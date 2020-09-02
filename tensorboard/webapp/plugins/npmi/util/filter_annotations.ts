@@ -56,9 +56,9 @@ export function filterAnnotations(
 export function removeHiddenAnnotations(
   annotationData: AnnotationDataListing,
   hiddenAnnotations: string[],
-  removeHidden: boolean
+  showHidden: boolean
 ): AnnotationDataListing {
-  if (!removeHidden) {
+  if (showHidden) {
     return annotationData;
   }
   const data = annotationData;

@@ -13,7 +13,7 @@ import {ValueData} from '../../../store/npmi_types';
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
 @Component({
-  selector: 'npmi-annotations-list-row',
+  selector: 'npmi-annotation',
   template: `
     <annotation-component
       [data]="data"
@@ -28,7 +28,7 @@ import {ValueData} from '../../../store/npmi_types';
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AnnotationsListRowContainer {
+export class AnnotationContainer {
   @Input() data!: ValueData[];
   @Input() maxCount!: number;
   @Input() activeMetrics!: string[];

@@ -53,7 +53,7 @@ import {getSortedAnnotations} from '../../util/sort_annotations';
       [sortedAnnotations]="sortedAnnotations$ | async"
       [selectedAnnotations]="selectedAnnotations$ | async"
       [maxCount]="maxCount$ | async"
-      (onRowClicked)="rowClicked($event)"
+      (onRowClick)="rowClicked($event)"
     ></annotations-list-component>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,

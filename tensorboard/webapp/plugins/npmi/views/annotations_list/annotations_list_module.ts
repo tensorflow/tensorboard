@@ -21,7 +21,7 @@ import {AnnotationsListContainer} from './annotations_list_container';
 import {AnnotationsListToolbarModule} from './annotations_list_toolbar/annotations_list_toolbar_module';
 import {HeaderModule} from './header/header_module';
 import {LegendModule} from './legend/legend_module';
-import {AnnotationsListRowModule} from './annotations_list_row/annotations_list_row_module';
+import {AnnotationModule} from './annotation/annotation_module';
 
 @NgModule({
   declarations: [AnnotationsListComponent, AnnotationsListContainer],
@@ -31,7 +31,7 @@ import {AnnotationsListRowModule} from './annotations_list_row/annotations_list_
     HeaderModule,
     LegendModule,
     ScrollingModule,
-    AnnotationsListRowModule,
+    AnnotationModule,
   ],
   exports: [AnnotationsListContainer],
 })

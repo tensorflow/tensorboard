@@ -309,7 +309,7 @@ describe('npmi_reducers', () => {
 
     it('deselects a set of annotations if they are all selected', () => {
       const state = createNpmiState({
-        selected: ['annotation_1', 'annotation_2', 'annotation_3'],
+        selectedAnnotations: ['annotation_1', 'annotation_2', 'annotation_3'],
       });
       const nextState = reducers(
         state,

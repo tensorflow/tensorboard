@@ -6,20 +6,20 @@ package(default_visibility = ["//tensorboard:internal"])
 licenses(["notice"])  # Apache 2.0
 
 tf_sass_binary(
-    name = "annotations_list_row_component_styles",
-    src = "annotations_list_row_component.scss",
+    name = "annotation_component_styles",
+    src = "annotation_component.scss",
 )
 
 ng_module(
-    name = "annotations_list_row",
+    name = "annotation",
     srcs = [
-        "annotations_list_row_component.ts",
-        "annotations_list_row_container.ts",
-        "annotations_list_row_module.ts",
+        "annotation_component.ts",
+        "annotation_container.ts",
+        "annotation_module.ts",
     ],
     assets = [
-        "annotations_list_row_component.ng.html",
-        ":annotations_list_row_component_styles",
+        "annotation_component.ng.html",
+        ":annotation_component_styles",
     ],
     deps = [
         "//tensorboard/webapp:app_state",

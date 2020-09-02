@@ -123,8 +123,7 @@ const reducer = createReducer(
       }
       return {
         ...state,
-        flaggedAnnotations: [...combinedSelectedAnnotations],
-        selectedAnnotations: [],
+        selectedAnnotations: [...combinedSelectedAnnotations],
       };
     }
   ),

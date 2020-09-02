@@ -30,7 +30,7 @@ limitations under the License.
     itemSize="{{activeRuns.length * 30 + 30}}"
     class="annotation-rows"
   >
-    <npmi-annotations-list-row
+    <npmi-annotation
       *cdkVirtualFor="let annotation of sortedAnnotations"
       [data]="annotations[annotation]"
       [activeMetrics]="activeMetrics"
@@ -38,6 +38,6 @@ limitations under the License.
       [annotation]="annotation"
       (click)="rowClicked($event, annotation)"
     >
-    </npmi-annotations-list-row>
+    </npmi-annotation>
   </cdk-virtual-scroll-viewport>
 </ng-container>

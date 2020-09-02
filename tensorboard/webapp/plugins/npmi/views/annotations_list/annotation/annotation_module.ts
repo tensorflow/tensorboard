@@ -5,12 +5,12 @@ import {FormsModule} from '@angular/forms';
 import {MatCheckboxModule} from '@angular/material/checkbox';
 import {MatIconModule} from '@angular/material/icon';
 
-import {AnnotationComponent} from './annotations_list_row_component';
-import {AnnotationsListRowContainer} from './annotations_list_row_container';
+import {AnnotationComponent} from './annotation_component';
+import {AnnotationContainer} from './annotation_container';
 
 @NgModule({
-  declarations: [AnnotationsListRowContainer, AnnotationComponent],
+  declarations: [AnnotationContainer, AnnotationComponent],
   imports: [CommonModule, FormsModule, MatCheckboxModule, MatIconModule],
-  exports: [AnnotationsListRowContainer],
+  exports: [AnnotationContainer],
 })
-export class AnnotationsListRowModule {}
+export class AnnotationModule {}
