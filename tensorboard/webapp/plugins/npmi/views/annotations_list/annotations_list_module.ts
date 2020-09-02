@@ -19,10 +19,16 @@ import {AnnotationsListComponent} from './annotations_list_component';
 import {AnnotationsListContainer} from './annotations_list_container';
 import {AnnotationsListToolbarModule} from './annotations_list_toolbar/annotations_list_toolbar_module';
 import {HeaderModule} from './header/header_module';
+import {LegendModule} from './legend/legend_module';
 
 @NgModule({
   declarations: [AnnotationsListComponent, AnnotationsListContainer],
-  imports: [CommonModule, AnnotationsListToolbarModule, HeaderModule],
+  imports: [
+    CommonModule,
+    AnnotationsListToolbarModule,
+    HeaderModule,
+    LegendModule,
+  ],
   exports: [AnnotationsListContainer],
 })
 export class AnnotationsListModule {}

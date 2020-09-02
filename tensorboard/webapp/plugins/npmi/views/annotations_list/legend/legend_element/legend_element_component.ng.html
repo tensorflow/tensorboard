@@ -14,16 +14,5 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<npmi-annotations-list-toolbar
-  [numAnnotations]="numAnnotations"
-  [expanded]="annotationsExpanded"
-></npmi-annotations-list-toolbar>
-<ng-container *ngIf="annotationsExpanded">
-  <npmi-annotations-list-legend></npmi-annotations-list-legend>
-  <npmi-annotations-list-header
-    [annotations]="annotations"
-    [numAnnotations]="numAnnotations"
-    [activeMetrics]="activeMetrics"
-  >
-  </npmi-annotations-list-header
-></ng-container>
+<svg class="glyph" #glyph></svg>
+<div class="legend-element-title">{{text}}</div>
