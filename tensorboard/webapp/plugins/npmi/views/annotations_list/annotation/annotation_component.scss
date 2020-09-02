@@ -48,6 +48,10 @@ limitations under the License.
   padding-right: 5px;
 }
 
-.flagged-icon .hidden-icon {
+.flagged-icon {
+  transform: scale(0.6);
+}
+
+.hidden-icon {
   transform: scale(0.6);
 }

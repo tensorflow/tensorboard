@@ -198,9 +198,9 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
       this.drawCountDots();
       this.drawCountTexts();
     } else {
-      this.countDotsGroup.selectAll('.countDot').remove();
-      this.countTextsGroup.selectAll('.countBackgroundText').remove();
-      this.countTextsGroup.selectAll('.countText').remove();
+      this.countDotsGroup.selectAll('.count-dot').remove();
+      this.countTextsGroup.selectAll('.count-background-text').remove();
+      this.countTextsGroup.selectAll('.count-text').remove();
     }
   }
 
@@ -364,13 +364,13 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
 
   private drawCountDots() {
     const countDots = this.countDotsGroup
-      .selectAll('.countDot')
+      .selectAll('.count-dot')
       .data(this.data);
 
     countDots
       .enter()
       .append('circle')
-      .attr('class', 'countDot')
+      .attr('class', 'count-dot')
       .attr(
         'fill',
         function(this: AnnotationComponent, d: ValueData) {

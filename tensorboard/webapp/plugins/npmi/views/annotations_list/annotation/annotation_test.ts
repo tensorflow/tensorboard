@@ -47,7 +47,7 @@ describe('Npmi Annotations List Container', () => {
     RUN_INDICATORS: By.css('.hint'),
     RUN_HINT_TEXTS: By.css('.hint-text'),
     BARS: By.css('.bar'),
-    COUNT_DOTS: By.css('.countDot'),
+    COUNT_DOTS: By.css('.count-dot'),
     NPMI_BACKGROUND_TEXTS: By.css('.npmi-background-text'),
     NPMI_TEXTS: By.css('.npmi-text'),
     COUNT_BACKGROUND_TEXTS: By.css('.count-background-text'),
