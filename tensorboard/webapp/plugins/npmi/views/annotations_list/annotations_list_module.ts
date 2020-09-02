@@ -14,12 +14,14 @@ limitations under the License.
 ==============================================================================*/
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
+import {ScrollingModule} from '@angular/cdk/scrolling';
 
 import {AnnotationsListComponent} from './annotations_list_component';
 import {AnnotationsListContainer} from './annotations_list_container';
 import {AnnotationsListToolbarModule} from './annotations_list_toolbar/annotations_list_toolbar_module';
 import {HeaderModule} from './header/header_module';
 import {LegendModule} from './legend/legend_module';
+import {AnnotationsListRowModule} from './annotations_list_row/annotations_list_row_module';
 
 @NgModule({
   declarations: [AnnotationsListComponent, AnnotationsListContainer],
@@ -28,6 +30,8 @@ import {LegendModule} from './legend/legend_module';
     AnnotationsListToolbarModule,
     HeaderModule,
     LegendModule,
+    ScrollingModule,
+    AnnotationsListRowModule,
   ],
   exports: [AnnotationsListContainer],
 })

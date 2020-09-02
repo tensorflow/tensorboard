@@ -107,24 +107,24 @@ const reducer = createReducer(
     }
   ),
   on(
-    actions.npmiAddSelectedAnnotations,
+    actions.npmiToggleSelectedAnnotations,
     (state: NpmiState, {annotations}): NpmiState => {
+      const combinedSelectedAnnotations = new Set([
+        ...state.selectedAnnotations,
+        ...annotations,
+      ]);
+      if (
+        combinedSelectedAnnotations.size === state.selectedAnnotations.length
+      ) {
+        // If all annotations are already flagged, user wants to remove them
+        for (const annotation of annotations) {
+          combinedSelectedAnnotations.delete(annotation);
+        }
+      }
       return {
         ...state,
-        selectedAnnotations: [
-          ...new Set([...state.selectedAnnotations, ...annotations]),
-        ],
-      };
-    }
-  ),
-  on(
-    actions.npmiRemoveSelectedAnnotation,
-    (state: NpmiState, {annotation}): NpmiState => {
-      const annotationSet = new Set([...state.selectedAnnotations]);
-      annotationSet.delete(annotation);
-      return {
-        ...state,
-        selectedAnnotations: [...annotationSet],
+        flaggedAnnotations: [...combinedSelectedAnnotations],
+        selectedAnnotations: [],
       };
     }
   ),

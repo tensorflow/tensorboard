@@ -1,0 +1,32 @@
+<div
+  class="annotation-container"
+  [ngClass]="{'selected-row': selectedAnnotations.includes(annotation)}"
+  style="height: 100%"
+>
+  <div
+    class="annotation-title"
+    [ngClass]="{'flagged-annotation':
+    flaggedAnnotations.includes(annotation), 'hidden-annotation':
+    hiddenAnnotations.includes(annotation)}"
+  >
+    <mat-checkbox
+      class="annotation-checkbox"
+      [checked]="selectedAnnotations.includes(annotation)"
+      (click)="$event.preventDefault()"
+    ></mat-checkbox>
+    {{annotation}}
+    <mat-icon
+      *ngIf="flaggedAnnotations.includes(annotation)"
+      class="state-icon"
+      svgIcon="flag_24px"
+    ></mat-icon>
+    <mat-icon
+      *ngIf="hiddenAnnotations.includes(annotation)"
+      class="state-icon"
+      svgIcon="visibility_off_24px"
+    ></mat-icon>
+  </div>
+  <div #annotation class="annotation-chart">
+    <svg style="width: 100%; height: {{runs.length * 30}}px"></svg>
+  </div>
+</div>

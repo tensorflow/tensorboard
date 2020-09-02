@@ -12,20 +12,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-@import 'tensorboard/webapp/theme/tb_theme';
-
-:host {
-  background-color: mat-color($tb-background, card);
-  border: 1px solid mat-color($tb-foreground, border);
-  display: flex;
-  flex-direction: column;
-  height: calc(100% - 2px); // Because of Border
-  width: calc(100% - 2px); // Because of Boder
-}
-
-.annotation-rows {
-  display: flex;
-  flex-direction: column;
-  flex: 1 1;
-  overflow-y: auto;
+export function formatLargeNumberComma(num: number | null): string {
+  if (num) {
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  } else {
+    return '';
+  }
 }

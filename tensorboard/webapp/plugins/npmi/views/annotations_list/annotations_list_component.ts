@@ -12,7 +12,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+} from '@angular/core';
 
 import {AnnotationDataListing, AnnotationSorting} from '../../store/npmi_types';
 
@@ -28,4 +34,38 @@ export class AnnotationsListComponent {
   @Input() numAnnotations!: number;
   @Input() annotationSorting!: AnnotationSorting;
   @Input() activeMetrics!: string[];
+  @Input() activeRuns!: string[];
+  @Input() sortedAnnotations!: string[];
+  @Input() selectedAnnotations!: string[];
+  @Input() maxCount!: number;
+  @Output() onRowClick = new EventEmitter<string[]>();
+
+  rowClicked(event: MouseEvent, annotation: string) {
+    // Shift pressed, handle multiple annotations
+    if (event.shiftKey) {
+      let annotationIndex = this.sortedAnnotations.indexOf(annotation);
+      if (this.selectedAnnotations.length === 0) {
+        this.onRowClick.emit(
+          this.sortedAnnotations.slice(0, annotationIndex + 1)
+        );
+      } else {
+        let lastAnnotation = this.selectedAnnotations[
+          this.selectedAnnotations.length - 1
+        ];
+        const lastIndex = this.sortedAnnotations.indexOf(lastAnnotation);
+        if (lastIndex < annotationIndex) {
+          this.onRowClick.emit(
+            this.sortedAnnotations.slice(lastIndex, annotationIndex + 1)
+          );
+        } else {
+          this.onRowClick.emit(
+            this.sortedAnnotations.slice(annotationIndex, lastIndex + 1)
+          );
+        }
+      }
+      //Only handle one annotation
+    } else {
+      this.onRowClick.emit([annotation]);
+    }
+  }
 }

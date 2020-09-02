@@ -59,3 +59,24 @@ tf_ts_library(
         "@npm//rxjs",
     ],
 )
+
+ng_module(
+    name = "sort_annotations",
+    srcs = [
+        "sort_annotations.ts",
+    ],
+    deps = [
+        ":metric_type",
+        "//tensorboard/webapp/plugins/npmi/store:types",
+        "//tensorboard/webapp/third_party:d3",
+    ],
+)
+
+ng_module(
+    name = "number_format",
+    srcs = [
+        "number_format.ts",
+    ],
+    deps = [
+    ],
+)

@@ -33,6 +33,7 @@ describe('Npmi Annotations List Container', () => {
     TOOLBAR: By.css('npmi-annotations-list-toolbar'),
     HEADER: By.css('npmi-annotations-list-header'),
     LEGEND: By.css('npmi-annotations-legend'),
+    ROWS: By.css('.annotation-rows'),
   };
 
   beforeEach(async () => {
@@ -66,5 +67,8 @@ describe('Npmi Annotations List Container', () => {
 
     const annotationsToolbar = fixture.debugElement.query(css.TOOLBAR);
     expect(annotationsToolbar).toBeTruthy();
+
+    const rows = fixture.debugElement.query(css.ROWS);
+    expect(rows).toBeTruthy();
   });
 });

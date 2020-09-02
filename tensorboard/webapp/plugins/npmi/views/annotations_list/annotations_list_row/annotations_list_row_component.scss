@@ -1,0 +1,39 @@
+@import 'tensorboard/webapp/theme/tb_theme';
+
+:host {
+  cursor: pointer;
+}
+
+.annotation-title {
+  padding: 0px 10px 0px 10px;
+  font-size: 13px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+}
+
+.annotation-container {
+  padding-top: 5px;
+  user-select: none;
+  border-bottom: 1px solid mat-color($tb-foreground, border);
+}
+
+.selected-row {
+  background-color: #d3d3d366;
+}
+
+.flagged-annotation {
+  color: mat-color($tb-primary) !important;
+}
+
+.hidden-annotation {
+  color: lightgrey;
+}
+
+.annotation-checkbox {
+  padding-right: 5px;
+}
+
+.state-icon {
+  transform: scale(0.6);
+}

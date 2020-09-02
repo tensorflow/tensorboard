@@ -23,11 +23,14 @@ ng_module(
     ],
     deps = [
         "//tensorboard/webapp:app_state",
+        "//tensorboard/webapp/angular:expect_angular_cdk_scrolling",
         "//tensorboard/webapp/core/store",
         "//tensorboard/webapp/plugins/npmi/store",
         "//tensorboard/webapp/plugins/npmi/store:types",
         "//tensorboard/webapp/plugins/npmi/util:filter_annotations",
         "//tensorboard/webapp/plugins/npmi/util:metric_type",
+        "//tensorboard/webapp/plugins/npmi/util:sort_annotations",
+        "//tensorboard/webapp/plugins/npmi/views/annotations_list/annotations_list_row",
         "//tensorboard/webapp/plugins/npmi/views/annotations_list/annotations_list_toolbar",
         "//tensorboard/webapp/plugins/npmi/views/annotations_list/header",
         "//tensorboard/webapp/plugins/npmi/views/annotations_list/legend",
@@ -46,6 +49,7 @@ tf_ts_library(
     deps = [
         ":annotations_list",
         "//tensorboard/webapp:app_state",
+        "//tensorboard/webapp/angular:expect_angular_cdk_scrolling",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/angular:expect_ngrx_store_testing",
         "//tensorboard/webapp/core/store",
