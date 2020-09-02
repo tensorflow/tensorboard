@@ -58,11 +58,11 @@ export class ViolinFilterContainer implements OnInit {
         .map((run) => run[0]);
     })
   );
-  readonly visibleAnnotations$ = combineLatest(
+  readonly visibleAnnotations$ = combineLatest([
     this.store.select(getAnnotationData),
     this.store.select(getHiddenAnnotations),
-    this.store.select(getShowHiddenAnnotations)
-  ).pipe(
+    this.store.select(getShowHiddenAnnotations),
+  ]).pipe(
     map(([annotationData, hiddenAnnotations, showHiddenAnnotations]) => {
       return removeHiddenAnnotations(
         annotationData,
@@ -84,10 +84,10 @@ export class ViolinFilterContainer implements OnInit {
   constructor(private readonly store: Store<State>) {}
 
   ngOnInit() {
-    this.chartData$ = combineLatest(
+    this.chartData$ = combineLatest([
       this.visibleAnnotations$,
-      this.activeRuns$
-    ).pipe(
+      this.activeRuns$,
+    ]).pipe(
       map(([visibleAnnotations, activeRuns]) => {
         return violinData(visibleAnnotations, activeRuns, this.metricName);
       })

@@ -19,7 +19,11 @@ limitations under the License.
     Active Filters
   </h3>
   <div class="side-toggle">
-    <button mat-icon-button (click)="toggleSidebarExpanded.emit()">
+    <button
+      mat-icon-button
+      (click)="toggleSidebarExpanded.emit()"
+      aria-label="Expand/Hide Sidebar"
+    >
       <mat-icon svgIcon="chevron_left_24px"></mat-icon>
     </button>
   </div>

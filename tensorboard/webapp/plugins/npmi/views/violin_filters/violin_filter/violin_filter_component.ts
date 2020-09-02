@@ -25,7 +25,7 @@ import {
   ElementRef,
 } from '@angular/core';
 
-import * as d3 from 'd3';
+import * as d3 from '../../../../../third_party/d3';
 
 import {MetricFilter} from './../../../store/npmi_types';
 import {ViolinChartData, ViolinBin} from './../../../util/violin_data';
@@ -48,9 +48,9 @@ export class ViolinFilterComponent implements AfterViewInit, OnChanges {
   @Output() onUpdateFilter = new EventEmitter<MetricFilter>();
   @ViewChild('chart', {static: true, read: ElementRef})
   private readonly chartContainer!: ElementRef<HTMLDivElement>;
-  private height = 300;
-  private margin = {top: 20, right: 10, bottom: 20, left: 10};
-  private drawMargin = {top: 0, right: 0, bottom: 20, left: 20};
+  private readonly height = 300;
+  private readonly margin = {top: 20, right: 10, bottom: 20, left: 10};
+  private readonly drawMargin = {top: 0, right: 0, bottom: 20, left: 20};
   get chartWidth(): number {
     return this.width - this.margin.left - this.margin.right;
   }
@@ -64,26 +64,76 @@ export class ViolinFilterComponent implements AfterViewInit, OnChanges {
     return this.chartWidth - this.drawMargin.left - this.drawMargin.right;
   }
   // Drawing containers
-  private svg!: d3.Selection<SVGElement, unknown, null, undefined>;
-  private mainContainer!: d3.Selection<SVGGElement, unknown, null, undefined>;
-  private drawContainer!: d3.Selection<SVGGElement, unknown, null, undefined>;
+  private svg!: d3.Selection<
+    SVGElement,
+    unknown,
+    HTMLElement | null,
+    undefined
+  >;
+  private mainContainer!: d3.Selection<
+    SVGGElement,
+    unknown,
+    HTMLElement | null,
+    undefined
+  >;
+  private drawContainer!: d3.Selection<
+    SVGGElement,
+    unknown,
+    HTMLElement | null,
+    undefined
+  >;
   // Containers for axis and dots
-  private dotsGroup!: d3.Selection<SVGGElement, unknown, null, undefined>;
-  private xAxisGroup!: d3.Selection<SVGGElement, unknown, null, undefined>;
-  private yAxisGroup!: d3.Selection<SVGGElement, unknown, null, undefined>;
-  private miscGroup!: d3.Selection<SVGGElement, unknown, null, undefined>;
+  private dotsGroup!: d3.Selection<
+    SVGGElement,
+    unknown,
+    HTMLElement | null,
+    undefined
+  >;
+  private xAxisGroup!: d3.Selection<
+    SVGGElement,
+    unknown,
+    HTMLElement | null,
+    undefined
+  >;
+  private yAxisGroup!: d3.Selection<
+    SVGGElement,
+    unknown,
+    HTMLElement | null,
+    undefined
+  >;
+  private miscGroup!: d3.Selection<
+    SVGGElement,
+    unknown,
+    HTMLElement | null,
+    undefined
+  >;
   // Scales and axis
-  private xScale: d3.ScalePoint<string> = d3.scalePoint();
+  private xScale!: d3.ScalePoint<string>;
   private xAxis?: d3.Axis<string>;
-  private yScale: d3.ScaleLinear<number, number> = d3.scaleLinear();
+  private yScale!: d3.ScaleLinear<number, number>;
   private yAxis?: d3.Axis<number | {valueOf(): number}>;
-  private xScaleNum: d3.ScaleLinear<number, number> = d3.scaleLinear();
+  private xScaleNum!: d3.ScaleLinear<number, number>;
   // Brush
-  private brush: d3.BrushBehavior<unknown> = d3.brushY();
+  private readonly brush: d3.BrushBehavior<unknown> = d3.brushY();
   // Misc
-  private nanLine!: d3.Selection<SVGLineElement, unknown, null, undefined>;
-  private nanText!: d3.Selection<SVGTextElement, unknown, null, undefined>;
-  private zeroLine!: d3.Selection<SVGLineElement, unknown, null, undefined>;
+  private nanLine!: d3.Selection<
+    SVGLineElement,
+    unknown,
+    HTMLElement | null,
+    undefined
+  >;
+  private nanText!: d3.Selection<
+    SVGTextElement,
+    unknown,
+    HTMLElement | null,
+    undefined
+  >;
+  private zeroLine!: d3.Selection<
+    SVGLineElement,
+    unknown,
+    HTMLElement | null,
+    undefined
+  >;
 
   private maxBinSize = 0;
   private readonly rgbColors = ['240, 120, 80', '46, 119, 182', '190, 64, 36'];
@@ -331,6 +381,7 @@ export class ViolinFilterComponent implements AfterViewInit, OnChanges {
 
   // Called on Interaction
   brushMoved() {
+    if (!d3.event) return;
     if (!d3.event.sourceEvent) return;
     const extent = d3.event.selection;
     if (extent) {

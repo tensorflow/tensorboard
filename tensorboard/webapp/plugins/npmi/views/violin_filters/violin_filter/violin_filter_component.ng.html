@@ -24,7 +24,11 @@ limitations under the License.
     <div class="chart-heading">
       {{metricName}}
     </div>
-    <button mat-icon-button (click)="onRemove.emit()">
+    <button
+      mat-icon-button
+      (click)="onRemove.emit()"
+      aria-label="Remove Filter"
+    >
       <mat-icon svgIcon="clear_24px"></mat-icon>
     </button>
   </div>

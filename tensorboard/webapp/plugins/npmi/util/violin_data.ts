@@ -15,7 +15,7 @@ limitations under the License.
 import {AnnotationDataListing} from './../store/npmi_types';
 import {stripMetricString} from './metric_type';
 
-import * as d3 from 'd3';
+import * as d3 from '../../../third_party/d3';
 
 export type ViolinChartData = {[runId: string]: ViolinBin[]};
 export type ViolinBin = d3.Bin<number, number>;

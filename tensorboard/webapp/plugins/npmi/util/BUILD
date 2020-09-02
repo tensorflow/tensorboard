@@ -32,8 +32,7 @@ ng_module(
     deps = [
         ":metric_type",
         "//tensorboard/webapp/plugins/npmi/store:types",
-        "@npm//@types/d3",
-        "@npm//d3",
+        "//tensorboard/webapp/third_party:d3",
     ],
 )
 
