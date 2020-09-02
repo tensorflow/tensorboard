@@ -126,10 +126,10 @@ describe('Npmi Annotations List Header Container', () => {
     expect(headerMetric.nativeElement.textContent.trim()).toBe('test');
 
     const sortingIcon = headerMetric.query(css.DOWN_ICON);
-    expect(headerMetric).toBeTruthy();
+    expect(sortingIcon).toBeTruthy();
   });
 
-  fit('renders sorting up arrow when sorting active and up', () => {
+  it('renders sorting up arrow when sorting active and up', () => {
     store.overrideSelector(getAnnotationSorting, {
       metric: 'nPMI@test',
       order: SortingOrder.UP,
@@ -145,7 +145,7 @@ describe('Npmi Annotations List Header Container', () => {
     expect(headerMetric.nativeElement.textContent.trim()).toBe('test');
 
     const sortingIcon = headerMetric.query(css.UP_ICON);
-    expect(headerMetric).toBeTruthy();
+    expect(sortingIcon).toBeTruthy();
   });
 
   it('dispatches npmiSetSelectedAnnotations action with all annotations when checkbox is clicked', () => {

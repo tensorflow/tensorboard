@@ -25,6 +25,8 @@ ng_module(
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp/angular:expect_angular_material_checkbox",
         "//tensorboard/webapp/angular:expect_angular_material_icon",
+        "//tensorboard/webapp/angular:expect_angular_material_tooltip",
+        "//tensorboard/webapp/plugins/npmi/actions",
         "//tensorboard/webapp/plugins/npmi/store",
         "//tensorboard/webapp/plugins/npmi/store:types",
         "//tensorboard/webapp/plugins/npmi/util:metric_type",
@@ -44,6 +46,8 @@ tf_ts_library(
     deps = [
         ":header",
         "//tensorboard/webapp:app_state",
+        "//tensorboard/webapp/angular:expect_angular_core_testing",
+        "//tensorboard/webapp/angular:expect_ngrx_store_testing",
         "//tensorboard/webapp/core/store",
         "//tensorboard/webapp/core/testing",
         "//tensorboard/webapp/plugins/npmi/actions",
