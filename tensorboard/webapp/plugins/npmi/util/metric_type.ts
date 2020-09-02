@@ -34,18 +34,3 @@ export function stripMetricString(metricString: string): string {
   const strippedString = metricString.split('@', 2)[1];
   return strippedString;
 }
-
-export function addSortingSymbol(
-  metricString: string,
-  sorting: {metric: string; order: SortingOrder}
-): string {
-  let result = metricString;
-  if (metricString === sorting.metric) {
-    if (sorting.order === SortingOrder.DOWN) {
-      result = result + ' ↓';
-    } else if (sorting.order === SortingOrder.UP) {
-      result = result + ' ↑';
-    }
-  }
-  return result;
-}

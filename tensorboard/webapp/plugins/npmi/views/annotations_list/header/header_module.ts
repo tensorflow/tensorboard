@@ -12,9 +12,26 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-require.config({
-  paths: {
-    lodash: '/base/npm/node_modules/lodash/lodash',
-    d3: '/base/npm/node_modules/d3/dist/d3',
-  },
-});
+import {CommonModule} from '@angular/common';
+import {NgModule} from '@angular/core';
+import {FormsModule} from '@angular/forms';
+
+import {MatCheckboxModule} from '@angular/material/checkbox';
+import {MatTooltipModule} from '@angular/material/tooltip';
+import {MatIconModule} from '@angular/material/icon';
+
+import {HeaderComponent} from './header_component';
+import {HeaderContainer} from './header_container';
+
+@NgModule({
+  declarations: [HeaderComponent, HeaderContainer],
+  imports: [
+    CommonModule,
+    FormsModule,
+    MatCheckboxModule,
+    MatTooltipModule,
+    MatIconModule,
+  ],
+  exports: [HeaderContainer],
+})
+export class HeaderModule {}
