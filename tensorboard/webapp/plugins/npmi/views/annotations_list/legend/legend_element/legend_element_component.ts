@@ -20,7 +20,7 @@ import {
   ViewChild,
   ElementRef,
 } from '@angular/core';
-import * as d3 from 'd3';
+import * as d3 from '../../../../../../third_party/d3';
 
 @Component({
   selector: 'npmi-legend-element',

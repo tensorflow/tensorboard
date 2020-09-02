@@ -24,10 +24,9 @@ ng_module(
         "//tensorboard/webapp/core/store",
         "//tensorboard/webapp/plugins/npmi/store",
         "//tensorboard/webapp/plugins/npmi/store:types",
+        "//tensorboard/webapp/third_party:d3",
         "@npm//@angular/core",
         "@npm//@ngrx/store",
-        "@npm//@types/d3",
-        "@npm//d3",
         "@npm//rxjs",
     ],
 )
@@ -40,6 +39,7 @@ tf_ts_library(
     ],
     deps = [
         ":legend_element",
+        "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/core/testing",
         "@npm//@angular/core",
         "@npm//@angular/platform-browser",
