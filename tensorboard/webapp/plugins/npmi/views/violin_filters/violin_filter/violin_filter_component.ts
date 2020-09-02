@@ -130,7 +130,9 @@ export class ViolinFilterComponent implements AfterViewInit, OnChanges {
       .attr('class', 'axis axis--x');
     this.miscGroup = this.drawContainer.append('g');
     this.xScale = d3.scaleBand().padding(0.05);
+    this.xAxis = d3.axisBottom(this.xScale);
     this.yScale = d3.scaleLinear().range([this.drawHeight, 0]);
+    this.yAxis = d3.axisLeft(this.yScale);
     this.xScaleNum = d3.scaleLinear();
     this.initializeBrush();
     this.drawMisc();
@@ -162,13 +164,11 @@ export class ViolinFilterComponent implements AfterViewInit, OnChanges {
     this.xScale
       .range([0, this.drawWidth])
       .domain(Object.keys(this.chartData.violinData));
-    this.xAxis = d3.axisBottom(this.xScale);
 
     this.yScale.domain([
       this.chartData.extremes.min,
       this.chartData.extremes.max,
     ]);
-    this.yAxis = d3.axisLeft(this.yScale);
 
     this.xScaleNum
       .range([0, this.xScale.bandwidth()])
@@ -188,14 +188,6 @@ export class ViolinFilterComponent implements AfterViewInit, OnChanges {
   }
 
   drawAxes() {
-    this.miscGroup.selectAll('*').remove();
-    this.miscGroup
-      .append('line')
-      .style('stroke', 'black')
-      .attr('x1', 0)
-      .attr('y1', this.yScale(0))
-      .attr('x2', this.drawWidth)
-      .attr('y2', this.yScale(0));
     this.yAxisGroup
       .attr(
         'transform',
@@ -288,14 +280,14 @@ export class ViolinFilterComponent implements AfterViewInit, OnChanges {
       .attr('alignment-baseline', 'middle')
       .attr('x', -5)
       .attr('y', this.chartHeight - this.drawMargin.top);
-    this.nanLine = this.mainContainer
+    this.nanLine = this.miscGroup
       .append('line')
       .style('stroke', 'grey')
       .style('stroke-dasharray', '3, 3')
       .attr('x1', 0)
-      .attr('y1', this.drawHeight + this.drawMargin.top)
+      .attr('y1', this.chartHeight - this.drawMargin.top)
       .attr('x2', this.chartWidth)
-      .attr('y2', this.drawHeight + this.drawMargin.top);
+      .attr('y2', this.chartHeight - this.drawMargin.top);
   }
 
   refreshMisc() {
@@ -357,9 +349,6 @@ export class ViolinFilterComponent implements AfterViewInit, OnChanges {
       if (extent[1] < this.drawHeight) {
         min = this.yScale.invert(extent[1]);
       }
-      console.log(min);
-      console.log(max);
-      console.log(includeNaN);
       this.onUpdateFilter.emit({
         max: max,
         min: min,
