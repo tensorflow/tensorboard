@@ -26,5 +26,5 @@ export interface TextState {
 }
 
 export interface State {
-  [TEXT_FEATURE_KEY]: TextState;
+  [TEXT_FEATURE_KEY]?: TextState;
 }

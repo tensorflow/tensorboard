@@ -28,7 +28,7 @@ import {provideMockStore, MockStore} from '@ngrx/store/testing';
 import {SettingsDialogComponent} from './dialog_component';
 import {SettingsButtonComponent} from './settings_button_component';
 
-import {MatIconTestingModule} from '../testing/mat_icon.module';
+import {MatIconTestingModule} from '../testing/mat_icon_module';
 import {toggleReloadEnabled, changeReloadPeriod} from '../core/actions';
 import {createCoreState, createState} from '../core/testing';
 import {State} from '../core/store';

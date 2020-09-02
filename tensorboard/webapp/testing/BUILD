@@ -30,7 +30,7 @@ ng_module(
     name = "mat_icon",
     testonly = 1,
     srcs = [
-        "mat_icon.module.ts",
+        "mat_icon_module.ts",
     ],
     deps = [
         "@npm//@angular/core",
