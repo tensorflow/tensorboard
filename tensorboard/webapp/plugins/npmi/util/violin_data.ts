@@ -43,24 +43,25 @@ export function violinData(
   Object.values(annotationData).forEach((annotationEntry) => {
     annotationEntry.forEach((valueDataElement) => {
       const run = valueDataElement.run;
-      if (allRuns.has(run) && valueDataElement.metric === strippedMetric) {
-        if (valueDataElement.nPMIValue === null) {
-          if (histogramDataNull[run]) {
-            histogramDataNull[run].push(null);
-          } else {
-            histogramDataNull[run] = [null];
-          }
+      if (!allRuns.has(run) || valueDataElement.metric !== strippedMetric) {
+        return;
+      }
+      if (valueDataElement.nPMIValue === null) {
+        if (histogramDataNull[run]) {
+          histogramDataNull[run].push(null);
         } else {
-          const nPMIValue = valueDataElement.nPMIValue;
-          extremeValues.max =
-            extremeValues.max < nPMIValue ? nPMIValue : extremeValues.max;
-          extremeValues.min =
-            extremeValues.min > nPMIValue ? nPMIValue : extremeValues.min;
-          if (histogramData[valueDataElement.run]) {
-            histogramData[run].push(nPMIValue);
-          } else {
-            histogramData[run] = [nPMIValue];
-          }
+          histogramDataNull[run] = [null];
+        }
+      } else {
+        const nPMIValue = valueDataElement.nPMIValue;
+        extremeValues.max =
+          extremeValues.max < nPMIValue ? nPMIValue : extremeValues.max;
+        extremeValues.min =
+          extremeValues.min > nPMIValue ? nPMIValue : extremeValues.min;
+        if (histogramData[valueDataElement.run]) {
+          histogramData[run].push(nPMIValue);
+        } else {
+          histogramData[run] = [nPMIValue];
         }
       }
     });

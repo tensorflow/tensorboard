@@ -43,3 +43,8 @@ limitations under the License.
   height: 100%;
   width: 100%;
 }
+
+.stroked-line {
+  stroke: grey;
+  stroke-dasharray: 3 3;
+}
