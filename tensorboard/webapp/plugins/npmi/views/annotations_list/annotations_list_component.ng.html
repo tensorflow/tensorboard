@@ -18,3 +18,11 @@ limitations under the License.
   [numAnnotations]="numAnnotations"
   [expanded]="annotationsExpanded"
 ></npmi-annotations-list-toolbar>
+<ng-container *ngIf="annotationsExpanded">
+  <npmi-annotations-list-header
+    [annotations]="annotations"
+    [numAnnotations]="numAnnotations"
+    [activeMetrics]="activeMetrics"
+  >
+  </npmi-annotations-list-header
+></ng-container>

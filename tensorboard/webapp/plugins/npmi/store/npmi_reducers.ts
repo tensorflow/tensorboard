@@ -288,10 +288,20 @@ const reducer = createReducer(
   ),
   on(
     actions.npmiChangeAnnotationSorting,
-    (state: NpmiState, {sorting}): NpmiState => {
+    (state: NpmiState, {metric}): NpmiState => {
+      const newSorting = {
+        metric: metric,
+        order: SortingOrder.DOWN,
+      };
+      if (
+        state.sorting.metric === metric &&
+        state.sorting.order === SortingOrder.DOWN
+      ) {
+        newSorting.order = SortingOrder.UP;
+      }
       return {
         ...state,
-        sorting,
+        sorting: newSorting,
       };
     }
   ),

@@ -182,6 +182,7 @@ tf_ng_web_test_suite(
         "//tensorboard/webapp/plugins/npmi/views/annotations_list:annotations_list_test_lib",
         "//tensorboard/webapp/plugins/npmi/views/annotations_list/annotations_list_toolbar:annotations_list_toolbar_test_lib",
         "//tensorboard/webapp/plugins/npmi/views/annotations_list/annotations_list_toolbar/annotations_search:annotations_search_test_lib",
+        "//tensorboard/webapp/plugins/npmi/views/annotations_list/header:header_test_lib",
         "//tensorboard/webapp/plugins/npmi/views/data_selection:data_selection_test_lib",
         "//tensorboard/webapp/plugins/npmi/views/data_selection/metric_arithmetic:metric_arithmetic_test_lib",
         "//tensorboard/webapp/plugins/npmi/views/data_selection/metric_arithmetic/metric_arithmetic_element:metric_arithmetic_element_test_lib",
@@ -219,6 +220,8 @@ tf_svg_bundle(
         "@com_google_material_design_icon//:expand_more_24px.svg",
         "@com_google_material_design_icon//:expand_less_24px.svg",
         "@com_google_material_design_icon//:cancel_24px.svg",
+        "@com_google_material_design_icon//:arrow_downward_24px.svg",
+        "@com_google_material_design_icon//:arrow_upward_24px.svg",
     ],
     out = "icon_bundle.svg",
 )
