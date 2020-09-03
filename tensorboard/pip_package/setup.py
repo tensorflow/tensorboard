@@ -58,9 +58,9 @@ setup(
         "tensorboard": ["webfiles.zip",],
         # Must keep this in sync with tf_projector_plugin:projector_assets
         "tensorboard.plugins.projector": [
-            "polymer3/tf_projector_plugin/index.js",
-            "polymer3/tf_projector_plugin/projector_binary.html",
-            "polymer3/tf_projector_plugin/projector_binary.js",
+            "tf_projector_plugin/index.js",
+            "tf_projector_plugin/projector_binary.html",
+            "tf_projector_plugin/projector_binary.js",
         ],
     },
     # Disallow python 3.0 and 3.1 which lack a 'futures' module (see above).

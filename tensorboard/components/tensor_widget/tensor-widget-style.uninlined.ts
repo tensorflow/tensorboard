@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {registerStyleDomModule} from '../../components_polymer3/polymer/register_style_dom_module';
+import {registerStyleDomModule} from '../../components/polymer/register_style_dom_module';
 
 registerStyleDomModule({
   moduleName: 'tensor-widget-style',

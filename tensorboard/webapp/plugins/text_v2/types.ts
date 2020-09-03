@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {CategoryType} from '../../../components_polymer3/tf_categorization_utils/categorizationUtils';
+import {CategoryType} from '../../../components/tf_categorization_utils/categorizationUtils';
 
 export const PLUGIN_ID = 'text_v2';
 

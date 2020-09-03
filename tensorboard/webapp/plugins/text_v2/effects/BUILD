@@ -33,7 +33,7 @@ tf_ts_library(
     ],
     deps = [
         ":effects",
-        "//tensorboard/components_polymer3/tf_categorization_utils",
+        "//tensorboard/components/tf_categorization_utils",
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/angular:expect_ngrx_store_testing",
