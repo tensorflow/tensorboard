@@ -10,7 +10,7 @@
     "postinstall": "ngcc -p main es2015",
     "build": "bazel build //...",
     "test": "ibazel test //...",
-    "lint": "prettier --check 'tensorboard/**/*.'{css,html,js,ts,scss} .github/**/*.yml || echo 'Failures OK during Prettier upgrade'",
+    "lint": "prettier --check 'tensorboard/**/*.'{css,html,js,ts,scss} .github/**/*.yml",
     "fix-lint": "prettier --write 'tensorboard/**/*.'{css,html,js,ts,scss} .github/**/*.yml"
   },
   "repository": {
