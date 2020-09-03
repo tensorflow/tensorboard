@@ -484,10 +484,7 @@ export class LineChart {
             ptsToCircle,
             (p: vz_chart_helpers.Point) => p.dataset.metadata().name
           );
-        ptsSelection
-          .enter()
-          .append('circle')
-          .classed('point', true);
+        ptsSelection.enter().append('circle').classed('point', true);
         ptsSelection
           .attr('r', vz_chart_helpers.TOOLTIP_CIRCLE_SIZE)
           .attr('cx', (p) => p.x)
@@ -507,10 +504,7 @@ export class LineChart {
     window.cancelAnimationFrame(this._tooltipUpdateAnimationFrame);
     this.tooltip.hide();
     this.scatterPlot.attr('display', 'block');
-    this.tooltipPointsComponent
-      .content()
-      .selectAll('.point')
-      .remove();
+    this.tooltipPointsComponent.content().selectAll('.point').remove();
   }
   private setupTooltips(plot: Plottable.XYPlot<number | Date, number>): void {
     plot.onDetach(() => {
@@ -615,7 +609,7 @@ export class LineChart {
         return target.x < firstX || target.x > lastX || isNaN(s);
       })
       .classed('closest', (p) => dist(p) === closestDist)
-      .each(function(point) {
+      .each(function (point) {
         self.drawTooltipRow(this, tooltipColumns, point);
       })
       // reorders DOM to match the ordering of the `data`.
@@ -624,7 +618,7 @@ export class LineChart {
     rows
       .enter()
       .append('tr')
-      .each(function(point) {
+      .each(function (point) {
         self.drawTooltipRow(this, tooltipColumns, point);
       })
       .nodes();
@@ -636,11 +630,8 @@ export class LineChart {
     point: vz_chart_helpers.Point
   ) {
     const self = this;
-    const columns = d3
-      .select(row)
-      .selectAll('td')
-      .data(tooltipColumns);
-    columns.each(function(col: TooltipColumn) {
+    const columns = d3.select(row).selectAll('td').data(tooltipColumns);
+    columns.each(function (col: TooltipColumn) {
       // Skip column value update when the column is static.
       if (col.static) return;
       self.drawTooltipColumn.call(self, this, col, point);
@@ -649,7 +640,7 @@ export class LineChart {
     columns
       .enter()
       .append('td')
-      .each(function(col: TooltipColumn | LineChartTooltipColumn) {
+      .each(function (col: TooltipColumn | LineChartTooltipColumn) {
         if ('enter' in col && col.enter) {
           const customTooltip = col as LineChartTooltipColumn;
           customTooltip.enter.call(this, point);

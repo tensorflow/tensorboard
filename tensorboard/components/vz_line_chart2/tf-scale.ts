@@ -44,7 +44,8 @@ export interface ITfScale extends Plottable.QuantitativeScale<number> {
   ignoreOutlier(): boolean;
   ignoreOutlier(ignore: boolean): this;
 }
-export abstract class TfScale extends Plottable.QuantitativeScale<number>
+export abstract class TfScale
+  extends Plottable.QuantitativeScale<number>
   implements ITfScale {
   protected _ignoreOutlier: boolean = false;
   protected _valueProviderForDomain: ValueProviderForDomain;

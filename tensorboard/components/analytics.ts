@@ -17,4 +17,4 @@ limitations under the License.
 // We fake the global 'ga' object, so the object is a noop. The
 // google.analytics typing gives the object a type of UniversalAnalytics.ga.
 // We do not track open source users.
-(window as any)['ga'] = function() {};
+(window as any)['ga'] = function () {};

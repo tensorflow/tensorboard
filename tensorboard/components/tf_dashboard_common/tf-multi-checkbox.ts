@@ -222,7 +222,7 @@ class TfMultiCheckbox extends LegacyElementMixin(PolymerElement) {
       150,
       {leading: false}
     );
-    return function() {
+    return function () {
       var r = this.$$('#names-regex').value;
       if (r == '') {
         // If the user cleared the field, they may be done typing, so
@@ -260,7 +260,7 @@ class TfMultiCheckbox extends LegacyElementMixin(PolymerElement) {
     var buttons = Array.prototype.slice.call(
       this.root.querySelectorAll('.isolator')
     );
-    buttons.forEach(function(b) {
+    buttons.forEach(function (b) {
       if (numChecked === 1 && selectionMap[b.name]) {
         b.icon = 'radio-button-checked';
       } else {
@@ -313,7 +313,7 @@ class TfMultiCheckbox extends LegacyElementMixin(PolymerElement) {
     // names.
     var name = (e.target as any).name;
     var selectionState = {};
-    this.names.forEach(function(n) {
+    this.names.forEach(function (n) {
       selectionState[n] = n == name;
     });
     this.selectionState = selectionState;

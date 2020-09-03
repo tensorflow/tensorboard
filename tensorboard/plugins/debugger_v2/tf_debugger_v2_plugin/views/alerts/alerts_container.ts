@@ -65,22 +65,19 @@ export class AlertsContainer {
 
   readonly alertsBreakdown$ = this.store.pipe(
     select(
-      createSelector(
-        getAlertsBreakdown,
-        (alertsBreakdown) => {
-          const alertTypes = Object.keys(alertsBreakdown);
-          alertTypes.sort();
-          return alertTypes.map(
-            (alertType): AlertTypeDisplay => {
-              return {
-                type: alertType as AlertType,
-                ...ALERT_TYPE_TO_DISPLAY_NAME_AND_SYMBOL[alertType],
-                count: alertsBreakdown[alertType],
-              };
-            }
-          );
-        }
-      )
+      createSelector(getAlertsBreakdown, (alertsBreakdown) => {
+        const alertTypes = Object.keys(alertsBreakdown);
+        alertTypes.sort();
+        return alertTypes.map(
+          (alertType): AlertTypeDisplay => {
+            return {
+              type: alertType as AlertType,
+              ...ALERT_TYPE_TO_DISPLAY_NAME_AND_SYMBOL[alertType],
+              count: alertsBreakdown[alertType],
+            };
+          }
+        );
+      })
     )
   );
 

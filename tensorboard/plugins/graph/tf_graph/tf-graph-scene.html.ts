@@ -171,8 +171,7 @@ export const template = html`
 .non-input > g >
 .annotation:not(.input-highlight):not(.input-highlight-selected) >
 .annotation-label
-/*.annotation-edge*/
- {
+/*.annotation-edge*/ {
       visibility: hidden;
     }
 
@@ -545,9 +544,7 @@ export const template = html`
   <div class="titleContainer">
     <div id="title" class="title">Main Graph</div>
     <div id="auxTitle" class="auxTitle">Auxiliary Nodes</div>
-    <div id="functionLibraryTitle" class="functionLibraryTitle">
-      Functions
-    </div>
+    <div id="functionLibraryTitle" class="functionLibraryTitle">Functions</div>
   </div>
   <svg id="svg">
     <defs>

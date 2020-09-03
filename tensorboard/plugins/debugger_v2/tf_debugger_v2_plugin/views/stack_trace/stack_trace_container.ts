@@ -57,46 +57,37 @@ export class StackTraceContainer {
 
   readonly opType$ = this.store.pipe(
     select(
-      createSelector(
-        getCodeLocationOrigin,
-        (originInfo): string | null => {
-          return originInfo === null ? null : originInfo.opType;
-        }
-      )
+      createSelector(getCodeLocationOrigin, (originInfo): string | null => {
+        return originInfo === null ? null : originInfo.opType;
+      })
     )
   );
 
   readonly opName$ = this.store.pipe(
     select(
-      createSelector(
-        getCodeLocationOrigin,
-        (originInfo): string | null => {
-          if (
-            originInfo === null ||
-            originInfo.codeLocationType !== CodeLocationType.GRAPH_OP_CREATION
-          ) {
-            return null;
-          }
-          return originInfo.opName;
+      createSelector(getCodeLocationOrigin, (originInfo): string | null => {
+        if (
+          originInfo === null ||
+          originInfo.codeLocationType !== CodeLocationType.GRAPH_OP_CREATION
+        ) {
+          return null;
         }
-      )
+        return originInfo.opName;
+      })
     )
   );
 
   readonly executionIndex$ = this.store.pipe(
     select(
-      createSelector(
-        getCodeLocationOrigin,
-        (originInfo): number | null => {
-          if (
-            originInfo === null ||
-            originInfo.codeLocationType !== CodeLocationType.EXECUTION
-          ) {
-            return null;
-          }
-          return originInfo.executionIndex;
+      createSelector(getCodeLocationOrigin, (originInfo): number | null => {
+        if (
+          originInfo === null ||
+          originInfo.codeLocationType !== CodeLocationType.EXECUTION
+        ) {
+          return null;
         }
-      )
+        return originInfo.executionIndex;
+      })
     )
   );
 

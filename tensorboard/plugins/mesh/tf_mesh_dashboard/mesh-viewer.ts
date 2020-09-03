@@ -244,7 +244,7 @@ export class MeshViewer extends THREE.EventDispatcher {
     this._camera.aspect = this._canvasSize.width / this._canvasSize.height;
     this._camera.updateProjectionMatrix();
     this._renderer.setSize(this._canvasSize.width, this._canvasSize.height);
-    const animate = function() {
+    const animate = function () {
       var delta = this._clock.getDelta();
       this._cameraControls.update(delta);
       this._animationFrameIndex = requestAnimationFrame(animate);
@@ -346,7 +346,7 @@ export class MeshViewer extends THREE.EventDispatcher {
       defaultConfig
     ) as PointCloudConfig;
     var geometry = new THREE.Geometry();
-    points.forEach(function(point) {
+    points.forEach(function (point) {
       var p = new THREE.Vector3(point[0], point[1], point[2]);
       const scale = 1;
       p.x = point[0] * scale;
@@ -355,7 +355,7 @@ export class MeshViewer extends THREE.EventDispatcher {
       geometry.vertices.push(p);
     });
     if (colors && colors.length == points.length) {
-      colors.forEach(function(color) {
+      colors.forEach(function (color) {
         const c = new THREE.Color(
           color[0] / 255,
           color[1] / 255,
@@ -442,7 +442,7 @@ export class MeshViewer extends THREE.EventDispatcher {
       },
     }) as any;
     let geometry = new THREE.Geometry();
-    vertices.forEach(function(point) {
+    vertices.forEach(function (point) {
       let p = new THREE.Vector3(point[0], point[1], point[2]);
       const scale = 1;
       p.x = point[0] * scale;
@@ -450,7 +450,7 @@ export class MeshViewer extends THREE.EventDispatcher {
       p.z = point[2] * scale;
       geometry.vertices.push(p);
     });
-    faces.forEach(function(face_indices) {
+    faces.forEach(function (face_indices) {
       let face = new THREE.Face3(
         face_indices[0],
         face_indices[1],

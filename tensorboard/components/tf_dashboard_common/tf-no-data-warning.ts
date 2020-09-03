@@ -22,17 +22,13 @@ class TfNoDataWarning extends PolymerElement {
     <template is="dom-if" if="[[showWarning]]">
       <div class="warning">
         <h3>No <span>[[dataType]]</span> data was found.</h3>
-        <p>
-          Probable causes:
-        </p>
+        <p>Probable causes:</p>
         <ul>
           <li>
             You haven't written any <span>[[dataType]]</span> data to your event
             files.
           </li>
-          <li>
-            TensorBoard can't find your event files.
-          </li>
+          <li>TensorBoard can't find your event files.</li>
         </ul>
         <p>
           If you're new to using TensorBoard, and want to find out how to add

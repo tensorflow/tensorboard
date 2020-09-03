@@ -17,9 +17,7 @@ limitations under the License.
 
 <div class="focus-execution-container">
   <div>
-    <span>
-      Python Execution #{{ focusedExecutionIndex }}
-    </span>
+    <span> Python Execution #{{ focusedExecutionIndex }} </span>
   </div>
 
   <div *ngIf="focusedExecutionData !== null; else loading_section">
@@ -35,9 +33,7 @@ limitations under the License.
       </div>
 
       <div class="execution-data-field">
-        <span class="execution-data-key">
-          # of input tensors:
-        </span>
+        <span class="execution-data-key"> # of input tensors: </span>
         <span class="execution-data-value input-tensors">
           {{ focusedExecutionData.input_tensor_ids == null ? 0 :
           focusedExecutionData.input_tensor_ids.length }}
@@ -45,9 +41,7 @@ limitations under the License.
       </div>
 
       <div class="execution-data-field">
-        <span class="execution-data-key">
-          # of output tensors:
-        </span>
+        <span class="execution-data-key"> # of output tensors: </span>
         <span class="execution-data-value output-tensors">
           {{ focusedExecutionData.output_tensor_ids == null ? 0 :
           focusedExecutionData.output_tensor_ids.length }}
@@ -65,9 +59,7 @@ limitations under the License.
         >
           <!-- TensorFlow's `tf.Tensor` has 0-based slots in their names. -->
           <!-- We need to be consistent with that. -->
-          <div class="output-slot-number">
-            Output slot {{ i }}:
-          </div>
+          <div class="output-slot-number">Output slot {{ i }}:</div>
           <div class="output-slot-debug-tensor-value">
             <debug-tensor-value
               [debugTensorValue]="parseDebugTensorValue({

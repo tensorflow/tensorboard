@@ -22,9 +22,7 @@ export interface InactiveState {}
 
 @Component({
   selector: 'tf-debugger-v2-inactive',
-  template: `
-    <inactive-component></inactive-component>
-  `,
+  template: ` <inactive-component></inactive-component> `,
 })
 export class InactiveContainer {
   constructor(private readonly store: Store<InactiveState>) {}

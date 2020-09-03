@@ -16,9 +16,7 @@ import {ChangeDetectionStrategy, Component} from '@angular/core';
 
 @Component({
   selector: 'text-dashboard',
-  template: `
-    This is the text dashboard
-  `,
+  template: ` This is the text dashboard `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TextDashboardComponent {}

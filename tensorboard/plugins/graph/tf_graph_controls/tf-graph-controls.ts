@@ -631,9 +631,7 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
         <template is="dom-if" if="[[_equals(colorBy, 'structure')]]">
           <div class="color-text">
             <div class="color-legend-row">
-              <span class="label">
-                colors
-              </span>
+              <span class="label"> colors </span>
               <span class="color-legend-value">same substructure</span>
             </div>
             <div class="color-legend-row">
@@ -1123,13 +1121,13 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
       return;
     }
     var devicesForStats = {};
-    var devices = _.each(stats.dev_stats, function(d) {
+    var devices = _.each(stats.dev_stats, function (d) {
       // Only considered included devices.
-      var include = _.some(DEVICE_NAMES_INCLUDE, function(rule) {
+      var include = _.some(DEVICE_NAMES_INCLUDE, function (rule) {
         return rule.regex.test(d.device);
       });
       // Exclude device names that are ignored by default.
-      var exclude = _.some(DEVICE_STATS_DEFAULT_OFF, function(rule) {
+      var exclude = _.some(DEVICE_STATS_DEFAULT_OFF, function (rule) {
         return rule.regex.test(d.device);
       });
       if (include && !exclude) {

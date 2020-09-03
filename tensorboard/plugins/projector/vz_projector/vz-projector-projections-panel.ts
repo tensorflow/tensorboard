@@ -179,7 +179,7 @@ class ProjectionsPanel extends LegacyElementMixin(PolymerElement) {
       const self = this;
       const inkTabs = this.root.querySelectorAll('.ink-tab');
       for (let i = 0; i < inkTabs.length; i++) {
-        inkTabs[i].addEventListener('click', function() {
+        inkTabs[i].addEventListener('click', function () {
           let id = this.getAttribute('data-tab');
           self.showTab(id);
         });

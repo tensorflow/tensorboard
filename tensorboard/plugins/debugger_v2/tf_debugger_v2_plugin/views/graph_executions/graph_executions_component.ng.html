@@ -35,9 +35,7 @@ limitations under the License.
         [ngClass]="{'input-of-focus': isInputOfFocus(i)}"
       >
         <div class="graph-execution-index">
-          <div *ngIf="i === focusIndex" class="graph-execution-focus">
-            ▶
-          </div>
+          <div *ngIf="i === focusIndex" class="graph-execution-focus">▶</div>
           {{ i }}
         </div>
         <div *ngIf="graphExecutionData[i]; else dataLoading">
@@ -53,9 +51,7 @@ limitations under the License.
             >
               {{ getTensorName(i) }}
             </button>
-            <div class="op-type">
-              {{ graphExecutionData[i].op_type }}
-            </div>
+            <div class="op-type">{{ graphExecutionData[i].op_type }}</div>
           </div>
 
           <debug-tensor-value

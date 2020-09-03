@@ -27,9 +27,7 @@ interface PolymerChangeEvent extends CustomEvent {
 
 @Component({
   selector: 'tb-legacy-runs-selector-component',
-  template: `
-    <tf-runs-selector #selector></tf-runs-selector>
-  `,
+  template: ` <tf-runs-selector #selector></tf-runs-selector> `,
 })
 export class LegacyRunsSelectorComponent implements AfterViewInit {
   @Output()

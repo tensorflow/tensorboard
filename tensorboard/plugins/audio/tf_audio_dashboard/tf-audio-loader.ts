@@ -62,7 +62,8 @@ tf-audio-loader loads an individual audio clip from the TensorBoard
 backend.
 */
 @customElement('tf-audio-loader')
-class _TfAudioLoader extends LegacyElementMixin(PolymerElement)
+class _TfAudioLoader
+  extends LegacyElementMixin(PolymerElement)
   implements TfAudioLoader {
   static readonly template = html`
     <tf-card-heading

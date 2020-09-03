@@ -531,7 +531,7 @@ class TfNodeInfo extends LegacyElementMixin(PolymerElement) {
     if (!stats || !stats.outputSize || !stats.outputSize.length) {
       return;
     }
-    return _.map(stats.outputSize, function(shape) {
+    return _.map(stats.outputSize, function (shape) {
       if (shape.length === 0) {
         return 'scalar';
       }
@@ -549,12 +549,12 @@ class TfNodeInfo extends LegacyElementMixin(PolymerElement) {
       return [];
     }
     var attrs = [];
-    _.each(node.attr, function(entry) {
+    _.each(node.attr, function (entry) {
       // Unpack the "too large" attributes into separate attributes
       // in the info card, with values "too large to show".
       if (entry.key === tf_graph.LARGE_ATTRS_KEY) {
         attrs = attrs.concat(
-          entry.value.list.s.map(function(key) {
+          entry.value.list.s.map(function (key) {
             return {key: key, value: 'Too large to show...'};
           })
         );
@@ -648,7 +648,7 @@ class TfNodeInfo extends LegacyElementMixin(PolymerElement) {
      * Converts a list of metaedges to a list of edge information
      * that can be rendered.
      */
-    var toEdgeInfoList = function(edges) {
+    var toEdgeInfoList = function (edges) {
       var edgeInfoList = [];
       _.each(edges, (metaedge) => {
         var name = isPredecessor ? metaedge.v : metaedge.w;

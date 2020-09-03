@@ -429,7 +429,10 @@ export class TfPrCurveCard extends PolymerElement {
 
   _computeEntryClosestOrEqualToStepCap(stepCap, entries) {
     const entryIndex = Math.min(
-      _.sortedIndex(entries.map((entry) => entry.step), stepCap),
+      _.sortedIndex(
+        entries.map((entry) => entry.step),
+        stepCap
+      ),
       entries.length - 1
     );
     return entries[entryIndex];

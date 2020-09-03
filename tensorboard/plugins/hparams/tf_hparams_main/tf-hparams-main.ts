@@ -59,9 +59,7 @@ class TfHparamsMain extends LegacyElementMixin(PolymerElement) {
             <h3>No hparams data was found.</h3>
             <p>Probable causes:</p>
             <ul>
-              <li>
-                You haven’t written any hparams data to your event files.
-              </li>
+              <li>You haven’t written any hparams data to your event files.</li>
               <li>
                 Event files are still being loaded (try reloading this page).
               </li>

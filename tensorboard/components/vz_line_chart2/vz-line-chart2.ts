@@ -455,7 +455,7 @@ class VzLineChart2<SeriesMetadata = {}> extends LegacyElementMixin(
       this.cancelAsync(this._makeChartAsyncCallbackId);
       this._makeChartAsyncCallbackId = null;
     }
-    this._makeChartAsyncCallbackId = this.async(function() {
+    this._makeChartAsyncCallbackId = this.async(function () {
       this._makeChartAsyncCallbackId = null;
       // Find the actual xComponentsCreationMethod.
       let normalXComponentsCreationMethod = this.xComponentsCreationMethod;

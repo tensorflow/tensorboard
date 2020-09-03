@@ -32,9 +32,7 @@ limitations under the License.
       [ngClass]="[breakdown.type === focusType ? 'focus' : '']"
       (click)="onToggleFocusType.emit(breakdown.type)"
     >
-      <div class="alert-type-name">
-        {{ breakdown.displayName }}
-      </div>
+      <div class="alert-type-name">{{ breakdown.displayName }}</div>
       <div class="alert-type-count">
         {{ breakdown.displaySymbol }}: {{ breakdown.count }}
       </div>

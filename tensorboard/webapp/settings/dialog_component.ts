@@ -38,9 +38,8 @@ import {
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
-const getReloadPeriodInSec = createSelector(
-  getReloadPeriodInMs,
-  (periodInMs) => Math.round(periodInMs / 1000)
+const getReloadPeriodInSec = createSelector(getReloadPeriodInMs, (periodInMs) =>
+  Math.round(periodInMs / 1000)
 );
 
 export function createIntegerValidator(): ValidatorFn {

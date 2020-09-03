@@ -61,7 +61,7 @@ function timeToDate(x: number): Date {
 }
 /**  Just a curryable map to make things cute and tidy. */
 function map<T, U>(f: (x: T) => U): (arr: T[]) => U[] {
-  return function(arr: T[]): U[] {
+  return function (arr: T[]): U[] {
     return arr.map(f);
   };
 }
@@ -71,7 +71,7 @@ function map<T, U>(f: (x: T) => U): (arr: T[]) => U[] {
  * them into the intersection of a G and a Datum.
  */
 function detupler<T, G>(xform: (x: T) => G): (t: TupleData<T>) => Datum & G {
-  return function(x: TupleData<T>): Datum & G {
+  return function (x: TupleData<T>): Datum & G {
     // Create a G, assert it has type <G & Datum>
     let obj = <G & Datum>xform(x[2]);
     // ... patch in the properties of datum

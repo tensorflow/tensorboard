@@ -17,9 +17,7 @@ import {PluginRegistryModule} from '../plugin_registry_module';
 
 @Component({
   selector: 'extra-dashboard',
-  template: `
-    <div>I'm the extra Angular dashboard!</div>
-  `,
+  template: ` <div>I'm the extra Angular dashboard!</div> `,
 })
 export class ExtraDashboardComponent {}
 

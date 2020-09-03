@@ -32,9 +32,7 @@ const basicDebugInfoStyle = `
 
 @Component({
   selector: 'debug-tensor-dtype',
-  template: `
-    {{ dtype }}
-  `,
+  template: ` {{ dtype }} `,
   styles: [basicDebugInfoStyle],
 })
 export class DebugTensorDTypeComponent {
@@ -44,9 +42,7 @@ export class DebugTensorDTypeComponent {
 
 @Component({
   selector: 'debug-tensor-rank',
-  template: `
-    {{ rank }}D
-  `,
+  template: ` {{ rank }}D `,
   styles: [basicDebugInfoStyle],
 })
 export class DebugTensorRankComponent {
@@ -56,9 +52,7 @@ export class DebugTensorRankComponent {
 
 @Component({
   selector: 'debug-tensor-shape',
-  template: `
-    shape:{{ shapeString }}
-  `,
+  template: ` shape:{{ shapeString }} `,
   styles: [basicDebugInfoStyle],
 })
 export class DebugTensorShapeComponent {

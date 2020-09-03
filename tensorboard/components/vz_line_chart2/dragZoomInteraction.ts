@@ -172,18 +172,10 @@ export class DragZoomLayer extends Plottable.Components.SelectionBoxLayer {
     this._doubleClickInteraction.enabled(!isZooming);
   }
   private interpolateZoom(x0f: number, x1f: number, y0f: number, y1f: number) {
-    let x0s: number = this.xScale()
-      .domain()[0]
-      .valueOf();
-    let x1s: number = this.xScale()
-      .domain()[1]
-      .valueOf();
-    let y0s: number = this.yScale()
-      .domain()[0]
-      .valueOf();
-    let y1s: number = this.yScale()
-      .domain()[1]
-      .valueOf();
+    let x0s: number = this.xScale().domain()[0].valueOf();
+    let x1s: number = this.xScale().domain()[1].valueOf();
+    let y0s: number = this.yScale().domain()[0].valueOf();
+    let y1s: number = this.yScale().domain()[1].valueOf();
     // Copy a ref to the ease fn, so that changing ease wont affect zooms in
     // progress.
     let ease = this.easeFn;

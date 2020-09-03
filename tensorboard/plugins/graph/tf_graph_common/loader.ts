@@ -39,7 +39,7 @@ export function fetchAndConstructHierarchicalGraph(
   return parser
     .fetchAndParseGraphData(remotePath, pbTxtFile, dataTracker)
     .then(
-      function(graph) {
+      function (graph) {
         if (!graph.node) {
           throw new Error(
             'The graph is empty. This can happen when ' +

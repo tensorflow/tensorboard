@@ -785,9 +785,9 @@ describe('Debugger graphs reducers', () => {
       numExecutions
     );
     // The first page is loaded in full.
-    expect(nextState.executions.executionDigestsLoaded.pageLoadedSizes).toEqual(
-      {0: 100}
-    );
+    expect(
+      nextState.executions.executionDigestsLoaded.pageLoadedSizes
+    ).toEqual({0: 100});
     // The detailed digest data should be recorded.
     expect(Object.keys(nextState.executions.executionDigests).length).toBe(100);
     for (let i = 0; i < 100; ++i) {
@@ -837,9 +837,9 @@ describe('Debugger graphs reducers', () => {
       numExecutions
     );
     // The first page is expanded.
-    expect(nextState.executions.executionDigestsLoaded.pageLoadedSizes).toEqual(
-      {0: 4}
-    );
+    expect(
+      nextState.executions.executionDigestsLoaded.pageLoadedSizes
+    ).toEqual({0: 4});
     // The detailed digest data should be recorded.
     expect(Object.keys(nextState.executions.executionDigests).length).toBe(4);
     expect(nextState.executions.executionDigests[0]).toEqual({
@@ -899,9 +899,9 @@ describe('Debugger graphs reducers', () => {
       numExecutions
     );
     // The first page is expanded.
-    expect(nextState.executions.executionDigestsLoaded.pageLoadedSizes).toEqual(
-      {0: 2, 1: 2}
-    );
+    expect(
+      nextState.executions.executionDigestsLoaded.pageLoadedSizes
+    ).toEqual({0: 2, 1: 2});
     // The detailed digest data should be recorded.
     expect(Object.keys(nextState.executions.executionDigests).length).toEqual(
       4
@@ -962,9 +962,9 @@ describe('Debugger graphs reducers', () => {
       numExecutions + 1
     );
     // The first page is expanded.
-    expect(nextState.executions.executionDigestsLoaded.pageLoadedSizes).toEqual(
-      {0: 2, 1: 2}
-    );
+    expect(
+      nextState.executions.executionDigestsLoaded.pageLoadedSizes
+    ).toEqual({0: 2, 1: 2});
     // The detailed digest data should be recorded.
     expect(Object.keys(nextState.executions.executionDigests).length).toBe(4);
     expect(nextState.executions.executionDigests[0]).toEqual({

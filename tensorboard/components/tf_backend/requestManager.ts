@@ -240,14 +240,14 @@ export class RequestManager {
         requestOptions.withCredentials,
         requestOptions.contentType
       );
-      req.onload = function() {
+      req.onload = function () {
         if (req.status === 200) {
           resolve(JSON.parse(req.responseText));
         } else {
           reject(new RequestNetworkError(req, url));
         }
       };
-      req.onerror = function() {
+      req.onerror = function () {
         reject(new RequestNetworkError(req, url));
       };
       if (requestOptions.body) {

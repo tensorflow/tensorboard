@@ -73,7 +73,13 @@ const initialState = {
     ['run3', ['c', 'a/b']],
   ]),
   data: new Map([
-    ['run1', new Map([['a/b', DATA_A_B_RUN1], ['a/c', DATA_A_C_RUN1]])],
+    [
+      'run1',
+      new Map([
+        ['a/b', DATA_A_B_RUN1],
+        ['a/c', DATA_A_C_RUN1],
+      ]),
+    ],
   ]),
   visibleRunTags: new Map(),
 };

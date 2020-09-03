@@ -90,7 +90,7 @@ export function buildGroup(
   // Select all children and join with data.
   // (Note that all children of g.edges are g.edge)
   let edgeGroups = (container as any)
-    .selectAll(function() {
+    .selectAll(function () {
       return this.childNodes;
     })
     .data(edges, getEdgeKey);
@@ -100,7 +100,7 @@ export function buildGroup(
     .append('g')
     .attr('class', Class.Edge.GROUP)
     .attr('data-edge', getEdgeKey)
-    .each(function(d: EdgeData) {
+    .each(function (d: EdgeData) {
       let edgeGroup = d3.select(this);
       d.label.edgeGroup = edgeGroup;
       // index node group for quick highlighting
@@ -122,10 +122,10 @@ export function buildGroup(
       appendEdge(edgeGroup, d, sceneComponent);
     })
     .merge(edgeGroups)
-    .each(function() {
+    .each(function () {
       position(sceneElement, this);
     })
-    .each(function(d) {
+    .each(function (d) {
       stylize(d3.select(this), d, sceneComponent);
     });
   edgeGroups
@@ -231,10 +231,7 @@ function adjustPathPointsForMarker(
     .select(document.createElementNS('http://www.w3.org/2000/svg', 'path'))
     .attr('d', lineFunc(points));
   let markerWidth = +marker.attr('markerWidth');
-  let viewBox = marker
-    .attr('viewBox')
-    .split(' ')
-    .map(Number);
+  let viewBox = marker.attr('viewBox').split(' ').map(Number);
   let viewBoxWidth = viewBox[2] - viewBox[0];
   let refX = +marker.attr('refX');
   let pathNode = <SVGPathElement>path.node();
@@ -413,7 +410,7 @@ function getEdgePathInterpolator(
   // coordinates into the space of the renderPath using its Current
   // Transformation Matrix (CTM).
   let inbound = renderMetaedgeInfo.metaedge.inbound;
-  return function(t) {
+  return function (t) {
     let adjoiningPoint = adjoiningPath
       .getPointAtLength(inbound ? adjoiningPath.getTotalLength() : 0)
       .matrixTransform(adjoiningPath.getCTM())
@@ -431,7 +428,7 @@ function position(component: HTMLElement, edgeGroup: HTMLElement) {
   d3.select(edgeGroup)
     .select('path.' + Class.Edge.LINE)
     .transition()
-    .attrTween('d', function(d: EdgeData, i: number, a: SVGPathElement[]) {
+    .attrTween('d', function (d: EdgeData, i: number, a: SVGPathElement[]) {
       return getEdgePathInterpolator(
         component,
         this as SVGPathElement,

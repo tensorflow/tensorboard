@@ -154,10 +154,9 @@ export function fit(svg, zoomG, d3zoom, callback) {
  *            provided node.
  */
 export function panToNode(nodeName: String, svg, zoomG, d3zoom): boolean {
-  const node = <SVGAElement>d3
-    .select(svg)
-    .select(`[data-name="${nodeName}"]`)
-    .node();
+  const node = <SVGAElement>(
+    d3.select(svg).select(`[data-name="${nodeName}"]`).node()
+  );
   if (!node) {
     console.warn(`panToNode() failed for node name "${nodeName}"`);
     return false;
@@ -366,10 +365,7 @@ export function positionButton(button, renderNode: render.RenderNodeInfo) {
     y -= 2;
   }
   let translateStr = 'translate(' + x + ',' + y + ')';
-  button
-    .selectAll('path')
-    .transition()
-    .attr('transform', translateStr);
+  button.selectAll('path').transition().attr('transform', translateStr);
   button
     .select('circle')
     .transition()
@@ -664,7 +660,7 @@ export function addHealthPills(
   let svgRootSelection = d3.select(svgRoot);
   svgRootSelection
     .selectAll('g.nodeshape')
-    .each(function(nodeInfo: render.RenderNodeInfo) {
+    .each(function (nodeInfo: render.RenderNodeInfo) {
       // Only show health pill data for this node if it is available.
       const healthPills = nodeNamesToHealthPills[nodeInfo.node.name];
       const healthPill = healthPills ? healthPills[healthPillStepIndex] : null;
