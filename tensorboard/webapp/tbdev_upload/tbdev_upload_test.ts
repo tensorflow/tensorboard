@@ -28,7 +28,7 @@ import {TbdevUploadDialogComponent} from './tbdev_upload_dialog_component';
 import {TbdevUploadDialogContainer} from './tbdev_upload_dialog_container';
 
 import {createCoreState, createEnvironment, createState} from '../core/testing';
-import {MatIconTestingModule} from '../testing/mat_icon.module';
+import {MatIconTestingModule} from '../testing/mat_icon_module';
 
 describe('tbdev upload test', () => {
   let store: MockStore<State>;

@@ -23,7 +23,7 @@ import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {Store} from '@ngrx/store';
 import {provideMockStore, MockStore} from '@ngrx/store/testing';
 
-import {MatIconTestingModule} from '../testing/mat_icon.module';
+import {MatIconTestingModule} from '../testing/mat_icon_module';
 import {HeaderComponent} from './header_component';
 import {PluginSelectorComponent} from './plugin_selector_component';
 import {PluginSelectorContainer} from './plugin_selector_container';

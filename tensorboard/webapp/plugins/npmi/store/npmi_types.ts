@@ -88,5 +88,5 @@ export interface NpmiState {
 }
 
 export interface State {
-  [NPMI_FEATURE_KEY]: NpmiState;
+  [NPMI_FEATURE_KEY]?: NpmiState;
 }
