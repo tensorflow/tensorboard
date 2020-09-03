@@ -2,7 +2,6 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "importHelpers": true,
-    "lib": ["dom", "es2019"],
     "types": ["jasmine"]
   }
 }

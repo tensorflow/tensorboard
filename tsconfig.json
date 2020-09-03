@@ -5,8 +5,10 @@
     "experimentalDecorators": true,
     "importHelpers": true,
     "inlineSourceMap": true,
-    "lib": ["dom", "es2019"],
+    "lib": ["dom", "es2020"],
     "moduleResolution": "node",
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitReturns": true,
     "skipLibCheck": true,
     "strict": true,
     // Don't scan the node_modules/@types folder for ambient types.
