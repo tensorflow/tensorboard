@@ -40,7 +40,10 @@ namespace vz_projector.test {
 
   describe('parse tensors', () => {
     it('parseTensors', (doneFn) => {
-      let tensors = [[1.0, 2.0], [2.0, 3.0]];
+      let tensors = [
+        [1.0, 2.0],
+        [2.0, 3.0],
+      ];
       stringToArrayBuffer(dataToTsv(tensors)).then(
         (tensorsArrayBuffer: ArrayBuffer) => {
           parseTensors(tensorsArrayBuffer).then((data: DataPoint[]) => {
@@ -59,7 +62,11 @@ namespace vz_projector.test {
       );
     });
     it('parseMetadata', (doneFn) => {
-      let metadata = [['label', 'fakecol'], ['Г', '0'], ['label1', '1']];
+      let metadata = [
+        ['label', 'fakecol'],
+        ['Г', '0'],
+        ['label1', '1'],
+      ];
 
       stringToArrayBuffer(dataToTsv(metadata)).then(
         (metadataArrayBuffer: ArrayBuffer) => {

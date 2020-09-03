@@ -50,8 +50,14 @@ describe('runs_data_source', () => {
           run_2: ['count@test', 'nPMI@test'],
         });
         httpMock.expectOne('data/plugin/npmi/values').flush({
-          run_1: [[1000, 0.2618], [15298, -0.74621]],
-          run_2: [[3598, 0.135], [8327, -0.1572]],
+          run_1: [
+            [1000, 0.2618],
+            [15298, -0.74621],
+          ],
+          run_2: [
+            [3598, 0.135],
+            [8327, -0.1572],
+          ],
         });
 
         expect(returnValue).toHaveBeenCalledWith({

@@ -174,11 +174,7 @@ export function computeDomain(values: number[], ignoreOutliers: boolean) {
     lower = a - padding;
   }
   let domain = [lower, b + padding];
-  domain = d3
-    .scaleLinear()
-    .domain(domain)
-    .nice()
-    .domain();
+  domain = d3.scaleLinear().domain(domain).nice().domain();
   return domain;
 }
 

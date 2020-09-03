@@ -66,12 +66,12 @@ function getSignature(metanode) {
       '|V|': metanode.metagraph.nodes().length,
       '|E|': metanode.metagraph.edges().length,
     },
-    function(v, k) {
+    function (v, k) {
       return k + '=' + v;
     }
   ).join(' ');
   // optype1=count1,optype2=count2
-  let ops = _.map(metanode.opHistogram, function(count, op) {
+  let ops = _.map(metanode.opHistogram, function (count, op) {
     return op + '=' + count;
   }).join(',');
   return props + ' [ops] ' + ops;
@@ -140,11 +140,11 @@ function groupTemplateAndAssignId(nnGroups, verifyTemplate) {
   } = {};
   return _.reduce(
     nnGroups,
-    function(templates, nnGroupPair) {
+    function (templates, nnGroupPair) {
       let signature = nnGroupPair[0],
         nnGroup = nnGroupPair[1].nodes,
         clusters = [];
-      nnGroup.forEach(function(metanode) {
+      nnGroup.forEach(function (metanode) {
         // check with each existing cluster
         for (let i = 0; i < clusters.length; i++) {
           let similar =
@@ -168,7 +168,7 @@ function groupTemplateAndAssignId(nnGroups, verifyTemplate) {
           members: [metanode.name],
         });
       });
-      clusters.forEach(function(c) {
+      clusters.forEach(function (c) {
         templates[c.metanode.templateId] = {
           level: nnGroupPair[1].level,
           nodes: c.members,

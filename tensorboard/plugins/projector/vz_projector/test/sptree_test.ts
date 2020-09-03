@@ -14,7 +14,12 @@ limitations under the License.
 ==============================================================================*/
 namespace vz_projector.test {
   it('simple 2D data', () => {
-    let data = [[0, 1], [1, 0], [1, 1], [0, 0]];
+    let data = [
+      [0, 1],
+      [1, 0],
+      [1, 1],
+      [0, 0],
+    ];
     let tree = new SPTree(data);
     // Check that each point is within the bound.
     tree.visit((node, low, high) => {
@@ -35,7 +40,12 @@ namespace vz_projector.test {
   });
 
   it('simple 3D data', () => {
-    let data = [[0, 1, 0], [1, 0.4, 2], [1, 1, 3], [0, 0, 5]];
+    let data = [
+      [0, 1, 0],
+      [1, 0.4, 2],
+      [1, 1, 3],
+      [0, 0, 5],
+    ];
     let tree = new SPTree(data);
     // Check that each point is within the bound.
     tree.visit((node, low, high) => {
@@ -58,7 +68,12 @@ namespace vz_projector.test {
   });
 
   it('Only visit root', () => {
-    let data = [[0, 1, 0], [1, 0.4, 2], [1, 1, 3], [0, 0, 5]];
+    let data = [
+      [0, 1, 0],
+      [1, 0.4, 2],
+      [1, 1, 3],
+      [0, 0, 5],
+    ];
     let tree = new SPTree(data);
     let numVisits = 0;
     tree.visit((node, low, high) => {

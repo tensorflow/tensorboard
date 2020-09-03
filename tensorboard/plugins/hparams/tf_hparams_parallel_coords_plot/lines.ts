@@ -185,7 +185,7 @@ export class LinesCollection {
       // lines.
       window.setTimeout(() => {
         const _this = this;
-        this._fgPathsSel.each(function(this: SVGPathElement, sessionGroup) {
+        this._fgPathsSel.each(function (this: SVGPathElement, sessionGroup) {
           // '_this' refers to the 'LinesCollection' instance.
           _this._setControlPointsProperty(this, sessionGroup);
         });
@@ -302,11 +302,13 @@ export class LinesCollection {
     }
     const colorScale = d3
       .scaleLinear</*range=*/ string, /*output=*/ string>()
-      .domain(tf_hparams_utils.numericColumnExtent(
-        this._schema,
-        this._sessionGroups,
-        colorByColumnIndex
-      ) as any)
+      .domain(
+        tf_hparams_utils.numericColumnExtent(
+          this._schema,
+          this._sessionGroups,
+          colorByColumnIndex
+        ) as any
+      )
       .range([minColor, maxColor])
       .interpolate(d3.interpolateLab);
     return (sessionGroup) =>
@@ -324,10 +326,7 @@ export class LinesCollection {
       /*key=*/ (sessionGroup) => sessionGroup.name
     );
     currentPathSel.exit().remove();
-    return currentPathSel
-      .enter()
-      .append('path')
-      .merge(currentPathSel);
+    return currentPathSel.enter().append('path').merge(currentPathSel);
   }
   /** Sets the controlPoints property of 'pathElement' to the control-points
    * array of the given sessionGroup with respect to the current state of

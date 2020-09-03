@@ -26,12 +26,8 @@ limitations under the License.
     </button>
     <div *ngIf="kind !== 'self'" class="slot">
       <span [ngSwitch]="kind">
-        <span *ngSwitchCase="'input'">
-          Output
-        </span>
-        <span *ngSwitchCase="'consumer'">
-          Input
-        </span>
+        <span *ngSwitchCase="'input'"> Output </span>
+        <span *ngSwitchCase="'consumer'"> Input </span>
       </span>
       slot: {{ slot }}
     </div>
@@ -40,8 +36,6 @@ limitations under the License.
     {{ opData.op_type }}
   </div>
   <ng-template #opInfoMissing>
-    <span class="op-info-missing">
-      (Op info unavailable.)
-    </span>
+    <span class="op-info-missing"> (Op info unavailable.) </span>
   </ng-template>
 </button>

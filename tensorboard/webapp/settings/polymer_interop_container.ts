@@ -53,10 +53,7 @@ export class SettingsPolymerInteropContainer {
 
   ngOnInit() {
     this.getPageSize$
-      .pipe(
-        takeUntil(this.ngUnsubscribe),
-        distinctUntilChanged()
-      )
+      .pipe(takeUntil(this.ngUnsubscribe), distinctUntilChanged())
       .subscribe((pageSize) => {
         this.paginatedViewStore.setLimit(pageSize);
       });

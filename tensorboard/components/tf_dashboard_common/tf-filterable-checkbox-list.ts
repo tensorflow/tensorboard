@@ -63,9 +63,7 @@ class TfFilterableCheckboxList extends LegacyElementMixin(PolymerElement) {
     </div>
     <div class="matches">
       <template is="dom-if" if="[[!_itemsMatchingRegex.length]]">
-        <div class="item empty-match">
-          No matches
-        </div>
+        <div class="item empty-match">No matches</div>
       </template>
       <template
         is="dom-repeat"

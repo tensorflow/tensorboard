@@ -63,4 +63,4 @@ var HTMLImports;
  * @param {function()} callback
  * @param {!HTMLDocument=} opt_doc
  */
-HTMLImports.whenReady = function(callback, opt_doc) {};
+HTMLImports.whenReady = function (callback, opt_doc) {};

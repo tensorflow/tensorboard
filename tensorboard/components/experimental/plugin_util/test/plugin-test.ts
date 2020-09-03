@@ -20,7 +20,7 @@ namespace tb_plugin.lib.DO_NOT_USE_INTERNAL {
   ) as HTMLTemplateElement;
 
   describe('plugin-util', () => {
-    beforeEach(function(done) {
+    beforeEach(function (done) {
       const iframeFrag = document.importNode(template.content, true);
       const iframe = iframeFrag.firstElementChild as HTMLIFrameElement;
       document.body.appendChild(iframe);
@@ -32,12 +32,12 @@ namespace tb_plugin.lib.DO_NOT_USE_INTERNAL {
       this.sandbox = sinon.sandbox.create();
     });
 
-    afterEach(function() {
+    afterEach(function () {
       document.body.removeChild(this.guestFrame);
       this.sandbox.restore();
     });
 
-    it('setUp sanity check', function() {
+    it('setUp sanity check', function () {
       expect(this.guestWindow.plugin_internal)
         .to.have.property('sendMessage')
         .that.is.a('function');
@@ -52,7 +52,7 @@ namespace tb_plugin.lib.DO_NOT_USE_INTERNAL {
     [
       {
         spec: 'host (src) to guest (dest)',
-        beforeEachFunc: function() {
+        beforeEachFunc: function () {
           this.destWindow = this.guestWindow;
           this.destListen = this.guestWindow.plugin_internal.listen;
           this.destUnlisten = this.guestWindow.plugin_internal.unlisten;
@@ -66,7 +66,7 @@ namespace tb_plugin.lib.DO_NOT_USE_INTERNAL {
       },
       {
         spec: 'guest (src) to host (dest)',
-        beforeEachFunc: function() {
+        beforeEachFunc: function () {
           this.destWindow = window;
           this.destListen = (
             type: lib.DO_NOT_USE_INTERNAL.MessageType,
@@ -92,18 +92,18 @@ namespace tb_plugin.lib.DO_NOT_USE_INTERNAL {
       describe(spec, () => {
         beforeEach(beforeEachFunc);
 
-        beforeEach(function() {
+        beforeEach(function () {
           this.onMessage = this.sandbox.stub();
           this.destListen('messageType', this.onMessage);
         });
 
-        it('sends a message to dest', async function() {
+        it('sends a message to dest', async function () {
           await this.srcSendMessage('messageType', 'hello');
           expect(this.onMessage.callCount).to.equal(1);
           expect(this.onMessage.firstCall.args).to.deep.equal(['hello']);
         });
 
-        it('sends a message a random payload not by ref', async function() {
+        it('sends a message a random payload not by ref', async function () {
           const payload = {
             foo: 'foo',
             bar: {
@@ -117,7 +117,7 @@ namespace tb_plugin.lib.DO_NOT_USE_INTERNAL {
           expect(this.onMessage.firstCall.args[0]).to.deep.equal(payload);
         });
 
-        it('resolves when dest replies with ack', async function() {
+        it('resolves when dest replies with ack', async function () {
           const sendMessageP = this.srcSendMessage('messageType', 'hello');
 
           expect(this.onMessage.callCount).to.equal(0);
@@ -127,7 +127,7 @@ namespace tb_plugin.lib.DO_NOT_USE_INTERNAL {
           expect(this.onMessage.firstCall.args).to.deep.equal(['hello']);
         });
 
-        it('triggers, on dest, a cb for the matching type', async function() {
+        it('triggers, on dest, a cb for the matching type', async function () {
           const barCb = this.sandbox.stub();
           this.destListen('bar', barCb);
 
@@ -138,7 +138,7 @@ namespace tb_plugin.lib.DO_NOT_USE_INTERNAL {
           expect(barCb.firstCall.args).to.deep.equal(['soap']);
         });
 
-        it('supports single listener for a type', async function() {
+        it('supports single listener for a type', async function () {
           const barCb1 = this.sandbox.stub();
           const barCb2 = this.sandbox.stub();
           this.destListen('bar', barCb1);
@@ -160,7 +160,7 @@ namespace tb_plugin.lib.DO_NOT_USE_INTERNAL {
             {specName: 'object', payload: {some: 'object'}, expectDeep: true},
             {specName: 'array', payload: ['a', 'b', 'c'], expectDeep: true},
           ].forEach(({specName, payload, expectDeep}) => {
-            it(specName, async function() {
+            it(specName, async function () {
               this.destListen('bar', () => payload);
 
               const response = await this.srcSendMessage('bar', 'soap');
@@ -174,7 +174,7 @@ namespace tb_plugin.lib.DO_NOT_USE_INTERNAL {
           });
         });
 
-        it('unregister a callback with unlisten', async function() {
+        it('unregister a callback with unlisten', async function () {
           const barCb = this.sandbox.stub();
           this.destListen('bar', barCb);
           await this.srcSendMessage('bar', 'soap');
@@ -186,7 +186,7 @@ namespace tb_plugin.lib.DO_NOT_USE_INTERNAL {
           expect(barCb.callCount).to.equal(1);
         });
 
-        it('ignores foreign postMessages', async function() {
+        it('ignores foreign postMessages', async function () {
           const barCb = this.sandbox.stub();
           this.destListen('bar', barCb);
           const fakeMessage: Message = {
@@ -203,7 +203,7 @@ namespace tb_plugin.lib.DO_NOT_USE_INTERNAL {
           expect(barCb).to.not.have.been.called;
         });
 
-        it('processes messages while waiting for a reponse', async function() {
+        it('processes messages while waiting for a reponse', async function () {
           let resolveLongTask = null;
           this.destListen('longTask', () => {
             return new Promise((resolve) => {

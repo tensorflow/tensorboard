@@ -94,10 +94,7 @@ export class Minimap {
       this.updateViewpoint();
     };
     this.viewpointCoord = {x: 0, y: 0};
-    let drag = d3
-      .drag()
-      .subject(Object)
-      .on('drag', dragmove);
+    let drag = d3.drag().subject(Object).on('drag', dragmove);
     $viewpoint.datum(this.viewpointCoord as any).call(drag);
     // Make the minimap clickable.
     $minimapSvg.on('click', () => {

@@ -16,9 +16,7 @@ limitations under the License.
 -->
 
 <div>
-  <div>
-    Graph Structure
-  </div>
+  <div>Graph Structure</div>
 
   <div class="graph-structure-container">
     <div *ngIf="opInfo !== undefined && opInfo !== null; else noOpFocused">
@@ -28,9 +26,7 @@ limitations under the License.
             *ngFor="let inputOpInfo of inputOps; let slot = index"
             class="input-op-section"
           >
-            <div class="input-slot-header">
-              Input slot {{slot}}:
-            </div>
+            <div class="input-slot-header">Input slot {{slot}}:</div>
             <graph-op
               [kind]="'input'"
               [opName]="inputOpInfo.op_name"
@@ -51,9 +47,7 @@ limitations under the License.
       </ng-template>
 
       <div class="self-op-container">
-        <div class="self-op-header">
-          Op:
-        </div>
+        <div class="self-op-header">Op:</div>
         <graph-op
           [kind]="'self'"
           [opName]="opInfo.op_name"
@@ -111,9 +105,7 @@ limitations under the License.
   </div>
 
   <ng-template #opInfoMissing>
-    <span class="op-info-missing">
-      (Op info unavailable.)
-    </span>
+    <span class="op-info-missing"> (Op info unavailable.) </span>
   </ng-template>
 
   <ng-template #noOpFocused>

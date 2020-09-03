@@ -105,7 +105,11 @@ describe('Npmi Main Container', () => {
   it('renders npmi main component with multiple runs, some active, some inactive', () => {
     store.overrideSelector(
       getRunSelection,
-      new Map([['run_1', false], ['run_2', true], ['run_3', false]])
+      new Map([
+        ['run_1', false],
+        ['run_2', true],
+        ['run_3', false],
+      ])
     );
     const fixture = TestBed.createComponent(MainContainer);
     fixture.detectChanges();

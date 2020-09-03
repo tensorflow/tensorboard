@@ -97,7 +97,7 @@ limitations under the License.
   </template>
   <script src="../vz-line-chart2/line-chart-exporter.js"></script>
   <script>
-    (function() {
+    (function () {
       // The chart can sometimes get in a bad state, when it redraws while
       // it is display: none due to the user having switched to a different
       // page. This code implements a cascading queue to redraw the bad charts
@@ -105,7 +105,7 @@ limitations under the License.
       // We use a cascading queue becuase we don't want to block the UI / make the
       // ripples very slow while everything synchronously redraws.
       const redrawQueue = [];
-      const cascadingRedraw = (function() {
+      const cascadingRedraw = (function () {
         let redrawRaf = 0;
         return _.throttle(function internalRedraw() {
           if (redrawQueue.length == 0) return;

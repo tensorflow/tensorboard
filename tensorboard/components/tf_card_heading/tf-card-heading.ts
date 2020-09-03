@@ -43,9 +43,7 @@ class TfCardHeading extends PolymerElement {
       <figcaption class="content">
         <div class="heading-row">
           <template is="dom-if" if="[[_nameLabel]]">
-            <div itemprop="name" class="heading-label name">
-              [[_nameLabel]]
-            </div>
+            <div itemprop="name" class="heading-label name">[[_nameLabel]]</div>
           </template>
           <template is="dom-if" if="[[run]]">
             <!-- Extra wrapping span needed to avoid flexbox blockification. -->

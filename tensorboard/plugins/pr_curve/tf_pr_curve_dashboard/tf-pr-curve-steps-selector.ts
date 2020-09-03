@@ -30,9 +30,7 @@ class TfPrCurveStepsSelector extends PolymerElement {
             class="run-color-box"
             style="background:[[_computeColorForRun(run)]];"
           ></div>
-          <div class="run-text">
-            [[run]]
-          </div>
+          <div class="run-text">[[run]]</div>
         </div>
         <div class="step-display-container">
           [[_computeTimeTextForRun(runToAvailableTimeEntries, _runToStepIndex,

@@ -21,9 +21,7 @@ class VzProjectorDashboard extends PolymerElement {
   static readonly template = html`
     <template is="dom-if" if="[[dataNotFound]]">
       <div style="max-width: 540px; margin: 80px auto 0 auto;">
-        <h3>
-          No checkpoint was found.
-        </h3>
+        <h3>No checkpoint was found.</h3>
         <p>Probable causes:</p>
         <ul>
           <li>

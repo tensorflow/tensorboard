@@ -38,9 +38,7 @@ class TfHparamsSessionGroupValues extends PolymerElement {
       is="dom-if"
       if="[[!_propertiesArePopulated(visibleSchema, sessionGroup)]]"
     >
-      <div>
-        Click or hover over a session group to display its values here.
-      </div>
+      <div>Click or hover over a session group to display its values here.</div>
     </template>
 
     <style>

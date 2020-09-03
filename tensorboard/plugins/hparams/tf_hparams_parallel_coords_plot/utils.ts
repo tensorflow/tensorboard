@@ -241,10 +241,7 @@ export function createAxisScale(domainValues, axisHeight, scaleType) {
       // d3.scaleQuantile() requires a non-empty domain.
       domainValues = [1];
     }
-    return d3
-      .scaleQuantile()
-      .domain(_.uniq(domainValues))
-      .range(scaleRange);
+    return d3.scaleQuantile().domain(_.uniq(domainValues)).range(scaleRange);
   } else if (scaleType === 'NON_NUMERIC') {
     return d3
       .scalePoint()

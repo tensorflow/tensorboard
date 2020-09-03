@@ -112,12 +112,9 @@ export class TimelineContainer {
 
   readonly loadingNumExecutions$ = this.store.pipe(
     select(
-      createSelector(
-        getNumExecutionsLoaded,
-        (loaded) => {
-          return loaded.state == DataLoadState.LOADING;
-        }
-      )
+      createSelector(getNumExecutionsLoaded, (loaded) => {
+        return loaded.state == DataLoadState.LOADING;
+      })
     )
   );
 
@@ -143,14 +140,11 @@ export class TimelineContainer {
 
   readonly displayExecutionDigests$ = this.store.pipe(
     select(
-      createSelector(
-        getVisibleExecutionDigests,
-        (visibleDigests) => {
-          return visibleDigests.map((digest) =>
-            getExecutionDigestForDisplay(digest)
-          );
-        }
-      )
+      createSelector(getVisibleExecutionDigests, (visibleDigests) => {
+        return visibleDigests.map((digest) =>
+          getExecutionDigestForDisplay(digest)
+        );
+      })
     )
   );
 

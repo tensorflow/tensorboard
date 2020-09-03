@@ -23,12 +23,8 @@ import {UiPluginMetadata} from './types';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
-const getUiPlugins = createSelector(
-  getPlugins,
-  (listing): UiPluginMetadata[] =>
-    Object.keys(listing).map((key) =>
-      Object.assign({}, {id: key}, listing[key])
-    )
+const getUiPlugins = createSelector(getPlugins, (listing): UiPluginMetadata[] =>
+  Object.keys(listing).map((key) => Object.assign({}, {id: key}, listing[key]))
 );
 
 const getDisabledPlugins = createSelector(

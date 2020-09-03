@@ -27,21 +27,21 @@ async function createIframe(): Promise<HTMLIFrameElement> {
 describe('plugin lib integration', () => {
   const {expect} = chai;
 
-  beforeEach(async function() {
+  beforeEach(async function () {
     this.sandbox = sinon.sandbox.create({useFakeServer: true});
     this.sandbox.server.respondImmediately = true;
     this.iframe = await createIframe();
     this.lib = (this.iframe.contentWindow as any).tb_plugin_lib.experimental;
   });
 
-  afterEach(function() {
+  afterEach(function () {
     document.body.removeChild(this.iframe);
     this.sandbox.restore();
   });
 
   describe('lib.run', () => {
     describe('#getRuns', () => {
-      it('returns list of runs', async function() {
+      it('returns list of runs', async function () {
         this.sandbox
           .stub(tf_backend.runsStore, 'getRuns')
           .returns(['foo', 'bar', 'baz']);
@@ -51,7 +51,7 @@ describe('plugin lib integration', () => {
       });
     });
     describe('#setOnRunsChanged', () => {
-      it('lets plugins subscribe to runs change', async function() {
+      it('lets plugins subscribe to runs change', async function () {
         const runsChanged = this.sandbox.stub();
         const promise = new Promise((resolve) => {
           this.lib.runs.setOnRunsChanged(resolve);
@@ -68,7 +68,7 @@ describe('plugin lib integration', () => {
         expect(runsChanged).to.have.been.calledOnce;
         expect(runsChanged).to.have.been.calledWith(['foo', 'bar']);
       });
-      it('lets plugins unsubscribe to runs change', async function() {
+      it('lets plugins unsubscribe to runs change', async function () {
         const runsChanged = this.sandbox.stub();
         const promise = new Promise((resolve) => {
           this.lib.runs.setOnRunsChanged(resolve);
@@ -97,7 +97,7 @@ describe('plugin lib integration', () => {
        * These tests use tf_globals' fake hash to make tf_storage think that the
        * host's URL has been updated.
        */
-      it('returns URL data', async function() {
+      it('returns URL data', async function () {
         const hash = [
           'sample_plugin',
           'p.sample_plugin.foo=bar',
@@ -113,7 +113,7 @@ describe('plugin lib integration', () => {
         });
       });
 
-      it('ignores unrelated URL data', async function() {
+      it('ignores unrelated URL data', async function () {
         const hash = [
           'sample_plugin',
           'tagFilter=loss',
@@ -133,7 +133,7 @@ describe('plugin lib integration', () => {
         });
       });
 
-      it('handles incomplete URL data', async function() {
+      it('handles incomplete URL data', async function () {
         const hash = [
           'sample_plugin',
           'tagFilter=loss',
@@ -147,7 +147,7 @@ describe('plugin lib integration', () => {
         expect(data).to.deep.equal({});
       });
 
-      it('handles non alphanumeric data', async function() {
+      it('handles non alphanumeric data', async function () {
         const hash = [
           'sample_plugin',
           'p.sample_plugin.foo=bar%20baz',

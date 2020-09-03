@@ -248,10 +248,7 @@ class TfGraphScene2 extends LegacyElementMixin(PolymerElement) {
     this._edgeGroupIndex = {};
     this._updateLabels(false);
     // Remove all svg elements under the 'root' svg group.
-    d3.select(this.$.svg)
-      .select('#root')
-      .selectAll('*')
-      .remove();
+    d3.select(this.$.svg).select('#root').selectAll('*').remove();
     // And the defs.
     tf_graph_scene_node.removeGradientDefinitions(this.$.svg as SVGElement);
   }
@@ -260,14 +257,14 @@ class TfGraphScene2 extends LegacyElementMixin(PolymerElement) {
     this.templateIndex = renderHierarchy.hierarchy.getTemplateIndex();
     tf_graph_util.time(
       'tf-graph-scene (layout):',
-      function() {
+      function () {
         // layout the scene for this meta / series node
         tf_graph_layout.layoutScene(renderHierarchy.root);
       }.bind(this)
     );
     tf_graph_util.time(
       'tf-graph-scene (build scene):',
-      function() {
+      function () {
         tf_graph_scene_node.buildGroupForScene(
           d3.select(this.$.root),
           renderHierarchy.root,
@@ -279,7 +276,7 @@ class TfGraphScene2 extends LegacyElementMixin(PolymerElement) {
     );
     // Update the minimap again when the graph is done animating.
     setTimeout(
-      function() {
+      function () {
         this._updateHealthPills(
           this.nodeNamesToHealthPills,
           this.healthPillStepIndex
@@ -295,7 +292,7 @@ class TfGraphScene2 extends LegacyElementMixin(PolymerElement) {
       .zoom()
       .on(
         'end',
-        function() {
+        function () {
           if (this._zoomStartCoords) {
             // Calculate the total distance dragged during the zoom event.
             // If it is sufficiently small, then fire an event indicating
@@ -318,7 +315,7 @@ class TfGraphScene2 extends LegacyElementMixin(PolymerElement) {
       )
       .on(
         'zoom',
-        function() {
+        function () {
           // Store the coordinates of the zoom event.
           this._zoomTransform = d3.event.transform;
           // If this is the first zoom event after a zoom-end, then
@@ -342,7 +339,7 @@ class TfGraphScene2 extends LegacyElementMixin(PolymerElement) {
       .on('dblclick.zoom', null);
     d3.select(window).on(
       'resize',
-      function() {
+      function () {
         // Notify the minimap that the user's window was resized.
         // The minimap will figure out the new dimensions of the main svg
         // and will use the existing translate and scale params.
@@ -488,7 +485,7 @@ class TfGraphScene2 extends LegacyElementMixin(PolymerElement) {
       this.$.svg,
       this.$.root,
       this._zoom,
-      function() {
+      function () {
         this._zoomed = false;
       }.bind(this)
     );

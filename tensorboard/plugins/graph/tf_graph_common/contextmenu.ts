@@ -61,7 +61,7 @@ export function getMenu(sceneElement: TfGraphScene, menu: ContextMenuItem[]) {
   const menuNode = sceneElement.getContextMenu();
   const menuSelection = d3.select(sceneElement.getContextMenu());
   // Function called to populate the context menu.
-  return function(data, index: number): void {
+  return function (data, index: number): void {
     // Position and display the menu.
     let event = <MouseEvent>d3.event;
     const sceneOffset = getOffset(sceneElement);
@@ -99,7 +99,7 @@ export function getMenu(sceneElement: TfGraphScene, menu: ContextMenuItem[]) {
         d.action(this, data, index);
         maybeCloseMenu();
       })
-      .html(function(d) {
+      .html(function (d) {
         return d.title(data);
       });
   };

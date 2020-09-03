@@ -552,7 +552,10 @@ describe('Debugger reducers', () => {
 
       expect(nextState.graphs.ops).toEqual({
         g0: new Map([[opInfo0.op_name, opInfo0]]),
-        g2: new Map([[opInfo1.op_name, opInfo1], [opInfo2.op_name, opInfo2]]),
+        g2: new Map([
+          [opInfo1.op_name, opInfo1],
+          [opInfo2.op_name, opInfo2],
+        ]),
       });
       expect(nextState.graphs.loadingOps).toEqual({
         g2: new Map([['TestOp_3', DataLoadState.LOADED]]),
@@ -614,7 +617,10 @@ describe('Debugger reducers', () => {
 
       expect(nextState.graphs.ops).toEqual({
         g0: new Map([[opInfo0.op_name, opInfo0]]),
-        g2: new Map([[opInfo1.op_name, opInfo1], [opInfo2.op_name, opInfo2]]),
+        g2: new Map([
+          [opInfo1.op_name, opInfo1],
+          [opInfo2.op_name, opInfo2],
+        ]),
       });
       expect(nextState.graphs.loadingOps).toEqual({
         g2: new Map([['TestOp_4', DataLoadState.LOADED]]),

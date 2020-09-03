@@ -103,7 +103,7 @@ export class ArrayBufferDataProvider {
         step: String(step),
       })
     );
-    const reshapeTo1xNx3 = function(data) {
+    const reshapeTo1xNx3 = function (data) {
       const channelsCount = 3;
       let items = [];
       for (let i = 0; i < data.length / channelsCount; i++) {
