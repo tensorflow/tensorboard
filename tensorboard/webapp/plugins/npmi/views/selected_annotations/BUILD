@@ -30,6 +30,7 @@ ng_module(
         "//tensorboard/webapp/plugins/npmi/actions",
         "//tensorboard/webapp/plugins/npmi/store",
         "//tensorboard/webapp/plugins/npmi/store:types",
+        "//tensorboard/webapp/plugins/npmi/views/selected_annotations/parallel_coordinates",
         "@npm//@angular/core",
         "@npm//@ngrx/store",
         "@npm//rxjs",

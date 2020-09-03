@@ -83,3 +83,14 @@ tf_ts_library(
         "@npm//rxjs",
     ],
 )
+
+ng_module(
+    name = "coordinate_data",
+    srcs = [
+        "coordinate_data.ts",
+    ],
+    deps = [
+        ":metric_type",
+        "//tensorboard/webapp/plugins/npmi/store:types",
+    ],
+)

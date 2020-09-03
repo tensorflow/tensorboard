@@ -21,10 +21,17 @@ import {MatTooltipModule} from '@angular/material/tooltip';
 
 import {SelectedAnnotationsComponent} from './selected_annotations_component';
 import {SelectedAnnotationsContainer} from './selected_annotations_container';
+import {ParallelCoordinatesModule} from './parallel_coordinates/parallel_coordinates_module';
 
 @NgModule({
   declarations: [SelectedAnnotationsComponent, SelectedAnnotationsContainer],
-  imports: [CommonModule, MatIconModule, MatButtonModule, MatTooltipModule],
+  imports: [
+    CommonModule,
+    MatIconModule,
+    MatButtonModule,
+    MatTooltipModule,
+    ParallelCoordinatesModule,
+  ],
   exports: [SelectedAnnotationsContainer],
 })
 export class SelectedAnnotationsModule {}
