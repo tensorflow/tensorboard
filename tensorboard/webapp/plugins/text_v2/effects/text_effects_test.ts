@@ -32,7 +32,7 @@ import {
   RunToTags,
   StepDatum,
 } from '../data_source/text_v2_data_source';
-import {CategoryType} from '../../../../components_polymer3/tf_categorization_utils/categorizationUtils';
+import {CategoryType} from '../../../../components/tf_categorization_utils/categorizationUtils';
 import {
   getTextData,
   getTextAllVisibleRunTags,
