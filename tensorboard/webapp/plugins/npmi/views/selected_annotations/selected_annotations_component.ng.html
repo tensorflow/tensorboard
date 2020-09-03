@@ -25,6 +25,7 @@ limitations under the License.
       <button
         mat-icon-button
         aria-label="Clear Annotation Selection"
+        i18n-aria-label="Label for a button that clears the annotation selection."
         class="clear-button"
         [disabled]="selectedAnnotations.length === 0"
         (click)="onClearSelectedAnnotations.emit()"
@@ -35,6 +36,7 @@ limitations under the License.
     <button
       mat-icon-button
       aria-label="Expand/Hide Selected Annotations"
+      i18n-aria-label="Label for a button that expands or hides selected annotations."
       class="expand-button"
       (click)="onToggleExpanded.emit()"
     >
