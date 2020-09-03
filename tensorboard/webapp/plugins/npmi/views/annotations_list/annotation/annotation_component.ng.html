@@ -15,32 +15,31 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <div
-  class="annotation-container"
-  [ngClass]="{'selected-row': selectedAnnotations.includes(annotation)}"
+  class="annotation-title"
+  [class.flagged-annotation]="flaggedAnnotations.includes(annotation)"
+  [class.hidden-annotation]="hiddenAnnotations.includes(annotation) && !flaggedAnnotations.includes(annotation)"
 >
-  <div
-    class="annotation-title"
-    [class.flagged-annotation]="flaggedAnnotations.includes(annotation)"
-    [class.hidden-annotation]="hiddenAnnotations.includes(annotation) && !flaggedAnnotations.includes(annotation)"
-  >
-    <mat-checkbox
-      class="annotation-checkbox"
-      [checked]="selectedAnnotations.includes(annotation)"
-      (click)="$event.preventDefault()"
-    ></mat-checkbox>
-    {{annotation}}
-    <mat-icon
-      *ngIf="flaggedAnnotations.includes(annotation)"
-      class="flagged-icon"
-      svgIcon="flag_24px"
-    ></mat-icon>
-    <mat-icon
-      *ngIf="hiddenAnnotations.includes(annotation)"
-      class="hidden-icon"
-      svgIcon="visibility_off_24px"
-    ></mat-icon>
-  </div>
-  <div #chart>
-    <svg class="chart-svg" [style.height]="runs.length * 30 + 'px'"></svg>
-  </div>
+  <mat-checkbox
+    class="annotation-checkbox"
+    [checked]="selectedAnnotations.includes(annotation)"
+    (click)="$event.preventDefault()"
+  ></mat-checkbox>
+  {{annotation}}
+  <mat-icon
+    *ngIf="flaggedAnnotations.includes(annotation)"
+    class="flagged-icon"
+    svgIcon="flag_24px"
+  ></mat-icon>
+  <mat-icon
+    *ngIf="hiddenAnnotations.includes(annotation)"
+    class="hidden-icon"
+    svgIcon="visibility_off_24px"
+  ></mat-icon>
+</div>
+<div #chart class="chart-div">
+  <svg class="chart-svg">
+    <clipPath id="hint-clip" #hintClip>
+      <rect x="0" y="0"></rect>
+    </clipPath>
+  </svg>
 </div>

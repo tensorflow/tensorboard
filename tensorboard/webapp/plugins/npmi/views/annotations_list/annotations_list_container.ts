@@ -37,9 +37,9 @@ import {
 } from '../../util/filter_annotations';
 import {metricIsNpmiAndNotDiff} from '../../util/metric_type';
 import * as npmiActions from '../../actions';
+import {sortAnnotations} from '../../util/sort_annotations';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
-import {sortAnnotations} from '../../util/sort_annotations';
 
 @Component({
   selector: 'npmi-annotations-list',

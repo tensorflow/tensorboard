@@ -22,6 +22,7 @@ import {
   ViewChild,
   ElementRef,
   ViewEncapsulation,
+  HostBinding,
 } from '@angular/core';
 import {ValueData} from '../../../store/npmi_types';
 import * as d3 from '../../../../../third_party/d3';
@@ -45,28 +46,17 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
   @Input() annotation!: string;
   @ViewChild('chart', {static: true, read: ElementRef})
   private readonly annotationContainer!: ElementRef<HTMLDivElement>;
-  get height(): number {
-    return this.runs.length * 30;
-  }
-  get width(): number {
-    return parseInt(
-      d3.select(this.annotationContainer.nativeElement).style('width'),
-      10
-    );
-  }
+  @ViewChild('hintClip', {static: true, read: ElementRef})
+  private readonly clipPathElement!: ElementRef<SVGClipPathElement>;
+  @HostBinding('class.selected-row') selected = false;
+  private width: number = 10;
+  private height: number = 10;
+  private chartWidth: number = 10;
+  private chartHeight: number = 10;
   private readonly margin = {top: 0, right: 0, bottom: 0, left: 100};
-  get chartWidth(): number {
-    return this.width - this.margin.left - this.margin.right;
-  }
-  get chartHeight(): number {
-    return this.height - this.margin.top - this.margin.bottom;
-  }
+  private readonly strokeColor = '#fff';
   private textClass = 'default-text';
-  get runs(): string[] {
-    const runs = new Set<string>();
-    this.data.forEach((element) => runs.add(element.run));
-    return [...runs];
-  }
+  private runs: string[] = [];
   // Drawing containers
   private svg!: d3.Selection<
     SVGElement,
@@ -116,12 +106,6 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
   private sizeScale!: d3.ScaleLinear<number, number>;
   private countSizeScale!: d3.ScaleLinear<number, number>;
 
-  private runClipPath!: d3.Selection<
-    SVGRectElement,
-    unknown,
-    HTMLElement | null,
-    undefined
-  >;
   private rgbColors = ['240, 120, 80', '46, 119, 182', '190, 64, 36'];
 
   ngAfterViewInit(): void {
@@ -138,15 +122,6 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
     this.textsGroup = this.mainContainer.append('g');
     this.countTextsGroup = this.mainContainer.append('g');
     this.runHintGroup = this.svg.append('g');
-    this.runClipPath = this.runHintGroup
-      .append('clipPath')
-      .attr('id', 'hint-clip')
-      .attr('class', 'hint-clip')
-      .append('rect')
-      .attr('x', 0)
-      .attr('y', 0)
-      .attr('width', this.margin.left - 30)
-      .attr('height', this.chartHeight);
     this.redraw();
   }
 
@@ -157,12 +132,25 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
   }
 
   private redraw() {
+    this.selected = this.selectedAnnotations.includes(this.annotation);
+    this.updateDimensions();
     this.setTextClass();
     this.updateAxes();
     this.draw();
   }
 
   // Initializing/Updating the visualization props.
+  private updateDimensions() {
+    const runs = new Set<string>();
+    this.data.forEach((element) => runs.add(element.run));
+    this.runs = [...runs];
+    this.svg.style('height', this.runs.length * 30 + 'px');
+    this.height = this.runs.length * 30;
+    this.width = this.annotationContainer.nativeElement.clientWidth || 10;
+    this.chartWidth = this.width - this.margin.left - this.margin.right;
+    this.chartHeight = this.height - this.margin.top - this.margin.bottom;
+  }
+
   private setTextClass() {
     this.textClass = 'default-text';
     if (this.flaggedAnnotations.includes(this.annotation)) {
@@ -206,32 +194,26 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
   }
 
   private drawRunIndicators() {
-    this.runClipPath.attr('height', this.chartHeight);
+    d3.select(this.clipPathElement.nativeElement)
+      .select('rect')
+      .attr('width', this.margin.left - 30)
+      .attr('height', this.chartHeight);
 
     const indicators = this.runHintGroup
-      .selectAll('.hint')
+      .selectAll<SVGGElement, unknown>('.hint')
       .data([...this.runs]);
 
-    indicators
+    const indicatorEnters = indicators
       .enter()
       .append('g')
-      .attr('class', 'hint')
-      .attr(
-        'transform',
-        function(this: AnnotationComponent, d: string) {
-          return `translate(10, ${this.yScale(d)! + 5})`;
-        }.bind(this)
-      )
-      .attr(
-        'fill',
-        function(this: AnnotationComponent, d: string) {
-          return `rgb(${this.rgbColors[0]})`;
-        }.bind(this)
-      )
+      .attr('class', 'hint');
+
+    indicatorEnters
       .append('path')
       .attr('d', 'M 0 0 L 15 0 L 10 10 L 15 20 L 0 20 Z');
 
-    indicators
+    indicatorEnters
+      .merge(indicators)
       .attr(
         'transform',
         function(this: AnnotationComponent, d: string) {
@@ -250,28 +232,19 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
 
   private drawRunHintTexts() {
     const hintTexts = this.runHintGroup
-      .selectAll('.hint-text')
+      .selectAll<SVGTextElement, unknown>('.hint-text')
       .data([...this.runs]);
 
-    hintTexts
+    const hintTextEnters = hintTexts
       .enter()
       .append('text')
-      .attr('class', `hint-text ${this.textClass}`)
       .attr('x', 25)
-      .attr(
-        'y',
-        function(this: AnnotationComponent, d: string) {
-          return this.yScale(d)! + 15;
-        }.bind(this)
-      )
       .attr('font-size', '10px')
       .attr('alignment-baseline', 'middle')
-      .attr('clip-path', 'url(#hint-clip)')
-      .text(function(d: string) {
-        return d;
-      });
+      .attr('clip-path', 'url(#hint-clip)');
 
-    hintTexts
+    hintTextEnters
+      .merge(hintTexts)
       .attr(
         'y',
         function(this: AnnotationComponent, d: string) {
@@ -279,57 +252,27 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
         }.bind(this)
       )
       .attr('class', `hint-text ${this.textClass}`)
-      .text(function(d: string) {
-        return d;
-      });
+      .text((d: string) => d);
 
     hintTexts.exit().remove();
   }
 
   private drawBars() {
-    const bars = this.barsGroup.selectAll('.bar').data(this.data);
+    const bars = this.barsGroup
+      .selectAll<SVGRectElement, unknown>('.bar')
+      .data(this.data);
 
-    bars
+    const barEnters = bars
       .enter()
       .append('rect')
       .attr('class', 'bar')
-      .attr('fill', function(d: ValueData) {
-        if (d.nPMIValue === null) {
-          return 'white';
-        } else if (d.nPMIValue >= 0) {
-          return d3.interpolateBlues(d.nPMIValue);
-        } else {
-          return d3.interpolateReds(d.nPMIValue * -1);
-        }
-      })
-      .attr(
-        'x',
-        function(this: AnnotationComponent, d: ValueData) {
-          return this.xScale(d.metric)!;
-        }.bind(this)
-      )
-      .attr(
-        'y',
-        function(this: AnnotationComponent, d: ValueData) {
-          return this.yScale(d.run)! + 5;
-        }.bind(this)
-      )
-      .attr(
-        'width',
-        function(this: AnnotationComponent, d: ValueData) {
-          if (d.nPMIValue === null) {
-            return 0;
-          } else {
-            return this.sizeScale(Math.abs(d.nPMIValue));
-          }
-        }.bind(this)
-      )
       .attr('height', 20);
 
-    bars
-      .attr('fill', function(d: ValueData) {
+    barEnters
+      .merge(bars)
+      .attr('fill', (d: ValueData) => {
         if (d.nPMIValue === null) {
-          return 'white';
+          return '';
         } else if (d.nPMIValue >= 0) {
           return d3.interpolateBlues(d.nPMIValue);
         } else {
@@ -364,53 +307,22 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
 
   private drawCountDots() {
     const countDots = this.countDotsGroup
-      .selectAll('.count-dot')
+      .selectAll<SVGCircleElement, unknown>('.count-dot')
       .data(this.data);
 
-    countDots
+    const countDotEnters = countDots
       .enter()
       .append('circle')
       .attr('class', 'count-dot')
-      .attr(
-        'fill',
-        function(this: AnnotationComponent, d: ValueData) {
-          if (d.countValue === null) {
-            return 'white';
-          } else {
-            return d3.interpolateGreys(d.countValue / this.maxCount);
-          }
-        }.bind(this)
-      )
-      .attr('stroke', 'black')
-      .attr(
-        'cx',
-        function(this: AnnotationComponent, d: ValueData) {
-          return this.xScale(d.metric)! + 70;
-        }.bind(this)
-      )
-      .attr(
-        'cy',
-        function(this: AnnotationComponent, d: ValueData) {
-          return this.yScale(d.run)! + 15;
-        }.bind(this)
-      )
-      .attr(
-        'r',
-        function(this: AnnotationComponent, d: ValueData) {
-          if (d.countValue === null) {
-            return 0;
-          } else {
-            return this.countSizeScale(d.countValue);
-          }
-        }.bind(this)
-      );
+      .attr('stroke', 'black');
 
-    countDots
+    countDotEnters
+      .merge(countDots)
       .attr(
         'fill',
         function(this: AnnotationComponent, d: ValueData) {
           if (d.countValue === null) {
-            return 'white';
+            return '';
           } else {
             return d3.interpolateGreys(d.countValue / this.maxCount);
           }
@@ -444,39 +356,21 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
 
   private drawTexts() {
     const backgroundTexts = this.textsGroup
-      .selectAll('.npmi-background-text')
+      .selectAll<SVGTextElement, unknown>('.npmi-background-text')
       .data(this.data);
 
-    backgroundTexts
+    const backgroundTextEnters = backgroundTexts
       .enter()
       .append('text')
       .attr('class', 'npmi-background-text')
       .attr('stroke-width', 3)
       .attr('stroke-linejoin', 'round')
-      .attr('stroke', 'white')
-      .attr(
-        'x',
-        function(this: AnnotationComponent, d: ValueData) {
-          return this.xScale(d.metric)! + 5;
-        }.bind(this)
-      )
-      .attr(
-        'y',
-        function(this: AnnotationComponent, d: ValueData) {
-          return this.yScale(d.run)! + 15;
-        }.bind(this)
-      )
+      .attr('stroke', this.strokeColor)
       .attr('font-size', '13px')
-      .attr('alignment-baseline', 'middle')
-      .text(function(d: ValueData) {
-        let value =
-          d.nPMIValue === null
-            ? 'null'
-            : Math.round((d.nPMIValue + Number.EPSILON) * 1000) / 1000;
-        return value;
-      });
+      .attr('alignment-baseline', 'middle');
 
-    backgroundTexts
+    backgroundTextEnters
+      .merge(backgroundTexts)
       .attr(
         'x',
         function(this: AnnotationComponent, d: ValueData) {
@@ -489,7 +383,7 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
           return this.yScale(d.run)! + 15;
         }.bind(this)
       )
-      .text(function(d: ValueData) {
+      .text((d: ValueData) => {
         let value =
           d.nPMIValue === null
             ? 'null'
@@ -499,35 +393,19 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
 
     backgroundTexts.exit().remove();
 
-    const texts = this.textsGroup.selectAll('.npmi-text').data(this.data);
+    const texts = this.textsGroup
+      .selectAll<SVGTextElement, unknown>('.npmi-text')
+      .data(this.data);
 
-    texts
+    const textEnters = texts
       .enter()
       .append('text')
       .attr('class', 'npmi-text')
-      .attr(
-        'x',
-        function(this: AnnotationComponent, d: ValueData) {
-          return this.xScale(d.metric)! + 5;
-        }.bind(this)
-      )
-      .attr(
-        'y',
-        function(this: AnnotationComponent, d: ValueData) {
-          return this.yScale(d.run)! + 15;
-        }.bind(this)
-      )
       .attr('font-size', '13px')
-      .attr('alignment-baseline', 'middle')
-      .text(function(d: ValueData) {
-        let value =
-          d.nPMIValue === null
-            ? 'null'
-            : Math.round((d.nPMIValue + Number.EPSILON) * 1000) / 1000;
-        return value;
-      });
+      .attr('alignment-baseline', 'middle');
 
-    texts
+    textEnters
+      .merge(texts)
       .attr(
         'x',
         function(this: AnnotationComponent, d: ValueData) {
@@ -540,7 +418,7 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
           return this.yScale(d.run)! + 15;
         }.bind(this)
       )
-      .text(function(d: ValueData) {
+      .text((d: ValueData) => {
         let value =
           d.nPMIValue === null
             ? 'null'
@@ -553,38 +431,21 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
 
   private drawCountTexts() {
     const countBackgroundTexts = this.countTextsGroup
-      .selectAll('.count-background-text')
+      .selectAll<SVGTextElement, unknown>('.count-background-text')
       .data(this.data);
 
-    countBackgroundTexts
+    const countBackgroundTextEnters = countBackgroundTexts
       .enter()
       .append('text')
       .attr('class', 'count-background-text')
       .attr('stroke-width', 3)
       .attr('stroke-linejoin', 'round')
-      .attr('stroke', 'white')
-      .attr(
-        'x',
-        function(this: AnnotationComponent, d: ValueData) {
-          return this.xScale(d.metric)! + 82;
-        }.bind(this)
-      )
-      .attr(
-        'y',
-        function(this: AnnotationComponent, d: ValueData) {
-          return this.yScale(d.run)! + 15;
-        }.bind(this)
-      )
+      .attr('stroke', this.strokeColor)
       .attr('font-size', '10px')
-      .attr('alignment-baseline', 'middle')
-      .text(function(d: ValueData) {
-        if (d.countValue === null) {
-          return '';
-        }
-        return Intl.NumberFormat().format(d.countValue);
-      });
+      .attr('alignment-baseline', 'middle');
 
-    countBackgroundTexts
+    countBackgroundTextEnters
+      .merge(countBackgroundTexts)
       .attr(
         'x',
         function(this: AnnotationComponent, d: ValueData) {
@@ -597,7 +458,7 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
           return this.yScale(d.run)! + 15;
         }.bind(this)
       )
-      .text(function(d: ValueData) {
+      .text((d: ValueData) => {
         if (d.countValue === null) {
           return '';
         }
@@ -607,35 +468,18 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
     countBackgroundTexts.exit().remove();
 
     const countTexts = this.countTextsGroup
-      .selectAll('.count-text')
+      .selectAll<SVGTextElement, unknown>('.count-text')
       .data(this.data);
 
-    countTexts
+    const countTextEnters = countTexts
       .enter()
       .append('text')
       .attr('class', 'count-text')
-      .attr(
-        'x',
-        function(this: AnnotationComponent, d: ValueData) {
-          return this.xScale(d.metric)! + 82;
-        }.bind(this)
-      )
-      .attr(
-        'y',
-        function(this: AnnotationComponent, d: ValueData) {
-          return this.yScale(d.run)! + 15;
-        }.bind(this)
-      )
       .attr('font-size', '10px')
-      .attr('alignment-baseline', 'middle')
-      .text(function(d: ValueData) {
-        if (d.countValue === null) {
-          return '';
-        }
-        return Intl.NumberFormat().format(d.countValue);
-      });
+      .attr('alignment-baseline', 'middle');
 
-    countTexts
+    countTextEnters
+      .merge(countTexts)
       .attr(
         'x',
         function(this: AnnotationComponent, d: ValueData) {
@@ -648,9 +492,7 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
           return this.yScale(d.run)! + 15;
         }.bind(this)
       )
-      .attr('font-size', '10px')
-      .attr('alignment-baseline', 'middle')
-      .text(function(d: ValueData) {
+      .text((d: ValueData) => {
         if (d.countValue === null) {
           return '';
         }

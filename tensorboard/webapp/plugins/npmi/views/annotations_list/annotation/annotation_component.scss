@@ -15,7 +15,7 @@ limitations under the License.
 @import 'tensorboard/webapp/theme/tb_theme';
 
 :host {
-  cursor: pointer;
+  padding-top: 5px;
 }
 
 .annotation-title {
@@ -24,17 +24,12 @@ limitations under the License.
   font-size: 13px;
   height: 20px;
   padding: 0 10px;
-}
-
-.annotation-container {
-  border-bottom: 1px solid mat-color($tb-foreground, border);
-  padding-top: 5px;
   user-select: none;
-  height: 100%;
 }
 
 .selected-row {
   background-color: mat-color($mat-light-theme-background, selected-button);
+  display: block;
 }
 
 .flagged-annotation {
@@ -57,8 +52,13 @@ limitations under the License.
   transform: scale(0.6);
 }
 
+.chart-div {
+  border-bottom: 1px solid mat-color($tb-foreground, border);
+}
+
 .chart-svg {
   width: 100%;
+  user-select: none;
 }
 
 .default-text {

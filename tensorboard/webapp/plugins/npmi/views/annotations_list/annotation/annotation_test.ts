@@ -37,7 +37,6 @@ describe('Npmi Annotations List Container', () => {
   let store: MockStore<State>;
   let dispatchedActions: Action[];
   const css = {
-    SELECTED_ROW: By.css('.selected-row'),
     FLAGGED_ANNOTATION: By.css('.flagged-annotation'),
     HIDDEN_ANNOTATION: By.css('.hidden-annotation'),
     CHECKBOX: By.css('.annotation-checkbox'),
@@ -108,9 +107,6 @@ describe('Npmi Annotations List Container', () => {
     fixture.componentInstance.maxCount = 101;
     fixture.componentInstance.annotation = 'annotation_1';
     fixture.detectChanges();
-
-    const selectedRow = fixture.debugElement.query(css.SELECTED_ROW);
-    expect(selectedRow).toBeFalsy();
 
     const flaggedAnnotation = fixture.debugElement.query(
       css.FLAGGED_ANNOTATION
@@ -196,9 +192,6 @@ describe('Npmi Annotations List Container', () => {
     fixture.componentInstance.maxCount = 101;
     fixture.componentInstance.annotation = 'annotation_1';
     fixture.detectChanges();
-
-    const selectedRow = fixture.debugElement.query(css.SELECTED_ROW);
-    expect(selectedRow).toBeTruthy();
 
     const selectedCheckbox = fixture.debugElement.query(css.CHECKBOX);
     expect(selectedCheckbox).toBeTruthy();

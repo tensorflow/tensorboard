@@ -29,41 +29,32 @@ export function sortAnnotations(
     return result;
   }
   if (sorting.order === SortingOrder.DOWN) {
+    const maxData: {[annotation: string]: number} = {};
+    for (const annotation of result) {
+      maxData[annotation] = Math.max(
+        ...annotationData[annotation]
+          .filter((annotation) => annotation.metric === strippedMetric)
+          .map((filtered) =>
+            filtered.nPMIValue === null ? -Infinity : filtered.nPMIValue
+          )
+      );
+    }
     result = result.sort((a, b) => {
-      const maxNPMIAnnotationA = Math.max(
-        ...annotationData[a]
-          .filter((annotation) => annotation.metric === strippedMetric)
-          .map((filtered) =>
-            filtered.nPMIValue === null ? -Infinity : filtered.nPMIValue
-          )
-      );
-      const maxNPMIAnnotationB = Math.max(
-        ...annotationData[b]
-          .filter((annotation) => annotation.metric === strippedMetric)
-          .map((filtered) =>
-            filtered.nPMIValue === null ? -Infinity : filtered.nPMIValue
-          )
-      );
-      return maxNPMIAnnotationB - maxNPMIAnnotationA;
+      return maxData[b] - maxData[a];
     });
   } else if (sorting.order === SortingOrder.UP) {
-    result = result.sort(function(a, b) {
-      return (
-        Math.min(
-          ...annotationData[a]
-            .filter((annotation) => annotation.metric === strippedMetric)
-            .map((filtered) =>
-              filtered.nPMIValue === null ? Infinity : filtered.nPMIValue
-            )
-        ) -
-        Math.min(
-          ...annotationData[b]
-            .filter((annotation) => annotation.metric === strippedMetric)
-            .map((filtered) =>
-              filtered.nPMIValue === null ? Infinity : filtered.nPMIValue
-            )
-        )
+    const minData: {[annotation: string]: number} = {};
+    for (const annotation of result) {
+      minData[annotation] = Math.min(
+        ...annotationData[annotation]
+          .filter((annotation) => annotation.metric === strippedMetric)
+          .map((filtered) =>
+            filtered.nPMIValue === null ? Infinity : filtered.nPMIValue
+          )
       );
+    }
+    result = result.sort((a, b) => {
+      return minData[a] - minData[b];
     });
   }
   return result;
