@@ -23,25 +23,26 @@ limitations under the License.
   display: flex;
   font-size: 13px;
   height: 20px;
-  padding: 0px 10px 0px 10px;
+  padding: 0 10px;
 }
 
 .annotation-container {
   border-bottom: 1px solid mat-color($tb-foreground, border);
   padding-top: 5px;
   user-select: none;
+  height: 100%;
 }
 
 .selected-row {
-  background-color: #d3d3d366;
+  background-color: mat-color($mat-light-theme-background, selected-button);
 }
 
 .flagged-annotation {
-  color: mat-color($tb-primary) !important;
+  color: mat-color($tb-primary);
 }
 
 .hidden-annotation {
-  color: lightgrey;
+  color: mat-color($tb-foreground, disabled-text);
 }
 
 .annotation-checkbox {
@@ -54,4 +55,20 @@ limitations under the License.
 
 .hidden-icon {
   transform: scale(0.6);
+}
+
+.chart-svg {
+  width: 100%;
+}
+
+.default-text {
+  fill: mat-color($tb-foreground, base);
+}
+
+.flag-text {
+  fill: mat-color($tb-primary);
+}
+
+.hidden-text {
+  fill: mat-color($tb-foreground, disabled-text);
 }

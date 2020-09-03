@@ -63,8 +63,8 @@ export class AnnotationsListComponent {
           );
         }
       }
-      //Only handle one annotation
     } else {
+      // No shift, only one annotation clicked
       this.onRowClick.emit([annotation]);
     }
   }

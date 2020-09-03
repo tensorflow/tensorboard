@@ -19,7 +19,7 @@ import {
 } from '../store/npmi_types';
 import {stripMetricString} from './metric_type';
 
-export function getSortedAnnotations(
+export function sortAnnotations(
   annotationData: AnnotationDataListing,
   sorting: AnnotationSorting
 ): string[] {
@@ -29,23 +29,22 @@ export function getSortedAnnotations(
     return result;
   }
   if (sorting.order === SortingOrder.DOWN) {
-    result = result.sort(function(a, b) {
-      return (
-        Math.max(
-          ...annotationData[b]
-            .filter((annotation) => annotation.metric === strippedMetric)
-            .map((filtered) =>
-              filtered.nPMIValue === null ? -Infinity : filtered.nPMIValue
-            )
-        ) -
-        Math.max(
-          ...annotationData[a]
-            .filter((annotation) => annotation.metric === strippedMetric)
-            .map((filtered) =>
-              filtered.nPMIValue === null ? -Infinity : filtered.nPMIValue
-            )
-        )
+    result = result.sort((a, b) => {
+      const maxNPMIAnnotationA = Math.max(
+        ...annotationData[a]
+          .filter((annotation) => annotation.metric === strippedMetric)
+          .map((filtered) =>
+            filtered.nPMIValue === null ? -Infinity : filtered.nPMIValue
+          )
       );
+      const maxNPMIAnnotationB = Math.max(
+        ...annotationData[b]
+          .filter((annotation) => annotation.metric === strippedMetric)
+          .map((filtered) =>
+            filtered.nPMIValue === null ? -Infinity : filtered.nPMIValue
+          )
+      );
+      return maxNPMIAnnotationB - maxNPMIAnnotationA;
     });
   } else if (sorting.order === SortingOrder.UP) {
     result = result.sort(function(a, b) {

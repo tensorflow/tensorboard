@@ -21,17 +21,18 @@ import {
   SimpleChanges,
   ViewChild,
   ElementRef,
+  ViewEncapsulation,
 } from '@angular/core';
 import {ValueData} from '../../../store/npmi_types';
 import * as d3 from '../../../../../third_party/d3';
 import {stripMetricString} from '../../../util/metric_type';
-import * as numberFormat from '../../../util/number_format';
 
 @Component({
   selector: 'annotation-component',
   templateUrl: './annotation_component.ng.html',
   styleUrls: ['./annotation_component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
 })
 export class AnnotationComponent implements AfterViewInit, OnChanges {
   @Input() data!: ValueData[];
@@ -60,7 +61,7 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
   get chartHeight(): number {
     return this.height - this.margin.top - this.margin.bottom;
   }
-  private textColor = 'black';
+  private textClass = 'default-text';
   get runs(): string[] {
     const runs = new Set<string>();
     this.data.forEach((element) => runs.add(element.run));
@@ -156,18 +157,18 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
   }
 
   private redraw() {
-    this.setTextColor();
+    this.setTextClass();
     this.updateAxes();
     this.draw();
   }
 
   // Initializing/Updating the visualization props.
-  private setTextColor() {
-    this.textColor = 'black';
+  private setTextClass() {
+    this.textClass = 'default-text';
     if (this.flaggedAnnotations.includes(this.annotation)) {
-      this.textColor = '#F57C00';
+      this.textClass = 'flag-text';
     } else if (this.hiddenAnnotations.includes(this.annotation)) {
-      this.textColor = 'lightgrey';
+      this.textClass = 'hidden-text';
     }
   }
 
@@ -255,7 +256,7 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
     hintTexts
       .enter()
       .append('text')
-      .attr('class', 'hint-text')
+      .attr('class', `hint-text ${this.textClass}`)
       .attr('x', 25)
       .attr(
         'y',
@@ -266,7 +267,6 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
       .attr('font-size', '10px')
       .attr('alignment-baseline', 'middle')
       .attr('clip-path', 'url(#hint-clip)')
-      .attr('fill', this.textColor)
       .text(function(d: string) {
         return d;
       });
@@ -278,7 +278,7 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
           return this.yScale(d)! + 15;
         }.bind(this)
       )
-      .attr('fill', this.textColor)
+      .attr('class', `hint-text ${this.textClass}`)
       .text(function(d: string) {
         return d;
       });
@@ -578,7 +578,10 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
       .attr('font-size', '10px')
       .attr('alignment-baseline', 'middle')
       .text(function(d: ValueData) {
-        return numberFormat.formatLargeNumberComma(d.countValue);
+        if (d.countValue === null) {
+          return '';
+        }
+        return Intl.NumberFormat().format(d.countValue);
       });
 
     countBackgroundTexts
@@ -595,7 +598,10 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
         }.bind(this)
       )
       .text(function(d: ValueData) {
-        return numberFormat.formatLargeNumberComma(d.countValue);
+        if (d.countValue === null) {
+          return '';
+        }
+        return Intl.NumberFormat().format(d.countValue);
       });
 
     countBackgroundTexts.exit().remove();
@@ -623,7 +629,10 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
       .attr('font-size', '10px')
       .attr('alignment-baseline', 'middle')
       .text(function(d: ValueData) {
-        return numberFormat.formatLargeNumberComma(d.countValue);
+        if (d.countValue === null) {
+          return '';
+        }
+        return Intl.NumberFormat().format(d.countValue);
       });
 
     countTexts
@@ -642,7 +651,10 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
       .attr('font-size', '10px')
       .attr('alignment-baseline', 'middle')
       .text(function(d: ValueData) {
-        return numberFormat.formatLargeNumberComma(d.countValue);
+        if (d.countValue === null) {
+          return '';
+        }
+        return Intl.NumberFormat().format(d.countValue);
       });
 
     countTexts.exit().remove();

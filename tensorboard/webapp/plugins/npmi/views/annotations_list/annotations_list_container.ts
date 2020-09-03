@@ -39,7 +39,7 @@ import {metricIsNpmiAndNotDiff} from '../../util/metric_type';
 import * as npmiActions from '../../actions';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
-import {getSortedAnnotations} from '../../util/sort_annotations';
+import {sortAnnotations} from '../../util/sort_annotations';
 
 @Component({
   selector: 'npmi-annotations-list',
@@ -138,7 +138,7 @@ export class AnnotationsListContainer {
     this.store.pipe(select(getAnnotationSorting))
   ).pipe(
     map(([annotations, sorting]) => {
-      return getSortedAnnotations(annotations, sorting);
+      return sortAnnotations(annotations, sorting);
     })
   );
   readonly selectedAnnotations$ = this.store.pipe(
