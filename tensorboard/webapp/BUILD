@@ -228,7 +228,6 @@ tf_svg_bundle(
         "@com_google_material_design_icon//:cancel_24px.svg",
         "@com_google_material_design_icon//:arrow_downward_24px.svg",
         "@com_google_material_design_icon//:arrow_upward_24px.svg",
-        "@com_google_material_design_icon//:clear_24px.svg",
     ],
     out = "icon_bundle.svg",
 )
