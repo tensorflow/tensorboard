@@ -115,7 +115,7 @@ class TfSmoothingInput extends PolymerElement {
   })
   _inputWeightStringForPaperInput: string;
 
-  _updateWeight = _.debounce(function(val) {
+  _updateWeight = _.debounce(function (val) {
     this.weight = val;
   }, 250);
 

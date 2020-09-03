@@ -138,9 +138,7 @@ class _TfCustomScalarMultiLineChartCard
           </paper-icon-button>
         </template>
 
-        <span class="matches-text">
-          Matches ([[_seriesNames.length]])
-        </span>
+        <span class="matches-text"> Matches ([[_seriesNames.length]]) </span>
       </div>
       <template is="dom-if" if="[[_seriesNames.length]]">
         <iron-collapse opened="[[_matchesListOpened]]">

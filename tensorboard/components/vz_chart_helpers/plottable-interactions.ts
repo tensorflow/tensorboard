@@ -116,17 +116,11 @@ class MouseDispatcher extends (Plottable.Dispatchers as any).Mouse {
   constructor(component) {
     super(component);
     // eventTarget is `document` by default. Change it to the root of chart.
-    this._eventTarget = component
-      .root()
-      .rootElement()
-      .node();
+    this._eventTarget = component.root().rootElement().node();
     // Requires custom translator that uses correct DOM traversal (with
     // WebComponents) to change pointer position to relative to the root node.
     (this as any)._translator = new CustomTranslator(
-      component
-        .root()
-        .rootElement()
-        .node()
+      component.root().rootElement().node()
     );
   }
   static getDispatcher(component) {
@@ -144,17 +138,11 @@ class TouchDispatcher extends Plottable.Dispatchers.Touch {
   constructor(component) {
     super(component);
     // eventTarget is `document` by default. Change it to the root of chart.
-    this._eventTarget = component
-      .root()
-      .rootElement()
-      .node();
+    this._eventTarget = component.root().rootElement().node();
     // Requires custom translator that uses correct DOM traversal (with
     // WebComponents) to change pointer position to relative to the root node.
     (this as any)._translator = new CustomTranslator(
-      component
-        .root()
-        .rootElement()
-        .node()
+      component.root().rootElement().node()
     );
   }
   static getDispatcher(component) {
@@ -196,7 +184,7 @@ class TouchDispatcher extends Plottable.Dispatchers.Touch {
  * manifest since event delegation on the entire document will eventually
  * trigger mouse out when cursor is at, for instance, <101, 100>.
  */
-(Plottable.Interaction.prototype as any)._isInsideComponent = function(p) {
+(Plottable.Interaction.prototype as any)._isInsideComponent = function (p) {
   return (
     0 <= p.x &&
     0 <= p.y &&

@@ -45,19 +45,19 @@ export type Tracker = {
  */
 export function getTracker(polymerComponent: any): Tracker {
   return {
-    setMessage: function(msg) {
+    setMessage: function (msg) {
       polymerComponent.set('progress', {
         value: polymerComponent.progress.value,
         msg: msg,
       });
     },
-    updateProgress: function(value) {
+    updateProgress: function (value) {
       polymerComponent.set('progress', {
         value: polymerComponent.progress.value + value,
         msg: polymerComponent.progress.msg,
       });
     },
-    reportError: function(msg: string, err) {
+    reportError: function (msg: string, err) {
       // Log the stack trace in the console.
       console.error(err.stack);
       // And send a user-friendly message to the UI.
@@ -82,12 +82,12 @@ export function getSubtaskTracker(
   subtaskMsg: string
 ): ProgressTracker {
   return {
-    setMessage: function(progressMsg) {
+    setMessage: function (progressMsg) {
       // The parent should show a concatenation of its message along with
       // its subtask tracker message.
       parentTracker.setMessage(subtaskMsg + ': ' + progressMsg);
     },
-    updateProgress: function(incrementValue) {
+    updateProgress: function (incrementValue) {
       // Update the parent progress relative to the child progress.
       // For example, if the sub-task progresses by 30%, and the impact on the
       // total progress is 50%, then the task progresses by 30% * 50% = 15%.
@@ -95,7 +95,7 @@ export function getSubtaskTracker(
         (incrementValue * impactOnTotalProgress) / 100
       );
     },
-    reportError: function(msg: string, err: Error) {
+    reportError: function (msg: string, err: Error) {
       // The parent should show a concatenation of its message along with
       // its subtask error message.
       parentTracker.reportError(subtaskMsg + ': ' + msg, err);
@@ -142,7 +142,7 @@ export function runAsyncTask<T>(
     tracker.setMessage(msg);
     // Run the expensive task with a delay that gives enough time for the
     // UI to update.
-    setTimeout(function() {
+    setTimeout(function () {
       try {
         let result = time(msg, task);
         // Update the progress value.
@@ -169,7 +169,7 @@ export function runAsyncPromiseTask<T>(
   tracker: ProgressTracker
 ): Promise<T> {
   return new Promise((resolve, reject) => {
-    let handleError = function(e) {
+    let handleError = function (e) {
       // Errors that happen inside asynchronous tasks are
       // reported to the tracker using a user-friendly message.
       tracker.reportError('Failed ' + msg, e);
@@ -179,11 +179,11 @@ export function runAsyncPromiseTask<T>(
     tracker.setMessage(msg);
     // Run the expensive task with a delay that gives enough time for the
     // UI to update.
-    setTimeout(function() {
+    setTimeout(function () {
       try {
         let start = Date.now();
         task()
-          .then(function(value) {
+          .then(function (value) {
             /* tslint:disable */
             console.log(msg, ':', Date.now() - start, 'ms');
             // Update the progress value.

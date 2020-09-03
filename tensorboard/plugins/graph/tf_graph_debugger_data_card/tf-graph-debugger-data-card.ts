@@ -258,9 +258,7 @@ class TfGraphDebuggerDataCard extends LegacyElementMixin(PolymerElement) {
       </template>
       <div hidden$="[[!_hasDebuggerNumericAlerts(debuggerNumericAlerts)]]">
         <h2 id="numeric-alerts-header">Numeric Alerts</h2>
-        <p>
-          Alerts are sorted from top to bottom by increasing timestamp.
-        </p>
+        <p>Alerts are sorted from top to bottom by increasing timestamp.</p>
         <div id="numeric-alerts-table-container">
           <table id="numeric-alerts-table">
             <thead>

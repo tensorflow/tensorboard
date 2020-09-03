@@ -17,9 +17,7 @@ limitations under the License.
 
 <div class="stack-trace-container">
   <div class="stack-trace-header">
-    <span class="stack-trace-title">
-      Stack Trace
-    </span>
+    <span class="stack-trace-title"> Stack Trace </span>
 
     <div
       *ngIf="codeLocationType !== null; else noStackTrace"
@@ -32,9 +30,7 @@ limitations under the License.
             <span *ngIf="opType !== null" class="eager-execution-index">
               #{{ executionIndex }}:
             </span>
-            <span *ngIf="opType !== null" class="op-type">
-              {{ opType }}
-            </span>
+            <span *ngIf="opType !== null" class="op-type"> {{ opType }} </span>
           </div>
 
           <div *ngSwitchCase="CodeLocationType.GRAPH_OP_CREATION">
@@ -42,9 +38,7 @@ limitations under the License.
             <span *ngIf="opName !== null" class="op-name">
               "{{ opName }}"
             </span>
-            <span *ngIf="opType !== null" class="op-type">
-              {{ opType }}
-            </span>
+            <span *ngIf="opType !== null" class="op-type"> {{ opType }} </span>
           </div>
         </span>
       </span>

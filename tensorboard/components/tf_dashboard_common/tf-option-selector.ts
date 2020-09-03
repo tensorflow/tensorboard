@@ -67,9 +67,9 @@ class TfOptionSelector extends LegacyElementMixin(PolymerElement) {
   selectedId: string;
 
   attached() {
-    this.async(function() {
+    this.async(function () {
       this.getEffectiveChildren().forEach(
-        function(node) {
+        function (node) {
           this.listen(node, 'tap', '_selectTarget');
         }.bind(this)
       );
@@ -85,7 +85,7 @@ class TfOptionSelector extends LegacyElementMixin(PolymerElement) {
     if (!selected) {
       return;
     }
-    this.getEffectiveChildren().forEach(function(node) {
+    this.getEffectiveChildren().forEach(function (node) {
       (node as HTMLElement).classList.remove('selected');
     });
     (selected as HTMLElement).classList.add('selected');

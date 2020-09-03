@@ -47,7 +47,10 @@ describe('core selectors', () => {
         })
       );
       expect(selectors.getRunSelection(state)).toEqual(
-        new Map([['1', false], ['2', true]])
+        new Map([
+          ['1', false],
+          ['2', true],
+        ])
       );
     });
 
@@ -62,7 +65,10 @@ describe('core selectors', () => {
         })
       );
       expect(selectors.getRunSelection(state)).toEqual(
-        new Map([['1', true], ['2', false]])
+        new Map([
+          ['1', true],
+          ['2', false],
+        ])
       );
     });
   });

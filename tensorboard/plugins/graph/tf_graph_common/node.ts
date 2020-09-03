@@ -98,7 +98,7 @@ export function buildGroup(
   // Select all children and join with data.
   // (Note that all children of g.nodes are g.node)
   let nodeGroups = (container as any)
-    .selectAll(function() {
+    .selectAll(function () {
       return this.childNodes;
     })
     .data(nodeData, (d) => {
@@ -112,7 +112,7 @@ export function buildGroup(
     .attr('data-name', (d) => {
       return d.node.name;
     })
-    .each(function(d) {
+    .each(function (d) {
       let nodeGroup = d3.select(this);
       // index node group for quick stylizing
       sceneElement.addNodeGroup(d.node.name, nodeGroup);
@@ -122,7 +122,7 @@ export function buildGroup(
     .attr('class', (d) => {
       return Class.Node.GROUP + ' ' + nodeClass(d);
     })
-    .each(function(d) {
+    .each(function (d) {
       let nodeGroup = d3.select(this);
       // Add g.in-annotations (always add -- to keep layer order
       // consistent.)
@@ -169,7 +169,7 @@ export function buildGroup(
   // EXIT
   nodeGroups
     .exit()
-    .each(function(d) {
+    .each(function (d) {
       // remove all indices on remove
       sceneElement.removeNodeGroup(d.node.name);
       let nodeGroup = d3.select(this);
@@ -767,9 +767,7 @@ function getGradient(
   return `url(#${escapedId})`;
 }
 export function removeGradientDefinitions(svgRoot: SVGElement) {
-  d3.select(svgRoot)
-    .select('defs#_graph-gradients')
-    .remove();
+  d3.select(svgRoot).select('defs#_graph-gradients').remove();
 }
 /**
  * Returns the fill color for the node given its state and the 'color by'
@@ -907,10 +905,7 @@ export function getStrokeForFill(fill: string) {
   // If node is colored by a gradient, then use a dark gray outline.
   return fill.substring(0, 3) === 'url'
     ? render.MetanodeColors.GRADIENT_OUTLINE
-    : d3
-        .rgb(fill)
-        .darker()
-        .toString();
+    : d3.rgb(fill).darker().toString();
 }
 /**
  * Finds selected node and highlights all nodes which are providing direct
@@ -943,7 +938,7 @@ export function updateInputTrace(
   }
   let opNodes = _getAllContainedOpNodes(selectedNodeName, renderGraphInfo);
   let allTracedNodes = {};
-  _.each(opNodes, function(nodeInstance) {
+  _.each(opNodes, function (nodeInstance) {
     allTracedNodes = traceAllInputsOfOpNode(
       svgRoot,
       renderGraphInfo,
@@ -966,7 +961,7 @@ export function updateInputTrace(
         ':not(.input-parent):not(.input-children)'
     )
     .classed('non-input', true)
-    .each(function(d: RenderNodeInfo) {
+    .each(function (d: RenderNodeInfo) {
       // Mark all nodes with the specified name as non-inputs. This
       // results in Annotation nodes which are attached to inputs to be
       // tagged as well.
@@ -1000,7 +995,7 @@ function _getAllContainedOpNodes(
   }
   // Otherwise, make recursive call for each node contained by the GroupNode.
   let childNodeNames = (node as tf_graph.GroupNode).metagraph.nodes();
-  _.each(childNodeNames, function(childNodeName) {
+  _.each(childNodeNames, function (childNodeName) {
     opNodes = opNodes.concat(
       _getAllContainedOpNodes(childNodeName, renderGraphInfo)
     );
@@ -1041,7 +1036,7 @@ function traceAllInputsOfOpNode(
     .classed('input-highlight', true);
   // Find the visible parent of each input.
   let visibleInputs = {};
-  _.each(inputs, function(nodeInstance) {
+  _.each(inputs, function (nodeInstance) {
     let resolvedNode = renderGraphInfo.getNodeByName(nodeInstance.name);
     if (resolvedNode === undefined) {
       // Node could not be found in rendered Hierarchy, which happens when
@@ -1085,11 +1080,11 @@ function traceAllInputsOfOpNode(
     indexedStartNodeParents[index] = currentNode;
   }
   // Find first mutual parent of each input node and highlight connection.
-  _.forOwn(visibleInputs, function(visibleParentInfo: VisibleParent, key) {
+  _.forOwn(visibleInputs, function (visibleParentInfo: VisibleParent, key) {
     let nodeInstance = visibleParentInfo.visibleParent;
     // Make recursive call for each input-OpNode contained by the visible
     // parent.
-    _.each(visibleParentInfo.opNodes, function(opNode: OpNode) {
+    _.each(visibleParentInfo.opNodes, function (opNode: OpNode) {
       allTracedNodes = traceAllInputsOfOpNode(
         svgRoot,
         renderGraphInfo,
@@ -1178,7 +1173,7 @@ function _createVisibleTrace(
     .selectAll(`[data-edge="${endNodeName}--${startNodeName}"]`)
     .classed('input-edge-highlight', true);
   // Trace up the parents of the input.
-  _.each(destinationParentPairs, function(value) {
+  _.each(destinationParentPairs, function (value) {
     let inner = value[0];
     let outer = value[1];
     let edgeSelector =
@@ -1209,7 +1204,7 @@ function _findVisibleParentsFromOpNodes(renderGraphInfo, nodeNames: string[]) {
   let visibleParents: {
     [nodeName: string]: Node;
   } = {};
-  _.each(nodeNames, function(nodeName) {
+  _.each(nodeNames, function (nodeName) {
     let currentNode = renderGraphInfo.getNodeByName(nodeName);
     let visibleParent = getVisibleParent(renderGraphInfo, currentNode);
     visibleParents[visibleParent.name] = visibleParent;
@@ -1229,7 +1224,7 @@ function _markParentsOfNodes(
     [nodeName: string]: Node;
   }
 ) {
-  _.forOwn(visibleNodes, function(nodeInstance: Node) {
+  _.forOwn(visibleNodes, function (nodeInstance: Node) {
     // Mark all parents of the node as input-parents.
     let currentNode = nodeInstance;
     while (currentNode.name !== tf_graph.ROOT_NAME) {
@@ -1302,7 +1297,7 @@ export function buildGroupForAnnotation(
 ) {
   // Select all children and join with data.
   let annotationGroups = container
-    .selectAll(function() {
+    .selectAll(function () {
       // using d3's selector function
       // See https://github.com/mbostock/d3/releases/tag/v2.0.0
       // (It's not listed in the d3 wiki.)
@@ -1317,7 +1312,7 @@ export function buildGroupForAnnotation(
     .attr('data-name', (a) => {
       return a.node.name;
     })
-    .each(function(a) {
+    .each(function (a) {
       let aGroup = d3.select(this);
       // Add annotation to the index in the scene
       sceneElement.addAnnotationGroup(a, d, aGroup);
@@ -1349,7 +1344,7 @@ export function buildGroupForAnnotation(
         nodeClass(a)
       );
     })
-    .each(function(a) {
+    .each(function (a) {
       let aGroup = d3.select(this);
       update(aGroup, d, a, sceneElement);
       if (a.annotationType !== render.AnnotationType.ELLIPSIS) {
@@ -1358,7 +1353,7 @@ export function buildGroupForAnnotation(
     });
   annotationGroups
     .exit()
-    .each(function(a) {
+    .each(function (a) {
       let aGroup = d3.select(this);
       // Remove annotation from the index in the scene
       sceneElement.removeAnnotationGroup(a, d, aGroup);
@@ -1632,10 +1627,7 @@ export function buildGroupForScene(
   tf_graph_scene.position(sceneGroup, renderNode);
   // Fade in the scene group if it didn't already exist.
   if (isNewSceneGroup) {
-    sceneGroup
-      .attr('opacity', 0)
-      .transition()
-      .attr('opacity', 1);
+    sceneGroup.attr('opacity', 0).transition().attr('opacity', 1);
   }
   return sceneGroup;
 }

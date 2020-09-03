@@ -67,7 +67,10 @@ export const {
   getInitializer: getStringInitializer,
   getObserver: getStringObserver,
   disposeBinding: disposeStringBinding,
-} = makeBindings((x) => x, (x) => x);
+} = makeBindings(
+  (x) => x,
+  (x) => x
+);
 export const {
   get: getBoolean,
   set: setBoolean,
@@ -84,14 +87,20 @@ export const {
   getInitializer: getNumberInitializer,
   getObserver: getNumberObserver,
   disposeBinding: disposeNumberBinding,
-} = makeBindings((s) => +s, (n) => n.toString());
+} = makeBindings(
+  (s) => +s,
+  (n) => n.toString()
+);
 export const {
   get: getObject,
   set: setObject,
   getInitializer: getObjectInitializer,
   getObserver: getObjectObserver,
   disposeBinding: disposeObjectBinding,
-} = makeBindings((s) => JSON.parse(atob(s)), (o) => btoa(JSON.stringify(o)));
+} = makeBindings(
+  (s) => JSON.parse(atob(s)),
+  (o) => btoa(JSON.stringify(o))
+);
 export interface StorageOptions<T> {
   defaultValue?: T;
   useLocalStorage?: boolean;
@@ -158,7 +167,7 @@ export function makeBindings<T>(
       useLocalStorage: false,
       ...options,
     };
-    return function() {
+    return function () {
       const uriStorageName = getURIStorageName(this, key);
       // setComponentValue will be called every time the underlying storage
       // changes and is responsible for ensuring that new state will propagate
@@ -199,7 +208,7 @@ export function makeBindings<T>(
       useLocalStorage: false,
       ...options,
     };
-    return function() {
+    return function () {
       const uriStorageName = getURIStorageName(this, key);
       const newVal = this[fullOptions.polymerProperty];
       set(uriStorageName, newVal, fullOptions);

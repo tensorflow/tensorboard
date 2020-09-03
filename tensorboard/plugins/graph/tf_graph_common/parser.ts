@@ -89,7 +89,7 @@ export function fetchAndParseGraphData(
       40,
       () => {
         if (pbTxtFile) {
-          return new Promise<ArrayBuffer>(function(resolve, reject) {
+          return new Promise<ArrayBuffer>(function (resolve, reject) {
             let fileReader = new FileReader();
             fileReader.onload = () => resolve(fileReader.result as ArrayBuffer);
             fileReader.onerror = () => reject(fileReader.error);
@@ -127,7 +127,7 @@ export function streamParse(
   chunkSize: number = 1000000,
   delim: string = '\n'
 ): Promise<boolean> {
-  return new Promise<boolean>(function(resolve, reject) {
+  return new Promise<boolean>(function (resolve, reject) {
     function readChunk(oldData: string, newData: string, offset: number) {
       const doneReading = offset >= arrayBuffer.byteLength;
       const parts = newData.split(delim);
@@ -151,7 +151,7 @@ export function streamParse(
         arrayBuffer.slice(offset, offset + chunkSize),
       ]);
       const file = new FileReader();
-      file.onload = function(e: any) {
+      file.onload = function (e: any) {
         readChunk(remainder, e.target.result, offset + chunkSize);
       };
       file.readAsText(nextChunk);
@@ -293,7 +293,7 @@ function parsePbtxtFile(
     }
   }
   // Run through the file a line at a time.
-  return streamParse(input, function(line: string) {
+  return streamParse(input, function (line: string) {
     if (!line) {
       return;
     }
@@ -318,7 +318,7 @@ function parsePbtxtFile(
         addAttribute(current, x.name, x.value, path.concat(x.name));
         break;
     }
-  }).then(function() {
+  }).then(function () {
     return output;
   });
 }

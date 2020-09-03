@@ -267,7 +267,7 @@ class TfHparamsScatterPlotMatrixPlot extends LegacyElementMixin(
     xAxesG
       .append('g')
       .attr('clip-path', (col) => 'url(#' + xAxisClipPathId(col) + ')')
-      .each(function(col) {
+      .each(function (col) {
         d3.select(this).call(
           drawAxis,
           d3
@@ -325,7 +325,7 @@ class TfHparamsScatterPlotMatrixPlot extends LegacyElementMixin(
     yAxesG
       .append('g')
       .attr('clip-path', (metric) => 'url(#' + yAxisClipPathId(metric) + ')')
-      .each(function(metric) {
+      .each(function (metric) {
         d3.select(this).call(
           drawAxis,
           d3
@@ -494,7 +494,7 @@ class TfHparamsScatterPlotMatrixPlot extends LegacyElementMixin(
       _this.sessionGroups.forEach((sessionGroup) => {
         sessionGroupMarkersMap.set(sessionGroup, []);
       });
-      markers.each(function(d) {
+      markers.each(function (d) {
         sessionGroupMarkersMap.get(d.sessionGroup).push(this);
       });
       markers.each((d) => {
@@ -526,7 +526,7 @@ class TfHparamsScatterPlotMatrixPlot extends LegacyElementMixin(
     // element.
     function createCellQuadTree(col, metric) {
       const data = [];
-      cellMarkers[col][metric].each(function() {
+      cellMarkers[col][metric].each(function () {
         data.push(this);
       });
       return d3
@@ -564,13 +564,23 @@ class TfHparamsScatterPlotMatrixPlot extends LegacyElementMixin(
         );
       }
       // Highlight the new visible markers.
-      d3.selectAll(Array.from(
-        utils.filterSet(newVisibleMarkers, (elem) => !visibleMarkers.has(elem))
-      ) as any).attr('fill', markerColorFn);
+      d3.selectAll(
+        Array.from(
+          utils.filterSet(
+            newVisibleMarkers,
+            (elem) => !visibleMarkers.has(elem)
+          )
+        ) as any
+      ).attr('fill', markerColorFn);
       // Gray-out the no-longer visible markers.
-      d3.selectAll(Array.from(
-        utils.filterSet(visibleMarkers, (elem) => !newVisibleMarkers.has(elem))
-      ) as any).attr('fill', '#ddd');
+      d3.selectAll(
+        Array.from(
+          utils.filterSet(
+            visibleMarkers,
+            (elem) => !newVisibleMarkers.has(elem)
+          )
+        ) as any
+      ).attr('fill', '#ddd');
       visibleMarkers = newVisibleMarkers;
     }
     // Returns a Set of all marker elements that are in the
@@ -602,7 +612,7 @@ class TfHparamsScatterPlotMatrixPlot extends LegacyElementMixin(
         [-frameMargin + 1, -frameMargin + 1],
         [cellWidth - 1 + frameMargin - 1, cellHeight - 1 + frameMargin - 1],
       ])
-      .on('start', function() {
+      .on('start', function () {
         if (isBrushActive() && brushedCellG.node() != this) {
           // The brush is active in a different cell.
           // Clear the selection first.
@@ -614,10 +624,10 @@ class TfHparamsScatterPlotMatrixPlot extends LegacyElementMixin(
         }
         brushChanged(this);
       })
-      .on('brush', function() {
+      .on('brush', function () {
         brushChanged(this);
       })
-      .on('end', function() {
+      .on('end', function () {
         brushChanged(this);
       });
     // Updates the internal state in response to a brush event in
@@ -685,7 +695,7 @@ class TfHparamsScatterPlotMatrixPlot extends LegacyElementMixin(
         .classed('selected-marker', true);
     }
     cells
-      .on('click', function() {
+      .on('click', function () {
         const newSelectedMarkers =
           closestMarkers === selectedMarkers ? null : closestMarkers;
         if (newSelectedMarkers === selectedMarkers) {
@@ -706,7 +716,7 @@ class TfHparamsScatterPlotMatrixPlot extends LegacyElementMixin(
               selectedMarkers.datum().sessionGroup;
         _this.selectedSessionGroup = newSessionGroup;
       })
-      .on('mousemove mouseenter', function([col, metric]) {
+      .on('mousemove mouseenter', function ([col, metric]) {
         const [x, y] = d3.mouse(this);
         const newClosestMarkers = findClosestMarkers(
           col,
@@ -733,7 +743,7 @@ class TfHparamsScatterPlotMatrixPlot extends LegacyElementMixin(
           (_this as any)._setClosestSessionGroup(null);
         }
       })
-      .on('mouseleave', function([col, metric]) {
+      .on('mouseleave', function ([col, metric]) {
         if (closestMarkers !== null) {
           closestMarkers.classed('closest-marker', false);
           closestMarkers = null;
@@ -784,10 +794,7 @@ class TfHparamsScatterPlotMatrixPlot extends LegacyElementMixin(
   // visibleSchema-column indexed by colIndex.
   _cellScale(colIndex, range) {
     const extent = this._colExtent(colIndex) as any;
-    const linearScale = d3
-      .scaleLinear()
-      .domain(extent)
-      .range(range);
+    const linearScale = d3.scaleLinear().domain(extent).range(range);
     if (this.options.columns[colIndex].scale === 'LINEAR') {
       return linearScale;
     } else if (this.options.columns[colIndex].scale === 'LOG') {
@@ -800,10 +807,7 @@ class TfHparamsScatterPlotMatrixPlot extends LegacyElementMixin(
         // and b/111755540
         return linearScale;
       }
-      return d3
-        .scaleLog()
-        .domain(extent)
-        .range(range);
+      return d3.scaleLog().domain(extent).range(range);
     } else if (this.options.columns[colIndex].scale === 'QUANTILE') {
       // Compute 20-quantiles:
       const step = (range[1] - range[0]) / 19;
@@ -832,10 +836,9 @@ class TfHparamsScatterPlotMatrixPlot extends LegacyElementMixin(
         .range(range)
         .padding(0.1);
     } else {
-      throw 'Unknown scale for column: ' +
-        colIndex +
-        '. options: ' +
-        this.options;
+      throw (
+        'Unknown scale for column: ' + colIndex + '. options: ' + this.options
+      );
     }
   }
   _colValue(sessionGroup, colIndex) {

@@ -483,7 +483,7 @@ class TfGraphDashboard extends LegacyElementMixin(PolymerElement) {
       // This path may be slow. Schedule network requests to start some time later. If another
       // request is scheduled in the mean time, drop this current request.
       this._healthPillStepRequestTimerId = setTimeout(
-        function() {
+        function () {
           this._healthPillStepRequestTimerId = null;
           this._initiateNetworkRequestForHealthPills(requestId);
         }.bind(this),
@@ -512,7 +512,7 @@ class TfGraphDashboard extends LegacyElementMixin(PolymerElement) {
     );
     const alertsPromise = this._fetchDebuggerNumericsAlerts();
     Promise.all([healthPillsPromise, alertsPromise]).then(
-      function(result) {
+      function (result) {
         var healthPillsResult = result[0];
         var alertsResult = result[1];
         if (!this.healthPillsToggledOn) {

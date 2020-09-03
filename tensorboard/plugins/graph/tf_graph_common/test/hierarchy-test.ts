@@ -15,7 +15,7 @@ limitations under the License.
 describe('hierarchy', () => {
   const {expect} = chai;
 
-  beforeEach(function() {
+  beforeEach(function () {
     const pbtxt = tf.graph.test.util.stringToArrayBuffer(`
       node {
         name: "Q"
@@ -134,7 +134,7 @@ describe('hierarchy', () => {
       .then((graph: tf.graph.SlimGraph) => (this.slimGraph = graph));
   });
 
-  it('builds hierarchy with metagraph', function() {
+  it('builds hierarchy with metagraph', function () {
     return tf.graph.hierarchy
       .build(this.slimGraph, this.options, this.dummyTracker)
       .then((hierarchy) => {

@@ -128,7 +128,7 @@ export class TfDomRepeat<T extends {}> extends ArrayUpdateHelper {
           [this.as]: true,
           active: this._contentActive,
         },
-        forwardHostProp: function(prop: string, value: any) {
+        forwardHostProp: function (prop: string, value: any) {
           this._renderedTemplateInst.forEach((inst: TemplateInstanceBase) => {
             inst.forwardHostProp(prop, value);
           });

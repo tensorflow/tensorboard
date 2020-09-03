@@ -251,7 +251,7 @@ class TfGraph extends LegacyElementMixin(PolymerElement) {
   _buildRenderHierarchy(graphHierarchy) {
     tf_graph_util.time(
       'new tf_graph_render.Hierarchy',
-      function() {
+      function () {
         if (graphHierarchy.root.type !== tf_graph.NodeType.META) {
           // root must be metanode but sometimes Polymer's dom-if has not
           // remove tf-graph element yet in <tf-node-info>
@@ -281,7 +281,7 @@ class TfGraph extends LegacyElementMixin(PolymerElement) {
             renderGraph.computeTimeScale as any
           ),
           memory: getColorParamsFromScale(renderGraph.memoryUsageScale as any),
-          device: _.map(renderGraph.deviceColorMap.domain(), function(
+          device: _.map(renderGraph.deviceColorMap.domain(), function (
             deviceName
           ) {
             return {
@@ -289,7 +289,7 @@ class TfGraph extends LegacyElementMixin(PolymerElement) {
               color: renderGraph.deviceColorMap(deviceName),
             };
           }),
-          xla_cluster: _.map(renderGraph.xlaClusterColorMap.domain(), function(
+          xla_cluster: _.map(renderGraph.xlaClusterColorMap.domain(), function (
             xlaClusterName
           ) {
             return {
@@ -299,7 +299,7 @@ class TfGraph extends LegacyElementMixin(PolymerElement) {
           }),
         });
         this._setRenderHierarchy(renderGraph);
-        this.async(function() {
+        this.async(function () {
           this.fire('rendered');
         });
       }.bind(this)
@@ -406,7 +406,7 @@ class TfGraph extends LegacyElementMixin(PolymerElement) {
     // Expand the node with some delay so that the user can immediately see
     // the visual effect of selecting that node, before the expansion is
     // done.
-    this.async(function() {
+    this.async(function () {
       this.$.scene.setNodeExpanded(renderNode);
     }, 75);
   }
@@ -451,7 +451,7 @@ class TfGraph extends LegacyElementMixin(PolymerElement) {
     tf_graph_hierarchy
       .build(this.basicGraph as any, this.hierarchyParams, hierarchyTracker)
       .then(
-        function(graphHierarchy) {
+        function (graphHierarchy) {
           this.set('graphHierarchy', graphHierarchy);
           this._buildRenderHierarchy(this.graphHierarchy);
         }.bind(this)

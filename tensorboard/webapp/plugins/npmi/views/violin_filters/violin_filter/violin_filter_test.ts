@@ -66,7 +66,11 @@ describe('Npmi Violin Filter Container', () => {
 
     store.overrideSelector(
       getRunSelection,
-      new Map([['run_1', true], ['run_2', false], ['run_3', true]])
+      new Map([
+        ['run_1', true],
+        ['run_2', false],
+        ['run_3', true],
+      ])
     );
     store.overrideSelector(getAnnotationData, {
       annotation_1: [

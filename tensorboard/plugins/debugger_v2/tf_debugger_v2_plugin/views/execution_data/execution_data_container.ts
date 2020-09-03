@@ -47,88 +47,78 @@ export class ExecutionDataContainer {
 
   readonly tensorDebugMode$ = this.store.pipe(
     select(
-      createSelector(
-        getFocusedExecutionData,
-        (execution: Execution | null) => {
-          if (execution === null) {
-            return TensorDebugMode.UNSPECIFIED;
-          } else {
-            return execution.tensor_debug_mode;
-          }
+      createSelector(getFocusedExecutionData, (execution: Execution | null) => {
+        if (execution === null) {
+          return TensorDebugMode.UNSPECIFIED;
+        } else {
+          return execution.tensor_debug_mode;
         }
-      )
+      })
     )
   );
 
   readonly hasDebugTensorValues$ = this.store.pipe(
     select(
-      createSelector(
-        getFocusedExecutionData,
-        (execution: Execution | null) => {
-          if (execution === null || execution.debug_tensor_values === null) {
-            return false;
-          } else {
-            for (const singleDebugTensorValues of execution.debug_tensor_values) {
-              if (
-                singleDebugTensorValues !== null &&
-                singleDebugTensorValues.length > 0
-              ) {
-                return true;
-              }
+      createSelector(getFocusedExecutionData, (execution: Execution | null) => {
+        if (execution === null || execution.debug_tensor_values === null) {
+          return false;
+        } else {
+          for (const singleDebugTensorValues of execution.debug_tensor_values) {
+            if (
+              singleDebugTensorValues !== null &&
+              singleDebugTensorValues.length > 0
+            ) {
+              return true;
             }
-            return false;
           }
+          return false;
         }
-      )
+      })
     )
   );
 
   readonly debugTensorValues$ = this.store.pipe(
     select(
-      createSelector(
-        getFocusedExecutionData,
-        (execution: Execution | null) => {
-          if (execution === null) {
-            return null;
-          } else {
-            return execution.debug_tensor_values;
-          }
+      createSelector(getFocusedExecutionData, (execution: Execution | null) => {
+        if (execution === null) {
+          return null;
+        } else {
+          return execution.debug_tensor_values;
         }
-      )
+      })
     )
   );
 
   readonly debugTensorDtypes$ = this.store.pipe(
     select(
-      createSelector(
-        getFocusedExecutionData,
-        (execution: Execution | null): string[] | null => {
-          if (execution === null || execution.debug_tensor_values === null) {
-            return null;
-          }
-          if (
-            execution.tensor_debug_mode !== TensorDebugMode.FULL_HEALTH &&
-            execution.tensor_debug_mode !== TensorDebugMode.SHAPE
-          ) {
-            // TODO(cais): Add logic for other TensorDebugModes with dtype info.
-            return null;
-          }
-          const dtypes: string[] = [];
-          for (const tensorValue of execution.debug_tensor_values) {
-            if (tensorValue === null) {
-              dtypes.push(UNKNOWN_DTYPE_NAME);
-            } else {
-              const dtypeEnum = String(
-                execution.tensor_debug_mode === TensorDebugMode.FULL_HEALTH
-                  ? tensorValue[2] // tensor_debug_mode: FULL_HEALTH
-                  : tensorValue[1] // tensor_debug_mode: SHAPE
-              );
-              dtypes.push(DTYPE_ENUM_TO_NAME[dtypeEnum] || UNKNOWN_DTYPE_NAME);
-            }
-          }
-          return dtypes;
+      createSelector(getFocusedExecutionData, (execution: Execution | null):
+        | string[]
+        | null => {
+        if (execution === null || execution.debug_tensor_values === null) {
+          return null;
         }
-      )
+        if (
+          execution.tensor_debug_mode !== TensorDebugMode.FULL_HEALTH &&
+          execution.tensor_debug_mode !== TensorDebugMode.SHAPE
+        ) {
+          // TODO(cais): Add logic for other TensorDebugModes with dtype info.
+          return null;
+        }
+        const dtypes: string[] = [];
+        for (const tensorValue of execution.debug_tensor_values) {
+          if (tensorValue === null) {
+            dtypes.push(UNKNOWN_DTYPE_NAME);
+          } else {
+            const dtypeEnum = String(
+              execution.tensor_debug_mode === TensorDebugMode.FULL_HEALTH
+                ? tensorValue[2] // tensor_debug_mode: FULL_HEALTH
+                : tensorValue[1] // tensor_debug_mode: SHAPE
+            );
+            dtypes.push(DTYPE_ENUM_TO_NAME[dtypeEnum] || UNKNOWN_DTYPE_NAME);
+          }
+        }
+        return dtypes;
+      })
     )
   );
 

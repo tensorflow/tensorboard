@@ -55,9 +55,7 @@ class TfHparamsScaleAndColorControls extends PolymerElement {
         <template is="dom-repeat" items="{{options.columns}}" as="column">
           <template is="dom-if" if="[[_isNumericColumn(column.index)]]">
             <div class="column">
-              <div class="column-title">
-                [[column.name]]
-              </div>
+              <div class="column-title">[[column.name]]</div>
               <div>
                 <paper-radio-group
                   class="scale-radio-group"

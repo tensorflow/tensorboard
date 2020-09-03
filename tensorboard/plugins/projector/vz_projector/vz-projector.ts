@@ -71,7 +71,8 @@ const POINT_COLOR_MISSING = 'black';
 const INDEX_METADATA_FIELD = '__index__';
 
 @customElement('vz-projector')
-class Projector extends LegacyElementMixin(PolymerElement)
+class Projector
+  extends LegacyElementMixin(PolymerElement)
   implements ProjectorEventContext {
   static readonly template = template;
 

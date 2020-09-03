@@ -117,7 +117,7 @@ class TfGraphLoader extends LegacyElementMixin(PolymerElement) {
         hierarchyParams
       )
       .then(
-        function({graph, graphHierarchy}) {
+        function ({graph, graphHierarchy}) {
           this._setOutHierarchyParams(hierarchyParams);
           this._setOutGraph(graph);
           this._setOutGraphHierarchy(graphHierarchy);

@@ -71,7 +71,8 @@ export interface TfCustomScalarMarginChartCard extends HTMLElement {
 }
 
 @customElement('tf-custom-scalar-margin-chart-card')
-class _TfCustomScalarMarginChartCard extends LegacyElementMixin(PolymerElement)
+class _TfCustomScalarMarginChartCard
+  extends LegacyElementMixin(PolymerElement)
   implements TfCustomScalarMarginChartCard {
   static readonly template = html`
     <tf-card-heading display-name="[[_titleDisplayString]]"></tf-card-heading>

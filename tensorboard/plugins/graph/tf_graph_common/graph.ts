@@ -1291,7 +1291,7 @@ export function createGraph<N, E>(
  * the specified types.
  */
 function getEmbedPredicate(types: string[]) {
-  return function(node: OpNode) {
+  return function (node: OpNode) {
     // check types
     for (let i = 0; i < types.length; i++) {
       let regExp = new RegExp(types[i]);
@@ -1373,7 +1373,7 @@ function mapStrictHierarchy(
  * Returns a list of the degrees of each node in the graph.
  */
 function degreeSequence(graph: graphlib.Graph): number[] {
-  let degrees = graph.nodes().map(function(name) {
+  let degrees = graph.nodes().map(function (name) {
     return graph.neighbors(name).length;
   });
   degrees.sort();

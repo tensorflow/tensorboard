@@ -143,7 +143,10 @@ describe('Execution Data Container', () => {
                 op_type: 'Inverse',
                 output_tensor_ids: [10, 11],
                 tensor_debug_mode: TensorDebugMode.CURT_HEALTH,
-                debug_tensor_values: [[0, 0], [0, 1]],
+                debug_tensor_values: [
+                  [0, 0],
+                  [0, 1],
+                ],
               }),
             },
           },

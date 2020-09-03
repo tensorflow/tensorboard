@@ -108,7 +108,7 @@ class TfGraphDashboardLoader extends LegacyElementMixin(PolymerElement) {
       case tf_graph_common.SelectionType.OP_GRAPH:
       case tf_graph_common.SelectionType.CONCEPTUAL_GRAPH: {
         // Clear stats about the previous graph.
-        (function() {
+        (function () {
           this._setOutStats(null);
         }.bind(this)());
         const params = new URLSearchParams();
@@ -172,7 +172,7 @@ class TfGraphDashboardLoader extends LegacyElementMixin(PolymerElement) {
     });
     var tracker = tf_graph_util.getTracker(this);
     tf_graph_parser.fetchAndParseMetadata(path, tracker).then(
-      function(stats) {
+      function (stats) {
         this._setOutStats(stats);
       }.bind(this)
     );
@@ -193,7 +193,7 @@ class TfGraphDashboardLoader extends LegacyElementMixin(PolymerElement) {
         this.hierarchyParams as any
       )
       .then(
-        function({graph, graphHierarchy}) {
+        function ({graph, graphHierarchy}) {
           this._setOutGraph(graph);
           this._setOutGraphHierarchy(graphHierarchy);
         }.bind(this)

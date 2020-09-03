@@ -43,17 +43,17 @@ limitations under the License.
          Tensorboard.
       */
       chai.config.truncateThreshold = 0;
-      suite('<tf-hparams-parallel-coords-plot>-tests', function() {
+      suite('<tf-hparams-parallel-coords-plot>-tests', function () {
         var element;
 
-        setup(function() {
+        setup(function () {
           element = fixture('f');
         });
 
         const epsilon = 1e-5;
-        teardown(function() {});
+        teardown(function () {});
 
-        test('pointScaleInverseImage', function() {
+        test('pointScaleInverseImage', function () {
           const pointScaleInverseImage =
             tf.hparams.parallel_coords_plot.pointScaleInverseImage;
           const scale = d3
@@ -77,13 +77,10 @@ limitations under the License.
           assert.deepEqual(pointScaleInverseImage(scale, 0, 300), [a, b, c]);
         });
 
-        test('continuousScaleInverseImage', function() {
+        test('continuousScaleInverseImage', function () {
           const continuousScaleInverseImage =
             tf.hparams.parallel_coords_plot.continuousScaleInverseImage;
-          let scale = d3
-            .scaleLinear()
-            .domain([-150, 300])
-            .range([0, 300]);
+          let scale = d3.scaleLinear().domain([-150, 300]).range([0, 300]);
           // scale(x)=2/3*x+100
           // x=3/2*scale(x)-150
           assertVectorsApproxEqual(
@@ -96,10 +93,7 @@ limitations under the License.
             [-196.5, 217.5],
             epsilon
           );
-          scale = d3
-            .scaleLog()
-            .domain([1, 150])
-            .range([300, 1]);
+          scale = d3.scaleLog().domain([1, 150]).range([300, 1]);
 
           assertVectorsApproxEqual(
             continuousScaleInverseImage(scale, 10, 50),
@@ -108,7 +102,7 @@ limitations under the License.
           );
         });
 
-        test('quantileScaleInverseImage', function() {
+        test('quantileScaleInverseImage', function () {
           const quantileScaleInverseImage =
             tf.hparams.parallel_coords_plot.quantileScaleInverseImage;
           const scale = d3
@@ -142,12 +136,20 @@ limitations under the License.
           );
         });
 
-        test('findClosestPath', function() {
+        test('findClosestPath', function () {
           const findClosestPath =
             tf.hparams.parallel_coords_plot.findClosestPath;
           axesPos = [0, 50, 100, 150, 200];
           paths = [
-            {controlPoints: [[0, 0], [50, 0], [100, 10], [150, 11], [200, 10]]},
+            {
+              controlPoints: [
+                [0, 0],
+                [50, 0],
+                [100, 10],
+                [150, 11],
+                [200, 10],
+              ],
+            },
             {
               controlPoints: [
                 [0, 11],
@@ -216,7 +218,7 @@ limitations under the License.
           assert.isNull(findClosestPath(paths, axesPos, [250, 1], 100));
         });
 
-        test('createAxisScale', function() {
+        test('createAxisScale', function () {
           const testCases = [
             {
               name: 'LINEAR scale test',
@@ -318,7 +320,7 @@ limitations under the License.
           });
         });
 
-        test('createScale_throws', function() {
+        test('createScale_throws', function () {
           const createAxisScale =
             tf.hparams.parallel_coords_plot.createAxisScale;
           assert.throws(

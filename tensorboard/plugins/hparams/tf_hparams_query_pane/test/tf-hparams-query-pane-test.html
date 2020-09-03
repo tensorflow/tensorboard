@@ -36,7 +36,7 @@ limitations under the License.
     </test-fixture>
     <script>
       chai.config.truncateThreshold = 0;
-      suite('<tf-hparams-query-pane>-tests', function() {
+      suite('<tf-hparams-query-pane>-tests', function () {
         var element;
         const experimentResponse = {
           description: '',
@@ -129,15 +129,15 @@ limitations under the License.
         // synchronously to make the test synchronous (otherwise
         // the _queryServer() method called on element initialization would
         // end-up querying the server after a delay).
-        Polymer.Base.debounce = function(name, func, delay) {
+        Polymer.Base.debounce = function (name, func, delay) {
           func();
         };
 
         // Make the window.alert() method a no-op so the element won't block
         // awaiting user input.
-        window.alert = function() {};
+        window.alert = function () {};
 
-        setup(function() {
+        setup(function () {
           fakeBackend = sinon.createStubInstance(tf.hparams.Backend);
           fakeBackend.getExperiment.returns(
             Promise.resolve(experimentResponse)
@@ -150,7 +150,7 @@ limitations under the License.
           element.set('backend', fakeBackend);
         });
 
-        test('element initialized correctly.', function() {
+        test('element initialized correctly.', function () {
           return element._getExperimentResolved.then(() => {
             assert.deepEqual(element._hparams, [
               {
@@ -234,7 +234,7 @@ limitations under the License.
           });
         });
 
-        test('element updates "sessionGroups" in correct order', function() {
+        test('element updates "sessionGroups" in correct order', function () {
           let resolveFirstQuery = null;
           let resolveSecondQuery = null;
           // We set calls #1 and #2 here to return pending promises so
@@ -294,7 +294,7 @@ limitations under the License.
         test(
           'element updates "sessionGroups" after a successful request' +
             ' following a failed request',
-          function() {
+          function () {
             let rejectFirstQuery = null;
             let resolveSecondQuery = null;
             // We set calls #1 and #2 here to return pending promises so
@@ -366,7 +366,7 @@ limitations under the License.
           }
         );
 
-        test('element sends correct ListSessionGroupsRequest', function() {
+        test('element sends correct ListSessionGroupsRequest', function () {
           return element._getExperimentResolved.then(() => {
             element._hparams[0].filter = {
               domainDiscrete: [

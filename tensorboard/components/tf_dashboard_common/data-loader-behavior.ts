@@ -54,7 +54,8 @@ export interface RequestDataCallback<Item, Data> {
 export function DataLoaderBehavior<Item, Data>(
   superClass: new () => PolymerElement
 ): new () => DataLoaderBehaviorInterface<Item, Data> {
-  return class DataLoaderBehaviorImpl<Item, Data> extends superClass
+  return class DataLoaderBehaviorImpl<Item, Data>
+    extends superClass
     implements DataLoaderBehaviorInterface<Item, Data> {
     active!: boolean;
 

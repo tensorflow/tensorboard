@@ -1101,7 +1101,10 @@ describe('debugger selectors', () => {
         createDebuggerState({
           graphs: createDebuggerGraphsState({
             ops: {
-              g1: new Map([['op1', op1Info], ['op2', op2Info]]),
+              g1: new Map([
+                ['op1', op1Info],
+                ['op2', op2Info],
+              ]),
             },
             focusedOp: null,
           }),
@@ -1115,7 +1118,10 @@ describe('debugger selectors', () => {
         createDebuggerState({
           graphs: createDebuggerGraphsState({
             ops: {
-              g1: new Map([['op1', op1Info], ['op2', op2Info]]),
+              g1: new Map([
+                ['op1', op1Info],
+                ['op2', op2Info],
+              ]),
             },
             focusedOp: {
               graphId: 'g1',
@@ -1132,7 +1138,10 @@ describe('debugger selectors', () => {
         createDebuggerState({
           graphs: createDebuggerGraphsState({
             ops: {
-              g1: new Map([['op1', op1Info], ['op2', op2Info]]),
+              g1: new Map([
+                ['op1', op1Info],
+                ['op2', op2Info],
+              ]),
             },
             focusedOp: {
               graphId: 'g1',
@@ -1233,7 +1242,10 @@ describe('debugger selectors', () => {
         createDebuggerState({
           graphs: createDebuggerGraphsState({
             ops: {
-              g1: new Map([['op1', op1Info], ['op2', op2Info]]),
+              g1: new Map([
+                ['op1', op1Info],
+                ['op2', op2Info],
+              ]),
             },
             focusedOp: {
               graphId: 'g1',
@@ -1347,7 +1359,10 @@ describe('debugger selectors', () => {
           }),
           graphs: createDebuggerGraphsState({
             ops: {
-              g1: new Map([['op1', op1Info], ['op2', op2Info]]),
+              g1: new Map([
+                ['op1', op1Info],
+                ['op2', op2Info],
+              ]),
             },
             focusedOp: null,
           }),
@@ -1624,7 +1639,10 @@ describe('debugger selectors', () => {
         createDebuggerState({
           graphs: createDebuggerGraphsState({
             ops: {
-              g1: new Map([['op1', op1Info], ['op2', op2Info]]),
+              g1: new Map([
+                ['op1', op1Info],
+                ['op2', op2Info],
+              ]),
             },
             focusedOp: {
               graphId: 'g1',

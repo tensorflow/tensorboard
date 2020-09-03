@@ -37,9 +37,7 @@ class TfHparamsSessionsPane extends PolymerElement {
           <!-- view-id can be used by integration tests to locate a tab.
                It should be the name of the root element implementing the view
                without the 'tf-hparams-' prefix. -->
-          <paper-tab view-id="table-view">
-            TABLE VIEW
-          </paper-tab>
+          <paper-tab view-id="table-view"> TABLE VIEW </paper-tab>
           <paper-tab view-id="parallel-coords-view">
             PARALLEL COORDINATES VIEW
           </paper-tab>

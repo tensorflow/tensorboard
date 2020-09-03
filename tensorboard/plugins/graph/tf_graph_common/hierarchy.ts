@@ -692,11 +692,11 @@ function addNodes(h: Hierarchy, graph: SlimGraph) {
     node.parentNode = parent;
     parent.metagraph.setNode(node.name, node);
     // Add each of the in-embeddings and out-embeddings in the hierarchy.
-    _.each(node.inEmbeddings, function(embedding) {
+    _.each(node.inEmbeddings, function (embedding) {
       h.setNode(embedding.name, embedding);
       embedding.parentNode = node;
     });
-    _.each(node.outEmbeddings, function(embedding) {
+    _.each(node.outEmbeddings, function (embedding) {
       h.setNode(embedding.name, embedding);
       embedding.parentNode = node;
     });
@@ -838,7 +838,7 @@ function groupSeries(
   );
   // Add each series node to the graph and add its grouped children to its own
   // metagraph.
-  _.each(seriesDict, function(seriesNode: SeriesNode, seriesName: string) {
+  _.each(seriesDict, function (seriesNode: SeriesNode, seriesName: string) {
     let nodeMemberNames = seriesNode.metagraph.nodes();
     _.each(nodeMemberNames, (n) => {
       let child = metagraph.node(n) as any;
@@ -961,7 +961,7 @@ function detectSeriesUsingNumericSuffixes(
   let seriesDict: {
     [seriesName: string]: SeriesNode;
   } = {};
-  _.each(clusters, function(members, clusterId: string) {
+  _.each(clusters, function (members, clusterId: string) {
     if (members.length <= 1) {
       return;
     } // isolated clusters can't make series
@@ -975,7 +975,7 @@ function detectSeriesUsingNumericSuffixes(
     // Group all nodes that have the same name, with the exception of a
     // number at the end of the name after an underscore, which is allowed to
     // vary.
-    _.each(members, function(name: string) {
+    _.each(members, function (name: string) {
       let isGroup = name.charAt(name.length - 1) === '*';
       let namepath = name.split('/');
       let leaf = namepath[namepath.length - 1];
@@ -1008,11 +1008,14 @@ function detectSeriesUsingNumericSuffixes(
     });
     // In each group of nodes, group nodes in bunches that have monotonically
     // increasing numbers in their names.  Each of these bunches is a series.
-    _.each(candidatesDict, function(seriesInfoArray: SeriesNode[], seriesName) {
+    _.each(candidatesDict, function (
+      seriesInfoArray: SeriesNode[],
+      seriesName
+    ) {
       if (seriesInfoArray.length < 2) {
         return;
       }
-      seriesInfoArray.sort(function(a, b) {
+      seriesInfoArray.sort(function (a, b) {
         return +a.clusterId - +b.clusterId;
       });
       // Loop through the nodes sorted by its detected series number, grouping
@@ -1068,7 +1071,7 @@ function detectSeriesAnywhereInNodeName(
   let seriesDict: {
     [seriesName: string]: SeriesNode;
   } = {};
-  _.each(clusters, function(members, clusterId: string) {
+  _.each(clusters, function (members, clusterId: string) {
     if (members.length <= 1) {
       return;
     } // isolated clusters can't make series
@@ -1089,7 +1092,7 @@ function detectSeriesAnywhereInNodeName(
     // Group all nodes that have the same name, with the exception of a
     // number at the end of the name after an underscore, which is allowed to
     // vary.
-    _.each(members, function(name: string) {
+    _.each(members, function (name: string) {
       let isGroup = name.charAt(name.length - 1) === '*';
       let namepath = name.split('/');
       let leaf = namepath[namepath.length - 1];
@@ -1155,8 +1158,8 @@ function detectSeriesAnywhereInNodeName(
     } = {};
     // For each of the member, put it into the maximum possible series,
     // and create candidatesDict accordingly.
-    _.each(reverseDict, function(seriesNameIdArray, name) {
-      seriesNameIdArray.sort(function(a, b) {
+    _.each(reverseDict, function (seriesNameIdArray, name) {
+      seriesNameIdArray.sort(function (a, b) {
         return forwardDict[b[0]].ids.length - forwardDict[a[0]].ids.length;
       });
       var seriesName = seriesNameIdArray[0][0];
@@ -1177,11 +1180,14 @@ function detectSeriesAnywhereInNodeName(
     });
     // In each group of nodes, group nodes in bunches that have monotonically
     // increasing numbers in their names.  Each of these bunches is a series.
-    _.each(candidatesDict, function(seriesInfoArray: SeriesNode[], seriesName) {
+    _.each(candidatesDict, function (
+      seriesInfoArray: SeriesNode[],
+      seriesName
+    ) {
       if (seriesInfoArray.length < 2) {
         return;
       }
-      seriesInfoArray.sort(function(a, b) {
+      seriesInfoArray.sort(function (a, b) {
         return +a.clusterId - +b.clusterId;
       });
       // Loop through the nodes sorted by its detected series number, grouping
@@ -1251,7 +1257,7 @@ function addSeriesToDict(
       curSeriesName,
       graphOptions
     );
-    _.each(seriesNodes, function(node) {
+    _.each(seriesNodes, function (node) {
       curSeriesNode.ids.push(node.clusterId);
       curSeriesNode.metagraph.setNode(node.name, metagraph.node(node.name));
     });

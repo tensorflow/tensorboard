@@ -72,10 +72,7 @@ export class DistributionChart {
     this.yScale = new Plottable.Scales.Linear();
     this.yAxis = new Plottable.Axes.Numeric(this.yScale, 'left');
     let yFormatter = multiscaleFormatter(Y_AXIS_FORMATTER_PRECISION);
-    this.yAxis
-      .margin(0)
-      .tickLabelPadding(5)
-      .formatter(yFormatter);
+    this.yAxis.margin(0).tickLabelPadding(5).formatter(yFormatter);
     this.yAxis.usesTextWidthApproximation(true);
     let center = this.buildPlot(this.xAccessor, this.xScale, this.yScale);
     this.gridlines = new Plottable.Components.Gridlines(
@@ -159,7 +156,8 @@ export interface VzDistributionChart extends HTMLElement {
 }
 
 @customElement('vz-distribution-chart')
-class _VzDistributionChart extends LegacyElementMixin(PolymerElement)
+class _VzDistributionChart
+  extends LegacyElementMixin(PolymerElement)
   implements VzDistributionChart {
   static readonly template = html`
     <style include="plottable-style"></style>
@@ -233,7 +231,7 @@ class _VzDistributionChart extends LegacyElementMixin(PolymerElement)
     if (this._makeChartAsyncCallbackId === null) {
       this.cancelAsync(this._makeChartAsyncCallbackId);
     }
-    this._makeChartAsyncCallbackId = this.async(function() {
+    this._makeChartAsyncCallbackId = this.async(function () {
       this._makeChartAsyncCallbackId = null;
       if (!_attached) return;
       if (this._chart) this._chart.destroy();
@@ -249,7 +247,7 @@ class _VzDistributionChart extends LegacyElementMixin(PolymerElement)
     if (this._chart) {
       this._chart.setVisibleSeries(this._visibleSeriesCache);
       this._visibleSeriesCache.forEach(
-        function(name) {
+        function (name) {
           this._chart.setSeriesData(name, this._seriesDataCache[name] || []);
         }.bind(this)
       );

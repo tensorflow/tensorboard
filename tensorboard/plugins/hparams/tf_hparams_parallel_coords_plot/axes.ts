@@ -239,7 +239,10 @@ export class Axis {
     // Add the brush.
     const d3Brush = d3
       .brushY()
-      .extent([[-8, 0], [8, this._svgProps.height + 1]])
+      .extent([
+        [-8, 0],
+        [8, this._svgProps.height + 1],
+      ])
       /* Define the brush event handlers. D3 will call these both when
              the user moves the brush selection and when we change the brush
              selection programmatically using d3Brush.move(). We'd like to
@@ -434,7 +437,7 @@ export class AxesCollection {
     const _this = this;
     this._parentsSel
       .call((sel) => this._updateAxesPositionsInDOM(sel))
-      .each(function(colIndex) {
+      .each(function (colIndex) {
         /* Here 'this' is the 'axis-parent'-classed <g> element,
              and '_this' is the AxesCollection element. */
         _this._axes[colIndex].updateDOM(this);

@@ -36,9 +36,8 @@ export class DebuggerContainer implements OnInit, OnDestroy {
 
   readonly runsIds$ = this.store.pipe(
     select(
-      createSelector(
-        getDebuggerRunListing,
-        (runs): string[] => Object.keys(runs)
+      createSelector(getDebuggerRunListing, (runs): string[] =>
+        Object.keys(runs)
       )
     )
   );

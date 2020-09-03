@@ -85,9 +85,7 @@ class TfPrCurveDashboard extends LegacyElementMixin(PolymerElement) {
                 You haven’t written any precision–recall data to your event
                 files.
               </li>
-              <li>
-                TensorBoard can’t find your event files.
-              </li>
+              <li>TensorBoard can’t find your event files.</li>
             </ul>
             <p>
               If you’re new to using TensorBoard, and want to find out how to

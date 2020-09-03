@@ -58,7 +58,5 @@ export function addParams(baseURL: string, params: QueryParams): string {
 
 function _encodeURIComponent(x: string): string {
   // Replace parentheses for consistency with Python's urllib.urlencode.
-  return encodeURIComponent(x)
-    .replace(/\(/g, '%28')
-    .replace(/\)/g, '%29');
+  return encodeURIComponent(x).replace(/\(/g, '%28').replace(/\)/g, '%29');
 }

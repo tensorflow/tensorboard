@@ -44,7 +44,8 @@ export interface VzHistogramTimeseries extends HTMLElement {
 }
 
 @customElement('vz-histogram-timeseries')
-class _VzHistogramTimeseries extends LegacyElementMixin(PolymerElement)
+class _VzHistogramTimeseries
+  extends LegacyElementMixin(PolymerElement)
   implements VzHistogramTimeseries {
   static readonly template = html`
     <div id="tooltip"><span></span></div>
@@ -321,23 +322,23 @@ class _VzHistogramTimeseries extends LegacyElementMixin(PolymerElement)
     var mode = this.mode;
     var color = d3.hcl(this.colorScale(name));
     var tooltip = d3.select(this.$.tooltip);
-    var xAccessor = function(d) {
+    var xAccessor = function (d) {
       return d[xProp];
     };
-    var yAccessor = function(d) {
+    var yAccessor = function (d) {
       return d[yProp];
     };
-    var dxAccessor = function(d) {
+    var dxAccessor = function (d) {
       return d[dxProp];
     };
-    var xRightAccessor = function(d) {
+    var xRightAccessor = function (d) {
       return d[xProp] + d[dxProp];
     };
-    var timeAccessor = function(d) {
+    var timeAccessor = function (d) {
       return d[timeProp];
     };
     if (timeProp === 'relative') {
-      timeAccessor = function(d) {
+      timeAccessor = function (d) {
         return d.wall_time - data[0].wall_time;
       };
     }
@@ -364,20 +365,20 @@ class _VzHistogramTimeseries extends LegacyElementMixin(PolymerElement)
     if (timeProp === 'wall_time') {
       yAxisFormat = d3.timeFormat('%m/%d %X');
     } else if (timeProp === 'relative') {
-      yAxisFormat = function(d: number) {
+      yAxisFormat = function (d: number) {
         return d3.format('.1r')(d / 3.6e6) + 'h'; // Convert to hours.
       };
     }
     //
     // Calculate the extents
     //
-    var xExtents = data.map(function(d, i) {
+    var xExtents = data.map(function (d, i) {
       return [
         d3.min(d[binsProp], xAccessor),
         d3.max(d[binsProp], xRightAccessor),
       ];
     });
-    var yExtents = data.map(function(d) {
+    var yExtents = data.map(function (d) {
       return d3.extent(d[binsProp], yAccessor);
     });
     //
@@ -393,7 +394,7 @@ class _VzHistogramTimeseries extends LegacyElementMixin(PolymerElement)
       .scaleLinear()
       .domain([
         0,
-        d3.max(data, function(d, i) {
+        d3.max(data, function (d, i) {
           return yExtents[i][1];
         }),
       ])
@@ -405,10 +406,10 @@ class _VzHistogramTimeseries extends LegacyElementMixin(PolymerElement)
     var xScale = d3
       .scaleLinear()
       .domain([
-        d3.min(data, function(d, i) {
+        d3.min(data, function (d, i) {
           return xExtents[i][0];
         }),
-        d3.max(data, function(d, i) {
+        d3.max(data, function (d, i) {
           return xExtents[i][1];
         }),
       ])
@@ -433,18 +434,18 @@ class _VzHistogramTimeseries extends LegacyElementMixin(PolymerElement)
       .ticks(Math.max(2, height / 15))
       .tickSize(width + 5)
       .tickFormat(format);
-    var xBinCentroid = function(d) {
+    var xBinCentroid = function (d) {
       return d[xProp] + d[dxProp] / 2;
     };
     var linePath = d3
       .line()
-      .x(function(d) {
+      .x(function (d) {
         return xLineScale(xBinCentroid(d));
       })
-      .y(function(d) {
+      .y(function (d) {
         return yLineScale(d[yProp]);
       });
-    var path = function(d) {
+    var path = function (d) {
       // Draw a line from 0 to the first point and from the last point to 0.
       return (
         'M' +
@@ -467,13 +468,13 @@ class _VzHistogramTimeseries extends LegacyElementMixin(PolymerElement)
     var svgTransition = svg.transition().duration(duration);
     var g = svg
       .select('g')
-      .classed('small', function() {
+      .classed('small', function () {
         return width > 0 && width <= 150;
       })
-      .classed('medium', function() {
+      .classed('medium', function () {
         return width > 150 && width <= 300;
       })
-      .classed('large', function() {
+      .classed('large', function () {
         return width > 300;
       });
     var gTransition = svgTransition
@@ -482,14 +483,14 @@ class _VzHistogramTimeseries extends LegacyElementMixin(PolymerElement)
     var bisect = d3.bisector(xRightAccessor).left;
     var stage = g
       .select('.stage')
-      .on('mouseover', function() {
+      .on('mouseover', function () {
         hoverUpdate.style('opacity', 1);
         xAxisHoverUpdate.style('opacity', 1);
         yAxisHoverUpdate.style('opacity', 1);
         ySliceAxisHoverUpdate.style('opacity', 1);
         tooltip.style('opacity', 1);
       })
-      .on('mouseout', function() {
+      .on('mouseout', function () {
         hoverUpdate.style('opacity', 0);
         xAxisHoverUpdate.style('opacity', 0);
         yAxisHoverUpdate.style('opacity', 0);
@@ -506,16 +507,13 @@ class _VzHistogramTimeseries extends LegacyElementMixin(PolymerElement)
       .attr('height', outerHeight);
     var histogram = stage.selectAll('.histogram').data(data),
       histogramExit = histogram.exit().remove(),
-      histogramEnter = histogram
-        .enter()
-        .append('g')
-        .attr('class', 'histogram'),
-      histogramUpdate = histogramEnter.merge(histogram).sort(function(a, b) {
+      histogramEnter = histogram.enter().append('g').attr('class', 'histogram'),
+      histogramUpdate = histogramEnter.merge(histogram).sort(function (a, b) {
         return timeAccessor(a) - timeAccessor(b);
       }),
       histogramTransition = gTransition
         .selectAll('.histogram')
-        .attr('transform', function(d) {
+        .attr('transform', function (d) {
           return (
             'translate(0, ' +
             (mode === 'offset' ? yScale(timeAccessor(d)) - sliceHeight : 0) +
@@ -525,7 +523,7 @@ class _VzHistogramTimeseries extends LegacyElementMixin(PolymerElement)
     var baselineEnter = histogramEnter.append('line').attr('class', 'baseline'),
       baselineUpdate = histogramTransition
         .select('.baseline')
-        .style('stroke-opacity', function(d) {
+        .style('stroke-opacity', function (d) {
           return mode === 'offset' ? 0.1 : 0;
         })
         .attr('y1', sliceHeight)
@@ -535,7 +533,7 @@ class _VzHistogramTimeseries extends LegacyElementMixin(PolymerElement)
       outlineUpdate = histogramUpdate
         .select('.outline')
         .attr('vector-effect', 'non-scaling-stroke')
-        .attr('d', function(d) {
+        .attr('d', function (d) {
           return path(d[binsProp]);
         })
         .style('stroke-width', 1),
@@ -549,34 +547,25 @@ class _VzHistogramTimeseries extends LegacyElementMixin(PolymerElement)
             sliceHeight / outlineCanvasSize +
             ')'
         )
-        .style('stroke', function(d) {
+        .style('stroke', function (d) {
           return mode === 'offset' ? 'white' : outlineColor(timeAccessor(d));
         })
-        .style('fill-opacity', function(d) {
+        .style('fill-opacity', function (d) {
           return mode === 'offset' ? 1 : 0;
         })
-        .style('fill', function(d) {
+        .style('fill', function (d) {
           return outlineColor(timeAccessor(d));
         });
     var hoverEnter = histogramEnter.append('g').attr('class', 'hover');
     var hoverUpdate = histogramUpdate
       .select('.hover')
-      .style('fill', function(d) {
+      .style('fill', function (d) {
         return outlineColor(timeAccessor(d));
       });
     hoverEnter.append('circle').attr('r', 2);
-    hoverEnter
-      .append('text')
-      .style('display', 'none')
-      .attr('dx', 4);
-    var xAxisHover = g
-        .select('.x-axis-hover')
-        .selectAll('.label')
-        .data(['x']),
-      xAxisHoverEnter = xAxisHover
-        .enter()
-        .append('g')
-        .attr('class', 'label'),
+    hoverEnter.append('text').style('display', 'none').attr('dx', 4);
+    var xAxisHover = g.select('.x-axis-hover').selectAll('.label').data(['x']),
+      xAxisHoverEnter = xAxisHover.enter().append('g').attr('class', 'label'),
       xAxisHoverUpdate = xAxisHover.merge(xAxisHoverEnter);
     xAxisHoverEnter
       .append('rect')
@@ -591,14 +580,8 @@ class _VzHistogramTimeseries extends LegacyElementMixin(PolymerElement)
       .attr('y1', 0)
       .attr('y2', 6);
     xAxisHoverEnter.append('text').attr('dy', 18);
-    var yAxisHover = g
-        .select('.y-axis-hover')
-        .selectAll('.label')
-        .data(['y']),
-      yAxisHoverEnter = yAxisHover
-        .enter()
-        .append('g')
-        .attr('class', 'label'),
+    var yAxisHover = g.select('.y-axis-hover').selectAll('.label').data(['y']),
+      yAxisHoverEnter = yAxisHover.enter().append('g').attr('class', 'label'),
       yAxisHoverUpdate = yAxisHover.merge(yAxisHoverEnter);
     yAxisHoverEnter
       .append('rect')
@@ -612,10 +595,7 @@ class _VzHistogramTimeseries extends LegacyElementMixin(PolymerElement)
       .attr('x2', 6)
       .attr('y1', 0)
       .attr('y2', 0);
-    yAxisHoverEnter
-      .append('text')
-      .attr('dx', 8)
-      .attr('dy', 4);
+    yAxisHoverEnter.append('text').attr('dx', 8).attr('dy', 4);
     var ySliceAxisHover = g
         .select('.y-slice-axis-hover')
         .selectAll('.label')
@@ -637,10 +617,7 @@ class _VzHistogramTimeseries extends LegacyElementMixin(PolymerElement)
       .attr('x2', 6)
       .attr('y1', 0)
       .attr('y2', 0);
-    ySliceAxisHoverEnter
-      .append('text')
-      .attr('dx', 8)
-      .attr('dy', 4);
+    ySliceAxisHoverEnter.append('text').attr('dx', 8).attr('dy', 4);
     gTransition
       .select('.y.axis.slice')
       .style('opacity', mode === 'offset' ? 0 : 1)
@@ -673,7 +650,7 @@ class _VzHistogramTimeseries extends LegacyElementMixin(PolymerElement)
       var closestSliceData;
       var closestSliceDistance = Infinity;
       var lastSliceData;
-      hoverUpdate.attr('transform', function(d, i) {
+      hoverUpdate.attr('transform', function (d, i) {
         var index = hoverXIndex(d);
         lastSliceData = d;
         var x = xScale(
@@ -689,19 +666,19 @@ class _VzHistogramTimeseries extends LegacyElementMixin(PolymerElement)
         }
         return 'translate(' + x + ',' + y + ')';
       });
-      hoverUpdate.select('text').text(function(d) {
+      hoverUpdate.select('text').text(function (d) {
         var index = hoverXIndex(d);
         return d[binsProp][index][yProp];
       });
-      hoverUpdate.classed('hover-closest', function(d) {
+      hoverUpdate.classed('hover-closest', function (d) {
         return d === closestSliceData;
       });
-      outlineUpdate.classed('outline-hover', function(d) {
+      outlineUpdate.classed('outline-hover', function (d) {
         return d === closestSliceData;
       });
       var index = hoverXIndex(lastSliceData);
       xAxisHoverUpdate
-        .attr('transform', function(d) {
+        .attr('transform', function (d) {
           return (
             'translate(' +
             xScale(
@@ -714,7 +691,7 @@ class _VzHistogramTimeseries extends LegacyElementMixin(PolymerElement)
           );
         })
         .select('text')
-        .text(function(d) {
+        .text(function (d) {
           return format(
             lastSliceData[binsProp][index][xProp] +
               lastSliceData[binsProp][index][dxProp] / 2
@@ -722,7 +699,7 @@ class _VzHistogramTimeseries extends LegacyElementMixin(PolymerElement)
         });
       var fy = yAxis.tickFormat();
       yAxisHoverUpdate
-        .attr('transform', function(d) {
+        .attr('transform', function (d) {
           return (
             'translate(' +
             width +
@@ -733,12 +710,12 @@ class _VzHistogramTimeseries extends LegacyElementMixin(PolymerElement)
         })
         .style('display', mode === 'offset' ? '' : 'none')
         .select('text')
-        .text(function(d) {
+        .text(function (d) {
           return fy(timeAccessor(closestSliceData));
         });
       var fsy = ySliceAxis.tickFormat();
       ySliceAxisHoverUpdate
-        .attr('transform', function(d) {
+        .attr('transform', function (d) {
           return (
             'translate(' +
             width +
@@ -751,7 +728,7 @@ class _VzHistogramTimeseries extends LegacyElementMixin(PolymerElement)
         })
         .style('display', mode === 'offset' ? 'none' : '')
         .select('text')
-        .text(function(d) {
+        .text(function (d) {
           return fsy(closestSliceData[binsProp][index][yProp]);
         });
       var svgMouse = d3.mouse(svgNode);

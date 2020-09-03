@@ -241,7 +241,10 @@ namespace tf_backend {
 
         // When the first request rejects, it should decrement nActiveRequests
         // and then launch remaining requests in queue (i.e. this one)
-        r1.then((success) => done(), (failure) => done(new Error(failure)));
+        r1.then(
+          (success) => done(),
+          (failure) => done(new Error(failure))
+        );
       });
 
       it('queue is LIFO', (done) => {
@@ -312,9 +315,7 @@ namespace tf_backend {
           );
           done();
         };
-        rm.request('0')
-          .then(success, failure)
-          .then(finishTheTest);
+        rm.request('0').then(success, failure).then(finishTheTest);
         rm.request('1').then(success, failure);
         rm.request('2').then(success, failure);
         rm.request('3').then(success, failure);
@@ -334,7 +335,7 @@ namespace tf_backend {
         });
       });
 
-      it('throws an error when a GET request has a body', function() {
+      it('throws an error when a GET request has a body', function () {
         const rm = new RequestManager();
         const badOptions = new RequestOptions();
         badOptions.methodType = HttpMethodType.GET;
@@ -345,20 +346,20 @@ namespace tf_backend {
         );
       });
 
-      describe('tests using sinon.fakeServer', function() {
+      describe('tests using sinon.fakeServer', function () {
         let server;
 
-        beforeEach(function() {
+        beforeEach(function () {
           server = sinon.fakeServer.create();
           server.respondImmediately = true;
           server.respondWith('{}');
         });
 
-        afterEach(function() {
+        afterEach(function () {
           server.restore();
         });
 
-        it('builds correct XMLHttpRequest when request(url) is called', function() {
+        it('builds correct XMLHttpRequest when request(url) is called', function () {
           const rm = new RequestManager();
           return rm.request('my_url').then(() => {
             chai.assert.lengthOf(server.requests, 1);
@@ -372,7 +373,7 @@ namespace tf_backend {
           });
         });
 
-        it('builds correct XMLHttpRequest when request(url, postData) is called', function() {
+        it('builds correct XMLHttpRequest when request(url, postData) is called', function () {
           const rm = new RequestManager();
           return rm
             .request('my_url', {key1: 'value1', key2: 'value2'})
@@ -383,12 +384,15 @@ namespace tf_backend {
               chai.assert.instanceOf(server.requests[0].requestBody, FormData);
               chai.assert.sameDeepMembers(
                 Array.from(server.requests[0].requestBody.entries()),
-                [['key1', 'value1'], ['key2', 'value2']]
+                [
+                  ['key1', 'value1'],
+                  ['key2', 'value2'],
+                ]
               );
             });
         });
 
-        it('builds correct XMLHttpRequest when requestWithOptions is called', function() {
+        it('builds correct XMLHttpRequest when requestWithOptions is called', function () {
           const rm = new RequestManager();
           const requestOptions = new RequestOptions();
           requestOptions.methodType = HttpMethodType.POST;
@@ -408,11 +412,11 @@ namespace tf_backend {
       });
 
       describe('fetch', () => {
-        beforeEach(function() {
+        beforeEach(function () {
           this.stubbedFetch = sandbox.stub(window, 'fetch');
           this.clock = sandbox.useFakeTimers();
 
-          this.resolvesAfter = function(
+          this.resolvesAfter = function (
             value: any,
             timeInMs: number
           ): Promise<any> {
@@ -422,7 +426,7 @@ namespace tf_backend {
           };
         });
 
-        it('resolves', async function() {
+        it('resolves', async function () {
           this.stubbedFetch.returns(
             Promise.resolve(new Response('Success', {status: 200}))
           );
@@ -436,7 +440,7 @@ namespace tf_backend {
           expect(body).to.equal('Success');
         });
 
-        it('retries', async function() {
+        it('retries', async function () {
           this.stubbedFetch
             .onCall(0)
             .returns(Promise.resolve(new Response('Error 1', {status: 500})));
@@ -456,7 +460,7 @@ namespace tf_backend {
           expect(body).to.equal('Success');
         });
 
-        it('gives up after max retries', async function() {
+        it('gives up after max retries', async function () {
           const failure = new Response('Error', {status: 500});
           this.stubbedFetch.returns(Promise.resolve(failure));
           const rm = new RequestManager();
@@ -470,7 +474,7 @@ namespace tf_backend {
           expect(body).to.equal('Error');
         });
 
-        it('sends requests concurrently', async function() {
+        it('sends requests concurrently', async function () {
           this.stubbedFetch
             .onCall(0)
             .returns(
@@ -496,7 +500,7 @@ namespace tf_backend {
           expect(firstBody).to.equal('nay');
         });
 
-        it('queues requests', async function() {
+        it('queues requests', async function () {
           this.stubbedFetch
             .onCall(0)
             .returns(

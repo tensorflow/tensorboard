@@ -164,14 +164,10 @@ class TfHparamsQueryPane extends LegacyElementMixin(PolymerElement) {
             on-selected-item-changed="_queryServer"
           >
             <template is="dom-repeat" items="[[_hparams]]" as="hparam">
-              <paper-item>
-                [[_hparamName(hparam.info)]]
-              </paper-item>
+              <paper-item> [[_hparamName(hparam.info)]] </paper-item>
             </template>
             <template is="dom-repeat" items="[[_metrics]]" as="metric">
-              <paper-item>
-                [[_metricName(metric.info)]]
-              </paper-item>
+              <paper-item> [[_metricName(metric.info)]] </paper-item>
             </template>
           </paper-listbox>
         </paper-dropdown-menu>
@@ -204,9 +200,7 @@ class TfHparamsQueryPane extends LegacyElementMixin(PolymerElement) {
             invalid="[[_pageNumberInput.invalid]]"
             on-value-changed="_queryServer"
           >
-            <div slot="suffix" class="page-suffix">
-              / [[_pageCountStr]]
-            </div>
+            <div slot="suffix" class="page-suffix">/ [[_pageCountStr]]</div>
           </paper-input>
         </div>
         <div class="inline-element page-size-input">

@@ -339,8 +339,10 @@ export class TensorWidgetImpl implements TensorWidget {
       } as SingleActionMenuItemConfig);
     }
     if (this.menuConfig !== null && this.menuConfig.items.length > 0) {
-      this.menu = new Menu(this.menuConfig, this
-        .headerSection as HTMLDivElement);
+      this.menu = new Menu(
+        this.menuConfig,
+        this.headerSection as HTMLDivElement
+      );
       this.renderMenuThumb();
     }
   }
