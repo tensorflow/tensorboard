@@ -34,6 +34,7 @@ import {ValueData} from '../../../store/npmi_types';
       [maxCount]="maxCount"
       [activeMetrics]="activeMetrics"
       [annotation]="annotation"
+      [runHeight]="runHeight"
       [selectedAnnotations]="selectedAnnotations$ | async"
       [flaggedAnnotations]="flaggedAnnotations$ | async"
       [hiddenAnnotations]="hiddenAnnotations$ | async"
@@ -47,6 +48,7 @@ export class AnnotationContainer {
   @Input() maxCount!: number;
   @Input() activeMetrics!: string[];
   @Input() annotation!: string;
+  @Input() runHeight!: number;
 
   readonly flaggedAnnotations$ = this.store.select(getFlaggedAnnotations);
   readonly hiddenAnnotations$ = this.store.select(getHiddenAnnotations);

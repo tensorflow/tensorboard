@@ -44,6 +44,7 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
   @Input() activeMetrics!: string[];
   @Input() showCounts!: boolean;
   @Input() annotation!: string;
+  @Input() runHeight!: number;
   @ViewChild('chart', {static: true, read: ElementRef})
   private readonly annotationContainer!: ElementRef<HTMLDivElement>;
   @ViewChild('hintClip', {static: true, read: ElementRef})
@@ -53,6 +54,9 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
   private height: number = 10;
   private chartWidth: number = 10;
   private chartHeight: number = 10;
+  private readonly maxDotRadius = 10;
+  private readonly countDotOffset = 70;
+  private readonly countTextPadding = 2;
   private readonly margin = {top: 0, right: 0, bottom: 0, left: 100};
   private readonly strokeColor = '#fff';
   private textClass = 'default-text';
@@ -113,7 +117,7 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
     this.xScale = d3.scalePoint<string>().padding(0);
     this.yScale = d3.scalePoint<string>().padding(0);
     this.sizeScale = d3.scaleLinear().domain([0.0, 1.0]);
-    this.countSizeScale = d3.scaleLinear().range([2, 10]);
+    this.countSizeScale = d3.scaleLinear().range([2, this.maxDotRadius]);
     this.mainContainer = this.svg
       .append('g')
       .attr('transform', `translate(${this.margin.left}, ${this.margin.top})`);
@@ -144,8 +148,8 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
     const runs = new Set<string>();
     this.data.forEach((element) => runs.add(element.run));
     this.runs = [...runs];
-    this.svg.style('height', this.runs.length * 30 + 'px');
-    this.height = this.runs.length * 30;
+    this.svg.style('height', this.runs.length * this.runHeight + 'px');
+    this.height = this.runs.length * this.runHeight;
     this.width = this.annotationContainer.nativeElement.clientWidth || 10;
     this.chartWidth = this.width - this.margin.left - this.margin.right;
     this.chartHeight = this.height - this.margin.top - this.margin.bottom;
@@ -169,7 +173,7 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
       .domain(this.activeMetrics.map((d) => stripMetricString(d)));
 
     this.yScale
-      .rangeRound([0, this.chartHeight - 30])
+      .rangeRound([0, this.chartHeight - this.runHeight])
       .domain(this.runs.map((d: string) => d));
 
     this.sizeScale.range([0, this.chartWidth / this.activeMetrics.length]);
@@ -331,13 +335,13 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
       .attr(
         'cx',
         function(this: AnnotationComponent, d: ValueData) {
-          return this.xScale(d.metric)! + 70;
+          return this.xScale(d.metric)! + this.countDotOffset;
         }.bind(this)
       )
       .attr(
         'cy',
         function(this: AnnotationComponent, d: ValueData) {
-          return this.yScale(d.run)! + 15;
+          return this.yScale(d.run)! + this.runHeight / 2.0;
         }.bind(this)
       )
       .attr(
@@ -380,7 +384,7 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
       .attr(
         'y',
         function(this: AnnotationComponent, d: ValueData) {
-          return this.yScale(d.run)! + 15;
+          return this.yScale(d.run)! + this.runHeight / 2.0;
         }.bind(this)
       )
       .text((d: ValueData) => {
@@ -415,7 +419,7 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
       .attr(
         'y',
         function(this: AnnotationComponent, d: ValueData) {
-          return this.yScale(d.run)! + 15;
+          return this.yScale(d.run)! + this.runHeight / 2.0;
         }.bind(this)
       )
       .text((d: ValueData) => {
@@ -449,13 +453,18 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
       .attr(
         'x',
         function(this: AnnotationComponent, d: ValueData) {
-          return this.xScale(d.metric)! + 82;
+          return (
+            this.xScale(d.metric)! +
+            this.countDotOffset +
+            this.countTextPadding +
+            this.maxDotRadius
+          );
         }.bind(this)
       )
       .attr(
         'y',
         function(this: AnnotationComponent, d: ValueData) {
-          return this.yScale(d.run)! + 15;
+          return this.yScale(d.run)! + this.runHeight / 2.0;
         }.bind(this)
       )
       .text((d: ValueData) => {
@@ -483,13 +492,18 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
       .attr(
         'x',
         function(this: AnnotationComponent, d: ValueData) {
-          return this.xScale(d.metric)! + 82;
+          return (
+            this.xScale(d.metric)! +
+            this.countDotOffset +
+            this.countTextPadding +
+            this.maxDotRadius
+          );
         }.bind(this)
       )
       .attr(
         'y',
         function(this: AnnotationComponent, d: ValueData) {
-          return this.yScale(d.run)! + 15;
+          return this.yScale(d.run)! + this.runHeight / 2.0;
         }.bind(this)
       )
       .text((d: ValueData) => {

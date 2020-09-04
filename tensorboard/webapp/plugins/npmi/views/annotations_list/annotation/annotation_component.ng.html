@@ -38,8 +38,10 @@ limitations under the License.
 </div>
 <div #chart class="chart-div">
   <svg class="chart-svg">
-    <clipPath id="hint-clip" #hintClip>
-      <rect x="0" y="0"></rect>
-    </clipPath>
+    <defs>
+      <clipPath id="hint-clip" #hintClip>
+        <rect x="0" y="0"></rect>
+      </clipPath>
+    </defs>
   </svg>
 </div>

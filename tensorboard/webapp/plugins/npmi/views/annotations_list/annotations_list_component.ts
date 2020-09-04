@@ -39,6 +39,7 @@ export class AnnotationsListComponent {
   @Input() selectedAnnotations!: string[];
   @Input() maxCount!: number;
   @Output() onRowClick = new EventEmitter<string[]>();
+  readonly runHeight = 30;
 
   rowClicked(event: MouseEvent, annotation: string) {
     // Shift pressed, handle multiple annotations

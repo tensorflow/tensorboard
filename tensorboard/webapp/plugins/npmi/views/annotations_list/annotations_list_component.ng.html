@@ -27,7 +27,7 @@ limitations under the License.
   >
   </npmi-annotations-list-header>
   <cdk-virtual-scroll-viewport
-    itemSize="{{activeRuns.length * 30 + 30}}"
+    itemSize="{{activeRuns.length * runHeight + 30}}"
     class="annotation-rows"
   >
     <npmi-annotation
@@ -36,6 +36,7 @@ limitations under the License.
       [activeMetrics]="activeMetrics"
       [maxCount]="maxCount"
       [annotation]="annotation"
+      [runHeight]="runHeight"
       (click)="rowClicked($event, annotation)"
     >
     </npmi-annotation>
