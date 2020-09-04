@@ -39,6 +39,7 @@ limitations under the License.
   ></div>
   <div *ngIf="runActive === true; else noRun" class="analysis-container">
     <npmi-annotations-list></npmi-annotations-list>
+    <npmi-selected-annotations></npmi-selected-annotations>
   </div>
   <ng-template #noRun>
     <div class="noRun">You need to select at least one run.</div>
@@ -46,7 +47,12 @@ limitations under the License.
 </div>
 
 <div *ngIf="!sidebarExpanded" class="side-toggle">
-  <button mat-icon-button (click)="toggleSidebarExpanded.emit()">
+  <button
+    mat-icon-button
+    (click)="toggleSidebarExpanded.emit()"
+    aria-label="Toggle Sidebar"
+    i18n-aria-label="Label for a button that toggles the sidebar."
+  >
     <mat-icon svgIcon="chevron_right_24px"></mat-icon>
   </button>
 </div>

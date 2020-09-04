@@ -12,13 +12,23 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-@import 'tensorboard/webapp/theme/tb_theme';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+} from '@angular/core';
 
-:host {
-  background-color: mat-color($tb-background, card);
-  border: 1px solid mat-color($tb-foreground, border);
-  display: flex;
-  flex-direction: column;
-  height: calc(100% - 2px); // Because of Border
-  width: calc(100% - 2px); // Because of Boder
+@Component({
+  selector: 'selected-annotations-component',
+  templateUrl: './selected_annotations_component.ng.html',
+  styleUrls: ['./selected_annotations_component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class SelectedAnnotationsComponent {
+  @Input() pcExpanded!: boolean;
+  @Input() selectedAnnotations!: string[];
+  @Output() onClearSelectedAnnotations = new EventEmitter();
+  @Output() onToggleExpanded = new EventEmitter();
 }
