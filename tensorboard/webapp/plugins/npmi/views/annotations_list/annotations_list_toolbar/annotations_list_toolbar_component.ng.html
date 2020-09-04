@@ -24,6 +24,8 @@ limitations under the License.
     >
       <button
         mat-icon-button
+        aria-label="Flag Selected Annotations"
+        i18n-aria-label="Label for a button that flags selected annotations."
         (click)="onFlagAnnotations.emit(selectedAnnotations)"
         [disabled]="selectedAnnotations.length === 0"
       >
@@ -37,6 +39,8 @@ limitations under the License.
     >
       <button
         mat-icon-button
+        aria-label="Hide Selected Annotations"
+        i18n-aria-label="Label for a button that hides selected annotations."
         (click)="onHideAnnotations.emit(selectedAnnotations)"
         [disabled]="selectedAnnotations.length === 0"
       >
@@ -68,7 +72,13 @@ limitations under the License.
   </mat-slide-toggle>
   <npmi-annotations-search></npmi-annotations-search>
 </ng-container>
-<button class="expand-button" mat-icon-button (click)="onToggleExpanded.emit()">
+<button
+  class="expand-button"
+  mat-icon-button
+  aria-label="Hides/Shows the Annotations List"
+  i18n-aria-label="Label for a button that hides/shows the annotations list."
+  (click)="onToggleExpanded.emit()"
+>
   <mat-icon
     [svgIcon]="expanded ? 'expand_less_24px' : 'expand_more_24px'"
   ></mat-icon>

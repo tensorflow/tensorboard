@@ -14,25 +14,17 @@ limitations under the License.
 ==============================================================================*/
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
-import {ScrollingModule} from '@angular/cdk/scrolling';
+import {FormsModule} from '@angular/forms';
 
-import {AnnotationsListComponent} from './annotations_list_component';
-import {AnnotationsListContainer} from './annotations_list_container';
-import {AnnotationsListToolbarModule} from './annotations_list_toolbar/annotations_list_toolbar_module';
-import {HeaderModule} from './header/header_module';
-import {LegendModule} from './legend/legend_module';
-import {AnnotationModule} from './annotation/annotation_module';
+import {MatCheckboxModule} from '@angular/material/checkbox';
+import {MatIconModule} from '@angular/material/icon';
+
+import {AnnotationComponent} from './annotation_component';
+import {AnnotationContainer} from './annotation_container';
 
 @NgModule({
-  declarations: [AnnotationsListComponent, AnnotationsListContainer],
-  imports: [
-    CommonModule,
-    AnnotationsListToolbarModule,
-    HeaderModule,
-    LegendModule,
-    ScrollingModule,
-    AnnotationModule,
-  ],
-  exports: [AnnotationsListContainer],
+  declarations: [AnnotationContainer, AnnotationComponent],
+  imports: [CommonModule, FormsModule, MatCheckboxModule, MatIconModule],
+  exports: [AnnotationContainer],
 })
-export class AnnotationsListModule {}
+export class AnnotationModule {}

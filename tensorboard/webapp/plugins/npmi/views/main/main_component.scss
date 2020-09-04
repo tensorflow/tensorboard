@@ -78,3 +78,9 @@ limitations under the License.
   overflow: hidden;
   background-color: grey;
 }
+
+.annotations-list {
+  width: 100%;
+  min-height: 0px;
+  flex: 1 1;
+}
