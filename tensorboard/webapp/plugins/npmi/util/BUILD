@@ -90,7 +90,24 @@ ng_module(
         "coordinate_data.ts",
     ],
     deps = [
-        ":metric_type",
         "//tensorboard/webapp/plugins/npmi/store:types",
+    ],
+)
+
+tf_ts_library(
+    name = "coordinate_data_test_lib",
+    testonly = True,
+    srcs = ["coordinate_data_test.ts"],
+    deps = [
+        ":coordinate_data",
+        "//tensorboard/webapp/angular:expect_angular_core_testing",
+        "//tensorboard/webapp/core/testing",
+        "//tensorboard/webapp/plugins/npmi/store:types",
+        "@npm//@angular/common",
+        "@npm//@angular/compiler",
+        "@npm//@angular/core",
+        "@npm//@angular/platform-browser",
+        "@npm//@types/jasmine",
+        "@npm//rxjs",
     ],
 )

@@ -74,6 +74,7 @@ describe('Npmi Annotations List Container', () => {
   it('renders annotation', () => {
     const fixture = TestBed.createComponent(AnnotationContainer);
     fixture.componentInstance.activeMetrics = ['nPMI@test', 'nPMI@other'];
+    fixture.componentInstance.runHeight = 30;
     fixture.componentInstance.data = [
       {
         annotation: 'annotation_1',
@@ -159,6 +160,7 @@ describe('Npmi Annotations List Container', () => {
     store.overrideSelector(getSelectedAnnotations, ['annotation_1']);
     const fixture = TestBed.createComponent(AnnotationContainer);
     fixture.componentInstance.activeMetrics = ['nPMI@test', 'nPMI@other'];
+    fixture.componentInstance.runHeight = 30;
     fixture.componentInstance.data = [
       {
         annotation: 'annotation_1',
@@ -202,6 +204,7 @@ describe('Npmi Annotations List Container', () => {
     store.overrideSelector(getFlaggedAnnotations, ['annotation_1']);
     const fixture = TestBed.createComponent(AnnotationContainer);
     fixture.componentInstance.activeMetrics = ['nPMI@test', 'nPMI@other'];
+    fixture.componentInstance.runHeight = 30;
     fixture.componentInstance.data = [
       {
         annotation: 'annotation_1',
@@ -249,6 +252,7 @@ describe('Npmi Annotations List Container', () => {
     store.overrideSelector(getHiddenAnnotations, ['annotation_1']);
     const fixture = TestBed.createComponent(AnnotationContainer);
     fixture.componentInstance.activeMetrics = ['nPMI@test', 'nPMI@other'];
+    fixture.componentInstance.runHeight = 30;
     fixture.componentInstance.data = [
       {
         annotation: 'annotation_1',
@@ -295,6 +299,7 @@ describe('Npmi Annotations List Container', () => {
     store.overrideSelector(getFlaggedAnnotations, ['annotation_1']);
     const fixture = TestBed.createComponent(AnnotationContainer);
     fixture.componentInstance.activeMetrics = ['nPMI@test', 'nPMI@other'];
+    fixture.componentInstance.runHeight = 30;
     fixture.componentInstance.data = [
       {
         annotation: 'annotation_1',
@@ -348,6 +353,7 @@ describe('Npmi Annotations List Container', () => {
     store.overrideSelector(getShowCounts, false);
     const fixture = TestBed.createComponent(AnnotationContainer);
     fixture.componentInstance.activeMetrics = ['nPMI@test', 'nPMI@other'];
+    fixture.componentInstance.runHeight = 30;
     fixture.componentInstance.data = [
       {
         annotation: 'annotation_1',

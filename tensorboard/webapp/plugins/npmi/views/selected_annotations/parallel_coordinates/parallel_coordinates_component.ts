@@ -10,6 +10,7 @@ import {
 } from '@angular/core';
 import * as d3 from 'd3';
 import {Coordinate} from '../../../util/coordinate_data';
+import {ValueData} from './../../../store/npmi_types';
 
 @Component({
   selector: 'parallel-coordinates-component',
@@ -63,12 +64,6 @@ export class ParallelCoordinatesComponent implements AfterViewInit, OnChanges {
     HTMLElement | null,
     undefined
   >;
-  private gys: d3.Selection<
-    SVGGElement,
-    unknown,
-    HTMLElement | null,
-    undefined
-  >[] = [];
   // Scales
   private xScale!: d3.ScalePoint<string>;
   private yScale!: d3.ScaleLinear<number, number>;
@@ -108,9 +103,7 @@ export class ParallelCoordinatesComponent implements AfterViewInit, OnChanges {
   }
 
   private updateAxes() {
-    this.xScale
-      .rangeRound([0, this.chartWidth])
-      .domain(this.activeMetrics.map((d) => d));
+    this.xScale.rangeRound([0, this.chartWidth]).domain(this.activeMetrics);
     this.yScale.domain([
       this.coordinateData.extremes.min,
       this.coordinateData.extremes.max,
@@ -120,8 +113,8 @@ export class ParallelCoordinatesComponent implements AfterViewInit, OnChanges {
   private draw() {
     this.drawAxes();
     this.drawAxisLabels();
-    // this.drawCoordinates();
-    // this.drawLabels();
+    this.drawCoordinates();
+    this.drawLabels();
   }
 
   private drawAxes() {
@@ -129,24 +122,17 @@ export class ParallelCoordinatesComponent implements AfterViewInit, OnChanges {
       .selectAll<SVGGElement, unknown>('.axis-y')
       .data(this.activeMetrics);
 
-    const axisEnters = axes
-      .enter()
-      .append('g')
-      .attr('class', 'axis-y');
+    const axisEnters = axes.enter().append('g').attr('class', 'axis-y');
 
     axisEnters
       .merge(axes)
       .attr(
         'transform',
-        function(this: ParallelCoordinatesComponent, d: string) {
+        function (this: ParallelCoordinatesComponent, d: string) {
           return `translate(${this.xScale(d)}, 0)`;
         }.bind(this)
       )
       .call(this.yAxis!);
-
-    const gys = this.axisGroup
-      .selectAll<SVGGElement, unknown>('.axis-y')
-      .data(this.activeMetrics);
 
     axes.exit().remove();
   }
@@ -170,7 +156,7 @@ export class ParallelCoordinatesComponent implements AfterViewInit, OnChanges {
       .text((d: string) => d)
       .attr(
         'transform',
-        function(this: ParallelCoordinatesComponent, d: string) {
+        function (this: ParallelCoordinatesComponent, d: string) {
           return `translate(${this.xScale(d)! - 5}, ${this.yScale(
             this.coordinateData.extremes.min
           )}) rotate(-90)`;
@@ -180,7 +166,7 @@ export class ParallelCoordinatesComponent implements AfterViewInit, OnChanges {
     axisBackgroundTexts.exit().remove();
 
     const axisTexts = this.axisGroup
-      .selectAll<SVGGElement, unknown>('.axis-text')
+      .selectAll<SVGTextElement, unknown>('.axis-text')
       .data(this.activeMetrics);
 
     const axisTextEnters = axisTexts
@@ -190,11 +176,11 @@ export class ParallelCoordinatesComponent implements AfterViewInit, OnChanges {
       .attr('class', 'axis-text');
 
     axisTextEnters
-      .merge(axisBackgroundTexts)
+      .merge(axisTexts)
       .text((d: string) => d)
       .attr(
         'transform',
-        function(this: ParallelCoordinatesComponent, d: string) {
+        function (this: ParallelCoordinatesComponent, d: string) {
           return `translate(${this.xScale(d)! - 5}, ${this.yScale(
             this.coordinateData.extremes.min
           )}) rotate(-90)`;
@@ -204,89 +190,126 @@ export class ParallelCoordinatesComponent implements AfterViewInit, OnChanges {
     axisTexts.exit().remove();
   }
 
-  // private drawCoordinates() {
-  //   let data = this.coordinatesData;
-  //   // Draw the coordinate paths
-  //   this.coordinatesGroup
-  //     .selectAll('.coord')
-  //     .data(data)
-  //     .join('path')
-  //     .attr('class', 'coord')
-  //     .attr('fill', 'none')
-  //     .attr('d', this.path.bind(this))
-  //     .attr(
-  //       'stroke',
-  //       function(this: ParallelCoordinatesComponent, d: Coordinate) {
-  //         const index = this.allRuns.indexOf(d.runId);
-  //         return `rgba(${this.rgbColors[index]}, 1.0)`;
-  //       }.bind(this)
-  //     );
-  //   // Draw invisible paths for a broader hover area
-  //   this.coordinatesGroup
-  //     .selectAll('.hiddenCoord')
-  //     .data(data)
-  //     .join('path')
-  //     .attr('class', 'hiddenCoord')
-  //     .attr('stroke-width', '10px')
-  //     .attr('fill', 'none')
-  //     .attr('d', this.path.bind(this))
-  //     .attr('stroke', 'rgba(0, 0, 0, 0.0)')
-  //     .on('mouseover', this.handleCoordinateMouseOver.bind(this))
-  //     .on('mouseout', this.handleCoordinateMouseOut.bind(this));
-  // }
+  private drawCoordinates() {
+    // Draw the coordinate paths
+    const coords = this.coordinatesGroup
+      .selectAll<SVGPathElement, unknown>('.coord')
+      .data(this.coordinateData.coordinates);
 
-  // private drawLabels() {
-  //   const interpolationFactor = 30 / this.xScale.step();
-  //   let data = this.coordinatesData.length < 30 ? this.coordinatesData : [];
-  //   this.labelsGroup
-  //     .selectAll('.label')
-  //     .data(data)
-  //     .join('text')
-  //     .attr('class', 'label')
-  //     .text(function(d: Coordinate) {
-  //       return d.annotation;
-  //     })
-  //     .attr('font-size', '10px')
-  //     .attr('x', this.xScale(this.allMetrics[0]) + 30)
-  //     .attr(
-  //       'y',
-  //       function(this: ParallelCoordinatesComponent, d: Coordinate) {
-  //         return (
-  //           (1 - interpolationFactor) * this.yScale(d.data[0].value) +
-  //           interpolationFactor * this.yScale(d.data[1].value)
-  //         );
-  //       }.bind(this)
-  //     );
-  // }
+    const coordEnters = coords
+      .enter()
+      .append('path')
+      .attr('class', 'coord')
+      .attr('fill', 'none');
 
-  // private path(d: Coordinate) {
-  //   return d3.line()(
-  //     d.data.map(
-  //       function(this: any, p: CoordinateData) {
-  //         let yPos = this.yScale(p.value);
-  //         return [this.xScale(p.metric), yPos] as [number, number];
-  //       }.bind(this)
-  //     )
-  //   );
-  // }
+    coordEnters
+      .merge(coords)
+      .attr('d', this.path.bind(this))
+      .attr(
+        'stroke',
+        function (this: ParallelCoordinatesComponent, d: Coordinate) {
+          return `rgba(${this.rgbColors[0]}, 1.0)`;
+        }.bind(this)
+      );
 
-  // private handleCoordinateMouseOver(this: any, d: Coordinate, i: number) {
-  //   this.labelsGroup
-  //     .selectAll('.label')
-  //     .filter(function(x: Coordinate) {
-  //       return !(x.annotation === d.annotation);
-  //     })
-  //     .style('opacity', 0.1);
-  //   this.coordinatesGroup
-  //     .selectAll('.coord')
-  //     .filter(function(x: Coordinate) {
-  //       return !(x.annotation === d.annotation);
-  //     })
-  //     .style('opacity', 0.1);
-  // }
+    coords.exit().remove();
 
-  // private handleCoordinateMouseOut(this: any) {
-  //   this.labelsGroup.selectAll('.label').style('opacity', 1.0);
-  //   this.coordinatesGroup.selectAll('.coord').style('opacity', 1.0);
-  // }
+    // Draw invisible paths for a broader hover area
+    const hiddenCoords = this.coordinatesGroup
+      .selectAll<SVGPathElement, unknown>('.hiddenCoord')
+      .data(this.coordinateData.coordinates);
+
+    const hiddenCoordEnters = hiddenCoords
+      .enter()
+      .append('path')
+      .attr('class', 'hiddenCoord')
+      .attr('stroke-width', '10px')
+      .attr('fill', 'none')
+      .attr('stroke', 'rgba(0, 0, 0, 0.0)')
+      .on('mouseover', this.handleCoordinateMouseOver.bind(this))
+      .on('mouseout', this.handleCoordinateMouseOut.bind(this));
+
+    hiddenCoordEnters.merge(hiddenCoords).attr('d', this.path.bind(this));
+
+    hiddenCoords.exit().remove();
+  }
+
+  private path(d: Coordinate) {
+    const sorted = d.values.sort(
+      (a, b) =>
+        this.activeMetrics.indexOf(a.metric) -
+        this.activeMetrics.indexOf(b.metric)
+    );
+    return d3.line()(
+      d.values.map(
+        function (this: any, p: ValueData) {
+          let yPos = this.yScale(p.nPMIValue);
+          return [this.xScale(p.metric), yPos] as [number, number];
+        }.bind(this)
+      )
+    );
+  }
+
+  private handleCoordinateMouseOver(
+    this: ParallelCoordinatesComponent,
+    d: Coordinate,
+    i: number
+  ) {
+    this.labelsGroup
+      .selectAll<SVGTextElement, Coordinate>('.coordinate-label')
+      .filter(function (x: Coordinate) {
+        return !(x.annotation === d.annotation);
+      })
+      .style('opacity', 0.1);
+    this.coordinatesGroup
+      .selectAll<SVGPathElement, Coordinate>('.coord')
+      .filter(function (x: Coordinate) {
+        return !(x.annotation === d.annotation);
+      })
+      .style('opacity', 0.1);
+  }
+
+  private handleCoordinateMouseOut(this: ParallelCoordinatesComponent) {
+    this.labelsGroup.selectAll('.coordinate-label').style('opacity', 1.0);
+    this.coordinatesGroup.selectAll('.coord').style('opacity', 1.0);
+  }
+
+  private drawLabels() {
+    const interpolationFactor = 30 / this.xScale.step();
+    const data =
+      this.coordinateData.coordinates.length < 30
+        ? this.coordinateData.coordinates
+        : [];
+
+    const coordinateLabels = this.labelsGroup
+      .selectAll<SVGTextElement, unknown>('.coordinate-label')
+      .data(data);
+
+    const coordinateLabelEnters = coordinateLabels
+      .enter()
+      .append('text')
+      .attr('class', 'coordinate-label')
+      .attr('font-size', '10px');
+
+    coordinateLabelEnters
+      .merge(coordinateLabels)
+      .text(function (d: Coordinate) {
+        return d.annotation;
+      })
+      .attr('x', this.xScale(this.activeMetrics[0])! + 30)
+      .attr(
+        'y',
+        function (this: ParallelCoordinatesComponent, d: Coordinate) {
+          const y0 = this.yScale(
+            d.values[0].nPMIValue ? d.values[0].nPMIValue : 0
+          );
+          const y1 = this.yScale(
+            d.values[1].nPMIValue ? d.values[1].nPMIValue : 0
+          );
+          return (1 - interpolationFactor) * y0 + interpolationFactor * y1;
+        }.bind(this)
+      );
+
+    coordinateLabels.exit().remove();
+  }
 }

@@ -14,6 +14,7 @@ import {
 import {getRunSelection} from '../../../../../core/store/core_selectors';
 import {metricIsNpmiAndNotDiff} from '../../../util/metric_type';
 import {coordinateData} from '../../../util/coordinate_data';
+import {stripMetricString} from '../../../util/metric_type';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
@@ -51,7 +52,7 @@ export class ParallelCoordinatesContainer {
         }
       }
       metrics = [...new Set([...Object.keys(metricFilters), ...metrics])];
-      return metrics;
+      return metrics.map((metric) => stripMetricString(metric));
     })
   );
   readonly coordinateData$ = combineLatest([
