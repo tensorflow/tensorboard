@@ -14,11 +14,22 @@ limitations under the License.
 ==============================================================================*/
 @import 'tensorboard/webapp/theme/tb_theme';
 
-:host {
+.pc-container {
   background-color: mat-color($tb-background, card);
   border: 1px solid mat-color($tb-foreground, border);
+}
+
+.pc-toolbar {
+  align-items: center;
+  border-bottom: 1px solid mat-color($tb-foreground, border);
   display: flex;
-  flex-direction: column;
-  height: calc(100% - 2px); // Because of Border
-  width: calc(100% - 2px); // Because of Boder
+  height: 42px;
+  padding: 0 16px;
+}
+
+.pc-title {
+  font-size: 14px;
+  font-weight: 500;
+  display: inline;
+  flex: 1 1;
 }

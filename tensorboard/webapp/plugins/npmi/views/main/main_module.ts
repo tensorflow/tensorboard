@@ -26,6 +26,7 @@ import {RunsModule} from '../../../../runs/runs_module';
 import {DataSelectionModule} from './../data_selection/data_selection_module';
 import {ViolinFiltersModule} from './../violin_filters/violin_filters_module';
 import {AnnotationsListModule} from '../annotations_list/annotations_list_module';
+import {SelectedAnnotationsModule} from './../selected_annotations/selected_annotations_module';
 
 @NgModule({
   declarations: [MainComponent, MainContainer],
@@ -39,6 +40,7 @@ import {AnnotationsListModule} from '../annotations_list/annotations_list_module
     MatButtonModule,
     ViolinFiltersModule,
     AnnotationsListModule,
+    SelectedAnnotationsModule,
   ],
   exports: [MainContainer],
 })
