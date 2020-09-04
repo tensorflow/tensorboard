@@ -140,17 +140,17 @@ export class ViolinFilterComponent implements AfterViewInit, OnChanges {
   private readonly area = d3
     .area<ViolinBin>()
     .x0(
-      function (this: ViolinFilterComponent, d: ViolinBin) {
+      function(this: ViolinFilterComponent, d: ViolinBin) {
         return this.xScaleNum(-d.length);
       }.bind(this)
     )
     .x1(
-      function (this: ViolinFilterComponent, d: ViolinBin) {
+      function(this: ViolinFilterComponent, d: ViolinBin) {
         return this.xScaleNum(d.length);
       }.bind(this)
     )
     .y(
-      function (this: ViolinFilterComponent, d: ViolinBin) {
+      function(this: ViolinFilterComponent, d: ViolinBin) {
         if (d.x0! === -Infinity) {
           return this.chartHeight - this.drawMargin.top;
         }
@@ -161,7 +161,6 @@ export class ViolinFilterComponent implements AfterViewInit, OnChanges {
 
   ngAfterViewInit(): void {
     this.svg = d3.select(this.chartContainer.nativeElement).select('svg');
-    this.svg;
     this.mainContainer = this.svg
       .append('g')
       .attr('transform', `translate(${this.margin.left}, ${this.margin.top})`);
@@ -265,7 +264,7 @@ export class ViolinFilterComponent implements AfterViewInit, OnChanges {
       .attr('class', 'violin-plot')
       .style(
         'stroke',
-        function (
+        function(
           this: ViolinFilterComponent,
           d: [string, ViolinBin[]]
         ): string {
@@ -274,7 +273,7 @@ export class ViolinFilterComponent implements AfterViewInit, OnChanges {
       )
       .style(
         'fill',
-        function (
+        function(
           this: ViolinFilterComponent,
           d: [string, ViolinBin[]]
         ): string {
@@ -283,14 +282,14 @@ export class ViolinFilterComponent implements AfterViewInit, OnChanges {
       )
       .attr(
         'transform',
-        function (
+        function(
           this: ViolinFilterComponent,
           d: [string, ViolinBin[]]
         ): string {
           return `translate(${this.xScale(d[0])}, 0)`;
         }.bind(this)
       )
-      .datum(function (d: [string, ViolinBin[]]): ViolinBin[] {
+      .datum(function(d: [string, ViolinBin[]]): ViolinBin[] {
         return d[1];
       })
       .attr('d', this.area);
@@ -298,14 +297,14 @@ export class ViolinFilterComponent implements AfterViewInit, OnChanges {
     plots
       .attr(
         'transform',
-        function (
+        function(
           this: ViolinFilterComponent,
           d: [string, ViolinBin[]]
         ): string {
           return `translate(${this.xScale(d[0])}, 0)`;
         }.bind(this)
       )
-      .datum(function (d: [string, ViolinBin[]]): ViolinBin[] {
+      .datum(function(d: [string, ViolinBin[]]): ViolinBin[] {
         return d[1];
       })
       .attr('d', this.area);
