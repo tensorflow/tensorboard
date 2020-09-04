@@ -3,7 +3,7 @@ load("//tensorboard/defs:defs.bzl", "tf_sass_binary", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
-licenses(["notice"])  # Apache 2.0
+licenses(["notice"])
 
 tf_sass_binary(
     name = "parallel_coordinates_component_styles",
@@ -29,7 +29,6 @@ ng_module(
         "//tensorboard/webapp/plugins/npmi/util:coordinate_data",
         "//tensorboard/webapp/plugins/npmi/util:metric_type",
         "@npm//@angular/core",
-        "@npm//@angular/material",
         "@npm//@ngrx/store",
         "@npm//@types/d3",
         "@npm//d3",
