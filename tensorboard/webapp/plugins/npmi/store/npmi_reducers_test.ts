@@ -275,29 +275,47 @@ describe('npmi_reducers', () => {
   });
 
   describe('Annotation Selection', () => {
-    it('selects annotations without adding duplcates to the selection', () => {
-      const state = createNpmiState({
-        selectedAnnotations: ['annotation_1'],
-      });
+    it('selects annotations when no annotation is already selected', () => {
+      const state = createNpmiState();
       const nextState = reducers(
         state,
-        actions.npmiAddSelectedAnnotations({
-          annotations: ['annotation_1', 'annotation_2'],
+        actions.npmiToggleSelectedAnnotations({
+          annotations: ['annotation_1', 'annotation_2', 'annotation_3'],
         })
       );
       expect(nextState.selectedAnnotations).toEqual([
         'annotation_1',
         'annotation_2',
+        'annotation_3',
       ]);
     });
 
-    it('removes a selected annotation', () => {
+    it('selects annotations with some already selected', () => {
       const state = createNpmiState({
-        selectedAnnotations: ['annotation_1', 'annotation_2'],
+        selectedAnnotations: ['annotation_1', 'annotation_3'],
       });
       const nextState = reducers(
         state,
-        actions.npmiRemoveSelectedAnnotation({annotation: 'annotation_1'})
+        actions.npmiToggleSelectedAnnotations({
+          annotations: ['annotation_1', 'annotation_2', 'annotation_3'],
+        })
+      );
+      expect(nextState.selectedAnnotations).toEqual([
+        'annotation_1',
+        'annotation_3',
+        'annotation_2',
+      ]);
+    });
+
+    it('deselects a set of annotations if they are all selected', () => {
+      const state = createNpmiState({
+        selectedAnnotations: ['annotation_1', 'annotation_2', 'annotation_3'],
+      });
+      const nextState = reducers(
+        state,
+        actions.npmiToggleSelectedAnnotations({
+          annotations: ['annotation_1', 'annotation_3'],
+        })
       );
       expect(nextState.selectedAnnotations).toEqual(['annotation_2']);
     });

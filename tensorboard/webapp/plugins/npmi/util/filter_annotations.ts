@@ -45,7 +45,9 @@ export function filterAnnotations(
     if (
       checkArithmeticParts(metricArithmetic, metricFilters, valueDataElements)
     ) {
-      data[entry[0]] = valueDataElements;
+      if (valueDataElements.length !== 0) {
+        data[entry[0]] = valueDataElements;
+      }
     }
   });
   return data;
@@ -54,9 +56,9 @@ export function filterAnnotations(
 export function removeHiddenAnnotations(
   annotationData: AnnotationDataListing,
   hiddenAnnotations: string[],
-  removeHidden: boolean
+  showHidden: boolean
 ): AnnotationDataListing {
-  if (!removeHidden) {
+  if (showHidden) {
     return annotationData;
   }
   const data = annotationData;
@@ -76,7 +78,7 @@ function checkArithmeticParts(
     }
     const metricFilter = metricFilters[element.metric];
     return valueDataElements.some((valueDataElement) => {
-      if (stripMetricString(valueDataElement.metric) === element.metric) {
+      if (valueDataElement.metric === stripMetricString(element.metric)) {
         if (!valueDataElement.nPMIValue && metricFilter.includeNaN) {
           return true;
         } else {

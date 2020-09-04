@@ -44,14 +44,9 @@ export const npmiPluginDataRequestFailed = createAction(
   '[NPMI] nPMI Plugin Data Request Failed'
 );
 
-export const npmiAddSelectedAnnotations = createAction(
-  '[NPMI] Adding Annotations to Selected',
+export const npmiToggleSelectedAnnotations = createAction(
+  '[NPMI] Adding/Removing Annotations to/from Selected',
   props<{annotations: string[]}>()
-);
-
-export const npmiRemoveSelectedAnnotation = createAction(
-  '[NPMI] Annotation Removed from Selected',
-  props<{annotation: string}>()
 );
 
 export const npmiSetSelectedAnnotations = createAction(

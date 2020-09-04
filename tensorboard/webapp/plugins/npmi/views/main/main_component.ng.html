@@ -38,7 +38,7 @@ limitations under the License.
     (mousedown)="resizeGrabbed.emit()"
   ></div>
   <div *ngIf="runActive === true; else noRun" class="analysis-container">
-    <npmi-annotations-list></npmi-annotations-list>
+    <npmi-annotations-list class="annotations-list"></npmi-annotations-list>
     <npmi-selected-annotations></npmi-selected-annotations>
   </div>
   <ng-template #noRun>

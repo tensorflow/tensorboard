@@ -27,6 +27,8 @@ import {
   getShowHiddenAnnotations,
   getHiddenAnnotations,
   getAnnotationsExpanded,
+  getSelectedAnnotations,
+  getAnnotationSorting,
 } from '../../store';
 import {getRunSelection} from '../../../../core/store/core_selectors';
 import {
@@ -34,6 +36,8 @@ import {
   removeHiddenAnnotations,
 } from '../../util/filter_annotations';
 import {metricIsNpmiAndNotDiff} from '../../util/metric_type';
+import * as npmiActions from '../../actions';
+import {sortAnnotations} from '../../util/sort_annotations';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
@@ -45,6 +49,11 @@ import {metricIsNpmiAndNotDiff} from '../../util/metric_type';
       [annotationsExpanded]="annotationsExpanded$ | async"
       [numAnnotations]="numAnnotations$ | async"
       [activeMetrics]="activeMetrics$ | async"
+      [activeRuns]="activeRuns$ | async"
+      [sortedAnnotations]="sortedAnnotations$ | async"
+      [selectedAnnotations]="selectedAnnotations$ | async"
+      [maxCount]="maxCount$ | async"
+      (onRowClick)="rowClicked($event)"
     ></annotations-list-component>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -61,11 +70,11 @@ export class AnnotationsListContainer {
         .map((run) => run[0]);
     })
   );
-  readonly activeMetrics$ = combineLatest(
+  readonly activeMetrics$ = combineLatest([
     this.store.select(getRunToMetrics),
     this.activeRuns$,
-    this.store.select(getMetricFilters)
-  ).pipe(
+    this.store.select(getMetricFilters),
+  ]).pipe(
     map(([runToMetrics, activeRuns, metricFilters]) => {
       let metrics: string[] = [];
       for (const run of activeRuns) {
@@ -79,11 +88,11 @@ export class AnnotationsListContainer {
       return metrics;
     })
   );
-  readonly visibleAnnotations$ = combineLatest(
+  readonly visibleAnnotations$ = combineLatest([
     this.store.select(getAnnotationData),
     this.store.select(getHiddenAnnotations),
-    this.store.select(getShowHiddenAnnotations)
-  ).pipe(
+    this.store.select(getShowHiddenAnnotations),
+  ]).pipe(
     map(([annotationData, hiddenAnnotations, showHiddenAnnotations]) => {
       return removeHiddenAnnotations(
         annotationData,
@@ -92,13 +101,13 @@ export class AnnotationsListContainer {
       );
     })
   );
-  readonly filteredAnnotations$ = combineLatest(
+  readonly filteredAnnotations$ = combineLatest([
     this.visibleAnnotations$,
     this.store.select(getMetricArithmetic),
     this.store.select(getMetricFilters),
     this.activeRuns$,
-    this.activeMetrics$
-  )
+    this.activeMetrics$,
+  ])
     .pipe(
       map(
         ([
@@ -124,6 +133,36 @@ export class AnnotationsListContainer {
       return Object.keys(annotations).length;
     })
   );
+  readonly sortedAnnotations$ = combineLatest([
+    this.filteredAnnotations$,
+    this.store.pipe(select(getAnnotationSorting)),
+  ]).pipe(
+    map(([annotations, sorting]) => {
+      return sortAnnotations(annotations, sorting);
+    })
+  );
+  readonly selectedAnnotations$ = this.store.pipe(
+    select(getSelectedAnnotations)
+  );
+  readonly maxCount$ = this.filteredAnnotations$.pipe(
+    map((annotations) => {
+      let max = 0;
+      Object.values(annotations).forEach((annotation) => {
+        annotation.forEach((values) => {
+          if (values.countValue) {
+            max = Math.max(max, values.countValue);
+          }
+        });
+      });
+      return max;
+    })
+  );
 
   constructor(private readonly store: Store<State>) {}
+
+  rowClicked(annotations: string[]) {
+    this.store.dispatch(
+      npmiActions.npmiToggleSelectedAnnotations({annotations})
+    );
+  }
 }

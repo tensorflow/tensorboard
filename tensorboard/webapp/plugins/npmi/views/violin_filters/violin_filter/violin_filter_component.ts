@@ -161,7 +161,6 @@ export class ViolinFilterComponent implements AfterViewInit, OnChanges {
 
   ngAfterViewInit(): void {
     this.svg = d3.select(this.chartContainer.nativeElement).select('svg');
-    this.svg;
     this.mainContainer = this.svg
       .append('g')
       .attr('transform', `translate(${this.margin.left}, ${this.margin.top})`);

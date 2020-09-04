@@ -42,19 +42,43 @@ tf_ts_library(
     srcs = ["violin_data_test.ts"],
     deps = [
         ":violin_data",
-        "//tensorboard/webapp:app_state",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
-        "//tensorboard/webapp/angular:expect_ngrx_store_testing",
-        "//tensorboard/webapp/core/store",
         "//tensorboard/webapp/core/testing",
         "//tensorboard/webapp/plugins/npmi/store:types",
-        "//tensorboard/webapp/runs",
-        "//tensorboard/webapp/testing:mat_icon",
         "@npm//@angular/common",
         "@npm//@angular/compiler",
         "@npm//@angular/core",
         "@npm//@angular/platform-browser",
-        "@npm//@ngrx/store",
+        "@npm//@types/jasmine",
+        "@npm//rxjs",
+    ],
+)
+
+ng_module(
+    name = "sort_annotations",
+    srcs = [
+        "sort_annotations.ts",
+    ],
+    deps = [
+        ":metric_type",
+        "//tensorboard/webapp/plugins/npmi/store:types",
+        "//tensorboard/webapp/third_party:d3",
+    ],
+)
+
+tf_ts_library(
+    name = "sort_annotations_test_lib",
+    testonly = True,
+    srcs = ["sort_annotations_test.ts"],
+    deps = [
+        ":sort_annotations",
+        "//tensorboard/webapp/angular:expect_angular_core_testing",
+        "//tensorboard/webapp/core/testing",
+        "//tensorboard/webapp/plugins/npmi/store:types",
+        "@npm//@angular/common",
+        "@npm//@angular/compiler",
+        "@npm//@angular/core",
+        "@npm//@angular/platform-browser",
         "@npm//@types/jasmine",
         "@npm//rxjs",
     ],
