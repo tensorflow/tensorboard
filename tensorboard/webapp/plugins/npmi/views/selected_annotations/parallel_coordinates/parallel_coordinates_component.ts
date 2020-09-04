@@ -25,47 +25,68 @@ export class ParallelCoordinatesComponent implements AfterViewInit, OnChanges {
   @Input() activeMetrics!: string[];
   @ViewChild('chart', {static: true, read: ElementRef})
   private readonly svgElement!: ElementRef<SVGElement>;
-
-  private readonly height: number = 300;
   private width: number = 0;
-  private margin = {top: 20, right: 40, bottom: 20, left: 40};
-  private backgroundMargin = {top: 10, right: 10, bottom: 10, left: 10};
-  get chartWidth(): number {
-    return this.width - this.margin.left - this.margin.right;
-  }
-  get chartHeight(): number {
-    return this.height - this.margin.top - this.margin.bottom;
-  }
-  // group containers (X axis, Y axis and coordinates)
-  private axisGroup: any;
-  private gys: any[] = [];
-  // Scales and Axis
-  private xScale: any;
-  private yAxis: any;
-  private yScale: any;
+  private chartWidth: number = 0;
+  private readonly height: number = 300;
+  private readonly margin = {top: 20, right: 40, bottom: 20, left: 40};
+  private readonly chartHeight =
+    this.height - this.margin.top - this.margin.bottom;
   // Drawing containers
-  private svg: any;
-  private mainContainer: any;
-  private coordinatesGroup: any;
-  private labelsGroup: any;
-  private backgroundGroup: any;
-  private rgbColors = ['240, 120, 80', '46, 119, 182', '190, 64, 36'];
+  private svg!: d3.Selection<
+    SVGElement,
+    unknown,
+    HTMLElement | null,
+    undefined
+  >;
+  private mainContainer!: d3.Selection<
+    SVGGElement,
+    unknown,
+    HTMLElement | null,
+    undefined
+  >;
+  private coordinatesGroup!: d3.Selection<
+    SVGGElement,
+    unknown,
+    HTMLElement | null,
+    undefined
+  >;
+  private labelsGroup!: d3.Selection<
+    SVGGElement,
+    unknown,
+    HTMLElement | null,
+    undefined
+  >;
+  // Scales and Axis
+  private axisGroup!: d3.Selection<
+    SVGGElement,
+    unknown,
+    HTMLElement | null,
+    undefined
+  >;
+  private gys: d3.Selection<
+    SVGGElement,
+    unknown,
+    HTMLElement | null,
+    undefined
+  >[] = [];
+  // Scales
+  private xScale!: d3.ScalePoint<string>;
+  private yScale!: d3.ScaleLinear<number, number>;
+  private yAxis?: d3.Axis<number | {valueOf(): number}>;
+
+  private readonly rgbColors = ['240, 120, 80', '46, 119, 182', '190, 64, 36'];
 
   ngAfterViewInit(): void {
     this.svg = d3.select(this.svgElement.nativeElement);
-    this.xScale = d3.scalePoint();
-    this.yScale = d3.scaleLinear();
-    this.backgroundGroup = this.svg.append('g').attr(
-      'transform',
-      `translate(${this.backgroundMargin.left},
-                   ${this.backgroundMargin.top})`
-    );
     this.mainContainer = this.svg
       .append('g')
       .attr('transform', `translate(${this.margin.left}, ${this.margin.top})`);
     this.coordinatesGroup = this.mainContainer.append('g');
     this.labelsGroup = this.mainContainer.append('g');
     this.axisGroup = this.mainContainer.append('g');
+    this.xScale = d3.scalePoint<string>().padding(0.1);
+    this.yScale = d3.scaleLinear().range([this.chartHeight, 0]);
+    this.yAxis = d3.axisRight(this.yScale);
     this.redraw();
   }
 
@@ -76,75 +97,111 @@ export class ParallelCoordinatesComponent implements AfterViewInit, OnChanges {
   }
 
   private redraw() {
-    this.width = this.svgElement.nativeElement.clientWidth || 10;
+    this.updateDimensions();
     this.updateAxes();
     this.draw();
   }
 
-  private updateAxes() {
-    this.xScale = d3.scalePoint();
-    this.yScale = d3.scaleLinear();
+  private updateDimensions() {
+    this.width = this.svgElement.nativeElement.clientWidth || 10;
+    this.chartWidth = this.width - this.margin.left - this.margin.right;
+  }
 
+  private updateAxes() {
     this.xScale
       .rangeRound([0, this.chartWidth])
-      .padding(0.1)
       .domain(this.activeMetrics.map((d) => d));
-    this.yScale
-      .range([this.chartHeight, 0])
-      .domain([
-        this.coordinateData.extremes.min,
-        this.coordinateData.extremes.max,
-      ]);
-    this.yAxis = d3.axisRight(this.yScale);
+    this.yScale.domain([
+      this.coordinateData.extremes.min,
+      this.coordinateData.extremes.max,
+    ]);
   }
 
   private draw() {
-    this.drawAxis();
+    this.drawAxes();
+    this.drawAxisLabels();
     // this.drawCoordinates();
     // this.drawLabels();
   }
 
-  private drawAxis() {
-    this.gys = [];
-    this.axisGroup.selectAll('*').remove();
-    for (const it of this.activeMetrics) {
-      this.gys.push(this.axisGroup.append('g').attr('class', 'axis axis--y'));
-    }
-    for (const it in this.activeMetrics) {
-      if (this.activeMetrics[it]) {
-        this.gys[it]
-          .attr(
-            'transform',
-            `translate(${this.xScale(this.activeMetrics[it])}, 0)`
-          )
-          .call(this.yAxis);
-        this.drawAxisLabel(this.gys[it], parseInt(it));
-      }
-    }
+  private drawAxes() {
+    const axes = this.axisGroup
+      .selectAll<SVGGElement, unknown>('.axis-y')
+      .data(this.activeMetrics);
+
+    const axisEnters = axes
+      .enter()
+      .append('g')
+      .attr('class', 'axis-y');
+
+    axisEnters
+      .merge(axes)
+      .attr(
+        'transform',
+        function(this: ParallelCoordinatesComponent, d: string) {
+          return `translate(${this.xScale(d)}, 0)`;
+        }.bind(this)
+      )
+      .call(this.yAxis!);
+
+    const gys = this.axisGroup
+      .selectAll<SVGGElement, unknown>('.axis-y')
+      .data(this.activeMetrics);
+
+    axes.exit().remove();
   }
 
-  private drawAxisLabel(group: any, iterator: number) {
-    group
+  private drawAxisLabels() {
+    const axisBackgroundTexts = this.axisGroup
+      .selectAll<SVGTextElement, unknown>('.axis-bg-text')
+      .data(this.activeMetrics);
+
+    const axisBackgroundTextEnters = axisBackgroundTexts
+      .enter()
       .append('text')
+      .attr('class', 'axis-bg-text')
+      .attr('font-size', '13px')
       .attr('stroke-width', 2)
       .attr('stroke-linejoin', 'round')
-      .attr('stroke', 'white')
-      .text(this.activeMetrics[iterator])
+      .attr('stroke', 'white');
+
+    axisBackgroundTextEnters
+      .merge(axisBackgroundTexts)
+      .text((d: string) => d)
       .attr(
         'transform',
-        `translate(-5, ${this.yScale(this.coordinateData.extremes.min)})
-                                    rotate(-90)`
+        function(this: ParallelCoordinatesComponent, d: string) {
+          return `translate(${this.xScale(d)! - 5}, ${this.yScale(
+            this.coordinateData.extremes.min
+          )}) rotate(-90)`;
+        }.bind(this)
       );
-    group
+
+    axisBackgroundTexts.exit().remove();
+
+    const axisTexts = this.axisGroup
+      .selectAll<SVGGElement, unknown>('.axis-text')
+      .data(this.activeMetrics);
+
+    const axisTextEnters = axisTexts
+      .enter()
       .append('text')
-      .attr('text-anchor', 'start')
-      .style('fill', 'black')
-      .text(this.activeMetrics[iterator])
+      .attr('font-size', '13px')
+      .attr('class', 'axis-text');
+
+    axisTextEnters
+      .merge(axisBackgroundTexts)
+      .text((d: string) => d)
       .attr(
         'transform',
-        `translate(-5, ${this.yScale(this.coordinateData.extremes.min)})
-                                    rotate(-90)`
+        function(this: ParallelCoordinatesComponent, d: string) {
+          return `translate(${this.xScale(d)! - 5}, ${this.yScale(
+            this.coordinateData.extremes.min
+          )}) rotate(-90)`;
+        }.bind(this)
       );
+
+    axisTexts.exit().remove();
   }
 
   // private drawCoordinates() {
