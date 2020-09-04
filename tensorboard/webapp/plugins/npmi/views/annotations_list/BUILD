@@ -25,6 +25,7 @@ ng_module(
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp/angular:expect_angular_cdk_scrolling",
         "//tensorboard/webapp/core/store",
+        "//tensorboard/webapp/plugins/npmi/actions",
         "//tensorboard/webapp/plugins/npmi/store",
         "//tensorboard/webapp/plugins/npmi/store:types",
         "//tensorboard/webapp/plugins/npmi/util:filter_annotations",

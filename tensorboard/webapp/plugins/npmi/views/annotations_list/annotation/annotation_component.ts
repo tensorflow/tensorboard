@@ -110,7 +110,7 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
   private sizeScale!: d3.ScaleLinear<number, number>;
   private countSizeScale!: d3.ScaleLinear<number, number>;
 
-  private rgbColors = ['240, 120, 80', '46, 119, 182', '190, 64, 36'];
+  private readonly rgbColors = ['240, 120, 80', '46, 119, 182', '190, 64, 36'];
 
   ngAfterViewInit(): void {
     this.svg = d3.select(this.annotationContainer.nativeElement).select('svg');
@@ -146,9 +146,11 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
   // Initializing/Updating the visualization props.
   private updateDimensions() {
     const runs = new Set<string>();
-    this.data.forEach((element) => runs.add(element.run));
+    this.data.forEach((element) => {
+      runs.add(element.run);
+    });
     this.runs = [...runs];
-    this.svg.style('height', this.runs.length * this.runHeight + 'px');
+    this.svg.style('height', `${this.runs.length * this.runHeight}px`);
     this.height = this.runs.length * this.runHeight;
     this.width = this.annotationContainer.nativeElement.clientWidth || 10;
     this.chartWidth = this.width - this.margin.left - this.margin.right;

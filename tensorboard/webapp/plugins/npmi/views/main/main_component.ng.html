@@ -38,12 +38,8 @@ limitations under the License.
     (mousedown)="resizeGrabbed.emit()"
   ></div>
   <div *ngIf="runActive === true; else noRun" class="analysis-container">
-<<<<<<< HEAD
-    <npmi-annotations-list></npmi-annotations-list>
-    <npmi-selected-annotations></npmi-selected-annotations>
-=======
     <npmi-annotations-list class="annotations-list"></npmi-annotations-list>
->>>>>>> 9528030c (Further Implementation of Rows)
+    <npmi-selected-annotations></npmi-selected-annotations>
   </div>
   <ng-template #noRun>
     <div class="noRun">You need to select at least one run.</div>

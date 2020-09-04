@@ -70,11 +70,11 @@ export class AnnotationsListContainer {
         .map((run) => run[0]);
     })
   );
-  readonly activeMetrics$ = combineLatest(
+  readonly activeMetrics$ = combineLatest([
     this.store.select(getRunToMetrics),
     this.activeRuns$,
-    this.store.select(getMetricFilters)
-  ).pipe(
+    this.store.select(getMetricFilters),
+  ]).pipe(
     map(([runToMetrics, activeRuns, metricFilters]) => {
       let metrics: string[] = [];
       for (const run of activeRuns) {
@@ -88,11 +88,11 @@ export class AnnotationsListContainer {
       return metrics;
     })
   );
-  readonly visibleAnnotations$ = combineLatest(
+  readonly visibleAnnotations$ = combineLatest([
     this.store.select(getAnnotationData),
     this.store.select(getHiddenAnnotations),
-    this.store.select(getShowHiddenAnnotations)
-  ).pipe(
+    this.store.select(getShowHiddenAnnotations),
+  ]).pipe(
     map(([annotationData, hiddenAnnotations, showHiddenAnnotations]) => {
       return removeHiddenAnnotations(
         annotationData,
@@ -101,13 +101,13 @@ export class AnnotationsListContainer {
       );
     })
   );
-  readonly filteredAnnotations$ = combineLatest(
+  readonly filteredAnnotations$ = combineLatest([
     this.visibleAnnotations$,
     this.store.select(getMetricArithmetic),
     this.store.select(getMetricFilters),
     this.activeRuns$,
-    this.activeMetrics$
-  )
+    this.activeMetrics$,
+  ])
     .pipe(
       map(
         ([
@@ -133,10 +133,10 @@ export class AnnotationsListContainer {
       return Object.keys(annotations).length;
     })
   );
-  readonly sortedAnnotations$ = combineLatest(
+  readonly sortedAnnotations$ = combineLatest([
     this.filteredAnnotations$,
-    this.store.pipe(select(getAnnotationSorting))
-  ).pipe(
+    this.store.pipe(select(getAnnotationSorting)),
+  ]).pipe(
     map(([annotations, sorting]) => {
       return sortAnnotations(annotations, sorting);
     })
@@ -147,13 +147,13 @@ export class AnnotationsListContainer {
   readonly maxCount$ = this.filteredAnnotations$.pipe(
     map((annotations) => {
       let max = 0;
-      Object.values(annotations).forEach((annotation) =>
+      Object.values(annotations).forEach((annotation) => {
         annotation.forEach((values) => {
           if (values.countValue) {
             max = Math.max(max, values.countValue);
           }
-        })
-      );
+        });
+      });
       return max;
     })
   );
