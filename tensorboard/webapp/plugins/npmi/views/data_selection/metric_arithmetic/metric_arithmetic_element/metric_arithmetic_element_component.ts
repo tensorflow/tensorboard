@@ -20,6 +20,7 @@ import {
   EventEmitter,
   OnDestroy,
   OnInit,
+  SimpleChanges,
 } from '@angular/core';
 import {Validators, FormControl, ValidationErrors} from '@angular/forms';
 import {takeUntil} from 'rxjs/operators';
@@ -76,6 +77,13 @@ export class MetricArithmeticElementComponent implements OnInit, OnDestroy {
           });
         }
       });
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (this.minFormControl && this.maxFormControl) {
+      this.minFormControl.setValue(this.filterValues.min, {emitEvent: false});
+      this.maxFormControl.setValue(this.filterValues.max, {emitEvent: false});
+    }
   }
 
   ngOnDestroy() {
