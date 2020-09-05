@@ -3,7 +3,7 @@ load("//tensorboard/defs:defs.bzl", "tf_sass_binary", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
-licenses(["notice"])  # Apache 2.0
+licenses(["notice"])
 
 tf_sass_binary(
     name = "results_download_component_styles",
@@ -23,12 +23,13 @@ ng_module(
     ],
     deps = [
         "//tensorboard/webapp:app_state",
+        "//tensorboard/webapp/angular:expect_angular_material_button",
+        "//tensorboard/webapp/angular:expect_angular_material_icon",
         "//tensorboard/webapp/plugins/npmi/store",
         "//tensorboard/webapp/plugins/npmi/store:types",
         "//tensorboard/webapp/plugins/npmi/util:csv_result",
         "//tensorboard/webapp/plugins/npmi/util:metric_type",
         "@npm//@angular/core",
-        "@npm//@angular/material",
         "@npm//@ngrx/store",
         "@npm//rxjs",
     ],

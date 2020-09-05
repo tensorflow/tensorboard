@@ -21,8 +21,6 @@ ng_module(
         "data_selection_component.ng.html",
     ],
     deps = [
-        "//tensorboard/webapp/angular:expect_angular_material_button",
-        "//tensorboard/webapp/angular:expect_angular_material_icon",
         "//tensorboard/webapp/plugins/npmi/store",
         "//tensorboard/webapp/plugins/npmi/store:types",
         "//tensorboard/webapp/plugins/npmi/views/data_selection/metric_arithmetic",
