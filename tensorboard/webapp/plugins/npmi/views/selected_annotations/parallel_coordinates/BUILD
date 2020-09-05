@@ -6,31 +6,29 @@ package(default_visibility = ["//tensorboard:internal"])
 licenses(["notice"])
 
 tf_sass_binary(
-    name = "selected_annotations_component_styles",
-    src = "selected_annotations_component.scss",
+    name = "parallel_coordinates_component_styles",
+    src = "parallel_coordinates_component.scss",
 )
 
 ng_module(
-    name = "selected_annotations",
+    name = "parallel_coordinates",
     srcs = [
-        "selected_annotations_component.ts",
-        "selected_annotations_container.ts",
-        "selected_annotations_module.ts",
+        "parallel_coordinates_component.ts",
+        "parallel_coordinates_container.ts",
+        "parallel_coordinates_module.ts",
     ],
     assets = [
-        "selected_annotations_component.ng.html",
-        ":selected_annotations_component_styles",
+        "parallel_coordinates_component.ng.html",
+        ":parallel_coordinates_component_styles",
     ],
     deps = [
         "//tensorboard/webapp:app_state",
-        "//tensorboard/webapp/angular:expect_angular_material_button",
-        "//tensorboard/webapp/angular:expect_angular_material_icon",
-        "//tensorboard/webapp/angular:expect_angular_material_tooltip",
         "//tensorboard/webapp/core/store",
-        "//tensorboard/webapp/plugins/npmi/actions",
         "//tensorboard/webapp/plugins/npmi/store",
         "//tensorboard/webapp/plugins/npmi/store:types",
-        "//tensorboard/webapp/plugins/npmi/views/selected_annotations/parallel_coordinates",
+        "//tensorboard/webapp/plugins/npmi/util:coordinate_data",
+        "//tensorboard/webapp/plugins/npmi/util:metric_type",
+        "//tensorboard/webapp/third_party:d3",
         "@npm//@angular/core",
         "@npm//@ngrx/store",
         "@npm//rxjs",
@@ -38,20 +36,20 @@ ng_module(
 )
 
 tf_ts_library(
-    name = "selected_annotations_test_lib",
+    name = "parallel_coordinates_test_lib",
     testonly = True,
     srcs = [
-        "selected_annotations_test.ts",
+        "parallel_coordinates_test.ts",
     ],
     deps = [
-        ":selected_annotations",
+        ":parallel_coordinates",
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/angular:expect_ngrx_store_testing",
         "//tensorboard/webapp/core/store",
         "//tensorboard/webapp/core/testing",
-        "//tensorboard/webapp/plugins/npmi/actions",
         "//tensorboard/webapp/plugins/npmi/store",
+        "//tensorboard/webapp/plugins/npmi/store:types",
         "//tensorboard/webapp/plugins/npmi/testing",
         "//tensorboard/webapp/runs",
         "@npm//@angular/core",
