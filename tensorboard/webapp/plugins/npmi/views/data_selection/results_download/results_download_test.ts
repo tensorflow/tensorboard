@@ -13,12 +13,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 /**
- * Unit tests for the Selected Annotations.
+ * Unit tests for the Result Downloads.
  */
 import {TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
 
-import {Store, Action} from '@ngrx/store';
+import {Store} from '@ngrx/store';
 import {provideMockStore, MockStore} from '@ngrx/store/testing';
 
 import {State} from '../../../../../app_state';
