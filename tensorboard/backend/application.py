@@ -190,7 +190,7 @@ class TensorBoardWSGI(object):
 
         Args:
           plugins: A list of base_plugin.TBPlugin subclass instances.
-          flags: An argparse.Namespace containing TensorBoard CLI flags.
+          path_prefix: A prefix of the path when app isn't served from root.
           data_provider: `tensorboard.data.provider.DataProvider` or
             `None`; if present, will inform the "active" state of
             `/plugins_listing`.
