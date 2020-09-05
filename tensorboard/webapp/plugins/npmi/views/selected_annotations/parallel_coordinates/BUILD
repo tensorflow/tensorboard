@@ -28,10 +28,9 @@ ng_module(
         "//tensorboard/webapp/plugins/npmi/store:types",
         "//tensorboard/webapp/plugins/npmi/util:coordinate_data",
         "//tensorboard/webapp/plugins/npmi/util:metric_type",
+        "//tensorboard/webapp/third_party:d3",
         "@npm//@angular/core",
         "@npm//@ngrx/store",
-        "@npm//@types/d3",
-        "@npm//d3",
         "@npm//rxjs",
     ],
 )

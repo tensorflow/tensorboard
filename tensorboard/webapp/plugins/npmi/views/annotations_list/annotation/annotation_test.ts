@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {TestBed} from '@angular/core/testing';
+import {TestBed, ComponentFixture} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
 
 import {Action, Store} from '@ngrx/store';
@@ -36,6 +36,45 @@ import {
 describe('Npmi Annotations List Container', () => {
   let store: MockStore<State>;
   let dispatchedActions: Action[];
+  function createComponentInstance(): ComponentFixture<AnnotationContainer> {
+    const fixture = TestBed.createComponent(AnnotationContainer);
+    fixture.componentInstance.data = [
+      {
+        annotation: 'annotation_1',
+        metric: 'test',
+        run: 'run_1',
+        nPMIValue: 0.5178,
+        countValue: 100,
+      },
+      {
+        annotation: 'annotation_1',
+        metric: 'other',
+        run: 'run_1',
+        nPMIValue: 0.02157,
+        countValue: 101,
+      },
+      {
+        annotation: 'annotation_1',
+        metric: 'test',
+        run: 'run_2',
+        nPMIValue: null,
+        countValue: null,
+      },
+      {
+        annotation: 'annotation_1',
+        metric: 'other',
+        run: 'run_2',
+        nPMIValue: -0.1,
+        countValue: 53,
+      },
+    ];
+    fixture.componentInstance.activeMetrics = ['nPMI@test', 'nPMI@other'];
+    fixture.componentInstance.runHeight = 30;
+    fixture.componentInstance.maxCount = 101;
+    fixture.componentInstance.annotation = 'annotation_1';
+    return fixture;
+  }
+
   const css = {
     FLAGGED_ANNOTATION: By.css('.flagged-annotation'),
     HIDDEN_ANNOTATION: By.css('.hidden-annotation'),
@@ -72,41 +111,7 @@ describe('Npmi Annotations List Container', () => {
   });
 
   it('renders annotation', () => {
-    const fixture = TestBed.createComponent(AnnotationContainer);
-    fixture.componentInstance.activeMetrics = ['nPMI@test', 'nPMI@other'];
-    fixture.componentInstance.runHeight = 30;
-    fixture.componentInstance.data = [
-      {
-        annotation: 'annotation_1',
-        metric: 'test',
-        run: 'run_1',
-        nPMIValue: 0.5178,
-        countValue: 100,
-      },
-      {
-        annotation: 'annotation_1',
-        metric: 'other',
-        run: 'run_1',
-        nPMIValue: 0.02157,
-        countValue: 101,
-      },
-      {
-        annotation: 'annotation_1',
-        metric: 'test',
-        run: 'run_2',
-        nPMIValue: null,
-        countValue: null,
-      },
-      {
-        annotation: 'annotation_1',
-        metric: 'other',
-        run: 'run_2',
-        nPMIValue: -0.1,
-        countValue: 53,
-      },
-    ];
-    fixture.componentInstance.maxCount = 101;
-    fixture.componentInstance.annotation = 'annotation_1';
+    const fixture = createComponentInstance();
     fixture.detectChanges();
 
     const flaggedAnnotation = fixture.debugElement.query(
@@ -158,41 +163,7 @@ describe('Npmi Annotations List Container', () => {
 
   it('renders selected annotation', () => {
     store.overrideSelector(getSelectedAnnotations, ['annotation_1']);
-    const fixture = TestBed.createComponent(AnnotationContainer);
-    fixture.componentInstance.activeMetrics = ['nPMI@test', 'nPMI@other'];
-    fixture.componentInstance.runHeight = 30;
-    fixture.componentInstance.data = [
-      {
-        annotation: 'annotation_1',
-        metric: 'test',
-        run: 'run_1',
-        nPMIValue: 0.5178,
-        countValue: 100,
-      },
-      {
-        annotation: 'annotation_1',
-        metric: 'other',
-        run: 'run_1',
-        nPMIValue: 0.02157,
-        countValue: 101,
-      },
-      {
-        annotation: 'annotation_1',
-        metric: 'test',
-        run: 'run_2',
-        nPMIValue: null,
-        countValue: null,
-      },
-      {
-        annotation: 'annotation_1',
-        metric: 'other',
-        run: 'run_2',
-        nPMIValue: -0.1,
-        countValue: 53,
-      },
-    ];
-    fixture.componentInstance.maxCount = 101;
-    fixture.componentInstance.annotation = 'annotation_1';
+    const fixture = createComponentInstance();
     fixture.detectChanges();
 
     const selectedCheckbox = fixture.debugElement.query(css.CHECKBOX);
@@ -202,41 +173,7 @@ describe('Npmi Annotations List Container', () => {
 
   it('renders flagged annotation', () => {
     store.overrideSelector(getFlaggedAnnotations, ['annotation_1']);
-    const fixture = TestBed.createComponent(AnnotationContainer);
-    fixture.componentInstance.activeMetrics = ['nPMI@test', 'nPMI@other'];
-    fixture.componentInstance.runHeight = 30;
-    fixture.componentInstance.data = [
-      {
-        annotation: 'annotation_1',
-        metric: 'test',
-        run: 'run_1',
-        nPMIValue: 0.5178,
-        countValue: 100,
-      },
-      {
-        annotation: 'annotation_1',
-        metric: 'other',
-        run: 'run_1',
-        nPMIValue: 0.02157,
-        countValue: 101,
-      },
-      {
-        annotation: 'annotation_1',
-        metric: 'test',
-        run: 'run_2',
-        nPMIValue: null,
-        countValue: null,
-      },
-      {
-        annotation: 'annotation_1',
-        metric: 'other',
-        run: 'run_2',
-        nPMIValue: -0.1,
-        countValue: 53,
-      },
-    ];
-    fixture.componentInstance.maxCount = 101;
-    fixture.componentInstance.annotation = 'annotation_1';
+    const fixture = createComponentInstance();
     fixture.detectChanges();
 
     const flaggedAnnotation = fixture.debugElement.query(
@@ -250,41 +187,7 @@ describe('Npmi Annotations List Container', () => {
 
   it('renders hidden annotation', () => {
     store.overrideSelector(getHiddenAnnotations, ['annotation_1']);
-    const fixture = TestBed.createComponent(AnnotationContainer);
-    fixture.componentInstance.activeMetrics = ['nPMI@test', 'nPMI@other'];
-    fixture.componentInstance.runHeight = 30;
-    fixture.componentInstance.data = [
-      {
-        annotation: 'annotation_1',
-        metric: 'test',
-        run: 'run_1',
-        nPMIValue: 0.5178,
-        countValue: 100,
-      },
-      {
-        annotation: 'annotation_1',
-        metric: 'other',
-        run: 'run_1',
-        nPMIValue: 0.02157,
-        countValue: 101,
-      },
-      {
-        annotation: 'annotation_1',
-        metric: 'test',
-        run: 'run_2',
-        nPMIValue: null,
-        countValue: null,
-      },
-      {
-        annotation: 'annotation_1',
-        metric: 'other',
-        run: 'run_2',
-        nPMIValue: -0.1,
-        countValue: 53,
-      },
-    ];
-    fixture.componentInstance.maxCount = 101;
-    fixture.componentInstance.annotation = 'annotation_1';
+    const fixture = createComponentInstance();
     fixture.detectChanges();
 
     const hiddenAnnotation = fixture.debugElement.query(css.HIDDEN_ANNOTATION);
@@ -297,41 +200,7 @@ describe('Npmi Annotations List Container', () => {
   it('renders annotation that is both flagged and hidden', () => {
     store.overrideSelector(getHiddenAnnotations, ['annotation_1']);
     store.overrideSelector(getFlaggedAnnotations, ['annotation_1']);
-    const fixture = TestBed.createComponent(AnnotationContainer);
-    fixture.componentInstance.activeMetrics = ['nPMI@test', 'nPMI@other'];
-    fixture.componentInstance.runHeight = 30;
-    fixture.componentInstance.data = [
-      {
-        annotation: 'annotation_1',
-        metric: 'test',
-        run: 'run_1',
-        nPMIValue: 0.5178,
-        countValue: 100,
-      },
-      {
-        annotation: 'annotation_1',
-        metric: 'other',
-        run: 'run_1',
-        nPMIValue: 0.02157,
-        countValue: 101,
-      },
-      {
-        annotation: 'annotation_1',
-        metric: 'test',
-        run: 'run_2',
-        nPMIValue: null,
-        countValue: null,
-      },
-      {
-        annotation: 'annotation_1',
-        metric: 'other',
-        run: 'run_2',
-        nPMIValue: -0.1,
-        countValue: 53,
-      },
-    ];
-    fixture.componentInstance.maxCount = 101;
-    fixture.componentInstance.annotation = 'annotation_1';
+    const fixture = createComponentInstance();
     fixture.detectChanges();
 
     const flaggedAnnotation = fixture.debugElement.query(
@@ -351,41 +220,7 @@ describe('Npmi Annotations List Container', () => {
 
   it('does not render the counts when not active', () => {
     store.overrideSelector(getShowCounts, false);
-    const fixture = TestBed.createComponent(AnnotationContainer);
-    fixture.componentInstance.activeMetrics = ['nPMI@test', 'nPMI@other'];
-    fixture.componentInstance.runHeight = 30;
-    fixture.componentInstance.data = [
-      {
-        annotation: 'annotation_1',
-        metric: 'test',
-        run: 'run_1',
-        nPMIValue: 0.5178,
-        countValue: 100,
-      },
-      {
-        annotation: 'annotation_1',
-        metric: 'other',
-        run: 'run_1',
-        nPMIValue: 0.02157,
-        countValue: 101,
-      },
-      {
-        annotation: 'annotation_1',
-        metric: 'test',
-        run: 'run_2',
-        nPMIValue: null,
-        countValue: null,
-      },
-      {
-        annotation: 'annotation_1',
-        metric: 'other',
-        run: 'run_2',
-        nPMIValue: -0.1,
-        countValue: 53,
-      },
-    ];
-    fixture.componentInstance.maxCount = 101;
-    fixture.componentInstance.annotation = 'annotation_1';
+    const fixture = createComponentInstance();
     fixture.detectChanges();
 
     const dots = fixture.debugElement.queryAll(css.COUNT_DOTS);

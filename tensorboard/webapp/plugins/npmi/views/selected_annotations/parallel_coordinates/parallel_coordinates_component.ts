@@ -22,7 +22,7 @@ import {
   ViewChild,
   ElementRef,
 } from '@angular/core';
-import * as d3 from 'd3';
+import * as d3 from '../../../../../third_party/d3';
 import {Coordinate} from '../../../util/coordinate_data';
 import {ValueData} from './../../../store/npmi_types';
 

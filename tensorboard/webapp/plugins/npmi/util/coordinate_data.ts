@@ -20,7 +20,7 @@ export type Coordinate = {
   values: ValueData[];
 };
 
-export function coordinateData(
+export function convertToCoordinateData(
   annotationData: AnnotationDataListing,
   selectedAnnotations: string[],
   activeRuns: string[],
@@ -28,10 +28,17 @@ export function coordinateData(
 ): {coordinates: Coordinate[]; extremes: {min: number; max: number}} {
   const result: Coordinate[] = [];
   const extremeValues = {max: -1.0, min: 1.0};
+  const allRuns = new Set(activeRuns);
+  const allMetrics = new Set(activeMetrics);
+  if (
+    allRuns.size === 0 ||
+    allMetrics.size === 0 ||
+    Object.keys(annotationData).length === 0
+  ) {
+    return {coordinates: [], extremes: {min: -1.0, max: 1.0}};
+  }
   selectedAnnotations.forEach((annotation) => {
     const data = annotationData[annotation];
-    const allRuns = new Set(activeRuns);
-    const allMetrics = new Set(activeMetrics);
     const runResult: {[runId: string]: ValueData[]} = {};
     data.forEach((entry) => {
       if (!allRuns.has(entry.run) || !allMetrics.has(entry.metric)) {
@@ -58,5 +65,9 @@ export function coordinateData(
       });
     }
   });
+  if (extremeValues.max < extremeValues.min) {
+    extremeValues.max = 1.0;
+    extremeValues.min = -1.0;
+  }
   return {coordinates: result, extremes: extremeValues};
 }
