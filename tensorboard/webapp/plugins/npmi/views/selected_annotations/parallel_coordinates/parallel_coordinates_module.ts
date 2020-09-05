@@ -15,23 +15,12 @@ limitations under the License.
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
 
-import {MatButtonModule} from '@angular/material/button';
-import {MatIconModule} from '@angular/material/icon';
-import {MatTooltipModule} from '@angular/material/tooltip';
-
-import {SelectedAnnotationsComponent} from './selected_annotations_component';
-import {SelectedAnnotationsContainer} from './selected_annotations_container';
-import {ParallelCoordinatesModule} from './parallel_coordinates/parallel_coordinates_module';
+import {ParallelCoordinatesComponent} from './parallel_coordinates_component';
+import {ParallelCoordinatesContainer} from './parallel_coordinates_container';
 
 @NgModule({
-  declarations: [SelectedAnnotationsComponent, SelectedAnnotationsContainer],
-  imports: [
-    CommonModule,
-    MatIconModule,
-    MatButtonModule,
-    MatTooltipModule,
-    ParallelCoordinatesModule,
-  ],
-  exports: [SelectedAnnotationsContainer],
+  declarations: [ParallelCoordinatesComponent, ParallelCoordinatesContainer],
+  imports: [CommonModule],
+  exports: [ParallelCoordinatesContainer],
 })
-export class SelectedAnnotationsModule {}
+export class ParallelCoordinatesModule {}
