@@ -1,0 +1,12 @@
+<button
+  mat-stroked-button
+  (click)="onDownloadRequested.emit()"
+  [disabled]="flaggedAnnotations.length === 0"
+  [ngClass]="{'active-button': flaggedAnnotations.length > 0}"
+  title="Export CSV reports of all flagged annotations. Will generate one CSV per active run."
+>
+  <span class="button-contents">
+    <mat-icon svgIcon="get_app_24px"></mat-icon>
+    Flagged Rows ({{flaggedAnnotations.length}})
+  </span>
+</button>

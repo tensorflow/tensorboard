@@ -1,0 +1,18 @@
+@import 'tensorboard/webapp/theme/tb_theme';
+
+/* Override material styling with more precise selector. */
+.active-button {
+  background-color: mat-color($tb-primary, 500);
+  border: 1px solid map-get($tb-foreground, border);
+  color: map-get($tb-background, raised-button);
+}
+
+.button-contents {
+  align-items: center;
+  display: flex;
+  text-transform: uppercase;
+}
+
+mat-icon {
+  margin-right: 6px;
+}

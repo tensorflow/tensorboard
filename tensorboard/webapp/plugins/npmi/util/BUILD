@@ -111,3 +111,32 @@ tf_ts_library(
         "@npm//rxjs",
     ],
 )
+
+ng_module(
+    name = "csv_result",
+    srcs = [
+        "csv_result.ts",
+    ],
+    deps = [
+        "metric_type",
+        "//tensorboard/webapp/plugins/npmi/store:types",
+    ],
+)
+
+tf_ts_library(
+    name = "csv_result_test_lib",
+    testonly = True,
+    srcs = ["csv_result_test.ts"],
+    deps = [
+        ":csv_result",
+        "//tensorboard/webapp/angular:expect_angular_core_testing",
+        "//tensorboard/webapp/core/testing",
+        "//tensorboard/webapp/plugins/npmi/store:types",
+        "@npm//@angular/common",
+        "@npm//@angular/compiler",
+        "@npm//@angular/core",
+        "@npm//@angular/platform-browser",
+        "@npm//@types/jasmine",
+        "@npm//rxjs",
+    ],
+)

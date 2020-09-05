@@ -3,53 +3,53 @@ load("//tensorboard/defs:defs.bzl", "tf_sass_binary", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
-licenses(["notice"])
+licenses(["notice"])  # Apache 2.0
 
 tf_sass_binary(
-    name = "data_selection_component_styles",
-    src = "data_selection_component.scss",
+    name = "results_download_component_styles",
+    src = "results_download_component.scss",
 )
 
 ng_module(
-    name = "data_selection",
+    name = "results_download",
     srcs = [
-        "data_selection_component.ts",
-        "data_selection_module.ts",
+        "results_download_component.ts",
+        "results_download_container.ts",
+        "results_download_module.ts",
     ],
     assets = [
-        ":data_selection_component_styles",
-        "data_selection_component.ng.html",
+        ":results_download_component_styles",
+        "results_download_component.ng.html",
     ],
     deps = [
-        "//tensorboard/webapp/angular:expect_angular_material_button",
-        "//tensorboard/webapp/angular:expect_angular_material_icon",
+        "//tensorboard/webapp:app_state",
         "//tensorboard/webapp/plugins/npmi/store",
         "//tensorboard/webapp/plugins/npmi/store:types",
-        "//tensorboard/webapp/plugins/npmi/views/data_selection/metric_arithmetic",
-        "//tensorboard/webapp/plugins/npmi/views/data_selection/metric_search",
-        "//tensorboard/webapp/plugins/npmi/views/data_selection/results_download",
+        "//tensorboard/webapp/plugins/npmi/util:csv_result",
+        "//tensorboard/webapp/plugins/npmi/util:metric_type",
         "@npm//@angular/core",
+        "@npm//@angular/material",
         "@npm//@ngrx/store",
         "@npm//rxjs",
     ],
 )
 
 tf_ts_library(
-    name = "data_selection_test_lib",
+    name = "results_download_test_lib",
     testonly = True,
     srcs = [
-        "data_selection_test.ts",
+        "results_download_test.ts",
     ],
     deps = [
-        ":data_selection",
+        ":results_download",
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/angular:expect_ngrx_store_testing",
+        "//tensorboard/webapp/core/store",
         "//tensorboard/webapp/core/testing",
         "//tensorboard/webapp/plugins/npmi/store",
         "//tensorboard/webapp/plugins/npmi/store:types",
         "//tensorboard/webapp/plugins/npmi/testing",
-        "//tensorboard/webapp/testing:mat_icon",
         "@npm//@angular/core",
         "@npm//@angular/platform-browser",
         "@npm//@ngrx/store",
