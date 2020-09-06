@@ -42,6 +42,7 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
   @Input() flaggedAnnotations!: string[];
   @Input() hiddenAnnotations!: string[];
   @Input() activeMetrics!: string[];
+  @Input() activeRuns!: string[];
   @Input() showCounts!: boolean;
   @Input() annotation!: string;
   @Input() runHeight!: number;
@@ -51,7 +52,6 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
   private readonly clipPathElement!: ElementRef<SVGClipPathElement>;
   @HostBinding('class.selected-row') selected = false;
   private width: number = 10;
-  private height: number = 10;
   private chartWidth: number = 10;
   private chartHeight: number = 10;
   private readonly maxDotRadius = 10;
@@ -149,12 +149,12 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
     this.data.forEach((element) => {
       runs.add(element.run);
     });
-    this.runs = [...runs];
-    this.svg.style('height', `${this.runs.length * this.runHeight}px`);
-    this.height = this.runs.length * this.runHeight;
+    this.runs = this.activeRuns.filter((run) => runs.has(run));
+    this.svg.style('height', `${this.activeRuns.length * this.runHeight}px`);
     this.width = this.annotationContainer.nativeElement.clientWidth || 10;
     this.chartWidth = this.width - this.margin.left - this.margin.right;
-    this.chartHeight = this.height - this.margin.top - this.margin.bottom;
+    this.chartHeight =
+      this.runs.length * this.runHeight - this.margin.top - this.margin.bottom;
   }
 
   private setTextClass() {
@@ -176,7 +176,7 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
 
     this.yScale
       .rangeRound([0, this.chartHeight - this.runHeight])
-      .domain(this.runs.map((d: string) => d));
+      .domain(this.runs);
 
     this.sizeScale.range([0, this.chartWidth / this.activeMetrics.length]);
 
