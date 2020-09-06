@@ -61,7 +61,7 @@ export function removeHiddenAnnotations(
   if (showHidden) {
     return annotationData;
   }
-  const data = annotationData;
+  const data = {...annotationData};
   hiddenAnnotations.forEach((annotation) => delete data[annotation]);
   return data;
 }
