@@ -24,6 +24,7 @@ import {
   getRunToMetrics,
   getMetricFilters,
   getAnnotationData,
+  getSidebarWidth,
 } from '../../../store';
 import {getRunSelection} from '../../../../../core/store/core_selectors';
 import {metricIsNpmiAndNotDiff} from '../../../util/metric_type';
@@ -38,6 +39,7 @@ import {stripMetricString} from '../../../util/metric_type';
     <parallel-coordinates-component
       [activeMetrics]="activeMetrics$ | async"
       [coordinateData]="coordinateData$ | async"
+      [sidebarWidth]="sidebarWidth$ | async"
     ></parallel-coordinates-component>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -84,6 +86,7 @@ export class ParallelCoordinatesContainer {
       );
     })
   );
+  readonly sidebarWidth$ = this.store.select(getSidebarWidth);
 
   constructor(private readonly store: Store<State>) {}
 }

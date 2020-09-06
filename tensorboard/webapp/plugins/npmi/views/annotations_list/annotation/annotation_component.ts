@@ -23,6 +23,7 @@ import {
   ElementRef,
   ViewEncapsulation,
   HostBinding,
+  HostListener,
 } from '@angular/core';
 import {ValueData} from '../../../store/npmi_types';
 import * as d3 from '../../../../../third_party/d3';
@@ -45,11 +46,16 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
   @Input() showCounts!: boolean;
   @Input() annotation!: string;
   @Input() runHeight!: number;
+  @Input() sidebarWidth!: number;
   @ViewChild('chart', {static: true, read: ElementRef})
   private readonly annotationContainer!: ElementRef<HTMLDivElement>;
   @ViewChild('hintClip', {static: true, read: ElementRef})
   private readonly clipPathElement!: ElementRef<SVGClipPathElement>;
   @HostBinding('class.selected-row') selected = false;
+  @HostListener('window:resize', ['$event'])
+  onResize(event: Event) {
+    this.redraw();
+  }
   private width: number = 10;
   private height: number = 10;
   private chartWidth: number = 10;
