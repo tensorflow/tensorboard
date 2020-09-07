@@ -101,8 +101,14 @@ class LocalDataIngester(object):
                 logger.info(
                     "TensorBoard reload process: Reload the whole Multiplexer"
                 )
-                self._multiplexer.Reload()
+                print("multiplexer.AddRunsFromDirectory(path, name) completed")
                 duration = time.time() - start
+                print('AddRunsFromDirectory done. Load took {} secs'.format(duration))
+                start2 = time.time()
+                self._multiplexer.Reload()
+                duration = time.time() - start2
+                print('TensorBoard done reloading. Load took {} secs'.format(duration))
+
                 logger.info(
                     "TensorBoard done reloading. Load took %0.3f secs", duration
                 )

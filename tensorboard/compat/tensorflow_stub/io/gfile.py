@@ -182,6 +182,7 @@ class LocalFileSystem(object):
         return os.path.isdir(compat.as_bytes(dirname))
 
     def listdir(self, dirname):
+        import time; time.sleep(0.1) # simulate the network latency
         """Returns a list of entries contained within a directory."""
         if not self.isdir(dirname):
             raise errors.NotFoundError(None, None, "Could not find directory")
