@@ -17,36 +17,26 @@ limitations under the License.
 <div class="annotations-title-container">
   <h3 class="annotations-title">Annotations ({{numAnnotations}})</h3>
   <ng-container *ngIf="expanded">
-    <div
-      matTooltipPosition="below"
-      matTooltip="Flagging annotations adds them to your investigation results, and can later be exported."
-      matTooltipShowDelay="500"
+    <button
+      mat-icon-button
+      aria-label="Flag Selected Annotations"
+      i18n-aria-label="Label for a button that flags selected annotations."
+      (click)="onFlagAnnotations.emit(selectedAnnotations)"
+      [disabled]="selectedAnnotations.length === 0"
+      title="Flagging annotations adds them to your investigation results, which can later be exported."
     >
-      <button
-        mat-icon-button
-        aria-label="Flag Selected Annotations"
-        i18n-aria-label="Label for a button that flags selected annotations."
-        (click)="onFlagAnnotations.emit(selectedAnnotations)"
-        [disabled]="selectedAnnotations.length === 0"
-      >
-        <mat-icon svgIcon="flag_24px"></mat-icon>
-      </button>
-    </div>
-    <div
-      matTooltipPosition="below"
-      matTooltip="Removing non-critical annotations unclutters the view. Removed annotations are removed from all visualizations."
-      matTooltipShowDelay="500"
+      <mat-icon svgIcon="flag_24px"></mat-icon>
+    </button>
+    <button
+      mat-icon-button
+      aria-label="Hide Selected Annotations"
+      i18n-aria-label="Label for a button that hides selected annotations."
+      (click)="onHideAnnotations.emit(selectedAnnotations)"
+      [disabled]="selectedAnnotations.length === 0"
+      title="Removing non-critical annotations unclutters the view. Removed annotations are removed from all visualizations."
     >
-      <button
-        mat-icon-button
-        aria-label="Hide Selected Annotations"
-        i18n-aria-label="Label for a button that hides selected annotations."
-        (click)="onHideAnnotations.emit(selectedAnnotations)"
-        [disabled]="selectedAnnotations.length === 0"
-      >
-        <mat-icon svgIcon="visibility_off_24px"></mat-icon>
-      </button>
-    </div>
+      <mat-icon svgIcon="visibility_off_24px"></mat-icon>
+    </button>
   </ng-container>
 </div>
 <ng-container *ngIf="expanded">
@@ -54,9 +44,7 @@ limitations under the License.
     [checked]="showCounts"
     (change)="onToggleShowCounts.emit()"
     class="show-toggle"
-    matTooltipPosition="below"
-    matTooltip="Hides and shows the sample count where applicable (how many samples belong to a category)."
-    matTooltipShowDelay="500"
+    title="Hides and shows the sample count where applicable (how many samples belong to a category)."
   >
     Sample Count
   </mat-slide-toggle>
@@ -64,9 +52,7 @@ limitations under the License.
     [checked]="showHidden"
     (change)="onToggleShowHidden.emit()"
     class="show-toggle"
-    matTooltipPosition="below"
-    matTooltip="Hides and shows hidden annotations in all visualizations."
-    matTooltipShowDelay="500"
+    title="Hides and shows hidden annotations in all visualizations."
   >
     Show Hidden
   </mat-slide-toggle>

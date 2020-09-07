@@ -17,7 +17,6 @@ import {NgModule} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 
 import {MatCheckboxModule} from '@angular/material/checkbox';
-import {MatTooltipModule} from '@angular/material/tooltip';
 import {MatIconModule} from '@angular/material/icon';
 
 import {HeaderComponent} from './header_component';
@@ -25,13 +24,7 @@ import {HeaderContainer} from './header_container';
 
 @NgModule({
   declarations: [HeaderComponent, HeaderContainer],
-  imports: [
-    CommonModule,
-    FormsModule,
-    MatCheckboxModule,
-    MatTooltipModule,
-    MatIconModule,
-  ],
+  imports: [CommonModule, FormsModule, MatCheckboxModule, MatIconModule],
   exports: [HeaderContainer],
 })
 export class HeaderModule {}

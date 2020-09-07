@@ -28,9 +28,7 @@ limitations under the License.
         tabindex="0"
         role="button"
         (click)="onChangeSorting.emit(metric)"
-        matTooltipPosition="below"
-        matTooltip="Change the sorting by clicking any of the metrics."
-        matTooltipShowDelay="500"
+        title="Change the sorting by clicking any of the metrics."
       >
         {{stripMetric(metric)}}
         <mat-icon
