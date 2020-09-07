@@ -16,7 +16,7 @@ import {createAction, props} from '@ngrx/store';
 import {
   AnnotationDataListing,
   MetricListing,
-  AnnotationSorting,
+  AnnotationSort,
 } from '../store/npmi_types';
 
 // HACK: Below import is for type inference.
@@ -93,8 +93,8 @@ export const npmiChangeMetricFilter = createAction(
   props<{metric: string; max: number; min: number; includeNaN: boolean}>()
 );
 
-export const npmiChangeAnnotationSorting = createAction(
-  '[NPMI] Change Annotation Sorting',
+export const npmiChangeAnnotationSort = createAction(
+  '[NPMI] Change Annotation Sort',
   props<{metric: string}>()
 );
 

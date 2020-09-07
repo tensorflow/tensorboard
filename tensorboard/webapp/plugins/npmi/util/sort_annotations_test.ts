@@ -14,8 +14,8 @@ limitations under the License.
 ==============================================================================*/
 import {
   AnnotationDataListing,
-  SortingOrder,
-  AnnotationSorting,
+  SortOrder,
+  AnnotationSort,
 } from '../store/npmi_types';
 import {sortAnnotations} from './sort_annotations';
 
@@ -78,11 +78,11 @@ describe('sort annotations utils', () => {
         },
       ],
     };
-    const sorting: AnnotationSorting = {
+    const sort: AnnotationSort = {
       metric: 'nPMI@test',
-      order: SortingOrder.UP,
+      order: SortOrder.UP,
     };
-    const annotations = sortAnnotations(annotationData, sorting);
+    const annotations = sortAnnotations(annotationData, sort);
     expect(annotations).toEqual([
       'annotation_1',
       'annotation_3',
@@ -148,11 +148,11 @@ describe('sort annotations utils', () => {
         },
       ],
     };
-    const sorting: AnnotationSorting = {
+    const sort: AnnotationSort = {
       metric: 'nPMI@test',
-      order: SortingOrder.DOWN,
+      order: SortOrder.DOWN,
     };
-    const annotations = sortAnnotations(annotationData, sorting);
+    const annotations = sortAnnotations(annotationData, sort);
     expect(annotations).toEqual([
       'annotation_3',
       'annotation_1',
@@ -211,11 +211,11 @@ describe('sort annotations utils', () => {
         },
       ],
     };
-    const sorting: AnnotationSorting = {
+    const sort: AnnotationSort = {
       metric: '',
-      order: SortingOrder.UP,
+      order: SortOrder.UP,
     };
-    const annotations = sortAnnotations(annotationData, sorting);
+    const annotations = sortAnnotations(annotationData, sort);
     expect(annotations).toEqual([
       'annotation_1',
       'annotation_2',

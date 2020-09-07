@@ -20,7 +20,7 @@ import {
   EventEmitter,
 } from '@angular/core';
 
-import {AnnotationDataListing, AnnotationSorting} from '../../store/npmi_types';
+import {AnnotationDataListing, AnnotationSort} from '../../store/npmi_types';
 
 @Component({
   selector: 'annotations-list-component',
@@ -32,7 +32,7 @@ export class AnnotationsListComponent {
   @Input() annotations!: AnnotationDataListing;
   @Input() annotationsExpanded!: boolean;
   @Input() numAnnotations!: number;
-  @Input() annotationSorting!: AnnotationSorting;
+  @Input() annotationSort!: AnnotationSort;
   @Input() activeMetrics!: string[];
   @Input() activeRuns!: string[];
   @Input() sortedAnnotations!: string[];
