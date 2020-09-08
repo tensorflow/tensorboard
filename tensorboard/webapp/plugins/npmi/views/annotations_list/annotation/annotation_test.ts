@@ -72,7 +72,7 @@ describe('Npmi Annotations List Row', () => {
     fixture.componentInstance.runHeight = 30;
     fixture.componentInstance.maxCount = 101;
     fixture.componentInstance.annotation = 'annotation_1';
-    fixture.componentInstance.activeRuns = ['run_1', 'run_2'];
+    fixture.componentInstance.numActiveRuns = 2;
     return fixture;
   }
 
