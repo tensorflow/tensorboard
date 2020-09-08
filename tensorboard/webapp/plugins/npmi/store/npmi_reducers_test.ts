@@ -472,7 +472,7 @@ describe('npmi_reducers', () => {
         expect(nextState.metricArithmetic).toEqual([
           {kind: ArithmeticKind.METRIC, metric: 'nPMI@test'},
         ]);
-        expect(nextState.sorting).toEqual({
+        expect(nextState.sort).toEqual({
           metric: 'nPMI@test',
           order: SortOrder.DOWN,
         });
