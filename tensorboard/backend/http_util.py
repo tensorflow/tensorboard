@@ -44,6 +44,7 @@ _CSP_FONT_DOMAINS_WHITELIST = ["data:"]
 _CSP_FRAME_DOMAINS_WHITELIST = []
 _CSP_IMG_DOMAINS_WHITELIST = []
 _CSP_SCRIPT_DOMAINS_WHITELIST = []
+_CSP_CONNECT_DOMAINS_WHITELIST = []
 _CSP_SCRIPT_SELF = True
 # numericjs (via projector) uses unsafe-eval :(.
 _CSP_SCRIPT_UNSAFE_EVAL = True
@@ -201,6 +202,7 @@ def Respond(
         _CSP_FONT_DOMAINS_WHITELIST
         _CSP_FRAME_DOMAINS_WHITELIST
         _CSP_SCRIPT_DOMAINS_WHITELIST
+        _CSP_CONNECT_DOMAINS_WHITELIST
 
         frags = (
             _CSP_SCRIPT_DOMAINS_WHITELIST
@@ -244,6 +246,8 @@ def Respond(
                     "'unsafe-inline'",
                     *_CSP_STYLE_DOMAINS_WHITELIST
                 ),
+                "connect-src %s"
+                % _create_csp_string("'self'", *_CSP_CONNECT_DOMAINS_WHITELIST),
                 "script-src %s" % script_srcs,
             ]
         )
