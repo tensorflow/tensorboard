@@ -27,6 +27,7 @@ import tensorflow as tf
 
 from tensorboard import errors
 from tensorboard import context
+from tensorboard.backend.event_processing import data_provider
 from tensorboard.backend.event_processing import (
     plugin_event_multiplexer as event_multiplexer,
 )
@@ -62,23 +63,22 @@ class DistributionsPluginTest(tf.test.TestCase):
         self.plugin = None
 
     def set_up_with_runs(self, run_names):
-        self.logdir = self.get_temp_dir()
+        logdir = self.get_temp_dir()
         for run_name in run_names:
-            self.generate_run(run_name)
+            self.generate_run(logdir, run_name)
         multiplexer = event_multiplexer.EventMultiplexer(
             size_guidance={
                 # don't truncate my test data, please
                 tag_types.TENSORS: self._STEPS,
             }
         )
-        multiplexer.AddRunsFromDirectory(self.logdir)
+        multiplexer.AddRunsFromDirectory(logdir)
         multiplexer.Reload()
-        context = base_plugin.TBContext(
-            logdir=self.logdir, multiplexer=multiplexer
-        )
+        provider = data_provider.MultiplexerDataProvider(multiplexer, logdir)
+        context = base_plugin.TBContext(logdir=logdir, data_provider=provider)
         self.plugin = distributions_plugin.DistributionsPlugin(context)
 
-    def generate_run(self, run_name):
+    def generate_run(self, logdir, run_name):
         tf.compat.v1.reset_default_graph()
         sess = tf.compat.v1.Session()
         placeholder = tf.compat.v1.placeholder(tf.float32, shape=[3])
@@ -102,7 +102,7 @@ class DistributionsPluginTest(tf.test.TestCase):
             assert False, "Invalid run name: %r" % run_name
         summ = tf.compat.v1.summary.merge_all()
 
-        subdir = os.path.join(self.logdir, run_name)
+        subdir = os.path.join(logdir, run_name)
         with test_util.FileWriterCache.get(subdir) as writer:
             writer.add_graph(sess.graph)
             for step in xrange(self._STEPS):
@@ -190,20 +190,6 @@ class DistributionsPluginTest(tf.test.TestCase):
             self._RUN_WITH_DISTRIBUTION,
             "%s/histogram_summary" % self._DISTRIBUTION_TAG,
         )
-
-    def test_active_with_distribution(self):
-        self.set_up_with_runs([self._RUN_WITH_DISTRIBUTION])
-        self.assertTrue(self.plugin.is_active())
-
-    def test_active_with_scalars(self):
-        self.set_up_with_runs([self._RUN_WITH_SCALARS])
-        self.assertFalse(self.plugin.is_active())
-
-    def test_active_with_both(self):
-        self.set_up_with_runs(
-            [self._RUN_WITH_DISTRIBUTION, self._RUN_WITH_SCALARS]
-        )
-        self.assertTrue(self.plugin.is_active())
 
 
 if __name__ == "__main__":
