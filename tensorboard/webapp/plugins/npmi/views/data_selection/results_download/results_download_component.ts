@@ -12,13 +12,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {
-  ChangeDetectionStrategy,
-  Component,
-  Input,
-  Output,
-  EventEmitter,
-} from '@angular/core';
+import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
+import {ValueData} from './../../../store/npmi_types';
+
+import {convertToCSVResult} from '../../../util/csv_result';
 
 @Component({
   selector: 'results-download-component',
@@ -28,5 +25,17 @@ import {
 })
 export class ResultsDownloadComponent {
   @Input() numFlaggedAnnotations!: number;
-  @Output() onDownloadRequested = new EventEmitter();
+  @Input() runs!: string[];
+  @Input() flaggedData!: [string, ValueData[]][];
+  @Input() metrics!: string[];
+
+  downloadResults() {
+    for (const run of this.runs) {
+      const csvData = convertToCSVResult(this.flaggedData, run, this.metrics);
+      const element = document.createElement('a');
+      element.setAttribute('href', csvData);
+      element.setAttribute('download', `report_${run}.csv`);
+      element.click();
+    }
+  }
 }

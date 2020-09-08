@@ -16,7 +16,7 @@ limitations under the License.
 -->
 <button
   mat-stroked-button
-  (click)="onDownloadRequested.emit()"
+  (click)="downloadResults()"
   [disabled]="numFlaggedAnnotations === 0"
   [ngClass]="{'active-button': numFlaggedAnnotations > 0}"
   title="Export CSV reports of all flagged annotations. Will generate one CSV per active run."
