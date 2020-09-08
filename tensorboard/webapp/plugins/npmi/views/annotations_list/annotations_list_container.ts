@@ -49,7 +49,7 @@ import {sortAnnotations} from '../../util/sort_annotations';
       [annotationsExpanded]="annotationsExpanded$ | async"
       [numAnnotations]="numAnnotations$ | async"
       [activeMetrics]="activeMetrics$ | async"
-      [activeRuns]="activeRuns$ | async"
+      [numActiveRuns]="numActiveRuns$ | async"
       [sortedAnnotations]="sortedAnnotations$ | async"
       [selectedAnnotations]="selectedAnnotations$ | async"
       [maxCount]="maxCount$ | async"
@@ -70,6 +70,7 @@ export class AnnotationsListContainer {
         .map((run) => run[0]);
     })
   );
+  readonly numActiveRuns$ = this.activeRuns$.pipe(map((runs) => runs.length));
   readonly activeMetrics$ = combineLatest([
     this.store.select(getRunToMetrics),
     this.activeRuns$,

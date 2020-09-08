@@ -33,7 +33,7 @@ import {
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
-describe('Npmi Annotations List Container', () => {
+describe('Npmi Annotations List Row', () => {
   let store: MockStore<State>;
   let dispatchedActions: Action[];
   function createComponentInstance(): ComponentFixture<AnnotationContainer> {
@@ -72,6 +72,7 @@ describe('Npmi Annotations List Container', () => {
     fixture.componentInstance.runHeight = 30;
     fixture.componentInstance.maxCount = 101;
     fixture.componentInstance.annotation = 'annotation_1';
+    fixture.componentInstance.numActiveRuns = 2;
     return fixture;
   }
 

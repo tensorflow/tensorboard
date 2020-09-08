@@ -43,6 +43,7 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
   @Input() flaggedAnnotations!: string[];
   @Input() hiddenAnnotations!: string[];
   @Input() activeMetrics!: string[];
+  @Input() numActiveRuns!: number;
   @Input() showCounts!: boolean;
   @Input() annotation!: string;
   @Input() runHeight!: number;
@@ -58,7 +59,6 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
     this.redraw();
   }
   private width: number = 10;
-  private height: number = 10;
   private chartWidth: number = 10;
   private chartHeight: number = 10;
   private readonly maxDotRadius = 10;
@@ -157,11 +157,13 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
       runs.add(element.run);
     });
     this.runs = [...runs];
-    this.svg.style('height', `${this.runs.length * this.runHeight}px`);
-    this.height = this.runs.length * this.runHeight;
+    // Needs to be numActiveRuns * runHeight because of cdk-virtual-croll
+    this.svg.style('height', `${this.numActiveRuns * this.runHeight}px`);
+    // Needs to be runs.length * runHeight as this is used for y-pos scales
+    this.chartHeight =
+      this.runs.length * this.runHeight - this.margin.top - this.margin.bottom;
     this.width = this.annotationContainer.nativeElement.clientWidth || 10;
     this.chartWidth = this.width - this.margin.left - this.margin.right;
-    this.chartHeight = this.height - this.margin.top - this.margin.bottom;
   }
 
   private setTextClass() {
@@ -183,7 +185,7 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
 
     this.yScale
       .rangeRound([0, this.chartHeight - this.runHeight])
-      .domain(this.runs.map((d: string) => d));
+      .domain(this.runs);
 
     this.sizeScale.range([0, this.chartWidth / this.activeMetrics.length]);
 
@@ -214,7 +216,7 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
 
     const indicators = this.runHintGroup
       .selectAll<SVGGElement, unknown>('.hint')
-      .data([...this.runs]);
+      .data(this.runs);
 
     const indicatorEnters = indicators
       .enter()
@@ -246,7 +248,7 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
   private drawRunHintTexts() {
     const hintTexts = this.runHintGroup
       .selectAll<SVGTextElement, unknown>('.hint-text')
-      .data([...this.runs]);
+      .data(this.runs);
 
     const hintTextEnters = hintTexts
       .enter()
