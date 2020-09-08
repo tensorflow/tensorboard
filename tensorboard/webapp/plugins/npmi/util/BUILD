@@ -118,7 +118,7 @@ ng_module(
         "csv_result.ts",
     ],
     deps = [
-        "metric_type",
+        ":metric_type",
         "//tensorboard/webapp/plugins/npmi/store:types",
     ],
 )

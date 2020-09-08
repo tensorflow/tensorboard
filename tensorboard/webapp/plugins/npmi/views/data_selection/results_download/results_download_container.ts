@@ -36,7 +36,7 @@ import {convertToCSVResult} from '../../../util/csv_result';
   selector: 'npmi-results-download',
   template: `
     <results-download-component
-      [flaggedAnnotations]="flaggedAnnotations$ | async"
+      [numFlaggedAnnotations]="numFlaggedAnnotations$ | async"
       (onDownloadRequested)="downloadRequested()"
     ></results-download-component>
   `,
@@ -46,6 +46,9 @@ export class ResultsDownloadContainer implements OnDestroy {
   private ngUnsubscribe = new Subject();
   private flaggedAnnotations: string[] = [];
   readonly flaggedAnnotations$ = this.store.select(getFlaggedAnnotations);
+  readonly numFlaggedAnnotations$ = this.flaggedAnnotations$.pipe(
+    map((flaggedAnnotations) => flaggedAnnotations.length)
+  );
   readonly activeRuns$ = this.store.select(getRunSelection).pipe(
     map((runSelection) => {
       if (!runSelection) return [];
@@ -69,14 +72,14 @@ export class ResultsDownloadContainer implements OnDestroy {
     this.activeRuns$
       .pipe(takeUntil(this.ngUnsubscribe))
       .subscribe((x) => (this.runs = x));
-    combineLatest(
+    combineLatest([
       this.store.select(getRunToMetrics),
       this.activeRuns$,
-      this.store.select(getMetricFilters)
-    )
+      this.store.select(getMetricFilters),
+    ])
       .pipe(
         map(([runToMetrics, activeRuns, metricFilters]) => {
-          let metrics: string[] = [];
+          let metrics = Object.keys(metricFilters);
           for (const run of activeRuns) {
             if (runToMetrics[run]) {
               metrics = metrics.concat(
@@ -84,7 +87,7 @@ export class ResultsDownloadContainer implements OnDestroy {
               );
             }
           }
-          metrics = [...new Set([...Object.keys(metricFilters), ...metrics])];
+          metrics = [...new Set(metrics)];
           return metrics;
         })
       )
@@ -103,17 +106,11 @@ export class ResultsDownloadContainer implements OnDestroy {
       flagSet.has(entry[0])
     );
     for (const run of this.runs) {
-      const csvResult = convertToCSVResult(flaggedData, run, this.metrics);
-      let csvContent =
-        'data:text/csv;charset=utf-8,' +
-        csvResult.map((e) => e.join(',')).join('\n');
-      var element = document.createElement('a');
-      element.setAttribute('href', csvContent);
+      const csvData = convertToCSVResult(flaggedData, run, this.metrics);
+      const element = document.createElement('a');
+      element.setAttribute('href', csvData);
       element.setAttribute('download', `report_${run}.csv`);
-      element.style.display = 'none';
-      document.body.appendChild(element);
       element.click();
-      document.body.removeChild(element);
     }
   }
 }

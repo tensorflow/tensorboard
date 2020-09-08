@@ -75,11 +75,9 @@ describe('csv result utils', () => {
     const metrics = ['nPMI@test', 'nPMI@other'];
 
     const result = convertToCSVResult(flaggedData, run, metrics);
-    expect(result).toEqual([
-      ['run_1', 'nPMI@test', 'nPMI@other'],
-      ['annotation_1', '0.5178', '0.02157'],
-      ['annotation_3', 'null', 'null'],
-    ]);
+    expect(result).toEqual(
+      'data:text/csv;charset=utf-8,run_1,nPMI@test,nPMI@other\nannotation_1,0.5178,0.02157\nannotation_3,null,null'
+    );
   });
 
   it('returns empty result when no metrics active', () => {
@@ -141,7 +139,7 @@ describe('csv result utils', () => {
     const metrics: string[] = [];
 
     const result = convertToCSVResult(flaggedData, run, metrics);
-    expect(result).toEqual([['run_1']]);
+    expect(result).toEqual('data:text/csv;charset=utf-8,run_1');
   });
 
   it('returns empty result when no flagged data', () => {
@@ -150,6 +148,8 @@ describe('csv result utils', () => {
     const metrics = ['nPMI@test', 'nPMI@other'];
 
     const result = convertToCSVResult(flaggedData, run, metrics);
-    expect(result).toEqual([['run_1', 'nPMI@test', 'nPMI@other']]);
+    expect(result).toEqual(
+      'data:text/csv;charset=utf-8,run_1,nPMI@test,nPMI@other'
+    );
   });
 });

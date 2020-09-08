@@ -27,6 +27,6 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ResultsDownloadComponent {
-  @Input() flaggedAnnotations!: string[];
+  @Input() numFlaggedAnnotations!: number;
   @Output() onDownloadRequested = new EventEmitter();
 }

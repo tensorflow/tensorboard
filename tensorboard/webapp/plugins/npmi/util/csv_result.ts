@@ -19,16 +19,19 @@ export function convertToCSVResult(
   flaggedData: [string, ValueData[]][],
   run: string,
   metrics: string[]
-): string[][] {
+): string {
   const result = [[run, ...metrics]];
-  if (metrics.length === 0 || flaggedData.length === 0) {
-    return result;
+  if (!metrics.length || !flaggedData.length) {
+    const csvContent =
+      'data:text/csv;charset=utf-8,' +
+      result.map((e) => e.join(',')).join('\n');
+    return csvContent;
   }
   const strippedMetrics = metrics.map((metric) => stripMetricString(metric));
-  for (const element of flaggedData) {
-    const runValues = element[1].filter((values) => values.run === run);
-    if (runValues.length > 0) {
-      const elementResult = [element[0]];
+  for (const [annotation, valueDataList] of flaggedData) {
+    const runValues = valueDataList.filter((values) => values.run === run);
+    if (runValues.length) {
+      const elementResult = [annotation];
       for (const metric of strippedMetrics) {
         const metricValue = runValues.find((value) => value.metric === metric);
         if (metricValue === undefined) {
@@ -40,5 +43,7 @@ export function convertToCSVResult(
       result.push(elementResult);
     }
   }
-  return result;
+  const csvContent =
+    'data:text/csv;charset=utf-8,' + result.map((e) => e.join(',')).join('\n');
+  return csvContent;
 }
