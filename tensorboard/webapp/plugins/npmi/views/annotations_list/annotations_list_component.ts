@@ -34,7 +34,7 @@ export class AnnotationsListComponent {
   @Input() numAnnotations!: number;
   @Input() annotationSorting!: AnnotationSorting;
   @Input() activeMetrics!: string[];
-  @Input() activeRuns!: string[];
+  @Input() numActiveRuns!: number;
   @Input() sortedAnnotations!: string[];
   @Input() selectedAnnotations!: string[];
   @Input() maxCount!: number;

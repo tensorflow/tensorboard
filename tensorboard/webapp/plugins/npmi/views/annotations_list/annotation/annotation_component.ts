@@ -42,7 +42,7 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
   @Input() flaggedAnnotations!: string[];
   @Input() hiddenAnnotations!: string[];
   @Input() activeMetrics!: string[];
-  @Input() activeRuns!: string[];
+  @Input() numActiveRuns!: number;
   @Input() showCounts!: boolean;
   @Input() annotation!: string;
   @Input() runHeight!: number;
@@ -149,12 +149,14 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
     this.data.forEach((element) => {
       runs.add(element.run);
     });
-    this.runs = this.activeRuns.filter((run) => runs.has(run));
-    this.svg.style('height', `${this.activeRuns.length * this.runHeight}px`);
-    this.width = this.annotationContainer.nativeElement.clientWidth || 10;
-    this.chartWidth = this.width - this.margin.left - this.margin.right;
+    this.runs = [...runs];
+    // Needs to be numActiveRuns * runHeight because of cdk-virtual-croll
+    this.svg.style('height', `${this.numActiveRuns * this.runHeight}px`);
+    // Needs to be runs.length * runHeight as this is used for y-pos scales
     this.chartHeight =
       this.runs.length * this.runHeight - this.margin.top - this.margin.bottom;
+    this.width = this.annotationContainer.nativeElement.clientWidth || 10;
+    this.chartWidth = this.width - this.margin.left - this.margin.right;
   }
 
   private setTextClass() {
@@ -207,7 +209,7 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
 
     const indicators = this.runHintGroup
       .selectAll<SVGGElement, unknown>('.hint')
-      .data([...this.runs]);
+      .data(this.runs);
 
     const indicatorEnters = indicators
       .enter()
@@ -222,13 +224,13 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
       .merge(indicators)
       .attr(
         'transform',
-        function (this: AnnotationComponent, d: string) {
+        function(this: AnnotationComponent, d: string) {
           return `translate(10, ${this.yScale(d)! + 5})`;
         }.bind(this)
       )
       .attr(
         'fill',
-        function (this: AnnotationComponent, d: string) {
+        function(this: AnnotationComponent, d: string) {
           return `rgb(${this.rgbColors[0]})`;
         }.bind(this)
       );
@@ -239,7 +241,7 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
   private drawRunHintTexts() {
     const hintTexts = this.runHintGroup
       .selectAll<SVGTextElement, unknown>('.hint-text')
-      .data([...this.runs]);
+      .data(this.runs);
 
     const hintTextEnters = hintTexts
       .enter()
@@ -253,7 +255,7 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
       .merge(hintTexts)
       .attr(
         'y',
-        function (this: AnnotationComponent, d: string) {
+        function(this: AnnotationComponent, d: string) {
           return this.yScale(d)! + 15;
         }.bind(this)
       )
@@ -287,19 +289,19 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
       })
       .attr(
         'x',
-        function (this: AnnotationComponent, d: ValueData) {
+        function(this: AnnotationComponent, d: ValueData) {
           return this.xScale(d.metric)!;
         }.bind(this)
       )
       .attr(
         'y',
-        function (this: AnnotationComponent, d: ValueData) {
+        function(this: AnnotationComponent, d: ValueData) {
           return this.yScale(d.run)! + 5;
         }.bind(this)
       )
       .attr(
         'width',
-        function (this: AnnotationComponent, d: ValueData) {
+        function(this: AnnotationComponent, d: ValueData) {
           if (d.nPMIValue === null) {
             return 0;
           } else {
@@ -326,7 +328,7 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
       .merge(countDots)
       .attr(
         'fill',
-        function (this: AnnotationComponent, d: ValueData) {
+        function(this: AnnotationComponent, d: ValueData) {
           if (d.countValue === null) {
             return '';
           } else {
@@ -336,19 +338,19 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
       )
       .attr(
         'cx',
-        function (this: AnnotationComponent, d: ValueData) {
+        function(this: AnnotationComponent, d: ValueData) {
           return this.xScale(d.metric)! + this.countDotOffset;
         }.bind(this)
       )
       .attr(
         'cy',
-        function (this: AnnotationComponent, d: ValueData) {
+        function(this: AnnotationComponent, d: ValueData) {
           return this.yScale(d.run)! + this.runHeight / 2.0;
         }.bind(this)
       )
       .attr(
         'r',
-        function (this: AnnotationComponent, d: ValueData) {
+        function(this: AnnotationComponent, d: ValueData) {
           if (d.countValue === null) {
             return 0;
           } else {
@@ -379,13 +381,13 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
       .merge(backgroundTexts)
       .attr(
         'x',
-        function (this: AnnotationComponent, d: ValueData) {
+        function(this: AnnotationComponent, d: ValueData) {
           return this.xScale(d.metric)! + 5;
         }.bind(this)
       )
       .attr(
         'y',
-        function (this: AnnotationComponent, d: ValueData) {
+        function(this: AnnotationComponent, d: ValueData) {
           return this.yScale(d.run)! + this.runHeight / 2.0;
         }.bind(this)
       )
@@ -414,13 +416,13 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
       .merge(texts)
       .attr(
         'x',
-        function (this: AnnotationComponent, d: ValueData) {
+        function(this: AnnotationComponent, d: ValueData) {
           return this.xScale(d.metric)! + 5;
         }.bind(this)
       )
       .attr(
         'y',
-        function (this: AnnotationComponent, d: ValueData) {
+        function(this: AnnotationComponent, d: ValueData) {
           return this.yScale(d.run)! + this.runHeight / 2.0;
         }.bind(this)
       )
@@ -454,7 +456,7 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
       .merge(countBackgroundTexts)
       .attr(
         'x',
-        function (this: AnnotationComponent, d: ValueData) {
+        function(this: AnnotationComponent, d: ValueData) {
           return (
             this.xScale(d.metric)! +
             this.countDotOffset +
@@ -465,7 +467,7 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
       )
       .attr(
         'y',
-        function (this: AnnotationComponent, d: ValueData) {
+        function(this: AnnotationComponent, d: ValueData) {
           return this.yScale(d.run)! + this.runHeight / 2.0;
         }.bind(this)
       )
@@ -493,7 +495,7 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
       .merge(countTexts)
       .attr(
         'x',
-        function (this: AnnotationComponent, d: ValueData) {
+        function(this: AnnotationComponent, d: ValueData) {
           return (
             this.xScale(d.metric)! +
             this.countDotOffset +
@@ -504,7 +506,7 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
       )
       .attr(
         'y',
-        function (this: AnnotationComponent, d: ValueData) {
+        function(this: AnnotationComponent, d: ValueData) {
           return this.yScale(d.run)! + this.runHeight / 2.0;
         }.bind(this)
       )

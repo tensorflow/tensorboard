@@ -33,7 +33,7 @@ import {ValueData} from '../../../store/npmi_types';
       [data]="data"
       [maxCount]="maxCount"
       [activeMetrics]="activeMetrics"
-      [activeRuns]="activeRuns"
+      [numActiveRuns]="numActiveRuns"
       [annotation]="annotation"
       [runHeight]="runHeight"
       [selectedAnnotations]="selectedAnnotations$ | async"
@@ -48,7 +48,7 @@ export class AnnotationContainer {
   @Input() data!: ValueData[];
   @Input() maxCount!: number;
   @Input() activeMetrics!: string[];
-  @Input() activeRuns!: string[];
+  @Input() numActiveRuns!: number;
   @Input() annotation!: string;
   @Input() runHeight!: number;
 
