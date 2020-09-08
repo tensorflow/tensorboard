@@ -21,6 +21,7 @@ import {
   getFlaggedAnnotations,
   getHiddenAnnotations,
   getShowCounts,
+  getSidebarWidth,
 } from '../../../store';
 import {ValueData} from '../../../store/npmi_types';
 
@@ -39,6 +40,7 @@ import {ValueData} from '../../../store/npmi_types';
       [flaggedAnnotations]="flaggedAnnotations$ | async"
       [hiddenAnnotations]="hiddenAnnotations$ | async"
       [showCounts]="showCounts$ | async"
+      [sidebarWidth]="sidebarWidth$ | async"
     ></annotation-component>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -54,6 +56,7 @@ export class AnnotationContainer {
   readonly hiddenAnnotations$ = this.store.select(getHiddenAnnotations);
   readonly selectedAnnotations$ = this.store.select(getSelectedAnnotations);
   readonly showCounts$ = this.store.select(getShowCounts);
+  readonly sidebarWidth$ = this.store.select(getSidebarWidth);
 
   constructor(private readonly store: Store<State>) {}
 }
