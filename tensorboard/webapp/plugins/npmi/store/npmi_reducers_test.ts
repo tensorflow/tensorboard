@@ -456,7 +456,7 @@ describe('npmi_reducers', () => {
 
   describe('Metric Filters', () => {
     describe('Adding Filters', () => {
-      it('adds a new metric filter with none present', () => {
+      it('adds a new metric filter with none present, and adjusts sorting', () => {
         const state = createNpmiState();
         const nextState = reducers(
           state,
@@ -472,6 +472,10 @@ describe('npmi_reducers', () => {
         expect(nextState.metricArithmetic).toEqual([
           {kind: ArithmeticKind.METRIC, metric: 'nPMI@test'},
         ]);
+        expect(nextState.sorting).toEqual({
+          metric: 'nPMI@test',
+          order: SortOrder.DOWN,
+        });
       });
 
       it('adds a new metric filter after the first one', () => {
