@@ -19,7 +19,7 @@ import {
   NpmiState,
   DataLoadState,
   MetricListing,
-  SortingOrder,
+  SortOrder,
   ArithmeticElement,
   Operator,
   ArithmeticKind,
@@ -44,9 +44,9 @@ const initialState: NpmiState = {
   metricsRegex: '',
   metricArithmetic: [],
   metricFilters: {},
-  sorting: {
+  sort: {
     metric: '',
-    order: SortingOrder.DOWN,
+    order: SortOrder.DOWN,
   },
   pcExpanded: true,
   annotationsExpanded: true,
@@ -286,21 +286,18 @@ const reducer = createReducer(
     }
   ),
   on(
-    actions.npmiChangeAnnotationSorting,
+    actions.npmiChangeAnnotationSort,
     (state: NpmiState, {metric}): NpmiState => {
-      const newSorting = {
+      const newSort = {
         metric: metric,
-        order: SortingOrder.DOWN,
+        order: SortOrder.DOWN,
       };
-      if (
-        state.sorting.metric === metric &&
-        state.sorting.order === SortingOrder.DOWN
-      ) {
-        newSorting.order = SortingOrder.UP;
+      if (state.sort.metric === metric && state.sort.order === SortOrder.DOWN) {
+        newSort.order = SortOrder.UP;
       }
       return {
         ...state,
-        sorting: newSorting,
+        sort: newSort,
       };
     }
   ),

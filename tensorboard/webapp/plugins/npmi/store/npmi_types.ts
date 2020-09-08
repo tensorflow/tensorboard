@@ -54,12 +54,12 @@ export interface MetricFilter {
   includeNaN: boolean;
 }
 
-export interface AnnotationSorting {
+export interface AnnotationSort {
   metric: string;
-  order: SortingOrder;
+  order: SortOrder;
 }
 
-export enum SortingOrder {
+export enum SortOrder {
   DOWN,
   UP,
 }
@@ -78,7 +78,7 @@ export interface NpmiState {
   metricsRegex: string;
   metricArithmetic: ArithmeticElement[];
   metricFilters: MetricFilterListing;
-  sorting: AnnotationSorting;
+  sort: AnnotationSort;
   pcExpanded: boolean;
   annotationsExpanded: boolean;
   sidebarExpanded: boolean;

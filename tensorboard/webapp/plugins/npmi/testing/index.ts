@@ -17,7 +17,7 @@ import {
   DataLoadState,
   NPMI_FEATURE_KEY,
   State,
-  SortingOrder,
+  SortOrder,
 } from '../store/npmi_types';
 
 export function createNpmiState(override?: Partial<NpmiState>): NpmiState {
@@ -35,9 +35,9 @@ export function createNpmiState(override?: Partial<NpmiState>): NpmiState {
     metricsRegex: '',
     metricArithmetic: [],
     metricFilters: {},
-    sorting: {
+    sort: {
       metric: '',
-      order: SortingOrder.DOWN,
+      order: SortOrder.DOWN,
     },
     pcExpanded: true,
     annotationsExpanded: true,

@@ -16,7 +16,7 @@ import {Component, ChangeDetectionStrategy, Input} from '@angular/core';
 import {Store} from '@ngrx/store';
 import {State} from '../../../../../app_state';
 
-import {getSelectedAnnotations, getAnnotationSorting} from '../../../store';
+import {getSelectedAnnotations, getAnnotationSort} from '../../../store';
 import {AnnotationDataListing} from './../../../store/npmi_types';
 import * as npmiActions from '../../../actions';
 
@@ -28,9 +28,9 @@ import * as npmiActions from '../../../actions';
     <npmi-annotations-list-header-component
       [numAnnotations]="numAnnotations"
       [selectedAnnotations]="selectedAnnotations$ | async"
-      [sorting]="annotationSorting$ | async"
+      [sort]="annotationSort$ | async"
       [activeMetrics]="activeMetrics"
-      (onChangeSorting)="changeSorting($event)"
+      (onChangeSort)="changeSort($event)"
       (onAllAnnotationsToggled)="allAnnotationsToggled($event)"
     ></npmi-annotations-list-header-component>
   `,
@@ -41,13 +41,13 @@ export class HeaderContainer {
   @Input() annotations!: AnnotationDataListing;
   @Input() activeMetrics!: string[];
   readonly selectedAnnotations$ = this.store.select(getSelectedAnnotations);
-  readonly annotationSorting$ = this.store.select(getAnnotationSorting);
+  readonly annotationSort$ = this.store.select(getAnnotationSort);
 
   constructor(private readonly store: Store<State>) {}
 
-  changeSorting(newMetric: string) {
+  changeSort(newMetric: string) {
     this.store.dispatch(
-      npmiActions.npmiChangeAnnotationSorting({metric: newMetric})
+      npmiActions.npmiChangeAnnotationSort({metric: newMetric})
     );
   }
 

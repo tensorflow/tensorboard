@@ -14,12 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import * as actions from '../actions';
 import {reducers} from './npmi_reducers';
-import {
-  DataLoadState,
-  Operator,
-  SortingOrder,
-  ArithmeticKind,
-} from './npmi_types';
+import {DataLoadState, Operator, SortOrder, ArithmeticKind} from './npmi_types';
 import {createNpmiState} from '../testing';
 
 describe('npmi_reducers', () => {
@@ -824,30 +819,30 @@ describe('npmi_reducers', () => {
     });
   });
 
-  describe('Annotation Sorting', () => {
-    it('changes the sorting to a different metric', () => {
+  describe('Annotation Sort', () => {
+    it('changes the metric by which to sort', () => {
       const state = createNpmiState();
       const nextState = reducers(
         state,
-        actions.npmiChangeAnnotationSorting({metric: 'test'})
+        actions.npmiChangeAnnotationSort({metric: 'test'})
       );
-      expect(nextState.sorting).toEqual({
+      expect(nextState.sort).toEqual({
         metric: 'test',
-        order: SortingOrder.DOWN,
+        order: SortOrder.DOWN,
       });
     });
 
-    it('changes the sorting from up to down', () => {
+    it('changes the sort from up to down', () => {
       const state = createNpmiState({
-        sorting: {metric: 'test', order: SortingOrder.DOWN},
+        sort: {metric: 'test', order: SortOrder.DOWN},
       });
       const nextState = reducers(
         state,
-        actions.npmiChangeAnnotationSorting({metric: 'test'})
+        actions.npmiChangeAnnotationSort({metric: 'test'})
       );
-      expect(nextState.sorting).toEqual({
+      expect(nextState.sort).toEqual({
         metric: 'test',
-        order: SortingOrder.UP,
+        order: SortOrder.UP,
       });
     });
   });

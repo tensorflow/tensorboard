@@ -22,9 +22,9 @@ import {State} from '../../../../../app_state';
 import {HeaderComponent} from './header_component';
 import {HeaderContainer} from './header_container';
 import * as npmiActions from '../../../actions';
-import {SortingOrder} from '../../../store/npmi_types';
+import {SortOrder} from '../../../store/npmi_types';
 import {appStateFromNpmiState, createNpmiState} from '../../../testing';
-import {getAnnotationSorting} from '../../../store';
+import {getAnnotationSort} from '../../../store';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
@@ -110,10 +110,10 @@ describe('Npmi Annotations List Header Container', () => {
     );
   });
 
-  it('renders down arrow when sorting active and down', () => {
-    store.overrideSelector(getAnnotationSorting, {
+  it('renders down arrow when sort active and down', () => {
+    store.overrideSelector(getAnnotationSort, {
       metric: 'nPMI@test',
-      order: SortingOrder.DOWN,
+      order: SortOrder.DOWN,
     });
     fixture = TestBed.createComponent(HeaderContainer);
     fixture.componentInstance.activeMetrics = [
@@ -125,14 +125,14 @@ describe('Npmi Annotations List Header Container', () => {
     const headerMetric = fixture.debugElement.query(css.HEADER);
     expect(headerMetric.nativeElement.textContent.trim()).toBe('test');
 
-    const sortingIcon = headerMetric.query(css.DOWN_ICON);
-    expect(sortingIcon).toBeTruthy();
+    const sortIcon = headerMetric.query(css.DOWN_ICON);
+    expect(sortIcon).toBeTruthy();
   });
 
-  it('renders sorting up arrow when sorting active and up', () => {
-    store.overrideSelector(getAnnotationSorting, {
+  it('renders sort up arrow when sort active and up', () => {
+    store.overrideSelector(getAnnotationSort, {
       metric: 'nPMI@test',
-      order: SortingOrder.UP,
+      order: SortOrder.UP,
     });
     fixture = TestBed.createComponent(HeaderContainer);
     fixture.componentInstance.activeMetrics = [
@@ -144,8 +144,8 @@ describe('Npmi Annotations List Header Container', () => {
     const headerMetric = fixture.debugElement.query(css.HEADER);
     expect(headerMetric.nativeElement.textContent.trim()).toBe('test');
 
-    const sortingIcon = headerMetric.query(css.UP_ICON);
-    expect(sortingIcon).toBeTruthy();
+    const sortIcon = headerMetric.query(css.UP_ICON);
+    expect(sortIcon).toBeTruthy();
   });
 
   it('dispatches npmiSetSelectedAnnotations action with all annotations when checkbox is clicked', () => {
@@ -159,12 +159,12 @@ describe('Npmi Annotations List Header Container', () => {
     ]);
   });
 
-  it('dispatches npmiChangeannotationSorting action when metric is clicked', () => {
+  it('dispatches npmiChangeannotationSort action when metric is clicked', () => {
     const headerMetric = fixture.debugElement.query(css.HEADER);
     headerMetric.nativeElement.click();
     fixture.detectChanges();
     expect(dispatchedActions).toEqual([
-      npmiActions.npmiChangeAnnotationSorting({
+      npmiActions.npmiChangeAnnotationSort({
         metric: 'nPMI@test',
       }),
     ]);

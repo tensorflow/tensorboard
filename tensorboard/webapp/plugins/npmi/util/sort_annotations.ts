@@ -14,21 +14,21 @@ limitations under the License.
 ==============================================================================*/
 import {
   AnnotationDataListing,
-  AnnotationSorting,
-  SortingOrder,
+  AnnotationSort,
+  SortOrder,
 } from '../store/npmi_types';
 import {stripMetricString} from './metric_type';
 
 export function sortAnnotations(
   annotationData: AnnotationDataListing,
-  sorting: AnnotationSorting
+  sort: AnnotationSort
 ): string[] {
   let result = Object.keys(annotationData);
-  const strippedMetric = stripMetricString(sorting.metric);
-  if (sorting.metric === '') {
+  const strippedMetric = stripMetricString(sort.metric);
+  if (sort.metric === '') {
     return result;
   }
-  if (sorting.order === SortingOrder.DOWN) {
+  if (sort.order === SortOrder.DOWN) {
     const maxData: {[annotation: string]: number} = {};
     for (const annotation of result) {
       maxData[annotation] = Math.max(
@@ -42,7 +42,7 @@ export function sortAnnotations(
     result = result.sort((a, b) => {
       return maxData[b] - maxData[a];
     });
-  } else if (sorting.order === SortingOrder.UP) {
+  } else if (sort.order === SortOrder.UP) {
     const minData: {[annotation: string]: number} = {};
     for (const annotation of result) {
       minData[annotation] = Math.min(
