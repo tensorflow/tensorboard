@@ -17,7 +17,7 @@ export function metricIsMetricCount(metric: string): boolean {
 }
 
 export function metricIsNpmi(metric: string): boolean {
-  return metric.startsWith('nPMI');
+  return metric.startsWith('nPMI@') || metric.startsWith('nPMI_diff@');
 }
 
 export function metricIsNpmiAndNotDiff(metric: string): boolean {

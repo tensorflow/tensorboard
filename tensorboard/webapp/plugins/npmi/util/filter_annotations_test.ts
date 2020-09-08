@@ -341,7 +341,7 @@ describe('filter annotations utils', () => {
         metricArithmetic,
         metricFilters,
         metrics,
-        '1'
+        'Ann.+_1$'
       );
       expect(result).toEqual({
         annotation_1: [
@@ -375,6 +375,29 @@ describe('filter annotations utils', () => {
           },
         ],
       });
+    });
+
+    it('returns empty result if filters exclude all annotations', () => {
+      const result = filterAnnotations(
+        annotationData,
+        activeRuns,
+        metricArithmetic,
+        {
+          'nPMI@test': {
+            max: 1.0,
+            min: 0.8,
+            includeNaN: false,
+          },
+          'nPMI@other': {
+            max: 0,
+            min: -1.0,
+            includeNaN: false,
+          },
+        },
+        metrics,
+        ''
+      );
+      expect(result).toEqual({});
     });
   });
 

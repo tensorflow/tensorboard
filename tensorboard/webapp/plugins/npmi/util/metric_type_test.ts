@@ -30,6 +30,10 @@ describe('metric type utils', () => {
       const metric = 'nPMI@test';
       expect(metricIsMetricCount(metric)).toBeFalse();
     });
+
+    it('returns false if the metric only contains count@', () => {
+      const metric = 'foo@count@';
+    });
   });
 
   describe('metric is npmi', () => {
@@ -47,6 +51,18 @@ describe('metric type utils', () => {
       const metric = 'count@test';
       expect(metricIsNpmi(metric)).toBeFalse();
     });
+
+    it('returns false if the metric only contains nPMI@', () => {
+      const metric = 'foo@nPMI@';
+    });
+
+    it('returns false if the metric starts with npmi@', () => {
+      const metric = 'npmi@test';
+    });
+
+    it('returns false if the metric and prefix are not separated by @', () => {
+      const metric = 'nPMItest';
+    });
   });
 
   describe('metric is npmi and not diff', () => {
@@ -58,6 +74,10 @@ describe('metric type utils', () => {
     it('returns false if the metric starts with nPMI_diff@', () => {
       const metric = 'nPMI_diff@test';
       expect(metricIsNpmiAndNotDiff(metric)).toBeFalse();
+    });
+
+    it('returns false if the metric only contains nPMI@', () => {
+      const metric = 'foo@nPMI@';
     });
   });
 

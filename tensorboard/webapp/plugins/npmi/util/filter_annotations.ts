@@ -34,23 +34,28 @@ export function filterAnnotations(
   const allMetrics = new Set(
     metrics.map((metric) => stripMetricString(metric))
   );
+  const filterRegex = new RegExp(annotationsRegex, 'i');
   Object.entries(annotationData).forEach((entry) => {
-    const filterRegex = new RegExp(annotationsRegex, 'i');
-    if (filterRegex.test(entry[0])) {
-      let valueDataElements = entry[1];
-      // Remove all inactive runs and keep only metrics currently displayed
-      valueDataElements = valueDataElements.filter((valueDataElement) => {
-        return (
-          allRuns.has(valueDataElement.run) &&
-          allMetrics.has(valueDataElement.metric)
-        );
-      });
-      if (
-        checkArithmeticParts(metricArithmetic, metricFilters, valueDataElements)
-      ) {
-        if (valueDataElements.length !== 0) {
-          data[entry[0]] = valueDataElements;
-        }
+    if (!filterRegex.test(entry[0])) {
+      return;
+    }
+    let valueDataElements = entry[1];
+    // Remove all inactive runs and keep only metrics currently displayed
+    valueDataElements = valueDataElements.filter((valueDataElement) => {
+      return (
+        allRuns.has(valueDataElement.run) &&
+        allMetrics.has(valueDataElement.metric)
+      );
+    });
+    if (
+      checkValuesPassMetricArithmetic(
+        metricArithmetic,
+        metricFilters,
+        valueDataElements
+      )
+    ) {
+      if (valueDataElements.length !== 0) {
+        data[entry[0]] = valueDataElements;
       }
     }
   });
@@ -70,7 +75,7 @@ export function removeHiddenAnnotations(
   return data;
 }
 
-function checkArithmeticParts(
+function checkValuesPassMetricArithmetic(
   metricArithmetic: ArithmeticElement[],
   metricFilters: MetricFilterListing,
   valueDataElements: ValueData[]
