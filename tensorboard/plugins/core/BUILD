@@ -30,6 +30,7 @@ py_test(
         ":core_plugin",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend:application",
+        "//tensorboard/backend/event_processing:data_provider",
         "//tensorboard/backend/event_processing:event_multiplexer",
         "//tensorboard/data:provider",
         "//tensorboard/plugins:base_plugin",
