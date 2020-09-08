@@ -230,10 +230,6 @@ const reducer = createReducer(
             includeNaN: false,
           },
         },
-        sorting: {
-          metric,
-          order: SortingOrder.DOWN,
-        },
       };
     }
   ),
