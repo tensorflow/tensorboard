@@ -21,6 +21,7 @@ import {
   Input,
   ViewChild,
   ElementRef,
+  HostListener,
 } from '@angular/core';
 import * as d3 from '../../../../../third_party/d3';
 import {Coordinate} from '../../../util/coordinate_data';
@@ -33,13 +34,19 @@ import {ValueData} from './../../../store/npmi_types';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ParallelCoordinatesComponent implements AfterViewInit, OnChanges {
+  @Input() activeMetrics!: string[];
   @Input() coordinateData!: {
     coordinates: Coordinate[];
     extremes: {max: number; min: number};
   };
-  @Input() activeMetrics!: string[];
+  // Only to trigger OnChanges to re-render the component.
+  @Input() sidebarWidth!: number;
   @ViewChild('chart', {static: true, read: ElementRef})
   private readonly svgElement!: ElementRef<SVGElement>;
+  @HostListener('window:resize', ['$event'])
+  onResize(event: Event) {
+    this.redraw();
+  }
   private width: number = 0;
   private chartWidth: number = 0;
   private readonly height: number = 300;
