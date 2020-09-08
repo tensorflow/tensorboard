@@ -27,15 +27,15 @@ limitations under the License.
         class="header-clickable"
         tabindex="0"
         role="button"
-        (click)="onChangeSorting.emit(metric)"
+        (click)="onChangeSort.emit(metric)"
         title="Change the sorting by clicking any of the metrics."
       >
         {{stripMetric(metric)}}
         <mat-icon
-          [svgIcon]="sorting.order === SortingOrder.DOWN ? 'arrow_downward_24px' : 'arrow_upward_24px'"
-          *ngIf="metric === sorting.metric"
-          [ngClass]="sorting.order === SortingOrder.DOWN ? 'down-icon' : 'up-icon'"
-          class="sorting-icon"
+          [svgIcon]="sort.order === SortOrder.DOWN ? 'arrow_downward_24px' : 'arrow_upward_24px'"
+          *ngIf="metric === sort.metric"
+          [ngClass]="sort.order === SortOrder.DOWN ? 'down-icon' : 'up-icon'"
+          class="sort-icon"
         ></mat-icon>
       </div>
     </div>

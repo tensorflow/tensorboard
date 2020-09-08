@@ -22,7 +22,7 @@ import {
   State,
   ArithmeticElement,
   MetricFilterListing,
-  AnnotationSorting,
+  AnnotationSort,
 } from './npmi_types';
 
 // HACK: These imports are for type inference.
@@ -104,10 +104,10 @@ export const getMetricFilters = createSelector(
   }
 );
 
-export const getAnnotationSorting = createSelector(
+export const getAnnotationSort = createSelector(
   selectNpmiState,
-  (state: NpmiState): AnnotationSorting => {
-    return state.sorting;
+  (state: NpmiState): AnnotationSort => {
+    return state.sort;
   }
 );
 

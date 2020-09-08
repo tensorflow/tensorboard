@@ -28,7 +28,7 @@ import {
   getHiddenAnnotations,
   getAnnotationsExpanded,
   getSelectedAnnotations,
-  getAnnotationSorting,
+  getAnnotationSort,
 } from '../../store';
 import {getRunSelection} from '../../../../core/store/core_selectors';
 import {
@@ -135,10 +135,10 @@ export class AnnotationsListContainer {
   );
   readonly sortedAnnotations$ = combineLatest([
     this.filteredAnnotations$,
-    this.store.pipe(select(getAnnotationSorting)),
+    this.store.pipe(select(getAnnotationSort)),
   ]).pipe(
-    map(([annotations, sorting]) => {
-      return sortAnnotations(annotations, sorting);
+    map(([annotations, sort]) => {
+      return sortAnnotations(annotations, sort);
     })
   );
   readonly selectedAnnotations$ = this.store.pipe(

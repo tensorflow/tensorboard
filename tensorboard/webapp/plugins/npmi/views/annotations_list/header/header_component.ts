@@ -20,7 +20,7 @@ import {
   EventEmitter,
 } from '@angular/core';
 import {stripMetricString} from '../../../util/metric_type';
-import {AnnotationSorting, SortingOrder} from '../../../store/npmi_types';
+import {AnnotationSort, SortOrder} from '../../../store/npmi_types';
 
 @Component({
   selector: 'npmi-annotations-list-header-component',
@@ -32,10 +32,10 @@ export class HeaderComponent {
   @Input() numAnnotations!: number;
   @Input() selectedAnnotations!: string[];
   @Input() activeMetrics!: string[];
-  @Input() sorting!: AnnotationSorting;
-  @Output() onChangeSorting = new EventEmitter<string>();
+  @Input() sort!: AnnotationSort;
+  @Output() onChangeSort = new EventEmitter<string>();
   @Output() onAllAnnotationsToggled = new EventEmitter<boolean>();
-  readonly SortingOrder = SortingOrder;
+  readonly SortOrder = SortOrder;
 
   stripMetric(metric: string): string {
     return stripMetricString(metric);

@@ -23,7 +23,7 @@ import {
   getMetricsRegex,
   getMetricArithmetic,
   getMetricFilters,
-  getAnnotationSorting,
+  getAnnotationSort,
   getPCExpanded,
   getAnnotationsExpanded,
   getShowCounts,
@@ -31,12 +31,7 @@ import {
   getSidebarWidth,
   getSidebarExpanded,
 } from './npmi_selectors';
-import {
-  DataLoadState,
-  Operator,
-  SortingOrder,
-  ArithmeticKind,
-} from './npmi_types';
+import {DataLoadState, Operator, SortOrder, ArithmeticKind} from './npmi_types';
 import {createNpmiState, createState} from '../testing';
 
 describe('npmi selectors', () => {
@@ -285,27 +280,27 @@ describe('npmi selectors', () => {
     });
   });
 
-  describe('getAnnotationSorting', () => {
+  describe('getAnnotationSort', () => {
     it('returns correct inital object', () => {
       const state = createState(createNpmiState());
-      expect(getAnnotationSorting(state)).toEqual({
+      expect(getAnnotationSort(state)).toEqual({
         metric: '',
-        order: SortingOrder.DOWN,
+        order: SortOrder.DOWN,
       });
     });
 
     it('returns correct state', () => {
       const state = createState(
         createNpmiState({
-          sorting: {
+          sort: {
             metric: 'test',
-            order: SortingOrder.UP,
+            order: SortOrder.UP,
           },
         })
       );
-      expect(getAnnotationSorting(state)).toEqual({
+      expect(getAnnotationSort(state)).toEqual({
         metric: 'test',
-        order: SortingOrder.UP,
+        order: SortOrder.UP,
       });
     });
   });
