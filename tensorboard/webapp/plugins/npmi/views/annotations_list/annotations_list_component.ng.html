@@ -27,13 +27,14 @@ limitations under the License.
   >
   </npmi-annotations-list-header>
   <cdk-virtual-scroll-viewport
-    itemSize="{{activeRuns.length * runHeight + 30}}"
+    itemSize="{{numActiveRuns * runHeight + 25}}"
     class="annotation-rows"
   >
     <npmi-annotation
       *cdkVirtualFor="let annotation of sortedAnnotations"
       [data]="annotations[annotation]"
       [activeMetrics]="activeMetrics"
+      [numActiveRuns]="numActiveRuns"
       [maxCount]="maxCount"
       [annotation]="annotation"
       [runHeight]="runHeight"
