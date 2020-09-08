@@ -25,7 +25,6 @@ ng_module(
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp/angular:expect_angular_material_button",
         "//tensorboard/webapp/angular:expect_angular_material_icon",
-        "//tensorboard/webapp/angular:expect_angular_material_tooltip",
         "//tensorboard/webapp/core/store",
         "//tensorboard/webapp/plugins/npmi/actions",
         "//tensorboard/webapp/plugins/npmi/store",

@@ -18,7 +18,6 @@ import {FormsModule} from '@angular/forms';
 
 import {MatButtonModule} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
-import {MatTooltipModule} from '@angular/material/tooltip';
 import {MatSlideToggleModule} from '@angular/material/slide-toggle';
 
 import {AnnotationsListToolbarComponent} from './annotations_list_toolbar_component';
@@ -35,7 +34,6 @@ import {AnnotationsSearchModule} from './annotations_search/annotations_search_m
     FormsModule,
     MatIconModule,
     MatButtonModule,
-    MatTooltipModule,
     MatSlideToggleModule,
     AnnotationsSearchModule,
   ],
