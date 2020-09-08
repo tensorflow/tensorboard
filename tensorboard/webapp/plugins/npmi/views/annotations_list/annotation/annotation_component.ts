@@ -46,13 +46,14 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
   @Input() showCounts!: boolean;
   @Input() annotation!: string;
   @Input() runHeight!: number;
+  // Only to trigger OnChanges to re-render the component.
   @Input() sidebarWidth!: number;
   @ViewChild('chart', {static: true, read: ElementRef})
   private readonly annotationContainer!: ElementRef<HTMLDivElement>;
   @ViewChild('hintClip', {static: true, read: ElementRef})
   private readonly clipPathElement!: ElementRef<SVGClipPathElement>;
   @HostBinding('class.selected-row') selected = false;
-  @HostListener('window:resize', ['$event'])
+  @HostListener('window:resize')
   onResize(event: Event) {
     this.redraw();
   }

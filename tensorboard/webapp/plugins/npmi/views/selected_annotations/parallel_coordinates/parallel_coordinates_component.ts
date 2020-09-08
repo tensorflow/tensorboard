@@ -39,6 +39,7 @@ export class ParallelCoordinatesComponent implements AfterViewInit, OnChanges {
     coordinates: Coordinate[];
     extremes: {max: number; min: number};
   };
+  // Only to trigger OnChanges to re-render the component.
   @Input() sidebarWidth!: number;
   @ViewChild('chart', {static: true, read: ElementRef})
   private readonly svgElement!: ElementRef<SVGElement>;
