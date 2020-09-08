@@ -242,7 +242,7 @@ class RespondTest(tb_test.TestCase):
             "default-src 'self';font-src 'self' data:;frame-ancestors *;"
             "frame-src 'self';img-src 'self' data: blob:;object-src 'none';"
             "style-src 'self' https://www.gstatic.com data: 'unsafe-inline';"
-            "script-src 'self' 'unsafe-eval' 'sha256-abcdefghi'"
+            "connect-src 'self';script-src 'self' 'unsafe-eval' 'sha256-abcdefghi'"
         )
         self.assertEqual(r.headers.get("Content-Security-Policy"), expected_csp)
 
@@ -256,7 +256,7 @@ class RespondTest(tb_test.TestCase):
             "default-src 'self';font-src 'self' data:;frame-ancestors *;"
             "frame-src 'self';img-src 'self' data: blob:;object-src 'none';"
             "style-src 'self' https://www.gstatic.com data: 'unsafe-inline';"
-            "script-src 'unsafe-eval'"
+            "connect-src 'self';script-src 'unsafe-eval'"
         )
         self.assertEqual(r.headers.get("Content-Security-Policy"), expected_csp)
 
@@ -271,7 +271,7 @@ class RespondTest(tb_test.TestCase):
             "default-src 'self';font-src 'self' data:;frame-ancestors *;"
             "frame-src 'self';img-src 'self' data: blob:;object-src 'none';"
             "style-src 'self' https://www.gstatic.com data: 'unsafe-inline';"
-            "script-src 'none'"
+            "connect-src 'self';script-src 'none'"
         )
         self.assertEqual(r.headers.get("Content-Security-Policy"), expected_csp)
 
@@ -286,7 +286,7 @@ class RespondTest(tb_test.TestCase):
             "default-src 'self';font-src 'self' data:;frame-ancestors *;"
             "frame-src 'self';img-src 'self' data: blob:;object-src 'none';"
             "style-src 'self' https://www.gstatic.com data: 'unsafe-inline';"
-            "script-src 'self'"
+            "connect-src 'self';script-src 'self'"
         )
         self.assertEqual(r.headers.get("Content-Security-Policy"), expected_csp)
 
@@ -300,7 +300,7 @@ class RespondTest(tb_test.TestCase):
             "default-src 'self';font-src 'self' data:;frame-ancestors *;"
             "frame-src 'self';img-src 'self' data: blob:;object-src 'none';"
             "style-src 'self' https://www.gstatic.com data: 'unsafe-inline';"
-            "script-src 'self' 'sha256-abcdefghi'"
+            "connect-src 'self';script-src 'self' 'sha256-abcdefghi'"
         )
         self.assertEqual(r.headers.get("Content-Security-Policy"), expected_csp)
 
@@ -328,7 +328,7 @@ class RespondTest(tb_test.TestCase):
             "frame-src 'self' https://myframe.com;"
             "img-src 'self' data: blob: https://example.com;"
             "object-src 'none';style-src 'self' https://www.gstatic.com data: "
-            "'unsafe-inline' https://googol.com;script-src "
+            "'unsafe-inline' https://googol.com;connect-src 'self';script-src "
             "https://tensorflow.org/tensorboard 'self' 'unsafe-eval' 'sha256-abcd'"
         )
         self.assertEqual(r.headers.get("Content-Security-Policy"), expected_csp)
