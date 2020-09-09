@@ -26,14 +26,19 @@ export function filterAnnotations(
   activeRuns: string[],
   metricArithmetic: ArithmeticElement[],
   metricFilters: MetricFilterListing,
-  metrics: string[]
+  metrics: string[],
+  annotationsRegex: string
 ): AnnotationDataListing {
   const data: AnnotationDataListing = {};
   const allRuns = new Set(activeRuns);
   const allMetrics = new Set(
     metrics.map((metric) => stripMetricString(metric))
   );
+  const filterRegex = new RegExp(annotationsRegex, 'i');
   Object.entries(annotationData).forEach((entry) => {
+    if (!filterRegex.test(entry[0])) {
+      return;
+    }
     let valueDataElements = entry[1];
     // Remove all inactive runs and keep only metrics currently displayed
     valueDataElements = valueDataElements.filter((valueDataElement) => {
@@ -43,7 +48,11 @@ export function filterAnnotations(
       );
     });
     if (
-      checkArithmeticParts(metricArithmetic, metricFilters, valueDataElements)
+      checkValuesPassMetricArithmetic(
+        metricArithmetic,
+        metricFilters,
+        valueDataElements
+      )
     ) {
       if (valueDataElements.length !== 0) {
         data[entry[0]] = valueDataElements;
@@ -66,7 +75,7 @@ export function removeHiddenAnnotations(
   return data;
 }
 
-function checkArithmeticParts(
+function checkValuesPassMetricArithmetic(
   metricArithmetic: ArithmeticElement[],
   metricFilters: MetricFilterListing,
   valueDataElements: ValueData[]

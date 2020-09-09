@@ -29,6 +29,7 @@ import {
   getAnnotationsExpanded,
   getSelectedAnnotations,
   getAnnotationSort,
+  getAnnotationsRegex,
 } from '../../store';
 import {getRunSelection} from '../../../../core/store/core_selectors';
 import {
@@ -108,6 +109,7 @@ export class AnnotationsListContainer {
     this.store.select(getMetricFilters),
     this.activeRuns$,
     this.activeMetrics$,
+    this.store.select(getAnnotationsRegex),
   ])
     .pipe(
       map(
@@ -117,13 +119,15 @@ export class AnnotationsListContainer {
           metricFilters,
           activeRuns,
           activeMetrics,
+          annotationsRegex,
         ]) => {
           return filterAnnotations(
             visibleAnnotations,
             activeRuns,
             metricArithmetic,
             metricFilters,
-            activeMetrics
+            activeMetrics,
+            annotationsRegex
           );
         }
       )

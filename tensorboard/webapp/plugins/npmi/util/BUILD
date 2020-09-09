@@ -8,8 +8,22 @@ ng_module(
     srcs = [
         "metric_type.ts",
     ],
+)
+
+tf_ts_library(
+    name = "metric_type_test_lib",
+    testonly = True,
+    srcs = ["metric_type_test.ts"],
     deps = [
-        "//tensorboard/webapp/plugins/npmi/store:types",
+        ":metric_type",
+        "//tensorboard/webapp/angular:expect_angular_core_testing",
+        "//tensorboard/webapp/core/testing",
+        "@npm//@angular/common",
+        "@npm//@angular/compiler",
+        "@npm//@angular/core",
+        "@npm//@angular/platform-browser",
+        "@npm//@types/jasmine",
+        "@npm//rxjs",
     ],
 )
 
@@ -21,6 +35,25 @@ ng_module(
     deps = [
         ":metric_type",
         "//tensorboard/webapp/plugins/npmi/store:types",
+    ],
+)
+
+tf_ts_library(
+    name = "filter_annotations_test_lib",
+    testonly = True,
+    srcs = ["filter_annotations_test.ts"],
+    deps = [
+        ":filter_annotations",
+        "//tensorboard/webapp/angular:expect_angular_core_testing",
+        "//tensorboard/webapp/core/testing",
+        "//tensorboard/webapp/plugins/npmi/store:types",
+        "//tensorboard/webapp/plugins/npmi/testing",
+        "@npm//@angular/common",
+        "@npm//@angular/compiler",
+        "@npm//@angular/core",
+        "@npm//@angular/platform-browser",
+        "@npm//@types/jasmine",
+        "@npm//rxjs",
     ],
 )
 
@@ -45,6 +78,7 @@ tf_ts_library(
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/core/testing",
         "//tensorboard/webapp/plugins/npmi/store:types",
+        "//tensorboard/webapp/plugins/npmi/testing",
         "@npm//@angular/common",
         "@npm//@angular/compiler",
         "@npm//@angular/core",
@@ -75,6 +109,7 @@ tf_ts_library(
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/core/testing",
         "//tensorboard/webapp/plugins/npmi/store:types",
+        "//tensorboard/webapp/plugins/npmi/testing",
         "@npm//@angular/common",
         "@npm//@angular/compiler",
         "@npm//@angular/core",
@@ -103,6 +138,7 @@ tf_ts_library(
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/core/testing",
         "//tensorboard/webapp/plugins/npmi/store:types",
+        "//tensorboard/webapp/plugins/npmi/testing",
         "@npm//@angular/common",
         "@npm//@angular/compiler",
         "@npm//@angular/core",

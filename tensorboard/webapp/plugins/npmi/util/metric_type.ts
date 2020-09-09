@@ -12,18 +12,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {SortOrder} from './../store/npmi_types';
-
-export function metricIsCount(metric: string): boolean {
-  return metric.startsWith('count');
-}
-
 export function metricIsMetricCount(metric: string): boolean {
   return metric.startsWith('count@');
 }
 
 export function metricIsNpmi(metric: string): boolean {
-  return metric.startsWith('nPMI');
+  return metric.startsWith('nPMI@') || metric.startsWith('nPMI_diff@');
 }
 
 export function metricIsNpmiAndNotDiff(metric: string): boolean {
