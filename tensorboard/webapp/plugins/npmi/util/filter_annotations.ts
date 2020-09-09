@@ -77,6 +77,9 @@ function checkArithmeticParts(
       return true;
     }
     const metricFilter = metricFilters[element.metric];
+    if (metricFilter === undefined) {
+      return true;
+    }
     return valueDataElements.some((valueDataElement) => {
       if (valueDataElement.metric === stripMetricString(element.metric)) {
         if (!valueDataElement.nPMIValue && metricFilter.includeNaN) {
