@@ -20,100 +20,10 @@ import {
   MetricFilterListing,
 } from '../store/npmi_types';
 import {filterAnnotations, removeHiddenAnnotations} from './filter_annotations';
+import {buildSampleAnnotationData} from '../testing';
 
 describe('filter annotations utils', () => {
-  const annotationData: AnnotationDataListing = {
-    annotation_1: [
-      {
-        annotation: 'annotation_1',
-        metric: 'test',
-        run: 'run_1',
-        nPMIValue: 0.5178,
-        countValue: 100,
-      },
-      {
-        annotation: 'annotation_1',
-        metric: 'other',
-        run: 'run_1',
-        nPMIValue: 0.815,
-        countValue: 100,
-      },
-      {
-        annotation: 'annotation_1',
-        metric: 'test',
-        run: 'run_2',
-        nPMIValue: 0.02157,
-        countValue: 101,
-      },
-      {
-        annotation: 'annotation_1',
-        metric: 'other',
-        run: 'run_2',
-        nPMIValue: -0.02157,
-        countValue: 101,
-      },
-      {
-        annotation: 'annotation_1',
-        metric: 'test',
-        run: 'run_3',
-        nPMIValue: -0.31,
-        countValue: 53,
-      },
-      {
-        annotation: 'annotation_1',
-        metric: 'other',
-        run: 'run_3',
-        nPMIValue: -1.0,
-        countValue: 53,
-      },
-    ],
-    annotation_2: [
-      {
-        annotation: 'annotation_2',
-        metric: 'test',
-        run: 'run_1',
-        nPMIValue: null,
-        countValue: 572,
-      },
-      {
-        annotation: 'annotation_2',
-        metric: 'other',
-        run: 'run_1',
-        nPMIValue: -1.0,
-        countValue: 53,
-      },
-    ],
-    annotation_3: [
-      {
-        annotation: 'annotation_3',
-        metric: 'test',
-        run: 'run_1',
-        nPMIValue: 0.757,
-        countValue: 572,
-      },
-      {
-        annotation: 'annotation3',
-        metric: 'other',
-        run: 'run_1',
-        nPMIValue: 0.05,
-        countValue: 53,
-      },
-      {
-        annotation: 'annotation_3',
-        metric: 'test',
-        run: 'run_2',
-        nPMIValue: -0.157,
-        countValue: 572,
-      },
-      {
-        annotation: 'annotation3',
-        metric: 'other',
-        run: 'run_2',
-        nPMIValue: -0.05,
-        countValue: 53,
-      },
-    ],
-  };
+  const annotationData: AnnotationDataListing = buildSampleAnnotationData();
   const activeRuns = ['run_1', 'run_2'];
   const metricArithmetic: ArithmeticElement[] = [
     {kind: ArithmeticKind.METRIC, metric: 'nPMI@test'},
