@@ -14,8 +14,15 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<div class="data-selection">
-  <npmi-metric-search class="metrics-selector"></npmi-metric-search>
-  <npmi-results-download></npmi-results-download>
-</div>
-<npmi-metric-arithmetic></npmi-metric-arithmetic>
+<button
+  mat-stroked-button
+  (click)="downloadResults()"
+  [disabled]="numFlaggedAnnotations === 0"
+  [ngClass]="{'active-button': numFlaggedAnnotations > 0}"
+  title="Export CSV reports of all flagged annotations. Will generate one CSV per active run."
+>
+  <span class="button-contents">
+    <mat-icon svgIcon="get_app_24px"></mat-icon>
+    Flagged Rows ({{numFlaggedAnnotations}})
+  </span>
+</button>

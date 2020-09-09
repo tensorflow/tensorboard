@@ -72,7 +72,7 @@ const dataExample = {
 };
 
 describe('coordinate data utils', () => {
-  it('creates violin data containing only selected metric and active runs', () => {
+  it('creates coordinate data', () => {
     const annotationData: AnnotationDataListing = dataExample;
     const selectedAnnotations = ['annotation_1'];
     const activeRuns = ['run_1', 'run_3'];
