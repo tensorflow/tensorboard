@@ -33,6 +33,7 @@ describe('metric type utils', () => {
 
     it('returns false if the metric only contains count@', () => {
       const metric = 'foo@count@';
+      expect(metricIsMetricCount(metric)).toBeFalse();
     });
   });
 
@@ -54,14 +55,17 @@ describe('metric type utils', () => {
 
     it('returns false if the metric only contains nPMI@', () => {
       const metric = 'foo@nPMI@';
+      expect(metricIsNpmi(metric)).toBeFalse();
     });
 
     it('returns false if the metric starts with npmi@', () => {
       const metric = 'npmi@test';
+      expect(metricIsNpmi(metric)).toBeFalse();
     });
 
     it('returns false if the metric and prefix are not separated by @', () => {
       const metric = 'nPMItest';
+      expect(metricIsNpmi(metric)).toBeFalse();
     });
   });
 
@@ -78,6 +82,7 @@ describe('metric type utils', () => {
 
     it('returns false if the metric only contains nPMI@', () => {
       const metric = 'foo@nPMI@';
+      expect(metricIsNpmiAndNotDiff(metric)).toBeFalse();
     });
   });
 
