@@ -15,7 +15,7 @@ limitations under the License.
 @import 'tensorboard/webapp/theme/tb_theme';
 
 .chart-container {
-  background-color: #fff;
+  background-color: mat-color($tb-background, card);
   border-bottom: 1px solid mat-color($tb-foreground, border);
   display: flex;
   flex-direction: column;
@@ -45,6 +45,6 @@ limitations under the License.
 }
 
 .stroked-line {
-  stroke: grey;
+  stroke: mat-color($tb-foreground, divider);
   stroke-dasharray: 3 3;
 }

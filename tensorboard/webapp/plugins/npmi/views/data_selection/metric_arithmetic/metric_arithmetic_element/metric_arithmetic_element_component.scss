@@ -22,7 +22,7 @@ limitations under the License.
 
 .metric-arithmetic-element-range {
   align-items: center;
-  background-color: mat-color($mat-light-theme-background, card);
+  background-color: mat-color($tb-background, card);
   font-size: 0.8em;
   height: 30px;
   justify-content: center;
@@ -39,7 +39,7 @@ limitations under the License.
   transition: width 1s;
 
   &:focus {
-    background-color: mat-color($mat-light-theme-background, focused-button);
+    background-color: mat-color($tb-background, focused-button);
     border: none;
     outline: none;
   }
