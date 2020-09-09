@@ -317,5 +317,27 @@ describe('Npmi Metric Arithmetic Element Container', () => {
         expect(invalidInput).toBeNull();
       });
     });
+
+    it('changes the form controls when the filter is updated', () => {
+      store.overrideSelector(getMetricFilters, {
+        'npmi@test': {max: 1.0, min: -1.0, includeNaN: true},
+      });
+      const fixture = TestBed.createComponent(MetricArithmeticElementContainer);
+      fixture.componentInstance.metric = 'npmi@test';
+      fixture.detectChanges();
+
+      const inputs = fixture.debugElement.queryAll(css.INPUT);
+      expect(inputs[0].nativeElement.value).toBe('NaN');
+      expect(inputs[1].nativeElement.value).toBe('1');
+
+      store.overrideSelector(getMetricFilters, {
+        'npmi@test': {max: 0.0, min: -0.3, includeNaN: false},
+      });
+      store.refreshState();
+      fixture.detectChanges();
+
+      expect(inputs[0].nativeElement.value).toBe('-0.3');
+      expect(inputs[1].nativeElement.value).toBe('0');
+    });
   });
 });
