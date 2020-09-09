@@ -29,6 +29,7 @@ limitations under the License.
   <cdk-virtual-scroll-viewport
     itemSize="{{numActiveRuns * runHeight + 25}}"
     class="annotation-rows"
+    minBufferPx="300"
   >
     <npmi-annotation
       *cdkVirtualFor="let annotation of sortedAnnotations"
