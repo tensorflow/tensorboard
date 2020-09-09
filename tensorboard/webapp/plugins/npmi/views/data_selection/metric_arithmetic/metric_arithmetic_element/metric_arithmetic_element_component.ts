@@ -20,6 +20,7 @@ import {
   EventEmitter,
   OnDestroy,
   OnInit,
+  OnChanges,
   SimpleChanges,
 } from '@angular/core';
 import {Validators, FormControl, ValidationErrors} from '@angular/forms';
@@ -32,9 +33,10 @@ import {Subject} from 'rxjs';
   styleUrls: ['./metric_arithmetic_element_component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class MetricArithmeticElementComponent implements OnInit, OnDestroy {
+export class MetricArithmeticElementComponent
+  implements OnInit, OnDestroy, OnChanges {
   @Input() metric!: string;
-  @Input() filterValues!: {min: string; max: string};
+  @Input() filterValues!: {min: number; max: number};
   @Output() onRemove = new EventEmitter<string>();
   @Output() onFilterChange = new EventEmitter<{min: number; max: number}>();
   focusMin = false;
