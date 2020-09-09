@@ -15,19 +15,23 @@ limitations under the License.
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
 
-import {MetricSearchModule} from './metric_search/metric_search_module';
-import {MetricArithmeticModule} from './metric_arithmetic/metric_arithmetic_module';
-import {ResultsDownloadModule} from './results_download/results_download_module';
-import {DataSelectionComponent} from './data_selection_component';
+import {MatIconModule} from '@angular/material/icon';
+import {MatButtonModule} from '@angular/material/button';
+import {MatTooltipModule} from '@angular/material/tooltip';
+import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
+
+import {ResultsDownloadComponent} from './results_download_component';
+import {ResultsDownloadContainer} from './results_download_container';
 
 @NgModule({
-  declarations: [DataSelectionComponent],
+  declarations: [ResultsDownloadComponent, ResultsDownloadContainer],
   imports: [
     CommonModule,
-    MetricSearchModule,
-    MetricArithmeticModule,
-    ResultsDownloadModule,
+    MatIconModule,
+    MatButtonModule,
+    MatTooltipModule,
+    BrowserAnimationsModule,
   ],
-  exports: [DataSelectionComponent],
+  exports: [ResultsDownloadContainer],
 })
-export class DataSelectionModule {}
+export class ResultsDownloadModule {}

@@ -180,6 +180,7 @@ tf_ng_web_test_suite(
         "//tensorboard/webapp/plugins/npmi/effects:effects_test_lib",
         "//tensorboard/webapp/plugins/npmi/store:store_test_lib",
         "//tensorboard/webapp/plugins/npmi/util:coordinate_data_test_lib",
+        "//tensorboard/webapp/plugins/npmi/util:csv_result_test_lib",
         "//tensorboard/webapp/plugins/npmi/util:sort_annotations_test_lib",
         "//tensorboard/webapp/plugins/npmi/util:violin_data_test_lib",
         "//tensorboard/webapp/plugins/npmi/views/annotations_list:annotations_list_test_lib",
@@ -194,6 +195,7 @@ tf_ng_web_test_suite(
         "//tensorboard/webapp/plugins/npmi/views/data_selection/metric_arithmetic/metric_arithmetic_element:metric_arithmetic_element_test_lib",
         "//tensorboard/webapp/plugins/npmi/views/data_selection/metric_arithmetic/metric_arithmetic_operator:metric_arithmetic_operator_test_lib",
         "//tensorboard/webapp/plugins/npmi/views/data_selection/metric_search:metric_search_test_lib",
+        "//tensorboard/webapp/plugins/npmi/views/data_selection/results_download:results_download_test_lib",
         "//tensorboard/webapp/plugins/npmi/views/main:main_test_lib",
         "//tensorboard/webapp/plugins/npmi/views/selected_annotations:selected_annotations_test_lib",
         "//tensorboard/webapp/plugins/npmi/views/selected_annotations/parallel_coordinates:parallel_coordinates_test_lib",
@@ -232,6 +234,7 @@ tf_svg_bundle(
         "@com_google_material_design_icon//:cancel_24px.svg",
         "@com_google_material_design_icon//:arrow_downward_24px.svg",
         "@com_google_material_design_icon//:arrow_upward_24px.svg",
+        "@com_google_material_design_icon//:get_app_24px.svg",
     ],
     out = "icon_bundle.svg",
 )
