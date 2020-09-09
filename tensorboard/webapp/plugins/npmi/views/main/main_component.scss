@@ -62,7 +62,6 @@ limitations under the License.
   position: absolute;
   left: 10px;
   bottom: 10px;
-  background-color: white;
   border: 1px solid mat-color($tb-foreground, border);
   border-radius: 3px;
   display: flex;
@@ -76,7 +75,7 @@ limitations under the License.
   height: 100%;
   width: 3px;
   overflow: hidden;
-  background-color: grey;
+  background-color: mat-color($tb-foreground, divider);
 }
 
 .annotations-list {

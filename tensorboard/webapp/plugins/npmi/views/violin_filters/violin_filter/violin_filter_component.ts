@@ -335,7 +335,7 @@ export class ViolinFilterComponent implements AfterViewInit, OnChanges {
       .style('stroke-dasharray', '3, 3')
       .attr('x1', 0)
       .attr('y1', this.chartHeight - this.drawMargin.top)
-      .attr('x2', this.chartWidth)
+      .attr('x2', this.drawWidth)
       .attr('y2', this.chartHeight - this.drawMargin.top);
   }
 
@@ -347,7 +347,7 @@ export class ViolinFilterComponent implements AfterViewInit, OnChanges {
     this.nanText.attr('y', this.chartHeight - this.drawMargin.top);
     this.nanLine
       .attr('y1', this.drawHeight + this.drawMargin.top)
-      .attr('x2', this.chartWidth)
+      .attr('x2', this.drawWidth)
       .attr('y2', this.drawHeight + this.drawMargin.top);
   }
 

@@ -37,7 +37,7 @@ limitations under the License.
 
 .side-toggle {
   align-items: center;
-  background-color: white;
+  background-color: mat-color($tb-background, raised-button);
   border-radius: 3px;
   border: 1px solid mat-color($tb-foreground, border);
   display: flex;
@@ -58,5 +58,5 @@ limitations under the License.
 }
 
 .filters-hint-text {
-  color: lightgray;
+  color: mat-color($tb-foreground, hint-text);
 }
