@@ -55,10 +55,10 @@ export class ResultsDownloadContainer {
         .map((run) => run[0]);
     })
   );
-  readonly flaggedData$ = combineLatest(
+  readonly flaggedData$ = combineLatest([
     this.store.select(getAnnotationData),
-    this.flaggedAnnotations$
-  ).pipe(
+    this.flaggedAnnotations$,
+  ]).pipe(
     map(([annotationData, flaggedAnnotations]) => {
       const flagSet = new Set(flaggedAnnotations);
       const flaggedData = Object.entries(annotationData).filter((entry) =>

@@ -14,66 +14,11 @@ limitations under the License.
 ==============================================================================*/
 import {AnnotationDataListing} from '../store/npmi_types';
 import {convertToCoordinateData} from './coordinate_data';
-
-const dataExample = {
-  annotation_1: [
-    {
-      annotation: 'annotation_1',
-      metric: 'test',
-      run: 'run_1',
-      nPMIValue: 0.5178,
-      countValue: 100,
-    },
-    {
-      annotation: 'annotation_1',
-      metric: 'other',
-      run: 'run_1',
-      nPMIValue: -0.1,
-      countValue: 53,
-    },
-    {
-      annotation: 'annotation_1',
-      metric: 'test',
-      run: 'run_2',
-      nPMIValue: 0.02157,
-      countValue: 101,
-    },
-    {
-      annotation: 'annotation_1',
-      metric: 'test',
-      run: 'run_3',
-      nPMIValue: -0.1,
-      countValue: 53,
-    },
-    {
-      annotation: 'annotation_1',
-      metric: 'other',
-      run: 'run_3',
-      nPMIValue: -0.1,
-      countValue: 53,
-    },
-    {
-      annotation: 'annotation_1',
-      metric: 'third',
-      run: 'run_3',
-      nPMIValue: -0.1,
-      countValue: 53,
-    },
-  ],
-  annotation_2: [
-    {
-      annotation: 'annotation_2',
-      metric: 'test',
-      run: 'run_1',
-      nPMIValue: null,
-      countValue: 572,
-    },
-  ],
-};
+import {buildSampleAnnotationData} from '../testing';
 
 describe('coordinate data utils', () => {
   it('creates coordinate data', () => {
-    const annotationData: AnnotationDataListing = dataExample;
+    const annotationData: AnnotationDataListing = buildSampleAnnotationData();
     const selectedAnnotations = ['annotation_1'];
     const activeRuns = ['run_1', 'run_3'];
     const activeMetrics = ['test', 'other'];
@@ -83,7 +28,7 @@ describe('coordinate data utils', () => {
       activeRuns,
       activeMetrics
     );
-    expect(data.extremes).toEqual({min: -0.1, max: 0.5178});
+    expect(data.extremes).toEqual({min: -1, max: 0.815});
     expect(data.coordinates).toEqual([
       {
         runId: 'run_1',
@@ -100,8 +45,8 @@ describe('coordinate data utils', () => {
             annotation: 'annotation_1',
             metric: 'other',
             run: 'run_1',
-            nPMIValue: -0.1,
-            countValue: 53,
+            nPMIValue: 0.815,
+            countValue: 100,
           },
         ],
       },
@@ -113,14 +58,14 @@ describe('coordinate data utils', () => {
             annotation: 'annotation_1',
             metric: 'test',
             run: 'run_3',
-            nPMIValue: -0.1,
+            nPMIValue: -0.31,
             countValue: 53,
           },
           {
             annotation: 'annotation_1',
             metric: 'other',
             run: 'run_3',
-            nPMIValue: -0.1,
+            nPMIValue: -1.0,
             countValue: 53,
           },
         ],
@@ -129,7 +74,7 @@ describe('coordinate data utils', () => {
   });
 
   it('returns empty coordinates when no runs active', () => {
-    const annotationData: AnnotationDataListing = dataExample;
+    const annotationData: AnnotationDataListing = buildSampleAnnotationData();
     const selectedAnnotations = ['annotation_1'];
     const activeRuns: string[] = [];
     const activeMetrics = ['test', 'other'];
@@ -159,7 +104,7 @@ describe('coordinate data utils', () => {
   });
 
   it('returns empty coordinates when nothing matches the active metrics', () => {
-    const annotationData: AnnotationDataListing = dataExample;
+    const annotationData: AnnotationDataListing = buildSampleAnnotationData();
     const selectedAnnotations = ['annotation_1'];
     const activeRuns = ['run_1'];
     const activeMetrics = ['more', 'metrics'];

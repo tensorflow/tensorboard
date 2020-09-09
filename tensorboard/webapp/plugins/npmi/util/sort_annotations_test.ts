@@ -18,66 +18,11 @@ import {
   AnnotationSort,
 } from '../store/npmi_types';
 import {sortAnnotations} from './sort_annotations';
+import {buildSampleAnnotationData} from '../testing';
 
 describe('sort annotations utils', () => {
   it('sorts annotations upwards', () => {
-    const annotationData: AnnotationDataListing = {
-      annotation_1: [
-        {
-          annotation: 'annotation_1',
-          metric: 'test',
-          run: 'run_1',
-          nPMIValue: 0.5178,
-          countValue: 100,
-        },
-        {
-          annotation: 'annotation_1',
-          metric: 'test',
-          run: 'run_2',
-          nPMIValue: 0.02157,
-          countValue: 101,
-        },
-        {
-          annotation: 'annotation_1',
-          metric: 'test',
-          run: 'run_3',
-          nPMIValue: -0.31,
-          countValue: 53,
-        },
-        {
-          annotation: 'annotation_1',
-          metric: 'other',
-          run: 'run_3',
-          nPMIValue: -1.0,
-          countValue: 53,
-        },
-      ],
-      annotation_2: [
-        {
-          annotation: 'annotation_2',
-          metric: 'test',
-          run: 'run_1',
-          nPMIValue: null,
-          countValue: 572,
-        },
-      ],
-      annotation_3: [
-        {
-          annotation: 'annotation_3',
-          metric: 'test',
-          run: 'run_1',
-          nPMIValue: 0.757,
-          countValue: 572,
-        },
-        {
-          annotation: 'annotation_3',
-          metric: 'test',
-          run: 'run_2',
-          nPMIValue: -0.157,
-          countValue: 572,
-        },
-      ],
-    };
+    const annotationData: AnnotationDataListing = buildSampleAnnotationData();
     const sort: AnnotationSort = {
       metric: 'nPMI@test',
       order: SortOrder.UP,
@@ -91,63 +36,7 @@ describe('sort annotations utils', () => {
   });
 
   it('sorts annotations downwards', () => {
-    const annotationData: AnnotationDataListing = {
-      annotation_1: [
-        {
-          annotation: 'annotation_1',
-          metric: 'test',
-          run: 'run_1',
-          nPMIValue: 0.5178,
-          countValue: 100,
-        },
-        {
-          annotation: 'annotation_1',
-          metric: 'test',
-          run: 'run_2',
-          nPMIValue: 0.02157,
-          countValue: 101,
-        },
-        {
-          annotation: 'annotation_1',
-          metric: 'test',
-          run: 'run_3',
-          nPMIValue: -0.31,
-          countValue: 53,
-        },
-        {
-          annotation: 'annotation_1',
-          metric: 'other',
-          run: 'run_3',
-          nPMIValue: 1.0,
-          countValue: 53,
-        },
-      ],
-      annotation_2: [
-        {
-          annotation: 'annotation_2',
-          metric: 'test',
-          run: 'run_1',
-          nPMIValue: null,
-          countValue: 572,
-        },
-      ],
-      annotation_3: [
-        {
-          annotation: 'annotation_3',
-          metric: 'test',
-          run: 'run_1',
-          nPMIValue: 0.757,
-          countValue: 572,
-        },
-        {
-          annotation: 'annotation_3',
-          metric: 'test',
-          run: 'run_2',
-          nPMIValue: -0.157,
-          countValue: 572,
-        },
-      ],
-    };
+    const annotationData: AnnotationDataListing = buildSampleAnnotationData();
     const sort: AnnotationSort = {
       metric: 'nPMI@test',
       order: SortOrder.DOWN,
@@ -161,56 +50,7 @@ describe('sort annotations utils', () => {
   });
 
   it('does not sort annotations if no metric specified', () => {
-    const annotationData: AnnotationDataListing = {
-      annotation_1: [
-        {
-          annotation: 'annotation_1',
-          metric: 'test',
-          run: 'run_1',
-          nPMIValue: 0.5178,
-          countValue: 100,
-        },
-        {
-          annotation: 'annotation_1',
-          metric: 'test',
-          run: 'run_2',
-          nPMIValue: 0.02157,
-          countValue: 101,
-        },
-        {
-          annotation: 'annotation_1',
-          metric: 'test',
-          run: 'run_3',
-          nPMIValue: -0.1,
-          countValue: 53,
-        },
-        {
-          annotation: 'annotation_1',
-          metric: 'other',
-          run: 'run_3',
-          nPMIValue: -0.1,
-          countValue: 53,
-        },
-      ],
-      annotation_2: [
-        {
-          annotation: 'annotation_2',
-          metric: 'test',
-          run: 'run_1',
-          nPMIValue: null,
-          countValue: 572,
-        },
-      ],
-      annotation_3: [
-        {
-          annotation: 'annotation_3',
-          metric: 'test',
-          run: 'run_1',
-          nPMIValue: 0.757,
-          countValue: 572,
-        },
-      ],
-    };
+    const annotationData: AnnotationDataListing = buildSampleAnnotationData();
     const sort: AnnotationSort = {
       metric: '',
       order: SortOrder.UP,

@@ -181,6 +181,8 @@ tf_ng_web_test_suite(
         "//tensorboard/webapp/plugins/npmi/store:store_test_lib",
         "//tensorboard/webapp/plugins/npmi/util:coordinate_data_test_lib",
         "//tensorboard/webapp/plugins/npmi/util:csv_result_test_lib",
+        "//tensorboard/webapp/plugins/npmi/util:filter_annotations_test_lib",
+        "//tensorboard/webapp/plugins/npmi/util:metric_type_test_lib",
         "//tensorboard/webapp/plugins/npmi/util:sort_annotations_test_lib",
         "//tensorboard/webapp/plugins/npmi/util:violin_data_test_lib",
         "//tensorboard/webapp/plugins/npmi/views/annotations_list:annotations_list_test_lib",
