@@ -61,13 +61,13 @@ tf_ts_library(
         "//tensorboard/components/polymer:legacy_element_mixin",
         "//tensorboard/components/polymer:register_style_dom_module",
         "//tensorboard/components/tf_wbr_string",
+        "//tensorboard/webapp/third_party:tfjs",
         "@npm//@polymer/decorators",
         "@npm//@polymer/polymer",
         "@npm//d3",
         "@npm//numeric",
         "@npm//three",
         "@npm//umap-js",
-        "@npm//weblas",
     ],
 )
 

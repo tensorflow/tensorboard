@@ -124,7 +124,7 @@ class Projector
   private metadataCard: any;
   private statusBar: HTMLDivElement;
   private analyticsLogger: AnalyticsLogger;
-  ready() {
+  async ready() {
     super.ready();
     logging.setDomContainer(this as HTMLElement);
     this.analyticsLogger = new AnalyticsLogger(
@@ -132,7 +132,8 @@ class Projector
       this.eventLogging
     );
     this.analyticsLogger.logPageView('embeddings');
-    if (!util.hasWebGLSupport()) {
+    const hasWebGLSupport = await util.hasWebGLSupport();
+    if (!hasWebGLSupport) {
       this.analyticsLogger.logWebGLDisabled();
       logging.setErrorMessage(
         'Your browser or device does not have WebGL enabled. Please enable ' +

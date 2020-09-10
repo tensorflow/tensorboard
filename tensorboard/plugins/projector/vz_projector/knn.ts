@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import weblas from 'weblas/dist/weblas';
+import * as tf from '../../../webapp/third_party/tfjs';
 
 import {KMin} from './heap';
 import * as vector from './vector';
@@ -60,7 +60,7 @@ export function findKNNGPUCosine<T>(
   // pair of points, which we sort using KMin data structure to obtain the
   // K nearest neighbors for each point.
   let typedArray = vector.toTypedArray(dataPoints, accessor);
-  let bigMatrix = new weblas.pipeline.Tensor([N, dim], typedArray);
+  const bigMatrix = tf.tensor(typedArray, [N, dim]);
   let nearest: NearestEntry[][] = new Array(N);
   let numPieces = Math.ceil(N / OPTIMAL_GPU_BLOCK_SIZE);
   let M = Math.floor(N / numPieces);
@@ -75,7 +75,7 @@ export function findKNNGPUCosine<T>(
     util
       .runAsyncTask(
         progressMsg,
-        () => {
+        async () => {
           let B = piece < modulo ? M + 1 : M;
           let typedB = new Float32Array(B * dim);
           for (let i = 0; i < B; ++i) {
@@ -84,18 +84,13 @@ export function findKNNGPUCosine<T>(
               typedB[i * dim + d] = vector[d];
             }
           }
-          let partialMatrix = new weblas.pipeline.Tensor([B, dim], typedB);
-          // Result is N x B matrix.
-          let result = weblas.pipeline.sgemm(
-            1,
-            bigMatrix,
-            partialMatrix,
-            null,
-            null
-          );
-          let partial = result.transfer();
-          partialMatrix.delete();
-          result.delete();
+          const partialMatrix = tf.tensor(typedB, [dim, B]);
+
+          const result = tf.matMul(bigMatrix, partialMatrix);
+          const partial = await result.array();
+          partialMatrix.dispose();
+          result.dispose();
+
           progress += progressDiff;
           for (let i = 0; i < B; i++) {
             let kMin = new KMin<NearestEntry>(k);
@@ -104,7 +99,7 @@ export function findKNNGPUCosine<T>(
               if (j === iReal) {
                 continue;
               }
-              let cosDist = 1 - partial[j * B + i]; // [j, i];
+              let cosDist = 1 - partial[j][i];
               kMin.add(cosDist, {index: j, dist: cosDist});
             }
             nearest[iReal] = kMin.getMinKItems();
@@ -121,7 +116,7 @@ export function findKNNGPUCosine<T>(
             step(resolve);
           } else {
             logging.setModalMessage(null, KNN_GPU_MSG_ID);
-            bigMatrix.delete();
+            bigMatrix.dispose();
             resolve(nearest);
           }
         },
