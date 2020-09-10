@@ -90,3 +90,7 @@ export interface NpmiState {
 export interface State {
   [NPMI_FEATURE_KEY]?: NpmiState;
 }
+
+export interface TfColorScale extends HTMLElement {
+  runsColorScale: (runName: string) => string;
+}

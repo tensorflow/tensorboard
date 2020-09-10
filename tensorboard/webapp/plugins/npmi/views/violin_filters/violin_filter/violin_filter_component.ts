@@ -27,7 +27,7 @@ import {
 
 import * as d3 from '../../../../../third_party/d3';
 
-import {MetricFilter} from './../../../store/npmi_types';
+import {MetricFilter, TfColorScale} from './../../../store/npmi_types';
 import {ViolinChartData, ViolinBin} from './../../../util/violin_data';
 
 @Component({
@@ -49,20 +49,13 @@ export class ViolinFilterComponent implements AfterViewInit, OnChanges {
   @ViewChild('chart', {static: true, read: ElementRef})
   private readonly chartContainer!: ElementRef<HTMLDivElement>;
   private readonly height = 300;
+  private chartWidth: number = 0;
+  private chartHeight: number = 0;
+  private drawHeight: number = 0;
+  private drawWidth: number = 0;
   private readonly margin = {top: 20, right: 10, bottom: 20, left: 10};
   private readonly drawMargin = {top: 0, right: 0, bottom: 20, left: 20};
-  get chartWidth(): number {
-    return this.width - this.margin.left - this.margin.right;
-  }
-  get chartHeight(): number {
-    return this.height - this.margin.top - this.margin.bottom;
-  }
-  get drawHeight(): number {
-    return this.chartHeight - this.drawMargin.top - this.drawMargin.bottom;
-  }
-  get drawWidth(): number {
-    return this.chartWidth - this.drawMargin.left - this.drawMargin.right;
-  }
+  private colorScale!: (runName: string) => string;
   // Drawing containers
   private svg!: d3.Selection<
     SVGElement,
@@ -136,21 +129,20 @@ export class ViolinFilterComponent implements AfterViewInit, OnChanges {
   >;
 
   private maxBinSize = 0;
-  private readonly rgbColors = ['240, 120, 80', '46, 119, 182', '190, 64, 36'];
   private readonly area = d3
     .area<ViolinBin>()
     .x0(
-      function (this: ViolinFilterComponent, d: ViolinBin) {
+      function(this: ViolinFilterComponent, d: ViolinBin) {
         return this.xScaleNum(-d.length);
       }.bind(this)
     )
     .x1(
-      function (this: ViolinFilterComponent, d: ViolinBin) {
+      function(this: ViolinFilterComponent, d: ViolinBin) {
         return this.xScaleNum(d.length);
       }.bind(this)
     )
     .y(
-      function (this: ViolinFilterComponent, d: ViolinBin) {
+      function(this: ViolinFilterComponent, d: ViolinBin) {
         if (d.x0! === -Infinity) {
           return this.chartHeight - this.drawMargin.top;
         }
@@ -160,6 +152,10 @@ export class ViolinFilterComponent implements AfterViewInit, OnChanges {
     .curve(d3.curveCatmullRom);
 
   ngAfterViewInit(): void {
+    this.updateDimensions();
+    this.colorScale = (document.createElement(
+      'tf-color-scale'
+    ) as TfColorScale).runsColorScale;
     this.svg = d3.select(this.chartContainer.nativeElement).select('svg');
     this.mainContainer = this.svg
       .append('g')
@@ -195,12 +191,22 @@ export class ViolinFilterComponent implements AfterViewInit, OnChanges {
   }
 
   redraw() {
+    this.updateDimensions();
     this.setMaxBinSize();
     this.updateAxes();
     this.draw();
   }
 
   // Initializing/Updating the visualization props
+  private updateDimensions() {
+    this.chartWidth = this.width - this.margin.left - this.margin.right;
+    this.drawWidth =
+      this.chartWidth - this.drawMargin.left - this.drawMargin.right;
+    this.chartHeight = this.height - this.margin.top - this.margin.bottom;
+    this.drawHeight =
+      this.chartHeight - this.drawMargin.top - this.drawMargin.bottom;
+  }
+
   setMaxBinSize() {
     Object.values(this.chartData.violinData).forEach((dataElement) => {
       const lengths = dataElement.map((bin) => bin.length);
@@ -264,32 +270,32 @@ export class ViolinFilterComponent implements AfterViewInit, OnChanges {
       .attr('class', 'violin-plot')
       .style(
         'stroke',
-        function (
+        function(
           this: ViolinFilterComponent,
           d: [string, ViolinBin[]]
         ): string {
-          return `rgba(${this.rgbColors[0]}, 1.0)`;
+          return this.colorScale(d[0]);
         }.bind(this)
       )
       .style(
         'fill',
-        function (
+        function(
           this: ViolinFilterComponent,
           d: [string, ViolinBin[]]
         ): string {
-          return `rgba(${this.rgbColors[0]}, 0.3)`;
+          return `${this.colorScale(d[0])}33`;
         }.bind(this)
       )
       .attr(
         'transform',
-        function (
+        function(
           this: ViolinFilterComponent,
           d: [string, ViolinBin[]]
         ): string {
           return `translate(${this.xScale(d[0])}, 0)`;
         }.bind(this)
       )
-      .datum(function (d: [string, ViolinBin[]]): ViolinBin[] {
+      .datum(function(d: [string, ViolinBin[]]): ViolinBin[] {
         return d[1];
       })
       .attr('d', this.area);
@@ -297,14 +303,14 @@ export class ViolinFilterComponent implements AfterViewInit, OnChanges {
     plots
       .attr(
         'transform',
-        function (
+        function(
           this: ViolinFilterComponent,
           d: [string, ViolinBin[]]
         ): string {
           return `translate(${this.xScale(d[0])}, 0)`;
         }.bind(this)
       )
-      .datum(function (d: [string, ViolinBin[]]): ViolinBin[] {
+      .datum(function(d: [string, ViolinBin[]]): ViolinBin[] {
         return d[1];
       })
       .attr('d', this.area);
