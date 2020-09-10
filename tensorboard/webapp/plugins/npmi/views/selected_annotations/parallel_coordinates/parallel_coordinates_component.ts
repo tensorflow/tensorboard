@@ -145,16 +145,13 @@ export class ParallelCoordinatesComponent implements AfterViewInit, OnChanges {
       .selectAll<SVGGElement, unknown>('.axis-y')
       .data(this.activeMetrics);
 
-    const axisEnters = axes
-      .enter()
-      .append('g')
-      .attr('class', 'axis-y');
+    const axisEnters = axes.enter().append('g').attr('class', 'axis-y');
 
     axisEnters
       .merge(axes)
       .attr(
         'transform',
-        function(this: ParallelCoordinatesComponent, d: string) {
+        function (this: ParallelCoordinatesComponent, d: string) {
           return `translate(${this.xScale(d)}, 0)`;
         }.bind(this)
       )
@@ -182,7 +179,7 @@ export class ParallelCoordinatesComponent implements AfterViewInit, OnChanges {
       .text((d: string) => d)
       .attr(
         'transform',
-        function(this: ParallelCoordinatesComponent, d: string) {
+        function (this: ParallelCoordinatesComponent, d: string) {
           return `translate(${this.xScale(d)! - 5}, ${this.yScale(
             this.coordinateData.extremes.min
           )}) rotate(-90)`;
@@ -206,7 +203,7 @@ export class ParallelCoordinatesComponent implements AfterViewInit, OnChanges {
       .text((d: string) => d)
       .attr(
         'transform',
-        function(this: ParallelCoordinatesComponent, d: string) {
+        function (this: ParallelCoordinatesComponent, d: string) {
           return `translate(${this.xScale(d)! - 5}, ${this.yScale(
             this.coordinateData.extremes.min
           )}) rotate(-90)`;
@@ -233,7 +230,7 @@ export class ParallelCoordinatesComponent implements AfterViewInit, OnChanges {
       .attr('d', this.path.bind(this))
       .attr(
         'stroke',
-        function(this: ParallelCoordinatesComponent, d: Coordinate) {
+        function (this: ParallelCoordinatesComponent, d: Coordinate) {
           return this.colorScale(d.runId);
         }.bind(this)
       );
@@ -268,7 +265,7 @@ export class ParallelCoordinatesComponent implements AfterViewInit, OnChanges {
     );
     return d3.line()(
       d.values.map(
-        function(this: any, p: ValueData) {
+        function (this: any, p: ValueData) {
           let yPos = this.yScale(p.nPMIValue);
           return [this.xScale(p.metric), yPos] as [number, number];
         }.bind(this)
@@ -283,13 +280,13 @@ export class ParallelCoordinatesComponent implements AfterViewInit, OnChanges {
   ) {
     this.labelsGroup
       .selectAll<SVGTextElement, Coordinate>('.coordinate-label')
-      .filter(function(x: Coordinate) {
+      .filter(function (x: Coordinate) {
         return !(x.annotation === d.annotation);
       })
       .style('opacity', 0.1);
     this.coordinatesGroup
       .selectAll<SVGPathElement, Coordinate>('.coord')
-      .filter(function(x: Coordinate) {
+      .filter(function (x: Coordinate) {
         return !(x.annotation === d.annotation);
       })
       .style('opacity', 0.1);
@@ -319,13 +316,13 @@ export class ParallelCoordinatesComponent implements AfterViewInit, OnChanges {
 
     coordinateLabelEnters
       .merge(coordinateLabels)
-      .text(function(d: Coordinate) {
+      .text(function (d: Coordinate) {
         return d.annotation;
       })
       .attr('x', this.xScale(this.activeMetrics[0])! + 30)
       .attr(
         'y',
-        function(this: ParallelCoordinatesComponent, d: Coordinate) {
+        function (this: ParallelCoordinatesComponent, d: Coordinate) {
           const y0 = this.yScale(
             d.values[0].nPMIValue ? d.values[0].nPMIValue : 0
           );
