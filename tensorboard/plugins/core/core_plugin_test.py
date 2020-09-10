@@ -37,6 +37,7 @@ from werkzeug import test as werkzeug_test
 from werkzeug import wrappers
 
 from tensorboard.backend import application
+from tensorboard.backend.event_processing import data_provider
 from tensorboard.backend.event_processing import (
     plugin_event_multiplexer as event_multiplexer,
 )
@@ -136,10 +137,13 @@ class CorePluginFlagsTest(tf.test.TestCase):
 class CorePluginNoDataTest(tf.test.TestCase):
     def setUp(self):
         super(CorePluginNoDataTest, self).setUp()
+        multiplexer = event_multiplexer.EventMultiplexer()
+        logdir = self.get_temp_dir()
+        provider = data_provider.MultiplexerDataProvider(multiplexer, logdir)
         context = base_plugin.TBContext(
             assets_zip_provider=get_test_assets_zip_provider(),
-            logdir=self.get_temp_dir(),
-            multiplexer=event_multiplexer.EventMultiplexer(),
+            logdir=logdir,
+            data_provider=provider,
             window_title="title foo",
         )
         self.plugin = core_plugin.CorePlugin(context)
@@ -271,10 +275,13 @@ class CorePluginTestBase(object):
         super(CorePluginTestBase, self).setUp()
         self.logdir = self.get_temp_dir()
         self.multiplexer = event_multiplexer.EventMultiplexer()
+        provider = data_provider.MultiplexerDataProvider(
+            self.multiplexer, self.logdir
+        )
         context = base_plugin.TBContext(
             assets_zip_provider=get_test_assets_zip_provider(),
             logdir=self.logdir,
-            multiplexer=self.multiplexer,
+            data_provider=provider,
         )
         self.plugin = core_plugin.CorePlugin(context)
         app = application.TensorBoardWSGI([self.plugin])

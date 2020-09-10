@@ -19,9 +19,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import argparse
 import collections.abc
-import functools
 import os
 import textwrap
 import numpy as np
@@ -46,45 +44,18 @@ class TextPluginTest(tf.test.TestCase):
     def setUp(self):
         self.logdir = self.get_temp_dir()
 
-    def with_plugin(generate_testdata=True, include_text=True):
-        """Run a test with a bare multiplexer and with a `data_provider`.
+    def load_plugin(self):
+        self.generate_testdata()
+        multiplexer = event_multiplexer.EventMultiplexer()
+        multiplexer.AddRunsFromDirectory(self.logdir)
+        multiplexer.Reload()
+        provider = data_provider.MultiplexerDataProvider(
+            multiplexer, self.logdir
+        )
+        ctx = base_plugin.TBContext(logdir=self.logdir, data_provider=provider)
+        return text_plugin.TextPlugin(ctx)
 
-        The decorated function will receive an initialized
-        `TextPlugin` object as its first positional argument.
-        """
-
-        def decorator(fn):
-            @functools.wraps(fn)
-            def wrapper(self, *args, **kwargs):
-                if generate_testdata:
-                    self.generate_testdata(include_text=include_text)
-                multiplexer = event_multiplexer.EventMultiplexer()
-                multiplexer.AddRunsFromDirectory(self.logdir)
-                multiplexer.Reload()
-                with self.subTest("bare multiplexer"):
-                    flags = argparse.Namespace(generic_data="false")
-                    ctx = base_plugin.TBContext(
-                        logdir=self.logdir,
-                        multiplexer=multiplexer,
-                        flags=flags,
-                    )
-                    fn(self, text_plugin.TextPlugin(ctx), *args, **kwargs)
-                with self.subTest("generic data provider"):
-                    provider = data_provider.MultiplexerDataProvider(
-                        multiplexer, self.logdir
-                    )
-                    ctx = base_plugin.TBContext(
-                        logdir=self.logdir,
-                        multiplexer=multiplexer,
-                        data_provider=provider,
-                    )
-                    fn(self, text_plugin.TextPlugin(ctx), *args, **kwargs)
-
-            return wrapper
-
-        return decorator
-
-    def generate_testdata(self, include_text=True, logdir=None):
+    def generate_testdata(self, logdir=None):
         tf.compat.v1.reset_default_graph()
         sess = tf.compat.v1.Session()
         placeholder = tf.compat.v1.placeholder(tf.string)
@@ -104,36 +75,34 @@ class TextPluginTest(tf.test.TestCase):
                     feed_dict = {
                         placeholder: message,
                     }
-                    if include_text:
-                        summ = sess.run(summary_tensor, feed_dict=feed_dict)
-                        writer.add_summary(summ, global_step=step)
+                    summ = sess.run(summary_tensor, feed_dict=feed_dict)
+                    writer.add_summary(summ, global_step=step)
                     step += 1
 
                 vector_message = ["one", "two", "three", "four"]
-                if include_text:
-                    summ = sess.run(
-                        vector_summary, feed_dict={placeholder: vector_message}
-                    )
-                    writer.add_summary(summ)
+                summ = sess.run(
+                    vector_summary, feed_dict={placeholder: vector_message}
+                )
+                writer.add_summary(summ)
 
                 summ = sess.run(scalar_summary, feed_dict={placeholder: []})
                 writer.add_summary(summ)
 
-    @with_plugin()
-    def testRoutesProvided(self, plugin):
+    def testRoutesProvided(self):
+        plugin = self.load_plugin()
         routes = plugin.get_plugin_apps()
         self.assertIsInstance(routes["/tags"], collections.abc.Callable)
         self.assertIsInstance(routes["/text"], collections.abc.Callable)
 
-    @with_plugin()
-    def testIndex(self, plugin):
+    def testIndex(self):
+        plugin = self.load_plugin()
         index = plugin.index_impl(context.RequestContext(), experiment="123")
         self.assertItemsEqual(["fry", "leela"], index.keys())
         self.assertItemsEqual(["message", "vector"], index["fry"])
         self.assertItemsEqual(["message", "vector"], index["leela"])
 
-    @with_plugin()
-    def testText(self, plugin):
+    def testText(self):
+        plugin = self.load_plugin()
         fry = plugin.text_impl(
             context.RequestContext(), "fry", "message", experiment="123"
         )
@@ -410,27 +379,8 @@ class TextPluginTest(tf.test.TestCase):
         )
         self.assertEqual(convert(d3), d3_expected)
 
-    @with_plugin(generate_testdata=False)
-    def testPluginIsActiveWhenNoRuns(self, plugin):
-        """The plugin should be inactive when there are no runs."""
-        self.assertFalse(plugin.is_active())
-
-    @with_plugin()
-    def testPluginIsActiveWhenTextRuns(self, plugin):
-        """The plugin should be active when there are runs with text."""
-        if plugin._data_provider:
-            self.assertFalse(plugin.is_active())
-        else:
-            self.assertTrue(plugin.is_active())
-
-    @with_plugin(include_text=False)
-    def testPluginIsActiveWhenRunsButNoText(self, plugin):
-        """The plugin should be inactive when there are runs but none has
-        text."""
-        self.assertFalse(plugin.is_active())
-
-    @with_plugin()
-    def testPluginIndexImpl(self, plugin):
+    def testPluginIndexImpl(self):
+        plugin = self.load_plugin()
         run_to_tags = plugin.index_impl(
             context.RequestContext(), experiment="123"
         )

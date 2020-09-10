@@ -16,13 +16,11 @@ py_library(
     srcs_version = "PY2AND3",
     deps = [
         ":metadata",
-        "//tensorboard:context",
         "//tensorboard:errors",
         "//tensorboard:plugin_util",
         "//tensorboard/backend:http_util",
         "//tensorboard/data:provider",
         "//tensorboard/plugins:base_plugin",
-        "//tensorboard/util:tensor_util",
         "@org_pocoo_werkzeug",
         "@org_pythonhosted_six",
     ],

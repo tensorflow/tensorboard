@@ -20,7 +20,6 @@ py_library(
         "//tensorboard/backend:http_util",
         "//tensorboard/data:provider",
         "//tensorboard/plugins:base_plugin",
-        "//tensorboard/util:tensor_util",
         "@org_mozilla_bleach",
         "@org_pocoo_werkzeug",
         "@org_pythonhosted_markdown",

@@ -58,12 +58,8 @@ class CorePlugin(base_plugin.TBPlugin):
         logdir_spec = context.flags.logdir_spec if context.flags else ""
         self._logdir = context.logdir or logdir_spec
         self._window_title = context.window_title
-        self._multiplexer = context.multiplexer
         self._assets_zip_provider = context.assets_zip_provider
-        if not context.flags or context.flags.generic_data != "false":
-            self._data_provider = context.data_provider
-        else:
-            self._data_provider = None
+        self._data_provider = context.data_provider
 
     def is_active(self):
         return True
@@ -128,18 +124,14 @@ class CorePlugin(base_plugin.TBPlugin):
           database (depending on which mode TensorBoard is running in).
         * window_title is the title of the TensorBoard web page.
         """
-        if self._data_provider:
-            ctx = plugin_util.context(request.environ)
-            experiment = plugin_util.experiment_id(request.environ)
-            data_location = self._data_provider.data_location(
-                ctx, experiment_id=experiment
-            )
-            experiment_metadata = self._data_provider.experiment_metadata(
-                ctx, experiment_id=experiment
-            )
-        else:
-            data_location = self._logdir
-            experiment_metadata = None
+        ctx = plugin_util.context(request.environ)
+        experiment = plugin_util.experiment_id(request.environ)
+        data_location = self._data_provider.data_location(
+            ctx, experiment_id=experiment
+        )
+        experiment_metadata = self._data_provider.experiment_metadata(
+            ctx, experiment_id=experiment
+        )
 
         environment = {
             "data_location": data_location,
@@ -183,37 +175,16 @@ class CorePlugin(base_plugin.TBPlugin):
         times sorted last, and then ties are broken by sorting on the
         run name.
         """
-        if self._data_provider:
-            ctx = plugin_util.context(request.environ)
-            experiment = plugin_util.experiment_id(request.environ)
-            runs = sorted(
-                self._data_provider.list_runs(ctx, experiment_id=experiment),
-                key=lambda run: (
-                    run.start_time
-                    if run.start_time is not None
-                    else float("inf"),
-                    run.run_name,
-                ),
-            )
-            run_names = [run.run_name for run in runs]
-        else:
-            # Python's list.sort is stable, so to order by started time and
-            # then by name, we can just do the sorts in the reverse order.
-            run_names = sorted(self._multiplexer.Runs())
-
-            def get_first_event_timestamp(run_name):
-                try:
-                    return self._multiplexer.FirstEventTimestamp(run_name)
-                except ValueError as e:
-                    logger.warning(
-                        "Unable to get first event timestamp for run %s: %s",
-                        run_name,
-                        e,
-                    )
-                    # Put runs without a timestamp at the end.
-                    return float("inf")
-
-            run_names.sort(key=get_first_event_timestamp)
+        ctx = plugin_util.context(request.environ)
+        experiment = plugin_util.experiment_id(request.environ)
+        runs = sorted(
+            self._data_provider.list_runs(ctx, experiment_id=experiment),
+            key=lambda run: (
+                run.start_time if run.start_time is not None else float("inf"),
+                run.run_name,
+            ),
+        )
+        run_names = [run.run_name for run in runs]
         return http_util.Respond(request, run_names, "application/json")
 
     @wrappers.Request.application
