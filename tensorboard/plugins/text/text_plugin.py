@@ -34,7 +34,6 @@ from tensorboard.backend import http_util
 from tensorboard.data import provider
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.text import metadata
-from tensorboard.util import tensor_util
 
 # HTTP routes
 TAGS_ROUTE = "/tags"
@@ -210,43 +209,21 @@ class TextPlugin(base_plugin.TBPlugin):
         Args:
           context: A base_plugin.TBContext instance.
         """
-        self._multiplexer = context.multiplexer
         self._downsample_to = (context.sampling_hints or {}).get(
             self.plugin_name, _DEFAULT_DOWNSAMPLING
         )
-        if not context.flags or context.flags.generic_data != "false":
-            self._data_provider = context.data_provider
-        else:
-            self._data_provider = None
+        self._data_provider = context.data_provider
 
     def is_active(self):
-        """Determines whether this plugin is active.
-
-        This plugin is only active if TensorBoard sampled any text summaries.
-
-        Returns:
-          Whether this plugin is active.
-        """
-        if self._data_provider:
-            return False  # `list_plugins` as called by TB core suffices
-        if not self._multiplexer:
-            return False
-        return bool(
-            self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME)
-        )
+        return False  # `list_plugins` as called by TB core suffices
 
     def frontend_metadata(self):
         return base_plugin.FrontendMetadata(element_name="tf-text-dashboard")
 
     def index_impl(self, ctx, experiment):
-        if self._data_provider:
-            mapping = self._data_provider.list_tensors(
-                ctx, experiment_id=experiment, plugin_name=metadata.PLUGIN_NAME,
-            )
-        else:
-            mapping = self._multiplexer.PluginRunToTagToContent(
-                metadata.PLUGIN_NAME
-            )
+        mapping = self._data_provider.list_tensors(
+            ctx, experiment_id=experiment, plugin_name=metadata.PLUGIN_NAME,
+        )
         return {
             run: list(tag_to_content)
             for (run, tag_to_content) in six.iteritems(mapping)
@@ -260,29 +237,17 @@ class TextPlugin(base_plugin.TBPlugin):
         return http_util.Respond(request, index, "application/json")
 
     def text_impl(self, ctx, run, tag, experiment):
-        if self._data_provider:
-            all_text = self._data_provider.read_tensors(
-                ctx,
-                experiment_id=experiment,
-                plugin_name=metadata.PLUGIN_NAME,
-                downsample=self._downsample_to,
-                run_tag_filter=provider.RunTagFilter(runs=[run], tags=[tag]),
-            )
-            text = all_text.get(run, {}).get(tag, None)
-            if text is None:
-                return []
-            return [process_event(d.wall_time, d.step, d.numpy) for d in text]
-
-        try:
-            text_events = self._multiplexer.Tensors(run, tag)
-        except KeyError:
-            text_events = []
-        return [
-            process_event(
-                e.wall_time, e.step, tensor_util.make_ndarray(e.tensor_proto)
-            )
-            for e in text_events
-        ]
+        all_text = self._data_provider.read_tensors(
+            ctx,
+            experiment_id=experiment,
+            plugin_name=metadata.PLUGIN_NAME,
+            downsample=self._downsample_to,
+            run_tag_filter=provider.RunTagFilter(runs=[run], tags=[tag]),
+        )
+        text = all_text.get(run, {}).get(tag, None)
+        if text is None:
+            return []
+        return [process_event(d.wall_time, d.step, d.numpy) for d in text]
 
     @wrappers.Request.application
     def text_route(self, request):

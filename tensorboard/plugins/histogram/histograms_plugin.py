@@ -22,7 +22,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import collections
 import random
 
 import six
@@ -30,12 +29,10 @@ from werkzeug import wrappers
 
 from tensorboard import errors
 from tensorboard import plugin_util
-from tensorboard import context
 from tensorboard.backend import http_util
 from tensorboard.data import provider
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.histogram import metadata
-from tensorboard.util import tensor_util
 
 
 _DEFAULT_DOWNSAMPLING = 500  # histograms per time series
@@ -62,14 +59,10 @@ class HistogramsPlugin(base_plugin.TBPlugin):
         Args:
           context: A base_plugin.TBContext instance.
         """
-        self._multiplexer = context.multiplexer
         self._downsample_to = (context.sampling_hints or {}).get(
             self.plugin_name, _DEFAULT_DOWNSAMPLING
         )
-        if not context.flags or context.flags.generic_data != "false":
-            self._data_provider = context.data_provider
-        else:
-            self._data_provider = None
+        self._data_provider = context.data_provider
 
     def get_plugin_apps(self):
         return {
@@ -78,53 +71,24 @@ class HistogramsPlugin(base_plugin.TBPlugin):
         }
 
     def is_active(self):
-        """This plugin is active iff any run has at least one histograms
-        tag."""
-        if self._data_provider:
-            return False  # `list_plugins` as called by TB core suffices
-
-        if self._multiplexer:
-            empty_context = context.RequestContext()  # not used
-            return any(self.index_impl(empty_context, experiment="").values())
-
-        return False
+        return False  # `list_plugins` as called by TB core suffices
 
     def index_impl(self, ctx, experiment):
         """Return {runName: {tagName: {displayName: ..., description:
         ...}}}."""
-        if self._data_provider:
-            mapping = self._data_provider.list_tensors(
-                ctx, experiment_id=experiment, plugin_name=metadata.PLUGIN_NAME,
-            )
-            result = {run: {} for run in mapping}
-            for (run, tag_to_content) in six.iteritems(mapping):
-                for (tag, metadatum) in six.iteritems(tag_to_content):
-                    description = plugin_util.markdown_to_safe_html(
-                        metadatum.description
-                    )
-                    result[run][tag] = {
-                        "displayName": metadatum.display_name,
-                        "description": description,
-                    }
-            return result
-
-        runs = self._multiplexer.Runs()
-        result = collections.defaultdict(lambda: {})
-
-        mapping = self._multiplexer.PluginRunToTagToContent(
-            metadata.PLUGIN_NAME
+        mapping = self._data_provider.list_tensors(
+            ctx, experiment_id=experiment, plugin_name=metadata.PLUGIN_NAME,
         )
+        result = {run: {} for run in mapping}
         for (run, tag_to_content) in six.iteritems(mapping):
-            for (tag, content) in six.iteritems(tag_to_content):
-                content = metadata.parse_plugin_metadata(content)
-                summary_metadata = self._multiplexer.SummaryMetadata(run, tag)
+            for (tag, metadatum) in six.iteritems(tag_to_content):
+                description = plugin_util.markdown_to_safe_html(
+                    metadatum.description
+                )
                 result[run][tag] = {
-                    "displayName": summary_metadata.display_name,
-                    "description": plugin_util.markdown_to_safe_html(
-                        summary_metadata.summary_description
-                    ),
+                    "displayName": metadatum.display_name,
+                    "description": description,
                 }
-
         return result
 
     def frontend_metadata(self):
@@ -141,52 +105,28 @@ class HistogramsPlugin(base_plugin.TBPlugin):
         Raises:
           tensorboard.errors.PublicError: On invalid request.
         """
-        if self._data_provider:
-            sample_count = (
-                downsample_to
-                if downsample_to is not None
-                else self._downsample_to
+        sample_count = (
+            downsample_to if downsample_to is not None else self._downsample_to
+        )
+        all_histograms = self._data_provider.read_tensors(
+            ctx,
+            experiment_id=experiment,
+            plugin_name=metadata.PLUGIN_NAME,
+            downsample=sample_count,
+            run_tag_filter=provider.RunTagFilter(runs=[run], tags=[tag]),
+        )
+        histograms = all_histograms.get(run, {}).get(tag, None)
+        if histograms is None:
+            raise errors.NotFoundError(
+                "No histogram tag %r for run %r" % (tag, run)
             )
-            all_histograms = self._data_provider.read_tensors(
-                ctx,
-                experiment_id=experiment,
-                plugin_name=metadata.PLUGIN_NAME,
-                downsample=sample_count,
-                run_tag_filter=provider.RunTagFilter(runs=[run], tags=[tag]),
-            )
-            histograms = all_histograms.get(run, {}).get(tag, None)
-            if histograms is None:
-                raise errors.NotFoundError(
-                    "No histogram tag %r for run %r" % (tag, run)
-                )
-            # Downsample again, even though the data provider is supposed to,
-            # because the multiplexer provider currently doesn't. (For
-            # well-behaved data providers, this is a no-op.)
-            if downsample_to is not None:
-                rng = random.Random(0)
-                histograms = _downsample(rng, histograms, downsample_to)
-            events = [
-                (e.wall_time, e.step, e.numpy.tolist()) for e in histograms
-            ]
-        else:
-            # Serve data from events files.
-            try:
-                tensor_events = self._multiplexer.Tensors(run, tag)
-            except KeyError:
-                raise errors.NotFoundError(
-                    "No histogram tag %r for run %r" % (tag, run)
-                )
-            if downsample_to is not None:
-                rng = random.Random(0)
-                tensor_events = _downsample(rng, tensor_events, downsample_to)
-            events = [
-                [
-                    e.wall_time,
-                    e.step,
-                    tensor_util.make_ndarray(e.tensor_proto).tolist(),
-                ]
-                for e in tensor_events
-            ]
+        # Downsample again, even though the data provider is supposed to,
+        # because the multiplexer provider currently doesn't. (For
+        # well-behaved data providers, this is a no-op.)
+        if downsample_to is not None:
+            rng = random.Random(0)
+            histograms = _downsample(rng, histograms, downsample_to)
+        events = [(e.wall_time, e.step, e.numpy.tolist()) for e in histograms]
         return (events, "application/json")
 
     @wrappers.Request.application
