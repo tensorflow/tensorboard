@@ -1,5 +1,5 @@
 ,nPMI@test,nPMI@other,nPMI_diff@test-other
-annotation_1,0.037,0.518,-0.481
+annotation_1,nan,0.518,nan
 annotation_2,0.318,0.569,-0.251
 annotation_3,0.333,0.625,-0.292
 annotation_4,0.21,0.444,-0.234

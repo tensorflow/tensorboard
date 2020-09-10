@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Sample data exhibiting npmi values."""
+"""Convert csv data to logs for the plugin."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -37,6 +37,13 @@ flags.DEFINE_string(
 )
 
 
+def contains_npmi_metric(metrics):
+    for metric in metrics:
+        if metric.startswith('nPMI@') or metric.startswith('nPMI_diff@'):
+            return True
+    return False
+
+
 def convert_file(file_path):
     if not os.path.exists(file_path):
         print("No such file found. Conversion failed.")
@@ -47,6 +54,9 @@ def convert_file(file_path):
     with open(file_path) as csv_file:
         csv_reader = csv.reader(csv_file)
         metrics = next(csv_reader)[1:]
+        if not contains_npmi_metric(metrics):
+            print("No metric is prefixed with nPMI@ or nPMI_diff@. No export generated.")
+            return
         for row in csv_reader:
             annotations.append(row[0])
             values.append(row[1:])
