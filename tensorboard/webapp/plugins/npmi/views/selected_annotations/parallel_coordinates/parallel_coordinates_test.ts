@@ -121,11 +121,7 @@ describe('Npmi Parallel Coordinates Container', () => {
   it('renders parallel coordinates without selected annoations', () => {
     store.overrideSelector(
       getRunSelection,
-      new Map([
-        ['run_1', true],
-        ['run_2', false],
-        ['run_3', true],
-      ])
+      new Map([['run_1', true], ['run_2', false], ['run_3', true]])
     );
     store.overrideSelector(getAnnotationData, annotationData);
     store.overrideSelector(getRunToMetrics, {
@@ -167,11 +163,7 @@ describe('Npmi Parallel Coordinates Container', () => {
   it('renders parallel coordinates with selected annoations', () => {
     store.overrideSelector(
       getRunSelection,
-      new Map([
-        ['run_1', true],
-        ['run_2', false],
-        ['run_3', true],
-      ])
+      new Map([['run_1', true], ['run_2', false], ['run_3', true]])
     );
     store.overrideSelector(getAnnotationData, annotationData);
     store.overrideSelector(getSelectedAnnotations, ['annotation_1']);
@@ -214,11 +206,7 @@ describe('Npmi Parallel Coordinates Container', () => {
   it('renders parallel coordinates with additional metric filter', () => {
     store.overrideSelector(
       getRunSelection,
-      new Map([
-        ['run_1', true],
-        ['run_2', false],
-        ['run_3', true],
-      ])
+      new Map([['run_1', true], ['run_2', false], ['run_3', true]])
     );
     store.overrideSelector(getAnnotationData, annotationData);
     store.overrideSelector(getSelectedAnnotations, ['annotation_1']);
