@@ -25,7 +25,7 @@ import {
 } from '@angular/core';
 import * as d3 from '../../../../../third_party/d3';
 import {Coordinate} from '../../../util/coordinate_data';
-import {ValueData} from './../../../store/npmi_types';
+import {ValueData, TfColorScale} from './../../../store/npmi_types';
 
 @Component({
   selector: 'parallel-coordinates-component',
@@ -53,6 +53,7 @@ export class ParallelCoordinatesComponent implements AfterViewInit, OnChanges {
   private readonly margin = {top: 20, right: 40, bottom: 20, left: 40};
   private readonly chartHeight =
     this.height - this.margin.top - this.margin.bottom;
+  private colorScale: (runName: string) => string = () => '#333333';
   // Drawing containers
   private svg!: d3.Selection<
     SVGElement,
@@ -90,9 +91,11 @@ export class ParallelCoordinatesComponent implements AfterViewInit, OnChanges {
   private yScale!: d3.ScaleLinear<number, number>;
   private yAxis?: d3.Axis<number | {valueOf(): number}>;
 
-  private readonly rgbColors = ['240, 120, 80', '46, 119, 182', '190, 64, 36'];
-
   ngAfterViewInit(): void {
+    const runsColorScale = (document.createElement(
+      'tf-color-scale'
+    ) as TfColorScale).runsColorScale;
+    this.colorScale = runsColorScale ? runsColorScale : this.colorScale;
     this.svg = d3.select(this.svgElement.nativeElement);
     this.mainContainer = this.svg
       .append('g')
@@ -229,7 +232,7 @@ export class ParallelCoordinatesComponent implements AfterViewInit, OnChanges {
       .attr(
         'stroke',
         function (this: ParallelCoordinatesComponent, d: Coordinate) {
-          return `rgba(${this.rgbColors[0]}, 1.0)`;
+          return this.colorScale(d.runId);
         }.bind(this)
       );
 

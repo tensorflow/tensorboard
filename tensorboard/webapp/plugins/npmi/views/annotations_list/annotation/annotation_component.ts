@@ -25,7 +25,7 @@ import {
   HostBinding,
   HostListener,
 } from '@angular/core';
-import {ValueData} from '../../../store/npmi_types';
+import {ValueData, TfColorScale} from '../../../store/npmi_types';
 import * as d3 from '../../../../../third_party/d3';
 import {stripMetricString} from '../../../util/metric_type';
 
@@ -68,6 +68,7 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
   private readonly strokeColor = '#fff';
   private textClass = 'default-text';
   private runs: string[] = [];
+  private colorScale: (runName: string) => string = () => '#333333';
   // Drawing containers
   private svg!: d3.Selection<
     SVGElement,
@@ -117,9 +118,11 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
   private sizeScale!: d3.ScaleLinear<number, number>;
   private countSizeScale!: d3.ScaleLinear<number, number>;
 
-  private readonly rgbColors = ['240, 120, 80', '46, 119, 182', '190, 64, 36'];
-
   ngAfterViewInit(): void {
+    const runsColorScale = (document.createElement(
+      'tf-color-scale'
+    ) as TfColorScale).runsColorScale;
+    this.colorScale = runsColorScale ? runsColorScale : this.colorScale;
     this.svg = d3.select(this.annotationContainer.nativeElement).select('svg');
     this.xScale = d3.scalePoint<string>().padding(0);
     this.yScale = d3.scalePoint<string>().padding(0);
@@ -238,7 +241,7 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
       .attr(
         'fill',
         function (this: AnnotationComponent, d: string) {
-          return `rgb(${this.rgbColors[0]})`;
+          return this.colorScale(d);
         }.bind(this)
       );
 
