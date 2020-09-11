@@ -205,7 +205,7 @@ class ProjectionsPanel extends LegacyElementMixin(PolymerElement) {
       if (this.dataSet && this.projector) {
         this.dataSet.perturbTsne();
         this.projector.notifyProjectionPositionsUpdated();
-        this.perturbInterval = setInterval(() => {
+        this.perturbInterval = window.setInterval(() => {
           this.dataSet.perturbTsne();
           this.projector.notifyProjectionPositionsUpdated();
         }, 100);

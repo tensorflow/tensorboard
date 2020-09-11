@@ -88,7 +88,6 @@ export interface DataPoint {
 }
 const IS_FIREFOX = navigator.userAgent.toLowerCase().indexOf('firefox') >= 0;
 /** Controls whether nearest neighbors computation is done on the GPU or CPU. */
-const KNN_GPU_ENABLED = util.hasWebGLSupport() && !IS_FIREFOX;
 export const TSNE_SAMPLE_SIZE = 10000;
 export const UMAP_SAMPLE_SIZE = 5000;
 export const PCA_SAMPLE_SIZE = 50000;
@@ -459,7 +458,8 @@ export class DataSet {
         this.nearest.map((neighbors) => neighbors.slice(0, nNeighbors))
       );
     } else {
-      const result = await (KNN_GPU_ENABLED
+      const knnGpuEnabled = (await util.hasWebGLSupport()) && !IS_FIREFOX;
+      const result = await (knnGpuEnabled
         ? knn.findKNNGPUCosine(data, nNeighbors, (d) => d.vector)
         : knn.findKNN(
             data,
