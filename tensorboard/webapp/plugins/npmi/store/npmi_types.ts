@@ -92,5 +92,5 @@ export interface State {
 }
 
 export interface TfColorScale extends HTMLElement {
-  runsColorScale: (runName: string) => string;
+  runsColorScale?: (runName: string) => string;
 }
