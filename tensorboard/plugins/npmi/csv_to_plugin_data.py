@@ -31,15 +31,13 @@ tf.compat.v1.enable_eager_execution()
 FLAGS = flags.FLAGS
 
 flags.DEFINE_string(
-    "csv_path",
-    "",
-    "CSV file to convert to npmi plugin data.",
+    "csv_path", "", "CSV file to convert to npmi plugin data.",
 )
 
 
 def contains_npmi_metric(metrics):
     for metric in metrics:
-        if metric.startswith('nPMI@') or metric.startswith('nPMI_diff@'):
+        if metric.startswith("nPMI@") or metric.startswith("nPMI_diff@"):
             return True
     return False
 
@@ -55,7 +53,9 @@ def convert_file(file_path):
         csv_reader = csv.reader(csv_file)
         metrics = next(csv_reader)[1:]
         if not contains_npmi_metric(metrics):
-            print("No metric is prefixed with nPMI@ or nPMI_diff@. No export generated.")
+            print(
+                "No metric is prefixed with nPMI@ or nPMI_diff@. No export generated."
+            )
             return
         for row in csv_reader:
             annotations.append(row[0])
@@ -72,8 +72,9 @@ def convert_file(file_path):
         summary.npmi_annotations(tensor_annotations, 1)
         summary.npmi_metrics(tensor_metrics, 1)
     writer.close()
-    print("Successfuly saved converted output to %s" %
-          os.path.dirname(file_path))
+    print(
+        "Successfuly saved converted output to %s" % os.path.dirname(file_path)
+    )
 
 
 def main(unused_argv):
