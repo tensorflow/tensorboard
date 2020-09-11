@@ -2,11 +2,11 @@
 
 The nPMI plugin is a frontend to the techniques presented in a [paper](https://svn.spraakdata.gu.se/repos/gerlof/pub/www/Docs/npmi-pfd.pdf) by Gelof Bouma.
 
-The plugin is currently experimental and still under active development. It is already fully functional, however, and can be used as is.
+The plugin is currently experimental and still under active development, however it can already be used as is.
 
 ## nPMI
 
-nPMI is a correlation metric, which can be used to analyze different aspects in the pipeline of neural network development. It can be used for training data assessment as well as to get insights into the model.
+nPMI is short for "normalized pointwise mutual information", which is a correlation metric. It can be used to analyze different aspects in the pipeline of neural network development, such as training data assessment as well as to get insights into the model.
 
 ## Using the Plugin
 
