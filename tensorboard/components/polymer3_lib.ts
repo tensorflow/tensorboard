@@ -33,3 +33,4 @@ import './tf_backend/tf-backend-polymer';
 import './tf_globals/globals-polymer';
 import './tf_storage/tf-storage-polymer';
 import './tf_paginated_view/tf-paginated-view-store';
+import './tf_color_scale/tf-color-scale-polymer';
