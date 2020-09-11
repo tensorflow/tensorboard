@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import * as THREE from 'three';
-import weblas from 'weblas/dist/weblas';
+import * as tf from '../../../webapp/third_party/tfjs';
 
 import {DataPoint} from './data';
 import * as vector from './vector';
@@ -244,11 +244,12 @@ export function xor(cond1: boolean, cond2: boolean): boolean {
   return (cond1 || cond2) && !(cond1 && cond2);
 }
 /** Checks to see if the browser supports webgl. */
-export function hasWebGLSupport(): boolean {
+export async function hasWebGLSupport(): Promise<boolean> {
   try {
     let c = document.createElement('canvas');
     let gl = c.getContext('webgl') || c.getContext('experimental-webgl');
-    return gl != null && typeof weblas !== 'undefined';
+    await tf.ready();
+    return gl != null && tf.getBackend() === 'webgl';
   } catch (e) {
     return false;
   }

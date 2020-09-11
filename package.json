@@ -111,6 +111,7 @@
     "@polymer/paper-toolbar": "^3.0.1",
     "@polymer/paper-tooltip": "^3.0.1",
     "@polymer/polymer": "^3.4.1",
+    "@tensorflow/tfjs": "^2.3.0",
     "@vaadin/vaadin-grid": "^5.6.6",
     "d3": "5.7.0",
     "dagre": "^0.8.5",
