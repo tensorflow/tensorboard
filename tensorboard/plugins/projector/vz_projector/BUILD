@@ -31,7 +31,6 @@ tf_ts_library(
         "scatterPlotVisualizerPolylines.ts",
         "scatterPlotVisualizerSprites.ts",
         "styles.ts",
-        "umap.d.ts",
         "util.ts",
         "vector.ts",
         "vz-projector.html.ts",
