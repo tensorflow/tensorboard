@@ -86,7 +86,6 @@ genrule(
         "@npm//:node_modules/d3/LICENSE",
         "@io_github_cpettitt_dagre//:LICENSE",
         "@io_github_cpettitt_graphlib//:LICENSE",
-        "@io_github_waylonflinn_weblas//:LICENSE",
         "@com_numericjs//:license.txt",
         "@org_threejs//:LICENSE",
         "@com_lodash//:LICENSE",

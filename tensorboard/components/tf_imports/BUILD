@@ -100,15 +100,6 @@ tf_web_library(
 )
 
 tf_web_library(
-    name = "weblas",
-    srcs = [
-        "weblas.html",
-        "@io_github_waylonflinn_weblas//:weblas.js",
-    ],
-    path = "/tf-imports",
-)
-
-tf_web_library(
     name = "graphlib",
     srcs = [
         "graphlib.html",

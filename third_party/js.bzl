@@ -265,22 +265,6 @@ def tensorboard_js_workspace():
         },
     )
 
-    filegroup_external(
-        name = "io_github_waylonflinn_weblas",
-        # no @license header
-        licenses = ["notice"],  # MIT
-        sha256_urls = {
-            "633f2861a9a862b9cd7967e841e14dd3527912f209d6563595774fa31e3d84cb": [
-                "http://mirror.tensorflow.org/raw.githubusercontent.com/waylonflinn/weblas/v0.9.0/LICENSE",
-                "https://raw.githubusercontent.com/waylonflinn/weblas/v0.9.0/LICENSE",
-            ],
-            "f138fce57f673ca8a633f4aee5ae5b6fcb6ad0de59069a42a74e996fd04d8fcc": [
-                "http://mirror.tensorflow.org/raw.githubusercontent.com/waylonflinn/weblas/v0.9.0/dist/weblas.js",
-                "https://raw.githubusercontent.com/waylonflinn/weblas/v0.9.0/dist/weblas.js",
-            ],
-        },
-    )
-
     web_library_external(
         name = "vaadin_vaadin_split_layout",
         licenses = ["notice"],  # Apache License 2.0
