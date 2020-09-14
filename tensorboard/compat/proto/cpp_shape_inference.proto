@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package tensorboard;
 option cc_enable_arenas = true;
+option go_package = "github.com/tensorflow/tensorflow/tensorflow/go/python/framework/cpp_shape_inference_go_proto";
 
 import "tensorboard/compat/proto/types.proto";
 import "tensorboard/compat/proto/tensor_shape.proto";
