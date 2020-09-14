@@ -105,7 +105,7 @@ py_library(
 )
 
 py_binary(
-    name = "csv_to_plugin_data",
+    name = "csv_to_plugin_data_demo",
     srcs = ["csv_to_plugin_data.py"],
     srcs_version = "PY2AND3",
     deps = [

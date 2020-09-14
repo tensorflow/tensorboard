@@ -12,18 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Convert csv data to logs for the plugin."""
+"""Demo script for converting csv data to logs for the plugin."""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import tensorflow as tf
-import numpy as np
 import csv
 import os.path
 from absl import app
 from absl import flags
+import tensorflow as tf
+import numpy as np
 from tensorboard.plugins.npmi import summary
 
 tf.compat.v1.enable_eager_execution()
@@ -36,6 +36,14 @@ flags.DEFINE_string(
 
 
 def contains_npmi_metric(metrics):
+    """Checks if the csv file contains a metric that matches the plugin requirements.
+
+    Args:
+        metrics: The metrics in the header of the csv.
+
+    Returns:
+        Whether the header contains a metric that can be used by the plugin.
+    """
     for metric in metrics:
         if metric.startswith("nPMI@") or metric.startswith("nPMI_diff@"):
             return True
@@ -43,6 +51,11 @@ def contains_npmi_metric(metrics):
 
 
 def convert_file(file_path):
+    """Converts a csv file to a logfile readable by the nPMI plugin.
+
+    Args:
+        file_path: the path to the csv file to be converted
+    """
     if not os.path.exists(file_path):
         print("No such file found. Conversion failed.")
         return

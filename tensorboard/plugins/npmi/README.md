@@ -23,7 +23,7 @@ If you want to experiment with the plugin but do not have your own data, simply 
 
 #### Converting CSV Data
 
-If you have csv data containing annotations as rows, and metrics in the first row of the csv, you can convert this data to logfiles which can be displayed by the plugin. To do this, run `bazel run //tensorboard/plugins/npmi:csv_to_plugin_data -- --csv_path [path_to_your_csv_file]`.
+If you have csv data containing annotations as rows, and metrics in the first row of the csv, you can convert this data to logfiles which can be displayed by the plugin. As an example, you can run this demo target `bazel run //tensorboard/plugins/npmi:csv_to_plugin_data_demo -- --csv_path [path_to_your_csv_file]`.
 For this to work correctly, you need metrics in the csv that are prefixed with `nPMI@` or `nPMI_diff@`. The values for these metrics should additionally be normalized between `-1.0` and `1.0`, and can contain `nan` values.
 
 ### Building the Plugin
