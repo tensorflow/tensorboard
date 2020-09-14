@@ -38,6 +38,7 @@ module.exports = {
         'node_modules/d3-transition',
         'node_modules/d3-voronoi',
         'node_modules/plottable',
+        'node_modules/ml-matrix',
       ];
       for (const prefix of ignoredPrefixes) {
         if (warning.cycle.some((x) => x.startsWith(prefix))) {

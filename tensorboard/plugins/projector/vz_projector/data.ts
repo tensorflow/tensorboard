@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import numeric from 'numeric';
+import {UMAP} from 'umap-js';
 
 import {TSNE} from './bh_tsne';
 import {SpriteMetadata} from './data-provider';
