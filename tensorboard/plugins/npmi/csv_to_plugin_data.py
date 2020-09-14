@@ -20,10 +20,10 @@ from __future__ import print_function
 
 import csv
 import os.path
-from absl import app
-from absl import flags
 import tensorflow as tf
 import numpy as np
+from absl import app
+from absl import flags
 from tensorboard.plugins.npmi import summary
 
 tf.compat.v1.enable_eager_execution()
