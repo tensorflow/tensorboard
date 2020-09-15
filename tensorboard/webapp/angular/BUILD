@@ -171,6 +171,7 @@ tf_ts_library(
 tf_ts_library(
     name = "expect_angular_platform_browser_animations",
     srcs = [],
+    deps = ["@npm//@angular/platform-browser"],
 )
 
 # This is a dummy rule used as a @angular/platform-browser-dynamic/testing dependency.
