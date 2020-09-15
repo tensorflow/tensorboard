@@ -4415,12 +4415,10 @@ neo-async@^2.6.0:
   resolved "https://registry.yarnpkg.com/neo-async/-/neo-async-2.6.2.tgz#b4aafb93e3aeb2d8174ca53cf163ab7d7308305f"
   integrity sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==
 
-ngx-color-picker@^10.0.1:
-  version "10.0.1"
-  resolved "https://registry.yarnpkg.com/ngx-color-picker/-/ngx-color-picker-10.0.1.tgz#b6f10b2a4bc625c5430bfd5d0f18eb49140e5ca6"
-  integrity sha512-HlF+pWCmIEEaqs8n0pjTI0u1gLcCcT4Icay1JUwJRD2WJ4vyZiyDDzpnSRk6nkfdRAZp3ch40pEuZa+VlYOUTg==
-  dependencies:
-    tslib "^2.0.0"
+ngx-color-picker@^8.2.0:
+  version "8.2.0"
+  resolved "https://registry.yarnpkg.com/ngx-color-picker/-/ngx-color-picker-8.2.0.tgz#36b2e7f173e006f680dea39743d0bfc6c2531454"
+  integrity sha512-rzR+cByjNG9M/UskU5vNoH7cUc6oM8STTDFKOZmnlX4ALOuM1+61CBjsNTGETWfo9a/h5mbGX02oh5/iNAa7vA==
 
 nice-try@^1.0.4:
   version "1.0.5"
@@ -5841,11 +5839,6 @@ tslib@^1.10.0, tslib@^1.8.1, tslib@^1.9.0:
   version "1.13.0"
   resolved "https://registry.yarnpkg.com/tslib/-/tslib-1.13.0.tgz#c881e13cc7015894ed914862d276436fa9a47043"
   integrity sha512-i/6DQjL8Xf3be4K/E6Wgpekn5Qasl1usyw++dAA35Ue5orEn65VIxOA+YvNNl9HV3qv70T7CNwjODHZrLwvd1Q==
-
-tslib@^2.0.0:
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/tslib/-/tslib-2.0.1.tgz#410eb0d113e5b6356490eec749603725b021b43e"
-  integrity sha512-SgIkNheinmEBgx1IUNirK0TUD4X9yjjBRTqqjggWCU3pUEqIk3/Uwl3yRixYKT6WjQuGiwDv4NomL3wqRCj+CQ==
 
 tslib@~1.8.0:
   version "1.8.1"
