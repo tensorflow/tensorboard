@@ -3,7 +3,6 @@
 # models. nPMI is a technique presented in a paper (https://svn.spraakdata.gu.se/repos/gerlof/pub/www/Docs/npmi-pfd.pdfhttps://svn.spraakdata.gu.se/repos/gerlof/pub/www/Docs/npmi-pfd.pdf)
 # presented by Gerlof Bouma.
 
-load("@rules_python//python:defs.bzl", "py_binary", "py_library", "py_test")
 load("//tensorboard/defs:protos.bzl", "tb_proto_library")
 
 package(default_visibility = ["//tensorboard:internal"])
