@@ -20,9 +20,7 @@ from __future__ import print_function
 
 import argparse
 import collections
-import functools
 import os.path
-import unittest
 
 import tensorflow.compat.v1 as tf1
 import tensorflow.compat.v2 as tf
@@ -31,8 +29,6 @@ from tensorboard import context
 from tensorboard.backend.event_processing import (
     data_provider,)
 from tensorboard.backend.event_processing import (
-    plugin_event_accumulator as event_accumulator,)
-from tensorboard.backend.event_processing import (
     plugin_event_multiplexer as event_multiplexer,)
 from tensorboard.data import provider
 from tensorboard.plugins import base_plugin
@@ -40,7 +36,6 @@ from tensorboard.plugins.image import (
     metadata as image_metadata,)
 from tensorboard.plugins.metrics import (
     metrics_plugin,)
-from tensorboard.util import test_util
 
 tf1.enable_eager_execution()
 
