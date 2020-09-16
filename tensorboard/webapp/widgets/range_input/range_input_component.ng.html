@@ -1,0 +1,49 @@
+<!--
+@license
+Copyright 2020 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<input
+  class="lower-input"
+  type="number"
+  [value]="lowerValue"
+  (change)="handleInputChange($event, Position.LEFT)"
+/>
+<input
+  class="upper-input"
+  type="number"
+  [value]="upperValue"
+  (change)="handleInputChange($event, Position.RIGHT)"
+/>
+
+<span class="container" #container>
+  <span class="slider-track"></span>
+  <span
+    class="slider-track-fill"
+    [style.left]="getThumbPosition(lowerValue)"
+    [style.width]="getTrackWidth()"
+  ></span>
+  <span
+    class="thumb"
+    (mousedown)="handleMouseDown($event, Position.LEFT)"
+    [style.left]="getThumbPosition(lowerValue)"
+    [class.active]="isThumbActive(Position.LEFT)"
+  ></span>
+  <span
+    class="thumb"
+    (mousedown)="handleMouseDown($event, Position.RIGHT)"
+    [style.left]="getThumbPosition(upperValue)"
+    [class.active]="isThumbActive(Position.RIGHT)"
+  ></span>
+</span>
