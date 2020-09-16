@@ -21,7 +21,6 @@
 /** @type {!Object} */ var d3;
 /** @type {!Object} */ var dagre;
 /** @type {!Object} */ var numeric;
-/** @type {!Object} */ var weblas;
 /** @type {!Object} */ var UMAP;
 /** @type {!Object} */ var graphlib;
 /** @type {!Object} */ var Plottable;

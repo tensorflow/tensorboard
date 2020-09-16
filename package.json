@@ -127,7 +127,6 @@
     "three": "~0.108.0",
     "umap-js": "^1.3.2",
     "web-animations-js": "^2.3.2",
-    "weblas": "^0.9.1",
     "zone.js": "^0.10.2"
   }
 }
