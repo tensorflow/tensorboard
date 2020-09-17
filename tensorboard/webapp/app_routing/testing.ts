@@ -20,6 +20,9 @@ import {navigated} from './actions';
 import {Location} from './location';
 import {Route, RouteKind} from './types';
 
+/** @typehack */ import * as _typeHackModels from '@ngrx/store/src/models';
+/** @typehack */ import * as _typeHackRxjs from 'rxjs';
+
 export function buildRoute(routeOverride: Partial<Route> = {}): Route {
   return {
     routeKind: RouteKind.EXPERIMENTS,

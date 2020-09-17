@@ -34,7 +34,7 @@ import {Navigation, Route, RouteKind, SerializableQueryParams} from '../types';
 
 import {AppRoutingEffects, TEST_ONLY} from './app_routing_effects';
 
-@Component({selector: 'test'})
+@Component({selector: 'test', template: ''})
 class TestableComponent {}
 
 const testAction = createAction('[TEST] test actions');

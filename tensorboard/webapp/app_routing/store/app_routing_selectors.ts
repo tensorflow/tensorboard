@@ -27,13 +27,18 @@ import {
   State,
 } from './app_routing_types';
 
+/** @typehack */ import * as _typeHackStore from '@ngrx/store';
+
 const getAppRoutingState = createFeatureSelector<State, AppRoutingState>(
   APP_ROUTING_FEATURE_KEY
 );
 
-export const getActiveRoute = createSelector(getAppRoutingState, (state) => {
-  return state.activeRoute;
-});
+export const getActiveRoute = createSelector(
+  getAppRoutingState,
+  (state: AppRoutingState) => {
+    return state.activeRoute;
+  }
+);
 
 export const getNextRouteForRouterOutletOnly = createSelector(
   getAppRoutingState,

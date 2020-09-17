@@ -34,6 +34,8 @@ ng_module(
     deps = [
         ":effects",
         "//tensorboard/webapp:app_state",
+        "//tensorboard/webapp/angular:expect_angular_core_testing",
+        "//tensorboard/webapp/angular:expect_ngrx_store_testing",
         "//tensorboard/webapp/app_routing:location",
         "//tensorboard/webapp/app_routing:programmatical_navigation_module",
         "//tensorboard/webapp/app_routing:route_registry",
@@ -41,8 +43,6 @@ ng_module(
         "//tensorboard/webapp/app_routing:types",
         "//tensorboard/webapp/app_routing/actions",
         "//tensorboard/webapp/app_routing/store",
-        "//tensorboard/webapp/angular:expect_angular_core_testing",
-        "//tensorboard/webapp/angular:expect_ngrx_store_testing",
         "@npm//@angular/core",
         "@npm//@ngrx/effects",
         "@npm//@ngrx/store",

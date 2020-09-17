@@ -73,6 +73,7 @@ ng_module(
         "app_state.ts",
     ],
     deps = [
+        "//tensorboard/webapp/app_routing/store:types",
         "//tensorboard/webapp/core/store",
         "//tensorboard/webapp/feature_flag/store:types",
         "//tensorboard/webapp/plugins/npmi/store:types",
@@ -167,6 +168,13 @@ tensorboard_html_binary(
 tf_ng_web_test_suite(
     name = "karma_test",
     deps = [
+        "//tensorboard/webapp/app_routing:app_routing_test",
+        "//tensorboard/webapp/app_routing:route_config_test",
+        "//tensorboard/webapp/app_routing:testing",
+        "//tensorboard/webapp/app_routing/effects:effects_tests",
+        "//tensorboard/webapp/app_routing/store:store_test_lib",
+        "//tensorboard/webapp/app_routing/store:testing",
+        "//tensorboard/webapp/app_routing/views:views_tests",
         "//tensorboard/webapp/core/effects:core_effects_test_lib",
         "//tensorboard/webapp/core/store:core_store_test_lib",
         "//tensorboard/webapp/core/views:test_lib",

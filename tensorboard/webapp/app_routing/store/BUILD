@@ -9,13 +9,23 @@ tf_ts_library(
     srcs = [
         "app_routing_reducers.ts",
         "app_routing_selectors.ts",
-        "app_routing_types.ts",
     ],
     deps = [
+        ":types",
         "//tensorboard/webapp/app_routing:internal_utils",
         "//tensorboard/webapp/app_routing:types",
         "//tensorboard/webapp/app_routing/actions",
         "@npm//@ngrx/store",
+    ],
+)
+
+tf_ts_library(
+    name = "types",
+    srcs = [
+        "app_routing_types.ts",
+    ],
+    deps = [
+        "//tensorboard/webapp/app_routing:types",
     ],
 )
 
@@ -27,6 +37,7 @@ tf_ts_library(
     ],
     deps = [
         ":store",
+        ":types",
     ],
 )
 

@@ -22,7 +22,6 @@ import {buildAppRoutingState, buildStateFromAppRoutingState} from './testing';
 describe('app_routing_selectors', () => {
   describe('getActiveRoute', () => {
     beforeEach(() => {
-      selectors.getActiveRoute.setResult();
       selectors.getActiveRoute.release();
     });
 
@@ -59,7 +58,6 @@ describe('app_routing_selectors', () => {
 
   describe('getRouteKind', () => {
     beforeEach(() => {
-      selectors.getRouteKind.setResult();
       selectors.getRouteKind.release();
     });
 
@@ -83,7 +81,6 @@ describe('app_routing_selectors', () => {
 
   describe('getRouteParams', () => {
     beforeEach(() => {
-      selectors.getRouteParams.setResult();
       selectors.getRouteParams.release();
     });
 
@@ -109,7 +106,6 @@ describe('app_routing_selectors', () => {
 
   describe('getExperimentIdToAliasMap', () => {
     beforeEach(() => {
-      selectors.getExperimentIdToAliasMap.setResult();
       selectors.getExperimentIdToAliasMap.release();
     });
 

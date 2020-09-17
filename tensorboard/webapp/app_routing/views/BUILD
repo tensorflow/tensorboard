@@ -1,4 +1,5 @@
 load("@npm_angular_bazel//:index.bzl", "ng_module")
+load("//tensorboard/defs:defs.bzl", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
@@ -27,7 +28,7 @@ ng_module(
     ],
 )
 
-ng_module(
+tf_ts_library(
     name = "views_tests",
     testonly = True,
     srcs = [
@@ -37,16 +38,16 @@ ng_module(
     deps = [
         ":views",
         "//tensorboard/webapp:app_state",
+        "//tensorboard/webapp/angular:expect_angular_core_testing",
+        "//tensorboard/webapp/angular:expect_angular_platform_browser_animations",
+        "//tensorboard/webapp/angular:expect_angular_platform_browser_dynamic_testing",
+        "//tensorboard/webapp/angular:expect_ngrx_store_testing",
         "//tensorboard/webapp/app_routing:location",
         "//tensorboard/webapp/app_routing:route_registry",
         "//tensorboard/webapp/app_routing:testing",
         "//tensorboard/webapp/app_routing:types",
         "//tensorboard/webapp/app_routing/actions",
         "//tensorboard/webapp/app_routing/store",
-        "//tensorboard/webapp/angular:expect_angular_core_testing",
-        "//tensorboard/webapp/angular:expect_angular_platform_browser_animations",
-        "//tensorboard/webapp/angular:expect_angular_platform_browser_dynamic_testing",
-        "//tensorboard/webapp/angular:expect_ngrx_store_testing",
         "@npm//@angular/core",
         "@npm//@angular/platform-browser",
         "@npm//@ngrx/store",

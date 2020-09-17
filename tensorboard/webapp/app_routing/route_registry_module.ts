@@ -40,7 +40,12 @@ export class RouteRegistryModule {
     if (!configsList) {
       return;
     }
-    const configs = configsList.flat();
+    const configs: RouteDef[] = [];
+    for (const routeDefList of configsList) {
+      for (const routeDef of routeDefList) {
+        configs.push(routeDef);
+      }
+    }
     this.routeConfigs = new RouteConfigs(configs);
     configs.forEach((config) => {
       if (config.routeKind) {

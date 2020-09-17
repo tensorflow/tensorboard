@@ -16,6 +16,9 @@ import {createAction, props} from '@ngrx/store';
 
 import {Navigation, Route, RouteKind} from '../types';
 
+/** @typehack */ import * as _typeHackModels from '@ngrx/store/src/models';
+/** @typehack */ import * as _typeHackStore from '@ngrx/store';
+
 /**
  * Created when router rehydrates state from the URL after a browser initiated
  * event. Please do note that the action is fired before `navigated` so make

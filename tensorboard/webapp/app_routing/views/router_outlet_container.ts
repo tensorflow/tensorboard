@@ -25,6 +25,9 @@ import {
   getNextRouteForRouterOutletOnly,
 } from '../store/app_routing_selectors';
 
+/** @typehack */ import * as _typeHackAngularCore from '@angular/core/core';
+/** @typehack */ import * as _typeHackRxjs from 'rxjs';
+
 @Component({
   selector: 'router-outlet',
   template: `
