@@ -83,6 +83,19 @@ py_binary(
     ],
 )
 
+py_binary(
+    name = "scalars_demo_eager",
+    srcs = ["scalars_demo_eager.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":summary",
+        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/summary:summary",
+        "//tensorboard/summary:tf_summary",
+        "@org_pythonhosted_six",
+    ],
+)
+
 py_library(
     name = "summary",
     srcs = ["summary.py"],
