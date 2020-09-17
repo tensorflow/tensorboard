@@ -1,4 +1,5 @@
 load("@npm_angular_bazel//:index.bzl", "ng_module")
+load("//tensorboard/defs:defs.bzl", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
@@ -18,15 +19,15 @@ ng_module(
     ],
 )
 
-ng_module(
+tf_ts_library(
     name = "line_chart_test",
     testonly = True,
     srcs = ["line_chart_test.ts"],
     deps = [
         ":line_chart",
-        "//tensorboard/webapp/types:ui",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/angular:expect_angular_platform_browser_animations",
+        "//tensorboard/webapp/types:ui",
         "@npm//@angular/core",
         "@npm//@angular/platform-browser",
         "@npm//@types/jasmine",

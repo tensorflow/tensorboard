@@ -212,6 +212,12 @@ tf_ng_web_test_suite(
         "//tensorboard/webapp/util:util_tests",
         "//tensorboard/webapp/webapp_data_source:feature_flag_test_lib",
         "//tensorboard/webapp/webapp_data_source:webapp_data_source_test_lib",
+        "//tensorboard/webapp/widgets:resize_detector_test",
+        "//tensorboard/webapp/widgets:resize_detector_testing",
+        "//tensorboard/webapp/widgets/histogram:histogram_test",
+        "//tensorboard/webapp/widgets/line_chart:line_chart_test",
+        "//tensorboard/webapp/widgets/range_input:range_input_tests",
+        "//tensorboard/webapp/widgets/text:text_tests",
     ],
 )
 

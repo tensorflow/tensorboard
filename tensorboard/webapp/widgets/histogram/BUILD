@@ -17,7 +17,7 @@ ng_module(
     ],
 )
 
-ng_module(
+tf_ts_library(
     name = "histogram_test",
     testonly = True,
     srcs = [

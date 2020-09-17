@@ -45,20 +45,20 @@ describe('resize detector', () => {
     }).compileComponents();
 
     resizeObservers = [];
-    spyOn(window, 'ResizeObserver').and.callFake(
-      (callback: ResizeObserverCallback) => {
-        const resizeObserver: ResizeObserver = {
-          disconnect: () => {},
-          observe: () => {},
-          unobserve: () => {},
-        };
-        triggerResize = () => {
-          callback([], resizeObserver);
-        };
-        resizeObservers.push(resizeObserver);
-        return resizeObserver;
-      }
-    );
+    spyOn(window, 'ResizeObserver').and.callFake(function (
+      callback: ResizeObserverCallback
+    ) {
+      const resizeObserver: ResizeObserver = {
+        disconnect: () => {},
+        observe: () => {},
+        unobserve: () => {},
+      };
+      triggerResize = () => {
+        callback([], resizeObserver);
+      };
+      resizeObservers.push(resizeObserver);
+      return resizeObserver;
+    });
   });
 
   it('does not call onResize on initial render without resize', fakeAsync(() => {
