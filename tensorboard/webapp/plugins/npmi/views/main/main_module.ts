@@ -22,7 +22,7 @@ import {MatIconModule} from '@angular/material/icon';
 
 import {MainComponent} from './main_component';
 import {MainContainer} from './main_container';
-import {RunsModule} from '../../../../runs/runs_module';
+import {RunsModule} from '../../../../runs_legacy/runs_module';
 import {DataSelectionModule} from './../data_selection/data_selection_module';
 import {ViolinFiltersModule} from './../violin_filters/violin_filters_module';
 import {AnnotationsListModule} from '../annotations_list/annotations_list_module';

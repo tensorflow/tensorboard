@@ -58,7 +58,7 @@ ng_module(
         "//tensorboard/webapp/header",
         "//tensorboard/webapp/plugins",
         "//tensorboard/webapp/reloader",
-        "//tensorboard/webapp/runs",
+        "//tensorboard/webapp/runs_legacy",
         "//tensorboard/webapp/settings",
         "@npm//@angular/core",
         "@npm//@angular/platform-browser",

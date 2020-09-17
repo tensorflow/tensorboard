@@ -52,7 +52,7 @@ tf_ts_library(
         "//tensorboard/webapp/plugins/npmi/actions",
         "//tensorboard/webapp/plugins/npmi/store",
         "//tensorboard/webapp/plugins/npmi/testing",
-        "//tensorboard/webapp/runs",
+        "//tensorboard/webapp/runs_legacy",
         "@npm//@angular/core",
         "@npm//@angular/platform-browser",
         "@npm//@ngrx/store",
