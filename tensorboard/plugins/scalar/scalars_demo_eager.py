@@ -26,6 +26,7 @@ import os
 
 from absl import app
 from absl import flags
+from absl import logging
 
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
@@ -37,9 +38,7 @@ FLAGS = flags.FLAGS
 flags.DEFINE_string(
     "logdir", "/tmp/scalars_logdir", "Where to write the output logdir."
 )
-flags.DEFINE_integer(
-    "num_runs", 1, "How many runs to create."
-    )
+flags.DEFINE_integer("num_runs", 1, "How many runs to create.")
 flags.DEFINE_integer(
     "num_tags_per_run",
     1,
@@ -70,6 +69,22 @@ def main(unused_argv):
         % (FLAGS.num_runs, FLAGS.num_tags_per_run, FLAGS.num_scalars_per_tag)
     )
     logging.info("Output saved to %s." % logdir)
+    logging.info(
+        f"""
+You can now view the scalars in this logdir:
+
+Run local: 
+
+    tensorboard --logdir={logdir}
+
+Upload to TensorBoard.dev:
+
+    tensorboard dev upload \\
+      --logdir={logdir} \\
+      --name=\"Scalars demo.\" \\
+      --one_shot
+"""
+    )
 
 
 if __name__ == "__main__":
