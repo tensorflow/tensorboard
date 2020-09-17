@@ -183,6 +183,7 @@ The proper fix is:
 
 class ProtoMatchTest(tf.test.TestCase):
     def test_each_proto_matches_tensorflow(self):
+        failed_diffs = []
         for tf_path, tb_path in PROTO_IMPORTS:
             tf_pb2 = importlib.import_module(tf_path)
             tb_pb2 = importlib.import_module(tb_path)
@@ -207,7 +208,9 @@ class ProtoMatchTest(tf.test.TestCase):
             diff = "".join(diff)
 
             if diff:
-                self.fail(MATCH_FAIL_MESSAGE_TEMPLATE.format(diff))
+                failed_diffs.append(diff)
+        if failed_diffs:
+            self.fail(MATCH_FAIL_MESSAGE_TEMPLATE.format("".join(failed_diffs)))
 
 
 if __name__ == "__main__":
