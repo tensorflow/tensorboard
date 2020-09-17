@@ -29,6 +29,7 @@ tf_ng_module(
         "//tensorboard/webapp/plugins/npmi/util:coordinate_data",
         "//tensorboard/webapp/plugins/npmi/util:metric_type",
         "//tensorboard/webapp/third_party:d3",
+        "@npm//@angular/common",
         "@npm//@angular/core",
         "@npm//@ngrx/store",
         "@npm//rxjs",

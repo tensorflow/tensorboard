@@ -18,8 +18,6 @@ import {map} from 'rxjs/operators';
 
 import {loadMonaco} from './load_monaco_shim';
 
-/** @typehack */ import * as _typeHackRxjwindowWithRequireAndMonacos from 'rxjs';
-
 // TODO(cais): Explore better typing by depending on external libraries.
 const windowWithRequireAndMonaco: any = window;
 

@@ -144,6 +144,7 @@ tf_ng_module(
         ":types",
         "//tensorboard/webapp/app_routing/actions",
         "@npm//@angular/core",
+        "@npm//@ngrx/store",
         "@npm//rxjs",
     ],
 )

@@ -17,7 +17,6 @@ import {TestBed} from '@angular/core/testing';
 import {HashStorageComponent} from './hash';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
-/** @typehack */ import * as _typeHackStoreTesting from '@ngrx/store/testing';
 
 describe('hash storage test', () => {
   let store: MockStore<State>;

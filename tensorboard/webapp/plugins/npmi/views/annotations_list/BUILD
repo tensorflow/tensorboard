@@ -35,6 +35,7 @@ tf_ng_module(
         "//tensorboard/webapp/plugins/npmi/views/annotations_list/annotations_list_toolbar",
         "//tensorboard/webapp/plugins/npmi/views/annotations_list/header",
         "//tensorboard/webapp/plugins/npmi/views/annotations_list/legend",
+        "@npm//@angular/common",
         "@npm//@angular/core",
         "@npm//@ngrx/store",
         "@npm//rxjs",

@@ -17,7 +17,7 @@ import {Action, createReducer, on} from '@ngrx/store';
 import * as actions from '../actions/feature_flag_actions';
 import {FeatureFlagState} from './feature_flag_types';
 
-/** @typehack */ import * as _typeHackStore from '@ngrx/store/store';
+/** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
 const initialState: FeatureFlagState = {
   isFeatureFlagsLoaded: false,
