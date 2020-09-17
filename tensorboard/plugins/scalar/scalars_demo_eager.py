@@ -53,10 +53,8 @@ tf.compat.v1.enable_eager_execution()
 
 def main(unused_argv):
     logdir = FLAGS.logdir
-    # TODO(bileschi): Test for existence of logdir before writing.
     logging.info("Saving output to %s.", logdir)
     for i_run in range(0, FLAGS.num_runs):
-        # TODO(bileschi): Test for existence of logdir before writing.
         run_name = "test-run-name-%.8d" % i_run
         writer = tf.summary.create_file_writer(os.path.join(logdir, run_name))
         with writer.as_default():
