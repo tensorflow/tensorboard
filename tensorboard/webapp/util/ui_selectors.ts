@@ -31,6 +31,8 @@ import {getExperimentIdsFromRoute} from '../app_routing/store/app_routing_select
 import {State} from '../app_state';
 import {getRunSelectionMap} from '../runs/store/runs_selectors';
 
+/** @typehack */ import * as _typeHackStore from '@ngrx/store';
+
 /**
  * Selects the run selection (runId to boolean) of current routeId.
  *
