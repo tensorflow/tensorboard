@@ -60,7 +60,8 @@ def main(unused_argv):
         % (FLAGS.num_runs, FLAGS.num_tags_per_run, FLAGS.num_scalars_per_tag)
     )
     logging.info("Output saved to %s." % logdir)
-    logging.info("""
+    logging.info(
+        """
 You can now view the scalars in this logdir:
 
 Run local:
@@ -73,7 +74,10 @@ Upload to TensorBoard.dev:
       --logdir=%s \\
       --name=\"Scalars demo.\" \\
       --one_shot
-""", logdir, logdir)
+""",
+        logdir,
+        logdir,
+    )
 
 
 if __name__ == "__main__":
