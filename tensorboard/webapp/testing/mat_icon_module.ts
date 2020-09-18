@@ -15,31 +15,47 @@ limitations under the License.
 import {Component, Input, NgModule} from '@angular/core';
 
 const KNOWN_SVG_ICON = new Set([
-  'content_copy_24px',
-  'help_outline_24px',
-  'info_outline_24px',
-  'refresh_24px',
-  'settings_24px',
-  'search_24px',
-  'error_24px',
+  'arrow_downward_24px',
+  'arrow_upward_24px',
+  'bug_report_24px',
+  'cancel_24px',
   'chevron_left_24px',
   'chevron_right_24px',
-  'visibility_off_24px.svg',
-  'flag_24px.svg',
   'clear_24px',
-  'expand_more_24px.svg',
-  'expand_less_24px.svg',
-  'cancel_24px',
-  'arrow_downward_24px.svg',
-  'arrow_upward_24px.svg',
-  'get_app_24px.svg',
+  'close_24px',
+  'content_copy_24px',
+  'error_24px',
+  'expand_less_24px',
+  'expand_more_24px',
+  'filter_alt_24px',
+  'flag_24px',
+  'fullscreen_24px',
+  'fullscreen_exit_24px',
+  'get_app_24px',
+  'help_outline_24px',
+  'image_search_24px',
+  'info_outline_24px',
+  'line_weight_24px',
+  'more_vert_24px',
+  'refresh_24px',
+  'search_24px',
+  'settings_24px',
+  'settings_backup_restore_24px',
+  'settings_overscan_24px',
+  'warning_24px',
+  'visibility_off_24px',
 ]);
 
 /**
  * Requires to be exported for AOT. Do not use it otherwise.
+ *
+ * Does not extend MatIcon since its implementation detail (such as ngOnChanges)
+ * can interfere with the stub implementation. If TensorBoard makes use of a new
+ * input on MatIcon that is not present here, it will fail at the test
+ * compilation time due to unknown input onto the template.
  */
 @Component({
-  template: '<ng-container>{{ svgIcon }}</ng-container>',
+  template: '<ng-container>{{svgIcon}}</ng-container>',
   selector: 'mat-icon',
 })
 export class MatIcon {
@@ -51,7 +67,8 @@ export class MatIcon {
       const humanReadableIconNames = Array.from(KNOWN_SVG_ICON.values()).join(
         ', '
       );
-      // Below will cause test to fail if a component makes use of unknown SVG.
+      // Below will cause test to fail if a component makes use of unknown
+      // SVG.
       throw new RangeError(
         [
           `Unknown SVG mat-icon, "${svgIcon}".`,
@@ -61,9 +78,23 @@ export class MatIcon {
     }
     this.internalSvgIcon = svgIcon;
   }
-
   get svgIcon() {
     return this.internalSvgIcon;
+  }
+
+  @Input()
+  set fontSet(value: string) {
+    throw new Error(
+      'Usage of fontSet is disallowed in TensorBoard. Use svgIcon.'
+    );
+  }
+
+  /** Name of an icon within a font set. */
+  @Input()
+  set fontIcon(icon: string) {
+    throw new Error(
+      'Usage of fontIcon is disallowed in TensorBoard. Use svgIcon.'
+    );
   }
 }
 
