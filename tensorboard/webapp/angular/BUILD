@@ -30,7 +30,7 @@ tf_ts_library(
     ],
 )
 
-# This is a dummy rule used as a @angular/material/tabs dependency.
+# This is a dummy rule used as a @angular/material/cdk_clipboard dependency.
 tf_ts_library(
     name = "expect_angular_cdk_clipboard",
     srcs = [],
@@ -46,15 +46,6 @@ tf_ts_library(
     srcs = [],
     deps = [
         "@npm//@angular/core",
-    ],
-)
-
-# This is a dummy rule used as a @angular/material/tabs dependency.
-tf_ts_library(
-    name = "expect_angular_material_tabs",
-    srcs = [],
-    deps = [
-        "@npm//@angular/material",
     ],
 )
 
@@ -85,6 +76,24 @@ tf_ts_library(
     ],
 )
 
+# This is a dummy rule used as a @angular/material/button_toggle dependency.
+tf_ts_library(
+    name = "expect_angular_material_button_toggle",
+    srcs = [],
+    deps = [
+        "@npm//@angular/material",
+    ],
+)
+
+# This is a dummy rule used as a @angular/material/chips dependency.
+tf_ts_library(
+    name = "expect_angular_material_chips",
+    srcs = [],
+    deps = [
+        "@npm//@angular/material",
+    ],
+)
+
 # This is a dummy rule used as a @angular/material/dialog dependency.
 tf_ts_library(
     name = "expect_angular_material_dialog",
@@ -94,27 +103,9 @@ tf_ts_library(
     ],
 )
 
-# This is a dummy rule used as a @angular/material/slider dependency.
+# This is a dummy rule used as a @angular/material/expansion dependency.
 tf_ts_library(
-    name = "expect_angular_material_slider",
-    srcs = [],
-    deps = [
-        "@npm//@angular/material",
-    ],
-)
-
-# This is a dummy rule used as a @angular/material/toolbar dependency.
-tf_ts_library(
-    name = "expect_angular_material_toolbar",
-    srcs = [],
-    deps = [
-        "@npm//@angular/material",
-    ],
-)
-
-# This is a dummy rule used as a @angular/material/select dependency.
-tf_ts_library(
-    name = "expect_angular_material_select",
+    name = "expect_angular_material_expansion",
     srcs = [],
     deps = [
         "@npm//@angular/material",
@@ -139,9 +130,36 @@ tf_ts_library(
     ],
 )
 
-# This is a dummy rule used as a @angular/material/tooltip dependency.
+# This is a dummy rule used as a @angular/material/menu dependency.
 tf_ts_library(
-    name = "expect_angular_material_tooltip",
+    name = "expect_angular_material_menu",
+    srcs = [],
+    deps = [
+        "@npm//@angular/material",
+    ],
+)
+
+# This is a dummy rule used as a @angular/material/paginator dependency.
+tf_ts_library(
+    name = "expect_angular_material_paginator",
+    srcs = [],
+    deps = [
+        "@npm//@angular/material",
+    ],
+)
+
+# This is a dummy rule used as a @angular/material/progress_spinner dependency.
+tf_ts_library(
+    name = "expect_angular_material_progress_spinner",
+    srcs = [],
+    deps = [
+        "@npm//@angular/material",
+    ],
+)
+
+# This is a dummy rule used as a @angular/material/select dependency.
+tf_ts_library(
+    name = "expect_angular_material_select",
     srcs = [],
     deps = [
         "@npm//@angular/material",
@@ -157,9 +175,54 @@ tf_ts_library(
     ],
 )
 
-# This is a dummy rule used as a @angular/material/chip dependency.
+# This is a dummy rule used as a @angular/material/slider dependency.
 tf_ts_library(
-    name = "expect_angular_material_chips",
+    name = "expect_angular_material_slider",
+    srcs = [],
+    deps = [
+        "@npm//@angular/material",
+    ],
+)
+
+# This is a dummy rule used as a @angular/material/sort dependency.
+tf_ts_library(
+    name = "expect_angular_material_sort",
+    srcs = [],
+    deps = [
+        "@npm//@angular/material",
+    ],
+)
+
+# This is a dummy rule used as a @angular/material/table dependency.
+tf_ts_library(
+    name = "expect_angular_material_table",
+    srcs = [],
+    deps = [
+        "@npm//@angular/material",
+    ],
+)
+
+# This is a dummy rule used as a @angular/material/tabs dependency.
+tf_ts_library(
+    name = "expect_angular_material_tabs",
+    srcs = [],
+    deps = [
+        "@npm//@angular/material",
+    ],
+)
+
+# This is a dummy rule used as a @angular/material/toolbar dependency.
+tf_ts_library(
+    name = "expect_angular_material_toolbar",
+    srcs = [],
+    deps = [
+        "@npm//@angular/material",
+    ],
+)
+
+# This is a dummy rule used as a @angular/material/tooltip dependency.
+tf_ts_library(
+    name = "expect_angular_material_tooltip",
     srcs = [],
     deps = [
         "@npm//@angular/material",
@@ -180,6 +243,15 @@ tf_ts_library(
     name = "expect_angular_platform_browser_dynamic_testing",
     srcs = [],
     deps = ["@npm//@angular/platform-browser-dynamic"],
+)
+
+# This is a dummy rule used as a @angular/cdk/drag_drop dependency.
+tf_ts_library(
+    name = "expect_angular_cdk_drag_drop",
+    srcs = [],
+    deps = [
+        "@npm//@angular/cdk",
+    ],
 )
 
 # This is a dummy rule used as a @angular/cdk/overlay dependency.
