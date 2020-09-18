@@ -103,6 +103,16 @@ py_library(
     ],
 )
 
+py_binary(
+    name = "csv_to_plugin_data_demo",
+    srcs = ["csv_to_plugin_data_demo.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":summary",
+        "//tensorboard:expect_tensorflow_installed",
+    ],
+)
+
 tb_proto_library(
     name = "protos_all",
     srcs = ["plugin_data.proto"],
