@@ -12,15 +12,29 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {Component, EventEmitter, Input, Output} from '@angular/core';
 
-import {State as AppRoutingState} from './app_routing/store/app_routing_types';
-import {State as CoreState} from './core/store/core_types';
-import {State as FeatureFlagState} from './feature_flag/store/feature_flag_types';
-import {State as NpmiState} from './plugins/npmi/store/npmi_types';
-import {State as TextState} from './plugins/text_v2/store/text_types';
+export interface DropdownOption {
+  value: any;
+  displayText: string;
+}
 
-export type State = AppRoutingState &
-  CoreState &
-  FeatureFlagState &
-  NpmiState &
-  TextState;
+@Component({
+  selector: 'tb-dropdown',
+  template: `
+    <mat-select
+      [value]="value"
+      (selectionChange)="selectionChange.emit($event.value)"
+    >
+      <mat-option *ngFor="let option of options" [value]="option.value">
+        {{ option.displayText }}
+      </mat-option>
+    </mat-select>
+  `,
+  styleUrls: [`dropdown_component.css`],
+})
+export class DropdownComponent {
+  @Input() value = '';
+  @Input() options: DropdownOption[] = [];
+  @Output() selectionChange = new EventEmitter<any>();
+}

@@ -12,15 +12,19 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+:host {
+  display: inline-flex;
+  white-space: nowrap;
+}
 
-import {State as AppRoutingState} from './app_routing/store/app_routing_types';
-import {State as CoreState} from './core/store/core_types';
-import {State as FeatureFlagState} from './feature_flag/store/feature_flag_types';
-import {State as NpmiState} from './plugins/npmi/store/npmi_types';
-import {State as TextState} from './plugins/text_v2/store/text_types';
+.first-text-part {
+  // Give basis to keep the first part visible, if the second part is very long.
+  flex: 1 1 4ch;
+  max-width: max-content;
+}
 
-export type State = AppRoutingState &
-  CoreState &
-  FeatureFlagState &
-  NpmiState &
-  TextState;
+.first-text-part,
+.second-text-part {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

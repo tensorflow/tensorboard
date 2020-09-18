@@ -1,0 +1,41 @@
+load("//tensorboard/defs:defs.bzl", "tf_sass_binary", "tf_ts_library")
+load("@npm_angular_bazel//:index.bzl", "ng_module")
+
+package(default_visibility = ["//tensorboard:internal"])
+
+tf_sass_binary(
+    name = "range_input_styles",
+    src = "range_input_component.scss",
+)
+
+ng_module(
+    name = "range_input",
+    srcs = [
+        "range_input_component.ts",
+        "range_input_module.ts",
+    ],
+    assets = [
+        ":range_input_styles",
+        "range_input_component.ng.html",
+    ],
+    deps = [
+        "//tensorboard/webapp/angular:expect_angular_cdk_drag_drop",
+        "@npm//@angular/common",
+        "@npm//@angular/core",
+        "@npm//rxjs",
+    ],
+)
+
+tf_ts_library(
+    name = "range_input_tests",
+    testonly = True,
+    srcs = ["range_input_test.ts"],
+    deps = [
+        ":range_input",
+        "//tensorboard/webapp/angular:expect_angular_core_testing",
+        "//tensorboard/webapp/angular:expect_angular_platform_browser_animations",
+        "@npm//@angular/core",
+        "@npm//@angular/platform-browser",
+        "@npm//@types/jasmine",
+    ],
+)

@@ -12,15 +12,34 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+export interface ColorScale {
+  (runName: string): string;
+}
 
-import {State as AppRoutingState} from './app_routing/store/app_routing_types';
-import {State as CoreState} from './core/store/core_types';
-import {State as FeatureFlagState} from './feature_flag/store/feature_flag_types';
-import {State as NpmiState} from './plugins/npmi/store/npmi_types';
-import {State as TextState} from './plugins/text_v2/store/text_types';
+export interface Bin {
+  x: number;
+  /**
+   * A non-negative number.
+   */
+  dx: number;
+  y: number;
+}
 
-export type State = AppRoutingState &
-  CoreState &
-  FeatureFlagState &
-  NpmiState &
-  TextState;
+export interface HistogramDatum {
+  wallTime: number;
+  step: number;
+  bins: Bin[];
+}
+
+export type HistogramData = HistogramDatum[];
+
+export enum TimeProperty {
+  STEP = 'step',
+  WALL_TIME = 'wall_time',
+  RELATIVE = 'relative',
+}
+
+export enum HistogramMode {
+  OFFSET = 'offset',
+  OVERLAY = 'overlay',
+}

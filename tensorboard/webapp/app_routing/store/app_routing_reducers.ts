@@ -12,15 +12,25 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {Action, createReducer, on} from '@ngrx/store';
+import * as actions from '../actions';
+import {AppRoutingState} from './app_routing_types';
 
-import {State as AppRoutingState} from './app_routing/store/app_routing_types';
-import {State as CoreState} from './core/store/core_types';
-import {State as FeatureFlagState} from './feature_flag/store/feature_flag_types';
-import {State as NpmiState} from './plugins/npmi/store/npmi_types';
-import {State as TextState} from './plugins/text_v2/store/text_types';
+const initialState: AppRoutingState = {
+  activeRoute: null,
+  nextRoute: null,
+};
 
-export type State = AppRoutingState &
-  CoreState &
-  FeatureFlagState &
-  NpmiState &
-  TextState;
+const reducer = createReducer(
+  initialState,
+  on(actions.navigating, (state, {after}) => {
+    return {...state, nextRoute: after};
+  }),
+  on(actions.navigated, (state, {after}) => {
+    return {...state, activeRoute: after, nextRoute: null};
+  })
+);
+
+export function reducers(state: AppRoutingState, action: Action) {
+  return reducer(state, action);
+}
