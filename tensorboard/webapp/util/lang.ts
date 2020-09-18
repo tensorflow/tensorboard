@@ -16,8 +16,10 @@ type MapObjectValuesTransformer = (value: any, key: string) => any;
 
 /**
  * Returns a new object where all values have been transformed.
- * Similar to https://lodash.com/docs/#mapValues or
- * https://underscorejs.org/#mapObject
+ * For familiarity, the API signature was made to be as close as possible to the
+ * signatures of equivalent functions in popular libraries:
+ * - https://lodash.com/docs/#mapValues
+ * - https://underscorejs.org/#mapObject
  */
 export function mapObjectValues<T extends {} = {}>(
   object: Record<keyof T, any>,
