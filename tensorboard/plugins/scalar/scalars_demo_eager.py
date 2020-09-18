@@ -26,8 +26,6 @@ from absl import flags
 from absl import logging
 import tensorflow as tf
 
-from tensorboard.plugins.scalar import summary
-
 FLAGS = flags.FLAGS
 
 flags.DEFINE_string(
@@ -66,7 +64,7 @@ def main(unused_argv):
         f"""
 You can now view the scalars in this logdir:
 
-Run local: 
+Run local:
 
     tensorboard --logdir={logdir}
 
