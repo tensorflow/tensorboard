@@ -1,0 +1,57 @@
+load("@npm_angular_bazel//:index.bzl", "ng_module")
+load("//tensorboard/defs:defs.bzl", "tf_ts_library")
+
+package(default_visibility = ["//tensorboard:internal"])
+
+licenses(["notice"])
+
+ng_module(
+    name = "metrics",
+    srcs = [
+        "metrics_module.ts",
+    ],
+    deps = [
+        "//tensorboard/webapp/metrics/data_source",
+        "//tensorboard/webapp/metrics/effects",
+        "//tensorboard/webapp/metrics/store",
+        "//tensorboard/webapp/metrics/views",
+        "//tensorboard/webapp/runs/views/runs_selector",
+        "//tensorboard/webapp/plugins:plugin_registry",
+        "@npm//@angular/common",
+        "@npm//@angular/core",
+        "@npm//@ngrx/effects",
+        "@npm//@ngrx/store",
+    ],
+)
+
+tf_ts_library(
+    name = "types",
+    srcs = [
+        "types.ts",
+    ],
+    deps = [
+        "//tensorboard/webapp/metrics/data_source",
+        "//tensorboard/webapp/widgets/histogram:types",
+        "//tensorboard/webapp/widgets/line_chart",
+    ],
+)
+
+tf_ts_library(
+    name = "test_lib",
+    testonly = True,
+    srcs = [
+        "testing.ts",
+    ],
+    deps = [
+        ":types",
+        "//tensorboard/webapp:app_state",
+        "//tensorboard/webapp/metrics/data_source",
+        "//tensorboard/webapp/metrics/store",
+        "//tensorboard/webapp/metrics/store:types",
+        "//tensorboard/webapp/widgets/histogram:types",
+        "//tensorboard/webapp/types",
+        "@npm//@angular/core",
+        "@npm//@types/jasmine",
+        "@npm//rxjs",
+    ],
+)
