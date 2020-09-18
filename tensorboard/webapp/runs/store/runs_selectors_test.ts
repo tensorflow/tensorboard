@@ -12,8 +12,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import 'jasmine';
-
 import {DataLoadState} from '../../types/data';
 
 import {SortDirection} from '../../types/ui';
@@ -33,7 +31,6 @@ describe('runs_selectors', () => {
   describe('#getExperimentIdForRunId', () => {
     beforeEach(() => {
       // Clear the memoization.
-      selectors.getExperimentIdForRunId.setResult();
       selectors.getExperimentIdForRunId.release();
     });
 
@@ -81,7 +78,6 @@ describe('runs_selectors', () => {
   describe('#getRun', () => {
     beforeEach(() => {
       // Clear the memoization.
-      selectors.getRun.setResult();
       selectors.getRun.release();
     });
 
@@ -117,7 +113,6 @@ describe('runs_selectors', () => {
   describe('#getRuns', () => {
     beforeEach(() => {
       // Clear the memoization.
-      selectors.getRuns.setResult();
       selectors.getRuns.release();
     });
 
@@ -170,7 +165,6 @@ describe('runs_selectors', () => {
   describe('#getRunsLoadState', () => {
     beforeEach(() => {
       // Clear the memoization.
-      selectors.getRunsLoadState.setResult();
       selectors.getRunsLoadState.release();
     });
 
@@ -208,7 +202,6 @@ describe('runs_selectors', () => {
   describe('#getExperimentsHparamsAndMetrics', () => {
     beforeEach(() => {
       // Clear the memoization.
-      selectors.getExperimentsHparamsAndMetrics.setResult();
       selectors.getExperimentsHparamsAndMetrics.release();
     });
 
@@ -243,7 +236,6 @@ describe('runs_selectors', () => {
   describe('#getRunSelectionMap', () => {
     beforeEach(() => {
       // Clear the memoization.
-      selectors.getRunSelectionMap.setResult();
       selectors.getRunSelectionMap.release();
     });
 
@@ -278,7 +270,6 @@ describe('runs_selectors', () => {
   describe('#getRunSelectorPaginationOption', () => {
     beforeEach(() => {
       // Clear the memoization.
-      selectors.getRunSelectorPaginationOption.setResult();
       selectors.getRunSelectorPaginationOption.release();
     });
 
@@ -302,7 +293,6 @@ describe('runs_selectors', () => {
   describe('#getRunSelectorRegexFilter', () => {
     beforeEach(() => {
       // Clear the memoization.
-      selectors.getRunSelectorRegexFilter.setResult();
       selectors.getRunSelectorRegexFilter.release();
     });
 
@@ -318,7 +308,6 @@ describe('runs_selectors', () => {
   describe('#getRunSelectorSort', () => {
     beforeEach(() => {
       // Clear the memoization.
-      selectors.getRunSelectorSort.setResult();
       selectors.getRunSelectorSort.release();
     });
 
@@ -339,7 +328,6 @@ describe('runs_selectors', () => {
   describe('#getRunColorMap', () => {
     beforeEach(() => {
       // Clear the memoization.
-      selectors.getRunColorMap.setResult();
       selectors.getRunColorMap.release();
     });
 
@@ -380,7 +368,6 @@ describe('runs_selectors', () => {
   describe('#getRunHparamFilterMap', () => {
     beforeEach(() => {
       // Clear the memoization.
-      selectors.getRunHparamFilterMap.setResult();
       selectors.getRunHparamFilterMap.release();
     });
 
@@ -434,7 +421,6 @@ describe('runs_selectors', () => {
   describe('#getRunMetricFilterMap', () => {
     beforeEach(() => {
       // Clear the memoization.
-      selectors.getRunMetricFilterMap.setResult();
       selectors.getRunMetricFilterMap.release();
     });
 

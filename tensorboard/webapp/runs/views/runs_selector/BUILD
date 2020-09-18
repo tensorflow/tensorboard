@@ -1,4 +1,5 @@
 load("@npm_angular_bazel//:index.bzl", "ng_module")
+load("//tensorboard/defs:defs.bzl", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
@@ -23,7 +24,7 @@ ng_module(
     ],
 )
 
-ng_module(
+tf_ts_library(
     name = "runs_selector_test",
     testonly = True,
     srcs = [
@@ -33,11 +34,11 @@ ng_module(
         ":runs_selector",
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp:selectors",
-        "//tensorboard/webapp/runs/store:testing",
-        "//tensorboard/webapp/runs/views/runs_table",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/angular:expect_angular_platform_browser_animations",
         "//tensorboard/webapp/angular:expect_ngrx_store_testing",
+        "//tensorboard/webapp/runs/store:testing",
+        "//tensorboard/webapp/runs/views/runs_table",
         "@npm//@angular/core",
         "@npm//@angular/platform-browser",
         "@npm//@ngrx/store",

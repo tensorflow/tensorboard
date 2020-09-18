@@ -16,10 +16,10 @@ tf_ts_library(
         "//tensorboard/webapp/app_routing:route_contexted_reducer_helper",
         "//tensorboard/webapp/runs:types",
         "//tensorboard/webapp/runs/actions",
+        "//tensorboard/webapp/types",
         "//tensorboard/webapp/types:ui",
         "//tensorboard/webapp/util:colors",
         "//tensorboard/webapp/util:ngrx",
-        "//tensorboard/webapp/types",
         "@npm//@ngrx/store",
     ],
 )
@@ -39,8 +39,8 @@ tf_ts_library(
         ":types",
         ":utils",
         "//tensorboard/webapp/runs:types",
-        "//tensorboard/webapp/types:ui",
         "//tensorboard/webapp/types",
+        "//tensorboard/webapp/types:ui",
         "@npm//@ngrx/store",
     ],
 )
@@ -55,8 +55,8 @@ tf_ts_library(
         "//tensorboard/webapp/app_routing:route_contexted_reducer_helper",
         "//tensorboard/webapp/runs:types",
         "//tensorboard/webapp/runs/data_source",
-        "//tensorboard/webapp/types:ui",
         "//tensorboard/webapp/types",
+        "//tensorboard/webapp/types:ui",
     ],
 )
 
@@ -92,9 +92,9 @@ tf_ts_library(
         "//tensorboard/webapp/runs/data_source",
         "//tensorboard/webapp/runs/data_source:testing",
         "//tensorboard/webapp/testing:lang",
+        "//tensorboard/webapp/types",
         "//tensorboard/webapp/types:ui",
         "//tensorboard/webapp/util:colors",
-        "//tensorboard/webapp/types",
         "@npm//@types/jasmine",
     ],
 )

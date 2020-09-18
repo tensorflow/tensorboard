@@ -39,6 +39,8 @@ ng_module(
     deps = [
         "//tensorboard/webapp/app_routing/store",
         "//tensorboard/webapp/experiments/store:selectors",
+        "//tensorboard/webapp/runs/store:selectors",
+        "//tensorboard/webapp/util:ui_selectors",
     ],
 )
 
@@ -90,6 +92,7 @@ ng_module(
         "//tensorboard/webapp/feature_flag/store:types",
         "//tensorboard/webapp/plugins/npmi/store:types",
         "//tensorboard/webapp/plugins/text_v2/store:types",
+        "//tensorboard/webapp/runs/store:types",
     ],
 )
 
@@ -227,6 +230,11 @@ tf_ng_web_test_suite(
         "//tensorboard/webapp/plugins/text_v2/effects:effects_test_lib",
         "//tensorboard/webapp/plugins/text_v2/store:store_test_lib",
         "//tensorboard/webapp/reloader:test_lib",
+        "//tensorboard/webapp/runs/effects:effects_test",
+        "//tensorboard/webapp/runs/store:store_test",
+        "//tensorboard/webapp/runs/store:testing",
+        "//tensorboard/webapp/runs/views/runs_selector:runs_selector_test",
+        "//tensorboard/webapp/runs/views/runs_table:runs_table_test",
         "//tensorboard/webapp/settings:test_lib",
         "//tensorboard/webapp/tbdev_upload:test_lib",
         "//tensorboard/webapp/util:util_tests",

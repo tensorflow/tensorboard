@@ -14,10 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import {ChangeDetectionStrategy, Component, Input, OnInit} from '@angular/core';
 import {createSelector, Store} from '@ngrx/store';
-import {
-  DataLoadState,
-  LoadState,
-} from '../../../types/data';
+import {DataLoadState, LoadState} from '../../../types/data';
 import {combineLatest, Observable, of} from 'rxjs';
 import {combineLatestWith, map, shareReplay} from 'rxjs/operators';
 
@@ -64,6 +61,8 @@ import {
   MetricColumn,
 } from './runs_table_component';
 import {RunsTableColumn, RunTableItem} from './types';
+
+/** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
 const getRunsLoading = createSelector<
   State,

@@ -14,7 +14,6 @@ ng_module(
     ],
     deps = [
         ":backend_types",
-        "//tensorboard/webapp/angular:expect_angular_common_http",
         "//tensorboard/webapp/webapp_data_source:http_client",
         "@npm//@angular/core",
         "@npm//rxjs",

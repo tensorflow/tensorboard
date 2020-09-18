@@ -16,10 +16,7 @@ import {Injectable} from '@angular/core';
 import {Actions, createEffect, ofType} from '@ngrx/effects';
 import {Store} from '@ngrx/store';
 import * as coreActions from '../../core/actions';
-import {
-  DataLoadState,
-  LoadState,
-} from '../../types/data';
+import {DataLoadState, LoadState} from '../../types/data';
 import {forkJoin, merge, Observable, of, throwError} from 'rxjs';
 import {
   catchError,
@@ -45,6 +42,8 @@ import {Run} from '../data_source/runs_data_source_types';
 import {RunsDataSource} from '../data_source/runs_data_source_types';
 import {HparamsAndMetadata} from '../data_source/runs_data_source_types';
 import {ExperimentIdToRunsAndMetadata} from '../types';
+
+/** @typehack */ import * as _typeHackNgrxEffects from '@ngrx/effects/effects';
 
 /**
  * Runs effect for fetching data from the backend.

@@ -179,11 +179,10 @@ const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
     const nextSelectionState = new Map(state.selectionState);
     const subSelectionState = new Map(nextSelectionState.get(stateKey) ?? []);
 
-    const allRunIds = experimentIds
-      .map((experimentId) => state.runIds[experimentId])
-      .flat();
-    for (const runId of allRunIds) {
-      subSelectionState.set(runId, true);
+    for (const experimentId of experimentIds) {
+      for (const runId of state.runIds[experimentId]) {
+        subSelectionState.set(runId, true);
+      }
     }
 
     nextSelectionState.set(stateKey, subSelectionState);

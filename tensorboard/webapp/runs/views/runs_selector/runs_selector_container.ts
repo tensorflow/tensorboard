@@ -20,6 +20,8 @@ import {State} from '../../../app_state';
 import {getExperimentIdsFromRoute} from '../../../selectors';
 import {RunsTableColumn} from '../runs_table/types';
 
+/** @typehack */ import * as _typeHackRxjs from 'rxjs';
+
 @Component({
   selector: 'runs-selector',
   template: `
