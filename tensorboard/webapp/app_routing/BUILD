@@ -16,6 +16,7 @@ ng_module(
         ":route_registry",
         "//tensorboard/webapp/app_routing/effects",
         "//tensorboard/webapp/app_routing/store",
+        "//tensorboard/webapp/app_routing/store:types",
         "@npm//@angular/core",
         "@npm//@ngrx/effects",
         "@npm//@ngrx/store",
