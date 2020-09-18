@@ -27,6 +27,8 @@ import {auditTime} from 'rxjs/operators';
 import {DropdownOption} from '../../../widgets/dropdown/dropdown_component';
 import {HistogramMode, TooltipSort, XAxisType} from '../../types';
 
+/** @typehack */ import * as _typeHackRxjs from 'rxjs';
+
 const SLIDER_AUDIT_TIME_MS = 250;
 
 @Component({

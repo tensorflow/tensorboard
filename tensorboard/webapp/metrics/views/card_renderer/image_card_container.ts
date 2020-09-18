@@ -36,7 +36,11 @@ import {
 import {State} from '../../../app_state';
 import {RunColorScale} from '../../../types/ui';
 import * as actions from '../../actions';
-import {ImageStepDatum, MetricsDataSource, PluginType} from '../../data_source';
+import {
+  ImageStepDatum,
+  MetricsDataSource,
+  PluginType,
+} from '../../data_source/index';
 import {
   getCardLoadState,
   getCardMetadata,

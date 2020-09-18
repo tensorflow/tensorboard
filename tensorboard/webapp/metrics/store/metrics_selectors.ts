@@ -37,6 +37,8 @@ import {
   TagMetadata,
 } from './metrics_types';
 
+/** @typehack */ import * as _typeHackStore from '@ngrx/store';
+
 const selectMetricsState = createFeatureSelector<State, MetricsState>(
   METRICS_FEATURE_KEY
 );

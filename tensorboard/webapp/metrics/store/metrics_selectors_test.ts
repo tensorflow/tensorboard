@@ -12,8 +12,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import 'jasmine';
-
 import {DataLoadState} from '../../types/data';
 
 import {PluginType} from '../data_source';
@@ -33,7 +31,6 @@ import * as selectors from './metrics_selectors';
 describe('metrics selectors', () => {
   beforeEach(() => {
     // Clear the memoization.
-    selectors.getMetricsTagMetadataLoaded.setResult();
     selectors.getMetricsTagMetadataLoaded.release();
   });
 
@@ -50,7 +47,6 @@ describe('metrics selectors', () => {
 
   describe('getCardLoadState', () => {
     it('returns a card load state', () => {
-      selectors.getCardLoadState.setResult();
       selectors.getCardLoadState.release();
 
       const loadable = {
@@ -78,7 +74,6 @@ describe('metrics selectors', () => {
     });
 
     it('returns a card load state for a specific run', () => {
-      selectors.getCardLoadState.setResult();
       selectors.getCardLoadState.release();
 
       const loadable = {
@@ -115,7 +110,6 @@ describe('metrics selectors', () => {
     });
 
     it('returns not-loaded when no time series is available', () => {
-      selectors.getCardLoadState.setResult();
       selectors.getCardLoadState.release();
 
       const state = appStateFromMetricsState(
@@ -135,7 +129,6 @@ describe('metrics selectors', () => {
     });
 
     it('returns not-loaded when card is not available', () => {
-      selectors.getCardLoadState.setResult();
       selectors.getCardLoadState.release();
 
       const state = appStateFromMetricsState(buildMetricsState());
@@ -145,7 +138,6 @@ describe('metrics selectors', () => {
     });
 
     it('returns loading when some runs are loading', () => {
-      selectors.getCardLoadState.setResult();
       selectors.getCardLoadState.release();
 
       const loadable = {
@@ -179,7 +171,6 @@ describe('metrics selectors', () => {
       'returns not-loaded when some runs are not loaded and nothing is ' +
         'loading',
       () => {
-        selectors.getCardLoadState.setResult();
         selectors.getCardLoadState.release();
 
         const loadable = {
@@ -215,7 +206,6 @@ describe('metrics selectors', () => {
 
   describe('getCardMetadata', () => {
     it('returns card metadata', () => {
-      selectors.getCardMetadata.setResult();
       selectors.getCardMetadata.release();
 
       const state = appStateFromMetricsState(
@@ -237,7 +227,6 @@ describe('metrics selectors', () => {
     });
 
     it('returns null when metadata is not available', () => {
-      selectors.getCardMetadata.setResult();
       selectors.getCardMetadata.release();
 
       const state = appStateFromMetricsState(buildMetricsState());
@@ -247,7 +236,6 @@ describe('metrics selectors', () => {
 
   describe('getNonEmptyCardIdsWithMetadata', () => {
     beforeEach(() => {
-      selectors.getNonEmptyCardIdsWithMetadata.setResult();
       selectors.getNonEmptyCardIdsWithMetadata.release();
     });
 
@@ -304,7 +292,6 @@ describe('metrics selectors', () => {
 
   describe('getVisibleCardIds', () => {
     beforeEach(() => {
-      selectors.getVisibleCardIds.setResult();
       selectors.getVisibleCardIds.release();
     });
 
@@ -329,7 +316,6 @@ describe('metrics selectors', () => {
 
   describe('getCardTimeSeries', () => {
     it('getCardTimeSeries', () => {
-      selectors.getCardTimeSeries.setResult();
       selectors.getCardTimeSeries.release();
 
       const sampleScalarRunToSeries = {
@@ -386,7 +372,6 @@ describe('metrics selectors', () => {
 
   describe('getCardStepIndex', () => {
     it('returns null if no card exists', () => {
-      selectors.getCardStepIndex.setResult();
       selectors.getCardStepIndex.release();
 
       const state = appStateFromMetricsState(
@@ -398,7 +383,6 @@ describe('metrics selectors', () => {
     });
 
     it('properly returns card ids', () => {
-      selectors.getCardStepIndex.setResult();
       selectors.getCardStepIndex.release();
 
       const state = appStateFromMetricsState(
@@ -412,7 +396,6 @@ describe('metrics selectors', () => {
 
   describe('getPinnedCardsWithMetadata', () => {
     beforeEach(() => {
-      selectors.getPinnedCardsWithMetadata.setResult();
       selectors.getPinnedCardsWithMetadata.release();
     });
 
@@ -470,7 +453,6 @@ describe('metrics selectors', () => {
 
   describe('getCardPinnedState', () => {
     it('returns false if no card exists', () => {
-      selectors.getCardPinnedState.setResult();
       selectors.getCardPinnedState.release();
 
       const state = appStateFromMetricsState(
@@ -483,7 +465,6 @@ describe('metrics selectors', () => {
     });
 
     it('returns false if the card is not pinned', () => {
-      selectors.getCardPinnedState.setResult();
       selectors.getCardPinnedState.release();
 
       const state = appStateFromMetricsState(
@@ -499,7 +480,6 @@ describe('metrics selectors', () => {
     });
 
     it('returns true if the card has a pinned copy', () => {
-      selectors.getCardPinnedState.setResult();
       selectors.getCardPinnedState.release();
 
       const state = appStateFromMetricsState(
@@ -516,7 +496,6 @@ describe('metrics selectors', () => {
     });
 
     it('returns true if the card is a pinned copy', () => {
-      selectors.getCardPinnedState.setResult();
       selectors.getCardPinnedState.release();
 
       const state = appStateFromMetricsState(
@@ -535,7 +514,6 @@ describe('metrics selectors', () => {
 
   describe('settings', () => {
     it('returns tooltipSort when called getMetricsTooltipSort', () => {
-      selectors.getMetricsTooltipSort.setResult();
       selectors.getMetricsTooltipSort.release();
       const state = appStateFromMetricsState(
         buildMetricsState({
@@ -550,7 +528,6 @@ describe('metrics selectors', () => {
     });
 
     it('returns ignoreOutliers when called getMetricsIgnoreOutliers', () => {
-      selectors.getMetricsIgnoreOutliers.setResult();
       selectors.getMetricsIgnoreOutliers.release();
       const state = appStateFromMetricsState(
         buildMetricsState({
@@ -563,7 +540,6 @@ describe('metrics selectors', () => {
     });
 
     it('returns xAxis when called getMetricsXAxisType', () => {
-      selectors.getMetricsXAxisType.setResult();
       selectors.getMetricsXAxisType.release();
       const state = appStateFromMetricsState(
         buildMetricsState({
@@ -576,7 +552,6 @@ describe('metrics selectors', () => {
     });
 
     it('returns scalarSmoothing when called getMetricsScalarSmoothing', () => {
-      selectors.getMetricsScalarSmoothing.setResult();
       selectors.getMetricsScalarSmoothing.release();
       const state = appStateFromMetricsState(
         buildMetricsState({
@@ -589,7 +564,6 @@ describe('metrics selectors', () => {
     });
 
     it('returns imageBrightnessInMilli when called getMetricsImageBrightnessInMilli', () => {
-      selectors.getMetricsImageBrightnessInMilli.setResult();
       selectors.getMetricsImageBrightnessInMilli.release();
       const state = appStateFromMetricsState(
         buildMetricsState({
@@ -602,7 +576,6 @@ describe('metrics selectors', () => {
     });
 
     it('returns imageContrastInMilli when called getMetricsImageContrastInMilli', () => {
-      selectors.getMetricsImageContrastInMilli.setResult();
       selectors.getMetricsImageContrastInMilli.release();
       const state = appStateFromMetricsState(
         buildMetricsState({
@@ -615,7 +588,6 @@ describe('metrics selectors', () => {
     });
 
     it('returns imageShowActualSize when called getMetricsImageShowActualSize', () => {
-      selectors.getMetricsImageShowActualSize.setResult();
       selectors.getMetricsImageShowActualSize.release();
       const state = appStateFromMetricsState(
         buildMetricsState({
@@ -628,7 +600,6 @@ describe('metrics selectors', () => {
     });
 
     it('returns histogramMode when called getMetricsHistogramMode', () => {
-      selectors.getMetricsHistogramMode.setResult();
       selectors.getMetricsHistogramMode.release();
       const state = appStateFromMetricsState(
         buildMetricsState({
@@ -645,7 +616,6 @@ describe('metrics selectors', () => {
 
   describe('getMetricsTagFilter', () => {
     it('returns tagFilter', () => {
-      selectors.getMetricsTagFilter.setResult();
       selectors.getMetricsTagFilter.release();
       const state = appStateFromMetricsState(
         buildMetricsState({tagFilter: 'hello'})
@@ -656,7 +626,6 @@ describe('metrics selectors', () => {
 
   describe('getMetricsTagGroupExpansionState', () => {
     beforeEach(() => {
-      selectors.getMetricsTagGroupExpansionState.setResult();
       selectors.getMetricsTagGroupExpansionState.release();
     });
 

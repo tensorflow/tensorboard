@@ -19,6 +19,8 @@ import {map} from 'rxjs/operators';
 import {State} from '../../../app_state';
 import {getMetricsTagFilter} from '../../store';
 
+/** @typehack */ import * as _typeHackRxjs from 'rxjs';
+
 @Component({
   selector: 'metrics-main-view',
   template: `

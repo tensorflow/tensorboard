@@ -14,5 +14,6 @@ limitations under the License.
 ==============================================================================*/
 export * from './app_routing/store/app_routing_selectors';
 export * from './experiments/store/experiments_selectors';
+export * from './metrics/store/metrics_selectors';
 export * from './runs/store/runs_selectors';
 export * from './util/ui_selectors';

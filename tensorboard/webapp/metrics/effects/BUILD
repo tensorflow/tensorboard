@@ -1,4 +1,5 @@
 load("@npm_angular_bazel//:index.bzl", "ng_module")
+load("//tensorboard/defs:defs.bzl", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
@@ -9,12 +10,12 @@ ng_module(
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp:selectors",
         "//tensorboard/webapp/app_routing/actions",
+        "//tensorboard/webapp/core/actions",
+        "//tensorboard/webapp/core/store",
         "//tensorboard/webapp/metrics:types",
         "//tensorboard/webapp/metrics/actions",
         "//tensorboard/webapp/metrics/data_source",
         "//tensorboard/webapp/metrics/store",
-        "//tensorboard/webapp/core/actions",
-        "//tensorboard/webapp/core/store",
         "//tensorboard/webapp/types",
         "@npm//@angular/core",
         "@npm//@ngrx/effects",
@@ -23,7 +24,7 @@ ng_module(
     ],
 )
 
-ng_module(
+tf_ts_library(
     name = "effects_test",
     testonly = True,
     srcs = ["metrics_effects_test.ts"],
@@ -31,19 +32,19 @@ ng_module(
         ":effects",
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp:selectors",
+        "//tensorboard/webapp/angular:expect_angular_core_testing",
+        "//tensorboard/webapp/angular:expect_ngrx_store_testing",
         "//tensorboard/webapp/app_routing:testing",
         "//tensorboard/webapp/app_routing:types",
         "//tensorboard/webapp/app_routing/actions",
+        "//tensorboard/webapp/core/actions",
+        "//tensorboard/webapp/core/store",
+        "//tensorboard/webapp/core/testing",
         "//tensorboard/webapp/metrics:test_lib",
         "//tensorboard/webapp/metrics:types",
         "//tensorboard/webapp/metrics/actions",
         "//tensorboard/webapp/metrics/data_source",
         "//tensorboard/webapp/metrics/store",
-        "//tensorboard/webapp/angular:expect_angular_core_testing",
-        "//tensorboard/webapp/angular:expect_ngrx_store_testing",
-        "//tensorboard/webapp/core/actions",
-        "//tensorboard/webapp/core/store",
-        "//tensorboard/webapp/core/testing",
         "//tensorboard/webapp/types",
         "//tensorboard/webapp/webapp_data_source:http_client_testing",
         "@npm//@ngrx/effects",

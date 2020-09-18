@@ -51,7 +51,7 @@ tf_ts_library(
     ],
 )
 
-ng_module(
+tf_ts_library(
     name = "views_test",
     testonly = True,
     srcs = [
@@ -63,10 +63,10 @@ ng_module(
         ":utils",
         ":views",
         "//tensorboard/webapp:app_state",
-        "//tensorboard/webapp/metrics/data_source",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/angular:expect_angular_platform_browser_animations",
         "//tensorboard/webapp/angular:expect_ngrx_store_testing",
+        "//tensorboard/webapp/metrics/data_source",
         "@npm//@angular/core",
         "@npm//@angular/platform-browser",
         "@npm//@ngrx/store",

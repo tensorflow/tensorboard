@@ -12,8 +12,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import 'jasmine';
-
 import {Injectable} from '@angular/core';
 import {DataLoadState} from '../types/data';
 import {of} from 'rxjs';
@@ -40,6 +38,8 @@ import {
 import * as selectors from './store/metrics_selectors';
 import {RunToSeries, StepDatum} from './store/metrics_types';
 import {CardId, CardMetadata, TooltipSort, XAxisType} from './types';
+
+/** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
 export function buildMetricsSettingsState(
   overrides?: Partial<MetricsState['settings']>

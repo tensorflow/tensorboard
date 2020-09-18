@@ -21,6 +21,9 @@ import {
 } from '../data_source';
 import {CardId, HistogramMode, TooltipSort, XAxisType} from '../types';
 
+/** @typehack */ import * as _typeHackModels from '@ngrx/store/src/models';
+/** @typehack */ import * as _typeHackStore from '@ngrx/store';
+
 export const metricsTagMetadataRequested = createAction(
   '[Metrics] Metrics Tag Metadata Requested'
 );

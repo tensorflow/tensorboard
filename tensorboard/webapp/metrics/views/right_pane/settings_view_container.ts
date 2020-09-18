@@ -31,6 +31,8 @@ import {
 import * as selectors from '../../store/metrics_selectors';
 import {HistogramMode, TooltipSort, XAxisType} from '../../types';
 
+/** @typehack */ import * as _typeHackRxjs from 'rxjs';
+
 @Component({
   selector: 'metrics-dashboard-settings',
   template: `

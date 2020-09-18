@@ -17,6 +17,7 @@ import {State as AppRoutingState} from './app_routing/store/app_routing_types';
 import {State as CoreState} from './core/store/core_types';
 import {State as ExperimentsState} from './experiments/store/experiments_types';
 import {State as FeatureFlagState} from './feature_flag/store/feature_flag_types';
+import {State as MetricsState} from './metrics/store/metrics_types';
 import {State as NpmiState} from './plugins/npmi/store/npmi_types';
 import {State as RunsState} from './runs/store/runs_types';
 import {State as TextState} from './plugins/text_v2/store/text_types';
@@ -25,6 +26,7 @@ export type State = AppRoutingState &
   CoreState &
   ExperimentsState &
   FeatureFlagState &
+  MetricsState &
   NpmiState &
   RunsState &
   TextState;

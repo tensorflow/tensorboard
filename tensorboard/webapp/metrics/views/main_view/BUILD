@@ -1,5 +1,5 @@
 load("@npm_angular_bazel//:index.bzl", "ng_module")
-load("//tensorboard/defs:defs.bzl", "tf_sass_binary")
+load("//tensorboard/defs:defs.bzl", "tf_sass_binary", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
@@ -79,6 +79,11 @@ ng_module(
     deps = [
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp:selectors",
+        "//tensorboard/webapp/angular:expect_angular_material_autocomplete",
+        "//tensorboard/webapp/angular:expect_angular_material_button",
+        "//tensorboard/webapp/angular:expect_angular_material_icon",
+        "//tensorboard/webapp/angular:expect_angular_material_input",
+        "//tensorboard/webapp/core/store",
         "//tensorboard/webapp/metrics/actions",
         "//tensorboard/webapp/metrics/data_source",
         "//tensorboard/webapp/metrics/store",
@@ -90,18 +95,13 @@ ng_module(
         "//tensorboard/webapp/types:ui",
         "//tensorboard/webapp/util:string",
         "//tensorboard/webapp/util:types",
-        "//tensorboard/webapp/angular:expect_angular_material_autocomplete",
-        "//tensorboard/webapp/angular:expect_angular_material_button",
-        "//tensorboard/webapp/angular:expect_angular_material_icon",
-        "//tensorboard/webapp/angular:expect_angular_material_input",
-        "//tensorboard/webapp/core/store",
         "@npm//@angular/core",
         "@npm//@ngrx/store",
         "@npm//rxjs",
     ],
 )
 
-ng_module(
+tf_ts_library(
     name = "main_view_tests",
     testonly = True,
     srcs = [
@@ -112,6 +112,14 @@ ng_module(
         ":main_view",
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp:selectors",
+        "//tensorboard/webapp/angular:expect_angular_cdk_overlay",
+        "//tensorboard/webapp/angular:expect_angular_core_testing",
+        "//tensorboard/webapp/angular:expect_angular_material_autocomplete",
+        "//tensorboard/webapp/angular:expect_angular_material_button",
+        "//tensorboard/webapp/angular:expect_angular_material_input",
+        "//tensorboard/webapp/angular:expect_angular_platform_browser_animations",
+        "//tensorboard/webapp/angular:expect_ngrx_store_testing",
+        "//tensorboard/webapp/core/store",
         "//tensorboard/webapp/metrics:test_lib",
         "//tensorboard/webapp/metrics:types",
         "//tensorboard/webapp/metrics/actions",
@@ -122,14 +130,6 @@ ng_module(
         "//tensorboard/webapp/testing:mat_icon",
         "//tensorboard/webapp/testing:material",
         "//tensorboard/webapp/types:ui",
-        "//tensorboard/webapp/angular:expect_angular_cdk_overlay",
-        "//tensorboard/webapp/angular:expect_angular_core_testing",
-        "//tensorboard/webapp/angular:expect_angular_material_autocomplete",
-        "//tensorboard/webapp/angular:expect_angular_material_button",
-        "//tensorboard/webapp/angular:expect_angular_material_input",
-        "//tensorboard/webapp/angular:expect_angular_platform_browser_animations",
-        "//tensorboard/webapp/angular:expect_ngrx_store_testing",
-        "//tensorboard/webapp/core/store",
         "@npm//@angular/core",
         "@npm//@angular/platform-browser",
         "@npm//@ngrx/store",

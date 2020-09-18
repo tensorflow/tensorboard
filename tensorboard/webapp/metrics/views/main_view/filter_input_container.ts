@@ -25,6 +25,8 @@ import {
 import {metricsTagFilterChanged} from '../../actions';
 import {compareTagNames} from '../utils';
 
+/** @typehack */ import * as _typeHackRxjs from 'rxjs';
+
 @Component({
   selector: 'metrics-tag-filter',
   template: `
