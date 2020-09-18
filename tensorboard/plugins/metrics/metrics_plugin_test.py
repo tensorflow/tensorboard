@@ -70,11 +70,11 @@ class MetricsPluginTest(tf.test.TestCase):
     def _write_scalar_data(self, run, tag, data=[]):
         """Writes scalar data, starting at step 0.
 
-    Args:
-      run: string run name.
-      tag: string tag name.
-      data: list of scalar values to write at each step.
-    """
+        Args:
+          run: string run name.
+          tag: string tag name.
+          data: list of scalar values to write at each step.
+        """
         subdir = os.path.join(self._logdir, run)
         writer = tf.summary.create_file_writer(subdir)
 
@@ -99,11 +99,11 @@ class MetricsPluginTest(tf.test.TestCase):
     def _write_histogram_data(self, run, tag, data=[]):
         """Writes histogram data, starting at step 0.
 
-    Args:
-      run: string run name.
-      tag: string tag name.
-      data: list of histogram values to write at each step.
-    """
+        Args:
+          run: string run name.
+          tag: string tag name.
+          data: list of histogram values to write at each step.
+        """
         subdir = os.path.join(self._logdir, run)
         writer = tf.summary.create_file_writer(subdir)
 
@@ -130,7 +130,8 @@ class MetricsPluginTest(tf.test.TestCase):
     ### Misc utilities.
 
     def _clean_time_series_responses(self, responses):
-        """Cleans non-deterministic data from a TimeSeriesResponse, in place."""
+        """Cleans non-deterministic data from a TimeSeriesResponse, in
+        place."""
         for response in responses:
             run_to_series = response.get("runToSeries", {})
             for (run, series) in run_to_series.items():

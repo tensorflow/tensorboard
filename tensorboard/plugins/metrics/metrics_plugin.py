@@ -81,17 +81,17 @@ def _get_tag_description_info(mapping):
 def _build_combined_description(descriptions, description_to_runs):
     """Creates a single description from a set of descriptions.
 
-  Descriptions may be composites when a single tag has different descriptions
-  across multiple runs.
+    Descriptions may be composites when a single tag has different descriptions
+    across multiple runs.
 
-  Args:
-      descriptions: A list of description strings.
-      description_to_runs: A map from description strings to a set of run
-          strings.
+    Args:
+        descriptions: A list of description strings.
+        description_to_runs: A map from description strings to a set of run
+            strings.
 
-  Returns:
-      The combined description string.
-  """
+    Returns:
+        The combined description string.
+    """
     prefixed_descriptions = []
     for description in descriptions:
         runs = sorted(description_to_runs[description])
@@ -154,15 +154,15 @@ def _get_run_tag_info(mapping):
 def _format_basic_mapping(mapping):
     """Prepares a scalar or histogram mapping for client consumption.
 
-  Args:
-      mapping: a nested map `d` such that `d[run][tag]` is a time series
-        produced by DataProvider's `list_*` methods.
+    Args:
+        mapping: a nested map `d` such that `d[run][tag]` is a time series
+          produced by DataProvider's `list_*` methods.
 
-  Returns:
-      A dict with the following fields:
-          runTagInfo: the return type of `_get_run_tag_info`
-          tagDescriptions: the return type of `_get_tag_to_description`
-  """
+    Returns:
+        A dict with the following fields:
+            runTagInfo: the return type of `_get_run_tag_info`
+            tagDescriptions: the return type of `_get_tag_to_description`
+    """
     return {
         "runTagInfo": _get_run_tag_info(mapping),
         "tagDescriptions": _get_tag_to_description(mapping),
@@ -172,17 +172,17 @@ def _format_basic_mapping(mapping):
 def _format_image_blob_sequence_datum(sorted_datum_list, sample):
     """Formats image metadata from a list of BlobSequenceDatum's for clients.
 
-  This expects that frontend clients need to access images based on the
-  run+tag+sample.
+    This expects that frontend clients need to access images based on the
+    run+tag+sample.
 
-  Args:
-      sorted_datum_list: a list of DataProvider's `BlobSequenceDatum`, sorted by
-          step. This can be produced via DataProvider's `read_blob_sequences`.
-      sample: zero-indexed integer for the requested sample.
+    Args:
+        sorted_datum_list: a list of DataProvider's `BlobSequenceDatum`, sorted by
+            step. This can be produced via DataProvider's `read_blob_sequences`.
+        sample: zero-indexed integer for the requested sample.
 
-  Returns:
-      A list of `ImageStepDatum` (see http_api.md).
-  """
+    Returns:
+        A list of `ImageStepDatum` (see http_api.md).
+    """
     # For images, ignore the first 2 items of a BlobSequenceDatum's values, which
     # correspond to width, height.
     index = sample + 2
@@ -204,20 +204,20 @@ def _format_image_blob_sequence_datum(sorted_datum_list, sample):
 def _get_tag_run_image_info(mapping):
     """Returns a map of tag names to run information.
 
-  Args:
-      mapping: the result of DataProvider's `list_blob_sequences`.
+    Args:
+        mapping: the result of DataProvider's `list_blob_sequences`.
 
-  Returns:
-      A nested map from run strings to tag string to image info, where image
-      info is an object of form {"maxSamplesPerStep": num}. For example,
-      {
-          "reshaped": {
-              "test": {"maxSamplesPerStep": 1},
-              "train": {"maxSamplesPerStep": 1}
-          },
-          "convolved": {"test": {"maxSamplesPerStep": 50}},
-      }
-  """
+    Returns:
+        A nested map from run strings to tag string to image info, where image
+        info is an object of form {"maxSamplesPerStep": num}. For example,
+        {
+            "reshaped": {
+                "test": {"maxSamplesPerStep": 1},
+                "train": {"maxSamplesPerStep": 1}
+            },
+            "convolved": {"test": {"maxSamplesPerStep": 50}},
+        }
+    """
     tag_run_image_info = collections.defaultdict(dict)
     for (run, tag_to_content) in mapping.items():
         for (tag, metadatum) in tag_to_content.items():
@@ -230,14 +230,14 @@ def _get_tag_run_image_info(mapping):
 def _format_image_mapping(mapping):
     """Prepares an image mapping for client consumption.
 
-  Args:
-      mapping: the result of DataProvider's `list_blob_sequences`.
+    Args:
+        mapping: the result of DataProvider's `list_blob_sequences`.
 
-  Returns:
-      A dict with the following fields:
-          tagRunSampledInfo: the return type of `_get_tag_run_image_info`
-          tagDescriptions: the return type of `_get_tag_description_info`
-  """
+    Returns:
+        A dict with the following fields:
+            tagRunSampledInfo: the return type of `_get_tag_run_image_info`
+            tagDescriptions: the return type of `_get_tag_description_info`
+    """
     return {
         "tagDescriptions": _get_tag_to_description(mapping),
         "tagRunSampledInfo": _get_tag_run_image_info(mapping),
@@ -252,10 +252,10 @@ class MetricsPlugin(base_plugin.TBPlugin):
     def __init__(self, context):
         """Instantiates MetricsPlugin.
 
-    Args:
-        context: A base_plugin.TBContext instance. MetricsLoader checks that
-            it contains a valid `data_provider`.
-    """
+        Args:
+            context: A base_plugin.TBContext instance. MetricsLoader checks that
+                it contains a valid `data_provider`.
+        """
         self._data_provider = context.data_provider
 
         # For histograms, use a round number + 1 since sampling includes both start
@@ -298,14 +298,14 @@ class MetricsPlugin(base_plugin.TBPlugin):
     def _tags_impl(self, ctx, experiment=None):
         """Returns tag metadata for a given experiment's logged metrics.
 
-    Args:
-        ctx: A `tensorboard.context.RequestContext` value.
-        experiment: optional string ID of the request's experiment.
+        Args:
+            ctx: A `tensorboard.context.RequestContext` value.
+            experiment: optional string ID of the request's experiment.
 
-    Returns:
-        A nested dict 'd' with keys in ("scalars", "histograms", "images")
-            and values being the return type of _format_*mapping.
-    """
+        Returns:
+            A nested dict 'd' with keys in ("scalars", "histograms", "images")
+                and values being the return type of _format_*mapping.
+        """
         scalar_mapping = self._data_provider.list_scalars(
             ctx,
             experiment_id=experiment,
@@ -348,14 +348,14 @@ class MetricsPlugin(base_plugin.TBPlugin):
     def _time_series_impl(self, ctx, experiment, series_requests):
         """Constructs a list of responses from a list of series requests.
 
-    Args:
-        ctx: A `tensorboard.context.RequestContext` value.
-        experiment: string ID of the request's experiment.
-        series_requests: a list of `TimeSeriesRequest` dicts (see http_api.md).
+        Args:
+            ctx: A `tensorboard.context.RequestContext` value.
+            experiment: string ID of the request's experiment.
+            series_requests: a list of `TimeSeriesRequest` dicts (see http_api.md).
 
-    Returns:
-        A list of `TimeSeriesResponse` dicts (see http_api.md).
-    """
+        Returns:
+            A list of `TimeSeriesResponse` dicts (see http_api.md).
+        """
         responses = [
             self._get_time_series(ctx, experiment, request)
             for request in series_requests
@@ -402,14 +402,14 @@ class MetricsPlugin(base_plugin.TBPlugin):
     def _get_time_series(self, ctx, experiment, series_request):
         """Returns time series data for a given tag, plugin.
 
-    Args:
-        ctx: A `tensorboard.context.RequestContext` value.
-        experiment: string ID of the request's experiment.
-        series_request: a `TimeSeriesRequest` (see http_api.md).
+        Args:
+            ctx: A `tensorboard.context.RequestContext` value.
+            experiment: string ID of the request's experiment.
+            series_request: a `TimeSeriesRequest` (see http_api.md).
 
-    Returns:
-        A `TimeSeriesResponse` dict (see http_api.md).
-    """
+        Returns:
+            A `TimeSeriesResponse` dict (see http_api.md).
+        """
         tag = series_request.get("tag")
         run = series_request.get("run")
         plugin = series_request.get("plugin")
@@ -443,15 +443,15 @@ class MetricsPlugin(base_plugin.TBPlugin):
     def _get_run_to_scalar_series(self, ctx, experiment, tag, runs):
         """Builds a run-to-scalar-series dict for client consumption.
 
-    Args:
-        ctx: A `tensorboard.context.RequestContext` value.
-        experiment: a string experiment id.
-        tag: string of the requested tag.
-        runs: optional list of run names as strings.
+        Args:
+            ctx: A `tensorboard.context.RequestContext` value.
+            experiment: a string experiment id.
+            tag: string of the requested tag.
+            runs: optional list of run names as strings.
 
-    Returns:
-        A map from string run names to `ScalarStepDatum` (see http_api.md).
-    """
+        Returns:
+            A map from string run names to `ScalarStepDatum` (see http_api.md).
+        """
         mapping = self._data_provider.read_scalars(
             ctx,
             experiment_id=experiment,
@@ -479,12 +479,12 @@ class MetricsPlugin(base_plugin.TBPlugin):
     def _format_histogram_datum_bins(self, datum):
         """Formats a histogram datum's bins for client consumption.
 
-    Args:
-        datum: a DataProvider's TensorDatum.
+        Args:
+            datum: a DataProvider's TensorDatum.
 
-    Returns:
-        A list of `HistogramBin`s (see http_api.md).
-    """
+        Returns:
+            A list of `HistogramBin`s (see http_api.md).
+        """
         numpy_list = datum.numpy.tolist()
         bins = [{"min": x[0], "max": x[1], "count": x[2]} for x in numpy_list]
         return bins
@@ -492,15 +492,15 @@ class MetricsPlugin(base_plugin.TBPlugin):
     def _get_run_to_histogram_series(self, ctx, experiment, tag, runs):
         """Builds a run-to-histogram-series dict for client consumption.
 
-    Args:
-        ctx: A `tensorboard.context.RequestContext` value.
-        experiment: a string experiment id.
-        tag: string of the requested tag.
-        runs: optional list of run names as strings.
+        Args:
+            ctx: A `tensorboard.context.RequestContext` value.
+            experiment: a string experiment id.
+            tag: string of the requested tag.
+            runs: optional list of run names as strings.
 
-    Returns:
-        A map from string run names to `HistogramStepDatum` (see http_api.md).
-    """
+        Returns:
+            A map from string run names to `HistogramStepDatum` (see http_api.md).
+        """
         mapping = self._data_provider.read_tensors(
             ctx,
             experiment_id=experiment,
@@ -528,16 +528,16 @@ class MetricsPlugin(base_plugin.TBPlugin):
     def _get_run_to_image_series(self, ctx, experiment, tag, sample, runs):
         """Builds a run-to-image-series dict for client consumption.
 
-    Args:
-        ctx: A `tensorboard.context.RequestContext` value.
-        experiment: a string experiment id.
-        tag: string of the requested tag.
-        sample: zero-indexed integer for the requested sample.
-        runs: optional list of run names as strings.
+        Args:
+            ctx: A `tensorboard.context.RequestContext` value.
+            experiment: a string experiment id.
+            tag: string of the requested tag.
+            sample: zero-indexed integer for the requested sample.
+            runs: optional list of run names as strings.
 
-    Returns:
-        A `RunToSeries` dict (see http_api.md).
-    """
+        Returns:
+            A `RunToSeries` dict (see http_api.md).
+        """
         mapping = self._data_provider.read_blob_sequences(
             ctx,
             experiment_id=experiment,
@@ -573,15 +573,15 @@ class MetricsPlugin(base_plugin.TBPlugin):
     def _image_data_impl(self, ctx, blob_key):
         """Gets the image data for a blob key.
 
-    Args:
-        ctx: A `tensorboard.context.RequestContext` value.
-        blob_key: a string identifier for a DataProvider blob.
+        Args:
+            ctx: A `tensorboard.context.RequestContext` value.
+            blob_key: a string identifier for a DataProvider blob.
 
-    Returns:
-        A tuple containing:
-          data: a raw bytestring of the requested image's contents.
-          content_type: a string HTTP content type.
-    """
+        Returns:
+            A tuple containing:
+              data: a raw bytestring of the requested image's contents.
+              content_type: a string HTTP content type.
+        """
         data = self._data_provider.read_blob(ctx, blob_key=blob_key)
         image_type = imghdr.what(None, data)
         content_type = _IMGHDR_TO_MIMETYPE.get(
