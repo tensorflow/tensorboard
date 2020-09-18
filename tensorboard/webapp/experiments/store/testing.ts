@@ -12,17 +12,33 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {Experiment} from '../types';
+import {
+  EXPERIMENTS_FEATURE_KEY,
+  ExperimentsState,
+  State,
+} from './experiments_types';
 
-import {State as AppRoutingState} from './app_routing/store/app_routing_types';
-import {State as CoreState} from './core/store/core_types';
-import {State as ExperimentsState} from './experiments/store/experiments_types';
-import {State as FeatureFlagState} from './feature_flag/store/feature_flag_types';
-import {State as NpmiState} from './plugins/npmi/store/npmi_types';
-import {State as TextState} from './plugins/text_v2/store/text_types';
+/**
+ * Builds an experiment from default. Can override fields by providing
+ * `override`.
+ */
+export function buildExperiment(override?: Partial<Experiment>) {
+  return {
+    id: '1',
+    description: undefined,
+    name: 'Default Experiment',
+    start_time: 1,
+    tags: undefined,
+    ...override,
+  };
+}
 
-export type State = AppRoutingState &
-  CoreState &
-  ExperimentsState &
-  FeatureFlagState &
-  NpmiState &
-  TextState;
+/**
+ * Get application state from an experiment state.
+ */
+export function buildStateFromExperimentsState(
+  experimentsState: ExperimentsState
+): State {
+  return {[EXPERIMENTS_FEATURE_KEY]: experimentsState};
+}

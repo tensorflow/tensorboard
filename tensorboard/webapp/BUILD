@@ -31,6 +31,17 @@ ng_module(
     ],
 )
 
+ng_module(
+    name = "selectors",
+    srcs = [
+        "selectors.ts",
+    ],
+    deps = [
+        "//tensorboard/webapp/app_routing/store",
+        "//tensorboard/webapp/experiments/store:selectors",
+    ],
+)
+
 # Angular module for the top-level app component together with all of its
 # injectable dependencies.  I.e., the entire Angular app.
 ng_module(
@@ -75,6 +86,7 @@ ng_module(
     deps = [
         "//tensorboard/webapp/app_routing/store:types",
         "//tensorboard/webapp/core/store",
+        "//tensorboard/webapp/experiments/store:types",
         "//tensorboard/webapp/feature_flag/store:types",
         "//tensorboard/webapp/plugins/npmi/store:types",
         "//tensorboard/webapp/plugins/text_v2/store:types",
