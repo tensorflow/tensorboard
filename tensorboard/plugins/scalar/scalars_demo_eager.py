@@ -60,22 +60,20 @@ def main(unused_argv):
         % (FLAGS.num_runs, FLAGS.num_tags_per_run, FLAGS.num_scalars_per_tag)
     )
     logging.info("Output saved to %s." % logdir)
-    logging.info(
-        f"""
+    logging.info("""
 You can now view the scalars in this logdir:
 
 Run local:
 
-    tensorboard --logdir={logdir}
+    tensorboard --logdir=%s
 
 Upload to TensorBoard.dev:
 
     tensorboard dev upload \\
-      --logdir={logdir} \\
+      --logdir=%s \\
       --name=\"Scalars demo.\" \\
       --one_shot
-"""
-    )
+""", logdir, logdir)
 
 
 if __name__ == "__main__":
