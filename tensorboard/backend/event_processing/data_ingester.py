@@ -32,9 +32,7 @@ from tensorboard.plugins.scalar import metadata as scalar_metadata
 from tensorboard.util import tb_logging
 
 
-DEFAULT_SIZE_GUIDANCE = {
-    tag_types.TENSORS: 10,
-}
+DEFAULT_SIZE_GUIDANCE = {tag_types.TENSORS: 10}
 
 # TODO(@wchargin): Replace with something that works for third-party plugins.
 DEFAULT_TENSOR_SIZE_GUIDANCE = {
@@ -101,13 +99,21 @@ class LocalDataIngester(object):
                 logger.info(
                     "TensorBoard reload process: Reload the whole Multiplexer"
                 )
-                print("multiplexer.AddRunsFromDirectory(path, name) completed")
+                print ("multiplexer.AddRunsFromDirectory(path, name) completed")
                 duration = time.time() - start
-                print('AddRunsFromDirectory done. Load took {} secs'.format(duration))
+                print (
+                    "AddRunsFromDirectory done. Load took {} secs".format(
+                        duration
+                    )
+                )
                 start2 = time.time()
                 self._multiplexer.Reload()
                 duration = time.time() - start2
-                print('TensorBoard done reloading. Load took {} secs'.format(duration))
+                print (
+                    "TensorBoard done reloading. Load took {} secs".format(
+                        duration
+                    )
+                )
 
                 logger.info(
                     "TensorBoard done reloading. Load took %0.3f secs", duration

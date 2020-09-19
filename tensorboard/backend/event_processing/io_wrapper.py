@@ -34,6 +34,7 @@ _ESCAPE_GLOB_CHARACTERS_REGEX = re.compile("([*?[])")
 directory_cache = {}
 use_bfs_and_build_cache_MT = True
 
+
 def IsCloudPath(path):
     return (
         path.startswith("gs://")
@@ -91,7 +92,8 @@ def ListDirectoryAbsolute(directory):
         return directory_cache[directory]
     else:
         return (
-            os.path.join(directory, path) for path in tf.io.gfile.listdir(directory)
+            os.path.join(directory, path)
+            for path in tf.io.gfile.listdir(directory)
         )
 
 
@@ -167,10 +169,13 @@ def ListRecursivelyViaGlobbing(top):
         current_glob_string = os.path.join(current_glob_string, "*")
         level += 1
 
+
 import queue
 import time
 import os
 import threading
+
+
 class listdir_bfs:
     def __init__(self, baseDir, list_dir_function=None):
         # list_dir_function = listdirWithDelay
@@ -184,7 +189,7 @@ class listdir_bfs:
         self.unwalked_dirs.put(baseDir)
         self.threads = []
         for i in range(20):
-            t = threading.Thread(name="thread"+str(i), target=self.worker)
+            t = threading.Thread(name="thread" + str(i), target=self.worker)
             self.threads.append(t)
             t.start()
 
@@ -200,7 +205,9 @@ class listdir_bfs:
                 current = self.unwalked_dirs.get(False)
                 last_job_time = time.time()
             except queue.Empty:
-                if time.time() - last_job_time > self.max_idle_time_in_sec : # and last_job_time > 0:
+                if (
+                    time.time() - last_job_time > self.max_idle_time_in_sec
+                ):  # and last_job_time > 0:
                     # print('Worker '+threading.current_thread().getName() + " is stopped")
                     break
                 # print('Worker '+threading.current_thread().getName() + " slept for 0.1s")
@@ -218,8 +225,11 @@ class listdir_bfs:
                     dir_paths.append(fullpath)
                 else:
                     file_paths.append(fullpath)
-            self.return_structure.append((current, tuple(dir_paths), tuple(file_paths)))
+            self.return_structure.append(
+                (current, tuple(dir_paths), tuple(file_paths))
+            )
             # print(self.return_structure)
+
 
 def ListRecursivelyViaWalking(top):
     """Walks a directory tree, yielding (dir_path, file_paths) tuples.
@@ -243,10 +253,10 @@ def ListRecursivelyViaWalking(top):
 
         xx = listdir_bfs(top, list_dir_function=tf.io.gfile.listdir)
         directory_cache = {}
-        
+
         for key, dirs, files in xx.return_structure:
-            directory_cache[key] = dirs+files
-        for dir_path, _,  filename in xx.return_structure:
+            directory_cache[key] = dirs + files
+        for dir_path, _, filename in xx.return_structure:
             yield (dir_path, filename)
     else:
         for dir_path, _, filenames in tf.io.gfile.walk(top, topdown=True):
