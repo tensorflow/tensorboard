@@ -79,7 +79,7 @@ limitations under the License.
     <img
       alt="Image at step {{ stepValues[stepIndex] }}"
       src="{{ imageUrl }}"
-      [style.filter]="cssFilter()"
+      [ngStyle]="{'filter': cssFilter()}"
     />
   </div>
 </ng-container>

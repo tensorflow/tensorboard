@@ -355,7 +355,7 @@ describe('image card', () => {
       const imgCardEl = fixture.debugElement.query(
         By.css('image-card-component')
       );
-      expect(imgCardEl.classes['actual-size']).toBe(false);
+      expect(imgCardEl.classes['actual-size']).not.toBeTruthy();
       expect(fullWidthSpy.calls.allArgs()).toEqual([[false]]);
 
       store.overrideSelector(selectors.getMetricsImageShowActualSize, true);
@@ -382,7 +382,7 @@ describe('image card', () => {
       const imgCardEl = fixture.debugElement.query(
         By.css('image-card-component')
       );
-      expect(imgCardEl.classes['actual-size']).toBe(false);
+      expect(imgCardEl.classes['actual-size']).not.toBeTruthy();
       expect(fullWidthSpy.calls.allArgs()).toEqual([[false]]);
 
       // Toggle on.
@@ -399,7 +399,7 @@ describe('image card', () => {
       button.nativeElement.click();
       fixture.detectChanges();
 
-      expect(imgCardEl.classes['actual-size']).toBe(false);
+      expect(imgCardEl.classes['actual-size']).not.toBeTruthy();
       expect(fullWidthSpy.calls.allArgs()).toEqual([[false], [true], [false]]);
     });
 
@@ -414,7 +414,7 @@ describe('image card', () => {
       const button = fixture.debugElement.query(
         By.css('[aria-label="Toggle actual image size"]')
       );
-      expect(button.attributes['disabled']).toBe(null);
+      expect(button.attributes['disabled']).not.toBeTruthy();
 
       store.overrideSelector(selectors.getMetricsImageShowActualSize, true);
       store.refreshState();

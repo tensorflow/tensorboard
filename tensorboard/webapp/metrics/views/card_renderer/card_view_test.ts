@@ -91,7 +91,7 @@ describe('card view test', () => {
     fixture.componentInstance.pluginType = PluginType.SCALARS;
     fixture.detectChanges();
 
-    expect(fixture.debugElement.classes['full-width']).toBe(false);
+    expect(fixture.debugElement.classes['full-width']).not.toBeTruthy();
 
     const scalarCard = fixture.debugElement.query(By.css('scalar-card'));
     scalarCard.componentInstance.fullWidthChanged.emit(true);
@@ -102,7 +102,7 @@ describe('card view test', () => {
     scalarCard.componentInstance.fullWidthChanged.emit(false);
     fixture.detectChanges();
 
-    expect(fixture.debugElement.classes['full-width']).toBe(false);
+    expect(fixture.debugElement.classes['full-width']).not.toBeTruthy();
   });
 
   it('updates full height upon card notification', () => {
@@ -111,7 +111,7 @@ describe('card view test', () => {
     fixture.componentInstance.pluginType = PluginType.SCALARS;
     fixture.detectChanges();
 
-    expect(fixture.debugElement.classes['full-height']).toBe(false);
+    expect(fixture.debugElement.classes['full-height']).not.toBeTruthy();
 
     const scalarCard = fixture.debugElement.query(By.css('scalar-card'));
     scalarCard.componentInstance.fullHeightChanged.emit(true);
@@ -122,7 +122,7 @@ describe('card view test', () => {
     scalarCard.componentInstance.fullHeightChanged.emit(false);
     fixture.detectChanges();
 
-    expect(fixture.debugElement.classes['full-height']).toBe(false);
+    expect(fixture.debugElement.classes['full-height']).not.toBeTruthy();
   });
 
   it('dispatches action when pin state changes', () => {
