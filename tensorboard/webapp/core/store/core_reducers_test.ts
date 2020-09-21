@@ -20,7 +20,7 @@ import {
   createPluginMetadata,
   createCoreState,
 } from '../testing';
-import {DataLoadState} from '../../types/data';
+import {DataLoadState, LoadFailureCode} from '../../types/data';
 
 function createPluginsListing() {
   return {
@@ -90,12 +90,14 @@ describe('core reducer', () => {
         pluginsListLoaded: {
           lastLoadedTimeInMs: null,
           state: DataLoadState.FAILED,
-          failedCode: 400,
+          failedCode: LoadFailureCode.NOT_FOUND,
         },
       });
       const nextState = reducers(state, actions.pluginsListingRequested());
 
-      expect(nextState.pluginsListLoaded.failedCode).toEqual(400);
+      expect(nextState.pluginsListLoaded.failedCode).toEqual(
+        LoadFailureCode.NOT_FOUND
+      );
     });
   });
 
@@ -109,7 +111,7 @@ describe('core reducer', () => {
       });
       const nextState = reducers(
         state,
-        actions.pluginsListingFailed({failedCode: 500})
+        actions.pluginsListingFailed({failedCode: LoadFailureCode.UNKNOWN})
       );
 
       expect(nextState.pluginsListLoaded.state).toEqual(DataLoadState.FAILED);
@@ -124,7 +126,7 @@ describe('core reducer', () => {
       });
       const nextState = reducers(
         state,
-        actions.pluginsListingFailed({failedCode: 500})
+        actions.pluginsListingFailed({failedCode: LoadFailureCode.UNKNOWN})
       );
 
       expect(nextState.pluginsListLoaded.lastLoadedTimeInMs).toBe(1337);
@@ -139,10 +141,12 @@ describe('core reducer', () => {
       });
       const nextState = reducers(
         state,
-        actions.pluginsListingFailed({failedCode: 500})
+        actions.pluginsListingFailed({failedCode: LoadFailureCode.NOT_FOUND})
       );
 
-      expect(nextState.pluginsListLoaded.failedCode).toEqual(500);
+      expect(nextState.pluginsListLoaded.failedCode).toEqual(
+        LoadFailureCode.NOT_FOUND
+      );
     });
   });
 
@@ -230,7 +234,7 @@ describe('core reducer', () => {
         pluginsListLoaded: {
           lastLoadedTimeInMs: null,
           state: DataLoadState.LOADING,
-          failedCode: 400,
+          failedCode: LoadFailureCode.UNKNOWN,
         },
       });
       const nextState = reducers(
@@ -308,10 +312,7 @@ describe('core reducer', () => {
       const nextState = reducers(
         state,
         actions.fetchRunSucceeded({
-          runs: [
-            {id: '1', name: 'Run name 1'},
-            {id: '2', name: 'Run name 2'},
-          ],
+          runs: [{id: '1', name: 'Run name 1'}, {id: '2', name: 'Run name 2'}],
         })
       );
 

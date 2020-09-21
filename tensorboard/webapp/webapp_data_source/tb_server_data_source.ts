@@ -17,6 +17,7 @@ import {from, forkJoin, throwError, Observable} from 'rxjs';
 import {catchError, map} from 'rxjs/operators';
 
 import {Environment, PluginsListing, GetRunsResponse} from '../types/api';
+import {LoadFailureCode} from '../types/data';
 import {Run} from '../core/types';
 
 import {HttpErrorResponse, TBHttpClient} from './tb_http_client';
@@ -36,14 +37,17 @@ function getPluginsListingQueryParams(enabledExperimentPluginIds: string[]) {
 }
 
 function handleError(e: any) {
+  let status = LoadFailureCode.UNKNOWN;
   if (e instanceof HttpErrorResponse) {
-    return throwError(new TBServerError(e.status));
+    if (e.status === 404) {
+      status = LoadFailureCode.NOT_FOUND;
+    }
   }
-  return throwError(new TBServerError(500));
+  return throwError(new TBServerError(status));
 }
 
 export class TBServerError {
-  constructor(public readonly errorCode: number) {}
+  constructor(public readonly failureCode: LoadFailureCode) {}
 }
 
 @Injectable()

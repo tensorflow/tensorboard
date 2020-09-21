@@ -32,7 +32,7 @@ import {
 import {Run} from '../types';
 
 import {PluginsListing} from '../../types/api';
-import {DataLoadState} from '../../types/data';
+import {DataLoadState, LoadFailureCode} from '../../types/data';
 import {TBServerDataSource} from '../../webapp_data_source/tb_server_data_source';
 import {getEnabledExperimentalPlugins} from '../../feature_flag/store/feature_flag_selectors';
 import {
@@ -142,14 +142,16 @@ describe('core_effects', () => {
 
         httpMock
           .expectOne('data/plugins_listing')
-          .error(new ErrorEvent('FakeError'), {status: 444});
+          .error(new ErrorEvent('FakeError'), {status: 404});
 
         expect(recordedActions).toEqual([
           coreActions.pluginsListingRequested(),
           coreActions.environmentLoaded({
             environment: createEnvironment(),
           }),
-          coreActions.pluginsListingFailed({failedCode: 444}),
+          coreActions.pluginsListingFailed({
+            failedCode: LoadFailureCode.NOT_FOUND,
+          }),
         ]);
       });
 
