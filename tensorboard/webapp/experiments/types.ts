@@ -13,8 +13,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 export interface Experiment {
-  // int64 should be represented in string as JS can only represent number up to
-  // 53 bits.
   id: string;
   name: string;
   start_time: number;
