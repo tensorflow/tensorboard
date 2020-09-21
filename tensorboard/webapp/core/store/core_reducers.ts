@@ -44,12 +44,13 @@ const reducer = createReducer(
   ),
   on(
     actions.pluginsListingFailed,
-    (state: CoreState): CoreState => {
+    (state: CoreState, {failedCode}): CoreState => {
       return {
         ...state,
         pluginsListLoaded: {
           ...state.pluginsListLoaded,
           state: DataLoadState.FAILED,
+          failedCode,
         },
       };
     }

@@ -60,42 +60,89 @@ describe('core reducer', () => {
     });
   });
 
-  [
-    {
-      specSetName: '#pluginsListingRequested',
-      action: actions.pluginsListingRequested(),
-      expectedState: DataLoadState.LOADING,
-    },
-    {
-      specSetName: '#pluginsListingFailed',
-      action: actions.pluginsListingFailed(),
-      expectedState: DataLoadState.FAILED,
-    },
-  ].forEach(({specSetName, action, expectedState}) => {
-    describe(specSetName, () => {
-      it('changes the pluginsListLoaded state to Loading', () => {
-        const state = createCoreState({
-          pluginsListLoaded: {
-            lastLoadedTimeInMs: null,
-            state: DataLoadState.NOT_LOADED,
-          },
-        });
-        const nextState = reducers(state, action);
-
-        expect(nextState.pluginsListLoaded.state).toEqual(expectedState);
+  describe('#pluginsListingRequested', () => {
+    it('changes the pluginsListLoaded state to LOADING', () => {
+      const state = createCoreState({
+        pluginsListLoaded: {
+          lastLoadedTimeInMs: null,
+          state: DataLoadState.NOT_LOADED,
+        },
       });
+      const nextState = reducers(state, actions.pluginsListingRequested());
 
-      it('keeps the lastLoadedTimeInMs the same', () => {
-        const state = createCoreState({
-          pluginsListLoaded: {
-            lastLoadedTimeInMs: 1337,
-            state: DataLoadState.NOT_LOADED,
-          },
-        });
-        const nextState = reducers(state, action);
+      expect(nextState.pluginsListLoaded.state).toEqual(DataLoadState.LOADING);
+    });
 
-        expect(nextState.pluginsListLoaded.lastLoadedTimeInMs).toBe(1337);
+    it('keeps the lastLoadedTimeInMs the same', () => {
+      const state = createCoreState({
+        pluginsListLoaded: {
+          lastLoadedTimeInMs: 1337,
+          state: DataLoadState.NOT_LOADED,
+        },
       });
+      const nextState = reducers(state, actions.pluginsListingRequested());
+
+      expect(nextState.pluginsListLoaded.lastLoadedTimeInMs).toBe(1337);
+    });
+
+    it('keeps the failedCode', () => {
+      const state = createCoreState({
+        pluginsListLoaded: {
+          lastLoadedTimeInMs: null,
+          state: DataLoadState.FAILED,
+          failedCode: 400,
+        },
+      });
+      const nextState = reducers(state, actions.pluginsListingRequested());
+
+      expect(nextState.pluginsListLoaded.failedCode).toEqual(400);
+    });
+  });
+
+  describe('#pluginsListingFailed', () => {
+    it('changes the pluginsListLoaded state to FAILED', () => {
+      const state = createCoreState({
+        pluginsListLoaded: {
+          lastLoadedTimeInMs: null,
+          state: DataLoadState.LOADING,
+        },
+      });
+      const nextState = reducers(
+        state,
+        actions.pluginsListingFailed({failedCode: 500})
+      );
+
+      expect(nextState.pluginsListLoaded.state).toEqual(DataLoadState.FAILED);
+    });
+
+    it('keeps the lastLoadedTimeInMs the same', () => {
+      const state = createCoreState({
+        pluginsListLoaded: {
+          lastLoadedTimeInMs: 1337,
+          state: DataLoadState.LOADING,
+        },
+      });
+      const nextState = reducers(
+        state,
+        actions.pluginsListingFailed({failedCode: 500})
+      );
+
+      expect(nextState.pluginsListLoaded.lastLoadedTimeInMs).toBe(1337);
+    });
+
+    it('sets the failedCode', () => {
+      const state = createCoreState({
+        pluginsListLoaded: {
+          lastLoadedTimeInMs: null,
+          state: DataLoadState.LOADING,
+        },
+      });
+      const nextState = reducers(
+        state,
+        actions.pluginsListingFailed({failedCode: 500})
+      );
+
+      expect(nextState.pluginsListLoaded.failedCode).toEqual(500);
     });
   });
 
@@ -177,6 +224,22 @@ describe('core reducer', () => {
 
       expect(nextState.activePlugin).toBe('foo');
     });
+
+    it('clears the failedCode', () => {
+      const state = createCoreState({
+        pluginsListLoaded: {
+          lastLoadedTimeInMs: null,
+          state: DataLoadState.LOADING,
+          failedCode: 400,
+        },
+      });
+      const nextState = reducers(
+        state,
+        actions.pluginsListingLoaded({plugins: createPluginsListing()})
+      );
+
+      expect(nextState.pluginsListLoaded.failedCode).toBeUndefined();
+    });
   });
 
   describe('#environmentLoaded', () => {
@@ -245,10 +308,7 @@ describe('core reducer', () => {
       const nextState = reducers(
         state,
         actions.fetchRunSucceeded({
-          runs: [
-            {id: '1', name: 'Run name 1'},
-            {id: '2', name: 'Run name 2'},
-          ],
+          runs: [{id: '1', name: 'Run name 1'}, {id: '2', name: 'Run name 2'}],
         })
       );
 

@@ -24,6 +24,9 @@ export enum DataLoadState {
 
 export interface LoadState {
   state: DataLoadState;
-  // Time since epoch.
+  // Time of last successful load. Time since epoch.
   lastLoadedTimeInMs: number | null;
+  // HTTP code of previous failed attempt to load. Not set if there has not been
+  // any failure or if the previous attempt to load was successful.
+  failedCode?: number;
 }

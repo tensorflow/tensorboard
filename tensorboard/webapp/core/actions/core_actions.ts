@@ -52,7 +52,8 @@ export const pluginsListingLoaded = createAction(
   props<{plugins: PluginsListing}>()
 );
 export const pluginsListingFailed = createAction(
-  '[Core] PluginListing Fetch Failed'
+  '[Core] PluginListing Fetch Failed',
+  props<{failedCode: number}>()
 );
 
 /**

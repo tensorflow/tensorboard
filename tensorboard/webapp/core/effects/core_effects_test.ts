@@ -137,6 +137,22 @@ describe('core_effects', () => {
         ]);
       });
 
+      it('handles error when fetching webapp data', () => {
+        action.next(onAction);
+
+        httpMock
+          .expectOne('data/plugins_listing')
+          .error(new ErrorEvent('FakeError'), {status: 444});
+
+        expect(recordedActions).toEqual([
+          coreActions.pluginsListingRequested(),
+          coreActions.environmentLoaded({
+            environment: createEnvironment(),
+          }),
+          coreActions.pluginsListingFailed({failedCode: 444}),
+        ]);
+      });
+
       it(
         'appends query params to the data/plugins_listing when ' +
           'getEnabledExperimentalPlugins is non-empty',

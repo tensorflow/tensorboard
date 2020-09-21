@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import {fakeAsync, flush, TestBed} from '@angular/core/testing';
 
-import {TBServerDataSource} from './tb_server_data_source';
+import {TBServerDataSource, TBServerError} from './tb_server_data_source';
 import {
   TBHttpClientTestingModule,
   HttpTestingController,
@@ -68,6 +68,21 @@ describe('tb_server_data_source', () => {
           'data/plugins_listing?experimentalPlugin=foo&experimentalPlugin=bar'
         );
       });
+
+      it('handles "data/plugins_listing" failures', fakeAsync(() => {
+        const results = jasmine.createSpy();
+        const error = jasmine.createSpy();
+        dataSource.fetchPluginsListing([]).subscribe(results, error);
+
+        httpMock
+          .expectOne('data/plugins_listing')
+          .error(new ErrorEvent('FakeError'), {status: 501});
+        // Flush the promise in the microtask.
+        flush();
+
+        expect(results).not.toHaveBeenCalled();
+        expect(error).toHaveBeenCalledWith(new TBServerError(501));
+      }));
     });
 
     describe('fetchRuns', () => {
@@ -89,15 +104,62 @@ describe('tb_server_data_source', () => {
         dataSource.fetchRuns().subscribe(() => {});
         expect(tbBackend.tf_backend.runsStore.refresh).toHaveBeenCalled();
       });
+
+      it('handles "data/runs" failures', fakeAsync(() => {
+        const results = jasmine.createSpy();
+        const error = jasmine.createSpy();
+        dataSource.fetchRuns().subscribe(results, error);
+
+        httpMock
+          .expectOne('data/runs')
+          .error(new ErrorEvent('FakeError'), {status: 444});
+        // Flush the promise in the microtask.
+        flush();
+
+        expect(results).not.toHaveBeenCalled();
+        expect(error).toHaveBeenCalledWith(new TBServerError(444));
+      }));
     });
 
     describe('fetchEnvironment', () => {
+      it('fetches from "data/environment"', fakeAsync(() => {
+        const results = jasmine.createSpy();
+        dataSource.fetchEnvironment().subscribe(results);
+
+        httpMock.expectOne('data/environment').flush({
+          data_location: '/dev/null',
+          window_title: 'my_environment_test',
+        });
+        // Flush the promise in the microtask.
+        flush();
+
+        expect(results).toHaveBeenCalledWith({
+          data_location: '/dev/null',
+          window_title: 'my_environment_test',
+        });
+      }));
+
       it('calls the polymer API to refresh the polymer store', () => {
         dataSource.fetchEnvironment().subscribe(() => {});
         expect(
           tbBackend.tf_backend.environmentStore.refresh
         ).toHaveBeenCalled();
       });
+
+      it('handles "data/environment" failures', fakeAsync(() => {
+        const results = jasmine.createSpy();
+        const error = jasmine.createSpy();
+        dataSource.fetchEnvironment().subscribe(results, error);
+
+        httpMock
+          .expectOne('data/environment')
+          .error(new ErrorEvent('FakeError'), {status: 444});
+        // Flush the promise in the microtask.
+        flush();
+
+        expect(results).not.toHaveBeenCalled();
+        expect(error).toHaveBeenCalledWith(new TBServerError(444));
+      }));
     });
   });
 });
