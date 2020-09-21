@@ -100,6 +100,11 @@ def tf_ng_web_test_suite(runtime_deps = [], bootstrap = [], deps = [], **kwargs)
             "@npm//:node_modules/lodash/lodash.js",
             "@npm//:node_modules/d3/dist/d3.js",
         ],
+        # Allows user to pass `--define DISPLAY=false` to bazel so that
+        # `bazel run` won't open up a Chrome browser. Note that it will lead to
+        # console errors of the form `ERROR [launcher]: Cannot start Chrome`
+        # that should be ignored.
+        configuration_env_vars = ["DISPLAY"],
         **kwargs
     )
 
