@@ -312,7 +312,10 @@ describe('core reducer', () => {
       const nextState = reducers(
         state,
         actions.fetchRunSucceeded({
-          runs: [{id: '1', name: 'Run name 1'}, {id: '2', name: 'Run name 2'}],
+          runs: [
+            {id: '1', name: 'Run name 1'},
+            {id: '2', name: 'Run name 2'},
+          ],
         })
       );
 
