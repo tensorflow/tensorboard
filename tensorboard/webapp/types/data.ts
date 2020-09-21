@@ -31,7 +31,8 @@ export interface LoadState {
   state: DataLoadState;
   // Time of last successful load. Time since epoch.
   lastLoadedTimeInMs: number | null;
-  // HTTP code of previous failed attempt to load. Not set if there has not been
-  // any failure or if the previous attempt to load was successful.
+  // Reason for failure of most recently completed request. This should not be
+  // set if there has not been a failure or if the most recently completed
+  // request was successful.
   failedCode?: LoadFailureCode;
 }
