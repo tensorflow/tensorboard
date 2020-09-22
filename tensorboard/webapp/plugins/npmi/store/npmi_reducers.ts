@@ -18,6 +18,7 @@ import * as actions from '../actions';
 import {
   NpmiState,
   DataLoadState,
+  LoadFailureCode,
   MetricListing,
   SortOrder,
   ArithmeticElement,
@@ -78,6 +79,7 @@ const reducer = createReducer(
         pluginDataLoaded: {
           ...state.pluginDataLoaded,
           state: DataLoadState.FAILED,
+          failedCode: LoadFailureCode.UNKNOWN,
         },
       };
     }

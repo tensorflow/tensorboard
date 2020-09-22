@@ -29,7 +29,7 @@ import {
   IframeLoadingMechanism,
   NgElementLoadingMechanism,
 } from '../types/api';
-import {DataLoadState} from '../types/data';
+import {DataLoadState, LoadFailureCode} from '../types/data';
 import {State} from '../core/store';
 import {
   getPlugins,
@@ -277,22 +277,25 @@ describe('plugins_component', () => {
   });
 
   describe('updates', () => {
-    function setLastLoadedTime(
-      timeInMs: number | null,
-      state = DataLoadState.LOADED
-    ) {
-      store.overrideSelector(getPluginsListLoaded, {
-        state:
-          timeInMs !== null ? DataLoadState.LOADED : DataLoadState.NOT_LOADED,
-        lastLoadedTimeInMs: timeInMs,
-      });
+    function setLastLoadedTime(timeInMs: number | null) {
+      if (timeInMs !== null) {
+        store.overrideSelector(getPluginsListLoaded, {
+          state: DataLoadState.LOADED,
+          lastLoadedTimeInMs: timeInMs,
+        });
+      } else {
+        store.overrideSelector(getPluginsListLoaded, {
+          state: DataLoadState.NOT_LOADED,
+          lastLoadedTimeInMs: null,
+        });
+      }
       store.refreshState();
     }
 
     it('invokes reload method on the dashboard DOM', () => {
       const fixture = TestBed.createComponent(PluginsContainer);
 
-      setLastLoadedTime(null, DataLoadState.NOT_LOADED);
+      setLastLoadedTime(null);
       setActivePlugin('bar');
       fixture.detectChanges();
       setActivePlugin('foo');
@@ -348,7 +351,7 @@ describe('plugins_component', () => {
       });
       const fixture = TestBed.createComponent(PluginsContainer);
 
-      setLastLoadedTime(null, DataLoadState.NOT_LOADED);
+      setLastLoadedTime(null);
       setActivePlugin('bar');
       fixture.detectChanges();
 
@@ -417,6 +420,7 @@ describe('plugins_component', () => {
       store.overrideSelector(getPluginsListLoaded, {
         state: DataLoadState.FAILED,
         lastLoadedTimeInMs: null,
+        failedCode: LoadFailureCode.UNKNOWN,
       });
       const fixture = TestBed.createComponent(PluginsContainer);
       fixture.detectChanges();

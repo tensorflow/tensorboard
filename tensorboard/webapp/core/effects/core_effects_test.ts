@@ -226,6 +226,7 @@ describe('core_effects', () => {
               pluginsListLoaded: {
                 state: DataLoadState.FAILED,
                 lastLoadedTimeInMs: null,
+                failedCode: LoadFailureCode.UNKNOWN,
               },
             })
           )

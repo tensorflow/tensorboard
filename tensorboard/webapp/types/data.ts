@@ -27,8 +27,20 @@ export enum LoadFailureCode {
   NOT_FOUND = 'NOT_FOUND',
 }
 
-export interface LoadState {
-  state: DataLoadState;
+export interface NotLoadedLoadState {
+  state: DataLoadState.NOT_LOADED;
+  // Time of last successful load. Time since epoch.
+  lastLoadedTimeInMs: null;
+}
+
+export interface LoadedLoadState {
+  state: DataLoadState.LOADED;
+  // Time of last successful load. Time since epoch.
+  lastLoadedTimeInMs: number;
+}
+
+export interface LoadingLoadState {
+  state: DataLoadState.LOADING;
   // Time of last successful load. Time since epoch.
   lastLoadedTimeInMs: number | null;
   // Reason for failure of most recently completed request. This should not be
@@ -36,3 +48,17 @@ export interface LoadState {
   // request was successful.
   failedCode?: LoadFailureCode;
 }
+
+export interface FailedLoadState {
+  state: DataLoadState.FAILED;
+  // Time of last successful load. Time since epoch.
+  lastLoadedTimeInMs: number | null;
+  // Reason for failure.
+  failedCode: LoadFailureCode;
+}
+
+export type LoadState =
+  | NotLoadedLoadState
+  | LoadedLoadState
+  | LoadingLoadState
+  | FailedLoadState;

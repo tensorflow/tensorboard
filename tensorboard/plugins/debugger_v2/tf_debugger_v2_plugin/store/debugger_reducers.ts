@@ -38,6 +38,7 @@ import {
   Graphs,
   GraphExecutions,
   InfNanAlert,
+  LoadFailureCode,
   StackFramesById,
   SourceFileSpec,
   StackFrame,
@@ -170,6 +171,7 @@ const reducer = createReducer(
         runsLoaded: {
           ...state.runsLoaded,
           state: DataLoadState.FAILED,
+          failedCode: LoadFailureCode.UNKNOWN,
         },
       };
     }
@@ -240,7 +242,6 @@ const reducer = createReducer(
         alerts: {
           ...state.alerts,
           alertsLoaded: {
-            ...state.alerts.alertsLoaded,
             state: DataLoadState.LOADED,
             lastLoadedTimeInMs: Date.now(),
           },
@@ -318,7 +319,6 @@ const reducer = createReducer(
         alerts: {
           ...state.alerts,
           alertsLoaded: {
-            ...state.alerts.alertsLoaded,
             state: DataLoadState.LOADED,
             lastLoadedTimeInMs: Date.now(),
           },
@@ -400,15 +400,18 @@ const reducer = createReducer(
       }
       const numExecutionsIncreased =
         numExecutions > state.executions.executionDigestsLoaded.numExecutions;
-      const newState = {
+      return {
         ...state,
         lastNonEmptyPollDataTimeMs: numExecutionsIncreased
           ? Date.now()
           : state.lastNonEmptyPollDataTimeMs,
         executions: {
           ...state.executions,
+          focusIndex:
+            numExecutions > 0 && state.executions.focusIndex === null
+              ? 0
+              : state.executions.focusIndex,
           numExecutionsLoaded: {
-            ...state.executions.numExecutionsLoaded,
             state: DataLoadState.LOADED,
             lastLoadedTimeInMs: Date.now(),
           },
@@ -418,10 +421,6 @@ const reducer = createReducer(
           },
         },
       };
-      if (numExecutions > 0 && state.executions.focusIndex === null) {
-        newState.executions.focusIndex = 0;
-      }
-      return newState;
     }
   ),
   on(
@@ -650,15 +649,18 @@ const reducer = createReducer(
       const numGraphExecutionsIncreased =
         numGraphExecutions >
         state.graphExecutions.executionDigestsLoaded.numExecutions;
-      const newState = {
+      return {
         ...state,
         lastNonEmptyPollDataTimeMs: numGraphExecutionsIncreased
           ? Date.now()
           : state.lastNonEmptyPollDataTimeMs,
         graphExecutions: {
           ...state.graphExecutions,
+          focusIndex:
+            numGraphExecutions > 0 && state.graphExecutions.focusIndex === null
+              ? 0
+              : state.graphExecutions.focusIndex,
           numExecutionsLoaded: {
-            ...state.graphExecutions.numExecutionsLoaded,
             state: DataLoadState.LOADED,
             lastLoadedTimeInMs: Date.now(),
           },
@@ -668,10 +670,6 @@ const reducer = createReducer(
           },
         },
       };
-      if (numGraphExecutions > 0 && state.graphExecutions.focusIndex === null) {
-        newState.graphExecutions.focusIndex = 0;
-      }
-      return newState;
     }
   ),
   on(
@@ -893,7 +891,6 @@ const reducer = createReducer(
         sourceCode: {
           ...state.sourceCode,
           sourceFileListLoaded: {
-            ...state.sourceCode.sourceFileListLoaded,
             state: DataLoadState.LOADED,
             lastLoadedTimeInMs: Date.now(),
           },

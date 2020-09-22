@@ -20,7 +20,12 @@ import {
   createPluginMetadata,
   createCoreState,
 } from '../testing';
-import {DataLoadState, LoadFailureCode} from '../../types/data';
+import {
+  DataLoadState,
+  LoadFailureCode,
+  LoadingLoadState,
+  FailedLoadState,
+} from '../../types/data';
 
 function createPluginsListing() {
   return {
@@ -77,7 +82,7 @@ describe('core reducer', () => {
       const state = createCoreState({
         pluginsListLoaded: {
           lastLoadedTimeInMs: 1337,
-          state: DataLoadState.NOT_LOADED,
+          state: DataLoadState.LOADED,
         },
       });
       const nextState = reducers(state, actions.pluginsListingRequested());
@@ -94,10 +99,8 @@ describe('core reducer', () => {
         },
       });
       const nextState = reducers(state, actions.pluginsListingRequested());
-
-      expect(nextState.pluginsListLoaded.failedCode).toEqual(
-        LoadFailureCode.NOT_FOUND
-      );
+      const pluginsListLoaded = nextState.pluginsListLoaded as LoadingLoadState;
+      expect(pluginsListLoaded.failedCode).toEqual(LoadFailureCode.NOT_FOUND);
     });
   });
 
@@ -143,10 +146,8 @@ describe('core reducer', () => {
         state,
         actions.pluginsListingFailed({failedCode: LoadFailureCode.NOT_FOUND})
       );
-
-      expect(nextState.pluginsListLoaded.failedCode).toEqual(
-        LoadFailureCode.NOT_FOUND
-      );
+      const pluginsListLoaded = nextState.pluginsListLoaded as FailedLoadState;
+      expect(pluginsListLoaded.failedCode).toEqual(LoadFailureCode.NOT_FOUND);
     });
   });
 
@@ -227,22 +228,6 @@ describe('core reducer', () => {
       );
 
       expect(nextState.activePlugin).toBe('foo');
-    });
-
-    it('clears the failedCode', () => {
-      const state = createCoreState({
-        pluginsListLoaded: {
-          lastLoadedTimeInMs: null,
-          state: DataLoadState.LOADING,
-          failedCode: LoadFailureCode.UNKNOWN,
-        },
-      });
-      const nextState = reducers(
-        state,
-        actions.pluginsListingLoaded({plugins: createPluginsListing()})
-      );
-
-      expect(nextState.pluginsListLoaded.failedCode).toBeUndefined();
     });
   });
 

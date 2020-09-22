@@ -12,9 +12,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {DataLoadState, LoadState} from '../../../types/data';
+import {DataLoadState, LoadFailureCode, LoadState} from '../../../types/data';
 
-export {DataLoadState, LoadState};
+export {DataLoadState, LoadFailureCode, LoadState};
 
 export const NPMI_FEATURE_KEY = 'npmi';
 
