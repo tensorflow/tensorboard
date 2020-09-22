@@ -32,6 +32,8 @@ export enum RouteKind {
   COMPARE_EXPERIMENT,
 }
 
+export const DEFAULT_EXPERIMENT_ID = 'defaultExperimentId';
+
 export interface CompareRouteParams {
   experimentIds: string;
 }

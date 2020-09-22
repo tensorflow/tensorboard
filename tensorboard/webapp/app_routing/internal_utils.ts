@@ -14,6 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import {
   CompareRouteParams,
+  DEFAULT_EXPERIMENT_ID,
   ExperimentRouteParams,
   Route,
   RouteKind,
@@ -63,8 +64,9 @@ export function getExperimentIdsFromRouteParams(
 ): string[] | null {
   switch (routeKind) {
     case RouteKind.EXPERIMENT: {
-      const typedParams = params as ExperimentRouteParams;
-      return [typedParams.experimentId];
+      // The route may rely on the implicit, default experiment id, if the URL
+      // does not contain the experiment param.
+      return [params.experimentId || DEFAULT_EXPERIMENT_ID];
     }
     case RouteKind.COMPARE_EXPERIMENT: {
       const typedParams = params as CompareRouteParams;

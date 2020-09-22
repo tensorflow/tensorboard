@@ -22,6 +22,7 @@ import {AppContainer} from './app_container';
 import {AppRoutingModule} from './app_routing/app_routing_module';
 import {AppRoutingViewModule} from './app_routing/views/app_routing_view_module';
 import {CoreModule} from './core/core_module';
+import {ExperimentsModule} from './experiments/experiments_module';
 import {HashStorageModule} from './core/views/hash_storage_module';
 import {PageTitleModule} from './core/views/page_title_module';
 import {FeatureFlagModule} from './feature_flag/feature_flag_module';
@@ -30,6 +31,7 @@ import {MatIconModule} from './mat_icon_module';
 import {PluginsModule} from './plugins/plugins_module';
 import {ROOT_REDUCERS, loggerMetaReducerFactory} from './reducer_config';
 import {ReloaderModule} from './reloader/reloader_module';
+import {RunsModule} from './runs/runs_module';
 import {SettingsModule} from './settings/settings_module';
 import {TensorBoardWrapperModule} from './tb_wrapper/tb_wrapper_module';
 import {OssPluginsModule} from './oss_plugins_module';
@@ -47,12 +49,14 @@ import {routesFactory} from './routes';
     RouteRegistryModule.registerRoutes(routesFactory),
     TensorBoardWrapperModule,
     CoreModule,
+    ExperimentsModule,
     FeatureFlagModule,
     HashStorageModule,
     HeaderModule,
     MatIconModule,
     PageTitleModule,
     PluginsModule,
+    RunsModule,
     SettingsModule,
     StoreModule.forRoot(ROOT_REDUCERS, {
       runtimeChecks: {

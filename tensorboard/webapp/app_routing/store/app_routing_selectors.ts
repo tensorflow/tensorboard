@@ -58,9 +58,6 @@ export const getRouteParams = createSelector(getActiveRoute, (activeRoute) => {
 /**
  * Returns experiment ids activated by route. The value can be null if current
  * route does not have eids.
- *
- * If you want list of all experiments, please refer to `getExperimentList` in
- * the /app/experiments/store.
  */
 export const getExperimentIdsFromRoute = createSelector(
   getRouteKind,

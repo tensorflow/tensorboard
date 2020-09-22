@@ -12,7 +12,7 @@ tf_ts_library(
     ],
     deps = [
         "//tensorboard/webapp/runs:types",
-        "//tensorboard/webapp/runs/data_source",
+        "//tensorboard/webapp/runs/data_source:types",
         "//tensorboard/webapp/types:ui",
         "@npm//@ngrx/store",
     ],

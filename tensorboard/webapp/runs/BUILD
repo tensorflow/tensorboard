@@ -26,5 +26,5 @@ tf_ts_library(
     srcs = [
         "types.ts",
     ],
-    deps = ["//tensorboard/webapp/runs/data_source"],
+    deps = ["//tensorboard/webapp/runs/data_source:types"],
 )
