@@ -12,19 +12,21 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {serializeExperimentIds} from './utils';
 
-import {State as AppRoutingState} from './app_routing/store/app_routing_types';
-import {State as CoreState} from './core/store/core_types';
-import {State as ExperimentsState} from './experiments/store/experiments_types';
-import {State as FeatureFlagState} from './feature_flag/store/feature_flag_types';
-import {State as NpmiState} from './plugins/npmi/store/npmi_types';
-import {State as RunsState} from './runs/store/runs_types';
-import {State as TextState} from './plugins/text_v2/store/text_types';
+describe('run store utils test', () => {
+  describe('#serializeExperimentIds', () => {
+    it('serializes experiment ids into a string', () => {
+      const actual = serializeExperimentIds(['b', 'c', 'd']);
 
-export type State = AppRoutingState &
-  CoreState &
-  ExperimentsState &
-  FeatureFlagState &
-  NpmiState &
-  RunsState &
-  TextState;
+      expect(actual).toBe('["b","c","d"]');
+    });
+
+    it('sorts the experiment ids so order does not matter', () => {
+      const a = serializeExperimentIds(['a', 'c', 'b']);
+      const b = serializeExperimentIds(['b', 'a', 'c']);
+
+      expect(a).toBe(b);
+    });
+  });
+});

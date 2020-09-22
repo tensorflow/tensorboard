@@ -48,6 +48,19 @@ tf_ts_library(
 )
 
 tf_ts_library(
+    name = "ui_selectors",
+    srcs = [
+        "ui_selectors.ts",
+    ],
+    deps = [
+        "//tensorboard/webapp:app_state",
+        "//tensorboard/webapp/app_routing/store",
+        "//tensorboard/webapp/runs/store:selectors",
+        "@npm//@ngrx/store",
+    ],
+)
+
+tf_ts_library(
     name = "util_tests",
     testonly = True,
     srcs = [
@@ -55,6 +68,7 @@ tf_ts_library(
         "lang_test.ts",
         "ngrx_test.ts",
         "string_test.ts",
+        "ui_selectors_test.ts",
         "value_formatter_test.ts",
     ],
     deps = [
@@ -62,7 +76,13 @@ tf_ts_library(
         ":lang",
         ":ngrx",
         ":string",
+        ":ui_selectors",
         ":value_formatter",
+        "//tensorboard/webapp:selectors",
+        "//tensorboard/webapp/app_routing:testing",
+        "//tensorboard/webapp/app_routing:types",
+        "//tensorboard/webapp/app_routing/store:testing",
+        "//tensorboard/webapp/runs/store:testing",
         "@npm//@ngrx/store",
         "@npm//@types/jasmine",
     ],
