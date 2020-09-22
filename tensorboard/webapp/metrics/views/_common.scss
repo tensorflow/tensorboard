@@ -12,8 +12,28 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-export * from './app_routing/store/app_routing_selectors';
-export * from './experiments/store/experiments_selectors';
-export * from './metrics/store/metrics_selectors';
-export * from './runs/store/runs_selectors';
-export * from './util/ui_selectors';
+$metrics-preferred-gap: 16px;
+
+// TODO(psybuzz): This is likely not metrics-specific. Consider moving to OSS in
+// webapp/theme/_tb_theme.template.scss
+$metrics-button-background-color-on-gray: #fff;
+
+$metrics-min-card-width: 335px;
+$metrics-min-card-height: 320px;
+
+@mixin metrics-card-group-toolbar {
+  background-color: #fff;
+  height: 42px;
+  padding: 0 16px;
+}
+
+@mixin metrics-card-group-title {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+@mixin metrics-card-group-count-text {
+  font-size: 12px;
+  font-weight: 400;
+  color: mat-color($tb-foreground, secondary-text);
+}

@@ -12,8 +12,38 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-export * from './app_routing/store/app_routing_selectors';
-export * from './experiments/store/experiments_selectors';
-export * from './metrics/store/metrics_selectors';
-export * from './runs/store/runs_selectors';
-export * from './util/ui_selectors';
+@import 'tensorboard/webapp/theme/tb_theme';
+
+.tag-filter {
+  display: flex;
+  position: relative;
+}
+
+mat-icon {
+  color: mat-color($tb-foreground, secondary-text);
+  flex: none;
+  margin-right: 5px;
+}
+
+:host {
+  color: mat-color($tb-foreground, text);
+  font-size: 13px;
+
+  &:not(.valid) {
+    $_error-color: mat-color($tb-warn, 800);
+
+    color: $_error-color;
+
+    input {
+      caret-color: currentColor;
+    }
+
+    .error-icon {
+      color: $_error-color;
+
+      // Allow the autocomplete width calculation to ignore the icon size.
+      position: absolute;
+      right: 0;
+    }
+  }
+}

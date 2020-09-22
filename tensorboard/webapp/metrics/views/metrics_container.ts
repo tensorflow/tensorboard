@@ -12,8 +12,17 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-export * from './app_routing/store/app_routing_selectors';
-export * from './experiments/store/experiments_selectors';
-export * from './metrics/store/metrics_selectors';
-export * from './runs/store/runs_selectors';
-export * from './util/ui_selectors';
+import {ChangeDetectionStrategy, Component} from '@angular/core';
+
+@Component({
+  selector: 'metrics-dashboard',
+  template: `
+    <nav>
+      <runs-selector></runs-selector>
+    </nav>
+    <metrics-main-view></metrics-main-view>
+  `,
+  styleUrls: ['metrics_container.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class MetricsDashboardContainer {}

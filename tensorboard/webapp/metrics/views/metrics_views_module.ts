@@ -12,8 +12,18 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-export * from './app_routing/store/app_routing_selectors';
-export * from './experiments/store/experiments_selectors';
-export * from './metrics/store/metrics_selectors';
-export * from './runs/store/runs_selectors';
-export * from './util/ui_selectors';
+import {CommonModule} from '@angular/common';
+import {NgModule} from '@angular/core';
+
+import {RunsSelectorModule} from '../../runs/views/runs_selector/runs_selector_module';
+
+import {MainViewModule} from './main_view/main_view_module';
+import {MetricsDashboardContainer} from './metrics_container';
+import {RightPaneModule} from './right_pane/right_pane_module';
+
+@NgModule({
+  declarations: [MetricsDashboardContainer],
+  exports: [MetricsDashboardContainer],
+  imports: [CommonModule, RightPaneModule, RunsSelectorModule, MainViewModule],
+})
+export class MetricsViewsModule {}

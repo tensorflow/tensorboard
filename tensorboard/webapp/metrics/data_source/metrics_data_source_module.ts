@@ -12,8 +12,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-export * from './app_routing/store/app_routing_selectors';
-export * from './experiments/store/experiments_selectors';
-export * from './metrics/store/metrics_selectors';
-export * from './runs/store/runs_selectors';
-export * from './util/ui_selectors';
+import {NgModule} from '@angular/core';
+import {TBHttpClientModule} from '../../webapp_data_source/tb_http_client_module';
+
+import {TBMetricsDataSource} from './metrics_data_source';
+import {MetricsDataSource} from './types';
+
+@NgModule({
+  imports: [TBHttpClientModule],
+  providers: [{provide: MetricsDataSource, useClass: TBMetricsDataSource}],
+})
+export class MetricsDataSourceModule {}

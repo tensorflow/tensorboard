@@ -1,0 +1,110 @@
+/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+==============================================================================*/
+@import 'tensorboard/webapp/theme/tb_theme';
+@import '../common';
+
+$_title-to-heading-gap: 12px;
+
+:host {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  height: 100%;
+  overflow: auto;
+  padding: $metrics-preferred-gap;
+  padding-top: $metrics-preferred-gap - $_title-to-heading-gap;
+}
+
+.heading {
+  $heading-content-gap: 4px;
+
+  align-items: center;
+  display: grid;
+  grid-template-areas:
+    'tag controls'
+    'run spinner';
+  grid-template-columns: 1fr auto;
+  font-size: 14px;
+  margin-bottom: $heading-content-gap;
+}
+
+.tag {
+  grid-area: tag;
+  overflow: hidden;
+}
+
+.pin-button mat-icon {
+  height: 18px;
+}
+
+.run {
+  grid-area: run;
+  display: flex;
+  white-space: nowrap;
+  font-size: 13px;
+  color: mat-color($tb-foreground, secondary-text);
+
+  .dot {
+    flex: none;
+    display: inline-block;
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    margin-right: 4px;
+  }
+
+  .run-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 120px;
+  }
+}
+
+.controls {
+  color: mat-color($tb-foreground, secondary-text);
+  grid-area: controls;
+  justify-self: flex-end;
+  flex-shrink: 0;
+  // TODO(psybuzz) do not use negative margin.
+  margin-right: -1 * $_title-to-heading-gap;
+  white-space: nowrap;
+}
+
+.spinner {
+  display: flex;
+  grid-area: spinner;
+  height: 100%;
+  justify-content: center;
+  position: relative;
+}
+
+mat-spinner {
+  top: 0;
+  right: 0;
+  // mat-spinner has 18px height but the `run` container naturally has 15px
+  // height. We do not want the histogram area height to change when loading
+  // so we "lift" the spinner.
+  position: absolute;
+}
+
+tb-histogram {
+  flex-grow: 1;
+  overflow: hidden;
+}
+
+.empty-message {
+  margin-top: 1em;
+  font-size: 13px;
+}

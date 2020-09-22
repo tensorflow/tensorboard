@@ -12,8 +12,19 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-export * from './app_routing/store/app_routing_selectors';
-export * from './experiments/store/experiments_selectors';
-export * from './metrics/store/metrics_selectors';
-export * from './runs/store/runs_selectors';
-export * from './util/ui_selectors';
+@import 'tensorboard/webapp/theme/tb_theme';
+
+:host {
+  display: flex;
+  height: 100%;
+}
+
+nav {
+  border-right: 1px solid mat-color($tb-foreground, border);
+  flex: none;
+  width: 340px;
+}
+
+metrics-main-view {
+  flex: 1 1;
+}
