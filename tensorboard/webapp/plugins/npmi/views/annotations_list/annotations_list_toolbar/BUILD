@@ -57,7 +57,7 @@ tf_ts_library(
         "//tensorboard/webapp/plugins/npmi/store",
         "//tensorboard/webapp/plugins/npmi/store:types",
         "//tensorboard/webapp/plugins/npmi/testing",
-        "//tensorboard/webapp/runs",
+        "//tensorboard/webapp/runs_legacy",
         "//tensorboard/webapp/testing:mat_icon",
         "@npm//@angular/common",
         "@npm//@angular/core",

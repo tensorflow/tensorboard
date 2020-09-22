@@ -12,11 +12,24 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {NgModule} from '@angular/core';
+/**
+ * @fileoverview Module for runs.
+ */
 
-import {LegacyRunsSelectorModule as LegacyRunsSelectorViewModule} from './views/legacy_runs_selector/legacy_runs_selector_module';
+import {NgModule} from '@angular/core';
+import {EffectsModule} from '@ngrx/effects';
+import {StoreModule} from '@ngrx/store';
+
+import {RunsDataSourceModule} from './data_source/runs_data_source_module';
+import {RunsEffects} from './effects';
+import {reducers} from './store';
+import {RUNS_FEATURE_KEY} from './store/runs_types';
 
 @NgModule({
-  exports: [LegacyRunsSelectorViewModule],
+  imports: [
+    StoreModule.forFeature(RUNS_FEATURE_KEY, reducers),
+    EffectsModule.forFeature([RunsEffects]),
+    RunsDataSourceModule,
+  ],
 })
 export class RunsModule {}

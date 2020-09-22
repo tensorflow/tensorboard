@@ -47,22 +47,22 @@ def tensorboard_workspace(name = ""):
     )
 
     platform_http_file(
-        name = "org_chromium_chromium",
+        name = "org_chromium_chromium",  # pinned to Chromium 84.0.4147.0
         licenses = ["notice"],  # BSD 3-clause (maybe more?)
         amd64_sha256 =
-            "6933d0afce6e17304b62029fbbd246cbe9e130eb0d90d7682d3765d3dbc8e1c8",
+            "49b25bf32b797558eb7957ac7c60e065433bdef278f669291f71edd329505e27",
         amd64_urls = [
-            "https://commondatastorage.googleapis.com/chromium-browser-snapshots/Linux_x64/561732/chrome-linux.zip",
+            "https://commondatastorage.googleapis.com/chromium-browser-snapshots/Linux_x64/768959/chrome-linux.zip",
         ],
         macos_sha256 =
-            "084884e91841a923d7b6e81101f0105bbc3b0026f9f6f7a3477f5b313ee89e32",
+            "f0c7dc5c26061e2f179d1cb9819cb786d2c37cca9f53155e57ac2b6ab60c5cbc",
         macos_urls = [
-            "https://commondatastorage.googleapis.com/chromium-browser-snapshots/Mac/561733/chrome-mac.zip",
+            "https://commondatastorage.googleapis.com/chromium-browser-snapshots/Mac/768938/chrome-mac.zip",
         ],
         windows_sha256 =
-            "d1bb728118c12ea436d8ea07dba980789e7d860aa664dd1fad78bc20e8d9391c",
+            "f441a079046a35afc249a95d29356f33945c0a60b59236b9cf6db532c69dba6f",
         windows_urls = [
-            "https://commondatastorage.googleapis.com/chromium-browser-snapshots/Win_x64/540270/chrome-win32.zip",
+            "https://commondatastorage.googleapis.com/chromium-browser-snapshots/Win_x64/768952/chrome-win.zip",
         ],
     )
 

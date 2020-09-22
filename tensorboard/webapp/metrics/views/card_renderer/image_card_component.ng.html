@@ -1,0 +1,90 @@
+<!--
+@license
+Copyright 2020 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<div class="heading">
+  <tb-truncated-path
+    class="tag"
+    title="{{ tag }}"
+    value="{{ title }}"
+  ></tb-truncated-path>
+  <div class="run">
+    <span
+      class="dot"
+      [ngStyle]="{backgroundColor: runColorScale(runId)}"
+    ></span>
+    <card-run-name class="run-text" [runId]="runId"></card-run-name>
+  </div>
+  <div class="step" *ngIf="stepIndex !== null && stepIndex < stepValues.length">
+    Step {{ stepValues[stepIndex] }}
+    <mat-spinner
+      diameter="18"
+      *ngIf="loadState === DataLoadState.LOADING"
+    ></mat-spinner>
+  </div>
+  <span class="controls">
+    <button
+      mat-icon-button
+      class="pin-button"
+      i18n-aria-label="A button to pin a card."
+      aria-label="Pin card"
+      [attr.title]="isPinned ? 'Unpin card' : 'Pin card'"
+      (click)="onPinClicked.emit(!isPinned)"
+    >
+      <mat-icon
+        [svgIcon]="isPinned ? 'keep_24px' : 'keep_outline_24px'"
+      ></mat-icon>
+    </button>
+    <button
+      mat-icon-button
+      i18n-aria-label="A button on an image card that toggles actual image size."
+      aria-label="Toggle actual image size"
+      [disabled]="!allowToggleActualSize"
+      title="Toggle actual image size"
+      (click)="onActualSizeToggle.emit()"
+    >
+      <mat-icon svgIcon="image_search_24px"></mat-icon>
+    </button>
+  </span>
+</div>
+<ng-container
+  *ngIf="stepIndex !== null && stepIndex < stepValues.length; else noImageData"
+>
+  <div class="slider-row">
+    <mat-slider
+      class="step-slider"
+      color="primary"
+      [disabled]="stepValues.length <= 1"
+      [min]="0"
+      [max]="stepValues.length - 1"
+      [step]="1"
+      [tickInterval]="1"
+      [value]="stepIndex"
+      (input)="onSliderInput($event)"
+    ></mat-slider>
+  </div>
+  <div class="img-container">
+    <img
+      alt="Image at step {{ stepValues[stepIndex] }}"
+      src="{{ imageUrl }}"
+      [ngStyle]="{'filter': cssFilter()}"
+    />
+  </div>
+</ng-container>
+<ng-template #noImageData>
+  <div *ngIf="loadState === DataLoadState.FAILED" class="empty-message">
+    Data failed to load.
+  </div>
+</ng-template>

@@ -31,6 +31,20 @@ ng_module(
     ],
 )
 
+ng_module(
+    name = "selectors",
+    srcs = [
+        "selectors.ts",
+    ],
+    deps = [
+        "//tensorboard/webapp/app_routing/store",
+        "//tensorboard/webapp/experiments/store:selectors",
+        "//tensorboard/webapp/metrics/store",
+        "//tensorboard/webapp/runs/store:selectors",
+        "//tensorboard/webapp/util:ui_selectors",
+    ],
+)
+
 # Angular module for the top-level app component together with all of its
 # injectable dependencies.  I.e., the entire Angular app.
 ng_module(
@@ -58,7 +72,7 @@ ng_module(
         "//tensorboard/webapp/header",
         "//tensorboard/webapp/plugins",
         "//tensorboard/webapp/reloader",
-        "//tensorboard/webapp/runs",
+        "//tensorboard/webapp/runs_legacy",
         "//tensorboard/webapp/settings",
         "@npm//@angular/core",
         "@npm//@angular/platform-browser",
@@ -75,9 +89,12 @@ ng_module(
     deps = [
         "//tensorboard/webapp/app_routing/store:types",
         "//tensorboard/webapp/core/store",
+        "//tensorboard/webapp/experiments/store:types",
         "//tensorboard/webapp/feature_flag/store:types",
+        "//tensorboard/webapp/metrics/store:types",
         "//tensorboard/webapp/plugins/npmi/store:types",
         "//tensorboard/webapp/plugins/text_v2/store:types",
+        "//tensorboard/webapp/runs/store:types",
     ],
 )
 
@@ -182,6 +199,14 @@ tf_ng_web_test_suite(
         "//tensorboard/webapp/feature_flag/effects:effects_test_lib",
         "//tensorboard/webapp/feature_flag/store:store_test_lib",
         "//tensorboard/webapp/header:test_lib",
+        "//tensorboard/webapp/metrics:test_lib",
+        "//tensorboard/webapp/metrics/data_source:metrics_data_source_test",
+        "//tensorboard/webapp/metrics/effects:effects_test",
+        "//tensorboard/webapp/metrics/store:store_test",
+        "//tensorboard/webapp/metrics/views:views_test",
+        "//tensorboard/webapp/metrics/views/card_renderer:card_renderer_tests",
+        "//tensorboard/webapp/metrics/views/main_view:main_view_tests",
+        "//tensorboard/webapp/metrics/views/right_pane:right_pane_test",
         "//tensorboard/webapp/plugins:plugins_container_test_lib",
         "//tensorboard/webapp/plugins/npmi:npmi_test_lib",
         "//tensorboard/webapp/plugins/npmi/data_source:data_source_test_lib",
@@ -215,6 +240,11 @@ tf_ng_web_test_suite(
         "//tensorboard/webapp/plugins/text_v2/effects:effects_test_lib",
         "//tensorboard/webapp/plugins/text_v2/store:store_test_lib",
         "//tensorboard/webapp/reloader:test_lib",
+        "//tensorboard/webapp/runs/effects:effects_test",
+        "//tensorboard/webapp/runs/store:store_test",
+        "//tensorboard/webapp/runs/store:testing",
+        "//tensorboard/webapp/runs/views/runs_selector:runs_selector_test",
+        "//tensorboard/webapp/runs/views/runs_table:runs_table_test",
         "//tensorboard/webapp/settings:test_lib",
         "//tensorboard/webapp/tbdev_upload:test_lib",
         "//tensorboard/webapp/util:util_tests",
@@ -234,24 +264,26 @@ tf_svg_bundle(
     srcs = [
         # When modifying below, please make sure to update
         # //tensorboard/webapp/testing/mat_icon_module.ts.
+        "@com_google_material_design_icon//:arrow_downward_24px.svg",
+        "@com_google_material_design_icon//:arrow_upward_24px.svg",
+        "@com_google_material_design_icon//:cancel_24px.svg",
+        "@com_google_material_design_icon//:chevron_left_24px.svg",
+        "@com_google_material_design_icon//:chevron_right_24px.svg",
+        "@com_google_material_design_icon//:clear_24px.svg",
         "@com_google_material_design_icon//:content_copy_24px.svg",
+        "@com_google_material_design_icon//:error_24px.svg",
+        "@com_google_material_design_icon//:expand_less_24px.svg",
+        "@com_google_material_design_icon//:expand_more_24px.svg",
+        "@com_google_material_design_icon//:flag_24px.svg",
+        "@com_google_material_design_icon//:get_app_24px.svg",
         "@com_google_material_design_icon//:help_outline_24px.svg",
         "@com_google_material_design_icon//:info_outline_24px.svg",
+        "@com_google_material_design_icon//:keep_24px.svg",
+        "@com_google_material_design_icon//:keep_outline_24px.svg",
         "@com_google_material_design_icon//:refresh_24px.svg",
         "@com_google_material_design_icon//:settings_24px.svg",
         "@com_google_material_design_icon//:search_24px.svg",
-        "@com_google_material_design_icon//:error_24px.svg",
-        "@com_google_material_design_icon//:chevron_left_24px.svg",
-        "@com_google_material_design_icon//:chevron_right_24px.svg",
         "@com_google_material_design_icon//:visibility_off_24px.svg",
-        "@com_google_material_design_icon//:flag_24px.svg",
-        "@com_google_material_design_icon//:clear_24px.svg",
-        "@com_google_material_design_icon//:expand_more_24px.svg",
-        "@com_google_material_design_icon//:expand_less_24px.svg",
-        "@com_google_material_design_icon//:cancel_24px.svg",
-        "@com_google_material_design_icon//:arrow_downward_24px.svg",
-        "@com_google_material_design_icon//:arrow_upward_24px.svg",
-        "@com_google_material_design_icon//:get_app_24px.svg",
     ],
     out = "icon_bundle.svg",
 )
