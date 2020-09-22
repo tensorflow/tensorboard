@@ -19,6 +19,8 @@ import {StoreModule, META_REDUCERS} from '@ngrx/store';
 import {EffectsModule} from '@ngrx/effects';
 
 import {AppContainer} from './app_container';
+import {AppRoutingModule} from './app_routing/app_routing_module';
+import {AppRoutingViewModule} from './app_routing/views/app_routing_view_module';
 import {CoreModule} from './core/core_module';
 import {HashStorageModule} from './core/views/hash_storage_module';
 import {PageTitleModule} from './core/views/page_title_module';
@@ -31,19 +33,23 @@ import {ReloaderModule} from './reloader/reloader_module';
 import {SettingsModule} from './settings/settings_module';
 import {OssPluginsModule} from './oss_plugins_module';
 
+import {RouteRegistryModule} from './app_routing/route_registry_module';
+import {routesFactory} from './routes';
+
 @NgModule({
   declarations: [AppContainer],
   imports: [
     BrowserModule,
     BrowserAnimationsModule,
+    AppRoutingModule,
+    AppRoutingViewModule,
+    RouteRegistryModule.registerRoutes(routesFactory),
     CoreModule,
     FeatureFlagModule,
     HashStorageModule,
-    HeaderModule,
     MatIconModule,
     PageTitleModule,
     PluginsModule,
-    ReloaderModule,
     SettingsModule,
     StoreModule.forRoot(ROOT_REDUCERS, {
       runtimeChecks: {
@@ -55,6 +61,10 @@ import {OssPluginsModule} from './oss_plugins_module';
     OssPluginsModule,
   ],
   providers: [
+    {
+      provide: 'window',
+      useValue: window,
+    },
     {
       provide: META_REDUCERS,
       useFactory: loggerMetaReducerFactory,
