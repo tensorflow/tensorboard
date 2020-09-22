@@ -19,7 +19,7 @@ import {
   createReducer,
   on,
 } from '@ngrx/store';
-import {DataLoadState} from '../../types/data';
+import {DataLoadState, LoadFailureCode} from '../../types/data';
 
 import {createRouteContextedState} from '../../app_routing/route_contexted_reducer_helper';
 import {SortDirection} from '../../types/ui';
@@ -138,6 +138,7 @@ const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
         lastLoadedTimeInMs: null,
         ...nextRunsLoadState[eid],
         state: DataLoadState.FAILED,
+        failedCode: LoadFailureCode.UNKNOWN
       };
     }
     return {...state, runsLoadState: nextRunsLoadState};
