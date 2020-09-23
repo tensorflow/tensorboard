@@ -66,7 +66,10 @@ export function getExperimentIdsFromRouteParams(
     case RouteKind.EXPERIMENT: {
       // The route may rely on the implicit, default experiment id, if the URL
       // does not contain the experiment param.
-      return [params.experimentId || DEFAULT_EXPERIMENT_ID];
+      if (Object.prototype.hasOwnProperty.call(params, 'experimentId')) {
+        return [(params as ExperimentRouteParams).experimentId];
+      }
+      return [DEFAULT_EXPERIMENT_ID];
     }
     case RouteKind.COMPARE_EXPERIMENT: {
       const typedParams = params as CompareRouteParams;

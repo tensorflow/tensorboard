@@ -34,7 +34,8 @@ function runToRunId(run: string, experimentId: string) {
 
 @Injectable()
 export class TBRunsDataSource implements RunsDataSource {
-  private tfBackend = (document.createElement('tf-backend') as any).tf_backend;
+  private readonly tfBackend = (document.createElement('tf-backend') as any)
+    .tf_backend;
 
   constructor(private readonly http: TBHttpClient) {}
 

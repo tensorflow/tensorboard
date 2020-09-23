@@ -51,6 +51,7 @@ ng_module(
     deps = [
         ":backend_types",
         ":data_source",
+        ":types",
         "@npm//@angular/core",
         "@npm//rxjs",
     ],
