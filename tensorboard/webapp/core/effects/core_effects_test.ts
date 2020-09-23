@@ -29,10 +29,10 @@ import {
   createState,
   createCoreState,
 } from '../testing';
-import {Run} from '../types';
+import {PluginsListFailureCode, Run} from '../types';
 
 import {PluginsListing} from '../../types/api';
-import {DataLoadState, LoadFailureCode} from '../../types/data';
+import {DataLoadState} from '../../types/data';
 import {TBServerDataSource} from '../../webapp_data_source/tb_server_data_source';
 import {getEnabledExperimentalPlugins} from '../../feature_flag/store/feature_flag_selectors';
 import {
@@ -150,7 +150,7 @@ describe('core_effects', () => {
             environment: createEnvironment(),
           }),
           coreActions.pluginsListingFailed({
-            failedCode: LoadFailureCode.NOT_FOUND,
+            failureCode: PluginsListFailureCode.NOT_FOUND,
           }),
         ]);
       });

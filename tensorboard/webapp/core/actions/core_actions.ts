@@ -14,9 +14,8 @@ limitations under the License.
 ==============================================================================*/
 import {createAction, props} from '@ngrx/store';
 import {Environment, PluginId, PluginsListing} from '../../types/api';
-import {LoadFailureCode} from '../../types/data';
 
-import {Run, RunId} from '../types';
+import {PluginsListFailureCode, Run, RunId} from '../types';
 
 // HACK: Below import is for type inference.
 // https://github.com/bazelbuild/rules_nodejs/issues/1013
@@ -54,7 +53,7 @@ export const pluginsListingLoaded = createAction(
 );
 export const pluginsListingFailed = createAction(
   '[Core] PluginListing Fetch Failed',
-  props<{failedCode: LoadFailureCode}>()
+  props<{failureCode: PluginsListFailureCode}>()
 );
 
 /**

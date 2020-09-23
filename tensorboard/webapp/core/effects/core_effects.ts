@@ -38,7 +38,8 @@ import {
   changePlugin,
 } from '../actions';
 import {getPluginsListLoaded, getActivePlugin} from '../store';
-import {DataLoadState, LoadFailureCode} from '../../types/data';
+import {PluginsListFailureCode} from '../types';
+import {DataLoadState} from '../../types/data';
 import {
   TBServerDataSource,
   TBServerError,
@@ -81,11 +82,13 @@ export class CoreEffects {
             catchError((e) => {
               if (e instanceof TBServerError) {
                 this.store.dispatch(
-                  pluginsListingFailed({failedCode: e.failureCode})
+                  pluginsListingFailed({failureCode: e.failureCode})
                 );
               } else {
                 this.store.dispatch(
-                  pluginsListingFailed({failedCode: LoadFailureCode.UNKNOWN})
+                  pluginsListingFailed({
+                    failureCode: PluginsListFailureCode.UNKNOWN,
+                  })
                 );
               }
               return EMPTY;

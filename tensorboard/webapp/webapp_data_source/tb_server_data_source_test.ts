@@ -19,7 +19,7 @@ import {
   TBHttpClientTestingModule,
   HttpTestingController,
 } from './tb_http_client_testing';
-import {LoadFailureCode} from '../types/data';
+import {PluginsListFailureCode} from '../core/types';
 
 describe('tb_server_data_source', () => {
   describe('TBServerDataSource', () => {
@@ -83,7 +83,7 @@ describe('tb_server_data_source', () => {
 
         expect(results).not.toHaveBeenCalled();
         expect(error).toHaveBeenCalledWith(
-          new TBServerError(LoadFailureCode.UNKNOWN)
+          new TBServerError(PluginsListFailureCode.UNKNOWN)
         );
       }));
     });
@@ -121,7 +121,7 @@ describe('tb_server_data_source', () => {
 
         expect(results).not.toHaveBeenCalled();
         expect(error).toHaveBeenCalledWith(
-          new TBServerError(LoadFailureCode.UNKNOWN)
+          new TBServerError(PluginsListFailureCode.UNKNOWN)
         );
       }));
     });
@@ -164,7 +164,7 @@ describe('tb_server_data_source', () => {
 
         expect(results).not.toHaveBeenCalled();
         expect(error).toHaveBeenCalledWith(
-          new TBServerError(LoadFailureCode.UNKNOWN)
+          new TBServerError(PluginsListFailureCode.UNKNOWN)
         );
       }));
     });
@@ -183,7 +183,7 @@ describe('tb_server_data_source', () => {
         flush();
 
         expect(error).toHaveBeenCalledWith(
-          new TBServerError(LoadFailureCode.NOT_FOUND)
+          new TBServerError(PluginsListFailureCode.NOT_FOUND)
         );
       }));
 
@@ -200,7 +200,7 @@ describe('tb_server_data_source', () => {
         flush();
 
         expect(error).toHaveBeenCalledWith(
-          new TBServerError(LoadFailureCode.UNKNOWN)
+          new TBServerError(PluginsListFailureCode.UNKNOWN)
         );
       }));
     });

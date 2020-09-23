@@ -21,14 +21,21 @@ limitations under the License.
 import {Environment, PluginId, PluginsListing} from '../../types/api';
 import {DataLoadState, LoadState} from '../../types/data';
 
-import {Run, RunId} from '../types';
+import {PluginsListFailureCode, Run, RunId} from '../types';
 
 export const CORE_FEATURE_KEY = 'core';
+
+export interface PluginsListLoadState extends LoadState {
+  // Reason for failure of most recently completed request. This should not be
+  // set if there has not been a failure or if the most recently completed
+  // request was successful.
+  failureCode?: PluginsListFailureCode;
+}
 
 export interface CoreState {
   activePlugin: PluginId | null;
   plugins: PluginsListing;
-  pluginsListLoaded: LoadState;
+  pluginsListLoaded: PluginsListLoadState;
   reloadPeriodInMs: number;
   reloadEnabled: boolean;
   // Size of a page in a general paginated view that is configurable by user via

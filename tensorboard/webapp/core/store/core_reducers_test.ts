@@ -20,7 +20,8 @@ import {
   createPluginMetadata,
   createCoreState,
 } from '../testing';
-import {DataLoadState, LoadFailureCode} from '../../types/data';
+import {DataLoadState} from '../../types/data';
+import {PluginsListFailureCode} from '../types';
 
 function createPluginsListing() {
   return {
@@ -85,18 +86,18 @@ describe('core reducer', () => {
       expect(nextState.pluginsListLoaded.lastLoadedTimeInMs).toBe(1337);
     });
 
-    it('keeps the failedCode', () => {
+    it('keeps the failureCode', () => {
       const state = createCoreState({
         pluginsListLoaded: {
           lastLoadedTimeInMs: null,
           state: DataLoadState.FAILED,
-          failedCode: LoadFailureCode.NOT_FOUND,
+          failureCode: PluginsListFailureCode.NOT_FOUND,
         },
       });
       const nextState = reducers(state, actions.pluginsListingRequested());
 
-      expect(nextState.pluginsListLoaded.failedCode).toEqual(
-        LoadFailureCode.NOT_FOUND
+      expect(nextState.pluginsListLoaded.failureCode).toEqual(
+        PluginsListFailureCode.NOT_FOUND
       );
     });
   });
@@ -111,7 +112,9 @@ describe('core reducer', () => {
       });
       const nextState = reducers(
         state,
-        actions.pluginsListingFailed({failedCode: LoadFailureCode.UNKNOWN})
+        actions.pluginsListingFailed({
+          failureCode: PluginsListFailureCode.UNKNOWN,
+        })
       );
 
       expect(nextState.pluginsListLoaded.state).toEqual(DataLoadState.FAILED);
@@ -126,13 +129,15 @@ describe('core reducer', () => {
       });
       const nextState = reducers(
         state,
-        actions.pluginsListingFailed({failedCode: LoadFailureCode.UNKNOWN})
+        actions.pluginsListingFailed({
+          failureCode: PluginsListFailureCode.UNKNOWN,
+        })
       );
 
       expect(nextState.pluginsListLoaded.lastLoadedTimeInMs).toBe(1337);
     });
 
-    it('sets the failedCode', () => {
+    it('sets the failureCode', () => {
       const state = createCoreState({
         pluginsListLoaded: {
           lastLoadedTimeInMs: null,
@@ -141,11 +146,13 @@ describe('core reducer', () => {
       });
       const nextState = reducers(
         state,
-        actions.pluginsListingFailed({failedCode: LoadFailureCode.NOT_FOUND})
+        actions.pluginsListingFailed({
+          failureCode: PluginsListFailureCode.NOT_FOUND,
+        })
       );
 
-      expect(nextState.pluginsListLoaded.failedCode).toEqual(
-        LoadFailureCode.NOT_FOUND
+      expect(nextState.pluginsListLoaded.failureCode).toEqual(
+        PluginsListFailureCode.NOT_FOUND
       );
     });
   });
@@ -229,12 +236,12 @@ describe('core reducer', () => {
       expect(nextState.activePlugin).toBe('foo');
     });
 
-    it('clears the failedCode', () => {
+    it('clears the failureCode', () => {
       const state = createCoreState({
         pluginsListLoaded: {
           lastLoadedTimeInMs: null,
           state: DataLoadState.LOADING,
-          failedCode: LoadFailureCode.UNKNOWN,
+          failureCode: PluginsListFailureCode.UNKNOWN,
         },
       });
       const nextState = reducers(
@@ -242,7 +249,7 @@ describe('core reducer', () => {
         actions.pluginsListingLoaded({plugins: createPluginsListing()})
       );
 
-      expect(nextState.pluginsListLoaded.failedCode).toBeUndefined();
+      expect(nextState.pluginsListLoaded.failureCode).toBeUndefined();
     });
   });
 

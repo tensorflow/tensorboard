@@ -33,6 +33,7 @@ tf_ts_library(
     ],
     deps = [
         ":store",
+        "//tensorboard/webapp/core:types",
         "//tensorboard/webapp/core/actions",
         "//tensorboard/webapp/core/testing",
         "//tensorboard/webapp/deeplink",
