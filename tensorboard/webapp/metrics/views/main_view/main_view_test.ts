@@ -170,15 +170,15 @@ describe('metrics main view', () => {
     store.overrideSelector(getPageSize, 10);
     store.overrideSelector(selectors.getMetricsTagFilter, '');
     store.overrideSelector(getMetricsTagGroupExpansionState, false);
-    store.overrideSelector(selectors.getCurrentRouteRunSelection, {});
+    store.overrideSelector(selectors.getCurrentRouteRunSelection, new Map());
     store.overrideSelector(selectors.getRunColorMap, {});
   });
 
   describe('card grid', () => {
     it('renders group by tag name', () => {
-      store.overrideSelector(selectors.getCurrentRouteRunSelection, {
-        run1: true,
-      });
+      store.overrideSelector(selectors.getCurrentRouteRunSelection, new Map([
+        ['run1', true],
+      ]));
       store.overrideSelector(selectors.getNonEmptyCardIdsWithMetadata, [
         {
           cardId: 'card1',
@@ -214,9 +214,9 @@ describe('metrics main view', () => {
     });
 
     it('renders plugins', async () => {
-      store.overrideSelector(selectors.getCurrentRouteRunSelection, {
-        run1: true,
-      });
+      store.overrideSelector(selectors.getCurrentRouteRunSelection, new Map([
+        ['run1', true],
+      ]));
       store.overrideSelector(selectors.getNonEmptyCardIdsWithMetadata, [
         {
           cardId: 'card1',
@@ -289,10 +289,10 @@ describe('metrics main view', () => {
         },
       ]);
 
-      store.overrideSelector(selectors.getCurrentRouteRunSelection, {
-        run1: false,
-        run2: true,
-      });
+      store.overrideSelector(selectors.getCurrentRouteRunSelection, new Map([
+        ['run1', false],
+        ['run2', true],
+      ]));
       const fixture = TestBed.createComponent(MainViewContainer);
       fixture.detectChanges();
 
@@ -301,10 +301,10 @@ describe('metrics main view', () => {
         'images: card3',
       ]);
 
-      store.overrideSelector(selectors.getCurrentRouteRunSelection, {
-        run1: true,
-        run2: false,
-      });
+      store.overrideSelector(selectors.getCurrentRouteRunSelection, new Map([
+        ['run1', true],
+        ['run2', false],
+      ]));
       store.refreshState();
       fixture.detectChanges();
 
@@ -479,9 +479,9 @@ describe('metrics main view', () => {
 
     describe('pagination', () => {
       beforeEach(() => {
-        store.overrideSelector(selectors.getCurrentRouteRunSelection, {
-          run1: true,
-        });
+        store.overrideSelector(selectors.getCurrentRouteRunSelection, new Map([
+          ['run1', true],
+        ]));
         store.overrideSelector(getPageSize, 2);
         store.overrideSelector(selectors.getNonEmptyCardIdsWithMetadata, [
           {
@@ -871,10 +871,10 @@ describe('metrics main view', () => {
 
   describe('filter view', () => {
     beforeEach(() => {
-      store.overrideSelector(selectors.getCurrentRouteRunSelection, {
-        run1: true,
-        run2: true,
-      });
+      store.overrideSelector(selectors.getCurrentRouteRunSelection, new Map([
+        ['run1', true],
+        ['run2', true],
+      ]));
       store.overrideSelector(selectors.getNonEmptyCardIdsWithMetadata, [
         {
           cardId: 'card1',
@@ -1041,10 +1041,10 @@ describe('metrics main view', () => {
 
     it('hides single-run cards based on the run selection', () => {
       store.overrideSelector(selectors.getMetricsTagFilter, 'tag');
-      store.overrideSelector(selectors.getCurrentRouteRunSelection, {
-        run1: false,
-        run2: true,
-      });
+      store.overrideSelector(selectors.getCurrentRouteRunSelection, new Map([
+        ['run1', false],
+        ['run2', true],
+      ]));
       const fixture = TestBed.createComponent(MainViewContainer);
       fixture.detectChanges();
 
@@ -1053,10 +1053,10 @@ describe('metrics main view', () => {
         'images: card3',
       ]);
 
-      store.overrideSelector(selectors.getCurrentRouteRunSelection, {
-        run1: true,
-        run2: false,
-      });
+      store.overrideSelector(selectors.getCurrentRouteRunSelection, new Map([
+        ['run1', true],
+        ['run2', false],
+      ]));
       store.refreshState();
       fixture.detectChanges();
 
@@ -1068,10 +1068,10 @@ describe('metrics main view', () => {
 
     describe('perf', () => {
       beforeEach(() => {
-        store.overrideSelector(selectors.getCurrentRouteRunSelection, {
-          run1: true,
-          run2: true,
-        });
+        store.overrideSelector(selectors.getCurrentRouteRunSelection, new Map([
+          ['run1', true],
+          ['run2', true],
+        ]));
         store.overrideSelector(selectors.getNonEmptyCardIdsWithMetadata, [
           {
             cardId: 'card1',
@@ -1098,10 +1098,10 @@ describe('metrics main view', () => {
 
       it('does not update the card when irrelevant runSelection changes', () => {
         store.overrideSelector(selectors.getMetricsTagFilter, 'tagA');
-        store.overrideSelector(selectors.getCurrentRouteRunSelection, {
-          run1: true,
-          run2: true,
-        });
+        store.overrideSelector(selectors.getCurrentRouteRunSelection, new Map([
+          ['run1', true],
+          ['run2', true],
+        ]));
         const fixture = TestBed.createComponent(MainViewContainer);
         fixture.detectChanges();
         const gridContainer = fixture.debugElement.query(
@@ -1110,11 +1110,11 @@ describe('metrics main view', () => {
 
         const before = gridContainer.componentInstance.cardIdsWithMetadata;
 
-        store.overrideSelector(selectors.getCurrentRouteRunSelection, {
-          run1: true,
-          run2: true,
-          run3: false,
-        });
+        store.overrideSelector(selectors.getCurrentRouteRunSelection, new Map([
+          ['run1', true],
+          ['run2', true],
+          ['run3', false],
+        ]));
         store.refreshState();
         fixture.detectChanges();
 
@@ -1125,10 +1125,10 @@ describe('metrics main view', () => {
       it('updates the card when relevant runSelection changes', () => {
         store.overrideSelector(selectors.getMetricsTagFilter, 'tagA');
         // All scalar and image cards are rendered.
-        store.overrideSelector(selectors.getCurrentRouteRunSelection, {
-          run1: true,
-          run2: true,
-        });
+        store.overrideSelector(selectors.getCurrentRouteRunSelection, new Map([
+          ['run1', true],
+          ['run2', true],
+        ]));
         const fixture = TestBed.createComponent(MainViewContainer);
         fixture.detectChanges();
         const gridContainer = fixture.debugElement.query(
@@ -1139,10 +1139,10 @@ describe('metrics main view', () => {
 
         // While the scalar is still rendered, the image card ('card2') does
         // not render and, thus, should change the cardIdsWithMetadata.
-        store.overrideSelector(selectors.getCurrentRouteRunSelection, {
-          run1: false,
-          run2: true,
-        });
+        store.overrideSelector(selectors.getCurrentRouteRunSelection, new Map([
+          ['run1', false],
+          ['run2', true],
+        ]));
         store.refreshState();
         fixture.detectChanges();
 
@@ -1198,9 +1198,9 @@ describe('metrics main view', () => {
     });
 
     it('shows pinned card copies', () => {
-      store.overrideSelector(selectors.getCurrentRouteRunSelection, {
-        run1: true,
-      });
+      store.overrideSelector(selectors.getCurrentRouteRunSelection, new Map([
+        ['run1', true],
+      ]));
       store.overrideSelector(selectors.getPinnedCardsWithMetadata, [
         {cardId: 'card1', ...createCardMetadata(PluginType.SCALARS)},
         {cardId: 'card2', ...createCardMetadata(PluginType.IMAGES)},
@@ -1214,9 +1214,9 @@ describe('metrics main view', () => {
     });
 
     it('ignores the run selection filter', () => {
-      store.overrideSelector(selectors.getCurrentRouteRunSelection, {
-        run1: false,
-      });
+      store.overrideSelector(selectors.getCurrentRouteRunSelection, new Map([
+        ['run1', false],
+      ]));
       const originalCardMetadata = [
         {
           cardId: 'card1',

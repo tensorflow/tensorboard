@@ -31,7 +31,7 @@ import {
   getAnnotationSort,
   getAnnotationsRegex,
 } from '../../store';
-import {getRunSelection} from '../../../../core/store/core_selectors';
+import {getCurrentRouteRunSelection} from '../../../../selectors';
 import {
   filterAnnotations,
   removeHiddenAnnotations,
@@ -63,7 +63,7 @@ export class AnnotationsListContainer {
   readonly annotationsExpanded$ = this.store.pipe(
     select(getAnnotationsExpanded)
   );
-  readonly activeRuns$ = this.store.pipe(select(getRunSelection)).pipe(
+  readonly activeRuns$ = this.store.pipe(select(getCurrentRouteRunSelection)).pipe(
     map((runSelection) => {
       if (!runSelection) return [];
       return Array.from(runSelection.entries())

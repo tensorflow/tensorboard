@@ -17,7 +17,10 @@ import {from, forkJoin, throwError, Observable} from 'rxjs';
 import {catchError, map} from 'rxjs/operators';
 
 import {Environment, PluginsListing, GetRunsResponse} from '../types/api';
+<<<<<<< HEAD
 import {PluginsListFailureCode, Run} from '../core/types';
+=======
+>>>>>>> 3e0518d1a (migrate users of core_selector's getRunSelection)
 
 import {HttpErrorResponse, TBHttpClient} from './tb_http_client';
 
@@ -64,27 +67,6 @@ export class TBServerDataSource {
     return this.http
       .get<PluginsListing>(pathWithParams)
       .pipe(catchError(handleError));
-  }
-
-  fetchRuns(): Observable<Run[]> {
-    const dataFetch = this.http.get<GetRunsResponse>('data/runs');
-    // Force a data load for the polymer-specific portion of the app.
-    // This leads to duplicate requests but hopefully the state is temporary until
-    // we migrate everything from polymer to angular.
-    const polymerRunsRefresh = from(this.tfBackend.runsStore.refresh());
-    // Wait for both operations to complete and return the response from the
-    // explicit http get call.
-    return forkJoin([dataFetch, polymerRunsRefresh]).pipe(
-      map(([runs]) => {
-        return runs.map((run) => {
-          return {
-            id: run,
-            name: run,
-          };
-        });
-      }),
-      catchError(handleError)
-    );
   }
 
   fetchEnvironment(): Observable<Environment> {

@@ -63,10 +63,10 @@ describe('ui_selectors test', () => {
         ),
       };
 
-      expect(getCurrentRouteRunSelection(state)).toEqual({
-        r1: true,
-        r2: false,
-      });
+      expect(getCurrentRouteRunSelection(state)).toEqual(new Map([
+        ['r1', true],
+        ['r2', false],
+      ]));
     });
 
     it('returns null if current route does not have experimentIds', () => {

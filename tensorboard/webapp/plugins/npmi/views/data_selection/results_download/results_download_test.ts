@@ -22,6 +22,7 @@ import {Store} from '@ngrx/store';
 import {provideMockStore, MockStore} from '@ngrx/store/testing';
 
 import {State} from '../../../../../app_state';
+import * as selectors from '../../../../../selectors';
 import {appStateFromNpmiState, createNpmiState} from '../../../testing';
 import {createState, createCoreState} from '../../../../../core/testing';
 import {ResultsDownloadContainer} from './results_download_container';
@@ -51,6 +52,7 @@ describe('Npmi Results Download', () => {
       ],
     }).compileComponents();
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
+    store.overrideSelector(selectors.getCurrentRouteRunSelection, new Map());
   });
 
   it('renders disabled button when no annotations are flagged', () => {

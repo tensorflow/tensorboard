@@ -34,7 +34,6 @@ import {
   pluginsListingRequested,
   pluginsListingLoaded,
   pluginsListingFailed,
-  fetchRunSucceeded,
   changePlugin,
 } from '../actions';
 import {getPluginsListLoaded, getActivePlugin} from '../store';
@@ -74,7 +73,6 @@ export class CoreEffects {
               enabledExperimentalPlugins
             ),
             this.fetchEnvironment(),
-            this.fetchRuns()
           ).pipe(
             map(([plugins]) => {
               this.store.dispatch(pluginsListingLoaded({plugins}));
@@ -141,12 +139,4 @@ export class CoreEffects {
     private store: Store<State>,
     private webappDataSource: TBServerDataSource
   ) {}
-
-  private fetchRuns() {
-    return this.webappDataSource.fetchRuns().pipe(
-      tap((runs) => {
-        this.store.dispatch(fetchRunSucceeded({runs}));
-      })
-    );
-  }
 }

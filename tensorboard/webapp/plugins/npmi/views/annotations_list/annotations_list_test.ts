@@ -19,6 +19,7 @@ import {Store} from '@ngrx/store';
 import {provideMockStore, MockStore} from '@ngrx/store/testing';
 
 import {State} from '../../../../app_state';
+import * as selectors from '../../../../selectors';
 import {getAnnotationsExpanded} from '../../store';
 import {appStateFromNpmiState, createNpmiState} from '../../testing';
 import {createState, createCoreState} from '../../../../core/testing';
@@ -50,6 +51,7 @@ describe('Npmi Annotations List Container', () => {
       ],
     }).compileComponents();
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
+    store.overrideSelector(selectors.getCurrentRouteRunSelection, new Map());
   });
 
   it('renders expanded annotations list', () => {

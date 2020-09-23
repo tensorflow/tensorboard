@@ -67,7 +67,7 @@ tf_ts_library(
     deps = [
         ":types",
         "//tensorboard/webapp/runs:types",
-        "//tensorboard/webapp/runs/data_source",
+        "//tensorboard/webapp/runs/data_source:types",
         "//tensorboard/webapp/types:ui",
     ],
 )
@@ -90,6 +90,7 @@ tf_ts_library(
         "//tensorboard/webapp/runs:types",
         "//tensorboard/webapp/runs/actions",
         "//tensorboard/webapp/runs/data_source",
+        "//tensorboard/webapp/runs/data_source:types",
         "//tensorboard/webapp/runs/data_source:testing",
         "//tensorboard/webapp/testing:lang",
         "//tensorboard/webapp/types",

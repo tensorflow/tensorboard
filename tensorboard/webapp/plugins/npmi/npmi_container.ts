@@ -17,7 +17,7 @@ import {select, Store} from '@ngrx/store';
 
 import {npmiLoaded} from './actions';
 import {State} from '../../app_state';
-import {getRunSelection} from '../../core/store/core_selectors';
+import {getCurrentRouteRunSelection} from '../../selectors';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
@@ -26,7 +26,7 @@ import {getRunSelection} from '../../core/store/core_selectors';
   template: ` <npmi-component [runs]="runs$ | async"></npmi-component> `,
 })
 export class NpmiContainer implements OnInit {
-  readonly runs$ = this.store.pipe(select(getRunSelection));
+  readonly runs$ = this.store.pipe(select(getCurrentRouteRunSelection));
 
   constructor(private readonly store: Store<State>) {}
 

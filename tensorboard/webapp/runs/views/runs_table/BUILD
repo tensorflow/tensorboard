@@ -72,7 +72,7 @@ tf_ts_library(
         "//tensorboard/webapp/experiments/store:testing",
         "//tensorboard/webapp/runs:types",
         "//tensorboard/webapp/runs/actions",
-        "//tensorboard/webapp/runs/data_source",
+        "//tensorboard/webapp/runs/data_source:types",
         "//tensorboard/webapp/runs/store:testing",
         "//tensorboard/webapp/runs/store:types",
         "//tensorboard/webapp/testing:dom",

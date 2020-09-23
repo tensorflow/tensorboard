@@ -189,7 +189,7 @@ describe('runs_table', () => {
       lastLoadedTimeInMs: null,
     });
     store.overrideSelector(getExperiment, null);
-    store.overrideSelector(getCurrentRouteRunSelection, {});
+    store.overrideSelector(getCurrentRouteRunSelection, new Map());
     store.overrideSelector(getRunSelectorPaginationOption, {
       pageIndex: 0,
       pageSize: 10,
@@ -411,10 +411,10 @@ describe('runs_table', () => {
           ])
         );
       selectSpy.withArgs(getCurrentRouteRunSelection).and.returnValue(
-        of({
-          book1: true,
-          book2: false,
-        })
+        of(new Map([
+          ['book1', true],
+          ['book2', false],
+        ]))
       );
 
       const fixture = createComponent(
@@ -445,10 +445,10 @@ describe('runs_table', () => {
       store.overrideSelector(getExperimentIdToAliasMap, {
         book: "The Philosopher's Stone",
       });
-      store.overrideSelector(getCurrentRouteRunSelection, {
-        book1: true,
-        book2: false,
-      });
+      store.overrideSelector(getCurrentRouteRunSelection, new Map([
+        ['book1', true],
+        ['book2', false],
+      ]));
       store.overrideSelector(getRunColorMap, {
         book1: '#000',
       });
@@ -1234,12 +1234,12 @@ describe('runs_table', () => {
         pageIndex: 0,
         pageSize: 2,
       });
-      store.overrideSelector(getCurrentRouteRunSelection, {
-        book1: true,
-        book2: true,
-        // pageSize is 2 so book3 is out of current page.
-        book3: false,
-      });
+      // pageSize is 2 so book3 is out of current page.
+      store.overrideSelector(getCurrentRouteRunSelection, new Map([
+        ['book1', true],
+        ['book2', true],
+        ['book3', false],
+      ]));
       store.overrideSelector(getRuns, [
         buildRun({id: 'book1', name: "The Philosopher's Stone"}),
         buildRun({id: 'book2', name: 'The Chamber Of Secrets'}),
@@ -1271,11 +1271,11 @@ describe('runs_table', () => {
           pageIndex: 0,
           pageSize: 2,
         });
-        store.overrideSelector(getCurrentRouteRunSelection, {
-          book1: true,
-          book2: false,
-          book3: true,
-        });
+        store.overrideSelector(getCurrentRouteRunSelection, new Map([
+          ['book1', true],
+          ['book2', false],
+          ['book3', true],
+        ]));
         store.overrideSelector(getRuns, [
           buildRun({id: 'book1', name: "The Philosopher's Stone"}),
           buildRun({id: 'book2', name: 'The Chamber Of Secrets'}),
@@ -1376,11 +1376,11 @@ describe('runs_table', () => {
         buildRun({id: 'book2', name: 'The Chamber Of Secrets'}),
         buildRun({id: 'book3', name: 'The Prisoner of Azkaban'}),
       ]);
-      store.overrideSelector(getCurrentRouteRunSelection, {
-        book1: true,
-        book2: true,
-        book3: false,
-      });
+      store.overrideSelector(getCurrentRouteRunSelection, new Map([
+        ['book1', true],
+        ['book2', true],
+        ['book3', false],
+      ]));
 
       const fixture = createComponent(
         ['tolkien'],
@@ -1405,11 +1405,11 @@ describe('runs_table', () => {
         buildRun({id: 'book2', name: 'The Chamber Of Secrets'}),
         buildRun({id: 'book3', name: 'The Prisoner of Azkaban'}),
       ]);
-      store.overrideSelector(getCurrentRouteRunSelection, {
-        book1: true,
-        book2: true,
-        book3: false,
-      });
+      store.overrideSelector(getCurrentRouteRunSelection, new Map([
+        ['book1', true],
+        ['book2', true],
+        ['book3', false],
+      ]));
 
       const fixture = createComponent(
         ['tolkien'],
@@ -1436,11 +1436,11 @@ describe('runs_table', () => {
         buildRun({id: 'book2', name: 'The Chamber Of Secrets'}),
         buildRun({id: 'book3', name: 'The Prisoner of Azkaban'}),
       ]);
-      store.overrideSelector(getCurrentRouteRunSelection, {
-        book1: true,
-        book2: true,
-        book3: true,
-      });
+      store.overrideSelector(getCurrentRouteRunSelection, new Map([
+        ['book1', true],
+        ['book2', true],
+        ['book3', true],
+      ]));
 
       const fixture = createComponent(
         ['rowling'],
@@ -1465,11 +1465,11 @@ describe('runs_table', () => {
         buildRun({id: 'book2', name: 'The Chamber Of Secrets'}),
         buildRun({id: 'book3', name: 'The Prisoner of Azkaban'}),
       ]);
-      store.overrideSelector(getCurrentRouteRunSelection, {
-        book1: true,
-        book2: false,
-        book3: true,
-      });
+      store.overrideSelector(getCurrentRouteRunSelection, new Map([
+        ['book1', true],
+        ['book2', false],
+        ['book3', true],
+      ]));
 
       const fixture = createComponent(
         ['rowling'],
@@ -1495,11 +1495,11 @@ describe('runs_table', () => {
         buildRun({id: 'book2', name: 'The Chamber Of Secrets'}),
         buildRun({id: 'book3', name: 'The Prisoner of Azkaban'}),
       ]);
-      store.overrideSelector(getCurrentRouteRunSelection, {
-        book1: false,
-        book2: true,
-        book3: true,
-      });
+      store.overrideSelector(getCurrentRouteRunSelection, new Map([
+        ['book1', false],
+        ['book2', true],
+        ['book3', true],
+      ]));
 
       const fixture = createComponent(
         ['tolkien'],
@@ -1526,11 +1526,11 @@ describe('runs_table', () => {
         buildRun({id: 'book2', name: 'The Chamber Of Secrets'}),
         buildRun({id: 'book3', name: 'The Prisoner of Azkaban'}),
       ]);
-      store.overrideSelector(getCurrentRouteRunSelection, {
-        book1: true,
-        book2: true,
-        book3: false,
-      });
+      store.overrideSelector(getCurrentRouteRunSelection, new Map([
+        ['book1', true],
+        ['book2', true],
+        ['book3', false],
+      ]));
 
       const fixture = createComponent(
         ['rowling'],

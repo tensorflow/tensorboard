@@ -20,7 +20,7 @@ import {By} from '@angular/platform-browser';
 
 import {Store} from '@ngrx/store';
 import {State} from '../../app_state';
-import {getRunSelection} from './../../core/store/core_selectors';
+import {getCurrentRouteRunSelection} from './../../selectors';
 import {provideMockStore, MockStore} from '@ngrx/store/testing';
 
 import {NpmiComponent} from './npmi_component';
@@ -41,7 +41,7 @@ describe('Npmi Container', () => {
   });
 
   it('renders npmi component initially with inactive component', () => {
-    store.overrideSelector(getRunSelection, new Map());
+    store.overrideSelector(getCurrentRouteRunSelection, new Map());
     const fixture = TestBed.createComponent(NpmiContainer);
     fixture.detectChanges();
 
@@ -54,7 +54,7 @@ describe('Npmi Container', () => {
   });
 
   it('renders npmi component', () => {
-    store.overrideSelector(getRunSelection, new Map([['run_1', true]]));
+    store.overrideSelector(getCurrentRouteRunSelection, new Map([['run_1', true]]));
     const fixture = TestBed.createComponent(NpmiContainer);
     fixture.detectChanges();
 

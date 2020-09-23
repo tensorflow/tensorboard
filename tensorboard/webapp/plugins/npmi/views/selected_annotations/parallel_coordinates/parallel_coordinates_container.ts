@@ -26,7 +26,7 @@ import {
   getAnnotationData,
   getSidebarWidth,
 } from '../../../store';
-import {getRunSelection} from '../../../../../core/store/core_selectors';
+import {getCurrentRouteRunSelection} from '../../../../../selectors';
 import {metricIsNpmiAndNotDiff} from '../../../util/metric_type';
 import {convertToCoordinateData} from '../../../util/coordinate_data';
 import {stripMetricString} from '../../../util/metric_type';
@@ -45,7 +45,7 @@ import {stripMetricString} from '../../../util/metric_type';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ParallelCoordinatesContainer {
-  readonly activeRuns$ = this.store.pipe(select(getRunSelection)).pipe(
+  readonly activeRuns$ = this.store.pipe(select(getCurrentRouteRunSelection)).pipe(
     map((runSelection) => {
       if (!runSelection) return [];
       return Array.from(runSelection.entries())

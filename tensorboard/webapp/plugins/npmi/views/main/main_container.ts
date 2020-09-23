@@ -18,7 +18,7 @@ import {select, Store} from '@ngrx/store';
 import {map} from 'rxjs/operators';
 
 import {State} from '../../../../app_state';
-import {getRunSelection} from '../../../../core/store/core_selectors';
+import {getCurrentRouteRunSelection} from '../../../../selectors';
 import {
   getSidebarExpanded,
   getSidebarWidth,
@@ -43,7 +43,7 @@ import * as npmiActions from '../../actions';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MainContainer {
-  readonly runActive$ = this.store.pipe(select(getRunSelection)).pipe(
+  readonly runActive$ = this.store.pipe(select(getCurrentRouteRunSelection)).pipe(
     map((runs) => {
       if (!runs) {
         return false;

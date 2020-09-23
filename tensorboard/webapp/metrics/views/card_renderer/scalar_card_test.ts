@@ -156,7 +156,7 @@ describe('scalar card', () => {
     selectSpy = spyOn(store, 'select').and.callThrough();
     overlayContainer = TestBed.inject(OverlayContainer);
     resizeTester = TestBed.inject(ResizeDetectorTestingModule);
-    store.overrideSelector(selectors.getCurrentRouteRunSelection, {});
+    store.overrideSelector(selectors.getCurrentRouteRunSelection, new Map());
     store.overrideSelector(selectors.getExperimentIdForRunId, null);
     store.overrideSelector(selectors.getExperimentIdToAliasMap, {});
     store.overrideSelector(selectors.getRun, null);
@@ -238,7 +238,7 @@ describe('scalar card', () => {
       cardMetadata,
       runToSeries
     );
-    store.overrideSelector(selectors.getCurrentRouteRunSelection, {run1: true});
+    store.overrideSelector(selectors.getCurrentRouteRunSelection, new Map([['run1', true]]));
     store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.STEP);
     selectSpy
       .withArgs(selectors.getRun, {runId: 'run1'})
@@ -409,9 +409,9 @@ describe('scalar card', () => {
         null /* metadataOverride */,
         runToSeries
       );
-      store.overrideSelector(selectors.getCurrentRouteRunSelection, {
-        run1: true,
-      });
+      store.overrideSelector(selectors.getCurrentRouteRunSelection, new Map([
+        ['run1', true],
+      ]));
     });
 
     const expectedPoints = {
@@ -546,7 +546,7 @@ describe('scalar card', () => {
       null /* metadataOverride */,
       runToSeries
     );
-    store.overrideSelector(selectors.getCurrentRouteRunSelection, {run1: true});
+    store.overrideSelector(selectors.getCurrentRouteRunSelection, new Map([['run1', true]]));
     store.overrideSelector(
       selectors.getMetricsTooltipSort,
       TooltipSort.ASCENDING
@@ -611,10 +611,10 @@ describe('scalar card', () => {
       null /* metadataOverride */,
       runToSeries
     );
-    store.overrideSelector(selectors.getCurrentRouteRunSelection, {
-      run1: true,
-      run2: false,
-    });
+    store.overrideSelector(selectors.getCurrentRouteRunSelection, new Map([
+      ['run1', true],
+      ['run2', false],
+    ]));
 
     const fixture = createComponent('card1');
 
@@ -627,10 +627,10 @@ describe('scalar card', () => {
     expect(lineChart.seriesDataList.length).toBe(3);
     expect(visibleRunIds).toEqual(['run1']);
 
-    store.overrideSelector(selectors.getCurrentRouteRunSelection, {
-      run1: false,
-      run3: true,
-    });
+    store.overrideSelector(selectors.getCurrentRouteRunSelection, new Map([
+      ['run1', false],
+      ['run3', true],
+    ]));
     triggerStoreUpdate();
     fixture.detectChanges();
 
@@ -796,9 +796,9 @@ describe('scalar card', () => {
         null /* metadataOverride */,
         runToSeries
       );
-      store.overrideSelector(selectors.getCurrentRouteRunSelection, {
-        run1: true,
-      });
+      store.overrideSelector(selectors.getCurrentRouteRunSelection, new Map([
+        ['run1', true],
+      ]));
 
       const fixture = createComponent('card1');
       const lineChartComponent = fixture.debugElement.query(
@@ -806,10 +806,10 @@ describe('scalar card', () => {
       );
       const before = lineChartComponent.componentInstance.seriesDataList;
 
-      store.overrideSelector(selectors.getCurrentRouteRunSelection, {
-        run1: true,
-        shouldBeNoop: true,
-      });
+      store.overrideSelector(selectors.getCurrentRouteRunSelection, new Map([
+        ['run1', true],
+        ['shouldBeNoop', true],
+      ]));
       triggerStoreUpdate();
       fixture.detectChanges();
 
@@ -826,9 +826,9 @@ describe('scalar card', () => {
         null /* metadataOverride */,
         runToSeries
       );
-      store.overrideSelector(selectors.getCurrentRouteRunSelection, {
-        run1: true,
-      });
+      store.overrideSelector(selectors.getCurrentRouteRunSelection, new Map([
+        ['run1', true],
+      ]));
 
       const fixture = createComponent('card1');
       const lineChartComponent = fixture.debugElement.query(
@@ -836,9 +836,9 @@ describe('scalar card', () => {
       );
       const before = lineChartComponent.componentInstance.seriesDataList;
 
-      store.overrideSelector(selectors.getCurrentRouteRunSelection, {
-        run1: false,
-      });
+      store.overrideSelector(selectors.getCurrentRouteRunSelection, new Map([
+        ['run1', false],
+      ]));
       triggerStoreUpdate();
       fixture.detectChanges();
 
@@ -861,9 +861,9 @@ describe('scalar card', () => {
         runToSeries
       );
       store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.STEP);
-      store.overrideSelector(selectors.getCurrentRouteRunSelection, {
-        run1: true,
-      });
+      store.overrideSelector(selectors.getCurrentRouteRunSelection, new Map([
+        ['run1', true],
+      ]));
 
       const fixture = createComponent('card1');
       const lineChartComponent = fixture.debugElement.query(

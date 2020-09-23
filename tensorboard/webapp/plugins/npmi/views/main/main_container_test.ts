@@ -22,7 +22,7 @@ import {Store, Action} from '@ngrx/store';
 import {provideMockStore, MockStore} from '@ngrx/store/testing';
 
 import {State} from '../../../../app_state';
-import {getRunSelection} from './../../../../core/store/core_selectors';
+import {getCurrentRouteRunSelection} from './../../../../selectors';
 import {getSidebarExpanded} from '../../store';
 import {appStateFromNpmiState, createNpmiState} from '../../testing';
 import {createState, createCoreState} from '../../../../core/testing';
@@ -59,6 +59,7 @@ describe('Npmi Main Container', () => {
       ],
     }).compileComponents();
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
+    store.overrideSelector(getCurrentRouteRunSelection, new Map());
 
     dispatchedActions = [];
     spyOn(store, 'dispatch').and.callFake((action: Action) => {
@@ -67,7 +68,7 @@ describe('Npmi Main Container', () => {
   });
 
   it('renders npmi main component without runs', () => {
-    store.overrideSelector(getRunSelection, new Map());
+    store.overrideSelector(getCurrentRouteRunSelection, new Map());
     const fixture = TestBed.createComponent(MainContainer);
     fixture.detectChanges();
 
@@ -79,7 +80,7 @@ describe('Npmi Main Container', () => {
   });
 
   it('renders npmi main component with run', () => {
-    store.overrideSelector(getRunSelection, new Map([['run_1', true]]));
+    store.overrideSelector(getCurrentRouteRunSelection, new Map([['run_1', true]]));
     const fixture = TestBed.createComponent(MainContainer);
     fixture.detectChanges();
 
@@ -91,7 +92,7 @@ describe('Npmi Main Container', () => {
   });
 
   it('renders npmi main component without active run', () => {
-    store.overrideSelector(getRunSelection, new Map([['run_1', false]]));
+    store.overrideSelector(getCurrentRouteRunSelection, new Map([['run_1', false]]));
     const fixture = TestBed.createComponent(MainContainer);
     fixture.detectChanges();
 
@@ -104,7 +105,7 @@ describe('Npmi Main Container', () => {
 
   it('renders npmi main component with multiple runs, some active, some inactive', () => {
     store.overrideSelector(
-      getRunSelection,
+      getCurrentRouteRunSelection,
       new Map([
         ['run_1', false],
         ['run_2', true],

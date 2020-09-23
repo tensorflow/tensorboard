@@ -39,18 +39,12 @@ import {getRunSelectionMap} from '../runs/store/runs_selectors';
  * Note that emits null when current route is not about an experiment.
  */
 export const getCurrentRouteRunSelection = createSelector(
-  (state: State): Record<string, boolean> | null => {
+  (state: State): Map<string, boolean> | null => {
     const experimentIds = getExperimentIdsFromRoute(state);
     if (experimentIds === null) {
       return null;
     }
-    const selectionMap = getRunSelectionMap(state, {experimentIds});
-
-    const selectionObj: Record<string, boolean> = {};
-    selectionMap.forEach((value, key) => {
-      selectionObj[key] = value;
-    });
-    return selectionObj;
+    return getRunSelectionMap(state, {experimentIds});
   },
   (runSelection) => runSelection
 );
