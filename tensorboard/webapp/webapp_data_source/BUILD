@@ -28,6 +28,7 @@ ng_module(
         ":http_client_testing",
         ":webapp_data_source",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
+        "//tensorboard/webapp/core:types",
         "@npm//@types/jasmine",
     ],
 )
