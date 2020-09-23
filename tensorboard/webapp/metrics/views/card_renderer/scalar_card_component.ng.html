@@ -1,0 +1,99 @@
+<!--
+@license
+Copyright 2020 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<div class="heading">
+  <tb-truncated-path
+    class="tag"
+    title="{{ tag }}"
+    value="{{ title }}"
+  ></tb-truncated-path>
+  <span class="controls">
+    <button
+      mat-icon-button
+      class="pin-button"
+      i18n-aria-label="A button to pin a card."
+      aria-label="Pin card"
+      [attr.title]="isPinned ? 'Unpin card' : 'Pin card'"
+      (click)="onPinClicked.emit(!isPinned)"
+    >
+      <mat-icon
+        [svgIcon]="isPinned ? 'keep_24px' : 'keep_outline_24px'"
+      ></mat-icon>
+    </button>
+    <button
+      mat-icon-button
+      i18n-aria-label="A button on line chart that toggles full size mode."
+      aria-label="Toggle full size mode"
+      title="Toggle full size mode"
+      (click)="onFullSizeToggle.emit()"
+    >
+      <mat-icon
+        [svgIcon]="showFullSize ? 'fullscreen_exit_24px' : 'fullscreen_24px'"
+      ></mat-icon>
+    </button>
+    <!-- overflow menu cannot use mat-tooltip since it interferes with the mat-menu. -->
+    <button
+      mat-icon-button
+      [matMenuTriggerFor]="menu"
+      i18n-aria-label="An overflow menu button that opens more line chart options"
+      aria-label="More line chart options"
+      title="More line chart options"
+    >
+      <mat-icon svgIcon="more_vert_24px"></mat-icon>
+    </button>
+    <mat-menu #menu="matMenu">
+      <button
+        mat-menu-item
+        (click)="toggleYAxisType()"
+        i18n-aria-label="A button that toggles log scale on y-axis on a line chart"
+        aria-label="Toggle Y-axis log scale on line chart"
+      >
+        <mat-icon svgIcon="line_weight_24px"></mat-icon>
+        <span>Toggle Y-axis log scale</span>
+      </button>
+      <button
+        mat-menu-item
+        [disabled]="!seriesDataList || !seriesDataList.length"
+        (click)="resetDomain()"
+        i18n-aria-label="A button that resets line chart domain to the data"
+        aria-label="Fit line chart domains to data"
+      >
+        <mat-icon svgIcon="settings_overscan_24px"></mat-icon>
+        <span>Fit domain to data</span>
+      </button>
+    </mat-menu>
+  </span>
+</div>
+<div class="chart-container">
+  <mat-spinner
+    diameter="18"
+    *ngIf="loadState === DataLoadState.LOADING"
+  ></mat-spinner>
+  <tb-line-chart
+    [colorScale]="runColorScale"
+    [seriesDataList]="seriesDataList"
+    [tooltipColumns]="tooltipColumns"
+    [tooltipSortingMethod]="tooltipSort"
+    [ignoreYOutliers]="ignoreOutliers"
+    [xAxisType]="chartXAxisType()"
+    [smoothingEnabled]="scalarSmoothing > 0"
+    [smoothingWeight]="scalarSmoothing"
+    [yAxisType]="yAxisType"
+    detectResize
+    [resizeEventDebouncePeriodInMs]="RESIZE_REDRAW_DEBOUNCE_TIME_IN_MS"
+    (onResize)="redraw()"
+  ></tb-line-chart>
+</div>

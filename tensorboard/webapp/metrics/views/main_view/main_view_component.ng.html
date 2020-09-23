@@ -1,0 +1,71 @@
+<!--
+@license
+Copyright 2020 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<div class="toolbar">
+  <metrics-tag-filter></metrics-tag-filter>
+  <div class="right-items">
+    <button
+      mat-stroked-button
+      [ngClass]="{
+        'checked': isSidepaneOpen,
+        'settings-button': true
+      }"
+      i18n-aria-label="Label on a toolbar button to toggle the settings side pane."
+      aria-label="Toggle settings side pane"
+      [attr.aria-pressed]="isSidepaneOpen"
+      (click)="onSettingsButtonClicked.emit()"
+    >
+      <mat-icon svgIcon="settings_24px"></mat-icon>
+      Settings
+    </button>
+  </div>
+</div>
+<div class="split-content">
+  <div class="main">
+    <metrics-filtered-view
+      *ngIf="showFilteredView"
+      [cardObserver]="cardObserver"
+    ></metrics-filtered-view>
+    <!-- We cannot use 'display: none' until the small charts issue is fixed.
+    Otherwise, adding a pinned card when the section is hidden reliably creates
+    a 'squished chart'. We can switch to 'display: none' when this issue is
+    fixed: https://github.com/tensorflow/tensorboard/issues/2595. -->
+    <metrics-pinned-view
+      *ngIf="!showFilteredView"
+      [cardObserver]="cardObserver"
+    ></metrics-pinned-view>
+    <!-- Always show the metrics-card-groups as a performance optimization--it makes view transition
+    from filtered view to card view quicker. -->
+    <metrics-card-groups
+      [style.display]="showFilteredView ? 'none' : ''"
+      [cardObserver]="cardObserver"
+    ></metrics-card-groups>
+  </div>
+  <div class="sidebar" *ngIf="isSidepaneOpen">
+    <div class="header">
+      <h2 class="title">Settings</h2>
+      <button
+        mat-icon-button
+        (click)="onCloseSidepaneButtonClicked.emit()"
+        i18n-aria-label="Label on a button to close the settings side pane."
+        aria-label="Close side pane"
+      >
+        <mat-icon svgIcon="close_24px"></mat-icon>
+      </button>
+    </div>
+    <metrics-dashboard-right-pane></metrics-dashboard-right-pane>
+  </div>
+</div>

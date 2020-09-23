@@ -1,0 +1,156 @@
+<!--
+@license
+Copyright 2020 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<section class="general">
+  <h3 class="section-title">General</h3>
+
+  <div class="control-row x-axis-type">
+    <div class="control-name" id="x-axis-type-label">Horizontal Axis</div>
+    <tb-dropdown
+      [value]="xAxisType"
+      [options]="XAxisTypeDropdownOptions"
+      (selectionChange)="xAxisTypeChanged.emit($event)"
+    >
+    </tb-dropdown>
+  </div>
+</section>
+
+<section class="scalars">
+  <h3 class="section-title">Scalars</h3>
+
+  <div class="control-row scalars-smoothing">
+    <div class="control-name" id="scalars-smoothing-label">Smoothing</div>
+    <div class="slider-row">
+      <mat-slider
+        aria-labelledby="scalars-smoothing-label"
+        color="primary"
+        [max]="1"
+        [min]="0"
+        [step]="0.01"
+        [value]="scalarSmoothing"
+        [thumbLabel]="true"
+        (input)="scalarSmoothingControlChanged$.emit($event.value)"
+      ></mat-slider>
+      <input
+        class="slider-input"
+        aria-labelledby="scalars-smoothing-label"
+        type="number"
+        min="0"
+        max="1"
+        step="0.01"
+        [value]="scalarSmoothing"
+        (input)="onScalarSmoothingInput($event)"
+      />
+    </div>
+  </div>
+
+  <div class="control-row tooltip-sort">
+    <div class="control-name">Tooltip sorting method</div>
+    <tb-dropdown
+      [value]="tooltipSort"
+      [options]="TooltipSortDropdownOptions"
+      (selectionChange)="tooltipSortChanged.emit($event)"
+    >
+    </tb-dropdown>
+  </div>
+
+  <div class="control-row scalars-ignore-outliers">
+    <mat-checkbox
+      [checked]="ignoreOutliers"
+      (change)="ignoreOutliersChanged.emit($event.checked)"
+      >Ignore outliers in chart scaling</mat-checkbox
+    >
+  </div>
+</section>
+
+<section class="Histograms">
+  <h3 class="section-title">Histograms</h3>
+
+  <div class="control-row histogram-mode">
+    <div class="control-name">Mode</div>
+    <tb-dropdown
+      [value]="histogramMode"
+      [options]="HistogramModeDropdownOptions"
+      (selectionChange)="histogramModeChanged.emit($event)"
+    >
+    </tb-dropdown>
+  </div>
+</section>
+
+<section class="image">
+  <h3 class="section-title">Images</h3>
+  <div class="control-row image-brightness">
+    <div class="control-name" id="image-brightness-label">Brightness</div>
+    <div class="slider-row">
+      <mat-slider
+        aria-labelledby="image-brightness-label"
+        color="primary"
+        [max]="2000"
+        [min]="0"
+        [step]="10"
+        [value]="imageBrightnessInMilli"
+        [thumbLabel]="true"
+        [displayWith]="formatMilliToZeroth"
+        (input)="imageBrightnessSliderChanged$.emit($event.value)"
+      ></mat-slider>
+      <button
+        class="reset-button"
+        mat-icon-button
+        i18n-aria-label="A button to reset the image brightness setting"
+        aria-label="Reset brightness"
+        title="Reset brightness"
+        (click)="imageBrightnessReset.emit()"
+      >
+        <mat-icon svgIcon="settings_backup_restore_24px"></mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <div class="control-row image-contrast">
+    <div class="control-name" id="image-constrast-label">Contrast</div>
+    <div class="slider-row">
+      <mat-slider
+        aria-labelledby="image-constrast-label"
+        color="primary"
+        [max]="5000"
+        [min]="0"
+        [step]="10"
+        [value]="imageContrastInMilli"
+        [thumbLabel]="true"
+        [displayWith]="formatMilliToZeroth"
+        (input)="imageContrastSliderChanged$.emit($event.value)"
+      ></mat-slider>
+      <button
+        class="reset-button"
+        mat-icon-button
+        i18n-aria-label="A button to reset the image contrast setting"
+        aria-label="Reset contrast"
+        title="Reset contrast"
+        (click)="imageContrastReset.emit()"
+      >
+        <mat-icon svgIcon="settings_backup_restore_24px"></mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <div class="control-row image-show-actual-size">
+    <mat-checkbox
+      [checked]="imageShowActualSize"
+      (change)="imageShowActualSizeChanged.emit($event.checked)"
+      >Show actual image size</mat-checkbox
+    >
+  </div>
+</section>

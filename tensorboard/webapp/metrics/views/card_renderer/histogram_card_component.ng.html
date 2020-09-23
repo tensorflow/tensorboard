@@ -1,0 +1,74 @@
+<!--
+@license
+Copyright 2020 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<div class="heading">
+  <tb-truncated-path
+    class="tag"
+    title="{{ tag }}"
+    value="{{ title }}"
+  ></tb-truncated-path>
+  <div class="run">
+    <span
+      class="dot"
+      [ngStyle]="{backgroundColor: runColorScale(runId)}"
+    ></span>
+    <card-run-name class="run-text" [runId]="runId"></card-run-name>
+  </div>
+  <span class="controls">
+    <button
+      mat-icon-button
+      class="pin-button"
+      i18n-aria-label="A button to pin a card."
+      aria-label="Pin card"
+      [attr.title]="isPinned ? 'Unpin card' : 'Pin card'"
+      (click)="onPinClicked.emit(!isPinned)"
+    >
+      <mat-icon
+        [svgIcon]="isPinned ? 'keep_24px' : 'keep_outline_24px'"
+      ></mat-icon>
+    </button>
+    <button
+      mat-icon-button
+      i18n-aria-label="A button on a histogram card that toggles full size mode."
+      aria-label="Toggle full size mode"
+      title="Toggle full size mode"
+      (click)="onFullSizeToggle.emit()"
+    >
+      <mat-icon
+        [svgIcon]="showFullSize ? 'fullscreen_exit_24px' : 'fullscreen_24px'"
+      ></mat-icon>
+    </button>
+  </span>
+  <span class="spinner" *ngIf="loadState === DataLoadState.LOADING">
+    <mat-spinner diameter="18"></mat-spinner>
+  </span>
+</div>
+<tb-histogram
+  *ngIf="data && data.length; else noData"
+  [name]="runId"
+  [data]="data"
+  [mode]="mode"
+  [timeProperty]="timeProperty(xAxisType)"
+  [colorScale]="runColorScale"
+  detectResize
+  [resizeEventDebouncePeriodInMs]="RESIZE_REDRAW_DEBOUNCE_TIME_IN_MS"
+  (onResize)="redraw()"
+></tb-histogram>
+<ng-template #noData>
+  <div *ngIf="loadState === DataLoadState.FAILED" class="empty-message">
+    Data failed to load.
+  </div>
+</ng-template>
