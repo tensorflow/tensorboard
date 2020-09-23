@@ -16,11 +16,8 @@ import {Injectable} from '@angular/core';
 import {from, forkJoin, throwError, Observable} from 'rxjs';
 import {catchError, map} from 'rxjs/operators';
 
-import {Environment, PluginsListing, GetRunsResponse} from '../types/api';
-<<<<<<< HEAD
-import {PluginsListFailureCode, Run} from '../core/types';
-=======
->>>>>>> 3e0518d1a (migrate users of core_selector's getRunSelection)
+import {Environment, PluginsListing} from '../types/api';
+import {PluginsListFailureCode} from '../core/types';
 
 import {HttpErrorResponse, TBHttpClient} from './tb_http_client';
 
