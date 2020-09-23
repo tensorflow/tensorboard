@@ -23,6 +23,7 @@ ng_module(
     ],
     deps = [
         "//tensorboard/webapp:app_state",
+        "//tensorboard/webapp:selectors",
         "//tensorboard/webapp/angular:expect_angular_material_button",
         "//tensorboard/webapp/angular:expect_angular_material_checkbox",
         "//tensorboard/webapp/angular:expect_angular_material_icon",
@@ -35,7 +36,6 @@ ng_module(
         "//tensorboard/webapp/plugins/npmi/views/selected_annotations",
         "//tensorboard/webapp/plugins/npmi/views/violin_filters",
         "//tensorboard/webapp/runs_legacy",
-        "//tensorboard/webapp:selectors",
         "@npm//@angular/core",
         "@npm//@angular/forms",
         "@npm//@ngrx/store",
@@ -52,6 +52,7 @@ tf_ts_library(
     deps = [
         ":main",
         "//tensorboard/webapp:app_state",
+        "//tensorboard/webapp:selectors",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/angular:expect_ngrx_store_testing",
         "//tensorboard/webapp/core/store",
@@ -60,7 +61,6 @@ tf_ts_library(
         "//tensorboard/webapp/plugins/npmi/store",
         "//tensorboard/webapp/plugins/npmi/testing",
         "//tensorboard/webapp/runs_legacy",
-        "//tensorboard/webapp:selectors",
         "@npm//@angular/core",
         "@npm//@angular/platform-browser",
         "@npm//@ngrx/store",

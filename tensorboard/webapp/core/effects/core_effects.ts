@@ -72,7 +72,7 @@ export class CoreEffects {
             this.webappDataSource.fetchPluginsListing(
               enabledExperimentalPlugins
             ),
-            this.fetchEnvironment(),
+            this.fetchEnvironment()
           ).pipe(
             map(([plugins]) => {
               this.store.dispatch(pluginsListingLoaded({plugins}));

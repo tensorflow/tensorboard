@@ -80,7 +80,10 @@ describe('Npmi Main Container', () => {
   });
 
   it('renders npmi main component with run', () => {
-    store.overrideSelector(getCurrentRouteRunSelection, new Map([['run_1', true]]));
+    store.overrideSelector(
+      getCurrentRouteRunSelection,
+      new Map([['run_1', true]])
+    );
     const fixture = TestBed.createComponent(MainContainer);
     fixture.detectChanges();
 
@@ -92,7 +95,10 @@ describe('Npmi Main Container', () => {
   });
 
   it('renders npmi main component without active run', () => {
-    store.overrideSelector(getCurrentRouteRunSelection, new Map([['run_1', false]]));
+    store.overrideSelector(
+      getCurrentRouteRunSelection,
+      new Map([['run_1', false]])
+    );
     const fixture = TestBed.createComponent(MainContainer);
     fixture.detectChanges();
 

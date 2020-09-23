@@ -45,14 +45,16 @@ import {stripMetricString} from '../../../util/metric_type';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ParallelCoordinatesContainer {
-  readonly activeRuns$ = this.store.pipe(select(getCurrentRouteRunSelection)).pipe(
-    map((runSelection) => {
-      if (!runSelection) return [];
-      return Array.from(runSelection.entries())
-        .filter((run) => run[1])
-        .map((run) => run[0]);
-    })
-  );
+  readonly activeRuns$ = this.store
+    .pipe(select(getCurrentRouteRunSelection))
+    .pipe(
+      map((runSelection) => {
+        if (!runSelection) return [];
+        return Array.from(runSelection.entries())
+          .filter((run) => run[1])
+          .map((run) => run[0]);
+      })
+    );
   readonly activeMetrics$ = combineLatest(
     this.store.select(getRunToMetrics),
     this.activeRuns$,

@@ -54,7 +54,10 @@ describe('Npmi Container', () => {
   });
 
   it('renders npmi component', () => {
-    store.overrideSelector(getCurrentRouteRunSelection, new Map([['run_1', true]]));
+    store.overrideSelector(
+      getCurrentRouteRunSelection,
+      new Map([['run_1', true]])
+    );
     const fixture = TestBed.createComponent(NpmiContainer);
     fixture.detectChanges();
 

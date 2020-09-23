@@ -23,6 +23,7 @@ ng_module(
     ],
     deps = [
         "//tensorboard/webapp:app_state",
+        "//tensorboard/webapp:selectors",
         "//tensorboard/webapp/angular:expect_angular_material_autocomplete",
         "//tensorboard/webapp/angular:expect_angular_material_icon",
         "//tensorboard/webapp/angular:expect_angular_material_input",
@@ -30,7 +31,6 @@ ng_module(
         "//tensorboard/webapp/plugins/npmi/actions",
         "//tensorboard/webapp/plugins/npmi/store",
         "//tensorboard/webapp/plugins/npmi/store:types",
-        "//tensorboard/webapp:selectors",
         "@npm//@angular/common",
         "@npm//@angular/core",
         "@npm//@angular/forms",
@@ -48,6 +48,7 @@ tf_ts_library(
     deps = [
         ":metric_search",
         "//tensorboard/webapp:app_state",
+        "//tensorboard/webapp:selectors",
         "//tensorboard/webapp/angular:expect_angular_cdk_overlay",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/angular:expect_angular_material_autocomplete",
@@ -60,7 +61,6 @@ tf_ts_library(
         "//tensorboard/webapp/plugins/npmi/store:types",
         "//tensorboard/webapp/plugins/npmi/testing",
         "//tensorboard/webapp/runs_legacy",
-        "//tensorboard/webapp:selectors",
         "//tensorboard/webapp/testing:mat_icon",
         "@npm//@angular/common",
         "@npm//@angular/core",

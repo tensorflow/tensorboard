@@ -36,10 +36,7 @@ describe('TBRunsDataSource test', () => {
       },
     };
 
-    const createElementSpy = spyOn(
-      document,
-      'createElement'
-    ).and.callThrough();
+    const createElementSpy = spyOn(document, 'createElement').and.callThrough();
 
     createElementSpy.withArgs('tf-backend').and.returnValue(tbBackend);
 

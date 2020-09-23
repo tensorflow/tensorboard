@@ -63,14 +63,16 @@ export class AnnotationsListContainer {
   readonly annotationsExpanded$ = this.store.pipe(
     select(getAnnotationsExpanded)
   );
-  readonly activeRuns$ = this.store.pipe(select(getCurrentRouteRunSelection)).pipe(
-    map((runSelection) => {
-      if (!runSelection) return [];
-      return Array.from(runSelection.entries())
-        .filter((run) => run[1])
-        .map((run) => run[0]);
-    })
-  );
+  readonly activeRuns$ = this.store
+    .pipe(select(getCurrentRouteRunSelection))
+    .pipe(
+      map((runSelection) => {
+        if (!runSelection) return [];
+        return Array.from(runSelection.entries())
+          .filter((run) => run[1])
+          .map((run) => run[0]);
+      })
+    );
   readonly numActiveRuns$ = this.activeRuns$.pipe(map((runs) => runs.length));
   readonly activeMetrics$ = combineLatest([
     this.store.select(getRunToMetrics),

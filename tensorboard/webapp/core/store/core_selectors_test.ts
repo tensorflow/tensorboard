@@ -15,5 +15,4 @@ limitations under the License.
 import * as selectors from './core_selectors';
 import {createState, createCoreState} from '../testing';
 
-describe('core selectors', () => {
-});
+describe('core selectors', () => {});

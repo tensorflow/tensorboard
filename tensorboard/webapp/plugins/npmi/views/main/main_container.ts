@@ -43,14 +43,16 @@ import * as npmiActions from '../../actions';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MainContainer {
-  readonly runActive$ = this.store.pipe(select(getCurrentRouteRunSelection)).pipe(
-    map((runs) => {
-      if (!runs) {
-        return false;
-      }
-      return [...runs.values()].includes(true);
-    })
-  );
+  readonly runActive$ = this.store
+    .pipe(select(getCurrentRouteRunSelection))
+    .pipe(
+      map((runs) => {
+        if (!runs) {
+          return false;
+        }
+        return [...runs.values()].includes(true);
+      })
+    );
   readonly sidebarExpanded$ = this.store.pipe(select(getSidebarExpanded));
   readonly sidebarWidth$ = this.store.pipe(select(getSidebarWidth));
   resizing = false;
