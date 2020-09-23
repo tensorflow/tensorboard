@@ -29,7 +29,7 @@ import {
   createState,
   createCoreState,
 } from '../testing';
-import {Run} from '../types';
+import {PluginsListFailureCode, Run} from '../types';
 
 import {PluginsListing} from '../../types/api';
 import {DataLoadState} from '../../types/data';
@@ -58,6 +58,7 @@ describe('core_effects', () => {
         pluginsListLoaded: {
           state: DataLoadState.NOT_LOADED,
           lastLoadedTimeInMs: null,
+          failureCode: null,
         },
       })
     );
@@ -137,6 +138,24 @@ describe('core_effects', () => {
         ]);
       });
 
+      it('handles error when fetching webapp data', () => {
+        action.next(onAction);
+
+        httpMock
+          .expectOne('data/plugins_listing')
+          .error(new ErrorEvent('FakeError'), {status: 404});
+
+        expect(recordedActions).toEqual([
+          coreActions.pluginsListingRequested(),
+          coreActions.environmentLoaded({
+            environment: createEnvironment(),
+          }),
+          coreActions.pluginsListingFailed({
+            failureCode: PluginsListFailureCode.NOT_FOUND,
+          }),
+        ]);
+      });
+
       it(
         'appends query params to the data/plugins_listing when ' +
           'getEnabledExperimentalPlugins is non-empty',
@@ -186,6 +205,7 @@ describe('core_effects', () => {
               pluginsListLoaded: {
                 state: DataLoadState.LOADING,
                 lastLoadedTimeInMs: null,
+                failureCode: null,
               },
             })
           )
@@ -208,6 +228,7 @@ describe('core_effects', () => {
               pluginsListLoaded: {
                 state: DataLoadState.FAILED,
                 lastLoadedTimeInMs: null,
+                failureCode: PluginsListFailureCode.NOT_FOUND,
               },
             })
           )
@@ -236,6 +257,7 @@ describe('core_effects', () => {
               pluginsListLoaded: {
                 state: DataLoadState.LOADING,
                 lastLoadedTimeInMs: null,
+                failureCode: null,
               },
             })
           )

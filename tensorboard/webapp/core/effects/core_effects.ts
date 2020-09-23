@@ -38,8 +38,12 @@ import {
   changePlugin,
 } from '../actions';
 import {getPluginsListLoaded, getActivePlugin} from '../store';
+import {PluginsListFailureCode} from '../types';
 import {DataLoadState} from '../../types/data';
-import {TBServerDataSource} from '../../webapp_data_source/tb_server_data_source';
+import {
+  TBServerDataSource,
+  TBServerError,
+} from '../../webapp_data_source/tb_server_data_source';
 import {getEnabledExperimentalPlugins} from '../../feature_flag/store/feature_flag_selectors';
 import {State} from '../../app_state';
 
@@ -72,15 +76,23 @@ export class CoreEffects {
             this.fetchEnvironment(),
             this.fetchRuns()
           ).pipe(
-            map(
-              ([plugins]) => {
-                this.store.dispatch(pluginsListingLoaded({plugins}));
-              },
-              catchError(() => {
-                this.store.dispatch(pluginsListingFailed());
-                return EMPTY;
-              })
-            )
+            map(([plugins]) => {
+              this.store.dispatch(pluginsListingLoaded({plugins}));
+            }),
+            catchError((e) => {
+              if (e instanceof TBServerError) {
+                this.store.dispatch(
+                  pluginsListingFailed({failureCode: e.failureCode})
+                );
+              } else {
+                this.store.dispatch(
+                  pluginsListingFailed({
+                    failureCode: PluginsListFailureCode.UNKNOWN,
+                  })
+                );
+              }
+              return EMPTY;
+            })
           );
         })
       ),

@@ -58,6 +58,7 @@ export function createCoreState(override?: Partial<CoreState>): CoreState {
     pluginsListLoaded: {
       state: DataLoadState.NOT_LOADED,
       lastLoadedTimeInMs: null,
+      failureCode: null,
     },
     reloadPeriodInMs: 30000,
     reloadEnabled: true,

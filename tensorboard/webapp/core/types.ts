@@ -18,3 +18,8 @@ export interface Run {
   id: RunId;
   name: string;
 }
+
+export enum PluginsListFailureCode {
+  UNKNOWN = 'UNKNOWN',
+  NOT_FOUND = 'NOT_FOUND',
+}

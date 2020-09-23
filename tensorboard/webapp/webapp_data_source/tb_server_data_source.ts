@@ -13,13 +13,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Injectable} from '@angular/core';
-import {from, forkJoin, Observable} from 'rxjs';
-import {map} from 'rxjs/operators';
+import {from, forkJoin, throwError, Observable} from 'rxjs';
+import {catchError, map} from 'rxjs/operators';
 
 import {Environment, PluginsListing, GetRunsResponse} from '../types/api';
-import {Run} from '../core/types';
+import {PluginsListFailureCode, Run} from '../core/types';
 
-import {TBHttpClient} from './tb_http_client';
+import {HttpErrorResponse, TBHttpClient} from './tb_http_client';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
@@ -35,6 +35,20 @@ function getPluginsListingQueryParams(enabledExperimentPluginIds: string[]) {
   return params;
 }
 
+function handleError(e: any) {
+  let status = PluginsListFailureCode.UNKNOWN;
+  if (e instanceof HttpErrorResponse) {
+    if (e.status === 404) {
+      status = PluginsListFailureCode.NOT_FOUND;
+    }
+  }
+  return throwError(new TBServerError(status));
+}
+
+export class TBServerError {
+  constructor(public readonly failureCode: PluginsListFailureCode) {}
+}
+
 @Injectable()
 export class TBServerDataSource {
   // TODO(soergel): implements WebappDataSource
@@ -47,7 +61,9 @@ export class TBServerDataSource {
     const pathWithParams = params
       ? `data/plugins_listing?${params.toString()}`
       : 'data/plugins_listing';
-    return this.http.get<PluginsListing>(pathWithParams);
+    return this.http
+      .get<PluginsListing>(pathWithParams)
+      .pipe(catchError(handleError));
   }
 
   fetchRuns(): Observable<Run[]> {
@@ -66,7 +82,8 @@ export class TBServerDataSource {
             name: run,
           };
         });
-      })
+      }),
+      catchError(handleError)
     );
   }
 
@@ -82,7 +99,8 @@ export class TBServerDataSource {
     // Wait for both operations to complete and return the response from the
     // explicit http get call.
     return forkJoin([dataFetch, polymerEnvironmentRefresh]).pipe(
-      map(([data]) => data)
+      map(([data]) => data),
+      catchError(handleError)
     );
   }
 }

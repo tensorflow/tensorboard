@@ -183,6 +183,7 @@ describe('header test', () => {
       store.overrideSelector(getPluginsListLoaded, {
         state: DataLoadState.LOADED,
         lastLoadedTimeInMs: new Date('2000/01/01').getTime(),
+        failureCode: null,
       });
       const fixture = TestBed.createComponent(HeaderComponent);
       fixture.detectChanges();
@@ -199,6 +200,7 @@ describe('header test', () => {
       store.overrideSelector(getPluginsListLoaded, {
         state: DataLoadState.NOT_LOADED,
         lastLoadedTimeInMs: null,
+        failureCode: null,
       });
       const fixture = TestBed.createComponent(HeaderComponent);
       fixture.detectChanges();
@@ -213,6 +215,7 @@ describe('header test', () => {
       store.overrideSelector(getPluginsListLoaded, {
         state: DataLoadState.NOT_LOADED,
         lastLoadedTimeInMs: null,
+        failureCode: null,
       });
       const fixture = TestBed.createComponent(HeaderComponent);
       fixture.detectChanges();
@@ -225,6 +228,7 @@ describe('header test', () => {
       store.overrideSelector(getPluginsListLoaded, {
         state: DataLoadState.LOADING,
         lastLoadedTimeInMs: null,
+        failureCode: null,
       });
       store.refreshState();
       fixture.detectChanges();
@@ -239,6 +243,7 @@ describe('header test', () => {
       store.overrideSelector(getPluginsListLoaded, {
         state: DataLoadState.LOADING,
         lastLoadedTimeInMs: null,
+        failureCode: null,
       });
       const fixture = TestBed.createComponent(HeaderComponent);
       fixture.detectChanges();
@@ -251,6 +256,7 @@ describe('header test', () => {
       store.overrideSelector(getPluginsListLoaded, {
         state: DataLoadState.LOADED,
         lastLoadedTimeInMs: 1,
+        failureCode: null,
       });
       store.refreshState();
       fixture.detectChanges();
@@ -282,6 +288,7 @@ describe('header test', () => {
       store.overrideSelector(getPluginsListLoaded, {
         state: DataLoadState.LOADING,
         lastLoadedTimeInMs: null,
+        failureCode: null,
       });
       store.overrideSelector(getPlugins, {
         foo: buildPluginMetadata({

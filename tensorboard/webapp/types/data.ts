@@ -24,6 +24,6 @@ export enum DataLoadState {
 
 export interface LoadState {
   state: DataLoadState;
-  // Time since epoch.
+  // Time of last successful load. Time since epoch.
   lastLoadedTimeInMs: number | null;
 }
