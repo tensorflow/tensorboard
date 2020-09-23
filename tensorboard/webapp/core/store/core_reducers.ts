@@ -70,6 +70,7 @@ const reducer = createReducer(
         pluginsListLoaded: {
           state: DataLoadState.LOADED,
           lastLoadedTimeInMs: Date.now(),
+          failureCode: null,
         },
       };
     }

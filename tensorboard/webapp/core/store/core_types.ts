@@ -25,13 +25,6 @@ import {PluginsListFailureCode, Run, RunId} from '../types';
 
 export const CORE_FEATURE_KEY = 'core';
 
-export interface PluginsListLoadState extends LoadState {
-  // Reason for failure of most recently completed request. This should not be
-  // set if there has not been a failure or if the most recently completed
-  // request was successful.
-  failureCode?: PluginsListFailureCode;
-}
-
 export interface CoreState {
   activePlugin: PluginId | null;
   plugins: PluginsListing;
@@ -48,6 +41,38 @@ export interface CoreState {
   polymerInteropRunSelection: Set<RunId>;
 }
 
+/*
+ * LoadState enhanced with a failureCode field.
+ */
+export type PluginsListLoadState =
+  | NotLoadedPluginsListLoadState
+  | LoadedPluginsListLoadState
+  | LoadingPluginsListLoadState
+  | FailedPluginsListLoadState;
+
+interface NotLoadedPluginsListLoadState extends LoadState {
+  state: DataLoadState.NOT_LOADED;
+  failureCode: null;
+}
+
+interface LoadedPluginsListLoadState extends LoadState {
+  state: DataLoadState.LOADED;
+  failureCode: null;
+}
+
+interface LoadingPluginsListLoadState extends LoadState {
+  state: DataLoadState.LOADING;
+  // Reason for failure of most recently completed request. This should not be
+  // set if there has not been a failure or if the most recently completed
+  // request was successful.
+  failureCode: PluginsListFailureCode | null;
+}
+
+interface FailedPluginsListLoadState extends LoadState {
+  state: DataLoadState.FAILED;
+  failureCode: PluginsListFailureCode;
+}
+
 export interface State {
   [CORE_FEATURE_KEY]?: CoreState;
 }
@@ -58,6 +83,7 @@ export const initialState: CoreState = {
   pluginsListLoaded: {
     state: DataLoadState.NOT_LOADED,
     lastLoadedTimeInMs: null,
+    failureCode: null,
   },
   reloadPeriodInMs: 30000,
   reloadEnabled: false,

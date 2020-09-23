@@ -58,6 +58,7 @@ describe('core_effects', () => {
         pluginsListLoaded: {
           state: DataLoadState.NOT_LOADED,
           lastLoadedTimeInMs: null,
+          failureCode: null,
         },
       })
     );
@@ -204,6 +205,7 @@ describe('core_effects', () => {
               pluginsListLoaded: {
                 state: DataLoadState.LOADING,
                 lastLoadedTimeInMs: null,
+                failureCode: null,
               },
             })
           )
@@ -226,6 +228,7 @@ describe('core_effects', () => {
               pluginsListLoaded: {
                 state: DataLoadState.FAILED,
                 lastLoadedTimeInMs: null,
+                failureCode: PluginsListFailureCode.NOT_FOUND,
               },
             })
           )
@@ -254,6 +257,7 @@ describe('core_effects', () => {
               pluginsListLoaded: {
                 state: DataLoadState.LOADING,
                 lastLoadedTimeInMs: null,
+                failureCode: null,
               },
             })
           )

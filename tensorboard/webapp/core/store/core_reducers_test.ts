@@ -67,6 +67,7 @@ describe('core reducer', () => {
         pluginsListLoaded: {
           lastLoadedTimeInMs: null,
           state: DataLoadState.NOT_LOADED,
+          failureCode: null,
         },
       });
       const nextState = reducers(state, actions.pluginsListingRequested());
@@ -79,6 +80,7 @@ describe('core reducer', () => {
         pluginsListLoaded: {
           lastLoadedTimeInMs: 1337,
           state: DataLoadState.NOT_LOADED,
+          failureCode: null,
         },
       });
       const nextState = reducers(state, actions.pluginsListingRequested());
@@ -108,6 +110,7 @@ describe('core reducer', () => {
         pluginsListLoaded: {
           lastLoadedTimeInMs: null,
           state: DataLoadState.LOADING,
+          failureCode: null,
         },
       });
       const nextState = reducers(
@@ -125,6 +128,7 @@ describe('core reducer', () => {
         pluginsListLoaded: {
           lastLoadedTimeInMs: 1337,
           state: DataLoadState.LOADING,
+          failureCode: null,
         },
       });
       const nextState = reducers(
@@ -142,6 +146,7 @@ describe('core reducer', () => {
         pluginsListLoaded: {
           lastLoadedTimeInMs: null,
           state: DataLoadState.LOADING,
+          failureCode: null,
         },
       });
       const nextState = reducers(
@@ -180,6 +185,7 @@ describe('core reducer', () => {
         pluginsListLoaded: {
           state: DataLoadState.NOT_LOADED,
           lastLoadedTimeInMs: null,
+          failureCode: null,
         },
       });
       const nextState = reducers(
@@ -190,6 +196,7 @@ describe('core reducer', () => {
       expect(nextState.pluginsListLoaded).toEqual({
         state: DataLoadState.LOADED,
         lastLoadedTimeInMs: 1000,
+        failureCode: null,
       });
     });
 
@@ -249,7 +256,7 @@ describe('core reducer', () => {
         actions.pluginsListingLoaded({plugins: createPluginsListing()})
       );
 
-      expect(nextState.pluginsListLoaded.failureCode).toBeUndefined();
+      expect(nextState.pluginsListLoaded.failureCode).toBeNull();
     });
   });
 
