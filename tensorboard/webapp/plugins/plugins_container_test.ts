@@ -37,6 +37,7 @@ import {
   getPluginsListLoaded,
   getEnvironment,
 } from '../core/store/core_selectors';
+import {PluginsListFailureCode} from '../core/types';
 import {TestingDebuggerModule} from '../../plugins/debugger_v2/tf_debugger_v2_plugin/testing';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
@@ -116,6 +117,7 @@ describe('plugins_component', () => {
     store.overrideSelector(getPluginsListLoaded, {
       state: DataLoadState.NOT_LOADED,
       lastLoadedTimeInMs: null,
+      failureCode: null,
     });
     store.overrideSelector(getEnvironment, {
       data_location: 'foobar',
@@ -285,6 +287,7 @@ describe('plugins_component', () => {
         state:
           timeInMs !== null ? DataLoadState.LOADED : DataLoadState.NOT_LOADED,
         lastLoadedTimeInMs: timeInMs,
+        failureCode: null,
       });
       store.refreshState();
     }
@@ -370,6 +373,7 @@ describe('plugins_component', () => {
       store.overrideSelector(getPluginsListLoaded, {
         state: DataLoadState.LOADING,
         lastLoadedTimeInMs: null,
+        failureCode: null,
       });
       store.overrideSelector(getActivePlugin, null);
 
@@ -384,6 +388,7 @@ describe('plugins_component', () => {
       store.overrideSelector(getPluginsListLoaded, {
         state: DataLoadState.LOADED,
         lastLoadedTimeInMs: 123,
+        failureCode: null,
       });
       const fixture = TestBed.createComponent(PluginsContainer);
       fixture.detectChanges();
@@ -401,6 +406,7 @@ describe('plugins_component', () => {
         store.overrideSelector(getPluginsListLoaded, {
           state: DataLoadState.LOADING,
           lastLoadedTimeInMs: 123,
+          failureCode: null,
         });
         store.overrideSelector(getActivePlugin, 'you_do_not_know_me');
         const fixture = TestBed.createComponent(PluginsContainer);
@@ -417,6 +423,7 @@ describe('plugins_component', () => {
       store.overrideSelector(getPluginsListLoaded, {
         state: DataLoadState.FAILED,
         lastLoadedTimeInMs: null,
+        failureCode: PluginsListFailureCode.NOT_FOUND,
       });
       const fixture = TestBed.createComponent(PluginsContainer);
       fixture.detectChanges();
@@ -434,6 +441,7 @@ describe('plugins_component', () => {
         store.overrideSelector(getPluginsListLoaded, {
           state: DataLoadState.LOADING,
           lastLoadedTimeInMs: 123,
+          failureCode: null,
         });
         const fixture = TestBed.createComponent(PluginsContainer);
         fixture.detectChanges();
@@ -449,6 +457,7 @@ describe('plugins_component', () => {
       store.overrideSelector(getPluginsListLoaded, {
         state: DataLoadState.LOADED,
         lastLoadedTimeInMs: 123,
+        failureCode: null,
       });
       const fixture = TestBed.createComponent(PluginsContainer);
       fixture.detectChanges();
@@ -468,6 +477,7 @@ describe('plugins_component', () => {
         store.overrideSelector(getPluginsListLoaded, {
           state: DataLoadState.LOADED,
           lastLoadedTimeInMs: 123,
+          failureCode: null,
         });
         const fixture = TestBed.createComponent(PluginsContainer);
         fixture.detectChanges();
@@ -487,6 +497,7 @@ describe('plugins_component', () => {
         store.overrideSelector(getPluginsListLoaded, {
           state: DataLoadState.LOADED,
           lastLoadedTimeInMs: 123,
+          failureCode: null,
         });
         const fixture = TestBed.createComponent(PluginsContainer);
         fixture.detectChanges();
