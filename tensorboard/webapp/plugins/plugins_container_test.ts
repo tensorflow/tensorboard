@@ -57,10 +57,10 @@ function expectPluginIframe(element: HTMLElement, name: string) {
 @Component({
   template: `
     <ng-template #environmentFailureNotFoundTemplate>
-      <h3 class="custom-not-found-template">Custom Not Found</h3>
+      <h3 class="custom-not-found-template">Custom Not Found Error</h3>
     </ng-template>
     <ng-template #environmentFailureUnknownTemplate>
-      <h3 class="custom-unknown-template">Custom Unknown</h3>
+      <h3 class="custom-unknown-template">Custom Unknown Error</h3>
     </ng-template>
     <plugins
       [environmentFailureNotFoundTemplate]="environmentFailureNotFoundTemplate"
@@ -419,9 +419,9 @@ describe('plugins_component', () => {
       const fixture = TestBed.createComponent(PluginsContainer);
       fixture.detectChanges();
 
-      expect(
-        fixture.debugElement.query(By.css('.unknown-plugin'))
-      ).not.toBeNull();
+      expect(fixture.debugElement.nativeElement.textContent).toContain(
+        'There’s no dashboard by the name of “you_do_not_know_me”'
+      );
     });
 
     it(
@@ -438,9 +438,9 @@ describe('plugins_component', () => {
         const fixture = TestBed.createComponent(PluginsContainer);
         fixture.detectChanges();
 
-        expect(
-          fixture.debugElement.query(By.css('.unknown-plugin'))
-        ).not.toBeNull();
+        expect(fixture.debugElement.nativeElement.textContent).toContain(
+          'There’s no dashboard by the name of “you_do_not_know_me”'
+        );
       }
     );
 
@@ -454,9 +454,9 @@ describe('plugins_component', () => {
       const fixture = TestBed.createComponent(PluginsContainer);
       fixture.detectChanges();
 
-      expect(
-        fixture.debugElement.query(By.css('.environment-not-loaded'))
-      ).not.toBeNull();
+      expect(fixture.debugElement.nativeElement.textContent).toContain(
+        'Data could not be loaded.'
+      );
     });
 
     it('shows warning when environment failed UNKNOWN', () => {
@@ -469,9 +469,9 @@ describe('plugins_component', () => {
       const fixture = TestBed.createComponent(PluginsContainer);
       fixture.detectChanges();
 
-      expect(
-        fixture.debugElement.query(By.css('.environment-not-loaded'))
-      ).not.toBeNull();
+      expect(fixture.debugElement.nativeElement.textContent).toContain(
+        'Data could not be loaded.'
+      );
     });
 
     it(
@@ -487,9 +487,9 @@ describe('plugins_component', () => {
         const fixture = TestBed.createComponent(PluginsContainer);
         fixture.detectChanges();
 
-        expect(
-          fixture.debugElement.query(By.css('.no-active-plugin'))
-        ).not.toBeNull();
+        expect(fixture.debugElement.nativeElement.textContent).toContain(
+          'No dashboards are active for the current data set.'
+        );
       }
     );
 
@@ -503,9 +503,9 @@ describe('plugins_component', () => {
       const fixture = TestBed.createComponent(PluginsContainer);
       fixture.detectChanges();
 
-      expect(
-        fixture.debugElement.query(By.css('.no-active-plugin'))
-      ).not.toBeNull();
+      expect(fixture.debugElement.nativeElement.textContent).toContain(
+        'No dashboards are active for the current data set.'
+      );
     });
 
     describe('custom error templates', () => {
@@ -521,15 +521,9 @@ describe('plugins_component', () => {
         );
         fixture.detectChanges();
 
-        expect(
-          fixture.debugElement.query(By.css('.environment-not-loaded'))
-        ).toBeNull();
-        expect(
-          fixture.debugElement.query(By.css('.custom-not-found-template'))
-        ).not.toBeNull();
-        expect(
-          fixture.debugElement.query(By.css('.custom-unknown-template'))
-        ).toBeNull();
+        expect(fixture.debugElement.nativeElement.textContent).toBe(
+          'Custom Not Found Error'
+        );
       });
 
       it('shows warning when environment failed UNKNOWN', () => {
@@ -544,15 +538,9 @@ describe('plugins_component', () => {
         );
         fixture.detectChanges();
 
-        expect(
-          fixture.debugElement.query(By.css('.environment-not-loaded'))
-        ).toBeNull();
-        expect(
-          fixture.debugElement.query(By.css('.custom-not-found-template'))
-        ).toBeNull();
-        expect(
-          fixture.debugElement.query(By.css('.custom-unknown-template'))
-        ).not.toBeNull();
+        expect(fixture.debugElement.nativeElement.textContent).toBe(
+          'Custom Unknown Error'
+        );
       });
     });
 
