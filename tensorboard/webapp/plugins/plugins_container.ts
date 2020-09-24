@@ -12,7 +12,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {ChangeDetectionStrategy, Component} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  TemplateRef,
+} from '@angular/core';
 import {Store, createSelector} from '@ngrx/store';
 import {combineLatest} from 'rxjs';
 import {map} from 'rxjs/operators';
@@ -23,6 +28,7 @@ import {
   getPluginsListLoaded,
   getEnvironment,
 } from '../core/store';
+import {PluginsListFailureCode} from '../core/types';
 import {PluginMetadata} from '../types/api';
 import {LoadState, DataLoadState} from '../types/data';
 import {State} from '../core/store/core_types';
@@ -60,6 +66,8 @@ const lastLoadedTimeInMs = createSelector(
       [dataLocation]="dataLocation$ | async"
       [lastUpdated]="lastLoadedTimeInMs$ | async"
       [pluginLoadState]="pluginLoadState$ | async"
+      [environmentFailureNotFoundTemplate]="environmentFailureNotFoundTemplate"
+      [environmentFailureUnknownTemplate]="environmentFailureUnknownTemplate"
     ></plugins-component>
   `,
   styles: ['plugins-component { height: 100%; }'],
@@ -69,12 +77,29 @@ export class PluginsContainer {
   readonly activeKnownPlugin$ = this.store.select(activePlugin);
   readonly activePluginId$ = this.store.select(getActivePlugin);
 
+  @Input()
+  environmentFailureNotFoundTemplate?: TemplateRef<any>;
+
+  @Input()
+  environmentFailureUnknownTemplate?: TemplateRef<any>;
+
   readonly pluginLoadState$ = combineLatest(
     this.activeKnownPlugin$,
     this.activePluginId$,
     this.store.select(getPluginsListLoaded)
   ).pipe(
     map(([activePlugin, activePluginId, loadState]) => {
+      if (loadState.failureCode !== null) {
+        // Despite its 'Plugins'-specific name, getPluginsListLoaded actually
+        // encapsulates multiple requests to load different parts of the
+        // environment.
+        if (loadState.failureCode === PluginsListFailureCode.NOT_FOUND) {
+          return PluginLoadState.ENVIRONMENT_FAILURE_NOT_FOUND;
+        } else {
+          return PluginLoadState.ENVIRONMENT_FAILURE_UNKNOWN;
+        }
+      }
+
       if (activePlugin !== null) {
         return PluginLoadState.LOADED;
       }

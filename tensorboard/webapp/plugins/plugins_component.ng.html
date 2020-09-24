@@ -23,11 +23,32 @@ limitations under the License.
 </div>
 
 <div
-  *ngIf="pluginLoadState === PluginLoadState.UNKNOWN_PLUGIN_ID || pluginLoadState === PluginLoadState.NO_ENABLED_PLUGINS"
+  *ngIf="pluginLoadState !== PluginLoadState.LOADED
+      && pluginLoadState !== PluginLoadState.LOADING"
   [ngSwitch]="pluginLoadState"
   class="warning"
 >
   <div class="warning-message">
+    <ng-container *ngSwitchCase="PluginLoadState.ENVIRONMENT_FAILURE_NOT_FOUND">
+      <!-- This error template can be injected by the parent component. -->
+      <ng-container
+        *ngTemplateOutlet="environmentFailureNotFoundTemplate ?
+                             environmentFailureNotFoundTemplate :
+                             environmentFailureDefaultTemplate"
+      >
+      </ng-container>
+    </ng-container>
+
+    <ng-container *ngSwitchCase="PluginLoadState.ENVIRONMENT_FAILURE_UNKNOWN">
+      <!-- This error template can be injected by the parent component. -->
+      <ng-container
+        *ngTemplateOutlet="environmentFailureUnknownTemplate ?
+                             environmentFailureUnknownTemplate :
+                             environmentFailureDefaultTemplate"
+      >
+      </ng-container>
+    </ng-container>
+
     <ng-container *ngSwitchCase="PluginLoadState.UNKNOWN_PLUGIN_ID">
       <h3 class="unknown-plugin">
         There’s no dashboard by the name of “<code>{{activePluginId}}</code>”.
@@ -72,6 +93,20 @@ limitations under the License.
     </ng-container>
   </div>
 </div>
+
+<!-- In core TensorBoard this error likely happens when user has been able to
+  -- successfully load their TensorBoard but the server is inaccessible for some
+  -- subsequent attempt to reload environment data.
+  --
+  -- In other flavors of TensorBoard the root cause may be different so we allow
+  -- this template to be overriden by the parent component. -->
+<ng-template #environmentFailureDefaultTemplate>
+  <h3 class="environment-not-loaded">Data could not be loaded.</h3>
+  <p>The TensorBoard server may be down or inaccessible.</p>
+  <p>
+    <ng-container [ngTemplateOutlet]="dateAndDataLocation"></ng-container>
+  </p>
+</ng-template>
 
 <ng-template #dateAndDataLocation>
   <!-- Class name used to hide this element in screenshot tests. -->

@@ -12,6 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {Component} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
 import {Store} from '@ngrx/store';
@@ -48,6 +49,27 @@ function expectPluginIframe(element: HTMLElement, name: string) {
     `data/plugin_entry.html?name=${name}`
   );
 }
+
+/**
+ * A Component used to test that custom error templates can be passed to
+ * the `plugins` component.
+ */
+@Component({
+  template: `
+    <ng-template #environmentFailureNotFoundTemplate>
+      <h3 class="custom-not-found-template">Custom Not Found Error</h3>
+    </ng-template>
+    <ng-template #environmentFailureUnknownTemplate>
+      <h3 class="custom-unknown-template">Custom Unknown Error</h3>
+    </ng-template>
+    <plugins
+      [environmentFailureNotFoundTemplate]="environmentFailureNotFoundTemplate"
+      [environmentFailureUnknownTemplate]="environmentFailureUnknownTemplate"
+    >
+    </plugins>
+  `,
+})
+class CustomizedErrorTemplatesComponent {}
 
 class TestableCustomElement extends HTMLElement {
   constructor() {
@@ -108,7 +130,11 @@ describe('plugins_component', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       providers: [provideMockStore(), PluginsContainer, PluginRegistryModule],
-      declarations: [PluginsContainer, PluginsComponent],
+      declarations: [
+        PluginsContainer,
+        PluginsComponent,
+        CustomizedErrorTemplatesComponent,
+      ],
       imports: [TestingDebuggerModule, ExtraDashboardModule],
     }).compileComponents();
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
@@ -393,9 +419,9 @@ describe('plugins_component', () => {
       const fixture = TestBed.createComponent(PluginsContainer);
       fixture.detectChanges();
 
-      expect(
-        fixture.debugElement.query(By.css('.unknown-plugin'))
-      ).not.toBeNull();
+      expect(fixture.debugElement.nativeElement.textContent).toContain(
+        'There’s no dashboard by the name of “you_do_not_know_me”'
+      );
     });
 
     it(
@@ -412,13 +438,13 @@ describe('plugins_component', () => {
         const fixture = TestBed.createComponent(PluginsContainer);
         fixture.detectChanges();
 
-        expect(
-          fixture.debugElement.query(By.css('.unknown-plugin'))
-        ).not.toBeNull();
+        expect(fixture.debugElement.nativeElement.textContent).toContain(
+          'There’s no dashboard by the name of “you_do_not_know_me”'
+        );
       }
     );
 
-    it('shows warning when the plugins listing failed to load', () => {
+    it('shows warning when environment failed NOT_FOUND', () => {
       store.overrideSelector(getActivePlugin, null);
       store.overrideSelector(getPluginsListLoaded, {
         state: DataLoadState.FAILED,
@@ -428,9 +454,24 @@ describe('plugins_component', () => {
       const fixture = TestBed.createComponent(PluginsContainer);
       fixture.detectChanges();
 
-      expect(
-        fixture.debugElement.query(By.css('.no-active-plugin'))
-      ).not.toBeNull();
+      expect(fixture.debugElement.nativeElement.textContent).toContain(
+        'Data could not be loaded.'
+      );
+    });
+
+    it('shows warning when environment failed UNKNOWN', () => {
+      store.overrideSelector(getActivePlugin, null);
+      store.overrideSelector(getPluginsListLoaded, {
+        state: DataLoadState.FAILED,
+        lastLoadedTimeInMs: null,
+        failureCode: PluginsListFailureCode.UNKNOWN,
+      });
+      const fixture = TestBed.createComponent(PluginsContainer);
+      fixture.detectChanges();
+
+      expect(fixture.debugElement.nativeElement.textContent).toContain(
+        'Data could not be loaded.'
+      );
     });
 
     it(
@@ -446,9 +487,9 @@ describe('plugins_component', () => {
         const fixture = TestBed.createComponent(PluginsContainer);
         fixture.detectChanges();
 
-        expect(
-          fixture.debugElement.query(By.css('.no-active-plugin'))
-        ).not.toBeNull();
+        expect(fixture.debugElement.nativeElement.textContent).toContain(
+          'No dashboards are active for the current data set.'
+        );
       }
     );
 
@@ -462,9 +503,45 @@ describe('plugins_component', () => {
       const fixture = TestBed.createComponent(PluginsContainer);
       fixture.detectChanges();
 
-      expect(
-        fixture.debugElement.query(By.css('.no-active-plugin'))
-      ).not.toBeNull();
+      expect(fixture.debugElement.nativeElement.textContent).toContain(
+        'No dashboards are active for the current data set.'
+      );
+    });
+
+    describe('custom error templates', () => {
+      it('shows warning when environment failed NOT_FOUND', () => {
+        store.overrideSelector(getActivePlugin, null);
+        store.overrideSelector(getPluginsListLoaded, {
+          state: DataLoadState.FAILED,
+          lastLoadedTimeInMs: null,
+          failureCode: PluginsListFailureCode.NOT_FOUND,
+        });
+        const fixture = TestBed.createComponent(
+          CustomizedErrorTemplatesComponent
+        );
+        fixture.detectChanges();
+
+        expect(fixture.debugElement.nativeElement.textContent).toBe(
+          'Custom Not Found Error'
+        );
+      });
+
+      it('shows warning when environment failed UNKNOWN', () => {
+        store.overrideSelector(getActivePlugin, null);
+        store.overrideSelector(getPluginsListLoaded, {
+          state: DataLoadState.FAILED,
+          lastLoadedTimeInMs: null,
+          failureCode: PluginsListFailureCode.UNKNOWN,
+        });
+        const fixture = TestBed.createComponent(
+          CustomizedErrorTemplatesComponent
+        );
+        fixture.detectChanges();
+
+        expect(fixture.debugElement.nativeElement.textContent).toBe(
+          'Custom Unknown Error'
+        );
+      });
     });
 
     describe('data location', () => {
