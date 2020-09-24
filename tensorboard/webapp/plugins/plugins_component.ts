@@ -28,6 +28,7 @@ import {
   ViewChild,
   ComponentFactoryResolver,
   ViewContainerRef,
+  TemplateRef,
 } from '@angular/core';
 
 import {UiPluginMetadata} from './plugins_container';
@@ -42,6 +43,8 @@ interface ExperimentalPluginHostLib extends HTMLElement {
 }
 
 export enum PluginLoadState {
+  ENVIRONMENT_FAILURE_NOT_FOUND,
+  ENVIRONMENT_FAILURE_UNKNOWN,
   NO_ENABLED_PLUGINS,
   UNKNOWN_PLUGIN_ID,
   LOADED,
@@ -115,6 +118,12 @@ export class PluginsComponent implements OnChanges {
 
   @Input()
   lastUpdated?: number;
+
+  @Input()
+  environmentFailureNotFoundTemplate?: TemplateRef<any>;
+
+  @Input()
+  environmentFailureUnknownTemplate?: TemplateRef<any>;
 
   readonly PluginLoadState = PluginLoadState;
   readonly LoadingMechanismType = LoadingMechanismType;
