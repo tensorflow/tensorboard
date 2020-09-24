@@ -52,7 +52,7 @@ function expectPluginIframe(element: HTMLElement, name: string) {
 
 /**
  * A Component used to test that custom error templates can be passed to
- * PluginComponent.
+ * the `plugins` component.
  */
 @Component({
   template: `
@@ -527,6 +527,9 @@ describe('plugins_component', () => {
         expect(
           fixture.debugElement.query(By.css('.custom-not-found-template'))
         ).not.toBeNull();
+        expect(
+          fixture.debugElement.query(By.css('.custom-unknown-template'))
+        ).toBeNull();
       });
 
       it('shows warning when environment failed UNKNOWN', () => {
@@ -543,6 +546,9 @@ describe('plugins_component', () => {
 
         expect(
           fixture.debugElement.query(By.css('.environment-not-loaded'))
+        ).toBeNull();
+        expect(
+          fixture.debugElement.query(By.css('.custom-not-found-template'))
         ).toBeNull();
         expect(
           fixture.debugElement.query(By.css('.custom-unknown-template'))

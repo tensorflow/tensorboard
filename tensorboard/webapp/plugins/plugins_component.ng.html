@@ -32,18 +32,20 @@ limitations under the License.
     <ng-container *ngSwitchCase="PluginLoadState.ENVIRONMENT_FAILURE_NOT_FOUND">
       <!-- This error template can be injected by the parent component. -->
       <ng-container
-          *ngTemplateOutlet="environmentFailureNotFoundTemplate ?
+        *ngTemplateOutlet="environmentFailureNotFoundTemplate ?
                              environmentFailureNotFoundTemplate :
-                             environmentFailureDefaultTemplate">
+                             environmentFailureDefaultTemplate"
+      >
       </ng-container>
     </ng-container>
 
     <ng-container *ngSwitchCase="PluginLoadState.ENVIRONMENT_FAILURE_UNKNOWN">
       <!-- This error template can be injected by the parent component. -->
       <ng-container
-          *ngTemplateOutlet="environmentFailureUnknownTemplate ?
+        *ngTemplateOutlet="environmentFailureUnknownTemplate ?
                              environmentFailureUnknownTemplate :
-                             environmentFailureDefaultTemplate">
+                             environmentFailureDefaultTemplate"
+      >
       </ng-container>
     </ng-container>
 
@@ -99,12 +101,8 @@ limitations under the License.
   -- In other flavors of TensorBoard the root cause may be different so we allow
   -- this template to be overriden by the parent component. -->
 <ng-template #environmentFailureDefaultTemplate>
-  <h3 class="environment-not-loaded">
-    Data could not be loaded.
-  </h3>
-  <p>
-    The TensorBoard server may be down or inaccessible.
-  </p>
+  <h3 class="environment-not-loaded">Data could not be loaded.</h3>
+  <p>The TensorBoard server may be down or inaccessible.</p>
   <p>
     <ng-container [ngTemplateOutlet]="dateAndDataLocation"></ng-container>
   </p>
