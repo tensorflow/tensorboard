@@ -345,7 +345,8 @@ def _display_colab(port, height, display_handle):
 
     shell = """
         (async () => {
-            const url = await google.colab.kernel.proxyPort(%PORT%, {"cache": true});
+            const url = new URL(await google.colab.kernel.proxyPort(%PORT%, {'cache': true}));
+            url.searchParams.set('tensorboardColab', 'true');
             const iframe = document.createElement('iframe');
             iframe.src = url;
             iframe.setAttribute('width', '100%');

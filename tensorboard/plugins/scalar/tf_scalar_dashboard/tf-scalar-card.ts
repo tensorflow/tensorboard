@@ -265,6 +265,40 @@ export class TfScalarCard extends PolymerElement {
     onLoad,
     onFinish
   ) => {
+    const inColab =
+      new URLSearchParams(window.location.search).get('tensorboardColab') ===
+      'true';
+    if (inColab) {
+      // Google-internal Colab doesn't support HTTP POST requests, so we fall
+      // back to HTTP GET (even though public Colab supports POST).
+      return this._requestDataGet(items, onLoad, onFinish);
+    } else {
+      return this._requestDataPost(items, onLoad, onFinish);
+    }
+  };
+
+  _requestDataGet: RequestDataCallback<RunTagItem, ScalarDatum[] | null> = (
+    items,
+    onLoad,
+    onFinish
+  ) => {
+    const router = getRouter();
+    const baseUrl = router.pluginRoute('scalars', '/scalars');
+    Promise.all(
+      items.map((item) => {
+        const url = addParams(baseUrl, {tag: item.tag, run: item.run});
+        return this.requestManager
+          .request(url)
+          .then((data) => void onLoad({item, data}));
+      })
+    ).finally(() => void onFinish());
+  };
+
+  _requestDataPost: RequestDataCallback<RunTagItem, ScalarDatum[] | null> = (
+    items,
+    onLoad,
+    onFinish
+  ) => {
     const router = getRouter();
     const url = router.pluginRoute('scalars', '/scalars_multirun');
     const runsByTag = new Map<string, string[]>();
