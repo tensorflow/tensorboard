@@ -31,6 +31,7 @@ import {PluginsModule} from './plugins/plugins_module';
 import {ROOT_REDUCERS, loggerMetaReducerFactory} from './reducer_config';
 import {ReloaderModule} from './reloader/reloader_module';
 import {SettingsModule} from './settings/settings_module';
+import {TensorBoardWrapperModule} from './tb_wrapper/tb_wrapper_module';
 import {OssPluginsModule} from './oss_plugins_module';
 
 import {RouteRegistryModule} from './app_routing/route_registry_module';
@@ -44,6 +45,7 @@ import {routesFactory} from './routes';
     AppRoutingModule,
     AppRoutingViewModule,
     RouteRegistryModule.registerRoutes(routesFactory),
+    TensorBoardWrapperModule,
     CoreModule,
     FeatureFlagModule,
     HashStorageModule,

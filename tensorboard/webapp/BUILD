@@ -78,6 +78,7 @@ ng_module(
         "//tensorboard/webapp/routes",
         "//tensorboard/webapp/runs_legacy",
         "//tensorboard/webapp/settings",
+        "//tensorboard/webapp/tb_wrapper",
         "@npm//@angular/core",
         "@npm//@angular/platform-browser",
         "@npm//@ngrx/effects",
