@@ -49,6 +49,7 @@ import {routesFactory} from './routes';
     CoreModule,
     FeatureFlagModule,
     HashStorageModule,
+    HeaderModule,
     MatIconModule,
     PageTitleModule,
     PluginsModule,
@@ -63,10 +64,6 @@ import {routesFactory} from './routes';
     OssPluginsModule,
   ],
   providers: [
-    {
-      provide: 'window',
-      useValue: window,
-    },
     {
       provide: META_REDUCERS,
       useFactory: loggerMetaReducerFactory,

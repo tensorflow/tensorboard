@@ -11,7 +11,6 @@ ng_module(
         "tb_wrapper_module.ts",
     ],
     deps = [
-        "//tensorboard/webapp/header",
         "//tensorboard/webapp/plugins",
         "//tensorboard/webapp/reloader",
         "@npm//@angular/common",

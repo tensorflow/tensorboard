@@ -17,7 +17,6 @@ import {ChangeDetectionStrategy, Component} from '@angular/core';
 @Component({
   selector: 'tensorboard-wrapper-component',
   template: `
-    <app-header></app-header>
     <plugins class="plugins"></plugins>
     <reloader></reloader>
   `,
@@ -27,12 +26,6 @@ import {ChangeDetectionStrategy, Component} from '@angular/core';
         display: flex;
         flex-direction: column;
         height: 100%;
-      }
-
-      app-header {
-        box-shadow: 0 1px 3px 3px rgba(0, 0, 0, 0.25);
-        flex: 0 0;
-        z-index: 1; /* The box shadow needs to extend out of the app-header. */
       }
 
       .plugins {
