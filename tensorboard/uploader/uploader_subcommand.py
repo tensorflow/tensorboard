@@ -432,7 +432,7 @@ class UploadIntent(_Intent):
         experiment_id = uploader.create_experiment()
         url = server_info_lib.experiment_url(server_info, experiment_id)
         if self.experiment_url_callback:
-          self.experiment_url_callback(url)
+            self.experiment_url_callback(url)
         print(
             "Upload started and will continue reading any new data as it's added"
         )
@@ -627,7 +627,7 @@ class UploaderSubcommand(program.TensorBoardSubcommand):
     """Integration point with `tensorboard` CLI."""
 
     def __init__(self, experiment_url_callback=None):
-      self._experiment_url_callback = experiment_url_callback
+        self._experiment_url_callback = experiment_url_callback
 
     def name(self):
         return "dev"
