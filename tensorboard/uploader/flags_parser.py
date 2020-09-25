@@ -18,6 +18,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import argparse
+
 
 SUBCOMMAND_FLAG = "_uploader__subcommand"
 SUBCOMMAND_KEY_UPLOAD = "UPLOAD"
@@ -91,6 +93,13 @@ def define_flags(parser):
         type=str,
         default=None,
         help="Title of the experiment.  Max 100 characters.",
+    )
+    upload.add_argument(
+        "--_tensorboardinternal_experiment_name",
+        dest="name",
+        type=str,
+        default=None,
+        help=argparse.SUPPRESS,
     )
     upload.add_argument(
         "--description",
