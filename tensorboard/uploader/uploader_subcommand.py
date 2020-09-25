@@ -78,6 +78,8 @@ def _run(flags, experiment_url_callback=None):
 
     Args:
       flags: An `argparse.Namespace`.
+      experiment_url_callback: A function accepting a single string argument
+        containing the full TB.dev URL of the uploaded experiment.
     """
 
     logging.set_stderrthreshold(logging.WARNING)
@@ -431,7 +433,7 @@ class UploadIntent(_Intent):
         )
         experiment_id = uploader.create_experiment()
         url = server_info_lib.experiment_url(server_info, experiment_id)
-        if self.experiment_url_callback:
+        if self.experiment_url_callback is not None:
             self.experiment_url_callback(url)
         print(
             "Upload started and will continue reading any new data as it's added"
@@ -517,6 +519,8 @@ def _get_intent(flags, experiment_url_callback=None):
 
     Args:
       flags: An `argparse.Namespace` with the parsed flags.
+      experiment_url_callback: A function accepting a single string argument
+        containing the full TB.dev URL of the uploaded experiment.
 
     Returns:
       An `_Intent` instance.
