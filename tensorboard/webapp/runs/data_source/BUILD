@@ -12,9 +12,6 @@ ng_module(
         "runs_data_source_module.ts",
         "runs_data_source_types.ts",
     ],
-    data = [
-        "//tensorboard/components/tf_backend",
-    ],
     deps = [
         ":backend_types",
         "//tensorboard/webapp/webapp_data_source:http_client",
