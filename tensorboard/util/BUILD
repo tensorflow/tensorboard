@@ -4,8 +4,6 @@ package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])
 
-exports_files(["LICENSE"])  # Needed for internal repo.
-
 py_library(
     name = "argparse_util",
     srcs = ["argparse_util.py"],

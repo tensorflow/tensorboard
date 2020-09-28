@@ -4,8 +4,6 @@ package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])
 
-exports_files(["LICENSE"])
-
 # TODO(@wchargin): Split more granularly.
 tb_proto_library(
     name = "protos_all",
