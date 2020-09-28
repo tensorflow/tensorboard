@@ -73,15 +73,17 @@ def _prompt_for_user_ack(intent):
     sys.stderr.write("\n")
 
 
-def _run(flags):
+def _run(flags, experiment_url_callback=None):
     """Runs the main uploader program given parsed flags.
 
     Args:
       flags: An `argparse.Namespace`.
+      experiment_url_callback: A function accepting a single string argument
+        containing the full TB.dev URL of the uploaded experiment.
     """
 
     logging.set_stderrthreshold(logging.WARNING)
-    intent = _get_intent(flags)
+    intent = _get_intent(flags, experiment_url_callback)
 
     store = auth.CredentialsStore()
     if isinstance(intent, _AuthRevokeIntent):
@@ -397,6 +399,7 @@ class UploadIntent(_Intent):
         verbosity=None,
         dry_run=None,
         one_shot=None,
+        experiment_url_callback=None,
     ):
         self.logdir = logdir
         self.name = name
@@ -404,6 +407,7 @@ class UploadIntent(_Intent):
         self.verbosity = verbosity
         self.dry_run = False if dry_run is None else dry_run
         self.one_shot = False if one_shot is None else one_shot
+        self.experiment_url_callback = experiment_url_callback
 
     def get_ack_message_body(self):
         return self._MESSAGE_TEMPLATE.format(logdir=self.logdir)
@@ -429,6 +433,8 @@ class UploadIntent(_Intent):
         )
         experiment_id = uploader.create_experiment()
         url = server_info_lib.experiment_url(server_info, experiment_id)
+        if self.experiment_url_callback is not None:
+            self.experiment_url_callback(url)
         print(
             "Upload started and will continue reading any new data as it's added"
         )
@@ -508,11 +514,13 @@ class _ExportIntent(_Intent):
         )
 
 
-def _get_intent(flags):
+def _get_intent(flags, experiment_url_callback=None):
     """Determines what the program should do (upload, delete, ...).
 
     Args:
       flags: An `argparse.Namespace` with the parsed flags.
+      experiment_url_callback: A function accepting a single string argument
+        containing the full TB.dev URL of the uploaded experiment.
 
     Returns:
       An `_Intent` instance.
@@ -533,6 +541,7 @@ def _get_intent(flags):
                 verbosity=flags.verbose,
                 dry_run=flags.dry_run,
                 one_shot=flags.one_shot,
+                experiment_url_callback=experiment_url_callback,
             )
         else:
             raise base_plugin.FlagsError(
@@ -621,6 +630,9 @@ def _die(message):
 class UploaderSubcommand(program.TensorBoardSubcommand):
     """Integration point with `tensorboard` CLI."""
 
+    def __init__(self, experiment_url_callback=None):
+        self._experiment_url_callback = experiment_url_callback
+
     def name(self):
         return "dev"
 
@@ -628,7 +640,7 @@ class UploaderSubcommand(program.TensorBoardSubcommand):
         flags_parser.define_flags(parser)
 
     def run(self, flags):
-        return _run(flags)
+        return _run(flags, self._experiment_url_callback)
 
     def help(self):
         return "upload data to TensorBoard.dev"
