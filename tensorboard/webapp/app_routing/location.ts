@@ -98,8 +98,11 @@ export class Location implements LocationInterface {
     return url.pathname;
   }
 
-  getFullPathFromRouteOrNav(routeLike: Route | Navigation): string {
-    // TODO(stephanwlee): support hashes.
+  getFullPathFromRouteOrNav(
+    routeLike: Route | Navigation,
+    shouldPreserveHash?: boolean
+  ): string {
+    // TODO(stephanwlee): support hashes in the routeLike.
     const pathname = this.getResolvedPath(routeLike.pathname);
     let search = '';
     if (!isNavigation(routeLike) && routeLike.queryParams.length) {
@@ -109,7 +112,8 @@ export class Location implements LocationInterface {
           routeLike.queryParams
         ).toString();
     }
-    return `${pathname}${search}`;
+    const hash = shouldPreserveHash ? this.getHash() : '';
+    return `${pathname}${search}${hash}`;
   }
 }
 

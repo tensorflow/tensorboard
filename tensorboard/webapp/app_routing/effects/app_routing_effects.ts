@@ -228,21 +228,39 @@ export class AppRoutingEffects {
         ofType(navigated),
         withLatestFrom(this.store.select(getActiveRoute)),
         filter(([, route]) => Boolean(route)),
-        map(([, route]) => route!),
-        filter((route) => {
+        map(([navigatedAction, route]) => {
+          return {
+            isFirstNavigation: navigatedAction.before === null,
+            route: route!,
+          };
+        }),
+        filter(({route}) => {
           return !areRoutesEqual(route, {
             pathname: this.location.getPath(),
             queryParams: this.location.getSearch(),
           });
         }),
-        tap((route) => {
+        tap(({isFirstNavigation, route}) => {
+          // The Polymer side of TB relies on reading state directly from the
+          // URL. Ideally, the source of truth would be in application JS, and
+          // the Angular side of TB would have enough information to manage the
+          // 'hash' of the URL.
+
+          // Currently this is not the case, so important hashes set before the
+          // initial navigation might get unintentionally discarded, unless we
+          // explicitly preserve them.
+
+          // Note: hashes such as the active plugin '#scalars' may be reflected
+          // in the URL before or after this effect runs, due to race
+          // conditions.
+          const shouldPreserveHash = isFirstNavigation;
           if (route.navigationOptions.replaceState) {
             this.location.replaceState(
-              this.location.getFullPathFromRouteOrNav(route)
+              this.location.getFullPathFromRouteOrNav(route, shouldPreserveHash)
             );
           } else {
             this.location.pushState(
-              this.location.getFullPathFromRouteOrNav(route)
+              this.location.getFullPathFromRouteOrNav(route, shouldPreserveHash)
             );
           }
         })
