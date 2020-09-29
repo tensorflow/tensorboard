@@ -148,7 +148,10 @@ class UploadIntentTest(tf.test.TestCase):
             side_effect=dry_run_stubs.DryRunTensorBoardWriterStub,
         ):
             intent = uploader_subcommand.UploadIntent(
-                self.get_temp_dir(), dry_run=True, one_shot=True, experiment_url_callback=mock_experiment_url_callback
+                self.get_temp_dir(),
+                dry_run=True,
+                one_shot=True,
+                experiment_url_callback=mock_experiment_url_callback,
             )
             intent.execute(mock_server_info, mock_channel)
         mock_experiment_url_callback.assert_called_once_with(tb_dev_url)
