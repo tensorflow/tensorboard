@@ -631,6 +631,12 @@ class UploaderSubcommand(program.TensorBoardSubcommand):
     """Integration point with `tensorboard` CLI."""
 
     def __init__(self, experiment_url_callback=None):
+        """Constructor of UploaderSubcommand.
+
+        Args:
+          experiment_url_callback: A function accepting a single string argument
+            containing the full TB.dev URL of the uploaded experiment.
+        """
         self._experiment_url_callback = experiment_url_callback
 
     def name(self):
