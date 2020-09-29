@@ -84,6 +84,18 @@ py_library(
     ],
 )
 
+py_test(
+    name = "uploader_subcommand_test",
+    srcs = ["uploader_subcommand_test.py"],
+    srcs_version = "PY3",
+    deps = [
+        ":dry_run_stubs",
+        ":server_info",
+        ":uploader",
+        ":uploader_subcommand",
+    ],
+)
+
 py_library(
     name = "uploader",
     srcs = ["uploader.py"],
@@ -141,18 +153,6 @@ py_test(
         "//tensorboard/util:test_util",
         "@com_google_protobuf//:protobuf_python",
         "@org_pythonhosted_mock",
-    ],
-)
-
-py_test(
-    name = "uploader_subcommand_test",
-    srcs = ["uploader_subcommand_test.py"],
-    srcs_version = "PY3",
-    deps = [
-        ":dry_run_stubs",
-        ":server_info",
-        ":uploader",
-        ":uploader_subcommand",
     ],
 )
 
