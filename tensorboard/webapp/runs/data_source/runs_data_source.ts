@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Injectable} from '@angular/core';
-import {from, forkJoin, Observable, of} from 'rxjs';
+import {Observable, of} from 'rxjs';
 import {map} from 'rxjs/operators';
 
 import {TBHttpClient} from '../../webapp_data_source/tb_http_client';
@@ -34,21 +34,11 @@ function runToRunId(run: string, experimentId: string) {
 
 @Injectable()
 export class TBRunsDataSource implements RunsDataSource {
-  private readonly tfBackend = (document.createElement('tf-backend') as any)
-    .tf_backend;
-
   constructor(private readonly http: TBHttpClient) {}
 
   fetchRuns(experimentId: string): Observable<Run[]> {
-    const dataFetch = this.http.get<BackendGetRunsResponse>('data/runs');
-    // Force a data load for the polymer-specific portion of the app.
-    // This leads to duplicate requests but hopefully the state is temporary until
-    // we migrate everything from polymer to angular.
-    const polymerRunsRefresh = from(this.tfBackend.runsStore.refresh());
-    // Wait for both operations to complete and return the response from the
-    // explicit http get call.
-    return forkJoin([dataFetch, polymerRunsRefresh]).pipe(
-      map(([runs]) => {
+    return this.http.get<BackendGetRunsResponse>('data/runs').pipe(
+      map((runs) => {
         return runs.map((run) => {
           return {
             id: runToRunId(run, experimentId),
