@@ -116,6 +116,41 @@ class UploadIntentTest(tf.test.TestCase):
             mock_stdout_write.call_args_list[-1][0][0], "\nDone.\n"
         )
 
+    def testUploadIntentWithExperimentUrlCallback(self):
+        """Test the upload intent with a callback."""
+        mock_server_info = mock.MagicMock()
+        mock_channel = mock.MagicMock()
+        upload_limits = server_info_pb2.UploadLimits(
+            max_scalar_request_size=128000,
+            max_tensor_request_size=128000,
+            max_tensor_point_size=11111,
+            max_blob_request_size=128000,
+            max_blob_size=128000,
+        )
+        tb_dev_url = "https://tensorboard.dev/experiment/test_experiment_id"
+        mock_experiment_url_callback = mock.MagicMock()
+        mock_stdout_write = mock.MagicMock()
+        with mock.patch.object(
+            server_info_lib,
+            "allowed_plugins",
+            return_value=_SCALARS_HISTOGRAMS_AND_GRAPHS,
+        ), mock.patch.object(
+            server_info_lib, "upload_limits", return_value=upload_limits
+        ), mock.patch.object(
+            server_info_lib, "experiment_url", return_value=tb_dev_url
+        ), mock.patch.object(
+            sys.stdout, "write", mock_stdout_write
+        ), mock.patch.object(
+            dry_run_stubs,
+            "DryRunTensorBoardWriterStub",
+            side_effect=dry_run_stubs.DryRunTensorBoardWriterStub,
+        ):
+            intent = uploader_subcommand.UploadIntent(
+                self.get_temp_dir(), dry_run=True, one_shot=True, experiment_url_callback=mock_experiment_url_callback
+            )
+            intent.execute(mock_server_info, mock_channel)
+        mock_experiment_url_callback.assert_called_once_with(tb_dev_url)
+
     def testUploadIntentDryRunNonOneShotInterrupted(self):
         mock_server_info = mock.MagicMock()
         mock_channel = mock.MagicMock()
