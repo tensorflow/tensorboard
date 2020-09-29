@@ -115,6 +115,33 @@ class UploadIntentTest(tf.test.TestCase):
             mock_stdout_write.call_args_list[-1][0][0], "\nDone.\n"
         )
 
+    def testUploadIntentWithExperimentUrlCallback(self):
+        """Test the upload intent with a callback."""
+        server_info = server_info_pb2.ServerInfoResponse()
+        server_info.url_format.template = "https://tensorboard.dev/x/{}"
+        server_info.url_format.id_placeholder = "{}"
+
+        stub = dry_run_stubs.DryRunTensorBoardWriterStub()
+        stub.CreateExperiment = lambda req, **__: write_service_pb2.CreateExperimentResponse(
+            experiment_id="test_experiment_id", url="this URL is ignored"
+        )
+
+        expected_url = "https://tensorboard.dev/x/test_experiment_id"
+
+        with mock.patch.object(
+            dry_run_stubs, "DryRunTensorBoardWriterStub", wraps=lambda: stub,
+        ), mock.patch.object(sys.stdout, "write"):
+            mock_channel = mock.Mock()
+            mock_experiment_url_callback = mock.Mock()
+            intent = uploader_subcommand.UploadIntent(
+                self.get_temp_dir(),
+                dry_run=True,
+                one_shot=True,
+                experiment_url_callback=mock_experiment_url_callback,
+            )
+            intent.execute(server_info, mock_channel)
+        mock_experiment_url_callback.assert_called_once_with(expected_url)
+
     def testUploadIntentDryRunNonOneShotInterrupted(self):
         mock_server_info = mock.MagicMock()
         mock_channel = mock.MagicMock()
