@@ -82,6 +82,18 @@ py_library(
     ],
 )
 
+py_test(
+    name = "uploader_subcommand_test",
+    srcs = ["uploader_subcommand_test.py"],
+    srcs_version = "PY3",
+    deps = [
+        ":dry_run_stubs",
+        ":server_info",
+        ":uploader",
+        ":uploader_subcommand",
+    ],
+)
+
 py_library(
     name = "uploader",
     srcs = ["uploader.py"],
@@ -121,7 +133,6 @@ py_test(
         ":test_util",
         ":upload_tracker",
         ":uploader",
-        ":uploader_subcommand",
         ":util",
         "//tensorboard:data_compat",
         "//tensorboard:dataclass_compat",
