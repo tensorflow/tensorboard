@@ -21,7 +21,6 @@ from __future__ import print_function
 import itertools
 import os
 import re
-import sys
 
 import grpc
 import grpc_testing
