@@ -1,4 +1,4 @@
-# Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+# Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -67,6 +67,7 @@ def _create_mock_client():
     )
     return mock_client
 
+
 # By default allow at least one plugin for each upload type: Scalar, Tensor, and
 # Blobs.
 _SCALARS_HISTOGRAMS_AND_GRAPHS = frozenset(
@@ -76,6 +77,7 @@ _SCALARS_HISTOGRAMS_AND_GRAPHS = frozenset(
         graphs_metadata.PLUGIN_NAME,
     )
 )
+
 
 class UploadIntentTest(tf.test.TestCase):
     def testUploadIntentUnderDryRunOneShot(self):
@@ -156,6 +158,7 @@ class UploadIntentTest(tf.test.TestCase):
             "\nInterrupted. View your TensorBoard at ",
             mock_stdout_write.call_args_list[-1][0][0],
         )
+
 
 if __name__ == "__main__":
     tf.test.main()
