@@ -91,6 +91,7 @@ py_test(
         ":server_info",
         ":uploader",
         ":uploader_subcommand",
+        "//tensorboard:expect_grpc_testing_installed",
     ],
 )
 
