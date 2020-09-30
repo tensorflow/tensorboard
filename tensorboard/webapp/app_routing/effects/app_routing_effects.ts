@@ -241,18 +241,16 @@ export class AppRoutingEffects {
           });
         }),
         tap(({isFirstNavigation, route}) => {
-          // The Polymer side of TB relies on reading state directly from the
-          // URL. Ideally, the source of truth would be in application JS, and
-          // the Angular side of TB would have enough information to manage the
-          // 'hash' of the URL.
+          // AppRouting's effect to dispatch the initial navigated action is
+          // asynchronous. It is possible to see a race condition, where the
+          // network request for plugins_listing returns first, which sets the
+          // URL hash to '#scalars', only to be discarded by the replaceState
+          // below. Preserving the hash upon initial navigation is a workaround.
 
-          // Currently this is not the case, so important hashes set before the
-          // initial navigation might get unintentionally discarded, unless we
-          // explicitly preserve them.
-
-          // Note: hashes such as the active plugin '#scalars' may be reflected
-          // in the URL before or after this effect runs, due to race
-          // conditions.
+          // TODO(b/169799696): either AppRouting should manage the URL entirely
+          // (including hash), or we make the app wait for AppRouting to
+          // initialize before setting the active plugin hash.
+          // See https://github.com/tensorflow/tensorboard/issues/4207.
           const shouldPreserveHash = isFirstNavigation;
           if (route.navigationOptions.replaceState) {
             this.location.replaceState(
