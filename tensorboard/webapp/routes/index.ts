@@ -1,4 +1,4 @@
-/* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -12,28 +12,19 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-html,
-body {
-  font-family: Roboto, sans-serif;
-  height: 100%;
-  margin: 0;
-  padding: 0;
-}
+import {Component, Type} from '@angular/core';
 
-:host {
-  background: #f5f5f5;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
+import {TensorBoardWrapperComponent} from '../tb_wrapper/tb_wrapper_component';
+import {RouteDef} from '../app_routing/route_config_types';
+import {RouteKind} from '../app_routing/types';
 
-app-header {
-  box-shadow: 0 1px 3px 3px rgba(0, 0, 0, 0.25);
-  flex: 0 0;
-  z-index: 1; /* The box shadow needs to extend out of the app-header. */
-}
-
-main {
-  flex-grow: 1;
-  overflow: auto;
+export function routesFactory(): RouteDef[] {
+  return [
+    {
+      routeKind: RouteKind.EXPERIMENT,
+      path: '/',
+      ngComponent: TensorBoardWrapperComponent as Type<Component>,
+      defaultRoute: true,
+    },
+  ];
 }
