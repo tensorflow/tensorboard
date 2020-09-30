@@ -7,8 +7,6 @@ package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])
 
-exports_files(["LICENSE"])
-
 ## Custom Scalars Plugin ##
 py_library(
     name = "custom_scalars_plugin",

@@ -7,8 +7,6 @@ package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])
 
-exports_files(["LICENSE"])
-
 ## Histograms Plugin ##
 py_library(
     name = "histograms_plugin",

@@ -5,8 +5,6 @@ package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])
 
-exports_files(["LICENSE"])
-
 # Compatibility helpers in the `tensorboard.compat` module.
 #
 # This module provides aliases for importing variations on the TensorFlow APIs.
