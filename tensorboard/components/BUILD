@@ -8,13 +8,7 @@ tf_ts_library(
     name = "polymer3_ts_lib",
     srcs = ["polymer3_lib.ts"],
     deps = [
-        "//tensorboard/components/experimental/plugin_util:plugin_host",
-        "//tensorboard/components/tf_backend",
-        "//tensorboard/components/tf_color_scale",
-        "//tensorboard/components/tf_globals",
-        "//tensorboard/components/tf_markdown_view",
-        "//tensorboard/components/tf_paginated_view",
-        "//tensorboard/components/tf_storage",
+        ":polymer3_core_components",
         "//tensorboard/plugins/audio/tf_audio_dashboard",
         "//tensorboard/plugins/custom_scalar/tf_custom_scalar_dashboard",
         "//tensorboard/plugins/distribution/tf_distribution_dashboard",
@@ -27,6 +21,20 @@ tf_ts_library(
         "//tensorboard/plugins/profile_redirect/tf_profile_redirect_dashboard",
         "//tensorboard/plugins/scalar/tf_scalar_dashboard",
         "//tensorboard/plugins/text/tf_text_dashboard",
+    ],
+)
+
+tf_ts_library(
+    name = "polymer3_core_components",
+    srcs = ["polymer3_core_components.ts"],
+    deps = [
+        "//tensorboard/components/experimental/plugin_util:plugin_host",
+        "//tensorboard/components/tf_backend",
+        "//tensorboard/components/tf_color_scale",
+        "//tensorboard/components/tf_globals",
+        "//tensorboard/components/tf_markdown_view",
+        "//tensorboard/components/tf_paginated_view",
+        "//tensorboard/components/tf_storage",
     ],
 )
 
