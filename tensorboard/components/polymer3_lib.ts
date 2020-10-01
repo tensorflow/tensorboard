@@ -27,10 +27,4 @@ import '../plugins/profile_redirect/tf_profile_redirect_dashboard/tf-profile-red
 import '../plugins/scalar/tf_scalar_dashboard/tf-scalar-dashboard';
 import '../plugins/text/tf_text_dashboard/tf-text-dashboard';
 
-// Exported Polymer <-> Angular interop (to be removed).
-import './experimental/plugin_util/plugin-host';
-import './tf_backend/tf-backend-polymer';
-import './tf_globals/globals-polymer';
-import './tf_storage/tf-storage-polymer';
-import './tf_paginated_view/tf-paginated-view-store';
-import './tf_color_scale/tf-color-scale-polymer';
+import './polymer3_interop_helper';
