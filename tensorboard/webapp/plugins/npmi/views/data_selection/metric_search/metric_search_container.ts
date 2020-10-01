@@ -24,7 +24,7 @@ import {
   getMetricsRegex,
   getRunToMetrics,
 } from '../../../store';
-import {getRunSelection} from '../../../../../core/store/core_selectors';
+import {getCurrentRouteRunSelection} from '../../../../../selectors';
 import * as npmiActions from '../../../actions';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
@@ -44,14 +44,16 @@ import * as npmiActions from '../../../actions';
 })
 export class MetricSearchContainer {
   readonly metricsRegex$ = this.store.select(getMetricsRegex);
-  readonly activeRuns$ = this.store.pipe(select(getRunSelection)).pipe(
-    map((runSelection) => {
-      if (!runSelection) return [];
-      return Array.from(runSelection.entries())
-        .filter((run) => run[1])
-        .map((run) => run[0]);
-    })
-  );
+  readonly activeRuns$ = this.store
+    .pipe(select(getCurrentRouteRunSelection))
+    .pipe(
+      map((runSelection) => {
+        if (!runSelection) return [];
+        return Array.from(runSelection.entries())
+          .filter((run) => run[1])
+          .map((run) => run[0]);
+      })
+    );
   readonly metricsForActiveRuns$ = combineLatest(
     this.activeRuns$,
     this.store.select(getRunToMetrics)

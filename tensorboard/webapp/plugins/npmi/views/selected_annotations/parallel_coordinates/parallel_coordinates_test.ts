@@ -29,7 +29,7 @@ import {
   getMetricFilters,
   getAnnotationData,
 } from '../../../store';
-import {getRunSelection} from '../../../../../core/store/core_selectors';
+import {getCurrentRouteRunSelection} from '../../../../../selectors';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
@@ -120,7 +120,7 @@ describe('Npmi Parallel Coordinates Container', () => {
 
   it('renders parallel coordinates without selected annoations', () => {
     store.overrideSelector(
-      getRunSelection,
+      getCurrentRouteRunSelection,
       new Map([
         ['run_1', true],
         ['run_2', false],
@@ -166,7 +166,7 @@ describe('Npmi Parallel Coordinates Container', () => {
 
   it('renders parallel coordinates with selected annoations', () => {
     store.overrideSelector(
-      getRunSelection,
+      getCurrentRouteRunSelection,
       new Map([
         ['run_1', true],
         ['run_2', false],
@@ -213,7 +213,7 @@ describe('Npmi Parallel Coordinates Container', () => {
 
   it('renders parallel coordinates with additional metric filter', () => {
     store.overrideSelector(
-      getRunSelection,
+      getCurrentRouteRunSelection,
       new Map([
         ['run_1', true],
         ['run_2', false],

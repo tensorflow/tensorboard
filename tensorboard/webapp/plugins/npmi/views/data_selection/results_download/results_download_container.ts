@@ -25,7 +25,7 @@ import {
   getRunToMetrics,
   getMetricFilters,
 } from '../../../store';
-import {getRunSelection} from '../../../../../core/store/core_selectors';
+import {getCurrentRouteRunSelection} from '../../../../../selectors';
 import {metricIsNpmiAndNotDiff} from '../../../util/metric_type';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
@@ -47,7 +47,7 @@ export class ResultsDownloadContainer {
   readonly numFlaggedAnnotations$ = this.flaggedAnnotations$.pipe(
     map((flaggedAnnotations) => flaggedAnnotations.length)
   );
-  readonly activeRuns$ = this.store.select(getRunSelection).pipe(
+  readonly activeRuns$ = this.store.select(getCurrentRouteRunSelection).pipe(
     map((runSelection) => {
       if (!runSelection) return [];
       return Array.from(runSelection.entries())

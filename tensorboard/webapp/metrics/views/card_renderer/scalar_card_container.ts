@@ -214,7 +214,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit {
             seriesId: runId,
             metadata: {displayName},
             points,
-            visible: Boolean(runSelectionMap && runSelectionMap[runId]),
+            visible: Boolean(runSelectionMap && runSelectionMap.get(runId)),
           };
         });
       }),

@@ -41,3 +41,17 @@ ng_module(
         "@npm//rxjs",
     ],
 )
+
+tf_ts_library(
+    name = "runs_data_source_test",
+    testonly = True,
+    srcs = [
+        "runs_data_source_test.ts",
+    ],
+    deps = [
+        ":data_source",
+        "//tensorboard/webapp/angular:expect_angular_core_testing",
+        "//tensorboard/webapp/webapp_data_source:http_client_testing",
+        "@npm//@types/jasmine",
+    ],
+)

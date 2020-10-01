@@ -40,7 +40,7 @@ const getRenderableCardIdsWithMetadata = createSelector(
       if (!isSingleRunPlugin(card.plugin)) {
         return true;
       }
-      return Boolean(runSelectionMap && runSelectionMap[card.runId!]);
+      return Boolean(runSelectionMap && runSelectionMap.get(card.runId!));
     });
   }
 );

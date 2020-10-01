@@ -12,25 +12,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component, OnInit} from '@angular/core';
-import {select, Store} from '@ngrx/store';
+import {NgModule} from '@angular/core';
+import {StoreModule} from '@ngrx/store';
 
-import {npmiLoaded} from './actions';
-import {State} from '../../app_state';
-import {getCurrentRouteRunSelection} from '../../selectors';
+import {reducers} from './store';
+import {EXPERIMENTS_FEATURE_KEY} from './store/experiments_types';
 
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
-
-@Component({
-  selector: 'npmi',
-  template: ` <npmi-component [runs]="runs$ | async"></npmi-component> `,
+@NgModule({
+  imports: [StoreModule.forFeature(EXPERIMENTS_FEATURE_KEY, reducers)],
 })
-export class NpmiContainer implements OnInit {
-  readonly runs$ = this.store.pipe(select(getCurrentRouteRunSelection));
-
-  constructor(private readonly store: Store<State>) {}
-
-  ngOnInit(): void {
-    this.store.dispatch(npmiLoaded());
-  }
-}
+export class ExperimentsModule {}

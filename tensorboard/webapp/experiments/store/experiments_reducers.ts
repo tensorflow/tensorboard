@@ -19,10 +19,12 @@ import {
   createReducer,
 } from '@ngrx/store';
 
+import {DEFAULT_EXPERIMENT_ID} from '../../app_routing/types';
+
 import {ExperimentsDataState, ExperimentsState} from './experiments_types';
 
 const defaultExperiment = {
-  id: 'defaultExpId',
+  id: DEFAULT_EXPERIMENT_ID,
   name: 'Default experiment',
   start_time: 0,
 };

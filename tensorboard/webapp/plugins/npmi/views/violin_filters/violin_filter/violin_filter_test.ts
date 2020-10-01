@@ -28,7 +28,7 @@ import {appStateFromNpmiState, createNpmiState} from '../../../testing';
 import {createState, createCoreState} from '../../../../../core/testing';
 import * as npmiActions from '../../../actions';
 import {getAnnotationData} from '../../../store';
-import {getRunSelection} from '../../../../../core/store/core_selectors';
+import {getCurrentRouteRunSelection} from '../../../../../selectors';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
@@ -65,7 +65,7 @@ describe('Npmi Violin Filter Container', () => {
     });
 
     store.overrideSelector(
-      getRunSelection,
+      getCurrentRouteRunSelection,
       new Map([
         ['run_1', true],
         ['run_2', false],

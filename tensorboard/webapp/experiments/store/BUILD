@@ -8,9 +8,11 @@ tf_ts_library(
     name = "store",
     srcs = [
         "experiments_reducers.ts",
+        "index.ts",
     ],
     deps = [
         ":types",
+        "//tensorboard/webapp/app_routing:types",
         "//tensorboard/webapp/experiments:types",
         "//tensorboard/webapp/types",
         "@npm//@ngrx/store",

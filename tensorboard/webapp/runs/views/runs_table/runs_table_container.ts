@@ -445,7 +445,7 @@ export class RunsTableContainer implements OnInit {
             run,
             experimentName: experiment?.name || '',
             experimentAlias: experimentIdToAlias[experimentId],
-            selected: Boolean(selectionMap && selectionMap[run.id]),
+            selected: Boolean(selectionMap && selectionMap.get(run.id)),
             runColor: colorMap[run.id],
             hparams: hparamMap,
             metrics: metricMap,
