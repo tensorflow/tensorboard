@@ -27,4 +27,4 @@ import '../plugins/profile_redirect/tf_profile_redirect_dashboard/tf-profile-red
 import '../plugins/scalar/tf_scalar_dashboard/tf-scalar-dashboard';
 import '../plugins/text/tf_text_dashboard/tf-text-dashboard';
 
-import './polymer3_core_components';
+import './polymer3_interop_helper';

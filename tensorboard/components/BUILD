@@ -8,7 +8,7 @@ tf_ts_library(
     name = "polymer3_ts_lib",
     srcs = ["polymer3_lib.ts"],
     deps = [
-        ":polymer3_core_components",
+        ":polymer3_interop_helper",
         "//tensorboard/plugins/audio/tf_audio_dashboard",
         "//tensorboard/plugins/custom_scalar/tf_custom_scalar_dashboard",
         "//tensorboard/plugins/distribution/tf_distribution_dashboard",
@@ -25,8 +25,8 @@ tf_ts_library(
 )
 
 tf_ts_library(
-    name = "polymer3_core_components",
-    srcs = ["polymer3_core_components.ts"],
+    name = "polymer3_interop_helper",
+    srcs = ["polymer3_interop_helper.ts"],
     deps = [
         "//tensorboard/components/experimental/plugin_util:plugin_host",
         "//tensorboard/components/tf_backend",

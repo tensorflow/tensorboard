@@ -14,10 +14,8 @@ limitations under the License.
 ==============================================================================*/
 
 /**
- * Imports core set of polymer components required to run TensorBoard UI.
+ * Exports components necessary for Polymer <-> Angular interop.
  */
-
-// Exported Polymer <-> Angular interop (to be removed).
 import './experimental/plugin_util/plugin-host';
 import './tf_backend/tf-backend-polymer';
 import './tf_globals/globals-polymer';
