@@ -28,18 +28,6 @@ describe('TBRunsDataSource test', () => {
   let tbBackend: any;
 
   beforeEach(async () => {
-    tbBackend = {
-      tf_backend: {
-        runsStore: {
-          refresh: jasmine.createSpy().and.callFake(() => Promise.resolve()),
-        },
-      },
-    };
-
-    const createElementSpy = spyOn(document, 'createElement').and.callThrough();
-
-    createElementSpy.withArgs('tf-backend').and.returnValue(tbBackend);
-
     await TestBed.configureTestingModule({
       imports: [TBHttpClientTestingModule],
       providers: [{provide: RunsDataSource, useClass: TBRunsDataSource}],
@@ -63,10 +51,5 @@ describe('TBRunsDataSource test', () => {
         {id: 'exp1/bar', name: 'bar', startTime: 0},
       ]);
     }));
-
-    it('calls the polymer API to refresh the polymer store, too', () => {
-      dataSource.fetchRuns('exp1').subscribe(() => {});
-      expect(tbBackend.tf_backend.runsStore.refresh).toHaveBeenCalled();
-    });
   });
 });
