@@ -6,8 +6,6 @@ package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])
 
-exports_files(["LICENSE"])
-
 py_library(
     name = "projector_plugin",
     srcs = ["projector_plugin.py"],

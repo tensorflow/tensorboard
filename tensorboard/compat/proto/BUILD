@@ -7,8 +7,6 @@ package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])
 
-exports_files(["LICENSE"])
-
 # Protobuf files copied from the main TensorFlow repository.
 # Keep this list synced with proto_test.py
 tb_proto_library(

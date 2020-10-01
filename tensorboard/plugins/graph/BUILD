@@ -5,8 +5,6 @@ package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])
 
-exports_files(["LICENSE"])
-
 ## Graphs Plugin ##
 py_library(
     name = "graphs_plugin",

@@ -7,8 +7,6 @@ package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])
 
-exports_files(["LICENSE"])
-
 py_library(
     name = "images_plugin",
     srcs = ["images_plugin.py"],
