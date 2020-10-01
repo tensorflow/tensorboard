@@ -29,7 +29,7 @@ import {
   createState,
   createCoreState,
 } from '../testing';
-import {PluginsListFailureCode} from '../types';
+import {PluginsListFailureCode, Run} from '../types';
 
 import {PluginsListing} from '../../types/api';
 import {DataLoadState} from '../../types/data';
@@ -47,7 +47,9 @@ describe('core_effects', () => {
   let action: ReplaySubject<Action>;
   let store: MockStore<Partial<State>>;
   let fetchEnvironment: jasmine.Spy;
+  let fetchPolymerRunsSubjects: Array<Subject<Array<Run>>>;
   let recordedActions: Action[] = [];
+  let createElementSpy;
 
   beforeEach(async () => {
     action = new ReplaySubject<Action>(1);
@@ -70,6 +72,22 @@ describe('core_effects', () => {
         provideMockStore({initialState}),
       ],
     }).compileComponents();
+
+    fetchPolymerRunsSubjects = [];
+    createElementSpy = spyOn(document, 'createElement');
+    createElementSpy.withArgs('tf-backend').and.returnValue({
+      tf_backend: {
+        runsStore: {
+          refresh() {
+            const fetchRunSubject = new Subject<Array<Run>>();
+            fetchPolymerRunsSubjects.push(fetchRunSubject);
+            return fetchRunSubject;
+          },
+        },
+      },
+    });
+    createElementSpy.and.callThrough();
+
     coreEffects = TestBed.inject(CoreEffects);
     httpMock = TestBed.inject(HttpTestingController);
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
@@ -111,6 +129,8 @@ describe('core_effects', () => {
 
         action.next(onAction);
 
+        fetchPolymerRunsSubjects[0].next([{id: '1', name: 'Run 1'}]);
+        fetchPolymerRunsSubjects[0].complete();
         // Flushing the request response invokes above subscription sychronously.
         httpMock.expectOne('data/plugins_listing').flush(pluginsListing);
         expect(fetchEnvironment).toHaveBeenCalled();
@@ -169,6 +189,8 @@ describe('core_effects', () => {
 
           expect(fetchEnvironment).toHaveBeenCalled();
 
+          fetchPolymerRunsSubjects[0].next([{id: '1', name: 'Run 1'}]);
+          fetchPolymerRunsSubjects[0].complete();
           expect(recordedActions).toEqual([
             coreActions.pluginsListingRequested(),
             coreActions.environmentLoaded({
@@ -219,6 +241,8 @@ describe('core_effects', () => {
 
         action.next(onAction);
         httpMock.expectOne('data/plugins_listing').flush(pluginsListing);
+        fetchPolymerRunsSubjects[0].next([{id: '1', name: 'Run 1'}]);
+        fetchPolymerRunsSubjects[0].complete();
         expect(recordedActions).toEqual([
           coreActions.pluginsListingRequested(),
           coreActions.environmentLoaded({
