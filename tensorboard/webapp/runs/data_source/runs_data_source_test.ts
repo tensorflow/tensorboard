@@ -25,7 +25,6 @@ import {RunsDataSource} from './runs_data_source_types';
 describe('TBRunsDataSource test', () => {
   let httpMock: HttpTestingController;
   let dataSource: RunsDataSource;
-  let tbBackend: any;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
