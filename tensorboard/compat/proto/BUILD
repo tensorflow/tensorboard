@@ -26,24 +26,31 @@ tb_proto_library(
         "meta_graph.proto",
         "node_def.proto",
         "op_def.proto",
-        "resource_handle.proto",
         "rewriter_config.proto",
         "saved_object_graph.proto",
         "saver.proto",
         "step_stats.proto",
         "struct.proto",
         "summary.proto",
-        "tensor.proto",
         "tensor_description.proto",
-        "tensor_shape.proto",
         "tfprof_log.proto",
         "trackable_object_graph.proto",
-        "types.proto",
         "variable.proto",
         "verifier_config.proto",
         "versions.proto",
     ],
     visibility = ["//visibility:public"],
+    deps = [":tensor_proto_lib"],
+)
+
+tb_proto_library(
+    name = "tensor_proto_lib",
+    srcs = [
+        "resource_handle.proto",
+        "tensor.proto",
+        "tensor_shape.proto",
+        "types.proto",
+    ],
 )
 
 py_test(
