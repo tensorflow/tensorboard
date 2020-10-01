@@ -228,21 +228,37 @@ export class AppRoutingEffects {
         ofType(navigated),
         withLatestFrom(this.store.select(getActiveRoute)),
         filter(([, route]) => Boolean(route)),
-        map(([, route]) => route!),
-        filter((route) => {
+        map(([navigatedAction, route]) => {
+          return {
+            isFirstNavigation: navigatedAction.before === null,
+            route: route!,
+          };
+        }),
+        filter(({route}) => {
           return !areRoutesEqual(route, {
             pathname: this.location.getPath(),
             queryParams: this.location.getSearch(),
           });
         }),
-        tap((route) => {
+        tap(({isFirstNavigation, route}) => {
+          // AppRouting's effect to dispatch the initial navigated action is
+          // asynchronous. It is possible to see a race condition, where the
+          // network request for plugins_listing returns first, which sets the
+          // URL hash to '#scalars', only to be discarded by the replaceState
+          // below. Preserving the hash upon initial navigation is a workaround.
+
+          // TODO(b/169799696): either AppRouting should manage the URL entirely
+          // (including hash), or we make the app wait for AppRouting to
+          // initialize before setting the active plugin hash.
+          // See https://github.com/tensorflow/tensorboard/issues/4207.
+          const shouldPreserveHash = isFirstNavigation;
           if (route.navigationOptions.replaceState) {
             this.location.replaceState(
-              this.location.getFullPathFromRouteOrNav(route)
+              this.location.getFullPathFromRouteOrNav(route, shouldPreserveHash)
             );
           } else {
             this.location.pushState(
-              this.location.getFullPathFromRouteOrNav(route)
+              this.location.getFullPathFromRouteOrNav(route, shouldPreserveHash)
             );
           }
         })

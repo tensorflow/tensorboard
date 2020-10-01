@@ -42,6 +42,7 @@ from tensorboard.plugins.graph import graphs_plugin
 from tensorboard.plugins.histogram import histograms_plugin
 from tensorboard.plugins.hparams import hparams_plugin
 from tensorboard.plugins.image import images_plugin
+from tensorboard.plugins.metrics import metrics_plugin
 from tensorboard.plugins.pr_curve import pr_curves_plugin
 from tensorboard.plugins.profile_redirect import profile_redirect_plugin
 from tensorboard.plugins.scalar import scalars_plugin
@@ -87,6 +88,7 @@ _PLUGINS = [
     profile_redirect_plugin.ProfileRedirectPluginLoader,
     hparams_plugin.HParamsPlugin,
     mesh_plugin.MeshPlugin,
+    metrics_plugin.MetricsPlugin,
     ExperimentalTextV2Plugin,
     ExperimentalNpmiPlugin,
 ]

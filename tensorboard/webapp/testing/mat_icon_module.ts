@@ -14,6 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import {Component, Input, NgModule} from '@angular/core';
 
+// Keep in sync with the 'svg_bundle' target in tensorboard/webapp/BUILD.
 const KNOWN_SVG_ICON = new Set([
   'arrow_downward_24px',
   'arrow_upward_24px',
@@ -35,10 +36,10 @@ const KNOWN_SVG_ICON = new Set([
   'help_outline_24px',
   'image_search_24px',
   'info_outline_24px',
-  'line_weight_24px',
-  'more_vert_24px',
   'keep_24px',
   'keep_outline_24px',
+  'line_weight_24px',
+  'more_vert_24px',
   'refresh_24px',
   'search_24px',
   'settings_24px',

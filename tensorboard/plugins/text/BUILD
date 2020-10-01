@@ -7,8 +7,6 @@ package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])
 
-exports_files(["LICENSE"])
-
 ## Text Plugin ##
 py_library(
     name = "text_plugin",

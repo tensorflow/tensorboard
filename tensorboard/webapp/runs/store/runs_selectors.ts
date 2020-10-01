@@ -117,7 +117,9 @@ export const getExperimentsHparamsAndMetrics = createSelector(
 );
 
 /**
- * Returns Observable that emits selection state of runs.
+ * Returns Observable that emits selection state of runs. If the runs for the
+ * current route are desired, please see ui_selectors.ts's
+ * getCurrentRouteRunSelection instead.
  */
 export const getRunSelectionMap = createSelector(
   getDataState,

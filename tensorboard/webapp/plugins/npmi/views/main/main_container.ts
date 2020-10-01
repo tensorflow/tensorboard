@@ -18,7 +18,7 @@ import {select, Store} from '@ngrx/store';
 import {map} from 'rxjs/operators';
 
 import {State} from '../../../../app_state';
-import {getRunSelection} from '../../../../core/store/core_selectors';
+import {getCurrentRouteRunSelection} from '../../../../selectors';
 import {
   getSidebarExpanded,
   getSidebarWidth,
@@ -43,14 +43,16 @@ import * as npmiActions from '../../actions';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MainContainer {
-  readonly runActive$ = this.store.pipe(select(getRunSelection)).pipe(
-    map((runs) => {
-      if (!runs) {
-        return false;
-      }
-      return [...runs.values()].includes(true);
-    })
-  );
+  readonly runActive$ = this.store
+    .pipe(select(getCurrentRouteRunSelection))
+    .pipe(
+      map((runs) => {
+        if (!runs) {
+          return false;
+        }
+        return [...runs.values()].includes(true);
+      })
+    );
   readonly sidebarExpanded$ = this.store.pipe(select(getSidebarExpanded));
   readonly sidebarWidth$ = this.store.pipe(select(getSidebarWidth));
   resizing = false;

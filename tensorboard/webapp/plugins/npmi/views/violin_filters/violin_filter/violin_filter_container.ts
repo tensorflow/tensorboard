@@ -19,7 +19,7 @@ import {Observable, combineLatest} from 'rxjs';
 import {map} from 'rxjs/operators';
 
 import {State} from '../../../../../app_state';
-import {getRunSelection} from '../../../../../core/store/core_selectors';
+import {getCurrentRouteRunSelection} from '../../../../../selectors';
 import {
   getAnnotationData,
   getHiddenAnnotations,
@@ -50,14 +50,16 @@ import {violinData, ViolinChartData} from '../../../util/violin_data';
 export class ViolinFilterContainer implements OnInit {
   @Input() metricName!: string;
   @Input() filter!: MetricFilter;
-  readonly activeRuns$ = this.store.pipe(select(getRunSelection)).pipe(
-    map((runSelection) => {
-      if (!runSelection) return [];
-      return Array.from(runSelection.entries())
-        .filter((run) => run[1])
-        .map((run) => run[0]);
-    })
-  );
+  readonly activeRuns$ = this.store
+    .pipe(select(getCurrentRouteRunSelection))
+    .pipe(
+      map((runSelection) => {
+        if (!runSelection) return [];
+        return Array.from(runSelection.entries())
+          .filter((run) => run[1])
+          .map((run) => run[0]);
+      })
+    );
   readonly visibleAnnotations$ = combineLatest([
     this.store.select(getAnnotationData),
     this.store.select(getHiddenAnnotations),

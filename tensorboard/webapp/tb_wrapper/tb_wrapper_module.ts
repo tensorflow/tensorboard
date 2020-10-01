@@ -12,25 +12,20 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component, OnInit} from '@angular/core';
-import {select, Store} from '@ngrx/store';
+import {NgModule} from '@angular/core';
+import {CommonModule} from '@angular/common';
 
-import {npmiLoaded} from './actions';
-import {State} from '../../app_state';
-import {getCurrentRouteRunSelection} from '../../selectors';
+import {PluginsModule} from '../plugins/plugins_module';
+import {ReloaderModule} from '../reloader/reloader_module';
+import {TensorBoardWrapperComponent} from './tb_wrapper_component';
 
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
-
-@Component({
-  selector: 'npmi',
-  template: ` <npmi-component [runs]="runs$ | async"></npmi-component> `,
+/**
+ * Provides the wrapper component that renders the main dashboard page.
+ */
+@NgModule({
+  declarations: [TensorBoardWrapperComponent],
+  imports: [CommonModule, PluginsModule, ReloaderModule],
+  exports: [TensorBoardWrapperComponent],
+  entryComponents: [TensorBoardWrapperComponent],
 })
-export class NpmiContainer implements OnInit {
-  readonly runs$ = this.store.pipe(select(getCurrentRouteRunSelection));
-
-  constructor(private readonly store: Store<State>) {}
-
-  ngOnInit(): void {
-    this.store.dispatch(npmiLoaded());
-  }
-}
+export class TensorBoardWrapperModule {}

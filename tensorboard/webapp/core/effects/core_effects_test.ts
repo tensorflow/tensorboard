@@ -47,8 +47,9 @@ describe('core_effects', () => {
   let action: ReplaySubject<Action>;
   let store: MockStore<Partial<State>>;
   let fetchEnvironment: jasmine.Spy;
-  let fetchRunsSubjects: Array<Subject<Array<Run>>>;
+  let fetchPolymerRunsSubjects: Array<Subject<Array<Run>>>;
   let recordedActions: Action[] = [];
+  let createElementSpy;
 
   beforeEach(async () => {
     action = new ReplaySubject<Action>(1);
@@ -71,6 +72,22 @@ describe('core_effects', () => {
         provideMockStore({initialState}),
       ],
     }).compileComponents();
+
+    fetchPolymerRunsSubjects = [];
+    createElementSpy = spyOn(document, 'createElement');
+    createElementSpy.withArgs('tf-backend').and.returnValue({
+      tf_backend: {
+        runsStore: {
+          refresh() {
+            const fetchRunSubject = new Subject<Array<Run>>();
+            fetchPolymerRunsSubjects.push(fetchRunSubject);
+            return fetchRunSubject;
+          },
+        },
+      },
+    });
+    createElementSpy.and.callThrough();
+
     coreEffects = TestBed.inject(CoreEffects);
     httpMock = TestBed.inject(HttpTestingController);
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
@@ -84,12 +101,6 @@ describe('core_effects', () => {
     fetchEnvironment = spyOn(dataSource, 'fetchEnvironment')
       .withArgs()
       .and.returnValue(of(createEnvironment()));
-    fetchRunsSubjects = [];
-    spyOn(dataSource, 'fetchRuns').and.callFake(() => {
-      const fetchRunSubject = new Subject<Array<Run>>();
-      fetchRunsSubjects.push(fetchRunSubject);
-      return fetchRunSubject;
-    });
 
     store.overrideSelector(getEnabledExperimentalPlugins, []);
   });
@@ -118,8 +129,8 @@ describe('core_effects', () => {
 
         action.next(onAction);
 
-        fetchRunsSubjects[0].next([{id: '1', name: 'Run 1'}]);
-        fetchRunsSubjects[0].complete();
+        fetchPolymerRunsSubjects[0].next([{id: '1', name: 'Run 1'}]);
+        fetchPolymerRunsSubjects[0].complete();
         // Flushing the request response invokes above subscription sychronously.
         httpMock.expectOne('data/plugins_listing').flush(pluginsListing);
         expect(fetchEnvironment).toHaveBeenCalled();
@@ -128,9 +139,6 @@ describe('core_effects', () => {
           coreActions.pluginsListingRequested(),
           coreActions.environmentLoaded({
             environment: createEnvironment(),
-          }),
-          coreActions.fetchRunSucceeded({
-            runs: [{id: '1', name: 'Run 1'}],
           }),
           coreActions.pluginsListingLoaded({
             plugins: pluginsListing,
@@ -179,17 +187,14 @@ describe('core_effects', () => {
             )
             .flush(pluginsListing);
 
-          fetchRunsSubjects[0].next([{id: '1', name: 'Run 1'}]);
-          fetchRunsSubjects[0].complete();
           expect(fetchEnvironment).toHaveBeenCalled();
 
+          fetchPolymerRunsSubjects[0].next([{id: '1', name: 'Run 1'}]);
+          fetchPolymerRunsSubjects[0].complete();
           expect(recordedActions).toEqual([
             coreActions.pluginsListingRequested(),
             coreActions.environmentLoaded({
               environment: createEnvironment(),
-            }),
-            coreActions.fetchRunSucceeded({
-              runs: [{id: '1', name: 'Run 1'}],
             }),
             coreActions.pluginsListingLoaded({
               plugins: pluginsListing,
@@ -236,15 +241,12 @@ describe('core_effects', () => {
 
         action.next(onAction);
         httpMock.expectOne('data/plugins_listing').flush(pluginsListing);
-        fetchRunsSubjects[0].next([{id: '1', name: 'Run 1'}]);
-        fetchRunsSubjects[0].complete();
+        fetchPolymerRunsSubjects[0].next([{id: '1', name: 'Run 1'}]);
+        fetchPolymerRunsSubjects[0].complete();
         expect(recordedActions).toEqual([
           coreActions.pluginsListingRequested(),
           coreActions.environmentLoaded({
             environment: createEnvironment(),
-          }),
-          coreActions.fetchRunSucceeded({
-            runs: [{id: '1', name: 'Run 1'}],
           }),
           coreActions.pluginsListingLoaded({
             plugins: pluginsListing,

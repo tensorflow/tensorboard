@@ -30,9 +30,6 @@ describe('tb_server_data_source', () => {
     beforeEach(async () => {
       tbBackend = {
         tf_backend: {
-          runsStore: {
-            refresh: jasmine.createSpy().and.callFake(() => Promise.resolve()),
-          },
           environmentStore: {
             refresh: jasmine.createSpy().and.callFake(() => Promise.resolve()),
           },
@@ -78,44 +75,6 @@ describe('tb_server_data_source', () => {
         httpMock
           .expectOne('data/plugins_listing')
           .error(new ErrorEvent('FakeError'), {status: 501});
-        // Flush the promise in the microtask.
-        flush();
-
-        expect(results).not.toHaveBeenCalled();
-        expect(error).toHaveBeenCalledWith(
-          new TBServerError(PluginsListFailureCode.UNKNOWN)
-        );
-      }));
-    });
-
-    describe('fetchRuns', () => {
-      it('fetches from "data/runs"', fakeAsync(() => {
-        const results = jasmine.createSpy();
-        dataSource.fetchRuns().subscribe(results);
-
-        httpMock.expectOne('data/runs').flush(['foo', 'bar']);
-        // Flush the promise in the microtask.
-        flush();
-
-        expect(results).toHaveBeenCalledWith([
-          {id: 'foo', name: 'foo'},
-          {id: 'bar', name: 'bar'},
-        ]);
-      }));
-
-      it('calls the polymer API to refresh the polymer store, too', () => {
-        dataSource.fetchRuns().subscribe(() => {});
-        expect(tbBackend.tf_backend.runsStore.refresh).toHaveBeenCalled();
-      });
-
-      it('handles "data/runs" failures', fakeAsync(() => {
-        const results = jasmine.createSpy();
-        const error = jasmine.createSpy();
-        dataSource.fetchRuns().subscribe(results, error);
-
-        httpMock
-          .expectOne('data/runs')
-          .error(new ErrorEvent('FakeError'), {status: 444});
         // Flush the promise in the microtask.
         flush();
 

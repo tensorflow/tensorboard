@@ -5,8 +5,6 @@ package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])
 
-exports_files(["LICENSE"])
-
 py_binary(
     name = "generate_testdata",
     srcs = ["generate_testdata.py"],

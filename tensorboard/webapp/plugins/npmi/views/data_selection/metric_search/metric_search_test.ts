@@ -29,7 +29,7 @@ import {Action, Store} from '@ngrx/store';
 import {provideMockStore, MockStore} from '@ngrx/store/testing';
 
 import {State} from '../../../../../app_state';
-import {getRunSelection} from '../../../../../core/store/core_selectors';
+import {getCurrentRouteRunSelection} from '../../../../../selectors';
 import {
   getMetricFilters,
   getMetricsRegex,
@@ -76,7 +76,7 @@ describe('Npmi Metric Search Container', () => {
     });
 
     store.overrideSelector(
-      getRunSelection,
+      getCurrentRouteRunSelection,
       new Map([
         ['run1', true],
         ['run2', true],

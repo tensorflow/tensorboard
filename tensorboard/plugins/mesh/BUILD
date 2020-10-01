@@ -4,8 +4,6 @@ package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])
 
-exports_files(["LICENSE"])
-
 # Public-facing API, included in Pip package.
 py_library(
     name = "mesh",

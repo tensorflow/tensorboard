@@ -33,8 +33,7 @@ app-header {
   z-index: 1; /* The box shadow needs to extend out of the app-header. */
 }
 
-.plugins {
-  flex: 1 1;
+main {
+  flex-grow: 1;
   overflow: auto;
-  position: relative;
 }

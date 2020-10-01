@@ -12,25 +12,29 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component, OnInit} from '@angular/core';
-import {select, Store} from '@ngrx/store';
-
-import {npmiLoaded} from './actions';
-import {State} from '../../app_state';
-import {getCurrentRouteRunSelection} from '../../selectors';
-
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
+import {ChangeDetectionStrategy, Component} from '@angular/core';
 
 @Component({
-  selector: 'npmi',
-  template: ` <npmi-component [runs]="runs$ | async"></npmi-component> `,
+  selector: 'tensorboard-wrapper-component',
+  template: `
+    <plugins class="plugins"></plugins>
+    <reloader></reloader>
+  `,
+  styles: [
+    `
+      :host {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+      }
+
+      .plugins {
+        flex: 1 1;
+        overflow: auto;
+        position: relative;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class NpmiContainer implements OnInit {
-  readonly runs$ = this.store.pipe(select(getCurrentRouteRunSelection));
-
-  constructor(private readonly store: Store<State>) {}
-
-  ngOnInit(): void {
-    this.store.dispatch(npmiLoaded());
-  }
-}
+export class TensorBoardWrapperComponent {}
