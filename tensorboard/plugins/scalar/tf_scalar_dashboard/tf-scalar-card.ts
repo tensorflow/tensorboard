@@ -31,6 +31,13 @@ import {DEFAULT_TOOLTIP_COLUMNS} from '../../../components/vz_line_chart2/vz-lin
 type RunTagItem = {run: string; tag: string};
 
 /**
+ * Save the initial URL query params, before the AppRoutingEffects initialize.
+ * Ideally, AppRouting would manage all URL params.
+ * https://github.com/tensorflow/tensorboard/issues/4207
+ */
+const initialURLSearchParams = new URLSearchParams(window.location.search);
+
+/**
  * A card that handles loading data (at the right times), rendering a scalar
  * chart, and providing UI affordances (such as buttons) for scalar data.
  */
@@ -265,9 +272,7 @@ export class TfScalarCard extends PolymerElement {
     onLoad,
     onFinish
   ) => {
-    const inColab =
-      new URLSearchParams(window.location.search).get('tensorboardColab') ===
-      'true';
+    const inColab = initialURLSearchParams.get('tensorboardColab') === 'true';
     if (inColab) {
       // Google-internal Colab doesn't support HTTP POST requests, so we fall
       // back to HTTP GET (even though public Colab supports POST).

@@ -16,9 +16,16 @@ import {Injectable} from '@angular/core';
 
 import {TBFeatureFlagDataSource} from './tb_feature_flag_data_source_types';
 
+/**
+ * Save the initial URL query params, before the AppRoutingEffects initialize.
+ * Ideally, AppRouting would manage all URL params.
+ * https://github.com/tensorflow/tensorboard/issues/4207
+ */
+const initialURLSearchParams = new URLSearchParams(window.location.search);
+
 const util = {
   getParams() {
-    return new URLSearchParams(window.location.search);
+    return initialURLSearchParams;
   },
 };
 
