@@ -129,13 +129,11 @@ limitations under the License.
           <mat-menu #filterMenu="matMenu">
             <div
               mat-menu-item
-              (click)="$event.stopPropagation()"
+              (click)="handleHparamIncludeUndefinedChanged($event, column)"
               role="menuitemcheckbox"
               disableRipple
             >
-              <mat-checkbox
-                [checked]="column.filter.includeUndefined"
-                (change)="handleHparamIncludeUndefinedToggled(column)"
+              <mat-checkbox [checked]="column.filter.includeUndefined"
                 ><span>(show empty value)</span></mat-checkbox
               >
             </div>
@@ -160,11 +158,10 @@ limitations under the License.
                 *ngFor="let value of column.filter.possibleValues"
                 mat-menu-item
                 role="menuitemcheckbox"
-                (click)="$event.stopPropagation()"
+                (click)="handleHparamDiscreteChanged($event, column, value)"
               >
                 <mat-checkbox
                   [checked]="column.filter.filterValues.includes(value)"
-                  (change)="handleHparamDiscreteChanged(column, value)"
                   ><span>{{ value }}</span></mat-checkbox
                 >
               </div>
@@ -197,13 +194,11 @@ limitations under the License.
           <mat-menu #filterMenu="matMenu">
             <div
               mat-menu-item
-              (click)="$event.stopPropagation()"
+              (click)="handleMetricIncludeUndefinedChanged($event, column)"
               role="menuitemcheckbox"
               disableRipple
             >
-              <mat-checkbox
-                [checked]="column.filter.includeUndefined"
-                (change)="handleMetricIncludeUndefinedChanged(column)"
+              <mat-checkbox [checked]="column.filter.includeUndefined"
                 ><span>(show empty value)</span></mat-checkbox
               >
             </div>

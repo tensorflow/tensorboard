@@ -23,6 +23,7 @@ ng_module(
         "runs_table_component.ng.html",
     ],
     deps = [
+        "//tensorboard/webapp:app_config",
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp:selectors",
         "//tensorboard/webapp/angular:expect_angular_material_button",

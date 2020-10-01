@@ -117,6 +117,13 @@ ng_module(
     ],
 )
 
+ng_module(
+    name = "app_config",
+    srcs = [
+        "app_config.ts",
+    ],
+)
+
 # TODO(stephanwlee): at the moment, there is no development build. Reinstate it.
 # Wrapper that prepares Angular app for deployment, dealing with browser
 # compatibility, Vulcanization, and configuration (e.g. prod vs. dev).

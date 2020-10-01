@@ -27,7 +27,9 @@ import {MatPaginator} from '@angular/material/paginator';
 import {MatPaginatorIntl} from '@angular/material/paginator';
 import {MatSort, Sort} from '@angular/material/sort';
 import {MatTableDataSource} from '@angular/material/table';
+import {MAT_CHECKBOX_DEFAULT_OPTIONS} from '@angular/material/checkbox';
 
+import {MAT_CHECKBOX_DEFAULT_COLOR} from '../../../app_config';
 import {SortDirection} from '../../../types/ui';
 import {
   DiscreteFilter,
@@ -73,8 +75,17 @@ export interface IntervalFilterChange {
   },
   styleUrls: ['runs_table_component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  // Use Element Provider since this text is unique to this element hierarchy.
-  providers: [{provide: MatPaginatorIntl, useClass: RunsPaginatorIntl}],
+  providers: [
+    // Use Element Provider since this text is unique to this element hierarchy.
+    {provide: MatPaginatorIntl, useClass: RunsPaginatorIntl},
+    {
+      provide: MAT_CHECKBOX_DEFAULT_OPTIONS,
+      useValue: {
+        clickAction: 'noop',
+        color: MAT_CHECKBOX_DEFAULT_COLOR,
+      },
+    },
+  ],
 })
 export class RunsTableComponent implements OnChanges {
   readonly dataSource = new MatTableDataSource<RunTableItem>();
@@ -201,7 +212,11 @@ export class RunsTableComponent implements OnChanges {
     return item.run.id;
   }
 
-  handleHparamIncludeUndefinedToggled(hparamColumn: HparamColumn) {
+  handleHparamIncludeUndefinedChanged(
+    event: MouseEvent,
+    hparamColumn: HparamColumn
+  ) {
+    event.stopPropagation();
     const {name, filter} = hparamColumn;
 
     if (!filter) {
@@ -247,9 +262,11 @@ export class RunsTableComponent implements OnChanges {
   }
 
   handleHparamDiscreteChanged(
+    event: MouseEvent,
     hparamColumn: HparamColumn,
     toggledValue: DiscreteHparamValue
   ) {
+    event.stopPropagation();
     const {name, filter} = hparamColumn;
 
     if (!filter) {
@@ -277,7 +294,11 @@ export class RunsTableComponent implements OnChanges {
     });
   }
 
-  handleMetricIncludeUndefinedChanged(metricColumn: MetricColumn) {
+  handleMetricIncludeUndefinedChanged(
+    event: MouseEvent,
+    metricColumn: MetricColumn
+  ) {
+    event.stopPropagation();
     if (!metricColumn.filter) {
       throw new RangeError(
         'Invariant error: require filter to exist for it to change'
