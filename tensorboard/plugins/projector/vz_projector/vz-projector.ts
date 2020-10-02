@@ -72,8 +72,6 @@ const INDEX_METADATA_FIELD = '__index__';
 
 /**
  * Save the initial URL query params, before the AppRoutingEffects initialize.
- * Ideally, AppRouting would manage all URL params.
- * https://github.com/tensorflow/tensorboard/issues/4207
  */
 const initialURLQueryString = window.location.search;
 

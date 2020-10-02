@@ -33,8 +33,6 @@ export interface Router {
 /**
  * Save the initial URL query params, before the AppRoutingEffects initialize,
  * and before creating the router.
- * Ideally, AppRouting would manage all URL params.
- * https://github.com/tensorflow/tensorboard/issues/4207
  */
 const initialURLSearchParams = new URLSearchParams(window.location.search);
 let _router: Router = createRouter();
