@@ -16,9 +16,14 @@ import {Injectable} from '@angular/core';
 
 import {TBFeatureFlagDataSource} from './tb_feature_flag_data_source_types';
 
+/**
+ * Save the initial URL query params, before the AppRoutingEffects initialize.
+ */
+const initialURLSearchParams = new URLSearchParams(window.location.search);
+
 const util = {
   getParams() {
-    return new URLSearchParams(window.location.search);
+    return initialURLSearchParams;
   },
 };
 

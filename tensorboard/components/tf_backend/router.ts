@@ -29,6 +29,12 @@ export interface Router {
   runs: () => string;
   runsForExperiment: (id: ExperimentId) => string;
 }
+
+/**
+ * Save the initial URL query params, before the AppRoutingEffects initialize,
+ * and before creating the router.
+ */
+const initialURLSearchParams = new URLSearchParams(window.location.search);
 let _router: Router = createRouter();
 
 /**
@@ -39,7 +45,7 @@ let _router: Router = createRouter();
  */
 export function createRouter(
   dataDir = 'data',
-  urlSearchParams = new URLSearchParams(window.location.search)
+  urlSearchParams = initialURLSearchParams
 ): Router {
   if (dataDir[dataDir.length - 1] === '/') {
     dataDir = dataDir.slice(0, dataDir.length - 1);

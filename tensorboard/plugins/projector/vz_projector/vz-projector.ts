@@ -70,6 +70,11 @@ const THRESHOLD_DIM_NORMALIZE = 50;
 const POINT_COLOR_MISSING = 'black';
 const INDEX_METADATA_FIELD = '__index__';
 
+/**
+ * Save the initial URL query params, before the AppRoutingEffects initialize.
+ */
+const initialURLQueryString = window.location.search;
+
 @customElement('vz-projector')
 class Projector
   extends LegacyElementMixin(PolymerElement)
@@ -440,7 +445,7 @@ class Projector
     if (this.servingMode === 'demo') {
       let projectorConfigUrl: string;
       // Only in demo mode do we allow the config being passed via URL.
-      let urlParams = util.getURLParams(window.location.search);
+      let urlParams = util.getURLParams(initialURLQueryString);
       if ('config' in urlParams) {
         projectorConfigUrl = urlParams['config'];
       } else {
