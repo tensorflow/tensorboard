@@ -81,6 +81,8 @@ class EventMultiplexer(object):
         purge_orphaned_data=True,
         max_reload_threads=None,
         event_file_active_filter=None,
+        concurrent_dir_discover=False,
+        concurrent_dir_discover_cache_TTL=30,
     ):
         """Constructor for the `EventMultiplexer`.
 
@@ -115,6 +117,10 @@ class EventMultiplexer(object):
         self.purge_orphaned_data = purge_orphaned_data
         self._max_reload_threads = max_reload_threads or 1
         self._event_file_active_filter = event_file_active_filter
+        self._concurrent_dir_discover = concurrent_dir_discover
+        self._concurrent_dir_discover_cache_TTL = (
+            concurrent_dir_discover_cache_TTL
+        )
         if run_path_map is not None:
             logger.info(
                 "Event Multplexer doing initialization load for %s",
@@ -199,7 +205,11 @@ class EventMultiplexer(object):
           The `EventMultiplexer`.
         """
         logger.info("Starting AddRunsFromDirectory: %s", path)
-        for subdir in io_wrapper.GetLogdirSubdirectories(path):
+        for subdir in io_wrapper.GetLogdirSubdirectories(
+            path,
+            concurrent_dir_discover=self._concurrent_dir_discover,
+            cache_TTL=self._concurrent_dir_discover_cache_TTL,
+        ):
             logger.info("Adding run from directory %s", subdir)
             rpath = os.path.relpath(subdir, path)
             subname = os.path.join(name, rpath) if name else rpath

@@ -66,6 +66,8 @@ class LocalDataIngester(object):
             purge_orphaned_data=flags.purge_orphaned_data,
             max_reload_threads=flags.max_reload_threads,
             event_file_active_filter=_get_event_file_active_filter(flags),
+            concurrent_dir_discover=flags.concurrent_dir_discover,
+            concurrent_dir_discover_cache_TTL=flags.concurrent_dir_discover_cache_TTL,
         )
         self._data_provider = data_provider.MultiplexerDataProvider(
             self._multiplexer, flags.logdir or flags.logdir_spec
@@ -99,21 +101,11 @@ class LocalDataIngester(object):
                 logger.info(
                     "TensorBoard reload process: Reload the whole Multiplexer"
                 )
-                print("multiplexer.AddRunsFromDirectory(path, name) completed")
                 duration = time.time() - start
-                print(
-                    "AddRunsFromDirectory done. Load took {} secs".format(
-                        duration
-                    )
-                )
+                logger.info("Listing directory took {} secs".format(duration))
                 start2 = time.time()
                 self._multiplexer.Reload()
                 duration = time.time() - start2
-                print(
-                    "TensorBoard done reloading. Load took {} secs".format(
-                        duration
-                    )
-                )
 
                 logger.info(
                     "TensorBoard done reloading. Load took %0.3f secs", duration

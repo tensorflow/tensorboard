@@ -424,6 +424,30 @@ based routing of an ELB when the website base_url is not available e.g.
         )
 
         parser.add_argument(
+            "--concurrent_dir_discover",
+            metavar="BOOL",
+            # Custom str-to-bool converter since regular bool() doesn't work.
+            type=lambda v: {"true": True, "false": False}.get(v.lower(), v),
+            choices=[True, False],
+            default=False,
+            help="""\
+[experimental] Listing all experiments on a remote storage might be slow for non tensorflow environment. This 
+argument controls whether to list the directories concurrently to reduce the waiting time. (default: %(default)s)\
+""",
+        )
+
+        parser.add_argument(
+            "--concurrent_dir_discover_cache_TTL",
+            metavar="SECONDS",
+            type=float,
+            default=30,
+            help="""\
+How often the backend should refresh the cached directories, in seconds.
+Set to 0 to rewalk every time. If --concurrent_dir_discover==False, then this argument has no effect. (default: %(default)s)\
+""",
+        )
+
+        parser.add_argument(
             "--max_reload_threads",
             metavar="COUNT",
             type=int,
