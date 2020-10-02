@@ -174,16 +174,19 @@ def ListRecursivelyViaGlobbing(top):
 class ListRecursivelyViaBFSWalking:
     """A class that walks a directory recursively with multiple threads.
 
-    For network based file systems, listing the directory might suffer from large latency. 
+    For network based file systems, listing the directory might suffer from large latency.
     This class walks the directory with breadth first strategy with concurrent threads to speed up.
-    The result is put inside walked_structure.
-    Also, this class maintains a cache to speed up the query. If the cache is not expired, the class has no side effect.
+    The traverse result is put inside walked_structure.
+    Also, this class maintains a cache to speed up the query. If the cache is not expired,
+    then the class has no side effect.
     Since I want to keep the function signature intact, some parameters are passed by global vars.
     Args:
       top_directory: A path to a directory.
 
     Returns:
-      Nothing. The result is stored in return_structure.
+      Nothing. The result is stored in return_structure. The return_structure is a list of
+      tuple(dir_path, dirs, filenames), where dirs (tuple) and filenames (tuple) are the directories
+      and files in dir_path.
     """
 
     class _BFSWALK:
