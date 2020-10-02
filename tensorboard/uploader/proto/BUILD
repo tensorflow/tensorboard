@@ -17,5 +17,8 @@ tb_proto_library(
         "write_service.proto",
     ],
     has_services = True,
-    deps = ["//tensorboard/compat/proto:protos_all"],
+    deps = [
+      "//tensorboard/compat/proto:protos_all",
+      "//tensorboard/compat/proto:tensor_proto_lib",
+    ],
 )
