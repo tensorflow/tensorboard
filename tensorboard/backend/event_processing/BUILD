@@ -31,7 +31,6 @@ py_test(
     ],
 )
 
-
 py_test(
     name = "io_wrapper_test_no_tf",
     size = "small",
@@ -44,7 +43,6 @@ py_test(
         "@org_pythonhosted_six",
     ],
 )
-
 
 py_library(
     name = "data_ingester",
