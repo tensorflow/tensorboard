@@ -365,6 +365,10 @@ class TensorBoard(object):
             `signal.SIGTERM`.
           signal_name: The human-readable signal name.
         """
+        # Note to maintainers: Google-internal code overrides this
+        # method (cf. cl/334534610). Double-check changes before
+        # modifying API.
+
         old_signal_handler = None  # set below
 
         def handler(handled_signal_number, frame):
