@@ -20,6 +20,10 @@ import '../tf_hparams_main/tf-hparams-main';
 import * as tf_hparams_backend from '../tf_hparams_backend/tf-hparams-backend';
 import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
 
+const inColab =
+  new URLSearchParams(window.location.search).get('tensorboardColab') ===
+  'true';
+
 const PLUGIN_NAME = 'hparams';
 @customElement('tf-hparams-dashboard')
 class TfHparamsDashboard extends LegacyElementMixin(PolymerElement) {
@@ -43,7 +47,7 @@ class TfHparamsDashboard extends LegacyElementMixin(PolymerElement) {
     new tf_backend.RequestManager(),
     /* Use GETs if we're running in colab (due to b/126387106).
           Otherwise use POSTs. */
-    /* useHttpGet= */ !!((window as any).TENSORBOARD_ENV || {}).IN_COLAB
+    /* useHttpGet= */ inColab
   );
   // This is called by the tensorboard web framework to refresh the plugin.
   reload() {
