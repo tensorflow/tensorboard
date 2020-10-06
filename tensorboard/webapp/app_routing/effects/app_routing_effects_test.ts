@@ -651,7 +651,42 @@ describe('app_routing_effects', () => {
       expect(replaceStateSpy).toHaveBeenCalledWith('/experiments#foo');
     });
 
-    it('does not preserve hash upon replace for non-initial navigation', () => {
+    it('preserves hash upon navigations to the same route id', () => {
+      const activeRoute = buildRoute({
+        routeKind: RouteKind.EXPERIMENT,
+        pathname: '/experiment',
+        queryParams: [],
+        navigationOptions: {
+          replaceState: true,
+        },
+      });
+      const nextActiveRoute = buildRoute({
+        routeKind: RouteKind.EXPERIMENT,
+        pathname: '/experiment',
+        queryParams: [{key: 'q', value: 'new_value'}],
+        navigationOptions: {
+          replaceState: true,
+        },
+      });
+      store.overrideSelector(getActiveRoute, nextActiveRoute);
+      store.refreshState();
+      getHashSpy.and.returnValue('#foo');
+      getPathSpy.and.returnValue('meow');
+      getSearchSpy.and.returnValue([]);
+
+      action.next(
+        actions.navigated({
+          before: activeRoute,
+          after: nextActiveRoute,
+        })
+      );
+
+      expect(replaceStateSpy).toHaveBeenCalledWith(
+        '/experiment?q=new_value#foo'
+      );
+    });
+
+    it('discards hash upon navigations to a new route id', () => {
       const activeRoute = buildRoute({
         routeKind: RouteKind.EXPERIMENTS,
         pathname: '/experiments',
@@ -663,6 +698,8 @@ describe('app_routing_effects', () => {
       const nextActiveRoute = buildRoute({
         routeKind: RouteKind.EXPERIMENT,
         pathname: '/experiment',
+        // Changing route params produces a new route id.
+        params: {experimentId: '123'},
         queryParams: [],
         navigationOptions: {
           replaceState: true,
