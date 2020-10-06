@@ -259,6 +259,7 @@ tf_ng_web_test_suite(
         "//tensorboard/webapp/plugins/text_v2/effects:effects_test_lib",
         "//tensorboard/webapp/plugins/text_v2/store:store_test_lib",
         "//tensorboard/webapp/reloader:test_lib",
+        "//tensorboard/webapp/routes:routes_test_lib",
         "//tensorboard/webapp/runs/data_source:runs_data_source_test",
         "//tensorboard/webapp/runs/effects:effects_test",
         "//tensorboard/webapp/runs/store:store_test",

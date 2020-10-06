@@ -17,6 +17,7 @@ import {Component, Type} from '@angular/core';
 import {TensorBoardWrapperComponent} from '../tb_wrapper/tb_wrapper_component';
 import {RouteDef} from '../app_routing/route_config_types';
 import {RouteKind} from '../app_routing/types';
+import {CoreDeepLinkProvider} from './core_deeplink_provider';
 
 export function routesFactory(): RouteDef[] {
   return [
@@ -25,6 +26,7 @@ export function routesFactory(): RouteDef[] {
       path: '/',
       ngComponent: TensorBoardWrapperComponent as Type<Component>,
       defaultRoute: true,
+      deepLinkProvider: new CoreDeepLinkProvider(),
     },
   ];
 }
