@@ -30,6 +30,7 @@ import {
   buildMetricsState,
   buildTagMetadata,
   buildTimeSeriesData,
+  createCardMetadata,
   createHistogramStepData,
   createImageStepData,
   createScalarStepData,
@@ -252,6 +253,69 @@ describe('metrics reducers', () => {
       expect(nextState.cardToPinnedCopy).toEqual(
         expectedState.cardToPinnedCopy
       );
+    });
+
+    it('automatically pins cards from pre-pinned storage', () => {
+      const fakeCardMetadata = {
+        plugin: PluginType.SCALARS,
+        tag: 'tagA',
+        runId: null,
+      };
+      const stepCount = 10;
+      const expectedCardId = getCardId(fakeCardMetadata);
+      const expectedPinnedCopyId = getPinnedCardId(expectedCardId);
+      const beforeState = buildMetricsState({
+        cardMetadataMap: {},
+        cardList: [],
+        cardStepIndex: {
+          [expectedCardId]: stepCount - 1,
+        },
+        cardToPinnedCopy: new Map(),
+        pinnedCardToOriginal: new Map(),
+        prePinnedCards: [{tag: 'tagA'}, {tag: 'tagB'}],
+      });
+      const nextState = reducers(
+        beforeState,
+        actions.metricsTagMetadataLoaded({
+          tagMetadata: {
+            ...buildDataSourceTagMetadata(),
+            [PluginType.SCALARS]: {
+              tagDescriptions: {},
+              runTagInfo: {run1: ['tagA']},
+            },
+          },
+        })
+      );
+
+      const {
+        cardMetadataMap,
+        cardList,
+        cardStepIndex,
+        cardToPinnedCopy,
+        pinnedCardToOriginal,
+        prePinnedCards,
+      } = nextState;
+      expect({
+        cardMetadataMap,
+        cardList,
+        cardStepIndex,
+        cardToPinnedCopy,
+        pinnedCardToOriginal,
+        prePinnedCards,
+      }).toEqual({
+        cardMetadataMap: {
+          [expectedCardId]: fakeCardMetadata,
+          [expectedPinnedCopyId]: fakeCardMetadata,
+        },
+        cardList: [expectedCardId],
+        cardStepIndex: {
+          [expectedCardId]: stepCount - 1,
+          [expectedPinnedCopyId]: stepCount - 1,
+        },
+        cardToPinnedCopy: new Map([[expectedCardId, expectedPinnedCopyId]]),
+        pinnedCardToOriginal: new Map([[expectedPinnedCopyId, expectedCardId]]),
+        prePinnedCards: [{tag: 'tagB'}],
+      });
     });
 
     it('does not drop existing data', () => {
@@ -1311,6 +1375,95 @@ describe('metrics reducers', () => {
         actions.metricsTagGroupExpansionChanged({tagGroup: 'foo'})
       );
       expect(nextState.tagGroupExpanded).toEqual(new Map([['foo', true]]));
+    });
+  });
+
+  describe('pinned card hydration', () => {
+    it('ignores RouteKind EXPERIMENTS', () => {
+      const beforeState = buildMetricsState({prePinnedCards: []});
+      const action = routingActions.stateRehydratedFromUrl({
+        routeKind: RouteKind.EXPERIMENTS,
+        partialState: {
+          metrics: {
+            pinnedCards: [{tag: 'accuracy'}],
+          },
+        },
+      });
+      const nextState = reducers(beforeState, action);
+
+      expect(nextState.prePinnedCards).toEqual([]);
+    });
+
+    it('populates ngrx store with pre-pinned cards from storage', () => {
+      const beforeState = buildMetricsState({prePinnedCards: []});
+      const action = routingActions.stateRehydratedFromUrl({
+        routeKind: RouteKind.EXPERIMENT,
+        partialState: {
+          metrics: {
+            pinnedCards: [{tag: 'accuracy'}],
+          },
+        },
+      });
+      const nextState = reducers(beforeState, action);
+
+      expect(nextState.prePinnedCards).toEqual([{tag: 'accuracy'}]);
+    });
+
+    it('does not populate pre-pinned store with already pinned cards', () => {
+      const fakeMetadata = {...createCardMetadata(), tag: 'accuracy'};
+      const beforeState = buildMetricsState({
+        cardMetadataMap: {
+          'card-pin1': fakeMetadata,
+          card1: fakeMetadata,
+        },
+        pinnedCardToOriginal: new Map([['card-pin1', 'card1']]),
+        prePinnedCards: [],
+      });
+      const action = routingActions.stateRehydratedFromUrl({
+        routeKind: RouteKind.EXPERIMENT,
+        partialState: {
+          metrics: {
+            pinnedCards: [{tag: 'accuracy'}],
+          },
+        },
+      });
+      const nextState = reducers(beforeState, action);
+
+      expect(nextState.prePinnedCards).toEqual([]);
+    });
+
+    it('does not populate pre-pinned store with duplicates', () => {
+      const beforeState = buildMetricsState({
+        prePinnedCards: [{tag: 'accuracy'}],
+      });
+      const action = routingActions.stateRehydratedFromUrl({
+        routeKind: RouteKind.EXPERIMENT,
+        partialState: {
+          metrics: {
+            pinnedCards: [{tag: 'accuracy'}],
+          },
+        },
+      });
+      const nextState = reducers(beforeState, action);
+
+      expect(nextState.prePinnedCards).toEqual([{tag: 'accuracy'}]);
+    });
+
+    it('does not clear pre-pinned store if hydration is empty', () => {
+      const beforeState = buildMetricsState({
+        prePinnedCards: [{tag: 'accuracy'}],
+      });
+      const action = routingActions.stateRehydratedFromUrl({
+        routeKind: RouteKind.EXPERIMENT,
+        partialState: {
+          metrics: {
+            pinnedCards: [],
+          },
+        },
+      });
+      const nextState = reducers(beforeState, action);
+
+      expect(nextState.prePinnedCards).toEqual([{tag: 'accuracy'}]);
     });
   });
 });

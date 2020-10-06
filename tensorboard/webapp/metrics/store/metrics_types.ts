@@ -27,6 +27,7 @@ import {
 } from '../data_source';
 import {
   CardId,
+  CardInStorage,
   CardMetadata,
   HistogramMode,
   NonPinnedCardId,
@@ -125,13 +126,23 @@ export type CardStepIndexMap = Record<
   number | null
 >;
 
+export type CardToPinnedCard = Map<NonPinnedCardId, PinnedCardId>;
+
+export type PinnedCardToCard = Map<PinnedCardId, NonPinnedCardId>;
+
 export interface MetricsRoutefulState {
   tagMetadataLoaded: DataLoadState;
   tagMetadata: TagMetadata;
   // A list of card ids in the main content area, excluding pinned copies.
   cardList: NonPinnedCardId[];
-  cardToPinnedCopy: Map<NonPinnedCardId, PinnedCardId>;
-  pinnedCardToOriginal: Map<PinnedCardId, NonPinnedCardId>;
+  cardToPinnedCopy: CardToPinnedCard;
+  pinnedCardToOriginal: PinnedCardToCard;
+  /**
+   * Pinned cards from storage that do not yet have a corresponding card
+   * (e.g. tag metadata might not be loaded yet). A pinned card exists either in
+   * prePinnedCards or in pinnedCardToOriginal, but not both.
+   */
+  prePinnedCards: CardInStorage[];
   cardMetadataMap: CardMetadataMap;
   cardStepIndex: CardStepIndexMap;
   tagFilter: string;

@@ -51,3 +51,21 @@ export type CardId = NonPinnedCardId | PinnedCardId;
 export type CardIdWithMetadata = CardMetadata & {
   cardId: CardId;
 };
+
+/**
+ * The normal representation of a card, for storage layers.
+ */
+export interface CardInStorage {
+  tag: string;
+  runId?: string;
+  sample?: number;
+}
+
+/**
+ * The state after deserializing a URL for hydration.
+ */
+export interface URLDeserializedState {
+  metrics: {
+    pinnedCards: CardInStorage[];
+  };
+}
