@@ -20,6 +20,7 @@ import '../tf_hparams_main/tf-hparams-main';
 import * as tf_hparams_backend from '../tf_hparams_backend/tf-hparams-backend';
 import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
 
+// Read URL at module import time, before AppRoutingEffects stomps it.
 const inColab =
   new URLSearchParams(window.location.search).get('tensorboardColab') ===
   'true';
