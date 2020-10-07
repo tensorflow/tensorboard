@@ -65,17 +65,15 @@ ng_module(
     srcs = [
         "app_container.ts",
         "app_module.ts",
-        # TODO(bmd3k): Depend on :mat_icon when internal cleanup is complete.
-        "mat_icon_module.ts",
     ],
     assets = [
         "app_container.css",
         "app_container.ng.html",
     ],
     deps = [
+        ":mat_icon",
         ":oss_plugins_module",
         ":reducer_config",
-        "//tensorboard/webapp/angular:expect_angular_material_icon",
         "//tensorboard/webapp/angular:expect_angular_platform_browser_animations",
         "//tensorboard/webapp/app_routing",
         "//tensorboard/webapp/app_routing:route_registry",
