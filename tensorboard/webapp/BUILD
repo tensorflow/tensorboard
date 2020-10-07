@@ -46,6 +46,18 @@ ng_module(
     ],
 )
 
+ng_module(
+    name = "mat_icon",
+    srcs = [
+        "mat_icon_module.ts",
+    ],
+    deps = [
+        "//tensorboard/webapp/angular:expect_angular_material_icon",
+        "@npm//@angular/core",
+        "@npm//@angular/platform-browser",
+    ],
+)
+
 # Angular module for the top-level app component together with all of its
 # injectable dependencies.  I.e., the entire Angular app.
 ng_module(
@@ -53,6 +65,7 @@ ng_module(
     srcs = [
         "app_container.ts",
         "app_module.ts",
+        # TODO(bmd3k): Depend on :mat_icon when internal cleanup is complete.
         "mat_icon_module.ts",
     ],
     assets = [
