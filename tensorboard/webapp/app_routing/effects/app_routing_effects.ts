@@ -229,15 +229,14 @@ export class AppRoutingEffects {
         withLatestFrom(this.store.select(getActiveRoute)),
         filter(([, route]) => Boolean(route)),
         map(([navigatedAction, route]) => {
-          // DeepLinkProviders may tell AppRoutingEffects to modify URL query
-          // params upon redux state changes. These updates can discard URL
-          // hash storage, set by tf-storage on the Polymer side. Due to async
-          // operators, we cannot guarantee that the initial 'navigated' action
-          // will be processed before any other URL-modifying logic.
+          // The URL hash can be set via HashStorageComponent (which uses
+          // Polymer's tf-storage). DeepLinkProviders also modify the URL when
+          // a provider's serializeStateToQueryParams() emits. These result in
+          // the URL updated without the previous hash. HashStorageComponent
+          // makes no attempt to restore the hash, so it is dropped.
 
-          // When Polymer-set URL hashes are dropped, this results in bad
-          // behavior when refreshing (e.g. lost active plugin) and when
-          // changing dashboards (e.g. lost tagFilter).
+          // This results in bad behavior when refreshing (e.g. lost active
+          // plugin) and when changing dashboards (e.g. lost tagFilter).
 
           // TODO(b/169799696): either AppRouting should manage the URL entirely
           // (including hash), or we make the app wait for AppRouting to

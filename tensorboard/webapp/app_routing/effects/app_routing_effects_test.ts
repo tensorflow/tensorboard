@@ -651,6 +651,9 @@ describe('app_routing_effects', () => {
       expect(replaceStateSpy).toHaveBeenCalledWith('/experiments#foo');
     });
 
+    // This hash preservation spec may become obsolete. If we enable app_routing
+    // to properly set the URL hash, and all TB embedders use app_routing, then
+    // this spec can be removed.
     it('preserves hash upon navigations to the same route id', () => {
       const activeRoute = buildRoute({
         routeKind: RouteKind.EXPERIMENT,
