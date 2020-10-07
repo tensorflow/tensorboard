@@ -436,9 +436,9 @@ class UploadIntent(_Intent):
         if self.experiment_url_callback is not None:
             self.experiment_url_callback(url)
         print(
-            "Upload started and will continue reading any new data as it's added"
+            "Upload started and will continue reading any new data as it's "
+            "added to the logdir.\n\nTo stop uploading, press Ctrl-C."
         )
-        print("to the logdir. To stop uploading, press Ctrl-C.")
         if self.dry_run:
             print(
                 "\n** This is a dry run. "
