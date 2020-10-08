@@ -46,6 +46,18 @@ ng_module(
     ],
 )
 
+ng_module(
+    name = "mat_icon",
+    srcs = [
+        "mat_icon_module.ts",
+    ],
+    deps = [
+        "//tensorboard/webapp/angular:expect_angular_material_icon",
+        "@npm//@angular/core",
+        "@npm//@angular/platform-browser",
+    ],
+)
+
 # Angular module for the top-level app component together with all of its
 # injectable dependencies.  I.e., the entire Angular app.
 ng_module(
@@ -53,16 +65,15 @@ ng_module(
     srcs = [
         "app_container.ts",
         "app_module.ts",
-        "mat_icon_module.ts",
     ],
     assets = [
         "app_container.css",
         "app_container.ng.html",
     ],
     deps = [
+        ":mat_icon",
         ":oss_plugins_module",
         ":reducer_config",
-        "//tensorboard/webapp/angular:expect_angular_material_icon",
         "//tensorboard/webapp/angular:expect_angular_platform_browser_animations",
         "//tensorboard/webapp/app_routing",
         "//tensorboard/webapp/app_routing:route_registry",
