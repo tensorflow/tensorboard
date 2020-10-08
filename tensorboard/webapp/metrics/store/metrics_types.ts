@@ -27,7 +27,7 @@ import {
 } from '../data_source';
 import {
   CardId,
-  CardInStorage,
+  CardUniqueInfo,
   CardMetadata,
   HistogramMode,
   NonPinnedCardId,
@@ -138,11 +138,13 @@ export interface MetricsRoutefulState {
   cardToPinnedCopy: CardToPinnedCard;
   pinnedCardToOriginal: PinnedCardToCard;
   /**
-   * Pinned cards from storage that do not yet have a corresponding card
-   * (e.g. tag metadata might not be loaded yet). A pinned card exists either in
-   * prePinnedCards or in pinnedCardToOriginal, but not both.
+   * Pinned cards imported from storage that do not yet have a corresponding
+   * card (e.g. tag metadata might not be loaded yet). Resolving an imported
+   * card requires comparing its CardUniqueInfo to a resolved card. After
+   * resolution, it is removed from this collection and added to the
+   * appropriate data structures (e.g. pinnedCardToOriginal).
    */
-  prePinnedCards: CardInStorage[];
+  unresolvedImportedPinnedCards: CardUniqueInfo[];
   cardMetadataMap: CardMetadataMap;
   cardStepIndex: CardStepIndexMap;
   tagFilter: string;

@@ -46,6 +46,11 @@ export type NonPinnedCardId = string;
 
 export type PinnedCardId = string;
 
+/**
+ * A unique identifier to a specific card instance in the UI. This is an opaque
+ * ID, meaning that consumers should never peer into/parse it and never assume
+ * that it will always be a string.
+ */
 export type CardId = NonPinnedCardId | PinnedCardId;
 
 export type CardIdWithMetadata = CardMetadata & {
@@ -53,9 +58,11 @@ export type CardIdWithMetadata = CardMetadata & {
 };
 
 /**
- * The normal representation of a card, for storage layers.
+ * The most minimal representation of a card that uniquely identifies it.
+ * This information can be used in storage layers (e.g. URL) and may be matched
+ * against an existing card with the same metadata.
  */
-export interface CardInStorage {
+export interface CardUniqueInfo {
   tag: string;
   runId?: string;
   sample?: number;
@@ -66,6 +73,6 @@ export interface CardInStorage {
  */
 export interface URLDeserializedState {
   metrics: {
-    pinnedCards: CardInStorage[];
+    pinnedCards: CardUniqueInfo[];
   };
 }

@@ -83,7 +83,7 @@ function buildBlankState(): MetricsState {
     cardList: [],
     cardToPinnedCopy: new Map(),
     pinnedCardToOriginal: new Map(),
-    prePinnedCards: [],
+    unresolvedImportedPinnedCards: [],
     cardMetadataMap: {},
     cardStepIndex: {},
     visibleCards: new Set(),

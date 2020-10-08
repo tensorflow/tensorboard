@@ -35,7 +35,7 @@ import {
 } from '../data_source';
 import {
   CardId,
-  CardInStorage,
+  CardUniqueInfo,
   CardMetadata,
   HistogramMode,
   NonPinnedCardId,
@@ -200,15 +200,15 @@ function buildResetLoadable(loadable: TimeSeriesLoadable) {
  * Returns whether the CardMetadata exactly matches the pinned card from
  * storage.
  */
-function cardMatchesCardInStorage(
+function cardMatchesCardUniqueInfo(
   cardMetadata: CardMetadata,
-  cardInStorage: CardInStorage
+  cardUniqueInfo: CardUniqueInfo
 ) {
-  const noRunId = !cardMetadata.runId && !cardInStorage.runId;
+  const noRunId = !cardMetadata.runId && !cardUniqueInfo.runId;
   return (
-    cardMetadata.tag === cardInStorage.tag &&
-    cardMetadata.sample === cardInStorage.sample &&
-    (cardMetadata.runId === cardInStorage.runId || noRunId)
+    cardMetadata.tag === cardUniqueInfo.tag &&
+    cardMetadata.sample === cardUniqueInfo.sample &&
+    (cardMetadata.runId === cardUniqueInfo.runId || noRunId)
   );
 }
 
@@ -216,7 +216,7 @@ function cardMatchesCardInStorage(
  * Returns an identifier useful for comparing a card in storage with a real card
  * with loaded metadata.
  */
-function hashCardInStorage(
+function hashCardUniqueInfo(
   tag: string,
   runId?: string | null,
   sample?: number
@@ -281,7 +281,7 @@ const {initialState, reducers: routeContextReducer} = createRouteContextedState(
     cardList: [],
     cardToPinnedCopy: new Map(),
     pinnedCardToOriginal: new Map(),
-    prePinnedCards: [],
+    unresolvedImportedPinnedCards: [],
     cardMetadataMap: {},
     cardStepIndex: {},
 
@@ -336,24 +336,24 @@ const reducer = createReducer(
     const seenHashes = new Set();
     for (const pinnedCardId of state.pinnedCardToOriginal.keys()) {
       const {tag, runId, sample} = state.cardMetadataMap[pinnedCardId];
-      seenHashes.add(hashCardInStorage(tag, runId, sample));
+      seenHashes.add(hashCardUniqueInfo(tag, runId, sample));
     }
 
     const hydratedState = partialState as URLDeserializedState;
-    const nextPrePinnedCards = [] as CardInStorage[];
+    const nextUnresolvedImportedPinnedCards = [] as CardUniqueInfo[];
     for (const card of [
-      ...state.prePinnedCards,
+      ...state.unresolvedImportedPinnedCards,
       ...hydratedState.metrics.pinnedCards,
     ]) {
-      const hash = hashCardInStorage(card.tag, card.runId, card.sample);
+      const hash = hashCardUniqueInfo(card.tag, card.runId, card.sample);
       if (!seenHashes.has(hash)) {
         seenHashes.add(hash);
-        nextPrePinnedCards.push(card);
+        nextUnresolvedImportedPinnedCards.push(card);
       }
     }
     return {
       ...state,
-      prePinnedCards: nextPrePinnedCards,
+      unresolvedImportedPinnedCards: nextUnresolvedImportedPinnedCards,
     };
   }),
   on(coreActions.reload, coreActions.manualReload, (state) => {
@@ -432,16 +432,18 @@ const reducer = createReducer(
         : state.cardList;
 
       // Automatically create pinned copies of new cards that match, and remove
-      // new auto-pinned cards from prePinnedCards so that subsequent
+      // new auto-pinned cards from unresolvedImportedPinnedCards so that subsequent
       // `metricsTagMetadataLoaded` will not reset user-created pin states.
-      const nextPrePinnedCardSet = new Set(state.prePinnedCards);
+      const nextUnresolvedImportedPinnedCardSet = new Set(
+        state.unresolvedImportedPinnedCards
+      );
       const nextCardToPinnedCopy = new Map(state.cardToPinnedCopy);
       const nextPinnedCardToOriginal = new Map(state.pinnedCardToOriginal);
       const nextCardStepIndexMap = {...state.cardStepIndex};
       for (const newCardId of newCardIds) {
-        for (const prePinnedCard of nextPrePinnedCardSet) {
+        for (const importedCard of nextUnresolvedImportedPinnedCardSet) {
           const cardMetadata = nextCardMetadataMap[newCardId];
-          if (cardMatchesCardInStorage(cardMetadata, prePinnedCard)) {
+          if (cardMatchesCardUniqueInfo(cardMetadata, importedCard)) {
             addPinnedCopyToState(
               newCardId,
               nextCardToPinnedCopy,
@@ -449,7 +451,7 @@ const reducer = createReducer(
               nextCardStepIndexMap,
               nextCardMetadataMap
             );
-            nextPrePinnedCardSet.delete(prePinnedCard);
+            nextUnresolvedImportedPinnedCardSet.delete(importedCard);
             break;
           }
         }
@@ -464,7 +466,7 @@ const reducer = createReducer(
         cardStepIndex: nextCardStepIndexMap,
         cardToPinnedCopy: nextCardToPinnedCopy,
         pinnedCardToOriginal: nextPinnedCardToOriginal,
-        prePinnedCards: [...nextPrePinnedCardSet],
+        unresolvedImportedPinnedCards: [...nextUnresolvedImportedPinnedCardSet],
       };
     }
   ),

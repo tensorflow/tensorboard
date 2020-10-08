@@ -272,7 +272,7 @@ describe('metrics reducers', () => {
         },
         cardToPinnedCopy: new Map(),
         pinnedCardToOriginal: new Map(),
-        prePinnedCards: [{tag: 'tagA'}, {tag: 'tagB'}],
+        unresolvedImportedPinnedCards: [{tag: 'tagA'}, {tag: 'tagB'}],
       });
       const nextState = reducers(
         beforeState,
@@ -293,7 +293,7 @@ describe('metrics reducers', () => {
         cardStepIndex,
         cardToPinnedCopy,
         pinnedCardToOriginal,
-        prePinnedCards,
+        unresolvedImportedPinnedCards,
       } = nextState;
       expect({
         cardMetadataMap,
@@ -301,7 +301,7 @@ describe('metrics reducers', () => {
         cardStepIndex,
         cardToPinnedCopy,
         pinnedCardToOriginal,
-        prePinnedCards,
+        unresolvedImportedPinnedCards,
       }).toEqual({
         cardMetadataMap: {
           [expectedCardId]: fakeCardMetadata,
@@ -314,7 +314,7 @@ describe('metrics reducers', () => {
         },
         cardToPinnedCopy: new Map([[expectedCardId, expectedPinnedCopyId]]),
         pinnedCardToOriginal: new Map([[expectedPinnedCopyId, expectedCardId]]),
-        prePinnedCards: [{tag: 'tagB'}],
+        unresolvedImportedPinnedCards: [{tag: 'tagB'}],
       });
     });
 
@@ -1380,7 +1380,9 @@ describe('metrics reducers', () => {
 
   describe('pinned card hydration', () => {
     it('ignores RouteKind EXPERIMENTS', () => {
-      const beforeState = buildMetricsState({prePinnedCards: []});
+      const beforeState = buildMetricsState({
+        unresolvedImportedPinnedCards: [],
+      });
       const action = routingActions.stateRehydratedFromUrl({
         routeKind: RouteKind.EXPERIMENTS,
         partialState: {
@@ -1391,11 +1393,13 @@ describe('metrics reducers', () => {
       });
       const nextState = reducers(beforeState, action);
 
-      expect(nextState.prePinnedCards).toEqual([]);
+      expect(nextState.unresolvedImportedPinnedCards).toEqual([]);
     });
 
     it('populates ngrx store with pre-pinned cards from storage', () => {
-      const beforeState = buildMetricsState({prePinnedCards: []});
+      const beforeState = buildMetricsState({
+        unresolvedImportedPinnedCards: [],
+      });
       const action = routingActions.stateRehydratedFromUrl({
         routeKind: RouteKind.EXPERIMENT,
         partialState: {
@@ -1406,7 +1410,9 @@ describe('metrics reducers', () => {
       });
       const nextState = reducers(beforeState, action);
 
-      expect(nextState.prePinnedCards).toEqual([{tag: 'accuracy'}]);
+      expect(nextState.unresolvedImportedPinnedCards).toEqual([
+        {tag: 'accuracy'},
+      ]);
     });
 
     it('does not populate pre-pinned store with already pinned cards', () => {
@@ -1417,7 +1423,7 @@ describe('metrics reducers', () => {
           card1: fakeMetadata,
         },
         pinnedCardToOriginal: new Map([['card-pin1', 'card1']]),
-        prePinnedCards: [],
+        unresolvedImportedPinnedCards: [],
       });
       const action = routingActions.stateRehydratedFromUrl({
         routeKind: RouteKind.EXPERIMENT,
@@ -1429,12 +1435,12 @@ describe('metrics reducers', () => {
       });
       const nextState = reducers(beforeState, action);
 
-      expect(nextState.prePinnedCards).toEqual([]);
+      expect(nextState.unresolvedImportedPinnedCards).toEqual([]);
     });
 
     it('does not populate pre-pinned store with duplicates', () => {
       const beforeState = buildMetricsState({
-        prePinnedCards: [{tag: 'accuracy'}],
+        unresolvedImportedPinnedCards: [{tag: 'accuracy'}],
       });
       const action = routingActions.stateRehydratedFromUrl({
         routeKind: RouteKind.EXPERIMENT,
@@ -1446,12 +1452,14 @@ describe('metrics reducers', () => {
       });
       const nextState = reducers(beforeState, action);
 
-      expect(nextState.prePinnedCards).toEqual([{tag: 'accuracy'}]);
+      expect(nextState.unresolvedImportedPinnedCards).toEqual([
+        {tag: 'accuracy'},
+      ]);
     });
 
     it('does not clear pre-pinned store if hydration is empty', () => {
       const beforeState = buildMetricsState({
-        prePinnedCards: [{tag: 'accuracy'}],
+        unresolvedImportedPinnedCards: [{tag: 'accuracy'}],
       });
       const action = routingActions.stateRehydratedFromUrl({
         routeKind: RouteKind.EXPERIMENT,
@@ -1463,7 +1471,9 @@ describe('metrics reducers', () => {
       });
       const nextState = reducers(beforeState, action);
 
-      expect(nextState.prePinnedCards).toEqual([{tag: 'accuracy'}]);
+      expect(nextState.unresolvedImportedPinnedCards).toEqual([
+        {tag: 'accuracy'},
+      ]);
     });
   });
 });
