@@ -16,7 +16,7 @@ import {HttpHeaders, HttpParams} from '@angular/common/http';
 import {Observable} from 'rxjs';
 
 export interface HttpOptions {
-  header?: HttpHeaders;
+  headers?: HttpHeaders;
   params?: HttpParams | {[paramKey: string]: string | string[]};
 }
 

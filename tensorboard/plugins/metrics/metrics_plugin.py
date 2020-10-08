@@ -332,7 +332,10 @@ class MetricsPlugin(base_plugin.TBPlugin):
     def _serve_time_series(self, request):
         ctx = plugin_util.context(request.environ)
         experiment = plugin_util.experiment_id(request.environ)
-        series_requests_string = request.form.get("requests")
+        if request.method == "POST":
+            series_requests_string = request.form.get("requests")
+        else:
+            series_requests_string = request.args.get("requests")
         if not series_requests_string:
             raise errors.InvalidArgumentError("Missing 'requests' field")
         try:

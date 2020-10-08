@@ -42,9 +42,32 @@ ng_module(
     ],
     deps = [
         "//tensorboard/webapp/angular:expect_angular_common_http",
+        "//tensorboard/webapp/feature_flag",
+        "//tensorboard/webapp/feature_flag:types",
+        "//tensorboard/webapp/feature_flag/store",
+        "//tensorboard/webapp/feature_flag/store:types",
         "@npm//@angular/common",
         "@npm//@angular/core",
+        "@npm//@ngrx/store",
         "@npm//rxjs",
+    ],
+)
+
+ng_module(
+    name = "http_client_test",
+    testonly = True,
+    srcs = [
+        "tb_http_client_test.ts",
+    ],
+    deps = [
+        ":feature_flag_testing",
+        ":http_client",
+        ":http_client_testing",
+        "//tensorboard/webapp/angular:expect_angular_core_testing",
+        "//tensorboard/webapp/core:types",
+        "//tensorboard/webapp/feature_flag/store",
+        "//tensorboard/webapp/feature_flag/store:store_test_lib",
+        "@npm//@types/jasmine",
     ],
 )
 
