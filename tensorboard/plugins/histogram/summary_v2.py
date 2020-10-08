@@ -100,7 +100,7 @@ def histogram(name, data, step=None, buckets=None, description=None):
     # handling once dynamic shapes are supported on TPU's.
     if isinstance(
         tf.distribute.get_strategy(),
-        (tf.distribute.experimental.TPUStrategy, tf.distribute.TPUStrategy)
+        (tf.distribute.experimental.TPUStrategy, tf.distribute.TPUStrategy),
     ):
         return tf.compat.v1.tpu.outside_compilation(
             histogram_summary, data, buckets, summary_metadata, step
