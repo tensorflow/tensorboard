@@ -15,10 +15,9 @@ limitations under the License.
 import {NgModule} from '@angular/core';
 import {HttpClientModule} from '@angular/common/http';
 import {TBHttpClient} from './tb_http_client';
-import {FeatureFlagModule} from '../feature_flag/feature_flag_module';
 
 @NgModule({
-  imports: [HttpClientModule, FeatureFlagModule],
+  imports: [HttpClientModule],
   providers: [TBHttpClient],
 })
 export class TBHttpClientModule {}

@@ -64,9 +64,12 @@ ng_module(
         ":http_client",
         ":http_client_testing",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
+        "//tensorboard/webapp/angular:expect_ngrx_store_testing",
         "//tensorboard/webapp/core:types",
         "//tensorboard/webapp/feature_flag/store",
         "//tensorboard/webapp/feature_flag/store:store_test_lib",
+        "//tensorboard/webapp/feature_flag/store:types",
+        "@npm//@ngrx/store",
         "@npm//@types/jasmine",
     ],
 )
@@ -121,6 +124,9 @@ ng_module(
     deps = [
         ":http_client",
         "//tensorboard/webapp/angular:expect_angular_common_http_testing",
+        "//tensorboard/webapp/angular:expect_ngrx_store_testing",
+        "//tensorboard/webapp/feature_flag/store:store_test_lib",
         "@npm//@angular/core",
+        "@npm//@ngrx/store",
     ],
 )

@@ -13,9 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {TestBed} from '@angular/core/testing';
-import {HttpClientTestingModule} from '@angular/common/http/testing';
 import {Store} from '@ngrx/store';
-import {MockStore, provideMockStore} from '@ngrx/store/testing';
+import {MockStore} from '@ngrx/store/testing';
 
 import {State} from '../feature_flag/store/feature_flag_types';
 import {
@@ -27,7 +26,7 @@ import {
   getIsInColab,
 } from '../feature_flag/store/feature_flag_selectors';
 import {TBFeatureFlagTestingModule} from './tb_feature_flag_testing';
-import {HttpTestingController} from './tb_http_client_testing';
+import {HttpTestingController, TBHttpClientTestingModule} from './tb_http_client_testing';
 import {TBHttpClient} from './tb_http_client';
 
 describe('TBHttpClient', () => {
@@ -37,11 +36,8 @@ describe('TBHttpClient', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TBFeatureFlagTestingModule, HttpClientTestingModule],
+      imports: [TBFeatureFlagTestingModule, TBHttpClientTestingModule],
       providers: [
-        provideMockStore({
-          initialState: buildFeatureFlagAppState(buildFeatureFlagState()),
-        }),
         TBHttpClient,
       ],
     }).compileComponents();
@@ -53,6 +49,7 @@ describe('TBHttpClient', () => {
 
   it('waits for feature flags before making POST request', () => {
     const body = {formKey: 'value'};
+    store.overrideSelector(getIsFeatureFlagsLoaded, false);
     tbHttpClient.post('foo', body).subscribe(jasmine.createSpy());
     httpMock.expectNone('foo');
 
