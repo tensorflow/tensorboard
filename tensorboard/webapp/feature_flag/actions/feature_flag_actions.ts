@@ -15,6 +15,7 @@ limitations under the License.
 
 import {createAction, props} from '@ngrx/store';
 
+import {FeatureFlags} from '../store/feature_flag_types';
 import {FeatureValue} from '../types';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store/store';
@@ -23,6 +24,6 @@ import {FeatureValue} from '../types';
 export const featuresLoaded = createAction(
   '[FEATURE FLAG] Features Loaded',
   props<{
-    features: {[featureKey: string]: FeatureValue};
+    features: Partial<FeatureFlags>;
   }>()
 );

@@ -9,6 +9,7 @@ ng_module(
     ],
     deps = [
         "//tensorboard/webapp/feature_flag:types",
+        "//tensorboard/webapp/feature_flag/store:types",
         "@npm//@ngrx/store",
     ],
 )

@@ -20,7 +20,9 @@ describe('feature_flag_selectors', () => {
     it('returns a current feature', () => {
       const state = buildState(
         buildFeatureFlagState({
-          enableMagicFeature: true,
+          features: {
+            enableMagicFeature: true,
+          },
         })
       );
       const actual = selectors.getFeature(state, 'enableMagicFeature');
@@ -31,7 +33,9 @@ describe('feature_flag_selectors', () => {
     it('returns null if the value is not present', () => {
       const state = buildState(
         buildFeatureFlagState({
-          enabledExperimentalPlugins: ['foo'],
+          features: {
+            enabledExperimentalPlugins: ['foo'],
+          },
         })
       );
       const actual = selectors.getFeature(state, 'bar');
@@ -44,7 +48,9 @@ describe('feature_flag_selectors', () => {
     it('returns value in array', () => {
       const state = buildState(
         buildFeatureFlagState({
-          enabledExperimentalPlugins: ['bar'],
+          features: {
+            enabledExperimentalPlugins: ['bar'],
+          },
         })
       );
       const actual = selectors.getFeature(state, 'enabledExperimentalPlugins');

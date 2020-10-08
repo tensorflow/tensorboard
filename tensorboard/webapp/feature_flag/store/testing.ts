@@ -18,10 +18,18 @@ import {
   FEAUTURE_FLAG_FEATURE_KEY,
 } from './feature_flag_types';
 
-export function buildFeatureFlagState(override: Partial<FeatureFlagState>) {
+export function buildFeatureFlagState(
+  override: Partial<FeatureFlagState> = {}
+) {
+  const {features: featuresOverride, ...restOverride} = override;
   return {
-    enabledExperimentalPlugins: ['foo'],
-    ...override,
+    isFeatureFlagsLoaded: false,
+    ...restOverride,
+    features: {
+      enabledExperimentalPlugins: ['foo'],
+      inColab: false,
+      ...featuresOverride,
+    },
   };
 }
 

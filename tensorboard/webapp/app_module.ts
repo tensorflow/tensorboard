@@ -42,6 +42,8 @@ import {routesFactory} from './routes';
 @NgModule({
   declarations: [AppContainer],
   imports: [
+    // Ensure feature flags are enabled before they are consumed.
+    FeatureFlagModule,
     BrowserModule,
     BrowserAnimationsModule,
     AppRoutingModule,
@@ -50,7 +52,6 @@ import {routesFactory} from './routes';
     TensorBoardWrapperModule,
     CoreModule,
     ExperimentsModule,
-    FeatureFlagModule,
     HashStorageModule,
     HeaderModule,
     MatIconModule,

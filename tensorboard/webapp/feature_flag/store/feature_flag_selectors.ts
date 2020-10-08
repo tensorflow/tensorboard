@@ -16,6 +16,7 @@ limitations under the License.
 import {createSelector, createFeatureSelector} from '@ngrx/store';
 
 import {
+  FeatureFlags,
   FeatureFlagState,
   FEAUTURE_FLAG_FEATURE_KEY,
   State,
@@ -28,19 +29,30 @@ const selectFeatureFlagState = createFeatureSelector<State, FeatureFlagState>(
   FEAUTURE_FLAG_FEATURE_KEY
 );
 
+export const getIsFeatureFlagsLoaded = createSelector(
+  selectFeatureFlagState,
+  (state) => {
+    return state.isFeatureFlagsLoaded;
+  }
+);
+
 export const getFeature = createSelector(
   selectFeatureFlagState,
   (
     state: FeatureFlagState,
-    featureId: keyof FeatureFlagState
+    featureId: keyof FeatureFlags
   ): FeatureValue | null => {
-    return state[featureId] || null;
+    return state.features[featureId] || null;
   }
 );
 
 export const getEnabledExperimentalPlugins = createSelector(
   selectFeatureFlagState,
   (state) => {
-    return state.enabledExperimentalPlugins as string[];
+    return state.features.enabledExperimentalPlugins || [];
   }
 );
+
+export const getIsInColab = createSelector(selectFeatureFlagState, (state) => {
+  return !!state.features.inColab;
+});

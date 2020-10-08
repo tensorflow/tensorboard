@@ -17,9 +17,15 @@ import {FeatureValue} from '../types';
 
 export const FEAUTURE_FLAG_FEATURE_KEY = 'feature';
 
+export interface FeatureFlags {
+  enabledExperimentalPlugins?: string[];
+  inColab?: boolean;
+  [featureId: string]: FeatureValue | undefined;
+}
+
 export interface FeatureFlagState {
-  enabledExperimentalPlugins: string[];
-  [featureId: string]: FeatureValue;
+  isFeatureFlagsLoaded: boolean;
+  features: FeatureFlags;
 }
 
 export interface State {

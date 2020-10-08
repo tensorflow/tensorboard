@@ -37,6 +37,27 @@ describe('tb_feature_flag_data_source', () => {
         );
         expect(dataSource.getFeatures()).toEqual({
           enabledExperimentalPlugins: ['a', 'b'],
+          inColab: false,
+        });
+      });
+
+      it('returns isInColab when true', () => {
+        spyOn(TEST_ONLY.util, 'getParams').and.returnValue(
+          new URLSearchParams('tensorboardColab=true')
+        );
+        expect(dataSource.getFeatures()).toEqual({
+          enabledExperimentalPlugins: [],
+          inColab: true,
+        });
+      });
+
+      it('returns isInColab when false', () => {
+        spyOn(TEST_ONLY.util, 'getParams').and.returnValue(
+          new URLSearchParams('tensorboardColab=false')
+        );
+        expect(dataSource.getFeatures()).toEqual({
+          enabledExperimentalPlugins: [],
+          inColab: false,
         });
       });
 
@@ -46,6 +67,7 @@ describe('tb_feature_flag_data_source', () => {
         );
         expect(dataSource.getFeatures()).toEqual({
           enabledExperimentalPlugins: [],
+          inColab: false,
         });
       });
     });

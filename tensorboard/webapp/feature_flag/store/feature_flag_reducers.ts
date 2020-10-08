@@ -19,13 +19,24 @@ import {FeatureFlagState} from './feature_flag_types';
 /** @typehack */ import * as _typeHackStore from '@ngrx/store/store';
 
 const initialState: FeatureFlagState = {
-  enabledExperimentalPlugins: [],
+  isFeatureFlagsLoaded: false,
+  features: {
+    enabledExperimentalPlugins: [],
+    inColab: false,
+  },
 };
 
 const reducer = createReducer<FeatureFlagState>(
   initialState,
   on(actions.featuresLoaded, (state, {features}) => {
-    return {...state, ...features};
+    return {
+      ...state,
+      isFeatureFlagsLoaded: true,
+      features: {
+        ...state.features,
+        ...features,
+      },
+    };
   })
 );
 
