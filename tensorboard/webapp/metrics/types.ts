@@ -58,18 +58,19 @@ export type CardIdWithMetadata = CardMetadata & {
 };
 
 /**
- * The most minimal representation of a card that uniquely identifies it.
- * This information can be used in storage layers (e.g. URL) and may be matched
- * against an existing card with the same metadata.
+ * The most minimal representation of a card that uniquely identifies it across
+ * a browser session. This information may be persisted in storage, retrieved,
+ * and used to match against an existing card with the same metadata.
  */
 export interface CardUniqueInfo {
+  plugin: string;
   tag: string;
   runId?: string;
   sample?: number;
 }
 
 /**
- * The state after deserializing a URL for hydration.
+ * The metrics-related state created by deserializing a URL.
  */
 export interface URLDeserializedState {
   metrics: {

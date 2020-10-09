@@ -38,13 +38,14 @@ import {
   CardUniqueInfo,
   CardMetadata,
   HistogramMode,
-  NonPinnedCardId,
   TooltipSort,
   URLDeserializedState,
   XAxisType,
 } from '../types';
 
 import {
+  buildOrReturnStateWithUnresolvedImportedPins,
+  buildOrReturnStateWithPinnedCopy,
   createPluginDataWithLoadable,
   createRunToLoadState,
   getCardId,
@@ -197,65 +198,16 @@ function buildResetLoadable(loadable: TimeSeriesLoadable) {
 }
 
 /**
- * Returns whether the CardMetadata exactly matches the pinned card from
- * storage.
- */
-function cardMatchesCardUniqueInfo(
-  cardMetadata: CardMetadata,
-  cardUniqueInfo: CardUniqueInfo
-) {
-  const noRunId = !cardMetadata.runId && !cardUniqueInfo.runId;
-  return (
-    cardMetadata.tag === cardUniqueInfo.tag &&
-    cardMetadata.sample === cardUniqueInfo.sample &&
-    (cardMetadata.runId === cardUniqueInfo.runId || noRunId)
-  );
-}
-
-/**
  * Returns an identifier useful for comparing a card in storage with a real card
  * with loaded metadata.
  */
-function hashCardUniqueInfo(
+function serializeCardUniqueInfo(
+  plugin: string,
   tag: string,
   runId?: string | null,
   sample?: number
-) {
-  return JSON.stringify([tag, runId || '', sample]);
-}
-
-/**
- * Impure helper to modify the state by creating a new pinned copy of the
- * provided card. May throw if the card provided has no metadata.
- */
-function addPinnedCopyToState(
-  cardId: NonPinnedCardId,
-  nextCardToPinnedCopy: CardToPinnedCard,
-  nextPinnedCardToOriginal: PinnedCardToCard,
-  nextCardStepIndexMap: CardStepIndexMap,
-  nextCardMetadataMap: CardMetadataMap
-) {
-  // No-op if the card is a pinned copy, or if it already has a pinned copy.
-  if (
-    nextPinnedCardToOriginal.has(cardId) ||
-    nextCardToPinnedCopy.has(cardId)
-  ) {
-    return;
-  }
-
-  // Create a pinned copy. Copies step index from the original card.
-  const pinnedCardId = getPinnedCardId(cardId);
-  nextCardToPinnedCopy.set(cardId, pinnedCardId);
-  nextPinnedCardToOriginal.set(pinnedCardId, cardId);
-  if (nextCardStepIndexMap.hasOwnProperty(cardId)) {
-    nextCardStepIndexMap[pinnedCardId] = nextCardStepIndexMap[cardId];
-  }
-
-  const metadata = nextCardMetadataMap[cardId];
-  if (!metadata) {
-    throw new Error('Cannot pin a card without metadata');
-  }
-  nextCardMetadataMap[pinnedCardId] = metadata;
+): string {
+  return JSON.stringify([plugin, tag, runId || '', sample]);
 }
 
 const {initialState, reducers: routeContextReducer} = createRouteContextedState(
@@ -322,8 +274,6 @@ const {initialState, reducers: routeContextReducer} = createRouteContextedState(
 
 const reducer = createReducer(
   initialState,
-  // This hydration action is dispatched on any in-app navigation.
-  // switching plugin dashboards will trigger this, which clears things
   on(stateRehydratedFromUrl, (state, {routeKind, partialState}) => {
     if (
       routeKind !== RouteKind.EXPERIMENT &&
@@ -331,29 +281,52 @@ const reducer = createReducer(
     ) {
       return state;
     }
-    // The URL serializes pinned cards + pre-pinned cards. Keep these sets
-    // mutually exclusive, and do not add duplicate pre-pinned cards.
-    const seenHashes = new Set();
+    // The URL contains pinned cards + unresolved imported pins. Keep these sets
+    // mutually exclusive, and do not add duplicate any unresolved imported
+    // cards.
+    const serializedCardUniqueInfos = new Set();
+
+    // Visit existing pins.
     for (const pinnedCardId of state.pinnedCardToOriginal.keys()) {
-      const {tag, runId, sample} = state.cardMetadataMap[pinnedCardId];
-      seenHashes.add(hashCardUniqueInfo(tag, runId, sample));
+      const {plugin, tag, runId, sample} = state.cardMetadataMap[pinnedCardId];
+      serializedCardUniqueInfos.add(
+        serializeCardUniqueInfo(plugin, tag, runId, sample)
+      );
     }
 
+    // We need to include previous unresolved imported pins, because the new
+    // hydrated state might not include them. For example, navigating from
+    // experiment A (with pins) --> B --> A, we want to ensure that rehydration
+    // does not drop the old pins on A.
     const hydratedState = partialState as URLDeserializedState;
-    const nextUnresolvedImportedPinnedCards = [] as CardUniqueInfo[];
+    const unresolvedImportedPinnedCards = [] as CardUniqueInfo[];
     for (const card of [
       ...state.unresolvedImportedPinnedCards,
       ...hydratedState.metrics.pinnedCards,
     ]) {
-      const hash = hashCardUniqueInfo(card.tag, card.runId, card.sample);
-      if (!seenHashes.has(hash)) {
-        seenHashes.add(hash);
-        nextUnresolvedImportedPinnedCards.push(card);
+      const cardUniqueInfoString = serializeCardUniqueInfo(
+        card.plugin,
+        card.tag,
+        card.runId,
+        card.sample
+      );
+      if (!serializedCardUniqueInfos.has(cardUniqueInfoString)) {
+        serializedCardUniqueInfos.add(cardUniqueInfoString);
+        unresolvedImportedPinnedCards.push(card);
       }
     }
+
+    const resolvedResult = buildOrReturnStateWithUnresolvedImportedPins(
+      unresolvedImportedPinnedCards,
+      state.cardList,
+      state.cardMetadataMap,
+      state.cardToPinnedCopy,
+      state.pinnedCardToOriginal,
+      state.cardStepIndex
+    );
     return {
       ...state,
-      unresolvedImportedPinnedCards: nextUnresolvedImportedPinnedCards,
+      ...resolvedResult,
     };
   }),
   on(coreActions.reload, coreActions.manualReload, (state) => {
@@ -431,42 +404,21 @@ const reducer = createReducer(
         ? [...state.cardList, ...newCardIds]
         : state.cardList;
 
-      // Automatically create pinned copies of new cards that match, and remove
-      // new auto-pinned cards from unresolvedImportedPinnedCards so that subsequent
-      // `metricsTagMetadataLoaded` will not reset user-created pin states.
-      const nextUnresolvedImportedPinnedCardSet = new Set(
-        state.unresolvedImportedPinnedCards
+      const resolvedResult = buildOrReturnStateWithUnresolvedImportedPins(
+        state.unresolvedImportedPinnedCards,
+        newCardIds,
+        nextCardMetadataMap,
+        state.cardToPinnedCopy,
+        state.pinnedCardToOriginal,
+        state.cardStepIndex
       );
-      const nextCardToPinnedCopy = new Map(state.cardToPinnedCopy);
-      const nextPinnedCardToOriginal = new Map(state.pinnedCardToOriginal);
-      const nextCardStepIndexMap = {...state.cardStepIndex};
-      for (const newCardId of newCardIds) {
-        for (const importedCard of nextUnresolvedImportedPinnedCardSet) {
-          const cardMetadata = nextCardMetadataMap[newCardId];
-          if (cardMatchesCardUniqueInfo(cardMetadata, importedCard)) {
-            addPinnedCopyToState(
-              newCardId,
-              nextCardToPinnedCopy,
-              nextPinnedCardToOriginal,
-              nextCardStepIndexMap,
-              nextCardMetadataMap
-            );
-            nextUnresolvedImportedPinnedCardSet.delete(importedCard);
-            break;
-          }
-        }
-      }
 
       return {
         ...state,
+        ...resolvedResult,
         tagMetadataLoaded: DataLoadState.LOADED,
         tagMetadata: nextTagMetadata,
         cardList: nextCardList,
-        cardMetadataMap: nextCardMetadataMap,
-        cardStepIndex: nextCardStepIndexMap,
-        cardToPinnedCopy: nextCardToPinnedCopy,
-        pinnedCardToOriginal: nextPinnedCardToOriginal,
-        unresolvedImportedPinnedCards: [...nextUnresolvedImportedPinnedCardSet],
       };
     }
   ),
@@ -745,10 +697,10 @@ const reducer = createReducer(
       ? false
       : !state.cardToPinnedCopy.has(cardId);
 
-    const nextCardToPinnedCopy = new Map(state.cardToPinnedCopy);
-    const nextPinnedCardToOriginal = new Map(state.pinnedCardToOriginal);
-    const nextCardMetadataMap = {...state.cardMetadataMap};
-    const nextCardStepIndexMap = {...state.cardStepIndex};
+    let nextCardToPinnedCopy = new Map(state.cardToPinnedCopy);
+    let nextPinnedCardToOriginal = new Map(state.pinnedCardToOriginal);
+    let nextCardMetadataMap = {...state.cardMetadataMap};
+    let nextCardStepIndexMap = {...state.cardStepIndex};
 
     if (isPinnedCopy) {
       const originalCardId = state.pinnedCardToOriginal.get(cardId);
@@ -758,13 +710,17 @@ const reducer = createReducer(
       delete nextCardStepIndexMap[cardId];
     } else {
       if (shouldPin) {
-        addPinnedCopyToState(
+        const resolvedResult = buildOrReturnStateWithPinnedCopy(
           cardId,
           nextCardToPinnedCopy,
           nextPinnedCardToOriginal,
           nextCardStepIndexMap,
           nextCardMetadataMap
         );
+        nextCardToPinnedCopy = resolvedResult.cardToPinnedCopy;
+        nextPinnedCardToOriginal = resolvedResult.pinnedCardToOriginal;
+        nextCardMetadataMap = resolvedResult.cardMetadataMap;
+        nextCardStepIndexMap = resolvedResult.cardStepIndex;
       } else {
         const pinnedCardId = state.cardToPinnedCopy.get(cardId)!;
         nextCardToPinnedCopy.delete(cardId);

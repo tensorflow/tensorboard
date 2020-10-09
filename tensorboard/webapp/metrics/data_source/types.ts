@@ -52,6 +52,14 @@ export enum PluginType {
   IMAGES = 'images',
 }
 
+export function isPluginType(text: string): text is PluginType {
+  return (
+    text === PluginType.SCALARS ||
+    text === PluginType.HISTOGRAMS ||
+    text === PluginType.IMAGES
+  );
+}
+
 export type SampledPluginType = PluginType.IMAGES;
 const sampledPluginTypes = [PluginType.IMAGES];
 

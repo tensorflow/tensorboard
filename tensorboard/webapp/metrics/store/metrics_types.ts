@@ -143,6 +143,8 @@ export interface MetricsRoutefulState {
    * card requires comparing its CardUniqueInfo to a resolved card. After
    * resolution, it is removed from this collection and added to the
    * appropriate data structures (e.g. pinnedCardToOriginal).
+   *
+   * These may become stale if runs are deleted from the experiment.
    */
   unresolvedImportedPinnedCards: CardUniqueInfo[];
   cardMetadataMap: CardMetadataMap;
