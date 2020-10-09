@@ -125,14 +125,14 @@ class FetchServerInfoTest(tb_test.TestCase):
         @wrappers.BaseRequest.application
         def app(request):
             del request  # unused
-            return wrappers.BaseResponse(b"an unlikely proto")
+            return wrappers.BaseResponse(b"\x7a\x7ftruncated proto")
 
         origin = self._start_server(app)
         with self.assertRaises(server_info.CommunicationError) as cm:
             server_info.fetch_server_info(origin, [])
         msg = str(cm.exception)
         self.assertIn("Corrupt response from backend", msg)
-        self.assertIn("an unlikely proto", msg)
+        self.assertIn("truncated proto", msg)
 
     def test_user_agent(self):
         @wrappers.BaseRequest.application
