@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component, OnInit} from '@angular/core';
+import {Component, OnInit, ViewContainerRef} from '@angular/core';
 import {Store} from '@ngrx/store';
 import {coreLoaded} from './core/actions';
 import {State} from './core/store';
@@ -25,7 +25,13 @@ import {State} from './core/store';
   styleUrls: ['./app_container.css'],
 })
 export class AppContainer implements OnInit {
-  constructor(private readonly store: Store<State>) {}
+  // vcRef is required by ngx-color-picker in order for it to place the popup
+  // in the root node in a modal mode.
+  // https://github.com/zefoy/ngx-color-picker/blob/94a7c862bb61d7207f21281526fcd94453219b54/projects/lib/src/lib/color-picker.directive.ts#L168-L175
+  constructor(
+    private readonly store: Store<State>,
+    readonly vcRef: ViewContainerRef
+  ) {}
 
   ngOnInit() {
     this.store.dispatch(coreLoaded());
