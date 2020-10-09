@@ -24,6 +24,6 @@ import {FeatureValue} from '../types';
 export const featuresLoaded = createAction(
   '[FEATURE FLAG] Features Loaded',
   props<{
-    features: Partial<FeatureFlags>;
+    features: FeatureFlags;
   }>()
 );

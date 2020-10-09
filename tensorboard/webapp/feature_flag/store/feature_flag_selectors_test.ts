@@ -58,4 +58,26 @@ describe('feature_flag_selectors', () => {
       expect(actual).toEqual(['bar']);
     });
   });
+
+  describe('getIsInColab', () => {
+    it('returns the proper value', () => {
+      let state = buildState(
+        buildFeatureFlagState({
+          features: {
+            inColab: true,
+          },
+        })
+      );
+      expect(selectors.getIsInColab(state)).toEqual(true);
+
+      state = buildState(
+        buildFeatureFlagState({
+          features: {
+            inColab: false,
+          },
+        })
+      );
+      expect(selectors.getIsInColab(state)).toEqual(false);
+    });
+  });
 });
