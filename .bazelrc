@@ -3,3 +3,7 @@
 build --define=angular_ivy_enabled=True
 
 common --experimental_repo_remote_exec  # from TensorFlow
+
+# Use C++ backing implementations for Python proto parsing and deserialization,
+# which is much faster (~10x).
+build --define=use_fast_cpp_protos=true
