@@ -15,7 +15,8 @@ limitations under the License.
 
 import {PolymerElement, html} from '@polymer/polymer';
 import {LegacyElementMixin} from '../polymer/legacy_element_mixin';
-import {customElement, property} from '@polymer/decorators';
+import {computed, customElement, property} from '@polymer/decorators';
+import {sanitize} from './sanitize';
 
 // tf-markdown-view renders raw HTML that has been converted from
 // Markdown by some other agent. The HTML must be sanitized, and must be
@@ -27,7 +28,7 @@ import {customElement, property} from '@polymer/decorators';
 @customElement('tf-markdown-view')
 class TfMarkdownView extends LegacyElementMixin(PolymerElement) {
   static readonly template = html`
-    <div id="markdown" inner-h-t-m-l="[[html]]"></div>
+    <div id="markdown" inner-h-t-m-l="[[sanitizedHtml]]"></div>
     <style>
       /*
        * Reduce topmost and bottommost margins from 16px to 0.3em (renders
@@ -68,6 +69,11 @@ class TfMarkdownView extends LegacyElementMixin(PolymerElement) {
     type: String,
   })
   html: string = '';
+
+  @computed('html')
+  get sanitizedHtml() {
+    return sanitize(this.html);
+  }
 
   attached() {
     window.requestAnimationFrame(() => {

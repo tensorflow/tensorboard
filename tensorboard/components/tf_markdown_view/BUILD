@@ -9,8 +9,15 @@ tf_ts_library(
     srcs = ["tf-markdown-view.ts"],
     strict_checks = False,
     deps = [
+        ":sanitize",
         "//tensorboard/components/polymer:legacy_element_mixin",
         "@npm//@polymer/decorators",
         "@npm//@polymer/polymer",
     ],
+)
+
+tf_ts_library(
+    name = "sanitize",
+    srcs = ["sanitize.ts"],
+    deps = [],
 )
