@@ -61,22 +61,22 @@ export class TBHttpClient implements TBHttpClientInterface {
 
   post<ResponseType>(
     path: string,
-    body: any,
+    body: FormData,
     options: PostOptions = {}
   ): Observable<ResponseType> {
-    // Google-internal Colab does not support HTTP POST requests, so we fall
-    // back to HTTP GET (even though public Colab supports POST)
-    // See b/72932164.
     return this.store.select(getIsFeatureFlagsLoaded).pipe(
       filter((isLoaded) => Boolean(isLoaded)),
       take(1),
       withLatestFrom(this.store.select(getIsInColab)),
       mergeMap(([, isInColab]) => {
+        // Google-internal Colab does not support HTTP POST requests, so we fall
+        // back to HTTP GET (even though public Colab supports POST)
+        // See b/72932164.
         if (isInColab) {
-          const optionsForGet = {headers: options.headers} as GetOptions;
-          optionsForGet.params =
-            body instanceof FormData ? convertFormDataToObject(body) : body;
-          return this.http.get<ResponseType>(path, optionsForGet);
+          return this.http.get<ResponseType>(path, {
+            headers: options.headers,
+            params: convertFormDataToObject(body),
+          });
         } else {
           return this.http.post<ResponseType>(path, body, options);
         }

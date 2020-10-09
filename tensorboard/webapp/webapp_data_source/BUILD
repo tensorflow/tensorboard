@@ -67,7 +67,6 @@ ng_module(
         "//tensorboard/webapp/angular:expect_ngrx_store_testing",
         "//tensorboard/webapp/core:types",
         "//tensorboard/webapp/feature_flag/store",
-        "//tensorboard/webapp/feature_flag/store:store_test_lib",
         "//tensorboard/webapp/feature_flag/store:types",
         "@npm//@ngrx/store",
         "@npm//@types/jasmine",

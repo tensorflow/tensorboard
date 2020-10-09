@@ -29,9 +29,11 @@ import {TBHttpClientModule} from './tb_http_client_module';
   imports: [TBHttpClientModule, HttpClientTestingModule],
   providers: [
     provideMockStore({
-      initialState: buildFeatureFlagAppState(buildFeatureFlagState({
-        isFeatureFlagsLoaded: true,
-      })),
+      initialState: buildFeatureFlagAppState(
+        buildFeatureFlagState({
+          isFeatureFlagsLoaded: true,
+        })
+      ),
     }),
   ],
 })

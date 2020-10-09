@@ -18,15 +18,14 @@ import {MockStore} from '@ngrx/store/testing';
 
 import {State} from '../feature_flag/store/feature_flag_types';
 import {
-  buildState as buildFeatureFlagAppState,
-  buildFeatureFlagState,
-} from '../feature_flag/store/testing';
-import {
   getIsFeatureFlagsLoaded,
   getIsInColab,
 } from '../feature_flag/store/feature_flag_selectors';
 import {TBFeatureFlagTestingModule} from './tb_feature_flag_testing';
-import {HttpTestingController, TBHttpClientTestingModule} from './tb_http_client_testing';
+import {
+  HttpTestingController,
+  TBHttpClientTestingModule,
+} from './tb_http_client_testing';
 import {TBHttpClient} from './tb_http_client';
 
 describe('TBHttpClient', () => {
@@ -37,9 +36,7 @@ describe('TBHttpClient', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [TBFeatureFlagTestingModule, TBHttpClientTestingModule],
-      providers: [
-        TBHttpClient,
-      ],
+      providers: [TBHttpClient],
     }).compileComponents();
 
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
