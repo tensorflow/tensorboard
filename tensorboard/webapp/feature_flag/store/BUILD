@@ -10,7 +10,6 @@ ng_module(
     ],
     deps = [
         ":types",
-        "//tensorboard/webapp:app_state",
         "//tensorboard/webapp/feature_flag:types",
         "//tensorboard/webapp/feature_flag/actions",
         "//tensorboard/webapp/webapp_data_source:feature_flag",

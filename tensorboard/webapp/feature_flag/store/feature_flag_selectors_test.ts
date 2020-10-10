@@ -20,7 +20,9 @@ describe('feature_flag_selectors', () => {
     it('returns a current feature', () => {
       const state = buildState(
         buildFeatureFlagState({
-          enableMagicFeature: true,
+          features: {
+            enableMagicFeature: true,
+          },
         })
       );
       const actual = selectors.getFeature(state, 'enableMagicFeature');
@@ -31,7 +33,9 @@ describe('feature_flag_selectors', () => {
     it('returns null if the value is not present', () => {
       const state = buildState(
         buildFeatureFlagState({
-          enabledExperimentalPlugins: ['foo'],
+          features: {
+            enabledExperimentalPlugins: ['foo'],
+          },
         })
       );
       const actual = selectors.getFeature(state, 'bar');
@@ -44,12 +48,36 @@ describe('feature_flag_selectors', () => {
     it('returns value in array', () => {
       const state = buildState(
         buildFeatureFlagState({
-          enabledExperimentalPlugins: ['bar'],
+          features: {
+            enabledExperimentalPlugins: ['bar'],
+          },
         })
       );
       const actual = selectors.getFeature(state, 'enabledExperimentalPlugins');
 
       expect(actual).toEqual(['bar']);
+    });
+  });
+
+  describe('getIsInColab', () => {
+    it('returns the proper value', () => {
+      let state = buildState(
+        buildFeatureFlagState({
+          features: {
+            inColab: true,
+          },
+        })
+      );
+      expect(selectors.getIsInColab(state)).toEqual(true);
+
+      state = buildState(
+        buildFeatureFlagState({
+          features: {
+            inColab: false,
+          },
+        })
+      );
+      expect(selectors.getIsInColab(state)).toEqual(false);
     });
   });
 });

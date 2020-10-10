@@ -20,7 +20,10 @@ describe('feature_flag_reducers', () => {
   describe('featuresLoaded', () => {
     it('sets the new feature flags onto the state', () => {
       const prevState = buildFeatureFlagState({
-        enabledExperimentalPlugins: ['foo'],
+        isFeatureFlagsLoaded: false,
+        features: {
+          enabledExperimentalPlugins: ['foo'],
+        },
       });
       const nextState = reducers(
         prevState,
@@ -31,12 +34,17 @@ describe('feature_flag_reducers', () => {
         })
       );
 
-      expect(nextState.enabledExperimentalPlugins).toEqual(['foo', 'bar']);
+      expect(nextState.features.enabledExperimentalPlugins).toEqual([
+        'foo',
+        'bar',
+      ]);
     });
 
     it('sets the feature value of other features', () => {
       const prevState = buildFeatureFlagState({
-        enabledExperimentalPlugins: [],
+        features: {
+          enabledExperimentalPlugins: [],
+        },
       });
       const nextState = reducers(
         prevState,
@@ -48,7 +56,7 @@ describe('feature_flag_reducers', () => {
         })
       );
 
-      expect(nextState['enableMagicalFeature']).toBe(true);
+      expect(nextState.features['enableMagicalFeature']).toBe(true);
     });
   });
 });

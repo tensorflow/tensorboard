@@ -33,6 +33,7 @@ export class QueryParamsFeatureFlagDataSource extends TBFeatureFlagDataSource {
     const params = util.getParams();
     return {
       enabledExperimentalPlugins: params.getAll('experimentalPlugin'),
+      inColab: params.get('tensorboardColab') === 'true',
     };
   }
 }
