@@ -19,5 +19,4 @@ tf_ts_library(
 tf_ts_library(
     name = "sanitize",
     srcs = ["sanitize.ts"],
-    deps = [],
 )
