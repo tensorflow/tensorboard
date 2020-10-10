@@ -45,7 +45,8 @@ describe('TBHttpClient', () => {
   });
 
   it('waits for feature flags before making POST request', () => {
-    const body = {formKey: 'value'};
+    const body = new FormData();
+    body.append('formKey', 'value');
     store.overrideSelector(getIsFeatureFlagsLoaded, false);
     tbHttpClient.post('foo', body).subscribe(jasmine.createSpy());
     httpMock.expectNone('foo');
@@ -62,7 +63,8 @@ describe('TBHttpClient', () => {
   });
 
   it('makes POST requests when not in Colab', () => {
-    const body = {formKey: 'value'};
+    const body = new FormData();
+    body.append('formKey', 'value');
     store.overrideSelector(getIsFeatureFlagsLoaded, true);
     store.overrideSelector(getIsInColab, false);
     tbHttpClient.post('foo', body).subscribe(jasmine.createSpy());
@@ -76,20 +78,6 @@ describe('TBHttpClient', () => {
   });
 
   it('converts POST requests to GET when in Colab', () => {
-    const body = {formKey: 'value'};
-    store.overrideSelector(getIsFeatureFlagsLoaded, true);
-    store.overrideSelector(getIsInColab, true);
-    tbHttpClient.post('foo', body).subscribe(jasmine.createSpy());
-    httpMock.expectOne((req) => {
-      return (
-        req.method === 'GET' &&
-        req.urlWithParams === 'foo?formKey=value' &&
-        !req.body
-      );
-    });
-  });
-
-  it('converts POST requests with FormData to GET when in Colab', () => {
     const body = new FormData();
     body.append('formKey', 'value');
     store.overrideSelector(getIsFeatureFlagsLoaded, true);
