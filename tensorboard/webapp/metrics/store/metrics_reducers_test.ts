@@ -1495,6 +1495,7 @@ describe('metrics reducers', () => {
       expect(nextState.cardToPinnedCopy).toEqual(
         new Map([['card1', pinnedCopyId]])
       );
+      expect(nextState.unresolvedImportedPinnedCards).toEqual([]);
     });
 
     it('does not add resolved pins to the unresolved imported pins', () => {

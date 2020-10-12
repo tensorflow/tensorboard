@@ -297,7 +297,7 @@ const reducer = createReducer(
     // We need to include previous unresolved imported pins, because the new
     // hydrated state might not include them. For example, navigating from
     // experiment A (with pins) --> B --> A, we want to ensure that rehydration
-    // does not drop the old pins on A.
+    // does not drop the old unresolved pins on A.
     const hydratedState = partialState as URLDeserializedState;
     const unresolvedImportedPinnedCards = [] as CardUniqueInfo[];
     for (const card of [
@@ -400,9 +400,7 @@ const reducer = createReducer(
         }
       }
 
-      const nextCardList = newCardIds.length
-        ? [...state.cardList, ...newCardIds]
-        : state.cardList;
+      const nextCardList = [...state.cardList, ...newCardIds];
 
       const resolvedResult = buildOrReturnStateWithUnresolvedImportedPins(
         state.unresolvedImportedPinnedCards,
