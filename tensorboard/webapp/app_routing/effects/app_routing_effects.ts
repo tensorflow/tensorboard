@@ -33,7 +33,7 @@ import {
   navigationRequested,
   stateRehydratedFromUrl,
 } from '../actions';
-import {areRoutesEqual} from '../internal_utils';
+import {areRoutesEqual, getRouteId} from '../internal_utils';
 import {Location} from '../location';
 import {ProgrammaticalNavigationModule} from '../programmatical_navigation_module';
 import {RouteConfigs} from '../route_config';
@@ -229,8 +229,26 @@ export class AppRoutingEffects {
         withLatestFrom(this.store.select(getActiveRoute)),
         filter(([, route]) => Boolean(route)),
         map(([navigatedAction, route]) => {
+          // The URL hash can be set via HashStorageComponent (which uses
+          // Polymer's tf-storage). DeepLinkProviders also modify the URL when
+          // a provider's serializeStateToQueryParams() emits. These result in
+          // the URL updated without the previous hash. HashStorageComponent
+          // makes no attempt to restore the hash, so it is dropped.
+
+          // This results in bad behavior when refreshing (e.g. lost active
+          // plugin) and when changing dashboards (e.g. lost tagFilter).
+
+          // TODO(b/169799696): either AppRouting should manage the URL entirely
+          // (including hash), or we make the app wait for AppRouting to
+          // initialize before setting the active plugin hash.
+          // See https://github.com/tensorflow/tensorboard/issues/4207.
+          const oldRoute = navigatedAction.before;
+          const preserveHash =
+            oldRoute === null ||
+            getRouteId(oldRoute.routeKind, oldRoute.params) ===
+              getRouteId(route!.routeKind, route!.params);
           return {
-            isFirstNavigation: navigatedAction.before === null,
+            preserveHash,
             route: route!,
           };
         }),
@@ -240,25 +258,14 @@ export class AppRoutingEffects {
             queryParams: this.location.getSearch(),
           });
         }),
-        tap(({isFirstNavigation, route}) => {
-          // AppRouting's effect to dispatch the initial navigated action is
-          // asynchronous. It is possible to see a race condition, where the
-          // network request for plugins_listing returns first, which sets the
-          // URL hash to '#scalars', only to be discarded by the replaceState
-          // below. Preserving the hash upon initial navigation is a workaround.
-
-          // TODO(b/169799696): either AppRouting should manage the URL entirely
-          // (including hash), or we make the app wait for AppRouting to
-          // initialize before setting the active plugin hash.
-          // See https://github.com/tensorflow/tensorboard/issues/4207.
-          const shouldPreserveHash = isFirstNavigation;
+        tap(({preserveHash, route}) => {
           if (route.navigationOptions.replaceState) {
             this.location.replaceState(
-              this.location.getFullPathFromRouteOrNav(route, shouldPreserveHash)
+              this.location.getFullPathFromRouteOrNav(route, preserveHash)
             );
           } else {
             this.location.pushState(
-              this.location.getFullPathFromRouteOrNav(route, shouldPreserveHash)
+              this.location.getFullPathFromRouteOrNav(route, preserveHash)
             );
           }
         })
