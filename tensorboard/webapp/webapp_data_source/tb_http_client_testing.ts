@@ -16,10 +16,25 @@ export {HttpTestingController} from '@angular/common/http/testing';
 
 import {NgModule} from '@angular/core';
 import {HttpClientTestingModule} from '@angular/common/http/testing';
+import {provideMockStore} from '@ngrx/store/testing';
+
+import {
+  buildState as buildFeatureFlagAppState,
+  buildFeatureFlagState,
+} from '../feature_flag/store/testing';
 
 import {TBHttpClientModule} from './tb_http_client_module';
 
 @NgModule({
   imports: [TBHttpClientModule, HttpClientTestingModule],
+  providers: [
+    provideMockStore({
+      initialState: buildFeatureFlagAppState(
+        buildFeatureFlagState({
+          isFeatureFlagsLoaded: true,
+        })
+      ),
+    }),
+  ],
 })
 export class TBHttpClientTestingModule {}

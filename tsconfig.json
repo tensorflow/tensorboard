@@ -5,7 +5,7 @@
     "experimentalDecorators": true,
     "importHelpers": true,
     "inlineSourceMap": true,
-    "lib": ["dom", "es2020"],
+    "lib": ["dom", "es2020", "dom.iterable"],
     "moduleResolution": "node",
     "noFallthroughCasesInSwitch": true,
     "noImplicitReturns": true,
