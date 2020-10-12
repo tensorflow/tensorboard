@@ -187,6 +187,9 @@ function cardMatchesCardUniqueInfo(
 /**
  * Attempts to resolve the imported pins against the list of non-pinned cards
  * provided. Returns the resulting state.
+ *
+ * Note: this assumes input has already been sanitized and validated. Untrusted
+ * data from URLs must be cleaned before being passed to the store.
  */
 export function buildOrReturnStateWithUnresolvedImportedPins(
   unresolvedImportedPinnedCards: CardUniqueInfo[],
