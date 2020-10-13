@@ -14,6 +14,8 @@ tf_ts_library(
         ":types",
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp/app_routing:route_contexted_reducer_helper",
+        "//tensorboard/webapp/app_routing:types",
+        "//tensorboard/webapp/app_routing/actions",
         "//tensorboard/webapp/core/actions",
         "//tensorboard/webapp/metrics:types",
         "//tensorboard/webapp/metrics/actions",

@@ -30,6 +30,7 @@ import {
   buildMetricsState,
   buildTagMetadata,
   buildTimeSeriesData,
+  createCardMetadata,
   createHistogramStepData,
   createImageStepData,
   createScalarStepData,
@@ -252,6 +253,113 @@ describe('metrics reducers', () => {
       expect(nextState.cardToPinnedCopy).toEqual(
         expectedState.cardToPinnedCopy
       );
+    });
+
+    it('resolves imported pins by automatically creating pinned copies', () => {
+      const fakeCardMetadata = {
+        plugin: PluginType.SCALARS,
+        tag: 'tagA',
+        runId: null,
+      };
+      const stepCount = 10;
+      const expectedCardId = getCardId(fakeCardMetadata);
+      const expectedPinnedCopyId = getPinnedCardId(expectedCardId);
+      const beforeState = buildMetricsState({
+        cardMetadataMap: {},
+        cardList: [],
+        cardStepIndex: {
+          [expectedCardId]: stepCount - 1,
+        },
+        cardToPinnedCopy: new Map(),
+        pinnedCardToOriginal: new Map(),
+        unresolvedImportedPinnedCards: [
+          {plugin: PluginType.SCALARS, tag: 'tagA'},
+          {plugin: PluginType.SCALARS, tag: 'tagB'},
+        ],
+      });
+      const nextState = reducers(
+        beforeState,
+        actions.metricsTagMetadataLoaded({
+          tagMetadata: {
+            ...buildDataSourceTagMetadata(),
+            [PluginType.SCALARS]: {
+              tagDescriptions: {},
+              runTagInfo: {run1: ['tagA']},
+            },
+          },
+        })
+      );
+
+      const {
+        cardMetadataMap,
+        cardList,
+        cardStepIndex,
+        cardToPinnedCopy,
+        pinnedCardToOriginal,
+        unresolvedImportedPinnedCards,
+      } = nextState;
+      expect({
+        cardMetadataMap,
+        cardList,
+        cardStepIndex,
+        cardToPinnedCopy,
+        pinnedCardToOriginal,
+        unresolvedImportedPinnedCards,
+      }).toEqual({
+        cardMetadataMap: {
+          [expectedCardId]: fakeCardMetadata,
+          [expectedPinnedCopyId]: fakeCardMetadata,
+        },
+        cardList: [expectedCardId],
+        cardStepIndex: {
+          [expectedCardId]: stepCount - 1,
+          [expectedPinnedCopyId]: stepCount - 1,
+        },
+        cardToPinnedCopy: new Map([[expectedCardId, expectedPinnedCopyId]]),
+        pinnedCardToOriginal: new Map([[expectedPinnedCopyId, expectedCardId]]),
+        unresolvedImportedPinnedCards: [
+          {plugin: PluginType.SCALARS, tag: 'tagB'},
+        ],
+      });
+    });
+
+    it('does not resolve mismatching imported pins', () => {
+      const beforeState = buildMetricsState({
+        cardToPinnedCopy: new Map(),
+        pinnedCardToOriginal: new Map(),
+        unresolvedImportedPinnedCards: [
+          {plugin: PluginType.IMAGES, tag: 'tagA', runId: 'run1', sample: 5},
+          {plugin: PluginType.IMAGES, tag: 'tagB', runId: 'run1', sample: 5},
+        ],
+      });
+      const nextState = reducers(
+        beforeState,
+        actions.metricsTagMetadataLoaded({
+          tagMetadata: {
+            ...buildDataSourceTagMetadata(),
+            [PluginType.IMAGES]: {
+              tagDescriptions: {},
+              tagRunSampledInfo: {
+                tagA: {
+                  // Matching run, but incorrect sample.
+                  run1: {maxSamplesPerStep: 1},
+                },
+                tagB: {
+                  // Matching tag, sample, but incorrect run.
+                  run10: {maxSamplesPerStep: 10},
+                },
+              },
+            },
+          },
+        })
+      );
+
+      expect(nextState.cardToPinnedCopy).toEqual(new Map());
+      expect(nextState.pinnedCardToOriginal).toEqual(new Map());
+      expect(nextState.unresolvedImportedPinnedCards).toEqual([
+        {plugin: PluginType.IMAGES, tag: 'tagA', runId: 'run1', sample: 5},
+        {plugin: PluginType.IMAGES, tag: 'tagB', runId: 'run1', sample: 5},
+      ]);
     });
 
     it('does not drop existing data', () => {
@@ -1311,6 +1419,168 @@ describe('metrics reducers', () => {
         actions.metricsTagGroupExpansionChanged({tagGroup: 'foo'})
       );
       expect(nextState.tagGroupExpanded).toEqual(new Map([['foo', true]]));
+    });
+  });
+
+  describe('pinned card hydration', () => {
+    it('ignores RouteKind EXPERIMENTS', () => {
+      const beforeState = buildMetricsState({
+        unresolvedImportedPinnedCards: [],
+      });
+      const action = routingActions.stateRehydratedFromUrl({
+        routeKind: RouteKind.EXPERIMENTS,
+        partialState: {
+          metrics: {
+            pinnedCards: [{plugin: PluginType.SCALARS, tag: 'accuracy'}],
+          },
+        },
+      });
+      const nextState = reducers(beforeState, action);
+
+      expect(nextState.unresolvedImportedPinnedCards).toEqual([]);
+    });
+
+    it('populates ngrx store with unresolved imported pins', () => {
+      const beforeState = buildMetricsState({
+        unresolvedImportedPinnedCards: [],
+      });
+      const action = routingActions.stateRehydratedFromUrl({
+        routeKind: RouteKind.EXPERIMENT,
+        partialState: {
+          metrics: {
+            pinnedCards: [{plugin: PluginType.SCALARS, tag: 'accuracy'}],
+          },
+        },
+      });
+      const nextState = reducers(beforeState, action);
+
+      expect(nextState.unresolvedImportedPinnedCards).toEqual([
+        {plugin: PluginType.SCALARS, tag: 'accuracy'},
+      ]);
+    });
+
+    it('resolves imported pins', () => {
+      const fakeMetadata = {
+        ...createCardMetadata(PluginType.SCALARS),
+        tag: 'accuracy',
+      };
+      const beforeState = buildMetricsState({
+        cardList: ['card1'],
+        cardMetadataMap: {
+          card1: fakeMetadata,
+        },
+        tagMetadataLoaded: DataLoadState.LOADED,
+        tagMetadata: {
+          ...buildTagMetadata(),
+          [PluginType.SCALARS]: {
+            tagDescriptions: {},
+            tagToRuns: {accuracy: ['run1']},
+          },
+        },
+      });
+      const action = routingActions.stateRehydratedFromUrl({
+        routeKind: RouteKind.EXPERIMENT,
+        partialState: {
+          metrics: {
+            pinnedCards: [{plugin: PluginType.SCALARS, tag: 'accuracy'}],
+          },
+        },
+      });
+      const nextState = reducers(beforeState, action);
+
+      const pinnedCopyId = getPinnedCardId('card1');
+      expect(nextState.pinnedCardToOriginal).toEqual(
+        new Map([[pinnedCopyId, 'card1']])
+      );
+      expect(nextState.cardToPinnedCopy).toEqual(
+        new Map([['card1', pinnedCopyId]])
+      );
+      expect(nextState.unresolvedImportedPinnedCards).toEqual([]);
+    });
+
+    it('does not add resolved pins to the unresolved imported pins', () => {
+      const fakeMetadata = {...createCardMetadata(), tag: 'accuracy'};
+      const beforeState = buildMetricsState({
+        cardMetadataMap: {
+          'card-pin1': fakeMetadata,
+          card1: fakeMetadata,
+        },
+        pinnedCardToOriginal: new Map([['card-pin1', 'card1']]),
+        unresolvedImportedPinnedCards: [],
+      });
+      const action = routingActions.stateRehydratedFromUrl({
+        routeKind: RouteKind.EXPERIMENT,
+        partialState: {
+          metrics: {
+            pinnedCards: [{plugin: PluginType.SCALARS, tag: 'accuracy'}],
+          },
+        },
+      });
+      const nextState = reducers(beforeState, action);
+
+      expect(nextState.unresolvedImportedPinnedCards).toEqual([]);
+    });
+
+    it('does not create duplicate unresolved imported pins', () => {
+      const beforeState = buildMetricsState({
+        unresolvedImportedPinnedCards: [
+          {plugin: PluginType.SCALARS, tag: 'accuracy'},
+        ],
+      });
+      const action = routingActions.stateRehydratedFromUrl({
+        routeKind: RouteKind.EXPERIMENT,
+        partialState: {
+          metrics: {
+            pinnedCards: [{plugin: PluginType.SCALARS, tag: 'accuracy'}],
+          },
+        },
+      });
+      const nextState = reducers(beforeState, action);
+
+      expect(nextState.unresolvedImportedPinnedCards).toEqual([
+        {plugin: PluginType.SCALARS, tag: 'accuracy'},
+      ]);
+    });
+
+    it('does not create duplicates if URL contained duplicates', () => {
+      const beforeState = buildMetricsState();
+      const action = routingActions.stateRehydratedFromUrl({
+        routeKind: RouteKind.EXPERIMENT,
+        partialState: {
+          metrics: {
+            pinnedCards: [
+              {plugin: PluginType.SCALARS, tag: 'accuracyAgain'},
+              {plugin: PluginType.SCALARS, tag: 'accuracyAgain'},
+            ],
+          },
+        },
+      });
+      const nextState = reducers(beforeState, action);
+
+      expect(nextState.unresolvedImportedPinnedCards).toEqual([
+        {plugin: PluginType.SCALARS, tag: 'accuracyAgain'},
+      ]);
+    });
+
+    it('does not clear unresolved imported pins if hydration is empty', () => {
+      const beforeState = buildMetricsState({
+        unresolvedImportedPinnedCards: [
+          {plugin: PluginType.SCALARS, tag: 'accuracy'},
+        ],
+      });
+      const action = routingActions.stateRehydratedFromUrl({
+        routeKind: RouteKind.EXPERIMENT,
+        partialState: {
+          metrics: {
+            pinnedCards: [],
+          },
+        },
+      });
+      const nextState = reducers(beforeState, action);
+
+      expect(nextState.unresolvedImportedPinnedCards).toEqual([
+        {plugin: PluginType.SCALARS, tag: 'accuracy'},
+      ]);
     });
   });
 });

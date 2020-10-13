@@ -19,14 +19,27 @@ limitations under the License.
 import {DataLoadState} from '../../types/data';
 
 import {isSampledPlugin, PluginType, SampledPluginType} from '../data_source';
-import {CardId, CardMetadata} from '../types';
+import {CardId, CardMetadata, CardUniqueInfo, NonPinnedCardId} from '../types';
 
 import {
+  CardMetadataMap,
+  CardStepIndexMap,
+  CardToPinnedCard,
+  MetricsState,
+  PinnedCardToCard,
   RunToLoadState,
   TagMetadata,
   TimeSeriesData,
   TimeSeriesLoadables,
 } from './metrics_types';
+
+type ResolvedPinPartialState = Pick<
+  MetricsState,
+  | 'cardMetadataMap'
+  | 'cardToPinnedCopy'
+  | 'pinnedCardToOriginal'
+  | 'cardStepIndex'
+>;
 
 /**
  * Returns the loadable information for a specific tag, containing its series
@@ -152,4 +165,129 @@ export function getRunIds(
   }
   const tagToRunIds = tagMetadata[plugin].tagToRuns;
   return tagToRunIds.hasOwnProperty(tag) ? tagToRunIds[tag] : [];
+}
+
+/**
+ * Returns whether the CardMetadata exactly matches the pinned card from
+ * storage.
+ */
+function cardMatchesCardUniqueInfo(
+  cardMetadata: CardMetadata,
+  cardUniqueInfo: CardUniqueInfo
+): boolean {
+  const noRunId = !cardMetadata.runId && !cardUniqueInfo.runId;
+  return (
+    cardMetadata.plugin === cardUniqueInfo.plugin &&
+    cardMetadata.tag === cardUniqueInfo.tag &&
+    cardMetadata.sample === cardUniqueInfo.sample &&
+    (cardMetadata.runId === cardUniqueInfo.runId || noRunId)
+  );
+}
+
+/**
+ * Attempts to resolve the imported pins against the list of non-pinned cards
+ * provided. Returns the resulting state.
+ *
+ * Note: this assumes input has already been sanitized and validated. Untrusted
+ * data from URLs must be cleaned before being passed to the store.
+ */
+export function buildOrReturnStateWithUnresolvedImportedPins(
+  unresolvedImportedPinnedCards: CardUniqueInfo[],
+  nonPinnedCards: NonPinnedCardId[],
+  cardMetadataMap: CardMetadataMap,
+  cardToPinnedCopy: CardToPinnedCard,
+  pinnedCardToOriginal: PinnedCardToCard,
+  cardStepIndexMap: CardStepIndexMap
+): ResolvedPinPartialState & {unresolvedImportedPinnedCards: CardUniqueInfo[]} {
+  const unresolvedPinSet = new Set(unresolvedImportedPinnedCards);
+  const nonPinnedCardsWithMatch = [];
+  for (const unresolvedPin of unresolvedImportedPinnedCards) {
+    for (const nonPinnedCardId of nonPinnedCards) {
+      const cardMetadata = cardMetadataMap[nonPinnedCardId];
+      if (cardMatchesCardUniqueInfo(cardMetadata, unresolvedPin)) {
+        nonPinnedCardsWithMatch.push(nonPinnedCardId);
+        unresolvedPinSet.delete(unresolvedPin);
+        break;
+      }
+    }
+  }
+
+  if (!nonPinnedCardsWithMatch.length) {
+    return {
+      unresolvedImportedPinnedCards,
+      cardMetadataMap,
+      cardToPinnedCopy,
+      pinnedCardToOriginal,
+      cardStepIndex: cardStepIndexMap,
+    };
+  }
+
+  let stateWithResolvedPins = {
+    cardToPinnedCopy,
+    pinnedCardToOriginal,
+    cardStepIndex: cardStepIndexMap,
+    cardMetadataMap,
+  };
+  for (const cardToPin of nonPinnedCardsWithMatch) {
+    stateWithResolvedPins = buildOrReturnStateWithPinnedCopy(
+      cardToPin,
+      stateWithResolvedPins.cardToPinnedCopy,
+      stateWithResolvedPins.pinnedCardToOriginal,
+      stateWithResolvedPins.cardStepIndex,
+      stateWithResolvedPins.cardMetadataMap
+    );
+  }
+
+  return {
+    ...stateWithResolvedPins,
+    unresolvedImportedPinnedCards: [...unresolvedPinSet],
+  };
+}
+
+/**
+ * Return the state produced by creating a new pinned copy of the provided card.
+ * May throw if the card provided has no metadata.
+ */
+export function buildOrReturnStateWithPinnedCopy(
+  cardId: NonPinnedCardId,
+  cardToPinnedCopy: CardToPinnedCard,
+  pinnedCardToOriginal: PinnedCardToCard,
+  cardStepIndexMap: CardStepIndexMap,
+  cardMetadataMap: CardMetadataMap
+): ResolvedPinPartialState {
+  // No-op if the card already has a pinned copy.
+  if (cardToPinnedCopy.has(cardId)) {
+    return {
+      cardToPinnedCopy,
+      pinnedCardToOriginal,
+      cardStepIndex: cardStepIndexMap,
+      cardMetadataMap,
+    };
+  }
+
+  const nextCardToPinnedCopy = new Map(cardToPinnedCopy);
+  const nextPinnedCardToOriginal = new Map(pinnedCardToOriginal);
+  const nextCardStepIndexMap = {...cardStepIndexMap};
+  const nextCardMetadataMap = {...cardMetadataMap};
+
+  // Create a pinned copy. Copies step index from the original card.
+  const pinnedCardId = getPinnedCardId(cardId);
+  nextCardToPinnedCopy.set(cardId, pinnedCardId);
+  nextPinnedCardToOriginal.set(pinnedCardId, cardId);
+  if (cardStepIndexMap.hasOwnProperty(cardId)) {
+    nextCardStepIndexMap[pinnedCardId] = cardStepIndexMap[cardId];
+  }
+
+  const metadata = cardMetadataMap[cardId];
+  if (!metadata) {
+    throw new Error('Cannot pin a card without metadata');
+  }
+  nextCardMetadataMap[pinnedCardId] = metadata;
+
+  return {
+    cardToPinnedCopy: nextCardToPinnedCopy,
+    pinnedCardToOriginal: nextPinnedCardToOriginal,
+    cardStepIndex: nextCardStepIndexMap,
+    cardMetadataMap: nextCardMetadataMap,
+  };
 }

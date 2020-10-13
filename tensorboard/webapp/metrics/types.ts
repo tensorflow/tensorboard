@@ -46,8 +46,34 @@ export type NonPinnedCardId = string;
 
 export type PinnedCardId = string;
 
+/**
+ * A unique identifier to a specific card instance in the UI. This is an opaque
+ * ID, meaning that consumers should never peer into/parse it and never assume
+ * that it will always be a string.
+ */
 export type CardId = NonPinnedCardId | PinnedCardId;
 
 export type CardIdWithMetadata = CardMetadata & {
   cardId: CardId;
 };
+
+/**
+ * The most minimal representation of a card that uniquely identifies it across
+ * a browser session. This information may be persisted in storage, retrieved,
+ * and used to match against an existing card with the same metadata.
+ */
+export interface CardUniqueInfo {
+  plugin: string;
+  tag: string;
+  runId?: string;
+  sample?: number;
+}
+
+/**
+ * The metrics-related state created by deserializing a URL.
+ */
+export interface URLDeserializedState {
+  metrics: {
+    pinnedCards: CardUniqueInfo[];
+  };
+}

@@ -27,6 +27,7 @@ import {
 } from '../data_source';
 import {
   CardId,
+  CardUniqueInfo,
   CardMetadata,
   HistogramMode,
   NonPinnedCardId,
@@ -125,13 +126,27 @@ export type CardStepIndexMap = Record<
   number | null
 >;
 
+export type CardToPinnedCard = Map<NonPinnedCardId, PinnedCardId>;
+
+export type PinnedCardToCard = Map<PinnedCardId, NonPinnedCardId>;
+
 export interface MetricsRoutefulState {
   tagMetadataLoaded: DataLoadState;
   tagMetadata: TagMetadata;
   // A list of card ids in the main content area, excluding pinned copies.
   cardList: NonPinnedCardId[];
-  cardToPinnedCopy: Map<NonPinnedCardId, PinnedCardId>;
-  pinnedCardToOriginal: Map<PinnedCardId, NonPinnedCardId>;
+  cardToPinnedCopy: CardToPinnedCard;
+  pinnedCardToOriginal: PinnedCardToCard;
+  /**
+   * Pinned cards imported from storage that do not yet have a corresponding
+   * card (e.g. tag metadata might not be loaded yet). Resolving an imported
+   * card requires comparing its CardUniqueInfo to a resolved card. After
+   * resolution, it is removed from this collection and added to the
+   * appropriate data structures (e.g. pinnedCardToOriginal).
+   *
+   * These may become stale if runs are deleted from the experiment.
+   */
+  unresolvedImportedPinnedCards: CardUniqueInfo[];
   cardMetadataMap: CardMetadataMap;
   cardStepIndex: CardStepIndexMap;
   tagFilter: string;
