@@ -275,6 +275,7 @@ tf_ng_web_test_suite(
         "//tensorboard/webapp/widgets:resize_detector_testing",
         "//tensorboard/webapp/widgets/histogram:histogram_test",
         "//tensorboard/webapp/widgets/line_chart:line_chart_test",
+        "//tensorboard/webapp/widgets/line_chart_v2/lib:worker_allocator_test",
         "//tensorboard/webapp/widgets/range_input:range_input_tests",
         "//tensorboard/webapp/widgets/text:text_tests",
     ],
