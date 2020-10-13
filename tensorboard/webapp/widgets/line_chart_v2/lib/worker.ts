@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 
 /**
- * Returns a Worker instancefor a given resource url.
+ * Creates a new worker that loads and executes the JavaScript at the given URL.
  *
  * This module exists to conform to internal requirements.
  */

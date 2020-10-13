@@ -3,8 +3,8 @@ load("//tensorboard/defs:defs.bzl", "tf_ts_library")
 package(default_visibility = ["//tensorboard:internal"])
 
 tf_ts_library(
-    name = "worker_allocator",
-    srcs = ["worker_allocator.ts"],
+    name = "worker_pool",
+    srcs = ["worker_pool.ts"],
     deps = [
         ":worker",
     ],
@@ -17,14 +17,14 @@ tf_ts_library(
 )
 
 tf_ts_library(
-    name = "worker_allocator_test",
+    name = "lib_tests",
     testonly = True,
     srcs = [
-        "worker_allocator_test.ts",
+        "worker_pool_test.ts",
     ],
     deps = [
         ":worker",
-        ":worker_allocator",
+        ":worker_pool",
         "@npm//@types/jasmine",
     ],
 )
