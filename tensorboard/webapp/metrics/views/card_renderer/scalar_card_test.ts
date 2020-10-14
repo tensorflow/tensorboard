@@ -392,7 +392,6 @@ describe('scalar card', () => {
         By.directive(TestableLineChart)
       );
       const {metadata} = lineChartEl.componentInstance.seriesDataList[0];
-      console.log(metadata);
       expect(metadata).toEqual({displayName: 'existing_exp/Foobar'});
     }));
   });
