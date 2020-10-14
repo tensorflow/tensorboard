@@ -277,7 +277,7 @@ export class TfScalarCard extends PolymerElement {
 
     // TODO(b/170675710): Stop unconditionally forcing legacy endpoint when
     // fixed.
-    const forceLegacyEnpoint = true;
+    const forceLegacyEndpoint = true;
     if (inColab || forceLegacyEndpoint) {
       return this._requestDataGet(items, onLoad, onFinish);
     } else {
