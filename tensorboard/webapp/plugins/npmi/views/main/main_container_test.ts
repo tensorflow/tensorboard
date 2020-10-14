@@ -31,6 +31,7 @@ import {MainContainer} from './main_container';
 import * as npmiActions from '../../actions';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
+import {NO_ERRORS_SCHEMA} from '@angular/core';
 
 describe('Npmi Main Container', () => {
   let store: MockStore<State>;
@@ -57,6 +58,7 @@ describe('Npmi Main Container', () => {
           },
         }),
       ],
+      schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
     store.overrideSelector(getCurrentRouteRunSelection, new Map());

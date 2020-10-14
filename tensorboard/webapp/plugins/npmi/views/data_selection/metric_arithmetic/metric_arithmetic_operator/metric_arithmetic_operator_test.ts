@@ -15,6 +15,7 @@ limitations under the License.
 /**
  * Unit tests for the metric arithmetic operator.
  */
+import {NO_ERRORS_SCHEMA} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
 
 import {MetricArithmeticOperatorComponent} from './metric_arithmetic_operator_component';
@@ -26,8 +27,7 @@ describe('Npmi Metric Arithmetic Operator Component', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [MetricArithmeticOperatorComponent],
-      imports: [],
-      providers: [],
+      schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
   });
 

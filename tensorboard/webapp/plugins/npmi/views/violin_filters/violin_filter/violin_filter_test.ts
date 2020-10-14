@@ -15,6 +15,7 @@ limitations under the License.
 /**
  * Unit tests for a violin filter.
  */
+import {NO_ERRORS_SCHEMA} from '@angular/core';
 import {TestBed, ComponentFixture} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
 
@@ -56,6 +57,7 @@ describe('Npmi Violin Filter Container', () => {
           },
         }),
       ],
+      schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
 

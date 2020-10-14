@@ -15,6 +15,7 @@ limitations under the License.
 /**
  * Unit tests for the Selected Annotations.
  */
+import {NO_ERRORS_SCHEMA} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
 
@@ -26,9 +27,9 @@ import {appStateFromNpmiState, createNpmiState} from '../../testing';
 import {SelectedAnnotationsContainer} from './selected_annotations_container';
 import {SelectedAnnotationsComponent} from './selected_annotations_component';
 import * as npmiActions from '../../actions';
+import {getPCExpanded, getSelectedAnnotations} from '../../store';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
-import {getPCExpanded, getSelectedAnnotations} from '../../store';
 
 describe('Npmi Selected Annotations', () => {
   let store: MockStore<State>;
@@ -54,6 +55,7 @@ describe('Npmi Selected Annotations', () => {
           initialState: appStateFromNpmiState(createNpmiState()),
         }),
       ],
+      schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
 
