@@ -36,18 +36,6 @@ type RunTagItem = {run: string; tag: string};
 const initialURLSearchParams = new URLSearchParams(window.location.search);
 
 /**
- * Whether TensorBoard is running in a Colab environment.
- *
- * Google-internal Colab doesn't support HTTP POST requests, so we can use this
- * to fallback to HTTP GET (even though public Colab supports POST).
- * See b/126387106.
- *
- * Currently unused due to b/170675710 rendering the multirun endpoint unusable
- * temporarily.
- */
-const inColab = initialURLSearchParams.get('tensorboardColab') === 'true';
-
-/**
  * A card that handles loading data (at the right times), rendering a scalar
  * chart, and providing UI affordances (such as buttons) for scalar data.
  */
@@ -282,19 +270,19 @@ export class TfScalarCard extends PolymerElement {
     onLoad,
     onFinish
   ) => {
-    // TODO(psybuzz): Ideally, we would always make use of `_requestDataPost`,
-    // which implements an optimization that reduces the overall # of network
-    // requests.
+    // Google-internal Colab doesn't support HTTP POST requests, so we fall
+    // back to HTTP GET (even though public Colab supports POST).
+    // See b/126387106.
+    const inColab = initialURLSearchParams.get('tensorboardColab') === 'true';
 
-    // However, the /scalars_multirun endpoint triggers errors when TensorBoard
-    // is hosted with a Google Cloud Spanner backend. Thus, we temporarily use
-    // `_requestDataGet` unconditionally until [1] is synced into Google.
-    // See b/170675710.
-    // [1] https://github.com/googleapis/python-spanner/pull/144
-
-    // Furthermore, once the multirun endpoint is safe to call, we cannot use it
-    // unconditionally. See `inColab` above on why it should be gated.
-    return this._requestDataGet(items, onLoad, onFinish);
+    // TODO(b/170675710): Stop unconditionally forcing legacy endpoint when
+    // fixed.
+    const forceLegacyEnpoint = true;
+    if (inColab || forceLegacyEndpoint) {
+      return this._requestDataGet(items, onLoad, onFinish);
+    } else {
+      return this._requestDataPost(items, onLoad, onFinish);
+    }
   };
 
   _requestDataGet: RequestDataCallback<RunTagItem, ScalarDatum[] | null> = (
