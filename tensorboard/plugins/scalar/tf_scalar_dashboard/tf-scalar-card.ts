@@ -270,10 +270,15 @@ export class TfScalarCard extends PolymerElement {
     onLoad,
     onFinish
   ) => {
+    // Google-internal Colab doesn't support HTTP POST requests, so we fall
+    // back to HTTP GET (even though public Colab supports POST).
+    // See b/126387106.
     const inColab = initialURLSearchParams.get('tensorboardColab') === 'true';
-    if (inColab) {
-      // Google-internal Colab doesn't support HTTP POST requests, so we fall
-      // back to HTTP GET (even though public Colab supports POST).
+
+    // TODO(b/170675710): Stop unconditionally forcing legacy endpoint when
+    // fixed.
+    const forceLegacyEndpoint = true;
+    if (inColab || forceLegacyEndpoint) {
       return this._requestDataGet(items, onLoad, onFinish);
     } else {
       return this._requestDataPost(items, onLoad, onFinish);
