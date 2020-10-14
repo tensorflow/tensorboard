@@ -197,9 +197,12 @@ class BookmarkPanel extends LegacyElementMixin(PolymerElement) {
    */
   private getParentDataIndex(evt: Event) {
     for (let i = 0; i < (evt as any).path.length; i++) {
-      let dataIndex = (evt as any).path[i].getAttribute('data-index');
-      if (dataIndex != null) {
-        return +dataIndex;
+      let elem = (evt as any).path[i];
+      if (elem instanceof HTMLElement) {
+        let dataIndex = elem.getAttribute('data-index');
+        if (dataIndex != null) {
+          return +dataIndex;
+        }
       }
     }
     return -1;
