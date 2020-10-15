@@ -12,10 +12,32 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-require.config({
-  paths: {
-    lodash: '/base/npm/node_modules/lodash/lodash',
-    d3: '/base/npm/node_modules/d3/dist/d3',
-    three: '/base/npm/node_modules/three/build/three',
-  },
-});
+
+import * as THREE from 'three';
+
+import {Coordinator} from './coordinator';
+import {Rect} from './types';
+
+export class ThreeCoordinator extends Coordinator {
+  private readonly camera = new THREE.OrthographicCamera(
+    0,
+    1000,
+    1000,
+    0,
+    0,
+    100
+  );
+
+  setDomContainerRect(rect: Rect) {
+    super.setDomContainerRect(rect);
+    this.camera.left = rect.x;
+    this.camera.right = rect.x + rect.width;
+    this.camera.top = rect.y;
+    this.camera.bottom = rect.y + rect.height;
+    this.camera.updateProjectionMatrix();
+  }
+
+  getCamera() {
+    return this.camera;
+  }
+}

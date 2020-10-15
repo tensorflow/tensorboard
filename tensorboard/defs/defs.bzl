@@ -99,6 +99,7 @@ def tf_ng_web_test_suite(runtime_deps = [], bootstrap = [], deps = [], **kwargs)
         static_files = [
             "@npm//:node_modules/lodash/lodash.js",
             "@npm//:node_modules/d3/dist/d3.js",
+            "@npm//:node_modules/three/build/three.js",
         ],
         **kwargs
     )
