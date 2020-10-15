@@ -30,17 +30,12 @@ export interface WorkerProxy {
 }
 
 /**
- * Returns a worker-like object that can be used to offload computation like Worker.
- * This method allocates new Worker upto 10 instances. Depending on its usage (not by CPU
- * utilization but merely number of instance holder), it allocates the freest one. Upon
- * disposal (e.g., Angular's ngOnDestroy), please invoke `free` for recycle. Failing to
- * invoke `free` will impact load balancing but will not impact correctness of the
- * program. Similarly, invoking `free` multiple times do not impact correctness but
- * impacts load balancing; please invoke it correctly.
+ * Worker pool load balancing module.
  *
- * Important: to reduce the overhead of fetch and instantiating a worker, we do not
- * terminate a worker once it is completedly freed up. For more control over the lifecycle
- * of a Worker, please instantiate a Worker directly.
+ * Module attempts, without knowing the CPU workload, balance number of active users while
+ * minimally instantiating Workers.
+ *
+ * For a transient or for more control over Worker, please instiate one manually.
  *
  * Example usage:
  *
@@ -67,6 +62,19 @@ export class WorkerPool {
     // TODO(tensorboard-team): consider pre-allocating with the IdleCallback.
   }
 
+  /**
+   * Returns a worker-like object that can be used to offload computation like Worker.
+   * This method allocates new Worker upto 10 instances. Depending on its usage (not by CPU
+   * utilization but merely number of instance holder), it allocates the freest one. Upon
+   * disposal (e.g., Angular's ngOnDestroy), please invoke `free` for recycle. Failing to
+   * invoke `free` will impact load balancing, but it will not impact correctness of the
+   * program. Similarly, invoking `free` multiple times do not impact correctness but
+   * impacts load balancing; please invoke it correctly.
+   *
+   * Important: to reduce the overhead of fetch and instantiating a worker, we do not
+   * terminate a worker once it is completedly freed up. For more control over the lifecycle
+   * of a Worker, please instantiate a Worker directly.
+   */
   getNext(): WorkerProxy {
     let workerLike: WorkerProxy;
 
