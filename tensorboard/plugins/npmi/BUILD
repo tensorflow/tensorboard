@@ -118,8 +118,8 @@ py_binary(
     srcs = ["add_embeddings.py"],
     srcs_version = "PY2AND3",
     deps = [
-        ":summary",
         ":metadata",
+        ":summary",
         "//tensorboard:expect_tensorflow_installed",
     ],
 )

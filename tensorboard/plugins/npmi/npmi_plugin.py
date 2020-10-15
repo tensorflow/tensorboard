@@ -162,8 +162,7 @@ class NpmiPlugin(base_plugin.TBPlugin):
                 downsample=self._downsample_to,
             )
             metrics = all_metrics.get(run, {}).get(metadata.METRICS_TAG, {})
-            event_data = [metric.decode("utf-8")
-                          for metric in metrics[0].numpy]
+            event_data = [metric.decode("utf-8") for metric in metrics[0].numpy]
             result[run] = event_data
         contents = json.dumps(result)
         return contents
@@ -199,7 +198,8 @@ class NpmiPlugin(base_plugin.TBPlugin):
             experiment_id=experiment,
             plugin_name=self.plugin_name,
             run_tag_filter=provider.RunTagFilter(
-                tags=[metadata.EMBEDDINGS_TAG]),
+                tags=[metadata.EMBEDDINGS_TAG]
+            ),
         )
         result = {run: {} for run in mapping}
         for (run, _) in six.iteritems(mapping):
@@ -212,8 +212,9 @@ class NpmiPlugin(base_plugin.TBPlugin):
                 ),
                 downsample=self._downsample_to,
             )
-            embeddings = all_embeddings.get(
-                run, {}).get(metadata.EMBEDDINGS_TAG, {})
+            embeddings = all_embeddings.get(run, {}).get(
+                metadata.EMBEDDINGS_TAG, {}
+            )
             event_data = embeddings[0].numpy.tolist()
             result[run] = event_data
         contents = json.dumps(result)

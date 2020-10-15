@@ -75,14 +75,8 @@ class NpmiPluginTest(tf.test.TestCase):
             ],
         }
         embedding_ground_truth = {
-            "run_1": [
-                [1.0, 0.5],
-                [-0.5, 0.5]
-            ],
-            "run_2": [
-                [1.0, 0.5],
-                [-0.5, 0.5]
-            ]
+            "run_1": [[1.0, 0.5], [-0.5, 0.5]],
+            "run_2": [[1.0, 0.5], [-0.5, 0.5]],
         }
         for run_name in run_names:
             subdir = os.path.join(self.logdir, run_name)
@@ -104,14 +98,14 @@ class NpmiPluginTest(tf.test.TestCase):
                         if col_index == 0:
                             python_annotations.append(column)
                         else:
-                            python_result[len(python_result) -
-                                          1].append(column)
+                            python_result[len(python_result) - 1].append(column)
             with writer.as_default():
                 tensor_result = tf.convert_to_tensor(python_result)
                 tensor_annotations = tf.convert_to_tensor(python_annotations)
                 tensor_classes = tf.convert_to_tensor(python_classes)
                 tensor_embeddings = tf.convert_to_tensor(
-                    embedding_ground_truth[run_name])
+                    embedding_ground_truth[run_name]
+                )
                 summary.npmi_values(tensor_result, 1)
                 summary.npmi_annotations(tensor_annotations, 1)
                 summary.npmi_metrics(tensor_classes, 1)
@@ -132,8 +126,12 @@ class NpmiPluginTest(tf.test.TestCase):
         tags = plugin.tags_impl(context.RequestContext(), experiment="exp")
         tags = json.loads(tags)
         gt_runs = ["run_1", "run_2"]
-        gt_tags = ["_npmi_/annotations", "_npmi_/metrics",
-                   "_npmi_/values", "_npmi_/embeddings"]
+        gt_tags = [
+            "_npmi_/annotations",
+            "_npmi_/metrics",
+            "_npmi_/values",
+            "_npmi_/embeddings",
+        ]
         self.assertItemsEqual(gt_runs, tags.keys())
         self.assertItemsEqual(gt_tags, tags["run_1"])
         self.assertItemsEqual(gt_tags, tags["run_2"])
@@ -168,7 +166,8 @@ class NpmiPluginTest(tf.test.TestCase):
     def testEmbeddings(self):
         plugin = self.create_plugin()
         embeddings = plugin.embeddings_impl(
-            context.RequestContext(), experiment="exp")
+            context.RequestContext(), experiment="exp"
+        )
         embeddings = json.loads(embeddings)
         self.assertItemsEqual([1.0, 0.5], embeddings["run_1"][0])
         self.assertItemsEqual([-0.5, 0.5], embeddings["run_1"][1])
