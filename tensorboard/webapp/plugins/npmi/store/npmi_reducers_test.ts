@@ -87,6 +87,9 @@ describe('npmi_reducers', () => {
               'nPMI@test2',
             ],
           },
+          embeddingData: {
+            annotation_1: [0.1257, -1.3256],
+          },
         })
       );
       expect(nextState.pluginDataLoaded.state).toBe(DataLoadState.LOADED);
@@ -129,6 +132,9 @@ describe('npmi_reducers', () => {
       });
       expect(nextState.runToMetrics).toEqual({
         run_1: ['nPMI@test1', 'nPMI@test2'],
+      });
+      expect(nextState.embeddingData).toEqual({
+        annotation_1: [0.1257, -1.3256],
       });
     });
 
@@ -174,6 +180,9 @@ describe('npmi_reducers', () => {
         },
         runToMetrics: {
           run_1: ['nPMI@test1', 'nPMI@test2'],
+        },
+        embeddingData: {
+          annotation_1: [0.1257, -1.3256],
         },
       });
       const t0 = Date.now();
@@ -223,6 +232,9 @@ describe('npmi_reducers', () => {
               'nPMI@newtest2',
             ],
           },
+          embeddingData: {
+            annotation_1: [1.1257, -0.3256],
+          },
         })
       );
       expect(nextState.pluginDataLoaded.state).toBe(DataLoadState.LOADED);
@@ -265,6 +277,9 @@ describe('npmi_reducers', () => {
       });
       expect(nextState.runToMetrics).toEqual({
         run_1: ['nPMI@newtest1', 'nPMI@newtest2'],
+      });
+      expect(nextState.embeddingData).toEqual({
+        annotation_1: [1.1257, -0.3256],
       });
     });
   });

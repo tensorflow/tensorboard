@@ -111,3 +111,34 @@ def npmi_values(tensor, step=None, description=None):
             step=step,
             metadata=metadata.create_summary_metadata(description),
         )
+
+
+def npmi_embeddings(tensor, step=None, description=None):
+    """Write the actual npmi values.
+
+    Arguments:
+      tensor: A `Tensor` of shape (num_annotations, embedding_dimension) and dtype
+        float.
+      step: Explicit `int64`-castable monotonic step value for this summary. If
+        omitted, this defaults to `tf.summary.experimental.get_step()`, which
+        must not be None.
+      description: Optional long-form description for this summary, as a
+        constant `str`. Markdown is supported. Defaults to empty.
+
+    Returns:
+      True on success, or false if no summary was written because no default
+      summary writer was available.
+
+    Raises:
+      ValueError: if a default writer exists, but no step was provided and
+        `tf.summary.experimental.get_step()` is None.
+    """
+    with tf.summary.experimental.summary_scope(
+        metadata.EMBEDDINGS_TAG, "", values=[tensor, step],
+    ) as (tag, _):
+        return tf.summary.write(
+            tag=tag,
+            tensor=tensor,
+            step=step,
+            metadata=metadata.create_summary_metadata(description),
+        )

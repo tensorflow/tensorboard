@@ -28,6 +28,7 @@ export function createNpmiState(override?: Partial<NpmiState>): NpmiState {
     },
     annotationData: {},
     runToMetrics: {},
+    embeddingData: {},
     selectedAnnotations: [],
     flaggedAnnotations: [],
     hiddenAnnotations: [],

@@ -36,8 +36,8 @@ describe('runs_data_source', () => {
 
   describe('fetch data', () => {
     it(
-      'calls /annotations, /metrics, and /values to return map of annotation ' +
-        'to ValueData and map of runId to metrics',
+      'calls /annotations, /metrics, /values and /embeddings to return map ' +
+        'of annotation to ValueData and map of runId to metrics',
       () => {
         const returnValue = jasmine.createSpy();
         dataSource.fetchData().subscribe(returnValue);
@@ -57,6 +57,16 @@ describe('runs_data_source', () => {
           run_2: [
             [3598, 0.135],
             [8327, -0.1572],
+          ],
+        });
+        httpMock.expectOne('data/plugin/npmi/embeddings').flush({
+          run_1: [
+            [0.15125, 0.2618],
+            [1.51251, -0.74621],
+          ],
+          run_2: [
+            [1.51251, -0.74621],
+            [-0.8327, -0.1572],
           ],
         });
 
@@ -101,6 +111,11 @@ describe('runs_data_source', () => {
             run_1: ['count@test', 'nPMI@test'],
             run_2: ['count@test', 'nPMI@test'],
           },
+          embeddingData: {
+            annotation_1: [0.15125, 0.2618],
+            annotation_2: [1.51251, -0.74621],
+            annotation_3: [-0.8327, -0.1572],
+          },
         });
       }
     );
@@ -111,10 +126,12 @@ describe('runs_data_source', () => {
       httpMock.expectOne('data/plugin/npmi/annotations').flush({});
       httpMock.expectOne('data/plugin/npmi/metrics').flush({});
       httpMock.expectOne('data/plugin/npmi/values').flush({});
+      httpMock.expectOne('data/plugin/npmi/embeddings').flush({});
 
       expect(returnValue).toHaveBeenCalledWith({
         annotationData: {},
         metrics: {},
+        embeddingData: {},
       });
     });
 
@@ -128,6 +145,7 @@ describe('runs_data_source', () => {
       expect(returnValue).toHaveBeenCalledWith({
         annotationData: {},
         metrics: {},
+        embeddingData: {},
       });
     });
 

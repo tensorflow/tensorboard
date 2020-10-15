@@ -26,6 +26,7 @@ import {
   MetricListing,
   AnnotationDataListing,
   ValueData,
+  EmbeddingListing,
 } from './../store/npmi_types';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
@@ -34,6 +35,7 @@ export abstract class NpmiDataSource {
   abstract fetchData(): Observable<{
     annotationData: AnnotationDataListing;
     metrics: MetricListing;
+    embeddingData: EmbeddingListing;
   }>;
 }
 
@@ -42,6 +44,10 @@ interface AnnotationListing {
 }
 
 interface ValueListing {
+  [runId: string]: number[][];
+}
+
+interface RunEmbeddingListing {
   [runId: string]: number[][];
 }
 
@@ -55,13 +61,18 @@ export class NpmiHttpServerDataSource implements NpmiDataSource {
     return forkJoin(
       this.fetchAnnotations(),
       this.fetchMetrics(),
-      this.fetchValues()
+      this.fetchValues(),
+      this.fetchEmbeddings()
     ).pipe(
-      map(([annotations, metrics, values]) => {
+      map(([annotations, metrics, values, embeddings]) => {
         const annotationData: AnnotationDataListing = {};
+        const embeddingData: EmbeddingListing = {};
         for (const run of Object.keys(annotations)) {
           for (const annotationIndex in annotations[run]) {
             const annotation = annotations[run][annotationIndex];
+            if (embeddings[run][annotationIndex]) {
+              embeddingData[annotation] = embeddings[run][annotationIndex];
+            }
             const metricToDataElements = new Map<string, ValueData>();
             for (const metricIndex in metrics[run]) {
               const metric = metrics[run][metricIndex];
@@ -94,7 +105,7 @@ export class NpmiHttpServerDataSource implements NpmiDataSource {
             ];
           }
         }
-        return {annotationData, metrics};
+        return {annotationData, metrics, embeddingData};
       }),
       catchError((error) => {
         if (
@@ -105,6 +116,7 @@ export class NpmiHttpServerDataSource implements NpmiDataSource {
           return of({
             annotationData: {},
             metrics: {},
+            embeddingData: {},
           });
         }
         return throwError(error);
@@ -124,5 +136,11 @@ export class NpmiHttpServerDataSource implements NpmiDataSource {
 
   private fetchValues() {
     return this.http.get<ValueListing>(this.httpPathPrefix + '/values');
+  }
+
+  private fetchEmbeddings() {
+    return this.http.get<RunEmbeddingListing>(
+      this.httpPathPrefix + '/embeddings'
+    );
   }
 }
