@@ -20,20 +20,20 @@ describe('line_chart_v2/lib/worker_pool', () => {
 
   beforeEach(() => {
     workerFactory = jasmine.createSpy().and.callFake(() => {
-      return jasmine.createSpyObj(Worker, ['postMessage']);
+      return {postMessage: jasmine.createSpy()};
     });
   });
 
   it('returns a worker like that it can postMessage to', () => {
-    const workerSpy = jasmine.createSpyObj(Worker, ['postMessage']);
-    workerFactory.and.returnValue(workerSpy);
+    const worker = {postMessage: jasmine.createSpy()};
+    workerFactory.and.returnValue(worker);
 
     const workerLike = new WorkerPool('testing', 2, workerFactory).getNext();
     workerLike.postMessage('foo', []);
 
     expect(workerFactory).toHaveBeenCalledTimes(1);
-    expect(workerSpy.postMessage).toHaveBeenCalledTimes(1);
-    expect(workerSpy.postMessage).toHaveBeenCalledWith('foo', []);
+    expect(worker.postMessage).toHaveBeenCalledTimes(1);
+    expect(worker.postMessage).toHaveBeenCalledWith('foo', []);
   });
 
   describe('allocation', () => {

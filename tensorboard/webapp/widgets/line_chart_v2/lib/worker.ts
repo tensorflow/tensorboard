@@ -17,6 +17,10 @@ limitations under the License.
  * Creates a new worker that loads and executes the JavaScript at the given URL.
  *
  * This module exists to conform to internal requirements.
+ *
+ * @param workerResourcePath URL pathanme to the JavaScript resource served by
+ *   TensorBoard. TensorBoard disallows fetching JavaScript resources from a differnt
+ *   origin.
  */
 export function getWorker(workerResourcePath: string): Worker {
   return new Worker(workerResourcePath);
