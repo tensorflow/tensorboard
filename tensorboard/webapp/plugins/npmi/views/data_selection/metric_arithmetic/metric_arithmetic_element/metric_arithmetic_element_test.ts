@@ -15,6 +15,7 @@ limitations under the License.
 /**
  * Unit tests for the metric arithmetic element.
  */
+import {NO_ERRORS_SCHEMA} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
@@ -61,6 +62,7 @@ describe('Npmi Metric Arithmetic Element Container', () => {
           initialState: appStateFromNpmiState(createNpmiState()),
         }),
       ],
+      schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
 
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;

@@ -15,6 +15,7 @@ limitations under the License.
 /**
  * Unit tests for the NPMI Container.
  */
+import {NO_ERRORS_SCHEMA} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
 
@@ -34,8 +35,8 @@ describe('Npmi Container', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [NpmiComponent, NpmiContainer],
-      imports: [],
       providers: [provideMockStore({}), NpmiContainer],
+      schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
   });

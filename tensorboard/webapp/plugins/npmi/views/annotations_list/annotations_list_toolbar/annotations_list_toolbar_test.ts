@@ -12,6 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {NO_ERRORS_SCHEMA} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
 
@@ -23,9 +24,9 @@ import {AnnotationsListToolbarComponent} from './annotations_list_toolbar_compon
 import {AnnotationsListToolbarContainer} from './annotations_list_toolbar_container';
 import {appStateFromNpmiState, createNpmiState} from '../../../testing';
 import * as npmiActions from '../../../actions';
+import {getSelectedAnnotations} from '../../../store';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
-import {getSelectedAnnotations} from '../../../store';
 
 describe('Npmi Annotations List Toolbar Container', () => {
   let store: MockStore<State>;
@@ -50,6 +51,7 @@ describe('Npmi Annotations List Toolbar Container', () => {
           initialState: appStateFromNpmiState(createNpmiState()),
         }),
       ],
+      schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
 

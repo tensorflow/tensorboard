@@ -15,6 +15,7 @@ limitations under the License.
 /**
  * Unit tests for the Annotations Search.
  */
+import {NO_ERRORS_SCHEMA} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
 import {FormsModule} from '@angular/forms';
@@ -30,9 +31,9 @@ import * as npmiActions from '../../../../actions';
 import {appStateFromNpmiState, createNpmiState} from '../../../../testing';
 import {AnnotationsSearchContainer} from './annotations_search_container';
 import {AnnotationsSearchComponent} from './annotations_search_component';
+import {getAnnotationsRegex} from '../../../../store';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
-import {getAnnotationsRegex} from '../../../../store';
 
 describe('Npmi Annotations Search Container', () => {
   let store: MockStore<State>;
@@ -51,6 +52,7 @@ describe('Npmi Annotations Search Container', () => {
           initialState: appStateFromNpmiState(createNpmiState()),
         }),
       ],
+      schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
 
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
