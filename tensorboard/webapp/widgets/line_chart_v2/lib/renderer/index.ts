@@ -13,26 +13,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-export * from './scale_types';
-
-export interface Dimension {
-  width: number;
-  height: number;
-}
-
-export interface Rect {
-  x: number;
-  width: number;
-  y: number;
-  height: number;
-}
-
-export interface Extent {
-  x: [number, number];
-  y: [number, number];
-}
-
-/**
- * Flattened array of 2d coordinates: [x0, y0, x1, y1, ..., xn, yn].
- */
-export type Paths = Float32Array;
+export * from './renderer_types';
+export {SvgRenderer} from './svg_renderer';
+export {ThreeRenderer} from './threejs_renderer';
