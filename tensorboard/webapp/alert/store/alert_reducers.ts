@@ -12,9 +12,29 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-export * from './app_routing/store/app_routing_selectors';
-export * from './experiments/store/experiments_selectors';
-export * from './alert/store/alert_selectors';
-export * from './metrics/store/metrics_selectors';
-export * from './runs/store/runs_selectors';
-export * from './util/ui_selectors';
+import {Action, createReducer, on} from '@ngrx/store';
+import * as actions from '../actions';
+import {AlertState} from './alert_types';
+
+/** @typehack */ import * as _typeHackStore from '@ngrx/store/store';
+
+const initialState: AlertState = {
+  latestAlert: null,
+};
+
+const reducer = createReducer(
+  initialState,
+  on(
+    actions.alertReported,
+    (state: AlertState, {details}): AlertState => {
+      return {
+        ...state,
+        latestAlert: {details, created: Date.now()},
+      };
+    }
+  )
+);
+
+export function reducers(state: AlertState | undefined, action: Action) {
+  return reducer(state, action);
+}

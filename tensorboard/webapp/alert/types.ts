@@ -1,6 +1,4 @@
-<!--
-@license
-Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,13 +11,15 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
--->
+==============================================================================*/
+/**
+ * An alert structure used when creating newly reported alerts.
+ */
+export interface AlertReport {
+  details: string;
+}
 
-<app-header></app-header>
-<main #main>
-  <router-outlet></router-outlet>
-</main>
-<alert-snackbar></alert-snackbar>
-<hash-storage></hash-storage>
-<page-title></page-title>
-<settings-polymer-interop></settings-polymer-interop>
+/**
+ * An alert exposed by the feature's selectors.
+ */
+export type AlertInfo = AlertReport & {created: number};

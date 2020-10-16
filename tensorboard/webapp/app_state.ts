@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+import {State as AlertState} from './alert/store/alert_types';
 import {State as AppRoutingState} from './app_routing/store/app_routing_types';
 import {State as CoreState} from './core/store/core_types';
 import {State as ExperimentsState} from './experiments/store/experiments_types';
@@ -22,7 +23,8 @@ import {State as NpmiState} from './plugins/npmi/store/npmi_types';
 import {State as RunsState} from './runs/store/runs_types';
 import {State as TextState} from './plugins/text_v2/store/text_types';
 
-export type State = AppRoutingState &
+export type State = AlertState &
+  AppRoutingState &
   CoreState &
   ExperimentsState &
   FeatureFlagState &

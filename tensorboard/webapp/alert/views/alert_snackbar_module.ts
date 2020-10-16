@@ -12,9 +12,18 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-export * from './app_routing/store/app_routing_selectors';
-export * from './experiments/store/experiments_selectors';
-export * from './alert/store/alert_selectors';
-export * from './metrics/store/metrics_selectors';
-export * from './runs/store/runs_selectors';
-export * from './util/ui_selectors';
+import {NgModule} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {MatSnackBarModule} from '@angular/material/snack-bar';
+
+import {AlertSnackbarContainer} from './alert_snackbar_container';
+
+/**
+ * Provides the 'alert snackbar' view.
+ */
+@NgModule({
+  declarations: [AlertSnackbarContainer],
+  exports: [AlertSnackbarContainer],
+  imports: [CommonModule, MatSnackBarModule],
+})
+export class AlertSnackbarModule {}

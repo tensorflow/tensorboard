@@ -23,6 +23,8 @@ import {AppRoutingModule} from './app_routing/app_routing_module';
 import {AppRoutingViewModule} from './app_routing/views/app_routing_view_module';
 import {CoreModule} from './core/core_module';
 import {ExperimentsModule} from './experiments/experiments_module';
+import {AlertModule} from './alert/alert_module';
+import {AlertSnackbarModule} from './alert/views/alert_snackbar_module';
 import {HashStorageModule} from './core/views/hash_storage_module';
 import {PageTitleModule} from './core/views/page_title_module';
 import {FeatureFlagModule} from './feature_flag/feature_flag_module';
@@ -30,7 +32,6 @@ import {HeaderModule} from './header/header_module';
 import {MatIconModule} from './mat_icon_module';
 import {PluginsModule} from './plugins/plugins_module';
 import {ROOT_REDUCERS, loggerMetaReducerFactory} from './reducer_config';
-import {ReloaderModule} from './reloader/reloader_module';
 import {RunsModule} from './runs/runs_module';
 import {SettingsModule} from './settings/settings_module';
 import {TensorBoardWrapperModule} from './tb_wrapper/tb_wrapper_module';
@@ -49,6 +50,8 @@ import {routesFactory} from './routes';
     AppRoutingModule,
     AppRoutingViewModule,
     RouteRegistryModule.registerRoutes(routesFactory),
+    AlertModule,
+    AlertSnackbarModule,
     TensorBoardWrapperModule,
     CoreModule,
     ExperimentsModule,

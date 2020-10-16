@@ -38,6 +38,7 @@ ng_module(
         "selectors.ts",
     ],
     deps = [
+        "//tensorboard/webapp/alert/store",
         "//tensorboard/webapp/app_routing/store",
         "//tensorboard/webapp/experiments/store:selectors",
         "//tensorboard/webapp/metrics/store",
@@ -74,6 +75,8 @@ ng_module(
         ":mat_icon",
         ":oss_plugins_module",
         ":reducer_config",
+        "//tensorboard/webapp/alert",
+        "//tensorboard/webapp/alert/views:alert_snackbar",
         "//tensorboard/webapp/angular:expect_angular_platform_browser_animations",
         "//tensorboard/webapp/app_routing",
         "//tensorboard/webapp/app_routing:route_registry",
@@ -106,6 +109,7 @@ ng_module(
         "app_state.ts",
     ],
     deps = [
+        "//tensorboard/webapp/alert/store:types",
         "//tensorboard/webapp/app_routing/store:types",
         "//tensorboard/webapp/core/store",
         "//tensorboard/webapp/experiments/store:types",
@@ -204,6 +208,9 @@ tensorboard_html_binary(
 tf_ng_web_test_suite(
     name = "karma_test",
     deps = [
+        "//tensorboard/webapp/alert:test_lib",
+        "//tensorboard/webapp/alert/store:test_lib",
+        "//tensorboard/webapp/alert/views:views_test",
         "//tensorboard/webapp/app_routing:app_routing_test",
         "//tensorboard/webapp/app_routing:route_config_test",
         "//tensorboard/webapp/app_routing:testing",
