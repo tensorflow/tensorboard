@@ -513,7 +513,7 @@ describe('metrics selectors', () => {
   });
 
   describe('getUnresolvedImportedPinnedCards', () => {
-    it('returns false if no card exists', () => {
+    it('returns unresolved imported pinned cards', () => {
       selectors.getUnresolvedImportedPinnedCards.release();
 
       const state = appStateFromMetricsState(

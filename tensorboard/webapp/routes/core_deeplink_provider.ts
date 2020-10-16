@@ -85,7 +85,8 @@ export class CoreDeepLinkProvider extends DeepLinkProvider {
     let pinnedCards = null;
     for (const {key, value} of queryParams) {
       if (key === 'pinnedCards') {
-        pinnedCards = pinnedCards || extractPinnedCardsFromURLText(value);
+        pinnedCards = extractPinnedCardsFromURLText(value);
+        break;
       }
     }
     return {
@@ -116,13 +117,13 @@ function extractPinnedCardsFromURLText(
     const isPluginString = typeof item.plugin === 'string';
     const isRunString = typeof item.runId === 'string';
     const isSampleNumber = typeof item.sample === 'number';
-    const isTagTypeValid = typeof item.tag === 'string';
+    const isTagString = typeof item.tag === 'string';
     const isRunTypeValid = isRunString || typeof item.runId === 'undefined';
     const isSampleTypeValid =
       isSampleNumber || typeof item.sample === 'undefined';
     if (
       !isPluginString ||
-      !isTagTypeValid ||
+      !isTagString ||
       !isRunTypeValid ||
       !isSampleTypeValid
     ) {
@@ -136,8 +137,16 @@ function extractPinnedCardsFromURLText(
     if (!item.tag) {
       continue;
     }
-    if (isRunString && (!item.runId || !isSingleRunPlugin(item.plugin))) {
-      continue;
+    if (isSingleRunPlugin(item.plugin)) {
+      // A single run plugin must specify a non-empty run.
+      if (!item.runId) {
+        continue;
+      }
+    } else {
+      // A multi run plugin must not specify a run.
+      if (item.runId) {
+        continue;
+      }
     }
     if (isSampleNumber) {
       if (!isSampledPlugin(item.plugin)) {

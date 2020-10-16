@@ -15,7 +15,6 @@ limitations under the License.
 import {TestBed} from '@angular/core/testing';
 import {Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
-import {Observable} from 'rxjs';
 import {skip} from 'rxjs/operators';
 
 import * as selectors from '../selectors';
@@ -151,6 +150,7 @@ describe('core deeplink provider', () => {
     it('sanitizes pinned cards on deserialization', () => {
       const cases = [
         {
+          // malformed URL value
           serializedValue: 'blah[{"plugin":"scalars","tag":"accuracy"}]',
           expectedPinnedCards: [],
         },
@@ -188,6 +188,12 @@ describe('core deeplink provider', () => {
           // runId is empty
           serializedValue:
             '[{"plugin":"images","tag":"loss","runId":""},{"plugin":"scalars","tag":"default"}]',
+          expectedPinnedCards: [{plugin: PluginType.SCALARS, tag: 'default'}],
+        },
+        {
+          // runId provided with multi-run plugin
+          serializedValue:
+            '[{"plugin":"scalars","tag":"loss","runId":"123"},{"plugin":"scalars","tag":"default"}]',
           expectedPinnedCards: [{plugin: PluginType.SCALARS, tag: 'default'}],
         },
         {
