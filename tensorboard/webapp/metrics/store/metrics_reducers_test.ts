@@ -1243,7 +1243,11 @@ describe('metrics reducers', () => {
       });
       const nextState = reducers(
         beforeState,
-        actions.cardPinStateToggled({cardId: 'pinnedCopy1'})
+        actions.cardPinStateToggled({
+          cardId: 'pinnedCopy1',
+          canCreateNewPins: true,
+          wasPinned: true,
+        })
       );
 
       const expectedState = buildMetricsState({
@@ -1278,6 +1282,8 @@ describe('metrics reducers', () => {
         beforeState,
         actions.cardPinStateToggled({
           cardId: 'card1',
+          canCreateNewPins: true,
+          wasPinned: true,
         })
       );
 
@@ -1327,6 +1333,8 @@ describe('metrics reducers', () => {
         beforeState,
         actions.cardPinStateToggled({
           cardId: 'card1',
+          canCreateNewPins: true,
+          wasPinned: false,
         })
       );
 
@@ -1357,6 +1365,8 @@ describe('metrics reducers', () => {
       });
       const action = actions.cardPinStateToggled({
         cardId: 'card1',
+        canCreateNewPins: true,
+        wasPinned: false,
       });
 
       expect(() => {
@@ -1373,6 +1383,8 @@ describe('metrics reducers', () => {
       });
       const action = actions.cardPinStateToggled({
         cardId: 'cardUnknown',
+        canCreateNewPins: true,
+        wasPinned: false,
       });
 
       expect(() => {

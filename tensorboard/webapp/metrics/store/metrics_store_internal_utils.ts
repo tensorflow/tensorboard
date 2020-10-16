@@ -291,3 +291,17 @@ export function buildOrReturnStateWithPinnedCopy(
     cardMetadataMap: nextCardMetadataMap,
   };
 }
+
+/**
+ * The maximum number of pins we allow the user to create. This is intentionally
+ * finite at the moment to mitigate super long URL lengths, until there is more
+ * durable value storage for pins.
+ */
+const MAX_PIN_COUNT = 10;
+
+export function canCreateNewPins(state: MetricsState) {
+  const pinCountInURL =
+    state.pinnedCardToOriginal.size +
+    state.unresolvedImportedPinnedCards.length;
+  return pinCountInURL < MAX_PIN_COUNT;
+}

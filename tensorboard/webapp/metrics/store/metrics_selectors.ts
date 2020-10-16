@@ -247,6 +247,17 @@ export const getUnresolvedImportedPinnedCards = createSelector(
 );
 
 /**
+ * Whether the UI is allowed to pin more cards. This may be limited if the URL
+ * contains too many pins already.
+ */
+export const getCanCreateNewPins = createSelector(
+  selectMetricsState,
+  (state: MetricsState): boolean => {
+    return storeUtils.canCreateNewPins(state);
+  }
+);
+
+/**
  * Settings.
  */
 export const getMetricsTooltipSort = createSelector(
