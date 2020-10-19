@@ -23,6 +23,7 @@ import {
   ArithmeticElement,
   MetricFilterListing,
   AnnotationSort,
+  EmbeddingListing,
 } from './npmi_types';
 
 // HACK: These imports are for type inference.
@@ -52,6 +53,13 @@ export const getRunToMetrics = createSelector(
   selectNpmiState,
   (state: NpmiState): MetricListing => {
     return state.runToMetrics;
+  }
+);
+
+export const getEmbeddingData = createSelector(
+  selectNpmiState,
+  (state: NpmiState): EmbeddingListing => {
+    return state.embeddingData;
   }
 );
 

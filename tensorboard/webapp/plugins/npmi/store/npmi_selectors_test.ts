@@ -16,6 +16,7 @@ import {
   getPluginDataLoaded,
   getAnnotationData,
   getRunToMetrics,
+  getEmbeddingData,
   getSelectedAnnotations,
   getFlaggedAnnotations,
   getHiddenAnnotations,
@@ -141,6 +142,28 @@ describe('npmi selectors', () => {
       );
       expect(getRunToMetrics(state)).toEqual({
         run_1: ['npmi_metric_1', 'npmi_metric_2'],
+      });
+    });
+  });
+
+  describe('getEmbeddingData', () => {
+    fit('returns the correct empty object', () => {
+      const state = createState(createNpmiState());
+      expect(getEmbeddingData(state)).toEqual({});
+    });
+
+    fit('returns the correct data', () => {
+      const state = createState(
+        createNpmiState({
+          embeddingData: {
+            annotation_new_1: [1.0, 0.5],
+            annotation_new_2: [0.5, -0.5],
+          },
+        })
+      );
+      expect(getEmbeddingData(state)).toEqual({
+        annotation_new_1: [1.0, 0.5],
+        annotation_new_2: [0.5, -0.5],
       });
     });
   });
