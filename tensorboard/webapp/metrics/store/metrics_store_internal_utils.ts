@@ -296,12 +296,17 @@ export function buildOrReturnStateWithPinnedCopy(
  * The maximum number of pins we allow the user to create. This is intentionally
  * finite at the moment to mitigate super long URL lengths, until there is more
  * durable value storage for pins.
+ * https://github.com/tensorflow/tensorboard/issues/4242
  */
-const MAX_PIN_COUNT = 10;
+const util = {
+  MAX_PIN_COUNT: 10,
+};
 
 export function canCreateNewPins(state: MetricsState) {
   const pinCountInURL =
     state.pinnedCardToOriginal.size +
     state.unresolvedImportedPinnedCards.length;
-  return pinCountInURL < MAX_PIN_COUNT;
+  return pinCountInURL < util.MAX_PIN_COUNT;
 }
+
+export const TEST_ONLY = {util};

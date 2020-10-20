@@ -17,18 +17,10 @@ import {
   Component,
   HostBinding,
   Input,
-  OnDestroy,
-  OnInit,
 } from '@angular/core';
 import {Store} from '@ngrx/store';
-import {Observable, Subject} from 'rxjs';
-import {
-  map,
-  takeUntil,
-  tap,
-  throttleTime,
-  withLatestFrom,
-} from 'rxjs/operators';
+import {Observable} from 'rxjs';
+import {map, take, tap, throttleTime, withLatestFrom} from 'rxjs/operators';
 
 import {State} from '../../../app_state';
 import * as selectors from '../../../selectors';
@@ -60,7 +52,7 @@ const RUN_COLOR_UPDATE_THROTTLE_TIME_IN_MS = 350;
   styleUrls: ['card_view_container.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CardViewContainer implements OnInit, OnDestroy {
+export class CardViewContainer {
   constructor(private readonly store: Store<State>) {}
 
   @Input() cardId!: CardId;
@@ -69,35 +61,6 @@ export class CardViewContainer implements OnInit, OnDestroy {
 
   @HostBinding('class.full-width') showFullWidth: boolean = false;
   @HostBinding('class.full-height') showFullHeight: boolean = false;
-
-  private readonly ngUnsubscribe = new Subject();
-  private readonly cardPinStateToggledSubject = new Subject();
-
-  ngOnInit() {
-    this.cardPinStateToggledSubject
-      .pipe(
-        takeUntil(this.ngUnsubscribe),
-        withLatestFrom(
-          this.store.select(selectors.getCardPinnedState, this.cardId),
-          this.store.select(selectors.getCanCreateNewPins)
-        ),
-        tap(([toggledAction, wasPinned, canCreateNewPins]) => {
-          this.store.dispatch(
-            actions.cardPinStateToggled({
-              cardId: this.cardId,
-              canCreateNewPins,
-              wasPinned: wasPinned,
-            })
-          );
-        })
-      )
-      .subscribe(() => {});
-  }
-
-  ngOnDestroy() {
-    this.ngUnsubscribe.next();
-    this.ngUnsubscribe.complete();
-  }
 
   readonly runColorScale$: Observable<RunColorScale> = this.store
     .select(selectors.getRunColorMap)
@@ -125,7 +88,22 @@ export class CardViewContainer implements OnInit, OnDestroy {
   }
 
   onPinStateChanged() {
-    this.cardPinStateToggledSubject.next();
+    this.store
+      .select(selectors.getCardPinnedState, this.cardId)
+      .pipe(
+        take(1),
+        withLatestFrom(this.store.select(selectors.getCanCreateNewPins)),
+        tap(([wasPinned, canCreateNewPins]) => {
+          this.store.dispatch(
+            actions.cardPinStateToggled({
+              cardId: this.cardId,
+              canCreateNewPins,
+              wasPinned,
+            })
+          );
+        })
+      )
+      .subscribe(() => {});
   }
 }
 
