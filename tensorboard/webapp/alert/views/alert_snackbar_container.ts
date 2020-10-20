@@ -49,7 +49,7 @@ export class AlertSnackbarContainer implements OnInit, OnDestroy {
         takeUntil(this.ngUnsubscribe),
         filter((alert) => Boolean(alert)),
         tap((alert) => {
-          this.showAlert(alert!.details);
+          this.showAlert(alert!.localizedMessage);
         })
       )
       .subscribe(() => {});
@@ -60,8 +60,8 @@ export class AlertSnackbarContainer implements OnInit, OnDestroy {
     this.ngUnsubscribe.complete();
   }
 
-  private showAlert(details: string) {
-    this.snackBar.open(details, '', {
+  private showAlert(localizedMessage: string) {
+    this.snackBar.open(localizedMessage, '', {
       duration: 5000,
       horizontalPosition: 'start',
       verticalPosition: 'bottom',

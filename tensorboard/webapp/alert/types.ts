@@ -16,7 +16,7 @@ limitations under the License.
  * An alert structure used when creating newly reported alerts.
  */
 export interface AlertReport {
-  details: string;
+  localizedMessage: string;
 }
 
 /**

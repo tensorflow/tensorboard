@@ -52,13 +52,13 @@ export interface ActionToAlertConfig {
  *     AlertActionModule.registerAlertActions([
  *       {
  *         action: fetchKeysFailed,
- *         alertFromAction: () => {details: "Keys failed to fetch."},
+ *         alertFromAction: () => {localizedMessage: "Keys failed to fetch."},
  *       },
  *       {
  *         action: greenButtonClicked,
  *         alertFromAction: (actionPayload) => {
  *           if (!actionPayload.wasButtonEnabled) {
- *             return {details: "Green button failed."};
+ *             return {localizedMessage: "Green button failed."};
  *           }
  *           return null;
  *         }

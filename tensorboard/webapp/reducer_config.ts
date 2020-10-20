@@ -37,12 +37,11 @@ function logger(reducer: ActionReducer<any>): ActionReducer<any> {
 }
 
 export function loggerMetaReducerFactory(): MetaReducer {
-  return logger;
-  // return !isDevMode()
-  //   ? (reducer) => (state, action) => {
-  //       return reducer(state, action);
-  //     }
-  //   : logger;
+  return !isDevMode()
+    ? (reducer) => (state, action) => {
+        return reducer(state, action);
+      }
+    : logger;
 }
 
 export const ROOT_REDUCERS = new InjectionToken<

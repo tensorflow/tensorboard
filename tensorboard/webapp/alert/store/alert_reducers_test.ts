@@ -19,26 +19,34 @@ import {buildAlertState} from './testing';
 describe('alert_reducers', () => {
   it('saves alerts with a timestamp', () => {
     spyOn(Date, 'now').and.returnValues(123, 234);
-    const action1 = alertActions.alertReported({details: 'Foo1 failed'});
-    const action2 = alertActions.alertReported({details: 'Foo2 failed'});
+    const action1 = alertActions.alertReported({
+      localizedMessage: 'Foo1 failed',
+    });
+    const action2 = alertActions.alertReported({
+      localizedMessage: 'Foo2 failed',
+    });
     const state1 = buildAlertState({latestAlert: null});
 
     const state2 = alertReducers.reducers(state1, action1);
     expect(state2.latestAlert!).toEqual({
-      details: 'Foo1 failed',
+      localizedMessage: 'Foo1 failed',
       created: 123,
     });
 
     const state3 = alertReducers.reducers(state2, action2);
     expect(state3.latestAlert!).toEqual({
-      details: 'Foo2 failed',
+      localizedMessage: 'Foo2 failed',
       created: 234,
     });
   });
 
   it('updates state with a different alert if the report is the same', () => {
-    const action1 = alertActions.alertReported({details: 'Foo failed again'});
-    const action2 = alertActions.alertReported({details: 'Foo failed again'});
+    const action1 = alertActions.alertReported({
+      localizedMessage: 'Foo failed again',
+    });
+    const action2 = alertActions.alertReported({
+      localizedMessage: 'Foo failed again',
+    });
     const state1 = buildAlertState({latestAlert: null});
 
     const state2 = alertReducers.reducers(state1, action1);

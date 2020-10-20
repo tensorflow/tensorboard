@@ -35,13 +35,13 @@ describe('alert_selectors', () => {
       const state = buildStateFromAlertState(
         buildAlertState({
           latestAlert: {
-            details: 'The sky is orange',
+            localizedMessage: 'The sky is orange',
             created: 2020,
           },
         })
       );
       expect(selectors.getLatestAlert(state)).toEqual({
-        details: 'The sky is orange',
+        localizedMessage: 'The sky is orange',
         created: 2020,
       });
     });

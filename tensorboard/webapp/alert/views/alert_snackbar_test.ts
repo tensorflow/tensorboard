@@ -46,13 +46,13 @@ describe('alert snackbar', () => {
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
   });
 
-  it('should open the snackbar on each alert', () => {
+  it('opens the snackbar on each alert', () => {
     const fixture = TestBed.createComponent(AlertSnackbarContainer);
     fixture.detectChanges();
     expect(snackBarOpenSpy).not.toHaveBeenCalled();
 
     store.overrideSelector(selectors.getLatestAlert, {
-      details: 'Foo failed',
+      localizedMessage: 'Foo failed',
       created: 0,
     });
     store.refreshState();
@@ -61,7 +61,7 @@ describe('alert snackbar', () => {
     expect(snackBarOpenSpy.calls.mostRecent().args[0]).toBe('Foo failed');
 
     store.overrideSelector(selectors.getLatestAlert, {
-      details: 'Foo2 failed',
+      localizedMessage: 'Foo2 failed',
       created: 1,
     });
     store.refreshState();
@@ -70,13 +70,13 @@ describe('alert snackbar', () => {
     expect(snackBarOpenSpy.calls.mostRecent().args[0]).toBe('Foo2 failed');
   });
 
-  it('should open the snackbar again on receiving the same alert', () => {
+  it('opens the snackbar again on receiving the same alert', () => {
     const fixture = TestBed.createComponent(AlertSnackbarContainer);
     fixture.detectChanges();
     expect(snackBarOpenSpy).not.toHaveBeenCalled();
 
     store.overrideSelector(selectors.getLatestAlert, {
-      details: 'Foo failed again',
+      localizedMessage: 'Foo failed again',
       created: 0,
     });
     store.refreshState();
@@ -85,7 +85,7 @@ describe('alert snackbar', () => {
     expect(snackBarOpenSpy.calls.mostRecent().args[0]).toBe('Foo failed again');
 
     store.overrideSelector(selectors.getLatestAlert, {
-      details: 'Foo failed again',
+      localizedMessage: 'Foo failed again',
       created: 1,
     });
     store.refreshState();
