@@ -38,7 +38,7 @@ describe('alert_effects', () => {
 
     await TestBed.configureTestingModule({
       imports: [
-        AlertActionModule.registerAlertActions([
+        AlertActionModule.registerAlertActions(() => [
           {
             actionCreator: alertActionOccurred,
             alertFromAction: (action: Action) => {

@@ -22,9 +22,11 @@ import {
 import {Action, ActionCreator, Creator} from '@ngrx/store';
 import {AlertReport} from './types';
 
-const ACTION_TO_ALERT_PROVIDER = new InjectionToken<ActionToAlertConfig[]>(
-  '[Alert] Action-To-Alert Provider'
-);
+// While this token is not used outside, it must be exported so that stricter
+// build tools may discover it during compilation.
+export const ACTION_TO_ALERT_PROVIDER = new InjectionToken<
+  ActionToAlertConfig[]
+>('[Alert] Action-To-Alert Provider');
 
 export type ActionToAlertTransformer = (action: Action) => AlertReport | null;
 
@@ -101,7 +103,7 @@ export class AlertActionModule {
   }
 
   static registerAlertActions(
-    configs: ActionToAlertConfig[]
+    providerFactory: () => ActionToAlertConfig[]
   ): ModuleWithProviders<AlertActionModule> {
     return {
       ngModule: AlertActionModule,
@@ -109,7 +111,7 @@ export class AlertActionModule {
         {
           provide: ACTION_TO_ALERT_PROVIDER,
           multi: true,
-          useValue: configs,
+          useFactory: providerFactory,
         },
       ],
     };

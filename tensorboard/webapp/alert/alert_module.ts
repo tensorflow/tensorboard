@@ -15,6 +15,7 @@ limitations under the License.
 import {NgModule} from '@angular/core';
 import {EffectsModule} from '@ngrx/effects';
 import {StoreModule} from '@ngrx/store';
+import {AlertActionModule} from './alert_action_module';
 import {AlertEffects} from './effects';
 import {reducers} from './store';
 import {ALERT_FEATURE_KEY} from './store/alert_types';
@@ -22,9 +23,10 @@ import {AlertSnackbarModule} from './views/alert_snackbar_module';
 
 @NgModule({
   imports: [
+    AlertActionModule,
+    AlertSnackbarModule,
     StoreModule.forFeature(ALERT_FEATURE_KEY, reducers),
     EffectsModule.forFeature([AlertEffects]),
-    AlertSnackbarModule,
   ],
 })
 export class AlertModule {}

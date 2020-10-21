@@ -17,6 +17,7 @@ ng_module(
         "@npm//@angular/common",
         "@npm//@angular/core",
         "@npm//@ngrx/store",
+        "@npm//rxjs",
     ],
 )
 

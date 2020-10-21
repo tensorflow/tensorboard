@@ -21,7 +21,7 @@ import {
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {Store} from '@ngrx/store';
 import {Subject} from 'rxjs';
-import {filter, takeUntil, tap} from 'rxjs/operators';
+import {filter, takeUntil} from 'rxjs/operators';
 
 import {State} from '../../app_state';
 import {getLatestAlert} from '../../selectors';
