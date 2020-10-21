@@ -17,6 +17,7 @@ import {MAT_SNACK_BAR_DATA, MatSnackBarRef} from '@angular/material/snack-bar';
 import {State} from '../../app_state';
 import {AlertInfo} from '../types';
 import {Store} from '@ngrx/store';
+import {splitByURL} from '../../util/string';
 
 @Component({
   selector: 'alert-display-snackbar',
@@ -26,6 +27,7 @@ import {Store} from '@ngrx/store';
 })
 export class AlertDisplaySnackbarContainer {
   readonly alert: AlertInfo;
+  readonly splitByURL = splitByURL;
 
   constructor(
     private readonly snackBarRef: MatSnackBarRef<AlertDisplaySnackbarContainer>,
