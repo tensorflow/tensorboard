@@ -12,20 +12,24 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {NgModule} from '@angular/core';
-import {CommonModule} from '@angular/common';
-import {MatButtonModule} from '@angular/material/button';
-import {MatSnackBarModule} from '@angular/material/snack-bar';
+:host {
+  display: flex;
+  flex-wrap: wrap;
+}
 
-import {AlertSnackbarContainer} from './alert_snackbar_container';
-import {AlertDisplaySnackbarContainer} from './alert_display_snackbar_container';
+.message {
+  font-size: 14px;
+  align-self: center;
+  margin: 5px 0;
+}
 
-/**
- * Provides the 'alert snackbar' view.
- */
-@NgModule({
-  declarations: [AlertSnackbarContainer, AlertDisplaySnackbarContainer],
-  exports: [AlertSnackbarContainer],
-  imports: [CommonModule, MatButtonModule, MatSnackBarModule],
-})
-export class AlertSnackbarModule {}
+.controls {
+  text-align: right;
+  display: inline-block;
+  white-space: nowrap;
+  margin-left: auto;
+}
+
+button {
+  text-transform: uppercase;
+}

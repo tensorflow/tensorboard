@@ -37,6 +37,10 @@ tf_ts_library(
     srcs = [
         "types.ts",
     ],
+    deps = [
+        "@npm//@ngrx/store",
+        "@npm//rxjs",
+    ],
 )
 
 tf_ts_library(

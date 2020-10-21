@@ -17,7 +17,7 @@ import {EffectsModule} from '@ngrx/effects';
 import {provideMockActions} from '@ngrx/effects/testing';
 import {Action, createAction, Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
-import {ReplaySubject} from 'rxjs';
+import {ReplaySubject, of} from 'rxjs';
 import {State} from '../app_state';
 import * as alertActions from './actions';
 import {AlertActionModule} from './alert_action_module';
