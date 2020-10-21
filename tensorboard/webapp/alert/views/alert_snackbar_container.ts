@@ -47,12 +47,11 @@ export class AlertSnackbarContainer implements OnInit, OnDestroy {
       .select(getLatestAlert)
       .pipe(
         takeUntil(this.ngUnsubscribe),
-        filter((alert) => Boolean(alert)),
-        tap((alert) => {
-          this.showAlert(alert!.localizedMessage);
-        })
+        filter((alert) => Boolean(alert))
       )
-      .subscribe(() => {});
+      .subscribe((alert) => {
+        this.showAlert(alert!.localizedMessage);
+      });
   }
 
   ngOnDestroy() {
