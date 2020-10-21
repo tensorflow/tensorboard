@@ -100,7 +100,7 @@ export const npmiChangeAnnotationSort = createAction(
 );
 
 export const npmiChangeSimilaritySort = createAction(
-  '[NPMI] Change Similarity Selection',
+  '[NPMI] Change Similarity Sort',
   props<{annotation: string}>()
 );
 

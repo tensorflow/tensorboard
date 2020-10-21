@@ -27,7 +27,12 @@ import {
   HostBinding,
   HostListener,
 } from '@angular/core';
-import {ValueData, TfColorScale} from '../../../store/npmi_types';
+import {
+  ValueData,
+  TfColorScale,
+  SortOrder,
+  AnnotationSort,
+} from '../../../store/npmi_types';
 import * as d3 from '../../../../../third_party/d3';
 import {stripMetricString} from '../../../util/metric_type';
 
@@ -49,9 +54,10 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
   @Input() showCounts!: boolean;
   @Input() annotation!: string;
   @Input() runHeight!: number;
+  @Input() hasEmbedding!: boolean;
+  @Input() sort!: AnnotationSort;
   // Only to trigger OnChanges to re-render the component.
   @Input() sidebarWidth!: number;
-  @Input() hasEmbedding!: boolean;
   @ViewChild('chart', {static: true, read: ElementRef})
   private readonly annotationContainer!: ElementRef<HTMLDivElement>;
   @ViewChild('hintClip', {static: true, read: ElementRef})
@@ -62,6 +68,7 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
     this.redraw();
   }
   @Output() onShowSimilarAnnotations = new EventEmitter();
+  readonly SortOrder = SortOrder;
   private width: number = 10;
   private chartWidth: number = 10;
   private chartHeight: number = 10;
@@ -532,5 +539,12 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
       });
 
     countTexts.exit().remove();
+  }
+
+  similaritySort(event: Event) {
+    if (this.hasEmbedding) {
+      event.stopPropagation();
+      this.onShowSimilarAnnotations.emit();
+    }
   }
 }

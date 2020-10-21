@@ -22,6 +22,7 @@ import {
   getHiddenAnnotations,
   getShowCounts,
   getSidebarWidth,
+  getAnnotationSort,
 } from '../../../store';
 import {ValueData} from '../../../store/npmi_types';
 import * as npmiActions from '../../../actions';
@@ -39,6 +40,7 @@ import * as npmiActions from '../../../actions';
       [annotation]="annotation"
       [runHeight]="runHeight"
       [hasEmbedding]="hasEmbedding"
+      [sort]="sort$ | async"
       [selectedAnnotations]="selectedAnnotations$ | async"
       [flaggedAnnotations]="flaggedAnnotations$ | async"
       [hiddenAnnotations]="hiddenAnnotations$ | async"
@@ -58,6 +60,7 @@ export class AnnotationContainer {
   @Input() runHeight!: number;
   @Input() hasEmbedding!: boolean;
 
+  readonly sort$ = this.store.select(getAnnotationSort);
   readonly flaggedAnnotations$ = this.store.select(getFlaggedAnnotations);
   readonly hiddenAnnotations$ = this.store.select(getHiddenAnnotations);
   readonly selectedAnnotations$ = this.store.select(getSelectedAnnotations);
