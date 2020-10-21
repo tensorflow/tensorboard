@@ -99,6 +99,11 @@ export const npmiChangeAnnotationSort = createAction(
   props<{metric: string}>()
 );
 
+export const npmiChangeSimilaritySort = createAction(
+  '[NPMI] Change Similarity Selection',
+  props<{annotation: string}>()
+);
+
 export const npmiToggleParallelCoordinatesExpanded = createAction(
   '[NPMI] Toggle PC Expanded'
 );

@@ -24,6 +24,7 @@ import {
   getSidebarWidth,
 } from '../../../store';
 import {ValueData} from '../../../store/npmi_types';
+import * as npmiActions from '../../../actions';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
@@ -37,11 +38,13 @@ import {ValueData} from '../../../store/npmi_types';
       [numActiveRuns]="numActiveRuns"
       [annotation]="annotation"
       [runHeight]="runHeight"
+      [hasEmbedding]="hasEmbedding"
       [selectedAnnotations]="selectedAnnotations$ | async"
       [flaggedAnnotations]="flaggedAnnotations$ | async"
       [hiddenAnnotations]="hiddenAnnotations$ | async"
       [showCounts]="showCounts$ | async"
       [sidebarWidth]="sidebarWidth$ | async"
+      (onShowSimilarAnnotations)="showSimilarAnnotations()"
     ></annotation-component>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -53,6 +56,7 @@ export class AnnotationContainer {
   @Input() numActiveRuns!: number;
   @Input() annotation!: string;
   @Input() runHeight!: number;
+  @Input() hasEmbedding!: boolean;
 
   readonly flaggedAnnotations$ = this.store.select(getFlaggedAnnotations);
   readonly hiddenAnnotations$ = this.store.select(getHiddenAnnotations);
@@ -61,4 +65,12 @@ export class AnnotationContainer {
   readonly sidebarWidth$ = this.store.select(getSidebarWidth);
 
   constructor(private readonly store: Store<State>) {}
+
+  showSimilarAnnotations() {
+    this.store.dispatch(
+      npmiActions.npmiChangeSimilaritySort({
+        annotation: this.annotation,
+      })
+    );
+  }
 }

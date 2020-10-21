@@ -35,6 +35,16 @@ limitations under the License.
     class="hidden-icon"
     svgIcon="visibility_off_24px"
   ></mat-icon>
+  <button
+    *ngIf="hasEmbedding"
+    mat-icon-button
+    aria-label="Flag Selected Annotations"
+    i18n-aria-label="Label for a button that flags selected annotations."
+    (click)="$event.stopPropagation(); onShowSimilarAnnotations.emit()"
+    title="Showing annotations that are semantically similar to this one."
+  >
+    <mat-icon class="flagged-icon" svgIcon="flag_24px"></mat-icon>
+  </button>
 </div>
 <div #chart class="chart-div">
   <svg class="chart-svg">

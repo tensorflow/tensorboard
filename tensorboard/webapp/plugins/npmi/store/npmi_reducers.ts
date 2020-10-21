@@ -308,6 +308,25 @@ const reducer = createReducer(
     }
   ),
   on(
+    actions.npmiChangeSimilaritySort,
+    (state: NpmiState, {annotation}): NpmiState => {
+      const newSort = {
+        metric: annotation,
+        order: SortOrder.SIMILAR,
+      };
+      if (
+        state.sort.metric === annotation &&
+        state.sort.order === SortOrder.SIMILAR
+      ) {
+        newSort.order = SortOrder.DISSIMILAR;
+      }
+      return {
+        ...state,
+        sort: newSort,
+      };
+    }
+  ),
+  on(
     actions.npmiToggleParallelCoordinatesExpanded,
     (state: NpmiState): NpmiState => {
       return {

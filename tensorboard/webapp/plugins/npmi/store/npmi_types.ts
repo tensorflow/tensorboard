@@ -66,6 +66,8 @@ export interface AnnotationSort {
 export enum SortOrder {
   DOWN,
   UP,
+  SIMILAR,
+  DISSIMILAR,
 }
 
 export interface NpmiState {

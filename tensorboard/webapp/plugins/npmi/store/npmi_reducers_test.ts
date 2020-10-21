@@ -864,6 +864,32 @@ describe('npmi_reducers', () => {
         order: SortOrder.UP,
       });
     });
+
+    it('changes the similarity sort', () => {
+      const state = createNpmiState();
+      const nextState = reducers(
+        state,
+        actions.npmiChangeSimilaritySort({annotation: 'test'})
+      );
+      expect(nextState.sort).toEqual({
+        metric: 'test',
+        order: SortOrder.SIMILAR,
+      });
+    });
+
+    it('changes the sort from similar to dissimilar', () => {
+      const state = createNpmiState({
+        sort: {metric: 'test', order: SortOrder.SIMILAR},
+      });
+      const nextState = reducers(
+        state,
+        actions.npmiChangeSimilaritySort({annotation: 'test'})
+      );
+      expect(nextState.sort).toEqual({
+        metric: 'test',
+        order: SortOrder.DISSIMILAR,
+      });
+    });
   });
 
   describe('UI Preferences', () => {

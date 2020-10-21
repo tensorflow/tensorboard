@@ -16,6 +16,8 @@ import {
   ChangeDetectionStrategy,
   Component,
   Input,
+  Output,
+  EventEmitter,
   AfterViewInit,
   OnChanges,
   SimpleChanges,
@@ -49,6 +51,7 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
   @Input() runHeight!: number;
   // Only to trigger OnChanges to re-render the component.
   @Input() sidebarWidth!: number;
+  @Input() hasEmbedding!: boolean;
   @ViewChild('chart', {static: true, read: ElementRef})
   private readonly annotationContainer!: ElementRef<HTMLDivElement>;
   @ViewChild('hintClip', {static: true, read: ElementRef})
@@ -58,6 +61,7 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
   onResize(event: Event) {
     this.redraw();
   }
+  @Output() onShowSimilarAnnotations = new EventEmitter();
   private width: number = 10;
   private chartWidth: number = 10;
   private chartHeight: number = 10;
