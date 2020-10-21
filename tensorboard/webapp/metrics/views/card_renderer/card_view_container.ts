@@ -20,7 +20,7 @@ import {
 } from '@angular/core';
 import {Store} from '@ngrx/store';
 import {Observable} from 'rxjs';
-import {map, take, tap, throttleTime, withLatestFrom} from 'rxjs/operators';
+import {map, take, throttleTime, withLatestFrom} from 'rxjs/operators';
 
 import {State} from '../../../app_state';
 import * as selectors from '../../../selectors';

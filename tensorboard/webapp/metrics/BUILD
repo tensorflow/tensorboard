@@ -12,6 +12,7 @@ ng_module(
     ],
     deps = [
         "//tensorboard/webapp/alert:alert_action",
+        "//tensorboard/webapp/metrics/actions",
         "//tensorboard/webapp/metrics/data_source",
         "//tensorboard/webapp/metrics/effects",
         "//tensorboard/webapp/metrics/store",

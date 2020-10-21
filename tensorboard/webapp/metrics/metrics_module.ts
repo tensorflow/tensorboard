@@ -28,10 +28,32 @@ import {MetricsViewsModule} from './views/metrics_views_module';
 import {AlertActionModule} from '../alert/alert_action_module';
 import * as actions from './actions';
 
+/** @typehack */ import * as _typeHackModels from '@ngrx/store/src/models';
+/** @typehack */ import * as _typeHackStore from '@ngrx/store';
+
 const CREATE_PIN_MAX_EXCEEDED_TEXT =
   `Max pin limit exceeded. Remove existing` +
   ` pins before adding more. See ` +
   `https://github.com/tensorflow/tensorboard/issues/4242`;
+
+// Note: Angular can only reference symbols from the @NgModule if they are
+// exported.
+export function alertActionProvider() {
+  return [
+    {
+      actionCreator: actions.cardPinStateToggled,
+      alertFromAction: (action: Action) => {
+        const {wasPinned, canCreateNewPins} = action as ReturnType<
+          typeof actions.cardPinStateToggled
+        >;
+        if (!wasPinned && !canCreateNewPins) {
+          return {localizedMessage: CREATE_PIN_MAX_EXCEEDED_TEXT};
+        }
+        return null;
+      },
+    },
+  ];
+}
 
 @NgModule({
   imports: [
@@ -45,20 +67,7 @@ const CREATE_PIN_MAX_EXCEEDED_TEXT =
     MetricsViewsModule,
     StoreModule.forFeature(METRICS_FEATURE_KEY, reducers),
     EffectsModule.forFeature([MetricsEffects]),
-    AlertActionModule.registerAlertActions([
-      {
-        actionCreator: actions.cardPinStateToggled,
-        alertFromAction: (action: Action) => {
-          const {wasPinned, canCreateNewPins} = action as ReturnType<
-            typeof actions.cardPinStateToggled
-          >;
-          if (!wasPinned && !canCreateNewPins) {
-            return {details: CREATE_PIN_MAX_EXCEEDED_TEXT};
-          }
-          return null;
-        },
-      },
-    ]),
+    AlertActionModule.registerAlertActions(alertActionProvider),
   ],
   entryComponents: [MetricsDashboardContainer],
 })
