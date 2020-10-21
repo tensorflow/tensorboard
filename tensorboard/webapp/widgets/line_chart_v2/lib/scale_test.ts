@@ -34,7 +34,7 @@ describe('line_chart_v2/lib/scale test', () => {
         expect(scale.forward([0, 1], [-100, 100], 5)).toBe(900);
       });
 
-      it('allows flippping order of the range', () => {
+      it('allows flipping order of the range', () => {
         expect(scale.forward([0, 1], [100, -100], 0)).toBe(100);
         expect(scale.forward([0, 1], [100, -100], 0.5)).toBe(0);
         expect(scale.forward([0, 1], [100, -100], 1)).toBe(-100);
@@ -65,20 +65,20 @@ describe('line_chart_v2/lib/scale test', () => {
 
     describe('#nice', () => {
       it('puts "nice" (~5%) padding around and round value of min and max', () => {
-        expect(scale.nice([0, 100])).toEqual([-10, 110]);
-        expect(scale.nice([-0.011, 99.5])).toEqual([-10, 110]);
-        expect(scale.nice([5.44, 95.12])).toEqual([0, 100]);
+        expect(scale.niceDomain([0, 100])).toEqual([-10, 110]);
+        expect(scale.niceDomain([-0.011, 99.5])).toEqual([-10, 110]);
+        expect(scale.niceDomain([5.44, 95.12])).toEqual([0, 100]);
       });
 
       it('puts padding of 5% of value when min == max', () => {
-        expect(scale.nice([100, 100])).toEqual([95, 105]);
-        expect(scale.nice([1, 1])).toEqual([0.95, 1.05]);
-        expect(scale.nice([10000, 10000])).toEqual([9500, 10500]);
-        expect(scale.nice([0, 0])).toEqual([-0.01, 0.01]);
+        expect(scale.niceDomain([100, 100])).toEqual([95, 105]);
+        expect(scale.niceDomain([1, 1])).toEqual([0.95, 1.05]);
+        expect(scale.niceDomain([10000, 10000])).toEqual([9500, 10500]);
+        expect(scale.niceDomain([0, 0])).toEqual([-0.01, 0.01]);
       });
 
       it('throws an error when min is larger than max', () => {
-        expect(() => void scale.nice([100, 0])).toThrowError(Error);
+        expect(() => void scale.niceDomain([100, 0])).toThrowError(Error);
       });
     });
 
@@ -150,7 +150,7 @@ describe('line_chart_v2/lib/scale test', () => {
         expect(scale.forward([-100, 100], [0, 1], 1)).toBeCloseTo(1, 1);
       });
 
-      it('allows flippping order of the range', () => {
+      it('allows flipping order of the range', () => {
         expect(scale.forward([0, 1], [100, -100], 0)).toBe(100);
         expect(scale.forward([0, 1], [100, -100], 0.5)).toBeCloseTo(-100, 0);
         expect(scale.forward([0, 1], [100, -100], 1)).toBe(-100);
@@ -199,18 +199,18 @@ describe('line_chart_v2/lib/scale test', () => {
         let low: number;
         let high: number;
 
-        [low, high] = scale.nice([0, 100]);
+        [low, high] = scale.niceDomain([0, 100]);
         expect(low).toBe(Number.MIN_VALUE);
         expect(high).toBeCloseTo(100, 0);
 
-        [low, high] = scale.nice([0.001, 75]);
+        [low, high] = scale.niceDomain([0.001, 75]);
         // spread is about log_10(75) - log_10(0.001) = 4.875
         // We add 5% padding with that spread (~0.2438) before we convert it back with
         // exponential. low turns into -3.244, so we exp(-3.244 / log_10(E)) ~ 0.00057.
         expect(low).toBeCloseTo(0.00057, 4);
         expect(high).toBeCloseTo(131, 0);
 
-        [low, high] = scale.nice([100, 1e6]);
+        [low, high] = scale.niceDomain([100, 1e6]);
         expect(low).toBeCloseTo(63, 0);
         expect(high).toBeCloseTo(1.585e6, -4);
       });
@@ -218,21 +218,21 @@ describe('line_chart_v2/lib/scale test', () => {
       it('puts padding of 5% of value when min == max', () => {
         let low: number;
         let high: number;
-        [low, high] = scale.nice([100, 100]);
+        [low, high] = scale.niceDomain([100, 100]);
         expect(low).toBeCloseTo(79, 0);
         expect(high).toBeCloseTo(126, 0);
 
-        [low, high] = scale.nice([1, 1]);
+        [low, high] = scale.niceDomain([1, 1]);
         expect(low).toBeCloseTo(0.977, 2);
         expect(high).toBeCloseTo(1.023, 2);
 
-        [low, high] = scale.nice([10000, 10000]);
+        [low, high] = scale.niceDomain([10000, 10000]);
         expect(low).toBeCloseTo(6310, 0);
         expect(high).toBeCloseTo(15849, 0);
       });
 
       it('throws an error when min is larger than max', () => {
-        expect(() => void scale.nice([100, 0])).toThrowError(Error);
+        expect(() => void scale.niceDomain([100, 0])).toThrowError(Error);
       });
     });
 

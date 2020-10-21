@@ -16,19 +16,42 @@ import {scaleLinear, scaleLog} from 'd3';
 
 import {ScaleType} from './scale_types';
 
+/**
+ * A `Scale` takes `domain` and sometimes `range` and provide coordinate system
+ * transformation and convenience method around interval. Similar abstraction as d3.scale.
+ *
+ * Unlike d3.scale, it is pure and does not have performance impact.
+ *
+ * Important: both `domain` and `range` require to be finite numbers. The order of the
+ * values do not matter (e.g., domain[1] < domain[0] is okay).
+ */
 export interface Scale {
+  /**
+   * Converts `x` in `domain` coordinates into `range` coordinates.
+   */
   forward(domain: [number, number], range: [number, number], x: number): number;
 
+  /**
+   * Converts `x` in `range` coordinates into `domain` coordinates.
+   */
   reverse(domain: [number, number], range: [number, number], x: number): number;
 
-  nice(minAndMax: [number, number]): [number, number];
+  /**
+   * Attempts to transform domain into nice round numbers. Analogous to `d3.nice`.
+   *
+   * @param domain Two finite numbers to compuute round number from.
+   */
+  niceDomain(domain: [number, number]): [number, number];
 
   /**
-   * @param lowAndHigh bounds of the tick
-   * @param sizeGuidance approximate number of the ticks. Depending on the lowAndHigh, it
+   * Returns "human friendly" numbers between the `domain` that can be used for ticks and
+   * grid.
+   *
+   * @param domain bounds of the tick
+   * @param sizeGuidance approximate number of the ticks. Depending on the domain, it
    * may return less or more ticks.
    */
-  ticks(lowAndHigh: [number, number], sizeGuidance: number): number[];
+  ticks(domain: [number, number], sizeGuidance: number): number[];
 }
 
 export function createScale(type: ScaleType): Scale {
@@ -38,7 +61,8 @@ export function createScale(type: ScaleType): Scale {
     case ScaleType.LOG10:
       return new Log10Scale();
     default:
-      throw new RangeError(`ScaleType ${type} not supported.`);
+      const _: never = type;
+      throw new RangeError(`ScaleType ${_} not supported.`);
   }
 }
 
@@ -79,8 +103,8 @@ class LinearScale implements Scale {
     return this.transform(range, domain, x);
   }
 
-  nice(minAndMax: [number, number]): [number, number] {
-    let [min, max] = minAndMax;
+  niceDomain(domain: [number, number]): [number, number] {
+    let [min, max] = domain;
     if (max < min) {
       throw new Error('Unexpected input: min is larger than max');
     }
@@ -98,8 +122,8 @@ class LinearScale implements Scale {
     return [niceMin, niceMax];
   }
 
-  ticks(lowAndHigh: [number, number], sizeGuidance: number): number[] {
-    return scaleLinear().domain(lowAndHigh).ticks(sizeGuidance);
+  ticks(domain: [number, number], sizeGuidance: number): number[] {
+    return scaleLinear().domain(domain).ticks(sizeGuidance);
   }
 }
 
@@ -155,8 +179,8 @@ class Log10Scale implements Scale {
     return this.untransform(val);
   }
 
-  nice(minAndMax: [number, number]): [number, number] {
-    const [min, max] = minAndMax;
+  niceDomain(domain: [number, number]): [number, number] {
+    const [min, max] = domain;
     if (min > max) {
       throw new Error('Unexpected input: min is larger than max');
     }
@@ -187,10 +211,10 @@ class Log10Scale implements Scale {
     ];
   }
 
-  ticks(lowAndHigh: [number, number], sizeGuidance: number): number[] {
-    const low = lowAndHigh[0] <= 0 ? Number.MIN_VALUE : lowAndHigh[0];
-    const high = lowAndHigh[1] <= 0 ? Number.MIN_VALUE : lowAndHigh[1];
+  ticks(domain: [number, number], sizeGuidance: number): number[] {
+    const low = domain[0] <= 0 ? Number.MIN_VALUE : domain[0];
+    const high = domain[1] <= 0 ? Number.MIN_VALUE : domain[1];
     const ticks = scaleLog().domain([low, high]).ticks(sizeGuidance);
-    return ticks.length ? ticks : lowAndHigh;
+    return ticks.length ? ticks : domain;
   }
 }
