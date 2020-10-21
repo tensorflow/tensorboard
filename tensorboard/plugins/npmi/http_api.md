@@ -10,7 +10,9 @@ exporter that we use to export multiple tables at the same time. Table names can
 be anything user-defined.
 
 Returns a dictionary mapping from `runName` to an array of dictionaries mapping
-from `tagName` to the table they were exported for. Example:
+from `tagName` to the table they were exported for.
+
+Example:
 
 ```json
 {
@@ -32,7 +34,9 @@ from `tagName` to the table they were exported for. Example:
 
 Retrieves all the annotations that were written to the summary.
 
-Returns a dictionary mapping from `runName` to an array of annotations. Example:
+Returns a dictionary mapping from `runName` to an array of annotations.
+
+Example:
 
 ```json
 {
@@ -48,7 +52,9 @@ Returns a dictionary mapping from `runName` to an array of annotations. Example:
 
 Retrieves all the metrics that were calculated.
 
-Returns a dictionary mapping from `runName` to an array of metrics. Example:
+Returns a dictionary mapping from `runName` to an array of metrics.
+
+Example:
 
 ```json
 {
@@ -67,7 +73,9 @@ the nPMI calculations.
 
 Returns a dictionary mapping from `runName` to an array of arrays of metric
 values. In this, the outer array indices resolve to the annotations, whereas the
-inner array resolves to the metrics per annotation. Example:
+inner array resolves to the metrics per annotation.
+
+Example:
 
 ```json
 {
@@ -87,6 +95,44 @@ inner array resolves to the metrics per annotation. Example:
       -0.05774582177400589,
       0.11519329994916916
     ]
+  ]
+}
+```
+
+## `data/plugin/npmi/embeddings`
+
+Retrieves high-dimensional embeddings for the annotations. Embeddings are
+optional but can be used to further inform the user in their analysis.
+
+Returns a dictionary mapping from `annotation` to an embedding. The embedding
+can be any dimension, and does not have to be there for every annotation. You
+can use any embedding technique with this implementation.
+
+Example:
+
+```json
+{
+  "annotation_1": [
+      0.34362471103668213,
+      0.17068558931350708,
+      0.28587889671325684,
+      0.17293912172317505,
+      0.05774582177400589,
+      -0.17293912172317505,
+      -0.11519329994916916,
+      -0.05774582177400589,
+      0.11519329994916916
+  ],
+  "annotation_2": [
+      -0.11519329994916916,
+      0.34362471103668213,
+      0.05774582177400589,
+      -0.17293912172317505,
+      0.28587889671325684,
+      0.17293912172317505,
+      -0.05774582177400589,
+      0.11519329994916916
+      0.17068558931350708,
   ]
 }
 ```

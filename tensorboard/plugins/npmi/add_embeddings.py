@@ -27,14 +27,19 @@ from tensorboard.plugins.npmi import metadata
 FLAGS = flags.FLAGS
 
 flags.DEFINE_string(
-    "log_path", "", "Log file to extend by embedding data.",
+    "log_path", None, "Log file to extend by embedding data.",
 )
 flags.DEFINE_string(
-    "out_path", "", "Where to write the new log file.",
+    "out_path", None, "Where to write the new log file.",
 )
 flags.DEFINE_string(
-    "embeddings_path", "", "Where to write the new log file.",
+    "embeddings_path",
+    None,
+    "Path to the numpy file containing the embeddings.",
 )
+flags.mark_flag_as_required("log_path")
+flags.mark_flag_as_required("out_path")
+flags.mark_flag_as_required("embeddings_path")
 
 
 def add_embeddings(log_path, out_path, embeddings_path):
