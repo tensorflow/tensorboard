@@ -441,6 +441,12 @@ describe('metrics store utils', () => {
   });
 
   describe('canCreateNewPins', () => {
+    const originalMaxPinCount = TEST_ONLY.util.MAX_PIN_COUNT;
+
+    afterEach(() => {
+      TEST_ONLY.util.MAX_PIN_COUNT = originalMaxPinCount;
+    });
+
     it('returns true when pins are under the limit', () => {
       TEST_ONLY.util.MAX_PIN_COUNT = 3;
       const state = buildMetricsState({

@@ -92,18 +92,17 @@ export class CardViewContainer {
       .select(selectors.getCardPinnedState, this.cardId)
       .pipe(
         take(1),
-        withLatestFrom(this.store.select(selectors.getCanCreateNewPins)),
-        tap(([wasPinned, canCreateNewPins]) => {
-          this.store.dispatch(
-            actions.cardPinStateToggled({
-              cardId: this.cardId,
-              canCreateNewPins,
-              wasPinned,
-            })
-          );
-        })
+        withLatestFrom(this.store.select(selectors.getCanCreateNewPins))
       )
-      .subscribe(() => {});
+      .subscribe(([wasPinned, canCreateNewPins]) => {
+        this.store.dispatch(
+          actions.cardPinStateToggled({
+            cardId: this.cardId,
+            canCreateNewPins,
+            wasPinned,
+          })
+        );
+      });
   }
 }
 
