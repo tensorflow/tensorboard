@@ -184,6 +184,15 @@ tf_ts_library(
     ],
 )
 
+# This is a dummy rule used as a @angular/material/snackbar dependency.
+tf_ts_library(
+    name = "expect_angular_material_snackbar",
+    srcs = [],
+    deps = [
+        "@npm//@angular/material",
+    ],
+)
+
 # This is a dummy rule used as a @angular/material/sort dependency.
 tf_ts_library(
     name = "expect_angular_material_sort",

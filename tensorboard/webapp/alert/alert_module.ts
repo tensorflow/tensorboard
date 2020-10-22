@@ -12,9 +12,21 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-export * from './app_routing/store/app_routing_selectors';
-export * from './experiments/store/experiments_selectors';
-export * from './alert/store/alert_selectors';
-export * from './metrics/store/metrics_selectors';
-export * from './runs/store/runs_selectors';
-export * from './util/ui_selectors';
+import {NgModule} from '@angular/core';
+import {EffectsModule} from '@ngrx/effects';
+import {StoreModule} from '@ngrx/store';
+import {AlertActionModule} from './alert_action_module';
+import {AlertEffects} from './effects';
+import {reducers} from './store';
+import {ALERT_FEATURE_KEY} from './store/alert_types';
+import {AlertSnackbarModule} from './views/alert_snackbar_module';
+
+@NgModule({
+  imports: [
+    AlertActionModule,
+    AlertSnackbarModule,
+    StoreModule.forFeature(ALERT_FEATURE_KEY, reducers),
+    EffectsModule.forFeature([AlertEffects]),
+  ],
+})
+export class AlertModule {}
