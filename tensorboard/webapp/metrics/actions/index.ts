@@ -128,5 +128,5 @@ export const metricsTagGroupExpansionChanged = createAction(
 
 export const cardPinStateToggled = createAction(
   '[Metrics] Card Pin State Toggled',
-  props<{cardId: CardId}>()
+  props<{cardId: CardId; canCreateNewPins: boolean; wasPinned: boolean}>()
 );

@@ -136,15 +136,29 @@ describe('card view test', () => {
     fixture.detectChanges();
 
     expect(dispatchedActions).toEqual([
-      actions.cardPinStateToggled({cardId: 'cardId'}),
+      actions.cardPinStateToggled({
+        cardId: 'cardId',
+        canCreateNewPins: true,
+        wasPinned: false,
+      }),
     ]);
 
+    store.overrideSelector(selectors.getCardPinnedState, true);
+    store.refreshState();
     scalarCard.componentInstance.pinStateChanged.emit(false);
     fixture.detectChanges();
 
     expect(dispatchedActions).toEqual([
-      actions.cardPinStateToggled({cardId: 'cardId'}),
-      actions.cardPinStateToggled({cardId: 'cardId'}),
+      actions.cardPinStateToggled({
+        cardId: 'cardId',
+        canCreateNewPins: true,
+        wasPinned: false,
+      }),
+      actions.cardPinStateToggled({
+        cardId: 'cardId',
+        canCreateNewPins: true,
+        wasPinned: true,
+      }),
     ]);
   });
 

@@ -15,7 +15,7 @@ limitations under the License.
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
 import {EffectsModule} from '@ngrx/effects';
-import {StoreModule} from '@ngrx/store';
+import {Action, StoreModule} from '@ngrx/store';
 import {PluginRegistryModule} from '../plugins/plugin_registry_module';
 
 import {RunsSelectorModule} from '../runs/views/runs_selector/runs_selector_module';
@@ -25,6 +25,35 @@ import {MetricsEffects} from './effects';
 import {METRICS_FEATURE_KEY, reducers} from './store';
 import {MetricsDashboardContainer} from './views/metrics_container';
 import {MetricsViewsModule} from './views/metrics_views_module';
+import {AlertActionModule} from '../alert/alert_action_module';
+import * as actions from './actions';
+
+/** @typehack */ import * as _typeHackModels from '@ngrx/store/src/models';
+/** @typehack */ import * as _typeHackStore from '@ngrx/store';
+
+const CREATE_PIN_MAX_EXCEEDED_TEXT =
+  `Max pin limit exceeded. Remove existing` +
+  ` pins before adding more. See ` +
+  `https://github.com/tensorflow/tensorboard/issues/4242`;
+
+// Note: Angular can only reference symbols from the @NgModule if they are
+// exported.
+export function alertActionProvider() {
+  return [
+    {
+      actionCreator: actions.cardPinStateToggled,
+      alertFromAction: (action: Action) => {
+        const {wasPinned, canCreateNewPins} = action as ReturnType<
+          typeof actions.cardPinStateToggled
+        >;
+        if (!wasPinned && !canCreateNewPins) {
+          return {localizedMessage: CREATE_PIN_MAX_EXCEEDED_TEXT};
+        }
+        return null;
+      },
+    },
+  ];
+}
 
 @NgModule({
   imports: [
@@ -38,6 +67,7 @@ import {MetricsViewsModule} from './views/metrics_views_module';
     MetricsViewsModule,
     StoreModule.forFeature(METRICS_FEATURE_KEY, reducers),
     EffectsModule.forFeature([MetricsEffects]),
+    AlertActionModule.registerAlertActions(alertActionProvider),
   ],
   entryComponents: [MetricsDashboardContainer],
 })

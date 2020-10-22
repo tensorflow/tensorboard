@@ -20,7 +20,7 @@ import {
 } from '@angular/core';
 import {Store} from '@ngrx/store';
 import {Observable} from 'rxjs';
-import {map, throttleTime} from 'rxjs/operators';
+import {map, take, throttleTime, withLatestFrom} from 'rxjs/operators';
 
 import {State} from '../../../app_state';
 import * as selectors from '../../../selectors';
@@ -88,7 +88,21 @@ export class CardViewContainer {
   }
 
   onPinStateChanged() {
-    this.store.dispatch(actions.cardPinStateToggled({cardId: this.cardId}));
+    this.store
+      .select(selectors.getCardPinnedState, this.cardId)
+      .pipe(
+        take(1),
+        withLatestFrom(this.store.select(selectors.getCanCreateNewPins))
+      )
+      .subscribe(([wasPinned, canCreateNewPins]) => {
+        this.store.dispatch(
+          actions.cardPinStateToggled({
+            cardId: this.cardId,
+            canCreateNewPins,
+            wasPinned,
+          })
+        );
+      });
   }
 }
 

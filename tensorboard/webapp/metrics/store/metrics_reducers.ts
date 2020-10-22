@@ -46,6 +46,7 @@ import {
 import {
   buildOrReturnStateWithUnresolvedImportedPins,
   buildOrReturnStateWithPinnedCopy,
+  canCreateNewPins,
   createPluginDataWithLoadable,
   createRunToLoadState,
   getCardId,
@@ -694,6 +695,10 @@ const reducer = createReducer(
     const shouldPin = isPinnedCopy
       ? false
       : !state.cardToPinnedCopy.has(cardId);
+
+    if (shouldPin && !canCreateNewPins(state)) {
+      return state;
+    }
 
     let nextCardToPinnedCopy = new Map(state.cardToPinnedCopy);
     let nextPinnedCardToOriginal = new Map(state.pinnedCardToOriginal);

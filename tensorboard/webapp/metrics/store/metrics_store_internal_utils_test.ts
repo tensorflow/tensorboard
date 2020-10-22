@@ -15,7 +15,11 @@ limitations under the License.
 import {DataLoadState} from '../../types/data';
 
 import {PluginType} from '../data_source';
-import {buildTagMetadata, createCardMetadata} from '../testing';
+import {
+  buildTagMetadata,
+  createCardMetadata,
+  buildMetricsState,
+} from '../testing';
 
 import {
   buildOrReturnStateWithPinnedCopy,
@@ -26,6 +30,8 @@ import {
   getPinnedCardId,
   getRunIds,
   getTimeSeriesLoadable,
+  canCreateNewPins,
+  TEST_ONLY,
 } from './metrics_store_internal_utils';
 import {ImageTimeSeriesData} from './metrics_types';
 
@@ -431,6 +437,69 @@ describe('metrics store utils', () => {
       );
       expect(result.cardStepIndex).toEqual(originals.cardStepIndexMap);
       expect(result.cardMetadataMap).toEqual(originals.cardMetadataMap);
+    });
+  });
+
+  describe('canCreateNewPins', () => {
+    const originalMaxPinCount = TEST_ONLY.util.MAX_PIN_COUNT;
+
+    afterEach(() => {
+      TEST_ONLY.util.MAX_PIN_COUNT = originalMaxPinCount;
+    });
+
+    it('returns true when pins are under the limit', () => {
+      TEST_ONLY.util.MAX_PIN_COUNT = 3;
+      const state = buildMetricsState({
+        pinnedCardToOriginal: new Map([['pinnedCard1', 'card1']]),
+        unresolvedImportedPinnedCards: [
+          {plugin: PluginType.SCALARS, tag: 'loss'},
+        ],
+      });
+
+      expect(canCreateNewPins(state)).toBe(true);
+    });
+
+    it('returns false when resolved pins reaches the limit', () => {
+      TEST_ONLY.util.MAX_PIN_COUNT = 3;
+      const state = buildMetricsState({
+        pinnedCardToOriginal: new Map([
+          ['pinnedCard1', 'card1'],
+          ['pinnedCard2', 'card2'],
+          ['pinnedCard3', 'card3'],
+        ]),
+        unresolvedImportedPinnedCards: [],
+      });
+
+      expect(canCreateNewPins(state)).toBe(false);
+    });
+
+    it('returns false when unresolved pins reaches the limit', () => {
+      TEST_ONLY.util.MAX_PIN_COUNT = 3;
+      const state = buildMetricsState({
+        pinnedCardToOriginal: new Map(),
+        unresolvedImportedPinnedCards: [
+          {plugin: PluginType.SCALARS, tag: 'loss1'},
+          {plugin: PluginType.SCALARS, tag: 'loss2'},
+          {plugin: PluginType.SCALARS, tag: 'loss3'},
+        ],
+      });
+
+      expect(canCreateNewPins(state)).toBe(false);
+    });
+
+    it('returns false when pins + unresolved pins reaches the limit', () => {
+      TEST_ONLY.util.MAX_PIN_COUNT = 3;
+      const state = buildMetricsState({
+        pinnedCardToOriginal: new Map([
+          ['pinnedCard1', 'card1'],
+          ['pinnedCard2', 'card2'],
+        ]),
+        unresolvedImportedPinnedCards: [
+          {plugin: PluginType.SCALARS, tag: 'loss1'},
+        ],
+      });
+
+      expect(canCreateNewPins(state)).toBe(false);
     });
   });
 });
