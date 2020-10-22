@@ -63,7 +63,7 @@ describe('line_chart_v2/lib/scale test', () => {
       });
     });
 
-    describe('#nice', () => {
+    describe('#niceDomain', () => {
       it('puts "nice" (~5%) padding around and round value of min and max', () => {
         expect(scale.niceDomain([0, 100])).toEqual([-10, 110]);
         expect(scale.niceDomain([-0.011, 99.5])).toEqual([-10, 110]);
@@ -193,7 +193,7 @@ describe('line_chart_v2/lib/scale test', () => {
       });
     });
 
-    describe('#nice', () => {
+    describe('#niceDomain', () => {
       // Carrying over the behavior from existing vz_line_chart
       it('puts "nice" (~5%) padding around but does not round values', () => {
         let low: number;
