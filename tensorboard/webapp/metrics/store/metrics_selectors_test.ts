@@ -512,6 +512,35 @@ describe('metrics selectors', () => {
     });
   });
 
+  describe('getUnresolvedImportedPinnedCards', () => {
+    it('returns unresolved imported pinned cards', () => {
+      selectors.getUnresolvedImportedPinnedCards.release();
+
+      const state = appStateFromMetricsState(
+        buildMetricsState({
+          unresolvedImportedPinnedCards: [
+            {plugin: PluginType.SCALARS, tag: 'accuracy'},
+            {
+              plugin: PluginType.IMAGES,
+              tag: 'output',
+              runId: 'exp1/run1',
+              sample: 5,
+            },
+          ],
+        })
+      );
+      expect(selectors.getUnresolvedImportedPinnedCards(state)).toEqual([
+        {plugin: PluginType.SCALARS, tag: 'accuracy'},
+        {
+          plugin: PluginType.IMAGES,
+          tag: 'output',
+          runId: 'exp1/run1',
+          sample: 5,
+        },
+      ]);
+    });
+  });
+
   describe('settings', () => {
     it('returns tooltipSort when called getMetricsTooltipSort', () => {
       selectors.getMetricsTooltipSort.release();

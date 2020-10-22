@@ -20,6 +20,7 @@ import {DeepReadonly} from '../../util/types';
 import {
   CardId,
   CardIdWithMetadata,
+  CardUniqueInfo,
   CardMetadata,
   HistogramMode,
   NonPinnedCardId,
@@ -235,6 +236,13 @@ export const getCardPinnedState = createSelector(
     cardId: NonPinnedCardId | PinnedCardId
   ): boolean => {
     return cardToPinnedCopy.has(cardId) || pinnedCardToOriginal.has(cardId);
+  }
+);
+
+export const getUnresolvedImportedPinnedCards = createSelector(
+  selectMetricsState,
+  (state: MetricsState): CardUniqueInfo[] => {
+    return state.unresolvedImportedPinnedCards;
   }
 );
 
