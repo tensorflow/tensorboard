@@ -47,9 +47,17 @@ export interface Scale {
    * Returns "human friendly" numbers between the `domain` that can be used for ticks and
    * grid.
    *
-   * @param domain bounds of the tick
+   * In case the spread of an interval is 0 or negligible, it can return an empty array
+   * depending on an implementation.
+   *
+   * Examples:
+   *   ticks([0, 10], 5) -> [0, 2, 4, 6, 8, 10]
+   *   ticks([10, 0], 5) -> [10, 8, 6, 4, 2, 0]
+   *   ticks([10, 10], 5) -> []
+   *
+   * @param domain Interval in which tick should be created.
    * @param sizeGuidance approximate number of the ticks. Depending on the domain, it
-   * may return less or more ticks.
+   *    may return less or more ticks.
    */
   ticks(domain: [number, number], sizeGuidance: number): number[];
 }
