@@ -17,9 +17,6 @@ import {createScale, Scale} from './scale';
 import {Rect, ScaleType} from './types';
 import {convertRectToExtent} from './utils';
 
-type XCoordinate = number;
-type YCoordinate = number;
-
 /**
  * A stateful convenient utility around scale for converting coordinate systems.
  *
@@ -33,7 +30,7 @@ type YCoordinate = number;
  * - ui coordinate: coordinate of a data in pixel/view-space. For example above, a data at
  *     <0.5, 0.5> will be on <50, 100> in UI coordinates.
  * - internal coordinate: in case like webgl, you can use an internal static
- *     coordinate system separate from the ui coordinate. It is
+ *     coordinate system separate from the ui coordinate.
  * - view box: a rect in data coordinate that describes what should be visible
  *     on the screen.
  */
@@ -59,14 +56,18 @@ export class Coordinator {
     return this.lastUpdated;
   }
 
+  private updateIdentifier() {
+    this.lastUpdated = Date.now();
+  }
+
   setXScale(scale: Scale) {
     this.xScale = scale;
-    this.lastUpdated = Date.now();
+    this.updateIdentifier();
   }
 
   setYScale(scale: Scale) {
     this.yScale = scale;
-    this.lastUpdated = Date.now();
+    this.updateIdentifier();
   }
 
   getCurrentViewBoxRect(): Rect {
@@ -75,25 +76,22 @@ export class Coordinator {
 
   setViewBoxRect(rectInDataCoordinate: Rect) {
     this.currentViewBoxRect = rectInDataCoordinate;
-    this.lastUpdated = Date.now();
+    this.updateIdentifier();
   }
 
   setDomContainerRect(rect: Rect) {
     this.domContainerRect = rect;
-    this.lastUpdated = Date.now();
+    this.updateIdentifier();
   }
 
   /**
    * Converts data coordinate into ui coordinates where the ui coordinate bounds are
    * specified in `rectInUiCoordinate`.
-   *
-   * @param rectInUiCoordinate
-   * @param dataCoordinate
    */
   getViewCoordinate(
     rectInUiCoordinate: Rect,
-    dataCoordinate: [XCoordinate, YCoordinate]
-  ): [XCoordinate, YCoordinate] {
+    dataCoordinate: [number, number]
+  ): [number, number] {
     const rect = rectInUiCoordinate;
     const domain = convertRectToExtent(this.currentViewBoxRect);
     return [
