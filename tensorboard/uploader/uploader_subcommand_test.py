@@ -78,6 +78,52 @@ _SCALARS_HISTOGRAMS_AND_GRAPHS = frozenset(
 
 
 class UploadIntentTest(tf.test.TestCase):
+    def testUploadIntentOneShotEmptyDirectoryFails(self):
+        """Test the upload intent under the one-shot mode
+        
+        In the case of a non-existent directoy, uploading should not
+        create an experiment.
+        """
+        mock_server_info = mock.MagicMock()
+        mock_channel = mock.MagicMock()
+        upload_limits = server_info_pb2.UploadLimits(
+            max_scalar_request_size=128000,
+            max_tensor_request_size=128000,
+            max_tensor_point_size=11111,
+            max_blob_request_size=128000,
+            max_blob_size=128000,
+        )
+        mock_stdout_write = mock.MagicMock()
+        with mock.patch.object(
+            server_info_lib,
+            "allowed_plugins",
+            return_value=_SCALARS_HISTOGRAMS_AND_GRAPHS,
+        ), mock.patch.object(
+            server_info_lib, "upload_limits", return_value=upload_limits
+        ), mock.patch.object(
+            sys.stdout, "write", mock_stdout_write
+        ), mock.patch.object(
+            dry_run_stubs,
+            "DryRunTensorBoardWriterStub",
+            side_effect=dry_run_stubs.DryRunTensorBoardWriterStub,
+        ) as mock_dry_run_stub:
+            intent = uploader_subcommand.UploadIntent(
+                "/dev/null/non/existent/directory", dry_run=False, one_shot=True
+            )
+            intent.execute(mock_server_info, mock_channel)
+        self.assertEqual(mock_dry_run_stub.call_count, 1)
+        stdout_writes = [x[0][0] for x in mock_stdout_write.call_args_list]
+        print(stdout_writes)
+        # ".*Done scanning logdir.*" should be among the things printed.
+        self.assertRegex(
+            ",".join(stdout_writes),
+            ".*Done scanning logdir.*",
+        )
+        # Last thing written should be the string "\nDone.\n"
+        self.assertEqual(
+            stdout_writes[-1], "\nDone.\n"
+        )
+
     def testUploadIntentUnderDryRunOneShot(self):
         """Test the upload intent under the dry-run + one-shot mode."""
         mock_server_info = mock.MagicMock()
@@ -108,12 +154,15 @@ class UploadIntentTest(tf.test.TestCase):
             )
             intent.execute(mock_server_info, mock_channel)
         self.assertEqual(mock_dry_run_stub.call_count, 1)
+        stdout_writes = [x[0][0] for x in mock_stdout_write.call_args_list]
+        # ".*Done scanning logdir.*" should be among the things printed.
         self.assertRegex(
-            mock_stdout_write.call_args_list[-2][0][0],
+            ",".join(stdout_writes),
             ".*Done scanning logdir.*",
         )
+        # Last thing written should be the string "\nDone.\n"
         self.assertEqual(
-            mock_stdout_write.call_args_list[-1][0][0], "\nDone.\n"
+            stdout_writes[-1], "\nDone.\n"
         )
 
     def testUploadIntentWithExperimentUrlCallback(self):
