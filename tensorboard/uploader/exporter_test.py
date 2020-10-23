@@ -455,11 +455,10 @@ class TensorBoardExporterTest(tb_test.TestCase):
             )
             tensors = [tensors[key] for key in tensors.keys()]
             self.assertLen(tensors, 2)
-            np.testing.assert_array_equal(tensors[0],
-                                          np.array(["a", "a", "a"], "|S"))
-            np.testing.assert_array_equal(tensors[1],
-                                          np.array(["aa", "aa", "aa"], "|S"))
-
+            np.testing.assert_array_equal(
+                tensors[0], np.array(["a", "a", "a"], "|S"))
+            np.testing.assert_array_equal(
+                tensors[1], np.array(["aa", "aa", "aa"], "|S"))
 
     def test_e2e_success_case_with_blob_sequence_data(self):
         """Covers exporting of complete and incomplete blob sequences

@@ -300,8 +300,7 @@ class TensorBoardExporter(object):
             tensor_util.make_ndarray(tensor_proto)
             for tensor_proto in points.values
         ]
-        ndarrays = [
-            self._fix_string_types(x) for x in ndarrays]
+        ndarrays = [self._fix_string_types(x) for x in ndarrays]
         np.savez(os.path.join(experiment_dir, tensors_file_path), *ndarrays)
         json_object["tensors_file_path"] = tensors_file_path
         return json_object
@@ -324,7 +323,7 @@ class TensorBoardExporter(object):
         if ndarray.dtype != np.object:
             return ndarray
         else:
-            return ndarray.astype('|S')
+            return ndarray.astype("|S")
 
     def _get_tensor_file_path(self, experiment_dir, wall_time):
         """Get a nonexistent path for a tensor value.
