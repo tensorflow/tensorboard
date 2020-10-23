@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {getWorker} from './worker';
+import {getWorker} from '../worker';
 
 /**
  * An object that that provides facility to interact with a Worker process. Because
