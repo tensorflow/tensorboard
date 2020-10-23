@@ -125,6 +125,7 @@ def tf_sass_binary(deps = [], include_paths = [], **kwargs):
         include_paths = include_paths + [
             "external/npm/node_modules",
         ],
+        sourcemap = False,
         **kwargs
     )
 
