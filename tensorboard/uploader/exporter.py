@@ -300,9 +300,31 @@ class TensorBoardExporter(object):
             tensor_util.make_ndarray(tensor_proto)
             for tensor_proto in points.values
         ]
+        ndarrays = [
+            self._fix_string_types(x) for x in ndarrays]
         np.savez(os.path.join(experiment_dir, tensors_file_path), *ndarrays)
         json_object["tensors_file_path"] = tensors_file_path
         return json_object
+
+    def _fix_string_types(self, ndarray):
+        """ Change the dtype of text arrays to String rather than Object.
+
+        np.savez ends up pickling np.object arrays, while it doesn't pickle
+        strings.  The downside is that it needs to pad the length of each string
+        in the array to the maximal length string.  We only want to do this
+        type override in this final step of the export path.
+
+        Args:
+          ndarray: a tensor converted to an ndarray
+
+        Returns:
+          The original ndarray if not np.oject, dtype converted to String
+          if np.object.
+        """
+        if ndarray.dtype != np.object:
+            return ndarray
+        else:
+            return ndarray.astype('|S')
 
     def _get_tensor_file_path(self, experiment_dir, wall_time):
         """Get a nonexistent path for a tensor value.

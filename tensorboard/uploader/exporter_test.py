@@ -277,7 +277,7 @@ class TensorBoardExporterTest(tb_test.TestCase):
         def stream_experiment_data(request, **kwargs):
             self.assertEqual(kwargs["metadata"], grpc_util.version_metadata())
             for run in ("train_1", "train_2"):
-                for tag in ("dense_1/kernel", "dense_1/bias"):
+                for tag in ("dense_1/kernel", "dense_1/bias", "text/test"):
                     response = export_service_pb2.StreamExperimentDataResponse()
                     response.run_name = run
                     response.tag_name = tag
@@ -291,11 +291,18 @@ class TensorBoardExporterTest(tb_test.TestCase):
                             seconds=1571084520 + step,
                             nanos=862939144 if run == "train_1" else 962939144,
                         )
-                        response.tensors.values.append(
-                            tensor_util.make_tensor_proto(
-                                np.ones([3, 2]) * step
+                        if tag != "text/test":
+                            response.tensors.values.append(
+                                tensor_util.make_tensor_proto(
+                                    np.ones([3, 2]) * step
+                                )
                             )
-                        )
+                        else:
+                            response.tensors.values.append(
+                                tensor_util.make_tensor_proto(
+                                    np.full([3], "a" * (step + 1))
+                                )
+                            )
                     yield response
 
         mock_api_client.StreamExperiments = mock.Mock(wraps=stream_experiments)
@@ -333,10 +340,16 @@ class TensorBoardExporterTest(tb_test.TestCase):
             os.path.join("experiment_123", "tensors", "1571084520.862939_1.npz")
         )
         expected_files.append(
+            os.path.join("experiment_123", "tensors", "1571084520.862939_2.npz")
+        )
+        expected_files.append(
             os.path.join("experiment_123", "tensors", "1571084520.962939.npz")
         )
         expected_files.append(
             os.path.join("experiment_123", "tensors", "1571084520.962939_1.npz")
+        )
+        expected_files.append(
+            os.path.join("experiment_123", "tensors", "1571084520.962939_2.npz")
         )
         self.assertCountEqual(expected_files, _outdir_files(outdir))
 
@@ -380,7 +393,7 @@ class TensorBoardExporterTest(tb_test.TestCase):
             os.path.join(outdir, "experiment_123", "tensors.json")
         ) as infile:
             jsons = [json.loads(line) for line in infile]
-        self.assertLen(jsons, 4)
+        self.assertLen(jsons, 6)
 
         datum = jsons[0]
         self.assertEqual(datum.pop("run"), "train_1")
@@ -400,7 +413,7 @@ class TensorBoardExporterTest(tb_test.TestCase):
         )
         self.assertEqual(datum, {})
 
-        datum = jsons[3]
+        datum = jsons[4]
         self.assertEqual(datum.pop("run"), "train_2")
         self.assertEqual(datum.pop("tag"), "dense_1/bias")
         summary_metadata = summary_pb2.SummaryMetadata.FromString(
@@ -432,6 +445,21 @@ class TensorBoardExporterTest(tb_test.TestCase):
             self.assertLen(tensors, 2)
             np.testing.assert_array_equal(tensors[0], 0 * np.ones([3, 2]))
             np.testing.assert_array_equal(tensors[1], 1 * np.ones([3, 2]))
+
+        for filename in (
+            "1571084520.862939_2.npz",
+            "1571084520.962939_2.npz",
+        ):
+            tensors = np.load(
+                os.path.join(outdir, "experiment_123", "tensors", filename)
+            )
+            tensors = [tensors[key] for key in tensors.keys()]
+            self.assertLen(tensors, 2)
+            np.testing.assert_array_equal(tensors[0],
+                                          np.array(["a", "a", "a"], "|S"))
+            np.testing.assert_array_equal(tensors[1],
+                                          np.array(["aa", "aa", "aa"], "|S"))
+
 
     def test_e2e_success_case_with_blob_sequence_data(self):
         """Covers exporting of complete and incomplete blob sequences
