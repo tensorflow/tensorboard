@@ -16,6 +16,7 @@ import {
   AnnotationDataListing,
   SortOrder,
   AnnotationSort,
+  EmbeddingListing,
 } from '../store/npmi_types';
 import {sortAnnotations} from './sort_annotations';
 import {buildSampleAnnotationData} from '../testing';
@@ -27,7 +28,7 @@ describe('sort annotations utils', () => {
       metric: 'nPMI@test',
       order: SortOrder.UP,
     };
-    const annotations = sortAnnotations(annotationData, sort);
+    const annotations = sortAnnotations(annotationData, sort, {});
     expect(annotations).toEqual([
       'annotation_1',
       'annotation_3',
@@ -41,11 +42,85 @@ describe('sort annotations utils', () => {
       metric: 'nPMI@test',
       order: SortOrder.DOWN,
     };
-    const annotations = sortAnnotations(annotationData, sort);
+    const annotations = sortAnnotations(annotationData, sort, {});
     expect(annotations).toEqual([
       'annotation_3',
       'annotation_1',
       'annotation_2',
+    ]);
+  });
+
+  it('sorts annotations by similar embeddings', () => {
+    const annotationData: AnnotationDataListing = buildSampleAnnotationData();
+    const sort: AnnotationSort = {
+      metric: 'annotation_1',
+      order: SortOrder.SIMILAR,
+    };
+    const embeddingData: EmbeddingListing = {
+      annotation_1: [0.5],
+      annotation_2: [-0.2],
+      annotation_3: [0.1],
+    };
+    const annotations = sortAnnotations(annotationData, sort, embeddingData);
+    expect(annotations).toEqual([
+      'annotation_1',
+      'annotation_3',
+      'annotation_2',
+    ]);
+  });
+
+  it('sorts annotations by dissimilar embeddings', () => {
+    const annotationData: AnnotationDataListing = buildSampleAnnotationData();
+    const sort: AnnotationSort = {
+      metric: 'annotation_2',
+      order: SortOrder.DISSIMILAR,
+    };
+    const embeddingData: EmbeddingListing = {
+      annotation_1: [0.5],
+      annotation_2: [-0.2],
+      annotation_3: [0.1],
+    };
+    const annotations = sortAnnotations(annotationData, sort, embeddingData);
+    expect(annotations).toEqual([
+      'annotation_2',
+      'annotation_1',
+      'annotation_3',
+    ]);
+  });
+
+  it('sorts annotations by similar embeddings with empty embedding', () => {
+    const annotationData: AnnotationDataListing = buildSampleAnnotationData();
+    const sort: AnnotationSort = {
+      metric: 'annotation_1',
+      order: SortOrder.SIMILAR,
+    };
+    const embeddingData: EmbeddingListing = {
+      annotation_1: [0.5],
+      annotation_3: [0.1],
+    };
+    const annotations = sortAnnotations(annotationData, sort, embeddingData);
+    expect(annotations).toEqual([
+      'annotation_1',
+      'annotation_3',
+      'annotation_2',
+    ]);
+  });
+
+  it('sorts annotations by dissimilar embeddings with empty embedding', () => {
+    const annotationData: AnnotationDataListing = buildSampleAnnotationData();
+    const sort: AnnotationSort = {
+      metric: 'annotation_2',
+      order: SortOrder.DISSIMILAR,
+    };
+    const embeddingData: EmbeddingListing = {
+      annotation_2: [-0.2],
+      annotation_3: [0.1],
+    };
+    const annotations = sortAnnotations(annotationData, sort, embeddingData);
+    expect(annotations).toEqual([
+      'annotation_2',
+      'annotation_3',
+      'annotation_1',
     ]);
   });
 
@@ -55,7 +130,7 @@ describe('sort annotations utils', () => {
       metric: '',
       order: SortOrder.UP,
     };
-    const annotations = sortAnnotations(annotationData, sort);
+    const annotations = sortAnnotations(annotationData, sort, {});
     expect(annotations).toEqual([
       'annotation_1',
       'annotation_2',

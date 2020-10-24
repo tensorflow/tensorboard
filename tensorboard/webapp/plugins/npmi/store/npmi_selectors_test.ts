@@ -147,12 +147,12 @@ describe('npmi selectors', () => {
   });
 
   describe('getEmbeddingData', () => {
-    fit('returns the correct empty object', () => {
+    it('returns the correct empty object', () => {
       const state = createState(createNpmiState());
       expect(getEmbeddingData(state)).toEqual({});
     });
 
-    fit('returns the correct data', () => {
+    it('returns the correct data', () => {
       const state = createState(
         createNpmiState({
           embeddingData: {
