@@ -13,6 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
+"""Adds embedding representations to the annotations of a dataset to enable
+similarity-based analysis.
+
+To use this, provide a .npy file containing embeddings, which will be converted
+to a logfile alongside other logs for this run.
+"""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -22,49 +28,33 @@ import tensorflow as tf
 from absl import app
 from absl import flags
 from tensorboard.plugins.npmi import summary
-from tensorboard.plugins.npmi import metadata
 
 FLAGS = flags.FLAGS
-
 flags.DEFINE_string(
-    "log_path", None, "Log file to extend by embedding data.",
-)
-flags.DEFINE_string(
-    "out_path", None, "Where to write the new log file.",
+    "out_path", None, "Directory to write the new log file to.",
 )
 flags.DEFINE_string(
     "embeddings_path",
     None,
-    "Path to the numpy file containing the embeddings.",
+    "Path to the numpy .npy file containing the embeddings. Embeddings can "
+    + "be any 1D Tensor.",
 )
-flags.mark_flag_as_required("log_path")
 flags.mark_flag_as_required("out_path")
 flags.mark_flag_as_required("embeddings_path")
 
 
-def add_embeddings(log_path, out_path, embeddings_path):
+def convert_embeddings(out_path, embeddings_path):
     with open(embeddings_path, "rb") as f:
         embeddings = np.load(f)
-    event_file = log_path
     embeddings_tensor = tf.convert_to_tensor(embeddings)
     writer = tf.compat.v2.summary.create_file_writer(out_path)
     with writer.as_default():
         summary.npmi_embeddings(embeddings_tensor, 1)
-        for summ in tf.compat.v1.train.summary_iterator(event_file):
-            for value in summ.summary.value:
-                parsed = tf.make_ndarray(value.tensor)
-                tensor_result = tf.convert_to_tensor(parsed)
-                if value.tag == metadata.ANNOTATIONS_TAG:
-                    summary.npmi_annotations(tensor_result, 1)
-                elif value.tag == metadata.VALUES_TAG:
-                    summary.npmi_values(tensor_result, 1)
-                elif value.tag == metadata.METRICS_TAG:
-                    summary.npmi_metrics(tensor_result, 1)
     writer.close()
 
 
 def main(unused_argv):
-    add_embeddings(FLAGS.log_path, FLAGS.out_path, FLAGS.embeddings_path)
+    convert_embeddings(FLAGS.out_path, FLAGS.embeddings_path)
 
 
 if __name__ == "__main__":

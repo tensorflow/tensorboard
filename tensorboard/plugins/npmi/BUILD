@@ -114,11 +114,10 @@ py_binary(
 )
 
 py_binary(
-    name = "add_embeddings",
-    srcs = ["add_embeddings.py"],
+    name = "npy_to_embedding_data_demo",
+    srcs = ["npy_to_embedding_data_demo.py"],
     srcs_version = "PY2AND3",
     deps = [
-        ":metadata",
         ":summary",
         "//tensorboard:expect_tensorflow_installed",
     ],

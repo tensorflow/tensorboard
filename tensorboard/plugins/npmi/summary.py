@@ -114,7 +114,7 @@ def npmi_values(tensor, step=None, description=None):
 
 
 def npmi_embeddings(tensor, step=None, description=None):
-    """Write the actual npmi values.
+    """Write the embedding representations for the annotations in the dataset.
 
     Arguments:
       tensor: A `Tensor` of shape (num_annotations, embedding_dimension) and dtype
