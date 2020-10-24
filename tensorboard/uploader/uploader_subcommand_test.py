@@ -72,13 +72,12 @@ class UploadIntentTest(tf.test.TestCase):
         mock_uploader = mock.MagicMock()
         mock_stdout_write = mock.MagicMock()
         with mock.patch.object(
-            uploader_lib,
-            "TensorBoardUploader",
-            return_value=mock_uploader,
+            uploader_lib, "TensorBoardUploader", return_value=mock_uploader,
         ), mock.patch.object(
             sys.stdout, "write", mock_stdout_write
-        ),mock.patch.object(
-            write_service_pb2_grpc, "TensorBoardWriterServiceStub"):
+        ), mock.patch.object(
+            write_service_pb2_grpc, "TensorBoardWriterServiceStub"
+        ):
             # Set up an UploadIntent configured with one_shot and a
             # non-existent directory.
             intent = uploader_subcommand.UploadIntent(
@@ -106,14 +105,13 @@ class UploadIntentTest(tf.test.TestCase):
         #    communication.        mock_uploader = mock.MagicMock()
         mock_uploader = mock.MagicMock()
         mock_uploader.create_experiment = mock.MagicMock(
-            return_value="fake_experiment_id")
+            return_value="fake_experiment_id"
+        )
         mock_stdout_write = mock.MagicMock()
         with mock.patch.object(
             sys.stdout, "write", mock_stdout_write
         ), mock.patch.object(
-            uploader_lib,
-            "TensorBoardUploader",
-            return_value=mock_uploader
+            uploader_lib, "TensorBoardUploader", return_value=mock_uploader
         ):
             # Set up an UploadIntent configured with one_shot and an empty temp
             # directory.
@@ -129,13 +127,10 @@ class UploadIntentTest(tf.test.TestCase):
         # Expect that ".*Done scanning logdir.*" is among the things printed.
         stdout_writes = [x[0][0] for x in mock_stdout_write.call_args_list]
         self.assertRegex(
-            ",".join(stdout_writes),
-            ".*Upload started.*",
+            ",".join(stdout_writes), ".*Upload started.*",
         )
         # Expect that the last thing written is the string "\nDone.\n"
-        self.assertEqual(
-            stdout_writes[-1], "\nDone.\n"
-        )
+        self.assertEqual(stdout_writes[-1], "\nDone.\n")
 
     def testUploadIntentWithExperimentUrlCallback(self):
         """Test the upload intent with a callback."""

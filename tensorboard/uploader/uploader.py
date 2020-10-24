@@ -214,8 +214,8 @@ class TensorBoardUploader(object):
                 "any known uploadable data types in the specified logdir: %s\n"
                 "An empty experiment was created. "
                 "To delete the empty experiment execute the following\n\n"
-                "    tensorboard dev delete --experiment_id=%s" %
-                (self._logdir, self._experiment_id)
+                "    tensorboard dev delete --experiment_id=%s"
+                % (self._logdir, self._experiment_id)
             )
 
     def _upload_once(self):

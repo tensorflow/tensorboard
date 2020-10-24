@@ -435,7 +435,8 @@ class UploadIntent(_Intent):
             print("%s: No such directory." % self.logdir)
             print(
                 "User specified `one_shot` mode with an unavailable "
-                "logdir. Exiting without creating an experiment.")
+                "logdir. Exiting without creating an experiment."
+            )
             return
         experiment_id = uploader.create_experiment()
         url = server_info_lib.experiment_url(server_info, experiment_id)
