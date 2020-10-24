@@ -210,11 +210,11 @@ class TensorBoardUploader(object):
                 break
         if self._one_shot and not self._tracker.has_data():
             print(
-                "One-shot mode was used on a logdir (%s) "
-                "without any uploadable data\n"
-                "As a result, the experiment created will be empty. "
+                "Tensorboard was run in `one_shot` mode, but did not detect "
+                "any known uploadable data types in the specified logdir: %s\n"
+                "An empty experiment was created. "
                 "To delete the empty experiment execute the following\n\n"
-                "    tensorboard dev delete --experiment_id=%s\n" %
+                "    tensorboard dev delete --experiment_id=%s" %
                 (self._logdir, self._experiment_id)
             )
 
