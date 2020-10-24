@@ -19,7 +19,6 @@ from __future__ import division
 from __future__ import print_function
 
 import itertools
-import os
 import sys
 
 import grpc_testing
@@ -112,11 +111,13 @@ class UploadIntentTest(tf.test.TestCase):
             sys.stdout, "write", mock_stdout_write
         ), mock.patch.object(
             uploader_lib, "TensorBoardUploader", return_value=mock_uploader
+        ), mock.patch.object(
+            write_service_pb2_grpc, "TensorBoardWriterServiceStub"
         ):
             # Set up an UploadIntent configured with one_shot and an empty temp
             # directory.
             intent = uploader_subcommand.UploadIntent(
-                self.get_temp_dir(), dry_run=True, one_shot=True
+                self.get_temp_dir(), one_shot=True
             )
             # Execute the intent.execute method.
             intent.execute(server_info_pb2.ServerInfoResponse(), None)
@@ -129,8 +130,10 @@ class UploadIntentTest(tf.test.TestCase):
         self.assertRegex(
             ",".join(stdout_writes), ".*Upload started.*",
         )
-        # Expect that the last thing written is the string "\nDone.\n"
-        self.assertEqual(stdout_writes[-1], "\nDone.\n")
+        # Expect that the last thing written is the string "Done" and the
+        # experiment_id.
+        self.assertRegex(stdout_writes[-1], ".*Done.*")
+        self.assertRegex(stdout_writes[-1], ".*fake_experiment_id.*")
 
     def testUploadIntentWithExperimentUrlCallback(self):
         """Test the upload intent with a callback."""
