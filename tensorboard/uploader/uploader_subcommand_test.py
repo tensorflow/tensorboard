@@ -44,28 +44,6 @@ from tensorboard.plugins.graph import metadata as graphs_metadata
 from tensorboard.plugins.scalar import metadata as scalars_metadata
 
 
-def _create_mock_client():
-    # Create a stub instance (using a test channel) in order to derive a mock
-    # from it with autospec enabled. Mocking TensorBoardWriterServiceStub itself
-    # doesn't work with autospec because grpc constructs stubs via metaclassing.
-    test_channel = grpc_testing.channel(
-        service_descriptors=[], time=grpc_testing.strict_real_time()
-    )
-    stub = write_service_pb2_grpc.TensorBoardWriterServiceStub(test_channel)
-    mock_client = mock.create_autospec(stub)
-    fake_exp_response = write_service_pb2.CreateExperimentResponse(
-        experiment_id="123", url="should not be used!"
-    )
-    mock_client.CreateExperiment.return_value = fake_exp_response
-    mock_client.GetOrCreateBlobSequence.side_effect = (
-        write_service_pb2.GetOrCreateBlobSequenceResponse(
-            blob_sequence_id="blob%d" % i
-        )
-        for i in itertools.count()
-    )
-    return mock_client
-
-
 # By default allow at least one plugin for each upload type: Scalar, Tensor, and
 # Blobs.
 _SCALARS_HISTOGRAMS_AND_GRAPHS = frozenset(
@@ -79,88 +57,82 @@ _SCALARS_HISTOGRAMS_AND_GRAPHS = frozenset(
 
 class UploadIntentTest(tf.test.TestCase):
     def testUploadIntentOneShotEmptyDirectoryFails(self):
-        """Test the upload intent under the one-shot mode
-        
+        """Test the upload intent under the one-shot mode with missing dir.
+
         In the case of a non-existent directoy, uploading should not
         create an experiment.
         """
-        mock_server_info = mock.MagicMock()
-        mock_channel = mock.MagicMock()
-        upload_limits = server_info_pb2.UploadLimits(
-            max_scalar_request_size=128000,
-            max_tensor_request_size=128000,
-            max_tensor_point_size=11111,
-            max_blob_request_size=128000,
-            max_blob_size=128000,
-        )
+        # Mock three places:
+        # 1. The uploader itself, we will inspect invocations of its methods but
+        #    do not want to actually uplaod anything.
+        # 2. Writing to stdout, so we can inspect messages to the user.
+        # 3. The creation of the grpc WriteServiceChannel, which happens in the
+        #    non dry_run execution, but we don't want to actually open a network
+        #    communication.
+        mock_uploader = mock.MagicMock()
         mock_stdout_write = mock.MagicMock()
         with mock.patch.object(
-            server_info_lib,
-            "allowed_plugins",
-            return_value=_SCALARS_HISTOGRAMS_AND_GRAPHS,
-        ), mock.patch.object(
-            server_info_lib, "upload_limits", return_value=upload_limits
+            uploader_lib,
+            "TensorBoardUploader",
+            return_value=mock_uploader,
         ), mock.patch.object(
             sys.stdout, "write", mock_stdout_write
-        ), mock.patch.object(
-            dry_run_stubs,
-            "DryRunTensorBoardWriterStub",
-            side_effect=dry_run_stubs.DryRunTensorBoardWriterStub,
-        ) as mock_dry_run_stub:
+        ),mock.patch.object(
+            write_service_pb2_grpc, "TensorBoardWriterServiceStub"):
+            # Set up an UploadIntent configured with one_shot and a
+            # non-existent directory.
             intent = uploader_subcommand.UploadIntent(
-                "/dev/null/non/existent/directory", dry_run=False, one_shot=True
+                "/dev/null/non/existent/directory", one_shot=True
             )
-            intent.execute(mock_server_info, mock_channel)
-        self.assertEqual(mock_dry_run_stub.call_count, 1)
+            # Execute the intent.execute method.
+            intent.execute(server_info_pb2.ServerInfoResponse(), None)
+        # Expect that there is no call to create an experiment.
+        self.assertEqual(mock_uploader.create_experiment.call_count, 0)
+        # Expect a message to the user indicating no experiment was created.
         stdout_writes = [x[0][0] for x in mock_stdout_write.call_args_list]
-        print(stdout_writes)
-        # ".*Done scanning logdir.*" should be among the things printed.
         self.assertRegex(
             ",".join(stdout_writes),
-            ".*Done scanning logdir.*",
-        )
-        # Last thing written should be the string "\nDone.\n"
-        self.assertEqual(
-            stdout_writes[-1], "\nDone.\n"
+            ".*Exiting without creating an experiment.*",
         )
 
-    def testUploadIntentUnderDryRunOneShot(self):
-        """Test the upload intent under the dry-run + one-shot mode."""
-        mock_server_info = mock.MagicMock()
-        mock_channel = mock.MagicMock()
-        upload_limits = server_info_pb2.UploadLimits(
-            max_scalar_request_size=128000,
-            max_tensor_request_size=128000,
-            max_tensor_point_size=11111,
-            max_blob_request_size=128000,
-            max_blob_size=128000,
-        )
+    def testUploadIntentOneShot(self):
+        """Test the upload intent under the one-shot mode."""
+        # Mock three places:
+        # 1. The uploader itself, we will inspect invocations of its methods but
+        #    do not want to actually uplaod anything.
+        # 2. Writing to stdout, so we can inspect messages to the user.
+        # 3. The creation of the grpc WriteServiceChannel, which happens in the
+        #    non dry_run execution, but we don't want to actually open a network
+        #    communication.        mock_uploader = mock.MagicMock()
+        mock_uploader = mock.MagicMock()
+        mock_uploader.create_experiment = mock.MagicMock(
+            return_value="fake_experiment_id")
         mock_stdout_write = mock.MagicMock()
         with mock.patch.object(
-            server_info_lib,
-            "allowed_plugins",
-            return_value=_SCALARS_HISTOGRAMS_AND_GRAPHS,
-        ), mock.patch.object(
-            server_info_lib, "upload_limits", return_value=upload_limits
-        ), mock.patch.object(
             sys.stdout, "write", mock_stdout_write
         ), mock.patch.object(
-            dry_run_stubs,
-            "DryRunTensorBoardWriterStub",
-            side_effect=dry_run_stubs.DryRunTensorBoardWriterStub,
-        ) as mock_dry_run_stub:
+            uploader_lib,
+            "TensorBoardUploader",
+            return_value=mock_uploader
+        ):
+            # Set up an UploadIntent configured with one_shot and an empty temp
+            # directory.
             intent = uploader_subcommand.UploadIntent(
                 self.get_temp_dir(), dry_run=True, one_shot=True
             )
-            intent.execute(mock_server_info, mock_channel)
-        self.assertEqual(mock_dry_run_stub.call_count, 1)
+            # Execute the intent.execute method.
+            intent.execute(server_info_pb2.ServerInfoResponse(), None)
+        # Expect that there is one call to create_experiment.
+        self.assertEqual(mock_uploader.create_experiment.call_count, 1)
+        # Expect that there is one call to start_uploading.
+        self.assertEqual(mock_uploader.start_uploading.call_count, 1)
+        # Expect that ".*Done scanning logdir.*" is among the things printed.
         stdout_writes = [x[0][0] for x in mock_stdout_write.call_args_list]
-        # ".*Done scanning logdir.*" should be among the things printed.
         self.assertRegex(
             ",".join(stdout_writes),
-            ".*Done scanning logdir.*",
+            ".*Upload started.*",
         )
-        # Last thing written should be the string "\nDone.\n"
+        # Expect that the last thing written is the string "\nDone.\n"
         self.assertEqual(
             stdout_writes[-1], "\nDone.\n"
         )

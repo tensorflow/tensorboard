@@ -431,13 +431,12 @@ class UploadIntent(_Intent):
             verbosity=self.verbosity,
             one_shot=self.one_shot,
         )
-        if False:
-            if self.one_shot and not os.path.isdir(self.logdir):
-                print("%s: No such directory." % self.logdir)
-                print(
-                    "User specified `one_shot` mode with an unavailable "
-                    "logdir. Exiting without creating an experiment.")
-                return
+        if self.one_shot and not os.path.isdir(self.logdir):
+            print("%s: No such directory." % self.logdir)
+            print(
+                "User specified `one_shot` mode with an unavailable "
+                "logdir. Exiting without creating an experiment.")
+            return
         experiment_id = uploader.create_experiment()
         url = server_info_lib.experiment_url(server_info, experiment_id)
         if self.experiment_url_callback is not None:
