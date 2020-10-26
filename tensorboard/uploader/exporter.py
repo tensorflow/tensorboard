@@ -317,7 +317,7 @@ class TensorBoardExporter(object):
           ndarray: a tensor converted to an ndarray
 
         Returns:
-          The original ndarray if not np.oject, dtype converted to String
+          The original ndarray if not np.object, dtype converted to String
           if np.object.
         """
         if ndarray.dtype != np.object:
