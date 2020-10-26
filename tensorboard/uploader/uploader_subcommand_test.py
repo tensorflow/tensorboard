@@ -34,7 +34,6 @@ from tensorboard.uploader.proto import write_service_pb2_grpc
 from tensorboard.uploader import dry_run_stubs
 from tensorboard.uploader import uploader as uploader_lib
 from tensorboard.uploader import uploader_subcommand
-from tensorboard.uploader import server_info as server_info_lib
 from tensorboard.plugins.histogram import metadata as histograms_metadata
 from tensorboard.plugins.graph import metadata as graphs_metadata
 from tensorboard.plugins.scalar import metadata as scalars_metadata
