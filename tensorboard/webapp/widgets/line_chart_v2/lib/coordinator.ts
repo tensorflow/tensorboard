@@ -88,7 +88,7 @@ export class Coordinator {
    * Converts data coordinate into ui coordinates where the ui coordinate bounds are
    * specified in `rectInUiCoordinate`.
    */
-  getViewCoordinate(
+  transformDataToUiCoord(
     rectInUiCoordinate: Rect,
     dataCoordinate: [number, number]
   ): [number, number] {

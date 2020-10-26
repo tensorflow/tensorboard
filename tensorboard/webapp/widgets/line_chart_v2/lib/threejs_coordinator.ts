@@ -16,25 +16,59 @@ limitations under the License.
 import * as THREE from 'three';
 
 import {Coordinator} from './coordinator';
-import {Rect} from './types';
+import {createScale} from './scale';
+import {Rect, ScaleType} from './types';
+import {convertRectToExtent} from './utils';
 
+/**
+ * Unlike Coordinator, ThreeCoordinator uses internal coordinate system.
+ *
+ * Three.js has a notion of camera and it can efficiently update the canvas when the
+ * canvas dimension changes; it does not have to re-transform coordinates of each
+ * DataSeries, but, instead, only have to update the camera.
+ *
+ * In this coordinator, the output coordinate system is static from [0, 1000].
+ */
 export class ThreeCoordinator extends Coordinator {
+  private readonly CAMERA_MIN = 0;
+  private readonly CAMERA_MAX = 1000;
+  private readonly domToCameraScale = createScale(ScaleType.LINEAR);
   private readonly camera = new THREE.OrthographicCamera(
-    0,
-    1000,
-    1000,
-    0,
+    this.CAMERA_MIN,
+    this.CAMERA_MAX,
+    this.CAMERA_MAX,
+    this.CAMERA_MIN,
     0,
     100
   );
 
-  setDomContainerRect(rect: Rect) {
-    super.setDomContainerRect(rect);
-    this.camera.left = rect.x;
-    this.camera.right = rect.x + rect.width;
-    this.camera.top = rect.y;
-    this.camera.bottom = rect.y + rect.height;
-    this.camera.updateProjectionMatrix();
+  transformDataToUiCoord(
+    rectInUiCoordinate: Rect,
+    dataCoordinate: [number, number]
+  ): [number, number] {
+    const rect = rectInUiCoordinate;
+    const domain = convertRectToExtent(this.getCurrentViewBoxRect());
+    const containerRect = this.domContainerRect;
+
+    const xInCamera = this.domToCameraScale.forward(
+      [containerRect.x, containerRect.x + containerRect.width],
+      [this.CAMERA_MIN, this.CAMERA_MAX],
+      this.xScale.forward(
+        domain.x,
+        [rect.x, rect.x + rect.width],
+        dataCoordinate[0]
+      )
+    );
+    const yInCamera = this.domToCameraScale.forward(
+      [containerRect.y + containerRect.height, containerRect.y],
+      [this.CAMERA_MIN, this.CAMERA_MAX],
+      this.yScale.forward(
+        domain.y,
+        [rect.y + rect.height, rect.y],
+        dataCoordinate[1]
+      )
+    );
+    return [xInCamera, yInCamera];
   }
 
   getCamera() {

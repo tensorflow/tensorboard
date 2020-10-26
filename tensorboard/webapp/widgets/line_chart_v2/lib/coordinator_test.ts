@@ -95,7 +95,7 @@ describe('line_chart_v2/lib/coordinator test', () => {
       });
     });
 
-    describe('#getViewCoordinate', () => {
+    describe('#transformDataToUiCoord', () => {
       beforeEach(() => {
         coordinator.setViewBoxRect({
           x: 50,
@@ -121,17 +121,17 @@ describe('line_chart_v2/lib/coordinator test', () => {
           height: 500,
         };
 
-        expect(coordinator.getViewCoordinate(layout, [50, 50])).toEqual([
+        expect(coordinator.transformDataToUiCoord(layout, [50, 50])).toEqual([
           500,
           750,
         ]);
-        expect(coordinator.getViewCoordinate(layout, [150, 150])).toEqual([
+        expect(coordinator.transformDataToUiCoord(layout, [150, 150])).toEqual([
           1000,
           250,
         ]);
 
         // Outside of the viewBox.
-        expect(coordinator.getViewCoordinate(layout, [0, 0])).toEqual([
+        expect(coordinator.transformDataToUiCoord(layout, [0, 0])).toEqual([
           250,
           1000,
         ]);
@@ -158,23 +158,46 @@ describe('line_chart_v2/lib/coordinator test', () => {
       });
     });
 
-    describe('camera', () => {
-      it('updates the camera when changing dom container rect', () => {
-        coordinator.setDomContainerRect({
+    describe('#transformDataToUiCoord', () => {
+      beforeEach(() => {
+        coordinator.setViewBoxRect({
           x: 50,
-          y: 50,
+          y: 0,
           width: 100,
           height: 100,
         });
+        coordinator.setDomContainerRect({
+          x: 0,
+          y: 0,
+          width: 5,
+          height: 5,
+        });
+      });
 
-        const {top, left, right, bottom} = coordinator.getCamera();
-        // y-axis is flipped since getViewCoordinate flips the y-axis.
-        // We can override the getViewCoordinate to flip it back but there is no strong
-        // reason to do so when we can just invert the camera.
-        expect(top).toBe(50);
-        expect(bottom).toBe(150);
-        expect(left).toBe(50);
-        expect(right).toBe(150);
+      // y-axis is flipped since data's origin assumes bottom-left as opposed to DOM's
+      // coordinate system that has origin at top-left.
+      it('converts into internal coordinate system [0, 1000], no y-axis flipped', () => {
+        const layout = {
+          x: 2,
+          width: 3,
+          y: 0,
+          height: 5,
+        };
+
+        expect(coordinator.transformDataToUiCoord(layout, [50, 50])).toEqual([
+          400,
+          500,
+        ]);
+        expect(coordinator.transformDataToUiCoord(layout, [150, 100])).toEqual([
+          1000,
+          1000,
+        ]);
+
+        // Outside of the viewBox.
+        expect(coordinator.transformDataToUiCoord(layout, [0, -100])).toEqual([
+          100,
+          -1000,
+        ]);
       });
     });
   });
