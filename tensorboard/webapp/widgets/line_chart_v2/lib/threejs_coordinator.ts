@@ -46,27 +46,21 @@ export class ThreeCoordinator extends Coordinator {
     rectInUiCoordinate: Rect,
     dataCoordinate: [number, number]
   ): [number, number] {
-    const rect = rectInUiCoordinate;
-    const domain = convertRectToExtent(this.getCurrentViewBoxRect());
     const containerRect = this.domContainerRect;
+    const uiCoordinates = super.transformDataToUiCoord(
+      rectInUiCoordinate,
+      dataCoordinate
+    );
 
     const xInCamera = this.domToCameraScale.forward(
       [containerRect.x, containerRect.x + containerRect.width],
       [this.CAMERA_MIN, this.CAMERA_MAX],
-      this.xScale.forward(
-        domain.x,
-        [rect.x, rect.x + rect.width],
-        dataCoordinate[0]
-      )
+      uiCoordinates[0]
     );
     const yInCamera = this.domToCameraScale.forward(
       [containerRect.y + containerRect.height, containerRect.y],
       [this.CAMERA_MIN, this.CAMERA_MAX],
-      this.yScale.forward(
-        domain.y,
-        [rect.y + rect.height, rect.y],
-        dataCoordinate[1]
-      )
+      uiCoordinates[1]
     );
     return [xInCamera, yInCamera];
   }

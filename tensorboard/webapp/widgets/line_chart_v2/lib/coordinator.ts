@@ -17,6 +17,8 @@ import {createScale, Scale} from './scale';
 import {Rect, ScaleType} from './types';
 import {convertRectToExtent} from './utils';
 
+let updateIdentifierIncrement = 0;
+
 /**
  * A stateful convenient utility around scale for converting coordinate systems.
  *
@@ -57,7 +59,7 @@ export class Coordinator {
   }
 
   private updateIdentifier() {
-    this.lastUpdated = Date.now();
+    this.lastUpdated = updateIdentifierIncrement++;
   }
 
   setXScale(scale: Scale) {

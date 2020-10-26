@@ -116,8 +116,8 @@ describe('line_chart_v2/lib/coordinator test', () => {
       it('converts the coordinate system but flips y-axis', () => {
         const layout = {
           x: 500,
-          width: 500,
           y: 250,
+          width: 500,
           height: 500,
         };
 
@@ -174,13 +174,14 @@ describe('line_chart_v2/lib/coordinator test', () => {
         });
       });
 
-      // y-axis is flipped since data's origin assumes bottom-left as opposed to DOM's
-      // coordinate system that has origin at top-left.
+      // unlike the base class, y-axis is not flipped since we are not rendering onto the
+      // DOM where <0, 0> is top-left. Unlike DOM, threejs's scene looks like ordinary
+      // cartesian coordinate with z-axis pointing up.
       it('converts into internal coordinate system [0, 1000], no y-axis flipped', () => {
         const layout = {
           x: 2,
-          width: 3,
           y: 0,
+          width: 3,
           height: 5,
         };
 
