@@ -18,7 +18,7 @@ import * as THREE from 'three';
 import {ThreeCoordinator} from '../threejs_coordinator';
 import {Polyline, Rect} from '../types';
 import {arePolylinesEqual, isOffscreenCanvasSupported} from '../utils';
-import {BaseObjectRenderer} from './renderer';
+import {BaseCachedObjectRenderer} from './renderer';
 import {LinePaintOption} from './renderer_types';
 
 function createOpacityAdjustedColor(hex: string, opacity: number): THREE.Color {
@@ -29,7 +29,13 @@ function createOpacityAdjustedColor(hex: string, opacity: number): THREE.Color {
   return new THREE.Color((newD3Color.brighter(1 - opacity) as any).hex());
 }
 
-export class ThreeRenderer extends BaseObjectRenderer<THREE.Object3D> {
+interface LineCacheValue {
+  type: 'line';
+  obj: THREE.Object3D;
+  data: Polyline;
+}
+
+export class ThreeRenderer extends BaseCachedObjectRenderer<LineCacheValue> {
   private readonly renderer: THREE.WebGLRenderer;
   private readonly scene = new THREE.Scene();
 
@@ -59,14 +65,15 @@ export class ThreeRenderer extends BaseObjectRenderer<THREE.Object3D> {
     this.renderer.setSize(rect.width, rect.height);
   }
 
-  removeRenderObject(cacheable: THREE.Object3D): void {
-    this.scene.remove(cacheable);
+  removeRenderObject(cacheValue: LineCacheValue): void {
+    const obj3d = cacheValue.obj;
+    this.scene.remove(obj3d);
 
-    if (cacheable instanceof THREE.Mesh || cacheable instanceof THREE.Line) {
-      cacheable.geometry.dispose();
-      const materials = Array.isArray(cacheable.material)
-        ? cacheable.material
-        : [cacheable.material];
+    if (obj3d instanceof THREE.Mesh || obj3d instanceof THREE.Line) {
+      obj3d.geometry.dispose();
+      const materials = Array.isArray(obj3d.material)
+        ? obj3d.material
+        : [obj3d.material];
       for (const material of materials) {
         material.dispose();
       }
@@ -77,21 +84,20 @@ export class ThreeRenderer extends BaseObjectRenderer<THREE.Object3D> {
     if (!polyline.length) return;
 
     super.drawLine(cacheId, polyline, paintOpt);
-    const renderCache = this.getRenderCache();
 
-    const cachedLine = renderCache.get(cacheId);
+    const cachedLine = this.getCachedValue(cacheId);
     let line: THREE.Line | null = null;
     let prevPolyline: Polyline | null = null;
 
     if (cachedLine) {
-      if (cachedLine.cacheable instanceof THREE.Line) {
-        line = cachedLine.cacheable;
+      if (cachedLine.obj instanceof THREE.Line) {
+        line = cachedLine.obj;
       }
 
       prevPolyline = cachedLine.data;
     }
 
-    // If a line is not cached and is not even visible, skip rendering.
+    // If a line is not cached and is not even visible, skip drawing line.
     if (!line && !paintOpt.visible) return;
 
     const {visible, width} = paintOpt;
@@ -100,55 +106,59 @@ export class ThreeRenderer extends BaseObjectRenderer<THREE.Object3D> {
       paintOpt.opacity ?? 1
     );
 
-    if (line) {
-      if (line && Array.isArray(line.material)) {
-        throw new Error('Invariant error: only expect one material on a line');
-      }
-
-      const material = line.material as THREE.LineBasicMaterial;
-
-      if (material.visible !== visible) {
-        material.visible = visible;
-        material.needsUpdate = true;
-      }
-
-      // No need to update geometry or material if it is not visible.
-      if (!visible) {
-        return;
-      }
-
-      if (material.linewidth !== width) {
-        material.linewidth = width;
-        material.needsUpdate = true;
-      }
-
-      const currentColor = material.color;
-      if (!currentColor.equals(newColor)) {
-        material.color.set(newColor);
-        material.needsUpdate = true;
-      }
-
-      if (!prevPolyline || !arePolylinesEqual(prevPolyline, polyline)) {
-        this.updatePoints(line.geometry as THREE.BufferGeometry, polyline);
-        renderCache.set(cacheId, {
-          data: polyline,
-          cacheable: line,
-        });
-      }
-    } else {
+    if (!line) {
       const geometry = new THREE.BufferGeometry();
       const material = new THREE.LineBasicMaterial({
         color: newColor,
         linewidth: width,
       });
       line = new THREE.Line(geometry, material);
-      renderCache.set(cacheId, {
+      this.setCacheObject(cacheId, {
+        type: 'line',
         data: polyline,
-        cacheable: line,
+        obj: line,
       });
       material.visible = visible;
       this.updatePoints(geometry, polyline);
       this.scene.add(line);
+      return;
+    }
+
+    // Update the cached THREE.Line.
+    if (line && Array.isArray(line.material)) {
+      throw new Error('Invariant error: only expect one material on a line');
+    }
+
+    const material = line.material as THREE.LineBasicMaterial;
+
+    if (material.visible !== visible) {
+      material.visible = visible;
+      material.needsUpdate = true;
+    }
+
+    // No need to update geometry or material if it is not visible.
+    if (!visible) {
+      return;
+    }
+
+    if (material.linewidth !== width) {
+      material.linewidth = width;
+      material.needsUpdate = true;
+    }
+
+    const currentColor = material.color;
+    if (!currentColor.equals(newColor)) {
+      material.color.set(newColor);
+      material.needsUpdate = true;
+    }
+
+    if (!prevPolyline || !arePolylinesEqual(prevPolyline, polyline)) {
+      this.updatePoints(line.geometry as THREE.BufferGeometry, polyline);
+      this.setCacheObject(cacheId, {
+        type: 'line',
+        data: polyline,
+        obj: line,
+      });
     }
   }
 

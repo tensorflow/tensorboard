@@ -24,7 +24,7 @@ export type RenderGroupMap<Cacheable> = Map<
   }
 >;
 
-export abstract class BaseObjectRenderer<RenderObject> implements Renderer {
+export abstract class BaseCachedObjectRenderer<CacheValue> implements Renderer {
   onResize(rect: Rect): void {}
 
   drawLine(
@@ -39,10 +39,10 @@ export abstract class BaseObjectRenderer<RenderObject> implements Renderer {
 
   private groupToCacheIdToCacheable = new Map<
     string,
-    RenderGroupMap<RenderObject>
+    Map<string, CacheValue>
   >();
 
-  private currentRenderGroupCache: RenderGroupMap<RenderObject> | null = null;
+  private currentRenderGroupCache: Map<string, CacheValue> | null = null;
 
   /**
    * Helps renderer maintain objects that need to be removed after a frame.
@@ -53,16 +53,25 @@ export abstract class BaseObjectRenderer<RenderObject> implements Renderer {
    */
   private cacheIdsToRemove = new Set<string>();
 
-  protected getRenderCache(): RenderGroupMap<RenderObject> {
+  protected getCachedValue(cacheId: string): CacheValue | null {
     if (!this.currentRenderGroupCache) {
       throw new RangeError(
         'Expected getRenderCache to be invoked inside a renderGroup'
       );
     }
-    return this.currentRenderGroupCache;
+    return this.currentRenderGroupCache.get(cacheId) ?? null;
   }
 
-  abstract removeRenderObject(cacheable: RenderObject): void;
+  protected setCacheObject(cacheId: string, cacheObject: CacheValue): void {
+    if (!this.currentRenderGroupCache) {
+      throw new RangeError(
+        'Expected getRenderCache to be invoked inside a renderGroup'
+      );
+    }
+    this.currentRenderGroupCache.set(cacheId, cacheObject);
+  }
+
+  abstract removeRenderObject(cacheValue: CacheValue): void;
 
   renderGroup(groupName: string, renderBlock: () => void) {
     if (this.currentRenderGroupCache) {
@@ -81,8 +90,8 @@ export abstract class BaseObjectRenderer<RenderObject> implements Renderer {
     renderBlock();
 
     for (const cacheKey of this.cacheIdsToRemove.values()) {
-      const {cacheable} = this.currentRenderGroupCache.get(cacheKey)!;
-      this.removeRenderObject(cacheable);
+      const cachedValue = this.currentRenderGroupCache.get(cacheKey)!;
+      this.removeRenderObject(cachedValue);
       this.currentRenderGroupCache.delete(cacheKey);
     }
 

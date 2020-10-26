@@ -13,18 +13,24 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {BaseObjectRenderer} from './renderer';
+import {BaseCachedObjectRenderer} from './renderer';
 import {LinePaintOption} from './renderer_types';
 import {Polyline} from '../types';
 import {arePolylinesEqual} from '../utils';
 
-export class SvgRenderer extends BaseObjectRenderer<SVGPathElement> {
+interface LineCache {
+  type: 'line';
+  data: Polyline;
+  dom: SVGPathElement;
+}
+
+export class SvgRenderer extends BaseCachedObjectRenderer<LineCache> {
   constructor(private readonly svg: SVGElement) {
     super();
   }
 
-  removeRenderObject(cacheable: SVGPathElement): void {
-    this.svg.removeChild(cacheable);
+  removeRenderObject(cachedValue: LineCache): void {
+    this.svg.removeChild(cachedValue.dom);
   }
 
   private createPathDString(polyline: Polyline): string {
@@ -47,12 +53,11 @@ export class SvgRenderer extends BaseObjectRenderer<SVGPathElement> {
 
     super.drawLine(cacheId, polyline, paintOpt);
 
-    const renderCache = this.getRenderCache();
     const {color, visible, width, opacity} = paintOpt;
     const cssDisplayValue = visible ? '' : 'none';
 
-    const cache = renderCache.get(cacheId);
-    let svgPath = cache?.cacheable;
+    const cachedValue = this.getCachedValue(cacheId);
+    let svgPath = cachedValue?.dom;
 
     if (!svgPath) {
       // Skip if it is not cached and is already invisible.
@@ -61,7 +66,11 @@ export class SvgRenderer extends BaseObjectRenderer<SVGPathElement> {
       svgPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
       svgPath.style.fill = 'none';
       this.svg.appendChild(svgPath);
-      renderCache.set(cacheId, {cacheable: svgPath, data: polyline});
+      this.setCacheObject(cacheId, {
+        type: 'line',
+        dom: svgPath,
+        data: polyline,
+      });
     } else {
       if (!visible) {
         svgPath.style.display = cssDisplayValue;
@@ -69,10 +78,14 @@ export class SvgRenderer extends BaseObjectRenderer<SVGPathElement> {
       }
     }
 
-    if (!cache?.data || !arePolylinesEqual(polyline, cache?.data)) {
+    if (!cachedValue?.data || !arePolylinesEqual(polyline, cachedValue?.data)) {
       const data = this.createPathDString(polyline);
       svgPath.setAttribute('d', data);
-      renderCache.set(cacheId, {cacheable: svgPath, data: polyline});
+      this.setCacheObject(cacheId, {
+        type: 'line',
+        dom: svgPath,
+        data: polyline,
+      });
     }
 
     svgPath.style.display = cssDisplayValue;
