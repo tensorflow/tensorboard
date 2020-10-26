@@ -15,13 +15,13 @@ limitations under the License.
 import * as THREE from 'three';
 
 import {ThreeCoordinator} from '../threejs_coordinator';
-import {Paths} from '../types';
-import {IRenderer} from './renderer_types';
+import {Polyline} from '../types';
+import {Renderer} from './renderer_types';
 import {SvgRenderer} from './svg_renderer';
 import {ThreeRenderer} from './threejs_renderer';
 
 describe('line_chart_v2/lib/renderer test', () => {
-  let renderer: IRenderer;
+  let renderer: Renderer;
 
   const SVG_NS = 'http://www.w3.org/2000/svg';
   const DEFAULT_LINE_OPTIONS = {visible: true, color: '#f00', width: 6};
@@ -125,6 +125,20 @@ describe('line_chart_v2/lib/renderer test', () => {
         );
       }).toThrowError(RangeError);
     });
+
+    it('throws when renderGroup is inside another renderGroup', () => {
+      expect(() => {
+        renderer.renderGroup('foo', () => {
+          renderer.renderGroup('bar', () => {
+            renderer.drawLine(
+              'line2',
+              new Float32Array([5, 10]),
+              DEFAULT_LINE_OPTIONS
+            );
+          });
+        });
+      }).toThrowError(RangeError);
+    });
   });
 
   describe('svg renderer', () => {
@@ -223,15 +237,15 @@ describe('line_chart_v2/lib/renderer test', () => {
   describe('threejs renderer', () => {
     let scene: THREE.Scene;
 
-    function assertPaths(line: THREE.Line, paths: Paths) {
+    function assertLine(line: THREE.Line, polyline: Polyline) {
       const geometry = line.geometry as THREE.BufferGeometry;
       const positions = geometry.getAttribute(
         'position'
       ) as THREE.BufferAttribute;
       let positionIndex = 0;
-      for (let index = 0; index < paths.length; index += 2) {
-        const expectedX = paths[index];
-        const expectedY = paths[index + 1];
+      for (let index = 0; index < polyline.length; index += 2) {
+        const expectedX = polyline[index];
+        const expectedY = polyline[index + 1];
         const actualX = positions.array[positionIndex++];
         const actualY = positions.array[positionIndex++];
         const actualZ = positions.array[positionIndex++];
@@ -272,7 +286,7 @@ describe('line_chart_v2/lib/renderer test', () => {
       expect(scene.children.length).toBe(1);
       const lineObject = scene.children[0] as THREE.Line;
       expect(lineObject).toBeInstanceOf(THREE.Line);
-      assertPaths(lineObject, new Float32Array([0, 10, 10, 100]));
+      assertLine(lineObject, new Float32Array([0, 10, 10, 100]));
       assertMaterial(lineObject, '#ff0000', true);
     });
 
@@ -294,7 +308,7 @@ describe('line_chart_v2/lib/renderer test', () => {
       });
 
       const lineObject = scene.children[0] as THREE.Line;
-      assertPaths(lineObject, new Float32Array([0, 5, 5, 50, 10, 100]));
+      assertLine(lineObject, new Float32Array([0, 5, 5, 50, 10, 100]));
       assertMaterial(lineObject, '#00ff00', true);
     });
 
@@ -316,7 +330,7 @@ describe('line_chart_v2/lib/renderer test', () => {
       });
 
       const lineObject = scene.children[0] as THREE.Line;
-      assertPaths(lineObject, new Float32Array([0, 10, 10, 100]));
+      assertLine(lineObject, new Float32Array([0, 10, 10, 100]));
       assertMaterial(lineObject, '#ff0000', false);
     });
 
@@ -339,10 +353,10 @@ describe('line_chart_v2/lib/renderer test', () => {
 
       expect(scene.children.length).toBe(1);
       const lineAfter = scene.children[0] as THREE.Line;
-      assertPaths(lineAfter, new Float32Array([0, 1, 0, 1]));
+      assertLine(lineAfter, new Float32Array([0, 1, 0, 1]));
     });
 
-    it('skips renderering if render starts with visibility=false ', () => {
+    it('skips rendering if render starts with visibility=false ', () => {
       render(() => {
         renderer.drawLine('line1', new Float32Array([0, 1, 0, 1]), {
           ...DEFAULT_LINE_OPTIONS,

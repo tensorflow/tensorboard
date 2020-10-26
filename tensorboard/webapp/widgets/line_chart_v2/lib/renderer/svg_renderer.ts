@@ -13,42 +13,42 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {Renderer} from './renderer';
-import {LineSpec} from './renderer_types';
-import {Paths} from '../types';
-import {arePathsEqual} from '../utils';
+import {BaseObjectRenderer} from './renderer';
+import {LinePaintOption} from './renderer_types';
+import {Polyline} from '../types';
+import {arePolylinesEqual} from '../utils';
 
-export class SvgRenderer extends Renderer<SVGPathElement> {
+export class SvgRenderer extends BaseObjectRenderer<SVGPathElement> {
   constructor(private readonly svg: SVGElement) {
     super();
   }
 
-  removeCacheable(cacheable: SVGPathElement): void {
+  removeRenderObject(cacheable: SVGPathElement): void {
     this.svg.removeChild(cacheable);
   }
 
-  private createPathDString(paths: Paths): string {
-    if (!paths.length) {
+  private createPathDString(polyline: Polyline): string {
+    if (!polyline.length) {
       return '';
     }
 
-    const dBuilder: string[] = new Array(paths.length / 2);
-    dBuilder[0] = `M${paths[0]},${paths[1]}`;
-    for (let index = 1; index < paths.length / 2; index++) {
-      dBuilder[index] = `L${paths[index * 2]},${paths[index * 2 + 1]}`;
+    const dBuilder: string[] = new Array(polyline.length / 2);
+    dBuilder[0] = `M${polyline[0]},${polyline[1]}`;
+    for (let index = 1; index < polyline.length / 2; index++) {
+      dBuilder[index] = `L${polyline[index * 2]},${polyline[index * 2 + 1]}`;
     }
     return dBuilder.join('');
   }
 
-  drawLine(cacheId: string, paths: Paths, spec: LineSpec) {
-    if (!paths.length) {
+  drawLine(cacheId: string, polyline: Polyline, paintOpt: LinePaintOption) {
+    if (!polyline.length) {
       return;
     }
 
-    super.drawLine(cacheId, paths, spec);
+    super.drawLine(cacheId, polyline, paintOpt);
 
     const renderCache = this.getRenderCache();
-    const {color, visible, width, opacity} = spec;
+    const {color, visible, width, opacity} = paintOpt;
     const cssDisplayValue = visible ? '' : 'none';
 
     const cache = renderCache.get(cacheId);
@@ -61,7 +61,7 @@ export class SvgRenderer extends Renderer<SVGPathElement> {
       svgPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
       svgPath.style.fill = 'none';
       this.svg.appendChild(svgPath);
-      renderCache.set(cacheId, {cacheable: svgPath, data: paths});
+      renderCache.set(cacheId, {cacheable: svgPath, data: polyline});
     } else {
       if (!visible) {
         svgPath.style.display = cssDisplayValue;
@@ -69,10 +69,10 @@ export class SvgRenderer extends Renderer<SVGPathElement> {
       }
     }
 
-    if (!cache?.data || !arePathsEqual(paths, cache?.data)) {
-      const data = this.createPathDString(paths);
+    if (!cache?.data || !arePolylinesEqual(polyline, cache?.data)) {
+      const data = this.createPathDString(polyline);
       svgPath.setAttribute('d', data);
-      renderCache.set(cacheId, {cacheable: svgPath, data: paths});
+      renderCache.set(cacheId, {cacheable: svgPath, data: polyline});
     }
 
     svgPath.style.display = cssDisplayValue;

@@ -13,21 +13,25 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {LineSpec, IRenderer} from './renderer_types';
-import {Paths, Rect} from '../types';
+import {LinePaintOption, Renderer} from './renderer_types';
+import {Polyline, Rect} from '../types';
 
 export type RenderGroupMap<Cacheable> = Map<
   string,
   {
-    data: Paths;
+    data: Polyline;
     cacheable: Cacheable;
   }
 >;
 
-export abstract class Renderer<Cacheable> implements IRenderer {
+export abstract class BaseObjectRenderer<RenderObject> implements Renderer {
   onResize(rect: Rect): void {}
 
-  drawLine(cacheId: string, paths: Float32Array, spec: LineSpec): void {
+  drawLine(
+    cacheId: string,
+    polyline: Float32Array,
+    paintOpt: LinePaintOption
+  ): void {
     this.cacheIdsToRemove.delete(cacheId);
   }
 
@@ -35,23 +39,36 @@ export abstract class Renderer<Cacheable> implements IRenderer {
 
   private groupToCacheIdToCacheable = new Map<
     string,
-    RenderGroupMap<Cacheable>
+    RenderGroupMap<RenderObject>
   >();
-  private currentRenderGroupCache: RenderGroupMap<Cacheable> | null = null;
-  protected cacheIdsToRemove = new Set<string>();
 
-  protected getRenderCache(): RenderGroupMap<Cacheable> {
+  private currentRenderGroupCache: RenderGroupMap<RenderObject> | null = null;
+
+  /**
+   * Helps renderer maintain objects that need to be removed after a frame.
+   *
+   * cacheIds to be removed is populated at the start of a renderGroup and each draw
+   * method is expected to delete cacheId from cacheIdsToRemove. Failure to do so will
+   * result in object removal at the end of the renderGroup.
+   */
+  private cacheIdsToRemove = new Set<string>();
+
+  protected getRenderCache(): RenderGroupMap<RenderObject> {
     if (!this.currentRenderGroupCache) {
       throw new RangeError(
-        'Invariant error: expected getRenderCache to be invoked inside a renderGroup'
+        'Expected getRenderCache to be invoked inside a renderGroup'
       );
     }
-    return this.currentRenderGroupCache!;
+    return this.currentRenderGroupCache;
   }
 
-  abstract removeCacheable(cacheable: Cacheable): void;
+  abstract removeRenderObject(cacheable: RenderObject): void;
 
   renderGroup(groupName: string, renderBlock: () => void) {
+    if (this.currentRenderGroupCache) {
+      throw new RangeError('renderGroup cannot nest another renderGroup');
+    }
+
     this.currentRenderGroupCache =
       this.groupToCacheIdToCacheable.get(groupName) ?? new Map();
     this.groupToCacheIdToCacheable.set(groupName, this.currentRenderGroupCache);
@@ -65,7 +82,7 @@ export abstract class Renderer<Cacheable> implements IRenderer {
 
     for (const cacheKey of this.cacheIdsToRemove.values()) {
       const {cacheable} = this.currentRenderGroupCache.get(cacheKey)!;
-      this.removeCacheable(cacheable);
+      this.removeRenderObject(cacheable);
       this.currentRenderGroupCache.delete(cacheKey);
     }
 

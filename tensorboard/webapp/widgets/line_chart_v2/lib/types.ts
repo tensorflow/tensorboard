@@ -35,4 +35,4 @@ export interface Extent {
 /**
  * Flattened array of 2d coordinates: [x0, y0, x1, y1, ..., xn, yn].
  */
-export type Paths = Float32Array;
+export type Polyline = Float32Array;

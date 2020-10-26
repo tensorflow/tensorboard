@@ -16,10 +16,10 @@ import {color as d3Color} from 'd3';
 import * as THREE from 'three';
 
 import {ThreeCoordinator} from '../threejs_coordinator';
-import {Paths, Rect} from '../types';
-import {arePathsEqual, isOffscreenCanvasSupported} from '../utils';
-import {Renderer} from './renderer';
-import {LineSpec} from './renderer_types';
+import {Polyline, Rect} from '../types';
+import {arePolylinesEqual, isOffscreenCanvasSupported} from '../utils';
+import {BaseObjectRenderer} from './renderer';
+import {LinePaintOption} from './renderer_types';
 
 function createOpacityAdjustedColor(hex: string, opacity: number): THREE.Color {
   const newD3Color = d3Color(hex);
@@ -29,7 +29,7 @@ function createOpacityAdjustedColor(hex: string, opacity: number): THREE.Color {
   return new THREE.Color((newD3Color.brighter(1 - opacity) as any).hex());
 }
 
-export class ThreeRenderer extends Renderer<THREE.Object3D> {
+export class ThreeRenderer extends BaseObjectRenderer<THREE.Object3D> {
   private readonly renderer: THREE.WebGLRenderer;
   private readonly scene = new THREE.Scene();
 
@@ -59,7 +59,7 @@ export class ThreeRenderer extends Renderer<THREE.Object3D> {
     this.renderer.setSize(rect.width, rect.height);
   }
 
-  removeCacheable(cacheable: THREE.Object3D): void {
+  removeRenderObject(cacheable: THREE.Object3D): void {
     this.scene.remove(cacheable);
 
     if (cacheable instanceof THREE.Mesh || cacheable instanceof THREE.Line) {
@@ -73,29 +73,32 @@ export class ThreeRenderer extends Renderer<THREE.Object3D> {
     }
   }
 
-  drawLine(cacheId: string, paths: Paths, spec: LineSpec) {
-    if (!paths.length) return;
+  drawLine(cacheId: string, polyline: Polyline, paintOpt: LinePaintOption) {
+    if (!polyline.length) return;
 
-    super.drawLine(cacheId, paths, spec);
+    super.drawLine(cacheId, polyline, paintOpt);
     const renderCache = this.getRenderCache();
 
     const cachedLine = renderCache.get(cacheId);
     let line: THREE.Line | null = null;
-    let prevPaths: Paths | null = null;
+    let prevPolyline: Polyline | null = null;
 
     if (cachedLine) {
       if (cachedLine.cacheable instanceof THREE.Line) {
         line = cachedLine.cacheable;
       }
 
-      prevPaths = cachedLine.data;
+      prevPolyline = cachedLine.data;
     }
 
     // If a line is not cached and is not even visible, skip rendering.
-    if (!line && !spec.visible) return;
+    if (!line && !paintOpt.visible) return;
 
-    const {visible, width} = spec;
-    const newColor = createOpacityAdjustedColor(spec.color, spec.opacity ?? 1);
+    const {visible, width} = paintOpt;
+    const newColor = createOpacityAdjustedColor(
+      paintOpt.color,
+      paintOpt.opacity ?? 1
+    );
 
     if (line) {
       if (line && Array.isArray(line.material)) {
@@ -125,10 +128,10 @@ export class ThreeRenderer extends Renderer<THREE.Object3D> {
         material.needsUpdate = true;
       }
 
-      if (!prevPaths || !arePathsEqual(prevPaths, paths)) {
-        this.updatePoints(line.geometry as THREE.BufferGeometry, paths);
+      if (!prevPolyline || !arePolylinesEqual(prevPolyline, polyline)) {
+        this.updatePoints(line.geometry as THREE.BufferGeometry, polyline);
         renderCache.set(cacheId, {
-          data: paths,
+          data: polyline,
           cacheable: line,
         });
       }
@@ -140,16 +143,16 @@ export class ThreeRenderer extends Renderer<THREE.Object3D> {
       });
       line = new THREE.Line(geometry, material);
       renderCache.set(cacheId, {
-        data: paths,
+        data: polyline,
         cacheable: line,
       });
       material.visible = visible;
-      this.updatePoints(geometry, paths);
+      this.updatePoints(geometry, polyline);
       this.scene.add(line);
     }
   }
 
-  private updatePoints(lineGeometry: THREE.BufferGeometry, paths: Paths) {
+  private updatePoints(lineGeometry: THREE.BufferGeometry, paths: Polyline) {
     const length = paths.length / 2;
     const vectors = new Array<THREE.Vector2>(length);
     for (let index = 0; index < length * 2; index += 2) {
