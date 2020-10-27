@@ -15,7 +15,7 @@ limitations under the License.
 import {ChangeDetectionStrategy, Component, Inject} from '@angular/core';
 import {MAT_SNACK_BAR_DATA, MatSnackBarRef} from '@angular/material/snack-bar';
 import {AlertInfo} from '../types';
-import {Action, Store, ActionCreator, Creator} from '@ngrx/store';
+import {Store} from '@ngrx/store';
 import {take} from 'rxjs/operators';
 
 @Component({
