@@ -31,8 +31,7 @@ tf_ts_library(
     ],
     deps = [
         ":types",
-        "@npm//@types/d3",
-        "@npm//d3",
+        "//tensorboard/webapp/third_party:d3",
     ],
 )
 
