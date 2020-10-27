@@ -116,6 +116,7 @@ class TensorBoardUploader(object):
         self._verbosity = 1 if verbosity is None else verbosity
         self._one_shot = False if one_shot is None else one_shot
         self._request_sender = None
+        self._experiment_id = None
         if logdir_poll_rate_limiter is None:
             self._logdir_poll_rate_limiter = util.RateLimiter(
                 _MIN_LOGDIR_POLL_INTERVAL_SECS
@@ -179,10 +180,19 @@ class TensorBoardUploader(object):
             blob_rpc_rate_limiter=self._blob_rpc_rate_limiter,
             tracker=self._tracker,
         )
+        self._experiment_id = response.experiment_id
         return response.experiment_id
 
     def start_uploading(self):
-        """Blocks forever to continuously upload data from the logdir.
+        """Uploads data from the logdir.
+
+        This will continuously scan the logdir, uploading as data is added
+        unless the uploader was built with the _one_shot option, in which
+        case it will terminate after the first scan.
+
+        Returns:
+            A manifest of what was uploaded, in the case of a `one_shot` upload.
+
 
         Raises:
           RuntimeError: If `create_experiment` has not yet been called.
@@ -199,9 +209,13 @@ class TensorBoardUploader(object):
             if self._one_shot:
                 break
         if self._one_shot and not self._tracker.has_data():
-            logger.warning(
-                "One-shot mode was used on a logdir (%s) "
-                "without any uploadable data" % self._logdir
+            print(
+                "Tensorboard was run in `one_shot` mode, but did not detect "
+                "any known uploadable data types in the specified logdir: %s\n"
+                "An empty experiment was created. "
+                "To delete the empty experiment execute the following\n\n"
+                "    tensorboard dev delete --experiment_id=%s"
+                % (self._logdir, self._experiment_id)
             )
 
     def _upload_once(self):
