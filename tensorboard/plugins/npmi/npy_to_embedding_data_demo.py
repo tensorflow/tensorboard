@@ -36,8 +36,9 @@ flags.DEFINE_string(
 flags.DEFINE_string(
     "embeddings_path",
     None,
-    "Path to the numpy .npy file containing the embeddings. Embeddings can "
-    + "be any 1D Tensor.",
+    "Path to the numpy .npy file containing the embeddings. Embeddings have to "
+    + "be shaped like (num_annotations, embedding_dimension) and have dtype  "
+    + "float",
 )
 flags.mark_flag_as_required("out_path")
 flags.mark_flag_as_required("embeddings_path")

@@ -21,7 +21,6 @@ from __future__ import print_function
 
 import collections.abc
 import os
-import json
 import numpy as np
 import tensorflow as tf
 
@@ -124,7 +123,6 @@ class NpmiPluginTest(tf.test.TestCase):
     def testTags(self):
         plugin = self.create_plugin()
         tags = plugin.tags_impl(context.RequestContext(), experiment="exp")
-        tags = json.loads(tags)
         gt_runs = ["run_1", "run_2"]
         gt_tags = [
             "_npmi_/annotations",
@@ -141,7 +139,6 @@ class NpmiPluginTest(tf.test.TestCase):
         annotations = plugin.annotations_impl(
             context.RequestContext(), experiment="exp",
         )
-        annotations = json.loads(annotations)
         self.assertItemsEqual(["name_1", "name_2"], annotations["run_1"])
         self.assertItemsEqual(["name_1", "name_2"], annotations["run_2"])
 
@@ -150,14 +147,12 @@ class NpmiPluginTest(tf.test.TestCase):
         metrics = plugin.metrics_impl(
             context.RequestContext(), experiment="exp",
         )
-        metrics = json.loads(metrics)
         self.assertItemsEqual(["A", "B"], metrics["run_1"])
         self.assertItemsEqual(["A", "B"], metrics["run_2"])
 
     def testValues(self):
         plugin = self.create_plugin()
         values = plugin.values_impl(context.RequestContext(), experiment="exp")
-        values = json.loads(values)
         self.assertItemsEqual([1.0, -1.0], values["run_1"][0])
         self.assertItemsEqual([0.5, -0.5], values["run_1"][1])
         self.assertItemsEqual([1.0, -1.0], values["run_2"][0])
@@ -168,7 +163,6 @@ class NpmiPluginTest(tf.test.TestCase):
         embeddings = plugin.embeddings_impl(
             context.RequestContext(), experiment="exp"
         )
-        embeddings = json.loads(embeddings)
         self.assertItemsEqual([1.0, 0.5], embeddings["run_1"][0])
         self.assertItemsEqual([-0.5, 0.5], embeddings["run_1"][1])
         self.assertItemsEqual([1.0, 0.5], embeddings["run_2"][0])

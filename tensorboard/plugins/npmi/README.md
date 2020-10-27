@@ -29,7 +29,7 @@ For this to work correctly, you need metrics in the csv that are prefixed with `
 ### Adding Embeddings to the Logs
 
 To enable similarity-based analysis, you can also add embedding representations to the annotations of a dataset.
-These have to be available as `.npy` files.
+These have to be available as `.npy` files that have to contain data shaped like (num_annotations, embedding_dimension) with dtype float.
 To convert this `.npy` file to a logfile, run `bazel run //tensorboard/plugins/npmi:npy_to_embedding_data_demo -- --out_path [path_to_other_logs_for_the_run] --embeddings_path [path_to_your_embeddings_npy_file]`.
 
 ### Building the Plugin

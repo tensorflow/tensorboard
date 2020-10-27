@@ -40,11 +40,7 @@ Example:
 
 ```json
 {
-  "run_1": [
-    "tree",
-    "field",
-    "road",
-  ]
+  "run_1": ["tree", "field", "road"]
 }
 ```
 
@@ -58,11 +54,7 @@ Example:
 
 ```json
 {
-  "run_1": [
-    "npmi@green",
-    "npmi@blue",
-    "npmi@red",
-  ]
+  "run_1": ["npmi@green", "npmi@blue", "npmi@red"]
 }
 ```
 
@@ -80,21 +72,9 @@ Example:
 ```json
 {
   "run_1": [
-    [
-      0.34362471103668213,
-      0.17068558931350708,
-      0.28587889671325684,
-    ],
-    [
-      0.17293912172317505,
-      0.05774582177400589,
-      -0.17293912172317505,
-    ],
-    [
-      -0.11519329994916916,
-      -0.05774582177400589,
-      0.11519329994916916
-    ]
+    [0.34362471103668213, 0.17068558931350708, 0.28587889671325684],
+    [0.17293912172317505, 0.05774582177400589, -0.17293912172317505],
+    [-0.11519329994916916, -0.05774582177400589, 0.11519329994916916]
   ]
 }
 ```
@@ -104,15 +84,16 @@ Example:
 Retrieves high-dimensional embeddings for the annotations. Embeddings are
 optional but can be used to further inform the user in their analysis.
 
-Returns a dictionary mapping from `annotation` to an embedding. The embedding
-can be any dimension, and does not have to be there for every annotation. You
-can use any embedding technique with this implementation.
+Returns a dictionary mapping from `run_id` to an embedding per annotation. The
+embedding can be any dimension. You can use any embedding technique with this
+implementation.
 
 Example:
 
 ```json
 {
-  "annotation_1": [
+  "run_1": [
+    [
       0.34362471103668213,
       0.17068558931350708,
       0.28587889671325684,
@@ -121,9 +102,8 @@ Example:
       -0.17293912172317505,
       -0.11519329994916916,
       -0.05774582177400589,
-      0.11519329994916916
-  ],
-  "annotation_2": [
+      0.11519329994916916]
+    [
       -0.11519329994916916,
       0.34362471103668213,
       0.05774582177400589,
@@ -133,6 +113,7 @@ Example:
       -0.05774582177400589,
       0.11519329994916916
       0.17068558931350708,
+    ]
   ]
 }
 ```

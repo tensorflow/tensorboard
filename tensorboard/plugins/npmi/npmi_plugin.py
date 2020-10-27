@@ -18,7 +18,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import json
 import six
 import math
 from werkzeug import wrappers
@@ -109,8 +108,7 @@ class NpmiPlugin(base_plugin.TBPlugin):
                     metadatum.plugin_content
                 )
                 result[run].append(tag)
-        contents = json.dumps(result, sort_keys=True)
-        return contents
+        return result
 
     def annotations_impl(self, ctx, experiment):
         mapping = self._data_provider.list_tensors(
@@ -140,8 +138,7 @@ class NpmiPlugin(base_plugin.TBPlugin):
                 for annotation in annotations[0].numpy
             ]
             result[run] = event_data
-        contents = json.dumps(result)
-        return contents
+        return result
 
     def metrics_impl(self, ctx, experiment):
         mapping = self._data_provider.list_tensors(
@@ -164,8 +161,7 @@ class NpmiPlugin(base_plugin.TBPlugin):
             metrics = all_metrics.get(run, {}).get(metadata.METRICS_TAG, {})
             event_data = [metric.decode("utf-8") for metric in metrics[0].numpy]
             result[run] = event_data
-        contents = json.dumps(result)
-        return contents
+        return result
 
     def values_impl(self, ctx, experiment):
         mapping = self._data_provider.list_tensors(
@@ -189,8 +185,7 @@ class NpmiPlugin(base_plugin.TBPlugin):
             event_data = values[0].numpy.tolist()
             event_data = convert_nan_none(event_data)
             result[run] = event_data
-        contents = json.dumps(result)
-        return contents
+        return result
 
     def embeddings_impl(self, ctx, experiment):
         mapping = self._data_provider.list_tensors(
@@ -217,8 +212,7 @@ class NpmiPlugin(base_plugin.TBPlugin):
             )
             event_data = embeddings[0].numpy.tolist()
             result[run] = event_data
-        contents = json.dumps(result)
-        return contents
+        return result
 
     @wrappers.Request.application
     def serve_tags(self, request):
