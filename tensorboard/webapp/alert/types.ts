@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Action, ActionCreator, Creator, Store} from '@ngrx/store';
+import {Action, Store} from '@ngrx/store';
 import {Observable} from 'rxjs';
 
 /**
@@ -28,22 +28,17 @@ export interface AlertReport {
     /**
      * Localized name of a followup action.
      */
-    label: string;
+    localizedLabel: string;
 
     /**
-     * The followup action to be dispatched upon user gesture.
-     */
-    actionCreator: ActionCreator<string, Creator<any[], Action>>;
-
-    /**
-     * A callback to be fired just before the followup action is dispatched.
-     * The result of this observable is provided as the payload to the followup
-     * action.
+     * A factory that defines how to create the followup action. At the time
+     * when the followup action is requested, the Observable is subscribed to,
+     * and the resulting action is dispatched.
      *
      * Note: clients do not need to subscribe to this observable, but they
      * should ensure that it completes after 1 emission (e.g. take(1)).
      */
-    getActionPayload$?: (store: Store) => Observable<{}>;
+    getFollowupAction$: (store: Store) => Observable<Action>;
   };
 }
 

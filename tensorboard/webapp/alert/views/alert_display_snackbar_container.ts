@@ -38,17 +38,10 @@ export class AlertDisplaySnackbarContainer {
   onActionButtonClicked() {
     this.snackBarRef.dismiss();
 
-    const {actionCreator, getActionPayload$} = this.alert.followupAction!;
-    if (!getActionPayload$) {
-      this.store.dispatch(actionCreator());
-      return;
-    }
-
-    // Dispatch with action payload.
-    getActionPayload$(this.store)
+    this.alert
+      .followupAction!.getFollowupAction$(this.store)
       .pipe(take(1))
-      .subscribe((payload) => {
-        const action = payload ? actionCreator(payload) : actionCreator();
+      .subscribe((action) => {
         this.store.dispatch(action);
       });
   }

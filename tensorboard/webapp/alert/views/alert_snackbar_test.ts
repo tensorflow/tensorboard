@@ -158,8 +158,8 @@ describe('alert snackbar', () => {
     store.overrideSelector(selectors.getLatestAlert, {
       localizedMessage: 'Foo failed',
       followupAction: {
-        label: 'Try again?',
-        actionCreator: testAction,
+        localizedLabel: 'Try again?',
+        getFollowupAction$: () => of(testAction()),
       },
       created: 0,
     });
@@ -193,8 +193,8 @@ describe('alert snackbar', () => {
     store.overrideSelector(selectors.getLatestAlert, {
       localizedMessage: 'Foo failed',
       followupAction: {
-        label: 'Try again?',
-        actionCreator: testAction,
+        localizedLabel: 'Try again?',
+        getFollowupAction$: () => of(testAction()),
       },
       created: 0,
     });
@@ -220,11 +220,8 @@ describe('alert snackbar', () => {
     store.overrideSelector(selectors.getLatestAlert, {
       localizedMessage: 'Foo failed',
       followupAction: {
-        label: 'Try again?',
-        actionCreator: testActionWithProps,
-        getActionPayload$: () => {
-          return of({foo: true}, {foo: false});
-        },
+        localizedLabel: 'Try again?',
+        getFollowupAction$: () => of(testActionWithProps({foo: true})),
       },
       created: 0,
     });
