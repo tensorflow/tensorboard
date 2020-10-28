@@ -442,10 +442,15 @@ class UploadIntent(_Intent):
         url = server_info_lib.experiment_url(server_info, experiment_id)
         if self.experiment_url_callback is not None:
             self.experiment_url_callback(url)
-        print(
-            "Upload started and will continue reading any new data as it's "
-            "added to the logdir.\n\nTo stop uploading, press Ctrl-C."
-        )
+        if self.one_shot:
+            print(
+                "Upload started.\n\nTo stop uploading, press Ctrl-C."
+            )
+        else:
+            print(
+                "Upload started and will continue reading any new data as it's "
+                "added to the logdir.\n\nTo stop uploading, press Ctrl-C."
+            )
         if self.dry_run:
             print(
                 "\n** This is a dry run. "
