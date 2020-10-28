@@ -124,7 +124,7 @@ class UploadIntentTest(tf.test.TestCase):
         # Expect that ".*Done scanning logdir.*" is among the things printed.
         stdout_writes = [x[0][0] for x in mock_stdout_write.call_args_list]
         self.assertRegex(
-            ",".join(stdout_writes), ".*Upload started.*",
+            ",".join(stdout_writes), ".*experiment created.*",
         )
         # Expect that the last thing written is the string "Done" and the
         # experiment_id.

@@ -442,11 +442,7 @@ class UploadIntent(_Intent):
         url = server_info_lib.experiment_url(server_info, experiment_id)
         if self.experiment_url_callback is not None:
             self.experiment_url_callback(url)
-        if self.one_shot:
-            print(
-                "Upload started."
-            )
-        else:
+        if not self.one_shot:
             print(
                 "Upload started and will continue reading any new data as it's "
                 "added to the logdir.\n\nTo stop uploading, press Ctrl-C."
@@ -457,7 +453,7 @@ class UploadIntent(_Intent):
                 "No data will be sent to tensorboard.dev. **\n"
             )
         else:
-            print("\nView your TensorBoard live at: %s\n" % url)
+            print("\nNew experiment created. View your TensorBoard at: %s\n" % url)
         interrupted = False
         try:
             uploader.start_uploading()
@@ -469,9 +465,8 @@ class UploadIntent(_Intent):
         finally:
             if self.one_shot and not uploader.tracker.has_data():
                 print(
-                    "Tensorboard was run in `one_shot` mode, but did not detect "
-                    "any known uploadable data types in the specified "
-                    "logdir: %s\n"
+                    "Tensorboard was run in `one_shot` mode, but did not find "
+                    "any uploadable data in the specified logdir: %s\n"
                     "An empty experiment was created. "
                     "To delete the empty experiment execute the following\n\n"
                     "    tensorboard dev delete --experiment_id=%s"
@@ -484,7 +479,7 @@ class UploadIntent(_Intent):
                 end_message += "Done."
             # Only Add the "View your TensorBoard" message if there was any
             # data added at all.
-            if not self.dry_run and not uploader.tracker.has_data():
+            if not self.dry_run and uploader.tracker.has_data():
                 end_message += " View your TensorBoard at %s" % url
             sys.stdout.write(end_message + "\n")
             sys.stdout.flush()
