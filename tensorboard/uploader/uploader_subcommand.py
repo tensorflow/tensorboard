@@ -444,7 +444,7 @@ class UploadIntent(_Intent):
             self.experiment_url_callback(url)
         if self.one_shot:
             print(
-                "Upload started.\n\nTo stop uploading, press Ctrl-C."
+                "Upload started."
             )
         else:
             print(
@@ -467,12 +467,24 @@ class UploadIntent(_Intent):
         except KeyboardInterrupt:
             interrupted = True
         finally:
+            if self.one_shot and not uploader.tracker.has_data():
+                print(
+                    "Tensorboard was run in `one_shot` mode, but did not detect "
+                    "any known uploadable data types in the specified "
+                    "logdir: %s\n"
+                    "An empty experiment was created. "
+                    "To delete the empty experiment execute the following\n\n"
+                    "    tensorboard dev delete --experiment_id=%s"
+                    % (self.logdir, uploader.experiment_id)
+                )
             end_message = "\n"
             if interrupted:
                 end_message += "Interrupted."
             else:
                 end_message += "Done."
-            if not self.dry_run:
+            # Only Add the "View your TensorBoard" message if there was any
+            # data added at all.
+            if not self.dry_run and not uploader.tracker.has_data():
                 end_message += " View your TensorBoard at %s" % url
             sys.stdout.write(end_message + "\n")
             sys.stdout.flush()

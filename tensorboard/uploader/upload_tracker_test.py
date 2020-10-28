@@ -165,7 +165,7 @@ class UploadStatsTest(tb_test.TestCase):
         )
         self.assertEqual(stats.has_new_data_since_last_summarize(), True)
 
-    def testHasNewDataSinceLastSummarizeReturnsTrueAfterNewTensors(self):
+    def testHasNewDataSinceLastSummarizeReturnsTrueAfterNewBlob(self):
         stats = upload_tracker.UploadStats()
         self.assertEqual(stats.has_new_data_since_last_summarize(), False)
         stats.add_scalars(1234)
@@ -352,7 +352,7 @@ class UploadTrackerTest(tb_test.TestCase):
             self.assertEqual(self.mock_write.call_count, 2)
             self.assertEqual(self.mock_flush.call_count, 2)
             self.assertIn(
-                "Uploader started.", self.mock_write.call_args_list[0][0][0],
+                "Started scanning", self.mock_write.call_args_list[0][0][0],
             )
             with tracker.blob_tracker(
                 blob_bytes=2048 * 1024 * 1024
