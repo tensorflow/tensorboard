@@ -79,6 +79,11 @@ tf_ts_library(
     srcs = [
         "scale.ts",
     ],
+    visibility = [
+        "//tensorboard/webapp/widgets/line_chart_v2/lib:__subpackages__",
+        # test uses it
+        "//tensorboard/webapp/widgets/line_chart_v2/sub_view:__pkg__",
+    ],
     deps = [
         ":internal_types",
         "//tensorboard/webapp/third_party:d3",
