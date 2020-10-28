@@ -119,6 +119,59 @@ describe('filter annotations utils', () => {
       });
     });
 
+    it('filters out null values if includeNaN is false', () => {
+      const result = filterAnnotations(
+        annotationData,
+        activeRuns,
+        [{kind: ArithmeticKind.METRIC, metric: 'nPMI@test'}],
+        {
+          'nPMI@test': {
+            max: -0.9,
+            min: -1.0,
+            includeNaN: false,
+          },
+        },
+        metrics,
+        ''
+      );
+      expect(result).toEqual({});
+    });
+
+    it('preserves null values if includeNaN is true', () => {
+      const result = filterAnnotations(
+        annotationData,
+        activeRuns,
+        [{kind: ArithmeticKind.METRIC, metric: 'nPMI@test'}],
+        {
+          'nPMI@test': {
+            max: -0.9,
+            min: -1.0,
+            includeNaN: true,
+          },
+        },
+        metrics,
+        ''
+      );
+      expect(result).toEqual({
+        annotation_2: [
+          {
+            annotation: 'annotation_2',
+            metric: 'test',
+            run: 'run_1',
+            nPMIValue: null,
+            countValue: 572,
+          },
+          {
+            annotation: 'annotation_2',
+            metric: 'other',
+            run: 'run_1',
+            nPMIValue: -1.0,
+            countValue: 53,
+          },
+        ],
+      });
+    });
+
     it('returns correct result if no filters active', () => {
       const result = filterAnnotations(
         annotationData,
