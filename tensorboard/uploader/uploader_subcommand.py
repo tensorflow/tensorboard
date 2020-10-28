@@ -453,7 +453,9 @@ class UploadIntent(_Intent):
                 "No data will be sent to tensorboard.dev. **\n"
             )
         else:
-            print("\nNew experiment created. View your TensorBoard at: %s\n" % url)
+            print(
+                "\nNew experiment created. View your TensorBoard at: %s\n" % url
+            )
         interrupted = False
         try:
             uploader.start_uploading()

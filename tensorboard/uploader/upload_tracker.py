@@ -297,7 +297,7 @@ class UploadTracker(object):
             _STYLE_BOLD,
             readable_time_string(),
             _STYLE_RESET,
-            message
+            message,
         )
         sys.stdout.write(start_message)
         sys.stdout.flush()
@@ -350,7 +350,7 @@ class UploadTracker(object):
                 self._overwrite_line_message(
                     "Listening for new data in logdir",
                     color_code=_STYLE_YELLOW,
-            )
+                )
 
     @contextlib.contextmanager
     def scalars_tracker(self, num_scalars):

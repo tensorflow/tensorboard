@@ -219,7 +219,6 @@ class TensorBoardUploader(object):
             if self._one_shot:
                 break
 
-
     def _upload_once(self):
         """Runs one upload cycle, sending zero or more RPCs."""
         logger.info("Starting an upload cycle")
