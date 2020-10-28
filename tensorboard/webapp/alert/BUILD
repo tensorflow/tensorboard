@@ -38,6 +38,7 @@ tf_ts_library(
         "types.ts",
     ],
     deps = [
+        "//tensorboard/webapp:app_state",
         "@npm//@ngrx/store",
         "@npm//rxjs",
     ],

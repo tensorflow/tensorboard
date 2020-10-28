@@ -22,7 +22,9 @@ ng_module(
     deps = [
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp:selectors",
+        "//tensorboard/webapp/alert:types",
         "//tensorboard/webapp/alert/store",
+        "//tensorboard/webapp/alert/store:types",
         "//tensorboard/webapp/angular:expect_angular_material_button",
         "//tensorboard/webapp/angular:expect_angular_material_snackbar",
         "@npm//@angular/common",

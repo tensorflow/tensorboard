@@ -18,7 +18,6 @@ import {MatSnackBar, MatSnackBarModule} from '@angular/material/snack-bar';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {Action, createAction, props, Store} from '@ngrx/store';
 import {provideMockStore, MockStore} from '@ngrx/store/testing';
-import {of} from 'rxjs';
 import {AlertSnackbarContainer} from './alert_snackbar_container';
 import {State} from '../store';
 import * as selectors from '../../selectors';
@@ -159,7 +158,7 @@ describe('alert snackbar', () => {
       localizedMessage: 'Foo failed',
       followupAction: {
         localizedLabel: 'Try again?',
-        getFollowupAction$: () => of(testAction()),
+        getFollowupAction: async () => testAction(),
       },
       created: 0,
     });
@@ -194,7 +193,7 @@ describe('alert snackbar', () => {
       localizedMessage: 'Foo failed',
       followupAction: {
         localizedLabel: 'Try again?',
-        getFollowupAction$: () => of(testAction()),
+        getFollowupAction: async () => testAction(),
       },
       created: 0,
     });
@@ -221,7 +220,7 @@ describe('alert snackbar', () => {
       localizedMessage: 'Foo failed',
       followupAction: {
         localizedLabel: 'Try again?',
-        getFollowupAction$: () => of(testActionWithProps({foo: true})),
+        getFollowupAction: async () => testActionWithProps({foo: true}),
       },
       created: 0,
     });

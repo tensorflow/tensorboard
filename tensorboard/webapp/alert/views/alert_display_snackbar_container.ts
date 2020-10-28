@@ -14,9 +14,9 @@ limitations under the License.
 ==============================================================================*/
 import {ChangeDetectionStrategy, Component, Inject} from '@angular/core';
 import {MAT_SNACK_BAR_DATA, MatSnackBarRef} from '@angular/material/snack-bar';
+import {State} from '../../app_state';
 import {AlertInfo} from '../types';
 import {Store} from '@ngrx/store';
-import {take} from 'rxjs/operators';
 
 @Component({
   selector: 'alert-display-snackbar',
@@ -30,20 +30,18 @@ export class AlertDisplaySnackbarContainer {
   constructor(
     private readonly snackBarRef: MatSnackBarRef<AlertDisplaySnackbarContainer>,
     @Inject(MAT_SNACK_BAR_DATA) readonly unknownData: unknown,
-    private readonly store: Store
+    private readonly store: Store<State>
   ) {
     this.alert = unknownData as AlertInfo;
   }
 
-  onActionButtonClicked() {
+  async onActionButtonClicked() {
     this.snackBarRef.dismiss();
 
-    this.alert
-      .followupAction!.getFollowupAction$(this.store)
-      .pipe(take(1))
-      .subscribe((action) => {
-        this.store.dispatch(action);
-      });
+    const followupAction = await this.alert.followupAction!.getFollowupAction(
+      this.store
+    );
+    this.store.dispatch(followupAction);
   }
 
   onCloseButtonClicked() {

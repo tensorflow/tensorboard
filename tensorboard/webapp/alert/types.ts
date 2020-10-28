@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Action, Store} from '@ngrx/store';
-import {Observable} from 'rxjs';
+import {State} from '../app_state';
 
 /**
  * An alert structure used when creating newly reported alerts.
@@ -32,13 +32,10 @@ export interface AlertReport {
 
     /**
      * A factory that defines how to create the followup action. At the time
-     * when the followup action is requested, the Observable is subscribed to,
-     * and the resulting action is dispatched.
-     *
-     * Note: clients do not need to subscribe to this observable, but they
-     * should ensure that it completes after 1 emission (e.g. take(1)).
+     * when the followup action is requested, a newly created Promise will be
+     * awaited, and the resulting action is dispatched.
      */
-    getFollowupAction$: (store: Store) => Observable<Action>;
+    getFollowupAction: (store: Store<State>) => Promise<Action>;
   };
 }
 

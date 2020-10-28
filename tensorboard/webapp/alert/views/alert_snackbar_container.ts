@@ -23,7 +23,7 @@ import {Store} from '@ngrx/store';
 import {Subject} from 'rxjs';
 import {filter, takeUntil} from 'rxjs/operators';
 
-import {State} from '../../app_state';
+import {State} from '../store/alert_types';
 import {getLatestAlert} from '../../selectors';
 import {AlertDisplaySnackbarContainer} from './alert_display_snackbar_container';
 import {AlertInfo} from '../types';
