@@ -16,7 +16,7 @@ import {createAction, props} from '@ngrx/store';
 import {
   AnnotationDataListing,
   MetricListing,
-  AnnotationSort,
+  EmbeddingListing,
 } from '../store/npmi_types';
 
 // HACK: Below import is for type inference.
@@ -37,6 +37,7 @@ export const npmiPluginDataLoaded = createAction(
   props<{
     annotationData: AnnotationDataListing;
     metrics: MetricListing;
+    embeddingData: EmbeddingListing;
   }>()
 );
 

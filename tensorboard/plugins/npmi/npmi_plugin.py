@@ -18,7 +18,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import json
 import six
 import math
 from werkzeug import wrappers
@@ -79,6 +78,7 @@ class NpmiPlugin(base_plugin.TBPlugin):
             "/annotations": self.serve_annotations,
             "/metrics": self.serve_metrics,
             "/values": self.serve_values,
+            "/embeddings": self.serve_embeddings,
         }
 
     def is_active(self):
@@ -108,8 +108,7 @@ class NpmiPlugin(base_plugin.TBPlugin):
                     metadatum.plugin_content
                 )
                 result[run].append(tag)
-        contents = json.dumps(result, sort_keys=True)
-        return contents
+        return result
 
     def annotations_impl(self, ctx, experiment):
         mapping = self._data_provider.list_tensors(
@@ -139,8 +138,7 @@ class NpmiPlugin(base_plugin.TBPlugin):
                 for annotation in annotations[0].numpy
             ]
             result[run] = event_data
-        contents = json.dumps(result)
-        return contents
+        return result
 
     def metrics_impl(self, ctx, experiment):
         mapping = self._data_provider.list_tensors(
@@ -163,8 +161,7 @@ class NpmiPlugin(base_plugin.TBPlugin):
             metrics = all_metrics.get(run, {}).get(metadata.METRICS_TAG, {})
             event_data = [metric.decode("utf-8") for metric in metrics[0].numpy]
             result[run] = event_data
-        contents = json.dumps(result)
-        return contents
+        return result
 
     def values_impl(self, ctx, experiment):
         mapping = self._data_provider.list_tensors(
@@ -188,8 +185,34 @@ class NpmiPlugin(base_plugin.TBPlugin):
             event_data = values[0].numpy.tolist()
             event_data = convert_nan_none(event_data)
             result[run] = event_data
-        contents = json.dumps(result)
-        return contents
+        return result
+
+    def embeddings_impl(self, ctx, experiment):
+        mapping = self._data_provider.list_tensors(
+            ctx,
+            experiment_id=experiment,
+            plugin_name=self.plugin_name,
+            run_tag_filter=provider.RunTagFilter(
+                tags=[metadata.EMBEDDINGS_TAG]
+            ),
+        )
+        result = {run: {} for run in mapping}
+        for (run, _) in six.iteritems(mapping):
+            all_embeddings = self._data_provider.read_tensors(
+                ctx,
+                experiment_id=experiment,
+                plugin_name=self.plugin_name,
+                run_tag_filter=provider.RunTagFilter(
+                    runs=[run], tags=[metadata.EMBEDDINGS_TAG]
+                ),
+                downsample=self._downsample_to,
+            )
+            embeddings = all_embeddings.get(run, {}).get(
+                metadata.EMBEDDINGS_TAG, {}
+            )
+            event_data = embeddings[0].numpy.tolist()
+            result[run] = event_data
+        return result
 
     @wrappers.Request.application
     def serve_tags(self, request):
@@ -217,4 +240,11 @@ class NpmiPlugin(base_plugin.TBPlugin):
         ctx = plugin_util.context(request.environ)
         experiment = plugin_util.experiment_id(request.environ)
         contents = self.values_impl(ctx, experiment=experiment)
+        return http_util.Respond(request, contents, "application/json")
+
+    @wrappers.Request.application
+    def serve_embeddings(self, request):
+        ctx = plugin_util.context(request.environ)
+        experiment = plugin_util.experiment_id(request.environ)
+        contents = self.embeddings_impl(ctx, experiment=experiment)
         return http_util.Respond(request, contents, "application/json")

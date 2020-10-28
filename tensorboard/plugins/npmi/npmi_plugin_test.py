@@ -21,7 +21,6 @@ from __future__ import print_function
 
 import collections.abc
 import os
-import json
 import numpy as np
 import tensorflow as tf
 
@@ -74,6 +73,10 @@ class NpmiPluginTest(tf.test.TestCase):
                 ["name_2", -0.5, np.nan],
             ],
         }
+        embedding_ground_truth = {
+            "run_1": [[1.0, 0.5], [-0.5, 0.5]],
+            "run_2": [[1.0, 0.5], [-0.5, 0.5]],
+        }
         for run_name in run_names:
             subdir = os.path.join(self.logdir, run_name)
             writer = tf.compat.v2.summary.create_file_writer(subdir)
@@ -99,9 +102,13 @@ class NpmiPluginTest(tf.test.TestCase):
                 tensor_result = tf.convert_to_tensor(python_result)
                 tensor_annotations = tf.convert_to_tensor(python_annotations)
                 tensor_classes = tf.convert_to_tensor(python_classes)
+                tensor_embeddings = tf.convert_to_tensor(
+                    embedding_ground_truth[run_name]
+                )
                 summary.npmi_values(tensor_result, 1)
                 summary.npmi_annotations(tensor_annotations, 1)
                 summary.npmi_metrics(tensor_classes, 1)
+                summary.npmi_embeddings(tensor_embeddings, 1)
             writer.close()
 
     def testRoutesProvided(self):
@@ -111,13 +118,18 @@ class NpmiPluginTest(tf.test.TestCase):
         self.assertIsInstance(routes["/annotations"], collections.abc.Callable)
         self.assertIsInstance(routes["/metrics"], collections.abc.Callable)
         self.assertIsInstance(routes["/values"], collections.abc.Callable)
+        self.assertIsInstance(routes["/embeddings"], collections.abc.Callable)
 
     def testTags(self):
         plugin = self.create_plugin()
         tags = plugin.tags_impl(context.RequestContext(), experiment="exp")
-        tags = json.loads(tags)
         gt_runs = ["run_1", "run_2"]
-        gt_tags = ["_npmi_/annotations", "_npmi_/metrics", "_npmi_/values"]
+        gt_tags = [
+            "_npmi_/annotations",
+            "_npmi_/metrics",
+            "_npmi_/values",
+            "_npmi_/embeddings",
+        ]
         self.assertItemsEqual(gt_runs, tags.keys())
         self.assertItemsEqual(gt_tags, tags["run_1"])
         self.assertItemsEqual(gt_tags, tags["run_2"])
@@ -127,7 +139,6 @@ class NpmiPluginTest(tf.test.TestCase):
         annotations = plugin.annotations_impl(
             context.RequestContext(), experiment="exp",
         )
-        annotations = json.loads(annotations)
         self.assertItemsEqual(["name_1", "name_2"], annotations["run_1"])
         self.assertItemsEqual(["name_1", "name_2"], annotations["run_2"])
 
@@ -136,18 +147,26 @@ class NpmiPluginTest(tf.test.TestCase):
         metrics = plugin.metrics_impl(
             context.RequestContext(), experiment="exp",
         )
-        metrics = json.loads(metrics)
         self.assertItemsEqual(["A", "B"], metrics["run_1"])
         self.assertItemsEqual(["A", "B"], metrics["run_2"])
 
     def testValues(self):
         plugin = self.create_plugin()
         values = plugin.values_impl(context.RequestContext(), experiment="exp")
-        values = json.loads(values)
         self.assertItemsEqual([1.0, -1.0], values["run_1"][0])
         self.assertItemsEqual([0.5, -0.5], values["run_1"][1])
         self.assertItemsEqual([1.0, -1.0], values["run_2"][0])
         self.assertItemsEqual([-0.5, None], values["run_2"][1])
+
+    def testEmbeddings(self):
+        plugin = self.create_plugin()
+        embeddings = plugin.embeddings_impl(
+            context.RequestContext(), experiment="exp"
+        )
+        self.assertItemsEqual([1.0, 0.5], embeddings["run_1"][0])
+        self.assertItemsEqual([-0.5, 0.5], embeddings["run_1"][1])
+        self.assertItemsEqual([1.0, 0.5], embeddings["run_2"][0])
+        self.assertItemsEqual([-0.5, 0.5], embeddings["run_2"][1])
 
     def testIsActiveReturnsFalse(self):
         """The plugin should always return false because this is now handled

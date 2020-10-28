@@ -33,6 +33,7 @@ PROTO_VERSION = 0
 ANNOTATIONS_TAG = "_npmi_/annotations"
 METRICS_TAG = "_npmi_/metrics"
 VALUES_TAG = "_npmi_/values"
+EMBEDDINGS_TAG = "_npmi_/embeddings"
 
 
 def create_summary_metadata(description):

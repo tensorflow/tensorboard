@@ -48,6 +48,10 @@ export interface MetricFilterListing {
   [metric: string]: MetricFilter;
 }
 
+export interface EmbeddingListing {
+  [annotation: string]: number[];
+}
+
 export interface MetricFilter {
   max: number;
   min: number;
@@ -69,6 +73,7 @@ export interface NpmiState {
   pluginDataLoaded: LoadState;
   annotationData: AnnotationDataListing;
   runToMetrics: MetricListing;
+  embeddingData: EmbeddingListing;
 
   // based on user interaction
   selectedAnnotations: Annotation[];

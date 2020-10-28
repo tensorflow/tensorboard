@@ -113,6 +113,16 @@ py_binary(
     ],
 )
 
+py_binary(
+    name = "npy_to_embedding_data_demo",
+    srcs = ["npy_to_embedding_data_demo.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":summary",
+        "//tensorboard:expect_tensorflow_installed",
+    ],
+)
+
 tb_proto_library(
     name = "protos_all",
     srcs = ["plugin_data.proto"],

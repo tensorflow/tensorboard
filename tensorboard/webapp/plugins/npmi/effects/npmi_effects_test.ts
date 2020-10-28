@@ -27,6 +27,7 @@ import {
   DataLoadState,
   AnnotationDataListing,
   MetricListing,
+  EmbeddingListing,
 } from '../store/npmi_types';
 import {getPluginDataLoaded} from '../store/npmi_selectors';
 import * as actions from '../actions';
@@ -74,6 +75,7 @@ describe('npmi effects', () => {
     let fetchDataSubject: Subject<{
       annotationData: AnnotationDataListing;
       metrics: MetricListing;
+      embeddingData: EmbeddingListing;
     }>;
 
     beforeEach(() => {
@@ -110,6 +112,10 @@ describe('npmi effects', () => {
           ],
         },
         metrics: {run_1: ['count@test', 'npmi@test']},
+        embeddingData: {
+          annotation_new_1: [0.0513, 1.3157],
+          annotation_new_2: [1.0513, 0.3157],
+        },
       });
 
       expect(fetchDataSpy).toHaveBeenCalled();
@@ -137,6 +143,10 @@ describe('npmi effects', () => {
             ],
           },
           metrics: {run_1: ['count@test', 'npmi@test']},
+          embeddingData: {
+            annotation_new_1: [0.0513, 1.3157],
+            annotation_new_2: [1.0513, 0.3157],
+          },
         }),
       ]);
     });
