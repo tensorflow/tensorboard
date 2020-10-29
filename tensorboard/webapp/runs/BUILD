@@ -11,6 +11,8 @@ ng_module(
         "runs_module.ts",
     ],
     deps = [
+        "//tensorboard/webapp/alert:alert_action",
+        "//tensorboard/webapp/runs/actions",
         "//tensorboard/webapp/runs/data_source",
         "//tensorboard/webapp/runs/effects",
         "//tensorboard/webapp/runs/store",
