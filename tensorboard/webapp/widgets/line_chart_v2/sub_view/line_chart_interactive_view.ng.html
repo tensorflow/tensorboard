@@ -1,0 +1,90 @@
+<!--
+@license
+Copyright 2020 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<svg #dots class="dots">
+  <ng-container *ngIf="state === InteractionState.NONE">
+    <ng-container
+      *ngFor="let datum of cursoredData; trackBy: trackBySeriesName"
+    >
+      <circle
+        *ngIf="datum.point"
+        [attr.cx]="getDomX(datum.point.x)"
+        [attr.cy]="getDomY(datum.point.y)"
+        [attr.fill]="datum.metadata.color"
+        r="4"
+      ></circle>
+    </ng-container>
+  </ng-container>
+  <rect
+    *ngIf="state === InteractionState.DRAG_ZOOMING"
+    class="zoom-box"
+    [attr.x]="zoomBoxInUiCoordinate.x"
+    [attr.width]="zoomBoxInUiCoordinate.width"
+    [attr.y]="zoomBoxInUiCoordinate.y"
+    [attr.height]="zoomBoxInUiCoordinate.height"
+  ></rect>
+</svg>
+<div class="zoom-instruction">
+  <span class="instruction-content">Alt + Scroll to Zoom</span>
+</div>
+<div
+  class="tooltip-origin"
+  cdkOverlayOrigin
+  #tooltipOrigin="cdkOverlayOrigin"
+></div>
+<ng-template
+  cdkConnectedOverlay
+  [cdkConnectedOverlayOrigin]="tooltipOriginEl"
+  [cdkConnectedOverlayOpen]="tooltipDislayAttached && state === InteractionState.NONE"
+  [cdkConnectedOverlayPositions]="tooltipPositions"
+  [cdkConnectedOverlayScrollStrategy]="scrollStrategy"
+  [cdkConnectedOverlayLockPosition]="false"
+  [cdkConnectedOverlayFlexibleDimensions]="true"
+  [cdkConnectedOverlayGrowAfterOpen]="true"
+  (detach)="onTooltipDisplayDetached()"
+>
+  <table class="tooltip-container">
+    <thead>
+      <tr>
+        <th class="circle-header"></th>
+        <th>Run</th>
+        <th>Value</th>
+        <th>Step</th>
+      </tr>
+    </thead>
+    <tbody>
+      <ng-container
+        *ngFor="let datum of cursoredData; trackBy: trackBySeriesName"
+      >
+        <ng-container
+          [ngTemplateOutlet]="tooltipTemplate ? tooltipTemplate : defaultTooltipRow"
+          [ngTemplateOutletContext]="{data: datum}"
+        ></ng-container>
+      </ng-container>
+    </tbody>
+  </table>
+</ng-template>
+
+<ng-template #defaultTooltipRow let-rowData="data">
+  <tr class="tooltip-row">
+    <td class="circle">
+      <span [style.backgroundColor]="rowData.metadata.color"></span>
+    </td>
+    <td class="name">{{ rowData.metadata.displayName }}</td>
+    <td>{{ rowData.point.y }}</td>
+    <td>{{ rowData.point.x }}</td>
+  </tr>
+</ng-template>

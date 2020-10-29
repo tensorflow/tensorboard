@@ -21,6 +21,7 @@ export {
   Dimension,
   Extent,
   Point,
+  Rect,
 } from './internal_types';
 export {RendererType} from './renderer/renderer_types';
 export {Scale, ScaleType} from './scale_types';

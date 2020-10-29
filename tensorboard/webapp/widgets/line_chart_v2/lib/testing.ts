@@ -12,25 +12,27 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {OverlayModule} from '@angular/cdk/overlay';
-import {CommonModule} from '@angular/common';
-import {NgModule} from '@angular/core';
 
-import {LineChartAxisComponent} from './line_chart_axis_view';
-import {LineChartGridView} from './line_chart_grid_view';
-import {LineChartInteractiveViewComponent} from './line_chart_interactive_view';
+import {DataSeries, DataSeriesMetadata} from './internal_types';
 
-@NgModule({
-  declarations: [
-    LineChartAxisComponent,
-    LineChartInteractiveViewComponent,
-    LineChartGridView,
-  ],
-  exports: [
-    LineChartAxisComponent,
-    LineChartInteractiveViewComponent,
-    LineChartGridView,
-  ],
-  imports: [CommonModule, OverlayModule],
-})
-export class SubViewModule {}
+export function createSeries(
+  id: string,
+  pointFn: (index: number) => number = Math.sin
+): DataSeries {
+  return {
+    id,
+    points: new Array(10).fill({x: 0, y: 0}).map((data, index) => {
+      return {x: index, y: pointFn(index)};
+    }),
+  };
+}
+
+export function buildMetadata(metadata: Partial<DataSeriesMetadata>) {
+  return {
+    id: 'line',
+    displayName: 'Line',
+    visible: true,
+    color: '#000',
+    ...metadata,
+  };
+}
