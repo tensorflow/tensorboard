@@ -20,4 +20,5 @@ export interface Experiment {
   description?: string;
   hparams?: string;
   tags?: string[];
+  related_links?: Array<{name: string; url: string}>;
 }
