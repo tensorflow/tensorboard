@@ -23,8 +23,10 @@ import {Store} from '@ngrx/store';
 import {Subject} from 'rxjs';
 import {filter, takeUntil} from 'rxjs/operators';
 
-import {State} from '../../app_state';
+import {State} from '../store/alert_types';
 import {getLatestAlert} from '../../selectors';
+import {AlertDisplaySnackbarContainer} from './alert_display_snackbar_container';
+import {AlertInfo} from '../types';
 
 /**
  * Renders alerts in a 'snackbar' to indicate them to the user.
@@ -50,7 +52,7 @@ export class AlertSnackbarContainer implements OnInit, OnDestroy {
         filter((alert) => Boolean(alert))
       )
       .subscribe((alert) => {
-        this.showAlert(alert!.localizedMessage);
+        this.showAlert(alert!);
       });
   }
 
@@ -59,11 +61,12 @@ export class AlertSnackbarContainer implements OnInit, OnDestroy {
     this.ngUnsubscribe.complete();
   }
 
-  private showAlert(localizedMessage: string) {
-    this.snackBar.open(localizedMessage, '', {
+  private showAlert(alertInfo: AlertInfo) {
+    this.snackBar.openFromComponent(AlertDisplaySnackbarContainer, {
       duration: 5000,
       horizontalPosition: 'start',
       verticalPosition: 'bottom',
+      data: alertInfo,
     });
   }
 }

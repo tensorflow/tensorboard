@@ -109,7 +109,6 @@ ng_module(
         "app_state.ts",
     ],
     deps = [
-        "//tensorboard/webapp/alert/store:types",
         "//tensorboard/webapp/app_routing/store:types",
         "//tensorboard/webapp/core/store",
         "//tensorboard/webapp/experiments/store:types",
