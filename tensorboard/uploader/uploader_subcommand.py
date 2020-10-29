@@ -467,14 +467,15 @@ class UploadIntent(_Intent):
         finally:
             if self.one_shot and not uploader.tracker.has_data():
                 print(
-                    "Tensorboard was run in `one_shot` mode, but did not find "
+                    "TensorBoard was run in `one_shot` mode, but did not find "
                     "any uploadable data in the specified logdir: %s\n"
                     "An empty experiment was created. "
-                    "To delete the empty experiment execute the following\n\n"
+                    "To delete the empty experiment you can execute the "
+                    "following\n\n"
                     "    tensorboard dev delete --experiment_id=%s"
                     % (self.logdir, uploader.experiment_id)
                 )
-            end_message = "\n"
+            end_message = "\n\n"
             if interrupted:
                 end_message += "Interrupted."
             else:
