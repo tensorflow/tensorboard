@@ -21,6 +21,11 @@ limitations under the License.
   font-size: 14px;
   align-self: center;
   margin: 5px 0;
+  word-break: break-word;
+}
+
+.message a {
+  color: inherit;
 }
 
 .controls {

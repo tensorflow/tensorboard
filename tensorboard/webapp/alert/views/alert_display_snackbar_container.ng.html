@@ -14,7 +14,18 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<div class="message">{{ alert.localizedMessage }}</div>
+<div class="message">
+  <ng-container *ngFor="let piece of splitByURL(alert.localizedMessage)">
+    <ng-container *ngIf="!piece.isURL; else linkPiece">
+      {{ piece.text }}
+    </ng-container>
+    <ng-template #linkPiece>
+      <a href="{{ piece.text }}" rel="noreferrer noopener" target="_blank"
+        >{{ piece.text }}</a
+      >
+    </ng-template>
+  </ng-container>
+</div>
 <div class="controls">
   <button
     mat-button

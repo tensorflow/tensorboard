@@ -27,6 +27,7 @@ ng_module(
         "//tensorboard/webapp/alert/store:types",
         "//tensorboard/webapp/angular:expect_angular_material_button",
         "//tensorboard/webapp/angular:expect_angular_material_snackbar",
+        "//tensorboard/webapp/util:string",
         "@npm//@angular/common",
         "@npm//@angular/core",
         "@npm//@ngrx/store",
