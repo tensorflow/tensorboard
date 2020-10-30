@@ -16,132 +16,15 @@ import * as THREE from 'three';
 
 import {ThreeCoordinator} from '../threejs_coordinator';
 import {Polyline} from '../types';
-import {Renderer} from './renderer_types';
 import {SvgRenderer} from './svg_renderer';
 import {ThreeRenderer} from './threejs_renderer';
 
 describe('line_chart_v2/lib/renderer test', () => {
-  let renderer: Renderer;
-
   const SVG_NS = 'http://www.w3.org/2000/svg';
   const DEFAULT_LINE_OPTIONS = {visible: true, color: '#f00', width: 6};
 
-  function render(draw: () => void) {
-    renderer.renderGroup('test', () => {
-      draw();
-    });
-    renderer.flush();
-  }
-
-  describe('basic operations', () => {
-    let el: SVGElement;
-
-    beforeEach(() => {
-      el = document.createElementNS(SVG_NS, 'svg');
-      renderer = new SvgRenderer(el);
-    });
-
-    it('renders when invoked `drawLine` in a renderGroup', () => {
-      expect(el.children.length).toBe(0);
-
-      render(() => {
-        renderer.drawLine(
-          'line',
-          new Float32Array([0, 10, 10, 100]),
-          DEFAULT_LINE_OPTIONS
-        );
-      });
-
-      // Assertion of the correctness of svg renderer is in svg renderer.
-      expect(el.children.length).toBe(1);
-    });
-
-    it('reuses DOM when updated', () => {
-      render(() => {
-        renderer.drawLine('line', new Float32Array([0, 10, 10, 100]), {
-          ...DEFAULT_LINE_OPTIONS,
-          visible: true,
-        });
-      });
-      const pathLineBefore = el.children[0] as SVGPathElement;
-
-      render(() => {
-        renderer.drawLine('line', new Float32Array([0, 10, 10, 100]), {
-          ...DEFAULT_LINE_OPTIONS,
-          visible: false,
-        });
-      });
-      const pathLineAfter = el.children[0] as SVGPathElement;
-
-      expect(pathLineBefore).toBe(pathLineAfter);
-      // visibility changed.
-      expect(pathLineAfter.style.display).toBe('none');
-    });
-
-    it('removes, automatically, items that are not rendered after an update', () => {
-      render(() => {
-        renderer.drawLine(
-          'line',
-          new Float32Array([0, 10, 10, 100]),
-          DEFAULT_LINE_OPTIONS
-        );
-      });
-
-      render(() => {});
-
-      expect(el.children.length).toBe(0);
-    });
-
-    it('does not recycle DOM for a different cache id', () => {
-      render(() => {
-        renderer.drawLine('line1', new Float32Array([0, 10, 10, 100]), {
-          visible: true,
-          color: '#f00',
-          width: 6,
-        });
-      });
-
-      const [pathLine1] = el.children;
-
-      render(() => {
-        renderer.drawLine('line2', new Float32Array([5, 10, 5, 10]), {
-          visible: true,
-          color: '#00f',
-          width: 1,
-        });
-      });
-
-      const [pathLine2] = el.children;
-      expect(el.children.length).toBe(1);
-      expect(pathLine1).not.toBe(pathLine2);
-    });
-
-    it('throws when rendered without using renderGroup', () => {
-      expect(() => {
-        renderer.drawLine(
-          'line2',
-          new Float32Array([5, 10]),
-          DEFAULT_LINE_OPTIONS
-        );
-      }).toThrowError(RangeError);
-    });
-
-    it('throws when renderGroup is inside another renderGroup', () => {
-      expect(() => {
-        renderer.renderGroup('foo', () => {
-          renderer.renderGroup('bar', () => {
-            renderer.drawLine(
-              'line2',
-              new Float32Array([5, 10]),
-              DEFAULT_LINE_OPTIONS
-            );
-          });
-        });
-      }).toThrowError(RangeError);
-    });
-  });
-
   describe('svg renderer', () => {
+    let renderer: SvgRenderer;
     let el: SVGElement;
 
     beforeEach(() => {
@@ -149,16 +32,14 @@ describe('line_chart_v2/lib/renderer test', () => {
       renderer = new SvgRenderer(el);
     });
 
-    it('renders a line', () => {
+    it('creates a line', () => {
       expect(el.children.length).toBe(0);
 
-      render(() => {
-        renderer.drawLine('line', new Float32Array([0, 10, 10, 100]), {
-          visible: true,
-          color: '#f00',
-          width: 6,
-        });
-      });
+      renderer.createOrUpdateLineObject(
+        null,
+        new Float32Array([0, 10, 10, 100]),
+        {visible: true, color: '#f00', width: 6}
+      );
 
       expect(el.children.length).toBe(1);
       const path = el.children[0] as SVGPathElement;
@@ -169,22 +50,27 @@ describe('line_chart_v2/lib/renderer test', () => {
       expect(path.style.display).toBe('');
     });
 
-    it('updates path and styles', () => {
-      render(() => {
-        renderer.drawLine('line', new Float32Array([0, 10, 10, 100]), {
-          visible: true,
-          color: '#f00',
-          width: 6,
-        });
-      });
+    it('returns null when polyline is empty', () => {
+      const cachedObject = renderer.createOrUpdateLineObject(
+        null,
+        new Float32Array(0),
+        {visible: false, color: '#f00', width: 6}
+      );
+      expect(cachedObject).toBeNull();
+    });
 
-      render(() => {
-        renderer.drawLine('line', new Float32Array([0, 5, 5, 50]), {
-          visible: true,
-          color: '#0f0',
-          width: 3,
-        });
-      });
+    it('updates a cached path and styles', () => {
+      const cacheObject = renderer.createOrUpdateLineObject(
+        null,
+        new Float32Array([0, 10, 10, 100]),
+        {visible: true, color: '#f00', width: 6}
+      );
+
+      renderer.createOrUpdateLineObject(
+        cacheObject,
+        new Float32Array([0, 5, 5, 50]),
+        {visible: true, color: '#0f0', width: 3}
+      );
 
       expect(el.children.length).toBe(1);
       const path = el.children[0] as SVGPathElement;
@@ -196,21 +82,17 @@ describe('line_chart_v2/lib/renderer test', () => {
     });
 
     it('skips updating path and color if visibility goes from true to false', () => {
-      render(() => {
-        renderer.drawLine('line', new Float32Array([0, 10, 10, 100]), {
-          visible: true,
-          color: '#f00',
-          width: 6,
-        });
-      });
+      const cacheObject = renderer.createOrUpdateLineObject(
+        null,
+        new Float32Array([0, 10, 10, 100]),
+        {visible: true, color: '#f00', width: 6}
+      );
 
-      render(() => {
-        renderer.drawLine('line', new Float32Array([0, 5, 5, 50]), {
-          visible: false,
-          color: '#0f0',
-          width: 3,
-        });
-      });
+      renderer.createOrUpdateLineObject(
+        cacheObject,
+        new Float32Array([0, 5, 5, 50]),
+        {visible: false, color: '#0f0', width: 3}
+      );
 
       expect(el.children.length).toBe(1);
       const path = el.children[0] as SVGPathElement;
@@ -222,19 +104,18 @@ describe('line_chart_v2/lib/renderer test', () => {
     });
 
     it('skips rendering DOM when a new cacheId starts with visible=false', () => {
-      render(() => {
-        renderer.drawLine('line', new Float32Array([0, 10, 10, 100]), {
-          visible: false,
-          color: '#f00',
-          width: 6,
-        });
-      });
+      renderer.createOrUpdateLineObject(
+        null,
+        new Float32Array([0, 10, 10, 100]),
+        {visible: false, color: '#f00', width: 6}
+      );
 
       expect(el.children.length).toBe(0);
     });
   });
 
   describe('threejs renderer', () => {
+    let renderer: ThreeRenderer;
     let scene: THREE.Scene;
 
     function assertLine(line: THREE.Line, polyline: Polyline) {
@@ -274,14 +155,12 @@ describe('line_chart_v2/lib/renderer test', () => {
       renderer = new ThreeRenderer(canvas, coordinator, 2);
     });
 
-    it('renders a line', () => {
-      render(() => {
-        renderer.drawLine('line', new Float32Array([0, 10, 10, 100]), {
-          visible: true,
-          color: '#f00',
-          width: 6,
-        });
-      });
+    it('creates a line', () => {
+      renderer.createOrUpdateLineObject(
+        null,
+        new Float32Array([0, 10, 10, 100]),
+        {visible: true, color: '#f00', width: 6}
+      );
 
       expect(scene.children.length).toBe(1);
       const lineObject = scene.children[0] as THREE.Line;
@@ -290,22 +169,27 @@ describe('line_chart_v2/lib/renderer test', () => {
       assertMaterial(lineObject, '#ff0000', true);
     });
 
-    it('updates path and styles', () => {
-      render(() => {
-        renderer.drawLine('line', new Float32Array([0, 10, 10, 100]), {
-          visible: true,
-          color: '#f00',
-          width: 6,
-        });
-      });
+    it('returns null when polyline is empty', () => {
+      const cachedObject = renderer.createOrUpdateLineObject(
+        null,
+        new Float32Array(0),
+        {visible: false, color: '#f00', width: 6}
+      );
+      expect(cachedObject).toBeNull();
+    });
 
-      render(() => {
-        renderer.drawLine('line', new Float32Array([0, 5, 5, 50, 10, 100]), {
-          visible: true,
-          color: '#0f0',
-          width: 3,
-        });
-      });
+    it('updates cached path and styles', () => {
+      const cacheObject = renderer.createOrUpdateLineObject(
+        null,
+        new Float32Array([0, 10, 10, 100]),
+        {visible: true, color: '#f00', width: 6}
+      );
+
+      renderer.createOrUpdateLineObject(
+        cacheObject,
+        new Float32Array([0, 5, 5, 50, 10, 100]),
+        {visible: true, color: '#0f0', width: 3}
+      );
 
       const lineObject = scene.children[0] as THREE.Line;
       assertLine(lineObject, new Float32Array([0, 5, 5, 50, 10, 100]));
@@ -313,55 +197,27 @@ describe('line_chart_v2/lib/renderer test', () => {
     });
 
     it('does not update color and paths when visibility go from true to false', () => {
-      render(() => {
-        renderer.drawLine('line', new Float32Array([0, 10, 10, 100]), {
-          visible: true,
-          color: '#f00',
-          width: 6,
-        });
-      });
+      const cachedObject = renderer.createOrUpdateLineObject(
+        null,
+        new Float32Array([0, 10, 10, 100]),
+        {visible: true, color: '#f00', width: 6}
+      );
 
-      render(() => {
-        renderer.drawLine('line', new Float32Array([0, 5, 5, 50, 10, 100]), {
-          visible: false,
-          color: '#0f0',
-          width: 3,
-        });
-      });
+      renderer.createOrUpdateLineObject(
+        cachedObject,
+        new Float32Array([0, 5, 5, 50, 10, 100]),
+        {visible: false, color: '#0f0', width: 3}
+      );
 
       const lineObject = scene.children[0] as THREE.Line;
       assertLine(lineObject, new Float32Array([0, 10, 10, 100]));
       assertMaterial(lineObject, '#ff0000', false);
     });
 
-    it('creates separate instance per cacheId', () => {
-      render(() => {
-        renderer.drawLine(
-          'line1',
-          new Float32Array([0, 10, 10, 100]),
-          DEFAULT_LINE_OPTIONS
-        );
-      });
-
-      render(() => {
-        renderer.drawLine(
-          'line2',
-          new Float32Array([0, 1, 0, 1]),
-          DEFAULT_LINE_OPTIONS
-        );
-      });
-
-      expect(scene.children.length).toBe(1);
-      const lineAfter = scene.children[0] as THREE.Line;
-      assertLine(lineAfter, new Float32Array([0, 1, 0, 1]));
-    });
-
     it('skips rendering if render starts with visibility=false ', () => {
-      render(() => {
-        renderer.drawLine('line1', new Float32Array([0, 1, 0, 1]), {
-          ...DEFAULT_LINE_OPTIONS,
-          visible: false,
-        });
+      renderer.createOrUpdateLineObject(null, new Float32Array([0, 1, 0, 1]), {
+        ...DEFAULT_LINE_OPTIONS,
+        visible: false,
       });
 
       expect(scene.children.length).toBe(0);

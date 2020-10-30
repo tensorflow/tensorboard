@@ -18,8 +18,7 @@ import * as THREE from 'three';
 import {ThreeCoordinator} from '../threejs_coordinator';
 import {Polyline, Rect} from '../types';
 import {arePolylinesEqual, isOffscreenCanvasSupported} from '../utils';
-import {BaseCachedObjectRenderer} from './renderer';
-import {LinePaintOption} from './renderer_types';
+import {ObjectRenderer, LinePaintOption} from './renderer_types';
 
 function createOpacityAdjustedColor(hex: string, opacity: number): THREE.Color {
   const newD3Color = d3Color(hex);
@@ -31,11 +30,13 @@ function createOpacityAdjustedColor(hex: string, opacity: number): THREE.Color {
 
 interface LineCacheValue {
   type: 'line';
-  obj: THREE.Object3D;
+  obj3d: THREE.Object3D;
   data: Polyline;
 }
 
-export class ThreeRenderer extends BaseCachedObjectRenderer<LineCacheValue> {
+type CacheValue = LineCacheValue;
+
+export class ThreeRenderer implements ObjectRenderer<CacheValue> {
   private readonly renderer: THREE.WebGLRenderer;
   private readonly scene = new THREE.Scene();
 
@@ -44,8 +45,6 @@ export class ThreeRenderer extends BaseCachedObjectRenderer<LineCacheValue> {
     private readonly coordinator: ThreeCoordinator,
     devicePixelRatio: number
   ) {
-    super();
-
     if (isOffscreenCanvasSupported() && canvas instanceof OffscreenCanvas) {
       // THREE.js require the style object which Offscreen canvas lacks.
       (canvas as any).style = (canvas as any).style || {};
@@ -65,8 +64,8 @@ export class ThreeRenderer extends BaseCachedObjectRenderer<LineCacheValue> {
     this.renderer.setSize(rect.width, rect.height);
   }
 
-  removeRenderObject(cacheValue: LineCacheValue): void {
-    const obj3d = cacheValue.obj;
+  destroyObject(cacheValue: CacheValue): void {
+    const obj3d = cacheValue.obj3d;
     this.scene.remove(obj3d);
 
     if (obj3d instanceof THREE.Mesh || obj3d instanceof THREE.Line) {
@@ -80,25 +79,26 @@ export class ThreeRenderer extends BaseCachedObjectRenderer<LineCacheValue> {
     }
   }
 
-  drawLine(cacheId: string, polyline: Polyline, paintOpt: LinePaintOption) {
-    if (!polyline.length) return;
+  createOrUpdateLineObject(
+    cachedLine: CacheValue | null,
+    polyline: Polyline,
+    paintOpt: LinePaintOption
+  ): CacheValue | null {
+    if (!polyline.length) return null;
 
-    super.drawLine(cacheId, polyline, paintOpt);
-
-    const cachedLine = this.getCachedValue(cacheId);
     let line: THREE.Line | null = null;
     let prevPolyline: Polyline | null = null;
 
     if (cachedLine) {
-      if (cachedLine.obj instanceof THREE.Line) {
-        line = cachedLine.obj;
+      if (cachedLine.obj3d instanceof THREE.Line) {
+        line = cachedLine.obj3d;
       }
 
       prevPolyline = cachedLine.data;
     }
 
     // If a line is not cached and is not even visible, skip drawing line.
-    if (!line && !paintOpt.visible) return;
+    if (!line && !paintOpt.visible) return null;
 
     const {visible, width} = paintOpt;
     const newColor = createOpacityAdjustedColor(
@@ -113,15 +113,10 @@ export class ThreeRenderer extends BaseCachedObjectRenderer<LineCacheValue> {
         linewidth: width,
       });
       line = new THREE.Line(geometry, material);
-      this.setCacheObject(cacheId, {
-        type: 'line',
-        data: polyline,
-        obj: line,
-      });
       material.visible = visible;
       this.updatePoints(geometry, polyline);
       this.scene.add(line);
-      return;
+      return {type: 'line', data: polyline, obj3d: line};
     }
 
     // Update the cached THREE.Line.
@@ -138,7 +133,7 @@ export class ThreeRenderer extends BaseCachedObjectRenderer<LineCacheValue> {
 
     // No need to update geometry or material if it is not visible.
     if (!visible) {
-      return;
+      return cachedLine;
     }
 
     if (material.linewidth !== width) {
@@ -154,12 +149,13 @@ export class ThreeRenderer extends BaseCachedObjectRenderer<LineCacheValue> {
 
     if (!prevPolyline || !arePolylinesEqual(prevPolyline, polyline)) {
       this.updatePoints(line.geometry as THREE.BufferGeometry, polyline);
-      this.setCacheObject(cacheId, {
-        type: 'line',
-        data: polyline,
-        obj: line,
-      });
     }
+
+    return {
+      type: 'line',
+      data: polyline,
+      obj3d: line,
+    };
   }
 
   private updatePoints(lineGeometry: THREE.BufferGeometry, paths: Polyline) {

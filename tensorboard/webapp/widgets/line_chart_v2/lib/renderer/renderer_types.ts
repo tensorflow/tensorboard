@@ -17,24 +17,10 @@ import {Polyline, Rect} from '../types';
 /**
  * Responsible for rendering shapes (e.g., line).
  *
- * Assumption:
- * - Two renderers we want to support are rendering based on objects (SVG*Element and
- *   Three.Object3D for SVGRenderer and ThreeRenderer, respectively).
- * - Do not want consumers to manage the lifecycle of objects and optimize render
- *   operations.
- *
- * Design choice:
- * The renderer holds and manages cache. With cache closer to the renderer, depending on a
- * renderer, we can optimize render operations on cache. With the knowledge of objects
- * rendered at given time, a cache id that is rendered at t_(n-1) but is not at t_n will
- * be removed from DOM/scene.
- *
- * Requirement:
- * `cacheId`: within a renderGroup block, a cacheId needs to be unique. When the same
- * `cacheId` appear more than once, it will either override previous ones if the same
- * shape or will throw an invariant error due to an unexpected cached object.
+ * Two renderers we want to support are rendering based on objects (SVG*Element and
+ * Three.Object3D for SVGRenderer and ThreeRenderer, respectively).
  */
-export interface Renderer {
+export interface ObjectRenderer<CacheValue = {}> {
   /**
    * Certain renderer requires DOM dimensions for correct density and operations. The
    * method is invoked when container is resized.
@@ -43,19 +29,24 @@ export interface Renderer {
    */
   onResize(domRect: Rect): void;
 
-  drawLine(
-    cacheId: string,
+  /**
+   * Draws or enqueues drawing operations depending on a renderer. If the `cachedLine` is
+   * null, it will create a new line object. Otherwise, it will update the object.
+   *
+   * @param cachedLine Previously created object. Can be a recycled instance to reduce
+   *    memory operations.
+   * @param polyline A polyline to draw.
+   * @param paintOpt A paint option for drawing the line.
+   */
+  createOrUpdateLineObject(
+    cachedLine: CacheValue | null,
     polyline: Polyline,
     paintOpt: LinePaintOption
-  ): void;
+  ): CacheValue | null;
 
   flush(): void;
 
-  /**
-   * A `cacheId` scoping operation that allows consumer not to worry about collision in
-   * the `cacheId`. A renderGroup cannot nest another renderGroup.
-   */
-  renderGroup(groupName: string, renderBlock: () => void): void;
+  destroyObject(cachedValue: CacheValue): void;
 }
 
 export interface LinePaintOption {

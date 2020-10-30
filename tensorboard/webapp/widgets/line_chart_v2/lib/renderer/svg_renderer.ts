@@ -13,23 +13,31 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {BaseCachedObjectRenderer} from './renderer';
-import {LinePaintOption} from './renderer_types';
+import {LinePaintOption, ObjectRenderer} from './renderer_types';
 import {Polyline} from '../types';
 import {arePolylinesEqual} from '../utils';
+import {Rect} from '../types';
 
-interface LineCache {
+interface LineCacheValue {
   type: 'line';
   data: Polyline;
   dom: SVGPathElement;
 }
 
-export class SvgRenderer extends BaseCachedObjectRenderer<LineCache> {
-  constructor(private readonly svg: SVGElement) {
-    super();
+type CacheValue = LineCacheValue;
+
+export class SvgRenderer implements ObjectRenderer<CacheValue> {
+  constructor(private readonly svg: SVGElement) {}
+
+  flush() {
+    // Svg can update the DOM right away when creating the object. No need to flush.
   }
 
-  removeRenderObject(cachedValue: LineCache): void {
+  onResize(domRect: Rect): void {
+    // Svg viewBox does not need to change with the container size.
+  }
+
+  destroyObject(cachedValue: CacheValue): void {
     this.svg.removeChild(cachedValue.dom);
   }
 
@@ -46,53 +54,46 @@ export class SvgRenderer extends BaseCachedObjectRenderer<LineCache> {
     return dBuilder.join('');
   }
 
-  drawLine(cacheId: string, polyline: Polyline, paintOpt: LinePaintOption) {
-    if (!polyline.length) {
-      return;
-    }
-
-    super.drawLine(cacheId, polyline, paintOpt);
+  createOrUpdateLineObject(
+    cachedLine: CacheValue | null,
+    polyline: Polyline,
+    paintOpt: LinePaintOption
+  ): CacheValue | null {
+    if (!polyline.length) return null;
 
     const {color, visible, width, opacity} = paintOpt;
     const cssDisplayValue = visible ? '' : 'none';
 
-    const cachedValue = this.getCachedValue(cacheId);
-    let svgPath = cachedValue?.dom;
+    let svgPath = cachedLine?.dom;
 
     if (!svgPath) {
       // Skip if it is not cached and is already invisible.
-      if (!visible) return;
+      if (!visible) return null;
 
       svgPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
       svgPath.style.fill = 'none';
       this.svg.appendChild(svgPath);
-      this.setCacheObject(cacheId, {
-        type: 'line',
-        dom: svgPath,
-        data: polyline,
-      });
     } else {
       if (!visible) {
         svgPath.style.display = cssDisplayValue;
-        return;
+        return cachedLine;
       }
     }
 
-    if (!cachedValue?.data || !arePolylinesEqual(polyline, cachedValue?.data)) {
+    if (!cachedLine?.data || !arePolylinesEqual(polyline, cachedLine?.data)) {
       const data = this.createPathDString(polyline);
       svgPath.setAttribute('d', data);
-      this.setCacheObject(cacheId, {
-        type: 'line',
-        dom: svgPath,
-        data: polyline,
-      });
     }
 
     svgPath.style.display = cssDisplayValue;
     svgPath.style.stroke = color;
     svgPath.style.opacity = String(opacity ?? 1);
     svgPath.style.strokeWidth = String(width);
-  }
 
-  flush() {}
+    return {
+      type: 'line',
+      dom: svgPath,
+      data: polyline,
+    };
+  }
 }

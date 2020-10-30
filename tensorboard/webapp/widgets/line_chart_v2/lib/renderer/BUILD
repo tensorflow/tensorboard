@@ -6,7 +6,6 @@ tf_ts_library(
     name = "renderer",
     srcs = [
         "index.ts",
-        "renderer.ts",
         "svg_renderer.ts",
         "threejs_renderer.ts",
     ],

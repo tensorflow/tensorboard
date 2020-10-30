@@ -6,18 +6,19 @@ This is a generic charting library with a focus on performance.
 
 - Agnostic to HTMLCanvas vs. OffscreenCanvas
 - Generic to different implementation of renderer; SVG vs. WebGL.
-- Minimize cache eviction and try to do a minimal work for render
+- Do a minimal work; for example, it should only do a coordinate system conversion upon
+  requested and it should do the minimal operation on rendered object.
 
-### Jargons we define
+### Key concepts
 
 - coordinatior: A utility module for converting coordinate systems. Abstracts
   away certain renderer quirks and holds onto state, helping with performance
   optimizations.
-- renderer: a stateful module that knows how to render limited number of
-  primitives such as line, rect, circle, and text (for more accurate set of
-  supported shapes, please refer to the abstract class) using a defined
-  technology. For instance, there can be a SVG, canvas, and threejs renderer.
-  As a consumer of the renderer, you do not have to keep track of what was
-  rendered in a previous render cycle but only focus on what should be rendered
-  in the current render cycle; renderer will remove what should disappear
-  appropriately.
+- renderer: A pure module responsible for shape rendering (e.g., line, rect, triangle,
+  etc...) of a given technology such as SVG or Three.js.
+- data drawable: a view that draws renders data in a reigon given. Examples of data
+  drawable are series line and bar drawers. As implementer of a new visualizer should
+  subclass DataDrawable and implement a `redraw` method. The base class maintains both
+  data and render caches and let visualizer focus on the `redraw` method.
+- paint brush: primitives, such as `setLine`, for a data drawable that should be used
+  inside a `redraw` method.
