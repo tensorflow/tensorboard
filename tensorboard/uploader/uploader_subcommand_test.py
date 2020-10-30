@@ -174,8 +174,8 @@ class UploadIntentTest(tf.test.TestCase):
                 self.get_temp_dir(), dry_run=True, one_shot=False
             )
             intent.execute(mock_server_info, mock_channel)
-        self.assertEqual(
-            mock_stdout_write.call_args_list[-1][0][0], "\nInterrupted.\n"
+        self.assertRegex(
+            mock_stdout_write.call_args_list[-1][0][0], ".*Interrupted.*"
         )
 
     def testUploadIntentNonDryRunNonOneShotInterrupted(self):

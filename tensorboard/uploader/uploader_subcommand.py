@@ -465,7 +465,7 @@ class UploadIntent(_Intent):
         except KeyboardInterrupt:
             interrupted = True
         finally:
-            if self.one_shot and not uploader.tracker.has_data():
+            if self.one_shot and not uploader.has_data():
                 print(
                     "TensorBoard was run in `one_shot` mode, but did not find "
                     "any uploadable data in the specified logdir: %s\n"
@@ -482,7 +482,7 @@ class UploadIntent(_Intent):
                 end_message += "Done."
             # Only Add the "View your TensorBoard" message if there was any
             # data added at all.
-            if not self.dry_run and uploader.tracker.has_data():
+            if not self.dry_run and uploader.has_data():
                 end_message += " View your TensorBoard at %s" % url
             sys.stdout.write(end_message + "\n")
             sys.stdout.flush()

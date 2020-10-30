@@ -161,10 +161,9 @@ class TensorBoardUploader(object):
             verbosity=self._verbosity, one_shot=self._one_shot
         )
 
-    @property
-    def tracker(self) -> upload_tracker.UploadTracker:
+    def has_data(self) -> bool:
         """Returns this object's upload tracker."""
-        return self._tracker
+        return self._tracker.has_data()
 
     @property
     def experiment_id(self) -> str:
