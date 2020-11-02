@@ -29,6 +29,7 @@ import {
   CustomElementLoadingMechanism,
   IframeLoadingMechanism,
   NgElementLoadingMechanism,
+  NoLoadingMechanism,
 } from '../types/api';
 import {DataLoadState} from '../types/data';
 import {State} from '../core/store';
@@ -358,6 +359,15 @@ describe('plugins_component', () => {
           tab_name: 'Gamma',
           remove_dom: false,
         },
+        zeta: {
+          disable_reload: true,
+          enabled: true,
+          loading_mechanism: {
+            type: LoadingMechanismType.NONE,
+          } as NoLoadingMechanism,
+          tab_name: 'zeta',
+          remove_dom: false,
+        },
       };
       store.overrideSelector(getPlugins, PLUGINS);
 
@@ -397,6 +407,19 @@ describe('plugins_component', () => {
       fixture.detectChanges();
 
       expect(gammaEl.reload).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not break when acitvePlugin id changes to one without UI', () => {
+      const fixture = TestBed.createComponent(PluginsContainer);
+      setLastLoadedTime(100, DataLoadState.LOADED);
+      fixture.detectChanges();
+
+      setActivePlugin('alpha');
+      fixture.detectChanges();
+
+      // zeta does not have a DOM and it definitely cannot have `reload` method called.
+      setActivePlugin('zeta');
+      fixture.detectChanges();
     });
 
     it('invokes reload method on the dashboard DOM on data load time changes', () => {

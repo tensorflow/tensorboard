@@ -42,6 +42,10 @@ interface ExperimentalPluginHostLib extends HTMLElement {
   registerPluginIframe(iframe: HTMLIFrameElement, plugin_id: string): void;
 }
 
+interface PolymerDashboard extends HTMLElement {
+  reload?: () => void;
+}
+
 export enum PluginLoadState {
   ENVIRONMENT_FAILURE_NOT_FOUND,
   ENVIRONMENT_FAILURE_UNKNOWN,
@@ -132,8 +136,10 @@ export class PluginsComponent implements OnChanges {
 
   ngOnChanges(change: SimpleChanges): void {
     const shouldCreatePlugin = Boolean(
-      this.activeKnownPlugin && this.shouldCreatePlugin(this.activeKnownPlugin)
+      this.activeKnownPlugin &&
+        !this.pluginInstances.has(this.activeKnownPlugin.id)
     );
+
     if (change['activeKnownPlugin'] && this.activeKnownPlugin) {
       const prevActiveKnownPlugin = change['activeKnownPlugin'].previousValue;
       if (
@@ -159,13 +165,9 @@ export class PluginsComponent implements OnChanges {
     }
   }
 
-  private shouldCreatePlugin(plugin: UiPluginMetadata): boolean {
-    return !this.pluginInstances.has(plugin.id);
-  }
-
   private hidePlugin(plugin: UiPluginMetadata) {
-    // Not all plugins are maintained manually with a HTMLElement instance in the cache
-    // (e.g., NgPlugin). Skip and let Angular manage the DOM.
+    // In case the active plugin does not have a DOM, for example, core plugin, the
+    // instance can be falsy.
     if (!this.pluginInstances.has(plugin.id)) return;
 
     const instance = this.pluginInstances.get(plugin.id) as HTMLElement;
@@ -183,8 +185,8 @@ export class PluginsComponent implements OnChanges {
   }
 
   private showPlugin(plugin: UiPluginMetadata) {
-    // Not all plugins are maintained manually with a HTMLElement instance in the cache
-    // (e.g., NgPlugin). Skip and let Angular manage the DOM.
+    // In case the active plugin does not have a DOM, for example, core plugin, the
+    // instance can be falsy.
     if (!this.pluginInstances.has(plugin.id)) return;
 
     const instance = this.pluginInstances.get(plugin.id) as HTMLElement;
@@ -251,8 +253,10 @@ export class PluginsComponent implements OnChanges {
       return;
     }
 
-    const maybeDashboard = this.pluginInstances.get(plugin.id) as any;
-    if (maybeDashboard.reload) {
+    const maybeDashboard = this.pluginInstances.get(
+      plugin.id
+    ) as PolymerDashboard;
+    if (maybeDashboard && maybeDashboard.reload) {
       maybeDashboard.reload();
     }
   }
