@@ -11,11 +11,10 @@ tf_ts_library(
     ],
     deps = [
         ":types",
+        "//tensorboard/webapp/third_party:d3",
         "//tensorboard/webapp/widgets/line_chart_v2/lib:coordinator",
         "//tensorboard/webapp/widgets/line_chart_v2/lib:types",
         "//tensorboard/webapp/widgets/line_chart_v2/lib:utils",
-        "@npm//@types/d3",
-        "@npm//d3",
         "@npm//three",
     ],
 )

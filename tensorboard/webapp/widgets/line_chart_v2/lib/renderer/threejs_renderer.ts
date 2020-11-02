@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {color as d3Color} from 'd3';
+import {color as d3Color} from '../../../../third_party/d3';
 import * as THREE from 'three';
 
 import {ThreeCoordinator} from '../threejs_coordinator';
