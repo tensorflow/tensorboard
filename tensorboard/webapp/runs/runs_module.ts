@@ -20,16 +20,33 @@ import {NgModule} from '@angular/core';
 import {EffectsModule} from '@ngrx/effects';
 import {StoreModule} from '@ngrx/store';
 
+import {AlertActionModule} from '../alert/alert_action_module';
+import * as actions from './actions';
 import {RunsDataSourceModule} from './data_source/runs_data_source_module';
 import {RunsEffects} from './effects';
 import {reducers} from './store';
 import {RUNS_FEATURE_KEY} from './store/runs_types';
+
+/** @typehack */ import * as _typeHackModels from '@ngrx/store/src/models';
+/** @typehack */ import * as _typeHackStore from '@ngrx/store/store';
+
+export function alertActionProvider() {
+  return [
+    {
+      actionCreator: actions.fetchRunsFailed,
+      alertFromAction: () => {
+        return {localizedMessage: 'Failed to fetch runs'};
+      },
+    },
+  ];
+}
 
 @NgModule({
   imports: [
     StoreModule.forFeature(RUNS_FEATURE_KEY, reducers),
     EffectsModule.forFeature([RunsEffects]),
     RunsDataSourceModule,
+    AlertActionModule.registerAlertActions(alertActionProvider),
   ],
 })
 export class RunsModule {}
