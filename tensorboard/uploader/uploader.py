@@ -157,6 +157,22 @@ class TensorBoardUploader(object):
         self._logdir_loader = logdir_loader.LogdirLoader(
             self._logdir, directory_loader_factory
         )
+        self._tracker = upload_tracker.UploadTracker(
+            verbosity=self._verbosity, one_shot=self._one_shot
+        )
+
+    def has_data(self) -> bool:
+        """Returns this object's upload tracker."""
+        return self._tracker.has_data()
+
+    @property
+    def experiment_id(self) -> str:
+        """Returns the experiment_id associated with this uploader.
+
+        May be none if no experiment is set, for instance, if
+        `create_experiment` has not been called.
+        """
+        return self._experiment_id
 
     def create_experiment(self):
         """Creates an Experiment for this upload session and returns the ID."""
@@ -166,9 +182,6 @@ class TensorBoardUploader(object):
         )
         response = grpc_util.call_with_retries(
             self._api.CreateExperiment, request
-        )
-        self._tracker = upload_tracker.UploadTracker(
-            verbosity=self._verbosity, one_shot=self._one_shot
         )
         self._request_sender = _BatchedRequestSender(
             response.experiment_id,
@@ -190,10 +203,6 @@ class TensorBoardUploader(object):
         unless the uploader was built with the _one_shot option, in which
         case it will terminate after the first scan.
 
-        Returns:
-            A manifest of what was uploaded, in the case of a `one_shot` upload.
-
-
         Raises:
           RuntimeError: If `create_experiment` has not yet been called.
           ExperimentNotFoundError: If the experiment is deleted during the
@@ -208,15 +217,6 @@ class TensorBoardUploader(object):
             self._upload_once()
             if self._one_shot:
                 break
-        if self._one_shot and not self._tracker.has_data():
-            print(
-                "Tensorboard was run in `one_shot` mode, but did not detect "
-                "any known uploadable data types in the specified logdir: %s\n"
-                "An empty experiment was created. "
-                "To delete the empty experiment execute the following\n\n"
-                "    tensorboard dev delete --experiment_id=%s"
-                % (self._logdir, self._experiment_id)
-            )
 
     def _upload_once(self):
         """Runs one upload cycle, sending zero or more RPCs."""

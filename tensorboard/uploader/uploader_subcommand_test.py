@@ -124,7 +124,7 @@ class UploadIntentTest(tf.test.TestCase):
         # Expect that ".*Done scanning logdir.*" is among the things printed.
         stdout_writes = [x[0][0] for x in mock_stdout_write.call_args_list]
         self.assertRegex(
-            ",".join(stdout_writes), ".*Upload started.*",
+            ",".join(stdout_writes), ".*experiment created.*",
         )
         # Expect that the last thing written is the string "Done" and the
         # experiment_id.
@@ -174,8 +174,8 @@ class UploadIntentTest(tf.test.TestCase):
                 self.get_temp_dir(), dry_run=True, one_shot=False
             )
             intent.execute(mock_server_info, mock_channel)
-        self.assertEqual(
-            mock_stdout_write.call_args_list[-1][0][0], "\nInterrupted.\n"
+        self.assertRegex(
+            mock_stdout_write.call_args_list[-1][0][0], ".*Interrupted.*"
         )
 
     def testUploadIntentNonDryRunNonOneShotInterrupted(self):

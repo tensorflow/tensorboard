@@ -279,7 +279,8 @@ class UploadTracker(object):
             # Yield an arbitrary value 0: The progress bar is indefinite.
             yield 0
 
-    def _update_uploading_status(self, message, color_code=_STYLE_GREEN):
+    def _overwrite_line_message(self, message, color_code=_STYLE_GREEN):
+        """Overwrite the current line with a stylized message."""
         if not self._verbosity:
             return
         message += "." * 3
@@ -288,14 +289,15 @@ class UploadTracker(object):
         )
         sys.stdout.flush()
 
-    def _upload_start(self):
-        """Write an update indicating the start of the uploading."""
+    def _single_line_message(self, message):
+        """Write a timestamped single line, with newline, to stdout."""
         if not self._verbosity:
             return
-        start_message = "%s[%s]%s Uploader started.\n" % (
+        start_message = "%s[%s]%s %s\n" % (
             _STYLE_BOLD,
             readable_time_string(),
             _STYLE_RESET,
+            message,
         )
         sys.stdout.write(start_message)
         sys.stdout.flush()
@@ -335,19 +337,20 @@ class UploadTracker(object):
         """Create a context manager for a round of data sending."""
         self._send_count += 1
         if self._send_count == 1:
-            self._upload_start()
+            self._single_line_message("Started scanning logdir.")
         try:
             # self._reset_bars()
-            self._update_uploading_status("Data upload starting")
+            self._overwrite_line_message("Data upload starting")
             yield
         finally:
             self._update_cumulative_status()
-            self._update_uploading_status(
-                "Done scanning logdir"
-                if self._one_shot
-                else "Listening for new data in logdir",
-                color_code=_STYLE_YELLOW,
-            )
+            if self._one_shot:
+                self._single_line_message("Done scanning logdir.")
+            else:
+                self._overwrite_line_message(
+                    "Listening for new data in logdir",
+                    color_code=_STYLE_YELLOW,
+                )
 
     @contextlib.contextmanager
     def scalars_tracker(self, num_scalars):
@@ -356,7 +359,7 @@ class UploadTracker(object):
         Args:
           num_scalars: Number of scalars in the batch.
         """
-        self._update_uploading_status("Uploading %d scalars" % num_scalars)
+        self._overwrite_line_message("Uploading %d scalars" % num_scalars)
         try:
             yield
         finally:
@@ -392,7 +395,7 @@ class UploadTracker(object):
                 num_tensors,
                 readable_bytes_string(tensor_bytes),
             )
-        self._update_uploading_status(message)
+        self._overwrite_line_message(message)
         try:
             yield
         finally:
@@ -410,7 +413,7 @@ class UploadTracker(object):
         Args:
           blob_bytes: Total byte size of the blob being uploaded.
         """
-        self._update_uploading_status(
+        self._overwrite_line_message(
             "Uploading binary object (%s)" % readable_bytes_string(blob_bytes)
         )
         try:

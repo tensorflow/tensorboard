@@ -442,17 +442,20 @@ class UploadIntent(_Intent):
         url = server_info_lib.experiment_url(server_info, experiment_id)
         if self.experiment_url_callback is not None:
             self.experiment_url_callback(url)
-        print(
-            "Upload started and will continue reading any new data as it's "
-            "added to the logdir.\n\nTo stop uploading, press Ctrl-C."
-        )
+        if not self.one_shot:
+            print(
+                "Upload started and will continue reading any new data as it's "
+                "added to the logdir.\n\nTo stop uploading, press Ctrl-C."
+            )
         if self.dry_run:
             print(
                 "\n** This is a dry run. "
                 "No data will be sent to tensorboard.dev. **\n"
             )
         else:
-            print("\nView your TensorBoard live at: %s\n" % url)
+            print(
+                "\nNew experiment created. View your TensorBoard at: %s\n" % url
+            )
         interrupted = False
         try:
             uploader.start_uploading()
@@ -462,12 +465,24 @@ class UploadIntent(_Intent):
         except KeyboardInterrupt:
             interrupted = True
         finally:
-            end_message = "\n"
+            if self.one_shot and not uploader.has_data():
+                print(
+                    "TensorBoard was run in `one_shot` mode, but did not find "
+                    "any uploadable data in the specified logdir: %s\n"
+                    "An empty experiment was created. "
+                    "To delete the empty experiment you can execute the "
+                    "following\n\n"
+                    "    tensorboard dev delete --experiment_id=%s"
+                    % (self.logdir, uploader.experiment_id)
+                )
+            end_message = "\n\n"
             if interrupted:
                 end_message += "Interrupted."
             else:
                 end_message += "Done."
-            if not self.dry_run:
+            # Only Add the "View your TensorBoard" message if there was any
+            # data added at all.
+            if not self.dry_run and uploader.has_data():
                 end_message += " View your TensorBoard at %s" % url
             sys.stdout.write(end_message + "\n")
             sys.stdout.flush()
