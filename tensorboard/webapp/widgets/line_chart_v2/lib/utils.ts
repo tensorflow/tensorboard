@@ -12,10 +12,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-require.config({
-  paths: {
-    lodash: '/base/npm/node_modules/lodash/lodash',
-    d3: '/base/npm/node_modules/d3/dist/d3',
-    three: '/base/npm/node_modules/three/build/three',
-  },
-});
+
+import {Extent, Rect} from './types';
+
+export function convertRectToExtent(rect: Rect): Extent {
+  return {
+    x: [rect.x, rect.x + rect.width],
+    y: [rect.y, rect.y + rect.height],
+  };
+}
