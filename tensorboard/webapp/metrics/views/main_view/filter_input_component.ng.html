@@ -19,7 +19,7 @@ limitations under the License.
   <input
     matInput
     autocomplete="off"
-    placeholder="Filter tags"
+    placeholder="Filter tags (regex)"
     [value]="regexFilterValue"
     (input)="onRegexFilterValueChange.emit($event.target.value)"
     (keyup)="onFilterKeyUp($event)"
