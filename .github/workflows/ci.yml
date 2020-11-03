@@ -108,7 +108,7 @@ jobs:
         # Cannot directly depend on d3 in webapp. Must depend on
         # `//tensorboard/webapp/third_party:d3` instead.
       - run: |
-          ! git grep -E '@npm//d3' 'tensorboard/webapp/**/*BUILD' ':!tensorboard/webapp/third_party/**'
+          ! git grep -E '"@npm//d3"|"@npm//@types/d3"' 'tensorboard/webapp/**/*BUILD' ':!tensorboard/webapp/third_party/**'
 
   lint-build:
     runs-on: ubuntu-16.04

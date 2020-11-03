@@ -36,7 +36,6 @@ ng_module(
         "@npm//@angular/core",
         "@npm//@angular/forms",
         "@npm//@ngrx/store",
-        "@npm//@types/d3",
         "@npm//rxjs",
     ],
 )
