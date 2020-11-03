@@ -113,6 +113,9 @@ $_second-row-height: 15px;
 }
 
 .img-container img {
+  // Avoid the 'smooth' image scaling provided in browsers by default.
+  // Instead, choose rendering modes that are closer to pixel representation.
+  // See b/32560663.
   image-rendering: -moz-crisp-edges;
   image-rendering: pixelated;
 }
