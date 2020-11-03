@@ -112,6 +112,11 @@ $_second-row-height: 15px;
   position: relative;
 }
 
+.img-container img {
+  image-rendering: -moz-crisp-edges;
+  image-rendering: pixelated;
+}
+
 :host.actual-size .img-container {
   overflow: auto;
   flex: none;
