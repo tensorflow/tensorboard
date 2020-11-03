@@ -112,6 +112,14 @@ $_second-row-height: 15px;
   position: relative;
 }
 
+.img-container img {
+  // Avoid the 'smooth' image scaling provided in browsers by default.
+  // Instead, choose rendering modes that are closer to pixel representation.
+  // See b/32560663.
+  image-rendering: -moz-crisp-edges;
+  image-rendering: pixelated;
+}
+
 :host.actual-size .img-container {
   overflow: auto;
   flex: none;
