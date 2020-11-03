@@ -29,6 +29,7 @@ import {
   CustomElementLoadingMechanism,
   IframeLoadingMechanism,
   NgElementLoadingMechanism,
+  NoLoadingMechanism,
 } from '../types/api';
 import {DataLoadState} from '../types/data';
 import {State} from '../core/store';
@@ -83,6 +84,10 @@ class TestableCustomElement extends HTMLElement {
 }
 
 customElements.define('tb-bar', TestableCustomElement);
+
+interface TbElement extends HTMLElement {
+  reload: () => void;
+}
 
 describe('plugins_component', () => {
   let store: MockStore<State>;
@@ -304,7 +309,7 @@ describe('plugins_component', () => {
     });
   });
 
-  describe('updates', () => {
+  describe('reload', () => {
     function setLastLoadedTime(
       timeInMs: number | null,
       state = DataLoadState.LOADED
@@ -318,78 +323,157 @@ describe('plugins_component', () => {
       store.refreshState();
     }
 
-    it('invokes reload method on the dashboard DOM', () => {
-      const fixture = TestBed.createComponent(PluginsContainer);
+    let alphaEl: TbElement;
+    let betaEl: TbElement;
+    let gammaEl: TbElement;
 
-      setLastLoadedTime(null, DataLoadState.NOT_LOADED);
-      setActivePlugin('bar');
-      fixture.detectChanges();
-      setActivePlugin('foo');
-      fixture.detectChanges();
-      setActivePlugin('bar');
-      fixture.detectChanges();
-
-      const {nativeElement} = fixture.debugElement.query(By.css('.plugins'));
-      // Stamped 'bar' and 'foo'
-      expect(nativeElement.children.length).toBe(2);
-      const [barElement, fooElement] = nativeElement.children;
-      const barReloadSpy = jasmine.createSpy();
-      barElement.reload = barReloadSpy;
-      const fooReloadSpy = jasmine.createSpy();
-      fooElement.reload = fooReloadSpy;
-
-      setLastLoadedTime(1);
-      fixture.detectChanges();
-      expect(barReloadSpy).toHaveBeenCalledTimes(1);
-      expect(fooReloadSpy).not.toHaveBeenCalled();
-
-      setLastLoadedTime(1);
-      fixture.detectChanges();
-      expect(barReloadSpy).toHaveBeenCalledTimes(1);
-      expect(fooReloadSpy).not.toHaveBeenCalled();
-
-      setLastLoadedTime(2);
-      fixture.detectChanges();
-      expect(barReloadSpy).toHaveBeenCalledTimes(2);
-      expect(fooReloadSpy).not.toHaveBeenCalled();
-
-      setActivePlugin('foo');
-      fixture.detectChanges();
-
-      setLastLoadedTime(3);
-      fixture.detectChanges();
-      expect(barReloadSpy).toHaveBeenCalledTimes(2);
-      expect(fooReloadSpy).toHaveBeenCalledTimes(1);
-    });
-
-    it('does not invoke reload method on dom if disable_reload', () => {
-      store.overrideSelector(getPlugins, {
-        bar: {
+    beforeEach(() => {
+      const PLUGINS = {
+        alpha: {
+          disable_reload: false,
+          enabled: true,
+          loading_mechanism: {
+            type: LoadingMechanismType.CUSTOM_ELEMENT,
+            element_name: 'tb-alpha',
+          } as CustomElementLoadingMechanism,
+          tab_name: 'Alpha',
+          remove_dom: false,
+        },
+        beta: {
+          disable_reload: false,
+          enabled: true,
+          loading_mechanism: {
+            type: LoadingMechanismType.CUSTOM_ELEMENT,
+            element_name: 'tb-beta',
+          } as CustomElementLoadingMechanism,
+          tab_name: 'Beta',
+          remove_dom: false,
+        },
+        gamma: {
           disable_reload: true,
           enabled: true,
           loading_mechanism: {
             type: LoadingMechanismType.CUSTOM_ELEMENT,
-            element_name: 'tb-bar',
+            element_name: 'tb-gamma',
           } as CustomElementLoadingMechanism,
-          tab_name: 'Bar',
+          tab_name: 'Gamma',
           remove_dom: false,
         },
-      });
+        zeta: {
+          disable_reload: true,
+          enabled: true,
+          loading_mechanism: {
+            type: LoadingMechanismType.NONE,
+          } as NoLoadingMechanism,
+          tab_name: 'zeta',
+          remove_dom: false,
+        },
+      };
+      store.overrideSelector(getPlugins, PLUGINS);
+
+      alphaEl = document.createElement('span') as any;
+      alphaEl.reload = jasmine.createSpy();
+      betaEl = document.createElement('span') as any;
+      betaEl.reload = jasmine.createSpy();
+      gammaEl = document.createElement('span') as any;
+      gammaEl.reload = jasmine.createSpy();
+
+      createElementSpy.withArgs('tb-alpha').and.returnValue(alphaEl);
+      createElementSpy.withArgs('tb-beta').and.returnValue(betaEl);
+      createElementSpy.withArgs('tb-gamma').and.returnValue(gammaEl);
+    });
+
+    it('invokes reload on initial page render and new plugin stamp', () => {
+      const fixture = TestBed.createComponent(PluginsContainer);
+      // When TensorBoard starts, the new dashboard is stamped only after plugins
+      // listing is loaded and thus the last loaded time is not zero.
+      setLastLoadedTime(100, DataLoadState.LOADED);
+      fixture.detectChanges();
+
+      setActivePlugin('alpha');
+      fixture.detectChanges();
+
+      expect(alphaEl.reload).toHaveBeenCalledTimes(1);
+
+      // Without changing the lastLoadedTime, stamp a new dashboard.
+      setActivePlugin('beta');
+      fixture.detectChanges();
+
+      expect(betaEl.reload).toHaveBeenCalledTimes(1);
+
+      // Even for the plugin that disabled the auto reload, it should invoke reload once
+      // at the stamp time.
+      setActivePlugin('gamma');
+      fixture.detectChanges();
+
+      expect(gammaEl.reload).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not break when acitvePlugin id changes to one without UI', () => {
+      const fixture = TestBed.createComponent(PluginsContainer);
+      setLastLoadedTime(100, DataLoadState.LOADED);
+      fixture.detectChanges();
+
+      setActivePlugin('alpha');
+      fixture.detectChanges();
+
+      // zeta does not have a DOM and it definitely cannot have `reload` method called.
+      setActivePlugin('zeta');
+      fixture.detectChanges();
+    });
+
+    it('invokes reload method on the dashboard DOM on data load time changes', () => {
       const fixture = TestBed.createComponent(PluginsContainer);
 
       setLastLoadedTime(null, DataLoadState.NOT_LOADED);
-      setActivePlugin('bar');
+      setActivePlugin('alpha');
+      fixture.detectChanges();
+      setActivePlugin('beta');
+      fixture.detectChanges();
+      setActivePlugin('alpha');
       fixture.detectChanges();
 
-      const {nativeElement} = fixture.debugElement.query(By.css('.plugins'));
-      const [barElement] = nativeElement.children;
-      const barReloadSpy = jasmine.createSpy();
-      barElement.reload = barReloadSpy;
+      // Initial stamp reloads.
+      expect(alphaEl.reload).toHaveBeenCalledTimes(1);
+      expect(betaEl.reload).toHaveBeenCalledTimes(1);
+
+      setLastLoadedTime(1);
+      fixture.detectChanges();
+      expect(alphaEl.reload).toHaveBeenCalledTimes(2);
+      expect(betaEl.reload).toHaveBeenCalledTimes(1);
+
+      setLastLoadedTime(1);
+      fixture.detectChanges();
+      expect(alphaEl.reload).toHaveBeenCalledTimes(2);
+      expect(betaEl.reload).toHaveBeenCalledTimes(1);
+
+      setLastLoadedTime(2);
+      fixture.detectChanges();
+      expect(alphaEl.reload).toHaveBeenCalledTimes(3);
+      expect(betaEl.reload).toHaveBeenCalledTimes(1);
+
+      setActivePlugin('beta');
+      fixture.detectChanges();
+
+      setLastLoadedTime(3);
+      fixture.detectChanges();
+      expect(alphaEl.reload).toHaveBeenCalledTimes(3);
+      expect(betaEl.reload).toHaveBeenCalledTimes(2);
+    });
+
+    it('does not invoke reload method on dom if disable_reload', () => {
+      const fixture = TestBed.createComponent(PluginsContainer);
+
+      setLastLoadedTime(100, DataLoadState.NOT_LOADED);
+      setActivePlugin('gamma');
+      fixture.detectChanges();
+
+      expect(gammaEl.reload).toHaveBeenCalledTimes(1);
 
       setLastLoadedTime(1);
       fixture.detectChanges();
 
-      expect(barReloadSpy).not.toHaveBeenCalled();
+      expect(gammaEl.reload).toHaveBeenCalledTimes(1);
     });
   });
 

@@ -42,6 +42,10 @@ interface ExperimentalPluginHostLib extends HTMLElement {
   registerPluginIframe(iframe: HTMLIFrameElement, plugin_id: string): void;
 }
 
+interface PolymerDashboard extends HTMLElement {
+  reload?: () => void;
+}
+
 export enum PluginLoadState {
   ENVIRONMENT_FAILURE_NOT_FOUND,
   ENVIRONMENT_FAILURE_UNKNOWN,
@@ -131,44 +135,67 @@ export class PluginsComponent implements OnChanges {
   private readonly pluginInstances = new Map<string, HTMLElement>();
 
   ngOnChanges(change: SimpleChanges): void {
+    const shouldCreatePlugin = Boolean(
+      this.activeKnownPlugin &&
+        !this.pluginInstances.has(this.activeKnownPlugin.id)
+    );
+
     if (change['activeKnownPlugin'] && this.activeKnownPlugin) {
-      this.renderPlugin(this.activeKnownPlugin!);
+      const prevActiveKnownPlugin = change['activeKnownPlugin'].previousValue;
+      if (
+        prevActiveKnownPlugin &&
+        prevActiveKnownPlugin.id !== this.activeKnownPlugin.id
+      ) {
+        this.hidePlugin(prevActiveKnownPlugin);
+      }
+      if (shouldCreatePlugin) {
+        const pluginElement = this.createPlugin(this.activeKnownPlugin);
+        if (pluginElement) {
+          this.pluginInstances.set(this.activeKnownPlugin.id, pluginElement);
+        }
+      } else {
+        this.showPlugin(this.activeKnownPlugin);
+      }
     }
-    if (change['lastUpdated']) {
-      this.reload();
+    if (
+      this.activeKnownPlugin &&
+      (shouldCreatePlugin || change['lastUpdated'])
+    ) {
+      this.reload(this.activeKnownPlugin, shouldCreatePlugin);
     }
   }
 
-  private renderPlugin(plugin: UiPluginMetadata) {
-    for (const element of this.pluginInstances.values()) {
-      Object.assign(element.style, {
-        maxHeight: 0,
-        overflow: 'hidden',
-        /**
-         * We further make containers invisible. Some elements may anchor to
-         * the viewport instead of the container, in which case setting the max
-         * height here to 0 will not hide them.
-         **/
-        visibility: 'hidden',
-        position: 'absolute',
-      });
-    }
+  private hidePlugin(plugin: UiPluginMetadata) {
+    // In case the active plugin does not have a DOM, for example, core plugin, the
+    // instance can be falsy.
+    if (!this.pluginInstances.has(plugin.id)) return;
 
-    if (this.pluginInstances.has(plugin.id)) {
-      const instance = this.pluginInstances.get(plugin.id) as HTMLElement;
-      Object.assign(instance.style, {
-        maxHeight: null,
-        overflow: null,
-        visibility: null,
-        position: null,
-      });
-      return;
-    }
+    const instance = this.pluginInstances.get(plugin.id) as HTMLElement;
+    Object.assign(instance.style, {
+      maxHeight: 0,
+      overflow: 'hidden',
+      /**
+       * We further make containers invisible. Some elements may anchor to
+       * the viewport instead of the container, in which case setting the max
+       * height here to 0 will not hide them.
+       **/
+      visibility: 'hidden',
+      position: 'absolute',
+    });
+  }
 
-    const pluginElement = this.createPlugin(plugin);
-    if (pluginElement) {
-      this.pluginInstances.set(plugin.id, pluginElement);
-    }
+  private showPlugin(plugin: UiPluginMetadata) {
+    // In case the active plugin does not have a DOM, for example, core plugin, the
+    // instance can be falsy.
+    if (!this.pluginInstances.has(plugin.id)) return;
+
+    const instance = this.pluginInstances.get(plugin.id) as HTMLElement;
+    Object.assign(instance.style, {
+      maxHeight: null,
+      overflow: null,
+      visibility: null,
+      position: null,
+    });
   }
 
   private createPlugin(plugin: UiPluginMetadata): HTMLElement | null {
@@ -179,6 +206,7 @@ export class PluginsComponent implements OnChanges {
         pluginElement = document.createElement(
           customElementPlugin.element_name
         );
+        (pluginElement as any).reloadOnReady = false;
         this.pluginsContainer.nativeElement.appendChild(pluginElement);
         break;
       }
@@ -220,15 +248,15 @@ export class PluginsComponent implements OnChanges {
     return pluginElement;
   }
 
-  private reload() {
-    if (!this.activeKnownPlugin || this.activeKnownPlugin.disable_reload) {
+  private reload(plugin: UiPluginMetadata, initialStamp: boolean) {
+    if (!initialStamp && plugin.disable_reload) {
       return;
     }
 
     const maybeDashboard = this.pluginInstances.get(
-      this.activeKnownPlugin.id
-    ) as any;
-    if (maybeDashboard.reload) {
+      plugin.id
+    ) as PolymerDashboard;
+    if (maybeDashboard && maybeDashboard.reload) {
       maybeDashboard.reload();
     }
   }
