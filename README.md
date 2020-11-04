@@ -338,7 +338,7 @@ download links for the data it contains.
 
 If you need access to the full dataset, you can read the event files that
 TensorBoard consumes by using the [`summary_iterator`](
-https://www.tensorflow.org/api_docs/python/tf/train/summary_iterator)
+https://www.tensorflow.org/api_docs/python/tf/compat/v1/train/summary_iterator)
 method.
 
 ### Can I make my own plugin?
