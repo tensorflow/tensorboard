@@ -164,8 +164,9 @@ export class ThreeRenderer implements ObjectRenderer<CacheValue> {
     }
 
     let index = 0;
-    const positionAttributes = lineGeometry.attributes
-      .position as THREE.BufferAttribute;
+    const positionAttributes = lineGeometry.attributes[
+      'position'
+    ] as THREE.BufferAttribute;
     if (
       !positionAttributes ||
       positionAttributes.count !== vectors.length * 3

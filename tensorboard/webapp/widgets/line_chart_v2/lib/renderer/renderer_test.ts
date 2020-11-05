@@ -79,7 +79,7 @@ describe('line_chart_v2/lib/renderer test', () => {
         {visible: true, color: '#f00', width: 6}
       );
 
-      renderer.createOrUpdateLineObject(cacheObject, new Float32Array(), {
+      renderer.createOrUpdateLineObject(cacheObject, new Float32Array(0), {
         visible: true,
         color: '#0f0',
         width: 3,
@@ -213,14 +213,14 @@ describe('line_chart_v2/lib/renderer test', () => {
         {visible: true, color: '#f00', width: 6}
       );
 
-      renderer.createOrUpdateLineObject(cacheObject, new Float32Array(), {
+      renderer.createOrUpdateLineObject(cacheObject, new Float32Array(0), {
         visible: true,
         color: '#0f0',
         width: 3,
       });
 
       const lineObject = scene.children[0] as THREE.Line;
-      assertLine(lineObject, new Float32Array());
+      assertLine(lineObject, new Float32Array(0));
       assertMaterial(lineObject, '#00ff00', true);
     });
 
