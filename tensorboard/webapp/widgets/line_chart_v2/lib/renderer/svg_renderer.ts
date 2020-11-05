@@ -59,8 +59,6 @@ export class SvgRenderer implements ObjectRenderer<CacheValue> {
     polyline: Polyline,
     paintOpt: LinePaintOption
   ): CacheValue | null {
-    if (!polyline.length) return null;
-
     const {color, visible, width, opacity} = paintOpt;
     const cssDisplayValue = visible ? '' : 'none';
 

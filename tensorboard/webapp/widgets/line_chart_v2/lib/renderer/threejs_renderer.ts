@@ -84,8 +84,6 @@ export class ThreeRenderer implements ObjectRenderer<CacheValue> {
     polyline: Polyline,
     paintOpt: LinePaintOption
   ): CacheValue | null {
-    if (!polyline.length) return null;
-
     let line: THREE.Line | null = null;
     let prevPolyline: Polyline | null = null;
 

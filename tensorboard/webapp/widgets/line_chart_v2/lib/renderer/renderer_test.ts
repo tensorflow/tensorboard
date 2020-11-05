@@ -50,15 +50,6 @@ describe('line_chart_v2/lib/renderer test', () => {
       expect(path.style.display).toBe('');
     });
 
-    it('returns null when polyline is empty', () => {
-      const cachedObject = renderer.createOrUpdateLineObject(
-        null,
-        new Float32Array(0),
-        {visible: false, color: '#f00', width: 6}
-      );
-      expect(cachedObject).toBeNull();
-    });
-
     it('updates a cached path and styles', () => {
       const cacheObject = renderer.createOrUpdateLineObject(
         null,
@@ -76,6 +67,30 @@ describe('line_chart_v2/lib/renderer test', () => {
       const path = el.children[0] as SVGPathElement;
       expect(path.tagName).toBe('path');
       expect(path.getAttribute('d')).toBe('M0,5L5,50');
+      expect(path.style.stroke).toBe('rgb(0, 255, 0)');
+      expect(path.style.strokeWidth).toBe('3');
+      expect(path.style.display).toBe('');
+    });
+
+    it('updates a cached path to an empty polyline', () => {
+      const cacheObject = renderer.createOrUpdateLineObject(
+        null,
+        new Float32Array([0, 10, 10, 100]),
+        {visible: true, color: '#f00', width: 6}
+      );
+
+      renderer.createOrUpdateLineObject(cacheObject, new Float32Array(), {
+        visible: true,
+        color: '#0f0',
+        width: 3,
+      });
+
+      expect(el.children.length).toBe(1);
+      const path = el.children[0] as SVGPathElement;
+      expect(path.tagName).toBe('path');
+      expect(path.getAttribute('d')).toBe('');
+      // While it is possible to update minimally and only change the path or visibility,
+      // such optimization is a bit too premature without a clear benefit.
       expect(path.style.stroke).toBe('rgb(0, 255, 0)');
       expect(path.style.strokeWidth).toBe('3');
       expect(path.style.display).toBe('');
@@ -124,9 +139,13 @@ describe('line_chart_v2/lib/renderer test', () => {
         'position'
       ) as THREE.BufferAttribute;
       let positionIndex = 0;
-      for (let index = 0; index < polyline.length; index += 2) {
-        const expectedX = polyline[index];
-        const expectedY = polyline[index + 1];
+      for (
+        let polylineIndex = 0;
+        polylineIndex < polyline.length;
+        polylineIndex += 2
+      ) {
+        const expectedX = polyline[polylineIndex];
+        const expectedY = polyline[polylineIndex + 1];
         const actualX = positions.array[positionIndex++];
         const actualY = positions.array[positionIndex++];
         const actualZ = positions.array[positionIndex++];
@@ -169,15 +188,6 @@ describe('line_chart_v2/lib/renderer test', () => {
       assertMaterial(lineObject, '#ff0000', true);
     });
 
-    it('returns null when polyline is empty', () => {
-      const cachedObject = renderer.createOrUpdateLineObject(
-        null,
-        new Float32Array(0),
-        {visible: false, color: '#f00', width: 6}
-      );
-      expect(cachedObject).toBeNull();
-    });
-
     it('updates cached path and styles', () => {
       const cacheObject = renderer.createOrUpdateLineObject(
         null,
@@ -193,6 +203,24 @@ describe('line_chart_v2/lib/renderer test', () => {
 
       const lineObject = scene.children[0] as THREE.Line;
       assertLine(lineObject, new Float32Array([0, 5, 5, 50, 10, 100]));
+      assertMaterial(lineObject, '#00ff00', true);
+    });
+
+    it('updates object when going from non-emtpy polyline to an empty one', () => {
+      const cacheObject = renderer.createOrUpdateLineObject(
+        null,
+        new Float32Array([0, 10, 10, 100]),
+        {visible: true, color: '#f00', width: 6}
+      );
+
+      renderer.createOrUpdateLineObject(cacheObject, new Float32Array(), {
+        visible: true,
+        color: '#0f0',
+        width: 3,
+      });
+
+      const lineObject = scene.children[0] as THREE.Line;
+      assertLine(lineObject, new Float32Array());
       assertMaterial(lineObject, '#00ff00', true);
     });
 
