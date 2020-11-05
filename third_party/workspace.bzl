@@ -23,6 +23,7 @@ load("//third_party:fonts.bzl", "tensorboard_fonts_workspace")
 load("//third_party:polymer.bzl", "tensorboard_polymer_workspace")
 load("//third_party:python.bzl", "tensorboard_python_workspace")
 load("//third_party:js.bzl", "tensorboard_js_workspace")
+load("//third_party:rust.bzl", "tensorboard_rust_workspace")
 load("//third_party:typings.bzl", "tensorboard_typings_workspace")
 
 def tensorboard_workspace(name = ""):
@@ -36,6 +37,7 @@ def tensorboard_workspace(name = ""):
     tensorboard_python_workspace()
     tensorboard_typings_workspace()
     tensorboard_js_workspace()
+    tensorboard_rust_workspace()
 
     # Set up TypeScript toolchain.
     ts_setup_workspace()

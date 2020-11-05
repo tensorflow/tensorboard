@@ -1,0 +1,22 @@
+"""
+@generated
+cargo-raze workspace build file.
+
+DO NOT EDIT! Replaced on runs of cargo-raze
+"""
+
+package(default_visibility = ["//visibility:public"])
+
+licenses([
+    "notice",  # See individual crates for specific licenses
+])
+
+# Aliased targets
+alias(
+    name = "byteorder",
+    actual = "@raze__byteorder__1_3_4//:byteorder",
+    tags = [
+        "cargo-raze",
+        "manual",
+    ],
+)
