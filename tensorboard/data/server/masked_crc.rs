@@ -17,7 +17,7 @@ limitations under the License.
 
 use std::fmt::{self, Debug};
 
-/// A CRC-32-C (Castagnoli) checksum that has undergone a masking permutation.
+/// A CRC-32C (Castagnoli) checksum that has undergone a masking permutation.
 ///
 /// This is the checksum format used by TFRecords. The masking permutation is [the same as in
 /// LevelDB][ldb], which offers as motivation that "it is problematic to compute the CRC of a
@@ -36,7 +36,7 @@ impl Debug for MaskedCrc {
 
 const CRC_MASK_DELTA: u32 = 0xa282ead8;
 
-/// Apply a masking operation to an unmasked CRC-32-C.
+/// Applies a masking permutation to a raw CRC-32C checksum.
 fn mask(crc: u32) -> MaskedCrc {
     MaskedCrc(((crc >> 15) | (crc << 17)).wrapping_add(CRC_MASK_DELTA))
 }
