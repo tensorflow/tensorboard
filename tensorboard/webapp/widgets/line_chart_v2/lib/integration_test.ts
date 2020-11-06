@@ -44,7 +44,7 @@ function buildMetadata(metadata: Partial<DataSeriesMetadata>) {
   };
 }
 
-fdescribe('line_chart_v2/lib/integration test', () => {
+describe('line_chart_v2/lib/integration test', () => {
   let dom: SVGElement;
   let callbacks: ChartCallbacks;
   let chart: MainThreadChart;
