@@ -13,10 +13,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {LinePaintOption, ObjectRenderer} from './renderer_types';
-import {Polyline} from '../types';
+import {Polyline, Rect} from '../internal_types';
 import {arePolylinesEqual} from '../utils';
-import {Rect} from '../types';
+import {LinePaintOption, ObjectRenderer} from './renderer_types';
 
 interface LineCacheValue {
   type: 'line';

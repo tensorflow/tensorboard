@@ -13,7 +13,7 @@ tf_ts_library(
         ":types",
         "//tensorboard/webapp/third_party:d3",
         "//tensorboard/webapp/widgets/line_chart_v2/lib:coordinator",
-        "//tensorboard/webapp/widgets/line_chart_v2/lib:types",
+        "//tensorboard/webapp/widgets/line_chart_v2/lib:internal_types",
         "//tensorboard/webapp/widgets/line_chart_v2/lib:utils",
         "@npm//three",
     ],
@@ -25,7 +25,7 @@ tf_ts_library(
         "renderer_types.ts",
     ],
     deps = [
-        "//tensorboard/webapp/widgets/line_chart_v2/lib:types",
+        "//tensorboard/webapp/widgets/line_chart_v2/lib:internal_types",
     ],
 )
 
@@ -39,7 +39,7 @@ tf_ts_library(
         ":renderer",
         ":types",
         "//tensorboard/webapp/widgets/line_chart_v2/lib:coordinator",
-        "//tensorboard/webapp/widgets/line_chart_v2/lib:types",
+        "//tensorboard/webapp/widgets/line_chart_v2/lib:internal_types",
         "@npm//@types/jasmine",
         "@npm//three",
     ],

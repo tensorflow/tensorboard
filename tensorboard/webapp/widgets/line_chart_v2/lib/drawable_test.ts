@@ -15,8 +15,8 @@ limitations under the License.
 
 import {Coordinator} from './coordinator';
 import {DataDrawable} from './drawable';
+import {DataSeries, Rect} from './internal_types';
 import {SvgRenderer} from './renderer/svg_renderer';
-import {DataSeries, Rect} from './types';
 
 class TestableDataDrawable extends DataDrawable {
   redraw(): void {

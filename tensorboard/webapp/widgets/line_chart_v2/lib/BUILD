@@ -3,10 +3,24 @@ load("//tensorboard/defs:defs.bzl", "tf_ts_library")
 package(default_visibility = ["//tensorboard:internal"])
 
 tf_ts_library(
-    name = "types",
+    name = "internal_types",
     srcs = [
+        "internal_types.ts",
         "scale_types.ts",
-        "types.ts",
+    ],
+    visibility = [
+        "//tensorboard/webapp/widgets/line_chart_v2/lib:__subpackages__",
+    ],
+)
+
+tf_ts_library(
+    name = "public_types",
+    srcs = [
+        "public_types.ts",
+    ],
+    deps = [
+        ":internal_types",
+        "//tensorboard/webapp/widgets/line_chart_v2/lib/renderer:types",
     ],
 )
 
@@ -25,8 +39,8 @@ tf_ts_library(
         "threejs_coordinator.ts",
     ],
     deps = [
+        ":internal_types",
         ":scale",
-        ":types",
         ":utils",
         "@npm//three",
     ],
@@ -44,7 +58,7 @@ tf_ts_library(
         "scale.ts",
     ],
     deps = [
-        ":types",
+        ":internal_types",
         "//tensorboard/webapp/third_party:d3",
     ],
 )
@@ -55,7 +69,7 @@ tf_ts_library(
         "utils.ts",
     ],
     deps = [
-        ":types",
+        ":internal_types",
     ],
 )
 
@@ -67,7 +81,7 @@ tf_ts_library(
     ],
     deps = [
         ":coordinator",
-        ":types",
+        ":internal_types",
         "//tensorboard/webapp/widgets/line_chart_v2/lib/renderer:types",
     ],
 )
@@ -94,8 +108,8 @@ tf_ts_library(
     deps = [
         ":coordinator",
         ":drawable",
+        ":internal_types",
         ":scale",
-        ":types",
         ":worker",
         ":worker_pool",
         "//tensorboard/webapp/widgets/line_chart_v2/lib/renderer",
