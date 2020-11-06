@@ -11,4 +11,12 @@ licenses([
     "notice",  # See individual crates for specific licenses
 ])
 
-# No targets defined
+# Aliased targets
+alias(
+    name = "crc",
+    actual = "@raze__crc__1_8_1//:crc",
+    tags = [
+        "cargo-raze",
+        "manual",
+    ],
+)
