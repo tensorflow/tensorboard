@@ -1,6 +1,8 @@
 load("//tensorboard/defs:defs.bzl", "tf_ts_library")
 
-package(default_visibility = ["//tensorboard:internal"])
+package(default_visibility = [
+    "//tensorboard/webapp/widgets/line_chart_v2/lib:__subpackages__",
+])
 
 tf_ts_library(
     name = "renderer",
@@ -34,6 +36,9 @@ tf_ts_library(
     testonly = True,
     srcs = [
         "renderer_test.ts",
+    ],
+    visibility = [
+        "//tensorboard:internal",
     ],
     deps = [
         ":renderer",
