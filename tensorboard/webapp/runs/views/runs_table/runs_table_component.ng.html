@@ -129,6 +129,7 @@ limitations under the License.
           <mat-menu #filterMenu="matMenu">
             <div
               mat-menu-item
+              class="filter-menu-checkbox-row"
               (click)="$event.stopPropagation()"
               role="menuitemcheckbox"
               disableRipple
@@ -159,6 +160,7 @@ limitations under the License.
               <div
                 *ngFor="let value of column.filter.possibleValues"
                 mat-menu-item
+                class="filter-menu-checkbox-row"
                 role="menuitemcheckbox"
                 (click)="$event.stopPropagation()"
               >
@@ -197,6 +199,7 @@ limitations under the License.
           <mat-menu #filterMenu="matMenu">
             <div
               mat-menu-item
+              class="filter-menu-checkbox-row"
               (click)="$event.stopPropagation()"
               role="menuitemcheckbox"
               disableRipple

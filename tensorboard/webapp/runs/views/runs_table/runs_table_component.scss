@@ -176,3 +176,23 @@ table {
 :host ::ng-deep mat-paginator mat-form-field {
   margin: 0;
 }
+
+.filter-menu-checkbox-row mat-checkbox ::ng-deep label {
+  // Make mat-checkboxes in menus take up full row.
+  display: flex;
+  height: 100%;
+  align-items: center;
+}
+
+.filter-menu-checkbox-row
+  mat-checkbox
+  ::ng-deep
+  label
+  .mat-checkbox-inner-container {
+  margin-left: 0;
+}
+
+.filter-menu-checkbox-row mat-checkbox ::ng-deep label .mat-checkbox-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
