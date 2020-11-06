@@ -40,7 +40,7 @@ import {ThreeCoordinator} from './threejs_coordinator';
  * authoring more cumbersome.
  */
 const util = {
-  requestAnimationFrame: self.requestAnimationFrame,
+  requestAnimationFrame: window.requestAnimationFrame,
 };
 
 export class MainThreadChart implements Chart {
@@ -98,10 +98,10 @@ export class MainThreadChart implements Chart {
       x: 0,
       y: 0,
     });
-    this.scheduleRedraw();
+    this.scheduleRepaint();
   }
 
-  updateMetadata(metadataMap: DataSeriesMetadataMap) {
+  setMetadata(metadataMap: DataSeriesMetadataMap) {
     let shouldRepaint = false;
     Object.entries(metadataMap).forEach(([id, metadata]) => {
       const existing = this.metadataMap[id];
@@ -119,37 +119,37 @@ export class MainThreadChart implements Chart {
     if (shouldRepaint) {
       this.seriesLineView.markAsPaintDirty();
     }
-    this.scheduleRedraw();
+    this.scheduleRepaint();
   }
 
-  updateViewBox(extent: Extent) {
+  setViewBox(extent: Extent) {
     this.coordinator.setViewBoxRect({
       x: extent.x[0],
       width: extent.x[1] - extent.x[0],
       y: extent.y[0],
       height: extent.y[1] - extent.y[0],
     });
-    this.scheduleRedraw();
+    this.scheduleRepaint();
   }
 
-  updateData(data: DataSeries[]) {
+  setData(data: DataSeries[]) {
     this.seriesLineView.setData(data);
-    this.scheduleRedraw();
+    this.scheduleRepaint();
   }
 
-  private shouldRedraw = false;
+  private shouldRepaint = false;
 
-  private scheduleRedraw() {
-    if (this.shouldRedraw) return;
+  private scheduleRepaint() {
+    if (this.shouldRepaint) return;
 
-    this.shouldRedraw = true;
+    this.shouldRepaint = true;
     util.requestAnimationFrame(() => {
-      this.redraw();
-      this.shouldRedraw = false;
+      this.repaint();
+      this.shouldRepaint = false;
     });
   }
 
-  private redraw() {
+  private repaint() {
     this.seriesLineView.internalOnlyDrawFrame();
     this.renderer.flush();
     this.callbacks.onDrawEnd();

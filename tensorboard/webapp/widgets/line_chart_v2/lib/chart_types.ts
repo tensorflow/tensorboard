@@ -25,11 +25,11 @@ import {ScaleType} from './scale_types';
 export interface Chart {
   resize(dim: Dimension): void;
 
-  updateMetadata(metadataMap: DataSeriesMetadataMap): void;
+  setMetadata(metadataMap: DataSeriesMetadataMap): void;
 
-  updateViewBox(extent: Extent): void;
+  setViewBox(extent: Extent): void;
 
-  updateData(data: DataSeries[]): void;
+  setData(data: DataSeries[]): void;
 
   setXScaleType(type: ScaleType): void;
 

@@ -28,7 +28,7 @@ function createSeries(
 ): DataSeries {
   return {
     id,
-    points: new Array(10).fill({x: 0, y: 0}).map((data, index) => {
+    points: [...new Array(10)].map((_, index) => {
       return {x: index, y: pointFn(index)};
     }),
   };
@@ -44,7 +44,7 @@ function buildMetadata(metadata: Partial<DataSeriesMetadata>) {
   };
 }
 
-describe('line_chart_v2/lib/integration test', () => {
+fdescribe('line_chart_v2/lib/integration test', () => {
   let dom: SVGElement;
   let callbacks: ChartCallbacks;
   let chart: MainThreadChart;
@@ -73,14 +73,14 @@ describe('line_chart_v2/lib/integration test', () => {
 
   describe('render', () => {
     it('renders data', () => {
-      chart.updateMetadata({
+      chart.setMetadata({
         line: buildMetadata({id: 'line', visible: true}),
       });
-      chart.updateViewBox({x: [0, 10], y: [0, 10]});
+      chart.setViewBox({x: [0, 10], y: [0, 10]});
 
       expect(dom.children.length).toBe(0);
 
-      chart.updateData([createSeries('line', (index) => index)]);
+      chart.setData([createSeries('line', (index) => index)]);
 
       expect(dom.children.length).toBe(1);
       const path = dom.children[0] as SVGPathElement;
@@ -91,21 +91,21 @@ describe('line_chart_v2/lib/integration test', () => {
     });
 
     it('handles data without metadata', () => {
-      chart.updateMetadata({});
-      chart.updateViewBox({x: [0, 10], y: [0, 10]});
+      chart.setMetadata({});
+      chart.setViewBox({x: [0, 10], y: [0, 10]});
 
-      chart.updateData([createSeries('line', (index) => index)]);
+      chart.setData([createSeries('line', (index) => index)]);
 
       expect(dom.children.length).toBe(0);
     });
 
-    it('handles metadata withotu data', () => {
-      chart.updateMetadata({
+    it('handles metadata without data', () => {
+      chart.setMetadata({
         line1: buildMetadata({id: 'line1', visible: true}),
         line2: buildMetadata({id: 'line2', visible: true}),
       });
-      chart.updateViewBox({x: [0, 10], y: [0, 10]});
-      chart.updateData([createSeries('line1', (index) => index)]);
+      chart.setViewBox({x: [0, 10], y: [0, 10]});
+      chart.setData([createSeries('line1', (index) => index)]);
 
       expect(dom.children.length).toBe(1);
     });
@@ -113,12 +113,12 @@ describe('line_chart_v2/lib/integration test', () => {
 
   describe('chart update', () => {
     it('updates lines on data and metadata changes', () => {
-      chart.updateMetadata({
+      chart.setMetadata({
         line1: buildMetadata({id: 'line1', visible: true}),
         line2: buildMetadata({id: 'line2', visible: true}),
       });
-      chart.updateViewBox({x: [0, 10], y: [0, 20]});
-      chart.updateData([createSeries('line1', (index) => index)]);
+      chart.setViewBox({x: [0, 10], y: [0, 20]});
+      chart.setData([createSeries('line1', (index) => index)]);
 
       expect(dom.children.length).toBe(1);
       const path1 = dom.children[0] as SVGPathElement;
@@ -127,17 +127,20 @@ describe('line_chart_v2/lib/integration test', () => {
       );
       expect(path1.style.display).toBe('');
 
-      chart.updateData([
+      chart.setData([
         createSeries('line1', (index) => index),
         createSeries('line2', (index) => index * 2),
       ]);
       expect(dom.children.length).toBe(2);
       const path2 = dom.children[1] as SVGPathElement;
       expect(path2.getAttribute('d')).toBe(
-        'M0,100L20,90L40,80L60,70L80,60L100,50L120,40L140,30L160,20L180,10'
+        (
+          'M0,100 L20,90 L40,80 L60,70 L80,60 L100,50 L120,40 L140,30 L160,20 ' +
+          'L180,10'
+        ).replace(/ /g, '')
       );
 
-      chart.updateMetadata({
+      chart.setMetadata({
         line1: buildMetadata({id: 'line1', visible: false}),
         line2: buildMetadata({id: 'line2', visible: true}),
       });
@@ -148,29 +151,35 @@ describe('line_chart_v2/lib/integration test', () => {
     });
 
     it('updates on viewBox changes', () => {
-      chart.updateMetadata({
+      chart.setMetadata({
         line: buildMetadata({id: 'line', visible: true}),
       });
-      chart.updateViewBox({x: [0, 10], y: [0, 20]});
-      chart.updateData([createSeries('line', (index) => index)]);
+      chart.setViewBox({x: [0, 10], y: [0, 20]});
+      chart.setData([createSeries('line', (index) => index)]);
 
       const path = dom.children[0] as SVGPathElement;
       expect(path.getAttribute('d')).toBe(
-        'M0,100L20,95L40,90L60,85L80,80L100,75L120,70L140,65L160,60L180,55'
+        (
+          'M0,100 L20,95 L40,90 L60,85 L80,80 L100,75 L120,70 L140,65 L160,60 ' +
+          'L180,55'
+        ).replace(/ /g, '')
       );
 
-      chart.updateViewBox({x: [0, 10], y: [0, 10]});
+      chart.setViewBox({x: [0, 10], y: [0, 10]});
       expect(path.getAttribute('d')).toBe(
-        'M0,100L20,90L40,80L60,70L80,60L100,50L120,40L140,30L160,20L180,10'
+        (
+          'M0,100 L20,90 L40,80 L60,70 L80,60 L100,50 L120,40 L140,30 L160,20 ' +
+          'L180,10'
+        ).replace(/ /g, '')
       );
     });
 
-    it('updates once a requestAnimationFrame', async () => {
-      chart.updateMetadata({
+    it('updates once a requestAnimationFrame', () => {
+      chart.setMetadata({
         line: buildMetadata({id: 'line', visible: true}),
       });
-      chart.updateViewBox({x: [0, 10], y: [0, 100]});
-      chart.updateData([createSeries('line', (index) => index)]);
+      chart.setViewBox({x: [0, 10], y: [0, 100]});
+      chart.setData([createSeries('line', (index) => index)]);
 
       const path = dom.children[0] as SVGPathElement;
       const pathDBefore = path.getAttribute('d');
@@ -180,7 +189,7 @@ describe('line_chart_v2/lib/integration test', () => {
         return rafCallbacks.push(cb);
       });
 
-      chart.updateViewBox({x: [0, 10], y: [0, 1]});
+      chart.setViewBox({x: [0, 10], y: [0, 1]});
 
       expect(rafCallbacks.length).toBe(1);
       expect(path.getAttribute('d')).toBe(pathDBefore);
@@ -189,9 +198,28 @@ describe('line_chart_v2/lib/integration test', () => {
 
       expect(path.getAttribute('d')).not.toBe(pathDBefore);
 
-      chart.updateViewBox({x: [0, 10], y: [0, 20]});
-      chart.updateViewBox({x: [0, 10], y: [0, 10]});
+      chart.setViewBox({x: [0, 10], y: [0, 20]});
+      chart.setViewBox({x: [0, 10], y: [0, 10]});
       expect(rafCallbacks.length).toBe(1);
+    });
+
+    it('invokes onDrawEnd after a repaint', () => {
+      // Could have been called in beforeEach. Reset.
+      (callbacks.onDrawEnd as jasmine.Spy).calls.reset();
+      const rafCallbacks: FrameRequestCallback[] = [];
+      rafSpy.and.callFake((cb: FrameRequestCallback) => {
+        return rafCallbacks.push(cb);
+      });
+
+      chart.setMetadata({
+        line: buildMetadata({id: 'line', visible: true}),
+      });
+      chart.setData([createSeries('line', (index) => index)]);
+      chart.setViewBox({x: [0, 10], y: [0, 1]});
+
+      rafCallbacks.shift()!(0);
+
+      expect(callbacks.onDrawEnd).toHaveBeenCalledTimes(1);
     });
   });
 });
