@@ -1,6 +1,6 @@
 load("//tensorboard/defs:defs.bzl", "tf_ts_library")
 
-package(default_visibility = ["//tensorboard:internal"])
+package(default_visibility = ["//tensorboard/webapp/widgets/line_chart_v2/lib:__subpackages__"])
 
 tf_ts_library(
     name = "internal_types",
@@ -8,15 +8,15 @@ tf_ts_library(
         "internal_types.ts",
         "scale_types.ts",
     ],
-    visibility = [
-        "//tensorboard/webapp/widgets/line_chart_v2/lib:__subpackages__",
-    ],
 )
 
 tf_ts_library(
     name = "public_types",
     srcs = [
         "public_types.ts",
+    ],
+    visibility = [
+        "//tensorboard:internal",
     ],
     deps = [
         ":internal_types",
@@ -104,6 +104,9 @@ tf_ts_library(
         "drawable_test.ts",
         "scale_test.ts",
         "worker_pool_test.ts",
+    ],
+    visibility = [
+        "//tensorboard:internal",
     ],
     deps = [
         ":coordinator",
