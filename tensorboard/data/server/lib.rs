@@ -16,5 +16,3 @@ limitations under the License.
 //! Core functionality for TensorBoard data loading.
 
 pub mod masked_crc;
-
-pub const PI_ISH: f32 = 3.1415;
