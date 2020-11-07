@@ -8,8 +8,12 @@ rust_library(
     name = "rustboard_core",
     srcs = [
         "lib.rs",
+        "masked_crc.rs",
     ],
     edition = "2018",
+    deps = [
+        "//third_party/rust:crc",
+    ],
 )
 
 rust_test(
