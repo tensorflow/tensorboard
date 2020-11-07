@@ -182,17 +182,13 @@ table {
   display: flex;
   height: 100%;
   align-items: center;
-}
 
-.filter-menu-checkbox-row
-  mat-checkbox
-  ::ng-deep
-  label
   .mat-checkbox-inner-container {
-  margin-left: 0;
-}
+    margin-left: 0;
+  }
 
-.filter-menu-checkbox-row mat-checkbox ::ng-deep label .mat-checkbox-label {
-  overflow: hidden;
-  text-overflow: ellipsis;
+  .mat-checkbox-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 }
