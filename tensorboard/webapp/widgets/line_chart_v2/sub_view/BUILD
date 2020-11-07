@@ -3,8 +3,6 @@ load("@npm_angular_bazel//:index.bzl", "ng_module")
 
 package(default_visibility = ["//tensorboard:internal"])
 
-licenses(["notice"])  # Apache 2.0
-
 tf_sass_binary(
     name = "line_chart_interactive_layer_styles",
     src = "line_chart_interactive_layer.scss",
