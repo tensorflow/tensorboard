@@ -69,14 +69,29 @@ jobs:
 
   lint-rust:
     runs-on: ubuntu-16.04
+    strategy:
+      matrix:
+        rust_version: '1.47.0'
+        cargo_raze_version: '0.7.0'
     steps:
       - uses: actions/checkout@v1
+      - name: 'Cache Cargo home directory'
+        uses: actions/cache@v2
+        with:
+          # https://doc.rust-lang.org/cargo/guide/cargo-home.html#caching-the-cargo-home-in-ci
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            tensorboard/data/server/target/
+          key: ${{ runner.os }}-cargo-${{ matrix.rust_version }}-${{ matrix.cargo_raze_version }}-${{ hashFiles('**/Cargo.lock') }}
       - name: 'Install Rust toolchain'
         uses: actions-rs/toolchain@v1
         with:
-          toolchain: '1.47.0'
+          toolchain: ${{ matrix.rust_version }}
       - name: 'Install cargo-raze'
-        run: cargo install cargo-raze --version 0.7.0
+        run: cargo install cargo-raze --version ${{ matrix.cargo_raze_version }}
       - name: 'Run Rustfmt'
         run: (cd tensorboard/data/server/ && cargo fmt -- --check)
       - name: 'Run Clippy'
