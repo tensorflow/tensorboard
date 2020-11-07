@@ -2,7 +2,7 @@
 @generated
 cargo-raze generated Bazel file.
 
-DO NOT EDIT! Replaced on runs of cargo-raze. Really!
+DO NOT EDIT! Replaced on runs of cargo-raze
 """
 
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "new_git_repository")  # buildifier: disable=load
