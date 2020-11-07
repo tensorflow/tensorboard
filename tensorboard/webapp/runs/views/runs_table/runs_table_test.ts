@@ -129,10 +129,10 @@ class TestableColorPicker {
 }
 
 const Selector = {
-  ROW: '[role="row"]',
+  ITEM_ROW: '[role="row"]:not(.header)',
   COLUMN: '[role="cell"]',
-  HEADER_COLUMN: '[role="rowheader"] .column',
-  HEADER_CHECKBOX: '[role="rowheader"] mat-checkbox',
+  HEADER_COLUMN: '[role="columnheader"]',
+  HEADER_CHECKBOX: '[role="columnheader"] mat-checkbox',
   SELECT_ALL_ROW: '.select-all',
 };
 
@@ -160,7 +160,7 @@ describe('runs_table', () => {
   function getTableRowTextContent(
     fixture: ComponentFixture<RunsTableContainer>
   ) {
-    const rows = [...fixture.nativeElement.querySelectorAll(Selector.ROW)];
+    const rows = [...fixture.nativeElement.querySelectorAll(Selector.ITEM_ROW)];
     return rows.map((row) => {
       const columns = [...row.querySelectorAll(Selector.COLUMN)];
       return columns.map((column) => column.textContent.trim());
@@ -259,7 +259,7 @@ describe('runs_table', () => {
       await fixture.whenStable();
 
       // mat-table's content somehow does not end up in DebugElement.
-      const rows = fixture.nativeElement.querySelectorAll(Selector.ROW);
+      const rows = fixture.nativeElement.querySelectorAll(Selector.ITEM_ROW);
       expect(rows.length).toBe(2);
 
       const [book1, book2] = rows;
@@ -341,7 +341,7 @@ describe('runs_table', () => {
       await fixture.whenStable();
 
       // mat-table's content somehow does not end up in DebugElement.
-      const rows = fixture.nativeElement.querySelectorAll(Selector.ROW);
+      const rows = fixture.nativeElement.querySelectorAll(Selector.ITEM_ROW);
       expect(rows.length).toBe(3);
 
       const [book1, book2, book3] = rows;
@@ -382,7 +382,7 @@ describe('runs_table', () => {
       await fixture.whenStable();
 
       // mat-table's content somehow does not end up in DebugElement.
-      const [book1] = fixture.nativeElement.querySelectorAll(Selector.ROW);
+      const [book1] = fixture.nativeElement.querySelectorAll(Selector.ITEM_ROW);
       expect(
         [...book1.querySelectorAll(Selector.COLUMN)].map(
           (node) => node.textContent
@@ -406,13 +406,17 @@ describe('runs_table', () => {
       fixture.detectChanges();
       await fixture.whenStable();
 
-      const rowsBefore = fixture.nativeElement.querySelectorAll(Selector.ROW);
+      const rowsBefore = fixture.nativeElement.querySelectorAll(
+        Selector.ITEM_ROW
+      );
       expect(rowsBefore.length).toBe(2);
 
       runs.next([buildRun({id: 'Potter', name: 'Potter'})]);
       fixture.detectChanges();
 
-      const rowsAfter = fixture.nativeElement.querySelectorAll(Selector.ROW);
+      const rowsAfter = fixture.nativeElement.querySelectorAll(
+        Selector.ITEM_ROW
+      );
       expect(rowsAfter.length).toBe(1);
       const [potter] = rowsAfter;
       expect(potter.querySelector(Selector.COLUMN).textContent).toBe('Potter');
@@ -448,7 +452,7 @@ describe('runs_table', () => {
 
       // mat-table's content somehow does not end up in DebugElement.
       const [book1, book2] = fixture.nativeElement.querySelectorAll(
-        Selector.ROW
+        Selector.ITEM_ROW
       );
       expect(book1.querySelector('mat-checkbox input').checked).toBe(true);
       expect(book2.querySelector('mat-checkbox input').checked).toBe(false);
@@ -487,7 +491,7 @@ describe('runs_table', () => {
       fixture.detectChanges();
 
       const [book1, book2] = fixture.nativeElement.querySelectorAll(
-        Selector.ROW
+        Selector.ITEM_ROW
       );
       const [book1Name, book1Color] = book1.querySelectorAll(Selector.COLUMN);
       expect(book1Name.textContent).toBe("The Philosopher's Stone");
@@ -657,7 +661,7 @@ describe('runs_table', () => {
       const fixture = createComponent(['book']);
       fixture.detectChanges();
 
-      const rows = fixture.nativeElement.querySelectorAll(Selector.ROW);
+      const rows = fixture.nativeElement.querySelectorAll(Selector.ITEM_ROW);
       expect(rows.length).toBe(5);
       expect(
         fixture.debugElement.query(By.css('mat-paginator'))
@@ -700,7 +704,7 @@ describe('runs_table', () => {
       );
       updateTableAndPaginator(fixture);
 
-      const rows = fixture.nativeElement.querySelectorAll(Selector.ROW);
+      const rows = fixture.nativeElement.querySelectorAll(Selector.ITEM_ROW);
       // By default, mat-paginator take the lowest pageSizeOptions.
       expect(rows.length).toBe(PAGE_SIZE);
       const [beforeFirstEl] = rows;
@@ -753,7 +757,7 @@ describe('runs_table', () => {
       );
       updateTableAndPaginator(fixture);
 
-      const rows = fixture.nativeElement.querySelectorAll(Selector.ROW);
+      const rows = fixture.nativeElement.querySelectorAll(Selector.ITEM_ROW);
       // By default, mat-paginator take the lowest pageSizeOptions.
       expect(rows.length).toBe(5);
       const [beforeFirstEl] = rows;
@@ -1354,7 +1358,7 @@ describe('runs_table', () => {
       await fixture.whenStable();
 
       // mat-table's content somehow does not end up in DebugElement.
-      const rows = fixture.nativeElement.querySelectorAll(Selector.ROW);
+      const rows = fixture.nativeElement.querySelectorAll(Selector.ITEM_ROW);
       const [book1, book2] = rows;
       book2.querySelector('mat-checkbox input').click();
       book1.querySelector('mat-checkbox input').click();

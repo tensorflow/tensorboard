@@ -27,7 +27,7 @@ limitations under the License.
   </div>
 </div>
 <div class="table-container">
-  <div role="grid">
+  <div role="table">
     <ng-container *ngTemplateOutlet="header"></ng-container>
     <ng-container *ngTemplateOutlet="selectAll"></ng-container>
     <ng-container *ngFor="let item of pageItems; trackBy: tableTrackBy">
@@ -63,9 +63,9 @@ limitations under the License.
   <div
     *ngIf="allPageItemsSelected() && numSelectedItems !== allItemsLength"
     class="select-all"
-    role="rowheader"
+    role="row"
   >
-    <span
+    <span role="columnheader"
       >All runs in this page are selected but not all runs ({{ numSelectedItems
       }} of {{ allItemsLength }}) are selected.</span
     ><button mat-button (click)="onSelectAllPages.emit()">
@@ -80,11 +80,11 @@ limitations under the License.
     matSort
     (matSortChange)="handleSortChange($event)"
     [matSortActive]="sortOption.column"
-    role="rowheader"
+    role="row"
   >
     <span
       *ngFor="let columnId of columns"
-      role="cell"
+      role="columnheader"
       [ngClass]="['column', columnId]"
     >
       <ng-container [ngSwitch]="columnId">
@@ -119,8 +119,8 @@ limitations under the License.
 
     <span
       *ngFor="let column of hparamColumns; trackBy: trackByHparamColumn"
-      role="cell"
-      [ngClass]="['column', column.name]"
+      role="columnheader"
+      class="column"
     >
       <span class="name">{{ column.displayName || column.name }}</span>
       <ng-container *ngIf="column.filter">
@@ -181,8 +181,8 @@ limitations under the License.
 
     <span
       *ngFor="let column of metricColumns; trackBy: trackByMetricColumn"
-      role="cell"
-      [ngClass]="['column', column.tag]"
+      role="columnheader"
+      class="column"
     >
       <span class="name">{{ column.displayName || column.tag }}</span>
       <ng-container *ngIf="column.filter">
@@ -229,7 +229,7 @@ limitations under the License.
 </ng-template>
 
 <ng-template #row let-item="item">
-  <div class="run-row" role="row">
+  <div role="row">
     <span
       *ngFor="let columnId of columns"
       role="cell"
@@ -272,17 +272,11 @@ limitations under the License.
       </ng-container>
     </span>
 
-    <span
-      *ngFor="let column of hparamColumns"
-      role="cell"
-      [ngClass]="['column', column.name]"
+    <span *ngFor="let column of hparamColumns" role="cell" class="column"
       >{{ item.hparams.get(column.name) }}</span
     >
 
-    <span
-      *ngFor="let column of metricColumns"
-      role="cell"
-      [ngClass]="['column', column.tag]"
+    <span *ngFor="let column of metricColumns" role="cell" class="column"
       >{{ item.metrics.get(column.tag) }}</span
     >
   </div>

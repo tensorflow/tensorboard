@@ -48,14 +48,13 @@ $_font-size: 13px;
 
 $_border-color: #0000001f;
 
-[role='grid'] {
+[role='table'] {
   .header {
     color: mat-color($tb-foreground, text);
     white-space: nowrap;
   }
 
-  .header,
-  .run-row {
+  [role='row'] {
     contain: strict;
     display: table-row;
     height: $_table-content-row-min-height;
