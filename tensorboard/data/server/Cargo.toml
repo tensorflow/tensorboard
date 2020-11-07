@@ -22,6 +22,7 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+crc = "1.8.1"
 
 [[bin]]
 name = "rustboard"
@@ -34,3 +35,6 @@ path = "lib.rs"
 [raze]
 workspace_path = "//third_party/rust"
 genmode = "Remote"
+
+[raze.crates.crc.'1.8.1']
+gen_buildrs = true
