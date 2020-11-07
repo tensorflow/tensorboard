@@ -71,8 +71,8 @@ jobs:
     runs-on: ubuntu-16.04
     strategy:
       matrix:
-        rust_version: '1.47.0'
-        cargo_raze_version: '0.7.0'
+        rust_version: ['1.47.0']
+        cargo_raze_version: ['0.7.0']
     steps:
       - uses: actions/checkout@v1
       - name: 'Cache Cargo home directory'
