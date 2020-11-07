@@ -1,6 +1,6 @@
 """
 @generated
-cargo-raze crate workspace functions
+cargo-raze generated Bazel file.
 
 DO NOT EDIT! Replaced on runs of cargo-raze
 """
@@ -18,7 +18,7 @@ def raze_fetch_remote_crates():
         type = "tar.gz",
         sha256 = "39092a32794787acd8525ee150305ff051b0aa6cc2abaf193924f5ab05425f39",
         strip_prefix = "build_const-0.2.1",
-        build_file = Label("//third_party/rust/remote:build_const-0.2.1.BUILD.bazel"),
+        build_file = Label("//third_party/rust/remote:BUILD.build_const-0.2.1.bazel"),
     )
 
     maybe(
@@ -28,5 +28,5 @@ def raze_fetch_remote_crates():
         type = "tar.gz",
         sha256 = "d663548de7f5cca343f1e0a48d14dcfb0e9eb4e079ec58883b7251539fa10aeb",
         strip_prefix = "crc-1.8.1",
-        build_file = Label("//third_party/rust/remote:crc-1.8.1.BUILD.bazel"),
+        build_file = Label("//third_party/rust/remote:BUILD.crc-1.8.1.bazel"),
     )
