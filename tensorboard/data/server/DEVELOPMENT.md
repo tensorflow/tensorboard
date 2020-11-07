@@ -18,6 +18,11 @@ might want to use Cargo:
 -   …to cross-compile.
 -   …simply because you’re more familiar with it or prefer it.
 
+The easiest way to get and use Cargo is with <https://rustup.rs>. Cargo resolves
+subcommands by looking for executables called `cargo-*` (analogous to Git), so
+you may want to `cargo install cargo-raze cargo-watch cargo-geiger` for some
+useful tools.
+
 To build with Cargo, change into the `tensorboard/data/server/` directory and
 use standard Cargo commands, like `cargo build --release` or `cargo test`.
 Running `cargo raze` from within `tensorboard/data/server/` will update the
