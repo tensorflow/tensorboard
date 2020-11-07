@@ -67,6 +67,27 @@ jobs:
         # You can run `black .` to fix all Black complaints.
         run: black --check --diff .
 
+  lint-rust:
+    runs-on: ubuntu-16.04
+    steps:
+      - uses: actions/checkout@v1
+      - name: 'Install Rust toolchain'
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: '1.47.0'
+      - name: 'Install cargo-raze'
+        run: cargo install cargo-raze --version 0.7.0
+      - name: 'Run Rustfmt'
+        run: (cd tensorboard/data/server/ && cargo fmt -- --check)
+      - name: 'Run Clippy'
+        run: (cd tensorboard/data/server/ && cargo clippy)
+      - name: 'Check cargo-raze freshness'
+        run: |
+          rm -rf third_party/rust/
+          (cd tensorboard/data/server/ && cargo generate-lockfile && cargo raze)
+          git add .
+          git diff --staged --exit-code
+
   lint-docs:
     runs-on: ubuntu-16.04
     steps:
