@@ -78,14 +78,17 @@ jobs:
       - name: 'Cache Cargo home directory'
         uses: actions/cache@v2
         with:
-          # https://doc.rust-lang.org/cargo/guide/cargo-home.html#caching-the-cargo-home-in-ci
           path: |
+            tensorboard/data/server/target/
+            # https://doc.rust-lang.org/cargo/guide/cargo-home.html#caching-the-cargo-home-in-ci
             ~/.cargo/bin/
             ~/.cargo/registry/index/
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
-            tensorboard/data/server/target/
-          key: ${{ runner.os }}-cargo-${{ matrix.rust_version }}-${{ matrix.cargo_raze_version }}-${{ hashFiles('**/Cargo.lock') }}
+            # Needed for installing binaries (`cargo-raze`) with cache
+            ~/.cargo/.crates.toml
+            ~/.cargo/.crates2.json
+          key: ${{ runner.os }}-cargo-${{ matrix.rust_version }}-${{ matrix.cargo_raze_version }}-${{ hashFiles('**/Cargo.lock') }}-${{ hashFiles('.github/workflows/ci.yml') }}
       - name: 'Install Rust toolchain'
         uses: actions-rs/toolchain@v1
         with:
