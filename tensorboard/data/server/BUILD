@@ -26,11 +26,4 @@ rust_binary(
     name = "server",
     srcs = ["main.rs"],
     edition = "2018",
-<<<<<<< HEAD
-=======
-    deps = [
-        ":rustboard_core",
-        "//third_party/rust:byteorder",
-    ],
->>>>>>> 78df9b17477e9d114ae31b0c03212e6fec6b89a6
 )
