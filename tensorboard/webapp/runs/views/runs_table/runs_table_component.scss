@@ -26,9 +26,11 @@ $_font-size: 13px;
 }
 
 .table-container {
+  contain: layout paint;
   height: 100%;
   max-width: 100%;
   overflow-x: auto;
+  overflow-y: auto;
   will-change: scroll-position;
 }
 
