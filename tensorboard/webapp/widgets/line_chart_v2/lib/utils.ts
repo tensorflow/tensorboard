@@ -13,11 +13,37 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {Extent, Rect} from './types';
+import {Extent, Polyline, Rect} from './types';
 
 export function convertRectToExtent(rect: Rect): Extent {
   return {
     x: [rect.x, rect.x + rect.width],
     y: [rect.y, rect.y + rect.height],
   };
+}
+
+const cachedIsWebGl2Supported = Boolean(
+  self.hasOwnProperty('document') &&
+    document.createElement('canvas').getContext('webgl2')
+);
+
+export function isWebGl2Supported(): boolean {
+  return cachedIsWebGl2Supported;
+}
+
+export function isOffscreenCanvasSupported(): boolean {
+  return self.hasOwnProperty('OffscreenCanvas');
+}
+
+export function arePolylinesEqual(lineA: Polyline, lineB: Polyline) {
+  if (lineA.length !== lineB.length) {
+    return false;
+  }
+
+  for (let i = 0; i < lineA.length; i++) {
+    if (lineA[i] !== lineB[i]) {
+      return false;
+    }
+  }
+  return true;
 }

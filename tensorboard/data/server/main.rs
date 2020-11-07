@@ -13,4 +13,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+<<<<<<< HEAD
 fn main() {}
+=======
+use byteorder::{ByteOrder, LittleEndian};
+
+fn main() {
+    let ptr = LittleEndian::read_u32(b"\x2e\x68\x63\x73"); // look, a dependency!
+    assert_eq!(ptr, 0x7363682e);
+    println!("Hello, server! 2 + 2 = {}", rustboard_core::add(2, 2)); // look, a sibling crate!
+}
+>>>>>>> 78df9b17477e9d114ae31b0c03212e6fec6b89a6
