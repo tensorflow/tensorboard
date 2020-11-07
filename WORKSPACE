@@ -107,6 +107,17 @@ load("@upb//bazel:repository_defs.bzl", "bazel_version_repository")
 
 bazel_version_repository(name = "bazel_version")
 
+http_archive(
+    name = "io_bazel_rules_rust",
+    sha256 = "9beda941ab076d15428d8615475329bd65002a13a26c2837932af0fb3dc582c5",
+    strip_prefix = "rules_rust-9426a3820093e75ea07d14f875e42f789632507f",
+    urls = [
+        # Master branch as of 2020-10-23
+        "http://mirror.tensorflow.org/github.com/bazelbuild/rules_rust/archive/9426a3820093e75ea07d14f875e42f789632507f.tar.gz",
+        "https://github.com/bazelbuild/rules_rust/archive/9426a3820093e75ea07d14f875e42f789632507f.tar.gz",
+    ],
+)
+
 # Please add all new dependencies in workspace.bzl.
 load("//third_party:workspace.bzl", "tensorboard_workspace")
 tensorboard_workspace()

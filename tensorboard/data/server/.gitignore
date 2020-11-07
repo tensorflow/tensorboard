@@ -1,5 +1,4 @@
-#!/usr/bin/env bash
-# Copyright 2018 The TensorFlow Authors. All Rights Reserved.
+# Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,16 +13,4 @@
 # limitations under the License.
 # ==============================================================================
 
-# tf_imports/*.html define their respective OSS license.
-files=$(git grep -L "Copyright 20[0-9][0-9] The TensorFlow" \
-    'tensorboard/*.*' \
-    ':!*.'{pyc,json,png,wav,proto,pbtxt,md,in,rst,cfg,ipynb,svg,lock} \
-    ':!tensorboard/components/tf_imports/*.html')
-
-count=$(echo "$files" | wc -l | awk '{print $1}')
-
-if [[ ! -z $files && $count -gt 0 ]]; then
-  echo "Requires license information in below file(s):"
-  echo -e "$files"
-  exit $count
-fi
+target/
