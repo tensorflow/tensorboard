@@ -1,0 +1,1 @@
+third_party/rust/** -diff -merge linguist-generated=true
