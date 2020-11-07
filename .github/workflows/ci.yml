@@ -88,7 +88,7 @@ jobs:
             # Needed for installing binaries (`cargo-raze`) with cache
             ~/.cargo/.crates.toml
             ~/.cargo/.crates2.json
-          key: ${{ runner.os }}-cargo-${{ matrix.rust_version }}-${{ matrix.cargo_raze_version }}-${{ hashFiles('**/Cargo.lock') }}-${{ hashFiles('.github/workflows/ci.yml') }}
+          key: ${{ runner.os }}-cargo-${{ matrix.rust_version }}-${{ matrix.cargo_raze_version }}-${{ hashFiles('**/Cargo.lock', '.github/workflows/ci.yml') }}
       - name: 'Install Rust toolchain'
         uses: actions-rs/toolchain@v1
         with:
