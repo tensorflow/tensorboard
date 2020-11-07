@@ -33,11 +33,9 @@ $_font-size: 13px;
 }
 
 :host.flex-layout {
-  .exp_name,
-  .run_name {
+  .name {
     word-break: break-word;
     overflow-wrap: break-word;
-    width: 100%;
   }
 
   mat-paginator {

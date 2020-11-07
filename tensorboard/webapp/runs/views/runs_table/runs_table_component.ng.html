@@ -82,11 +82,7 @@ limitations under the License.
     [matSortActive]="sortOption.column"
     role="row"
   >
-    <span
-      *ngFor="let columnId of columns"
-      role="columnheader"
-      [ngClass]="['column', columnId]"
-    >
+    <span *ngFor="let columnId of columns" role="columnheader" class="column">
       <ng-container [ngSwitch]="columnId">
         <span *ngSwitchCase="RunsTableColumn.CHECKBOX"
           ><mat-checkbox
@@ -99,21 +95,18 @@ limitations under the License.
         <span
           *ngSwitchCase="RunsTableColumn.EXPERIMENT_NAME"
           [mat-sort-header]="RunsTableColumn.EXPERIMENT_NAME"
-          [class]="columnId"
+          class="name"
           >Experiment</span
         >
 
         <span
           *ngSwitchCase="RunsTableColumn.RUN_NAME"
           [mat-sort-header]="RunsTableColumn.RUN_NAME"
-          [class]="columnId"
+          class="name"
           >Run</span
         >
 
-        <span
-          *ngSwitchCase="RunsTableColumn.RUN_COLOR"
-          [class]="columnId"
-        ></span>
+        <span *ngSwitchCase="RunsTableColumn.RUN_COLOR"></span>
       </ng-container>
     </span>
 
@@ -230,13 +223,9 @@ limitations under the License.
 
 <ng-template #row let-item="item">
   <div role="row">
-    <span
-      *ngFor="let columnId of columns"
-      role="cell"
-      [ngClass]="['column', columnId]"
-    >
+    <span *ngFor="let columnId of columns" role="cell" class="column">
       <ng-container [ngSwitch]="columnId">
-        <span *ngSwitchCase="RunsTableColumn.CHECKBOX" [class]="columnId">
+        <span *ngSwitchCase="RunsTableColumn.CHECKBOX">
           <mat-checkbox
             [checked]="item.selected"
             (change)="onSelectionToggle.emit(item)"
@@ -244,16 +233,16 @@ limitations under the License.
         </span>
         <span
           *ngSwitchCase="RunsTableColumn.EXPERIMENT_NAME"
-          [class]="columnId"
+          class="name"
           [attr.title]="item.experimentName"
           >{{ item.experimentAlias }}</span
         >
 
-        <span *ngSwitchCase="RunsTableColumn.RUN_NAME" [class]="columnId"
+        <span *ngSwitchCase="RunsTableColumn.RUN_NAME" class="name"
           >{{ item.run.name }}</span
         >
 
-        <span *ngSwitchCase="RunsTableColumn.RUN_COLOR" [class]="columnId">
+        <span *ngSwitchCase="RunsTableColumn.RUN_COLOR">
           <button
             [ngClass]="{
               'run-color-swatch': true,
