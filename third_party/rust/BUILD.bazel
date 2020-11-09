@@ -20,3 +20,21 @@ alias(
         "manual",
     ],
 )
+
+alias(
+    name = "rand",
+    actual = "@raze__rand__0_7_3//:rand",
+    tags = [
+        "cargo-raze",
+        "manual",
+    ],
+)
+
+alias(
+    name = "rand_chacha",
+    actual = "@raze__rand_chacha__0_2_2//:rand_chacha",
+    tags = [
+        "cargo-raze",
+        "manual",
+    ],
+)

@@ -23,6 +23,8 @@ edition = "2018"
 
 [dependencies]
 crc = "1.8.1"
+rand = "0.7.3"
+rand_chacha = "0.2.2"
 
 [[bin]]
 name = "rustboard"
