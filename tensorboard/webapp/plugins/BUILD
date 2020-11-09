@@ -1,11 +1,10 @@
-load("@npm_angular_bazel//:index.bzl", "ng_module")
-load("//tensorboard/defs:defs.bzl", "tf_ts_library")
+load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])
 
-ng_module(
+tf_ng_module(
     name = "plugins",
     srcs = [
         "plugins_component.ts",
@@ -28,7 +27,7 @@ ng_module(
     ],
 )
 
-ng_module(
+tf_ng_module(
     name = "plugin_registry",
     srcs = [
         "plugin_registry_module.ts",

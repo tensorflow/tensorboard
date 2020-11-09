@@ -1,10 +1,10 @@
-load("@npm_angular_bazel//:index.bzl", "ng_module")
+load("//tensorboard/defs:defs.bzl", "tf_ng_module")
 
 package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])
 
-ng_module(
+tf_ng_module(
     name = "tb_wrapper",
     srcs = [
         "tb_wrapper_component.ts",

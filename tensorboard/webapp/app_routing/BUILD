@@ -1,11 +1,10 @@
-load("//tensorboard/defs:defs.bzl", "tf_ts_library")
-load("@npm_angular_bazel//:index.bzl", "ng_module")
+load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])
 
-ng_module(
+tf_ng_module(
     name = "app_routing",
     srcs = [
         "app_routing_module.ts",
@@ -23,7 +22,7 @@ ng_module(
     ],
 )
 
-ng_module(
+tf_ng_module(
     name = "location",
     srcs = [
         "location.ts",
@@ -37,7 +36,7 @@ ng_module(
     ],
 )
 
-ng_module(
+tf_ng_module(
     name = "route_registry",
     srcs = [
         "route_registry_module.ts",
@@ -57,7 +56,7 @@ tf_ts_library(
     ],
 )
 
-ng_module(
+tf_ng_module(
     name = "programmatical_navigation_module",
     srcs = [
         "programmatical_navigation_module.ts",
@@ -70,7 +69,7 @@ ng_module(
     ],
 )
 
-ng_module(
+tf_ng_module(
     name = "deep_link_provider",
     srcs = [
         "deep_link_provider.ts",
@@ -84,7 +83,7 @@ ng_module(
     ],
 )
 
-ng_module(
+tf_ng_module(
     name = "route_config",
     srcs = [
         "route_config.ts",
@@ -97,7 +96,7 @@ ng_module(
     ],
 )
 
-ng_module(
+tf_ng_module(
     name = "route_config_test",
     testonly = True,
     srcs = [
@@ -134,7 +133,7 @@ tf_ts_library(
     deps = [":types"],
 )
 
-ng_module(
+tf_ng_module(
     name = "testing",
     testonly = True,
     srcs = [
@@ -149,7 +148,7 @@ ng_module(
     ],
 )
 
-ng_module(
+tf_ng_module(
     name = "app_routing_test",
     testonly = True,
     srcs = [

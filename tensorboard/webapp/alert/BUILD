@@ -1,9 +1,8 @@
-load("//tensorboard/defs:defs.bzl", "tf_ts_library")
-load("@npm_angular_bazel//:index.bzl", "ng_module")
+load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
-ng_module(
+tf_ng_module(
     name = "alert",
     srcs = [
         "alert_module.ts",
@@ -20,7 +19,7 @@ ng_module(
     ],
 )
 
-ng_module(
+tf_ng_module(
     name = "alert_action",
     srcs = [
         "alert_action_module.ts",
