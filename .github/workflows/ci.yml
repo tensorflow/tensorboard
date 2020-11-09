@@ -67,6 +67,48 @@ jobs:
         # You can run `black .` to fix all Black complaints.
         run: black --check --diff .
 
+  lint-rust:
+    runs-on: ubuntu-16.04
+    strategy:
+      matrix:
+        rust_version: ['1.47.0']
+        cargo_raze_version: ['0.6.1']
+    steps:
+      - uses: actions/checkout@v1
+      - name: 'Cache Cargo home directory'
+        uses: actions/cache@v2
+        with:
+          path: |
+            tensorboard/data/server/target/
+            # https://doc.rust-lang.org/cargo/guide/cargo-home.html#caching-the-cargo-home-in-ci
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            # Needed for installing binaries (`cargo-raze`) with cache
+            ~/.cargo/.crates.toml
+            ~/.cargo/.crates2.json
+          key: ${{ runner.os }}-cargo-${{ matrix.rust_version }}-${{ matrix.cargo_raze_version }}-${{ hashFiles('**/Cargo.lock', '.github/workflows/ci.yml') }}
+      - name: 'Install Rust toolchain'
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust_version }}
+      - name: 'Install cargo-raze'
+        run: cargo install cargo-raze --version ${{ matrix.cargo_raze_version }}
+      - name: 'Run Rustfmt'
+        run: (cd tensorboard/data/server/ && cargo fmt -- --check)
+      - name: 'Run Clippy'
+        uses: actions-rs/clippy-check@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          args: --manifest-path tensorboard/data/server/Cargo.toml
+      - name: 'Check cargo-raze freshness'
+        run: |
+          rm -rf third_party/rust/
+          (cd tensorboard/data/server/ && cargo generate-lockfile && cargo raze)
+          git add .
+          git diff --staged --exit-code
+
   lint-docs:
     runs-on: ubuntu-16.04
     steps:
