@@ -27,8 +27,6 @@ type Step = i64;
 /// records to a separate destination for better concurrency. This structure always keeps the
 /// latest record in the reservoir, and therefore must inspect every record in the stream.
 ///
-/// **Note:** Preemption support is not yet implemented.
-///
 /// # Preemption
 ///
 /// All records stored in this reservoir have a *step* and a *payload*. The step, a non-negative
@@ -77,6 +75,8 @@ pub struct StageReservoir<T, C = ChaCha20Rng> {
     /// `staged_items` may exceed this, but their combined lengths will not. Behavior is undefined
     /// if `capacity == 0`.
     capacity: usize,
+    /// Whether there has been a preemption since the last commit.
+    staged_preemption: bool,
     /// Reservoir control, to determine whether and whither a given new record should be included.
     ctl: C,
     /// Total number of records passed in the stream so far, regardless of whether they were ever
@@ -121,6 +121,7 @@ impl<T, C: ReservoirControl> StageReservoir<T, C> {
     /// Other than the latest record, the records kept form a simple random sample of the stream
     /// (or at least approximately so in the case of preemptions).
     pub fn offer(&mut self, step: Step, v: T) {
+        self.preempt(step);
         self.seen += 1;
         let dst = self.ctl.destination(self.seen);
 
@@ -157,6 +158,7 @@ impl<T, C: ReservoirControl> StageReservoir<T, C> {
             committed_steps: Vec::new(),
             staged_items: Vec::new(),
             capacity,
+            staged_preemption: false,
             ctl,
             seen: 0,
         }
@@ -165,6 +167,50 @@ impl<T, C: ReservoirControl> StageReservoir<T, C> {
     /// Accesses a view of the currently staged items.
     pub fn staged_items(&self) -> &[(Step, T)] {
         &self.staged_items[..]
+    }
+
+    /// Checks whether a preemption has been staged.
+    pub fn staged_preemption(&self) -> bool {
+        self.staged_preemption
+    }
+
+    /// Preempts any records whose step does not precede the given step.
+    fn preempt(&mut self, step: Step) {
+        let staged_nonpreempted = self
+            .staged_items
+            .iter()
+            .enumerate()
+            .rev()
+            .find_map(|(i, (s, _))| if *s < step { Some(i + 1) } else { None })
+            .unwrap_or(0);
+        let staged_preempted = self.staged_items.len() - staged_nonpreempted;
+        if staged_preempted > 0 {
+            self.staged_items.truncate(staged_nonpreempted);
+            self.staged_preemption = true;
+        }
+        let mut preempted = staged_preempted;
+        if self.staged_items.is_empty() {
+            // Committed steps may have been preempted as well.
+            let committed_nonpreempted = self
+                .committed_steps
+                .iter()
+                .enumerate()
+                .rev()
+                .find_map(|(i, s)| if *s < step { Some(i + 1) } else { None })
+                .unwrap_or(0);
+            let committed_preempted = self.committed_steps.len() - committed_nonpreempted;
+            if committed_preempted > 0 {
+                self.committed_steps.truncate(committed_nonpreempted);
+                self.staged_preemption = true;
+                preempted += committed_preempted;
+            }
+        }
+        if preempted == 0 {
+            return; // No need to adjust `seen`.
+        }
+        let old_stored = self.committed_steps.len() + self.staged_items.len() + preempted;
+        let fac_preempted = (preempted as f64) / (old_stored as f64);
+        self.seen = (self.seen as f64 * (1.0 - fac_preempted)).ceil() as usize;
     }
 
     /// Commits pending changes from this reservoir into a commit view. The commit should be a
@@ -191,6 +237,7 @@ impl<T, C: ReservoirControl> StageReservoir<T, C> {
         self.committed_steps
             .extend(self.staged_items.iter().map(|(step, _)| *step));
         head.extend(self.staged_items.drain(..).map(|(step, t)| (step, f(t))));
+        self.staged_preemption = false;
     }
 }
 
@@ -236,47 +283,75 @@ mod tests {
         rsv.offer(0, "zero");
         rsv.offer(1, "one");
         rsv.offer(2, "two");
-        rsv.offer(3, "three");
+        rsv.offer(3, "three???"); // this funny-looking record will be evicted
         rsv.commit_map(&mut head, mapper);
         assert_eq!(
             head,
-            vec![(0, ":zero:"), (1, ":one:"), (2, ":two:"), (3, ":three:")],
+            vec![(0, ":zero:"), (1, ":one:"), (2, ":two:"), (3, ":three???:")],
         );
 
         rsv.ctl.extend(vec![1, 2, 1, 3]);
+        rsv.offer(4, "four???");
+        assert!(!rsv.staged_preemption());
+        rsv.offer(3, "three");
+        assert!(rsv.staged_preemption());
         rsv.offer(4, "four");
         rsv.offer(5, "five");
-        rsv.offer(6, "six");
-        rsv.offer(7, "seven"); // this one exceeds capacity, evicting index 3
+        assert!(rsv.staged_preemption());
         rsv.commit_map(&mut head, mapper);
+        assert!(!rsv.staged_preemption());
         assert_eq!(
             head,
             vec![
                 (0, ":zero:"),
                 (1, ":one:"),
                 (2, ":two:"),
+                (3, ":three:"),
                 (4, ":four:"),
                 (5, ":five:"),
-                (6, ":six:"),
-                (7, ":seven:"),
             ],
         );
 
-        rsv.ctl.extend(vec![3, 7, 6]);
-        rsv.offer(8, "eight"); // evict index 3 (now "four")
-        rsv.offer(9, "nine"); // 7 >= 7, so drop (evict most recent)
-        rsv.offer(10, "ten"); // evict index 6 (now "nine")
+        rsv.ctl.extend(vec![4]);
+        rsv.offer(6, "six");
+        rsv.ctl.extend(vec![1]); // the first that matters: evict step 1
+        rsv.offer(7, "seven");
+        rsv.ctl.extend(vec![2, 3]); // these don't matter: preempt two, store two
+        rsv.offer(6, "SIX");
+        rsv.offer(7, "SEVEN");
+        rsv.ctl.extend(vec![4]); // evict step 5 (at index 4, since 1 was evicted already)
+        rsv.offer(8, "EIGHT");
+        rsv.ctl.extend(vec![8, 9]); // drop steps 9 and 10, modulo keep-last
+        rsv.offer(9, "NINE");
+        rsv.offer(10, "TEN");
         rsv.commit_map(&mut head, mapper);
         assert_eq!(
             head,
             vec![
                 (0, ":zero:"),
-                (1, ":one:"),
                 (2, ":two:"),
-                (5, ":five:"),
-                (6, ":six:"),
-                (7, ":seven:"),
-                (10, ":ten:"),
+                (3, ":three:"),
+                (4, ":four:"),
+                (6, ":SIX:"),
+                (7, ":SEVEN:"),
+                (10, ":TEN:"),
+            ],
+        );
+
+        // Preempt again, then drop records even while there's space.
+        rsv.ctl.extend(vec![0, 7, 7]);
+        rsv.offer(5, "!five!");
+        rsv.offer(6, "!six!");
+        rsv.offer(7, "!seven!");
+        rsv.commit_map(&mut head, mapper);
+        assert_eq!(
+            head,
+            vec![
+                (0, ":zero:"),
+                (2, ":two:"),
+                (3, ":three:"),
+                (4, ":four:"),
+                (7, ":!seven!:"),
             ],
         );
     }
@@ -303,6 +378,31 @@ mod tests {
             assert_eq!(head.len(), 10);
             assert_eq!(head.last(), Some(&(i * i, ())));
         }
+
+        // Seen 16 records, keeping 10. Preempt to invalidate records 9..=16, that the reservoir
+        // must have between 2 and 8 old records before the new one is added.
+        assert!(!rsv.staged_preemption());
+        rsv.offer(70, ()); // 8 * 8 < 70 < 9 * 9
+        assert!(rsv.staged_preemption());
+        rsv.commit(&mut head);
+        assert!(
+            (2..=9).contains(&head.len()),
+            "want 2 <= {} <= 9: {:?}",
+            head.len(),
+            head
+        );
+        assert!(
+            head.iter().all(|(s, _)| *s <= 70),
+            "want all <= 70: {:?}",
+            head
+        );
+        assert_eq!(head.last(), Some(&(70, ())));
+
+        // One more sanity check: add another record. The "70" preemption may or may not be
+        // evicted, but this new record should be the last.
+        rsv.offer(71, ());
+        rsv.commit(&mut head);
+        assert_eq!(head.last(), Some(&(71, ())));
     }
 
     #[test]
