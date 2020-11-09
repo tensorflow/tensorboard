@@ -9,10 +9,13 @@ rust_library(
     srcs = [
         "lib.rs",
         "masked_crc.rs",
+        "reservoir.rs",
     ],
     edition = "2018",
     deps = [
         "//third_party/rust:crc",
+        "//third_party/rust:rand",
+        "//third_party/rust:rand_chacha",
     ],
 )
 
