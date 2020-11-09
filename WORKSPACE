@@ -89,7 +89,7 @@ tf_workspace()
 load("@bazel_skylib//lib:versions.bzl", "versions")
 # Keep this version in sync with the BAZEL environment variable defined
 # in our .travis.yml config.
-versions.check(minimum_bazel_version = "2.1.0")
+versions.check(minimum_bazel_version = "3.0.0")
 
 load("@io_bazel_rules_sass//:package.bzl", "rules_sass_dependencies")
 
@@ -109,12 +109,12 @@ bazel_version_repository(name = "bazel_version")
 
 http_archive(
     name = "io_bazel_rules_rust",
-    sha256 = "9beda941ab076d15428d8615475329bd65002a13a26c2837932af0fb3dc582c5",
-    strip_prefix = "rules_rust-9426a3820093e75ea07d14f875e42f789632507f",
+    sha256 = "17dbf791f4dab0fd4496ce5345af35e9ce2f6d011c1c8423436da517d019a3ea",
+    strip_prefix = "rules_rust-2f97db595b05b1ee8cc44bde5bdf03c00bd169fb",
     urls = [
-        # Master branch as of 2020-10-23
-        "http://mirror.tensorflow.org/github.com/bazelbuild/rules_rust/archive/9426a3820093e75ea07d14f875e42f789632507f.tar.gz",
-        "https://github.com/bazelbuild/rules_rust/archive/9426a3820093e75ea07d14f875e42f789632507f.tar.gz",
+        # Master branch as of 2020-11-05
+        "http://mirror.tensorflow.org/github.com/bazelbuild/rules_rust/archive/2f97db595b05b1ee8cc44bde5bdf03c00bd169fb.tar.gz",
+        "https://github.com/bazelbuild/rules_rust/archive/2f97db595b05b1ee8cc44bde5bdf03c00bd169fb.tar.gz",
     ],
 )
 
