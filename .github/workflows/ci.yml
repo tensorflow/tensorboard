@@ -98,7 +98,10 @@ jobs:
       - name: 'Run Rustfmt'
         run: (cd tensorboard/data/server/ && cargo fmt -- --check)
       - name: 'Run Clippy'
-        run: (cd tensorboard/data/server/ && cargo clippy)
+        uses: actions-rs/clippy-check@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          args: --manifest-path tensorboard/data/server/Cargo.toml
       - name: 'Check cargo-raze freshness'
         run: |
           rm -rf third_party/rust/
