@@ -28,27 +28,27 @@ licenses([
     "notice",  # MIT from expression "MIT"
 ])
 
-# Generated Targets
+# Generated targets
 
+# buildifier: leave-alone
 rust_library(
     name = "build_const",
-    srcs = glob(["**/*.rs"]),
-    crate_features = [
-        "default",
-        "std",
-    ],
-    crate_root = "src/lib.rs",
     crate_type = "lib",
+    deps = [
+    ],
+    srcs = glob(["**/*.rs"]),
+    crate_root = "src/lib.rs",
     edition = "2015",
     rustc_flags = [
         "--cap-lints=allow",
     ],
+    version = "0.2.1",
     tags = [
         "cargo-raze",
         "manual",
     ],
-    version = "0.2.1",
-    # buildifier: leave-alone
-    deps = [
+    crate_features = [
+        "default",
+        "std",
     ],
 )
