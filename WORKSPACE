@@ -89,7 +89,7 @@ tf_workspace()
 load("@bazel_skylib//lib:versions.bzl", "versions")
 # Keep this version in sync with the BAZEL environment variable defined
 # in our .travis.yml config.
-versions.check(minimum_bazel_version = "3.0.0")
+versions.check(minimum_bazel_version = "3.5.0")
 
 load("@io_bazel_rules_sass//:package.bzl", "rules_sass_dependencies")
 
