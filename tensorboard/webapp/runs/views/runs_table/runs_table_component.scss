@@ -49,6 +49,9 @@ $_font-size: 13px;
 $_border-color: #0000001f;
 
 [role='table'] {
+  display: table;
+  width: 100%;
+
   .header {
     color: mat-color($tb-foreground, text);
     white-space: nowrap;
@@ -74,6 +77,14 @@ $_border-color: #0000001f;
         padding-right: 24px;
       }
     }
+  }
+}
+
+[role='rowgroup'] {
+  display: table-row-group;
+
+  &.header {
+    display: table-header-group;
   }
 }
 
@@ -133,8 +144,8 @@ $_border-color: #0000001f;
 
 // Prevents the table column for checkbox and run_color from growing beyond
 // their sizes.
-.mat-column-checkbox,
-.mat-column-run_color {
+.tb-column-checkbox,
+.tb-column-run_color {
   width: 20px;
 }
 
