@@ -9,6 +9,7 @@ rust_library(
     srcs = [
         "lib.rs",
         "masked_crc.rs",
+        "scripted_reader.rs",
     ],
     edition = "2018",
     deps = [
