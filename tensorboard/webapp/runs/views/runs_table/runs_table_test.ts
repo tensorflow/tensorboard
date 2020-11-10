@@ -129,14 +129,14 @@ class TestableColorPicker {
 }
 
 const Selector = {
-  ITEM_ROW: '[role="row"]:not(.header)',
+  ITEM_ROW: '.rows [role="row"]',
   COLUMN: '[role="cell"]',
   HEADER_COLUMN: '[role="columnheader"]',
   HEADER_CHECKBOX: '[role="columnheader"] mat-checkbox',
   SELECT_ALL_ROW: '.select-all',
 };
 
-describe('runs_table', () => {
+fdescribe('runs_table', () => {
   let store: MockStore<State>;
   let dispatchSpy: jasmine.Spy;
   let overlayContainer: OverlayContainer;

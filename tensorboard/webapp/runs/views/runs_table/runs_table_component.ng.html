@@ -30,7 +30,7 @@ limitations under the License.
   <div role="table">
     <ng-container *ngTemplateOutlet="header"></ng-container>
     <ng-container *ngTemplateOutlet="selectAll"></ng-container>
-    <div role="rowgroup">
+    <div role="rowgroup" class="rows">
       <ng-container *ngFor="let item of pageItems; trackBy: tableTrackBy">
         <ng-container
           *ngTemplateOutlet="row; context:{item: item}"
@@ -102,14 +102,12 @@ limitations under the License.
           <span
             *ngSwitchCase="RunsTableColumn.EXPERIMENT_NAME"
             [mat-sort-header]="RunsTableColumn.EXPERIMENT_NAME"
-            class="name"
             >Experiment</span
           >
 
           <span
             *ngSwitchCase="RunsTableColumn.RUN_NAME"
             [mat-sort-header]="RunsTableColumn.RUN_NAME"
-            class="name"
             >Run</span
           >
 
