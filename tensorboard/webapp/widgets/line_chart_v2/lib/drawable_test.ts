@@ -14,9 +14,9 @@ limitations under the License.
 ==============================================================================*/
 
 import {Coordinator} from './coordinator';
+import {DataDrawable} from './drawable';
 import {SvgRenderer} from './renderer/svg_renderer';
-import {DataDrawable, DrawableConfig} from './drawable';
-import {DataSeries} from './types';
+import {DataSeries, Rect} from './types';
 
 class TestableDataDrawable extends DataDrawable {
   redraw(): void {
@@ -49,56 +49,74 @@ function buildSeries(override: Partial<DataSeries>): DataSeries {
   };
 }
 
-describe('line_chart_v2/lib/drawable test', () => {
-  let options: DrawableConfig;
-  let root: TestableDataDrawable;
-  let redrawSpy: jasmine.Spy;
-  let svg: SVGElement;
-  let getMetadataMap: jasmine.Spy;
+interface SetupParam {
+  data: DataSeries[];
+  viewBox: Rect;
+  layoutRect: Rect;
+  getMetadataMap: jasmine.Spy;
+}
 
-  beforeEach(() => {
-    svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+interface SetupValue {
+  dataDrawable: TestableDataDrawable;
+  redrawSpy: jasmine.Spy;
+  svg: SVGElement;
+}
 
-    getMetadataMap = jasmine.createSpy().and.returnValue({
+function setUp(options: Partial<SetupParam> = {}): SetupValue {
+  const {data, getMetadataMap, viewBox, layoutRect} = {
+    data: [buildSeries({id: 'foo'})],
+    viewBox: {x: 0, y: -1, width: 5, height: 1},
+    layoutRect: {x: 0, y: 0, width: 100, height: 100},
+    getMetadataMap: jasmine.createSpy().and.returnValue({
       foo: {
         color: '#f00',
         visible: true,
       },
-    });
+    }),
+    ...options,
+  };
 
-    options = {
-      coordinator: new Coordinator(),
-      renderer: new SvgRenderer(svg),
-      getMetadataMap,
-    };
-    root = new TestableDataDrawable(options);
-    root.setData([buildSeries({id: 'foo'})]);
-    options.coordinator.setViewBoxRect({x: 0, y: -1, width: 5, height: 1});
-    root.setLayoutRect({x: 0, y: 0, width: 100, height: 100});
-    redrawSpy = spyOn(root, 'redraw');
-  });
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  const drawableOptions = {
+    coordinator: new Coordinator(),
+    renderer: new SvgRenderer(svg),
+    getMetadataMap,
+  };
 
+  const dataDrawable = new TestableDataDrawable(drawableOptions);
+  dataDrawable.setData(data);
+  drawableOptions.coordinator.setViewBoxRect(viewBox);
+  dataDrawable.setLayoutRect(layoutRect);
+  const redrawSpy = spyOn(dataDrawable, 'redraw');
+
+  return {redrawSpy, dataDrawable, svg};
+}
+
+describe('line_chart_v2/lib/drawable test', () => {
   describe('draw frame', () => {
     it('invokes redraw on empty data', () => {
-      root.internalOnlyDrawFrame();
+      const {dataDrawable, redrawSpy} = setUp();
+      dataDrawable.render();
 
       expect(redrawSpy).toHaveBeenCalledTimes(1);
     });
 
     it('does not re-render if paint is not dirty', () => {
-      root.internalOnlyDrawFrame();
+      const {dataDrawable, redrawSpy} = setUp();
+      dataDrawable.render();
 
       expect(redrawSpy).toHaveBeenCalledTimes(1);
 
       // Nothing changed for paint to be dirty.
-      root.internalOnlyDrawFrame();
+      dataDrawable.render();
       expect(redrawSpy).toHaveBeenCalledTimes(1);
     });
 
     it('re-renders if explictly marked as dirty', () => {
-      root.internalOnlyDrawFrame();
-      root.markAsPaintDirty();
-      root.internalOnlyDrawFrame();
+      const {dataDrawable, redrawSpy} = setUp();
+      dataDrawable.render();
+      dataDrawable.markAsPaintDirty();
+      dataDrawable.render();
 
       expect(redrawSpy).toHaveBeenCalledTimes(2);
     });
@@ -106,32 +124,35 @@ describe('line_chart_v2/lib/drawable test', () => {
     // If the dimension of the DOM changes, even if the data has not changed, we need to
     // repaint.
     it('re-renders if layout has changed', () => {
-      root.internalOnlyDrawFrame();
-      root.setLayoutRect({x: 0, y: 0, width: 200, height: 200});
+      const {dataDrawable, redrawSpy} = setUp();
+      dataDrawable.render();
+      dataDrawable.setLayoutRect({x: 0, y: 0, width: 200, height: 200});
 
       expect(redrawSpy).toHaveBeenCalledTimes(1);
 
-      root.internalOnlyDrawFrame();
+      dataDrawable.render();
 
       expect(redrawSpy).toHaveBeenCalledTimes(2);
     });
 
     it('manages the DOM cache', () => {
       // Use the real redraw and update SVG.
-      redrawSpy.and.callThrough();
-      getMetadataMap = getMetadataMap.and.returnValue({
-        foo: {
-          color: '#f00',
-          visible: true,
-        },
-        bar: {
-          color: '#0f0',
-          visible: true,
-        },
+      const {dataDrawable, redrawSpy, svg} = setUp({
+        data: [buildSeries({id: 'foo', points: [{x: 0, y: 1}]})],
+        getMetadataMap: jasmine.createSpy().and.returnValue({
+          foo: {
+            color: '#f00',
+            visible: true,
+          },
+          bar: {
+            color: '#0f0',
+            visible: true,
+          },
+        }),
       });
+      redrawSpy.and.callThrough();
 
-      root.setData([buildSeries({id: 'foo', points: [{x: 0, y: 1}]})]);
-      root.internalOnlyDrawFrame();
+      dataDrawable.render();
 
       expect(svg.children.length).toBe(1);
       const path1 = svg.children[0];
@@ -139,7 +160,7 @@ describe('line_chart_v2/lib/drawable test', () => {
       expect(path1.tagName).toBe('path');
       const pathD1 = path1.getAttribute('d')!;
 
-      root.setData([
+      dataDrawable.setData([
         buildSeries({
           id: 'foo',
           points: [
@@ -148,7 +169,7 @@ describe('line_chart_v2/lib/drawable test', () => {
           ],
         }),
       ]);
-      root.internalOnlyDrawFrame();
+      dataDrawable.render();
       expect(svg.children.length).toBe(1);
       const path2 = svg.children[0];
       const pathD2 = path2.getAttribute('d')!;
@@ -157,13 +178,13 @@ describe('line_chart_v2/lib/drawable test', () => {
       expect(pathD2).not.toBe(pathD1);
       expect(pathD2.length).toBeGreaterThan(pathD1.length);
 
-      root.setData([
+      dataDrawable.setData([
         buildSeries({
           id: 'bar',
           points: [{x: 0, y: 0}],
         }),
       ]);
-      root.internalOnlyDrawFrame();
+      dataDrawable.render();
       expect(svg.children.length).toBe(1);
       const path3 = svg.children[0];
       expect(path3).not.toEqual(path2);
@@ -171,46 +192,65 @@ describe('line_chart_v2/lib/drawable test', () => {
   });
 
   describe('data coordinate transformation', () => {
-    beforeEach(() => {
-      const domRect = {x: 0, y: 0, width: 100, height: 100};
-      root.setLayoutRect(domRect);
-
-      const dataSeries = [
-        buildSeries({
-          id: 'foo',
-          points: [
-            {x: 0, y: 0},
-            {x: 1, y: 1},
-            {x: 2, y: -1},
-          ],
-        }),
-        buildSeries({
-          id: 'bar',
-          points: [
-            {x: 0, y: 0},
-            {x: 1, y: -10},
-            {x: 2, y: 10},
-          ],
-        }),
-      ];
-      root.setData(dataSeries);
-      options.coordinator.setViewBoxRect({x: 0, y: -50, width: 2, height: 100});
-      options.coordinator.setDomContainerRect(domRect);
-    });
-
     it('updates the data coordinate on redraw', () => {
-      root.internalOnlyDrawFrame();
+      const {dataDrawable} = setUp({
+        layoutRect: {x: 0, y: 0, width: 100, height: 100},
+        data: [
+          buildSeries({
+            id: 'foo',
+            points: [
+              {x: 0, y: 0},
+              {x: 1, y: 1},
+              {x: 2, y: -1},
+            ],
+          }),
+          buildSeries({
+            id: 'bar',
+            points: [
+              {x: 0, y: 0},
+              {x: 1, y: -10},
+              {x: 2, y: 10},
+            ],
+          }),
+        ],
+        viewBox: {x: 0, y: -50, width: 2, height: 100},
+      });
 
-      expect(root.getSeriesData()).toEqual([
+      dataDrawable.render();
+
+      expect(dataDrawable.getSeriesData()).toEqual([
         {id: 'foo', polyline: new Float32Array([0, 50, 50, 49, 100, 51])},
         {id: 'bar', polyline: new Float32Array([0, 50, 50, 60, 100, 40])},
       ]);
     });
 
     it('updates and redraws when the data changes', () => {
-      root.internalOnlyDrawFrame();
+      const {dataDrawable, redrawSpy} = setUp({
+        layoutRect: {x: 0, y: 0, width: 100, height: 100},
+        data: [
+          buildSeries({
+            id: 'foo',
+            points: [
+              {x: 0, y: 0},
+              {x: 1, y: 1},
+              {x: 2, y: -1},
+            ],
+          }),
+          buildSeries({
+            id: 'bar',
+            points: [
+              {x: 0, y: 0},
+              {x: 1, y: -10},
+              {x: 2, y: 10},
+            ],
+          }),
+        ],
+        viewBox: {x: 0, y: -50, width: 2, height: 100},
+      });
 
-      root.setData([
+      dataDrawable.render();
+
+      dataDrawable.setData([
         {
           id: 'foo',
           points: [
@@ -229,7 +269,7 @@ describe('line_chart_v2/lib/drawable test', () => {
         },
       ]);
       expect(redrawSpy).toHaveBeenCalledTimes(1);
-      root.setData([
+      dataDrawable.setData([
         {
           id: 'foo',
           points: [
@@ -248,8 +288,8 @@ describe('line_chart_v2/lib/drawable test', () => {
         },
       ]);
 
-      root.internalOnlyDrawFrame();
-      expect(root.getSeriesData()).toEqual([
+      dataDrawable.render();
+      expect(dataDrawable.getSeriesData()).toEqual([
         {id: 'foo', polyline: new Float32Array([0, 50, 50, 0, 100, 100])},
         {id: 'bar', polyline: new Float32Array([0, 50, 50, 50, 100, 50])},
       ]);

@@ -132,8 +132,13 @@ export abstract class DataDrawable {
     this.paintDirty = true;
   }
 
-  internalOnlyDrawFrame() {
-    this.internalOnlyTransformCoordinatesIfStale();
+  /**
+   * Renders a rectangular region if paint is dirty.
+   *
+   * @final Do not override.
+   */
+  render() {
+    this.transformCoordinatesIfStale();
 
     if (!this.paintDirty) return;
 
@@ -159,7 +164,7 @@ export abstract class DataDrawable {
     this.rawSeriesData = data;
   }
 
-  internalOnlyTransformCoordinatesIfStale(): void {
+  private transformCoordinatesIfStale(): void {
     if (!this.isCoordinateUpdated()) {
       return;
     }
@@ -187,5 +192,9 @@ export abstract class DataDrawable {
     this.markAsPaintDirty();
   }
 
+  /**
+   * Draws a rectangular region with coordinate system transformed `this.series` and
+   * `this.paintBrush`.
+   */
   protected abstract redraw(): void;
 }
