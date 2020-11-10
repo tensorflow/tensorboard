@@ -60,19 +60,45 @@ tf_ts_library(
 )
 
 tf_ts_library(
+    name = "drawable",
+    srcs = [
+        "drawable.ts",
+        "paint_brush.ts",
+    ],
+    deps = [
+        ":coordinator",
+        ":types",
+        "//tensorboard/webapp/widgets/line_chart_v2/lib/renderer:types",
+    ],
+)
+
+tf_ts_library(
+    name = "series_line_view",
+    srcs = [
+        "series_line_view.ts",
+    ],
+    deps = [
+        ":drawable",
+    ],
+)
+
+tf_ts_library(
     name = "lib_tests",
     testonly = True,
     srcs = [
         "coordinator_test.ts",
+        "drawable_test.ts",
         "scale_test.ts",
         "worker_pool_test.ts",
     ],
     deps = [
         ":coordinator",
+        ":drawable",
         ":scale",
         ":types",
         ":worker",
         ":worker_pool",
+        "//tensorboard/webapp/widgets/line_chart_v2/lib/renderer",
         "@npm//@types/jasmine",
     ],
 )
