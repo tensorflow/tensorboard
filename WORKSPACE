@@ -109,12 +109,12 @@ bazel_version_repository(name = "bazel_version")
 
 http_archive(
     name = "io_bazel_rules_rust",
-    sha256 = "9beda941ab076d15428d8615475329bd65002a13a26c2837932af0fb3dc582c5",
-    strip_prefix = "rules_rust-9426a3820093e75ea07d14f875e42f789632507f",
+    sha256 = "52b7c0da410c8a80baf3c0d3b799b8619eb3e81a9c61cba829f63c16f0be1711",
+    strip_prefix = "rules_rust-afee872f08ed67b53caab2e1d2fefd501dce81f4",
     urls = [
-        # Master branch as of 2020-10-23
-        "http://mirror.tensorflow.org/github.com/bazelbuild/rules_rust/archive/9426a3820093e75ea07d14f875e42f789632507f.tar.gz",
-        "https://github.com/bazelbuild/rules_rust/archive/9426a3820093e75ea07d14f875e42f789632507f.tar.gz",
+        # Master branch as of 2020-11-05
+        "http://mirror.tensorflow.org/github.com/bazelbuild/rules_rust/archive/afee872f08ed67b53caab2e1d2fefd501dce81f4.tar.gz",
+        "https://github.com/bazelbuild/rules_rust/archive/afee872f08ed67b53caab2e1d2fefd501dce81f4.tar.gz",
     ],
 )
 
