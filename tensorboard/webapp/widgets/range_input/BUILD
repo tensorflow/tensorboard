@@ -1,5 +1,4 @@
-load("//tensorboard/defs:defs.bzl", "tf_sass_binary", "tf_ts_library")
-load("@npm_angular_bazel//:index.bzl", "ng_module")
+load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_sass_binary", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
@@ -8,7 +7,7 @@ tf_sass_binary(
     src = "range_input_component.scss",
 )
 
-ng_module(
+tf_ng_module(
     name = "range_input",
     srcs = [
         "range_input_component.ts",

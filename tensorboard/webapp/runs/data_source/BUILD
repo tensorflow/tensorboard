@@ -1,11 +1,10 @@
-load("@npm_angular_bazel//:index.bzl", "ng_module")
-load("//tensorboard/defs:defs.bzl", "tf_ts_library")
+load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])
 
-ng_module(
+tf_ng_module(
     name = "data_source",
     srcs = [
         "runs_data_source.ts",
@@ -28,7 +27,7 @@ tf_ts_library(
     visibility = ["//visibility:private"],
 )
 
-ng_module(
+tf_ng_module(
     name = "testing",
     testonly = True,
     srcs = [

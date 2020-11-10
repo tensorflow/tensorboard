@@ -1,5 +1,4 @@
-load("@npm_angular_bazel//:index.bzl", "ng_module")
-load("//tensorboard/defs:defs.bzl", "tf_sass_binary", "tf_sass_library", "tf_ts_library")
+load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_sass_binary", "tf_sass_library", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
@@ -15,7 +14,7 @@ tf_sass_binary(
     src = "metrics_container.scss",
 )
 
-ng_module(
+tf_ng_module(
     name = "views",
     srcs = [
         "metrics_container.ts",

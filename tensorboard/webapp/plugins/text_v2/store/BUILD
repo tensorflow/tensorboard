@@ -1,9 +1,8 @@
-load("@npm_angular_bazel//:index.bzl", "ng_module")
-load("//tensorboard/defs:defs.bzl", "tf_ts_library")
+load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
-ng_module(
+tf_ng_module(
     name = "store",
     srcs = [
         "index.ts",
@@ -18,7 +17,7 @@ ng_module(
     ],
 )
 
-ng_module(
+tf_ng_module(
     name = "types",
     srcs = [
         "text_types.ts",
