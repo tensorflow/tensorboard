@@ -9,11 +9,8 @@ rust_library(
     srcs = [
         "lib.rs",
         "masked_crc.rs",
-<<<<<<< HEAD
         "reservoir.rs",
-=======
         "scripted_reader.rs",
->>>>>>> 5ecced3ed0b0f615287d32485a23d01973e706e2
     ],
     edition = "2018",
     deps = [
