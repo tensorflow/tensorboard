@@ -13,6 +13,7 @@
 # limitations under the License.
 """External-only delegates for various BUILD rules."""
 
+load("@npm_angular_bazel//:index.bzl", "ng_module")
 load("@npm_bazel_rollup//:index.bzl", "rollup_bundle")
 load("@npm_bazel_karma//:index.bzl", "karma_web_test_suite")
 load("@npm_bazel_typescript//:index.bzl", "ts_config", "ts_devserver", "ts_library")
@@ -139,3 +140,7 @@ def tf_sass_library(**kwargs):
     sass_library(
         **kwargs
     )
+
+def tf_ng_module(**kwargs):
+    """TensorBoard wrapper for Angular modules."""
+    ng_module(**kwargs)
