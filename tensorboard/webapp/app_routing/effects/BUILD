@@ -1,10 +1,10 @@
-load("@npm_angular_bazel//:index.bzl", "ng_module")
+load("//tensorboard/defs:defs.bzl", "tf_ng_module")
 
 package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])
 
-ng_module(
+tf_ng_module(
     name = "effects",
     srcs = [
         "app_routing_effects.ts",
@@ -27,7 +27,7 @@ ng_module(
     ],
 )
 
-ng_module(
+tf_ng_module(
     name = "effects_tests",
     testonly = True,
     srcs = ["app_routing_effects_test.ts"],

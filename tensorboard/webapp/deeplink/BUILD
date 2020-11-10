@@ -1,8 +1,8 @@
-load("@npm_angular_bazel//:index.bzl", "ng_module")
+load("//tensorboard/defs:defs.bzl", "tf_ng_module")
 
 package(default_visibility = ["//tensorboard:internal"])
 
-ng_module(
+tf_ng_module(
     name = "deeplink",
     srcs = [
         "deeplink_module.ts",
@@ -15,7 +15,7 @@ ng_module(
     ],
 )
 
-ng_module(
+tf_ng_module(
     name = "deeplink_test_lib",
     testonly = True,
     srcs = [

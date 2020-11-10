@@ -1,5 +1,4 @@
-load("@npm_angular_bazel//:index.bzl", "ng_module")
-load("//tensorboard/defs:defs.bzl", "tf_sass_binary", "tf_ts_library")
+load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_sass_binary", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
@@ -8,7 +7,7 @@ tf_sass_binary(
     src = "alert_display_snackbar_container.scss",
 )
 
-ng_module(
+tf_ng_module(
     name = "alert_snackbar",
     srcs = [
         "alert_display_snackbar_container.ts",

@@ -1,8 +1,8 @@
-load("@npm_angular_bazel//:index.bzl", "ng_module")
+load("//tensorboard/defs:defs.bzl", "tf_ng_module")
 
 package(default_visibility = ["//tensorboard:internal"])
 
-ng_module(
+tf_ng_module(
     name = "webapp_data_source",
     srcs = [
         "tb_server_data_source.ts",
@@ -18,7 +18,7 @@ ng_module(
     ],
 )
 
-ng_module(
+tf_ng_module(
     name = "webapp_data_source_test_lib",
     testonly = True,
     srcs = [
@@ -33,7 +33,7 @@ ng_module(
     ],
 )
 
-ng_module(
+tf_ng_module(
     name = "http_client",
     srcs = [
         "tb_http_client.ts",
@@ -53,7 +53,7 @@ ng_module(
     ],
 )
 
-ng_module(
+tf_ng_module(
     name = "http_client_test",
     testonly = True,
     srcs = [
@@ -73,7 +73,7 @@ ng_module(
     ],
 )
 
-ng_module(
+tf_ng_module(
     name = "feature_flag",
     srcs = [
         "tb_feature_flag_data_source.ts",
@@ -88,7 +88,7 @@ ng_module(
     ],
 )
 
-ng_module(
+tf_ng_module(
     name = "feature_flag_testing",
     testonly = True,
     srcs = [
@@ -100,7 +100,7 @@ ng_module(
     ],
 )
 
-ng_module(
+tf_ng_module(
     name = "feature_flag_test_lib",
     testonly = True,
     srcs = [
@@ -114,7 +114,7 @@ ng_module(
     ],
 )
 
-ng_module(
+tf_ng_module(
     name = "http_client_testing",
     testonly = True,
     srcs = [
