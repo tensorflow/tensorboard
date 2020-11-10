@@ -19,7 +19,7 @@ import {DataDrawable, DrawableConfig} from './drawable';
 import {DataSeries} from './types';
 
 class TestableDataDrawable extends DataDrawable {
-  renderFrame(): void {
+  redraw(): void {
     const metadataMap = this.getMetadataMap();
     for (const data of this.series) {
       const metadata = metadataMap[data.id];
@@ -50,9 +50,9 @@ function buildSeries(override: Partial<DataSeries>): DataSeries {
 }
 
 describe('line_chart_v2/lib/drawable test', () => {
-  let option: DrawableConfig;
+  let options: DrawableConfig;
   let root: TestableDataDrawable;
-  let renderFrameSpy: jasmine.Spy;
+  let redrawSpy: jasmine.Spy;
   let svg: SVGElement;
   let getMetadataMap: jasmine.Spy;
 
@@ -66,33 +66,33 @@ describe('line_chart_v2/lib/drawable test', () => {
       },
     });
 
-    option = {
+    options = {
       coordinator: new Coordinator(),
       renderer: new SvgRenderer(svg),
       getMetadataMap,
     };
-    root = new TestableDataDrawable(option);
+    root = new TestableDataDrawable(options);
     root.setData([buildSeries({id: 'foo'})]);
-    option.coordinator.setViewBoxRect({x: 0, y: -1, width: 5, height: 1});
+    options.coordinator.setViewBoxRect({x: 0, y: -1, width: 5, height: 1});
     root.setLayoutRect({x: 0, y: 0, width: 100, height: 100});
-    renderFrameSpy = spyOn(root, 'renderFrame');
+    redrawSpy = spyOn(root, 'redraw');
   });
 
   describe('draw frame', () => {
     it('invokes redraw on empty data', () => {
       root.internalOnlyDrawFrame();
 
-      expect(renderFrameSpy).toHaveBeenCalledTimes(1);
+      expect(redrawSpy).toHaveBeenCalledTimes(1);
     });
 
     it('does not re-render if paint is not dirty', () => {
       root.internalOnlyDrawFrame();
 
-      expect(renderFrameSpy).toHaveBeenCalledTimes(1);
+      expect(redrawSpy).toHaveBeenCalledTimes(1);
 
       // Nothing changed for paint to be dirty.
       root.internalOnlyDrawFrame();
-      expect(renderFrameSpy).toHaveBeenCalledTimes(1);
+      expect(redrawSpy).toHaveBeenCalledTimes(1);
     });
 
     it('re-renders if explictly marked as dirty', () => {
@@ -100,7 +100,7 @@ describe('line_chart_v2/lib/drawable test', () => {
       root.markAsPaintDirty();
       root.internalOnlyDrawFrame();
 
-      expect(renderFrameSpy).toHaveBeenCalledTimes(2);
+      expect(redrawSpy).toHaveBeenCalledTimes(2);
     });
 
     // If the dimension of the DOM changes, even if the data has not changed, we need to
@@ -109,16 +109,16 @@ describe('line_chart_v2/lib/drawable test', () => {
       root.internalOnlyDrawFrame();
       root.setLayoutRect({x: 0, y: 0, width: 200, height: 200});
 
-      expect(renderFrameSpy).toHaveBeenCalledTimes(1);
+      expect(redrawSpy).toHaveBeenCalledTimes(1);
 
       root.internalOnlyDrawFrame();
 
-      expect(renderFrameSpy).toHaveBeenCalledTimes(2);
+      expect(redrawSpy).toHaveBeenCalledTimes(2);
     });
 
     it('manages the DOM cache', () => {
       // Use the real redraw and update SVG.
-      renderFrameSpy.and.callThrough();
+      redrawSpy.and.callThrough();
       getMetadataMap = getMetadataMap.and.returnValue({
         foo: {
           color: '#f00',
@@ -194,15 +194,13 @@ describe('line_chart_v2/lib/drawable test', () => {
         }),
       ];
       root.setData(dataSeries);
-      option.coordinator.setViewBoxRect({x: 0, y: -50, width: 2, height: 100});
-      option.coordinator.setDomContainerRect(domRect);
+      options.coordinator.setViewBoxRect({x: 0, y: -50, width: 2, height: 100});
+      options.coordinator.setDomContainerRect(domRect);
     });
 
     it('updates the data coordinate on redraw', () => {
       root.internalOnlyDrawFrame();
-      // Notice that data.x = 0 got map to dom.x = 50. That is because we are rendering
-      // both TestableDrawable and TestableDataDrawable, both of which are flex layout,
-      // and TestableDataDrawable has rect of {x: 50, y: 0, width: 50, height: 100}.
+
       expect(root.getSeriesData()).toEqual([
         {id: 'foo', polyline: new Float32Array([0, 50, 50, 49, 100, 51])},
         {id: 'bar', polyline: new Float32Array([0, 50, 50, 60, 100, 40])},
@@ -230,7 +228,7 @@ describe('line_chart_v2/lib/drawable test', () => {
           ],
         },
       ]);
-      expect(renderFrameSpy).toHaveBeenCalledTimes(1);
+      expect(redrawSpy).toHaveBeenCalledTimes(1);
       root.setData([
         {
           id: 'foo',
@@ -255,7 +253,7 @@ describe('line_chart_v2/lib/drawable test', () => {
         {id: 'foo', polyline: new Float32Array([0, 50, 50, 0, 100, 100])},
         {id: 'bar', polyline: new Float32Array([0, 50, 50, 50, 100, 50])},
       ]);
-      expect(renderFrameSpy).toHaveBeenCalledTimes(2);
+      expect(redrawSpy).toHaveBeenCalledTimes(2);
     });
   });
 });

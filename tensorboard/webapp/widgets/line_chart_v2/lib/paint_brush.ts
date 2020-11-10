@@ -15,10 +15,10 @@ limitations under the License.
 
 import {LinePaintOption, ObjectRenderer} from './renderer/renderer_types';
 
-export interface PaintBrushContext {
+export interface PaintBrushContext<T = any> {
   renderCache: {
-    getFromPreviousFrame<T>(cacheKey: string): T;
-    setToCurrentFrame<T>(cacheKey: string, obj: T): void;
+    getFromPreviousFrame(cacheKey: string): T;
+    setToCurrentFrame(cacheKey: string, obj: T): void;
   };
 }
 

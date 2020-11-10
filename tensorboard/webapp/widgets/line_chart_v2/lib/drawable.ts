@@ -123,6 +123,11 @@ export abstract class DataDrawable {
     return this.getMetadataMapImpl();
   }
 
+  /**
+   * Manually marks paint as dirty. Drawable automatically marks paint as dirty when data
+   * or layout changes. If there are other conditions in which redraw must happen, invoke
+   * this method.
+   */
   markAsPaintDirty() {
     this.paintDirty = true;
   }
@@ -132,7 +137,7 @@ export abstract class DataDrawable {
 
     if (!this.paintDirty) return;
 
-    this.renderFrame();
+    this.redraw();
 
     for (const removedObj of this.renderCache.finalizeFrameAndGetRemoved()) {
       this.renderer.destroyObject(removedObj);
@@ -182,5 +187,5 @@ export abstract class DataDrawable {
     this.markAsPaintDirty();
   }
 
-  protected abstract renderFrame(): void;
+  protected abstract redraw(): void;
 }
