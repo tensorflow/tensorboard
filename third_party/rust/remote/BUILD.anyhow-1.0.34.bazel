@@ -33,7 +33,7 @@ licenses([
 # Unsupported target "build-script-build" with type "custom-build" omitted
 
 rust_library(
-    name = "libc",
+    name = "anyhow",
     srcs = glob(["**/*.rs"]),
     crate_features = [
         "default",
@@ -41,7 +41,7 @@ rust_library(
     ],
     crate_root = "src/lib.rs",
     crate_type = "lib",
-    edition = "2015",
+    edition = "2018",
     rustc_flags = [
         "--cap-lints=allow",
     ],
@@ -49,10 +49,32 @@ rust_library(
         "cargo-raze",
         "manual",
     ],
-    version = "0.2.80",
+    version = "1.0.34",
     # buildifier: leave-alone
     deps = [
     ],
 )
 
-# Unsupported target "const_fn" with type "test" omitted
+# Unsupported target "compiletest" with type "test" omitted
+
+# Unsupported target "test_autotrait" with type "test" omitted
+
+# Unsupported target "test_backtrace" with type "test" omitted
+
+# Unsupported target "test_boxed" with type "test" omitted
+
+# Unsupported target "test_chain" with type "test" omitted
+
+# Unsupported target "test_context" with type "test" omitted
+
+# Unsupported target "test_convert" with type "test" omitted
+
+# Unsupported target "test_downcast" with type "test" omitted
+
+# Unsupported target "test_fmt" with type "test" omitted
+
+# Unsupported target "test_macros" with type "test" omitted
+
+# Unsupported target "test_repr" with type "test" omitted
+
+# Unsupported target "test_source" with type "test" omitted
