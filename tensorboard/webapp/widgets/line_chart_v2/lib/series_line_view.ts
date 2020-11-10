@@ -16,7 +16,7 @@ limitations under the License.
 import {DataDrawable} from './drawable';
 
 export class SeriesLineView extends DataDrawable {
-  renderFrame() {
+  redraw() {
     for (const series of this.series) {
       const map = this.getMetadataMap();
       const metadata = map[series.id];
