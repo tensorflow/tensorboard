@@ -23,6 +23,16 @@ def raze_fetch_remote_crates():
 
     maybe(
         http_archive,
+        name = "raze__byteorder__1_3_4",
+        url = "https://crates.io/api/v1/crates/byteorder/1.3.4/download",
+        type = "tar.gz",
+        sha256 = "08c48aae112d48ed9f069b33538ea9e3e90aa263cfa3d1c24309612b1f7472de",
+        strip_prefix = "byteorder-1.3.4",
+        build_file = Label("//third_party/rust/remote:BUILD.byteorder-1.3.4.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "raze__crc__1_8_1",
         url = "https://crates.io/api/v1/crates/crc/1.8.1/download",
         type = "tar.gz",

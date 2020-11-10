@@ -13,6 +13,15 @@ licenses([
 
 # Aliased targets
 alias(
+    name = "byteorder",
+    actual = "@raze__byteorder__1_3_4//:byteorder",
+    tags = [
+        "cargo-raze",
+        "manual",
+    ],
+)
+
+alias(
     name = "crc",
     actual = "@raze__crc__1_8_1//:crc",
     tags = [
