@@ -16,4 +16,10 @@ limitations under the License.
 //! Core functionality for TensorBoard data loading.
 
 pub mod masked_crc;
+<<<<<<< HEAD
 pub mod reservoir;
+=======
+
+#[cfg(test)]
+mod scripted_reader;
+>>>>>>> 5ecced3ed0b0f615287d32485a23d01973e706e2
