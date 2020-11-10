@@ -17,3 +17,6 @@ limitations under the License.
 
 pub mod masked_crc;
 pub mod reservoir;
+
+#[cfg(test)]
+mod scripted_reader;

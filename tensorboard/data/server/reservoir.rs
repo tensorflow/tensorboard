@@ -21,8 +21,6 @@ use rand::{
 };
 use rand_chacha::ChaCha20Rng;
 
-type Step = i64;
-
 /// A [reservoir sampling] data structure, with support for preemption and deferred "commits" of
 /// records to a separate destination for better concurrency. This structure always keeps the
 /// latest record in the reservoir, and therefore must inspect every record in the stream.
@@ -84,6 +82,11 @@ pub struct StageReservoir<T, C = ChaCha20Rng> {
     seen: usize,
 }
 
+/// A step associated with a record. The step values in a record stream should be strictly
+/// increasing over time.
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Copy, Clone)]
+pub struct Step(pub i64);
+
 /// A `ReservoirControl` determines which records from a stream should be included into a
 /// reservoir, and which records they should evict. This is usually backed by a random number
 /// generator, but may be made deterministic for testing.
@@ -127,27 +130,42 @@ impl<T, C: ReservoirControl> StageReservoir<T, C> {
 
         // Didn't make the cut? Keep-last only.
         if dst >= self.capacity {
-            if self.staged_items.pop().is_none() {
-                self.committed_steps.pop();
-            }
-            self.staged_items.push((step, v));
-            return;
+            self.pop();
+        } else
+        // No room? Evict the destination.
+        if self.len() >= self.capacity {
+            // From `if`-guards, we know `dst < self.capacity <= self.len()`, so this is safe.
+            self.remove(dst);
         }
+        // In any case, add to end.
+        self.staged_items.push((step, v));
+    }
 
-        // Room to spare? Add to end.
-        let num_stored = self.committed_steps.len() + self.staged_items.len();
-        if num_stored < self.capacity {
-            self.staged_items.push((step, v));
-            return;
+    /// Returns the number of items in the reservoir, including both committed and staged items.
+    fn len(&self) -> usize {
+        self.committed_steps.len() + self.staged_items.len()
+    }
+
+    /// Pops the last item in this reservoir, which will be a staged item if there is one or a
+    /// committed step otherwise. Has no effect if the reservoir is empty.
+    fn pop(&mut self) {
+        if self.staged_items.pop().is_none() {
+            self.committed_steps.pop();
         }
+    }
 
-        // Otherwise, we're evicting.
-        if dst < self.committed_steps.len() {
-            self.committed_steps.remove(dst);
+    /// Removes an item at the given index in the sequence of items in the reservoir, including
+    /// both committed and staged items.
+    ///
+    /// # Panics
+    ///
+    /// Panics if `index >= self.len()`.
+    fn remove(&mut self, index: usize) {
+        if index < self.committed_steps.len() {
+            self.committed_steps.remove(index);
         } else {
-            self.staged_items.remove(dst - self.committed_steps.len());
+            self.staged_items.remove(index - self.committed_steps.len());
         }
-        self.staged_items.push((step, v))
     }
 
     /// Creates a new reservoir with the specified capacity and reservoir control.
@@ -227,7 +245,7 @@ impl<T, C: ReservoirControl> StageReservoir<T, C> {
     /// value.
     pub fn commit_map<S, F: FnMut(T) -> S>(&mut self, head: &mut Vec<(Step, S)>, mut f: F) {
         let mut keep_steps = self.committed_steps.iter().peekable();
-        head.retain(move |(s, _)| match keep_steps.peek() {
+        head.retain(|(s, _)| match keep_steps.peek() {
             Some(t) if *s == **t => {
                 keep_steps.next();
                 true
@@ -280,6 +298,7 @@ mod tests {
         }
 
         rsv.ctl.extend(vec![0, 1, 1, 2]);
+<<<<<<< HEAD
         rsv.offer(0, "zero");
         rsv.offer(1, "one");
         rsv.offer(2, "two");
@@ -298,11 +317,34 @@ mod tests {
         rsv.offer(4, "four");
         rsv.offer(5, "five");
         assert!(rsv.staged_preemption());
+=======
+        rsv.offer(Step(0), "zero");
+        rsv.offer(Step(1), "one");
+        rsv.offer(Step(2), "two");
+        rsv.offer(Step(3), "three");
+        rsv.commit_map(&mut head, mapper);
+        assert_eq!(
+            head,
+            vec![
+                (Step(0), ":zero:"),
+                (Step(1), ":one:"),
+                (Step(2), ":two:"),
+                (Step(3), ":three:")
+            ],
+        );
+
+        rsv.ctl.extend(vec![1, 2, 1, 3]);
+        rsv.offer(Step(4), "four");
+        rsv.offer(Step(5), "five");
+        rsv.offer(Step(6), "six");
+        rsv.offer(Step(7), "seven"); // this one exceeds capacity, evicting index 3
+>>>>>>> e1d9a49e6459a8d39b9cd4f49a1161b0d3dce409
         rsv.commit_map(&mut head, mapper);
         assert!(!rsv.staged_preemption());
         assert_eq!(
             head,
             vec![
+<<<<<<< HEAD
                 (0, ":zero:"),
                 (1, ":one:"),
                 (2, ":two:"),
@@ -324,10 +366,27 @@ mod tests {
         rsv.ctl.extend(vec![8, 9]); // drop steps 9 and 10, modulo keep-last
         rsv.offer(9, "NINE");
         rsv.offer(10, "TEN");
+=======
+                (Step(0), ":zero:"),
+                (Step(1), ":one:"),
+                (Step(2), ":two:"),
+                (Step(4), ":four:"),
+                (Step(5), ":five:"),
+                (Step(6), ":six:"),
+                (Step(7), ":seven:"),
+            ],
+        );
+
+        rsv.ctl.extend(vec![3, 7, 6]);
+        rsv.offer(Step(8), "eight"); // evict index 3 (now "four")
+        rsv.offer(Step(9), "nine"); // 7 >= 7, so drop (evict most recent)
+        rsv.offer(Step(10), "ten"); // evict index 6 (now "nine")
+>>>>>>> e1d9a49e6459a8d39b9cd4f49a1161b0d3dce409
         rsv.commit_map(&mut head, mapper);
         assert_eq!(
             head,
             vec![
+<<<<<<< HEAD
                 (0, ":zero:"),
                 (2, ":two:"),
                 (3, ":three:"),
@@ -352,6 +411,15 @@ mod tests {
                 (3, ":three:"),
                 (4, ":four:"),
                 (7, ":!seven!:"),
+=======
+                (Step(0), ":zero:"),
+                (Step(1), ":one:"),
+                (Step(2), ":two:"),
+                (Step(5), ":five:"),
+                (Step(6), ":six:"),
+                (Step(7), ":seven:"),
+                (Step(10), ":ten:"),
+>>>>>>> e1d9a49e6459a8d39b9cd4f49a1161b0d3dce409
             ],
         );
     }
@@ -364,19 +432,19 @@ mod tests {
 
         // Fill with `[i * i for i in range(1, 11)]`, exactly filling the reservoir.
         for i in 1..=10 {
-            rsv.offer(i * i, ());
+            rsv.offer(Step(i * i), ());
             if i % 5 == 0 {
                 rsv.commit(&mut head);
-                assert_eq!(head, (1..=i).map(|j| (j * j, ())).collect::<Vec<_>>());
+                assert_eq!(head, (1..=i).map(|j| (Step(j * j), ())).collect::<Vec<_>>());
             }
         }
 
         // Fill with more square numbers, keeping last but not overflowing.
         for i in 11..=16 {
-            rsv.offer(i * i, ());
+            rsv.offer(Step(i * i), ());
             rsv.commit(&mut head);
             assert_eq!(head.len(), 10);
-            assert_eq!(head.last(), Some(&(i * i, ())));
+            assert_eq!(head.last(), Some(&(Step(i * i), ())));
         }
 
         // Seen 16 records, keeping 10. Preempt to invalidate records 9..=16, that the reservoir
@@ -412,8 +480,8 @@ mod tests {
         let mut h1 = Vec::new();
         let mut h2 = Vec::new();
         for i in 0..100 {
-            r1.offer(i, ());
-            r2.offer(i, ());
+            r1.offer(Step(i), ());
+            r2.offer(Step(i), ());
             match i % 10 {
                 2 => r1.commit(&mut h1),
                 7 => r2.commit(&mut h2),
