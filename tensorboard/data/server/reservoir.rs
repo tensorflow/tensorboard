@@ -298,30 +298,10 @@ mod tests {
         }
 
         rsv.ctl.extend(vec![0, 1, 1, 2]);
-<<<<<<< HEAD
-        rsv.offer(0, "zero");
-        rsv.offer(1, "one");
-        rsv.offer(2, "two");
-        rsv.offer(3, "three???"); // this funny-looking record will be evicted
-        rsv.commit_map(&mut head, mapper);
-        assert_eq!(
-            head,
-            vec![(0, ":zero:"), (1, ":one:"), (2, ":two:"), (3, ":three???:")],
-        );
-
-        rsv.ctl.extend(vec![1, 2, 1, 3]);
-        rsv.offer(4, "four???");
-        assert!(!rsv.staged_preemption());
-        rsv.offer(3, "three");
-        assert!(rsv.staged_preemption());
-        rsv.offer(4, "four");
-        rsv.offer(5, "five");
-        assert!(rsv.staged_preemption());
-=======
         rsv.offer(Step(0), "zero");
         rsv.offer(Step(1), "one");
         rsv.offer(Step(2), "two");
-        rsv.offer(Step(3), "three");
+        rsv.offer(Step(3), "three???"); // this funny-looking record will be evicted
         rsv.commit_map(&mut head, mapper);
         assert_eq!(
             head,
@@ -329,97 +309,72 @@ mod tests {
                 (Step(0), ":zero:"),
                 (Step(1), ":one:"),
                 (Step(2), ":two:"),
-                (Step(3), ":three:")
+                (Step(3), ":three???:")
             ],
         );
 
         rsv.ctl.extend(vec![1, 2, 1, 3]);
+        rsv.offer(Step(4), "four???");
+        assert!(!rsv.staged_preemption());
+        rsv.offer(Step(3), "three");
+        assert!(rsv.staged_preemption());
         rsv.offer(Step(4), "four");
         rsv.offer(Step(5), "five");
-        rsv.offer(Step(6), "six");
-        rsv.offer(Step(7), "seven"); // this one exceeds capacity, evicting index 3
->>>>>>> e1d9a49e6459a8d39b9cd4f49a1161b0d3dce409
+        assert!(rsv.staged_preemption());
         rsv.commit_map(&mut head, mapper);
         assert!(!rsv.staged_preemption());
         assert_eq!(
             head,
             vec![
-<<<<<<< HEAD
-                (0, ":zero:"),
-                (1, ":one:"),
-                (2, ":two:"),
-                (3, ":three:"),
-                (4, ":four:"),
-                (5, ":five:"),
+                (Step(0), ":zero:"),
+                (Step(1), ":one:"),
+                (Step(2), ":two:"),
+                (Step(3), ":three:"),
+                (Step(4), ":four:"),
+                (Step(5), ":five:"),
             ],
         );
 
         rsv.ctl.extend(vec![4]);
-        rsv.offer(6, "six");
+        rsv.offer(Step(6), "six");
         rsv.ctl.extend(vec![1]); // the first that matters: evict step 1
-        rsv.offer(7, "seven");
+        rsv.offer(Step(7), "seven");
         rsv.ctl.extend(vec![2, 3]); // these don't matter: preempt two, store two
-        rsv.offer(6, "SIX");
-        rsv.offer(7, "SEVEN");
+        rsv.offer(Step(6), "SIX");
+        rsv.offer(Step(7), "SEVEN");
         rsv.ctl.extend(vec![4]); // evict step 5 (at index 4, since 1 was evicted already)
-        rsv.offer(8, "EIGHT");
+        rsv.offer(Step(8), "EIGHT");
         rsv.ctl.extend(vec![8, 9]); // drop steps 9 and 10, modulo keep-last
-        rsv.offer(9, "NINE");
-        rsv.offer(10, "TEN");
-=======
-                (Step(0), ":zero:"),
-                (Step(1), ":one:"),
-                (Step(2), ":two:"),
-                (Step(4), ":four:"),
-                (Step(5), ":five:"),
-                (Step(6), ":six:"),
-                (Step(7), ":seven:"),
-            ],
-        );
-
-        rsv.ctl.extend(vec![3, 7, 6]);
-        rsv.offer(Step(8), "eight"); // evict index 3 (now "four")
-        rsv.offer(Step(9), "nine"); // 7 >= 7, so drop (evict most recent)
-        rsv.offer(Step(10), "ten"); // evict index 6 (now "nine")
->>>>>>> e1d9a49e6459a8d39b9cd4f49a1161b0d3dce409
+        rsv.offer(Step(9), "NINE");
+        rsv.offer(Step(10), "TEN");
         rsv.commit_map(&mut head, mapper);
         assert_eq!(
             head,
             vec![
-<<<<<<< HEAD
-                (0, ":zero:"),
-                (2, ":two:"),
-                (3, ":three:"),
-                (4, ":four:"),
-                (6, ":SIX:"),
-                (7, ":SEVEN:"),
-                (10, ":TEN:"),
+                (Step(0), ":zero:"),
+                (Step(2), ":two:"),
+                (Step(3), ":three:"),
+                (Step(4), ":four:"),
+                (Step(6), ":SIX:"),
+                (Step(7), ":SEVEN:"),
+                (Step(10), ":TEN:"),
             ],
         );
 
         // Preempt again, then drop records even while there's space.
         rsv.ctl.extend(vec![0, 7, 7]);
-        rsv.offer(5, "!five!");
-        rsv.offer(6, "!six!");
-        rsv.offer(7, "!seven!");
+        rsv.offer(Step(5), "!five!");
+        rsv.offer(Step(6), "!six!");
+        rsv.offer(Step(7), "!seven!");
         rsv.commit_map(&mut head, mapper);
         assert_eq!(
             head,
             vec![
-                (0, ":zero:"),
-                (2, ":two:"),
-                (3, ":three:"),
-                (4, ":four:"),
-                (7, ":!seven!:"),
-=======
                 (Step(0), ":zero:"),
-                (Step(1), ":one:"),
                 (Step(2), ":two:"),
-                (Step(5), ":five:"),
-                (Step(6), ":six:"),
-                (Step(7), ":seven:"),
-                (Step(10), ":ten:"),
->>>>>>> e1d9a49e6459a8d39b9cd4f49a1161b0d3dce409
+                (Step(3), ":three:"),
+                (Step(4), ":four:"),
+                (Step(7), ":!seven!:"),
             ],
         );
     }
@@ -450,7 +405,7 @@ mod tests {
         // Seen 16 records, keeping 10. Preempt to invalidate records 9..=16, that the reservoir
         // must have between 2 and 8 old records before the new one is added.
         assert!(!rsv.staged_preemption());
-        rsv.offer(70, ()); // 8 * 8 < 70 < 9 * 9
+        rsv.offer(Step(70), ()); // 8 * 8 < 70 < 9 * 9
         assert!(rsv.staged_preemption());
         rsv.commit(&mut head);
         assert!(
@@ -460,17 +415,17 @@ mod tests {
             head
         );
         assert!(
-            head.iter().all(|(s, _)| *s <= 70),
+            head.iter().all(|(s, _)| *s <= Step(70)),
             "want all <= 70: {:?}",
             head
         );
-        assert_eq!(head.last(), Some(&(70, ())));
+        assert_eq!(head.last(), Some(&(Step(70), ())));
 
         // One more sanity check: add another record. The "70" preemption may or may not be
         // evicted, but this new record should be the last.
-        rsv.offer(71, ());
+        rsv.offer(Step(71), ());
         rsv.commit(&mut head);
-        assert_eq!(head.last(), Some(&(71, ())));
+        assert_eq!(head.last(), Some(&(Step(71), ())));
     }
 
     #[test]
