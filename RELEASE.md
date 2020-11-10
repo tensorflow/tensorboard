@@ -1,3 +1,50 @@
+# Release 2.4.0
+
+The 2.4 minor series tracks TensorFlow 2.4.
+
+## Features
+
+- Improved performance for scalar charts with many runs
+  - Up to 50% faster network fetch times in some cases (#4050)
+  - Up to 90% faster paint time in some cases (#4053)
+- 🧪 **Experimental** Time Series dashboard
+  - View scalars, histograms, and images side-by-side in a combined view
+  - Customize the color of specific runs
+  - Pin specific charts/images/histograms and share a custom view of your data
+  - No additional logging required
+
+## TensorBoard.dev updates
+
+- Added support for uploading Hparams (#3916)
+  - Try `tensorboard dev upload` on a logdir containing
+    [hparams][hparam-tutorial]!
+
+[hparam-tutorial]: https://www.tensorflow.org/tensorboard/hyperparameter_tuning_with_hparams
+
+## Bug fixes
+
+- Docs: fixed image summary tutorial (#4206)
+- Projector Plugin: fixed bookmark loading (#4159), thanks aknoerig@!
+- Graphs: updated TPU-compatible ops list (#4024)
+
+## Deprecations
+
+TensorBoard features that depend on TensorFlow APIs now require TensorFlow 2.x
+installed. Running TensorBoard 2.4.0+ with TensorFlow 1.x installed will not be
+supported.
+
+Please note that this does not affect data already written to disk; summaries
+emitted by the TF 1.x tf.summary API are still readable and fully supported by
+the latest versions of TensorBoard.
+
+Support for Python 3.5 is dropped.
+
+Plugin dashboards have been removed:
+- Beholder: see #3843
+- Debugger V1: replaced by [Debugger V2][debugger_v2_tutorial]
+
+[debugger_v2_tutorial]: https://www.tensorflow.org/tensorboard/debugger_v2
+
 # Release 2.3.0
 
 The 2.3 minor series tracks TensorFlow 2.3.
