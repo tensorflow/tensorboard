@@ -1,9 +1,8 @@
-load("@npm_angular_bazel//:index.bzl", "ng_module")
-load("//tensorboard/defs:defs.bzl", "tf_ts_library")
+load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
-ng_module(
+tf_ng_module(
     name = "metric_type",
     srcs = [
         "metric_type.ts",
@@ -27,7 +26,7 @@ tf_ts_library(
     ],
 )
 
-ng_module(
+tf_ng_module(
     name = "filter_annotations",
     srcs = [
         "filter_annotations.ts",
@@ -57,7 +56,7 @@ tf_ts_library(
     ],
 )
 
-ng_module(
+tf_ng_module(
     name = "violin_data",
     srcs = [
         "violin_data.ts",
@@ -88,7 +87,7 @@ tf_ts_library(
     ],
 )
 
-ng_module(
+tf_ng_module(
     name = "sort_annotations",
     srcs = [
         "sort_annotations.ts",
@@ -119,7 +118,7 @@ tf_ts_library(
     ],
 )
 
-ng_module(
+tf_ng_module(
     name = "coordinate_data",
     srcs = [
         "coordinate_data.ts",
@@ -148,7 +147,7 @@ tf_ts_library(
     ],
 )
 
-ng_module(
+tf_ng_module(
     name = "csv_result",
     srcs = [
         "csv_result.ts",

@@ -1,5 +1,4 @@
-load("@npm_angular_bazel//:index.bzl", "ng_module")
-load("//tensorboard/defs:defs.bzl", "tf_js_binary", "tf_ng_web_test_suite", "tf_sass_binary", "tf_sass_library", "tf_svg_bundle")
+load("//tensorboard/defs:defs.bzl", "tf_js_binary", "tf_ng_module", "tf_ng_web_test_suite", "tf_sass_binary", "tf_sass_library", "tf_svg_bundle")
 load("//tensorboard/defs:web.bzl", "tf_web_library")
 load("//tensorboard/defs:vulcanize.bzl", "tensorboard_html_binary")
 
@@ -7,7 +6,7 @@ package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])
 
-ng_module(
+tf_ng_module(
     name = "oss_plugins_module",
     srcs = [
         "oss_plugins_module.ts",
@@ -21,7 +20,7 @@ ng_module(
     ],
 )
 
-ng_module(
+tf_ng_module(
     name = "reducer_config",
     srcs = [
         "reducer_config.ts",
@@ -32,7 +31,7 @@ ng_module(
     ],
 )
 
-ng_module(
+tf_ng_module(
     name = "selectors",
     srcs = [
         "selectors.ts",
@@ -47,7 +46,7 @@ ng_module(
     ],
 )
 
-ng_module(
+tf_ng_module(
     name = "mat_icon",
     srcs = [
         "mat_icon_module.ts",
@@ -61,7 +60,7 @@ ng_module(
 
 # Angular module for the top-level app component together with all of its
 # injectable dependencies.  I.e., the entire Angular app.
-ng_module(
+tf_ng_module(
     name = "app",
     srcs = [
         "app_container.ts",
@@ -103,7 +102,7 @@ ng_module(
     ],
 )
 
-ng_module(
+tf_ng_module(
     name = "app_state",
     srcs = [
         "app_state.ts",
@@ -123,7 +122,7 @@ ng_module(
 # TODO(stephanwlee): at the moment, there is no development build. Reinstate it.
 # Wrapper that prepares Angular app for deployment, dealing with browser
 # compatibility, Vulcanization, and configuration (e.g. prod vs. dev).
-ng_module(
+tf_ng_module(
     name = "ng_main",
     srcs = [
         "bootstrap.ts",

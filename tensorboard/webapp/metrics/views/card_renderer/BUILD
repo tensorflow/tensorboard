@@ -1,5 +1,4 @@
-load("//tensorboard/defs:defs.bzl", "tf_sass_binary", "tf_ts_library")
-load("@npm_angular_bazel//:index.bzl", "ng_module")
+load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_sass_binary", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
@@ -8,7 +7,7 @@ tf_sass_binary(
     src = "card_view_container.scss",
 )
 
-ng_module(
+tf_ng_module(
     name = "card_renderer",
     srcs = [
         "card_lazy_loader.ts",
@@ -45,7 +44,7 @@ tf_sass_binary(
     ],
 )
 
-ng_module(
+tf_ng_module(
     name = "histogram_card",
     srcs = [
         "histogram_card_component.ts",
@@ -88,7 +87,7 @@ tf_sass_binary(
     ],
 )
 
-ng_module(
+tf_ng_module(
     name = "image_card",
     srcs = [
         "image_card_component.ts",
@@ -121,7 +120,7 @@ ng_module(
     ],
 )
 
-ng_module(
+tf_ng_module(
     name = "run_name",
     srcs = [
         "run_name_component.ts",
@@ -156,7 +155,7 @@ tf_sass_binary(
     ],
 )
 
-ng_module(
+tf_ng_module(
     name = "scalar_card",
     srcs = [
         "scalar_card_component.ts",

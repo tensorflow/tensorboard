@@ -1,11 +1,10 @@
-load("@npm_angular_bazel//:index.bzl", "ng_module")
-load("//tensorboard/defs:defs.bzl", "tf_ts_library")
+load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])
 
-ng_module(
+tf_ng_module(
     name = "resize_detector",
     srcs = [
         "resize_detector_directive.ts",
@@ -33,7 +32,7 @@ tf_ts_library(
     ],
 )
 
-ng_module(
+tf_ng_module(
     name = "resize_detector_testing",
     testonly = True,
     srcs = [

@@ -1,5 +1,4 @@
-load("@npm_angular_bazel//:index.bzl", "ng_module")
-load("//tensorboard/defs:defs.bzl", "tf_sass_binary")
+load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_sass_binary")
 
 package(default_visibility = ["//tensorboard:internal"])
 
@@ -10,7 +9,7 @@ tf_sass_binary(
     src = "truncated_path_component.scss",
 )
 
-ng_module(
+tf_ng_module(
     name = "truncated_path",
     srcs = [
         "truncated_path_component.ts",
@@ -25,7 +24,7 @@ ng_module(
     ],
 )
 
-ng_module(
+tf_ng_module(
     name = "text_tests",
     testonly = True,
     srcs = ["truncated_path_test.ts"],
