@@ -13,18 +13,22 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-//! Core functionality for TensorBoard data loading.
+use std::path::PathBuf;
 
-pub mod masked_crc;
-
-#[cfg(test)]
-mod scripted_reader;
-
-/// Protocol buffer bindings.
-#[allow(clippy::all)]
-pub mod proto {
-    /// Bindings for `package tensorboard`, containing standard TensorFlow protos.
-    pub mod tensorboard {
-        include!("tensorboard.pb.rs");
-    }
+fn main() -> std::io::Result<()> {
+    let rule_dir = PathBuf::from(
+        std::env::args_os()
+            .nth(1)
+            .expect("must give output dir as first arg"),
+    );
+    let out_dir = {
+        let mut dir = rule_dir;
+        dir.push("genproto");
+        dir
+    };
+    prost_build::Config::new()
+        .out_dir(&out_dir)
+        .compile_protos(&["tensorboard/compat/proto/event.proto"], &["."])
+        .expect("compile_protos");
+    Ok(())
 }
