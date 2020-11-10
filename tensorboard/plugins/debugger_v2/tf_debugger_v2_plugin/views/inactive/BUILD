@@ -1,4 +1,4 @@
-load("@npm_angular_bazel//:index.bzl", "ng_module")
+load("//tensorboard/defs:defs.bzl", "tf_ng_module")
 
 package(default_visibility = ["//tensorboard:internal"])
 
@@ -19,7 +19,7 @@ genrule(
     exec_tools = [":inline_images"],
 )
 
-ng_module(
+tf_ng_module(
     name = "inactive",
     srcs = [
         "inactive_component.ts",
