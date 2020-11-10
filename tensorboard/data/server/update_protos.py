@@ -15,7 +15,6 @@
 """Update proto source files based on generated outputs."""
 
 import os
-import shutil
 import sys
 
 # Paths to "tensorboard/data/server/" in (a) the Bazel runfiles tree,
