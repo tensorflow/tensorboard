@@ -32,9 +32,9 @@ path = "main.rs"
 name = "rustboard_core"
 path = "lib.rs"
 
-[raze]
+[package.metadata.raze]
 workspace_path = "//third_party/rust"
 genmode = "Remote"
 
-[raze.crates.crc.'1.8.1']
+[package.metadata.raze.crates.crc.'1.8.1']
 gen_buildrs = true
