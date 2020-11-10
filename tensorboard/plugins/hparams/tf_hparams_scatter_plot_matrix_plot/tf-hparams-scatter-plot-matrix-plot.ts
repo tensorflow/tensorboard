@@ -736,18 +736,16 @@ class TfHparamsScatterPlotMatrixPlot extends LegacyElementMixin(
           closestMarkers.classed('closest-marker', true);
           // All elements in closestMarkers should have the same
           // sessionGroup.
-          (_this as any)._setClosestSessionGroup(
-            closestMarkers.datum().sessionGroup
-          );
+          _this.closestSessionGroup = closestMarkers.datum().sessionGroup;
         } else {
-          (_this as any)._setClosestSessionGroup(null);
+          _this.closestSessionGroup = null;
         }
       })
       .on('mouseleave', function ([col, metric]) {
         if (closestMarkers !== null) {
           closestMarkers.classed('closest-marker', false);
           closestMarkers = null;
-          (_this as any)._setClosestSessionGroup(null);
+          _this.closestSessionGroup = null;
         }
       });
     // Finds a closest visible marker in the [col,metric] cell to the point
