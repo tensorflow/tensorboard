@@ -31,6 +31,24 @@ alias(
 )
 
 alias(
+    name = "prost",
+    actual = "@raze__prost__0_6_1//:prost",
+    tags = [
+        "cargo-raze",
+        "manual",
+    ],
+)
+
+alias(
+    name = "prost_build",
+    actual = "@raze__prost_build__0_6_1//:prost_build",
+    tags = [
+        "cargo-raze",
+        "manual",
+    ],
+)
+
+alias(
     name = "rand",
     actual = "@raze__rand__0_7_3//:rand",
     tags = [
