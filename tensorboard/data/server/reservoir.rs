@@ -159,6 +159,7 @@ impl<T, C: ReservoirControl> StageReservoir<T, C> {
             committed_steps: Vec::new(),
             staged_items: Vec::new(),
             capacity,
+            staged_preemption: false,
             ctl,
             seen: 0,
         }
@@ -168,13 +169,10 @@ impl<T, C: ReservoirControl> StageReservoir<T, C> {
     /// Other than the latest record, the records kept form a simple random sample of the stream
     /// (or at least approximately so in the case of preemptions).
     pub fn offer(&mut self, step: Step, v: T) {
-<<<<<<< HEAD
-        self.preempt(step);
-=======
         if self.capacity == 0 {
             return;
         }
->>>>>>> 769cc366af6c64ba2495c1962b0b034a1aec7ca2
+        self.preempt(step);
         self.seen += 1;
         let dst = self.ctl.destination(self.seen);
 
@@ -217,32 +215,15 @@ impl<T, C: ReservoirControl> StageReservoir<T, C> {
         }
     }
 
-<<<<<<< HEAD
-    /// Creates a new reservoir with the specified capacity and reservoir control.
-    ///
-    /// This function does not allocate. Reservoir capacity is allocated as records are offered.
-    pub fn with_control(capacity: usize, ctl: C) -> Self {
-        Self {
-            committed_steps: Vec::new(),
-            staged_items: Vec::new(),
-            capacity,
-            staged_preemption: false,
-            ctl,
-            seen: 0,
-        }
-    }
-
-    /// Accesses a view of the currently staged items.
-=======
     /// Accesses a view of the currently staged items. This includes all items that have been added
     /// to the reservoir since the last commit and have not been evicted.
->>>>>>> 769cc366af6c64ba2495c1962b0b034a1aec7ca2
     pub fn staged_items(&self) -> &[(Step, T)] {
         &self.staged_items[..]
     }
 
-<<<<<<< HEAD
-    /// Checks whether a preemption has been staged.
+    /// Checks whether a preemption has been staged. This is initially `false`; it changes to
+    /// `true` whenever a record is preempted, and back to `false` whenever the reservoir is
+    /// committed.
     pub fn staged_preemption(&self) -> bool {
         self.staged_preemption
     }
@@ -286,17 +267,10 @@ impl<T, C: ReservoirControl> StageReservoir<T, C> {
         self.seen = (self.seen as f64 * (1.0 - fac_preempted)).ceil() as usize;
     }
 
-    /// Commits pending changes from this reservoir into a commit view. The commit should be a
-    /// vector that starts empty and is modified only by calls to `commit`/`commit_map` on this
-    /// reservoir value.
-    pub fn commit(&mut self, head: &mut Vec<(Step, T)>) {
-        self.commit_map(head, |t| t)
-=======
     /// Commits pending changes from this reservoir into a basin. The basin should initially be
     /// empty and should be modified only by calls to `commit`/`commit_map` on this reservoir.
     pub fn commit(&mut self, basin: &mut Basin<T>) {
         self.commit_map(basin, |t| t)
->>>>>>> 769cc366af6c64ba2495c1962b0b034a1aec7ca2
     }
 
     /// Commits pending changes from this reservoir into a basin, applying a mapping function
@@ -314,14 +288,10 @@ impl<T, C: ReservoirControl> StageReservoir<T, C> {
         });
         self.committed_steps
             .extend(self.staged_items.iter().map(|(step, _)| *step));
-<<<<<<< HEAD
-        head.extend(self.staged_items.drain(..).map(|(step, t)| (step, f(t))));
-        self.staged_preemption = false;
-=======
         basin
             .0
             .extend(self.staged_items.drain(..).map(|(step, t)| (step, f(t))));
->>>>>>> 769cc366af6c64ba2495c1962b0b034a1aec7ca2
+        self.staged_preemption = false;
     }
 }
 
@@ -434,8 +404,8 @@ mod tests {
         rsv.offer(Step(7), "!seven!");
         rsv.commit_map(&mut head, mapper);
         assert_eq!(
-            head,
-            vec![
+            head.as_slice(),
+            &[
                 (Step(0), ":zero:"),
                 (Step(2), ":two:"),
                 (Step(3), ":three:"),
@@ -481,23 +451,23 @@ mod tests {
         assert!(rsv.staged_preemption());
         rsv.commit(&mut head);
         assert!(
-            (2..=9).contains(&head.len()),
+            (2..=9).contains(&head.as_slice().len()),
             "want 2 <= {} <= 9: {:?}",
-            head.len(),
+            head.as_slice().len(),
             head
         );
         assert!(
-            head.iter().all(|(s, _)| *s <= Step(70)),
+            head.as_slice().iter().all(|(s, _)| *s <= Step(70)),
             "want all <= 70: {:?}",
             head
         );
-        assert_eq!(head.last(), Some(&(Step(70), ())));
+        assert_eq!(head.as_slice().last(), Some(&(Step(70), ())));
 
         // One more sanity check: add another record. The "70" preemption may or may not be
         // evicted, but this new record should be the last.
         rsv.offer(Step(71), ());
         rsv.commit(&mut head);
-        assert_eq!(head.last(), Some(&(Step(71), ())));
+        assert_eq!(head.as_slice().last(), Some(&(Step(71), ())));
     }
 
     #[test]
@@ -526,8 +496,12 @@ mod tests {
     fn test_empty() {
         let mut rsv = StageReservoir::new(0);
         let mut head = Basin::new();
-        for i in 0..100 {
+        for mut i in 0..100 {
+            if i > 60 {
+                i -= 20; // "preemption", but not really, since no records
+            }
             rsv.offer(Step(i), ());
+            assert!(!rsv.staged_preemption());
             assert_eq!(rsv.staged_items(), &[]);
             if i % 5 == 0 {
                 rsv.commit(&mut head);
