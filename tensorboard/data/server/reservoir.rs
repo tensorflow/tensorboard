@@ -233,10 +233,10 @@ impl<T, C: ReservoirControl> StageReservoir<T, C> {
         &self.staged_items[..]
     }
 
-<<<<<<< HEAD
-    /// Checks whether a preemption has been staged. This is initially `false`; it changes to
-    /// `true` whenever a record is preempted, and back to `false` whenever the reservoir is
-    /// committed.
+    /// Checks whether a preemption has been staged.
+    ///
+    /// This is initially `false`; it changes to `true` whenever a record is preempted, and back to
+    /// `false` whenever the reservoir is committed.
     pub fn staged_preemption(&self) -> bool {
         self.staged_preemption
     }
@@ -280,14 +280,10 @@ impl<T, C: ReservoirControl> StageReservoir<T, C> {
         self.seen = (self.seen as f64 * (1.0 - fac_preempted)).ceil() as usize;
     }
 
-    /// Commits pending changes from this reservoir into a basin. The basin should initially be
-    /// empty and should be modified only by calls to `commit`/`commit_map` on this reservoir.
-=======
     /// Commits pending changes from this reservoir into a basin.
     ///
     /// The basin should initially be empty and should be modified only by calls to
     /// `commit`/`commit_map` on this reservoir.
->>>>>>> 18fe7b38eef0c6613a347cb517ad9df5efe26187
     pub fn commit(&mut self, basin: &mut Basin<T>) {
         self.commit_map(basin, |t| t)
     }
