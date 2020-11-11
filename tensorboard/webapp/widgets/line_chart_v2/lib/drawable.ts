@@ -14,14 +14,14 @@ limitations under the License.
 ==============================================================================*/
 
 import {Coordinator} from './coordinator';
-import {PaintBrush} from './paint_brush';
-import {ObjectRenderer} from './renderer/renderer_types';
 import {
   DataInternalSeries,
   DataSeries,
   DataSeriesMetadataMap,
   Rect,
-} from './types';
+} from './internal_types';
+import {PaintBrush} from './paint_brush';
+import {ObjectRenderer} from './renderer/renderer_types';
 
 class RenderCacheContainer {
   private prevFrameCache = new Map<string, any>();
