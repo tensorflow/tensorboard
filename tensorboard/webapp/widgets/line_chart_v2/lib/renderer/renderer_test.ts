@@ -15,7 +15,7 @@ limitations under the License.
 import * as THREE from 'three';
 
 import {ThreeCoordinator} from '../threejs_coordinator';
-import {Polyline} from '../types';
+import {Polyline} from '../internal_types';
 import {SvgRenderer} from './svg_renderer';
 import {ThreeRenderer} from './threejs_renderer';
 

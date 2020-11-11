@@ -32,7 +32,43 @@ export interface Extent {
   y: [number, number];
 }
 
+export interface DataSeriesMetadata {
+  id: string;
+  displayName: string;
+  visible: boolean;
+  color: string;
+  // Number between 0-1. Default is 1.
+  opacity?: number;
+  /**
+   * Whether the series is auxiliary. When a datum is auxiliary, it is visible in the
+   * chart but will not be used for calculating the data extent and will not be
+   * interactable.
+   */
+  aux?: boolean;
+}
+
+export interface DataSeriesMetadataMap<
+  Metadata extends DataSeriesMetadata = DataSeriesMetadata
+> {
+  [id: string]: Metadata;
+}
+
+export interface Point {
+  x: number;
+  y: number;
+}
+
+export interface DataSeries<T extends Point = Point> {
+  id: string;
+  points: T[];
+}
+
 /**
  * Flattened array of 2d coordinates: [x0, y0, x1, y1, ..., xn, yn].
  */
 export type Polyline = Float32Array;
+
+export interface DataInternalSeries {
+  id: string;
+  polyline: Polyline;
+}
