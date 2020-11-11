@@ -24,6 +24,7 @@ rust_library(
     srcs = [
         "lib.rs",
         "masked_crc.rs",
+        "reservoir.rs",
         "scripted_reader.rs",
         "tf_record.rs",
     ] + _checked_in_proto_files,
@@ -32,6 +33,8 @@ rust_library(
         "//third_party/rust:byteorder",
         "//third_party/rust:crc",
         "//third_party/rust:prost",
+        "//third_party/rust:rand",
+        "//third_party/rust:rand_chacha",
     ],
 )
 
