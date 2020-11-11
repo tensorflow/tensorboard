@@ -63,7 +63,7 @@ function createPortHandler(port: MessagePort, initMessage: InitMessage) {
 
     switch (message.type) {
       case HostToGuestEvent.SERIES_DATA_UPDATE: {
-        const data = decompactDataSeries(message);
+        const data = decompactDataSeries(message.compactDataSeries);
         lineChart.setData(data);
         break;
       }

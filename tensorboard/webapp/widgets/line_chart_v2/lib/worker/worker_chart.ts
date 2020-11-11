@@ -21,6 +21,7 @@ import {
   Extent,
   ScaleType,
 } from '../internal_types';
+import {compactDataSeries} from './compact_data_series';
 import {
   GuestToMainMessage,
   GuestToMainType,
@@ -29,7 +30,6 @@ import {
   MainToGuestMessage,
   RendererType,
 } from './message_types';
-import {compactDataSeries} from './compact_data_series';
 import {WorkerPool, WorkerProxy} from './worker_pool';
 
 export class WorkerChart implements Chart {
@@ -109,15 +109,14 @@ export class WorkerChart implements Chart {
   }
 
   setData(data: DataSeries[]): void {
-    const {idsAndLengths, flattenedSeries} = compactDataSeries(data);
+    const compactData = compactDataSeries(data);
     this.sendMessage(
       {
         type: HostToGuestEvent.SERIES_DATA_UPDATE,
-        idsAndLengths,
-        flattenedSeries,
+        compactDataSeries: compactData,
       },
       // Need to transfer the ownership to the worker.
-      [flattenedSeries]
+      [compactData.flattenedSeries]
     );
   }
 

@@ -16,6 +16,7 @@ limitations under the License.
 import {DataSeriesMetadataMap, Dimension, Extent} from '../internal_types';
 import {RendererType} from '../renderer/renderer_types';
 import {ScaleType} from '../scale_types';
+import {CompactDataSeries} from './compact_data_series';
 
 export {RendererType} from '../renderer/renderer_types';
 
@@ -49,11 +50,7 @@ export interface ResizeMessage {
 
 export interface SeriesUpdateMessage {
   type: HostToGuestEvent.SERIES_DATA_UPDATE;
-  idsAndLengths: Array<{
-    id: string;
-    length: number;
-  }>;
-  flattenedSeries: ArrayBufferLike;
+  compactDataSeries: CompactDataSeries;
 }
 
 export type SeriesMetadataMap = DataSeriesMetadataMap;

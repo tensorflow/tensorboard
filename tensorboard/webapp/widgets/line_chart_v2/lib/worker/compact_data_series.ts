@@ -17,7 +17,7 @@ import {DataSeries} from '../internal_types';
 
 export interface CompactDataSeries {
   idsAndLengths: Array<{id: string; length: number}>;
-  flattenedSeries: ArrayBufferLike;
+  flattenedSeries: ArrayBuffer;
 }
 
 /**
@@ -59,8 +59,11 @@ export function decompactDataSeries(
   const rawData = new Float32Array(flattenedSeries);
   const data: DataSeries[] = [];
 
-  let rawDataIndex = 0;
+  if (rawData.length % 2 !== 0) {
+    throw new Error('`flattenedSeries` must have even number of elements');
+  }
 
+  let rawDataIndex = 0;
   for (const {id, length} of idsAndLengths) {
     const points: Array<{x: number; y: number}> = [];
     for (let index = 0; index < length; index++) {

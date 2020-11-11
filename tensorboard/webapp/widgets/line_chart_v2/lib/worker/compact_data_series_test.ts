@@ -13,7 +13,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {compactDataSeries, decompactDataSeries} from './compact_data_series';
+import {
+  CompactDataSeries,
+  compactDataSeries,
+  decompactDataSeries,
+} from './compact_data_series';
 
 describe('line_chart_v2/lib/compact_data_series', () => {
   describe('data series compact & decompact', () => {
@@ -116,6 +120,20 @@ describe('line_chart_v2/lib/compact_data_series', () => {
           points: [{x: 1, y: 0}],
         },
       ]);
+    });
+
+    it('fails when decompacting wrong message (odd number of data points', () => {
+      const compactDataSeries: CompactDataSeries = {
+        idsAndLengths: [
+          {
+            id: 'foo',
+            length: 2,
+          },
+        ],
+        flattenedSeries: new Float32Array([1, 2, 3]),
+      };
+
+      expect(() => decompactDataSeries(compactDataSeries)).toThrow();
     });
   });
 });

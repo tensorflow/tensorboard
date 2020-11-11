@@ -129,7 +129,7 @@ describe('line_chart_v2/lib/worker_chart test', () => {
     expect(channelTxSpy).toHaveBeenCalledWith(
       {
         type: HostToGuestEvent.SERIES_DATA_UPDATE,
-        ...compact,
+        compactDataSeries: compact,
       },
       [compact.flattenedSeries]
     );
