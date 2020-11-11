@@ -30,18 +30,26 @@ licenses([
 
 # Generated Targets
 
-# Unsupported target "build-script-build" with type "custom-build" omitted
+# Unsupported target "dijkstra" with type "bench" omitted
+
+# Unsupported target "iso" with type "bench" omitted
+
+# Unsupported target "matrix_graph" with type "bench" omitted
+
+# Unsupported target "ograph" with type "bench" omitted
+
+# Unsupported target "stable_graph" with type "bench" omitted
+
+# Unsupported target "unionfind" with type "bench" omitted
 
 rust_library(
-    name = "libc",
+    name = "petgraph",
     srcs = glob(["**/*.rs"]),
     crate_features = [
-        "default",
-        "std",
     ],
     crate_root = "src/lib.rs",
     crate_type = "lib",
-    edition = "2015",
+    edition = "2018",
     rustc_flags = [
         "--cap-lints=allow",
     ],
@@ -49,10 +57,22 @@ rust_library(
         "cargo-raze",
         "manual",
     ],
-    version = "0.2.80",
+    version = "0.5.1",
     # buildifier: leave-alone
     deps = [
+        "@raze__fixedbitset__0_2_0//:fixedbitset",
+        "@raze__indexmap__1_6_0//:indexmap",
     ],
 )
 
-# Unsupported target "const_fn" with type "test" omitted
+# Unsupported target "graph" with type "test" omitted
+
+# Unsupported target "graphmap" with type "test" omitted
+
+# Unsupported target "iso" with type "test" omitted
+
+# Unsupported target "quickcheck" with type "test" omitted
+
+# Unsupported target "stable_graph" with type "test" omitted
+
+# Unsupported target "unionfind" with type "test" omitted

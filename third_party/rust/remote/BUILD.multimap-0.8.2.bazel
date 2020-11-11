@@ -30,14 +30,10 @@ licenses([
 
 # Generated Targets
 
-# Unsupported target "build-script-build" with type "custom-build" omitted
-
 rust_library(
-    name = "libc",
+    name = "multimap",
     srcs = glob(["**/*.rs"]),
     crate_features = [
-        "default",
-        "std",
     ],
     crate_root = "src/lib.rs",
     crate_type = "lib",
@@ -49,10 +45,8 @@ rust_library(
         "cargo-raze",
         "manual",
     ],
-    version = "0.2.80",
+    version = "0.8.2",
     # buildifier: leave-alone
     deps = [
     ],
 )
-
-# Unsupported target "const_fn" with type "test" omitted

@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {ScaleType} from './types';
+import {ScaleType} from './scale_types';
 import {createScale} from './scale';
 import {Coordinator} from './coordinator';
 import {ThreeCoordinator} from './threejs_coordinator';

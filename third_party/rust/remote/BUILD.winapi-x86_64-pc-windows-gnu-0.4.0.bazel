@@ -33,11 +33,9 @@ licenses([
 # Unsupported target "build-script-build" with type "custom-build" omitted
 
 rust_library(
-    name = "libc",
+    name = "winapi_x86_64_pc_windows_gnu",
     srcs = glob(["**/*.rs"]),
     crate_features = [
-        "default",
-        "std",
     ],
     crate_root = "src/lib.rs",
     crate_type = "lib",
@@ -49,10 +47,8 @@ rust_library(
         "cargo-raze",
         "manual",
     ],
-    version = "0.2.80",
+    version = "0.4.0",
     # buildifier: leave-alone
     deps = [
     ],
 )
-
-# Unsupported target "const_fn" with type "test" omitted
