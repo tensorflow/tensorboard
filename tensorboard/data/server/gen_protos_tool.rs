@@ -13,26 +13,22 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-export * from './scale_types';
+use std::path::PathBuf;
 
-export interface Dimension {
-  width: number;
-  height: number;
+fn main() -> std::io::Result<()> {
+    let rule_dir = PathBuf::from(
+        std::env::args_os()
+            .nth(1)
+            .expect("must give output dir as first arg"),
+    );
+    let out_dir = {
+        let mut dir = rule_dir;
+        dir.push("genproto");
+        dir
+    };
+    prost_build::Config::new()
+        .out_dir(&out_dir)
+        .compile_protos(&["tensorboard/compat/proto/event.proto"], &["."])
+        .expect("compile_protos");
+    Ok(())
 }
-
-export interface Rect {
-  x: number;
-  width: number;
-  y: number;
-  height: number;
-}
-
-export interface Extent {
-  x: [number, number];
-  y: [number, number];
-}
-
-/**
- * Flattened array of 2d coordinates: [x0, y0, x1, y1, ..., xn, yn].
- */
-export type Polyline = Float32Array;

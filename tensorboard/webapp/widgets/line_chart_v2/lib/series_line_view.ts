@@ -13,20 +13,21 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-//! Core functionality for TensorBoard data loading.
+import {DataDrawable} from './drawable';
 
-pub mod masked_crc;
-pub mod reservoir;
-pub mod tf_record;
+export class SeriesLineView extends DataDrawable {
+  redraw() {
+    for (const series of this.series) {
+      const map = this.getMetadataMap();
+      const metadata = map[series.id];
+      if (!metadata) continue;
 
-#[cfg(test)]
-mod scripted_reader;
-
-/// Protocol buffer bindings.
-#[allow(clippy::all)]
-pub mod proto {
-    /// Bindings for `package tensorboard`, containing standard TensorFlow protos.
-    pub mod tensorboard {
-        include!("tensorboard.pb.rs");
+      this.paintBrush.setLine(series.id, series.polyline, {
+        color: metadata.color,
+        visible: metadata.visible || false,
+        opacity: metadata.opacity ?? 1,
+        width: 1,
+      });
     }
+  }
 }

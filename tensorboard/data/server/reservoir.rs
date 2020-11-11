@@ -22,10 +22,11 @@ use rand::{
 use rand_chacha::ChaCha20Rng;
 
 /// A [reservoir sampling] data structure, with support for preemption and deferred "commits" of
-/// records to a separate destination for better concurrency. This structure always keeps the
-/// latest record in the reservoir, and therefore must inspect every record in the stream.
-/// (One exception: when the reservoir's capacity is zero, it does not retain any records, even the
-/// latest one.)
+/// records to a separate destination for better concurrency.
+///
+/// This structure always keeps the latest record in the reservoir, and therefore must inspect
+/// every record in the stream. (One exception: when the reservoir's capacity is zero, it does not
+/// retain any records, even the latest one.)
 ///
 /// # Preemption
 ///
@@ -65,38 +66,43 @@ use rand_chacha::ChaCha20Rng;
 /// [reservoir sampling]: https://en.wikipedia.org/wiki/Reservoir_sampling
 #[derive(Debug)]
 pub struct StageReservoir<T, C = ChaCha20Rng> {
-    /// Steps of items currently in the reservoir whose values have already been committed. Stored
-    /// in step-sorted order, and all steps in `committed_steps` precede all steps in
+    /// Steps of items currently in the reservoir whose values have already been committed.
+    ///
+    /// Stored in step-sorted order, and all steps in `committed_steps` precede all steps in
     /// `staged_items`.
     committed_steps: Vec<Step>,
-    /// Items currently in the reservoir but not yet committed. Stored in step-sorted order, and
-    /// all steps in `staged_items` succeed all steps in `committed_steps`.
+    /// Items currently in the reservoir but not yet committed.
+    ///
+    /// Stored in step-sorted order, and all steps in `staged_items` succeed all steps in
+    /// `committed_steps`.
     staged_items: Vec<(Step, T)>,
-    /// Total capacity of this reservoir. The combined physical capacities of `committed_steps` and
-    /// `staged_items` may exceed this, but their combined lengths will not. Behavior is undefined
-    /// if `capacity == 0`.
+    /// Total capacity of this reservoir.
+    ///
+    /// The combined physical capacities of `committed_steps` and `staged_items` may exceed this,
+    /// but their combined lengths will not. Behavior is undefined if `capacity == 0`.
     capacity: usize,
     /// Whether there has been a preemption since the last commit.
     staged_preemption: bool,
     /// Reservoir control, to determine whether and whither a given new record should be included.
     ctl: C,
-    /// Estimate of the total number of records passed in the stream so far, regardless of whether
-    /// they were ever added to the reservoir. Usually called `N` in the literature.
+    /// Estimate of the total number of non-preempted records passed in the stream so far,
+    /// regardless of whether they were ever added to the reservoir.
     ///
-    /// This estimate is exact for record streams with no preemptions. When a preemption occurs,
-    /// the total number of records preempted from the stream is estimated linearly from the
-    /// proportion of records preempted from the reservoir.
+    /// This value is usually called capital-*N* in the literature. The estimate is exact for
+    /// record streams with no preemptions. When a preemption occurs, the total number of records
+    /// preempted from the stream is estimated linearly from the proportion of records preempted
+    /// from the reservoir.
     seen: usize,
 }
 
-/// A step associated with a record. The step values in a record stream should be strictly
-/// increasing over time.
+/// A step associated with a record, strictly increasing over time within a record stream.
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Copy, Clone)]
 pub struct Step(pub i64);
 
-/// A buffer of records that have been committed and not yet evicted from the reservoir. This is a
-/// snapshot of the reservoir contents at some point in time that is periodically updated by
-/// calling [`StageReservoir::commit`].
+/// A buffer of records that have been committed and not yet evicted from the reservoir.
+///
+/// This is a snapshot of the reservoir contents at some point in time that is periodically updated
+/// by calling [`StageReservoir::commit`].
 #[derive(Debug, Clone)]
 pub struct Basin<T>(Vec<(Step, T)>);
 
@@ -119,8 +125,9 @@ impl<T> Default for Basin<T> {
 }
 
 /// A `ReservoirControl` determines which records from a stream should be included into a
-/// reservoir, and which records they should evict. This is usually backed by a random number
-/// generator, but may be made deterministic for testing.
+/// reservoir, and which records they should evict.
+///
+/// This is usually backed by a random number generator, but may be made deterministic for testing.
 pub trait ReservoirControl {
     /// Upon seeing the latest record in a stream of `n` so far, rolls for the index into the
     /// reservoir that should be evicted to make room for this record. If the result is greater
@@ -141,8 +148,9 @@ impl<R: Rng> ReservoirControl for R {
 
 impl<T> StageReservoir<T, ChaCha20Rng> {
     /// Creates a new reservoir with the specified capacity, using a fixed-seed random number
-    /// generator for reservoir control. All reservoirs created by this function will use the same
-    /// sequence of random numbers.
+    /// generator for reservoir control.
+    ///
+    /// All reservoirs created by this function will use the same sequence of random numbers.
     ///
     /// This function does not allocate. Reservoir capacity is allocated as records are offered.
     pub fn new(capacity: usize) -> Self {
@@ -165,9 +173,11 @@ impl<T, C: ReservoirControl> StageReservoir<T, C> {
         }
     }
 
-    /// Offers a record to the reservoir. The reservoir will always include the latest record.
-    /// Other than the latest record, the records kept form a simple random sample of the stream
-    /// (or at least approximately so in the case of preemptions).
+    /// Offers a record to the reservoir.
+    ///
+    /// The reservoir will always include the latest record. Other than the latest record, the
+    /// records kept form a simple random sample of the stream (or at least approximately so in the
+    /// case of preemptions).
     pub fn offer(&mut self, step: Step, v: T) {
         if self.capacity == 0 {
             return;
@@ -194,7 +204,9 @@ impl<T, C: ReservoirControl> StageReservoir<T, C> {
     }
 
     /// Pops the last item in this reservoir, which will be a staged item if there is one or a
-    /// committed step otherwise. Has no effect if the reservoir is empty.
+    /// committed step otherwise.
+    ///
+    /// Has no effect if the reservoir is empty.
     fn pop(&mut self) {
         if self.staged_items.pop().is_none() {
             self.committed_steps.pop();
@@ -221,6 +233,7 @@ impl<T, C: ReservoirControl> StageReservoir<T, C> {
         &self.staged_items[..]
     }
 
+<<<<<<< HEAD
     /// Checks whether a preemption has been staged. This is initially `false`; it changes to
     /// `true` whenever a record is preempted, and back to `false` whenever the reservoir is
     /// committed.
@@ -269,14 +282,22 @@ impl<T, C: ReservoirControl> StageReservoir<T, C> {
 
     /// Commits pending changes from this reservoir into a basin. The basin should initially be
     /// empty and should be modified only by calls to `commit`/`commit_map` on this reservoir.
+=======
+    /// Commits pending changes from this reservoir into a basin.
+    ///
+    /// The basin should initially be empty and should be modified only by calls to
+    /// `commit`/`commit_map` on this reservoir.
+>>>>>>> 18fe7b38eef0c6613a347cb517ad9df5efe26187
     pub fn commit(&mut self, basin: &mut Basin<T>) {
         self.commit_map(basin, |t| t)
     }
 
     /// Commits pending changes from this reservoir into a basin, applying a mapping function
-    /// to each new value. This can be used to perform relatively expensive conversions or
-    /// enrichments only for records that are actually committed. The basin should initially be
-    /// empty and should be modified only by calls to `commit`/`commit_map` on this reservoir.
+    /// to each new value.
+    ///
+    /// This can be used to perform relatively expensive conversions or enrichments only for
+    /// records that are actually committed. The basin should initially be empty and should be
+    /// modified only by calls to `commit`/`commit_map` on this reservoir.
     pub fn commit_map<S, F: FnMut(T) -> S>(&mut self, basin: &mut Basin<S>, mut f: F) {
         let mut keep_steps = self.committed_steps.iter().peekable();
         basin.0.retain(|(s, _)| match keep_steps.peek() {
