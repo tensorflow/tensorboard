@@ -12,7 +12,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Polyline, Rect} from '../types';
+import {Polyline, Rect} from '../internal_types';
+
+export enum RendererType {
+  SVG,
+  WEBGL,
+}
 
 /**
  * Responsible for rendering shapes (e.g., line).

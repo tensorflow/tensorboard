@@ -25,19 +25,15 @@ package(default_visibility = [
 ])
 
 licenses([
-    "notice",  # MIT from expression "MIT OR Apache-2.0"
+    "notice",  # MIT from expression "MIT"
 ])
 
 # Generated Targets
 
-# Unsupported target "build-script-build" with type "custom-build" omitted
-
 rust_library(
-    name = "libc",
+    name = "which",
     srcs = glob(["**/*.rs"]),
     crate_features = [
-        "default",
-        "std",
     ],
     crate_root = "src/lib.rs",
     crate_type = "lib",
@@ -49,10 +45,11 @@ rust_library(
         "cargo-raze",
         "manual",
     ],
-    version = "0.2.80",
+    version = "3.1.1",
     # buildifier: leave-alone
     deps = [
+        "@raze__libc__0_2_80//:libc",
     ],
 )
 
-# Unsupported target "const_fn" with type "test" omitted
+# Unsupported target "basic" with type "test" omitted
