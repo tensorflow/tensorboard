@@ -142,7 +142,6 @@ impl<R: Read> TfRecordReader<R> {
     /// ```rust
     /// use rustboard_core::tf_record::{ReadRecordError, TfRecordReader};
     /// use std::io::Cursor;
-    /// use std::sync::mpsc;
     ///
     /// // Simulate a growing file...
     /// let (tx, rx) = std::sync::mpsc::channel();
