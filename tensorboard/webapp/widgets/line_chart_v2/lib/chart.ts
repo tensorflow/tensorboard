@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {Chart, ChartCallbacks, ChartOption} from './chart_types';
+import {Chart, ChartCallbacks, ChartOptions} from './chart_types';
 import {Coordinator} from './coordinator';
 import {
   DataSeries,
@@ -50,7 +50,7 @@ export class MainThreadChart implements Chart {
   private readonly metadataMap: DataSeriesMetadataMap = {};
   private readonly callbacks: ChartCallbacks;
 
-  constructor(option: ChartOption) {
+  constructor(option: ChartOptions) {
     this.callbacks = option.callbacks;
 
     switch (option.type) {
@@ -150,7 +150,7 @@ export class MainThreadChart implements Chart {
   }
 
   private repaint() {
-    this.seriesLineView.internalOnlyDrawFrame();
+    this.seriesLineView.render();
     this.renderer.flush();
     this.callbacks.onDrawEnd();
   }

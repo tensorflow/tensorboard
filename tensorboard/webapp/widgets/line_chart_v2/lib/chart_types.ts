@@ -42,20 +42,20 @@ export interface ChartCallbacks {
   onDrawEnd(): void;
 }
 
-export interface BaseChartOption {
+export interface BaseChartOptions {
   callbacks: ChartCallbacks;
   domDimension: Dimension;
 }
 
-export interface SvgChartOption extends BaseChartOption {
+export interface SvgChartOptions extends BaseChartOptions {
   type: RendererType.SVG;
   container: SVGElement;
 }
 
-export interface WebGlChartOption extends BaseChartOption {
+export interface WebGlChartOptions extends BaseChartOptions {
   type: RendererType.WEBGL;
   devicePixelRatio: number;
   container: OffscreenCanvas | HTMLCanvasElement;
 }
 
-export type ChartOption = SvgChartOption | WebGlChartOption;
+export type ChartOptions = SvgChartOptions | WebGlChartOptions;
