@@ -128,6 +128,14 @@ class TestableColorPicker {
   }
 }
 
+const Selector = {
+  ITEM_ROW: '.rows [role="row"]',
+  COLUMN: '[role="cell"]',
+  HEADER_COLUMN: '[role="columnheader"]',
+  HEADER_CHECKBOX: '[role="columnheader"] mat-checkbox',
+  SELECT_ALL_ROW: '.select-all',
+};
+
 describe('runs_table', () => {
   let store: MockStore<State>;
   let dispatchSpy: jasmine.Spy;
@@ -152,9 +160,9 @@ describe('runs_table', () => {
   function getTableRowTextContent(
     fixture: ComponentFixture<RunsTableContainer>
   ) {
-    const rows = [...fixture.nativeElement.querySelectorAll('tbody tr')];
+    const rows = [...fixture.nativeElement.querySelectorAll(Selector.ITEM_ROW)];
     return rows.map((row) => {
-      const columns = [...row.querySelectorAll('td')];
+      const columns = [...row.querySelectorAll(Selector.COLUMN)];
       return columns.map((column) => column.textContent.trim());
     });
   }
@@ -251,16 +259,20 @@ describe('runs_table', () => {
       await fixture.whenStable();
 
       // mat-table's content somehow does not end up in DebugElement.
-      const rows = fixture.nativeElement.querySelectorAll('tbody tr');
+      const rows = fixture.nativeElement.querySelectorAll(Selector.ITEM_ROW);
       expect(rows.length).toBe(2);
 
       const [book1, book2] = rows;
       expect(
-        [...book1.querySelectorAll('td')].map((node) => node.textContent)
+        [...book1.querySelectorAll(Selector.COLUMN)].map(
+          (node) => node.textContent
+        )
       ).toEqual(['Harry Potter', "The Philosopher's Stone"]);
 
       expect(
-        [...book2.querySelectorAll('td')].map((node) => node.textContent)
+        [...book2.querySelectorAll(Selector.COLUMN)].map(
+          (node) => node.textContent
+        )
       ).toEqual(['Harry Potter', 'The Chamber Of Secrets']);
     });
 
@@ -329,18 +341,24 @@ describe('runs_table', () => {
       await fixture.whenStable();
 
       // mat-table's content somehow does not end up in DebugElement.
-      const rows = fixture.nativeElement.querySelectorAll('tbody tr');
+      const rows = fixture.nativeElement.querySelectorAll(Selector.ITEM_ROW);
       expect(rows.length).toBe(3);
 
       const [book1, book2, book3] = rows;
       expect(
-        [...book1.querySelectorAll('td')].map((node) => node.textContent)
+        [...book1.querySelectorAll(Selector.COLUMN)].map(
+          (node) => node.textContent
+        )
       ).toEqual(['LoTR', 'The Fellowship of the Ring']);
       expect(
-        [...book2.querySelectorAll('td')].map((node) => node.textContent)
+        [...book2.querySelectorAll(Selector.COLUMN)].map(
+          (node) => node.textContent
+        )
       ).toEqual(['HP', "The Philosopher's Stone"]);
       expect(
-        [...book3.querySelectorAll('td')].map((node) => node.textContent)
+        [...book3.querySelectorAll(Selector.COLUMN)].map(
+          (node) => node.textContent
+        )
       ).toEqual(['HP', 'The Chamber Of Secrets']);
     });
 
@@ -364,9 +382,11 @@ describe('runs_table', () => {
       await fixture.whenStable();
 
       // mat-table's content somehow does not end up in DebugElement.
-      const [book1] = fixture.nativeElement.querySelectorAll('tbody tr');
+      const [book1] = fixture.nativeElement.querySelectorAll(Selector.ITEM_ROW);
       expect(
-        [...book1.querySelectorAll('td')].map((node) => node.textContent)
+        [...book1.querySelectorAll(Selector.COLUMN)].map(
+          (node) => node.textContent
+        )
       ).toEqual(['The Fellowship of the Ring', 'The Lord of the Rings']);
     });
 
@@ -386,16 +406,20 @@ describe('runs_table', () => {
       fixture.detectChanges();
       await fixture.whenStable();
 
-      const rowsBefore = fixture.nativeElement.querySelectorAll('tbody tr');
+      const rowsBefore = fixture.nativeElement.querySelectorAll(
+        Selector.ITEM_ROW
+      );
       expect(rowsBefore.length).toBe(2);
 
       runs.next([buildRun({id: 'Potter', name: 'Potter'})]);
       fixture.detectChanges();
 
-      const rowsAfter = fixture.nativeElement.querySelectorAll('tbody tr');
+      const rowsAfter = fixture.nativeElement.querySelectorAll(
+        Selector.ITEM_ROW
+      );
       expect(rowsAfter.length).toBe(1);
       const [potter] = rowsAfter;
-      expect(potter.querySelector('td').textContent).toBe('Potter');
+      expect(potter.querySelector(Selector.COLUMN).textContent).toBe('Potter');
     });
 
     it('renders checkboxes according to the map', async () => {
@@ -427,7 +451,9 @@ describe('runs_table', () => {
       await fixture.whenStable();
 
       // mat-table's content somehow does not end up in DebugElement.
-      const [book1, book2] = fixture.nativeElement.querySelectorAll('tbody tr');
+      const [book1, book2] = fixture.nativeElement.querySelectorAll(
+        Selector.ITEM_ROW
+      );
       expect(book1.querySelector('mat-checkbox input').checked).toBe(true);
       expect(book2.querySelector('mat-checkbox input').checked).toBe(false);
     });
@@ -464,8 +490,10 @@ describe('runs_table', () => {
       );
       fixture.detectChanges();
 
-      const [book1, book2] = fixture.nativeElement.querySelectorAll('tbody tr');
-      const [book1Name, book1Color] = book1.querySelectorAll('td');
+      const [book1, book2] = fixture.nativeElement.querySelectorAll(
+        Selector.ITEM_ROW
+      );
+      const [book1Name, book1Color] = book1.querySelectorAll(Selector.COLUMN);
       expect(book1Name.textContent).toBe("The Philosopher's Stone");
       expect(book1Color.querySelector('button').style.background).toBe(
         'rgb(0, 0, 0)'
@@ -474,7 +502,7 @@ describe('runs_table', () => {
         book1Color.querySelector('button').classList.contains('no-color')
       ).toBe(false);
 
-      const [book2Name, book2Color] = book2.querySelectorAll('td');
+      const [book2Name, book2Color] = book2.querySelectorAll(Selector.COLUMN);
       expect(book2Name.textContent).toBe('The Chamber Of Secrets');
       expect(book2Color.querySelector('button').style.background).toBe('');
       expect(
@@ -633,7 +661,7 @@ describe('runs_table', () => {
       const fixture = createComponent(['book']);
       fixture.detectChanges();
 
-      const rows = fixture.nativeElement.querySelectorAll('tbody tr');
+      const rows = fixture.nativeElement.querySelectorAll(Selector.ITEM_ROW);
       expect(rows.length).toBe(5);
       expect(
         fixture.debugElement.query(By.css('mat-paginator'))
@@ -676,11 +704,13 @@ describe('runs_table', () => {
       );
       updateTableAndPaginator(fixture);
 
-      const rows = fixture.nativeElement.querySelectorAll('tbody tr');
+      const rows = fixture.nativeElement.querySelectorAll(Selector.ITEM_ROW);
       // By default, mat-paginator take the lowest pageSizeOptions.
       expect(rows.length).toBe(PAGE_SIZE);
       const [beforeFirstEl] = rows;
-      expect(beforeFirstEl.querySelector('td').textContent).toBe('run_5');
+      expect(beforeFirstEl.querySelector(Selector.COLUMN).textContent).toBe(
+        'run_5'
+      );
 
       fixture.debugElement
         .query(By.css('[aria-label="Next page"]'))
@@ -727,11 +757,13 @@ describe('runs_table', () => {
       );
       updateTableAndPaginator(fixture);
 
-      const rows = fixture.nativeElement.querySelectorAll('tbody tr');
+      const rows = fixture.nativeElement.querySelectorAll(Selector.ITEM_ROW);
       // By default, mat-paginator take the lowest pageSizeOptions.
       expect(rows.length).toBe(5);
       const [beforeFirstEl] = rows;
-      expect(beforeFirstEl.querySelector('td').textContent).toBe('run_0');
+      expect(beforeFirstEl.querySelector(Selector.COLUMN).textContent).toBe(
+        'run_0'
+      );
 
       store.overrideSelector(getRunSelectorPaginationOption, {
         pageIndex: 1,
@@ -821,7 +853,7 @@ describe('runs_table', () => {
       fixture.detectChanges();
 
       const [expButton, runButton] = fixture.nativeElement.querySelectorAll(
-        'th .mat-sort-header-container'
+        Selector.HEADER_COLUMN + ' .mat-sort-header-container'
       );
 
       expButton.click();
@@ -1174,7 +1206,7 @@ describe('runs_table', () => {
       expect(getTableRowTextContent(fixture)).toEqual([]);
 
       expect(
-        fixture.nativeElement.querySelector('.show-select-all')
+        fixture.nativeElement.querySelector(Selector.SELECT_ALL_ROW)
       ).toBeNull();
     });
 
@@ -1265,7 +1297,7 @@ describe('runs_table', () => {
       fixture.detectChanges();
 
       const checkbox = fixture.nativeElement.querySelector(
-        'thead mat-checkbox'
+        Selector.HEADER_CHECKBOX
       );
 
       expect(checkbox.classList.contains('mat-checkbox-checked')).toBe(true);
@@ -1301,7 +1333,7 @@ describe('runs_table', () => {
         fixture.detectChanges();
 
         const checkbox = fixture.nativeElement.querySelector(
-          'thead mat-checkbox'
+          Selector.HEADER_CHECKBOX
         );
 
         expect(checkbox.classList.contains('mat-checkbox-indeterminate')).toBe(
@@ -1326,10 +1358,10 @@ describe('runs_table', () => {
       await fixture.whenStable();
 
       // mat-table's content somehow does not end up in DebugElement.
-      const rows = fixture.nativeElement.querySelectorAll('tbody tr');
+      const rows = fixture.nativeElement.querySelectorAll(Selector.ITEM_ROW);
       const [book1, book2] = rows;
-      book2.querySelector('td mat-checkbox input').click();
-      book1.querySelector('td mat-checkbox input').click();
+      book2.querySelector('mat-checkbox input').click();
+      book1.querySelector('mat-checkbox input').click();
 
       expect(dispatchSpy).toHaveBeenCalledWith(
         runSelectionToggled({
@@ -1366,7 +1398,10 @@ describe('runs_table', () => {
         );
         fixture.detectChanges();
 
-        fixture.nativeElement.querySelector('thead mat-checkbox input').click();
+        fixture.nativeElement
+          .querySelector(Selector.HEADER_CHECKBOX)
+          .querySelector('input')
+          .click();
 
         expect(dispatchSpy).toHaveBeenCalledWith(
           runPageSelectionToggled({
@@ -1404,7 +1439,7 @@ describe('runs_table', () => {
       fixture.detectChanges();
 
       const showAll = fixture.nativeElement.querySelector(
-        '.select-all.show-select-all'
+        Selector.SELECT_ALL_ROW
       );
       expect(showAll).not.toBeTruthy();
     });
@@ -1436,7 +1471,7 @@ describe('runs_table', () => {
       fixture.detectChanges();
 
       const showAll = fixture.nativeElement.querySelector(
-        '.select-all.show-select-all'
+        Selector.SELECT_ALL_ROW
       );
       expect(showAll.textContent).toContain(
         'All runs in this page are selected but not all runs (2 of 3)'
@@ -1470,7 +1505,7 @@ describe('runs_table', () => {
       fixture.detectChanges();
 
       const showAll = fixture.nativeElement.querySelector(
-        '.select-all.show-select-all'
+        Selector.SELECT_ALL_ROW
       );
       expect(showAll).toBeNull();
     });
@@ -1502,7 +1537,7 @@ describe('runs_table', () => {
       fixture.detectChanges();
 
       const showAll = fixture.nativeElement.querySelector(
-        '.select-all.show-select-all'
+        Selector.SELECT_ALL_ROW
       );
       expect(showAll).toBeNull();
     });
@@ -1535,7 +1570,7 @@ describe('runs_table', () => {
       fixture.detectChanges();
 
       const showAll = fixture.nativeElement.querySelector(
-        '.select-all.show-select-all'
+        Selector.SELECT_ALL_ROW
       );
       expect(showAll.textContent).toContain(
         'All runs in this page are selected but not all runs (2 of 3)'
@@ -1675,7 +1710,7 @@ describe('runs_table', () => {
 
       const fixture = createComponent(hparamSpecs, metricSpecs);
       const columnHeaders = fixture.nativeElement.querySelectorAll(
-        '.columns th .name'
+        Selector.HEADER_COLUMN + ' .name'
       );
       expect([...columnHeaders].map((header) => header.textContent)).toEqual([
         'Batch size',
@@ -2120,7 +2155,9 @@ describe('runs_table', () => {
           const fixture = createComponent(TEST_HPARAM_SPECS, TEST_METRIC_SPECS);
           fixture.detectChanges();
 
-          const columnHeaders = fixture.nativeElement.querySelectorAll('th');
+          const columnHeaders = fixture.nativeElement.querySelectorAll(
+            Selector.HEADER_COLUMN
+          );
           columnHeaders[3].querySelector('button').click();
           const menuItems = getOverlayMenuItems();
 
@@ -2151,7 +2188,9 @@ describe('runs_table', () => {
           const fixture = createComponent(TEST_HPARAM_SPECS, TEST_METRIC_SPECS);
           fixture.detectChanges();
 
-          const columnHeaders = fixture.nativeElement.querySelectorAll('th');
+          const columnHeaders = fixture.nativeElement.querySelectorAll(
+            Selector.HEADER_COLUMN
+          );
           columnHeaders[3].querySelector('button').click();
           const [, menuItemFoo] = getOverlayMenuItems();
 
@@ -2185,7 +2224,9 @@ describe('runs_table', () => {
           const fixture = createComponent(TEST_HPARAM_SPECS, TEST_METRIC_SPECS);
           fixture.detectChanges();
 
-          const columnHeaders = fixture.nativeElement.querySelectorAll('th');
+          const columnHeaders = fixture.nativeElement.querySelectorAll(
+            Selector.HEADER_COLUMN
+          );
           columnHeaders[3].querySelector('button').click();
           const [includeUndefined] = getOverlayMenuItems();
 
@@ -2219,7 +2260,9 @@ describe('runs_table', () => {
           const fixture = createComponent(TEST_HPARAM_SPECS, TEST_METRIC_SPECS);
           fixture.detectChanges();
 
-          const columnHeaders = fixture.nativeElement.querySelectorAll('th');
+          const columnHeaders = fixture.nativeElement.querySelectorAll(
+            Selector.HEADER_COLUMN
+          );
           columnHeaders[1].querySelector('button').click();
           const menuItems = getOverlayMenuItems();
 
@@ -2246,7 +2289,9 @@ describe('runs_table', () => {
           const fixture = createComponent(TEST_HPARAM_SPECS, TEST_METRIC_SPECS);
           fixture.detectChanges();
 
-          const columnHeaders = fixture.nativeElement.querySelectorAll('th');
+          const columnHeaders = fixture.nativeElement.querySelectorAll(
+            Selector.HEADER_COLUMN
+          );
           columnHeaders[1].querySelector('button').click();
           const [, slider] = getOverlayMenuItems();
 
@@ -2282,7 +2327,9 @@ describe('runs_table', () => {
           const fixture = createComponent(TEST_HPARAM_SPECS, TEST_METRIC_SPECS);
           fixture.detectChanges();
 
-          const columnHeaders = fixture.nativeElement.querySelectorAll('th');
+          const columnHeaders = fixture.nativeElement.querySelectorAll(
+            Selector.HEADER_COLUMN
+          );
           columnHeaders[1].querySelector('button').click();
           const [includeUndefined] = getOverlayMenuItems();
 
@@ -2317,7 +2364,9 @@ describe('runs_table', () => {
           const fixture = createComponent(TEST_HPARAM_SPECS, TEST_METRIC_SPECS);
           fixture.detectChanges();
 
-          const columnHeaders = fixture.nativeElement.querySelectorAll('th');
+          const columnHeaders = fixture.nativeElement.querySelectorAll(
+            Selector.HEADER_COLUMN
+          );
           columnHeaders[4].querySelector('button').click();
           const menuItems = getOverlayMenuItems();
 
@@ -2344,7 +2393,9 @@ describe('runs_table', () => {
           const fixture = createComponent(TEST_HPARAM_SPECS, TEST_METRIC_SPECS);
           fixture.detectChanges();
 
-          const columnHeaders = fixture.nativeElement.querySelectorAll('th');
+          const columnHeaders = fixture.nativeElement.querySelectorAll(
+            Selector.HEADER_COLUMN
+          );
           columnHeaders[4].querySelector('button').click();
           const [, slider] = getOverlayMenuItems();
 
@@ -2380,7 +2431,9 @@ describe('runs_table', () => {
           const fixture = createComponent(TEST_HPARAM_SPECS, TEST_METRIC_SPECS);
           fixture.detectChanges();
 
-          const columnHeaders = fixture.nativeElement.querySelectorAll('th');
+          const columnHeaders = fixture.nativeElement.querySelectorAll(
+            Selector.HEADER_COLUMN
+          );
           columnHeaders[4].querySelector('button').click();
           const [checkbox] = getOverlayMenuItems();
           const input = checkbox.querySelector('input') as HTMLInputElement;

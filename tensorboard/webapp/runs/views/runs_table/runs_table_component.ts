@@ -79,6 +79,7 @@ export interface IntervalFilterChange {
 export class RunsTableComponent implements OnChanges {
   readonly dataSource = new MatTableDataSource<RunTableItem>();
   readonly DomainType = DomainType;
+  readonly RunsTableColumn = RunsTableColumn;
 
   @Input() showExperimentName!: boolean;
   @Input() columns!: RunsTableColumn[];
