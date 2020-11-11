@@ -25,7 +25,7 @@ package(default_visibility = [
 ])
 
 licenses([
-    "notice",  # MIT from expression "MIT OR Apache-2.0"
+    "unencumbered",  # Unlicense from expression "Unlicense OR MIT"
 ])
 
 # Generated Targets
@@ -33,20 +33,11 @@ licenses([
 # Unsupported target "build-script-build" with type "custom-build" omitted
 
 rust_library(
-    name = "winapi",
+    name = "memchr",
     srcs = glob(["**/*.rs"]),
     crate_features = [
-        "errhandlingapi",
-        "fileapi",
-        "handleapi",
-        "minwindef",
+        "default",
         "std",
-        "winbase",
-        "winerror",
-        "winsock2",
-        "ws2def",
-        "ws2ipdef",
-        "ws2tcpip",
     ],
     crate_root = "src/lib.rs",
     crate_type = "lib",
@@ -58,7 +49,7 @@ rust_library(
         "cargo-raze",
         "manual",
     ],
-    version = "0.3.9",
+    version = "2.3.4",
     # buildifier: leave-alone
     deps = [
     ],

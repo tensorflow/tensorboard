@@ -30,27 +30,17 @@ licenses([
 
 # Generated Targets
 
-# Unsupported target "build-script-build" with type "custom-build" omitted
-
 rust_library(
-    name = "winapi",
+    name = "futures_core",
     srcs = glob(["**/*.rs"]),
     crate_features = [
-        "errhandlingapi",
-        "fileapi",
-        "handleapi",
-        "minwindef",
+        "alloc",
+        "default",
         "std",
-        "winbase",
-        "winerror",
-        "winsock2",
-        "ws2def",
-        "ws2ipdef",
-        "ws2tcpip",
     ],
     crate_root = "src/lib.rs",
     crate_type = "lib",
-    edition = "2015",
+    edition = "2018",
     rustc_flags = [
         "--cap-lints=allow",
     ],
@@ -58,7 +48,7 @@ rust_library(
         "cargo-raze",
         "manual",
     ],
-    version = "0.3.9",
+    version = "0.3.8",
     # buildifier: leave-alone
     deps = [
     ],

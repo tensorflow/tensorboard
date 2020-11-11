@@ -30,25 +30,12 @@ licenses([
 
 # Generated Targets
 
-# Unsupported target "build-script-build" with type "custom-build" omitted
-
 rust_library(
-    name = "winapi",
+    name = "percent_encoding",
     srcs = glob(["**/*.rs"]),
     crate_features = [
-        "errhandlingapi",
-        "fileapi",
-        "handleapi",
-        "minwindef",
-        "std",
-        "winbase",
-        "winerror",
-        "winsock2",
-        "ws2def",
-        "ws2ipdef",
-        "ws2tcpip",
     ],
-    crate_root = "src/lib.rs",
+    crate_root = "lib.rs",
     crate_type = "lib",
     edition = "2015",
     rustc_flags = [
@@ -58,7 +45,7 @@ rust_library(
         "cargo-raze",
         "manual",
     ],
-    version = "0.3.9",
+    version = "2.1.0",
     # buildifier: leave-alone
     deps = [
     ],

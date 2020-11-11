@@ -25,32 +25,24 @@ package(default_visibility = [
 ])
 
 licenses([
-    "notice",  # MIT from expression "MIT OR Apache-2.0"
+    "notice",  # MIT from expression "MIT"
 ])
 
 # Generated Targets
 
-# Unsupported target "build-script-build" with type "custom-build" omitted
+# Unsupported target "tcp_accept" with type "example" omitted
 
 rust_library(
-    name = "winapi",
+    name = "async_stream",
     srcs = glob(["**/*.rs"]),
     crate_features = [
-        "errhandlingapi",
-        "fileapi",
-        "handleapi",
-        "minwindef",
-        "std",
-        "winbase",
-        "winerror",
-        "winsock2",
-        "ws2def",
-        "ws2ipdef",
-        "ws2tcpip",
     ],
     crate_root = "src/lib.rs",
     crate_type = "lib",
-    edition = "2015",
+    edition = "2018",
+    proc_macro_deps = [
+        "@raze__async_stream_impl__0_2_1//:async_stream_impl",
+    ],
     rustc_flags = [
         "--cap-lints=allow",
     ],
@@ -58,8 +50,15 @@ rust_library(
         "cargo-raze",
         "manual",
     ],
-    version = "0.3.9",
+    version = "0.2.1",
     # buildifier: leave-alone
     deps = [
+        "@raze__futures_core__0_3_8//:futures_core",
     ],
 )
+
+# Unsupported target "for_await" with type "test" omitted
+
+# Unsupported target "stream" with type "test" omitted
+
+# Unsupported target "try_stream" with type "test" omitted

@@ -30,27 +30,19 @@ licenses([
 
 # Generated Targets
 
-# Unsupported target "build-script-build" with type "custom-build" omitted
+# Unsupported target "sync_mpsc" with type "bench" omitted
 
 rust_library(
-    name = "winapi",
+    name = "futures_channel",
     srcs = glob(["**/*.rs"]),
     crate_features = [
-        "errhandlingapi",
-        "fileapi",
-        "handleapi",
-        "minwindef",
+        "alloc",
+        "default",
         "std",
-        "winbase",
-        "winerror",
-        "winsock2",
-        "ws2def",
-        "ws2ipdef",
-        "ws2tcpip",
     ],
     crate_root = "src/lib.rs",
     crate_type = "lib",
-    edition = "2015",
+    edition = "2018",
     rustc_flags = [
         "--cap-lints=allow",
     ],
@@ -58,8 +50,17 @@ rust_library(
         "cargo-raze",
         "manual",
     ],
-    version = "0.3.9",
+    version = "0.3.8",
     # buildifier: leave-alone
     deps = [
+        "@raze__futures_core__0_3_8//:futures_core",
     ],
 )
+
+# Unsupported target "channel" with type "test" omitted
+
+# Unsupported target "mpsc" with type "test" omitted
+
+# Unsupported target "mpsc-close" with type "test" omitted
+
+# Unsupported target "oneshot" with type "test" omitted

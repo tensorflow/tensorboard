@@ -25,28 +25,26 @@ package(default_visibility = [
 ])
 
 licenses([
-    "notice",  # MIT from expression "MIT OR Apache-2.0"
+    "notice",  # MIT from expression "MIT"
 ])
 
 # Generated Targets
 
 # Unsupported target "build-script-build" with type "custom-build" omitted
 
+alias(
+    name = "kernel32_sys",
+    actual = ":kernel32",
+    tags = [
+        "cargo-raze",
+        "manual",
+    ],
+)
+
 rust_library(
-    name = "winapi",
+    name = "kernel32",
     srcs = glob(["**/*.rs"]),
     crate_features = [
-        "errhandlingapi",
-        "fileapi",
-        "handleapi",
-        "minwindef",
-        "std",
-        "winbase",
-        "winerror",
-        "winsock2",
-        "ws2def",
-        "ws2ipdef",
-        "ws2tcpip",
     ],
     crate_root = "src/lib.rs",
     crate_type = "lib",
@@ -58,8 +56,9 @@ rust_library(
         "cargo-raze",
         "manual",
     ],
-    version = "0.3.9",
+    version = "0.2.2",
     # buildifier: leave-alone
     deps = [
+        "@raze__winapi__0_2_8//:winapi",
     ],
 )
