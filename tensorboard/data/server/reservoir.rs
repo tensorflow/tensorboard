@@ -92,6 +92,9 @@ pub struct StageReservoir<T, C = ChaCha20Rng> {
     /// record streams with no preemptions. When a preemption occurs, the total number of records
     /// preempted from the stream is estimated linearly from the proportion of records preempted
     /// from the reservoir.
+    ///
+    /// Exception: when `capacity == 0`, `seen` is always `0` as well. A reservoir with no capacity
+    /// is inert and has no need to track `seen`.
     seen: usize,
 }
 
