@@ -25,12 +25,8 @@ rust_library(
         "lib.rs",
         "masked_crc.rs",
         "scripted_reader.rs",
-<<<<<<< HEAD
         "tf_record.rs",
-    ],
-=======
     ] + _checked_in_proto_files,
->>>>>>> 34fe0bfd9d41c4e0da175df16cf716436a4ae263
     edition = "2018",
     deps = [
         "//third_party/rust:byteorder",

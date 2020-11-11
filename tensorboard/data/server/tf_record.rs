@@ -118,8 +118,8 @@ impl<R: Read> TfRecordReader<R> {
     /// start of the file).
     ///
     /// This allocates a vector with 12 bytes of capacity to read TFRecord headers, which will be
-    /// reused for all records read with this state value. Buffers for record paylods are allocated
-    /// as records are read.
+    /// reused for all records read with this state value. Buffers for record payloads are
+    /// allocated as records are read.
     pub fn new(reader: R) -> Self {
         TfRecordReader {
             reader,
@@ -129,10 +129,9 @@ impl<R: Read> TfRecordReader<R> {
     }
 
     /// Attempts to read a TFRecord, pausing gracefully in the face of truncations. If the record
-    /// is truncated, the result is a `Truncated` error, and the state buffer will be updated to
-    /// contain the prefix of the raw record that was read. The same state buffer should be passed
-    /// to a subsequent call to `read_record` that it may continue where it left off. If the record
-    /// is read successfully, this reader is left ready to read a new record.
+    /// is truncated, the result is a `Truncated` error; call `read_record` again once more data
+    /// may have been written to resume reading where it left off. If the record is read
+    /// successfully, this reader is left ready to read a new record.
     ///
     /// The record's length field is always validated against its checksum, but the full data is
     /// only validated if you call `checksum()` on the resulting record.
@@ -222,7 +221,7 @@ impl<R: Read> TfRecordReader<R> {
         let data_length = self.data_plus_footer.len() - FOOTER_LENGTH;
         let data_crc_buf = self.data_plus_footer.split_off(data_length);
         // Take ownership of the data vector out of `self` so that we can hand it off to the
-        // caller. This leaves an empty vector (`Vec::default`) in `self`.
+        // caller. This leaves an empty vector (`Vec::default()`) in `self`.
         let data = std::mem::take(&mut self.data_plus_footer);
         let data_crc = MaskedCrc(LittleEndian::read_u32(&data_crc_buf));
         self.header.clear(); // reset; caller may use this again
