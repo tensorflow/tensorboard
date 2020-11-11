@@ -19,17 +19,17 @@ import {ScaleType} from '../scale_types';
 
 export {RendererType} from '../renderer/renderer_types';
 
-export enum MainToGuestEvent {
+export enum HostToGuestEvent {
   SERIES_DATA_UPDATE,
   SERIES_METADATA_CHANGED,
   SCALE_UPDATE,
-  UPDATE_VIEW_BOX,
+  VIEW_BOX_UPDATE,
   INIT,
-  RESIZE,
+  DOM_RESIZED,
 }
 
 export interface InitMessage {
-  type: MainToGuestEvent.INIT;
+  type: HostToGuestEvent.INIT;
   canvas: OffscreenCanvas;
   devicePixelRatio: number;
   dim: Dimension;
@@ -37,18 +37,18 @@ export interface InitMessage {
   rendererType: RendererType.WEBGL;
 }
 
-export interface UpdateMessage {
-  type: MainToGuestEvent.UPDATE_VIEW_BOX;
+export interface UpdateViewBoxMessage {
+  type: HostToGuestEvent.VIEW_BOX_UPDATE;
   extent: Extent;
 }
 
 export interface ResizeMessage {
-  type: MainToGuestEvent.RESIZE;
+  type: HostToGuestEvent.DOM_RESIZED;
   dim: Dimension;
 }
 
 export interface SeriesUpdateMessage {
-  type: MainToGuestEvent.SERIES_DATA_UPDATE;
+  type: HostToGuestEvent.SERIES_DATA_UPDATE;
   idsAndLengths: Array<{
     id: string;
     length: number;
@@ -58,23 +58,23 @@ export interface SeriesUpdateMessage {
 
 export type SeriesMetadataMap = DataSeriesMetadataMap;
 
-export interface SeriesMetadataChangedeMessage {
-  type: MainToGuestEvent.SERIES_METADATA_CHANGED;
+export interface SeriesMetadataChangedMessage {
+  type: HostToGuestEvent.SERIES_METADATA_CHANGED;
   metadata: SeriesMetadataMap;
 }
 
 export interface ScaleUpdateMessage {
-  type: MainToGuestEvent.SCALE_UPDATE;
+  type: HostToGuestEvent.SCALE_UPDATE;
   axis: 'x' | 'y';
   scaleType: ScaleType;
 }
 
 export type MainToGuestMessage =
-  | UpdateMessage
+  | UpdateViewBoxMessage
   | ResizeMessage
   | ScaleUpdateMessage
   | SeriesUpdateMessage
-  | SeriesMetadataChangedeMessage;
+  | SeriesMetadataChangedMessage;
 
 export enum GuestToMainType {
   ON_REDRAW_END,

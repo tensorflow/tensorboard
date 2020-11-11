@@ -15,8 +15,9 @@ limitations under the License.
 
 import {RendererType} from '../renderer/renderer_types';
 import {ScaleType} from '../scale_types';
+import {compactDataSeries} from './compact_data_series';
+import {HostToGuestEvent} from './message_types';
 import {WorkerChart} from './worker_chart';
-import {MainToGuestEvent} from './worker_chart_types';
 
 describe('line_chart_v2/lib/worker_chart test', () => {
   let workerPostMessageSpy: jasmine.Spy;
@@ -49,13 +50,11 @@ describe('line_chart_v2/lib/worker_chart test', () => {
     });
   });
 
-  it('initializes with canvas and ');
-
   it('posts xScaleType message when setting xScaleType', () => {
     chart.setXScaleType(ScaleType.LOG10);
 
     expect(channelTxSpy).toHaveBeenCalledWith({
-      type: MainToGuestEvent.SCALE_UPDATE,
+      type: HostToGuestEvent.SCALE_UPDATE,
       axis: 'x',
       scaleType: ScaleType.LOG10,
     });
@@ -65,7 +64,7 @@ describe('line_chart_v2/lib/worker_chart test', () => {
     chart.setYScaleType(ScaleType.LOG10);
 
     expect(channelTxSpy).toHaveBeenCalledWith({
-      type: MainToGuestEvent.SCALE_UPDATE,
+      type: HostToGuestEvent.SCALE_UPDATE,
       axis: 'y',
       scaleType: ScaleType.LOG10,
     });
@@ -88,7 +87,7 @@ describe('line_chart_v2/lib/worker_chart test', () => {
     });
 
     expect(channelTxSpy).toHaveBeenCalledWith({
-      type: MainToGuestEvent.SERIES_METADATA_CHANGED,
+      type: HostToGuestEvent.SERIES_METADATA_CHANGED,
       metadata: {
         foo: {
           id: 'foo',
@@ -106,8 +105,8 @@ describe('line_chart_v2/lib/worker_chart test', () => {
     });
   });
 
-  it('sends data in a compat form', () => {
-    chart.setData([
+  it('sends data in a compact form', () => {
+    const data = [
       {
         id: 'foo',
         points: [
@@ -123,30 +122,16 @@ describe('line_chart_v2/lib/worker_chart test', () => {
           {x: 200, y: -100},
         ],
       },
-    ]);
+    ];
+    chart.setData(data);
 
-    const expectedFlatttenedData = new Float32Array([
-      0,
-      0,
-      1,
-      1,
-      0,
-      -100,
-      100,
-      100,
-      200,
-      -100,
-    ]).buffer;
+    const compact = compactDataSeries(data);
     expect(channelTxSpy).toHaveBeenCalledWith(
       {
-        type: MainToGuestEvent.SERIES_DATA_UPDATE,
-        idsAndLengths: [
-          {id: 'foo', length: 2},
-          {id: 'bar', length: 3},
-        ],
-        flattenedSeries: expectedFlatttenedData,
+        type: HostToGuestEvent.SERIES_DATA_UPDATE,
+        ...compact,
       },
-      [expectedFlatttenedData]
+      [compact.flattenedSeries]
     );
   });
 });

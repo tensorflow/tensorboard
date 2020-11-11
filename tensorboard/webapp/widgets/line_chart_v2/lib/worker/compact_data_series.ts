@@ -21,7 +21,7 @@ export interface CompactDataSeries {
 }
 
 /**
- * Converts array of DataSeries to a compact represenation for psotMessage.
+ * Converts array of DataSeries to a compact represenation for postMessage.
  *
  * Sending a large JavaScript object can lead to inefficiency as it spends significant
  * amount of time on JSON.stringify and JSON.parse.
@@ -62,7 +62,7 @@ export function decompactDataSeries(
   let rawDataIndex = 0;
 
   for (const {id, length} of idsAndLengths) {
-    const points = [] as Array<{x: number; y: number}>;
+    const points: Array<{x: number; y: number}> = [];
     for (let index = 0; index < length; index++) {
       points.push({
         x: rawData[rawDataIndex++],

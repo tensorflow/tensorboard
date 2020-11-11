@@ -13,9 +13,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {compactDataSeries, decompactDataSeries} from './worker_chart_utils';
+import {compactDataSeries, decompactDataSeries} from './compact_data_series';
 
-describe('line_chart_v2/lib/worker_chart_utils', () => {
+describe('line_chart_v2/lib/compact_data_series', () => {
   describe('data series compact & decompact', () => {
     it('compacts and decompacts to original DataSeries', () => {
       const dataSeries = [

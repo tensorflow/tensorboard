@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {Chart, ChartCallbacks, ChartOption} from '../chart_types';
+import {Chart, ChartCallbacks, ChartOptions} from '../chart_types';
 import {
   DataSeries,
   DataSeriesMetadataMap,
@@ -24,12 +24,12 @@ import {
 import {
   GuestToMainMessage,
   GuestToMainType,
+  HostToGuestEvent,
   InitMessage,
-  MainToGuestEvent,
   MainToGuestMessage,
   RendererType,
-} from './worker_chart_types';
-import {compactDataSeries} from './worker_chart_utils';
+} from './message_types';
+import {compactDataSeries} from './compact_data_series';
 import {WorkerPool, WorkerProxy} from './worker_pool';
 
 export class WorkerChart implements Chart {
@@ -39,11 +39,15 @@ export class WorkerChart implements Chart {
 
   static readonly workerPool = new WorkerPool('chart_worker.js');
 
-  constructor(option: ChartOption) {
-    this.callbacks = option.callbacks;
+  constructor(options: ChartOptions) {
+    this.callbacks = options.callbacks;
 
-    if (option.type === RendererType.SVG) {
-      throw new RangeError('Cannot use SVG for the offscreen line chart.');
+    if (options.type !== RendererType.WEBGL) {
+      throw new RangeError(
+        `Cannot use non WEBGL renderer for the offscreen line chart. Received ${
+          RendererType[options.type]
+        } `
+      );
     }
 
     const channel = new MessageChannel();
@@ -53,16 +57,16 @@ export class WorkerChart implements Chart {
 
     this.txMessagePort = channel.port1;
 
-    const canvas = (option.container as HTMLCanvasElement).transferControlToOffscreen();
+    const canvas = (options.container as HTMLCanvasElement).transferControlToOffscreen();
 
     this.workerInstance = WorkerChart.workerPool.getNext();
 
     const initMessage: InitMessage = {
-      type: MainToGuestEvent.INIT,
+      type: HostToGuestEvent.INIT,
       canvas,
       devicePixelRatio: window.devicePixelRatio,
-      dim: option.domDimension,
-      rendererType: option.type,
+      dim: options.domDimension,
+      rendererType: options.type,
     };
 
     this.workerInstance.postMessage(initMessage, [canvas, channel.port2]);
@@ -75,7 +79,7 @@ export class WorkerChart implements Chart {
 
   setXScaleType(type: ScaleType) {
     this.sendMessage({
-      type: MainToGuestEvent.SCALE_UPDATE,
+      type: HostToGuestEvent.SCALE_UPDATE,
       axis: 'x',
       scaleType: type,
     });
@@ -83,32 +87,32 @@ export class WorkerChart implements Chart {
 
   setYScaleType(type: ScaleType) {
     this.sendMessage({
-      type: MainToGuestEvent.SCALE_UPDATE,
+      type: HostToGuestEvent.SCALE_UPDATE,
       axis: 'y',
       scaleType: type,
     });
   }
 
   resize(dim: Dimension) {
-    this.sendMessage({type: MainToGuestEvent.RESIZE, dim});
+    this.sendMessage({type: HostToGuestEvent.DOM_RESIZED, dim});
   }
 
   setMetadata(metadataMap: DataSeriesMetadataMap): void {
     this.sendMessage({
-      type: MainToGuestEvent.SERIES_METADATA_CHANGED,
+      type: HostToGuestEvent.SERIES_METADATA_CHANGED,
       metadata: metadataMap,
     });
   }
 
   setViewBox(extent: Extent): void {
-    this.sendMessage({type: MainToGuestEvent.UPDATE_VIEW_BOX, extent});
+    this.sendMessage({type: HostToGuestEvent.VIEW_BOX_UPDATE, extent});
   }
 
   setData(data: DataSeries[]): void {
     const {idsAndLengths, flattenedSeries} = compactDataSeries(data);
     this.sendMessage(
       {
-        type: MainToGuestEvent.SERIES_DATA_UPDATE,
+        type: HostToGuestEvent.SERIES_DATA_UPDATE,
         idsAndLengths,
         flattenedSeries,
       },
@@ -132,6 +136,7 @@ export class WorkerChart implements Chart {
     switch (message.type) {
       case GuestToMainType.ON_REDRAW_END: {
         this.callbacks.onDrawEnd();
+        break;
       }
     }
   }

@@ -13,30 +13,23 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {Chart} from '../chart';
-import {ChartOption} from '../chart_types';
-import {DataSeries} from '../internal_types';
+import {MainThreadChart} from '../chart';
+import {ChartOptions} from '../chart_types';
+import {decompactDataSeries} from './compact_data_series';
 import {
   GuestToMainType,
+  HostToGuestEvent,
   InitMessage,
-  MainToGuestEvent,
   MainToGuestMessage,
   RendererType,
-} from './worker_chart_types';
+} from './message_types';
 
 self.addEventListener('message', (event: MessageEvent) => {
   createPortHandler(event.ports[0], event.data as InitMessage);
 });
 
 function createPortHandler(port: MessagePort, initMessage: InitMessage) {
-  const {
-    canvas,
-    devicePixelRatio,
-    dim,
-    rendererType,
-    xScaleType,
-    yScaleType,
-  } = initMessage;
+  const {canvas, devicePixelRatio, dim, rendererType} = initMessage;
 
   const lineChartCallbacks = {
     onDrawEnd: () => {
@@ -46,17 +39,15 @@ function createPortHandler(port: MessagePort, initMessage: InitMessage) {
     },
   };
 
-  let chartOption: ChartOption;
+  let chartOptions: ChartOptions;
   switch (rendererType) {
     case RendererType.WEBGL:
-      chartOption = {
-        readAndUpdateDomDimensions: RendererType.WEBGL,
+      chartOptions = {
+        type: RendererType.WEBGL,
         domDimension: dim,
         callbacks: lineChartCallbacks,
         container: canvas,
         devicePixelRatio,
-        xScaleType,
-        yScaleType,
       };
       break;
     default:
@@ -65,50 +56,30 @@ function createPortHandler(port: MessagePort, initMessage: InitMessage) {
       );
   }
 
-  const lineChart = new Chart(chartOption);
+  const lineChart = new MainThreadChart(chartOptions);
 
   port.onmessage = function (event: MessageEvent) {
     const message = event.data as MainToGuestMessage;
 
     switch (message.type) {
-      case MainToGuestEvent.SERIES_DATA_UPDATE: {
-        const rawData = new Float32Array(message.flattenedSeries);
-        const data: DataSeries[] = [];
-        let rawDataIndex = 0;
-
-        for (const {id, length} of message.idsAndLengths) {
-          const points = [] as Array<{x: number; y: number}>;
-          for (let index = 0; index < length; index++) {
-            points.push({
-              x: rawData[rawDataIndex++],
-              y: rawData[rawDataIndex++],
-            });
-          }
-          data.push({
-            id,
-            points,
-          });
-        }
-
-        lineChart.updateData(data);
+      case HostToGuestEvent.SERIES_DATA_UPDATE: {
+        const data = decompactDataSeries(message);
+        lineChart.setData(data);
         break;
       }
-      case MainToGuestEvent.SERIES_METADATA_CHANGED: {
-        lineChart.updateMetadata(message.metadata);
+      case HostToGuestEvent.SERIES_METADATA_CHANGED: {
+        lineChart.setMetadata(message.metadata);
         break;
       }
-      case MainToGuestEvent.SERIES_DATA_UPDATE: {
+      case HostToGuestEvent.VIEW_BOX_UPDATE: {
+        lineChart.setViewBox(message.extent);
         break;
       }
-      case MainToGuestEvent.UPDATE_VIEW_BOX: {
-        lineChart.updateViewBox(message.extent);
-        break;
-      }
-      case MainToGuestEvent.RESIZE: {
+      case HostToGuestEvent.DOM_RESIZED: {
         lineChart.resize(message.dim);
         break;
       }
-      case MainToGuestEvent.SCALE_UPDATE: {
+      case HostToGuestEvent.SCALE_UPDATE: {
         switch (message.axis) {
           case 'x':
             lineChart.setXScaleType(message.scaleType);
@@ -117,8 +88,8 @@ function createPortHandler(port: MessagePort, initMessage: InitMessage) {
             lineChart.setYScaleType(message.scaleType);
             break;
           default:
-            const _: never = message.axis;
-            throw new RangeError(`Unknown axis: ${_}`);
+            const axis: never = message.axis;
+            throw new RangeError(`Unknown axis: ${axis}`);
         }
         break;
       }
