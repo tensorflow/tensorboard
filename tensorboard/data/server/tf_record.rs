@@ -20,19 +20,24 @@ use std::io::{self, Read};
 
 use crate::masked_crc::MaskedCrc;
 
-// From TensorFlow `record_writer.cc` comments:
+// From [TensorFlow `record_writer.cc` comments][1]:
 // Format of a single record:
 //  uint64    length
 //  uint32    masked crc of length
 //  byte      data[length]
 //  uint32    masked crc of data
+//
+// [1]: https://github.com/tensorflow/tensorflow/blob/24d1fba948edd2c466b85b91836f055f5553404e/tensorflow/core/lib/io/record_writer.cc#L104-L108
 const LENGTH_CRC_OFFSET: usize = 8;
 const HEADER_LENGTH: usize = LENGTH_CRC_OFFSET + 4;
 const FOOTER_LENGTH: usize = 4;
 
-/// State for reading one `TfRecord`, potentially over multiple attempts to handle growing,
-/// partially flushed files.
-pub struct TfRecordState {
+/// A reader for a stream of `TfRecords`. This reader can read a single record over one or more
+/// underlying reads, to support growing, partially flushed files. It can also read records that
+/// have incorrect data-CRCs: it's up to the caller to determine what to do in that case. However,
+/// all records must have valid length-CRCs, because without knowing the length of each record we
+/// can't continue to parse the file.
+pub struct TfRecordReader<R> {
     /// TFRecord header: little-endian u64 length, u32 length-CRC. This vector always has capacity
     /// `HEADER_LENGTH`.
     //
@@ -43,24 +48,8 @@ pub struct TfRecordState {
     /// of the data buffer. Once `header.len() == HEADER_LENGTH`, this will have capacity equal to
     /// the data length plus `FOOTER_LENGTH`; before then, it will have no capacity.
     data_plus_footer: Vec<u8>,
-}
-
-impl TfRecordState {
-    /// Creates an empty `TfRecordState`, ready to read a record from its beginning. This allocates
-    /// a vector with 12 bytes of capacity, which will be reused for all records read with this
-    /// state value.
-    pub fn new() -> Self {
-        TfRecordState {
-            header: Vec::with_capacity(HEADER_LENGTH),
-            data_plus_footer: Vec::new(),
-        }
-    }
-}
-
-impl Default for TfRecordState {
-    fn default() -> Self {
-        Self::new()
-    }
+    /// Underlying reader.
+    reader: R,
 }
 
 /// A TFRecord with a data buffer and expected checksum. The checksum may or may not match the
@@ -95,7 +84,7 @@ impl TfRecord {
     }
 }
 
-/// Error returned by [`TfRecordState::read_record`].
+/// Error returned by [`TfRecordReader::read_record`].
 #[derive(Debug)]
 pub enum ReadRecordError {
     /// Length field failed checksum. The file is corrupt, and reading must abort.
@@ -123,14 +112,27 @@ impl From<io::Error> for ReadRecordError {
     }
 }
 
-impl TfRecordState {
+impl<R: Read> TfRecordReader<R> {
+    /// Creates an empty `TfRecordReader`, ready to read a stream of TFRecords from its beginning.
+    /// The underlying reader should be aligned to the start of a record (usually, this is just the
+    /// start of the file).
+    ///
+    /// This allocates a vector with 12 bytes of capacity to read TFRecord headers, which will be
+    /// reused for all records read with this state value. Buffers for record paylods are allocated
+    /// as records are read.
+    pub fn new(reader: R) -> Self {
+        TfRecordReader {
+            reader,
+            header: Vec::with_capacity(HEADER_LENGTH),
+            data_plus_footer: Vec::new(),
+        }
+    }
+
     /// Attempts to read a TFRecord, pausing gracefully in the face of truncations. If the record
     /// is truncated, the result is a `Truncated` error, and the state buffer will be updated to
     /// contain the prefix of the raw record that was read. The same state buffer should be passed
     /// to a subsequent call to `read_record` that it may continue where it left off. If the record
-    /// is read successfully, this `TfRecordState` is left at its default value (equivalent to
-    /// `TfRecordState::new`, but without re-allocating) and may be reused by the caller to read a
-    /// fresh record.
+    /// is read successfully, this reader is left ready to read a new record.
     ///
     /// The record's length field is always validated against its checksum, but the full data is
     /// only validated if you call `checksum()` on the resulting record.
@@ -138,35 +140,62 @@ impl TfRecordState {
     /// # Examples
     ///
     /// ```rust
-    /// use rustboard_core::tf_record::{ReadRecordError, TfRecordState};
+    /// use rustboard_core::tf_record::{ReadRecordError, TfRecordReader};
     /// use std::io::Cursor;
+    /// use std::sync::mpsc;
+    ///
+    /// // Simulate a growing file...
+    /// let (tx, rx) = std::sync::mpsc::channel();
+    /// # struct ChannelReader(std::sync::mpsc::Receiver<u8>);
+    /// # impl ChannelReader {
+    /// #     fn new(rx: std::sync::mpsc::Receiver<u8>) -> Self {
+    /// #         Self(rx)
+    /// #     }
+    /// # }
+    /// # impl std::io::Read for ChannelReader {
+    /// #     fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
+    /// #         let fst = match buf.first_mut() {
+    /// #             Some(fst) => fst,
+    /// #             None => return Ok(0),
+    /// #         };
+    /// #         match self.0.try_recv() {
+    /// #             Err(_) => Ok(0),
+    /// #             Ok(byte) => {
+    /// #                 *fst = byte;
+    /// #                 Ok(1)
+    /// #             }
+    /// #         }
+    /// #     }
+    /// # }
+    /// let file_reader = ChannelReader::new(rx); // implements `std::io::Read`
+    /// let mut reader = TfRecordReader::new(file_reader);
     ///
     /// let mut buf: Vec<u8> = Vec::new();
     /// buf.extend(b"\x18\x00\x00\x00\x00\x00\x00\x00"); // length: 24 bytes
     /// buf.extend(b"\xa3\x7f\x4b\x22"); // length checksum (0x224b7fa3)
     /// let contents = b"\x09\x00\x00\x80\x38\x99\xd6\xd7\x41\x1a\x0dbrain.Event:2";
     /// buf.extend(&contents[..5]); // file truncated mid-write
-    ///
-    /// let mut state = TfRecordState::new();
+    /// buf.into_iter().for_each(|b| tx.send(b).unwrap());
     ///
     /// // First attempt: read what we can, then encounter truncation.
     /// assert!(matches!(
-    ///     state.read_record(&mut Cursor::new(buf)),
+    ///     reader.read_record(),
     ///     Err(ReadRecordError::Truncated)
     /// ));
     ///
     /// let mut buf: Vec<u8> = Vec::new();
     /// buf.extend(&contents[5..]); // rest of the payload
     /// buf.extend(b"\x12\x4b\x36\xab"); // data checksum (0xab364b12)
+    /// buf.into_iter().for_each(|b| tx.send(b).unwrap());
     ///
     /// // Second read: read the rest of the record.
-    /// let record = state.read_record(&mut Cursor::new(buf)).unwrap();
+    /// let record = reader.read_record().unwrap();
     /// assert_eq!(record.data, contents);
     /// assert_eq!(record.checksum(), Ok(()));
     /// ```
-    pub fn read_record<R: Read>(&mut self, reader: &mut R) -> Result<TfRecord, ReadRecordError> {
+    pub fn read_record(&mut self) -> Result<TfRecord, ReadRecordError> {
         if self.header.len() < HEADER_LENGTH {
-            read_remaining(reader, &mut self.header)?;
+            read_remaining(&mut self.reader, &mut self.header)?;
 
             let (length_buf, length_crc_buf) = self.header.split_at(LENGTH_CRC_OFFSET);
             let length_crc = MaskedCrc(LittleEndian::read_u32(length_crc_buf));
@@ -188,11 +217,13 @@ impl TfRecordState {
         }
 
         if self.data_plus_footer.len() < self.data_plus_footer.capacity() {
-            read_remaining(reader, &mut self.data_plus_footer)?;
+            read_remaining(&mut self.reader, &mut self.data_plus_footer)?;
         }
 
         let data_length = self.data_plus_footer.len() - FOOTER_LENGTH;
         let data_crc_buf = self.data_plus_footer.split_off(data_length);
+        // Take ownership of the data vector out of `self` so that we can hand it off to the
+        // caller. This leaves an empty vector (`Vec::default`) in `self`.
         let data = std::mem::take(&mut self.data_plus_footer);
         let data_crc = MaskedCrc(LittleEndian::read_u32(&data_crc_buf));
         self.header.clear(); // reset; caller may use this again
@@ -201,7 +232,7 @@ impl TfRecordState {
 }
 
 /// Fills `buf`'s remaining capacity from `reader`, or fails with `Truncated` if the reader is dry.
-fn read_remaining<R: Read>(reader: &mut R, buf: &mut Vec<u8>) -> Result<(), ReadRecordError> {
+fn read_remaining<R: Read>(reader: R, buf: &mut Vec<u8>) -> Result<(), ReadRecordError> {
     let want = buf.capacity() - buf.len();
     reader.take(want as u64).read_to_end(buf)?;
     if buf.len() < buf.capacity() {
@@ -254,8 +285,7 @@ mod tests {
             v
         });
 
-        let mut sr = ScriptedReader::new(reads);
-        let mut st = TfRecordState::new();
+        let mut reader = TfRecordReader::new(ScriptedReader::new(reads));
 
         #[derive(Debug)]
         enum TestCase {
@@ -273,7 +303,7 @@ mod tests {
             Record(record_2.to_vec()),
         ];
         for (i, step) in steps.into_iter().enumerate() {
-            let result = st.read_record(&mut sr);
+            let result = reader.read_record();
             match (step, result) {
                 (Truncated, Err(ReadRecordError::Truncated)) => (),
                 (Record(v), Ok(r)) if v == r.data => {
@@ -295,8 +325,8 @@ mod tests {
         file.extend(b"123456789abcdef012345678");
         file.extend(b"\x00\x00\x00\x00");
 
-        let mut st = TfRecordState::new();
-        match st.read_record(&mut Cursor::new(file)) {
+        let mut reader = TfRecordReader::new(Cursor::new(file));
+        match reader.read_record() {
             Err(ReadRecordError::BadLengthCrc(ChecksumError {
                 got: MaskedCrc(0x224b7fa3),
                 want: MaskedCrc(0x554b7f99),
@@ -313,8 +343,8 @@ mod tests {
         file.extend(b"123456789abcdef012345678");
         file.extend(b"\xdf\x9b\x57\x13"); // 0x13579bdf
 
-        let mut st = TfRecordState::new();
-        let record = st.read_record(&mut Cursor::new(file)).expect("read_record");
+        let mut reader = TfRecordReader::new(Cursor::new(file));
+        let record = reader.read_record().expect("read_record");
         assert_eq!(record.data, b"123456789abcdef012345678".to_vec());
         match record.checksum() {
             Err(ChecksumError {
