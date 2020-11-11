@@ -26,9 +26,9 @@ fn main() -> std::io::Result<()> {
         dir.push("genproto");
         dir
     };
-    prost_build::Config::new()
+    tonic_build::configure()
         .out_dir(&out_dir)
-        .compile_protos(&["tensorboard/compat/proto/event.proto"], &["."])
+        .compile(&["tensorboard/compat/proto/event.proto"], &["."])
         .expect("compile_protos");
     Ok(())
 }
