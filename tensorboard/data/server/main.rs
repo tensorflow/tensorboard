@@ -13,4 +13,36 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-fn main() {}
+use tonic::{transport::Server, Request, Response};
+
+use rustboard_core::proto::demo as pb;
+
+#[derive(Debug, Default)]
+struct DemoHandler;
+
+#[tonic::async_trait]
+impl pb::demo_server::Demo for DemoHandler {
+    async fn add(
+        &self,
+        request: Request<pb::AddRequest>,
+    ) -> Result<Response<pb::AddResponse>, tonic::Status> {
+        let request = request.into_inner();
+        let sum: i32 = request.term.into_iter().sum();
+        let response = pb::AddResponse {
+            sum,
+            ..Default::default()
+        };
+        Ok(Response::new(response))
+    }
+}
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let addr = "[::0]:6789".parse::<std::net::SocketAddr>()?;
+    let handler = DemoHandler::default();
+    Server::builder()
+        .add_service(pb::demo_server::DemoServer::new(handler))
+        .serve(addr)
+        .await?;
+    Ok(())
+}
