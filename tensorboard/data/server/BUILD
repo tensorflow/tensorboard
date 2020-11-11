@@ -23,6 +23,7 @@ rust_library(
     name = "rustboard_core",
     srcs = [
         "lib.rs",
+        "event_file.rs",
         "masked_crc.rs",
         "scripted_reader.rs",
         "tf_record.rs",
