@@ -7,6 +7,11 @@ package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])
 
+filegroup(
+    name = "proto_srcs",
+    srcs = glob(["*.proto"]),
+)
+
 # Protobuf files copied from the main TensorFlow repository.
 # Keep this list synced with proto_test.py
 tb_proto_library(
