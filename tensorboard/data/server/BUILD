@@ -32,12 +32,9 @@ rust_library(
     deps = [
         "//third_party/rust:byteorder",
         "//third_party/rust:crc",
-<<<<<<< HEAD
+        "//third_party/rust:prost",
         "//third_party/rust:rand",
         "//third_party/rust:rand_chacha",
-=======
-        "//third_party/rust:prost",
->>>>>>> 84b92546496651b978e7a7d0f84870d3d48f193d
     ],
 )
 
