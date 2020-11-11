@@ -20,8 +20,8 @@ import sys
 # Paths to "tensorboard/data/server/" in (a) the Bazel runfiles tree,
 # whence we can read data dependencies, and (b) the Git repository,
 # whither we can write output files.
-_REPO_DIR = os.path.dirname(os.readlink(__file__))
 _BAZEL_DIR = os.path.join("tensorboard", "data", "server")
+_REPO_DIR = os.path.dirname(os.readlink(__file__))
 
 _RUST_LICENSE = """\
 /* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
