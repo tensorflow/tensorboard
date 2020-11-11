@@ -17,9 +17,37 @@ tf_ts_library(
     srcs = [
         "public_types.ts",
     ],
-    visibility = [
-        "//tensorboard:internal",
+    visibility = ["//tensorboard:internal"],
+    deps = [
+        ":chart_types",
+        ":internal_types",
+        "//tensorboard/webapp/widgets/line_chart_v2/lib/renderer:types",
     ],
+)
+
+tf_ts_library(
+    name = "chart",
+    srcs = [
+        "chart.ts",
+    ],
+    visibility = ["//tensorboard:internal"],
+    deps = [
+        ":chart_types",
+        ":coordinator",
+        ":internal_types",
+        ":scale",
+        ":series_line_view",
+        "//tensorboard/webapp/widgets/line_chart_v2/lib/renderer",
+        "//tensorboard/webapp/widgets/line_chart_v2/lib/renderer:types",
+    ],
+)
+
+tf_ts_library(
+    name = "chart_types",
+    srcs = [
+        "chart_types.ts",
+    ],
+    visibility = ["//tensorboard:internal"],
     deps = [
         ":internal_types",
         "//tensorboard/webapp/widgets/line_chart_v2/lib/renderer:types",
@@ -104,6 +132,7 @@ tf_ts_library(
     srcs = [
         "coordinator_test.ts",
         "drawable_test.ts",
+        "integration_test.ts",
         "scale_test.ts",
         "worker_pool_test.ts",
     ],
@@ -111,13 +140,16 @@ tf_ts_library(
         "//tensorboard:internal",
     ],
     deps = [
+        ":chart",
         ":coordinator",
         ":drawable",
         ":internal_types",
+        ":public_types",
         ":scale",
         ":worker",
         ":worker_pool",
         "//tensorboard/webapp/widgets/line_chart_v2/lib/renderer",
+        "@npm//@angular/core",
         "@npm//@types/jasmine",
     ],
 )
