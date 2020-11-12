@@ -26,9 +26,16 @@ fn main() -> std::io::Result<()> {
         dir.push("genproto");
         dir
     };
-    prost_build::Config::new()
+    tonic_build::configure()
         .out_dir(&out_dir)
-        .compile_protos(&["tensorboard/compat/proto/event.proto"], &["."])
+        .format(false) // don't run `rustfmt`; shouldn't be needed to build
+        .compile(
+            &[
+                "tensorboard/compat/proto/event.proto",
+                "tensorboard/data/server/demo.proto",
+            ],
+            &["."],
+        )
         .expect("compile_protos");
     Ok(())
 }

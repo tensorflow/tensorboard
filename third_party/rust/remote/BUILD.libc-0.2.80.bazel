@@ -36,6 +36,7 @@ rust_library(
     name = "libc",
     srcs = glob(["**/*.rs"]),
     crate_features = [
+        "align",
         "default",
         "std",
     ],
@@ -44,6 +45,7 @@ rust_library(
     edition = "2015",
     rustc_flags = [
         "--cap-lints=allow",
+        "--cfg=libc_align",
     ],
     tags = [
         "cargo-raze",

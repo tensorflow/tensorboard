@@ -28,6 +28,11 @@ use rand_chacha::ChaCha20Rng;
 /// every record in the stream. (One exception: when the reservoir's capacity is zero, it does not
 /// retain any records, even the latest one.)
 ///
+<<<<<<< HEAD
+=======
+/// **Note:** Preemption support is not yet implemented.
+///
+>>>>>>> 1919cb443cd7734dc09b64ead67eb67b5873816a
 /// # Preemption
 ///
 /// All records stored in this reservoir have a *step* and a *payload*. The step, a non-negative
@@ -81,8 +86,11 @@ pub struct StageReservoir<T, C = ChaCha20Rng> {
     /// The combined physical capacities of `committed_steps` and `staged_items` may exceed this,
     /// but their combined lengths will not. Behavior is undefined if `capacity == 0`.
     capacity: usize,
+<<<<<<< HEAD
     /// Whether there has been a preemption since the last commit.
     staged_preemption: bool,
+=======
+>>>>>>> 1919cb443cd7734dc09b64ead67eb67b5873816a
     /// Reservoir control, to determine whether and whither a given new record should be included.
     ctl: C,
     /// Estimate of the total number of non-preempted records passed in the stream so far,
@@ -92,6 +100,12 @@ pub struct StageReservoir<T, C = ChaCha20Rng> {
     /// record streams with no preemptions. When a preemption occurs, the total number of records
     /// preempted from the stream is estimated linearly from the proportion of records preempted
     /// from the reservoir.
+<<<<<<< HEAD
+=======
+    ///
+    /// Exception: when `capacity == 0`, `seen` is always `0` as well. A reservoir with no capacity
+    /// is inert and has no need to track `seen`.
+>>>>>>> 1919cb443cd7734dc09b64ead67eb67b5873816a
     seen: usize,
 }
 
@@ -167,7 +181,10 @@ impl<T, C: ReservoirControl> StageReservoir<T, C> {
             committed_steps: Vec::new(),
             staged_items: Vec::new(),
             capacity,
+<<<<<<< HEAD
             staged_preemption: false,
+=======
+>>>>>>> 1919cb443cd7734dc09b64ead67eb67b5873816a
             ctl,
             seen: 0,
         }
@@ -182,7 +199,10 @@ impl<T, C: ReservoirControl> StageReservoir<T, C> {
         if self.capacity == 0 {
             return;
         }
+<<<<<<< HEAD
         self.preempt(step);
+=======
+>>>>>>> 1919cb443cd7734dc09b64ead67eb67b5873816a
         self.seen += 1;
         let dst = self.ctl.destination(self.seen);
 
@@ -233,6 +253,7 @@ impl<T, C: ReservoirControl> StageReservoir<T, C> {
         &self.staged_items[..]
     }
 
+<<<<<<< HEAD
     /// Checks whether a preemption has been staged.
     ///
     /// This is initially `false`; it changes to `true` whenever a record is preempted, and back to
@@ -280,6 +301,8 @@ impl<T, C: ReservoirControl> StageReservoir<T, C> {
         self.seen = (self.seen as f64 * (1.0 - fac_preempted)).ceil() as usize;
     }
 
+=======
+>>>>>>> 1919cb443cd7734dc09b64ead67eb67b5873816a
     /// Commits pending changes from this reservoir into a basin.
     ///
     /// The basin should initially be empty and should be modified only by calls to
@@ -308,7 +331,10 @@ impl<T, C: ReservoirControl> StageReservoir<T, C> {
         basin
             .0
             .extend(self.staged_items.drain(..).map(|(step, t)| (step, f(t))));
+<<<<<<< HEAD
         self.staged_preemption = false;
+=======
+>>>>>>> 1919cb443cd7734dc09b64ead67eb67b5873816a
     }
 }
 
@@ -354,7 +380,11 @@ mod tests {
         rsv.offer(Step(0), "zero");
         rsv.offer(Step(1), "one");
         rsv.offer(Step(2), "two");
+<<<<<<< HEAD
         rsv.offer(Step(3), "three???"); // this funny-looking record will be evicted
+=======
+        rsv.offer(Step(3), "three");
+>>>>>>> 1919cb443cd7734dc09b64ead67eb67b5873816a
         rsv.commit_map(&mut head, mapper);
         assert_eq!(
             head.as_slice(),
@@ -362,11 +392,16 @@ mod tests {
                 (Step(0), ":zero:"),
                 (Step(1), ":one:"),
                 (Step(2), ":two:"),
+<<<<<<< HEAD
                 (Step(3), ":three???:")
+=======
+                (Step(3), ":three:")
+>>>>>>> 1919cb443cd7734dc09b64ead67eb67b5873816a
             ],
         );
 
         rsv.ctl.extend(vec![1, 2, 1, 3]);
+<<<<<<< HEAD
         rsv.offer(Step(4), "four???");
         assert!(!rsv.staged_preemption());
         rsv.offer(Step(3), "three");
@@ -376,12 +411,20 @@ mod tests {
         assert!(rsv.staged_preemption());
         rsv.commit_map(&mut head, mapper);
         assert!(!rsv.staged_preemption());
+=======
+        rsv.offer(Step(4), "four");
+        rsv.offer(Step(5), "five");
+        rsv.offer(Step(6), "six");
+        rsv.offer(Step(7), "seven"); // this one exceeds capacity, evicting index 3
+        rsv.commit_map(&mut head, mapper);
+>>>>>>> 1919cb443cd7734dc09b64ead67eb67b5873816a
         assert_eq!(
             head.as_slice(),
             &[
                 (Step(0), ":zero:"),
                 (Step(1), ":one:"),
                 (Step(2), ":two:"),
+<<<<<<< HEAD
                 (Step(3), ":three:"),
                 (Step(4), ":four:"),
                 (Step(5), ":five:"),
@@ -419,15 +462,37 @@ mod tests {
         rsv.offer(Step(5), "!five!");
         rsv.offer(Step(6), "!six!");
         rsv.offer(Step(7), "!seven!");
+=======
+                (Step(4), ":four:"),
+                (Step(5), ":five:"),
+                (Step(6), ":six:"),
+                (Step(7), ":seven:"),
+            ],
+        );
+
+        rsv.ctl.extend(vec![3, 7, 6]);
+        rsv.offer(Step(8), "eight"); // evict index 3 (now "four")
+        rsv.offer(Step(9), "nine"); // 7 >= 7, so drop (evict most recent)
+        rsv.offer(Step(10), "ten"); // evict index 6 (now "nine")
+>>>>>>> 1919cb443cd7734dc09b64ead67eb67b5873816a
         rsv.commit_map(&mut head, mapper);
         assert_eq!(
             head.as_slice(),
             &[
                 (Step(0), ":zero:"),
+<<<<<<< HEAD
                 (Step(2), ":two:"),
                 (Step(3), ":three:"),
                 (Step(4), ":four:"),
                 (Step(7), ":!seven!:"),
+=======
+                (Step(1), ":one:"),
+                (Step(2), ":two:"),
+                (Step(5), ":five:"),
+                (Step(6), ":six:"),
+                (Step(7), ":seven:"),
+                (Step(10), ":ten:"),
+>>>>>>> 1919cb443cd7734dc09b64ead67eb67b5873816a
             ],
         );
     }
@@ -460,6 +525,7 @@ mod tests {
             assert_eq!(head.as_slice().len(), 10);
             assert_eq!(head.as_slice().last(), Some(&(Step(i * i), ())));
         }
+<<<<<<< HEAD
 
         // Seen 16 records, keeping 10. Preempt to invalidate records 9..=16, that the reservoir
         // must have between 2 and 8 old records before the new one is added.
@@ -485,6 +551,8 @@ mod tests {
         rsv.offer(Step(71), ());
         rsv.commit(&mut head);
         assert_eq!(head.as_slice().last(), Some(&(Step(71), ())));
+=======
+>>>>>>> 1919cb443cd7734dc09b64ead67eb67b5873816a
     }
 
     #[test]
@@ -513,12 +581,17 @@ mod tests {
     fn test_empty() {
         let mut rsv = StageReservoir::new(0);
         let mut head = Basin::new();
+<<<<<<< HEAD
         for mut i in 0..100 {
             if i > 60 {
                 i -= 20; // "preemption", but not really, since no records
             }
             rsv.offer(Step(i), ());
             assert!(!rsv.staged_preemption());
+=======
+        for i in 0..100 {
+            rsv.offer(Step(i), ());
+>>>>>>> 1919cb443cd7734dc09b64ead67eb67b5873816a
             assert_eq!(rsv.staged_items(), &[]);
             if i % 5 == 0 {
                 rsv.commit(&mut head);
