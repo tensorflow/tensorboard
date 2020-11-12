@@ -94,6 +94,15 @@ alias(
 )
 
 alias(
+    name = "thiserror",
+    actual = "@raze__thiserror__1_0_22//:thiserror",
+    tags = [
+        "cargo-raze",
+        "manual",
+    ],
+)
+
+alias(
     name = "tokio",
     actual = "@raze__tokio__0_2_22//:tokio",
     tags = [
