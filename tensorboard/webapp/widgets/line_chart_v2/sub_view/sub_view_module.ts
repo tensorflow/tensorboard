@@ -15,23 +15,12 @@ limitations under the License.
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
 
-import {
-  LineChartXAxisComponent,
-  LineChartYAxisComponent,
-} from './line_chart_axis_view';
+import {LineChartAxisComponent} from './line_chart_axis_view';
 import {LineChartGridView} from './line_chart_grid_view';
 
 @NgModule({
-  declarations: [
-    LineChartXAxisComponent,
-    LineChartYAxisComponent,
-    LineChartGridView,
-  ],
-  exports: [
-    LineChartXAxisComponent,
-    LineChartYAxisComponent,
-    LineChartGridView,
-  ],
+  declarations: [LineChartAxisComponent, LineChartGridView],
+  exports: [LineChartAxisComponent, LineChartGridView],
   imports: [CommonModule],
 })
 export class SubViewModule {}

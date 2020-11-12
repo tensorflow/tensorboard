@@ -20,26 +20,27 @@ import {By} from '@angular/platform-browser';
 
 import {createScale} from '../lib/scale';
 import {Extent, ScaleType} from '../lib/public_types';
-import {
-  LineChartXAxisComponent,
-  LineChartYAxisComponent,
-} from './line_chart_axis_view';
+import {LineChartAxisComponent} from './line_chart_axis_view';
 
 @Component({
   selector: 'testable-comp',
   template: `
-    <line-chart-x-axis
-      [viewExtent]="viewBox"
-      [xScale]="scale"
-      [xGridCount]="10"
+    <line-chart-axis
+      class="x"
+      axis="x"
+      [axisExtent]="viewBox.x"
+      [scale]="scale"
+      [gridCount]="10"
       [domDim]="domDim"
-    ></line-chart-x-axis>
-    <line-chart-y-axis
-      [viewExtent]="viewBox"
-      [yScale]="scale"
-      [yGridCount]="5"
+    ></line-chart-axis>
+    <line-chart-axis
+      class="y"
+      axis="y"
+      [axisExtent]="viewBox.y"
+      [scale]="scale"
+      [gridCount]="5"
       [domDim]="domDim"
-    ></line-chart-y-axis>
+    ></line-chart-axis>
   `,
 })
 class TestableComponent {
@@ -59,17 +60,13 @@ class TestableComponent {
 
 describe('line_chart_v2/sub_view/axis test', () => {
   const ByCss = {
-    X_AXIS_LABEL: By.css('line-chart-x-axis text'),
-    Y_AXIS_LABEL: By.css('line-chart-y-axis text'),
+    X_AXIS_LABEL: By.css('line-chart-axis.x text'),
+    Y_AXIS_LABEL: By.css('line-chart-axis.y text'),
   };
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [
-        TestableComponent,
-        LineChartXAxisComponent,
-        LineChartYAxisComponent,
-      ],
+      declarations: [TestableComponent, LineChartAxisComponent],
       imports: [CommonModule],
     }).compileComponents();
   });
@@ -86,13 +83,16 @@ describe('line_chart_v2/sub_view/axis test', () => {
     expectedLocs: Array<{x: number; y: number}>
   ) {
     expect(debugElements.length).toBe(expectedLocs.length);
-    for (const [index, el] of debugElements.entries()) {
-      const actual = {x: el.attributes['x'], y: el.attributes['y']};
-      expect(actual).toEqual({
-        x: String(expectedLocs[index].x),
-        y: String(expectedLocs[index].y),
+
+    const actuals: typeof expectedLocs = [];
+    for (const el of debugElements) {
+      actuals.push({
+        x: Number(el.attributes['x']),
+        y: Number(el.attributes['y']),
       });
     }
+
+    expect(expectedLocs).toEqual(actuals);
   }
 
   it('renders tick in human readable format', () => {

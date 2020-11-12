@@ -14,74 +14,31 @@ limitations under the License.
 ==============================================================================*/
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 
-import {Dimension, Extent, Scale} from '../lib/public_types';
+import {Dimension, Scale} from '../lib/public_types';
 import {formatAxisNumber} from './axis_formatter';
 import {
-  getDomX,
-  getDomY,
-  XDimChartView,
-  YDimChartView,
+  getDomSizeInformedTickCount,
+  getScaleRangeFromDomDim,
 } from './chart_view_utils';
 
-export abstract class AxisView {
-  trackByTick(index: number, tick: number) {
-    return tick;
-  }
-
-  getTickString(tick: number): string {
-    return formatAxisNumber(tick);
-  }
-
-  private getDomSizeInformedTickCount(
-    domSize: number,
-    tickCount: number
-  ): number {
-    const guidance = Math.floor(domSize / 50);
-    return Math.min(guidance, tickCount);
-  }
-
-  protected getTicks(
-    scale: Scale,
-    domain: [number, number],
-    domSize: number,
-    preferredCount: number
-  ): number[] {
-    return scale.ticks(
-      domain,
-      this.getDomSizeInformedTickCount(domSize, preferredCount)
-    );
-  }
-}
-
-const AXIS_COMMON_STYLES = `
-  :host {
-    display: block;
-    overflow: hidden;
-  }
-
-  svg {
-    height: 100%;
-    width: 100%;
-  }
-
-  line {
-    stroke: #333;
-    stroke-width: 1px;
-  }
-
-  text {
-    font-size: 11px;
-    user-select: none;
-  }
-`;
-
 @Component({
-  selector: 'line-chart-x-axis',
-  template: `<svg>
-    <line x1="0" y1="0" [attr.x2]="domDim.width" y2="0"></line>
-    <ng-container *ngFor="let tick of getXTicks(); trackBy: trackByTick">
+  selector: 'line-chart-axis',
+  template: `<svg [ngClass]="axis">
+    <ng-container *ngIf="axis === 'x'; else yAxisLine">
+      <line x1="0" y1="0" [attr.x2]="domDim.width" y2="0"></line>
+    </ng-container>
+    <ng-template #yAxisLine>
+      <line
+        [attr.x1]="domDim.width"
+        y1="0"
+        [attr.x2]="domDim.width"
+        [attr.y2]="domDim.height"
+      ></line>
+    </ng-template>
+
+    <ng-container *ngFor="let tick of getTicks()">
       <g>
-        <text [attr.x]="getDomX(tick)" [attr.y]="5">
+        <text [attr.x]="textXPosition(tick)" [attr.y]="textYPosition(tick)">
           {{ getTickString(tick) }}
         </text>
         <title>{{ tick }}</title>
@@ -89,65 +46,33 @@ const AXIS_COMMON_STYLES = `
     </ng-container>
   </svg>`,
   styles: [
-    AXIS_COMMON_STYLES,
     `
+      :host {
+        display: block;
+        overflow: hidden;
+      }
+
+      svg {
+        height: 100%;
+        width: 100%;
+      }
+
+      line {
+        stroke: #333;
+        stroke-width: 1px;
+      }
+
       text {
+        font-size: 11px;
+        user-select: none;
+      }
+
+      svg.x text {
         dominant-baseline: hanging;
         text-anchor: middle;
       }
-    `,
-  ],
-  changeDetection: ChangeDetectionStrategy.OnPush,
-})
-export class LineChartXAxisComponent extends AxisView implements XDimChartView {
-  @Input()
-  viewExtent!: Extent;
 
-  @Input()
-  xScale!: Scale;
-
-  @Input()
-  xGridCount!: number;
-
-  @Input()
-  domDim!: Dimension;
-
-  getDomX(data: number): number {
-    return getDomX(this, data);
-  }
-
-  getXTicks() {
-    return this.getTicks(
-      this.xScale,
-      this.viewExtent.x,
-      this.domDim.width,
-      this.xGridCount
-    );
-  }
-}
-
-@Component({
-  selector: 'line-chart-y-axis',
-  template: `<svg>
-    <line
-      [attr.x1]="domDim.width"
-      y1="0"
-      [attr.x2]="domDim.width"
-      [attr.y2]="domDim.height"
-    ></line>
-    <ng-container *ngFor="let tick of getYTicks(); trackBy: trackByTick">
-      <g>
-        <text [attr.x]="domDim.width - 5" [attr.y]="getDomY(tick)">
-          {{ getTickString(tick) }}
-        </text>
-        <title>{{ tick }}</title>
-      </g>
-    </ng-container>
-  </svg>`,
-  styles: [
-    AXIS_COMMON_STYLES,
-    `
-      text {
+      svg.y text {
         dominant-baseline: central;
         text-anchor: end;
       }
@@ -155,29 +80,53 @@ export class LineChartXAxisComponent extends AxisView implements XDimChartView {
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class LineChartYAxisComponent extends AxisView implements YDimChartView {
+export class LineChartAxisComponent {
   @Input()
-  viewExtent!: Extent;
+  axisExtent!: [number, number];
 
   @Input()
-  yScale!: Scale;
+  axis!: 'x' | 'y';
 
   @Input()
-  yGridCount!: number;
+  scale!: Scale;
+
+  @Input()
+  gridCount!: number;
 
   @Input()
   domDim!: Dimension;
 
-  getDomY(data: number): number {
-    return getDomY(this, data);
+  getTicks(): number[] {
+    const domSize = this.axis === 'x' ? this.domDim.width : this.domDim.height;
+    return this.scale.ticks(
+      this.axisExtent,
+      getDomSizeInformedTickCount(domSize, this.gridCount)
+    );
   }
 
-  getYTicks() {
-    return this.getTicks(
-      this.yScale,
-      this.viewExtent.y,
-      this.domDim.height,
-      this.yGridCount
+  getTickString(tick: number): string {
+    return formatAxisNumber(tick);
+  }
+
+  private getDomPos(data: number): number {
+    return this.scale.forward(
+      this.axisExtent,
+      getScaleRangeFromDomDim(this.domDim, this.axis),
+      data
     );
+  }
+
+  private static readonly TEXT_PADDING = 5;
+
+  textXPosition(tick: number) {
+    return this.axis === 'x'
+      ? this.getDomPos(tick)
+      : this.domDim.width - LineChartAxisComponent.TEXT_PADDING;
+  }
+
+  textYPosition(tick: number) {
+    return this.axis === 'x'
+      ? LineChartAxisComponent.TEXT_PADDING
+      : this.getDomPos(tick);
   }
 }

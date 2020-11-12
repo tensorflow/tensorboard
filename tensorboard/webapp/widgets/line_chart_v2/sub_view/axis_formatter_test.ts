@@ -32,7 +32,9 @@ describe('line_chart_v2/sub_view/axis_formatter test', () => {
     });
 
     it('fails to format large number with many decimals nicely', () => {
-      // This causes
+      // This causes TensorBoard to format axis in less than ideal when spread of a
+      // viewBox is miniscule compared to the number. e.g., you see axis that says,
+      // "1e9", "1e9", "1e9" which is quite meaningless. It will be addressed in the future.
       expect(formatAxisNumber(1e9 + 0.00000001)).toBe('1e+9');
     });
   });

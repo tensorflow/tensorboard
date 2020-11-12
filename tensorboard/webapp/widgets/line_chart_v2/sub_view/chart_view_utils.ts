@@ -12,48 +12,19 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Dimension, Extent, Scale} from '../lib/public_types';
+import {Dimension} from '../lib/public_types';
 
-export interface XDimChartView {
-  viewExtent: Extent;
-  domDim: Dimension;
-  xScale: Scale;
+export function getScaleRangeFromDomDim(
+  domDim: Dimension,
+  axis: 'x' | 'y'
+): [number, number] {
+  return axis === 'x' ? [0, domDim.width] : [domDim.height, 0];
 }
 
-export interface YDimChartView {
-  viewExtent: Extent;
-  domDim: Dimension;
-  yScale: Scale;
-}
-
-export function getDomX(chartView: XDimChartView, dataCoord: number): number {
-  return chartView.xScale.forward(
-    chartView.viewExtent.x,
-    [0, chartView.domDim.width],
-    dataCoord
-  );
-}
-
-export function getDataX(chartView: XDimChartView, uiCoord: number): number {
-  return chartView.xScale.reverse(
-    chartView.viewExtent.x,
-    [0, chartView.domDim.width],
-    uiCoord
-  );
-}
-
-export function getDomY(chartView: YDimChartView, dataCoord: number): number {
-  return chartView.yScale.forward(
-    chartView.viewExtent.y,
-    [chartView.domDim.height, 0],
-    dataCoord
-  );
-}
-
-export function getDataY(chartView: YDimChartView, uiCoord: number): number {
-  return chartView.yScale.reverse(
-    chartView.viewExtent.y,
-    [chartView.domDim.height, 0],
-    uiCoord
-  );
+export function getDomSizeInformedTickCount(
+  domSize: number,
+  tickCount: number
+): number {
+  const guidance = Math.floor(domSize / 50);
+  return Math.min(guidance, tickCount);
 }

@@ -16,12 +16,9 @@ import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 
 import {Extent, Scale} from '../lib/public_types';
 import {
-  getDomX,
-  getDomY,
-  XDimChartView,
-  YDimChartView,
+  getDomSizeInformedTickCount,
+  getScaleRangeFromDomDim,
 } from './chart_view_utils';
-import {AxisView} from './line_chart_axis_view';
 
 @Component({
   selector: 'line-chart-grid-view',
@@ -68,9 +65,7 @@ import {AxisView} from './line_chart_axis_view';
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class LineChartGridView
-  extends AxisView
-  implements XDimChartView, YDimChartView {
+export class LineChartGridView {
   @Input()
   viewExtent!: Extent;
 
@@ -90,28 +85,32 @@ export class LineChartGridView
   domDim!: {width: number; height: number};
 
   getDomX(dataX: number): number {
-    return getDomX(this, dataX);
+    return this.xScale.forward(
+      this.viewExtent.x,
+      getScaleRangeFromDomDim(this.domDim, 'x'),
+      dataX
+    );
   }
 
   getDomY(dataY: number): number {
-    return getDomY(this, dataY);
+    return this.xScale.forward(
+      this.viewExtent.y,
+      getScaleRangeFromDomDim(this.domDim, 'y'),
+      dataY
+    );
   }
 
   getXTicks() {
-    return this.getTicks(
-      this.xScale,
+    return this.xScale.ticks(
       this.viewExtent.x,
-      this.domDim.width,
-      this.xGridCount
+      getDomSizeInformedTickCount(this.domDim.width, this.xGridCount)
     );
   }
 
   getYTicks() {
-    return this.getTicks(
-      this.yScale,
+    return this.xScale.ticks(
       this.viewExtent.y,
-      this.domDim.height,
-      this.yGridCount
+      getDomSizeInformedTickCount(this.domDim.height, this.yGridCount)
     );
   }
 }
