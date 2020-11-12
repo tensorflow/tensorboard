@@ -120,20 +120,16 @@ describe('line_chart_v2/sub_view/grid test', () => {
 
   // We tweak the size guidance to approximately allows around 50 pixel gap between the
   // lines so the axis labels do not overlap.
-  it(
-    'renders less number of grids when DOM is tiny and allows at least 50 pixel ' +
-      'between lines',
-    () => {
-      const fixture = TestBed.createComponent(TestableComponent);
-      fixture.componentInstance.domDim = {width: 100, height: 50};
-      fixture.detectChanges();
+  it('renders fewer grid lines when DOM is smaller and spaces them min. 50 pixel', () => {
+    const fixture = TestBed.createComponent(TestableComponent);
+    fixture.componentInstance.domDim = {width: 100, height: 50};
+    fixture.detectChanges();
 
-      assertLines(fixture.debugElement.queryAll(ByCss.GRID_LINE), [
-        {x1: 0, y1: 0, x2: 0, y2: 50},
-        {x1: 50, y1: 0, x2: 50, y2: 50},
-        {x1: 100, y1: 0, x2: 100, y2: 50},
-        {x1: 0, y1: 25, x2: 100, y2: 25},
-      ]);
-    }
-  );
+    assertLines(fixture.debugElement.queryAll(ByCss.GRID_LINE), [
+      {x1: 0, y1: 0, x2: 0, y2: 50},
+      {x1: 50, y1: 0, x2: 50, y2: 50},
+      {x1: 100, y1: 0, x2: 100, y2: 50},
+      {x1: 0, y1: 25, x2: 100, y2: 25},
+    ]);
+  });
 });
