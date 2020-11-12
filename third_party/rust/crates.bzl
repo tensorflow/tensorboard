@@ -733,6 +733,26 @@ def raze_fetch_remote_crates():
 
     maybe(
         http_archive,
+        name = "raze__thiserror__1_0_22",
+        url = "https://crates.io/api/v1/crates/thiserror/1.0.22/download",
+        type = "tar.gz",
+        sha256 = "0e9ae34b84616eedaaf1e9dd6026dbe00dcafa92aa0c8077cb69df1fcfe5e53e",
+        strip_prefix = "thiserror-1.0.22",
+        build_file = Label("//third_party/rust/remote:BUILD.thiserror-1.0.22.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "raze__thiserror_impl__1_0_22",
+        url = "https://crates.io/api/v1/crates/thiserror-impl/1.0.22/download",
+        type = "tar.gz",
+        sha256 = "9ba20f23e85b10754cd195504aebf6a27e2e6cbe28c17778a0c930724628dd56",
+        strip_prefix = "thiserror-impl-1.0.22",
+        build_file = Label("//third_party/rust/remote:BUILD.thiserror-impl-1.0.22.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "raze__tokio__0_2_22",
         url = "https://crates.io/api/v1/crates/tokio/0.2.22/download",
         type = "tar.gz",
