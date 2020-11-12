@@ -19,8 +19,8 @@ env:
   # Grab the BAZEL_SHA256SUM from the Bazel releases page; e.g.:
   # bazel-0.20.0-linux-x86_64.sha256
   global:
-    - BAZEL=2.1.0
-    - BAZEL_SHA256SUM=e13581d44faad6ac807dd917e682fef20359d26728166ac35dadd8ee653a580d
+    - BAZEL=3.7.0
+    - BAZEL_SHA256SUM=b7583eec83cc38302997098a40b8c870c37e0ab971a83cb3364c754a178b74ec
   matrix:
     - TF_VERSION_ID=tf-nightly
     - TF_VERSION_ID=  # Do not install TensorFlow in this case
