@@ -29,12 +29,12 @@ pub struct TensorShapeProto {
     /// in-memory layout of RowMajor Eigen tensors.
     ///
     /// If "dim.size()" > 0, "unknown_rank" must be false.
-    #[prost(message, repeated, tag = "2")]
+    #[prost(message, repeated, tag="2")]
     pub dim: ::std::vec::Vec<tensor_shape_proto::Dim>,
     /// If true, the number of dimensions in the shape is unknown.
     ///
     /// If true, "dim.size()" must be 0.
-    #[prost(bool, tag = "3")]
+    #[prost(bool, tag="3")]
     pub unknown_rank: bool,
 }
 pub mod tensor_shape_proto {
@@ -46,10 +46,10 @@ pub mod tensor_shape_proto {
         /// shapes (values of -1 mean "unknown" dimension).  Certain wrappers
         /// that work with TensorShapeProto may fail at runtime when deserializing
         /// a TensorShapeProto containing a dim value of -1.
-        #[prost(int64, tag = "1")]
+        #[prost(int64, tag="1")]
         pub size: i64,
         /// Optional name of the tensor dimension.
-        #[prost(string, tag = "2")]
+        #[prost(string, tag="2")]
         pub name: std::string::String,
     }
 }
@@ -139,119 +139,121 @@ pub enum SpecializedType {
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct ResourceHandleProto {
     /// Unique name for the device containing the resource.
-    #[prost(string, tag = "1")]
+    #[prost(string, tag="1")]
     pub device: std::string::String,
     /// Container in which this resource is placed.
-    #[prost(string, tag = "2")]
+    #[prost(string, tag="2")]
     pub container: std::string::String,
     /// Unique name of this resource.
-    #[prost(string, tag = "3")]
+    #[prost(string, tag="3")]
     pub name: std::string::String,
     /// Hash code for the type of the resource. Is only valid in the same device
     /// and in the same execution.
-    #[prost(uint64, tag = "4")]
+    #[prost(uint64, tag="4")]
     pub hash_code: u64,
     /// For debug-only, the name of the type pointed to by this handle, if
     /// available.
-    #[prost(string, tag = "5")]
+    #[prost(string, tag="5")]
     pub maybe_type_name: std::string::String,
     /// Data types and shapes for the underlying resource.
-    #[prost(message, repeated, tag = "6")]
+    #[prost(message, repeated, tag="6")]
     pub dtypes_and_shapes: ::std::vec::Vec<resource_handle_proto::DtypeAndShape>,
 }
 pub mod resource_handle_proto {
     /// Protocol buffer representing a pair of (data type, tensor shape).
     #[derive(Clone, PartialEq, ::prost::Message)]
     pub struct DtypeAndShape {
-        #[prost(enumeration = "super::DataType", tag = "1")]
+        #[prost(enumeration="super::DataType", tag="1")]
         pub dtype: i32,
-        #[prost(message, optional, tag = "2")]
+        #[prost(message, optional, tag="2")]
         pub shape: ::std::option::Option<super::TensorShapeProto>,
     }
 }
 /// Protocol buffer representing a tensor.
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct TensorProto {
-    #[prost(enumeration = "DataType", tag = "1")]
+    #[prost(enumeration="DataType", tag="1")]
     pub dtype: i32,
     /// Shape of the tensor.  TODO(touts): sort out the 0-rank issues.
-    #[prost(message, optional, tag = "2")]
+    #[prost(message, optional, tag="2")]
     pub tensor_shape: ::std::option::Option<TensorShapeProto>,
     // Only one of the representations below is set, one of "tensor_contents" and
     // the "xxx_val" attributes.  We are not using oneof because as oneofs cannot
     // contain repeated fields it would require another extra set of messages.
+
     /// Version number.
     ///
     /// In version 0, if the "repeated xxx" representations contain only one
     /// element, that element is repeated to fill the shape.  This makes it easy
     /// to represent a constant Tensor with a single value.
-    #[prost(int32, tag = "3")]
+    #[prost(int32, tag="3")]
     pub version_number: i32,
     /// Serialized raw tensor content from either Tensor::AsProtoTensorContent or
     /// memcpy in tensorflow::grpc::EncodeTensorToByteBuffer. This representation
     /// can be used for all tensor types. The purpose of this representation is to
     /// reduce serialization overhead during RPC call by avoiding serialization of
     /// many repeated small items.
-    #[prost(bytes, tag = "4")]
+    #[prost(bytes, tag="4")]
     pub tensor_content: std::vec::Vec<u8>,
     // Type specific representations that make it easy to create tensor protos in
     // all languages.  Only the representation corresponding to "dtype" can
     // be set.  The values hold the flattened representation of the tensor in
     // row major order.
+
     /// DT_HALF, DT_BFLOAT16. Note that since protobuf has no int16 type, we'll
     /// have some pointless zero padding for each value here.
-    #[prost(int32, repeated, tag = "13")]
+    #[prost(int32, repeated, tag="13")]
     pub half_val: ::std::vec::Vec<i32>,
     /// DT_FLOAT.
-    #[prost(float, repeated, tag = "5")]
+    #[prost(float, repeated, tag="5")]
     pub float_val: ::std::vec::Vec<f32>,
     /// DT_DOUBLE.
-    #[prost(double, repeated, tag = "6")]
+    #[prost(double, repeated, tag="6")]
     pub double_val: ::std::vec::Vec<f64>,
     /// DT_INT32, DT_INT16, DT_INT8, DT_UINT8.
-    #[prost(int32, repeated, tag = "7")]
+    #[prost(int32, repeated, tag="7")]
     pub int_val: ::std::vec::Vec<i32>,
     /// DT_STRING
-    #[prost(bytes, repeated, tag = "8")]
+    #[prost(bytes, repeated, tag="8")]
     pub string_val: ::std::vec::Vec<std::vec::Vec<u8>>,
     /// DT_COMPLEX64. scomplex_val(2*i) and scomplex_val(2*i+1) are real
     /// and imaginary parts of i-th single precision complex.
-    #[prost(float, repeated, tag = "9")]
+    #[prost(float, repeated, tag="9")]
     pub scomplex_val: ::std::vec::Vec<f32>,
     /// DT_INT64
-    #[prost(int64, repeated, tag = "10")]
+    #[prost(int64, repeated, tag="10")]
     pub int64_val: ::std::vec::Vec<i64>,
     /// DT_BOOL
-    #[prost(bool, repeated, tag = "11")]
+    #[prost(bool, repeated, tag="11")]
     pub bool_val: ::std::vec::Vec<bool>,
     /// DT_COMPLEX128. dcomplex_val(2*i) and dcomplex_val(2*i+1) are real
     /// and imaginary parts of i-th double precision complex.
-    #[prost(double, repeated, tag = "12")]
+    #[prost(double, repeated, tag="12")]
     pub dcomplex_val: ::std::vec::Vec<f64>,
     /// DT_RESOURCE
-    #[prost(message, repeated, tag = "14")]
+    #[prost(message, repeated, tag="14")]
     pub resource_handle_val: ::std::vec::Vec<ResourceHandleProto>,
     /// DT_VARIANT
-    #[prost(message, repeated, tag = "15")]
+    #[prost(message, repeated, tag="15")]
     pub variant_val: ::std::vec::Vec<VariantTensorDataProto>,
     /// DT_UINT32
-    #[prost(uint32, repeated, tag = "16")]
+    #[prost(uint32, repeated, tag="16")]
     pub uint32_val: ::std::vec::Vec<u32>,
     /// DT_UINT64
-    #[prost(uint64, repeated, tag = "17")]
+    #[prost(uint64, repeated, tag="17")]
     pub uint64_val: ::std::vec::Vec<u64>,
 }
 /// Protocol buffer representing the serialization format of DT_VARIANT tensors.
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct VariantTensorDataProto {
     /// Name of the type of objects being serialized.
-    #[prost(string, tag = "1")]
+    #[prost(string, tag="1")]
     pub type_name: std::string::String,
     /// Portions of the object that are not Tensors.
-    #[prost(bytes, tag = "2")]
+    #[prost(bytes, tag="2")]
     pub metadata: std::vec::Vec<u8>,
     /// Tensors contained within objects being serialized.
-    #[prost(message, repeated, tag = "3")]
+    #[prost(message, repeated, tag="3")]
     pub tensors: ::std::vec::Vec<TensorProto>,
 }
 /// Metadata associated with a series of Summary data
@@ -259,31 +261,31 @@ pub struct VariantTensorDataProto {
 pub struct SummaryDescription {
     /// Hint on how plugins should process the data in this series.
     /// Supported values include "scalar", "histogram", "image", "audio"
-    #[prost(string, tag = "1")]
+    #[prost(string, tag="1")]
     pub type_hint: std::string::String,
 }
 /// Serialization format for histogram module in
 /// core/lib/histogram/histogram.h
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct HistogramProto {
-    #[prost(double, tag = "1")]
+    #[prost(double, tag="1")]
     pub min: f64,
-    #[prost(double, tag = "2")]
+    #[prost(double, tag="2")]
     pub max: f64,
-    #[prost(double, tag = "3")]
+    #[prost(double, tag="3")]
     pub num: f64,
-    #[prost(double, tag = "4")]
+    #[prost(double, tag="4")]
     pub sum: f64,
-    #[prost(double, tag = "5")]
+    #[prost(double, tag="5")]
     pub sum_squares: f64,
     /// Parallel arrays encoding the bucket boundaries and the bucket values.
     /// bucket(i) is the count for the bucket i.  The range for
     /// a bucket is:
     ///   i == 0:  -DBL_MAX .. bucket_limit(0)
     ///   i != 0:  bucket_limit(i-1) .. bucket_limit(i)
-    #[prost(double, repeated, tag = "6")]
+    #[prost(double, repeated, tag="6")]
     pub bucket_limit: ::std::vec::Vec<f64>,
-    #[prost(double, repeated, tag = "7")]
+    #[prost(double, repeated, tag="7")]
     pub bucket: ::std::vec::Vec<f64>,
 }
 /// A SummaryMetadata encapsulates information on which plugins are able to make
@@ -291,30 +293,30 @@ pub struct HistogramProto {
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct SummaryMetadata {
     /// Data that associates a summary with a certain plugin.
-    #[prost(message, optional, tag = "1")]
+    #[prost(message, optional, tag="1")]
     pub plugin_data: ::std::option::Option<summary_metadata::PluginData>,
     /// Display name for viewing in TensorBoard.
-    #[prost(string, tag = "2")]
+    #[prost(string, tag="2")]
     pub display_name: std::string::String,
     /// Longform readable description of the summary sequence. Markdown supported.
-    #[prost(string, tag = "3")]
+    #[prost(string, tag="3")]
     pub summary_description: std::string::String,
     /// Class of data stored in this time series. Required for compatibility with
     /// TensorBoard's generic data facilities (`DataProvider`, et al.). This value
     /// imposes constraints on the dtype and shape of the corresponding tensor
     /// values. See `DataClass` docs for details.
-    #[prost(enumeration = "DataClass", tag = "4")]
+    #[prost(enumeration="DataClass", tag="4")]
     pub data_class: i32,
 }
 pub mod summary_metadata {
     #[derive(Clone, PartialEq, ::prost::Message)]
     pub struct PluginData {
         /// The name of the plugin this data pertains to.
-        #[prost(string, tag = "1")]
+        #[prost(string, tag="1")]
         pub plugin_name: std::string::String,
         /// The content to store for the plugin. The best practice is for this to be
         /// a binary serialized protocol buffer.
-        #[prost(bytes, tag = "2")]
+        #[prost(bytes, tag="2")]
         pub content: std::vec::Vec<u8>,
     }
 }
@@ -327,16 +329,16 @@ pub mod summary_metadata {
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Summary {
     /// Set of values for the summary.
-    #[prost(message, repeated, tag = "1")]
+    #[prost(message, repeated, tag="1")]
     pub value: ::std::vec::Vec<summary::Value>,
 }
 pub mod summary {
     #[derive(Clone, PartialEq, ::prost::Message)]
     pub struct Image {
         /// Dimensions of the image.
-        #[prost(int32, tag = "1")]
+        #[prost(int32, tag="1")]
         pub height: i32,
-        #[prost(int32, tag = "2")]
+        #[prost(int32, tag="2")]
         pub width: i32,
         /// Valid colorspace values are
         ///   1 - grayscale
@@ -345,67 +347,67 @@ pub mod summary {
         ///   4 - RGBA
         ///   5 - DIGITAL_YUV
         ///   6 - BGRA
-        #[prost(int32, tag = "3")]
+        #[prost(int32, tag="3")]
         pub colorspace: i32,
         /// Image data in encoded format.  All image formats supported by
         /// image_codec::CoderUtil can be stored here.
-        #[prost(bytes, tag = "4")]
+        #[prost(bytes, tag="4")]
         pub encoded_image_string: std::vec::Vec<u8>,
     }
     #[derive(Clone, PartialEq, ::prost::Message)]
     pub struct Audio {
         /// Sample rate of the audio in Hz.
-        #[prost(float, tag = "1")]
+        #[prost(float, tag="1")]
         pub sample_rate: f32,
         /// Number of channels of audio.
-        #[prost(int64, tag = "2")]
+        #[prost(int64, tag="2")]
         pub num_channels: i64,
         /// Length of the audio in frames (samples per channel).
-        #[prost(int64, tag = "3")]
+        #[prost(int64, tag="3")]
         pub length_frames: i64,
         /// Encoded audio data and its associated RFC 2045 content type (e.g.
         /// "audio/wav").
-        #[prost(bytes, tag = "4")]
+        #[prost(bytes, tag="4")]
         pub encoded_audio_string: std::vec::Vec<u8>,
-        #[prost(string, tag = "5")]
+        #[prost(string, tag="5")]
         pub content_type: std::string::String,
     }
     #[derive(Clone, PartialEq, ::prost::Message)]
     pub struct Value {
         /// This field is deprecated and will not be set.
-        #[prost(string, tag = "7")]
+        #[prost(string, tag="7")]
         pub node_name: std::string::String,
         /// Tag name for the data. Used by TensorBoard plugins to organize data. Tags
         /// are often organized by scope (which contains slashes to convey
         /// hierarchy). For example: foo/bar/0
-        #[prost(string, tag = "1")]
+        #[prost(string, tag="1")]
         pub tag: std::string::String,
         /// Contains metadata on the summary value such as which plugins may use it.
         /// Take note that many summary values may lack a metadata field. This is
         /// because the FileWriter only keeps a metadata object on the first summary
         /// value with a certain tag for each tag. TensorBoard then remembers which
         /// tags are associated with which plugins. This saves space.
-        #[prost(message, optional, tag = "9")]
+        #[prost(message, optional, tag="9")]
         pub metadata: ::std::option::Option<super::SummaryMetadata>,
         /// Value associated with the tag.
-        #[prost(oneof = "value::Value", tags = "2, 3, 4, 5, 6, 8")]
+        #[prost(oneof="value::Value", tags="2, 3, 4, 5, 6, 8")]
         pub value: ::std::option::Option<value::Value>,
     }
     pub mod value {
         /// Value associated with the tag.
         #[derive(Clone, PartialEq, ::prost::Oneof)]
         pub enum Value {
-            #[prost(float, tag = "2")]
+            #[prost(float, tag="2")]
             SimpleValue(f32),
-            #[prost(bytes, tag = "3")]
+            #[prost(bytes, tag="3")]
             ObsoleteOldStyleHistogram(std::vec::Vec<u8>),
-            #[prost(message, tag = "4")]
+            #[prost(message, tag="4")]
             Image(super::Image),
-            #[prost(message, tag = "5")]
+            #[prost(message, tag="5")]
             Histo(super::super::HistogramProto),
-            #[prost(message, tag = "6")]
+            #[prost(message, tag="6")]
             Audio(super::Audio),
-            #[prost(message, tag = "8")]
+            #[prost(message, tag="8")]
             Tensor(super::super::TensorProto),
         }
     }
@@ -434,12 +436,12 @@ pub enum DataClass {
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Event {
     /// Timestamp of the event.
-    #[prost(double, tag = "1")]
+    #[prost(double, tag="1")]
     pub wall_time: f64,
     /// Global step of the event.
-    #[prost(int64, tag = "2")]
+    #[prost(int64, tag="2")]
     pub step: i64,
-    #[prost(oneof = "event::What", tags = "3, 4, 5, 6, 7, 8, 9")]
+    #[prost(oneof="event::What", tags="3, 4, 5, 6, 7, 8, 9")]
     pub what: ::std::option::Option<event::What>,
 }
 pub mod event {
@@ -449,35 +451,35 @@ pub mod event {
         /// This is use to identify the contents of the record IO files
         /// easily.  Current version is "brain.Event:2".  All versions
         /// start with "brain.Event:".
-        #[prost(string, tag = "3")]
+        #[prost(string, tag="3")]
         FileVersion(std::string::String),
         /// An encoded version of a GraphDef.
-        #[prost(bytes, tag = "4")]
+        #[prost(bytes, tag="4")]
         GraphDef(std::vec::Vec<u8>),
         /// A summary was generated.
-        #[prost(message, tag = "5")]
+        #[prost(message, tag="5")]
         Summary(super::Summary),
         /// The user output a log message. Not all messages are logged, only ones
         /// generated via the Python tensorboard_logging module.
-        #[prost(message, tag = "6")]
+        #[prost(message, tag="6")]
         LogMessage(super::LogMessage),
         /// The state of the session which can be used for restarting after crashes.
-        #[prost(message, tag = "7")]
+        #[prost(message, tag="7")]
         SessionLog(super::SessionLog),
         /// The metadata returned by running a session.run() call.
-        #[prost(message, tag = "8")]
+        #[prost(message, tag="8")]
         TaggedRunMetadata(super::TaggedRunMetadata),
         /// An encoded version of a MetaGraphDef.
-        #[prost(bytes, tag = "9")]
+        #[prost(bytes, tag="9")]
         MetaGraphDef(std::vec::Vec<u8>),
     }
 }
 /// Protocol buffer used for logging messages to the events file.
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct LogMessage {
-    #[prost(enumeration = "log_message::Level", tag = "1")]
+    #[prost(enumeration="log_message::Level", tag="1")]
     pub level: i32,
-    #[prost(string, tag = "2")]
+    #[prost(string, tag="2")]
     pub message: std::string::String,
 }
 pub mod log_message {
@@ -499,12 +501,12 @@ pub mod log_message {
 /// Protocol buffer used for logging session state.
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct SessionLog {
-    #[prost(enumeration = "session_log::SessionStatus", tag = "1")]
+    #[prost(enumeration="session_log::SessionStatus", tag="1")]
     pub status: i32,
     /// This checkpoint_path contains both the path and filename.
-    #[prost(string, tag = "2")]
+    #[prost(string, tag="2")]
     pub checkpoint_path: std::string::String,
-    #[prost(string, tag = "3")]
+    #[prost(string, tag="3")]
     pub msg: std::string::String,
 }
 pub mod session_log {
@@ -521,39 +523,39 @@ pub mod session_log {
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct TaggedRunMetadata {
     /// Tag name associated with this metadata.
-    #[prost(string, tag = "1")]
+    #[prost(string, tag="1")]
     pub tag: std::string::String,
     /// Byte-encoded version of the `RunMetadata` proto in order to allow lazy
     /// deserialization.
-    #[prost(bytes, tag = "2")]
+    #[prost(bytes, tag="2")]
     pub run_metadata: std::vec::Vec<u8>,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct WatchdogConfig {
-    #[prost(int64, tag = "1")]
+    #[prost(int64, tag="1")]
     pub timeout_ms: i64,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct RequestedExitCode {
-    #[prost(int32, tag = "1")]
+    #[prost(int32, tag="1")]
     pub exit_code: i32,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct WorkerHeartbeatRequest {
-    #[prost(enumeration = "WorkerShutdownMode", tag = "1")]
+    #[prost(enumeration="WorkerShutdownMode", tag="1")]
     pub shutdown_mode: i32,
-    #[prost(message, optional, tag = "2")]
+    #[prost(message, optional, tag="2")]
     pub watchdog_config: ::std::option::Option<WatchdogConfig>,
-    #[prost(message, optional, tag = "3")]
+    #[prost(message, optional, tag="3")]
     pub exit_code: ::std::option::Option<RequestedExitCode>,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct WorkerHeartbeatResponse {
-    #[prost(enumeration = "WorkerHealth", tag = "1")]
+    #[prost(enumeration="WorkerHealth", tag="1")]
     pub health_status: i32,
-    #[prost(message, repeated, tag = "2")]
+    #[prost(message, repeated, tag="2")]
     pub worker_log: ::std::vec::Vec<Event>,
-    #[prost(string, tag = "3")]
+    #[prost(string, tag="3")]
     pub hostname: std::string::String,
 }
 // Worker heartbeat messages.  Support for these operations is currently
