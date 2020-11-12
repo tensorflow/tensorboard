@@ -35,6 +35,7 @@ rust_library(
         "//third_party/rust:prost",
         "//third_party/rust:rand",
         "//third_party/rust:rand_chacha",
+        "//third_party/rust:tonic",
     ],
 )
 
@@ -89,7 +90,7 @@ rust_binary(
     edition = "2018",
     visibility = ["//visibility:private"],
     deps = [
-        "//third_party/rust:prost_build",
+        "//third_party/rust:tonic_build",
     ],
 )
 
