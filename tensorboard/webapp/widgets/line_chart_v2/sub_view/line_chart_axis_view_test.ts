@@ -82,17 +82,16 @@ describe('line_chart_v2/sub_view/axis test', () => {
     debugElements: DebugElement[],
     expectedLocs: Array<{x: number; y: number}>
   ) {
-    expect(debugElements.length).toBe(expectedLocs.length);
+    const expected = expectedLocs.map((loc) => ({
+      x: String(loc.x),
+      y: String(loc.y),
+    }));
+    const actuals = debugElements.map((el) => ({
+      x: el.attributes['x'],
+      y: el.attributes['y'],
+    }));
 
-    const actuals: typeof expectedLocs = [];
-    for (const el of debugElements) {
-      actuals.push({
-        x: Number(el.attributes['x']),
-        y: Number(el.attributes['y']),
-      });
-    }
-
-    expect(expectedLocs).toEqual(actuals);
+    expect(expected).toEqual(actuals);
   }
 
   it('renders tick in human readable format', () => {
