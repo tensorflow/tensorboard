@@ -38,10 +38,7 @@ rust_library(
         "//third_party/rust:prost",
         "//third_party/rust:rand",
         "//third_party/rust:rand_chacha",
-<<<<<<< HEAD
-=======
         "//third_party/rust:tonic",
->>>>>>> 1919cb443cd7734dc09b64ead67eb67b5873816a
     ],
 )
 
