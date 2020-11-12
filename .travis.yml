@@ -22,7 +22,8 @@ env:
     - BAZEL=2.1.0
     - BAZEL_SHA256SUM=e13581d44faad6ac807dd917e682fef20359d26728166ac35dadd8ee653a580d
   matrix:
-    - TF_VERSION_ID=tensorflow==2.4.0rc1
+    # HACK: do not try the 2.4.0rc1 because Travis CI cannot reuse any caches.
+    # - TF_VERSION_ID=tensorflow==2.4.0rc1
     - TF_VERSION_ID=  # Do not install TensorFlow in this case
 
 cache:
@@ -63,6 +64,10 @@ install:
       ;
   # Keep the node version in sync with node_js key above.
   - nvm use v11
+  # HACK: intentionally test just 2.4.0rc1, since the notf version was tested
+  # and historically passed in:
+  # https://travis-ci.org/github/tensorflow/tensorboard/builds/742878781
+  - export TF_VERSION_ID=tensorflow==2.4.0rc1
   - |
     # Install TensorFlow if requested
     if [ -n "${TF_VERSION_ID}" ]; then
