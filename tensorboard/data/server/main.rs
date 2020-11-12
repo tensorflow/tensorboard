@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+#![allow(clippy::needless_update)] // https://github.com/rust-lang/rust-clippy/issues/6323
+
 use tonic::{transport::Server, Request, Response};
 
 use rustboard_core::proto::demo as pb;
