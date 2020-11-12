@@ -6,7 +6,10 @@ licenses(["notice"])
 
 # Protocol buffer packages (as in `package foo.bar;` directives) that we need
 # to compile to Rust bindings.
-_proto_packages = ["tensorboard"]
+_proto_packages = [
+    "demo",
+    "tensorboard",
+]
 
 # Generated files with Rust protobuf bindings. These only exist in the build
 # graph, not in the source tree. The file name pattern is specified by Prost
@@ -25,6 +28,7 @@ rust_library(
         "lib.rs",
         "event_file.rs",
         "masked_crc.rs",
+        "reservoir.rs",
         "scripted_reader.rs",
         "tf_record.rs",
     ] + _checked_in_proto_files,
@@ -33,6 +37,9 @@ rust_library(
         "//third_party/rust:byteorder",
         "//third_party/rust:crc",
         "//third_party/rust:prost",
+        "//third_party/rust:rand",
+        "//third_party/rust:rand_chacha",
+        "//third_party/rust:tonic",
     ],
 )
 
@@ -66,11 +73,17 @@ rust_binary(
     name = "server",
     srcs = ["main.rs"],
     edition = "2018",
+    deps = [
+        ":rustboard_core",
+        "//third_party/rust:tokio",
+        "//third_party/rust:tonic",
+    ],
 )
 
 genrule(
     name = "gen_protos",
     srcs = [
+        ":demo.proto",
         "//tensorboard/compat/proto:proto_srcs",
     ],
     outs = _genproto_files,
@@ -87,7 +100,7 @@ rust_binary(
     edition = "2018",
     visibility = ["//visibility:private"],
     deps = [
-        "//third_party/rust:prost_build",
+        "//third_party/rust:tonic_build",
     ],
 )
 
