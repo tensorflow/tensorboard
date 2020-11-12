@@ -81,6 +81,7 @@ tf_ng_module(
         "tb_feature_flag_module.ts",
     ],
     deps = [
+        "//tensorboard/webapp/feature_flag:types",
         "//tensorboard/webapp/types",
         "@npm//@angular/common",
         "@npm//@angular/core",

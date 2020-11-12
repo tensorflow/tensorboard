@@ -15,8 +15,7 @@ limitations under the License.
 
 import {createAction, props} from '@ngrx/store';
 
-import {FeatureFlags} from '../store/feature_flag_types';
-import {FeatureValue} from '../types';
+import {FeatureFlags} from '../types';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store/store';
 /** @typehack */ import * as _typeHackStoreModel from '@ngrx/store/src/models';

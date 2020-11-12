@@ -22,6 +22,7 @@ export class TestingTBFeatureFlagDataSource extends TBFeatureFlagDataSource {
   getFeatures() {
     return {
       enabledExperimentalPlugins: [] as string[],
+      inColab: false,
     };
   }
 }

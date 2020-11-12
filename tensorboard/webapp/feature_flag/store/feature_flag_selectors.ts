@@ -16,12 +16,10 @@ limitations under the License.
 import {createSelector, createFeatureSelector} from '@ngrx/store';
 
 import {
-  FeatureFlags,
   FeatureFlagState,
   FEAUTURE_FLAG_FEATURE_KEY,
   State,
 } from './feature_flag_types';
-import {FeatureValue} from '../types';
 
 /** @typehack */ import * as _typeHackNgrxStore from '@ngrx/store';
 
@@ -33,16 +31,6 @@ export const getIsFeatureFlagsLoaded = createSelector(
   selectFeatureFlagState,
   (state) => {
     return state.isFeatureFlagsLoaded;
-  }
-);
-
-export const getFeature = createSelector(
-  selectFeatureFlagState,
-  (
-    state: FeatureFlagState,
-    featureId: keyof FeatureFlags
-  ): FeatureValue | null => {
-    return state.features[featureId] || null;
   }
 );
 
