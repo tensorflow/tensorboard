@@ -29,7 +29,6 @@ fn main() -> std::io::Result<()> {
     tonic_build::configure()
         .out_dir(&out_dir)
         .format(false) // don't run `rustfmt`; shouldn't be needed to build
-<<<<<<< HEAD
         .compile(
             &[
                 "tensorboard/compat/proto/event.proto",
@@ -37,9 +36,6 @@ fn main() -> std::io::Result<()> {
             ],
             &["."],
         )
-=======
-        .compile(&["tensorboard/compat/proto/event.proto"], &["."])
->>>>>>> 1fbc43682f157f68fea4cd265459455b1b0007ef
         .expect("compile_protos");
     Ok(())
 }
