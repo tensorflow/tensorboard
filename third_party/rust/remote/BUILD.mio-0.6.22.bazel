@@ -25,42 +25,23 @@ package(default_visibility = [
 ])
 
 licenses([
-    "notice",  # MIT from expression "MIT OR Apache-2.0"
+    "notice",  # MIT from expression "MIT"
 ])
 
 # Generated Targets
 
-# Unsupported target "generators" with type "bench" omitted
-
-# Unsupported target "misc" with type "bench" omitted
-
-# Unsupported target "seq" with type "bench" omitted
-
-# Unsupported target "weighted" with type "bench" omitted
-
-# Unsupported target "monte-carlo" with type "example" omitted
-
-# Unsupported target "monty-hall" with type "example" omitted
-
 rust_library(
-    name = "rand",
+    name = "mio",
     srcs = glob(["**/*.rs"]),
     aliases = {
-        "@raze__getrandom__0_1_15//:getrandom": "getrandom_package",
     },
     crate_features = [
-        "alloc",
         "default",
-        "getrandom",
-        "getrandom_package",
-        "libc",
-        "rand_pcg",
-        "small_rng",
-        "std",
+        "with-deprecated",
     ],
     crate_root = "src/lib.rs",
     crate_type = "lib",
-    edition = "2018",
+    edition = "2015",
     rustc_flags = [
         "--cap-lints=allow",
     ],
@@ -68,13 +49,14 @@ rust_library(
         "cargo-raze",
         "manual",
     ],
-    version = "0.7.3",
+    version = "0.6.22",
     # buildifier: leave-alone
     deps = [
-        "@raze__getrandom__0_1_15//:getrandom",
-        "@raze__rand_chacha__0_2_2//:rand_chacha",
-        "@raze__rand_core__0_5_1//:rand_core",
-        "@raze__rand_pcg__0_2_1//:rand_pcg",
+        "@raze__cfg_if__0_1_10//:cfg_if",
+        "@raze__iovec__0_1_4//:iovec",
+        "@raze__log__0_4_11//:log",
+        "@raze__net2__0_2_35//:net2",
+        "@raze__slab__0_4_2//:slab",
     ] + selects.with_or({
         # cfg(unix)
         (
@@ -84,5 +66,17 @@ rust_library(
             "@raze__libc__0_2_80//:libc",
         ],
         "//conditions:default": [],
+    }) + selects.with_or({
+        # cfg(windows)
+        (
+            "@io_bazel_rules_rust//rust/platform:x86_64-pc-windows-msvc",
+        ): [
+            "@raze__kernel32_sys__0_2_2//:kernel32_sys",
+            "@raze__miow__0_2_1//:miow",
+            "@raze__winapi__0_2_8//:winapi",
+        ],
+        "//conditions:default": [],
     }),
 )
+
+# Unsupported target "test" with type "test" omitted

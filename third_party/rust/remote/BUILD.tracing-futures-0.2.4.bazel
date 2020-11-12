@@ -25,32 +25,23 @@ package(default_visibility = [
 ])
 
 licenses([
-    "notice",  # MIT from expression "MIT OR Apache-2.0"
+    "notice",  # MIT from expression "MIT"
 ])
 
 # Generated Targets
 
-# Unsupported target "build-script-build" with type "custom-build" omitted
-
 rust_library(
-    name = "winapi",
+    name = "tracing_futures",
     srcs = glob(["**/*.rs"]),
     crate_features = [
-        "errhandlingapi",
-        "fileapi",
-        "handleapi",
-        "minwindef",
+        "default",
+        "pin-project",
         "std",
-        "winbase",
-        "winerror",
-        "winsock2",
-        "ws2def",
-        "ws2ipdef",
-        "ws2tcpip",
+        "std-future",
     ],
     crate_root = "src/lib.rs",
     crate_type = "lib",
-    edition = "2015",
+    edition = "2018",
     rustc_flags = [
         "--cap-lints=allow",
     ],
@@ -58,8 +49,14 @@ rust_library(
         "cargo-raze",
         "manual",
     ],
-    version = "0.3.9",
+    version = "0.2.4",
     # buildifier: leave-alone
     deps = [
+        "@raze__pin_project__0_4_27//:pin_project",
+        "@raze__tracing__0_1_21//:tracing",
     ],
 )
+
+# Unsupported target "std_future" with type "test" omitted
+
+# Unsupported target "support" with type "test" omitted

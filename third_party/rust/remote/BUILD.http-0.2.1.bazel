@@ -30,27 +30,22 @@ licenses([
 
 # Generated Targets
 
-# Unsupported target "build-script-build" with type "custom-build" omitted
+# Unsupported target "header_map" with type "bench" omitted
+
+# Unsupported target "header_name" with type "bench" omitted
+
+# Unsupported target "header_value" with type "bench" omitted
+
+# Unsupported target "uri" with type "bench" omitted
 
 rust_library(
-    name = "winapi",
+    name = "http",
     srcs = glob(["**/*.rs"]),
     crate_features = [
-        "errhandlingapi",
-        "fileapi",
-        "handleapi",
-        "minwindef",
-        "std",
-        "winbase",
-        "winerror",
-        "winsock2",
-        "ws2def",
-        "ws2ipdef",
-        "ws2tcpip",
     ],
     crate_root = "src/lib.rs",
     crate_type = "lib",
-    edition = "2015",
+    edition = "2018",
     rustc_flags = [
         "--cap-lints=allow",
     ],
@@ -58,8 +53,17 @@ rust_library(
         "cargo-raze",
         "manual",
     ],
-    version = "0.3.9",
+    version = "0.2.1",
     # buildifier: leave-alone
     deps = [
+        "@raze__bytes__0_5_6//:bytes",
+        "@raze__fnv__1_0_7//:fnv",
+        "@raze__itoa__0_4_6//:itoa",
     ],
 )
+
+# Unsupported target "header_map" with type "test" omitted
+
+# Unsupported target "header_map_fuzz" with type "test" omitted
+
+# Unsupported target "status_code" with type "test" omitted

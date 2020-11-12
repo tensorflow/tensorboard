@@ -25,30 +25,19 @@ package(default_visibility = [
 ])
 
 licenses([
-    "notice",  # MIT from expression "MIT OR Apache-2.0"
+    "notice",  # Apache-2.0 from expression "Apache-2.0 OR MIT"
 ])
 
 # Generated Targets
 
-# Unsupported target "build-script-build" with type "custom-build" omitted
-
 rust_library(
-    name = "winapi",
+    name = "fnv",
     srcs = glob(["**/*.rs"]),
     crate_features = [
-        "errhandlingapi",
-        "fileapi",
-        "handleapi",
-        "minwindef",
+        "default",
         "std",
-        "winbase",
-        "winerror",
-        "winsock2",
-        "ws2def",
-        "ws2ipdef",
-        "ws2tcpip",
     ],
-    crate_root = "src/lib.rs",
+    crate_root = "lib.rs",
     crate_type = "lib",
     edition = "2015",
     rustc_flags = [
@@ -58,7 +47,7 @@ rust_library(
         "cargo-raze",
         "manual",
     ],
-    version = "0.3.9",
+    version = "1.0.7",
     # buildifier: leave-alone
     deps = [
     ],
