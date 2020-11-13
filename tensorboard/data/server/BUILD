@@ -26,6 +26,7 @@ rust_library(
     name = "rustboard_core",
     srcs = [
         "lib.rs",
+        "event_file.rs",
         "masked_crc.rs",
         "reservoir.rs",
         "scripted_reader.rs",
