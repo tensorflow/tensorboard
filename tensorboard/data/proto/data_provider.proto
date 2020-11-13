@@ -29,6 +29,37 @@ service TensorBoardDataProvider {
   rpc ReadBlob(ReadBlobRequest) returns (stream ReadBlobResponse) {}
 }
 
+message PluginFilter {
+  // Only match data with exactly this plugin name.
+  string plugin_name = 1;
+}
+
+message RunTagFilter {
+  // Optional filter for runs. If omitted, *all* runs match; this is not
+  // equivalent to an empty submessage (which matches no tags).
+  RunFilter runs = 1;
+  // Optional filter for tags. If omitted, *all* tags match; this is not
+  // equivalent to an empty submessage (which matches no tags).
+  TagFilter tags = 2;
+}
+
+message RunFilter {
+  // Only match runs with exactly one of these names. In particular, if this
+  // list is empty, no runs match.
+  repeated string names = 1;
+}
+
+message TagFilter {
+  // Only match tags with exactly one of these names. In particular, if this
+  // list is empty, no tags match.
+  repeated string names = 1;
+}
+
+message Downsample {
+  // Maximum number of points to return. Must be non-negative. Zero means zero.
+  int64 num_points = 1;
+}
+
 message ListRunsRequest {
   // ID of experiment in which to query data.
   string experiment_id = 1;
@@ -39,8 +70,10 @@ message ListRunsResponse {
 }
 
 message Run {
-  // Unique opaque string identifier.
-  string id = 1;
+  // Reserved for a unique internal identifier: names are unique, but can also
+  // be long, so it would be nice to work with a more compact ID form.
+  reserved "id";
+  reserved 1;
   // User-facing name.
   string name = 2;
   // Wall time of earliest recorded event, as floating-point seconds since
@@ -51,7 +84,8 @@ message Run {
 message ListScalarsRequest {
   // ID of experiment in which to query data.
   string experiment_id = 1;
-  // Required filter for plugin name. If omitted, an empty message is implied.
+  // Filter for plugin name. If omitted, an empty message is implied, which
+  // implies filtering on `plugin_name == ""`.
   PluginFilter plugin_filter = 2;
   // Optional filter for time series. If omitted, all time series match.
   RunTagFilter run_tag_filter = 3;
@@ -65,36 +99,12 @@ message ListScalarsResponse {
   }
   message TagEntry {
     string tag_name = 1;
-    ScalarMetadata time_series = 2;
+    ScalarMetadata metadata = 2;
   }
 }
 
-message PluginFilter {
-  // Only match data with exactly this plugin name.
-  string plugin_name = 1;
-}
-
-message RunTagFilter {
-  // Optional filter for runs. If omitted, all runs match.
-  RunFilter runs = 1;
-  // Optional filter for tags. If omitted, all tags match.
-  TagFilter tags = 2;
-}
-
-message RunFilter {
-  // Only match runs with exactly one of these names. In particular, if this
-  // list is empty, no runs match.
-  repeated string runs = 1;
-}
-
-message TagFilter {
-  // Only match tags with exactly one of these names. In particular, if this
-  // list is empty, no tags match.
-  repeated string tags = 1;
-}
-
 message ScalarMetadata {
-  // Largest step value of any datum in this time series. Non-negative.
+  // Largest step value of any datum in this time series.
   int64 max_step = 1;
   // Largest wall time of any datum in this time series.
   double max_wall_time = 2;
@@ -105,20 +115,15 @@ message ScalarMetadata {
 message ReadScalarsRequest {
   // ID of experiment in which to query data.
   string experiment_id = 1;
-  // Required filter for plugin name. If omitted, an empty message is implied.
+  // Filter for plugin name. If omitted, an empty message is implied, which
+  // implies filtering on `plugin_name == ""`.
   PluginFilter plugin_filter = 2;
   // Optional filter for time series. If omitted, all time series match.
   RunTagFilter run_tag_filter = 3;
-  // Required downsampling specification describing how many points to return
-  // per time series. If omitted, an empty message is implied, which means that
-  // no points will be returned.
+  // Downsampling specification describing how many points to return per time
+  // series. If omitted, an empty message is implied, which means that no
+  // points will be returned.
   Downsample downsample = 4;
-}
-
-message Downsample {
-  // Maximum number of points to return. Should be non-negative. Zero means
-  // zero.
-  int64 num_points = 1;
 }
 
 message ReadScalarsResponse {
@@ -144,7 +149,8 @@ message ScalarData {
 message ListTensorsRequest {
   // ID of experiment in which to query data.
   string experiment_id = 1;
-  // Required filter for plugin name. If omitted, an empty message is implied.
+  // Filter for plugin name. If omitted, an empty message is implied, which
+  // implies filtering on `plugin_name == ""`.
   PluginFilter plugin_filter = 2;
   // Optional filter for time series. If omitted, all time series match.
   RunTagFilter run_tag_filter = 3;
@@ -158,12 +164,12 @@ message ListTensorsResponse {
   }
   message TagEntry {
     string tag_name = 1;
-    TensorMetadata time_series = 2;
+    TensorMetadata metadata = 2;
   }
 }
 
 message TensorMetadata {
-  // Largest step value of any datum in this time series. Non-negative.
+  // Largest step value of any datum in this time series.
   int64 max_step = 1;
   // Largest wall time of any datum in this time series.
   double max_wall_time = 2;
@@ -174,13 +180,14 @@ message TensorMetadata {
 message ReadTensorsRequest {
   // ID of experiment in which to query data.
   string experiment_id = 1;
-  // Required filter for plugin name. If omitted, an empty message is implied.
+  // Filter for plugin name. If omitted, an empty message is implied, which
+  // implies filtering on `plugin_name == ""`.
   PluginFilter plugin_filter = 2;
   // Optional filter for time series. If omitted, all time series match.
   RunTagFilter run_tag_filter = 3;
-  // Required downsampling specification describing how many points to return
-  // per time series. If omitted, an empty message is implied, which means that
-  // no points will be returned.
+  // Downsampling specification describing how many points to return per time
+  // series. If omitted, an empty message is implied, which means that no
+  // points will be returned.
   Downsample downsample = 4;
 }
 
@@ -207,7 +214,8 @@ message TensorData {
 message ListBlobSequencesRequest {
   // ID of experiment in which to query data.
   string experiment_id = 1;
-  // Required filter for plugin name. If omitted, an empty message is implied.
+  // Filter for plugin name. If omitted, an empty message is implied, which
+  // implies filtering on `plugin_name == ""`.
   PluginFilter plugin_filter = 2;
   // Optional filter for time series. If omitted, all time series match.
   RunTagFilter run_tag_filter = 3;
@@ -221,12 +229,12 @@ message ListBlobSequencesResponse {
   }
   message TagEntry {
     string tag_name = 1;
-    BlobSequenceMetadata time_series = 2;
+    BlobSequenceMetadata metadata = 2;
   }
 }
 
 message BlobSequenceMetadata {
-  // Largest step value of any datum in this time series. Non-negative.
+  // Largest step value of any datum in this time series.
   int64 max_step = 1;
   // Largest wall time of any datum in this time series.
   double max_wall_time = 2;
@@ -239,13 +247,14 @@ message BlobSequenceMetadata {
 message ReadBlobSequencesRequest {
   // ID of experiment in which to query data.
   string experiment_id = 1;
-  // Required filter for plugin name. If omitted, an empty message is implied.
+  // Filter for plugin name. If omitted, an empty message is implied, which
+  // implies filtering on `plugin_name == ""`.
   PluginFilter plugin_filter = 2;
   // Optional filter for time series. If omitted, all time series match.
   RunTagFilter run_tag_filter = 3;
-  // Required downsampling specification describing how many points to return
-  // per time series. If omitted, an empty message is implied, which means that
-  // no points will be returned.
+  // Downsampling specification describing how many points to return per time
+  // series. If omitted, an empty message is implied, which means that no
+  // points will be returned.
   Downsample downsample = 4;
 }
 
