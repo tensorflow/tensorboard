@@ -105,7 +105,7 @@ jobs:
       - name: 'Check cargo-raze freshness'
         run: |
           rm -rf third_party/rust/
-          (cd tensorboard/data/server/ && cargo generate-lockfile && cargo raze)
+          (cd tensorboard/data/server/ && cargo fetch && cargo raze)
           git add .
           git diff --staged --exit-code
 

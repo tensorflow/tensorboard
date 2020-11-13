@@ -89,9 +89,9 @@ export abstract class DataDrawable {
   private paintDirty = true;
   private readonly getMetadataMapImpl: () => DataSeriesMetadataMap;
   private readonly renderer: ObjectRenderer;
+  private readonly renderCache = new RenderCacheContainer();
   private coordinateIdentifier: number | null = null;
   private layout: Rect = {x: 0, width: 1, y: 0, height: 1};
-  private renderCache = new RenderCacheContainer();
 
   constructor(config: DrawableConfig) {
     this.getMetadataMapImpl = config.getMetadataMap;

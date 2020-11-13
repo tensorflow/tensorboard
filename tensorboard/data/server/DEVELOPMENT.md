@@ -50,9 +50,9 @@ dependency:
     should look like `rand = "0.7.3"`. You can find the most recent version of a
     package on <https://crates.io/>.
 3.  Change into the `tensorboard/data/server/` directory.
-4.  Run `cargo generate-lockfile` to update `Cargo.lock`. Running this before
-    `cargo raze` ensures that the `http_archive` workspace rules in the
-    generated build files will have `sha256` checksums.
+4.  Run `cargo fetch` to update `Cargo.lock`. Running this before `cargo raze`
+    ensures that the `http_archive` workspace rules in the generated build
+    files will have `sha256` checksums.
 5.  Run `cargo raze` to update `third_party/rust/...`.
 
 This will add a new target like `//third_party/rust:rand`. Manually build it
