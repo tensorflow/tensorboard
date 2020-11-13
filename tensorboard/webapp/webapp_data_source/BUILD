@@ -97,6 +97,7 @@ tf_ng_module(
     ],
     deps = [
         ":feature_flag",
+        "//tensorboard/webapp/feature_flag:testing",
         "@npm//@angular/core",
     ],
 )

@@ -13,17 +13,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {NgModule, Injectable} from '@angular/core';
+import {Injectable, NgModule} from '@angular/core';
 
+import {buildFeatureFlag} from '../feature_flag/testing';
 import {TBFeatureFlagDataSource} from './tb_feature_flag_data_source_types';
 
 @Injectable()
 export class TestingTBFeatureFlagDataSource extends TBFeatureFlagDataSource {
   getFeatures() {
-    return {
-      enabledExperimentalPlugins: [] as string[],
-      inColab: false,
-    };
+    return buildFeatureFlag();
   }
 }
 
