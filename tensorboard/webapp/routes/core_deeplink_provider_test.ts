@@ -17,17 +17,16 @@ import {Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {skip} from 'rxjs/operators';
 
-import * as selectors from '../selectors';
-import {DeepLinkProvider} from '../app_routing/deep_link_provider';
 import {SerializableQueryParams} from '../app_routing/types';
 import {State} from '../app_state';
-import {appStateFromMetricsState, buildMetricsState} from '../metrics/testing';
 import {PluginType} from '../metrics/data_source/types';
+import {appStateFromMetricsState, buildMetricsState} from '../metrics/testing';
+import * as selectors from '../selectors';
 import {CoreDeepLinkProvider} from './core_deeplink_provider';
 
 describe('core deeplink provider', () => {
   let store: MockStore<State>;
-  let provider: DeepLinkProvider;
+  let provider: CoreDeepLinkProvider;
   let queryParamsSerialized: SerializableQueryParams[];
 
   beforeEach(async () => {
@@ -42,6 +41,10 @@ describe('core deeplink provider', () => {
     }).compileComponents();
 
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
+    store.overrideSelector(selectors.getPinnedCardsWithMetadata, []);
+    store.overrideSelector(selectors.getUnresolvedImportedPinnedCards, []);
+    store.overrideSelector(selectors.getEnabledExperimentalPlugins, []);
+
     queryParamsSerialized = [];
 
     provider = new CoreDeepLinkProvider();
@@ -120,7 +123,7 @@ describe('core deeplink provider', () => {
     it('deserializes empty pinned cards', () => {
       const state = provider.deserializeQueryParams([]);
 
-      expect(state).toEqual({metrics: {pinnedCards: []}});
+      expect(state.metrics).toEqual({pinnedCards: []});
     });
 
     it('deserializes valid pinned cards', () => {
@@ -132,18 +135,16 @@ describe('core deeplink provider', () => {
         },
       ]);
 
-      expect(state).toEqual({
-        metrics: {
-          pinnedCards: [
-            {plugin: PluginType.SCALARS, tag: 'accuracy'},
-            {
-              plugin: PluginType.IMAGES,
-              tag: 'loss',
-              runId: 'exp1/123',
-              sample: 5,
-            },
-          ],
-        },
+      expect(state.metrics).toEqual({
+        pinnedCards: [
+          {plugin: PluginType.SCALARS, tag: 'accuracy'},
+          {
+            plugin: PluginType.IMAGES,
+            tag: 'loss',
+            runId: 'exp1/123',
+            sample: 5,
+          },
+        ],
       });
     });
 
@@ -226,8 +227,27 @@ describe('core deeplink provider', () => {
           {key: 'pinnedCards', value: serializedValue},
         ]);
 
-        expect(state).toEqual({metrics: {pinnedCards: expectedPinnedCards}});
+        expect(state.metrics).toEqual({pinnedCards: expectedPinnedCards});
       }
+    });
+  });
+
+  describe('feature flag', () => {
+    beforeEach(() => {});
+
+    it('serializes enabled experimental plugins', () => {
+      store.overrideSelector(selectors.getEnabledExperimentalPlugins, [
+        'foo',
+        'bar',
+        'baz',
+      ]);
+      store.refreshState();
+
+      expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual([
+        {key: 'experimentalPlugin', value: 'foo'},
+        {key: 'experimentalPlugin', value: 'bar'},
+        {key: 'experimentalPlugin', value: 'baz'},
+      ]);
     });
   });
 });
