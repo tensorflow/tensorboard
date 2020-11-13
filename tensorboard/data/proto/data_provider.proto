@@ -56,7 +56,7 @@ message TagFilter {
 }
 
 message Downsample {
-  // Maximum number of points to return. Must be non-negative. Zero means zero.
+  // Maximum number of points to return. Must be positive.
   int64 num_points = 1;
 }
 
@@ -121,8 +121,7 @@ message ReadScalarsRequest {
   // Optional filter for time series. If omitted, all time series match.
   RunTagFilter run_tag_filter = 3;
   // Downsampling specification describing how many points to return per time
-  // series. If omitted, an empty message is implied, which means that no
-  // points will be returned.
+  // series. It is an error if `downsample.num_points <= 0`.
   Downsample downsample = 4;
 }
 
@@ -140,10 +139,13 @@ message ReadScalarsResponse {
 
 // A column-major sequence of scalar points. Arrays `step`, `wall_time`, and
 // `value` have the same lengths.
+//
+// These are repeated primitive values, so they will be packed on the wire:
+// <https://developers.google.com/protocol-buffers/docs/encoding#packed>
 message ScalarData {
-  repeated int64 step = 1 [packed = true];
-  repeated double wall_time = 2 [packed = true];
-  repeated double value = 3 [packed = true];
+  repeated int64 step = 1;
+  repeated double wall_time = 2;
+  repeated double value = 3;
 }
 
 message ListTensorsRequest {
@@ -186,8 +188,7 @@ message ReadTensorsRequest {
   // Optional filter for time series. If omitted, all time series match.
   RunTagFilter run_tag_filter = 3;
   // Downsampling specification describing how many points to return per time
-  // series. If omitted, an empty message is implied, which means that no
-  // points will be returned.
+  // series. It is an error if `downsample.num_points <= 0`.
   Downsample downsample = 4;
 }
 
@@ -205,9 +206,13 @@ message ReadTensorsResponse {
 
 // A column-major sequence of tensor points. Arrays `step`, `wall_time`, and
 // `value` have the same lengths.
+//
+// The `step` and `wall_time` fields are repeated primitive values, so they
+// will be packed on the wire:
+// <https://developers.google.com/protocol-buffers/docs/encoding#packed>
 message TensorData {
-  repeated int64 step = 1 [packed = true];
-  repeated double wall_time = 2 [packed = true];
+  repeated int64 step = 1;
+  repeated double wall_time = 2;
   repeated tensorboard.TensorProto value = 3;
 }
 
@@ -253,8 +258,7 @@ message ReadBlobSequencesRequest {
   // Optional filter for time series. If omitted, all time series match.
   RunTagFilter run_tag_filter = 3;
   // Downsampling specification describing how many points to return per time
-  // series. If omitted, an empty message is implied, which means that no
-  // points will be returned.
+  // series. It is an error if `downsample.num_points <= 0`.
   Downsample downsample = 4;
 }
 
@@ -272,9 +276,13 @@ message ReadBlobSequencesResponse {
 
 // A column-major sequence of blob sequence points. Arrays `step`, `wall_time`,
 // and `value` have the same lengths.
+//
+// The `step` and `wall_time` fields are repeated primitive values, so they
+// will be packed on the wire:
+// <https://developers.google.com/protocol-buffers/docs/encoding#packed>
 message BlobSequenceData {
-  repeated int64 step = 1 [packed = true];
-  repeated double wall_time = 2 [packed = true];
+  repeated int64 step = 1;
+  repeated double wall_time = 2;
   repeated BlobReferenceSequence values = 3;
 }
 
