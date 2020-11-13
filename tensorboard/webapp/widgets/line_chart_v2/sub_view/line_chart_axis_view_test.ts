@@ -87,8 +87,8 @@ describe('line_chart_v2/sub_view/axis test', () => {
       y: String(loc.y),
     }));
     const actuals = debugElements.map((el) => ({
-      x: el.attributes['x'],
-      y: el.attributes['y'],
+      x: String(el.attributes['x']),
+      y: String(el.attributes['y']),
     }));
 
     expect(expected).toEqual(actuals);

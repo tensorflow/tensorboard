@@ -1,12 +1,7 @@
-load("//tensorboard/defs:defs.bzl", "tf_sass_binary", "tf_ts_library")
+load("//tensorboard/defs:defs.bzl", "tf_ts_library")
 load("@npm_angular_bazel//:index.bzl", "ng_module")
 
 package(default_visibility = ["//tensorboard:internal"])
-
-tf_sass_binary(
-    name = "line_chart_interactive_layer_styles",
-    src = "line_chart_interactive_layer.scss",
-)
 
 ng_module(
     name = "sub_view",
