@@ -16,7 +16,8 @@ limitations under the License.
 //! Resumable reading for TFRecord streams.
 
 use byteorder::{ByteOrder, LittleEndian};
-use std::io::{self, Read};
+use std::fmt::{self, Debug};
+use std::io::{self, Read, Write};
 
 use crate::masked_crc::MaskedCrc;
 
@@ -54,11 +55,12 @@ pub struct TfRecordReader<R> {
 
 /// A TFRecord with a data buffer and expected checksum. The checksum may or may not match the
 /// actual contents.
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct TfRecord {
     /// The payload of the TFRecord.
     pub data: Vec<u8>,
-    data_crc: MaskedCrc,
+    /// The data CRC listed in the record, which may or not actually match the payload.
+    pub data_crc: MaskedCrc,
 }
 
 /// A buffer's checksum was computed, but it did not match the expected value.
@@ -81,6 +83,31 @@ impl TfRecord {
         } else {
             Err(ChecksumError { got, want })
         }
+    }
+
+    /// Creates a TFRecord from a data vector, computing the correct data CRC. Calling `checksum()`
+    /// on this record will always succeed.
+    pub fn from_data(data: Vec<u8>) -> Self {
+        let data_crc = MaskedCrc::compute(&data);
+        TfRecord { data, data_crc }
+    }
+
+    /// Encodes the record to an output stream. The data CRC will be taken from the `TfRecord`
+    /// value, not recomputed from the payload. This means that reading a valid record and writing
+    /// it back out will always produce identical input. It also means that the written data CRC
+    /// may not be valid.
+    ///
+    /// This may call [`Write::write`] multiple times; consider providing a buffered output stream
+    /// if this is an issue.
+    ///
+    /// A record can always be serialized. This method fails only due to underlying I/O errors.
+    pub fn write<W: Write>(&self, mut writer: W) -> io::Result<()> {
+        let len_buf: [u8; 8] = (self.data.len() as u64).to_le_bytes();
+        writer.write_all(&len_buf)?;
+        writer.write_all(&MaskedCrc::compute(&len_buf).0.to_le_bytes())?;
+        writer.write_all(&self.data)?;
+        writer.write_all(&self.data_crc.0.to_le_bytes())?;
+        Ok(())
     }
 }
 
@@ -112,6 +139,26 @@ impl From<io::Error> for ReadRecordError {
     }
 }
 
+impl<R: Debug> Debug for TfRecordReader<R> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("TfRecordReader")
+            .field(
+                "header",
+                &format_args!("{}/{}", self.header.len(), self.header.capacity()),
+            )
+            .field(
+                "data_plus_footer",
+                &format_args!(
+                    "{}/{}",
+                    self.data_plus_footer.len(),
+                    self.data_plus_footer.capacity()
+                ),
+            )
+            .field("reader", &self.reader)
+            .finish()
+    }
+}
+
 impl<R: Read> TfRecordReader<R> {
     /// Creates an empty `TfRecordReader`, ready to read a stream of TFRecords from its beginning.
     /// The underlying reader should be aligned to the start of a record (usually, this is just the
@@ -126,6 +173,11 @@ impl<R: Read> TfRecordReader<R> {
             header: Vec::with_capacity(HEADER_LENGTH),
             data_plus_footer: Vec::new(),
         }
+    }
+
+    /// Consumes this `TfRecordReader<R>`, returning the underlying reader `R`.
+    pub fn into_inner(self) -> R {
+        self.reader
     }
 
     /// Attempts to read a TFRecord, pausing gracefully in the face of truncations. If the record
@@ -351,5 +403,47 @@ mod tests {
             }) => (),
             other => panic!("{:?}", other),
         }
+    }
+
+    #[test]
+    fn test_from_data() {
+        let test_cases = vec![
+            b"".to_vec(),
+            b"\x00".to_vec(),
+            b"the quick brown fox jumped over the lazy dog".to_vec(),
+        ];
+        for data in test_cases {
+            TfRecord::from_data(data).checksum().unwrap();
+        }
+    }
+
+    fn test_write_read_roundtrip(record: &TfRecord) {
+        let mut cursor = Cursor::new(Vec::<u8>::new());
+        record.write(&mut cursor).expect("failed to write record");
+        let written_len = cursor.position();
+        cursor.set_position(0);
+        let mut reader = TfRecordReader::new(cursor);
+        let output_record = reader.read_record().expect("read_record");
+        assert_eq!(&output_record, record);
+        assert_eq!(reader.into_inner().position(), written_len); // should have read all the bytes and not more
+    }
+
+    #[test]
+    fn test_write_read_roundtrip_valid_data_crc() {
+        let data = b"hello world".to_vec();
+        let record = TfRecord {
+            data_crc: MaskedCrc::compute(&data),
+            data,
+        };
+        test_write_read_roundtrip(&record);
+    }
+
+    #[test]
+    fn test_write_read_roundtrip_invalid_data_crc() {
+        let record = TfRecord {
+            data: b"hello world".to_vec(),
+            data_crc: MaskedCrc(0x12345678),
+        };
+        test_write_read_roundtrip(&record);
     }
 }

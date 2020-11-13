@@ -13,4 +13,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-export {FeatureValue} from '../webapp_data_source/tb_feature_flag_data_source_types';
+export interface FeatureFlags {
+  // experimental plugins to manually enable.
+  enabledExperimentalPlugins: string[];
+  // Whether the TensorBoard is being run inside Colab output cell.
+  inColab: boolean;
+}

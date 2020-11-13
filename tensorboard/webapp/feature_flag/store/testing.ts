@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+import {buildFeatureFlag} from '../testing';
 import {
   FeatureFlagState,
   FEAUTURE_FLAG_FEATURE_KEY,
@@ -25,11 +26,7 @@ export function buildFeatureFlagState(
   return {
     isFeatureFlagsLoaded: false,
     ...restOverride,
-    features: {
-      enabledExperimentalPlugins: ['foo'],
-      inColab: false,
-      ...featuresOverride,
-    },
+    features: buildFeatureFlag(featuresOverride),
   };
 }
 
