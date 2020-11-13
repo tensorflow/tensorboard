@@ -21,6 +21,7 @@ export function buildFeatureFlag(
   return {
     enabledExperimentalPlugins: [],
     inColab: false,
+    enableGpuChart: false,
     ...override,
   };
 }

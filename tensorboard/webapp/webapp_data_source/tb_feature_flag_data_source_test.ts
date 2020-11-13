@@ -38,6 +38,7 @@ describe('tb_feature_flag_data_source', () => {
         expect(dataSource.getFeatures()).toEqual({
           enabledExperimentalPlugins: ['a', 'b'],
           inColab: false,
+          enableGpuChart: false,
         });
       });
 
@@ -48,6 +49,7 @@ describe('tb_feature_flag_data_source', () => {
         expect(dataSource.getFeatures()).toEqual({
           enabledExperimentalPlugins: [],
           inColab: true,
+          enableGpuChart: false,
         });
       });
 
@@ -58,7 +60,29 @@ describe('tb_feature_flag_data_source', () => {
         expect(dataSource.getFeatures()).toEqual({
           enabledExperimentalPlugins: [],
           inColab: false,
+          enableGpuChart: false,
         });
+      });
+
+      it("returns enableGpuChart=false when 'fastChart' is empty", () => {
+        spyOn(TEST_ONLY.util, 'getParams').and.returnValue(
+          new URLSearchParams('fastChart=')
+        );
+        expect(dataSource.getFeatures().enableGpuChart).toEqual(false);
+      });
+
+      it('returns enableGpuChart=true when "true"', () => {
+        spyOn(TEST_ONLY.util, 'getParams').and.returnValue(
+          new URLSearchParams('fastChart=true')
+        );
+        expect(dataSource.getFeatures().enableGpuChart).toEqual(true);
+      });
+
+      it('returns enableGpuChart=false when explicitly "false"', () => {
+        spyOn(TEST_ONLY.util, 'getParams').and.returnValue(
+          new URLSearchParams('fastChart=false')
+        );
+        expect(dataSource.getFeatures().enableGpuChart).toEqual(false);
       });
 
       it('returns empty enabledExperimentalPlugins when empty', () => {
@@ -68,6 +92,7 @@ describe('tb_feature_flag_data_source', () => {
         expect(dataSource.getFeatures()).toEqual({
           enabledExperimentalPlugins: [],
           inColab: false,
+          enableGpuChart: false,
         });
       });
     });

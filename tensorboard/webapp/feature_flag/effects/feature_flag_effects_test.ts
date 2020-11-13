@@ -14,19 +14,19 @@ limitations under the License.
 ==============================================================================*/
 
 import {TestBed} from '@angular/core/testing';
-
 import {provideMockActions} from '@ngrx/effects/testing';
 import {Action, Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {ReplaySubject} from 'rxjs';
 
-import {State} from '../store/feature_flag_types';
 import {
   TBFeatureFlagTestingModule,
   TestingTBFeatureFlagDataSource,
 } from '../../webapp_data_source/tb_feature_flag_testing';
-import {FeatureFlagEffects} from './feature_flag_effects';
 import {featuresLoaded} from '../actions/feature_flag_actions';
+import {State} from '../store/feature_flag_types';
+import {buildFeatureFlag} from '../testing';
+import {FeatureFlagEffects} from './feature_flag_effects';
 
 describe('feature_flag_effects', () => {
   let actions: ReplaySubject<Action>;
@@ -60,19 +60,21 @@ describe('feature_flag_effects', () => {
     });
 
     it('loads features from the data source on init', () => {
-      spyOn(dataSource, 'getFeatures').and.returnValue({
-        enabledExperimentalPlugins: ['foo', 'bar'],
-        inColab: false,
-      });
+      spyOn(dataSource, 'getFeatures').and.returnValue(
+        buildFeatureFlag({
+          enabledExperimentalPlugins: ['foo', 'bar'],
+          inColab: false,
+        })
+      );
 
       actions.next(effects.ngrxOnInitEffects());
 
       expect(recordedActions).toEqual([
         featuresLoaded({
-          features: {
+          features: buildFeatureFlag({
             enabledExperimentalPlugins: ['foo', 'bar'],
             inColab: false,
-          },
+          }),
         }),
       ]);
     });
