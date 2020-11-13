@@ -84,8 +84,8 @@ message Run {
 message ListScalarsRequest {
   // ID of experiment in which to query data.
   string experiment_id = 1;
-  // Filter for plugin name. If omitted, an empty message is implied, which
-  // implies filtering on `plugin_name == ""`.
+  // Filter for the plugin that owns the scalars. It is an error if
+  // `plugin_filter.plugin_name` is the empty string.
   PluginFilter plugin_filter = 2;
   // Optional filter for time series. If omitted, all time series match.
   RunTagFilter run_tag_filter = 3;
@@ -115,8 +115,8 @@ message ScalarMetadata {
 message ReadScalarsRequest {
   // ID of experiment in which to query data.
   string experiment_id = 1;
-  // Filter for plugin name. If omitted, an empty message is implied, which
-  // implies filtering on `plugin_name == ""`.
+  // Filter for the plugin that owns the scalars. It is an error if
+  // `plugin_filter.plugin_name` is the empty string.
   PluginFilter plugin_filter = 2;
   // Optional filter for time series. If omitted, all time series match.
   RunTagFilter run_tag_filter = 3;
@@ -151,8 +151,8 @@ message ScalarData {
 message ListTensorsRequest {
   // ID of experiment in which to query data.
   string experiment_id = 1;
-  // Filter for plugin name. If omitted, an empty message is implied, which
-  // implies filtering on `plugin_name == ""`.
+  // Filter for the plugin that owns the tensors. It is an error if
+  // `plugin_filter.plugin_name` is the empty string.
   PluginFilter plugin_filter = 2;
   // Optional filter for time series. If omitted, all time series match.
   RunTagFilter run_tag_filter = 3;
@@ -182,8 +182,8 @@ message TensorMetadata {
 message ReadTensorsRequest {
   // ID of experiment in which to query data.
   string experiment_id = 1;
-  // Filter for plugin name. If omitted, an empty message is implied, which
-  // implies filtering on `plugin_name == ""`.
+  // Filter for the plugin that owns the tensors. It is an error if
+  // `plugin_filter.plugin_name` is the empty string.
   PluginFilter plugin_filter = 2;
   // Optional filter for time series. If omitted, all time series match.
   RunTagFilter run_tag_filter = 3;
@@ -219,8 +219,8 @@ message TensorData {
 message ListBlobSequencesRequest {
   // ID of experiment in which to query data.
   string experiment_id = 1;
-  // Filter for plugin name. If omitted, an empty message is implied, which
-  // implies filtering on `plugin_name == ""`.
+  // Filter for the plugin that owns the blob sequences. It is an error if
+  // `plugin_filter.plugin_name` is the empty string.
   PluginFilter plugin_filter = 2;
   // Optional filter for time series. If omitted, all time series match.
   RunTagFilter run_tag_filter = 3;
@@ -252,8 +252,8 @@ message BlobSequenceMetadata {
 message ReadBlobSequencesRequest {
   // ID of experiment in which to query data.
   string experiment_id = 1;
-  // Filter for plugin name. If omitted, an empty message is implied, which
-  // implies filtering on `plugin_name == ""`.
+  // Filter for the plugin that owns the blob sequences. It is an error if
+  // `plugin_filter.plugin_name` is the empty string.
   PluginFilter plugin_filter = 2;
   // Optional filter for time series. If omitted, all time series match.
   RunTagFilter run_tag_filter = 3;
