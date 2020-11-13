@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Action, createReducer, on} from '@ngrx/store';
+
 import * as actions from '../actions/feature_flag_actions';
 import {FeatureFlagState} from './feature_flag_types';
 

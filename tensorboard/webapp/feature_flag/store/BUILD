@@ -39,6 +39,7 @@ tf_ng_module(
     deps = [
         ":store",
         ":types",
+        "//tensorboard/webapp/feature_flag:testing",
         "//tensorboard/webapp/feature_flag:types",
         "//tensorboard/webapp/feature_flag/actions",
         "@npm//@ngrx/store",

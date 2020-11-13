@@ -12,48 +12,21 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {buildFeatureFlag} from '../testing';
 import * as selectors from './feature_flag_selectors';
 import {buildFeatureFlagState, buildState} from './testing';
 
 describe('feature_flag_selectors', () => {
-  describe('getFeature', () => {
-    it('returns a current feature', () => {
-      const state = buildState(
-        buildFeatureFlagState({
-          features: {
-            enableMagicFeature: true,
-          },
-        })
-      );
-      const actual = selectors.getFeature(state, 'enableMagicFeature');
-
-      expect(actual).toBe(true);
-    });
-
-    it('returns null if the value is not present', () => {
-      const state = buildState(
-        buildFeatureFlagState({
-          features: {
-            enabledExperimentalPlugins: ['foo'],
-          },
-        })
-      );
-      const actual = selectors.getFeature(state, 'bar');
-
-      expect(actual).toBeNull();
-    });
-  });
-
   describe('getEnabledExperimentalPlugins', () => {
     it('returns value in array', () => {
       const state = buildState(
         buildFeatureFlagState({
-          features: {
+          features: buildFeatureFlag({
             enabledExperimentalPlugins: ['bar'],
-          },
+          }),
         })
       );
-      const actual = selectors.getFeature(state, 'enabledExperimentalPlugins');
+      const actual = selectors.getEnabledExperimentalPlugins(state);
 
       expect(actual).toEqual(['bar']);
     });
@@ -63,18 +36,18 @@ describe('feature_flag_selectors', () => {
     it('returns the proper value', () => {
       let state = buildState(
         buildFeatureFlagState({
-          features: {
+          features: buildFeatureFlag({
             inColab: true,
-          },
+          }),
         })
       );
       expect(selectors.getIsInColab(state)).toEqual(true);
 
       state = buildState(
         buildFeatureFlagState({
-          features: {
+          features: buildFeatureFlag({
             inColab: false,
-          },
+          }),
         })
       );
       expect(selectors.getIsInColab(state)).toEqual(false);
