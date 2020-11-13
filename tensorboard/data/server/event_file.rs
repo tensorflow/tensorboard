@@ -25,6 +25,7 @@ use crate::tf_record::{ChecksumError, ReadRecordError, TfRecordReader};
 ///
 /// As with [`TfRecordReader`], an event may be read over one or more underlying reads, to support
 /// growing, partially flushed files.
+#[derive(Debug)]
 pub struct EventFileReader<R> {
     /// Wall time of the record most recently read from this event file, or `None` if no records
     /// have been read. Used for determining when to consider this file dead and abandon it.
@@ -36,9 +37,7 @@ pub struct EventFileReader<R> {
 /// Error returned by [`EventFileReader::read_event`].
 #[derive(Debug)]
 pub enum ReadEventError {
-    /// The record failed its checksum. This may only be detected if the protocol buffer fails to
-    /// decode: records with bad checksum that still happen to parse as valid protos may be
-    /// returned silently.
+    /// The record failed its checksum.
     InvalidRecord(ChecksumError),
     /// The record passed its checksum, but the contained protocol buffer is invalid.
     InvalidProto(DecodeError),
@@ -89,14 +88,8 @@ impl<R: Read> EventFileReader<R> {
     /// Reads the next event from the file.
     pub fn read_event(&mut self) -> Result<Event, ReadEventError> {
         let record = self.reader.read_record()?;
-        let event = match Event::decode(&record.data[..]) {
-            Ok(ev) => ev,
-            Err(err) => {
-                // On proto decoding failure, check the record checksum first.
-                record.checksum()?;
-                return Err(err.into());
-            }
-        };
+        record.checksum()?;
+        let event = Event::decode(&record.data[..])?;
         let wall_time = event.wall_time;
         if wall_time.is_nan() {
             return Err(ReadEventError::NanWallTime(event));
@@ -148,6 +141,10 @@ mod tests {
                 data: b"failed proto, failed checksum, OK record structure".to_vec(),
                 data_crc: MaskedCrc(0x12345678),
             },
+            TfRecord {
+                data: encode_event(&good_event),
+                data_crc: MaskedCrc(0x12345678), // OK proto, failed checksum, OK record structure
+            },
         ];
         let mut file = Vec::new();
         for record in records {
@@ -179,6 +176,15 @@ mod tests {
                 got: _,
                 want: MaskedCrc(0x12345678),
             })) => (),
+            other => panic!("{:?}", other),
+        };
+        assert_eq!(reader.last_wall_time(), &Some(1234.5));
+        match reader.read_event() {
+            Err(ReadEventError::InvalidRecord(ChecksumError { got, want: _ }))
+                if got == MaskedCrc::compute(&encode_event(&good_event)) =>
+            {
+                ()
+            }
             other => panic!("{:?}", other),
         };
         assert_eq!(reader.last_wall_time(), &Some(1234.5));

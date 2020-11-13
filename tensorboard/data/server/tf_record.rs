@@ -16,6 +16,7 @@ limitations under the License.
 //! Resumable reading for TFRecord streams.
 
 use byteorder::{ByteOrder, LittleEndian};
+use std::fmt::{self, Debug};
 use std::io::{self, Read, Write};
 
 use crate::masked_crc::MaskedCrc;
@@ -135,6 +136,26 @@ pub enum ReadRecordError {
 impl From<io::Error> for ReadRecordError {
     fn from(e: io::Error) -> Self {
         ReadRecordError::Io(e)
+    }
+}
+
+impl<R: Debug> Debug for TfRecordReader<R> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("TfRecordReader")
+            .field(
+                "header",
+                &format_args!("{}/{}", self.header.len(), self.header.capacity()),
+            )
+            .field(
+                "data_plus_footer",
+                &format_args!(
+                    "{}/{}",
+                    self.data_plus_footer.len(),
+                    self.data_plus_footer.capacity()
+                ),
+            )
+            .field("reader", &self.reader)
+            .finish()
     }
 }
 

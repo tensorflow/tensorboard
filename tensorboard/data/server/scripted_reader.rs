@@ -20,6 +20,7 @@ use std::io::{self, Cursor, Read};
 
 /// A reader that delegates to a sequence of cursors, reading from each in turn and simulating
 /// EOF after each one.
+#[derive(Debug)]
 pub struct ScriptedReader(VecDeque<Cursor<Vec<u8>>>);
 
 impl ScriptedReader {
