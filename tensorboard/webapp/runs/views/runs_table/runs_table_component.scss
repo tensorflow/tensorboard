@@ -16,33 +16,28 @@ limitations under the License.
 
 // 42px + 1px for border.
 $_table-content-row-min-height: 43px;
+$_font-size: 13px;
 
 :host {
-  display: block;
-  overflow: hidden;
   background-color: #fff;
+  display: block;
+  font-size: $_font-size;
+  overflow: hidden;
 }
 
 .table-container {
   contain: layout paint;
+  height: 100%;
   max-width: 100%;
   overflow-x: auto;
-  will-change: transform;
+  overflow-y: auto;
+  will-change: scroll-position;
 }
 
 :host.flex-layout {
-  display: flex;
-  flex-direction: column;
-
-  .table-container {
-    flex: 1 1 0;
-    overflow-x: hidden;
-    overflow-y: auto;
-
-    td.name {
-      word-break: break-word;
-      overflow-wrap: break-word;
-    }
+  .name {
+    word-break: break-word;
+    overflow-wrap: break-word;
   }
 
   mat-paginator {
@@ -51,38 +46,45 @@ $_table-content-row-min-height: 43px;
   }
 }
 
-table {
+$_border-color: #0000001f;
+
+[role='table'] {
+  display: table;
   width: 100%;
 
-  th,
-  td {
-    font-size: 13px;
-    padding: 5px;
-
-    &:not(.name) {
-      text-align: center;
-    }
-
-    &:first-of-type {
-      padding-left: 24px;
-    }
-
-    &:last-of-type {
-      padding-right: 24px;
-    }
-  }
-
-  th {
+  .header {
     color: mat-color($tb-foreground, text);
-  }
-
-  tr:not(.select-all) th {
     white-space: nowrap;
   }
 
-  .mat-header-row,
-  .mat-row {
+  [role='row'] {
+    contain: strict;
+    display: table-row;
     height: $_table-content-row-min-height;
+
+    .column {
+      border-bottom: 1px solid $_border-color;
+      display: table-cell;
+
+      padding: 5px;
+      vertical-align: middle;
+
+      &:first-child {
+        padding-left: 24px;
+      }
+
+      &:last-child {
+        padding-right: 24px;
+      }
+    }
+  }
+}
+
+[role='rowgroup'] {
+  display: table-row-group;
+
+  &.header {
+    display: table-header-group;
   }
 }
 
@@ -91,7 +93,7 @@ table {
   align-items: center;
   border: 0;
   border-bottom-width: 1px;
-  border-color: #0000001f;
+  border-color: $_border-color;
   border-style: solid;
   display: flex;
   height: 48px;
@@ -107,13 +109,8 @@ table {
   padding-top: 12px;
 }
 
-:host tr.select-all:not(.show-select-all) {
-  display: none;
-}
-
 .select-all-content,
 .select-all-content button {
-  font-size: 13px;
   font-weight: 400;
   line-height: 1.6;
   text-align: left;
@@ -135,7 +132,6 @@ table {
 .run-filter {
   display: flex;
   color: mat-color($tb-foreground, text);
-  font-size: 13px;
   flex: 1;
 
   mat-icon {
@@ -148,8 +144,8 @@ table {
 
 // Prevents the table column for checkbox and run_color from growing beyond
 // their sizes.
-.mat-column-checkbox,
-.mat-column-run_color {
+.tb-column-checkbox,
+.tb-column-run_color {
   width: 20px;
 }
 

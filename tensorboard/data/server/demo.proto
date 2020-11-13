@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package demo;
+
+service Demo {
+  rpc Add(AddRequest) returns (AddResponse);
+}
+
+message AddRequest {
+  repeated int32 term = 1;
+}
+
+message AddResponse {
+  int32 sum = 1;
+}

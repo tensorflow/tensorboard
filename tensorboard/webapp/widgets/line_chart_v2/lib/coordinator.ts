@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 
 import {createScale, Scale} from './scale';
-import {Rect, ScaleType} from './types';
+import {Rect, ScaleType} from './internal_types';
 import {convertRectToExtent} from './utils';
 
 /**

@@ -22,14 +22,21 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+async-stream = "0.3.0"
+async-trait = "0.1.41"
 byteorder = "1.3.4"
 crc = "1.8.1"
+futures-core = "0.3.6"
 prost = "0.6.1"
 rand = "0.7.3"
 rand_chacha = "0.2.2"
+thiserror = "1.0.21"
+tokio = { version = "0.2.2", features = ["macros"] }
+tonic = "0.3.1"
 
 [dev-dependencies]
 prost-build = "0.6.1"
+tonic-build = "0.3.1"
 
 [[bin]]
 name = "rustboard"
@@ -50,6 +57,11 @@ targets = [
 
 [package.metadata.raze.crates.crc.'1.8.1']
 gen_buildrs = true
+
+[package.metadata.raze.crates.libc.'0.2.80']
+additional_flags = [
+    "--cfg=libc_align",
+]
 
 [package.metadata.raze.crates.indexmap.'1.6.0']
 additional_flags = [

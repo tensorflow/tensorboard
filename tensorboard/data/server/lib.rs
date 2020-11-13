@@ -16,6 +16,21 @@ limitations under the License.
 //! Core functionality for TensorBoard data loading.
 
 pub mod masked_crc;
+pub mod reservoir;
+pub mod tf_record;
 
 #[cfg(test)]
 mod scripted_reader;
+
+/// Protocol buffer bindings.
+#[allow(clippy::all)]
+pub mod proto {
+    /// Bindings for `package demo`, used for a demo Tonic server.
+    pub mod demo {
+        include!("demo.pb.rs");
+    }
+    /// Bindings for `package tensorboard`, containing standard TensorFlow protos.
+    pub mod tensorboard {
+        include!("tensorboard.pb.rs");
+    }
+}

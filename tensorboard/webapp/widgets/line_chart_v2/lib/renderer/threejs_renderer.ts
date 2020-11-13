@@ -16,7 +16,7 @@ import {color as d3Color} from '../../../../third_party/d3';
 import * as THREE from 'three';
 
 import {ThreeCoordinator} from '../threejs_coordinator';
-import {Polyline, Rect} from '../types';
+import {Polyline, Rect} from '../internal_types';
 import {arePolylinesEqual, isOffscreenCanvasSupported} from '../utils';
 import {ObjectRenderer, LinePaintOption} from './renderer_types';
 
