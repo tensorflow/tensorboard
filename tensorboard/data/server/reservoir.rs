@@ -279,6 +279,8 @@ impl<T, C: ReservoirControl> StageReservoir<T, C> {
             return; // No need to adjust `seen`.
         }
         let old_stored = self.committed_steps.len() + self.staged_items.len() + preempted;
+        // Note: when preempting to the earliest-written step (or before it), `fac_preempted` will
+        // be `1.0`, so we will reset seen to exactly `0`, as desired.
         let fac_preempted = (preempted as f64) / (old_stored as f64);
         self.seen = (self.seen as f64 * (1.0 - fac_preempted)).ceil() as usize;
     }
@@ -528,5 +530,35 @@ mod tests {
                 assert_eq!(head.as_slice(), &[]);
             }
         }
+    }
+
+    #[test]
+    fn test_preempt_to_start() {
+        let mut rsv = StageReservoir::new(100);
+        let mut head = Basin::new();
+        for i in 0..100_000 {
+            rsv.offer(Step(i), ());
+        }
+        rsv.commit(&mut head);
+        assert_eq!(head.as_slice().len(), 100);
+
+        // Preempt back to step 0.
+        assert_eq!(rsv.seen, 100_000);
+        rsv.offer(Step(0), ());
+        assert_eq!(rsv.seen, 1); // just the newest record
+
+        // Offer more points: all should be accepted.
+        for i in 1..50 {
+            rsv.offer(Step(i), ());
+        }
+        rsv.commit(&mut head);
+        assert_eq!(
+            head.as_slice()
+                .iter()
+                .map(|&(Step(s), _)| s)
+                .collect::<Vec<i64>>(),
+            (0..50).collect::<Vec<i64>>()
+        );
+        assert_eq!(rsv.seen, 50);
     }
 }
