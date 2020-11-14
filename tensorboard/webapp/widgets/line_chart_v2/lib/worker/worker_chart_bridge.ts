@@ -20,7 +20,7 @@ import {
   GuestToMainType,
   HostToGuestEvent,
   InitMessage,
-  MainToGuestMessage,
+  HostToGuestMessage,
   RendererType,
 } from './message_types';
 
@@ -59,7 +59,7 @@ function createPortHandler(port: MessagePort, initMessage: InitMessage) {
   const lineChart = new MainThreadChart(chartOptions);
 
   port.onmessage = function (event: MessageEvent) {
-    const message = event.data as MainToGuestMessage;
+    const message = event.data as HostToGuestMessage;
 
     switch (message.type) {
       case HostToGuestEvent.SERIES_DATA_UPDATE: {

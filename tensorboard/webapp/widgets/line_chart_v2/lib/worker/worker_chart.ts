@@ -27,7 +27,7 @@ import {
   GuestToMainType,
   HostToGuestEvent,
   InitMessage,
-  MainToGuestMessage,
+  HostToGuestMessage,
   RendererType,
 } from './message_types';
 import {WorkerPool, WorkerProxy} from './worker_pool';
@@ -121,7 +121,7 @@ export class WorkerChart implements Chart {
   }
 
   private sendMessage(
-    message: Exclude<MainToGuestMessage, InitMessage>,
+    message: Exclude<HostToGuestMessage, InitMessage>,
     transfer?: Transferable[]
   ) {
     if (transfer) {

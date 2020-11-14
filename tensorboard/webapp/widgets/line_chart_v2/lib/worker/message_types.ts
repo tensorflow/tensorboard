@@ -66,7 +66,7 @@ export interface ScaleUpdateMessage {
   scaleType: ScaleType;
 }
 
-export type MainToGuestMessage =
+export type HostToGuestMessage =
   | UpdateViewBoxMessage
   | ResizeMessage
   | ScaleUpdateMessage
