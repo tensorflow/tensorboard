@@ -14,24 +14,21 @@ limitations under the License.
 ==============================================================================*/
 import {Injectable} from '@angular/core';
 import {Store} from '@ngrx/store';
-import {DeepLinkProvider} from '../app_routing/deep_link_provider';
-import {SerializableQueryParams} from '../app_routing/types';
-import {
-  CardUniqueInfo,
-  URLDeserializedState as MetricsURLDeserializedState,
-} from '../metrics/types';
-import {
-  isSampledPlugin,
-  isSingleRunPlugin,
-  isPluginType,
-} from '../metrics/data_source/types';
 import {combineLatest, Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
 
+import {DeepLinkProvider} from '../app_routing/deep_link_provider';
+import {SerializableQueryParams} from '../app_routing/types';
 import {State} from '../app_state';
+import {
+  isPluginType,
+  isSampledPlugin,
+  isSingleRunPlugin,
+} from '../metrics/data_source/types';
+import {CardUniqueInfo} from '../metrics/types';
 import * as selectors from '../selectors';
-
-export type DeserializedState = MetricsURLDeserializedState;
+import {EXPERIMENTAL_PLUGIN_QUERY_PARAM_KEY} from '../webapp_data_source/tb_feature_flag_data_source_types';
+import {DeserializedState} from './core_deeplink_provider_types';
 
 /**
  * Provides deeplinking for the core dashboards page.
@@ -73,10 +70,29 @@ export class CoreDeepLinkProvider extends DeepLinkProvider {
     );
   }
 
+  private getExperimentalPluginList(
+    store: Store<State>
+  ): Observable<SerializableQueryParams> {
+    return store.select(selectors.getEnabledExperimentalPlugins).pipe(
+      map((experimentalPlugins) => {
+        return experimentalPlugins.map((pluginId) => {
+          return {key: EXPERIMENTAL_PLUGIN_QUERY_PARAM_KEY, value: pluginId};
+        });
+      })
+    );
+  }
+
   serializeStateToQueryParams(
     store: Store<State>
   ): Observable<SerializableQueryParams> {
-    return this.getMetricsPinnedCards(store);
+    return combineLatest([
+      this.getMetricsPinnedCards(store),
+      this.getExperimentalPluginList(store),
+    ]).pipe(
+      map((queryParamList) => {
+        return queryParamList.flat();
+      })
+    );
   }
 
   deserializeQueryParams(

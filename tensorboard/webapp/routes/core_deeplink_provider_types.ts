@@ -12,20 +12,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Injectable} from '@angular/core';
+import {URLDeserializedState as MetricsURLDeserializedState} from '../metrics/types';
 
-import {FeatureFlags} from '../feature_flag/types';
-
-@Injectable()
-export abstract class TBFeatureFlagDataSource {
-  /**
-   * Gets feature flags defined.
-   *
-   * The "feature" is very loosely defined so other applications can define more
-   * flags. It is up to the application to better type the flags and create necessary
-   * facilities (e.g., strongly typed selector).
-   */
-  abstract getFeatures(): FeatureFlags;
-}
-
-export const EXPERIMENTAL_PLUGIN_QUERY_PARAM_KEY = 'experimentalPlugin';
+// No need to deserialize the Experimental Plugins as it is immutable and is only read at
+// the start of the application.
+export type DeserializedState = MetricsURLDeserializedState;

@@ -40,6 +40,7 @@ tf_ng_module(
         "//tensorboard/webapp/alert/store",
         "//tensorboard/webapp/app_routing/store",
         "//tensorboard/webapp/experiments/store:selectors",
+        "//tensorboard/webapp/feature_flag/store",
         "//tensorboard/webapp/metrics/store",
         "//tensorboard/webapp/runs/store:selectors",
         "//tensorboard/webapp/util:ui_selectors",
