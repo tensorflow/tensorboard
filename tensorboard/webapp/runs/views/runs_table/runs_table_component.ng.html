@@ -231,7 +231,7 @@ limitations under the License.
 </ng-template>
 
 <ng-template #row let-item="item">
-  <div role="row">
+  <div role="row" [attr.data-id]="item.run.id">
     <span
       *ngFor="let columnId of columns"
       role="cell"
