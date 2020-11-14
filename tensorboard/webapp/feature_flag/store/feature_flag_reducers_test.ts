@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import * as actions from '../actions/feature_flag_actions';
+import {buildFeatureFlag} from '../testing';
 import {reducers} from './feature_flag_reducers';
 import {buildFeatureFlagState} from './testing';
 
@@ -21,16 +22,16 @@ describe('feature_flag_reducers', () => {
     it('sets the new feature flags onto the state', () => {
       const prevState = buildFeatureFlagState({
         isFeatureFlagsLoaded: false,
-        features: {
+        features: buildFeatureFlag({
           enabledExperimentalPlugins: ['foo'],
-        },
+        }),
       });
       const nextState = reducers(
         prevState,
         actions.featuresLoaded({
-          features: {
+          features: buildFeatureFlag({
             enabledExperimentalPlugins: ['foo', 'bar'],
-          },
+          }),
         })
       );
 
@@ -38,25 +39,6 @@ describe('feature_flag_reducers', () => {
         'foo',
         'bar',
       ]);
-    });
-
-    it('sets the feature value of other features', () => {
-      const prevState = buildFeatureFlagState({
-        features: {
-          enabledExperimentalPlugins: [],
-        },
-      });
-      const nextState = reducers(
-        prevState,
-        actions.featuresLoaded({
-          features: {
-            enabledExperimentalPlugins: [],
-            enableMagicalFeature: true,
-          },
-        })
-      );
-
-      expect(nextState.features['enableMagicalFeature']).toBe(true);
     });
   });
 });

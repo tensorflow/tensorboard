@@ -62,6 +62,7 @@ describe('feature_flag_effects', () => {
     it('loads features from the data source on init', () => {
       spyOn(dataSource, 'getFeatures').and.returnValue({
         enabledExperimentalPlugins: ['foo', 'bar'],
+        inColab: false,
       });
 
       actions.next(effects.ngrxOnInitEffects());
@@ -70,6 +71,7 @@ describe('feature_flag_effects', () => {
         featuresLoaded({
           features: {
             enabledExperimentalPlugins: ['foo', 'bar'],
+            inColab: false,
           },
         }),
       ]);

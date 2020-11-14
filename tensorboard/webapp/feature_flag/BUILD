@@ -1,4 +1,4 @@
-load("//tensorboard/defs:defs.bzl", "tf_ng_module")
+load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
@@ -18,12 +18,16 @@ tf_ng_module(
     ],
 )
 
-tf_ng_module(
+tf_ts_library(
     name = "types",
     srcs = [
         "types.ts",
     ],
-    deps = [
-        "//tensorboard/webapp/webapp_data_source:feature_flag",
-    ],
+)
+
+tf_ts_library(
+    name = "testing",
+    testonly = True,
+    srcs = ["testing.ts"],
+    deps = [":types"],
 )
