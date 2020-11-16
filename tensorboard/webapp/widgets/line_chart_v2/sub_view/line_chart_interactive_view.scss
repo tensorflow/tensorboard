@@ -13,9 +13,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 :host {
-  height: 100%;
+  display: block;
   position: relative;
-  width: 100%;
+  user-select: none;
 }
 
 .dots {
@@ -25,15 +25,15 @@ limitations under the License.
 
 $_circle-size: 12px;
 
-.circle {
+.tooltip-row-circle {
   align-items: center;
   display: inline-flex;
   height: $_circle-size;
   width: $_circle-size;
 }
 
-.circle > span {
-  border-radius: 100%;
+.tooltip-row-circle > span {
+  border-radius: 50%;
   border: 1px solid rgba(255, 255, 255, 0.6);
   display: inline-block;
   // Subtract by border width (1px on both sides)
@@ -51,9 +51,10 @@ $_circle-size: 12px;
 .tooltip-container {
   background: rgba(50, 50, 50, 0.85);
   color: #fff;
-  padding: 5px;
-  width: 100%;
   overflow: auto;
+  padding: 5px;
+  pointer-events: none;
+  width: 100%;
 }
 
 th,

@@ -12,7 +12,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-
 import {
   CdkConnectedOverlay,
   ConnectedPosition,
@@ -47,13 +46,13 @@ import {
 import {getScaleRangeFromDomDim} from './chart_view_utils';
 import {
   findClosestIndex,
-  proposeViewExtentOnZoom,
+  getProposedViewExtentOnZoom,
 } from './line_chart_interactive_utils';
 
 export interface TooltipDatum {
   id: string;
   metadata: DataSeriesMetadataMap[string];
-  indClosest: number | null;
+  closestPointIndex: number | null;
   point: {x: number; y: number} | null;
 }
 
@@ -123,7 +122,7 @@ export class LineChartInteractiveViewComponent implements OnChanges, OnDestroy {
   tooltipTemplate?: TooltipTemplate;
 
   @Output()
-  onViewExtentChange = new EventEmitter<Extent>();
+  onViewExtentChange = new EventEmitter<{dataExtent: Extent}>();
 
   @Output()
   onViewExtentReset = new EventEmitter<void>();
@@ -164,7 +163,7 @@ export class LineChartInteractiveViewComponent implements OnChanges, OnDestroy {
 
   cursorXLocation: number | null = null;
   cursoredData: TooltipDatum[] = [];
-  tooltipDislayAttached: boolean = false;
+  tooltipDisplayAttached: boolean = false;
 
   @HostBinding('class.show-zoom-instruction')
   showZoomInstruction: boolean = false;
@@ -233,8 +232,10 @@ export class LineChartInteractiveViewComponent implements OnChanges, OnDestroy {
           const yMax = this.getDataY(zoomBox.y);
 
           this.onViewExtentChange.emit({
-            x: [xMin, xMax],
-            y: [yMin, yMax],
+            dataExtent: {
+              x: [xMin, xMax],
+              y: [yMin, yMax],
+            },
           });
         }
         if (this.state !== InteractionState.NONE) {
@@ -290,8 +291,10 @@ export class LineChartInteractiveViewComponent implements OnChanges, OnDestroy {
             const yMin = this.getDataY(domHeight + deltaY);
             const yMax = this.getDataY(deltaY);
             this.onViewExtentChange.emit({
-              x: [xMin, xMax],
-              y: [yMin, yMax],
+              dataExtent: {
+                x: [xMin, xMax],
+                y: [yMin, yMax],
+              },
             });
             break;
           }
@@ -325,6 +328,7 @@ export class LineChartInteractiveViewComponent implements OnChanges, OnDestroy {
           this.changeDetector.markForCheck();
 
           if (shouldZoom) {
+            event.preventDefault();
             return of(event);
           }
           return timer(3000).pipe(
@@ -339,16 +343,14 @@ export class LineChartInteractiveViewComponent implements OnChanges, OnDestroy {
       )
       .subscribe((eventOrNull) => {
         const event = eventOrNull!;
-        event.preventDefault();
-
-        this.onViewExtentChange.emit(
-          proposeViewExtentOnZoom(
+        this.onViewExtentChange.emit({
+          dataExtent: getProposedViewExtentOnZoom(
             event,
             this.viewExtent,
             this.domDim,
             SCROLL_ZOOM_SPEED_FACTOR
-          )
-        );
+          ),
+        });
 
         if (this.state !== InteractionState.SCROLL_ZOOMING) {
           this.state = InteractionState.SCROLL_ZOOMING;
@@ -408,34 +410,41 @@ export class LineChartInteractiveViewComponent implements OnChanges, OnDestroy {
   }
 
   onTooltipDisplayDetached() {
-    this.tooltipDislayAttached = false;
+    this.tooltipDisplayAttached = false;
   }
 
   private updateCursoredDataAndTooltipVisibility() {
-    if (this.cursorXLocation === null) return;
+    if (this.cursorXLocation === null) {
+      this.cursoredData = [];
+      this.tooltipDisplayAttached = false;
+      return;
+    }
+
     const cursorXLocation = this.cursorXLocation;
 
-    this.cursoredData = this.seriesData
-      .map((seriesData) => {
-        return {
-          seriesData,
-          metadata: this.seriesMetadataMap[seriesData.id],
-        };
-      })
-      .filter(({metadata}) => {
-        return metadata && metadata.visible && !Boolean(metadata.aux);
-      })
-      .map(({seriesData, metadata}) => {
-        const index = findClosestIndex(seriesData.points, cursorXLocation);
-        return {
-          id: seriesData.id,
-          indClosest: index,
-          point: index !== null ? seriesData.points[index] : null,
-          metadata,
-        };
-      })
-      .filter(({indClosest}) => indClosest !== null);
-    this.tooltipDislayAttached =
-      this.isCursorInside && Boolean(this.cursoredData.length);
+    this.cursoredData = this.isCursorInside
+      ? (this.seriesData
+          .map((seriesDatum) => {
+            return {
+              seriesDatum: seriesDatum,
+              metadata: this.seriesMetadataMap[seriesDatum.id],
+            };
+          })
+          .filter(({metadata}) => {
+            return metadata && metadata.visible && !Boolean(metadata.aux);
+          })
+          .map(({seriesDatum, metadata}) => {
+            const index = findClosestIndex(seriesDatum.points, cursorXLocation);
+            if (index === null) return null;
+            return {
+              id: seriesDatum.id,
+              closestPointIndex: index,
+              point: seriesDatum.points[index],
+              metadata,
+            };
+          })
+          .filter((tooltipDatumOrNull) => tooltipDatumOrNull) as TooltipDatum[])
+      : [];
+    this.tooltipDisplayAttached = Boolean(this.cursoredData.length);
   }
 }

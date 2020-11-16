@@ -92,6 +92,11 @@ describe('line_chart_v2/sub_view/interactive_view test', () => {
   let onViewExtentChange: jasmine.Spy;
   let onViewExtentReset: jasmine.Spy;
 
+  const Selector = {
+    TOOLTIP_ROW_CIRCLE: '.tooltip-row-circle',
+    TOOLTIP_NON_CIRCLE_COLUMN: 'td:not(.tooltip-row-circle)',
+  };
+
   function createComponent(): ComponentFixture<TestableComponent> {
     const fixture = TestBed.createComponent(TestableComponent);
     fixture.componentInstance.xScale = createScale(ScaleType.LINEAR);
@@ -190,19 +195,27 @@ describe('line_chart_v2/sub_view/interactive_view test', () => {
       ] = overlayContainer.getContainerElement().querySelectorAll('tbody tr');
 
       expect(
-        (foo.querySelector('.circle span') as HTMLSpanElement).style
-          .backgroundColor
+        (foo.querySelector(
+          `${Selector.TOOLTIP_ROW_CIRCLE} span`
+        ) as HTMLSpanElement).style.backgroundColor
       ).toBe('rgb(255, 0, 0)');
       expect(
-        (bar.querySelector('.circle span') as HTMLSpanElement).style
-          .backgroundColor
+        (bar.querySelector(
+          `${Selector.TOOLTIP_ROW_CIRCLE} span`
+        ) as HTMLSpanElement).style.backgroundColor
       ).toBe('rgb(0, 0, 255)');
 
+      // In the <500, 200> sized DOM, the cursor is right in the middle (in x dim) at
+      // <250, 10>. The middle data point should be rendered in the tooltip.
       expect(
-        [...foo.querySelectorAll('td:not(.circle)')].map((td) => td.textContent)
+        [...foo.querySelectorAll(Selector.TOOLTIP_NON_CIRCLE_COLUMN)].map(
+          (td) => td.textContent
+        )
       ).toEqual(['Foo', '5', '5']);
       expect(
-        [...bar.querySelectorAll('td:not(.circle)')].map((td) => td.textContent)
+        [...bar.querySelectorAll(Selector.TOOLTIP_NON_CIRCLE_COLUMN)].map(
+          (td) => td.textContent
+        )
       ).toEqual(['Bar name', '10', '5']);
     });
 
@@ -304,8 +317,10 @@ describe('line_chart_v2/sub_view/interactive_view test', () => {
       emulateDrag(fixture, {x: 10, y: 10}, {x: 100, y: 100});
       expect(onViewExtentChange).toHaveBeenCalledTimes(1);
       expect(onViewExtentChange).toHaveBeenCalledWith({
-        x: [110, 200],
-        y: [500, 950],
+        dataExtent: {
+          x: [110, 200],
+          y: [500, 950],
+        },
       });
     });
 
@@ -341,7 +356,7 @@ describe('line_chart_v2/sub_view/interactive_view test', () => {
   });
 
   describe('pan', () => {
-    it('pans when user drags with shiftKey  on', () => {
+    it('pans when user drags with shiftKey on', () => {
       const fixture = createComponent();
       fixture.componentInstance.viewExtent = {x: [100, 200], y: [0, 1000]};
       fixture.componentInstance.domDim = {width: 100, height: 200};
@@ -360,8 +375,10 @@ describe('line_chart_v2/sub_view/interactive_view test', () => {
 
       expect(onViewExtentChange).toHaveBeenCalledTimes(1);
       expect(onViewExtentChange).toHaveBeenCalledWith({
-        x: [80, 180],
-        y: [-25, 975],
+        dataExtent: {
+          x: [80, 180],
+          y: [-25, 975],
+        },
       });
     });
   });

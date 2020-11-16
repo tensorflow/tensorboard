@@ -48,7 +48,7 @@ limitations under the License.
 <ng-template
   cdkConnectedOverlay
   [cdkConnectedOverlayOrigin]="tooltipOriginEl"
-  [cdkConnectedOverlayOpen]="tooltipDislayAttached && state === InteractionState.NONE"
+  [cdkConnectedOverlayOpen]="tooltipDisplayAttached && state === InteractionState.NONE"
   [cdkConnectedOverlayPositions]="tooltipPositions"
   [cdkConnectedOverlayScrollStrategy]="scrollStrategy"
   [cdkConnectedOverlayLockPosition]="false"
@@ -80,7 +80,7 @@ limitations under the License.
 
 <ng-template #defaultTooltipRow let-rowData="data">
   <tr class="tooltip-row">
-    <td class="circle">
+    <td class="tooltip-row-circle">
       <span [style.backgroundColor]="rowData.metadata.color"></span>
     </td>
     <td class="name">{{ rowData.metadata.displayName }}</td>

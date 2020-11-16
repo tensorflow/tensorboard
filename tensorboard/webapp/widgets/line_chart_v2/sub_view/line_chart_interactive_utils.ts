@@ -14,16 +14,16 @@ limitations under the License.
 ==============================================================================*/
 
 import {bisect} from '../../../third_party/d3';
-import {DataSeries, Dimension, Extent} from '../lib/public_types';
+import {Dimension, Extent, Point} from '../lib/public_types';
 
 /**
  * @param sortedPoints DataSeries points that requires points to be sorted in `x`.
  * @param targetX target `x` location.
  */
 export function findClosestIndex(
-  sortedPoints: DataSeries['points'],
+  sortedPoints: Point[],
   targetX: number
-): number | null {
+): number {
   const right = Math.min(
     bisect(
       sortedPoints.map(({x}) => x),
@@ -43,7 +43,7 @@ export function findClosestIndex(
 /**
  * Proposes new viewExtent based on zoom factor and zoom origin.
  */
-export function proposeViewExtentOnZoom(
+export function getProposedViewExtentOnZoom(
   event: WheelEvent,
   viewExtent: Extent,
   domDim: Dimension,
@@ -68,7 +68,7 @@ export function proposeViewExtentOnZoom(
   const scrollMagnitude = event.deltaY * scrollDeltaFactor;
 
   const zoomFactor =
-    1 + scrollMagnitude < 0
+    scrollMagnitude < 0
       ? // Clip the zoom-in to -0.95 (eye-balled) so we do not invert min/max extent.
         Math.max(scrollMagnitude * scrollZoomSpeedFactor, -0.95)
       : scrollMagnitude * scrollZoomSpeedFactor;

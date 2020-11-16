@@ -15,7 +15,7 @@ limitations under the License.
 
 import {
   findClosestIndex,
-  proposeViewExtentOnZoom,
+  getProposedViewExtentOnZoom,
 } from './line_chart_interactive_utils';
 
 describe('line_chart_v2/sub_view/interactive_utils test', () => {
@@ -94,7 +94,7 @@ describe('line_chart_v2/sub_view/interactive_utils test', () => {
     });
   });
 
-  describe('#proposeViewExtentOnZoom', () => {
+  describe('#getProposedViewExtentOnZoom', () => {
     function buildWheelEvent(
       wheelOption: Partial<WheelEventInit> = {},
       mouseOption: Partial<{offsetX: number; offsetY: number}> = {}
@@ -110,7 +110,7 @@ describe('line_chart_v2/sub_view/interactive_utils test', () => {
     }
 
     it('returns viewExtent if scroll did not move in y direction', () => {
-      const actualExtent = proposeViewExtentOnZoom(
+      const actualExtent = getProposedViewExtentOnZoom(
         buildWheelEvent({deltaX: 10, deltaY: 0}),
         {x: [0, 100], y: [-100, 100]},
         {width: 1000, height: 500},
@@ -121,7 +121,7 @@ describe('line_chart_v2/sub_view/interactive_utils test', () => {
 
     // Emulating existing vz_line_chart behavior
     it('zooms out when scroll wheels in positive y direction', () => {
-      const actualExtent = proposeViewExtentOnZoom(
+      const actualExtent = getProposedViewExtentOnZoom(
         buildWheelEvent(
           {deltaMode: WheelEvent.DOM_DELTA_LINE, deltaY: 10},
           {offsetX: 500, offsetY: 250}
@@ -137,7 +137,7 @@ describe('line_chart_v2/sub_view/interactive_utils test', () => {
     });
 
     it('zooms in when scroll wheels in negative y direction', () => {
-      const actualExtent = proposeViewExtentOnZoom(
+      const actualExtent = getProposedViewExtentOnZoom(
         buildWheelEvent(
           {deltaMode: WheelEvent.DOM_DELTA_LINE, deltaY: -10},
           {offsetX: 500, offsetY: 250}
@@ -155,7 +155,7 @@ describe('line_chart_v2/sub_view/interactive_utils test', () => {
     it('clamps zoom-in so min extent never cross max when scrolled a lot', () => {
       // Scroll speed is 1e100. This is quite large that slight movement in deltaY
       // will zoom almost into the middle of the chart.
-      const actualExtent = proposeViewExtentOnZoom(
+      const actualExtent = getProposedViewExtentOnZoom(
         buildWheelEvent(
           {deltaMode: WheelEvent.DOM_DELTA_LINE, deltaY: -1},
           {offsetX: 500, offsetY: 250}
@@ -173,7 +173,7 @@ describe('line_chart_v2/sub_view/interactive_utils test', () => {
     });
 
     it('zooms in closer to cursor position', () => {
-      const actualExtent = proposeViewExtentOnZoom(
+      const actualExtent = getProposedViewExtentOnZoom(
         buildWheelEvent(
           {deltaMode: WheelEvent.DOM_DELTA_LINE, deltaY: -1},
           {offsetX: 250, offsetY: 125}
@@ -192,7 +192,7 @@ describe('line_chart_v2/sub_view/interactive_utils test', () => {
     });
 
     it('zooms in correctly at edges of the interactive layer', () => {
-      const actualExtent = proposeViewExtentOnZoom(
+      const actualExtent = getProposedViewExtentOnZoom(
         buildWheelEvent(
           {deltaMode: WheelEvent.DOM_DELTA_LINE, deltaY: -1},
           {offsetX: 1000, offsetY: 0}
