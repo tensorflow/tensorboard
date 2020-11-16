@@ -55,14 +55,6 @@ tf_ts_library(
 )
 
 tf_ts_library(
-    name = "worker_pool",
-    srcs = ["worker_pool.ts"],
-    deps = [
-        ":worker",
-    ],
-)
-
-tf_ts_library(
     name = "coordinator",
     srcs = [
         "coordinator.ts",
@@ -79,7 +71,7 @@ tf_ts_library(
 tf_ts_library(
     name = "worker",
     srcs = ["worker.ts"],
-    visibility = ["//visibility:private"],
+    visibility = ["//tensorboard/webapp/widgets/line_chart_v2/lib/worker:__pkg__"],
 )
 
 tf_ts_library(
@@ -134,7 +126,6 @@ tf_ts_library(
         "drawable_test.ts",
         "integration_test.ts",
         "scale_test.ts",
-        "worker_pool_test.ts",
     ],
     visibility = [
         "//tensorboard:internal",
@@ -147,7 +138,6 @@ tf_ts_library(
         ":public_types",
         ":scale",
         ":worker",
-        ":worker_pool",
         "//tensorboard/webapp/widgets/line_chart_v2/lib/renderer",
         "@npm//@angular/core",
         "@npm//@types/jasmine",
