@@ -62,7 +62,7 @@ function createPortHandler(port: MessagePort, initMessage: InitMessage) {
     const message = event.data as HostToGuestMessage;
 
     switch (message.type) {
-      case HostToGuestEvent.SERIES_DATA_UPDATE: {
+      case HostToGuestEvent.SERIES_DATA_UPDATED: {
         const data = decompactDataSeries(message.compactDataSeries);
         lineChart.setData(data);
         break;
@@ -79,7 +79,7 @@ function createPortHandler(port: MessagePort, initMessage: InitMessage) {
         lineChart.resize(message.dim);
         break;
       }
-      case HostToGuestEvent.SCALE_UPDATE: {
+      case HostToGuestEvent.SCALE_UPDATED: {
         switch (message.axis) {
           case 'x':
             lineChart.setXScaleType(message.scaleType);
