@@ -9,7 +9,7 @@ tf_ng_module(
     ],
     deps = [
         "//tensorboard/webapp/feature_flag/actions",
-        "//tensorboard/webapp/webapp_data_source:feature_flag",
+        "//tensorboard/webapp/webapp_data_source:feature_flag_types",
         "@npm//@angular/core",
         "@npm//@ngrx/effects",
         "@npm//@ngrx/store",
