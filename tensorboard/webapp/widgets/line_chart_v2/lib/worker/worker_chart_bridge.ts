@@ -71,7 +71,7 @@ function createPortHandler(port: MessagePort, initMessage: InitMessage) {
         lineChart.setMetadata(message.metadata);
         break;
       }
-      case HostToGuestEvent.VIEW_BOX_UPDATE: {
+      case HostToGuestEvent.VIEW_BOX_UPDATED: {
         lineChart.setViewBox(message.extent);
         break;
       }

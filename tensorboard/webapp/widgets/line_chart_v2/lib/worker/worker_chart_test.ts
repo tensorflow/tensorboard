@@ -54,7 +54,7 @@ describe('line_chart_v2/lib/worker_chart test', () => {
     chart.setXScaleType(ScaleType.LOG10);
 
     expect(channelTxSpy).toHaveBeenCalledWith({
-      type: HostToGuestEvent.SCALE_UPDATE,
+      type: HostToGuestEvent.SCALE_UPDATED,
       axis: 'x',
       scaleType: ScaleType.LOG10,
     });
@@ -64,7 +64,7 @@ describe('line_chart_v2/lib/worker_chart test', () => {
     chart.setYScaleType(ScaleType.LOG10);
 
     expect(channelTxSpy).toHaveBeenCalledWith({
-      type: HostToGuestEvent.SCALE_UPDATE,
+      type: HostToGuestEvent.SCALE_UPDATED,
       axis: 'y',
       scaleType: ScaleType.LOG10,
     });
@@ -128,7 +128,7 @@ describe('line_chart_v2/lib/worker_chart test', () => {
     const compact = compactDataSeries(data);
     expect(channelTxSpy).toHaveBeenCalledWith(
       {
-        type: HostToGuestEvent.SERIES_DATA_UPDATE,
+        type: HostToGuestEvent.SERIES_DATA_UPDATED,
         compactDataSeries: compact,
       },
       [compact.flattenedSeries]

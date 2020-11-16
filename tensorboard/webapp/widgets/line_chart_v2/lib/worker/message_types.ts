@@ -21,10 +21,10 @@ import {CompactDataSeries} from './compact_data_series';
 export {RendererType} from '../renderer/renderer_types';
 
 export enum HostToGuestEvent {
-  SERIES_DATA_UPDATE,
+  SERIES_DATA_UPDATED,
   SERIES_METADATA_CHANGED,
-  SCALE_UPDATE,
-  VIEW_BOX_UPDATE,
+  SCALE_UPDATED,
+  VIEW_BOX_UPDATED,
   INIT,
   DOM_RESIZED,
 }
@@ -39,7 +39,7 @@ export interface InitMessage {
 }
 
 export interface UpdateViewBoxMessage {
-  type: HostToGuestEvent.VIEW_BOX_UPDATE;
+  type: HostToGuestEvent.VIEW_BOX_UPDATED;
   extent: Extent;
 }
 
@@ -49,7 +49,7 @@ export interface ResizeMessage {
 }
 
 export interface SeriesUpdateMessage {
-  type: HostToGuestEvent.SERIES_DATA_UPDATE;
+  type: HostToGuestEvent.SERIES_DATA_UPDATED;
   compactDataSeries: CompactDataSeries;
 }
 
@@ -61,7 +61,7 @@ export interface SeriesMetadataChangedMessage {
 }
 
 export interface ScaleUpdateMessage {
-  type: HostToGuestEvent.SCALE_UPDATE;
+  type: HostToGuestEvent.SCALE_UPDATED;
   axis: 'x' | 'y';
   scaleType: ScaleType;
 }

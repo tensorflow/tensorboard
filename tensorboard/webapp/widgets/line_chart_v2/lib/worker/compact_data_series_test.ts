@@ -122,6 +122,33 @@ describe('line_chart_v2/lib/compact_data_series', () => {
       ]);
     });
 
+    it('does not round fractiional numbers', () => {
+      const dataSeries = [
+        {
+          id: 'foo',
+          points: [
+            {x: 1, y: 0.3},
+            {x: 1, y: 1e-10},
+          ],
+        },
+      ];
+
+      const actual = decompactDataSeries(compactDataSeries(dataSeries));
+      expect(actual).not.toEqual(dataSeries);
+      expect(actual).toEqual([
+        {
+          id: 'foo',
+          points: [
+            {x: 1, y: jasmine.any(Number)},
+            {x: 1, y: jasmine.any(Number)},
+          ],
+        },
+      ]);
+      // When converting to Float32, there are error due to missing precision.
+      expect(actual[0].points[0].y).toBeCloseTo(0.3, 6);
+      expect(actual[0].points[1].y).toBeCloseTo(1e-10, 12);
+    });
+
     it('fails when decompacting wrong message (odd number of data points', () => {
       const compactDataSeries: CompactDataSeries = {
         idsAndLengths: [

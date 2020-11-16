@@ -79,7 +79,7 @@ export class WorkerChart implements Chart {
 
   setXScaleType(type: ScaleType) {
     this.sendMessage({
-      type: HostToGuestEvent.SCALE_UPDATE,
+      type: HostToGuestEvent.SCALE_UPDATED,
       axis: 'x',
       scaleType: type,
     });
@@ -87,7 +87,7 @@ export class WorkerChart implements Chart {
 
   setYScaleType(type: ScaleType) {
     this.sendMessage({
-      type: HostToGuestEvent.SCALE_UPDATE,
+      type: HostToGuestEvent.SCALE_UPDATED,
       axis: 'y',
       scaleType: type,
     });
@@ -105,14 +105,14 @@ export class WorkerChart implements Chart {
   }
 
   setViewBox(extent: Extent): void {
-    this.sendMessage({type: HostToGuestEvent.VIEW_BOX_UPDATE, extent});
+    this.sendMessage({type: HostToGuestEvent.VIEW_BOX_UPDATED, extent});
   }
 
   setData(data: DataSeries[]): void {
     const compactData = compactDataSeries(data);
     this.sendMessage(
       {
-        type: HostToGuestEvent.SERIES_DATA_UPDATE,
+        type: HostToGuestEvent.SERIES_DATA_UPDATED,
         compactDataSeries: compactData,
       },
       // Need to transfer the ownership to the worker.

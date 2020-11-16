@@ -24,7 +24,8 @@ export interface CompactDataSeries {
  * Converts array of DataSeries to a compact represenation for postMessage.
  *
  * Sending a large JavaScript object can lead to inefficiency as it spends significant
- * amount of time on JSON.stringify and JSON.parse.
+ * amount of time on JSON.stringify and JSON.parse. In a smaller test of sending 1000
+ * points, we saw about 4.5x speed up when using the typed array.
  */
 export function compactDataSeries(
   dataSeriesArr: DataSeries[]
