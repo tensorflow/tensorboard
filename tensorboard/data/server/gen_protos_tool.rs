@@ -32,6 +32,7 @@ fn main() -> std::io::Result<()> {
         .compile(
             &[
                 "tensorboard/compat/proto/event.proto",
+                "tensorboard/data/proto/data_provider.proto",
                 "tensorboard/data/server/demo.proto",
             ],
             &["."],

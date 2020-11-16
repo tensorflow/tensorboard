@@ -33,5 +33,9 @@ pub mod proto {
     /// Bindings for `package tensorboard`, containing standard TensorFlow protos.
     pub mod tensorboard {
         include!("tensorboard.pb.rs");
+        /// Bindings for `package tensorboard.data`, containing the data provider API.
+        pub mod data {
+            include!("tensorboard.data.pb.rs");
+        }
     }
 }
