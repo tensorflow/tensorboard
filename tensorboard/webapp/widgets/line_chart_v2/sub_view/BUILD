@@ -30,6 +30,7 @@ tf_ts_library(
     ],
     deps = [
         ":sub_view",
+        "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/widgets/line_chart_v2/lib:public_types",
         "//tensorboard/webapp/widgets/line_chart_v2/lib:scale",
         "@npm//@angular/common",
