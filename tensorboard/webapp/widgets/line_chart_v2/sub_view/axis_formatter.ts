@@ -12,15 +12,19 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {format} from '../../../third_party/d3';
 
-export * from './chart_types';
-export {
-  DataSeries,
-  DataSeriesMetadata,
-  DataSeriesMetadataMap,
-  Dimension,
-  Extent,
-  Point,
-} from './internal_types';
-export {RendererType} from './renderer/renderer_types';
-export {Scale, ScaleType} from './scale_types';
+const d3AxisFormatter = format('.2~e');
+const d3AxisIntFormatter = format('~');
+
+export function formatAxisNumber(num: number): string {
+  if (num === 0) {
+    return '0';
+  }
+
+  const absNum = Math.abs(num);
+  if (absNum >= 100000 || absNum < 0.001) {
+    return d3AxisFormatter(num);
+  }
+  return d3AxisIntFormatter(num);
+}

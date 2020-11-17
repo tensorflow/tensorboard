@@ -12,15 +12,19 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {Dimension} from '../lib/public_types';
 
-export * from './chart_types';
-export {
-  DataSeries,
-  DataSeriesMetadata,
-  DataSeriesMetadataMap,
-  Dimension,
-  Extent,
-  Point,
-} from './internal_types';
-export {RendererType} from './renderer/renderer_types';
-export {Scale, ScaleType} from './scale_types';
+export function getScaleRangeFromDomDim(
+  domDim: Dimension,
+  axis: 'x' | 'y'
+): [number, number] {
+  return axis === 'x' ? [0, domDim.width] : [domDim.height, 0];
+}
+
+export function getDomSizeInformedTickCount(
+  domSize: number,
+  tickCount: number
+): number {
+  const guidance = Math.floor(domSize / 50);
+  return Math.min(guidance, tickCount);
+}

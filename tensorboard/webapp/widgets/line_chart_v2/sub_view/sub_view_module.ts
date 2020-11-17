@@ -12,15 +12,15 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {CommonModule} from '@angular/common';
+import {NgModule} from '@angular/core';
 
-export * from './chart_types';
-export {
-  DataSeries,
-  DataSeriesMetadata,
-  DataSeriesMetadataMap,
-  Dimension,
-  Extent,
-  Point,
-} from './internal_types';
-export {RendererType} from './renderer/renderer_types';
-export {Scale, ScaleType} from './scale_types';
+import {LineChartAxisComponent} from './line_chart_axis_view';
+import {LineChartGridView} from './line_chart_grid_view';
+
+@NgModule({
+  declarations: [LineChartAxisComponent, LineChartGridView],
+  exports: [LineChartAxisComponent, LineChartGridView],
+  imports: [CommonModule],
+})
+export class SubViewModule {}
