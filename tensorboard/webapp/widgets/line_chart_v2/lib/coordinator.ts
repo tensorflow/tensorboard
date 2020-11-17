@@ -13,8 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {createScale, Scale} from './scale';
-import {Rect, ScaleType} from './internal_types';
+import {Rect, Scale, ScaleType} from './internal_types';
+import {createScale} from './scale';
 import {convertRectToExtent} from './utils';
 
 /**
