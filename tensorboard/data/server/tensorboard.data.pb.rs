@@ -46,7 +46,7 @@ pub struct TagFilter {
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Downsample {
-    /// Maximum number of points to return. Must be positive.
+    /// Maximum number of points to return. Must be non-negative. Zero means zero.
     #[prost(int64, tag="1")]
     pub num_points: i64,
 }
@@ -129,8 +129,8 @@ pub struct ReadScalarsRequest {
     /// Optional filter for time series. If omitted, all time series match.
     #[prost(message, optional, tag="3")]
     pub run_tag_filter: ::std::option::Option<RunTagFilter>,
-    /// Downsampling specification describing how many points to return per time
-    /// series. It is an error if `downsample.num_points <= 0`.
+    /// Required downsampling specification describing how many points to return
+    /// per time series.
     #[prost(message, optional, tag="4")]
     pub downsample: ::std::option::Option<Downsample>,
 }
@@ -227,8 +227,8 @@ pub struct ReadTensorsRequest {
     /// Optional filter for time series. If omitted, all time series match.
     #[prost(message, optional, tag="3")]
     pub run_tag_filter: ::std::option::Option<RunTagFilter>,
-    /// Downsampling specification describing how many points to return per time
-    /// series. It is an error if `downsample.num_points <= 0`.
+    /// Required downsampling specification describing how many points to return
+    /// per time series.
     #[prost(message, optional, tag="4")]
     pub downsample: ::std::option::Option<Downsample>,
 }
@@ -329,8 +329,8 @@ pub struct ReadBlobSequencesRequest {
     /// Optional filter for time series. If omitted, all time series match.
     #[prost(message, optional, tag="3")]
     pub run_tag_filter: ::std::option::Option<RunTagFilter>,
-    /// Downsampling specification describing how many points to return per time
-    /// series. It is an error if `downsample.num_points <= 0`.
+    /// Required downsampling specification describing how many points to return
+    /// per time series.
     #[prost(message, optional, tag="4")]
     pub downsample: ::std::option::Option<Downsample>,
 }

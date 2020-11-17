@@ -56,7 +56,7 @@ message TagFilter {
 }
 
 message Downsample {
-  // Maximum number of points to return. Must be positive.
+  // Maximum number of points to return. Must be non-negative. Zero means zero.
   int64 num_points = 1;
 }
 
@@ -120,8 +120,8 @@ message ReadScalarsRequest {
   PluginFilter plugin_filter = 2;
   // Optional filter for time series. If omitted, all time series match.
   RunTagFilter run_tag_filter = 3;
-  // Downsampling specification describing how many points to return per time
-  // series. It is an error if `downsample.num_points <= 0`.
+  // Required downsampling specification describing how many points to return
+  // per time series.
   Downsample downsample = 4;
 }
 
@@ -187,8 +187,8 @@ message ReadTensorsRequest {
   PluginFilter plugin_filter = 2;
   // Optional filter for time series. If omitted, all time series match.
   RunTagFilter run_tag_filter = 3;
-  // Downsampling specification describing how many points to return per time
-  // series. It is an error if `downsample.num_points <= 0`.
+  // Required downsampling specification describing how many points to return
+  // per time series.
   Downsample downsample = 4;
 }
 
@@ -257,8 +257,8 @@ message ReadBlobSequencesRequest {
   PluginFilter plugin_filter = 2;
   // Optional filter for time series. If omitted, all time series match.
   RunTagFilter run_tag_filter = 3;
-  // Downsampling specification describing how many points to return per time
-  // series. It is an error if `downsample.num_points <= 0`.
+  // Required downsampling specification describing how many points to return
+  // per time series.
   Downsample downsample = 4;
 }
 
