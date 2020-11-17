@@ -40,6 +40,15 @@ alias(
 )
 
 alias(
+    name = "clap",
+    actual = "@raze__clap__3_0_0_beta_2//:clap",
+    tags = [
+        "cargo-raze",
+        "manual",
+    ],
+)
+
+alias(
     name = "crc",
     actual = "@raze__crc__1_8_1//:crc",
     tags = [
