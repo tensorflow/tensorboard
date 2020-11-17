@@ -37,6 +37,7 @@ import {filter, map, switchMap, takeUntil, tap} from 'rxjs/operators';
 
 import {
   DataSeries,
+  DataSeriesMetadata,
   DataSeriesMetadataMap,
   Dimension,
   Extent,
@@ -51,7 +52,7 @@ import {
 
 export interface TooltipDatum {
   id: string;
-  metadata: DataSeriesMetadataMap[string];
+  metadata: DataSeriesMetadata;
   closestPointIndex: number | null;
   point: {x: number; y: number} | null;
 }
@@ -178,24 +179,22 @@ export class LineChartInteractiveViewComponent implements OnChanges, OnDestroy {
   ) {}
 
   ngAfterViewInit() {
+    // dblclick event cannot be prevented. Using css to disallow selecting instead.
     fromEvent<MouseEvent>(this.dotsContainer.nativeElement, 'dblclick', {
-      passive: false,
+      passive: true,
     })
       .pipe(takeUntil(this.ngUnsubscribe))
-      .subscribe((event) => {
-        // Prevent double click from selecting text.
-        event.preventDefault();
+      .subscribe(() => {
         this.onViewExtentReset.emit();
         this.state = InteractionState.NONE;
         this.changeDetector.markForCheck();
       });
 
     fromEvent<MouseEvent>(this.dotsContainer.nativeElement, 'mousedown', {
-      passive: false,
+      passive: true,
     })
       .pipe(takeUntil(this.ngUnsubscribe))
       .subscribe((event) => {
-        event.preventDefault();
         this.state = event.shiftKey
           ? InteractionState.PANNING
           : InteractionState.DRAG_ZOOMING;
@@ -435,7 +434,6 @@ export class LineChartInteractiveViewComponent implements OnChanges, OnDestroy {
           })
           .map(({seriesDatum, metadata}) => {
             const index = findClosestIndex(seriesDatum.points, cursorXLocation);
-            if (index === null) return null;
             return {
               id: seriesDatum.id,
               closestPointIndex: index,
