@@ -1,0 +1,68 @@
+<!--
+@license
+Copyright 2020 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<div
+  class="container"
+  detectResize
+  (onResize)="onViewResize()"
+  [resizeEventDebouncePeriodInMs]="0"
+  #overlayTarget="cdkOverlayOrigin"
+  cdkOverlayOrigin
+>
+  <div class="series-view" #main>
+    <line-chart-grid-view
+      [viewExtent]="viewBox"
+      [xScale]="xScale"
+      [yScale]="yScale"
+      [xGridCount]="10"
+      [yGridCount]="6"
+      [domDim]="domDimensions.main"
+    ></line-chart-grid-view>
+    <svg #chartEl *ngIf="getRendererType() === RendererType.SVG"></svg>
+    <canvas #chartEl *ngIf="getRendererType() === RendererType.WEBGL"></canvas>
+    <line-chart-interactive-view
+      [seriesData]="seriesData"
+      [seriesMetadataMap]="seriesMetadataMap"
+      [viewExtent]="viewBox"
+      [xScale]="xScale"
+      [yScale]="yScale"
+      [tooltipOriginEl]="overlayTarget"
+      [domDim]="domDimensions.main"
+      [tooltipTemplate]="tooltipTemplate"
+      (onViewExtentChange)="onViewBoxChanged($event)"
+      (onViewExtentReset)="onViewBoxReset()"
+    ></line-chart-interactive-view>
+  </div>
+  <line-chart-axis
+    #yAxis
+    class="y-axis"
+    axis="y"
+    [axisExtent]="viewBox.y"
+    [scale]="yScale"
+    [gridCount]="6"
+    [domDim]="domDimensions.yAxis"
+  ></line-chart-axis>
+  <line-chart-axis
+    #xAxis
+    class="x-axis"
+    axis="x"
+    [axisExtent]="viewBox.x"
+    [scale]="xScale"
+    [gridCount]="10"
+    [domDim]="domDimensions.xAxis"
+  ></line-chart-axis>
+</div>
