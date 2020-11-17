@@ -19,6 +19,7 @@ import {
   RepositionScrollStrategy,
 } from '@angular/cdk/overlay';
 import {
+  AfterViewInit,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
@@ -91,7 +92,8 @@ export type TooltipTemplate = TemplateRef<TooltipTemplateContext>;
     },
   ],
 })
-export class LineChartInteractiveViewComponent implements OnChanges, OnDestroy {
+export class LineChartInteractiveViewComponent
+  implements OnChanges, OnDestroy, AfterViewInit {
   @ViewChild('dots', {static: true, read: ElementRef})
   dotsContainer!: ElementRef<SVGElement>;
 
