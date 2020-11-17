@@ -2,6 +2,8 @@ load("//tensorboard/defs:defs.bzl", "tf_js_binary", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard/webapp/widgets/line_chart_v2/lib:__subpackages__"])
 
+licenses(["notice"])
+
 tf_ts_library(
     name = "message_types",
     srcs = [
