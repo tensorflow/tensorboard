@@ -94,6 +94,15 @@ alias(
 )
 
 alias(
+    name = "tempfile",
+    actual = "@raze__tempfile__3_1_0//:tempfile",
+    tags = [
+        "cargo-raze",
+        "manual",
+    ],
+)
+
+alias(
     name = "thiserror",
     actual = "@raze__thiserror__1_0_22//:thiserror",
     tags = [

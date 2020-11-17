@@ -627,6 +627,7 @@ dependencies = [
  "prost-build",
  "rand",
  "rand_chacha",
+ "tempfile",
  "thiserror",
  "tokio",
  "tonic",
