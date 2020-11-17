@@ -119,12 +119,6 @@ impl<T> Basin<T> {
     pub fn as_slice(&self) -> &[(Step, T)] {
         &self.0[..]
     }
-
-    /// Extracts the steps in this basin. Convenient for tests.
-    #[cfg(test)]
-    fn steps(&self) -> Vec<Step> {
-        self.0.iter().map(|(s, _)| *s).collect()
-    }
 }
 
 impl<T> Default for Basin<T> {
@@ -362,6 +356,11 @@ mod tests {
         }
     }
 
+    /// Extracts the steps from a basin. Convenient for tests.
+    fn steps<T>(basin: &Basin<T>) -> Vec<Step> {
+        basin.as_slice().iter().map(|(s, _)| *s).collect()
+    }
+
     #[test]
     fn test_sampling_no_preemptions() {
         let mut rsv = StageReservoir::with_control(7, ScriptedControl::new());
@@ -506,7 +505,7 @@ mod tests {
         rsv.ctl.extend(vec![0, 8, 1, 9, 2, 10, 3, 11]);
         (8..16).for_each(|i| rsv.offer(Step(i), ()));
         rsv.commit(&mut head);
-        assert_eq!(head.steps(), vec![Step(3), Step(7), Step(11), Step(15)]);
+        assert_eq!(steps(&head), vec![Step(3), Step(7), Step(11), Step(15)]);
         assert_eq!(rsv.seen, 16);
 
         // Offer step 4, preempting 12/16 of stream (estimated, and also exactly).
@@ -514,13 +513,13 @@ mod tests {
         rsv.offer(Step(4), ());
         assert_eq!(rsv.seen, 5); // had 16, preempted 12, offered 1
         rsv.commit(&mut head);
-        assert_eq!(head.steps(), vec![Step(3), Step(4)]);
+        assert_eq!(steps(&head), vec![Step(3), Step(4)]);
 
         // Offer another record, evicting even though we have capacity.
         rsv.ctl.extend(vec![4]);
         rsv.offer(Step(5), ());
         rsv.commit(&mut head);
-        assert_eq!(head.steps(), vec![Step(3), Step(5)]); // kept last only
+        assert_eq!(steps(&head), vec![Step(3), Step(5)]); // kept last only
     }
 
     #[test]
@@ -588,7 +587,7 @@ mod tests {
             fix this, there may be a bug (committed steps: {:?})",
             rng_file,
             rng_line,
-            head.steps(),
+            steps(&head),
         );
 
         // Preempt back to step 0.
@@ -601,7 +600,7 @@ mod tests {
             rsv.offer(Step(i), ());
         }
         rsv.commit(&mut head);
-        assert_eq!(head.steps(), (0..8).map(Step).collect::<Vec<_>>());
+        assert_eq!(steps(&head), (0..8).map(Step).collect::<Vec<_>>());
         assert_eq!(rsv.seen, 8);
     }
 }
