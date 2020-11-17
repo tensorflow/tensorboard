@@ -24,6 +24,7 @@ const initialState: FeatureFlagState = {
   features: {
     enabledExperimentalPlugins: [],
     inColab: false,
+    enableGpuChart: false,
   },
 };
 

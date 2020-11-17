@@ -19,11 +19,22 @@ tf_ts_library(
 )
 
 tf_ts_library(
+    name = "core_deeplink_provider_types",
+    srcs = [
+        "core_deeplink_provider_types.ts",
+    ],
+    deps = [
+        "//tensorboard/webapp/metrics:types",
+    ],
+)
+
+tf_ts_library(
     name = "core_deeplink_provider",
     srcs = [
         "core_deeplink_provider.ts",
     ],
     deps = [
+        ":core_deeplink_provider_types",
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp:selectors",
         "//tensorboard/webapp/app_routing:deep_link_provider",
@@ -32,6 +43,7 @@ tf_ts_library(
         "//tensorboard/webapp/metrics:types",
         "//tensorboard/webapp/metrics/data_source:types",
         "//tensorboard/webapp/tb_wrapper",
+        "//tensorboard/webapp/webapp_data_source:feature_flag_types",
         "@npm//@angular/core",
         "@npm//@ngrx/store",
         "@npm//rxjs",

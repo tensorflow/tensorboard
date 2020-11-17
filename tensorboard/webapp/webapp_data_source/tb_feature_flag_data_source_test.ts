@@ -31,44 +31,67 @@ describe('tb_feature_flag_data_source', () => {
     });
 
     describe('getFeatures', () => {
-      it('returns enabledExperimentalPlugins from the query params', () => {
-        spyOn(TEST_ONLY.util, 'getParams').and.returnValue(
-          new URLSearchParams('experimentalPlugin=a&experimentalPlugin=b')
-        );
-        expect(dataSource.getFeatures()).toEqual({
-          enabledExperimentalPlugins: ['a', 'b'],
-          inColab: false,
-        });
-      });
-
-      it('returns isInColab when true', () => {
-        spyOn(TEST_ONLY.util, 'getParams').and.returnValue(
-          new URLSearchParams('tensorboardColab=true')
-        );
-        expect(dataSource.getFeatures()).toEqual({
-          enabledExperimentalPlugins: [],
-          inColab: true,
-        });
-      });
-
-      it('returns isInColab when false', () => {
-        spyOn(TEST_ONLY.util, 'getParams').and.returnValue(
-          new URLSearchParams('tensorboardColab=false')
-        );
-        expect(dataSource.getFeatures()).toEqual({
-          enabledExperimentalPlugins: [],
-          inColab: false,
-        });
-      });
-
-      it('returns empty enabledExperimentalPlugins when empty', () => {
+      it('returns default values when params are empty', () => {
         spyOn(TEST_ONLY.util, 'getParams').and.returnValue(
           new URLSearchParams('')
         );
         expect(dataSource.getFeatures()).toEqual({
           enabledExperimentalPlugins: [],
           inColab: false,
+          enableGpuChart: false,
         });
+      });
+
+      it('returns enabledExperimentalPlugins from the query params', () => {
+        spyOn(TEST_ONLY.util, 'getParams').and.returnValue(
+          new URLSearchParams('experimentalPlugin=a&experimentalPlugin=b')
+        );
+        expect(dataSource.getFeatures().enabledExperimentalPlugins).toEqual([
+          'a',
+          'b',
+        ]);
+      });
+
+      it('returns empty enabledExperimentalPlugins when empty', () => {
+        spyOn(TEST_ONLY.util, 'getParams').and.returnValue(
+          new URLSearchParams('')
+        );
+        expect(dataSource.getFeatures().enabledExperimentalPlugins).toEqual([]);
+      });
+
+      it('returns isInColab when true', () => {
+        spyOn(TEST_ONLY.util, 'getParams').and.returnValue(
+          new URLSearchParams('tensorboardColab=true')
+        );
+        expect(dataSource.getFeatures().inColab).toEqual(true);
+      });
+
+      it('returns isInColab when false', () => {
+        spyOn(TEST_ONLY.util, 'getParams').and.returnValue(
+          new URLSearchParams('tensorboardColab=false')
+        );
+        expect(dataSource.getFeatures().inColab).toEqual(false);
+      });
+
+      it("returns enableGpuChart=false when 'fastChart' is empty", () => {
+        spyOn(TEST_ONLY.util, 'getParams').and.returnValue(
+          new URLSearchParams('fastChart=')
+        );
+        expect(dataSource.getFeatures().enableGpuChart).toEqual(false);
+      });
+
+      it('returns enableGpuChart=true when "true"', () => {
+        spyOn(TEST_ONLY.util, 'getParams').and.returnValue(
+          new URLSearchParams('fastChart=true')
+        );
+        expect(dataSource.getFeatures().enableGpuChart).toEqual(true);
+      });
+
+      it('returns enableGpuChart=false when explicitly "false"', () => {
+        spyOn(TEST_ONLY.util, 'getParams').and.returnValue(
+          new URLSearchParams('fastChart=false')
+        );
+        expect(dataSource.getFeatures().enableGpuChart).toEqual(false);
       });
     });
   });

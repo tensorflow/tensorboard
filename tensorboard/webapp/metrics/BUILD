@@ -31,7 +31,7 @@ tf_ts_library(
         "types.ts",
     ],
     deps = [
-        "//tensorboard/webapp/metrics/data_source",
+        "//tensorboard/webapp/metrics/data_source:types",
         "//tensorboard/webapp/widgets/histogram:types",
         "//tensorboard/webapp/widgets/line_chart",
     ],

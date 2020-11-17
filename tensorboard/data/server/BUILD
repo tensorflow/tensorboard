@@ -9,6 +9,7 @@ licenses(["notice"])
 _proto_packages = [
     "demo",
     "tensorboard",
+    "tensorboard.data",
 ]
 
 # Generated files with Rust protobuf bindings. These only exist in the build
@@ -85,6 +86,7 @@ genrule(
     srcs = [
         ":demo.proto",
         "//tensorboard/compat/proto:proto_srcs",
+        "//tensorboard/data/proto:proto_srcs",
     ],
     outs = _genproto_files,
     cmd = "$(execpath :gen_protos_tool) $(RULEDIR)",

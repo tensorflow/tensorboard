@@ -14,7 +14,10 @@ limitations under the License.
 ==============================================================================*/
 import {Injectable} from '@angular/core';
 
-import {TBFeatureFlagDataSource} from './tb_feature_flag_data_source_types';
+import {
+  EXPERIMENTAL_PLUGIN_QUERY_PARAM_KEY,
+  TBFeatureFlagDataSource,
+} from './tb_feature_flag_data_source_types';
 
 /**
  * Save the initial URL query params, before the AppRoutingEffects initialize.
@@ -32,8 +35,11 @@ export class QueryParamsFeatureFlagDataSource extends TBFeatureFlagDataSource {
   getFeatures() {
     const params = util.getParams();
     return {
-      enabledExperimentalPlugins: params.getAll('experimentalPlugin'),
+      enabledExperimentalPlugins: params.getAll(
+        EXPERIMENTAL_PLUGIN_QUERY_PARAM_KEY
+      ),
       inColab: params.get('tensorboardColab') === 'true',
+      enableGpuChart: params.get('fastChart') === 'true',
     };
   }
 }
