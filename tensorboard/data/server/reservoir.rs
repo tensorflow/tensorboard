@@ -28,8 +28,6 @@ use rand_chacha::ChaCha20Rng;
 /// every record in the stream. (One exception: when the reservoir's capacity is zero, it does not
 /// retain any records, even the latest one.)
 ///
-/// **Note:** Preemption support is not yet implemented.
-///
 /// # Preemption
 ///
 /// All records stored in this reservoir have a *step* and a *payload*. The step, a non-negative
@@ -92,6 +90,8 @@ pub struct StageReservoir<T, C = ChaCha20Rng> {
     /// record streams with no preemptions. When a preemption occurs, the total number of records
     /// preempted from the stream is estimated linearly from the proportion of records preempted
     /// from the reservoir.
+    ///
+    /// It always holds that `self.len() <= self.seen`, even when `self.seen` is not exact.
     ///
     /// Exception: when `capacity == 0`, `seen` is always `0` as well. A reservoir with no capacity
     /// is inert and has no need to track `seen`.
@@ -184,16 +184,22 @@ impl<T, C: ReservoirControl> StageReservoir<T, C> {
         if self.capacity == 0 {
             return;
         }
+        self.preempt(step);
         self.seen += 1;
-        let dst = self.ctl.destination(self.seen);
 
-        if dst >= self.capacity {
-            // Didn't make the cut? Keep-last only.
-            self.pop();
-        } else if self.len() >= self.capacity {
-            // No room? Evict the destination.
-            // From `if`-guards, we know `dst < self.capacity <= self.len()`, so this is safe.
-            self.remove(dst);
+        // If we can hold every record that we've seen, we can add this record unconditionally.
+        // Otherwise, we need to roll a destination---even if there's available space, to avoid
+        // bias right after a preemption.
+        if self.seen > self.capacity {
+            let dst = self.ctl.destination(self.seen);
+            if dst >= self.capacity {
+                // Didn't make the cut? Keep-last only.
+                self.pop();
+            } else if self.len() >= self.capacity {
+                // No room? Evict the destination.
+                // From `if`-guards, we know `dst < self.capacity <= self.len()`, so this is safe.
+                self.remove(dst);
+            }
         }
         // In any case, add to end.
         self.staged_items.push((step, v));
@@ -232,6 +238,62 @@ impl<T, C: ReservoirControl> StageReservoir<T, C> {
     /// to the reservoir since the last commit and have not been evicted.
     pub fn staged_items(&self) -> &[(Step, T)] {
         &self.staged_items[..]
+    }
+
+    /// Preempts any records whose step does not precede the given step.
+    fn preempt(&mut self, step: Step) {
+        let old_len = self.len();
+        let staged_preempted = self
+            .staged_items
+            .iter()
+            .rev()
+            .take_while(|(s, _)| *s >= step)
+            .count();
+        if staged_preempted > 0 {
+            self.staged_items
+                .truncate(self.staged_items.len() - staged_preempted);
+        }
+        if self.staged_items.is_empty() {
+            // Committed steps may have been preempted as well. Note: we can hit this case even if
+            // `staged_preempted == 0`, since `staged_items` may have been empty to begin with.
+            let committed_preempted = self
+                .committed_steps
+                .iter()
+                .rev()
+                .take_while(|s| **s >= step)
+                .count();
+            if committed_preempted > 0 {
+                self.committed_steps
+                    .truncate(self.committed_steps.len() - committed_preempted);
+            }
+        }
+        let new_len = self.len();
+        if new_len == old_len {
+            return; // No need to adjust `seen`.
+        }
+        // Update our estimate of `seen` assuming that the fraction of sampled-records preempted is
+        // the same as the fraction of seen-records preempted. Note: when preempting to or before
+        // the earliest-written step, `self.len()` will now be `0`, so we will reset `seen` to
+        // exactly `0`, as desired.
+        //
+        // This preserves that `self.len() <= self.seen` because:
+        //
+        // ```none
+        // old_seen >= old_len  (by induction)
+        // old_seen * new_len >= old_len * new_len
+        // (old_seen * new_len) / old_len >= (old_len * new_len) / old_len
+        // (old_seen * new_len) / old_len >= new_len  (since the above integer division is exact)
+        // new_seen >= new_len
+        // ```
+        let old_seen = self.seen;
+        let new_seen = ((old_seen as u64 * new_len as u64) / old_len as u64) as usize;
+        debug_assert!(
+            new_seen >= new_len,
+            "old (len, seen) = {:?}, new (len, seen) = {:?}; wanted seen >= len",
+            (old_len, old_seen),
+            (new_len, new_seen),
+        );
+        self.seen = new_seen;
     }
 
     /// Commits pending changes from this reservoir into a basin.
@@ -294,8 +356,13 @@ mod tests {
         }
     }
 
+    /// Extracts the steps from a basin. Convenient for tests.
+    fn steps<T>(basin: &Basin<T>) -> Vec<Step> {
+        basin.as_slice().iter().map(|(s, _)| *s).collect()
+    }
+
     #[test]
-    fn test() {
+    fn test_sampling_no_preemptions() {
         let mut rsv = StageReservoir::with_control(7, ScriptedControl::new());
         let mut head = Basin::new();
         fn mapper(s: &str) -> &str {
@@ -303,7 +370,6 @@ mod tests {
             Box::leak(format!(":{}:", s).into_boxed_str())
         }
 
-        rsv.ctl.extend(vec![0, 1, 1, 2]);
         rsv.offer(Step(0), "zero");
         rsv.offer(Step(1), "one");
         rsv.offer(Step(2), "two");
@@ -319,10 +385,10 @@ mod tests {
             ],
         );
 
-        rsv.ctl.extend(vec![1, 2, 1, 3]);
         rsv.offer(Step(4), "four");
         rsv.offer(Step(5), "five");
         rsv.offer(Step(6), "six");
+        rsv.ctl.extend(vec![3]);
         rsv.offer(Step(7), "seven"); // this one exceeds capacity, evicting index 3
         rsv.commit_map(&mut head, mapper);
         assert_eq!(
@@ -357,8 +423,10 @@ mod tests {
         );
     }
 
+    /// Tests some desired properties about sampling and preemption. This uses seeded RNG, but the
+    /// seed is arbitrary.
     #[test]
-    fn test_random() {
+    fn test_sampling_preemption() {
         // Seeded RNG, with tests for some invariants.
         let mut rsv = StageReservoir::new(10);
         let mut head = Basin::new();
@@ -385,6 +453,73 @@ mod tests {
             assert_eq!(head.as_slice().len(), 10);
             assert_eq!(head.as_slice().last(), Some(&(Step(i * i), ())));
         }
+
+        // Seen 16 records, keeping 10. Preempt to invalidate records 9..=16, that the reservoir
+        // must have between 2 and 8 old records before the new one is added.
+        rsv.offer(Step(70), ()); // 8 * 8 < 70 < 9 * 9
+        rsv.commit(&mut head);
+        assert!(
+            (2..=9).contains(&head.as_slice().len()),
+            "want 2 <= {} <= 9: {:?}",
+            head.as_slice().len(),
+            head
+        );
+        assert!(
+            head.as_slice().iter().all(|(s, _)| *s <= Step(70)),
+            "want all <= 70: {:?}",
+            head
+        );
+        assert_eq!(head.as_slice().last(), Some(&(Step(70), ())));
+
+        // One more sanity check: add another record. The "70" preemption may or may not be
+        // evicted, but this new record should be the last.
+        rsv.offer(Step(71), ());
+        rsv.commit(&mut head);
+        assert_eq!(head.as_slice().last(), Some(&(Step(71), ())));
+    }
+
+    /// Tests that a reservoir may reject a record (modulo keep-last) even if there is sufficient
+    /// capacity available, if it is estimated that the total number of records seen exceeds the
+    /// capacity.
+    ///
+    /// Without this, the reservoir's sampling is biased. Consider a reservoir of capacity 1000
+    /// into which 1 million records have been offered, at sequential steps. Suppose that we
+    /// preempt back to step 900_000, and suppose that this leaves the reservoir with 900/1000
+    /// slots filled. If we add the next record unconditionally, then that record has probability 1
+    /// of being sampled, whereas all the other records have probability 1/1000. This is
+    /// nonuniform.
+    ///
+    /// This test case uses smaller numbers (`n = 4`, `N = 16`), but exhibits the same idea.
+    #[test]
+    fn test_unbiased_even_with_space_after_preemption() {
+        let mut rsv = StageReservoir::with_control(4, ScriptedControl::new());
+        let mut head = Basin::new();
+
+        // Offer:
+        //   - (0..4), filling capacity
+        //   - (4..8), evicting to form [1, 3, 5, 7]
+        //   - (8..16), evicting to form [3, 7, 11, 15]
+        (0..4).for_each(|i| rsv.offer(Step(i), ()));
+        rsv.ctl.extend(vec![0, 1, 2, 3]);
+        (4..8).for_each(|i| rsv.offer(Step(i), ()));
+        rsv.ctl.extend(vec![0, 8, 1, 9, 2, 10, 3, 11]);
+        (8..16).for_each(|i| rsv.offer(Step(i), ()));
+        rsv.commit(&mut head);
+        assert_eq!(steps(&head), vec![Step(3), Step(7), Step(11), Step(15)]);
+        assert_eq!(rsv.seen, 16);
+
+        // Offer step 4, preempting 12/16 of stream (estimated, and also exactly).
+        rsv.ctl.extend(vec![3]);
+        rsv.offer(Step(4), ());
+        assert_eq!(rsv.seen, 5); // had 16, preempted 12, offered 1
+        rsv.commit(&mut head);
+        assert_eq!(steps(&head), vec![Step(3), Step(4)]);
+
+        // Offer another record, evicting even though we have capacity.
+        rsv.ctl.extend(vec![4]);
+        rsv.offer(Step(5), ());
+        rsv.commit(&mut head);
+        assert_eq!(steps(&head), vec![Step(3), Step(5)]); // kept last only
     }
 
     #[test]
@@ -413,7 +548,10 @@ mod tests {
     fn test_empty() {
         let mut rsv = StageReservoir::new(0);
         let mut head = Basin::new();
-        for i in 0..100 {
+        for mut i in 0..100 {
+            if i > 60 {
+                i -= 20; // "preemption", but not really, since no records
+            }
             rsv.offer(Step(i), ());
             assert_eq!(rsv.staged_items(), &[]);
             if i % 5 == 0 {
@@ -421,5 +559,48 @@ mod tests {
                 assert_eq!(head.as_slice(), &[]);
             }
         }
+    }
+
+    /// Tests that when a reservoir is preempted back to its first-read record, we reset `seen` to
+    /// exactly zero, so that the next `capacity - 1` records may be read unconditionally. You can
+    /// imagine implementations of a reservoir whose `seen` estimation rounds in such a way that
+    /// this doesn't hold. That would be confusing for training jobs that are preempted before they
+    /// reach their first checkpoint.
+    #[test]
+    fn test_preempt_to_start() {
+        let (rng_line, rng_file) = (line!() + 1, file!()); // for error message below
+        let rng = ChaCha20Rng::seed_from_u64(0);
+        let mut rsv = StageReservoir::with_control(10, rng);
+        let mut head = Basin::new();
+        for i in 0..10_000 {
+            rsv.offer(Step(i), ());
+        }
+        rsv.commit(&mut head);
+        assert_eq!(head.as_slice().len(), 10);
+        // If step 0 happened to be sampled, we can't test this usefully. Complain so that people
+        // fix the test.
+        assert_ne!(
+            head.as_slice().first().expect("head empty after commit").0,
+            Step(0),
+            "step 0 happened to stay in the reservoir, which is unlikely but \
+            possible (0.1% chance); if changing the RNG seed on {}:{} doesn't \
+            fix this, there may be a bug (committed steps: {:?})",
+            rng_file,
+            rng_line,
+            steps(&head),
+        );
+
+        // Preempt back to step 0.
+        assert_eq!(rsv.seen, 10_000);
+        rsv.offer(Step(0), ());
+        assert_eq!(rsv.seen, 1); // just the newest record
+
+        // Offer more points: all should be accepted.
+        for i in 1..8 {
+            rsv.offer(Step(i), ());
+        }
+        rsv.commit(&mut head);
+        assert_eq!(steps(&head), (0..8).map(Step).collect::<Vec<_>>());
+        assert_eq!(rsv.seen, 8);
     }
 }
