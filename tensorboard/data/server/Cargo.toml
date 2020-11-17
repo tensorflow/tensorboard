@@ -60,9 +60,7 @@ targets = [
 gen_buildrs = true
 
 [package.metadata.raze.crates.libc.'0.2.80']
-additional_flags = [
-    "--cfg=libc_align",
-]
+gen_buildrs = true
 
 [package.metadata.raze.crates.indexmap.'1.6.0']
 additional_flags = [
