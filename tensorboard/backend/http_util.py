@@ -222,7 +222,6 @@ def Respond(
                 "default-src 'self'",
                 "font-src %s"
                 % _create_csp_string("'self'", *_CSP_FONT_DOMAINS_WHITELIST),
-                "frame-ancestors *",
                 # Dynamic plugins are rendered inside an iframe.
                 "frame-src %s"
                 % _create_csp_string("'self'", *_CSP_FRAME_DOMAINS_WHITELIST),
