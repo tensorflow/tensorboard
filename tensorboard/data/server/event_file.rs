@@ -35,34 +35,20 @@ pub struct EventFileReader<R> {
 }
 
 /// Error returned by [`EventFileReader::read_event`].
-#[derive(Debug)]
+#[derive(Debug, thiserror::Error)]
 pub enum ReadEventError {
     /// The record failed its checksum.
-    InvalidRecord(ChecksumError),
+    #[error(transparent)]
+    InvalidRecord(#[from] ChecksumError),
     /// The record passed its checksum, but the contained protocol buffer is invalid.
-    InvalidProto(DecodeError),
+    #[error(transparent)]
+    InvalidProto(#[from] DecodeError),
     /// The record is a valid `Event` proto, but its `wall_time` is `NaN`.
+    #[error("NaN wall time at step {}", .0.step)]
     NanWallTime(Event),
     /// An error occurred reading the record. May or may not be fatal.
-    ReadRecordError(ReadRecordError),
-}
-
-impl From<DecodeError> for ReadEventError {
-    fn from(e: DecodeError) -> Self {
-        ReadEventError::InvalidProto(e)
-    }
-}
-
-impl From<ChecksumError> for ReadEventError {
-    fn from(e: ChecksumError) -> Self {
-        ReadEventError::InvalidRecord(e)
-    }
-}
-
-impl From<ReadRecordError> for ReadEventError {
-    fn from(e: ReadRecordError) -> Self {
-        ReadEventError::ReadRecordError(e)
-    }
+    #[error(transparent)]
+    ReadRecordError(#[from] ReadRecordError),
 }
 
 impl ReadEventError {
