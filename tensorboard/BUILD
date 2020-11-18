@@ -335,6 +335,7 @@ tf_web_library(
         "//tensorboard/webapp:index.html",
         "//tensorboard/webapp:index.js",
         "//tensorboard/webapp:svg_bundle",
+        "//tensorboard/webapp/widgets/line_chart_v2/lib/worker:chart_worker.js",
     ],
     path = "/",
     deps = [
