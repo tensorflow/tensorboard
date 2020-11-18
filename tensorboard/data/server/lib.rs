@@ -19,6 +19,7 @@ pub mod event_file;
 pub mod masked_crc;
 pub mod reservoir;
 pub mod tf_record;
+pub mod types;
 
 #[cfg(test)]
 mod scripted_reader;
