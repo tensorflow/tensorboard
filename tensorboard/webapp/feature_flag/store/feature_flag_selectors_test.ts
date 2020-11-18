@@ -65,7 +65,7 @@ describe('feature_flag_selectors', () => {
       );
       const actual1 = selectors.getIsGpuChartEnabled(state1);
 
-      expect(actual1).toEqual(false);
+      expect(actual1).toBe(false);
 
       const state2 = buildState(
         buildFeatureFlagState({
@@ -76,7 +76,7 @@ describe('feature_flag_selectors', () => {
       );
       const actual2 = selectors.getIsGpuChartEnabled(state2);
 
-      expect(actual2).toEqual(true);
+      expect(actual2).toBe(true);
     });
   });
 });
