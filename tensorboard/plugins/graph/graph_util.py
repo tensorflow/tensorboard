@@ -118,9 +118,7 @@ def merge_graph_defs(graph_defs):
             raise ValueError("Cannot combine GraphDefs of different versions.")
 
         _add_with_prepended_names(
-            "graph_%d" % (index + 1),
-            graph_def,
-            dst_graph_def,
+            "graph_%d" % (index + 1), graph_def, dst_graph_def,
         )
 
     return dst_graph_def
