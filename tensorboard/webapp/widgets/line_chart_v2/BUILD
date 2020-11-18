@@ -45,6 +45,20 @@ tf_ts_library(
     ],
 )
 
+ng_module(
+    name = "line_chart_demo",
+    srcs = [
+        "line_chart_demo_component.ts",
+        "line_chart_demo_module.ts",
+    ],
+    deps = [
+        ":line_chart_v2",
+        "//tensorboard/webapp/widgets/line_chart_v2/lib:public_types",
+        "@npm//@angular/common",
+        "@npm//@angular/core",
+    ],
+)
+
 tf_ts_library(
     name = "line_chart_v2_tests",
     testonly = True,
