@@ -79,6 +79,11 @@ tf_ts_library(
     srcs = [
         "scale.ts",
     ],
+    visibility = [
+        "//tensorboard/webapp/widgets/line_chart_v2/lib:__subpackages__",
+        # test uses it
+        "//tensorboard/webapp/widgets/line_chart_v2/sub_view:__pkg__",
+    ],
     deps = [
         ":internal_types",
         "//tensorboard/webapp/third_party:d3",
@@ -119,6 +124,20 @@ tf_ts_library(
 )
 
 tf_ts_library(
+    name = "testing",
+    testonly = True,
+    srcs = [
+        "testing.ts",
+    ],
+    visibility = [
+        "//tensorboard/webapp/widgets/line_chart_v2:__subpackages__",
+    ],
+    deps = [
+        ":internal_types",
+    ],
+)
+
+tf_ts_library(
     name = "lib_tests",
     testonly = True,
     srcs = [
@@ -137,6 +156,7 @@ tf_ts_library(
         ":internal_types",
         ":public_types",
         ":scale",
+        ":testing",
         ":worker",
         "//tensorboard/webapp/widgets/line_chart_v2/lib/renderer",
         "@npm//@angular/core",

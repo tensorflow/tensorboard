@@ -13,15 +13,26 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-export * from './chart_types';
-export {
-  DataSeries,
-  DataSeriesMetadata,
-  DataSeriesMetadataMap,
-  Dimension,
-  Extent,
-  Point,
-  Rect,
-} from './internal_types';
-export {RendererType} from './renderer/renderer_types';
-export {Scale, ScaleType} from './scale_types';
+import {DataSeries, DataSeriesMetadata} from './internal_types';
+
+export function createSeries(
+  id: string,
+  pointFn: (index: number) => number = Math.sin
+): DataSeries {
+  return {
+    id,
+    points: new Array(10).fill({x: 0, y: 0}).map((data, index) => {
+      return {x: index, y: pointFn(index)};
+    }),
+  };
+}
+
+export function buildMetadata(metadata: Partial<DataSeriesMetadata>) {
+  return {
+    id: 'line',
+    displayName: 'Line',
+    visible: true,
+    color: '#000',
+    ...metadata,
+  };
+}

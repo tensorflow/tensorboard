@@ -44,3 +44,10 @@ export const getEnabledExperimentalPlugins = createSelector(
 export const getIsInColab = createSelector(selectFeatureFlagState, (state) => {
   return !!state.features.inColab;
 });
+
+export const getIsGpuChartEnabled = createSelector(
+  selectFeatureFlagState,
+  (state: FeatureFlagState): boolean => {
+    return !!state.features.enableGpuChart;
+  }
+);
