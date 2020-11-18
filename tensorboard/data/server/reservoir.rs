@@ -21,6 +21,8 @@ use rand::{
 };
 use rand_chacha::ChaCha20Rng;
 
+use crate::types::Step;
+
 /// A [reservoir sampling] data structure, with support for preemption and deferred "commits" of
 /// records to a separate destination for better concurrency.
 ///
@@ -97,10 +99,6 @@ pub struct StageReservoir<T, C = ChaCha20Rng> {
     /// is inert and has no need to track `seen`.
     seen: usize,
 }
-
-/// A step associated with a record, strictly increasing over time within a record stream.
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Copy, Clone)]
-pub struct Step(pub i64);
 
 /// A buffer of records that have been committed and not yet evicted from the reservoir.
 ///

@@ -33,6 +33,7 @@ rust_library(
         "reservoir.rs",
         "scripted_reader.rs",
         "tf_record.rs",
+        "types.rs",
     ] + _checked_in_proto_files,
     edition = "2018",
     deps = [
@@ -41,6 +42,7 @@ rust_library(
         "//third_party/rust:prost",
         "//third_party/rust:rand",
         "//third_party/rust:rand_chacha",
+        "//third_party/rust:thiserror",
         "//third_party/rust:tonic",
     ],
 )
