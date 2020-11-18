@@ -20,6 +20,7 @@ use std::fs::File;
 use std::io::BufReader;
 use std::path::PathBuf;
 
+use crate::data_compat::{EventValue, SummaryValue};
 use crate::event_file::EventFileReader;
 use crate::proto::tensorboard as pb;
 use crate::reservoir::StageReservoir;
@@ -94,14 +95,7 @@ impl TimeSeries {
 #[derive(Debug)]
 struct StageValue {
     wall_time: WallTime,
-    payload: StagePayload,
-}
-
-#[derive(Debug)]
-enum StagePayload {
-    #[allow(dead_code)]
-    GraphDef(Vec<u8>),
-    Summary(Box<pb::summary::value::Value>),
+    payload: EventValue,
 }
 
 impl RunLoader {
@@ -215,26 +209,24 @@ fn read_event(
             eprintln!("graph_def events not yet handled");
         }
         Some(pb::event::What::Summary(sum)) => {
-            for mut summary_value in sum.value {
-                let value = match summary_value.value {
+            for mut summary_pb_value in sum.value {
+                let summary_value = match summary_pb_value.value {
                     None => continue,
-                    Some(v) => v,
+                    Some(v) => SummaryValue(Box::new(v)),
                 };
 
                 use std::collections::hash_map::Entry;
-                let ts = match time_series.entry(Tag(summary_value.tag)) {
+                let ts = match time_series.entry(Tag(summary_pb_value.tag)) {
                     Entry::Occupied(o) => o.into_mut(),
                     Entry::Vacant(v) => {
-                        let metadata = crate::data_compat::initial_metadata(
-                            summary_value.metadata.take(),
-                            &value,
-                        );
+                        let metadata =
+                            summary_value.initial_metadata(summary_pb_value.metadata.take());
                         v.insert(TimeSeries::new(metadata))
                     }
                 };
                 let sv = StageValue {
                     wall_time,
-                    payload: StagePayload::Summary(Box::new(value)),
+                    payload: EventValue::Summary(summary_value),
                 };
                 ts.rsv.offer(step, sv);
             }
@@ -340,7 +332,7 @@ mod test {
         // Points should be as expected (no downsampling at these sizes).
         let mut actual_points = Vec::new();
         for (step, StageValue { wall_time, payload }) in basin.as_slice() {
-            if let StagePayload::Summary(value_box) = payload {
+            if let EventValue::Summary(SummaryValue(value_box)) = payload {
                 if let pb::summary::value::Value::SimpleValue(f) = **value_box {
                     actual_points.push((*step, *wall_time, f));
                     continue;
