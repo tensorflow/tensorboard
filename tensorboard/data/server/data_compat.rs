@@ -18,7 +18,7 @@ limitations under the License.
 use crate::proto::tensorboard as pb;
 use pb::{summary::value::Value, summary_metadata::PluginData};
 
-const SCALARS_PLUGIN_NAME: &str = "scalars";
+pub(crate) const SCALARS_PLUGIN_NAME: &str = "scalars";
 
 /// Determines the metadata for a time series given its first event.
 ///
