@@ -22,14 +22,26 @@ def _prefixed_op_name(prefix, op_name):
 
 
 def _prefixed_func_name(prefix, func_name):
-    # TODO(stephanwlee): add business logic to strip "__inference_".
+    """Returns function name prefixed with `prefix`.
+
+    For function libraries, which are often created out of autographed Python
+    function, are factored out in the graph vis. They are grouped under a
+    function name which often has a shape of
+    `__inference_[py_func_name]_[numeric_suffix]`.
+
+    While it does not have some unique information about which graph it is from,
+    creating another wrapping structure with graph prefix and "/" is less than
+    ideal so we join the prefix and func_name using underscore.
+
+    TODO(stephanwlee): add business logic to strip "__inference_" for more user
+    friendlier name
+    """
     return "%s_%s" % (prefix, func_name)
 
 
-def _prepend_names(prefix, orig_graph_def):
-    mut_graph_def = graph_pb2.GraphDef()
-    for node in orig_graph_def.node:
-        new_node = mut_graph_def.node.add()
+def _add_with_prepended_names(prefix, graph_to_add, destination_graph):
+    for node in graph_to_add.node:
+        new_node = destination_graph.node.add()
         new_node.CopyFrom(node)
         new_node.name = _prefixed_op_name(prefix, node.name)
         new_node.input[:] = [
@@ -44,17 +56,15 @@ def _prepend_names(prefix, orig_graph_def):
                 prefix, new_node.attr["f"].func.name,
             )
 
-    for func in orig_graph_def.library.function:
-        new_func = mut_graph_def.library.function.add()
+    for func in graph_to_add.library.function:
+        new_func = destination_graph.library.function.add()
         new_func.CopyFrom(func)
-        # Not creating a structure out of factored out function. They already
-        # create an awkward hierarchy and one for each graph.
         new_func.signature.name = _prefixed_func_name(
             prefix, new_func.signature.name
         )
 
-    for gradient in orig_graph_def.library.gradient:
-        new_gradient = mut_graph_def.library.gradient.add()
+    for gradient in graph_to_add.library.gradient:
+        new_gradient = destination_graph.library.gradient.add()
         new_gradient.CopyFrom(gradient)
         new_gradient.function_name = _prefixed_func_name(
             prefix, new_gradient.function_name,
@@ -62,8 +72,6 @@ def _prepend_names(prefix, orig_graph_def):
         new_gradient.gradient_func = _prefixed_func_name(
             prefix, new_gradient.gradient_func,
         )
-
-    return mut_graph_def
 
 
 def merge_graph_defs(graph_defs):
@@ -109,15 +117,10 @@ def merge_graph_defs(graph_defs):
         if dst_graph_def.versions.producer != graph_def.versions.producer:
             raise ValueError("Cannot combine GraphDefs of different versions.")
 
-        mapped_graph_def = _prepend_names("graph_%d" % (index + 1), graph_def)
-        dst_graph_def.node.extend(mapped_graph_def.node)
-        if mapped_graph_def.library.function:
-            dst_graph_def.library.function.extend(
-                mapped_graph_def.library.function
-            )
-        if mapped_graph_def.library.gradient:
-            dst_graph_def.library.gradient.extend(
-                mapped_graph_def.library.gradient
-            )
+        _add_with_prepended_names(
+            "graph_%d" % (index + 1),
+            graph_def,
+            dst_graph_def,
+        )
 
     return dst_graph_def
