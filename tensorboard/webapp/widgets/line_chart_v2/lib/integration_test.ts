@@ -14,35 +14,8 @@ limitations under the License.
 ==============================================================================*/
 
 import {MainThreadChart, TEST_ONLY} from './chart';
-import {DataSeriesMetadata} from './internal_types';
-import {
-  ChartCallbacks,
-  DataSeries,
-  RendererType,
-  ScaleType,
-} from './public_types';
-
-function createSeries(
-  id: string,
-  pointFn: (index: number) => number = Math.sin
-): DataSeries {
-  return {
-    id,
-    points: [...new Array(10)].map((_, index) => {
-      return {x: index, y: pointFn(index)};
-    }),
-  };
-}
-
-function buildMetadata(metadata: Partial<DataSeriesMetadata>) {
-  return {
-    id: 'line',
-    displayName: 'Line',
-    visible: true,
-    color: '#000',
-    ...metadata,
-  };
-}
+import {ChartCallbacks, RendererType, ScaleType} from './public_types';
+import {buildMetadata, createSeries} from './testing';
 
 describe('line_chart_v2/lib/integration test', () => {
   let dom: SVGElement;
