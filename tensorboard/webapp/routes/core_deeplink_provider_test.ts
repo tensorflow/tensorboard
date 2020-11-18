@@ -44,6 +44,7 @@ describe('core deeplink provider', () => {
     store.overrideSelector(selectors.getPinnedCardsWithMetadata, []);
     store.overrideSelector(selectors.getUnresolvedImportedPinnedCards, []);
     store.overrideSelector(selectors.getEnabledExperimentalPlugins, []);
+    store.overrideSelector(selectors.getIsGpuChartEnabled, false);
 
     queryParamsSerialized = [];
 
@@ -247,6 +248,15 @@ describe('core deeplink provider', () => {
         {key: 'experimentalPlugin', value: 'foo'},
         {key: 'experimentalPlugin', value: 'bar'},
         {key: 'experimentalPlugin', value: 'baz'},
+      ]);
+    });
+
+    it('serializes enabled fast chart state', () => {
+      store.overrideSelector(selectors.getIsGpuChartEnabled, true);
+      store.refreshState();
+
+      expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual([
+        {key: 'fastChart', value: 'true'},
       ]);
     });
   });
