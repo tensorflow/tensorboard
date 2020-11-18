@@ -44,7 +44,7 @@ describe('line_chart_v2/data_transformer test', () => {
       const actual = await classicSmoothing(dataSeries, 0.6);
       expect(actual).toEqual([
         {
-          srcId: 's1',
+          id: 's1',
           points: [
             // 0.4 * 1 / (1 - 0.6^1) = 1
             {x: 0, y: 1},
@@ -60,7 +60,7 @@ describe('line_chart_v2/data_transformer test', () => {
           ],
         },
         {
-          srcId: 's2',
+          id: 's2',
           points: [
             {x: 0, y: 0},
             // (0.5 * 0.4) / (1 - 0.6^2) = 0.3125
@@ -70,7 +70,7 @@ describe('line_chart_v2/data_transformer test', () => {
           ],
         },
         {
-          srcId: 's3',
+          id: 's3',
           points: [],
         },
       ]);
@@ -98,7 +98,7 @@ describe('line_chart_v2/data_transformer test', () => {
       const actual = await classicSmoothing(dataSeries, 0.0);
       expect(actual).toEqual([
         {
-          srcId: 's1',
+          id: 's1',
           points: [
             {x: 0, y: 1},
             {x: 1, y: 0.5},
@@ -106,7 +106,7 @@ describe('line_chart_v2/data_transformer test', () => {
           ],
         },
         {
-          srcId: 's2',
+          id: 's2',
           points: [
             {x: 0, y: 0},
             {x: 1, y: 0.5},
@@ -134,7 +134,7 @@ describe('line_chart_v2/data_transformer test', () => {
       );
       expect(actual).toEqual([
         {
-          srcId: 's1',
+          id: 's1',
           points: [
             {x: 0, y: -Infinity},
             {x: 0, y: 1},
@@ -163,7 +163,7 @@ describe('line_chart_v2/data_transformer test', () => {
       );
       expect(actual).toEqual([
         {
-          srcId: 's1',
+          id: 's1',
           points: [
             {x: 0, y: 0},
             {x: 1, y: 0},
@@ -189,7 +189,7 @@ describe('line_chart_v2/data_transformer test', () => {
       );
       expect(actual).toEqual([
         {
-          srcId: 's1',
+          id: 's1',
           points: [
             {x: 0, y: 0.3},
             {x: 1, y: 0.3},
@@ -216,7 +216,7 @@ describe('line_chart_v2/data_transformer test', () => {
           );
           expect(actual).toEqual([
             {
-              srcId: 's1',
+              id: 's1',
               points: [
                 {x: 0, y: 1},
                 {x: 1, y: 0.5},
@@ -241,7 +241,7 @@ describe('line_chart_v2/data_transformer test', () => {
         );
         expect(actual).toEqual([
           {
-            srcId: 's1',
+            id: 's1',
             points: [
               {x: 0, y: 0},
               {x: 1, y: 0},

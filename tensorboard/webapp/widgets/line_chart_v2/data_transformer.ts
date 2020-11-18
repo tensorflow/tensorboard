@@ -25,7 +25,7 @@ import {DataSeries} from './lib/public_types';
 export async function classicSmoothing(
   data: DataSeries[],
   smoothingWeight: number
-): Promise<Array<{srcId: string; points: DataSeries['points']}>> {
+): Promise<DataSeries[]> {
   if (!data.length) [];
 
   if (!Number.isFinite(smoothingWeight)) {
@@ -33,32 +33,20 @@ export async function classicSmoothing(
   }
   smoothingWeight = Math.max(0, Math.min(smoothingWeight, 1));
 
-  const results: Array<{srcId: string; points: DataSeries['points']}> = [];
+  const results: Array<{id: string; points: DataSeries['points']}> = [];
 
   for (const series of data) {
-    if (!series.points.length) {
-      results.push({
-        srcId: series.id,
-        points: [],
-      });
+    const initialYVal = series.points[0]?.y;
+    const isConstant = series.points.every((point) => point.y == initialYVal);
+
+    // See #786.
+    if (isConstant) {
+      results.push(series);
       continue;
     }
 
     let last = series.points.length > 0 ? 0 : NaN;
     let numAccum = 0;
-
-    const initialYVal = series.points[0].y;
-    const isConstant = series.points.every((point) => point.y == initialYVal);
-
-    // See #786.
-    if (isConstant) {
-      // No need to prepend smoothed data.
-      results.push({
-        srcId: series.id,
-        points: series.points,
-      });
-      continue;
-    }
 
     const smoothedPoints = series.points.map((point) => {
       const nextVal = point.y;
@@ -90,7 +78,7 @@ export async function classicSmoothing(
       }
     });
     results.push({
-      srcId: series.id,
+      id: series.id,
       points: smoothedPoints,
     });
   }
