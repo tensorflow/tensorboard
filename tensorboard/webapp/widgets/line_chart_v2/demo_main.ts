@@ -12,16 +12,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {BrowserModule} from '@angular/platform-browser';
-import {NgModule} from '@angular/core';
-import {CommonModule} from '@angular/common';
-import {LineChartDemoComponent} from './line_chart_demo_component';
-import {LineChartModule} from './line_chart_module';
+import {platformBrowser} from '@angular/platform-browser';
+import 'zone.js/dist/zone.js'; // Angular runtime dep
 
-@NgModule({
-  declarations: [LineChartDemoComponent],
-  exports: [LineChartDemoComponent],
-  imports: [CommonModule, LineChartModule, BrowserModule],
-  bootstrap: [LineChartDemoComponent],
-})
-export class LineChartDemoModule {}
+import {LineChartDemoModule} from './line_chart_demo_module';
+
+// Bootstrap needs to happen after body is ready but we cannot reliably
+// controls the order in which script gets loaded (Vulcanization inlines
+// the script in <head>).
+window.addEventListener('DOMContentLoaded', () => {
+  platformBrowser().bootstrapModule(LineChartDemoModule);
+});

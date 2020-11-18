@@ -1,4 +1,5 @@
-load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_sass_binary", "tf_ts_library")
+load("//tensorboard/defs:defs.bzl", "tf_js_binary", "tf_ng_module", "tf_sass_binary", "tf_ts_library")
+load("//tensorboard/defs:web.bzl", "tf_web_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
@@ -48,15 +49,37 @@ tf_ts_library(
 ng_module(
     name = "line_chart_demo",
     srcs = [
+        "demo_main.ts",
         "line_chart_demo_component.ts",
         "line_chart_demo_module.ts",
     ],
+    visibility = ["//visibility:private"],
     deps = [
         ":line_chart_v2",
         "//tensorboard/webapp/widgets/line_chart_v2/lib:public_types",
         "@npm//@angular/common",
         "@npm//@angular/core",
+        "@npm//@angular/platform-browser",
     ],
+)
+
+tf_js_binary(
+    name = "demo_binary",
+    compile = True,
+    entry_point = ":demo_main.ts",
+    visibility = ["//visibility:private"],
+    deps = [":line_chart_demo"],
+)
+
+tf_web_library(
+    name = "demo_server",
+    srcs = [
+        "demo.html",
+        ":demo_binary.js",
+        "//tensorboard/webapp/widgets/line_chart_v2/lib/worker:chart_worker.js",
+    ],
+    path = "/",
+    visibility = ["//visibility:private"],
 )
 
 tf_ts_library(
