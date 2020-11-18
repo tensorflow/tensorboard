@@ -17,7 +17,7 @@ import * as selectors from './feature_flag_selectors';
 import {buildFeatureFlagState, buildState} from './testing';
 
 describe('feature_flag_selectors', () => {
-  describe('getEnabledExperimentalPlugins', () => {
+  describe('#getEnabledExperimentalPlugins', () => {
     it('returns value in array', () => {
       const state = buildState(
         buildFeatureFlagState({
@@ -32,7 +32,7 @@ describe('feature_flag_selectors', () => {
     });
   });
 
-  describe('getIsInColab', () => {
+  describe('#getIsInColab', () => {
     it('returns the proper value', () => {
       let state = buildState(
         buildFeatureFlagState({
@@ -51,6 +51,32 @@ describe('feature_flag_selectors', () => {
         })
       );
       expect(selectors.getIsInColab(state)).toEqual(false);
+    });
+  });
+
+  describe('#getIsGpuChartEnabled', () => {
+    it('returns value in the store', () => {
+      const state1 = buildState(
+        buildFeatureFlagState({
+          features: buildFeatureFlag({
+            enableGpuChart: false,
+          }),
+        })
+      );
+      const actual1 = selectors.getIsGpuChartEnabled(state1);
+
+      expect(actual1).toEqual(false);
+
+      const state2 = buildState(
+        buildFeatureFlagState({
+          features: buildFeatureFlag({
+            enableGpuChart: true,
+          }),
+        })
+      );
+      const actual2 = selectors.getIsGpuChartEnabled(state2);
+
+      expect(actual2).toEqual(true);
     });
   });
 });
