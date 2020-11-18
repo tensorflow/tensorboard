@@ -64,7 +64,8 @@ pub struct TfRecord {
 }
 
 /// A buffer's checksum was computed, but it did not match the expected value.
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, thiserror::Error)]
+#[error("checksum mismatch: got {got}, want {want}")]
 pub struct ChecksumError {
     /// The actual checksum of the buffer.
     pub got: MaskedCrc,
@@ -112,9 +113,10 @@ impl TfRecord {
 }
 
 /// Error returned by [`TfRecordReader::read_record`].
-#[derive(Debug)]
+#[derive(Debug, thiserror::Error)]
 pub enum ReadRecordError {
     /// Length field failed checksum. The file is corrupt, and reading must abort.
+    #[error("length checksum mismatch: got {}, want {}", .0.got, .0.want)]
     BadLengthCrc(ChecksumError),
     /// No fatal errors so far, but the record is not complete. Call `read_record` again with the
     /// same state buffer once new data may be available.
@@ -122,21 +124,18 @@ pub enum ReadRecordError {
     /// This includes the "trivial truncation" case where there are no bytes in a new record, so
     /// repeatedly reading records from a file of zero or more well-formed records will always
     /// finish with a `Truncated` error.
+    #[error("record truncated")]
     Truncated,
     /// Record is too large to be represented in memory on this system.
     ///
     /// In principle, it would be possible to recover from this error, but in practice this should
     /// rarely occur since serialized protocol buffers do not exceed 2 GiB in size. Thus, no
     /// recovery codepath has been implemented, so reading must abort.
+    #[error("record too large to fit in memory ({0} bytes)")]
     TooLarge(u64),
     /// Underlying I/O error. May be retryable if the underlying error is.
-    Io(io::Error),
-}
-
-impl From<io::Error> for ReadRecordError {
-    fn from(e: io::Error) -> Self {
-        ReadRecordError::Io(e)
-    }
+    #[error(transparent)]
+    Io(#[from] io::Error),
 }
 
 impl<R: Debug> Debug for TfRecordReader<R> {
@@ -403,6 +402,32 @@ mod tests {
             }) => (),
             other => panic!("{:?}", other),
         }
+    }
+
+    #[test]
+    fn test_error_display() {
+        let e = ReadRecordError::BadLengthCrc(ChecksumError {
+            got: MaskedCrc(0x01234567),
+            want: MaskedCrc(0xfedcba98),
+        });
+        assert_eq!(
+            e.to_string(),
+            "length checksum mismatch: got 0x01234567, want 0xfedcba98"
+        );
+
+        let e = ReadRecordError::Truncated;
+        assert_eq!(e.to_string(), "record truncated");
+
+        let e = ReadRecordError::TooLarge(999);
+        assert_eq!(
+            e.to_string(),
+            "record too large to fit in memory (999 bytes)"
+        );
+
+        let io_error = io::Error::new(io::ErrorKind::BrokenPipe, "pipe machine broke");
+        let expected_message = io_error.to_string();
+        let e = ReadRecordError::Io(io_error);
+        assert_eq!(e.to_string(), expected_message);
     }
 
     #[test]

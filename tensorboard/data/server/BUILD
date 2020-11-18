@@ -41,6 +41,7 @@ rust_library(
         "//third_party/rust:prost",
         "//third_party/rust:rand",
         "//third_party/rust:rand_chacha",
+        "//third_party/rust:thiserror",
         "//third_party/rust:tonic",
     ],
 )
