@@ -53,6 +53,12 @@ import {
   TooltipColumns,
 } from './scalar_card_component';
 import {ScalarCardContainer} from './scalar_card_container';
+import {
+  DataSeries,
+  DataSeriesMetadataMap,
+  RendererType,
+  ScaleType,
+} from '../../../widgets/line_chart_v2/types';
 
 @Component({
   selector: 'tb-line-chart',
@@ -70,6 +76,17 @@ class TestableLineChart {
   @Input() tooltipSortingMethod!: TooltipSortingMethod;
   redraw() {}
   resetDomain() {}
+}
+
+@Component({
+  selector: 'line-chart',
+  template: '',
+})
+class TestableGpuLineChart {
+  @Input() preferredRendererType!: RendererType;
+  @Input() seriesData!: DataSeries[];
+  @Input() seriesMetadataMap!: DataSeriesMetadataMap;
+  @Input() yScaleType!: ScaleType;
 }
 
 describe('scalar card', () => {
@@ -144,6 +161,7 @@ describe('scalar card', () => {
         ScalarCardContainer,
         ScalarCardComponent,
         TestableLineChart,
+        TestableGpuLineChart,
       ],
       providers: [
         provideMockStore({
@@ -160,6 +178,8 @@ describe('scalar card', () => {
     store.overrideSelector(selectors.getExperimentIdForRunId, null);
     store.overrideSelector(selectors.getExperimentIdToAliasMap, {});
     store.overrideSelector(selectors.getRun, null);
+    store.overrideSelector(selectors.getIsGpuChartEnabled, false);
+    store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.STEP);
   });
 
   it('renders empty chart when there is no data', fakeAsync(() => {
@@ -916,6 +936,180 @@ describe('scalar card', () => {
       fixture.nativeElement.style.display = 'block';
       resizeTester.simulateResize(fixture);
       expect(redrawSpy).toHaveBeenCalledTimes(1);
+    }));
+  });
+
+  describe('gpu line chart integration', () => {
+    beforeEach(() => {
+      store.overrideSelector(selectors.getIsGpuChartEnabled, true);
+      store.overrideSelector(selectors.getRunColorMap, {});
+      store.overrideSelector(selectors.getMetricsScalarSmoothing, 0.1);
+    });
+
+    const Selector = {
+      GPU_LINE_CHART: By.directive(TestableGpuLineChart),
+      SVG_LINE_CHART: By.directive(TestableLineChart),
+    };
+
+    it('renders the gpu line chart instead of svg one', fakeAsync(() => {
+      const fixture = createComponent('card1');
+      expect(fixture.debugElement.query(Selector.SVG_LINE_CHART)).toBeNull();
+      expect(
+        fixture.debugElement.query(Selector.GPU_LINE_CHART)
+      ).not.toBeNull();
+    }));
+
+    it('passes data series and metadata with smoothed values', fakeAsync(() => {
+      store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.STEP);
+      store.overrideSelector(selectors.getRunColorMap, {
+        run1: '#f00',
+        run2: '#0f0',
+      });
+      store.overrideSelector(selectors.getMetricsScalarSmoothing, 0.1);
+
+      const runToSeries = {
+        run1: [
+          {wallTime: 2, value: 1, step: 1},
+          {wallTime: 4, value: 10, step: 2},
+        ],
+        run2: [{wallTime: 2, value: 1, step: 1}],
+      };
+      provideMockCardRunToSeriesData(
+        selectSpy,
+        PluginType.SCALARS,
+        'card1',
+        null /* metadataOverride */,
+        runToSeries
+      );
+
+      const fixture = createComponent('card1');
+      const lineChart = fixture.debugElement.query(Selector.GPU_LINE_CHART);
+
+      expect(lineChart.componentInstance.seriesData).toEqual([
+        {
+          id: 'run1',
+          points: [
+            // Keeps the data structure as is but requires "x" and "y" props.
+            {wallTime: 2, value: 1, step: 1, x: 1, y: 1},
+            {wallTime: 4, value: 10, step: 2, x: 2, y: 10},
+          ],
+        },
+        {id: 'run2', points: [{wallTime: 2, value: 1, step: 1, x: 1, y: 1}]},
+        {
+          id: '["smoothed","run1"]',
+          points: [
+            {wallTime: 2, value: 1, step: 1, x: 1, y: 1},
+            // Exact smoothed value is not too important.
+            {wallTime: 4, value: 10, step: 2, x: 2, y: jasmine.any(Number)},
+          ],
+        },
+        {
+          id: '["smoothed","run2"]',
+          points: [{wallTime: 2, value: 1, step: 1, x: 1, y: 1}],
+        },
+      ]);
+      expect(lineChart.componentInstance.seriesMetadataMap).toEqual({
+        run1: {
+          id: 'run1',
+          displayName: 'run1',
+          smoothedBy: '["smoothed","run1"]',
+          smoothOf: null,
+          visible: false,
+          color: '#f00',
+          opacity: 0.4,
+          aux: true,
+        },
+        run2: {
+          id: 'run2',
+          displayName: 'run2',
+          smoothedBy: '["smoothed","run2"]',
+          smoothOf: null,
+          visible: false,
+          color: '#0f0',
+          opacity: 0.4,
+          aux: true,
+        },
+        '["smoothed","run1"]': {
+          id: '["smoothed","run1"]',
+          displayName: 'run1',
+          smoothedBy: null,
+          smoothOf: 'run1',
+          visible: false,
+          color: '#f00',
+          opacity: 1,
+          aux: false,
+        },
+        '["smoothed","run2"]': {
+          id: '["smoothed","run2"]',
+          displayName: 'run2',
+          smoothedBy: null,
+          smoothOf: 'run2',
+          visible: false,
+          color: '#0f0',
+          opacity: 1,
+          aux: false,
+        },
+      });
+    }));
+
+    it('does not set smoothed series when it is disabled,', fakeAsync(() => {
+      store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.STEP);
+      store.overrideSelector(selectors.getRunColorMap, {
+        run1: '#f00',
+        run2: '#0f0',
+      });
+      store.overrideSelector(selectors.getMetricsScalarSmoothing, 0);
+      const runToSeries = {
+        run1: [
+          {wallTime: 2, value: 1, step: 1},
+          {wallTime: 4, value: 10, step: 2},
+        ],
+        run2: [{wallTime: 2, value: 1, step: 1}],
+      };
+      provideMockCardRunToSeriesData(
+        selectSpy,
+        PluginType.SCALARS,
+        'card1',
+        null /* metadataOverride */,
+        runToSeries
+      );
+
+      const fixture = createComponent('card1');
+      const lineChart = fixture.debugElement.query(Selector.GPU_LINE_CHART);
+
+      expect(lineChart.componentInstance.seriesData).toEqual([
+        {
+          id: 'run1',
+          points: [
+            // Keeps the data structure as is but requires "x" and "y" props.
+            {wallTime: 2, value: 1, step: 1, x: 1, y: 1},
+            {wallTime: 4, value: 10, step: 2, x: 2, y: 10},
+          ],
+        },
+        {id: 'run2', points: [{wallTime: 2, value: 1, step: 1, x: 1, y: 1}]},
+      ]);
+      expect(lineChart.componentInstance.seriesMetadataMap).toEqual({
+        run1: {
+          id: 'run1',
+          displayName: 'run1',
+          smoothedBy: null,
+          smoothOf: null,
+          visible: false,
+          color: '#f00',
+          opacity: 1,
+          aux: false,
+        },
+        run2: {
+          id: 'run2',
+          displayName: 'run2',
+          smoothedBy: null,
+          smoothOf: null,
+          visible: false,
+          color: '#0f0',
+          opacity: 1,
+          aux: false,
+        },
+      });
     }));
   });
 });

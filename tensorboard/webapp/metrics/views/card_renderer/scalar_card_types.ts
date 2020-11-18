@@ -13,12 +13,26 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-// Only selectively export types that would be used by the user of the line chart.
-export {
+import {
   DataSeries,
   DataSeriesMetadata,
   DataSeriesMetadataMap,
   Point,
-  RendererType,
-  ScaleType,
-} from './lib/public_types';
+} from '../../../widgets/line_chart_v2/types';
+
+export interface ScalarCardSeriesMetadata extends DataSeriesMetadata {
+  smoothOf: string | null;
+  smoothedBy: string | null;
+}
+
+export type ScalarCardSeriesMetadataMap = DataSeriesMetadataMap<
+  ScalarCardSeriesMetadata
+>;
+
+export interface ScalarCardPoint extends Point {
+  wallTime: number;
+  value: number;
+  step: number;
+}
+
+export type ScalarCardDataSeries = DataSeries<ScalarCardPoint>;
