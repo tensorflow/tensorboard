@@ -20,16 +20,16 @@ const NUM_SERIES = 5;
 const NUM_POINTS = 1000;
 const NUM_PERIODS = 2;
 
-function createData(numPointsPerSeries: number, lambda: number): DataSeries {
+function createData(numPointsPerSeries: number, alpha: number): DataSeries {
   return {
-    id: `sine_${lambda}`,
+    id: `sine_${alpha}`,
     points: [...new Array(numPointsPerSeries)].map((_, index) => {
       return {
         x: index,
         y:
           Math.sin(
-            (lambda * index * 2 * Math.PI * NUM_PERIODS) / numPointsPerSeries
-          ) / lambda,
+            (alpha * index * 2 * Math.PI * NUM_PERIODS) / numPointsPerSeries
+          ) / alpha,
       };
     }),
   };
@@ -80,7 +80,6 @@ const COLORS = [
 
       line-chart {
         display: inline-block;
-        contain: strict;
         height: 100%;
         width: 100%;
       }
