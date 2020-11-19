@@ -31,6 +31,7 @@ rust_library(
         "event_file.rs",
         "masked_crc.rs",
         "reservoir.rs",
+        "run.rs",
         "scripted_reader.rs",
         "tf_record.rs",
         "types.rs",
@@ -50,6 +51,9 @@ rust_library(
 rust_test(
     name = "rustboard_core_test",
     crate = ":rustboard_core",
+    deps = [
+        "//third_party/rust:tempfile",
+    ],
 )
 
 rust_doc_test(

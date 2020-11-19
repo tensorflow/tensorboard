@@ -19,6 +19,7 @@ pub mod data_compat;
 pub mod event_file;
 pub mod masked_crc;
 pub mod reservoir;
+pub mod run;
 pub mod tf_record;
 pub mod types;
 
