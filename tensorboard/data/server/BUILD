@@ -79,6 +79,7 @@ rust_binary(
     edition = "2018",
     deps = [
         ":rustboard_core",
+        "//third_party/rust:futures_core",
         "//third_party/rust:tokio",
         "//third_party/rust:tonic",
     ],
