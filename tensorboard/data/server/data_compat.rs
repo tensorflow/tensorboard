@@ -58,11 +58,9 @@ impl EventValue {
             EventValue::GraphDef(_) => return Err(DataLoss),
             EventValue::Summary(SummaryValue(v)) => v,
         };
-        use pb::summary::value::Value;
         match *value_box {
-            Value::SimpleValue(f) => Ok(ScalarValue(f64::from(f))),
-            Value::Tensor(tp) => {
-                let tp: pb::TensorProto = tp; // helps rust-analyzer type inference
+            pb::summary::value::Value::SimpleValue(f) => Ok(ScalarValue(f64::from(f))),
+            pb::summary::value::Value::Tensor(tp) => {
                 use pb::DataType;
                 match DataType::from_i32(tp.dtype) {
                     Some(DataType::DtFloat) => {
