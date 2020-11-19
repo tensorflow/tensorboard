@@ -15,6 +15,7 @@ limitations under the License.
 
 //! Core functionality for TensorBoard data loading.
 
+pub mod data_compat;
 pub mod event_file;
 pub mod masked_crc;
 pub mod reservoir;
