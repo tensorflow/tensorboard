@@ -16,6 +16,7 @@ import {Injectable} from '@angular/core';
 
 import {
   EXPERIMENTAL_PLUGIN_QUERY_PARAM_KEY,
+  GPU_LINE_CHART_QUERY_PARAM_KEY,
   TBFeatureFlagDataSource,
 } from './tb_feature_flag_data_source_types';
 
@@ -39,7 +40,7 @@ export class QueryParamsFeatureFlagDataSource extends TBFeatureFlagDataSource {
         EXPERIMENTAL_PLUGIN_QUERY_PARAM_KEY
       ),
       inColab: params.get('tensorboardColab') === 'true',
-      enableGpuChart: params.get('fastChart') === 'true',
+      enableGpuChart: params.get(GPU_LINE_CHART_QUERY_PARAM_KEY) === 'true',
     };
   }
 }
