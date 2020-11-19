@@ -21,10 +21,7 @@ use crate::proto::tensorboard as pb;
 use pb::summary_metadata::PluginData;
 
 pub(crate) const SCALARS_PLUGIN_NAME: &str = "scalars";
-<<<<<<< HEAD
 pub(crate) const GRAPHS_PLUGIN_NAME: &str = "graphs";
-=======
->>>>>>> cc300437130d5026a628a6203ebdf10790819c64
 
 /// The inner contents of a single value from an event.
 ///

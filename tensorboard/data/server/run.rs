@@ -20,10 +20,7 @@ use std::fs::File;
 use std::io::BufReader;
 use std::path::PathBuf;
 
-<<<<<<< HEAD
 use crate::data_compat::{EventValue, SummaryValue};
-=======
->>>>>>> cc300437130d5026a628a6203ebdf10790819c64
 use crate::event_file::EventFileReader;
 use crate::proto::tensorboard as pb;
 use crate::reservoir::StageReservoir;
@@ -98,18 +95,7 @@ impl TimeSeries {
 #[derive(Debug)]
 struct StageValue {
     wall_time: WallTime,
-<<<<<<< HEAD
     payload: EventValue,
-=======
-    payload: StagePayload,
-}
-
-#[derive(Debug)]
-enum StagePayload {
-    #[allow(dead_code)]
-    GraphDef(Vec<u8>),
-    Summary(Box<pb::summary::value::Value>),
->>>>>>> cc300437130d5026a628a6203ebdf10790819c64
 }
 
 impl RunLoader {
@@ -223,7 +209,6 @@ fn read_event(
             eprintln!("graph_def events not yet handled");
         }
         Some(pb::event::What::Summary(sum)) => {
-<<<<<<< HEAD
             for mut summary_pb_value in sum.value {
                 let summary_value = match summary_pb_value.value {
                     None => continue,
@@ -236,32 +221,12 @@ fn read_event(
                     Entry::Vacant(v) => {
                         let metadata =
                             summary_value.initial_metadata(summary_pb_value.metadata.take());
-=======
-            for mut summary_value in sum.value {
-                let value = match summary_value.value {
-                    None => continue,
-                    Some(v) => v,
-                };
-
-                use std::collections::hash_map::Entry;
-                let ts = match time_series.entry(Tag(summary_value.tag)) {
-                    Entry::Occupied(o) => o.into_mut(),
-                    Entry::Vacant(v) => {
-                        let metadata = crate::data_compat::initial_metadata(
-                            summary_value.metadata.take(),
-                            &value,
-                        );
->>>>>>> cc300437130d5026a628a6203ebdf10790819c64
                         v.insert(TimeSeries::new(metadata))
                     }
                 };
                 let sv = StageValue {
                     wall_time,
-<<<<<<< HEAD
                     payload: EventValue::Summary(summary_value),
-=======
-                    payload: StagePayload::Summary(Box::new(value)),
->>>>>>> cc300437130d5026a628a6203ebdf10790819c64
                 };
                 ts.rsv.offer(step, sv);
             }
@@ -371,11 +336,7 @@ mod test {
         // Points should be as expected (no downsampling at these sizes).
         let mut actual_points = Vec::new();
         for (step, StageValue { wall_time, payload }) in basin.as_slice() {
-<<<<<<< HEAD
             if let EventValue::Summary(SummaryValue(value_box)) = payload {
-=======
-            if let StagePayload::Summary(value_box) = payload {
->>>>>>> cc300437130d5026a628a6203ebdf10790819c64
                 if let pb::summary::value::Value::SimpleValue(f) = **value_box {
                     actual_points.push((*step, *wall_time, f));
                     continue;
