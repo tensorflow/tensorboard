@@ -75,7 +75,7 @@ class TestableComponent {
   }
 }
 
-fdescribe('line_chart_v2/line_chart test', () => {
+describe('line_chart_v2/line_chart test', () => {
   let resizeSpy: jasmine.Spy;
   let disposeSpy: jasmine.Spy;
   let setXScaleTypeSpy: jasmine.Spy;
