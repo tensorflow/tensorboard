@@ -123,6 +123,9 @@ py_library(
     srcs = ["graph_util.py"],
     srcs_version = "PY2AND3",
     visibility = ["//visibility:private"],
+    deps = [
+        "//tensorboard/compat/proto:protos_all_py_pb2",
+    ],
 )
 
 py_test(
@@ -136,7 +139,6 @@ py_test(
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "@com_google_protobuf//:protobuf_python",
-        "@org_pythonhosted_six",
     ],
 )
 
