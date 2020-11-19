@@ -165,7 +165,7 @@ describe('line_chart_v2/line_chart_internal_utils test', () => {
       expect(actual).toEqual({x: [1, 4], y: [-1, Infinity]});
     });
 
-    it('returns infinities when nothing is visible', () => {
+    it('returns undefined when nothing is visible', () => {
       const actual = computeDataSeriesExtent(
         [
           buildSeries({

@@ -117,8 +117,9 @@ export class LineChartComponent implements AfterViewInit, OnChanges, OnDestroy {
   private isDataUpdated = false;
   private isMetadataUpdated = false;
   private isFixedViewBoxUpdated = false;
-  // Must set the default view box since it is an optional input.
   private isViewBoxOverriden = false;
+  // Must set the default view box since it is an optional input and won't trigger
+  // onChanges.
   private isViewBoxChanged = true;
   private scaleUpdated = true;
 
