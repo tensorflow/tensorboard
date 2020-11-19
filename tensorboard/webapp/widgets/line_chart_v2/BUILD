@@ -1,5 +1,4 @@
-load("@npm_angular_bazel//:index.bzl", "ng_module")
-load("//tensorboard/defs:defs.bzl", "tf_sass_binary", "tf_ts_library")
+load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_sass_binary", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
@@ -10,7 +9,7 @@ tf_sass_binary(
     src = "line_chart_component.scss",
 )
 
-ng_module(
+tf_ng_module(
     name = "line_chart_v2",
     srcs = [
         "line_chart_component.ts",
@@ -39,6 +38,7 @@ tf_ts_library(
     srcs = [
         "line_chart_internal_utils.ts",
     ],
+    visibility = ["//visibility:private"],
     deps = [
         "//tensorboard/webapp/widgets/line_chart_v2/lib:public_types",
         "//tensorboard/webapp/widgets/line_chart_v2/lib:utils",

@@ -38,11 +38,7 @@ import {
   ScaleType,
 } from './lib/public_types';
 import {createScale} from './lib/scale';
-import {
-  areExtentsEqual,
-  isOffscreenCanvasSupported,
-  isWebGl2Supported,
-} from './lib/utils';
+import {areExtentsEqual, isOffscreenCanvasSupported} from './lib/utils';
 import {WorkerChart} from './lib/worker/worker_chart';
 import {
   computeDataSeriesExtent,
@@ -69,8 +65,8 @@ interface DomDimensions {
 export class LineChartComponent implements AfterViewInit, OnChanges, OnDestroy {
   readonly RendererType = RendererType;
 
-  @ViewChild('main', {static: true, read: ElementRef})
-  private main!: ElementRef<HTMLElement>;
+  @ViewChild('seriesView', {static: true, read: ElementRef})
+  private seriesView!: ElementRef<HTMLElement>;
 
   @ViewChild('xAxis', {static: true, read: ElementRef})
   private xAxis!: ElementRef<HTMLElement>;
@@ -82,9 +78,7 @@ export class LineChartComponent implements AfterViewInit, OnChanges, OnDestroy {
   private chartEl?: ElementRef<HTMLCanvasElement | SVGElement>;
 
   @Input()
-  preferredRendererType: RendererType = isWebGl2Supported()
-    ? RendererType.WEBGL
-    : RendererType.SVG;
+  preferredRendererType: RendererType = RendererType.WEBGL;
 
   @Input()
   seriesData!: DataSeries[];
@@ -106,6 +100,9 @@ export class LineChartComponent implements AfterViewInit, OnChanges, OnDestroy {
   @Input()
   tooltipTemplate?: TooltipTemplate;
 
+  readonly Y_GRID_COUNT = 6;
+  readonly X_GRID_COUNT = 10;
+
   xScale: Scale = createScale(this.xScaleType);
   yScale: Scale = createScale(this.xScaleType);
   viewBox: Extent = DEFAULT_EXTENT;
@@ -117,14 +114,13 @@ export class LineChartComponent implements AfterViewInit, OnChanges, OnDestroy {
   };
 
   private lineChart?: Chart;
-  private dataExtent: Extent = DEFAULT_EXTENT;
   private isDataUpdated = false;
   private isMetadataUpdated = false;
-  // Must set the default view extent since it is an optional input.
-  private isViewBoxUpdated = true;
-  private isFixedViewBoxUpdataed = false;
-  private maybeSetViewBoxToDefault = true;
-  private scaleUpdated = false;
+  private isFixedViewBoxUpdated = false;
+  // Must set the default view box since it is an optional input.
+  private isViewBoxOverriden = false;
+  private isViewBoxChanged = true;
+  private scaleUpdated = true;
 
   constructor(private readonly changeDetector: ChangeDetectorRef) {}
 
@@ -146,15 +142,16 @@ export class LineChartComponent implements AfterViewInit, OnChanges, OnDestroy {
       this.isDataUpdated = true;
     }
 
-    if (changes['defaultViewExtent']) {
-      this.isFixedViewBoxUpdataed = true;
+    if (changes['fixedViewBox']) {
+      this.isFixedViewBoxUpdated = true;
     }
 
     if (changes['seriesMetadataMap']) {
       this.isMetadataUpdated = true;
     }
 
-    this.maybeSetViewBoxToDefault = this.shouldResetViewExtent(changes);
+    this.isViewBoxChanged =
+      !this.isViewBoxOverriden && this.shouldUpdateDefaultViewBox(changes);
 
     this.updateLineChart();
   }
@@ -172,29 +169,42 @@ export class LineChartComponent implements AfterViewInit, OnChanges, OnDestroy {
     this.changeDetector.detectChanges();
   }
 
-  private shouldResetViewExtent(changes: SimpleChanges): boolean {
+  /**
+   * Returns true when default view box changes (e.g., due to more data coming in
+   * or more series becoming visible).
+   *
+   * Calculating the dataExtent and updating the viewBox accordingly can be expensive as
+   * (1) we have to iterate over ~1M data points and (2) supporting `ignoreOutlier` will
+   * make us remember 5th and 95th percentile presumably using min and max heaps
+   * (increased memory usage).
+   */
+  private shouldUpdateDefaultViewBox(changes: SimpleChanges): boolean {
     if (changes['xScaleType'] || changes['yScaleType']) {
       return true;
     }
 
-    const prevDefaultExtent = this.getDefaultViewBox();
-    const wasViewExtentChanged = !areExtentsEqual(
-      prevDefaultExtent,
-      this.viewBox
-    );
-
-    // Don't modify view extent if user has manually changed the view box.
-    if (wasViewExtentChanged) {
-      return false;
-    }
-
-    if (changes['seriesData']) {
+    const seriesDataChange = changes['seriesData'];
+    if (seriesDataChange) {
+      // Technically, this is much more convoluted; we should see if the seriesData that
+      // change is visible and was visible so we do not recompute the extent when an
+      // invisible data series change (that did not contribute to the dataExtent
+      // calculation) causes extent computation. However, for now, since seriesData dirty
+      // checking is expensive, too, we simply recompute the default box when seriesData
+      // changes. When this proves to be a hot spot, we can improve the logic in this
+      // method to detect dirtiness to minimize the work.
       return true;
     }
 
     const seriesMetadataChange = changes['seriesMetadataMap'];
     if (seriesMetadataChange) {
       const prevMetadataMap = seriesMetadataChange.previousValue;
+      if (
+        Object.keys(this.seriesMetadataMap).length !==
+        Object.keys(prevMetadataMap ?? {}).length
+      ) {
+        return true;
+      }
+
       for (const [id, metadata] of Object.entries(this.seriesMetadataMap)) {
         const prevMetadata = prevMetadataMap && prevMetadataMap[id];
         if (!prevMetadata || metadata.visible !== prevMetadata.visible) {
@@ -261,8 +271,8 @@ export class LineChartComponent implements AfterViewInit, OnChanges, OnDestroy {
   private readAndUpdateDomDimensions(): void {
     this.domDimensions = {
       main: {
-        width: this.main.nativeElement.clientWidth,
-        height: this.main.nativeElement.clientHeight,
+        width: this.seriesView.nativeElement.clientWidth,
+        height: this.seriesView.nativeElement.clientHeight,
       },
       xAxis: {
         width: this.xAxis.nativeElement.clientWidth,
@@ -297,52 +307,40 @@ export class LineChartComponent implements AfterViewInit, OnChanges, OnDestroy {
       this.lineChart.setData(this.seriesData);
     }
 
-    // There are below conditions in which the viewExtent changes.
-    const viewBoxChange =
-      this.isFixedViewBoxUpdataed ||
-      this.isViewBoxUpdated ||
-      this.maybeSetViewBoxToDefault;
-
-    if (this.isFixedViewBoxUpdataed && this.fixedViewBox) {
+    if (this.isFixedViewBoxUpdated && this.fixedViewBox) {
       this.viewBox = this.fixedViewBox;
-    } else if (this.maybeSetViewBoxToDefault) {
+    } else if (!this.isViewBoxOverriden && this.isViewBoxChanged) {
       const dataExtent = computeDataSeriesExtent(
         this.seriesData,
         this.seriesMetadataMap
       );
-
-      this.dataExtent = {
-        x: dataExtent.x ?? DEFAULT_EXTENT.x,
-        y: dataExtent.y ?? DEFAULT_EXTENT.y,
+      this.viewBox = {
+        x: this.xScale.niceDomain(dataExtent.x ?? DEFAULT_EXTENT.x),
+        y: this.yScale.niceDomain(dataExtent.y ?? DEFAULT_EXTENT.y),
       };
-      this.viewBox = this.getDefaultViewBox();
     }
 
-    if (viewBoxChange) {
-      this.isFixedViewBoxUpdataed = false;
-      this.isViewBoxUpdated = false;
-      this.maybeSetViewBoxToDefault = false;
+    // There are below conditions in which the viewBox changes.
+    const shouldSetViewBox =
+      this.isFixedViewBoxUpdated || this.isViewBoxChanged;
+
+    if (shouldSetViewBox) {
+      this.isFixedViewBoxUpdated = false;
+      this.isViewBoxChanged = false;
       this.lineChart.setViewBox(this.viewBox);
     }
   }
 
   onViewBoxChanged({dataExtent}: {dataExtent: Extent}) {
-    this.isViewBoxUpdated = true;
+    this.isViewBoxOverriden = true;
+    this.isViewBoxChanged = true;
     this.viewBox = dataExtent;
     this.updateLineChart();
   }
 
   onViewBoxReset() {
-    this.maybeSetViewBoxToDefault = true;
+    this.isViewBoxOverriden = false;
+    this.isViewBoxChanged = true;
     this.updateLineChart();
-  }
-
-  private getDefaultViewBox(): Extent {
-    return this.fixedViewBox
-      ? this.fixedViewBox
-      : {
-          x: this.xScale.niceDomain(this.dataExtent.x),
-          y: this.yScale.niceDomain(this.dataExtent.y),
-        };
   }
 }

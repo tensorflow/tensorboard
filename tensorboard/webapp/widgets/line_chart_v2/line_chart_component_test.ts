@@ -75,7 +75,7 @@ class TestableComponent {
   }
 }
 
-describe('line_chart_v2/line_chart test', () => {
+fdescribe('line_chart_v2/line_chart test', () => {
   let resizeSpy: jasmine.Spy;
   let disposeSpy: jasmine.Spy;
   let setXScaleTypeSpy: jasmine.Spy;
@@ -268,6 +268,30 @@ describe('line_chart_v2/line_chart test', () => {
 
       expect(updateDataSpy).toHaveBeenCalledTimes(2);
       // when data changes, we want to recompute the domain and fit it.
+      expect(updateViewBoxSpy).toHaveBeenCalledTimes(2);
+    });
+
+    it('updates viewBox when metadata map updates', () => {
+      const fixture = createComponent({
+        seriesData: [
+          buildSeries({
+            id: 'foo',
+            points: [
+              {x: 0, y: 0},
+              {x: 1, y: -1},
+              {x: 2, y: 1},
+            ],
+          }),
+        ],
+        seriesMetadataMap: {foo: buildMetadata({id: 'foo', visible: true})},
+        yScaleType: ScaleType.LINEAR,
+      });
+      fixture.detectChanges();
+      expect(updateViewBoxSpy).toHaveBeenCalledTimes(1);
+
+      fixture.componentInstance.seriesMetadataMap = {};
+      fixture.detectChanges();
+
       expect(updateViewBoxSpy).toHaveBeenCalledTimes(2);
     });
 

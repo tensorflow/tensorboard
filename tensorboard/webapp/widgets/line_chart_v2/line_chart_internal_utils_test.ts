@@ -196,7 +196,7 @@ describe('line_chart_v2/line_chart_internal_utils test', () => {
       });
     });
 
-    it('returns infinities when dataSeries is empty', () => {
+    it('returns undefined when dataSeries is empty', () => {
       const actual = computeDataSeriesExtent([], {});
 
       expect(actual).toEqual({
@@ -205,7 +205,7 @@ describe('line_chart_v2/line_chart_internal_utils test', () => {
       });
     });
 
-    it('returns infinities when dataSeries is all NaN', () => {
+    it('returns undefined when dataSeries is all NaN', () => {
       const actual = computeDataSeriesExtent(
         [
           buildSeries({

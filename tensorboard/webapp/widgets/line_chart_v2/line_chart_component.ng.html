@@ -23,13 +23,13 @@ limitations under the License.
   #overlayTarget="cdkOverlayOrigin"
   cdkOverlayOrigin
 >
-  <div class="series-view" #main>
+  <div class="series-view" #seriesView>
     <line-chart-grid-view
       [viewExtent]="viewBox"
       [xScale]="xScale"
       [yScale]="yScale"
-      [xGridCount]="10"
-      [yGridCount]="6"
+      [xGridCount]="X_GRID_COUNT"
+      [yGridCount]="Y_GRID_COUNT"
       [domDim]="domDimensions.main"
     ></line-chart-grid-view>
     <svg #chartEl *ngIf="getRendererType() === RendererType.SVG"></svg>
@@ -53,7 +53,7 @@ limitations under the License.
     axis="y"
     [axisExtent]="viewBox.y"
     [scale]="yScale"
-    [gridCount]="6"
+    [gridCount]="Y_GRID_COUNT"
     [domDim]="domDimensions.yAxis"
   ></line-chart-axis>
   <line-chart-axis
@@ -62,7 +62,7 @@ limitations under the License.
     axis="x"
     [axisExtent]="viewBox.x"
     [scale]="xScale"
-    [gridCount]="10"
+    [gridCount]="X_GRID_COUNT"
     [domDim]="domDimensions.xAxis"
   ></line-chart-axis>
 </div>

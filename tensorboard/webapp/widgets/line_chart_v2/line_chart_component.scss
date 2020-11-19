@@ -14,8 +14,7 @@ limitations under the License.
 ==============================================================================*/
 :host {
   contain: strict;
-  height: 100%;
-  width: 100%;
+  display: inline-block;
 }
 
 .container {
