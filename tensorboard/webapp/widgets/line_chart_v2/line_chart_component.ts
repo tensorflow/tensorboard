@@ -38,7 +38,7 @@ import {
   ScaleType,
 } from './lib/public_types';
 import {createScale} from './lib/scale';
-import {areExtentsEqual, isOffscreenCanvasSupported} from './lib/utils';
+import {isOffscreenCanvasSupported} from './lib/utils';
 import {WorkerChart} from './lib/worker/worker_chart';
 import {
   computeDataSeriesExtent,
