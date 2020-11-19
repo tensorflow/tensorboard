@@ -168,10 +168,10 @@ impl RunLoader {
 
         // Open readers for any new files.
         for filename in filenames {
-            use std::collections::btree_map;
+            use std::collections::btree_map::Entry;
             match self.files.entry(filename) {
-                btree_map::Entry::Occupied(_) => {}
-                btree_map::Entry::Vacant(v) => {
+                Entry::Occupied(_) => {}
+                Entry::Vacant(v) => {
                     let event_file = match File::open(v.key()) {
                         Ok(file) => {
                             let reader = EventFileReader::new(BufReader::new(file));
@@ -352,8 +352,12 @@ mod test {
         let tag = Tag("accuracy".to_string());
         write_scalar(&mut f1, &tag, Step(0), WallTime::new(1235.0).unwrap(), 0.25)?;
         write_scalar(&mut f1, &tag, Step(1), WallTime::new(1236.0).unwrap(), 0.50)?;
-        write_scalar(&mut f2, &tag, Step(2), WallTime::new(2346.0).unwrap(), 0.75)?;
-        write_scalar(&mut f2, &tag, Step(3), WallTime::new(2347.0).unwrap(), 1.00)?;
+        write_scalar(&mut f1, &tag, Step(2), WallTime::new(1237.0).unwrap(), 0.75)?;
+        write_scalar(&mut f1, &tag, Step(3), WallTime::new(1238.0).unwrap(), 1.00)?;
+        // preempt!
+        write_scalar(&mut f2, &tag, Step(2), WallTime::new(2346.0).unwrap(), 0.70)?;
+        write_scalar(&mut f2, &tag, Step(3), WallTime::new(2347.0).unwrap(), 0.85)?;
+        write_scalar(&mut f2, &tag, Step(4), WallTime::new(2348.0).unwrap(), 0.90)?;
         f1.into_inner()?.sync_all()?;
         f2.into_inner()?.sync_all()?;
 
@@ -396,10 +400,18 @@ mod test {
         assert_eq!(
             ts.valid_values().collect::<Vec<_>>(),
             vec![
+<<<<<<< HEAD
                 (Step(0), WallTime::new(1235.0).unwrap(), &scalar(0.25)),
                 (Step(1), WallTime::new(1236.0).unwrap(), &scalar(0.50)),
                 (Step(2), WallTime::new(2346.0).unwrap(), &scalar(0.75)),
                 (Step(3), WallTime::new(2347.0).unwrap(), &scalar(1.00)),
+=======
+                (Step(0), WallTime::new(1235.0).unwrap(), 0.25),
+                (Step(1), WallTime::new(1236.0).unwrap(), 0.50),
+                (Step(2), WallTime::new(2346.0).unwrap(), 0.70),
+                (Step(3), WallTime::new(2347.0).unwrap(), 0.85),
+                (Step(4), WallTime::new(2348.0).unwrap(), 0.90),
+>>>>>>> 8b116605a1387f85be42bc62aa734296217afe4c
             ]
         );
 
