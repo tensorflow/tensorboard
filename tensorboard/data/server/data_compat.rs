@@ -15,66 +15,131 @@ limitations under the License.
 
 //! Conversions from legacy formats.
 
+use std::fmt::Debug;
+
 use crate::proto::tensorboard as pb;
-use pb::{summary::value::Value, summary_metadata::PluginData};
+use pb::summary_metadata::PluginData;
 
 pub(crate) const SCALARS_PLUGIN_NAME: &str = "scalars";
+pub(crate) const GRAPHS_PLUGIN_NAME: &str = "graphs";
 
-/// Determines the metadata for a time series given its first event.
+/// The inner contents of a single value from an event.
 ///
-/// This fills in the plugin name and/or data class for legacy summaries for which those values are
-/// implied but not explicitly set. You should only need to call this function on the first event
-/// from each time series; doing so for subsequent events would be wasteful.
+/// This does not include associated step, wall time, tag, or summary metadata information. Step
+/// and wall time are available on every event and just not tracked here. Tag and summary metadata
+/// information are materialized on `Event`s whose `oneof what` is `summary`, but implicit for
+/// graph defs. See [`GraphDefValue::initial_metadata`] and [`SummaryValue::initial_metadata`] for
+/// type-specific helpers to determine summary metadata given appropriate information.
 ///
-/// Rules, in order of decreasing precedence:
+/// This is kept as close as possible to the on-disk event representation, since every record in
+/// the stream is converted into this format.
 ///
-///   - If the initial metadata has a data class, it is taken as authoritative and returned
-///     verbatim.
-///   - If the summary value is of primitive type, an appropriate plugin metadata value is
-///     synthesized: e.g. a `simple_value` becomes metadata for the scalars plugin. Any existing
-///     metadata is ignored.
-///   - If the metadata has a known plugin name, the appropriate data class is added: e.g., a
-///     `"scalars"` metadata gets `DataClass::Scalar`.
-///   - Otherwise, the metadata is returned as is (or an empty metadata value synthesized if the
-///     given option was empty).
-pub fn initial_metadata(
-    md: Option<pb::SummaryMetadata>,
-    value: &Value,
-) -> Box<pb::SummaryMetadata> {
-    fn blank(plugin_name: &str, data_class: pb::DataClass) -> Box<pb::SummaryMetadata> {
-        Box::new(pb::SummaryMetadata {
-            plugin_data: Some(PluginData {
-                plugin_name: plugin_name.to_string(),
-                ..Default::default()
-            }),
-            data_class: data_class.into(),
-            ..Default::default()
-        })
+/// There is no method provided to turn an [`Event`][`pb::Event`] proto into a stream of
+/// `EventValue`s because what needs to be done there depends on the reader state. Specifically,
+/// summary values' metadata needs to be read and converted from legacy formats only for the first
+/// record in each time series, and it would be expensive and wasteful to do so unconditionally.
+/// Thus, this logic is left to the run reader.
+#[derive(Debug)]
+pub enum EventValue {
+    GraphDef(GraphDefValue),
+    Summary(SummaryValue),
+}
+
+/// A value from an `Event` whose `graph_def` field is set.
+///
+/// This contains the raw bytes of a serialized `GraphDef` proto. It implies a fixed tag name and
+/// plugin metadata, but these are not materialized.
+pub struct GraphDefValue(pub Vec<u8>);
+
+/// A value from an `Event` whose `summary` field is set.
+///
+/// This contains a [`summary::value::Value`], which represents the underlying `oneof value` field
+/// (a `simple_value`, `tensor`, etc.). It is not to be confused with a [`summary::Value`], which
+/// is the container around a `summary::value::Value` that also has tag and metadata information.
+///
+/// This field is boxed because `Value`s are large (in turn because [`TensorProto`]s are large,
+/// because each `repeated` field takes up 3 words for its `Vec`).
+///
+/// [`TensorProto`]: `pb::TensorProto`
+/// [`summary::Value`]: `pb::summary::Value`
+/// [`summary::value::Value`]: `pb::summary::value::Value`
+#[derive(Debug)]
+pub struct SummaryValue(pub Box<pb::summary::value::Value>);
+
+impl GraphDefValue {
+    /// Determines the metadata for a time series whose first event is a
+    /// [`GraphDef`][`EventValue::GraphDef`].
+    pub fn initial_metadata() -> Box<pb::SummaryMetadata> {
+        blank(GRAPHS_PLUGIN_NAME, pb::DataClass::BlobSequence)
     }
+}
 
-    match (md, value) {
-        // Any summary metadata that sets its own data class is expected to already be in the right
-        // form.
-        (Some(md), _) if md.data_class != i32::from(pb::DataClass::Unknown) => Box::new(md),
-        (_, Value::SimpleValue(_)) => blank(SCALARS_PLUGIN_NAME, pb::DataClass::Scalar),
-        (Some(mut md), _) => {
-            // Use given metadata, but first set data class based on plugin name, if known.
-            #[allow(clippy::single_match)] // will have more patterns later
-            match md.plugin_data.as_ref().map(|pd| pd.plugin_name.as_str()) {
-                Some(SCALARS_PLUGIN_NAME) => {
-                    md.data_class = pb::DataClass::Scalar.into();
-                }
-                _ => {}
-            };
-            Box::new(md)
+impl SummaryValue {
+    /// Determines the metadata for a time series given its first event.
+    ///
+    /// This fills in the plugin name and/or data class for legacy summaries for which those values
+    /// are implied but not explicitly set. You should only need to call this function on the first
+    /// event from each time series; doing so for subsequent events would be wasteful.
+    ///
+    /// Rules, in order of decreasing precedence:
+    ///
+    ///   - If the initial metadata has a data class, it is taken as authoritative and returned
+    ///     verbatim.
+    ///   - If the summary value is of primitive type, an appropriate plugin metadata value is
+    ///     synthesized: e.g. a `simple_value` becomes metadata for the scalars plugin. Any
+    ///     existing metadata is ignored.
+    ///   - If the metadata has a known plugin name, the appropriate data class is added: e.g., a
+    ///     `"scalars"` metadata gets `DataClass::Scalar`.
+    ///   - Otherwise, the metadata is returned as is (or an empty metadata value synthesized if
+    ///     the given option was empty).
+    pub fn initial_metadata(&self, md: Option<pb::SummaryMetadata>) -> Box<pb::SummaryMetadata> {
+        use pb::summary::value::Value;
+
+        match (md, &*self.0) {
+            // Any summary metadata that sets its own data class is expected to already be in the right
+            // form.
+            (Some(md), _) if md.data_class != i32::from(pb::DataClass::Unknown) => Box::new(md),
+            (_, Value::SimpleValue(_)) => blank(SCALARS_PLUGIN_NAME, pb::DataClass::Scalar),
+            (Some(mut md), _) => {
+                // Use given metadata, but first set data class based on plugin name, if known.
+                #[allow(clippy::single_match)] // will have more patterns later
+                match md.plugin_data.as_ref().map(|pd| pd.plugin_name.as_str()) {
+                    Some(SCALARS_PLUGIN_NAME) => {
+                        md.data_class = pb::DataClass::Scalar.into();
+                    }
+                    _ => {}
+                };
+                Box::new(md)
+            }
+            (None, _) => Box::new(pb::SummaryMetadata::default()),
         }
-        (None, _) => Box::new(pb::SummaryMetadata::default()),
     }
+}
+
+impl Debug for GraphDefValue {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_tuple("GraphDefValue")
+            .field(&format_args!("<{} bytes>", self.0.len()))
+            .finish()
+    }
+}
+
+/// Creates a summary metadata value with plugin name and data class, but no other contents.
+fn blank(plugin_name: &str, data_class: pb::DataClass) -> Box<pb::SummaryMetadata> {
+    Box::new(pb::SummaryMetadata {
+        plugin_data: Some(PluginData {
+            plugin_name: plugin_name.to_string(),
+            ..Default::default()
+        }),
+        data_class: data_class.into(),
+        ..Default::default()
+    })
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use pb::summary::value::Value;
 
     fn tensor_shape(dims: &[i64]) -> pb::TensorShapeProto {
         pb::TensorShapeProto {
@@ -102,8 +167,8 @@ mod tests {
                 }),
                 ..Default::default()
             };
-            let v = Value::SimpleValue(0.125);
-            let result = initial_metadata(Some(md), &v);
+            let v = SummaryValue(Box::new(Value::SimpleValue(0.125)));
+            let result = v.initial_metadata(Some(md));
 
             assert_eq!(
                 *result,
@@ -128,13 +193,13 @@ mod tests {
                 }),
                 ..Default::default()
             };
-            let v = Value::Tensor(pb::TensorProto {
+            let v = SummaryValue(Box::new(Value::Tensor(pb::TensorProto {
                 dtype: pb::DataType::DtFloat.into(),
                 tensor_shape: Some(tensor_shape(&[])),
                 float_val: vec![0.125],
                 ..Default::default()
-            });
-            let result = initial_metadata(Some(md), &v);
+            })));
+            let result = v.initial_metadata(Some(md));
 
             assert_eq!(
                 *result,
@@ -148,6 +213,17 @@ mod tests {
                     ..Default::default()
                 }
             );
+        }
+    }
+
+    mod graphs {
+        use super::*;
+
+        #[test]
+        fn test() {
+            let md = GraphDefValue::initial_metadata();
+            assert_eq!(&md.plugin_data.unwrap().plugin_name, GRAPHS_PLUGIN_NAME);
+            assert_eq!(md.data_class, pb::DataClass::BlobSequence.into());
         }
     }
 
@@ -166,11 +242,9 @@ mod tests {
                 ..Default::default()
             };
             // Even with a `SimpleValue`, dataclass-annotated metadata passes through.
-            let v = Value::SimpleValue(0.125);
-            let expected = md.clone();
-            let result = initial_metadata(Some(md), &v);
-
-            assert_eq!(*result, expected);
+            let v = SummaryValue(Box::new(Value::SimpleValue(0.125)));
+            let result = v.initial_metadata(Some(md.clone()));
+            assert_eq!(*result, md);
         }
 
         #[test]
@@ -183,17 +257,15 @@ mod tests {
                 }),
                 ..Default::default()
             };
-            let v = Value::Tensor(pb::TensorProto::default());
-            let expected = md.clone();
-            let result = initial_metadata(Some(md), &v);
-
-            assert_eq!(*result, expected);
+            let v = SummaryValue(Box::new(Value::Tensor(pb::TensorProto::default())));
+            let result = v.initial_metadata(Some(md.clone()));
+            assert_eq!(*result, md);
         }
 
         #[test]
         fn test_empty() {
-            let v = Value::Tensor(pb::TensorProto::default());
-            let result = initial_metadata(None, &v);
+            let v = SummaryValue(Box::new(Value::Tensor(pb::TensorProto::default())));
+            let result = v.initial_metadata(None);
             assert_eq!(*result, pb::SummaryMetadata::default());
         }
     }
