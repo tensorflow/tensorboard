@@ -15,8 +15,10 @@ limitations under the License.
 
 //! Conversions from legacy formats.
 
+use byteorder::{ByteOrder, LittleEndian};
 use std::fmt::Debug;
 
+use crate::commit::{DataLoss, ScalarValue};
 use crate::proto::tensorboard as pb;
 use pb::summary_metadata::PluginData;
 
@@ -43,6 +45,54 @@ pub(crate) const GRAPHS_PLUGIN_NAME: &str = "graphs";
 pub enum EventValue {
     GraphDef(GraphDefValue),
     Summary(SummaryValue),
+}
+
+impl EventValue {
+    /// Consumes this event value and enriches it into a scalar.
+    ///
+    /// This supports `simple_value` (TF 1.x) summaries as well as non-empty tensors of type
+    /// `DT_FLOAT` or `DT_DOUBLE`. If a tensor has more than one item, the first will be taken.
+    /// Returns `DataLoss` if the value is a `GraphDef` or an unsupported summary.
+    pub fn into_scalar(self) -> Result<ScalarValue, DataLoss> {
+        let value_box = match self {
+            EventValue::GraphDef(_) => return Err(DataLoss),
+            EventValue::Summary(SummaryValue(v)) => v,
+        };
+        use pb::summary::value::Value;
+        match *value_box {
+            Value::SimpleValue(f) => Ok(ScalarValue(f64::from(f))),
+            Value::Tensor(tp) => {
+                let tp: pb::TensorProto = tp; // helps rust-analyzer type inference
+                use pb::DataType;
+                match DataType::from_i32(tp.dtype) {
+                    Some(DataType::DtFloat) => {
+                        // Could have data in either `float_val` or `tensor_content`.
+                        if let Some(f) = tp.float_val.first() {
+                            Ok(ScalarValue(f64::from(*f)))
+                        } else if tp.tensor_content.len() >= std::mem::size_of::<f32>() {
+                            let f: f32 = LittleEndian::read_f32(&tp.tensor_content);
+                            Ok(ScalarValue(f64::from(f)))
+                        } else {
+                            Err(DataLoss)
+                        }
+                    }
+                    Some(DataType::DtDouble) => {
+                        // Could have data in either `double_val` or `tensor_content`.
+                        if let Some(f) = tp.double_val.first() {
+                            Ok(ScalarValue(*f))
+                        } else if tp.tensor_content.len() >= std::mem::size_of::<f64>() {
+                            let f: f64 = LittleEndian::read_f64(&tp.tensor_content);
+                            Ok(ScalarValue(f))
+                        } else {
+                            Err(DataLoss)
+                        }
+                    }
+                    _ => Err(DataLoss),
+                }
+            }
+            _ => Err(DataLoss),
+        }
+    }
 }
 
 /// A value from an `Event` whose `graph_def` field is set.
@@ -158,7 +208,7 @@ mod tests {
         use super::*;
 
         #[test]
-        fn test_tf1x_simple_value() {
+        fn test_metadata_tf1x_simple_value() {
             let md = pb::SummaryMetadata {
                 plugin_data: Some(PluginData {
                     plugin_name: "ignored_plugin".to_string(),
@@ -184,7 +234,7 @@ mod tests {
         }
 
         #[test]
-        fn test_tf2x_scalar_tensor_without_dataclass() {
+        fn test_metadata_tf2x_scalar_tensor_without_dataclass() {
             let md = pb::SummaryMetadata {
                 plugin_data: Some(PluginData {
                     plugin_name: SCALARS_PLUGIN_NAME.to_string(),
@@ -213,6 +263,180 @@ mod tests {
                     ..Default::default()
                 }
             );
+        }
+
+        #[test]
+        fn test_enrich_simple_value() {
+            let v = EventValue::Summary(SummaryValue(Box::new(Value::SimpleValue(0.125))));
+            assert_eq!(v.into_scalar(), Ok(ScalarValue(0.125)));
+        }
+
+        #[test]
+        fn test_enrich_valid_tensors() {
+            let tensors = vec![
+                pb::TensorProto {
+                    dtype: pb::DataType::DtFloat.into(),
+                    tensor_shape: Some(tensor_shape(&[])),
+                    float_val: vec![0.125],
+                    ..Default::default()
+                },
+                pb::TensorProto {
+                    dtype: pb::DataType::DtDouble.into(),
+                    tensor_shape: Some(tensor_shape(&[])),
+                    double_val: vec![0.125],
+                    ..Default::default()
+                },
+                pb::TensorProto {
+                    dtype: pb::DataType::DtFloat.into(),
+                    tensor_shape: Some(tensor_shape(&[])),
+                    tensor_content: f32::to_le_bytes(0.125).to_vec(),
+                    ..Default::default()
+                },
+                pb::TensorProto {
+                    dtype: pb::DataType::DtDouble.into(),
+                    tensor_shape: Some(tensor_shape(&[])),
+                    tensor_content: f64::to_le_bytes(0.125).to_vec(),
+                    ..Default::default()
+                },
+            ];
+            for tensor in tensors {
+                let v = EventValue::Summary(SummaryValue(Box::new(Value::Tensor(tensor.clone()))));
+                let expected = Ok(ScalarValue(0.125));
+                let actual = v.into_scalar();
+                assert_eq!(
+                    actual, expected,
+                    "into_scalar for {:?}: got {:?}, expected {:?}",
+                    &tensor, actual, expected
+                )
+            }
+        }
+
+        #[test]
+        fn test_enrich_short_tensors() {
+            let tensors = vec![
+                pb::TensorProto {
+                    dtype: pb::DataType::DtFloat.into(),
+                    tensor_shape: Some(tensor_shape(&[])),
+                    float_val: vec![],
+                    ..Default::default()
+                },
+                pb::TensorProto {
+                    dtype: pb::DataType::DtDouble.into(),
+                    tensor_shape: Some(tensor_shape(&[])),
+                    double_val: vec![],
+                    ..Default::default()
+                },
+                pb::TensorProto {
+                    dtype: pb::DataType::DtFloat.into(),
+                    tensor_shape: Some(tensor_shape(&[])),
+                    tensor_content: f32::to_le_bytes(0.125)[..2].to_vec(),
+                    ..Default::default()
+                },
+                pb::TensorProto {
+                    dtype: pb::DataType::DtDouble.into(),
+                    tensor_shape: Some(tensor_shape(&[])),
+                    tensor_content: f64::to_le_bytes(0.125)[..6].to_vec(),
+                    ..Default::default()
+                },
+            ];
+            for tensor in tensors {
+                let v = EventValue::Summary(SummaryValue(Box::new(Value::Tensor(tensor.clone()))));
+                let expected = Err(DataLoss);
+                let actual = v.into_scalar();
+                assert_eq!(
+                    actual, expected,
+                    "into_scalar for {:?}: got {:?}, expected {:?}",
+                    &tensor, actual, expected
+                )
+            }
+        }
+
+        #[test]
+        fn test_enrich_long_tensors() {
+            let tensors = vec![
+                pb::TensorProto {
+                    dtype: pb::DataType::DtFloat.into(),
+                    tensor_shape: Some(tensor_shape(&[])),
+                    float_val: vec![0.125, 9.99],
+                    ..Default::default()
+                },
+                pb::TensorProto {
+                    dtype: pb::DataType::DtDouble.into(),
+                    tensor_shape: Some(tensor_shape(&[])),
+                    double_val: vec![0.125, 9.99],
+                    ..Default::default()
+                },
+                pb::TensorProto {
+                    dtype: pb::DataType::DtFloat.into(),
+                    tensor_shape: Some(tensor_shape(&[])),
+                    tensor_content: [f32::to_le_bytes(0.125), f32::to_le_bytes(9.99)]
+                        .iter()
+                        .flatten()
+                        .copied()
+                        .collect(),
+                    ..Default::default()
+                },
+                pb::TensorProto {
+                    dtype: pb::DataType::DtDouble.into(),
+                    tensor_shape: Some(tensor_shape(&[])),
+                    tensor_content: [f64::to_le_bytes(0.125), f64::to_le_bytes(9.99)]
+                        .iter()
+                        .flatten()
+                        .copied()
+                        .collect(),
+                    ..Default::default()
+                },
+            ];
+            for tensor in tensors {
+                let v = EventValue::Summary(SummaryValue(Box::new(Value::Tensor(tensor.clone()))));
+                let expected = Ok(ScalarValue(0.125));
+                let actual = v.into_scalar();
+                assert_eq!(
+                    actual, expected,
+                    "into_scalar for {:?}: got {:?}, expected {:?}",
+                    &tensor, actual, expected
+                )
+            }
+        }
+
+        #[test]
+        fn test_enrich_non_float_tensors() {
+            let tensors = vec![
+                pb::TensorProto {
+                    dtype: pb::DataType::DtString.into(),
+                    string_val: vec![b"abc".to_vec()],
+                    ..Default::default()
+                },
+                pb::TensorProto {
+                    dtype: pb::DataType::DtInt32.into(),
+                    int_val: vec![123],
+                    ..Default::default()
+                },
+                pb::TensorProto::default(),
+            ];
+            for tensor in tensors {
+                let v = EventValue::Summary(SummaryValue(Box::new(Value::Tensor(tensor.clone()))));
+                let expected = Err(DataLoss);
+                let actual = v.into_scalar();
+                assert_eq!(
+                    actual, expected,
+                    "into_scalar for {:?}: got {:?}, expected {:?}",
+                    &tensor, actual, expected
+                )
+            }
+        }
+
+        #[test]
+        fn test_enrich_graph_def() {
+            let v = EventValue::GraphDef(GraphDefValue(vec![1, 2, 3, 4]));
+            assert_eq!(v.into_scalar(), Err(DataLoss));
+        }
+
+        #[test]
+        fn test_enrich_non_scalar_summary_values() {
+            let image_value = Value::Image(pb::summary::Image::default());
+            let v = EventValue::Summary(SummaryValue(Box::new(image_value)));
+            assert_eq!(v.into_scalar(), Err(DataLoss));
         }
     }
 
