@@ -763,6 +763,16 @@ def raze_fetch_remote_crates():
 
     maybe(
         http_archive,
+        name = "raze__same_file__1_0_6",
+        url = "https://crates.io/api/v1/crates/same-file/1.0.6/download",
+        type = "tar.gz",
+        sha256 = "93fc1dc3aaa9bfed95e02e6eadabb4baf7e3078b0bd1b4d7b6b0b68378900502",
+        strip_prefix = "same-file-1.0.6",
+        build_file = Label("//third_party/rust/remote:BUILD.same-file-1.0.6.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "raze__slab__0_4_2",
         url = "https://crates.io/api/v1/crates/slab/0.4.2/download",
         type = "tar.gz",
@@ -1139,6 +1149,16 @@ def raze_fetch_remote_crates():
         sha256 = "b5a972e5669d67ba988ce3dc826706fb0a8b01471c088cb0b6110b805cc36aed",
         strip_prefix = "version_check-0.9.2",
         build_file = Label("//third_party/rust/remote:BUILD.version_check-0.9.2.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "raze__walkdir__2_3_1",
+        url = "https://crates.io/api/v1/crates/walkdir/2.3.1/download",
+        type = "tar.gz",
+        sha256 = "777182bc735b6424e1a57516d35ed72cb8019d85c8c9bf536dccb3445c1a2f7d",
+        strip_prefix = "walkdir-2.3.1",
+        build_file = Label("//third_party/rust/remote:BUILD.walkdir-2.3.1.bazel"),
     )
 
     maybe(
