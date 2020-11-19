@@ -17,7 +17,7 @@ tf_ts_library(
     srcs = [
         "public_types.ts",
     ],
-    visibility = ["//tensorboard:internal"],
+    visibility = ["//tensorboard/webapp/widgets/line_chart_v2:__subpackages__"],
     deps = [
         ":chart_types",
         ":internal_types",
