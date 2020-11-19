@@ -63,3 +63,36 @@ py_test(
         "//tensorboard:test",
     ],
 )
+
+py_library(
+    name = "grpc_provider",
+    srcs = ["grpc_provider.py"],
+    srcs_version = "PY3",
+    deps = [
+        ":provider",
+        "//tensorboard:errors",
+        "//tensorboard:expect_grpc_installed",
+        "//tensorboard/data/proto:protos_all_py_pb2",
+        "//tensorboard/data/proto:protos_all_py_pb2_grpc",
+        "//tensorboard/util:timing",
+    ],
+)
+
+py_test(
+    name = "grpc_provider_test",
+    size = "small",
+    srcs = ["grpc_provider_test.py"],
+    srcs_version = "PY3",
+    tags = ["support_notf"],
+    deps = [
+        ":grpc_provider",
+        ":provider",
+        "//tensorboard:context",
+        "//tensorboard:errors",
+        "//tensorboard:expect_grpc_installed",
+        "//tensorboard:expect_grpc_testing_installed",
+        "//tensorboard:test",
+        "//tensorboard/data/proto:protos_all_py_pb2",
+        "//tensorboard/data/proto:protos_all_py_pb2_grpc",
+    ],
+)
