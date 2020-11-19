@@ -29,3 +29,5 @@ export abstract class TBFeatureFlagDataSource {
 }
 
 export const EXPERIMENTAL_PLUGIN_QUERY_PARAM_KEY = 'experimentalPlugin';
+
+export const GPU_LINE_CHART_QUERY_PARAM_KEY = 'fastChart';

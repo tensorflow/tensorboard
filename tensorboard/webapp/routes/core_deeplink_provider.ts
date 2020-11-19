@@ -27,7 +27,10 @@ import {
 } from '../metrics/data_source/types';
 import {CardUniqueInfo} from '../metrics/types';
 import * as selectors from '../selectors';
-import {EXPERIMENTAL_PLUGIN_QUERY_PARAM_KEY} from '../webapp_data_source/tb_feature_flag_data_source_types';
+import {
+  EXPERIMENTAL_PLUGIN_QUERY_PARAM_KEY,
+  GPU_LINE_CHART_QUERY_PARAM_KEY,
+} from '../webapp_data_source/tb_feature_flag_data_source_types';
 import {DeserializedState} from './core_deeplink_provider_types';
 
 /**
@@ -70,14 +73,24 @@ export class CoreDeepLinkProvider extends DeepLinkProvider {
     );
   }
 
-  private getExperimentalPluginList(
+  private getFeatureFlagStates(
     store: Store<State>
   ): Observable<SerializableQueryParams> {
-    return store.select(selectors.getEnabledExperimentalPlugins).pipe(
-      map((experimentalPlugins) => {
-        return experimentalPlugins.map((pluginId) => {
+    return combineLatest([
+      store.select(selectors.getEnabledExperimentalPlugins),
+      store.select(selectors.getIsGpuChartEnabled),
+    ]).pipe(
+      map(([experimentalPlugins, isGpuChartEnabled]) => {
+        const queryParams = experimentalPlugins.map((pluginId) => {
           return {key: EXPERIMENTAL_PLUGIN_QUERY_PARAM_KEY, value: pluginId};
         });
+        if (isGpuChartEnabled) {
+          queryParams.push({
+            key: GPU_LINE_CHART_QUERY_PARAM_KEY,
+            value: 'true',
+          });
+        }
+        return queryParams;
       })
     );
   }
@@ -87,7 +100,7 @@ export class CoreDeepLinkProvider extends DeepLinkProvider {
   ): Observable<SerializableQueryParams> {
     return combineLatest([
       this.getMetricsPinnedCards(store),
-      this.getExperimentalPluginList(store),
+      this.getFeatureFlagStates(store),
     ]).pipe(
       map((queryParamList) => {
         return queryParamList.flat();
