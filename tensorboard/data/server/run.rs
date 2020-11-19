@@ -396,22 +396,15 @@ mod test {
         );
 
         // Points should be as expected (no downsampling at these sizes).
-        let scalar = commit::ScalarValue;
+        let scalar = |f: f32| commit::ScalarValue(f64::from(f));
         assert_eq!(
             ts.valid_values().collect::<Vec<_>>(),
             vec![
-<<<<<<< HEAD
                 (Step(0), WallTime::new(1235.0).unwrap(), &scalar(0.25)),
                 (Step(1), WallTime::new(1236.0).unwrap(), &scalar(0.50)),
-                (Step(2), WallTime::new(2346.0).unwrap(), &scalar(0.75)),
-                (Step(3), WallTime::new(2347.0).unwrap(), &scalar(1.00)),
-=======
-                (Step(0), WallTime::new(1235.0).unwrap(), 0.25),
-                (Step(1), WallTime::new(1236.0).unwrap(), 0.50),
-                (Step(2), WallTime::new(2346.0).unwrap(), 0.70),
-                (Step(3), WallTime::new(2347.0).unwrap(), 0.85),
-                (Step(4), WallTime::new(2348.0).unwrap(), 0.90),
->>>>>>> 8b116605a1387f85be42bc62aa734296217afe4c
+                (Step(2), WallTime::new(2346.0).unwrap(), &scalar(0.70)),
+                (Step(3), WallTime::new(2347.0).unwrap(), &scalar(0.85)),
+                (Step(4), WallTime::new(2348.0).unwrap(), &scalar(0.90)),
             ]
         );
 
