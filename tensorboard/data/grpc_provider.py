@@ -103,7 +103,7 @@ class GrpcDataProvider(provider.DataProvider):
         experiment_id,
         plugin_name,
         downsample=None,
-        run_tag_filter=None,
+        run_tag_filter=None
     ):
         with timing.log_latency("build request"):
             req = data_provider_pb2.ReadScalarsRequest()
