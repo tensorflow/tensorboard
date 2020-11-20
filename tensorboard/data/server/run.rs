@@ -245,40 +245,9 @@ impl Default for RunLoader {
 mod test {
     use super::*;
     use std::fs::File;
-    use std::io::{BufWriter, Write};
+    use std::io::BufWriter;
 
-    /// Writes an event to the given writer, in TFRecord form.
-    fn write_event<W: Write>(writer: W, event: &pb::Event) -> std::io::Result<()> {
-        use prost::Message;
-        let mut data = Vec::new();
-        event.encode(&mut data)?;
-        crate::tf_record::TfRecord::from_data(data).write(writer)?;
-        Ok(())
-    }
-
-    /// Writes a TF 1.x scalar event (`simple_value`) to the given writer.
-    fn write_scalar<W: Write>(
-        writer: W,
-        tag: &Tag,
-        step: Step,
-        wt: WallTime,
-        value: f32,
-    ) -> std::io::Result<()> {
-        let event = pb::Event {
-            step: step.0,
-            wall_time: wt.into(),
-            what: Some(pb::event::What::Summary(pb::Summary {
-                value: vec![pb::summary::Value {
-                    tag: tag.0.clone(),
-                    value: Some(pb::summary::value::Value::SimpleValue(value)),
-                    ..Default::default()
-                }],
-                ..Default::default()
-            })),
-            ..Default::default()
-        };
-        write_event(writer, &event)
-    }
+    use crate::writer::SummaryWriteExt;
 
     #[test]
     fn test() -> Result<(), Box<dyn std::error::Error>> {
@@ -295,19 +264,20 @@ mod test {
                 what: Some(pb::event::What::FileVersion("brain.Event:2".to_string())),
                 ..Default::default()
             };
-            write_event(f, &file_version)?;
+            f.write_event(&file_version)?;
         }
 
         // Write some data points across both files.
         let tag = Tag("accuracy".to_string());
-        write_scalar(&mut f1, &tag, Step(0), WallTime::new(1235.0).unwrap(), 0.25)?;
-        write_scalar(&mut f1, &tag, Step(1), WallTime::new(1236.0).unwrap(), 0.50)?;
-        write_scalar(&mut f1, &tag, Step(2), WallTime::new(1237.0).unwrap(), 0.75)?;
-        write_scalar(&mut f1, &tag, Step(3), WallTime::new(1238.0).unwrap(), 1.00)?;
+        f1.write_scalar(&tag, Step(0), WallTime::new(1235.0).unwrap(), 0.25)?;
+        f1.write_scalar(&tag, Step(1), WallTime::new(1236.0).unwrap(), 0.50)?;
+        f1.write_scalar(&tag, Step(2), WallTime::new(1237.0).unwrap(), 0.75)?;
+        f1.write_scalar(&tag, Step(3), WallTime::new(1238.0).unwrap(), 1.00)?;
         // preempt!
-        write_scalar(&mut f2, &tag, Step(2), WallTime::new(2346.0).unwrap(), 0.70)?;
-        write_scalar(&mut f2, &tag, Step(3), WallTime::new(2347.0).unwrap(), 0.85)?;
-        write_scalar(&mut f2, &tag, Step(4), WallTime::new(2348.0).unwrap(), 0.90)?;
+        f2.write_scalar(&tag, Step(2), WallTime::new(2346.0).unwrap(), 0.70)?;
+        f2.write_scalar(&tag, Step(3), WallTime::new(2347.0).unwrap(), 0.85)?;
+        f2.write_scalar(&tag, Step(4), WallTime::new(2348.0).unwrap(), 0.90)?;
+        // flush, so that the data's there when we read it
         f1.into_inner()?.sync_all()?;
         f2.into_inner()?.sync_all()?;
 
