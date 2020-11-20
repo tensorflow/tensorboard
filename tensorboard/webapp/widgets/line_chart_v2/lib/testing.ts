@@ -15,16 +15,28 @@ limitations under the License.
 
 import {DataSeries, DataSeriesMetadata} from './internal_types';
 
+export function buildSeries(override: Partial<DataSeries>): DataSeries {
+  return {
+    id: 'foo',
+    points: [
+      {x: 1, y: 0},
+      {x: 2, y: -1},
+      {x: 2, y: 1},
+    ],
+    ...override,
+  };
+}
+
 export function createSeries(
   id: string,
   pointFn: (index: number) => number = Math.sin
 ): DataSeries {
-  return {
+  return buildSeries({
     id,
-    points: new Array(10).fill({x: 0, y: 0}).map((data, index) => {
+    points: [...new Array(10)].map((_, index) => {
       return {x: index, y: pointFn(index)};
     }),
-  };
+  });
 }
 
 export function buildMetadata(metadata: Partial<DataSeriesMetadata>) {
