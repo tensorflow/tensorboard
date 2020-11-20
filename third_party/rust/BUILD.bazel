@@ -146,3 +146,12 @@ alias(
         "manual",
     ],
 )
+
+alias(
+    name = "walkdir",
+    actual = "@raze__walkdir__2_3_1//:walkdir",
+    tags = [
+        "cargo-raze",
+        "manual",
+    ],
+)

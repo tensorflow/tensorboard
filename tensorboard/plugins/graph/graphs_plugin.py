@@ -243,12 +243,12 @@ class GraphsPlugin(base_plugin.TBPlugin):
             run_metadata = config_pb2.RunMetadata.FromString(
                 tensor_events[0].tensor_proto.string_val[0]
             )
-            graph = graph_pb2.GraphDef()
-
-            for func_graph in run_metadata.function_graphs:
-                graph_util.combine_graph_defs(
-                    graph, func_graph.pre_optimization_graph
-                )
+            graph = graph_util.merge_graph_defs(
+                [
+                    func_graph.pre_optimization_graph
+                    for func_graph in run_metadata.function_graphs
+                ]
+            )
         else:
             graph = self._multiplexer.Graph(run)
 
