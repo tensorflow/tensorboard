@@ -8,6 +8,8 @@ import "tensorboard/compat/proto/tensor.proto";
 option go_package = "github.com/tensorflow/tensorboard/tensorboard/data/proto/data_provider_proto";
 
 service TensorBoardDataProvider {
+  // List plugins that have data for an experiment.
+  rpc ListPlugins(ListPluginsRequest) returns (ListPluginsResponse) {}
   // List runs within an experiment.
   rpc ListRuns(ListRunsRequest) returns (ListRunsResponse) {}
   // List metadata about scalar time series.
@@ -58,6 +60,22 @@ message TagFilter {
 message Downsample {
   // Maximum number of points to return. Must be non-negative. Zero means zero.
   int64 num_points = 1;
+}
+
+message ListPluginsRequest {
+  // ID of experiment in which to query data.
+  string experiment_id = 1;
+}
+
+message ListPluginsResponse {
+  // List of active plugins: i.e., plugins that have data.
+  repeated Plugin plugins = 1;
+}
+
+message Plugin {
+  // Plugin name, as listed in the `PluginData.plugin_name` field of a
+  // `SummaryMetadata` value.
+  string name = 1;
 }
 
 message ListRunsRequest {
