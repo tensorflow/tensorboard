@@ -46,7 +46,7 @@ tf_ts_library(
     ],
 )
 
-ng_module(
+tf_ng_module(
     name = "line_chart_demo",
     srcs = [
         "demo_main.ts",
