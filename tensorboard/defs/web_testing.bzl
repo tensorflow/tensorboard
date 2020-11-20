@@ -73,7 +73,7 @@ def tf_web_test(name, web_library, src, **kwargs):
         srcs = [python_stub_output],
         browsers = ["//tensorboard/functionaltests/browsers:chromium"],
         data = [web_library],
-        srcs_version = "PY2AND3",
+        srcs_version = "PY3",
         deps = [
             "@io_bazel_rules_webtesting//testing/web",
             "@org_pythonhosted_urllib3//:org_pythonhosted_urllib3",

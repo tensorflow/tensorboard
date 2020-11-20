@@ -10,7 +10,7 @@ py_library(
     srcs = [
         "__init__.py",
     ],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     visibility = ["//tensorboard:internal"],
     deps = [
         ":summary_v1",
@@ -23,7 +23,7 @@ py_library(
     srcs = [
         "v1.py",
     ],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/plugins/audio:summary",
@@ -41,7 +41,7 @@ py_library(
     srcs = [
         "v2.py",
     ],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/plugins/audio:summary_v2",
@@ -56,7 +56,7 @@ py_test(
     name = "summary_test",
     size = "small",
     srcs = ["summary_test.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     tags = ["support_notf"],
     deps = [
         ":summary",
@@ -79,7 +79,7 @@ py_library(
         "_tf/__init__.py",
         "_tf/summary/__init__.py",
     ],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     visibility = [
         "//tensorboard:internal",
     ],
@@ -93,7 +93,7 @@ py_test(
     name = "tf_summary_test",
     size = "small",
     srcs = ["tf_summary_test.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         ":tf_summary",
         "//tensorboard:expect_tensorflow_installed",

@@ -9,7 +9,7 @@ licenses(["notice"])
 py_library(
     name = "graphs_plugin",
     srcs = ["graphs_plugin.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         ":graph_util",
         ":keras_util",
@@ -31,7 +31,7 @@ py_test(
     name = "graphs_plugin_test",
     size = "small",
     srcs = ["graphs_plugin_test.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [":graphs_plugin_test_lib"],
 )
 
@@ -39,7 +39,7 @@ py_library(
     name = "graphs_plugin_test_lib",
     testonly = True,
     srcs = ["graphs_plugin_test.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         ":graphs_plugin",
         "//tensorboard:context",
@@ -60,7 +60,7 @@ py_test(
     size = "small",
     srcs = ["graphs_plugin_v2_test.py"],
     main = "graphs_plugin_v2_test.py",
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         ":graphs_plugin",
         ":graphs_plugin_test_lib",
@@ -77,7 +77,7 @@ py_test(
     size = "small",
     srcs = ["graphs_plugin_test.py"],
     main = "graphs_plugin_test.py",
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         ":graphs_plugin",
         "//tensorboard:expect_tensorflow_installed",
@@ -96,7 +96,7 @@ py_test(
 py_library(
     name = "keras_util",
     srcs = ["keras_util.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     visibility = ["//visibility:private"],
     deps = [
         "//tensorboard/compat/proto:protos_all_py_pb2",
@@ -109,7 +109,7 @@ py_test(
     size = "small",
     srcs = ["keras_util_test.py"],
     main = "keras_util_test.py",
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         ":keras_util",
         "//tensorboard:expect_tensorflow_installed",
@@ -121,7 +121,7 @@ py_test(
 py_library(
     name = "graph_util",
     srcs = ["graph_util.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     visibility = ["//visibility:private"],
     deps = [
         "//tensorboard/compat/proto:protos_all_py_pb2",
@@ -133,7 +133,7 @@ py_test(
     size = "small",
     srcs = ["graph_util_test.py"],
     main = "graph_util_test.py",
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         ":graph_util",
         "//tensorboard:expect_tensorflow_installed",
@@ -145,5 +145,5 @@ py_test(
 py_library(
     name = "metadata",
     srcs = ["metadata.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
 )
