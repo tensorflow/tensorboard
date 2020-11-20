@@ -17,8 +17,7 @@ limitations under the License.
 
 use futures_core::Stream;
 use std::pin::Pin;
-use tonic::Status;
-use tonic::{transport::Server, Request, Response};
+use tonic::{transport::Server, Request, Response, Status};
 
 use rustboard_core::proto::tensorboard::data::{
     self,

@@ -34,6 +34,7 @@ rand_chacha = "0.2.2"
 thiserror = "1.0.21"
 tokio = { version = "0.2.2", features = ["macros"] }
 tonic = "0.3.1"
+walkdir = "2.3.1"
 
 [dev-dependencies]
 prost-build = "0.6.1"

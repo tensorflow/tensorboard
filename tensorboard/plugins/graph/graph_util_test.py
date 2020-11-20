@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-import six
 from google.protobuf import text_format
 import tensorflow as tf
 
@@ -21,35 +20,43 @@ from tensorboard.plugins.graph import graph_util
 
 
 class GraphUtilTest(tf.test.TestCase):
-    def test_combine_graph_defs(self):
+    def test_merge_graph_defs(self):
         expected_proto = """
             node {
-              name: "X"
+              name: "graph_1/X"
               op: "Input"
             }
             node {
-              name: "W"
+              name: "graph_1/W"
               op: "Input"
             }
             node {
-              name: "Y"
+              name: "graph_1/Y"
               op: "MatMul"
-              input: "X"
-              input: "W"
+              input: "graph_1/X"
+              input: "graph_1/W"
             }
             node {
-              name: "A"
+              name: "graph_2/A"
               op: "Input"
             }
             node {
-              name: "B"
+              name: "graph_2/B"
               op: "Input"
             }
             node {
-              name: "C"
+              name: "graph_2/C"
               op: "MatMul"
-              input: "A"
-              input: "B"
+              input: "graph_2/A"
+              input: "graph_2/B"
+            }
+            node {
+              name: "graph_3/A"
+              op: "Input"
+            }
+            node {
+              name: "graph_3/B"
+              op: "Input"
             }
             versions {
               producer: 21
@@ -104,30 +111,60 @@ class GraphUtilTest(tf.test.TestCase):
             graph_def_b,
         )
 
-        self.assertProtoEquals(
-            expected_proto,
-            graph_util.combine_graph_defs(graph_def_a, graph_def_b),
+        graph_def_c = GraphDef()
+        text_format.Merge(
+            """
+                node {
+                  name: "A"
+                  op: "Input"
+                }
+                node {
+                  name: "B"
+                  op: "Input"
+                }
+                versions {
+                  producer: 21
+                }
+            """,
+            graph_def_c,
         )
 
-    def test_combine_graph_defs_name_collided_but_same_content(self):
+        self.assertProtoEquals(
+            expected_proto,
+            graph_util.merge_graph_defs(
+                [graph_def_a, graph_def_b, graph_def_c]
+            ),
+        )
+
+    def test_merge_graph_defs_name_collided_with_same_content(self):
         expected_proto = """
             node {
-              name: "X"
+              name: "graph_1/X"
               op: "Input"
             }
             node {
-              name: "W"
+              name: "graph_1/W"
               op: "Input"
             }
             node {
-              name: "Y"
+              name: "graph_1/Y"
               op: "MatMul"
-              input: "X"
-              input: "W"
+              input: "graph_1/X"
+              input: "graph_1/W"
             }
             node {
-              name: "A"
+              name: "graph_2/X"
               op: "Input"
+            }
+            node {
+              name: "graph_2/A"
+              op: "Input"
+            }
+            node {
+              name: "graph_2/Y"
+              op: "MatMul"
+              input: "graph_2/X"
+              input: "graph_2/A"
             }
             versions {
               producer: 21
@@ -169,6 +206,12 @@ class GraphUtilTest(tf.test.TestCase):
                   name: "A"
                   op: "Input"
                 }
+                node {
+                  name: "Y"
+                  op: "MatMul"
+                  input: "X"
+                  input: "A"
+                }
                 versions {
                   producer: 21
                 }
@@ -178,160 +221,15 @@ class GraphUtilTest(tf.test.TestCase):
 
         self.assertProtoEquals(
             expected_proto,
-            graph_util.combine_graph_defs(graph_def_a, graph_def_b),
+            graph_util.merge_graph_defs([graph_def_a, graph_def_b]),
         )
 
-    def test_combine_graph_defs_name_collided_different_content(self):
-        graph_def_a = GraphDef()
-        text_format.Merge(
-            """
-                node {
-                  name: "X"
-                  op: "Input"
-                }
-                node {
-                  name: "W"
-                  op: "Input"
-                }
-                node {
-                  name: "Y"
-                  op: "MatMul"
-                  input: "X"
-                  input: "W"
-                }
-                versions {
-                  producer: 21
-                }
-            """,
-            graph_def_a,
-        )
-
-        graph_def_b = GraphDef()
-        text_format.Merge(
-            """
-                node {
-                  name: "X"
-                  op: "Input"
-                  device: "cpu:0"
-                }
-                node {
-                  name: "Z"
-                  op: "Input"
-                }
-                node {
-                  name: "Q"
-                  op: "MatMul"
-                  input: "X"
-                  input: "Z"
-                }
-                versions {
-                  producer: 21
-                }
-            """,
-            graph_def_b,
-        )
-
-        with six.assertRaisesRegex(
-            self,
-            ValueError,
-            (
-                "Cannot combine GraphDefs because nodes share a name but "
-                "contents are different: X"
-            ),
-        ):
-            graph_util.combine_graph_defs(graph_def_a, graph_def_b)
-
-    def test_combine_graph_defs_dst_nodes_duplicate_keys(self):
-        graph_def_a = GraphDef()
-        text_format.Merge(
-            """
-                node {
-                  name: "X"
-                  op: "Input"
-                }
-                node {
-                  name: "X"
-                  op: "Input"
-                }
-                versions {
-                  producer: 21
-                }
-            """,
-            graph_def_a,
-        )
-
-        graph_def_b = GraphDef()
-        text_format.Merge(
-            """
-                node {
-                  name: "X"
-                  op: "Input"
-                }
-                node {
-                  name: "Z"
-                  op: "Input"
-                }
-                versions {
-                  producer: 21
-                }
-            """,
-            graph_def_b,
-        )
-
-        with six.assertRaisesRegex(
-            self, ValueError, "A GraphDef contains non-unique node names: X"
-        ):
-            graph_util.combine_graph_defs(graph_def_a, graph_def_b)
-
-    def test_combine_graph_defs_src_nodes_duplicate_keys(self):
-        graph_def_a = GraphDef()
-        text_format.Merge(
-            """
-                node {
-                  name: "X"
-                  op: "Input"
-                }
-                node {
-                  name: "Y"
-                  op: "Input"
-                }
-                versions {
-                  producer: 21
-                }
-            """,
-            graph_def_a,
-        )
-
-        graph_def_b = GraphDef()
-        text_format.Merge(
-            """
-                node {
-                  name: "W"
-                  op: "Input"
-                  device: "cpu:0"
-                }
-                node {
-                  name: "W"
-                  op: "Input"
-                }
-                versions {
-                  producer: 21
-                }
-            """,
-            graph_def_b,
-        )
-
-        with six.assertRaisesRegex(
-            self, ValueError, "A GraphDef contains non-unique node names: W"
-        ):
-            graph_util.combine_graph_defs(graph_def_a, graph_def_b)
-
-    def test_combine_graph_defs_function(self):
+    def test_merge_graph_defs_function(self):
         expected_proto = """
             library {
               function {
                 signature {
-                  name: "foo"
+                  name: "graph_1_foo"
                   input_arg {
                     name: "x"
                     type: DT_HALF
@@ -350,7 +248,26 @@ class GraphUtilTest(tf.test.TestCase):
               }
               function {
                 signature {
-                  name: "foo_1"
+                  name: "graph_2_foo"
+                  input_arg {
+                    name: "x"
+                    type: DT_INT32
+                  }
+                  output_arg {
+                    name: "identity"
+                    type: DT_INT32
+                  }
+                }
+                node_def {
+                  name: "add"
+                  op: "Add"
+                  input: "x"
+                  input: "y"
+                }
+              }
+              function {
+                signature {
+                  name: "graph_2_foo_1"
                   input_arg {
                     name: "x"
                     type: DT_HALF
@@ -407,11 +324,11 @@ class GraphUtilTest(tf.test.TestCase):
                       name: "foo"
                       input_arg {
                         name: "x"
-                        type: DT_HALF
+                        type: DT_INT32
                       }
                       output_arg {
                         name: "identity"
-                        type: DT_HALF
+                        type: DT_INT32
                       }
                     }
                     node_def {
@@ -447,17 +364,29 @@ class GraphUtilTest(tf.test.TestCase):
 
         self.assertProtoEquals(
             expected_proto,
-            graph_util.combine_graph_defs(graph_def_a, graph_def_b),
+            graph_util.merge_graph_defs([graph_def_a, graph_def_b]),
         )
 
-    def test_combine_graph_defs_function_collison(self):
-        graph_def_a = GraphDef()
+    def test_merge_graph_defs_partitioned_call_remap(self):
+        expected_proto = GraphDef()
         text_format.Merge(
             """
+                node {
+                  name: "graph_1/X"
+                  op: "PartitionedCall"
+                  attr {
+                    key: "f"
+                    value {
+                      func {
+                        name: "graph_1_foo"
+                      }
+                    }
+                  }
+                }
                 library {
                   function {
                     signature {
-                      name: "foo"
+                      name: "graph_1_foo"
                       input_arg {
                         name: "x"
                         type: DT_HALF
@@ -466,105 +395,34 @@ class GraphUtilTest(tf.test.TestCase):
                         name: "identity"
                         type: DT_HALF
                       }
-                    }
-                    node_def {
-                      name: "add"
-                      op: "Add"
-                      input: "x"
-                      input: "y"
                     }
                   }
                 }
             """,
-            graph_def_a,
+            expected_proto,
         )
 
-        graph_def_b = GraphDef()
-        text_format.Merge(
-            """
-                library {
-                  function {
-                    signature {
-                      name: "foo"
-                      input_arg {
-                        name: "x"
-                        type: DT_HALF
-                      }
-                      output_arg {
-                        name: "identity"
-                        type: DT_HALF
-                      }
-                    }
-                    node_def {
-                      name: "div"
-                      op: "Div"
-                      input: "x"
-                      input: "y"
-                    }
-                  }
-                  function {
-                    signature {
-                      name: "foo_1"
-                      input_arg {
-                        name: "x"
-                        type: DT_HALF
-                      }
-                      output_arg {
-                        name: "identity"
-                        type: DT_HALF
-                      }
-                    }
-                    node_def {
-                      name: "add"
-                      op: "Add"
-                      input: "x"
-                      input: "y"
-                    }
-                  }
-                }
-            """,
-            graph_def_b,
-        )
-
-        with six.assertRaisesRegex(
-            self,
-            ValueError,
-            (
-                "Cannot combine GraphDefs because functions share a name but "
-                "are different: foo"
-            ),
-        ):
-            graph_util.combine_graph_defs(graph_def_a, graph_def_b)
-
-    def test_combine_graph_defs_dst_function_duplicate_keys(self):
         graph_def_a = GraphDef()
         text_format.Merge(
             """
+                node {
+                  name: "X"
+                  op: "PartitionedCall"
+                  attr {
+                    key: "f"
+                    value {
+                      func {
+                        name: "foo"
+                      }
+                    }
+                  }
+                }
                 library {
                   function {
                     signature {
                       name: "foo"
                       input_arg {
                         name: "x"
-                        type: DT_HALF
-                      }
-                      output_arg {
-                        name: "identity"
-                        type: DT_HALF
-                      }
-                    }
-                    node_def {
-                      name: "add"
-                      op: "Add"
-                      input: "x"
-                      input: "y"
-                    }
-                  }
-                  function {
-                    signature {
-                      name: "foo"
-                      input_arg {
-                        name: "y"
                         type: DT_HALF
                       }
                       output_arg {
@@ -577,123 +435,27 @@ class GraphUtilTest(tf.test.TestCase):
             """,
             graph_def_a,
         )
-
         graph_def_b = GraphDef()
-        text_format.Merge(
-            """
-                library {
-                  function {
-                    signature {
-                      name: "bar"
-                      input_arg {
-                        name: "x"
-                        type: DT_HALF
-                      }
-                      output_arg {
-                        name: "identity"
-                        type: DT_HALF
-                      }
-                    }
-                    node_def {
-                      name: "div"
-                      op: "Div"
-                      input: "x"
-                      input: "y"
-                    }
-                  }
-                }
-            """,
-            graph_def_b,
+
+        self.assertProtoEquals(
+            expected_proto,
+            graph_util.merge_graph_defs([graph_def_a, graph_def_b]),
         )
 
-        with six.assertRaisesRegex(
-            self,
-            ValueError,
-            ("A GraphDef contains non-unique function names: foo"),
-        ):
-            graph_util.combine_graph_defs(graph_def_a, graph_def_b)
-
-    def test_combine_graph_defs_src_function_duplicate_keys(self):
-        graph_def_a = GraphDef()
-        text_format.Merge(
-            """
-                library {
-                  function {
-                    signature {
-                      name: "foo"
-                      input_arg {
-                        name: "x"
-                        type: DT_HALF
-                      }
-                      output_arg {
-                        name: "identity"
-                        type: DT_HALF
-                      }
-                    }
-                    node_def {
-                      name: "add"
-                      op: "Add"
-                      input: "x"
-                      input: "y"
-                    }
-                  }
-                }
-            """,
-            graph_def_a,
-        )
-
-        graph_def_b = GraphDef()
-        text_format.Merge(
-            """
-                library {
-                  function {
-                    signature {
-                      name: "bar"
-                      input_arg {
-                        name: "x"
-                        type: DT_HALF
-                      }
-                      output_arg {
-                        name: "identity"
-                        type: DT_HALF
-                      }
-                    }
-                  }
-                  function {
-                    signature {
-                      name: "bar"
-                      input_arg {
-                        name: "y"
-                        type: DT_HALF
-                      }
-                      output_arg {
-                        name: "identity"
-                        type: DT_HALF
-                      }
-                    }
-                  }
-                }
-            """,
-            graph_def_b,
-        )
-
-        with six.assertRaisesRegex(
-            self,
-            ValueError,
-            "A GraphDef contains non-unique function names: bar",
-        ):
-            graph_util.combine_graph_defs(graph_def_a, graph_def_b)
-
-    def test_combine_graph_defs_gradient(self):
+    def test_merge_graph_defs_gradient(self):
         expected_proto = """
             library {
               gradient {
-                function_name: "foo"
-                gradient_func: "foo_grad"
+                function_name: "graph_1_foo"
+                gradient_func: "graph_1_foo_grad"
               }
               gradient {
-                function_name: "bar"
-                gradient_func: "bar_grad"
+                function_name: "graph_2_foo"
+                gradient_func: "graph_2_foo_grad"
+              }
+              gradient {
+                function_name: "graph_2_bar"
+                gradient_func: "graph_2_bar_grad"
               }
             }
         """
@@ -730,125 +492,61 @@ class GraphUtilTest(tf.test.TestCase):
 
         self.assertProtoEquals(
             expected_proto,
-            graph_util.combine_graph_defs(graph_def_a, graph_def_b),
+            graph_util.merge_graph_defs([graph_def_a, graph_def_b]),
         )
 
-    def test_combine_graph_defs_gradient_collison(self):
+    def test_merge_graph_defs_mismatch_version(self):
         graph_def_a = GraphDef()
         text_format.Merge(
             """
-                library {
-                  gradient {
-                    function_name: "foo"
-                    gradient_func: "foo_grad"
-                  }
-                }
-            """,
+              node {
+                name: "A"
+                op: "Input"
+              }
+              versions {
+                producer: 21
+              }
+          """,
             graph_def_a,
         )
 
         graph_def_b = GraphDef()
         text_format.Merge(
             """
-                library {
-                  gradient {
-                    function_name: "bar"
-                    gradient_func: "bar_grad"
-                  }
-                  gradient {
-                    function_name: "foo_1"
-                    gradient_func: "foo_grad"
-                  }
-                }
-            """,
+              node {
+                name: "A"
+                op: "Input"
+              }
+              versions {
+                producer: 100
+              }
+          """,
             graph_def_b,
         )
 
-        with six.assertRaisesRegex(
-            self,
-            ValueError,
-            (
-                "share a gradient_func name but map to different functions: "
-                "foo_grad"
-            ),
+        with self.assertRaisesRegex(
+            ValueError, "Cannot combine GraphDefs of different versions"
         ):
-            graph_util.combine_graph_defs(graph_def_a, graph_def_b)
+            graph_util.merge_graph_defs([graph_def_a, graph_def_b])
 
-    def test_combine_graph_defs_dst_gradient_func_non_unique(self):
+    def test_merge_graph_defs_single_graph_def_no_prefix(self):
         graph_def_a = GraphDef()
         text_format.Merge(
             """
-                library {
-                  gradient {
-                    function_name: "foo"
-                    gradient_func: "foo_grad"
-                  }
-                  gradient {
-                    function_name: "foo_bar"
-                    gradient_func: "foo_grad"
-                  }
-                }
-            """,
+              node {
+                name: "A"
+                op: "Input"
+              }
+              versions {
+                producer: 21
+              }
+          """,
             graph_def_a,
         )
 
-        graph_def_b = GraphDef()
-        text_format.Merge(
-            """
-                library {
-                  gradient {
-                    function_name: "bar"
-                    gradient_func: "bar_grad"
-                  }
-                }
-            """,
-            graph_def_b,
+        self.assertProtoEquals(
+            graph_def_a, graph_util.merge_graph_defs([graph_def_a]),
         )
-
-        with six.assertRaisesRegex(
-            self,
-            ValueError,
-            "A GraphDef contains non-unique gradient function names: foo_grad",
-        ):
-            graph_util.combine_graph_defs(graph_def_a, graph_def_b)
-
-    def test_combine_graph_defs_src_gradient_func_non_unique(self):
-        graph_def_a = GraphDef()
-        text_format.Merge(
-            """
-                library {
-                  gradient {
-                    function_name: "foo"
-                    gradient_func: "foo_grad"
-                  }
-                }
-            """,
-            graph_def_a,
-        )
-
-        graph_def_b = GraphDef()
-        text_format.Merge(
-            """
-                library {
-                  gradient {
-                    function_name: "bar"
-                    gradient_func: "bar_grad"
-                  }
-                  gradient {
-                    function_name: "bar_baz"
-                    gradient_func: "bar_grad"
-                  }
-                }
-            """,
-            graph_def_b,
-        )
-
-        with six.assertRaisesRegex(
-            self,
-            ValueError,
-            "A GraphDef contains non-unique gradient function names: bar_grad",
-        ):
-            graph_util.combine_graph_defs(graph_def_a, graph_def_b)
 
 
 if __name__ == "__main__":
