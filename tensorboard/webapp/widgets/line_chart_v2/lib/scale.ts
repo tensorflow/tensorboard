@@ -28,7 +28,7 @@ export function createScale(type: ScaleType): Scale {
 }
 
 const PADDING_RATIO = 0.05;
-const MIN_SIGNIFICANT_PADDING = 0.01;
+const PADDING_FOR_ZERO = 0.01;
 
 class LinearScale implements Scale {
   private transform(
@@ -74,7 +74,9 @@ class LinearScale implements Scale {
     const padding =
       max === min
         ? // In case both `min` and `max` are 0, we want some padding.
-          Math.max(min * PADDING_RATIO, MIN_SIGNIFICANT_PADDING)
+          min === 0
+          ? PADDING_FOR_ZERO
+          : Math.abs(min) * PADDING_RATIO
         : (max - min + Number.EPSILON) * PADDING_RATIO;
     const [niceMin, niceMax] = scale
       .domain([min - padding, max + padding])
@@ -148,8 +150,9 @@ class Log10Scale implements Scale {
 
     const adjustedMin = Math.max(min, Number.MIN_VALUE);
     const adjustedMax = Math.max(max, Number.MIN_VALUE);
-    if (min <= 0 || max <= 0) {
-      return [adjustedMin, adjustedMax];
+    if (max <= 0) {
+      // When both min and max are non-positive, clip to [1e-326, 1].
+      return [adjustedMin, 1];
     }
 
     const numericMinLogValue = this.transform(Number.MIN_VALUE);
@@ -161,10 +164,7 @@ class Log10Scale implements Scale {
       spreadInLog > 0
         ? spreadInLog * PADDING_RATIO
         : // In case `minLogValue` is 0 (i.e., log_10(1) = 0), we want some padding.
-          Math.max(
-            Math.abs(minLogValue * PADDING_RATIO),
-            MIN_SIGNIFICANT_PADDING
-          );
+          Math.max(Math.abs(minLogValue * PADDING_RATIO), PADDING_FOR_ZERO);
 
     return [
       this.untransform(Math.max(numericMinLogValue, minLogValue - padInLog)),

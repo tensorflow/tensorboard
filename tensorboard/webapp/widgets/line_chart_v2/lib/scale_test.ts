@@ -75,6 +75,9 @@ describe('line_chart_v2/lib/scale test', () => {
         expect(scale.niceDomain([1, 1])).toEqual([0.95, 1.05]);
         expect(scale.niceDomain([10000, 10000])).toEqual([9500, 10500]);
         expect(scale.niceDomain([0, 0])).toEqual([-0.01, 0.01]);
+        // https://github.com/tensorflow/tensorboard/issues/4362
+        expect(scale.niceDomain([0.001, 0.001])).toEqual([0.00095, 0.00105]);
+        expect(scale.niceDomain([-10000, -10000])).toEqual([-10500, -9500]);
       });
 
       it('throws an error when min is larger than max', () => {
@@ -229,6 +232,28 @@ describe('line_chart_v2/lib/scale test', () => {
         [low, high] = scale.niceDomain([10000, 10000]);
         expect(low).toBeCloseTo(6310, 0);
         expect(high).toBeCloseTo(15849, 0);
+
+        [low, high] = scale.niceDomain([0.001, 0.001]);
+        expect(low).toBeCloseTo(0.00071, 5);
+        expect(high).toBeCloseTo(0.00141, 5);
+      });
+
+      it('clips at min value when domains are non-positive', () => {
+        let low: number;
+        let high: number;
+        [low, high] = scale.niceDomain([-100, -1]);
+        expect(low).toBe(Number.MIN_VALUE);
+        expect(high).toBe(1);
+
+        [low, high] = scale.niceDomain([0, 0]);
+        expect(low).toBe(Number.MIN_VALUE);
+        expect(high).toBe(1);
+
+        [low, high] = scale.niceDomain([-1, 1]);
+        expect(low).toBe(Number.MIN_VALUE);
+        // Because the spread is large from -326 to 0, upper bound is much larger, too.
+        // This may not be ideal and we may want to implement better logic in this case.
+        expect(high).toBeGreaterThanOrEqual(1e16);
       });
 
       it('throws an error when min is larger than max', () => {
