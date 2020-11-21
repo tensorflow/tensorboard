@@ -27,6 +27,7 @@ rust_library(
     name = "rustboard_core",
     srcs = [
         "lib.rs",
+        "commit.rs",
         "data_compat.rs",
         "event_file.rs",
         "masked_crc.rs",
