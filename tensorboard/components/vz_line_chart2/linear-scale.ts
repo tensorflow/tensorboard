@@ -15,7 +15,11 @@ limitations under the License.
 import * as d3 from 'd3';
 import * as Plottable from 'plottable';
 
-import {ValueProviderForDomain, ITfScale} from './tf-scale';
+import {
+  createScale,
+  ScaleType,
+} from '../../webapp/widgets/line_chart_v2/lib/scale';
+import {ITfScale, ValueProviderForDomain} from './tf-scale';
 
 export class LinearScale extends Plottable.Scales.Linear implements ITfScale {
   private _ignoreOutlier: boolean = false;
@@ -41,27 +45,8 @@ export class LinearScale extends Plottable.Scales.Linear implements ITfScale {
    */
   protected _niceDomain(domain: number[], count?: number): number[] {
     const [a, b] = domain;
-    let padding: number;
-    const span = b - a;
-    if (span === 0) {
-      // If b===a, we would create an empty range. We instead select the range
-      // [0, 2*a] if a > 0, or [-2*a, 0] if a < 0, plus a little bit of
-      // extra padding on the top and bottom of the plot.
-      padding = Math.abs(a) * 1.1 + 1.1;
-    } else {
-      padding = span * this.padProportion();
-    }
-    let lower: number;
-    if (a >= 0 && a < span) {
-      // [1]: We include the intercept (y = 0) if doing so less than doubles the
-      // span of the y-axis. (We actually select a lower bound that's slightly
-      // less than 0 so that 0.00 will clearly be written on the lower edge of
-      // the chart. The label on the lowest tick is often filtered out.)
-      lower = -0.1 * b;
-    } else {
-      lower = a - padding;
-    }
-    return super._niceDomain([lower, b + padding], count);
+
+    return createScale(ScaleType.LINEAR).niceDomain([a, b]);
   }
   /**
    * @override to remove default padding logic.

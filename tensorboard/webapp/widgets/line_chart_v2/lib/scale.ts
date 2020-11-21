@@ -15,6 +15,8 @@ limitations under the License.
 import {scaleLinear, scaleLog} from '../../../third_party/d3';
 import {Scale, ScaleType} from './scale_types';
 
+export {ScaleType} from './scale_types';
+
 export function createScale(type: ScaleType): Scale {
   switch (type) {
     case ScaleType.LINEAR:
