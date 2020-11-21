@@ -31,6 +31,12 @@ import {HistogramMode, TooltipSort, XAxisType} from '../../types';
 
 const SLIDER_AUDIT_TIME_MS = 250;
 
+/**
+ * When smoothing === 1, all lines become flat on the x-axis, which is not
+ * useful at all. Use a maximum smoothing value < 1.
+ */
+const MAX_SMOOTHING_VALUE = 0.999;
+
 @Component({
   selector: 'metrics-dashboard-settings-component',
   templateUrl: 'settings_view_component.ng.html',
@@ -67,6 +73,8 @@ export class SettingsViewComponent {
   @Input() histogramMode!: HistogramMode;
   @Output() histogramModeChanged = new EventEmitter<HistogramMode>();
 
+  readonly MAX_SMOOTHING_VALUE = MAX_SMOOTHING_VALUE;
+
   readonly scalarSmoothingControlChanged$ = new EventEmitter<number>();
   @Input() scalarSmoothing!: number;
   @Output()
@@ -74,12 +82,20 @@ export class SettingsViewComponent {
     auditTime(SLIDER_AUDIT_TIME_MS)
   );
 
+  formatSmoothingThumbLabel(value: number): string {
+    const stringValue = value + '';
+    return stringValue.startsWith('0.') ? stringValue.slice(1) : stringValue;
+  }
+
   onScalarSmoothingInput(event: Event) {
     const input = event.target as HTMLInputElement;
     if (!input.value) {
       return;
     }
-    const nextValue = Math.min(Math.max(0, parseFloat(input.value)), 1);
+    const nextValue = Math.min(
+      Math.max(0, parseFloat(input.value)),
+      MAX_SMOOTHING_VALUE
+    );
 
     // Rectify here in case Angular does not trigger ngOnChanges when expected.
     if (nextValue !== parseFloat(input.value)) {
@@ -120,4 +136,5 @@ export class SettingsViewComponent {
 
 export const TEST_ONLY = {
   SLIDER_AUDIT_TIME_MS,
+  MAX_SMOOTHING_VALUE,
 };

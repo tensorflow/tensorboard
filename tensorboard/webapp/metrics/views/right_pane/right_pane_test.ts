@@ -197,9 +197,13 @@ describe('metrics right_pane', () => {
       scalarSmoothingInput.nativeElement.dispatchEvent(new Event('input'));
       tick(TEST_ONLY.SLIDER_AUDIT_TIME_MS);
 
-      expect(scalarSmoothingInput.nativeElement.value).toBe('1');
+      expect(scalarSmoothingInput.nativeElement.value).toBe(
+        TEST_ONLY.MAX_SMOOTHING_VALUE.toString()
+      );
       expect(dispatchSpy).toHaveBeenCalledWith(
-        actions.metricsChangeScalarSmoothing({smoothing: 1})
+        actions.metricsChangeScalarSmoothing({
+          smoothing: TEST_ONLY.MAX_SMOOTHING_VALUE,
+        })
       );
     }));
 
