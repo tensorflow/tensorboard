@@ -39,10 +39,9 @@ limitations under the License.
         color="primary"
         [max]="MAX_SMOOTHING_VALUE"
         [min]="0"
-        [step]="0.001"
+        [step]="0.01"
         [value]="scalarSmoothing"
         [thumbLabel]="true"
-        [displayWith]="formatSmoothingThumbLabel"
         (input)="scalarSmoothingControlChanged$.emit($event.value)"
       ></mat-slider>
       <input
@@ -51,7 +50,7 @@ limitations under the License.
         type="number"
         [max]="MAX_SMOOTHING_VALUE"
         min="0"
-        step="0.001"
+        step="0.01"
         [value]="scalarSmoothing"
         (input)="onScalarSmoothingInput($event)"
       />

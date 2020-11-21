@@ -35,7 +35,7 @@ const SLIDER_AUDIT_TIME_MS = 250;
  * When smoothing === 1, all lines become flat on the x-axis, which is not
  * useful at all. Use a maximum smoothing value < 1.
  */
-const MAX_SMOOTHING_VALUE = 0.999;
+const MAX_SMOOTHING_VALUE = 0.99;
 
 @Component({
   selector: 'metrics-dashboard-settings-component',
@@ -81,11 +81,6 @@ export class SettingsViewComponent {
   scalarSmoothingChanged = this.scalarSmoothingControlChanged$.pipe(
     auditTime(SLIDER_AUDIT_TIME_MS)
   );
-
-  formatSmoothingThumbLabel(value: number): string {
-    const stringValue = value + '';
-    return stringValue.startsWith('0.') ? stringValue.slice(1) : stringValue;
-  }
 
   onScalarSmoothingInput(event: Event) {
     const input = event.target as HTMLInputElement;
