@@ -34,6 +34,7 @@ rust_library(
         "reservoir.rs",
         "run.rs",
         "scripted_reader.rs",
+        "server.rs",
         "tf_record.rs",
         "types.rs",
     ] + _checked_in_proto_files,
@@ -41,10 +42,12 @@ rust_library(
     deps = [
         "//third_party/rust:byteorder",
         "//third_party/rust:crc",
+        "//third_party/rust:futures_core",
         "//third_party/rust:prost",
         "//third_party/rust:rand",
         "//third_party/rust:rand_chacha",
         "//third_party/rust:thiserror",
+        "//third_party/rust:tokio",
         "//third_party/rust:tonic",
     ],
 )
@@ -84,7 +87,6 @@ rust_binary(
     edition = "2018",
     deps = [
         ":rustboard_core",
-        "//third_party/rust:futures_core",
         "//third_party/rust:tokio",
         "//third_party/rust:tonic",
     ],
