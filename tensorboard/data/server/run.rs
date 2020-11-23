@@ -291,45 +291,9 @@ mod test {
     use std::fs::File;
     use std::io::BufWriter;
 
-<<<<<<< HEAD
     use crate::commit::Commit;
     use crate::types::Run;
-
-    /// Writes an event to the given writer, in TFRecord form.
-    fn write_event<W: Write>(writer: W, event: &pb::Event) -> std::io::Result<()> {
-        use prost::Message;
-        let mut data = Vec::new();
-        event.encode(&mut data)?;
-        crate::tf_record::TfRecord::from_data(data).write(writer)?;
-        Ok(())
-    }
-
-    /// Writes a TF 1.x scalar event (`simple_value`) to the given writer.
-    fn write_scalar<W: Write>(
-        writer: W,
-        tag: &Tag,
-        step: Step,
-        wt: WallTime,
-        value: f32,
-    ) -> std::io::Result<()> {
-        let event = pb::Event {
-            step: step.0,
-            wall_time: wt.into(),
-            what: Some(pb::event::What::Summary(pb::Summary {
-                value: vec![pb::summary::Value {
-                    tag: tag.0.clone(),
-                    value: Some(pb::summary::value::Value::SimpleValue(value)),
-                    ..Default::default()
-                }],
-                ..Default::default()
-            })),
-            ..Default::default()
-        };
-        write_event(writer, &event)
-    }
-=======
     use crate::writer::SummaryWriteExt;
->>>>>>> ef6a3c1472d92a4fa682d1f8bdd55a676daa8144
 
     #[test]
     fn test() -> Result<(), Box<dyn std::error::Error>> {
