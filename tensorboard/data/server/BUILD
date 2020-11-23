@@ -36,6 +36,7 @@ rust_library(
         "scripted_reader.rs",
         "tf_record.rs",
         "types.rs",
+        "writer.rs",
     ] + _checked_in_proto_files,
     edition = "2018",
     deps = [
