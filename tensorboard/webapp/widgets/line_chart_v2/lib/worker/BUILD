@@ -87,6 +87,7 @@ tf_js_binary(
     name = "chart_worker",
     compile = True,
     entry_point = "worker_chart_bridge.ts",
+    visibility = ["//tensorboard:internal"],
     deps = [
         ":worker_chart_bridge",
     ],

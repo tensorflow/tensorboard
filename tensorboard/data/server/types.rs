@@ -70,6 +70,19 @@ impl Borrow<str> for Tag {
     }
 }
 
+/// The name of a TensorBoard run.
+///
+/// Run names are derived from directory names relative to the logdir, but are lossily converted to
+/// valid Unicode strings.
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone)]
+pub struct Run(pub String);
+
+impl Borrow<str> for Run {
+    fn borrow(&self) -> &str {
+        &self.0
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -83,6 +96,17 @@ mod tests {
         // We can call `get` given only a `&str`, not an owned `Tag`.
         assert_eq!(m.get("accuracy"), Some(&1));
         assert_eq!(m.get("xent"), None);
+    }
+
+    #[test]
+    fn test_run_hash_map_str_access() {
+        use std::collections::HashMap;
+        let mut m: HashMap<Run, i32> = HashMap::new();
+        m.insert(Run("train".to_string()), 1);
+        m.insert(Run("test".to_string()), 2);
+        // We can call `get` given only a `&str`, not an owned `Run`.
+        assert_eq!(m.get("train"), Some(&1));
+        assert_eq!(m.get("val"), None);
     }
 
     #[test]
