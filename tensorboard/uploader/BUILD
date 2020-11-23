@@ -62,6 +62,7 @@ py_test(
 py_library(
     name = "uploader_subcommand",
     srcs = ["uploader_subcommand.py"],
+    srcs_version = "PY3",
     visibility = ["//tensorboard:internal"],
     deps = [
         ":auth",
@@ -98,6 +99,7 @@ py_test(
 py_library(
     name = "uploader",
     srcs = ["uploader.py"],
+    srcs_version = "PY3",
     deps = [
         ":logdir_loader",
         ":upload_tracker",
@@ -121,6 +123,7 @@ py_library(
 py_library(
     name = "upload_tracker",
     srcs = ["upload_tracker.py"],
+    srcs_version = "PY3",
     deps = [],
 )
 
@@ -169,6 +172,7 @@ py_test(
 py_library(
     name = "dry_run_stubs",
     srcs = ["dry_run_stubs.py"],
+    srcs_version = "PY3",
     deps = [
         "//tensorboard/uploader/proto:protos_all_py_pb2",
     ],
@@ -188,6 +192,7 @@ py_test(
 py_library(
     name = "auth",
     srcs = ["auth.py"],
+    srcs_version = "PY3",
     deps = [
         ":util",
         "//tensorboard:expect_google_auth_installed",
@@ -211,6 +216,7 @@ py_test(
 py_library(
     name = "logdir_loader",
     srcs = ["logdir_loader.py"],
+    srcs_version = "PY3",
     deps = [
         "//tensorboard/backend/event_processing:directory_watcher",
         "//tensorboard/backend/event_processing:io_wrapper",
@@ -236,6 +242,7 @@ py_library(
     name = "test_util",
     testonly = 1,
     srcs = ["test_util.py"],
+    srcs_version = "PY3",
     deps = [
         "//tensorboard:expect_grpc_installed",
         "//tensorboard/compat/proto:protos_all_py_pb2",
@@ -246,6 +253,7 @@ py_library(
 py_library(
     name = "util",
     srcs = ["util.py"],
+    srcs_version = "PY3",
 )
 
 py_test(
@@ -263,6 +271,7 @@ py_test(
 py_library(
     name = "server_info",
     srcs = ["server_info.py"],
+    srcs_version = "PY3",
     deps = [
         "//tensorboard:expect_requests_installed",
         "//tensorboard:version",
@@ -291,6 +300,7 @@ py_test(
 py_library(
     name = "flags_parser",
     srcs = ["flags_parser.py"],
+    srcs_version = "PY3",
     visibility = ["//tensorboard:internal"],
     deps = [
         "//tensorboard:expect_absl_flags_argparse_flags_installed",

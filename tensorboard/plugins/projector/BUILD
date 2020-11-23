@@ -12,7 +12,7 @@ py_library(
     data = [
         "//tensorboard/plugins/projector/tf_projector_plugin:projector_assets",
     ],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         ":metadata",
         ":protos_all_py_pb2",
@@ -28,7 +28,7 @@ py_library(
 py_library(
     name = "projector",
     srcs = ["__init__.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     visibility = ["//visibility:public"],
     deps = [
         ":metadata",
@@ -42,7 +42,7 @@ py_test(
     size = "small",
     srcs = ["projector_api_test.py"],
     main = "projector_api_test.py",
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         ":projector",
         "//tensorboard:expect_tensorflow_installed",
@@ -56,7 +56,7 @@ py_test(
     size = "small",
     srcs = ["projector_plugin_test.py"],
     main = "projector_plugin_test.py",
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         ":projector_plugin",
         "//tensorboard:expect_numpy_installed",
@@ -76,7 +76,7 @@ py_test(
     size = "small",
     srcs = ["projector_plugin_test.py"],
     main = "projector_plugin_test.py",
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         ":projector_plugin",
         "//tensorboard:expect_numpy_installed",
@@ -94,7 +94,7 @@ py_test(
 py_library(
     name = "metadata",
     srcs = ["metadata.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
 )
 
 tb_proto_library(
@@ -106,7 +106,7 @@ tb_proto_library(
 py_binary(
     name = "projector_demo",
     srcs = ["projector_demo.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         ":projector",
         "//tensorboard:expect_tensorflow_datasets_installed",

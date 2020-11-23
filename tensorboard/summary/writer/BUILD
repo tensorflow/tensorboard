@@ -11,7 +11,7 @@ py_library(
         "event_file_writer.py",
         "record_writer.py",
     ],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         "//tensorboard/compat:tensorflow",
         "//tensorboard/compat/proto:protos_all_py_pb2",
@@ -24,7 +24,7 @@ py_test(
     size = "small",
     srcs = ["event_file_writer_test.py"],
     main = "event_file_writer_test.py",
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     tags = ["support_notf"],
     deps = [
         ":writer",
@@ -37,7 +37,7 @@ py_test(
     size = "small",
     srcs = ["event_file_writer_s3_test.py"],
     main = "event_file_writer_s3_test.py",
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     tags = [
         "manual",
         "notap",
@@ -54,7 +54,7 @@ py_test(
     size = "small",
     srcs = ["record_writer_test.py"],
     main = "record_writer_test.py",
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     tags = ["support_notf"],
     deps = [
         ":writer",

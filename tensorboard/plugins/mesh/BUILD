@@ -8,7 +8,7 @@ licenses(["notice"])
 py_library(
     name = "mesh",
     srcs = ["__init__.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     visibility = ["//visibility:public"],
     deps = [
         ":summary",
@@ -18,7 +18,7 @@ py_library(
 py_library(
     name = "metadata",
     srcs = ["metadata.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         ":protos_all_py_pb2",
         "//tensorboard/compat/proto:protos_all_py_pb2",
@@ -29,7 +29,7 @@ py_test(
     name = "metadata_test",
     size = "small",
     srcs = ["metadata_test.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         ":metadata",
         "//tensorboard:expect_tensorflow_installed",
@@ -41,7 +41,7 @@ py_test(
 py_library(
     name = "mesh_plugin",
     srcs = ["mesh_plugin.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         ":metadata",
         ":protos_all_py_pb2",
@@ -59,7 +59,7 @@ py_library(
     name = "test_utils",
     testonly = 1,
     srcs = ["test_utils.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         ":summary",
         "//tensorboard/backend/event_processing:event_multiplexer",
@@ -71,7 +71,7 @@ py_test(
     name = "mesh_plugin_test",
     size = "small",
     srcs = ["mesh_plugin_test.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         ":mesh_plugin",
         ":summary",
@@ -91,7 +91,7 @@ py_test(
 py_library(
     name = "summary",
     srcs = ["summary.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     visibility = [
         "//visibility:public",
     ],
@@ -106,7 +106,7 @@ py_library(
 py_library(
     name = "summary_v2",
     srcs = ["summary_v2.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         ":metadata",
         "//tensorboard/compat:tensorflow",
@@ -119,7 +119,7 @@ py_test(
     name = "summary_test",
     size = "small",
     srcs = ["summary_test.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         ":summary",
         ":test_utils",
@@ -131,7 +131,7 @@ py_test(
     name = "summary_v2_test",
     size = "small",
     srcs = ["summary_v2_test.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         ":metadata",
         ":protos_all_py_pb2",
@@ -149,7 +149,7 @@ tb_proto_library(
 py_library(
     name = "demo_utils",
     srcs = ["demo_utils.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         "//tensorboard:expect_numpy_installed",
         "//tensorboard/compat:tensorflow",
@@ -164,7 +164,7 @@ py_test(
         ":test_data",
         "//tensorboard/compat:tensorflow",
     ],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         ":demo_utils",
     ],
@@ -173,7 +173,7 @@ py_test(
 py_binary(
     name = "mesh_demo",
     srcs = ["mesh_demo.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         ":demo_utils",
         ":summary",
@@ -187,7 +187,7 @@ py_binary(
 py_binary(
     name = "mesh_demo_v2",
     srcs = ["mesh_demo_v2.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         ":demo_utils",
         ":summary_v2",
