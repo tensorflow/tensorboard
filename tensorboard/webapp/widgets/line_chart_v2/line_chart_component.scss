@@ -12,19 +12,45 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+:host {
+  contain: strict;
+  display: inline-block;
+}
 
-use tonic::transport::Server;
+.container {
+  background: #fff;
+  display: grid;
+  height: 100%;
+  overflow: hidden;
+  width: 100%;
+  grid-template-areas:
+    'yaxis series'
+    '. xaxis';
+  grid-template-columns: 50px 1fr;
+  grid-auto-rows: 1fr 30px;
+}
 
-use rustboard_core::proto::tensorboard::data::tensor_board_data_provider_server::TensorBoardDataProviderServer;
-use rustboard_core::server::DataProviderHandler;
+.series-view {
+  grid-area: series;
+  position: relative;
+  overflow: hidden;
 
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let addr = "[::0]:6806".parse::<std::net::SocketAddr>()?;
-    let handler = DataProviderHandler;
-    Server::builder()
-        .add_service(TensorBoardDataProviderServer::new(handler))
-        .serve(addr)
-        .await?;
-    Ok(())
+  canvas,
+  svg,
+  line-chart-grid-view,
+  line-chart-interactive-layer {
+    height: 100%;
+    left: 0;
+    position: absolute;
+    top: 0;
+    width: 100%;
+  }
+}
+
+.x-axis {
+  grid-area: xaxis;
+}
+
+.y-axis {
+  grid-area: yaxis;
 }

@@ -12,19 +12,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {BrowserModule} from '@angular/platform-browser';
+import {NgModule} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {LineChartDemoComponent} from './line_chart_demo_component';
+import {LineChartModule} from './line_chart_module';
 
-use tonic::transport::Server;
-
-use rustboard_core::proto::tensorboard::data::tensor_board_data_provider_server::TensorBoardDataProviderServer;
-use rustboard_core::server::DataProviderHandler;
-
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let addr = "[::0]:6806".parse::<std::net::SocketAddr>()?;
-    let handler = DataProviderHandler;
-    Server::builder()
-        .add_service(TensorBoardDataProviderServer::new(handler))
-        .serve(addr)
-        .await?;
-    Ok(())
-}
+@NgModule({
+  declarations: [LineChartDemoComponent],
+  exports: [LineChartDemoComponent],
+  imports: [CommonModule, LineChartModule, BrowserModule],
+  bootstrap: [LineChartDemoComponent],
+})
+export class LineChartDemoModule {}

@@ -64,7 +64,7 @@ class GraphUtilTest(tf.test.TestCase):
         """
 
         graph_def_a = GraphDef()
-        text_format.Merge(
+        text_format.Parse(
             """
                 node {
                   name: "X"
@@ -88,7 +88,7 @@ class GraphUtilTest(tf.test.TestCase):
         )
 
         graph_def_b = GraphDef()
-        text_format.Merge(
+        text_format.Parse(
             """
                 node {
                   name: "A"
@@ -112,7 +112,7 @@ class GraphUtilTest(tf.test.TestCase):
         )
 
         graph_def_c = GraphDef()
-        text_format.Merge(
+        text_format.Parse(
             """
                 node {
                   name: "A"
@@ -172,7 +172,7 @@ class GraphUtilTest(tf.test.TestCase):
         """
 
         graph_def_a = GraphDef()
-        text_format.Merge(
+        text_format.Parse(
             """
                 node {
                   name: "X"
@@ -196,7 +196,7 @@ class GraphUtilTest(tf.test.TestCase):
         )
 
         graph_def_b = GraphDef()
-        text_format.Merge(
+        text_format.Parse(
             """
                 node {
                   name: "X"
@@ -288,7 +288,7 @@ class GraphUtilTest(tf.test.TestCase):
         """
 
         graph_def_a = GraphDef()
-        text_format.Merge(
+        text_format.Parse(
             """
                 library {
                   function {
@@ -316,7 +316,7 @@ class GraphUtilTest(tf.test.TestCase):
         )
 
         graph_def_b = GraphDef()
-        text_format.Merge(
+        text_format.Parse(
             """
                 library {
                   function {
@@ -369,7 +369,7 @@ class GraphUtilTest(tf.test.TestCase):
 
     def test_merge_graph_defs_partitioned_call_remap(self):
         expected_proto = GraphDef()
-        text_format.Merge(
+        text_format.Parse(
             """
                 node {
                   name: "graph_1/X"
@@ -403,7 +403,7 @@ class GraphUtilTest(tf.test.TestCase):
         )
 
         graph_def_a = GraphDef()
-        text_format.Merge(
+        text_format.Parse(
             """
                 node {
                   name: "X"
@@ -461,7 +461,7 @@ class GraphUtilTest(tf.test.TestCase):
         """
 
         graph_def_a = GraphDef()
-        text_format.Merge(
+        text_format.Parse(
             """
                 library {
                   gradient {
@@ -474,7 +474,7 @@ class GraphUtilTest(tf.test.TestCase):
         )
 
         graph_def_b = GraphDef()
-        text_format.Merge(
+        text_format.Parse(
             """
                 library {
                   gradient {
@@ -497,7 +497,7 @@ class GraphUtilTest(tf.test.TestCase):
 
     def test_merge_graph_defs_mismatch_version(self):
         graph_def_a = GraphDef()
-        text_format.Merge(
+        text_format.Parse(
             """
               node {
                 name: "A"
@@ -511,7 +511,7 @@ class GraphUtilTest(tf.test.TestCase):
         )
 
         graph_def_b = GraphDef()
-        text_format.Merge(
+        text_format.Parse(
             """
               node {
                 name: "A"
@@ -531,7 +531,7 @@ class GraphUtilTest(tf.test.TestCase):
 
     def test_merge_graph_defs_single_graph_def_no_prefix(self):
         graph_def_a = GraphDef()
-        text_format.Merge(
+        text_format.Parse(
             """
               node {
                 name: "A"

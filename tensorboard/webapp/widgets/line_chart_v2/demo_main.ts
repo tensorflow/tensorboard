@@ -12,19 +12,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {platformBrowser} from '@angular/platform-browser';
+import 'zone.js/dist/zone.js'; // Angular runtime dep
 
-use tonic::transport::Server;
+import {LineChartDemoModule} from './line_chart_demo_module';
 
-use rustboard_core::proto::tensorboard::data::tensor_board_data_provider_server::TensorBoardDataProviderServer;
-use rustboard_core::server::DataProviderHandler;
-
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let addr = "[::0]:6806".parse::<std::net::SocketAddr>()?;
-    let handler = DataProviderHandler;
-    Server::builder()
-        .add_service(TensorBoardDataProviderServer::new(handler))
-        .serve(addr)
-        .await?;
-    Ok(())
-}
+// Bootstrap needs to happen after body is ready but we cannot reliably
+// controls the order in which script gets loaded (Vulcanization inlines
+// the script in <head>).
+window.addEventListener('DOMContentLoaded', () => {
+  platformBrowser().bootstrapModule(LineChartDemoModule);
+});

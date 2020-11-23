@@ -47,3 +47,12 @@ export function arePolylinesEqual(lineA: Polyline, lineB: Polyline) {
   }
   return true;
 }
+
+export function areExtentsEqual(extentA: Extent, extentB: Extent): boolean {
+  return (
+    extentA.x[0] === extentB.x[0] &&
+    extentA.x[1] === extentB.x[1] &&
+    extentA.y[0] === extentB.y[0] &&
+    extentA.y[1] === extentB.y[1]
+  );
+}

@@ -12,19 +12,17 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {NgModule} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {OverlayModule} from '@angular/cdk/overlay';
 
-use tonic::transport::Server;
+import {LineChartComponent} from './line_chart_component';
+import {SubViewModule} from './sub_view/sub_view_module';
+import {ResizeDetectorModule} from '../resize_detector_module';
 
-use rustboard_core::proto::tensorboard::data::tensor_board_data_provider_server::TensorBoardDataProviderServer;
-use rustboard_core::server::DataProviderHandler;
-
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let addr = "[::0]:6806".parse::<std::net::SocketAddr>()?;
-    let handler = DataProviderHandler;
-    Server::builder()
-        .add_service(TensorBoardDataProviderServer::new(handler))
-        .serve(addr)
-        .await?;
-    Ok(())
-}
+@NgModule({
+  declarations: [LineChartComponent],
+  exports: [LineChartComponent],
+  imports: [CommonModule, OverlayModule, SubViewModule, ResizeDetectorModule],
+})
+export class LineChartModule {}
