@@ -291,7 +291,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit {
                 id: getSmoothedSeriesId(dataSeries.id),
                 points: smoothedDataSeriesList[index].points.map(
                   ({y}, pointIndex) => {
-                    return {...dataSeries[index][pointIndex], y};
+                    return {...dataSeries.points[pointIndex], y};
                   }
                 ),
               };
