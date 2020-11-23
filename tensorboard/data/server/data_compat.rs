@@ -51,8 +51,8 @@ impl EventValue {
     /// Consumes this event value and enriches it into a scalar.
     ///
     /// This supports `simple_value` (TF 1.x) summaries as well as non-empty tensors of type
-    /// `DT_FLOAT` or `DT_DOUBLE`. If a tensor has more than one item, the first will be taken.
-    /// Returns `DataLoss` if the value is a `GraphDef` or an unsupported summary.
+    /// `DT_FLOAT` or `DT_DOUBLE`. Returns `DataLoss` if the value is a `GraphDef`, is an
+    /// unsupported summary, or is a tensor that does not have exactly one item.
     pub fn into_scalar(self) -> Result<ScalarValue, DataLoss> {
         let value_box = match self {
             EventValue::GraphDef(_) => return Err(DataLoss),
@@ -60,36 +60,54 @@ impl EventValue {
         };
         match *value_box {
             pb::summary::value::Value::SimpleValue(f) => Ok(ScalarValue(f64::from(f))),
-            pb::summary::value::Value::Tensor(tp) => {
-                use pb::DataType;
-                match DataType::from_i32(tp.dtype) {
-                    Some(DataType::DtFloat) => {
-                        // Could have data in either `float_val` or `tensor_content`.
-                        if let Some(f) = tp.float_val.first() {
-                            Ok(ScalarValue(f64::from(*f)))
-                        } else if tp.tensor_content.len() >= std::mem::size_of::<f32>() {
-                            let f: f32 = LittleEndian::read_f32(&tp.tensor_content);
-                            Ok(ScalarValue(f64::from(f)))
-                        } else {
-                            Err(DataLoss)
-                        }
-                    }
-                    Some(DataType::DtDouble) => {
-                        // Could have data in either `double_val` or `tensor_content`.
-                        if let Some(f) = tp.double_val.first() {
-                            Ok(ScalarValue(*f))
-                        } else if tp.tensor_content.len() >= std::mem::size_of::<f64>() {
-                            let f: f64 = LittleEndian::read_f64(&tp.tensor_content);
-                            Ok(ScalarValue(f))
-                        } else {
-                            Err(DataLoss)
-                        }
-                    }
-                    _ => Err(DataLoss),
-                }
-            }
+            pb::summary::value::Value::Tensor(tp) => match tensor_proto_to_scalar(&tp) {
+                Some(f) => Ok(ScalarValue(f)),
+                None => Err(DataLoss),
+            },
             _ => Err(DataLoss),
         }
+    }
+}
+
+fn tensor_proto_to_scalar(tp: &pb::TensorProto) -> Option<f64> {
+    // Ensure that it's rank-0. Treat an absent `tensor_shape` as an empty message, which happens
+    // to imply rank 0.
+    if tp.tensor_shape.as_ref().map(|s| s.dim.is_empty()) == Some(false) {
+        return None;
+    }
+    use pb::DataType;
+    match DataType::from_i32(tp.dtype) {
+        Some(DataType::DtFloat) => {
+            // Could have data in either `float_val` or `tensor_content`.
+            if let Some(f) = tp.float_val.first() {
+                if tp.float_val.len() == 1 {
+                    Some(f64::from(*f))
+                } else {
+                    None
+                }
+            } else if tp.tensor_content.len() == std::mem::size_of::<f32>() {
+                let f: f32 = LittleEndian::read_f32(&tp.tensor_content);
+                Some(f64::from(f))
+            } else {
+                None
+            }
+        }
+        Some(DataType::DtDouble) => {
+            // Could have data in either `double_val` or `tensor_content`.
+            if let Some(f) = tp.double_val.first() {
+                if tp.double_val.len() == 1 {
+                    Some(*f)
+                } else {
+                    None
+                }
+            } else if tp.tensor_content.len() == std::mem::size_of::<f64>() {
+                let f: f64 = LittleEndian::read_f64(&tp.tensor_content);
+                Some(f)
+            } else {
+                None
+            }
+        }
+        _ => None,
     }
 }
 
@@ -296,6 +314,12 @@ mod tests {
                     tensor_content: f64::to_le_bytes(0.125).to_vec(),
                     ..Default::default()
                 },
+                pb::TensorProto {
+                    dtype: pb::DataType::DtDouble.into(),
+                    tensor_shape: None, // no explicit tensor shape; treated as rank 0
+                    tensor_content: f64::to_le_bytes(0.125).to_vec(),
+                    ..Default::default()
+                },
             ];
             for tensor in tensors {
                 let v = EventValue::Summary(SummaryValue(Box::new(Value::Tensor(tensor.clone()))));
@@ -387,7 +411,36 @@ mod tests {
             ];
             for tensor in tensors {
                 let v = EventValue::Summary(SummaryValue(Box::new(Value::Tensor(tensor.clone()))));
-                let expected = Ok(ScalarValue(0.125));
+                let expected = Err(DataLoss);
+                let actual = v.into_scalar();
+                assert_eq!(
+                    actual, expected,
+                    "into_scalar for {:?}: got {:?}, expected {:?}",
+                    &tensor, actual, expected
+                )
+            }
+        }
+
+        #[test]
+        fn test_enrich_higher_rank_tensors() {
+            let tensors = vec![
+                pb::TensorProto {
+                    dtype: pb::DataType::DtFloat.into(),
+                    tensor_shape: Some(tensor_shape(&[2, 2])),
+                    float_val: vec![0.125, 9.99, 1.0, 2.0],
+                    ..Default::default()
+                },
+                // Rank-3 tensor that happens to be of size 1: still invalid.
+                pb::TensorProto {
+                    dtype: pb::DataType::DtDouble.into(),
+                    tensor_shape: Some(tensor_shape(&[1, 1, 1])),
+                    double_val: vec![0.125],
+                    ..Default::default()
+                },
+            ];
+            for tensor in tensors {
+                let v = EventValue::Summary(SummaryValue(Box::new(Value::Tensor(tensor.clone()))));
+                let expected = Err(DataLoss);
                 let actual = v.into_scalar();
                 assert_eq!(
                     actual, expected,

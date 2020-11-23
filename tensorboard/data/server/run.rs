@@ -19,13 +19,14 @@ use std::collections::{BTreeMap, HashMap, HashSet};
 use std::fs::File;
 use std::io::BufReader;
 use std::path::PathBuf;
+use std::sync::RwLock;
 
-use crate::commit::{self, Commit};
+use crate::commit;
 use crate::data_compat::{EventValue, SummaryValue};
 use crate::event_file::EventFileReader;
 use crate::proto::tensorboard as pb;
 use crate::reservoir::StageReservoir;
-use crate::types::{Run, Step, Tag, WallTime};
+use crate::types::{Step, Tag, WallTime};
 
 /// A loader to accumulate reservoir-sampled events in a single TensorBoard run.
 ///
@@ -145,12 +146,11 @@ impl RunLoader {
     ///
     /// # Panics
     ///
-    /// If there is data to write but `!commit.runs.read().unwrap().contains_key(run)`, or if any
-    /// lock is poisoned.
-    pub fn reload(&mut self, run: &Run, filenames: Vec<PathBuf>, commit: &Commit) {
+    /// If we need to access `run_data` but the lock is poisoned.
+    pub fn reload(&mut self, filenames: Vec<PathBuf>, run_data: &RwLock<commit::RunData>) {
         self.update_file_set(filenames);
         self.reload_files();
-        self.commit_all(run, commit);
+        self.commit_all(run_data);
     }
 
     /// Updates the active key set of `self.files` to match the given filenames.
@@ -215,13 +215,8 @@ impl RunLoader {
         }
     }
 
-    fn commit_all(&mut self, run: &Run, commit: &Commit) {
-        let runs = commit.runs.read().expect("acquiring runs lock");
-        let mut run = runs
-            .get(run)
-            .unwrap_or_else(|| panic!("no runs entry for {:?}", run))
-            .write()
-            .expect("acquiring tags lock");
+    fn commit_all(&mut self, run_data: &RwLock<commit::RunData>) {
+        let mut run = run_data.write().expect("acquiring run data lock");
         for (tag, ts) in &mut self.time_series {
             ts.commit(tag, &mut *run);
         }
@@ -296,6 +291,9 @@ mod test {
     use std::fs::File;
     use std::io::{BufWriter, Write};
 
+    use crate::commit::Commit;
+    use crate::types::Run;
+
     /// Writes an event to the given writer, in TFRecord form.
     fn write_event<W: Write>(writer: W, event: &pb::Event) -> std::io::Result<()> {
         use prost::Message;
@@ -368,7 +366,7 @@ mod test {
             .write()
             .expect("write-locking runs map")
             .insert(run.clone(), Default::default());
-        loader.reload(&run, vec![f1_name, f2_name], &commit);
+        loader.reload(vec![f1_name, f2_name], &commit.runs.read().unwrap()[&run]);
 
         // Start time should be that of the file version event, even though that didn't correspond
         // to any time series.
