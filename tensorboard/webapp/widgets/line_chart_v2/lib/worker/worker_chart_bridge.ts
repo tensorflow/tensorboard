@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {MainThreadChart} from '../chart';
+import {ChartImpl} from '../chart';
 import {ChartOptions} from '../chart_types';
 import {decompactDataSeries} from './compact_data_series';
 import {
@@ -56,7 +56,7 @@ function createPortHandler(port: MessagePort, initMessage: InitMessage) {
       );
   }
 
-  const lineChart = new MainThreadChart(chartOptions);
+  const lineChart = new ChartImpl(chartOptions);
 
   port.onmessage = function (event: MessageEvent) {
     const message = event.data as HostToGuestMessage;

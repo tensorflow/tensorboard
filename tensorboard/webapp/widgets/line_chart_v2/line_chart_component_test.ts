@@ -18,7 +18,7 @@ import {CommonModule} from '@angular/common';
 import {Component, Input, NO_ERRORS_SCHEMA, ViewChild} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 
-import {MainThreadChart} from './lib/chart';
+import {ChartImpl} from './lib/chart';
 import {
   DataSeries,
   DataSeriesMetadataMap,
@@ -91,13 +91,13 @@ describe('line_chart_v2/line_chart test', () => {
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
 
-    resizeSpy = spyOn(MainThreadChart.prototype, 'resize');
-    disposeSpy = spyOn(MainThreadChart.prototype, 'dispose');
-    setXScaleTypeSpy = spyOn(MainThreadChart.prototype, 'setXScaleType');
-    setYScaleTypeSpy = spyOn(MainThreadChart.prototype, 'setYScaleType');
-    updateMetadataSpy = spyOn(MainThreadChart.prototype, 'setMetadata');
-    updateDataSpy = spyOn(MainThreadChart.prototype, 'setData');
-    updateViewBoxSpy = spyOn(MainThreadChart.prototype, 'setViewBox');
+    resizeSpy = spyOn(ChartImpl.prototype, 'resize');
+    disposeSpy = spyOn(ChartImpl.prototype, 'dispose');
+    setXScaleTypeSpy = spyOn(ChartImpl.prototype, 'setXScaleType');
+    setYScaleTypeSpy = spyOn(ChartImpl.prototype, 'setYScaleType');
+    updateMetadataSpy = spyOn(ChartImpl.prototype, 'setMetadata');
+    updateDataSpy = spyOn(ChartImpl.prototype, 'setData');
+    updateViewBoxSpy = spyOn(ChartImpl.prototype, 'setViewBox');
   });
 
   function createComponent(input: {
