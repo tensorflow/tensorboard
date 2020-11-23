@@ -202,9 +202,9 @@ describe('line_chart_v2/lib/scale test', () => {
         let low: number;
         let high: number;
 
-        [low, high] = scale.niceDomain([0, 100]);
-        expect(low).toBe(Number.MIN_VALUE);
-        expect(high).toBeCloseTo(100, 0);
+        [low, high] = scale.niceDomain([1, 100]);
+        expect(low).toBeCloseTo(0.79, 2);
+        expect(high).toBeCloseTo(125.8, 0);
 
         [low, high] = scale.niceDomain([0.001, 75]);
         // spread is about log_10(75) - log_10(0.001) = 4.875
