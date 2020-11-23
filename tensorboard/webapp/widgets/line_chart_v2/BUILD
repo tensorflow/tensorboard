@@ -1,5 +1,4 @@
-load("//tensorboard/defs:defs.bzl", "tf_js_binary", "tf_ng_module", "tf_sass_binary", "tf_ts_library")
-load("//tensorboard/defs:web.bzl", "tf_web_library")
+load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_sass_binary", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
@@ -25,8 +24,10 @@ tf_ng_module(
         "//tensorboard/webapp/angular:expect_angular_cdk_overlay",
         "//tensorboard/webapp/widgets:resize_detector",
         "//tensorboard/webapp/widgets/line_chart_v2/lib:chart",
+        "//tensorboard/webapp/widgets/line_chart_v2/lib:chart_types",
         "//tensorboard/webapp/widgets/line_chart_v2/lib:public_types",
         "//tensorboard/webapp/widgets/line_chart_v2/lib:scale",
+        "//tensorboard/webapp/widgets/line_chart_v2/lib:utils",
         "//tensorboard/webapp/widgets/line_chart_v2/lib/worker:worker_chart",
         "//tensorboard/webapp/widgets/line_chart_v2/sub_view",
         "@npm//@angular/common",
@@ -46,51 +47,27 @@ tf_ts_library(
     ],
 )
 
-tf_ng_module(
-    name = "line_chart_demo",
+tf_ts_library(
+    name = "line_chart_utils",
     srcs = [
-        "demo_main.ts",
-        "line_chart_demo_component.ts",
-        "line_chart_demo_module.ts",
+        "data_transformer.ts",
     ],
-    visibility = ["//visibility:private"],
     deps = [
-        ":line_chart_v2",
         "//tensorboard/webapp/widgets/line_chart_v2/lib:public_types",
-        "@npm//@angular/common",
-        "@npm//@angular/core",
-        "@npm//@angular/platform-browser",
     ],
-)
-
-tf_js_binary(
-    name = "demo_binary",
-    compile = True,
-    entry_point = ":demo_main.ts",
-    visibility = ["//visibility:private"],
-    deps = [":line_chart_demo"],
-)
-
-tf_web_library(
-    name = "demo_server",
-    srcs = [
-        "demo.html",
-        ":demo_binary.js",
-        "//tensorboard/webapp/widgets/line_chart_v2/lib/worker:chart_worker.js",
-    ],
-    path = "/",
-    visibility = ["//visibility:private"],
 )
 
 tf_ts_library(
     name = "line_chart_v2_tests",
     testonly = True,
     srcs = [
+        "data_transformer_test.ts",
         "line_chart_component_test.ts",
         "line_chart_internal_utils_test.ts",
     ],
     deps = [
         ":internal_utils",
+        ":line_chart_utils",
         ":line_chart_v2",
         "//tensorboard/webapp/angular:expect_angular_cdk_overlay",
         "//tensorboard/webapp/angular:expect_angular_core_testing",

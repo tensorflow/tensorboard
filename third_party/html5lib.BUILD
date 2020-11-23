@@ -45,7 +45,7 @@ py_library(
         "html5lib/treewalkers/etree_lxml.py",
         "html5lib/treewalkers/genshi.py",
     ],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         "@org_pythonhosted_six",
         "@org_pythonhosted_webencodings",

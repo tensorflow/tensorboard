@@ -25,7 +25,7 @@ import {
   ViewChild,
 } from '@angular/core';
 
-import {MainThreadChart} from './lib/chart';
+import {ChartImpl} from './lib/chart';
 import {Chart} from './lib/chart_types';
 import {
   ChartCallbacks,
@@ -257,7 +257,7 @@ export class LineChartComponent implements AfterViewInit, OnChanges, OnDestroy {
 
     const useWorker =
       rendererType !== RendererType.SVG && isOffscreenCanvasSupported();
-    const klass = useWorker ? WorkerChart : MainThreadChart;
+    const klass = useWorker ? WorkerChart : ChartImpl;
     this.lineChart = new klass(params);
   }
 

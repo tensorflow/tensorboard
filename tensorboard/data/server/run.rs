@@ -289,8 +289,9 @@ impl Default for RunLoader {
 mod test {
     use super::*;
     use std::fs::File;
-    use std::io::{BufWriter, Write};
+    use std::io::BufWriter;
 
+<<<<<<< HEAD
     use crate::commit::Commit;
     use crate::types::Run;
 
@@ -326,6 +327,9 @@ mod test {
         };
         write_event(writer, &event)
     }
+=======
+    use crate::writer::SummaryWriteExt;
+>>>>>>> ef6a3c1472d92a4fa682d1f8bdd55a676daa8144
 
     #[test]
     fn test() -> Result<(), Box<dyn std::error::Error>> {
@@ -342,20 +346,21 @@ mod test {
                 what: Some(pb::event::What::FileVersion("brain.Event:2".to_string())),
                 ..Default::default()
             };
-            write_event(f, &file_version)?;
+            f.write_event(&file_version)?;
         }
 
         // Write some data points across both files.
         let run = Run("train".to_string());
         let tag = Tag("accuracy".to_string());
-        write_scalar(&mut f1, &tag, Step(0), WallTime::new(1235.0).unwrap(), 0.25)?;
-        write_scalar(&mut f1, &tag, Step(1), WallTime::new(1236.0).unwrap(), 0.50)?;
-        write_scalar(&mut f1, &tag, Step(2), WallTime::new(1237.0).unwrap(), 0.75)?;
-        write_scalar(&mut f1, &tag, Step(3), WallTime::new(1238.0).unwrap(), 1.00)?;
+        f1.write_scalar(&tag, Step(0), WallTime::new(1235.0).unwrap(), 0.25)?;
+        f1.write_scalar(&tag, Step(1), WallTime::new(1236.0).unwrap(), 0.50)?;
+        f1.write_scalar(&tag, Step(2), WallTime::new(1237.0).unwrap(), 0.75)?;
+        f1.write_scalar(&tag, Step(3), WallTime::new(1238.0).unwrap(), 1.00)?;
         // preempt!
-        write_scalar(&mut f2, &tag, Step(2), WallTime::new(2346.0).unwrap(), 0.70)?;
-        write_scalar(&mut f2, &tag, Step(3), WallTime::new(2347.0).unwrap(), 0.85)?;
-        write_scalar(&mut f2, &tag, Step(4), WallTime::new(2348.0).unwrap(), 0.90)?;
+        f2.write_scalar(&tag, Step(2), WallTime::new(2346.0).unwrap(), 0.70)?;
+        f2.write_scalar(&tag, Step(3), WallTime::new(2347.0).unwrap(), 0.85)?;
+        f2.write_scalar(&tag, Step(4), WallTime::new(2348.0).unwrap(), 0.90)?;
+        // flush, so that the data's there when we read it
         f1.into_inner()?.sync_all()?;
         f2.into_inner()?.sync_all()?;
 

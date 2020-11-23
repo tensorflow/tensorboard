@@ -40,10 +40,11 @@ import {ThreeCoordinator} from './threejs_coordinator';
  * authoring more cumbersome.
  */
 const util = {
-  requestAnimationFrame: window.requestAnimationFrame,
+  requestAnimationFrame: (cb: FrameRequestCallback) =>
+    self.requestAnimationFrame(cb),
 };
 
-export class MainThreadChart implements Chart {
+export class ChartImpl implements Chart {
   private readonly renderer: ObjectRenderer;
   private readonly seriesLineView: SeriesLineView;
   private readonly coordinator: Coordinator;

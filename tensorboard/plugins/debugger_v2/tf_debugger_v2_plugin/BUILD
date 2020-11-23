@@ -94,7 +94,7 @@ py_binary(
     name = "extract_dtypes_from_python",
     srcs = ["extract_dtypes_from_python.py"],
     python_version = "PY3",
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         "//tensorboard/compat/tensorflow_stub",
     ],

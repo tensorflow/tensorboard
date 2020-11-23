@@ -1,9 +1,8 @@
-load("@npm_angular_bazel//:index.bzl", "ng_module")
-load("//tensorboard/defs:defs.bzl", "tf_ts_library")
+load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
-ng_module(
+tf_ng_module(
     name = "store",
     srcs = [
         "debugger_reducers.ts",
@@ -20,7 +19,7 @@ ng_module(
     ],
 )
 
-ng_module(
+tf_ng_module(
     name = "debugger_store_helpers",
     srcs = [
         "debugger_store_helpers.ts",
@@ -33,7 +32,7 @@ ng_module(
     ],
 )
 
-ng_module(
+tf_ng_module(
     name = "types",
     srcs = [
         "debugger_types.ts",
@@ -45,7 +44,7 @@ ng_module(
     ],
 )
 
-ng_module(
+tf_ng_module(
     name = "debug_tensor_value",
     srcs = [
         "debug_tensor_value.ts",

@@ -8,7 +8,7 @@ licenses(["notice"])
 py_library(
     name = "http_util",
     srcs = ["http_util.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     visibility = ["//visibility:public"],
     deps = [
         ":json_util",
@@ -21,7 +21,7 @@ py_test(
     name = "http_util_test",
     size = "small",
     srcs = ["http_util_test.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     tags = ["support_notf"],
     deps = [
         ":http_util",
@@ -34,14 +34,14 @@ py_test(
 py_library(
     name = "json_util",
     srcs = ["json_util.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
 )
 
 py_test(
     name = "json_util_test",
     size = "small",
     srcs = ["json_util_test.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     tags = ["support_notf"],
     deps = [
         ":json_util",
@@ -94,14 +94,14 @@ py_test(
 py_library(
     name = "empty_path_redirect",
     srcs = ["empty_path_redirect.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
 )
 
 py_test(
     name = "empty_path_redirect_test",
     size = "small",
     srcs = ["empty_path_redirect_test.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     tags = ["support_notf"],
     deps = [
         ":empty_path_redirect",
@@ -113,13 +113,13 @@ py_test(
 py_library(
     name = "experiment_id",
     srcs = ["experiment_id.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
 )
 
 py_test(
     name = "experiment_id_test",
     srcs = ["experiment_id_test.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         ":experiment_id",
         "//tensorboard:test",
@@ -130,13 +130,13 @@ py_test(
 py_library(
     name = "experimental_plugin",
     srcs = ["experimental_plugin.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
 )
 
 py_library(
     name = "path_prefix",
     srcs = ["path_prefix.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         "//tensorboard:errors",
     ],
@@ -146,7 +146,7 @@ py_test(
     name = "path_prefix_test",
     size = "small",
     srcs = ["path_prefix_test.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     tags = ["support_notf"],
     deps = [
         ":path_prefix",
@@ -159,14 +159,14 @@ py_test(
 py_library(
     name = "process_graph",
     srcs = ["process_graph.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     visibility = ["//visibility:public"],
 )
 
 py_library(
     name = "security_validator",
     srcs = ["security_validator.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         "//tensorboard/util:tb_logging",
         "@org_pocoo_werkzeug",
@@ -177,7 +177,7 @@ py_test(
     name = "security_validator_test",
     size = "small",
     srcs = ["security_validator_test.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     tags = ["support_notf"],
     deps = [
         ":security_validator",
