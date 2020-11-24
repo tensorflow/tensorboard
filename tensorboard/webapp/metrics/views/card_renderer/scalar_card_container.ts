@@ -65,6 +65,7 @@ import {
   ScalarCardDataSeries,
   ScalarCardPoint,
   ScalarCardSeriesMetadataMap,
+  SeriesType,
 } from './scalar_card_types';
 import {getDisplayNameForRun} from './utils';
 
@@ -180,6 +181,9 @@ export class ScalarCardContainer implements CardRenderer, OnInit {
   readonly xAxisType$ = this.store.select(getMetricsXAxisType);
   readonly scalarSmoothing$ = this.store.select(getMetricsScalarSmoothing);
   readonly gpuLineChartEnabled$ = this.store.select(getIsGpuChartEnabled);
+  readonly smoothingEnabled$ = this.store
+    .select(getMetricsScalarSmoothing)
+    .pipe(map((smoothing) => smoothing > 0));
 
   showFullSize = false;
 
@@ -331,14 +335,13 @@ export class ScalarCardContainer implements CardRenderer, OnInit {
 
         for (const {displayName, runId} of displayNameAndPoints) {
           metadataMap[runId] = {
+            type: SeriesType.ORIGINAL,
             id: runId,
             displayName,
             visible: Boolean(runSelectionMap && runSelectionMap.get(runId)),
             color: colorMap[runId] ?? '#fff',
             aux: false,
             opacity: 1,
-            smoothOf: null,
-            smoothedBy: null,
           };
         }
 
@@ -351,15 +354,14 @@ export class ScalarCardContainer implements CardRenderer, OnInit {
           metadataMap[smoothedSeriesId] = {
             ...metadata,
             id: smoothedSeriesId,
+            type: SeriesType.DERIVED,
             aux: false,
             smoothOf: id,
-            smoothedBy: null,
             opacity: 1,
           };
 
           metadata.aux = true;
           metadata.opacity = 0.4;
-          metadata.smoothedBy = smoothedSeriesId;
         }
         return metadataMap;
       }),

@@ -20,17 +20,26 @@ import {
   Point,
 } from '../../../widgets/line_chart_v2/types';
 
-export interface ScalarCardSeriesMetadata extends DataSeriesMetadata {
-  // Whether current series is derived from another series. Useful when displaying a
-  // tooltip where we need to show smoothed value and original value on a same row;
-  // sub_view/interactive_view only gives metdata, closest point index and its point
-  // value. We are supposed to find the original unsmoothed value to display on the
-  // tooltip.
-  smoothOf: string | null;
-  // Whether the series is smoothed by and derived by other series. Usedful for detecting
-  // whether this series is auxiliary.
-  smoothedBy: string | null;
+export enum SeriesType {
+  ORIGINAL,
+  DERIVED,
 }
+
+// Smoothed series is derived from a data serie. The additional information on the
+// metadata allows us to render smoothed value and its original value in the tooltip.
+export interface SmoothedSeriesMetadata extends DataSeriesMetadata {
+  type: SeriesType.DERIVED;
+  aux: false;
+  smoothOf: string;
+}
+
+export interface OriginalSeriesMetadata extends DataSeriesMetadata {
+  type: SeriesType.ORIGINAL;
+}
+
+export type ScalarCardSeriesMetadata =
+  | SmoothedSeriesMetadata
+  | OriginalSeriesMetadata;
 
 export type ScalarCardSeriesMetadataMap = DataSeriesMetadataMap<
   ScalarCardSeriesMetadata
