@@ -30,6 +30,7 @@ rust_library(
         "commit.rs",
         "data_compat.rs",
         "event_file.rs",
+        "logdir.rs",
         "masked_crc.rs",
         "reservoir.rs",
         "run.rs",
@@ -50,6 +51,7 @@ rust_library(
         "//third_party/rust:thiserror",
         "//third_party/rust:tokio",
         "//third_party/rust:tonic",
+        "//third_party/rust:walkdir",
     ],
 )
 
