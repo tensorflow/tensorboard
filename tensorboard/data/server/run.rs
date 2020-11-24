@@ -50,7 +50,7 @@ pub struct RunLoader {
     files: BTreeMap<PathBuf, EventFile<BufReader<File>>>,
 
     /// Reservoir-sampled data and metadata for each time series.
-    time_series: HashMap<Tag, TimeSeries>,
+    time_series: HashMap<Tag, StageTimeSeries>,
 }
 
 #[derive(Debug)]
@@ -66,7 +66,7 @@ enum EventFile<R> {
 }
 
 #[derive(Debug)]
-struct TimeSeries {
+struct StageTimeSeries {
     data_class: pb::DataClass,
     metadata: Box<pb::SummaryMetadata>,
     rsv: StageReservoir<StageValue>,
@@ -82,7 +82,7 @@ struct StageValue {
     payload: EventValue,
 }
 
-impl TimeSeries {
+impl StageTimeSeries {
     fn new(metadata: Box<pb::SummaryMetadata>) -> Self {
         let data_class =
             pb::DataClass::from_i32(metadata.data_class).unwrap_or(pb::DataClass::Unknown);
@@ -228,7 +228,7 @@ impl RunLoader {
 /// This is a standalone function because it's called from `reload_files` in a context that already
 /// has an exclusive reference into `self.files`, and so can't call methods on `&mut self`.
 fn read_event(
-    time_series: &mut HashMap<Tag, TimeSeries>,
+    time_series: &mut HashMap<Tag, StageTimeSeries>,
     start_time: &mut Option<WallTime>,
     e: pb::Event,
 ) {
@@ -265,7 +265,7 @@ fn read_event(
                     Entry::Vacant(v) => {
                         let metadata =
                             summary_value.initial_metadata(summary_pb_value.metadata.take());
-                        v.insert(TimeSeries::new(metadata))
+                        v.insert(StageTimeSeries::new(metadata))
                     }
                 };
                 let sv = StageValue {
