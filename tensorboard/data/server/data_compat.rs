@@ -73,9 +73,8 @@ fn tensor_proto_to_scalar(tp: &pb::TensorProto) -> Option<f64> {
     // Ensure that it's rank-0. Treat an absent `tensor_shape` as an empty message, which happens
     // to imply rank 0.
     match &tp.tensor_shape {
-        Some(s) if s.dim.is_empty() => (),
-        None => (), // just like the explicitly empty case
-        Some(_) => return None,
+        Some(s) if !s.dim.is_empty() => return None,
+        _ => (),
     }
     use pb::DataType;
     match DataType::from_i32(tp.dtype) {
