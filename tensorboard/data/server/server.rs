@@ -139,45 +139,36 @@ impl TensorBoardDataProvider for DataProviderHandler {
 mod tests {
     use super::*;
 
-    use futures_core::Future;
-    use tokio::runtime::Runtime;
-
-    /// Executes the given future in a new, temporary event loop.
-    fn block_on<F: Future>(future: F) -> F::Output {
-        let mut rt = Runtime::new().unwrap();
-        rt.block_on(future)
-    }
-
-    #[test]
-    fn test_list_plugins() {
+    #[tokio::test]
+    async fn test_list_plugins() {
         let handler = DataProviderHandler;
         let req = Request::new(data::ListPluginsRequest {
             experiment_id: "123".to_string(),
             ..Default::default()
         });
-        let res = block_on(handler.list_plugins(req)).unwrap().into_inner();
+        let res = handler.list_plugins(req).await.unwrap().into_inner();
         assert_eq!(
             res.plugins.into_iter().map(|p| p.name).collect::<Vec<_>>(),
             vec!["scalars"]
         );
     }
 
-    #[test]
-    fn test_list_runs() {
+    #[tokio::test]
+    async fn test_list_runs() {
         let handler = DataProviderHandler;
         let req = Request::new(data::ListRunsRequest {
             experiment_id: "123".to_string(),
             ..Default::default()
         });
-        let res = block_on(handler.list_runs(req)).unwrap().into_inner();
+        let res = handler.list_runs(req).await.unwrap().into_inner();
         assert_eq!(res.runs.len(), 1);
         let run = &res.runs[0];
         assert_eq!(run.start_time, FAKE_START_TIME);
         assert_eq!(run.name, "train");
     }
 
-    #[test]
-    fn test_list_scalars() {
+    #[tokio::test]
+    async fn test_list_scalars() {
         let handler = DataProviderHandler;
         let req = Request::new(data::ListScalarsRequest {
             experiment_id: "123".to_string(),
@@ -187,14 +178,14 @@ mod tests {
             }),
             ..Default::default()
         });
-        let res = block_on(handler.list_scalars(req)).unwrap().into_inner();
+        let res = handler.list_scalars(req).await.unwrap().into_inner();
         assert_eq!(res.runs.len(), 1);
         assert_eq!(res.runs[0].tags.len(), 1);
         // fake data; don't bother checking the contents
     }
 
-    #[test]
-    fn test_read_scalars() {
+    #[tokio::test]
+    async fn test_read_scalars() {
         let handler = DataProviderHandler;
         let req = Request::new(data::ReadScalarsRequest {
             experiment_id: "123".to_string(),
@@ -208,7 +199,7 @@ mod tests {
             }),
             ..Default::default()
         });
-        let res = block_on(handler.read_scalars(req)).unwrap().into_inner();
+        let res = handler.read_scalars(req).await.unwrap().into_inner();
         assert_eq!(res.runs.len(), 1);
         assert_eq!(res.runs[0].tags.len(), 1);
         // fake data; don't bother checking the contents
