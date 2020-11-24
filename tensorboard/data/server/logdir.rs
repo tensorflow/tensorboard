@@ -36,9 +36,23 @@ struct RunState {
     /// Path to this run's directory relative to the root logdir.
     relpath: PathBuf,
     /// Logdir-relative paths to other directories that normalize to the same name as this run
-    /// after lossy Unicode conversion. This is only non-empty when there are multiple filesystem
-    /// paths that are invalid Unicode and collide. For deduplicating warnings.
-    merged_relpaths: HashSet<PathBuf>,
+    /// after lossy Unicode conversion.
+    ///
+    /// Directories on the filesystem need not be valid Unicode. On Unix, for instance, they're
+    /// arbitrary byte sequences without `\0` or `/`. But TensorBoard wants run names to be strings
+    /// for human display. Thus, we apply [`OsStr::to_string_lossy`] to convert run directory paths
+    /// to run names. As the name suggests, this is a lossy conversion: it replaces non-Unicode
+    /// sequences with U+FFFD. This creates an edge case wherein two different directories may map
+    /// to the same run name. In such a case, we merge the two directories into one run, and print
+    /// a warning.
+    ///
+    /// This set tracks the directories other than `self.relpath` that comprise this run. It is
+    /// non-empty only when we hit this edge case: i.e., when there are multiple filesystem paths
+    /// that are invalid Unicode and collide. It's used for deduplicating warnings, so that we
+    /// don't warn about the directory again on every load cycle.
+    ///
+    /// [`OsStr::to_string_lossy`]: std::ffi::OsStr::to_string_lossy
+    collided_relpaths: HashSet<PathBuf>,
 }
 
 /// Record of an event file found under the log directory.
@@ -47,9 +61,12 @@ struct EventFileDiscovery {
     run_relpath: PathBuf,
     event_file: PathBuf,
 }
-/// Record of all event files found under the log directory, grouped by run. Each value in the map
-/// must be non-empty. Not all `run_relpaths` within one `Vec<_>` value need be the same due to
-/// lossy paths.
+/// Record of all event files found under the log directory, grouped by run.
+///
+/// Each value in the map must be non-empty.
+///
+/// Not all `run_relpaths` within one `Vec<_>` value need be the same due to lossy paths. See the
+/// `collided_relpaths` field of [`RunState`] for details.
 struct Discoveries(HashMap<Run, Vec<EventFileDiscovery>>);
 
 /// A file is treated as an event file if its basename contains this substring.
@@ -82,7 +99,9 @@ impl<'a> LogdirLoader<'a> {
     /// Finds all event files under the log directory and groups them by run.
     fn discover(&self) -> Discoveries {
         let mut run_map: HashMap<Run, Vec<EventFileDiscovery>> = HashMap::new();
-        let walker = WalkDir::new(&self.logdir).sort_by(|a, b| a.file_name().cmp(b.file_name()));
+        let walker = WalkDir::new(&self.logdir)
+            .sort_by(|a, b| a.file_name().cmp(b.file_name()))
+            .follow_links(true);
         for walkdir_item in walker {
             let dirent = match walkdir_item {
                 Ok(dirent) => dirent,
@@ -186,15 +205,16 @@ impl<'a> LogdirLoader<'a> {
                     // first relpath.
                     relpath: event_files[0].run_relpath.clone(),
                     loader: RunLoader::new(),
-                    merged_relpaths: HashSet::new(),
+                    collided_relpaths: HashSet::new(),
                 });
             for ef in event_files {
-                if ef.run_relpath != run.relpath && !run.merged_relpaths.contains(&ef.run_relpath) {
+                if ef.run_relpath != run.relpath && !run.collided_relpaths.contains(&ef.run_relpath)
+                {
                     eprintln!(
                         "merging directories {:?} and {:?}, which both normalize to run {:?}",
                         run.relpath, ef.run_relpath, run_name.0
                     );
-                    run.merged_relpaths.insert(ef.run_relpath.clone()); // don't warn again
+                    run.collided_relpaths.insert(ef.run_relpath.clone()); // don't warn again
                 }
             }
         }
@@ -299,7 +319,7 @@ mod tests {
         assert_eq!(&loader.runs[&train_run].relpath, &train_relpath);
         assert_eq!(&loader.runs[&test_run].relpath, &test_relpath);
         for run_state in loader.runs.values() {
-            assert!(run_state.merged_relpaths.is_empty()); // no bad Unicode
+            assert!(run_state.collided_relpaths.is_empty()); // no bad Unicode
         }
 
         // Check that we persist the right run states in the commit.
@@ -418,8 +438,46 @@ mod tests {
         assert_eq!(run_state.relpath, bad1);
         let mut expected_relpaths = HashSet::new();
         expected_relpaths.insert(bad2.to_path_buf());
-        assert_eq!(run_state.merged_relpaths, expected_relpaths);
+        assert_eq!(run_state.collided_relpaths, expected_relpaths);
 
+        Ok(())
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn test_symlink() -> Result<(), Box<dyn std::error::Error>> {
+        let logdir = tempfile::tempdir()?;
+        let train_dir = logdir.path().join("train");
+        let test_dir = logdir.path().join("test");
+        fs::create_dir(&train_dir)?;
+        std::os::unix::fs::symlink(&train_dir, &test_dir)?;
+        File::create(train_dir.join(EVENT_FILE_BASENAME_INFIX))?;
+
+        let commit = Commit::new();
+        let mut loader = LogdirLoader::new(&commit, logdir.path().to_path_buf());
+        loader.reload();
+
+        assert_eq!(
+            loader.runs.keys().collect::<HashSet<_>>(),
+            vec![&Run("test".to_string()), &Run("train".to_string())]
+                .into_iter()
+                .collect::<HashSet<_>>(),
+        );
+        Ok(())
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn test_symlink_loop() -> Result<(), Box<dyn std::error::Error>> {
+        let logdir = tempfile::tempdir()?;
+        let dir1 = logdir.path().join("dir1");
+        let dir2 = logdir.path().join("dir2");
+        std::os::unix::fs::symlink(&dir1, &dir2)?;
+        std::os::unix::fs::symlink(&dir2, &dir1)?;
+
+        let commit = Commit::new();
+        let mut loader = LogdirLoader::new(&commit, logdir.path().to_path_buf());
+        loader.reload(); // should not hang
         Ok(())
     }
 }
