@@ -30,6 +30,9 @@ pub mod types;
 #[cfg(test)]
 mod scripted_reader;
 
+#[cfg(test)]
+mod writer;
+
 /// Protocol buffer bindings.
 #[allow(clippy::all)]
 pub mod proto {

@@ -37,7 +37,7 @@ py_test(
         "test.py",
     ],
     main = "test.py",
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     tags = ["support_notf"],
     deps = [
         "//tensorboard",

@@ -12,7 +12,7 @@ licenses(["notice"])
 py_library(
     name = "npmi_plugin",
     srcs = ["npmi_plugin.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         ":metadata",
         "//tensorboard:plugin_util",
@@ -27,7 +27,7 @@ py_test(
     size = "small",
     srcs = ["npmi_plugin_test.py"],
     main = "npmi_plugin_test.py",
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         ":npmi_plugin",
         ":summary",
@@ -43,7 +43,7 @@ py_test(
 py_binary(
     name = "npmi_demo",
     srcs = ["npmi_demo.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         ":npmi_demo_data",
         ":summary",
@@ -54,7 +54,7 @@ py_binary(
 py_library(
     name = "npmi_demo_data",
     srcs = ["npmi_demo_data.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     visibility = [
         "//tensorboard:internal",
     ],
@@ -65,7 +65,7 @@ py_library(
 py_library(
     name = "summary",
     srcs = ["summary.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     visibility = [
         "//visibility:public",
     ],
@@ -79,7 +79,7 @@ py_test(
     name = "summary_test",
     size = "small",
     srcs = ["summary_test.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         ":metadata",
         ":summary",
@@ -92,7 +92,7 @@ py_test(
 py_library(
     name = "metadata",
     srcs = ["metadata.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     visibility = [
         "//tensorboard:internal",
     ],
@@ -106,7 +106,7 @@ py_library(
 py_binary(
     name = "csv_to_plugin_data_demo",
     srcs = ["csv_to_plugin_data_demo.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         ":summary",
         "//tensorboard:expect_tensorflow_installed",
@@ -116,7 +116,7 @@ py_binary(
 py_binary(
     name = "npy_to_embedding_data_demo",
     srcs = ["npy_to_embedding_data_demo.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         ":summary",
         "//tensorboard:expect_tensorflow_installed",

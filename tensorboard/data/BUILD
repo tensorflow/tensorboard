@@ -8,7 +8,7 @@ licenses(["notice"])
 py_library(
     name = "lib_init_only",
     srcs = ["__init__.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     visibility = ["//tensorboard:internal"],
     deps = [
         "//tensorboard/data/experimental:lib_init_only",
@@ -29,7 +29,7 @@ py_test(
     name = "provider_test",
     size = "small",
     srcs = ["provider_test.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     tags = ["support_notf"],
     deps = [
         ":provider",

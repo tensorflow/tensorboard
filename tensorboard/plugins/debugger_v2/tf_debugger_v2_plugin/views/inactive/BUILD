@@ -8,7 +8,7 @@ py_binary(
     name = "inline_images",
     srcs = ["inline_images.py"],
     python_version = "PY3",
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
 )
 
 genrule(

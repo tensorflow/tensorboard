@@ -419,10 +419,10 @@ class _VzHistogramTimeseries
       .scaleLinear()
       .domain(xScale.domain())
       .range([0, outlineCanvasSize]);
-    var outlineColor = d3
+    const fillColor = d3
       .scaleLinear()
       .domain(d3.extent(data, timeAccessor))
-      .range([color.darker(), color.brighter()])
+      .range([color.brighter(), color.darker()])
       .interpolate(d3.interpolateHcl);
     var xAxis = d3.axisBottom(xScale).ticks(Math.max(2, width / 20));
     var yAxis = d3
@@ -548,19 +548,19 @@ class _VzHistogramTimeseries
             ')'
         )
         .style('stroke', function (d) {
-          return mode === 'offset' ? 'white' : outlineColor(timeAccessor(d));
+          return mode === 'offset' ? 'white' : fillColor(timeAccessor(d));
         })
         .style('fill-opacity', function (d) {
           return mode === 'offset' ? 1 : 0;
         })
         .style('fill', function (d) {
-          return outlineColor(timeAccessor(d));
+          return fillColor(timeAccessor(d));
         });
     var hoverEnter = histogramEnter.append('g').attr('class', 'hover');
     var hoverUpdate = histogramUpdate
       .select('.hover')
       .style('fill', function (d) {
-        return outlineColor(timeAccessor(d));
+        return fillColor(timeAccessor(d));
       });
     hoverEnter.append('circle').attr('r', 2);
     hoverEnter.append('text').style('display', 'none').attr('dx', 4);

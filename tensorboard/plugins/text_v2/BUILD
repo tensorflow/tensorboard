@@ -10,7 +10,7 @@ licenses(["notice"])
 py_library(
     name = "text_v2_plugin",
     srcs = ["text_v2_plugin.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:plugin_util",
@@ -28,7 +28,7 @@ py_test(
     size = "small",
     srcs = ["text_v2_plugin_test.py"],
     main = "text_v2_plugin_test.py",
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         ":text_v2_plugin",
         "//tensorboard:context",

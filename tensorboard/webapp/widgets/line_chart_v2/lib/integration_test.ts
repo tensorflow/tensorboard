@@ -13,14 +13,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {MainThreadChart, TEST_ONLY} from './chart';
+import {ChartImpl, TEST_ONLY} from './chart';
 import {ChartCallbacks, RendererType, ScaleType} from './public_types';
 import {buildMetadata, createSeries} from './testing';
 
 describe('line_chart_v2/lib/integration test', () => {
   let dom: SVGElement;
   let callbacks: ChartCallbacks;
-  let chart: MainThreadChart;
+  let chart: ChartImpl;
   let rafSpy: jasmine.Spy;
 
   beforeEach(() => {
@@ -34,7 +34,7 @@ describe('line_chart_v2/lib/integration test', () => {
     callbacks = {
       onDrawEnd: jasmine.createSpy(),
     };
-    chart = new MainThreadChart({
+    chart = new ChartImpl({
       type: RendererType.SVG,
       container: dom,
       callbacks,

@@ -24,7 +24,7 @@ py_binary(
     name = "tensorboard",
     srcs = ["main.py"],
     main = "main.py",
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         ":default",
         ":dynamic_plugins",
@@ -45,7 +45,7 @@ py_binary(
 py_library(
     name = "lib",
     srcs = ["__init__.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     visibility = ["//tensorboard:internal"],
     deps = [
         ":errors",
@@ -66,7 +66,7 @@ py_library(
 py_library(
     name = "lib_init_only",
     srcs = ["__init__.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     visibility = ["//tensorboard:internal"],
     deps = [
         ":lazy",
@@ -78,7 +78,7 @@ py_test(
     name = "lib_test",
     size = "small",
     srcs = ["lib_test.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     tags = ["support_notf"],
     visibility = ["//tensorboard:internal"],
     deps = [
@@ -90,7 +90,7 @@ py_test(
 py_library(
     name = "auth",
     srcs = ["auth.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         "@org_pythonhosted_six",
     ],
@@ -111,7 +111,7 @@ py_test(
 py_library(
     name = "context",
     srcs = ["context.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         ":auth",
     ],
@@ -139,7 +139,7 @@ py_library(
 py_test(
     name = "errors_test",
     srcs = ["errors_test.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         ":errors",
         ":test",
@@ -149,7 +149,7 @@ py_test(
 py_library(
     name = "manager",
     srcs = ["manager.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     visibility = ["//tensorboard:internal"],
     deps = [
         ":version",
@@ -162,7 +162,7 @@ py_test(
     name = "manager_test",
     size = "small",
     srcs = ["manager_test.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     tags = ["support_notf"],
     visibility = ["//tensorboard:internal"],
     deps = [
@@ -187,7 +187,7 @@ py_test(
     # high parallelism; TensorBoard subprocess time out instead of
     # launching successfully.
     flaky = True,
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     visibility = ["//tensorboard:internal"],
     deps = [
         ":manager",
@@ -200,7 +200,7 @@ py_test(
 py_library(
     name = "notebook",
     srcs = ["notebook.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     visibility = ["//visibility:public"],
     deps = [
         ":manager",
@@ -210,7 +210,7 @@ py_library(
 py_library(
     name = "program",
     srcs = ["program.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         ":manager",
         ":version",
@@ -231,7 +231,7 @@ py_test(
     name = "program_test",
     size = "small",
     srcs = ["program_test.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     tags = ["support_notf"],
     deps = [
         ":default",
@@ -249,7 +249,7 @@ py_library(
     name = "test",
     testonly = 1,
     srcs = ["test.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         "//tensorboard:expect_absl_testing_absltest_installed",
         "//tensorboard/util:tb_logging",
@@ -261,7 +261,7 @@ py_library(
     name = "default",
     srcs = ["default.py"],
     data = ["webfiles.zip"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         "//tensorboard:expect_pkg_resources_installed",
         "//tensorboard/backend:experimental_plugin",
@@ -287,6 +287,7 @@ py_library(
 
 py_library(
     name = "dynamic_plugins",
+    srcs_version = "PY3",
     deps = [
         "//tensorboard/plugins/projector:projector_plugin",
     ],
@@ -296,7 +297,7 @@ py_test(
     name = "default_test",
     size = "small",
     srcs = ["default_test.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     tags = ["support_notf"],
     deps = [
         ":default",
@@ -310,14 +311,14 @@ py_test(
 py_library(
     name = "version",
     srcs = ["version.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
 )
 
 py_test(
     name = "version_test",
     size = "small",
     srcs = ["version_test.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     tags = ["support_notf"],
     deps = [
         ":test",
@@ -337,6 +338,7 @@ tf_web_library(
         "//tensorboard/webapp:index.html",
         "//tensorboard/webapp:index.js",
         "//tensorboard/webapp:svg_bundle",
+        "//tensorboard/webapp/widgets/line_chart_v2/lib/worker:chart_worker.js",
     ],
     path = "/",
     deps = [
@@ -442,7 +444,7 @@ filegroup(
 py_library(
     name = "data_compat",
     srcs = ["data_compat.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/plugins/audio:metadata",
@@ -458,7 +460,7 @@ py_test(
     name = "data_compat_test",
     size = "small",
     srcs = ["data_compat_test.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         ":data_compat",
         "//tensorboard:expect_numpy_installed",
@@ -479,7 +481,7 @@ py_test(
 py_library(
     name = "dataclass_compat",
     srcs = ["dataclass_compat.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/plugins/audio:metadata",
@@ -498,7 +500,7 @@ py_test(
     name = "dataclass_compat_test",
     size = "small",
     srcs = ["dataclass_compat_test.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         ":dataclass_compat",
         "//tensorboard:expect_numpy_installed",
@@ -524,7 +526,7 @@ py_test(
 py_binary(
     name = "encode_png_benchmark",
     srcs = ["encode_png_benchmark.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         "//tensorboard:expect_absl_logging_installed",
         "//tensorboard:expect_numpy_installed",
@@ -538,7 +540,7 @@ py_binary(
 py_library(
     name = "plugin_util",
     srcs = ["plugin_util.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     visibility = ["//visibility:public"],
     deps = [
         ":context",
@@ -553,7 +555,7 @@ py_test(
     name = "plugin_util_test",
     size = "small",
     srcs = ["plugin_util_test.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     tags = ["support_notf"],
     deps = [
         ":context",
@@ -573,14 +575,14 @@ alias(
 py_library(
     name = "lazy",
     srcs = ["lazy.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
 )
 
 py_test(
     name = "lazy_test",
     size = "small",
     srcs = ["lazy_test.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     tags = ["support_notf"],
     deps = [
         ":lazy",

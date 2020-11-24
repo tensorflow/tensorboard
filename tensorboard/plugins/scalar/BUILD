@@ -11,7 +11,7 @@ licenses(["notice"])
 py_library(
     name = "scalars_plugin",
     srcs = ["scalars_plugin.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         ":metadata",
         "//tensorboard:errors",
@@ -29,7 +29,7 @@ py_test(
     size = "medium",
     srcs = ["scalars_plugin_test.py"],
     main = "scalars_plugin_test.py",
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         ":scalars_plugin",
         ":summary",
@@ -52,7 +52,7 @@ py_test(
     size = "small",
     srcs = ["scalars_plugin_test.py"],
     main = "scalars_plugin_test.py",
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         ":scalars_plugin",
         ":summary",
@@ -73,7 +73,7 @@ py_test(
 py_binary(
     name = "scalars_demo",
     srcs = ["scalars_demo.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         ":summary",
         "//tensorboard:expect_tensorflow_installed",
@@ -84,7 +84,7 @@ py_binary(
 py_binary(
     name = "scalars_demo_eager",
     srcs = ["scalars_demo_eager.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         ":summary",
         "//tensorboard:expect_tensorflow_installed",
@@ -97,7 +97,7 @@ py_binary(
 py_library(
     name = "summary",
     srcs = ["summary.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         ":metadata",
         ":summary_v2",
@@ -108,7 +108,7 @@ py_library(
 py_library(
     name = "summary_v2",
     srcs = ["summary_v2.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     visibility = [
         "//tensorboard:internal",
     ],
@@ -124,7 +124,7 @@ py_test(
     name = "summary_test",
     size = "small",
     srcs = ["summary_test.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         ":metadata",
         ":summary",
@@ -138,7 +138,7 @@ py_test(
 py_library(
     name = "metadata",
     srcs = ["metadata.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     visibility = [
         "//tensorboard:internal",
     ],
