@@ -32,7 +32,6 @@ pub struct LogdirLoader<'a> {
 
 struct RunState {
     /// Stateful loader for this run.
-    #[allow(dead_code)] // under construction
     loader: RunLoader,
     /// Path to this run's directory relative to the root logdir.
     relpath: PathBuf,
@@ -69,7 +68,11 @@ impl<'a> LogdirLoader<'a> {
     /// Performs a complete load cycle: finds all event files and reads data from all runs,
     /// updating the shared commit.
     ///
-    /// **Note:** This method is only partially implemented and does not actually read data yet.
+    /// # Panics
+    ///
+    /// If any of the commit locks is poisoned, or if a run is removed from the commit by another
+    /// client while this reload is in progress (should not happen if the commit is only being
+    /// updated by a single `LogdirLoader`).
     pub fn reload(&mut self) {
         let discoveries = self.discover();
         self.synchronize_runs(&discoveries);
@@ -197,8 +200,35 @@ impl<'a> LogdirLoader<'a> {
         }
     }
 
-    fn load_runs(&mut self, _discoveries: Discoveries) {
-        // TODO(@wchargin): Not yet implemented.
+    /// Tells all run loaders to reload data with the given filenames, and blocks until completion.
+    ///
+    /// # Panics
+    ///
+    /// Panics if a run in `self.runs` has no entry in `discoveries`, which should only happen if
+    /// `synchronize_runs(&discoveries)` was not called. Panics if any run loader panics.
+    fn load_runs(&mut self, discoveries: Discoveries) {
+        let mut discoveries = discoveries.0;
+        let commit_runs = self
+            .commit
+            .runs
+            .read()
+            .expect("could not acquire runs.data");
+        for (run, run_state) in self.runs.iter_mut() {
+            let event_files = discoveries
+                .remove(run)
+                .unwrap_or_else(|| panic!("run in self.runs but not discovered: {:?}", run));
+            let filenames: Vec<PathBuf> = event_files.into_iter().map(|d| d.event_file).collect();
+            run_state.loader.reload(
+                filenames,
+                commit_runs.get(run).unwrap_or_else(|| {
+                    panic!(
+                        "run in self.runs but not in commit.runs \
+                        (is another client mutating this commit?): {:?}",
+                        run
+                    )
+                }),
+            );
+        }
     }
 }
 
@@ -206,26 +236,47 @@ impl<'a> LogdirLoader<'a> {
 mod tests {
     use super::*;
     use std::ffi::OsStr;
-    use std::fs::{self, DirBuilder, File};
+    use std::fs::{self, File};
+
+    use crate::types::{Step, Tag, WallTime};
+    use crate::writer::SummaryWriteExt;
 
     #[test]
-    fn test_discovery() -> Result<(), Box<dyn std::error::Error>> {
+    fn test_basic() -> Result<(), Box<dyn std::error::Error>> {
         let logdir = tempfile::tempdir()?;
-        let files_to_create = vec![
-            vec!["tfevents.123"],
-            vec!["mnist", "train", "tfevents.234"],
-            vec!["mnist", "train", "tfevents.345"],
-            vec!["mnist", "test", "tfevents.456"],
-            vec!["non_run", "non_event_file"],
-        ];
-        for path_components in &files_to_create {
-            let mut p = logdir.path().to_path_buf();
-            p.extend(path_components.iter());
-            DirBuilder::new()
-                .recursive(true)
-                .create(p.parent().ok_or("event file has no parent")?)?;
-            File::create(p)?;
-        }
+        let train_dir = logdir.path().join("mnist").join("train");
+        let test_dir = logdir.path().join("mnist").join("test");
+        fs::create_dir_all(&train_dir)?;
+        fs::create_dir_all(&test_dir)?;
+        fs::create_dir_all(logdir.path().join("non_run"))?;
+
+        let tag = Tag("accuracy".to_string());
+
+        let mut root_file = File::create(logdir.path().join("tfevents.123"))?;
+        root_file.write_scalar(&tag, Step(0), WallTime::new(1234.0).unwrap(), 0.75)?;
+        root_file.write_scalar(&tag, Step(1), WallTime::new(1235.0).unwrap(), 0.875)?;
+        root_file.sync_all()?;
+        drop(root_file);
+
+        let mut train_file1 = File::create(train_dir.join("tfevents.234"))?;
+        train_file1.write_scalar(&tag, Step(4), WallTime::new(2234.0).unwrap(), 0.125)?;
+        train_file1.write_scalar(&tag, Step(5), WallTime::new(2235.0).unwrap(), 0.25)?;
+        train_file1.sync_all()?;
+        drop(train_file1);
+
+        let mut train_file2 = File::create(train_dir.join("tfevents.345"))?;
+        train_file2.write_scalar(&tag, Step(6), WallTime::new(2236.0).unwrap(), 0.375)?;
+        train_file2.sync_all()?;
+        drop(train_file2);
+
+        let mut test_file = File::create(test_dir.join("tfevents.456"))?;
+        test_file.write_scalar(&tag, Step(8), WallTime::new(3456.0).unwrap(), 0.5)?;
+        test_file.sync_all()?;
+        drop(test_file);
+
+        // decoy file
+        File::create(logdir.path().join("non_run").join("non_event_file"))?;
+
         // expected run names
         let root_run = Run(".".to_string());
         let train_run = Run(format!("mnist{}train", std::path::MAIN_SEPARATOR));
@@ -237,50 +288,6 @@ mod tests {
 
         let commit = Commit::new();
         let mut loader = LogdirLoader::new(&commit, logdir.path().to_path_buf());
-
-        // Check that we discover the right event files. Since we don't actually load runs yet, the
-        // only way to do this is to poke into `discoveries()`.
-        let mut expected_discoveries = HashMap::new();
-        expected_discoveries.insert(
-            root_run.clone(),
-            vec![EventFileDiscovery {
-                run_relpath: root_relpath.clone(),
-                event_file: logdir.path().join("tfevents.123"),
-            }],
-        );
-        expected_discoveries.insert(
-            train_run.clone(),
-            vec![
-                EventFileDiscovery {
-                    run_relpath: train_relpath.clone(),
-                    event_file: logdir.path().join(
-                        ["mnist", "train", "tfevents.234"]
-                            .iter()
-                            .collect::<PathBuf>(),
-                    ),
-                },
-                EventFileDiscovery {
-                    run_relpath: train_relpath.clone(),
-                    event_file: logdir.path().join(
-                        ["mnist", "train", "tfevents.345"]
-                            .iter()
-                            .collect::<PathBuf>(),
-                    ),
-                },
-            ],
-        );
-        expected_discoveries.insert(
-            test_run.clone(),
-            vec![EventFileDiscovery {
-                run_relpath: test_relpath.clone(),
-                event_file: logdir.path().join(
-                    ["mnist", "test", "tfevents.456"]
-                        .iter()
-                        .collect::<PathBuf>(),
-                ),
-            }],
-        );
-        assert_eq!(loader.discover().0, expected_discoveries);
 
         // Check that we persist the right run states in the loader.
         loader.reload();
@@ -296,9 +303,25 @@ mod tests {
         }
 
         // Check that we persist the right run states in the commit.
+        let mut expected_data = HashMap::new();
+        expected_data.insert(&root_run, vec![0.75, 0.875]);
+        expected_data.insert(&train_run, vec![0.125, 0.25, 0.375]);
+        expected_data.insert(&test_run, vec![0.5]);
         assert_eq!(
-            commit.runs.read().unwrap().keys().collect::<HashSet<_>>(),
-            expected_runs
+            commit
+                .runs
+                .read()
+                .unwrap()
+                .iter()
+                .map(|(run, data)| {
+                    let values = data.read().unwrap().scalars[&tag]
+                        .valid_values()
+                        .map(|(_step, _wall_time, value)| value.0)
+                        .collect();
+                    (run, values)
+                })
+                .collect::<HashMap<&Run, Vec<f64>>>(),
+            expected_data
         );
 
         Ok(())
@@ -315,7 +338,13 @@ mod tests {
         fs::create_dir(&train_dir)?;
         fs::create_dir(&test_dir)?;
         File::create(train_dir.join(EVENT_FILE_BASENAME_INFIX))?;
-        File::create(test_dir.join(EVENT_FILE_BASENAME_INFIX))?;
+        // Write an event to "test" to make sure that it doesn't get dropped across loads.
+        File::create(test_dir.join(EVENT_FILE_BASENAME_INFIX))?.write_scalar(
+            &Tag("accuracy".to_string()),
+            Step(7),
+            WallTime::new(1234.5).unwrap(),
+            0.75,
+        )?;
 
         let commit = Commit::new();
         let mut loader = LogdirLoader::new(&commit, logdir.path().to_path_buf());
@@ -329,9 +358,20 @@ mod tests {
             result.sort();
             result
         };
+        let get_test_scalar = || {
+            let runs_store = commit.runs.read().unwrap();
+            let run_data = runs_store.get(&Run("test".to_string()))?.read().unwrap();
+            let first_point = run_data.scalars[&Tag("accuracy".to_string())]
+                .valid_values()
+                .map(|(_step, _wall_time, &value)| value.0)
+                .nth(0);
+            first_point
+        };
 
+        assert_eq!(get_test_scalar(), None);
         loader.reload();
         assert_eq!(get_run_names(), vec!["test", "train"]);
+        assert_eq!(get_test_scalar(), Some(0.75));
 
         // Add val, remove train.
         fs::create_dir(&val_dir)?;
@@ -341,6 +381,7 @@ mod tests {
 
         loader.reload();
         assert_eq!(get_run_names(), vec!["test", "val"]);
+        assert_eq!(get_test_scalar(), Some(0.75));
 
         Ok(())
     }
