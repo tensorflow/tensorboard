@@ -59,6 +59,7 @@ import {
   RendererType,
   ScaleType,
 } from '../../../widgets/line_chart_v2/types';
+import {SeriesType} from './scalar_card_types';
 
 @Component({
   selector: 'tb-line-chart',
@@ -1012,8 +1013,7 @@ describe('scalar card', () => {
         run1: {
           id: 'run1',
           displayName: 'run1',
-          smoothedBy: '["smoothed","run1"]',
-          smoothOf: null,
+          type: SeriesType.ORIGINAL,
           visible: false,
           color: '#f00',
           opacity: 0.4,
@@ -1022,8 +1022,7 @@ describe('scalar card', () => {
         run2: {
           id: 'run2',
           displayName: 'run2',
-          smoothedBy: '["smoothed","run2"]',
-          smoothOf: null,
+          type: SeriesType.ORIGINAL,
           visible: false,
           color: '#0f0',
           opacity: 0.4,
@@ -1032,7 +1031,7 @@ describe('scalar card', () => {
         '["smoothed","run1"]': {
           id: '["smoothed","run1"]',
           displayName: 'run1',
-          smoothedBy: null,
+          type: SeriesType.DERIVED,
           smoothOf: 'run1',
           visible: false,
           color: '#f00',
@@ -1042,7 +1041,7 @@ describe('scalar card', () => {
         '["smoothed","run2"]': {
           id: '["smoothed","run2"]',
           displayName: 'run2',
-          smoothedBy: null,
+          type: SeriesType.DERIVED,
           smoothOf: 'run2',
           visible: false,
           color: '#0f0',
@@ -1092,8 +1091,7 @@ describe('scalar card', () => {
         run1: {
           id: 'run1',
           displayName: 'run1',
-          smoothedBy: null,
-          smoothOf: null,
+          type: SeriesType.ORIGINAL,
           visible: false,
           color: '#f00',
           opacity: 1,
@@ -1102,8 +1100,7 @@ describe('scalar card', () => {
         run2: {
           id: 'run2',
           displayName: 'run2',
-          smoothedBy: null,
-          smoothOf: null,
+          type: SeriesType.ORIGINAL,
           visible: false,
           color: '#0f0',
           opacity: 1,
