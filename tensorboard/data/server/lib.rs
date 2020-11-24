@@ -15,6 +15,8 @@ limitations under the License.
 
 //! Core functionality for TensorBoard data loading.
 
+#![allow(clippy::needless_update)] // https://github.com/rust-lang/rust-clippy/issues/6323
+
 pub mod commit;
 pub mod data_compat;
 pub mod event_file;
@@ -22,6 +24,7 @@ pub mod logdir;
 pub mod masked_crc;
 pub mod reservoir;
 pub mod run;
+pub mod server;
 pub mod tf_record;
 pub mod types;
 
