@@ -98,7 +98,7 @@ impl<V> TimeSeries<V> {
 /// don't care too much about what happens to these invalid values. Keeping them in the commit as
 /// `DataLoss` tombstones is convenient, and [`TimeSeries::valid_values`] offers a view that
 /// abstracts over this detail by only showing valid data.
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct DataLoss;
 
 /// The value of a scalar time series at a single point.
