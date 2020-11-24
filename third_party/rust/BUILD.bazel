@@ -13,6 +13,15 @@ licenses([
 
 # Aliased targets
 alias(
+    name = "anyhow",
+    actual = "@raze__anyhow__1_0_34//:anyhow",
+    tags = [
+        "cargo-raze",
+        "manual",
+    ],
+)
+
+alias(
     name = "async_stream",
     actual = "@raze__async_stream__0_3_0//:async_stream",
     tags = [
