@@ -21,6 +21,12 @@ use std::borrow::Borrow;
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Copy, Clone)]
 pub struct Step(pub i64);
 
+impl From<Step> for i64 {
+    fn from(step: Step) -> i64 {
+        step.0
+    }
+}
+
 /// The wall time of a TensorBoard event.
 ///
 /// Wall times represent floating-point seconds since Unix epoch. They must be finite and non-NaN.
