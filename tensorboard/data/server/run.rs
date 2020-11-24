@@ -216,7 +216,8 @@ impl RunLoader {
     }
 
     fn commit_all(&mut self, run_data: &RwLock<commit::RunData>) {
-        let mut run = run_data.write().expect("acquiring run data lock");
+        let mut run = run_data.write().expect("acquiring tags lock");
+        run.start_time = self.start_time;
         for (tag, ts) in &mut self.time_series {
             ts.commit(tag, &mut *run);
         }
