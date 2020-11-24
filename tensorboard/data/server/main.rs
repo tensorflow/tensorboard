@@ -13,37 +13,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#![allow(clippy::needless_update)] // https://github.com/rust-lang/rust-clippy/issues/6323
+use tonic::transport::Server;
 
-use tonic::{transport::Server, Request, Response};
-
-use rustboard_core::proto::demo as pb;
-
-#[derive(Debug, Default)]
-struct DemoHandler;
-
-#[tonic::async_trait]
-impl pb::demo_server::Demo for DemoHandler {
-    async fn add(
-        &self,
-        request: Request<pb::AddRequest>,
-    ) -> Result<Response<pb::AddResponse>, tonic::Status> {
-        let request = request.into_inner();
-        let sum: i32 = request.term.into_iter().sum();
-        let response = pb::AddResponse {
-            sum,
-            ..Default::default()
-        };
-        Ok(Response::new(response))
-    }
-}
+use rustboard_core::proto::tensorboard::data::tensor_board_data_provider_server::TensorBoardDataProviderServer;
+use rustboard_core::server::DataProviderHandler;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let addr = "[::0]:6789".parse::<std::net::SocketAddr>()?;
-    let handler = DemoHandler::default();
+    let addr = "[::0]:6806".parse::<std::net::SocketAddr>()?;
+    let handler = DataProviderHandler;
     Server::builder()
-        .add_service(pb::demo_server::DemoServer::new(handler))
+        .add_service(TensorBoardDataProviderServer::new(handler))
         .serve(addr)
         .await?;
     Ok(())
