@@ -19,7 +19,7 @@ py_library(
         "bleach/utils.py",
         "bleach/version.py",
     ],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         "@org_html5lib",
         "@org_pythonhosted_six",

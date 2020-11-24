@@ -8,7 +8,7 @@ licenses(["notice"])
 py_library(
     name = "profile_redirect_plugin",
     srcs = ["profile_redirect_plugin.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         "//tensorboard/plugins:base_plugin",
     ],

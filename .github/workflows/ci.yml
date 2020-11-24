@@ -152,7 +152,7 @@ jobs:
       - run: |
           ! git grep -E '"@npm//d3"|"@npm//@types/d3"' 'tensorboard/webapp/**/*BUILD' ':!tensorboard/webapp/third_party/**'
       - run: |
-          ! git grep -E '"@npm_angular_bazel//:index.bzl"' 'tensorboard/webapp/**/*BUILD'
+          ! git grep -E '"@npm_angular_bazel//:index.bzl"' 'tensorboard/**/BUILD'
 
   lint-build:
     runs-on: ubuntu-16.04

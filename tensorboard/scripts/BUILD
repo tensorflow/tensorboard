@@ -8,7 +8,7 @@ licenses(["notice"])
 py_binary(
     name = "generate_testdata",
     srcs = ["generate_testdata.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
@@ -19,6 +19,6 @@ py_binary(
 py_binary(
     name = "execrooter",
     srcs = ["execrooter.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     visibility = ["//visibility:public"],
 )
