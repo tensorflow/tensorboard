@@ -15,7 +15,7 @@ limitations under the License.
 
 //! Conversions from legacy formats.
 
-use byteorder::{ByteOrder, LittleEndian};
+use std::convert::TryInto;
 use std::fmt::Debug;
 
 use crate::commit::{DataLoss, ScalarValue};
@@ -72,8 +72,10 @@ impl EventValue {
 fn tensor_proto_to_scalar(tp: &pb::TensorProto) -> Option<f64> {
     // Ensure that it's rank-0. Treat an absent `tensor_shape` as an empty message, which happens
     // to imply rank 0.
-    if tp.tensor_shape.as_ref().map(|s| s.dim.is_empty()) == Some(false) {
-        return None;
+    match &tp.tensor_shape {
+        Some(s) if s.dim.is_empty() => (),
+        None => (), // just like the explicitly empty case
+        Some(_) => return None,
     }
     use pb::DataType;
     match DataType::from_i32(tp.dtype) {
@@ -85,8 +87,7 @@ fn tensor_proto_to_scalar(tp: &pb::TensorProto) -> Option<f64> {
                 } else {
                     None
                 }
-            } else if tp.tensor_content.len() == std::mem::size_of::<f32>() {
-                let f: f32 = LittleEndian::read_f32(&tp.tensor_content);
+            } else if let Ok(f) = (&*tp.tensor_content).try_into().map(f32::from_le_bytes) {
                 Some(f64::from(f))
             } else {
                 None
@@ -100,8 +101,7 @@ fn tensor_proto_to_scalar(tp: &pb::TensorProto) -> Option<f64> {
                 } else {
                     None
                 }
-            } else if tp.tensor_content.len() == std::mem::size_of::<f64>() {
-                let f: f64 = LittleEndian::read_f64(&tp.tensor_content);
+            } else if let Ok(f) = (&*tp.tensor_content).try_into().map(f64::from_le_bytes) {
                 Some(f)
             } else {
                 None
