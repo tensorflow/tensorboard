@@ -58,8 +58,26 @@ alias(
 )
 
 alias(
+    name = "env_logger",
+    actual = "@raze__env_logger__0_8_2//:env_logger",
+    tags = [
+        "cargo-raze",
+        "manual",
+    ],
+)
+
+alias(
     name = "futures_core",
     actual = "@raze__futures_core__0_3_8//:futures_core",
+    tags = [
+        "cargo-raze",
+        "manual",
+    ],
+)
+
+alias(
+    name = "log",
+    actual = "@raze__log__0_4_11//:log",
     tags = [
         "cargo-raze",
         "manual",
