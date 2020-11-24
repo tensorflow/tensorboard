@@ -356,7 +356,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit {
             id: smoothedSeriesId,
             type: SeriesType.DERIVED,
             aux: false,
-            smoothOf: id,
+            originalSeriesId: id,
             opacity: 1,
           };
 

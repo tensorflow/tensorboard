@@ -30,7 +30,7 @@ export enum SeriesType {
 export interface SmoothedSeriesMetadata extends DataSeriesMetadata {
   type: SeriesType.DERIVED;
   aux: false;
-  smoothOf: string;
+  originalSeriesId: string;
 }
 
 export interface OriginalSeriesMetadata extends DataSeriesMetadata {
