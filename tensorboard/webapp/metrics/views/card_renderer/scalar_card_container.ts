@@ -144,6 +144,7 @@ function areSeriesEqual(
         (gpuLineChartEnabled$ | async) ? (chartMetadataMap$ | async) : {}
       "
       [gpuLineChartEnabled]="gpuLineChartEnabled$ | async"
+      [smoothingEnabled]="smoothingEnabled$ | async"
       (onFullSizeToggle)="onFullSizeToggle()"
       (onPinClicked)="pinStateChanged.emit($event)"
     ></scalar-card-component>
@@ -278,10 +279,22 @@ export class ScalarCardContainer implements CardRenderer, OnInit {
     }
 
     this.dataSeries$ = runIdAndPoints$.pipe(
-      combineLatestWith(this.store.select(getMetricsScalarSmoothing)),
-      switchMap(([runsData, smoothing]) => {
+      combineLatestWith(
+        this.store.select(getMetricsScalarSmoothing),
+        this.store.select(getMetricsXAxisType)
+      ),
+      switchMap(([runsData, smoothing, xType]) => {
         const dataSeriesList = runsData.map(({runId, points}) => {
-          return {id: runId, points};
+          return {
+            id: runId,
+            points: points.map((point) => {
+              return {
+                ...point,
+                x: xType === XAxisType.WALL_TIME ? point.x * 1000 : point.x,
+                wallTime: point.wallTime * 1000,
+              };
+            }),
+          };
         });
 
         if (smoothing === 0) {
@@ -304,7 +317,8 @@ export class ScalarCardContainer implements CardRenderer, OnInit {
           })
         );
       }),
-      startWith([])
+      startWith([]),
+      shareReplay(1)
     );
 
     this.chartMetadataMap$ = runIdAndPoints$.pipe(

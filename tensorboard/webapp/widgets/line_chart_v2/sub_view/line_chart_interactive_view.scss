@@ -49,8 +49,11 @@ $_circle-size: 12px;
 }
 
 .tooltip-container {
-  background: rgba(50, 50, 50, 0.85);
+  background: rgba(0, 0, 0, 0.85);
+  border-radius: 4px;
   color: #fff;
+  contain: paint style layout;
+  font-size: 0.9em;
   overflow: auto;
   padding: 5px;
   pointer-events: none;
@@ -61,7 +64,6 @@ th,
 td {
   padding: 2px 5px;
   text-align: left;
-  font-size: 0.9em;
 }
 
 th {

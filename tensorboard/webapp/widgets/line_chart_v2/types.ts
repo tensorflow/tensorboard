@@ -22,3 +22,4 @@ export {
   RendererType,
   ScaleType,
 } from './lib/public_types';
+export {TooltipDatum} from './sub_view/line_chart_interactive_view';
