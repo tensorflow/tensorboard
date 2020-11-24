@@ -94,7 +94,7 @@ grpc_cli \
 ```
 
 The `localhost:6806` argument should point to your running server. The
-`ListRuns` identifier should name the RPC method that you want to invoke. And
+`ListScalars` identifier should name the RPC method that you want to invoke. And
 the quoted string is the text format encoding of the request message.
 
 You should know:
