@@ -20,11 +20,9 @@ load("@bazel_tools//tools/build_defs/repo:java.bzl", "java_import_external")
 load("@io_bazel_rules_webtesting//web/internal:platform_http_file.bzl", "platform_http_file")  # buildifier: disable=bzl-visibility
 load("@npm_bazel_typescript//:index.bzl", "ts_setup_workspace")
 load("//third_party:fonts.bzl", "tensorboard_fonts_workspace")
-load("//third_party:polymer.bzl", "tensorboard_polymer_workspace")
 load("//third_party:python.bzl", "tensorboard_python_workspace")
 load("//third_party:js.bzl", "tensorboard_js_workspace")
 load("//third_party:rust.bzl", "tensorboard_rust_workspace")
-load("//third_party:typings.bzl", "tensorboard_typings_workspace")
 
 def tensorboard_workspace(name = ""):
     """Add repositories needed to build TensorBoard.
@@ -33,9 +31,7 @@ def tensorboard_workspace(name = ""):
         name: name of Bazel rule passed to this macro. The value is ignored.
     """
     tensorboard_fonts_workspace()
-    tensorboard_polymer_workspace()
     tensorboard_python_workspace()
-    tensorboard_typings_workspace()
     tensorboard_js_workspace()
     tensorboard_rust_workspace()
 
