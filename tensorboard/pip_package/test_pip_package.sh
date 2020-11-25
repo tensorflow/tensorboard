@@ -104,7 +104,10 @@ smoke() (
   smoke_venv="${virtualenvs_root}/venv-${smoke_python}/"
   set +x
   printf '\n\n%70s\n' '' | tr ' ' '='
-  if [ -z "${tf_version}" ] || [ "${tf_version}" = notf ]; then
+  if [ "${tf_version}" = notf ]; then
+      tf_version=
+  fi
+  if [ -z "${tf_version}" ]; then
     echo "Smoke testing with ${smoke_python} and no tensorflow..."
   else
     echo "Smoke testing with ${smoke_python} and ${tf_version}..."
