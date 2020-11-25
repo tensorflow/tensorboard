@@ -18,14 +18,6 @@ build --worker_sandboxing
 # https://github.com/bazelbuild/bazel/issues/7026 (future of action_env)
 build --action_env=PATH
 
-# Set up caching on local disk so incremental builds are faster.
-# See https://bazel.build/designs/2016/09/30/repository-cache.html
-build --repository_cache=~/.cache/tb-bazel-repo
-fetch --repository_cache=~/.cache/tb-bazel-repo
-query --repository_cache=~/.cache/tb-bazel-repo
-# See https://docs.bazel.build/versions/master/remote-caching.html#disk-cache
-build --disk_cache=~/.cache/tb-bazel-disk
-
 # Log more information to help with debugging, and disable curses output which
 # just adds more clutter to the log. (Travis spoofs an interactive terminal.)
 common --curses=no
@@ -33,3 +25,6 @@ build --verbose_failures
 build --worker_verbose
 test --test_output=errors
 test --test_verbose_timeout_warnings
+
+common --remote_cache=https://storage.googleapis.com/tensorboard-build-cache
+common --remote_upload_local_results=false

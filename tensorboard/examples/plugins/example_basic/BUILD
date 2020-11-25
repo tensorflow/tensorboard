@@ -26,7 +26,5 @@ sh_test(
     ]),
     tags = [
         "manual",  # https://github.com/tensorflow/tensorboard/issues/2987
-        # TODO(@wchargin): Debug failure and re-enable test.
-        "nogithub",
     ],
 )

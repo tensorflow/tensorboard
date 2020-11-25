@@ -15,26 +15,69 @@ on:
       - '[0-9]+.*'
       - 'ci-*'
   pull_request: {}
-  schedule:
-    # 13:00 UTC is 05:00 in Pacific standard time (UTC-8), which is well
-    # after nightly TensorFlow wheels are released (around 2--3 AM) and
-    # just after nightly TensorBoard wheels are released (around 04:15).
-    # (cron syntax: minute hour day-of-month month day-of-week)
-    - cron: '0 13 * * *'
 
 env:
-<<<<<<< HEAD
-  BAZEL: '0.26.1'
-  BAZEL_SHA256SUM: '6c50e142a0a405d3d8598050d6c1b3920c8cdb82a7ffca6fc067cb474275148f'
-  BUILDIFIER: '0.29.0'
-  BUILDIFIER_SHA256SUM: '4c985c883eafdde9c0e8cf3c8595b8bfdf32e77571c369bf8ddae83b042028d6'
-=======
+  BAZEL_VERSION: '3.7.0'
+  BAZEL_SHA256SUM: 'b7583eec83cc38302997098a40b8c870c37e0ab971a83cb3364c754a178b74ec'
   BUILDTOOLS_VERSION: '3.0.0'
   BUILDIFIER_SHA256SUM: 'e92a6793c7134c5431c58fbc34700664f101e5c9b1c1fcd93b97978e8b7f88db'
   BUILDOZER_SHA256SUM: '3d58a0b6972e4535718cdd6c12778170ea7382de7c75bc3728f5719437ffb84d'
->>>>>>> 94edc4fafbf6e6ef810e9252c3cc48855b4470f6
 
 jobs:
+  build:
+    runs-on: ubuntu-16.04
+    needs: lint-python-flake8 # fail fast in case of "undefined variable" errors
+    strategy:
+      fail-fast: false
+      matrix:
+        # flake8 should run on each Python version that we target,
+        # because the errors and warnings can differ due to language
+        # changes, and we want to catch them all.
+        tf_version: ['tf-nightly', ''] # empty string = notf
+        python_version: ['3.7']
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python_version }}
+          architecture: 'x64'
+      - name: 'Set up Bazel'
+        run: |
+          ci/download_bazel.sh "${BAZEL_VERSION}" "${BAZEL_SHA256SUM}" ~/bazel
+          sudo mv ~/bazel /usr/local/bin/bazel
+          cp ./ci/bazelrc ~/.bazelrc
+      - name: 'Install Python dependencies'
+        run: |
+          python -m pip install -U pip
+          pip uninstall -y numpy
+          pip install \
+            -r ./tensorboard/pip_package/requirements.txt \
+            -r ./tensorboard/pip_package/requirements_dev.txt \
+            ;
+      - name: 'Install TensorFlow'
+        run: pip install "${{ matrix.tf_version_id }}"
+        if: matrix.tf_version_id != ''
+      - name: 'Check Pip state'
+        run: pip freeze --all
+      - name: 'Bazel: fetch'
+        run: bazel fetch //tensorboard/...
+      - name: 'Bazel: build'
+        run: bazel build //tensorboard/...
+      - name: 'Bazel: test (with TensorFlow support)'
+        run: bazel test //tensorboard/... --test_tag_filters="-nogithub"
+        if: matrix.tf_version_id != ''
+      - name: 'Bazel: test (non-TensorFlow only)'
+        run: bazel test //tensorboard/... --test_tag_filters="-nogithub"
+        if: matrix.tf_version_id == ''
+      - name: 'Bazel: run Pip package test'
+        run: |
+          bazel run //tensorboard/pip_package:test_pip_package -- \
+            --tf-version "${{ matrix.tf_version_id }}"
+      - name: 'Bazel: run manual tests'
+        run: |
+          bazel test //tensorboard/compat/tensorflow_stub:gfile_s3_test &&
+          bazel test //tensorboard/summary/writer:event_file_writer_s3_test
+
   lint-python-flake8:
     runs-on: ubuntu-16.04
     strategy:
@@ -212,76 +255,3 @@ jobs:
       - run: ./tensorboard/tools/do_not_submit_test.sh
       - run: ./tensorboard/tools/license_test.sh
       - run: ./tensorboard/tools/whitespace_hygiene_test.py
-
-  test:
-    runs-on: ubuntu-16.04
-    needs: lint-python # fail fast in case of "undefined variable" errors
-    strategy:
-      fail-fast: false
-      matrix:
-        python_version: ['3.6']
-        tf_version_id: ['tensorflow==1.15.0rc3', 'tf-nightly', '']
-    steps:
-      - uses: actions/checkout@v1
-      - uses: actions/setup-python@v1
-        with:
-          python-version: ${{ matrix.python_version }}
-          architecture: 'x64'
-      - uses: actions/setup-node@v1
-        # Don't cache Bazel for now, pending cache size and unicache support:
-        # <https://github.com/actions/cache/issues/6>
-        # <https://github.com/actions/cache/issues/109>
-      - name: 'Set up Bazel'
-        run: |
-          ci/download_bazel.sh "${BAZEL}" "${BAZEL_SHA256SUM}" ~/bazel
-          sudo mv ~/bazel /usr/local/bin/bazel
-          cp ./ci/bazelrc ~/.bazelrc
-
-        # Don't cache Python deps for now: the `tf-nightly` dep is
-        # intentionally floating.
-      - name: 'Install Python dependencies'
-        run: |
-          python -m pip install -U pip
-          pip uninstall -y numpy
-          pip install \
-            -r ./tensorboard/pip_package/requirements.txt \
-            -r ./tensorboard/pip_package/requirements_dev.txt \
-            ;
-          # Workaround for https://github.com/travis-ci/travis-ci/issues/7940
-          # TODO(@wchargin): Is this still needed with GitHub Actions?
-          sudo rm -f /etc/boto.cfg
-      - name: 'Install TensorFlow'
-        run: pip install "${{ matrix.tf_version_id }}"
-        if: matrix.tf_version_id != ''
-      - name: 'Check Pip state'
-        run: pip freeze --all
-
-        # Don't cache Node modules for now, pending clarity on the recommended
-        # caching strategy:
-        # <https://github.com/actions/cache/issues/67>
-      - name: 'Install Node modules'
-        run: yarn install --ignore-engines
-
-      - name: 'Run diagnose_tensorboard'
-        run: python ./tensorboard/tools/diagnose_tensorboard.py
-
-      - name: 'Bazel: Fetch all dependencies'
-        run: bazel fetch //tensorboard/...
-
-      - name: 'Bazel: Build all targets'
-        run: bazel build //tensorboard/...
-
-      - name: 'Bazel: Run tests'
-        run: bazel test //tensorboard/... --test_tag_filters="-nogithub"
-        if: matrix.tf_version_id != ''
-      - name: '[notf only] Bazel: Run notf tests'
-        run: bazel test //tensorboard/... --test_tag_filters="support_notf,-nogithub"
-        if: matrix.tf_version_id == ''
-
-      - name: 'Bazel: Run Pip package test'
-        run: bazel run //tensorboard/pip_package:test_pip_package -- --default-python-only --tf-version "${{ matrix.tf_version_id }}"
-
-      - name: 'Bazel: Run manual tests'
-        run: |
-          bazel test //tensorboard/compat/tensorflow_stub:gfile_s3_test
-          bazel test //tensorboard/summary/writer:event_file_writer_s3_test
