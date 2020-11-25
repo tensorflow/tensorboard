@@ -30,6 +30,7 @@ rust_library(
         "commit.rs",
         "data_compat.rs",
         "event_file.rs",
+        "logdir.rs",
         "masked_crc.rs",
         "reservoir.rs",
         "run.rs",
@@ -44,12 +45,14 @@ rust_library(
         "//third_party/rust:byteorder",
         "//third_party/rust:crc",
         "//third_party/rust:futures_core",
+        "//third_party/rust:log",
         "//third_party/rust:prost",
         "//third_party/rust:rand",
         "//third_party/rust:rand_chacha",
         "//third_party/rust:thiserror",
         "//third_party/rust:tokio",
         "//third_party/rust:tonic",
+        "//third_party/rust:walkdir",
     ],
 )
 
@@ -88,6 +91,8 @@ rust_binary(
     edition = "2018",
     deps = [
         ":rustboard_core",
+        "//third_party/rust:env_logger",
+        "//third_party/rust:log",
         "//third_party/rust:tokio",
         "//third_party/rust:tonic",
     ],

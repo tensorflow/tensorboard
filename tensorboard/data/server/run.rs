@@ -15,11 +15,14 @@ limitations under the License.
 
 //! Loader for a single run, with one or more event files.
 
+use log::warn;
 use std::collections::{BTreeMap, HashMap, HashSet};
 use std::fs::File;
 use std::io::BufReader;
 use std::path::PathBuf;
+use std::sync::RwLock;
 
+use crate::commit;
 use crate::data_compat::{EventValue, SummaryValue};
 use crate::event_file::EventFileReader;
 use crate::proto::tensorboard as pb;
@@ -48,7 +51,7 @@ pub struct RunLoader {
     files: BTreeMap<PathBuf, EventFile<BufReader<File>>>,
 
     /// Reservoir-sampled data and metadata for each time series.
-    time_series: HashMap<Tag, TimeSeries>,
+    time_series: HashMap<Tag, StageTimeSeries>,
 }
 
 #[derive(Debug)]
@@ -64,13 +67,23 @@ enum EventFile<R> {
 }
 
 #[derive(Debug)]
-struct TimeSeries {
+struct StageTimeSeries {
     data_class: pb::DataClass,
     metadata: Box<pb::SummaryMetadata>,
     rsv: StageReservoir<StageValue>,
 }
 
-impl TimeSeries {
+/// A value staged in the reservoir.
+///
+/// This is kept as close as possible to the on-disk event representation, since every record in
+/// the stream is converted into this format.
+#[derive(Debug)]
+struct StageValue {
+    wall_time: WallTime,
+    payload: EventValue,
+}
+
+impl StageTimeSeries {
     fn new(metadata: Box<pb::SummaryMetadata>) -> Self {
         let data_class =
             pb::DataClass::from_i32(metadata.data_class).unwrap_or(pb::DataClass::Unknown);
@@ -86,16 +99,34 @@ impl TimeSeries {
             rsv: StageReservoir::new(capacity),
         }
     }
-}
 
-/// A value staged in the reservoir.
-///
-/// This is kept as close as possible to the on-disk event representation, since every record in
-/// the stream is converted into this format.
-#[derive(Debug)]
-struct StageValue {
-    wall_time: WallTime,
-    payload: EventValue,
+    /// Writes all staged data for this time series into the commit.
+    fn commit(&mut self, tag: &Tag, run: &mut commit::RunData) {
+        use pb::DataClass;
+        match self.data_class {
+            DataClass::Scalar => self.commit_to(tag, &mut run.scalars, EventValue::into_scalar),
+            DataClass::Tensor => todo!("tensor time series not yet supported"),
+            DataClass::BlobSequence => todo!("blob sequence time series not yet supported"),
+            _ => (),
+        };
+    }
+
+    /// Helper for `commit`: writes staged data for this time series into storage for a statically
+    /// known data class.
+    fn commit_to<V, F: FnMut(EventValue) -> Result<V, commit::DataLoss>>(
+        &mut self,
+        tag: &Tag,
+        store: &mut commit::TagStore<V>,
+        mut enrich: F,
+    ) {
+        let commit_ts = store
+            .entry(tag.clone())
+            .or_insert_with(|| commit::TimeSeries::new(self.metadata.clone()));
+        self.rsv
+            .commit_map(&mut commit_ts.basin, |StageValue { wall_time, payload }| {
+                (wall_time, enrich(payload))
+            });
+    }
 }
 
 impl RunLoader {
@@ -111,9 +142,16 @@ impl RunLoader {
     ///
     /// The provided filenames should correspond to the entire set of event files currently part of
     /// this run.
-    pub fn reload(&mut self, filenames: Vec<PathBuf>) {
+    ///
+    /// The given commit must have an entry for this run (the entry may be empty).
+    ///
+    /// # Panics
+    ///
+    /// If we need to access `run_data` but the lock is poisoned.
+    pub fn reload(&mut self, filenames: Vec<PathBuf>, run_data: &RwLock<commit::RunData>) {
         self.update_file_set(filenames);
         self.reload_files();
+        self.commit_all(run_data);
     }
 
     /// Updates the active key set of `self.files` to match the given filenames.
@@ -142,7 +180,7 @@ impl RunLoader {
                         }
                         // TODO(@wchargin): Improve error handling?
                         Err(e) => {
-                            eprintln!("failed to open event file {:?}: {:?}", v.key(), e);
+                            warn!("Failed to open event file {:?}: {:?}", v.key(), e);
                             EventFile::Dead
                         }
                     };
@@ -168,13 +206,21 @@ impl RunLoader {
                     Err(ReadRecordError(Truncated)) => break,
                     Err(e) => {
                         // TODO(@wchargin): Improve error handling?
-                        eprintln!("read error in {}: {:?}", filename.display(), e);
+                        warn!("Read error in {}: {:?}", filename.display(), e);
                         *ef = EventFile::Dead;
                         break;
                     }
                 };
                 read_event(&mut self.time_series, &mut self.start_time, event);
             }
+        }
+    }
+
+    fn commit_all(&mut self, run_data: &RwLock<commit::RunData>) {
+        let mut run = run_data.write().expect("acquiring tags lock");
+        run.start_time = self.start_time;
+        for (tag, ts) in &mut self.time_series {
+            ts.commit(tag, &mut *run);
         }
     }
 }
@@ -184,7 +230,7 @@ impl RunLoader {
 /// This is a standalone function because it's called from `reload_files` in a context that already
 /// has an exclusive reference into `self.files`, and so can't call methods on `&mut self`.
 fn read_event(
-    time_series: &mut HashMap<Tag, TimeSeries>,
+    time_series: &mut HashMap<Tag, StageTimeSeries>,
     start_time: &mut Option<WallTime>,
     e: pb::Event,
 ) {
@@ -192,8 +238,8 @@ fn read_event(
     let wall_time = match WallTime::new(e.wall_time) {
         None => {
             // TODO(@wchargin): Improve error handling.
-            eprintln!(
-                "dropping event at step {} with invalid wall time {}",
+            warn!(
+                "Dropping event at step {} with invalid wall time {}",
                 e.step, e.wall_time
             );
             return;
@@ -206,7 +252,7 @@ fn read_event(
     match e.what {
         Some(pb::event::What::GraphDef(_)) => {
             // TODO(@wchargin): Handle run graphs.
-            eprintln!("graph_def events not yet handled");
+            warn!("`graph_def` events not yet handled");
         }
         Some(pb::event::What::Summary(sum)) => {
             for mut summary_pb_value in sum.value {
@@ -221,7 +267,7 @@ fn read_event(
                     Entry::Vacant(v) => {
                         let metadata =
                             summary_value.initial_metadata(summary_pb_value.metadata.take());
-                        v.insert(TimeSeries::new(metadata))
+                        v.insert(StageTimeSeries::new(metadata))
                     }
                 };
                 let sv = StageValue {
@@ -247,6 +293,8 @@ mod test {
     use std::fs::File;
     use std::io::BufWriter;
 
+    use crate::commit::Commit;
+    use crate::types::Run;
     use crate::writer::SummaryWriteExt;
 
     #[test]
@@ -268,6 +316,7 @@ mod test {
         }
 
         // Write some data points across both files.
+        let run = Run("train".to_string());
         let tag = Tag("accuracy".to_string());
         f1.write_scalar(&tag, Step(0), WallTime::new(1235.0).unwrap(), 0.25)?;
         f1.write_scalar(&tag, Step(1), WallTime::new(1236.0).unwrap(), 0.50)?;
@@ -282,13 +331,27 @@ mod test {
         f2.into_inner()?.sync_all()?;
 
         let mut loader = RunLoader::new();
-        loader.reload(vec![f1_name, f2_name]);
+        let commit = Commit::new();
+        commit
+            .runs
+            .write()
+            .expect("write-locking runs map")
+            .insert(run.clone(), Default::default());
+        loader.reload(vec![f1_name, f2_name], &commit.runs.read().unwrap()[&run]);
 
         // Start time should be that of the file version event, even though that didn't correspond
         // to any time series.
         assert_eq!(loader.start_time, Some(WallTime::new(1234.0).unwrap()));
-        assert_eq!(loader.time_series.keys().collect::<Vec<_>>(), vec![&tag]);
-        let ts = loader.time_series.get_mut(&tag).unwrap();
+
+        let runs = commit.runs.read().expect("read-locking runs map");
+        let run_data: &commit::RunData = &*runs
+            .get(&run)
+            .expect("looking up data for run")
+            .read()
+            .expect("read-locking run data map");
+
+        assert_eq!(run_data.scalars.keys().collect::<Vec<_>>(), vec![&tag]);
+        let ts = run_data.scalars.get(&tag).unwrap();
         assert_eq!(
             *ts.metadata,
             pb::SummaryMetadata {
@@ -300,28 +363,17 @@ mod test {
                 ..Default::default()
             }
         );
-        let mut basin = crate::reservoir::Basin::new();
-        ts.rsv.commit(&mut basin);
 
         // Points should be as expected (no downsampling at these sizes).
-        let mut actual_points = Vec::new();
-        for (step, StageValue { wall_time, payload }) in basin.as_slice() {
-            if let EventValue::Summary(SummaryValue(value_box)) = payload {
-                if let pb::summary::value::Value::SimpleValue(f) = **value_box {
-                    actual_points.push((*step, *wall_time, f));
-                    continue;
-                }
-            }
-            panic!("step {:?}: {:?}", step, payload);
-        }
+        let scalar = |f: f32| commit::ScalarValue(f64::from(f));
         assert_eq!(
-            actual_points,
+            ts.valid_values().collect::<Vec<_>>(),
             vec![
-                (Step(0), WallTime::new(1235.0).unwrap(), 0.25),
-                (Step(1), WallTime::new(1236.0).unwrap(), 0.50),
-                (Step(2), WallTime::new(2346.0).unwrap(), 0.70),
-                (Step(3), WallTime::new(2347.0).unwrap(), 0.85),
-                (Step(4), WallTime::new(2348.0).unwrap(), 0.90),
+                (Step(0), WallTime::new(1235.0).unwrap(), &scalar(0.25)),
+                (Step(1), WallTime::new(1236.0).unwrap(), &scalar(0.50)),
+                (Step(2), WallTime::new(2346.0).unwrap(), &scalar(0.70)),
+                (Step(3), WallTime::new(2347.0).unwrap(), &scalar(0.85)),
+                (Step(4), WallTime::new(2348.0).unwrap(), &scalar(0.90)),
             ]
         );
 

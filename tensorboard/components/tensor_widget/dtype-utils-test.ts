@@ -13,8 +13,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {expect} from 'chai';
-
 import {
   isBooleanDType,
   isFloatDType,
@@ -24,91 +22,91 @@ import {
 
 describe('isIntegerDType', () => {
   it('returns true for unsigned ints', () => {
-    expect(isIntegerDType('uint02')).to.be.true;
-    expect(isIntegerDType('uint2')).to.be.true;
-    expect(isIntegerDType('uint04')).to.be.true;
-    expect(isIntegerDType('uint4')).to.be.true;
-    expect(isIntegerDType('uint8')).to.be.true;
-    expect(isIntegerDType('uint16')).to.be.true;
-    expect(isIntegerDType('uint64')).to.be.true;
-    expect(isIntegerDType('uint128')).to.be.true;
+    expect(isIntegerDType('uint02')).toBe(true);
+    expect(isIntegerDType('uint2')).toBe(true);
+    expect(isIntegerDType('uint04')).toBe(true);
+    expect(isIntegerDType('uint4')).toBe(true);
+    expect(isIntegerDType('uint8')).toBe(true);
+    expect(isIntegerDType('uint16')).toBe(true);
+    expect(isIntegerDType('uint64')).toBe(true);
+    expect(isIntegerDType('uint128')).toBe(true);
   });
 
   it('returns true for signed ints', () => {
-    expect(isIntegerDType('int4')).to.be.true;
-    expect(isIntegerDType('int8')).to.be.true;
-    expect(isIntegerDType('int16')).to.be.true;
-    expect(isIntegerDType('int32')).to.be.true;
-    expect(isIntegerDType('int64')).to.be.true;
-    expect(isIntegerDType('int128')).to.be.true;
+    expect(isIntegerDType('int4')).toBe(true);
+    expect(isIntegerDType('int8')).toBe(true);
+    expect(isIntegerDType('int16')).toBe(true);
+    expect(isIntegerDType('int32')).toBe(true);
+    expect(isIntegerDType('int64')).toBe(true);
+    expect(isIntegerDType('int128')).toBe(true);
   });
 
   it('returns false for negative cases', () => {
-    expect(isIntegerDType('bool')).to.be.false;
-    expect(isIntegerDType('string')).to.be.false;
-    expect(isIntegerDType('float32')).to.be.false;
-    expect(isIntegerDType('complex64')).to.be.false;
-    expect(isIntegerDType('complex128')).to.be.false;
-    expect(isIntegerDType('resource')).to.be.false;
-    expect(isIntegerDType('interrupt')).to.be.false;
+    expect(isIntegerDType('bool')).toBe(false);
+    expect(isIntegerDType('string')).toBe(false);
+    expect(isIntegerDType('float32')).toBe(false);
+    expect(isIntegerDType('complex64')).toBe(false);
+    expect(isIntegerDType('complex128')).toBe(false);
+    expect(isIntegerDType('resource')).toBe(false);
+    expect(isIntegerDType('interrupt')).toBe(false);
   });
 });
 
 describe('isFloatDType', () => {
   it('returns true for floats', () => {
-    expect(isFloatDType('float32')).to.be.true;
-    expect(isFloatDType('float64')).to.be.true;
+    expect(isFloatDType('float32')).toBe(true);
+    expect(isFloatDType('float64')).toBe(true);
   });
 
   it('returns true for bfloat types', () => {
-    expect(isFloatDType('bfloat16')).to.be.true;
+    expect(isFloatDType('bfloat16')).toBe(true);
   });
 
   it('returns false for negative cases', () => {
-    expect(isFloatDType('bool')).to.be.false;
-    expect(isFloatDType('string')).to.be.false;
-    expect(isFloatDType('int32')).to.be.false;
-    expect(isFloatDType('uint32')).to.be.false;
-    expect(isFloatDType('complex64')).to.be.false;
-    expect(isFloatDType('complex128')).to.be.false;
-    expect(isFloatDType('resource')).to.be.false;
+    expect(isFloatDType('bool')).toBe(false);
+    expect(isFloatDType('string')).toBe(false);
+    expect(isFloatDType('int32')).toBe(false);
+    expect(isFloatDType('uint32')).toBe(false);
+    expect(isFloatDType('complex64')).toBe(false);
+    expect(isFloatDType('complex128')).toBe(false);
+    expect(isFloatDType('resource')).toBe(false);
   });
 });
 
 describe('isBooleanDType', () => {
   it('returns true for booleans', () => {
-    expect(isBooleanDType('bool')).to.be.true;
-    expect(isBooleanDType('boolean')).to.be.true;
-    expect(isBooleanDType('Boolean')).to.be.true;
+    expect(isBooleanDType('bool')).toBe(true);
+    expect(isBooleanDType('boolean')).toBe(true);
+    expect(isBooleanDType('Boolean')).toBe(true);
   });
 
   it('returns false for negative cases', () => {
-    expect(isBooleanDType('string')).to.be.false;
-    expect(isBooleanDType('int32')).to.be.false;
-    expect(isBooleanDType('uint32')).to.be.false;
-    expect(isBooleanDType('float32')).to.be.false;
-    expect(isBooleanDType('float64')).to.be.false;
-    expect(isBooleanDType('complex64')).to.be.false;
-    expect(isBooleanDType('complex128')).to.be.false;
-    expect(isBooleanDType('resource')).to.be.false;
+    expect(isBooleanDType('string')).toBe(false);
+    expect(isBooleanDType('int32')).toBe(false);
+    expect(isBooleanDType('uint32')).toBe(false);
+    expect(isBooleanDType('float32')).toBe(false);
+    expect(isBooleanDType('float64')).toBe(false);
+    expect(isBooleanDType('complex64')).toBe(false);
+    expect(isBooleanDType('complex128')).toBe(false);
+    expect(isBooleanDType('resource')).toBe(false);
   });
 });
 
 describe('isStringDType', () => {
   it('returns true for strings', () => {
-    expect(isStringDType('str')).to.be.true;
-    expect(isStringDType('string')).to.be.true;
-    expect(isStringDType('String')).to.be.true;
+    expect(isStringDType('str')).toBe(true);
+    expect(isStringDType('string')).toBe(true);
+    expect(isStringDType('String')).toBe(true);
   });
 
   it('returns false for negative cases', () => {
-    expect(isStringDType('bool')).to.be.false;
-    expect(isStringDType('int32')).to.be.false;
-    expect(isStringDType('uint32')).to.be.false;
-    expect(isStringDType('float32')).to.be.false;
-    expect(isStringDType('float64')).to.be.false;
-    expect(isStringDType('complex64')).to.be.false;
-    expect(isStringDType('complex128')).to.be.false;
-    expect(isStringDType('resource')).to.be.false;
+    expect(isStringDType('bool')).toBe(false);
+    expect(isStringDType('int32')).toBe(false);
+    expect(isStringDType('uint32')).toBe(false);
+    expect(isStringDType('float32')).toBe(false);
+    expect(isStringDType('float64')).toBe(false);
+    expect(isStringDType('complex64')).toBe(false);
+    expect(isStringDType('complex128')).toBe(false);
+    expect(isStringDType('resource')).toBe(false);
   });
 });

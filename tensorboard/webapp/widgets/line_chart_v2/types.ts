@@ -16,8 +16,9 @@ limitations under the License.
 // Only selectively export types that would be used by the user of the line chart.
 export {
   DataSeries,
+  DataSeriesMetadata,
+  DataSeriesMetadataMap,
+  Point,
   RendererType,
   ScaleType,
-  DataSeriesMetadataMap,
-  DataSeriesMetadata,
 } from './lib/public_types';
