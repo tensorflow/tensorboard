@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+use log::{info, LevelFilter};
 use std::path::PathBuf;
 use std::time::{Duration, Instant};
 use tonic::transport::Server;
@@ -26,6 +27,8 @@ const RELOAD_INTERVAL: Duration = Duration::from_secs(5);
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    init_logging(LevelFilter::Info);
+
     let addr = "[::0]:6806".parse::<std::net::SocketAddr>()?;
     let logdir = match std::env::args_os().nth(1) {
         Some(d) => PathBuf::from(d),
@@ -41,11 +44,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     std::thread::spawn(move || {
         let mut loader = LogdirLoader::new(commit, logdir);
         loop {
-            eprintln!("beginning load cycle");
+            info!("Starting load cycle");
             let start = Instant::now();
             loader.reload();
             let end = Instant::now();
-            eprintln!("finished load cycle ({:?})", end - start);
+            info!("Finished load cycle ({:?})", end - start);
             std::thread::sleep(RELOAD_INTERVAL);
         }
     });
@@ -56,4 +59,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .serve(addr)
         .await?;
     Ok(())
+}
+
+/// Installs a logging handler whose behavior is determined by the `RUST_LOG` environment variable
+/// (per <https://docs.rs/env_logger> semantics), or by including all logs at `default_log_level`
+/// or above if `RUST_LOG_LEVEL` is not given.
+fn init_logging(default_log_level: LevelFilter) {
+    use env_logger::{Builder, Env};
+    Builder::from_env(Env::default().default_filter_or(default_log_level.to_string())).init();
 }

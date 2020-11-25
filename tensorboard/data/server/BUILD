@@ -45,6 +45,7 @@ rust_library(
         "//third_party/rust:byteorder",
         "//third_party/rust:crc",
         "//third_party/rust:futures_core",
+        "//third_party/rust:log",
         "//third_party/rust:prost",
         "//third_party/rust:rand",
         "//third_party/rust:rand_chacha",
@@ -90,6 +91,8 @@ rust_binary(
     edition = "2018",
     deps = [
         ":rustboard_core",
+        "//third_party/rust:env_logger",
+        "//third_party/rust:log",
         "//third_party/rust:tokio",
         "//third_party/rust:tonic",
     ],

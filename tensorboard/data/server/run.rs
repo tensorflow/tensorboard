@@ -15,6 +15,7 @@ limitations under the License.
 
 //! Loader for a single run, with one or more event files.
 
+use log::warn;
 use std::collections::{BTreeMap, HashMap, HashSet};
 use std::fs::File;
 use std::io::BufReader;
@@ -179,7 +180,7 @@ impl RunLoader {
                         }
                         // TODO(@wchargin): Improve error handling?
                         Err(e) => {
-                            eprintln!("failed to open event file {:?}: {:?}", v.key(), e);
+                            warn!("Failed to open event file {:?}: {:?}", v.key(), e);
                             EventFile::Dead
                         }
                     };
@@ -205,7 +206,7 @@ impl RunLoader {
                     Err(ReadRecordError(Truncated)) => break,
                     Err(e) => {
                         // TODO(@wchargin): Improve error handling?
-                        eprintln!("read error in {}: {:?}", filename.display(), e);
+                        warn!("Read error in {}: {:?}", filename.display(), e);
                         *ef = EventFile::Dead;
                         break;
                     }
@@ -237,8 +238,8 @@ fn read_event(
     let wall_time = match WallTime::new(e.wall_time) {
         None => {
             // TODO(@wchargin): Improve error handling.
-            eprintln!(
-                "dropping event at step {} with invalid wall time {}",
+            warn!(
+                "Dropping event at step {} with invalid wall time {}",
                 e.step, e.wall_time
             );
             return;
@@ -251,7 +252,7 @@ fn read_event(
     match e.what {
         Some(pb::event::What::GraphDef(_)) => {
             // TODO(@wchargin): Handle run graphs.
-            eprintln!("graph_def events not yet handled");
+            warn!("`graph_def` events not yet handled");
         }
         Some(pb::event::What::Summary(sum)) => {
             for mut summary_pb_value in sum.value {
