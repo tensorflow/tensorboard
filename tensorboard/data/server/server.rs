@@ -14,25 +14,17 @@ limitations under the License.
 ==============================================================================*/
 
 use futures_core::Stream;
-<<<<<<< HEAD
 use std::borrow::Borrow;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::hash::Hash;
-=======
-use std::collections::HashMap;
->>>>>>> 8f8af3a43a906f6a0d6e6999eb1a46b27210d886
 use std::pin::Pin;
 use std::sync::{RwLock, RwLockReadGuard};
 use tonic::{Request, Response, Status};
 
 use crate::commit::{self, Commit};
 use crate::proto::tensorboard::data;
-<<<<<<< HEAD
 use crate::types::{Run, Tag, WallTime};
-=======
-use crate::types::{Run, WallTime};
->>>>>>> 8f8af3a43a906f6a0d6e6999eb1a46b27210d886
 use data::tensor_board_data_provider_server::TensorBoardDataProvider;
 
 /// Data provider gRPC service implementation.
@@ -40,19 +32,6 @@ use data::tensor_board_data_provider_server::TensorBoardDataProvider;
 pub struct DataProviderHandler {
     pub commit: &'static Commit,
 }
-<<<<<<< HEAD
-=======
-
-impl DataProviderHandler {
-    /// Obtains a read-lock to `self.commit.runs`, or fails with `Status::internal`.
-    fn read_runs(&self) -> Result<RwLockReadGuard<HashMap<Run, RwLock<commit::RunData>>>, Status> {
-        self.commit
-            .runs
-            .read()
-            .map_err(|_| Status::internal("failed to read commit.runs"))
-    }
-}
->>>>>>> 8f8af3a43a906f6a0d6e6999eb1a46b27210d886
 
 impl DataProviderHandler {
     /// Obtains a read-lock to `self.commit.runs`, or fails with `Status::internal`.
@@ -407,77 +386,6 @@ mod tests {
         }
     }
 
-    use crate::commit::{ScalarValue, TimeSeries};
-    use crate::data_compat;
-    use crate::proto::tensorboard as pb;
-    use crate::reservoir::StageReservoir;
-    use crate::types::{Run, Step, Tag, WallTime};
-
-    /// Creates a commit with some test data.
-    fn sample_commit() -> Commit {
-        let commit = Commit::new();
-
-        let mut runs = commit.runs.write().unwrap();
-
-        fn scalar_series(points: Vec<(Step, WallTime, f64)>) -> TimeSeries<ScalarValue> {
-            use pb::summary::value::Value::SimpleValue;
-            let mut ts = commit::TimeSeries::new(
-                data_compat::SummaryValue(Box::new(SimpleValue(0.0))).initial_metadata(None),
-            );
-            let mut rsv = StageReservoir::new(points.len());
-            for (step, wall_time, value) in points {
-                rsv.offer(step, (wall_time, Ok(commit::ScalarValue(value))));
-            }
-            rsv.commit(&mut ts.basin);
-            ts
-        }
-
-        let mut train = runs
-            .entry(Run("train".to_string()))
-            .or_default()
-            .write()
-            .unwrap();
-        train.start_time = Some(WallTime::new(1234.0).unwrap());
-        train.scalars.insert(
-            Tag("xent".to_string()),
-            scalar_series(vec![
-                (Step(0), WallTime::new(1235.0).unwrap(), 0.5),
-                (Step(1), WallTime::new(1236.0).unwrap(), 0.25),
-                (Step(2), WallTime::new(1237.0).unwrap(), 0.125),
-            ]),
-        );
-        drop(train);
-
-        let mut test = runs
-            .entry(Run("test".to_string()))
-            .or_default()
-            .write()
-            .unwrap();
-        test.start_time = Some(WallTime::new(6234.0).unwrap());
-        test.scalars.insert(
-            Tag("accuracy".to_string()),
-            scalar_series(vec![
-                (Step(0), WallTime::new(6235.0).unwrap(), 0.125),
-                (Step(1), WallTime::new(6236.0).unwrap(), 0.25),
-                (Step(2), WallTime::new(6237.0).unwrap(), 0.5),
-            ]),
-        );
-        drop(test);
-
-        // An run with no start time or data: should not show up in results.
-        runs.entry(Run("empty".to_string())).or_default();
-
-        drop(runs);
-        commit
-    }
-
-    fn sample_handler() -> DataProviderHandler {
-        DataProviderHandler {
-            // Leak the commit object, since the Tonic server must have only 'static references.
-            commit: Box::leak(Box::new(sample_commit())),
-        }
-    }
-
     #[tokio::test]
     async fn test_list_plugins() {
         let handler = sample_handler();
@@ -515,7 +423,6 @@ mod tests {
                 },
             ]
         );
-<<<<<<< HEAD
     }
 
     /// Converts a list-of-lists back into a map, for easy assertions that don't depend on
@@ -546,8 +453,6 @@ mod tests {
                 )
             })
             .collect()
-=======
->>>>>>> 8f8af3a43a906f6a0d6e6999eb1a46b27210d886
     }
 
     #[tokio::test]
