@@ -91,6 +91,7 @@ rust_binary(
     edition = "2018",
     deps = [
         ":rustboard_core",
+        "//third_party/rust:clap",
         "//third_party/rust:env_logger",
         "//third_party/rust:log",
         "//third_party/rust:tokio",
