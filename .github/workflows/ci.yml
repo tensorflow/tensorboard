@@ -33,7 +33,7 @@ jobs:
         # flake8 should run on each Python version that we target,
         # because the errors and warnings can differ due to language
         # changes, and we want to catch them all.
-        tf_version: ['tf-nightly', ''] # empty string = notf
+        tf_version_id: ['tf-nightly', ''] # empty string = notf
         python_version: ['3.7']
     steps:
       - uses: actions/checkout@v1
