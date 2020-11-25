@@ -20,6 +20,7 @@ import {MatMenuModule} from '@angular/material/menu';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 
 import {LineChartModule} from '../../../widgets/line_chart/line_chart_module';
+import {LineChartModule as LineChartV2Module} from '../../../widgets/line_chart_v2/line_chart_module';
 import {ResizeDetectorModule} from '../../../widgets/resize_detector_module';
 import {TruncatedPathModule} from '../../../widgets/text/truncated_path_module';
 import {ScalarCardComponent} from './scalar_card_component';
@@ -31,6 +32,7 @@ import {ScalarCardContainer} from './scalar_card_container';
   imports: [
     CommonModule,
     LineChartModule,
+    LineChartV2Module,
     MatButtonModule,
     MatIconModule,
     MatMenuModule,
