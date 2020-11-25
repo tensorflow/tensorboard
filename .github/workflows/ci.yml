@@ -64,10 +64,10 @@ jobs:
       - name: 'Bazel: build'
         run: bazel build //tensorboard/...
       - name: 'Bazel: test (with TensorFlow support)'
-        run: bazel test //tensorboard/... --test_tag_filters="-nogithub"
+        run: bazel test //tensorboard/...
         if: matrix.tf_version_id != 'notf'
       - name: 'Bazel: test (non-TensorFlow only)'
-        run: bazel test //tensorboard/... --test_tag_filters="-nogithub"
+        run: bazel test //tensorboard/... --test_tag_filters="support_notf"
         if: matrix.tf_version_id == 'notf'
       - name: 'Bazel: run Pip package test'
         run: |
