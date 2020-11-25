@@ -185,8 +185,8 @@ pub struct ScalarData {
     pub step: ::std::vec::Vec<i64>,
     #[prost(double, repeated, tag="2")]
     pub wall_time: ::std::vec::Vec<f64>,
-    #[prost(double, repeated, tag="3")]
-    pub value: ::std::vec::Vec<f64>,
+    #[prost(float, repeated, tag="3")]
+    pub value: ::std::vec::Vec<f32>,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct ListTensorsRequest {

@@ -341,7 +341,7 @@ mod tests {
                         .collect();
                     (run, values)
                 })
-                .collect::<HashMap<&Run, Vec<f64>>>(),
+                .collect::<HashMap<&Run, Vec<f32>>>(),
             expected_data
         );
 

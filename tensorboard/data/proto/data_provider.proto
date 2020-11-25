@@ -163,7 +163,7 @@ message ReadScalarsResponse {
 message ScalarData {
   repeated int64 step = 1;
   repeated double wall_time = 2;
-  repeated double value = 3;
+  repeated float value = 3;
 }
 
 message ListTensorsRequest {
