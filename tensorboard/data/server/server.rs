@@ -125,6 +125,7 @@ impl TensorBoardDataProvider for DataProviderHandler {
                     None => continue,
                     Some((step, _, _)) => step,
                 };
+                // TODO(@wchargin): Consider tracking this on the time series itself?
                 let max_wall_time = ts
                     .valid_values()
                     .map(|(_, wt, _)| wt)
@@ -253,7 +254,7 @@ impl TensorBoardDataProvider for DataProviderHandler {
 
 /// Parses a request plugin filter. Returns the desired plugin name, or an error if that's empty.
 fn parse_plugin_filter(pf: Option<data::PluginFilter>) -> Result<String, Status> {
-    let want_plugin = pf.map(|x| x.plugin_name).unwrap_or_default();
+    let want_plugin = pf.unwrap_or_default().plugin_name;
     if want_plugin.is_empty() {
         return Err(Status::invalid_argument(
             "must specify non-empty plugin name",
@@ -298,6 +299,10 @@ enum Filter<T> {
 
 impl<T: Hash + Eq> Filter<T> {
     /// Tests whether this filter matches a specific item.
+    //
+    // TODO(@wchargin): Consider offering a function that enables callers with a `Filter<T>` and a
+    // `HashMap<K, V>` to iterate over matching `(&K, &V)`s by only iterating over this filter's
+    // explicit set in the `Just` case, optimizing for the case when `Just` is small.
     pub fn want<Q: ?Sized>(&self, value: &Q) -> bool
     where
         T: Borrow<Q>,
@@ -425,34 +430,29 @@ mod tests {
         );
     }
 
-    /// Converts a list-of-lists back into a map, for easy assertions that don't depend on
-    /// serialization order.
-    fn unroll_map<
-        TRun,
-        TTag,
-        TInner,
-        FRun: FnMut(TRun) -> (String, Vec<TTag>),
-        FTag: FnMut(TTag) -> (String, TInner),
-    >(
-        items: Vec<TRun>,
-        mut run_fn: FRun,
-        mut tag_fn: FTag,
-    ) -> HashMap<Run, HashMap<Tag, TInner>> {
-        items
-            .into_iter()
-            .map(|run| {
-                let (run_name, tags) = run_fn(run);
-                (
-                    Run(run_name),
-                    tags.into_iter()
+    /// Converts a list of `RunEntry`s into a nested map from `Run` to `Tag` to `TagEntry`, for
+    /// easy assertions that don't depend on serialization order.
+    ///
+    /// This is a macro so that it can be generic over the response types, which don't implement
+    /// any common trait but do share field names `run_name`, `tags`, and `tag_name`.
+    macro_rules! run_tag_map {
+        ($items:expr) => {
+            $items
+                .into_iter()
+                .map(|run| {
+                    let run_name = Run(run.run_name);
+                    let tags = run
+                        .tags
+                        .into_iter()
                         .map(|tag| {
-                            let (tag_name, inner) = tag_fn(tag);
-                            (Tag(tag_name), inner)
+                            let tag_name = Tag(tag.tag_name.clone());
+                            (tag_name, tag)
                         })
-                        .collect(),
-                )
-            })
-            .collect()
+                        .collect();
+                    (run_name, tags)
+                })
+                .collect::<HashMap<Run, HashMap<Tag, _>>>()
+        };
     }
 
     #[tokio::test]
@@ -469,15 +469,14 @@ mod tests {
         let res = handler.list_scalars(req).await.unwrap().into_inner();
 
         assert_eq!(res.runs.len(), 2);
-        let map = unroll_map(
-            res.runs,
-            |x| (x.run_name, x.tags),
-            |y| (y.tag_name, y.metadata.unwrap()),
-        );
+        let map = run_tag_map!(res.runs);
 
         let train_run = &map[&Run("train".to_string())];
         assert_eq!(train_run.len(), 1);
-        let xent_metadata = &train_run[&Tag("xent".to_string())];
+        let xent_metadata = &train_run[&Tag("xent".to_string())]
+            .metadata
+            .as_ref()
+            .unwrap();
         assert_eq!(xent_metadata.max_step, 2);
         assert_eq!(xent_metadata.max_wall_time, 1237.0);
         assert_eq!(
@@ -494,7 +493,10 @@ mod tests {
 
         let test_run = &map[&Run("test".to_string())];
         assert_eq!(test_run.len(), 1);
-        let accuracy_metadata = &test_run[&Tag("accuracy".to_string())];
+        let accuracy_metadata = &test_run[&Tag("accuracy".to_string())]
+            .metadata
+            .as_ref()
+            .unwrap();
         assert_eq!(accuracy_metadata.max_wall_time, 6237.0);
     }
 
@@ -525,15 +527,11 @@ mod tests {
         let res = handler.read_scalars(req).await.unwrap().into_inner();
 
         assert_eq!(res.runs.len(), 1);
-        let map = unroll_map(
-            res.runs,
-            |x| (x.run_name, x.tags),
-            |y| (y.tag_name, y.data.unwrap()),
-        );
+        let map = run_tag_map!(res.runs);
 
         let train_run = &map[&Run("train".to_string())];
         assert_eq!(train_run.len(), 1);
-        let xent_data = &train_run[&Tag("xent".to_string())];
+        let xent_data = &train_run[&Tag("xent".to_string())].data.as_ref().unwrap();
         assert_eq!(xent_data.step, vec![0, 1, 2]);
         assert_eq!(xent_data.wall_time, vec![1235.0, 1236.0, 1237.0]);
         assert_eq!(xent_data.value, vec![0.5, 0.25, 0.125]);
@@ -573,6 +571,12 @@ mod tests {
             }),
             ..Default::default()
         });
-        handler.read_scalars(req).await.unwrap();
+        let res = handler.read_scalars(req).await.unwrap().into_inner();
+        let map = run_tag_map!(res.runs);
+        let train_run = &map[&Run("train".to_string())];
+        let xent_data = &train_run[&Tag("xent".to_string())].data.as_ref().unwrap();
+        // TODO(@wchargin): Enable once downsampling is implemented.
+        // assert_eq!(xent_data.value.len(), 0);
+        let _ = xent_data;
     }
 }
