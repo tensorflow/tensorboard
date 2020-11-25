@@ -15,8 +15,6 @@ limitations under the License.
 
 /** Unit tests for selection. */
 
-import {expect} from 'chai';
-
 import {MoveDirection, Shape, TensorViewSlicingSpec, TensorView} from './types';
 import {TensorElementSelection} from './selection';
 
@@ -37,7 +35,7 @@ describe('TensorElementSelection', () => {
       1,
       1
     );
-    expect(selection.getElementStatus([])).to.eql({
+    expect(selection.getElementStatus([])).toEqual({
       topEdge: true,
       bottomEdge: true,
       leftEdge: true,
@@ -63,26 +61,26 @@ describe('TensorElementSelection', () => {
       5,
       1
     );
-    expect(selection.getElementStatus([0])).to.eql({
+    expect(selection.getElementStatus([0])).toEqual({
       topEdge: true,
       bottomEdge: false,
       leftEdge: true,
       rightEdge: true,
     });
-    expect(selection.getElementStatus([1])).to.eql({
+    expect(selection.getElementStatus([1])).toEqual({
       topEdge: false,
       bottomEdge: false,
       leftEdge: true,
       rightEdge: true,
     });
-    expect(selection.getElementStatus([4])).to.eql({
+    expect(selection.getElementStatus([4])).toEqual({
       topEdge: false,
       bottomEdge: true,
       leftEdge: true,
       rightEdge: true,
     });
-    expect(selection.getElementStatus([5])).to.eql(null);
-    expect(selection.getElementStatus([9])).to.eql(null);
+    expect(selection.getElementStatus([5])).toBeNull();
+    expect(selection.getElementStatus([9])).toBeNull();
   });
 
   it('2D shape: multiple rows and multiple columns', () => {
@@ -103,50 +101,50 @@ describe('TensorElementSelection', () => {
       3,
       4
     );
-    expect(selection.getElementStatus([0, 0])).to.eql({
+    expect(selection.getElementStatus([0, 0])).toEqual({
       topEdge: true,
       bottomEdge: false,
       leftEdge: true,
       rightEdge: false,
     });
-    expect(selection.getElementStatus([0, 1])).to.eql({
+    expect(selection.getElementStatus([0, 1])).toEqual({
       topEdge: true,
       bottomEdge: false,
       leftEdge: false,
       rightEdge: false,
     });
-    expect(selection.getElementStatus([1, 0])).to.eql({
+    expect(selection.getElementStatus([1, 0])).toEqual({
       topEdge: false,
       bottomEdge: false,
       leftEdge: true,
       rightEdge: false,
     });
-    expect(selection.getElementStatus([1, 1])).to.eql({
+    expect(selection.getElementStatus([1, 1])).toEqual({
       topEdge: false,
       bottomEdge: false,
       leftEdge: false,
       rightEdge: false,
     });
-    expect(selection.getElementStatus([2, 3])).to.eql({
+    expect(selection.getElementStatus([2, 3])).toEqual({
       topEdge: false,
       bottomEdge: true,
       leftEdge: false,
       rightEdge: true,
     });
-    expect(selection.getElementStatus([1, 3])).to.eql({
+    expect(selection.getElementStatus([1, 3])).toEqual({
       topEdge: false,
       bottomEdge: false,
       leftEdge: false,
       rightEdge: true,
     });
-    expect(selection.getElementStatus([2, 2])).to.eql({
+    expect(selection.getElementStatus([2, 2])).toEqual({
       topEdge: false,
       bottomEdge: true,
       leftEdge: false,
       rightEdge: false,
     });
-    expect(selection.getElementStatus([3, 4])).to.eql(null);
-    expect(selection.getElementStatus([9, 9])).to.eql(null);
+    expect(selection.getElementStatus([3, 4])).toBeNull();
+    expect(selection.getElementStatus([9, 9])).toBeNull();
   });
 
   it('2D shape: single row, multiple columns', () => {
@@ -167,27 +165,27 @@ describe('TensorElementSelection', () => {
       1,
       4
     );
-    expect(selection.getElementStatus([0, 0])).to.eql(null);
-    expect(selection.getElementStatus([1, 0])).to.eql({
+    expect(selection.getElementStatus([0, 0])).toBeNull();
+    expect(selection.getElementStatus([1, 0])).toEqual({
       topEdge: true,
       bottomEdge: true,
       leftEdge: true,
       rightEdge: false,
     });
-    expect(selection.getElementStatus([1, 1])).to.eql({
+    expect(selection.getElementStatus([1, 1])).toEqual({
       topEdge: true,
       bottomEdge: true,
       leftEdge: false,
       rightEdge: false,
     });
-    expect(selection.getElementStatus([1, 3])).to.eql({
+    expect(selection.getElementStatus([1, 3])).toEqual({
       topEdge: true,
       bottomEdge: true,
       leftEdge: false,
       rightEdge: true,
     });
-    expect(selection.getElementStatus([2, 0])).to.eql(null);
-    expect(selection.getElementStatus([2, 1])).to.eql(null);
+    expect(selection.getElementStatus([2, 0])).toBeNull();
+    expect(selection.getElementStatus([2, 1])).toBeNull();
   });
 
   it('2D shape: multiple rows, single column', () => {
@@ -208,20 +206,20 @@ describe('TensorElementSelection', () => {
       3,
       1
     );
-    expect(selection.getElementStatus([0, 0])).to.eql(null);
-    expect(selection.getElementStatus([5, 7])).to.eql({
+    expect(selection.getElementStatus([0, 0])).toBeNull();
+    expect(selection.getElementStatus([5, 7])).toEqual({
       topEdge: true,
       bottomEdge: false,
       leftEdge: true,
       rightEdge: true,
     });
-    expect(selection.getElementStatus([7, 7])).to.eql({
+    expect(selection.getElementStatus([7, 7])).toEqual({
       topEdge: false,
       bottomEdge: true,
       leftEdge: true,
       rightEdge: true,
     });
-    expect(selection.getElementStatus([8, 7])).to.eql(null);
+    expect(selection.getElementStatus([8, 7])).toBeNull();
   });
 
   it('2D shape: single row, single column', () => {
@@ -242,12 +240,12 @@ describe('TensorElementSelection', () => {
       1,
       1
     );
-    expect(selection.getElementStatus([0, 0])).to.eql(null);
-    expect(selection.getElementStatus([4, 7])).to.eql(null);
-    expect(selection.getElementStatus([6, 7])).to.eql(null);
-    expect(selection.getElementStatus([5, 6])).to.eql(null);
-    expect(selection.getElementStatus([5, 8])).to.eql(null);
-    expect(selection.getElementStatus([5, 7])).to.eql({
+    expect(selection.getElementStatus([0, 0])).toBeNull();
+    expect(selection.getElementStatus([4, 7])).toBeNull();
+    expect(selection.getElementStatus([6, 7])).toBeNull();
+    expect(selection.getElementStatus([5, 6])).toBeNull();
+    expect(selection.getElementStatus([5, 8])).toBeNull();
+    expect(selection.getElementStatus([5, 7])).toEqual({
       topEdge: true,
       bottomEdge: true,
       leftEdge: true,
@@ -278,29 +276,29 @@ describe('TensorElementSelection', () => {
       3,
       2
     );
-    expect(selection.getElementStatus([0, 0, 0])).to.eql(null);
-    expect(selection.getElementStatus([2, 0, 0])).to.eql(null);
-    expect(selection.getElementStatus([3, 5, 7])).to.eql(null);
-    expect(selection.getElementStatus([3, 5, 8])).to.eql(null);
-    expect(selection.getElementStatus([2, 5, 7])).to.eql({
+    expect(selection.getElementStatus([0, 0, 0])).toBeNull();
+    expect(selection.getElementStatus([2, 0, 0])).toBeNull();
+    expect(selection.getElementStatus([3, 5, 7])).toBeNull();
+    expect(selection.getElementStatus([3, 5, 8])).toBeNull();
+    expect(selection.getElementStatus([2, 5, 7])).toEqual({
       topEdge: true,
       bottomEdge: false,
       leftEdge: true,
       rightEdge: false,
     });
-    expect(selection.getElementStatus([2, 5, 8])).to.eql({
+    expect(selection.getElementStatus([2, 5, 8])).toEqual({
       topEdge: true,
       bottomEdge: false,
       leftEdge: false,
       rightEdge: true,
     });
-    expect(selection.getElementStatus([2, 7, 7])).to.eql({
+    expect(selection.getElementStatus([2, 7, 7])).toEqual({
       topEdge: false,
       bottomEdge: true,
       leftEdge: true,
       rightEdge: false,
     });
-    expect(selection.getElementStatus([2, 7, 8])).to.eql({
+    expect(selection.getElementStatus([2, 7, 8])).toEqual({
       topEdge: false,
       bottomEdge: true,
       leftEdge: false,
@@ -318,7 +316,7 @@ describe('TensorElementSelection', () => {
     };
     expect(
       () => new TensorElementSelection(shape, slicingSpec, 0, 0, 0, 0)
-    ).to.throw(/doesn\'t support tensor with zero elements./);
+    ).toThrowError(Error, /doesn\'t support tensor with zero elements./);
   });
 });
 
@@ -340,26 +338,26 @@ describe('Moving selection', () => {
       1
     );
     // All movements on a scalar selection leads to no change.
-    expect(selection.move(MoveDirection.UP, slicingSpec)).to.be.null;
-    expect(selection.getRowStart()).to.equal(0);
-    expect(selection.getRowCount()).to.equal(1);
-    expect(selection.getColStart()).to.equal(0);
-    expect(selection.getColCount()).to.equal(1);
-    expect(selection.move(MoveDirection.DOWN, slicingSpec)).to.be.null;
-    expect(selection.getRowStart()).to.equal(0);
-    expect(selection.getRowCount()).to.equal(1);
-    expect(selection.getColStart()).to.equal(0);
-    expect(selection.getColCount()).to.equal(1);
-    expect(selection.move(MoveDirection.LEFT, slicingSpec)).to.be.null;
-    expect(selection.getRowStart()).to.equal(0);
-    expect(selection.getRowCount()).to.equal(1);
-    expect(selection.getColStart()).to.equal(0);
-    expect(selection.getColCount()).to.equal(1);
-    expect(selection.move(MoveDirection.RIGHT, slicingSpec)).to.be.null;
-    expect(selection.getRowStart()).to.equal(0);
-    expect(selection.getRowCount()).to.equal(1);
-    expect(selection.getColStart()).to.equal(0);
-    expect(selection.getColCount()).to.equal(1);
+    expect(selection.move(MoveDirection.UP, slicingSpec)).toBeNull();
+    expect(selection.getRowStart()).toBe(0);
+    expect(selection.getRowCount()).toBe(1);
+    expect(selection.getColStart()).toBe(0);
+    expect(selection.getColCount()).toBe(1);
+    expect(selection.move(MoveDirection.DOWN, slicingSpec)).toBeNull();
+    expect(selection.getRowStart()).toBe(0);
+    expect(selection.getRowCount()).toBe(1);
+    expect(selection.getColStart()).toBe(0);
+    expect(selection.getColCount()).toBe(1);
+    expect(selection.move(MoveDirection.LEFT, slicingSpec)).toBeNull();
+    expect(selection.getRowStart()).toBe(0);
+    expect(selection.getRowCount()).toBe(1);
+    expect(selection.getColStart()).toBe(0);
+    expect(selection.getColCount()).toBe(1);
+    expect(selection.move(MoveDirection.RIGHT, slicingSpec)).toBeNull();
+    expect(selection.getRowStart()).toBe(0);
+    expect(selection.getRowCount()).toBe(1);
+    expect(selection.getColStart()).toBe(0);
+    expect(selection.getColCount()).toBe(1);
   });
 
   it('1D moving', () => {
@@ -381,33 +379,33 @@ describe('Moving selection', () => {
       1
     );
     // Null effects from left-right movements.
-    expect(selection.move(MoveDirection.UP, slicingSpec)).to.be.null;
-    expect(selection.getRowStart()).to.equal(0);
-    expect(selection.getColStart()).to.equal(0);
-    expect(selection.move(MoveDirection.LEFT, slicingSpec)).to.be.null;
-    expect(selection.getRowStart()).to.equal(0);
-    expect(selection.getColStart()).to.equal(0);
-    expect(selection.move(MoveDirection.RIGHT, slicingSpec)).to.be.null;
-    expect(selection.getRowStart()).to.equal(0);
-    expect(selection.getColStart()).to.equal(0);
+    expect(selection.move(MoveDirection.UP, slicingSpec)).toBeNull();
+    expect(selection.getRowStart()).toBe(0);
+    expect(selection.getColStart()).toBe(0);
+    expect(selection.move(MoveDirection.LEFT, slicingSpec)).toBeNull();
+    expect(selection.getRowStart()).toBe(0);
+    expect(selection.getColStart()).toBe(0);
+    expect(selection.move(MoveDirection.RIGHT, slicingSpec)).toBeNull();
+    expect(selection.getRowStart()).toBe(0);
+    expect(selection.getColStart()).toBe(0);
     // Effective movements without changing slicing spec.
-    expect(selection.move(MoveDirection.DOWN, slicingSpec)).to.be.null;
-    expect(selection.getRowStart()).to.equal(1);
-    expect(selection.move(MoveDirection.DOWN, slicingSpec)).to.be.null;
-    expect(selection.getRowStart()).to.equal(2);
-    expect(selection.move(MoveDirection.DOWN, slicingSpec)).to.be.null;
-    expect(selection.getRowStart()).to.equal(3);
-    expect(selection.move(MoveDirection.DOWN, slicingSpec)).to.be.null;
-    expect(selection.getRowStart()).to.equal(4);
+    expect(selection.move(MoveDirection.DOWN, slicingSpec)).toBeNull();
+    expect(selection.getRowStart()).toBe(1);
+    expect(selection.move(MoveDirection.DOWN, slicingSpec)).toBeNull();
+    expect(selection.getRowStart()).toBe(2);
+    expect(selection.move(MoveDirection.DOWN, slicingSpec)).toBeNull();
+    expect(selection.getRowStart()).toBe(3);
+    expect(selection.move(MoveDirection.DOWN, slicingSpec)).toBeNull();
+    expect(selection.getRowStart()).toBe(4);
     // Movement causes updates to slicing spec.
-    expect(selection.move(MoveDirection.DOWN, slicingSpec)).to.equal(
+    expect(selection.move(MoveDirection.DOWN, slicingSpec)).toBe(
       MoveDirection.DOWN
     );
-    expect(selection.getRowStart()).to.equal(5);
+    expect(selection.getRowStart()).toBe(5);
 
     // Cannnot move anymore.
-    expect(selection.move(MoveDirection.DOWN, slicingSpec)).to.be.null;
-    expect(selection.getRowStart()).to.equal(5);
+    expect(selection.move(MoveDirection.DOWN, slicingSpec)).toBeNull();
+    expect(selection.getRowStart()).toBe(5);
   });
 
   it('2D moving', () => {
@@ -429,36 +427,36 @@ describe('Moving selection', () => {
       1
     );
     // Null effects from up and left movements.
-    expect(selection.move(MoveDirection.UP, slicingSpec)).to.be.null;
-    expect(selection.getRowStart()).to.equal(0);
-    expect(selection.getColStart()).to.equal(0);
-    expect(selection.move(MoveDirection.LEFT, slicingSpec)).to.be.null;
-    expect(selection.getRowStart()).to.equal(0);
-    expect(selection.getColStart()).to.equal(0);
+    expect(selection.move(MoveDirection.UP, slicingSpec)).toBeNull();
+    expect(selection.getRowStart()).toBe(0);
+    expect(selection.getColStart()).toBe(0);
+    expect(selection.move(MoveDirection.LEFT, slicingSpec)).toBeNull();
+    expect(selection.getRowStart()).toBe(0);
+    expect(selection.getColStart()).toBe(0);
     // Non-null effect from down movement.
-    expect(selection.move(MoveDirection.DOWN, slicingSpec)).to.be.null;
-    expect(selection.getRowStart()).to.equal(1);
-    expect(selection.getColStart()).to.equal(0);
+    expect(selection.move(MoveDirection.DOWN, slicingSpec)).toBeNull();
+    expect(selection.getRowStart()).toBe(1);
+    expect(selection.getColStart()).toBe(0);
     // Non-null effect from right movement.
-    expect(selection.move(MoveDirection.RIGHT, slicingSpec)).to.be.null;
-    expect(selection.getRowStart()).to.equal(1);
-    expect(selection.getColStart()).to.equal(1);
+    expect(selection.move(MoveDirection.RIGHT, slicingSpec)).toBeNull();
+    expect(selection.getRowStart()).toBe(1);
+    expect(selection.getColStart()).toBe(1);
     // Next down movement should cause a slicinng spec change.
-    expect(selection.move(MoveDirection.DOWN, slicingSpec)).to.equal(
+    expect(selection.move(MoveDirection.DOWN, slicingSpec)).toBe(
       MoveDirection.DOWN
     );
-    expect(selection.getRowStart()).to.equal(2);
-    expect(selection.getColStart()).to.equal(1);
+    expect(selection.getRowStart()).toBe(2);
+    expect(selection.getColStart()).toBe(1);
     // Next right movement should cause a slicing spec change.
-    expect(selection.move(MoveDirection.RIGHT, slicingSpec)).to.equal(
+    expect(selection.move(MoveDirection.RIGHT, slicingSpec)).toBe(
       MoveDirection.RIGHT
     );
-    expect(selection.getRowStart()).to.equal(2);
-    expect(selection.getColStart()).to.equal(2);
+    expect(selection.getRowStart()).toBe(2);
+    expect(selection.getColStart()).toBe(2);
     // Moving back up.
-    expect(selection.move(MoveDirection.UP, slicingSpec)).to.be.null;
-    expect(selection.getRowStart()).to.equal(1);
-    expect(selection.getColStart()).to.equal(2);
+    expect(selection.move(MoveDirection.UP, slicingSpec)).toBeNull();
+    expect(selection.getRowStart()).toBe(1);
+    expect(selection.getColStart()).toBe(2);
   });
 
   it('2D moving with setSlicingSpec reflects new spec', () => {
@@ -488,8 +486,8 @@ describe('Moving selection', () => {
     };
     // With the new slicing spec set, the downward move should lead to no update
     // in the slicing spec, and neither should the rightward move.
-    expect(selection.move(MoveDirection.DOWN, newSlicingSpec)).to.be.null;
-    expect(selection.move(MoveDirection.RIGHT, newSlicingSpec)).to.be.null;
+    expect(selection.move(MoveDirection.DOWN, newSlicingSpec)).toBeNull();
+    expect(selection.move(MoveDirection.RIGHT, newSlicingSpec)).toBeNull();
   });
 
   it('3D moving', () => {
@@ -516,36 +514,36 @@ describe('Moving selection', () => {
       1
     );
     // Null effects from up and left movements.
-    expect(selection.move(MoveDirection.UP, slicingSpec)).to.be.null;
-    expect(selection.getRowStart()).to.equal(0);
-    expect(selection.getColStart()).to.equal(0);
-    expect(selection.move(MoveDirection.LEFT, slicingSpec)).to.be.null;
-    expect(selection.getRowStart()).to.equal(0);
-    expect(selection.getColStart()).to.equal(0);
+    expect(selection.move(MoveDirection.UP, slicingSpec)).toBeNull();
+    expect(selection.getRowStart()).toBe(0);
+    expect(selection.getColStart()).toBe(0);
+    expect(selection.move(MoveDirection.LEFT, slicingSpec)).toBeNull();
+    expect(selection.getRowStart()).toBe(0);
+    expect(selection.getColStart()).toBe(0);
     // Non-null effect from down movement.
-    expect(selection.move(MoveDirection.DOWN, slicingSpec)).to.be.null;
-    expect(selection.getRowStart()).to.equal(1);
-    expect(selection.getColStart()).to.equal(0);
+    expect(selection.move(MoveDirection.DOWN, slicingSpec)).toBeNull();
+    expect(selection.getRowStart()).toBe(1);
+    expect(selection.getColStart()).toBe(0);
     // Non-null effect from right movement.
-    expect(selection.move(MoveDirection.RIGHT, slicingSpec)).to.be.null;
-    expect(selection.getRowStart()).to.equal(1);
-    expect(selection.getColStart()).to.equal(1);
+    expect(selection.move(MoveDirection.RIGHT, slicingSpec)).toBeNull();
+    expect(selection.getRowStart()).toBe(1);
+    expect(selection.getColStart()).toBe(1);
     // Next down movement should cause a slicinng spec change.
-    expect(selection.move(MoveDirection.DOWN, slicingSpec)).to.equal(
+    expect(selection.move(MoveDirection.DOWN, slicingSpec)).toBe(
       MoveDirection.DOWN
     );
-    expect(selection.getRowStart()).to.equal(2);
-    expect(selection.getColStart()).to.equal(1);
+    expect(selection.getRowStart()).toBe(2);
+    expect(selection.getColStart()).toBe(1);
     // Next right movement should cause a slicing spec change.
-    expect(selection.move(MoveDirection.RIGHT, slicingSpec)).to.equal(
+    expect(selection.move(MoveDirection.RIGHT, slicingSpec)).toBe(
       MoveDirection.RIGHT
     );
-    expect(selection.getRowStart()).to.equal(2);
-    expect(selection.getColStart()).to.equal(2);
+    expect(selection.getRowStart()).toBe(2);
+    expect(selection.getColStart()).toBe(2);
 
     // Moving back up.
-    expect(selection.move(MoveDirection.UP, slicingSpec)).to.be.null;
-    expect(selection.getRowStart()).to.equal(1);
-    expect(selection.getColStart()).to.equal(2);
+    expect(selection.move(MoveDirection.UP, slicingSpec)).toBeNull();
+    expect(selection.getRowStart()).toBe(1);
+    expect(selection.getColStart()).toBe(2);
   });
 });

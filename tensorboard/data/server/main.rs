@@ -13,7 +13,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+<<<<<<< HEAD
 use log::{info, LevelFilter};
+=======
+>>>>>>> 5f3b099444fdb69fb3988e312cfbc8408812e303
 use std::path::PathBuf;
 use std::time::{Duration, Instant};
 use tonic::transport::Server;
@@ -44,11 +47,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     std::thread::spawn(move || {
         let mut loader = LogdirLoader::new(commit, logdir);
         loop {
+<<<<<<< HEAD
             info!("Starting load cycle");
             let start = Instant::now();
             loader.reload();
             let end = Instant::now();
             info!("Finished load cycle ({:?})", end - start);
+=======
+            eprintln!("beginning load cycle");
+            let start = Instant::now();
+            loader.reload();
+            let end = Instant::now();
+            eprintln!("finished load cycle ({:?})", end - start);
+>>>>>>> 5f3b099444fdb69fb3988e312cfbc8408812e303
             std::thread::sleep(RELOAD_INTERVAL);
         }
     });

@@ -1,5 +1,4 @@
-load("@npm_bazel_jasmine//:index.bzl", "jasmine_node_test")
-load("//tensorboard/defs:defs.bzl", "tf_js_binary", "tf_ts_library")
+load("//tensorboard/defs:defs.bzl", "tf_js_binary", "tf_ng_web_test_suite", "tf_ts_library")
 load("//tensorboard/defs:web.bzl", "tf_web_library")
 
 package(default_visibility = ["//tensorboard:internal"])
@@ -84,16 +83,13 @@ tf_ts_library(
     ],
     deps = [
         ":tensor_widget_lib",
-        "@npm//@types/chai",
         "@npm//@types/jasmine",
-        "@npm//chai",
     ],
 )
 
-jasmine_node_test(
-    name = "test",
-    srcs = [":test_lib"],
+tf_ng_web_test_suite(
+    name = "karma_test",
     deps = [
-        "@npm//chai",
+        ":test_lib",
     ],
 )

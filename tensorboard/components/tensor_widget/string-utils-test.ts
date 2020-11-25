@@ -13,8 +13,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {expect} from 'chai';
-
 import {
   booleanValueToDisplayString,
   ELLIPSES,
@@ -34,34 +32,32 @@ function stringRepeat(str: string, times: number) {
 
 describe('formatTensorName', () => {
   it('returns original string for under-limit lengths', () => {
-    expect(formatTensorName('')).to.equal('');
-    expect(formatTensorName('a')).to.equal('a');
+    expect(formatTensorName('')).toBe('');
+    expect(formatTensorName('a')).toBe('a');
     const onLimitName = stringRepeat('A', TENSOR_NAME_LENGTH_CUTOFF);
-    expect(formatTensorName(onLimitName)).to.equal(onLimitName);
+    expect(formatTensorName(onLimitName)).toBe(onLimitName);
   });
 
   it('returns string with ellipses for over-limit lengths', () => {
     const longName = stringRepeat('A', TENSOR_NAME_LENGTH_CUTOFF + 10);
-    expect(formatTensorName(longName).length).to.equal(
-      TENSOR_NAME_LENGTH_CUTOFF
-    );
+    expect(formatTensorName(longName).length).toBe(TENSOR_NAME_LENGTH_CUTOFF);
   });
 
   it('includes ellipses, prefix and suffix', () => {
     const longName = stringRepeat('A', TENSOR_NAME_LENGTH_CUTOFF + 10);
     const output = formatTensorName(longName);
-    expect(output.indexOf(ELLIPSES)).to.equal(
+    expect(output.indexOf(ELLIPSES)).toBe(
       Math.floor(TENSOR_NAME_LENGTH_CUTOFF / 2)
     );
-    expect(output.slice(0, 1)).to.equal('A');
-    expect(output.slice(output.length - 1, output.length)).to.equal('A');
+    expect(output.slice(0, 1)).toBe('A');
+    expect(output.slice(output.length - 1, output.length)).toBe('A');
   });
 });
 
 describe('Constants for formatTensorName', () => {
   it('TENSOR_NAME_LENGTH_CUTOFF is long-enough positive integer', () => {
-    expect(TENSOR_NAME_LENGTH_CUTOFF).to.be.greaterThan(ELLIPSES.length);
-    expect(Math.floor(TENSOR_NAME_LENGTH_CUTOFF)).to.equal(
+    expect(TENSOR_NAME_LENGTH_CUTOFF).toBeGreaterThan(ELLIPSES.length);
+    expect(Math.floor(TENSOR_NAME_LENGTH_CUTOFF)).toBe(
       Math.floor(TENSOR_NAME_LENGTH_CUTOFF)
     );
   });
@@ -70,73 +66,69 @@ describe('Constants for formatTensorName', () => {
 describe('numericValueToString', () => {
   it('returns NaN string for NaN', () => {
     const isInteger = false;
-    expect(numericValueToString(NaN, isInteger)).to.equal('NaN');
+    expect(numericValueToString(NaN, isInteger)).toBe('NaN');
     const decimalPlaces = 4;
-    expect(numericValueToString(NaN, isInteger, decimalPlaces)).to.equal('NaN');
+    expect(numericValueToString(NaN, isInteger, decimalPlaces)).toBe('NaN');
     expect(
       numericValueToString(NaN, isInteger, decimalPlaces, 'exponential')
-    ).to.equal('NaN');
+    ).toBe('NaN');
   });
 
   it('returns unicode infinity for +/- Infinity', () => {
     const isInteger = false;
-    expect(numericValueToString(-Infinity, isInteger)).to.equal('-∞');
-    expect(numericValueToString(Infinity, isInteger)).to.equal('+∞');
+    expect(numericValueToString(-Infinity, isInteger)).toBe('-∞');
+    expect(numericValueToString(Infinity, isInteger)).toBe('+∞');
     const decimalPlaces = 4;
-    expect(numericValueToString(-Infinity, isInteger, decimalPlaces)).to.equal(
+    expect(numericValueToString(-Infinity, isInteger, decimalPlaces)).toBe(
       '-∞'
     );
-    expect(numericValueToString(Infinity, isInteger, decimalPlaces)).to.equal(
-      '+∞'
-    );
+    expect(numericValueToString(Infinity, isInteger, decimalPlaces)).toBe('+∞');
     expect(
       numericValueToString(-Infinity, isInteger, decimalPlaces, 'exponential')
-    ).to.equal('-∞');
+    ).toBe('-∞');
     expect(
       numericValueToString(Infinity, isInteger, decimalPlaces, 'exponential')
-    ).to.equal('+∞');
+    ).toBe('+∞');
   });
 
   it('float zeros are formatted correctly', () => {
     const isInteger = false;
     const x = 0;
-    expect(numericValueToString(x, isInteger)).to.equal('0.00');
+    expect(numericValueToString(x, isInteger)).toBe('0.00');
 
     let decimalPlaces = 0;
-    expect(numericValueToString(x, isInteger, decimalPlaces)).to.equal('0');
+    expect(numericValueToString(x, isInteger, decimalPlaces)).toBe('0');
 
     decimalPlaces = 1;
-    expect(numericValueToString(x, isInteger, decimalPlaces)).to.equal('0.0');
+    expect(numericValueToString(x, isInteger, decimalPlaces)).toBe('0.0');
 
     decimalPlaces = 0;
     expect(
       numericValueToString(x, isInteger, decimalPlaces, 'exponential')
-    ).to.equal('0e+0');
+    ).toBe('0e+0');
     decimalPlaces = 2;
     expect(
       numericValueToString(x, isInteger, decimalPlaces, 'exponential')
-    ).to.equal('0.00e+0');
+    ).toBe('0.00e+0');
   });
 
   it('Large positive float values are formatted correctly', () => {
     const isInteger = false;
     const x = 12345;
-    expect(numericValueToString(x, isInteger)).to.equal('1.23e+4');
+    expect(numericValueToString(x, isInteger)).toBe('1.23e+4');
 
     let decimalPlaces = 0;
-    expect(numericValueToString(x, isInteger, decimalPlaces)).to.equal('1e+4');
+    expect(numericValueToString(x, isInteger, decimalPlaces)).toBe('1e+4');
 
     decimalPlaces = 1;
-    expect(numericValueToString(x, isInteger, decimalPlaces)).to.equal(
-      '1.2e+4'
-    );
+    expect(numericValueToString(x, isInteger, decimalPlaces)).toBe('1.2e+4');
 
     decimalPlaces = 0;
-    expect(numericValueToString(x, isInteger, decimalPlaces, 'fixed')).to.equal(
+    expect(numericValueToString(x, isInteger, decimalPlaces, 'fixed')).toBe(
       '12345'
     );
     decimalPlaces = 2;
-    expect(numericValueToString(x, isInteger, decimalPlaces, 'fixed')).to.equal(
+    expect(numericValueToString(x, isInteger, decimalPlaces, 'fixed')).toBe(
       '12345.00'
     );
   });
@@ -144,22 +136,20 @@ describe('numericValueToString', () => {
   it('Large negative float values are formatted correctly', () => {
     const isInteger = false;
     const x = -12345;
-    expect(numericValueToString(x, isInteger)).to.equal('-1.23e+4');
+    expect(numericValueToString(x, isInteger)).toBe('-1.23e+4');
 
     let decimalPlaces = 0;
-    expect(numericValueToString(x, isInteger, decimalPlaces)).to.equal('-1e+4');
+    expect(numericValueToString(x, isInteger, decimalPlaces)).toBe('-1e+4');
 
     decimalPlaces = 1;
-    expect(numericValueToString(x, isInteger, decimalPlaces)).to.equal(
-      '-1.2e+4'
-    );
+    expect(numericValueToString(x, isInteger, decimalPlaces)).toBe('-1.2e+4');
 
     decimalPlaces = 0;
-    expect(numericValueToString(x, isInteger, decimalPlaces, 'fixed')).to.equal(
+    expect(numericValueToString(x, isInteger, decimalPlaces, 'fixed')).toBe(
       '-12345'
     );
     decimalPlaces = 2;
-    expect(numericValueToString(x, isInteger, decimalPlaces, 'fixed')).to.equal(
+    expect(numericValueToString(x, isInteger, decimalPlaces, 'fixed')).toBe(
       '-12345.00'
     );
   });
@@ -167,64 +157,62 @@ describe('numericValueToString', () => {
   it('Medium magnitude positive float values are formatted correctly', () => {
     const isInteger = false;
     const x = 42.6;
-    expect(numericValueToString(x, isInteger)).to.equal('42.60');
+    expect(numericValueToString(x, isInteger)).toBe('42.60');
 
     let decimalPlaces = 0;
-    expect(numericValueToString(x, isInteger, decimalPlaces)).to.equal('43');
+    expect(numericValueToString(x, isInteger, decimalPlaces)).toBe('43');
 
     decimalPlaces = 1;
-    expect(numericValueToString(x, isInteger, decimalPlaces)).to.equal('42.6');
+    expect(numericValueToString(x, isInteger, decimalPlaces)).toBe('42.6');
 
     decimalPlaces = 0;
     expect(
       numericValueToString(x, isInteger, decimalPlaces, 'exponential')
-    ).to.equal('4e+1');
+    ).toBe('4e+1');
     decimalPlaces = 2;
     expect(
       numericValueToString(x, isInteger, decimalPlaces, 'exponential')
-    ).to.equal('4.26e+1');
+    ).toBe('4.26e+1');
   });
 
   it('Medium magnitude negative float values are formatted correctly', () => {
     const isInteger = false;
     const x = -42.6;
-    expect(numericValueToString(x, isInteger)).to.equal('-42.60');
+    expect(numericValueToString(x, isInteger)).toBe('-42.60');
 
     let decimalPlaces = 0;
-    expect(numericValueToString(x, isInteger, decimalPlaces)).to.equal('-43');
+    expect(numericValueToString(x, isInteger, decimalPlaces)).toBe('-43');
 
     decimalPlaces = 1;
-    expect(numericValueToString(x, isInteger, decimalPlaces)).to.equal('-42.6');
+    expect(numericValueToString(x, isInteger, decimalPlaces)).toBe('-42.6');
 
     decimalPlaces = 0;
     expect(
       numericValueToString(x, isInteger, decimalPlaces, 'exponential')
-    ).to.equal('-4e+1');
+    ).toBe('-4e+1');
     decimalPlaces = 2;
     expect(
       numericValueToString(x, isInteger, decimalPlaces, 'exponential')
-    ).to.equal('-4.26e+1');
+    ).toBe('-4.26e+1');
   });
 
   it('Small magnitude positive float values are formatted correctly', () => {
     const isInteger = false;
     const x = 1.337e-8;
-    expect(numericValueToString(x, isInteger)).to.equal('1.34e-8');
+    expect(numericValueToString(x, isInteger)).toBe('1.34e-8');
 
     let decimalPlaces = 0;
-    expect(numericValueToString(x, isInteger, decimalPlaces)).to.equal('1e-8');
+    expect(numericValueToString(x, isInteger, decimalPlaces)).toBe('1e-8');
 
     decimalPlaces = 1;
-    expect(numericValueToString(x, isInteger, decimalPlaces)).to.equal(
-      '1.3e-8'
-    );
+    expect(numericValueToString(x, isInteger, decimalPlaces)).toBe('1.3e-8');
 
     decimalPlaces = 0;
-    expect(numericValueToString(x, isInteger, decimalPlaces, 'fixed')).to.equal(
+    expect(numericValueToString(x, isInteger, decimalPlaces, 'fixed')).toBe(
       '0'
     );
     decimalPlaces = 2;
-    expect(numericValueToString(x, isInteger, decimalPlaces, 'fixed')).to.equal(
+    expect(numericValueToString(x, isInteger, decimalPlaces, 'fixed')).toBe(
       '0.00'
     );
   });
@@ -232,88 +220,86 @@ describe('numericValueToString', () => {
   it('Small magnitude negative float values are formatted correctly', () => {
     const isInteger = false;
     const x = -1.337e-8;
-    expect(numericValueToString(x, isInteger)).to.equal('-1.34e-8');
+    expect(numericValueToString(x, isInteger)).toBe('-1.34e-8');
 
     let decimalPlaces = 0;
-    expect(numericValueToString(x, isInteger, decimalPlaces)).to.equal('-1e-8');
+    expect(numericValueToString(x, isInteger, decimalPlaces)).toBe('-1e-8');
 
     decimalPlaces = 1;
-    expect(numericValueToString(x, isInteger, decimalPlaces)).to.equal(
-      '-1.3e-8'
-    );
+    expect(numericValueToString(x, isInteger, decimalPlaces)).toBe('-1.3e-8');
 
     decimalPlaces = 0;
-    expect(numericValueToString(x, isInteger, decimalPlaces, 'fixed')).to.equal(
+    expect(numericValueToString(x, isInteger, decimalPlaces, 'fixed')).toBe(
       '-0'
     );
     decimalPlaces = 2;
-    expect(numericValueToString(x, isInteger, decimalPlaces, 'fixed')).to.equal(
+    expect(numericValueToString(x, isInteger, decimalPlaces, 'fixed')).toBe(
       '-0.00'
     );
   });
 
   it('Zero integer is formatted correctly', () => {
     const isInteger = true;
-    expect(numericValueToString(0, isInteger)).to.equal('0');
+    expect(numericValueToString(0, isInteger)).toBe('0');
   });
 
   it('Small magnitude positive integers are formatted correctly', () => {
     const isInteger = true;
-    expect(numericValueToString(42, isInteger)).to.equal('42');
+    expect(numericValueToString(42, isInteger)).toBe('42');
   });
 
   it('Small magnitude negative integers are formatted correctly', () => {
     const isInteger = true;
-    expect(numericValueToString(-42, isInteger)).to.equal('-42');
+    expect(numericValueToString(-42, isInteger)).toBe('-42');
   });
 
   it('Large magnitude positive integers are formatted correctly', () => {
     const isInteger = true;
-    expect(numericValueToString(12345678, isInteger)).to.equal('1.23e+7');
+    expect(numericValueToString(12345678, isInteger)).toBe('1.23e+7');
   });
 
   it('Large magnitude negative integers are formatted correctly', () => {
     const isInteger = true;
-    expect(numericValueToString(-12345678, isInteger)).to.equal('-1.23e+7');
+    expect(numericValueToString(-12345678, isInteger)).toBe('-1.23e+7');
   });
 });
 
 describe('booleanValueToString', () => {
   it('correct return values for boolean arguments', () => {
-    expect(booleanValueToDisplayString(true)).to.eql('T');
-    expect(booleanValueToDisplayString(false)).to.eql('F');
+    expect(booleanValueToDisplayString(true)).toBe('T');
+    expect(booleanValueToDisplayString(false)).toBe('F');
     const shortForm = false;
-    expect(booleanValueToDisplayString(true, shortForm)).to.eql('True');
-    expect(booleanValueToDisplayString(false, shortForm)).to.eql('False');
+    expect(booleanValueToDisplayString(true, shortForm)).toBe('True');
+    expect(booleanValueToDisplayString(false, shortForm)).toBe('False');
   });
 
   it('correct return values for number arguments', () => {
-    expect(booleanValueToDisplayString(1)).to.eql('T');
-    expect(booleanValueToDisplayString(0)).to.eql('F');
+    expect(booleanValueToDisplayString(1)).toBe('T');
+    expect(booleanValueToDisplayString(0)).toBe('F');
     const shortForm = false;
-    expect(booleanValueToDisplayString(1, shortForm)).to.eql('True');
-    expect(booleanValueToDisplayString(0, shortForm)).to.eql('False');
+    expect(booleanValueToDisplayString(1, shortForm)).toBe('True');
+    expect(booleanValueToDisplayString(0, shortForm)).toBe('False');
   });
 });
 
 describe('stringValueToString', () => {
   it('cutoff with default length limit', () => {
-    expect(stringValueToDisplayString('')).to.eql('');
-    expect(stringValueToDisplayString('ABC')).to.eql('ABC');
-    expect(stringValueToDisplayString('ABCDE')).to.eql('ABC…');
+    expect(stringValueToDisplayString('')).toBe('');
+    expect(stringValueToDisplayString('ABC')).toBe('ABC');
+    expect(stringValueToDisplayString('ABCDE')).toBe('ABC…');
   });
 
   it('cutoff with custom length limit', () => {
     const lengthLimit = 2;
-    expect(stringValueToDisplayString('', lengthLimit)).to.eql('');
-    expect(stringValueToDisplayString('ABC', lengthLimit)).to.eql('A…');
+    expect(stringValueToDisplayString('', lengthLimit)).toBe('');
+    expect(stringValueToDisplayString('ABC', lengthLimit)).toBe('A…');
   });
 
   it('cutoff with explicitly disabled limit', () => {
-    expect(stringValueToDisplayString('', null)).to.eql('');
-    expect(stringValueToDisplayString('ABC', null)).to.eql('ABC');
-    expect(stringValueToDisplayString('ABCDE', null)).to.eql('ABCDE');
-    expect(stringValueToDisplayString(stringRepeat('V', 1000), null)).to.eql(
+    expect(stringValueToDisplayString('', null)).toBe('');
+    expect(stringValueToDisplayString('ABC', null)).toBe('ABC');
+    expect(stringValueToDisplayString('ABCDE', null)).toBe('ABCDE');
+    expect(stringValueToDisplayString(stringRepeat('V', 1000), null)).toBe(
       stringRepeat('V', 1000)
     );
   });
