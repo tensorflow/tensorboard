@@ -13,8 +13,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {expect} from 'chai';
-
 import {
   formatShapeForDisplay,
   getDefaultSlicingSpec,
@@ -25,52 +23,50 @@ import {TensorViewSlicingSpec} from './types';
 
 describe('size', () => {
   it('scalar', () => {
-    expect(numElements([])).to.equal(1);
+    expect(numElements([])).toBe(1);
   });
 
   it('1D', () => {
-    expect(numElements([3])).to.equal(3);
-    expect(numElements([0])).to.equal(0);
+    expect(numElements([3])).toBe(3);
+    expect(numElements([0])).toBe(0);
   });
 
   it('2D', () => {
-    expect(numElements([3, 4])).to.equal(12);
-    expect(numElements([3, 0])).to.equal(0);
-    expect(numElements([0, 3])).to.equal(0);
+    expect(numElements([3, 4])).toBe(12);
+    expect(numElements([3, 0])).toBe(0);
+    expect(numElements([0, 3])).toBe(0);
   });
 
   it('3D', () => {
-    expect(numElements([3, 4, 5])).to.equal(60);
-    expect(numElements([3, 0, 5])).to.equal(0);
-    expect(numElements([0, 4, 5])).to.equal(0);
+    expect(numElements([3, 4, 5])).toBe(60);
+    expect(numElements([3, 0, 5])).toBe(0);
+    expect(numElements([0, 4, 5])).toBe(0);
   });
 
   it('4D', () => {
-    expect(numElements([2, 3, 4, 5])).to.equal(120);
-    expect(numElements([2, 3, 0, 5])).to.equal(0);
+    expect(numElements([2, 3, 4, 5])).toBe(120);
+    expect(numElements([2, 3, 0, 5])).toBe(0);
   });
 });
 
 describe('formatShapeForDisplay', () => {
   it('returns string scalar for []', () => {
-    expect(formatShapeForDisplay([])).to.equal('scalar');
+    expect(formatShapeForDisplay([])).toBe('scalar');
   });
 
   it('returns array strings for non-scalar shapes', () => {
-    expect(formatShapeForDisplay([0])).to.equal('[0]');
-    expect(formatShapeForDisplay([12])).to.equal('[12]');
-    expect(formatShapeForDisplay([4, 8])).to.equal('[4,8]');
-    expect(formatShapeForDisplay([1, 32, 8])).to.equal('[1,32,8]');
-    expect(formatShapeForDisplay([8, 32, 32, 128])).to.equal('[8,32,32,128]');
-    expect(formatShapeForDisplay([0, 8, 32, 32, 128])).to.equal(
-      '[0,8,32,32,128]'
-    );
+    expect(formatShapeForDisplay([0])).toBe('[0]');
+    expect(formatShapeForDisplay([12])).toBe('[12]');
+    expect(formatShapeForDisplay([4, 8])).toBe('[4,8]');
+    expect(formatShapeForDisplay([1, 32, 8])).toBe('[1,32,8]');
+    expect(formatShapeForDisplay([8, 32, 32, 128])).toBe('[8,32,32,128]');
+    expect(formatShapeForDisplay([0, 8, 32, 32, 128])).toBe('[0,8,32,32,128]');
   });
 });
 
 describe('getDefaultSlicingSpec', () => {
   it('returns correct result for scalar shape', () => {
-    expect(getDefaultSlicingSpec([])).to.eql({
+    expect(getDefaultSlicingSpec([])).toEqual({
       slicingDimsAndIndices: [],
       viewingDims: [],
       verticalRange: null,
@@ -79,7 +75,7 @@ describe('getDefaultSlicingSpec', () => {
   });
 
   it('returns correct result for 1D shape', () => {
-    expect(getDefaultSlicingSpec([10])).to.eql({
+    expect(getDefaultSlicingSpec([10])).toEqual({
       slicingDimsAndIndices: [],
       viewingDims: [0],
       verticalRange: null,
@@ -88,7 +84,7 @@ describe('getDefaultSlicingSpec', () => {
   });
 
   it('returns correct result for 2D shape', () => {
-    expect(getDefaultSlicingSpec([4, 5])).to.eql({
+    expect(getDefaultSlicingSpec([4, 5])).toEqual({
       slicingDimsAndIndices: [],
       viewingDims: [0, 1],
       verticalRange: null,
@@ -97,7 +93,7 @@ describe('getDefaultSlicingSpec', () => {
   });
 
   it('returns correct result for 3D shape', () => {
-    expect(getDefaultSlicingSpec([4, 5, 6])).to.eql({
+    expect(getDefaultSlicingSpec([4, 5, 6])).toEqual({
       slicingDimsAndIndices: [
         {
           dim: 0,
@@ -111,7 +107,7 @@ describe('getDefaultSlicingSpec', () => {
   });
 
   it('returns correct result for 4D shape', () => {
-    expect(getDefaultSlicingSpec([4, 5, 6, 7])).to.eql({
+    expect(getDefaultSlicingSpec([4, 5, 6, 7])).toEqual({
       slicingDimsAndIndices: [
         {
           dim: 0,
@@ -129,7 +125,7 @@ describe('getDefaultSlicingSpec', () => {
   });
 
   it('returns correct result for 5D shape', () => {
-    expect(getDefaultSlicingSpec([4, 5, 6, 7, 8])).to.eql({
+    expect(getDefaultSlicingSpec([4, 5, 6, 7, 8])).toEqual({
       slicingDimsAndIndices: [
         {
           dim: 0,
@@ -183,7 +179,7 @@ describe('dimensionsDiffer', () => {
       verticalRange: null,
       horizontalRange: null,
     };
-    expect(areSlicingSpecsCompatible(spec0, spec1)).to.be.true;
+    expect(areSlicingSpecsCompatible(spec0, spec1)).toBe(true);
   });
 
   it('Different slicing indices are ignored', () => {
@@ -217,7 +213,7 @@ describe('dimensionsDiffer', () => {
       verticalRange: null,
       horizontalRange: null,
     };
-    expect(areSlicingSpecsCompatible(spec0, spec1)).to.be.true;
+    expect(areSlicingSpecsCompatible(spec0, spec1)).toBe(true);
   });
 
   it('Different slicing and viewing dimensions are captured', () => {
@@ -251,6 +247,6 @@ describe('dimensionsDiffer', () => {
       verticalRange: null,
       horizontalRange: null,
     };
-    expect(areSlicingSpecsCompatible(spec0, spec1)).to.be.false;
+    expect(areSlicingSpecsCompatible(spec0, spec1)).toBe(false);
   });
 });
