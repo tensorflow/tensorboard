@@ -1,0 +1,156 @@
+/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+==============================================================================*/
+@import 'tensorboard/webapp/theme/tb_theme';
+@import '../common';
+
+$_title-to-heading-gap: 12px;
+$_second-row-height: 15px;
+
+:host {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  height: 100%;
+  overflow: auto;
+  padding: $metrics-preferred-gap;
+  padding-top: $metrics-preferred-gap - $_title-to-heading-gap;
+}
+
+:host.actual-size {
+  height: auto;
+}
+
+.heading {
+  $heading-content-gap: 4px;
+
+  align-items: center;
+  display: grid;
+  grid-template-areas:
+    'tag controls'
+    'run step';
+  grid-template-columns: 1fr auto;
+  font-size: 14px;
+  margin-bottom: $heading-content-gap;
+  position: relative;
+}
+
+.tag {
+  grid-area: tag;
+  overflow: hidden;
+}
+
+.pin-button mat-icon {
+  height: 18px;
+}
+
+.run {
+  grid-area: run;
+  display: flex;
+  white-space: nowrap;
+
+  .dot {
+    flex: none;
+    display: inline-block;
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    margin-right: 4px;
+  }
+
+  .run-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 120px;
+  }
+}
+
+.step {
+  grid-area: step;
+  display: flex;
+
+  mat-spinner {
+    $mat-icon-button-diameter: 40px;
+    $spinner-diameter: 18px;
+
+    margin-left: 4px;
+    margin-right: 0;
+  }
+}
+
+.run,
+.step {
+  font-size: 13px;
+  color: mat-color($tb-foreground, secondary-text);
+  height: $_second-row-height;
+}
+
+.controls {
+  color: mat-color($tb-foreground, secondary-text);
+  grid-area: controls;
+  justify-self: flex-end;
+  flex-shrink: 0;
+  // TODO(psybuzz) do not use negative margin.
+  margin-right: -1 * $_title-to-heading-gap;
+  white-space: nowrap;
+}
+
+.img-container {
+  flex: 1 1 0;
+  overflow-y: auto;
+  position: relative;
+}
+
+.img-container img {
+  // Avoid the 'smooth' image scaling provided in browsers by default.
+  // Instead, choose rendering modes that are closer to pixel representation.
+  // See b/32560663.
+  image-rendering: -moz-crisp-edges;
+  image-rendering: pixelated;
+}
+
+:host.actual-size .img-container {
+  overflow: auto;
+  flex: none;
+}
+
+:host:not(.actual-size) img {
+  position: absolute;
+  max-height: 100%;
+  max-width: 100%;
+  width: auto;
+  height: 100%;
+  object-fit: contain;
+}
+
+.slider-row {
+  display: flex;
+  align-items: center;
+  // Reset mat-slider's internal extra space on top
+  // https://github.com/angular/components/blob/master/src/material/slider/slider.scss#L10
+  height: 24px;
+}
+
+.step-slider {
+  flex: 1;
+}
+
+:host ::ng-deep .mat-slider-min-value .mat-slider-thumb {
+  background-color: mat-color($tb-primary);
+}
+
+.empty-message {
+  margin-top: 1em;
+  font-size: 13px;
+}

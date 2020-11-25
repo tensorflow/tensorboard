@@ -1,12 +1,12 @@
-load("@npm_angular_bazel//:index.bzl", "ng_module")
-load("//tensorboard/defs:defs.bzl", "tf_ts_library")
+load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
-ng_module(
+tf_ng_module(
     name = "settings",
     srcs = [
         "dialog_component.ts",
+        "polymer_interop_container.ts",
         "settings_button_component.ts",
         "settings_module.ts",
     ],
@@ -34,9 +34,9 @@ tf_ts_library(
     name = "test_lib",
     testonly = True,
     srcs = [
+        "polymer_interop_test.ts",
         "settings_test.ts",
     ],
-    tsconfig = "//:tsconfig-test",
     deps = [
         ":settings",
         "//tensorboard/webapp/angular:expect_angular_cdk_overlay",
@@ -48,6 +48,7 @@ tf_ts_library(
         "//tensorboard/webapp/angular:expect_angular_material_input",
         "//tensorboard/webapp/angular:expect_angular_platform_browser_animations",
         "//tensorboard/webapp/angular:expect_angular_platform_browser_dynamic_testing",
+        "//tensorboard/webapp/angular:expect_ngrx_store_testing",
         "//tensorboard/webapp/core/actions",
         "//tensorboard/webapp/core/store",
         "//tensorboard/webapp/core/testing",

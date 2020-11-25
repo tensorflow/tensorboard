@@ -1,0 +1,117 @@
+<!--
+@license
+Copyright 2020 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<div>
+  <div>Graph Structure</div>
+
+  <div class="graph-structure-container">
+    <div *ngIf="opInfo !== undefined && opInfo !== null; else noOpFocused">
+      <div *ngIf="inputOps.length > 0; else noInputs" class="inputs-container">
+        <div>
+          <div
+            *ngFor="let inputOpInfo of inputOps; let slot = index"
+            class="input-op-section"
+          >
+            <div class="input-slot-header">Input slot {{slot}}:</div>
+            <graph-op
+              [kind]="'input'"
+              [opName]="inputOpInfo.op_name"
+              [slot]="inputOpInfo.output_slot"
+              [opData]="inputOpInfo.data"
+              (onOpNameClick)="onGraphOpNavigate.emit({op_name: $event.op_name, graph_id: graphId})"
+            >
+            </graph-op>
+          </div>
+        </div>
+      </div>
+
+      <ng-template #noInputs>
+        <div class="inputs-container no-inputs-indicator">
+          (This op has no input tensor.)
+        </div>
+        <!-- TODO(cais): Add a ? icon to explain control inputs are not included. -->
+      </ng-template>
+
+      <div class="self-op-container">
+        <div class="self-op-header">Op:</div>
+        <graph-op
+          [kind]="'self'"
+          [opName]="opInfo.op_name"
+          [opData]="opInfo"
+          (onOpNameClick)="onGraphOpNavigate.emit({op_name: $event.op_name, graph_id: graphId})"
+        >
+        </graph-op>
+      </div>
+
+      <div
+        *ngIf="totalNumConsumers > 0; else noConsumers"
+        class="consumers-container"
+      >
+        <div>
+          <div
+            *ngFor="let slotConsumers of consumerOps; let slot = index"
+            class="slot-consumers-container"
+          >
+            <div class="slot-consumers-header">
+              Output slot {{slot}}: ({{slotConsumers.length}}
+              <span i18n>
+                {slotConsumers.length, plural, =0 {consumer} =1 {consumer} other
+                {consumers}}</span
+              >)
+            </div>
+
+            <div
+              *ngFor="let consumerOpInfo of slotConsumers"
+              class="consumer-section"
+            >
+              <graph-op
+                [kind]="'consumer'"
+                [opName]="consumerOpInfo.op_name"
+                [slot]="consumerOpInfo.input_slot"
+                [opData]="consumerOpInfo.data"
+                (onOpNameClick)="onGraphOpNavigate.emit({op_name: $event.op_name, graph_id: graphId})"
+              >
+              </graph-op>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <ng-template #noConsumers>
+        <div class="op-consumers-container">
+          (This op has {{opInfo.consumers.length}} output
+          <span i18n>
+            {opInfo.consumers.length, plural, =0 {tensor} =1 {tensor} other
+            {tensors}}</span
+          >
+          and no consumer.)
+        </div>
+      </ng-template>
+    </div>
+  </div>
+
+  <ng-template #opInfoMissing>
+    <span class="op-info-missing"> (Op info unavailable.) </span>
+  </ng-template>
+
+  <ng-template #noOpFocused>
+    <div class="no-op-focused">
+      No graph op selected. Click a tensor name in the Graph Executions table to
+      view the neighborhood of the tensor's op in its graph.
+    </div>
+  </ng-template>
+</div>

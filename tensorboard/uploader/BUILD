@@ -3,24 +3,19 @@
 
 package(default_visibility = ["//tensorboard:internal"])
 
-licenses(["notice"])  # Apache 2.0
-
-exports_files(["LICENSE"])
+licenses(["notice"])
 
 py_library(
-    name = "dev_creds",
-    srcs = ["dev_creds.py"],
-)
-
-py_library(
-    name = "exporter_lib",
+    name = "exporter",
     srcs = ["exporter.py"],
+    srcs_version = "PY3",
     deps = [
         ":util",
         "//tensorboard:expect_grpc_installed",
         "//tensorboard/uploader/proto:protos_all_py_pb2",
         "//tensorboard/util:grpc_util",
-        "@org_pythonhosted_six",
+        "//tensorboard/util:tb_logging",
+        "//tensorboard/util:tensor_util",
     ],
 )
 
@@ -28,39 +23,55 @@ py_test(
     name = "exporter_test",
     srcs = ["exporter_test.py"],
     deps = [
-        ":exporter_lib",
+        ":exporter",
         ":test_util",
+        ":util",
         "//tensorboard:expect_grpc_installed",
         "//tensorboard:expect_grpc_testing_installed",
+        "//tensorboard:expect_numpy_installed",
         "//tensorboard:test",
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/uploader/proto:protos_all_py_pb2",
         "//tensorboard/uploader/proto:protos_all_py_pb2_grpc",
         "//tensorboard/util:grpc_util",
+        "//tensorboard/util:tensor_util",
         "@org_pythonhosted_mock",
     ],
 )
 
-py_binary(
-    name = "uploader",
-    srcs = ["uploader_main.py"],
-    main = "uploader_main.py",
-    python_version = "PY2",
-    deps = [":uploader_main_lib"],
+py_library(
+    name = "formatters",
+    srcs = ["formatters.py"],
+    srcs_version = "PY3",
+    deps = [
+        ":util",
+    ],
+)
+
+py_test(
+    name = "formatters_test",
+    srcs = ["formatters_test.py"],
+    deps = [
+        ":formatters",
+        ":util",
+        "//tensorboard:test",
+        "//tensorboard/uploader/proto:protos_all_py_pb2",
+    ],
 )
 
 py_library(
-    name = "uploader_main_lib",
-    srcs = ["uploader_main.py"],
+    name = "uploader_subcommand",
+    srcs = ["uploader_subcommand.py"],
+    srcs_version = "PY3",
     visibility = ["//tensorboard:internal"],
     deps = [
         ":auth",
-        ":dev_creds",
-        ":exporter_lib",
+        ":dry_run_stubs",
+        ":exporter",
+        ":flags_parser",
+        ":formatters",
         ":server_info",
-        ":uploader_lib",
-        ":util",
-        "//tensorboard:expect_absl_app_installed",
+        ":uploader",
         "//tensorboard:expect_absl_flags_argparse_flags_installed",
         "//tensorboard:expect_absl_flags_installed",
         "//tensorboard:expect_absl_logging_installed",
@@ -72,51 +83,116 @@ py_library(
     ],
 )
 
+py_test(
+    name = "uploader_subcommand_test",
+    srcs = ["uploader_subcommand_test.py"],
+    srcs_version = "PY3",
+    deps = [
+        ":dry_run_stubs",
+        ":server_info",
+        ":uploader",
+        ":uploader_subcommand",
+        "//tensorboard:expect_grpc_testing_installed",
+    ],
+)
+
 py_library(
-    name = "uploader_lib",
+    name = "uploader",
     srcs = ["uploader.py"],
+    srcs_version = "PY3",
     deps = [
         ":logdir_loader",
-        ":peekable_iterator",
+        ":upload_tracker",
         ":util",
-        "//tensorboard:data_compat",
         "//tensorboard:expect_grpc_installed",
+        "//tensorboard/backend:process_graph",
         "//tensorboard/backend/event_processing:directory_loader",
         "//tensorboard/backend/event_processing:event_file_loader",
         "//tensorboard/backend/event_processing:io_wrapper",
-        "//tensorboard/plugins/scalar:metadata",
+        "//tensorboard/compat/proto:protos_all_py_pb2",
+        "//tensorboard/plugins/graph:metadata",
         "//tensorboard/uploader/proto:protos_all_py_pb2",
         "//tensorboard/util:grpc_util",
         "//tensorboard/util:tb_logging",
         "//tensorboard/util:tensor_util",
+        "@com_google_protobuf//:protobuf_python",
         "@org_pythonhosted_six",
     ],
+)
+
+py_library(
+    name = "upload_tracker",
+    srcs = ["upload_tracker.py"],
+    srcs_version = "PY3",
+    deps = [],
 )
 
 py_test(
     name = "uploader_test",
     srcs = ["uploader_test.py"],
+    srcs_version = "PY3",
     deps = [
+        ":dry_run_stubs",
+        ":server_info",
         ":test_util",
-        ":uploader_lib",
+        ":upload_tracker",
+        ":uploader",
         ":util",
+        "//tensorboard:data_compat",
+        "//tensorboard:dataclass_compat",
         "//tensorboard:expect_grpc_installed",
         "//tensorboard:expect_grpc_testing_installed",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/compat:no_tensorflow",
         "//tensorboard/compat/proto:protos_all_py_pb2",
+        "//tensorboard/plugins/graph:metadata",
         "//tensorboard/plugins/histogram:summary_v2",
+        "//tensorboard/plugins/scalar:metadata",
         "//tensorboard/plugins/scalar:summary_v2",
         "//tensorboard/summary:summary_v1",
         "//tensorboard/uploader/proto:protos_all_py_pb2",
         "//tensorboard/uploader/proto:protos_all_py_pb2_grpc",
         "//tensorboard/util:test_util",
+        "@com_google_protobuf//:protobuf_python",
         "@org_pythonhosted_mock",
+    ],
+)
+
+py_test(
+    name = "upload_tracker_test",
+    srcs = ["upload_tracker_test.py"],
+    srcs_version = "PY3",
+    deps = [
+        ":upload_tracker",
+        "//tensorboard:test",
+        "@org_pythonhosted_mock",
+    ],
+)
+
+py_library(
+    name = "dry_run_stubs",
+    srcs = ["dry_run_stubs.py"],
+    srcs_version = "PY3",
+    deps = [
+        "//tensorboard/uploader/proto:protos_all_py_pb2",
+    ],
+)
+
+py_test(
+    name = "dry_run_stubs_test",
+    srcs = ["dry_run_stubs_test.py"],
+    srcs_version = "PY3",
+    deps = [
+        ":dry_run_stubs",
+        "//tensorboard:test",
+        "//tensorboard/uploader/proto:protos_all_py_pb2",
     ],
 )
 
 py_library(
     name = "auth",
     srcs = ["auth.py"],
+    srcs_version = "PY3",
     deps = [
         ":util",
         "//tensorboard:expect_google_auth_installed",
@@ -140,6 +216,7 @@ py_test(
 py_library(
     name = "logdir_loader",
     srcs = ["logdir_loader.py"],
+    srcs_version = "PY3",
     deps = [
         "//tensorboard/backend/event_processing:directory_watcher",
         "//tensorboard/backend/event_processing:io_wrapper",
@@ -165,6 +242,7 @@ py_library(
     name = "test_util",
     testonly = 1,
     srcs = ["test_util.py"],
+    srcs_version = "PY3",
     deps = [
         "//tensorboard:expect_grpc_installed",
         "//tensorboard/compat/proto:protos_all_py_pb2",
@@ -175,6 +253,7 @@ py_library(
 py_library(
     name = "util",
     srcs = ["util.py"],
+    srcs_version = "PY3",
 )
 
 py_test(
@@ -190,27 +269,13 @@ py_test(
 )
 
 py_library(
-    name = "peekable_iterator",
-    srcs = ["peekable_iterator.py"],
-    srcs_version = "PY2AND3",
-)
-
-py_test(
-    name = "peekable_iterator_test",
-    size = "small",
-    srcs = ["peekable_iterator_test.py"],
-    deps = [
-        ":peekable_iterator",
-        "//tensorboard:test",
-    ],
-)
-
-py_library(
     name = "server_info",
     srcs = ["server_info.py"],
+    srcs_version = "PY3",
     deps = [
         "//tensorboard:expect_requests_installed",
         "//tensorboard:version",
+        "//tensorboard/plugins/scalar:metadata",
         "//tensorboard/uploader/proto:protos_all_py_pb2",
         "@com_google_protobuf//:protobuf_python",
     ],
@@ -226,7 +291,27 @@ py_test(
         "//tensorboard:expect_futures_installed",
         "//tensorboard:test",
         "//tensorboard:version",
+        "//tensorboard/plugins/scalar:metadata",
         "//tensorboard/uploader/proto:protos_all_py_pb2",
         "@org_pocoo_werkzeug",
+    ],
+)
+
+py_library(
+    name = "flags_parser",
+    srcs = ["flags_parser.py"],
+    srcs_version = "PY3",
+    visibility = ["//tensorboard:internal"],
+    deps = [
+        "//tensorboard:expect_absl_flags_argparse_flags_installed",
+    ],
+)
+
+py_test(
+    name = "flags_parser_test",
+    srcs = ["flags_parser_test.py"],
+    deps = [
+        ":flags_parser",
+        "//tensorboard:test",
     ],
 )

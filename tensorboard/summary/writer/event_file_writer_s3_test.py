@@ -23,7 +23,6 @@ import boto3
 import os
 import unittest
 from tensorboard.summary.writer.event_file_writer import EventFileWriter
-from tensorboard.summary.writer.event_file_writer import _AsyncWriter
 from tensorboard.compat import tf
 from tensorboard.compat.proto import event_pb2
 from tensorboard.compat.proto.summary_pb2 import Summary

@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "downlevelIteration": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "importHelpers": true,
+    "inlineSourceMap": true,
+    "inlineSources": true,
+    "lib": ["dom", "es2020"],
+    "moduleResolution": "node",
+    "noEmitOnError": false,
+    "noErrorTruncation": false,
+    "noResolve": true,
+    "preserveConstEnums": false,
+    "skipLibCheck": true,
+    "sourceMap": false,
+    "target": "es5"
+  }
+}

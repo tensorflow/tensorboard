@@ -23,12 +23,43 @@ on:
     - cron: '0 13 * * *'
 
 env:
+<<<<<<< HEAD
   BAZEL: '0.26.1'
   BAZEL_SHA256SUM: '6c50e142a0a405d3d8598050d6c1b3920c8cdb82a7ffca6fc067cb474275148f'
   BUILDIFIER: '0.29.0'
   BUILDIFIER_SHA256SUM: '4c985c883eafdde9c0e8cf3c8595b8bfdf32e77571c369bf8ddae83b042028d6'
+=======
+  BUILDTOOLS_VERSION: '3.0.0'
+  BUILDIFIER_SHA256SUM: 'e92a6793c7134c5431c58fbc34700664f101e5c9b1c1fcd93b97978e8b7f88db'
+  BUILDOZER_SHA256SUM: '3d58a0b6972e4535718cdd6c12778170ea7382de7c75bc3728f5719437ffb84d'
+>>>>>>> 94edc4fafbf6e6ef810e9252c3cc48855b4470f6
 
 jobs:
+  lint-python-flake8:
+    runs-on: ubuntu-16.04
+    strategy:
+      fail-fast: false
+      matrix:
+        # flake8 should run on each Python version that we target,
+        # because the errors and warnings can differ due to language
+        # changes, and we want to catch them all.
+        python_version: ['3.5', '3.7']
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python_version }}
+          architecture: 'x64'
+      - name: 'Install flake8'
+        run: |
+          python -m pip install -U pip
+          pip install flake8 -c ./tensorboard/pip_package/requirements_dev.txt
+      - run: pip freeze --all
+      - name: 'Lint Python code for errors with flake8'
+        # See: http://flake8.pycqa.org/en/3.7.8/user/error-codes.html
+        # Use the comment '# noqa: <error code>' to suppress.
+        run: flake8 . --count --select=E9,F63,F7,F82,F401 --show-source --statistics
+
   lint-python:
     runs-on: ubuntu-16.04
     steps:
@@ -37,18 +68,56 @@ jobs:
         with:
           python-version: '3.6'
           architecture: 'x64'
-      - name: 'Install black and flake8'
+      - name: 'Install black'
         run: |
           python -m pip install -U pip
-          pip install -r ./tensorboard/pip_package/requirements_dev.txt
+          pip install black -c ./tensorboard/pip_package/requirements_dev.txt
       - run: pip freeze --all
-      - name: 'Lint Python code for errors with flake8'
-        # See: http://flake8.pycqa.org/en/3.7.8/user/error-codes.html
-        # Use the comment '# noqa: <error code>' to suppress.
-        run: flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
       - name: 'Lint Python code for style with Black'
         # You can run `black .` to fix all Black complaints.
-        run: black --check .
+        run: black --check --diff .
+
+  lint-rust:
+    runs-on: ubuntu-16.04
+    strategy:
+      matrix:
+        rust_version: ['1.48.0']
+        cargo_raze_version: ['0.7.0']
+    steps:
+      - uses: actions/checkout@v1
+      - name: 'Cache Cargo home directory'
+        uses: actions/cache@v2
+        with:
+          path: |
+            tensorboard/data/server/target/
+            # https://doc.rust-lang.org/cargo/guide/cargo-home.html#caching-the-cargo-home-in-ci
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            # Needed for installing binaries (`cargo-raze`) with cache
+            ~/.cargo/.crates.toml
+            ~/.cargo/.crates2.json
+          key: ${{ runner.os }}-cargo-${{ matrix.rust_version }}-${{ matrix.cargo_raze_version }}-${{ hashFiles('**/Cargo.lock', '.github/workflows/ci.yml') }}
+      - name: 'Install Rust toolchain'
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust_version }}
+      - name: 'Install cargo-raze'
+        run: cargo install cargo-raze --version ${{ matrix.cargo_raze_version }}
+      - name: 'Run Rustfmt'
+        run: (cd tensorboard/data/server/ && cargo fmt -- --check)
+      - name: 'Run Clippy'
+        uses: actions-rs/clippy-check@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          args: --manifest-path tensorboard/data/server/Cargo.toml
+      - name: 'Check cargo-raze freshness'
+        run: |
+          rm -rf third_party/rust/
+          (cd tensorboard/data/server/ && cargo fetch && cargo raze)
+          git add .
+          git diff --staged --exit-code
 
   lint-docs:
     runs-on: ubuntu-16.04
@@ -61,12 +130,17 @@ jobs:
       - name: 'Install yamllint'
         run: |
           python -m pip install -U pip
-          pip install -r ./tensorboard/pip_package/requirements_dev.txt
+          pip install yamllint -c ./tensorboard/pip_package/requirements_dev.txt
       - run: pip freeze --all
       - name: 'Lint YAML for gotchas with yamllint'
         # Use '# yamllint disable-line rule:foo' to suppress.
         run: yamllint -c docs/.yamllint docs docs/.yamllint
-      - run: ./tensorboard/tools/docs_list_format_test.sh
+      - name: 'Install the TensorFlow docs notebook tools'
+        run: |
+          nbfmt_version="174c9a5c1cc51a3af1de98d84824c811ecd49029"
+          python3 -m pip install -U git+https://github.com/tensorflow/docs@${nbfmt_version}
+      - name: 'Use nbfmt to check Colab notebooks for formatting'
+        run: git ls-files -z '*.ipynb' | xargs -0 python3 -m tensorflow_docs.tools.nbfmt --test
 
   lint-frontend:
     runs-on: ubuntu-16.04
@@ -76,6 +150,19 @@ jobs:
       - run: yarn install --ignore-engines
         # You can run `yarn fix-lint` to fix all Prettier complaints.
       - run: yarn lint
+        # Make sure no tests are skipped with "focused" tests.
+      - run: |
+          ! git grep -E 'f(it|describe)\(' 'tensorboard/*_test.ts'
+        # Make sure no one depends on Angular material and CDK directly. Please
+        # import the indirection in //tensorboard/webapp/angular.
+      - run: |
+          ! git grep -E '"@npm//@angular/material"|"@npm//@angular/cdk"' 'tensorboard/*/BUILD' ':!tensorboard/webapp/BUILD' ':!tensorboard/webapp/angular/BUILD'
+        # Cannot directly depend on d3 in webapp. Must depend on
+        # `//tensorboard/webapp/third_party:d3` instead.
+      - run: |
+          ! git grep -E '"@npm//d3"|"@npm//@types/d3"' 'tensorboard/webapp/**/*BUILD' ':!tensorboard/webapp/third_party/**'
+      - run: |
+          ! git grep -E '"@npm_angular_bazel//:index.bzl"' 'tensorboard/**/BUILD'
 
   lint-build:
     runs-on: ubuntu-16.04
@@ -83,11 +170,40 @@ jobs:
       - uses: actions/checkout@v1
       - name: 'Set up Buildifier'
         run: |
-          ci/download_buildifier.sh "${BUILDIFIER}" "${BUILDIFIER_SHA256SUM}" ~/buildifier
+          ci/download_buildifier.sh "${BUILDTOOLS_VERSION}" "${BUILDIFIER_SHA256SUM}" ~/buildifier
           sudo mv ~/buildifier /usr/local/bin/buildifier
+      - name: 'Set up Buildozer'
+        run: |
+          ci/download_buildozer.sh "${BUILDTOOLS_VERSION}" "${BUILDOZER_SHA256SUM}" ~/buildozer
+          sudo mv ~/buildozer /usr/local/bin/buildozer
       - name: 'Lint BUILD files'
-        run: git ls-files -z '*BUILD' | xargs -0 buildifier --mode=check
+        # TODO(tensorboard-team): address all lint warnings and remove the exemption.
+        run:
+          git ls-files -z '*BUILD' third_party/js.bzl third_party/workspace.bzl | xargs -0 buildifier --mode=check --lint=warn
+          --warnings=-native-py,-native-java
       - run: ./tensorboard/tools/mirror_urls_test.sh
+      - name: 'Lint for no py2 BUILD targets'
+        # Use | to start a literal so YAML doesn't complain about the '!' character.
+        run: |
+          ! git grep 'python_version = "PY2"' '*BUILD'
+      - name: 'No comments on licenses rule'
+        # Assert buildozer error code for 'success, when no changes were made'.
+        # https://github.com/bazelbuild/buildtools/blob/master/buildozer/README.md#error-code
+        run: |
+          buildozer '//tensorboard/...:%licenses' remove_comment && false || test $? = 3
+
+  lint-proto:
+    runs-on: ubuntu-16.04
+    steps:
+      - uses: actions/checkout@v1
+      - name: clang-format lint
+        uses: DoozyX/clang-format-lint-action@v0.5
+        with:
+          source: ./tensorboard
+          # Exclude tensorboard/compat because the source of truth is TensorFlow.
+          exclude: ./tensorboard/compat/proto
+          extensions: 'proto'
+          clangFormatVersion: 9
 
   check-misc:
     runs-on: ubuntu-16.04

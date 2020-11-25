@@ -1,9 +1,8 @@
+load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_ts_library")
+
 package(default_visibility = ["//tensorboard:internal"])
 
-load("@npm_angular_bazel//:index.bzl", "ng_module")
-load("//tensorboard/defs:defs.bzl", "tf_ts_library")
-
-ng_module(
+tf_ng_module(
     name = "reloader",
     srcs = [
         "reloader_component.ts",
@@ -25,10 +24,10 @@ tf_ts_library(
     srcs = [
         "reloader_component_test.ts",
     ],
-    tsconfig = "//:tsconfig-test",
     deps = [
         ":reloader",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
+        "//tensorboard/webapp/angular:expect_ngrx_store_testing",
         "//tensorboard/webapp/core/actions",
         "//tensorboard/webapp/core/store",
         "//tensorboard/webapp/core/testing",

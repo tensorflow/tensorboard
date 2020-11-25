@@ -66,3 +66,18 @@ export interface PluginMetadata {
 export type PluginsListing = {
   [pluginName: string]: PluginMetadata;
 };
+
+export interface Environment {
+  /** @export */
+  data_location: string;
+  /** @export */
+  window_title: string;
+  /** @export */
+  experiment_name?: string;
+  /** @export */
+  experiment_description?: string;
+  /** @export */
+  creation_time?: number;
+}
+
+export type GetRunsResponse = string[];

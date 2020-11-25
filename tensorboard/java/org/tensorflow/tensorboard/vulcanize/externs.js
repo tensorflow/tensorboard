@@ -21,11 +21,14 @@
 /** @type {!Object} */ var d3;
 /** @type {!Object} */ var dagre;
 /** @type {!Object} */ var numeric;
-/** @type {!Object} */ var weblas;
 /** @type {!Object} */ var UMAP;
 /** @type {!Object} */ var graphlib;
 /** @type {!Object} */ var Plottable;
-/** @type {!Object} */ var GroupEffect;
+/**
+ * @suppress {duplicate} Already in the Closure Compiler builtin externs.
+ * @type {!Object}
+ */
+var GroupEffect;
 /** @type {!Object} */ var module;
 /** @type {!Object} */ var exports;
 /** @type {!Object} */ var define;
@@ -33,8 +36,13 @@
 /** @type {!Object} */ var tf;
 /** @type {!Object} */ var mobilenet;
 /** @type {!Function|undefined} */ var ga;
-/** @type {!Function|undefined} */ var KeyframeEffect;
+/**
+ * @suppress {duplicate} Already in the Closure Compiler builtin externs.
+ * @type {!Function|undefined}
+ */
+var KeyframeEffect;
 /** @type {!Object} */ var tensor_widget;
+/** @type {!Object} */ var tb_plugin_lib;
 
 /**
  * Some weird webcomponents-lite.js thing.
@@ -54,4 +62,4 @@ var HTMLImports;
  * @param {function()} callback
  * @param {!HTMLDocument=} opt_doc
  */
-HTMLImports.whenReady = function(callback, opt_doc) {};
+HTMLImports.whenReady = function (callback, opt_doc) {};

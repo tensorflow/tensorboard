@@ -7,7 +7,7 @@
 
 package(default_visibility = ["//tensorboard:internal"])
 
-licenses(["notice"])  # Apache 2.0
+licenses(["notice"])
 
 sh_test(
     name = "smoke_test",
@@ -27,5 +27,19 @@ sh_test(
     ]),
     tags = [
         "manual",  # https://github.com/tensorflow/tensorboard/issues/2987
+    ],
+)
+
+py_test(
+    name = "unit_test",
+    size = "small",
+    srcs = [
+        "test.py",
+    ],
+    main = "test.py",
+    srcs_version = "PY3",
+    tags = ["support_notf"],
+    deps = [
+        "//tensorboard",
     ],
 )

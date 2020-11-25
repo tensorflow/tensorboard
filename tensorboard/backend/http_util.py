@@ -27,24 +27,24 @@ import time
 import wsgiref.handlers
 
 import six
-from six.moves.urllib import (
-    parse as urlparse,
-)  # pylint: disable=wrong-import-order
 
 import werkzeug
 
 from tensorboard.backend import json_util
-from tensorboard.compat import tf
 
 _DISALLOWED_CHAR_IN_DOMAIN = re.compile(r"\s")
 
 # TODO(stephanwlee): Refactor this to not use the module variable but
 # instead use a configurable via some kind of assets provider which would
 # hold configurations for the CSP.
-_CSP_FONT_DOMAINS_WHITELIST = []
+
+# @vaadin/vaadin-lumo-styles/font-icons(via vaadin-grid) uses data URI for
+# loading font icons.
+_CSP_FONT_DOMAINS_WHITELIST = ["data:"]
 _CSP_FRAME_DOMAINS_WHITELIST = []
 _CSP_IMG_DOMAINS_WHITELIST = []
 _CSP_SCRIPT_DOMAINS_WHITELIST = []
+_CSP_CONNECT_DOMAINS_WHITELIST = []
 _CSP_SCRIPT_SELF = True
 # numericjs (via projector) uses unsafe-eval :(.
 _CSP_SCRIPT_UNSAFE_EVAL = True
@@ -89,6 +89,7 @@ def Respond(
     content_encoding=None,
     encoding="utf-8",
     csp_scripts_sha256s=None,
+    headers=None,
 ):
     """Construct a werkzeug Response.
 
@@ -129,6 +130,9 @@ def Respond(
         elements for script-src of the Content-Security-Policy. If it is None, the
         HTML will disallow any script to execute. It is only be used when the
         content_type is text/html.
+      headers: Any additional headers to include on the response, as a
+        list of key-value tuples: e.g., `[("Allow", "GET")]`. In case of
+        conflict, these may be overridden with headers added by this function.
 
     Returns:
       A werkzeug Response object (a WSGI application).
@@ -144,9 +148,13 @@ def Respond(
         content = json.dumps(
             json_util.Cleanse(content, encoding), ensure_ascii=not charset_match
         )
-    if charset != encoding:
-        content = tf.compat.as_text(content, encoding)
-    content = tf.compat.as_bytes(content, charset)
+
+    # Ensure correct output encoding, transcoding if necessary.
+    if charset != encoding and isinstance(content, bytes):
+        content = content.decode(encoding)
+    if isinstance(content, str):
+        content = content.encode(charset)
+
     if textual and not charset_match and mimetype not in _JSON_MIMETYPES:
         content_type += "; charset=" + charset
     gzip_accepted = _ALLOWS_GZIP_PATTERN.search(
@@ -176,7 +184,7 @@ def Respond(
         content_encoding = None
         direct_passthrough = True
 
-    headers = []
+    headers = list(headers or [])
     headers.append(("Content-Length", str(content_length)))
     headers.append(("X-Content-Type-Options", "nosniff"))
     if content_encoding:
@@ -189,11 +197,12 @@ def Respond(
         headers.append(("Expires", "0"))
         headers.append(("Cache-Control", "no-cache, must-revalidate"))
     if mimetype == _HTML_MIMETYPE:
-        _validate_global_whitelist(_CSP_IMG_DOMAINS_WHITELIST)
-        _validate_global_whitelist(_CSP_STYLE_DOMAINS_WHITELIST)
-        _validate_global_whitelist(_CSP_FONT_DOMAINS_WHITELIST)
-        _validate_global_whitelist(_CSP_FRAME_DOMAINS_WHITELIST)
-        _validate_global_whitelist(_CSP_SCRIPT_DOMAINS_WHITELIST)
+        _CSP_IMG_DOMAINS_WHITELIST
+        _CSP_STYLE_DOMAINS_WHITELIST
+        _CSP_FONT_DOMAINS_WHITELIST
+        _CSP_FRAME_DOMAINS_WHITELIST
+        _CSP_SCRIPT_DOMAINS_WHITELIST
+        _CSP_CONNECT_DOMAINS_WHITELIST
 
         frags = (
             _CSP_SCRIPT_DOMAINS_WHITELIST
@@ -213,7 +222,6 @@ def Respond(
                 "default-src 'self'",
                 "font-src %s"
                 % _create_csp_string("'self'", *_CSP_FONT_DOMAINS_WHITELIST),
-                "frame-ancestors *",
                 # Dynamic plugins are rendered inside an iframe.
                 "frame-src %s"
                 % _create_csp_string("'self'", *_CSP_FRAME_DOMAINS_WHITELIST),
@@ -237,6 +245,8 @@ def Respond(
                     "'unsafe-inline'",
                     *_CSP_STYLE_DOMAINS_WHITELIST
                 ),
+                "connect-src %s"
+                % _create_csp_string("'self'", *_CSP_CONNECT_DOMAINS_WHITELIST),
                 "script-src %s" % script_srcs,
             ]
         )
@@ -253,24 +263,6 @@ def Respond(
         content_type=content_type,
         direct_passthrough=direct_passthrough,
     )
-
-
-def _validate_global_whitelist(whitelists):
-    for domain in whitelists:
-        url = urlparse.urlparse(domain)
-        if not url.scheme == "https" or not url.netloc:
-            raise ValueError(
-                "Expected all whitelist to be a https URL: %r" % domain
-            )
-        if ";" in domain:
-            raise ValueError(
-                'Expected whitelist domain to not contain ";": %r' % domain
-            )
-        if _DISALLOWED_CHAR_IN_DOMAIN.search(domain):
-            raise ValueError(
-                "Expected whitelist domain to not contain a whitespace: %r"
-                % domain
-            )
 
 
 def _create_csp_string(*csp_fragments):

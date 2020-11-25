@@ -28,12 +28,12 @@ limitations under the License.
     <script>
       chai.config.truncateThreshold = 0;
       utils = tf.hparams.utils;
-      suite('tf-hparams-utils-tests', function() {
+      suite('tf-hparams-utils-tests', function () {
         let callback = null;
-        setup(function() {
+        setup(function () {
           callback = sinon.spy();
         });
-        test('pointToRectangleDist', function() {
+        test('pointToRectangleDist', function () {
           const testCases = [
             {
               x: 0,
@@ -111,22 +111,22 @@ limitations under the License.
           [3, 15],
           [3, 100],
         ]);
-        test('quadTreeVisitPointsInRect_EmptyIntersection1', function() {
+        test('quadTreeVisitPointsInRect_EmptyIntersection1', function () {
           utils.quadTreeVisitPointsInRect(quadTree, 0, 0, 1, 1, callback);
           assert(callback.notCalled);
         });
-        test('quadTreeVisitPointsInRect_EmptyIntersection2', function() {
+        test('quadTreeVisitPointsInRect_EmptyIntersection2', function () {
           utils.quadTreeVisitPointsInRect(quadTree, 0, 0, 1, 2, callback);
           assert(callback.notCalled);
         });
-        test('quadTreeVisitPointsInRect_NonEmptyInterserction1', function() {
+        test('quadTreeVisitPointsInRect_NonEmptyInterserction1', function () {
           utils.quadTreeVisitPointsInRect(quadTree, 1.25, 1, 2, 80, callback);
           assert.equal(callback.callCount, 3);
           assert(callback.withArgs([1.5, 10]).calledOnce);
           assert(callback.withArgs([1.5, 20]).calledOnce);
           assert(callback.withArgs([1.5, 15]).calledOnce);
         });
-        test('quadTreeVisitPointsInRect_NonEmptyInterserction2', function() {
+        test('quadTreeVisitPointsInRect_NonEmptyInterserction2', function () {
           utils.quadTreeVisitPointsInRect(quadTree, 1.25, 1, 4, 100, callback);
           assert.equal(callback.callCount, 5);
           assert(callback.withArgs([1.5, 10]).calledOnce);
@@ -135,16 +135,16 @@ limitations under the License.
           assert(callback.withArgs([3, 3]).calledOnce);
           assert(callback.withArgs([3, 15]).calledOnce);
         });
-        test('quadTreeVisitPointsInDisk_EmptyIntersection1', function() {
+        test('quadTreeVisitPointsInDisk_EmptyIntersection1', function () {
           utils.quadTreeVisitPointsInDisk(quadTree, 0, 0, 1, callback);
           assert(callback.notCalled);
         });
-        test('quadTreeVisitPointsInDisk_NonEmptyIntersection1', function() {
+        test('quadTreeVisitPointsInDisk_NonEmptyIntersection1', function () {
           utils.quadTreeVisitPointsInDisk(quadTree, 0, 2, 1, callback);
           assert.equal(callback.callCount, 1);
           assert(callback.withArgs([1, 2]).calledOnce);
         });
-        test('quadTreeVisitPointsInDisk_NonEmptyInterserction2', function() {
+        test('quadTreeVisitPointsInDisk_NonEmptyInterserction2', function () {
           utils.quadTreeVisitPointsInDisk(quadTree, 2, 15, 7, callback);
           assert.equal(callback.callCount, 4);
           assert(callback.withArgs([1.5, 10]).calledOnce);

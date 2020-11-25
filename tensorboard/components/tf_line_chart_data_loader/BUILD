@@ -1,40 +1,27 @@
+load("//tensorboard/defs:defs.bzl", "tf_ts_library")
+
 package(default_visibility = ["//tensorboard:internal"])
 
-load("//tensorboard/defs:defs.bzl", "tensorboard_webcomponent_library")
-load("//tensorboard/defs:web.bzl", "tf_web_library")
+licenses(["notice"])
 
-licenses(["notice"])  # Apache 2.0
-
-tf_web_library(
+tf_ts_library(
     name = "tf_line_chart_data_loader",
     srcs = [
-        "tf-line-chart-data-loader.html",
+        "tf-line-chart-data-loader.ts",
     ],
-    path = "/tf-line-chart-data-loader",
-    visibility = ["//visibility:public"],
+    strict_checks = False,
     deps = [
+        "//tensorboard/components/polymer:irons_and_papers",
+        "//tensorboard/components/polymer:legacy_element_mixin",
         "//tensorboard/components/tf_backend",
         "//tensorboard/components/tf_color_scale",
         "//tensorboard/components/tf_dashboard_common",
-        "//tensorboard/components/tf_imports:lodash",
-        "//tensorboard/components/tf_imports:polymer",
+        "//tensorboard/components/vz_chart_helpers",
         "//tensorboard/components/vz_line_chart2",
-        "@org_polymer_paper_spinner",
-    ],
-)
-
-tensorboard_webcomponent_library(
-    name = "legacy",
-    srcs = [":tf_line_chart_data_loader"],
-    visibility = ["//visibility:public"],
-    destdir = "tf-line-chart-data-loader",
-    deps = [
-        "//tensorboard/components/tf_backend:legacy",
-        "//tensorboard/components/tf_color_scale:legacy",
-        "//tensorboard/components/tf_dashboard_common:legacy",
-        "//tensorboard/components/tf_imports:polymer_lib",
-        "//tensorboard/components/tf_imports_google:lib",
-        "//tensorboard/components/vz_line_chart2:legacy",
-        "//third_party/javascript/polymer/v2/paper-spinner:lib",
+        "@npm//@polymer/decorators",
+        "@npm//@polymer/polymer",
+        "@npm//@types/lodash",
+        "@npm//lodash",
+        "@npm//plottable",
     ],
 )

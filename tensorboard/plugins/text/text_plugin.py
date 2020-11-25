@@ -18,7 +18,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import json
 import textwrap
 
 # pylint: disable=g-bad-import-order
@@ -32,9 +31,9 @@ from werkzeug import wrappers
 
 from tensorboard import plugin_util
 from tensorboard.backend import http_util
+from tensorboard.data import provider
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.text import metadata
-from tensorboard.util import tensor_util
 
 # HTTP routes
 TAGS_ROUTE = "/tags"
@@ -46,6 +45,8 @@ WARNING_TEMPLATE = textwrap.dedent(
   **Warning:** This text summary contained data of dimensionality %d, but only \
   2d tables are supported. Showing a 2d slice of the data instead."""
 )
+
+_DEFAULT_DOWNSAMPLING = 100  # text tensors per time series
 
 
 def make_table_row(contents, tag="td"):
@@ -173,29 +174,26 @@ def text_array_to_html(text_arr):
     """
     if not text_arr.shape:
         # It is a scalar. No need to put it in a table, just apply markdown
-        return plugin_util.markdown_to_safe_html(np.asscalar(text_arr))
+        return plugin_util.markdown_to_safe_html(text_arr.item())
     warning = ""
     if len(text_arr.shape) > 2:
         warning = plugin_util.markdown_to_safe_html(
             WARNING_TEMPLATE % len(text_arr.shape)
         )
         text_arr = reduce_to_2d(text_arr)
-
-    html_arr = [
-        plugin_util.markdown_to_safe_html(x) for x in text_arr.reshape(-1)
-    ]
-    html_arr = np.array(html_arr).reshape(text_arr.shape)
-
-    return warning + make_table(html_arr)
+    table = plugin_util.markdowns_to_safe_html(
+        text_arr.reshape(-1),
+        lambda xs: make_table(np.array(xs).reshape(text_arr.shape)),
+    )
+    return warning + table
 
 
-def process_string_tensor_event(event):
-    """Convert a TensorEvent into a JSON-compatible response."""
-    string_arr = tensor_util.make_ndarray(event.tensor_proto)
-    html = text_array_to_html(string_arr)
+def process_event(wall_time, step, string_ndarray):
+    """Convert a text event into a JSON-compatible response."""
+    html = text_array_to_html(string_ndarray)
     return {
-        "wall_time": event.wall_time,
-        "step": event.step,
+        "wall_time": wall_time,
+        "step": step,
         "text": html,
     }
 
@@ -211,28 +209,20 @@ class TextPlugin(base_plugin.TBPlugin):
         Args:
           context: A base_plugin.TBContext instance.
         """
-        self._multiplexer = context.multiplexer
+        self._downsample_to = (context.sampling_hints or {}).get(
+            self.plugin_name, _DEFAULT_DOWNSAMPLING
+        )
+        self._data_provider = context.data_provider
 
     def is_active(self):
-        """Determines whether this plugin is active.
-
-        This plugin is only active if TensorBoard sampled any text summaries.
-
-        Returns:
-          Whether this plugin is active.
-        """
-        if not self._multiplexer:
-            return False
-        return bool(
-            self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME)
-        )
+        return False  # `list_plugins` as called by TB core suffices
 
     def frontend_metadata(self):
         return base_plugin.FrontendMetadata(element_name="tf-text-dashboard")
 
-    def index_impl(self):
-        mapping = self._multiplexer.PluginRunToTagToContent(
-            metadata.PLUGIN_NAME
+    def index_impl(self, ctx, experiment):
+        mapping = self._data_provider.list_tensors(
+            ctx, experiment_id=experiment, plugin_name=metadata.PLUGIN_NAME,
         )
         return {
             run: list(tag_to_content)
@@ -241,22 +231,31 @@ class TextPlugin(base_plugin.TBPlugin):
 
     @wrappers.Request.application
     def tags_route(self, request):
-        index = self.index_impl()
+        ctx = plugin_util.context(request.environ)
+        experiment = plugin_util.experiment_id(request.environ)
+        index = self.index_impl(ctx, experiment)
         return http_util.Respond(request, index, "application/json")
 
-    def text_impl(self, run, tag):
-        try:
-            text_events = self._multiplexer.Tensors(run, tag)
-        except KeyError:
-            text_events = []
-        responses = [process_string_tensor_event(ev) for ev in text_events]
-        return responses
+    def text_impl(self, ctx, run, tag, experiment):
+        all_text = self._data_provider.read_tensors(
+            ctx,
+            experiment_id=experiment,
+            plugin_name=metadata.PLUGIN_NAME,
+            downsample=self._downsample_to,
+            run_tag_filter=provider.RunTagFilter(runs=[run], tags=[tag]),
+        )
+        text = all_text.get(run, {}).get(tag, None)
+        if text is None:
+            return []
+        return [process_event(d.wall_time, d.step, d.numpy) for d in text]
 
     @wrappers.Request.application
     def text_route(self, request):
+        ctx = plugin_util.context(request.environ)
+        experiment = plugin_util.experiment_id(request.environ)
         run = request.args.get("run")
         tag = request.args.get("tag")
-        response = self.text_impl(run, tag)
+        response = self.text_impl(ctx, run, tag, experiment)
         return http_util.Respond(request, response, "application/json")
 
     def get_plugin_apps(self):

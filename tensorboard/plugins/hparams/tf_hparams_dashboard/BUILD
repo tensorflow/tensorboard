@@ -1,21 +1,21 @@
-package(default_visibility = ["//visibility:public"])
+load("//tensorboard/defs:defs.bzl", "tf_ts_library")
 
-load("//tensorboard/defs:web.bzl", "tf_web_library")
+package(default_visibility = ["//tensorboard:internal"])
 
-licenses(["notice"])  # Apache 2.0
+licenses(["notice"])
 
-tf_web_library(
+tf_ts_library(
     name = "tf_hparams_dashboard",
     srcs = [
-        "tf-hparams-dashboard.html",
+        "tf-hparams-dashboard.ts",
     ],
-    path = "/tf-hparams-dashboard",
-    visibility = ["//visibility:public"],
+    strict_checks = False,
     deps = [
+        "//tensorboard/components/polymer:legacy_element_mixin",
         "//tensorboard/components/tf_backend",
-        "//tensorboard/components/tf_imports:polymer",
-        "//tensorboard/components/tf_tensorboard:plugin_dialog",
         "//tensorboard/plugins/hparams/tf_hparams_backend",
         "//tensorboard/plugins/hparams/tf_hparams_main",
+        "@npm//@polymer/decorators",
+        "@npm//@polymer/polymer",
     ],
 )

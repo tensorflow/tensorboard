@@ -18,7 +18,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import numpy as np
 import tensorflow as tf
 
 from tensorboard.backend.event_processing import (
@@ -109,7 +108,7 @@ class LayoutTest(tf.test.TestCase):
 
         # Parse the data.
         string_array = tensor_util.make_ndarray(tensor_events[0].tensor_proto)
-        content = np.asscalar(string_array)
+        content = string_array.item()
         layout_proto_from_disk = layout_pb2.Layout()
         layout_proto_from_disk.ParseFromString(tf.compat.as_bytes(content))
 

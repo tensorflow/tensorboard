@@ -549,7 +549,7 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
         discard events based on the step value of SessionLog.START.
         """
         warnings = []
-        self.stubs.Set(logger, "warn", warnings.append)
+        self.stubs.Set(logger, "warning", warnings.append)
 
         gen = _EventGenerator(self)
         acc = ea.EventAccumulator(gen)
@@ -610,7 +610,7 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
         discard events based on the step value of SessionLog.START.
         """
         warnings = []
-        self.stubs.Set(logger, "warn", warnings.append)
+        self.stubs.Set(logger, "warning", warnings.append)
 
         gen = _EventGenerator(self)
         acc = ea.EventAccumulator(gen)

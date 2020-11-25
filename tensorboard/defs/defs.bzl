@@ -13,15 +13,17 @@
 # limitations under the License.
 """External-only delegates for various BUILD rules."""
 
-load("@build_bazel_rules_nodejs//:defs.bzl", "rollup_bundle")
-load("@npm_bazel_karma//:defs.bzl", "karma_web_test_suite")
+load("@npm_angular_bazel//:index.bzl", "ng_module")
+load("@npm_bazel_rollup//:index.bzl", "rollup_bundle")
+load("@npm_bazel_karma//:index.bzl", "karma_web_test_suite")
 load("@npm_bazel_typescript//:index.bzl", "ts_config", "ts_devserver", "ts_library")
+load("@io_bazel_rules_sass//:defs.bzl", "sass_binary", "sass_library")
 
 def tensorboard_webcomponent_library(**kwargs):
     """Rules referencing this will be deleted from the codebase soon."""
     pass
 
-def tf_js_binary(compile, **kwargs):
+def tf_js_binary(compile, deps, **kwargs):
     """Rules for creating a JavaScript bundle.
 
     Please refer to https://bazelbuild.github.io/rules_nodejs/Built-ins.html#rollup_bundle
@@ -30,17 +32,42 @@ def tf_js_binary(compile, **kwargs):
 
     # `compile` option is used internally but is not used by rollup_bundle.
     # Discard it.
-    rollup_bundle(**kwargs)
+    rollup_bundle(
+        config_file = "//tensorboard/defs:rollup_config.js",
+        # Must pass `true` here specifically, else the input file argument to
+        # Rollup (appended by `rollup_binary`) is interpreted as a value for
+        # the preceding option.
+        args = ["--failAfterWarnings", "true", "--silent", "true"],
+        deps = deps + [
+            "@npm//@rollup/plugin-commonjs",
+            "@npm//@rollup/plugin-node-resolve",
+        ],
+        format = "iife",
+        **kwargs
+    )
 
 def tf_ts_config(**kwargs):
     """TensorBoard wrapper for the rule for a TypeScript configuration."""
 
     ts_config(**kwargs)
 
-def tf_ts_library(**kwargs):
-    """TensorBoard wrapper for the rule for a TypeScript library."""
+def tf_ts_library(strict_checks = True, **kwargs):
+    """TensorBoard wrapper for the rule for a TypeScript library.
 
-    ts_library(**kwargs)
+    Args:
+      strict_checks: whether to enable stricter type checking. Default is True.
+          Please use `strict_checks = False` for only Polymer based targets.
+      **kwargs: keyword arguments to ts_library build rule.
+    """
+    tsconfig = "//:tsconfig.json"
+
+    if strict_checks == False:
+        tsconfig = "//:tsconfig-lax"
+    elif "test_only" in kwargs and kwargs.get("test_only"):
+        tsconfig = "//:tsconfig-test"
+    kwargs.setdefault("deps", []).append("@npm//tslib")
+
+    ts_library(tsconfig = tsconfig, **kwargs)
 
 def tf_ts_devserver(**kwargs):
     """TensorBoard wrapper for the rule for a TypeScript dev server."""
@@ -55,16 +82,25 @@ def tf_ng_web_test_suite(runtime_deps = [], bootstrap = [], deps = [], **kwargs)
 
     kwargs.setdefault("tags", []).append("webtest")
     karma_web_test_suite(
-        srcs = [],
+        srcs = [
+            "//tensorboard/webapp/testing:require_js_karma_config.js",
+        ],
         bootstrap = bootstrap + [
             "@npm//:node_modules/zone.js/dist/zone-testing-bundle.js",
             "@npm//:node_modules/reflect-metadata/Reflect.js",
+            "@npm//:node_modules/@angular/localize/bundles/localize-init.umd.js",
         ],
         runtime_deps = runtime_deps + [
             "//tensorboard/webapp/testing:initialize_testbed",
         ],
         deps = deps + [
             "//tensorboard/webapp/testing:test_support_lib",
+        ],
+        # Lodash runtime dependency that is compatible with requirejs for karma.
+        static_files = [
+            "@npm//:node_modules/lodash/lodash.js",
+            "@npm//:node_modules/d3/dist/d3.js",
+            "@npm//:node_modules/three/build/three.js",
         ],
         **kwargs
     )
@@ -79,3 +115,32 @@ def tf_svg_bundle(name, srcs, out):
             "//tensorboard/tools:mat_bundle_icon_svg",
         ],
     )
+
+def tf_sass_binary(deps = [], include_paths = [], **kwargs):
+    """TensorBoard wrap for declaring SASS binary.
+
+    It adds dependency on theme by default then add include Angular material
+    theme library paths for better node_modules library resolution.
+    """
+    sass_binary(
+        deps = deps + ["//tensorboard/webapp/theme"],
+        include_paths = include_paths + [
+            "external/npm/node_modules",
+        ],
+        sourcemap = False,
+        **kwargs
+    )
+
+def tf_sass_library(**kwargs):
+    """TensorBoard wrap for declaring SASS library.
+
+    It re-exports the sass_libray symbol so users do not have to depend on
+    "@io_bazel_rules_sass//:defs.bzl".
+    """
+    sass_library(
+        **kwargs
+    )
+
+def tf_ng_module(**kwargs):
+    """TensorBoard wrapper for Angular modules."""
+    ng_module(**kwargs)

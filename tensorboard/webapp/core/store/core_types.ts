@@ -18,19 +18,80 @@ limitations under the License.
 // redundant copies in sync.  If the state shape and the API types need to
 // diverge in the future, that's straightforward: we'll leave types/api in place,
 // remove this import, and write the divergent state types explicitly here.
-import {PluginId, PluginsListing} from '../../types/api';
-import {LoadState} from '../../types/data';
+import {Environment, PluginId, PluginsListing} from '../../types/api';
+import {DataLoadState, LoadState} from '../../types/data';
+
+import {PluginsListFailureCode, Run, RunId} from '../types';
 
 export const CORE_FEATURE_KEY = 'core';
 
 export interface CoreState {
   activePlugin: PluginId | null;
   plugins: PluginsListing;
-  pluginsListLoaded: LoadState;
+  pluginsListLoaded: PluginsListLoadState;
   reloadPeriodInMs: number;
   reloadEnabled: boolean;
+  // Size of a page in a general paginated view that is configurable by user via
+  // settings.
+  pageSize: number;
+  environment: Environment;
+  // TODO(stephanwlee): move these state to the `runs` features.
+  // For now, we want them here for Polymer interop states reasons, too.
+  polymerInteropRuns: Run[];
+  polymerInteropRunSelection: Set<RunId>;
+}
+
+/*
+ * LoadState enhanced with a failureCode field.
+ */
+export type PluginsListLoadState =
+  | NotLoadedPluginsListLoadState
+  | LoadedPluginsListLoadState
+  | LoadingPluginsListLoadState
+  | FailedPluginsListLoadState;
+
+interface NotLoadedPluginsListLoadState extends LoadState {
+  state: DataLoadState.NOT_LOADED;
+  failureCode: null;
+}
+
+interface LoadedPluginsListLoadState extends LoadState {
+  state: DataLoadState.LOADED;
+  failureCode: null;
+}
+
+interface LoadingPluginsListLoadState extends LoadState {
+  state: DataLoadState.LOADING;
+  // Reason for failure of most recently completed request. This should not be
+  // set if there has not been a failure or if the most recently completed
+  // request was successful.
+  failureCode: PluginsListFailureCode | null;
+}
+
+interface FailedPluginsListLoadState extends LoadState {
+  state: DataLoadState.FAILED;
+  failureCode: PluginsListFailureCode;
 }
 
 export interface State {
   [CORE_FEATURE_KEY]?: CoreState;
 }
+
+export const initialState: CoreState = {
+  activePlugin: null,
+  plugins: {},
+  pluginsListLoaded: {
+    state: DataLoadState.NOT_LOADED,
+    lastLoadedTimeInMs: null,
+    failureCode: null,
+  },
+  reloadPeriodInMs: 30000,
+  reloadEnabled: false,
+  pageSize: 12,
+  environment: {
+    data_location: '',
+    window_title: '',
+  },
+  polymerInteropRuns: [],
+  polymerInteropRunSelection: new Set(),
+};

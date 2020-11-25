@@ -1,0 +1,77 @@
+/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+==============================================================================*/
+
+.op-container {
+  background-color: transparent;
+  border: 2px solid #c6cad1;
+  border-radius: 4px;
+  box-shadow: 1px 3px #eee;
+  cursor: pointer;
+  margin: 0 5px 0 0;
+  padding: 2px 6px;
+  text-align: right;
+  width: 200px;
+}
+
+.op-container:focus {
+  outline: 0;
+}
+
+.op-container:hover {
+  border: 2px solid #ffd3b2;
+}
+
+.op-info-missing {
+  color: #808080;
+}
+
+.op-name {
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  display: inline-block;
+  overflow-wrap: anywhere;
+  padding: 0;
+  text-align: right;
+  text-decoration: underline;
+  white-space: pre-wrap;
+}
+
+.op-name:focus {
+  outline: 0;
+}
+
+.op-type {
+  background-color: #e3e5e8;
+  border: 1px solid #c0c0c0;
+  border-radius: 4px;
+  display: inline-block;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 10px;
+  height: 14px;
+  line-height: 14px;
+  margin-top: 3px;
+  padding: 1px 3px;
+  width: max-content;
+}
+
+.self-op-name {
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.slot {
+  color: #707070;
+}

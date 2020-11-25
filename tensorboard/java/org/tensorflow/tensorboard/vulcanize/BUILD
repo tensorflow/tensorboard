@@ -1,6 +1,6 @@
 package(default_visibility = ["//tensorboard:internal"])
 
-licenses(["notice"])  # Apache 2.0
+licenses(["notice"])
 
 java_binary(
     name = "Vulcanize",
@@ -24,7 +24,6 @@ java_binary(
 java_binary(
     name = "Zipper",
     srcs = ["Zipper.java"],
-    visibility = ["//visibility:public"],
     deps = [
         "@com_google_guava",
         "@com_google_protobuf//:protobuf_java",

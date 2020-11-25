@@ -1,21 +1,17 @@
+load("//tensorboard/defs:defs.bzl", "tf_ts_library")
+
 package(default_visibility = ["//tensorboard:internal"])
 
-load("//tensorboard/defs:defs.bzl", "tensorboard_webcomponent_library")
-load("//tensorboard/defs:web.bzl", "tf_web_library")
+licenses(["notice"])
 
-licenses(["notice"])  # Apache 2.0
-
-tf_web_library(
+tf_ts_library(
     name = "tf_globals",
     srcs = [
         "globals.ts",
-        "tf-globals.html",
+        "globals-polymer.ts",
     ],
-    path = "/tf-globals",
-)
-
-tensorboard_webcomponent_library(
-    name = "legacy",
-    srcs = [":tf_globals"],
-    destdir = "tf-globals",
+    deps = [
+        "@npm//@polymer/decorators",
+        "@npm//@polymer/polymer",
+    ],
 )

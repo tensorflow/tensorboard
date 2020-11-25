@@ -3,50 +3,6 @@
 The plugin name is `pr_curves`, so all its routes are under
 `/data/plugin/pr_curves`.
 
-## `/data/plugin/pr_curves/available_time_entries`
-
-Retrieves a JSON object mapping run name to a list of time entries (one for each
-step). Each time entry has 2 properties:
-
-* **step**: The step of the event.
-* **wall_time**: The time in seconds since the epoch at which the summary was
-  written.
-
-Here is an example.
-
-```json
-{
-  "foo": [
-    {
-      "step": 0,
-      "wall_time": 1503076940.949388,
-    },
-    {
-      "step": 1,
-      "wall_time": 1503076940.953447,
-    },
-    {
-      "step": 2,
-      "wall_time": 1503076940.95812,
-    }
-  ],
-  "bar": [
-    {
-      "step": 0,
-      "wall_time": 1503076940.964225,
-    },
-    {
-      "step": 1,
-      "wall_time": 1503076940.969845,
-    },
-    {
-      "step": 2,
-      "wall_time": 1503076940.974917,
-    }
-  ],
-}
-```
-
 ## `/data/plugin/pr_curves/pr_curves`
 
 Retrieves a JSON object mapping run name to a list of PR curve data entries (one

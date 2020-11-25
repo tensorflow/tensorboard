@@ -124,8 +124,9 @@ def reexport_tf_summary():
 
     # API packages to check for the original V2 summary API, in preference order
     # to avoid going "under the hood" to the _api packages unless necessary.
+    # Skip the top-level `tensorflow` package since it's hard to confirm that it
+    # is the actual v2 API (just checking tf.__version__ is not always enough).
     packages = [
-        "tensorflow",
         "tensorflow.compat.v2",
         "tensorflow_core._api.v2",
         "tensorflow_core._api.v2.compat.v2",
@@ -135,11 +136,6 @@ def reexport_tf_summary():
         "tensorflow._api.v2.compat.v2",
         "tensorflow._api.v1.compat.v2",
     ]
-    # If we aren't sure we're on V2, don't use tf.summary since it could be V1.
-    # Note there may be false positives since the __version__ attribute may not be
-    # defined at this point in the import process.
-    if not getattr(tf, "__version__", "").startswith("2."):  # noqa: F821
-        packages.remove("tensorflow")
 
     def dynamic_wildcard_import(module):
         """Implements the logic of "from module import *" for the given
@@ -177,10 +173,10 @@ def reexport_tf_summary():
 
 reexport_tf_summary()
 
-from tensorboard.summary.v2 import audio
-from tensorboard.summary.v2 import histogram
-from tensorboard.summary.v2 import image
-from tensorboard.summary.v2 import scalar
-from tensorboard.summary.v2 import text
+from tensorboard.summary.v2 import audio  # noqa: F401
+from tensorboard.summary.v2 import histogram  # noqa: F401
+from tensorboard.summary.v2 import image  # noqa: F401
+from tensorboard.summary.v2 import scalar  # noqa: F401
+from tensorboard.summary.v2 import text  # noqa: F401
 
 del absolute_import, division, print_function, tf, reexport_tf_summary

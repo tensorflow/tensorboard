@@ -1,91 +1,75 @@
+load("//tensorboard/defs:defs.bzl", "tf_js_binary", "tf_ts_library")
+
 package(default_visibility = ["//tensorboard:internal"])
 
-load("//tensorboard/defs:web.bzl", "tf_web_library")
-load("//tensorboard/defs:vulcanize.bzl", "tensorboard_html_binary")
+licenses(["notice"])
 
-licenses(["notice"])  # Apache 2.0
-
-tf_web_library(
-    name = "tensorboard",
-    srcs = ["tensorboard.html"],
-    path = "/",
+tf_ts_library(
+    name = "polymer3_ts_lib",
+    srcs = ["polymer3_lib.ts"],
     deps = [
-        ":analytics",
-        "//tensorboard/components/tf_imports:polymer",
-        "//tensorboard/components/tf_tensorboard",
-        "//tensorboard/components/tf_tensorboard:default_plugins",
+        ":polymer3_interop_helper",
+        "//tensorboard/plugins/audio/tf_audio_dashboard",
+        "//tensorboard/plugins/custom_scalar/tf_custom_scalar_dashboard",
+        "//tensorboard/plugins/distribution/tf_distribution_dashboard",
+        "//tensorboard/plugins/graph/tf_graph_dashboard",
+        "//tensorboard/plugins/histogram/tf_histogram_dashboard",
+        "//tensorboard/plugins/hparams/tf_hparams_dashboard",
+        "//tensorboard/plugins/image/tf_image_dashboard",
+        "//tensorboard/plugins/mesh/tf_mesh_dashboard",
+        "//tensorboard/plugins/pr_curve/tf_pr_curve_dashboard",
+        "//tensorboard/plugins/profile_redirect/tf_profile_redirect_dashboard",
+        "//tensorboard/plugins/scalar/tf_scalar_dashboard",
+        "//tensorboard/plugins/text/tf_text_dashboard",
     ],
 )
 
-tensorboard_html_binary(
-    name = "index",
-    compile = True,
-    input_path = "/tensorboard.html",
-    js_path = "/index.js",
-    output_path = "/index.html",
-    deps = [":tensorboard"],
+tf_ts_library(
+    name = "polymer3_interop_helper",
+    srcs = ["polymer3_interop_helper.ts"],
+    deps = [
+        "//tensorboard/components/experimental/plugin_util:plugin_host",
+        "//tensorboard/components/tf_backend",
+        "//tensorboard/components/tf_color_scale",
+        "//tensorboard/components/tf_globals",
+        "//tensorboard/components/tf_markdown_view",
+        "//tensorboard/components/tf_paginated_view",
+        "//tensorboard/components/tf_storage",
+    ],
 )
 
-tf_web_library(
+tf_js_binary(
+    name = "polymer3_lib_binary_no_shim",
+    compile = True,
+    entry_point = ":polymer3_lib.ts",
+    deps = [":polymer3_ts_lib"],
+)
+
+genrule(
+    name = "polymer3_lib_binary",
+    srcs = [
+        # Do not sort. order is important.
+        "@npm//:node_modules/web-animations-js/web-animations-next-lite.min.js",
+        ":polymer3_lib_binary_no_shim.js",
+    ],
+    outs = ["polymer3_lib_binary.js"],
+    cmd = "for f in $(SRCS); do cat \"$$f\"; echo; done > $@",
+)
+
+tf_ts_library(
     name = "analytics",
     srcs = [
-        "analytics.html",
+        "analytics.ts",
     ],
-    path = "/",
 )
 
-tf_web_library(
+tf_ts_library(
     name = "security",
     srcs = [
-        "security.html",
+        "security.ts",
     ],
-    path = "/",
-    visibility = ["//visibility:public"],
-)
-
-tf_web_library(
-    name = "ng_polymer_lib",
-    srcs = [
-        "ng_polymer_lib.html",
-    ],
-    path = "/",
+    strict_checks = False,
     deps = [
-        ":analytics",
-        ":security",
-        "//tensorboard/components/tf_backend",
-        "//tensorboard/components/tf_imports:polymer",
-        "//tensorboard/components/tf_storage",
-        "//tensorboard/components/tf_tensorboard",
-        "//tensorboard/components/tf_tensorboard:default_plugins",
-        "//tensorboard/components/tf_tensorboard:registry",
+        "@npm//@polymer/polymer",
     ],
-)
-
-# This Polymer only binary (as opposed to ng_index) allows ng_index to be built without
-# JSCompiler step. In other words, Angular-only changes can be built faster
-# incrementally.
-tensorboard_html_binary(
-    name = "ng_polymer_lib_binary",
-    compile = True,
-    input_path = "/ng_polymer_lib.html",
-    output_path = "/ng_polymer_lib_binary.html",
-    deps = [":ng_polymer_lib"],
-)
-
-tf_web_library(
-    name = "trace_viewer",
-    srcs = ["trace_viewer.html"],
-    path = "/",
-    deps = [
-        "//tensorboard/components/tf_imports:polymer",
-        "//tensorboard/components/tf_trace_viewer",
-    ],
-)
-
-tensorboard_html_binary(
-    name = "trace_viewer_index",
-    input_path = "/trace_viewer.html",
-    js_path = "/trace_viewer_index.js",
-    output_path = "/trace_viewer_index.html",
-    deps = [":trace_viewer"],
 )

@@ -12,12 +12,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import {createSelector, select, Store} from '@ngrx/store';
-import {DebuggerRunListing, State} from './store/debugger_types';
+import {State} from './store/debugger_types';
 
-import {debuggerLoaded} from './actions';
-import {getDebuggerRunListing} from './store';
+import {debuggerLoaded, debuggerUnloaded} from './actions';
+import {getActiveRunId, getDebuggerRunListing} from './store';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
@@ -27,24 +27,30 @@ import {getDebuggerRunListing} from './store';
     <debugger-component
       [runs]="runs$ | async"
       [runIds]="runsIds$ | async"
+      [activeRunId]="activeRunId$ | async"
     ></debugger-component>
   `,
 })
-export class DebuggerContainer implements OnInit {
+export class DebuggerContainer implements OnInit, OnDestroy {
   readonly runs$ = this.store.pipe(select(getDebuggerRunListing));
 
   readonly runsIds$ = this.store.pipe(
     select(
-      createSelector(
-        getDebuggerRunListing,
-        (runs): string[] => Object.keys(runs)
+      createSelector(getDebuggerRunListing, (runs): string[] =>
+        Object.keys(runs)
       )
     )
   );
+
+  readonly activeRunId$ = this.store.pipe(select(getActiveRunId));
 
   constructor(private readonly store: Store<State>) {}
 
   ngOnInit(): void {
     this.store.dispatch(debuggerLoaded());
+  }
+
+  ngOnDestroy(): void {
+    this.store.dispatch(debuggerUnloaded());
   }
 }

@@ -12,11 +12,33 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component} from '@angular/core';
+import {Component, EventEmitter, Input, Output} from '@angular/core';
+
+import {AlertType} from '../../store/debugger_types';
+
+export interface AlertTypeDisplay {
+  displayName: string;
+  displaySymbol: string;
+  count: number;
+  type: AlertType;
+}
 
 @Component({
   selector: 'alerts-component',
   templateUrl: './alerts_component.ng.html',
   styleUrls: ['./alerts_component.css'],
 })
-export class AlertsComponent {}
+export class AlertsComponent {
+  // Total number of alerts.
+  @Input()
+  numAlerts: number = 0;
+
+  @Input()
+  alertsBreakdown: AlertTypeDisplay[] = [];
+
+  @Input()
+  focusType: AlertType | null = null;
+
+  @Output()
+  onToggleFocusType = new EventEmitter<AlertType>();
+}

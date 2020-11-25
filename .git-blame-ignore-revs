@@ -84,3 +84,9 @@ ae32a4adcab8c3349c3bff21240078334fef1371  # black: reformat directory tensorboar
 
 # Small BUILD reformat (<https://github.com/tensorflow/tensorboard/pull/3054>)
 ea4e9bbc885784a283b8b79974132df7c6cdcc50  # Reformat all `*BUILD` files with `buildifier`
+
+# third_party/js.bzl reformat (<https://github.com/tensorflow/tensorboard/pull/3332>)
+3e17c44d5bc3c7af72f14059e39d4b872e95d573  # Buildifier format js.bzl for future edits (#3332)
+
+# Prettier 1.18.2 to 2.1.1 upgrade (<https://github.com/tensorflow/tensorboard/pull/4122>)
+e42a7f18b33c7a85b51db28d465ec01915a8e725  # prettier: reformat code for 2.1.1

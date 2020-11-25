@@ -85,7 +85,7 @@ class SummaryBaseTest(object):
 
     def test_wav_format_roundtrip(self):
         audio = self._generate_audio(c=1)
-        pb = self.audio("k888", audio, 44100)
+        pb = self.audio("k488", audio, 44100)
         encoded = tensor_util.make_ndarray(pb.value[0].tensor)
         decoded, sample_rate = audio_ops.decode_wav(encoded.flat[0])
         # WAV roundtrip goes from float32 to int16 and back, so expect some
@@ -96,7 +96,7 @@ class SummaryBaseTest(object):
         self.assertEqual(44100, sample_rate.numpy())
 
     def _test_dimensions(self, audio):
-        pb = self.audio("k888", audio, 44100)
+        pb = self.audio("k488", audio, 44100)
         self.assertEqual(1, len(pb.value))
         results = tensor_util.make_ndarray(pb.value[0].tensor)
         for i, (encoded, _) in enumerate(results):

@@ -347,7 +347,7 @@ def generators_from_logdir(logdir):
 
 def generator_from_event_file(event_file):
     """Returns a generator that yields events from an event file."""
-    return event_file_loader.EventFileLoader(event_file).Load()
+    return event_file_loader.LegacyEventFileLoader(event_file).Load()
 
 
 def get_inspection_units(logdir="", event_file="", tag=""):

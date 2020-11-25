@@ -1,0 +1,122 @@
+/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+==============================================================================*/
+
+.focused-file {
+  font-weight: bold;
+}
+
+.focused-stack-frame {
+  background-color: rgba(255, 111, 0, 0.3);
+}
+
+.no-stack-trace {
+  color: #808080;
+}
+
+.op-name {
+  word-wrap: anywhere;
+}
+
+.op-type {
+  background-color: #e3e5e8;
+  border: 1px solid #c0c0c0;
+  border-radius: 4px;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 10px;
+  height: 14px;
+  line-height: 14px;
+  padding: 1px 3px;
+  width: max-content;
+}
+
+.stack-frame-array {
+  overflow-x: hidden;
+  overflow-y: auto;
+  /* Minus padding-left of the parent (stack-trace-container). */
+  width: calc(100% - 8px);
+}
+
+.stack-frame-container {
+  border-bottom: 1px solid #a0a0a0;
+}
+
+.stack-frame-file-path {
+  max-width: 180px;
+  width: 180px;
+}
+
+.stack-frame-lineno-function {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.stack-frame-function {
+  display: inline-block;
+  max-width: 200px;
+  padding-left: 10px;
+  text-align: left;
+  white-space: normal;
+  width: 200px;
+  word-wrap: anywhere;
+}
+
+.stack-frame-lineno {
+  cursor: pointer;
+  display: inline-block;
+  max-width: 80px;
+  text-align: left;
+  text-decoration: underline;
+  width: 80px;
+}
+
+.stack-trace-aux-info {
+  margin-top: 15px;
+  padding-left: 24px;
+}
+
+.stack-trace-container {
+  border-left: 1px solid rgba(0, 0, 0, 0.12);
+  box-sizing: border-box;
+  display: flex;
+  flex-flow: column;
+  font-size: 10px;
+  font-family: 'Roboto Mono', monospace;
+  height: 100%;
+  margin-left: 8px;
+  max-height: 360px;
+  overflow-x: hidden;
+  overflow-y: hidden;
+  padding-left: 8px;
+  width: 100%;
+}
+
+.stack-trace-header {
+  box-shadow: 0 5px 3px -3px #ccc;
+  padding-bottom: 3px;
+}
+.stack-trace-host-name {
+  color: #808080;
+}
+
+.stack-trace-title {
+  font-weight: bold;
+}
+
+.stick-to-bottommost-indicator {
+  display: inline-block;
+  font-weight: bold;
+  font-size: 12px;
+  padding-right: 3px;
+}

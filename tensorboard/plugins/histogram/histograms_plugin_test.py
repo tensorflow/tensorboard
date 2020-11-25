@@ -19,22 +19,19 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import argparse
-import collections
-import functools
+import collections.abc
 import os.path
 
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 
 from tensorboard import errors
+from tensorboard import context
 from tensorboard.backend.event_processing import data_provider
-from tensorboard.backend.event_processing import (
-    plugin_event_accumulator as event_accumulator,
-)
 from tensorboard.backend.event_processing import (
     plugin_event_multiplexer as event_multiplexer,
 )
+from tensorboard.backend.event_processing import tag_types
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.histogram import histograms_plugin
 from tensorboard.plugins.histogram import summary
@@ -70,55 +67,18 @@ class HistogramsPluginTest(tf.test.TestCase):
         multiplexer = event_multiplexer.EventMultiplexer(
             size_guidance={
                 # don't truncate my test data, please
-                event_accumulator.TENSORS: self._STEPS,
+                tag_types.TENSORS: self._STEPS,
             }
         )
         multiplexer.AddRunsFromDirectory(logdir)
         multiplexer.Reload()
         return (logdir, multiplexer)
 
-    def with_runs(run_names):
-        """Run a test with a bare multiplexer and with a `data_provider`.
-
-        The decorated function will receive an initialized
-        `HistogramsPlugin` object as its first positional argument.
-        """
-
-        def decorator(fn):
-            @functools.wraps(fn)
-            def wrapper(self, *args, **kwargs):
-                (logdir, multiplexer) = self.load_runs(run_names)
-                with self.subTest("bare multiplexer"):
-                    ctx = base_plugin.TBContext(
-                        logdir=logdir, multiplexer=multiplexer
-                    )
-                    fn(
-                        self,
-                        histograms_plugin.HistogramsPlugin(ctx),
-                        *args,
-                        **kwargs
-                    )
-                with self.subTest("generic data provider"):
-                    flags = argparse.Namespace(generic_data="true")
-                    provider = data_provider.MultiplexerDataProvider(
-                        multiplexer, logdir
-                    )
-                    ctx = base_plugin.TBContext(
-                        flags=flags,
-                        logdir=logdir,
-                        multiplexer=multiplexer,
-                        data_provider=provider,
-                    )
-                    fn(
-                        self,
-                        histograms_plugin.HistogramsPlugin(ctx),
-                        *args,
-                        **kwargs
-                    )
-
-            return wrapper
-
-        return decorator
+    def load_plugin(self, run_names):
+        (logdir, multiplexer) = self.load_runs(run_names)
+        provider = data_provider.MultiplexerDataProvider(multiplexer, logdir)
+        ctx = base_plugin.TBContext(logdir=logdir, data_provider=provider)
+        return histograms_plugin.HistogramsPlugin(ctx)
 
     def generate_run(self, logdir, run_name):
         tf.compat.v1.reset_default_graph()
@@ -152,17 +112,21 @@ class HistogramsPluginTest(tf.test.TestCase):
                 s = sess.run(summ, feed_dict=feed_dict)
                 writer.add_summary(s, global_step=step)
 
-    @with_runs([_RUN_WITH_SCALARS])
-    def test_routes_provided(self, plugin):
+    def test_routes_provided(self):
         """Tests that the plugin offers the correct routes."""
+        plugin = self.load_plugin([self._RUN_WITH_SCALARS])
         routes = plugin.get_plugin_apps()
-        self.assertIsInstance(routes["/histograms"], collections.Callable)
-        self.assertIsInstance(routes["/tags"], collections.Callable)
+        self.assertIsInstance(routes["/histograms"], collections.abc.Callable)
+        self.assertIsInstance(routes["/tags"], collections.abc.Callable)
 
-    @with_runs(
-        [_RUN_WITH_SCALARS, _RUN_WITH_LEGACY_HISTOGRAM, _RUN_WITH_HISTOGRAM,]
-    )
-    def test_index(self, plugin):
+    def test_index(self):
+        plugin = self.load_plugin(
+            [
+                self._RUN_WITH_SCALARS,
+                self._RUN_WITH_LEGACY_HISTOGRAM,
+                self._RUN_WITH_HISTOGRAM,
+            ]
+        )
         self.assertEqual(
             {
                 # _RUN_WITH_SCALARS omitted: No histogram data.
@@ -180,13 +144,17 @@ class HistogramsPluginTest(tf.test.TestCase):
                     },
                 },
             },
-            plugin.index_impl(experiment="exp"),
+            plugin.index_impl(context.RequestContext(), experiment="exp"),
         )
 
-    @with_runs(
-        [_RUN_WITH_SCALARS, _RUN_WITH_LEGACY_HISTOGRAM, _RUN_WITH_HISTOGRAM,]
-    )
-    def _test_histograms(self, plugin, run_name, tag_name, should_work=True):
+    def _test_histograms(self, run_name, tag_name, should_work=True):
+        plugin = self.load_plugin(
+            [
+                self._RUN_WITH_SCALARS,
+                self._RUN_WITH_LEGACY_HISTOGRAM,
+                self._RUN_WITH_HISTOGRAM,
+            ]
+        )
         if should_work:
             self._check_histograms_result(
                 plugin, tag_name, run_name, downsample=False
@@ -197,7 +165,10 @@ class HistogramsPluginTest(tf.test.TestCase):
         else:
             with self.assertRaises(errors.NotFoundError):
                 plugin.histograms_impl(
-                    self._HISTOGRAM_TAG, run_name, experiment="exp"
+                    context.RequestContext(),
+                    self._HISTOGRAM_TAG,
+                    run_name,
+                    experiment="exp",
                 )
 
     def _check_histograms_result(self, plugin, tag_name, run_name, downsample):
@@ -209,7 +180,11 @@ class HistogramsPluginTest(tf.test.TestCase):
             expected_length = self._STEPS
 
         (data, mime_type) = plugin.histograms_impl(
-            tag_name, run_name, experiment="exp", downsample_to=downsample_to
+            context.RequestContext(),
+            tag_name,
+            run_name,
+            experiment="exp",
+            downsample_to=downsample_to,
         )
         self.assertEqual("application/json", mime_type)
         self.assertEqual(
@@ -248,28 +223,6 @@ class HistogramsPluginTest(tf.test.TestCase):
             self._RUN_WITH_HISTOGRAM,
             "%s/histogram_summary" % self._HISTOGRAM_TAG,
         )
-
-    @with_runs([_RUN_WITH_LEGACY_HISTOGRAM])
-    def test_active_with_legacy_histogram(self, plugin):
-        self.assertTrue(plugin.is_active())
-
-    @with_runs([_RUN_WITH_HISTOGRAM])
-    def test_active_with_histogram(self, plugin):
-        self.assertTrue(plugin.is_active())
-
-    @with_runs([_RUN_WITH_SCALARS])
-    def test_active_with_scalars(self, plugin):
-        if plugin._data_provider:
-            # Hack, for now.
-            self.assertTrue(plugin.is_active())
-        else:
-            self.assertFalse(plugin.is_active())
-
-    @with_runs(
-        [_RUN_WITH_SCALARS, _RUN_WITH_LEGACY_HISTOGRAM, _RUN_WITH_HISTOGRAM,]
-    )
-    def test_active_with_all(self, plugin):
-        self.assertTrue(plugin.is_active())
 
 
 if __name__ == "__main__":

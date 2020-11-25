@@ -1,0 +1,248 @@
+/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+==============================================================================*/
+import {DebugElement, NO_ERRORS_SCHEMA} from '@angular/core';
+import {
+  ComponentFixture,
+  fakeAsync,
+  TestBed,
+  tick,
+} from '@angular/core/testing';
+import {MatButtonToggleModule} from '@angular/material/button-toggle';
+import {MatCheckboxModule} from '@angular/material/checkbox';
+import {MatSelectModule} from '@angular/material/select';
+import {MatSliderModule} from '@angular/material/slider';
+import {By} from '@angular/platform-browser';
+import {NoopAnimationsModule} from '@angular/platform-browser/animations';
+import {Store} from '@ngrx/store';
+import {MockStore, provideMockStore} from '@ngrx/store/testing';
+import {State} from '../../../app_state';
+
+import {DropdownModule} from '../../../widgets/dropdown/dropdown_module';
+import * as actions from '../../actions';
+import * as selectors from '../../store/metrics_selectors';
+import {HistogramMode, TooltipSort, XAxisType} from '../../types';
+
+import {RightPaneComponent} from './right_pane_component';
+import {SettingsViewComponent, TEST_ONLY} from './settings_view_component';
+import {SettingsViewContainer} from './settings_view_container';
+
+describe('metrics right_pane', () => {
+  let store: MockStore<State>;
+  let dispatchSpy: jasmine.Spy;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [
+        NoopAnimationsModule,
+        DropdownModule,
+        MatButtonToggleModule,
+        MatCheckboxModule,
+        MatSelectModule,
+        MatSliderModule,
+      ],
+      declarations: [
+        RightPaneComponent,
+        SettingsViewComponent,
+        SettingsViewContainer,
+      ],
+      providers: [provideMockStore()],
+      // Ignore errors from components that are out-of-scope for this test:
+      // 'runs-selector'.
+      schemas: [NO_ERRORS_SCHEMA],
+    }).compileComponents();
+
+    store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
+    dispatchSpy = spyOn(store, 'dispatch');
+  });
+
+  describe('settings pane', () => {
+    beforeEach(() => {
+      store.overrideSelector(
+        selectors.getMetricsTooltipSort,
+        TooltipSort.DEFAULT
+      );
+      store.overrideSelector(selectors.getMetricsIgnoreOutliers, false);
+      store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.STEP);
+      store.overrideSelector(selectors.getMetricsScalarSmoothing, 0.2);
+      store.overrideSelector(selectors.getMetricsImageBrightnessInMilli, 200);
+      store.overrideSelector(selectors.getMetricsImageContrastInMilli, 10);
+      store.overrideSelector(selectors.getMetricsImageShowActualSize, false);
+      store.overrideSelector(
+        selectors.getMetricsHistogramMode,
+        HistogramMode.OFFSET
+      );
+    });
+
+    function getMatSliderValue(el: DebugElement): string {
+      return el.query(By.css('.mat-slider-thumb-label-text')).nativeElement
+        .textContent;
+    }
+
+    function select(
+      fixture: ComponentFixture<SettingsViewContainer>,
+      cssSelector: string
+    ): DebugElement {
+      return fixture.debugElement.query(By.css(cssSelector));
+    }
+
+    it('renders', () => {
+      store.overrideSelector(
+        selectors.getMetricsTooltipSort,
+        TooltipSort.DEFAULT
+      );
+      store.overrideSelector(selectors.getMetricsIgnoreOutliers, false);
+      store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.STEP);
+      store.overrideSelector(selectors.getMetricsScalarSmoothing, 0.3);
+      store.overrideSelector(selectors.getMetricsImageBrightnessInMilli, 100);
+      store.overrideSelector(selectors.getMetricsImageContrastInMilli, 200);
+      store.overrideSelector(selectors.getMetricsImageShowActualSize, true);
+
+      const fixture = TestBed.createComponent(SettingsViewContainer);
+      fixture.detectChanges();
+
+      const tooltipSortSelect = select(fixture, '.tooltip-sort tb-dropdown');
+      // In the test setting, material component's DOM does not reflect the
+      // value.
+      expect(tooltipSortSelect.componentInstance.value).toBe(
+        TooltipSort.DEFAULT
+      );
+
+      expect(
+        select(fixture, '.scalars-ignore-outliers input').attributes[
+          'aria-checked'
+        ]
+      ).toBe('false');
+
+      const xAxisTypeSelect = select(fixture, '.x-axis-type tb-dropdown');
+      expect(xAxisTypeSelect.componentInstance.value).toBe(XAxisType.STEP);
+
+      const histogramModeSelect = select(
+        fixture,
+        '.histogram-mode tb-dropdown'
+      );
+      expect(histogramModeSelect.componentInstance.value).toBe(
+        HistogramMode.OFFSET
+      );
+
+      const scalarSmoothingInput = select(
+        fixture,
+        '.scalars-smoothing .slider-input'
+      );
+      expect(scalarSmoothingInput.nativeElement.value).toBe('0.3');
+      expect(
+        getMatSliderValue(select(fixture, '.scalars-smoothing mat-slider'))
+      ).toBe('0.30');
+
+      expect(
+        getMatSliderValue(select(fixture, '.image-brightness mat-slider'))
+      ).toBe('0.1');
+
+      expect(
+        getMatSliderValue(select(fixture, '.image-contrast mat-slider'))
+      ).toBe('0.2');
+
+      expect(
+        select(fixture, '.image-show-actual-size input').attributes[
+          'aria-checked'
+        ]
+      ).toBe('true');
+    });
+
+    it('dispatches smoothing changed action on input', fakeAsync(() => {
+      const fixture = TestBed.createComponent(SettingsViewContainer);
+      fixture.detectChanges();
+
+      const scalarSmoothingInput = select(
+        fixture,
+        '.scalars-smoothing .slider-input'
+      );
+      scalarSmoothingInput.nativeElement.value = '0.3';
+      scalarSmoothingInput.nativeElement.dispatchEvent(new Event('input'));
+      tick(TEST_ONLY.SLIDER_AUDIT_TIME_MS);
+      expect(dispatchSpy).toHaveBeenCalledWith(
+        actions.metricsChangeScalarSmoothing({smoothing: 0.3})
+      );
+    }));
+
+    it('dispatches corrected smoothing values on input', fakeAsync(() => {
+      const fixture = TestBed.createComponent(SettingsViewContainer);
+      fixture.detectChanges();
+
+      const scalarSmoothingInput = select(
+        fixture,
+        '.scalars-smoothing .slider-input'
+      );
+      scalarSmoothingInput.nativeElement.value = '-0.3';
+      scalarSmoothingInput.nativeElement.dispatchEvent(new Event('input'));
+      tick(TEST_ONLY.SLIDER_AUDIT_TIME_MS);
+
+      expect(scalarSmoothingInput.nativeElement.value).toBe('0');
+      expect(dispatchSpy).toHaveBeenCalledWith(
+        actions.metricsChangeScalarSmoothing({smoothing: 0})
+      );
+
+      scalarSmoothingInput.nativeElement.value = '1.3';
+      scalarSmoothingInput.nativeElement.dispatchEvent(new Event('input'));
+      tick(TEST_ONLY.SLIDER_AUDIT_TIME_MS);
+
+      expect(scalarSmoothingInput.nativeElement.value).toBe('1');
+      expect(dispatchSpy).toHaveBeenCalledWith(
+        actions.metricsChangeScalarSmoothing({smoothing: 1})
+      );
+    }));
+
+    it('does not dispatch values on invalid input', fakeAsync(() => {
+      const fixture = TestBed.createComponent(SettingsViewContainer);
+      fixture.detectChanges();
+
+      // Value can be empty string when invalid.
+      const scalarSmoothingInput = select(
+        fixture,
+        '.scalars-smoothing .slider-input'
+      );
+      scalarSmoothingInput.nativeElement.value = '';
+      scalarSmoothingInput.nativeElement.dispatchEvent(new Event('input'));
+      tick(TEST_ONLY.SLIDER_AUDIT_TIME_MS);
+
+      expect(scalarSmoothingInput.nativeElement.value).toBe('');
+      expect(dispatchSpy).not.toHaveBeenCalled();
+    }));
+
+    it('dispatches metricsToggleIgnoreOutliers on toggle', () => {
+      const fixture = TestBed.createComponent(SettingsViewContainer);
+      fixture.detectChanges();
+
+      select(fixture, '.scalars-ignore-outliers input').nativeElement.click();
+
+      expect(dispatchSpy).toHaveBeenCalledWith(
+        actions.metricsToggleIgnoreOutliers()
+      );
+    });
+
+    it('dispatches metricsToggleImageShowActualSize on toggle', () => {
+      const fixture = TestBed.createComponent(SettingsViewContainer);
+      fixture.detectChanges();
+
+      select(fixture, '.image-show-actual-size input').nativeElement.click();
+
+      expect(dispatchSpy).toHaveBeenCalledWith(
+        actions.metricsToggleImageShowActualSize()
+      );
+    });
+
+    // mat-select does not render `input` or a DOM that can be manipulated.
+    // skip the test for now.
+  });
+});

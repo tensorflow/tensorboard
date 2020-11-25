@@ -1,35 +1,52 @@
-package(default_visibility = ["//tensorboard:internal"])
-
-load("//tensorboard/defs:defs.bzl", "tensorboard_webcomponent_library")
+load("//tensorboard/defs:defs.bzl", "tf_js_binary", "tf_ts_library")
 load("//tensorboard/defs:web.bzl", "tf_web_library")
 load("//tensorboard/defs:vulcanize.bzl", "tensorboard_html_binary")
 
-licenses(["notice"])  # Apache 2.0
+package(default_visibility = ["//tensorboard:internal"])
 
-tf_web_library(
+licenses(["notice"])
+
+tf_ts_library(
     name = "tf_graph_app",
     srcs = [
-        "tf-graph-app.html",
+        "tf-graph-app.ts",
     ],
-    path = "/tf-graph-app",
+    strict_checks = False,
     deps = [
-        "//tensorboard/components/tf_imports:polymer",
+        "//tensorboard/components/polymer:legacy_element_mixin",
         "//tensorboard/plugins/graph/tf_graph_board",
         "//tensorboard/plugins/graph/tf_graph_controls",
         "//tensorboard/plugins/graph/tf_graph_loader",
+        "@npm//@polymer/decorators",
+        "@npm//@polymer/polymer",
+    ],
+)
+
+tf_js_binary(
+    name = "tf_graph_app_js_binary",
+    compile = True,
+    entry_point = ":tf-graph-app.ts",
+    deps = [":tf_graph_app"],
+)
+
+tf_web_library(
+    name = "tf_graph_app_bundle",
+    srcs = [
+        "tf-graph-app.html",
+        "tf_graph_app_js_binary.js",
+    ],
+    path = "/",
+    deps = [
+        "@com_google_fonts_roboto",
     ],
 )
 
 tensorboard_html_binary(
     name = "binary",
-    compile = True,
-    input_path = "/tf-graph-app/tf-graph-app.html",
-    output_path = "/tf-graph-app/binary.html",
-    deps = [":tf_graph_app"],
-)
-
-tensorboard_webcomponent_library(
-    name = "legacy",
-    srcs = [":binary"],
-    destdir = "tf-graph-app",
+    compile = False,
+    input_path = "/tf-graph-app.html",
+    output_path = "/index.html",
+    deps = [
+        ":tf_graph_app_bundle",
+    ],
 )

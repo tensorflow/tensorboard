@@ -142,25 +142,6 @@ def tensorboard_polymer_workspace():
   )
 
   web_library_external(
-      name = "org_polymer_iron_ajax",
-      licenses = ["notice"],  # BSD-3-Clause
-      sha256 = "80faddb20ac559d04fe32bf4d4652e2cf48bc0bb7567af665ebcabfafd85c557",
-      urls = [
-          "http://mirror.tensorflow.org/github.com/PolymerElements/iron-ajax/archive/v2.1.3.tar.gz",
-          "https://github.com/PolymerElements/iron-ajax/archive/v2.1.3.tar.gz",
-      ],
-      strip_prefix = "iron-ajax-2.1.3",
-      path = "/iron-ajax",
-      srcs = [
-          "iron-ajax.html",
-          "iron-request.html",
-      ],
-      deps = [
-          "@org_polymer",
-      ],
-  )
-
-  web_library_external(
       name = "org_polymer_iron_autogrow_textarea",
       licenses = ["notice"],  # BSD-3-Clause
       sha256 = "a6a20edde3621f6d99d5a1ec9f4ba499d02d9d8d74ddf95e29bf0966fc55e812",
@@ -1173,8 +1154,8 @@ def tensorboard_polymer_workspace():
       ],
       strip_prefix = "paper-styles-2.1.0",
       path = "/paper-styles",
+      # Deliberately omitting "classes/global.html" from srcs below.
       srcs = [
-          "classes/global.html",
           "classes/shadow.html",
           "classes/typography.html",
           "color.html",

@@ -11,13 +11,13 @@ request is expected to be passed (properly escaped) in a URL query parameter
 named 'request'.
 
 ### Notes:
-1. Per Tensorboard's conventions, each end-point has a "data/plugin/hparams"
+1. Per TensorBoard's conventions, each end-point has a "data/plugin/hparams"
 prefix. This prefix can be configured to other values, if required.
 
-2. Currently, a single Tensorboard UI window supports only one
+2. Currently, a single TensorBoard UI window supports only one
 experiment, but the API below accepts an experiment name required to support
 multiple experiments in the future. It is up to the API server backing the
-2. Although a single Tensorboard UI window currently supports only one
+2. Although a single TensorBoard UI window currently supports only one
 experiment, the API below accepts an experiment name required to support
 multiple experiments in the future. It is up to the API server backing the
 plugin to respect the experiment name.

@@ -1,28 +1,17 @@
-package(default_visibility = ["//visibility:public"])
+load("//tensorboard/defs:defs.bzl", "tf_ts_library")
 
-load("//tensorboard/defs:web.bzl", "tf_web_library")
-load("//tensorboard/defs:defs.bzl", "tensorboard_webcomponent_library")
+package(default_visibility = ["//tensorboard:internal"])
 
-licenses(["notice"])  # Apache 2.0
+licenses(["notice"])
 
-tf_web_library(
+tf_ts_library(
     name = "tf_hparams_backend",
     srcs = [
-        "tf-hparams-backend.html",
+        "tf-hparams-backend.ts",
     ],
-    path = "/tf-hparams-backend",
+    strict_checks = False,
     visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/components/tf_backend",
-    ],
-)
-
-tensorboard_webcomponent_library(
-    name = "legacy",
-    srcs = [":tf_hparams_backend"],
-    visibility = ["//visibility:public"],
-    destdir = "tf-hparams-backend",
-    deps = [
-        "//third_party/tensorboard/components/tf_backend:legacy",
     ],
 )

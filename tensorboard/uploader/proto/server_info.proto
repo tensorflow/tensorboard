@@ -8,11 +8,21 @@ package tensorboard.service;
 message ServerInfoRequest {
   // Client-side TensorBoard version, per `tensorboard.version.VERSION`.
   string version = 1;
+  // Information about the plugins for which the client wishes to upload data.
+  //
+  // If specified then the list of plugins will be confirmed by the server and
+  // echoed in the PluginControl.allowed_plugins field. Otherwise the server
+  // will return the default set of plugins it supports.
+  //
+  // If one of the plugins is not supported by the server then it will respond
+  // with compatibility verdict VERDICT_ERROR.
+  PluginSpecification plugin_specification = 2;
 }
 
 message ServerInfoResponse {
-  // Primary bottom-line: is the server compatible with the client, and is
-  // there anything that the end user should be aware of?
+  // Primary bottom-line: is the server compatible with the client, can it
+  // serve its request, and is there anything that the end user should be
+  // aware of?
   Compatibility compatibility = 1;
   // Identifier for a gRPC server providing the `TensorBoardExporterService` and
   // `TensorBoardWriterService` services (under the `tensorboard.service` proto
@@ -20,6 +30,26 @@ message ServerInfoResponse {
   ApiServer api_server = 2;
   // How to generate URLs to experiment pages.
   ExperimentUrlFormat url_format = 3;
+  // Information about the plugins for which data should be uploaded.
+  //
+  // If PluginSpecification.requested_plugins is specified then
+  // that list of plugins will be confirmed by the server and echoed in the
+  // the response. Otherwise the server will return the default set of
+  // plugins it supports.
+  //
+  // The client should only upload data for the plugins in the response even
+  // if it is capable of uploading more data.
+  PluginControl plugin_control = 4;
+  // Limits on the upload process that the client should honor.
+  // This may include limits on data size, chunk size, records per request,
+  // request rate, bandwidth, etc.  The server may enforce such limits, in which
+  // case the values reported here should be kept in sync.  Providing these
+  // limits in advance allows the client to avoid triggering server errors (both
+  // through more efficent operation and by earlier detection of real error
+  // conditions), and to print better error messages.
+  // If this field is not set, the client should choose reasonable default
+  // values to guide its behavior.
+  UploadLimits upload_limits = 5;
 }
 
 enum CompatibilityVerdict {
@@ -58,4 +88,51 @@ message ExperimentUrlFormat {
   // Placeholder string that should be replaced with an actual experiment ID.
   // (See docs for `template` field.)
   string id_placeholder = 2;
+}
+
+message PluginSpecification {
+  // Plugins for which the client wishes to upload data. These are plugin names
+  // as stored in the the `SummaryMetadata.plugin_data.plugin_name` proto
+  // field.
+  repeated string upload_plugins = 2;
+}
+
+message PluginControl {
+  // Plugins for which data should be uploaded. These are plugin names as
+  // stored in the the `SummaryMetadata.plugin_data.plugin_name` proto field.
+  repeated string allowed_plugins = 1;
+}
+
+message UploadLimits {
+  // The maximum allowed WriteScalar request size, in bytes.
+  // If this is 0 or unset, client should use a reasonable default value.
+  // If this is negative, no scalars should be uploaded.
+  int64 max_scalar_request_size = 3;
+  // The maximum allowed WriteTensor request size, in bytes.
+  // If this is 0 or unset, client should use a reasonable default value.
+  // If this is negative, no tensors should be uploaded.
+  int64 max_tensor_request_size = 4;
+  // The maximum allowed WriteBlob request size, in bytes.
+  // If this is 0 or unset, client should use a reasonable default value.
+  // If this is negative, no blobs should be uploaded.
+  int64 max_blob_request_size = 5;
+
+  // The minimum interval between WriteScalar requests, in milliseconds.
+  // If this is 0 or unset, client should use a reasonable default value.
+  int64 min_scalar_request_interval = 6;
+  // The minimum interval between WriteTensor requests, in milliseconds.
+  // If this is 0 or unset, client should use a reasonable default value.
+  int64 min_tensor_request_interval = 7;
+  // The minimum interval between WriteBlob requests, in milliseconds.
+  // If this is 0 or unset, client should use a reasonable default value.
+  int64 min_blob_request_interval = 8;
+
+  // The maximum allowed size for blob uploads.
+  // If this is 0 or unset, client should use a reasonable default value.
+  // If this is negative, no blobs should be uploaded.
+  int64 max_blob_size = 1;
+  // The maximum allowed size for tensor point uploads.
+  // If this is 0 or unset, client should use a reasonable default value.
+  // If this is negative, no blobs should be uploaded.
+  int64 max_tensor_point_size = 2;
 }

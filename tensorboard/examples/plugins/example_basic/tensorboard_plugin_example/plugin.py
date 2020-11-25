@@ -21,7 +21,6 @@ from __future__ import print_function
 import json
 import os
 
-import numpy as np
 import six
 from tensorboard.plugins import base_plugin
 from tensorboard.util import tensor_util
@@ -101,9 +100,9 @@ class ExamplePlugin(base_plugin.TBPlugin):
             raise werkzeug.exceptions.BadRequest("Must specify run and tag")
         try:
             data = [
-                np.asscalar(
-                    tensor_util.make_ndarray(event.tensor_proto)
-                ).decode("utf-8")
+                tensor_util.make_ndarray(event.tensor_proto)
+                .item()
+                .decode("utf-8")
                 for event in self._multiplexer.Tensors(run, tag)
             ]
         except KeyError:

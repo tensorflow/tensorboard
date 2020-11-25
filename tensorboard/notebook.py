@@ -23,9 +23,9 @@ from __future__ import print_function
 import datetime
 import errno
 import json
+import os
 import random
 import shlex
-import sys
 import textwrap
 import time
 
@@ -65,7 +65,7 @@ def _get_context():
     # returned by `IPython.get_ipython` does not have a `get_trait`
     # method.
     try:
-        import google.colab
+        import google.colab  # noqa: F401
         import IPython
     except ImportError:
         pass
@@ -345,7 +345,8 @@ def _display_colab(port, height, display_handle):
 
     shell = """
         (async () => {
-            const url = await google.colab.kernel.proxyPort(%PORT%, {"cache": true});
+            const url = new URL(await google.colab.kernel.proxyPort(%PORT%, {'cache': true}));
+            url.searchParams.set('tensorboardColab', 'true');
             const iframe = document.createElement('iframe');
             iframe.src = url;
             iframe.setAttribute('width', '100%');
@@ -378,18 +379,35 @@ def _display_ipython(port, height, display_handle):
       <script>
         (function() {
           const frame = document.getElementById(%JSON_ID%);
-          const url = new URL("/", window.location);
-          url.port = %PORT%;
+          const url = new URL(%URL%, window.location);
+          const port = %PORT%;
+          if (port) {
+            url.port = port;
+          }
           frame.src = url;
         })();
       </script>
-  """
-    replacements = [
-        ("%HTML_ID%", html_escape(frame_id, quote=True)),
-        ("%JSON_ID%", json.dumps(frame_id)),
-        ("%PORT%", "%d" % port),
-        ("%HEIGHT%", "%d" % height),
-    ]
+    """
+    proxy_url = os.environ.get("TENSORBOARD_PROXY_URL")
+    if proxy_url is not None:
+        # Allow %PORT% in $TENSORBOARD_PROXY_URL
+        proxy_url = proxy_url.replace("%PORT%", "%d" % port)
+        replacements = [
+            ("%HTML_ID%", html_escape(frame_id, quote=True)),
+            ("%JSON_ID%", json.dumps(frame_id)),
+            ("%HEIGHT%", "%d" % height),
+            ("%PORT%", "0"),
+            ("%URL%", json.dumps(proxy_url)),
+        ]
+    else:
+        replacements = [
+            ("%HTML_ID%", html_escape(frame_id, quote=True)),
+            ("%JSON_ID%", json.dumps(frame_id)),
+            ("%HEIGHT%", "%d" % height),
+            ("%PORT%", "%d" % port),
+            ("%URL%", json.dumps("/")),
+        ]
+
     for (k, v) in replacements:
         shell = shell.replace(k, v)
     iframe = IPython.display.HTML(shell)

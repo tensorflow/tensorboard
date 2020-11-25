@@ -7,7 +7,7 @@
 
 package(default_visibility = ["//tensorboard:internal"])
 
-licenses(["notice"])  # Apache 2.0
+licenses(["notice"])
 
 sh_test(
     name = "smoke_test",

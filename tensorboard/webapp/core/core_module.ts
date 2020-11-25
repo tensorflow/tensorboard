@@ -16,16 +16,30 @@ import {NgModule} from '@angular/core';
 import {StoreModule} from '@ngrx/store';
 import {EffectsModule} from '@ngrx/effects';
 
+import {TBServerDataSourceModule} from '../webapp_data_source/tb_server_data_source_module';
+
 import {reducers} from './store';
 import {CoreEffects} from './effects';
 import {CORE_FEATURE_KEY} from './store/core_types';
-import {TBServerDataSourceModule} from '../webapp_data_source/tb_server_data_source_module';
+import {
+  CORE_STORE_CONFIG_TOKEN,
+  getConfig,
+} from './store/core_initial_state_provider';
+import {DeepLinkModule} from '../deeplink/deeplink_module';
+import {HashDeepLinker} from '../deeplink';
 
 @NgModule({
   imports: [
-    TBServerDataSourceModule,
-    StoreModule.forFeature(CORE_FEATURE_KEY, reducers),
     EffectsModule.forFeature([CoreEffects]),
+    StoreModule.forFeature(CORE_FEATURE_KEY, reducers, CORE_STORE_CONFIG_TOKEN),
+    TBServerDataSourceModule,
+  ],
+  providers: [
+    {
+      provide: CORE_STORE_CONFIG_TOKEN,
+      deps: [HashDeepLinker],
+      useFactory: getConfig,
+    },
   ],
 })
 export class CoreModule {}

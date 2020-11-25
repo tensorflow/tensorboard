@@ -1,10 +1,10 @@
 # Description:
 # TensorBoard, a dashboard for investigating TensorFlow
 
-package(default_visibility = [":internal"])
-
 load("//tensorboard/defs:web.bzl", "tf_web_library")
 load("//tensorboard/defs:zipper.bzl", "tensorboard_zip_file")
+
+package(default_visibility = [":internal"])
 
 licenses(["notice"])
 
@@ -16,20 +16,27 @@ package_group(
 )
 
 # The standard TensorBoard binary that serves the webapp.
+# The two //tensorboard/summary lines are to suppress an
+# annoying startup warning emitted by TensorFlow that
+# "Limited tf.compat.v2.summary API due to missing TensorBoard
+# installation.
 py_binary(
     name = "tensorboard",
     srcs = ["main.py"],
     main = "main.py",
-    srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
+    srcs_version = "PY3",
     deps = [
         ":default",
         ":dynamic_plugins",
+        ":lib",
         ":program",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/plugins:base_plugin",
-        "//tensorboard/uploader:uploader_main_lib",
+        "//tensorboard/summary",  # Suppress TF startup warning
+        "//tensorboard/summary:tf_summary",  # Suppress TF startup warning
+        "//tensorboard/uploader:uploader_subcommand",
         "//tensorboard/util:tb_logging",
+        "//tensorboard/util:timing",  # non-strict dep, for patching convenience
     ],
 )
 
@@ -38,15 +45,32 @@ py_binary(
 py_library(
     name = "lib",
     srcs = ["__init__.py"],
-    srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
+    srcs_version = "PY3",
+    visibility = ["//tensorboard:internal"],
     deps = [
         ":errors",
-        ":lazy",
+        ":lib_init_only",
         ":notebook",
         ":program",
+        "//tensorboard/data:lib_init_only",
         "//tensorboard/summary",
         "//tensorboard/summary/writer",
+    ],
+)
+
+# The dependencies needed to initialize the `tensorboard` module itself,
+# which are not sufficient to resolve all of its lazy imports. Use only
+# if you're intending to link in a proper subset of TensorBoard's public
+# API, you're linking in that subset explicitly in your downstream
+# target, and you know what you're doing.
+py_library(
+    name = "lib_init_only",
+    srcs = ["__init__.py"],
+    srcs_version = "PY3",
+    visibility = ["//tensorboard:internal"],
+    deps = [
+        ":lazy",
+        ":version",
     ],
 )
 
@@ -54,7 +78,7 @@ py_test(
     name = "lib_test",
     size = "small",
     srcs = ["lib_test.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     tags = ["support_notf"],
     visibility = ["//tensorboard:internal"],
     deps = [
@@ -64,15 +88,58 @@ py_test(
 )
 
 py_library(
+    name = "auth",
+    srcs = ["auth.py"],
+    srcs_version = "PY3",
+    deps = [
+        "@org_pythonhosted_six",
+    ],
+)
+
+py_test(
+    name = "auth_test",
+    size = "small",
+    srcs = ["auth_test.py"],
+    srcs_version = "PY3",
+    tags = ["support_notf"],
+    deps = [
+        ":auth",
+        "//tensorboard:test",
+    ],
+)
+
+py_library(
+    name = "context",
+    srcs = ["context.py"],
+    srcs_version = "PY3",
+    deps = [
+        ":auth",
+    ],
+)
+
+py_test(
+    name = "context_test",
+    size = "small",
+    srcs = ["context_test.py"],
+    srcs_version = "PY3",
+    tags = ["support_notf"],
+    deps = [
+        ":auth",
+        ":context",
+        "//tensorboard:test",
+    ],
+)
+
+py_library(
     name = "errors",
     srcs = ["errors.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
 )
 
 py_test(
     name = "errors_test",
     srcs = ["errors_test.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         ":errors",
         ":test",
@@ -82,7 +149,7 @@ py_test(
 py_library(
     name = "manager",
     srcs = ["manager.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     visibility = ["//tensorboard:internal"],
     deps = [
         ":version",
@@ -95,7 +162,7 @@ py_test(
     name = "manager_test",
     size = "small",
     srcs = ["manager_test.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     tags = ["support_notf"],
     visibility = ["//tensorboard:internal"],
     deps = [
@@ -120,7 +187,7 @@ py_test(
     # high parallelism; TensorBoard subprocess time out instead of
     # launching successfully.
     flaky = True,
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     visibility = ["//tensorboard:internal"],
     deps = [
         ":manager",
@@ -133,7 +200,7 @@ py_test(
 py_library(
     name = "notebook",
     srcs = ["notebook.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     visibility = ["//visibility:public"],
     deps = [
         ":manager",
@@ -143,14 +210,14 @@ py_library(
 py_library(
     name = "program",
     srcs = ["program.py"],
-    srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
+    srcs_version = "PY3",
     deps = [
         ":manager",
         ":version",
         "//tensorboard:expect_absl_flags_installed",
         "//tensorboard:expect_absl_logging_installed",
         "//tensorboard/backend:application",
+        "//tensorboard/backend/event_processing:data_ingester",
         "//tensorboard/backend/event_processing:event_file_inspector",
         "//tensorboard/util:argparse_util",
         "@org_pocoo_werkzeug",
@@ -162,17 +229,17 @@ py_test(
     name = "program_test",
     size = "small",
     srcs = ["program_test.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     tags = ["support_notf"],
     deps = [
         ":default",
         ":program",
         ":test",
-        "//tensorboard/backend:application",
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/plugins/core:core_plugin",
         "@org_pocoo_werkzeug",
         "@org_pythonhosted_mock",
+        "@org_pythonhosted_six",
     ],
 )
 
@@ -180,7 +247,7 @@ py_library(
     name = "test",
     testonly = 1,
     srcs = ["test.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         "//tensorboard:expect_absl_testing_absltest_installed",
         "//tensorboard/util:tb_logging",
@@ -192,33 +259,33 @@ py_library(
     name = "default",
     srcs = ["default.py"],
     data = ["webfiles.zip"],
-    srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
+    srcs_version = "PY3",
     deps = [
         "//tensorboard:expect_pkg_resources_installed",
-        "//tensorboard/plugins:base_plugin",
+        "//tensorboard/backend:experimental_plugin",
         "//tensorboard/plugins/audio:audio_plugin",
-        "//tensorboard/plugins/beholder:beholder_plugin_loader",
         "//tensorboard/plugins/core:core_plugin",
         "//tensorboard/plugins/custom_scalar:custom_scalars_plugin",
-        "//tensorboard/plugins/debugger:debugger_plugin_loader",
         "//tensorboard/plugins/debugger_v2:debugger_v2_plugin",
         "//tensorboard/plugins/distribution:distributions_plugin",
         "//tensorboard/plugins/graph:graphs_plugin",
         "//tensorboard/plugins/histogram:histograms_plugin",
         "//tensorboard/plugins/hparams:hparams_plugin",
         "//tensorboard/plugins/image:images_plugin",
-        "//tensorboard/plugins/interactive_inference:interactive_inference_plugin_loader",
         "//tensorboard/plugins/mesh:mesh_plugin",
+        "//tensorboard/plugins/metrics:metrics_plugin",
+        "//tensorboard/plugins/npmi:npmi_plugin",
         "//tensorboard/plugins/pr_curve:pr_curves_plugin",
-        "//tensorboard/plugins/profile:profile_plugin_loader",
+        "//tensorboard/plugins/profile_redirect:profile_redirect_plugin",
         "//tensorboard/plugins/scalar:scalars_plugin",
         "//tensorboard/plugins/text:text_plugin",
+        "//tensorboard/plugins/text_v2:text_v2_plugin",
     ],
 )
 
 py_library(
     name = "dynamic_plugins",
+    srcs_version = "PY3",
     deps = [
         "//tensorboard/plugins/projector:projector_plugin",
     ],
@@ -228,7 +295,7 @@ py_test(
     name = "default_test",
     size = "small",
     srcs = ["default_test.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     tags = ["support_notf"],
     deps = [
         ":default",
@@ -242,15 +309,14 @@ py_test(
 py_library(
     name = "version",
     srcs = ["version.py"],
-    srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
+    srcs_version = "PY3",
 )
 
 py_test(
     name = "version_test",
     size = "small",
     srcs = ["version_test.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     tags = ["support_notf"],
     deps = [
         ":test",
@@ -259,158 +325,108 @@ py_test(
     ],
 )
 
-config_setting(
-    name = "dev_build",
-    # consider changing this to fastbuild
-    values = {"compilation_mode": "dbg"},
-)
-
 tensorboard_zip_file(
     name = "webfiles",
     deps = [":assets"],
 )
 
-# TODO(stephanwlee): add ng_index.html to the srcs when it is ready for mass consumption.
 tf_web_library(
     name = "assets",
     srcs = [
-        "//tensorboard/components:index.html",
-        "//tensorboard/components:index.js",
-        "//tensorboard/components:trace_viewer_index.html",
-        "//tensorboard/components:trace_viewer_index.js",
-    ] + select({
-        "//tensorboard:dev_build": [
-            "//tensorboard/webapp:ng_index.html",
-            "//tensorboard/webapp:ng_index.js",
-            "//tensorboard/webapp:svg_bundle",
-        ],
-        "//conditions:default": [],
-    }),
+        "//tensorboard/webapp:index.html",
+        "//tensorboard/webapp:index.js",
+        "//tensorboard/webapp:svg_bundle",
+        "//tensorboard/webapp/widgets/line_chart_v2/lib/worker:chart_worker.js",
+    ],
     path = "/",
     deps = [
+        "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/source_code/monaco:monaco_editor",
+        "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/source_code/monaco:monaco_languages",
         "@com_google_fonts_roboto",
     ],
 )
 
-py_library(
-    name = "expect_numpy_installed",
-    # This is a dummy rule used as a numpy dependency in open-source.
-    # We expect numpy to already be installed on the system, e.g. via
-    # `pip install numpy`
-    visibility = ["//visibility:public"],
-)
+# This is a dummy rule used as a numpy dependency in open-source.
+# We expect numpy to already be installed on the system, e.g. via
+# `pip install numpy`
+py_library(name = "expect_numpy_installed")
 
-py_library(
-    name = "expect_futures_installed",
-    # This is a dummy rule used as a futures dependency in open-source.
-    # We expect futures to already be installed on the system, e.g. via
-    # `pip install futures`
-    visibility = ["//visibility:public"],
-)
+# This is a dummy rule used as a futures dependency in open-source.
+# We expect futures to already be installed on the system, e.g. via
+# `pip install futures`
+py_library(name = "expect_futures_installed")
 
-py_library(
-    name = "expect_grpc_installed",
-    # This is a dummy rule used as a grpc dependency in open-source.
-    # We expect grpc to already be installed on the system, e.g. via
-    # `pip install grpcio`
-    visibility = ["//visibility:public"],
-)
+# This is a dummy rule used as a grpc dependency in open-source.
+# We expect grpc to already be installed on the system, e.g. via
+# `pip install grpcio`
+py_library(name = "expect_grpc_installed")
 
-py_library(
-    name = "expect_grpc_testing_installed",
-    # This is a dummy rule used as a grpc_testing dependency in open-source.
-    # We expect grpc_testing to already be installed on the system, e.g. via
-    # `pip install grpcio_testing`
-    visibility = ["//visibility:public"],
-)
+# This is a dummy rule used as a grpc_testing dependency in open-source.
+# We expect grpc_testing to already be installed on the system, e.g. via
+# `pip install grpcio_testing`
+py_library(name = "expect_grpc_testing_installed")
 
-py_library(
-    name = "expect_sqlite3_installed",
-    # This is a dummy rule used as a sqlite3 dependency in open-source.
-    # We expect sqlite3 to already be present, as it is part of the standard
-    # library.
-    visibility = ["//visibility:public"],
-)
+# This is a dummy rule used as a TensorFlow dependency in open-source.
+# We expect TensorFlow to already be installed on the system, e.g. via
+# `pip install tensorflow`
+py_library(name = "expect_tensorflow_installed")
 
-py_library(
-    name = "expect_tensorflow_installed",
-    # This is a dummy rule used as a TensorFlow dependency in open-source.
-    # We expect TensorFlow to already be installed on the system, e.g. via
-    # `pip install tensorflow`
-    visibility = ["//visibility:public"],
-)
+# This is a dummy rule used as a TensorFlow Datasets dependency in open-source.
+# We expect TensorFlow Datasets to already be installed on the system, e.g. via
+# `pip install tensorflow_datasets`
+py_library(name = "expect_tensorflow_datasets_installed")
 
-py_library(
-    name = "expect_absl_app_installed",
-    # This is a dummy rule used as a absl-py dependency in open-source.
-    # We expect absl-py to already be installed on the system, e.g. via
-    # `pip install absl-py`
-    visibility = ["//visibility:public"],
-)
+# This is a dummy rule used as a absl-py dependency in open-source.
+# We expect absl-py to already be installed on the system, e.g. via
+# `pip install absl-py`
+py_library(name = "expect_absl_app_installed")
 
-py_library(
-    name = "expect_absl_flags_installed",
-    # This is a dummy rule used as a absl-py dependency in open-source.
-    # We expect absl-py to already be installed on the system, e.g. via
-    # `pip install absl-py`
-    visibility = ["//visibility:public"],
-)
+# This is a dummy rule used as a absl-py dependency in open-source.
+# We expect absl-py to already be installed on the system, e.g. via
+# `pip install absl-py`
+py_library(name = "expect_absl_flags_installed")
 
-py_library(
-    name = "expect_absl_flags_argparse_flags_installed",
-    # This is a dummy rule used as a absl-py dependency in open-source.
-    # We expect absl-py to already be installed on the system, e.g. via
-    # `pip install absl-py`
-    visibility = ["//visibility:public"],
-)
+# This is a dummy rule used as a absl-py dependency in open-source.
+# We expect absl-py to already be installed on the system, e.g. via
+# `pip install absl-py`
+py_library(name = "expect_absl_flags_argparse_flags_installed")
 
-py_library(
-    name = "expect_absl_logging_installed",
-    # This is a dummy rule used as a absl-py dependency in open-source.
-    # We expect absl-py to already be installed on the system, e.g. via
-    # `pip install absl-py`
-    visibility = ["//visibility:public"],
-)
+# This is a dummy rule used as a absl-py dependency in open-source.
+# We expect absl-py to already be installed on the system, e.g. via
+# `pip install absl-py`
+py_library(name = "expect_absl_logging_installed")
 
-py_library(
-    name = "expect_absl_testing_absltest_installed",
-    # This is a dummy rule used as a absl-py dependency in open-source.
-    # We expect absl-py to already be installed on the system, e.g. via
-    # `pip install absl-py`
-    visibility = ["//visibility:public"],
-)
+# This is a dummy rule used as a absl-py dependency in open-source.
+# We expect absl-py to already be installed on the system, e.g. via
+# `pip install absl-py`
+py_library(name = "expect_absl_testing_absltest_installed")
 
-py_library(
-    name = "expect_google_auth_installed",
-    # This is a dummy rule used as a google_auth dependency in open-source.
-    # We expect google_auth to already be installed on the system, e.g., via
-    # `pip install google-auth`.
-    visibility = ["//visibility:public"],
-)
+# This is a dummy rule used as a google_auth dependency in open-source.
+# We expect google_auth to already be installed on the system, e.g., via
+# `pip install google-auth`.
+py_library(name = "expect_google_auth_installed")
 
-py_library(
-    name = "expect_google_auth_oauthlib_installed",
-    # This is a dummy rule used as a google_auth oauthlib_dependency in open-source.
-    # We expect google_auth_oauthlib to already be installed on the system, e.g., via
-    # `pip install google-auth-oauthlib`.
-    visibility = ["//visibility:public"],
-)
+# This is a dummy rule used as a google_auth oauthlib_dependency in open-source.
+# We expect google_auth_oauthlib to already be installed on the system, e.g., via
+# `pip install google-auth-oauthlib`.
+py_library(name = "expect_google_auth_oauthlib_installed")
 
-py_library(
-    name = "expect_pkg_resources_installed",
-    # This is a dummy rule used as a pkg-resources dependency in open-source.
-    # We expect pkg-resources to already be installed on the system, e.g., via
-    # `pip install setuptools`.
-    visibility = ["//visibility:public"],
-)
+# This is a dummy rule used as a pkg-resources dependency in open-source.
+# We expect pkg-resources to already be installed on the system, e.g., via
+# `pip install setuptools`.
+py_library(name = "expect_pkg_resources_installed")
 
-py_library(
-    name = "expect_requests_installed",
-    # This is a dummy rule used as a requests dependency in open-source.
-    # We expect requests to already be installed on the system, e.g., via
-    # `pip install requests`.
-    visibility = ["//visibility:public"],
-)
+# This is a dummy rule used as a requests dependency in open-source.
+# We expect requests to already be installed on the system, e.g., via
+# `pip install requests`.
+py_library(name = "expect_requests_installed")
+
+# This is a dummy rule used as a pandas dependency in open-source.
+# We expect pandas to already be installed on the system, e.g. via
+# `pip install pandas`.
+# NOTE: Unlike other parallel dependencies in this file, pandas is an
+# optional dependency.
+py_library(name = "expect_pandas_installed")
 
 filegroup(
     name = "tf_web_library_default_typings",
@@ -426,16 +442,15 @@ filegroup(
 py_library(
     name = "data_compat",
     srcs = ["data_compat.py"],
-    srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
+    srcs_version = "PY3",
     deps = [
-        "//tensorboard/compat:tensorflow",
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/plugins/audio:metadata",
         "//tensorboard/plugins/histogram:metadata",
         "//tensorboard/plugins/image:metadata",
         "//tensorboard/plugins/scalar:metadata",
         "//tensorboard/util:tensor_util",
+        "@com_google_protobuf//:protobuf_python",
     ],
 )
 
@@ -443,7 +458,7 @@ py_test(
     name = "data_compat_test",
     size = "small",
     srcs = ["data_compat_test.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         ":data_compat",
         "//tensorboard:expect_numpy_installed",
@@ -461,10 +476,55 @@ py_test(
     ],
 )
 
+py_library(
+    name = "dataclass_compat",
+    srcs = ["dataclass_compat.py"],
+    srcs_version = "PY3",
+    deps = [
+        "//tensorboard/compat/proto:protos_all_py_pb2",
+        "//tensorboard/plugins/audio:metadata",
+        "//tensorboard/plugins/graph:metadata",
+        "//tensorboard/plugins/histogram:metadata",
+        "//tensorboard/plugins/hparams:metadata",
+        "//tensorboard/plugins/image:metadata",
+        "//tensorboard/plugins/pr_curve:metadata",
+        "//tensorboard/plugins/scalar:metadata",
+        "//tensorboard/plugins/text:metadata",
+        "//tensorboard/util:tensor_util",
+    ],
+)
+
+py_test(
+    name = "dataclass_compat_test",
+    size = "small",
+    srcs = ["dataclass_compat_test.py"],
+    srcs_version = "PY3",
+    deps = [
+        ":dataclass_compat",
+        "//tensorboard:expect_numpy_installed",
+        "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard/backend/event_processing:event_file_loader",
+        "//tensorboard/compat/proto:protos_all_py_pb2",
+        "//tensorboard/plugins/audio:metadata",
+        "//tensorboard/plugins/audio:summary",
+        "//tensorboard/plugins/graph:metadata",
+        "//tensorboard/plugins/histogram:metadata",
+        "//tensorboard/plugins/histogram:summary",
+        "//tensorboard/plugins/hparams:metadata",
+        "//tensorboard/plugins/hparams:summary_v2",
+        "//tensorboard/plugins/pr_curve:metadata",
+        "//tensorboard/plugins/pr_curve:summary",
+        "//tensorboard/plugins/scalar:metadata",
+        "//tensorboard/plugins/scalar:summary",
+        "//tensorboard/util:tensor_util",
+        "//tensorboard/util:test_util",
+    ],
+)
+
 py_binary(
     name = "encode_png_benchmark",
     srcs = ["encode_png_benchmark.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         "//tensorboard:expect_absl_logging_installed",
         "//tensorboard:expect_numpy_installed",
@@ -478,9 +538,10 @@ py_binary(
 py_library(
     name = "plugin_util",
     srcs = ["plugin_util.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     visibility = ["//visibility:public"],
     deps = [
+        ":context",
         "//tensorboard/backend:experiment_id",
         "@org_mozilla_bleach",
         "@org_pythonhosted_markdown",
@@ -492,9 +553,10 @@ py_test(
     name = "plugin_util_test",
     size = "small",
     srcs = ["plugin_util_test.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     tags = ["support_notf"],
     deps = [
+        ":context",
         ":plugin_util",
         ":test",
         "//tensorboard/backend:experiment_id",
@@ -511,14 +573,14 @@ alias(
 py_library(
     name = "lazy",
     srcs = ["lazy.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
 )
 
 py_test(
     name = "lazy_test",
     size = "small",
     srcs = ["lazy_test.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     tags = ["support_notf"],
     deps = [
         ":lazy",

@@ -1,43 +1,47 @@
+load("//tensorboard/defs:defs.bzl", "tf_ts_library")
+
 package(default_visibility = ["//tensorboard:internal"])
 
-load("//tensorboard/defs:defs.bzl", "tensorboard_webcomponent_library")
-load("//tensorboard/defs:web.bzl", "tf_web_library")
+licenses(["notice"])
 
-licenses(["notice"])  # Apache 2.0
+tf_ts_library(
+    name = "dragZoomInteraction",
+    srcs = [
+        "dragZoomInteraction.ts",
+    ],
+    strict_checks = False,
+    deps = [
+        "@npm//@types/d3",
+        "@npm//d3",
+        "@npm//plottable",
+    ],
+)
 
-tf_web_library(
+tf_ts_library(
     name = "vz_line_chart2",
     srcs = [
         "line-chart.ts",
         "line-chart-exporter.ts",
         "linear-scale.ts",
         "log-scale.ts",
-        "panZoomDragLayer.html",
+        "panZoomDragLayer.html.ts",
         "panZoomDragLayer.ts",
         "tf-scale.ts",
-        "vz-line-chart2.html",
         "vz-line-chart2.ts",
     ],
-    path = "/vz-line-chart2",
-    visibility = ["//visibility:public"],
+    strict_checks = False,
     deps = [
-        "//tensorboard/components/tf_imports:d3",
-        "//tensorboard/components/tf_imports:lodash",
-        "//tensorboard/components/tf_imports:plottable",
-        "//tensorboard/components/tf_imports:polymer",
+        ":dragZoomInteraction",
+        "//tensorboard/components/polymer:legacy_element_mixin",
+        "//tensorboard/components/polymer:plottable_style",
+        "//tensorboard/components/polymer:register_style_dom_module",
         "//tensorboard/components/vz_chart_helpers",
-        "//tensorboard/components/vz_line_chart:dragZoomInteraction",
-    ],
-)
-
-tensorboard_webcomponent_library(
-    name = "legacy",
-    srcs = [":vz_line_chart2"],
-    destdir = "vz-line-chart2",
-    deps = [
-        "//tensorboard/components/tf_imports:polymer_lib",
-        "//tensorboard/components/tf_imports_google:lib",
-        "//tensorboard/components/vz_chart_helpers:legacy",
-        "//tensorboard/components/vz_line_chart:dragZoomInteraction_legacy",
+        "@npm//@polymer/decorators",
+        "@npm//@polymer/polymer",
+        "@npm//@types/d3",
+        "@npm//@types/lodash",
+        "@npm//d3",
+        "@npm//lodash",
+        "@npm//plottable",
     ],
 )

@@ -1,0 +1,176 @@
+load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_ts_library")
+
+package(default_visibility = ["//tensorboard:internal"])
+
+licenses(["notice"])
+
+tf_ng_module(
+    name = "app_routing",
+    srcs = [
+        "app_routing_module.ts",
+    ],
+    deps = [
+        ":location",
+        ":programmatical_navigation_module",
+        ":route_registry",
+        "//tensorboard/webapp/app_routing/effects",
+        "//tensorboard/webapp/app_routing/store",
+        "//tensorboard/webapp/app_routing/store:types",
+        "@npm//@angular/core",
+        "@npm//@ngrx/effects",
+        "@npm//@ngrx/store",
+    ],
+)
+
+tf_ng_module(
+    name = "location",
+    srcs = [
+        "location.ts",
+        "location_module.ts",
+    ],
+    deps = [
+        ":internal_utils",
+        ":types",
+        "@npm//@angular/core",
+        "@npm//rxjs",
+    ],
+)
+
+tf_ng_module(
+    name = "route_registry",
+    srcs = [
+        "route_registry_module.ts",
+        "route_registry_types.ts",
+    ],
+    deps = [
+        ":route_config",
+        ":types",
+        "@npm//@angular/core",
+    ],
+)
+
+tf_ts_library(
+    name = "types",
+    srcs = [
+        "types.ts",
+    ],
+)
+
+tf_ng_module(
+    name = "programmatical_navigation_module",
+    srcs = [
+        "programmatical_navigation_module.ts",
+        "programmatical_navigation_types.ts",
+    ],
+    deps = [
+        ":types",
+        "@npm//@angular/core",
+        "@npm//@ngrx/store",
+    ],
+)
+
+tf_ng_module(
+    name = "deep_link_provider",
+    srcs = [
+        "deep_link_provider.ts",
+    ],
+    deps = [
+        ":types",
+        "//tensorboard/webapp:app_state",
+        "@npm//@angular/core",
+        "@npm//@ngrx/store",
+        "@npm//rxjs",
+    ],
+)
+
+tf_ng_module(
+    name = "route_config",
+    srcs = [
+        "route_config.ts",
+        "route_config_types.ts",
+    ],
+    deps = [
+        ":deep_link_provider",
+        ":types",
+        "@npm//@angular/core",
+    ],
+)
+
+tf_ng_module(
+    name = "route_config_test",
+    testonly = True,
+    srcs = [
+        "route_config_test.ts",
+    ],
+    deps = [
+        ":route_config",
+        ":types",
+        "@npm//@angular/core",
+        "@npm//@types/jasmine",
+    ],
+)
+
+tf_ts_library(
+    name = "route_contexted_reducer_helper",
+    srcs = [
+        "route_contexted_reducer_helper.ts",
+    ],
+    deps = [
+        ":internal_utils",
+        "//tensorboard/webapp/app_routing/actions",
+        "@npm//@ngrx/store",
+    ],
+)
+
+tf_ts_library(
+    name = "internal_utils",
+    srcs = [
+        "internal_utils.ts",
+    ],
+    visibility = [
+        "//tensorboard/webapp/app_routing:__subpackages__",
+    ],
+    deps = [":types"],
+)
+
+tf_ng_module(
+    name = "testing",
+    testonly = True,
+    srcs = [
+        "testing.ts",
+    ],
+    deps = [
+        ":location",
+        ":types",
+        "//tensorboard/webapp/app_routing/actions",
+        "@npm//@angular/core",
+        "@npm//rxjs",
+    ],
+)
+
+tf_ng_module(
+    name = "app_routing_test",
+    testonly = True,
+    srcs = [
+        "internal_utils_test.ts",
+        "location_test.ts",
+        "programmatical_navigation_module_test.ts",
+        "route_contexted_reducer_helper_test.ts",
+        "route_registry_module_test.ts",
+    ],
+    deps = [
+        ":internal_utils",
+        ":location",
+        ":programmatical_navigation_module",
+        ":route_contexted_reducer_helper",
+        ":route_registry",
+        ":testing",
+        ":types",
+        "//tensorboard/webapp/angular:expect_angular_core_testing",
+        "//tensorboard/webapp/app_routing/actions",
+        "//tensorboard/webapp/util:ngrx",
+        "@npm//@angular/core",
+        "@npm//@ngrx/store",
+        "@npm//@types/jasmine",
+    ],
+)

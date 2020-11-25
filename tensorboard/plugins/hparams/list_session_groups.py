@@ -26,6 +26,7 @@ import six
 
 from google.protobuf import struct_pb2
 
+from tensorboard.data import provider
 from tensorboard.plugins.hparams import api_pb2
 from tensorboard.plugins.hparams import error
 from tensorboard.plugins.hparams import metadata
@@ -35,20 +36,33 @@ from tensorboard.plugins.hparams import metrics
 class Handler(object):
     """Handles a ListSessionGroups request."""
 
-    def __init__(self, context, request):
+    def __init__(
+        self, request_context, backend_context, experiment_id, request
+    ):
         """Constructor.
 
         Args:
-          context: A backend_context.Context instance.
+          request_context: A tensorboard.context.RequestContext.
+          backend_context: A backend_context.Context instance.
+          experiment_id: A string, as from `plugin_util.experiment_id`.
           request: A ListSessionGroupsRequest protobuf.
         """
-        self._context = context
+        self._request_context = request_context
+        self._backend_context = backend_context
+        self._experiment_id = experiment_id
         self._request = request
         self._extractors = _create_extractors(request.col_params)
         self._filters = _create_filters(request.col_params, self._extractors)
+        # Query for all Hparams summary metadata up front to minimize calls to
+        # the underlying DataProvider.
+        self._hparams_run_to_tag_to_content = backend_context.hparams_metadata(
+            request_context, experiment_id
+        )
         # Since an context.experiment() call may search through all the runs, we
         # cache it here.
-        self._experiment = context.experiment()
+        self._experiment = backend_context.experiment_from_metadata(
+            request_context, experiment_id, self._hparams_run_to_tag_to_content
+        )
 
     def run(self):
         """Handles the request specified on construction.
@@ -72,10 +86,35 @@ class Handler(object):
         # in the 'groups_by_name' dict. We create the SessionGroup object, if this
         # is the first session of that group we encounter.
         groups_by_name = {}
-        run_to_tag_to_content = self._context.multiplexer.PluginRunToTagToContent(
-            metadata.PLUGIN_NAME
+        # The TensorBoard runs with session start info are the
+        # "sessions", which are not necessarily the runs that actually
+        # contain metrics (may be in subdirectories).
+        session_names = [
+            run
+            for (run, tags) in self._hparams_run_to_tag_to_content.items()
+            if metadata.SESSION_START_INFO_TAG in tags
+        ]
+        metric_runs = set()
+        metric_tags = set()
+        for session_name in session_names:
+            for metric in self._experiment.metric_infos:
+                metric_name = metric.name
+                (run, tag) = metrics.run_tag_from_session_and_metric(
+                    session_name, metric_name
+                )
+                metric_runs.add(run)
+                metric_tags.add(tag)
+        all_metric_evals = self._backend_context.read_last_scalars(
+            self._request_context,
+            self._experiment_id,
+            run_tag_filter=provider.RunTagFilter(
+                runs=metric_runs, tags=metric_tags
+            ),
         )
-        for (run, tag_to_content) in six.iteritems(run_to_tag_to_content):
+        for (
+            session_name,
+            tag_to_content,
+        ) in self._hparams_run_to_tag_to_content.items():
             if metadata.SESSION_START_INFO_TAG not in tag_to_content:
                 continue
             start_info = metadata.parse_session_start_info_plugin_data(
@@ -86,7 +125,9 @@ class Handler(object):
                 end_info = metadata.parse_session_end_info_plugin_data(
                     tag_to_content[metadata.SESSION_END_INFO_TAG]
                 )
-            session = self._build_session(run, start_info, end_info)
+            session = self._build_session(
+                session_name, start_info, end_info, all_metric_evals
+            )
             if session.status in self._request.allowed_statuses:
                 self._add_session(session, start_info, groups_by_name)
 
@@ -133,7 +174,7 @@ class Handler(object):
                 group.hparams[key].CopyFrom(value)
             groups_by_name[group_name] = group
 
-    def _build_session(self, name, start_info, end_info):
+    def _build_session(self, name, start_info, end_info, all_metric_evals):
         """Builds a session object."""
 
         assert start_info is not None
@@ -141,7 +182,9 @@ class Handler(object):
             name=name,
             start_time_secs=start_info.start_time_secs,
             model_uri=start_info.model_uri,
-            metric_values=self._build_session_metric_values(name),
+            metric_values=self._build_session_metric_values(
+                name, all_metric_evals
+            ),
             monitor_url=start_info.monitor_url,
         )
         if end_info is not None:
@@ -149,7 +192,7 @@ class Handler(object):
             result.end_time_secs = end_info.end_time_secs
         return result
 
-    def _build_session_metric_values(self, session_name):
+    def _build_session_metric_values(self, session_name, all_metric_evals):
         """Builds the session metric values."""
 
         # result is a list of api_pb2.MetricValue instances.
@@ -157,22 +200,20 @@ class Handler(object):
         metric_infos = self._experiment.metric_infos
         for metric_info in metric_infos:
             metric_name = metric_info.name
-            try:
-                metric_eval = metrics.last_metric_eval(
-                    self._context.multiplexer, session_name, metric_name
-                )
-            except KeyError:
+            (run, tag) = metrics.run_tag_from_session_and_metric(
+                session_name, metric_name
+            )
+            datum = all_metric_evals.get(run, {}).get(tag)
+            if not datum:
                 # It's ok if we don't find the metric in the session.
                 # We skip it here. For filtering and sorting purposes its value is None.
                 continue
-
-            # metric_eval is a 3-tuple of the form [wall_time, step, value]
             result.append(
                 api_pb2.MetricValue(
                     name=metric_name,
-                    wall_time_secs=metric_eval[0],
-                    training_step=metric_eval[1],
-                    value=metric_eval[2],
+                    wall_time_secs=datum.wall_time,
+                    training_step=datum.step,
+                    value=datum.value,
                 )
             )
         return result

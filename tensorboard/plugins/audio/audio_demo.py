@@ -271,7 +271,7 @@ def run_all(logdir, verbose=False):
     ]
     for (i, wave_constructor) in enumerate(waves):
         wave_name = wave_constructor.__name__
-        run_name = "wave:%02d,%s" % (i + 1, wave_name)
+        run_name = "%02d_%s" % (i + 1, wave_name)
         if verbose:
             print("--- Running: %s" % run_name)
         run(logdir, run_name, wave_name, wave_constructor)

@@ -1,0 +1,67 @@
+"""
+@generated
+cargo-raze crate build file.
+
+DO NOT EDIT! Replaced on runs of cargo-raze
+"""
+
+# buildifier: disable=load
+load(
+    "@io_bazel_rules_rust//rust:rust.bzl",
+    "rust_binary",
+    "rust_library",
+    "rust_test",
+)
+
+# buildifier: disable=load
+load("@bazel_skylib//lib:selects.bzl", "selects")
+
+package(default_visibility = [
+    # Public for visibility by "@raze__crate__version//" targets.
+    #
+    # Prefer access through "//third_party/rust", which limits external
+    # visibility to explicit Cargo.toml dependencies.
+    "//visibility:public",
+])
+
+licenses([
+    "notice",  # MIT from expression "MIT"
+])
+
+# Generated Targets
+
+rust_library(
+    name = "tower",
+    srcs = glob(["**/*.rs"]),
+    crate_features = [
+        "default",
+        "full",
+        "log",
+    ],
+    crate_root = "src/lib.rs",
+    crate_type = "lib",
+    edition = "2018",
+    rustc_flags = [
+        "--cap-lints=allow",
+    ],
+    tags = [
+        "cargo-raze",
+        "manual",
+    ],
+    version = "0.3.1",
+    # buildifier: leave-alone
+    deps = [
+        "@raze__futures_core__0_3_8//:futures_core",
+        "@raze__tower_buffer__0_3_0//:tower_buffer",
+        "@raze__tower_discover__0_3_0//:tower_discover",
+        "@raze__tower_layer__0_3_0//:tower_layer",
+        "@raze__tower_limit__0_3_1//:tower_limit",
+        "@raze__tower_load_shed__0_3_0//:tower_load_shed",
+        "@raze__tower_retry__0_3_0//:tower_retry",
+        "@raze__tower_service__0_3_0//:tower_service",
+        "@raze__tower_timeout__0_3_0//:tower_timeout",
+        "@raze__tower_util__0_3_1//:tower_util",
+    ],
+)
+
+# Unsupported target "builder" with type "test" omitted

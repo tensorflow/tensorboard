@@ -13,20 +13,14 @@
 # limitations under the License.
 # ==============================================================================
 """TensorBoard 3D mesh visualizer plugin."""
-# Parser directives
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-# Standard library modules
-import collections
-
-# Third-party modules
 import numpy as np
 import six
 from werkzeug import wrappers
 
-# First-party modules
 from tensorboard.backend import http_util
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.mesh import metadata

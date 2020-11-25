@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package tensorboard.service;
+
+enum BlobState {
+  // Object state is unknown. This value should never be used; it is present
+  // only as a proto3 best practice.
+  // See https://developers.google.com/protocol-buffers/docs/proto3#enum
+  BLOB_STATE_UNKNOWN = 0;
+  // Object is being written and not yet finalized.
+  BLOB_STATE_UNFINALIZED = 1;
+  // Object is finalized.
+  BLOB_STATE_CURRENT = 2;
+}
+
+message Blob {
+  // A non-empty ID for the blob.
+  string blob_id = 1;
+  BlobState state = 2;
+}
+
+message BlobSequenceEntry {
+  // Optional. If absent, this represents a "hole" in the sequence:
+  // there is expected to be a blob here, but upload has not started.
+  Blob blob = 1;
+}
+
+message BlobSequence {
+  repeated BlobSequenceEntry entries = 1;
+}

@@ -22,12 +22,16 @@ import {MatIconModule} from '@angular/material/icon';
 import {MatInputModule} from '@angular/material/input';
 
 import {SettingsButtonComponent} from './settings_button_component';
-
 import {SettingsDialogComponent} from './dialog_component';
+import {SettingsPolymerInteropContainer} from './polymer_interop_container';
 
 @NgModule({
-  declarations: [SettingsButtonComponent, SettingsDialogComponent],
-  exports: [SettingsButtonComponent],
+  declarations: [
+    SettingsButtonComponent,
+    SettingsDialogComponent,
+    SettingsPolymerInteropContainer,
+  ],
+  exports: [SettingsButtonComponent, SettingsPolymerInteropContainer],
   entryComponents: [SettingsDialogComponent],
   imports: [
     CommonModule,

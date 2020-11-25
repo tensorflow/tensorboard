@@ -1,0 +1,86 @@
+<!--
+@license
+Copyright 2020 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<div>
+  <div class="timeline-title">
+    Python Execution Timeline
+    <span class="execution-count"> ({{ numExecutions }}) </span>
+  </div>
+
+  <div class="top-level-executions">
+    <div *ngIf="numExecutions" class="navigation-section">
+      <!-- TODO(cais): Apply mat-icon-button. -->
+      <button
+        mat-button
+        class="navigation-button-left"
+        (click)="onNavigateLeft.emit()"
+      >
+        &lt;
+      </button>
+      <div class="navigation-position-info">
+        {{ scrollBeginIndex }} ~ {{ scrollBeginIndex + displayCount - 1 }} of {{
+        numExecutions }}
+      </div>
+      <!-- TODO(cais): Apply mat-icon-button. -->
+      <button
+        mat-button
+        class="navigation-button-right"
+        (click)="onNavigateRight.emit()"
+      >
+        &gt;
+      </button>
+
+      <mat-slider
+        *ngIf="scrollBeginIndexUpperLimit > 0"
+        class="timeline-slider"
+        step="1"
+        [min]="0"
+        [max]="scrollBeginIndexUpperLimit"
+        [value]="scrollBeginIndex"
+        (input)="onSliderChange.emit($event.value)"
+      ></mat-slider>
+    </div>
+
+    <div *ngIf="numExecutions" class="execution-timeline">
+      <div
+        *ngFor="let displayDigest of displayExecutionDigests; index as i;"
+        (click)="onExecutionDigestClicked.emit(i)"
+      >
+        <div
+          class="execution-digest"
+          [ngClass]="[
+            displayDigest.is_graph ? 'func-graph-execution' : '',
+            i === focusedExecutionDisplayIndex ? 'focused' : '',
+            displayFocusedAlertTypes[i] || '']"
+          title="{{displayDigest.op_type}}"
+        >
+          <!-- TODO(cais): Replace title attr with matTooltip. -->
+          {{ displayDigest.short_op_type }}
+        </div>
+      </div>
+    </div>
+
+    <ng-container
+      *ngIf="activeRunId !== null && focusedExecutionIndex !== null"
+    >
+      <tf-debugger-v2-execution-data
+        [focusedExecutionIndex]="focusedExecutionIndex"
+      >
+      </tf-debugger-v2-execution-data>
+    </ng-container>
+  </div>
+</div>

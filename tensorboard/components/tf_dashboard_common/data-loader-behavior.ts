@@ -12,145 +12,160 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-namespace tf_dashboard_common {
-  type CacheKey = string;
+import {PolymerElement} from '@polymer/polymer';
+import * as _ from 'lodash';
 
-  // NOT_LOADED is implicit
-  enum LoadState {
-    LOADING,
-    LOADED,
-  }
+import {CancelResult, Canceller} from '../tf_backend/canceller';
+import {RequestManager} from '../tf_backend/requestManager';
 
-  /**
-   * @polymerBehavior
-   */
-  export const DataLoaderBehavior = {
-    properties: {
-      active: {
-        type: Boolean,
-        observer: '_loadDataIfActive',
-      },
+type CacheKey = string;
 
-      /**
-       * A unique identifiable string. When changes, it expunges the data
-       * cache.
-       */
-      loadKey: {
-        type: String,
-        value: '',
-      },
+// NOT_LOADED is implicit
+export enum LoadState {
+  LOADING,
+  LOADED,
+}
 
-      // List of data to be loaded. By default, a datum is passed to
-      // `requestData` to fetch data. When the request resolves, invokes
-      // `loadDataCallback` with the datum and its response.
-      dataToLoad: {
-        type: Array,
-        value: () => [],
-      },
+export interface DataLoaderBehaviorInterface<Item, Data>
+  extends PolymerElement {
+  active: boolean;
+  reset(): void;
+  reload(): void;
+  dataToLoad: Item[];
+}
 
-      /**
-       * A function that takes a datum as an input and returns a unique
-       * identifiable string. Used for caching purposes.
-       */
-      getDataLoadName: {
-        type: Function,
-        value: () => (datum): CacheKey => String(datum),
-      },
+// A function that takes a list of items and asynchronously fetches the
+// data for those items. As each item loads, it should invoke the
+// `onLoad` callback with an `{item, data}` pair to update the cache.
+// After all items have finished loading, it should invoke the
+// `onFinish` callback. Conceptually, that this function accepts
+// `onLoad` and `onFinish` as arguments is as if it returned an
+// Observable-style stream of `{item, data}`-pairs, CPS-transformed.
+//
+// Used in `DataLoaderBehavior.requestData`.
+export interface RequestDataCallback<Item, Data> {
+  (
+    items: Item[],
+    onLoad: (kv: {item: Item; data: Data}) => void,
+    onFinish: () => void
+  ): void;
+}
 
-      /**
-       * A function that takes as inputs:
-       * 1. Implementing component of data-loader-behavior.
-       * 2. datum of the request.
-       * 3. The response received from the data URL.
-       * This function will be called when a response from a request to that
-       * data URL is successfully received.
-       */
-      loadDataCallback: Function,
+export function DataLoaderBehavior<Item, Data>(
+  superClass: new () => PolymerElement
+): new () => DataLoaderBehaviorInterface<Item, Data> {
+  return class DataLoaderBehaviorImpl<Item, Data>
+    extends superClass
+    implements DataLoaderBehaviorInterface<Item, Data> {
+    active!: boolean;
 
-      // A function that takes a datum as argument and makes the HTTP
-      // request to fetch the data associated with the datum. It should return
-      // a promise that either fullfills with the data or rejects with an error.
-      // If the function doesn't bind 'this', then it will reference the element
-      // that includes this behavior.
-      // The default implementation calls this.requestManager.request with
-      // the value returned by this.getDataLoadUrl(datum) (see below).
-      // The only place getDataLoadUrl() is called is in the default
-      // implementation of this method. So if you override this method with
-      // an implementation that doesn't call getDataLoadUrl, it need not be
-      // provided.
-      requestData: {
-        type: Function,
-        value: function() {
-          return (datum) =>
-            this.requestManager.request(this.getDataLoadUrl(datum));
+    /**
+     * A unique identifiable string. When changes, it expunges the data
+     * cache.
+     */
+    loadKey = '';
+
+    // List of items to be loaded. By default, items are passed to
+    // `requestData` to fetch data. When the request resolves, invokes
+    // `loadDataCallback` with the datum and its response.
+    dataToLoad: Item[] = [];
+
+    /**
+     * A function that takes an item as an input and returns a unique
+     * identifiable string. Used for caching purposes.
+     */
+    getDataLoadName = (item: Item): CacheKey => String(item);
+
+    /**
+     * A function that takes as inputs:
+     * 1. Implementing component of data-loader-behavior.
+     * 2. datum of the request.
+     * 3. The response received from the data URL.
+     * This function will be called when a response from a request to that
+     * data URL is successfully received.
+     */
+    loadDataCallback!: (component: this, item: Item, data: Data) => void;
+
+    // Function that actually loads data from the network. See docs on
+    // `RequestDataCallback` for details.
+    requestData: RequestDataCallback<Item, Data>;
+
+    dataLoading = false;
+
+    // The standard Node.isConnected doesn't seem to be set reliably, so we
+    // wire up our own property manually.
+    _isConnected = false;
+
+    connectedCallback() {
+      super.connectedCallback();
+      this._isConnected = true;
+    }
+
+    disconnectedCallback() {
+      super.disconnectedCallback();
+      this._isConnected = false;
+    }
+
+    static get properties() {
+      return {
+        active: {
+          type: Boolean,
+          observer: '_loadDataIfActive',
         },
-      },
+        _isConnected: {type: Boolean},
+        loadKey: {type: String},
+        dataToLoad: {type: Array},
+        getDataLoadName: {type: Object},
+        loadDataCallback: {type: Object},
+        requestData: {type: Object},
+      };
+    }
 
-      // A function that takes a datum and returns a string URL for fetching
-      // data.
-      getDataLoadUrl: Function,
+    static get observers() {
+      return ['_dataToLoadChanged(_isConnected, dataToLoad.*)'];
+    }
 
-      dataLoading: {
-        type: Boolean,
-        readOnly: true,
-        reflectToAttribute: true,
-        value: false,
-      },
+    /*
+     * A map of a cache key to LoadState. If a cacheKey does not exist in the
+     * map, it is considered NOT_LOADED.
+     * Invoking `reload` or a change in `loadKey` clears the cache.
+     */
 
-      /*
-       * A map of a cache key to LoadState. If a cacheKey does not exist in the
-       * map, it is considered NOT_LOADED.
-       * Invoking `reload` or a change in `loadKey` clears the cache.
-       */
-      _dataLoadState: {
-        type: Object,
-        value: () => new Map<CacheKey, LoadState>(),
-      },
+    _dataLoadState = new Map<CacheKey, LoadState>();
 
-      _canceller: {
-        type: Object,
-        value: () => new tf_backend.Canceller(),
-      },
+    _canceller = new Canceller();
 
-      _loadDataAsync: {
-        type: Number,
-        value: null,
-      },
-    },
+    _loadDataAsync: null | number = null;
 
-    observers: ['_dataToLoadChanged(isAttached, dataToLoad.*)'],
+    _loadData = _.throttle(this._loadDataImpl, 100, {
+      leading: true,
+      trailing: true,
+    });
 
     onLoadFinish() {
       // Override to do something useful.
-    },
+    }
 
     reload() {
       this._dataLoadState.clear();
       this._loadData();
-    },
+    }
 
     reset() {
       // https://github.com/tensorflow/tensorboard/issues/1499
       // Cannot use the observer to observe `loadKey` changes directly.
       if (this._loadDataAsync != null) {
-        this.cancelAsync(this._loadDataAsync);
+        clearTimeout(this._loadDataAsync);
         this._loadDataAsync = null;
       }
       if (this._canceller) this._canceller.cancelAll();
       if (this._dataLoadState) this._dataLoadState.clear();
-      if (this.isAttached) this._loadData();
-    },
+      if (this._isConnected) this._loadData();
+    }
 
     _dataToLoadChanged() {
-      if (this.isAttached) this._loadData();
-    },
-
-    created() {
-      this._loadData = _.throttle(this._loadDataImpl, 100, {
-        leading: true,
-        trailing: true,
-      });
-    },
+      if (this._isConnected) this._loadData();
+    }
 
     detached() {
       // Note: Cannot call canceller.cancelAll since it will poison the cache.
@@ -161,88 +176,70 @@ namespace tf_dashboard_common {
       // t=20: request for 'a' resolves but we do not change the loadState
       // because we do not want to set one if, instead, it was resetted at t=10.
       if (this._loadDataAsync != null) {
-        this.cancelAsync(this._loadDataAsync);
+        clearTimeout(this._loadDataAsync);
         this._loadDataAsync = null;
       }
-    },
-
+    }
     _loadDataIfActive() {
       if (this.active) {
         this._loadData();
       }
-    },
-
+    }
     _loadDataImpl() {
       if (!this.active) return;
-      this.cancelAsync(this._loadDataAsync);
-      this._loadDataAsync = this.async(
+      if (this._loadDataAsync !== null) clearTimeout(this._loadDataAsync);
+      this._loadDataAsync = setTimeout(
         this._canceller.cancellable((result) => {
           if (result.cancelled) {
             return;
           }
-          // Read-only property have a special setter.
-          this._setDataLoading(true);
-
-          // Promises return cacheKeys of the data that were fetched.
-          const promises = this.dataToLoad
-            .filter((datum) => {
-              const cacheKey = this.getDataLoadName(datum);
-              return !this._dataLoadState.has(cacheKey);
-            })
-            .map((datum) => {
-              const cacheKey = this.getDataLoadName(datum);
-              this._dataLoadState.set(cacheKey, LoadState.LOADING);
-              return this.requestData(datum).then(
-                this._canceller.cancellable((result) => {
-                  // It was resetted. Do not notify of the response.
-                  if (!result.cancelled) {
-                    this._dataLoadState.set(cacheKey, LoadState.LOADED);
-                    this.loadDataCallback(this, datum, result.value);
-                  }
-                  return cacheKey;
-                })
-              );
-            });
-
-          return Promise.all(promises)
-            .then(
-              this._canceller.cancellable((result) => {
-                // It was resetted. Do not notify of the data load.
-                if (!result.cancelled) {
-                  const keysFetched = result.value;
-                  const fetched = new Set(keysFetched);
-                  const shouldNotify = this.dataToLoad.some((datum) =>
-                    fetched.has(this.getDataLoadName(datum))
-                  );
-
-                  if (shouldNotify) {
-                    this.onLoadFinish();
-                  }
-                }
-
-                const isDataFetchPending = Array.from(
-                  this._dataLoadState.values()
-                ).some((loadState) => loadState === LoadState.LOADING);
-
-                if (!isDataFetchPending) {
-                  // Read-only property have a special setter.
-                  this._setDataLoading(false);
-                }
-              }),
-              // TODO(stephanwlee): remove me when we can use  Promise.prototype.finally
-              // instead
-              () => {}
-            )
-            .then(
-              this._canceller.cancellable(({cancelled}) => {
-                if (cancelled) {
-                  return;
+          this.dataLoading = true;
+          const dirtyItems = this.dataToLoad.filter((datum) => {
+            const cacheKey = this.getDataLoadName(datum);
+            return !this._dataLoadState.has(cacheKey);
+          });
+          for (const item of dirtyItems) {
+            const cacheKey = this.getDataLoadName(item);
+            this._dataLoadState.set(cacheKey, LoadState.LOADING);
+          }
+          const onLoad = this._canceller.cancellable(
+            (result: CancelResult<{item: Item; data: Data}>) => {
+              if (result.cancelled) {
+                return;
+              }
+              const {item, data} = result.value;
+              const cacheKey = this.getDataLoadName(item);
+              this._dataLoadState.set(cacheKey, LoadState.LOADED);
+              this.loadDataCallback(this, item, data);
+            }
+          );
+          const onFinish = this._canceller.cancellable(
+            (result: CancelResult<void>) => {
+              // Only notify of data load if the load was not cancelled.
+              if (!result.cancelled) {
+                const keysFetched = result.value as any;
+                const fetched = new Set(
+                  dirtyItems.map((item) => this.getDataLoadName(item))
+                );
+                const shouldNotify = this.dataToLoad.some((datum) =>
+                  fetched.has(this.getDataLoadName(datum))
+                );
+                if (shouldNotify) {
+                  this.onLoadFinish();
                 }
                 this._loadDataAsync = null;
-              })
-            );
+              }
+              const isDataFetchPending = Array.from(
+                this._dataLoadState.values()
+              ).includes(LoadState.LOADING);
+              if (!isDataFetchPending) {
+                this.dataLoading = false;
+              }
+            }
+          );
+          this.requestData(dirtyItems, onLoad, () => onFinish(undefined));
         })
       );
-    },
+    }
   };
-} // namespace tf_dashboard_common
+}

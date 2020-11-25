@@ -29,6 +29,7 @@ from __future__ import division
 from __future__ import print_function
 
 import functools
+import warnings
 
 import numpy as np
 
@@ -39,6 +40,12 @@ from tensorboard.plugins.audio import summary_v2
 
 # Export V2 versions.
 audio = summary_v2.audio
+
+
+_LABELS_WARNING = (
+    "Labels on audio summaries are deprecated and will be removed. "
+    "See <https://github.com/tensorflow/tensorboard/issues/3513>."
+)
 
 
 def op(
@@ -63,11 +70,7 @@ def op(
         be statically unknown (i.e., `None`).
       sample_rate: An `int` or rank-0 `int32` `Tensor` that represents the
         sample rate, in Hz. Must be positive.
-      labels: Optional `string` `Tensor`, a vector whose length is the
-        first dimension of `audio`, where `labels[i]` contains arbitrary
-        textual information about `audio[i]`. (For instance, this could be
-        some text that a TTS system was supposed to produce.) Markdown is
-        supported. Contents should be UTF-8.
+      labels: Deprecated. Do not set.
       max_outputs: Optional `int` or rank-0 integer `Tensor`. At most this
         many audio clips will be emitted at each step. When more than
         `max_outputs` many clips are provided, the first `max_outputs`
@@ -92,6 +95,9 @@ def op(
     as WAV. If the specific format is important to you, please provide a
     file format explicitly.
     """
+    if labels is not None:
+        warnings.warn(_LABELS_WARNING)
+
     # TODO(nickfelt): remove on-demand imports once dep situation is fixed.
     import tensorflow.compat.v1 as tf
 
@@ -157,11 +163,7 @@ def pb(
         floating-point values in `[-1.0, 1.0]`.
       sample_rate: An `int` that represents the sample rate, in Hz.
         Must be positive.
-      labels: Optional list (or rank-1 `np.array`) of textstrings or UTF-8
-        bytestrings whose length is the first dimension of `audio`, where
-        `labels[i]` contains arbitrary textual information about
-        `audio[i]`. (For instance, this could be some text that a TTS
-        system was supposed to produce.) Markdown is supported.
+      labels: Deprecated. Do not set.
       max_outputs: Optional `int`. At most this many audio clips will be
         emitted. When more than `max_outputs` many clips are provided, the
         first `max_outputs` many clips will be used and the rest silently
@@ -183,6 +185,9 @@ def pb(
     as WAV. If the specific format is important to you, please provide a
     file format explicitly.
     """
+    if labels is not None:
+        warnings.warn(_LABELS_WARNING)
+
     # TODO(nickfelt): remove on-demand imports once dep situation is fixed.
     import tensorflow.compat.v1 as tf
 

@@ -1,0 +1,285 @@
+<!--
+@license
+Copyright 2020 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<div class="filter-row">
+  <div class="run-filter">
+    <mat-icon svgIcon="search_24px"></mat-icon>
+    <input
+      #filter
+      matInput
+      autocomplete="off"
+      (keyup)="onFilterKeyUp($event)"
+      placeholder="Filter runs (regex)"
+    />
+  </div>
+</div>
+<div class="table-container">
+  <div role="table">
+    <ng-container *ngTemplateOutlet="header"></ng-container>
+    <ng-container *ngTemplateOutlet="selectAll"></ng-container>
+    <div role="rowgroup" class="rows">
+      <ng-container *ngFor="let item of pageItems; trackBy: tableTrackBy">
+        <ng-container
+          *ngTemplateOutlet="row; context:{item: item}"
+        ></ng-container
+      ></ng-container>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="loading">
+    <mat-spinner mode="indeterminate" diameter="28"></mat-spinner>
+  </div>
+
+  <div *ngIf="!loading && allItemsLength === 0" class="no-runs">No Runs</div>
+
+  <div
+    *ngIf="!loading && allItemsLength > 0 && filteredItemsLength === 0"
+    class="no-runs"
+  >
+    <span>No runs match "<code>{{ regexFilter }}</code>"</span>
+  </div>
+</div>
+
+<mat-paginator
+  *ngIf="usePagination"
+  [pageSizeOptions]="[5, 10, 20]"
+  [pageIndex]="paginationOption.pageIndex"
+  [pageSize]="paginationOption.pageSize"
+  [length]="filteredItemsLength"
+  showFirstLastButtons
+  (page)="onPaginationChange.emit($event)"
+></mat-paginator>
+
+<ng-template #selectAll>
+  <div
+    *ngIf="allPageItemsSelected() && numSelectedItems !== allItemsLength"
+    class="select-all"
+    role="row"
+  >
+    <span role="columnheader"
+      >All runs in this page are selected but not all runs ({{ numSelectedItems
+      }} of {{ allItemsLength }}) are selected.</span
+    ><button mat-button (click)="onSelectAllPages.emit()">
+      Select all runs
+    </button>
+  </div>
+</ng-template>
+
+<ng-template #header>
+  <div class="header" role="rowgroup">
+    <div
+      matSort
+      (matSortChange)="handleSortChange($event)"
+      [matSortActive]="sortOption.column"
+      role="row"
+    >
+      <span
+        *ngFor="let columnId of columns"
+        role="columnheader"
+        [ngClass]="['column', 'tb-column-' + columnId]"
+      >
+        <ng-container [ngSwitch]="columnId">
+          <mat-checkbox
+            *ngSwitchCase="RunsTableColumn.CHECKBOX"
+            [checked]="allPageItemsSelected()"
+            [indeterminate]="!allPageItemsSelected() && somePageItemsSelected()"
+            (change)="handlePageToggle()"
+          ></mat-checkbox>
+
+          <span
+            *ngSwitchCase="RunsTableColumn.EXPERIMENT_NAME"
+            [mat-sort-header]="RunsTableColumn.EXPERIMENT_NAME"
+            >Experiment</span
+          >
+
+          <span
+            *ngSwitchCase="RunsTableColumn.RUN_NAME"
+            [mat-sort-header]="RunsTableColumn.RUN_NAME"
+            >Run</span
+          >
+
+          <span *ngSwitchCase="RunsTableColumn.RUN_COLOR"></span>
+        </ng-container>
+      </span>
+
+      <span
+        *ngFor="let column of hparamColumns; trackBy: trackByHparamColumn"
+        role="columnheader"
+        class="column"
+      >
+        <span class="name">{{ column.displayName || column.name }}</span>
+        <ng-container *ngIf="column.filter">
+          <button
+            mat-icon-button
+            [matMenuTriggerFor]="filterMenu"
+            i18n-aria-label="A button that opens a menu that lets user set hparam filter conditions"
+            [attr.aria-label]="'Filter hparam ' + (column.displayName || column.name)"
+          >
+            <mat-icon svgIcon="filter_alt_24px"></mat-icon>
+          </button>
+          <mat-menu #filterMenu="matMenu">
+            <div
+              mat-menu-item
+              class="filter-menu-checkbox-row"
+              (click)="$event.stopPropagation()"
+              role="menuitemcheckbox"
+              disableRipple
+            >
+              <mat-checkbox
+                [checked]="column.filter.includeUndefined"
+                (change)="handleHparamIncludeUndefinedToggled(column)"
+                ><span>(show empty value)</span></mat-checkbox
+              >
+            </div>
+            <ng-container *ngIf="column.filter.type === DomainType.INTERVAL">
+              <div
+                (click)="$event.stopPropagation()"
+                class="range-input-container"
+                disableRipple
+                mat-menu-item
+              >
+                <tb-range-input
+                  [min]="column.filter.minValue"
+                  [max]="column.filter.maxValue"
+                  [lowerValue]="column.filter.filterLowerValue"
+                  [upperValue]="column.filter.filterUpperValue"
+                  (value)="handleHparamIntervalChanged(column, $event)"
+                ></tb-range-input>
+              </div>
+            </ng-container>
+            <ng-container *ngIf="column.filter.type === DomainType.DISCRETE">
+              <div
+                *ngFor="let value of column.filter.possibleValues"
+                mat-menu-item
+                class="filter-menu-checkbox-row"
+                role="menuitemcheckbox"
+                (click)="$event.stopPropagation()"
+              >
+                <mat-checkbox
+                  [checked]="column.filter.filterValues.includes(value)"
+                  (change)="handleHparamDiscreteChanged(column, value)"
+                  ><span>{{ value }}</span></mat-checkbox
+                >
+              </div>
+            </ng-container>
+          </mat-menu>
+        </ng-container>
+      </span>
+
+      <span
+        *ngFor="let column of metricColumns; trackBy: trackByMetricColumn"
+        role="columnheader"
+        class="column"
+      >
+        <span class="name">{{ column.displayName || column.tag }}</span>
+        <ng-container *ngIf="column.filter">
+          <button
+            mat-icon-button
+            [matMenuTriggerFor]="filterMenu"
+            i18n-aria-label="A button that opens a menu that lets user set metric filter conditions"
+            [attr.aria-label]="'Filter metric ' + (column.displayName || column.tag)"
+          >
+            <mat-icon svgIcon="filter_alt_24px"></mat-icon>
+          </button>
+
+          <mat-menu #filterMenu="matMenu">
+            <div
+              mat-menu-item
+              class="filter-menu-checkbox-row"
+              (click)="$event.stopPropagation()"
+              role="menuitemcheckbox"
+              disableRipple
+            >
+              <mat-checkbox
+                [checked]="column.filter.includeUndefined"
+                (change)="handleMetricIncludeUndefinedChanged(column)"
+                ><span>(show empty value)</span></mat-checkbox
+              >
+            </div>
+            <div
+              (click)="$event.stopPropagation()"
+              class="range-input-container"
+              disableRipple
+              mat-menu-item
+            >
+              <tb-range-input
+                [min]="column.filter.minValue"
+                [max]="column.filter.maxValue"
+                [lowerValue]="column.filter.filterLowerValue"
+                [upperValue]="column.filter.filterUpperValue"
+                (value)="handleMetricFilterChanged(column, $event)"
+              ></tb-range-input>
+            </div>
+          </mat-menu>
+        </ng-container>
+      </span>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #row let-item="item">
+  <div role="row" [attr.data-id]="item.run.id">
+    <span
+      *ngFor="let columnId of columns"
+      role="cell"
+      [ngClass]="['column', 'tb-column-' + columnId]"
+    >
+      <ng-container [ngSwitch]="columnId">
+        <span *ngSwitchCase="RunsTableColumn.CHECKBOX">
+          <mat-checkbox
+            [checked]="item.selected"
+            (change)="onSelectionToggle.emit(item)"
+          ></mat-checkbox>
+        </span>
+        <span
+          *ngSwitchCase="RunsTableColumn.EXPERIMENT_NAME"
+          class="name"
+          [attr.title]="item.experimentName"
+          >{{ item.experimentAlias }}</span
+        >
+
+        <span *ngSwitchCase="RunsTableColumn.RUN_NAME" class="name"
+          >{{ item.run.name }}</span
+        >
+
+        <span *ngSwitchCase="RunsTableColumn.RUN_COLOR">
+          <button
+            [ngClass]="{
+              'run-color-swatch': true,
+              'no-color': !item.runColor
+            }"
+            [style.background]="item.runColor"
+            [colorPicker]="item.runColor"
+            [cpDialogDisplay]="'popup'"
+            [cpPosition]="'bottom-right'"
+            [cpPositionOffset]="-20"
+            [cpUseRootViewContainer]="true"
+            [cpOutputFormat]="'hex'"
+            (colorPickerChange)="onRunColorChange.emit({runId: item.run.id, newColor: $event})"
+          ></button>
+        </span>
+      </ng-container>
+    </span>
+
+    <span *ngFor="let column of hparamColumns" role="cell" class="column"
+      >{{ item.hparams.get(column.name) }}</span
+    >
+
+    <span *ngFor="let column of metricColumns" role="cell" class="column"
+      >{{ item.metrics.get(column.tag) }}</span
+    >
+  </div>
+</ng-template>

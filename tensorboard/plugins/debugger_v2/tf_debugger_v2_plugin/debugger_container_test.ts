@@ -28,26 +28,44 @@ import {DebuggerContainer} from './debugger_container';
 import {DataLoadState, State} from './store/debugger_types';
 import {createDebuggerState, createState} from './testing';
 import {AlertsModule} from './views/alerts/alerts_module';
+import {ExecutionDataModule} from './views/execution_data/execution_data_module';
+import {GraphExecutionsModule} from './views/graph_executions/graph_executions_module';
+import {GraphModule} from './views/graph/graph_module';
 import {InactiveModule} from './views/inactive/inactive_module';
+import {TimelineContainer} from './views/timeline/timeline_container';
+import {SourceFilesModule} from './views/source_files/source_files_module';
+import {StackTraceModule} from './views/stack_trace/stack_trace_module';
+import {TimelineModule} from './views/timeline/timeline_module';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
-describe('Debugger Container test', () => {
+describe('Debugger Container', () => {
   let store: MockStore<State>;
   let dispatchSpy: jasmine.Spy;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [DebuggerComponent, DebuggerContainer],
-      imports: [AlertsModule, CommonModule, InactiveModule],
+      imports: [
+        AlertsModule,
+        CommonModule,
+        ExecutionDataModule,
+        GraphExecutionsModule,
+        GraphModule,
+        InactiveModule,
+        SourceFilesModule,
+        StackTraceModule,
+        TimelineModule,
+      ],
       providers: [
         provideMockStore({
           initialState: createState(createDebuggerState()),
         }),
         DebuggerContainer,
+        TimelineContainer,
       ],
     }).compileComponents();
-    store = TestBed.get(Store);
+    store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
     dispatchSpy = spyOn(store, 'dispatch');
   });
 
@@ -80,8 +98,7 @@ describe('Debugger Container test', () => {
         createDebuggerState({
           runs: {
             foo_run: {
-              startTimeMs: 111,
-              tensorFlowVersion: '2.1.0',
+              start_time: 111,
             },
           },
           runsLoaded: {

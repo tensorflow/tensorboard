@@ -21,7 +21,6 @@ from __future__ import print_function
 import collections
 import functools
 import imghdr
-import math
 import mimetypes
 import os
 import threading
@@ -34,23 +33,12 @@ from google.protobuf import text_format
 
 from tensorboard.backend.http_util import Respond
 from tensorboard.compat import tf
-from tensorboard.compat import _pywrap_tensorflow
 from tensorboard.plugins import base_plugin
+from tensorboard.plugins.projector import metadata
 from tensorboard.plugins.projector.projector_config_pb2 import ProjectorConfig
 from tensorboard.util import tb_logging
 
 logger = tb_logging.get_logger()
-
-# The prefix of routes provided by this plugin.
-_PLUGIN_PREFIX_ROUTE = "projector"
-
-# FYI - the PROJECTOR_FILENAME is hardcoded in the visualize_embeddings
-# method in tf.contrib.tensorboard.plugins.projector module.
-# TODO(@decentralion): Fix duplication when we find a permanent home for the
-# projector module.
-PROJECTOR_FILENAME = "projector_config.pbtxt"
-_PLUGIN_NAME = "org_tensorflow_tensorboard_projector"
-_PLUGINS_DIR = "plugins"
 
 # Number of tensors in the LRU cache.
 _TENSOR_CACHE_CAPACITY = 1
@@ -171,8 +159,15 @@ def _read_tensor_tsv_file(fpath):
     return np.array(tensor, dtype="float32")
 
 
+def _read_tensor_binary_file(fpath, shape):
+    if len(shape) != 2:
+        raise ValueError("Tensor must be 2D, got shape {}".format(shape))
+    tensor = np.fromfile(fpath, dtype="float32")
+    return tensor.reshape(shape)
+
+
 def _assets_dir_to_logdir(assets_dir):
-    sub_path = os.path.sep + _PLUGINS_DIR + os.path.sep
+    sub_path = os.path.sep + metadata.PLUGINS_DIR + os.path.sep
     if sub_path in assets_dir:
         two_parents_up = os.pardir + os.path.sep + os.pardir
         return os.path.abspath(os.path.join(assets_dir, two_parents_up))
@@ -184,7 +179,7 @@ def _latest_checkpoints_changed(configs, run_path_pairs):
     for run_name, assets_dir in run_path_pairs:
         if run_name not in configs:
             config = ProjectorConfig()
-            config_fpath = os.path.join(assets_dir, PROJECTOR_FILENAME)
+            config_fpath = os.path.join(assets_dir, metadata.PROJECTOR_FILENAME)
             if tf.io.gfile.exists(config_fpath):
                 with tf.io.gfile.GFile(config_fpath, "r") as f:
                     file_content = f.read()
@@ -239,7 +234,7 @@ def _using_tf():
 class ProjectorPlugin(base_plugin.TBPlugin):
     """Embedding projector."""
 
-    plugin_name = _PLUGIN_PREFIX_ROUTE
+    plugin_name = metadata.PLUGIN_NAME
 
     def __init__(self, context):
         """Instantiates ProjectorPlugin via TensorBoard core.
@@ -249,7 +244,6 @@ class ProjectorPlugin(base_plugin.TBPlugin):
         """
         self.multiplexer = context.multiplexer
         self.logdir = context.logdir
-        self._handlers = None
         self.readers = {}
         self.run_paths = None
         self._configs = {}
@@ -270,7 +264,8 @@ class ProjectorPlugin(base_plugin.TBPlugin):
             self.run_paths = self.multiplexer.RunPaths()
 
     def get_plugin_apps(self):
-        self._handlers = {
+        asset_prefix = "tf_projector_plugin"
+        return {
             RUNS_ROUTE: self._serve_runs,
             CONFIG_ROUTE: self._serve_config,
             TENSOR_ROUTE: self._serve_tensor,
@@ -278,19 +273,17 @@ class ProjectorPlugin(base_plugin.TBPlugin):
             BOOKMARKS_ROUTE: self._serve_bookmarks,
             SPRITE_IMAGE_ROUTE: self._serve_sprite_image,
             "/index.js": functools.partial(
-                self._serve_file,
-                os.path.join("tf_projector_plugin", "index.js"),
+                self._serve_file, os.path.join(asset_prefix, "index.js"),
             ),
             "/projector_binary.html": functools.partial(
                 self._serve_file,
-                os.path.join("tf_projector_plugin", "projector_binary.html"),
+                os.path.join(asset_prefix, "projector_binary.html"),
             ),
             "/projector_binary.js": functools.partial(
                 self._serve_file,
-                os.path.join("tf_projector_plugin", "projector_binary.js"),
+                os.path.join(asset_prefix, "projector_binary.js"),
             ),
         }
-        return self._handlers
 
     def is_active(self):
         """Determines whether this plugin is active.
@@ -346,9 +339,11 @@ class ProjectorPlugin(base_plugin.TBPlugin):
         """Returns a map of run paths to `ProjectorConfig` protos."""
         run_path_pairs = list(self.run_paths.items())
         self._append_plugin_asset_directories(run_path_pairs)
-        # If there are no summary event files, the projector should still work,
-        # treating the `logdir` as the model checkpoint directory.
-        if not run_path_pairs:
+        # Also accept the root logdir as a model checkpoint directory,
+        # so that the projector still works when there are no runs.
+        # (Case on `run` rather than `path` to avoid issues with
+        # absolute/relative paths on any filesystems.)
+        if not any(run == "." for (run, path) in run_path_pairs):
             run_path_pairs.append((".", self.logdir))
         if self._run_paths_changed() or _latest_checkpoints_changed(
             self._configs, run_path_pairs
@@ -374,17 +369,25 @@ class ProjectorPlugin(base_plugin.TBPlugin):
                 if embedding.tensor_name.endswith(":0"):
                     embedding.tensor_name = embedding.tensor_name[:-2]
                 # Find the size of embeddings associated with a tensors file.
-                if embedding.tensor_path and not embedding.tensor_shape:
+                if embedding.tensor_path:
                     fpath = _rel_to_abs_asset_path(
                         embedding.tensor_path, self.config_fpaths[run]
                     )
                     tensor = self.tensor_cache.get((run, embedding.tensor_name))
                     if tensor is None:
-                        tensor = _read_tensor_tsv_file(fpath)
+                        try:
+                            tensor = _read_tensor_tsv_file(fpath)
+                        except UnicodeDecodeError:
+                            tensor = _read_tensor_binary_file(
+                                fpath, embedding.tensor_shape
+                            )
                         self.tensor_cache.set(
                             (run, embedding.tensor_name), tensor
                         )
-                    embedding.tensor_shape.extend([len(tensor), len(tensor[0])])
+                    if not embedding.tensor_shape:
+                        embedding.tensor_shape.extend(
+                            [len(tensor), len(tensor[0])]
+                        )
 
             reader = self._get_reader_for_run(run)
             if not reader:
@@ -397,6 +400,10 @@ class ProjectorPlugin(base_plugin.TBPlugin):
             var_map = reader.get_variable_to_shape_map()
             for tensor_name, tensor_shape in var_map.items():
                 if len(tensor_shape) != 2:
+                    continue
+                # Optimizer slot values are the same shape as embeddings
+                # but are not embeddings.
+                if ".OPTIMIZER_SLOT" in tensor_name:
                     continue
                 embedding = self._get_embedding(tensor_name, config)
                 if not embedding:
@@ -428,7 +435,7 @@ class ProjectorPlugin(base_plugin.TBPlugin):
         config_fpaths = {}
         for run_name, assets_dir in run_path_pairs:
             config = ProjectorConfig()
-            config_fpath = os.path.join(assets_dir, PROJECTOR_FILENAME)
+            config_fpath = os.path.join(assets_dir, metadata.PROJECTOR_FILENAME)
             if tf.io.gfile.exists(config_fpath):
                 with tf.io.gfile.GFile(config_fpath, "r") as f:
                     file_content = f.read()
@@ -458,7 +465,7 @@ class ProjectorPlugin(base_plugin.TBPlugin):
                 and _using_tf()
                 and not tf.io.gfile.glob(config.model_checkpoint_path + "*")
             ):
-                logger.warn(
+                logger.warning(
                     'Checkpoint file "%s" not found',
                     config.model_checkpoint_path,
                 )
@@ -477,7 +484,9 @@ class ProjectorPlugin(base_plugin.TBPlugin):
             try:
                 reader = tf.train.load_checkpoint(config.model_checkpoint_path)
             except Exception:  # pylint: disable=broad-except
-                logger.warn('Failed reading "%s"', config.model_checkpoint_path)
+                logger.warning(
+                    'Failed reading "%s"', config.model_checkpoint_path
+                )
         self.readers[run] = reader
         return reader
 
@@ -510,11 +519,15 @@ class ProjectorPlugin(base_plugin.TBPlugin):
         return None
 
     def _append_plugin_asset_directories(self, run_path_pairs):
-        for run, assets in self.multiplexer.PluginAssets(_PLUGIN_NAME).items():
-            if PROJECTOR_FILENAME not in assets:
+        for run, assets in self.multiplexer.PluginAssets(
+            metadata.PLUGIN_ASSETS_NAME
+        ).items():
+            if metadata.PROJECTOR_FILENAME not in assets:
                 continue
             assets_dir = os.path.join(
-                self.run_paths[run], _PLUGINS_DIR, _PLUGIN_NAME
+                self.run_paths[run],
+                metadata.PLUGINS_DIR,
+                metadata.PLUGIN_ASSETS_NAME,
             )
             assets_path_pair = (run, os.path.abspath(assets_dir))
             run_path_pairs.append(assets_path_pair)
@@ -655,7 +668,12 @@ class ProjectorPlugin(base_plugin.TBPlugin):
                         "text/plain",
                         400,
                     )
-                tensor = _read_tensor_tsv_file(fpath)
+                try:
+                    tensor = _read_tensor_tsv_file(fpath)
+                except UnicodeDecodeError:
+                    tensor = _read_tensor_binary_file(
+                        fpath, embedding.tensor_shape
+                    )
             else:
                 reader = self._get_reader_for_run(run)
                 if not reader or not reader.has_tensor(name):

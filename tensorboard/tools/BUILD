@@ -1,4 +1,6 @@
-licenses(["notice"])  # Apache 2.0
+package(default_visibility = ["//tensorboard:internal"])
+
+licenses(["notice"])
 
 py_binary(
     name = "import_google_fonts",
@@ -12,4 +14,9 @@ sh_binary(
     visibility = [
         "//tensorboard:internal",
     ],
+)
+
+py_binary(
+    name = "inline_file_content",
+    srcs = ["inline_file_content.py"],
 )

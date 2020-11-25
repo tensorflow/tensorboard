@@ -15,12 +15,10 @@
 # ==============================================================================
 
 # tf_imports/*.html define their respective OSS license.
-# tensorboard/plugins/beholder/colormaps.py has a different license.
-files=$(grep -rL "Copyright 20[0-9][0-9] The TensorFlow" \
-    --include=*.* \
-    --exclude=*.{pyc,json,png,wav,proto,pbtxt,md,in,rst,cfg,ipynb} \
-    tensorboard | \
-    grep -v "tensorboard/components/tf_imports/.*.html\|tensorboard/plugins/beholder/colormaps.py" )
+files=$(git grep -L "Copyright 20[0-9][0-9] The TensorFlow" \
+    'tensorboard/*.*' \
+    ':!*.'{pyc,json,png,wav,proto,pbtxt,md,in,rst,cfg,ipynb,svg,lock} \
+    ':!tensorboard/components/tf_imports/*.html')
 
 count=$(echo "$files" | wc -l | awk '{print $1}')
 

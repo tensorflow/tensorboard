@@ -74,6 +74,9 @@ class _FakeAccumulator(object):
     def Tensors(self, tag_name):
         return self._TagHelper(tag_name, event_accumulator.TENSORS)
 
+    def ActivePlugins(self):
+        return ["%s_plugin" % (self._path,)]
+
     def PluginTagToContent(self, plugin_name):
         # We pre-pend the runs with the path and '_' so that we can verify that the
         # tags are associated with the correct runs.
@@ -137,6 +140,14 @@ class EventMultiplexerTest(tf.test.TestCase):
         x.Reload()
         self.assertTrue(x.GetAccumulator("run1").reload_called)
         self.assertTrue(x.GetAccumulator("run2").reload_called)
+
+    def testActivePlugins(self):
+        x = event_multiplexer.EventMultiplexer(
+            {"run1": "path1", "run2": "path2"}
+        )
+        self.assertItemsEqual(
+            x.ActivePlugins(), ["path1_plugin", "path2_plugin"]
+        )
 
     def testPluginRunToTagToContent(self):
         """Tests the method that produces the run to tag to content mapping."""

@@ -19,7 +19,6 @@ from __future__ import division
 from __future__ import print_function
 
 import abc
-import collections
 
 import six
 import numpy as np
@@ -33,11 +32,82 @@ class DataProvider(object):
     providers may be asked to implement more filtering mechanisms, such as
     downsampling strategies or domain restriction by step or wall time.
 
+    The data provider interface specifies three *data classes*: scalars,
+    tensors, and blob sequences. All data is stored in *time series* for
+    one of these data classes. A time series is identified by run name and
+    tag name (each a non-empty text string), as well as an experiment ID
+    and plugin name (see below). Points in a time series are uniquely
+    indexed by *step*, an arbitrary non-negative integer. Each point in a
+    time series also has an associated wall time, plus its actual value,
+    which is drawn from the corresponding data class.
+
+    Each point in a scalar time series contains a single scalar value, as
+    a 64-bit floating point number. Scalars are "privileged" rather than
+    being subsumed under tensors because there are useful operations on
+    scalars that don't make sense in the general tensor case: e.g., "list
+    all scalar time series with tag name `accuracy` whose exponentially
+    weighted moving average is at least 0.999".
+
+    Each point in a tensor time series contains a tensor of arbitrary
+    dtype (including byte strings and text strings) and shape (including
+    rank-0 tensors, a.k.a. scalars). Each tensor is expected to be
+    "reasonably small" to accommodate common database cell size limits.
+    For instance, a histogram with a bounded number of buckets (say, 30)
+    occupies about 500 bytes, and a PR curve with a bounded number of
+    thresholds (say, 201) occupies about 5000 bytes. These are both well
+    within typical database tolerances (Google Cloud Spanner: 10 MiB;
+    MySQL: 64 KiB), and would be appropriate to store as tensors. By
+    contrast, image, audio, or model graph data may easily be multiple
+    megabytes in size, and so should be stored as blobs instead. The
+    tensors at each step in a time series need not have the same dtype or
+    shape.
+
+    Each point in a blob sequence time series contains an ordered sequence
+    of zero or more blobs, which are arbitrary data with no tensor
+    structure. These might represent PNG-encoded image data, protobuf wire
+    encodings of TensorFlow graphs, or PLY-format 3D mesh data, for some
+    examples. This data class provides blob *sequences* rather than just
+    blobs because it's common to want to take multiple homogeneous samples
+    of a given time series: say, "show me the bounding box classifications
+    for 3 random inputs from this batch". A single blob can of course be
+    represented as a blob sequence that always has exactly one element.
+
+    When reading time series, *downsampling* refers to selecting a
+    subset of the points in each time series. Downsampling only occurs
+    across the step axis (rather than, e.g., the blobs in a single blob
+    sequence datum), and occurs individually within each time series.
+    When downsampling, the latest datum should always be included in the
+    sample, so that clients have a view of metrics that is maximally up
+    to date. Implementations may choose to force the first (oldest)
+    datum to be included in each sample as well, but this is not
+    required; clients should not make assumptions either way. The
+    remainder of the points in the sample should be selected uniformly
+    at random from available points. Downsampling should be
+    deterministic within a time series. It is also useful for the
+    downsampling behavior to depend only on the set of step values
+    within a time series, such that two "parallel" time series with data
+    at exactly the same steps also retain the same steps after
+    downsampling.
+
+    Every time series belongs to a specific experiment and is owned by a
+    specific plugin. (Thus, the "primary key" for a time series has four
+    components: experiment, plugin, run, tag.) The experiment ID is an
+    arbitrary URL-safe non-empty text string, whose interpretation is at
+    the discretion of the data provider. As a special case, the empty
+    string as an experiment ID denotes that no experiment was given. Data
+    providers may or may not fully support an empty experiment ID. The
+    plugin name should correspond to the `plugin_data.plugin_name` field
+    of the `SummaryMetadata` proto passed to `tf.summary.write`.
+
+    All methods on this class take a `RequestContext` parameter as the
+    first positional argument. This argument is temporarily optional to
+    facilitate migration, but will be required in the future.
+
     Unless otherwise noted, any methods on this class may raise errors
     defined in `tensorboard.errors`, like `tensorboard.errors.NotFoundError`.
     """
 
-    def data_location(self, experiment_id):
+    def data_location(self, ctx=None, *, experiment_id):
         """Render a human-readable description of the data source.
 
         For instance, this might return a path to a directory on disk.
@@ -45,6 +115,7 @@ class DataProvider(object):
         The default implementation always returns the empty string.
 
         Args:
+          ctx: A TensorBoard `RequestContext` value.
           experiment_id: ID of enclosing experiment.
 
         Returns:
@@ -52,11 +123,49 @@ class DataProvider(object):
         """
         return ""
 
+    def experiment_metadata(self, ctx=None, *, experiment_id):
+        """Retrieve metadata of a given experiment.
+
+        The metadata may include fields such as name and description
+        of the experiment, as well as a timestamp for the experiment.
+
+        Args:
+          ctx: A TensorBoard `RequestContext` value.
+          experiment_id:  ID of the experiment in question.
+
+        Returns:
+          If the metadata does not exist, `None`.
+          Otherwise, an `ExperimentMetadata` object containing metadata about
+            the experiment.
+        """
+        return None
+
+    def list_plugins(self, ctx=None, *, experiment_id):
+        """List all plugins that own data in a given experiment.
+
+        This should be the set of all plugin names `p` such that calling
+        `list_scalars`, `list_tensors`, or `list_blob_sequences` for the
+        given `experiment_id` and plugin name `p` gives a non-empty
+        result.
+
+        This operation is optional, but may later become required.
+
+        Args:
+          ctx: A TensorBoard `RequestContext` value.
+          experiment_id: ID of enclosing experiment.
+
+        Returns:
+          A collection of strings representing plugin names, or `None`
+          if this operation is not supported by this data provider.
+        """
+        return None
+
     @abc.abstractmethod
-    def list_runs(self, experiment_id):
+    def list_runs(self, ctx=None, *, experiment_id):
         """List all runs within an experiment.
 
         Args:
+          ctx: A TensorBoard `RequestContext` value.
           experiment_id: ID of enclosing experiment.
 
         Returns:
@@ -68,10 +177,13 @@ class DataProvider(object):
         pass
 
     @abc.abstractmethod
-    def list_scalars(self, experiment_id, plugin_name, run_tag_filter=None):
+    def list_scalars(
+        self, ctx=None, *, experiment_id, plugin_name, run_tag_filter=None
+    ):
         """List metadata about scalar time series.
 
         Args:
+          ctx: A TensorBoard `RequestContext` value.
           experiment_id: ID of enclosing experiment.
           plugin_name: String name of the TensorBoard plugin that created
             the data to be queried. Required.
@@ -93,16 +205,24 @@ class DataProvider(object):
 
     @abc.abstractmethod
     def read_scalars(
-        self, experiment_id, plugin_name, downsample=None, run_tag_filter=None
+        self,
+        ctx=None,
+        *,
+        experiment_id,
+        plugin_name,
+        downsample=None,
+        run_tag_filter=None
     ):
         """Read values from scalar time series.
 
         Args:
+          ctx: A TensorBoard `RequestContext` value.
           experiment_id: ID of enclosing experiment.
           plugin_name: String name of the TensorBoard plugin that created
             the data to be queried. Required.
           downsample: Integer number of steps to which to downsample the
-            results (e.g., `1000`). Required.
+            results (e.g., `1000`). See `DataProvider` class docstring
+            for details about this parameter. Required.
           run_tag_filter: Optional `RunTagFilter` value. If provided, a time
             series will only be included in the result if its run and tag
             both pass this filter. If `None`, all time series will be
@@ -121,10 +241,13 @@ class DataProvider(object):
         """
         pass
 
-    def list_tensors(self, experiment_id, plugin_name, run_tag_filter=None):
+    def list_tensors(
+        self, ctx=None, *, experiment_id, plugin_name, run_tag_filter=None
+    ):
         """List metadata about tensor time series.
 
         Args:
+          ctx: A TensorBoard `RequestContext` value.
           experiment_id: ID of enclosing experiment.
           plugin_name: String name of the TensorBoard plugin that created
             the data to be queried. Required.
@@ -145,16 +268,24 @@ class DataProvider(object):
         pass
 
     def read_tensors(
-        self, experiment_id, plugin_name, downsample=None, run_tag_filter=None
+        self,
+        ctx=None,
+        *,
+        experiment_id,
+        plugin_name,
+        downsample=None,
+        run_tag_filter=None
     ):
         """Read values from tensor time series.
 
         Args:
+          ctx: A TensorBoard `RequestContext` value.
           experiment_id: ID of enclosing experiment.
           plugin_name: String name of the TensorBoard plugin that created
             the data to be queried. Required.
           downsample: Integer number of steps to which to downsample the
-            results (e.g., `1000`). Required.
+            results (e.g., `1000`). See `DataProvider` class docstring
+            for details about this parameter. Required.
           run_tag_filter: Optional `RunTagFilter` value. If provided, a time
             series will only be included in the result if its run and tag
             both pass this filter. If `None`, all time series will be
@@ -174,11 +305,12 @@ class DataProvider(object):
         pass
 
     def list_blob_sequences(
-        self, experiment_id, plugin_name, run_tag_filter=None
+        self, ctx=None, *, experiment_id, plugin_name, run_tag_filter=None
     ):
         """List metadata about blob sequence time series.
 
         Args:
+          ctx: A TensorBoard `RequestContext` value.
           experiment_id: ID of enclosing experiment.
           plugin_name: String name of the TensorBoard plugin that created the data
             to be queried. Required.
@@ -197,16 +329,24 @@ class DataProvider(object):
         pass
 
     def read_blob_sequences(
-        self, experiment_id, plugin_name, downsample=None, run_tag_filter=None
+        self,
+        ctx=None,
+        *,
+        experiment_id,
+        plugin_name,
+        downsample=None,
+        run_tag_filter=None
     ):
         """Read values from blob sequence time series.
 
         Args:
+          ctx: A TensorBoard `RequestContext` value.
           experiment_id: ID of enclosing experiment.
           plugin_name: String name of the TensorBoard plugin that created the data
             to be queried. Required.
-          downsample: Integer number of steps to which to downsample the results
-            (e.g., `1000`). Required.
+          downsample: Integer number of steps to which to downsample the
+            results (e.g., `1000`). See `DataProvider` class docstring
+            for details about this parameter. Required.
           run_tag_filter: Optional `RunTagFilter` value. If provided, a time series
             will only be included in the result if its run and tag both pass this
             filter. If `None`, all time series will be included. The result will
@@ -222,10 +362,11 @@ class DataProvider(object):
         """
         pass
 
-    def read_blob(self, blob_key):
+    def read_blob(self, ctx=None, *, blob_key):
         """Read data for a single blob.
 
         Args:
+          ctx: A TensorBoard `RequestContext` value.
           blob_key: A key identifying the desired blob, as provided by
             `read_blob_sequences(...)`.
 
@@ -236,6 +377,35 @@ class DataProvider(object):
           tensorboard.errors.PublicError: See `DataProvider` class docstring.
         """
         pass
+
+
+class ExperimentMetadata(object):
+    """Metadata about an experiment.
+
+    Attributes:
+      experiment_name: A user-facing name for the experiment (as a `str`).
+      experiment_description: A user-facing description for the experiment
+        (as a `str`).
+      creation_time: A timestamp for the creation of the experiment, as `float`
+        seconds since the epoch.
+    """
+
+    def __init__(self, experiment_name, experiment_description, creation_time):
+        self._experiment_name = experiment_name
+        self._experiment_description = experiment_description
+        self._creation_time = creation_time
+
+    @property
+    def experiment_name(self):
+        return self._experiment_name
+
+    @property
+    def experiment_description(self):
+        return self._experiment_description
+
+    @property
+    def creation_time(self):
+        return self._creation_time
 
 
 class Run(object):
@@ -295,7 +465,8 @@ class Run(object):
 class _TimeSeries(object):
     """Metadata about time series data for a particular run and tag.
 
-    Superclass of `ScalarTimeSeries` and `BlobSequenceTimeSeries`.
+    Superclass of `ScalarTimeSeries`, `TensorTimeSeries`, and
+    `BlobSequenceTimeSeries`.
     """
 
     __slots__ = (
@@ -307,7 +478,13 @@ class _TimeSeries(object):
     )
 
     def __init__(
-        self, max_step, max_wall_time, plugin_content, description, display_name
+        self,
+        *,
+        max_step,
+        max_wall_time,
+        plugin_content,
+        description,
+        display_name
     ):
         self._max_step = max_step
         self._max_wall_time = max_wall_time
@@ -563,8 +740,8 @@ class BlobSequenceTimeSeries(_TimeSeries):
         nonnegative integer.
       max_wall_time: The largest wall time of any datum in this time series, as
         `float` seconds since epoch.
-      latest_max_index: The largest index in the sequence at max_step (0-based,
-        inclusive).
+      max_length: The largest length (number of blobs) of any datum in
+        this scalar time series, or `None` if this time series is empty.
       plugin_content: A bytestring of arbitrary plugin-specific metadata for this
         time series, as provided to `tf.summary.write` in the
         `plugin_data.content` field of the `metadata` argument.
@@ -574,25 +751,30 @@ class BlobSequenceTimeSeries(_TimeSeries):
         empty if no description was specified. Deprecated; may be removed soon.
     """
 
-    __slots__ = ("_latest_max_index",)
+    __slots__ = ("_max_length",)
 
     def __init__(
         self,
+        *,
         max_step,
         max_wall_time,
-        latest_max_index,
+        max_length,
         plugin_content,
         description,
-        display_name,
+        display_name
     ):
         super(BlobSequenceTimeSeries, self).__init__(
-            max_step, max_wall_time, plugin_content, description, display_name
+            max_step=max_step,
+            max_wall_time=max_wall_time,
+            plugin_content=plugin_content,
+            description=description,
+            display_name=display_name,
         )
-        self._latest_max_index = latest_max_index
+        self._max_length = max_length
 
     @property
-    def latest_max_index(self):
-        return self._latest_max_index
+    def max_length(self):
+        return self._max_length
 
     def __eq__(self, other):
         if not isinstance(other, BlobSequenceTimeSeries):
@@ -601,7 +783,7 @@ class BlobSequenceTimeSeries(_TimeSeries):
             return False
         if self._max_wall_time != other._max_wall_time:
             return False
-        if self._latest_max_index != other._latest_max_index:
+        if self._max_length != other._max_length:
             return False
         if self._plugin_content != other._plugin_content:
             return False
@@ -616,7 +798,7 @@ class BlobSequenceTimeSeries(_TimeSeries):
             (
                 self._max_step,
                 self._max_wall_time,
-                self._latest_max_index,
+                self._max_length,
                 self._plugin_content,
                 self._description,
                 self._display_name,
@@ -628,7 +810,7 @@ class BlobSequenceTimeSeries(_TimeSeries):
             (
                 "max_step=%r" % (self._max_step,),
                 "max_wall_time=%r" % (self._max_wall_time,),
-                "latest_max_index=%r" % (self._latest_max_index,),
+                "max_length=%r" % (self._max_length,),
                 "plugin_content=%r" % (self._plugin_content,),
                 "description=%r" % (self._description,),
                 "display_name=%r" % (self._display_name,),
@@ -778,8 +960,27 @@ class RunTagFilter(object):
           tags: Collection of tag names, as strings, or `None` to admit all
             tags.
         """
-        self._runs = None if runs is None else frozenset(runs)
-        self._tags = None if tags is None else frozenset(tags)
+        self._runs = self._parse_optional_string_set("runs", runs)
+        self._tags = self._parse_optional_string_set("tags", tags)
+
+    def _parse_optional_string_set(self, name, value):
+        if value is None:
+            return None
+        if isinstance(value, six.string_types):
+            # Prevent confusion: strings _are_ iterable, but as
+            # sequences of characters, so this likely signals an error.
+            raise TypeError(
+                "%s: expected `None` or collection of strings; got %r: %r"
+                % (name, type(value), value)
+            )
+        value = frozenset(value)
+        for item in value:
+            if not isinstance(item, six.string_types):
+                raise TypeError(
+                    "%s: expected `None` or collection of strings; "
+                    "got item of type %r: %r" % (name, type(item), item)
+                )
+        return value
 
     @property
     def runs(self):

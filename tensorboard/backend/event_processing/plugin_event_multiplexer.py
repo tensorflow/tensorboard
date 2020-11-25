@@ -150,7 +150,7 @@ class EventMultiplexer(object):
                 if name in self._paths and self._paths[name] != path:
                     # TODO(@decentralion) - Make it impossible to overwrite an old path
                     # with a new path (just give the new path a distinct name)
-                    logger.warn(
+                    logger.warning(
                         "Conflict for name %s: old path %s, new path %s",
                         name,
                         self._paths[name],
@@ -260,7 +260,7 @@ class EventMultiplexer(object):
 
         with self._accumulators_mutex:
             for name in names_to_delete:
-                logger.warn("Deleting accumulator %r", name)
+                logger.warning("Deleting accumulator %r", name)
                 del self._accumulators[name]
         logger.info("Finished with EventMultiplexer.Reload()")
         return self
@@ -425,6 +425,18 @@ class EventMultiplexer(object):
             mapping[run] = tag_to_content
         return mapping
 
+    def ActivePlugins(self):
+        """Return a set of plugins with summary data.
+
+        Returns:
+          The distinct union of `plugin_data.plugin_name` fields from
+          all the `SummaryMetadata` protos stored in any run known to
+          this multiplexer.
+        """
+        with self._accumulators_mutex:
+            accumulators = list(self._accumulators.values())
+        return frozenset().union(*(a.ActivePlugins() for a in accumulators))
+
     def SummaryMetadata(self, run, tag):
         """Return the summary metadata for the given tag on the given run.
 
@@ -443,6 +455,21 @@ class EventMultiplexer(object):
         """
         accumulator = self.GetAccumulator(run)
         return accumulator.SummaryMetadata(tag)
+
+    def AllSummaryMetadata(self):
+        """Return summary metadata for all time series.
+
+        Returns:
+          A nested dict `d` such that `d[run][tag]` is a
+          `SummaryMetadata` proto for the keyed time series.
+        """
+        with self._accumulators_mutex:
+            # To avoid nested locks, we construct a copy of the run-accumulator map
+            items = list(six.iteritems(self._accumulators))
+        return {
+            run_name: accumulator.AllSummaryMetadata()
+            for run_name, accumulator in items
+        }
 
     def Runs(self):
         """Return all the run names in the `EventMultiplexer`.

@@ -12,13 +12,28 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {ChangeDetectionStrategy, Component} from '@angular/core';
-import {Store, select, createSelector} from '@ngrx/store';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  TemplateRef,
+} from '@angular/core';
+import {Store, createSelector} from '@ngrx/store';
+import {combineLatest} from 'rxjs';
+import {map} from 'rxjs/operators';
 
-import {getPlugins, getActivePlugin, getPluginsListLoaded} from '../core/store';
+import {
+  getPlugins,
+  getActivePlugin,
+  getPluginsListLoaded,
+  getEnvironment,
+} from '../core/store';
+import {PluginsListFailureCode} from '../core/types';
 import {PluginMetadata} from '../types/api';
-import {LoadState} from '../types/data';
+import {LoadState, DataLoadState} from '../types/data';
 import {State} from '../core/store/core_types';
+
+import {PluginLoadState} from './plugins_component';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
@@ -30,7 +45,7 @@ const activePlugin = createSelector(
   getPlugins,
   getActivePlugin,
   (plugins, id): UiPluginMetadata | null => {
-    if (!id || !plugins) return null;
+    if (!id || !plugins[id]) return null;
     return Object.assign({id}, plugins[id]);
   }
 );
@@ -46,16 +61,70 @@ const lastLoadedTimeInMs = createSelector(
   selector: 'plugins',
   template: `
     <plugins-component
-      [activePlugin]="activePlugin$ | async"
+      [activeKnownPlugin]="activeKnownPlugin$ | async"
+      [activePluginId]="activePluginId$ | async"
+      [dataLocation]="dataLocation$ | async"
       [lastUpdated]="lastLoadedTimeInMs$ | async"
+      [pluginLoadState]="pluginLoadState$ | async"
+      [environmentFailureNotFoundTemplate]="environmentFailureNotFoundTemplate"
+      [environmentFailureUnknownTemplate]="environmentFailureUnknownTemplate"
     ></plugins-component>
   `,
   styles: ['plugins-component { height: 100%; }'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PluginsContainer {
-  readonly activePlugin$ = this.store.pipe(select(activePlugin));
-  readonly lastLoadedTimeInMs$ = this.store.pipe(select(lastLoadedTimeInMs));
+  readonly activeKnownPlugin$ = this.store.select(activePlugin);
+  readonly activePluginId$ = this.store.select(getActivePlugin);
+
+  @Input()
+  environmentFailureNotFoundTemplate?: TemplateRef<any>;
+
+  @Input()
+  environmentFailureUnknownTemplate?: TemplateRef<any>;
+
+  readonly pluginLoadState$ = combineLatest(
+    this.activeKnownPlugin$,
+    this.activePluginId$,
+    this.store.select(getPluginsListLoaded)
+  ).pipe(
+    map(([activePlugin, activePluginId, loadState]) => {
+      if (loadState.failureCode !== null) {
+        // Despite its 'Plugins'-specific name, getPluginsListLoaded actually
+        // encapsulates multiple requests to load different parts of the
+        // environment.
+        if (loadState.failureCode === PluginsListFailureCode.NOT_FOUND) {
+          return PluginLoadState.ENVIRONMENT_FAILURE_NOT_FOUND;
+        } else {
+          return PluginLoadState.ENVIRONMENT_FAILURE_UNKNOWN;
+        }
+      }
+
+      if (activePlugin !== null) {
+        return PluginLoadState.LOADED;
+      }
+
+      if (
+        loadState.lastLoadedTimeInMs === null &&
+        loadState.state === DataLoadState.LOADING
+      ) {
+        return PluginLoadState.LOADING;
+      }
+
+      if (activePluginId) {
+        return PluginLoadState.UNKNOWN_PLUGIN_ID;
+      }
+
+      return PluginLoadState.NO_ENABLED_PLUGINS;
+    })
+  );
+
+  readonly lastLoadedTimeInMs$ = this.store.select(lastLoadedTimeInMs);
+  readonly dataLocation$ = this.store.select(getEnvironment).pipe(
+    map((env) => {
+      return env.data_location;
+    })
+  );
 
   constructor(private readonly store: Store<State>) {}
 }

@@ -18,7 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import collections
+import collections.abc
 import json
 import os
 import shutil
@@ -32,6 +32,7 @@ from werkzeug import test as werkzeug_test
 from werkzeug import wrappers
 
 from tensorboard.backend import application
+from tensorboard.backend.event_processing import data_provider
 from tensorboard.backend.event_processing import (
     plugin_event_multiplexer as event_multiplexer,
 )
@@ -45,6 +46,17 @@ tf.compat.v1.disable_v2_behavior()
 
 class ImagesPluginTest(tf.test.TestCase):
     def setUp(self):
+        super().setUp()
+        (logdir, multiplexer) = self._create_data()
+        provider = data_provider.MultiplexerDataProvider(multiplexer, logdir)
+        ctx = base_plugin.TBContext(logdir=logdir, data_provider=provider)
+        plugin = images_plugin.ImagesPlugin(ctx)
+        wsgi_app = application.TensorBoardWSGI([plugin])
+        self.server = werkzeug_test.Client(wsgi_app, wrappers.BaseResponse)
+        self.routes = plugin.get_plugin_apps()
+
+    def _create_data(self):
+        """Write test data to disk, returning `(logdir, multiplexer)`."""
         self.log_dir = tempfile.mkdtemp()
 
         # We use numpy.random to generate images. We seed to avoid non-determinism
@@ -104,13 +116,7 @@ class ImagesPluginTest(tf.test.TestCase):
             {"foo": foo_directory, "bar": bar_directory,}
         )
         multiplexer.Reload()
-        context = base_plugin.TBContext(
-            logdir=self.log_dir, multiplexer=multiplexer
-        )
-        plugin = images_plugin.ImagesPlugin(context)
-        wsgi_app = application.TensorBoardWSGI([plugin])
-        self.server = werkzeug_test.Client(wsgi_app, wrappers.BaseResponse)
-        self.routes = plugin.get_plugin_apps()
+        return (self.log_dir, multiplexer)
 
     def tearDown(self):
         shutil.rmtree(self.log_dir, ignore_errors=True)
@@ -128,11 +134,11 @@ class ImagesPluginTest(tf.test.TestCase):
 
     def testRoutesProvided(self):
         """Tests that the plugin offers the correct routes."""
-        self.assertIsInstance(self.routes["/images"], collections.Callable)
+        self.assertIsInstance(self.routes["/images"], collections.abc.Callable)
         self.assertIsInstance(
-            self.routes["/individualImage"], collections.Callable
+            self.routes["/individualImage"], collections.abc.Callable
         )
-        self.assertIsInstance(self.routes["/tags"], collections.Callable)
+        self.assertIsInstance(self.routes["/tags"], collections.abc.Callable)
 
     def testOldStyleImagesRoute(self):
         """Tests that the /images routes returns correct old-style data."""
@@ -148,20 +154,18 @@ class ImagesPluginTest(tf.test.TestCase):
         # Verify that the 1st entry is correct.
         entry = entries[0]
         self.assertEqual(0, entry["step"])
-        parsed_query = urllib.parse.parse_qs(entry["query"])
-        self.assertListEqual(["foo"], parsed_query["run"])
-        self.assertListEqual(["baz/image/0"], parsed_query["tag"])
-        self.assertListEqual(["0"], parsed_query["sample"])
-        self.assertListEqual(["0"], parsed_query["index"])
+        parsed_query_1 = urllib.parse.parse_qs(entry["query"])
+        self.assertItemsEqual(["blob_key"], parsed_query_1)
+        self.assertTrue(parsed_query_1["blob_key"])
 
         # Verify that the 2nd entry is correct.
         entry = entries[1]
         self.assertEqual(1, entry["step"])
-        parsed_query = urllib.parse.parse_qs(entry["query"])
-        self.assertListEqual(["foo"], parsed_query["run"])
-        self.assertListEqual(["baz/image/0"], parsed_query["tag"])
-        self.assertListEqual(["0"], parsed_query["sample"])
-        self.assertListEqual(["1"], parsed_query["index"])
+        parsed_query_2 = urllib.parse.parse_qs(entry["query"])
+        self.assertItemsEqual(["blob_key"], parsed_query_2)
+        self.assertTrue(parsed_query_2["blob_key"])
+
+        self.assertNotEqual(parsed_query_1, parsed_query_2)
 
     def testNewStyleImagesRoute(self):
         """Tests that the /images routes returns correct new-style data."""
@@ -177,26 +181,29 @@ class ImagesPluginTest(tf.test.TestCase):
         # Verify that the 1st entry is correct.
         entry = entries[0]
         self.assertEqual(0, entry["step"])
-        parsed_query = urllib.parse.parse_qs(entry["query"])
-        self.assertListEqual(["bar"], parsed_query["run"])
-        self.assertListEqual(["quux/image_summary"], parsed_query["tag"])
-        self.assertListEqual(["0"], parsed_query["sample"])
-        self.assertListEqual(["0"], parsed_query["index"])
+        parsed_query_1 = urllib.parse.parse_qs(entry["query"])
+        self.assertItemsEqual(["blob_key"], parsed_query_1)
+        self.assertTrue(parsed_query_1["blob_key"])
 
         # Verify that the 2nd entry is correct.
         entry = entries[1]
         self.assertEqual(1, entry["step"])
-        parsed_query = urllib.parse.parse_qs(entry["query"])
-        self.assertListEqual(["bar"], parsed_query["run"])
-        self.assertListEqual(["quux/image_summary"], parsed_query["tag"])
-        self.assertListEqual(["0"], parsed_query["sample"])
-        self.assertListEqual(["1"], parsed_query["index"])
+        parsed_query_2 = urllib.parse.parse_qs(entry["query"])
+        self.assertItemsEqual(["blob_key"], parsed_query_2)
+        self.assertTrue(parsed_query_2["blob_key"])
+
+        self.assertNotEqual(parsed_query_1, parsed_query_2)
 
     def testOldStyleIndividualImageRoute(self):
         """Tests fetching an individual image from an old-style summary."""
         response = self.server.get(
-            "/data/plugin/images/individualImage"
-            "?run=foo&tag=baz/image/0&sample=0&index=0"
+            "/data/plugin/images/images?run=foo&tag=baz/image/0&sample=0"
+        )
+        self.assertEqual(200, response.status_code)
+        entries = self._DeserializeResponse(response.get_data())
+        query_string = entries[0]["query"]
+        response = self.server.get(
+            "/data/plugin/images/individualImage?" + query_string
         )
         self.assertEqual(200, response.status_code)
         self.assertEqual("image/png", response.headers.get("content-type"))
@@ -204,8 +211,13 @@ class ImagesPluginTest(tf.test.TestCase):
     def testNewStyleIndividualImageRoute(self):
         """Tests fetching an individual image from a new-style summary."""
         response = self.server.get(
-            "/data/plugin/images/individualImage"
-            "?run=bar&tag=quux/image_summary&sample=0&index=0"
+            "/data/plugin/images/images?run=bar&tag=quux/image_summary&sample=0"
+        )
+        self.assertEqual(200, response.status_code)
+        entries = self._DeserializeResponse(response.get_data())
+        query_string = entries[0]["query"]
+        response = self.server.get(
+            "/data/plugin/images/individualImage?" + query_string
         )
         self.assertEqual(200, response.status_code)
         self.assertEqual("image/png", response.headers.get("content-type"))

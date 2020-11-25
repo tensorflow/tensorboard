@@ -1,0 +1,75 @@
+/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+==============================================================================*/
+@import 'tensorboard/webapp/theme/tb_theme';
+
+:host {
+  color: mat-color($tb-foreground, secondary-text);
+  font-size: 12px;
+}
+
+section {
+  border-bottom: 1px solid mat-color($tb-foreground, border);
+  padding: 16px;
+}
+
+.section-title {
+  color: mat-color($tb-foreground, text);
+  text-transform: uppercase;
+  font-weight: 500;
+  font-size: 13px;
+  line-height: normal;
+  margin: 0 0 12px 0;
+}
+
+section .control-row:not(:last-child) {
+  margin-bottom: 12px;
+}
+
+.control-name {
+  margin-bottom: 8px;
+}
+
+.slider-row {
+  display: flex;
+  align-items: center;
+  // Reset mat-slider's internal extra space on top
+  // https://github.com/angular/components/blob/master/src/material/slider/slider.scss#L10
+  height: 28px;
+
+  .reset-button {
+    margin-left: 6px;
+  }
+
+  .slider-input {
+    border: 1px solid mat-color($tf-slate, 500);
+    border-radius: 2px;
+    box-sizing: border-box;
+    height: 100%;
+    margin-left: 12px;
+    padding: 0 4px;
+  }
+}
+
+mat-slider {
+  flex: 1;
+  // Reset mat-slider's internal extra space on left/right sides
+  // https://github.com/angular/components/blob/master/src/material/slider/slider.scss#L10
+  margin-left: -8px;
+  margin-right: -8px;
+}
+
+tb-dropdown {
+  display: block;
+}

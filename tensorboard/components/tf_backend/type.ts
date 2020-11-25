@@ -12,24 +12,23 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-namespace tf_backend {
-  export type ExperimentId = number;
-  export type RunId = number | null;
-  export type TagId = number;
-
-  export type Experiment = {id: ExperimentId; name: string; startTime: number};
-
-  export type Run = {
-    id: RunId;
-    name: string;
-    startTime: number;
-    tags: Tag[];
-  };
-
-  export type Tag = {
-    id: TagId;
-    name: string;
-    displayName: string;
-    pluginName: string;
-  };
-} // namespace tf_backend
+export type ExperimentId = number;
+export type RunId = number | null;
+export type TagId = number;
+export type Experiment = {
+  id: ExperimentId;
+  name: string;
+  startTime: number;
+};
+export type Run = {
+  id: RunId;
+  name: string;
+  startTime: number;
+  tags: Tag[];
+};
+export type Tag = {
+  id: TagId;
+  name: string;
+  displayName: string;
+  pluginName: string;
+};

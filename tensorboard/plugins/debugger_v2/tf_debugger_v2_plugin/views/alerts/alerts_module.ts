@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
 
 import {AlertsComponent} from './alerts_component';
@@ -20,6 +21,7 @@ import {AlertsContainer} from './alerts_container';
 
 @NgModule({
   declarations: [AlertsComponent, AlertsContainer],
+  imports: [CommonModule],
   exports: [AlertsContainer],
 })
 export class AlertsModule {}

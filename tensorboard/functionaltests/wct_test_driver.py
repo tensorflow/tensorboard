@@ -25,7 +25,6 @@ import os
 import re
 import subprocess
 import unittest
-from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support import wait
 from testing.web import webtest
 

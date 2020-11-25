@@ -1,8 +1,8 @@
+load("//tensorboard/defs:defs.bzl", "tf_ng_module")
+
 package(default_visibility = ["//tensorboard:internal"])
 
-load("@npm_angular_bazel//:index.bzl", "ng_module")
-
-ng_module(
+tf_ng_module(
     name = "data_source",
     srcs = [
         "tfdbg2_data_source.ts",
@@ -10,8 +10,9 @@ ng_module(
     ],
     deps = [
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/store:types",
-        "//tensorboard/webapp/angular:expect_angular_common_http",
+        "//tensorboard/webapp/webapp_data_source:http_client",
         "@npm//@angular/common",
         "@npm//@angular/core",
+        "@npm//rxjs",
     ],
 )

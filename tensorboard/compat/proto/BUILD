@@ -1,13 +1,16 @@
 # Description:
 # TensorBoard, a dashboard for investigating TensorFlow
 
-package(default_visibility = ["//tensorboard:internal"])
-
 load("//tensorboard/defs:protos.bzl", "tb_proto_library")
 
-licenses(["notice"])  # Apache 2.0
+package(default_visibility = ["//tensorboard:internal"])
 
-exports_files(["LICENSE"])
+licenses(["notice"])
+
+filegroup(
+    name = "proto_srcs",
+    srcs = glob(["*.proto"]),
+)
 
 # Protobuf files copied from the main TensorFlow repository.
 # Keep this list synced with proto_test.py
@@ -52,7 +55,7 @@ py_test(
     name = "proto_test",
     size = "small",
     srcs = ["proto_test.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     tags = [
         "manual",
         "notap",

@@ -1,3 +1,236 @@
+# Release 2.4.0
+
+The 2.4 minor series tracks TensorFlow 2.4.
+
+## Features
+
+- Improved performance for scalar charts with many runs
+  - Up to 50% faster network fetch times in some cases (#4050)
+  - Up to 90% faster paint time in some cases (#4053)
+- 🧪 **Experimental** Time Series dashboard
+  - View scalars, histograms, and images side-by-side in a combined view
+  - Customize the color of specific runs
+  - Pin specific charts/images/histograms and share a custom view of your data
+  - No additional logging required
+
+## TensorBoard.dev updates
+
+- Added support for uploading Hparams (#3916)
+  - Try `tensorboard dev upload` on a logdir containing
+    [hparams][hparam-tutorial]!
+
+[hparam-tutorial]: https://www.tensorflow.org/tensorboard/hyperparameter_tuning_with_hparams
+
+## Bug fixes
+
+- Docs: fixed image summary tutorial (#4206)
+- Projector Plugin: fixed bookmark loading (#4159), thanks aknoerig@!
+- Graphs: updated TPU-compatible ops list (#4024)
+
+## Deprecations
+
+TensorBoard features that depend on TensorFlow APIs now require TensorFlow 2.x
+installed. Running TensorBoard 2.4.0+ with TensorFlow 1.x installed will not be
+supported.
+
+Please note that this does not affect data already written to disk; summaries
+emitted by the TF 1.x tf.summary API are still readable and fully supported by
+the latest versions of TensorBoard.
+
+Support for Python 3.5 is dropped.
+
+Plugin dashboards have been removed:
+- Beholder: see #3843
+- Debugger V1: replaced by [Debugger V2][debugger_v2_tutorial]
+
+[debugger_v2_tutorial]: https://www.tensorflow.org/tensorboard/debugger_v2
+
+# Release 2.3.0
+
+The 2.3 minor series tracks TensorFlow 2.3.
+
+## Features
+
+- The 30 sec default reload period is now customizable in the Settings UI
+  (#2794)
+- 🧪 **Experimental** Debugger V2 is now available; see the
+  [tutorial][debugger-v2-tutorial] on how to use the experimental TensorFlow
+  APIs to spot NaN's in tensors, view graphs generated from executions, and the
+  related lines in the Python source code (#3821)
+
+## TensorBoard.dev updates
+- Added support for showing the Distributions tab (#3762)
+- Uploader now displays data statistics in the console while uploading data
+  (#3678)
+- Added new uploader command line flags (#3707)
+  - `--dry_run`: causes the uploader to only read the logdir and display
+    statistics (if `--verbose` is the default 1) without uploading any data to
+    the server
+  - `--one_shot`: causes the uploader to exit immediately after all existing
+    data in the logdir are uploaded; this mode prints a warning message if the
+    logdir doesn't contain any uploadable data
+- Upload button in the header offers a convenient, copyable command
+- 🧪 **Experimental** DataFrame API: You can now read Scalars data from
+  TensorBoard.dev as a Pandas DataFrame (learn more [here][dataframe-tutorial])
+
+[debugger-v2-tutorial]: https://www.tensorflow.org/tensorboard/debugger_v2
+[dataframe-tutorial]: https://www.tensorflow.org/tensorboard/dataframe_api
+
+## Bug fixes
+- Projector plugin
+  - Shows data when logs exist in both logdir root and subdirectory (#3694)
+  - Fixed incorrect embeddings from TF2 checkpoints (#3679)
+  - Added support for binary format, with 2x speedup loading large tensors in
+    some cases (#3685) - thanks [@RustingSword](https://github.com/RustingSword)
+  - Added [Colab tutorial][projector-colab] for Projector plugin (#3423)
+- Notebooks
+  - Increased port scanning from 10 to 100 to better support multi-tenant
+    Notebooks (#3780) - thanks [@jerrylian-db](https://github.com/jerrylian-db)
+  - Add proxy (e.g. jupyter-server-proxy) support for %tensorboard magics
+    (#3674) - thanks [@zac-hopkinson](https://github.com/zac-hopkinson)
+    - Set the TENSORBOARD_PROXY_URL environment variable
+      `export TENSORBOARD_PROXY_URL="/proxy/%PORT%/"`
+- Dynamic plugins (Projector, Fairness Indicators, Profiler, What-If Tool)
+  appear when TensorBoard is launched programmatically via Python (#3695)
+- Fixed download links in Custom Scalars (#3794)
+- Updated broken docs (#3440, #3459, #3561, #3681) - thanks
+  [@LexusH](https://github.com/LexusH),
+  [@ManishAradwad](https://github.com/ManishAradwad),
+  [@ricmatsui](https://github.com/ricmatsui),
+  [@robertlugg](https://github.com/robertlugg)
+- Better handling of S3-related InvalidRange errors (#3609) - thanks
+  [@ahirner](https://github.com/ahirner)
+- Fixed deprecated numpy usage (#3768) - thanks
+  [@lgeiger](https://github.com/lgeiger)
+
+[projector-colab]: https://www.tensorflow.org/tensorboard/tensorboard_projector_plugin
+
+## Deprecations
+
+- Beholder will be removed in a future release (#3843)
+- Debugger (V1) will be removed in a future release, in favor of the
+  aforementioned V2 version
+
+## Misc
+
+The frontend now uses Angular (replaces the Polymer entry point, which will be
+removed in a future release; still visible at the `/legacy.html` endpoint)
+(#3779). If you observe any bugs that do not reproduce under `/legacy.html`,
+please file an issue.
+
+For dynamic plugins, please see their respective pages
+([Fairness Indicators][fairness-docs], [Profiler][profiler-docs],
+[What-If Tool][wit-docs]).
+
+[fairness-docs]: https://github.com/tensorflow/fairness-indicators/commits/master
+[profiler-docs]: https://github.com/tensorflow/profiler/commits/master
+[wit-docs]: https://github.com/PAIR-code/what-if-tool/blob/master/RELEASE.md
+
+# Release 2.2.2
+
+## Features
+
+- Some performance improvements to line charts (#3524)
+- Performance improvements in the Text plugin due to batch HTML
+  sanitization (#3529)
+- Performance improvements in backend markdown cleaning for tag
+  rendering (#3599)
+- CSS/layout performance optimization by applying layout/layer bound where
+  possible (#3642)
+- The `tensorboard dev list` subcommand now reports the total size of stored
+  tensors (used as the backing storage type for Histograms) (#3652)
+
+## TensorBoard.dev updates
+
+- TensorBoard.dev now supports the Histograms plugin, for experiments
+  uploaded starting from this release
+  - The `tensorboard dev upload` subcommand now sends the histograms, when
+    available, so that it can be rendered via the Histograms plugin on
+    TensorBoard.dev
+- This release may support additional plugins in the future, once those plugins
+  are enabled in the TensorBoard.dev service
+
+## Breaking changes
+
+- The experimental and legacy SQLite support (via the `--db_import` and `--db`
+  flags) is removed to ease maintenance (#3539)
+
+# Release 2.2.1
+
+## TensorBoard.dev updates
+
+- TensorBoard.dev now renders model graphs, for experiments uploaded starting
+  from this release.
+  - The `tensorboard dev upload` subcommand now sends the model graph, when
+    available, so that it can be rendered via the Graphs plugin on
+    TensorBoard.dev.
+  - Large node attribute values (which would not be rendered anyway) are
+    filtered out before upload.
+  - Graphs that remain larger than 10MB after filtering are not uploaded.
+- The `tensorboard dev upload` command supports a `--plugins` option to
+  explicitly indicate the desired plugins for which summary data should be
+  uploaded (#3402, #3492)
+- The `tensorboard dev list` subcommand now reports the total size of stored
+  binary objects (e.g., graphs) for each experiment (#3464)
+- The `tensorboard dev list` subcommand now accepts a `--json` flag to allow
+  parsing the output more easily (#3480)
+
+## Features
+
+- Auto-reload is now disabled when the browser tab is not visible, saving
+  network bandwidth (#3483)
+- New logo used in the favicon (#3406)
+
+## Bug fixes
+
+- Plugin loading: When a plugin fails to load, TensorBoard logs an error and
+  continues, instead of crashing (#3484, #3486)
+- Eliminated sporadic HTTP 500 errors for XHRs that do markdown rendering (#3491)
+
+# Release 2.2.0
+
+The 2.2 minor series tracks TensorFlow 2.2.
+
+## Features
+
+- Profile plugin now should be pip installed from `tensorboard-plugin-profile`.
+  The new version works in Chrome 80 and Firefox, has better model insights and
+  will be more actively maintained.
+- Add S3_ENDPOINT variable (#3368)  - thanks @thealphacod3r
+- Confirm that the connection to tensorboard works or change to localhost
+  (#2371) - thanks @miguelmorin
+- Update --reload_multifile_inactive_secs default to 24 hours (#3243)
+- New `tensorboard dev update-metadata` command allows for updating the name and
+  description of experiments (#3277)
+- Improved organization of artifacts downloaded during export from
+  TensorBoard.dev (#3307)
+
+## Bug fixes
+
+- Fix for #3282 where the tooltip would remain even after the mouse leaves the
+plot (#3347)
+- Internal fix: HParams summary protos now properly include tensor values (#3386)
+- Fixes to profiling tutorial (#3372 & #3381)
+
+## Breaking Changes
+- Note: As of TensorBoard 2.1.1+, only Python 3 is supported. There will be no
+further releases for Python 2 as per
+https://groups.google.com/a/tensorflow.org/forum/#!topic/developers/ifEAGK3aPls
+
+
+# Release 2.1.1
+
+## Features
+
+- Uploader: Added ability to upload and modify experiment name and description (#3277)
+
+## Breaking changes
+
+- As per
+  https://groups.google.com/a/tensorflow.org/forum/#!topic/developers/ifEAGK3aPls
+  this patch does not support Python 2.  Only Python 3 is supported
+
+
 # Release 2.1.0
 
 The 2.1 minor series tracks TensorFlow 2.1.

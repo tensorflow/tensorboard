@@ -1,0 +1,330 @@
+syntax = "proto3";
+
+package tensorboard.data;
+
+import "tensorboard/compat/proto/summary.proto";
+import "tensorboard/compat/proto/tensor.proto";
+
+option go_package = "github.com/tensorflow/tensorboard/tensorboard/data/proto/data_provider_proto";
+
+service TensorBoardDataProvider {
+  // List plugins that have data for an experiment.
+  rpc ListPlugins(ListPluginsRequest) returns (ListPluginsResponse) {}
+  // List runs within an experiment.
+  rpc ListRuns(ListRunsRequest) returns (ListRunsResponse) {}
+  // List metadata about scalar time series.
+  rpc ListScalars(ListScalarsRequest) returns (ListScalarsResponse) {}
+  // Read data from scalar time series.
+  rpc ReadScalars(ReadScalarsRequest) returns (ReadScalarsResponse) {}
+  // List metadata about tensor time series.
+  rpc ListTensors(ListTensorsRequest) returns (ListTensorsResponse) {}
+  // Read data from tensor time series.
+  rpc ReadTensors(ReadTensorsRequest) returns (ReadTensorsResponse) {}
+  // List metadata about blob sequence time series.
+  rpc ListBlobSequences(ListBlobSequencesRequest)
+      returns (ListBlobSequencesResponse) {}
+  // Read blob references from blob sequence time series. See `ReadBlob` to read
+  // the actual blob data.
+  rpc ReadBlobSequences(ReadBlobSequencesRequest)
+      returns (ReadBlobSequencesResponse) {}
+  // Read data for a specific blob.
+  rpc ReadBlob(ReadBlobRequest) returns (stream ReadBlobResponse) {}
+}
+
+message PluginFilter {
+  // Only match data with exactly this plugin name.
+  string plugin_name = 1;
+}
+
+message RunTagFilter {
+  // Optional filter for runs. If omitted, *all* runs match; this is not
+  // equivalent to an empty submessage (which matches no tags).
+  RunFilter runs = 1;
+  // Optional filter for tags. If omitted, *all* tags match; this is not
+  // equivalent to an empty submessage (which matches no tags).
+  TagFilter tags = 2;
+}
+
+message RunFilter {
+  // Only match runs with exactly one of these names. In particular, if this
+  // list is empty, no runs match.
+  repeated string names = 1;
+}
+
+message TagFilter {
+  // Only match tags with exactly one of these names. In particular, if this
+  // list is empty, no tags match.
+  repeated string names = 1;
+}
+
+message Downsample {
+  // Maximum number of points to return. Must be non-negative. Zero means zero.
+  int64 num_points = 1;
+}
+
+message ListPluginsRequest {
+  // ID of experiment in which to query data.
+  string experiment_id = 1;
+}
+
+message ListPluginsResponse {
+  // List of active plugins: i.e., plugins that have data.
+  repeated Plugin plugins = 1;
+}
+
+message Plugin {
+  // Plugin name, as listed in the `PluginData.plugin_name` field of a
+  // `SummaryMetadata` value.
+  string name = 1;
+}
+
+message ListRunsRequest {
+  // ID of experiment in which to query data.
+  string experiment_id = 1;
+}
+
+message ListRunsResponse {
+  repeated Run runs = 1;
+}
+
+message Run {
+  // Reserved for a unique internal identifier: names are unique, but can also
+  // be long, so it would be nice to work with a more compact ID form.
+  reserved "id";
+  reserved 1;
+  // User-facing name.
+  string name = 2;
+  // Wall time of earliest recorded event, as floating-point seconds since
+  // epoch (same as event file format).
+  double start_time = 3;
+}
+
+message ListScalarsRequest {
+  // ID of experiment in which to query data.
+  string experiment_id = 1;
+  // Filter for the plugin that owns the scalars. It is an error if
+  // `plugin_filter.plugin_name` is the empty string.
+  PluginFilter plugin_filter = 2;
+  // Optional filter for time series. If omitted, all time series match.
+  RunTagFilter run_tag_filter = 3;
+}
+
+message ListScalarsResponse {
+  repeated RunEntry runs = 1;
+  message RunEntry {
+    string run_name = 1;
+    repeated TagEntry tags = 2;
+  }
+  message TagEntry {
+    string tag_name = 1;
+    ScalarMetadata metadata = 2;
+  }
+}
+
+message ScalarMetadata {
+  // Largest step value of any datum in this time series.
+  int64 max_step = 1;
+  // Largest wall time of any datum in this time series.
+  double max_wall_time = 2;
+  // Atemporal summary metadata for this time series.
+  tensorboard.SummaryMetadata summary_metadata = 3;
+}
+
+message ReadScalarsRequest {
+  // ID of experiment in which to query data.
+  string experiment_id = 1;
+  // Filter for the plugin that owns the scalars. It is an error if
+  // `plugin_filter.plugin_name` is the empty string.
+  PluginFilter plugin_filter = 2;
+  // Optional filter for time series. If omitted, all time series match.
+  RunTagFilter run_tag_filter = 3;
+  // Required downsampling specification describing how many points to return
+  // per time series.
+  Downsample downsample = 4;
+}
+
+message ReadScalarsResponse {
+  repeated RunEntry runs = 1;
+  message RunEntry {
+    string run_name = 1;
+    repeated TagEntry tags = 2;
+  }
+  message TagEntry {
+    string tag_name = 1;
+    ScalarData data = 2;
+  }
+}
+
+// A column-major sequence of scalar points. Arrays `step`, `wall_time`, and
+// `value` have the same lengths.
+//
+// These are repeated primitive values, so they will be packed on the wire:
+// <https://developers.google.com/protocol-buffers/docs/encoding#packed>
+message ScalarData {
+  repeated int64 step = 1;
+  repeated double wall_time = 2;
+  repeated double value = 3;
+}
+
+message ListTensorsRequest {
+  // ID of experiment in which to query data.
+  string experiment_id = 1;
+  // Filter for the plugin that owns the tensors. It is an error if
+  // `plugin_filter.plugin_name` is the empty string.
+  PluginFilter plugin_filter = 2;
+  // Optional filter for time series. If omitted, all time series match.
+  RunTagFilter run_tag_filter = 3;
+}
+
+message ListTensorsResponse {
+  repeated RunEntry runs = 1;
+  message RunEntry {
+    string run_name = 1;
+    repeated TagEntry tags = 2;
+  }
+  message TagEntry {
+    string tag_name = 1;
+    TensorMetadata metadata = 2;
+  }
+}
+
+message TensorMetadata {
+  // Largest step value of any datum in this time series.
+  int64 max_step = 1;
+  // Largest wall time of any datum in this time series.
+  double max_wall_time = 2;
+  // Atemporal summary metadata for this time series.
+  tensorboard.SummaryMetadata summary_metadata = 3;
+}
+
+message ReadTensorsRequest {
+  // ID of experiment in which to query data.
+  string experiment_id = 1;
+  // Filter for the plugin that owns the tensors. It is an error if
+  // `plugin_filter.plugin_name` is the empty string.
+  PluginFilter plugin_filter = 2;
+  // Optional filter for time series. If omitted, all time series match.
+  RunTagFilter run_tag_filter = 3;
+  // Required downsampling specification describing how many points to return
+  // per time series.
+  Downsample downsample = 4;
+}
+
+message ReadTensorsResponse {
+  repeated RunEntry runs = 1;
+  message RunEntry {
+    string run_name = 1;
+    repeated TagEntry tags = 2;
+  }
+  message TagEntry {
+    string tag_name = 1;
+    TensorData data = 2;
+  }
+}
+
+// A column-major sequence of tensor points. Arrays `step`, `wall_time`, and
+// `value` have the same lengths.
+//
+// The `step` and `wall_time` fields are repeated primitive values, so they
+// will be packed on the wire:
+// <https://developers.google.com/protocol-buffers/docs/encoding#packed>
+message TensorData {
+  repeated int64 step = 1;
+  repeated double wall_time = 2;
+  repeated tensorboard.TensorProto value = 3;
+}
+
+message ListBlobSequencesRequest {
+  // ID of experiment in which to query data.
+  string experiment_id = 1;
+  // Filter for the plugin that owns the blob sequences. It is an error if
+  // `plugin_filter.plugin_name` is the empty string.
+  PluginFilter plugin_filter = 2;
+  // Optional filter for time series. If omitted, all time series match.
+  RunTagFilter run_tag_filter = 3;
+}
+
+message ListBlobSequencesResponse {
+  repeated RunEntry runs = 1;
+  message RunEntry {
+    string run_name = 1;
+    repeated TagEntry tags = 2;
+  }
+  message TagEntry {
+    string tag_name = 1;
+    BlobSequenceMetadata metadata = 2;
+  }
+}
+
+message BlobSequenceMetadata {
+  // Largest step value of any datum in this time series.
+  int64 max_step = 1;
+  // Largest wall time of any datum in this time series.
+  double max_wall_time = 2;
+  // Largest number of blobs in any datum in this time series.
+  int64 max_length = 3;
+  // Atemporal summary metadata for this time series.
+  tensorboard.SummaryMetadata summary_metadata = 4;
+}
+
+message ReadBlobSequencesRequest {
+  // ID of experiment in which to query data.
+  string experiment_id = 1;
+  // Filter for the plugin that owns the blob sequences. It is an error if
+  // `plugin_filter.plugin_name` is the empty string.
+  PluginFilter plugin_filter = 2;
+  // Optional filter for time series. If omitted, all time series match.
+  RunTagFilter run_tag_filter = 3;
+  // Required downsampling specification describing how many points to return
+  // per time series.
+  Downsample downsample = 4;
+}
+
+message ReadBlobSequencesResponse {
+  repeated RunEntry runs = 1;
+  message RunEntry {
+    string run_name = 1;
+    repeated TagEntry tags = 2;
+  }
+  message TagEntry {
+    string tag_name = 1;
+    BlobSequenceData data = 2;
+  }
+}
+
+// A column-major sequence of blob sequence points. Arrays `step`, `wall_time`,
+// and `value` have the same lengths.
+//
+// The `step` and `wall_time` fields are repeated primitive values, so they
+// will be packed on the wire:
+// <https://developers.google.com/protocol-buffers/docs/encoding#packed>
+message BlobSequenceData {
+  repeated int64 step = 1;
+  repeated double wall_time = 2;
+  repeated BlobReferenceSequence values = 3;
+}
+
+message BlobReferenceSequence {
+  repeated BlobReference blob_refs = 1;
+}
+
+// A reference to a blob.
+message BlobReference {
+  // Unique identifier for a blob, which may be dereferenced via the `ReadBlob`
+  // RPC. Must be suitable for inclusion directly in a URL with no further
+  // encoding. Case-sensitive. Required; the empty string is not a valid key.
+  string blob_key = 1;
+  // Optional URL from which the blob may be fetched directly, bypassing the
+  // data provider interface.
+  string url = 2;
+}
+
+message ReadBlobRequest {
+  string blob_key = 1;
+}
+
+message ReadBlobResponse {
+  // The bytes in this chunk. Should be concatenated with any other responses
+  // in the stream to recover the full blob contents.
+  bytes data = 1;
+}

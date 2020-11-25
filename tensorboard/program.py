@@ -37,6 +37,7 @@ from collections import defaultdict
 import errno
 import inspect
 import logging
+import mimetypes
 import os
 import signal
 import socket
@@ -55,8 +56,8 @@ from werkzeug import serving
 from tensorboard import manager
 from tensorboard import version
 from tensorboard.backend import application
+from tensorboard.backend.event_processing import data_ingester
 from tensorboard.backend.event_processing import event_file_inspector as efi
-from tensorboard.plugins import base_plugin
 from tensorboard.plugins.core import core_plugin
 from tensorboard.util import argparse_util
 from tensorboard.util import tb_logging
@@ -279,6 +280,7 @@ class TensorBoard(object):
         :rtype: int
         """
         self._install_signal_handler(signal.SIGTERM, "SIGTERM")
+        self._fix_mime_types()
         subcommand_name = getattr(self.flags, _SUBCOMMAND_FLAG)
         if subcommand_name == _SERVE_SUBCOMMAND_NAME:
             runner = self._run_serve_subcommand
@@ -363,6 +365,10 @@ class TensorBoard(object):
             `signal.SIGTERM`.
           signal_name: The human-readable signal name.
         """
+        # Note to maintainers: Google-internal code overrides this
+        # method (cf. cl/334534610). Double-check changes before
+        # modifying API.
+
         old_signal_handler = None  # set below
 
         def handler(handled_signal_number, frame):
@@ -380,10 +386,37 @@ class TensorBoard(object):
 
         old_signal_handler = signal.signal(signal_number, handler)
 
+    def _fix_mime_types(self):
+        """Fix incorrect entries in the `mimetypes` registry.
+
+        On Windows, the Python standard library's `mimetypes` reads in
+        mappings from file extension to MIME type from the Windows
+        registry. Other applications can and do write incorrect values
+        to this registry, which causes `mimetypes.guess_type` to return
+        incorrect values, which causes TensorBoard to fail to render on
+        the frontend.
+
+        This method hard-codes the correct mappings for certain MIME
+        types that are known to be either used by TensorBoard or
+        problematic in general.
+        """
+        # Known to be problematic when Visual Studio is installed:
+        # <https://github.com/tensorflow/tensorboard/issues/3120>
+        mimetypes.add_type("application/javascript", ".js")
+        # Not known to be problematic, but used by TensorBoard:
+        mimetypes.add_type("font/woff2", ".woff2")
+        mimetypes.add_type("text/html", ".html")
+
     def _make_server(self):
         """Constructs the TensorBoard WSGI app and instantiates the server."""
-        app = application.standard_tensorboard_wsgi(
-            self.flags, self.plugin_loaders, self.assets_zip_provider
+        ingester = data_ingester.LocalDataIngester(self.flags)
+        ingester.start()
+        app = application.TensorBoardWSGIApp(
+            self.flags,
+            self.plugin_loaders,
+            ingester.data_provider,
+            self.assets_zip_provider,
+            ingester.deprecated_multiplexer,
         )
         return self.server_class(app, self.flags)
 
@@ -528,13 +561,12 @@ def with_port_scanning(cls):
         base_port = (
             core_plugin.DEFAULT_PORT if flags.port is None else flags.port
         )
-        max_attempts = 10 if should_scan else 1
 
         if base_port > 0xFFFF:
             raise TensorBoardServerException(
                 "TensorBoard cannot bind to port %d > %d" % (base_port, 0xFFFF)
             )
-        max_attempts = 10 if should_scan else 1
+        max_attempts = 100 if should_scan else 1
         base_port = min(base_port + max_attempts, 0x10000) - max_attempts
 
         for port in xrange(base_port, base_port + max_attempts):
@@ -574,6 +606,7 @@ class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
             host = "localhost"
 
         self._host = host
+        self._url = None  # Will be set by get_url() below
 
         self._fix_werkzeug_logging()
         try:
@@ -635,7 +668,7 @@ class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
                     socket.AI_PASSIVE,
                 )
             except socket.gaierror as e:
-                logger.warn(
+                logger.warning(
                     "Failed to auto-detect wildcard address, assuming %s: %s",
                     fallback_address,
                     str(e),
@@ -650,7 +683,7 @@ class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
                 return addrs_by_family[socket.AF_INET6][0]
             if hasattr(socket, "AF_INET") and addrs_by_family[socket.AF_INET]:
                 return addrs_by_family[socket.AF_INET][0]
-        logger.warn(
+        logger.warning(
             "Failed to auto-detect wildcard address, assuming %s",
             fallback_address,
         )
@@ -683,7 +716,7 @@ class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
                     hasattr(errno, "EAFNOSUPPORT")
                     and e.errno != errno.EAFNOSUPPORT
                 ):
-                    logger.warn(
+                    logger.warning(
                         "Failed to dual-bind to IPv4 wildcard: %s", str(e)
                     )
         super(WerkzeugServer, self).server_bind()
@@ -697,27 +730,37 @@ class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
         exc_info = sys.exc_info()
         e = exc_info[1]
         if isinstance(e, IOError) and e.errno == errno.EPIPE:
-            logger.warn(
+            logger.warning(
                 "EPIPE caused by %s in HTTP serving" % str(client_address)
             )
         else:
             logger.error("HTTP serving error", exc_info=exc_info)
 
     def get_url(self):
-        if self._auto_wildcard:
-            display_host = socket.gethostname()
-        else:
-            host = self._host
-            display_host = (
-                "[%s]" % host
-                if ":" in host and not host.startswith("[")
-                else host
+        if not self._url:
+            if self._auto_wildcard:
+                display_host = socket.getfqdn()
+                # Confirm that the connection is open, otherwise change to `localhost`
+                try:
+                    socket.create_connection(
+                        (display_host, self.server_port), timeout=1
+                    )
+                except socket.error as e:
+                    display_host = "localhost"
+
+            else:
+                host = self._host
+                display_host = (
+                    "[%s]" % host
+                    if ":" in host and not host.startswith("[")
+                    else host
+                )
+            self._url = "http://%s:%d%s/" % (
+                display_host,
+                self.server_port,
+                self._flags.path_prefix.rstrip("/"),
             )
-        return "http://%s:%d%s/" % (
-            display_host,
-            self.server_port,
-            self._flags.path_prefix.rstrip("/"),
-        )
+        return self._url
 
     def print_serving_message(self):
         if self._flags.host is None and not self._flags.bind_all:

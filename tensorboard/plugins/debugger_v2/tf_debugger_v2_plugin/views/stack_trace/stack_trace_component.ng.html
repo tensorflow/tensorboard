@@ -1,0 +1,105 @@
+<!--
+@license
+Copyright 2020 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<div class="stack-trace-container">
+  <div class="stack-trace-header">
+    <span class="stack-trace-title"> Stack Trace </span>
+
+    <div
+      *ngIf="codeLocationType !== null; else noStackTrace"
+      class="stack-trace-aux-info"
+    >
+      <span>
+        <span [ngSwitch]="codeLocationType" class="code-location-origin">
+          <div *ngSwitchCase="CodeLocationType.EXECUTION">
+            Eager execution
+            <span *ngIf="opType !== null" class="eager-execution-index">
+              #{{ executionIndex }}:
+            </span>
+            <span *ngIf="opType !== null" class="op-type"> {{ opType }} </span>
+          </div>
+
+          <div *ngSwitchCase="CodeLocationType.GRAPH_OP_CREATION">
+            Creation of graph op
+            <span *ngIf="opName !== null" class="op-name">
+              "{{ opName }}"
+            </span>
+            <span *ngIf="opType !== null" class="op-type"> {{ opType }} </span>
+          </div>
+        </span>
+      </span>
+      <div>
+        <span
+          *ngIf="stackFramesForDisplay !== null && stackFramesForDisplay.length > 0"
+          class="stack-trace-host-name"
+        >
+          (Host name: {{ stackFramesForDisplay[0].host_name }})
+        </span>
+      </div>
+    </div>
+
+    <ng-template #noStackTrace>
+      <div class="stack-trace-aux-info no-stack-trace">
+        Click an eager execution or graph op to show its original stack trace.
+      </div>
+    </ng-template>
+  </div>
+
+  <div
+    #stackFrameArray
+    *ngIf="stackFramesForDisplay !== null; else loadingSection"
+    class="stack-frame-array"
+  >
+    <div
+      *ngFor="let stackFrameForDisplay of stackFramesForDisplay; index as i;"
+      class="stack-frame-container"
+      [ngClass]="[
+        stackFrameForDisplay.belongsToFocusedFile ? 'focused-file' : '',
+        stackFrameForDisplay.focused ? 'focused-stack-frame' : ''
+      ]"
+    >
+      <div
+        class="stack-frame-file-path"
+        title="{{stackFrameForDisplay.file_path}}"
+      >
+        {{ stackFrameForDisplay.concise_file_path }}
+      </div>
+      <div class="stack-frame-lineno-function">
+        <div
+          *ngIf="stickToBottommostFrameInFocusedFile && stackFrameForDisplay.focused"
+          class="stick-to-bottommost-indicator"
+          title="Sticking to the bottommost frame in the current source file when navigating executions and graph ops. To remove this sticking, click any non-bottommost stack frame."
+        >
+          ⤓
+        </div>
+        <div
+          class="stack-frame-lineno"
+          (click)="onSourceLineClicked.emit(stackFrameForDisplay)"
+        >
+          Line {{ stackFrameForDisplay.lineno }}
+        </div>
+        <div class="stack-frame-function">
+          {{ stackFrameForDisplay.function_name }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <ng-template #loadingSection>
+    <!-- TODO(cais): Display loading spinner. -->
+  </ng-template>
+</div>

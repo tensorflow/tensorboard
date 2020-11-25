@@ -20,6 +20,7 @@ from __future__ import print_function
 
 import datetime
 import os
+import time
 import unittest
 import mock
 
@@ -208,9 +209,13 @@ class FormatTimeTest(tb_test.TestCase):
     def _run(self, t=None, now=None):
         timestamp_pb = timestamp_pb2.Timestamp()
         util.set_timestamp(timestamp_pb, t)
-        with mock.patch.dict(os.environ, {"TZ": "UTC"}):
-            now = datetime.datetime.fromtimestamp(now)
-            return util.format_time(timestamp_pb, now=now)
+        try:
+            with mock.patch.dict(os.environ, {"TZ": "UTC"}):
+                time.tzset()
+                now = datetime.datetime.fromtimestamp(now)
+                return util.format_time(timestamp_pb, now=now)
+        finally:
+            time.tzset()
 
     def test_just_now(self):
         base = 1546398245
@@ -246,6 +251,29 @@ class FormatTimeTest(tb_test.TestCase):
         base = 1546398245
         actual = self._run(t=base, now=base + 7 * 86400)
         self.assertEqual(actual, "2019-01-02 03:04:05")
+
+
+class FormatTimeAbsoluteTest(tb_test.TestCase):
+    def _run(self, t=None, tz=None):
+        timestamp_pb = timestamp_pb2.Timestamp()
+        util.set_timestamp(timestamp_pb, t)
+        try:
+            with mock.patch.dict(os.environ, {"TZ": tz}):
+                time.tzset()
+                return util.format_time_absolute(timestamp_pb)
+        finally:
+            time.tzset()
+
+    def test_in_tz_utc(self):
+        t = 981173106
+        actual = self._run(t, tz="UTC")
+        self.assertEqual(actual, "2001-02-03T04:05:06Z")
+
+    def test_in_tz_nonutc(self):
+        # Shouldn't be affected by timezone.
+        t = 981173106
+        actual = self._run(t, tz="America/Los_Angeles")
+        self.assertEqual(actual, "2001-02-03T04:05:06Z")
 
 
 if __name__ == "__main__":

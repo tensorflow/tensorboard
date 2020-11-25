@@ -1,0 +1,124 @@
+/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+==============================================================================*/
+
+.graph-executions-container {
+  border-left: 1px solid rgba(0, 0, 0, 0.12);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  margin-left: 8px;
+  padding-left: 10px;
+}
+
+.graph-execution-focus {
+  display: inline-block;
+}
+
+.graph-execution-index {
+  color: #757575;
+  display: inline-block;
+  padding-right: 4px;
+  text-align: right;
+  width: 40px;
+}
+
+.graph-executions-title {
+  box-shadow: 0 5px 3px -3px #ccc;
+  padding-bottom: 5px;
+}
+
+.graph-executions-viewport {
+  flex-grow: 1;
+  font-size: 12px;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+.input-of-focus {
+  /** NOTE: If this is changed, change the corresponding color in
+      graph_component.css as well. */
+  background-color: #fff099;
+}
+
+.loading-spinner {
+  display: inline-block;
+}
+
+.op-type {
+  background-color: #e3e5e8;
+  border: 1px solid #c0c0c0;
+  border-radius: 4px;
+  direction: rtl;
+  display: block;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 10px;
+  height: 14px;
+  line-height: 14px;
+  padding: 1px 3px;
+  width: max-content;
+}
+
+.tensor-container {
+  width: 100%;
+}
+
+.tensor-item {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+  display: flex;
+  flex-wrap: nowrap;
+  height: 38px;
+  line-height: 38px;
+  text-align: left;
+  vertical-align: middle;
+  white-space: nowrap;
+  width: 100%;
+}
+
+.tensor-name {
+  background-color: transparent;
+  border: none;
+  box-sizing: border-box;
+  cursor: pointer;
+  direction: rtl;
+  display: block;
+  height: 16px;
+  line-height: 16px;
+  margin: 2px 0 1px;
+  max-width: calc(100% - 2px);
+  overflow: hidden;
+  padding: 0 2px;
+  text-align: right;
+  text-decoration: underline;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tensor-name:focus {
+  outline: 1px solid #c6cad1;
+}
+
+.tensor-name-and-op-type {
+  direction: rtl;
+  display: inline-block;
+  overflow: hidden;
+  padding-right: 8px;
+  text-align: right;
+  width: 240px;
+}
+
+debug-tensor-value {
+  display: inline-block;
+  margin: 2px 0;
+}

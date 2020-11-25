@@ -1,15 +1,13 @@
+load("//tensorboard/defs:defs.bzl", "tf_ts_library")
+
 package(default_visibility = ["//tensorboard:internal"])
 
-load("//tensorboard/defs:web.bzl", "tf_web_library")
+licenses(["notice"])
 
-licenses(["notice"])  # Apache 2.0
-
-tf_web_library(
+tf_ts_library(
     name = "tf_utils",
     srcs = [
-        "tf-utils.html",
         "utils.ts",
     ],
-    path = "/tf-utils",
-    visibility = ["//visibility:public"],
+    strict_checks = False,
 )

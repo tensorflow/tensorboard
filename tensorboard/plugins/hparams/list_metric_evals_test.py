@@ -26,6 +26,7 @@ except ImportError:
 import tensorflow as tf
 
 from google.protobuf import text_format
+from tensorboard import context
 from tensorboard.plugins.hparams import api_pb2
 from tensorboard.plugins.hparams import list_metric_evals
 from tensorboard.plugins.scalar import scalars_plugin
@@ -40,8 +41,9 @@ class ListMetricEvalsTest(tf.test.TestCase):
             self._mock_scalars_impl
         )
 
-    def _mock_scalars_impl(self, tag, run, experiment, output_format):
+    def _mock_scalars_impl(self, ctx, tag, run, experiment, output_format):
         del experiment  # unused
+        self.assertIsInstance(ctx, context.RequestContext)
         self.assertEqual("metric_tag", tag)
         self.assertEqual("/this/is/a/session/metric_group", run)
         self.assertEqual(scalars_plugin.OutputFormat.JSON, output_format)
@@ -51,7 +53,10 @@ class ListMetricEvalsTest(tf.test.TestCase):
         request_proto = api_pb2.ListMetricEvalsRequest()
         text_format.Merge(request, request_proto)
         handler = list_metric_evals.Handler(
-            request_proto, self._mock_scalars_plugin
+            context.RequestContext(),
+            request_proto,
+            self._mock_scalars_plugin,
+            "exp_id",
         )
         return handler.run()
 

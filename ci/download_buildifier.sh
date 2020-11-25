@@ -24,7 +24,7 @@ die() {
 }
 
 if [ "$#" -ne 3 ]; then
-  die "Usage: $0 <version> <sha256sum> <destination-file>"
+  die "Usage: $0 <buildtools-version> <sha256sum> <destination-file>"
 fi
 
 version="$1"

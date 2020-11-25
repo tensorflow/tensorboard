@@ -14,19 +14,106 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<div
-  #pluginContainer
-  class="plugins"
-  [ngSwitch]="activePlugin?.loading_mechanism.type"
->
+<div #pluginContainer class="plugins">
   <!-- let Polymer-based components render from JS -->
   <!-- let iframe based component render from JS to prevent flickering from prop changes. -->
 
-  <!-- render Angular built-in plugins with *ngSwitchCase statement. -->
-  <ng-container
-    *ngSwitchCase="LoadingMechanismType.NG_COMPONENT"
-    [ngSwitch]="activePlugin?.id"
-  >
-    <tf-debugger-v2 *ngSwitchCase="'debugger-v2'"></tf-debugger-v2>
-  </ng-container>
+  <!-- render Angular built-in plugins with a dynamic component resolver. -->
+  <ng-container #ngPluginContainer></ng-container>
 </div>
+
+<div
+  *ngIf="pluginLoadState !== PluginLoadState.LOADED
+      && pluginLoadState !== PluginLoadState.LOADING"
+  [ngSwitch]="pluginLoadState"
+  class="warning"
+>
+  <div class="warning-message">
+    <ng-container *ngSwitchCase="PluginLoadState.ENVIRONMENT_FAILURE_NOT_FOUND">
+      <!-- This error template can be injected by the parent component. -->
+      <ng-container
+        *ngTemplateOutlet="environmentFailureNotFoundTemplate ?
+                             environmentFailureNotFoundTemplate :
+                             environmentFailureDefaultTemplate"
+      >
+      </ng-container>
+    </ng-container>
+
+    <ng-container *ngSwitchCase="PluginLoadState.ENVIRONMENT_FAILURE_UNKNOWN">
+      <!-- This error template can be injected by the parent component. -->
+      <ng-container
+        *ngTemplateOutlet="environmentFailureUnknownTemplate ?
+                             environmentFailureUnknownTemplate :
+                             environmentFailureDefaultTemplate"
+      >
+      </ng-container>
+    </ng-container>
+
+    <ng-container *ngSwitchCase="PluginLoadState.UNKNOWN_PLUGIN_ID">
+      <h3 class="unknown-plugin">
+        There’s no dashboard by the name of “<code>{{activePluginId}}</code>”.
+      </h3>
+      <p>You can select a dashboard from the list above.</p>
+      <p>
+        <ng-container [ngTemplateOutlet]="dateAndDataLocation"></ng-container>
+      </p>
+    </ng-container>
+
+    <ng-container *ngSwitchCase="PluginLoadState.NO_ENABLED_PLUGINS">
+      <h3 class="no-active-plugin">
+        No dashboards are active for the current data set.
+      </h3>
+      <p>Probable causes:</p>
+      <ul>
+        <li>You haven’t written any data to your event files.</li>
+        <li>TensorBoard can’t find your event files.</li>
+      </ul>
+
+      If you’re new to using TensorBoard, and want to find out how to add data
+      and set up your event files, check out the
+      <a href="https://github.com/tensorflow/tensorboard/blob/master/README.md"
+        >README</a
+      >
+      and perhaps the
+      <a href="https://www.tensorflow.org/get_started/summaries_and_tensorboard"
+        >TensorBoard tutorial</a
+      >.
+      <p>
+        If you think TensorBoard is configured properly, please see
+        <a
+          href="https://github.com/tensorflow/tensorboard/blob/master/README.md#my-tensorboard-isnt-showing-any-data-whats-wrong"
+          >the section of the README devoted to missing data problems</a
+        >
+        and consider filing an issue on GitHub.
+      </p>
+
+      <p>
+        <ng-container [ngTemplateOutlet]="dateAndDataLocation"></ng-container>
+      </p>
+    </ng-container>
+  </div>
+</div>
+
+<!-- In core TensorBoard this error likely happens when user has been able to
+  -- successfully load their TensorBoard but the server is inaccessible for some
+  -- subsequent attempt to reload environment data.
+  --
+  -- In other flavors of TensorBoard the root cause may be different so we allow
+  -- this template to be overriden by the parent component. -->
+<ng-template #environmentFailureDefaultTemplate>
+  <h3 class="environment-not-loaded">Data could not be loaded.</h3>
+  <p>The TensorBoard server may be down or inaccessible.</p>
+  <p>
+    <ng-container [ngTemplateOutlet]="dateAndDataLocation"></ng-container>
+  </p>
+</ng-template>
+
+<ng-template #dateAndDataLocation>
+  <!-- Class name used to hide this element in screenshot tests. -->
+  <span class="last-reload-time"
+    >Last reload: {{lastUpdated | date: 'medium'}}</span
+  >
+  <p *ngIf="dataLocation" class="data-location">
+    <i>Log directory: <span>{{dataLocation}}</span></i>
+  </p>
+</ng-template>

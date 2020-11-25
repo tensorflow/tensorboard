@@ -11,5 +11,5 @@ exports_files(["LICENSE.md"])
 py_library(
     name = "org_pythonhosted_markdown",
     srcs = glob(["markdown/**/*.py"]),
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
 )

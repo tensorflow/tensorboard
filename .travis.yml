@@ -8,23 +8,20 @@ branches:
     - master
     - /^\d+\.\d+(\.\d+)?(-\S*)?$/
 
+# Update the `nvm use` stanza below when updating this.
+node_js:
+  - "11"
+
 env:
-  # Keep this Bazel version in sync with the `versions.check` directive
-  # near the top of our WORKSPACE file.
-  #
-  # Grab the BAZEL_SHA256SUM from the Bazel releases page; e.g.:
-  # bazel-0.20.0-linux-x86_64.sha256
-  global:
-    - BAZEL=0.26.1
-    - BAZEL_SHA256SUM=6c50e142a0a405d3d8598050d6c1b3920c8cdb82a7ffca6fc067cb474275148f
   matrix:
-    - TF_VERSION_ID=tensorflow==1.15.0rc3
     - TF_VERSION_ID=tf-nightly
     - TF_VERSION_ID=  # Do not install TensorFlow in this case
 
 cache:
-  # Reuse the pip cache directory across build machines.
-  pip: true
+  # Don't cache the Pip directory. We pull in a new `tf-nightly` wheel
+  # every day, and Pip caches are never evicted, so this quickly bloats
+  # to many gigabytes and adds minutes to the CI time.
+  pip: false
   # Cache directories for Bazel. See ci/bazelrc for details.
   directories:
     - $HOME/.cache/tb-bazel-repo
@@ -38,6 +35,13 @@ cache:
 before_install:
   - elapsed() { TZ=UTC printf "Time %(%T)T %s\n" "$SECONDS" "$1"; }
   - elapsed "before_install"
+  # Keep this Bazel version in sync with the `versions.check` directive
+  # near the top of our WORKSPACE file.
+  #
+  # Grab the BAZEL_SHA256SUM from the Bazel releases page; e.g.:
+  # bazel-0.20.0-linux-x86_64.sha256
+  - export BAZEL=3.7.0
+  - export BAZEL_SHA256SUM=b7583eec83cc38302997098a40b8c870c37e0ab971a83cb3364c754a178b74ec
   - ci/download_bazel.sh "${BAZEL}" "${BAZEL_SHA256SUM}" ~/bazel
   - sudo mv ~/bazel /usr/local/bin/bazel
   - cp ci/bazelrc ~/.bazelrc
@@ -56,7 +60,8 @@ install:
       -r tensorboard/pip_package/requirements.txt \
       -r tensorboard/pip_package/requirements_dev.txt \
       ;
-  - yarn install --ignore-engines
+  # Keep the node version in sync with node_js key above.
+  - nvm use v11
   - |
     # Install TensorFlow if requested
     if [ -n "${TF_VERSION_ID}" ]; then
@@ -87,10 +92,13 @@ script:
   - elapsed "script"
   # Note: bazel test implies fetch+build, but this gives us timing.
   - elapsed && bazel fetch //tensorboard/...
+  - elapsed && bazel build //tensorboard/plugins/...
+  - elapsed && bazel build //tensorboard/components/...
+  - elapsed && bazel build //tensorboard/webapp/...
   - elapsed && bazel build //tensorboard/...
   - elapsed && bazel test //tensorboard/... --test_tag_filters="${test_tag_filters}"
-  - elapsed && bazel run //tensorboard/pip_package:test_pip_package -- --default-python-only --tf-version "${TF_VERSION_ID}"
-  # Run manual S3 test
+  - elapsed && bazel run //tensorboard/pip_package:test_pip_package -- --tf-version "${TF_VERSION_ID}"
+  # # Run manual S3 test
   - elapsed && bazel test //tensorboard/compat/tensorflow_stub:gfile_s3_test
   - elapsed && bazel test //tensorboard/summary/writer:event_file_writer_s3_test
   - elapsed "script (done)"

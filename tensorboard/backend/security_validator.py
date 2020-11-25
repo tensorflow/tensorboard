@@ -20,7 +20,6 @@ from __future__ import print_function
 
 import collections
 
-from werkzeug import wrappers
 from werkzeug.datastructures import Headers
 from werkzeug import http
 
@@ -35,8 +34,6 @@ _HTML_MIME_TYPE = "text/html"
 _CSP_DEFAULT_SRC = "default-src"
 # Whitelist of allowed CSP violations.
 _CSP_IGNORE = {
-    # Allow TensorBoard to be iframed.
-    "frame-ancestors": ["*"],
     # Polymer-based code uses unsafe-inline.
     "style-src": ["'unsafe-inline'", "data:"],
     # Used in canvas
@@ -44,11 +41,12 @@ _CSP_IGNORE = {
     # Used by numericjs.
     # TODO(stephanwlee): remove it eventually.
     "script-src": ["'unsafe-eval'"],
+    "font-src": ["data:"],
 }
 
 
 def _maybe_raise_value_error(error_msg):
-    logger.warn("In 3.0, this warning will become an error:\n%s" % error_msg)
+    logger.warning("In 3.0, this warning will become an error:\n%s" % error_msg)
     # TODO(3.x): raise a value error.
 
 

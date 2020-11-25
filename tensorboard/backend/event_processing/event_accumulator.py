@@ -25,7 +25,7 @@ from tensorboard.backend.event_processing import event_file_loader
 from tensorboard.backend.event_processing import io_wrapper
 from tensorboard.backend.event_processing import plugin_asset_util
 from tensorboard.backend.event_processing import reservoir
-from tensorboard.compat import tf
+from tensorboard.backend.event_processing import tag_types
 from tensorboard.compat.proto import config_pb2
 from tensorboard.compat.proto import event_pb2
 from tensorboard.compat.proto import graph_pb2
@@ -81,17 +81,16 @@ SUMMARY_TYPES = {
     "tensor": "_ProcessTensor",
 }
 
-## The tagTypes below are just arbitrary strings chosen to pass the type
-## information of the tag from the backend to the frontend
-COMPRESSED_HISTOGRAMS = "distributions"
-HISTOGRAMS = "histograms"
-IMAGES = "images"
-AUDIO = "audio"
-SCALARS = "scalars"
-TENSORS = "tensors"
-GRAPH = "graph"
-META_GRAPH = "meta_graph"
-RUN_METADATA = "run_metadata"
+# Legacy aliases
+COMPRESSED_HISTOGRAMS = tag_types.COMPRESSED_HISTOGRAMS
+HISTOGRAMS = tag_types.HISTOGRAMS
+IMAGES = tag_types.IMAGES
+AUDIO = tag_types.AUDIO
+SCALARS = tag_types.SCALARS
+TENSORS = tag_types.TENSORS
+GRAPH = tag_types.GRAPH
+META_GRAPH = tag_types.META_GRAPH
+RUN_METADATA = tag_types.RUN_METADATA
 
 ## Normal CDF for std_devs: (-Inf, -1.5, -1, -0.5, 0, 0.5, 1, 1.5, Inf)
 ## naturally gives bands around median of width 1 std dev, 2 std dev, 3 std dev,
@@ -347,7 +346,7 @@ class EventAccumulator(object):
             new_file_version = _ParseFileVersion(event.file_version)
             if self.file_version and self.file_version != new_file_version:
                 ## This should not happen.
-                logger.warn(
+                logger.warning(
                     (
                         "Found new file_version for event.proto. This will "
                         "affect purging logic for TensorFlow restarts. "
@@ -366,7 +365,7 @@ class EventAccumulator(object):
         # inside the meta_graph_def.
         if event.HasField("graph_def"):
             if self._graph is not None:
-                logger.warn(
+                logger.warning(
                     (
                         "Found more than one graph event per run, or there was "
                         "a metagraph containing a graph_def, as well as one or "
@@ -378,7 +377,7 @@ class EventAccumulator(object):
             self._graph_from_metagraph = False
         elif event.HasField("meta_graph_def"):
             if self._meta_graph is not None:
-                logger.warn(
+                logger.warning(
                     (
                         "Found more than one metagraph event per run. "
                         "Overwriting the metagraph with the newest event."
@@ -392,7 +391,7 @@ class EventAccumulator(object):
                 meta_graph.ParseFromString(self._meta_graph)
                 if meta_graph.graph_def:
                     if self._graph is not None:
-                        logger.warn(
+                        logger.warning(
                             (
                                 "Found multiple metagraphs containing graph_defs,"
                                 "but did not find any graph events.  Overwriting the "
@@ -404,7 +403,7 @@ class EventAccumulator(object):
         elif event.HasField("tagged_run_metadata"):
             tag = event.tagged_run_metadata.tag
             if tag in self._tagged_metadata:
-                logger.warn(
+                logger.warning(
                     'Found more than one "run metadata" event with tag '
                     + tag
                     + ". Overwriting it with the newest event."
@@ -428,7 +427,7 @@ class EventAccumulator(object):
                                 plugin_data.plugin_name
                             ][tag] = plugin_data.content
                         else:
-                            logger.warn(
+                            logger.warning(
                                 (
                                     "This summary with tag %r is oddly not associated with a "
                                     "plugin."
@@ -781,7 +780,7 @@ class EventAccumulator(object):
                 event.wall_time,
                 *expired_per_type
             )
-            logger.warn(purge_msg)
+            logger.warning(purge_msg)
 
 
 def _GetPurgeMessage(
@@ -820,13 +819,13 @@ def _GeneratorFromPath(path):
     """Create an event generator for file or directory at given path string."""
     if not path:
         raise ValueError("path must be a valid string")
-    if io_wrapper.IsTensorFlowEventsFile(path):
-        return event_file_loader.EventFileLoader(path)
+    if io_wrapper.IsSummaryEventsFile(path):
+        return event_file_loader.LegacyEventFileLoader(path)
     else:
         return directory_watcher.DirectoryWatcher(
             path,
-            event_file_loader.EventFileLoader,
-            io_wrapper.IsTensorFlowEventsFile,
+            event_file_loader.LegacyEventFileLoader,
+            io_wrapper.IsSummaryEventsFile,
         )
 
 
@@ -845,7 +844,7 @@ def _ParseFileVersion(file_version):
     except ValueError:
         ## This should never happen according to the definition of file_version
         ## specified in event.proto.
-        logger.warn(
+        logger.warning(
             (
                 "Invalid event.proto file_version. Defaulting to use of "
                 "out-of-order event.step logic for purging expired events."

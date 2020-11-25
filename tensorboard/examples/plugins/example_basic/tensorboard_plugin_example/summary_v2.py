@@ -19,7 +19,6 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow.compat.v2 as tf
-from tensorboard.util import tensor_util
 from tensorboard.compat.proto import summary_pb2
 
 from tensorboard_plugin_example import metadata

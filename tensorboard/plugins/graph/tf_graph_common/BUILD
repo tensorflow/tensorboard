@@ -1,19 +1,16 @@
+load("//tensorboard/defs:defs.bzl", "tf_ts_library")
+
 package(default_visibility = ["//tensorboard:internal"])
 
-load("//tensorboard/defs:defs.bzl", "tensorboard_webcomponent_library")
-load("//tensorboard/defs:web.bzl", "tf_web_library")
+licenses(["notice"])
 
-licenses(["notice"])  # Apache 2.0
-
-tf_web_library(
+tf_ts_library(
     name = "tf_graph_common",
     srcs = [
-        "annotation.ts",
         "colors.ts",
         "common.ts",
         "contextmenu.ts",
         "edge.ts",
-        "externs.ts",
         "graph.ts",
         "hierarchy.ts",
         "layout.ts",
@@ -26,32 +23,23 @@ tf_web_library(
         "render.ts",
         "scene.ts",
         "template.ts",
-        "tf-graph-common.html",
-        "tf-graph-icon.html",
         "tf-graph-icon.ts",
         "tf-graph-scene.ts",
-        "tf-node-icon.html",
+        "tf-node-icon.ts",
         "util.ts",
     ],
-    path = "/tf-graph-common",
+    strict_checks = False,
     visibility = ["//visibility:public"],
     deps = [
+        "//tensorboard/components/polymer:dom",
+        "//tensorboard/components/polymer:legacy_element_mixin",
         "//tensorboard/components/tf_dashboard_common",
-        "//tensorboard/components/tf_imports:d3",
-        "//tensorboard/components/tf_imports:dagre",
-        "//tensorboard/components/tf_imports:graphlib",
-        "//tensorboard/components/tf_imports:lodash",
-        "//tensorboard/components/tf_imports:polymer",
-    ],
-)
-
-tensorboard_webcomponent_library(
-    name = "legacy",
-    srcs = [":tf_graph_common"],
-    destdir = "tf-graph-common",
-    deps = [
-        "//tensorboard/components/tf_dashboard_common:legacy",
-        "//tensorboard/components/tf_imports:polymer_lib",
-        "//tensorboard/components/tf_imports_google:lib",
+        "@npm//@polymer/decorators",
+        "@npm//@polymer/polymer",
+        "@npm//@types/d3",
+        "@npm//@types/lodash",
+        "@npm//d3",
+        "@npm//dagre",
+        "@npm//lodash",
     ],
 )

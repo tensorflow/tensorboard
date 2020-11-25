@@ -2,7 +2,7 @@
 
 To develop the Embedding Projector, launch it in standalone mode:
 ```sh
-bazel run tensorboard/plugins/projector/vz_projector:devserver
+bazel run tensorboard/plugins/projector/vz_projector:standalone
 ```
 
 And open <http://localhost:6006/index.html>. The projector points to the local

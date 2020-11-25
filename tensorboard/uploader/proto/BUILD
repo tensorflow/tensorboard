@@ -1,22 +1,21 @@
-package(default_visibility = ["//tensorboard:internal"])
-
 load("//tensorboard/defs:protos.bzl", "tb_proto_library")
 
-licenses(["notice"])  # Apache 2.0
+package(default_visibility = ["//tensorboard:internal"])
 
-exports_files(["LICENSE"])
+licenses(["notice"])
 
 # TODO(@wchargin): Split more granularly.
 tb_proto_library(
     name = "protos_all",
     srcs = [
+        "blob.proto",
+        "experiment.proto",
         "export_service.proto",
         "scalar.proto",
         "server_info.proto",
+        "tensor.proto",
         "write_service.proto",
     ],
     has_services = True,
-    deps = [
-        "//tensorboard/compat/proto:protos_all",
-    ],
+    deps = ["//tensorboard/compat/proto:protos_all"],
 )

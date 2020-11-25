@@ -14,9 +14,14 @@ limitations under the License.
 ==============================================================================*/
 
 import {createSelector, createFeatureSelector} from '@ngrx/store';
-import {PluginId, PluginsListing} from '../../types/api';
-import {LoadState} from '../../types/data';
-import {CoreState, State, CORE_FEATURE_KEY} from './core_types';
+import {Environment, PluginId, PluginsListing} from '../../types/api';
+import {
+  CoreState,
+  State,
+  CORE_FEATURE_KEY,
+  PluginsListLoadState,
+} from './core_types';
+import {Run, RunId} from '../types';
 
 // HACK: These imports are for type inference.
 // https://github.com/bazelbuild/rules_nodejs/issues/1013
@@ -29,7 +34,7 @@ const selectCoreState = createFeatureSelector<State, CoreState>(
 
 export const getPluginsListLoaded = createSelector(
   selectCoreState,
-  (state: CoreState): LoadState => state.pluginsListLoaded
+  (state: CoreState): PluginsListLoadState => state.pluginsListLoaded
 );
 
 export const getActivePlugin = createSelector(
@@ -46,6 +51,13 @@ export const getPlugins = createSelector(
   }
 );
 
+export const getEnvironment = createSelector(
+  selectCoreState,
+  (state: CoreState): Environment => {
+    return state.environment;
+  }
+);
+
 export const getReloadEnabled = createSelector(
   selectCoreState,
   (state: CoreState): boolean => {
@@ -57,5 +69,12 @@ export const getReloadPeriodInMs = createSelector(
   selectCoreState,
   (state: CoreState): number => {
     return state.reloadPeriodInMs;
+  }
+);
+
+export const getPageSize = createSelector(
+  selectCoreState,
+  (state: CoreState): number => {
+    return state.pageSize;
   }
 );

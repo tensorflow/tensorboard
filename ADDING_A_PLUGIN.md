@@ -54,7 +54,7 @@ You can start building the backend by subclassing `TBPlugin` in [`base_plugin.py
 
 ```python
 class MyPlugin(base_plugin.TBPlugin):
-  plugin_name = "My Awesome Plugin"
+  plugin_name = "my_awesome_plugin"
 
   def __init__(self, context): # ...
 
@@ -72,7 +72,7 @@ class MyPlugin(base_plugin.TBPlugin):
 ```
 
 #### TBPlugin
-  - `plugin_name`: Required field used as a unique ID for the plugin.
+  - `plugin_name`: Required field used as a unique ID for the plugin. This must only contain alphanumeric characters, hyphens, and underscores.
   - `get_plugin_apps()`: This should return a `dict` mapping route paths to WSGI applications: e.g., `"/tags"` might map to `self._serve_tags`.
   - `is_active()`: This should return whether the plugin is active (whether there exists relevant data for the plugin to process). TensorBoard will hide inactive plugins from the main navigation bar. We strongly recommend this to be a cheap operation.
   - `frontend_metadata()`: Defines how the plugin will be displayed on the frontend. See [`base_plugin.FrontendMetadata()`](https://github.com/tensorflow/tensorboard/blob/18dec9279e18a8222c9d83f90219ecddad591c46/tensorboard/plugins/base_plugin.py#L101).
@@ -161,6 +161,8 @@ When the dashboard opens, TensorBoard will create an IFrame and load the ES modu
 Consistency in user interface and experience, we believe, is important for happy users; for example, a run selection should be consistent for all plugins in TensorBoard. TensorBoard will provide a library that helps you build a dashboard like Scalars dashboard by providing UI components. We _will_ provide a library that can be bundled into your frontend binary (please follow [issue #2357][dynamic-plugin-tracking-bug] for progress):
 
 [dynamic-plugin-tracking-bug]: https://github.com/tensorflow/tensorboard/issues/2357
+
+We recommend that you vendor all resources required to use your plugin, including scripts, stylesheets, fonts, and images. All built-in TensorBoard plugins follow this policy.
 
 
 ### Summaries: How the plugin gets data

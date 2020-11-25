@@ -1,0 +1,76 @@
+<!--
+@license
+Copyright 2020 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<div class="graph-executions-container">
+  <div class="graph-executions-title">
+    Graph Executions ({{ numGraphExecutions }})
+  </div>
+
+  <cdk-virtual-scroll-viewport
+    *ngIf="numGraphExecutions !== null && numGraphExecutions > 0"
+    itemSize="38"
+    class="graph-executions-viewport"
+    (scrolledIndexChange)="onScrolledIndexChange.emit($event)"
+  >
+    <div
+      *cdkVirtualFor="let i of graphExecutionIndices"
+      class="tensor-container"
+    >
+      <div
+        class="tensor-item"
+        [ngClass]="{'input-of-focus': isInputOfFocus(i)}"
+      >
+        <div class="graph-execution-index">
+          <div *ngIf="i === focusIndex" class="graph-execution-focus">▶</div>
+          {{ i }}
+        </div>
+        <div *ngIf="graphExecutionData[i]; else dataLoading">
+          <div class="tensor-name-and-op-type">
+            <button
+              class="tensor-name"
+              title="{{ getTensorName(i) }}"
+              (click)="onTensorNameClick.emit({
+                index: i,
+                graph_id: graphExecutionData[i].graph_id,
+                op_name: graphExecutionData[i].op_name
+              })"
+            >
+              {{ getTensorName(i) }}
+            </button>
+            <div class="op-type">{{ graphExecutionData[i].op_type }}</div>
+          </div>
+
+          <debug-tensor-value
+            *ngIf="graphExecutionData[i].debug_tensor_value !== null"
+            [debugTensorValue]="parseDebugTensorValue({
+                tensorDebugMode: graphExecutionData[i].tensor_debug_mode,
+                array: graphExecutionData[i].debug_tensor_value
+            })"
+          >
+          </debug-tensor-value>
+        </div>
+
+        <ng-template #dataLoading class="tensor-item">
+          <div class="loading-spinner">
+            Loading...
+            <!-- TODO(cais): Use mat-spinner -->
+          </div>
+        </ng-template>
+      </div>
+    </div>
+  </cdk-virtual-scroll-viewport>
+</div>

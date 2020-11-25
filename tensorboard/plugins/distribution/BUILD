@@ -3,18 +3,16 @@
 
 package(default_visibility = ["//tensorboard:internal"])
 
-licenses(["notice"])  # Apache 2.0
-
-exports_files(["LICENSE"])
+licenses(["notice"])
 
 ## Distributions Plugin ##
 py_library(
     name = "distributions_plugin",
     srcs = ["distributions_plugin.py"],
-    srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
+    srcs_version = "PY3",
     deps = [
         ":compressor",
+        ":metadata",
         "//tensorboard:plugin_util",
         "//tensorboard/backend:http_util",
         "//tensorboard/plugins:base_plugin",
@@ -28,15 +26,16 @@ py_test(
     size = "small",
     srcs = ["distributions_plugin_test.py"],
     main = "distributions_plugin_test.py",
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         ":compressor",
         ":distributions_plugin",
+        "//tensorboard:context",
         "//tensorboard:errors",
         "//tensorboard:expect_tensorflow_installed",
-        "//tensorboard/backend:application",
-        "//tensorboard/backend/event_processing:event_accumulator",
+        "//tensorboard/backend/event_processing:data_provider",
         "//tensorboard/backend/event_processing:event_multiplexer",
+        "//tensorboard/backend/event_processing:tag_types",
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/plugins/histogram:summary",
         "//tensorboard/util:test_util",
@@ -51,14 +50,16 @@ py_test(
     size = "small",
     srcs = ["distributions_plugin_test.py"],
     main = "distributions_plugin_test.py",
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         ":compressor",
         ":distributions_plugin",
+        "//tensorboard:context",
+        "//tensorboard:errors",
         "//tensorboard:expect_tensorflow_installed",
-        "//tensorboard/backend:application",
-        "//tensorboard/backend/event_processing:event_accumulator",
+        "//tensorboard/backend/event_processing:data_provider",
         "//tensorboard/backend/event_processing:event_multiplexer",
+        "//tensorboard/backend/event_processing:tag_types",
         "//tensorboard/compat:no_tensorflow",
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/plugins/histogram:summary",
@@ -71,8 +72,7 @@ py_test(
 py_library(
     name = "compressor",
     srcs = ["compressor.py"],
-    srcs_version = "PY2AND3",
-    visibility = ["//visibility:public"],
+    srcs_version = "PY3",
     deps = ["//tensorboard:expect_numpy_installed"],
 )
 
@@ -80,9 +80,15 @@ py_test(
     name = "compressor_test",
     size = "small",
     srcs = ["compressor_test.py"],
-    srcs_version = "PY2AND3",
+    srcs_version = "PY3",
     deps = [
         ":compressor",
         "//tensorboard:expect_tensorflow_installed",
     ],
+)
+
+py_library(
+    name = "metadata",
+    srcs = ["metadata.py"],
+    srcs_version = "PY3",
 )

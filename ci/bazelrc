@@ -1,5 +1,6 @@
 # Limit resources since Travis Trusty GCE VMs have 2 cores and 7.5 GB RAM.
-build --local_resources=4000,2,1.0
+build --local_cpu_resources=2
+build --local_ram_resources=4000
 build --worker_max_instances=2
 
 # Ensure sandboxing is on to increase hermeticity.

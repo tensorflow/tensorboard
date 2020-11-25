@@ -16,7 +16,7 @@ Developing a custom plugin does not require Bazel or building TensorBoard.
 TensorBoard at HEAD relies on the nightly installation of TensorFlow: this allows plugin authors to use the latest features of TensorFlow, but it means release versions of TensorFlow may not suffice for development. We recommend installing TensorFlow nightly in a [Python virtualenv](https://virtualenv.pypa.io), and then running your modified development copy of TensorBoard within that virtualenv. To install TensorFlow nightly within the virtualenv, as well as TensorBoard's runtime and tooling dependencies, you can run:
 
 ```sh
-$ virtualenv tf
+$ virtualenv -p python3 tf
 $ source tf/bin/activate
 (tf)$ pip install --upgrade pip
 (tf)$ pip install tf-nightly -r tensorboard/pip_package/requirements.txt -r tensorboard/pip_package/requirements_dev.txt
@@ -29,10 +29,6 @@ You can build and run TensorBoard via Bazel (from within the TensorFlow nightly 
 ```sh
 (tf)$ bazel run //tensorboard -- --logdir /path/to/logs
 ```
-
-You may see warnings about “Limited tf.compat.v2.summary API due to missing TensorBoard installation” appear when you run TensorBoard. These are spurious: you can ignore them. (See [an explanation of why these warnings occur][why-warnings] if you’re curious.)
-
-[why-warnings]: https://github.com/tensorflow/tensorboard/issues/2968#issuecomment-558405994
 
 For any changes to the frontend, you’ll need to install [Yarn][yarn] to lint your code (`yarn lint`, `yarn fix-lint`). You’ll also need Yarn to add or remove any NPM dependencies.
 
@@ -77,3 +73,45 @@ When enabled by default, this also works with editor plugins like
 [vim-fugitive]. See `git help blame` and `git help config` for more details.
 
 [vim-fugitive]: https://github.com/tpope/vim-fugitive
+
+### iBazel: A file watcher for Bazel.
+
+Bazel is capable of performing incremental builds where it builds only the
+subset of files that are impacted by file changes. However, it does not come
+with a file watcher. For an improved developer experience, start TensorBoard
+with `ibazel` instead of `bazel` which will automatically re-build and start the
+server when files change.
+
+If you do not have the ibazel binary on your system, you can use the command
+below.
+
+```sh
+# Optionally run `yarn` to keep `node_modules` up-to-date.
+yarn run ibazel run tensorboard -- -- --logdir [LOG_DIR]
+```
+
+### Debugging UI Tests Locally
+
+Our UI tests (e.g., //tensorboard/components/vz_sorting/test) use HTML import
+which is now deprecated from all browsers (Chrome 79- had the native support)
+and is run without any polyfills. In order to debug tests, you may want to run a
+a Chromium used by our CI that supports HTML import. It can be found in
+`./bazel-bin/third_party/chromium/chromium.out` (exact path to binary will
+differ by OS you are on; for Linux, the full path is
+`./bazel-bin/third_party/chromium/chromium.out/chrome-linux/chrome`).
+
+For example of the vz_sorting test,
+
+```sh
+# Run the debug instance of the test. It should run a web server at a dynamic
+# port.
+bazel run tensorboard/components/vz_sorting/test:test_web_library
+
+# In another tab:
+
+# Fetch, if missing, the Chromium
+bazel build third_party/chromium
+./bazel-bin/third_party/chromium/chromium.out/chrome-linux/chrome
+
+# Lastly, put the address returnd by the web server into the Chromium.
+```
