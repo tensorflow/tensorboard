@@ -82,18 +82,29 @@ limitations under the License.
     diameter="18"
     *ngIf="loadState === DataLoadState.LOADING"
   ></mat-spinner>
-  <tb-line-chart
-    [colorScale]="runColorScale"
-    [seriesDataList]="seriesDataList"
-    [tooltipColumns]="tooltipColumns"
-    [tooltipSortingMethod]="tooltipSort"
-    [ignoreYOutliers]="ignoreOutliers"
-    [xAxisType]="chartXAxisType()"
-    [smoothingEnabled]="scalarSmoothing > 0"
-    [smoothingWeight]="scalarSmoothing"
-    [yAxisType]="yAxisType"
-    detectResize
-    [resizeEventDebouncePeriodInMs]="RESIZE_REDRAW_DEBOUNCE_TIME_IN_MS"
-    (onResize)="redraw()"
-  ></tb-line-chart>
+
+  <line-chart
+    *ngIf="gpuLineChartEnabled; else legacyChart"
+    [preferredRendererType]="RendererType.WEBGL"
+    [seriesData]="dataSeries"
+    [seriesMetadataMap]="chartMetadataMap"
+    [yScaleType]="newYAxisType"
+  ></line-chart>
+
+  <ng-template #legacyChart>
+    <tb-line-chart
+      [colorScale]="runColorScale"
+      [seriesDataList]="seriesDataList"
+      [tooltipColumns]="tooltipColumns"
+      [tooltipSortingMethod]="tooltipSort"
+      [ignoreYOutliers]="ignoreOutliers"
+      [xAxisType]="chartXAxisType()"
+      [smoothingEnabled]="scalarSmoothing > 0"
+      [smoothingWeight]="scalarSmoothing"
+      [yAxisType]="yAxisType"
+      detectResize
+      [resizeEventDebouncePeriodInMs]="RESIZE_REDRAW_DEBOUNCE_TIME_IN_MS"
+      (onResize)="redraw()"
+    ></tb-line-chart>
+  </ng-template>
 </div>
