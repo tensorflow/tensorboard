@@ -14,14 +14,17 @@ limitations under the License.
 ==============================================================================*/
 
 use futures_core::Stream;
+use std::borrow::Borrow;
 use std::collections::HashMap;
+use std::collections::HashSet;
+use std::hash::Hash;
 use std::pin::Pin;
 use std::sync::{RwLock, RwLockReadGuard};
 use tonic::{Request, Response, Status};
 
 use crate::commit::{self, Commit};
 use crate::proto::tensorboard::data;
-use crate::types::{Run, WallTime};
+use crate::types::{Run, Tag, WallTime};
 use data::tensor_board_data_provider_server::TensorBoardDataProvider;
 
 /// Data provider gRPC service implementation.
@@ -39,8 +42,6 @@ impl DataProviderHandler {
             .map_err(|_| Status::internal("failed to read commit.runs"))
     }
 }
-
-const FAKE_START_TIME: f64 = 1605752017.0;
 
 #[tonic::async_trait]
 impl TensorBoardDataProvider for DataProviderHandler {
@@ -92,44 +93,123 @@ impl TensorBoardDataProvider for DataProviderHandler {
 
     async fn list_scalars(
         &self,
-        _request: Request<data::ListScalarsRequest>,
+        req: Request<data::ListScalarsRequest>,
     ) -> Result<Response<data::ListScalarsResponse>, Status> {
+        let req = req.into_inner();
+        let want_plugin = parse_plugin_filter(req.plugin_filter)?;
+        let (run_filter, tag_filter) = parse_rtf(req.run_tag_filter);
+        let runs = self.read_runs()?;
+
         let mut res: data::ListScalarsResponse = Default::default();
-        let mut run: data::list_scalars_response::RunEntry = Default::default();
-        run.run_name = "train".to_string();
-        run.tags.push(data::list_scalars_response::TagEntry {
-            tag_name: "accuracy".to_string(),
-            metadata: Some(data::ScalarMetadata {
-                max_step: 5,
-                max_wall_time: FAKE_START_TIME + 5.0,
-                ..Default::default()
-            }),
-            ..Default::default()
-        });
-        res.runs.push(run);
+        for (run, data) in runs.iter() {
+            if !run_filter.want(run) {
+                continue;
+            }
+            let data = data
+                .read()
+                .map_err(|_| Status::internal(format!("failed to read run data for {:?}", run)))?;
+            let mut run_res: data::list_scalars_response::RunEntry = Default::default();
+            for (tag, ts) in &data.scalars {
+                if !tag_filter.want(tag) {
+                    continue;
+                }
+                let plugin_name = ts
+                    .metadata
+                    .plugin_data
+                    .as_ref()
+                    .map(|pd| pd.plugin_name.as_str());
+                if plugin_name != Some(&want_plugin) {
+                    continue;
+                }
+                let max_step = match ts.valid_values().last() {
+                    None => continue,
+                    Some((step, _, _)) => step,
+                };
+                // TODO(@wchargin): Consider tracking this on the time series itself?
+                let max_wall_time = ts
+                    .valid_values()
+                    .map(|(_, wt, _)| wt)
+                    .max()
+                    .expect("have valid values for step but not wall time");
+                run_res.tags.push(data::list_scalars_response::TagEntry {
+                    tag_name: tag.0.clone(),
+                    metadata: Some(data::ScalarMetadata {
+                        max_step: max_step.into(),
+                        max_wall_time: max_wall_time.into(),
+                        summary_metadata: Some(*ts.metadata.clone()),
+                        ..Default::default()
+                    }),
+                    ..Default::default()
+                });
+            }
+            if !run_res.tags.is_empty() {
+                run_res.run_name = run.0.clone();
+                res.runs.push(run_res);
+            }
+        }
+
         Ok(Response::new(res))
     }
 
     async fn read_scalars(
         &self,
-        _request: Request<data::ReadScalarsRequest>,
+        req: Request<data::ReadScalarsRequest>,
     ) -> Result<Response<data::ReadScalarsResponse>, Status> {
+        let req = req.into_inner();
+        let want_plugin = parse_plugin_filter(req.plugin_filter)?;
+        let (run_filter, tag_filter) = parse_rtf(req.run_tag_filter);
+        let _downsample = parse_downsample(req.downsample)?; // TODO(@wchargin): Use `downsample`.
+        let runs = self.read_runs()?;
+
         let mut res: data::ReadScalarsResponse = Default::default();
-        let mut run: data::read_scalars_response::RunEntry = Default::default();
-        run.run_name = "train".to_string();
-        run.tags.push(data::read_scalars_response::TagEntry {
-            tag_name: "accuracy".to_string(),
-            data: Some(data::ScalarData {
-                step: vec![0, 1, 2, 3, 4],
-                wall_time: (0..=4)
-                    .map(|i| FAKE_START_TIME + ((i + 1) as f64))
-                    .collect(),
-                value: vec![0.1, 0.5, 0.8, 0.9, 0.95],
-                ..Default::default()
-            }),
-            ..Default::default()
-        });
-        res.runs.push(run);
+        for (run, data) in runs.iter() {
+            if !run_filter.want(run) {
+                continue;
+            }
+            let data = data
+                .read()
+                .map_err(|_| Status::internal(format!("failed to read run data for {:?}", run)))?;
+            let mut run_res: data::read_scalars_response::RunEntry = Default::default();
+            for (tag, ts) in &data.scalars {
+                if !tag_filter.want(tag) {
+                    continue;
+                }
+                let plugin_name = ts
+                    .metadata
+                    .plugin_data
+                    .as_ref()
+                    .map(|pd| pd.plugin_name.as_str());
+                if plugin_name != Some(&want_plugin) {
+                    continue;
+                }
+
+                let n = ts.valid_values().count();
+                let mut steps = Vec::with_capacity(n);
+                let mut wall_times = Vec::with_capacity(n);
+                let mut values = Vec::with_capacity(n);
+                for (step, wall_time, &commit::ScalarValue(value)) in ts.valid_values() {
+                    steps.push(step.into());
+                    wall_times.push(wall_time.into());
+                    values.push(value);
+                }
+
+                run_res.tags.push(data::read_scalars_response::TagEntry {
+                    tag_name: tag.0.clone(),
+                    data: Some(data::ScalarData {
+                        step: steps,
+                        wall_time: wall_times,
+                        value: values,
+                        ..Default::default()
+                    }),
+                    ..Default::default()
+                });
+            }
+            if !run_res.tags.is_empty() {
+                run_res.run_name = run.0.clone();
+                res.runs.push(run_res);
+            }
+        }
+
         Ok(Response::new(res))
     }
 
@@ -172,9 +252,73 @@ impl TensorBoardDataProvider for DataProviderHandler {
     }
 }
 
+/// Parses a request plugin filter. Returns the desired plugin name, or an error if that's empty.
+fn parse_plugin_filter(pf: Option<data::PluginFilter>) -> Result<String, Status> {
+    let want_plugin = pf.unwrap_or_default().plugin_name;
+    if want_plugin.is_empty() {
+        return Err(Status::invalid_argument(
+            "must specify non-empty plugin name",
+        ));
+    }
+    Ok(want_plugin)
+}
+
+/// Parses a `RunTagFilter` from a request.
+fn parse_rtf(rtf: Option<data::RunTagFilter>) -> (Filter<Run>, Filter<Tag>) {
+    let rtf = rtf.unwrap_or_default();
+    let run_filter = match rtf.runs {
+        None => Filter::All,
+        Some(data::RunFilter { names }) => Filter::Just(names.into_iter().map(Run).collect()),
+    };
+    let tag_filter = match rtf.tags {
+        None => Filter::All,
+        Some(data::TagFilter { names }) => Filter::Just(names.into_iter().map(Tag).collect()),
+    };
+    (run_filter, tag_filter)
+}
+
+/// Parses `Downsample.num_points` from a request, failing if it's not given or invalid.
+fn parse_downsample(downsample: Option<data::Downsample>) -> Result<i64, Status> {
+    let num_points = downsample
+        .ok_or_else(|| Status::invalid_argument("must specify downsample"))?
+        .num_points;
+    if num_points < 0 {
+        return Err(Status::invalid_argument(format!(
+            "num_points must be non-negative; got {}",
+            num_points
+        )));
+    }
+    Ok(num_points)
+}
+
+/// A predicate that accepts either all values or just an explicit set of values.
+enum Filter<T> {
+    All,
+    Just(HashSet<T>),
+}
+
+impl<T: Hash + Eq> Filter<T> {
+    /// Tests whether this filter matches a specific item.
+    //
+    // TODO(@wchargin): Consider offering a function that enables callers with a `Filter<T>` and a
+    // `HashMap<K, V>` to iterate over matching `(&K, &V)`s by only iterating over this filter's
+    // explicit set in the `Just` case, optimizing for the case when `Just` is small.
+    pub fn want<Q: ?Sized>(&self, value: &Q) -> bool
+    where
+        T: Borrow<Q>,
+        Q: Hash + Eq,
+    {
+        match self {
+            Filter::All => true,
+            Filter::Just(which) => which.contains(value),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    use tonic::Code;
 
     use crate::commit::{ScalarValue, TimeSeries};
     use crate::data_compat;
@@ -286,6 +430,31 @@ mod tests {
         );
     }
 
+    /// Converts a list of `RunEntry`s into a nested map from `Run` to `Tag` to `TagEntry`, for
+    /// easy assertions that don't depend on serialization order.
+    ///
+    /// This is a macro so that it can be generic over the response types, which don't implement
+    /// any common trait but do share field names `run_name`, `tags`, and `tag_name`.
+    macro_rules! run_tag_map {
+        ($items:expr) => {
+            $items
+                .into_iter()
+                .map(|run| {
+                    let run_name = Run(run.run_name);
+                    let tags = run
+                        .tags
+                        .into_iter()
+                        .map(|tag| {
+                            let tag_name = Tag(tag.tag_name.clone());
+                            (tag_name, tag)
+                        })
+                        .collect();
+                    (run_name, tags)
+                })
+                .collect::<HashMap<Run, HashMap<Tag, _>>>()
+        };
+    }
+
     #[tokio::test]
     async fn test_list_scalars() {
         let handler = sample_handler();
@@ -298,9 +467,37 @@ mod tests {
             ..Default::default()
         });
         let res = handler.list_scalars(req).await.unwrap().into_inner();
-        assert_eq!(res.runs.len(), 1);
-        assert_eq!(res.runs[0].tags.len(), 1);
-        // fake data; don't bother checking the contents
+
+        assert_eq!(res.runs.len(), 2);
+        let map = run_tag_map!(res.runs);
+
+        let train_run = &map[&Run("train".to_string())];
+        assert_eq!(train_run.len(), 1);
+        let xent_metadata = &train_run[&Tag("xent".to_string())]
+            .metadata
+            .as_ref()
+            .unwrap();
+        assert_eq!(xent_metadata.max_step, 2);
+        assert_eq!(xent_metadata.max_wall_time, 1237.0);
+        assert_eq!(
+            xent_metadata
+                .summary_metadata
+                .as_ref()
+                .unwrap()
+                .plugin_data
+                .as_ref()
+                .unwrap()
+                .plugin_name,
+            "scalars".to_string()
+        );
+
+        let test_run = &map[&Run("test".to_string())];
+        assert_eq!(test_run.len(), 1);
+        let accuracy_metadata = &test_run[&Tag("accuracy".to_string())]
+            .metadata
+            .as_ref()
+            .unwrap();
+        assert_eq!(accuracy_metadata.max_wall_time, 6237.0);
     }
 
     #[tokio::test]
@@ -312,15 +509,74 @@ mod tests {
                 plugin_name: "scalars".to_string(),
                 ..Default::default()
             }),
+            run_tag_filter: Some(data::RunTagFilter {
+                runs: Some(data::RunFilter {
+                    names: vec!["train".to_string(), "nonexistent".to_string()],
+                    ..Default::default()
+                }),
+                tags: None,
+                ..Default::default()
+            }),
             downsample: Some(data::Downsample {
                 num_points: 1000,
                 ..Default::default()
             }),
             ..Default::default()
         });
+
         let res = handler.read_scalars(req).await.unwrap().into_inner();
+
         assert_eq!(res.runs.len(), 1);
-        assert_eq!(res.runs[0].tags.len(), 1);
-        // fake data; don't bother checking the contents
+        let map = run_tag_map!(res.runs);
+
+        let train_run = &map[&Run("train".to_string())];
+        assert_eq!(train_run.len(), 1);
+        let xent_data = &train_run[&Tag("xent".to_string())].data.as_ref().unwrap();
+        assert_eq!(xent_data.step, vec![0, 1, 2]);
+        assert_eq!(xent_data.wall_time, vec![1235.0, 1236.0, 1237.0]);
+        assert_eq!(xent_data.value, vec![0.5, 0.25, 0.125]);
+    }
+
+    #[tokio::test]
+    async fn test_read_scalars_needs_downsample() {
+        let handler = sample_handler();
+        let req = Request::new(data::ReadScalarsRequest {
+            experiment_id: "123".to_string(),
+            plugin_filter: Some(data::PluginFilter {
+                plugin_name: "scalars".to_string(),
+                ..Default::default()
+            }),
+            downsample: None,
+            ..Default::default()
+        });
+        let res = handler.read_scalars(req).await.unwrap_err();
+        match (res.code(), res.message()) {
+            (Code::InvalidArgument, msg) if msg.contains("downsample") => (),
+            other => panic!("{:?}", other),
+        };
+    }
+
+    #[tokio::test]
+    async fn test_read_scalars_downsample_zero_okay() {
+        let handler = sample_handler();
+        let req = Request::new(data::ReadScalarsRequest {
+            experiment_id: "123".to_string(),
+            plugin_filter: Some(data::PluginFilter {
+                plugin_name: "scalars".to_string(),
+                ..Default::default()
+            }),
+            downsample: Some(data::Downsample {
+                num_points: 0,
+                ..Default::default()
+            }),
+            ..Default::default()
+        });
+        let res = handler.read_scalars(req).await.unwrap().into_inner();
+        let map = run_tag_map!(res.runs);
+        let train_run = &map[&Run("train".to_string())];
+        let xent_data = &train_run[&Tag("xent".to_string())].data.as_ref().unwrap();
+        // TODO(@wchargin): Enable once downsampling is implemented.
+        // assert_eq!(xent_data.value.len(), 0);
+        let _ = xent_data;
     }
 }
