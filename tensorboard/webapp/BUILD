@@ -189,7 +189,7 @@ tf_web_library(
     deps = [
         ":tb_webapp",
         "//tensorboard/components/tf_imports:roboto",
-        "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/source_code/monaco:requirejs",
+        "//tensorboard/webapp/widgets/source_code/monaco:requirejs",
     ],
 )
 
@@ -288,6 +288,8 @@ tf_ng_web_test_suite(
         "//tensorboard/webapp/widgets/line_chart_v2/lib/worker:worker_test",
         "//tensorboard/webapp/widgets/line_chart_v2/sub_view:sub_view_tests",
         "//tensorboard/webapp/widgets/range_input:range_input_tests",
+        "//tensorboard/webapp/widgets/source_code:source_code_container_test_lib",
+        "//tensorboard/webapp/widgets/source_code:source_code_test_lib",
         "//tensorboard/webapp/widgets/text:text_tests",
     ],
 )
