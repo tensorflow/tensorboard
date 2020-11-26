@@ -12,6 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import * as d3 from '../../third_party/d3';
 import {
   DataSeries,
   DataSeriesMetadataMap,
@@ -22,44 +23,55 @@ import {isWebGl2Supported} from './lib/utils';
 /**
  * Returns extent, min and max values of each dimensions, of all data series points.
  *
+ * When ignoreYOutliers is true, it will filter out values that are approximately [1] less
+ * than 5th and greater than 95th percentile when calculating y-extent.
+ *
  * Note that it excludes auxillary data points and invisible data series.
  *
- * TODO(stephanwlee): add support for ignoreOutlier.
+ * [1]: Uses R-7 method for approximation: https://github.com/d3/d3-array#quantile
  */
 export function computeDataSeriesExtent(
   data: DataSeries[],
-  metadataMap: DataSeriesMetadataMap
+  metadataMap: DataSeriesMetadataMap,
+  ignoreYOutliers: boolean
 ): {x: [number, number] | undefined; y: [number, number] | undefined} {
-  let xMin = Infinity;
-  let xMax = -Infinity;
-  let yMin = Infinity;
-  let yMax = -Infinity;
+  let yPoints: number[] = [];
+  const xPoints: number[] = [];
 
-  let xExtentChanged = false;
-  let yExtentChanged = false;
-
+  let pointIndex = 0;
   for (const {id, points} of data) {
     const meta = metadataMap[id];
     if (!meta || meta.aux || !meta.visible) continue;
 
     for (let index = 0; index < points.length; index++) {
       const {x, y} = points[index];
-      if (!Number.isNaN(x)) {
-        xMin = Math.min(xMin, x);
-        xMax = Math.max(xMax, x);
-        xExtentChanged = true;
+      if (Number.isFinite(x)) {
+        xPoints.push(x);
       }
-      if (!Number.isNaN(y)) {
-        yMin = Math.min(yMin, y);
-        yMax = Math.max(yMax, y);
-        yExtentChanged = true;
+      if (Number.isFinite(y)) {
+        yPoints.push(y);
       }
+      pointIndex++;
     }
   }
 
+  yPoints.sort(d3.ascending);
+
+  if (ignoreYOutliers && yPoints.length > 2) {
+    const aY = d3.quantile(yPoints, 0.05)!;
+    const bY = d3.quantile(yPoints, 0.95)!;
+    yPoints = yPoints.filter((val) => {
+      return aY <= val && val <= bY;
+    });
+  }
+
+  const [xMin, xMax] = d3.extent(xPoints);
+  const yMin = yPoints[0];
+  const yMax = yPoints[yPoints.length - 1];
+
   return {
-    x: xExtentChanged ? [xMin, xMax] : undefined,
-    y: yExtentChanged ? [yMin, yMax] : undefined,
+    x: xMin !== undefined && xMax !== undefined ? [xMin, xMax] : undefined,
+    y: yMin !== undefined && yMax !== undefined ? [yMin, yMax] : undefined,
   };
 }
 

@@ -100,6 +100,14 @@ export class LineChartComponent implements AfterViewInit, OnChanges, OnDestroy {
   @Input()
   tooltipTemplate?: TooltipTemplate;
 
+  /**
+   * Whether to ignore outlier when computing default viewBox from the dataSeries.
+   *
+   * Do note that we only take values in between approxmiately 5th to 95th percentiles.
+   */
+  @Input()
+  ignoreYOutliers: boolean = false;
+
   readonly Y_GRID_COUNT = 6;
   readonly X_GRID_COUNT = 10;
 
@@ -174,13 +182,15 @@ export class LineChartComponent implements AfterViewInit, OnChanges, OnDestroy {
    * Returns true when default view box changes (e.g., due to more data coming in
    * or more series becoming visible).
    *
-   * Calculating the dataExtent and updating the viewBox accordingly can be expensive as
-   * (1) we have to iterate over ~1M data points and (2) supporting `ignoreOutlier` will
-   * make us remember 5th and 95th percentile presumably using min and max heaps
-   * (increased memory usage).
+   * Calculating the dataExtent and updating the viewBox accordingly can be an expensive
+   * operation.
    */
   private shouldUpdateDefaultViewBox(changes: SimpleChanges): boolean {
-    if (changes['xScaleType'] || changes['yScaleType']) {
+    if (
+      changes['xScaleType'] ||
+      changes['yScaleType'] ||
+      changes['ignoreYOutliers']
+    ) {
       return true;
     }
 
@@ -313,7 +323,8 @@ export class LineChartComponent implements AfterViewInit, OnChanges, OnDestroy {
     } else if (!this.isViewBoxOverriden && this.isViewBoxChanged) {
       const dataExtent = computeDataSeriesExtent(
         this.seriesData,
-        this.seriesMetadataMap
+        this.seriesMetadataMap,
+        this.ignoreYOutliers
       );
       this.viewBox = {
         x: this.xScale.niceDomain(dataExtent.x ?? DEFAULT_EXTENT.x),
