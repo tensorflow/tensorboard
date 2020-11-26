@@ -135,3 +135,78 @@ You should know:
 [`grpc_cli`]: https://github.com/grpc/grpc/blob/master/doc/command_line_tool.md
 [grpc/grpc#24734]: https://github.com/grpc/grpc/issues/24374
 [reflection]: https://github.com/hyperium/tonic/pull/340
+
+## Style
+
+Google has no official Rust style guide. In lieu of an exhaustive list of rules,
+we offer the following advice:
+
+-   There is an official [Rust API Guidelines Checklist][cklist]. (Don’t miss
+    all the prose behind the items, and see also the “External links”
+    reference.) This can sometimes be helpful to answer questions like, “how
+    should I name this method?” or “should I validate this invariant, and, if
+    so, how?”. The standard library and toolchains are also great references for
+    questions of documentation, interfaces, or implementation: you can always
+    just ”go see what `String` does”.
+
+    These sources provide _guidelines_. Our code can probably afford to be less
+    completely documented than the standard library.
+
+-   Listen to Clippy and bias toward taking its advice. It’s okay to disable
+    lints by using `#[allow(clippy::some_lint_name)]`: preferably on just a
+    single item (rather than a module), and preferably with a brief comment.
+
+-   Standard correctness guidelines: prefer making it structurally impossible to
+    panic (avoid `unwrap`/`expect` when possible); use newtypes and visibility
+    to enforce invariants where appropriate; do not use `unsafe` unless you have
+    a good reason that you are prepared to justify; etc.
+
+-   Write Rust code that will still compile if backward-compatible changes are
+    made to the protobuf definitions. This means:
+
+    -   When you construct a protobuf message, spread in `Default::default` even
+        if you populate all the fields, in case more fields are added:
+
+        ```rust
+        let plugin_data = pb::summary_metadata::PluginData {
+            plugin_name: String::from("scalars"),
+            content: Vec::new(),
+            ..Default::default()
+        };
+        ```
+
+        This [contradicts `clippy::needless_update`][clippy-nu], so we disable
+        that lint at the crate level.
+
+    -   When you consume a protobuf enum, include a default case:
+
+        ```rust
+        let class_name = match data_class {
+            DataClass::Scalar => "scalar",
+            DataClass::Tensor => "tensor",
+            DataClass::BlobSequence => "blob sequence",
+            _ => "unknown", // matching against `_`, not `DataClass::Unknown`
+        };
+        ```
+
+    This way, whoever is updating our copies of the protobuf definitions doesn’t
+    also have to context-switch in to updating Rust code.
+
+    We don’t have a compile-time check for this, so just try to be careful.
+
+    If you’re reading this because a protobuf change _has_ caused Rust failures,
+    here are some tips for fixing them:
+
+    -   For struct initializers: add `..Default::default()` (no trailing comma),
+        as in the example above.
+    -   For `match` expressions: add a `_ => unimplemented!()` branch, as in the
+        example above, which will panic at runtime if it’s hit.
+    -   For other contexts: if there’s not an obvious fix, run `git blame` and
+        ask the original author, or ask another Rust developer.
+
+[cklist]: https://rust-lang.github.io/api-guidelines/checklist.html
+[clippy-nu]: https://github.com/rust-lang/rust-clippy/issues/6323
+
+When in doubt, you can always ask a colleague or the internet. Stack Overflow
+responses on Rust tend to be both fast and helpful, especially for carefully
+posed questions.
