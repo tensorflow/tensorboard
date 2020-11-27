@@ -36,6 +36,7 @@ jobs:
         tf_version_id: ['tf-nightly', 'notf']
         python_version: ['3.7']
     steps:
+      - run: env
       - uses: actions/checkout@v1
       - uses: actions/setup-python@v1
         with:
@@ -52,12 +53,25 @@ jobs:
           export PATH="/venv/bin:/usr/local/bin:/usr/bin:/bin"
           printf '%s\n' "VIRTUAL_ENV=/venv" >>"${GITHUB_ENV}"
           printf '%s\n' "PATH=$PATH" >>"${GITHUB_ENV}"
+          # GitHub appears to insert an "/opt/hostedtoolcache/..." PATH
+          # entry at the start of each action. Thus, also export as
+          # ACTION_ENV_PATH so that we can recover exactly the PATH that
+          # we need.
+          printf '%s\n' "ACTION_ENV_PATH=$PATH" >>"${GITHUB_ENV}"
+          echo "$PATH"
           pip install -U pip setuptools wheel
       - run: echo $PATH
       - name: 'Set up Bazel'
         run: |
           ci/download_bazel.sh "${BAZEL_VERSION}" "${BAZEL_SHA256SUM}" ~/bazel
-          sudo mv ~/bazel /usr/local/bin/bazel
+          sudo mv ~/bazel /usr/local/bin/bazel-vanilla
+          printf '%s\n' \
+            '#!/bin/sh' \
+            'set -eu' \
+            'export PATH="${ACTION_ENV_PATH}"' \
+            'exec /usr/local/bin/bazel-vanilla "$@"' \
+            | sudo tee /usr/local/bin/bazel
+          sudo chmod +x /usr/local/bin/bazel
           cp ./ci/bazelrc ~/.bazelrc
       - name: 'Install Python dependencies'
         run: |
