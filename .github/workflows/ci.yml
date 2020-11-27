@@ -50,18 +50,22 @@ jobs:
           sudo mkdir /venv
           sudo chown "$USER:$USER" /venv
           python3 -m venv /venv
-          . /venv/bin/activate
           export VIRTUAL_ENV=/venv
           export PATH="/venv/bin:/usr/local/bin:/usr/bin:/bin"
-          printf '%s\n' "VIRTUAL_ENV=/venv" >>"${GITHUB_ENV}"
-          printf '%s\n' "PATH=$PATH" >>"${GITHUB_ENV}"
-          printf '%s\n' "/tmp/nonexistent/wheredoesthisgo" >>"${GITHUB_PATH}"
-          # GitHub appears to insert an "/opt/hostedtoolcache/..." PATH
-          # entry at the start of each action. Thus, also export as
-          # ACTION_ENV_PATH so that we can recover exactly the PATH that
-          # we need.
+          printf '%s\n' "VIRTUAL_ENV=${VIRTUAL_ENV}" >>"${GITHUB_ENV}"
+          # We need to control the exact value of `$PATH` to ensure remote cache
+          # hits, but actions/setup-python's use of `core.addPath` prepends the
+          # native Python directory (/opt/hostedtoolcache/Python/...) to `$PATH`
+          # at the start of each step, even if we write to `${GITHUB_ENV}` to
+          # (nominally) overwrite `${PATH}`. Instead, (a) use `${GITHUB_PATH}`
+          # so that `pip install`s in later steps install into our virtualenv
+          # rather than the global env, and (b) stash our desired `${PATH}` in a
+          # different env var, `${ACTION_ENV_PATH}`, and pop that for Bazel
+          # invocations.
+          #
+          # See: <https://github.com/actions/toolkit/issues/655>
+          printf '%s\n' "${VIRTUAL_ENV}/bin" >>"${GITHUB_PATH}"
           printf '%s\n' "ACTION_ENV_PATH=$PATH" >>"${GITHUB_ENV}"
-          echo "$PATH"
           pip install -U pip setuptools wheel
       - run: echo $PATH && env
       - name: Overwrite PATH=ACTION_ENV_PATH
@@ -107,6 +111,8 @@ jobs:
           python -c 'from __future__ import print_function; import numpy; print(numpy.get_include())'
       - name: 'Bazel: fetch'
         run: bazel fetch //tensorboard/...
+      - name: 'Bazel: aquery //tensorboard'
+        run: bazel aquery --action_env=PATH="$ACTION_ENV_PATH" //tensorboard/...
       - name: 'Bazel: build'
         run: bazel build //tensorboard/...
       - name: 'Bazel: test (with TensorFlow support)'
