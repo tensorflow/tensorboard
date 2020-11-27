@@ -69,6 +69,7 @@ jobs:
             '#!/bin/sh' \
             'set -eu' \
             'export PATH="${ACTION_ENV_PATH}"' \
+            'env' \
             'exec /usr/local/bin/bazel-vanilla "$@"' \
             | sudo tee /usr/local/bin/bazel
           sudo chmod +x /usr/local/bin/bazel
@@ -86,6 +87,8 @@ jobs:
         if: matrix.tf_version_id != 'notf'
       - name: 'Check Pip state'
         run: pip freeze --all
+      - run: echo "$PATH" && echo "$ACTION_ENV_PATH"
+      - run: python -c 'from __future__ import print_function; import numpy; print(numpy.get_include())'
       - name: 'Bazel: fetch'
         run: bazel fetch //tensorboard/...
       - name: 'Bazel: build'
