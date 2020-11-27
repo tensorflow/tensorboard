@@ -38,6 +38,7 @@ jobs:
     steps:
       - run: env
       - uses: actions/checkout@v1
+      - run: env
       - uses: actions/setup-python@v1
         with:
           python-version: ${{ matrix.python_version }}
@@ -74,6 +75,7 @@ jobs:
             | sudo tee /usr/local/bin/bazel
           sudo chmod +x /usr/local/bin/bazel
           cp ./ci/bazelrc ~/.bazelrc
+      - run: env
       - name: 'Install Python dependencies'
         run: |
           python -m pip install -U pip
@@ -82,13 +84,19 @@ jobs:
             -r ./tensorboard/pip_package/requirements.txt \
             -r ./tensorboard/pip_package/requirements_dev.txt \
             ;
+      - run: env
       - name: 'Install TensorFlow'
         run: pip install "${{ matrix.tf_version_id }}"
         if: matrix.tf_version_id != 'notf'
+      - run: env
       - name: 'Check Pip state'
         run: pip freeze --all
+      - run: env
       - run: echo "$PATH" && echo "$ACTION_ENV_PATH"
-      - run: python -c 'from __future__ import print_function; import numpy; print(numpy.get_include())'
+      - name: Find numpy include path
+        run: |
+          export PATH="$ACTION_ENV_PATH"
+          python -c 'from __future__ import print_function; import numpy; print(numpy.get_include())'
       - name: 'Bazel: fetch'
         run: bazel fetch //tensorboard/...
       - name: 'Bazel: build'
