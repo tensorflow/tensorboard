@@ -145,11 +145,7 @@ class GrpcDataProviderTest(tb_test.TestCase):
         tag = run.tags.add(tag_name="accuracy")
         tag.data.step.extend([0, 1, 2, 4])
         tag.data.wall_time.extend([1234.0, 1235.0, 1236.0, 1237.0])
-<<<<<<< HEAD
         tag.data.value.extend([0.25, 0.50, 0.75, 1.00])
-=======
-        tag.data.value.extend([0.1, 0.5, 0.8, 0.9])
->>>>>>> 5e34b53622eff1ea23d8b9f9ce4dba7a4182ed9e
         self.stub.ReadScalars.return_value = res
 
         actual = self.provider.read_scalars(
@@ -162,17 +158,10 @@ class GrpcDataProviderTest(tb_test.TestCase):
         expected = {
             "test": {
                 "accuracy": [
-<<<<<<< HEAD
                     provider.ScalarDatum(step=0, wall_time=1234.0, value=0.25),
                     provider.ScalarDatum(step=1, wall_time=1235.0, value=0.50),
                     provider.ScalarDatum(step=2, wall_time=1236.0, value=0.75),
                     provider.ScalarDatum(step=4, wall_time=1237.0, value=1.00),
-=======
-                    provider.ScalarDatum(step=0, wall_time=1234.0, value=0.1),
-                    provider.ScalarDatum(step=1, wall_time=1235.0, value=0.5),
-                    provider.ScalarDatum(step=2, wall_time=1236.0, value=0.8),
-                    provider.ScalarDatum(step=4, wall_time=1237.0, value=0.9),
->>>>>>> 5e34b53622eff1ea23d8b9f9ce4dba7a4182ed9e
                 ],
             },
         }
