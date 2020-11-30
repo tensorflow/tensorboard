@@ -17,12 +17,14 @@ use futures_core::Stream;
 use std::borrow::Borrow;
 use std::collections::HashMap;
 use std::collections::HashSet;
+use std::convert::TryInto;
 use std::hash::Hash;
 use std::pin::Pin;
 use std::sync::{RwLock, RwLockReadGuard};
 use tonic::{Request, Response, Status};
 
 use crate::commit::{self, Commit};
+use crate::downsample;
 use crate::proto::tensorboard::data;
 use crate::types::{Run, Tag, WallTime};
 use data::tensor_board_data_provider_server::TensorBoardDataProvider;
@@ -158,7 +160,7 @@ impl TensorBoardDataProvider for DataProviderHandler {
         let req = req.into_inner();
         let want_plugin = parse_plugin_filter(req.plugin_filter)?;
         let (run_filter, tag_filter) = parse_rtf(req.run_tag_filter);
-        let _downsample = parse_downsample(req.downsample)?; // TODO(@wchargin): Use `downsample`.
+        let num_points = parse_downsample(req.downsample)?;
         let runs = self.read_runs()?;
 
         let mut res: data::ReadScalarsResponse = Default::default();
@@ -183,11 +185,13 @@ impl TensorBoardDataProvider for DataProviderHandler {
                     continue;
                 }
 
-                let n = ts.valid_values().count();
+                let mut points = ts.valid_values().collect::<Vec<_>>();
+                downsample::downsample(&mut points, num_points);
+                let n = points.len();
                 let mut steps = Vec::with_capacity(n);
                 let mut wall_times = Vec::with_capacity(n);
                 let mut values = Vec::with_capacity(n);
-                for (step, wall_time, &commit::ScalarValue(value)) in ts.valid_values() {
+                for (step, wall_time, &commit::ScalarValue(value)) in points {
                     steps.push(step.into());
                     wall_times.push(wall_time.into());
                     values.push(value);
@@ -278,7 +282,7 @@ fn parse_rtf(rtf: Option<data::RunTagFilter>) -> (Filter<Run>, Filter<Tag>) {
 }
 
 /// Parses `Downsample.num_points` from a request, failing if it's not given or invalid.
-fn parse_downsample(downsample: Option<data::Downsample>) -> Result<i64, Status> {
+fn parse_downsample(downsample: Option<data::Downsample>) -> Result<usize, Status> {
     let num_points = downsample
         .ok_or_else(|| Status::invalid_argument("must specify downsample"))?
         .num_points;
@@ -288,7 +292,7 @@ fn parse_downsample(downsample: Option<data::Downsample>) -> Result<i64, Status>
             num_points
         )));
     }
-    Ok(num_points)
+    Ok(num_points.try_into().unwrap_or(usize::MAX))
 }
 
 /// A predicate that accepts either all values or just an explicit set of values.
@@ -575,8 +579,6 @@ mod tests {
         let map = run_tag_map!(res.runs);
         let train_run = &map[&Run("train".to_string())];
         let xent_data = &train_run[&Tag("xent".to_string())].data.as_ref().unwrap();
-        // TODO(@wchargin): Enable once downsampling is implemented.
-        // assert_eq!(xent_data.value.len(), 0);
-        let _ = xent_data;
+        assert_eq!(xent_data.value, Vec::new());
     }
 }

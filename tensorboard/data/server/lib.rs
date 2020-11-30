@@ -19,6 +19,7 @@ limitations under the License.
 
 pub mod commit;
 pub mod data_compat;
+pub mod downsample;
 pub mod event_file;
 pub mod logdir;
 pub mod masked_crc;
