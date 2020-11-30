@@ -50,9 +50,19 @@ limitations under the License.
 
     -webkit-font-smoothing: antialiased;
   }
+  noscript {
+    display: block;
+    margin: 0 auto;
+    max-width: 600px;
+    padding: 10px;
+  }
 </style>
 
 <body>
+  <noscript>
+    <h1>TensorBoard requires JavaScript</h1>
+    <p>Please enable JavaScript and reload this page.</p>
+  </noscript>
   <script jscomp-nocompile src="tf-imports/require.js"></script>
   <script jscomp-nocompile src="polymer3_lib_binary.js"></script>
   <script jscomp-nocompile src="tb-webapp/tb_webapp_binary.js"></script>

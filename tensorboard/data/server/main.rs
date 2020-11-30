@@ -13,50 +13,99 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-use log::{info, LevelFilter};
+use clap::Clap;
+use log::{debug, info, LevelFilter};
+use std::net::{IpAddr, SocketAddr};
 use std::path::PathBuf;
+use std::str::FromStr;
 use std::time::{Duration, Instant};
+use tokio::net::TcpListener;
 use tonic::transport::Server;
 
 use rustboard_core::commit::Commit;
 use rustboard_core::logdir::LogdirLoader;
-use rustboard_core::proto::tensorboard::data::tensor_board_data_provider_server::TensorBoardDataProviderServer;
+use rustboard_core::proto::tensorboard::data;
 use rustboard_core::server::DataProviderHandler;
 
-const RELOAD_INTERVAL: Duration = Duration::from_secs(5);
+use data::tensor_board_data_provider_server::TensorBoardDataProviderServer;
+
+#[derive(Clap, Debug)]
+#[clap(name = "rustboard", version = "0.1.0")]
+struct Opts {
+    /// Log directory to load
+    ///
+    /// Directory to recursively scan for event files (files matching the `*tfevents*` glob). This
+    /// directory, its descendants, and its event files will be periodically polled for new data.
+    #[clap(long)]
+    logdir: PathBuf,
+
+    /// Bind to this IP address
+    ///
+    /// IP address to bind this server to. May be an IPv4 address (e.g., 127.0.0.1 or 0.0.0.0) or
+    /// an IPv6 address (e.g., ::1 or ::0).
+    #[clap(long, default_value = "::0")]
+    host: IpAddr,
+
+    /// Bind to this port
+    ///
+    /// Port to bind this server to. Use `0` to request an arbitrary free port from the OS.
+    #[clap(long, default_value = "6806")]
+    port: u16,
+
+    /// Delay between reload cycles (seconds)
+    ///
+    /// Number of seconds to wait between finishing one load cycle and starting the next one. This
+    /// does not include the time for the reload itself.
+    #[clap(long, default_value = "5")]
+    reload_interval: Seconds,
+}
+
+/// A duration in seconds.
+#[derive(Debug, Copy, Clone)]
+struct Seconds(u64);
+impl FromStr for Seconds {
+    type Err = <u64 as FromStr>::Err;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        s.parse().map(Seconds)
+    }
+}
+impl Seconds {
+    fn duration(self) -> Duration {
+        Duration::from_secs(self.0)
+    }
+}
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let opts = Opts::parse();
     init_logging(LevelFilter::Info);
+    debug!("Parsed options: {:?}", opts);
 
-    let addr = "[::0]:6806".parse::<std::net::SocketAddr>()?;
-    let logdir = match std::env::args_os().nth(1) {
-        Some(d) => PathBuf::from(d),
-        None => {
-            eprintln!("fatal: specify logdir as first command-line argument");
-            std::process::exit(1);
-        }
-    };
+    let addr = SocketAddr::new(opts.host, opts.port);
+    let listener = TcpListener::bind(addr).await?;
+    let bound = listener.local_addr()?;
+    eprintln!("listening on {:?}", bound);
 
     // Leak the commit object, since the Tonic server must have only 'static references. This only
     // leaks the outer commit structure (of constant size), not the pointers to the actual data.
     let commit: &'static Commit = Box::leak(Box::new(Commit::new()));
+
     std::thread::spawn(move || {
-        let mut loader = LogdirLoader::new(commit, logdir);
+        let mut loader = LogdirLoader::new(commit, opts.logdir);
         loop {
             info!("Starting load cycle");
             let start = Instant::now();
             loader.reload();
             let end = Instant::now();
             info!("Finished load cycle ({:?})", end - start);
-            std::thread::sleep(RELOAD_INTERVAL);
+            std::thread::sleep(opts.reload_interval.duration());
         }
     });
 
     let handler = DataProviderHandler { commit };
     Server::builder()
         .add_service(TensorBoardDataProviderServer::new(handler))
-        .serve(addr)
+        .serve_with_incoming(listener)
         .await?;
     Ok(())
 }
