@@ -393,13 +393,10 @@ def start(arguments, timeout=datetime.timedelta(seconds=60)):
       A `StartReused`, `StartLaunched`, `StartFailed`, or `StartTimedOut`
       object.
     """
-    match = _find_matching_instance(
-        cache_key(
-            working_directory=os.getcwd(),
-            arguments=arguments,
-            configure_kwargs={},
-        ),
+    this_cache_key = cache_key(
+        working_directory=os.getcwd(), arguments=arguments, configure_kwargs={},
     )
+    match = _find_matching_instance(this_cache_key)
     if match:
         return StartReused(info=match)
 
@@ -430,9 +427,11 @@ def start(arguments, timeout=datetime.timedelta(seconds=60)):
                 stdout=_maybe_read_file(stdout_path),
                 stderr=_maybe_read_file(stderr_path),
             )
-        for info in get_all():
-            if info.pid == p.pid and info.start_time >= start_time_seconds:
-                return StartLaunched(info=info)
+        info = _find_matching_instance(this_cache_key)
+        if info:
+            # Don't check that `info.pid == p.pid`, since on Windows that may
+            # not be the case: see #4300.
+            return StartLaunched(info=info)
     else:
         return StartTimedOut(pid=p.pid)
 
