@@ -50,16 +50,16 @@ pub enum EventValue {
 impl EventValue {
     /// Consumes this event value and enriches it into a scalar.
     ///
-    /// This supports `simple_value` (TF 1.x) summaries as well as non-empty tensors of type
-    /// `DT_FLOAT` or `DT_DOUBLE`. Returns `DataLoss` if the value is a `GraphDef`, is an
-    /// unsupported summary, or is a tensor that does not have exactly one item.
+    /// This supports `simple_value` (TF 1.x) summaries as well as rank-0 tensors of type
+    /// `DT_FLOAT`. Returns `DataLoss` if the value is a `GraphDef`, is an unsupported summary, or
+    /// is a tensor of the wrong rank.
     pub fn into_scalar(self) -> Result<ScalarValue, DataLoss> {
         let value_box = match self {
             EventValue::GraphDef(_) => return Err(DataLoss),
             EventValue::Summary(SummaryValue(v)) => v,
         };
         match *value_box {
-            pb::summary::value::Value::SimpleValue(f) => Ok(ScalarValue(f64::from(f))),
+            pb::summary::value::Value::SimpleValue(f) => Ok(ScalarValue(f)),
             pb::summary::value::Value::Tensor(tp) => match tensor_proto_to_scalar(&tp) {
                 Some(f) => Ok(ScalarValue(f)),
                 None => Err(DataLoss),
@@ -69,7 +69,7 @@ impl EventValue {
     }
 }
 
-fn tensor_proto_to_scalar(tp: &pb::TensorProto) -> Option<f64> {
+fn tensor_proto_to_scalar(tp: &pb::TensorProto) -> Option<f32> {
     // Ensure that it's rank-0. Treat an absent `tensor_shape` as an empty message, which happens
     // to imply rank 0.
     match &tp.tensor_shape {
@@ -82,25 +82,11 @@ fn tensor_proto_to_scalar(tp: &pb::TensorProto) -> Option<f64> {
             // Could have data in either `float_val` or `tensor_content`.
             if let Some(f) = tp.float_val.first() {
                 if tp.float_val.len() == 1 {
-                    Some(f64::from(*f))
-                } else {
-                    None
-                }
-            } else if let Ok(f) = (&*tp.tensor_content).try_into().map(f32::from_le_bytes) {
-                Some(f64::from(f))
-            } else {
-                None
-            }
-        }
-        Some(DataType::DtDouble) => {
-            // Could have data in either `double_val` or `tensor_content`.
-            if let Some(f) = tp.double_val.first() {
-                if tp.double_val.len() == 1 {
                     Some(*f)
                 } else {
                     None
                 }
-            } else if let Ok(f) = (&*tp.tensor_content).try_into().map(f64::from_le_bytes) {
+            } else if let Ok(f) = (&*tp.tensor_content).try_into().map(f32::from_le_bytes) {
                 Some(f)
             } else {
                 None
@@ -296,27 +282,15 @@ mod tests {
                     ..Default::default()
                 },
                 pb::TensorProto {
-                    dtype: pb::DataType::DtDouble.into(),
-                    tensor_shape: Some(tensor_shape(&[])),
-                    double_val: vec![0.125],
-                    ..Default::default()
-                },
-                pb::TensorProto {
                     dtype: pb::DataType::DtFloat.into(),
                     tensor_shape: Some(tensor_shape(&[])),
                     tensor_content: f32::to_le_bytes(0.125).to_vec(),
                     ..Default::default()
                 },
                 pb::TensorProto {
-                    dtype: pb::DataType::DtDouble.into(),
-                    tensor_shape: Some(tensor_shape(&[])),
-                    tensor_content: f64::to_le_bytes(0.125).to_vec(),
-                    ..Default::default()
-                },
-                pb::TensorProto {
-                    dtype: pb::DataType::DtDouble.into(),
+                    dtype: pb::DataType::DtFloat.into(),
                     tensor_shape: None, // no explicit tensor shape; treated as rank 0
-                    tensor_content: f64::to_le_bytes(0.125).to_vec(),
+                    tensor_content: f32::to_le_bytes(0.125).to_vec(),
                     ..Default::default()
                 },
             ];
@@ -342,21 +316,9 @@ mod tests {
                     ..Default::default()
                 },
                 pb::TensorProto {
-                    dtype: pb::DataType::DtDouble.into(),
-                    tensor_shape: Some(tensor_shape(&[])),
-                    double_val: vec![],
-                    ..Default::default()
-                },
-                pb::TensorProto {
                     dtype: pb::DataType::DtFloat.into(),
                     tensor_shape: Some(tensor_shape(&[])),
                     tensor_content: f32::to_le_bytes(0.125)[..2].to_vec(),
-                    ..Default::default()
-                },
-                pb::TensorProto {
-                    dtype: pb::DataType::DtDouble.into(),
-                    tensor_shape: Some(tensor_shape(&[])),
-                    tensor_content: f64::to_le_bytes(0.125)[..6].to_vec(),
                     ..Default::default()
                 },
             ];
@@ -382,25 +344,9 @@ mod tests {
                     ..Default::default()
                 },
                 pb::TensorProto {
-                    dtype: pb::DataType::DtDouble.into(),
-                    tensor_shape: Some(tensor_shape(&[])),
-                    double_val: vec![0.125, 9.99],
-                    ..Default::default()
-                },
-                pb::TensorProto {
                     dtype: pb::DataType::DtFloat.into(),
                     tensor_shape: Some(tensor_shape(&[])),
                     tensor_content: [f32::to_le_bytes(0.125), f32::to_le_bytes(9.99)]
-                        .iter()
-                        .flatten()
-                        .copied()
-                        .collect(),
-                    ..Default::default()
-                },
-                pb::TensorProto {
-                    dtype: pb::DataType::DtDouble.into(),
-                    tensor_shape: Some(tensor_shape(&[])),
-                    tensor_content: [f64::to_le_bytes(0.125), f64::to_le_bytes(9.99)]
                         .iter()
                         .flatten()
                         .copied()
@@ -431,9 +377,9 @@ mod tests {
                 },
                 // Rank-3 tensor that happens to be of size 1: still invalid.
                 pb::TensorProto {
-                    dtype: pb::DataType::DtDouble.into(),
+                    dtype: pb::DataType::DtFloat.into(),
                     tensor_shape: Some(tensor_shape(&[1, 1, 1])),
-                    double_val: vec![0.125],
+                    float_val: vec![0.125],
                     ..Default::default()
                 },
             ];
@@ -460,6 +406,16 @@ mod tests {
                 pb::TensorProto {
                     dtype: pb::DataType::DtInt32.into(),
                     int_val: vec![123],
+                    ..Default::default()
+                },
+                pb::TensorProto {
+                    dtype: pb::DataType::DtDouble.into(),
+                    double_val: vec![123.0],
+                    ..Default::default()
+                },
+                pb::TensorProto {
+                    dtype: pb::DataType::DtDouble.into(),
+                    tensor_content: f64::to_le_bytes(123.0).to_vec(),
                     ..Default::default()
                 },
                 pb::TensorProto::default(),

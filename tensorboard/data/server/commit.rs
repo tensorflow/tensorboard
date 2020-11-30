@@ -103,7 +103,7 @@ pub struct DataLoss;
 
 /// The value of a scalar time series at a single point.
 #[derive(Debug, Copy, Clone, PartialEq)]
-pub struct ScalarValue(pub f64);
+pub struct ScalarValue(pub f32);
 
 #[cfg(test)]
 mod tests {

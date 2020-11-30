@@ -365,7 +365,7 @@ mod test {
         );
 
         // Points should be as expected (no downsampling at these sizes).
-        let scalar = |f: f32| commit::ScalarValue(f64::from(f));
+        let scalar = commit::ScalarValue;
         assert_eq!(
             ts.valid_values().collect::<Vec<_>>(),
             vec![

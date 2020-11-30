@@ -332,7 +332,7 @@ mod tests {
 
         let mut runs = commit.runs.write().unwrap();
 
-        fn scalar_series(points: Vec<(Step, WallTime, f64)>) -> TimeSeries<ScalarValue> {
+        fn scalar_series(points: Vec<(Step, WallTime, f32)>) -> TimeSeries<ScalarValue> {
             use pb::summary::value::Value::SimpleValue;
             let mut ts = commit::TimeSeries::new(
                 data_compat::SummaryValue(Box::new(SimpleValue(0.0))).initial_metadata(None),
