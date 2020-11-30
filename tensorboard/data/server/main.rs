@@ -58,6 +58,10 @@ struct Opts {
     /// does not include the time for the reload itself.
     #[clap(long, default_value = "5")]
     reload_interval: Seconds,
+
+    /// Use verbose output (-vv for very verbose output)
+    #[clap(long = "verbose", short, parse(from_occurrences))]
+    verbosity: u32,
 }
 
 /// A duration in seconds.
@@ -78,7 +82,11 @@ impl Seconds {
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let opts = Opts::parse();
-    init_logging(LevelFilter::Info);
+    init_logging(match opts.verbosity {
+        0 => LevelFilter::Warn,
+        1 => LevelFilter::Info,
+        _ => LevelFilter::max(),
+    });
     debug!("Parsed options: {:?}", opts);
 
     let addr = SocketAddr::new(opts.host, opts.port);
