@@ -290,6 +290,17 @@ unavailable. (default: "default").\
         )
 
         parser.add_argument(
+            "--grpc_data_provider",
+            metavar="PORT",
+            type=str,
+            default="",
+            help="""\
+Experimental. Address of a gRPC server exposing a data provider. Set to empty
+string to disable. (default: %(default)s)
+""",
+        )
+
+        parser.add_argument(
             "--purge_orphaned_data",
             metavar="BOOL",
             # Custom str-to-bool converter since regular bool() doesn't work.
@@ -520,7 +531,12 @@ flag.\
                 )
         elif flags.logdir and flags.logdir_spec:
             raise FlagsError("May not specify both --logdir and --logdir_spec")
-        elif not flags.db and not flags.logdir and not flags.logdir_spec:
+        elif (
+            not flags.db
+            and not flags.logdir
+            and not flags.logdir_spec
+            and not flags.grpc_data_provider
+        ):
             raise FlagsError(
                 "A logdir or db must be specified. "
                 "For example `tensorboard --logdir mylogdir` "
