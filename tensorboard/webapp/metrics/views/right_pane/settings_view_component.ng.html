@@ -37,7 +37,7 @@ limitations under the License.
       <mat-slider
         aria-labelledby="scalars-smoothing-label"
         color="primary"
-        [max]="MAX_SMOOTHING_VALUE"
+        [max]="MAX_SMOOTHING_SLIDER_VALUE"
         [min]="0"
         [step]="0.01"
         [value]="scalarSmoothing"
@@ -50,7 +50,7 @@ limitations under the License.
         type="number"
         [max]="MAX_SMOOTHING_VALUE"
         min="0"
-        step="0.01"
+        step="0.001"
         [value]="scalarSmoothing"
         (input)="onScalarSmoothingInput($event)"
       />

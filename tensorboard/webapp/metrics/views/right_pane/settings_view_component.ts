@@ -35,7 +35,15 @@ const SLIDER_AUDIT_TIME_MS = 250;
  * When smoothing === 1, all lines become flat on the x-axis, which is not
  * useful at all. Use a maximum smoothing value < 1.
  */
-const MAX_SMOOTHING_VALUE = 0.99;
+const MAX_SMOOTHING_VALUE = 0.999;
+
+/**
+ * The smoothing slider has a step size of 0.01. Angular's rounding logic makes
+ * the effective maximum value 1, even when the 'max' attribute is set to 0.999.
+ * Set this value to the nearest value less than MAX_SMOOTHING_VALUE that is
+ * representable as 'min' + k * 'step'.
+ */
+const MAX_SMOOTHING_SLIDER_VALUE = 0.99;
 
 @Component({
   selector: 'metrics-dashboard-settings-component',
@@ -74,6 +82,7 @@ export class SettingsViewComponent {
   @Output() histogramModeChanged = new EventEmitter<HistogramMode>();
 
   readonly MAX_SMOOTHING_VALUE = MAX_SMOOTHING_VALUE;
+  readonly MAX_SMOOTHING_SLIDER_VALUE = MAX_SMOOTHING_SLIDER_VALUE;
 
   readonly scalarSmoothingControlChanged$ = new EventEmitter<number>();
   @Input() scalarSmoothing!: number;
