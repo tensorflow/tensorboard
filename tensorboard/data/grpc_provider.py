@@ -62,7 +62,9 @@ class GrpcDataProvider(provider.DataProvider):
             res = self._stub.ListRuns(req)
         return [
             provider.Run(
-                run_id=run.name, run_name=run.name, start_time=run.start_time,
+                run_id=run.name,
+                run_name=run.name,
+                start_time=run.start_time,
             )
             for run in res.runs
         ]
@@ -125,7 +127,9 @@ class GrpcDataProvider(provider.DataProvider):
                     d = tag_entry.data
                     for (step, wt, value) in zip(d.step, d.wall_time, d.value):
                         pt = provider.ScalarDatum(
-                            step=step, wall_time=wt, value=value,
+                            step=step,
+                            wall_time=wt,
+                            value=value,
                         )
                         series.append(pt)
             return result

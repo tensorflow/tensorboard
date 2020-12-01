@@ -173,7 +173,9 @@ def _create_uploader(
 
 
 def _create_request_sender(
-    experiment_id=None, api=None, allowed_plugins=_USE_DEFAULT,
+    experiment_id=None,
+    api=None,
+    allowed_plugins=_USE_DEFAULT,
 ):
     if api is _USE_DEFAULT:
         api = _create_mock_client()
@@ -300,7 +302,8 @@ class TensorboardUploaderTest(tf.test.TestCase):
         (args, _) = mock_client.CreateExperiment.call_args
 
         expected_request = write_service_pb2.CreateExperimentRequest(
-            name=new_name, description=new_description,
+            name=new_name,
+            description=new_description,
         )
         self.assertEqual(args[0], expected_request)
 
@@ -543,7 +546,8 @@ class TensorboardUploaderTest(tf.test.TestCase):
             actual_graph_def = graph_pb2.GraphDef.FromString(data)
             self.assertProtoEquals(expected_graph_def, actual_graph_def)
             self.assertEqual(
-                set(r.blob_sequence_id for r in requests), {"blob%d" % i},
+                set(r.blob_sequence_id for r in requests),
+                {"blob%d" % i},
             )
         self.assertEqual(0, mock_rate_limiter.tick.call_count)
         self.assertEqual(0, mock_tensor_rate_limiter.tick.call_count)
@@ -611,7 +615,9 @@ class TensorboardUploaderTest(tf.test.TestCase):
         limiter.tick.side_effect = [None, AbortUploadError]
         mock_client = _create_mock_client()
         uploader = _create_uploader(
-            mock_client, logdir, logdir_poll_rate_limiter=limiter,
+            mock_client,
+            logdir,
+            logdir_poll_rate_limiter=limiter,
         )
         uploader.create_experiment()
 
@@ -1073,7 +1079,8 @@ class ScalarBatchedRequestSenderTest(tf.test.TestCase):
     def _add_events_and_flush(self, events):
         mock_client = _create_mock_client()
         sender = _create_scalar_request_sender(
-            experiment_id="123", api=mock_client,
+            experiment_id="123",
+            api=mock_client,
         )
         self._add_events(sender, "", events)
         sender.flush()
@@ -1355,7 +1362,9 @@ class ScalarBatchedRequestSenderTest(tf.test.TestCase):
                 raise uploader_lib._OutOfSpaceError()
 
         with mock.patch.object(
-            uploader_lib._ByteBudgetManager, "add_point", mock_add_point,
+            uploader_lib._ByteBudgetManager,
+            "add_point",
+            mock_add_point,
         ):
             sender = _create_scalar_request_sender("123", mock_client)
             self._add_events(sender, "train", _apply_compat([event_1]))
@@ -1799,7 +1808,9 @@ class TensorBatchedRequestSenderTest(tf.test.TestCase):
                 raise uploader_lib._OutOfSpaceError()
 
         with mock.patch.object(
-            uploader_lib._ByteBudgetManager, "add_point", mock_add_point,
+            uploader_lib._ByteBudgetManager,
+            "add_point",
+            mock_add_point,
         ):
             sender = _create_tensor_request_sender("123", mock_client)
             self._add_events(sender, "train", _apply_compat([event_1]))

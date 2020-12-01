@@ -347,7 +347,8 @@ class CorePluginTestBase(object):
             # Add one run: it should come last.
             self._add_run("avocado")
             self.assertEqual(
-                self._get_json(self.server, "/data/runs"), ["run1", "avocado"],
+                self._get_json(self.server, "/data/runs"),
+                ["run1", "avocado"],
             )
 
             # Add another run: it should come last, too.

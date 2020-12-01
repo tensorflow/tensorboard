@@ -139,10 +139,12 @@ class TimestampedEventFileLoaderTest(EventFileLoaderTestBase, tf.test.TestCase):
         transposed = list(zip(*load_result))
         wall_times, events = transposed if transposed else ([], [])
         self.assertEqual(
-            list(wall_times), event_wall_times_in_order,
+            list(wall_times),
+            event_wall_times_in_order,
         )
         self.assertEqual(
-            [event.wall_time for event in events], event_wall_times_in_order,
+            [event.wall_time for event in events],
+            event_wall_times_in_order,
         )
 
 

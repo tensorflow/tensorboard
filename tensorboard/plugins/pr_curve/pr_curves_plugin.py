@@ -173,7 +173,8 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
 
     def frontend_metadata(self):
         return base_plugin.FrontendMetadata(
-            element_name="tf-pr-curve-dashboard", tab_name="PR Curves",
+            element_name="tf-pr-curve-dashboard",
+            tab_name="PR Curves",
         )
 
     def _process_datum(self, datum):

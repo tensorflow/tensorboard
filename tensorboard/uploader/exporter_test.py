@@ -532,10 +532,14 @@ class TensorBoardExporterTest(tb_test.TestCase):
             iter(
                 [
                     export_service_pb2.StreamBlobDataResponse(
-                        data=b"4321", offset=0, final_chunk=False,
+                        data=b"4321",
+                        offset=0,
+                        final_chunk=False,
                     ),
                     export_service_pb2.StreamBlobDataResponse(
-                        data=b"8765", offset=4, final_chunk=True,
+                        data=b"8765",
+                        offset=4,
+                        final_chunk=True,
                     ),
                 ]
             ),

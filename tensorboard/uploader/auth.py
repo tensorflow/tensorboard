@@ -108,8 +108,10 @@ class CredentialsStore(object):
         if self._credentials_filepath is None:
             return None
         if os.path.exists(self._credentials_filepath):
-            return google.oauth2.credentials.Credentials.from_authorized_user_file(
-                self._credentials_filepath
+            return (
+                google.oauth2.credentials.Credentials.from_authorized_user_file(
+                    self._credentials_filepath
+                )
             )
         return None
 

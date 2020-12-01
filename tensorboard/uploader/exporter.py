@@ -141,7 +141,10 @@ class TensorBoardExporter(object):
         if read_time is None:
             read_time = time.time()
         experiment_metadata_mask = experiment_pb2.ExperimentMask(
-            create_time=True, update_time=True, name=True, description=True,
+            create_time=True,
+            update_time=True,
+            name=True,
+            description=True,
         )
         experiments = list_experiments(
             self._api, fieldmask=experiment_metadata_mask, read_time=read_time
@@ -306,7 +309,7 @@ class TensorBoardExporter(object):
         return json_object
 
     def _fix_string_types(self, ndarray):
-        """ Change the dtype of text arrays to String rather than Object.
+        """Change the dtype of text arrays to String rather than Object.
 
         np.savez ends up pickling np.object arrays, while it doesn't pickle
         strings.  The downside is that it needs to pad the length of each string

@@ -77,7 +77,9 @@ class HistogramsPlugin(base_plugin.TBPlugin):
         """Return {runName: {tagName: {displayName: ..., description:
         ...}}}."""
         mapping = self._data_provider.list_tensors(
-            ctx, experiment_id=experiment, plugin_name=metadata.PLUGIN_NAME,
+            ctx,
+            experiment_id=experiment,
+            plugin_name=metadata.PLUGIN_NAME,
         )
         result = {run: {} for run in mapping}
         for (run, tag_to_content) in six.iteritems(mapping):

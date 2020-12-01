@@ -65,8 +65,10 @@ class BackendContextTest(tf.test.TestCase):
         self._mock_multiplexer.SummaryMetadata.side_effect = (
             self._mock_summary_metadata
         )
-        self._mock_tb_context.data_provider = data_provider.MultiplexerDataProvider(
-            self._mock_multiplexer, "/path/to/logs"
+        self._mock_tb_context.data_provider = (
+            data_provider.MultiplexerDataProvider(
+                self._mock_multiplexer, "/path/to/logs"
+            )
         )
         self.session_1_start_info_ = ""
         self.session_2_start_info_ = ""
@@ -93,14 +95,32 @@ class BackendContextTest(tf.test.TestCase):
         }
         scalars_content = {
             "exp/session_1": {"loss": b"", "accuracy": b""},
-            "exp/session_1/eval": {"loss": b"",},
-            "exp/session_1/train": {"loss": b"",},
-            "exp/session_2": {"loss": b"", "accuracy": b"",},
-            "exp/session_2/eval": {"loss": b"",},
-            "exp/session_2/train": {"loss": b"",},
-            "exp/session_3": {"loss": b"", "accuracy": b"",},
-            "exp/session_3/eval": {"loss": b"",},
-            "exp/session_3xyz/": {"loss2": b"",},
+            "exp/session_1/eval": {
+                "loss": b"",
+            },
+            "exp/session_1/train": {
+                "loss": b"",
+            },
+            "exp/session_2": {
+                "loss": b"",
+                "accuracy": b"",
+            },
+            "exp/session_2/eval": {
+                "loss": b"",
+            },
+            "exp/session_2/train": {
+                "loss": b"",
+            },
+            "exp/session_3": {
+                "loss": b"",
+                "accuracy": b"",
+            },
+            "exp/session_3/eval": {
+                "loss": b"",
+            },
+            "exp/session_3xyz/": {
+                "loss2": b"",
+            },
         }
         for (run, tag_to_content) in hparams_content.items():
             result.setdefault(run, {})
@@ -340,7 +360,9 @@ class BackendContextTest(tf.test.TestCase):
         )
         request_ctx = context.RequestContext()
         actual_exp = ctxt.experiment_from_metadata(
-            request_ctx, "123", ctxt.hparams_metadata(request_ctx, "123"),
+            request_ctx,
+            "123",
+            ctxt.hparams_metadata(request_ctx, "123"),
         )
         _canonicalize_experiment(actual_exp)
         self.assertProtoEquals(expected_exp, actual_exp)

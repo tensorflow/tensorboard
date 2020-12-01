@@ -147,7 +147,9 @@ class MeshPluginTest(tf.test.TestCase):
 
         # Start a server that will receive requests.
         self.multiplexer = event_multiplexer.EventMultiplexer(
-            {"bar": bar_directory,}
+            {
+                "bar": bar_directory,
+            }
         )
         self.context = base_plugin.TBContext(
             logdir=self.log_dir, multiplexer=self.multiplexer

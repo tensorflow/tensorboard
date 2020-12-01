@@ -47,7 +47,12 @@ class CleanseTest(tb_test.TestCase):
     def testWrapsInListsAndTuples(self):
         self._assertWrapsAs([_INFINITY], ["Infinity"])
         # map() returns a list even if the argument is a tuple.
-        self._assertWrapsAs((_INFINITY,), ["Infinity",])
+        self._assertWrapsAs(
+            (_INFINITY,),
+            [
+                "Infinity",
+            ],
+        )
 
     def testWrapsRecursively(self):
         self._assertWrapsAs({"x": [_INFINITY]}, {"x": ["Infinity"]})

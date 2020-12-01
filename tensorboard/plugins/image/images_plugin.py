@@ -86,7 +86,9 @@ class ImagesPlugin(base_plugin.TBPlugin):
 
     def _index_impl(self, ctx, experiment):
         mapping = self._data_provider.list_blob_sequences(
-            ctx, experiment_id=experiment, plugin_name=metadata.PLUGIN_NAME,
+            ctx,
+            experiment_id=experiment,
+            plugin_name=metadata.PLUGIN_NAME,
         )
         result = {run: {} for run in mapping}
         for (run, tag_to_content) in six.iteritems(mapping):
@@ -201,7 +203,12 @@ class ImagesPlugin(base_plugin.TBPlugin):
           in the given run with the given tag.
         """
         query_string = urllib.parse.urlencode(
-            {"run": run, "tag": tag, "sample": sample, "index": index,}
+            {
+                "run": run,
+                "tag": tag,
+                "sample": sample,
+                "index": index,
+            }
         )
         return query_string
 

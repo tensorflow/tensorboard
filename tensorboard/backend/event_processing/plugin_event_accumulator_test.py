@@ -172,7 +172,12 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
         gen.AddScalarTensor("s1", wall_time=1, step=10, value=50)
         gen.AddScalarTensor("s2", wall_time=1, step=10, value=80)
         acc.Reload()
-        self.assertTagsEqual(acc.Tags(), {ea.TENSORS: ["s1", "s2"],})
+        self.assertTagsEqual(
+            acc.Tags(),
+            {
+                ea.TENSORS: ["s1", "s2"],
+            },
+        )
 
     def testKeyError(self):
         """KeyError should be raised when accessing non-existing keys."""
@@ -193,7 +198,12 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
         gen.AddScalarTensor("s3", wall_time=3, step=100, value=1)
 
         acc.Reload()
-        self.assertTagsEqual(acc.Tags(), {ea.TENSORS: ["s1", "s3"],})
+        self.assertTagsEqual(
+            acc.Tags(),
+            {
+                ea.TENSORS: ["s1", "s3"],
+            },
+        )
 
     def testExpiredDataDiscardedAfterRestartForFileVersionLessThan2(self):
         """Tests that events are discarded after a restart is detected.
@@ -406,7 +416,11 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
         ]
         self.assertTagsEqual(
             accumulator.Tags(),
-            {ea.TENSORS: tags, ea.GRAPH: True, ea.META_GRAPH: False,},
+            {
+                ea.TENSORS: tags,
+                ea.GRAPH: True,
+                ea.META_GRAPH: False,
+            },
         )
 
         self.assertItemsEqual(
@@ -451,7 +465,11 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
         ]
         self.assertTagsEqual(
             accumulator.Tags(),
-            {ea.TENSORS: tags, ea.GRAPH: True, ea.META_GRAPH: False,},
+            {
+                ea.TENSORS: tags,
+                ea.GRAPH: True,
+                ea.META_GRAPH: False,
+            },
         )
 
         self.assertItemsEqual(
@@ -494,7 +512,11 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
         ]
         self.assertTagsEqual(
             accumulator.Tags(),
-            {ea.TENSORS: tags, ea.GRAPH: True, ea.META_GRAPH: False,},
+            {
+                ea.TENSORS: tags,
+                ea.GRAPH: True,
+                ea.META_GRAPH: False,
+            },
         )
 
         self.assertItemsEqual(
@@ -521,7 +543,10 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
         accumulator.Reload()
 
         self.assertTagsEqual(
-            accumulator.Tags(), {ea.TENSORS: ["scalar", "vector", "string"],}
+            accumulator.Tags(),
+            {
+                ea.TENSORS: ["scalar", "vector", "string"],
+            },
         )
 
         scalar_proto = accumulator.Tensors("scalar")[0].tensor_proto
@@ -742,7 +767,13 @@ class RealisticEventAccumulatorTest(EventAccumulatorTest):
         # Verify that we can load those events properly
         acc = ea.EventAccumulator(directory)
         acc.Reload()
-        self.assertTagsEqual(acc.Tags(), {ea.GRAPH: True, ea.META_GRAPH: True,})
+        self.assertTagsEqual(
+            acc.Tags(),
+            {
+                ea.GRAPH: True,
+                ea.META_GRAPH: True,
+            },
+        )
 
         expected_graph_def = graph_pb2.GraphDef.FromString(
             graph.as_graph_def(add_shapes=True).SerializeToString()

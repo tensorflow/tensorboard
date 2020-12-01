@@ -46,7 +46,9 @@ def greeting(name, guest, step=None, description=None):
         `tf.summary.experimental.get_step()` is None.
     """
     with tf.summary.experimental.summary_scope(
-        name, "greeting_summary", values=[guest, step],
+        name,
+        "greeting_summary",
+        values=[guest, step],
     ) as (tag, _):
         return tf.summary.write(
             tag=tag,

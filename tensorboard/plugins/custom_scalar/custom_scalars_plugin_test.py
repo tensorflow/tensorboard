@@ -173,8 +173,8 @@ class CustomScalarsPluginTest(tf.test.TestCase):
             plugin_name_to_instance=plugin_name_to_instance,
         )
         scalars_plugin_instance = scalars_plugin.ScalarsPlugin(context)
-        custom_scalars_plugin_instance = custom_scalars_plugin.CustomScalarsPlugin(
-            context
+        custom_scalars_plugin_instance = (
+            custom_scalars_plugin.CustomScalarsPlugin(context)
         )
         plugin_instances = [
             scalars_plugin_instance,
