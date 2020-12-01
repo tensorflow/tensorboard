@@ -88,7 +88,11 @@ class GetUserConfigDirectoryTest(tb_test.TestCase):
                     util.get_user_config_directory(),
                 )
             with mock.patch.dict(
-                os.environ, {"LOCALAPPDATA": "", "APPDATA": "",}
+                os.environ,
+                {
+                    "LOCALAPPDATA": "",
+                    "APPDATA": "",
+                },
             ):
                 self.assertIsNone(util.get_user_config_directory())
 

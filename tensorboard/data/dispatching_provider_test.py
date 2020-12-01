@@ -305,7 +305,8 @@ class DispatchingDataProviderTest(tb_test.TestCase):
 
     def test_blobs_error_cases(self):
         with self.assertRaisesRegex(
-            errors.NotFoundError, "Unknown prefix in experiment ID: 'quux:hmm'",
+            errors.NotFoundError,
+            "Unknown prefix in experiment ID: 'quux:hmm'",
         ):
             self._get_blobs(self.with_unpfx, "quux:hmm")
         with self.assertRaisesRegex(

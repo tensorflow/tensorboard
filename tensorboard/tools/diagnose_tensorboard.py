@@ -161,10 +161,12 @@ def general():
     logging.info("os.name: %s", os.name)
     na = type("N/A", (object,), {"__repr__": lambda self: "N/A"})
     logging.info(
-        "os.uname(): %r", getattr(os, "uname", na)(),
+        "os.uname(): %r",
+        getattr(os, "uname", na)(),
     )
     logging.info(
-        "sys.getwindowsversion(): %r", getattr(sys, "getwindowsversion", na)(),
+        "sys.getwindowsversion(): %r",
+        getattr(sys, "getwindowsversion", na)(),
     )
 
 
@@ -184,7 +186,13 @@ def installed_packages():
     # For each of the following families, expect exactly one package to be
     # installed.
     expect_unique = [
-        frozenset(["tensorboard", "tb-nightly", "tensorflow-tensorboard",]),
+        frozenset(
+            [
+                "tensorboard",
+                "tb-nightly",
+                "tensorflow-tensorboard",
+            ]
+        ),
         frozenset(
             [
                 "tensorflow",

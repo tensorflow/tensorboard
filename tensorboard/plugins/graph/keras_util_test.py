@@ -458,7 +458,10 @@ class KerasUtilTest(tf.test.TestCase):
         )
 
         sub_model = tf.keras.models.Sequential(
-            [sub_sub_model, tf.keras.layers.Activation("relu", name="my_relu"),]
+            [
+                sub_sub_model,
+                tf.keras.layers.Activation("relu", name="my_relu"),
+            ]
         )
 
         model = tf.keras.models.Sequential(
@@ -773,7 +776,9 @@ class KerasUtilTest(tf.test.TestCase):
             tf.keras.layers.concatenate(sub_model([inputs2, inputs1]))
         )
         model = tf.keras.models.Model(
-            inputs=[inputs2, inputs1], outputs=main_outputs, name="model_1",
+            inputs=[inputs2, inputs1],
+            outputs=main_outputs,
+            name="model_1",
         )
 
         self.assertGraphDefToModel(expected_proto, model)

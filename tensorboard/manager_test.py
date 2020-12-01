@@ -273,7 +273,8 @@ class TensorBoardInfoIoTest(tb_test.TestCase):
         stat_result = os.stat(path)
         format_mode = lambda m: "0o%03o" % m
         self.assertEqual(
-            format_mode(stat_result.st_mode & 0o777), format_mode(expected),
+            format_mode(stat_result.st_mode & 0o777),
+            format_mode(expected),
         )
 
     def test_fails_if_info_dir_name_is_taken_by_a_regular_file(self):

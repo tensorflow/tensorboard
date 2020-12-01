@@ -484,7 +484,12 @@ class _ScalarBatchedRequestSender(object):
     """
 
     def __init__(
-        self, experiment_id, api, rpc_rate_limiter, max_request_size, tracker,
+        self,
+        experiment_id,
+        api,
+        rpc_rate_limiter,
+        max_request_size,
+        tracker,
     ):
         if experiment_id is None:
             raise ValueError("experiment_id cannot be None")
@@ -827,18 +832,18 @@ class _TensorBatchedRequestSender(object):
 class _ByteBudgetManager(object):
     """Helper class for managing the request byte budget for certain RPCs.
 
-  This should be used for RPCs that organize data by Runs, Tags, and Points,
-  specifically WriteScalar and WriteTensor.
+    This should be used for RPCs that organize data by Runs, Tags, and Points,
+    specifically WriteScalar and WriteTensor.
 
-  Any call to add_run(), add_tag(), or add_point() may raise an
-  _OutOfSpaceError, which is non-fatal. It signals to the caller that they
-  should flush the current request and begin a new one.
+    Any call to add_run(), add_tag(), or add_point() may raise an
+    _OutOfSpaceError, which is non-fatal. It signals to the caller that they
+    should flush the current request and begin a new one.
 
-  For more information on the protocol buffer encoding and how byte cost
-  can be calculated, visit:
+    For more information on the protocol buffer encoding and how byte cost
+    can be calculated, visit:
 
-  https://developers.google.com/protocol-buffers/docs/encoding
-  """
+    https://developers.google.com/protocol-buffers/docs/encoding
+    """
 
     def __init__(self, max_bytes):
         # The remaining number of bytes that we may yet add to the request.
@@ -848,13 +853,13 @@ class _ByteBudgetManager(object):
     def reset(self, base_request):
         """Resets the byte budget and calculates the cost of the base request.
 
-      Args:
-        base_request: Base request.
+        Args:
+          base_request: Base request.
 
-      Raises:
-        _OutOfSpaceError: If the size of the request exceeds the entire
-          request byte budget.
-      """
+        Raises:
+          _OutOfSpaceError: If the size of the request exceeds the entire
+            request byte budget.
+        """
         self._byte_budget = self._max_bytes
         self._byte_budget -= base_request.ByteSize()
         if self._byte_budget < 0:
@@ -863,13 +868,13 @@ class _ByteBudgetManager(object):
     def add_run(self, run_proto):
         """Integrates the cost of a run proto into the byte budget.
 
-      Args:
-        run_proto: The proto representing a run.
+        Args:
+          run_proto: The proto representing a run.
 
-      Raises:
-        _OutOfSpaceError: If adding the run would exceed the remaining request
-          budget.
-      """
+        Raises:
+          _OutOfSpaceError: If adding the run would exceed the remaining request
+            budget.
+        """
         cost = (
             # The size of the run proto without any tag fields set.
             run_proto.ByteSize()
@@ -889,13 +894,13 @@ class _ByteBudgetManager(object):
     def add_tag(self, tag_proto):
         """Integrates the cost of a tag proto into the byte budget.
 
-      Args:
-        tag_proto: The proto representing a tag.
+        Args:
+          tag_proto: The proto representing a tag.
 
-      Raises:
-        _OutOfSpaceError: If adding the tag would exceed the remaining request
-         budget.
-      """
+        Raises:
+          _OutOfSpaceError: If adding the tag would exceed the remaining request
+           budget.
+        """
         cost = (
             # The size of the tag proto without any tag fields set.
             tag_proto.ByteSize()
@@ -915,13 +920,13 @@ class _ByteBudgetManager(object):
     def add_point(self, point_proto):
         """Integrates the cost of a point proto into the byte budget.
 
-      Args:
-        point_proto: The proto representing a point.
+        Args:
+          point_proto: The proto representing a point.
 
-      Raises:
-        _OutOfSpaceError: If adding the point would exceed the remaining request
-         budget.
-      """
+        Raises:
+          _OutOfSpaceError: If adding the point would exceed the remaining request
+           budget.
+        """
         submessage_cost = point_proto.ByteSize()
         cost = (
             # The size of the point proto.
@@ -980,7 +985,11 @@ class _BlobRequestSender(object):
         self._metadata = None
 
     def add_event(
-        self, run_name, event, value, metadata,
+        self,
+        run_name,
+        event,
+        value,
+        metadata,
     ):
         """Attempts to add the given event to the current request.
 
@@ -1014,8 +1023,7 @@ class _BlobRequestSender(object):
             self._new_request()
 
     def flush(self):
-        """Sends the current blob sequence fully, and clears it to make way for the next.
-        """
+        """Sends the current blob sequence fully, and clears it to make way for the next."""
         if self._value:
             blob_sequence_id = self._get_or_create_blob_sequence()
             logger.info(
@@ -1212,7 +1220,8 @@ def _filtered_graph_bytes(graph_bytes):
     # a combination of mysterious circumstances.
     except (message.DecodeError, RuntimeWarning):
         logger.warning(
-            "Could not parse GraphDef of size %d. Skipping.", len(graph_bytes),
+            "Could not parse GraphDef of size %d. Skipping.",
+            len(graph_bytes),
         )
         return None
     # Use the default filter parameters:

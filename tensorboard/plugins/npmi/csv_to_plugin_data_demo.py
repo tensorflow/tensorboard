@@ -31,7 +31,9 @@ tf.compat.v1.enable_eager_execution()
 FLAGS = flags.FLAGS
 
 flags.DEFINE_string(
-    "csv_path", "", "CSV file to convert to npmi plugin data.",
+    "csv_path",
+    "",
+    "CSV file to convert to npmi plugin data.",
 )
 
 

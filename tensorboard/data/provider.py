@@ -992,5 +992,8 @@ class RunTagFilter(object):
 
     def __repr__(self):
         return "RunTagFilter(%s)" % ", ".join(
-            ("runs=%r" % (self._runs,), "tags=%r" % (self._tags,),)
+            (
+                "runs=%r" % (self._runs,),
+                "tags=%r" % (self._tags,),
+            )
         )

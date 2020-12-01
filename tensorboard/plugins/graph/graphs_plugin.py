@@ -119,7 +119,9 @@ class GraphsPlugin(base_plugin.TBPlugin):
 
         if self._data_provider:
             mapping = self._data_provider.list_blob_sequences(
-                ctx, experiment_id=experiment, plugin_name=metadata.PLUGIN_NAME,
+                ctx,
+                experiment_id=experiment,
+                plugin_name=metadata.PLUGIN_NAME,
             )
             for (run_name, tag_to_time_series) in six.iteritems(mapping):
                 for tag in tag_to_time_series:

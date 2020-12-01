@@ -74,8 +74,10 @@ class ListSessionGroupsTest(tf.test.TestCase):
             self._mock_summary_metadata
         )
         self._mock_multiplexer.Tensors.side_effect = self._mock_tensors
-        self._mock_tb_context.data_provider = data_provider.MultiplexerDataProvider(
-            self._mock_multiplexer, "/path/to/logs"
+        self._mock_tb_context.data_provider = (
+            data_provider.MultiplexerDataProvider(
+                self._mock_multiplexer, "/path/to/logs"
+            )
         )
 
     def _mock_all_summary_metadata(self):
@@ -272,7 +274,9 @@ class ListSessionGroupsTest(tf.test.TestCase):
             )
         ]
         result_dict = {
-            "": {metadata.EXPERIMENT_TAG: hparams_time_series[:],},
+            "": {
+                metadata.EXPERIMENT_TAG: hparams_time_series[:],
+            },
             "session_1": {
                 metadata.SESSION_START_INFO_TAG: hparams_time_series[:],
                 metadata.SESSION_END_INFO_TAG: hparams_time_series[:],

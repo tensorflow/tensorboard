@@ -545,7 +545,8 @@ class GraphUtilTest(tf.test.TestCase):
         )
 
         self.assertProtoEquals(
-            graph_def_a, graph_util.merge_graph_defs([graph_def_a]),
+            graph_def_a,
+            graph_util.merge_graph_defs([graph_def_a]),
         )
 
 

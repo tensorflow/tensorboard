@@ -34,7 +34,8 @@ def create_dummy_config():
         model_checkpoint_path="test",
         embeddings=[
             projector.EmbeddingInfo(
-                tensor_name="tensor1", metadata_path="metadata1",
+                tensor_name="tensor1",
+                metadata_path="metadata1",
             ),
         ],
     )

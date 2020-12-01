@@ -67,7 +67,9 @@ class UploadIntentTest(tf.test.TestCase):
         mock_uploader = mock.MagicMock()
         mock_stdout_write = mock.MagicMock()
         with mock.patch.object(
-            uploader_lib, "TensorBoardUploader", return_value=mock_uploader,
+            uploader_lib,
+            "TensorBoardUploader",
+            return_value=mock_uploader,
         ), mock.patch.object(
             sys.stdout, "write", mock_stdout_write
         ), mock.patch.object(
@@ -124,7 +126,8 @@ class UploadIntentTest(tf.test.TestCase):
         # Expect that ".*Done scanning logdir.*" is among the things printed.
         stdout_writes = [x[0][0] for x in mock_stdout_write.call_args_list]
         self.assertRegex(
-            ",".join(stdout_writes), ".*experiment created.*",
+            ",".join(stdout_writes),
+            ".*experiment created.*",
         )
         # Expect that the last thing written is the string "Done" and the
         # experiment_id.
@@ -138,14 +141,18 @@ class UploadIntentTest(tf.test.TestCase):
         server_info.url_format.id_placeholder = "{}"
 
         stub = dry_run_stubs.DryRunTensorBoardWriterStub()
-        stub.CreateExperiment = lambda req, **__: write_service_pb2.CreateExperimentResponse(
-            experiment_id="test_experiment_id", url="this URL is ignored"
+        stub.CreateExperiment = (
+            lambda req, **__: write_service_pb2.CreateExperimentResponse(
+                experiment_id="test_experiment_id", url="this URL is ignored"
+            )
         )
 
         expected_url = "https://tensorboard.dev/x/test_experiment_id"
 
         with mock.patch.object(
-            dry_run_stubs, "DryRunTensorBoardWriterStub", wraps=lambda: stub,
+            dry_run_stubs,
+            "DryRunTensorBoardWriterStub",
+            wraps=lambda: stub,
         ), mock.patch.object(sys.stdout, "write"):
             mock_channel = mock.Mock()
             mock_experiment_url_callback = mock.Mock()
@@ -164,7 +171,9 @@ class UploadIntentTest(tf.test.TestCase):
         mock_stdout_write = mock.MagicMock()
         mock_uploader = mock.MagicMock()
         with mock.patch.object(
-            mock_uploader, "start_uploading", side_effect=KeyboardInterrupt(),
+            mock_uploader,
+            "start_uploading",
+            side_effect=KeyboardInterrupt(),
         ), mock.patch.object(
             uploader_lib, "TensorBoardUploader", return_value=mock_uploader
         ), mock.patch.object(
@@ -184,7 +193,9 @@ class UploadIntentTest(tf.test.TestCase):
         mock_stdout_write = mock.MagicMock()
         mock_uploader = mock.MagicMock()
         with mock.patch.object(
-            mock_uploader, "start_uploading", side_effect=KeyboardInterrupt(),
+            mock_uploader,
+            "start_uploading",
+            side_effect=KeyboardInterrupt(),
         ), mock.patch.object(
             uploader_lib, "TensorBoardUploader", return_value=mock_uploader
         ), mock.patch.object(

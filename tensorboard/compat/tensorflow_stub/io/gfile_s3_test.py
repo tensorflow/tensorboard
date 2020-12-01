@@ -110,21 +110,67 @@ class GFileTest(unittest.TestCase):
         temp_dir = self._CreateDeepS3Structure()
         self._CreateDeepS3Structure(temp_dir)
         expected = [
-            ["", ["a.tfevents.1", "model.ckpt",]],
+            [
+                "",
+                [
+                    "a.tfevents.1",
+                    "model.ckpt",
+                ],
+            ],
             # Empty directory not returned
             # ['foo', []],
-            ["bar", ["b.tfevents.1", "red_herring.txt",]],
-            ["bar/baz", ["c.tfevents.1", "d.tfevents.1",]],
+            [
+                "bar",
+                [
+                    "b.tfevents.1",
+                    "red_herring.txt",
+                ],
+            ],
+            [
+                "bar/baz",
+                [
+                    "c.tfevents.1",
+                    "d.tfevents.1",
+                ],
+            ],
             [
                 "bar/quux",
-                ["some_flume_output.txt", "some_more_flume_output.txt",],
+                [
+                    "some_flume_output.txt",
+                    "some_more_flume_output.txt",
+                ],
             ],
-            ["quuz", ["e.tfevents.1",]],
-            ["quuz/garply", ["f.tfevents.1",]],
-            ["quuz/garply/corge", ["g.tfevents.1",]],
-            ["quuz/garply/grault", ["h.tfevents.1",]],
+            [
+                "quuz",
+                [
+                    "e.tfevents.1",
+                ],
+            ],
+            [
+                "quuz/garply",
+                [
+                    "f.tfevents.1",
+                ],
+            ],
+            [
+                "quuz/garply/corge",
+                [
+                    "g.tfevents.1",
+                ],
+            ],
+            [
+                "quuz/garply/grault",
+                [
+                    "h.tfevents.1",
+                ],
+            ],
             ["waldo", []],
-            ["waldo/fred", ["i.tfevents.1",]],
+            [
+                "waldo/fred",
+                [
+                    "i.tfevents.1",
+                ],
+            ],
         ]
         for pair in expected:
             # If this is not the top-level directory, prepend the high-level

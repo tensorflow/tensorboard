@@ -29,7 +29,8 @@ from tensorboard import test as tb_test
 class DeterministicTarGzTest(tb_test.TestCase):
     def setUp(self):
         self._tool_path = os.path.join(
-            os.path.dirname(os.environ["TEST_BINARY"]), "deterministic_tar_gz",
+            os.path.dirname(os.environ["TEST_BINARY"]),
+            "deterministic_tar_gz",
         )
 
     def _run_tool(self, args):

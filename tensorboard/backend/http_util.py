@@ -74,7 +74,12 @@ _TEXTUAL_MIMETYPES = set(
     ]
 )
 
-_JSON_MIMETYPES = set(["application/json", "application/json+protobuf",])
+_JSON_MIMETYPES = set(
+    [
+        "application/json",
+        "application/json+protobuf",
+    ]
+)
 
 # Do not support xhtml for now.
 _HTML_MIMETYPE = "text/html"

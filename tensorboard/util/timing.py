@@ -105,7 +105,11 @@ def _log_latency(name, log_level):
         _store.nesting_level = start_level
         elapsed = time.time() - started
         _log(
-            log_level, "%s LEAVE %s - %0.6fs elapsed", prefix, name, elapsed,
+            log_level,
+            "%s LEAVE %s - %0.6fs elapsed",
+            prefix,
+            name,
+            elapsed,
         )
 
 
