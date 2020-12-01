@@ -402,7 +402,9 @@ def start(arguments, timeout=datetime.timedelta(seconds=60)):
       object.
     """
     this_cache_key = cache_key(
-        working_directory=os.getcwd(), arguments=arguments, configure_kwargs={},
+        working_directory=os.getcwd(),
+        arguments=arguments,
+        configure_kwargs={},
     )
     match = _find_matching_instance(this_cache_key)
     if match:
