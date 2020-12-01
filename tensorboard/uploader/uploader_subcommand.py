@@ -43,7 +43,7 @@ from tensorboard import program
 from tensorboard.plugins import base_plugin
 
 
-_MESSAGE_TOS = u"""\
+_MESSAGE_TOS = """\
 Your use of this service is subject to Google's Terms of Service
 <https://policies.google.com/terms> and Privacy Policy
 <https://policies.google.com/privacy>, and TensorBoard.dev's Terms of Service
@@ -193,7 +193,7 @@ class _DeleteExperimentIntent(_Intent):
     """The user intends to delete an experiment."""
 
     _MESSAGE_TEMPLATE = textwrap.dedent(
-        u"""\
+        """\
         This will delete the experiment on https://tensorboard.dev with the
         following experiment ID:
 
@@ -241,7 +241,7 @@ class _UpdateMetadataIntent(_Intent):
     """The user intends to update the metadata for an experiment."""
 
     _MESSAGE_TEMPLATE = textwrap.dedent(
-        u"""\
+        """\
         This will modify the metadata associated with the experiment on
         https://tensorboard.dev with the following experiment ID:
 
@@ -304,7 +304,7 @@ class _ListIntent(_Intent):
     """The user intends to list all their experiments."""
 
     _MESSAGE = textwrap.dedent(
-        u"""\
+        """\
         This will list all experiments that you've uploaded to
         https://tensorboard.dev. TensorBoard.dev experiments are visible
         to everyone. Do not upload sensitive data.
@@ -380,7 +380,7 @@ class UploadIntent(_Intent):
     """The user intends to upload an experiment from the given logdir."""
 
     _MESSAGE_TEMPLATE = textwrap.dedent(
-        u"""\
+        """\
         This will upload your TensorBoard logs to https://tensorboard.dev/ from
         the following directory:
 
@@ -492,7 +492,7 @@ class _ExportIntent(_Intent):
     """The user intends to download all their experiment data."""
 
     _MESSAGE_TEMPLATE = textwrap.dedent(
-        u"""\
+        """\
         This will download all your experiment data from https://tensorboard.dev
         and save it to the following directory:
 

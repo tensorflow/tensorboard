@@ -785,12 +785,12 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
         accumulator.Reload()
 
         tags = [
-            u"1/images/image",
-            u"2/images/image/0",
-            u"2/images/image/1",
-            u"3/images/image/0",
-            u"3/images/image/1",
-            u"3/images/image/2",
+            "1/images/image",
+            "2/images/image/0",
+            "2/images/image/1",
+            "3/images/image/0",
+            "3/images/image/1",
+            "3/images/image/2",
         ]
 
         self.assertTagsEqual(

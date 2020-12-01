@@ -133,7 +133,7 @@ def markdowns_to_safe_html(markdown_strings, combine):
             source_decoded = source.decode("utf-8")
             # Remove null bytes and warn if there were any, since it probably means
             # we were given a bad encoding.
-            source = source_decoded.replace(u"\x00", u"")
+            source = source_decoded.replace("\x00", "")
             total_null_bytes += len(source_decoded) - len(source)
         unsafe_html = _MARKDOWN_STORE.markdown.convert(source)
         unsafe_htmls.append(unsafe_html)

@@ -178,28 +178,28 @@ def package_management():
 @check
 def installed_packages():
     freeze = pip(["freeze", "--all"]).decode("utf-8").splitlines()
-    packages = {line.split(u"==")[0]: line for line in freeze}
+    packages = {line.split("==")[0]: line for line in freeze}
     packages_set = frozenset(packages)
 
     # For each of the following families, expect exactly one package to be
     # installed.
     expect_unique = [
-        frozenset([u"tensorboard", u"tb-nightly", u"tensorflow-tensorboard",]),
+        frozenset(["tensorboard", "tb-nightly", "tensorflow-tensorboard",]),
         frozenset(
             [
-                u"tensorflow",
-                u"tensorflow-gpu",
-                u"tf-nightly",
-                u"tf-nightly-2.0-preview",
-                u"tf-nightly-gpu",
-                u"tf-nightly-gpu-2.0-preview",
+                "tensorflow",
+                "tensorflow-gpu",
+                "tf-nightly",
+                "tf-nightly-2.0-preview",
+                "tf-nightly-gpu",
+                "tf-nightly-gpu-2.0-preview",
             ]
         ),
         frozenset(
             [
-                u"tensorflow-estimator",
-                u"tensorflow-estimator-2.0-preview",
-                u"tf-estimator-nightly",
+                "tensorflow-estimator",
+                "tensorflow-estimator-2.0-preview",
+                "tf-estimator-nightly",
             ]
         ),
     ]

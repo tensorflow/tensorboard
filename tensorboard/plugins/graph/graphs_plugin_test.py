@@ -191,7 +191,7 @@ class GraphsPluginV1Test(GraphsPluginBaseTest, tf.test.TestCase):
             context.RequestContext(),
             _RUN_WITH_GRAPH_WITH_METADATA[0],
             *args,
-            **kwargs
+            **kwargs,
         )
         self.assertEqual(mime_type, "text/x-protobuf")
         return text_format.Parse(graph_pbtxt, tf.compat.v1.GraphDef())
