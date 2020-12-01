@@ -702,7 +702,7 @@ class TensorBoardExporterTest(tb_test.TestCase):
 
         msg = str(cm.exception)
         self.assertIn("Unexpected characters", msg)
-        self.assertIn(repr(sorted([u".", u"/"])), msg)
+        self.assertIn(repr(sorted([".", "/"])), msg)
         self.assertIn("../authorized_keys", msg)
         mock_api_client.StreamExperimentData.assert_not_called()
 

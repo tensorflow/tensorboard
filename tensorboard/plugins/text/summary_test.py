@@ -81,7 +81,7 @@ class SummaryBaseTest(object):
         self.assertEqual(b"A name\xe2\x80\xa6I call myself", value)
 
     def test_unicode_value(self):
-        pb = self.text("mi", u"A name\u2026I call myself")
+        pb = self.text("mi", "A name\u2026I call myself")
         value = tensor_util.make_ndarray(pb.value[0].tensor).item()
         self.assertIsInstance(value, six.binary_type)
         self.assertEqual(b"A name\xe2\x80\xa6I call myself", value)
@@ -106,9 +106,7 @@ class SummaryBaseTest(object):
     def test_np_array_unicode_value(self):
         pb = self.text(
             "fa",
-            np.array(
-                [[u"A", u"long", u"long"], [u"way", u"to", u"run \u203C"]]
-            ),
+            np.array([["A", "long", "long"], ["way", "to", "run \u203C"]]),
         )
         values = tensor_util.make_ndarray(pb.value[0].tensor).tolist()
         self.assertEqual(

@@ -515,7 +515,7 @@ class LocalDebuggerV2DataProvider(provider.DataProvider):
         experiment_id,
         plugin_name,
         downsample=None,
-        run_tag_filter=None
+        run_tag_filter=None,
     ):
         del experiment_id, plugin_name, downsample, run_tag_filter
         raise TypeError("Debugger V2 DataProvider doesn't support scalars.")
@@ -534,7 +534,7 @@ class LocalDebuggerV2DataProvider(provider.DataProvider):
         experiment_id,
         plugin_name,
         downsample=None,
-        run_tag_filter=None
+        run_tag_filter=None,
     ):
         del experiment_id, downsample  # Unused.
         if plugin_name != PLUGIN_NAME:

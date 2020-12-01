@@ -264,10 +264,10 @@ def run_sobel(logdir, verbose=False):
         tf.stack([output_image]),
         display_name="Sobel edge detection",
         description=(
-            u"Demonstration of [Sobel edge detection]. The step "
+            "Demonstration of [Sobel edge detection]. The step "
             "parameter adjusts the radius of the kernel. "
             "The kernel can be of arbitrary size, and considers "
-            u"nearby pixels with \u2113\u2082-linear falloff.\n\n"
+            "nearby pixels with \u2113\u2082-linear falloff.\n\n"
             # (that says ``$\ell_2$-linear falloff'')
             "Edge detection is done on a per-channel basis, so "
             "you can observe which edges are &ldquo;mostly red "

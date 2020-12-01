@@ -129,7 +129,7 @@ class MultiplexerDataProvider(provider.DataProvider):
         experiment_id,
         plugin_name,
         downsample=None,
-        run_tag_filter=None
+        run_tag_filter=None,
     ):
         self._validate_context(ctx)
         self._validate_experiment_id(experiment_id)
@@ -156,7 +156,7 @@ class MultiplexerDataProvider(provider.DataProvider):
         experiment_id,
         plugin_name,
         downsample=None,
-        run_tag_filter=None
+        run_tag_filter=None,
     ):
         self._validate_context(ctx)
         self._validate_experiment_id(experiment_id)
@@ -313,7 +313,7 @@ class MultiplexerDataProvider(provider.DataProvider):
         experiment_id,
         plugin_name,
         downsample=None,
-        run_tag_filter=None
+        run_tag_filter=None,
     ):
         self._validate_context(ctx)
         self._validate_experiment_id(experiment_id)

@@ -69,7 +69,7 @@ class CleanseTest(tb_test.TestCase):
 
     def testByteString_turnsIntoUnicodeString(self):
         self.assertEqual(
-            json_util.Cleanse(b"\xc2\xa3"), u"\u00a3"
+            json_util.Cleanse(b"\xc2\xa3"), "\u00a3"
         )  # is # sterling
 
 

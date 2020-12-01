@@ -401,8 +401,8 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
 
         tags = [
             graph_metadata.RUN_GRAPH_NAME,
-            u"accuracy/scalar_summary",
-            u"xent/scalar_summary",
+            "accuracy/scalar_summary",
+            "xent/scalar_summary",
         ]
         self.assertTagsEqual(
             accumulator.Tags(),
@@ -445,9 +445,9 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
 
         tags = [
             graph_metadata.RUN_GRAPH_NAME,
-            u"1/one/audio_summary",
-            u"2/two/audio_summary",
-            u"3/three/audio_summary",
+            "1/one/audio_summary",
+            "2/two/audio_summary",
+            "3/three/audio_summary",
         ]
         self.assertTagsEqual(
             accumulator.Tags(),
@@ -488,9 +488,9 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
 
         tags = [
             graph_metadata.RUN_GRAPH_NAME,
-            u"1/images/image_summary",
-            u"2/images/image_summary",
-            u"3/images/image_summary",
+            "1/images/image_summary",
+            "2/images/image_summary",
+            "3/images/image_summary",
         ]
         self.assertTagsEqual(
             accumulator.Tags(),
