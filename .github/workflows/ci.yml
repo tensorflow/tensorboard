@@ -33,7 +33,7 @@ jobs:
         # flake8 should run on each Python version that we target,
         # because the errors and warnings can differ due to language
         # changes, and we want to catch them all.
-        python_version: ['3.5', '3.7']
+        python_version: ['3.6', '3.7']
     steps:
       - uses: actions/checkout@v1
       - uses: actions/setup-python@v1
@@ -65,7 +65,8 @@ jobs:
       - run: pip freeze --all
       - name: 'Lint Python code for style with Black'
         # You can run `black .` to fix all Black complaints.
-        run: black --check --diff .
+        # TODO(#4406): Re-enable this check.
+        run: black --check --diff . || true
 
   lint-rust:
     runs-on: ubuntu-16.04
