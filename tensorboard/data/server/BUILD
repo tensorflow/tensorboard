@@ -29,6 +29,7 @@ rust_library(
         "lib.rs",
         "commit.rs",
         "data_compat.rs",
+        "downsample.rs",
         "event_file.rs",
         "logdir.rs",
         "masked_crc.rs",
