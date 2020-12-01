@@ -62,6 +62,7 @@ class FakeFlags(object):
         db="",
         path_prefix="",
         generic_data="true",
+        grpc_data_provider="",
     ):
         self.bind_all = bind_all
         self.host = host
@@ -73,6 +74,7 @@ class FakeFlags(object):
         self.db = db
         self.path_prefix = path_prefix
         self.generic_data = generic_data
+        self.grpc_data_provider = grpc_data_provider
 
 
 class CorePluginFlagsTest(tf.test.TestCase):

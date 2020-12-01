@@ -67,8 +67,6 @@ tf_ts_library(
         ":load_monaco",
         ":source_code",
         ":testing",
-        "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin:debugger_v2",
-        "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/testing",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "@npm//@angular/compiler",
         "@npm//@angular/core",
