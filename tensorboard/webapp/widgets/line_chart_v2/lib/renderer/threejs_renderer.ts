@@ -12,20 +12,24 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {color as d3Color} from '../../../../third_party/d3';
 import * as THREE from 'three';
 
-import {ThreeCoordinator} from '../threejs_coordinator';
+import {hsl} from '../../../../third_party/d3';
 import {Polyline, Rect} from '../internal_types';
+import {ThreeCoordinator} from '../threejs_coordinator';
 import {arePolylinesEqual, isOffscreenCanvasSupported} from '../utils';
-import {ObjectRenderer, LinePaintOption} from './renderer_types';
+import {LinePaintOption, ObjectRenderer} from './renderer_types';
 
 function createOpacityAdjustedColor(hex: string, opacity: number): THREE.Color {
-  const newD3Color = d3Color(hex);
+  if (opacity === 1) return new THREE.Color(hex);
+  const newD3Color = hsl(hex);
   if (!newD3Color) {
     throw new Error(`d3 failed to recognize the color: ${hex}`);
   }
-  return new THREE.Color((newD3Color.brighter(1 - opacity) as any).hex());
+  // As per d3 doc, in HSL, lightness channel is multiplied by 0.7 ^ -k.
+  // 1.6 is a random number but 1 - opacity was "not enough" thus increased "k" with 0.6
+  // bias.
+  return new THREE.Color(newD3Color.brighter(1.6 - opacity).hex());
 }
 
 interface LineCacheValue {

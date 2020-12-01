@@ -216,9 +216,11 @@ py_library(
         ":version",
         "//tensorboard:expect_absl_flags_installed",
         "//tensorboard:expect_absl_logging_installed",
+        "//tensorboard:expect_grpc_installed",
         "//tensorboard/backend:application",
         "//tensorboard/backend/event_processing:data_ingester",
         "//tensorboard/backend/event_processing:event_file_inspector",
+        "//tensorboard/data:grpc_provider",
         "//tensorboard/util:argparse_util",
         "@org_pocoo_werkzeug",
         "@org_pythonhosted_six",
@@ -340,8 +342,8 @@ tf_web_library(
     ],
     path = "/",
     deps = [
-        "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/source_code/monaco:monaco_editor",
-        "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/source_code/monaco:monaco_languages",
+        "//tensorboard/webapp/widgets/source_code/monaco:monaco_editor",
+        "//tensorboard/webapp/widgets/source_code/monaco:monaco_languages",
         "@com_google_fonts_roboto",
     ],
 )

@@ -48,6 +48,7 @@ import time
 from absl import flags as absl_flags
 from absl.flags import argparse_flags
 import absl.logging
+import grpc
 import six
 from six.moves import urllib
 from six.moves import xrange  # pylint: disable=redefined-builtin
@@ -58,6 +59,7 @@ from tensorboard import version
 from tensorboard.backend import application
 from tensorboard.backend.event_processing import data_ingester
 from tensorboard.backend.event_processing import event_file_inspector as efi
+from tensorboard.data import grpc_provider
 from tensorboard.plugins.core import core_plugin
 from tensorboard.util import argparse_util
 from tensorboard.util import tb_logging
@@ -407,16 +409,34 @@ class TensorBoard(object):
         mimetypes.add_type("font/woff2", ".woff2")
         mimetypes.add_type("text/html", ".html")
 
+    def _make_grpc_provider(self, addr):
+        options = [
+            ("grpc.max_receive_message_length", 1024 * 1024 * 256),
+        ]
+        channel = grpc.insecure_channel(addr, options=options)
+        stub = grpc_provider.make_stub(channel)
+        provider = grpc_provider.GrpcDataProvider(addr, stub)
+        return provider
+
+    def _make_data_provider(self):
+        """Returns `(data_provider, deprecated_multiplexer)`."""
+        grpc_addr = self.flags.grpc_data_provider
+        if grpc_addr:
+            return (self._make_grpc_provider(grpc_addr), None)
+        else:
+            ingester = data_ingester.LocalDataIngester(self.flags)
+            ingester.start()
+            return (ingester.data_provider, ingester.deprecated_multiplexer)
+
     def _make_server(self):
         """Constructs the TensorBoard WSGI app and instantiates the server."""
-        ingester = data_ingester.LocalDataIngester(self.flags)
-        ingester.start()
+        (data_provider, deprecated_multiplexer) = self._make_data_provider()
         app = application.TensorBoardWSGIApp(
             self.flags,
             self.plugin_loaders,
-            ingester.data_provider,
+            data_provider,
             self.assets_zip_provider,
-            ingester.deprecated_multiplexer,
+            deprecated_multiplexer,
         )
         return self.server_class(app, self.flags)
 
