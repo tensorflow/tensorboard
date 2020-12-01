@@ -294,6 +294,14 @@ unavailable. (default: "default").\
         )
 
         parser.add_argument(
+            "--load_fast",
+            action="store_true",
+            help="""\
+Experimental. Use a data server to accelerate loading.
+""",
+        )
+
+        parser.add_argument(
             "--grpc_data_provider",
             metavar="PORT",
             type=str,

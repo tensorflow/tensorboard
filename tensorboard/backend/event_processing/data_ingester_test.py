@@ -25,6 +25,7 @@ try:
 except ImportError:
     import mock  # pylint: disable=unused-import
 
+from tensorboard import ingester as ingester_lib
 from tensorboard import test as tb_test
 from tensorboard.backend.event_processing import data_ingester
 
@@ -57,6 +58,13 @@ class FakeFlags(object):
         self.reload_multifile = reload_multifile
         self.reload_multifile_inactive_secs = reload_multifile_inactive_secs
         self.generic_data = generic_data
+
+
+class NoLogdirTest(tb_test.TestCase):
+    def test(self):
+        flags = FakeFlags(logdir="", logdir_spec="")
+        with self.assertRaises(ingester_lib.NotApplicableError):
+            data_ingester.LocalDataIngester(flags)
 
 
 class GetEventFileActiveFilterTest(tb_test.TestCase):

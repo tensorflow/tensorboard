@@ -111,7 +111,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let addr = SocketAddr::new(opts.host, opts.port);
     let listener = TcpListener::bind(addr).await?;
     let bound = listener.local_addr()?;
-    eprintln!("listening on {:?}", bound);
+    // This magic string is read by the TensorBoard data ingester to determine the port.
+    println!("listening on port {} ({})", bound.port(), bound);
 
     // Leak the commit object, since the Tonic server must have only 'static references. This only
     // leaks the outer commit structure (of constant size), not the pointers to the actual data.
