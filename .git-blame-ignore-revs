@@ -90,3 +90,7 @@ ea4e9bbc885784a283b8b79974132df7c6cdcc50  # Reformat all `*BUILD` files with `bu
 
 # Prettier 1.18.2 to 2.1.1 upgrade (<https://github.com/tensorflow/tensorboard/pull/4122>)
 e42a7f18b33c7a85b51db28d465ec01915a8e725  # prettier: reformat code for 2.1.1
+
+# Black Python 2.7/3.5 drop and v20.8b1 upgrade (<https://github.com/tensorflow/tensorboard/pull/4409>)
+6d741a8c7afabd1137af2b63b93680d178199aa6  # black: reformat after dropping Python 2.7 and 3.5
+9f528cc2153314164692b1f2d0167b3ee2e896d5  # black: reformat after upgrading to Black v20.8b1
