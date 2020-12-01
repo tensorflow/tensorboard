@@ -28,7 +28,6 @@ export function createScale(type: ScaleType): Scale {
 }
 
 const PADDING_RATIO = 0.05;
-const PADDING_FOR_ZERO = 0.01;
 
 class LinearScale implements Scale {
   private transform(
@@ -70,14 +69,14 @@ class LinearScale implements Scale {
       throw new Error('Unexpected input: min is larger than max');
     }
 
+    if (max === min) {
+      if (min === 0) return [-1, 1];
+      if (min < 0) return [2 * min, 0];
+      return [0, 2 * min];
+    }
+
     const scale = scaleLinear();
-    const padding =
-      max === min
-        ? // In case both `min` and `max` are 0, we want some padding.
-          min === 0
-          ? PADDING_FOR_ZERO
-          : Math.abs(min) * PADDING_RATIO
-        : (max - min + Number.EPSILON) * PADDING_RATIO;
+    const padding = (max - min + Number.EPSILON) * PADDING_RATIO;
     const [niceMin, niceMax] = scale
       .domain([min - padding, max + padding])
       .nice()
@@ -150,26 +149,13 @@ class Log10Scale implements Scale {
 
     const adjustedMin = Math.max(min, Number.MIN_VALUE);
     const adjustedMax = Math.max(max, Number.MIN_VALUE);
+
     if (max <= 0) {
-      // When both min and max are non-positive, clip to [1e-326, 1].
-      return [adjustedMin, 1];
+      // When both min and max are non-positive, clip to [Number.MIN_VALUE, 1].
+      return [Number.MIN_VALUE, 1];
     }
 
-    const numericMinLogValue = this.transform(Number.MIN_VALUE);
-    const minLogValue = this.transform(adjustedMin);
-    const maxLogValue = this.transform(adjustedMax);
-
-    const spreadInLog = maxLogValue - minLogValue;
-    const padInLog =
-      spreadInLog > 0
-        ? spreadInLog * PADDING_RATIO
-        : // In case `minLogValue` is 0 (i.e., log_10(1) = 0), we want some padding.
-          Math.max(Math.abs(minLogValue * PADDING_RATIO), PADDING_FOR_ZERO);
-
-    return [
-      this.untransform(Math.max(numericMinLogValue, minLogValue - padInLog)),
-      this.untransform(maxLogValue + padInLog),
-    ];
+    return [Math.max(Number.MIN_VALUE, adjustedMin * 0.5), adjustedMax * 1.5];
   }
 
   ticks(domain: [number, number], sizeGuidance: number): number[] {

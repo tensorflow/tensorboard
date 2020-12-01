@@ -70,14 +70,13 @@ describe('line_chart_v2/lib/scale test', () => {
         expect(scale.niceDomain([5.44, 95.12])).toEqual([0, 100]);
       });
 
-      it('puts padding of 5% of value when min == max', () => {
-        expect(scale.niceDomain([100, 100])).toEqual([95, 105]);
-        expect(scale.niceDomain([1, 1])).toEqual([0.95, 1.05]);
-        expect(scale.niceDomain([10000, 10000])).toEqual([9500, 10500]);
-        expect(scale.niceDomain([0, 0])).toEqual([-0.01, 0.01]);
+      it('returns about [0, 2c] min == max', () => {
+        expect(scale.niceDomain([100, 100])).toEqual([0, 200]);
+        expect(scale.niceDomain([1, 1])).toEqual([0, 2]);
+        expect(scale.niceDomain([0, 0])).toEqual([-1, 1]);
         // https://github.com/tensorflow/tensorboard/issues/4362
-        expect(scale.niceDomain([0.001, 0.001])).toEqual([0.00095, 0.00105]);
-        expect(scale.niceDomain([-10000, -10000])).toEqual([-10500, -9500]);
+        expect(scale.niceDomain([0.001, 0.001])).toEqual([0, 0.002]);
+        expect(scale.niceDomain([-10000, -10000])).toEqual([-20000, 0]);
       });
 
       it('throws an error when min is larger than max', () => {
@@ -198,44 +197,20 @@ describe('line_chart_v2/lib/scale test', () => {
 
     describe('#niceDomain', () => {
       // Carrying over the behavior from existing vz_line_chart
-      it('puts "nice" (~5%) padding around but does not round values', () => {
-        let low: number;
-        let high: number;
-
-        [low, high] = scale.niceDomain([1, 100]);
-        expect(low).toBeCloseTo(0.79, 2);
-        expect(high).toBeCloseTo(125.8, 0);
-
-        [low, high] = scale.niceDomain([0.001, 75]);
-        // spread is about log_10(75) - log_10(0.001) = 4.875
-        // We add 5% padding with that spread (~0.2438) before we convert it back with
-        // exponential. low turns into -3.244, so we exp(-3.244 / log_10(E)) ~ 0.00057.
-        expect(low).toBeCloseTo(0.00057, 4);
-        expect(high).toBeCloseTo(131, 0);
-
-        [low, high] = scale.niceDomain([100, 1e6]);
-        expect(low).toBeCloseTo(63, 0);
-        expect(high).toBeCloseTo(1.585e6, -4);
+      it('puts padding around min and max by halving and doubling', () => {
+        expect(scale.niceDomain([1, 100])).toEqual([0.5, 200]);
+        expect(scale.niceDomain([0.001, 75])).toEqual([0.0005, 150]);
+        expect(scale.niceDomain([100, 1e6])).toEqual([50, 2e6]);
       });
 
-      it('puts padding of 5% of value when min == max', () => {
-        let low: number;
-        let high: number;
-        [low, high] = scale.niceDomain([100, 100]);
-        expect(low).toBeCloseTo(79, 0);
-        expect(high).toBeCloseTo(126, 0);
-
-        [low, high] = scale.niceDomain([1, 1]);
-        expect(low).toBeCloseTo(0.977, 2);
-        expect(high).toBeCloseTo(1.023, 2);
-
-        [low, high] = scale.niceDomain([10000, 10000]);
-        expect(low).toBeCloseTo(6310, 0);
-        expect(high).toBeCloseTo(15849, 0);
-
-        [low, high] = scale.niceDomain([0.001, 0.001]);
-        expect(low).toBeCloseTo(0.00071, 5);
-        expect(high).toBeCloseTo(0.00141, 5);
+      it('returns [0.5c, 2c] when min == max', () => {
+        // Unlike the linear case, [0, 2c] would result in very bottom heavy chart since,
+        // first, log(0) = NaN and we would have to render log(Number.MIN_VALUE) which is
+        // ~ -324. It is much better to halve and double the constant since double is
+        // small log(2) in log scale (0.3 + log_10(c)).
+        expect(scale.niceDomain([100, 100])).toEqual([50, 200]);
+        expect(scale.niceDomain([1, 1])).toEqual([0.5, 2]);
+        expect(scale.niceDomain([0.001, 0.001])).toEqual([0.0005, 0.002]);
       });
 
       it('clips at min value when domains are non-positive', () => {
