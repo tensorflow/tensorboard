@@ -33,7 +33,9 @@ import tensorflow as tf
 
 
 flags.DEFINE_string(
-    "target", None, """The directory where serialized data will be written""",
+    "target",
+    None,
+    """The directory where serialized data will be written""",
 )
 
 flags.DEFINE_boolean(

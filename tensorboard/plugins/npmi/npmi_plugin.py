@@ -34,7 +34,10 @@ _DEFAULT_DOWNSAMPLING = 1  # nPMI tensors per time series
 
 def _error_response(request, error_message):
     return http_util.Respond(
-        request, {"error": error_message}, "application/json", code=400,
+        request,
+        {"error": error_message},
+        "application/json",
+        code=400,
     )
 
 

@@ -532,10 +532,14 @@ class TensorBoardExporterTest(tb_test.TestCase):
             iter(
                 [
                     export_service_pb2.StreamBlobDataResponse(
-                        data=b"4321", offset=0, final_chunk=False,
+                        data=b"4321",
+                        offset=0,
+                        final_chunk=False,
                     ),
                     export_service_pb2.StreamBlobDataResponse(
-                        data=b"8765", offset=4, final_chunk=True,
+                        data=b"8765",
+                        offset=4,
+                        final_chunk=True,
                     ),
                 ]
             ),
@@ -702,7 +706,7 @@ class TensorBoardExporterTest(tb_test.TestCase):
 
         msg = str(cm.exception)
         self.assertIn("Unexpected characters", msg)
-        self.assertIn(repr(sorted([u".", u"/"])), msg)
+        self.assertIn(repr(sorted([".", "/"])), msg)
         self.assertIn("../authorized_keys", msg)
         mock_api_client.StreamExperimentData.assert_not_called()
 

@@ -145,7 +145,11 @@ class CorePlugin(base_plugin.TBPlugin):
                     "creation_time": experiment_metadata.creation_time,
                 }
             )
-        return http_util.Respond(request, environment, "application/json",)
+        return http_util.Respond(
+            request,
+            environment,
+            "application/json",
+        )
 
     @wrappers.Request.application
     def _serve_logdir(self, request):

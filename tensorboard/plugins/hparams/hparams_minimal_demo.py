@@ -270,9 +270,9 @@ def run_all(logdir, verbose=False):
         for ambient_temperature in TEMPERATURE_LIST:
             for material in HEAT_COEFFICIENTS:
                 hparams = {
-                    u"initial_temperature": initial_temperature,
-                    u"ambient_temperature": ambient_temperature,
-                    u"material": material,
+                    "initial_temperature": initial_temperature,
+                    "ambient_temperature": ambient_temperature,
+                    "material": material,
                 }
                 hparam_str = str(hparams)
                 group_name = fingerprint(hparam_str)

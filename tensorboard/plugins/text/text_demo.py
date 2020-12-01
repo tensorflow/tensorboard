@@ -96,7 +96,7 @@ def higher_order_tensors(step):
     bold_numbers = tf.strings.join(["**", tf.as_string(numbers), "**"])
     bold_row = tf.expand_dims(bold_numbers, 0)
     bold_column = tf.expand_dims(bold_numbers, 1)
-    corner_cell = tf.constant(u"\u00d7".encode("utf-8"))  # MULTIPLICATION SIGN
+    corner_cell = tf.constant("\u00d7".encode("utf-8"))  # MULTIPLICATION SIGN
 
     # Now, we have to put the pieces together. Using `axis=0` stacks
     # vertically; using `axis=1` juxtaposes horizontally.

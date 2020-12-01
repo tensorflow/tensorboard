@@ -141,7 +141,10 @@ class TensorBoardExporter(object):
         if read_time is None:
             read_time = time.time()
         experiment_metadata_mask = experiment_pb2.ExperimentMask(
-            create_time=True, update_time=True, name=True, description=True,
+            create_time=True,
+            update_time=True,
+            name=True,
+            description=True,
         )
         experiments = list_experiments(
             self._api, fieldmask=experiment_metadata_mask, read_time=read_time
@@ -230,23 +233,23 @@ class TensorBoardExporter(object):
                 response.tag_metadata.SerializeToString()
             ).decode("ascii")
             json_data = {
-                u"run": response.run_name,
-                u"tag": response.tag_name,
-                u"summary_metadata": metadata,
+                "run": response.run_name,
+                "tag": response.tag_name,
+                "summary_metadata": metadata,
             }
             filename = None
             if response.HasField("points"):
-                json_data[u"points"] = self._process_scalar_points(
+                json_data["points"] = self._process_scalar_points(
                     response.points
                 )
                 filename = _FILENAME_SCALARS
             elif response.HasField("tensors"):
-                json_data[u"points"] = self._process_tensor_points(
+                json_data["points"] = self._process_tensor_points(
                     response.tensors, experiment_id
                 )
                 filename = _FILENAME_TENSORS
             elif response.HasField("blob_sequences"):
-                json_data[u"points"] = self._process_blob_sequence_points(
+                json_data["points"] = self._process_blob_sequence_points(
                     response.blob_sequences, experiment_id
                 )
                 filename = _FILENAME_BLOB_SEQUENCES
@@ -266,9 +269,9 @@ class TensorBoardExporter(object):
         """
         wall_times = [t.ToNanoseconds() / 1e9 for t in points.wall_times]
         return {
-            u"steps": list(points.steps),
-            u"wall_times": wall_times,
-            u"values": list(points.values),
+            "steps": list(points.steps),
+            "wall_times": wall_times,
+            "values": list(points.values),
         }
 
     def _process_tensor_points(self, points, experiment_id):
@@ -286,9 +289,9 @@ class TensorBoardExporter(object):
         """
         wall_times = [t.ToNanoseconds() / 1e9 for t in points.wall_times]
         json_object = {
-            u"steps": list(points.steps),
-            u"wall_times": wall_times,
-            u"tensors_file_path": None,
+            "steps": list(points.steps),
+            "wall_times": wall_times,
+            "tensors_file_path": None,
         }
         if not json_object["steps"]:
             return json_object
@@ -306,7 +309,7 @@ class TensorBoardExporter(object):
         return json_object
 
     def _fix_string_types(self, ndarray):
-        """ Change the dtype of text arrays to String rather than Object.
+        """Change the dtype of text arrays to String rather than Object.
 
         np.savez ends up pickling np.object arrays, while it doesn't pickle
         strings.  The downside is that it needs to pad the length of each string
@@ -367,11 +370,11 @@ class TensorBoardExporter(object):
             t.ToNanoseconds() / 1e9 for t in blob_sequences.wall_times
         ]
         json_object = {
-            u"steps": list(blob_sequences.steps),
-            u"wall_times": wall_times,
-            u"blob_file_paths": [],
+            "steps": list(blob_sequences.steps),
+            "wall_times": wall_times,
+            "blob_file_paths": [],
         }
-        blob_file_paths = json_object[u"blob_file_paths"]
+        blob_file_paths = json_object["blob_file_paths"]
         for blobseq in blob_sequences.values:
             seq_blob_file_paths = []
             for entry in blobseq.entries:

@@ -31,7 +31,9 @@ from tensorboard.plugins.npmi import summary
 
 FLAGS = flags.FLAGS
 flags.DEFINE_string(
-    "out_path", None, "Directory to write the new log file to.",
+    "out_path",
+    None,
+    "Directory to write the new log file to.",
 )
 flags.DEFINE_string(
     "embeddings_path",

@@ -129,7 +129,7 @@ class MultiplexerDataProvider(provider.DataProvider):
         experiment_id,
         plugin_name,
         downsample=None,
-        run_tag_filter=None
+        run_tag_filter=None,
     ):
         self._validate_context(ctx)
         self._validate_experiment_id(experiment_id)
@@ -156,7 +156,7 @@ class MultiplexerDataProvider(provider.DataProvider):
         experiment_id,
         plugin_name,
         downsample=None,
-        run_tag_filter=None
+        run_tag_filter=None,
     ):
         self._validate_context(ctx)
         self._validate_experiment_id(experiment_id)
@@ -313,7 +313,7 @@ class MultiplexerDataProvider(provider.DataProvider):
         experiment_id,
         plugin_name,
         downsample=None,
-        run_tag_filter=None
+        run_tag_filter=None,
     ):
         self._validate_context(ctx)
         self._validate_experiment_id(experiment_id)
@@ -445,13 +445,20 @@ def _convert_blob_sequence_event(experiment_id, plugin_name, run, tag, event):
     values = tuple(
         provider.BlobReference(
             _encode_blob_key(
-                experiment_id, plugin_name, run, tag, event.step, idx,
+                experiment_id,
+                plugin_name,
+                run,
+                tag,
+                event.step,
+                idx,
             )
         )
         for idx in range(num_blobs)
     )
     return provider.BlobSequenceDatum(
-        wall_time=event.wall_time, step=event.step, values=values,
+        wall_time=event.wall_time,
+        step=event.step,
+        values=values,
     )
 
 

@@ -123,20 +123,72 @@ class IoWrapperTest(tf.test.TestCase):
         expected = [
             [
                 "",
-                ["foo", "bar", "a.tfevents.1", "model.ckpt", "quuz", "waldo",],
+                [
+                    "foo",
+                    "bar",
+                    "a.tfevents.1",
+                    "model.ckpt",
+                    "quuz",
+                    "waldo",
+                ],
             ],
-            ["bar", ["b.tfevents.1", "red_herring.txt", "baz", "quux",]],
-            ["bar/baz", ["c.tfevents.1", "d.tfevents.1",]],
+            [
+                "bar",
+                [
+                    "b.tfevents.1",
+                    "red_herring.txt",
+                    "baz",
+                    "quux",
+                ],
+            ],
+            [
+                "bar/baz",
+                [
+                    "c.tfevents.1",
+                    "d.tfevents.1",
+                ],
+            ],
             [
                 "bar/quux",
-                ["some_flume_output.txt", "some_more_flume_output.txt",],
+                [
+                    "some_flume_output.txt",
+                    "some_more_flume_output.txt",
+                ],
             ],
-            ["quuz", ["e.tfevents.1", "garply",]],
-            ["quuz/garply", ["f.tfevents.1", "corge", "grault",]],
+            [
+                "quuz",
+                [
+                    "e.tfevents.1",
+                    "garply",
+                ],
+            ],
+            [
+                "quuz/garply",
+                [
+                    "f.tfevents.1",
+                    "corge",
+                    "grault",
+                ],
+            ],
             ["quuz/garply/corge", ["g.tfevents.1"]],
-            ["quuz/garply/grault", ["h.tfevents.1",]],
-            ["waldo", ["fred",]],
-            ["waldo/fred", ["i.tfevents.1",]],
+            [
+                "quuz/garply/grault",
+                [
+                    "h.tfevents.1",
+                ],
+            ],
+            [
+                "waldo",
+                [
+                    "fred",
+                ],
+            ],
+            [
+                "waldo/fred",
+                [
+                    "i.tfevents.1",
+                ],
+            ],
         ]
         for pair in expected:
             # If this is not the top-level directory, prepend the high-level
@@ -169,8 +221,19 @@ class IoWrapperTest(tf.test.TestCase):
             open(os.path.join(temp_dir, file_name), "w").close()
 
         expected = [
-            ["", ["a.tfevents.1", "subdirectory",]],
-            ["subdirectory", ["b.tfevents.1",]],
+            [
+                "",
+                [
+                    "a.tfevents.1",
+                    "subdirectory",
+                ],
+            ],
+            [
+                "subdirectory",
+                [
+                    "b.tfevents.1",
+                ],
+            ],
             # The contents of the bar subdirectory should be excluded from
             # this listing because the * character should have been escaped.
         ]
@@ -188,20 +251,66 @@ class IoWrapperTest(tf.test.TestCase):
         temp_dir = tempfile.mkdtemp(prefix=self.get_temp_dir())
         self._CreateDeepDirectoryStructure(temp_dir)
         expected = [
-            ["", ["a.tfevents.1", "model.ckpt",]],
+            [
+                "",
+                [
+                    "a.tfevents.1",
+                    "model.ckpt",
+                ],
+            ],
             ["foo", []],
-            ["bar", ["b.tfevents.1", "red_herring.txt",]],
-            ["bar/baz", ["c.tfevents.1", "d.tfevents.1",]],
+            [
+                "bar",
+                [
+                    "b.tfevents.1",
+                    "red_herring.txt",
+                ],
+            ],
+            [
+                "bar/baz",
+                [
+                    "c.tfevents.1",
+                    "d.tfevents.1",
+                ],
+            ],
             [
                 "bar/quux",
-                ["some_flume_output.txt", "some_more_flume_output.txt",],
+                [
+                    "some_flume_output.txt",
+                    "some_more_flume_output.txt",
+                ],
             ],
-            ["quuz", ["e.tfevents.1",]],
-            ["quuz/garply", ["f.tfevents.1",]],
-            ["quuz/garply/corge", ["g.tfevents.1",]],
-            ["quuz/garply/grault", ["h.tfevents.1",]],
+            [
+                "quuz",
+                [
+                    "e.tfevents.1",
+                ],
+            ],
+            [
+                "quuz/garply",
+                [
+                    "f.tfevents.1",
+                ],
+            ],
+            [
+                "quuz/garply/corge",
+                [
+                    "g.tfevents.1",
+                ],
+            ],
+            [
+                "quuz/garply/grault",
+                [
+                    "h.tfevents.1",
+                ],
+            ],
             ["waldo", []],
-            ["waldo/fred", ["i.tfevents.1",]],
+            [
+                "waldo/fred",
+                [
+                    "i.tfevents.1",
+                ],
+            ],
         ]
         for pair in expected:
             # If this is not the top-level directory, prepend the high-level

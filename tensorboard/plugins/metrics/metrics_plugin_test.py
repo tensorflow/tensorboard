@@ -180,7 +180,10 @@ class MetricsPluginTest(tf.test.TestCase):
         self.assertEqual(expected_tags, response["scalars"])
         self.assertEqual(expected_tags, response["histograms"])
         self.assertEqual(
-            {"tagDescriptions": {}, "tagRunSampledInfo": {},},
+            {
+                "tagDescriptions": {},
+                "tagRunSampledInfo": {},
+            },
             response["images"],
         )
 
@@ -695,7 +698,10 @@ class MetricsPluginTest(tf.test.TestCase):
                 "run": "run1",
             },
             {"plugin": "images", "tag": "images/tagA", "run": "run1"},
-            {"plugin": "images", "tag": "images/tagA",},
+            {
+                "plugin": "images",
+                "tag": "images/tagA",
+            },
         ]
         response = self._plugin._time_series_impl(
             context.RequestContext(), "expid", requests

@@ -117,7 +117,10 @@ class AudioPluginTest(tf.test.TestCase):
 
         # Start a server with the plugin.
         multiplexer = event_multiplexer.EventMultiplexer(
-            {"foo": foo_directory, "bar": bar_directory,}
+            {
+                "foo": foo_directory,
+                "bar": bar_directory,
+            }
         )
         multiplexer.Reload()
         provider = data_provider.MultiplexerDataProvider(

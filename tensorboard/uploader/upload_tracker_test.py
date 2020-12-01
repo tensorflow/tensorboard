@@ -125,7 +125,8 @@ class UploadStatsTest(tb_test.TestCase):
             "1234 scalars, 40 tensors (200 B), 1 binary objects (1000 B)",
         )
         self.assertEqual(
-            skipped_summary, "10 tensors (1.8 kB), 1 binary objects (2.0 kB)",
+            skipped_summary,
+            "10 tensors (1.8 kB), 1 binary objects (2.0 kB)",
         )
         self.assertEqual(stats.has_new_data_since_last_summarize(), False)
 
@@ -135,7 +136,8 @@ class UploadStatsTest(tb_test.TestCase):
         self.assertEqual(stats.has_new_data_since_last_summarize(), True)
         (uploaded_summary, skipped_summary) = stats.summarize()
         self.assertEqual(
-            uploaded_summary, "1234 scalars, 0 tensors, 0 binary objects",
+            uploaded_summary,
+            "1234 scalars, 0 tensors, 0 binary objects",
         )
         self.assertIsNone(skipped_summary)
         self.assertEqual(stats.has_new_data_since_last_summarize(), False)
@@ -245,7 +247,8 @@ class UploadTrackerTest(tb_test.TestCase):
             self.assertEqual(self.mock_write.call_count, 2)
             self.assertEqual(self.mock_flush.call_count, 2)
             self.assertIn(
-                "Data upload starting...", self.mock_write.call_args[0][0],
+                "Data upload starting...",
+                self.mock_write.call_args[0][0],
             )
         self.assertEqual(self.mock_write.call_count, 3)
         self.assertEqual(self.mock_flush.call_count, 3)
@@ -269,7 +272,8 @@ class UploadTrackerTest(tb_test.TestCase):
             self.assertEqual(self.mock_write.call_count, 1)
             self.assertEqual(self.mock_flush.call_count, 1)
             self.assertIn(
-                "Uploading 123 scalars...", self.mock_write.call_args[0][0],
+                "Uploading 123 scalars...",
+                self.mock_write.call_args[0][0],
             )
         self.assertEqual(self.mock_write.call_count, 1)
         self.assertEqual(self.mock_flush.call_count, 1)
@@ -352,7 +356,8 @@ class UploadTrackerTest(tb_test.TestCase):
             self.assertEqual(self.mock_write.call_count, 2)
             self.assertEqual(self.mock_flush.call_count, 2)
             self.assertIn(
-                "Started scanning", self.mock_write.call_args_list[0][0][0],
+                "Started scanning",
+                self.mock_write.call_args_list[0][0][0],
             )
             with tracker.blob_tracker(
                 blob_bytes=2048 * 1024 * 1024

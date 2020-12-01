@@ -71,7 +71,11 @@ class ReadableFormatter(BaseExperimentFormatter):
         ]
         for name, value in data:
             output.append(
-                "\t%s %s" % (name.ljust(self._NAME_COLUMN_WIDTH), value,)
+                "\t%s %s"
+                % (
+                    name.ljust(self._NAME_COLUMN_WIDTH),
+                    value,
+                )
             )
         return "\n".join(output)
 
@@ -99,5 +103,6 @@ class JsonFormatter(object):
             ("binary_object_bytes", experiment.total_blob_bytes),
         ]
         return json.dumps(
-            collections.OrderedDict(data), indent=self._JSON_INDENT,
+            collections.OrderedDict(data),
+            indent=self._JSON_INDENT,
         )

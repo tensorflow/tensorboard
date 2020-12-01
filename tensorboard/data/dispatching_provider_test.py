@@ -74,7 +74,7 @@ class PlaceholderDataProvider(provider.DataProvider):
         experiment_id,
         plugin_name,
         downsample=None,
-        run_tag_filter=None
+        run_tag_filter=None,
     ):
         self._validate_eid(experiment_id)
         if run_tag_filter is None:
@@ -113,7 +113,7 @@ class PlaceholderDataProvider(provider.DataProvider):
         experiment_id,
         plugin_name,
         downsample=None,
-        run_tag_filter=None
+        run_tag_filter=None,
     ):
         raise NotImplementedError()
 
@@ -143,7 +143,7 @@ class PlaceholderDataProvider(provider.DataProvider):
         experiment_id,
         plugin_name,
         downsample=None,
-        run_tag_filter=None
+        run_tag_filter=None,
     ):
         self._validate_eid(experiment_id)
         if run_tag_filter is None:
@@ -305,7 +305,8 @@ class DispatchingDataProviderTest(tb_test.TestCase):
 
     def test_blobs_error_cases(self):
         with self.assertRaisesRegex(
-            errors.NotFoundError, "Unknown prefix in experiment ID: 'quux:hmm'",
+            errors.NotFoundError,
+            "Unknown prefix in experiment ID: 'quux:hmm'",
         ):
             self._get_blobs(self.with_unpfx, "quux:hmm")
         with self.assertRaisesRegex(

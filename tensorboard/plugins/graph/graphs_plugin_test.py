@@ -191,7 +191,7 @@ class GraphsPluginV1Test(GraphsPluginBaseTest, tf.test.TestCase):
             context.RequestContext(),
             _RUN_WITH_GRAPH_WITH_METADATA[0],
             *args,
-            **kwargs
+            **kwargs,
         )
         self.assertEqual(mime_type, "text/x-protobuf")
         return text_format.Parse(graph_pbtxt, tf.compat.v1.GraphDef())
@@ -250,7 +250,10 @@ class GraphsPluginV1Test(GraphsPluginBaseTest, tf.test.TestCase):
     @with_runs([_RUN_WITH_GRAPH_WITH_METADATA])
     def test_graph_simple(self, plugin):
         graph = self._get_graph(
-            plugin, tag=None, is_conceptual=False, experiment="eid",
+            plugin,
+            tag=None,
+            is_conceptual=False,
+            experiment="eid",
         )
         node_names = set(node.name for node in graph.node)
         self.assertEqual(

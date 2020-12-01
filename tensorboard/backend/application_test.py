@@ -190,7 +190,8 @@ class HandlingErrorsTest(tb_test.TestCase):
         server = werkzeug_test.Client(app, wrappers.BaseResponse)
         response = server.get("/")
         self.assertEqual(
-            response.get_data(), b"Unauthenticated: who are you?",
+            response.get_data(),
+            b"Unauthenticated: who are you?",
         )
         self.assertEqual(response.status_code, 401)
         self.assertStartsWith(
@@ -224,11 +225,15 @@ class ApplicationTest(tb_test.TestCase):
             ),
             FakePlugin(
                 plugin_name="baz",
-                routes_mapping={"/esmodule": lambda req: None,},
+                routes_mapping={
+                    "/esmodule": lambda req: None,
+                },
                 es_module_path_value="/esmodule",
             ),
             FakePlugin(
-                plugin_name="qux", is_active_value=False, is_ng_component=True,
+                plugin_name="qux",
+                is_active_value=False,
+                is_ng_component=True,
             ),
         ]
         app = application.TensorBoardWSGI(plugins)
@@ -289,7 +294,9 @@ class ApplicationTest(tb_test.TestCase):
                 },
                 "qux": {
                     "enabled": False,
-                    "loading_mechanism": {"type": "NG_COMPONENT",},
+                    "loading_mechanism": {
+                        "type": "NG_COMPONENT",
+                    },
                     "tab_name": "qux",
                     "remove_dom": False,
                     "disable_reload": False,
@@ -305,7 +312,9 @@ class ApplicationTest(tb_test.TestCase):
         plugins = [
             FakePlugin(plugin_name="foo", is_active_value=False),
             FakePlugin(
-                plugin_name="bar", is_active_value=False, data_plugin_names=(),
+                plugin_name="bar",
+                is_active_value=False,
+                data_plugin_names=(),
             ),
             FakePlugin(plugin_name="baz", is_active_value=False),
             FakePlugin(
@@ -495,7 +504,9 @@ class ApplicationBaseUrlTest(tb_test.TestCase):
             ),
             FakePlugin(
                 plugin_name="baz",
-                routes_mapping={"/esmodule": lambda req: None,},
+                routes_mapping={
+                    "/esmodule": lambda req: None,
+                },
                 es_module_path_value="/esmodule",
             ),
         ]
@@ -695,7 +706,9 @@ class TensorBoardPluginsTest(tb_test.TestCase):
                 ),
                 FakePluginLoader(
                     plugin_name="whoami",
-                    routes_mapping={"/eid": self._eid_handler,},
+                    routes_mapping={
+                        "/eid": self._eid_handler,
+                    },
                 ),
             ],
             data_provider=FakeDataProvider(),
@@ -761,7 +774,10 @@ class TensorBoardPluginsTest(tb_test.TestCase):
     def testPluginsAdded(self):
         # The routes are prefixed with /data/plugin/[plugin name].
         expected_routes = frozenset(
-            ("/data/plugin/foo/foo_route", "/data/plugin/bar/bar_route",)
+            (
+                "/data/plugin/foo/foo_route",
+                "/data/plugin/bar/bar_route",
+            )
         )
         self.assertLessEqual(expected_routes, frozenset(self.app.exact_routes))
 

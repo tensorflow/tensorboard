@@ -273,7 +273,8 @@ class ProjectorPlugin(base_plugin.TBPlugin):
             BOOKMARKS_ROUTE: self._serve_bookmarks,
             SPRITE_IMAGE_ROUTE: self._serve_sprite_image,
             "/index.js": functools.partial(
-                self._serve_file, os.path.join(asset_prefix, "index.js"),
+                self._serve_file,
+                os.path.join(asset_prefix, "index.js"),
             ),
             "/projector_binary.html": functools.partial(
                 self._serve_file,
@@ -320,7 +321,8 @@ class ProjectorPlugin(base_plugin.TBPlugin):
 
     def frontend_metadata(self):
         return base_plugin.FrontendMetadata(
-            es_module_path="/index.js", disable_reload=True,
+            es_module_path="/index.js",
+            disable_reload=True,
         )
 
     def _determine_is_active(self):

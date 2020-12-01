@@ -137,7 +137,9 @@ class ManagerEndToEndTest(tf.test.TestCase):
             outfile.write(program)
         os.chmod(filepath, 0o777)
         self._patch_environ(
-            {"PATH": os.pathsep.join((tempdir, os.environ["PATH"])),}
+            {
+                "PATH": os.pathsep.join((tempdir, os.environ["PATH"])),
+            }
         )
         self._ensure_tensorboard_on_path(expected_binary_dir=tempdir)
 
@@ -288,7 +290,11 @@ class ManagerEndToEndTest(tf.test.TestCase):
         self.assertIsInstance(start_result, manager.StartFailed)
         self.assertEqual(
             start_result,
-            manager.StartFailed(exit_code=22, stderr=None, stdout=None,),
+            manager.StartFailed(
+                exit_code=22,
+                stderr=None,
+                stdout=None,
+            ),
         )
         self.assertEqual(manager.get_all(), [])
 

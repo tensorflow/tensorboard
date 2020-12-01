@@ -102,7 +102,8 @@ class HParamsTest(test.TestCase):
         self.assertEqual(len(values), 1, values)
         actual_value = values[0]
         self.assertEqual(
-            actual_value.metadata.plugin_data.plugin_name, metadata.PLUGIN_NAME,
+            actual_value.metadata.plugin_data.plugin_name,
+            metadata.PLUGIN_NAME,
         )
         self.assertEqual(
             tensor_pb2.TensorProto.FromString(
@@ -408,7 +409,8 @@ class HParamsConfigTest(test.TestCase):
         self.assertEqual(len(values), 1, values)
         actual_value = values[0]
         self.assertEqual(
-            actual_value.metadata.plugin_data.plugin_name, metadata.PLUGIN_NAME,
+            actual_value.metadata.plugin_data.plugin_name,
+            metadata.PLUGIN_NAME,
         )
         plugin_content = actual_value.metadata.plugin_data.content
         self.assertEqual(

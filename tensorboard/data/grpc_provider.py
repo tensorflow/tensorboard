@@ -62,7 +62,9 @@ class GrpcDataProvider(provider.DataProvider):
             res = self._stub.ListRuns(req)
         return [
             provider.Run(
-                run_id=run.name, run_name=run.name, start_time=run.start_time,
+                run_id=run.name,
+                run_name=run.name,
+                start_time=run.start_time,
             )
             for run in res.runs
         ]
@@ -103,7 +105,7 @@ class GrpcDataProvider(provider.DataProvider):
         experiment_id,
         plugin_name,
         downsample=None,
-        run_tag_filter=None
+        run_tag_filter=None,
     ):
         with timing.log_latency("build request"):
             req = data_provider_pb2.ReadScalarsRequest()
@@ -125,7 +127,9 @@ class GrpcDataProvider(provider.DataProvider):
                     d = tag_entry.data
                     for (step, wt, value) in zip(d.step, d.wall_time, d.value):
                         pt = provider.ScalarDatum(
-                            step=step, wall_time=wt, value=value,
+                            step=step,
+                            wall_time=wt,
+                            value=value,
                         )
                         series.append(pt)
             return result

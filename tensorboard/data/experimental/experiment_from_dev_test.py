@@ -163,7 +163,9 @@ class ExperimentFromDevTest(tb_test.TestCase):
                             expected = pandas.DataFrame(data)
 
                         pandas.testing.assert_frame_equal(
-                            dataframe, expected, check_names=True,
+                            dataframe,
+                            expected,
+                            check_names=True,
                         )
 
     def test_get_scalars_with_pivot_table_with_missing_value(self):

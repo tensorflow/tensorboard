@@ -76,7 +76,10 @@ class ScalarsPluginTest(tf.test.TestCase):
         multiplexer.Reload()
 
         provider = data_provider.MultiplexerDataProvider(multiplexer, logdir)
-        ctx = base_plugin.TBContext(logdir=logdir, data_provider=provider,)
+        ctx = base_plugin.TBContext(
+            logdir=logdir,
+            data_provider=provider,
+        )
         return scalars_plugin.ScalarsPlugin(ctx)
 
     def load_server(self, run_names):
@@ -92,7 +95,8 @@ class ScalarsPluginTest(tf.test.TestCase):
                 data = [1 + step, 2 + step, 3 + step]
                 if run_name == self._RUN_WITH_LEGACY_SCALARS:
                     summ = tf.compat.v1.summary.scalar(
-                        self._LEGACY_SCALAR_TAG, tf.reduce_mean(data),
+                        self._LEGACY_SCALAR_TAG,
+                        tf.reduce_mean(data),
                     ).numpy()
                 elif run_name == self._RUN_WITH_SCALARS:
                     summ = summary.op(
@@ -303,7 +307,10 @@ class ScalarsPluginTest(tf.test.TestCase):
             "/data/plugin/scalars/scalars_multirun",
             query_string={
                 "tag": "%s/scalar_summary" % self._SCALAR_TAG,
-                "runs": [self._RUN_WITH_SCALARS, self._RUN_WITH_SCALARS_3,],
+                "runs": [
+                    self._RUN_WITH_SCALARS,
+                    self._RUN_WITH_SCALARS_3,
+                ],
             },
         )
         self.assertEqual(405, response.status_code)
@@ -337,7 +344,10 @@ class ScalarsPluginTest(tf.test.TestCase):
         server = werkzeug_test.Client(wsgi_app, wrappers.BaseResponse)
         response = server.get(
             "/data/plugin/scalars/scalars?run=%s&tag=%s"
-            % (self._RUN_WITH_SCALARS, "%s/scalar_summary" % self._SCALAR_TAG,)
+            % (
+                self._RUN_WITH_SCALARS,
+                "%s/scalar_summary" % self._SCALAR_TAG,
+            )
         )
         self.assertEqual(200, response.status_code)
         self.assertEqual("application/json", response.headers["Content-Type"])
@@ -350,7 +360,10 @@ class ScalarsPluginTest(tf.test.TestCase):
         server = werkzeug_test.Client(wsgi_app, wrappers.BaseResponse)
         response = server.get(
             "/data/plugin/scalars/scalars?run=%s&tag=%s&format=csv"
-            % (self._RUN_WITH_SCALARS, "%s/scalar_summary" % self._SCALAR_TAG,)
+            % (
+                self._RUN_WITH_SCALARS,
+                "%s/scalar_summary" % self._SCALAR_TAG,
+            )
         )
         self.assertEqual(200, response.status_code)
         self.assertEqual(

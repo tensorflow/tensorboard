@@ -60,7 +60,9 @@ flags.DEFINE_integer(
     "this flag.",
 )
 flags.DEFINE_integer(
-    "num_epochs", 5, "Number of epochs per trial.",
+    "num_epochs",
+    5,
+    "Number of epochs per trial.",
 )
 
 
@@ -85,13 +87,25 @@ HPARAMS = [
 
 METRICS = [
     hp.Metric(
-        "epoch_accuracy", group="validation", display_name="accuracy (val.)",
+        "epoch_accuracy",
+        group="validation",
+        display_name="accuracy (val.)",
     ),
-    hp.Metric("epoch_loss", group="validation", display_name="loss (val.)",),
     hp.Metric(
-        "batch_accuracy", group="train", display_name="accuracy (train)",
+        "epoch_loss",
+        group="validation",
+        display_name="loss (val.)",
     ),
-    hp.Metric("batch_loss", group="train", display_name="loss (train)",),
+    hp.Metric(
+        "batch_accuracy",
+        group="train",
+        display_name="accuracy (train)",
+    ),
+    hp.Metric(
+        "batch_loss",
+        group="train",
+        display_name="loss (train)",
+    ),
 ]
 
 

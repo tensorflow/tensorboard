@@ -29,7 +29,10 @@ from tensorboard.backend import http_util
 
 def _error_response(request, error_message):
     return http_util.Respond(
-        request, {"error": error_message}, "application/json", code=400,
+        request,
+        {"error": error_message},
+        "application/json",
+        code=400,
     )
 
 
@@ -197,8 +200,10 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
             return _missing_run_error_response(request)
         begin = int(request.args.get("begin", "0"))
         end = int(request.args.get("end", "-1"))
-        run_tag_filter = debug_data_provider.graph_execution_digest_run_tag_filter(
-            run, begin, end
+        run_tag_filter = (
+            debug_data_provider.graph_execution_digest_run_tag_filter(
+                run, begin, end
+            )
         )
         blob_sequences = self._data_provider.read_blob_sequences(
             experiment_id=experiment,
@@ -234,8 +239,10 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
             return _missing_run_error_response(request)
         begin = int(request.args.get("begin", "0"))
         end = int(request.args.get("end", "-1"))
-        run_tag_filter = debug_data_provider.graph_execution_data_run_tag_filter(
-            run, begin, end
+        run_tag_filter = (
+            debug_data_provider.graph_execution_data_run_tag_filter(
+                run, begin, end
+            )
         )
         blob_sequences = self._data_provider.read_blob_sequences(
             experiment_id=experiment,

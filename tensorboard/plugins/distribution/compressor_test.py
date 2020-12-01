@@ -32,7 +32,11 @@ class CompressorTest(tf.test.TestCase):
         buckets = [[0, 1, 0], [1, 2, 3], [2, 3, 0]]
         self.assertEqual(
             _make_expected_value(
-                (0, 0.0), (2500, 0.5), (5000, 1.0), (7500, 1.5), (10000, 3.0),
+                (0, 0.0),
+                (2500, 0.5),
+                (5000, 1.0),
+                (7500, 1.5),
+                (10000, 3.0),
             ),
             compressor.compress_histogram(buckets, bps),
         )
@@ -56,7 +60,11 @@ class CompressorTest(tf.test.TestCase):
         buckets = [[0, 1, 0], [1, 2, 0], [2, 3, 0]]
         self.assertEqual(
             _make_expected_value(
-                (0, 3.0), (2500, 3.0), (5000, 3.0), (7500, 3.0), (10000, 3.0),
+                (0, 3.0),
+                (2500, 3.0),
+                (5000, 3.0),
+                (7500, 3.0),
+                (10000, 3.0),
             ),
             compressor.compress_histogram(buckets, bps),
         )

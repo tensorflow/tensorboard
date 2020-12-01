@@ -33,7 +33,7 @@ jobs:
         # flake8 should run on each Python version that we target,
         # because the errors and warnings can differ due to language
         # changes, and we want to catch them all.
-        python_version: ['3.5', '3.7']
+        python_version: ['3.6', '3.7']
     steps:
       - uses: actions/checkout@v1
       - uses: actions/setup-python@v1

@@ -41,7 +41,12 @@ from tensorboard.util import tb_logging
 # https://github.com/tensorflow/tensorboard/issues/2017.
 _FieldType = collections.namedtuple(
     "_FieldType",
-    ("serialized_type", "runtime_type", "serialize", "deserialize",),
+    (
+        "serialized_type",
+        "runtime_type",
+        "serialize",
+        "deserialize",
+    ),
 )
 _type_int = _FieldType(
     serialized_type=int,
@@ -70,7 +75,8 @@ _TENSORBOARD_INFO_FIELDS = collections.OrderedDict(
     )
 )
 TensorBoardInfo = collections.namedtuple(
-    "TensorBoardInfo", _TENSORBOARD_INFO_FIELDS,
+    "TensorBoardInfo",
+    _TENSORBOARD_INFO_FIELDS,
 )
 
 
@@ -314,7 +320,9 @@ def get_all():
         except ValueError:
             # Ignore unrecognized files, logging at debug only.
             tb_logging.get_logger().debug(
-                "invalid info file: %r", filepath, exc_info=True,
+                "invalid info file: %r",
+                filepath,
+                exc_info=True,
             )
         else:
             results.append(info)

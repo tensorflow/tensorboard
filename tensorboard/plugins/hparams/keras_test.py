@@ -85,7 +85,8 @@ class CallbackTest(tf.test.TestCase):
             self.assertEqual(len(event.summary.value), 1, event.summary.value)
             value = event.summary.value[0]
             self.assertEqual(
-                value.metadata.plugin_data.plugin_name, metadata.PLUGIN_NAME,
+                value.metadata.plugin_data.plugin_name,
+                metadata.PLUGIN_NAME,
             )
             plugin_data.append(value.metadata.plugin_data.content)
 
@@ -140,7 +141,8 @@ class CallbackTest(tf.test.TestCase):
 
     def test_explicit_writer(self):
         writer = tf.compat.v2.summary.create_file_writer(
-            self.logdir, filename_suffix=".magic",
+            self.logdir,
+            filename_suffix=".magic",
         )
         self._initialize_model(writer=writer)
         self.model.fit(x=[(1,)], y=[(2,)], callbacks=[self.callback])

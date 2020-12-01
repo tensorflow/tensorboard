@@ -137,7 +137,8 @@ class NpmiPluginTest(tf.test.TestCase):
     def testAnnotations(self):
         plugin = self.create_plugin()
         annotations = plugin.annotations_impl(
-            context.RequestContext(), experiment="exp",
+            context.RequestContext(),
+            experiment="exp",
         )
         self.assertItemsEqual(["name_1", "name_2"], annotations["run_1"])
         self.assertItemsEqual(["name_1", "name_2"], annotations["run_2"])
@@ -145,7 +146,8 @@ class NpmiPluginTest(tf.test.TestCase):
     def testMetrics(self):
         plugin = self.create_plugin()
         metrics = plugin.metrics_impl(
-            context.RequestContext(), experiment="exp",
+            context.RequestContext(),
+            experiment="exp",
         )
         self.assertItemsEqual(["A", "B"], metrics["run_1"])
         self.assertItemsEqual(["A", "B"], metrics["run_2"])

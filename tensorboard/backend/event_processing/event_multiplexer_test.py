@@ -52,7 +52,10 @@ class _FakeAccumulator(object):
         self._path = path
         self.reload_called = False
         self._plugin_to_tag_to_content = {
-            "baz_plugin": {"foo": "foo_content", "bar": "bar_content",}
+            "baz_plugin": {
+                "foo": "foo_content",
+                "bar": "bar_content",
+            }
         }
 
     def Tags(self):

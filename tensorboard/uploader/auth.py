@@ -48,7 +48,7 @@ OPENID_CONNECT_SCOPES = (
 
 # The client "secret" is public by design for installed apps. See
 # https://developers.google.com/identity/protocols/OAuth2?csw=1#installed
-OAUTH_CLIENT_CONFIG = u"""
+OAUTH_CLIENT_CONFIG = """
 {
   "installed": {
     "client_id": "373649185512-8v619h5kft38l4456nm2dj4ubeqsrvh6.apps.googleusercontent.com",
@@ -108,8 +108,10 @@ class CredentialsStore(object):
         if self._credentials_filepath is None:
             return None
         if os.path.exists(self._credentials_filepath):
-            return google.oauth2.credentials.Credentials.from_authorized_user_file(
-                self._credentials_filepath
+            return (
+                google.oauth2.credentials.Credentials.from_authorized_user_file(
+                    self._credentials_filepath
+                )
             )
         return None
 

@@ -110,21 +110,67 @@ class GFileTest(unittest.TestCase):
         temp_dir = self._CreateDeepS3Structure()
         self._CreateDeepS3Structure(temp_dir)
         expected = [
-            ["", ["a.tfevents.1", "model.ckpt",]],
+            [
+                "",
+                [
+                    "a.tfevents.1",
+                    "model.ckpt",
+                ],
+            ],
             # Empty directory not returned
             # ['foo', []],
-            ["bar", ["b.tfevents.1", "red_herring.txt",]],
-            ["bar/baz", ["c.tfevents.1", "d.tfevents.1",]],
+            [
+                "bar",
+                [
+                    "b.tfevents.1",
+                    "red_herring.txt",
+                ],
+            ],
+            [
+                "bar/baz",
+                [
+                    "c.tfevents.1",
+                    "d.tfevents.1",
+                ],
+            ],
             [
                 "bar/quux",
-                ["some_flume_output.txt", "some_more_flume_output.txt",],
+                [
+                    "some_flume_output.txt",
+                    "some_more_flume_output.txt",
+                ],
             ],
-            ["quuz", ["e.tfevents.1",]],
-            ["quuz/garply", ["f.tfevents.1",]],
-            ["quuz/garply/corge", ["g.tfevents.1",]],
-            ["quuz/garply/grault", ["h.tfevents.1",]],
+            [
+                "quuz",
+                [
+                    "e.tfevents.1",
+                ],
+            ],
+            [
+                "quuz/garply",
+                [
+                    "f.tfevents.1",
+                ],
+            ],
+            [
+                "quuz/garply/corge",
+                [
+                    "g.tfevents.1",
+                ],
+            ],
+            [
+                "quuz/garply/grault",
+                [
+                    "h.tfevents.1",
+                ],
+            ],
             ["waldo", []],
-            ["waldo/fred", ["i.tfevents.1",]],
+            [
+                "waldo/fred",
+                [
+                    "i.tfevents.1",
+                ],
+            ],
         ]
         for pair in expected:
             # If this is not the top-level directory, prepend the high-level
@@ -156,10 +202,8 @@ class GFileTest(unittest.TestCase):
 
     @mock_s3
     def testReadLines(self):
-        ckpt_lines = (
-            [u"\n"] + [u"line {}\n".format(i) for i in range(10)] + [u" "]
-        )
-        ckpt_content = u"".join(ckpt_lines)
+        ckpt_lines = ["\n"] + ["line {}\n".format(i) for i in range(10)] + [" "]
+        ckpt_content = "".join(ckpt_lines)
         temp_dir = self._CreateDeepS3Structure(ckpt_content=ckpt_content)
         ckpt_path = self._PathJoin(temp_dir, "model.ckpt")
         with gfile.GFile(ckpt_path, "r") as f:
@@ -193,7 +237,7 @@ class GFileTest(unittest.TestCase):
     def testWrite(self):
         temp_dir = self._CreateDeepS3Structure()
         ckpt_path = os.path.join(temp_dir, "model2.ckpt")
-        ckpt_content = u"asdfasdfasdffoobarbuzz"
+        ckpt_content = "asdfasdfasdffoobarbuzz"
         with gfile.GFile(ckpt_path, "w") as f:
             f.write(ckpt_content)
         with gfile.GFile(ckpt_path, "r") as f:
@@ -204,9 +248,9 @@ class GFileTest(unittest.TestCase):
     def testOverwrite(self):
         temp_dir = self._CreateDeepS3Structure()
         ckpt_path = os.path.join(temp_dir, "model2.ckpt")
-        ckpt_content = u"asdfasdfasdffoobarbuzz"
+        ckpt_content = "asdfasdfasdffoobarbuzz"
         with gfile.GFile(ckpt_path, "w") as f:
-            f.write(u"original")
+            f.write("original")
         with gfile.GFile(ckpt_path, "w") as f:
             f.write(ckpt_content)
         with gfile.GFile(ckpt_path, "r") as f:
@@ -217,7 +261,7 @@ class GFileTest(unittest.TestCase):
     def testWriteMultiple(self):
         temp_dir = self._CreateDeepS3Structure()
         ckpt_path = os.path.join(temp_dir, "model2.ckpt")
-        ckpt_content = u"asdfasdfasdffoobarbuzz" * 5
+        ckpt_content = "asdfasdfasdffoobarbuzz" * 5
         with gfile.GFile(ckpt_path, "w") as f:
             for i in range(0, len(ckpt_content), 3):
                 f.write(ckpt_content[i : i + 3])
@@ -232,7 +276,7 @@ class GFileTest(unittest.TestCase):
     def testWriteEmpty(self):
         temp_dir = self._CreateDeepS3Structure()
         ckpt_path = os.path.join(temp_dir, "model2.ckpt")
-        ckpt_content = u""
+        ckpt_content = ""
         with gfile.GFile(ckpt_path, "w") as f:
             f.write(ckpt_content)
         with gfile.GFile(ckpt_path, "r") as f:
