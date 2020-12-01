@@ -76,7 +76,7 @@ mod tests {
     }
 
     #[test]
-    fn test_underlong_ok() {
+    fn test_ok_when_k_greater_than_n() {
         let xs: Vec<char> = "abcdefg".chars().collect();
         assert_eq!(downsample_cloned(&xs, 10), xs);
         assert_eq!(downsample_cloned(&xs, usize::MAX), xs);

@@ -292,7 +292,13 @@ fn parse_downsample(downsample: Option<data::Downsample>) -> Result<usize, Statu
             num_points
         )));
     }
-    Ok(num_points.try_into().unwrap_or(usize::MAX))
+    num_points.try_into().map_err(|_| {
+        Status::out_of_range(format!(
+            "num_points ({}) is too large for this system; max: {}",
+            num_points,
+            usize::MAX
+        ))
+    })
 }
 
 /// A predicate that accepts either all values or just an explicit set of values.
