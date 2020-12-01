@@ -22,10 +22,6 @@ import {By} from '@angular/platform-browser';
 import {Store} from '@ngrx/store';
 import {provideMockStore, MockStore} from '@ngrx/store/testing';
 
-import {
-  setUpMonacoFakes,
-  tearDownMonacoFakes,
-} from '../../../../../webapp/widgets/source_code/testing';
 import {DebuggerComponent} from '../../debugger_component';
 import {DebuggerContainer} from '../../debugger_container';
 import {DataLoadState, State} from '../../store/debugger_types';
@@ -34,6 +30,7 @@ import {AlertsModule} from '../alerts/alerts_module';
 import {ExecutionDataModule} from '../execution_data/execution_data_module';
 import {GraphExecutionsModule} from '../graph_executions/graph_executions_module';
 import {InactiveModule} from '../inactive/inactive_module';
+import {setUpMonacoFakes, tearDownMonacoFakes} from '../source_code/testing';
 import {StackTraceModule} from '../stack_trace/stack_trace_module';
 import {
   getFocusedSourceFileContent,

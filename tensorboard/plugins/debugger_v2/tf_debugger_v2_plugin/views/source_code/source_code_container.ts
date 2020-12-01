@@ -36,7 +36,7 @@ const windowWithRequireAndMonaco: any = window;
  * time.
  */
 @Component({
-  selector: 'source-code',
+  selector: 'tf-debugger-v2-source-code',
   template: `
     <source-code-component
       [lines]="lines"

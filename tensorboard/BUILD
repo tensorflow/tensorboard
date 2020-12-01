@@ -342,8 +342,8 @@ tf_web_library(
     ],
     path = "/",
     deps = [
-        "//tensorboard/webapp/widgets/source_code/monaco:monaco_editor",
-        "//tensorboard/webapp/widgets/source_code/monaco:monaco_languages",
+        "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/source_code/monaco:monaco_editor",
+        "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/source_code/monaco:monaco_languages",
         "@com_google_fonts_roboto",
     ],
 )

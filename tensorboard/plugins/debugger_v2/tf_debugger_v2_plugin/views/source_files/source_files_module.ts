@@ -16,7 +16,7 @@ limitations under the License.
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
 
-import {SourceCodeModule} from '../../../../../webapp/widgets/source_code/source_code_module';
+import {SourceCodeModule} from '../source_code/source_code_module';
 import {SourceFilesComponent} from './source_files_component';
 import {SourceFilesContainer} from './source_files_container';
 
