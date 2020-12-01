@@ -162,7 +162,8 @@ we offer the following advice:
     a good reason that you are prepared to justify; etc.
 
 -   Write Rust code that will still compile if backward-compatible changes are
-    made to the protobuf definitions. This means:
+    made to protobuf definitions whose source of truth is not in this repo
+    (i.e., those updated by `tensorboard/compat/proto/update.sh`). This means:
 
     -   When you construct a protobuf message, spread in `Default::default` even
         if you populate all the fields, in case more fields are added:
@@ -190,7 +191,8 @@ we offer the following advice:
         ```
 
     This way, whoever is updating our copies of the protobuf definitions doesn’t
-    also have to context-switch in to updating Rust code.
+    also have to context-switch in to updating Rust code. This rule doesn’t
+    apply to `tensorboard.data` protos, since we own those.
 
     We don’t have a compile-time check for this, so just try to be careful.
 
