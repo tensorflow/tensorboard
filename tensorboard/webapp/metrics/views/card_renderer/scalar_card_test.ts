@@ -88,6 +88,7 @@ class TestableGpuLineChart {
   @Input() seriesData!: DataSeries[];
   @Input() seriesMetadataMap!: DataSeriesMetadataMap;
   @Input() yScaleType!: ScaleType;
+  @Input() ignoreYOutliers: boolean = false;
 }
 
 describe('scalar card', () => {

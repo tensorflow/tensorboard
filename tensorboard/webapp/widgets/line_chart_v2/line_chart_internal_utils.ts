@@ -23,20 +23,19 @@ import {isWebGl2Supported} from './lib/utils';
 /**
  * Returns extent, min and max values of each dimensions, of all data series points.
  *
- * When ignoreYOutliers is true, it will filter out values that are approximately [1] less
- * than 5th and greater than 95th percentile when calculating y-extent.
+ * When ignoreYOutliers is true, it will calculate extent using values within 5th and 95th
+ * quantiles.
  *
  * Note that it excludes auxillary data points and invisible data series.
- *
- * [1]: Uses R-7 method for approximation: https://github.com/d3/d3-array#quantile
  */
 export function computeDataSeriesExtent(
   data: DataSeries[],
   metadataMap: DataSeriesMetadataMap,
   ignoreYOutliers: boolean
 ): {x: [number, number] | undefined; y: [number, number] | undefined} {
+  let xMin: number | null = null;
+  let xMax: number | null = null;
   let yPoints: number[] = [];
-  const xPoints: number[] = [];
 
   let pointIndex = 0;
   for (const {id, points} of data) {
@@ -46,7 +45,8 @@ export function computeDataSeriesExtent(
     for (let index = 0; index < points.length; index++) {
       const {x, y} = points[index];
       if (Number.isFinite(x)) {
-        xPoints.push(x);
+        xMin = xMin === null || x < xMin ? x : xMin;
+        xMax = xMax === null || x > xMax ? x : xMax;
       }
       if (Number.isFinite(y)) {
         yPoints.push(y);
@@ -56,21 +56,16 @@ export function computeDataSeriesExtent(
   }
 
   yPoints.sort(d3.ascending);
+  let yMin = yPoints[0];
+  let yMax = yPoints[yPoints.length - 1];
 
   if (ignoreYOutliers && yPoints.length > 2) {
-    const aY = d3.quantile(yPoints, 0.05)!;
-    const bY = d3.quantile(yPoints, 0.95)!;
-    yPoints = yPoints.filter((val) => {
-      return aY <= val && val <= bY;
-    });
+    yMin = yPoints[Math.ceil((yPoints.length - 1) * 0.05)];
+    yMax = yPoints[Math.floor((yPoints.length - 1) * 0.95)];
   }
 
-  const [xMin, xMax] = d3.extent(xPoints);
-  const yMin = yPoints[0];
-  const yMax = yPoints[yPoints.length - 1];
-
   return {
-    x: xMin !== undefined && xMax !== undefined ? [xMin, xMax] : undefined,
+    x: xMin !== null && xMax !== null ? [xMin, xMax] : undefined,
     y: yMin !== undefined && yMax !== undefined ? [yMin, yMax] : undefined,
   };
 }
