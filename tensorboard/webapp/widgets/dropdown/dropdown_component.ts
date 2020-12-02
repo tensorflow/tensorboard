@@ -18,8 +18,7 @@ export interface DropdownOption {
   value: any;
   displayText: string;
   /**
-   * Whether the option should appear non-interactable. All options are
-   * 'enabled' by default.
+   * Whether the option should appear non-interactable. 'enabled' by default.
    */
   disabled?: boolean;
 }
