@@ -226,9 +226,7 @@ describe('line_chart_v2/lib/scale test', () => {
 
         [low, high] = scale.niceDomain([-1, 1]);
         expect(low).toBe(Number.MIN_VALUE);
-        // Because the spread is large from -326 to 0, upper bound is much larger, too.
-        // This may not be ideal and we may want to implement better logic in this case.
-        expect(high).toBeGreaterThanOrEqual(1e16);
+        expect(high).toBe(2);
       });
 
       it('throws an error when min is larger than max', () => {

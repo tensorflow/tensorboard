@@ -155,7 +155,7 @@ class Log10Scale implements Scale {
       return [Number.MIN_VALUE, 1];
     }
 
-    return [Math.max(Number.MIN_VALUE, adjustedMin * 0.5), adjustedMax * 1.5];
+    return [Math.max(Number.MIN_VALUE, adjustedMin * 0.5), adjustedMax * 2];
   }
 
   ticks(domain: [number, number], sizeGuidance: number): number[] {
