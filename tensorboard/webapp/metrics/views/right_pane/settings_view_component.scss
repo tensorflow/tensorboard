@@ -62,6 +62,12 @@ section .control-row:not(:last-child) {
   }
 }
 
+.scalars-smoothing .slider-input {
+  flex: none;
+  // Wide enough to show 3 digits after a decimal.
+  width: 60px;
+}
+
 mat-slider {
   flex: 1;
   // Reset mat-slider's internal extra space on left/right sides
