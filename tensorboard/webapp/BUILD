@@ -32,6 +32,19 @@ tf_ng_module(
 )
 
 tf_ng_module(
+    name = "store_module",
+    srcs = [
+        "store_module.ts",
+    ],
+    deps = [
+        ":reducer_config",
+        "@npm//@angular/core",
+        "@npm//@ngrx/effects",
+        "@npm//@ngrx/store",
+    ],
+)
+
+tf_ng_module(
     name = "selectors",
     srcs = [
         "selectors.ts",
@@ -74,7 +87,7 @@ tf_ng_module(
     deps = [
         ":mat_icon",
         ":oss_plugins_module",
-        ":reducer_config",
+        ":store_module",
         "//tensorboard/webapp/alert",
         "//tensorboard/webapp/alert/views:alert_snackbar",
         "//tensorboard/webapp/angular:expect_angular_platform_browser_animations",
@@ -98,8 +111,6 @@ tf_ng_module(
         "//tensorboard/webapp/tb_wrapper",
         "@npm//@angular/core",
         "@npm//@angular/platform-browser",
-        "@npm//@ngrx/effects",
-        "@npm//@ngrx/store",
     ],
 )
 
