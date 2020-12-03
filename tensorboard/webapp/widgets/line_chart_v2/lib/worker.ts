@@ -20,7 +20,7 @@ limitations under the License.
  *
  * @param workerJsFilename Worker JavaScript resource file name. Exact resource path
  *   depends on context. It can be relative or absolute depending on a app and its
- *   configuration (internally, it is absolute; i.e., served at "/<resource_name.js>").
+ *   configuration. Please see the internal version of this module for details.
  */
 export function getWorker(workerJsFilename: string): Worker {
   if (workerJsFilename.includes('/')) {
