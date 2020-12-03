@@ -49,13 +49,13 @@ jobs:
       - name: 'Configure build cache write credentials'
         env:
           CREDS: ${{ secrets.BAZEL_CACHE_SERVICE_ACCOUNT_CREDS }}
-          EVENT_TYPE: ${{ github.event.type }}
+          EVENT_TYPE: ${{ github.event_name }}
         run: |
           if [ -z "${CREDS}" ]; then
             printf 'Using read-only cache (no credentials)\n'
             exit
           fi
-          if [ "${EVENT_TYPE}" = PullRequest ]; then
+          if [ "${EVENT_NAME}" = pull_request ]; then
             printf 'Using read-only cache (PR build)\n'
             exit
           fi
