@@ -49,8 +49,10 @@ jobs:
           CREDS: ${{ secrets.BAZEL_CACHE_SERVICE_ACCOUNT_CREDS }}
         run: |
           if [ -z "${CREDS}" ]; then
-            exit  # untrusted builds don't have credentials
+            printf 'Using read-only cache (no credentials)\n'
+            exit
           fi
+          printf 'Using writable cache (have credentials)\n'
           printf '%s\n' "${CREDS}" >/tmp/service_account_creds.json
           printf '%s\n' >>~/.bazelrc \
             'build --google_credentials=/tmp/service_account_creds.json' \
