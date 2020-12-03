@@ -48,6 +48,8 @@ jobs:
         env:
           CREDS: ${{ secrets.BAZEL_CACHE_SERVICE_ACCOUNT_CREDS }}
         run: |
+          printf 'Skipping to simulate read-only build\n'
+          exit  # DO NOT SUBMIT
           if [ -z "${CREDS}" ]; then
             printf 'Using read-only cache (no credentials)\n'
             exit
