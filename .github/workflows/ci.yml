@@ -55,7 +55,7 @@ jobs:
             printf 'Using read-only cache (no credentials)\n'
             exit
           fi
-          if [ "${EVENT_NAME}" = pull_request ]; then
+          if [ "${EVENT_TYPE}" = pull_request ]; then
             printf 'Using read-only cache (PR build)\n'
             exit
           fi
