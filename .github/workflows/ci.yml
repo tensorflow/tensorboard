@@ -17,6 +17,8 @@ on:
   pull_request: {}
 
 env:
+  # Keep this Bazel version in sync with the `versions.check` directive
+  # in our WORKSPACE file.
   BAZEL_VERSION: '3.7.0'
   BAZEL_SHA256SUM: 'b7583eec83cc38302997098a40b8c870c37e0ab971a83cb3364c754a178b74ec'
   BUILDTOOLS_VERSION: '3.0.0'
@@ -26,7 +28,7 @@ env:
 jobs:
   build:
     runs-on: ubuntu-16.04
-    # needs: lint-python-flake8 # fail fast in case of "undefined variable" errors  # DO NOT SUBMIT: re-enable
+    needs: lint-python-flake8 # fail fast in case of "undefined variable" errors
     strategy:
       fail-fast: false
       matrix:
@@ -48,8 +50,6 @@ jobs:
         env:
           CREDS: ${{ secrets.BAZEL_CACHE_SERVICE_ACCOUNT_CREDS }}
         run: |
-          printf 'Skipping to simulate read-only build\n'
-          exit  # DO NOT SUBMIT
           if [ -z "${CREDS}" ]; then
             printf 'Using read-only cache (no credentials)\n'
             exit
@@ -61,12 +61,6 @@ jobs:
             "common --google_credentials=${creds_file}" \
             "common --remote_upload_local_results=true" \
             ;
-      - name: 'Disable test caching'
-        run: |
-          printf '%s\n' 'test --nocache_test_results' >>~/.bazelrc
-          # DO NOT SUBMIT: Decide whether to cache test results; if not, do
-          # this perhaps via 'test --upload_local_results=false' instead and
-          # clear the bucket cache.
       - name: 'Install Python dependencies'
         run: |
           python -m pip install -U pip
@@ -100,7 +94,6 @@ jobs:
           bazel test //tensorboard/summary/writer:event_file_writer_s3_test
 
   lint-python-flake8:
-    if: false  # DO NOT SUBMIT
     runs-on: ubuntu-16.04
     strategy:
       fail-fast: false
@@ -126,7 +119,6 @@ jobs:
         run: flake8 . --count --select=E9,F63,F7,F82,F401 --show-source --statistics
 
   lint-python:
-    if: false  # DO NOT SUBMIT
     runs-on: ubuntu-16.04
     steps:
       - uses: actions/checkout@v1
@@ -144,7 +136,6 @@ jobs:
         run: black --check --diff .
 
   lint-rust:
-    if: false  # DO NOT SUBMIT
     runs-on: ubuntu-16.04
     strategy:
       matrix:
@@ -187,7 +178,6 @@ jobs:
           git diff --staged --exit-code
 
   lint-docs:
-    if: false  # DO NOT SUBMIT
     runs-on: ubuntu-16.04
     steps:
       - uses: actions/checkout@v1
@@ -211,7 +201,6 @@ jobs:
         run: git ls-files -z '*.ipynb' | xargs -0 python3 -m tensorflow_docs.tools.nbfmt --test
 
   lint-frontend:
-    if: false  # DO NOT SUBMIT
     runs-on: ubuntu-16.04
     steps:
       - uses: actions/checkout@v1
@@ -234,7 +223,6 @@ jobs:
           ! git grep -E '"@npm_angular_bazel//:index.bzl"' 'tensorboard/**/BUILD'
 
   lint-build:
-    if: false  # DO NOT SUBMIT
     runs-on: ubuntu-16.04
     steps:
       - uses: actions/checkout@v1
@@ -263,7 +251,6 @@ jobs:
           buildozer '//tensorboard/...:%licenses' remove_comment && false || test $? = 3
 
   lint-proto:
-    if: false  # DO NOT SUBMIT
     runs-on: ubuntu-16.04
     steps:
       - uses: actions/checkout@v1
@@ -277,7 +264,6 @@ jobs:
           clangFormatVersion: 9
 
   check-misc:
-    if: false  # DO NOT SUBMIT
     runs-on: ubuntu-16.04
     steps:
       - uses: actions/checkout@v1

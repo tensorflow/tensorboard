@@ -30,3 +30,4 @@ test --test_verbose_timeout_warnings
 # trusted commits (e.g., commits to master).
 common --remote_cache=https://storage.googleapis.com/tensorboard-build-cache
 common --remote_upload_local_results=false
+test --remote_upload_local_results=false
