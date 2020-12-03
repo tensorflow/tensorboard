@@ -131,23 +131,6 @@ py_test(
 )
 
 py_library(
-    name = "ingester",
-    srcs = ["ingester.py"],
-    srcs_version = "PY3",
-)
-
-py_test(
-    name = "ingester_test",
-    size = "small",
-    srcs = ["ingester_test.py"],
-    srcs_version = "PY3",
-    tags = ["support_notf"],
-    deps = [
-        ":ingester",
-    ],
-)
-
-py_library(
     name = "errors",
     srcs = ["errors.py"],
     srcs_version = "PY3",
@@ -229,7 +212,6 @@ py_library(
     srcs = ["program.py"],
     srcs_version = "PY3",
     deps = [
-        ":ingester",
         ":manager",
         ":version",
         "//tensorboard:expect_absl_flags_installed",

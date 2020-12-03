@@ -14,7 +14,7 @@
 # ==============================================================================
 """Unit tests for `tensorboard.ingester`."""
 
-from tensorboard import ingester
+from tensorboard.data import ingester
 
 # This is a pure abstract class. There's really nothing to test other than that
 # it executes successfully.

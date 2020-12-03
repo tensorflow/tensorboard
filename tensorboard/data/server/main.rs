@@ -14,10 +14,11 @@ limitations under the License.
 ==============================================================================*/
 
 use clap::Clap;
-use log::{debug, info, LevelFilter};
-use std::io::Read;
+use log::{debug, error, info, LevelFilter};
+use std::fs::File;
+use std::io::{Read, Write};
 use std::net::{IpAddr, SocketAddr};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::str::FromStr;
 use std::thread;
 use std::time::{Duration, Instant};
@@ -74,6 +75,15 @@ struct Opts {
     /// sense) but not killed.
     #[clap(long)]
     die_after_stdin: bool,
+
+    /// Write bound port to this file
+    ///
+    /// Once a server socket is opened, write the port on which it's listening to the file at this
+    /// path. Useful with `--port 0`. Port will be written as ASCII decimal followed by a newline
+    /// (e.g., "6806\n"). If the server fails to start, this file may not be written at all. If the
+    /// port file is specified but cannot be written, the server will die.
+    #[clap(long)]
+    port_file: Option<PathBuf>,
 }
 
 /// A duration in seconds.
@@ -111,8 +121,21 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let addr = SocketAddr::new(opts.host, opts.port);
     let listener = TcpListener::bind(addr).await?;
     let bound = listener.local_addr()?;
-    // This magic string is read by the TensorBoard data ingester to determine the port.
-    println!("listening on port {} ({})", bound.port(), bound);
+    eprintln!("listening on {:?}", bound);
+
+    if let Some(port_file) = opts.port_file {
+        let port = bound.port();
+        if let Err(e) = write_port_file(&port_file, port) {
+            error!(
+                "Failed to write port \"{}\" to {}: {}",
+                port,
+                port_file.display(),
+                e
+            );
+            std::process::exit(1);
+        }
+        info!("Wrote port \"{}\" to {}", port, port_file.display());
+    }
 
     // Leak the commit object, since the Tonic server must have only 'static references. This only
     // leaks the outer commit structure (of constant size), not the pointers to the actual data.
@@ -120,15 +143,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     thread::Builder::new()
         .name("Reloader".to_string())
-        .spawn(move || {
-            let mut loader = LogdirLoader::new(commit, opts.logdir);
-            loop {
-                info!("Starting load cycle");
-                let start = Instant::now();
-                loader.reload();
-                let end = Instant::now();
-                info!("Finished load cycle ({:?})", end - start);
-                thread::sleep(opts.reload_interval.duration());
+        .spawn({
+            let logdir = opts.logdir;
+            let reload_interval = opts.reload_interval;
+            move || {
+                let mut loader = LogdirLoader::new(commit, logdir);
+                loop {
+                    info!("Starting load cycle");
+                    let start = Instant::now();
+                    loader.reload();
+                    let end = Instant::now();
+                    info!("Finished load cycle ({:?})", end - start);
+                    thread::sleep(reload_interval.duration());
+                }
             }
         })
         .expect("failed to spawn reloader thread");
@@ -156,4 +183,12 @@ fn die_after_stdin() {
     for _ in stdin_lock.bytes() {}
     info!("Stdin closed; exiting");
     std::process::exit(0);
+}
+
+/// Writes `port` to file `path` as an ASCII decimal followed by newline.
+fn write_port_file(path: &Path, port: u16) -> std::io::Result<()> {
+    let mut f = File::create(path)?;
+    writeln!(f, "{}", port)?;
+    f.sync_all()?;
+    Ok(())
 }

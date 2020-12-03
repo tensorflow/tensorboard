@@ -14,51 +14,88 @@
 # ==============================================================================
 """Unit tests for `tensorboard.data.server_ingester`."""
 
-import argparse
+import os
+import subprocess
+import threading
+import time
 from unittest import mock
 
 import grpc
 
-from tensorboard import context
-from tensorboard import ingester as ingester_lib
 from tensorboard import test as tb_test
-from tensorboard.data import server_ingester
 from tensorboard.data import grpc_provider
+from tensorboard.data import server_ingester
 
 
-def make_flags(**kwargs):
-    kwargs.setdefault("grpc_data_provider", "")
-    kwargs.setdefault("logdir", "")
-    kwargs.setdefault("logdir_spec", "")
-    kwargs.setdefault("load_fast", False)
-    return argparse.Namespace(**kwargs)
-
-
-class ServerDataIngesterTest(tb_test.TestCase):
-    def setUp(self):
-        super().setUp()
-        self.enter_context(
-            mock.patch.object(grpc, "insecure_channel", autospec=True)
-        )
-
-    def test_fixed_address(self):
-        flags = make_flags(grpc_data_provider="localhost:6806")
-        ingester = server_ingester.ServerDataIngester(flags)
-        ingester.start()
-        ctx = context.RequestContext()
+class ExistingServerDataIngesterTest(tb_test.TestCase):
+    def test(self):
+        addr = "localhost:6806"
+        with mock.patch.object(grpc, "secure_channel", autospec=True):
+            ingester = server_ingester.ExistingServerDataIngester(addr)
+            ingester.start()
         self.assertIsInstance(
             ingester.data_provider, grpc_provider.GrpcDataProvider
         )
 
-    def test_empty_flags(self):
-        flags = make_flags(logdir="/some/logdir")
-        with self.assertRaises(ingester_lib.NotApplicableError):
-            server_ingester.ServerDataIngester(flags)
 
-    def test_load_fast(self):
-        flags = make_flags(logdir="/some/logdir", load_fast=True)
-        ingester = server_ingester.ServerDataIngester(flags)
-        # Not much more that we can easily test here.
+class SubprocessServerDataIngesterTest(tb_test.TestCase):
+    def test(self):
+        # Create a fake server binary so that the `os.path.exists` check
+        # passes.
+        fake_binary = os.path.join(self.get_temp_dir(), "server")
+        with open(fake_binary, "wb"):
+            pass
+        self.enter_context(
+            mock.patch.dict(
+                os.environ,
+                {server_ingester._ENV_DATA_SERVER_BINARY: fake_binary},
+            )
+        )
+
+        real_popen = subprocess.Popen
+        port_file_box = [None]  # value of `--port-file` to be stashed here
+
+        # Stub out `subprocess.Popen` to write the port file.
+        def fake_popen(subprocess_args, *args, **kwargs):
+            def target():
+                time.sleep(0.2)  # wait one cycle
+                for arg in subprocess_args:
+                    port_file_prefix = "--port-file="
+                    if not arg.startswith(port_file_prefix):
+                        continue
+                    port_file = arg[len(port_file_prefix) :]
+                    port_file_box[0] = port_file
+                    with open(port_file, "w") as outfile:
+                        outfile.write("23456\n")
+
+            result = mock.create_autospec(real_popen, instance=True)
+            result.stdin = mock.Mock()
+            result.poll = lambda: None
+            result.pid = 789
+            threading.Thread(target=target).start()
+            return result
+
+        with mock.patch.object(subprocess, "Popen", wraps=fake_popen) as popen:
+            with mock.patch.object(grpc, "secure_channel", autospec=True) as sc:
+                logdir = "/tmp/logs"
+                ingester = server_ingester.SubprocessServerDataIngester(logdir)
+                ingester.start()
+        self.assertIsInstance(
+            ingester.data_provider, grpc_provider.GrpcDataProvider
+        )
+
+        expected_args = [
+            fake_binary,
+            "--logdir=/tmp/logs",
+            "--port=0",
+            "--port-file=%s" % port_file_box[0],
+            "--die-after-stdin",
+            "--verbose",  # logging is enabled in tests
+        ]
+        popen.assert_called_once_with(expected_args, stdin=subprocess.PIPE)
+        sc.assert_called_once_with(
+            "localhost:23456", mock.ANY, options=mock.ANY
+        )
 
 
 if __name__ == "__main__":

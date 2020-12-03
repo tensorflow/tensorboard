@@ -21,10 +21,10 @@ import time
 
 import six
 
-from tensorboard import ingester
 from tensorboard.backend.event_processing import data_provider
 from tensorboard.backend.event_processing import plugin_event_multiplexer
 from tensorboard.backend.event_processing import tag_types
+from tensorboard.data import ingester
 from tensorboard.plugins.audio import metadata as audio_metadata
 from tensorboard.plugins.histogram import metadata as histogram_metadata
 from tensorboard.plugins.image import metadata as image_metadata
@@ -53,9 +53,14 @@ class LocalDataIngester(ingester.DataIngester):
     """Data ingestion implementation to use when running locally."""
 
     def __init__(self, flags):
-        logdir = flags.logdir or flags.logdir_spec
-        if not logdir:
-            raise ingester.NotApplicableError("No logdir given")
+        """Initializes a `LocalDataIngester` from `flags`.
+
+        Args:
+          flags: An argparse.Namespace containing TensorBoard CLI flags.
+
+        Returns:
+          The new `LocalDataIngester`.
+        """
         tensor_size_guidance = dict(DEFAULT_TENSOR_SIZE_GUIDANCE)
         tensor_size_guidance.update(flags.samples_per_plugin)
         self._multiplexer = plugin_event_multiplexer.EventMultiplexer(
@@ -66,7 +71,7 @@ class LocalDataIngester(ingester.DataIngester):
             event_file_active_filter=_get_event_file_active_filter(flags),
         )
         self._data_provider = data_provider.MultiplexerDataProvider(
-            self._multiplexer, logdir
+            self._multiplexer, flags.logdir or flags.logdir_spec
         )
         self._reload_interval = flags.reload_interval
         self._reload_task = flags.reload_task

@@ -17,34 +17,12 @@
 import abc
 
 
-class NotApplicableError(ValueError):
-    """This kind of ingester cannot be constructed from the given flags."""
-
-
 class DataIngester(metaclass=abc.ABCMeta):
     """Link between a data source and a data provider.
 
     A data ingester starts a reload operation in the background and
     provides a data provider as a view.
     """
-
-    @abc.abstractmethod
-    def __init__(self, flags):
-        """Creates a data ingester from flags.
-
-        Args:
-          flags: An argparse.Namespace containing TensorBoard CLI flags.
-
-        Returns:
-          The new data ingester.
-
-        Raises:
-          NotApplicableError: If this kind of data ingester is not
-            applicable for an invocation with the given flags. This is
-            not necessarily a fatal error; it indicates that the next
-            ingester kind should be tried.
-        """
-        pass
 
     @property
     @abc.abstractmethod
@@ -55,18 +33,13 @@ class DataIngester(metaclass=abc.ABCMeta):
         """
         pass
 
-    @property
-    @abc.abstractmethod
-    def deprecated_multiplexer(self):
-        """Returns a `PluginEventMultiplexer`, or `None` if not applicable.
-
-        It may be an error to dereference this before `start` is called.
-        """
-        pass
-
     @abc.abstractmethod
     def start(self):
-        """Starts ingesting data based on the ingester flag configuration.
+        """Starts ingesting data.
+
+        This may start a background thread or process, and will return
+        once communication with that task is established. It won't block
+        forever as data is reloaded.
 
         Must only be called once.
         """
