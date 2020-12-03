@@ -143,7 +143,9 @@ class TextV2Plugin(base_plugin.TBPlugin):
 
     def index_impl(self, ctx, experiment):
         mapping = self._data_provider.list_tensors(
-            ctx, experiment_id=experiment, plugin_name=metadata.PLUGIN_NAME,
+            ctx,
+            experiment_id=experiment,
+            plugin_name=metadata.PLUGIN_NAME,
         )
         return {
             run: list(tag_to_content)

@@ -90,20 +90,66 @@ class GFileTest(tb_test.TestCase):
         temp_dir = self.get_temp_dir()
         self._CreateDeepDirectoryStructure(temp_dir)
         expected = [
-            ["", ["a.tfevents.1", "model.ckpt",]],
+            [
+                "",
+                [
+                    "a.tfevents.1",
+                    "model.ckpt",
+                ],
+            ],
             ["foo", []],
-            ["bar", ["b.tfevents.1", "red_herring.txt",]],
-            ["bar/baz", ["c.tfevents.1", "d.tfevents.1",]],
+            [
+                "bar",
+                [
+                    "b.tfevents.1",
+                    "red_herring.txt",
+                ],
+            ],
+            [
+                "bar/baz",
+                [
+                    "c.tfevents.1",
+                    "d.tfevents.1",
+                ],
+            ],
             [
                 "bar/quux",
-                ["some_flume_output.txt", "some_more_flume_output.txt",],
+                [
+                    "some_flume_output.txt",
+                    "some_more_flume_output.txt",
+                ],
             ],
-            ["quuz", ["e.tfevents.1",]],
-            ["quuz/garply", ["f.tfevents.1",]],
-            ["quuz/garply/corge", ["g.tfevents.1",]],
-            ["quuz/garply/grault", ["h.tfevents.1",]],
+            [
+                "quuz",
+                [
+                    "e.tfevents.1",
+                ],
+            ],
+            [
+                "quuz/garply",
+                [
+                    "f.tfevents.1",
+                ],
+            ],
+            [
+                "quuz/garply/corge",
+                [
+                    "g.tfevents.1",
+                ],
+            ],
+            [
+                "quuz/garply/grault",
+                [
+                    "h.tfevents.1",
+                ],
+            ],
             ["waldo", []],
-            ["waldo/fred", ["i.tfevents.1",]],
+            [
+                "waldo/fred",
+                [
+                    "i.tfevents.1",
+                ],
+            ],
         ]
         for pair in expected:
             # If this is not the top-level directory, prepend the high-level
@@ -151,15 +197,15 @@ class GFileTest(tb_test.TestCase):
         # the underlying byte offsets (counting \r).  Multibyte characters would
         # similarly cause desynchronization.
         raw_ckpt_lines = (
-            [u"\r\n"] + [u"line {}\r\n".format(i) for i in range(10)] + [u" "]
+            ["\r\n"] + ["line {}\r\n".format(i) for i in range(10)] + [" "]
         )
         expected_ckpt_lines = (  # without \r
-            [u"\n"] + [u"line {}\n".format(i) for i in range(10)] + [u" "]
+            ["\n"] + ["line {}\n".format(i) for i in range(10)] + [" "]
         )
         # Write out newlines as given (i.e., \r\n) regardless of OS, so as to
         # test translation on read.
         with io.open(ckpt_path, "w", newline="") as f:
-            data = u"".join(raw_ckpt_lines)
+            data = "".join(raw_ckpt_lines)
             f.write(data)
         with gfile.GFile(ckpt_path, "r") as f:
             f.buff_chunk_size = 4  # Test buffering by reducing chunk size
@@ -194,7 +240,7 @@ class GFileTest(tb_test.TestCase):
         temp_dir = self.get_temp_dir()
         self._CreateDeepDirectoryStructure(temp_dir)
         ckpt_path = os.path.join(temp_dir, "model2.ckpt")
-        ckpt_content = u"asdfasdfasdffoobarbuzz"
+        ckpt_content = "asdfasdfasdffoobarbuzz"
         with gfile.GFile(ckpt_path, "w") as f:
             f.write(ckpt_content)
         with open(ckpt_path, "r") as f:
@@ -205,9 +251,9 @@ class GFileTest(tb_test.TestCase):
         temp_dir = self.get_temp_dir()
         self._CreateDeepDirectoryStructure(temp_dir)
         ckpt_path = os.path.join(temp_dir, "model2.ckpt")
-        ckpt_content = u"asdfasdfasdffoobarbuzz"
+        ckpt_content = "asdfasdfasdffoobarbuzz"
         with gfile.GFile(ckpt_path, "w") as f:
-            f.write(u"original")
+            f.write("original")
         with gfile.GFile(ckpt_path, "w") as f:
             f.write(ckpt_content)
         with open(ckpt_path, "r") as f:
@@ -218,7 +264,7 @@ class GFileTest(tb_test.TestCase):
         temp_dir = self.get_temp_dir()
         self._CreateDeepDirectoryStructure(temp_dir)
         ckpt_path = os.path.join(temp_dir, "model2.ckpt")
-        ckpt_content = u"asdfasdfasdffoobarbuzz" * 5
+        ckpt_content = "asdfasdfasdffoobarbuzz" * 5
         with gfile.GFile(ckpt_path, "w") as f:
             for i in range(0, len(ckpt_content), 3):
                 f.write(ckpt_content[i : i + 3])
@@ -233,7 +279,7 @@ class GFileTest(tb_test.TestCase):
         temp_dir = self.get_temp_dir()
         self._CreateDeepDirectoryStructure(temp_dir)
         ckpt_path = os.path.join(temp_dir, "model2.ckpt")
-        ckpt_content = u""
+        ckpt_content = ""
         with gfile.GFile(ckpt_path, "w") as f:
             f.write(ckpt_content)
         with open(ckpt_path, "r") as f:

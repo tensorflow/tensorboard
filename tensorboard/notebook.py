@@ -119,7 +119,9 @@ def _register_magics(ipython):
       ipython: An `InteractiveShell` instance.
     """
     ipython.register_magic_function(
-        _start_magic, magic_kind="line", magic_name="tensorboard",
+        _start_magic,
+        magic_kind="line",
+        magic_name="tensorboard",
     )
 
 
@@ -149,7 +151,8 @@ def start(args_string):
         print("Launching TensorBoard...")
     else:
         handle = IPython.display.display(
-            IPython.display.Pretty("Launching TensorBoard..."), display_id=True,
+            IPython.display.Pretty("Launching TensorBoard..."),
+            display_id=True,
         )
 
     def print_or_update(message):

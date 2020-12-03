@@ -15,6 +15,7 @@ limitations under the License.
 
 //! Loader for many runs under a directory.
 
+use log::{error, warn};
 use std::collections::{HashMap, HashSet};
 use std::path::{Path, PathBuf};
 use walkdir::WalkDir;
@@ -106,7 +107,7 @@ impl<'a> LogdirLoader<'a> {
             let dirent = match walkdir_item {
                 Ok(dirent) => dirent,
                 Err(e) => {
-                    eprintln!("error walking log directory: {}", e);
+                    error!("While walking log directory: {}", e);
                     continue;
                 }
             };
@@ -122,8 +123,8 @@ impl<'a> LogdirLoader<'a> {
                 None => {
                     // I don't know of any circumstance where this can happen, but I would believe
                     // that some weird filesystem can hit it, so just proceed.
-                    eprintln!(
-                        "path {} is a file but has no parent",
+                    warn!(
+                        "Path {} is a file but has no parent",
                         dirent.path().display()
                     );
                     continue;
@@ -132,8 +133,8 @@ impl<'a> LogdirLoader<'a> {
             let mut run_relpath = match run_dir.strip_prefix(&self.logdir) {
                 Ok(rp) => rp.to_path_buf(),
                 Err(_) => {
-                    eprintln!(
-                        "log directory {} is not a prefix of run directory {}",
+                    error!(
+                        "Log directory {} is not a prefix of run directory {}",
                         &self.logdir.display(),
                         &run_dir.display(),
                     );
@@ -210,8 +211,8 @@ impl<'a> LogdirLoader<'a> {
             for ef in event_files {
                 if ef.run_relpath != run.relpath && !run.collided_relpaths.contains(&ef.run_relpath)
                 {
-                    eprintln!(
-                        "merging directories {:?} and {:?}, which both normalize to run {:?}",
+                    warn!(
+                        "Merging directories {:?} and {:?}, which both normalize to run {:?}",
                         run.relpath, ef.run_relpath, run_name.0
                     );
                     run.collided_relpaths.insert(ef.run_relpath.clone()); // don't warn again
@@ -340,7 +341,7 @@ mod tests {
                         .collect();
                     (run, values)
                 })
-                .collect::<HashMap<&Run, Vec<f64>>>(),
+                .collect::<HashMap<&Run, Vec<f32>>>(),
             expected_data
         );
 

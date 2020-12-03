@@ -74,7 +74,12 @@ _TEXTUAL_MIMETYPES = set(
     ]
 )
 
-_JSON_MIMETYPES = set(["application/json", "application/json+protobuf",])
+_JSON_MIMETYPES = set(
+    [
+        "application/json",
+        "application/json+protobuf",
+    ]
+)
 
 # Do not support xhtml for now.
 _HTML_MIMETYPE = "text/html"
@@ -232,7 +237,7 @@ def Respond(
                     "data:",
                     # used by What-If tool for image sprites.
                     "blob:",
-                    *_CSP_IMG_DOMAINS_WHITELIST
+                    *_CSP_IMG_DOMAINS_WHITELIST,
                 ),
                 "object-src 'none'",
                 "style-src %s"
@@ -243,7 +248,7 @@ def Respond(
                     "data:",
                     # inline styles: Polymer templates + d3 uses inline styles.
                     "'unsafe-inline'",
-                    *_CSP_STYLE_DOMAINS_WHITELIST
+                    *_CSP_STYLE_DOMAINS_WHITELIST,
                 ),
                 "connect-src %s"
                 % _create_csp_string("'self'", *_CSP_CONNECT_DOMAINS_WHITELIST),

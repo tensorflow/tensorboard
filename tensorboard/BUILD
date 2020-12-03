@@ -216,9 +216,11 @@ py_library(
         ":version",
         "//tensorboard:expect_absl_flags_installed",
         "//tensorboard:expect_absl_logging_installed",
+        "//tensorboard:expect_grpc_installed",
         "//tensorboard/backend:application",
         "//tensorboard/backend/event_processing:data_ingester",
         "//tensorboard/backend/event_processing:event_file_inspector",
+        "//tensorboard/data:grpc_provider",
         "//tensorboard/util:argparse_util",
         "@org_pocoo_werkzeug",
         "@org_pythonhosted_six",
@@ -340,8 +342,8 @@ tf_web_library(
     ],
     path = "/",
     deps = [
-        "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/source_code/monaco:monaco_editor",
-        "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/source_code/monaco:monaco_languages",
+        "//tensorboard/webapp/widgets/source_code/monaco:monaco_editor",
+        "//tensorboard/webapp/widgets/source_code/monaco:monaco_languages",
         "@com_google_fonts_roboto",
     ],
 )
@@ -427,17 +429,6 @@ py_library(name = "expect_requests_installed")
 # NOTE: Unlike other parallel dependencies in this file, pandas is an
 # optional dependency.
 py_library(name = "expect_pandas_installed")
-
-filegroup(
-    name = "tf_web_library_default_typings",
-    srcs = [
-        # Ordering probably matters.
-        "@com_microsoft_typescript//:lib.es6.d.ts",
-        "@io_angular_clutz//:src/resources/closure.lib.d.ts",
-        "//tensorboard/defs:clutz.d.ts",
-    ],
-    visibility = ["//visibility:public"],
-)
 
 py_library(
     name = "data_compat",

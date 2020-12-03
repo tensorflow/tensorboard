@@ -390,7 +390,10 @@ class TensorBoardWSGI(object):
             """
         ).format(name=name, script_content=script_content)
         return http_util.Respond(
-            request, html, "text/html", csp_scripts_sha256s=[script_sha],
+            request,
+            html,
+            "text/html",
+            csp_scripts_sha256s=[script_sha],
         )
 
     @wrappers.Request.application

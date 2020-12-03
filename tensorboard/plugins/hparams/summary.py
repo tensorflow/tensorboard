@@ -194,7 +194,9 @@ def _summary(tag, hparams_plugin_data):
     raw_metadata = tb_metadata.SerializeToString()
     tf_metadata = tf.compat.v1.SummaryMetadata.FromString(raw_metadata)
     summary.value.add(
-        tag=tag, metadata=tf_metadata, tensor=_TF_NULL_TENSOR,
+        tag=tag,
+        metadata=tf_metadata,
+        tensor=_TF_NULL_TENSOR,
     )
     return summary
 

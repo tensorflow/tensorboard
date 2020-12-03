@@ -377,7 +377,8 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
         )
 
         run_tag_filter = base_provider.RunTagFilter(
-            runs=["lebesgue"], tags=["uniform", "bimodal"],
+            runs=["lebesgue"],
+            tags=["uniform", "bimodal"],
         )
         result = provider.read_tensors(
             self.ctx,

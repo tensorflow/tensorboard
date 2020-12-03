@@ -162,7 +162,8 @@ def _convert_blob_references(prefix, references):
     """
     return [
         provider.BlobReference(
-            blob_key=_encode_blob_key(prefix, r.blob_key), url=r.url,
+            blob_key=_encode_blob_key(prefix, r.blob_key),
+            url=r.url,
         )
         for r in references
     ]

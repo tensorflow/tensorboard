@@ -32,7 +32,10 @@ def main(unused_argv):
     writer = tf.summary.create_file_writer("demo_logs")
     with writer.as_default():
         summary_v2.greeting(
-            "guestbook", "Alice", step=0, description="Sign your name!",
+            "guestbook",
+            "Alice",
+            step=0,
+            description="Sign your name!",
         )
         summary_v2.greeting(
             "guestbook", "Bob", step=1

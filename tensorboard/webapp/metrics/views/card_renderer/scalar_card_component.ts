@@ -21,8 +21,8 @@ import {
   Output,
   ViewChild,
 } from '@angular/core';
-import {DataLoadState} from '../../../types/data';
 
+import {DataLoadState} from '../../../types/data';
 import {RunColorScale} from '../../../types/ui';
 import {
   formatNumber,
@@ -37,8 +37,13 @@ import {
   XAxisType as ChartXAxisType,
   YAxisType,
 } from '../../../widgets/line_chart/line_chart_types';
+import {RendererType, ScaleType} from '../../../widgets/line_chart_v2/types';
 import {ScalarStepDatum} from '../../data_source';
 import {TooltipSort, XAxisType} from '../../types';
+import {
+  ScalarCardDataSeries,
+  ScalarCardSeriesMetadataMap,
+} from './scalar_card_types';
 
 const RESIZE_REDRAW_DEBOUNCE_TIME_IN_MS = 50;
 
@@ -103,18 +108,26 @@ const DEFAULT_TOOLTIP_COLUMNS: TooltipColumns = [
 export class ScalarCardComponent {
   readonly RESIZE_REDRAW_DEBOUNCE_TIME_IN_MS = RESIZE_REDRAW_DEBOUNCE_TIME_IN_MS;
   readonly DataLoadState = DataLoadState;
+  readonly RendererType = RendererType;
 
   @Input() loadState!: DataLoadState;
   @Input() title!: string;
   @Input() tag!: string;
-  @Input() seriesDataList!: SeriesDataList;
   @Input() tooltipSort!: TooltipSort;
-  @Input() ignoreOutliers!: boolean;
   @Input() xAxisType!: XAxisType;
-  @Input() scalarSmoothing!: number;
-  @Input() runColorScale!: RunColorScale;
   @Input() showFullSize!: boolean;
   @Input() isPinned!: boolean;
+
+  // Legacy chart related; to be removed.
+  @Input() runColorScale!: RunColorScale;
+  @Input() ignoreOutliers!: boolean;
+  @Input() scalarSmoothing!: number;
+  @Input() seriesDataList!: SeriesDataList;
+
+  // gpu chart related props.
+  @Input() gpuLineChartEnabled!: boolean;
+  @Input() dataSeries!: ScalarCardDataSeries[];
+  @Input() chartMetadataMap!: ScalarCardSeriesMetadataMap;
 
   @Output() onFullSizeToggle = new EventEmitter<void>();
   @Output() onPinClicked = new EventEmitter<boolean>();
@@ -126,6 +139,7 @@ export class ScalarCardComponent {
   constructor(private readonly ref: ElementRef) {}
 
   yAxisType = YAxisType.LINEAR;
+  newYAxisType = ScaleType.LINEAR;
 
   chartXAxisType() {
     switch (this.xAxisType) {
@@ -147,6 +161,8 @@ export class ScalarCardComponent {
   toggleYAxisType() {
     this.yAxisType =
       this.yAxisType === YAxisType.LINEAR ? YAxisType.LOG : YAxisType.LINEAR;
+    this.newYAxisType =
+      this.yAxisType === YAxisType.LINEAR ? ScaleType.LINEAR : ScaleType.LOG10;
   }
 
   resetDomain() {

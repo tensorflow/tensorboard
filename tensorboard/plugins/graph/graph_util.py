@@ -53,7 +53,8 @@ def _add_with_prepended_names(prefix, graph_to_add, destination_graph):
         if new_node.op == "PartitionedCall" and new_node.attr["f"]:
 
             new_node.attr["f"].func.name = _prefixed_func_name(
-                prefix, new_node.attr["f"].func.name,
+                prefix,
+                new_node.attr["f"].func.name,
             )
 
     for func in graph_to_add.library.function:
@@ -67,10 +68,12 @@ def _add_with_prepended_names(prefix, graph_to_add, destination_graph):
         new_gradient = destination_graph.library.gradient.add()
         new_gradient.CopyFrom(gradient)
         new_gradient.function_name = _prefixed_func_name(
-            prefix, new_gradient.function_name,
+            prefix,
+            new_gradient.function_name,
         )
         new_gradient.gradient_func = _prefixed_func_name(
-            prefix, new_gradient.gradient_func,
+            prefix,
+            new_gradient.gradient_func,
         )
 
 
@@ -118,7 +121,9 @@ def merge_graph_defs(graph_defs):
             raise ValueError("Cannot combine GraphDefs of different versions.")
 
         _add_with_prepended_names(
-            "graph_%d" % (index + 1), graph_def, dst_graph_def,
+            "graph_%d" % (index + 1),
+            graph_def,
+            dst_graph_def,
         )
 
     return dst_graph_def

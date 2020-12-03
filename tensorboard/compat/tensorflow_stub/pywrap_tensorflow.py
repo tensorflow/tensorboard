@@ -244,7 +244,9 @@ class PyRecordReader_New:
         crc_event = struct.unpack("<I", crc_event_str)
         if event_crc_calc != crc_event[0]:
             raise errors.DataLossError(
-                None, None, "{} failed event crc32 check".format(self.filename),
+                None,
+                None,
+                "{} failed event crc32 check".format(self.filename),
             )
 
         # Set the current event to be read later by record() call

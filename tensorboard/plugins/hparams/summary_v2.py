@@ -58,7 +58,9 @@ def hparams(hparams, trial_id=None, start_time_secs=None):
       was written because no default summary writer was available.
     """
     pb = hparams_pb(
-        hparams=hparams, trial_id=trial_id, start_time_secs=start_time_secs,
+        hparams=hparams,
+        trial_id=trial_id,
+        start_time_secs=start_time_secs,
     )
     return _write_summary("hparams", pb)
 
@@ -87,7 +89,8 @@ def hparams_pb(hparams, trial_id=None, start_time_secs=None):
     group_name = _derive_session_group_name(trial_id, hparams)
 
     session_start_info = plugin_data_pb2.SessionStartInfo(
-        group_name=group_name, start_time_secs=start_time_secs,
+        group_name=group_name,
+        start_time_secs=start_time_secs,
     )
     for hp_name in sorted(hparams):
         hp_value = hparams[hp_name]
@@ -131,7 +134,9 @@ def hparams_config(hparams, metrics, time_created_secs=None):
       was written because no default summary writer was available.
     """
     pb = hparams_config_pb(
-        hparams=hparams, metrics=metrics, time_created_secs=time_created_secs,
+        hparams=hparams,
+        metrics=metrics,
+        time_created_secs=time_created_secs,
     )
     return _write_summary("hparams_config", pb)
 
@@ -588,7 +593,10 @@ class Metric(object):
 
     def as_proto(self):
         return api_pb2.MetricInfo(
-            name=api_pb2.MetricName(group=self._group, tag=self._tag,),
+            name=api_pb2.MetricName(
+                group=self._group,
+                tag=self._tag,
+            ),
             display_name=self._display_name,
             description=self._description,
             dataset_type=self._dataset_type,

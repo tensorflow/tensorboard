@@ -41,7 +41,8 @@ def create_summary_metadata(description):
     return summary_pb2.SummaryMetadata(
         summary_description=description,
         plugin_data=summary_pb2.SummaryMetadata.PluginData(
-            plugin_name=PLUGIN_NAME, content=content.SerializeToString(),
+            plugin_name=PLUGIN_NAME,
+            content=content.SerializeToString(),
         ),
         data_class=summary_pb2.DATA_CLASS_TENSOR,
     )

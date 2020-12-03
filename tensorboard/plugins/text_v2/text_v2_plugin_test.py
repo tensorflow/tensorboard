@@ -59,7 +59,9 @@ class TextPluginTest(tf.test.TestCase):
         )
 
         ctx = base_plugin.TBContext(
-            logdir=self.logdir, multiplexer=multiplexer, data_provider=provider,
+            logdir=self.logdir,
+            multiplexer=multiplexer,
+            data_provider=provider,
         )
 
         return text_v2_plugin.TextV2Plugin(ctx)

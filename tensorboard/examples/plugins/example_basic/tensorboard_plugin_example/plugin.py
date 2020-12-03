@@ -82,7 +82,7 @@ class ExamplePlugin(base_plugin.TBPlugin):
             for tag in tag_to_content:
                 summary_metadata = self._multiplexer.SummaryMetadata(run, tag)
                 result[run][tag] = {
-                    u"description": summary_metadata.summary_description,
+                    "description": summary_metadata.summary_description,
                 }
         contents = json.dumps(result, sort_keys=True)
         return werkzeug.Response(contents, content_type="application/json")

@@ -32,6 +32,19 @@ tf_ng_module(
 )
 
 tf_ng_module(
+    name = "store_module",
+    srcs = [
+        "store_module.ts",
+    ],
+    deps = [
+        ":reducer_config",
+        "@npm//@angular/core",
+        "@npm//@ngrx/effects",
+        "@npm//@ngrx/store",
+    ],
+)
+
+tf_ng_module(
     name = "selectors",
     srcs = [
         "selectors.ts",
@@ -74,7 +87,7 @@ tf_ng_module(
     deps = [
         ":mat_icon",
         ":oss_plugins_module",
-        ":reducer_config",
+        ":store_module",
         "//tensorboard/webapp/alert",
         "//tensorboard/webapp/alert/views:alert_snackbar",
         "//tensorboard/webapp/angular:expect_angular_platform_browser_animations",
@@ -98,8 +111,6 @@ tf_ng_module(
         "//tensorboard/webapp/tb_wrapper",
         "@npm//@angular/core",
         "@npm//@angular/platform-browser",
-        "@npm//@ngrx/effects",
-        "@npm//@ngrx/store",
     ],
 )
 
@@ -189,7 +200,7 @@ tf_web_library(
     deps = [
         ":tb_webapp",
         "//tensorboard/components/tf_imports:roboto",
-        "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/source_code/monaco:requirejs",
+        "//tensorboard/webapp/widgets/source_code/monaco:requirejs",
     ],
 )
 
@@ -288,6 +299,8 @@ tf_ng_web_test_suite(
         "//tensorboard/webapp/widgets/line_chart_v2/lib/worker:worker_test",
         "//tensorboard/webapp/widgets/line_chart_v2/sub_view:sub_view_tests",
         "//tensorboard/webapp/widgets/range_input:range_input_tests",
+        "//tensorboard/webapp/widgets/source_code:source_code_container_test_lib",
+        "//tensorboard/webapp/widgets/source_code:source_code_test_lib",
         "//tensorboard/webapp/widgets/text:text_tests",
     ],
 )

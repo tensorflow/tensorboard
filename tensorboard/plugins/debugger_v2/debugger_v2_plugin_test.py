@@ -292,7 +292,9 @@ class DebuggerV2PluginTest(tf.test.TestCase):
                 "begin": 0,
                 "end": 0,
                 "num_alerts": 3,
-                "alerts_breakdown": {"InfNanAlert": 3,},
+                "alerts_breakdown": {
+                    "InfNanAlert": 3,
+                },
                 "per_type_alert_limit": 1000,
                 "alert_type": None,
                 "alerts": [],
@@ -548,7 +550,12 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         data = json.loads(response.get_data())
         self.assertEqual(
             data,
-            {"begin": 0, "end": 0, "num_digests": 3, "execution_digests": [],},
+            {
+                "begin": 0,
+                "end": 0,
+                "num_digests": 3,
+                "execution_digests": [],
+            },
         )
 
     def testServeExecutionDigestsWithEndGreaterThanBeginFullRange(self):
@@ -1396,7 +1403,13 @@ class DebuggerV2PluginTest(tf.test.TestCase):
 
         self.assertNotIn("input_names", data)
         self.assertEqual(
-            data["inputs"], [{"op_name": "add_v2_input", "output_slot": 0,}]
+            data["inputs"],
+            [
+                {
+                    "op_name": "add_v2_input",
+                    "output_slot": 0,
+                }
+            ],
         )  # "data" is missing due to op lookup failure.
         # Check the consumer op data, which should also be None due to the
         # KeyError encountered during the retrieval of the data about the

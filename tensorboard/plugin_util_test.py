@@ -32,20 +32,20 @@ class MarkdownToSafeHTMLTest(tb_test.TestCase):
         self.assertEqual(expected, actual)
 
     def test_empty_input(self):
-        self._test(u"", u"")
+        self._test("", "")
 
     def test_basic_formatting(self):
         self._test(
-            u"# _Hello_, **world!**\n\n"
+            "# _Hello_, **world!**\n\n"
             "Check out [my website](http://example.com)!",
-            u"<h1><em>Hello</em>, <strong>world!</strong></h1>\n"
+            "<h1><em>Hello</em>, <strong>world!</strong></h1>\n"
             '<p>Check out <a href="http://example.com">my website</a>!</p>',
         )
 
     def test_table_formatting(self):
         self._test(
             textwrap.dedent(
-                u"""\
+                """\
                 Here is some data:
 
                 TensorBoard usage | Happiness
@@ -58,7 +58,7 @@ class MarkdownToSafeHTMLTest(tb_test.TestCase):
                 """
             ),
             textwrap.dedent(
-                u"""\
+                """\
                 <p>Here is some data:</p>
                 <table>
                 <thead>
@@ -89,39 +89,39 @@ class MarkdownToSafeHTMLTest(tb_test.TestCase):
 
     def test_whitelisted_tags_and_attributes_allowed(self):
         s = (
-            u'Check out <a href="http://example.com" title="do it">'
+            'Check out <a href="http://example.com" title="do it">'
             "my website</a>!"
         )
-        self._test(s, u"<p>%s</p>" % s)
+        self._test(s, "<p>%s</p>" % s)
 
     def test_arbitrary_tags_and_attributes_removed(self):
         self._test(
-            u"We should bring back the <blink>blink tag</blink>; "
+            "We should bring back the <blink>blink tag</blink>; "
             '<a name="bookmark" href="http://please-dont.com">'
             "sign the petition!</a>",
-            u"<p>We should bring back the "
+            "<p>We should bring back the "
             "&lt;blink&gt;blink tag&lt;/blink&gt;; "
             '<a href="http://please-dont.com">sign the petition!</a></p>',
         )
 
     def test_javascript_hrefs_sanitized(self):
         self._test(
-            u'A <a href="javascript:void0">sketchy link</a> for you',
-            u"<p>A <a>sketchy link</a> for you</p>",
+            'A <a href="javascript:void0">sketchy link</a> for you',
+            "<p>A <a>sketchy link</a> for you</p>",
         )
 
     def test_byte_strings_interpreted_as_utf8(self):
-        s = u"> Look\u2014some UTF-8!".encode("utf-8")
+        s = "> Look\u2014some UTF-8!".encode("utf-8")
         assert isinstance(s, six.binary_type), (type(s), six.binary_type)
         self._test(
-            s, u"<blockquote>\n<p>Look\u2014some UTF-8!</p>\n</blockquote>"
+            s, "<blockquote>\n<p>Look\u2014some UTF-8!</p>\n</blockquote>"
         )
 
     def test_unicode_strings_passed_through(self):
-        s = u"> Look\u2014some UTF-8!"
+        s = "> Look\u2014some UTF-8!"
         assert not isinstance(s, six.binary_type), (type(s), six.binary_type)
         self._test(
-            s, u"<blockquote>\n<p>Look\u2014some UTF-8!</p>\n</blockquote>"
+            s, "<blockquote>\n<p>Look\u2014some UTF-8!</p>\n</blockquote>"
         )
 
     def test_null_bytes_stripped_before_markdown_processing(self):
@@ -131,11 +131,11 @@ class MarkdownToSafeHTMLTest(tb_test.TestCase):
         # interpretation to avoid affecting output (e.g. middle-word underscores
         # would generate erroneous <em> tags like "un<em>der</em>score") and add an
         # HTML comment with a warning.
-        s = u"un_der_score".encode("utf-32-le")
+        s = "un_der_score".encode("utf-32-le")
         # UTF-32 encoding of ASCII will have 3 null bytes per char. 36 = 3 * 12.
         self._test(
             s,
-            u"<!-- WARNING: discarded 36 null bytes in markdown string "
+            "<!-- WARNING: discarded 36 null bytes in markdown string "
             "after UTF-8 decoding -->\n"
             "<p>un_der_score</p>",
         )

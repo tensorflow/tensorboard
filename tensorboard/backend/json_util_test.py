@@ -47,7 +47,12 @@ class CleanseTest(tb_test.TestCase):
     def testWrapsInListsAndTuples(self):
         self._assertWrapsAs([_INFINITY], ["Infinity"])
         # map() returns a list even if the argument is a tuple.
-        self._assertWrapsAs((_INFINITY,), ["Infinity",])
+        self._assertWrapsAs(
+            (_INFINITY,),
+            [
+                "Infinity",
+            ],
+        )
 
     def testWrapsRecursively(self):
         self._assertWrapsAs({"x": [_INFINITY]}, {"x": ["Infinity"]})
@@ -69,7 +74,7 @@ class CleanseTest(tb_test.TestCase):
 
     def testByteString_turnsIntoUnicodeString(self):
         self.assertEqual(
-            json_util.Cleanse(b"\xc2\xa3"), u"\u00a3"
+            json_util.Cleanse(b"\xc2\xa3"), "\u00a3"
         )  # is # sterling
 
 

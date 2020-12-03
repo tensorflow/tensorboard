@@ -94,7 +94,9 @@ class AudioPlugin(base_plugin.TBPlugin):
         dictionary for `"minibatch_input"` will contain `"samples": 10`.
         """
         mapping = self._data_provider.list_blob_sequences(
-            ctx, experiment_id=experiment, plugin_name=metadata.PLUGIN_NAME,
+            ctx,
+            experiment_id=experiment,
+            plugin_name=metadata.PLUGIN_NAME,
         )
         result = {run: {} for run in mapping}
         for (run, tag_to_time_series) in mapping.items():
@@ -190,7 +192,9 @@ class AudioPlugin(base_plugin.TBPlugin):
         # times) to `/tags` (called few times) to reduce data provider
         # calls.
         mapping = self._data_provider.list_blob_sequences(
-            ctx, experiment_id=experiment, plugin_name=metadata.PLUGIN_NAME,
+            ctx,
+            experiment_id=experiment,
+            plugin_name=metadata.PLUGIN_NAME,
         )
         time_series = mapping.get(run, {}).get(tag, None)
         if time_series is None:

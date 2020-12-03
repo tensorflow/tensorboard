@@ -56,7 +56,9 @@ class SecurityValidatorMiddlewareTest(tb_test.TestCase):
     """Tests for `SecurityValidatorMiddleware`."""
 
     def make_request_and_maybe_assert_warn(
-        self, headers, expected_warn_substr,
+        self,
+        headers,
+        expected_warn_substr,
     ):
         @werkzeug.Request.application
         def _simple_app(req):
@@ -74,7 +76,8 @@ class SecurityValidatorMiddlewareTest(tb_test.TestCase):
             mock_warn.assert_called_with(_WARN_PREFIX + expected_warn_substr)
 
     def make_request_and_assert_no_warn(
-        self, headers,
+        self,
+        headers,
     ):
         self.make_request_and_maybe_assert_warn(headers, None)
 

@@ -778,7 +778,7 @@ class EventAccumulator(object):
                 self.most_recent_wall_time,
                 event.step,
                 event.wall_time,
-                *expired_per_type
+                *expired_per_type,
             )
             logger.warning(purge_msg)
 

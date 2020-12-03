@@ -785,17 +785,21 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
         accumulator.Reload()
 
         tags = [
-            u"1/images/image",
-            u"2/images/image/0",
-            u"2/images/image/1",
-            u"3/images/image/0",
-            u"3/images/image/1",
-            u"3/images/image/2",
+            "1/images/image",
+            "2/images/image/0",
+            "2/images/image/1",
+            "3/images/image/0",
+            "3/images/image/1",
+            "3/images/image/2",
         ]
 
         self.assertTagsEqual(
             accumulator.Tags(),
-            {ea.IMAGES: tags, ea.GRAPH: True, ea.META_GRAPH: False,},
+            {
+                ea.IMAGES: tags,
+                ea.GRAPH: True,
+                ea.META_GRAPH: False,
+            },
         )
 
     def testTFSummaryTensor(self):
@@ -819,7 +823,10 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
         accumulator.Reload()
 
         self.assertTagsEqual(
-            accumulator.Tags(), {ea.TENSORS: ["scalar", "vector", "string"],}
+            accumulator.Tags(),
+            {
+                ea.TENSORS: ["scalar", "vector", "string"],
+            },
         )
 
         scalar_proto = accumulator.Tensors("scalar")[0].tensor_proto
@@ -949,7 +956,13 @@ class RealisticEventAccumulatorTest(EventAccumulatorTest):
         # Verify that we can load those events properly
         acc = ea.EventAccumulator(directory)
         acc.Reload()
-        self.assertTagsEqual(acc.Tags(), {ea.GRAPH: True, ea.META_GRAPH: True,})
+        self.assertTagsEqual(
+            acc.Tags(),
+            {
+                ea.GRAPH: True,
+                ea.META_GRAPH: True,
+            },
+        )
 
         expected_graph_def = graph_pb2.GraphDef.FromString(
             graph.as_graph_def(add_shapes=True).SerializeToString()
