@@ -49,12 +49,17 @@ jobs:
       - name: 'Configure build cache write credentials'
         env:
           CREDS: ${{ secrets.BAZEL_CACHE_SERVICE_ACCOUNT_CREDS }}
+          EVENT_TYPE: ${{ github.event.type }}
         run: |
           if [ -z "${CREDS}" ]; then
             printf 'Using read-only cache (no credentials)\n'
             exit
           fi
-          printf 'Using writable cache (have credentials)\n'
+          if [ "${EVENT_TYPE}" = pull_request ]; then
+            printf 'Using read-only cache (PR build)\n'
+            exit
+          fi
+          printf 'Using writable cache\n'
           creds_file=/tmp/service_account_creds.json
           printf '%s\n' "${CREDS}" >"${creds_file}"
           printf '%s\n' >>~/.bazelrc \
