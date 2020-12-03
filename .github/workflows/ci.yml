@@ -45,12 +45,13 @@ jobs:
           sudo chmod +x /usr/local/bin/bazel
           cp ./ci/bazelrc_github ~/.bazelrc
       - name: 'Configure build cache write credentials'
-        if: secrets.BAZEL_CACHE_SERVICE_ACCOUNT_CREDS
         env:
           CREDS: ${{ secrets.BAZEL_CACHE_SERVICE_ACCOUNT_CREDS }}
         run: |
+          if [ -z "${CREDS}" ]; then
+            exit  # untrusted builds don't have credentials
+          fi
           printf '%s\n' "${CREDS}" >/tmp/service_account_creds.json
-          # (^ use a subshell to keep secrets out of the command line)
           printf '%s\n' >>~/.bazelrc \
             'build --google_credentials=/tmp/service_account_creds.json' \
             'build --remote_upload_local_results=true' \
