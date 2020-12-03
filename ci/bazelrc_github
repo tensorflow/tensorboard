@@ -28,5 +28,5 @@ test --test_verbose_timeout_warnings
 
 # Enable remote caching. This cache is publicly readable, but only writable on
 # trusted commits (e.g., commits to master).
-build --remote_cache=https://storage.googleapis.com/tensorboard-build-cache
-build --remote_upload_local_results=false
+common --remote_cache=https://storage.googleapis.com/tensorboard-build-cache
+common --remote_upload_local_results=false
