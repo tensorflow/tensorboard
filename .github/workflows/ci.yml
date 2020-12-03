@@ -60,6 +60,12 @@ jobs:
             'build --google_credentials=/tmp/service_account_creds.json' \
             'build --remote_upload_local_results=true' \
             ;
+      - name: 'Disable test caching'
+        run: |
+          printf '%s\n' 'test --nocache_test_results' >>~/.bazelrc
+          # DO NOT SUBMIT: Decide whether to cache test results; if not, do
+          # this via 'test --upload_local_reuslts=false' instead and clear the
+          # bucket cache.
       - name: 'Install Python dependencies'
         run: |
           python -m pip install -U pip
