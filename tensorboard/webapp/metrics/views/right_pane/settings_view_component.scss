@@ -62,6 +62,13 @@ section .control-row:not(:last-child) {
   }
 }
 
+.scalars-smoothing .slider-input {
+  flex: none;
+  // Wide enough to show 3 digits after a decimal. Required since Firefox does
+  // not shrink input fields smaller than some intrinsic size.
+  width: 5em;
+}
+
 mat-slider {
   flex: 1;
   // Reset mat-slider's internal extra space on left/right sides

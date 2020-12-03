@@ -20,3 +20,10 @@ mat-select {
   box-sizing: border-box;
   padding: 6px;
 }
+
+mat-select:focus {
+  // Bring back the focus ring, which was removed by Angular Material's styles.
+  // In Firefox, the `outline-style: auto` is sufficient.
+  outline-color: -webkit-focus-ring-color;
+  outline-style: auto;
+}
