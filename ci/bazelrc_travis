@@ -1,4 +1,4 @@
-# Limit resources since GitHub Actions VMs have 2 cores and 7 GB RAM.
+# Limit resources since Travis Trusty GCE VMs have 2 cores and 7.5 GB RAM.
 build --local_cpu_resources=2
 build --local_ram_resources=4000
 build --worker_max_instances=2
@@ -18,17 +18,18 @@ build --worker_sandboxing
 # https://github.com/bazelbuild/bazel/issues/7026 (future of action_env)
 build --action_env=PATH
 
-# Log more information to help with debugging.
+# Set up caching on local disk so incremental builds are faster.
+# See https://bazel.build/designs/2016/09/30/repository-cache.html
+build --repository_cache=~/.cache/tb-bazel-repo
+fetch --repository_cache=~/.cache/tb-bazel-repo
+query --repository_cache=~/.cache/tb-bazel-repo
+# See https://docs.bazel.build/versions/master/remote-caching.html#disk-cache
+build --disk_cache=~/.cache/tb-bazel-disk
+
+# Log more information to help with debugging, and disable curses output which
+# just adds more clutter to the log. (Travis spoofs an interactive terminal.)
+common --curses=no
 build --verbose_failures
 build --worker_verbose
 test --test_output=errors
 test --test_verbose_timeout_warnings
-
-# Enable remote caching. This cache is publicly readable, but only writable on
-# trusted commits (e.g., commits to master). We don't write the actual test
-# statuses (or read them if they happen to be there) because not all tests are
-# actually hermetic, and they run pretty quickly, anyway.
-common --remote_cache=https://storage.googleapis.com/tensorboard-build-cache
-common --remote_upload_local_results=false
-test --remote_upload_local_results=false
-test --cache_test_results=false
