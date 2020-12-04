@@ -31,6 +31,7 @@ import {
   getHiddenAnnotations,
   getShowCounts,
 } from '../../../store';
+import {getRunColorMap} from '../../../../../selectors';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
@@ -114,6 +115,11 @@ describe('Npmi Annotations List Row', () => {
   });
 
   it('renders annotation', () => {
+    store.overrideSelector(getRunColorMap, {
+      run_1: '#000',
+      run_2: '#AAA',
+      run_3: '#FFF',
+    });
     const fixture = createComponentInstance();
     fixture.detectChanges();
 
@@ -166,6 +172,11 @@ describe('Npmi Annotations List Row', () => {
 
   it('renders selected annotation', () => {
     store.overrideSelector(getSelectedAnnotations, ['annotation_1']);
+    store.overrideSelector(getRunColorMap, {
+      run_1: '#000',
+      run_2: '#AAA',
+      run_3: '#FFF',
+    });
     const fixture = createComponentInstance();
     fixture.detectChanges();
 
@@ -176,6 +187,11 @@ describe('Npmi Annotations List Row', () => {
 
   it('renders flagged annotation', () => {
     store.overrideSelector(getFlaggedAnnotations, ['annotation_1']);
+    store.overrideSelector(getRunColorMap, {
+      run_1: '#000',
+      run_2: '#AAA',
+      run_3: '#FFF',
+    });
     const fixture = createComponentInstance();
     fixture.detectChanges();
 
@@ -190,6 +206,11 @@ describe('Npmi Annotations List Row', () => {
 
   it('renders hidden annotation', () => {
     store.overrideSelector(getHiddenAnnotations, ['annotation_1']);
+    store.overrideSelector(getRunColorMap, {
+      run_1: '#000',
+      run_2: '#AAA',
+      run_3: '#FFF',
+    });
     const fixture = createComponentInstance();
     fixture.detectChanges();
 
@@ -202,6 +223,11 @@ describe('Npmi Annotations List Row', () => {
 
   it('renders annotation that is both flagged and hidden', () => {
     store.overrideSelector(getHiddenAnnotations, ['annotation_1']);
+    store.overrideSelector(getRunColorMap, {
+      run_1: '#000',
+      run_2: '#AAA',
+      run_3: '#FFF',
+    });
     store.overrideSelector(getFlaggedAnnotations, ['annotation_1']);
     const fixture = createComponentInstance();
     fixture.detectChanges();
@@ -223,6 +249,11 @@ describe('Npmi Annotations List Row', () => {
 
   it('does not render the counts when not active', () => {
     store.overrideSelector(getShowCounts, false);
+    store.overrideSelector(getRunColorMap, {
+      run_1: '#000',
+      run_2: '#AAA',
+      run_3: '#FFF',
+    });
     const fixture = createComponentInstance();
     fixture.detectChanges();
 

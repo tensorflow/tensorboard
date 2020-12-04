@@ -31,6 +31,7 @@ import {
 } from '../store/npmi_types';
 import {getPluginDataLoaded} from '../store/npmi_selectors';
 import * as actions from '../actions';
+import * as selectors from '../../../selectors';
 
 describe('npmi effects', () => {
   let dataSource: NpmiHttpServerDataSource;
@@ -63,10 +64,8 @@ describe('npmi effects', () => {
     });
     effects = TestBed.inject(NpmiEffects);
     dataSource = TestBed.inject(NpmiHttpServerDataSource);
-    store.overrideSelector(getPluginDataLoaded, {
-      state: DataLoadState.NOT_LOADED,
-      lastLoadedTimeInMs: null,
-    });
+    store.overrideSelector(getPluginDataLoaded, DataLoadState.NOT_LOADED);
+    store.overrideSelector(selectors.getExperimentIdsFromRoute, ['exp1']);
     effects.loadData$.subscribe();
   });
 

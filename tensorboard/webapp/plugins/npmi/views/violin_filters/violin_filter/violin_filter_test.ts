@@ -30,6 +30,7 @@ import {createState, createCoreState} from '../../../../../core/testing';
 import * as npmiActions from '../../../actions';
 import {getAnnotationData} from '../../../store';
 import {getCurrentRouteRunSelection} from '../../../../../selectors';
+import * as selectors from '../../../../../selectors';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
@@ -121,6 +122,11 @@ describe('Npmi Violin Filter Container', () => {
           countValue: 53,
         },
       ],
+    });
+    store.overrideSelector(selectors.getRunColorMap, {
+      run_1: '#000',
+      run_2: '#AAA',
+      run_3: '#FFF',
     });
     fixture = TestBed.createComponent(ViolinFilterContainer);
     fixture.componentInstance.metricName = 'nPMI@test';

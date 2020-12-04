@@ -42,7 +42,7 @@ describe('Npmi Main Container', () => {
     SIDE_TOGGLE: By.css('.side-toggle'),
     GRABBER: By.css('.grabber'),
     CONTENT: By.css('.content'),
-    RUN_SELECTOR: By.css('tb-legacy-runs-selector'),
+    RUN_SELECTOR: By.css('runs-selector'),
     BUTTON: By.css('button'),
   };
 
