@@ -18,10 +18,15 @@ limitations under the License.
  *
  * This module exists to conform to internal requirements.
  *
- * @param workerResourcePath URL pathanme to the JavaScript resource served by
- *   TensorBoard. TensorBoard disallows fetching JavaScript resources from a differnt
- *   origin.
+ * @param workerJsFilename Worker JavaScript resource file name. Exact resource path
+ *   depends on context. It can be relative or absolute depending on a app and its
+ *   configuration. Please see the internal version of this module for details.
  */
-export function getWorker(workerResourcePath: string): Worker {
-  return new Worker(workerResourcePath);
+export function getWorker(workerJsFilename: string): Worker {
+  if (workerJsFilename.includes('/')) {
+    throw new RangeError(
+      'Worker factory only allows file name and no resource path.'
+    );
+  }
+  return new Worker(workerJsFilename);
 }

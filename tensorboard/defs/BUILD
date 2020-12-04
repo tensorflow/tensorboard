@@ -4,16 +4,6 @@ package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])
 
-filegroup(
-    name = "tf_web_library_default_typings",
-    srcs = [
-        # Ordering probably matters.
-        "@com_microsoft_typescript//:lib.es6.d.ts",
-        "@io_angular_clutz//:src/resources/closure.lib.d.ts",
-        "clutz.d.ts",
-    ],
-)
-
 py_test(
     name = "tb_proto_library_test",
     srcs = ["tb_proto_library_test.py"],
@@ -44,10 +34,5 @@ tb_proto_library(
 )
 
 exports_files(["web_test_python_stub.template.py"])
-
-exports_files(
-    ["clutz.d.ts"],
-    visibility = ["//tensorboard:internal"],
-)
 
 exports_files(["rollup_config.js"])

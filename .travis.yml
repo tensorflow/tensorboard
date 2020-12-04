@@ -22,7 +22,7 @@ cache:
   # every day, and Pip caches are never evicted, so this quickly bloats
   # to many gigabytes and adds minutes to the CI time.
   pip: false
-  # Cache directories for Bazel. See ci/bazelrc for details.
+  # Cache directories for Bazel. See ci/bazelrc_travis for details.
   directories:
     - $HOME/.cache/tb-bazel-repo
     - $HOME/.cache/tb-bazel-disk
@@ -44,7 +44,7 @@ before_install:
   - export BAZEL_SHA256SUM=b7583eec83cc38302997098a40b8c870c37e0ab971a83cb3364c754a178b74ec
   - ci/download_bazel.sh "${BAZEL}" "${BAZEL_SHA256SUM}" ~/bazel
   - sudo mv ~/bazel /usr/local/bin/bazel
-  - cp ci/bazelrc ~/.bazelrc
+  - cp ci/bazelrc_travis ~/.bazelrc
   - elapsed "before_install (done)"
 
 install:

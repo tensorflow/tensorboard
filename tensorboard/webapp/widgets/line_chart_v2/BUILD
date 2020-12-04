@@ -43,6 +43,7 @@ tf_ts_library(
     ],
     visibility = ["//visibility:private"],
     deps = [
+        "//tensorboard/webapp/third_party:d3",
         "//tensorboard/webapp/widgets/line_chart_v2/lib:public_types",
         "//tensorboard/webapp/widgets/line_chart_v2/lib:utils",
     ],
