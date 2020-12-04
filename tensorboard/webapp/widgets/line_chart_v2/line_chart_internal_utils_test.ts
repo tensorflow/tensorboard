@@ -29,9 +29,9 @@ describe('line_chart_v2/line_chart_internal_utils test', () => {
           buildSeries({
             id: 'foo',
             points: [
-              {x: 1, y: -1},
+              {x: 1, y: 100},
               {x: 2, y: -10},
-              {x: 3, y: 100},
+              {x: 3, y: -100},
             ],
           }),
           buildSeries({
@@ -46,10 +46,11 @@ describe('line_chart_v2/line_chart_internal_utils test', () => {
         {
           foo: buildMetadata({id: 'foo', visible: true}),
           bar: buildMetadata({id: 'bar', visible: true}),
-        }
+        },
+        false
       );
 
-      expect(actual).toEqual({x: [-1000, 3], y: [-10, 100]});
+      expect(actual).toEqual({x: [-1000, 3], y: [-100, 100]});
     });
 
     it('handles single dataSeries point', () => {
@@ -62,10 +63,33 @@ describe('line_chart_v2/line_chart_internal_utils test', () => {
         ],
         {
           foo: buildMetadata({id: 'foo', visible: true}),
-        }
+        },
+        false
       );
 
       expect(actual).toEqual({x: [1, 1], y: [-1, -1]});
+    });
+
+    it('handles two dataSeries point', () => {
+      const actual = computeDataSeriesExtent(
+        [
+          buildSeries({
+            id: 'foo',
+            points: [{x: 1, y: -1}],
+          }),
+          buildSeries({
+            id: 'bar',
+            points: [{x: -10, y: 10}],
+          }),
+        ],
+        {
+          foo: buildMetadata({id: 'foo', visible: true}),
+          bar: buildMetadata({id: 'bar', visible: true}),
+        },
+        false
+      );
+
+      expect(actual).toEqual({x: [-10, 1], y: [-1, 10]});
     });
 
     it('ignores dataseries that is visibility=false', () => {
@@ -90,7 +114,8 @@ describe('line_chart_v2/line_chart_internal_utils test', () => {
         {
           foo: buildMetadata({id: 'foo', visible: true}),
           bar: buildMetadata({id: 'bar', visible: false}),
-        }
+        },
+        false
       );
 
       expect(actual).toEqual({x: [1, 3], y: [-10, 100]});
@@ -118,7 +143,8 @@ describe('line_chart_v2/line_chart_internal_utils test', () => {
         {
           foo: buildMetadata({id: 'foo', visible: true, aux: true}),
           bar: buildMetadata({id: 'bar'}),
-        }
+        },
+        false
       );
 
       expect(actual).toEqual({x: [-1000, -100], y: [0, 1]});
@@ -138,13 +164,14 @@ describe('line_chart_v2/line_chart_internal_utils test', () => {
         ],
         {
           bar: buildMetadata({id: 'bar'}),
-        }
+        },
+        false
       );
 
       expect(actual).toEqual({x: [-1000, -100], y: [0, 1]});
     });
 
-    it('filters out NaN and keeps infinity', () => {
+    it('filters out NaN and infinity', () => {
       const actual = computeDataSeriesExtent(
         [
           buildSeries({
@@ -159,10 +186,11 @@ describe('line_chart_v2/line_chart_internal_utils test', () => {
         ],
         {
           foo: buildMetadata({id: 'foo'}),
-        }
+        },
+        false
       );
 
-      expect(actual).toEqual({x: [1, 4], y: [-1, Infinity]});
+      expect(actual).toEqual({x: [1, 4], y: [-1, -1]});
     });
 
     it('returns undefined when nothing is visible', () => {
@@ -187,7 +215,8 @@ describe('line_chart_v2/line_chart_internal_utils test', () => {
         {
           foo: buildMetadata({id: 'foo', visible: false}),
           bar: buildMetadata({id: 'bar', visible: false}),
-        }
+        },
+        false
       );
 
       expect(actual).toEqual({
@@ -197,7 +226,7 @@ describe('line_chart_v2/line_chart_internal_utils test', () => {
     });
 
     it('returns undefined when dataSeries is empty', () => {
-      const actual = computeDataSeriesExtent([], {});
+      const actual = computeDataSeriesExtent([], {}, false);
 
       expect(actual).toEqual({
         x: undefined,
@@ -218,12 +247,121 @@ describe('line_chart_v2/line_chart_internal_utils test', () => {
         ],
         {
           foo: buildMetadata({id: 'foo', visible: true}),
-        }
+        },
+        false
       );
 
       expect(actual).toEqual({
         x: undefined,
         y: undefined,
+      });
+    });
+
+    describe('ignoreOutlier', () => {
+      it('filters out outliers in y-extent', () => {
+        const actual = computeDataSeriesExtent(
+          [
+            buildSeries({
+              id: 'bar',
+              points: [
+                {x: 1, y: -100},
+                {x: 2, y: 100},
+                {x: 3, y: -5},
+              ],
+            }),
+            buildSeries({
+              id: 'foo',
+              points: [
+                {x: 3, y: -5},
+                {x: 4, y: 0},
+                {x: 5, y: 5},
+              ],
+            }),
+          ],
+          {
+            foo: buildMetadata({id: 'foo', visible: true}),
+            bar: buildMetadata({id: 'bar', visible: true}),
+          },
+          true
+        );
+
+        expect(actual).toEqual({
+          x: [1, 5],
+          y: [-5, 5],
+        });
+      });
+
+      it('does not filter out values when we have two values', () => {
+        const actual = computeDataSeriesExtent(
+          [
+            buildSeries({
+              id: 'foo',
+              points: [
+                {x: 0, y: NaN},
+                {x: 1, y: -100},
+                {x: 2, y: 100},
+              ],
+            }),
+          ],
+          {
+            foo: buildMetadata({id: 'foo', visible: true}),
+          },
+          true
+        );
+
+        expect(actual).toEqual({
+          x: [0, 2],
+          y: [-100, 100],
+        });
+      });
+
+      it('does not filter out values when they are constant', () => {
+        const actual = computeDataSeriesExtent(
+          [
+            buildSeries({
+              id: 'foo',
+              points: [
+                {x: 0, y: 1},
+                {x: 1, y: 1},
+                {x: 2, y: 1},
+              ],
+            }),
+          ],
+          {
+            foo: buildMetadata({id: 'foo', visible: true}),
+          },
+          true
+        );
+
+        expect(actual).toEqual({
+          x: [0, 2],
+          y: [1, 1],
+        });
+      });
+
+      it('filter out single outlier in values of constant', () => {
+        const actual = computeDataSeriesExtent(
+          [
+            buildSeries({
+              id: 'foo',
+              points: [
+                {x: -1, y: 0},
+                {x: 0, y: 1},
+                {x: 1, y: 1},
+                {x: 2, y: 1},
+              ],
+            }),
+          ],
+          {
+            foo: buildMetadata({id: 'foo', visible: true}),
+          },
+          true
+        );
+
+        expect(actual).toEqual({
+          x: [-1, 2],
+          y: [1, 1],
+        });
       });
     });
   });
