@@ -15,6 +15,8 @@ limitations under the License.
 import {Component, ChangeDetectionStrategy, Input} from '@angular/core';
 import {Store} from '@ngrx/store';
 import {State} from '../../../../../app_state';
+import {Observable} from 'rxjs';
+import {map} from 'rxjs/operators';
 
 import {
   getSelectedAnnotations,
@@ -24,8 +26,10 @@ import {
   getSidebarWidth,
   getAnnotationSort,
 } from '../../../store';
+import * as selectors from '../../../../../selectors';
 import {ValueData} from '../../../store/npmi_types';
 import * as npmiActions from '../../../actions';
+import {RunColorScale} from '../../../../../types/ui';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
@@ -46,6 +50,7 @@ import * as npmiActions from '../../../actions';
       [hiddenAnnotations]="hiddenAnnotations$ | async"
       [showCounts]="showCounts$ | async"
       [sidebarWidth]="sidebarWidth$ | async"
+      [colorScale]="runColorScale$ | async"
       (onShowSimilarAnnotations)="showSimilarAnnotations()"
     ></annotation-component>
   `,
@@ -66,6 +71,18 @@ export class AnnotationContainer {
   readonly selectedAnnotations$ = this.store.select(getSelectedAnnotations);
   readonly showCounts$ = this.store.select(getShowCounts);
   readonly sidebarWidth$ = this.store.select(getSidebarWidth);
+  readonly runColorScale$: Observable<RunColorScale> = this.store
+    .select(selectors.getRunColorMap)
+    .pipe(
+      map((colorMap) => {
+        return (runId: string) => {
+          if (!colorMap.hasOwnProperty(runId)) {
+            throw new Error(`[Color scale] unknown runId: ${runId}.`);
+          }
+          return colorMap[runId];
+        };
+      })
+    );
 
   constructor(private readonly store: Store<State>) {}
 

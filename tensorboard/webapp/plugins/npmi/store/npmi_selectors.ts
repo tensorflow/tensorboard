@@ -16,7 +16,7 @@ import {createSelector, createFeatureSelector} from '@ngrx/store';
 import {
   NPMI_FEATURE_KEY,
   NpmiState,
-  LoadState,
+  DataLoadState,
   AnnotationDataListing,
   MetricListing,
   State,
@@ -37,8 +37,8 @@ const selectNpmiState = createFeatureSelector<State, NpmiState>(
 
 export const getPluginDataLoaded = createSelector(
   selectNpmiState,
-  (state: NpmiState): LoadState => {
-    return state.pluginDataLoaded;
+  (state: NpmiState): DataLoadState => {
+    return state.pluginDataLoaded.state;
   }
 );
 

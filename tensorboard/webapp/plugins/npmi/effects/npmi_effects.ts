@@ -27,7 +27,8 @@ import {
 } from 'rxjs/operators';
 
 import {NpmiHttpServerDataSource} from '../data_source/npmi_data_source';
-import {State, DataLoadState} from './../store/npmi_types';
+import {DataLoadState} from './../store/npmi_types';
+import {State} from '../../../app_state';
 import {getPluginDataLoaded} from './../store/npmi_selectors';
 import {
   npmiLoaded,
@@ -35,6 +36,7 @@ import {
   npmiPluginDataLoaded,
   npmiPluginDataRequestFailed,
 } from './../actions';
+import * as selectors from '../../../selectors';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
@@ -55,11 +57,17 @@ export class NpmiEffects {
   private loadPluginData() {
     return this.actions$.pipe(
       ofType(npmiLoaded),
-      withLatestFrom(this.store.select(getPluginDataLoaded)),
-      filter(([, {state}]) => state !== DataLoadState.LOADING),
+      withLatestFrom(
+        this.store.select(getPluginDataLoaded),
+        this.store.select(selectors.getExperimentIdsFromRoute)
+      ),
+      filter(
+        ([, state, experimentIds]) =>
+          state !== DataLoadState.LOADING && experimentIds !== null
+      ),
       tap(() => this.store.dispatch(npmiPluginDataRequested())),
-      mergeMap(() => {
-        return this.dataSource.fetchData().pipe(
+      mergeMap(([, , experimentIds]) => {
+        return this.dataSource.fetchData(experimentIds!).pipe(
           tap((result) => {
             this.store.dispatch(npmiPluginDataLoaded(result));
           }),

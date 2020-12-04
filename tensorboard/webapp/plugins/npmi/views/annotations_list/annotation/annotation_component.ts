@@ -27,14 +27,10 @@ import {
   HostBinding,
   HostListener,
 } from '@angular/core';
-import {
-  ValueData,
-  TfColorScale,
-  SortOrder,
-  AnnotationSort,
-} from '../../../store/npmi_types';
+import {ValueData, SortOrder, AnnotationSort} from '../../../store/npmi_types';
 import * as d3 from '../../../../../third_party/d3';
 import {stripMetricString} from '../../../util/metric_type';
+import {RunColorScale} from '../../../../../types/ui';
 
 @Component({
   selector: 'annotation-component',
@@ -58,6 +54,7 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
   @Input() sort!: AnnotationSort;
   // Only to trigger OnChanges to re-render the component.
   @Input() sidebarWidth!: number;
+  @Input() colorScale!: RunColorScale;
   @ViewChild('chart', {static: true, read: ElementRef})
   private readonly annotationContainer!: ElementRef<HTMLDivElement>;
   @ViewChild('hintClip', {static: true, read: ElementRef})
@@ -79,7 +76,6 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
   private readonly strokeColor = '#fff';
   private textClass = 'default-text';
   private runs: string[] = [];
-  private colorScale: (runName: string) => string = () => '#333333';
   // Drawing containers
   private svg!: d3.Selection<
     SVGElement,
@@ -130,10 +126,6 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
   private countSizeScale!: d3.ScaleLinear<number, number>;
 
   ngAfterViewInit(): void {
-    const runsColorScale = (document.createElement(
-      'tf-color-scale'
-    ) as TfColorScale).runsColorScale;
-    this.colorScale = runsColorScale ? runsColorScale : this.colorScale;
     this.svg = d3.select(this.annotationContainer.nativeElement).select('svg');
     this.xScale = d3.scalePoint<string>().padding(0);
     this.yScale = d3.scalePoint<string>().padding(0);
@@ -281,7 +273,7 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
         }.bind(this)
       )
       .attr('class', `hint-text ${this.textClass}`)
-      .text((d: string) => d);
+      .text((d: string) => d.split('/').slice(1).join());
 
     hintTexts.exit().remove();
   }
