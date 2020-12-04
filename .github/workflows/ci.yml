@@ -45,7 +45,7 @@ jobs:
           ci/download_bazel.sh "${BAZEL_VERSION}" "${BAZEL_SHA256SUM}" ~/bazel
           sudo mv ~/bazel /usr/local/bin/bazel
           sudo chmod +x /usr/local/bin/bazel
-          cp ./ci/bazelrc_github ~/.bazelrc
+          cp ./ci/bazelrc ~/.bazelrc
       - name: 'Configure build cache write credentials'
         env:
           CREDS: ${{ secrets.BAZEL_CACHE_SERVICE_ACCOUNT_CREDS }}
@@ -69,7 +69,6 @@ jobs:
       - name: 'Install Python dependencies'
         run: |
           python -m pip install -U pip
-          pip uninstall -y numpy
           pip install \
             -r ./tensorboard/pip_package/requirements.txt \
             -r ./tensorboard/pip_package/requirements_dev.txt \
