@@ -86,8 +86,10 @@ tf_ng_module(
         "app_container.ng.html",
     ],
     deps = [
+        ":app_state",
         ":mat_icon",
         ":oss_plugins_module",
+        ":selectors",
         ":store_module",
         "//tensorboard/webapp/alert",
         "//tensorboard/webapp/alert/views:alert_snackbar",
@@ -113,6 +115,25 @@ tf_ng_module(
         "@npm//@angular/core",
         "@npm//@angular/platform-browser",
         "@npm//@ngrx/store",
+    ],
+)
+
+tf_ng_module(
+    name = "app_test",
+    testonly = True,
+    srcs = [
+        "app_test.ts",
+    ],
+    deps = [
+        ":app",
+        ":app_state",
+        ":selectors",
+        "//tensorboard/webapp/app_routing:testing",
+        "//tensorboard/webapp/core/actions",
+        "@npm//@angular/common",
+        "@npm//@angular/core",
+        "@npm//@ngrx/store",
+        "@npm//@types/jasmine",
     ],
 )
 
@@ -239,6 +260,7 @@ tf_resource_digest_suffixer(
 tf_ng_web_test_suite(
     name = "karma_test",
     deps = [
+        ":app_test",
         "//tensorboard/webapp/alert:test_lib",
         "//tensorboard/webapp/alert/store:test_lib",
         "//tensorboard/webapp/alert/views:views_test",
