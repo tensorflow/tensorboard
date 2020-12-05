@@ -23,6 +23,7 @@ import shutil
 import numpy as np
 import tensorflow as tf
 import time
+from unittest import mock
 
 from werkzeug import test as werkzeug_test
 from werkzeug import wrappers
@@ -36,13 +37,6 @@ from tensorboard.plugins.mesh import summary
 from tensorboard.plugins.mesh import plugin_data_pb2
 from tensorboard.plugins.mesh import test_utils
 from tensorboard.util import test_util as tensorboard_test_util
-from mock import patch
-
-try:
-    # python version >= 3.3
-    from unittest import mock
-except ImportError:
-    import mock  # pylint: disable=unused-import
 
 
 class MeshPluginTest(tf.test.TestCase):
@@ -129,7 +123,7 @@ class MeshPluginTest(tf.test.TestCase):
                         if step % 2 == 0
                         else mesh_no_color_extended
                     )
-                    with patch.object(time, "time", return_value=step):
+                    with mock.patch.object(time, "time", return_value=step):
                         writer.add_summary(
                             sess.run(
                                 merged_summary_op,
