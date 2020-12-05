@@ -54,7 +54,6 @@ impl TensorBoardDataProvider for DataProviderHandler {
         let mut res: data::ListPluginsResponse = Default::default();
         res.plugins.push(data::Plugin {
             name: "scalars".to_string(),
-            ..Default::default()
         });
         Ok(Response::new(res))
     }
@@ -85,10 +84,8 @@ impl TensorBoardDataProvider for DataProviderHandler {
                 .map(|(Run(name), start_time)| data::Run {
                     name,
                     start_time: start_time.into(),
-                    ..Default::default()
                 })
                 .collect(),
-            ..Default::default()
         };
         Ok(Response::new(res))
     }
@@ -141,7 +138,6 @@ impl TensorBoardDataProvider for DataProviderHandler {
                         summary_metadata: Some(*ts.metadata.clone()),
                         ..Default::default()
                     }),
-                    ..Default::default()
                 });
             }
             if !run_res.tags.is_empty() {
@@ -203,9 +199,7 @@ impl TensorBoardDataProvider for DataProviderHandler {
                         step: steps,
                         wall_time: wall_times,
                         value: values,
-                        ..Default::default()
                     }),
-                    ..Default::default()
                 });
             }
             if !run_res.tags.is_empty() {
@@ -406,7 +400,6 @@ mod tests {
         let handler = sample_handler();
         let req = Request::new(data::ListPluginsRequest {
             experiment_id: "123".to_string(),
-            ..Default::default()
         });
         let res = handler.list_plugins(req).await.unwrap().into_inner();
         assert_eq!(
@@ -420,7 +413,6 @@ mod tests {
         let handler = sample_handler();
         let req = Request::new(data::ListRunsRequest {
             experiment_id: "123".to_string(),
-            ..Default::default()
         });
         let res = handler.list_runs(req).await.unwrap().into_inner();
         assert_eq!(
@@ -429,12 +421,10 @@ mod tests {
                 data::Run {
                     name: "train".to_string(),
                     start_time: 1234.0,
-                    ..Default::default()
                 },
                 data::Run {
                     name: "test".to_string(),
                     start_time: 6234.0,
-                    ..Default::default()
                 },
             ]
         );
@@ -472,7 +462,6 @@ mod tests {
             experiment_id: "123".to_string(),
             plugin_filter: Some(data::PluginFilter {
                 plugin_name: "scalars".to_string(),
-                ..Default::default()
             }),
             ..Default::default()
         });
@@ -517,20 +506,14 @@ mod tests {
             experiment_id: "123".to_string(),
             plugin_filter: Some(data::PluginFilter {
                 plugin_name: "scalars".to_string(),
-                ..Default::default()
             }),
             run_tag_filter: Some(data::RunTagFilter {
                 runs: Some(data::RunFilter {
                     names: vec!["train".to_string(), "nonexistent".to_string()],
-                    ..Default::default()
                 }),
                 tags: None,
-                ..Default::default()
             }),
-            downsample: Some(data::Downsample {
-                num_points: 1000,
-                ..Default::default()
-            }),
+            downsample: Some(data::Downsample { num_points: 1000 }),
             ..Default::default()
         });
 
@@ -554,7 +537,6 @@ mod tests {
             experiment_id: "123".to_string(),
             plugin_filter: Some(data::PluginFilter {
                 plugin_name: "scalars".to_string(),
-                ..Default::default()
             }),
             downsample: None,
             ..Default::default()
@@ -573,12 +555,8 @@ mod tests {
             experiment_id: "123".to_string(),
             plugin_filter: Some(data::PluginFilter {
                 plugin_name: "scalars".to_string(),
-                ..Default::default()
             }),
-            downsample: Some(data::Downsample {
-                num_points: 0,
-                ..Default::default()
-            }),
+            downsample: Some(data::Downsample { num_points: 0 }),
             ..Default::default()
         });
         let res = handler.read_scalars(req).await.unwrap().into_inner();
