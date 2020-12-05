@@ -75,6 +75,24 @@ As an alternative to `--define=link_data_server=true`, you can set the
 server binary, and pass `--load_fast`. If running with `bazel run`, this should
 be an absolute path.
 
+As another alternative, you can install the `tensorboard_data_server` package
+into your virtualenv. To do so, run:
+
+```
+bazel run -c opt //tensorboard/data/server:install
+```
+
+and then run TensorBoard with `--load_fast`. You’ll need to re-generate and
+re-install the Pip package each time that you update the Rust binary.
+
+With `--load_fast`, the order of precedence for the different binary locations
+is:
+
+-   an explicit `TENSORBOARD_DATA_SERVER_BINARY` environment variable is honored
+    if present and non-empty; else
+-   the `tensorboard_data_server` package is queried if it is installed; else
+-   the server bundled with `--define=link_data_server=true` is used.
+
 ## Adding third-party dependencies
 
 Rust dependencies are usually hosted on [crates.io]. We use [`cargo-raze`][raze]
