@@ -18,7 +18,11 @@ py_test(
     data = [
         ":build_pip_package",
     ],
-    tags = ["manual"],  # depends on re-invoking `python setup.py`, `setuptools`
+    tags = [
+        # depends on re-invoking `python setup.py`, `setuptools`
+        "manual",
+        "notap",
+    ],
     deps = [
         "//tensorboard:test",
     ],
