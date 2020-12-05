@@ -41,7 +41,7 @@ def main():
 
     thisdir = pathlib.Path(os.path.dirname(__file__))
     server_binary = thisdir / ".." / "server"
-    build_script = thisdir / "build_pip_package"
+    build_script = thisdir / "build"
 
     try:
         result = _shell(
@@ -64,7 +64,7 @@ def main():
         raise RuntimeError("Expected one line of stdout; got: %r" % lines)
     wheel = lines[0]
 
-    _shell(["pip", "uninstall", "-qy", "tensorboard_data_server"])
+    _shell(["pip", "uninstall", "-y", "tensorboard_data_server"])
     _shell(["pip", "install", "--", wheel])
 
 

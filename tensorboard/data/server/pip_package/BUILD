@@ -1,11 +1,11 @@
-package(default_visibility = ["//tensorboard:internal"])
+package(default_visibility = ["//visibility:private"])
 
 licenses(["notice"])
 
 # This is built with Bazel for tests, but should also be runnable without Bazel.
 py_binary(
-    name = "build_pip_package",
-    srcs = ["build_pip_package.py"],
+    name = "build",
+    srcs = ["build.py"],
     data = [
         "setup.py",
         "//tensorboard/data/server/pip_package:tensorboard_data_server/__init__.py",
@@ -13,10 +13,10 @@ py_binary(
 )
 
 py_test(
-    name = "build_pip_package_test",
-    srcs = ["build_pip_package_test.py"],
+    name = "build_test",
+    srcs = ["build_test.py"],
     data = [
-        ":build_pip_package",
+        ":build",
     ],
     tags = [
         # depends on re-invoking `python setup.py`, `setuptools`
@@ -33,7 +33,7 @@ py_binary(
     name = "install",
     srcs = ["install.py"],
     data = [
-        ":build_pip_package",
+        ":build",
         "//tensorboard/data/server",
     ],
 )

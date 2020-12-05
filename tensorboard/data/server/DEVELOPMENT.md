@@ -52,8 +52,9 @@ bazel run -c opt //tensorboard -- --grpc_data_provider localhost:6806
 You don’t have to pass a `--logdir` if you do this, but you do have to
 concurrently run `//tensorboard/data/server` (say, in the background, or in a
 separate shell). You can also swap out the data server whenever you want without
-restarting TensorBoard; new RPCs will transparently reconnect. The server
-doesn’t have to be running when TensorBoard starts.
+restarting TensorBoard; new RPCs will transparently reconnect. This can be
+useful in conjunction with `ibazel` to restart the server when you make changes.
+The server doesn’t have to be running when TensorBoard starts.
 
 To tell TensorBoard to start the server as a subprocess, build with
 `--define=link_data_server=true` and pass `--load_fast` to TensorBoard along
@@ -64,10 +65,12 @@ bazel run -c opt --define=link_data_server=true //tensorboard -- \
     --load_fast --logdir ~/tensorboard_data/mnist/ --bind_all --verbosity 0
 ```
 
-This is an easier one-shot solution, but requires a `--define` flag, offers less
-flexibility over the flags to the data server, and requires restarting
-TensorBoard if you want to restart the data server (though that’s not usually a
-big deal). The data server will automatically shut down when TensorBoard exits
+This is an easier one-shot solution. You can use `ibazel` here, too; changes to
+the Rust code will cause both the Rust server and Python TensorBoard to restart
+(the latter a bit spuriously, but it’s not really a problem). The downsides are
+that it requires a `--define` flag, offers less flexibility over the flags to
+the data server, and requires restarting TensorBoard if you want to restart the
+data server. The data server will automatically shut down when TensorBoard exits
 for any reason.
 
 As an alternative to `--define=link_data_server=true`, you can set the
@@ -79,7 +82,7 @@ As another alternative, you can install the `tensorboard_data_server` package
 into your virtualenv. To do so, run:
 
 ```
-bazel run -c opt //tensorboard/data/server:install
+bazel run -c opt //tensorboard/data/server/pip_package:install
 ```
 
 and then run TensorBoard with `--load_fast`. You’ll need to re-generate and

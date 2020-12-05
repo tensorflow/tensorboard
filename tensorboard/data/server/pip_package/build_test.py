@@ -30,13 +30,11 @@ class BuildPipPackageTest(tb_test.TestCase):
         outdir = os.path.join(self.get_temp_dir(), "out")
         os.mkdir(outdir)
 
-        build_pip_package = os.path.join(
-            os.path.dirname(__file__), "build_pip_package"
-        )
+        build_script = os.path.join(os.path.dirname(__file__), "build")
         try:
             result = subprocess.run(
                 [
-                    build_pip_package,
+                    build_script,
                     "--server-binary=%s" % (server_bin,),
                     "--out-dir=%s" % (outdir,),
                 ],
@@ -56,7 +54,7 @@ class BuildPipPackageTest(tb_test.TestCase):
         self.assertEqual(os.path.dirname(wheel), outdir)
         self.assertTrue(os.path.isfile(wheel))
         os.unlink(wheel)
-        os.rmdir(outdir)  # make sure dir empty, and clean up
+        os.rmdir(outdir)  # make sure no extraneous files were added
 
 
 if __name__ == "__main__":
