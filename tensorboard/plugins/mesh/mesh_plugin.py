@@ -116,21 +116,7 @@ class MeshPlugin(base_plugin.TBPlugin):
         }
 
     def is_active(self):
-        """Determines whether this plugin is active.
-
-        This plugin is only active if TensorBoard sampled any summaries
-        relevant to the mesh plugin.
-
-        Returns:
-          Whether this plugin is active.
-        """
-        all_runs = self._multiplexer.PluginRunToTagToContent(
-            MeshPlugin.plugin_name
-        )
-
-        # The plugin is active if any of the runs has a tag relevant
-        # to the plugin.
-        return bool(self._multiplexer and any(six.itervalues(all_runs)))
+        return False  # `list_plugins` as called by TB core suffices
 
     def frontend_metadata(self):
         return base_plugin.FrontendMetadata(element_name="mesh-dashboard")

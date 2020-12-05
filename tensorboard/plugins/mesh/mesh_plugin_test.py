@@ -264,14 +264,6 @@ class MeshPluginTest(tf.test.TestCase):
             self.assertLessEqual(metadata[i - 1]["step"], metadata[i]["step"])
 
     def testIsActive(self):
-        self.assertTrue(self.plugin.is_active())
-
-    @mock.patch.object(
-        event_multiplexer.EventMultiplexer,
-        "PluginRunToTagToContent",
-        return_value={},
-    )
-    def testIsInactive(self, get_random_mesh_stub):
         self.assertFalse(self.plugin.is_active())
 
 
