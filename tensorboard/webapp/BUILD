@@ -111,6 +111,7 @@ tf_ng_module(
         "//tensorboard/webapp/tb_wrapper",
         "@npm//@angular/core",
         "@npm//@angular/platform-browser",
+        "@npm//@ngrx/store",
     ],
 )
 
