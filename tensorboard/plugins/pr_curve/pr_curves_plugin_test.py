@@ -107,7 +107,7 @@ class PrCurvesPluginTest(tf.test.TestCase):
     def computeCorrectDescription(self, standard_deviation):
         """Generates a correct description.
 
-        Arguments:
+        Args:
           standard_deviation: An integer standard deviation value.
 
         Returns:

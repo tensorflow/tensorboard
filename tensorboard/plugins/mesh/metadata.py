@@ -74,7 +74,7 @@ def create_summary_metadata(
 ):
     """Creates summary metadata which defined at MeshPluginData proto.
 
-    Arguments:
+    Args:
       name: Original merged (summaries of different types) summary name.
       display_name: The display name used in TensorBoard.
       content_type: Value from MeshPluginData.ContentType enum describing data.
@@ -115,7 +115,7 @@ def create_summary_metadata(
 def parse_plugin_metadata(content):
     """Parse summary metadata to a Python object.
 
-    Arguments:
+    Args:
       content: The `content` field of a `SummaryMetadata` proto
         corresponding to the mesh plugin.
 

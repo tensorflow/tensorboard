@@ -46,7 +46,7 @@ def op(
 ):
     """Create a legacy image summary op for use in a TensorFlow graph.
 
-    Arguments:
+    Args:
       name: A unique name for the generated summary node.
       images: A `Tensor` representing pixel data with shape `[k, h, w, c]`,
         where `k` is the number of images, `h` and `w` are the height and
@@ -114,7 +114,7 @@ def pb(name, images, max_outputs=3, display_name=None, description=None):
     (wrapped with constant tensors where appropriate) and then execute
     that summary op in a TensorFlow session.
 
-    Arguments:
+    Args:
       name: A unique name for the generated summary, including any desired
         name scopes.
       images: An `np.array` representing pixel data with shape

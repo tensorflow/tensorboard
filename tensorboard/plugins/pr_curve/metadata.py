@@ -42,7 +42,7 @@ PROTO_VERSION = 0
 def create_summary_metadata(display_name, description, num_thresholds):
     """Create a `summary_pb2.SummaryMetadata` proto for pr_curves plugin data.
 
-    Arguments:
+    Args:
       display_name: The display name used in TensorBoard.
       description: The description to show in TensorBoard.
       num_thresholds: The number of thresholds to use for PR curves.
@@ -66,7 +66,7 @@ def create_summary_metadata(display_name, description, num_thresholds):
 def parse_plugin_metadata(content):
     """Parse summary metadata to a Python object.
 
-    Arguments:
+    Args:
       content: The `content` field of a `SummaryMetadata` proto
         corresponding to the pr_curves plugin.
 

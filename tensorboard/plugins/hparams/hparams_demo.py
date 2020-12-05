@@ -204,7 +204,7 @@ def prepare_data():
 def run_all(logdir, verbose=False):
     """Perform random search over the hyperparameter space.
 
-    Arguments:
+    Args:
       logdir: The top-level directory into which to write data. This
         directory should be empty or nonexistent.
       verbose: If true, print out each run's name as it begins.

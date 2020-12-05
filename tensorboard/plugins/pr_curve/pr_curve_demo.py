@@ -58,7 +58,7 @@ def start_runs(
 ):
     """Generate a PR curve with precision and recall evenly weighted.
 
-    Arguments:
+    Args:
       logdir: The directory into which to store all the runs' data.
       steps: The number of steps to run for.
       run_name: The name of the run.
@@ -240,7 +240,7 @@ def start_runs(
 def run_all(logdir, steps, thresholds, verbose=False):
     """Generate PR curve summaries.
 
-    Arguments:
+    Args:
       logdir: The directory into which to store all the runs' data.
       steps: The number of steps to run for.
       verbose: Whether to print the names of runs into stdout during execution.

@@ -55,7 +55,7 @@ def migrate_value(value):
     disk; this method converts them to new-style values so that further
     code need only deal with one data format.
 
-    Arguments:
+    Args:
       value: A `Summary.Value` object. This argument is not modified.
 
     Returns:

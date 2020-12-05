@@ -33,7 +33,7 @@ from tensorboard.util import tensor_util
 def scalar(name, data, step=None, description=None):
     """Write a scalar summary.
 
-    Arguments:
+    Args:
       name: A name for this summary. The summary tag used for TensorBoard will
         be this name prefixed by any active name scopes.
       data: A real numeric scalar value, convertible to a `float32` Tensor.
@@ -72,7 +72,7 @@ def scalar(name, data, step=None, description=None):
 def scalar_pb(tag, data, description=None):
     """Create a scalar summary_pb2.Summary protobuf.
 
-    Arguments:
+    Args:
       tag: String tag for the summary.
       data: A 0-dimensional `np.array` or a compatible python number type.
       description: Optional long-form description for this summary, as a

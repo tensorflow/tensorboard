@@ -86,7 +86,7 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
         """Creates the JSON object for the PR curves response for a run-tag
         combo.
 
-        Arguments:
+        Args:
           runs: A list of runs to fetch the curves for.
           tag: The tag to fetch the curves for.
 

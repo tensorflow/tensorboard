@@ -44,7 +44,7 @@ DEFAULT_BUCKET_COUNT = 30
 def histogram(name, data, step=None, buckets=None, description=None):
     """Write a histogram summary.
 
-    Arguments:
+    Args:
       name: A name for this summary. The summary tag used for TensorBoard will
         be this name prefixed by any active name scopes.
       data: A `Tensor` of any shape. Must be castable to `float64`.
@@ -111,7 +111,7 @@ def histogram(name, data, step=None, buckets=None, description=None):
 def _buckets(data, bucket_count=None):
     """Create a TensorFlow op to group data into histogram buckets.
 
-    Arguments:
+    Args:
       data: A `Tensor` of any shape. Must be castable to `float64`.
       bucket_count: Optional positive `int` or scalar `int32` `Tensor`.
     Returns:
@@ -178,7 +178,7 @@ def _buckets(data, bucket_count=None):
 def histogram_pb(tag, data, buckets=None, description=None):
     """Create a histogram summary protobuf.
 
-    Arguments:
+    Args:
       tag: String tag for the summary.
       data: A `np.array` or array-like form of any shape. Must have type
         castable to `float`.

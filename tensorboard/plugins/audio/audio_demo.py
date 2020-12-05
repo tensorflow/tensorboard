@@ -60,7 +60,7 @@ def run(logdir, run_name, wave_name, wave_constructor):
 
     Waves will be generated at frequencies ranging from A4 to A5.
 
-    Arguments:
+    Args:
       logdir: the top-level directory into which to write summary data
       run_name: the name of this run; will be created as a subdirectory
         under logdir
@@ -258,7 +258,7 @@ def bisine_wahwah_wave(frequency):
 def run_all(logdir, verbose=False):
     """Generate waves of the shapes defined above.
 
-    Arguments:
+    Args:
       logdir: the directory into which to store all the runs' data
       verbose: if true, print out each run's name as it begins
     """

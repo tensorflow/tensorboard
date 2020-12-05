@@ -91,7 +91,7 @@ _CLEANER_STORE = _CleanerStore()
 def markdown_to_safe_html(markdown_string):
     """Convert Markdown to HTML that's safe to splice into the DOM.
 
-    Arguments:
+    Args:
       markdown_string: A Unicode string or UTF-8--encoded bytestring
         containing Markdown source. Markdown tables are supported.
 

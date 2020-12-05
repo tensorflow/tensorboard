@@ -40,7 +40,7 @@ _SUITE_FAILED_RE = re.compile(r".*failing test.*")
 def create_test_class(binary_path, web_path):
     """Create a unittest.TestCase class to run WebComponentTester tests.
 
-    Arguments:
+    Args:
       binary_path: relative path to a `tf_web_library` target;
           e.g.: "tensorboard/components/vz_foo/test/test_web_library"
       web_path: absolute web path to the tests page in the above web

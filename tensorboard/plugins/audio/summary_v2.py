@@ -43,7 +43,7 @@ def audio(
 ):
     """Write an audio summary.
 
-    Arguments:
+    Args:
       name: A name for this summary. The summary tag used for TensorBoard will
         be this name prefixed by any active name scopes.
       data: A `Tensor` representing audio data with shape `[k, t, c]`,

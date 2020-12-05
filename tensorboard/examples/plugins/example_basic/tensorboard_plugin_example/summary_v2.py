@@ -27,7 +27,7 @@ from tensorboard_plugin_example import metadata
 def greeting(name, guest, step=None, description=None):
     """Write a "greeting" summary.
 
-    Arguments:
+    Args:
       name: A name for this summary. The summary tag used for TensorBoard will
         be this name prefixed by any active name scopes.
       guest: A rank-0 string `Tensor`.

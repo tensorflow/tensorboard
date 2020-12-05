@@ -190,7 +190,7 @@ def pb(
 ):
     """Create a PR curves summary protobuf.
 
-    Arguments:
+    Args:
       name: A name for the generated node. Will also serve as a series name in
           TensorBoard.
       labels: The ground truth values. A bool numpy array.

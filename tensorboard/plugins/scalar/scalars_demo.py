@@ -50,7 +50,7 @@ def run(
     how far it is from the room's temperature, and how much it changes at
     each time step.
 
-    Arguments:
+    Args:
       logdir: the top-level directory into which to write summary data
       run_name: the name of this run; will be created as a subdirectory
         under logdir
@@ -132,7 +132,7 @@ def run(
 def run_all(logdir, verbose=False):
     """Run simulations on a reasonable set of parameters.
 
-    Arguments:
+    Args:
       logdir: the directory into which to store all the runs' data
       verbose: if true, print out each run's name as it begins
     """

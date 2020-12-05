@@ -93,7 +93,7 @@ def _image_of_size(image_size):
 def _format_line(headers, fields):
     """Format a line of a table.
 
-    Arguments:
+    Args:
       headers: A list of strings that are used as the table headers.
       fields: A list of the same length as `headers` where `fields[i]` is
         the entry for `headers[i]` in this row. Elements can be of

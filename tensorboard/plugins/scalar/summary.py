@@ -36,7 +36,7 @@ scalar_pb = summary_v2.scalar_pb
 def op(name, data, display_name=None, description=None, collections=None):
     """Create a legacy scalar summary op.
 
-    Arguments:
+    Args:
       name: A unique name for the generated summary node.
       data: A real numeric rank-0 `Tensor`. Must have `dtype` castable
         to `float32`.
@@ -72,7 +72,7 @@ def op(name, data, display_name=None, description=None, collections=None):
 def pb(name, data, display_name=None, description=None):
     """Create a legacy scalar summary protobuf.
 
-    Arguments:
+    Args:
       name: A unique name for the generated summary, including any desired
         name scopes.
       data: A rank-0 `np.array` or array-like form (so raw `int`s and

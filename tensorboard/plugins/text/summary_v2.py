@@ -29,7 +29,7 @@ from tensorboard.util import tensor_util
 def text(name, data, step=None, description=None):
     """Write a text summary.
 
-    Arguments:
+    Args:
       name: A name for this summary. The summary tag used for TensorBoard will
         be this name prefixed by any active name scopes.
       data: A UTF-8 string tensor value.
@@ -65,7 +65,7 @@ def text(name, data, step=None, description=None):
 def text_pb(tag, data, description=None):
     """Create a text tf.Summary protobuf.
 
-    Arguments:
+    Args:
       tag: String tag for the summary.
       data: A Python bytestring (of type bytes), a Unicode string, or a numpy data
         array of those types.

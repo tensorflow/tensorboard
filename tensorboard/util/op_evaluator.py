@@ -42,7 +42,7 @@ class PersistentOpEvaluator(object):
         class FluxCapacitanceEvaluator(PersistentOpEvaluator):
           \"\"\"Compute the flux capacitance required for a system.
 
-          Arguments:
+          Args:
             x: Available power input, as a `float`, in jigawatts.
 
           Returns:

@@ -25,7 +25,7 @@ from tensorboard.plugins.npmi import metadata
 def npmi_metrics(tensor, step=None, description=None):
     """Write the list of calculated metrics for this run.
 
-    Arguments:
+    Args:
       tensor: A `Tensor` of shape (num_metrics) and dtype string.
       step: Explicit `int64`-castable monotonic step value for this summary. If
         omitted, this defaults to `tf.summary.experimental.get_step()`, which
@@ -57,7 +57,7 @@ def npmi_metrics(tensor, step=None, description=None):
 def npmi_annotations(tensor, step=None, description=None):
     """Write the annotations for this run.
 
-    Arguments:
+    Args:
       tensor: A `Tensor` of shape (num_annotations) and dtype string.
       step: Explicit `int64`-castable monotonic step value for this summary. If
         omitted, this defaults to `tf.summary.experimental.get_step()`, which
@@ -89,7 +89,7 @@ def npmi_annotations(tensor, step=None, description=None):
 def npmi_values(tensor, step=None, description=None):
     """Write the actual npmi values.
 
-    Arguments:
+    Args:
       tensor: A `Tensor` of shape (num_annotations, num_metrics) and dtype
         float.
       step: Explicit `int64`-castable monotonic step value for this summary. If
@@ -122,7 +122,7 @@ def npmi_values(tensor, step=None, description=None):
 def npmi_embeddings(tensor, step=None, description=None):
     """Write the embedding representations for the annotations in the dataset.
 
-    Arguments:
+    Args:
       tensor: A `Tensor` of shape (num_annotations, embedding_dimension) and dtype
         float.
       step: Explicit `int64`-castable monotonic step value for this summary. If

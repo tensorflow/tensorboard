@@ -78,7 +78,7 @@ def op(name, data, display_name=None, description=None, collections=None):
 def pb(name, data, display_name=None, description=None):
     """Create a legacy text summary protobuf.
 
-    Arguments:
+    Args:
       name: A name for the generated node. Will also serve as a series name in
         TensorBoard.
       data: A Python bytestring (of type bytes), or Unicode string. Or a numpy

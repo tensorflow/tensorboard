@@ -792,7 +792,7 @@ class RealisticEventAccumulatorTest(EventAccumulatorTest):
     def _writeMetadata(self, logdir, summary_metadata, nonce=""):
         """Write to disk a summary with the given metadata.
 
-        Arguments:
+        Args:
           logdir: a string
           summary_metadata: a `SummaryMetadata` protobuf object
           nonce: optional; will be added to the end of the event file name

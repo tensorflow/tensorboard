@@ -56,7 +56,7 @@ def create_summary_metadata(display_name, description, encoding):
 def parse_plugin_metadata(content):
     """Parse summary metadata to a Python object.
 
-    Arguments:
+    Args:
       content: The `content` field of a `SummaryMetadata` proto
         corresponding to the audio plugin.
 

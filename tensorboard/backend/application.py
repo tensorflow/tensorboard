@@ -598,7 +598,7 @@ def _auth_context_middleware(wsgi_app, auth_providers):
 def _clean_path(path):
     """Removes a trailing slash from a non-root path.
 
-    Arguments:
+    Args:
       path: The path of a request.
 
     Returns:

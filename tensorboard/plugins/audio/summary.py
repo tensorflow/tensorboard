@@ -61,7 +61,7 @@ def op(
 ):
     """Create a legacy audio summary op for use in a TensorFlow graph.
 
-    Arguments:
+    Args:
       name: A unique name for the generated summary node.
       audio: A `Tensor` representing audio data with shape `[k, t, c]`,
         where `k` is the number of audio clips, `t` is the number of
@@ -155,7 +155,7 @@ def pb(
     (wrapped with constant tensors where appropriate) and then execute
     that summary op in a TensorFlow session.
 
-    Arguments:
+    Args:
       name: A unique name for the generated summary node.
       audio: An `np.array` representing audio data with shape `[k, t, c]`,
         where `k` is the number of audio clips, `t` is the number of

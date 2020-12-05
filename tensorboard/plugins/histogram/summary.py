@@ -46,7 +46,7 @@ histogram_pb = summary_v2.histogram_pb
 def _buckets(data, bucket_count=None):
     """Create a TensorFlow op to group data into histogram buckets.
 
-    Arguments:
+    Args:
       data: A `Tensor` of any shape. Must be castable to `float64`.
       bucket_count: Optional positive `int` or scalar `int32` `Tensor`.
     Returns:
@@ -122,7 +122,7 @@ def op(
 ):
     """Create a legacy histogram summary op.
 
-    Arguments:
+    Args:
       name: A unique name for the generated summary node.
       data: A `Tensor` of any shape. Must be castable to `float64`.
       bucket_count: Optional positive `int`. The output will have this
@@ -162,7 +162,7 @@ def op(
 def pb(name, data, bucket_count=None, display_name=None, description=None):
     """Create a legacy histogram summary protobuf.
 
-    Arguments:
+    Args:
       name: A unique name for the generated summary, including any desired
         name scopes.
       data: A `np.array` or array-like form of any shape. Must have type

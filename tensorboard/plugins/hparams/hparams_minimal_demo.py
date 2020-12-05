@@ -162,7 +162,7 @@ def run(logdir, session_id, hparams, group_name):
     how far it is from the room's temperature, and how much it changes at
     each time step.
 
-    Arguments:
+    Args:
       logdir: the top-level directory into which to write summary data
       session_id: an id for the session.
       hparams: A dictionary mapping a hyperparameter name to its value.
@@ -252,7 +252,7 @@ def run(logdir, session_id, hparams, group_name):
 def run_all(logdir, verbose=False):
     """Run simulations on a reasonable set of parameters.
 
-    Arguments:
+    Args:
       logdir: the directory into which to store all the runs' data
       verbose: if true, print out each run's name as it begins.
     """

@@ -71,7 +71,7 @@ def image_data(verbose=False):
 def convolve(image, pixel_filter, channels=3, name=None):
     """Perform a 2D pixel convolution on the given image.
 
-    Arguments:
+    Args:
       image: A 3D `float32` `Tensor` of shape `[height, width, channels]`,
         where `channels` is the third argument to this function and the
         first two dimensions are arbitrary.
@@ -121,7 +121,7 @@ def run_box_to_gaussian(logdir, verbose=False):
 
     See the summary description for more details.
 
-    Arguments:
+    Args:
       logdir: Directory into which to write event logs.
       verbose: Boolean; whether to log any output.
     """
@@ -218,7 +218,7 @@ def run_sobel(logdir, verbose=False):
 
     See the summary description for more details.
 
-    Arguments:
+    Args:
       logdir: Directory into which to write event logs.
       verbose: Boolean; whether to log any output.
     """
@@ -304,7 +304,7 @@ def run_sobel(logdir, verbose=False):
 def run_all(logdir, verbose=False):
     """Run simulations on a reasonable set of parameters.
 
-    Arguments:
+    Args:
       logdir: the directory into which to store all the runs' data
       verbose: if true, print out each run's name as it begins
     """

@@ -30,7 +30,7 @@ from tensorboard.util import lazy_tensor_creator
 def image(name, data, step=None, max_outputs=3, description=None):
     """Write an image summary.
 
-    Arguments:
+    Args:
       name: A name for this summary. The summary tag used for TensorBoard will
         be this name prefixed by any active name scopes.
       data: A `Tensor` representing pixel data with shape `[k, h, w, c]`,

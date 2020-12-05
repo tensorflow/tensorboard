@@ -32,7 +32,7 @@ class _TensorFlowPngEncoder(op_evaluator.PersistentOpEvaluator):
     This function is thread-safe, and has high performance when run in
     parallel. See `encode_png_benchmark.py` for details.
 
-    Arguments:
+    Args:
       image: A numpy array of shape `[height, width, channels]`, where
         `channels` is 1, 3, or 4, and of dtype uint8.
 
@@ -72,7 +72,7 @@ class _TensorFlowWavEncoder(op_evaluator.PersistentOpEvaluator):
 
     This function is thread-safe and exhibits good parallel performance.
 
-    Arguments:
+    Args:
       audio: A numpy array of shape `[samples, channels]`.
       samples_per_second: A positive `int`, in Hz.
 
