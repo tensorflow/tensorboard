@@ -116,6 +116,22 @@ describe('line_chart_v2/lib/scale test', () => {
         ]);
       });
     });
+
+    describe('#isSafeNumber', () => {
+      it('returns true for numbers', () => {
+        expect(scale.isSafeNumber(0.1)).toBe(true);
+        expect(scale.isSafeNumber(1)).toBe(true);
+        expect(scale.isSafeNumber(1e100)).toBe(true);
+        expect(scale.isSafeNumber(-1e100)).toBe(true);
+        expect(scale.isSafeNumber(1e-100)).toBe(true);
+      });
+
+      it('returns false for infinities and NaN', () => {
+        expect(scale.isSafeNumber(NaN)).toBe(false);
+        expect(scale.isSafeNumber(Infinity)).toBe(false);
+        expect(scale.isSafeNumber(-Infinity)).toBe(false);
+      });
+    });
   });
 
   describe('log10', () => {
@@ -288,6 +304,26 @@ describe('line_chart_v2/lib/scale test', () => {
       it('handles non-positive values correctly', () => {
         expect(scale.ticks([0, 0.01], 3)).toEqual([1e-300, 1e-200, 1e-100]);
         expect(scale.ticks([-100, 0.01], 3)).toEqual([1e-300, 1e-200, 1e-100]);
+      });
+    });
+
+    describe('#isSafeNumber', () => {
+      it('returns true for positive finite numbers', () => {
+        expect(scale.isSafeNumber(Number.MIN_VALUE)).toBe(true);
+        expect(scale.isSafeNumber(1e-100)).toBe(true);
+        expect(scale.isSafeNumber(0.1)).toBe(true);
+        expect(scale.isSafeNumber(1)).toBe(true);
+        expect(scale.isSafeNumber(1e100)).toBe(true);
+      });
+
+      it('returns non-positive values', () => {
+        expect(scale.isSafeNumber(Infinity)).toBe(false);
+        expect(scale.isSafeNumber(-Infinity)).toBe(false);
+        expect(scale.isSafeNumber(NaN)).toBe(false);
+        expect(scale.isSafeNumber(0)).toBe(false);
+        expect(scale.isSafeNumber(-0)).toBe(false);
+        expect(scale.isSafeNumber(-0.001)).toBe(false);
+        expect(scale.isSafeNumber(-1000)).toBe(false);
       });
     });
   });
