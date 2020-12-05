@@ -24,6 +24,7 @@ import six
 from tensorboard.backend.event_processing import data_provider
 from tensorboard.backend.event_processing import plugin_event_multiplexer
 from tensorboard.backend.event_processing import tag_types
+from tensorboard.data import ingester
 from tensorboard.plugins.audio import metadata as audio_metadata
 from tensorboard.plugins.histogram import metadata as histogram_metadata
 from tensorboard.plugins.image import metadata as image_metadata
@@ -48,7 +49,7 @@ DEFAULT_TENSOR_SIZE_GUIDANCE = {
 logger = tb_logging.get_logger()
 
 
-class LocalDataIngester(object):
+class LocalDataIngester(ingester.DataIngester):
     """Data ingestion implementation to use when running locally."""
 
     def __init__(self, flags):

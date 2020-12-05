@@ -36,6 +36,45 @@ Rust source files in your editor. For editor setup, consult
 
 [ra-docs]: https://rust-analyzer.github.io/
 
+## Running under TensorBoard
+
+You can point TensorBoard at a data server in two ways: start the server
+yourself and give TensorBoard an address, or tell TensorBoard to start the
+server as a subprocess.
+
+To connect to an existing server, pass `--grpc_data_provider ADDRESS`, where the
+address is like `localhost:6806`. Thus:
+
+```
+bazel run -c opt //tensorboard -- --grpc_data_provider localhost:6806
+```
+
+You don’t have to pass a `--logdir` if you do this, but you do have to
+concurrently run `//tensorboard/data/server` (say, in the background, or in a
+separate shell). You can also swap out the data server whenever you want without
+restarting TensorBoard; new RPCs will transparently reconnect. The server
+doesn’t have to be running when TensorBoard starts.
+
+To tell TensorBoard to start the server as a subprocess, build with
+`--define=link_data_server=true` and pass `--load_fast` to TensorBoard along
+with a normal `--logdir`. Thus:
+
+```
+bazel run -c opt --define=link_data_server=true //tensorboard -- \
+    --load_fast --logdir ~/tensorboard_data/mnist/ --bind_all --verbosity 0
+```
+
+This is an easier one-shot solution, but requires a `--define` flag, offers less
+flexibility over the flags to the data server, and requires restarting
+TensorBoard if you want to restart the data server (though that’s not usually a
+big deal). The data server will automatically shut down when TensorBoard exits
+for any reason.
+
+As an alternative to `--define=link_data_server=true`, you can set the
+`TENSORBOARD_DATA_SERVER_BINARY` environment variable to the path to a data
+server binary, and pass `--load_fast`. If running with `bazel run`, this should
+be an absolute path.
+
 ## Adding third-party dependencies
 
 Rust dependencies are usually hosted on [crates.io]. We use [`cargo-raze`][raze]
@@ -51,8 +90,8 @@ dependency:
     package on <https://crates.io/>.
 3.  Change into the `tensorboard/data/server/` directory.
 4.  Run `cargo fetch` to update `Cargo.lock`. Running this before `cargo raze`
-    ensures that the `http_archive` workspace rules in the generated build
-    files will have `sha256` checksums.
+    ensures that the `http_archive` workspace rules in the generated build files
+    will have `sha256` checksums.
 5.  Run `cargo raze` to update `third_party/rust/...`.
 
 This will add a new target like `//third_party/rust:rand`. Manually build it

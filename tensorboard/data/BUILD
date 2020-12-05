@@ -65,6 +65,59 @@ py_test(
 )
 
 py_library(
+    name = "ingester",
+    srcs = ["ingester.py"],
+    srcs_version = "PY3",
+)
+
+py_test(
+    name = "ingester_test",
+    size = "small",
+    srcs = ["ingester_test.py"],
+    srcs_version = "PY3",
+    tags = ["support_notf"],
+    deps = [
+        ":ingester",
+    ],
+)
+
+config_setting(
+    name = "link_data_server",
+    define_values = {"link_data_server": "true"},
+)
+
+py_library(
+    name = "server_ingester",
+    srcs = ["server_ingester.py"],
+    data = select({
+        ":link_data_server": ["//tensorboard/data/server"],
+        "//conditions:default": [],
+    }),
+    srcs_version = "PY3",
+    deps = [
+        ":grpc_provider",
+        ":ingester",
+        "//tensorboard:expect_grpc_installed",
+        "//tensorboard/util:tb_logging",
+    ],
+)
+
+py_test(
+    name = "server_ingester_test",
+    size = "medium",  # time.sleep
+    timeout = "short",
+    srcs = ["server_ingester_test.py"],
+    srcs_version = "PY3",
+    tags = ["support_notf"],
+    deps = [
+        ":grpc_provider",
+        ":server_ingester",
+        "//tensorboard:expect_grpc_installed",
+        "//tensorboard:test",
+    ],
+)
+
+py_library(
     name = "grpc_provider",
     srcs = ["grpc_provider.py"],
     srcs_version = "PY3",

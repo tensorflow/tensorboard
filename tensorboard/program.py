@@ -48,7 +48,6 @@ import time
 from absl import flags as absl_flags
 from absl.flags import argparse_flags
 import absl.logging
-import grpc
 import six
 from six.moves import urllib
 from six.moves import xrange  # pylint: disable=redefined-builtin
@@ -57,9 +56,9 @@ from werkzeug import serving
 from tensorboard import manager
 from tensorboard import version
 from tensorboard.backend import application
-from tensorboard.backend.event_processing import data_ingester
+from tensorboard.backend.event_processing import data_ingester as local_ingester
 from tensorboard.backend.event_processing import event_file_inspector as efi
-from tensorboard.data import grpc_provider
+from tensorboard.data import server_ingester
 from tensorboard.plugins.core import core_plugin
 from tensorboard.util import argparse_util
 from tensorboard.util import tb_logging
@@ -409,24 +408,29 @@ class TensorBoard(object):
         mimetypes.add_type("font/woff2", ".woff2")
         mimetypes.add_type("text/html", ".html")
 
-    def _make_grpc_provider(self, addr):
-        options = [
-            ("grpc.max_receive_message_length", 1024 * 1024 * 256),
-        ]
-        channel = grpc.insecure_channel(addr, options=options)
-        stub = grpc_provider.make_stub(channel)
-        provider = grpc_provider.GrpcDataProvider(addr, stub)
-        return provider
-
     def _make_data_provider(self):
         """Returns `(data_provider, deprecated_multiplexer)`."""
-        grpc_addr = self.flags.grpc_data_provider
-        if grpc_addr:
-            return (self._make_grpc_provider(grpc_addr), None)
+        flags = self.flags
+        if flags.grpc_data_provider:
+            ingester = server_ingester.ExistingServerDataIngester(
+                flags.grpc_data_provider
+            )
+        elif flags.load_fast:
+            ingester = server_ingester.SubprocessServerDataIngester(
+                flags.logdir
+            )
         else:
-            ingester = data_ingester.LocalDataIngester(self.flags)
-            ingester.start()
-            return (ingester.data_provider, ingester.deprecated_multiplexer)
+            ingester = local_ingester.LocalDataIngester(flags)
+
+        # Stash ingester so that it can avoid GCing Windows file handles.
+        # (See comment in `SubprocessServerDataIngester.start` for details.)
+        self._ingester = ingester
+
+        ingester.start()
+        deprecated_multiplexer = None
+        if isinstance(ingester, local_ingester.LocalDataIngester):
+            deprecated_multiplexer = ingester.deprecated_multiplexer
+        return (ingester.data_provider, deprecated_multiplexer)
 
     def _make_server(self):
         """Constructs the TensorBoard WSGI app and instantiates the server."""

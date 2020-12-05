@@ -37,6 +37,7 @@ py_library(
         ":data_provider",
         ":event_multiplexer",
         ":tag_types",
+        "//tensorboard/data:ingester",
         "//tensorboard/plugins/audio:metadata",
         "//tensorboard/plugins/histogram:metadata",
         "//tensorboard/plugins/image:metadata",
