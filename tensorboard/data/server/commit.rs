@@ -105,7 +105,7 @@ pub struct DataLoss;
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct ScalarValue(pub f32);
 
-#[cfg(any(test, doctest))]
+#[cfg(test)]
 mod tests {
     use super::*;
 
@@ -138,6 +138,9 @@ mod tests {
 }
 
 /// Utilities for constructing commits with test data.
+//
+// Not `#[cfg(test)]` because we have a doctest:
+// <https://github.com/rust-lang/rust/issues/45599>
 pub mod test_data {
     use super::*;
     use crate::data_compat;
