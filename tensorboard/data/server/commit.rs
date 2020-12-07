@@ -189,10 +189,11 @@ pub mod test_data {
         ) -> Self {
             self.with_run_data(Run(run.to_string()), |run_data| {
                 let time_series = build(ScalarTimeSeriesBuilder::default());
-                match (run_data.start_time, time_series.valid_values().nth(0)) {
-                    (None, Some((_step, wt, _value))) => run_data.start_time = Some(wt),
-                    _ => (),
-                };
+                if let (None, Some((_step, wall_time, _value))) =
+                    (run_data.start_time, time_series.valid_values().next())
+                {
+                    run_data.start_time = Some(wall_time);
+                }
                 run_data.scalars.insert(Tag(tag.to_string()), time_series);
             });
             self
