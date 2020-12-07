@@ -324,80 +324,22 @@ mod tests {
     use super::*;
     use tonic::Code;
 
-    use crate::commit::{ScalarValue, TimeSeries};
-    use crate::data_compat;
-    use crate::proto::tensorboard as pb;
-    use crate::reservoir::StageReservoir;
-    use crate::types::{Run, Step, Tag, WallTime};
+    use crate::commit::test_data::CommitBuilder;
+    use crate::types::{Run, Tag};
 
-    /// Creates a commit with some test data.
-    fn sample_commit() -> Commit {
-        let commit = Commit::new();
-
-        let mut runs = commit.runs.write().unwrap();
-
-        fn scalar_series(points: Vec<(Step, WallTime, f32)>) -> TimeSeries<ScalarValue> {
-            use pb::summary::value::Value::SimpleValue;
-            let mut ts = commit::TimeSeries::new(
-                data_compat::SummaryValue(Box::new(SimpleValue(0.0))).initial_metadata(None),
-            );
-            let mut rsv = StageReservoir::new(points.len());
-            for (step, wall_time, value) in points {
-                rsv.offer(step, (wall_time, Ok(commit::ScalarValue(value))));
-            }
-            rsv.commit(&mut ts.basin);
-            ts
-        }
-
-        let mut train = runs
-            .entry(Run("train".to_string()))
-            .or_default()
-            .write()
-            .unwrap();
-        train.start_time = Some(WallTime::new(1234.0).unwrap());
-        train.scalars.insert(
-            Tag("xent".to_string()),
-            scalar_series(vec![
-                (Step(0), WallTime::new(1235.0).unwrap(), 0.5),
-                (Step(1), WallTime::new(1236.0).unwrap(), 0.25),
-                (Step(2), WallTime::new(1237.0).unwrap(), 0.125),
-            ]),
-        );
-        drop(train);
-
-        let mut test = runs
-            .entry(Run("test".to_string()))
-            .or_default()
-            .write()
-            .unwrap();
-        test.start_time = Some(WallTime::new(6234.0).unwrap());
-        test.scalars.insert(
-            Tag("accuracy".to_string()),
-            scalar_series(vec![
-                (Step(0), WallTime::new(6235.0).unwrap(), 0.125),
-                (Step(1), WallTime::new(6236.0).unwrap(), 0.25),
-                (Step(2), WallTime::new(6237.0).unwrap(), 0.5),
-            ]),
-        );
-        drop(test);
-
-        // An run with no start time or data: should not show up in results.
-        runs.entry(Run("empty".to_string())).or_default();
-
-        drop(runs);
-        commit
-    }
-
-    fn sample_handler() -> DataProviderHandler {
+    fn sample_handler(commit: Commit) -> DataProviderHandler {
         DataProviderHandler {
             // Leak the commit object, since the Tonic server must have only 'static references.
-            commit: Box::leak(Box::new(sample_commit())),
+            commit: Box::leak(Box::new(commit)),
         }
     }
 
     #[tokio::test]
     async fn test_list_plugins() {
-        let handler = sample_handler();
+        let commit = CommitBuilder::new()
+            .scalars("train", "xent", |b| b.build())
+            .build();
+        let handler = sample_handler(commit);
         let req = Request::new(data::ListPluginsRequest {
             experiment_id: "123".to_string(),
         });
@@ -410,7 +352,14 @@ mod tests {
 
     #[tokio::test]
     async fn test_list_runs() {
-        let handler = sample_handler();
+        let commit = CommitBuilder::new()
+            .run("train", Some(1234.0))
+            .run("test", Some(6234.0))
+            .run("run_with_no_data", None)
+            .scalars("train", "xent", |mut b| b.wall_time_start(1235.0).build())
+            .scalars("test", "acc", |mut b| b.wall_time_start(6235.0).build())
+            .build();
+        let handler = sample_handler(commit);
         let req = Request::new(data::ListRunsRequest {
             experiment_id: "123".to_string(),
         });
@@ -457,7 +406,18 @@ mod tests {
 
     #[tokio::test]
     async fn test_list_scalars() {
-        let handler = sample_handler();
+        let commit = CommitBuilder::new()
+            .run("train", Some(1234.0))
+            .run("test", Some(6234.0))
+            .run("run_with_no_data", None)
+            .scalars("train", "xent", |mut b| {
+                b.wall_time_start(1235.0).len(3).build()
+            })
+            .scalars("test", "accuracy", |mut b| {
+                b.wall_time_start(6235.0).len(3).build()
+            })
+            .build();
+        let handler = sample_handler(commit);
         let req = Request::new(data::ListScalarsRequest {
             experiment_id: "123".to_string(),
             plugin_filter: Some(data::PluginFilter {
@@ -501,7 +461,11 @@ mod tests {
 
     #[tokio::test]
     async fn test_read_scalars() {
-        let handler = sample_handler();
+        let commit = CommitBuilder::new()
+            .scalars("train", "xent", |b| b.build())
+            .scalars("test", "xent", |b| b.build())
+            .build();
+        let handler = sample_handler(commit);
         let req = Request::new(data::ReadScalarsRequest {
             experiment_id: "123".to_string(),
             plugin_filter: Some(data::PluginFilter {
@@ -532,7 +496,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_read_scalars_needs_downsample() {
-        let handler = sample_handler();
+        let handler = sample_handler(Commit::default());
         let req = Request::new(data::ReadScalarsRequest {
             experiment_id: "123".to_string(),
             plugin_filter: Some(data::PluginFilter {
@@ -550,7 +514,11 @@ mod tests {
 
     #[tokio::test]
     async fn test_read_scalars_downsample_zero_okay() {
-        let handler = sample_handler();
+        let commit = CommitBuilder::new()
+            .scalars("train", "xent", |b| b.build())
+            .scalars("test", "xent", |b| b.build())
+            .build();
+        let handler = sample_handler(commit);
         let req = Request::new(data::ReadScalarsRequest {
             experiment_id: "123".to_string(),
             plugin_filter: Some(data::PluginFilter {
