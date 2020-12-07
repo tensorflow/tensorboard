@@ -15,6 +15,12 @@ on:
       - '[0-9]+.*'
       - 'ci-*'
   pull_request: {}
+  schedule:
+    # 13:00 UTC is 05:00 in Pacific standard time (UTC-8), which is well
+    # after nightly TensorFlow wheels are released (around 2--3 AM) and
+    # just after nightly TensorBoard wheels are released (around 04:15).
+    # (cron syntax: minute hour day-of-month month day-of-week)
+    - cron: '0 13 * * *'
 
 env:
   # Keep this Bazel version in sync with the `versions.check` directive
