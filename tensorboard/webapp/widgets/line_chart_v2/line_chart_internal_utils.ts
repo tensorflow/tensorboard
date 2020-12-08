@@ -31,7 +31,9 @@ import {isWebGl2Supported} from './lib/utils';
 export function computeDataSeriesExtent(
   data: DataSeries[],
   metadataMap: DataSeriesMetadataMap,
-  ignoreYOutliers: boolean
+  ignoreYOutliers: boolean,
+  isXSafeNumber: (x: number) => boolean,
+  isYSafeNumber: (x: number) => boolean
 ): {x: [number, number] | undefined; y: [number, number] | undefined} {
   let xMin: number | null = null;
   let xMax: number | null = null;
@@ -44,11 +46,11 @@ export function computeDataSeriesExtent(
 
     for (let index = 0; index < points.length; index++) {
       const {x, y} = points[index];
-      if (Number.isFinite(x)) {
+      if (isXSafeNumber(x)) {
         xMin = xMin === null || x < xMin ? x : xMin;
         xMax = xMax === null || x > xMax ? x : xMax;
       }
-      if (Number.isFinite(y)) {
+      if (isYSafeNumber(y)) {
         yPoints.push(y);
       }
       pointIndex++;
