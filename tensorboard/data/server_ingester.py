@@ -65,12 +65,7 @@ class SubprocessServerDataIngester(ingester.DataIngester):
     def start(self):
         if self._data_provider:
             return
-        server_binary = os.environ.get(_ENV_DATA_SERVER_BINARY)
-        if not server_binary:
-            server_binary = os.path.join(
-                os.path.dirname(__file__), "server", "server"
-            )
-        logger.info("Data server binary: %s", server_binary)
+        server_binary = _get_server_binary()
         if not os.path.exists(server_binary):
             raise RuntimeError(
                 "TensorBoard data server not found. This mode is experimental "
@@ -147,3 +142,23 @@ def _make_provider(addr):
     channel = grpc.secure_channel(addr, creds, options=options)
     stub = grpc_provider.make_stub(channel)
     return grpc_provider.GrpcDataProvider(addr, stub)
+
+
+def _get_server_binary():
+    env_result = os.environ.get(_ENV_DATA_SERVER_BINARY)
+    if env_result:
+        logging.info("Server binary (from env): %s", env_result)
+        return env_result
+
+    try:
+        import tensorboard_data_server
+    except ImportError:
+        pass
+    else:
+        pkg_result = tensorboard_data_server.server_binary()
+        logging.info("Server binary (from Python package): %s", pkg_result)
+        return pkg_result
+
+    bundle_result = os.path.join(os.path.dirname(__file__), "server", "server")
+    logging.info("Server binary (from bundle): %s", bundle_result)
+    return bundle_result
