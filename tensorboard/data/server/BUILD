@@ -91,7 +91,7 @@ py_binary(
 
 rust_binary(
     name = "server",
-    srcs = ["cli.rs"],
+    srcs = ["main.rs"],
     edition = "2018",
     deps = [
         ":rustboard_core",
