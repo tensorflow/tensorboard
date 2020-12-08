@@ -65,10 +65,7 @@ def main():
     platform_name = {
         # using platform tag values from TensorFlow releases
         "Linux": "manylinux2010",
-<<<<<<< HEAD
         "Darwin": "macosx_10_9",
-=======
->>>>>>> 17399b81b52db435aee8ea9104d7c2fbc37e8bc8
     }.get(platform.system())
     if platform_name is None:
         raise RuntimeError("Unsupported platform: %r" % (platform.system(),))
