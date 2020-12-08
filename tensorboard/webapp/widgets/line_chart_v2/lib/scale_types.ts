@@ -62,4 +62,12 @@ export interface Scale {
    *    may return less or more ticks.
    */
   ticks(domain: [number, number], sizeGuidance: number): number[];
+
+  /**
+   * Returns true when a value, x, is a value, can be safely transformed symmetrically*,
+   * and is not an extremum.
+   *
+   * *: e.g., f(1) = 2 and f'(2) = 1 vs. f(1) = NaN and f'(NaN) = ?.
+   */
+  isSafeNumber(x: number): boolean;
 }

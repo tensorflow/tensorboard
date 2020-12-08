@@ -321,6 +321,11 @@ class MetricsPlugin(base_plugin.TBPlugin):
             experiment_id=experiment,
             plugin_name=image_metadata.PLUGIN_NAME,
         )
+        # Not all data providers support tensors and/or blob sequences.
+        if histogram_mapping is None:
+            histogram_mapping = {}
+        if image_mapping is None:
+            image_mapping = {}
 
         result = {}
         result["scalars"] = _format_basic_mapping(scalar_mapping)
