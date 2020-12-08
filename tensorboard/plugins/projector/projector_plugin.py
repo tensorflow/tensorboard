@@ -24,6 +24,7 @@ import imghdr
 import mimetypes
 import os
 import threading
+import time
 
 import numpy as np
 from werkzeug import wrappers
@@ -71,6 +72,7 @@ class LRUCache(object):
             raise ValueError("The cache size must be >=1")
         self._size = size
         self._dict = collections.OrderedDict()
+        self._cache_ages = {}
 
     def get(self, key):
         try:
@@ -87,8 +89,15 @@ class LRUCache(object):
             self._dict.pop(key)
         except KeyError:
             if len(self._dict) >= self._size:
-                self._dict.popitem(last=False)
+                key = self._dict.popitem(last=False)[0]
+                self._cache_ages.pop(key)
         self._dict[key] = value
+        self._cache_ages[key] = time.time()
+
+    def clear_if_older_than(self, key, timestamp):
+        if key in self._cache_ages and self._cache_ages[key] < timestamp:
+            self._cache_ages.pop(key)
+            self._dict.pop(key)
 
 
 class EmbeddingMetadata(object):
@@ -373,6 +382,7 @@ class ProjectorPlugin(base_plugin.TBPlugin):
                     fpath = _rel_to_abs_asset_path(
                         embedding.tensor_path, self.config_fpaths[run]
                     )
+                    _clear_cache_if_outdated(fpath, (run, embedding.tensor_name));
                     tensor = self.tensor_cache.get((run, embedding.tensor_name))
                     if tensor is None:
                         try:
@@ -531,6 +541,11 @@ class ProjectorPlugin(base_plugin.TBPlugin):
             )
             assets_path_pair = (run, os.path.abspath(assets_dir))
             run_path_pairs.append(assets_path_pair)
+
+    def _clear_cache_if_outdated(self, path, key):
+      # Check file creation time
+      modified_date = tf.io.gfile.Stat(path).mtime
+      self.tensor_cache_.clear_if_older_than(key, modified_date)
 
     @wrappers.Request.application
     def _serve_file(self, file_path, request):
