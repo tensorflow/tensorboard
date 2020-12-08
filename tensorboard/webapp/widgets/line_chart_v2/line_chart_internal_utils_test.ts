@@ -18,8 +18,13 @@ import {
   getRendererType,
 } from './line_chart_internal_utils';
 import * as libUtils from './lib/utils';
-import {RendererType} from './lib/public_types';
+import {RendererType, ScaleType} from './lib/public_types';
 import {buildSeries, buildMetadata} from './lib/testing';
+import {createScale} from './lib/scale';
+
+function isFinite(x: number): boolean {
+  return Number.isFinite(x);
+}
 
 describe('line_chart_v2/line_chart_internal_utils test', () => {
   describe('#computeDataSeriesExtent', () => {
@@ -47,7 +52,9 @@ describe('line_chart_v2/line_chart_internal_utils test', () => {
           foo: buildMetadata({id: 'foo', visible: true}),
           bar: buildMetadata({id: 'bar', visible: true}),
         },
-        false
+        false,
+        isFinite,
+        isFinite
       );
 
       expect(actual).toEqual({x: [-1000, 3], y: [-100, 100]});
@@ -64,7 +71,9 @@ describe('line_chart_v2/line_chart_internal_utils test', () => {
         {
           foo: buildMetadata({id: 'foo', visible: true}),
         },
-        false
+        false,
+        isFinite,
+        isFinite
       );
 
       expect(actual).toEqual({x: [1, 1], y: [-1, -1]});
@@ -86,7 +95,9 @@ describe('line_chart_v2/line_chart_internal_utils test', () => {
           foo: buildMetadata({id: 'foo', visible: true}),
           bar: buildMetadata({id: 'bar', visible: true}),
         },
-        false
+        false,
+        isFinite,
+        isFinite
       );
 
       expect(actual).toEqual({x: [-10, 1], y: [-1, 10]});
@@ -115,7 +126,9 @@ describe('line_chart_v2/line_chart_internal_utils test', () => {
           foo: buildMetadata({id: 'foo', visible: true}),
           bar: buildMetadata({id: 'bar', visible: false}),
         },
-        false
+        false,
+        isFinite,
+        isFinite
       );
 
       expect(actual).toEqual({x: [1, 3], y: [-10, 100]});
@@ -144,7 +157,9 @@ describe('line_chart_v2/line_chart_internal_utils test', () => {
           foo: buildMetadata({id: 'foo', visible: true, aux: true}),
           bar: buildMetadata({id: 'bar'}),
         },
-        false
+        false,
+        isFinite,
+        isFinite
       );
 
       expect(actual).toEqual({x: [-1000, -100], y: [0, 1]});
@@ -165,7 +180,9 @@ describe('line_chart_v2/line_chart_internal_utils test', () => {
         {
           bar: buildMetadata({id: 'bar'}),
         },
-        false
+        false,
+        isFinite,
+        isFinite
       );
 
       expect(actual).toEqual({x: [-1000, -100], y: [0, 1]});
@@ -187,7 +204,9 @@ describe('line_chart_v2/line_chart_internal_utils test', () => {
         {
           foo: buildMetadata({id: 'foo'}),
         },
-        false
+        false,
+        isFinite,
+        isFinite
       );
 
       expect(actual).toEqual({x: [1, 4], y: [-1, -1]});
@@ -216,7 +235,9 @@ describe('line_chart_v2/line_chart_internal_utils test', () => {
           foo: buildMetadata({id: 'foo', visible: false}),
           bar: buildMetadata({id: 'bar', visible: false}),
         },
-        false
+        false,
+        isFinite,
+        isFinite
       );
 
       expect(actual).toEqual({
@@ -226,7 +247,7 @@ describe('line_chart_v2/line_chart_internal_utils test', () => {
     });
 
     it('returns undefined when dataSeries is empty', () => {
-      const actual = computeDataSeriesExtent([], {}, false);
+      const actual = computeDataSeriesExtent([], {}, false, isFinite, isFinite);
 
       expect(actual).toEqual({
         x: undefined,
@@ -248,7 +269,9 @@ describe('line_chart_v2/line_chart_internal_utils test', () => {
         {
           foo: buildMetadata({id: 'foo', visible: true}),
         },
-        false
+        false,
+        isFinite,
+        isFinite
       );
 
       expect(actual).toEqual({
@@ -282,7 +305,9 @@ describe('line_chart_v2/line_chart_internal_utils test', () => {
             foo: buildMetadata({id: 'foo', visible: true}),
             bar: buildMetadata({id: 'bar', visible: true}),
           },
-          true
+          true,
+          isFinite,
+          isFinite
         );
 
         expect(actual).toEqual({
@@ -306,7 +331,9 @@ describe('line_chart_v2/line_chart_internal_utils test', () => {
           {
             foo: buildMetadata({id: 'foo', visible: true}),
           },
-          true
+          true,
+          isFinite,
+          isFinite
         );
 
         expect(actual).toEqual({
@@ -330,7 +357,9 @@ describe('line_chart_v2/line_chart_internal_utils test', () => {
           {
             foo: buildMetadata({id: 'foo', visible: true}),
           },
-          true
+          true,
+          isFinite,
+          isFinite
         );
 
         expect(actual).toEqual({
@@ -355,12 +384,76 @@ describe('line_chart_v2/line_chart_internal_utils test', () => {
           {
             foo: buildMetadata({id: 'foo', visible: true}),
           },
-          true
+          true,
+          isFinite,
+          isFinite
         );
 
         expect(actual).toEqual({
           x: [-1, 2],
           y: [1, 1],
+        });
+      });
+    });
+
+    describe('filter for safe value', () => {
+      it('calculates extent after filtering based on safeValue predicate', () => {
+        const actual = computeDataSeriesExtent(
+          [
+            buildSeries({
+              id: 'foo',
+              points: [
+                {x: -1, y: 0},
+                {x: 0, y: 1},
+                {x: 1, y: 2},
+                {x: 2, y: 3},
+              ],
+            }),
+          ],
+          {
+            foo: buildMetadata({id: 'foo', visible: true}),
+          },
+          true,
+          (x: number) => x > 0,
+          (y: number) => y < 1
+        );
+
+        expect(actual).toEqual({
+          x: [1, 2],
+          y: [0, 0],
+        });
+      });
+
+      it('supports usages with line chart scale', () => {
+        const xScale = createScale(ScaleType.LOG10);
+        const yScale = createScale(ScaleType.LINEAR);
+
+        const actual = computeDataSeriesExtent(
+          [
+            buildSeries({
+              id: 'foo',
+              points: [
+                {x: -Infinity, y: -100},
+                {x: -100, y: NaN},
+                {x: 0, y: Infinity},
+                {x: 1, y: 2},
+                {x: 2, y: 3},
+              ],
+            }),
+          ],
+          {
+            foo: buildMetadata({id: 'foo', visible: true}),
+          },
+          false,
+          xScale.isSafeNumber,
+          yScale.isSafeNumber
+        );
+
+        expect(actual).toEqual({
+          // Filtered out non-positive values when calculating the extent
+          x: [1, 2],
+          // Filtered out NaN and non-finite values.
+          y: [-100, 3],
         });
       });
     });
