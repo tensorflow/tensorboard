@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+<<<<<<< HEAD
 //! Command-line interface for the main entry point.
 
 use clap::Clap;
@@ -193,4 +194,8 @@ fn write_port_file(path: &Path, port: u16) -> std::io::Result<()> {
     writeln!(f, "{}", port)?;
     f.sync_all()?;
     Ok(())
+=======
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    rustboard_core::cli::main()
+>>>>>>> 7a21416341368bc9933c9e86dfd63d95707dce9f
 }

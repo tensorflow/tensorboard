@@ -407,7 +407,7 @@ mod tests {
         Ok(())
     }
 
-    #[cfg(unix)]
+    #[cfg(target_os = "linux")] // macOS seems to sometimes give EILSEQ on non-UTF-8 filenames
     #[test]
     fn test_bad_unicode_collision() -> Result<(), Box<dyn std::error::Error>> {
         use std::os::unix::ffi::OsStrExt;
