@@ -97,6 +97,40 @@ jobs:
           bazel test //tensorboard/compat/tensorflow_stub:gfile_s3_test &&
           bazel test //tensorboard/summary/writer:event_file_writer_s3_test
 
+  build-data-server-pip:
+    runs-on: ${{ matrix.platform }}
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: ['ubuntu-16.04']
+        rust_version: ['1.48.0']
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-python@v1
+        with:
+          python-version: '3.8'
+          architecture: 'x64'
+      - name: 'Install Rust toolchain'
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust_version }}
+      - name: 'Build'
+        run: cd tensorboard/data/server/ && cargo build --release
+      - name: 'Test'
+        run: cd tensorboard/data/server/ && cargo test --release
+      - name: 'Package'
+        run: |
+          rm -rf /tmp/pip_package && mkdir /tmp/pip_package
+          python tensorboard/data/server/pip_package/build.py \
+            --server-binary tensorboard/data/server/target/release/rustboard \
+            --out-dir /tmp/pip_package \
+            ;
+      - name: 'Upload'
+        uses: actions/upload-artifact@v2
+        with:
+          name: rustboard-${{ matrix.platform }}
+          path: /tmp/pip_package/*
+
   lint-python-flake8:
     runs-on: ubuntu-16.04
     strategy:
