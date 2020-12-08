@@ -102,7 +102,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: ['ubuntu-16.04']
+        platform: ['ubuntu-16.04', 'macos-10.15']
         rust_version: ['1.48.0']
     steps:
       - uses: actions/checkout@v1
