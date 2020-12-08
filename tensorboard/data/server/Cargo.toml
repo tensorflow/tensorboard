@@ -45,7 +45,7 @@ tonic-build = "0.3.1"
 
 [[bin]]
 name = "rustboard"
-path = "cli.rs"
+path = "main.rs"
 
 [lib]
 name = "rustboard_core"

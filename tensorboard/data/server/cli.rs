@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+//! Command-line interface for the main entry point.
+
 use clap::Clap;
 use log::{debug, error, info, LevelFilter};
 use std::fs::File;
@@ -25,10 +27,10 @@ use std::time::{Duration, Instant};
 use tokio::net::TcpListener;
 use tonic::transport::Server;
 
-use rustboard_core::commit::Commit;
-use rustboard_core::logdir::LogdirLoader;
-use rustboard_core::proto::tensorboard::data;
-use rustboard_core::server::DataProviderHandler;
+use crate::commit::Commit;
+use crate::logdir::LogdirLoader;
+use crate::proto::tensorboard::data;
+use crate::server::DataProviderHandler;
 
 use data::tensor_board_data_provider_server::TensorBoardDataProviderServer;
 
@@ -102,7 +104,7 @@ impl Seconds {
 }
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
+pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let opts = Opts::parse();
     init_logging(match opts.verbosity {
         0 => LevelFilter::Warn,

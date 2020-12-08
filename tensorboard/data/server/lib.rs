@@ -17,6 +17,7 @@ limitations under the License.
 
 #![allow(clippy::needless_update)] // https://github.com/rust-lang/rust-clippy/issues/6323
 
+pub mod cli;
 pub mod commit;
 pub mod data_compat;
 pub mod downsample;
