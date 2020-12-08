@@ -75,6 +75,7 @@ tf_ts_library(
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/widgets/line_chart_v2/lib:chart",
         "//tensorboard/webapp/widgets/line_chart_v2/lib:public_types",
+        "//tensorboard/webapp/widgets/line_chart_v2/lib:scale",
         "//tensorboard/webapp/widgets/line_chart_v2/lib:testing",
         "//tensorboard/webapp/widgets/line_chart_v2/lib:utils",
         "@npm//@angular/common",
