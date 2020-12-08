@@ -316,7 +316,7 @@ describe('line_chart_v2/lib/scale test', () => {
         expect(scale.isSafeNumber(1e100)).toBe(true);
       });
 
-      it('returns non-positive values', () => {
+      it('returns false for non-positive values', () => {
         expect(scale.isSafeNumber(Infinity)).toBe(false);
         expect(scale.isSafeNumber(-Infinity)).toBe(false);
         expect(scale.isSafeNumber(NaN)).toBe(false);
