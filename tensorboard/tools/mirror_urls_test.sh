@@ -44,7 +44,7 @@ check_urls_resolve() {
     exclude_buildozer=':!ci/download_buildozer.sh'  # likewise
     # We use `git-grep` to efficiently get an initial result set, then
     # filter it down with GNU `grep` separately, because `git-grep` only
-    # learned `-o` in Git v2.19; Travis uses v2.15.1.
+    # learned `-o` in Git v2.19.
     unresolved_urls_file="${tmpdir}/unresolved_urls"
     git grep -Ph "${url_pcre}" "${exclude_bazel}" "${exclude_buildifier}" \
         "${exclude_buildozer}" \
