@@ -31,6 +31,7 @@ tf_ng_module(
         "//tensorboard/webapp/metrics/actions",
         "//tensorboard/webapp/metrics/store",
         "//tensorboard/webapp/widgets/dropdown",
+        "@npm//@angular/common",
         "@npm//@angular/core",
         "@npm//@ngrx/store",
         "@npm//rxjs",

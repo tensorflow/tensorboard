@@ -30,6 +30,7 @@ tf_ng_module(
         "//tensorboard/webapp/plugins/npmi/store:types",
         "//tensorboard/webapp/plugins/npmi/util:csv_result",
         "//tensorboard/webapp/plugins/npmi/util:metric_type",
+        "@npm//@angular/common",
         "@npm//@angular/core",
         "@npm//@ngrx/store",
         "@npm//rxjs",

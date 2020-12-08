@@ -14,6 +14,7 @@ tf_ng_module(
         "//tensorboard/webapp/angular:expect_angular_material_chips",
         "//tensorboard/webapp/plugins/npmi/store",
         "//tensorboard/webapp/plugins/npmi/store:types",
+        "@npm//@angular/common",
         "@npm//@angular/core",
         "@npm//@ngrx/store",
         "@npm//rxjs",

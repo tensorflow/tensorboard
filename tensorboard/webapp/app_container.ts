@@ -17,8 +17,6 @@ import {Store} from '@ngrx/store';
 import {coreLoaded} from './core/actions';
 import {State} from './core/store';
 
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
-
 @Component({
   selector: 'tb-webapp',
   templateUrl: './app_container.ng.html',

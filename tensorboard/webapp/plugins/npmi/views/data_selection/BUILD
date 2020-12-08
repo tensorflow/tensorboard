@@ -25,6 +25,7 @@ tf_ng_module(
         "//tensorboard/webapp/plugins/npmi/views/data_selection/metric_arithmetic",
         "//tensorboard/webapp/plugins/npmi/views/data_selection/metric_search",
         "//tensorboard/webapp/plugins/npmi/views/data_selection/results_download",
+        "@npm//@angular/common",
         "@npm//@angular/core",
         "@npm//@ngrx/store",
         "@npm//rxjs",

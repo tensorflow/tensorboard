@@ -16,8 +16,7 @@ import {createSelector, createFeatureSelector} from '@ngrx/store';
 import {AlertInfo} from '../types';
 import {AlertState, State, ALERT_FEATURE_KEY} from './alert_types';
 
-/** @typehack */ import * as _typeHackSelector from '@ngrx/store/src/selector';
-/** @typehack */ import * as _typeHackStore from '@ngrx/store/store';
+/** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
 const selectAlertState = createFeatureSelector<State, AlertState>(
   ALERT_FEATURE_KEY

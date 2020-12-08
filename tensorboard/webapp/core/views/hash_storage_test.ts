@@ -28,7 +28,6 @@ import {HashStorageComponent} from './hash_storage_component';
 import {HashDeepLinker, DeepLinkerInterface} from '../../deeplink';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
-/** @typehack */ import * as _typeHackStoreTesting from '@ngrx/store/testing';
 
 class TestableDeeplinker implements DeepLinkerInterface {
   getString(key: string) {

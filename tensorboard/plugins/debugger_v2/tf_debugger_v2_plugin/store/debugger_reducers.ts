@@ -45,7 +45,7 @@ import {
 
 // HACK: These imports are for type inference.
 // https://github.com/bazelbuild/rules_nodejs/issues/1013
-/** @typehack */ import * as _typeHackStore from '@ngrx/store/store';
+/** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
 const DEFAULT_EXECUTION_PAGE_SIZE = 100;
 const DEFAULT_GRAPH_EXECUTION_PAGE_SIZE = 200;

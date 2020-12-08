@@ -40,8 +40,8 @@ import {
 import {manualReload, reload} from '../../../core/actions';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
-/** @typehack */ import * as _typeHackNgrxStore from '@ngrx/store/src/models';
-/** @typehack */ import * as _typeHackNgrxEffects from '@ngrx/effects/effects';
+
+/** @typehack */ import * as _typeHackNgrxEffects from '@ngrx/effects';
 
 @Injectable()
 export class TextEffects {

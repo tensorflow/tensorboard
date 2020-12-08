@@ -35,6 +35,7 @@ tf_ng_module(
         "//tensorboard/webapp/plugins/npmi/views/selected_annotations",
         "//tensorboard/webapp/plugins/npmi/views/violin_filters",
         "//tensorboard/webapp/runs_legacy",
+        "@npm//@angular/common",
         "@npm//@angular/core",
         "@npm//@angular/forms",
         "@npm//@ngrx/store",

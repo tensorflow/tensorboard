@@ -17,10 +17,6 @@ import {DataLoadState} from '../../types/data';
 import * as actions from '../actions';
 import {CoreState, initialState} from './core_types';
 
-// HACK: These imports are for type inference.
-// https://github.com/bazelbuild/rules_nodejs/issues/1013
-/** @typehack */ import * as _typeHackStore from '@ngrx/store/store';
-
 const reducer = createReducer(
   initialState,
   on(

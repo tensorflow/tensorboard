@@ -47,7 +47,6 @@ import {getEnabledExperimentalPlugins} from '../../feature_flag/store/feature_fl
 import {State} from '../../app_state';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
-/** @typehack */ import * as _typeHackNgrx from '@ngrx/store/src/models';
 /** @typehack */ import * as _typeHackNgrxEffects from '@ngrx/effects';
 
 @Injectable()
