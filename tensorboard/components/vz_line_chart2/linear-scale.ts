@@ -33,14 +33,6 @@ export class LinearScale extends Plottable.Scales.Linear implements ITfScale {
     return this;
   }
   /**
-   * TODO(nickfelt): Examine whether we truly require `c`.
-   * Adds some padding to a given domain. Specifically, it:
-   * - returns about [-0.1a - c, 2.1a + c] when a = b and a >= 0.
-   * - returns about [-2.1|a| - c, -0.1|a| + c] when a = b and a < 0.
-   * - returns [-0.1b, b + padProportion * (b-a)] if b > 2a and a > 0
-   * - else, pads by `padProportion`
-   * Note that `c` is a constant offset which specifically is 1.1. Please refer
-   * to [1] for its rationale.
    * @override
    */
   protected _niceDomain(domain: number[], count?: number): number[] {
