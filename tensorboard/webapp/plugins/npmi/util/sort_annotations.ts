@@ -26,115 +26,105 @@ export function sortAnnotations(
   embeddingData: EmbeddingListing
 ): string[] {
   let result = Object.keys(annotationData);
-  if (sort.metric === '') {
+  let similarityBased =
+    sort.order === SortOrder.DISSIMILAR || sort.order === SortOrder.SIMILAR;
+  if (
+    sort.metric === '' ||
+    (embeddingData[sort.metric] === undefined && similarityBased)
+  ) {
     return result;
   }
-  if (sort.order === SortOrder.SIMILAR || sort.order === SortOrder.DISSIMILAR) {
-    return (result = embeddingSort(embeddingData, result, sort));
-  }
-  return classicSort(annotationData, result, sort);
+  const distanceData: {[annotation: string]: number} = similarityBased
+    ? calculateDistances(result, embeddingData, sort)
+    : extractExtremeData(result, annotationData, sort);
+  return sortData(
+    result,
+    distanceData,
+    sort.order === SortOrder.UP || sort.order === SortOrder.SIMILAR
+  );
 }
 
-function classicSort(
+function sortData(
+  keys: string[],
+  values: {[annotation: string]: number},
+  ascending: boolean
+) {
+  if (ascending) {
+    return keys.sort((a, b) => {
+      return values[a] - values[b];
+    });
+  }
+  return keys.sort((a, b) => {
+    return values[b] - values[a];
+  });
+}
+
+function extractExtremeData(
+  keys: string[],
   annotationData: AnnotationDataListing,
-  keys: string[],
   sort: AnnotationSort
-): string[] {
+) {
   const strippedMetric = stripMetricString(sort.metric);
-  switch (sort.order) {
-    case SortOrder.DOWN: {
-      const maxData: {[annotation: string]: number} = {};
-      for (const annotation of keys) {
-        maxData[annotation] = Math.max(
-          ...annotationData[annotation]
-            .filter((annotation) => annotation.metric === strippedMetric)
-            .map((filtered) =>
-              filtered.nPMIValue === null ? -Infinity : filtered.nPMIValue
-            )
-        );
-      }
-      keys = keys.sort((a, b) => {
-        return maxData[b] - maxData[a];
-      });
-      break;
+  const extremeData: {[annotation: string]: number} = {};
+  if (sort.order === SortOrder.DOWN) {
+    for (const annotation of keys) {
+      extremeData[annotation] = Math.max(
+        ...annotationData[annotation]
+          .filter((annotation) => annotation.metric === strippedMetric)
+          .map((filtered) =>
+            filtered.nPMIValue === null ? -Infinity : filtered.nPMIValue
+          )
+      );
     }
-    case SortOrder.UP: {
-      const minData: {[annotation: string]: number} = {};
-      for (const annotation of keys) {
-        minData[annotation] = Math.min(
-          ...annotationData[annotation]
-            .filter((annotation) => annotation.metric === strippedMetric)
-            .map((filtered) =>
-              filtered.nPMIValue === null ? Infinity : filtered.nPMIValue
-            )
-        );
-      }
-      keys = keys.sort((a, b) => {
-        return minData[a] - minData[b];
-      });
-      break;
+  } else {
+    for (const annotation of keys) {
+      extremeData[annotation] = Math.min(
+        ...annotationData[annotation]
+          .filter((annotation) => annotation.metric === strippedMetric)
+          .map((filtered) =>
+            filtered.nPMIValue === null ? Infinity : filtered.nPMIValue
+          )
+      );
     }
   }
-  return keys;
+  return extremeData;
 }
 
-function embeddingSort(
-  embeddingData: EmbeddingListing,
+function calculateDistances(
   keys: string[],
+  embeddingData: EmbeddingListing,
   sort: AnnotationSort
-): string[] {
-  switch (sort.order) {
-    case SortOrder.SIMILAR: {
-      const distance: {[annotation: string]: number} = {};
-      for (const annotation of keys) {
-        if (annotation === sort.metric) {
-          distance[annotation] = Number.NEGATIVE_INFINITY;
-        } else {
-          distance[annotation] = embeddingData[annotation]
-            ? calculateDistance(
-                embeddingData[sort.metric],
-                embeddingData[annotation]
-              )
-            : Number.POSITIVE_INFINITY;
-        }
-      }
-      keys = keys.sort((a, b) => {
-        return distance[a] - distance[b];
-      });
-      break;
-    }
-    case SortOrder.DISSIMILAR: {
-      const distance: {[annotation: string]: number} = {};
-      for (const annotation of keys) {
-        if (annotation === sort.metric) {
-          distance[annotation] = Number.POSITIVE_INFINITY;
-        } else {
-          distance[annotation] = embeddingData[annotation]
-            ? calculateDistance(
-                embeddingData[sort.metric],
-                embeddingData[annotation],
-                Number.NEGATIVE_INFINITY
-              )
-            : Number.NEGATIVE_INFINITY;
-        }
-      }
-      keys = keys.sort((a, b) => {
-        return distance[b] - distance[a];
-      });
-      break;
+) {
+  const distances: {[annotation: string]: number} = {};
+  let sameDistance = Number.POSITIVE_INFINITY;
+  let extremeDistance = Number.NEGATIVE_INFINITY;
+  if (sort.order === SortOrder.SIMILAR) {
+    sameDistance = Number.NEGATIVE_INFINITY;
+    extremeDistance = Number.POSITIVE_INFINITY;
+  }
+  for (const annotation of keys) {
+    if (annotation === sort.metric) {
+      distances[annotation] = sameDistance;
+    } else {
+      distances[annotation] = embeddingData[annotation]
+        ? calculateEmbeddingSimilarity(
+            embeddingData[sort.metric],
+            embeddingData[annotation],
+            extremeDistance
+          )
+        : extremeDistance;
     }
   }
-  return keys;
+  return distances;
 }
 
-function calculateDistance(
+function calculateEmbeddingSimilarity(
   reference: number[],
   toEmbedding: number[],
-  faultCase: number = Number.POSITIVE_INFINITY
+  faultCase: number
 ): number {
   if (reference.length != toEmbedding.length) return faultCase;
-  const subtracted = toEmbedding.map((i, n) => i - reference[n]);
+  const subtracted = toEmbedding.map((value, key) => value - reference[key]);
   const powered = subtracted.map((e) => Math.pow(e, 2));
-  const sum = powered.reduce((total, current) => total + current, 0);
-  return Math.sqrt(sum);
+  return powered.reduce((total, current) => total + current, 0);
 }

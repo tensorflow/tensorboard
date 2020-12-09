@@ -94,10 +94,10 @@ export class AnnotationsListToolbarContainer {
   }
 
   toggleShowCounts() {
-    this.store.dispatch(npmiActions.npmiToggleShowCounts());
+    this.store.dispatch(npmiActions.npmiShowCountsToggled());
   }
 
   toggleShowHidden() {
-    this.store.dispatch(npmiActions.npmiToggleShowHiddenAnnotations());
+    this.store.dispatch(npmiActions.npmiShowHiddenAnnotationsToggled());
   }
 }

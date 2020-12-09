@@ -161,12 +161,12 @@ describe('Npmi Annotations List Header Container', () => {
     ]);
   });
 
-  it('dispatches npmiChangeannotationSort action when metric is clicked', () => {
+  it('dispatches npmiAnnotationSortChanged action when metric is clicked', () => {
     const headerMetric = fixture.debugElement.query(css.HEADER);
     headerMetric.nativeElement.click();
     fixture.detectChanges();
     expect(dispatchedActions).toEqual([
-      npmiActions.npmiChangeAnnotationSort({
+      npmiActions.npmiAnnotationSortChanged({
         metric: 'nPMI@test',
       }),
     ]);

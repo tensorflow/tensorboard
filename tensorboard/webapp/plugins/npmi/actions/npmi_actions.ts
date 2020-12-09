@@ -89,18 +89,18 @@ export const npmiRemoveMetricFilter = createAction(
   props<{metric: string}>()
 );
 
-export const npmiChangeMetricFilter = createAction(
+export const npmiMetricFilterChanged = createAction(
   '[NPMI] Metric Filter Changed',
   props<{metric: string; max: number; min: number; includeNaN: boolean}>()
 );
 
-export const npmiChangeAnnotationSort = createAction(
-  '[NPMI] Change Annotation Sort',
+export const npmiAnnotationSortChanged = createAction(
+  '[NPMI] Annotation Sort Changed',
   props<{metric: string}>()
 );
 
-export const npmiChangeSimilaritySort = createAction(
-  '[NPMI] Change Similarity Sort',
+export const npmiSimilaritySortChanged = createAction(
+  '[NPMI] Similarity Sort Changed',
   props<{annotation: string}>()
 );
 
@@ -116,13 +116,13 @@ export const npmiToggleSidebarExpanded = createAction(
   '[NPMI] Toggle Sidebar Expanded'
 );
 
-export const npmiToggleShowCounts = createAction('[NPMI] Toggle Show Counts');
+export const npmiShowCountsToggled = createAction('[NPMI] Show Counts Toggled');
 
-export const npmiToggleShowHiddenAnnotations = createAction(
-  '[NPMI] Toggle Show Hidden Annotations'
+export const npmiShowHiddenAnnotationsToggled = createAction(
+  '[NPMI] Show Hidden Annotations Toggled'
 );
 
-export const npmiChangeSidebarWidth = createAction(
-  '[NPMI] Change Sidebar Width',
+export const npmiSidebarWidthChanged = createAction(
+  '[NPMI] Sidebar Width Changed',
   props<{sidebarWidth: number}>()
 );

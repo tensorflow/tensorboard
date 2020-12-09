@@ -47,7 +47,7 @@ export class HeaderContainer {
 
   changeSort(newMetric: string) {
     this.store.dispatch(
-      npmiActions.npmiChangeAnnotationSort({metric: newMetric})
+      npmiActions.npmiAnnotationSortChanged({metric: newMetric})
     );
   }
 

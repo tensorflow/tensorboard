@@ -176,7 +176,7 @@ describe('Npmi Main Container', () => {
     const contentElement = fixture.debugElement.query(css.CONTENT);
     contentElement.triggerEventHandler('mousemove', {clientX: 50});
     expect(dispatchedActions).toEqual([
-      npmiActions.npmiChangeSidebarWidth({sidebarWidth: 50}),
+      npmiActions.npmiSidebarWidthChanged({sidebarWidth: 50}),
     ]);
   });
 

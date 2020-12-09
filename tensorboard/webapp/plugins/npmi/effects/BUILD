@@ -9,6 +9,7 @@ tf_ng_module(
         "npmi_effects.ts",
     ],
     deps = [
+        "//tensorboard/webapp:app_state",
         "//tensorboard/webapp:selectors",
         "//tensorboard/webapp/core/actions",
         "//tensorboard/webapp/plugins/npmi/actions",

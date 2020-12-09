@@ -273,7 +273,7 @@ const reducer = createReducer(
     }
   ),
   on(
-    actions.npmiChangeMetricFilter,
+    actions.npmiMetricFilterChanged,
     (state: NpmiState, {metric, max, min, includeNaN}): NpmiState => {
       if (!state.metricFilters[metric]) {
         return state;
@@ -292,7 +292,7 @@ const reducer = createReducer(
     }
   ),
   on(
-    actions.npmiChangeAnnotationSort,
+    actions.npmiAnnotationSortChanged,
     (state: NpmiState, {metric}): NpmiState => {
       const newSort = {
         metric: metric,
@@ -308,7 +308,7 @@ const reducer = createReducer(
     }
   ),
   on(
-    actions.npmiChangeSimilaritySort,
+    actions.npmiSimilaritySortChanged,
     (state: NpmiState, {annotation}): NpmiState => {
       const newSort = {
         metric: annotation,
@@ -355,7 +355,7 @@ const reducer = createReducer(
   ),
 
   on(
-    actions.npmiToggleShowCounts,
+    actions.npmiShowCountsToggled,
     (state: NpmiState): NpmiState => {
       return {
         ...state,
@@ -364,7 +364,7 @@ const reducer = createReducer(
     }
   ),
   on(
-    actions.npmiToggleShowHiddenAnnotations,
+    actions.npmiShowHiddenAnnotationsToggled,
     (state: NpmiState): NpmiState => {
       return {
         ...state,
@@ -373,7 +373,7 @@ const reducer = createReducer(
     }
   ),
   on(
-    actions.npmiChangeSidebarWidth,
+    actions.npmiSidebarWidthChanged,
     (state: NpmiState, {sidebarWidth}): NpmiState => {
       return {
         ...state,

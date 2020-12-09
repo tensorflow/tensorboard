@@ -66,7 +66,7 @@ export class MainContainer {
   onResizeTriggered(event: MouseEvent) {
     if (this.resizing) {
       this.store.dispatch(
-        npmiActions.npmiChangeSidebarWidth({
+        npmiActions.npmiSidebarWidthChanged({
           sidebarWidth: event.clientX,
         })
       );

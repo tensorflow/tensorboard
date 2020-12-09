@@ -106,6 +106,24 @@ describe('sort annotations utils', () => {
     ]);
   });
 
+  it('does not sort annotations by similar embeddings if selected annotation not containing an embedding', () => {
+    const annotationData: AnnotationDataListing = buildSampleAnnotationData();
+    const sort: AnnotationSort = {
+      metric: 'annotation_1',
+      order: SortOrder.SIMILAR,
+    };
+    const embeddingData: EmbeddingListing = {
+      annotation_2: [0.5],
+      annotation_3: [0.1],
+    };
+    const annotations = sortAnnotations(annotationData, sort, embeddingData);
+    expect(annotations).toEqual([
+      'annotation_1',
+      'annotation_2',
+      'annotation_3',
+    ]);
+  });
+
   it('sorts annotations by dissimilar embeddings with empty embedding', () => {
     const annotationData: AnnotationDataListing = buildSampleAnnotationData();
     const sort: AnnotationSort = {

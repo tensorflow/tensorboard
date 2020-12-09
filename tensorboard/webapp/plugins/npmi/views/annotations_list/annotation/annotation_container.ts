@@ -88,7 +88,7 @@ export class AnnotationContainer {
 
   showSimilarAnnotations() {
     this.store.dispatch(
-      npmiActions.npmiChangeSimilaritySort({
+      npmiActions.npmiSimilaritySortChanged({
         annotation: this.annotation,
       })
     );

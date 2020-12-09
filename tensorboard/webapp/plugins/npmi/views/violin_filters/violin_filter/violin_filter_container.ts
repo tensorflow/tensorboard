@@ -119,7 +119,7 @@ export class ViolinFilterContainer implements OnInit {
 
   updateFilter(filter: MetricFilter) {
     this.store.dispatch(
-      npmiActions.npmiChangeMetricFilter({metric: this.metricName, ...filter})
+      npmiActions.npmiMetricFilterChanged({metric: this.metricName, ...filter})
     );
   }
 }

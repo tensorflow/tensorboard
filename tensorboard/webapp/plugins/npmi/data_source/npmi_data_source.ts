@@ -49,45 +49,48 @@ function buildAnnotationData(
   backendAnnotations: AnnotationListing,
   experimentId: string
 ): AnnotationListing {
-  const frontendAnnotations: AnnotationListing = {};
-  for (const key of Object.keys(backendAnnotations)) {
-    frontendAnnotations[runToRunId(key, experimentId)] =
-      backendAnnotations[key];
-  }
-  return frontendAnnotations;
+  return Object.fromEntries(
+    Object.entries(backendAnnotations).map(([key, value]) => [
+      runToRunId(key, experimentId),
+      value,
+    ])
+  );
 }
 
 function buildMetricData(
   backendMetrics: MetricListing,
   experimentId: string
 ): MetricListing {
-  const frontendMetrics: MetricListing = {};
-  for (const key of Object.keys(backendMetrics)) {
-    frontendMetrics[runToRunId(key, experimentId)] = backendMetrics[key];
-  }
-  return frontendMetrics;
+  return Object.fromEntries(
+    Object.entries(backendMetrics).map(([key, value]) => [
+      runToRunId(key, experimentId),
+      value,
+    ])
+  );
 }
 
 function buildValueData(
   backendValues: ValueListing,
   experimentId: string
 ): ValueListing {
-  const frontendValues: ValueListing = {};
-  for (const key of Object.keys(backendValues)) {
-    frontendValues[runToRunId(key, experimentId)] = backendValues[key];
-  }
-  return frontendValues;
+  return Object.fromEntries(
+    Object.entries(backendValues).map(([key, value]) => [
+      runToRunId(key, experimentId),
+      value,
+    ])
+  );
 }
 
 function buildEmbeddingData(
   backendEmbeddings: RunEmbeddingListing,
   experimentId: string
 ): RunEmbeddingListing {
-  const frontendEmbeddings: RunEmbeddingListing = {};
-  for (const key of Object.keys(backendEmbeddings)) {
-    frontendEmbeddings[runToRunId(key, experimentId)] = backendEmbeddings[key];
-  }
-  return frontendEmbeddings;
+  return Object.fromEntries(
+    Object.entries(backendEmbeddings).map(([key, value]) => [
+      runToRunId(key, experimentId),
+      value,
+    ])
+  );
 }
 
 interface AnnotationListing {
