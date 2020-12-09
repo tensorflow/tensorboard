@@ -105,8 +105,28 @@ impl StageTimeSeries {
         use pb::DataClass;
         match self.data_class {
             DataClass::Scalar => self.commit_to(tag, &mut run.scalars, EventValue::into_scalar),
-            DataClass::Tensor => todo!("tensor time series not yet supported"),
-            DataClass::BlobSequence => todo!("blob sequence time series not yet supported"),
+            DataClass::Tensor => {
+                warn!(
+                    "tensor time series not yet supported (tag: {:?}, plugin: {:?})",
+                    tag.0,
+                    self.metadata
+                        .plugin_data
+                        .as_ref()
+                        .map(|p| p.plugin_name.as_str())
+                        .unwrap_or("")
+                );
+            }
+            DataClass::BlobSequence => {
+                warn!(
+                    "blob sequence time series not yet supported (tag: {}, plugin: {})",
+                    tag.0,
+                    self.metadata
+                        .plugin_data
+                        .as_ref()
+                        .map(|p| p.plugin_name.as_str())
+                        .unwrap_or("")
+                );
+            }
             _ => (),
         };
     }
