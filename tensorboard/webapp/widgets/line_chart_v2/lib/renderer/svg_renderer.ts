@@ -13,17 +13,53 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {Polyline, Rect} from '../internal_types';
+import {Point, Polyline, Rect} from '../internal_types';
 import {arePolylinesEqual} from '../utils';
-import {LinePaintOption, ObjectRenderer} from './renderer_types';
+import {
+  CirclePaintOption,
+  LinePaintOption,
+  ObjectRenderer,
+  TrianglePaintOption,
+} from './renderer_types';
 
-interface LineCacheValue {
-  type: 'line';
+interface PathCacheValue {
   data: Polyline;
   dom: SVGPathElement;
 }
 
-type CacheValue = LineCacheValue;
+interface CircleCacheValue {
+  dom: SVGCircleElement;
+  data: Point;
+}
+
+type CacheValue = PathCacheValue | CircleCacheValue;
+
+function createOrUpdateObject<T extends SVGPathElement | SVGCircleElement>(
+  prevDom: T | undefined,
+  creator: () => T,
+  updater: (el: T) => T,
+  paintOpt: {visible: boolean; color: string; opacity?: number}
+): T | null {
+  const {color, visible, opacity} = paintOpt;
+  const cssDisplayValue = visible ? '' : 'none';
+  let dom: T | undefined = prevDom;
+
+  if (!dom) {
+    // Skip if prevDom does not exist and is invisible.
+    if (!visible) return null;
+
+    dom = creator();
+  } else if (!visible) {
+    dom.style.display = cssDisplayValue;
+    return dom;
+  }
+
+  dom = updater(dom);
+  dom.style.display = cssDisplayValue;
+  dom.style.stroke = color;
+  dom.style.opacity = String(opacity ?? 1);
+  return dom;
+}
 
 export class SvgRenderer implements ObjectRenderer<CacheValue> {
   constructor(private readonly svg: SVGElement) {}
@@ -54,43 +90,124 @@ export class SvgRenderer implements ObjectRenderer<CacheValue> {
   }
 
   createOrUpdateLineObject(
-    cachedLine: CacheValue | null,
+    cachedLine: PathCacheValue | null,
     polyline: Polyline,
     paintOpt: LinePaintOption
-  ): CacheValue | null {
-    const {color, visible, width, opacity} = paintOpt;
-    const cssDisplayValue = visible ? '' : 'none';
+  ): PathCacheValue | null {
+    const svgPath = createOrUpdateObject(
+      cachedLine?.dom,
+      () => {
+        const dom = document.createElementNS(
+          'http://www.w3.org/2000/svg',
+          'path'
+        );
+        dom.style.fill = 'none';
+        const data = this.createPathDString(polyline);
+        dom.setAttribute('d', data);
+        this.svg.appendChild(dom);
+        return dom;
+      },
+      (dom) => {
+        if (
+          !cachedLine?.data ||
+          !arePolylinesEqual(polyline, cachedLine?.data)
+        ) {
+          const data = this.createPathDString(polyline);
+          dom.setAttribute('d', data);
+        }
+        return dom;
+      },
+      paintOpt
+    );
 
-    let svgPath = cachedLine?.dom;
+    if (svgPath === null) return null;
 
-    if (!svgPath) {
-      // Skip if it is not cached and is already invisible.
-      if (!visible) return null;
+    svgPath.style.strokeWidth = String(paintOpt.width);
+    return {dom: svgPath, data: polyline};
+  }
 
-      svgPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-      svgPath.style.fill = 'none';
-      this.svg.appendChild(svgPath);
-    } else {
-      if (!visible) {
-        svgPath.style.display = cssDisplayValue;
-        return cachedLine;
-      }
-    }
+  createOrUpdateTriangleObject(
+    cached: PathCacheValue | null,
+    loc: Point,
+    paintOpt: TrianglePaintOption
+  ): PathCacheValue | null {
+    const {size, color} = paintOpt;
+    const altitude = (size * Math.sqrt(3)) / 2;
+    const vertices = new Float32Array([
+      loc.x - size / 2,
+      loc.y + (altitude * 1) / 3,
+      loc.x + size / 2,
+      loc.y + (altitude * 1) / 3,
+      loc.x,
+      loc.y - (altitude * 2) / 3,
+    ]);
 
-    if (!cachedLine?.data || !arePolylinesEqual(polyline, cachedLine?.data)) {
-      const data = this.createPathDString(polyline);
-      svgPath.setAttribute('d', data);
-    }
+    const svgPath = createOrUpdateObject(
+      cached?.dom,
+      () => {
+        const dom = document.createElementNS(
+          'http://www.w3.org/2000/svg',
+          'path'
+        );
+        dom.style.fill = 'none';
+        const data = this.createPathDString(vertices);
+        dom.setAttribute('d', data + 'Z');
+        this.svg.appendChild(dom);
+        return dom;
+      },
+      (dom) => {
+        const data = this.createPathDString(vertices);
+        dom.setAttribute('d', data + 'Z');
+        return dom;
+      },
+      paintOpt
+    );
 
-    svgPath.style.display = cssDisplayValue;
-    svgPath.style.stroke = color;
-    svgPath.style.opacity = String(opacity ?? 1);
-    svgPath.style.strokeWidth = String(width);
+    if (svgPath === null) return null;
 
+    svgPath.style.fill = color;
     return {
-      type: 'line',
       dom: svgPath,
-      data: polyline,
+      data: vertices,
     };
+  }
+
+  createOrUpdateCircleObject(
+    cached: CircleCacheValue | null,
+    loc: Point,
+    paintOpt: CirclePaintOption
+  ): CircleCacheValue | null {
+    const {color, radius} = paintOpt;
+
+    const svgCircle = createOrUpdateObject(
+      cached?.dom,
+      () => {
+        const dom = document.createElementNS(
+          'http://www.w3.org/2000/svg',
+          'circle'
+        );
+        dom.style.fill = color;
+        dom.setAttribute('cx', String(loc.x));
+        dom.setAttribute('cy', String(loc.y));
+        dom.setAttribute('r', String(radius));
+        this.svg.appendChild(dom);
+        return dom;
+      },
+      (dom) => {
+        dom.style.fill = color;
+        dom.setAttribute('cx', String(loc.x));
+        dom.setAttribute('cy', String(loc.y));
+        dom.setAttribute('r', String(radius));
+        return dom;
+      },
+      paintOpt
+    );
+
+    return svgCircle === null
+      ? null
+      : {
+          dom: svgCircle,
+          data: loc,
+        };
   }
 }

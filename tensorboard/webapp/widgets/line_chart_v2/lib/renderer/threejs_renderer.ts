@@ -15,10 +15,15 @@ limitations under the License.
 import * as THREE from 'three';
 
 import {hsl} from '../../../../third_party/d3';
-import {Polyline, Rect} from '../internal_types';
+import {Point, Polyline, Rect} from '../internal_types';
 import {ThreeCoordinator} from '../threejs_coordinator';
 import {arePolylinesEqual, isOffscreenCanvasSupported} from '../utils';
-import {LinePaintOption, ObjectRenderer} from './renderer_types';
+import {
+  CirclePaintOption,
+  LinePaintOption,
+  ObjectRenderer,
+  TrianglePaintOption,
+} from './renderer_types';
 
 function createOpacityAdjustedColor(hex: string, opacity: number): THREE.Color {
   if (opacity === 1) return new THREE.Color(hex);
@@ -32,13 +37,97 @@ function createOpacityAdjustedColor(hex: string, opacity: number): THREE.Color {
   return new THREE.Color(newD3Color.brighter(1.6 - opacity).hex());
 }
 
+enum CacheType {
+  CIRCLE,
+  LINE,
+  TRIANGLE,
+}
+
 interface LineCacheValue {
-  type: 'line';
-  obj3d: THREE.Object3D;
+  type: CacheType.LINE;
+  obj3d: THREE.Line;
   data: Polyline;
 }
 
-type CacheValue = LineCacheValue;
+interface TriangleCacheValue {
+  type: CacheType.TRIANGLE;
+  obj3d: THREE.Mesh;
+  data: Point;
+}
+
+interface CircleCacheValue {
+  type: CacheType.CIRCLE;
+  obj3d: THREE.Mesh;
+  data: {loc: Point; radius: number};
+}
+
+type CacheValue = LineCacheValue | TriangleCacheValue | CircleCacheValue;
+
+/**
+ * Updates BufferGeometry with Float32Array that denotes flattened array of Vec2 (<x, y>).
+ */
+function updateGeometryWithVec2Array(
+  geometry: THREE.BufferGeometry,
+  flatVec2: Float32Array
+) {
+  const length = flatVec2.length / 2;
+  let positionAttributes = geometry.attributes[
+    'position'
+  ] as THREE.BufferAttribute;
+  if (!positionAttributes || positionAttributes.count !== length * 3) {
+    positionAttributes = new THREE.BufferAttribute(
+      new Float32Array(length * 3),
+      3
+    );
+    geometry.addAttribute('position', positionAttributes);
+  }
+  const values = positionAttributes.array as number[];
+  for (let index = 0; index < length; index++) {
+    values[index * 3] = flatVec2[index * 2];
+    values[index * 3 + 1] = flatVec2[index * 2 + 1];
+  }
+  positionAttributes.needsUpdate = true;
+  geometry.setDrawRange(0, length * 3);
+  // Need to update the bounding sphere so renderer does not skip rendering
+  // this object because it is outside of the camera viewpoint (frustum).
+  geometry.computeBoundingSphere();
+}
+
+/**
+ * Updates an THREE.Object3D like object with geometry and material. Returns true if
+ * geometry is updated with the new data but returns false if we can minimally change the
+ * material to make an update.
+ */
+function updateObject(
+  object: THREE.Mesh | THREE.Line,
+  updateGeometry: (geometry: THREE.BufferGeometry) => THREE.BufferGeometry,
+  materialOption: {visible: boolean; color: string; opacity?: number}
+): boolean {
+  const {visible, color, opacity} = materialOption;
+
+  if (Array.isArray(object.material)) {
+    throw new Error('Invariant error: only expect one material on an object');
+  }
+
+  const material = object.material as THREE.MeshBasicMaterial;
+  if (material.visible !== visible) {
+    material.visible = visible;
+    material.needsUpdate = true;
+  }
+
+  if (!visible) return false;
+
+  const newColor = createOpacityAdjustedColor(color, opacity ?? 1);
+
+  updateGeometry(object.geometry as THREE.BufferGeometry);
+  const currentColor = material.color;
+  if (!currentColor.equals(newColor)) {
+    material.color.set(newColor);
+    material.needsUpdate = true;
+  }
+
+  return true;
+}
 
 export class ThreeRenderer implements ObjectRenderer<CacheValue> {
   private readonly renderer: THREE.WebGLRenderer;
@@ -84,111 +173,136 @@ export class ThreeRenderer implements ObjectRenderer<CacheValue> {
   }
 
   createOrUpdateLineObject(
-    cachedLine: CacheValue | null,
+    cachedLine: LineCacheValue | null,
     polyline: Polyline,
     paintOpt: LinePaintOption
-  ): CacheValue | null {
-    let line: THREE.Line | null = null;
-    let prevPolyline: Polyline | null = null;
-
-    if (cachedLine) {
-      if (cachedLine.obj3d instanceof THREE.Line) {
-        line = cachedLine.obj3d;
-      }
-
-      prevPolyline = cachedLine.data;
-    }
-
+  ): LineCacheValue | null {
     // If a line is not cached and is not even visible, skip drawing line.
-    if (!line && !paintOpt.visible) return null;
+    if (!cachedLine && !paintOpt.visible) return null;
 
     const {visible, width} = paintOpt;
-    const newColor = createOpacityAdjustedColor(
-      paintOpt.color,
-      paintOpt.opacity ?? 1
-    );
 
-    if (!line) {
+    if (!cachedLine) {
+      const newColor = createOpacityAdjustedColor(
+        paintOpt.color,
+        paintOpt.opacity ?? 1
+      );
       const geometry = new THREE.BufferGeometry();
       const material = new THREE.LineBasicMaterial({
         color: newColor,
         linewidth: width,
       });
-      line = new THREE.Line(geometry, material);
+      const line = new THREE.Line(geometry, material);
       material.visible = visible;
-      this.updatePoints(geometry, polyline);
+      updateGeometryWithVec2Array(geometry, polyline);
       this.scene.add(line);
-      return {type: 'line', data: polyline, obj3d: line};
+      return {type: CacheType.LINE, data: polyline, obj3d: line};
     }
 
-    // Update the cached THREE.Line.
-    if (line && Array.isArray(line.material)) {
-      throw new Error('Invariant error: only expect one material on a line');
-    }
+    const {data: prevPolyline, obj3d: line} = cachedLine;
+    const geomUpdated = updateObject(
+      line,
+      (geometry) => {
+        if (!prevPolyline || !arePolylinesEqual(prevPolyline, polyline)) {
+          updateGeometryWithVec2Array(geometry, polyline);
+        }
+        return geometry;
+      },
+      paintOpt
+    );
+    if (!geomUpdated) return cachedLine;
 
     const material = line.material as THREE.LineBasicMaterial;
-
-    if (material.visible !== visible) {
-      material.visible = visible;
-      material.needsUpdate = true;
-    }
-
-    // No need to update geometry or material if it is not visible.
-    if (!visible) {
-      return cachedLine;
-    }
-
     if (material.linewidth !== width) {
       material.linewidth = width;
       material.needsUpdate = true;
     }
 
-    const currentColor = material.color;
-    if (!currentColor.equals(newColor)) {
-      material.color.set(newColor);
-      material.needsUpdate = true;
-    }
-
-    if (!prevPolyline || !arePolylinesEqual(prevPolyline, polyline)) {
-      this.updatePoints(line.geometry as THREE.BufferGeometry, polyline);
-    }
-
     return {
-      type: 'line',
+      type: CacheType.LINE,
       data: polyline,
       obj3d: line,
     };
   }
 
-  private updatePoints(lineGeometry: THREE.BufferGeometry, paths: Polyline) {
-    const length = paths.length / 2;
-    const vectors = new Array<THREE.Vector2>(length);
-    for (let index = 0; index < length * 2; index += 2) {
-      vectors[index / 2] = new THREE.Vector2(paths[index], paths[index + 1]);
+  private createMesh(
+    geometry: THREE.BufferGeometry,
+    materialOption: {visible: boolean; color: string; opacity?: number}
+  ): THREE.Mesh | null {
+    if (!materialOption.visible) return null;
+
+    const {visible, color, opacity} = materialOption;
+    const newColor = createOpacityAdjustedColor(color, opacity ?? 1);
+    const material = new THREE.MeshBasicMaterial({color: newColor, visible});
+    return new THREE.Mesh(geometry, material);
+  }
+
+  createOrUpdateTriangleObject(
+    cached: TriangleCacheValue | null,
+    loc: Point,
+    paintOpt: TrianglePaintOption
+  ): TriangleCacheValue | null {
+    const {size} = paintOpt;
+    const altitude = (size * Math.sqrt(3)) / 2;
+    const vertices = new Float32Array([
+      loc.x - size / 2,
+      loc.y - (altitude * 1) / 3,
+      loc.x + size / 2,
+      loc.y - (altitude * 1) / 3,
+      loc.x,
+      loc.y + (altitude * 2) / 3,
+    ]);
+
+    if (!cached) {
+      const geom = new THREE.BufferGeometry();
+      updateGeometryWithVec2Array(geom, vertices);
+      const mesh = this.createMesh(geom, paintOpt);
+      if (mesh === null) return null;
+      this.scene.add(mesh);
+      return {
+        type: CacheType.TRIANGLE,
+        data: loc,
+        obj3d: mesh,
+      };
     }
 
-    let index = 0;
-    const positionAttributes = lineGeometry.attributes[
-      'position'
-    ] as THREE.BufferAttribute;
-    if (
-      !positionAttributes ||
-      positionAttributes.count !== vectors.length * 3
-    ) {
-      lineGeometry.setFromPoints(vectors);
-    } else {
-      const values = positionAttributes.array as number[];
-      for (const vector of vectors) {
-        values[index++] = vector.x;
-        values[index++] = vector.y;
-        values[index++] = 0;
-      }
-      positionAttributes.needsUpdate = true;
+    const geomUpdated = updateObject(
+      cached.obj3d,
+      (geom) => {
+        updateGeometryWithVec2Array(geom, vertices);
+        return geom;
+      },
+      paintOpt
+    );
+    return geomUpdated
+      ? {type: CacheType.TRIANGLE, data: loc, obj3d: cached.obj3d}
+      : cached;
+  }
+
+  createOrUpdateCircleObject(
+    cached: CircleCacheValue | null,
+    loc: Point,
+    paintOpt: CirclePaintOption
+  ): CircleCacheValue | null {
+    const {radius} = paintOpt;
+    const geom = new THREE.CircleBufferGeometry(paintOpt.radius);
+
+    if (!cached) {
+      const mesh = this.createMesh(geom, paintOpt);
+      if (mesh === null) return null;
+      mesh.position.set(loc.x, loc.y, 0);
+      this.scene.add(mesh);
+      return {
+        type: CacheType.CIRCLE,
+        data: {loc, radius},
+        obj3d: mesh,
+      };
     }
-    lineGeometry.setDrawRange(0, vectors.length);
-    // Need to update the bounding sphere so renderer does not skip rendering
-    // this object because it is outside of the camera viewpoint (frustum).
-    lineGeometry.computeBoundingSphere();
+
+    const geomUpdated = updateObject(cached.obj3d, () => geom, paintOpt);
+    if (!geomUpdated) return cached;
+    cached.obj3d.position.set(loc.x, loc.y, 0);
+    return {type: CacheType.CIRCLE, data: {loc, radius}, obj3d: cached.obj3d};
   }
 
   flush() {

@@ -15,11 +15,11 @@ limitations under the License.
 import * as THREE from 'three';
 
 import {ThreeCoordinator} from '../threejs_coordinator';
-import {Polyline} from '../internal_types';
+import {Point, Polyline} from '../internal_types';
 import {SvgRenderer} from './svg_renderer';
 import {ThreeRenderer} from './threejs_renderer';
 
-describe('line_chart_v2/lib/renderer test', () => {
+fdescribe('line_chart_v2/lib/renderer test', () => {
   const SVG_NS = 'http://www.w3.org/2000/svg';
   const DEFAULT_LINE_OPTIONS = {visible: true, color: '#f00', width: 6};
 
@@ -115,7 +115,6 @@ describe('line_chart_v2/lib/renderer test', () => {
       expect(path.style.display).toBe('none');
       expect(path.getAttribute('d')).toBe('M0,10L10,100');
       expect(path.style.stroke).toBe('rgb(255, 0, 0)');
-      expect(path.style.strokeWidth).toBe('6');
     });
 
     it('skips rendering DOM when a new cacheId starts with visible=false', () => {
@@ -126,6 +125,116 @@ describe('line_chart_v2/lib/renderer test', () => {
       );
 
       expect(el.children.length).toBe(0);
+    });
+
+    describe('triangle', () => {
+      function assertPath(path: SVGPathElement, roundedCoords: Point[]) {
+        expect(roundedCoords.length).toBe(3);
+        const dPath = path.getAttribute('d')!;
+        const parts = dPath.split(/[MLZ]/);
+        expect(parts.length).toBe(5);
+        for (const [index, {x, y}] of roundedCoords.entries()) {
+          const [actualX, actualY] = parts[index + 1].split(',');
+          expect(Number(actualX)).toBeCloseTo(x, 0);
+          expect(Number(actualY)).toBeCloseTo(y, 0);
+        }
+      }
+
+      it('creates a path with fill', () => {
+        renderer.createOrUpdateTriangleObject(
+          null,
+          {x: 10, y: 100},
+          {visible: true, color: '#f00', size: 6}
+        );
+
+        expect(el.children.length).toBe(1);
+        const path = el.children[0] as SVGPathElement;
+        expect(path.tagName).toBe('path');
+        expect(path.style.display).toBe('');
+        assertPath(path, [
+          {x: 7, y: 102},
+          {x: 13, y: 102},
+          {x: 10, y: 97},
+        ]);
+        expect(path.style.fill).toBe('rgb(255, 0, 0)');
+      });
+
+      it('updates path and styles', () => {
+        const object = renderer.createOrUpdateTriangleObject(
+          null,
+          {x: 10, y: 100},
+          {visible: true, color: '#f00', size: 6}
+        );
+
+        renderer.createOrUpdateTriangleObject(
+          object,
+          {x: 20, y: 50},
+          {visible: true, color: '#0f0', size: 10}
+        );
+
+        expect(el.children.length).toBe(1);
+        const path = el.children[0] as SVGPathElement;
+        expect(path.tagName).toBe('path');
+        expect(path.style.display).toBe('');
+        assertPath(path, [
+          {x: 15, y: 53},
+          {x: 25, y: 53},
+          {x: 20, y: 44},
+        ]);
+        expect(path.style.fill).toBe('rgb(0, 255, 0)');
+      });
+
+      it('does not create an object if previously null object is invisible', () => {
+        const object = renderer.createOrUpdateTriangleObject(
+          null,
+          {x: 10, y: 100},
+          {visible: false, color: '#f00', size: 6}
+        );
+        expect(object).toBeNull();
+        expect(el.children.length).toBe(0);
+      });
+    });
+
+    describe('circle', () => {
+      it('creates a circle with fill', () => {
+        renderer.createOrUpdateCircleObject(
+          null,
+          {x: 10, y: 100},
+          {visible: true, color: '#f00', radius: 5}
+        );
+
+        expect(el.children.length).toBe(1);
+        const path = el.children[0] as SVGPathElement;
+        expect(path.tagName).toBe('circle');
+        expect(path.style.display).toBe('');
+        expect(path.getAttribute('cx')).toBe('10');
+        expect(path.getAttribute('cy')).toBe('100');
+        expect(path.getAttribute('r')).toBe('5');
+        expect(path.style.fill).toBe('rgb(255, 0, 0)');
+      });
+
+      it('updates a circle', () => {
+        const obj = renderer.createOrUpdateCircleObject(
+          null,
+          {x: 10, y: 100},
+          {visible: true, color: '#f00', radius: 5}
+        );
+
+        renderer.createOrUpdateCircleObject(
+          obj,
+          {x: 100, y: 1},
+          {visible: true, color: '#00f', radius: 1}
+        );
+
+        expect(el.children.length).toBe(1);
+        const path = el.children[0] as SVGPathElement;
+        expect(path.tagName).toBe('circle');
+        expect(path.style.display).toBe('');
+        expect(path.getAttribute('cx')).toBe('100');
+        expect(path.getAttribute('cy')).toBe('1');
+        expect(path.getAttribute('r')).toBe('1');
+        expect(path.style.fill).toBe('rgb(0, 0, 255)');
+      });
     });
   });
 
@@ -155,12 +264,25 @@ describe('line_chart_v2/lib/renderer test', () => {
       }
     }
 
+    function assertPositions(
+      geometry: THREE.BufferGeometry,
+      rounded: Float32Array
+    ) {
+      const position = geometry.getAttribute(
+        'position'
+      ) as THREE.BufferAttribute;
+      expect(position.array.length).toBe(rounded.length);
+      for (const [index, val] of rounded.entries()) {
+        expect(position.array[index]).toBeCloseTo(val, 0);
+      }
+    }
+
     function assertMaterial(
-      line: THREE.Line,
+      obj: THREE.Mesh | THREE.Line,
       longHexString: string,
       visibility: boolean
     ) {
-      const material = line.material as THREE.LineBasicMaterial;
+      const material = obj.material as THREE.LineBasicMaterial;
       expect(material.visible).toBe(visibility);
       expect(material.color.getHexString()).toBe(longHexString.slice(1));
     }
@@ -249,6 +371,79 @@ describe('line_chart_v2/lib/renderer test', () => {
       });
 
       expect(scene.children.length).toBe(0);
+    });
+
+    describe('triangle', () => {
+      it('creates a Mesh object with path', () => {
+        renderer.createOrUpdateTriangleObject(
+          null,
+          {x: 100, y: 50},
+          {visible: true, color: '#0f0', size: 10}
+        );
+
+        const obj = scene.children[0] as THREE.Mesh;
+        assertPositions(
+          obj.geometry as THREE.BufferGeometry,
+          new Float32Array([95, 47, 0, 105, 47, 0, 100, 56, 0])
+        );
+        assertMaterial(obj, '#00ff00', true);
+      });
+
+      it('updates mesh', () => {
+        const cache = renderer.createOrUpdateTriangleObject(
+          null,
+          {x: 100, y: 50},
+          {visible: true, color: '#0f0', size: 10}
+        );
+
+        renderer.createOrUpdateTriangleObject(
+          cache,
+          {x: 50, y: 100},
+          {visible: true, color: '#f00', size: 20}
+        );
+
+        const obj = scene.children[0] as THREE.Mesh;
+        assertPositions(
+          obj.geometry as THREE.BufferGeometry,
+          new Float32Array([40, 94, 0, 60, 94, 0, 50, 112, 0])
+        );
+        assertMaterial(obj, '#ff0000', true);
+      });
+    });
+
+    describe('circle', () => {
+      it('creates a Mesh object with position prop', () => {
+        renderer.createOrUpdateCircleObject(
+          null,
+          {x: 100, y: 50},
+          {visible: true, color: '#0f0', radius: 10}
+        );
+
+        // Positions are set by CircleBufferGeometry and details do not matter.
+        const obj = scene.children[0] as THREE.Mesh;
+        expect(obj.position.x).toBe(100);
+        expect(obj.position.y).toBe(50);
+        assertMaterial(obj, '#00ff00', true);
+      });
+
+      it('updates mesh', () => {
+        const cache = renderer.createOrUpdateCircleObject(
+          null,
+          {x: 100, y: 50},
+          {visible: true, color: '#0f0', radius: 10}
+        );
+
+        renderer.createOrUpdateCircleObject(
+          cache,
+          {x: 50, y: 100},
+          {visible: true, color: '#f00', radius: 20}
+        );
+
+        const obj = scene.children[0] as THREE.Mesh;
+        expect(obj.position.x).toBe(50);
+        expect(obj.position.y).toBe(100);
+        assertMaterial(obj, '#ff0000', true);
+      });
     });
   });
 });
