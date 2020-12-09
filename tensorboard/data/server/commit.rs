@@ -136,3 +136,166 @@ mod tests {
         );
     }
 }
+
+/// Utilities for constructing commits with test data.
+//
+// Not `#[cfg(test)]` because we have a doctest:
+// <https://github.com/rust-lang/rust/issues/45599>
+pub mod test_data {
+    use super::*;
+    use crate::data_compat;
+    use crate::reservoir::StageReservoir;
+
+    #[derive(Default)]
+    pub struct CommitBuilder(Commit);
+
+    impl CommitBuilder {
+        /// Creates a new builder for an empty commit.
+        pub fn new() -> Self {
+            Self::default()
+        }
+
+        /// Ensures that data for a run exists, and update it.
+        ///
+        /// This takes a callback because we can't just return a mutable reference, since there are
+        /// nested `RwLockWriteGuard`s.
+        fn with_run_data(&self, run: Run, update: impl FnOnce(&mut RunData)) {
+            let mut runs = self.0.runs.write().expect("runs.write");
+            let mut run_data = runs
+                .entry(run)
+                .or_default()
+                .write()
+                .expect("runs[run].write");
+            update(&mut run_data);
+        }
+
+        /// Adds a scalar time series, creating the run if it doesn't exist, and setting its start
+        /// time if unset.
+        ///
+        /// # Examples
+        ///
+        /// ```
+        /// use rustboard_core::commit::{test_data::CommitBuilder, Commit};
+        /// use rustboard_core::types::Step;
+        ///
+        /// let my_commit: Commit = CommitBuilder::new()
+        ///     .scalars("train", "xent", |mut b| {
+        ///         b.eval(|Step(i)| 1.0 / (i + 1) as f32).build()
+        ///     })
+        ///     .build();
+        /// ```
+        pub fn scalars(
+            self,
+            run: &str,
+            tag: &str,
+            build: impl FnOnce(ScalarTimeSeriesBuilder) -> TimeSeries<ScalarValue>,
+        ) -> Self {
+            self.with_run_data(Run(run.to_string()), |run_data| {
+                let time_series = build(ScalarTimeSeriesBuilder::default());
+                if let (None, Some((_step, wall_time, _value))) =
+                    (run_data.start_time, time_series.valid_values().next())
+                {
+                    run_data.start_time = Some(wall_time);
+                }
+                run_data.scalars.insert(Tag(tag.to_string()), time_series);
+            });
+            self
+        }
+
+        /// Ensures that a run is present and sets its start time.
+        ///
+        /// If you don't care about the start time and the run is going to have data, anyway, you
+        /// can just add the data directly, which will create the run as a side effect.
+        ///
+        /// # Panics
+        ///
+        /// If `start_time` represents an invalid wall time (i.e., `start_time` is `Some(wt)` but
+        /// `WallTime::new(wt)` is `None`).
+        pub fn run(self, run: &str, start_time: Option<f64>) -> Self {
+            self.with_run_data(Run(run.to_string()), |run_data| {
+                run_data.start_time = start_time.map(|f| WallTime::new(f).unwrap());
+            });
+            self
+        }
+
+        /// Consumes this `CommitBuilder` and returns the underlying commit.
+        pub fn build(self) -> Commit {
+            self.0
+        }
+    }
+
+    pub struct ScalarTimeSeriesBuilder {
+        /// Initial step. Increments by `1` for each point.
+        step_start: Step,
+        /// Initial wall time. Increments by `1.0` for each point.
+        wall_time_start: WallTime,
+        /// Number of points in this time series.
+        len: u64,
+        /// Custom summary metadata. Leave `None` to use default.
+        metadata: Option<Box<pb::SummaryMetadata>>,
+        /// Scalar evaluation function, called for each point in the series.
+        ///
+        /// By default, this maps every step to `0.0`.
+        eval: Box<dyn Fn(Step) -> f32>,
+    }
+
+    impl Default for ScalarTimeSeriesBuilder {
+        fn default() -> Self {
+            ScalarTimeSeriesBuilder {
+                step_start: Step(0),
+                wall_time_start: WallTime::new(0.0).unwrap(),
+                len: 1,
+                metadata: None,
+                eval: Box::new(|_| 0.0),
+            }
+        }
+    }
+
+    impl ScalarTimeSeriesBuilder {
+        pub fn step_start(&mut self, raw_step: i64) -> &mut Self {
+            self.step_start = Step(raw_step);
+            self
+        }
+        pub fn wall_time_start(&mut self, raw_wall_time: f64) -> &mut Self {
+            self.wall_time_start = WallTime::new(raw_wall_time).unwrap();
+            self
+        }
+        pub fn len(&mut self, len: u64) -> &mut Self {
+            self.len = len;
+            self
+        }
+        pub fn metadata(&mut self, metadata: Option<Box<pb::SummaryMetadata>>) -> &mut Self {
+            self.metadata = metadata;
+            self
+        }
+        pub fn eval(&mut self, eval: impl Fn(Step) -> f32 + 'static) -> &mut Self {
+            self.eval = Box::new(eval);
+            self
+        }
+
+        /// Constructs a scalar time series from the state of this builder.
+        ///
+        /// # Panics
+        ///
+        /// If the wall time of a point would overflow to be infinite.
+        pub fn build(&self) -> TimeSeries<ScalarValue> {
+            let metadata = self.metadata.clone().unwrap_or_else(|| {
+                let sample_point = Box::new(pb::summary::value::Value::SimpleValue(0.0));
+                data_compat::SummaryValue(sample_point).initial_metadata(None)
+            });
+            let mut time_series = TimeSeries::new(metadata);
+
+            let mut rsv = StageReservoir::new(self.len as usize);
+            for i in 0..self.len {
+                let step = Step(self.step_start.0 + i as i64);
+                let wall_time =
+                    WallTime::new(f64::from(self.wall_time_start) + (i as f64)).unwrap();
+                let value = (self.eval)(step);
+                rsv.offer(step, (wall_time, Ok(ScalarValue(value))));
+            }
+            rsv.commit(&mut time_series.basin);
+
+            time_series
+        }
+    }
+}
