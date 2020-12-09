@@ -37,6 +37,7 @@ import {convertRectToExtent} from './utils';
 export class Coordinator {
   protected xScale: Scale = createScale(ScaleType.LINEAR);
   protected yScale: Scale = createScale(ScaleType.LINEAR);
+
   protected domContainerRect: Rect = {
     x: 0,
     width: 1,
@@ -44,7 +45,7 @@ export class Coordinator {
     height: 1,
   };
 
-  protected lastUpdated: number = 0;
+  private lastUpdated: number = 0;
   private currentViewBoxRect: Rect = {
     x: 0,
     width: 1,
@@ -58,6 +59,24 @@ export class Coordinator {
 
   private updateIdentifier() {
     this.lastUpdated++;
+  }
+
+  /**
+   * Returns directionality of the y axis of the output space.
+   *
+   * ↑
+   * | viewBoxYDirection = +1
+   * |
+   * |-------------→
+   * |
+   * | viewBoxYDirection = -1
+   * ↓
+   *
+   * +1: Suitable in 3-D aware context where you have full cartesian coordinates.
+   * -1: Suitable for DOM where <0, 0> is top-left corner of a DOM.
+   */
+  getYAxisDirection(): -1 | 1 {
+    return -1;
   }
 
   setXScale(scale: Scale) {
@@ -102,7 +121,9 @@ export class Coordinator {
       ),
       this.yScale.forward(
         domain.y,
-        [rect.y + rect.height, rect.y],
+        this.getYAxisDirection() === 1
+          ? [rect.y, rect.y + +rect.height]
+          : [rect.y + rect.height, rect.y],
         dataCoordinate[1]
       ),
     ];
