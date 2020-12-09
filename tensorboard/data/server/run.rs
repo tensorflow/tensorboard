@@ -107,7 +107,7 @@ impl StageTimeSeries {
             DataClass::Scalar => self.commit_to(tag, &mut run.scalars, EventValue::into_scalar),
             DataClass::Tensor => {
                 warn!(
-                    "tensor time series not yet supported (tag: {:?}, plugin: {:?})",
+                    "Tensor time series not yet supported (tag: {:?}, plugin: {:?})",
                     tag.0,
                     self.metadata
                         .plugin_data
@@ -118,7 +118,7 @@ impl StageTimeSeries {
             }
             DataClass::BlobSequence => {
                 warn!(
-                    "blob sequence time series not yet supported (tag: {}, plugin: {})",
+                    "Blob sequence time series not yet supported (tag: {}, plugin: {})",
                     tag.0,
                     self.metadata
                         .plugin_data
