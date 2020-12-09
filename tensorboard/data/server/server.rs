@@ -325,7 +325,7 @@ mod tests {
     use tonic::Code;
 
     use crate::commit::test_data::CommitBuilder;
-    use crate::types::{Run, Tag};
+    use crate::types::{Run, Step, Tag};
 
     fn sample_handler(commit: Commit) -> DataProviderHandler {
         DataProviderHandler {
@@ -411,10 +411,10 @@ mod tests {
             .run("test", Some(6234.0))
             .run("run_with_no_data", None)
             .scalars("train", "xent", |mut b| {
-                b.wall_time_start(1235.0).len(3).build()
+                b.wall_time_start(1235.0).step_start(0).len(3).build()
             })
             .scalars("test", "accuracy", |mut b| {
-                b.wall_time_start(6235.0).len(3).build()
+                b.wall_time_start(6235.0).step_start(0).len(3).build()
             })
             .build();
         let handler = sample_handler(commit);
@@ -462,7 +462,13 @@ mod tests {
     #[tokio::test]
     async fn test_read_scalars() {
         let commit = CommitBuilder::new()
-            .scalars("train", "xent", |b| b.build())
+            .scalars("train", "xent", |mut b| {
+                b.len(3)
+                    .wall_time_start(1235.0)
+                    .step_start(0)
+                    .eval(|Step(i)| 0.5f32.powi(i as i32))
+                    .build()
+            })
             .scalars("test", "xent", |b| b.build())
             .build();
         let handler = sample_handler(commit);
@@ -491,7 +497,7 @@ mod tests {
         let xent_data = &train_run[&Tag("xent".to_string())].data.as_ref().unwrap();
         assert_eq!(xent_data.step, vec![0, 1, 2]);
         assert_eq!(xent_data.wall_time, vec![1235.0, 1236.0, 1237.0]);
-        assert_eq!(xent_data.value, vec![0.5, 0.25, 0.125]);
+        assert_eq!(xent_data.value, vec![1.0, 0.5, 0.25]);
     }
 
     #[tokio::test]

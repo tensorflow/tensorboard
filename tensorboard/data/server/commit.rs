@@ -235,7 +235,7 @@ pub mod test_data {
         metadata: Option<Box<pb::SummaryMetadata>>,
         /// Scalar evaluation function, called for each point in the series.
         ///
-        /// By default, this maps step `i` to `0.5 ** (i + 1)`.
+        /// By default, this maps every step to `0.0`.
         eval: Box<dyn Fn(Step) -> f32>,
     }
 
@@ -243,10 +243,10 @@ pub mod test_data {
         fn default() -> Self {
             ScalarTimeSeriesBuilder {
                 step_start: Step(0),
-                wall_time_start: WallTime::new(1235.0).unwrap(),
-                len: 3,
+                wall_time_start: WallTime::new(0.0).unwrap(),
+                len: 1,
                 metadata: None,
-                eval: Box::new(|Step(i)| 0.5f32.powi((i + 1) as i32)),
+                eval: Box::new(|_| 0.0),
             }
         }
     }
