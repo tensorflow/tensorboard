@@ -20,6 +20,7 @@ tf_ng_module(
     ],
     deps = [
         "//tensorboard/webapp/angular:expect_angular_material_select",
+        "@npm//@angular/common",
         "@npm//@angular/core",
     ],
 )

@@ -324,7 +324,9 @@ export class LineChartComponent implements AfterViewInit, OnChanges, OnDestroy {
       const dataExtent = computeDataSeriesExtent(
         this.seriesData,
         this.seriesMetadataMap,
-        this.ignoreYOutliers
+        this.ignoreYOutliers,
+        this.xScale.isSafeNumber,
+        this.yScale.isSafeNumber
       );
       this.viewBox = {
         x: this.xScale.niceDomain(dataExtent.x ?? DEFAULT_EXTENT.x),

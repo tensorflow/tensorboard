@@ -28,6 +28,7 @@ tf_ng_module(
         "//tensorboard/webapp/plugins/npmi/actions",
         "//tensorboard/webapp/plugins/npmi/store",
         "//tensorboard/webapp/plugins/npmi/store:types",
+        "@npm//@angular/common",
         "@npm//@angular/core",
         "@npm//@angular/forms",
         "@npm//@ngrx/store",

@@ -18,7 +18,7 @@ import {TextState} from './text_types';
 
 // HACK: These imports are for type inference.
 // https://github.com/bazelbuild/rules_nodejs/issues/1013
-/** @typehack */ import * as _typeHackStore from '@ngrx/store/store';
+/** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
 const DATA_A_B_RUN1 = [
   {

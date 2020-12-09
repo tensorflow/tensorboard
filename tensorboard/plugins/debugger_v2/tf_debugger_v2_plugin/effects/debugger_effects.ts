@@ -111,8 +111,7 @@ import {
 } from '../data_source/tfdbg2_data_source';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
-/** @typehack */ import * as _typeHackNgrxStore from '@ngrx/store/src/models';
-/** @typehack */ import * as _typeHackNgrxEffects from '@ngrx/effects/effects';
+/** @typehack */ import * as _typeHackNgrxEffects from '@ngrx/effects';
 
 // Minimum polling interval in milliseconds.
 export const MIN_POLLING_INTERVAL_MS = 2e3;

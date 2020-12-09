@@ -17,7 +17,7 @@ import {createAction, props} from '@ngrx/store';
 
 import {FeatureFlags} from '../types';
 
-/** @typehack */ import * as _typeHackStore from '@ngrx/store/store';
+/** @typehack */ import * as _typeHackStore from '@ngrx/store';
 /** @typehack */ import * as _typeHackStoreModel from '@ngrx/store/src/models';
 
 export const featuresLoaded = createAction(

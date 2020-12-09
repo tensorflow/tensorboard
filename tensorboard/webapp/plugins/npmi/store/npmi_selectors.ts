@@ -27,8 +27,8 @@ import {
 
 // HACK: These imports are for type inference.
 // https://github.com/bazelbuild/rules_nodejs/issues/1013
-/** @typehack */ import * as _typeHackSelector from '@ngrx/store/src/selector';
-/** @typehack */ import * as _typeHackStore from '@ngrx/store/store';
+
+/** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
 const selectNpmiState = createFeatureSelector<State, NpmiState>(
   NPMI_FEATURE_KEY

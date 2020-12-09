@@ -87,6 +87,10 @@ class LinearScale implements Scale {
   ticks(domain: [number, number], sizeGuidance: number): number[] {
     return scaleLinear().domain(domain).ticks(sizeGuidance);
   }
+
+  isSafeNumber(x: number): boolean {
+    return Number.isFinite(x);
+  }
 }
 
 class Log10Scale implements Scale {
@@ -163,5 +167,9 @@ class Log10Scale implements Scale {
     const high = domain[1] <= 0 ? Number.MIN_VALUE : domain[1];
     const ticks = scaleLog().domain([low, high]).ticks(sizeGuidance);
     return ticks.length ? ticks : domain;
+  }
+
+  isSafeNumber(x: number): boolean {
+    return Number.isFinite(x) && x > 0;
   }
 }

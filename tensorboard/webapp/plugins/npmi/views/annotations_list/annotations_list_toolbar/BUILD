@@ -30,6 +30,7 @@ tf_ng_module(
         "//tensorboard/webapp/plugins/npmi/store",
         "//tensorboard/webapp/plugins/npmi/store:types",
         "//tensorboard/webapp/plugins/npmi/views/annotations_list/annotations_list_toolbar/annotations_search",
+        "@npm//@angular/common",
         "@npm//@angular/core",
         "@npm//@angular/forms",
         "@npm//@ngrx/store",

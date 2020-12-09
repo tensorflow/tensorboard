@@ -13,9 +13,11 @@ http_archive(
 )
 
 load("@io_bazel_rules_webtesting//web:repositories.bzl", "web_test_repositories")
+
 web_test_repositories(omit_bazel_skylib = True)
 
 load("@io_bazel_rules_webtesting//web:py_repositories.bzl", "py_repositories")
+
 py_repositories()
 
 http_archive(
@@ -29,6 +31,7 @@ http_archive(
 )
 
 load("@io_bazel_rules_closure//closure:repositories.bzl", "rules_closure_dependencies")
+
 rules_closure_dependencies(
     omit_bazel_skylib = True,
     omit_com_google_protobuf = True,
@@ -37,10 +40,10 @@ rules_closure_dependencies(
 
 http_archive(
     name = "build_bazel_rules_nodejs",
-    sha256 = "f9e7b9f42ae202cc2d2ce6d698ccb49a9f7f7ea572a78fd451696d03ef2ee116",
+    sha256 = "4952ef879704ab4ad6729a29007e7094aef213ea79e9f2e94cbe1c9a753e63ef",
     urls = [
-        "http://mirror.tensorflow.org/github.com/bazelbuild/rules_nodejs/releases/download/1.6.0/rules_nodejs-1.6.0.tar.gz",
-        "https://github.com/bazelbuild/rules_nodejs/releases/download/1.6.0/rules_nodejs-1.6.0.tar.gz",
+        "http://mirror.tensorflow.org/github.com/bazelbuild/rules_nodejs/releases/download/2.2.0/rules_nodejs-2.2.0.tar.gz",
+        "https://github.com/bazelbuild/rules_nodejs/releases/download/2.2.0/rules_nodejs-2.2.0.tar.gz",
     ],
 )
 
@@ -49,17 +52,13 @@ load("@build_bazel_rules_nodejs//:index.bzl", "yarn_install")
 yarn_install(
     name = "npm",
     package_json = "//:package.json",
-    yarn_lock = "//:yarn.lock",
     # Opt out of symlinking local node_modules folder into bazel internal
     # directory.  Symlinking is incompatible with our toolchain which often
     # removes source directory without `bazel clean` which creates broken
     # symlink into node_modules folder.
     symlink_node_modules = False,
+    yarn_lock = "//:yarn.lock",
 )
-
-load("@npm//:install_bazel_dependencies.bzl", "install_bazel_dependencies")
-
-install_bazel_dependencies()
 
 http_archive(
     name = "io_bazel_rules_sass",
@@ -70,6 +69,16 @@ http_archive(
         "https://github.com/bazelbuild/rules_sass/archive/1.26.3.zip",
     ],
 )
+
+# Load @bazel/protractor dependencies
+load("@npm//@bazel/protractor:package.bzl", "npm_bazel_protractor_dependencies")
+
+npm_bazel_protractor_dependencies()
+
+# Load @bazel/karma dependencies
+load("@npm//@bazel/karma:package.bzl", "npm_bazel_karma_dependencies")
+
+npm_bazel_karma_dependencies()
 
 http_archive(
     name = "org_tensorflow",
@@ -84,11 +93,13 @@ http_archive(
 )
 
 load("@org_tensorflow//tensorflow:workspace.bzl", "tf_workspace")
+
 tf_workspace()
 
 load("@bazel_skylib//lib:versions.bzl", "versions")
+
 # Keep this version in sync with the BAZEL environment variable defined
-# in our .travis.yml and .github/workflows/ci.yml configs.
+# in our .github/workflows/ci.yml config.
 versions.check(minimum_bazel_version = "3.7.0")
 
 load("@io_bazel_rules_sass//:package.bzl", "rules_sass_dependencies")
@@ -120,4 +131,5 @@ http_archive(
 
 # Please add all new dependencies in workspace.bzl.
 load("//third_party:workspace.bzl", "tensorboard_workspace")
+
 tensorboard_workspace()

@@ -27,6 +27,7 @@ rust_library(
     name = "rustboard_core",
     srcs = [
         "lib.rs",
+        "cli.rs",
         "commit.rs",
         "data_compat.rs",
         "downsample.rs",
@@ -44,7 +45,9 @@ rust_library(
     edition = "2018",
     deps = [
         "//third_party/rust:byteorder",
+        "//third_party/rust:clap",
         "//third_party/rust:crc",
+        "//third_party/rust:env_logger",
         "//third_party/rust:futures_core",
         "//third_party/rust:log",
         "//third_party/rust:prost",
@@ -92,11 +95,6 @@ rust_binary(
     edition = "2018",
     deps = [
         ":rustboard_core",
-        "//third_party/rust:clap",
-        "//third_party/rust:env_logger",
-        "//third_party/rust:log",
-        "//third_party/rust:tokio",
-        "//third_party/rust:tonic",
     ],
 )
 

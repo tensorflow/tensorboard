@@ -94,6 +94,7 @@ tf_ng_module(
         "//tensorboard/webapp/types:ui",
         "//tensorboard/webapp/util:string",
         "//tensorboard/webapp/util:types",
+        "@npm//@angular/common",
         "@npm//@angular/core",
         "@npm//@ngrx/store",
         "@npm//rxjs",

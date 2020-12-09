@@ -29,6 +29,7 @@ tf_ng_module(
         "//tensorboard/webapp/plugins/npmi/store",
         "//tensorboard/webapp/plugins/npmi/store:types",
         "//tensorboard/webapp/plugins/npmi/views/selected_annotations/parallel_coordinates",
+        "@npm//@angular/common",
         "@npm//@angular/core",
         "@npm//@ngrx/store",
         "@npm//rxjs",

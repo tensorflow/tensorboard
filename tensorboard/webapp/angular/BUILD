@@ -35,7 +35,7 @@ tf_ts_library(
     name = "expect_angular_cdk_clipboard",
     srcs = [],
     deps = [
-        "@npm//@angular/material",
+        "@npm//@angular/cdk",
     ],
 )
 

@@ -27,6 +27,7 @@ tf_ng_module(
         "//tensorboard/webapp/metrics/views/main_view",
         "//tensorboard/webapp/metrics/views/right_pane",
         "//tensorboard/webapp/runs/views/runs_selector",
+        "@npm//@angular/common",
         "@npm//@angular/core",
     ],
 )

@@ -50,7 +50,7 @@ import {
 } from '../store';
 import {CardId, CardMetadata} from '../types';
 
-/** @typehack */ import * as _typeHackNgrxEffects from '@ngrx/effects/effects';
+/** @typehack */ import * as _typeHackNgrxEffects from '@ngrx/effects';
 /** @typehack */ import * as _typeHackModels from '@ngrx/store/src/models';
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
 

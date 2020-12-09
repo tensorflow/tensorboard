@@ -105,6 +105,8 @@ class DataProvider(object):
 
     Unless otherwise noted, any methods on this class may raise errors
     defined in `tensorboard.errors`, like `tensorboard.errors.NotFoundError`.
+
+    If not implemented, optional methods may return `None`.
     """
 
     def data_location(self, ctx=None, *, experiment_id):
