@@ -42,6 +42,7 @@ import {
   DataSeriesMetadataMap,
   Dimension,
   Extent,
+  Point,
   Rect,
   Scale,
 } from '../lib/public_types';
@@ -403,6 +404,10 @@ export class LineChartInteractiveViewComponent
       getScaleRangeFromDomDim(this.domDim, 'y'),
       uiCoord
     );
+  }
+
+  shouldRenderTooltipPoint(point: Point | undefined): boolean {
+    return point !== undefined && !isNaN(point.x) && !isNaN(point.y);
   }
 
   private updateTooltip(event: MouseEvent) {

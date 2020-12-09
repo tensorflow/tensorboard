@@ -20,7 +20,7 @@ limitations under the License.
       *ngFor="let datum of cursoredData; trackBy: trackBySeriesName"
     >
       <circle
-        *ngIf="datum.point"
+        *ngIf="shouldRenderTooltipPoint(datum.point)"
         [attr.cx]="getDomX(datum.point.x)"
         [attr.cy]="getDomY(datum.point.y)"
         [attr.fill]="datum.metadata.color"
