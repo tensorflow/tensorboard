@@ -48,7 +48,7 @@ struct Opts {
     ///
     /// IP address to bind this server to. May be an IPv4 address (e.g., 127.0.0.1 or 0.0.0.0) or
     /// an IPv6 address (e.g., ::1 or ::0).
-    #[clap(long, default_value = "::0")]
+    #[clap(long, default_value = "::1")]
     host: IpAddr,
 
     /// Bind to this port
