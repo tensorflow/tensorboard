@@ -246,9 +246,9 @@ export class ThreeRenderer implements ObjectRenderer<CacheValue> {
     const altitude = (size * Math.sqrt(3)) / 2;
     const vertices = new Float32Array([
       loc.x - size / 2,
-      loc.y - (altitude * 1) / 3,
+      loc.y - altitude / 3,
       loc.x + size / 2,
-      loc.y - (altitude * 1) / 3,
+      loc.y - altitude / 3,
       loc.x,
       loc.y + (altitude * 2) / 3,
     ]);
@@ -259,16 +259,13 @@ export class ThreeRenderer implements ObjectRenderer<CacheValue> {
       const mesh = this.createMesh(geom, paintOpt);
       if (mesh === null) return null;
       this.scene.add(mesh);
-      return {
-        type: CacheType.TRIANGLE,
-        data: loc,
-        obj3d: mesh,
-      };
+      return {type: CacheType.TRIANGLE, data: loc, obj3d: mesh};
     }
 
     const geomUpdated = updateObject(
       cached.obj3d,
       (geom) => {
+        // Updating a geometry with three vertices is cheap enough. Update always.
         updateGeometryWithVec2Array(geom, vertices);
         return geom;
       },
@@ -292,13 +289,11 @@ export class ThreeRenderer implements ObjectRenderer<CacheValue> {
       if (mesh === null) return null;
       mesh.position.set(loc.x, loc.y, 0);
       this.scene.add(mesh);
-      return {
-        type: CacheType.CIRCLE,
-        data: {loc, radius},
-        obj3d: mesh,
-      };
+      return {type: CacheType.CIRCLE, data: {loc, radius}, obj3d: mesh};
     }
 
+    // geometry/vertices are created by CircleBufferGeometry and it is quite complex.
+    // Since it has N vertices (N < 20), update always.
     const geomUpdated = updateObject(cached.obj3d, () => geom, paintOpt);
     if (!geomUpdated) return cached;
     cached.obj3d.position.set(loc.x, loc.y, 0);

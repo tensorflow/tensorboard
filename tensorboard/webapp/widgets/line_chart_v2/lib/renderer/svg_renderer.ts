@@ -41,21 +41,20 @@ function createOrUpdateObject<T extends SVGPathElement | SVGCircleElement>(
   paintOpt: {visible: boolean; color: string; opacity?: number}
 ): T | null {
   const {color, visible, opacity} = paintOpt;
-  const cssDisplayValue = visible ? '' : 'none';
   let dom: T | undefined = prevDom;
 
   if (!dom) {
-    // Skip if prevDom does not exist and is invisible.
+    // Skip if prevDom does not exist and Object is invisible
     if (!visible) return null;
 
     dom = creator();
   } else if (!visible) {
-    dom.style.display = cssDisplayValue;
+    dom.style.display = 'none';
     return dom;
   }
 
   dom = updater(dom);
-  dom.style.display = cssDisplayValue;
+  dom.style.display = '';
   dom.style.stroke = color;
   dom.style.opacity = String(opacity ?? 1);
   return dom;
@@ -135,9 +134,9 @@ export class SvgRenderer implements ObjectRenderer<CacheValue> {
     const altitude = (size * Math.sqrt(3)) / 2;
     const vertices = new Float32Array([
       loc.x - size / 2,
-      loc.y + (altitude * 1) / 3,
+      loc.y + altitude / 3,
       loc.x + size / 2,
-      loc.y + (altitude * 1) / 3,
+      loc.y + altitude / 3,
       loc.x,
       loc.y - (altitude * 2) / 3,
     ]);
@@ -156,6 +155,7 @@ export class SvgRenderer implements ObjectRenderer<CacheValue> {
         return dom;
       },
       (dom) => {
+        // Modifying/overwriting three vertices is cheap enough. Update always.
         const data = this.createPathDString(vertices);
         dom.setAttribute('d', data + 'Z');
         return dom;
@@ -194,6 +194,7 @@ export class SvgRenderer implements ObjectRenderer<CacheValue> {
         return dom;
       },
       (dom) => {
+        // Modifying/overwriting x, y, and r is cheap enough. Update always.
         dom.style.fill = color;
         dom.setAttribute('cx', String(loc.x));
         dom.setAttribute('cy', String(loc.y));

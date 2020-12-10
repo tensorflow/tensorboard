@@ -128,6 +128,13 @@ describe('line_chart_v2/lib/renderer test', () => {
     });
 
     describe('triangle', () => {
+      /**
+       * Asserts `d` attribute on a SVGPathElement.
+       *
+       * @param path An SVGPathElement with `d` attribute of format with absolute
+       *    coordinates: M, L, and Zs. e.g., "M1,2L2,3L3,4Z".
+       * @param roundedCoords Coordinates expected rounded to nearest integer.
+       */
       function assertPath(path: SVGPathElement, roundedCoords: Point[]) {
         expect(roundedCoords.length).toBe(3);
         const dPath = path.getAttribute('d')!;
