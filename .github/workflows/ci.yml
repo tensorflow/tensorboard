@@ -169,7 +169,7 @@ jobs:
         # Use the comment '# noqa: <error code>' to suppress.
         run: flake8 . --count --select=E9,F63,F7,F82,F401 --show-source --statistics
 
-  lint-python:
+  lint-python-yaml-docs:
     runs-on: ubuntu-16.04
     steps:
       - uses: actions/checkout@v1
@@ -177,14 +177,21 @@ jobs:
         with:
           python-version: '3.6'
           architecture: 'x64'
-      - name: 'Install black'
+      - name: 'Install black, yamllint, and the TensorFlow docs notebook tools'
         run: |
           python -m pip install -U pip
-          pip install black -c ./tensorboard/pip_package/requirements_dev.txt
+          nbfmt_version="174c9a5c1cc51a3af1de98d84824c811ecd49029"
+          pip install black yamllint -c ./tensorboard/pip_package/requirements_dev.txt
+          pip install -U git+https://github.com/tensorflow/docs@${nbfmt_version}
       - run: pip freeze --all
       - name: 'Lint Python code for style with Black'
         # You can run `black .` to fix all Black complaints.
         run: black --check --diff .
+      - name: 'Lint YAML for gotchas with yamllint'
+        # Use '# yamllint disable-line rule:foo' to suppress.
+        run: yamllint -c docs/.yamllint docs docs/.yamllint
+      - name: 'Lint Colab notebooks for formatting with nbfmt'
+        run: git ls-files -z '*.ipynb' | xargs -0 python3 -m tensorflow_docs.tools.nbfmt --test
 
   lint-rust:
     runs-on: ubuntu-16.04
@@ -228,29 +235,6 @@ jobs:
           git add .
           git diff --staged --exit-code
 
-  lint-docs:
-    runs-on: ubuntu-16.04
-    steps:
-      - uses: actions/checkout@v1
-      - uses: actions/setup-python@v1
-        with:
-          python-version: '3.6'
-          architecture: 'x64'
-      - name: 'Install yamllint'
-        run: |
-          python -m pip install -U pip
-          pip install yamllint -c ./tensorboard/pip_package/requirements_dev.txt
-      - run: pip freeze --all
-      - name: 'Lint YAML for gotchas with yamllint'
-        # Use '# yamllint disable-line rule:foo' to suppress.
-        run: yamllint -c docs/.yamllint docs docs/.yamllint
-      - name: 'Install the TensorFlow docs notebook tools'
-        run: |
-          nbfmt_version="174c9a5c1cc51a3af1de98d84824c811ecd49029"
-          python3 -m pip install -U git+https://github.com/tensorflow/docs@${nbfmt_version}
-      - name: 'Use nbfmt to check Colab notebooks for formatting'
-        run: git ls-files -z '*.ipynb' | xargs -0 python3 -m tensorflow_docs.tools.nbfmt --test
-
   lint-frontend:
     runs-on: ubuntu-16.04
     steps:
@@ -273,7 +257,7 @@ jobs:
       - run: |
           ! git grep -E '"@npm_angular_bazel//:index.bzl"' 'tensorboard/**/BUILD'
 
-  lint-build:
+  lint-misc: # build, protos, etc.
     runs-on: ubuntu-16.04
     steps:
       - uses: actions/checkout@v1
@@ -300,11 +284,6 @@ jobs:
         # https://github.com/bazelbuild/buildtools/blob/master/buildozer/README.md#error-code
         run: |
           buildozer '//tensorboard/...:%licenses' remove_comment && false || test $? = 3
-
-  lint-proto:
-    runs-on: ubuntu-16.04
-    steps:
-      - uses: actions/checkout@v1
       - name: clang-format lint
         uses: DoozyX/clang-format-lint-action@v0.5
         with:
@@ -313,11 +292,6 @@ jobs:
           exclude: ./tensorboard/compat/proto
           extensions: 'proto'
           clangFormatVersion: 9
-
-  check-misc:
-    runs-on: ubuntu-16.04
-    steps:
-      - uses: actions/checkout@v1
       - run: ./tensorboard/tools/do_not_submit_test.sh
       - run: ./tensorboard/tools/license_test.sh
       - run: ./tensorboard/tools/whitespace_hygiene_test.py
