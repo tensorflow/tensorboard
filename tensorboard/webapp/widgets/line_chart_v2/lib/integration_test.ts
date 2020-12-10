@@ -15,13 +15,22 @@ limitations under the License.
 
 import {ChartImpl, TEST_ONLY} from './chart';
 import {ChartCallbacks, RendererType, ScaleType} from './public_types';
-import {buildMetadata, createSeries} from './testing';
+import {
+  assertSvgPathD,
+  buildMetadata,
+  buildSeries,
+  createSeries,
+} from './testing';
 
 describe('line_chart_v2/lib/integration test', () => {
   let dom: SVGElement;
   let callbacks: ChartCallbacks;
   let chart: ChartImpl;
   let rafSpy: jasmine.Spy;
+
+  function getDomChildren(): ReadonlyArray<SVGElement> {
+    return (dom.children as unknown) as ReadonlyArray<SVGElement>;
+  }
 
   beforeEach(() => {
     rafSpy = spyOn(TEST_ONLY.util, 'requestAnimationFrame').and.callFake(
@@ -193,6 +202,198 @@ describe('line_chart_v2/lib/integration test', () => {
       rafCallbacks.shift()!(0);
 
       expect(callbacks.onDrawEnd).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('null handling', () => {
+    function isTriangle(el: Element): boolean {
+      return el.classList.contains('triangle');
+    }
+
+    it('renders all NaNs as triangles at 0s (with size of 12)', () => {
+      chart.resize({width: 100, height: 100});
+      chart.setViewBox({x: [0, 100], y: [0, 100]});
+      chart.setMetadata({line: buildMetadata({id: 'line', visible: true})});
+      chart.setData([
+        buildSeries({
+          id: 'line',
+          points: [
+            {x: 0, y: NaN},
+            {x: 50, y: NaN},
+            {x: 100, y: NaN},
+          ],
+        }),
+      ]);
+
+      const children = getDomChildren();
+      expect(children.length).toBe(3);
+      const [triangle1, triangle2, triangle3] = children;
+      expect(isTriangle(triangle1)).toBe(true);
+      assertSvgPathD(triangle1, [
+        [-6, 103],
+        [6, 103],
+        [0, 93],
+      ]);
+
+      expect(isTriangle(triangle2)).toBe(true);
+      assertSvgPathD(triangle2, [
+        [44, 103],
+        [56, 103],
+        [50, 93],
+      ]);
+
+      expect(isTriangle(triangle3)).toBe(true);
+      assertSvgPathD(triangle3, [
+        [94, 103],
+        [106, 103],
+        [100, 93],
+      ]);
+    });
+
+    it('breaks line into parts when NaN appears in the middle', () => {
+      chart.resize({width: 10, height: 10});
+      chart.setViewBox({x: [0, 10], y: [0, 10]});
+      chart.setMetadata({line: buildMetadata({id: 'line', visible: true})});
+      chart.setData([
+        buildSeries({
+          id: 'line',
+          points: [
+            {x: 1, y: 1},
+            {x: 3, y: 5},
+            {x: 5, y: NaN},
+            {x: 7, y: 1},
+            {x: 9, y: 10},
+          ],
+        }),
+      ]);
+
+      const children = getDomChildren();
+      expect(children.length).toBe(3);
+      const [line1, triangle, line2] = children;
+
+      expect(isTriangle(line1)).toBe(false);
+      assertSvgPathD(line1, [
+        [1, 9],
+        [3, 5],
+      ]);
+      expect(isTriangle(triangle)).toBe(true);
+      assertSvgPathD(triangle, [
+        [-1, 8],
+        [11, 8],
+        [5, -2],
+      ]);
+      expect(isTriangle(line2)).toBe(false);
+      assertSvgPathD(line2, [
+        [7, 9],
+        [9, 0],
+      ]);
+    });
+
+    it('puts first NaN value in place of NaN when starts with NaN', () => {
+      chart.resize({width: 10, height: 10});
+      chart.setViewBox({x: [0, 10], y: [0, 10]});
+      chart.setMetadata({line: buildMetadata({id: 'line', visible: true})});
+      chart.setData([
+        buildSeries({
+          id: 'line',
+          points: [
+            {x: 1, y: NaN},
+            {x: 3, y: NaN},
+            {x: 5, y: 5},
+            {x: 7, y: 1},
+            {x: 9, y: 10},
+          ],
+        }),
+      ]);
+
+      const children = getDomChildren();
+      expect(children.length).toBe(3);
+      const [triangle1, triangle2, line] = children;
+
+      expect(isTriangle(triangle1)).toBe(true);
+      assertSvgPathD(triangle1, [
+        [-5, 8],
+        [7, 8],
+        [1, -2],
+      ]);
+      expect(isTriangle(triangle2)).toBe(true);
+      assertSvgPathD(triangle2, [
+        [-3, 8],
+        [9, 8],
+        [3, -2],
+      ]);
+      expect(isTriangle(line)).toBe(false);
+      assertSvgPathD(line, [
+        [5, 5],
+        [7, 9],
+        [9, 0],
+      ]);
+    });
+
+    it('renders triangle for trailing NaNs', () => {
+      chart.resize({width: 10, height: 10});
+      chart.setViewBox({x: [0, 10], y: [0, 10]});
+      chart.setMetadata({line: buildMetadata({id: 'line', visible: true})});
+      chart.setData([
+        buildSeries({
+          id: 'line',
+          points: [
+            {x: 1, y: 10},
+            {x: 3, y: 0},
+            {x: 7, y: NaN},
+            {x: 9, y: NaN},
+          ],
+        }),
+      ]);
+
+      const children = getDomChildren();
+      expect(children.length).toBe(3);
+      const [line, triangle1, triangle2] = children;
+
+      expect(isTriangle(line)).toBe(false);
+      assertSvgPathD(line, [
+        [1, 0],
+        [3, 10],
+      ]);
+
+      expect(isTriangle(triangle1)).toBe(true);
+      assertSvgPathD(triangle1, [
+        [1, 13],
+        [13, 13],
+        [7, 3],
+      ]);
+      expect(isTriangle(triangle2)).toBe(true);
+      assertSvgPathD(triangle2, [
+        [3, 13],
+        [15, 13],
+        [9, 3],
+      ]);
+    });
+
+    it('renders circle for single non-NaN point in between NaNs', () => {
+      chart.resize({width: 10, height: 10});
+      chart.setViewBox({x: [0, 10], y: [0, 10]});
+      chart.setMetadata({line: buildMetadata({id: 'line', visible: true})});
+      chart.setData([
+        buildSeries({
+          id: 'line',
+          points: [
+            {x: 1, y: NaN},
+            {x: 2, y: 5},
+            {x: 3, y: NaN},
+          ],
+        }),
+      ]);
+
+      const children = getDomChildren();
+      expect(children.length).toBe(3);
+      const [triangle1, circle, triangle2] = children;
+
+      expect(isTriangle(triangle1)).toBe(true);
+      expect(isTriangle(triangle2)).toBe(true);
+      expect(circle.nodeName).toBe('circle');
+      expect(circle.getAttribute('cx')).toBe('2');
+      expect(circle.getAttribute('cy')).toBe('5');
     });
   });
 });

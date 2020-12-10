@@ -131,6 +131,7 @@ tf_ts_library(
     ],
     deps = [
         ":internal_types",
+        "@npm//@types/jasmine",
     ],
 )
 
