@@ -30,6 +30,6 @@ export function getConfig(deepLinker: HashDeepLinker): StoreConfig<CoreState> {
     initialState: {
       ...initialState,
       activePlugin: deepLinker.getPluginId() || null,
-    } as CoreState,
+    },
   };
 }
