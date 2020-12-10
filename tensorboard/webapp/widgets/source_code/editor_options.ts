@@ -12,23 +12,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-
-import {CommonModule} from '@angular/common';
-import {NgModule} from '@angular/core';
-
-import {SourceCodeComponent} from './source_code_component';
-import {SourceCodeContainer} from './source_code_container';
-import {SourceCodeDiffComponent} from './source_code_diff_component';
-import {SourceCodeDiffContainer} from './source_code_diff_container';
-
-@NgModule({
-  declarations: [
-    SourceCodeComponent,
-    SourceCodeContainer,
-    SourceCodeDiffComponent,
-    SourceCodeDiffContainer,
-  ],
-  imports: [CommonModule],
-  exports: [SourceCodeContainer, SourceCodeDiffContainer],
-})
-export class SourceCodeModule {}
+/**
+ * Options for source code editors.
+ */
+export const DEFAULT_CODE_LANGUAGE = 'python';
+export const DEFAULT_CODE_FONT_SIZE = 10;
+export const RESIZE_DEBOUNCE_INTERVAL_MS = 50;

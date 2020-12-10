@@ -148,7 +148,7 @@ describe('Source Code Component', () => {
     });
 
     window.dispatchEvent(new Event('resize'));
-    await sleep(TEST_ONLY.RESIZE_DEBOUNCE_INTERAVL_MS);
+    await sleep(TEST_ONLY.RESIZE_DEBOUNCE_INTERVAL_MS);
     expect(spies.editorSpy!.layout).toHaveBeenCalledTimes(1);
   });
 });

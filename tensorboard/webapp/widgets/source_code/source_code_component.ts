@@ -26,12 +26,13 @@ import {
 import {fromEvent, interval, Subject} from 'rxjs';
 import {debounce, takeUntil, tap} from 'rxjs/operators';
 
+import {
+  DEFAULT_CODE_LANGUAGE,
+  DEFAULT_CODE_FONT_SIZE,
+  RESIZE_DEBOUNCE_INTERVAL_MS,
+} from './editor_options';
+
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
-
-const DEFAULT_CODE_LANGUAGE = 'python';
-const DEFAULT_CODE_FONT_SIZE = 10;
-
-const RESIZE_DEBOUNCE_INTERAVL_MS = 50;
 
 @Component({
   selector: 'source-code-component',
@@ -66,7 +67,7 @@ export class SourceCodeComponent implements OnInit, OnChanges, OnDestroy {
     const resizePipe = fromEvent(window, 'resize')
       .pipe(
         takeUntil(this.ngUnsubscribe),
-        debounce(() => interval(RESIZE_DEBOUNCE_INTERAVL_MS)),
+        debounce(() => interval(RESIZE_DEBOUNCE_INTERVAL_MS)),
         tap(() => {
           if (this.editor !== null) {
             this.editor.layout();
@@ -151,5 +152,5 @@ export class SourceCodeComponent implements OnInit, OnChanges, OnDestroy {
 }
 
 export const TEST_ONLY = {
-  RESIZE_DEBOUNCE_INTERAVL_MS,
+  RESIZE_DEBOUNCE_INTERVAL_MS,
 };

@@ -7,8 +7,11 @@ licenses(["notice"])
 tf_ng_module(
     name = "source_code",
     srcs = [
+        "editor_options.ts",
         "source_code_component.ts",
         "source_code_container.ts",
+        "source_code_diff_component.ts",
+        "source_code_diff_container.ts",
         "source_code_module.ts",
     ],
     assets = [
@@ -63,6 +66,7 @@ tf_ts_library(
     testonly = True,
     srcs = [
         "source_code_container_test.ts",
+        "source_code_diff_container_test.ts",
     ],
     deps = [
         ":load_monaco",
