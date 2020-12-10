@@ -17,14 +17,14 @@ import {createSelector, createFeatureSelector} from '@ngrx/store';
 
 import {
   FeatureFlagState,
-  FEAUTURE_FLAG_FEATURE_KEY,
+  FEATURE_FLAG_FEATURE_KEY,
   State,
 } from './feature_flag_types';
 
 /** @typehack */ import * as _typeHackNgrxStore from '@ngrx/store';
 
 const selectFeatureFlagState = createFeatureSelector<State, FeatureFlagState>(
-  FEAUTURE_FLAG_FEATURE_KEY
+  FEATURE_FLAG_FEATURE_KEY
 );
 
 export const getIsFeatureFlagsLoaded = createSelector(

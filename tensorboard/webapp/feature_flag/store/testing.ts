@@ -14,10 +14,7 @@ limitations under the License.
 ==============================================================================*/
 
 import {buildFeatureFlag} from '../testing';
-import {
-  FeatureFlagState,
-  FEAUTURE_FLAG_FEATURE_KEY,
-} from './feature_flag_types';
+import {FeatureFlagState, FEATURE_FLAG_FEATURE_KEY} from './feature_flag_types';
 
 export function buildFeatureFlagState(
   override: Partial<FeatureFlagState> = {}
@@ -32,6 +29,6 @@ export function buildFeatureFlagState(
 
 export function buildState(featureFlagState: FeatureFlagState) {
   return {
-    [FEAUTURE_FLAG_FEATURE_KEY]: featureFlagState,
+    [FEATURE_FLAG_FEATURE_KEY]: featureFlagState,
   };
 }

@@ -15,7 +15,7 @@ limitations under the License.
 
 import {FeatureFlags} from '../types';
 
-export const FEAUTURE_FLAG_FEATURE_KEY = 'feature';
+export const FEATURE_FLAG_FEATURE_KEY = 'feature';
 
 export interface FeatureFlagState {
   isFeatureFlagsLoaded: boolean;
@@ -23,5 +23,5 @@ export interface FeatureFlagState {
 }
 
 export interface State {
-  [FEAUTURE_FLAG_FEATURE_KEY]?: FeatureFlagState;
+  [FEATURE_FLAG_FEATURE_KEY]?: FeatureFlagState;
 }
