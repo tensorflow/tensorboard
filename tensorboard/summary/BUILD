@@ -85,7 +85,6 @@ py_library(
     ],
     deps = [
         ":summary_v2",
-        "//tensorboard:expect_tensorflow_installed",
     ],
 )
 

@@ -16,10 +16,6 @@ package_group(
 )
 
 # The standard TensorBoard binary that serves the webapp.
-# The two //tensorboard/summary lines are to suppress an
-# annoying startup warning emitted by TensorFlow that
-# "Limited tf.compat.v2.summary API due to missing TensorBoard
-# installation.
 py_binary(
     name = "tensorboard",
     srcs = ["main.py"],
@@ -32,8 +28,6 @@ py_binary(
         ":program",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/plugins:base_plugin",
-        "//tensorboard/summary",  # Suppress TF startup warning
-        "//tensorboard/summary:tf_summary",  # Suppress TF startup warning
         "//tensorboard/uploader:uploader_subcommand",
         "//tensorboard/util:tb_logging",
         "//tensorboard/util:timing",  # non-strict dep, for patching convenience
@@ -370,7 +364,20 @@ py_library(name = "expect_grpc_testing_installed")
 # This is a dummy rule used as a TensorFlow dependency in open-source.
 # We expect TensorFlow to already be installed on the system, e.g. via
 # `pip install tensorflow`
-py_library(name = "expect_tensorflow_installed")
+#
+# NOTE: we include the dep on //tensorboard/summary:tf_summary so that
+# any TensorBoard code that depends on TF also depends on the tf.summary
+# implementation code hosted by TensorBoard itself. This prevents the
+# "Limited tf.compat.v2.summary API due to missing TensorBoard installation."
+# warning that would otherwise be emitted when running via `bazel run` due
+# to the bazel runfiles containing a `tensorboard` module that lacks that
+# code, which hides the pip installation module that does have it.
+py_library(
+    name = "expect_tensorflow_installed",
+    deps = [
+        "//tensorboard/summary:tf_summary",
+    ],
+)
 
 # This is a dummy rule used as a TensorFlow Datasets dependency in open-source.
 # We expect TensorFlow Datasets to already be installed on the system, e.g. via

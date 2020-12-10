@@ -88,8 +88,6 @@ py_binary(
     deps = [
         ":summary",
         "//tensorboard:expect_tensorflow_installed",
-        "//tensorboard/summary",
-        "//tensorboard/summary:tf_summary",
         "@org_pythonhosted_six",
     ],
 )
