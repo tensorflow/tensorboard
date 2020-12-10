@@ -406,8 +406,8 @@ export class LineChartInteractiveViewComponent
     );
   }
 
-  shouldRenderTooltipPoint(point: Point | undefined): boolean {
-    return point !== undefined && !isNaN(point.x) && !isNaN(point.y);
+  shouldRenderTooltipPoint(point: Point | null): boolean {
+    return point !== null && !isNaN(point.x) && !isNaN(point.y);
   }
 
   private updateTooltip(event: MouseEvent) {
