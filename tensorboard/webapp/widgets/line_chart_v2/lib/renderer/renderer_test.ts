@@ -19,7 +19,7 @@ import {Point, Polyline} from '../internal_types';
 import {SvgRenderer} from './svg_renderer';
 import {ThreeRenderer} from './threejs_renderer';
 
-fdescribe('line_chart_v2/lib/renderer test', () => {
+describe('line_chart_v2/lib/renderer test', () => {
   const SVG_NS = 'http://www.w3.org/2000/svg';
   const DEFAULT_LINE_OPTIONS = {visible: true, color: '#f00', width: 6};
 
