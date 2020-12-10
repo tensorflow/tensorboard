@@ -16,7 +16,7 @@ limitations under the License.
 import {buildFeatureFlag} from '../testing';
 import {
   FeatureFlagState,
-  FEAUTURE_FLAG_FEATURE_KEY,
+  FEATURE_FLAG_FEATURE_KEY,
 } from './feature_flag_types';
 
 export function buildFeatureFlagState(
@@ -32,6 +32,6 @@ export function buildFeatureFlagState(
 
 export function buildState(featureFlagState: FeatureFlagState) {
   return {
-    [FEAUTURE_FLAG_FEATURE_KEY]: featureFlagState,
+    [FEATURE_FLAG_FEATURE_KEY]: featureFlagState,
   };
 }

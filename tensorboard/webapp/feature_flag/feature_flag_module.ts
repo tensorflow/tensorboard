@@ -19,14 +19,14 @@ import {EffectsModule} from '@ngrx/effects';
 
 import {TBFeatureFlagModule} from '../webapp_data_source/tb_feature_flag_module';
 
-import {FEAUTURE_FLAG_FEATURE_KEY} from './store/feature_flag_types';
+import {FEATURE_FLAG_FEATURE_KEY} from './store/feature_flag_types';
 import {reducers} from './store/feature_flag_reducers';
 import {FeatureFlagEffects} from './effects/feature_flag_effects';
 
 @NgModule({
   imports: [
     TBFeatureFlagModule,
-    StoreModule.forFeature(FEAUTURE_FLAG_FEATURE_KEY, reducers),
+    StoreModule.forFeature(FEATURE_FLAG_FEATURE_KEY, reducers),
     EffectsModule.forFeature([FeatureFlagEffects]),
   ],
 })
