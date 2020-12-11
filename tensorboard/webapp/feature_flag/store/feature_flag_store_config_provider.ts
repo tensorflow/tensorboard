@@ -17,7 +17,6 @@ import {StoreConfig} from '@ngrx/store';
 
 import {FeatureFlagState} from './feature_flag_types';
 
-
 export const initialState: FeatureFlagState = {
   isFeatureFlagsLoaded: false,
   features: {
