@@ -47,7 +47,7 @@ const initialState: NpmiState = {
   metricFilters: {},
   sort: {
     metric: '',
-    order: SortOrder.DOWN,
+    order: SortOrder.DESCENDING,
   },
   pcExpanded: true,
   annotationsExpanded: true,
@@ -234,7 +234,7 @@ const reducer = createReducer(
         },
         sort: {
           metric,
-          order: SortOrder.DOWN,
+          order: SortOrder.DESCENDING,
         },
       };
     }
@@ -296,10 +296,13 @@ const reducer = createReducer(
     (state: NpmiState, {metric}): NpmiState => {
       const newSort = {
         metric: metric,
-        order: SortOrder.DOWN,
+        order: SortOrder.DESCENDING,
       };
-      if (state.sort.metric === metric && state.sort.order === SortOrder.DOWN) {
-        newSort.order = SortOrder.UP;
+      if (
+        state.sort.metric === metric &&
+        state.sort.order === SortOrder.DESCENDING
+      ) {
+        newSort.order = SortOrder.ASCENDNG;
       }
       return {
         ...state,

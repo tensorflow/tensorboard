@@ -25,8 +25,8 @@ export function sortAnnotations(
   sort: AnnotationSort,
   embeddingData: EmbeddingListing
 ): string[] {
-  let result = Object.keys(annotationData);
-  let similarityBased =
+  const result = Object.keys(annotationData);
+  const similarityBased =
     sort.order === SortOrder.DISSIMILAR || sort.order === SortOrder.SIMILAR;
   if (
     sort.metric === '' ||
@@ -40,7 +40,7 @@ export function sortAnnotations(
   return sortData(
     result,
     distanceData,
-    sort.order === SortOrder.UP || sort.order === SortOrder.SIMILAR
+    sort.order === SortOrder.ASCENDNG || sort.order === SortOrder.SIMILAR
   );
 }
 
@@ -66,7 +66,7 @@ function extractExtremeData(
 ) {
   const strippedMetric = stripMetricString(sort.metric);
   const extremeData: {[annotation: string]: number} = {};
-  if (sort.order === SortOrder.DOWN) {
+  if (sort.order === SortOrder.DESCENDING) {
     for (const annotation of keys) {
       extremeData[annotation] = Math.max(
         ...annotationData[annotation]

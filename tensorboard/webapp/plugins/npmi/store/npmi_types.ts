@@ -64,8 +64,8 @@ export interface AnnotationSort {
 }
 
 export enum SortOrder {
-  DOWN,
-  UP,
+  DESCENDING,
+  ASCENDNG,
   SIMILAR,
   DISSIMILAR,
 }

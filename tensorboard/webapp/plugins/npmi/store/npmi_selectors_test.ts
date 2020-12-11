@@ -306,7 +306,7 @@ describe('npmi selectors', () => {
       const state = createState(createNpmiState());
       expect(getAnnotationSort(state)).toEqual({
         metric: '',
-        order: SortOrder.DOWN,
+        order: SortOrder.DESCENDING,
       });
     });
 
@@ -315,13 +315,13 @@ describe('npmi selectors', () => {
         createNpmiState({
           sort: {
             metric: 'test',
-            order: SortOrder.UP,
+            order: SortOrder.ASCENDNG,
           },
         })
       );
       expect(getAnnotationSort(state)).toEqual({
         metric: 'test',
-        order: SortOrder.UP,
+        order: SortOrder.ASCENDNG,
       });
     });
   });

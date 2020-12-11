@@ -489,7 +489,7 @@ describe('npmi_reducers', () => {
         ]);
         expect(nextState.sort).toEqual({
           metric: 'nPMI@test',
-          order: SortOrder.DOWN,
+          order: SortOrder.DESCENDING,
         });
       });
 
@@ -847,13 +847,13 @@ describe('npmi_reducers', () => {
       );
       expect(nextState.sort).toEqual({
         metric: 'test',
-        order: SortOrder.DOWN,
+        order: SortOrder.DESCENDING,
       });
     });
 
     it('changes the sort from up to down', () => {
       const state = createNpmiState({
-        sort: {metric: 'test', order: SortOrder.DOWN},
+        sort: {metric: 'test', order: SortOrder.DESCENDING},
       });
       const nextState = reducers(
         state,
@@ -861,7 +861,7 @@ describe('npmi_reducers', () => {
       );
       expect(nextState.sort).toEqual({
         metric: 'test',
-        order: SortOrder.UP,
+        order: SortOrder.ASCENDNG,
       });
     });
 

@@ -189,11 +189,9 @@ export class NpmiHttpServerDataSource implements NpmiDataSource {
     });
     return forkJoin(fetches).pipe(
       map((results) => {
-        const annotationData: AnnotationListing = {};
+        let annotationData: AnnotationListing = {};
         for (const result of results) {
-          for (const key of Object.keys(result)) {
-            annotationData[key] = result[key];
-          }
+          annotationData = {...annotationData, ...result};
         }
         return annotationData;
       })
@@ -211,11 +209,9 @@ export class NpmiHttpServerDataSource implements NpmiDataSource {
     });
     return forkJoin(fetches).pipe(
       map((results) => {
-        const metricData: MetricListing = {};
+        let metricData: MetricListing = {};
         for (const result of results) {
-          for (const key of Object.keys(result)) {
-            metricData[key] = result[key];
-          }
+          metricData = {...metricData, ...result};
         }
         return metricData;
       })
@@ -233,11 +229,9 @@ export class NpmiHttpServerDataSource implements NpmiDataSource {
     });
     return forkJoin(fetches).pipe(
       map((results) => {
-        const valueData: ValueListing = {};
+        let valueData: ValueListing = {};
         for (const result of results) {
-          for (const key of Object.keys(result)) {
-            valueData[key] = result[key];
-          }
+          valueData = {...valueData, ...result};
         }
         return valueData;
       })
@@ -255,11 +249,9 @@ export class NpmiHttpServerDataSource implements NpmiDataSource {
     });
     return forkJoin(fetches).pipe(
       map((results) => {
-        const embeddingData: RunEmbeddingListing = {};
+        let embeddingData: RunEmbeddingListing = {};
         for (const result of results) {
-          for (const key of Object.keys(result)) {
-            embeddingData[key] = result[key];
-          }
+          embeddingData = {...embeddingData, ...result};
         }
         return embeddingData;
       })

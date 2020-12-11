@@ -24,12 +24,13 @@ limitations under the License.
     [checked]="selectedAnnotations.includes(annotation)"
     (click)="$event.preventDefault()"
   ></mat-checkbox>
-  <div
+  <button
     [ngClass]="hasEmbedding ? 'clickable-annotation' : ''"
+    class="annotation-button"
     (click)="similaritySort($event)"
   >
     {{annotation}}
-  </div>
+  </button>
   <mat-icon
     *ngIf="flaggedAnnotations.includes(annotation)"
     class="flagged-icon"

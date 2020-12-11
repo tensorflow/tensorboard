@@ -26,7 +26,7 @@ describe('sort annotations utils', () => {
     const annotationData: AnnotationDataListing = buildSampleAnnotationData();
     const sort: AnnotationSort = {
       metric: 'nPMI@test',
-      order: SortOrder.UP,
+      order: SortOrder.ASCENDNG,
     };
     const annotations = sortAnnotations(annotationData, sort, {});
     expect(annotations).toEqual([
@@ -40,7 +40,7 @@ describe('sort annotations utils', () => {
     const annotationData: AnnotationDataListing = buildSampleAnnotationData();
     const sort: AnnotationSort = {
       metric: 'nPMI@test',
-      order: SortOrder.DOWN,
+      order: SortOrder.DESCENDING,
     };
     const annotations = sortAnnotations(annotationData, sort, {});
     expect(annotations).toEqual([
@@ -146,7 +146,7 @@ describe('sort annotations utils', () => {
     const annotationData: AnnotationDataListing = buildSampleAnnotationData();
     const sort: AnnotationSort = {
       metric: '',
-      order: SortOrder.UP,
+      order: SortOrder.ASCENDNG,
     };
     const annotations = sortAnnotations(annotationData, sort, {});
     expect(annotations).toEqual([
