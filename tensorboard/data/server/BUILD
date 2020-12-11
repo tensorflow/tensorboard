@@ -68,6 +68,18 @@ rust_test(
     ],
 )
 
+rust_binary(
+    name = "bench",
+    srcs = ["bench.rs"],
+    edition = "2018",
+    deps = [
+        ":rustboard_core",
+        "//third_party/rust:clap",
+        "//third_party/rust:env_logger",
+        "//third_party/rust:log",
+    ],
+)
+
 rust_doc_test(
     name = "rustboard_core_doc_test",
     dep = ":rustboard_core",

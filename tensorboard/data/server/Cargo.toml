@@ -18,6 +18,7 @@ name = "rustboard"
 version = "0.1.0"
 authors = ["The TensorFlow Authors <tensorboard-gardener@google.com>"]
 edition = "2018"
+default-run = "rustboard"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -46,6 +47,10 @@ tonic-build = "0.3.1"
 [[bin]]
 name = "rustboard"
 path = "main.rs"
+
+[[bin]]
+name = "bench"
+path = "bench.rs"
 
 [lib]
 name = "rustboard_core"
