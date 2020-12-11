@@ -19,6 +19,7 @@ import {
   GPU_LINE_CHART_QUERY_PARAM_KEY,
   TBFeatureFlagDataSource,
 } from './tb_feature_flag_data_source_types';
+import {FeatureFlags} from '../feature_flag/types';
 
 /**
  * Save the initial URL query params, before the AppRoutingEffects initialize.
@@ -35,13 +36,23 @@ const util = {
 export class QueryParamsFeatureFlagDataSource extends TBFeatureFlagDataSource {
   getFeatures() {
     const params = util.getParams();
-    return {
-      enabledExperimentalPlugins: params.getAll(
+    // Set feature flag value for query parameters that are explicitly
+    // specified. Feature flags for unspecified query parameters remain unset so
+    // their values in the underlying state are not inadvertently changed.
+    const featureFlags: Partial<FeatureFlags> = {};
+    if (params.has(EXPERIMENTAL_PLUGIN_QUERY_PARAM_KEY)) {
+      featureFlags.enabledExperimentalPlugins = params.getAll(
         EXPERIMENTAL_PLUGIN_QUERY_PARAM_KEY
-      ),
-      inColab: params.get('tensorboardColab') === 'true',
-      enableGpuChart: params.get(GPU_LINE_CHART_QUERY_PARAM_KEY) === 'true',
-    };
+      );
+    }
+    if (params.has('tensorboardColab')) {
+      featureFlags.inColab = params.get('tensorboardColab') === 'true';
+    }
+    if (params.has(GPU_LINE_CHART_QUERY_PARAM_KEY)) {
+      featureFlags.enableGpuChart =
+        params.get(GPU_LINE_CHART_QUERY_PARAM_KEY) === 'true';
+    }
+    return featureFlags;
   }
 }
 

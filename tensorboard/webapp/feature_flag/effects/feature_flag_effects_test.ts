@@ -23,7 +23,7 @@ import {
   TBFeatureFlagTestingModule,
   TestingTBFeatureFlagDataSource,
 } from '../../webapp_data_source/tb_feature_flag_testing';
-import {featuresLoaded} from '../actions/feature_flag_actions';
+import {partialFeatureFlagsLoaded} from '../actions/feature_flag_actions';
 import {State} from '../store/feature_flag_types';
 import {buildFeatureFlag} from '../testing';
 import {FeatureFlagEffects} from './feature_flag_effects';
@@ -70,7 +70,7 @@ describe('feature_flag_effects', () => {
       actions.next(effects.ngrxOnInitEffects());
 
       expect(recordedActions).toEqual([
-        featuresLoaded({
+        partialFeatureFlagsLoaded({
           features: buildFeatureFlag({
             enabledExperimentalPlugins: ['foo', 'bar'],
             inColab: false,
