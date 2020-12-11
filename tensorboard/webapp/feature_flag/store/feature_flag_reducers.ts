@@ -15,18 +15,9 @@ limitations under the License.
 import {Action, createReducer, on} from '@ngrx/store';
 
 import * as actions from '../actions/feature_flag_actions';
-import {FeatureFlagState} from './feature_flag_types';
+import {FeatureFlagState, initialState} from './feature_flag_types';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
-
-const initialState: FeatureFlagState = {
-  isFeatureFlagsLoaded: false,
-  features: {
-    enabledExperimentalPlugins: [],
-    inColab: false,
-    enableGpuChart: false,
-  },
-};
 
 const reducer = createReducer<FeatureFlagState>(
   initialState,
@@ -42,6 +33,6 @@ const reducer = createReducer<FeatureFlagState>(
   })
 );
 
-export function reducers(state: FeatureFlagState, action: Action) {
+export function reducers(state: FeatureFlagState | undefined, action: Action) {
   return reducer(state, action);
 }
