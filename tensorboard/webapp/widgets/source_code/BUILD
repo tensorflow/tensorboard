@@ -7,8 +7,11 @@ licenses(["notice"])
 tf_ng_module(
     name = "source_code",
     srcs = [
+        "editor_options.ts",
         "source_code_component.ts",
         "source_code_container.ts",
+        "source_code_diff_component.ts",
+        "source_code_diff_container.ts",
         "source_code_module.ts",
     ],
     assets = [
@@ -17,6 +20,7 @@ tf_ng_module(
     ],
     deps = [
         ":load_monaco",
+        "//tensorboard/webapp/widgets:resize_detector",
         "@npm//@angular/common",
         "@npm//@angular/core",
         "@npm//monaco-editor-core",
@@ -63,6 +67,7 @@ tf_ts_library(
     testonly = True,
     srcs = [
         "source_code_container_test.ts",
+        "source_code_diff_container_test.ts",
     ],
     deps = [
         ":load_monaco",

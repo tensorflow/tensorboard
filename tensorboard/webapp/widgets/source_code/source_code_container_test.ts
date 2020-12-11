@@ -18,7 +18,7 @@ limitations under the License.
 import {SimpleChange} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
 
-import {SourceCodeComponent, TEST_ONLY} from './source_code_component';
+import {SourceCodeComponent} from './source_code_component';
 import {SourceCodeContainer} from './source_code_container';
 import {
   fakes,
@@ -121,35 +121,6 @@ describe('Source Code Component', () => {
       1,
       fakes.fakeMonaco.editor.ScrollType.Smooth
     );
-  });
-
-  function sleep(durationMs: number): Promise<void> {
-    return new Promise((resolve) => {
-      setInterval(() => {
-        resolve();
-      }, durationMs);
-    });
-  }
-
-  it('calls monaco editor layout() on resize', async () => {
-    const fixture = TestBed.createComponent(SourceCodeComponent);
-    const component = fixture.componentInstance;
-    component.ngOnInit();
-    component.lines = lines1;
-    component.focusedLineno = 3;
-    await component.ngOnChanges({
-      lines: new SimpleChange(null, lines1, true),
-      focusedLineno: new SimpleChange(null, 3, true),
-    });
-    await loadMonacoShim.loadMonaco();
-    component.monaco = windowWithRequireAndMonaco.monaco;
-    await component.ngOnChanges({
-      monaco: new SimpleChange(null, windowWithRequireAndMonaco.monaco, true),
-    });
-
-    window.dispatchEvent(new Event('resize'));
-    await sleep(TEST_ONLY.RESIZE_DEBOUNCE_INTERAVL_MS);
-    expect(spies.editorSpy!.layout).toHaveBeenCalledTimes(1);
   });
 });
 
