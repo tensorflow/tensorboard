@@ -52,9 +52,7 @@ export class SourceCodeContainer implements OnInit {
   monaco$: Observable<typeof monaco> | null = null;
 
   ngOnInit(): void {
-    this.monaco$ = from(loadMonaco()).pipe(
-      map(() => window.monaco)
-    );
+    this.monaco$ = from(loadMonaco()).pipe(map(() => window.monaco));
   }
 
   constructor() {}
