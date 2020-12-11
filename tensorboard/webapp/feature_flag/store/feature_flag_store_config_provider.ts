@@ -15,9 +15,17 @@ limitations under the License.
 import {InjectionToken} from '@angular/core';
 import {StoreConfig} from '@ngrx/store';
 
-import {FeatureFlagState, initialState} from './feature_flag_types';
+import {FeatureFlagState} from './feature_flag_types';
 
-// /** @typehack */ import * as _typeHackStore from '@ngrx/store';
+
+export const initialState: FeatureFlagState = {
+  isFeatureFlagsLoaded: false,
+  features: {
+    enabledExperimentalPlugins: [],
+    inColab: false,
+    enableGpuChart: false,
+  },
+};
 
 /**
  * Injection token for providing feature flag StoreConfig.
@@ -25,7 +33,7 @@ import {FeatureFlagState, initialState} from './feature_flag_types';
 export const FEATURE_FLAG_STORE_CONFIG_TOKEN: InjectionToken<StoreConfig<
   FeatureFlagState
 >> = new InjectionToken<StoreConfig<FeatureFlagState>>(
-  'Feature Flag Store Config'
+  '[Feature Flag] Store Config'
 );
 
 /**

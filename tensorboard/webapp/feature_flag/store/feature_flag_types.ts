@@ -25,12 +25,3 @@ export interface FeatureFlagState {
 export interface State {
   [FEATURE_FLAG_FEATURE_KEY]?: FeatureFlagState;
 }
-
-export const initialState: FeatureFlagState = {
-  isFeatureFlagsLoaded: false,
-  features: {
-    enabledExperimentalPlugins: [],
-    inColab: false,
-    enableGpuChart: false,
-  },
-};

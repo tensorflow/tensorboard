@@ -15,7 +15,8 @@ limitations under the License.
 import {Action, createReducer, on} from '@ngrx/store';
 
 import * as actions from '../actions/feature_flag_actions';
-import {FeatureFlagState, initialState} from './feature_flag_types';
+import {initialState} from './feature_flag_store_config_provider';
+import {FeatureFlagState} from './feature_flag_types';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
