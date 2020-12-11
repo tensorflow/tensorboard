@@ -42,7 +42,9 @@ describe('tb_feature_flag_data_source', () => {
         spyOn(TEST_ONLY.util, 'getParams').and.returnValue(
           new URLSearchParams('experimentalPlugin=a&experimentalPlugin=b')
         );
-        expect(dataSource.getFeatures()).toEqual({enabledExperimentalPlugins: ['a', 'b']});
+        expect(dataSource.getFeatures()).toEqual({
+          enabledExperimentalPlugins: ['a', 'b'],
+        });
       });
 
       it('returns inColab=false when `tensorboardColab` is empty', () => {
@@ -89,9 +91,15 @@ describe('tb_feature_flag_data_source', () => {
 
       it('returns all flag values when they are all set', () => {
         spyOn(TEST_ONLY.util, 'getParams').and.returnValue(
-          new URLSearchParams('experimentalPlugin=a&tensorboardColab&fastChart=true')
+          new URLSearchParams(
+            'experimentalPlugin=a&tensorboardColab&fastChart=true'
+          )
         );
-        expect(dataSource.getFeatures()).toEqual({enabledExperimentalPlugins: ['a'], inColab: false, enableGpuChart: true});
+        expect(dataSource.getFeatures()).toEqual({
+          enabledExperimentalPlugins: ['a'],
+          inColab: false,
+          enableGpuChart: true,
+        });
       });
     });
   });

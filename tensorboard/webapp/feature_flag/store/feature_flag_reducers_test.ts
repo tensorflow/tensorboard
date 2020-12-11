@@ -28,9 +28,11 @@ describe('feature_flag_reducers', () => {
         actions.featuresLoaded({features: {}})
       );
 
-      expect(nextState).toEqual(buildFeatureFlagState({
-        isFeatureFlagsLoaded: true,
-      }));
+      expect(nextState).toEqual(
+        buildFeatureFlagState({
+          isFeatureFlagsLoaded: true,
+        })
+      );
     });
 
     it('sets the new feature flags onto the state', () => {
@@ -49,9 +51,11 @@ describe('feature_flag_reducers', () => {
         })
       );
 
-      expect(nextState.features).toEqual(buildFeatureFlag({
-        enabledExperimentalPlugins: ['foo', 'bar']
-      }));
+      expect(nextState.features).toEqual(
+        buildFeatureFlag({
+          enabledExperimentalPlugins: ['foo', 'bar'],
+        })
+      );
     });
 
     it('ignores unspecified feature flags', () => {
@@ -66,15 +70,17 @@ describe('feature_flag_reducers', () => {
         prevState,
         actions.featuresLoaded({
           features: {
-            inColab: false
+            inColab: false,
           },
         })
       );
 
-      expect(nextState.features).toEqual(buildFeatureFlag({
-        enabledExperimentalPlugins: ['foo'],
-        inColab: false,
-      }));
+      expect(nextState.features).toEqual(
+        buildFeatureFlag({
+          enabledExperimentalPlugins: ['foo'],
+          inColab: false,
+        })
+      );
     });
   });
 });

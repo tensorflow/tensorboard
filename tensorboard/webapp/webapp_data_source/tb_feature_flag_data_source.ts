@@ -39,7 +39,7 @@ export class QueryParamsFeatureFlagDataSource extends TBFeatureFlagDataSource {
     // Set feature flag value for query parameters that are explicitly
     // specified. Feature flags for unspecified query parameters remain unset so
     // their values in the underlying state are not inadvertently changed.
-    const featureFlags : Partial<FeatureFlags> = {};
+    const featureFlags: Partial<FeatureFlags> = {};
     if (params.has(EXPERIMENTAL_PLUGIN_QUERY_PARAM_KEY)) {
       featureFlags.enabledExperimentalPlugins = params.getAll(
         EXPERIMENTAL_PLUGIN_QUERY_PARAM_KEY
@@ -49,7 +49,8 @@ export class QueryParamsFeatureFlagDataSource extends TBFeatureFlagDataSource {
       featureFlags.inColab = params.get('tensorboardColab') === 'true';
     }
     if (params.has(GPU_LINE_CHART_QUERY_PARAM_KEY)) {
-      featureFlags.enableGpuChart = params.get(GPU_LINE_CHART_QUERY_PARAM_KEY) === 'true';
+      featureFlags.enableGpuChart =
+        params.get(GPU_LINE_CHART_QUERY_PARAM_KEY) === 'true';
     }
     return featureFlags;
   }
