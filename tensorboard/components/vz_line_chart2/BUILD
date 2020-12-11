@@ -36,6 +36,7 @@ tf_ts_library(
         "//tensorboard/components/polymer:plottable_style",
         "//tensorboard/components/polymer:register_style_dom_module",
         "//tensorboard/components/vz_chart_helpers",
+        "//tensorboard/webapp/widgets/line_chart_v2/lib:scale",
         "@npm//@polymer/decorators",
         "@npm//@polymer/polymer",
         "@npm//@types/d3",
