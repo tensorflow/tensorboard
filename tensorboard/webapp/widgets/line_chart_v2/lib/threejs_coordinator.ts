@@ -17,8 +17,7 @@ import * as THREE from 'three';
 
 import {Coordinator} from './coordinator';
 import {Rect} from './internal_types';
-import {createScale} from './scale';
-import {ScaleType} from './scale_types';
+import {convertRectToExtent} from './utils';
 
 /**
  * Unlike Coordinator, ThreeCoordinator uses internal coordinate system.
@@ -30,39 +29,30 @@ import {ScaleType} from './scale_types';
  * In this coordinator, the output coordinate system is static from [0, 1000].
  */
 export class ThreeCoordinator extends Coordinator {
-  private readonly CAMERA_MIN = 0;
-  private readonly CAMERA_MAX = 1000;
-  private readonly domToCameraScale = createScale(ScaleType.LINEAR);
+  isYAxisPointedDown() {
+    return false;
+  }
+
   private readonly camera = new THREE.OrthographicCamera(
-    this.CAMERA_MIN,
-    this.CAMERA_MAX,
-    this.CAMERA_MAX,
-    this.CAMERA_MIN,
+    0,
+    1000,
+    1000,
+    0,
     0,
     100
   );
 
-  transformDataToUiCoord(
-    rectInUiCoordinate: Rect,
-    dataCoordinate: [number, number]
-  ): [number, number] {
-    const containerRect = this.domContainerRect;
-    const uiCoordinates = super.transformDataToUiCoord(
-      rectInUiCoordinate,
-      dataCoordinate
-    );
-
-    const xInCamera = this.domToCameraScale.forward(
-      [containerRect.x, containerRect.x + containerRect.width],
-      [this.CAMERA_MIN, this.CAMERA_MAX],
-      uiCoordinates[0]
-    );
-    const yInCamera = this.domToCameraScale.forward(
-      [containerRect.y + containerRect.height, containerRect.y],
-      [this.CAMERA_MIN, this.CAMERA_MAX],
-      uiCoordinates[1]
-    );
-    return [xInCamera, yInCamera];
+  setDomContainerRect(rect: Rect) {
+    // We set the camera extent based on the dom container size so the dimensions in
+    // camera coordinate corresponds to dimensions in pixels. This way, in order to draw,
+    // for example a circle, we don't have to map a pixel size to camera dimensions
+    // (which may have different aspect ratio and can draw a circle as an oval).
+    super.setDomContainerRect(rect);
+    this.camera.left = rect.x;
+    this.camera.right = rect.x + rect.width;
+    this.camera.top = rect.y + rect.height;
+    this.camera.bottom = rect.y;
+    this.camera.updateProjectionMatrix();
   }
 
   getCamera() {
