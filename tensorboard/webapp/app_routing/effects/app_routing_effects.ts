@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Injectable} from '@angular/core';
+import {Inject, Injectable} from '@angular/core';
 import {Actions, createEffect, ofType} from '@ngrx/effects';
 import {Action, createAction, Store} from '@ngrx/store';
 import {merge, Observable, of} from 'rxjs';
@@ -22,6 +22,7 @@ import {
   filter,
   map,
   switchMap,
+  take,
   tap,
   withLatestFrom,
 } from 'rxjs/operators';
@@ -33,6 +34,7 @@ import {
   navigationRequested,
   stateRehydratedFromUrl,
 } from '../actions';
+import {RESOLVED_APP_ROOT} from '../app_root';
 import {areRoutesEqual, getRouteId} from '../internal_utils';
 import {Location} from '../location';
 import {ProgrammaticalNavigationModule} from '../programmatical_navigation_module';
@@ -60,7 +62,8 @@ export class AppRoutingEffects {
     private readonly store: Store<State>,
     private readonly location: Location,
     registry: RouteRegistryModule,
-    private readonly programmaticalNavModule: ProgrammaticalNavigationModule
+    private readonly programmaticalNavModule: ProgrammaticalNavigationModule,
+    @Inject(RESOLVED_APP_ROOT) private readonly appRoot: string
   ) {
     this.routeConfigs = registry.getRouteConfigs();
   }
@@ -69,13 +72,20 @@ export class AppRoutingEffects {
     ofType(navigationRequested)
   );
 
+  private getAppRootlessPathname(pathname: string): string {
+    if (this.appRoot !== null && pathname.startsWith(this.appRoot)) {
+      return pathname.slice(this.appRoot.length);
+    }
+    return pathname;
+  }
+
   private readonly onInit$: Observable<Navigation> = this.actions$
     .pipe(ofType(initAction))
     .pipe(
       delay(0),
       map(() => {
         return {
-          pathname: this.location.getPath(),
+          pathname: this.getAppRootlessPathname(this.location.getPath()),
           queryParams: this.location.getSearch(),
           replaceState: true,
           browserInitiated: true,
@@ -88,7 +98,11 @@ export class AppRoutingEffects {
     this.onInit$,
     this.location.onPopState().pipe(
       map((navigation) => {
-        return {...navigation, browserInitiated: true};
+        return {
+          pathname: this.getAppRootlessPathname(navigation.pathname),
+          replaceState: navigation.replaceState,
+          browserInitiated: true,
+        };
       })
     )
   ).pipe(
@@ -254,18 +268,20 @@ export class AppRoutingEffects {
         }),
         filter(({route}) => {
           return !areRoutesEqual(route, {
-            pathname: this.location.getPath(),
+            pathname: this.getAppRootlessPathname(this.location.getPath()),
             queryParams: this.location.getSearch(),
           });
         }),
         tap(({preserveHash, route}) => {
           if (route.navigationOptions.replaceState) {
             this.location.replaceState(
-              this.location.getFullPathFromRouteOrNav(route, preserveHash)
+              this.appRoot +
+                this.location.getFullPathFromRouteOrNav(route, preserveHash)
             );
           } else {
             this.location.pushState(
-              this.location.getFullPathFromRouteOrNav(route, preserveHash)
+              this.appRoot +
+                this.location.getFullPathFromRouteOrNav(route, preserveHash)
             );
           }
         })

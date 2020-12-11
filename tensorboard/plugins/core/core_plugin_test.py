@@ -163,7 +163,10 @@ class CorePluginNoDataTest(tf.test.TestCase):
         self.assertEqual(200, response.status_code)
         self.assertStartsWith(response.headers.get("Content-Type"), "text/html")
         html = response.get_data()
-        self.assertEqual(html, FAKE_INDEX_HTML)
+        self.assertEqual(
+            html,
+            b'<meta name="tb-relative-root" content="/" />' + FAKE_INDEX_HTML,
+        )
 
     def testDataPaths_disableAllCaching(self):
         """Test the format of the /data/runs endpoint."""

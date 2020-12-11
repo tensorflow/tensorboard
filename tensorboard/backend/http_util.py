@@ -121,7 +121,9 @@ def Respond(
     Args:
       request: A werkzeug Request object. Used mostly to check the
         Accept-Encoding header.
-      content: Payload data as byte string, unicode string, or maybe JSON.
+      content: Payload data as byte string, unicode string, or maybe JSON. Can be None if
+        content will be written to the write stream via
+        werkzeug.wrappers.Response.stream.write.
       content_type: Media type and optionally an output charset.
       code: Numeric HTTP status code to use.
       expires: Second duration for browser caching.
@@ -162,7 +164,7 @@ def Respond(
         request.headers.get("Accept-Encoding", "")
     )
     # Automatically gzip uncompressed text data if accepted.
-    if textual and not content_encoding and gzip_accepted:
+    if textual and not content_encoding and gzip_accepted and content:
         out = six.BytesIO()
         # Set mtime to zero to make payload for a given input deterministic.
         with gzip.GzipFile(
@@ -172,7 +174,7 @@ def Respond(
         content = out.getvalue()
         content_encoding = "gzip"
 
-    content_length = len(content)
+    content_length = len(content) if content else 0
     direct_passthrough = False
     # Automatically streamwise-gunzip precompressed data if not accepted.
     if content_encoding == "gzip" and not gzip_accepted:

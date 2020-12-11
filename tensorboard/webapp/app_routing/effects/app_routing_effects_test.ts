@@ -22,6 +22,7 @@ import {of, ReplaySubject} from 'rxjs';
 
 import {State} from '../../app_state';
 import * as actions from '../actions';
+import {RESOLVED_APP_ROOT} from '../app_root';
 import {Location} from '../location';
 import {
   NavigateToExperiments,
@@ -46,8 +47,13 @@ describe('app_routing_effects', () => {
   let location: Location;
   let actualActions: Action[];
   let onPopStateSubject: ReplaySubject<Navigation>;
+  let pushStateSpy: jasmine.Spy;
+  let getHashSpy: jasmine.Spy;
+  let getPathSpy: jasmine.Spy;
+  let getSearchSpy: jasmine.Spy;
   let serializeStateToQueryParamsSpy: jasmine.Spy;
   let deserializeQueryParamsSpy: jasmine.Spy;
+  let appRootProvider: jasmine.Spy;
 
   beforeEach(async () => {
     action = new ReplaySubject<Action>(1);
@@ -67,6 +73,7 @@ describe('app_routing_effects', () => {
           routeKind: RouteKind.EXPERIMENTS,
           path: '/experiments',
           ngComponent: TestableComponent,
+          defaultRoute: true,
         },
         {
           routeKind: RouteKind.COMPARE_EXPERIMENT,
@@ -92,6 +99,8 @@ describe('app_routing_effects', () => {
       };
     }
 
+    appRootProvider = jasmine.createSpy().and.returnValue('');
+
     await TestBed.configureTestingModule({
       imports: [
         RouteRegistryModule.registerRoutes(routeFactory),
@@ -104,6 +113,7 @@ describe('app_routing_effects', () => {
         AppRoutingEffects,
         provideMockStore(),
         provideLocationTesting(),
+        {provide: RESOLVED_APP_ROOT, useFactory: appRootProvider},
       ],
     }).compileComponents();
 
@@ -114,17 +124,19 @@ describe('app_routing_effects', () => {
     location = TestBed.inject(TestableLocation) as Location;
     onPopStateSubject = new ReplaySubject<Navigation>(1);
     spyOn(location, 'onPopState').and.returnValue(onPopStateSubject);
-    store.overrideSelector(getActiveRoute, null);
+    pushStateSpy = spyOn(location, 'pushState');
+    getHashSpy = spyOn(location, 'getHash').and.returnValue('');
+    getPathSpy = spyOn(location, 'getPath').and.returnValue('');
+    getSearchSpy = spyOn(location, 'getSearch').and.returnValue([]);
 
-    effects = TestBed.inject(AppRoutingEffects);
+    store.overrideSelector(getActiveRoute, null);
   });
 
   describe('fireNavigatedIfValidRoute$', () => {
-    let getPathSpy: jasmine.Spy;
-    let getSearchSpy: jasmine.Spy;
     let actualActions: Action[];
 
     beforeEach(() => {
+      effects = TestBed.inject(AppRoutingEffects);
       actualActions = [];
 
       spyOn(store, 'dispatch').and.callFake((action: Action) => {
@@ -133,9 +145,6 @@ describe('app_routing_effects', () => {
       effects.fireNavigatedIfValidRoute$.subscribe((action) => {
         actualActions.push(action);
       });
-
-      getPathSpy = spyOn(location, 'getPath');
-      getSearchSpy = spyOn(location, 'getSearch');
     });
 
     afterEach(fakeAsync(() => {
@@ -534,19 +543,11 @@ describe('app_routing_effects', () => {
 
   describe('changeBrowserUrl$', () => {
     let replaceStateSpy: jasmine.Spy;
-    let pushStateSpy: jasmine.Spy;
-    let getHashSpy: jasmine.Spy;
-    let getPathSpy: jasmine.Spy;
-    let getSearchSpy: jasmine.Spy;
 
     beforeEach(() => {
+      effects = TestBed.inject(AppRoutingEffects);
       effects.changeBrowserUrl$.subscribe(() => {});
-
       replaceStateSpy = spyOn(location, 'replaceState');
-      pushStateSpy = spyOn(location, 'pushState');
-      getHashSpy = spyOn(location, 'getHash');
-      getPathSpy = spyOn(location, 'getPath');
-      getSearchSpy = spyOn(location, 'getSearch');
     });
 
     it('noops if the new route matches current URL', () => {
@@ -722,6 +723,100 @@ describe('app_routing_effects', () => {
       );
 
       expect(replaceStateSpy).toHaveBeenCalledWith('/experiment');
+    });
+  });
+
+  describe('path_prefix support', () => {
+    function setAppRootAndSubscribe(appRoot: string) {
+      appRootProvider.and.returnValue(appRoot);
+      effects = TestBed.inject(AppRoutingEffects);
+      const dispatchSpy = spyOn(store, 'dispatch');
+      effects.fireNavigatedIfValidRoute$.subscribe((action) => {
+        actualActions.push(action);
+      });
+
+      actualActions = [];
+      dispatchSpy.and.callFake((action: Action) => {
+        actualActions.push(action);
+      });
+
+      effects.changeBrowserUrl$.subscribe(() => {});
+    }
+
+    it('navigates to default route if popstated to path without prefix', fakeAsync(() => {
+      setAppRootAndSubscribe('/foo/bar');
+
+      onPopStateSubject.next({
+        pathname: '/meow',
+      });
+
+      expect(actualActions).toEqual([
+        actions.navigating({
+          after: buildRoute({
+            routeKind: RouteKind.EXPERIMENTS,
+            params: {},
+            pathname: '/experiments',
+            queryParams: [],
+            navigationOptions: {
+              replaceState: false,
+            },
+          }),
+        }),
+      ]);
+
+      tick();
+    }));
+
+    it('navigates to a matching route if popstated to path with prefix', fakeAsync(() => {
+      setAppRootAndSubscribe('/foo/bar');
+
+      onPopStateSubject.next({
+        pathname: '/foo/bar/experiment/123',
+      });
+
+      expect(actualActions).toEqual([
+        actions.navigating({
+          after: buildRoute({
+            routeKind: RouteKind.EXPERIMENT,
+            params: {experimentId: '123'},
+            pathname: '/experiment/123',
+            queryParams: [],
+            navigationOptions: {
+              replaceState: false,
+            },
+          }),
+        }),
+      ]);
+
+      tick();
+    }));
+
+    describe('change url', () => {
+      it('navigates to URL with path prefix prefixed', fakeAsync(() => {
+        setAppRootAndSubscribe('/foo/bar/baz');
+        const activeRoute = buildRoute({
+          routeKind: RouteKind.EXPERIMENTS,
+          pathname: '/experiments',
+          queryParams: [],
+          navigationOptions: {
+            replaceState: false,
+          },
+        });
+        store.overrideSelector(getActiveRoute, activeRoute);
+        store.refreshState();
+        getHashSpy.and.returnValue('');
+        getPathSpy.and.returnValue('');
+        getSearchSpy.and.returnValue([]);
+
+        action.next(
+          actions.navigated({
+            before: null,
+            after: activeRoute,
+          })
+        );
+
+        expect(pushStateSpy).toHaveBeenCalledWith('/foo/bar/baz/experiments');
+      }));
     });
   });
 });
