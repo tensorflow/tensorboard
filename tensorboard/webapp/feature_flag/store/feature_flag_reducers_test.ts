@@ -19,6 +19,20 @@ import {buildFeatureFlagState} from './testing';
 
 describe('feature_flag_reducers', () => {
   describe('featuresLoaded', () => {
+    it('sets isFeatureFlagsLoaded to true', () => {
+      const prevState = buildFeatureFlagState({
+        isFeatureFlagsLoaded: false,
+      });
+      const nextState = reducers(
+        prevState,
+        actions.featuresLoaded({features: {}})
+      );
+
+      expect(nextState).toEqual(buildFeatureFlagState({
+        isFeatureFlagsLoaded: true,
+      }));
+    });
+
     it('sets the new feature flags onto the state', () => {
       const prevState = buildFeatureFlagState({
         isFeatureFlagsLoaded: false,
@@ -29,16 +43,38 @@ describe('feature_flag_reducers', () => {
       const nextState = reducers(
         prevState,
         actions.featuresLoaded({
-          features: buildFeatureFlag({
+          features: {
             enabledExperimentalPlugins: ['foo', 'bar'],
-          }),
+          },
         })
       );
 
-      expect(nextState.features.enabledExperimentalPlugins).toEqual([
-        'foo',
-        'bar',
-      ]);
+      expect(nextState.features).toEqual(buildFeatureFlag({
+        enabledExperimentalPlugins: ['foo', 'bar']
+      }));
+    });
+
+    it('ignores unspecified feature flags', () => {
+      const prevState = buildFeatureFlagState({
+        isFeatureFlagsLoaded: false,
+        features: buildFeatureFlag({
+          enabledExperimentalPlugins: ['foo'],
+          inColab: true,
+        }),
+      });
+      const nextState = reducers(
+        prevState,
+        actions.featuresLoaded({
+          features: {
+            inColab: false
+          },
+        })
+      );
+
+      expect(nextState.features).toEqual(buildFeatureFlag({
+        enabledExperimentalPlugins: ['foo'],
+        inColab: false,
+      }));
     });
   });
 });

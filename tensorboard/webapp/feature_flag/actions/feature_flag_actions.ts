@@ -20,9 +20,16 @@ import {FeatureFlags} from '../types';
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
 /** @typehack */ import * as _typeHackStoreModel from '@ngrx/store/src/models';
 
+/**
+ * Signals that a data source has loaded feature flag values.
+ *
+ * Some or all feature flag properties can be unspecified if the data source
+ * does not have enough information to provide values. In that case, the
+ * corresponding feature flag values should remain unchanged in the State.
+ */
 export const featuresLoaded = createAction(
   '[FEATURE FLAG] Features Loaded',
   props<{
-    features: FeatureFlags;
+    features: Partial<FeatureFlags>;
   }>()
 );
