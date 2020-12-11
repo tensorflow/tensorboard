@@ -20,6 +20,7 @@ tf_ng_module(
     ],
     deps = [
         ":load_monaco",
+        "//tensorboard/webapp/widgets:resize_detector",
         "@npm//@angular/common",
         "@npm//@angular/core",
         "@npm//monaco-editor-core",

@@ -15,4 +15,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<div #codeViewerContainer class="code-viewer-container"></div>
+<div
+  #codeViewerContainer
+  class="code-viewer-container"
+  detectResize
+  [resizeEventDebouncePeriodInMs]="RESIZE_DEBOUNCE_INTERVAL_MS"
+  (onResize)="onResize()"
+></div>

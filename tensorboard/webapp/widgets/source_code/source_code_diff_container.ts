@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
-import {from} from 'rxjs';
+import {from, Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
 
 import {loadMonaco} from './load_monaco_shim';
@@ -52,9 +52,9 @@ export class SourceCodeDiffContainer {
   @Input()
   renderSideBySide: boolean = true;
 
-  monaco$: any | null = null;
+  monaco$: Observable<typeof monaco> | null = null;
 
-  ngOnInit() {
-    this.monaco$ = from(loadMonaco()).pipe(map(() => (window as any).monaco));
+  ngOnInit(): void {
+    this.monaco$ = from(loadMonaco()).pipe(map(() => window.monaco));
   }
 }

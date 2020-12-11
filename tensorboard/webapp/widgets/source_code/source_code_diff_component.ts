@@ -18,25 +18,36 @@ import {
   ElementRef,
   Input,
   OnChanges,
-  OnDestroy,
-  OnInit,
   SimpleChanges,
+  ViewChild,
 } from '@angular/core';
-import {Subject} from 'rxjs';
-import {debounceTime, takeUntil} from 'rxjs/operators';
-
 import {
-  DEFAULT_CODE_LANGUAGE,
   DEFAULT_CODE_FONT_SIZE,
+  DEFAULT_CODE_LANGUAGE,
   RESIZE_DEBOUNCE_INTERVAL_MS,
 } from './editor_options';
 
 @Component({
   selector: 'source-code-diff-component',
-  template: '',
+  template: `
+    <div
+      #codeViewerContainer
+      class="code-viewer-container"
+      detectResize
+      [resizeEventDebouncePeriodInMs]="RESIZE_DEBOUNCE_INTERVAL_MS"
+      (onResize)="onResize()"
+    ></div>
+  `,
+  styles: [
+    `
+      .code-viewer-container {
+        height: 100%;
+      }
+    `,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SourceCodeDiffComponent implements OnInit, OnChanges, OnDestroy {
+export class SourceCodeDiffComponent implements OnChanges {
   @Input()
   firstText: string | null = null;
 
@@ -51,39 +62,18 @@ export class SourceCodeDiffComponent implements OnInit, OnChanges, OnDestroy {
   renderSideBySide: boolean = true;
 
   @Input()
-  monaco: any;
+  monaco: typeof monaco | null = null;
+
+  @ViewChild('codeViewerContainer', {static: true, read: ElementRef})
+  private readonly codeViewerContainer!: ElementRef<HTMLDivElement>;
 
   private editor: any = null;
-  private readonly ngUnsubscribe$ = new Subject();
-  private readonly onResize$ = new Subject<void>();
+  readonly RESIZE_DEBOUNCE_INTERVAL_MS = RESIZE_DEBOUNCE_INTERVAL_MS;
 
-  constructor(private readonly ref: ElementRef) {
-    const resizeObserver = new ResizeObserver(() => {
-      this.onResize$.next();
-    });
-    resizeObserver.observe(ref.nativeElement);
-    this.ngUnsubscribe$.subscribe(() => {
-      resizeObserver.unobserve(ref.nativeElement);
-    });
-  }
-
-  ngOnInit() {
-    // When the element resizes, notify Monaco that it can recalculate layout.
-    this.onResize$
-      .pipe(
-        debounceTime(RESIZE_DEBOUNCE_INTERVAL_MS),
-        takeUntil(this.ngUnsubscribe$)
-      )
-      .subscribe(() => {
-        if (this.editor) {
-          this.editor.layout();
-        }
-      });
-  }
-
-  ngOnDestroy() {
-    this.ngUnsubscribe$.next();
-    this.ngUnsubscribe$.complete();
+  onResize() {
+    if (this.editor) {
+      this.editor.layout();
+    }
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -95,9 +85,8 @@ export class SourceCodeDiffComponent implements OnInit, OnChanges, OnDestroy {
     const willCreateEditor = !this.editor;
     if (willCreateEditor) {
       this.editor = this.monaco.editor.createDiffEditor(
-        this.ref.nativeElement,
+        this.codeViewerContainer.nativeElement,
         {
-          language: DEFAULT_CODE_LANGUAGE,
           readOnly: true,
           fontSize: DEFAULT_CODE_FONT_SIZE,
           minimap: {
@@ -116,7 +105,3 @@ export class SourceCodeDiffComponent implements OnInit, OnChanges, OnDestroy {
     }
   }
 }
-
-export const TEST_ONLY = {
-  RESIZE_DEBOUNCE_INTERVAL_MS,
-};
