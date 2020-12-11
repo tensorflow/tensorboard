@@ -12,14 +12,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component, Input} from '@angular/core';
-import {from} from 'rxjs';
+import {Component, Input, OnInit} from '@angular/core';
+import {from, Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
 
 import {loadMonaco} from './load_monaco_shim';
-
-// TODO(cais): Explore better typing by depending on external libraries.
-const windowWithRequireAndMonaco: any = window;
 
 /**
  * SourceCodeContainer displays the content of a source-code file.
@@ -43,7 +40,7 @@ const windowWithRequireAndMonaco: any = window;
     ></source-code-component>
   `,
 })
-export class SourceCodeContainer {
+export class SourceCodeContainer implements OnInit {
   // Lines of the source-code file, split at line breaks.
   @Input()
   lines: string[] | null = null; // TODO(cais): Add spinner for `null`.
@@ -52,11 +49,11 @@ export class SourceCodeContainer {
   @Input()
   focusedLineno: number | null = null;
 
-  monaco$: any | null = null;
+  monaco$: Observable<typeof monaco> | null = null;
 
   ngOnInit(): void {
     this.monaco$ = from(loadMonaco()).pipe(
-      map(() => windowWithRequireAndMonaco.monaco)
+      map(() => window.monaco)
     );
   }
 

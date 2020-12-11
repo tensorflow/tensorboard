@@ -19,6 +19,7 @@ tf_ng_module(
         ":load_monaco",
         "@npm//@angular/common",
         "@npm//@angular/core",
+        "@npm//monaco-editor-core",
         "@npm//rxjs",
     ],
 )

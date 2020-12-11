@@ -46,9 +46,8 @@ export class SourceCodeComponent implements OnInit, OnChanges, OnDestroy {
   @Input()
   focusedLineno: number | null = null;
 
-  // TODO(cais): Explore better typing by depending on external libraries.
   @Input()
-  monaco: any | null = null;
+  monaco: typeof monaco | null = null;
 
   @ViewChild('codeViewerContainer', {static: true, read: ElementRef})
   private readonly codeViewerContainer!: ElementRef<HTMLDivElement>;
