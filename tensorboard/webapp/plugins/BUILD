@@ -16,9 +16,12 @@ tf_ng_module(
     ],
     deps = [
         ":plugin_registry",
+        "//tensorboard/webapp:app_state",
         "//tensorboard/webapp/core",
         "//tensorboard/webapp/core:types",
         "//tensorboard/webapp/core/store",
+        "//tensorboard/webapp/feature_flag:types",
+        "//tensorboard/webapp/feature_flag/store",
         "//tensorboard/webapp/types",
         "@npm//@angular/common",
         "@npm//@angular/core",

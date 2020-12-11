@@ -34,20 +34,24 @@ export const getIsFeatureFlagsLoaded = createSelector(
   }
 );
 
+export const getFeatureFlags = createSelector(selectFeatureFlagState, (state)=> {
+  return state.features;
+});
+
 export const getEnabledExperimentalPlugins = createSelector(
   selectFeatureFlagState,
   (state) => {
-    return state.features.enabledExperimentalPlugins || [];
+    return state.features.enabledExperimentalPlugins;
   }
 );
 
 export const getIsInColab = createSelector(selectFeatureFlagState, (state) => {
-  return !!state.features.inColab;
+  return state.features.inColab;
 });
 
 export const getIsGpuChartEnabled = createSelector(
   selectFeatureFlagState,
   (state: FeatureFlagState): boolean => {
-    return !!state.features.enableGpuChart;
+    return state.features.enableGpuChart;
   }
 );

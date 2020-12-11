@@ -30,6 +30,21 @@ import {DEFAULT_TOOLTIP_COLUMNS} from '../../../components/vz_line_chart2/vz-lin
 
 type RunTagItem = {run: string; tag: string};
 
+// Request at most this many runs at once.
+//
+// Back-of-the-envelope math: each scalar datum JSON value contains
+// two floats and a small-ish integer. Floats are about 18 bytes,
+// since f64s have -log_10(2^-53) ~= 16 digits of precision plus
+// decimal point and leading zero. Small-ish integers (steps) are
+// about 5 bytes. Add JSON overhead `[,,],` and you're looking at
+// about 48 bytes per datum. With standard downsampling of
+// 1000 points per time series, expect ~50 KB of response payload
+// per requested time series.
+//
+// Requesting 64 time series warrants a ~3 MB response, which seems
+// reasonable.
+const DEFAULT_BATCH_SIZE = 64;
+
 /**
  * Save the initial URL query params, before the AppRoutingEffects initialize.
  */
@@ -228,6 +243,12 @@ export class TfScalarCard extends PolymerElement {
   @property({type: String})
   tooltipSortingMethod: string;
 
+  @property({type: Number})
+  batchSize: number;
+
+  @property({type: Boolean})
+  inColab: number;
+
   // This function is called when data is received from the backend.
   @property({type: Object})
   _loadDataCallback: object = (scalarChart, item, maybeData) => {
@@ -273,8 +294,7 @@ export class TfScalarCard extends PolymerElement {
     // Google-internal Colab doesn't support HTTP POST requests, so we fall
     // back to HTTP GET (even though public Colab supports POST).
     // See b/126387106.
-    const inColab = initialURLSearchParams.get('tensorboardColab') === 'true';
-    if (inColab) {
+    if (this.inColab) {
       return this._requestDataGet(items, onLoad, onFinish);
     } else {
       return this._requestDataPost(items, onLoad, onFinish);
@@ -314,25 +334,12 @@ export class TfScalarCard extends PolymerElement {
       runs.push(run);
     }
 
-    // Request at most this many runs at once.
-    //
-    // Back-of-the-envelope math: each scalar datum JSON value contains
-    // two floats and a small-ish integer. Floats are about 18 bytes,
-    // since f64s have -log_10(2^-53) ~= 16 digits of precision plus
-    // decimal point and leading zero. Small-ish integers (steps) are
-    // about 5 bytes. Add JSON overhead `[,,],` and you're looking at
-    // about 48 bytes per datum. With standard downsampling of
-    // 1000 points per time series, expect ~50 KB of response payload
-    // per requested time series.
-    //
-    // Requesting 64 time series warrants a ~3 MB response, which seems
-    // reasonable.
-    const BATCH_SIZE = 64;
+    const batchSize = this.batchSize || DEFAULT_BATCH_SIZE;
 
     const requestGroups = [];
     for (const [tag, runs] of runsByTag) {
-      for (let i = 0; i < runs.length; i += BATCH_SIZE) {
-        requestGroups.push({tag, runs: runs.slice(i, i + BATCH_SIZE)});
+      for (let i = 0; i < runs.length; i += batchSize) {
+        requestGroups.push({tag, runs: runs.slice(i, i + batchSize)});
       }
     }
 

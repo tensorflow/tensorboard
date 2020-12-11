@@ -17,6 +17,7 @@ import {Injectable} from '@angular/core';
 import {
   EXPERIMENTAL_PLUGIN_QUERY_PARAM_KEY,
   GPU_LINE_CHART_QUERY_PARAM_KEY,
+  SCALARS_BATCH_SIZE_PARAM_KEY,
   TBFeatureFlagDataSource,
 } from './tb_feature_flag_data_source_types';
 import {FeatureFlags} from '../feature_flag/types';
@@ -51,6 +52,9 @@ export class QueryParamsFeatureFlagDataSource extends TBFeatureFlagDataSource {
     if (params.has(GPU_LINE_CHART_QUERY_PARAM_KEY)) {
       featureFlags.enableGpuChart =
         params.get(GPU_LINE_CHART_QUERY_PARAM_KEY) === 'true';
+    }
+    if (params.has(SCALARS_BATCH_SIZE_PARAM_KEY)) {
+      featureFlags.scalarsBatchSize = Number(params.get(SCALARS_BATCH_SIZE_PARAM_KEY));
     }
     return featureFlags;
   }

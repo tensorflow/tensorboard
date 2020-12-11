@@ -31,6 +31,8 @@ import {
   TemplateRef,
 } from '@angular/core';
 
+import {FeatureFlags} from '../feature_flag/types';
+
 import {UiPluginMetadata} from './plugins_container';
 import {
   LoadingMechanismType,
@@ -121,6 +123,12 @@ export class PluginsComponent implements OnChanges {
   dataLocation!: string;
 
   @Input()
+  isFeatureFlagsLoaded!: boolean;
+
+  @Input()
+  featureFlags!: FeatureFlags;
+
+  @Input()
   lastUpdated?: number;
 
   @Input()
@@ -207,6 +215,7 @@ export class PluginsComponent implements OnChanges {
           customElementPlugin.element_name
         );
         (pluginElement as any).reloadOnReady = false;
+        (pluginElement as any).featureFlags = this.featureFlags;
         this.pluginsContainer.nativeElement.appendChild(pluginElement);
         break;
       }

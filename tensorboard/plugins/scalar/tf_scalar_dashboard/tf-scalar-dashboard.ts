@@ -31,6 +31,7 @@ import '../../../components/tf_runs_selector/tf-runs-selector';
 import * as tf_storage from '../../../components/tf_storage/storage';
 import * as tf_utils from '../../../components/tf_utils/utils';
 import * as vz_chart_helpers from '../../../components/vz_chart_helpers/vz-chart-helpers';
+import {FeatureFlags} from '../../../webapp/feature_flag/types';
 import './tf-scalar-card';
 import {TfScalarCard} from './tf-scalar-card';
 import './tf-smoothing-input';
@@ -166,6 +167,8 @@ class TfScalarDashboard extends LegacyElementMixin(ArrayUpdateHelper) {
                   tag="[[item.tag]]"
                   tooltip-sorting-method="[[_tooltipSortingMethod]]"
                   x-type="[[_xType]]"
+                  batch-size="[[featureFlags.scalarsBatchSize]]"
+                  in-colab="[[featureFlags.inColab]]"
                 ></tf-scalar-card>
               </template>
             </tf-category-paginated-view>
@@ -205,6 +208,9 @@ class TfScalarDashboard extends LegacyElementMixin(ArrayUpdateHelper) {
 
   @property({type: Boolean})
   reloadOnReady: boolean = true;
+
+  @property({type: Object})
+  featureFlags?: FeatureFlags;
 
   @property({
     type: Boolean,

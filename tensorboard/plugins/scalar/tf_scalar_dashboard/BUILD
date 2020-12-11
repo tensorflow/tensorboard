@@ -23,6 +23,7 @@ tf_ts_library(
         "//tensorboard/components/tf_storage",
         "//tensorboard/components/tf_utils",
         "//tensorboard/components/vz_chart_helpers",
+        "//tensorboard/webapp/feature_flag:types",
         "@npm//@polymer/decorators",
         "@npm//@polymer/polymer",
         "@npm//@types/lodash",
