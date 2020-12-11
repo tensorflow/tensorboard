@@ -30,7 +30,11 @@ import {FeatureFlagEffects} from './effects/feature_flag_effects';
 @NgModule({
   imports: [
     TBFeatureFlagModule,
-    StoreModule.forFeature(FEATURE_FLAG_FEATURE_KEY, reducers, FEATURE_FLAG_STORE_CONFIG_TOKEN),
+    StoreModule.forFeature(
+      FEATURE_FLAG_FEATURE_KEY,
+      reducers,
+      FEATURE_FLAG_STORE_CONFIG_TOKEN
+    ),
     EffectsModule.forFeature([FeatureFlagEffects]),
   ],
   providers: [

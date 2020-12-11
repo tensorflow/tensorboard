@@ -22,11 +22,11 @@ import {FeatureFlagState, initialState} from './feature_flag_types';
 /**
  * Injection token for providing feature flag defaults values.
  */
-export const FEATURE_FLAG_STORE_CONFIG_TOKEN : InjectionToken<
-StoreConfig<FeatureFlagState>
->= new InjectionToken<
-  StoreConfig<FeatureFlagState>
->('Feature Flag Store Config');
+export const FEATURE_FLAG_STORE_CONFIG_TOKEN: InjectionToken<StoreConfig<
+  FeatureFlagState
+>> = new InjectionToken<StoreConfig<FeatureFlagState>>(
+  'Feature Flag Store Config'
+);
 
 /**
  * Returns initialState for feature flags with sensible default values for
