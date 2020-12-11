@@ -113,7 +113,7 @@ describe('line_chart_v2/lib/coordinator test', () => {
 
       // y-axis is flipped since data's origin assumes bottom-left as opposed to DOM's
       // coordinate system that has origin at top-left.
-      it('converts the coordinate system but flips y-axis', () => {
+      it('converts the coordinate system with y-axis pointing down', () => {
         const layout = {
           x: 500,
           y: 250,

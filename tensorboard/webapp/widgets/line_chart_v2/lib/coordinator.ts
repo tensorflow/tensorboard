@@ -62,21 +62,18 @@ export class Coordinator {
   }
 
   /**
-   * Returns directionality of the y axis of the output space.
+   * Returns whether y axis is pointing down in the output space.
    *
    * ↑
-   * | viewBoxYDirection = +1
+   * | isYAxisPointedDown = false (e.g., cartesian coordinates, 3d scene)
    * |
    * |-------------→
    * |
-   * | viewBoxYDirection = -1
+   * | isYAxisPointedDown = true (e.g., DOM)
    * ↓
-   *
-   * +1: Suitable in 3-D aware context where you have full cartesian coordinates.
-   * -1: Suitable for DOM where <0, 0> is top-left corner of a DOM.
    */
-  getYAxisDirection(): -1 | 1 {
-    return -1;
+  isYAxisPointedDown(): boolean {
+    return true;
   }
 
   setXScale(scale: Scale) {
@@ -121,9 +118,9 @@ export class Coordinator {
       ),
       this.yScale.forward(
         domain.y,
-        this.getYAxisDirection() === 1
-          ? [rect.y, rect.y + +rect.height]
-          : [rect.y + rect.height, rect.y],
+        this.isYAxisPointedDown()
+          ? [rect.y + rect.height, rect.y]
+          : [rect.y, rect.y + rect.height],
         dataCoordinate[1]
       ),
     ];

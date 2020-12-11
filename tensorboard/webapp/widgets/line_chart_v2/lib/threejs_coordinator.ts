@@ -29,8 +29,8 @@ import {convertRectToExtent} from './utils';
  * In this coordinator, the output coordinate system is static from [0, 1000].
  */
 export class ThreeCoordinator extends Coordinator {
-  getYAxisDirection(): 1 {
-    return 1;
+  isYAxisPointedDown() {
+    return false;
   }
 
   private readonly camera = new THREE.OrthographicCamera(
