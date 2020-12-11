@@ -48,7 +48,7 @@ import {
   styles: [
     `
       :host {
-        display: block;
+        display: flex;
         overflow: hidden;
       }
 
