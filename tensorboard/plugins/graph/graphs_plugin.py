@@ -61,7 +61,9 @@ class GraphsPlugin(base_plugin.TBPlugin):
           context: A base_plugin.TBContext instance.
         """
         self._multiplexer = context.multiplexer
-        if context.flags and context.flags.generic_data == "true":
+        if not self._multiplexer or (
+            context.flags and context.flags.generic_data == "true"
+        ):
             self._data_provider = context.data_provider
         else:
             self._data_provider = None
