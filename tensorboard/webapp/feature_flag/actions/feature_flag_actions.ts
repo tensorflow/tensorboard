@@ -27,8 +27,8 @@ import {FeatureFlags} from '../types';
  * does not have enough information to provide values. In that case, the
  * corresponding feature flag values should remain unchanged in the State.
  */
-export const featuresLoaded = createAction(
-  '[FEATURE FLAG] Features Loaded',
+export const partialFeatureFlagsLoaded = createAction(
+  '[FEATURE FLAG] Partial Feature Flags Loaded',
   props<{
     features: Partial<FeatureFlags>;
   }>()

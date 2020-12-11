@@ -25,7 +25,7 @@ describe('feature_flag_reducers', () => {
       });
       const nextState = reducers(
         prevState,
-        actions.featuresLoaded({features: {}})
+        actions.partialFeatureFlagsLoaded({features: {}})
       );
 
       expect(nextState).toEqual(
@@ -44,7 +44,7 @@ describe('feature_flag_reducers', () => {
       });
       const nextState = reducers(
         prevState,
-        actions.featuresLoaded({
+        actions.partialFeatureFlagsLoaded({
           features: {
             enabledExperimentalPlugins: ['foo', 'bar'],
           },
@@ -68,7 +68,7 @@ describe('feature_flag_reducers', () => {
       });
       const nextState = reducers(
         prevState,
-        actions.featuresLoaded({
+        actions.partialFeatureFlagsLoaded({
           features: {
             inColab: false,
           },

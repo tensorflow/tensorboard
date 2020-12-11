@@ -30,7 +30,7 @@ const initialState: FeatureFlagState = {
 
 const reducer = createReducer<FeatureFlagState>(
   initialState,
-  on(actions.featuresLoaded, (state, {features}) => {
+  on(actions.partialFeatureFlagsLoaded, (state, {features}) => {
     // Feature flag values have been loaded from a data source. Override current
     // flags with any values specified by the data source and leave values for
     // unspecified properties unchanged.
