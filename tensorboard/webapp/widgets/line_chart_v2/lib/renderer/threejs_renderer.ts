@@ -70,24 +70,26 @@ function updateGeometryWithVec2Array(
   geometry: THREE.BufferGeometry,
   flatVec2: Float32Array
 ) {
-  const length = flatVec2.length / 2;
+  const numVertices = flatVec2.length / 2;
   let positionAttributes = geometry.attributes[
     'position'
   ] as THREE.BufferAttribute;
-  if (!positionAttributes || positionAttributes.count !== length * 3) {
+  if (!positionAttributes || positionAttributes.count !== numVertices * 3) {
     positionAttributes = new THREE.BufferAttribute(
-      new Float32Array(length * 3),
+      new Float32Array(numVertices * 3),
       3
     );
     geometry.addAttribute('position', positionAttributes);
   }
   const values = positionAttributes.array as number[];
-  for (let index = 0; index < length; index++) {
+  for (let index = 0; index < numVertices; index++) {
     values[index * 3] = flatVec2[index * 2];
     values[index * 3 + 1] = flatVec2[index * 2 + 1];
+    // z-value (index * 3 + 2) is implicitly 0 (they are set when initializing
+    // Float32Array).
   }
   positionAttributes.needsUpdate = true;
-  geometry.setDrawRange(0, length * 3);
+  geometry.setDrawRange(0, numVertices * 3);
   // Need to update the bounding sphere so renderer does not skip rendering
   // this object because it is outside of the camera viewpoint (frustum).
   geometry.computeBoundingSphere();
@@ -95,8 +97,9 @@ function updateGeometryWithVec2Array(
 
 /**
  * Updates an THREE.Object3D like object with geometry and material. Returns true if
- * geometry is updated with the new data but returns false if we can minimally change the
- * material to make an update.
+ * geometry is updated (i.e., updateGeometry callback is invoked) and returns false
+ * otherwise. It is possible that we minimally update the material without updating the
+ * geometry.
  */
 function updateObject(
   object: THREE.Mesh | THREE.Line,
@@ -119,7 +122,11 @@ function updateObject(
 
   const newColor = createOpacityAdjustedColor(color, opacity ?? 1);
 
-  updateGeometry(object.geometry as THREE.BufferGeometry);
+  const newGeom = updateGeometry(object.geometry as THREE.BufferGeometry);
+  if (object.geometry !== newGeom) {
+    object.geometry = newGeom;
+  }
+
   const currentColor = material.color;
   if (!currentColor.equals(newColor)) {
     material.color.set(newColor);
