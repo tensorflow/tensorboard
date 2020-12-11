@@ -20,7 +20,7 @@ import {FeatureFlagState, initialState} from './feature_flag_types';
 // /** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
 /**
- * Injection token for providing feature flag defaults values.
+ * Injection token for providing feature flag StoreConfig.
  */
 export const FEATURE_FLAG_STORE_CONFIG_TOKEN: InjectionToken<StoreConfig<
   FeatureFlagState
@@ -34,7 +34,7 @@ export const FEATURE_FLAG_STORE_CONFIG_TOKEN: InjectionToken<StoreConfig<
  *
  * Other instances of TensorBoard can override these default values by
  * providing their own StoreConfig using the FEATURE_FLAG_STORE_CONFIG_TOKEN
- * injection token and providing their own initialState.
+ * injection token.
  */
 export function getConfig(): StoreConfig<FeatureFlagState> {
   return {initialState};
