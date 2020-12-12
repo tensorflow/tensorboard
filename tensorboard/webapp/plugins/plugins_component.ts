@@ -125,6 +125,11 @@ export class PluginsComponent implements OnChanges {
   @Input()
   isFeatureFlagsLoaded!: boolean;
 
+  /**
+   * Feature flags to pass to underlying plugins. Currently only passed to
+   * plugins of type CUSTOM_ELEMENT. The feature flags are set directly on
+   * the element as the featureFlags property.
+   */
   @Input()
   featureFlags!: FeatureFlags;
 

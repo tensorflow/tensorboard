@@ -41,6 +41,9 @@ import {
 } from '../core/store/core_selectors';
 import {PluginsListFailureCode} from '../core/types';
 import {TestingDebuggerModule} from '../../plugins/debugger_v2/tf_debugger_v2_plugin/testing';
+import {buildFeatureFlag} from '../feature_flag/testing';
+import {getFeatureFlags} from '../feature_flag/store/feature_flag_selectors';
+import {getIsFeatureFlagsLoaded} from '../feature_flag/store/feature_flag_selectors';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
@@ -154,6 +157,8 @@ describe('plugins_component', () => {
       data_location: 'foobar',
       window_title: 'Tests!',
     });
+    store.overrideSelector(getIsFeatureFlagsLoaded, true);
+    store.overrideSelector(getFeatureFlags, buildFeatureFlag());
 
     createElementSpy = spyOn(document, 'createElement').and.callThrough();
     createElementSpy

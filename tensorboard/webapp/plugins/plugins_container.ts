@@ -67,7 +67,7 @@ const lastLoadedTimeInMs = createSelector(
       [dataLocation]="dataLocation$ | async"
       [lastUpdated]="lastLoadedTimeInMs$ | async"
       [pluginLoadState]="pluginLoadState$ | async"
-      [isFeatureFlagsLoaded]="isFeatureFlagsLoaded | async"
+      [isFeatureFlagsLoaded]="isFeatureFlagsLoaded$ | async"
       [featureFlags]="featureFlags$ | async"
       [environmentFailureNotFoundTemplate]="environmentFailureNotFoundTemplate"
       [environmentFailureUnknownTemplate]="environmentFailureUnknownTemplate"
@@ -128,7 +128,7 @@ export class PluginsContainer {
       return env.data_location;
     })
   );
-  readonly isFeatureFlagsLoaded = this.store.select(getIsFeatureFlagsLoaded);
+  readonly isFeatureFlagsLoaded$ = this.store.select(getIsFeatureFlagsLoaded);
   readonly featureFlags$ = this.store.select(getFeatureFlags);
 
   constructor(private readonly store: Store<State>) {}
