@@ -23,7 +23,6 @@ import {
 } from '@angular/core';
 import {
   DEFAULT_CODE_FONT_SIZE,
-  DEFAULT_CODE_LANGUAGE,
   RESIZE_DEBOUNCE_INTERVAL_MS,
 } from './editor_options';
 
