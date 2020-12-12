@@ -14,6 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
+import {ScrollingModule} from '@angular/cdk/scrolling';
 import {MatAutocompleteModule} from '@angular/material/autocomplete';
 import {MatButtonModule} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
@@ -52,13 +53,14 @@ import {PinnedViewContainer} from './pinned_view_container';
   ],
   exports: [MainViewContainer],
   imports: [
-    CommonModule,
     CardRendererModule,
+    CommonModule,
     MatAutocompleteModule,
     MatButtonModule,
     MatIconModule,
     MatInputModule,
     RightPaneModule,
+    ScrollingModule,
   ],
 })
 export class MainViewModule {}

@@ -78,6 +78,7 @@ tf_ng_module(
     deps = [
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp:selectors",
+        "//tensorboard/webapp/angular:expect_angular_cdk_scrolling",
         "//tensorboard/webapp/angular:expect_angular_material_autocomplete",
         "//tensorboard/webapp/angular:expect_angular_material_button",
         "//tensorboard/webapp/angular:expect_angular_material_icon",
