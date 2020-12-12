@@ -12,6 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {NO_ERRORS_SCHEMA} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
 
 import * as loadMonacoShim from './load_monaco_shim';
@@ -24,6 +25,7 @@ describe('Source Code Diff', () => {
     setUpMonacoFakes();
     await TestBed.configureTestingModule({
       declarations: [SourceCodeDiffComponent, SourceCodeDiffContainer],
+      schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
   });
 
