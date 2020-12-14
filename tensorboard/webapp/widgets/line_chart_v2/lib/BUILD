@@ -20,6 +20,7 @@ tf_ts_library(
     visibility = ["//tensorboard/webapp/widgets/line_chart_v2:__subpackages__"],
     deps = [
         ":chart_types",
+        ":formatter",
         ":internal_types",
         "//tensorboard/webapp/widgets/line_chart_v2/lib/renderer:types",
     ],
@@ -82,6 +83,17 @@ tf_ts_library(
     visibility = ["//tensorboard:internal"],
     deps = [
         ":internal_types",
+        "//tensorboard/webapp/third_party:d3",
+    ],
+)
+
+tf_ts_library(
+    name = "formatter",
+    srcs = [
+        "formatter.ts",
+    ],
+    visibility = ["//tensorboard:internal"],
+    deps = [
         "//tensorboard/webapp/third_party:d3",
     ],
 )

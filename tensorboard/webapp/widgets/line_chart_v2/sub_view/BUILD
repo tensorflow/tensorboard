@@ -10,7 +10,6 @@ tf_sass_binary(
 tf_ng_module(
     name = "sub_view",
     srcs = [
-        "axis_formatter.ts",
         "chart_view_utils.ts",
         "line_chart_axis_view.ts",
         "line_chart_grid_view.ts",
@@ -25,6 +24,7 @@ tf_ng_module(
     deps = [
         "//tensorboard/webapp/angular:expect_angular_cdk_overlay",
         "//tensorboard/webapp/third_party:d3",
+        "//tensorboard/webapp/widgets/line_chart_v2/lib:formatter",
         "//tensorboard/webapp/widgets/line_chart_v2/lib:public_types",
         "@npm//@angular/common",
         "@npm//@angular/core",
@@ -36,7 +36,6 @@ tf_ts_library(
     name = "sub_view_tests",
     testonly = True,
     srcs = [
-        "axis_formatter_test.ts",
         "line_chart_axis_view_test.ts",
         "line_chart_grid_view_test.ts",
         "line_chart_interactive_utils_test.ts",
