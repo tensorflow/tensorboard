@@ -13,8 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import * as THREE from 'three';
-import * as d3 from 'd3';
 
+import * as d3 from '../../../webapp/third_party/d3';
 import {
   DataSet,
   DistanceFunction,
