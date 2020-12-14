@@ -37,7 +37,7 @@ def tagged():
     """Create run graph data with `TaggedRunMetadata`.
 
     The `tagged` run has a top-level run graph as well as steps
-    `step0000` through `step0002`, each with profile data.
+    `step_0000` through `step_0002`, each with profile data.
     """
     logdir = os.path.join(LOGDIR, "tagged")
     with tf.compat.v1.Graph().as_default():
@@ -103,8 +103,9 @@ def keras():
 def profile():
     """Create data with op graphs and profile data.
 
-    The `profile` run has tags `prof_f` and `prof_g`, each with both
-    profile and op graph data (`graph_run_metadata` plugin).
+    The `profile` run has tags `prof_f` with both profile and op graph data
+    (`graph_run_metadata` plugin), and `prof_g` with profile data only
+    (`graph_run_metadata_graph` plugin).
     """
 
     logdir = os.path.join(LOGDIR, "profile")
@@ -122,9 +123,10 @@ def profile():
             tf.summary.trace_on(profiler=True)
             print(f(step).numpy())
             tf.summary.trace_export("prof_f", step=step, profiler_outdir=logdir)
-            tf.summary.trace_on(profiler=True)
+
+            tf.summary.trace_on(profiler=False)
             print(g(step).numpy())
-            tf.summary.trace_export("prof_g", step=step, profiler_outdir=logdir)
+            tf.summary.trace_export("prof_g", step=step)
 
 
 if __name__ == "__main__":
