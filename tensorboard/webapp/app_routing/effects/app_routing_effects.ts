@@ -74,9 +74,15 @@ export class AppRoutingEffects {
 
   private getAppRootlessPathname(pathname: string): string {
     if (this.appRoot !== null && pathname.startsWith(this.appRoot)) {
-      return pathname.slice(this.appRoot.length);
+      // appRoot ends with "/" and we need the trimmed pathname to start with "/" since
+      // routes are defined with starting "/".
+      return '/' + pathname.slice(this.appRoot.length);
     }
     return pathname;
+  }
+
+  private getPathnameWithAppRoot(pathname: string): string {
+    return this.appRoot.slice(0, -1) + pathname;
   }
 
   private readonly onInit$: Observable<Navigation> = this.actions$
@@ -275,13 +281,15 @@ export class AppRoutingEffects {
         tap(({preserveHash, route}) => {
           if (route.navigationOptions.replaceState) {
             this.location.replaceState(
-              this.appRoot +
+              this.getPathnameWithAppRoot(
                 this.location.getFullPathFromRouteOrNav(route, preserveHash)
+              )
             );
           } else {
             this.location.pushState(
-              this.appRoot +
+              this.getPathnameWithAppRoot(
                 this.location.getFullPathFromRouteOrNav(route, preserveHash)
+              )
             );
           }
         })

@@ -99,7 +99,7 @@ describe('app_routing_effects', () => {
       };
     }
 
-    appRootProvider = jasmine.createSpy().and.returnValue('');
+    appRootProvider = jasmine.createSpy().and.returnValue('/');
 
     await TestBed.configureTestingModule({
       imports: [
@@ -744,7 +744,7 @@ describe('app_routing_effects', () => {
     }
 
     it('navigates to default route if popstated to path without prefix', fakeAsync(() => {
-      setAppRootAndSubscribe('/foo/bar');
+      setAppRootAndSubscribe('/foo/bar/');
 
       onPopStateSubject.next({
         pathname: '/meow',
@@ -768,7 +768,7 @@ describe('app_routing_effects', () => {
     }));
 
     it('navigates to a matching route if popstated to path with prefix', fakeAsync(() => {
-      setAppRootAndSubscribe('/foo/bar');
+      setAppRootAndSubscribe('/foo/bar/');
 
       onPopStateSubject.next({
         pathname: '/foo/bar/experiment/123',
@@ -793,7 +793,7 @@ describe('app_routing_effects', () => {
 
     describe('change url', () => {
       it('navigates to URL with path prefix prefixed', fakeAsync(() => {
-        setAppRootAndSubscribe('/foo/bar/baz');
+        setAppRootAndSubscribe('/foo/bar/baz/');
         const activeRoute = buildRoute({
           routeKind: RouteKind.EXPERIMENTS,
           pathname: '/experiments',

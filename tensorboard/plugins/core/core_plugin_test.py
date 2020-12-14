@@ -375,6 +375,77 @@ class CorePluginTestBase(object):
             )
 
 
+class CorePluginPathPrefixTest(tf.test.TestCase):
+    def _send_request(self, path_prefix, pathname):
+        multiplexer = event_multiplexer.EventMultiplexer()
+        logdir = self.get_temp_dir()
+        provider = data_provider.MultiplexerDataProvider(multiplexer, logdir)
+        context = base_plugin.TBContext(
+            assets_zip_provider=get_test_assets_zip_provider(),
+            logdir=logdir,
+            data_provider=provider,
+            window_title="",
+            flags=FakeFlags(path_prefix=path_prefix),
+        )
+        plugin = core_plugin.CorePlugin(context)
+        app = application.TensorBoardWSGI([plugin], path_prefix=path_prefix)
+        server = werkzeug_test.Client(app, wrappers.BaseResponse)
+        return server.get(pathname)
+
+    def _assert_index(self, response, expected_tb_relative_root):
+        self.assertEqual(200, response.status_code)
+        self.assertStartsWith(response.headers.get("Content-Type"), "text/html")
+        html = response.get_data()
+
+        expected_meta = (
+            '<meta name="tb-relative-root" content="%s" />'
+            % (expected_tb_relative_root)
+        ).encode()
+        self.assertEqual(
+            html,
+            expected_meta + FAKE_INDEX_HTML,
+        )
+
+    def testIndex_no_path_prefix(self):
+        self._assert_index(self._send_request("", "/"), "./")
+        self._assert_index(self._send_request("", "/index.html"), "./")
+
+    def testIndex_path_prefix_foo(self):
+        self._assert_index(self._send_request("/foo", "/foo/"), "./")
+        self._assert_index(self._send_request("/foo", "/foo/index.html"), "./")
+
+    def testIndex_path_prefix_foo_exp_route(self):
+        self._assert_index(
+            self._send_request("/foo", "/foo/experiment/123/"), "../../"
+        )
+
+    def testIndex_path_prefix_foo_incorrect_route(self):
+        self.assertEqual(
+            404, (self._send_request("/foo", "/foo/meow/").status_code)
+        )
+        self.assertEqual(404, (self._send_request("/foo", "/").status_code))
+        self.assertEqual(
+            404, (self._send_request("/foo", "/index.html").status_code)
+        )
+
+        # Missing trailing "/" causes redirection.
+        self.assertEqual(301, (self._send_request("/foo", "/foo").status_code))
+        self.assertEqual(
+            301, (self._send_request("/foo", "/foo/experiment/123").status_code)
+        )
+
+    def testIndex_path_prefix_foo_bar(self):
+        self._assert_index(self._send_request("/foo/bar", "/foo/bar/"), "./")
+        self._assert_index(
+            self._send_request("/foo/bar", "/foo/bar/index.html"), "./"
+        )
+
+    def testIndex_path_prefix_foo_bar_exp_route(self):
+        self._assert_index(
+            self._send_request("/foo/bar", "/foo/bar/experiment/123/"), "../../"
+        )
+
+
 def get_test_assets_zip_provider():
     memfile = six.BytesIO()
     with zipfile.ZipFile(

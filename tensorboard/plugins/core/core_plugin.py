@@ -133,7 +133,7 @@ class CorePlugin(base_plugin.TBPlugin):
         relpath = (
             posixpath.relpath(self._path_prefix, request.script_root)
             if self._path_prefix
-            else ""
+            else "."
         )
         # Technically, it is possible to flush parts using yields but http_utils
         # try to measure gzip and measure content length if a truthy value is

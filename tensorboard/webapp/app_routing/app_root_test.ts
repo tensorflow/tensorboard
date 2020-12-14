@@ -41,14 +41,17 @@ describe('app root', () => {
   }
 
   [
-    {href: 'https://tb.dev/', content: './', expected: ''},
+    {href: 'https://tb.dev/', content: './', expected: '/'},
+    {href: 'https://tb.dev/index.html', content: './', expected: '/'},
     {
       href: 'https://tb.dev/foo/bar/experiment/1/',
       content: '../../',
-      expected: '/foo/bar',
+      expected: '/foo/bar/',
     },
     // wrong relative content but we handle it correctly.
-    {href: 'https://tb.dev/', content: '../../', expected: ''},
+    {href: 'https://tb.dev/', content: '../../', expected: '/'},
+    {href: 'https://tb.dev/', content: './/', expected: '/'},
+    {href: 'https://tb.dev/experiment/1/', content: '../..///', expected: '/'},
   ].forEach(({content, href, expected}) => {
     it(`using <meta> content, returns an absolute path: ${href} and ${content}`, () => {
       getHrefSpy.and.returnValue(href);

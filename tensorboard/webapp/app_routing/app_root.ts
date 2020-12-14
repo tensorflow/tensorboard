@@ -34,7 +34,7 @@ function metaElAppRootExtractor(location: Location): string {
   );
   if (!relativeRoot) return '';
   const {pathname} = new URL(relativeRoot.content, location.getHref());
-  return pathname.replace(/\/+$/, '');
+  return pathname.replace(/\/*$/, '/');
 }
 
 export const AppRootProvider: Provider = {
