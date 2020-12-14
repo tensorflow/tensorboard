@@ -17,6 +17,22 @@ import * as selectors from './feature_flag_selectors';
 import {buildFeatureFlagState, buildState} from './testing';
 
 describe('feature_flag_selectors', () => {
+  describe('#getFeatureFlags', () => {
+    it('returns value in the store', () => {
+      const state = buildState(
+        buildFeatureFlagState({
+          features: buildFeatureFlag({
+            enableGpuChart: true,
+          }),
+        })
+      );
+
+      expect(selectors.getFeatureFlags(state)).toEqual(
+        buildFeatureFlag({enableGpuChart: true})
+      );
+    });
+  });
+
   describe('#getEnabledExperimentalPlugins', () => {
     it('returns value in array', () => {
       const state = buildState(
