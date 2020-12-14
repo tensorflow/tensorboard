@@ -54,7 +54,9 @@ export class QueryParamsFeatureFlagDataSource extends TBFeatureFlagDataSource {
         params.get(GPU_LINE_CHART_QUERY_PARAM_KEY) === 'true';
     }
     if (params.has(SCALARS_BATCH_SIZE_PARAM_KEY)) {
-      featureFlags.scalarsBatchSize = Number(params.get(SCALARS_BATCH_SIZE_PARAM_KEY));
+      featureFlags.scalarsBatchSize = Number(
+        params.get(SCALARS_BATCH_SIZE_PARAM_KEY)
+      );
     }
     return featureFlags;
   }

@@ -34,9 +34,12 @@ export const getIsFeatureFlagsLoaded = createSelector(
   }
 );
 
-export const getFeatureFlags = createSelector(selectFeatureFlagState, (state)=> {
-  return state.features;
-});
+export const getFeatureFlags = createSelector(
+  selectFeatureFlagState,
+  (state) => {
+    return state.features;
+  }
+);
 
 export const getEnabledExperimentalPlugins = createSelector(
   selectFeatureFlagState,

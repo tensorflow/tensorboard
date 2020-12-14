@@ -330,6 +330,23 @@ describe('plugins_component', () => {
         barElement.shadowRoot.firstElementChild.clientWidth
       ).toBeGreaterThan(0);
     });
+
+    it('assigns feature flags to CUSTOM_ELEMENT plugins', async () => {
+      store.overrideSelector(
+        getFeatureFlags,
+        buildFeatureFlag({inColab: true})
+      );
+      setActivePlugin('bar');
+
+      const fixture = TestBed.createComponent(PluginsContainer);
+      fixture.detectChanges();
+
+      const pluginElement = fixture.debugElement.query(By.css('.plugins'))
+        .children[0].nativeNode;
+      expect((pluginElement as any).featureFlags).toEqual(
+        buildFeatureFlag({inColab: true})
+      );
+    });
   });
 
   describe('reload', () => {

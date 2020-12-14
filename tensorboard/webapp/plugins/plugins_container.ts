@@ -32,7 +32,10 @@ import {PluginsListFailureCode} from '../core/types';
 import {PluginMetadata} from '../types/api';
 import {LoadState, DataLoadState} from '../types/data';
 import {State} from '../app_state';
-import {getFeatureFlags, getIsFeatureFlagsLoaded} from '../feature_flag/store/feature_flag_selectors';
+import {
+  getFeatureFlags,
+  getIsFeatureFlagsLoaded,
+} from '../feature_flag/store/feature_flag_selectors';
 
 import {PluginLoadState} from './plugins_component';
 
