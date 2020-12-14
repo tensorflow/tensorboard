@@ -63,6 +63,7 @@ tf_ts_library(
         "//tensorboard/webapp/third_party:tfjs",
         "@npm//@polymer/decorators",
         "@npm//@polymer/polymer",
+        "@npm//@types/d3",
         "@npm//d3",
         "@npm//numeric",
         "@npm//three",
