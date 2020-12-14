@@ -93,6 +93,16 @@ py_test(
     ],
 )
 
+py_binary(
+    name = "graphs_demo",
+    srcs = ["graphs_demo.py"],
+    srcs_version = "PY3",
+    deps = [
+        "//tensorboard:expect_numpy_installed",
+        "//tensorboard:expect_tensorflow_installed",
+    ],
+)
+
 py_library(
     name = "keras_util",
     srcs = ["keras_util.py"],
