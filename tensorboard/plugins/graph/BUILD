@@ -14,6 +14,7 @@ py_library(
         ":graph_util",
         ":keras_util",
         ":metadata",
+        "//tensorboard:errors",
         "//tensorboard:plugin_util",
         "//tensorboard/backend:http_util",
         "//tensorboard/backend:process_graph",
@@ -21,7 +22,6 @@ py_library(
         "//tensorboard/plugins:base_plugin",
         "@com_google_protobuf//:protobuf_python",
         "@org_pocoo_werkzeug",
-        "@org_pythonhosted_six",
     ],
 )
 

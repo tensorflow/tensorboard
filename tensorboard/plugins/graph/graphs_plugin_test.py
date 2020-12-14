@@ -64,7 +64,7 @@ _RUN_WITHOUT_GRAPH_WITHOUT_METADATA = (
 
 
 def with_runs(run_specs):
-    """Run a test with a bare multiplexer and with a `data_provider`.
+    """Run a test with a `data_provider`.
 
     The decorated function will receive an initialized `GraphsPlugin`
     object as its first positional argument.
@@ -77,11 +77,6 @@ def with_runs(run_specs):
         @functools.wraps(fn)
         def wrapper(self, *args, **kwargs):
             (logdir, multiplexer) = self.load_runs(run_specs)
-            with self.subTest("bare multiplexer"):
-                ctx = base_plugin.TBContext(
-                    logdir=logdir, multiplexer=multiplexer
-                )
-                fn(self, graphs_plugin.GraphsPlugin(ctx), *args, **kwargs)
             with self.subTest("generic data provider"):
                 flags = argparse.Namespace(generic_data="true")
                 provider = data_provider.MultiplexerDataProvider(
@@ -237,13 +232,6 @@ class GraphsPluginV1Test(GraphsPluginBaseTest, tf.test.TestCase):
             },
         }
 
-        if plugin._data_provider:
-            # Hack, for now.
-            # Data providers don't yet pass RunMetadata, so this entry excludes it.
-            expected["_RUN_WITH_GRAPH_WITH_METADATA"]["tags"] = {}
-            # Data providers don't yet pass RunMetadata, so this entry is completely omitted.
-            del expected["_RUN_WITHOUT_GRAPH_WITH_METADATA"]
-
         actual = plugin.info_impl(context.RequestContext(), "eid")
         self.assertEqual(expected, actual)
 
@@ -295,17 +283,14 @@ class GraphsPluginV1Test(GraphsPluginBaseTest, tf.test.TestCase):
 
     @with_runs([_RUN_WITH_GRAPH_WITH_METADATA])
     def test_run_metadata(self, plugin):
+        ctx = context.RequestContext()
         result = plugin.run_metadata_impl(
-            _RUN_WITH_GRAPH_WITH_METADATA[0], self._METADATA_TAG
+            ctx, "123", _RUN_WITH_GRAPH_WITH_METADATA[0], self._METADATA_TAG
         )
-        if plugin._data_provider:
-            # Hack, for now
-            self.assertEqual(result, None)
-        else:
-            (metadata_pbtxt, mime_type) = result
-            self.assertEqual(mime_type, "text/x-protobuf")
-            text_format.Parse(metadata_pbtxt, config_pb2.RunMetadata())
-            # If it parses, we're happy.
+        (metadata_pbtxt, mime_type) = result
+        self.assertEqual(mime_type, "text/x-protobuf")
+        text_format.Parse(metadata_pbtxt, config_pb2.RunMetadata())
+        # If it parses, we're happy.
 
     @with_runs([_RUN_WITH_GRAPH_WITHOUT_METADATA])
     def test_is_active(self, plugin):

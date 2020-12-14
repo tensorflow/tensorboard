@@ -139,6 +139,12 @@ def _migrate_value(value, initial_metadata):
         return _migrate_hparams_value(value)
     if plugin_name == pr_curves_metadata.PLUGIN_NAME:
         return _migrate_pr_curve_value(value)
+    if plugin_name in [
+        graphs_metadata.PLUGIN_NAME_RUN_METADATA,
+        graphs_metadata.PLUGIN_NAME_RUN_METADATA_WITH_GRAPH,
+        graphs_metadata.PLUGIN_NAME_KERAS_MODEL,
+    ]:
+        return _migrate_graph_sub_plugin_value(value)
     return (value,)
 
 
@@ -190,4 +196,13 @@ def _migrate_hparams_value(value):
 def _migrate_pr_curve_value(value):
     if value.HasField("metadata"):
         value.metadata.data_class = summary_pb2.DATA_CLASS_TENSOR
+    return (value,)
+
+
+def _migrate_graph_sub_plugin_value(value):
+    if value.HasField("metadata"):
+        value.metadata.data_class = summary_pb2.DATA_CLASS_BLOB_SEQUENCE
+    shape = value.tensor.tensor_shape.dim
+    if not shape:
+        shape.add(size=1)
     return (value,)
