@@ -165,7 +165,7 @@ class CorePluginNoDataTest(tf.test.TestCase):
         html = response.get_data()
         self.assertEqual(
             html,
-            b'<meta name="tb-relative-root" content="/" />' + FAKE_INDEX_HTML,
+            b'<meta name="tb-relative-root" content="./" />' + FAKE_INDEX_HTML,
         )
 
     def testDataPaths_disableAllCaching(self):
