@@ -17,21 +17,15 @@ import {
   Component,
   ElementRef,
   Input,
+  OnChanges,
   SimpleChanges,
   ViewChild,
-  OnChanges,
-  OnDestroy,
-  OnInit,
 } from '@angular/core';
-import {fromEvent, interval, Subject} from 'rxjs';
-import {debounce, takeUntil, tap} from 'rxjs/operators';
-
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
-
-const DEFAULT_CODE_LANGUAGE = 'python';
-const DEFAULT_CODE_FONT_SIZE = 10;
-
-const RESIZE_DEBOUNCE_INTERAVL_MS = 50;
+import {
+  DEFAULT_CODE_FONT_SIZE,
+  DEFAULT_CODE_LANGUAGE,
+  RESIZE_DEBOUNCE_INTERVAL_MS,
+} from './editor_options';
 
 @Component({
   selector: 'source-code-component',
@@ -39,47 +33,27 @@ const RESIZE_DEBOUNCE_INTERAVL_MS = 50;
   styleUrls: ['./source_code_component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SourceCodeComponent implements OnInit, OnChanges, OnDestroy {
+export class SourceCodeComponent implements OnChanges {
   @Input()
   lines: string[] | null = null; // TODO(cais): Add spinner for `null`.
 
   @Input()
   focusedLineno: number | null = null;
 
-  // TODO(cais): Explore better typing by depending on external libraries.
   @Input()
-  monaco: any | null = null;
+  monaco: typeof monaco | null = null;
 
   @ViewChild('codeViewerContainer', {static: true, read: ElementRef})
   private readonly codeViewerContainer!: ElementRef<HTMLDivElement>;
 
   private editor: any = null;
-
   private decorations: string[] = [];
+  readonly RESIZE_DEBOUNCE_INTERVAL_MS = RESIZE_DEBOUNCE_INTERVAL_MS;
 
-  private readonly ngUnsubscribe = new Subject();
-
-  ngOnInit(): void {
-    // Listen to window resize event. When resize happens, re-layout
-    // monaco editor, so its width is always up-to-date with respect to
-    // the window size. Do this with `debounce()` to prevent re-layouting
-    // at too high a rate.
-    const resizePipe = fromEvent(window, 'resize')
-      .pipe(
-        takeUntil(this.ngUnsubscribe),
-        debounce(() => interval(RESIZE_DEBOUNCE_INTERAVL_MS)),
-        tap(() => {
-          if (this.editor !== null) {
-            this.editor.layout();
-          }
-        })
-      )
-      .subscribe();
-  }
-
-  ngOnDestroy(): void {
-    this.ngUnsubscribe.next();
-    this.ngUnsubscribe.complete();
+  onResize() {
+    if (this.editor) {
+      this.editor.layout();
+    }
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -150,7 +124,3 @@ export class SourceCodeComponent implements OnInit, OnChanges, OnDestroy {
     }
   }
 }
-
-export const TEST_ONLY = {
-  RESIZE_DEBOUNCE_INTERAVL_MS,
-};

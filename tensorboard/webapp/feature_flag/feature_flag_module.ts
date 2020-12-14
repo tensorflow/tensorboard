@@ -20,14 +20,28 @@ import {EffectsModule} from '@ngrx/effects';
 import {TBFeatureFlagModule} from '../webapp_data_source/tb_feature_flag_module';
 
 import {FEATURE_FLAG_FEATURE_KEY} from './store/feature_flag_types';
+import {
+  FEATURE_FLAG_STORE_CONFIG_TOKEN,
+  getConfig,
+} from './store/feature_flag_store_config_provider';
 import {reducers} from './store/feature_flag_reducers';
 import {FeatureFlagEffects} from './effects/feature_flag_effects';
 
 @NgModule({
   imports: [
     TBFeatureFlagModule,
-    StoreModule.forFeature(FEATURE_FLAG_FEATURE_KEY, reducers),
+    StoreModule.forFeature(
+      FEATURE_FLAG_FEATURE_KEY,
+      reducers,
+      FEATURE_FLAG_STORE_CONFIG_TOKEN
+    ),
     EffectsModule.forFeature([FeatureFlagEffects]),
+  ],
+  providers: [
+    {
+      provide: FEATURE_FLAG_STORE_CONFIG_TOKEN,
+      useFactory: getConfig,
+    },
   ],
 })
 export class FeatureFlagModule {}

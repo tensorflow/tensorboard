@@ -113,7 +113,7 @@ describe('line_chart_v2/lib/coordinator test', () => {
 
       // y-axis is flipped since data's origin assumes bottom-left as opposed to DOM's
       // coordinate system that has origin at top-left.
-      it('converts the coordinate system but flips y-axis', () => {
+      it('converts the coordinate system with y-axis pointing down', () => {
         const layout = {
           x: 500,
           y: 250,
@@ -159,7 +159,7 @@ describe('line_chart_v2/lib/coordinator test', () => {
     });
 
     describe('#transformDataToUiCoord', () => {
-      beforeEach(() => {
+      it('converts with y-axis pointing up', () => {
         coordinator.setViewBoxRect({
           x: 50,
           y: 0,
@@ -172,12 +172,6 @@ describe('line_chart_v2/lib/coordinator test', () => {
           width: 5,
           height: 5,
         });
-      });
-
-      // unlike the base class, y-axis is not flipped since we are not rendering onto the
-      // DOM where <0, 0> is top-left. Unlike DOM, threejs's scene looks like ordinary
-      // cartesian coordinate with z-axis pointing up.
-      it('converts into internal coordinate system [0, 1000], no y-axis flipped', () => {
         const layout = {
           x: 2,
           y: 0,
@@ -186,18 +180,18 @@ describe('line_chart_v2/lib/coordinator test', () => {
         };
 
         expect(coordinator.transformDataToUiCoord(layout, [50, 50])).toEqual([
-          400,
-          500,
+          2,
+          2.5,
         ]);
         expect(coordinator.transformDataToUiCoord(layout, [150, 100])).toEqual([
-          1000,
-          1000,
+          5,
+          5,
         ]);
 
         // Outside of the viewBox.
         expect(coordinator.transformDataToUiCoord(layout, [0, -100])).toEqual([
-          100,
-          -1000,
+          0.5,
+          -5,
         ]);
       });
     });

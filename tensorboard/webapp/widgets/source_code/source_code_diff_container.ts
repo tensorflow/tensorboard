@@ -12,48 +12,49 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component, Input, OnInit} from '@angular/core';
+import {ChangeDetectionStrategy, Component, Input, OnInit} from '@angular/core';
 import {from, Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
 
 import {loadMonaco} from './load_monaco_shim';
 
 /**
- * SourceCodeContainer displays the content of a source-code file.
- *
- * It displays the code with visual features including syntax highlighting.
- * It additionally provides functionalities to:
- * - Scroll to and highlight a given line by its line number.
- *
- * TODO(cais): Add support for line decoration and symbol decoration.
- *
- * Unlike SourceFilesComponent, SourceCodeContainer handles only one file at a
- * time.
+ * A component that renders a diff of 2 separate text contents. Diffs can be
+ * viewed inline or side by side.
  */
 @Component({
-  selector: 'source-code',
+  selector: 'source-code-diff',
   template: `
-    <source-code-component
-      [lines]="lines"
-      [focusedLineno]="focusedLineno"
+    <source-code-diff-component
+      [firstText]="firstText"
+      [secondText]="secondText"
+      [renderSideBySide]="renderSideBySide"
       [monaco]="monaco$ | async"
-    ></source-code-component>
+    ></source-code-diff-component>
   `,
+  styles: [
+    `
+      source-code-diff-component {
+        display: block;
+        height: 100%;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SourceCodeContainer implements OnInit {
-  // Lines of the source-code file, split at line breaks.
+export class SourceCodeDiffContainer implements OnInit {
   @Input()
-  lines: string[] | null = null; // TODO(cais): Add spinner for `null`.
+  firstText: string | null = null;
 
-  // Line number to scroll to and highlight, 1-based.
   @Input()
-  focusedLineno: number | null = null;
+  secondText: string | null = null;
+
+  @Input()
+  renderSideBySide: boolean = true;
 
   monaco$: Observable<typeof monaco> | null = null;
 
   ngOnInit(): void {
     this.monaco$ = from(loadMonaco()).pipe(map(() => window.monaco));
   }
-
-  constructor() {}
 }

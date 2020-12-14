@@ -16,12 +16,20 @@ limitations under the License.
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
 
+import {ResizeDetectorModule} from '../resize_detector_module';
 import {SourceCodeComponent} from './source_code_component';
 import {SourceCodeContainer} from './source_code_container';
+import {SourceCodeDiffComponent} from './source_code_diff_component';
+import {SourceCodeDiffContainer} from './source_code_diff_container';
 
 @NgModule({
-  declarations: [SourceCodeComponent, SourceCodeContainer],
-  imports: [CommonModule],
-  exports: [SourceCodeContainer],
+  declarations: [
+    SourceCodeComponent,
+    SourceCodeContainer,
+    SourceCodeDiffComponent,
+    SourceCodeDiffContainer,
+  ],
+  imports: [CommonModule, ResizeDetectorModule],
+  exports: [SourceCodeContainer, SourceCodeDiffContainer],
 })
 export class SourceCodeModule {}

@@ -33,6 +33,9 @@ export class FakeRange {
 export const spies: {
   loadMonacoSpy?: jasmine.Spy;
   editorSpy?: jasmine.SpyObj<any>;
+  createDiffEditorSpy?: jasmine.SpyObj<any>;
+  diffEditorSpy?: jasmine.SpyObj<any>;
+  createModelSpy?: jasmine.SpyObj<any>;
 } = {};
 
 export const fakes: {
@@ -54,6 +57,17 @@ export function setUpMonacoFakes() {
           ]);
           return spies.editorSpy;
         },
+        createDiffEditor: () => {
+          spies.diffEditorSpy = jasmine.createSpyObj('diffEditorSpy', [
+            'layout',
+            'setModel',
+          ]);
+          return spies.diffEditorSpy;
+        },
+        createModel: () => {
+          spies.createModelSpy = jasmine.createSpy();
+          return spies.createModelSpy;
+        },
         ScrollType: {
           Immediate: 1,
           Smooth: 0,
@@ -61,6 +75,10 @@ export function setUpMonacoFakes() {
       },
       Range: FakeRange,
     };
+    spies.createDiffEditorSpy = spyOn(
+      fakes.fakeMonaco.editor,
+      'createDiffEditor'
+    ).and.callThrough();
     windowWithRequireAndMonaco.monaco = fakes.fakeMonaco;
   }
   spies.loadMonacoSpy = spyOn(loadMonacoShim, 'loadMonaco').and.callFake(

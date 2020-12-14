@@ -13,7 +13,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {LinePaintOption, ObjectRenderer} from './renderer/renderer_types';
+import {Point} from './internal_types';
+import {
+  CirclePaintOption,
+  LinePaintOption,
+  ObjectRenderer,
+  TrianglePaintOption,
+} from './renderer/renderer_types';
 
 export interface PaintBrushContext<T = any> {
   renderCache: {
@@ -32,6 +38,24 @@ export class PaintBrush {
     const newCacheValue = this.renderer.createOrUpdateLineObject(
       this.context.renderCache.getFromPreviousFrame(cacheId),
       polyline,
+      paintOpt
+    );
+    this.context.renderCache.setToCurrentFrame(cacheId, newCacheValue);
+  }
+
+  setTriangle(cacheId: string, loc: Point, paintOpt: TrianglePaintOption) {
+    const newCacheValue = this.renderer.createOrUpdateTriangleObject(
+      this.context.renderCache.getFromPreviousFrame(cacheId),
+      loc,
+      paintOpt
+    );
+    this.context.renderCache.setToCurrentFrame(cacheId, newCacheValue);
+  }
+
+  setCircle(cacheId: string, loc: Point, paintOpt: CirclePaintOption) {
+    const newCacheValue = this.renderer.createOrUpdateCircleObject(
+      this.context.renderCache.getFromPreviousFrame(cacheId),
+      loc,
       paintOpt
     );
     this.context.renderCache.setToCurrentFrame(cacheId, newCacheValue);

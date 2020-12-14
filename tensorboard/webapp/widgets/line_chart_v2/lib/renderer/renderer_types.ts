@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Polyline, Rect} from '../internal_types';
+import {Point, Polyline, Rect} from '../internal_types';
 
 export enum RendererType {
   SVG,
@@ -35,8 +35,9 @@ export interface ObjectRenderer<CacheValue = {}> {
   onResize(domRect: Rect): void;
 
   /**
-   * Draws or enqueues drawing operations depending on a renderer. If the `cachedLine` is
-   * null, it will create a new line object. Otherwise, it will update the object.
+   * Draws or enqueues line drawing operations depending on a renderer. If the
+   * `cachedLine` is null, it will create a new line object. Otherwise, it will
+   * the object.
    *
    * @param cachedLine Previously created object. Can be a recycled instance to reduce
    *    memory operations.
@@ -49,14 +50,44 @@ export interface ObjectRenderer<CacheValue = {}> {
     paintOpt: LinePaintOption
   ): CacheValue | null;
 
+  /**
+   * Draws or enqueues triangle drawing operations depending on a renderer. If the `cached` is
+   * null, it will create a new triangle object. Otherwise, it will update the object.
+   */
+  createOrUpdateTriangleObject(
+    cached: CacheValue | null,
+    loc: Point,
+    paintOpt: TrianglePaintOption
+  ): CacheValue | null;
+
+  /**
+   * Draws or enqueues circle drawing operations depending on a renderer.
+   */
+  createOrUpdateCircleObject(
+    cached: CacheValue | null,
+    loc: Point,
+    paintOpt: CirclePaintOption
+  ): CacheValue | null;
+
   flush(): void;
 
   destroyObject(cachedValue: CacheValue): void;
 }
 
-export interface LinePaintOption {
+interface PaintOption {
   visible: boolean;
   color: string;
   opacity?: number;
+}
+
+export interface LinePaintOption extends PaintOption {
   width: number;
+}
+
+export interface TrianglePaintOption extends PaintOption {
+  size: number;
+}
+
+export interface CirclePaintOption extends PaintOption {
+  radius: number;
 }

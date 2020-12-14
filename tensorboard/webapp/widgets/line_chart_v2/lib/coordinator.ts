@@ -37,6 +37,7 @@ import {convertRectToExtent} from './utils';
 export class Coordinator {
   protected xScale: Scale = createScale(ScaleType.LINEAR);
   protected yScale: Scale = createScale(ScaleType.LINEAR);
+
   protected domContainerRect: Rect = {
     x: 0,
     width: 1,
@@ -44,7 +45,7 @@ export class Coordinator {
     height: 1,
   };
 
-  protected lastUpdated: number = 0;
+  private lastUpdated: number = 0;
   private currentViewBoxRect: Rect = {
     x: 0,
     width: 1,
@@ -58,6 +59,21 @@ export class Coordinator {
 
   private updateIdentifier() {
     this.lastUpdated++;
+  }
+
+  /**
+   * Returns whether y axis is pointing down in the output space.
+   *
+   * ↑
+   * | isYAxisPointedDown = false (e.g., cartesian coordinates, 3d scene)
+   * |
+   * |-------------→
+   * |
+   * | isYAxisPointedDown = true (e.g., DOM)
+   * ↓
+   */
+  isYAxisPointedDown(): boolean {
+    return true;
   }
 
   setXScale(scale: Scale) {
@@ -102,7 +118,9 @@ export class Coordinator {
       ),
       this.yScale.forward(
         domain.y,
-        [rect.y + rect.height, rect.y],
+        this.isYAxisPointedDown()
+          ? [rect.y + rect.height, rect.y]
+          : [rect.y, rect.y + rect.height],
         dataCoordinate[1]
       ),
     ];
