@@ -148,6 +148,10 @@ export class PluginsComponent implements OnChanges {
   private readonly pluginInstances = new Map<string, HTMLElement>();
 
   ngOnChanges(change: SimpleChanges): void {
+    // TODO: Handle case where this.activeKnownPlugin goes from truthy to falsy.
+    //       It might happen when users are navigating between experiments and
+    //       the new experiment does not have data for the active dashboard?
+
     if (!this.isFeatureFlagsLoaded || !this.activeKnownPlugin) {
       return;
     }
