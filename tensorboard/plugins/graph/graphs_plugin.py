@@ -23,10 +23,8 @@ import six
 from werkzeug import wrappers
 
 from tensorboard import plugin_util
-from tensorboard import context
 from tensorboard.backend import http_util
 from tensorboard.backend import process_graph
-from tensorboard.backend.event_processing import tag_types
 from tensorboard.compat.proto import config_pb2
 from tensorboard.compat.proto import graph_pb2
 from tensorboard.data import provider
@@ -37,16 +35,6 @@ from tensorboard.plugins.graph import metadata
 from tensorboard.util import tb_logging
 
 logger = tb_logging.get_logger()
-
-# The Summary API is implemented in TensorFlow because it uses TensorFlow internal APIs.
-# As a result, this SummaryMetadata is a bit unconventional and uses non-public
-# hardcoded name as the plugin name. Please refer to link below for the summary ops.
-# https://github.com/tensorflow/tensorflow/blob/11f4ecb54708865ec757ca64e4805957b05d7570/tensorflow/python/ops/summary_ops_v2.py#L757
-_PLUGIN_NAME_RUN_METADATA = "graph_run_metadata"
-# https://github.com/tensorflow/tensorflow/blob/11f4ecb54708865ec757ca64e4805957b05d7570/tensorflow/python/ops/summary_ops_v2.py#L788
-_PLUGIN_NAME_RUN_METADATA_WITH_GRAPH = "graph_run_metadata_graph"
-# https://github.com/tensorflow/tensorflow/blob/565952cc2f17fdfd995e25171cf07be0f6f06180/tensorflow/python/ops/summary_ops_v2.py#L825
-_PLUGIN_NAME_KERAS_MODEL = "graph_keras_model"
 
 
 class GraphsPlugin(base_plugin.TBPlugin):
@@ -77,11 +65,16 @@ class GraphsPlugin(base_plugin.TBPlugin):
 
     def is_active(self):
         """The graphs plugin is active iff any run has a graph or metadata."""
-        if self._data_provider:
-            return False  # `list_plugins` as called by TB core suffices
+        return False  # `list_plugins` as called by TB core suffices
 
-        empty_context = context.RequestContext()  # not used
-        return bool(self.info_impl(empty_context))
+    def data_plugin_names(self):
+        return (
+            metadata.PLUGIN_NAME,
+            metadata.PLUGIN_NAME_RUN_METADATA,
+            metadata.PLUGIN_NAME_RUN_METADATA_WITH_GRAPH,
+            metadata.PLUGIN_NAME_KERAS_MODEL,
+            metadata.PLUGIN_NAME_TAGGED_RUN_METADATA,
+        )
 
     def frontend_metadata(self):
         return base_plugin.FrontendMetadata(
@@ -136,7 +129,7 @@ class GraphsPlugin(base_plugin.TBPlugin):
             return result
 
         mapping = self._multiplexer.PluginRunToTagToContent(
-            _PLUGIN_NAME_RUN_METADATA_WITH_GRAPH
+            metadata.PLUGIN_NAME_RUN_METADATA_WITH_GRAPH
         )
         for run_name, tag_to_content in six.iteritems(mapping):
             for (tag, content) in six.iteritems(tag_to_content):
@@ -151,10 +144,10 @@ class GraphsPlugin(base_plugin.TBPlugin):
                 (_, tag_item) = add_row_item(run_name, tag)
                 tag_item["op_graph"] = True
 
-        # Tensors associated with plugin name _PLUGIN_NAME_RUN_METADATA contain
-        # both op graph and profile information.
+        # Tensors associated with plugin name metadata.PLUGIN_NAME_RUN_METADATA
+        # contain both op graph and profile information.
         mapping = self._multiplexer.PluginRunToTagToContent(
-            _PLUGIN_NAME_RUN_METADATA
+            metadata.PLUGIN_NAME_RUN_METADATA
         )
         for run_name, tag_to_content in six.iteritems(mapping):
             for (tag, content) in six.iteritems(tag_to_content):
@@ -167,10 +160,10 @@ class GraphsPlugin(base_plugin.TBPlugin):
                 tag_item["profile"] = True
                 tag_item["op_graph"] = True
 
-        # Tensors associated with plugin name _PLUGIN_NAME_KERAS_MODEL contain
-        # serialized Keras model in JSON format.
+        # Tensors associated with plugin name metadata.PLUGIN_NAME_KERAS_MODEL
+        # contain serialized Keras model in JSON format.
         mapping = self._multiplexer.PluginRunToTagToContent(
-            _PLUGIN_NAME_KERAS_MODEL
+            metadata.PLUGIN_NAME_KERAS_MODEL
         )
         for run_name, tag_to_content in six.iteritems(mapping):
             for (tag, content) in six.iteritems(tag_to_content):
@@ -182,16 +175,22 @@ class GraphsPlugin(base_plugin.TBPlugin):
                 (_, tag_item) = add_row_item(run_name, tag)
                 tag_item["conceptual_graph"] = True
 
-        for (run_name, run_data) in six.iteritems(self._multiplexer.Runs()):
-            if run_data.get(tag_types.GRAPH):
+        mapping = self._multiplexer.PluginRunToTagToContent(
+            metadata.PLUGIN_NAME
+        )
+        for (run_name, tags) in mapping.items():
+            if metadata.RUN_GRAPH_NAME in tags:
                 (run_item, _) = add_row_item(run_name, None)
                 run_item["run_graph"] = True
 
-        for (run_name, run_data) in six.iteritems(self._multiplexer.Runs()):
-            if tag_types.RUN_METADATA in run_data:
-                for tag in run_data[tag_types.RUN_METADATA]:
-                    (_, tag_item) = add_row_item(run_name, tag)
-                    tag_item["profile"] = True
+        # Top level `Event.tagged_run_metadata` represents profile data only.
+        mapping = self._multiplexer.PluginRunToTagToContent(
+            metadata.PLUGIN_NAME_TAGGED_RUN_METADATA
+        )
+        for (run_name, tags) in mapping.items():
+            for tag in tags:
+                (_, tag_item) = add_row_item(run_name, tag)
+                tag_item["profile"] = True
 
         return result
 
@@ -253,8 +252,13 @@ class GraphsPlugin(base_plugin.TBPlugin):
                     for func_graph in run_metadata.function_graphs
                 ]
             )
+
         else:
-            graph = self._multiplexer.Graph(run)
+            tensor_events = self._multiplexer.Tensors(
+                run, metadata.RUN_GRAPH_NAME
+            )
+            graph_raw = tensor_events[0].tensor_proto.string_val[0]
+            graph = graph_pb2.GraphDef.FromString(graph_raw)
 
         # This next line might raise a ValueError if the limit parameters
         # are invalid (size is negative, size present but key absent, etc.).
@@ -269,21 +273,14 @@ class GraphsPlugin(base_plugin.TBPlugin):
         if self._data_provider:
             # TODO(davidsoergel, wchargin): Consider plumbing run metadata through data providers.
             return None
-        try:
-            run_metadata = self._multiplexer.RunMetadata(run, tag)
-        except ValueError:
-            # TODO(stephanwlee): Should include whether FE is fetching for v1 or v2 RunMetadata
-            # so we can remove this try/except.
-            tensor_events = self._multiplexer.Tensors(run, tag)
-            if tensor_events is None:
-                return None
-            # Take the first event if there are multiple events written from different
-            # steps.
-            run_metadata = config_pb2.RunMetadata.FromString(
-                tensor_events[0].tensor_proto.string_val[0]
-            )
-        if run_metadata is None:
+        tensor_events = self._multiplexer.Tensors(run, tag)
+        if tensor_events is None:
             return None
+        # Take the first event if there are multiple events written from different
+        # steps.
+        run_metadata = config_pb2.RunMetadata.FromString(
+            tensor_events[0].tensor_proto.string_val[0]
+        )
         return (str(run_metadata), "text/x-protobuf")  # pbtxt
 
     @wrappers.Request.application
