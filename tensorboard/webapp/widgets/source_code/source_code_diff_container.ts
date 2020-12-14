@@ -21,6 +21,8 @@ import {loadMonaco} from './load_monaco_shim';
 /**
  * A component that renders a diff of 2 separate text contents. Diffs can be
  * viewed inline or side by side.
+ * - side by side: 2 scrollable frames with a vertical separator
+ * - inline: 1 scrollable frame showing modified and original lines
  */
 @Component({
   selector: 'source-code-diff',
