@@ -117,6 +117,7 @@ tf_ts_library(
     ],
     deps = [
         ":drawable",
+        ":internal_types",
     ],
 )
 

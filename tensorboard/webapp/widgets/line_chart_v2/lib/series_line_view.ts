@@ -14,6 +14,7 @@ limitations under the License.
 ==============================================================================*/
 
 import {DataDrawable} from './drawable';
+import {Polyline} from './internal_types';
 
 enum PartitionType {
   NUMBER,
@@ -21,8 +22,24 @@ enum PartitionType {
 }
 
 export class SeriesLineView extends DataDrawable {
+  private recordPartition(
+    isNumberPartition: boolean,
+    slice: Float32Array,
+    nanSubstitute: {x: number; y: number}
+  ) {
+    return isNumberPartition
+      ? {type: PartitionType.NUMBER, polyline: slice}
+      : {
+          type: PartitionType.NAN,
+          polyline: slice.map((x, ind) => {
+            if (!isNaN(x)) return x;
+            return ind % 2 === 0 ? nanSubstitute.x : nanSubstitute.y;
+          }),
+        };
+  }
+
   private partitionPolyline(
-    polyline: Float32Array
+    polyline: Polyline
   ): Array<{polyline: Float32Array; type: PartitionType}> {
     if (polyline.length % 2 !== 0) {
       throw new Error(`Cannot have odd length-ed polyline: ${polyline.length}`);
@@ -42,31 +59,13 @@ export class SeriesLineView extends DataDrawable {
       y: number;
     } | null = null;
 
-    function recordPartition(
-      isNumberPartition: boolean,
-      slice: Float32Array,
-      nanSubstitude: {x: number; y: number}
-    ) {
-      if (isNumberPartition) {
-        return {type: PartitionType.NUMBER, polyline: slice};
-      } else {
-        return {
-          type: PartitionType.NAN,
-          polyline: slice.map((x, ind) => {
-            if (!isNaN(x)) return x;
-            return ind % 2 === 0 ? nanSubstitude.x : nanSubstitude.y;
-          }),
-        };
-      }
-    }
-
     for (let index = 0; index < polyline.length; index += 2) {
       const x = polyline[index];
       const y = polyline[index + 1];
       const hasNaN = isNaN(x) || isNaN(y);
       if (hasNaN !== isPrevValueNaN && partitionStartInd !== index) {
         partition.push(
-          recordPartition(
+          this.recordPartition(
             !isPrevValueNaN,
             polyline.slice(partitionStartInd, index),
             lastLegalNumber === null ? {x, y} : lastLegalNumber
@@ -84,7 +83,7 @@ export class SeriesLineView extends DataDrawable {
 
     if (partitionStartInd !== polyline.length - 1) {
       partition.push(
-        recordPartition(
+        this.recordPartition(
           !isPrevValueNaN,
           polyline.slice(partitionStartInd, polyline.length),
           lastLegalNumber ?? zeroPoint
@@ -112,22 +111,22 @@ export class SeriesLineView extends DataDrawable {
             if (metadata.aux) continue;
 
             this.paintBrush.setCircle(
-              `circle_${series.id}_${partitionInd}`,
+              JSON.stringify(['circle', series.id, partitionInd]),
               {x: polyline[0], y: polyline[1]},
               {
                 color: metadata.color,
-                visible: metadata.visible || false,
+                visible: metadata.visible,
                 opacity: metadata.opacity ?? 1,
                 radius: 4,
               }
             );
           } else {
             this.paintBrush.setLine(
-              `line_${series.id}_${partitionInd}`,
+              JSON.stringify(['line', series.id, partitionInd]),
               polyline,
               {
                 color: metadata.color,
-                visible: metadata.visible || false,
+                visible: metadata.visible,
                 opacity: metadata.opacity ?? 1,
                 width: 1,
               }
@@ -137,11 +136,16 @@ export class SeriesLineView extends DataDrawable {
         } else if (!metadata.aux) {
           for (let index = 0; index < polyline.length; index += 2) {
             this.paintBrush.setTriangle(
-              `NaN_${series.id}_${polyline[index]}_${polyline[index + 1]}`,
+              JSON.stringify([
+                'NaN',
+                series.id,
+                polyline[index],
+                polyline[index + 1],
+              ]),
               {x: polyline[index], y: polyline[index + 1]},
               {
                 color: metadata.color,
-                visible: metadata.visible || false,
+                visible: metadata.visible,
                 opacity: metadata.opacity ?? 1,
                 size: 12,
               }
