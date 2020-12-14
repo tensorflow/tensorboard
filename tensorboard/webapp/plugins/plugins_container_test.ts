@@ -185,6 +185,24 @@ describe('plugins_component', () => {
       expect(el.nativeElement.childElementCount).toBe(0);
     });
 
+    it('creates no plugin when feature flags are not loaded', async () => {
+      store.overrideSelector(getIsFeatureFlagsLoaded, false);
+      store.overrideSelector(getActivePlugin, 'foo');
+
+      const fixture = TestBed.createComponent(PluginsContainer);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      const plugins1 = fixture.debugElement.query(By.css('.plugins'));
+      expect(plugins1.nativeElement.childElementCount).toBe(0);
+
+      store.overrideSelector(getIsFeatureFlagsLoaded, true);
+      store.refreshState();
+      fixture.detectChanges();
+      await fixture.whenStable();
+      const plugins2 = fixture.debugElement.query(By.css('.plugins'));
+      expect(plugins2.nativeElement.childElementCount).toBe(1);
+    });
+
     it('creates an element for CUSTOM_ELEMENT type of plugin', async () => {
       const fixture = TestBed.createComponent(PluginsContainer);
       fixture.detectChanges();

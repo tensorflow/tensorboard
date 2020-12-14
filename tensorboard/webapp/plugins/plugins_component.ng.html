@@ -24,8 +24,7 @@ limitations under the License.
 
 <div
   *ngIf="pluginLoadState !== PluginLoadState.LOADED
-      && pluginLoadState !== PluginLoadState.LOADING
-      && isFeatureFlagsLoaded"
+      && pluginLoadState !== PluginLoadState.LOADING"
   [ngSwitch]="pluginLoadState"
   class="warning"
 >

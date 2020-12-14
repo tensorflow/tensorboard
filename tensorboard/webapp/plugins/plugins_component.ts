@@ -148,13 +148,17 @@ export class PluginsComponent implements OnChanges {
   private readonly pluginInstances = new Map<string, HTMLElement>();
 
   ngOnChanges(change: SimpleChanges): void {
+    if (!this.isFeatureFlagsLoaded || !this.activeKnownPlugin) {
+      return;
+    }
+
     const shouldCreatePlugin = Boolean(
       this.activeKnownPlugin &&
         !this.pluginInstances.has(this.activeKnownPlugin.id)
     );
 
-    if (change['activeKnownPlugin'] && this.activeKnownPlugin) {
-      const prevActiveKnownPlugin = change['activeKnownPlugin'].previousValue;
+    if (change['activeKnownPlugin'] || change['isFeatureFlagsLoaded']) {
+      const prevActiveKnownPlugin = change['activeKnownPlugin']?.previousValue;
       if (
         prevActiveKnownPlugin &&
         prevActiveKnownPlugin.id !== this.activeKnownPlugin.id
@@ -170,10 +174,7 @@ export class PluginsComponent implements OnChanges {
         this.showPlugin(this.activeKnownPlugin);
       }
     }
-    if (
-      this.activeKnownPlugin &&
-      (shouldCreatePlugin || change['lastUpdated'])
-    ) {
+    if (shouldCreatePlugin || change['lastUpdated']) {
       this.reload(this.activeKnownPlugin, shouldCreatePlugin);
     }
   }
