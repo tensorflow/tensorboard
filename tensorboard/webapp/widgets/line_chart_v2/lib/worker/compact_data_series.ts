@@ -17,7 +17,7 @@ import {DataSeries} from '../internal_types';
 
 export interface CompactDataSeries {
   idsAndLengths: Array<{id: string; length: number}>;
-  // buffer of packed f64s
+  // buffer of packed f64s that represents 2d coordinates, [x1, y1, x2, y2, ..., xn, yn].
   flattenedSeries: ArrayBuffer;
 }
 
