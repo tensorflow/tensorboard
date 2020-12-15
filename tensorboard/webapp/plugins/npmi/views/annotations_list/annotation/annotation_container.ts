@@ -15,6 +15,8 @@ limitations under the License.
 import {Component, ChangeDetectionStrategy, Input} from '@angular/core';
 import {Store} from '@ngrx/store';
 import {State} from '../../../../../app_state';
+import {Observable} from 'rxjs';
+import {map} from 'rxjs/operators';
 
 import {
   getSelectedAnnotations,
@@ -22,8 +24,12 @@ import {
   getHiddenAnnotations,
   getShowCounts,
   getSidebarWidth,
+  getAnnotationSort,
 } from '../../../store';
+import * as selectors from '../../../../../selectors';
 import {ValueData} from '../../../store/npmi_types';
+import * as npmiActions from '../../../actions';
+import {RunColorScale} from '../../../../../types/ui';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
@@ -37,11 +43,15 @@ import {ValueData} from '../../../store/npmi_types';
       [numActiveRuns]="numActiveRuns"
       [annotation]="annotation"
       [runHeight]="runHeight"
+      [hasEmbedding]="hasEmbedding"
+      [sort]="sort$ | async"
       [selectedAnnotations]="selectedAnnotations$ | async"
       [flaggedAnnotations]="flaggedAnnotations$ | async"
       [hiddenAnnotations]="hiddenAnnotations$ | async"
       [showCounts]="showCounts$ | async"
       [sidebarWidth]="sidebarWidth$ | async"
+      [colorScale]="runColorScale$ | async"
+      (onShowSimilarAnnotations)="showSimilarAnnotations()"
     ></annotation-component>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -53,12 +63,34 @@ export class AnnotationContainer {
   @Input() numActiveRuns!: number;
   @Input() annotation!: string;
   @Input() runHeight!: number;
+  @Input() hasEmbedding!: boolean;
 
+  readonly sort$ = this.store.select(getAnnotationSort);
   readonly flaggedAnnotations$ = this.store.select(getFlaggedAnnotations);
   readonly hiddenAnnotations$ = this.store.select(getHiddenAnnotations);
   readonly selectedAnnotations$ = this.store.select(getSelectedAnnotations);
   readonly showCounts$ = this.store.select(getShowCounts);
   readonly sidebarWidth$ = this.store.select(getSidebarWidth);
+  readonly runColorScale$: Observable<RunColorScale> = this.store
+    .select(selectors.getRunColorMap)
+    .pipe(
+      map((colorMap) => {
+        return (runId: string) => {
+          if (!colorMap.hasOwnProperty(runId)) {
+            throw new Error(`[Color scale] unknown runId: ${runId}.`);
+          }
+          return colorMap[runId];
+        };
+      })
+    );
 
   constructor(private readonly store: Store<State>) {}
+
+  showSimilarAnnotations() {
+    this.store.dispatch(
+      npmiActions.npmiSimilaritySortChanged({
+        annotation: this.annotation,
+      })
+    );
+  }
 }

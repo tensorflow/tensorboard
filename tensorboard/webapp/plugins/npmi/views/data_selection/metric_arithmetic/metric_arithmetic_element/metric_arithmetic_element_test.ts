@@ -118,7 +118,7 @@ describe('Npmi Metric Arithmetic Element Container', () => {
         fixture.detectChanges();
 
         expect(dispatchedActions).toEqual([
-          npmiActions.npmiChangeMetricFilter({
+          npmiActions.npmiMetricFilterChanged({
             metric: 'npmi@test',
             max: 1.0,
             min: 0.2,
@@ -146,7 +146,7 @@ describe('Npmi Metric Arithmetic Element Container', () => {
         fixture.detectChanges();
 
         expect(dispatchedActions).toEqual([
-          npmiActions.npmiChangeMetricFilter({
+          npmiActions.npmiMetricFilterChanged({
             metric: 'npmi@test',
             max: 1.0,
             min: -1.0,
@@ -225,7 +225,7 @@ describe('Npmi Metric Arithmetic Element Container', () => {
         fixture.detectChanges();
 
         expect(dispatchedActions).toEqual([
-          npmiActions.npmiChangeMetricFilter({
+          npmiActions.npmiMetricFilterChanged({
             metric: 'npmi@test',
             max: 0.2,
             min: -1.0,
@@ -307,7 +307,7 @@ describe('Npmi Metric Arithmetic Element Container', () => {
         fixture.detectChanges();
 
         expect(dispatchedActions).toEqual([
-          npmiActions.npmiChangeMetricFilter({
+          npmiActions.npmiMetricFilterChanged({
             metric: 'npmi@test',
             max: -2.0,
             min: -1.0,

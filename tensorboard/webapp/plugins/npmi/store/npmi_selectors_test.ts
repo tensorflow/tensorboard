@@ -16,6 +16,7 @@ import {
   getPluginDataLoaded,
   getAnnotationData,
   getRunToMetrics,
+  getEmbeddingData,
   getSelectedAnnotations,
   getFlaggedAnnotations,
   getHiddenAnnotations,
@@ -39,7 +40,7 @@ describe('npmi selectors', () => {
     it('returns the correct NOT_LOADED state', () => {
       const state = createState(createNpmiState());
       const annotationsLoaded = getPluginDataLoaded(state);
-      expect(annotationsLoaded.state).toBe(DataLoadState.NOT_LOADED);
+      expect(annotationsLoaded).toBe(DataLoadState.NOT_LOADED);
     });
 
     it('returns the correct LOADING state', () => {
@@ -52,8 +53,7 @@ describe('npmi selectors', () => {
         })
       );
       const annotationsLoaded = getPluginDataLoaded(state);
-      expect(annotationsLoaded.state).toBe(DataLoadState.LOADING);
-      expect(annotationsLoaded.lastLoadedTimeInMs).toBe(null);
+      expect(annotationsLoaded).toBe(DataLoadState.LOADING);
     });
 
     it('returns the correct LOADED state', () => {
@@ -66,8 +66,7 @@ describe('npmi selectors', () => {
         })
       );
       const loaded = getPluginDataLoaded(state);
-      expect(loaded.state).toBe(DataLoadState.LOADED);
-      expect(loaded.lastLoadedTimeInMs).toBe(1234);
+      expect(loaded).toBe(DataLoadState.LOADED);
     });
   });
 
@@ -141,6 +140,28 @@ describe('npmi selectors', () => {
       );
       expect(getRunToMetrics(state)).toEqual({
         run_1: ['npmi_metric_1', 'npmi_metric_2'],
+      });
+    });
+  });
+
+  describe('getEmbeddingData', () => {
+    it('returns the correct empty object', () => {
+      const state = createState(createNpmiState());
+      expect(getEmbeddingData(state)).toEqual({});
+    });
+
+    it('returns the correct data', () => {
+      const state = createState(
+        createNpmiState({
+          embeddingData: {
+            annotation_new_1: [1.0, 0.5],
+            annotation_new_2: [0.5, -0.5],
+          },
+        })
+      );
+      expect(getEmbeddingData(state)).toEqual({
+        annotation_new_1: [1.0, 0.5],
+        annotation_new_2: [0.5, -0.5],
       });
     });
   });
@@ -285,7 +306,7 @@ describe('npmi selectors', () => {
       const state = createState(createNpmiState());
       expect(getAnnotationSort(state)).toEqual({
         metric: '',
-        order: SortOrder.DOWN,
+        order: SortOrder.DESCENDING,
       });
     });
 
@@ -294,13 +315,13 @@ describe('npmi selectors', () => {
         createNpmiState({
           sort: {
             metric: 'test',
-            order: SortOrder.UP,
+            order: SortOrder.ASCENDNG,
           },
         })
       );
       expect(getAnnotationSort(state)).toEqual({
         metric: 'test',
-        order: SortOrder.UP,
+        order: SortOrder.ASCENDNG,
       });
     });
   });

@@ -42,7 +42,7 @@ describe('Npmi Main Container', () => {
     SIDE_TOGGLE: By.css('.side-toggle'),
     GRABBER: By.css('.grabber'),
     CONTENT: By.css('.content'),
-    RUN_SELECTOR: By.css('tb-legacy-runs-selector'),
+    RUN_SELECTOR: By.css('runs-selector'),
     BUTTON: By.css('button'),
   };
 
@@ -176,7 +176,7 @@ describe('Npmi Main Container', () => {
     const contentElement = fixture.debugElement.query(css.CONTENT);
     contentElement.triggerEventHandler('mousemove', {clientX: 50});
     expect(dispatchedActions).toEqual([
-      npmiActions.npmiChangeSidebarWidth({sidebarWidth: 50}),
+      npmiActions.npmiSidebarWidthChanged({sidebarWidth: 50}),
     ]);
   });
 

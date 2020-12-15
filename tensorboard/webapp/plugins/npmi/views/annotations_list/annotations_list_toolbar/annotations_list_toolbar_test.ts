@@ -176,7 +176,7 @@ describe('Npmi Annotations List Toolbar Container', () => {
       const toggles = fixture.debugElement.queryAll(css.TOGGLE);
       toggles[0].triggerEventHandler('change', null);
 
-      expect(dispatchedActions).toEqual([npmiActions.npmiToggleShowCounts()]);
+      expect(dispatchedActions).toEqual([npmiActions.npmiShowCountsToggled()]);
     });
 
     it('dispatches toggleShowHidden when toggled', () => {
@@ -188,7 +188,7 @@ describe('Npmi Annotations List Toolbar Container', () => {
       toggles[1].triggerEventHandler('change', null);
 
       expect(dispatchedActions).toEqual([
-        npmiActions.npmiToggleShowHiddenAnnotations(),
+        npmiActions.npmiShowHiddenAnnotationsToggled(),
       ]);
     });
   });

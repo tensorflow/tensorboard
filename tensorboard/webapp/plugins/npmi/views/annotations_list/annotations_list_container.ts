@@ -30,6 +30,7 @@ import {
   getSelectedAnnotations,
   getAnnotationSort,
   getAnnotationsRegex,
+  getEmbeddingData,
 } from '../../store';
 import {getCurrentRouteRunSelection} from '../../../../selectors';
 import {
@@ -47,6 +48,7 @@ import {sortAnnotations} from '../../util/sort_annotations';
   template: `
     <annotations-list-component
       [annotations]="filteredAnnotations$ | async"
+      [embeddingData]="embeddingData$ | async"
       [annotationsExpanded]="annotationsExpanded$ | async"
       [numAnnotations]="numAnnotations$ | async"
       [activeMetrics]="activeMetrics$ | async"
@@ -73,6 +75,7 @@ export class AnnotationsListContainer {
           .map((run) => run[0]);
       })
     );
+  readonly embeddingData$ = this.store.pipe(select(getEmbeddingData));
   readonly numActiveRuns$ = this.activeRuns$.pipe(map((runs) => runs.length));
   readonly activeMetrics$ = combineLatest([
     this.store.select(getRunToMetrics),
@@ -143,9 +146,10 @@ export class AnnotationsListContainer {
   readonly sortedAnnotations$ = combineLatest([
     this.filteredAnnotations$,
     this.store.pipe(select(getAnnotationSort)),
+    this.store.pipe(select(getEmbeddingData)),
   ]).pipe(
-    map(([annotations, sort]) => {
-      return sortAnnotations(annotations, sort);
+    map(([annotations, sort, embeddingData]) => {
+      return sortAnnotations(annotations, sort, embeddingData);
     })
   );
   readonly selectedAnnotations$ = this.store.pipe(

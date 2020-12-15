@@ -24,7 +24,13 @@ limitations under the License.
     [checked]="selectedAnnotations.includes(annotation)"
     (click)="$event.preventDefault()"
   ></mat-checkbox>
-  {{annotation}}
+  <button
+    [ngClass]="hasEmbedding ? 'clickable-annotation' : ''"
+    class="annotation-button"
+    (click)="similaritySort($event)"
+  >
+    {{annotation}}
+  </button>
   <mat-icon
     *ngIf="flaggedAnnotations.includes(annotation)"
     class="flagged-icon"
@@ -34,6 +40,12 @@ limitations under the License.
     *ngIf="hiddenAnnotations.includes(annotation)"
     class="hidden-icon"
     svgIcon="visibility_off_24px"
+  ></mat-icon>
+  <mat-icon
+    [svgIcon]="sort.order === SortOrder.SIMILAR ? 'arrow_downward_24px' : 'arrow_upward_24px'"
+    *ngIf="annotation === sort.metric"
+    [ngClass]="sort.order === SortOrder.SIMILAR ? 'down-icon' : 'up-icon'"
+    class="annotation-icon"
   ></mat-icon>
 </div>
 <div #chart class="chart-div">

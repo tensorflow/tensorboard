@@ -18,13 +18,20 @@ import {FormsModule} from '@angular/forms';
 
 import {MatCheckboxModule} from '@angular/material/checkbox';
 import {MatIconModule} from '@angular/material/icon';
+import {MatButtonModule} from '@angular/material/button';
 
 import {AnnotationComponent} from './annotation_component';
 import {AnnotationContainer} from './annotation_container';
 
 @NgModule({
   declarations: [AnnotationContainer, AnnotationComponent],
-  imports: [CommonModule, FormsModule, MatCheckboxModule, MatIconModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    MatCheckboxModule,
+    MatIconModule,
+    MatButtonModule,
+  ],
   exports: [AnnotationContainer],
 })
 export class AnnotationModule {}

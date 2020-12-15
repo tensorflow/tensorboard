@@ -38,7 +38,7 @@ export function createNpmiState(override?: Partial<NpmiState>): NpmiState {
     metricFilters: {},
     sort: {
       metric: '',
-      order: SortOrder.DOWN,
+      order: SortOrder.DESCENDING,
     },
     pcExpanded: true,
     annotationsExpanded: true,

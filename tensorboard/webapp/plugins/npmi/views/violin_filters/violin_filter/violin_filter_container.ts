@@ -30,6 +30,8 @@ import {MetricFilter} from '../../../store/npmi_types';
 import * as npmiActions from '../../../actions';
 import {removeHiddenAnnotations} from '../../../util/filter_annotations';
 import {violinData, ViolinChartData} from '../../../util/violin_data';
+import * as selectors from '../../../../../selectors';
+import {RunColorScale} from '../../../../../types/ui';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
@@ -41,6 +43,7 @@ import {violinData, ViolinChartData} from '../../../util/violin_data';
       [filter]="filter"
       [chartData]="chartData$ | async"
       [width]="chartWidth$ | async"
+      [colorScale]="runColorScale$ | async"
       (onRemove)="removeMetric()"
       (onUpdateFilter)="updateFilter($event)"
     ></violin-filter-component>
@@ -82,6 +85,18 @@ export class ViolinFilterContainer implements OnInit {
     violinData: ViolinChartData;
     extremes: {min: number; max: number};
   }>;
+  readonly runColorScale$: Observable<RunColorScale> = this.store
+    .select(selectors.getRunColorMap)
+    .pipe(
+      map((colorMap) => {
+        return (runId: string) => {
+          if (!colorMap.hasOwnProperty(runId)) {
+            throw new Error(`[Color scale] unknown runId: ${runId}.`);
+          }
+          return colorMap[runId];
+        };
+      })
+    );
 
   constructor(private readonly store: Store<State>) {}
 
@@ -104,7 +119,7 @@ export class ViolinFilterContainer implements OnInit {
 
   updateFilter(filter: MetricFilter) {
     this.store.dispatch(
-      npmiActions.npmiChangeMetricFilter({metric: this.metricName, ...filter})
+      npmiActions.npmiMetricFilterChanged({metric: this.metricName, ...filter})
     );
   }
 }

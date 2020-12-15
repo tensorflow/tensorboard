@@ -65,7 +65,7 @@ export class MetricArithmeticElementContainer {
     const max = isNaN(newValues.max) ? -2 : newValues.max;
     const includeNaN = isNaN(newValues.min);
     this.store.dispatch(
-      npmiActions.npmiChangeMetricFilter({
+      npmiActions.npmiMetricFilterChanged({
         metric: this.metric,
         max: max,
         min: min,

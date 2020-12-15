@@ -22,7 +22,7 @@ import {MatIconModule} from '@angular/material/icon';
 
 import {MainComponent} from './main_component';
 import {MainContainer} from './main_container';
-import {RunsModule} from '../../../../runs_legacy/runs_module';
+import {RunsSelectorModule} from '../../../../runs/views/runs_selector/runs_selector_module';
 import {DataSelectionModule} from './../data_selection/data_selection_module';
 import {ViolinFiltersModule} from './../violin_filters/violin_filters_module';
 import {AnnotationsListModule} from '../annotations_list/annotations_list_module';
@@ -35,7 +35,7 @@ import {SelectedAnnotationsModule} from './../selected_annotations/selected_anno
     FormsModule,
     MatCheckboxModule,
     MatIconModule,
-    RunsModule,
+    RunsSelectorModule,
     DataSelectionModule,
     MatButtonModule,
     ViolinFiltersModule,

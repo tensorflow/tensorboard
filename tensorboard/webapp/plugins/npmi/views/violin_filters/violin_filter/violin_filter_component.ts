@@ -27,8 +27,9 @@ import {
 
 import * as d3 from '../../../../../third_party/d3';
 
-import {MetricFilter, TfColorScale} from './../../../store/npmi_types';
+import {MetricFilter} from './../../../store/npmi_types';
 import {ViolinChartData, ViolinBin} from './../../../util/violin_data';
+import {RunColorScale} from '../../../../../types/ui';
 
 @Component({
   selector: 'violin-filter-component',
@@ -44,6 +45,7 @@ export class ViolinFilterComponent implements AfterViewInit, OnChanges {
     extremes: {min: number; max: number};
   };
   @Input() width!: number;
+  @Input() colorScale!: RunColorScale;
   @Output() onRemove = new EventEmitter();
   @Output() onUpdateFilter = new EventEmitter<MetricFilter>();
   @ViewChild('chart', {static: true, read: ElementRef})
@@ -55,7 +57,6 @@ export class ViolinFilterComponent implements AfterViewInit, OnChanges {
   private drawWidth: number = 0;
   private readonly margin = {top: 20, right: 10, bottom: 20, left: 10};
   private readonly drawMargin = {top: 0, right: 0, bottom: 20, left: 20};
-  private colorScale: (runName: string) => string = () => '#333333';
   // Drawing containers
   private svg!: d3.Selection<
     SVGElement,
@@ -153,10 +154,6 @@ export class ViolinFilterComponent implements AfterViewInit, OnChanges {
 
   ngAfterViewInit(): void {
     this.updateDimensions();
-    const runsColorScale = (document.createElement(
-      'tf-color-scale'
-    ) as TfColorScale).runsColorScale;
-    this.colorScale = runsColorScale ? runsColorScale : this.colorScale;
     this.svg = d3.select(this.chartContainer.nativeElement).select('svg');
     this.mainContainer = this.svg
       .append('g')

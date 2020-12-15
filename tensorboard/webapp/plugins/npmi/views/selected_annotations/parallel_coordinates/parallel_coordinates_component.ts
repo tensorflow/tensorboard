@@ -25,7 +25,8 @@ import {
 } from '@angular/core';
 import * as d3 from '../../../../../third_party/d3';
 import {Coordinate} from '../../../util/coordinate_data';
-import {ValueData, TfColorScale} from './../../../store/npmi_types';
+import {ValueData} from './../../../store/npmi_types';
+import {RunColorScale} from '../../../../../types/ui';
 
 @Component({
   selector: 'parallel-coordinates-component',
@@ -41,6 +42,7 @@ export class ParallelCoordinatesComponent implements AfterViewInit, OnChanges {
   };
   // Only to trigger OnChanges to re-render the component.
   @Input() sidebarWidth!: number;
+  @Input() colorScale!: RunColorScale;
   @ViewChild('chart', {static: true, read: ElementRef})
   private readonly svgElement!: ElementRef<SVGElement>;
   @HostListener('window:resize', ['$event'])
@@ -53,7 +55,6 @@ export class ParallelCoordinatesComponent implements AfterViewInit, OnChanges {
   private readonly margin = {top: 20, right: 40, bottom: 20, left: 40};
   private readonly chartHeight =
     this.height - this.margin.top - this.margin.bottom;
-  private colorScale: (runName: string) => string = () => '#333333';
   // Drawing containers
   private svg!: d3.Selection<
     SVGElement,
@@ -92,10 +93,6 @@ export class ParallelCoordinatesComponent implements AfterViewInit, OnChanges {
   private yAxis?: d3.Axis<number | {valueOf(): number}>;
 
   ngAfterViewInit(): void {
-    const runsColorScale = (document.createElement(
-      'tf-color-scale'
-    ) as TfColorScale).runsColorScale;
-    this.colorScale = runsColorScale ? runsColorScale : this.colorScale;
     this.svg = d3.select(this.svgElement.nativeElement);
     this.mainContainer = this.svg
       .append('g')

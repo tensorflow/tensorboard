@@ -29,7 +29,10 @@ import {
   getMetricFilters,
   getAnnotationData,
 } from '../../../store';
-import {getCurrentRouteRunSelection} from '../../../../../selectors';
+import {
+  getCurrentRouteRunSelection,
+  getRunColorMap,
+} from '../../../../../selectors';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
@@ -133,6 +136,11 @@ describe('Npmi Parallel Coordinates Container', () => {
       run_2: ['nPMI@test'],
       run_3: ['nPMI@test', 'nPMI@other', 'nPMI_diff@(test - other)'],
     });
+    store.overrideSelector(getRunColorMap, {
+      run_1: '#000',
+      run_2: '#AAA',
+      run_3: '#FFF',
+    });
     const fixture = TestBed.createComponent(ParallelCoordinatesContainer);
     fixture.detectChanges();
 
@@ -179,6 +187,11 @@ describe('Npmi Parallel Coordinates Container', () => {
       run_1: ['nPMI@test', 'nPMI@other'],
       run_2: ['nPMI@test'],
       run_3: ['nPMI@test', 'nPMI@other', 'nPMI_diff@(test - other)'],
+    });
+    store.overrideSelector(getRunColorMap, {
+      run_1: '#000',
+      run_2: '#AAA',
+      run_3: '#FFF',
     });
     const fixture = TestBed.createComponent(ParallelCoordinatesContainer);
     fixture.detectChanges();
@@ -229,6 +242,11 @@ describe('Npmi Parallel Coordinates Container', () => {
     });
     store.overrideSelector(getMetricFilters, {
       'nPMI_diff@(test - other)': {max: 1.0, min: -1.0, includeNaN: false},
+    });
+    store.overrideSelector(getRunColorMap, {
+      run_1: '#000',
+      run_2: '#AAA',
+      run_3: '#FFF',
     });
     const fixture = TestBed.createComponent(ParallelCoordinatesContainer);
     fixture.detectChanges();

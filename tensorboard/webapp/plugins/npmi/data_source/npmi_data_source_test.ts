@@ -35,21 +35,29 @@ describe('runs_data_source', () => {
   });
 
   describe('fetch data', () => {
+    it('does not fetch if no experiment passed', () => {
+      const returnValue = jasmine.createSpy();
+      dataSource.fetchData([]).subscribe(returnValue);
+      expect(returnValue).not.toHaveBeenCalled();
+    });
+
     it(
       'calls /annotations, /metrics, /values and /embeddings to return map ' +
         'of annotation to ValueData and map of runId to metrics',
       () => {
         const returnValue = jasmine.createSpy();
-        dataSource.fetchData().subscribe(returnValue);
-        httpMock.expectOne('data/plugin/npmi/annotations').flush({
-          run_1: ['annotation_1', 'annotation_2'],
-          run_2: ['annotation_2', 'annotation_3'],
-        });
-        httpMock.expectOne('data/plugin/npmi/metrics').flush({
+        dataSource.fetchData(['exp1']).subscribe(returnValue);
+        httpMock
+          .expectOne('/experiment/exp1/data/plugin/npmi/annotations')
+          .flush({
+            run_1: ['annotation_1', 'annotation_2'],
+            run_2: ['annotation_2', 'annotation_3'],
+          });
+        httpMock.expectOne('/experiment/exp1/data/plugin/npmi/metrics').flush({
           run_1: ['count@test', 'nPMI@test'],
           run_2: ['count@test', 'nPMI@test'],
         });
-        httpMock.expectOne('data/plugin/npmi/values').flush({
+        httpMock.expectOne('/experiment/exp1/data/plugin/npmi/values').flush({
           run_1: [
             [1000, 0.2618],
             [15298, -0.74621],
@@ -59,16 +67,18 @@ describe('runs_data_source', () => {
             [8327, -0.1572],
           ],
         });
-        httpMock.expectOne('data/plugin/npmi/embeddings').flush({
-          run_1: [
-            [0.15125, 0.2618],
-            [1.51251, -0.74621],
-          ],
-          run_2: [
-            [1.51251, -0.74621],
-            [-0.8327, -0.1572],
-          ],
-        });
+        httpMock
+          .expectOne('/experiment/exp1/data/plugin/npmi/embeddings')
+          .flush({
+            run_1: [
+              [0.15125, 0.2618],
+              [1.51251, -0.74621],
+            ],
+            run_2: [
+              [1.51251, -0.74621],
+              [-0.8327, -0.1572],
+            ],
+          });
 
         expect(returnValue).toHaveBeenCalledWith({
           annotationData: {
@@ -78,7 +88,7 @@ describe('runs_data_source', () => {
                 countValue: 1000,
                 annotation: 'annotation_1',
                 metric: 'test',
-                run: 'run_1',
+                run: 'exp1/run_1',
               },
             ],
             annotation_2: [
@@ -87,14 +97,14 @@ describe('runs_data_source', () => {
                 countValue: 15298,
                 annotation: 'annotation_2',
                 metric: 'test',
-                run: 'run_1',
+                run: 'exp1/run_1',
               },
               {
                 nPMIValue: 0.135,
                 countValue: 3598,
                 annotation: 'annotation_2',
                 metric: 'test',
-                run: 'run_2',
+                run: 'exp1/run_2',
               },
             ],
             annotation_3: [
@@ -103,13 +113,13 @@ describe('runs_data_source', () => {
                 countValue: 8327,
                 annotation: 'annotation_3',
                 metric: 'test',
-                run: 'run_2',
+                run: 'exp1/run_2',
               },
             ],
           },
           metrics: {
-            run_1: ['count@test', 'nPMI@test'],
-            run_2: ['count@test', 'nPMI@test'],
+            'exp1/run_1': ['count@test', 'nPMI@test'],
+            'exp1/run_2': ['count@test', 'nPMI@test'],
           },
           embeddingData: {
             annotation_1: [0.15125, 0.2618],
@@ -122,11 +132,15 @@ describe('runs_data_source', () => {
 
     it('does not break when responses is empty', () => {
       const returnValue = jasmine.createSpy();
-      dataSource.fetchData().subscribe(returnValue);
-      httpMock.expectOne('data/plugin/npmi/annotations').flush({});
-      httpMock.expectOne('data/plugin/npmi/metrics').flush({});
-      httpMock.expectOne('data/plugin/npmi/values').flush({});
-      httpMock.expectOne('data/plugin/npmi/embeddings').flush({});
+      dataSource.fetchData(['exp1']).subscribe(returnValue);
+      httpMock
+        .expectOne('/experiment/exp1/data/plugin/npmi/annotations')
+        .flush({});
+      httpMock.expectOne('/experiment/exp1/data/plugin/npmi/metrics').flush({});
+      httpMock.expectOne('/experiment/exp1/data/plugin/npmi/values').flush({});
+      httpMock
+        .expectOne('/experiment/exp1/data/plugin/npmi/embeddings')
+        .flush({});
 
       expect(returnValue).toHaveBeenCalledWith({
         annotationData: {},
@@ -137,9 +151,9 @@ describe('runs_data_source', () => {
 
     it('returns empty data when backend responds with 400', () => {
       const returnValue = jasmine.createSpy();
-      dataSource.fetchData().subscribe(returnValue);
+      dataSource.fetchData(['exp1']).subscribe(returnValue);
       httpMock
-        .expectOne('data/plugin/npmi/annotations')
+        .expectOne('/experiment/exp1/data/plugin/npmi/annotations')
         .error(new ErrorEvent('400 error'), {status: 400});
 
       expect(returnValue).toHaveBeenCalledWith({
@@ -152,9 +166,9 @@ describe('runs_data_source', () => {
     it('throws error when response is >= 500', () => {
       const returnValue = jasmine.createSpy();
       const errorValue = jasmine.createSpy();
-      dataSource.fetchData().subscribe(returnValue, errorValue);
+      dataSource.fetchData(['exp1']).subscribe(returnValue, errorValue);
       httpMock
-        .expectOne('data/plugin/npmi/values')
+        .expectOne('/experiment/exp1/data/plugin/npmi/values')
         .error(new ErrorEvent('501 Internal Server Error'), {status: 501});
 
       expect(returnValue).not.toHaveBeenCalled();

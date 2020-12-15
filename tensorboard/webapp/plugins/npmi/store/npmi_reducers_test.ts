@@ -489,7 +489,7 @@ describe('npmi_reducers', () => {
         ]);
         expect(nextState.sort).toEqual({
           metric: 'nPMI@test',
-          order: SortOrder.DOWN,
+          order: SortOrder.DESCENDING,
         });
       });
 
@@ -762,7 +762,7 @@ describe('npmi_reducers', () => {
         });
         const nextState = reducers(
           state,
-          actions.npmiChangeMetricFilter({
+          actions.npmiMetricFilterChanged({
             metric: 'nPMI@third',
             max: 0.5,
             min: -0.5,
@@ -810,7 +810,7 @@ describe('npmi_reducers', () => {
         });
         const nextState = reducers(
           state,
-          actions.npmiChangeMetricFilter({
+          actions.npmiMetricFilterChanged({
             metric: 'nPMI@inactive',
             max: 0.5,
             min: -0.5,
@@ -843,25 +843,65 @@ describe('npmi_reducers', () => {
       const state = createNpmiState();
       const nextState = reducers(
         state,
-        actions.npmiChangeAnnotationSort({metric: 'test'})
+        actions.npmiAnnotationSortChanged({metric: 'test'})
       );
       expect(nextState.sort).toEqual({
         metric: 'test',
-        order: SortOrder.DOWN,
+        order: SortOrder.DESCENDING,
       });
     });
 
     it('changes the sort from up to down', () => {
       const state = createNpmiState({
-        sort: {metric: 'test', order: SortOrder.DOWN},
+        sort: {metric: 'test', order: SortOrder.DESCENDING},
       });
       const nextState = reducers(
         state,
-        actions.npmiChangeAnnotationSort({metric: 'test'})
+        actions.npmiAnnotationSortChanged({metric: 'test'})
       );
       expect(nextState.sort).toEqual({
         metric: 'test',
-        order: SortOrder.UP,
+        order: SortOrder.ASCENDNG,
+      });
+    });
+
+    it('changes the similarity sort', () => {
+      const state = createNpmiState();
+      const nextState = reducers(
+        state,
+        actions.npmiSimilaritySortChanged({annotation: 'test'})
+      );
+      expect(nextState.sort).toEqual({
+        metric: 'test',
+        order: SortOrder.SIMILAR,
+      });
+    });
+
+    it('changes the sort from similar to dissimilar', () => {
+      const state = createNpmiState({
+        sort: {metric: 'test', order: SortOrder.SIMILAR},
+      });
+      const nextState = reducers(
+        state,
+        actions.npmiSimilaritySortChanged({annotation: 'test'})
+      );
+      expect(nextState.sort).toEqual({
+        metric: 'test',
+        order: SortOrder.DISSIMILAR,
+      });
+    });
+
+    it('changes the sort from dissimilar to similar', () => {
+      const state = createNpmiState({
+        sort: {metric: 'test', order: SortOrder.DISSIMILAR},
+      });
+      const nextState = reducers(
+        state,
+        actions.npmiSimilaritySortChanged({annotation: 'test'})
+      );
+      expect(nextState.sort).toEqual({
+        metric: 'test',
+        order: SortOrder.SIMILAR,
       });
     });
   });
@@ -917,13 +957,13 @@ describe('npmi_reducers', () => {
 
     it('hides the count values', () => {
       const state = createNpmiState();
-      const nextState = reducers(state, actions.npmiToggleShowCounts());
+      const nextState = reducers(state, actions.npmiShowCountsToggled());
       expect(nextState.showCounts).toBeFalse();
     });
 
     it('shows the hidden count values', () => {
       const state = createNpmiState({showCounts: false});
-      const nextState = reducers(state, actions.npmiToggleShowCounts());
+      const nextState = reducers(state, actions.npmiShowCountsToggled());
       expect(nextState.showCounts).toBeTrue();
     });
 
@@ -931,7 +971,7 @@ describe('npmi_reducers', () => {
       const state = createNpmiState();
       const nextState = reducers(
         state,
-        actions.npmiToggleShowHiddenAnnotations()
+        actions.npmiShowHiddenAnnotationsToggled()
       );
       expect(nextState.showHiddenAnnotations).toBeTrue();
     });
@@ -940,7 +980,7 @@ describe('npmi_reducers', () => {
       const state = createNpmiState({showHiddenAnnotations: true});
       const nextState = reducers(
         state,
-        actions.npmiToggleShowHiddenAnnotations()
+        actions.npmiShowHiddenAnnotationsToggled()
       );
       expect(nextState.showHiddenAnnotations).toBeFalse();
     });
@@ -949,7 +989,7 @@ describe('npmi_reducers', () => {
       const state = createNpmiState();
       const nextState = reducers(
         state,
-        actions.npmiChangeSidebarWidth({sidebarWidth: 500})
+        actions.npmiSidebarWidthChanged({sidebarWidth: 500})
       );
       expect(nextState.sidebarWidth).toBe(500);
     });

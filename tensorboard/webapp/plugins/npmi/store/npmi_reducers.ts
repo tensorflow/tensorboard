@@ -47,7 +47,7 @@ const initialState: NpmiState = {
   metricFilters: {},
   sort: {
     metric: '',
-    order: SortOrder.DOWN,
+    order: SortOrder.DESCENDING,
   },
   pcExpanded: true,
   annotationsExpanded: true,
@@ -234,7 +234,7 @@ const reducer = createReducer(
         },
         sort: {
           metric,
-          order: SortOrder.DOWN,
+          order: SortOrder.DESCENDING,
         },
       };
     }
@@ -273,7 +273,7 @@ const reducer = createReducer(
     }
   ),
   on(
-    actions.npmiChangeMetricFilter,
+    actions.npmiMetricFilterChanged,
     (state: NpmiState, {metric, max, min, includeNaN}): NpmiState => {
       if (!state.metricFilters[metric]) {
         return state;
@@ -292,14 +292,36 @@ const reducer = createReducer(
     }
   ),
   on(
-    actions.npmiChangeAnnotationSort,
+    actions.npmiAnnotationSortChanged,
     (state: NpmiState, {metric}): NpmiState => {
       const newSort = {
         metric: metric,
-        order: SortOrder.DOWN,
+        order: SortOrder.DESCENDING,
       };
-      if (state.sort.metric === metric && state.sort.order === SortOrder.DOWN) {
-        newSort.order = SortOrder.UP;
+      if (
+        state.sort.metric === metric &&
+        state.sort.order === SortOrder.DESCENDING
+      ) {
+        newSort.order = SortOrder.ASCENDNG;
+      }
+      return {
+        ...state,
+        sort: newSort,
+      };
+    }
+  ),
+  on(
+    actions.npmiSimilaritySortChanged,
+    (state: NpmiState, {annotation}): NpmiState => {
+      const newSort = {
+        metric: annotation,
+        order: SortOrder.SIMILAR,
+      };
+      if (
+        state.sort.metric === annotation &&
+        state.sort.order === SortOrder.SIMILAR
+      ) {
+        newSort.order = SortOrder.DISSIMILAR;
       }
       return {
         ...state,
@@ -336,7 +358,7 @@ const reducer = createReducer(
   ),
 
   on(
-    actions.npmiToggleShowCounts,
+    actions.npmiShowCountsToggled,
     (state: NpmiState): NpmiState => {
       return {
         ...state,
@@ -345,7 +367,7 @@ const reducer = createReducer(
     }
   ),
   on(
-    actions.npmiToggleShowHiddenAnnotations,
+    actions.npmiShowHiddenAnnotationsToggled,
     (state: NpmiState): NpmiState => {
       return {
         ...state,
@@ -354,7 +376,7 @@ const reducer = createReducer(
     }
   ),
   on(
-    actions.npmiChangeSidebarWidth,
+    actions.npmiSidebarWidthChanged,
     (state: NpmiState, {sidebarWidth}): NpmiState => {
       return {
         ...state,

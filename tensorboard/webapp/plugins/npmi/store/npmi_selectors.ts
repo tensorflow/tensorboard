@@ -16,13 +16,14 @@ import {createSelector, createFeatureSelector} from '@ngrx/store';
 import {
   NPMI_FEATURE_KEY,
   NpmiState,
-  LoadState,
+  DataLoadState,
   AnnotationDataListing,
   MetricListing,
   State,
   ArithmeticElement,
   MetricFilterListing,
   AnnotationSort,
+  EmbeddingListing,
 } from './npmi_types';
 
 // HACK: These imports are for type inference.
@@ -36,8 +37,8 @@ const selectNpmiState = createFeatureSelector<State, NpmiState>(
 
 export const getPluginDataLoaded = createSelector(
   selectNpmiState,
-  (state: NpmiState): LoadState => {
-    return state.pluginDataLoaded;
+  (state: NpmiState): DataLoadState => {
+    return state.pluginDataLoaded.state;
   }
 );
 
@@ -52,6 +53,13 @@ export const getRunToMetrics = createSelector(
   selectNpmiState,
   (state: NpmiState): MetricListing => {
     return state.runToMetrics;
+  }
+);
+
+export const getEmbeddingData = createSelector(
+  selectNpmiState,
+  (state: NpmiState): EmbeddingListing => {
+    return state.embeddingData;
   }
 );
 

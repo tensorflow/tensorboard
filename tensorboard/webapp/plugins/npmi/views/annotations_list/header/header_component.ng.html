@@ -32,9 +32,9 @@ limitations under the License.
       >
         {{stripMetric(metric)}}
         <mat-icon
-          [svgIcon]="sort.order === SortOrder.DOWN ? 'arrow_downward_24px' : 'arrow_upward_24px'"
+          [svgIcon]="sort.order === SortOrder.DESCENDING ? 'arrow_downward_24px' : 'arrow_upward_24px'"
           *ngIf="metric === sort.metric"
-          [ngClass]="sort.order === SortOrder.DOWN ? 'down-icon' : 'up-icon'"
+          [ngClass]="sort.order === SortOrder.DESCENDING ? 'down-icon' : 'up-icon'"
           class="sort-icon"
         ></mat-icon>
       </div>

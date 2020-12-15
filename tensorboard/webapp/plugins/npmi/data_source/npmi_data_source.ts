@@ -32,11 +32,65 @@ import {
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
 export abstract class NpmiDataSource {
-  abstract fetchData(): Observable<{
+  abstract fetchData(
+    experimentIds: string[]
+  ): Observable<{
     annotationData: AnnotationDataListing;
     metrics: MetricListing;
     embeddingData: EmbeddingListing;
   }>;
+}
+
+function runToRunId(run: string, experimentId: string) {
+  return `${experimentId}/${run}`;
+}
+
+function buildAnnotationData(
+  backendAnnotations: AnnotationListing,
+  experimentId: string
+): AnnotationListing {
+  return Object.fromEntries(
+    Object.entries(backendAnnotations).map(([key, value]) => [
+      runToRunId(key, experimentId),
+      value,
+    ])
+  );
+}
+
+function buildMetricData(
+  backendMetrics: MetricListing,
+  experimentId: string
+): MetricListing {
+  return Object.fromEntries(
+    Object.entries(backendMetrics).map(([key, value]) => [
+      runToRunId(key, experimentId),
+      value,
+    ])
+  );
+}
+
+function buildValueData(
+  backendValues: ValueListing,
+  experimentId: string
+): ValueListing {
+  return Object.fromEntries(
+    Object.entries(backendValues).map(([key, value]) => [
+      runToRunId(key, experimentId),
+      value,
+    ])
+  );
+}
+
+function buildEmbeddingData(
+  backendEmbeddings: RunEmbeddingListing,
+  experimentId: string
+): RunEmbeddingListing {
+  return Object.fromEntries(
+    Object.entries(backendEmbeddings).map(([key, value]) => [
+      runToRunId(key, experimentId),
+      value,
+    ])
+  );
 }
 
 interface AnnotationListing {
@@ -57,12 +111,12 @@ export class NpmiHttpServerDataSource implements NpmiDataSource {
 
   constructor(private readonly http: TBHttpClient) {}
 
-  fetchData() {
+  fetchData(experimentIds: string[]) {
     return forkJoin(
-      this.fetchAnnotations(),
-      this.fetchMetrics(),
-      this.fetchValues(),
-      this.fetchEmbeddings()
+      this.fetchAnnotations(experimentIds),
+      this.fetchMetrics(experimentIds),
+      this.fetchValues(experimentIds),
+      this.fetchEmbeddings(experimentIds)
     ).pipe(
       map(([annotations, metrics, values, embeddings]) => {
         const annotationData: AnnotationDataListing = {};
@@ -124,23 +178,83 @@ export class NpmiHttpServerDataSource implements NpmiDataSource {
     );
   }
 
-  private fetchAnnotations() {
-    return this.http.get<AnnotationListing>(
-      this.httpPathPrefix + '/annotations'
+  private fetchAnnotations(experimentIds: string[]) {
+    const fetches = experimentIds.map((experimentId) => {
+      const url = `/experiment/${experimentId}/${this.httpPathPrefix}/annotations`;
+      return this.http.get<AnnotationListing>(url).pipe(
+        map((annotations) => {
+          return buildAnnotationData(annotations, experimentId);
+        })
+      );
+    });
+    return forkJoin(fetches).pipe(
+      map((results) => {
+        let annotationData: AnnotationListing = {};
+        for (const result of results) {
+          annotationData = {...annotationData, ...result};
+        }
+        return annotationData;
+      })
     );
   }
 
-  private fetchMetrics() {
-    return this.http.get<MetricListing>(this.httpPathPrefix + '/metrics');
+  private fetchMetrics(experimentIds: string[]) {
+    const fetches = experimentIds.map((experimentId) => {
+      const url = `/experiment/${experimentId}/${this.httpPathPrefix}/metrics`;
+      return this.http.get<MetricListing>(url).pipe(
+        map((metrics) => {
+          return buildMetricData(metrics, experimentId);
+        })
+      );
+    });
+    return forkJoin(fetches).pipe(
+      map((results) => {
+        let metricData: MetricListing = {};
+        for (const result of results) {
+          metricData = {...metricData, ...result};
+        }
+        return metricData;
+      })
+    );
   }
 
-  private fetchValues() {
-    return this.http.get<ValueListing>(this.httpPathPrefix + '/values');
+  private fetchValues(experimentIds: string[]) {
+    const fetches = experimentIds.map((experimentId) => {
+      const url = `/experiment/${experimentId}/${this.httpPathPrefix}/values`;
+      return this.http.get<ValueListing>(url).pipe(
+        map((values) => {
+          return buildValueData(values, experimentId);
+        })
+      );
+    });
+    return forkJoin(fetches).pipe(
+      map((results) => {
+        let valueData: ValueListing = {};
+        for (const result of results) {
+          valueData = {...valueData, ...result};
+        }
+        return valueData;
+      })
+    );
   }
 
-  private fetchEmbeddings() {
-    return this.http.get<RunEmbeddingListing>(
-      this.httpPathPrefix + '/embeddings'
+  private fetchEmbeddings(experimentIds: string[]) {
+    const fetches = experimentIds.map((experimentId) => {
+      const url = `/experiment/${experimentId}/${this.httpPathPrefix}/embeddings`;
+      return this.http.get<RunEmbeddingListing>(url).pipe(
+        map((embeddings) => {
+          return buildEmbeddingData(embeddings, experimentId);
+        })
+      );
+    });
+    return forkJoin(fetches).pipe(
+      map((results) => {
+        let embeddingData: RunEmbeddingListing = {};
+        for (const result of results) {
+          embeddingData = {...embeddingData, ...result};
+        }
+        return embeddingData;
+      })
     );
   }
 }

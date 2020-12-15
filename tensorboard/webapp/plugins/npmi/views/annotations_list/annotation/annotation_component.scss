@@ -52,6 +52,10 @@ limitations under the License.
   transform: scale(0.6);
 }
 
+.annotation-icon {
+  transform: scale(0.6);
+}
+
 .chart-div {
   border-bottom: 1px solid mat-color($tb-foreground, border);
 }
@@ -71,4 +75,12 @@ limitations under the License.
 
 .hidden-text {
   fill: mat-color($tb-foreground, disabled-text);
+}
+
+.clickable-annotation {
+  cursor: pointer;
+}
+
+button {
+  all: unset;
 }

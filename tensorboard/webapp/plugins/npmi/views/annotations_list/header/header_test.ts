@@ -115,7 +115,7 @@ describe('Npmi Annotations List Header Container', () => {
   it('renders down arrow when sort active and down', () => {
     store.overrideSelector(getAnnotationSort, {
       metric: 'nPMI@test',
-      order: SortOrder.DOWN,
+      order: SortOrder.DESCENDING,
     });
     fixture = TestBed.createComponent(HeaderContainer);
     fixture.componentInstance.activeMetrics = [
@@ -134,7 +134,7 @@ describe('Npmi Annotations List Header Container', () => {
   it('renders sort up arrow when sort active and up', () => {
     store.overrideSelector(getAnnotationSort, {
       metric: 'nPMI@test',
-      order: SortOrder.UP,
+      order: SortOrder.ASCENDNG,
     });
     fixture = TestBed.createComponent(HeaderContainer);
     fixture.componentInstance.activeMetrics = [
@@ -161,12 +161,12 @@ describe('Npmi Annotations List Header Container', () => {
     ]);
   });
 
-  it('dispatches npmiChangeannotationSort action when metric is clicked', () => {
+  it('dispatches npmiAnnotationSortChanged action when metric is clicked', () => {
     const headerMetric = fixture.debugElement.query(css.HEADER);
     headerMetric.nativeElement.click();
     fixture.detectChanges();
     expect(dispatchedActions).toEqual([
-      npmiActions.npmiChangeAnnotationSort({
+      npmiActions.npmiAnnotationSortChanged({
         metric: 'nPMI@test',
       }),
     ]);

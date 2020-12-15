@@ -15,23 +15,60 @@ limitations under the License.
 import {
   AnnotationDataListing,
   AnnotationSort,
+  EmbeddingListing,
   SortOrder,
 } from '../store/npmi_types';
 import {stripMetricString} from './metric_type';
 
 export function sortAnnotations(
   annotationData: AnnotationDataListing,
-  sort: AnnotationSort
+  sort: AnnotationSort,
+  embeddingData: EmbeddingListing
 ): string[] {
-  let result = Object.keys(annotationData);
-  const strippedMetric = stripMetricString(sort.metric);
-  if (sort.metric === '') {
+  const result = Object.keys(annotationData);
+  const similarityBased =
+    sort.order === SortOrder.DISSIMILAR || sort.order === SortOrder.SIMILAR;
+  if (
+    sort.metric === '' ||
+    (embeddingData[sort.metric] === undefined && similarityBased)
+  ) {
     return result;
   }
-  if (sort.order === SortOrder.DOWN) {
-    const maxData: {[annotation: string]: number} = {};
-    for (const annotation of result) {
-      maxData[annotation] = Math.max(
+  const distanceData: {[annotation: string]: number} = similarityBased
+    ? calculateDistances(result, embeddingData, sort)
+    : extractExtremeData(result, annotationData, sort);
+  return sortData(
+    result,
+    distanceData,
+    sort.order === SortOrder.ASCENDNG || sort.order === SortOrder.SIMILAR
+  );
+}
+
+function sortData(
+  keys: string[],
+  values: {[annotation: string]: number},
+  ascending: boolean
+) {
+  if (ascending) {
+    return keys.sort((a, b) => {
+      return values[a] - values[b];
+    });
+  }
+  return keys.sort((a, b) => {
+    return values[b] - values[a];
+  });
+}
+
+function extractExtremeData(
+  keys: string[],
+  annotationData: AnnotationDataListing,
+  sort: AnnotationSort
+) {
+  const strippedMetric = stripMetricString(sort.metric);
+  const extremeData: {[annotation: string]: number} = {};
+  if (sort.order === SortOrder.DESCENDING) {
+    for (const annotation of keys) {
+      extremeData[annotation] = Math.max(
         ...annotationData[annotation]
           .filter((annotation) => annotation.metric === strippedMetric)
           .map((filtered) =>
@@ -39,13 +76,9 @@ export function sortAnnotations(
           )
       );
     }
-    result = result.sort((a, b) => {
-      return maxData[b] - maxData[a];
-    });
-  } else if (sort.order === SortOrder.UP) {
-    const minData: {[annotation: string]: number} = {};
-    for (const annotation of result) {
-      minData[annotation] = Math.min(
+  } else {
+    for (const annotation of keys) {
+      extremeData[annotation] = Math.min(
         ...annotationData[annotation]
           .filter((annotation) => annotation.metric === strippedMetric)
           .map((filtered) =>
@@ -53,9 +86,45 @@ export function sortAnnotations(
           )
       );
     }
-    result = result.sort((a, b) => {
-      return minData[a] - minData[b];
-    });
   }
-  return result;
+  return extremeData;
+}
+
+function calculateDistances(
+  keys: string[],
+  embeddingData: EmbeddingListing,
+  sort: AnnotationSort
+) {
+  const distances: {[annotation: string]: number} = {};
+  let sameDistance = Number.POSITIVE_INFINITY;
+  let extremeDistance = Number.NEGATIVE_INFINITY;
+  if (sort.order === SortOrder.SIMILAR) {
+    sameDistance = Number.NEGATIVE_INFINITY;
+    extremeDistance = Number.POSITIVE_INFINITY;
+  }
+  for (const annotation of keys) {
+    if (annotation === sort.metric) {
+      distances[annotation] = sameDistance;
+    } else {
+      distances[annotation] = embeddingData[annotation]
+        ? calculateEmbeddingSimilarity(
+            embeddingData[sort.metric],
+            embeddingData[annotation],
+            extremeDistance
+          )
+        : extremeDistance;
+    }
+  }
+  return distances;
+}
+
+function calculateEmbeddingSimilarity(
+  reference: number[],
+  toEmbedding: number[],
+  faultCase: number
+): number {
+  if (reference.length != toEmbedding.length) return faultCase;
+  const subtracted = toEmbedding.map((value, key) => value - reference[key]);
+  const powered = subtracted.map((e) => Math.pow(e, 2));
+  return powered.reduce((total, current) => total + current, 0);
 }
