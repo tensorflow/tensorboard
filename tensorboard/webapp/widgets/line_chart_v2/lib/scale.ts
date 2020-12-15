@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {scaleLinear, scaleLog, scaleTime} from '../../../third_party/d3';
-import {numberFormatter, relativeTimeFormatter} from './formatter';
+import {numberFormatter, wallTimeFormatter} from './formatter';
 import {Scale, ScaleType} from './scale_types';
 
 export {ScaleType} from './scale_types';
@@ -218,5 +218,5 @@ export class TemporalScale implements Scale {
     return Number.isFinite(x);
   }
 
-  defaultFormatter = relativeTimeFormatter;
+  defaultFormatter = wallTimeFormatter;
 }
