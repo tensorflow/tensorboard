@@ -22,6 +22,7 @@ export function buildFeatureFlag(
     enabledExperimentalPlugins: [],
     inColab: false,
     enableGpuChart: false,
+    scalarsBatchSize: undefined,
     ...override,
   };
 }

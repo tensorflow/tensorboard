@@ -23,6 +23,7 @@ export const initialState: FeatureFlagState = {
     enabledExperimentalPlugins: [],
     inColab: false,
     enableGpuChart: false,
+    scalarsBatchSize: undefined,
   },
 };
 

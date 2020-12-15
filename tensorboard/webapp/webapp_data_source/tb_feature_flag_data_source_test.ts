@@ -89,16 +89,29 @@ describe('tb_feature_flag_data_source', () => {
         expect(dataSource.getFeatures()).toEqual({enableGpuChart: false});
       });
 
+      it('returns scalarsBatchSize from the query params', () => {
+        spyOn(TEST_ONLY.util, 'getParams').and.returnValue(
+          new URLSearchParams('scalarsBatchSize=12')
+        );
+        expect(dataSource.getFeatures()).toEqual({
+          scalarsBatchSize: 12,
+        });
+      });
+
       it('returns all flag values when they are all set', () => {
         spyOn(TEST_ONLY.util, 'getParams').and.returnValue(
           new URLSearchParams(
-            'experimentalPlugin=a&tensorboardColab&fastChart=true'
+            'experimentalPlugin=a' +
+              '&tensorboardColab' +
+              '&fastChart=true' +
+              '&scalarsBatchSize=16'
           )
         );
         expect(dataSource.getFeatures()).toEqual({
           enabledExperimentalPlugins: ['a'],
           inColab: false,
           enableGpuChart: true,
+          scalarsBatchSize: 16,
         });
       });
     });

@@ -31,6 +31,8 @@ import {
   TemplateRef,
 } from '@angular/core';
 
+import {FeatureFlags} from '../feature_flag/types';
+
 import {UiPluginMetadata} from './plugins_container';
 import {
   LoadingMechanismType,
@@ -121,6 +123,17 @@ export class PluginsComponent implements OnChanges {
   dataLocation!: string;
 
   @Input()
+  isFeatureFlagsLoaded!: boolean;
+
+  /**
+   * Feature flags to pass to underlying plugins. Currently only passed to
+   * plugins of type CUSTOM_ELEMENT. The feature flags are set directly on
+   * the element as the featureFlags property.
+   */
+  @Input()
+  featureFlags!: FeatureFlags;
+
+  @Input()
   lastUpdated?: number;
 
   @Input()
@@ -135,13 +148,21 @@ export class PluginsComponent implements OnChanges {
   private readonly pluginInstances = new Map<string, HTMLElement>();
 
   ngOnChanges(change: SimpleChanges): void {
+    // TODO: Handle case where this.activeKnownPlugin goes from truthy to falsy.
+    //       It might happen when users are navigating between experiments and
+    //       the new experiment does not have data for the active dashboard?
+
+    if (!this.isFeatureFlagsLoaded || !this.activeKnownPlugin) {
+      return;
+    }
+
     const shouldCreatePlugin = Boolean(
       this.activeKnownPlugin &&
         !this.pluginInstances.has(this.activeKnownPlugin.id)
     );
 
-    if (change['activeKnownPlugin'] && this.activeKnownPlugin) {
-      const prevActiveKnownPlugin = change['activeKnownPlugin'].previousValue;
+    if (change['activeKnownPlugin'] || change['isFeatureFlagsLoaded']) {
+      const prevActiveKnownPlugin = change['activeKnownPlugin']?.previousValue;
       if (
         prevActiveKnownPlugin &&
         prevActiveKnownPlugin.id !== this.activeKnownPlugin.id
@@ -157,10 +178,7 @@ export class PluginsComponent implements OnChanges {
         this.showPlugin(this.activeKnownPlugin);
       }
     }
-    if (
-      this.activeKnownPlugin &&
-      (shouldCreatePlugin || change['lastUpdated'])
-    ) {
+    if (shouldCreatePlugin || change['lastUpdated']) {
       this.reload(this.activeKnownPlugin, shouldCreatePlugin);
     }
   }
@@ -207,6 +225,7 @@ export class PluginsComponent implements OnChanges {
           customElementPlugin.element_name
         );
         (pluginElement as any).reloadOnReady = false;
+        (pluginElement as any).featureFlags = this.featureFlags;
         this.pluginsContainer.nativeElement.appendChild(pluginElement);
         break;
       }

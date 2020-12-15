@@ -41,6 +41,9 @@ import {
 } from '../core/store/core_selectors';
 import {PluginsListFailureCode} from '../core/types';
 import {TestingDebuggerModule} from '../../plugins/debugger_v2/tf_debugger_v2_plugin/testing';
+import {buildFeatureFlag} from '../feature_flag/testing';
+import {getFeatureFlags} from '../feature_flag/store/feature_flag_selectors';
+import {getIsFeatureFlagsLoaded} from '../feature_flag/store/feature_flag_selectors';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
@@ -154,6 +157,8 @@ describe('plugins_component', () => {
       data_location: 'foobar',
       window_title: 'Tests!',
     });
+    store.overrideSelector(getIsFeatureFlagsLoaded, true);
+    store.overrideSelector(getFeatureFlags, buildFeatureFlag());
 
     createElementSpy = spyOn(document, 'createElement').and.callThrough();
     createElementSpy
@@ -178,6 +183,24 @@ describe('plugins_component', () => {
       fixture.detectChanges();
       const el = fixture.debugElement.query(By.css('.plugins'));
       expect(el.nativeElement.childElementCount).toBe(0);
+    });
+
+    it('creates no plugin when feature flags are not loaded', async () => {
+      store.overrideSelector(getIsFeatureFlagsLoaded, false);
+      store.overrideSelector(getActivePlugin, 'foo');
+
+      const fixture = TestBed.createComponent(PluginsContainer);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      const plugins1 = fixture.debugElement.query(By.css('.plugins'));
+      expect(plugins1.nativeElement.childElementCount).toBe(0);
+
+      store.overrideSelector(getIsFeatureFlagsLoaded, true);
+      store.refreshState();
+      fixture.detectChanges();
+      await fixture.whenStable();
+      const plugins2 = fixture.debugElement.query(By.css('.plugins'));
+      expect(plugins2.nativeElement.childElementCount).toBe(1);
     });
 
     it('creates an element for CUSTOM_ELEMENT type of plugin', async () => {
@@ -306,6 +329,23 @@ describe('plugins_component', () => {
       expect(
         barElement.shadowRoot.firstElementChild.clientWidth
       ).toBeGreaterThan(0);
+    });
+
+    it('assigns feature flags to CUSTOM_ELEMENT plugins', async () => {
+      store.overrideSelector(
+        getFeatureFlags,
+        buildFeatureFlag({inColab: true})
+      );
+      setActivePlugin('bar');
+
+      const fixture = TestBed.createComponent(PluginsContainer);
+      fixture.detectChanges();
+
+      const pluginElement = fixture.debugElement.query(By.css('.plugins'))
+        .children[0].nativeNode;
+      expect((pluginElement as any).featureFlags).toEqual(
+        buildFeatureFlag({inColab: true})
+      );
     });
   });
 

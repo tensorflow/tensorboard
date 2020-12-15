@@ -20,4 +20,10 @@ export interface FeatureFlags {
   inColab: boolean;
   // Whether to enable our experimental GPU line chart.
   enableGpuChart: boolean;
+  // Maximum number of runs to include in a request to get scalar data.
+  // `undefined` indicates that we should rely on defaults defined in the
+  // dashboards code.
+  //
+  // See: https://github.com/tensorflow/tensorboard/blob/master/tensorboard/plugins/scalar/tf_scalar_dashboard/tf-scalar-card.ts
+  scalarsBatchSize: number | undefined;
 }

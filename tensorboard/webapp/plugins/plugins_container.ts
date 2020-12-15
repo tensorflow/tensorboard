@@ -31,7 +31,11 @@ import {
 import {PluginsListFailureCode} from '../core/types';
 import {PluginMetadata} from '../types/api';
 import {LoadState, DataLoadState} from '../types/data';
-import {State} from '../core/store/core_types';
+import {State} from '../app_state';
+import {
+  getFeatureFlags,
+  getIsFeatureFlagsLoaded,
+} from '../feature_flag/store/feature_flag_selectors';
 
 import {PluginLoadState} from './plugins_component';
 
@@ -66,6 +70,8 @@ const lastLoadedTimeInMs = createSelector(
       [dataLocation]="dataLocation$ | async"
       [lastUpdated]="lastLoadedTimeInMs$ | async"
       [pluginLoadState]="pluginLoadState$ | async"
+      [isFeatureFlagsLoaded]="isFeatureFlagsLoaded$ | async"
+      [featureFlags]="featureFlags$ | async"
       [environmentFailureNotFoundTemplate]="environmentFailureNotFoundTemplate"
       [environmentFailureUnknownTemplate]="environmentFailureUnknownTemplate"
     ></plugins-component>
@@ -125,6 +131,8 @@ export class PluginsContainer {
       return env.data_location;
     })
   );
+  readonly isFeatureFlagsLoaded$ = this.store.select(getIsFeatureFlagsLoaded);
+  readonly featureFlags$ = this.store.select(getFeatureFlags);
 
   constructor(private readonly store: Store<State>) {}
 }
