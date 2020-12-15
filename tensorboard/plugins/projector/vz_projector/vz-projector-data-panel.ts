@@ -14,8 +14,8 @@ limitations under the License.
 ==============================================================================*/
 import {PolymerElement} from '@polymer/polymer';
 import {customElement, property, observe} from '@polymer/decorators';
-import * as d3 from 'd3';
 
+import * as d3 from '../../../webapp/third_party/d3';
 import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
 import '../../../components/polymer/irons_and_papers';
 
