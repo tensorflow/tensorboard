@@ -14,6 +14,7 @@ limitations under the License.
 ==============================================================================*/
 
 export * from './chart_types';
+export {Formatter} from './formatter';
 export {
   DataSeries,
   DataSeriesMetadata,
