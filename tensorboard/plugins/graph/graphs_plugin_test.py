@@ -308,28 +308,7 @@ class GraphsPluginV1Test(GraphsPluginBaseTest, tf.test.TestCase):
             # If it parses, we're happy.
 
     @with_runs([_RUN_WITH_GRAPH_WITHOUT_METADATA])
-    def test_is_active_with_graph_without_run_metadata(self, plugin):
-        if plugin._data_provider:
-            self.assertFalse(plugin.is_active())
-        else:
-            self.assertTrue(plugin.is_active())
-
-    @with_runs([_RUN_WITHOUT_GRAPH_WITH_METADATA])
-    def test_is_active_without_graph_with_run_metadata(self, plugin):
-        if plugin._data_provider:
-            self.assertFalse(plugin.is_active())
-        else:
-            self.assertTrue(plugin.is_active())
-
-    @with_runs([_RUN_WITH_GRAPH_WITH_METADATA])
-    def test_is_active_with_both(self, plugin):
-        if plugin._data_provider:
-            self.assertFalse(plugin.is_active())
-        else:
-            self.assertTrue(plugin.is_active())
-
-    @with_runs([_RUN_WITHOUT_GRAPH_WITHOUT_METADATA])
-    def test_is_inactive_without_both(self, plugin):
+    def test_is_active(self, plugin):
         self.assertFalse(plugin.is_active())
 
 

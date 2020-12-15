@@ -682,10 +682,15 @@ class RealisticEventAccumulatorTest(EventAccumulatorTest):
         self.assertTagsEqual(
             acc.Tags(),
             {
-                ea.TENSORS: [graph_metadata.RUN_GRAPH_NAME, "id", "sq"],
+                ea.TENSORS: [
+                    graph_metadata.RUN_GRAPH_NAME,
+                    "id",
+                    "sq",
+                    "test run",
+                ],
                 ea.GRAPH: True,
                 ea.META_GRAPH: True,
-                ea.RUN_METADATA: ["test run"],
+                ea.RUN_METADATA: [],
             },
         )
         id_events = acc.Tensors("id")

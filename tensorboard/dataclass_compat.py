@@ -54,9 +54,12 @@ def migrate_event(event, initial_metadata):
     Returns:
       A sequence of `event_pb2.Event`s to use instead of `event`.
     """
-    if event.HasField("graph_def"):
+    what = event.WhichOneof("what")
+    if what == "graph_def":
         return _migrate_graph_event(event)
-    if event.HasField("summary"):
+    if what == "tagged_run_metadata":
+        return _migrate_tagged_run_metadata_event(event)
+    if what == "summary":
         return _migrate_summary_event(event, initial_metadata)
     return (event,)
 
@@ -69,11 +72,26 @@ def _migrate_graph_event(old_event):
     graph_bytes = old_event.graph_def
     value.tensor.CopyFrom(tensor_util.make_tensor_proto([graph_bytes]))
     value.metadata.plugin_data.plugin_name = graphs_metadata.PLUGIN_NAME
-    # `value.metadata.plugin_data.content` left as the empty proto
+    # `value.metadata.plugin_data.content` left empty
     value.metadata.data_class = summary_pb2.DATA_CLASS_BLOB_SEQUENCE
-    # In the short term, keep both the old event and the new event to
-    # maintain compatibility.
+    # As long as the graphs plugin still reads the old format, keep both
+    # the old event and the new event to maintain compatibility.
     return (old_event, result)
+
+
+def _migrate_tagged_run_metadata_event(old_event):
+    result = event_pb2.Event()
+    result.wall_time = old_event.wall_time
+    result.step = old_event.step
+    trm = old_event.tagged_run_metadata
+    value = result.summary.value.add(tag=trm.tag)
+    value.tensor.CopyFrom(tensor_util.make_tensor_proto([trm.run_metadata]))
+    value.metadata.plugin_data.plugin_name = (
+        graphs_metadata.PLUGIN_NAME_TAGGED_RUN_METADATA
+    )
+    # `value.metadata.plugin_data.content` left empty
+    value.metadata.data_class = summary_pb2.DATA_CLASS_BLOB_SEQUENCE
+    return (result,)
 
 
 def _migrate_summary_event(event, initial_metadata):

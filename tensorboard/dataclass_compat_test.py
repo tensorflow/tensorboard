@@ -345,6 +345,31 @@ class MigrateEventTest(tf.test.TestCase):
 
         self.assertProtoEquals(graph_def, new_graph_def)
 
+    def test_run_metadata(self):
+        old_event = event_pb2.Event()
+        old_event.step = 123
+        old_event.wall_time = 456.75
+        rm = tf.compat.v1.RunMetadata()
+        rm.step_stats.dev_stats.add(device="CPU:0")
+        rm.step_stats.dev_stats.add(device="CPU:1")
+        old_event.tagged_run_metadata.tag = "step0"
+        old_event.tagged_run_metadata.run_metadata = rm.SerializeToString()
+
+        new_events = self._migrate_event(old_event)
+        self.assertLen(new_events, 1)
+        self.assertLen(new_events[0].summary.value, 1)
+        value = new_events[0].summary.value[0]
+        tensor = tensor_util.make_ndarray(value.tensor)
+        self.assertEqual(tensor.shape, (1,))
+        self.assertEqual(tensor.item(), rm.SerializeToString())
+        self.assertEqual(
+            value.metadata.data_class, summary_pb2.DATA_CLASS_BLOB_SEQUENCE
+        )
+        self.assertEqual(
+            value.metadata.plugin_data.plugin_name,
+            graphs_metadata.PLUGIN_NAME_TAGGED_RUN_METADATA,
+        )
+
 
 if __name__ == "__main__":
     tf.test.main()
