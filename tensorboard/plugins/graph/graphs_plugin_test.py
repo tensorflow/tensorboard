@@ -19,10 +19,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import argparse
 import collections.abc
 import math
-import functools
 import os.path
 
 import tensorflow as tf
@@ -63,38 +61,6 @@ _RUN_WITHOUT_GRAPH_WITHOUT_METADATA = (
 )
 
 
-def with_runs(run_specs):
-    """Run a test with a `data_provider`.
-
-    The decorated function will receive an initialized `GraphsPlugin`
-    object as its first positional argument.
-
-    The receiver argument of the decorated function must be a `TestCase` instance
-    that also provides `load_runs`.`
-    """
-
-    def decorator(fn):
-        @functools.wraps(fn)
-        def wrapper(self, *args, **kwargs):
-            (logdir, multiplexer) = self.load_runs(run_specs)
-            with self.subTest("generic data provider"):
-                flags = argparse.Namespace(generic_data="true")
-                provider = data_provider.MultiplexerDataProvider(
-                    multiplexer, logdir
-                )
-                ctx = base_plugin.TBContext(
-                    flags=flags,
-                    logdir=logdir,
-                    multiplexer=multiplexer,
-                    data_provider=provider,
-                )
-                fn(self, graphs_plugin.GraphsPlugin(ctx), *args, **kwargs)
-
-        return wrapper
-
-    return decorator
-
-
 class GraphsPluginBaseTest(object):
 
     _METADATA_TAG = "secret-stats"
@@ -113,23 +79,26 @@ class GraphsPluginBaseTest(object):
         """Create a run."""
         raise NotImplementedError("Please implement generate_run")
 
-    def load_runs(self, run_specs):
+    def load_plugin(self, run_specs):
         logdir = self.get_temp_dir()
         for run_spec in run_specs:
             self.generate_run(logdir, *run_spec)
-        return self.bootstrap_plugin(logdir)
-
-    def bootstrap_plugin(self, logdir):
         multiplexer = event_multiplexer.EventMultiplexer()
         multiplexer.AddRunsFromDirectory(logdir)
         multiplexer.Reload()
-        return (logdir, multiplexer)
+        provider = data_provider.MultiplexerDataProvider(multiplexer, logdir)
+        ctx = base_plugin.TBContext(
+            logdir=logdir,
+            multiplexer=multiplexer,
+            data_provider=provider,
+        )
+        return graphs_plugin.GraphsPlugin(ctx)
 
-    @with_runs(
-        [_RUN_WITH_GRAPH_WITH_METADATA, _RUN_WITHOUT_GRAPH_WITH_METADATA]
-    )
-    def testRoutesProvided(self, plugin):
+    def testRoutesProvided(self):
         """Tests that the plugin offers the correct routes."""
+        plugin = self.load_plugin(
+            [_RUN_WITH_GRAPH_WITH_METADATA, _RUN_WITHOUT_GRAPH_WITH_METADATA]
+        )
         routes = plugin.get_plugin_apps()
         self.assertIsInstance(routes["/graph"], collections.abc.Callable)
         self.assertIsInstance(routes["/run_metadata"], collections.abc.Callable)
@@ -191,15 +160,15 @@ class GraphsPluginV1Test(GraphsPluginBaseTest, tf.test.TestCase):
         self.assertEqual(mime_type, "text/x-protobuf")
         return text_format.Parse(graph_pbtxt, tf.compat.v1.GraphDef())
 
-    @with_runs(
-        [
-            _RUN_WITH_GRAPH_WITH_METADATA,
-            _RUN_WITH_GRAPH_WITHOUT_METADATA,
-            _RUN_WITHOUT_GRAPH_WITH_METADATA,
-            _RUN_WITHOUT_GRAPH_WITHOUT_METADATA,
-        ]
-    )
-    def test_info(self, plugin):
+    def test_info(self):
+        plugin = self.load_plugin(
+            [
+                _RUN_WITH_GRAPH_WITH_METADATA,
+                _RUN_WITH_GRAPH_WITHOUT_METADATA,
+                _RUN_WITHOUT_GRAPH_WITH_METADATA,
+                _RUN_WITHOUT_GRAPH_WITHOUT_METADATA,
+            ]
+        )
         expected = {
             "_RUN_WITH_GRAPH_WITH_METADATA": {
                 "run": "_RUN_WITH_GRAPH_WITH_METADATA",
@@ -235,8 +204,8 @@ class GraphsPluginV1Test(GraphsPluginBaseTest, tf.test.TestCase):
         actual = plugin.info_impl(context.RequestContext(), "eid")
         self.assertEqual(expected, actual)
 
-    @with_runs([_RUN_WITH_GRAPH_WITH_METADATA])
-    def test_graph_simple(self, plugin):
+    def test_graph_simple(self):
+        plugin = self.load_plugin([_RUN_WITH_GRAPH_WITH_METADATA])
         graph = self._get_graph(
             plugin,
             tag=None,
@@ -263,8 +232,8 @@ class GraphsPluginV1Test(GraphsPluginBaseTest, tf.test.TestCase):
             node_names,
         )
 
-    @with_runs([_RUN_WITH_GRAPH_WITH_METADATA])
-    def test_graph_large_attrs(self, plugin):
+    def test_graph_large_attrs(self):
+        plugin = self.load_plugin([_RUN_WITH_GRAPH_WITH_METADATA])
         key = "o---;;-;"
         graph = self._get_graph(
             plugin,
@@ -281,8 +250,8 @@ class GraphsPluginV1Test(GraphsPluginBaseTest, tf.test.TestCase):
         }
         self.assertEqual({"message_prefix": [b"value"]}, large_attrs)
 
-    @with_runs([_RUN_WITH_GRAPH_WITH_METADATA])
-    def test_run_metadata(self, plugin):
+    def test_run_metadata(self):
+        plugin = self.load_plugin([_RUN_WITH_GRAPH_WITH_METADATA])
         ctx = context.RequestContext()
         result = plugin.run_metadata_impl(
             ctx, "123", _RUN_WITH_GRAPH_WITH_METADATA[0], self._METADATA_TAG
@@ -292,8 +261,8 @@ class GraphsPluginV1Test(GraphsPluginBaseTest, tf.test.TestCase):
         text_format.Parse(metadata_pbtxt, config_pb2.RunMetadata())
         # If it parses, we're happy.
 
-    @with_runs([_RUN_WITH_GRAPH_WITHOUT_METADATA])
-    def test_is_active(self, plugin):
+    def test_is_active(self):
+        plugin = self.load_plugin([_RUN_WITH_GRAPH_WITHOUT_METADATA])
         self.assertFalse(plugin.is_active())
 
 
