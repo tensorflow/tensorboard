@@ -20,6 +20,7 @@ tf_ts_library(
     visibility = ["//tensorboard/webapp/widgets/line_chart_v2:__subpackages__"],
     deps = [
         ":chart_types",
+        ":formatter",
         ":internal_types",
         "//tensorboard/webapp/widgets/line_chart_v2/lib/renderer:types",
     ],
@@ -87,6 +88,17 @@ tf_ts_library(
 )
 
 tf_ts_library(
+    name = "formatter",
+    srcs = [
+        "formatter.ts",
+    ],
+    visibility = ["//tensorboard:internal"],
+    deps = [
+        "//tensorboard/webapp/third_party:d3",
+    ],
+)
+
+tf_ts_library(
     name = "utils",
     srcs = [
         "utils.ts",
@@ -117,6 +129,7 @@ tf_ts_library(
     ],
     deps = [
         ":drawable",
+        ":internal_types",
     ],
 )
 
@@ -131,6 +144,7 @@ tf_ts_library(
     ],
     deps = [
         ":internal_types",
+        "@npm//@types/jasmine",
     ],
 )
 

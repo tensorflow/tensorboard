@@ -148,6 +148,8 @@ export class SvgRenderer implements ObjectRenderer<CacheValue> {
           'http://www.w3.org/2000/svg',
           'path'
         );
+
+        dom.classList.add('triangle');
         dom.style.fill = 'none';
         const data = this.createPathDString(vertices);
         dom.setAttribute('d', data + 'Z');

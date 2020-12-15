@@ -45,6 +45,7 @@ tf_ts_library(
         ":types",
         "//tensorboard/webapp/widgets/line_chart_v2/lib:coordinator",
         "//tensorboard/webapp/widgets/line_chart_v2/lib:internal_types",
+        "//tensorboard/webapp/widgets/line_chart_v2/lib:testing",
         "@npm//@types/jasmine",
         "@npm//three",
     ],

@@ -115,7 +115,7 @@ export abstract class DataDrawable {
     this.layout = layout;
   }
 
-  private getLayoutRect(): Rect {
+  protected getLayoutRect(): Rect {
     return this.layout;
   }
 
