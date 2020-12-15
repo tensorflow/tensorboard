@@ -14,7 +14,10 @@ py_library(
         ":graph_util",
         ":keras_util",
         ":metadata",
+<<<<<<< HEAD
         "//tensorboard:errors",
+=======
+>>>>>>> 6b0b3e0b6e68637c4f8810259864c1256e9fbf38
         "//tensorboard:plugin_util",
         "//tensorboard/backend:http_util",
         "//tensorboard/backend:process_graph",

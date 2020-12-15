@@ -106,10 +106,31 @@ class GraphsPlugin(base_plugin.TBPlugin):
                 )
             return (run_item, tag_item)
 
+<<<<<<< HEAD
         mapping = self._data_provider.list_blob_sequences(
             ctx,
             experiment_id=experiment,
             plugin_name=metadata.PLUGIN_NAME_RUN_METADATA_WITH_GRAPH,
+=======
+        if self._data_provider:
+            mapping = self._data_provider.list_blob_sequences(
+                ctx,
+                experiment_id=experiment,
+                plugin_name=metadata.PLUGIN_NAME,
+            )
+            for (run_name, tag_to_time_series) in six.iteritems(mapping):
+                for tag in tag_to_time_series:
+                    if tag == metadata.RUN_GRAPH_NAME:
+                        (run_item, _) = add_row_item(run_name, None)
+                        run_item["run_graph"] = True
+                    else:
+                        (_, tag_item) = add_row_item(run_name, tag)
+                        tag_item["op_graph"] = True
+            return result
+
+        mapping = self._multiplexer.PluginRunToTagToContent(
+            metadata.PLUGIN_NAME_RUN_METADATA_WITH_GRAPH
+>>>>>>> 6b0b3e0b6e68637c4f8810259864c1256e9fbf38
         )
         for (run_name, tags) in mapping.items():
             for (tag, tag_data) in tags.items():
@@ -126,10 +147,15 @@ class GraphsPlugin(base_plugin.TBPlugin):
 
         # Tensors associated with plugin name metadata.PLUGIN_NAME_RUN_METADATA
         # contain both op graph and profile information.
+<<<<<<< HEAD
         mapping = self._data_provider.list_blob_sequences(
             ctx,
             experiment_id=experiment,
             plugin_name=metadata.PLUGIN_NAME_RUN_METADATA,
+=======
+        mapping = self._multiplexer.PluginRunToTagToContent(
+            metadata.PLUGIN_NAME_RUN_METADATA
+>>>>>>> 6b0b3e0b6e68637c4f8810259864c1256e9fbf38
         )
         for (run_name, tags) in mapping.items():
             for (tag, tag_data) in tags.items():
@@ -144,10 +170,15 @@ class GraphsPlugin(base_plugin.TBPlugin):
 
         # Tensors associated with plugin name metadata.PLUGIN_NAME_KERAS_MODEL
         # contain serialized Keras model in JSON format.
+<<<<<<< HEAD
         mapping = self._data_provider.list_blob_sequences(
             ctx,
             experiment_id=experiment,
             plugin_name=metadata.PLUGIN_NAME_KERAS_MODEL,
+=======
+        mapping = self._multiplexer.PluginRunToTagToContent(
+            metadata.PLUGIN_NAME_KERAS_MODEL
+>>>>>>> 6b0b3e0b6e68637c4f8810259864c1256e9fbf38
         )
         for (run_name, tags) in mapping.items():
             for (tag, tag_data) in tags.items():
@@ -159,10 +190,15 @@ class GraphsPlugin(base_plugin.TBPlugin):
                 (_, tag_item) = add_row_item(run_name, tag)
                 tag_item["conceptual_graph"] = True
 
+<<<<<<< HEAD
         mapping = self._data_provider.list_blob_sequences(
             ctx,
             experiment_id=experiment,
             plugin_name=metadata.PLUGIN_NAME,
+=======
+        mapping = self._multiplexer.PluginRunToTagToContent(
+            metadata.PLUGIN_NAME
+>>>>>>> 6b0b3e0b6e68637c4f8810259864c1256e9fbf38
         )
         for (run_name, tags) in mapping.items():
             if metadata.RUN_GRAPH_NAME in tags:
@@ -170,10 +206,15 @@ class GraphsPlugin(base_plugin.TBPlugin):
                 run_item["run_graph"] = True
 
         # Top level `Event.tagged_run_metadata` represents profile data only.
+<<<<<<< HEAD
         mapping = self._data_provider.list_blob_sequences(
             ctx,
             experiment_id=experiment,
             plugin_name=metadata.PLUGIN_NAME_TAGGED_RUN_METADATA,
+=======
+        mapping = self._multiplexer.PluginRunToTagToContent(
+            metadata.PLUGIN_NAME_TAGGED_RUN_METADATA
+>>>>>>> 6b0b3e0b6e68637c4f8810259864c1256e9fbf38
         )
         for (run_name, tags) in mapping.items():
             for tag in tags:
@@ -250,6 +291,16 @@ class GraphsPlugin(base_plugin.TBPlugin):
                     for func_graph in run_metadata.function_graphs
                 ]
             )
+<<<<<<< HEAD
+=======
+
+        else:
+            tensor_events = self._multiplexer.Tensors(
+                run, metadata.RUN_GRAPH_NAME
+            )
+            graph_raw = tensor_events[0].tensor_proto.string_val[0]
+            graph = graph_pb2.GraphDef.FromString(graph_raw)
+>>>>>>> 6b0b3e0b6e68637c4f8810259864c1256e9fbf38
 
         # This next line might raise a ValueError if the limit parameters
         # are invalid (size is negative, size present but key absent, etc.).
@@ -258,6 +309,7 @@ class GraphsPlugin(base_plugin.TBPlugin):
         )
         return (str(graph), "text/x-protobuf")  # pbtxt
 
+<<<<<<< HEAD
     def run_metadata_impl(self, ctx, experiment, run, tag):
         """Result of the form `(body, mime_type)`; may raise `NotFound`."""
         # Profile graph: could be either of two plugins. (Cf. `info_impl`.)
@@ -267,6 +319,22 @@ class GraphsPlugin(base_plugin.TBPlugin):
         ]
         raw_run_metadata = self._read_blob(ctx, experiment, plugins, run, tag)
         run_metadata = config_pb2.RunMetadata.FromString(raw_run_metadata)
+=======
+    def run_metadata_impl(self, run, tag):
+        """Result of the form `(body, mime_type)`, or `None` if no data
+        exists."""
+        if self._data_provider:
+            # TODO(davidsoergel, wchargin): Consider plumbing run metadata through data providers.
+            return None
+        tensor_events = self._multiplexer.Tensors(run, tag)
+        if tensor_events is None:
+            return None
+        # Take the first event if there are multiple events written from different
+        # steps.
+        run_metadata = config_pb2.RunMetadata.FromString(
+            tensor_events[0].tensor_proto.string_val[0]
+        )
+>>>>>>> 6b0b3e0b6e68637c4f8810259864c1256e9fbf38
         return (str(run_metadata), "text/x-protobuf")  # pbtxt
 
     @wrappers.Request.application
