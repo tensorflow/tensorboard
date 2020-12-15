@@ -48,3 +48,27 @@ export function buildMetadata(metadata: Partial<DataSeriesMetadata>) {
     ...metadata,
   };
 }
+
+/**
+ * Asserts `d` attribute on a SVGPathElement.
+ *
+ * @param path An SVGPathElement with `d` attribute of format with absolute
+ *    coordinates: M, L, and Zs. e.g., "M1,2L2,3L3,4Z".
+ * @param roundedCoords Coordinates expected rounded to nearest integer.
+ */
+export function assertSvgPathD(
+  path: SVGElement,
+  roundedCoords: Array<[number, number]>
+) {
+  expect(path.nodeName).toBe('path');
+  const dPath = path.getAttribute('d')!;
+  const parts = dPath.replace(/[MZ]/g, '').split('L');
+  expect(parts.length).toBe(roundedCoords.length);
+  for (const [index, [x, y]] of roundedCoords.entries()) {
+    const coordParts = parts[index].split(',');
+    expect(coordParts.length).toBe(2);
+    const [actualX, actualY] = coordParts;
+    expect(Number(actualX)).toBeCloseTo(x, 0);
+    expect(Number(actualY)).toBeCloseTo(y, 0);
+  }
+}

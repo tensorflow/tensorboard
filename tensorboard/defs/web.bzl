@@ -26,10 +26,6 @@ load("@io_bazel_rules_closure//closure/private:defs.bzl",
      "long_path",
      "unfurl")
 
-load(":web_testing.bzl", _tf_web_test = "tf_web_test")
-
-tf_web_test = _tf_web_test
-
 def _tf_web_library(ctx):
   if not ctx.attr.srcs:
     if ctx.attr.deps:

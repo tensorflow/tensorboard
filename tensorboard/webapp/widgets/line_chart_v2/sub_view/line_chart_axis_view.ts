@@ -15,7 +15,7 @@ limitations under the License.
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 
 import {Dimension, Scale} from '../lib/public_types';
-import {formatAxisNumber} from './axis_formatter';
+import {numberFormatter} from '../lib/formatter';
 import {
   getDomSizeInformedTickCount,
   getScaleRangeFromDomDim,
@@ -105,7 +105,7 @@ export class LineChartAxisComponent {
   }
 
   getTickString(tick: number): string {
-    return formatAxisNumber(tick);
+    return numberFormatter.formatTick(tick);
   }
 
   private getDomPos(data: number): number {
