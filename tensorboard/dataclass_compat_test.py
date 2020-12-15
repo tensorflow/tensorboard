@@ -405,6 +405,7 @@ class MigrateEventTest(tf.test.TestCase):
                 self.assertEqual(
                     new_value.metadata.plugin_data.plugin_name, plugin_name
                 )
+                self.assertEqual(new_value.metadata.plugin_data.content, b"1")
 
 
 if __name__ == "__main__":
