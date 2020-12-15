@@ -15,14 +15,38 @@ limitations under the License.
 import {format, scaleTime} from '../../../third_party/d3';
 
 export interface Formatter {
+  /**
+   * Represents a number in a string that would fit in ticks of a chart (max ~50px).
+   *
+   * Possible usage: tick labels on line chart.
+   */
   formatTick(x: number): string;
+
+  /**
+   * Represents a number in a short string that would appear in a UI with a limited
+   * space that is larger than a tick.
+   *
+   * Possible usage: major tick labels on line chart.
+   */
   formatShort(x: number): string;
-  formatLong(x: number): string;
+
+  /**
+   * Represents a number in a human readable string. The string can be a
+   * "lossy compression" and it must follow localization.
+   *
+   * Possible usage: tooltips on a line chart.
+   */
+  formatReadable(x: number): string;
 }
+
+/**
+ * ================
+ * NUMBER FORMATTER
+ * ================
+ */
 
 const d3NumberFormatter = format('.2~e');
 const d3TrimFormatter = format('~');
-const d3FloatFormatter = format('.4~');
 const d3LongFormatter = format(',~');
 
 function formatNumberShort(x: number): string {
@@ -41,10 +65,16 @@ function formatNumberShort(x: number): string {
 export const numberFormatter: Formatter = {
   formatTick: formatNumberShort,
   formatShort: formatNumberShort,
-  formatLong(x: number): string {
+  formatReadable(x: number): string {
     return d3LongFormatter(x);
   },
 };
+
+/**
+ * =======================
+ * RELATIVE TIME FORMATTER
+ * =======================
+ */
 
 const SECOND_IN_MS = 1000;
 const MINUTE_IN_MS = 60 * SECOND_IN_MS;
@@ -52,54 +82,64 @@ const HOUR_IN_MS = 60 * MINUTE_IN_MS;
 const DAY_IN_MS = 24 * HOUR_IN_MS;
 const YEAR_IN_MS = 365 * DAY_IN_MS;
 
-function formatTime(x: number): string {
+const d3FloatFormatter = format('.4~');
+
+/**
+ * Formats relative time in milliseconds with human readable unit.
+ */
+function formatRelativeTime(x: number): string {
   if (x === 0) return '0';
 
-  const sign = x <= 0 ? -1 : 1;
-  const builder = [];
+  let str = Math.sign(x) === 1 ? '' : '-';
   const absX = Math.abs(x);
   if (absX < SECOND_IN_MS) {
-    builder.push(d3FloatFormatter(absX), 'ms');
+    str += `${d3FloatFormatter(absX)} ms`;
   } else if (absX < MINUTE_IN_MS) {
-    builder.push(d3FloatFormatter(absX / SECOND_IN_MS), 'sec');
+    str += `${d3FloatFormatter(absX / SECOND_IN_MS)} sec`;
   } else if (absX < HOUR_IN_MS) {
-    builder.push(d3FloatFormatter(absX / MINUTE_IN_MS), 'min');
+    str += `${d3FloatFormatter(absX / MINUTE_IN_MS)} min`;
   } else if (absX < DAY_IN_MS) {
-    builder.push(d3FloatFormatter(absX / HOUR_IN_MS), 'hr');
+    str += `${d3FloatFormatter(absX / HOUR_IN_MS)} hr`;
   } else if (absX < YEAR_IN_MS) {
-    builder.push(d3FloatFormatter(absX / DAY_IN_MS), 'day');
+    str += `${d3FloatFormatter(absX / DAY_IN_MS)} day`;
   } else {
-    builder.push(d3FloatFormatter(absX / YEAR_IN_MS), 'yr');
+    str += `${d3FloatFormatter(absX / YEAR_IN_MS)} yr`;
   }
-  return `${sign === 1 ? '' : '-'}${builder.join('')}`;
+  return str;
 }
 
 export const relativeTimeFormatter: Formatter = {
-  formatTick: formatTime,
-  formatShort: formatTime,
-  formatLong: formatTime,
+  formatTick: formatRelativeTime,
+  formatShort: formatRelativeTime,
+  formatReadable: formatRelativeTime,
 };
+
+/**
+ * ===================
+ * WALL TIME FORMATTER
+ * ===================
+ */
 
 const d3TimeTickFormat = scaleTime().tickFormat();
 
 let localeOverride: string | undefined = undefined;
 
-export const timeFormatter: Formatter = {
+export const wallTimeFormatter: Formatter = {
   formatTick(x: number): string {
     return d3TimeTickFormat(new Date(x));
   },
   formatShort(x: number): string {
-    // "11/19/12, 7:00:00 PM"
+    // "Nov 19, 12, 7:00:00 PM"
     return new Date(x).toLocaleString(localeOverride, {
       year: '2-digit',
-      month: 'numeric',
+      month: 'short',
       day: 'numeric',
       hour: 'numeric',
       minute: 'numeric',
       second: 'numeric',
     });
   },
-  formatLong(x: number): string {
+  formatReadable(x: number): string {
     // "Nov 19, 2012, 7:00:00.551 PM PST"
     return new Date(x).toLocaleString(localeOverride, {
       year: 'numeric',

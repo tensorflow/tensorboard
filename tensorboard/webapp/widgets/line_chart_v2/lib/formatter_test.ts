@@ -15,7 +15,7 @@ limitations under the License.
 import {
   numberFormatter,
   relativeTimeFormatter,
-  timeFormatter,
+  wallTimeFormatter,
   TEST_ONLY,
 } from './formatter';
 
@@ -50,18 +50,20 @@ describe('line_chart_v2/lib/formatter test', () => {
       });
     }
 
-    describe('formatLong', () => {
+    describe('formatReadable', () => {
       it('formats with localization', () => {
-        expect(numberFormatter.formatLong(1)).toBe('1');
-        expect(numberFormatter.formatLong(5)).toBe('5');
-        expect(numberFormatter.formatLong(-100.4)).toBe('-100.4');
-        expect(numberFormatter.formatLong(3.01)).toBe('3.01');
-        expect(numberFormatter.formatLong(9999)).toBe('9,999');
-        expect(numberFormatter.formatLong(0.09)).toBe('0.09');
-        expect(numberFormatter.formatLong(1.004e6)).toBe('1,004,000');
-        expect(numberFormatter.formatLong(-1.004e6)).toBe('-1,004,000');
-        expect(numberFormatter.formatLong(0.00005)).toBe('0.00005');
-        expect(numberFormatter.formatLong(1e5 + 0.00005)).toBe('100,000.00005');
+        expect(numberFormatter.formatReadable(1)).toBe('1');
+        expect(numberFormatter.formatReadable(5)).toBe('5');
+        expect(numberFormatter.formatReadable(-100.4)).toBe('-100.4');
+        expect(numberFormatter.formatReadable(3.01)).toBe('3.01');
+        expect(numberFormatter.formatReadable(9999)).toBe('9,999');
+        expect(numberFormatter.formatReadable(0.09)).toBe('0.09');
+        expect(numberFormatter.formatReadable(1.004e6)).toBe('1,004,000');
+        expect(numberFormatter.formatReadable(-1.004e6)).toBe('-1,004,000');
+        expect(numberFormatter.formatReadable(0.00005)).toBe('0.00005');
+        expect(numberFormatter.formatReadable(1e5 + 0.00005)).toBe(
+          '100,000.00005'
+        );
       });
     });
   });
@@ -70,7 +72,7 @@ describe('line_chart_v2/lib/formatter test', () => {
     for (const {name, fn} of [
       {name: 'formatTick', fn: relativeTimeFormatter.formatTick},
       {name: 'formatShort', fn: relativeTimeFormatter.formatShort},
-      {name: 'formatLong', fn: relativeTimeFormatter.formatLong},
+      {name: 'formatReadable', fn: relativeTimeFormatter.formatReadable},
     ]) {
       describe(name, () => {
         it('formats time difference in appropriate unit', () => {
@@ -101,7 +103,7 @@ describe('line_chart_v2/lib/formatter test', () => {
     }
   });
 
-  describe('#timeFormatter', () => {
+  describe('#wallTimeFormatter', () => {
     beforeEach(() => {
       TEST_ONLY.setLocale('en-US');
     });
@@ -109,33 +111,33 @@ describe('line_chart_v2/lib/formatter test', () => {
     describe('#formatTick', () => {
       it('returns tick format using d3', () => {
         expect(
-          timeFormatter.formatTick(new Date('2020-1-5 13:23').getTime())
+          wallTimeFormatter.formatTick(new Date('2020-1-5 13:23').getTime())
         ).toBe('01:23');
         expect(
-          timeFormatter.formatTick(new Date('2020-1-5 5:00').getTime())
+          wallTimeFormatter.formatTick(new Date('2020-1-5 5:00').getTime())
         ).toBe('05 AM');
-        expect(timeFormatter.formatTick(new Date('2020-1-5').getTime())).toBe(
-          'Jan 05'
-        );
-        expect(timeFormatter.formatTick(new Date('2019-1-1').getTime())).toBe(
-          '2019'
-        );
+        expect(
+          wallTimeFormatter.formatTick(new Date('2020-1-5').getTime())
+        ).toBe('Jan 05');
+        expect(
+          wallTimeFormatter.formatTick(new Date('2019-1-1').getTime())
+        ).toBe('2019');
       });
     });
 
     describe('formatShort', () => {
       it('formats using localization', () => {
         expect(
-          timeFormatter.formatShort(new Date('2020-1-5 13:23').getTime())
-        ).toBe('1/5/20, 1:23:00 PM');
+          wallTimeFormatter.formatShort(new Date('2020-1-5 13:23').getTime())
+        ).toBe('Jan 5, 20, 1:23:00 PM');
       });
     });
 
-    describe('formatLong', () => {
+    describe('formatReadable', () => {
       it('formats using localization', () => {
         // jasmine + Angular seems to mock out the timezone by default (to UTC).
         expect(
-          timeFormatter.formatLong(new Date('2020-1-5 13:23').getTime())
+          wallTimeFormatter.formatReadable(new Date('2020-1-5 13:23').getTime())
         ).toBe('Jan 5, 2020, 1:23:00.000 PM UTC');
       });
     });
