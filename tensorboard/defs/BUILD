@@ -34,8 +34,6 @@ tb_proto_library(
     ],
 )
 
-exports_files(["web_test_python_stub.template.py"])
-
 exports_files(["rollup_config.js"])
 
 # Custom ts_library compiler that runs tsc_wrapped with angular/compiler-cli statically linked
