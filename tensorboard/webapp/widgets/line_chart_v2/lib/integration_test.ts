@@ -395,5 +395,39 @@ describe('line_chart_v2/lib/integration test', () => {
       expect(circle.getAttribute('cx')).toBe('2');
       expect(circle.getAttribute('cy')).toBe('5');
     });
+
+    it('renders circle for aux but not NaNs', () => {
+      chart.resize({width: 10, height: 10});
+      chart.setViewBox({x: [0, 10], y: [0, 10]});
+      chart.setMetadata({
+        aux: buildMetadata({id: 'aux', visible: true, aux: true}),
+      });
+      chart.setData([
+        buildSeries({
+          id: 'aux',
+          points: [
+            {x: -1, y: 5},
+            {x: 0, y: 5},
+            {x: 1, y: NaN},
+            {x: 2, y: 5},
+            {x: 3, y: NaN},
+          ],
+        }),
+      ]);
+
+      const children = getDomChildren();
+      expect(children.length).toBe(2);
+      const [line, circle] = children;
+
+      expect(isTriangle(line)).toBe(false);
+      expect(isTriangle(circle)).toBe(false);
+      assertSvgPathD(line, [
+        [-1, 5],
+        [0, 5],
+      ]);
+      expect(circle.nodeName).toBe('circle');
+      expect(circle.getAttribute('cx')).toBe('2');
+      expect(circle.getAttribute('cy')).toBe('5');
+    });
   });
 });

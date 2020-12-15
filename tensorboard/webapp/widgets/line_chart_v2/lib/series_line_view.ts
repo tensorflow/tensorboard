@@ -38,13 +38,13 @@ export class SeriesLineView extends DataDrawable {
         };
   }
 
+  /**
+   * @param polyline Expects the polyline to have even length and encode two-dimensional
+   *   coordinates.
+   */
   private partitionPolyline(
     polyline: Polyline
   ): Array<{polyline: Float32Array; type: PartitionType}> {
-    if (polyline.length % 2 !== 0) {
-      throw new Error(`Cannot have odd length-ed polyline: ${polyline.length}`);
-    }
-
     const partition = [];
     let partitionStartInd: number = 0;
     let isPrevValueNaN = false;
@@ -99,6 +99,11 @@ export class SeriesLineView extends DataDrawable {
       const map = this.getMetadataMap();
       const metadata = map[series.id];
       if (!metadata) continue;
+      if (series.polyline.length % 2 !== 0) {
+        throw new Error(
+          `Cannot have odd length-ed polyline: ${series.polyline.length}`
+        );
+      }
 
       const partitionedPolyline = this.partitionPolyline(series.polyline);
 
@@ -108,8 +113,6 @@ export class SeriesLineView extends DataDrawable {
       ] of partitionedPolyline.entries()) {
         if (type === PartitionType.NUMBER) {
           if (polyline.length === 2) {
-            if (metadata.aux) continue;
-
             this.paintBrush.setCircle(
               JSON.stringify(['circle', series.id, partitionInd]),
               {x: polyline[0], y: polyline[1]},
