@@ -117,6 +117,7 @@ tf_ts_library(
     ],
     deps = [
         ":drawable",
+        ":internal_types",
     ],
 )
 
@@ -131,6 +132,7 @@ tf_ts_library(
     ],
     deps = [
         ":internal_types",
+        "@npm//@types/jasmine",
     ],
 )
 

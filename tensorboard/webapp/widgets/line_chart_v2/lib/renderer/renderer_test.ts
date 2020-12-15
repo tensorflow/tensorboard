@@ -14,8 +14,9 @@ limitations under the License.
 ==============================================================================*/
 import * as THREE from 'three';
 
+import {Polyline} from '../internal_types';
+import {assertSvgPathD} from '../testing';
 import {ThreeCoordinator} from '../threejs_coordinator';
-import {Point, Polyline} from '../internal_types';
 import {SvgRenderer} from './svg_renderer';
 import {ThreeRenderer} from './threejs_renderer';
 
@@ -128,25 +129,6 @@ describe('line_chart_v2/lib/renderer test', () => {
     });
 
     describe('triangle', () => {
-      /**
-       * Asserts `d` attribute on a SVGPathElement.
-       *
-       * @param path An SVGPathElement with `d` attribute of format with absolute
-       *    coordinates: M, L, and Zs. e.g., "M1,2L2,3L3,4Z".
-       * @param roundedCoords Coordinates expected rounded to nearest integer.
-       */
-      function assertPath(path: SVGPathElement, roundedCoords: Point[]) {
-        expect(roundedCoords.length).toBe(3);
-        const dPath = path.getAttribute('d')!;
-        const parts = dPath.split(/[MLZ]/);
-        expect(parts.length).toBe(5);
-        for (const [index, {x, y}] of roundedCoords.entries()) {
-          const [actualX, actualY] = parts[index + 1].split(',');
-          expect(Number(actualX)).toBeCloseTo(x, 0);
-          expect(Number(actualY)).toBeCloseTo(y, 0);
-        }
-      }
-
       it('creates a path with fill', () => {
         renderer.createOrUpdateTriangleObject(
           null,
@@ -158,10 +140,10 @@ describe('line_chart_v2/lib/renderer test', () => {
         const path = el.children[0] as SVGPathElement;
         expect(path.tagName).toBe('path');
         expect(path.style.display).toBe('');
-        assertPath(path, [
-          {x: 7, y: 102},
-          {x: 13, y: 102},
-          {x: 10, y: 97},
+        assertSvgPathD(path, [
+          [7, 102],
+          [13, 102],
+          [10, 97],
         ]);
         expect(path.style.fill).toBe('rgb(255, 0, 0)');
       });
@@ -183,10 +165,10 @@ describe('line_chart_v2/lib/renderer test', () => {
         const path = el.children[0] as SVGPathElement;
         expect(path.tagName).toBe('path');
         expect(path.style.display).toBe('');
-        assertPath(path, [
-          {x: 15, y: 53},
-          {x: 25, y: 53},
-          {x: 20, y: 44},
+        assertSvgPathD(path, [
+          [15, 53],
+          [25, 53],
+          [20, 44],
         ]);
         expect(path.style.fill).toBe('rgb(0, 255, 0)');
       });
