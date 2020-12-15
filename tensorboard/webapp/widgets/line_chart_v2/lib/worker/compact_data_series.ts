@@ -17,6 +17,7 @@ import {DataSeries} from '../internal_types';
 
 export interface CompactDataSeries {
   idsAndLengths: Array<{id: string; length: number}>;
+  // buffer of packed f64s
   flattenedSeries: ArrayBuffer;
 }
 
