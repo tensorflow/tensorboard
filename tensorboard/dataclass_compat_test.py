@@ -370,7 +370,6 @@ class MigrateEventTest(tf.test.TestCase):
             graphs_metadata.PLUGIN_NAME_TAGGED_RUN_METADATA,
         )
 
-<<<<<<< HEAD
     def test_graph_sub_plugins(self):
         # Tests for `graph_run_metadata`, `graph_run_metadata_graph`,
         # and `graph_keras_model` plugins. We fabricate these since it's
@@ -408,8 +407,6 @@ class MigrateEventTest(tf.test.TestCase):
                 )
                 self.assertEqual(new_value.metadata.plugin_data.content, b"1")
 
-=======
->>>>>>> 6b0b3e0b6e68637c4f8810259864c1256e9fbf38
 
 if __name__ == "__main__":
     tf.test.main()
