@@ -34,7 +34,7 @@ export function compactDataSeries(
     return len + data.points.length;
   }, 0);
   let seriesIndex = 0;
-  const flattenedSeries = new Float32Array(totalLength * 2);
+  const flattenedSeries = new Float64Array(totalLength * 2);
   const idsAndLengths: Array<{id: string; length: number}> = [];
 
   for (const series of dataSeriesArr) {
@@ -57,7 +57,7 @@ export function decompactDataSeries(
   compactDataSeries: CompactDataSeries
 ): DataSeries[] {
   const {flattenedSeries, idsAndLengths} = compactDataSeries;
-  const rawData = new Float32Array(flattenedSeries);
+  const rawData = new Float64Array(flattenedSeries);
   const data: DataSeries[] = [];
 
   if (rawData.length % 2 !== 0) {
