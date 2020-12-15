@@ -129,7 +129,7 @@ describe('line_chart_v2/lib/formatter test', () => {
       it('formats using localization', () => {
         expect(
           wallTimeFormatter.formatShort(new Date('2020-1-5 13:23').getTime())
-        ).toBe('Jan 5, 20, 1:23:00 PM');
+        ).toBe('Jan 5, 2020, 1:23:00 PM');
       });
     });
 

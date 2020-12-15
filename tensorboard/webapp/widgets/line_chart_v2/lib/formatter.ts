@@ -90,7 +90,7 @@ const d3FloatFormatter = format('.4~');
 function formatRelativeTime(x: number): string {
   if (x === 0) return '0';
 
-  let str = Math.sign(x) === 1 ? '' : '-';
+  let str = Math.sign(x) > 0 ? '' : '-';
   const absX = Math.abs(x);
   if (absX < SECOND_IN_MS) {
     str += `${d3FloatFormatter(absX)} ms`;
@@ -129,9 +129,9 @@ export const wallTimeFormatter: Formatter = {
     return d3TimeTickFormat(new Date(x));
   },
   formatShort(x: number): string {
-    // "Nov 19, 12, 7:00:00 PM"
+    // "Nov 19, 2012, 7:00:00 PM"
     return new Date(x).toLocaleString(localeOverride, {
-      year: '2-digit',
+      year: 'numeric',
       month: 'short',
       day: 'numeric',
       hour: 'numeric',
