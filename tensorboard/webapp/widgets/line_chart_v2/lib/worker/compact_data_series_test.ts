@@ -104,29 +104,12 @@ describe('line_chart_v2/lib/compact_data_series', () => {
       );
     });
 
-    it('rounds to float 32', () => {
-      const dataSeries = [
-        {
-          id: 'foo',
-          points: [{x: 1, y: Number.MIN_VALUE}],
-        },
-      ];
-
-      const actual = decompactDataSeries(compactDataSeries(dataSeries));
-      expect(actual).not.toEqual(dataSeries);
-      expect(actual).toEqual([
-        {
-          id: 'foo',
-          points: [{x: 1, y: 0}],
-        },
-      ]);
-    });
-
-    it('does not round fractiional numbers', () => {
+    it('transfers without losing precision', () => {
       const dataSeries = [
         {
           id: 'foo',
           points: [
+            {x: 1, y: Number.MIN_VALUE},
             {x: 1, y: 0.3},
             {x: 1, y: 1e-10},
           ],
@@ -134,19 +117,20 @@ describe('line_chart_v2/lib/compact_data_series', () => {
       ];
 
       const actual = decompactDataSeries(compactDataSeries(dataSeries));
-      expect(actual).not.toEqual(dataSeries);
-      expect(actual).toEqual([
+      expect(actual).toEqual(dataSeries);
+    });
+
+    it('transfers date', () => {
+      const time = new Date('2020-01-01').getTime();
+      const dataSeries = [
         {
           id: 'foo',
-          points: [
-            {x: 1, y: jasmine.any(Number)},
-            {x: 1, y: jasmine.any(Number)},
-          ],
+          points: [{x: 1, y: time}],
         },
-      ]);
-      // When converting to Float32, there are error due to missing precision.
-      expect(actual[0].points[0].y).toBeCloseTo(0.3, 6);
-      expect(actual[0].points[1].y).toBeCloseTo(1e-10, 12);
+      ];
+
+      const actual = decompactDataSeries(compactDataSeries(dataSeries));
+      expect(actual).toEqual(dataSeries);
     });
 
     it('fails when decompacting wrong message (odd number of data points', () => {
