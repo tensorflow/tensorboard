@@ -65,17 +65,17 @@ class GraphsPluginV2Test(
         self.assertEqual(mime_type, "text/x-protobuf")
         return text_format.Parse(graph_pbtxt, graph_pb2.GraphDef())
 
-    @graphs_plugin_test.with_runs(
-        [
-            graphs_plugin_test._RUN_WITH_GRAPH_WITH_METADATA,
-            graphs_plugin_test._RUN_WITHOUT_GRAPH_WITH_METADATA,
-        ]
-    )
-    def test_info(self, plugin):
+    def test_info(self):
         raise self.skipTest(
             "TODO: enable this after tf-nightly writes a conceptual graph."
         )
 
+        plugin = self.load_plugin(
+            [
+                graphs_plugin_test._RUN_WITH_GRAPH_WITH_METADATA,
+                graphs_plugin_test._RUN_WITHOUT_GRAPH_WITH_METADATA,
+            ]
+        )
         expected = {
             "w_graph_wo_meta": {
                 "run": "w_graph_wo_meta",
