@@ -116,6 +116,22 @@ jobs:
         with:
           python-version: '3.8'
           architecture: 'x64'
+      - name: 'Cache Cargo artifacts'
+        uses: actions/cache@v2
+        with:
+          path: |
+            tensorboard/data/server/target/
+            # https://doc.rust-lang.org/cargo/guide/cargo-home.html#caching-the-cargo-home-in-ci
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            # Needed if we `cargo install` binaries (at time of writing, this
+            # job doesn't but the files are tiny, and this will mitigate
+            # confusion if we need to `cargo install` later)
+            ~/.cargo/.crates.toml
+            ~/.cargo/.crates2.json
+          key: build-data-server-pip-${{ runner.os }}-cargo-${{ matrix.rust_version }}-${{ hashFiles('**/Cargo.lock', '.github/workflows/ci.yml') }}
       - name: 'Install Rust toolchain'
         uses: actions-rs/toolchain@v1
         with:
@@ -201,7 +217,7 @@ jobs:
         cargo_raze_version: ['0.7.0']
     steps:
       - uses: actions/checkout@v1
-      - name: 'Cache Cargo home directory'
+      - name: 'Cache Cargo artifacts'
         uses: actions/cache@v2
         with:
           path: |
@@ -214,7 +230,7 @@ jobs:
             # Needed for installing binaries (`cargo-raze`) with cache
             ~/.cargo/.crates.toml
             ~/.cargo/.crates2.json
-          key: ${{ runner.os }}-cargo-${{ matrix.rust_version }}-${{ matrix.cargo_raze_version }}-${{ hashFiles('**/Cargo.lock', '.github/workflows/ci.yml') }}
+          key: lint-rust-${{ runner.os }}-cargo-${{ matrix.rust_version }}-${{ matrix.cargo_raze_version }}-${{ hashFiles('**/Cargo.lock', '.github/workflows/ci.yml') }}
       - name: 'Install Rust toolchain'
         uses: actions-rs/toolchain@v1
         with:
