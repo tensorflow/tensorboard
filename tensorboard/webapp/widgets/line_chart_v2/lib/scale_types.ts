@@ -13,9 +13,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+import {Formatter} from './formatter';
+
 export enum ScaleType {
   LINEAR,
   LOG10,
+  TIME,
 }
 
 /**
@@ -70,4 +73,6 @@ export interface Scale {
    * *: e.g., f(1) = 2 and f'(2) = 1 vs. f(1) = NaN and f'(NaN) = ?.
    */
   isSafeNumber(x: number): boolean;
+
+  defaultFormatter: Formatter;
 }
