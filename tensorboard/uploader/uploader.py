@@ -706,7 +706,7 @@ class _TensorBatchedRequestSender(object):
         if tag_proto is None:
             tag_proto = self._create_tag(run_proto, value.tag, metadata)
             self._tags[(run_name, value.tag)] = tag_proto
-        self._create_point(tag_proto, event, value)
+        self._create_point(tag_proto, event, value, run_name)
 
     def flush(self):
         """Sends the active request after removing empty runs and tags.
@@ -774,13 +774,14 @@ class _TensorBatchedRequestSender(object):
         self._byte_budget_manager.add_tag(tag_proto)
         return tag_proto
 
-    def _create_point(self, tag_proto, event, value):
+    def _create_point(self, tag_proto, event, value, run_name):
         """Adds a tensor point to the given tag, if there's space.
 
         Args:
           tag_proto: `WriteTensorRequest.Tag` proto to which to add a point.
           event: Enclosing `Event` proto with the step and wall time data.
           value: Tensor `Summary.Value` proto with the actual tensor data.
+          run_name: Name of the wrong, only used for error reporting.
 
         Raises:
           _OutOfSpaceError: If adding the point would exceed the remaining
@@ -795,8 +796,9 @@ class _TensorBatchedRequestSender(object):
         self._tensor_bytes += point.value.ByteSize()
         if point.value.ByteSize() > self._max_tensor_point_size:
             logger.warning(
-                "Tensor (%s, step: %d) too large; skipping. "
+                "Tensor (run:%s, tag:%s, step: %d) too large; skipping. "
                 "Size %d exceeds limit of %d bytes.",
+                run_name,
                 tag_proto.name,
                 event.step,
                 point.value.ByteSize(),
