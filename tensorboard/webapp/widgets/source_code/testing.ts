@@ -61,6 +61,7 @@ export function setUpMonacoFakes() {
           spies.diffEditorSpy = jasmine.createSpyObj('diffEditorSpy', [
             'layout',
             'setModel',
+            'updateOptions',
           ]);
           return spies.diffEditorSpy;
         },

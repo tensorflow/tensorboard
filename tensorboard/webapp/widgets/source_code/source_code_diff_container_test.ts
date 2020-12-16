@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {NO_ERRORS_SCHEMA} from '@angular/core';
+import {ChangeDetectorRef, NO_ERRORS_SCHEMA} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
 
 import * as loadMonacoShim from './load_monaco_shim';
@@ -69,6 +69,36 @@ describe('Source Code Diff', () => {
       spies.createDiffEditorSpy.calls.allArgs()[0][1].renderSideBySide
     ).toBe(false);
     expect(spies.diffEditorSpy.setModel).toHaveBeenCalledTimes(1);
+  });
+
+  it('updates an existing editor when renderSideBySide changes', async () => {
+    const fixture = TestBed.createComponent(SourceCodeDiffContainer);
+    const changeDetector = fixture.debugElement.injector.get(ChangeDetectorRef);
+    const component = fixture.componentInstance;
+    component.firstText = 'foo';
+    component.secondText = 'bar';
+    component.renderSideBySide = false;
+    fixture.detectChanges();
+
+    // Simlulate loading monaco.
+    await loadMonacoShim.loadMonaco();
+    changeDetector.detectChanges();
+
+    expect(spies.diffEditorSpy.updateOptions).not.toHaveBeenCalled();
+
+    component.renderSideBySide = true;
+    changeDetector.detectChanges();
+
+    expect(spies.diffEditorSpy.updateOptions).toHaveBeenCalledWith(
+      jasmine.objectContaining({renderSideBySide: true})
+    );
+
+    component.renderSideBySide = false;
+    changeDetector.detectChanges();
+
+    expect(spies.diffEditorSpy.updateOptions).toHaveBeenCalledWith(
+      jasmine.objectContaining({renderSideBySide: false})
+    );
   });
 
   it('calls loadMonaco() on ngOnInit()', () => {

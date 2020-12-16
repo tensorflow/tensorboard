@@ -56,7 +56,6 @@ export class SourceCodeDiffComponent implements OnChanges {
   // When a diff is shown, the two versions can be rendered in one of 2 modes:
   // - side by side: 2 scrollable frames with a vertical separator
   // - inline: 1 scrollable frame showing modified and original lines
-  // This component does not respond to changes in this property.
   @Input()
   renderSideBySide: boolean = true;
 
@@ -101,6 +100,10 @@ export class SourceCodeDiffComponent implements OnChanges {
         original: this.monaco.editor.createModel(this.firstText || ''),
         modified: this.monaco.editor.createModel(this.secondText || ''),
       });
+    }
+
+    if (changes['renderSideBySide']) {
+      this.editor.updateOptions({renderSideBySide: this.renderSideBySide});
     }
   }
 }
