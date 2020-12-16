@@ -24,8 +24,8 @@ tf_ng_module(
     deps = [
         "//tensorboard/webapp/angular:expect_angular_cdk_overlay",
         "//tensorboard/webapp/third_party:d3",
-        "//tensorboard/webapp/widgets/line_chart_v2/lib:formatter",
         "//tensorboard/webapp/widgets/line_chart_v2/lib:public_types",
+        "//tensorboard/webapp/widgets/line_chart_v2/lib:scale",
         "@npm//@angular/common",
         "@npm//@angular/core",
         "@npm//rxjs",

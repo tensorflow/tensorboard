@@ -12,39 +12,73 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  HostBinding,
+  Input,
+} from '@angular/core';
 
-import {Dimension, Scale} from '../lib/public_types';
-import {numberFormatter} from '../lib/formatter';
+import {Dimension, Formatter, Scale} from '../lib/public_types';
+import {TemporalScale} from '../lib/scale';
 import {
   getDomSizeInformedTickCount,
   getScaleRangeFromDomDim,
 } from './chart_view_utils';
 
+const DAY_IN_MS = 24 * 1000 * 60 * 60;
+
 @Component({
   selector: 'line-chart-axis',
-  template: `<svg [ngClass]="axis">
-    <ng-container *ngIf="axis === 'x'; else yAxisLine">
-      <line x1="0" y1="0" [attr.x2]="domDim.width" y2="0"></line>
-    </ng-container>
-    <ng-template #yAxisLine>
-      <line
-        [attr.x1]="domDim.width"
-        y1="0"
-        [attr.x2]="domDim.width"
-        [attr.y2]="domDim.height"
-      ></line>
-    </ng-template>
-
-    <ng-container *ngFor="let tick of getTicks()">
-      <g>
+  template: `<svg class="minor">
+      <ng-container *ngIf="axis === 'x'; else yAxisLine">
+        <line x1="0" y1="0" [attr.x2]="domDim.width" y2="0"></line>
+      </ng-container>
+      <ng-template #yAxisLine>
+        <line
+          [attr.x1]="domDim.width"
+          y1="0"
+          [attr.x2]="domDim.width"
+          [attr.y2]="domDim.height"
+        ></line>
+      </ng-template>
+      <ng-container *ngFor="let tick of getTicks()">
+        <g>
+          <text [attr.x]="textXPosition(tick)" [attr.y]="textYPosition(tick)">
+            {{
+              customFormatter
+                ? customFormatter.formatTick(tick)
+                : scale.defaultFormatter.formatTick(tick)
+            }}
+          </text>
+          <title>
+            {{
+              customFormatter
+                ? customFormatter.formatReadable(tick)
+                : scale.defaultFormatter.formatReadable(tick)
+            }}
+          </title>
+        </g>
+      </ng-container>
+    </svg>
+    <svg *ngIf="shouldShowMajorTicks()" class="major">
+      <g *ngFor="let tick of getMajorTicks()">
         <text [attr.x]="textXPosition(tick)" [attr.y]="textYPosition(tick)">
-          {{ getTickString(tick) }}
+          {{
+            customFormatter
+              ? customFormatter.formatShort(tick)
+              : scale.defaultFormatter.formatShort(tick)
+          }}
         </text>
-        <title>{{ tick }}</title>
+        <title>
+          {{
+            customFormatter
+              ? customFormatter.formatReadable(tick)
+              : scale.defaultFormatter.formatReadable(tick)
+          }}
+        </title>
       </g>
-    </ng-container>
-  </svg>`,
+    </svg>`,
   styles: [
     `
       :host {
@@ -67,12 +101,20 @@ import {
         user-select: none;
       }
 
-      svg.x text {
+      :host(.x) {
+        flex-direction: column;
+      }
+
+      :host(.x) text {
         dominant-baseline: hanging;
         text-anchor: middle;
       }
 
-      svg.y text {
+      :host(.y) {
+        flex-direction: row;
+      }
+
+      :host(.y) text {
         dominant-baseline: central;
         text-anchor: end;
       }
@@ -84,6 +126,7 @@ export class LineChartAxisComponent {
   @Input()
   axisExtent!: [number, number];
 
+  @HostBinding('class')
   @Input()
   axis!: 'x' | 'y';
 
@@ -96,16 +139,35 @@ export class LineChartAxisComponent {
   @Input()
   domDim!: Dimension;
 
-  getTicks(): number[] {
-    const domSize = this.axis === 'x' ? this.domDim.width : this.domDim.height;
-    return this.scale.ticks(
-      this.axisExtent,
-      getDomSizeInformedTickCount(domSize, this.gridCount)
+  @Input()
+  customFormatter?: Formatter;
+
+  /**
+   * Returns true if the major ticks must be shown.
+   *
+   * Major tick is required for temporal axis since tick string do not have sufficient
+   * information alone and is hard to fit time information without a major ticks.
+   */
+  shouldShowMajorTicks(): boolean {
+    const majorTickCount = this.getMajorTicks().length;
+    const minorTickCount = this.getTicks().length;
+
+    return (
+      this.scale instanceof TemporalScale &&
+      this.axisExtent[1] - this.axisExtent[0] < DAY_IN_MS &&
+      minorTickCount > majorTickCount &&
+      this.getMajorTicks().length <= 2
     );
   }
 
-  getTickString(tick: number): string {
-    return numberFormatter.formatTick(tick);
+  getMajorTicks() {
+    return this.scale.ticks(this.axisExtent, 2);
+  }
+
+  getTicks(): number[] {
+    const domSize = this.axis === 'x' ? this.domDim.width : this.domDim.height;
+    const maxTickSize = getDomSizeInformedTickCount(domSize, this.gridCount);
+    return this.scale.ticks(this.axisExtent, maxTickSize);
   }
 
   private getDomPos(data: number): number {
