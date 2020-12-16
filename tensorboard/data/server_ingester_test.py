@@ -53,7 +53,7 @@ class SubprocessServerDataIngesterTest(tb_test.TestCase):
         )
 
         real_popen = subprocess.Popen
-        port_file_box = [None]  # value of `--port-file` to be stashed here
+        port_file = None  # value of `--port-file` to be stashed here
 
         # Stub out `subprocess.Popen` to write the port file.
         def fake_popen(subprocess_args, *args, **kwargs):
@@ -63,8 +63,8 @@ class SubprocessServerDataIngesterTest(tb_test.TestCase):
                     port_file_prefix = "--port-file="
                     if not arg.startswith(port_file_prefix):
                         continue
+                    nonlocal port_file
                     port_file = arg[len(port_file_prefix) :]
-                    port_file_box[0] = port_file
                     with open(port_file, "w") as outfile:
                         outfile.write("23456\n")
 
@@ -88,7 +88,7 @@ class SubprocessServerDataIngesterTest(tb_test.TestCase):
             fake_binary,
             "--logdir=/tmp/logs",
             "--port=0",
-            "--port-file=%s" % port_file_box[0],
+            "--port-file=%s" % port_file,
             "--die-after-stdin",
             "--verbose",  # logging is enabled in tests
         ]
