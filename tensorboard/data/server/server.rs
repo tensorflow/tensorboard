@@ -25,6 +25,7 @@ use tonic::{Request, Response, Status};
 
 use crate::commit::{self, Commit};
 use crate::downsample;
+use crate::proto::tensorboard as pb;
 use crate::proto::tensorboard::data;
 use crate::types::{Run, Tag, WallTime};
 use data::tensor_board_data_provider_server::TensorBoardDataProvider;
@@ -52,9 +53,27 @@ impl TensorBoardDataProvider for DataProviderHandler {
         _request: Request<data::ListPluginsRequest>,
     ) -> Result<Response<data::ListPluginsResponse>, Status> {
         let mut res: data::ListPluginsResponse = Default::default();
-        res.plugins.push(data::Plugin {
-            name: "scalars".to_string(),
-        });
+        let runs = self.commit.runs.read().unwrap();
+        let mut plugin_names_set: HashSet<String> = HashSet::new();
+        for run_data in runs.values() {
+            let run_data = run_data.read().unwrap();
+            for scalar_value in run_data.scalars.values() {
+                let metadata: &pb::SummaryMetadata = scalar_value.metadata.as_ref();
+                let plugin_data = &metadata.plugin_data.as_ref();
+                match plugin_data {
+                    Some(d) => {
+                        plugin_names_set.insert(d.plugin_name.clone());
+                    }
+                    _ => {
+                        plugin_names_set.insert(String::new());
+                    }
+                }
+            }
+        }
+        // Move out of set into response's list.
+        for s in plugin_names_set {
+            res.plugins.push(data::Plugin { name: s });
+        }
         Ok(Response::new(res))
     }
 
@@ -350,6 +369,41 @@ mod tests {
         assert_eq!(
             res.plugins.into_iter().map(|p| p.name).collect::<Vec<_>>(),
             vec!["scalars"]
+        );
+    }
+
+    #[tokio::test]
+    async fn test_list_plugins_multiple_timeseries() {
+        let commit = CommitBuilder::new()
+            .scalars("train", "xent2", |b| b.build())
+            .scalars("train", "xent", |b| b.build())
+            .build();
+        let handler = sample_handler(commit);
+        let req = Request::new(data::ListPluginsRequest {
+            experiment_id: "123".to_string(),
+        });
+        let res = handler.list_plugins(req).await.unwrap().into_inner();
+        assert_eq!(
+            res.plugins.into_iter().map(|p| p.name).collect::<Vec<_>>(),
+            vec!["scalars"]
+        );
+    }
+
+    #[tokio::test]
+    async fn test_list_plugins_no_data() {
+        let commit = CommitBuilder::new().build();
+        let handler = sample_handler(commit);
+        let req = Request::new(data::ListPluginsRequest {
+            experiment_id: "123".to_string(),
+        });
+        let res = handler.list_plugins(req).await.unwrap().into_inner();
+        let expected: Vec<String> = vec![];
+        assert_eq!(
+            res.plugins
+                .into_iter()
+                .map(|p| p.name)
+                .collect::<Vec<String>>(),
+            expected
         );
     }
 
