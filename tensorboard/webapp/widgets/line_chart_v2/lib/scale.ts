@@ -12,7 +12,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {scaleLinear, scaleLog} from '../../../third_party/d3';
+import {scaleLinear, scaleLog, scaleTime} from '../../../third_party/d3';
+import {numberFormatter, wallTimeFormatter} from './formatter';
 import {Scale, ScaleType} from './scale_types';
 
 export {ScaleType} from './scale_types';
@@ -23,6 +24,8 @@ export function createScale(type: ScaleType): Scale {
       return new LinearScale();
     case ScaleType.LOG10:
       return new Log10Scale();
+    case ScaleType.TIME:
+      return new TemporalScale();
     default:
       const _: never = type;
       throw new RangeError(`ScaleType ${_} not supported.`);
@@ -93,6 +96,8 @@ class LinearScale implements Scale {
   isSafeNumber(x: number): boolean {
     return Number.isFinite(x);
   }
+
+  defaultFormatter = numberFormatter;
 }
 
 class Log10Scale implements Scale {
@@ -174,4 +179,44 @@ class Log10Scale implements Scale {
   isSafeNumber(x: number): boolean {
     return Number.isFinite(x) && x > 0;
   }
+
+  defaultFormatter = numberFormatter;
+}
+
+export class TemporalScale implements Scale {
+  private readonly scale = scaleTime();
+
+  forward(
+    domain: [number, number],
+    range: [number, number],
+    x: number
+  ): number {
+    return this.scale.domain(domain).range(range)(x);
+  }
+
+  reverse(
+    domain: [number, number],
+    range: [number, number],
+    x: number
+  ): number {
+    return this.scale.domain(domain).range(range).invert(x).getTime();
+  }
+
+  niceDomain(domain: [number, number]): [number, number] {
+    const [minDate, maxDate] = this.scale.domain(domain).nice().domain();
+    return [minDate.getTime(), maxDate.getTime()];
+  }
+
+  ticks(domain: [number, number], sizeGuidance: number): number[] {
+    return this.scale
+      .domain(domain)
+      .ticks(sizeGuidance)
+      .map((date) => date.getTime());
+  }
+
+  isSafeNumber(x: number): boolean {
+    return Number.isFinite(x);
+  }
+
+  defaultFormatter = wallTimeFormatter;
 }

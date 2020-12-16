@@ -10,6 +10,9 @@ tf_ts_library(
         "internal_types.ts",
         "scale_types.ts",
     ],
+    deps = [
+        ":formatter",
+    ],
 )
 
 tf_ts_library(
@@ -82,6 +85,7 @@ tf_ts_library(
     ],
     visibility = ["//tensorboard:internal"],
     deps = [
+        ":formatter",
         ":internal_types",
         "//tensorboard/webapp/third_party:d3",
     ],

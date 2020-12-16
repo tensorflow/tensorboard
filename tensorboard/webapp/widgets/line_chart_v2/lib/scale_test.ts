@@ -327,4 +327,123 @@ describe('line_chart_v2/lib/scale test', () => {
       });
     });
   });
+
+  describe('time', () => {
+    let scale: Scale;
+
+    beforeEach(() => {
+      scale = createScale(ScaleType.TIME);
+    });
+
+    describe('#forward and #reverse', () => {
+      it('converts value from domain space to range space', () => {
+        expect(scale.forward([0, 1], [-100, 100], 0)).toBe(-100);
+        expect(scale.forward([0, 1], [-100, 100], 0.5)).toBe(0);
+        expect(scale.forward([0, 1], [-100, 100], 1)).toBe(100);
+
+        expect(scale.forward([0, 1], [-100, 100], -1)).toBe(-300);
+        expect(scale.forward([0, 1], [-100, 100], 5)).toBe(900);
+
+        expect(
+          scale.forward(
+            [
+              new Date('2020-01-01 12:00:00').getTime(),
+              new Date('2020-01:02 00:00:00').getTime(),
+            ],
+            [0, 100],
+            new Date('2020-01-01 18:00:00').getTime()
+          )
+        ).toBe(50);
+      });
+
+      it('reverses the scale from range to domain', () => {
+        expect(scale.reverse([1000, 2000], [-100, 100], 0)).toBe(1500);
+        expect(scale.reverse([1000, 2000], [-100, 100], -100)).toBe(1000);
+        expect(scale.reverse([1000, 2000], [-100, 100], 100)).toBe(2000);
+
+        expect(scale.reverse([1000, 2000], [-100, 100], -101)).toBe(995);
+        expect(scale.reverse([1000, 2000], [-100, 100], 500)).toBe(4000);
+
+        expect(
+          scale.reverse(
+            [
+              new Date('2020-01-01 12:00:00').getTime(),
+              new Date('2020-01:02 00:00:00').getTime(),
+            ],
+            [0, 100],
+            50
+          )
+        ).toBe(new Date('2020-01-01 18:00:00').getTime());
+      });
+    });
+
+    describe('#niceDomain', () => {
+      it('rounds domain', () => {
+        expect(scale.niceDomain([0, 100])).toEqual([0, 100]);
+        expect(scale.niceDomain([-0.011, 99.5])).toEqual([0, 100]);
+        expect(scale.niceDomain([5.44, 95.12])).toEqual([0, 100]);
+        expect(
+          scale.niceDomain([
+            new Date('2020-01-03 11:24:43').getTime(),
+            new Date('2020-09-13 01:32:11').getTime(),
+          ])
+        ).toEqual([
+          1577836800000, // 2020-01-01 00:00:00
+          1601510400000, // 2020-10-01 00:00:00
+        ]);
+      });
+    });
+
+    // This is basically exercising d3.scale#ticks but it is good to test so we are not
+    // surprised by any behavior changes.
+    describe('#tick', () => {
+      it('returns ticks in between min and max', () => {
+        expect(
+          scale.ticks(
+            [
+              new Date('2020-01-01').getTime(),
+              new Date('2020-12-31').getTime(),
+            ],
+            5
+          )
+        ).toEqual([
+          1577836800000, // 2020-01-01
+          1585699200000, // 2020-04-01
+          1593561600000, // 2020-07-01
+          1601510400000, // 2020-10-01
+        ]);
+
+        expect(
+          scale.ticks(
+            [
+              new Date('2020-01-01 05:00').getTime(),
+              new Date('2020-01-01 17:00').getTime(),
+            ],
+            5
+          )
+        ).toEqual([
+          1577858400000, // 2020-01-01 06:00
+          1577869200000, // 2020-01-01 09:00
+          1577880000000, // 2020-01-01 12:00
+          1577890800000, // 2020-01-01 15:00
+        ]);
+      });
+    });
+
+    describe('#isSafeNumber', () => {
+      it('returns true for numbers', () => {
+        expect(scale.isSafeNumber(0.1)).toBe(true);
+        expect(scale.isSafeNumber(1)).toBe(true);
+        expect(scale.isSafeNumber(1e100)).toBe(true);
+        expect(scale.isSafeNumber(-1e100)).toBe(true);
+        expect(scale.isSafeNumber(1e-100)).toBe(true);
+      });
+
+      it('returns false for infinities and NaN', () => {
+        expect(scale.isSafeNumber(NaN)).toBe(false);
+        expect(scale.isSafeNumber(Infinity)).toBe(false);
+        expect(scale.isSafeNumber(-Infinity)).toBe(false);
+      });
+    });
+  });
 });
