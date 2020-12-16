@@ -59,7 +59,10 @@ limitations under the License.
   <div class="tooltip-container">
     <ng-container
       [ngTemplateOutlet]="tooltipTemplate ? tooltipTemplate : defaultTooltip"
-      [ngTemplateOutletContext]="{data: cursoredData}"
+      [ngTemplateOutletContext]="{
+        data: cursoredData,
+        cursorLocationInDataCoord: cursorLocationInDataCoord
+      }"
     ></ng-container>
   </div>
 </ng-template>

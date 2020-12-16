@@ -47,6 +47,7 @@ import {ScalarStepDatum} from '../../data_source';
 import {TooltipSort, XAxisType} from '../../types';
 import {
   ScalarCardDataSeries,
+  ScalarCardSeriesMetadata,
   ScalarCardSeriesMetadataMap,
 } from './scalar_card_types';
 
@@ -65,6 +66,13 @@ export type SeriesDataList = Array<SeriesData<Metadata, StepDatum>>;
 export type ScalarChartEvalPoint = EvaluationPoint<Metadata, StepDatum>;
 
 export type TooltipColumns = Array<TooltipColumnSpec<Metadata, StepDatum>>;
+
+type ScalarTooltipDatum = TooltipDatum<
+  ScalarCardSeriesMetadata & {
+    distSqToCursor: number;
+    closest: boolean;
+  }
+>;
 
 const DEFAULT_TOOLTIP_COLUMNS: TooltipColumns = [
   {
@@ -190,9 +198,53 @@ export class ScalarCardComponent {
     }
   }
 
-  trackByTooltipDatum(index: number, datum: TooltipDatum) {
+  trackByTooltipDatum(index: number, datum: ScalarTooltipDatum) {
     return datum.id;
   }
 
   readonly relativeXFormatter = relativeTimeFormatter;
+
+  getCursorAwareTooltipData(
+    tooltipData: TooltipDatum<ScalarCardSeriesMetadata>[],
+    cursorLoc: {x: number; y: number}
+  ): ScalarTooltipDatum[] {
+    const scalarTooltipData = tooltipData.map((datum) => {
+      return {
+        ...datum,
+        metadata: {
+          ...datum.metadata,
+          closest: false,
+          distSqToCursor:
+            (datum.point.x - cursorLoc.x) ** 2 +
+            (datum.point.y - cursorLoc.y) ** 2,
+        },
+      };
+    });
+
+    let minDist = Infinity;
+    let minIndex = 0;
+    for (let index = 0; index < scalarTooltipData.length; index++) {
+      if (minDist > scalarTooltipData[index].metadata.distSqToCursor) {
+        minDist = scalarTooltipData[index].metadata.distSqToCursor;
+        minIndex = index;
+      }
+    }
+
+    if (scalarTooltipData.length) {
+      scalarTooltipData[minIndex].metadata.closest = true;
+    }
+
+    switch (this.tooltipSort) {
+      case TooltipSort.DEFAULT:
+        return scalarTooltipData;
+      case TooltipSort.ASCENDING:
+        return scalarTooltipData.sort((a, b) => a.point.y - b.point.y);
+      case TooltipSort.DESCENDING:
+        return scalarTooltipData.sort((a, b) => b.point.y - a.point.y);
+      case TooltipSort.NEAREST:
+        return scalarTooltipData.sort((a, b) => {
+          return a.metadata.distSqToCursor - b.metadata.distSqToCursor;
+        });
+    }
+  }
 }
