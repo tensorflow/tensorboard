@@ -95,7 +95,7 @@ class TestableLineChart {
     <ng-container
       *ngIf="tooltipTemplate"
       [ngTemplateOutlet]="tooltipTemplate"
-      [ngTemplateOutletContext]="{data: tooltipData}"
+      [ngTemplateOutletContext]="{data: tooltipDataForTesting}"
     ></ng-container>
   `,
 })
@@ -107,7 +107,10 @@ class TestableGpuLineChart {
   @Input() ignoreYOutliers!: boolean;
   @Input()
   tooltipTemplate!: TemplateRef<{data: TooltipDatum[]}>;
-  @Input() tooltipData: TooltipDatum[] = [];
+
+  // This input does not exist on real line-chart and is devised to make tooltipTemplate
+  // testable without using the real implementation.
+  @Input() tooltipDataForTesting: TooltipDatum[] = [];
 
   constructor(public readonly changeDetectorRef: ChangeDetectorRef) {}
 }
@@ -1014,7 +1017,8 @@ describe('scalar card', () => {
         {
           id: 'run1',
           points: [
-            // Keeps the data structure as is but requires "x" and "y" props.
+            // Keeps the data structure as is but do notice adjusted wallTime and
+            // line_chart_v2 required "x" and "y" props.
             {wallTime: 2000, value: 1, step: 1, x: 1, y: 1},
             {wallTime: 4000, value: 10, step: 2, x: 2, y: 10},
           ],
@@ -1159,7 +1163,7 @@ describe('scalar card', () => {
       ) {
         const lineChart = fixture.debugElement.query(Selector.GPU_LINE_CHART);
 
-        lineChart.componentInstance.tooltipData = tooltipData;
+        lineChart.componentInstance.tooltipDataForTesting = tooltipData;
         lineChart.componentInstance.changeDetectorRef.markForCheck();
       }
 
@@ -1219,8 +1223,6 @@ describe('scalar card', () => {
 
         expect(tableContent).toEqual([
           ['', 'Row 1', '1000', '10', '1/1/20, 12:00 AM'],
-          // Print the step with comma for readability. The value is yet optimize for
-          // readability (we may use the scientific formatting).
           ['', 'Row 2', '-1000', '1,000', '12/31/20, 12:00 AM'],
         ]);
       }));

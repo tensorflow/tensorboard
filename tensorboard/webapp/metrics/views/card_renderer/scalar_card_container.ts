@@ -290,6 +290,9 @@ export class ScalarCardContainer implements CardRenderer, OnInit {
             points: points.map((point) => {
               return {
                 ...point,
+                // Convert time in seconds to milliseconds.
+                // TODO(stephanwlee): when the legacy line chart is removed, do the
+                // conversion at either effects or at `stepSeriesToLineSeries`.
                 x: xType === XAxisType.WALL_TIME ? point.x * 1000 : point.x,
                 wallTime: point.wallTime * 1000,
               };

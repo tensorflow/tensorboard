@@ -46,9 +46,7 @@ import {ScalarStepDatum} from '../../data_source';
 import {TooltipSort, XAxisType} from '../../types';
 import {
   ScalarCardDataSeries,
-  ScalarCardSeriesMetadata,
   ScalarCardSeriesMetadataMap,
-  SeriesType,
 } from './scalar_card_types';
 
 const RESIZE_REDRAW_DEBOUNCE_TIME_IN_MS = 50;
@@ -134,8 +132,6 @@ export class ScalarCardComponent {
   @Input() smoothingEnabled!: boolean;
   @Input() gpuLineChartEnabled!: boolean;
   @Input() dataSeries!: ScalarCardDataSeries[];
-  // For tooltip search.
-  @Input() dataSeriesMap!: Map<string, ScalarCardDataSeries>;
   @Input() chartMetadataMap!: ScalarCardSeriesMetadataMap;
 
   @Output() onFullSizeToggle = new EventEmitter<void>();
