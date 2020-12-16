@@ -23,6 +23,7 @@ tf_ng_module(
     deps = [
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp:selectors",
+        "//tensorboard/webapp/angular:expect_angular_material_button",
         "//tensorboard/webapp/angular:expect_angular_material_checkbox",
         "//tensorboard/webapp/angular:expect_angular_material_icon",
         "//tensorboard/webapp/core/store",
