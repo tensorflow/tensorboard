@@ -103,16 +103,17 @@ class LazyTest(unittest.TestCase):
             def __eq__(self, other):
                 return True
 
-        count_box = [0]
+        count = 0
 
         @lazy.lazy_load("foo")
         def foo():
-            count_box[0] += 1
+            nonlocal count
+            count += 1
             return EqualToEverything()
 
         dir(foo)
         dir(foo)
-        self.assertEqual(count_box[0], 1)
+        self.assertEqual(count, 1)
 
 
 if __name__ == "__main__":

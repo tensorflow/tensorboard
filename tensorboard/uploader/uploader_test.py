@@ -744,12 +744,13 @@ class TensorboardUploaderTest(tf.test.TestCase):
             pass
 
         mock_rate_limiter = mock.create_autospec(util.RateLimiter)
-        upload_call_count_box = [0]
+        upload_call_count = 0
 
         def mock_upload_once():
-            upload_call_count_box[0] += 1
+            nonlocal upload_call_count
+            upload_call_count += 1
             tick_count = mock_rate_limiter.tick.call_count
-            self.assertEqual(tick_count, upload_call_count_box[0])
+            self.assertEqual(tick_count, upload_call_count)
             if tick_count >= 3:
                 raise Success()
 
@@ -1352,13 +1353,14 @@ class ScalarBatchedRequestSenderTest(tf.test.TestCase):
         event_2 = event_pb2.Event(step=2)
         event_2.summary.value.add(tag="bar", simple_value=-2.0)
 
-        add_point_call_count_box = [0]
+        add_point_call_count = 0
 
         def mock_add_point(byte_budget_manager_self, point):
             # Simulate out-of-space error the first time that we try to store
             # the second point.
-            add_point_call_count_box[0] += 1
-            if add_point_call_count_box[0] == 2:
+            nonlocal add_point_call_count
+            add_point_call_count += 1
+            if add_point_call_count == 2:
                 raise uploader_lib._OutOfSpaceError()
 
         with mock.patch.object(
@@ -1798,13 +1800,14 @@ class TensorBatchedRequestSenderTest(tf.test.TestCase):
             ),
         )
 
-        add_point_call_count_box = [0]
+        add_point_call_count = 0
 
         def mock_add_point(byte_budget_manager_self, point):
             # Simulate out-of-space error the first time that we try to store
             # the second point.
-            add_point_call_count_box[0] += 1
-            if add_point_call_count_box[0] == 2:
+            nonlocal add_point_call_count
+            add_point_call_count += 1
+            if add_point_call_count == 2:
                 raise uploader_lib._OutOfSpaceError()
 
         with mock.patch.object(
