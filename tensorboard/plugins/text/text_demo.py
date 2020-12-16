@@ -24,7 +24,7 @@ tf.compat.v1.enable_v2_behavior()
 LOGDIR = "/tmp/text_demo"
 
 # Number of steps for which to write data.
-STEPS = 16
+STEPS = 160
 
 
 def simple_example(step):
@@ -123,8 +123,8 @@ def create_run(logdir, run_name):
                 markdown_table(step)
             with tf.name_scope("higher_order_tensors"):
                 higher_order_tensors(step)
-            with tf.name_scope("simple_example_with_pagination"):
-                simple_example_with_pagination(step)
+            #            with tf.name_scope("simple_example_with_pagination"):
+            #                simple_example_with_pagination(step)
 
     writer.close()
 

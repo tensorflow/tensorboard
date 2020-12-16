@@ -795,8 +795,10 @@ class _TensorBatchedRequestSender(object):
         self._tensor_bytes += point.value.ByteSize()
         if point.value.ByteSize() > self._max_tensor_point_size:
             logger.warning(
-                "Tensor too large; skipping. "
+                "Tensor (%s, step: %d) too large; skipping. "
                 "Size %d exceeds limit of %d bytes.",
+                tag_proto.name,
+                event.step,
                 point.value.ByteSize(),
                 self._max_tensor_point_size,
             )
