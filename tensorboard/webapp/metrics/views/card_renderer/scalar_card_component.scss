@@ -79,3 +79,29 @@ $_title-to-heading-gap: 12px;
     height: 100%;
   }
 }
+
+.tooltip {
+  border-spacing: 4px;
+  font-size: 13px;
+
+  th {
+    text-align: left;
+  }
+
+  $_circle-size: 12px;
+
+  .tooltip-row-circle {
+    align-items: center;
+    height: $_circle-size;
+    width: $_circle-size;
+  }
+
+  .tooltip-row-circle > span {
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    display: inline-block;
+    // Subtract by border width (1px on both sides)
+    height: $_circle-size - 2px;
+    width: $_circle-size - 2px;
+  }
+}

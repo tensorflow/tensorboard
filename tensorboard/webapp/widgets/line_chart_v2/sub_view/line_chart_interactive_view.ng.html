@@ -56,35 +56,37 @@ limitations under the License.
   [cdkConnectedOverlayGrowAfterOpen]="true"
   (detach)="onTooltipDisplayDetached()"
 >
-  <table class="tooltip-container">
+  <div class="tooltip-container">
+    <ng-container
+      [ngTemplateOutlet]="tooltipTemplate ? tooltipTemplate : defaultTooltip"
+      [ngTemplateOutletContext]="{data: cursoredData}"
+    ></ng-container>
+  </div>
+</ng-template>
+
+<ng-template #defaultTooltip let-tooltipData="data">
+  <table>
     <thead>
       <tr>
         <th class="circle-header"></th>
-        <th>Run</th>
-        <th>Value</th>
-        <th>Step</th>
+        <th>Name</th>
+        <th>Y</th>
+        <th>X</th>
       </tr>
     </thead>
     <tbody>
       <ng-container
-        *ngFor="let datum of cursoredData; trackBy: trackBySeriesName"
+        *ngFor="let datum of tooltipData; trackBy: trackBySeriesName"
       >
-        <ng-container
-          [ngTemplateOutlet]="tooltipTemplate ? tooltipTemplate : defaultTooltipRow"
-          [ngTemplateOutletContext]="{data: datum}"
-        ></ng-container>
+        <tr class="tooltip-row">
+          <td class="tooltip-row-circle">
+            <span [style.backgroundColor]="datum.metadata.color"></span>
+          </td>
+          <td class="name">{{ datum.metadata.displayName }}</td>
+          <td>{{ datum.point.y }}</td>
+          <td>{{ datum.point.x }}</td>
+        </tr>
       </ng-container>
     </tbody>
   </table>
-</ng-template>
-
-<ng-template #defaultTooltipRow let-rowData="data">
-  <tr class="tooltip-row">
-    <td class="tooltip-row-circle">
-      <span [style.backgroundColor]="rowData.metadata.color"></span>
-    </td>
-    <td class="name">{{ rowData.metadata.displayName }}</td>
-    <td>{{ rowData.point.y }}</td>
-    <td>{{ rowData.point.x }}</td>
-  </tr>
 </ng-template>

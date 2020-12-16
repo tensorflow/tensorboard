@@ -37,7 +37,11 @@ import {
   XAxisType as ChartXAxisType,
   YAxisType,
 } from '../../../widgets/line_chart/line_chart_types';
-import {RendererType, ScaleType} from '../../../widgets/line_chart_v2/types';
+import {
+  RendererType,
+  ScaleType,
+  TooltipDatum,
+} from '../../../widgets/line_chart_v2/types';
 import {ScalarStepDatum} from '../../data_source';
 import {TooltipSort, XAxisType} from '../../types';
 import {
@@ -125,6 +129,7 @@ export class ScalarCardComponent {
   @Input() seriesDataList!: SeriesDataList;
 
   // gpu chart related props.
+  @Input() smoothingEnabled!: boolean;
   @Input() gpuLineChartEnabled!: boolean;
   @Input() dataSeries!: ScalarCardDataSeries[];
   @Input() chartMetadataMap!: ScalarCardSeriesMetadataMap;
@@ -178,5 +183,9 @@ export class ScalarCardComponent {
         this.lineChart.redraw();
       }
     }
+  }
+
+  trackByTooltipDatum(index: number, datum: TooltipDatum) {
+    return datum.id;
   }
 }
