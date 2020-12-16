@@ -89,6 +89,8 @@ limitations under the License.
     [seriesData]="dataSeries"
     [seriesMetadataMap]="chartMetadataMap"
     [yScaleType]="newYAxisType"
+    [xScaleType]="newXAxisType"
+    [customXFormatter]="xAxisType === XAxisType.RELATIVE ? relativeXFormatter : undefined"
     [ignoreYOutliers]="ignoreOutliers"
     [tooltipTemplate]="tooltip"
   ></line-chart>
@@ -120,6 +122,7 @@ limitations under the License.
           <th>Value</th>
           <th>Step</th>
           <th>Time</th>
+          <th *ngIf="xAxisType === XAxisType.RELATIVE">Relative</th>
         </tr>
       </thead>
       <tbody>
@@ -136,6 +139,9 @@ limitations under the License.
             <!-- Print the step with comma for readability. -->
             <td>{{ datum.point.step | number }}</td>
             <td>{{ datum.point.wallTime | date: 'short' }}</td>
+            <td *ngIf="xAxisType === XAxisType.RELATIVE">
+              {{ relativeXFormatter.formatReadable(datum.point.x) }}
+            </td>
           </tr>
         </ng-container>
       </tbody>
