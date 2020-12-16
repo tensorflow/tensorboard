@@ -373,7 +373,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_list_plugins_multiple_timeseries() {
+    async fn test_list_plugins_multiple_timeseries_same_type() {
         let commit = CommitBuilder::new()
             .scalars("train", "xent2", |b| b.build())
             .scalars("train", "xent", |b| b.build())
@@ -388,6 +388,9 @@ mod tests {
             vec!["scalars"]
         );
     }
+
+    // TODO(@bileschi): Add a test for the case of multiple different types of
+    // tags once sample CommitBuilders exist for plugins beyond "scalar".
 
     #[tokio::test]
     async fn test_list_plugins_no_data() {
