@@ -52,28 +52,29 @@ impl TensorBoardDataProvider for DataProviderHandler {
         &self,
         _request: Request<data::ListPluginsRequest>,
     ) -> Result<Response<data::ListPluginsResponse>, Status> {
-        let mut res: data::ListPluginsResponse = Default::default();
-        let runs = self.commit.runs.read().unwrap();
-        let mut plugin_names_set: HashSet<String> = HashSet::new();
-        for run_data in runs.values() {
-            let run_data = run_data.read().unwrap();
-            for scalar_value in run_data.scalars.values() {
-                let metadata: &pb::SummaryMetadata = scalar_value.metadata.as_ref();
-                let plugin_data = &metadata.plugin_data.as_ref();
-                match plugin_data {
-                    Some(d) => {
-                        plugin_names_set.insert(d.plugin_name.clone());
-                    }
-                    _ => {
-                        plugin_names_set.insert(String::new());
-                    }
-                }
+        let runs = self.read_runs()?;
+        // Collect set of plugin names.
+        let mut plugin_names = HashSet::new();
+        for (run, data) in runs.iter() {
+            let data = data
+                .read()
+                .map_err(|_| Status::internal(format!("failed to read run data for {:?}", run)))?;
+            for time_series in data.scalars.values() {
+                let metadata: &pb::SummaryMetadata = time_series.metadata.as_ref();
+                let plugin_name = match &metadata.plugin_data.as_ref() {
+                    Some(d) => d.plugin_name.clone(),
+                    None => String::new(),
+                };
+                plugin_names.insert(plugin_name);
             }
         }
-        // Move out of set into response's list.
-        for s in plugin_names_set {
-            res.plugins.push(data::Plugin { name: s });
-        }
+        // Move out of set into a new ListPluginsResponse.
+        let res = data::ListPluginsResponse {
+            plugins: plugin_names
+                .into_iter()
+                .map(|name| data::Plugin { name })
+                .collect(),
+        };
         Ok(Response::new(res))
     }
 
@@ -389,8 +390,32 @@ mod tests {
         );
     }
 
-    // TODO(@bileschi): Add a test for the case of multiple different types of
-    // tags once sample CommitBuilders exist for plugins beyond "scalar".
+    #[tokio::test]
+    async fn test_list_plugins_multiple_timeseries_different_types() {
+        let mut custom_metadata = pb::SummaryMetadata::default();
+        let mut plugin_data = pb::summary_metadata::PluginData::default();
+        plugin_data.plugin_name = "custom_scalars".to_string();
+        custom_metadata.plugin_data = Some(plugin_data);
+        let commit = CommitBuilder::new()
+            .scalars("train", "xent2", |b| b.build())
+            .scalars("train", "xent", |mut b| {
+                b.metadata(Some(Box::new(custom_metadata))).build()
+            })
+            .build();
+        let handler = sample_handler(commit);
+        let req = Request::new(data::ListPluginsRequest {
+            experiment_id: "123".to_string(),
+        });
+        let res = handler.list_plugins(req).await.unwrap().into_inner();
+        assert_eq!(
+            res.plugins
+                .into_iter()
+                .map(|p| p.name)
+                .collect::<Vec<_>>()
+                .sort(),
+            vec!["custom_scalars", "scalars"].sort()
+        );
+    }
 
     #[tokio::test]
     async fn test_list_plugins_no_data() {
