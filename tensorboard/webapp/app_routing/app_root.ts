@@ -28,7 +28,10 @@ export function metaElAppRootExtractor(location: Location): string {
   const metaEl = document.querySelector('head meta[name="tb-relative-root"]');
 
   if (!metaEl) return '/';
-  const {pathname} = new URL(metaEl.content, location.getHref());
+  const {pathname} = new URL(
+    (metaEl as HTMLMetaElement).content,
+    location.getHref()
+  );
   return pathname.replace(/\/*$/, '/');
 }
 
