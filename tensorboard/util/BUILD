@@ -5,23 +5,6 @@ package(default_visibility = ["//tensorboard:internal"])
 licenses(["notice"])
 
 py_library(
-    name = "argparse_util",
-    srcs = ["argparse_util.py"],
-    srcs_version = "PY3",
-)
-
-py_test(
-    name = "argparse_util_test",
-    size = "small",
-    srcs = ["argparse_util_test.py"],
-    srcs_version = "PY3",
-    deps = [
-        ":argparse_util",
-        "//tensorboard:test",
-    ],
-)
-
-py_library(
     name = "encoder",
     srcs = ["encoder.py"],
     srcs_version = "PY3",
