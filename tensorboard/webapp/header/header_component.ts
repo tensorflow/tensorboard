@@ -53,8 +53,6 @@ import {Component} from '@angular/core';
       .readme,
       app-header-reload,
       settings-button {
-        align-items: center;
-        display: inline-flex;
         flex: 0 0 auto;
         justify-content: center;
       }

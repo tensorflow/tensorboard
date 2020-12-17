@@ -139,9 +139,9 @@ class CorePlugin(base_plugin.TBPlugin):
         # try to measure gzip and measure content length if a truthy value is
         # passed.
         res = http_util.Respond(request, None, "text/html")
-        res.stream.write(
-            '<meta name="tb-relative-root" content="%s/" />' % (relpath)
-        )
+        # res.stream.write(
+        #     '<meta name="tb-relative-root" content="%s/" />' % (relpath)
+        # )
         res.stream.write(index_asset_bytes)
         return res
 
