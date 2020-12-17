@@ -22,7 +22,6 @@ import {
   filter,
   map,
   switchMap,
-  take,
   tap,
   withLatestFrom,
 } from 'rxjs/operators';

@@ -25,9 +25,7 @@ export const RESOLVED_APP_ROOT = new InjectionToken<string>(
 );
 
 export function metaElAppRootExtractor(location: Location): string {
-  const metaEl = document.querySelector(
-    'head meta[name="tb-relative-root"]'
-  ) as HTMLMetaElement | null;
+  const metaEl = document.querySelector('head meta[name="tb-relative-root"]');
 
   if (!metaEl) return '/';
   const {pathname} = new URL(metaEl.content, location.getHref());
