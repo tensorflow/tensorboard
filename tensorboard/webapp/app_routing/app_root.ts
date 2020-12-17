@@ -17,8 +17,8 @@ import {InjectionToken, Provider} from '@angular/core';
 import {Location} from './location';
 
 /**
- * Provides web application root. The root path starts with `/` and does not have trailing
- * `/` (latter condition takes precedence over the former).
+ * Provides web application root. The root path starts with `/` and always end with `/`.
+ * In case of empty or missing tb-relative-root, it returns `/`.
  */
 export const RESOLVED_APP_ROOT = new InjectionToken<string>(
   '[AppRouting] Resolved App Root'
