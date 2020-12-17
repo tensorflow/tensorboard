@@ -135,15 +135,17 @@ class CorePlugin(base_plugin.TBPlugin):
             if self._path_prefix
             else "."
         )
-        # Technically, it is possible to flush parts using yields but http_utils
-        # try to measure gzip and measure content length if a truthy value is
-        # passed.
-        res = http_util.Respond(request, None, "text/html")
-        # res.stream.write(
-        #     '<meta name="tb-relative-root" content="%s/" />' % (relpath)
-        # )
-        res.stream.write(index_asset_bytes)
-        return res
+        meta_header = (
+            '<!doctype html><meta name="tb-relative-root" content="%s/">'
+            % relpath
+        )
+        content = meta_header.encode("utf-8") + index_asset_bytes
+        # By passing content_encoding, disallow gzipping. Bloats the content
+        # from ~25 kiB to ~120 kiB but reduces CPU usage and avoid 3ms worth of
+        # gzipping.
+        return http_util.Respond(
+            request, content, "text/html", content_encoding="identity"
+        )
 
     @wrappers.Request.application
     def _serve_environment(self, request):

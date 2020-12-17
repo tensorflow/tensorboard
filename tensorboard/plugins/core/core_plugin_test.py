@@ -165,7 +165,8 @@ class CorePluginNoDataTest(tf.test.TestCase):
         html = response.get_data()
         self.assertEqual(
             html,
-            b'<meta name="tb-relative-root" content="./" />' + FAKE_INDEX_HTML,
+            b'<!doctype html><meta name="tb-relative-root" content="./">'
+            + FAKE_INDEX_HTML,
         )
 
     def testDataPaths_disableAllCaching(self):
@@ -398,8 +399,8 @@ class CorePluginPathPrefixTest(tf.test.TestCase):
         html = response.get_data()
 
         expected_meta = (
-            '<meta name="tb-relative-root" content="%s" />'
-            % (expected_tb_relative_root)
+            '<!doctype html><meta name="tb-relative-root" content="%s">'
+            % expected_tb_relative_root
         ).encode()
         self.assertEqual(
             html,

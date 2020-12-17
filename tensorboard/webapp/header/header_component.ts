@@ -54,7 +54,6 @@ import {Component} from '@angular/core';
       app-header-reload,
       settings-button {
         flex: 0 0 auto;
-        justify-content: center;
       }
 
       .brand {
