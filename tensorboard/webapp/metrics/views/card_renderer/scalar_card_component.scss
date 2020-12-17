@@ -90,8 +90,13 @@ $_title-to-heading-gap: 12px;
 
   $_circle-size: 12px;
 
+  .tooltip-row {
+    white-space: nowrap;
+  }
+
   .tooltip-row-circle {
     align-items: center;
+    display: inline-flex;
     height: $_circle-size;
     width: $_circle-size;
   }

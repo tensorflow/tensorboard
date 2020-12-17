@@ -150,6 +150,14 @@ export class LineChartInteractiveViewComponent
       originY: 'bottom',
       overlayY: 'top',
     },
+    // bottom, right aligned
+    {
+      offsetY: 5,
+      originX: 'end',
+      overlayX: 'end',
+      originY: 'bottom',
+      overlayY: 'top',
+    },
     // Then top
     {
       offsetY: 5,
@@ -158,11 +166,27 @@ export class LineChartInteractiveViewComponent
       originY: 'top',
       overlayY: 'bottom',
     },
+    // then top, right aligned
+    {
+      offsetX: 5,
+      originX: 'end',
+      overlayX: 'end',
+      originY: 'top',
+      overlayY: 'bottom',
+    },
     // then right
     {
       offsetX: 5,
       originX: 'end',
       overlayX: 'start',
+      originY: 'top',
+      overlayY: 'top',
+    },
+    // then left
+    {
+      offsetX: 5,
+      originX: 'start',
+      overlayX: 'end',
       originY: 'top',
       overlayY: 'top',
     },
