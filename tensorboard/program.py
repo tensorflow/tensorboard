@@ -60,7 +60,6 @@ from tensorboard.backend.event_processing import data_ingester as local_ingester
 from tensorboard.backend.event_processing import event_file_inspector as efi
 from tensorboard.data import server_ingester
 from tensorboard.plugins.core import core_plugin
-from tensorboard.util import argparse_util
 from tensorboard.util import tb_logging
 
 
@@ -230,10 +229,7 @@ class TensorBoard(object):
 
         arg0 = argv[0] if argv else ""
 
-        with argparse_util.allow_missing_subcommand():
-            flags = base_parser.parse_args(
-                argv[1:]
-            )  # Strip binary name from argv.
+        flags = base_parser.parse_args(argv[1:])  # Strip binary name from argv.
         if getattr(flags, _SUBCOMMAND_FLAG, None) is None:
             # Manually assign default value rather than using `set_defaults`
             # on the base parser to work around Python bug #9351 on old
