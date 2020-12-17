@@ -12,11 +12,18 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Directive, HostBinding, HostListener, Input} from '@angular/core';
+import {
+  Directive,
+  HostBinding,
+  HostListener,
+  Inject,
+  Input,
+} from '@angular/core';
 import {Store} from '@ngrx/store';
 
 import {State} from '../../app_state';
 import {navigationRequested} from '../actions';
+import {RESOLVED_APP_ROOT} from '../app_root';
 import {Location} from '../location';
 
 @Directive({selector: 'a[routerLink]'})
@@ -25,7 +32,8 @@ export class RouterLinkDirectiveContainer {
 
   constructor(
     private readonly store: Store<State>,
-    private readonly location: Location
+    private readonly location: Location,
+    @Inject(RESOLVED_APP_ROOT) private readonly appRoot: string
   ) {}
 
   @HostListener('click', ['$event'])
@@ -47,9 +55,12 @@ export class RouterLinkDirectiveContainer {
   get href() {
     if (!this.pathname) return null;
 
-    return this.location.getFullPathFromRouteOrNav({
-      pathname: this.pathname,
-    });
+    return (
+      this.appRoot.slice(0, -1) +
+      this.location.getFullPathFromRouteOrNav({
+        pathname: this.pathname,
+      })
+    );
   }
 
   /**

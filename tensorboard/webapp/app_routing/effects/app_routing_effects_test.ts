@@ -22,6 +22,7 @@ import {of, ReplaySubject} from 'rxjs';
 
 import {State} from '../../app_state';
 import * as actions from '../actions';
+import {navigationRequested} from '../actions';
 import {RESOLVED_APP_ROOT} from '../app_root';
 import {Location} from '../location';
 import {
@@ -773,6 +774,56 @@ describe('app_routing_effects', () => {
       onPopStateSubject.next({
         pathname: '/foo/bar/experiment/123',
       });
+
+      expect(actualActions).toEqual([
+        actions.navigating({
+          after: buildRoute({
+            routeKind: RouteKind.EXPERIMENT,
+            params: {experimentId: '123'},
+            pathname: '/experiment/123',
+            queryParams: [],
+            navigationOptions: {
+              replaceState: false,
+            },
+          }),
+        }),
+      ]);
+
+      tick();
+    }));
+
+    it('navigates with appRoot aware path when navRequest with absPath', fakeAsync(() => {
+      setAppRootAndSubscribe('/foo/bar/');
+
+      // Do note that this path name does not contain the appRoot.
+      action.next(navigationRequested({pathname: '/experiment/123'}));
+
+      expect(actualActions).toEqual([
+        actions.navigating({
+          after: buildRoute({
+            routeKind: RouteKind.EXPERIMENT,
+            params: {experimentId: '123'},
+            pathname: '/experiment/123',
+            queryParams: [],
+            navigationOptions: {
+              replaceState: false,
+            },
+          }),
+        }),
+      ]);
+
+      tick();
+    }));
+
+    it('navigates with appRoot aware path when navRequest with relPath', fakeAsync(() => {
+      setAppRootAndSubscribe('/foo/bar/');
+
+      spyOn(location, 'getResolvedPath')
+        .withArgs('../experiment/123')
+        .and.returnValue('/foo/bar/experiment/123');
+
+      // Do note that this path name does not contain the appRoot.
+      action.next(navigationRequested({pathname: '../experiment/123'}));
 
       expect(actualActions).toEqual([
         actions.navigating({

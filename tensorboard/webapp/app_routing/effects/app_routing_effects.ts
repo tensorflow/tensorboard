@@ -68,12 +68,8 @@ export class AppRoutingEffects {
     this.routeConfigs = registry.getRouteConfigs();
   }
 
-  private readonly onNavigationRequested$ = this.actions$.pipe(
-    ofType(navigationRequested)
-  );
-
   private getAppRootlessPathname(pathname: string): string {
-    if (this.appRoot !== null && pathname.startsWith(this.appRoot)) {
+    if (pathname.startsWith(this.appRoot)) {
       // appRoot ends with "/" and we need the trimmed pathname to start with "/" since
       // routes are defined with starting "/".
       return '/' + pathname.slice(this.appRoot.length);
@@ -81,9 +77,19 @@ export class AppRoutingEffects {
     return pathname;
   }
 
-  private getPathnameWithAppRoot(pathname: string): string {
-    return this.appRoot.slice(0, -1) + pathname;
+  private getAbsPathnameWithAppRoot(absPathname: string): string {
+    return this.appRoot.slice(0, -1) + absPathname;
   }
+
+  private readonly onNavigationRequested$ = this.actions$.pipe(
+    ofType(navigationRequested),
+    map((navigation) => {
+      const resolvedPathname = navigation.pathname.startsWith('/')
+        ? this.getAbsPathnameWithAppRoot(navigation.pathname)
+        : this.location.getResolvedPath(navigation.pathname);
+      return {...navigation, pathname: resolvedPathname};
+    })
+  );
 
   private readonly onInit$: Observable<Navigation> = this.actions$
     .pipe(ofType(initAction))
@@ -91,7 +97,7 @@ export class AppRoutingEffects {
       delay(0),
       map(() => {
         return {
-          pathname: this.getAppRootlessPathname(this.location.getPath()),
+          pathname: this.location.getPath(),
           queryParams: this.location.getSearch(),
           replaceState: true,
           browserInitiated: true,
@@ -99,13 +105,17 @@ export class AppRoutingEffects {
       })
     );
 
+  /**
+   * Input observable must have absolute pathname with, when appRoot is present,
+   * appRoot prefixed (e.g., window.location.pathname).
+   */
   private readonly userInitNavRoute$ = merge(
     this.onNavigationRequested$,
     this.onInit$,
     this.location.onPopState().pipe(
       map((navigation) => {
         return {
-          pathname: this.getAppRootlessPathname(navigation.pathname),
+          pathname: navigation.pathname,
           replaceState: navigation.replaceState,
           browserInitiated: true,
         };
@@ -113,9 +123,15 @@ export class AppRoutingEffects {
     )
   ).pipe(
     map<InternalNavigation, InternalNavigation>((navigation) => {
+      // Expect to have absolute navigation here.
+      if (!navigation.pathname.startsWith('/')) {
+        throw new Error(
+          `[App routing] pathname must start with '/'. Got: ${navigation.pathname}`
+        );
+      }
       return {
         ...navigation,
-        pathname: this.location.getResolvedPath(navigation.pathname),
+        pathname: this.getAppRootlessPathname(navigation.pathname),
       };
     }),
     map((navigationWithAbsolutePath) => {
@@ -281,13 +297,13 @@ export class AppRoutingEffects {
         tap(({preserveHash, route}) => {
           if (route.navigationOptions.replaceState) {
             this.location.replaceState(
-              this.getPathnameWithAppRoot(
+              this.getAbsPathnameWithAppRoot(
                 this.location.getFullPathFromRouteOrNav(route, preserveHash)
               )
             );
           } else {
             this.location.pushState(
-              this.getPathnameWithAppRoot(
+              this.getAbsPathnameWithAppRoot(
                 this.location.getFullPathFromRouteOrNav(route, preserveHash)
               )
             );

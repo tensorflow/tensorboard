@@ -24,16 +24,13 @@ export const RESOLVED_APP_ROOT = new InjectionToken<string>(
   '[AppRouting] Resolved App Root'
 );
 
-function metaElAppRootExtractor(location: Location): string {
-  const metaElements = [
-    ...document.querySelectorAll('head meta'),
-  ] as HTMLMetaElement[];
+export function metaElAppRootExtractor(location: Location): string {
+  const metaEl = document.querySelector(
+    'head meta[name="tb-relative-root"]'
+  ) as HTMLMetaElement | null;
 
-  const relativeRoot = metaElements.find(
-    (el) => el.name === 'tb-relative-root'
-  );
-  if (!relativeRoot) return '';
-  const {pathname} = new URL(relativeRoot.content, location.getHref());
+  if (!metaEl) return '/';
+  const {pathname} = new URL(metaEl.content, location.getHref());
   return pathname.replace(/\/*$/, '/');
 }
 
