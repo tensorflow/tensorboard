@@ -47,6 +47,7 @@ import {
   Scale,
 } from '../lib/public_types';
 import {getScaleRangeFromDomDim} from './chart_view_utils';
+import {MouseEventButtons} from './internal_types';
 import {
   findClosestIndex,
   getProposedViewExtentOnZoom,
@@ -138,6 +139,9 @@ export class LineChartInteractiveViewComponent
 
   state: InteractionState = InteractionState.NONE;
 
+  // Whether alt or shiftKey is pressed down.
+  specialKeyPressed: boolean = false;
+
   // Gray box that shows when user drags with mouse down
   zoomBoxInUiCoordinate: Rect = {x: 0, width: 0, height: 0, y: 0};
 
@@ -196,17 +200,47 @@ export class LineChartInteractiveViewComponent
         this.changeDetector.markForCheck();
       });
 
+    fromEvent<MouseEvent>(window, 'keydown', {
+      passive: true,
+    })
+      .pipe(takeUntil(this.ngUnsubscribe))
+      .subscribe((event) => {
+        const newState = this.shouldPan(event);
+        if (newState !== this.specialKeyPressed) {
+          this.specialKeyPressed = newState;
+          this.changeDetector.markForCheck();
+        }
+      });
+
+    fromEvent<MouseEvent>(window, 'keyup', {
+      passive: true,
+    })
+      .pipe(takeUntil(this.ngUnsubscribe))
+      .subscribe((event) => {
+        const newState = this.shouldPan(event);
+        if (newState !== this.specialKeyPressed) {
+          this.specialKeyPressed = newState;
+          this.changeDetector.markForCheck();
+        }
+      });
+
     fromEvent<MouseEvent>(this.dotsContainer.nativeElement, 'mousedown', {
       passive: true,
     })
       .pipe(takeUntil(this.ngUnsubscribe))
       .subscribe((event) => {
-        this.state = event.shiftKey
+        const prevState = this.state;
+        const nextState = this.shouldPan(event)
           ? InteractionState.PANNING
           : InteractionState.DRAG_ZOOMING;
-        this.dragStartCoord = {x: event.offsetX, y: event.offsetY};
 
-        if (this.state === InteractionState.DRAG_ZOOMING) {
+        // In case left down -> middle down, don't override the initial
+        // zoomBoxInUiCoordinate and dragStartCoord.
+        if (
+          prevState === InteractionState.NONE &&
+          nextState === InteractionState.DRAG_ZOOMING
+        ) {
+          this.dragStartCoord = {x: event.offsetX, y: event.offsetY};
           this.zoomBoxInUiCoordinate = {
             x: event.offsetX,
             width: 0,
@@ -215,18 +249,24 @@ export class LineChartInteractiveViewComponent
           };
         }
 
-        this.changeDetector.markForCheck();
+        if (prevState !== nextState) {
+          this.state = nextState;
+          this.changeDetector.markForCheck();
+        }
       });
 
     fromEvent<MouseEvent>(this.dotsContainer.nativeElement, 'mouseup', {
       passive: true,
     })
       .pipe(takeUntil(this.ngUnsubscribe))
-      .subscribe(() => {
+      .subscribe((event) => {
+        const leftClicked =
+          (event.buttons & MouseEventButtons.LEFT) === MouseEventButtons.LEFT;
         this.dragStartCoord = null;
 
         const zoomBox = this.zoomBoxInUiCoordinate;
         if (
+          !leftClicked &&
           this.state === InteractionState.DRAG_ZOOMING &&
           zoomBox.width > 0 &&
           zoomBox.height > 0
@@ -371,6 +411,25 @@ export class LineChartInteractiveViewComponent
   ngOnDestroy() {
     this.ngUnsubscribe.next();
     this.ngUnsubscribe.complete();
+  }
+
+  private shouldPan(event: MouseEvent | KeyboardEvent): boolean {
+    const specialKeyEngaged = event.shiftKey || event.altKey;
+
+    if (event instanceof KeyboardEvent) {
+      return specialKeyEngaged;
+    }
+
+    const leftClicked =
+      (event.buttons & MouseEventButtons.LEFT) === MouseEventButtons.LEFT;
+    const middleClicked =
+      (event.buttons & MouseEventButtons.MIDDLE) === MouseEventButtons.MIDDLE;
+
+    // Ignore right/forward/back clicks.
+    if (!leftClicked && !middleClicked) return false;
+    // At this point, either left or middle is clicked, but if both are clicked, left
+    // takes precedence.
+    return (middleClicked && !leftClicked) || specialKeyEngaged;
   }
 
   trackBySeriesName(index: number, datum: TooltipDatum) {

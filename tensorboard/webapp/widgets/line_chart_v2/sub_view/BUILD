@@ -22,6 +22,7 @@ tf_ng_module(
         "line_chart_interactive_view.ng.html",
     ],
     deps = [
+        ":internal_types",
         "//tensorboard/webapp/angular:expect_angular_cdk_overlay",
         "//tensorboard/webapp/third_party:d3",
         "//tensorboard/webapp/widgets/line_chart_v2/lib:formatter",
@@ -33,6 +34,12 @@ tf_ng_module(
 )
 
 tf_ts_library(
+    name = "internal_types",
+    srcs = ["internal_types.ts"],
+    visibility = ["//visibility:private"],
+)
+
+tf_ts_library(
     name = "sub_view_tests",
     testonly = True,
     srcs = [
@@ -40,8 +47,10 @@ tf_ts_library(
         "line_chart_grid_view_test.ts",
         "line_chart_interactive_utils_test.ts",
         "line_chart_interactive_view_test.ts",
+        "testing.ts",
     ],
     deps = [
+        ":internal_types",
         ":sub_view",
         "//tensorboard/webapp/angular:expect_angular_cdk_overlay",
         "//tensorboard/webapp/angular:expect_angular_core_testing",

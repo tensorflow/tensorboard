@@ -28,7 +28,9 @@ import {
 } from '../lib/public_types';
 import {createScale} from '../lib/scale';
 import {buildMetadata, createSeries} from '../lib/testing';
+import {MouseEventButtons} from './internal_types';
 import {LineChartInteractiveViewComponent} from './line_chart_interactive_view';
+import {createPartialMouseEvent} from './testing';
 
 interface Coord {
   x: number;
@@ -96,6 +98,11 @@ describe('line_chart_v2/sub_view/interactive_view test', () => {
     TOOLTIP_ROW_CIRCLE: '.tooltip-row-circle',
     TOOLTIP_NON_CIRCLE_COLUMN: 'td:not(.tooltip-row-circle)',
   };
+  const ByCss = {
+    SVG: By.css('svg'),
+    SVG_PANNING: By.css('svg.panning'),
+    SVG_DRAGGING: By.css('svg.dragging'),
+  };
 
   function createComponent(): ComponentFixture<TestableComponent> {
     const fixture = TestBed.createComponent(TestableComponent);
@@ -139,7 +146,7 @@ describe('line_chart_v2/sub_view/interactive_view test', () => {
     eventName: string,
     eventInit: MouseEventInit | WheelEvent
   ) {
-    const dom = fixture.debugElement.query(By.css('svg'))
+    const dom = fixture.debugElement.query(ByCss.SVG)
       .nativeElement as SVGElement;
     const event =
       eventName === 'wheel'
@@ -324,7 +331,7 @@ describe('line_chart_v2/sub_view/interactive_view test', () => {
       });
     });
 
-    it('hides when dragging to zoom', () => {
+    it('hides tooltip when dragging to zoom', () => {
       const fixture = createComponent();
       fixture.detectChanges();
 
@@ -344,6 +351,53 @@ describe('line_chart_v2/sub_view/interactive_view test', () => {
 
       expect(overlayContainer.getContainerElement().childElementCount).toBe(0);
     });
+
+    it('does not trigger drag zoom for right clicks', () => {
+      const fixture = createComponent();
+      fixture.detectChanges();
+
+      emitEvent(fixture, 'mouseenter', {
+        clientX: 10,
+        clientY: 20,
+        ...createPartialMouseEvent([MouseEventButtons.RIGHT]),
+      });
+      emitEvent(fixture, 'mousedown', {
+        clientX: 10,
+        clientY: 20,
+        ...createPartialMouseEvent([MouseEventButtons.RIGHT]),
+      });
+      emitEvent(fixture, 'mousemove', {
+        clientX: 20,
+        clientY: 20,
+        ...createPartialMouseEvent([MouseEventButtons.RIGHT]),
+      });
+      fixture.detectChanges();
+
+      expect(onViewExtentChange).not.toHaveBeenCalled();
+    });
+
+    it('sets class, `dragging`, on svg while drag zooming', () => {
+      const fixture = createComponent();
+      fixture.componentInstance.viewExtent = {x: [100, 200], y: [0, 1000]};
+      fixture.componentInstance.domDim = {width: 100, height: 200};
+      fixture.detectChanges();
+
+      emitEvent(fixture, 'mousedown', {
+        clientX: 10,
+        clientY: 20,
+      });
+      expect(fixture.debugElement.query(ByCss.SVG_DRAGGING)).toBeDefined();
+      emitEvent(fixture, 'mousemove', {
+        movementX: 20,
+        movementY: 20,
+      });
+      expect(fixture.debugElement.query(ByCss.SVG_DRAGGING)).toBeDefined();
+      emitEvent(fixture, 'mouseup', {
+        clientX: 20,
+        clientY: 20,
+      });
+      expect(fixture.debugElement.query(ByCss.SVG_DRAGGING)).toBeNull();
+    });
   });
 
   describe('zoom reset', () => {
@@ -356,7 +410,52 @@ describe('line_chart_v2/sub_view/interactive_view test', () => {
   });
 
   describe('pan', () => {
-    it('pans when user drags with shiftKey on', () => {
+    const specs = [
+      {
+        name: 'pans when drags mouse with shiftKey down',
+        eventInit: {shiftKey: true},
+      },
+      {
+        name: 'pans when drags mouse with altKey down',
+        eventInit: {altKey: true},
+      },
+      {
+        name: 'pans when drags mouse with middle button down',
+        eventInit: {button: 1, buttons: 4},
+      },
+    ];
+
+    for (const {name, eventInit} of specs) {
+      it(name, () => {
+        const fixture = createComponent();
+        fixture.componentInstance.viewExtent = {x: [100, 200], y: [0, 1000]};
+        fixture.componentInstance.domDim = {width: 100, height: 200};
+        fixture.detectChanges();
+
+        emitEvent(fixture, 'mousedown', {
+          clientX: 20,
+          clientY: 0,
+          ...createPartialMouseEvent([MouseEventButtons.LEFT]),
+          ...eventInit,
+        });
+        emitEvent(fixture, 'mousemove', {
+          movementX: 20,
+          movementY: -5,
+          ...createPartialMouseEvent([MouseEventButtons.LEFT]),
+          ...eventInit,
+        });
+
+        expect(onViewExtentChange).toHaveBeenCalledTimes(1);
+        expect(onViewExtentChange).toHaveBeenCalledWith({
+          dataExtent: {
+            x: [80, 180],
+            y: [-25, 975],
+          },
+        });
+      });
+    }
+
+    it('does not pan when both left and middle buttons are pressed', () => {
       const fixture = createComponent();
       fixture.componentInstance.viewExtent = {x: [100, 200], y: [0, 1000]};
       fixture.componentInstance.domDim = {width: 100, height: 200};
@@ -365,21 +464,116 @@ describe('line_chart_v2/sub_view/interactive_view test', () => {
       emitEvent(fixture, 'mousedown', {
         clientX: 20,
         clientY: 0,
-        shiftKey: true,
+        ...createPartialMouseEvent([
+          MouseEventButtons.MIDDLE,
+          MouseEventButtons.LEFT,
+        ]),
       });
       emitEvent(fixture, 'mousemove', {
         movementX: 20,
         movementY: -5,
-        shiftKey: true,
+        ...createPartialMouseEvent([
+          MouseEventButtons.MIDDLE,
+          MouseEventButtons.LEFT,
+        ]),
+      });
+
+      expect(onViewExtentChange).not.toHaveBeenCalled();
+    });
+
+    it('changes mode when left button is clicked while panning', () => {
+      const fixture = createComponent();
+      fixture.componentInstance.viewExtent = {x: [100, 200], y: [0, 1000]};
+      fixture.componentInstance.domDim = {width: 100, height: 200};
+      fixture.detectChanges();
+
+      emitEvent(fixture, 'mousedown', {
+        clientX: 20,
+        clientY: 0,
+        button: 1,
+        buttons: 4,
+      });
+      emitEvent(fixture, 'mousemove', {
+        movementX: 20,
+        movementY: -5,
+        button: 1,
+        buttons: 4,
+      });
+      emitEvent(fixture, 'mousedown', {
+        clientX: 20,
+        clientY: 0,
+        button: 0,
+        buttons: 5,
+      });
+      emitEvent(fixture, 'mousemove', {
+        movementX: 0,
+        movementY: -10,
+        button: 0,
+        buttons: 5,
       });
 
       expect(onViewExtentChange).toHaveBeenCalledTimes(1);
-      expect(onViewExtentChange).toHaveBeenCalledWith({
-        dataExtent: {
-          x: [80, 180],
-          y: [-25, 975],
-        },
+    });
+
+    it('does not pan when clicking middle button while drag zooming', () => {
+      const fixture = createComponent();
+      fixture.componentInstance.viewExtent = {x: [100, 200], y: [0, 1000]};
+      fixture.componentInstance.domDim = {width: 100, height: 200};
+      fixture.detectChanges();
+
+      emitEvent(fixture, 'mousedown', {
+        clientX: 20,
+        clientY: 0,
+        button: 0,
+        buttons: 1,
       });
+      emitEvent(fixture, 'mousemove', {
+        movementX: 20,
+        movementY: -5,
+        button: 0,
+        buttons: 1,
+      });
+      emitEvent(fixture, 'mousedown', {
+        clientX: 0,
+        clientY: -5,
+        button: 1,
+        buttons: 5,
+      });
+      emitEvent(fixture, 'mousemove', {
+        movementX: 0,
+        movementY: -1,
+        button: 1,
+        buttons: 5,
+      });
+
+      expect(onViewExtentChange).not.toHaveBeenCalled();
+    });
+
+    it('sets class, `panning`, on svg while panning', () => {
+      const fixture = createComponent();
+      fixture.componentInstance.viewExtent = {x: [100, 200], y: [0, 1000]};
+      fixture.componentInstance.domDim = {width: 100, height: 200};
+      fixture.detectChanges();
+
+      expect(fixture.debugElement.query(ByCss.SVG_PANNING)).toBeNull();
+      emitEvent(fixture, 'mousedown', {
+        clientX: 20,
+        clientY: 0,
+        ...createPartialMouseEvent([MouseEventButtons.MIDDLE]),
+      });
+      expect(fixture.debugElement.query(ByCss.SVG_PANNING)).toBeDefined();
+      emitEvent(fixture, 'mousemove', {
+        movementX: 20,
+        movementY: -5,
+        ...createPartialMouseEvent([MouseEventButtons.MIDDLE]),
+      });
+      expect(fixture.debugElement.query(ByCss.SVG_PANNING)).toBeDefined();
+      emitEvent(fixture, 'mouseup', {
+        clientX: 40,
+        clientY: -5,
+        ...createPartialMouseEvent([MouseEventButtons.MIDDLE]),
+      });
+      expect(fixture.debugElement.query(ByCss.SVG_PANNING)).toBeNull();
     });
   });
 });
