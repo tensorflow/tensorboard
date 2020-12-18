@@ -426,17 +426,30 @@ function labelBuild(
   let labelNode = <HTMLElement>label.node();
   labelNode.parentNode.appendChild(labelNode);
   label.attr('dy', '.35em').attr('text-anchor', 'middle');
+
+  // In tf-graph-scene styles, fontSizes are defined to vary from 6px to 9px. Since we
+  // do not want to invoke computedStyles or hardcode the fontSize that would be
+  // duplicated in styles, we are rounding it to 8px which does not cause any visible
+  // jank.
+  let fontSize = 8;
   if (useFontScale) {
     if (text.length > sceneElement.maxMetanodeLabelLength) {
       text = text.substr(0, sceneElement.maxMetanodeLabelLength - 2) + '...';
     }
     let scale = getLabelFontScale(sceneElement);
     label.attr('font-size', scale(text.length) + 'px');
+    fontSize = scale(text.length);
   }
   let txtElement = <d3.Selection<any, any, any, any>>label.text(text);
-  enforceLabelWidth(txtElement, renderNodeInfo.node.type, renderNodeInfo);
+  enforceLabelWidth(
+    txtElement,
+    renderNodeInfo.node.type,
+    fontSize,
+    renderNodeInfo
+  );
   return label;
 }
+
 /**
  * This function shortens text which would exceed the maximum pixel width of
  * a label.
@@ -453,12 +466,13 @@ function labelBuild(
 export function enforceLabelWidth(
   txtElementSelection: d3.Selection<any, any, any, any>,
   nodeType: NodeType | number,
+  fontSize: number,
   renderNodeInfo?: render.RenderNodeInfo
 ): any {
   // Get text element itself and its on-screen width.
   let txtNode = <SVGTextElement>txtElementSelection.node();
-  let computedTxtLength = txtNode.getComputedTextLength();
   let labelContent = txtNode.textContent;
+
   // Get maximum length from settings.
   let maxLength = null;
   switch (nodeType) {
@@ -478,29 +492,13 @@ export function enforceLabelWidth(
     default:
       break;
   }
-  // Return if no max length provided for node type, or current label length is
-  // less than or equal to the provided length limit.
-  if (maxLength === null || computedTxtLength <= maxLength) {
-    return;
-  }
-  // Find the index of the character which exceeds the width.
-  // getSubStringLength performs far better than getComputedTextLength, and
-  // results in a 3x speed-up on average.
-  let index = 1;
-  while (txtNode.getSubStringLength(0, index) < maxLength) {
-    index++;
-  }
-  // Shorten the label starting at the string length known to be one
-  // character above max pixel length.
-  // When shortened the original label's substring is concatenated with
-  // '...', baseText contains the substring not including the '...'.
-  let baseText = <string>txtNode.textContent.substr(0, index);
-  do {
-    baseText = baseText.substr(0, baseText.length - 1);
-    // Recompute text length.
-    txtNode.textContent = baseText + '...';
-    computedTxtLength = txtNode.getComputedTextLength();
-  } while (computedTxtLength > maxLength && baseText.length > 0);
+  if (maxLength === null) return;
+
+  txtNode.textContent = tf_graph_util.maybeTruncateString(
+    txtNode.textContent,
+    fontSize,
+    maxLength
+  );
   // Add tooltip with full name and return.
   return txtElementSelection.append('title').text(labelContent);
 }
@@ -1401,7 +1399,7 @@ function addAnnotationLabel(
     .attr('dy', '.35em')
     .attr('text-anchor', a.isIn ? 'end' : 'start')
     .text(label);
-  return enforceLabelWidth(txtElement, -1);
+  return enforceLabelWidth(txtElement, -1, 8);
 }
 function addInteractionForAnnotation(
   selection,

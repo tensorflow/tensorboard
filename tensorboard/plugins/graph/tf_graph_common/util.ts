@@ -320,3 +320,40 @@ export function computeHumanFriendlyTime(timeInMicroseconds: number) {
   }
   return Math.floor(timeDifferenceInMs / 86400000) + ' days ago';
 }
+
+const canvas = document.createElement('canvas');
+const measurerContext = canvas.getContext('2d');
+
+/**
+ * Returns width of `text` rendered with Roboto at provided fontSize.
+ */
+export function measureTextWidth(text: string, fontSize: number): number {
+  measurerContext.font = `${fontSize}px Roboto, sans-serif`;
+  return measurerContext.measureText(text).width;
+}
+
+/**
+ * Returns, if rendered `text` does not fit into maxWidth, truncated string with trailing
+ * ellipsis.
+ */
+export function maybeTruncateString(
+  text: string,
+  fontSize: number,
+  maxWidth: number
+): string {
+  if (measureTextWidth(text, fontSize) <= maxWidth) return text;
+
+  let start = 0;
+  let end = text.length;
+  while (start < end) {
+    const middle = Math.round(start + (end - start) / 2);
+    const substring = text.slice(0, middle) + '…';
+    if (measureTextWidth(substring, fontSize) <= maxWidth) {
+      start = middle;
+    } else {
+      end = middle - 1;
+    }
+  }
+
+  return start === 0 ? text[0] : text.slice(0, start) + '…';
+}

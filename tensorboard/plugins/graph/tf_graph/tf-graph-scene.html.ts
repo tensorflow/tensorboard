@@ -273,6 +273,11 @@ export const template = html`
 
     /* --- Node label --- */
 
+    #root,
+    .node {
+      will-change: transform;
+    }
+
     .node > text.nodelabel {
       cursor: pointer;
       fill: #444;
