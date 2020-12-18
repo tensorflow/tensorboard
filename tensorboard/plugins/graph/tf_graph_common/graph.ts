@@ -916,6 +916,14 @@ function extractXlaCluster(
   }
   return null;
 }
+
+/**
+ * Matches node name that encodes output tensor name and/or its index.
+ * - <node_name>:<tensor_index>
+ * - <node_name>:<tensor_name>:<tensor_index>
+ */
+const INPUT_NAME_PART_MATCHER = /^([^:]+):((\w+:|)\d+)$/;
+
 /**
  * Normalizes the inputs and extracts associated metadata:
  * 1) Inputs can contain a colon followed by a suffix of characters.
@@ -926,10 +934,11 @@ function extractXlaCluster(
  *    remove this and annotate the edge as a control dependency.
  * @param inputs Array of unnormalized names of input nodes.
  */
-function normalizeInputs(inputs: string[]): NormalizedInput[] {
-  let normalizedInputs: NormalizedInput[] = [];
-  _.each(inputs, (inputName) => {
-    let isControlDependency = inputName[0] === '^';
+function normalizeInputs(inputs: string[] | undefined): NormalizedInput[] {
+  const normalizedInputs: NormalizedInput[] = [];
+  let lastName: string | null = null;
+  for (let inputName of inputs || []) {
+    const isControlDependency = inputName.startsWith('^');
     if (isControlDependency) {
       // The carat merely indicates whether this input is a control dependency.
       // It should not be part of the name.
@@ -937,31 +946,24 @@ function normalizeInputs(inputs: string[]): NormalizedInput[] {
     }
     let name = inputName;
     let outputTensorKey = '0';
-    let match = inputName.match(/(.*):(\w+:\d+)$/);
+    const match =
+      inputName.includes(':') && inputName.match(INPUT_NAME_PART_MATCHER);
     if (match) {
-      // The output string consists of several characters and a number separated
-      // by a colon.
+      // The output string consists of optionally several characters and a number
+      // separated by a colon.
       name = match[1];
       outputTensorKey = match[2];
-    } else {
-      match = inputName.match(/(.*):(\d+)$/);
-      if (match) {
-        // The output string consists of a single number.
-        name = match[1];
-        outputTensorKey = match[2];
-      }
     }
-    if (
-      normalizedInputs.length === 0 ||
-      name !== normalizedInputs[normalizedInputs.length - 1].name
-    ) {
+
+    if (lastName !== name) {
+      lastName = name;
       normalizedInputs.push({
         name: name,
         outputTensorKey: outputTensorKey,
         isControlDependency: isControlDependency,
       });
     }
-  });
+  }
   return normalizedInputs;
 }
 function addEdgeToGraph(
