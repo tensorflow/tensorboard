@@ -16,20 +16,24 @@
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
-
 import collections
 import os
 import re
-
+import queue
+import time
+import threading
 import six
 
 from tensorboard.compat import tf
 from tensorboard.util import tb_logging
 
-
 logger = tb_logging.get_logger()
 
 _ESCAPE_GLOB_CHARACTERS_REGEX = re.compile("([*?[])")
+
+directory_cache = {}
+use_bfs_and_build_cache_MT = True
+concurrent_dir_discover_cache_TTL = 30
 
 
 def IsCloudPath(path):
@@ -85,9 +89,13 @@ def ListDirectoryAbsolute(directory):
 
     The paths are absolute.
     """
-    return (
-        os.path.join(directory, path) for path in tf.io.gfile.listdir(directory)
-    )
+    if len(directory_cache) > 0:
+        return directory_cache[directory]
+    else:
+        return (
+            os.path.join(directory, path)
+            for path in tf.io.gfile.listdir(directory)
+        )
 
 
 def _EscapeGlobCharacters(path):
@@ -163,6 +171,107 @@ def ListRecursivelyViaGlobbing(top):
         level += 1
 
 
+class ListRecursivelyViaBFSWalking:
+    """A class that walks a directory recursively with multiple threads.
+
+    For network based file systems, listing the directory might suffer from large latency.
+    This class walks the directory with breadth first strategy with concurrent threads to speed up.
+    The traverse result is put inside walked_structure.
+    Also, this class maintains a cache to speed up the query. If the cache is not expired,
+    then the class has no side effect.
+    Since I want to keep the function signature intact, some parameters are passed by global vars.
+    Args:
+      top_directory: A path to a directory.
+
+    Returns:
+      Nothing. The result is stored in return_structure. The return_structure is a list of
+      tuple(dir_path, dirs, filenames), where dirs (tuple) and filenames (tuple) are the directories
+      and files in dir_path.
+    """
+
+    class _BFSWALK:
+        def __init__(
+            self,
+            baseDir,
+            list_dir_function=None,
+            num_threads=20,
+            max_delay_multiplier=5,
+        ):
+            self.return_structure = []
+            self.list_dir_function = list_dir_function
+            start = time.time()
+            list_dir_function(".")  # better change this to a network path
+            self.max_idle_time_in_sec = (
+                time.time() - start
+            ) * max_delay_multiplier
+            self.unwalked_dirs = queue.Queue()
+            self.unwalked_dirs.put(baseDir)
+            self.threads = []
+            for i in range(num_threads):
+                t = threading.Thread(name="thread" + str(i), target=self.worker)
+                self.threads.append(t)
+                t.start()
+
+            for t in self.threads:
+                t.join()
+
+        def worker(self):
+            """thread worker function"""
+            if "last_job_time" not in locals():
+                last_job_time = time.time()
+            while True:
+                try:
+                    current = self.unwalked_dirs.get(False)
+                    last_job_time = time.time()
+                except queue.Empty:
+                    # Don't kill a thread too early, or we will lack of workers if the network is too slow.
+                    # max_idle_time_in_sec is determined based on a call to list_dir_function
+                    if time.time() - last_job_time > self.max_idle_time_in_sec:
+                        break
+                    time.sleep(0.1)
+                    continue
+
+                children = self.list_dir_function(current)
+                file_paths = []
+                dir_paths = []
+                for c in children:
+                    fullpath = os.path.join(current, c)
+                    # check symbolic link?
+                    if os.path.isdir(fullpath):
+                        self.unwalked_dirs.put(fullpath)
+                        dir_paths.append(fullpath)
+                    else:
+                        file_paths.append(fullpath)
+                self.return_structure.append(
+                    (current, tuple(dir_paths), tuple(file_paths))
+                )
+
+    instance = None
+    walked_structure = None
+    last_update_time = 0
+
+    def __init__(
+        self,
+        top_directory,
+        list_dir_function=None,
+        concurrent_dir_discover_cache_TTL=30,
+    ):
+        if (
+            not ListRecursivelyViaBFSWalking.instance
+            or time.time() - ListRecursivelyViaBFSWalking.last_update_time
+            > concurrent_dir_discover_cache_TTL
+        ):
+            ListRecursivelyViaBFSWalking.instance = ListRecursivelyViaBFSWalking._BFSWALK(
+                top_directory, list_dir_function
+            )
+            ListRecursivelyViaBFSWalking.walked_structure = (
+                ListRecursivelyViaBFSWalking.instance.return_structure
+            )
+            ListRecursivelyViaBFSWalking.last_update_time = time.time()
+        else:
+            logger.info("Reuse the cache for ListRecursivelyViaBFSWalking")
+
+
 def ListRecursivelyViaWalking(top):
     """Walks a directory tree, yielding (dir_path, file_paths) tuples.
 
@@ -180,14 +289,28 @@ def ListRecursivelyViaWalking(top):
     Yields:
       A (dir_path, file_paths) tuple for each directory/subdirectory.
     """
-    for dir_path, _, filenames in tf.io.gfile.walk(top, topdown=True):
-        yield (
-            dir_path,
-            (os.path.join(dir_path, filename) for filename in filenames),
-        )
+    if use_bfs_and_build_cache_MT:
+        walked = ListRecursivelyViaBFSWalking(
+            top,
+            list_dir_function=tf.io.gfile.listdir,
+            concurrent_dir_discover_cache_TTL=concurrent_dir_discover_cache_TTL,
+        ).walked_structure
+        global directory_cache
+        directory_cache = {}
+
+        for key, dirs, files in walked:
+            directory_cache[key] = dirs + files
+        for dir_path, _, filename in walked:
+            yield (dir_path, filename)
+    else:
+        for dir_path, _, filenames in tf.io.gfile.walk(top, topdown=True):
+            yield (
+                dir_path,
+                (os.path.join(dir_path, filename) for filename in filenames),
+            )
 
 
-def GetLogdirSubdirectories(path):
+def GetLogdirSubdirectories(path, concurrent_dir_discover=False, cache_TTL=30):
     """Obtains all subdirectories with events files.
 
     The order of the subdirectories returned is unspecified. The internal logic
@@ -226,6 +349,12 @@ def GetLogdirSubdirectories(path):
         logger.info(
             "GetLogdirSubdirectories: Starting to list directories via walking."
         )
+        if not concurrent_dir_discover:
+            global use_bfs_and_build_cache_MT
+            use_bfs_and_build_cache_MT = False
+        else:
+            global concurrent_dir_discover_cache_TTL
+            concurrent_dir_discover_cache_TTL = cache_TTL
         traversal_method = ListRecursivelyViaWalking
 
     return (

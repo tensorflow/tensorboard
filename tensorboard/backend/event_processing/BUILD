@@ -29,6 +29,19 @@ py_test(
     ],
 )
 
+py_test(
+    name = "io_wrapper_test_no_tf",
+    size = "small",
+    srcs = ["io_wrapper_test_no_tf.py"],
+    srcs_version = "PY2AND3",
+    tags = ["support_notf"],
+    deps = [
+        ":io_wrapper",
+        "//tensorboard:test",
+        "@org_pythonhosted_six",
+    ],
+)
+
 py_library(
     name = "data_ingester",
     srcs = ["data_ingester.py"],
