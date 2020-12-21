@@ -29,6 +29,3 @@ try:
     from tensorboard.summary.v2 import *  # noqa: F401
 except ImportError:
     pass
-
-
-del absolute_import, division, print_function

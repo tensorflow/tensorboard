@@ -128,8 +128,5 @@ hparams_config_pb = summary_v2.hparams_config_pb
 KerasCallback = keras.Callback
 
 
-del absolute_import
-del division
 del keras
-del print_function
 del summary_v2

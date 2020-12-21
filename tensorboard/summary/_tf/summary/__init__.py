@@ -176,4 +176,4 @@ from tensorboard.summary.v2 import image  # noqa: F401
 from tensorboard.summary.v2 import scalar  # noqa: F401
 from tensorboard.summary.v2 import text  # noqa: F401
 
-del absolute_import, division, print_function, tf, reexport_tf_summary
+del tf, reexport_tf_summary
