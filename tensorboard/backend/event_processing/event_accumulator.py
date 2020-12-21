@@ -13,9 +13,6 @@
 # limitations under the License.
 # ==============================================================================
 """Takes a generator of values, and accumulates them for a frontend."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import collections
 import threading

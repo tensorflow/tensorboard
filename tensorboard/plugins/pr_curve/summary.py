@@ -18,9 +18,6 @@ NOTE: This module is in beta, and its API is subject to change, but the
 data that it stores to disk will be supported forever.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import numpy as np
 

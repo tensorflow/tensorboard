@@ -17,9 +17,6 @@
 These are porcelain on top of `api_pb2` (`api.proto`) and `summary.py`.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import abc
 import hashlib

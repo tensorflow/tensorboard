@@ -14,9 +14,6 @@
 # ==============================================================================
 """Used in genrule to convert dtype type info from Python to TypeScript."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import json
 import sys

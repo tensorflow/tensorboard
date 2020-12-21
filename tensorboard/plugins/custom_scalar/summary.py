@@ -14,9 +14,6 @@
 # ==============================================================================
 """Contains summaries related to laying out the custom scalars dashboard."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 from tensorboard.plugins.custom_scalar import layout_pb2
 from tensorboard.plugins.custom_scalar import metadata

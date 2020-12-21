@@ -14,9 +14,6 @@
 # ==============================================================================
 """Plugin that only displays a message with installation instructions."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 from tensorboard.plugins import base_plugin
 

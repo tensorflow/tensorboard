@@ -13,9 +13,6 @@
 # limitations under the License.
 # ==============================================================================
 """Helper classes for tensor shape inference."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 from . import compat, dtypes
 from tensorboard.compat.proto import tensor_shape_pb2

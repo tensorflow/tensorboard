@@ -19,9 +19,6 @@ the same environment (virtualenv, Conda, etc.) from which you normally
 run TensorBoard. Read the output and follow the directions.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 # This script may only depend on the Python standard library. It is not
 # built with Bazel and should not assume any third-party dependencies.

@@ -27,9 +27,6 @@ The compatibility module also provides the following types:
 * `real_types`
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import numbers as _numbers
 import numpy as _np

@@ -18,9 +18,6 @@ The logic below logs scalar data and then lays out the custom scalars
 dashboard.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 from absl import app
 from six.moves import xrange  # pylint: disable=redefined-builtin

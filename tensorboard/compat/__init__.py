@@ -19,10 +19,6 @@ APIs, as lazily loaded imports to help avoid circular dependency issues
 and defer the search and loading of the module until necessary.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 
 import tensorboard.lazy as _lazy
 

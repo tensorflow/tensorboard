@@ -16,9 +16,6 @@
 
 This module exposes summary ops for the standard TensorBoard plugins.
 """
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 # If the V1 summary API is accessible, load and re-export it here.
 try:

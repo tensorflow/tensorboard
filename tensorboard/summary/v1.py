@@ -17,9 +17,6 @@
 This module simply offers a shorter way to access the members of modules
 like `tensorboard.plugins.scalar.summary`.
 """
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 from tensorboard.plugins.audio import summary as _audio_summary
 from tensorboard.plugins.custom_scalar import summary as _custom_scalar_summary

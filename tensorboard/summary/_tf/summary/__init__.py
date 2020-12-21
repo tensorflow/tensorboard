@@ -78,9 +78,6 @@ with tf.compat.v1.Graph().as_default():
 ```
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 # Keep this import outside the function below for internal sync reasons.
 import tensorflow as tf

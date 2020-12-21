@@ -14,9 +14,6 @@
 # ==============================================================================
 """Bridge from event multiplexer storage to generic data APIs."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import base64
 import json

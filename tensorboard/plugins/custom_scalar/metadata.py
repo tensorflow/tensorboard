@@ -14,9 +14,6 @@
 # ==============================================================================
 """Information on the custom scalars plugin."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 from tensorboard.compat.proto import summary_pb2
 

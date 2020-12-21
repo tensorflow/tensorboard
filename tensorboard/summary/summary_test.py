@@ -19,9 +19,6 @@ public entry point for end users, so we should be as careful as possible
 to ensure that we export the right things.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import collections.abc
 import sys

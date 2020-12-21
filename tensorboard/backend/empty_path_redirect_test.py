@@ -14,10 +14,6 @@
 # ==============================================================================
 """Tests for `tensorboard.backend.empty_path_redirect`."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 
 import werkzeug
 from werkzeug import test as werkzeug_test

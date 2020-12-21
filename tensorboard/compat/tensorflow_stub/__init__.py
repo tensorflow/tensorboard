@@ -13,9 +13,6 @@
 # limitations under the License.
 # ==============================================================================
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 from tensorboard.compat.proto.config_pb2 import *  # noqa
 from tensorboard.compat.proto.event_pb2 import *  # noqa

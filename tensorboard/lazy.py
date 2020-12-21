@@ -14,9 +14,6 @@
 # ==============================================================================
 """TensorBoard is a webapp for understanding TensorFlow runs and graphs."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import functools
 import threading

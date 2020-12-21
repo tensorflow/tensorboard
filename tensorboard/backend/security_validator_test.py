@@ -14,9 +14,6 @@
 # ==============================================================================
 """Tests for `tensorboard.backend.security_validator`."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 try:
     # python version >= 3.3

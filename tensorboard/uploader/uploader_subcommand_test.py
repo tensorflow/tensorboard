@@ -14,9 +14,6 @@
 # ==============================================================================
 """Tests for tensorboard.uploader.uploader_subcommand."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import sys
 

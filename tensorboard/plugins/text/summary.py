@@ -14,9 +14,6 @@
 # ==============================================================================
 """Text summaries and TensorFlow operations to create them."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 from tensorboard.plugins.text import metadata
 from tensorboard.plugins.text import summary_v2

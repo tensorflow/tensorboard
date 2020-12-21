@@ -18,9 +18,6 @@ Most users should use `tensorboard.plugins.hparams.api` to access this
 module's contents.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import tensorflow as tf
 
