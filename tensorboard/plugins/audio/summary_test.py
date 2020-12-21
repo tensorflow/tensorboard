@@ -250,6 +250,39 @@ class SummaryV2OpTest(SummaryBaseTest, tf.test.TestCase):
             # Reset to default state for other tests.
             tf2.summary.experimental.set_step(None)
 
+    def test_lengths(self):
+        data = np.array([[[1.0], [0.0]], [[1.0], [-1.0]]]).astype(np.float32)
+        lengths = np.array([1, 2]).astype(np.int32)
+        event = self.audio_event("a", data, 44100, step=333, lengths=lengths)
+        self.assertEqual(event.step, 333)
+        self.assertLen(event.summary.value, 1)
+        tensor = tf.io.parse_tensor(
+            event.summary.value[0].tensor.SerializeToString(),
+            out_type=tf.string,
+        )
+
+        self.assertEqual(tensor.shape, [2, 2])
+        # If lengths are respected, the first example will be 2 bytes shorter
+        # than the second.
+        self.assertLen(tensor[0, 0].numpy(), 46)
+        self.assertLen(tensor[1, 0].numpy(), 48)
+
+    def test_no_lengths(self):
+        data = np.array([[[1.0], [0.0]], [[1.0], [-1.0]]]).astype(np.float32)
+        event = self.audio_event("a", data, 44100, step=333, lengths=None)
+        self.assertEqual(event.step, 333)
+        self.assertLen(event.summary.value, 1)
+        tensor = tf.io.parse_tensor(
+            event.summary.value[0].tensor.SerializeToString(),
+            out_type=tf.string,
+        )
+
+        self.assertEqual(tensor.shape, [2, 2])
+        # If no lengths are provided, both examples contain all samples in the
+        # dense tensor.
+        self.assertLen(tensor[0, 0].numpy(), 48)
+        self.assertLen(tensor[1, 0].numpy(), 48)
+
 
 if __name__ == "__main__":
     tf.test.main()
