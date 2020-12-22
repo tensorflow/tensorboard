@@ -18,17 +18,11 @@
 import base64
 import json
 import os
+from unittest import mock
 
 import grpc
 import grpc_testing
 import numpy as np
-
-try:
-    # python version >= 3.3
-    from unittest import mock
-except ImportError:
-    import mock  # pylint: disable=unused-import
-
 
 from tensorboard.uploader.proto import blob_pb2
 from tensorboard.uploader.proto import experiment_pb2

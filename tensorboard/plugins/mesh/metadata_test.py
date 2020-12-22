@@ -15,7 +15,8 @@
 """Tests for util functions to create/parse mesh plugin metadata."""
 
 
-from mock import patch
+from unittest import mock
+
 import six
 import tensorflow as tf
 from tensorboard.plugins.mesh import metadata
@@ -75,10 +76,12 @@ class MetadataTest(tf.test.TestCase):
 
     def test_metadata_version(self):
         """Tests that only the latest version of metadata is supported."""
-        with patch.object(metadata, "get_current_version", return_value=100):
+        with mock.patch.object(
+            metadata, "get_current_version", return_value=100
+        ):
             self._create_metadata()
         # Change the version.
-        with patch.object(metadata, "get_current_version", return_value=1):
+        with mock.patch.object(metadata, "get_current_version", return_value=1):
             # Try to parse metadata from a prior version.
             with self.assertRaises(ValueError):
                 metadata.parse_plugin_metadata(

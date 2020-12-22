@@ -15,16 +15,12 @@
 """Tests for download_data."""
 
 
-try:
-    # python version >= 3.3
-    from unittest import mock
-except ImportError:
-    import mock  # pylint: disable=unused-import
-import tensorflow as tf
+from unittest import mock
 
 from google.protobuf import text_format
-from tensorboard.backend.event_processing import plugin_event_multiplexer
+import tensorflow as tf
 
+from tensorboard.backend.event_processing import plugin_event_multiplexer
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.hparams import api_pb2
 from tensorboard.plugins.hparams import backend_context

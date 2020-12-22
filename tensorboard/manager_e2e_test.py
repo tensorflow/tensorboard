@@ -26,15 +26,10 @@ import shutil
 import subprocess
 import tempfile
 import textwrap
+from unittest import mock
 
 from six.moves import urllib
 import tensorflow as tf
-
-try:
-    # python version >= 3.3
-    from unittest import mock
-except ImportError:
-    import mock  # pylint: disable=unused-import
 
 from tensorboard import manager
 

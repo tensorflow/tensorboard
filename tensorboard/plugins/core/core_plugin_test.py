@@ -20,16 +20,10 @@ import contextlib
 import json
 import os
 import six
+from unittest import mock
 import zipfile
 
-try:
-    # python version >= 3.3
-    from unittest import mock
-except ImportError:
-    import mock  # pylint: disable=unused-import
-
 import tensorflow as tf
-
 from werkzeug import test as werkzeug_test
 from werkzeug import wrappers
 

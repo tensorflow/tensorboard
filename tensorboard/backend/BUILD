@@ -87,7 +87,6 @@ py_test(
         "//tensorboard/data:provider",
         "//tensorboard/plugins:base_plugin",
         "@org_pocoo_werkzeug",
-        "@org_pythonhosted_mock",
     ],
 )
 
@@ -184,6 +183,5 @@ py_test(
         "//tensorboard:test",
         "//tensorboard/util:tb_logging",
         "@org_pocoo_werkzeug",
-        "@org_pythonhosted_mock",
     ],
 )

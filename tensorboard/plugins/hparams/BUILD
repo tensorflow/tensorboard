@@ -64,7 +64,6 @@ py_test(
         "//tensorboard/backend/event_processing:event_accumulator",
         "//tensorboard/backend/event_processing:event_multiplexer",
         "@com_google_protobuf//:protobuf_python",
-        "@org_pythonhosted_mock",
     ],
 )
 
@@ -84,7 +83,6 @@ py_test(
         "//tensorboard/backend/event_processing:event_multiplexer",
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/plugins/scalar:metadata",
-        "@org_pythonhosted_mock",
     ],
 )
 
@@ -98,7 +96,6 @@ py_test(
         ":hparams_plugin",
         "//tensorboard:context",
         "//tensorboard:expect_tensorflow_installed",
-        "@org_pythonhosted_mock",
     ],
 )
 
@@ -116,7 +113,6 @@ py_test(
         "//tensorboard/backend/event_processing:event_multiplexer",
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/plugins/scalar:metadata",
-        "@org_pythonhosted_mock",
     ],
 )
 
@@ -226,7 +222,6 @@ py_test(
         ":summary_v2",
         "//tensorboard:expect_tensorflow_installed",
         "@com_google_protobuf//:protobuf_python",
-        "@org_pythonhosted_mock",
         "@org_pythonhosted_six",
     ],
 )
@@ -259,7 +254,6 @@ py_test(
         "//tensorboard:test",
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "@com_google_protobuf//:protobuf_python",
-        "@org_pythonhosted_mock",
         "@org_pythonhosted_six",
     ],
 )
@@ -280,7 +274,6 @@ py_test(
         "//tensorboard/compat:no_tensorflow",
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "@com_google_protobuf//:protobuf_python",
-        "@org_pythonhosted_mock",
         "@org_pythonhosted_six",
     ],
 )

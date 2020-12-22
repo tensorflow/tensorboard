@@ -53,7 +53,6 @@ py_test(
         "//tensorboard:expect_grpc_installed",
         "//tensorboard:test",
         "//tensorboard:version",
-        "@org_pythonhosted_mock",
         "@org_pythonhosted_six",
     ],
 )

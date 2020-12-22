@@ -18,15 +18,10 @@
 import itertools
 import os
 import re
+from unittest import mock
 
 import grpc
 import grpc_testing
-
-try:
-    # python version >= 3.3
-    from unittest import mock
-except ImportError:
-    import mock  # pylint: disable=unused-import
 
 import tensorflow as tf
 

@@ -55,7 +55,6 @@ py_test(
     deps = [
         ":data_ingester",
         "//tensorboard:test",
-        "@org_pythonhosted_mock",
     ],
 )
 
@@ -119,7 +118,6 @@ py_test(
         ":event_file_loader",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/util:test_util",
-        "@org_pythonhosted_mock",
     ],
 )
 

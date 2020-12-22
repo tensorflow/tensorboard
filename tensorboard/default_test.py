@@ -15,11 +15,7 @@
 """Unit tests for `tensorboard.default`."""
 
 
-try:
-    # python version >= 3.3
-    from unittest import mock
-except ImportError:
-    import mock  # pylint: disable=unused-import
+from unittest import mock
 
 import pkg_resources
 

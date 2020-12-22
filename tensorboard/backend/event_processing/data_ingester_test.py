@@ -18,12 +18,7 @@ import ntpath
 import os
 import posixpath
 import time
-
-try:
-    # python version >= 3.3
-    from unittest import mock
-except ImportError:
-    import mock  # pylint: disable=unused-import
+from unittest import mock
 
 from tensorboard import test as tb_test
 from tensorboard.backend.event_processing import data_ingester
