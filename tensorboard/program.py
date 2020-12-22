@@ -25,9 +25,6 @@ This module does not depend on first-party plugins or the default web
 server assets. Those are defined in `tensorboard.default`.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 from abc import ABCMeta
 from abc import abstractmethod

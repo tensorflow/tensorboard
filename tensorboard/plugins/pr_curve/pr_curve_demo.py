@@ -26,9 +26,6 @@ corner of the color triangle - RGB), we then compute the probability that each
 color belongs to the class. We use those probabilities to generate PR curves.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import os.path
 

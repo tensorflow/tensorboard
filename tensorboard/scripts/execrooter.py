@@ -13,9 +13,6 @@
 # limitations under the License.
 """Utility for running programs in a symlinked execroot."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import json
 import os

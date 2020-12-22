@@ -14,9 +14,6 @@
 # ==============================================================================
 """Tests for tensorboard.uploader.server_info."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import errno
 import os

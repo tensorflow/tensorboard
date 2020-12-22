@@ -21,9 +21,6 @@ field and makes any necessary transformations to the tensor value. For
 This should be effected after the `data_compat` transformation.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 from tensorboard.compat.proto import event_pb2
 from tensorboard.compat.proto import summary_pb2

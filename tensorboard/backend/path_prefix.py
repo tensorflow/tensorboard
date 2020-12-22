@@ -19,9 +19,6 @@ Using a path prefix of `/foo/bar` enables TensorBoard to serve from
 See the `--path_prefix` flag docs for more details.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 from tensorboard import errors
 

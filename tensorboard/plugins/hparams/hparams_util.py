@@ -39,9 +39,6 @@ hparams_util \
      --status=<A string containing a member of the Status protobuffer enum>
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import getpass
 import time

@@ -14,9 +14,6 @@
 # ==============================================================================
 """Initial server communication to determine session parameters."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 from google.protobuf import message
 import requests

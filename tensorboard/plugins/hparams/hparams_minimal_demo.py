@@ -25,9 +25,6 @@ trains real MNIST models instead of using synthetic data, at the cost of
 taking much longer to run.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import hashlib
 import math

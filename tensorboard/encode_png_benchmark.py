@@ -41,9 +41,6 @@ twelve threads.
 The above numbers are consistent across runs, within about 5%.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import datetime
 import threading

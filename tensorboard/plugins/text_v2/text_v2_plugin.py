@@ -14,10 +14,6 @@
 # ==============================================================================
 """Angular Version of Text Plugin."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 
 # Necessary for an internal test with special behavior for numpy.
 import numpy as np

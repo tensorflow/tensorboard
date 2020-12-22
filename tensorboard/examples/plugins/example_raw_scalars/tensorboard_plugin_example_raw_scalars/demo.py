@@ -19,9 +19,6 @@ After installing the plugin (`python setup.py develop`), you can run TensorBoard
 with logdir set to the `demo_logs` directory.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import math
 

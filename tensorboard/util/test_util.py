@@ -18,9 +18,6 @@ This module is basically a dumpster for really generic succinct helper
 routines that exist solely for test code.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import threading
 

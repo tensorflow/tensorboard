@@ -13,9 +13,6 @@
 # limitations under the License.
 # ==============================================================================
 """Mesh summaries and TensorFlow operations to create them."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import json
 import tensorflow as tf

@@ -14,9 +14,6 @@
 # ==============================================================================
 """Dry-run stubs for various rpc services."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 from tensorboard.uploader.proto import write_service_pb2
 

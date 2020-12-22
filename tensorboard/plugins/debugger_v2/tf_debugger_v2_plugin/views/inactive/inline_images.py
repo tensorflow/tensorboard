@@ -19,9 +19,6 @@ base64-encoded image content of the corresopnding .png files in the images/
 subdirectory.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import base64
 import os

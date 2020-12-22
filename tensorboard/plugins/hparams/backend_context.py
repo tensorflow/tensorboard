@@ -15,9 +15,6 @@
 """Wraps the base_plugin.TBContext to stores additional data shared across API
 handlers for the HParams plugin backend."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import collections
 import os

@@ -24,10 +24,6 @@ response with the error message.
 [1]: https://github.com/googleapis/googleapis/blob/master/google/rpc/code.proto
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 
 class PublicError(RuntimeError):
     """An error whose text does not contain sensitive information.

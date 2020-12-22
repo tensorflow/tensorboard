@@ -14,9 +14,6 @@
 # ==============================================================================
 """Classes and functions for handling the ListMetricEvals API call."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 from tensorboard.plugins.hparams import metrics
 from tensorboard.plugins.scalar import scalars_plugin

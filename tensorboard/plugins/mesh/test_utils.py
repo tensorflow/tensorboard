@@ -13,9 +13,6 @@
 # limitations under the License.
 # ==============================================================================
 """Test utils for mesh plugin tests."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import collections
 import json

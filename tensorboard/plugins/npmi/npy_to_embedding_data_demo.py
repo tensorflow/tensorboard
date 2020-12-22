@@ -19,9 +19,6 @@ similarity-based analysis.
 To use this, provide a .npy file containing embeddings, which will be converted
 to a logfile alongside other logs for this run.
 """
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import numpy as np
 import tensorflow as tf

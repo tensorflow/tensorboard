@@ -14,9 +14,6 @@
 # ==============================================================================
 """A sample plugin to demonstrate reading scalars."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import mimetypes
 import os

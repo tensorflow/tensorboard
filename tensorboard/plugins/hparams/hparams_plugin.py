@@ -18,9 +18,6 @@ See `http_api.md` in this directory for specifications of the routes for
 this plugin.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import json
 

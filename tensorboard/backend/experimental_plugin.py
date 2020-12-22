@@ -17,10 +17,6 @@
 Contains the mechanism for marking plugins as experimental.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 
 class ExperimentalPlugin(object):
     """A marker class used to annotate a plugin as experimental.

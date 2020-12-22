@@ -18,11 +18,6 @@ Used by both TensorBoard and mldash.
 """
 
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
-
 def prepare_graph_for_ui(
     graph, limit_attr_size=1024, large_attrs_key="_too_large_attrs"
 ):

@@ -19,9 +19,6 @@ pure Python implementation, limited to the features required for
 TensorBoard.  This allows running TensorBoard without depending on
 TensorFlow for file operations.
 """
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 from collections import namedtuple
 import glob as py_glob
