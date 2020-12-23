@@ -506,7 +506,7 @@ def _downsample(xs, k):
         return list(xs)
     if k == 0:
         return []
-    indices = random.Random(0).sample(six.moves.xrange(len(xs) - 1), k - 1)
+    indices = random.Random(0).sample(range(len(xs) - 1), k - 1)
     indices.sort()
     indices += [len(xs) - 1]
     return [xs[i] for i in indices]

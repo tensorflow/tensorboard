@@ -16,8 +16,8 @@
 
 
 import imghdr
+import urllib.parse
 
-from six.moves import urllib
 from werkzeug import wrappers
 
 from tensorboard import errors

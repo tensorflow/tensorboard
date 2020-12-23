@@ -16,11 +16,10 @@
 
 
 import os
+import queue
 import socket
 import threading
 import time
-
-import six
 
 from tensorboard.compat import tf
 from tensorboard.compat.proto import event_pb2
@@ -153,7 +152,7 @@ class _AsyncWriter(object):
         """
         self._writer = record_writer
         self._closed = False
-        self._byte_queue = six.moves.queue.Queue(max_queue_size)
+        self._byte_queue = queue.Queue(max_queue_size)
         self._worker = _AsyncWriterThread(
             self._byte_queue, self._writer, flush_secs
         )
@@ -234,7 +233,7 @@ class _AsyncWriterThread(threading.Thread):
                     return
                 self._record_writer.write(data)
                 self._has_pending_data = True
-            except six.moves.queue.Empty:
+            except queue.Empty:
                 pass
             finally:
                 if data:

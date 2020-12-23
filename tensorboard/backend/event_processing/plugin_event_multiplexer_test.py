@@ -16,6 +16,7 @@
 
 import os
 import os.path
+import queue
 import shutil
 
 import tensorflow as tf
@@ -351,8 +352,8 @@ class EventMultiplexerTest(tf.test.TestCase):
         )
         start_mock = patcher.start()
         self.addCleanup(patcher.stop)
-        patcher = tf.compat.v1.test.mock.patch(
-            "six.moves.queue.Queue.join", autospec=True
+        patcher = tf.compat.v1.test.mock.patch.object(
+            queue.Queue, "join", autospec=True
         )
         join_mock = patcher.start()
         self.addCleanup(patcher.stop)
@@ -373,8 +374,8 @@ class EventMultiplexerTest(tf.test.TestCase):
         )
         start_mock = patcher.start()
         self.addCleanup(patcher.stop)
-        patcher = tf.compat.v1.test.mock.patch(
-            "six.moves.queue.Queue.join", autospec=True
+        patcher = tf.compat.v1.test.mock.patch.object(
+            queue.Queue, "join", autospec=True
         )
         join_mock = patcher.start()
         self.addCleanup(patcher.stop)
@@ -396,8 +397,8 @@ class EventMultiplexerTest(tf.test.TestCase):
         )
         start_mock = patcher.start()
         self.addCleanup(patcher.stop)
-        patcher = tf.compat.v1.test.mock.patch(
-            "six.moves.queue.Queue.join", autospec=True
+        patcher = tf.compat.v1.test.mock.patch.object(
+            queue.Queue, "join", autospec=True
         )
         join_mock = patcher.start()
         self.addCleanup(patcher.stop)

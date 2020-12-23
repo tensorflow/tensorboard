@@ -21,7 +21,6 @@ this plugin.
 
 import random
 
-import six
 from werkzeug import wrappers
 
 from tensorboard import errors
@@ -169,6 +168,6 @@ def _downsample(rng, xs, k):
 
     if k > len(xs):
         return list(xs)
-    indices = rng.sample(six.moves.xrange(len(xs)), k)
+    indices = rng.sample(range(len(xs)), k)
     indices.sort()
     return [xs[i] for i in indices]
