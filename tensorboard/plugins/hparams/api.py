@@ -109,9 +109,6 @@ for API specifications. Consult the `hparams_demo.py` script in the
 TensorBoard repository for an end-to-end MNIST example.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 from tensorboard.plugins.hparams import keras
 from tensorboard.plugins.hparams import summary_v2
@@ -131,8 +128,5 @@ hparams_config_pb = summary_v2.hparams_config_pb
 KerasCallback = keras.Callback
 
 
-del absolute_import
-del division
 del keras
-del print_function
 del summary_v2

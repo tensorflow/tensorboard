@@ -14,9 +14,6 @@
 # ==============================================================================
 """The Embedding Projector plugin."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import collections
 import functools
@@ -261,8 +258,6 @@ class ProjectorPlugin(base_plugin.TBPlugin):
         # active. If such a thread exists, do not start a duplicate thread.
         self._thread_for_determining_is_active = None
 
-        self._update_run_paths()
-
     def get_plugin_apps(self):
         asset_prefix = "tf_projector_plugin"
         return {
@@ -326,6 +321,7 @@ class ProjectorPlugin(base_plugin.TBPlugin):
             disable_reload=True,
         )
 
+<<<<<<< HEAD
     def _update_run_paths(self):
         """Updates `self._run_paths`, testing for updates.
 
@@ -346,6 +342,24 @@ class ProjectorPlugin(base_plugin.TBPlugin):
         self._run_paths = run_paths
         return changed
 
+||||||| 638014e1c
+    def _update_run_paths(self):
+        """Updates `self._run_paths`, testing for updates.
+
+        Returns:
+          `True` if this call changed the value of `self._run_paths`,
+          else `False`.
+        """
+        if self.multiplexer:
+            run_paths = dict(self.multiplexer.RunPaths())
+        else:
+            run_paths = None
+        changed = run_paths != self._run_paths
+        self._run_paths = run_paths
+        return changed
+
+=======
+>>>>>>> b52d274d78b82dde9e10fb139070bb35168de350
     def _determine_is_active(self):
         """Determines whether the plugin is active.
 
@@ -359,8 +373,14 @@ class ProjectorPlugin(base_plugin.TBPlugin):
         self._thread_for_determining_is_active = None
 
     def _update_configs(self):
-        """Updates `self._configs`."""
-        run_paths_changed = self._update_run_paths()
+        """Updates `self._configs` and `self._run_paths`."""
+        if self.multiplexer:
+            run_paths = dict(self.multiplexer.RunPaths())
+        else:
+            run_paths = {}
+        run_paths_changed = run_paths != self._run_paths
+        self._run_paths = run_paths
+
         run_path_pairs = list(self._run_paths.items())
         self._append_plugin_asset_directories(run_path_pairs)
         # Also accept the root logdir as a model checkpoint directory,

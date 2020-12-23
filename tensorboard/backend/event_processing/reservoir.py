@@ -15,9 +15,6 @@
 
 """A key-value[] store that implements reservoir sampling on the values."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import collections
 import random

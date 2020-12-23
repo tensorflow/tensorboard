@@ -21,9 +21,6 @@ a binary string whose encoding is specified in the summary metadata, and
 `label` is a UTF-8 encoded Markdown string describing the audio clip.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import functools
 

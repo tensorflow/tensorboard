@@ -21,10 +21,6 @@ wishing to customize the set of plugins or static assets that
 TensorBoard uses can swap out this file with their own.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 
 import os
 

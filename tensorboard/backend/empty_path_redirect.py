@@ -25,10 +25,6 @@ This middleware respects `SCRIPT_NAME` as described by the WSGI spec. If
 the actual path "/foo", and so will be redirected to "/foo/".
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 
 class EmptyPathRedirectMiddleware(object):
     """WSGI middleware to redirect from "" to "/"."""

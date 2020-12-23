@@ -19,9 +19,6 @@ as those available directly from TensorFlow. Local protos are used to
 build `tensorboard-notf` without a TensorFlow dependency.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import difflib
 import importlib

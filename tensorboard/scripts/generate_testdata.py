@@ -14,9 +14,6 @@
 # ==============================================================================
 """Generate some standard test data for debugging TensorBoard."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import bisect
 import math

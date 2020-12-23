@@ -25,9 +25,6 @@ have the same value, then there is one bucket whose left and right
 endpoints are the same (the shape is `[1, 3]`).
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import numpy as np
 

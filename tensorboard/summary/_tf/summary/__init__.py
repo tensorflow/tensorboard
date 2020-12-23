@@ -78,9 +78,6 @@ with tf.compat.v1.Graph().as_default():
 ```
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 # Keep this import outside the function below for internal sync reasons.
 import tensorflow as tf
@@ -179,4 +176,4 @@ from tensorboard.summary.v2 import image  # noqa: F401
 from tensorboard.summary.v2 import scalar  # noqa: F401
 from tensorboard.summary.v2 import text  # noqa: F401
 
-del absolute_import, division, print_function, tf, reexport_tf_summary
+del tf, reexport_tf_summary

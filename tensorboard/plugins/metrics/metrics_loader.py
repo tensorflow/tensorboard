@@ -14,9 +14,6 @@
 # ==============================================================================
 """The TensorBoard metrics plugin loader."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins import metrics_plugin

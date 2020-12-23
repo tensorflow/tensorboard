@@ -14,10 +14,6 @@
 
 """TensorBoard helper routine for platform."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 
 def readahead_file_path(path, unused_readahead=None):
     """Readahead files not implemented; simply returns given path."""

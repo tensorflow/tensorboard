@@ -18,9 +18,6 @@ An image summary stores the width, height, and PNG-encoded data for zero
 or more images in a rank-1 string array: `[w, h, png0, png1, ...]`.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 from tensorboard.compat import tf2 as tf
 from tensorboard.plugins.image import metadata

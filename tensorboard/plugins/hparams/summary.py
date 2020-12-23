@@ -31,9 +31,6 @@ Typical usage for exporting summaries in a hyperparameters-tuning experiment:
    summary into the same session run <session_name>.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import time
 

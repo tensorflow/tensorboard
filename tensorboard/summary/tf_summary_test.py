@@ -22,9 +22,6 @@ sequences) via our pip package build script. But that script is run only in
 our external CI, whereas this python test can run anywhere our normal tests run.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import sys
 import unittest

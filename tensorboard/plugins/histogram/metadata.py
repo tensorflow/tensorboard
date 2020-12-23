@@ -14,9 +14,6 @@
 # ==============================================================================
 """Information about histogram summaries."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 from tensorboard.compat.proto import summary_pb2
 from tensorboard.plugins.histogram import plugin_data_pb2

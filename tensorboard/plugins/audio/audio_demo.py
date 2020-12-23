@@ -14,9 +14,6 @@
 # ==============================================================================
 """Sample data exhibiting audio summaries, via a waveform generator."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import inspect
 import math
