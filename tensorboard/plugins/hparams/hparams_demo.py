@@ -27,7 +27,6 @@ import shutil
 from absl import app
 from absl import flags
 import numpy as np
-from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 
 from tensorboard.plugins.hparams import api as hp
@@ -125,7 +124,7 @@ def model_fn(hparams, seed):
 
     # Add convolutional layers.
     conv_filters = 8
-    for _ in xrange(hparams[HP_CONV_LAYERS]):
+    for _ in range(hparams[HP_CONV_LAYERS]):
         model.add(
             tf.keras.layers.Conv2D(
                 filters=conv_filters,
@@ -142,7 +141,7 @@ def model_fn(hparams, seed):
 
     # Add fully connected layers.
     dense_neurons = 32
-    for _ in xrange(hparams[HP_DENSE_LAYERS]):
+    for _ in range(hparams[HP_DENSE_LAYERS]):
         model.add(tf.keras.layers.Dense(dense_neurons, activation="relu"))
         dense_neurons *= 2
 
@@ -215,10 +214,10 @@ def run_all(logdir, verbose=False):
     sessions_per_group = 2
     num_sessions = flags.FLAGS.num_session_groups * sessions_per_group
     session_index = 0  # across all session groups
-    for group_index in xrange(flags.FLAGS.num_session_groups):
+    for group_index in range(flags.FLAGS.num_session_groups):
         hparams = {h: h.domain.sample_uniform(rng) for h in HPARAMS}
         hparams_string = str(hparams)
-        for repeat_index in xrange(sessions_per_group):
+        for repeat_index in range(sessions_per_group):
             session_id = str(session_index)
             session_index += 1
             if verbose:

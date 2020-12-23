@@ -23,7 +23,6 @@ import tempfile
 import urllib.parse
 
 import numpy
-from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 from werkzeug import test as werkzeug_test
 from werkzeug import wrappers
@@ -69,7 +68,7 @@ class ImagesPluginTest(tf.test.TestCase):
         foo_directory = os.path.join(self.log_dir, "foo")
         with test_util.FileWriterCache.get(foo_directory) as writer:
             writer.add_graph(sess.graph)
-            for step in xrange(2):
+            for step in range(2):
                 writer.add_summary(
                     sess.run(
                         merged_summary_op,
@@ -95,7 +94,7 @@ class ImagesPluginTest(tf.test.TestCase):
         bar_directory = os.path.join(self.log_dir, "bar")
         with test_util.FileWriterCache.get(bar_directory) as writer:
             writer.add_graph(sess.graph)
-            for step in xrange(2):
+            for step in range(2):
                 writer.add_summary(
                     sess.run(
                         merged_summary_op,

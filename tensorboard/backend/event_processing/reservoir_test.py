@@ -14,7 +14,6 @@
 # ==============================================================================
 
 
-from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 
 from tensorboard.backend.event_processing import reservoir
@@ -53,7 +52,7 @@ class ReservoirTest(tf.test.TestCase):
         key = "key"
         r1 = reservoir.Reservoir(10)
         r2 = reservoir.Reservoir(10)
-        for i in xrange(100):
+        for i in range(100):
             r1.AddItem("key", i)
             r2.AddItem("key", i)
 
@@ -67,11 +66,11 @@ class ReservoirTest(tf.test.TestCase):
         """
         separate_reservoir = reservoir.Reservoir(10)
         interleaved_reservoir = reservoir.Reservoir(10)
-        for i in xrange(100):
+        for i in range(100):
             separate_reservoir.AddItem("key1", i)
-        for i in xrange(100):
+        for i in range(100):
             separate_reservoir.AddItem("key2", i)
-        for i in xrange(100):
+        for i in range(100):
             interleaved_reservoir.AddItem("key1", i)
             interleaved_reservoir.AddItem("key2", i)
 
@@ -86,14 +85,14 @@ class ReservoirTest(tf.test.TestCase):
         key = "key"
         r1 = reservoir.Reservoir(10, seed=0)
         r2 = reservoir.Reservoir(10, seed=1)
-        for i in xrange(100):
+        for i in range(100):
             r1.AddItem("key", i)
             r2.AddItem("key", i)
         self.assertNotEqual(r1.Items(key), r2.Items(key))
 
     def testFilterItemsByKey(self):
         r = reservoir.Reservoir(100, seed=0)
-        for i in xrange(10):
+        for i in range(10):
             r.AddItem("key1", i)
             r.AddItem("key2", i)
 
@@ -116,21 +115,21 @@ class ReservoirBucketTest(tf.test.TestCase):
 
     def testFillToSize(self):
         b = reservoir._ReservoirBucket(100)
-        for i in xrange(100):
+        for i in range(100):
             b.AddItem(i)
-        self.assertEqual(b.Items(), list(xrange(100)))
+        self.assertEqual(b.Items(), list(range(100)))
         self.assertEqual(b._num_items_seen, 100)
 
     def testDoesntOverfill(self):
         b = reservoir._ReservoirBucket(10)
-        for i in xrange(1000):
+        for i in range(1000):
             b.AddItem(i)
         self.assertEqual(len(b.Items()), 10)
         self.assertEqual(b._num_items_seen, 1000)
 
     def testMaintainsOrder(self):
         b = reservoir._ReservoirBucket(100)
-        for i in xrange(10000):
+        for i in range(10000):
             b.AddItem(i)
         items = b.Items()
         prev = -1
@@ -140,21 +139,21 @@ class ReservoirBucketTest(tf.test.TestCase):
 
     def testKeepsLatestItem(self):
         b = reservoir._ReservoirBucket(5)
-        for i in xrange(100):
+        for i in range(100):
             b.AddItem(i)
             last = b.Items()[-1]
             self.assertEqual(last, i)
 
     def testSizeOneBucket(self):
         b = reservoir._ReservoirBucket(1)
-        for i in xrange(20):
+        for i in range(20):
             b.AddItem(i)
             self.assertEqual(b.Items(), [i])
         self.assertEqual(b._num_items_seen, 20)
 
     def testSizeZeroBucket(self):
         b = reservoir._ReservoirBucket(0)
-        for i in xrange(20):
+        for i in range(20):
             b.AddItem(i)
             self.assertEqual(b.Items(), list(range(i + 1)))
         self.assertEqual(b._num_items_seen, 20)
@@ -167,7 +166,7 @@ class ReservoirBucketTest(tf.test.TestCase):
 
     def testRemovesItems(self):
         b = reservoir._ReservoirBucket(100)
-        for i in xrange(10):
+        for i in range(10):
             b.AddItem(i)
         self.assertEqual(len(b.Items()), 10)
         self.assertEqual(b._num_items_seen, 10)
@@ -177,7 +176,7 @@ class ReservoirBucketTest(tf.test.TestCase):
 
     def testRemovesItemsWhenItemsAreReplaced(self):
         b = reservoir._ReservoirBucket(100)
-        for i in xrange(10000):
+        for i in range(10000):
             b.AddItem(i)
         self.assertEqual(b._num_items_seen, 10000)
 
@@ -212,20 +211,20 @@ class ReservoirBucketTest(tf.test.TestCase):
             100, FakeRandom(), always_keep_last=False
         )
         incrementer = Incrementer()
-        for i in xrange(1000):
+        for i in range(1000):
             b.AddItem(i, incrementer.increment_and_double)
         self.assertEqual(incrementer.n, 100)
-        self.assertEqual(b.Items(), [x * 2 for x in xrange(100)])
+        self.assertEqual(b.Items(), [x * 2 for x in range(100)])
 
         # This time, we will always keep the last item, meaning that the function
         # should get invoked once for every item we add.
         b = reservoir._ReservoirBucket(100, FakeRandom(), always_keep_last=True)
         incrementer = Incrementer()
 
-        for i in xrange(1000):
+        for i in range(1000):
             b.AddItem(i, incrementer.increment_and_double)
         self.assertEqual(incrementer.n, 1000)
-        self.assertEqual(b.Items(), [x * 2 for x in xrange(99)] + [999 * 2])
+        self.assertEqual(b.Items(), [x * 2 for x in range(99)] + [999 * 2])
 
 
 class ReservoirBucketStatisticalDistributionTest(tf.test.TestCase):
@@ -263,7 +262,7 @@ class ReservoirBucketStatisticalDistributionTest(tf.test.TestCase):
         b = reservoir._ReservoirBucket(_max_size=self.samples)
         # add one extra item because we always keep the most recent item, which
         # would skew the distribution; we can just slice it off the end instead.
-        for i in xrange(self.total + 1):
+        for i in range(self.total + 1):
             b.AddItem(i)
 
         divbins = [0] * self.n_buckets
@@ -273,7 +272,7 @@ class ReservoirBucketStatisticalDistributionTest(tf.test.TestCase):
             divbins[item // self.total_per_bucket] += 1
             modbins[item % self.n_buckets] += 1
 
-        for bucket_index in xrange(self.n_buckets):
+        for bucket_index in range(self.n_buckets):
             divbin = divbins[bucket_index]
             modbin = modbins[bucket_index]
             self.AssertBinomialQuantity(divbin)

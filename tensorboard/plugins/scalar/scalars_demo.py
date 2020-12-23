@@ -18,7 +18,6 @@
 import os.path
 
 from absl import app
-from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow.compat.v1 as tf
 from tensorboard.plugins.scalar import summary
 
@@ -116,7 +115,7 @@ def run(
     writer = tf.summary.FileWriter(os.path.join(logdir, run_name))
     writer.add_graph(sess.graph)
     sess.run(tf.global_variables_initializer())
-    for step in xrange(STEPS):
+    for step in range(STEPS):
         # By asking TensorFlow to compute the update step, we force it to
         # change the value of the temperature variable. We don't actually
         # care about this value, so we discard it; instead, we grab the

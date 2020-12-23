@@ -19,7 +19,6 @@ import os
 import queue
 import threading
 
-from six.moves import xrange  # pylint: disable=redefined-builtin
 
 from tensorboard.backend.event_processing import directory_watcher
 from tensorboard.backend.event_processing import (
@@ -243,7 +242,7 @@ class EventMultiplexer(object):
         if self._max_reload_threads > 1:
             num_threads = min(self._max_reload_threads, len(items))
             logger.info("Starting %d threads to reload runs", num_threads)
-            for i in xrange(num_threads):
+            for i in range(num_threads):
                 thread = threading.Thread(target=Worker, name="Reloader %d" % i)
                 thread.daemon = True
                 thread.start()

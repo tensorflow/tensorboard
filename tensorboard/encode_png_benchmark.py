@@ -46,7 +46,6 @@ import datetime
 import threading
 import time
 
-from six.moves import xrange
 
 from absl import app
 from absl import logging
@@ -68,7 +67,7 @@ def bench(image, thread_count):
     """
     threads = [
         threading.Thread(target=lambda: encoder.encode_png(image))
-        for _ in xrange(thread_count)
+        for _ in range(thread_count)
     ]
     start_time = datetime.datetime.now()
     for thread in threads:
@@ -129,7 +128,7 @@ def main(unused_argv):
     for thread_count in thread_counts:
         time.sleep(1.0)
         total_time = min(
-            bench(image, thread_count) for _ in xrange(3)
+            bench(image, thread_count) for _ in range(3)
         )  # best-of-three timing
         unit_time = total_time / thread_count
         if total_time < 2.0:

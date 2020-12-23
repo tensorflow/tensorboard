@@ -19,7 +19,6 @@
 import collections.abc
 import os.path
 
-from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 
 from tensorboard import errors
@@ -104,7 +103,7 @@ class HistogramsPluginTest(tf.test.TestCase):
         subdir = os.path.join(logdir, run_name)
         with test_util.FileWriterCache.get(subdir) as writer:
             writer.add_graph(sess.graph)
-            for step in xrange(self._STEPS):
+            for step in range(self._STEPS):
                 feed_dict = {placeholder: [1 + step, 2 + step, 3 + step]}
                 s = sess.run(summ, feed_dict=feed_dict)
                 writer.add_summary(s, global_step=step)
