@@ -14,7 +14,6 @@
 
 
 import numpy as np
-import six
 from werkzeug import wrappers
 
 from tensorboard import plugin_util
@@ -144,7 +143,7 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
             ctx, experiment_id=experiment, plugin_name=metadata.PLUGIN_NAME
         )
         result = {run: {} for run in mapping}
-        for (run, tag_to_time_series) in six.iteritems(mapping):
+        for (run, tag_to_time_series) in mapping.items():
             for (tag, time_series) in tag_to_time_series.items():
                 result[run][tag] = {
                     "displayName": time_series.display_name,

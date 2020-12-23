@@ -17,7 +17,6 @@
 
 import os
 
-import six
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import numpy as np
 
@@ -200,7 +199,7 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
                 base_provider.Run(
                     run_id=run, run_name=run, start_time=start_time
                 )
-                for (run, start_time) in six.iteritems(start_times)
+                for (run, start_time) in start_times.items()
             ],
         )
 

@@ -79,8 +79,8 @@ class HistogramsPlugin(base_plugin.TBPlugin):
             plugin_name=metadata.PLUGIN_NAME,
         )
         result = {run: {} for run in mapping}
-        for (run, tag_to_content) in six.iteritems(mapping):
-            for (tag, metadatum) in six.iteritems(tag_to_content):
+        for (run, tag_to_content) in mapping.items():
+            for (tag, metadatum) in tag_to_content.items():
                 description = plugin_util.markdown_to_safe_html(
                     metadatum.description
                 )

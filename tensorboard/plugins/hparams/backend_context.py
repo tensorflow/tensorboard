@@ -19,7 +19,6 @@ handlers for the HParams plugin backend."""
 import collections
 import os
 
-import six
 
 from tensorboard.plugins.hparams import api_pb2
 from tensorboard.plugins.hparams import metadata
@@ -211,13 +210,13 @@ class Context(object):
             start_info = metadata.parse_session_start_info_plugin_data(
                 tag_to_content[metadata.SESSION_START_INFO_TAG]
             )
-            for (name, value) in six.iteritems(start_info.hparams):
+            for (name, value) in start_info.hparams.items():
                 hparams[name].append(value)
 
         # Try to construct an HParamInfo for each hparam from its name and list
         # of values.
         result = []
-        for (name, values) in six.iteritems(hparams):
+        for (name, values) in hparams.items():
             hparam_info = self._compute_hparam_info_from_values(name, values)
             if hparam_info is not None:
                 result.append(hparam_info)

@@ -18,7 +18,6 @@
 # Necessary for an internal test with special behavior for numpy.
 import numpy as np
 
-import six
 from werkzeug import wrappers
 
 from tensorboard.plugins import base_plugin
@@ -145,7 +144,7 @@ class TextV2Plugin(base_plugin.TBPlugin):
         )
         return {
             run: list(tag_to_content)
-            for (run, tag_to_content) in six.iteritems(mapping)
+            for (run, tag_to_content) in mapping.items()
         }
 
     def text_impl(self, ctx, run, tag, experiment):

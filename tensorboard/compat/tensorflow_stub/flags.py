@@ -23,7 +23,6 @@ import sys as _sys
 
 # go/tf-wildcard-import
 from absl.flags import *  # pylint: disable=wildcard-import
-import six as _six
 
 
 # Since we wrap absl.flags DEFINE functions, we need to declare this module
@@ -44,7 +43,7 @@ def _wrap_define_function(original_function):
     def wrapper(*args, **kwargs):
         """Wrapper function that turns old keyword names to new ones."""
         has_old_names = False
-        for old_name, new_name in _six.iteritems(_RENAMED_ARGUMENTS):
+        for old_name, new_name in __RENAMED_ARGUMENTS.items():
             if old_name in kwargs:
                 has_old_names = True
                 value = kwargs.pop(old_name)

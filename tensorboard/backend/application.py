@@ -27,7 +27,6 @@ import textwrap
 import time
 import zipfile
 
-import six
 from six.moves.urllib import (
     parse as urlparse,
 )  # pylint: disable=wrong-import-order
@@ -316,7 +315,7 @@ class TensorBoardWSGI(object):
         # over a more general one (e.g., a catchall route `/*` should come last).
         self.prefix_routes = collections.OrderedDict(
             sorted(
-                six.iteritems(unordered_prefix_routes),
+                unordered_prefix_routes.items(),
                 key=lambda x: len(x[0]),
                 reverse=True,
             )

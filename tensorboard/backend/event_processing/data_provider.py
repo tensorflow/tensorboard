@@ -260,10 +260,10 @@ class MultiplexerDataProvider(provider.DataProvider):
           suitable to be returned from `read_scalars` or `read_tensors`.
         """
         result = {}
-        for (run, tags_for_run) in six.iteritems(index):
+        for (run, tags_for_run) in index.items():
             result_for_run = {}
             result[run] = result_for_run
-            for (tag, metadata) in six.iteritems(tags_for_run):
+            for (tag, metadata) in tags_for_run.items():
                 events = self._multiplexer.Tensors(run, tag)
                 data = [convert_event(e) for e in events]
                 result_for_run[tag] = _downsample(data, downsample)
@@ -319,7 +319,7 @@ class MultiplexerDataProvider(provider.DataProvider):
             plugin_name, run_tag_filter, summary_pb2.DATA_CLASS_BLOB_SEQUENCE
         )
         result = {}
-        for (run, tags) in six.iteritems(index):
+        for (run, tags) in index.items():
             result_for_run = {}
             result[run] = result_for_run
             for tag in tags:

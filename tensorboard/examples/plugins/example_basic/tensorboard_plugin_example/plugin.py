@@ -18,7 +18,6 @@
 import json
 import os
 
-import six
 from tensorboard.plugins import base_plugin
 from tensorboard.util import tensor_util
 import werkzeug
@@ -75,7 +74,7 @@ class ExamplePlugin(base_plugin.TBPlugin):
             metadata.PLUGIN_NAME
         )
         result = {run: {} for run in self._multiplexer.Runs()}
-        for (run, tag_to_content) in six.iteritems(mapping):
+        for (run, tag_to_content) in mapping.items():
             for tag in tag_to_content:
                 summary_metadata = self._multiplexer.SummaryMetadata(run, tag)
                 result[run][tag] = {

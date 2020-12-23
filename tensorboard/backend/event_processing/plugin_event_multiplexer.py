@@ -18,7 +18,6 @@
 import os
 import threading
 
-import six
 from six.moves import queue, xrange  # pylint: disable=redefined-builtin
 
 from tensorboard.backend.event_processing import directory_watcher
@@ -117,7 +116,7 @@ class EventMultiplexer(object):
                 "Event Multplexer doing initialization load for %s",
                 run_path_map,
             )
-            for (run, path) in six.iteritems(run_path_map):
+            for (run, path) in run_path_map.items():
                 self.AddRun(path, run)
         logger.info("Event Multiplexer done initializing")
 
@@ -274,7 +273,7 @@ class EventMultiplexer(object):
         """
         with self._accumulators_mutex:
             # To avoid nested locks, we construct a copy of the run-accumulator map
-            items = list(six.iteritems(self._accumulators))
+            items = list(self._accumulators.items())
 
         return {run: accum.PluginAssets(plugin_name) for run, accum in items}
 
@@ -462,7 +461,7 @@ class EventMultiplexer(object):
         """
         with self._accumulators_mutex:
             # To avoid nested locks, we construct a copy of the run-accumulator map
-            items = list(six.iteritems(self._accumulators))
+            items = list(self._accumulators.items())
         return {
             run_name: accumulator.AllSummaryMetadata()
             for run_name, accumulator in items
@@ -479,7 +478,7 @@ class EventMultiplexer(object):
         """
         with self._accumulators_mutex:
             # To avoid nested locks, we construct a copy of the run-accumulator map
-            items = list(six.iteritems(self._accumulators))
+            items = list(self._accumulators.items())
         return {run_name: accumulator.Tags() for run_name, accumulator in items}
 
     def RunPaths(self):
