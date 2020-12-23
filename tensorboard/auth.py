@@ -16,11 +16,8 @@
 
 import abc
 
-import six
 
-
-@six.add_metaclass(abc.ABCMeta)
-class AuthProvider(object):
+class AuthProvider(metaclass=abc.ABCMeta):
     """Authentication provider for a specific kind of credential."""
 
     def authenticate(self, environ):
