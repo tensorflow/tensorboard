@@ -242,9 +242,8 @@ class ProjectorPlugin(base_plugin.TBPlugin):
         self.multiplexer = context.multiplexer
         self.logdir = context.logdir
         self.readers = {}
-        self.run_paths = None
+        self._run_paths = None
         self._configs = {}
-        self.old_num_run_paths = None
         self.config_fpaths = None
         self.tensor_cache = LRUCache(_TENSOR_CACHE_CAPACITY)
 
@@ -256,9 +255,6 @@ class ProjectorPlugin(base_plugin.TBPlugin):
         # The running thread that is currently determining whether the plugin is
         # active. If such a thread exists, do not start a duplicate thread.
         self._thread_for_determining_is_active = None
-
-        if self.multiplexer:
-            self.run_paths = self.multiplexer.RunPaths()
 
     def get_plugin_apps(self):
         asset_prefix = "tf_projector_plugin"
@@ -329,22 +325,29 @@ class ProjectorPlugin(base_plugin.TBPlugin):
         offer an immediate response to whether it is active and
         determine whether it should be active in a separate thread.
         """
-        if self.configs:
+        self._update_configs()
+        if self._configs:
             self._is_active = True
         self._thread_for_determining_is_active = None
 
-    @property
-    def configs(self):
-        """Returns a map of run paths to `ProjectorConfig` protos."""
-        run_path_pairs = list(self.run_paths.items())
+    def _update_configs(self):
+        """Updates `self._configs` and `self._run_paths`."""
+        if self.multiplexer:
+            run_paths = dict(self.multiplexer.RunPaths())
+        else:
+            run_paths = {}
+        run_paths_changed = run_paths != self._run_paths
+        self._run_paths = run_paths
+
+        run_path_pairs = list(self._run_paths.items())
         self._append_plugin_asset_directories(run_path_pairs)
         # Also accept the root logdir as a model checkpoint directory,
         # so that the projector still works when there are no runs.
         # (Case on `run` rather than `path` to avoid issues with
         # absolute/relative paths on any filesystems.)
-        if not any(run == "." for (run, path) in run_path_pairs):
+        if "." not in self._run_paths:
             run_path_pairs.append((".", self.logdir))
-        if self._run_paths_changed() or _latest_checkpoints_changed(
+        if run_paths_changed or _latest_checkpoints_changed(
             self._configs, run_path_pairs
         ):
             self.readers = {}
@@ -352,14 +355,6 @@ class ProjectorPlugin(base_plugin.TBPlugin):
                 run_path_pairs
             )
             self._augment_configs_with_checkpoint_info()
-        return self._configs
-
-    def _run_paths_changed(self):
-        num_run_paths = len(list(self.run_paths.keys()))
-        if num_run_paths != self.old_num_run_paths:
-            self.old_num_run_paths = num_run_paths
-            return True
-        return False
 
     def _augment_configs_with_checkpoint_info(self):
         for run, config in self._configs.items():
@@ -524,7 +519,7 @@ class ProjectorPlugin(base_plugin.TBPlugin):
             if metadata.PROJECTOR_FILENAME not in assets:
                 continue
             assets_dir = os.path.join(
-                self.run_paths[run],
+                self._run_paths[run],
                 metadata.PLUGINS_DIR,
                 metadata.PLUGIN_ASSETS_NAME,
             )
@@ -542,7 +537,8 @@ class ProjectorPlugin(base_plugin.TBPlugin):
     @wrappers.Request.application
     def _serve_runs(self, request):
         """Returns a list of runs that have embeddings."""
-        return Respond(request, list(self.configs.keys()), "application/json")
+        self._update_configs()
+        return Respond(request, list(self._configs.keys()), "application/json")
 
     @wrappers.Request.application
     def _serve_config(self, request):
@@ -551,12 +547,12 @@ class ProjectorPlugin(base_plugin.TBPlugin):
             return Respond(
                 request, 'query parameter "run" is required', "text/plain", 400
             )
-        if run not in self.configs:
+        self._update_configs()
+        config = self._configs.get(run)
+        if config is None:
             return Respond(
                 request, 'Unknown run: "%s"' % run, "text/plain", 400
             )
-
-        config = self.configs[run]
         return Respond(
             request, json_format.MessageToJson(config), "application/json"
         )
@@ -584,12 +580,12 @@ class ProjectorPlugin(base_plugin.TBPlugin):
                 400,
             )
 
-        if run not in self.configs:
+        self._update_configs()
+        config = self._configs.get(run)
+        if config is None:
             return Respond(
                 request, 'Unknown run: "%s"' % run, "text/plain", 400
             )
-
-        config = self.configs[run]
         fpath = self._get_metadata_file_for_tensor(name, config)
         if not fpath:
             return Respond(
@@ -644,13 +640,12 @@ class ProjectorPlugin(base_plugin.TBPlugin):
                 400,
             )
 
-        if run not in self.configs:
+        self._update_configs()
+        config = self._configs.get(run)
+        if config is None:
             return Respond(
                 request, 'Unknown run: "%s"' % run, "text/plain", 400
             )
-
-        config = self.configs[run]
-
         tensor = self.tensor_cache.get((run, name))
         if tensor is None:
             # See if there is a tensor file in the config.
@@ -711,12 +706,12 @@ class ProjectorPlugin(base_plugin.TBPlugin):
                 request, 'query parameter "name" is required', "text/plain", 400
             )
 
-        if run not in self.configs:
+        self._update_configs()
+        config = self._configs.get(run)
+        if config is None:
             return Respond(
                 request, 'Unknown run: "%s"' % run, "text/plain", 400
             )
-
-        config = self.configs[run]
         fpath = self._get_bookmarks_file_for_tensor(name, config)
         if not fpath:
             return Respond(
@@ -754,14 +749,14 @@ class ProjectorPlugin(base_plugin.TBPlugin):
                 request, 'query parameter "name" is required', "text/plain", 400
             )
 
-        if run not in self.configs:
+        self._update_configs()
+        config = self._configs.get(run)
+        if config is None:
             return Respond(
                 request, 'Unknown run: "%s"' % run, "text/plain", 400
             )
 
-        config = self.configs[run]
         embedding_info = self._get_embedding(name, config)
-
         if not embedding_info or not embedding_info.sprite.image_path:
             return Respond(
                 request,
