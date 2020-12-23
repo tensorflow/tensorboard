@@ -17,7 +17,6 @@
 
 import os
 
-import six
 import tensorflow as tf
 
 from google.protobuf import text_format
@@ -73,8 +72,8 @@ class ProjectorApiTest(tf.test.TestCase):
         self.assertEqual(config, config2)
 
     def test_visualize_embeddings_no_logdir(self):
-        with six.assertRaisesRegex(
-            self, ValueError, "Expected logdir to be a path, but got None"
+        with self.assertRaisesRegex(
+            ValueError, "Expected logdir to be a path, but got None"
         ):
             projector.visualize_embeddings(None, create_dummy_config())
 

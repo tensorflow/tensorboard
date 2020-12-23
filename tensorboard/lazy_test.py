@@ -15,7 +15,6 @@
 """Unit tests for the `tensorboard.lazy` module."""
 
 
-import six
 import unittest
 
 from tensorboard import lazy
@@ -57,7 +56,7 @@ class LazyTest(unittest.TestCase):
             return inner
 
         expected_message = "Circular import when resolving LazyModule 'inner'"
-        with six.assertRaisesRegex(self, ImportError, expected_message):
+        with self.assertRaisesRegex(ImportError, expected_message):
             outer.bar
 
     def test_repr_before_load(self):
@@ -88,9 +87,9 @@ class LazyTest(unittest.TestCase):
         def bad():
             raise ValueError(expected_message)
 
-        with six.assertRaisesRegex(self, ValueError, expected_message):
+        with self.assertRaisesRegex(ValueError, expected_message):
             bad.day
-        with six.assertRaisesRegex(self, ValueError, expected_message):
+        with self.assertRaisesRegex(ValueError, expected_message):
             bad.day
 
     def test_loads_only_once_even_when_result_equal_to_everything(self):

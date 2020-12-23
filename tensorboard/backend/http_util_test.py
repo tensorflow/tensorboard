@@ -196,7 +196,7 @@ class RespondTest(tb_test.TestCase):
         # Streaming gunzip defers actual unzipping until response is used; once
         # we iterate over the whole file-wrapper application iterator, the
         # underlying GzipFile should be closed, and throw the size check error.
-        with six.assertRaisesRegex(self, IOError, "Incorrect length"):
+        with self.assertRaisesRegex(IOError, "Incorrect length"):
             _ = list(r.response)
 
     def testJson_getsAutoSerialized(self):

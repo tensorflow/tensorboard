@@ -21,7 +21,6 @@ from unittest import mock
 
 from google.protobuf import text_format
 import numpy as np
-import six
 
 from tensorboard import test
 from tensorboard.compat import tf
@@ -170,8 +169,8 @@ class HParamsTest(test.TestCase):
         self._check_summary(result, check_group_name=True)
 
     def test_pb_invalid_trial_id(self):
-        with six.assertRaisesRegex(
-            self, TypeError, "`trial_id` should be a `str`, but got: 12"
+        with self.assertRaisesRegex(
+            TypeError, "`trial_id` should be a `str`, but got: 12"
         ):
             hp.hparams_pb(self.hparams, trial_id=12)
 
@@ -216,8 +215,8 @@ class HParamsTest(test.TestCase):
             "foo": 1,
             hp.HParam("foo"): 1,
         }
-        with six.assertRaisesRegex(
-            self, ValueError, "multiple values specified for hparam 'foo'"
+        with self.assertRaisesRegex(
+            ValueError, "multiple values specified for hparam 'foo'"
         ):
             hp.hparams_pb(hparams)
 
@@ -226,8 +225,8 @@ class HParamsTest(test.TestCase):
             hp.HParam("foo"): 1,
             hp.HParam("foo"): 1,
         }
-        with six.assertRaisesRegex(
-            self, ValueError, "multiple values specified for hparam 'foo'"
+        with self.assertRaisesRegex(
+            ValueError, "multiple values specified for hparam 'foo'"
         ):
             hp.hparams_pb(hparams)
 
@@ -508,17 +507,17 @@ class IntIntervalTest(test.TestCase):
         self.assertEqual(domain.dtype, int)
 
     def test_non_ints(self):
-        with six.assertRaisesRegex(
-            self, TypeError, "min_value must be an int: -inf"
+        with self.assertRaisesRegex(
+            TypeError, "min_value must be an int: -inf"
         ):
             hp.IntInterval(float("-inf"), 0)
-        with six.assertRaisesRegex(
-            self, TypeError, "max_value must be an int: 'eleven'"
+        with self.assertRaisesRegex(
+            TypeError, "max_value must be an int: 'eleven'"
         ):
             hp.IntInterval(7, "eleven")
 
     def test_backward_endpoints(self):
-        with six.assertRaisesRegex(self, ValueError, "123 > 45"):
+        with self.assertRaisesRegex(ValueError, "123 > 45"):
             hp.IntInterval(123, 45)
 
     def test_sample_uniform(self):
@@ -565,17 +564,17 @@ class RealIntervalTest(test.TestCase):
         self.assertEqual(domain.dtype, float)
 
     def test_non_ints(self):
-        with six.assertRaisesRegex(
-            self, TypeError, "min_value must be a float: True"
+        with self.assertRaisesRegex(
+            TypeError, "min_value must be a float: True"
         ):
             hp.RealInterval(True, 2.0)
-        with six.assertRaisesRegex(
-            self, TypeError, "max_value must be a float: 'wat'"
+        with self.assertRaisesRegex(
+            TypeError, "max_value must be a float: 'wat'"
         ):
             hp.RealInterval(1.2, "wat")
 
     def test_backward_endpoints(self):
-        with six.assertRaisesRegex(self, ValueError, "2.1 > 1.2"):
+        with self.assertRaisesRegex(ValueError, "2.1 > 1.2"):
             hp.RealInterval(2.1, 1.2)
 
     def test_sample_uniform(self):
@@ -614,14 +613,14 @@ class DiscreteTest(test.TestCase):
         self.assertEqual(domain.values, [])
 
     def test_empty_with_unspecified_dtype(self):
-        with six.assertRaisesRegex(
-            self, ValueError, "Empty domain with no dtype specified"
+        with self.assertRaisesRegex(
+            ValueError, "Empty domain with no dtype specified"
         ):
             hp.Discrete([])
 
     def test_dtype_mismatch(self):
-        with six.assertRaisesRegex(
-            self, TypeError, r"dtype mismatch: not isinstance\(2, str\)"
+        with self.assertRaisesRegex(
+            TypeError, r"dtype mismatch: not isinstance\(2, str\)"
         ):
             hp.Discrete(["one", 2])
 

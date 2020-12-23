@@ -318,8 +318,7 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
         provider = self.create_provider()
         run_tag_filter = base_provider.RunTagFilter(["waves"], ["bad"])
         # No explicit checks yet.
-        with six.assertRaisesRegex(
-            self,
+        with self.assertRaisesRegex(
             ValueError,
             "can only convert an array of size 1 to a Python scalar",
         ):

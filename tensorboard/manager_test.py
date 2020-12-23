@@ -23,7 +23,6 @@ import re
 import tempfile
 from unittest import mock
 
-import six
 
 from tensorboard import manager
 from tensorboard import test as tb_test
@@ -65,8 +64,7 @@ class TensorBoardInfoTest(tb_test.TestCase):
     def test_serialization_rejects_bad_types(self):
         bad_time = datetime.datetime.fromtimestamp(1549061116)  # not an int
         info = _make_info()._replace(start_time=bad_time)
-        with six.assertRaisesRegex(
-            self,
+        with self.assertRaisesRegex(
             ValueError,
             r"expected 'start_time' of type.*int.*, but found: datetime\.",
         ):
@@ -74,8 +72,7 @@ class TensorBoardInfoTest(tb_test.TestCase):
 
     def test_serialization_rejects_wrong_version(self):
         info = _make_info()._replace(version="reversion")
-        with six.assertRaisesRegex(
-            self,
+        with self.assertRaisesRegex(
             ValueError,
             "expected 'version' to be '.*', but found: 'reversion'",
         ):
@@ -83,13 +80,13 @@ class TensorBoardInfoTest(tb_test.TestCase):
 
     def test_deserialization_rejects_bad_json(self):
         bad_input = "parse me if you dare"
-        with six.assertRaisesRegex(self, ValueError, "invalid JSON:"):
+        with self.assertRaisesRegex(ValueError, "invalid JSON:"):
             manager._info_from_string(bad_input)
 
     def test_deserialization_rejects_non_object_json(self):
         bad_input = "[1, 2]"
-        with six.assertRaisesRegex(
-            self, ValueError, re.escape("not a JSON object: [1, 2]")
+        with self.assertRaisesRegex(
+            ValueError, re.escape("not a JSON object: [1, 2]")
         ):
             manager._info_from_string(bad_input)
 
@@ -98,8 +95,8 @@ class TensorBoardInfoTest(tb_test.TestCase):
         json_value = json.loads(manager._info_to_string(info))
         del json_value["version"]
         bad_input = json.dumps(json_value)
-        with six.assertRaisesRegex(
-            self, ValueError, re.escape("missing keys: ['version']")
+        with self.assertRaisesRegex(
+            ValueError, re.escape("missing keys: ['version']")
         ):
             manager._info_from_string(bad_input)
 
@@ -124,8 +121,8 @@ class TensorBoardInfoTest(tb_test.TestCase):
         json_value = json.loads(manager._info_to_string(info))
         del json_value["start_time"]
         bad_input = json.dumps(json_value)
-        with six.assertRaisesRegex(
-            self, ValueError, re.escape("missing keys: ['start_time']")
+        with self.assertRaisesRegex(
+            ValueError, re.escape("missing keys: ['start_time']")
         ):
             manager._info_from_string(bad_input)
 
@@ -134,8 +131,7 @@ class TensorBoardInfoTest(tb_test.TestCase):
         json_value = json.loads(manager._info_to_string(info))
         json_value["start_time"] = "2001-02-03T04:05:06"
         bad_input = json.dumps(json_value)
-        with six.assertRaisesRegex(
-            self,
+        with self.assertRaisesRegex(
             ValueError,
             "expected 'start_time' of type.*int.*, but found:.*"
             "'2001-02-03T04:05:06'",
@@ -332,8 +328,7 @@ class TensorBoardInfoIoTest(tb_test.TestCase):
         # `TensorBoardInfoTest` above.
         bad_time = datetime.datetime.fromtimestamp(1549061116)
         info = _make_info()._replace(start_time=bad_time)
-        with six.assertRaisesRegex(
-            self,
+        with self.assertRaisesRegex(
             ValueError,
             r"expected 'start_time' of type.*int.*, but found: datetime\.",
         ):
@@ -344,8 +339,7 @@ class TensorBoardInfoIoTest(tb_test.TestCase):
         # The particulars of validation are tested more thoroughly in
         # `TensorBoardInfoTest` above.
         info = _make_info()._replace(version="reversion")
-        with six.assertRaisesRegex(
-            self,
+        with self.assertRaisesRegex(
             ValueError,
             "expected 'version' to be '.*', but found: 'reversion'",
         ):

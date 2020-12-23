@@ -20,7 +20,6 @@ import functools
 import os.path
 
 import numpy as np
-import six
 import tensorflow as tf
 
 from tensorboard import context
@@ -286,16 +285,12 @@ class PrCurvesPluginTest(tf.test.TestCase):
         The handler should raise a ValueError when no PR curve data can
         be found for a certain run-tag combination.
         """
-        with six.assertRaisesRegex(
-            self, ValueError, r"No PR curves could be found"
-        ):
+        with self.assertRaisesRegex(ValueError, r"No PR curves could be found"):
             self.plugin.pr_curves_impl(
                 context.RequestContext(), "123", ["colors"], "non_existent_tag"
             )
 
-        with six.assertRaisesRegex(
-            self, ValueError, r"No PR curves could be found"
-        ):
+        with self.assertRaisesRegex(ValueError, r"No PR curves could be found"):
             self.plugin.pr_curves_impl(
                 context.RequestContext(),
                 "123",

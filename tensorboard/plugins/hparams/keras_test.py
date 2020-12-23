@@ -18,7 +18,6 @@ import os
 from unittest import mock
 
 from google.protobuf import text_format
-import six
 import tensorflow as tf
 
 from tensorboard.plugins.hparams import keras
@@ -150,22 +149,21 @@ class CallbackTest(tf.test.TestCase):
         with tf.compat.v1.Graph().as_default():
             assert not tf.executing_eagerly()
             self._initialize_model(writer=self.logdir)
-            with six.assertRaisesRegex(
-                self, RuntimeError, "only supported in TensorFlow eager mode"
+            with self.assertRaisesRegex(
+                RuntimeError, "only supported in TensorFlow eager mode"
             ):
                 self.model.fit(x=[(1,)], y=[(2,)], callbacks=[self.callback])
 
     def test_reuse_failure(self):
         self._initialize_model(writer=self.logdir)
         self.model.fit(x=[(1,)], y=[(2,)], callbacks=[self.callback])
-        with six.assertRaisesRegex(
-            self, RuntimeError, "cannot be reused across training sessions"
+        with self.assertRaisesRegex(
+            RuntimeError, "cannot be reused across training sessions"
         ):
             self.model.fit(x=[(1,)], y=[(2,)], callbacks=[self.callback])
 
     def test_invalid_writer(self):
-        with six.assertRaisesRegex(
-            self,
+        with self.assertRaisesRegex(
             TypeError,
             "writer must be a `SummaryWriter` or `str`, not None",
         ):
@@ -176,8 +174,8 @@ class CallbackTest(tf.test.TestCase):
             "foo": 1,
             hp.HParam("foo"): 1,
         }
-        with six.assertRaisesRegex(
-            self, ValueError, "multiple values specified for hparam 'foo'"
+        with self.assertRaisesRegex(
+            ValueError, "multiple values specified for hparam 'foo'"
         ):
             keras.Callback(self.get_temp_dir(), hparams)
 
@@ -186,14 +184,14 @@ class CallbackTest(tf.test.TestCase):
             hp.HParam("foo"): 1,
             hp.HParam("foo"): 1,
         }
-        with six.assertRaisesRegex(
-            self, ValueError, "multiple values specified for hparam 'foo'"
+        with self.assertRaisesRegex(
+            ValueError, "multiple values specified for hparam 'foo'"
         ):
             keras.Callback(self.get_temp_dir(), hparams)
 
     def test_invalid_trial_id(self):
-        with six.assertRaisesRegex(
-            self, TypeError, "`trial_id` should be a `str`, but got: 12"
+        with self.assertRaisesRegex(
+            TypeError, "`trial_id` should be a `str`, but got: 12"
         ):
             keras.Callback(self.get_temp_dir(), {}, trial_id=12)
 

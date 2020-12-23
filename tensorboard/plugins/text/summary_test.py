@@ -116,7 +116,7 @@ class SummaryBaseTest(object):
                 self.assertIsInstance(value, six.binary_type)
 
     def test_non_string_value(self):
-        with six.assertRaisesRegex(self, TypeError, r"must be of type.*string"):
+        with self.assertRaisesRegex(TypeError, r"must be of type.*string"):
             self.text("la", np.array(range(42)))
 
 
@@ -131,8 +131,8 @@ class SummaryV1PbTest(SummaryBaseTest, tf.test.TestCase):
         )
 
     def test_non_string_value(self):
-        with six.assertRaisesRegex(
-            self, ValueError, r"Expected binary or unicode string, got 0"
+        with self.assertRaisesRegex(
+            ValueError, r"Expected binary or unicode string, got 0"
         ):
             self.text("la", np.array(range(42)))
 

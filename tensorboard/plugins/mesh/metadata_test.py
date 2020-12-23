@@ -17,7 +17,6 @@
 
 from unittest import mock
 
-import six
 import tensorflow as tf
 from tensorboard.plugins.mesh import metadata
 from tensorboard.plugins.mesh import plugin_data_pb2
@@ -90,17 +89,15 @@ class MetadataTest(tf.test.TestCase):
 
     def test_tensor_shape(self):
         """Tests that target tensor should be of particular shape."""
-        with six.assertRaisesRegex(
-            self, ValueError, r"Tensor shape should be of shape BxNx3.*"
+        with self.assertRaisesRegex(
+            ValueError, r"Tensor shape should be of shape BxNx3.*"
         ):
             self._create_metadata([1])
 
     def test_metadata_format(self):
         """Tests that metadata content must be passed as a serialized
         string."""
-        with six.assertRaisesRegex(
-            self, TypeError, r"Content type must be bytes."
-        ):
+        with self.assertRaisesRegex(TypeError, r"Content type must be bytes."):
             metadata.parse_plugin_metadata(123)
 
     def test_default_components(self):

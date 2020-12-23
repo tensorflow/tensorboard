@@ -20,7 +20,6 @@ import glob
 import os
 
 import numpy as np
-import six
 import tensorflow as tf
 
 from tensorboard.compat import tf2
@@ -131,18 +130,18 @@ class SummaryBaseTest(object):
 
     def test_requires_nonnegative_max_outputs(self):
         data = np.array(1, np.float32, ndmin=3)
-        with six.assertRaisesRegex(
-            self, (ValueError, tf.errors.InvalidArgumentError), ">= 0"
+        with self.assertRaisesRegex(
+            (ValueError, tf.errors.InvalidArgumentError), ">= 0"
         ):
             self.audio("k488", data, 44100, max_outputs=-1)
 
     def test_requires_rank_3(self):
-        with six.assertRaisesRegex(self, ValueError, "must have rank 3"):
+        with self.assertRaisesRegex(ValueError, "must have rank 3"):
             self.audio("k488", np.array([[1]]), 44100)
 
     def test_requires_wav(self):
         data = np.array(1, np.float32, ndmin=3)
-        with six.assertRaisesRegex(self, ValueError, "Unknown encoding"):
+        with self.assertRaisesRegex(ValueError, "Unknown encoding"):
             self.audio("k488", data, 44100, encoding="pptx")
 
 

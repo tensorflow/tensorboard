@@ -17,7 +17,6 @@
 import os
 import tempfile
 
-import six
 import tensorflow as tf
 
 from tensorboard.backend.event_processing import io_wrapper
@@ -78,8 +77,8 @@ class IoWrapperTest(tf.test.TestCase):
         self.assertFalse(io_wrapper.IsSummaryEventsFile("/logdir/model.ckpt"))
 
     def testIsIsTensorFlowEventsFileWithEmptyInput(self):
-        with six.assertRaisesRegex(
-            self, ValueError, r"Path must be a nonempty string"
+        with self.assertRaisesRegex(
+            ValueError, r"Path must be a nonempty string"
         ):
             io_wrapper.IsTensorFlowEventsFile("")
 

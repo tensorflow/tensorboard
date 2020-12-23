@@ -14,7 +14,6 @@
 
 
 import numpy as np
-import six
 import tensorflow as tf
 
 from tensorboard.util import encoder
@@ -37,11 +36,11 @@ class TensorFlowPngEncoderTest(tf.test.TestCase):
         self.assertGreater(len(data), 128)
 
     def test_invalid_non_numpy(self):
-        with six.assertRaisesRegex(self, ValueError, "must be a numpy array"):
+        with self.assertRaisesRegex(ValueError, "must be a numpy array"):
             self._encode(self._rgb.tolist())
 
     def test_invalid_non_uint8(self):
-        with six.assertRaisesRegex(self, ValueError, "dtype must be uint8"):
+        with self.assertRaisesRegex(ValueError, "dtype must be uint8"):
             self._encode(self._rgb.astype(np.float32))
 
     def test_encodes_png(self):
