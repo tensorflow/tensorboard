@@ -19,14 +19,11 @@ methods of this base class.
 """
 
 
-import six
-
 from abc import ABCMeta
 from abc import abstractmethod
 
 
-@six.add_metaclass(ABCMeta)
-class TBPlugin(object):
+class TBPlugin(metaclass=ABCMeta):
     """TensorBoard plugin interface.
 
     Every plugin must extend from this class.

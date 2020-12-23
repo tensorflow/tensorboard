@@ -137,8 +137,7 @@ def _run(flags, experiment_url_callback=None):
         intent.execute(server_info, channel)
 
 
-@six.add_metaclass(abc.ABCMeta)
-class _Intent(object):
+class _Intent(metaclass=abc.ABCMeta):
     """A description of the user's intent in invoking this program.
 
     Each valid set of CLI flags corresponds to one intent: e.g., "upload

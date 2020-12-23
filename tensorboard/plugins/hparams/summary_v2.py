@@ -335,8 +335,7 @@ class HParam(object):
         return self._description
 
 
-@six.add_metaclass(abc.ABCMeta)
-class Domain(object):
+class Domain(metaclass=abc.ABCMeta):
     """The domain of a hyperparameter.
 
     Domains are restricted to values of the simple types `float`, `int`,

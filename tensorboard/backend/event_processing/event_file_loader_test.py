@@ -20,7 +20,6 @@ import abc
 import io
 import os
 
-import six
 import tensorflow as tf
 
 
@@ -32,8 +31,7 @@ from tensorboard.summary.writer import record_writer
 FILENAME = "test.events"
 
 
-@six.add_metaclass(abc.ABCMeta)
-class EventFileLoaderTestBase(object):
+class EventFileLoaderTestBase(metaclass=abc.ABCMeta):
     def _append_record(self, data):
         with open(os.path.join(self.get_temp_dir(), FILENAME), "ab") as f:
             record_writer.RecordWriter(f).write(data)

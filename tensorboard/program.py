@@ -45,7 +45,6 @@ import time
 from absl import flags as absl_flags
 from absl.flags import argparse_flags
 import absl.logging
-import six
 from six.moves import urllib
 from six.moves import xrange  # pylint: disable=redefined-builtin
 from werkzeug import serving
@@ -438,8 +437,7 @@ class TensorBoard(object):
         return self.server_class(app, self.flags)
 
 
-@six.add_metaclass(ABCMeta)
-class TensorBoardSubcommand(object):
+class TensorBoardSubcommand(metaclass=ABCMeta):
     """Experimental private API for defining subcommands to tensorboard(1)."""
 
     @abstractmethod
@@ -488,8 +486,7 @@ class TensorBoardSubcommand(object):
         return None
 
 
-@six.add_metaclass(ABCMeta)
-class TensorBoardServer(object):
+class TensorBoardServer(metaclass=ABCMeta):
     """Class for customizing TensorBoard WSGI app serving."""
 
     @abstractmethod

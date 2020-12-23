@@ -21,8 +21,7 @@ import six
 import numpy as np
 
 
-@six.add_metaclass(abc.ABCMeta)
-class DataProvider(object):
+class DataProvider(metaclass=abc.ABCMeta):
     """Interface for reading TensorBoard scalar, tensor, and blob data.
 
     These APIs are under development and subject to change. For instance,
