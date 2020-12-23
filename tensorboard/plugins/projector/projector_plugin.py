@@ -321,45 +321,6 @@ class ProjectorPlugin(base_plugin.TBPlugin):
             disable_reload=True,
         )
 
-<<<<<<< HEAD
-    def _update_run_paths(self):
-        """Updates `self._run_paths`, testing for updates.
-
-        Returns:
-          `True` if this call changed the value of `self._run_paths`,
-          else `False`.
-        """
-        if self.data_provider and self.logdir:
-            # Create a background context; we may not be in a request.
-            ctx = context.RequestContext()
-            run_paths = {
-                run.run_name: os.path.join(self.logdir, run.run_name)
-                for run in self.data_provider.list_runs(ctx, experiment_id="")
-            }
-        else:
-            run_paths = None
-        changed = run_paths != self._run_paths
-        self._run_paths = run_paths
-        return changed
-
-||||||| 638014e1c
-    def _update_run_paths(self):
-        """Updates `self._run_paths`, testing for updates.
-
-        Returns:
-          `True` if this call changed the value of `self._run_paths`,
-          else `False`.
-        """
-        if self.multiplexer:
-            run_paths = dict(self.multiplexer.RunPaths())
-        else:
-            run_paths = None
-        changed = run_paths != self._run_paths
-        self._run_paths = run_paths
-        return changed
-
-=======
->>>>>>> b52d274d78b82dde9e10fb139070bb35168de350
     def _determine_is_active(self):
         """Determines whether the plugin is active.
 
@@ -374,8 +335,13 @@ class ProjectorPlugin(base_plugin.TBPlugin):
 
     def _update_configs(self):
         """Updates `self._configs` and `self._run_paths`."""
-        if self.multiplexer:
-            run_paths = dict(self.multiplexer.RunPaths())
+        if self.data_provider and self.logdir:
+            # Create a background context; we may not be in a request.
+            ctx = context.RequestContext()
+            run_paths = {
+                run.run_name: os.path.join(self.logdir, run.run_name)
+                for run in self.data_provider.list_runs(ctx, experiment_id="")
+            }
         else:
             run_paths = {}
         run_paths_changed = run_paths != self._run_paths
