@@ -31,7 +31,6 @@ import math
 import os.path
 import shutil
 
-from six.moves import xrange  # pylint: disable=redefined-builtin
 
 # TODO(erez): This code currently does not support eager mode and can't
 # be run in tensorflow 2.0. Some of the issues are that it uses
@@ -83,7 +82,7 @@ def init_temperature_list():
     global TEMPERATURE_LIST
     TEMPERATURE_LIST = [
         270 + i * 50.0
-        for i in xrange(
+        for i in range(
             0, int(math.sqrt(FLAGS.num_session_groups / len(HEAT_COEFFICIENTS)))
         )
     ]
@@ -234,7 +233,7 @@ def run(logdir, session_id, hparams, group_name):
 
     sess = tf.Session()
     sess.run(tf.global_variables_initializer())
-    for step in xrange(FLAGS.num_steps):
+    for step in range(FLAGS.num_steps):
         # By asking TensorFlow to compute the update step, we force it to
         # change the value of the temperature variable. We don't actually
         # care about this value, so we discard it; instead, we grab the
@@ -273,7 +272,7 @@ def run_all(logdir, verbose=False):
                 }
                 hparam_str = str(hparams)
                 group_name = fingerprint(hparam_str)
-                for repeat_idx in xrange(2):
+                for repeat_idx in range(2):
                     session_id = str(session_num)
                     if verbose:
                         print(

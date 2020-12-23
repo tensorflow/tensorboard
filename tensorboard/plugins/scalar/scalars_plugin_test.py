@@ -21,7 +21,6 @@ import json
 import os.path
 
 from six import StringIO
-from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 from werkzeug import test as werkzeug_test
 from werkzeug import wrappers
@@ -88,7 +87,7 @@ class ScalarsPluginTest(tf.test.TestCase):
     def generate_run(self, logdir, run_name):
         subdir = os.path.join(logdir, run_name)
         with test_util.FileWriterCache.get(subdir) as writer:
-            for step in xrange(self._STEPS):
+            for step in range(self._STEPS):
                 data = [1 + step, 2 + step, 3 + step]
                 if run_name == self._RUN_WITH_LEGACY_SCALARS:
                     summ = tf.compat.v1.summary.scalar(

@@ -22,7 +22,6 @@ import os.path
 import textwrap
 import urllib.request
 
-from six.moves import xrange  # pylint: disable=redefined-builtin
 
 import tensorflow.compat.v1 as tf
 
@@ -139,7 +138,7 @@ def run_box_to_gaussian(logdir, verbose=False):
 
     iterations = 4
     images = [tf.cast(image, tf.float32) / 255.0]
-    for _ in xrange(iterations):
+    for _ in range(iterations):
         images.append(convolve(images[-1], pixel_filter))
     with tf.name_scope("convert_to_uint8"):
         images = tf.stack(
@@ -193,7 +192,7 @@ def run_box_to_gaussian(logdir, verbose=False):
         sess.run(image.initializer)
         writer = tf.summary.FileWriter(os.path.join(logdir, "box_to_gaussian"))
         writer.add_graph(sess.graph)
-        for step in xrange(8):
+        for step in range(8):
             if verbose:
                 logger.info("--- box_to_gaussian: step: %s" % step)
                 feed_dict = {blur_radius: step}
@@ -281,7 +280,7 @@ def run_sobel(logdir, verbose=False):
         sess.run(image.initializer)
         writer = tf.summary.FileWriter(os.path.join(logdir, "sobel"))
         writer.add_graph(sess.graph)
-        for step in xrange(8):
+        for step in range(8):
             if verbose:
                 logger.info("--- sobel: step: %s" % step)
                 feed_dict = {kernel_radius: step}

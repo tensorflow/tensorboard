@@ -17,7 +17,6 @@
 
 import os
 
-from six.moves import xrange  # pylint: disable=redefined-builtin
 import numpy as np
 
 from tensorboard import context
@@ -50,7 +49,7 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
 
         logdir = os.path.join(self.logdir, "polynomials")
         with tf.summary.create_file_writer(logdir).as_default():
-            for i in xrange(10):
+            for i in range(10):
                 scalar_summary.scalar(
                     "square", i ** 2, step=2 * i, description="boxen"
                 )
@@ -58,7 +57,7 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
 
         logdir = os.path.join(self.logdir, "waves")
         with tf.summary.create_file_writer(logdir).as_default():
-            for i in xrange(10):
+            for i in range(10):
                 scalar_summary.scalar("sine", tf.sin(float(i)), step=i)
                 scalar_summary.scalar(
                     "square", tf.sign(tf.sin(float(i))), step=i
@@ -86,7 +85,7 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
             ]
             for (description, distribution, name) in data:
                 tensor = tf.constant([distribution], dtype=tf.float64)
-                for i in xrange(1, 11):
+                for i in range(1, 11):
                     histogram_summary.histogram(
                         name, tensor * i, step=i, description=description
                     )
@@ -100,7 +99,7 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
             ]
             for (name, color, description) in data:
                 image_1x1 = tf.constant([[[color]]], dtype=tf.uint8)
-                for i in xrange(1, 11):
+                for i in range(1, 11):
                     # Use a non-monotonic sequence of sample sizes to
                     # test `max_length` calculation.
                     k = 6 - abs(6 - i)  # 1, .., 6, .., 2

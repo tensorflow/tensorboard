@@ -21,7 +21,6 @@ import os.path
 
 from absl import app
 from absl import flags
-from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 from tensorboard.plugins.audio import summary
 
@@ -145,7 +144,7 @@ def run(logdir, run_name, wave_name, wave_constructor):
     writer = tf.summary.FileWriter(os.path.join(logdir, run_name))
     writer.add_graph(sess.graph)
     sess.run(tf.compat.v1.global_variables_initializer())
-    for step in xrange(FLAGS.steps):
+    for step in range(FLAGS.steps):
         s = sess.run(summ, feed_dict={step_placeholder: float(step)})
         writer.add_summary(s, global_step=step)
     writer.close()

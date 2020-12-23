@@ -18,7 +18,6 @@ import os
 
 import numpy as np
 import six
-from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 
 from tensorboard import data_compat
@@ -399,7 +398,7 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
                 scalar_summary.op("xent", 1.0 / (step + tf.constant(1.0)))
                 merged = tf.compat.v1.summary.merge_all()
                 writer.add_graph(sess.graph)
-                for i in xrange(10):
+                for i in range(10):
                     summ = sess.run(merged, feed_dict={step: float(i)})
                     writer.add_summary(summ, global_step=i)
 
@@ -447,7 +446,7 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
                     )
                 merged = tf.compat.v1.summary.merge_all()
                 writer.add_graph(sess.graph)
-                for i in xrange(10):
+                for i in range(10):
                     summ = sess.run(merged)
                     writer.add_summary(summ, global_step=i)
 
@@ -494,7 +493,7 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
                     image_summary.op("images", ipt, max_outputs=3)
                 merged = tf.compat.v1.summary.merge_all()
                 writer.add_graph(sess.graph)
-                for i in xrange(10):
+                for i in range(10):
                     summ = sess.run(merged)
                     writer.add_summary(summ, global_step=i)
 
@@ -578,7 +577,7 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
                     summary_metadata=summary_metadata,
                 )
                 merged = tf.compat.v1.summary.merge_all()
-                for step in xrange(steps):
+                for step in range(steps):
                     writer.add_summary(sess.run(merged), global_step=step)
 
         accumulator = ea.EventAccumulator(
@@ -666,7 +665,7 @@ class RealisticEventAccumulatorTest(EventAccumulatorTest):
         writer.add_run_metadata(run_metadata, "test run")
 
         # Write a bunch of events using the writer.
-        for i in xrange(30):
+        for i in range(30):
             summ_id = FakeScalarSummary("id", i)
             summ_sq = FakeScalarSummary("sq", i * i)
             writer.add_summary(summ_id, i * 5)
@@ -694,7 +693,7 @@ class RealisticEventAccumulatorTest(EventAccumulatorTest):
         sq_events = acc.Tensors("sq")
         self.assertEqual(30, len(id_events))
         self.assertEqual(30, len(sq_events))
-        for i in xrange(30):
+        for i in range(30):
             self.assertEqual(i * 5, id_events[i].step)
             self.assertEqual(i * 5, sq_events[i].step)
             self.assertEqual(
@@ -706,7 +705,7 @@ class RealisticEventAccumulatorTest(EventAccumulatorTest):
             )
 
         # Write a few more events to test incremental reloading
-        for i in xrange(30, 40):
+        for i in range(30, 40):
             summ_id = FakeScalarSummary("id", i)
             summ_sq = FakeScalarSummary("sq", i * i)
             writer.add_summary(summ_id, i * 5)
@@ -719,7 +718,7 @@ class RealisticEventAccumulatorTest(EventAccumulatorTest):
         sq_events = acc.Tensors("sq")
         self.assertEqual(40, len(id_events))
         self.assertEqual(40, len(sq_events))
-        for i in xrange(40):
+        for i in range(40):
             self.assertEqual(i * 5, id_events[i].step)
             self.assertEqual(i * 5, sq_events[i].step)
             self.assertEqual(

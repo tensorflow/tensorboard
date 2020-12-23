@@ -36,11 +36,11 @@ class Reservoir(object):
 
     >>> separate_reservoir = reservoir.Reservoir(10)
     >>> interleaved_reservoir = reservoir.Reservoir(10)
-    >>> for i in xrange(100):
+    >>> for i in range(100):
     >>>   separate_reservoir.AddItem('key1', i)
-    >>> for i in xrange(100):
+    >>> for i in range(100):
     >>>   separate_reservoir.AddItem('key2', i)
-    >>> for i in xrange(100):
+    >>> for i in range(100):
     >>>   interleaved_reservoir.AddItem('key1', i)
     >>>   interleaved_reservoir.AddItem('key2', i)
 

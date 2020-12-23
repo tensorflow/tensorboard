@@ -25,7 +25,6 @@ import shutil
 from absl import app
 from absl import flags
 import numpy as np
-from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 
 
@@ -69,7 +68,7 @@ def _MakeHistogram(values):
         counts[idx] += 1
 
     limit_counts = [
-        (limits[i], counts[i]) for i in xrange(len(limits)) if counts[i]
+        (limits[i], counts[i]) for i in range(len(limits)) if counts[i]
     ]
     bucket_limit = [lc[0] for lc in limit_counts]
     bucket = [lc[1] for lc in limit_counts]
@@ -89,7 +88,7 @@ def WriteScalarSeries(writer, tag, f, n=5):
     """Write a series of scalar events to writer, using f to create values."""
     step = 0
     wall_time = _start_time
-    for i in xrange(n):
+    for i in range(n):
         v = f(i)
         value = tf.Summary.Value(tag=tag, simple_value=v)
         summary = tf.Summary(value=[value])
@@ -104,7 +103,7 @@ def WriteHistogramSeries(writer, tag, mu_sigma_tuples, n=20):
     step = 0
     wall_time = _start_time
     for [mean, stddev] in mu_sigma_tuples:
-        data = [random.normalvariate(mean, stddev) for _ in xrange(n)]
+        data = [random.normalvariate(mean, stddev) for _ in range(n)]
         histo = _MakeHistogram(data)
         summary = tf.Summary(value=[tf.Summary.Value(tag=tag, histo=histo)])
         event = tf.Event(wall_time=wall_time, step=step, summary=summary)
@@ -119,7 +118,7 @@ def WriteImageSeries(writer, tag, n_images=1):
     session = tf.compat.v1.Session()
     p = tf.compat.v1.placeholder("uint8", (1, 4, 4, 3))
     s = tf.compat.v1.summary.image(tag, p)
-    for _ in xrange(n_images):
+    for _ in range(n_images):
         im = np.random.random_integers(0, 255, (1, 4, 4, 3))
         summ = session.run(s, feed_dict={p: im})
         writer.add_summary(summ, step)
@@ -144,7 +143,7 @@ def WriteAudioSeries(writer, tag, n_audio=1):
     )
     s = tf.compat.v1.summary.audio(tag, p, sample_rate)
 
-    for _ in xrange(n_audio):
+    for _ in range(n_audio):
         # Generate a different frequency for each channel to show stereo works.
         frequencies = np.random.random_integers(
             min_frequency_hz,

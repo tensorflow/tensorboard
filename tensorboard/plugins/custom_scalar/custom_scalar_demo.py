@@ -20,7 +20,6 @@ dashboard.
 
 
 from absl import app
-from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 
 from tensorboard.summary import v1 as summary_lib
@@ -114,7 +113,7 @@ def run():
         )
         writer.add_summary(layout_summary)
 
-        for i in xrange(42):
+        for i in range(42):
             summary = sess.run(merged_summary, feed_dict={step: i})
             writer.add_summary(summary, global_step=i)
 

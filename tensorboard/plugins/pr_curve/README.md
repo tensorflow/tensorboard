@@ -38,7 +38,7 @@ merged_summary = tf.summary.merge_all()
 with tf.Session() as sess:
   writer = tf.summary.FileWriter('/tmp/logdir', sess.graph)
   sess.run(tf.local_variables_initializer())
-  for step in xrange(43):
+  for step in range(43):
     sess.run([update_op])
     if step % 6 == 0:
       writer.add_summary(sess.run(merged_summary), global_step=step)
@@ -147,7 +147,7 @@ merged_summary = tf.summary.merge_all()
 with tf.Session() as sess:
   writer = tf.summary.FileWriter('/tmp/logdir', sess.graph)
   sess.run(tf.local_variables_initializer())
-  for step in xrange(43):
+  for step in range(43):
     sess.run([update_op])
     if step % 6 == 0:
       writer.add_summary(sess.run(merged_summary), global_step=step)
@@ -200,7 +200,7 @@ merged_summary = tf.summary.merge_all()
 
 with tf.Session() as sess:
   writer = tf.summary.FileWriter('/tmp/logdir', sess.graph)
-  for step in xrange(43):
+  for step in range(43):
     writer.add_summary(sess.run(merged_summary), global_step=step)
 ```
 

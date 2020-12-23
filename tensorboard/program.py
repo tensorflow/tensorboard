@@ -46,7 +46,6 @@ import urllib.parse
 from absl import flags as absl_flags
 from absl.flags import argparse_flags
 import absl.logging
-from six.moves import xrange  # pylint: disable=redefined-builtin
 from werkzeug import serving
 
 from tensorboard import manager
@@ -583,7 +582,7 @@ def with_port_scanning(cls):
         max_attempts = 100 if should_scan else 1
         base_port = min(base_port + max_attempts, 0x10000) - max_attempts
 
-        for port in xrange(base_port, base_port + max_attempts):
+        for port in range(base_port, base_port + max_attempts):
             subflags = argparse.Namespace(**vars(flags))
             subflags.port = port
             try:

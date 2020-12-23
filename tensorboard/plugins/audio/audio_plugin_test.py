@@ -23,7 +23,6 @@ import tempfile
 import urllib.parse
 
 import numpy
-from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 from werkzeug import test as werkzeug_test
 from werkzeug import wrappers
@@ -59,7 +58,7 @@ class AudioPluginTest(tf.test.TestCase):
             foo_directory = os.path.join(self.log_dir, "foo")
             with test_util.FileWriterCache.get(foo_directory) as writer:
                 writer.add_graph(sess.graph)
-                for step in xrange(2):
+                for step in range(2):
                     # The floats (sample data) range from -1 to 1.
                     writer.add_summary(
                         sess.run(
@@ -89,7 +88,7 @@ class AudioPluginTest(tf.test.TestCase):
             bar_directory = os.path.join(self.log_dir, "bar")
             with test_util.FileWriterCache.get(bar_directory) as writer:
                 writer.add_graph(sess.graph)
-                for step in xrange(2):
+                for step in range(2):
                     # The floats (sample data) range from -1 to 1.
                     writer.add_summary(
                         sess.run(
@@ -105,7 +104,7 @@ class AudioPluginTest(tf.test.TestCase):
                                         "step **%s**, sample %s"
                                         % (step, sample)
                                     )
-                                    for sample in xrange(42)
+                                    for sample in range(42)
                                 ],
                             },
                         ),

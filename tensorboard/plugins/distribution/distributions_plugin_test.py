@@ -19,7 +19,6 @@
 import collections.abc
 import os.path
 
-from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 
 from tensorboard import errors
@@ -102,7 +101,7 @@ class DistributionsPluginTest(tf.test.TestCase):
         subdir = os.path.join(logdir, run_name)
         with test_util.FileWriterCache.get(subdir) as writer:
             writer.add_graph(sess.graph)
-            for step in xrange(self._STEPS):
+            for step in range(self._STEPS):
                 feed_dict = {placeholder: [1 + step, 2 + step, 3 + step]}
                 s = sess.run(summ, feed_dict=feed_dict)
                 writer.add_summary(s, global_step=step)
@@ -158,7 +157,7 @@ class DistributionsPluginTest(tf.test.TestCase):
             )
             self.assertEqual("application/json", mime_type)
             self.assertEqual(len(data), self._STEPS)
-            for i in xrange(self._STEPS):
+            for i in range(self._STEPS):
                 [_unused_wall_time, step, bps_and_icdfs] = data[i]
                 self.assertEqual(i, step)
                 (bps, _unused_icdfs) = zip(*bps_and_icdfs)

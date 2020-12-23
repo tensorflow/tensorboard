@@ -17,7 +17,6 @@
 
 
 from absl import app
-from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 
 from tensorboard.plugins.histogram import summary as histogram_summary
@@ -116,7 +115,7 @@ def run_all(logdir, verbose=False, num_summaries=400):
 
     # Setup a loop and write the summaries to disk
     N = num_summaries
-    for step in xrange(N):
+    for step in range(N):
         k_val = step / float(N)
         summ = sess.run(summaries, feed_dict={k: k_val})
         writer.add_summary(summ, global_step=step)
