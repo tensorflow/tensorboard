@@ -47,7 +47,6 @@ from absl import app
 from absl import flags
 from google.protobuf import struct_pb2
 from google.protobuf import text_format
-import six
 import tensorflow as tf
 
 from tensorboard.plugins.hparams import api_pb2
@@ -186,8 +185,7 @@ def start_session():
     # Convert hparams.hparams values from google.protobuf.Value to Python native
     # objects.
     hparams = {
-        key: value_to_python(value)
-        for (key, value) in six.iteritems(hparams.hparams)
+        key: value_to_python(value) for (key, value) in hparams.hparams.items()
     }
     write_summary(
         summary.session_start_pb(

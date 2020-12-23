@@ -23,7 +23,6 @@ import numpy as np
 
 # pylint: enable=g-bad-import-order
 
-import six
 from werkzeug import wrappers
 
 from tensorboard import plugin_util
@@ -225,7 +224,7 @@ class TextPlugin(base_plugin.TBPlugin):
         )
         return {
             run: list(tag_to_content)
-            for (run, tag_to_content) in six.iteritems(mapping)
+            for (run, tag_to_content) in mapping.items()
         }
 
     @wrappers.Request.application

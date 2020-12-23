@@ -20,7 +20,6 @@ import functools
 import time
 
 import grpc
-import six
 
 from google.protobuf import message
 from tensorboard.compat.proto import graph_pb2
@@ -462,7 +461,7 @@ class _BatchedRequestSender(object):
         # stream contains runs with no events, or events with no values, we'll
         # lose that information. This is not a problem: we would need to prune
         # such data from the request anyway.
-        for (run_name, events) in six.iteritems(run_to_events):
+        for (run_name, events) in run_to_events.items():
             for event in events:
                 _filter_graph_defs(event)
                 for value in event.summary.value:

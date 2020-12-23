@@ -126,7 +126,7 @@ def session_start_pb(
         group_name=group_name,
         start_time_secs=start_time_secs,
     )
-    for (hp_name, hp_val) in six.iteritems(hparams):
+    for (hp_name, hp_val) in hparams.items():
         if isinstance(hp_val, (float, int)):
             session_start_info.hparams[hp_name].number_value = hp_val
         elif isinstance(hp_val, six.string_types):

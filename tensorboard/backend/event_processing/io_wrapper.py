@@ -18,7 +18,6 @@ import collections
 import os
 import re
 
-import six
 
 from tensorboard.compat import tf
 from tensorboard.util import tb_logging
@@ -145,7 +144,7 @@ def ListRecursivelyViaGlobbing(top):
         pairs = collections.defaultdict(list)
         for file_path in glob:
             pairs[os.path.dirname(file_path)].append(file_path)
-        for dir_name, file_paths in six.iteritems(pairs):
+        for dir_name, file_paths in pairs.items():
             yield (dir_name, tuple(file_paths))
 
         if len(pairs) == 1:

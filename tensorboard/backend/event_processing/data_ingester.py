@@ -19,7 +19,6 @@ import re
 import threading
 import time
 
-import six
 
 from tensorboard.backend.event_processing import data_provider
 from tensorboard.backend.event_processing import plugin_event_multiplexer
@@ -97,7 +96,7 @@ class LocalDataIngester(ingester.DataIngester):
             while True:
                 start = time.time()
                 logger.info("TensorBoard reload process beginning")
-                for path, name in six.iteritems(self._path_to_run):
+                for path, name in self._path_to_run.items():
                     self._multiplexer.AddRunsFromDirectory(path, name)
                 logger.info(
                     "TensorBoard reload process: Reload the whole Multiplexer"

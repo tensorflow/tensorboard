@@ -15,7 +15,6 @@
 """Utilities to manipulate TensorProtos."""
 
 import numpy as np
-import six
 
 from tensorboard.compat.proto import tensor_pb2
 from tensorboard.compat.tensorflow_stub import dtypes, compat, tensor_shape
@@ -124,10 +123,10 @@ BACKUP_DICT = {
 
 def GetFromNumpyDTypeDict(dtype_dict, dtype):
     # NOTE: dtype_dict.get(dtype) always returns None.
-    for key, val in six.iteritems(dtype_dict):
+    for key, val in dtype_dict.items():
         if key == dtype:
             return val
-    for key, val in six.iteritems(BACKUP_DICT):
+    for key, val in BACKUP_DICT.items():
         if key == dtype:
             return val
     return None

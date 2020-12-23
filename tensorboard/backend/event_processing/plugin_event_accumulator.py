@@ -17,7 +17,6 @@
 import collections
 import threading
 
-import six
 
 from tensorboard.backend.event_processing import directory_loader
 from tensorboard.backend.event_processing import directory_watcher
@@ -595,7 +594,7 @@ class EventAccumulator(object):
                         _NotExpired, _TENSOR_RESERVOIR_KEY
                     )
         else:
-            for tag_reservoir in six.itervalues(self.tensors_by_tag):
+            for tag_reservoir in self.tensors_by_tag.values():
                 num_expired += tag_reservoir.FilterItems(
                     _NotExpired, _TENSOR_RESERVOIR_KEY
                 )

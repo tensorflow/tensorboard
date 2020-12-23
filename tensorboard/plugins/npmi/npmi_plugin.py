@@ -15,7 +15,6 @@
 """The nPMI visualization plugin."""
 
 
-import six
 import math
 from werkzeug import wrappers
 
@@ -101,9 +100,9 @@ class NpmiPlugin(base_plugin.TBPlugin):
             ctx, experiment_id=experiment, plugin_name=self.plugin_name
         )
         result = {run: {} for run in mapping}
-        for (run, tag_to_content) in six.iteritems(mapping):
+        for (run, tag_to_content) in mapping.items():
             result[run] = []
-            for (tag, metadatum) in six.iteritems(tag_to_content):
+            for (tag, metadatum) in tag_to_content.items():
                 content = metadata.parse_plugin_metadata(
                     metadatum.plugin_content
                 )
@@ -120,7 +119,7 @@ class NpmiPlugin(base_plugin.TBPlugin):
             ),
         )
         result = {run: {} for run in mapping}
-        for (run, _) in six.iteritems(mapping):
+        for (run, _) in mapping.items():
             all_annotations = self._data_provider.read_tensors(
                 ctx,
                 experiment_id=experiment,
@@ -148,7 +147,7 @@ class NpmiPlugin(base_plugin.TBPlugin):
             run_tag_filter=provider.RunTagFilter(tags=[metadata.METRICS_TAG]),
         )
         result = {run: {} for run in mapping}
-        for (run, _) in six.iteritems(mapping):
+        for (run, _) in mapping.items():
             all_metrics = self._data_provider.read_tensors(
                 ctx,
                 experiment_id=experiment,
@@ -171,7 +170,7 @@ class NpmiPlugin(base_plugin.TBPlugin):
             run_tag_filter=provider.RunTagFilter(tags=[metadata.VALUES_TAG]),
         )
         result = {run: {} for run in mapping}
-        for (run, _) in six.iteritems(mapping):
+        for (run, _) in mapping.items():
             all_values = self._data_provider.read_tensors(
                 ctx,
                 experiment_id=experiment,
@@ -197,7 +196,7 @@ class NpmiPlugin(base_plugin.TBPlugin):
             ),
         )
         result = {run: {} for run in mapping}
-        for (run, _) in six.iteritems(mapping):
+        for (run, _) in mapping.items():
             all_embeddings = self._data_provider.read_tensors(
                 ctx,
                 experiment_id=experiment,

@@ -197,7 +197,7 @@ def _normalize_hparams(hparams):
         hyperparameter name.
     """
     result = {}
-    for (k, v) in six.iteritems(hparams):
+    for (k, v) in hparams.items():
         if isinstance(k, HParam):
             k = k.name
         if k in result:

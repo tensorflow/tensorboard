@@ -167,7 +167,7 @@ class Handler(object):
             # hyperparameter values) into result.
             # There doesn't seem to be a way to initialize a protobuffer map in the
             # constructor.
-            for (key, value) in six.iteritems(start_info.hparams):
+            for (key, value) in start_info.hparams.items():
                 group.hparams[key].CopyFrom(value)
             groups_by_name[group_name] = group
 
@@ -627,7 +627,7 @@ def _set_avg_session_metrics(session_group):
             stats.total_wall_time_secs += metric_value.wall_time_secs
 
     del session_group.metric_values[:]
-    for (metric_name, stats) in six.iteritems(metric_stats):
+    for (metric_name, stats) in metric_stats.items():
         session_group.metric_values.add(
             name=api_pb2.MetricName(
                 group=metric_name.group, tag=metric_name.tag

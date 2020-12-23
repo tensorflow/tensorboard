@@ -17,7 +17,6 @@
 
 import os.path
 import shutil
-import six
 
 from tensorboard.uploader import logdir_loader
 from tensorboard import test as tb_test
@@ -49,7 +48,7 @@ class LogdirLoaderTest(tb_test.TestCase):
     def _extract_run_to_tags(self, run_to_events):
         """Returns run-to-tags dict from run-to-event-generator dict."""
         run_to_tags = {}
-        for run_name, event_generator in six.iteritems(run_to_events):
+        for run_name, event_generator in run_to_events.items():
             # There should be no duplicate runs.
             self.assertNotIn(run_name, run_to_tags)
             run_to_tags[run_name] = self._extract_tags(event_generator)

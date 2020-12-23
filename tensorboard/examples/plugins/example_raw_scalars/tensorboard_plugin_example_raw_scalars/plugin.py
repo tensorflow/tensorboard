@@ -18,7 +18,6 @@
 import mimetypes
 import os
 
-import six
 from werkzeug import wrappers
 
 from tensorboard import errors
@@ -62,9 +61,7 @@ class ExampleRawScalarsPlugin(base_plugin.TBPlugin):
         run_tag_mapping = self._multiplexer.PluginRunToTagToContent(
             _SCALAR_PLUGIN_NAME
         )
-        run_info = {
-            run: list(tags) for (run, tags) in six.iteritems(run_tag_mapping)
-        }
+        run_info = {run: list(tags) for (run, tags) in run_tag_mapping.items()}
 
         return http_util.Respond(request, run_info, "application/json")
 

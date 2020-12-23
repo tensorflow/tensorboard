@@ -212,7 +212,7 @@ class TensorBoard(object):
             # any positional arguments to `serve`.
             serve_parser = serve_subparser
 
-        for (name, subcommand) in six.iteritems(self.subcommands):
+        for (name, subcommand) in self.subcommands.items():
             subparser = subparsers.add_parser(
                 name,
                 help=subcommand.help(),

@@ -15,7 +15,6 @@
 """TensorBoard 3D mesh visualizer plugin."""
 
 import numpy as np
-import six
 from werkzeug import wrappers
 
 from tensorboard.backend import http_util
@@ -57,7 +56,7 @@ class MeshPlugin(base_plugin.TBPlugin):
         )
         return [
             instance_tag
-            for (instance_tag, content) in six.iteritems(index)
+            for (instance_tag, content) in index.items()
             if tag == metadata.parse_plugin_metadata(content).name
         ]
 
@@ -84,9 +83,9 @@ class MeshPlugin(base_plugin.TBPlugin):
         # to obtain a list of tags associated with each run. For each tag estimate
         # number of samples.
         response = dict()
-        for run, tag_to_content in six.iteritems(all_runs):
+        for run, tag_to_content in all_runs.items():
             response[run] = dict()
-            for instance_tag, _ in six.iteritems(tag_to_content):
+            for instance_tag, _ in tag_to_content.items():
                 # Make sure we only operate on user-defined tags here.
                 tag = self._tag(run, instance_tag)
                 meta = self._instance_tag_metadata(run, instance_tag)
