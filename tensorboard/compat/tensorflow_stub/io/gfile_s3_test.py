@@ -16,7 +16,6 @@
 
 import boto3
 import os
-import six
 import unittest
 from moto import mock_s3
 
@@ -59,8 +58,7 @@ class GFileTest(unittest.TestCase):
         ]
         expected_listing = [self._PathJoin(temp_dir, f) for f in expected]
         gotten_listing = gfile.glob(self._PathJoin(temp_dir, "*"))
-        six.assertCountEqual(
-            self,
+        self.assertCountEqual(
             expected_listing,
             gotten_listing,
             "Files must match. Expected %r. Got %r."
@@ -86,7 +84,7 @@ class GFileTest(unittest.TestCase):
             "waldo",
         ]
         gotten_files = gfile.listdir(temp_dir)
-        six.assertCountEqual(self, expected_files, gotten_files)
+        self.assertCountEqual(expected_files, gotten_files)
 
     @mock_s3
     def testMakeDirs(self):
@@ -403,16 +401,14 @@ class GFileTest(unittest.TestCase):
             result[0]: list(result[2])
             for result in gotten
         }
-        six.assertCountEqual(
-            self,
+        self.assertCountEqual(
             expected_directory_to_files.keys(),
             gotten_directory_to_files.keys(),
         )
 
         for subdir, expected_listing in expected_directory_to_files.items():
             gotten_listing = gotten_directory_to_files[subdir]
-            six.assertCountEqual(
-                self,
+            self.assertCountEqual(
                 expected_listing,
                 gotten_listing,
                 "Files for subdir %r must match. Expected %r. Got %r."

@@ -87,19 +87,17 @@ class CorePluginFlagsTest(tf.test.TestCase):
         )
         event_or_logdir_req = r"Must specify either --logdir or --event_file.$"
 
-        with six.assertRaisesRegex(self, ValueError, event_or_logdir_req):
+        with self.assertRaisesRegex(ValueError, event_or_logdir_req):
             loader.fix_flags(FakeFlags(inspect=True))
-        with six.assertRaisesRegex(
-            self, ValueError, one_of_event_or_logdir_req
-        ):
+        with self.assertRaisesRegex(ValueError, one_of_event_or_logdir_req):
             loader.fix_flags(
                 FakeFlags(
                     inspect=True, logdir="/tmp", event_file="/tmp/event.out"
                 )
             )
-        with six.assertRaisesRegex(self, ValueError, logdir_or_db_req):
+        with self.assertRaisesRegex(ValueError, logdir_or_db_req):
             loader.fix_flags(FakeFlags(inspect=False))
-        with six.assertRaisesRegex(self, ValueError, logdir_or_db_req):
+        with self.assertRaisesRegex(ValueError, logdir_or_db_req):
             loader.fix_flags(
                 FakeFlags(inspect=False, event_file="/tmp/event.out")
             )

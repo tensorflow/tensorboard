@@ -21,7 +21,6 @@ import os
 
 
 import numpy as np
-import six
 import tensorflow as tf
 
 from tensorboard.compat import tf2
@@ -94,13 +93,13 @@ class SummaryBaseTest(object):
     def test_string_value(self):
         # Use str.* in regex because PY3 numpy refers to string arrays using
         # length-dependent type names in the format "str%d" % (32 * len(str)).
-        with six.assertRaisesRegex(
-            self, (ValueError, tf.errors.UnimplementedError), r"Cast str.*float"
+        with self.assertRaisesRegex(
+            (ValueError, tf.errors.UnimplementedError), r"Cast str.*float"
         ):
             self.scalar("a", np.array("113"))
 
     def test_requires_rank_0(self):
-        with six.assertRaisesRegex(self, ValueError, r"Expected scalar shape"):
+        with self.assertRaisesRegex(ValueError, r"Expected scalar shape"):
             self.scalar("a", np.array([1, 1, 3]))
 
 

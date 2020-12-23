@@ -48,7 +48,7 @@ class TensorBoardTest(tb_test.TestCase):
 
     def testPlugins_invalidType(self):
         plugin_instance = core_plugin.CorePlugin(base_plugin.TBContext())
-        with six.assertRaisesRegex(self, TypeError, "CorePlugin"):
+        with self.assertRaisesRegex(TypeError, "CorePlugin"):
             tb = program.TensorBoard(plugins=[plugin_instance])
 
     def testConfigure(self):
@@ -58,9 +58,7 @@ class TensorBoardTest(tb_test.TestCase):
 
     def testConfigure_unknownFlag(self):
         tb = program.TensorBoard(plugins=[core_plugin.CorePlugin])
-        with six.assertRaisesRegex(
-            self, ValueError, "Unknown TensorBoard flag"
-        ):
+        with self.assertRaisesRegex(ValueError, "Unknown TensorBoard flag"):
             tb.configure(foo="bar")
 
 

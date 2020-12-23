@@ -18,7 +18,6 @@
 import json
 from unittest import mock
 
-import six
 from werkzeug import test as werkzeug_test
 from werkzeug import wrappers
 
@@ -446,8 +445,8 @@ class ApplicationTest(tb_test.TestCase):
         ]
         app = application.TensorBoardWSGI(plugins)
         server = werkzeug_test.Client(app, wrappers.BaseResponse)
-        with six.assertRaisesRegex(
-            self, ValueError, "Expected es_module_path to be non-absolute path"
+        with self.assertRaisesRegex(
+            ValueError, "Expected es_module_path to be non-absolute path"
         ):
             server.get("/data/plugin_entry.html?name=mallory")
 
@@ -461,8 +460,8 @@ class ApplicationTest(tb_test.TestCase):
         ]
         app = application.TensorBoardWSGI(plugins)
         server = werkzeug_test.Client(app, wrappers.BaseResponse)
-        with six.assertRaisesRegex(
-            self, ValueError, "quux.*declared.*both Angular.*legacy"
+        with self.assertRaisesRegex(
+            ValueError, "quux.*declared.*both Angular.*legacy"
         ):
             server.get("/data/plugins_listing")
 
@@ -476,8 +475,8 @@ class ApplicationTest(tb_test.TestCase):
         ]
         app = application.TensorBoardWSGI(plugins)
         server = werkzeug_test.Client(app, wrappers.BaseResponse)
-        with six.assertRaisesRegex(
-            self, ValueError, "quux.*declared.*both Angular.*iframed"
+        with self.assertRaisesRegex(
+            ValueError, "quux.*declared.*both Angular.*iframed"
         ):
             server.get("/data/plugins_listing")
 
@@ -576,33 +575,33 @@ class ApplicationPluginNameTest(tb_test.TestCase):
         )
 
     def testNameIsNone(self):
-        with six.assertRaisesRegex(self, ValueError, r"no plugin_name"):
+        with self.assertRaisesRegex(ValueError, r"no plugin_name"):
             application.TensorBoardWSGI(plugins=[FakePlugin(plugin_name=None)])
 
     def testEmptyName(self):
-        with six.assertRaisesRegex(self, ValueError, r"invalid name"):
+        with self.assertRaisesRegex(ValueError, r"invalid name"):
             application.TensorBoardWSGI(plugins=[FakePlugin(plugin_name="")])
 
     def testNameWithSlashes(self):
-        with six.assertRaisesRegex(self, ValueError, r"invalid name"):
+        with self.assertRaisesRegex(ValueError, r"invalid name"):
             application.TensorBoardWSGI(
                 plugins=[FakePlugin(plugin_name="scalars/data")]
             )
 
     def testNameWithPeriods(self):
-        with six.assertRaisesRegex(self, ValueError, r"invalid name"):
+        with self.assertRaisesRegex(ValueError, r"invalid name"):
             application.TensorBoardWSGI(
                 plugins=[FakePlugin(plugin_name="scalars.data")]
             )
 
     def testNameWithSpaces(self):
-        with six.assertRaisesRegex(self, ValueError, r"invalid name"):
+        with self.assertRaisesRegex(ValueError, r"invalid name"):
             application.TensorBoardWSGI(
                 plugins=[FakePlugin(plugin_name="my favorite plugin")]
             )
 
     def testDuplicateName(self):
-        with six.assertRaisesRegex(self, ValueError, r"Duplicate"):
+        with self.assertRaisesRegex(ValueError, r"Duplicate"):
             application.TensorBoardWSGI(
                 plugins=[
                     FakePlugin(plugin_name="scalars"),
@@ -625,23 +624,23 @@ class ApplicationPluginRouteTest(tb_test.TestCase):
         application.TensorBoardWSGI([self._make_plugin("/foo/*")])
 
     def testNonPathComponentWildcardRoute(self):
-        with six.assertRaisesRegex(self, ValueError, r"invalid route"):
+        with self.assertRaisesRegex(ValueError, r"invalid route"):
             application.TensorBoardWSGI([self._make_plugin("/foo*")])
 
     def testMultiWildcardRoute(self):
-        with six.assertRaisesRegex(self, ValueError, r"invalid route"):
+        with self.assertRaisesRegex(ValueError, r"invalid route"):
             application.TensorBoardWSGI([self._make_plugin("/foo/*/bar/*")])
 
     def testInternalWildcardRoute(self):
-        with six.assertRaisesRegex(self, ValueError, r"invalid route"):
+        with self.assertRaisesRegex(ValueError, r"invalid route"):
             application.TensorBoardWSGI([self._make_plugin("/foo/*/bar")])
 
     def testEmptyRoute(self):
-        with six.assertRaisesRegex(self, ValueError, r"invalid route"):
+        with self.assertRaisesRegex(ValueError, r"invalid route"):
             application.TensorBoardWSGI([self._make_plugin("")])
 
     def testSlashlessRoute(self):
-        with six.assertRaisesRegex(self, ValueError, r"invalid route"):
+        with self.assertRaisesRegex(ValueError, r"invalid route"):
             application.TensorBoardWSGI([self._make_plugin("runaway")])
 
 
@@ -660,7 +659,7 @@ class MakePluginLoaderTest(tb_test.TestCase):
         self.assertIs(loader, application.make_plugin_loader(loader))
 
     def testMakePluginLoader_invalidType(self):
-        with six.assertRaisesRegex(self, TypeError, "FakePlugin"):
+        with self.assertRaisesRegex(TypeError, "FakePlugin"):
             application.make_plugin_loader(FakePlugin())
 
 

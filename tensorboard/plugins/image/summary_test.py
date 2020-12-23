@@ -20,7 +20,6 @@ import glob
 import os
 
 import numpy as np
-import six
 import tensorflow as tf
 
 from tensorboard.compat import tf2
@@ -131,13 +130,13 @@ class SummaryBaseTest(object):
 
     def test_requires_nonnegative_max_outputs(self):
         data = np.array(1, np.uint8, ndmin=4)
-        with six.assertRaisesRegex(
-            self, (ValueError, tf.errors.InvalidArgumentError), ">= 0"
+        with self.assertRaisesRegex(
+            (ValueError, tf.errors.InvalidArgumentError), ">= 0"
         ):
             self.image("mona_lisa", data, max_outputs=-1)
 
     def test_requires_rank_4(self):
-        with six.assertRaisesRegex(self, ValueError, "must have rank 4"):
+        with self.assertRaisesRegex(ValueError, "must have rank 4"):
             self.image("mona_lisa", [[[1], [2]], [[3], [4]]])
 
 

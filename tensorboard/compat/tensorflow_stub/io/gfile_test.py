@@ -16,7 +16,6 @@
 
 import io
 import os
-import six
 
 from tensorboard import test as tb_test
 from tensorboard.compat.tensorflow_stub import errors
@@ -44,8 +43,7 @@ class GFileTest(tb_test.TestCase):
         ]
         expected_listing = [os.path.join(temp_dir, f) for f in expected]
         gotten_listing = gfile.glob(os.path.join(temp_dir, "*"))
-        six.assertCountEqual(
-            self,
+        self.assertCountEqual(
             expected_listing,
             gotten_listing,
             "Files must match. Expected %r. Got %r."
@@ -67,7 +65,7 @@ class GFileTest(tb_test.TestCase):
             "model.ckpt",
             "waldo",
         )
-        six.assertCountEqual(self, expected_files, gfile.listdir(temp_dir))
+        self.assertCountEqual(expected_files, gfile.listdir(temp_dir))
 
     def testMakeDirs(self):
         temp_dir = self.get_temp_dir()
@@ -375,16 +373,14 @@ class GFileTest(tb_test.TestCase):
             result[0]: list(result[2])
             for result in gotten
         }
-        six.assertCountEqual(
-            self,
+        self.assertCountEqual(
             expected_directory_to_files.keys(),
             gotten_directory_to_files.keys(),
         )
 
         for subdir, expected_listing in expected_directory_to_files.items():
             gotten_listing = gotten_directory_to_files[subdir]
-            six.assertCountEqual(
-                self,
+            self.assertCountEqual(
                 expected_listing,
                 gotten_listing,
                 "Files for subdir %r must match. Expected %r. Got %r."

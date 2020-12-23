@@ -884,7 +884,7 @@ class RealisticEventAccumulatorTest(EventAccumulatorTest):
         self.assertEqual(
             acc.PluginTagToContent("outlet"), {"you_are_it": b"120v"}
         )
-        with six.assertRaisesRegex(self, KeyError, "plug"):
+        with self.assertRaisesRegex(KeyError, "plug"):
             acc.PluginTagToContent("plug")
         self.assertItemsEqual(acc.ActivePlugins(), ["outlet"])
 

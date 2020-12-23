@@ -16,7 +16,6 @@
 
 
 import numpy as np
-import six
 
 from tensorboard import test as tb_test
 from tensorboard.data import provider
@@ -24,7 +23,7 @@ from tensorboard.data import provider
 
 class DataProviderTest(tb_test.TestCase):
     def test_abstract(self):
-        with six.assertRaisesRegex(self, TypeError, "abstract class"):
+        with self.assertRaisesRegex(TypeError, "abstract class"):
             provider.DataProvider()
 
 
@@ -217,7 +216,7 @@ class TensorDatumTest(tb_test.TestCase):
         x = provider.TensorDatum(
             step=12, wall_time=0.25, numpy=np.array([1.25])
         )
-        with six.assertRaisesRegex(self, TypeError, "unhashable type"):
+        with self.assertRaisesRegex(TypeError, "unhashable type"):
             hash(x)
 
 
@@ -368,18 +367,18 @@ class RunTagFilterTest(tb_test.TestCase):
 
     def test_validates_runs_tags(self):
         # Accidentally passed scalar strings
-        with six.assertRaisesRegex(self, TypeError, "runs:.*got.*str.*myrun"):
+        with self.assertRaisesRegex(TypeError, "runs:.*got.*str.*myrun"):
             provider.RunTagFilter(runs="myrun")
-        with six.assertRaisesRegex(self, TypeError, "tags:.*got.*str.*mytag"):
+        with self.assertRaisesRegex(TypeError, "tags:.*got.*str.*mytag"):
             provider.RunTagFilter(tags="mytag")
 
         # Passed collections with non-string elements
-        with six.assertRaisesRegex(
-            self, TypeError, "runs:.*got item of type.*NoneType.*None"
+        with self.assertRaisesRegex(
+            TypeError, "runs:.*got item of type.*NoneType.*None"
         ):
             provider.RunTagFilter(runs=[None])
-        with six.assertRaisesRegex(
-            self, TypeError, "tags:.*got item of type.*int.*3"
+        with self.assertRaisesRegex(
+            TypeError, "tags:.*got item of type.*int.*3"
         ):
             provider.RunTagFilter(tags=["one", "two", 3])
 
