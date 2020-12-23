@@ -20,8 +20,8 @@ from absl import logging
 import contextlib
 import os.path
 import textwrap
+import urllib.request
 
-from six.moves import urllib
 from six.moves import xrange  # pylint: disable=redefined-builtin
 
 import tensorflow.compat.v1 as tf

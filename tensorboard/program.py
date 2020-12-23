@@ -41,11 +41,11 @@ import socket
 import sys
 import threading
 import time
+import urllib.parse
 
 from absl import flags as absl_flags
 from absl.flags import argparse_flags
 import absl.logging
-from six.moves import urllib
 from six.moves import xrange  # pylint: disable=redefined-builtin
 from werkzeug import serving
 

@@ -25,11 +25,8 @@ import json
 import re
 import textwrap
 import time
+from urllib import parse as urlparse
 import zipfile
-
-from six.moves.urllib import (
-    parse as urlparse,
-)  # pylint: disable=wrong-import-order
 
 from werkzeug import wrappers
 

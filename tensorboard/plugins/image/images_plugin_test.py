@@ -20,9 +20,9 @@ import json
 import os
 import shutil
 import tempfile
+import urllib.parse
 
 import numpy
-from six.moves import urllib
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 from werkzeug import test as werkzeug_test

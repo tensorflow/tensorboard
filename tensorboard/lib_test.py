@@ -13,7 +13,7 @@
 # limitations under the License.
 
 
-from six import moves
+import importlib
 import sys
 import unittest
 
@@ -28,7 +28,7 @@ class ReloadTensorBoardTest(unittest.TestCase):
             module_name: dir(getattr(tensorboard, module_name))
             for module_name in submodules
         }
-        tensorboard = moves.reload_module(tensorboard)
+        tensorboard = importlib.reload(tensorboard)
         dirs_after = {
             module_name: dir(getattr(tensorboard, module_name))
             for module_name in submodules

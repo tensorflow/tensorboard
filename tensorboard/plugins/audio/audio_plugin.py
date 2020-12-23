@@ -15,7 +15,8 @@
 """The TensorBoard Audio plugin."""
 
 
-from six.moves import urllib
+import urllib.parse
+
 from werkzeug import wrappers
 
 from tensorboard import errors

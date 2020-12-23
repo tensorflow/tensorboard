@@ -23,7 +23,6 @@ import textwrap
 
 from absl import logging
 import grpc
-import six
 
 from tensorboard.uploader.proto import experiment_pb2
 from tensorboard.uploader.proto import export_service_pb2_grpc
@@ -64,7 +63,7 @@ def _prompt_for_user_ack(intent):
     user_ack_message = "\n".join((header, body, _MESSAGE_TOS))
     sys.stderr.write(user_ack_message)
     sys.stderr.write("\n")
-    response = six.moves.input("Continue? (yes/NO) ")
+    response = input("Continue? (yes/NO) ")
     if response.lower() not in ("y", "yes"):
         sys.exit(0)
     sys.stderr.write("\n")

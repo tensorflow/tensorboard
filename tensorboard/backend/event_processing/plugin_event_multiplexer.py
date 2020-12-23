@@ -16,9 +16,10 @@
 
 
 import os
+import queue
 import threading
 
-from six.moves import queue, xrange  # pylint: disable=redefined-builtin
+from six.moves import xrange  # pylint: disable=redefined-builtin
 
 from tensorboard.backend.event_processing import directory_watcher
 from tensorboard.backend.event_processing import (

@@ -27,8 +27,8 @@ import subprocess
 import tempfile
 import textwrap
 from unittest import mock
+import urllib.request
 
-from six.moves import urllib
 import tensorflow as tf
 
 from tensorboard import manager
