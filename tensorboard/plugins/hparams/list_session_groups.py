@@ -19,8 +19,6 @@ import collections
 import operator
 import re
 
-import six
-
 from google.protobuf import struct_pb2
 
 from tensorboard.data import provider
@@ -508,15 +506,12 @@ def _create_interval_filter(interval):
     Args:
       interval: A tensorboard.hparams.Interval protobuf describing the interval.
     Returns:
-      A function taking a number (a float or an object of a type in
-      six.integer_types) that returns True if the number belongs to (the closed)
-      'interval'.
+      A function taking a number (float or int) that returns True if the number
+      belongs to (the closed) 'interval'.
     """
 
     def filter_fn(value):
-        if not isinstance(value, six.integer_types) and not isinstance(
-            value, float
-        ):
+        if not isinstance(value, (int, float)):
             raise error.HParamsError(
                 "Cannot use an interval filter for a value of type: %s, Value: %s"
                 % (type(value), value)
