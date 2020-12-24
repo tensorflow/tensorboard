@@ -17,7 +17,6 @@
 import os
 
 import numpy as np
-import six
 import tensorflow as tf
 
 from tensorboard import data_compat
@@ -530,7 +529,7 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
                 tensor_summary = tf.compat.v1.summary.tensor_summary
                 tensor_summary("scalar", tf.constant(1.0))
                 tensor_summary("vector", tf.constant([1.0, 2.0, 3.0]))
-                tensor_summary("string", tf.constant(six.b("foobar")))
+                tensor_summary("string", tf.constant(b"foobar"))
                 merged = tf.compat.v1.summary.merge_all()
                 summ = sess.run(merged)
                 writer.add_summary(summ, 0)
@@ -554,7 +553,7 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
 
         self.assertTrue(np.array_equal(scalar, 1.0))
         self.assertTrue(np.array_equal(vector, [1.0, 2.0, 3.0]))
-        self.assertTrue(np.array_equal(string, six.b("foobar")))
+        self.assertTrue(np.array_equal(string, b"foobar"))
 
         self.assertItemsEqual(accumulator.ActivePlugins(), [])
 

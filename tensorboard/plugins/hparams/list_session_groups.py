@@ -492,7 +492,7 @@ def _create_regexp_filter(regex):
     compiled_regex = re.compile(regex)
 
     def filter_fn(value):
-        if not isinstance(value, six.string_types):
+        if not isinstance(value, str):
             raise error.HParamsError(
                 "Cannot use a regexp filter for a value of type %s. Value: %s"
                 % (type(value), value)

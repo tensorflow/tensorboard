@@ -33,7 +33,7 @@ class RespondTest(tb_test.TestCase):
         q = wrappers.Request(wtest.EnvironBuilder().get_environ())
         r = http_util.Respond(q, "<b>hello world</b>", "text/html")
         self.assertEqual(r.status_code, 200)
-        self.assertEqual(r.response, [six.b("<b>hello world</b>")])
+        self.assertEqual(r.response, [b"<b>hello world</b>"])
         self.assertEqual(r.headers.get("Content-Length"), "18")
 
     def testHeadRequest_doesNotWrite(self):

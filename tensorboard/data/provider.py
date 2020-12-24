@@ -17,7 +17,6 @@
 
 import abc
 
-import six
 import numpy as np
 
 
@@ -964,7 +963,7 @@ class RunTagFilter(object):
     def _parse_optional_string_set(self, name, value):
         if value is None:
             return None
-        if isinstance(value, six.string_types):
+        if isinstance(value, str):
             # Prevent confusion: strings _are_ iterable, but as
             # sequences of characters, so this likely signals an error.
             raise TypeError(
@@ -973,7 +972,7 @@ class RunTagFilter(object):
             )
         value = frozenset(value)
         for item in value:
-            if not isinstance(item, six.string_types):
+            if not isinstance(item, str):
                 raise TypeError(
                     "%s: expected `None` or collection of strings; "
                     "got item of type %r: %r" % (name, type(item), item)

@@ -18,7 +18,6 @@
 import collections
 import json
 import os
-import six
 import socket
 import threading
 
@@ -1597,11 +1596,11 @@ class DebuggerV2PluginTest(tf.test.TestCase):
             self.assertIsInstance(item, list)
             self.assertLen(item, 4)  # [host_name, file_path, lineno, function].
             self.assertEqual(item[0], _HOST_NAME)
-            self.assertIsInstance(item[1], six.string_types)
+            self.assertIsInstance(item[1], str)
             self.assertTrue(item[1])
             self.assertIsInstance(item[2], int)
             self.assertGreaterEqual(item[2], 1)
-            self.assertIsInstance(item[3], six.string_types)
+            self.assertIsInstance(item[3], str)
             self.assertTrue(item[3])
         # Assert that the current file and current function should be in the
         # stack frames.

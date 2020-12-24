@@ -34,7 +34,6 @@ Typical usage for exporting summaries in a hyperparameters-tuning experiment:
 
 import time
 
-import six
 
 import tensorflow as tf
 
@@ -101,7 +100,7 @@ def session_start_pb(
                 +-----------------+---------------------------------+
                 |DATA_TYPE_BOOL   | bool                            |
                 |DATA_TYPE_FLOAT64| int, float                      |
-                |DATA_TYPE_STRING | six.string_types, tuple, list   |
+                |DATA_TYPE_STRING | str, tuple, list   |
                 +-----------------+---------------------------------+
 
                Tuple and list instances will be converted to their string
@@ -129,7 +128,7 @@ def session_start_pb(
     for (hp_name, hp_val) in hparams.items():
         if isinstance(hp_val, (float, int)):
             session_start_info.hparams[hp_name].number_value = hp_val
-        elif isinstance(hp_val, six.string_types):
+        elif isinstance(hp_val, str):
             session_start_info.hparams[hp_name].string_value = hp_val
         elif isinstance(hp_val, bool):
             session_start_info.hparams[hp_name].bool_value = hp_val
