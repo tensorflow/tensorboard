@@ -18,7 +18,6 @@ py_library(
         "//tensorboard:expect_absl_flags_installed",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard/compat/proto:protos_all_py_pb2",
-        "@org_pythonhosted_six",
     ],
 )
 

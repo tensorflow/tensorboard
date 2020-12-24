@@ -10,9 +10,6 @@ py_library(
     srcs = ["base_plugin.py"],
     srcs_version = "PY3",
     visibility = ["//visibility:public"],
-    deps = [
-        "@org_pythonhosted_six",
-    ],
 )
 
 py_test(
@@ -22,6 +19,5 @@ py_test(
     deps = [
         ":base_plugin",
         "//tensorboard:test",
-        "@org_pythonhosted_six",
     ],
 )

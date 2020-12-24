@@ -75,19 +75,13 @@ py_test(
     srcs_version = "PY3",
     tags = ["support_notf"],
     visibility = ["//tensorboard:internal"],
-    deps = [
-        ":lib",
-        "@org_pythonhosted_six",
-    ],
+    deps = [":lib"],
 )
 
 py_library(
     name = "auth",
     srcs = ["auth.py"],
     srcs_version = "PY3",
-    deps = [
-        "@org_pythonhosted_six",
-    ],
 )
 
 py_test(
@@ -148,7 +142,6 @@ py_library(
     deps = [
         ":version",
         "//tensorboard/util:tb_logging",
-        "@org_pythonhosted_six",
     ],
 )
 
@@ -164,7 +157,6 @@ py_test(
         ":test",
         ":version",
         "//tensorboard/util:tb_logging",
-        "@org_pythonhosted_six",
     ],
 )
 
@@ -185,7 +177,6 @@ py_test(
     deps = [
         ":manager",
         "//tensorboard:expect_tensorflow_installed",
-        "@org_pythonhosted_six",
     ],
 )
 
@@ -213,7 +204,6 @@ py_library(
         "//tensorboard/backend/event_processing:event_file_inspector",
         "//tensorboard/data:server_ingester",
         "@org_pocoo_werkzeug",
-        "@org_pythonhosted_six",
     ],
 )
 
@@ -230,7 +220,6 @@ py_test(
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/plugins/core:core_plugin",
         "@org_pocoo_werkzeug",
-        "@org_pythonhosted_six",
     ],
 )
 
@@ -242,7 +231,6 @@ py_library(
     deps = [
         "//tensorboard:expect_absl_testing_absltest_installed",
         "//tensorboard/util:tb_logging",
-        "@org_pythonhosted_six",
     ],
 )
 
@@ -523,7 +511,6 @@ py_binary(
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/util:encoder",
         "//tensorboard/util:tb_logging",
-        "@org_pythonhosted_six",
     ],
 )
 
@@ -537,7 +524,6 @@ py_library(
         "//tensorboard/backend:experiment_id",
         "@org_mozilla_bleach",
         "@org_pythonhosted_markdown",
-        "@org_pythonhosted_six",
     ],
 )
 
@@ -552,7 +538,6 @@ py_test(
         ":plugin_util",
         ":test",
         "//tensorboard/backend:experiment_id",
-        "@org_pythonhosted_six",
     ],
 )
 
@@ -574,8 +559,5 @@ py_test(
     srcs = ["lazy_test.py"],
     srcs_version = "PY3",
     tags = ["support_notf"],
-    deps = [
-        ":lazy",
-        "@org_pythonhosted_six",
-    ],
+    deps = [":lazy"],
 )

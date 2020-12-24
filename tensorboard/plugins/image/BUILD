@@ -18,7 +18,6 @@ py_library(
         "//tensorboard/backend:http_util",
         "//tensorboard/plugins:base_plugin",
         "@org_pocoo_werkzeug",
-        "@org_pythonhosted_six",
     ],
 )
 
@@ -32,7 +31,6 @@ py_binary(
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/util:tb_logging",
-        "@org_pythonhosted_six",
     ],
 )
 
@@ -52,7 +50,6 @@ py_test(
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/util:test_util",
         "@org_pocoo_werkzeug",
-        "@org_pythonhosted_six",
     ],
 )
 
@@ -75,7 +72,6 @@ py_test(
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/util:test_util",
         "@org_pocoo_werkzeug",
-        "@org_pythonhosted_six",
     ],
 )
 

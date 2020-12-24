@@ -40,7 +40,6 @@ py_test(
         "//tensorboard/plugins/histogram:summary",
         "//tensorboard/util:test_util",
         "@org_pocoo_werkzeug",
-        "@org_pythonhosted_six",
     ],
 )
 
@@ -65,7 +64,6 @@ py_test(
         "//tensorboard/plugins/histogram:summary",
         "//tensorboard/util:test_util",
         "@org_pocoo_werkzeug",
-        "@org_pythonhosted_six",
     ],
 )
 

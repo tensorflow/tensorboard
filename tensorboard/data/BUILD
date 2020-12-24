@@ -19,10 +19,7 @@ py_library(
     name = "provider",
     srcs = ["provider.py"],
     srcs_version = "PY3",
-    deps = [
-        "//tensorboard:expect_numpy_installed",
-        "@org_pythonhosted_six",
-    ],
+    deps = ["//tensorboard:expect_numpy_installed"],
 )
 
 py_test(
@@ -35,7 +32,6 @@ py_test(
         ":provider",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:test",
-        "@org_pythonhosted_six",
     ],
 )
 

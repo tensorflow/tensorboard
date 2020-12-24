@@ -24,7 +24,6 @@ py_test(
         ":encoder",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_tensorflow_installed",
-        "@org_pythonhosted_six",
     ],
 )
 
@@ -53,7 +52,6 @@ py_test(
         "//tensorboard:expect_grpc_installed",
         "//tensorboard:test",
         "//tensorboard:version",
-        "@org_pythonhosted_six",
     ],
 )
 
