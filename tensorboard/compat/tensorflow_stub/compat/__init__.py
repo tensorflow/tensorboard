@@ -30,7 +30,6 @@ The compatibility module also provides the following types:
 
 import numbers as _numbers
 import numpy as _np
-import six as _six
 
 from tensorboard.compat.tensorflow_stub.compat.v1 import *  # noqa
 
@@ -83,14 +82,7 @@ def as_text(bytes_or_text, encoding="utf-8"):
 
 
 # Convert an object to a `str` in both Python 2 and 3.
-if _six.PY2:
-    as_str = as_bytes
-    # tf_export('compat.as_bytes', 'compat.as_str')(as_bytes)
-    # tf_export('compat.as_text')(as_text)
-else:
-    as_str = as_text
-    # tf_export('compat.as_bytes')(as_bytes)
-    # tf_export('compat.as_text', 'compat.as_str')(as_text)
+as_str = as_text
 
 
 # @tf_export('compat.as_str_any')

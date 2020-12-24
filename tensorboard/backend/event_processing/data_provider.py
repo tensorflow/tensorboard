@@ -19,8 +19,6 @@ import base64
 import json
 import random
 
-import six
-
 from tensorboard import errors
 from tensorboard.compat.proto import summary_pb2
 from tensorboard.data import provider
@@ -392,7 +390,7 @@ def _encode_blob_key(experiment_id, plugin_name, run, tag, step, index):
     )
     bytesified = stringified.encode("ascii")
     encoded = base64.urlsafe_b64encode(bytesified)
-    return six.ensure_str(encoded).rstrip("=")
+    return encoded.decode("ascii").rstrip("=")
 
 
 # Any changes to this function need not be backward-compatible, even though
