@@ -49,7 +49,7 @@ def as_bytes(bytes_or_text, encoding="utf-8"):
     Raises:
     TypeError: If `bytes_or_text` is not a binary or unicode string.
     """
-    if isinstance(bytes_or_text, _six.text_type):
+    if isinstance(bytes_or_text, str):
         return bytes_or_text.encode(encoding)
     elif isinstance(bytes_or_text, bytes):
         return bytes_or_text
@@ -72,7 +72,7 @@ def as_text(bytes_or_text, encoding="utf-8"):
     Raises:
     TypeError: If `bytes_or_text` is not a binary or unicode string.
     """
-    if isinstance(bytes_or_text, _six.text_type):
+    if isinstance(bytes_or_text, str):
         return bytes_or_text
     elif isinstance(bytes_or_text, bytes):
         return bytes_or_text.decode(encoding)
@@ -135,6 +135,6 @@ complex_types = (_numbers.Complex, _np.number)
 # tf_export('compat.complex_types').export_constant(__name__, 'complex_types')
 
 # Either bytes or text.
-bytes_or_text_types = (bytes, _six.text_type)
+bytes_or_text_types = (bytes, str)
 # tf_export('compat.bytes_or_text_types').export_constant(__name__,
 #                                                         'bytes_or_text_types')

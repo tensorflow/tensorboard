@@ -17,7 +17,6 @@
 
 import os
 
-import six
 
 from tensorboard.plugins.hparams import api_pb2
 
@@ -31,7 +30,7 @@ def run_tag_from_session_and_metric(session_name, metric_name):
       metric_name: MetricName protobuffer.
     Returns: (run, tag) tuple.
     """
-    assert isinstance(session_name, six.string_types)
+    assert isinstance(session_name, str)
     assert isinstance(metric_name, api_pb2.MetricName)
     # os.path.join() will append a final slash if the group is empty; it seems
     # like multiplexer.Tensors won't recognize paths that end with a '/' so

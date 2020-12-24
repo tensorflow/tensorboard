@@ -15,7 +15,6 @@
 
 import textwrap
 
-import six
 
 from tensorboard import context
 from tensorboard import plugin_util
@@ -109,14 +108,14 @@ class MarkdownToSafeHTMLTest(tb_test.TestCase):
 
     def test_byte_strings_interpreted_as_utf8(self):
         s = "> Look\u2014some UTF-8!".encode("utf-8")
-        assert isinstance(s, six.binary_type), (type(s), six.binary_type)
+        assert isinstance(s, bytes), (type(s), bytes)
         self._test(
             s, "<blockquote>\n<p>Look\u2014some UTF-8!</p>\n</blockquote>"
         )
 
     def test_unicode_strings_passed_through(self):
         s = "> Look\u2014some UTF-8!"
-        assert not isinstance(s, six.binary_type), (type(s), six.binary_type)
+        assert not isinstance(s, bytes), (type(s), bytes)
         self._test(
             s, "<blockquote>\n<p>Look\u2014some UTF-8!</p>\n</blockquote>"
         )

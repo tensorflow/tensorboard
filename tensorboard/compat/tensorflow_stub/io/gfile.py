@@ -24,7 +24,6 @@ from collections import namedtuple
 import glob as py_glob
 import io
 import os
-import six
 import sys
 import tempfile
 
@@ -158,7 +157,7 @@ class LocalFileSystem(object):
 
     def glob(self, filename):
         """Returns a list of files that match the given pattern(s)."""
-        if isinstance(filename, six.string_types):
+        if isinstance(filename, str):
             return [
                 # Convert the filenames to string from bytes.
                 compat.as_str_any(matching_filename)
@@ -319,7 +318,7 @@ class S3FileSystem(object):
         bucket, path = self.bucket_and_path(filename)
         # Always convert to bytes for writing
         if binary_mode:
-            if not isinstance(file_content, six.binary_type):
+            if not isinstance(file_content, bytes):
                 raise TypeError("File content type must be bytes")
         else:
             file_content = compat.as_bytes(file_content)

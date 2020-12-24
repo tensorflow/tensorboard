@@ -21,7 +21,6 @@ import os
 
 
 import numpy as np
-import six
 import tensorflow as tf
 
 from tensorboard.compat import tf2
@@ -74,13 +73,13 @@ class SummaryBaseTest(object):
     def test_bytes_value(self):
         pb = self.text("mi", b"A name\xe2\x80\xa6I call myself")
         value = tensor_util.make_ndarray(pb.value[0].tensor).item()
-        self.assertIsInstance(value, six.binary_type)
+        self.assertIsInstance(value, bytes)
         self.assertEqual(b"A name\xe2\x80\xa6I call myself", value)
 
     def test_unicode_value(self):
         pb = self.text("mi", "A name\u2026I call myself")
         value = tensor_util.make_ndarray(pb.value[0].tensor).item()
-        self.assertIsInstance(value, six.binary_type)
+        self.assertIsInstance(value, bytes)
         self.assertEqual(b"A name\xe2\x80\xa6I call myself", value)
 
     def test_np_array_bytes_value(self):
@@ -98,7 +97,7 @@ class SummaryBaseTest(object):
         # Check that all entries are byte strings.
         for vectors in values:
             for value in vectors:
-                self.assertIsInstance(value, six.binary_type)
+                self.assertIsInstance(value, bytes)
 
     def test_np_array_unicode_value(self):
         pb = self.text(
@@ -113,7 +112,7 @@ class SummaryBaseTest(object):
         # Check that all entries are byte strings.
         for vectors in values:
             for value in vectors:
-                self.assertIsInstance(value, six.binary_type)
+                self.assertIsInstance(value, bytes)
 
     def test_non_string_value(self):
         with self.assertRaisesRegex(TypeError, r"must be of type.*string"):

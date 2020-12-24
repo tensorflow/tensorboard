@@ -25,7 +25,6 @@ import subprocess
 import tempfile
 import time
 
-import six
 
 from tensorboard import version
 from tensorboard.util import tb_logging
@@ -52,9 +51,9 @@ _type_int = _FieldType(
     deserialize=lambda n: n,
 )
 _type_str = _FieldType(
-    serialized_type=six.text_type,  # `json.loads` always gives Unicode
+    serialized_type=str,  # `json.loads` always gives Unicode
     runtime_type=str,
-    serialize=six.text_type,
+    serialize=str,
     deserialize=str,
 )
 

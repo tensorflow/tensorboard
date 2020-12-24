@@ -17,7 +17,6 @@
 import os
 
 import numpy as np
-import six
 import tensorflow as tf
 
 from tensorboard.backend.event_processing import event_accumulator as ea
@@ -807,7 +806,7 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
                     "vector", tf.constant([1.0, 2.0, 3.0])
                 )
                 tf.compat.v1.summary.tensor_summary(
-                    "string", tf.constant(six.b("foobar"))
+                    "string", tf.constant(b"foobar")
                 )
                 merged = tf.compat.v1.summary.merge_all()
                 summ = sess.run(merged)
@@ -832,7 +831,7 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
 
         self.assertTrue(np.array_equal(scalar, 1.0))
         self.assertTrue(np.array_equal(vector, [1.0, 2.0, 3.0]))
-        self.assertTrue(np.array_equal(string, six.b("foobar")))
+        self.assertTrue(np.array_equal(string, b"foobar"))
 
 
 class RealisticEventAccumulatorTest(EventAccumulatorTest):

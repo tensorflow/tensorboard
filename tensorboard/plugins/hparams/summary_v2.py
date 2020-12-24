@@ -25,7 +25,6 @@ import random
 import time
 
 import numpy as np
-import six
 
 from tensorboard.compat import tf2 as tf
 from tensorboard.compat.proto import summary_pb2
@@ -95,7 +94,7 @@ def hparams_pb(hparams, trial_id=None, start_time_secs=None):
             session_start_info.hparams[hp_name].bool_value = hp_value
         elif isinstance(hp_value, (float, int)):
             session_start_info.hparams[hp_name].number_value = hp_value
-        elif isinstance(hp_value, six.string_types):
+        elif isinstance(hp_value, str):
             session_start_info.hparams[hp_name].string_value = hp_value
         else:
             raise TypeError(
@@ -227,7 +226,7 @@ def _normalize_numpy_value(value):
 
 def _derive_session_group_name(trial_id, hparams):
     if trial_id is not None:
-        if not isinstance(trial_id, six.string_types):
+        if not isinstance(trial_id, str):
             raise TypeError(
                 "`trial_id` should be a `str`, but got: %r" % (trial_id,)
             )

@@ -21,7 +21,6 @@ import threading
 
 from concurrent import futures
 import grpc
-import six
 
 from tensorboard.util import grpc_util
 from tensorboard.util import grpc_util_test_pb2
@@ -171,7 +170,7 @@ class VersionMetadataTest(tb_test.TestCase):
             self.assertLen(kv, 2)
             (k, v) = kv
             self.assertIsInstance(k, str)
-            self.assertIsInstance(v, six.string_types)
+            self.assertIsInstance(v, str)
 
     def test_roundtrip(self):
         result = grpc_util.extract_version(grpc_util.version_metadata())

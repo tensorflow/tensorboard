@@ -22,7 +22,6 @@ from bleach.sanitizer import Cleaner
 # pylint: disable=g-bad-import-order
 # Google-only: import markdown_freewisdom
 import markdown
-import six
 
 from tensorboard import context as _context
 from tensorboard.backend import experiment_id as _experiment_id
@@ -126,7 +125,7 @@ def markdowns_to_safe_html(markdown_strings, combine):
 
     for source in markdown_strings:
         # Convert to utf-8 whenever we have a binary input.
-        if isinstance(source, six.binary_type):
+        if isinstance(source, bytes):
             source_decoded = source.decode("utf-8")
             # Remove null bytes and warn if there were any, since it probably means
             # we were given a bad encoding.
