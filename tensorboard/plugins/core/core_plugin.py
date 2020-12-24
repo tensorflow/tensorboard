@@ -17,10 +17,10 @@
 
 import functools
 import gzip
+import io
 import mimetypes
 import zipfile
 
-import six
 from werkzeug import utils
 from werkzeug import wrappers
 
@@ -568,7 +568,7 @@ flag.\
 
 
 def _gzip(bytestring):
-    out = six.BytesIO()
+    out = io.BytesIO()
     # Set mtime to zero for deterministic results across TensorBoard launches.
     with gzip.GzipFile(fileobj=out, mode="wb", compresslevel=3, mtime=0) as f:
         f.write(bytestring)

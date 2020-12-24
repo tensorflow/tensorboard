@@ -20,8 +20,8 @@ this plugin.
 
 
 import csv
+import io
 
-from six import StringIO
 import werkzeug.exceptions
 from werkzeug import wrappers
 
@@ -107,7 +107,7 @@ class ScalarsPlugin(base_plugin.TBPlugin):
             )
         values = [(x.wall_time, x.step, x.value) for x in scalars]
         if output_format == OutputFormat.CSV:
-            string_io = StringIO()
+            string_io = io.StringIO()
             writer = csv.writer(string_io)
             writer.writerow(["Wall time", "Step", "Value"])
             writer.writerows(values)
