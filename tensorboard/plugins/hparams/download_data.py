@@ -16,9 +16,8 @@
 
 
 import csv
+import io
 import math
-
-import six
 
 from tensorboard.plugins.hparams import error
 
@@ -147,7 +146,7 @@ class Handler(object):
             bottom_part = "\\hline\n\\end{tabular}\n\\end{table}\n"
             body = top_part + header_part + middle_part + bottom_part
         elif response_format == OutputFormat.CSV:
-            string_io = six.StringIO()
+            string_io = io.StringIO()
             writer = csv.writer(string_io)
             writer.writerow(header)
             writer.writerows(rows)

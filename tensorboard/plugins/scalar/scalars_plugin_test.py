@@ -17,10 +17,10 @@
 
 
 import csv
+import io
 import json
 import os.path
 
-from six import StringIO
 import tensorflow as tf
 from werkzeug import test as werkzeug_test
 from werkzeug import wrappers
@@ -366,7 +366,7 @@ class ScalarsPluginTest(tf.test.TestCase):
             "text/csv; charset=utf-8", response.headers["Content-Type"]
         )
         payload = response.get_data()
-        s = StringIO(payload.decode("utf-8"))
+        s = io.StringIO(payload.decode("utf-8"))
         reader = csv.reader(s)
         self.assertEqual(["Wall time", "Step", "Value"], next(reader))
         self.assertEqual(len(list(reader)), self._STEPS)

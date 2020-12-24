@@ -16,7 +16,7 @@
 # """Tests for RecordWriter"""
 
 
-import six
+import io
 import os
 from tensorboard.summary.writer.record_writer import RecordWriter
 from tensorboard.compat.tensorflow_stub import errors
@@ -82,7 +82,7 @@ class RecordWriterTest(tb_test.TestCase):
 
     def test_expect_bytes_written_bytes_IO(self):
         byte_len = 64
-        Bytes_io = six.BytesIO()
+        Bytes_io = io.BytesIO()
         w = RecordWriter(Bytes_io)
         bytes_to_write = b"x" * byte_len
         w.write(bytes_to_write)

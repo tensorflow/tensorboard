@@ -16,13 +16,12 @@
 
 
 import gzip
+import io
 import json
 import re
 import struct
 import time
 import wsgiref.handlers
-
-import six
 
 import werkzeug
 
@@ -163,7 +162,7 @@ def Respond(
     )
     # Automatically gzip uncompressed text data if accepted.
     if textual and not content_encoding and gzip_accepted:
-        out = six.BytesIO()
+        out = io.BytesIO()
         # Set mtime to zero to make payload for a given input deterministic.
         with gzip.GzipFile(
             fileobj=out, mode="wb", compresslevel=3, mtime=0
@@ -176,7 +175,7 @@ def Respond(
     direct_passthrough = False
     # Automatically streamwise-gunzip precompressed data if not accepted.
     if content_encoding == "gzip" and not gzip_accepted:
-        gzip_file = gzip.GzipFile(fileobj=six.BytesIO(content), mode="rb")
+        gzip_file = gzip.GzipFile(fileobj=io.BytesIO(content), mode="rb")
         # Last 4 bytes of gzip formatted data (little-endian) store the original
         # content length mod 2^32; we just assume it's the content length. That
         # means we can't streamwise-gunzip >4 GB precompressed file; this is ok.
