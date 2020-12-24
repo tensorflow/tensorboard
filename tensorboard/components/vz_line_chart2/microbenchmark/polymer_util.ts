@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 
 export async function polymerFlush() {
-  return new Promise((resolve) => {
+  return new Promise<void>((resolve) => {
     (Polymer as any).flush();
     (Polymer as any).RenderStatus.afterNextRender(null, () => {
       resolve();
