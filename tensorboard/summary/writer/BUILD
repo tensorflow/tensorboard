@@ -15,7 +15,6 @@ py_library(
     deps = [
         "//tensorboard/compat:tensorflow",
         "//tensorboard/compat/proto:protos_all_py_pb2",
-        "@org_pythonhosted_six",
     ],
 )
 

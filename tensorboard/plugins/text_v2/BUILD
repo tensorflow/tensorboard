@@ -19,7 +19,6 @@ py_library(
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/plugins/text:metadata",
         "@org_pocoo_werkzeug",
-        "@org_pythonhosted_six",
     ],
 )
 

@@ -49,7 +49,6 @@ py_test(
         ":projector",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/util:test_util",
-        "@org_pythonhosted_six",
     ],
 )
 

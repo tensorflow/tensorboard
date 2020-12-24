@@ -78,7 +78,6 @@ py_library(
         "//tensorboard:program",
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/uploader/proto:protos_all_py_pb2_grpc",
-        "@org_pythonhosted_six",
     ],
 )
 
@@ -115,7 +114,6 @@ py_library(
         "//tensorboard/util:tb_logging",
         "//tensorboard/util:tensor_util",
         "@com_google_protobuf//:protobuf_python",
-        "@org_pythonhosted_six",
     ],
 )
 
@@ -229,7 +227,6 @@ py_test(
         "//tensorboard/backend/event_processing:event_file_loader",
         "//tensorboard/backend/event_processing:io_wrapper",
         "//tensorboard/util:test_util",
-        "@org_pythonhosted_six",
     ],
 )
 

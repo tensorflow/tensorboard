@@ -61,8 +61,5 @@ py_binary(
     name = "test_binary",
     srcs = ["test_binary.py"],
     srcs_version = "PY3",
-    deps = [
-        "//tensorboard/data/experimental:experiment_from_dev",
-        "@org_pythonhosted_six",
-    ],
+    deps = ["//tensorboard/data/experimental:experiment_from_dev"],
 )

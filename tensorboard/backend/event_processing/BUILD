@@ -13,7 +13,6 @@ py_library(
     deps = [
         "//tensorboard/compat:tensorflow",
         "//tensorboard/util:tb_logging",
-        "@org_pythonhosted_six",
     ],
 )
 
@@ -25,7 +24,6 @@ py_test(
     deps = [
         ":io_wrapper",
         "//tensorboard:expect_tensorflow_installed",
-        "@org_pythonhosted_six",
     ],
 )
 
@@ -68,7 +66,6 @@ py_library(
         "//tensorboard/data:provider",
         "//tensorboard/util:tb_logging",
         "//tensorboard/util:tensor_util",
-        "@org_pythonhosted_six",
     ],
 )
 
@@ -91,7 +88,6 @@ py_test(
         "//tensorboard/plugins/scalar:metadata",
         "//tensorboard/plugins/scalar:summary_v2",
         "//tensorboard/util:tensor_util",
-        "@org_pythonhosted_six",
     ],
 )
 
@@ -186,7 +182,6 @@ py_test(
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/summary/writer",
-        "@org_pythonhosted_six",
     ],
 )
 
@@ -202,7 +197,6 @@ py_test(
         "//tensorboard/compat:no_tensorflow",
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/summary/writer",
-        "@org_pythonhosted_six",
     ],
 )
 
@@ -274,7 +268,6 @@ py_test(
         "//tensorboard/util:tb_logging",
         "//tensorboard/util:tensor_util",
         "//tensorboard/util:test_util",
-        "@org_pythonhosted_six",
     ],
 )
 
@@ -291,7 +284,6 @@ py_library(
         ":event_accumulator",
         ":io_wrapper",
         "//tensorboard/util:tb_logging",
-        "@org_pythonhosted_six",
     ],
 )
 

@@ -19,7 +19,6 @@ py_library(
         "//tensorboard/data:provider",
         "//tensorboard/plugins:base_plugin",
         "@org_pocoo_werkzeug",
-        "@org_pythonhosted_six",
     ],
 )
 
@@ -39,7 +38,6 @@ py_test(
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/util:test_util",
         "@org_pocoo_werkzeug",
-        "@org_pythonhosted_six",
     ],
 )
 
@@ -62,7 +60,6 @@ py_test(
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/util:test_util",
         "@org_pocoo_werkzeug",
-        "@org_pythonhosted_six",
     ],
 )
 
@@ -114,7 +111,6 @@ py_binary(
     deps = [
         ":summary",
         "//tensorboard:expect_tensorflow_installed",
-        "@org_pythonhosted_six",
     ],
 )
 

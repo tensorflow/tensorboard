@@ -13,7 +13,6 @@ py_library(
     deps = [
         ":json_util",
         "@org_pocoo_werkzeug",
-        "@org_pythonhosted_six",
     ],
 )
 
@@ -27,7 +26,6 @@ py_test(
         ":http_util",
         "//tensorboard:test",
         "@org_pocoo_werkzeug",
-        "@org_pythonhosted_six",
     ],
 )
 
@@ -68,7 +66,6 @@ py_library(
         "//tensorboard/plugins/core:core_plugin",
         "//tensorboard/util:tb_logging",
         "@org_pocoo_werkzeug",
-        "@org_pythonhosted_six",
     ],
 )
 

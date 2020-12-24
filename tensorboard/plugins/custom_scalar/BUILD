@@ -23,7 +23,6 @@ py_library(
         "//tensorboard/plugins/scalar:scalars_plugin",
         "//tensorboard/util:tensor_util",
         "@org_pocoo_werkzeug",
-        "@org_pythonhosted_six",
     ],
 )
 
@@ -127,6 +126,5 @@ py_binary(
         ":protos_all_py_pb2",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/summary:summary_v1",
-        "@org_pythonhosted_six",
     ],
 )

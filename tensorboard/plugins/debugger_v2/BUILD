@@ -63,6 +63,5 @@ py_test(
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/backend:application",
         "//tensorboard/plugins:base_plugin",
-        "@org_pythonhosted_six",
     ],
 )
