@@ -193,7 +193,7 @@ function streamParse(
         if (data) {
           callback(data);
         }
-        resolve(undefined);
+        resolve();
         return;
       }
       readChunk(offset, chunkSize);
