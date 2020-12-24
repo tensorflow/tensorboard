@@ -432,7 +432,7 @@ export class DataSet {
                 logging.setModalMessage(null, UMAP_MSG_ID);
                 this.hasUmapRun = true;
                 stepCallback(currentEpoch);
-                resolve();
+                resolve(undefined);
               }
             },
             UMAP_MSG_ID,

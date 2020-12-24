@@ -68,7 +68,7 @@ export function patchAsync(): Async {
       async.promises.set(
         stringId,
         new Promise((resolve) => {
-          idToResolve.set(stringId, {resolve});
+          idToResolve.set(stringId, {resolve: () => resolve(undefined)});
         })
       );
     }
