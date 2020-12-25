@@ -41,6 +41,7 @@ py_library(
     deps = [
         ":compat",
         "//tensorboard/compat/tensorflow_stub",
+        "//tensorboard/compat/tensorboard",
     ],
 )
 

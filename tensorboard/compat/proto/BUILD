@@ -47,6 +47,9 @@ tb_proto_library(
         "variable.proto",
         "verifier_config.proto",
         "versions.proto",
+        "plugin_text.proto",  # relative dir is not accepted. copt that.
+        "plugin_pr_curve.proto",  # relative dir is not accepted. copt that.
+        "layout.proto",  # relative dir is not accepted. copt that.
     ],
     visibility = ["//visibility:public"],
 )
