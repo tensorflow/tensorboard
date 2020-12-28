@@ -385,7 +385,7 @@ mod tests {
             let first_point = run_data.scalars[&Tag("accuracy".to_string())]
                 .valid_values()
                 .map(|(_step, _wall_time, &value)| value.0)
-                .nth(0);
+                .next();
             first_point
         };
 
