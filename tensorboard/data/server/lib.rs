@@ -17,10 +17,6 @@ limitations under the License.
 
 #![allow(clippy::needless_update)] // https://github.com/rust-lang/rust-clippy/issues/6323
 
-pub fn zero(x: f32) -> bool {
-    x == 0.0
-}
-
 pub mod cli;
 pub mod commit;
 pub mod data_compat;
