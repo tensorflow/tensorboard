@@ -167,10 +167,7 @@ mod tests {
         assert_eq!(reader.last_wall_time(), &Some(1234.5));
         match reader.read_event() {
             Err(ReadEventError::InvalidRecord(ChecksumError { got, want: _ }))
-                if got == MaskedCrc::compute(&encode_event(&good_event)) =>
-            {
-                ()
-            }
+                if got == MaskedCrc::compute(&encode_event(&good_event)) => {}
             other => panic!("{:?}", other),
         };
         assert_eq!(reader.last_wall_time(), &Some(1234.5));

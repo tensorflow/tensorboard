@@ -13,8 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 interface ResolveReject {
-  resolve: Function;
-  reject: Function;
+  resolve: (x: unknown) => void;
+  reject: (x: unknown) => void;
 }
 
 /**
@@ -203,7 +203,7 @@ export class RequestManager {
       this._queue.length > 0
     ) {
       this._nActiveRequests++;
-      this._queue.pop().resolve();
+      this._queue.pop().resolve(undefined);
     }
   }
   /**

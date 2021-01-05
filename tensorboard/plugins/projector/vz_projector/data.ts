@@ -401,7 +401,7 @@ export class DataSet {
     // Now, iterate through all epoch batches of the UMAP optimization, updating
     // the modal window with the progress rather than animating each step since
     // the UMAP animation is not nearly as informative as t-SNE.
-    return new Promise((resolve, reject) => {
+    return new Promise<void>((resolve, reject) => {
       const step = () => {
         // Compute a batch of epochs since we don't want to update the UI
         // on every epoch.

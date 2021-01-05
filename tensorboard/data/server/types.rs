@@ -116,6 +116,7 @@ mod tests {
     }
 
     #[test]
+    #[allow(clippy::float_cmp)]
     fn test_wall_time() {
         assert_eq!(WallTime::new(f64::INFINITY), None);
         assert_eq!(WallTime::new(-f64::INFINITY), None);
