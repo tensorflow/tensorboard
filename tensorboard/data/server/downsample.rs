@@ -59,8 +59,8 @@ mod tests {
     use super::*;
 
     /// Clones `xs` and [`downsample`]s the result to `k` elements.
-    fn downsample_cloned<T: Clone>(xs: &Vec<T>, k: usize) -> Vec<T> {
-        let mut ys = xs.clone();
+    fn downsample_cloned<T: Clone>(xs: &[T], k: usize) -> Vec<T> {
+        let mut ys = Vec::from(xs);
         downsample(&mut ys, k);
         ys
     }
@@ -84,9 +84,9 @@ mod tests {
 
     #[test]
     fn test_inorder_plus_last() {
-        let xs: Vec<u32> = downsample_cloned(&(0..10000).collect(), 100);
+        let xs: Vec<u32> = downsample_cloned(&(0..10000).collect::<Vec<_>>(), 100);
         let mut ys = xs.clone();
-        ys.sort();
+        ys.sort_unstable();
         assert_eq!(xs, ys);
         assert_eq!(xs.last(), Some(&9999));
     }
