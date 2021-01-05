@@ -528,9 +528,7 @@ class ProjectorPlugin(base_plugin.TBPlugin):
             if metadata.PROJECTOR_FILENAME not in assets:
                 continue
             assets_dir = os.path.join(
-                self._run_paths[run],
-                metadata.PLUGINS_DIR,
-                metadata.PLUGIN_ASSETS_NAME,
+                self._run_paths[run], metadata.PLUGINS_DIR, plugin_assets_name
             )
             assets_path_pair = (run, os.path.abspath(assets_dir))
             extra.append(assets_path_pair)
