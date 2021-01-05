@@ -333,7 +333,6 @@ class ProjectorPlugin(base_plugin.TBPlugin):
             self._is_active = True
         self._thread_for_determining_is_active = None
 
-<<<<<<< HEAD
     def _update_configs(self):
         """Updates `self._configs` and `self._run_paths`."""
         if self.data_provider and self.logdir:
@@ -349,23 +348,6 @@ class ProjectorPlugin(base_plugin.TBPlugin):
         self._run_paths = run_paths
 
         run_path_pairs = list(self._run_paths.items())
-||||||| 4c9a69939
-    @property
-    def configs(self):
-        """Returns a map of run paths to `ProjectorConfig` protos."""
-        run_path_pairs = list(self.run_paths.items())
-=======
-    def _update_configs(self):
-        """Updates `self._configs` and `self._run_paths`."""
-        if self.multiplexer:
-            run_paths = dict(self.multiplexer.RunPaths())
-        else:
-            run_paths = {}
-        run_paths_changed = run_paths != self._run_paths
-        self._run_paths = run_paths
-
-        run_path_pairs = list(self._run_paths.items())
->>>>>>> 23d9e5b5959959371d70442d4d0358736e6e0723
         self._append_plugin_asset_directories(run_path_pairs)
         # Also accept the root logdir as a model checkpoint directory,
         # so that the projector still works when there are no runs.
