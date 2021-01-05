@@ -30,6 +30,7 @@ from werkzeug import wrappers
 from google.protobuf import text_format
 
 from tensorboard.backend import application
+from tensorboard.backend.event_processing import data_provider
 from tensorboard.backend.event_processing import (
     plugin_event_multiplexer as event_multiplexer,
 )
@@ -274,10 +275,10 @@ class ProjectorAppTest(tf.test.TestCase):
         self.assertEqual(2, mock.call_count)
 
     def _SetupWSGIApp(self):
+        logdir = self.log_dir
         multiplexer = event_multiplexer.EventMultiplexer()
-        context = base_plugin.TBContext(
-            logdir=self.log_dir, multiplexer=multiplexer
-        )
+        provider = data_provider.MultiplexerDataProvider(multiplexer, logdir)
+        context = base_plugin.TBContext(logdir=logdir, data_provider=provider)
         self.plugin = projector_plugin.ProjectorPlugin(context)
         wsgi_app = application.TensorBoardWSGI([self.plugin])
         self.server = werkzeug_test.Client(wsgi_app, wrappers.BaseResponse)

@@ -28,6 +28,8 @@ from werkzeug import wrappers
 from google.protobuf import json_format
 from google.protobuf import text_format
 
+from tensorboard import context
+from tensorboard.backend.event_processing import plugin_asset_util
 from tensorboard.backend.http_util import Respond
 from tensorboard.compat import tf
 from tensorboard.plugins import base_plugin
@@ -239,7 +241,7 @@ class ProjectorPlugin(base_plugin.TBPlugin):
         Args:
           context: A base_plugin.TBContext instance.
         """
-        self.multiplexer = context.multiplexer
+        self.data_provider = context.data_provider
         self.logdir = context.logdir
         self.readers = {}
         self._run_paths = None
@@ -282,12 +284,13 @@ class ProjectorPlugin(base_plugin.TBPlugin):
     def is_active(self):
         """Determines whether this plugin is active.
 
-        This plugin is only active if any run has an embedding.
+        This plugin is only active if any run has an embedding, and only
+        when running against a local log directory.
 
         Returns:
           Whether any run has embedding data to show in the projector.
         """
-        if not self.multiplexer:
+        if not self.data_provider or not self.logdir:
             return False
 
         if self._is_active:
@@ -332,8 +335,13 @@ class ProjectorPlugin(base_plugin.TBPlugin):
 
     def _update_configs(self):
         """Updates `self._configs` and `self._run_paths`."""
-        if self.multiplexer:
-            run_paths = dict(self.multiplexer.RunPaths())
+        if self.data_provider and self.logdir:
+            # Create a background context; we may not be in a request.
+            ctx = context.RequestContext()
+            run_paths = {
+                run.run_name: os.path.join(self.logdir, run.run_name)
+                for run in self.data_provider.list_runs(ctx, experiment_id="")
+            }
         else:
             run_paths = {}
         run_paths_changed = run_paths != self._run_paths
@@ -513,18 +521,18 @@ class ProjectorPlugin(base_plugin.TBPlugin):
         return None
 
     def _append_plugin_asset_directories(self, run_path_pairs):
-        for run, assets in self.multiplexer.PluginAssets(
-            metadata.PLUGIN_ASSETS_NAME
-        ).items():
+        extra = []
+        plugin_assets_name = metadata.PLUGIN_ASSETS_NAME
+        for (run, logdir) in run_path_pairs:
+            assets = plugin_asset_util.ListAssets(logdir, plugin_assets_name)
             if metadata.PROJECTOR_FILENAME not in assets:
                 continue
             assets_dir = os.path.join(
-                self._run_paths[run],
-                metadata.PLUGINS_DIR,
-                metadata.PLUGIN_ASSETS_NAME,
+                self._run_paths[run], metadata.PLUGINS_DIR, plugin_assets_name
             )
             assets_path_pair = (run, os.path.abspath(assets_dir))
-            run_path_pairs.append(assets_path_pair)
+            extra.append(assets_path_pair)
+        run_path_pairs.extend(extra)
 
     @wrappers.Request.application
     def _serve_file(self, file_path, request):
