@@ -256,7 +256,6 @@ impl<'a> LogdirLoader<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::ffi::OsStr;
     use std::fs::{self, File};
 
     use crate::types::{Step, Tag, WallTime};
@@ -385,7 +384,7 @@ mod tests {
             let first_point = run_data.scalars[&Tag("accuracy".to_string())]
                 .valid_values()
                 .map(|(_step, _wall_time, &value)| value.0)
-                .nth(0);
+                .next();
             first_point
         };
 
@@ -410,6 +409,7 @@ mod tests {
     #[cfg(target_os = "linux")] // macOS seems to sometimes give EILSEQ on non-UTF-8 filenames
     #[test]
     fn test_bad_unicode_collision() -> Result<(), Box<dyn std::error::Error>> {
+        use std::ffi::OsStr;
         use std::os::unix::ffi::OsStrExt;
 
         // Generate a bad-Unicode collision.

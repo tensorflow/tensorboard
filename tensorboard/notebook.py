@@ -19,23 +19,13 @@ These APIs are experimental and subject to change.
 
 import datetime
 import errno
+import html
 import json
 import os
 import random
 import shlex
 import textwrap
 import time
-
-try:
-    import html
-
-    html_escape = html.escape
-    del html
-except ImportError:
-    import cgi
-
-    html_escape = cgi.escape
-    del cgi
 
 from tensorboard import manager
 
@@ -393,7 +383,7 @@ def _display_ipython(port, height, display_handle):
         # Allow %PORT% in $TENSORBOARD_PROXY_URL
         proxy_url = proxy_url.replace("%PORT%", "%d" % port)
         replacements = [
-            ("%HTML_ID%", html_escape(frame_id, quote=True)),
+            ("%HTML_ID%", html.escape(frame_id, quote=True)),
             ("%JSON_ID%", json.dumps(frame_id)),
             ("%HEIGHT%", "%d" % height),
             ("%PORT%", "0"),
@@ -401,7 +391,7 @@ def _display_ipython(port, height, display_handle):
         ]
     else:
         replacements = [
-            ("%HTML_ID%", html_escape(frame_id, quote=True)),
+            ("%HTML_ID%", html.escape(frame_id, quote=True)),
             ("%JSON_ID%", json.dumps(frame_id)),
             ("%HEIGHT%", "%d" % height),
             ("%PORT%", "%d" % port),

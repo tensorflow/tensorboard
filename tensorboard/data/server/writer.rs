@@ -74,7 +74,7 @@ mod tests {
             match reader.read_event() {
                 Ok(event) => result.push(event),
                 Err(ReadRecordError(Truncated)) => return Ok(result),
-                Err(e) => return Err(e.into()),
+                Err(e) => return Err(e),
             }
         }
     }

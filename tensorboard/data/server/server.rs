@@ -320,6 +320,9 @@ impl<T: Hash + Eq> Filter<T> {
 }
 
 #[cfg(test)]
+// Allow comparing raw wall times on responses. Wall times are always passed through as opaque
+// values (we don't do arithmetic on them), so comparing them for exact equality is okay.
+#[allow(clippy::float_cmp)]
 mod tests {
     use super::*;
     use tonic::Code;
