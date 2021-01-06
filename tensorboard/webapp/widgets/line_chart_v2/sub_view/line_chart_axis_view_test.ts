@@ -19,14 +19,14 @@ import {TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
 
 import {createScale} from '../lib/scale';
-import {Extent, ScaleType} from '../lib/public_types';
+import {Extent, Scale, ScaleType} from '../lib/public_types';
 import {LineChartAxisComponent} from './line_chart_axis_view';
 
 @Component({
   selector: 'testable-comp',
   template: `
     <line-chart-axis
-      class="x"
+      class="test"
       axis="x"
       [axisExtent]="viewBox.x"
       [scale]="scale"
@@ -34,7 +34,7 @@ import {LineChartAxisComponent} from './line_chart_axis_view';
       [domDim]="domDim"
     ></line-chart-axis>
     <line-chart-axis
-      class="y"
+      class="test"
       axis="y"
       [axisExtent]="viewBox.y"
       [scale]="scale"
@@ -44,7 +44,8 @@ import {LineChartAxisComponent} from './line_chart_axis_view';
   `,
 })
 class TestableComponent {
-  scale = createScale(ScaleType.LINEAR);
+  @Input()
+  scale: Scale = createScale(ScaleType.LINEAR);
 
   @Input()
   viewBox: Extent = {
@@ -52,6 +53,7 @@ class TestableComponent {
     y: [-1, 1],
   };
 
+  @Input()
   domDim = {
     width: 100,
     height: 200,
@@ -60,7 +62,8 @@ class TestableComponent {
 
 describe('line_chart_v2/sub_view/axis test', () => {
   const ByCss = {
-    X_AXIS_LABEL: By.css('line-chart-axis.x text'),
+    X_AXIS_LABEL: By.css('line-chart-axis.x .minor text'),
+    X_AXIS_MAJOR_TICK_LABEL: By.css('line-chart-axis.x .major text'),
     Y_AXIS_LABEL: By.css('line-chart-axis.y text'),
   };
 
@@ -159,5 +162,160 @@ describe('line_chart_v2/sub_view/axis test', () => {
       {x: 50, y: 5},
       {x: 100, y: 5},
     ]);
+  });
+
+  describe('temporal axis', () => {
+    function createComponent(minDate: Date, maxDate: Date) {
+      const fixture = TestBed.createComponent(TestableComponent);
+      fixture.componentInstance.scale = createScale(ScaleType.TIME);
+      fixture.componentInstance.domDim = {width: 500, height: 100};
+      fixture.componentInstance.viewBox = {
+        x: [minDate.getTime(), maxDate.getTime()],
+        y: [0, 1],
+      };
+      fixture.detectChanges();
+      return fixture;
+    }
+
+    it('shows tick in milliseconds', () => {
+      const fixture = createComponent(
+        new Date('2020-01-05 13:23:01.030'),
+        new Date('2020-01-05 13:23:01.084')
+      );
+
+      assertLabels(fixture.debugElement.queryAll(ByCss.X_AXIS_LABEL), [
+        '.030',
+        '.035',
+        '.040',
+        '.045',
+        '.050',
+        '.055',
+        '.060',
+        '.065',
+        '.070',
+        '.075',
+        '.080',
+      ]);
+      assertLabels(
+        fixture.debugElement.queryAll(ByCss.X_AXIS_MAJOR_TICK_LABEL),
+        []
+      );
+    });
+
+    it('shows tick in seconds', () => {
+      const fixture = createComponent(
+        new Date('2020-01-05 13:23:01'),
+        new Date('2020-01-05 13:23:54')
+      );
+
+      assertLabels(fixture.debugElement.queryAll(ByCss.X_AXIS_LABEL), [
+        ':05',
+        ':10',
+        ':15',
+        ':20',
+        ':25',
+        ':30',
+        ':35',
+        ':40',
+        ':45',
+        ':50',
+      ]);
+      assertLabels(
+        fixture.debugElement.queryAll(ByCss.X_AXIS_MAJOR_TICK_LABEL),
+        ['Jan 5, 2020, 1:23:30 PM']
+      );
+    });
+
+    it('shows tick in hours', () => {
+      const fixture = createComponent(
+        new Date('2020-01-05 13:23:01'),
+        new Date('2020-01-05 16:23:54')
+      );
+
+      assertLabels(fixture.debugElement.queryAll(ByCss.X_AXIS_LABEL), [
+        '01:30',
+        '01:45',
+        '02 PM',
+        '02:15',
+        '02:30',
+        '02:45',
+        '03 PM',
+        '03:15',
+        '03:30',
+        '03:45',
+        '04 PM',
+        '04:15',
+      ]);
+      assertLabels(
+        fixture.debugElement.queryAll(ByCss.X_AXIS_MAJOR_TICK_LABEL),
+        []
+      );
+    });
+
+    it('shows tick in hours (wider diff)', () => {
+      const fixture = createComponent(
+        new Date('2020-01-05 13:23:01'),
+        new Date('2020-01-05 20:23:54')
+      );
+
+      assertLabels(fixture.debugElement.queryAll(ByCss.X_AXIS_LABEL), [
+        '01:30',
+        '02 PM',
+        '02:30',
+        '03 PM',
+        '03:30',
+        '04 PM',
+        '04:30',
+        '05 PM',
+        '05:30',
+        '06 PM',
+        '06:30',
+        '07 PM',
+        '07:30',
+        '08 PM',
+      ]);
+      assertLabels(
+        fixture.debugElement.queryAll(ByCss.X_AXIS_MAJOR_TICK_LABEL),
+        ['Jan 5, 2020, 3:00:00 PM', 'Jan 5, 2020, 6:00:00 PM']
+      );
+    });
+
+    it('shows tick in months', () => {
+      const fixture = createComponent(
+        new Date('2020-01-05 13:23:01'),
+        new Date('2020-06-23 20:23:54')
+      );
+
+      assertLabels(fixture.debugElement.queryAll(ByCss.X_AXIS_LABEL), [
+        'February',
+        'March',
+        'April',
+        'May',
+        'June',
+      ]);
+      assertLabels(
+        fixture.debugElement.queryAll(ByCss.X_AXIS_MAJOR_TICK_LABEL),
+        []
+      );
+    });
+
+    it('shows tick in years', () => {
+      const fixture = createComponent(
+        new Date('2020-01-05 13:23:01'),
+        new Date('2025-01-03 05:01:02')
+      );
+
+      assertLabels(fixture.debugElement.queryAll(ByCss.X_AXIS_LABEL), [
+        '2021',
+        '2022',
+        '2023',
+        '2024',
+        '2025',
+      ]);
+      assertLabels(
+        fixture.debugElement.queryAll(ByCss.X_AXIS_MAJOR_TICK_LABEL),
+        []
+      );
+    });
   });
 });
