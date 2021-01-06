@@ -115,8 +115,8 @@ def audio(
                 tf.debugging.assert_rank(lengths, 1)
                 limited_lengths = lengths[:max_outputs]
 
-                def encode_with_length(datum_length):
-                    datum, length = datum_length
+                def encode_with_length(datum_and_length):
+                    datum, length = datum_and_length
                     return encode_fn(datum[:length])
 
                 encoded_audio = tf.map_fn(
