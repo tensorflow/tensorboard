@@ -23,6 +23,11 @@ export enum MouseEventButton {
   FIFTH = 4, // often 'forward' button, but can differ by mouse controller.
 }
 
+/**
+ * Emulates MouseEvent's `button` and `buttons`. When multiple buttons are pressed, do
+ * note that `buttons` have bit-wise union of the keys while `button` has a value
+ * corresponding to the last button pressed.
+ */
 export function createPartialMouseEvent(
   buttonList: MouseEventButtons[]
 ): Partial<MouseEventInit> {

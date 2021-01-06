@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+// From: https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/buttons
 export enum MouseEventButtons {
   LEFT = 0b1,
   RIGHT = 0b10,

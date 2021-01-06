@@ -234,8 +234,9 @@ export class LineChartInteractiveViewComponent
           ? InteractionState.PANNING
           : InteractionState.DRAG_ZOOMING;
 
-        // In case left down -> middle down, don't override the initial
-        // zoomBoxInUiCoordinate and dragStartCoord.
+        // Override the dragStartCoord and zoomBox only when started to zoom.
+        // For instance, if you press left button then right, drag zoom should start at
+        // the left button down so the second mousedown is ignored.
         if (
           prevState === InteractionState.NONE &&
           nextState === InteractionState.DRAG_ZOOMING
