@@ -23,7 +23,7 @@ import {Store} from '@ngrx/store';
 
 import {State} from '../../app_state';
 import {navigationRequested} from '../actions';
-import {RESOLVED_APP_ROOT} from '../app_root';
+import {AppRootProvider} from '../app_root';
 import {Location} from '../location';
 
 @Directive({selector: 'a[routerLink]'})
@@ -33,7 +33,7 @@ export class RouterLinkDirectiveContainer {
   constructor(
     private readonly store: Store<State>,
     private readonly location: Location,
-    @Inject(RESOLVED_APP_ROOT) private readonly appRoot: string
+    private readonly appRootProvider: AppRootProvider
   ) {}
 
   @HostListener('click', ['$event'])
@@ -54,9 +54,7 @@ export class RouterLinkDirectiveContainer {
   @HostBinding('attr.href')
   get href() {
     if (!this.pathname) return null;
-
-    return (
-      this.appRoot.slice(0, -1) +
+    return this.appRootProvider.getAbsPathnameWithAppRoot(
       this.location.getFullPathFromRouteOrNav({
         pathname: this.pathname,
       })

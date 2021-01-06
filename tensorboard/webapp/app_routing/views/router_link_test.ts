@@ -22,7 +22,7 @@ import {MockStore, provideMockStore} from '@ngrx/store/testing';
 
 import {State} from '../../app_state';
 import {navigationRequested} from '../actions';
-import {RESOLVED_APP_ROOT} from '../app_root';
+import {AppRootProvider, TestableAppRootProvider} from '../app_root';
 import {LocationModule} from '../location_module';
 
 import {RouterLinkDirectiveContainer} from './router_link_directive_container';
@@ -37,23 +37,26 @@ class TestableComponent {
 
 describe('router_link', () => {
   let actualDispatches: Action[];
-  let appRootProvider: jasmine.Spy;
+  let appRootProvider: TestableAppRootProvider;
 
   beforeEach(async () => {
     actualDispatches = [];
 
-    appRootProvider = jasmine.createSpy().and.returnValue('/');
     await TestBed.configureTestingModule({
       imports: [LocationModule, NoopAnimationsModule],
       providers: [
         provideMockStore(),
-        {provide: RESOLVED_APP_ROOT, useFactory: appRootProvider},
+        {provide: AppRootProvider, useClass: TestableAppRootProvider},
       ],
       declarations: [RouterLinkDirectiveContainer, TestableComponent],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
 
     const store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
+    appRootProvider = TestBed.inject(
+      AppRootProvider
+    ) as TestableAppRootProvider;
+
     spyOn(store, 'dispatch').and.callFake((action: Action) => {
       actualDispatches.push(action);
     });
@@ -80,7 +83,7 @@ describe('router_link', () => {
   });
 
   it('renders the path as href with appRoot to support path_prefix', () => {
-    appRootProvider.and.returnValue('/qaz/quz/');
+    appRootProvider.setAppRoot('/qaz/quz/');
     const anchorStr = createComponentAndGetAnchorDebugElement('/foobar');
     expect(anchorStr.attributes['href']).toBe('/qaz/quz/foobar/');
 
@@ -104,7 +107,7 @@ describe('router_link', () => {
   });
 
   it('dispatches programmatical navigation without appRoot', () => {
-    appRootProvider.and.returnValue('/qaz/quz/');
+    appRootProvider.setAppRoot('/qaz/quz/');
     const link = createComponentAndGetAnchorDebugElement('../foobar');
     const event = new MouseEvent('click');
     link.triggerEventHandler('click', event);

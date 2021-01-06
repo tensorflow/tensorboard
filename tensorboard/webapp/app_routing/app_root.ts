@@ -12,31 +12,54 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {InjectionToken, Provider} from '@angular/core';
+import {Injectable} from '@angular/core';
 
 import {Location} from './location';
 
-/**
- * Provides web application root. The root path starts with `/` and always end with `/`.
- * In case of empty or missing tb-relative-root, it returns `/`.
- */
-export const RESOLVED_APP_ROOT = new InjectionToken<string>(
-  '[AppRouting] Resolved App Root'
-);
+@Injectable()
+export class AppRootProvider {
+  protected appRoot: string;
 
-export function metaElAppRootExtractor(location: Location): string {
-  const metaEl = document.querySelector('head meta[name="tb-relative-root"]');
+  constructor(location: Location) {
+    this.appRoot = this.getAppRootFromMetaElement(location);
+  }
 
-  if (!metaEl) return '/';
-  const {pathname} = new URL(
-    (metaEl as HTMLMetaElement).content,
-    location.getHref()
-  );
-  return pathname.replace(/\/*$/, '/');
+  /**
+   * appRoot path starts with `/` and always end with `/`.
+   */
+  private getAppRootFromMetaElement(location: Location): string {
+    const metaEl = document.querySelector('head meta[name="tb-relative-root"]');
+
+    if (!metaEl) return '/';
+    const {pathname} = new URL(
+      (metaEl as HTMLMetaElement).content,
+      location.getHref()
+    );
+    return pathname.replace(/\/*$/, '/');
+  }
+
+  getAbsPathnameWithAppRoot(absPathname: string): string {
+    // appRoot has trailing '/'. Remove one so we don't have "//".
+    return this.appRoot.slice(0, -1) + absPathname;
+  }
+
+  getAppRootlessPathname(absPathname: string) {
+    if (absPathname.startsWith(this.appRoot)) {
+      // appRoot ends with "/" and we need the trimmed pathname to start with "/" since
+      // routes are defined with starting "/".
+      return '/' + absPathname.slice(this.appRoot.length);
+    }
+    return absPathname;
+  }
 }
 
-export const AppRootProvider: Provider = {
-  provide: RESOLVED_APP_ROOT,
-  useFactory: metaElAppRootExtractor,
-  deps: [Location],
-};
+@Injectable()
+export class TestableAppRootProvider extends AppRootProvider {
+  getAppRoot(): string {
+    return this.appRoot;
+  }
+
+  setAppRoot(appRoot: string) {
+    this.appRoot = appRoot;
+  }
+}

@@ -33,7 +33,7 @@ import {
   navigationRequested,
   stateRehydratedFromUrl,
 } from '../actions';
-import {RESOLVED_APP_ROOT} from '../app_root';
+import {AppRootProvider} from '../app_root';
 import {areRoutesEqual, getRouteId} from '../internal_utils';
 import {Location} from '../location';
 import {ProgrammaticalNavigationModule} from '../programmatical_navigation_module';
@@ -62,29 +62,16 @@ export class AppRoutingEffects {
     private readonly location: Location,
     registry: RouteRegistryModule,
     private readonly programmaticalNavModule: ProgrammaticalNavigationModule,
-    @Inject(RESOLVED_APP_ROOT) private readonly appRoot: string
+    private readonly appRootProvider: AppRootProvider
   ) {
     this.routeConfigs = registry.getRouteConfigs();
-  }
-
-  private getAppRootlessPathname(pathname: string): string {
-    if (pathname.startsWith(this.appRoot)) {
-      // appRoot ends with "/" and we need the trimmed pathname to start with "/" since
-      // routes are defined with starting "/".
-      return '/' + pathname.slice(this.appRoot.length);
-    }
-    return pathname;
-  }
-
-  private getAbsPathnameWithAppRoot(absPathname: string): string {
-    return this.appRoot.slice(0, -1) + absPathname;
   }
 
   private readonly onNavigationRequested$ = this.actions$.pipe(
     ofType(navigationRequested),
     map((navigation) => {
       const resolvedPathname = navigation.pathname.startsWith('/')
-        ? this.getAbsPathnameWithAppRoot(navigation.pathname)
+        ? this.appRootProvider.getAbsPathnameWithAppRoot(navigation.pathname)
         : this.location.getResolvedPath(navigation.pathname);
       return {...navigation, pathname: resolvedPathname};
     })
@@ -130,7 +117,9 @@ export class AppRoutingEffects {
       }
       return {
         ...navigation,
-        pathname: this.getAppRootlessPathname(navigation.pathname),
+        pathname: this.appRootProvider.getAppRootlessPathname(
+          navigation.pathname
+        ),
       };
     }),
     map((navigationWithAbsolutePath) => {
@@ -289,20 +278,22 @@ export class AppRoutingEffects {
         }),
         filter(({route}) => {
           return !areRoutesEqual(route, {
-            pathname: this.getAppRootlessPathname(this.location.getPath()),
+            pathname: this.appRootProvider.getAppRootlessPathname(
+              this.location.getPath()
+            ),
             queryParams: this.location.getSearch(),
           });
         }),
         tap(({preserveHash, route}) => {
           if (route.navigationOptions.replaceState) {
             this.location.replaceState(
-              this.getAbsPathnameWithAppRoot(
+              this.appRootProvider.getAbsPathnameWithAppRoot(
                 this.location.getFullPathFromRouteOrNav(route, preserveHash)
               )
             );
           } else {
             this.location.pushState(
-              this.getAbsPathnameWithAppRoot(
+              this.appRootProvider.getAbsPathnameWithAppRoot(
                 this.location.getFullPathFromRouteOrNav(route, preserveHash)
               )
             );

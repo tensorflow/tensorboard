@@ -23,7 +23,7 @@ import {of, ReplaySubject} from 'rxjs';
 import {State} from '../../app_state';
 import * as actions from '../actions';
 import {navigationRequested} from '../actions';
-import {RESOLVED_APP_ROOT} from '../app_root';
+import {AppRootProvider, TestableAppRootProvider} from '../app_root';
 import {Location} from '../location';
 import {
   NavigateToExperiments,
@@ -54,7 +54,6 @@ describe('app_routing_effects', () => {
   let getSearchSpy: jasmine.Spy;
   let serializeStateToQueryParamsSpy: jasmine.Spy;
   let deserializeQueryParamsSpy: jasmine.Spy;
-  let appRootProvider: jasmine.Spy;
 
   beforeEach(async () => {
     action = new ReplaySubject<Action>(1);
@@ -100,8 +99,6 @@ describe('app_routing_effects', () => {
       };
     }
 
-    appRootProvider = jasmine.createSpy().and.returnValue('/');
-
     await TestBed.configureTestingModule({
       imports: [
         RouteRegistryModule.registerRoutes(routeFactory),
@@ -114,7 +111,10 @@ describe('app_routing_effects', () => {
         AppRoutingEffects,
         provideMockStore(),
         provideLocationTesting(),
-        {provide: RESOLVED_APP_ROOT, useFactory: appRootProvider},
+        {
+          provide: AppRootProvider,
+          useClass: TestableAppRootProvider,
+        },
       ],
     }).compileComponents();
 
@@ -729,7 +729,11 @@ describe('app_routing_effects', () => {
 
   describe('path_prefix support', () => {
     function setAppRootAndSubscribe(appRoot: string) {
-      appRootProvider.and.returnValue(appRoot);
+      const provider = TestBed.inject(
+        AppRootProvider
+      ) as TestableAppRootProvider;
+      provider.setAppRoot(appRoot);
+
       effects = TestBed.inject(AppRoutingEffects);
       const dispatchSpy = spyOn(store, 'dispatch');
       effects.fireNavigatedIfValidRoute$.subscribe((action) => {
