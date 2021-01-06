@@ -341,7 +341,6 @@ export class RenderGraphInfo {
         proportion: histogram[key] / numItems,
       }));
     }
-    console.info('no pairs found!');
     return null;
   }
   /**
