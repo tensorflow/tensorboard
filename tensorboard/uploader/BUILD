@@ -35,7 +35,6 @@ py_test(
         "//tensorboard/uploader/proto:protos_all_py_pb2_grpc",
         "//tensorboard/util:grpc_util",
         "//tensorboard/util:tensor_util",
-        "@org_pythonhosted_mock",
     ],
 )
 
@@ -124,7 +123,6 @@ py_library(
     name = "upload_tracker",
     srcs = ["upload_tracker.py"],
     srcs_version = "PY3",
-    deps = [],
 )
 
 py_test(
@@ -154,7 +152,6 @@ py_test(
         "//tensorboard/uploader/proto:protos_all_py_pb2_grpc",
         "//tensorboard/util:test_util",
         "@com_google_protobuf//:protobuf_python",
-        "@org_pythonhosted_mock",
     ],
 )
 
@@ -165,7 +162,6 @@ py_test(
     deps = [
         ":upload_tracker",
         "//tensorboard:test",
-        "@org_pythonhosted_mock",
     ],
 )
 
@@ -209,7 +205,6 @@ py_test(
         ":auth",
         "//tensorboard:expect_google_auth_installed",
         "//tensorboard:test",
-        "@org_pythonhosted_mock",
     ],
 )
 
@@ -264,7 +259,6 @@ py_test(
         ":util",
         "//tensorboard:test",
         "@com_google_protobuf//:protobuf_python",
-        "@org_pythonhosted_mock",
     ],
 )
 

@@ -20,12 +20,7 @@ import functools
 import glob
 import os
 import shutil
-
-try:
-    # python version >= 3.3
-    from unittest import mock
-except ImportError:
-    import mock  # pylint: disable=unused-import
+from unittest import mock
 
 import tensorflow as tf
 

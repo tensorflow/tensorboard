@@ -19,15 +19,7 @@ import datetime
 import os
 import time
 import unittest
-import mock
-
-
-try:
-    # python version >= 3.3
-    from unittest import mock
-except ImportError:
-    import mock  # pylint: disable=unused-import
-
+from unittest import mock
 
 from google.protobuf import timestamp_pb2
 from tensorboard.uploader import test_util

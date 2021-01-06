@@ -15,11 +15,7 @@
 """Tests for `tensorboard.backend.security_validator`."""
 
 
-try:
-    # python version >= 3.3
-    from unittest import mock
-except ImportError:
-    import mock  # pylint: disable=unused-import
+from unittest import mock
 
 import werkzeug
 from werkzeug import test as werkzeug_test

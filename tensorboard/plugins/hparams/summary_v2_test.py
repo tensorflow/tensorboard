@@ -17,16 +17,11 @@
 import os
 import random
 import unittest
+from unittest import mock
 
 from google.protobuf import text_format
 import numpy as np
 import six
-
-try:
-    # python version >= 3.3
-    from unittest import mock
-except ImportError:
-    import mock  # pylint: disable=unused-import
 
 from tensorboard import test
 from tensorboard.compat import tf

@@ -58,8 +58,6 @@ py_library(
     visibility = [
         "//tensorboard:internal",
     ],
-    deps = [
-    ],
 )
 
 py_library(

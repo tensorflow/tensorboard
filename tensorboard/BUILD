@@ -164,7 +164,6 @@ py_test(
         ":test",
         ":version",
         "//tensorboard/util:tb_logging",
-        "@org_pythonhosted_mock",
         "@org_pythonhosted_six",
     ],
 )
@@ -186,7 +185,6 @@ py_test(
     deps = [
         ":manager",
         "//tensorboard:expect_tensorflow_installed",
-        "@org_pythonhosted_mock",
         "@org_pythonhosted_six",
     ],
 )
@@ -232,7 +230,6 @@ py_test(
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/plugins/core:core_plugin",
         "@org_pocoo_werkzeug",
-        "@org_pythonhosted_mock",
         "@org_pythonhosted_six",
     ],
 )
@@ -296,7 +293,6 @@ py_test(
         ":test",
         "//tensorboard:expect_pkg_resources_installed",
         "//tensorboard/plugins:base_plugin",
-        "@org_pythonhosted_mock",
     ],
 )
 

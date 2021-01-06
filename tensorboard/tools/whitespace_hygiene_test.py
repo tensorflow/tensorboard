@@ -25,13 +25,7 @@ import subprocess
 import sys
 
 
-exceptions = frozenset(
-    [
-        # End-of-line whitespace is semantic in patch files when a line
-        # contains a single space.
-        "third_party/mock_call_assertions.patch",
-    ]
-)
+exceptions = frozenset([])
 
 
 Match = collections.namedtuple("Match", ("filename", "line_number", "line"))
