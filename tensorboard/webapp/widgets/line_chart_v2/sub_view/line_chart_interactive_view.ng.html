@@ -14,7 +14,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<svg #dots class="dots">
+<svg
+  #dots
+  class="dots"
+  [class.pannable]="specialKeyPressed"
+  [class.draggable]="state === InteractionState.NONE || state === InteractionState.DRAG_ZOOMING"
+  [class.panning]="state === InteractionState.PANNING"
+>
   <ng-container *ngIf="state === InteractionState.NONE">
     <ng-container
       *ngFor="let datum of cursoredData; trackBy: trackBySeriesName"

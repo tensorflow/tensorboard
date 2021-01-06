@@ -21,6 +21,18 @@ limitations under the License.
 .dots {
   height: 100%;
   width: 100%;
+
+  &.draggable {
+    cursor: crosshair;
+  }
+
+  &.pannable {
+    cursor: grab;
+  }
+
+  &.panning {
+    cursor: grabbing;
+  }
 }
 
 $_circle-size: 12px;
