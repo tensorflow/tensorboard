@@ -41,6 +41,7 @@ import {
   YAxisType,
 } from '../../../widgets/line_chart/line_chart_types';
 import {TooltipSortingMethod} from '../../../widgets/line_chart/polymer_interop_types';
+import {Formatter} from '../../../widgets/line_chart_v2/lib/formatter';
 import {
   DataSeries,
   DataSeriesMetadataMap,
@@ -100,9 +101,11 @@ class TestableLineChart {
   `,
 })
 class TestableGpuLineChart {
+  @Input() customXFormatter?: Formatter;
   @Input() preferredRendererType!: RendererType;
   @Input() seriesData!: DataSeries[];
   @Input() seriesMetadataMap!: DataSeriesMetadataMap;
+  @Input() xScaleType!: ScaleType;
   @Input() yScaleType!: ScaleType;
   @Input() ignoreYOutliers!: boolean;
   @Input()
@@ -1137,6 +1140,47 @@ describe('scalar card', () => {
       });
     }));
 
+    it('sets relative wallTime value to x when XAxisType is RELATIVE', fakeAsync(() => {
+      store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.RELATIVE);
+      store.overrideSelector(selectors.getRunColorMap, {
+        run1: '#f00',
+        run2: '#0f0',
+      });
+      store.overrideSelector(selectors.getMetricsScalarSmoothing, 0);
+      const runToSeries = {
+        run1: [
+          {wallTime: 2, value: 1, step: 1},
+          {wallTime: 4, value: 10, step: 2},
+          {wallTime: 2, value: 5, step: 3},
+          {wallTime: 0, value: 0, step: 4},
+        ],
+        run2: [{wallTime: 2, value: 1, step: 1}],
+      };
+      provideMockCardRunToSeriesData(
+        selectSpy,
+        PluginType.SCALARS,
+        'card1',
+        null /* metadataOverride */,
+        runToSeries
+      );
+
+      const fixture = createComponent('card1');
+      const lineChart = fixture.debugElement.query(Selector.GPU_LINE_CHART);
+
+      expect(lineChart.componentInstance.seriesData).toEqual([
+        {
+          id: 'run1',
+          points: [
+            {wallTime: 2000, value: 1, step: 1, x: 0, y: 1},
+            {wallTime: 4000, value: 10, step: 2, x: 2000, y: 10},
+            {wallTime: 2000, value: 5, step: 3, x: 0, y: 5},
+            {wallTime: 0, value: 0, step: 4, x: -2000, y: 0},
+          ],
+        },
+        {id: 'run2', points: [{wallTime: 2000, value: 1, step: 1, x: 0, y: 1}]},
+      ]);
+    }));
+
     describe('tooltip', () => {
       function buildTooltipDatum(
         metadata?: ScalarCardSeriesMetadata,
@@ -1297,6 +1341,81 @@ describe('scalar card', () => {
           // Print the step with comma for readability. The value is yet optimize for
           // readability (we may use the scientific formatting).
           ['', 'Row 2', '-500', '-1000', '1,000', '12/31/20, 12:00 AM'],
+        ]);
+      }));
+
+      it('shows relative time when XAxisType is RELATIVE', fakeAsync(() => {
+        store.overrideSelector(
+          selectors.getMetricsXAxisType,
+          XAxisType.RELATIVE
+        );
+        store.overrideSelector(selectors.getMetricsScalarSmoothing, 0);
+        const fixture = createComponent('card1');
+        setTooltipData(fixture, [
+          buildTooltipDatum(
+            {
+              id: 'smoothed_row1',
+              type: SeriesType.DERIVED,
+              displayName: 'Row 1',
+              visible: true,
+              color: '#00f',
+              aux: false,
+              originalSeriesId: 'row1',
+            },
+            {
+              x: 10,
+              step: 10,
+              y: 1000,
+              value: 1000,
+              wallTime: new Date('2020-01-01').getTime(),
+            }
+          ),
+          buildTooltipDatum(
+            {
+              id: 'smoothed_row2',
+              type: SeriesType.DERIVED,
+              displayName: 'Row 2',
+              visible: true,
+              color: '#0f0',
+              aux: false,
+              originalSeriesId: 'row2',
+            },
+            {
+              x: 432000000,
+              step: 1000,
+              y: -1000,
+              value: -1000,
+              wallTime: new Date('2020-01-05').getTime(),
+            }
+          ),
+        ]);
+        fixture.detectChanges();
+
+        const headerCols = fixture.debugElement.queryAll(
+          Selector.TOOLTIP_HEADER_COLUMN
+        );
+        const headerText = headerCols.map(
+          (col) => col.nativeElement.textContent
+        );
+        expect(headerText).toEqual([
+          '',
+          'Run',
+          'Value',
+          'Step',
+          'Time',
+          'Relative',
+        ]);
+
+        const rows = fixture.debugElement.queryAll(Selector.TOOLTIP_ROW);
+        const tableContent = rows.map((row) => {
+          return row
+            .queryAll(By.css('td'))
+            .map((td) => td.nativeElement.textContent.trim());
+        });
+
+        expect(tableContent).toEqual([
+          ['', 'Row 1', '1000', '10', '1/1/20, 12:00 AM', '10 ms'],
+          ['', 'Row 2', '-1000', '1,000', '1/5/20, 12:00 AM', '5 day'],
         ]);
       }));
     });

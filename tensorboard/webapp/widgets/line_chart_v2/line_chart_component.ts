@@ -33,6 +33,7 @@ import {
   DataSeries,
   DataSeriesMetadataMap,
   Extent,
+  Formatter,
   RendererType,
   Scale,
   ScaleType,
@@ -96,6 +97,12 @@ export class LineChartComponent implements AfterViewInit, OnChanges, OnDestroy {
 
   @Input()
   yScaleType: ScaleType = ScaleType.LINEAR;
+
+  @Input()
+  customXFormatter?: Formatter;
+
+  @Input()
+  customYFormatter?: Formatter;
 
   @Input()
   tooltipTemplate?: TooltipTemplate;

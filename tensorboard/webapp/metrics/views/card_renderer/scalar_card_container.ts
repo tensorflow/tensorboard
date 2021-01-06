@@ -46,6 +46,7 @@ import {
 import {DataLoadState} from '../../../types/data';
 import {RunColorScale} from '../../../types/ui';
 import {classicSmoothing} from '../../../widgets/line_chart_v2/data_transformer';
+import {ScaleType} from '../../../widgets/line_chart_v2/types';
 import {PluginType, ScalarStepDatum} from '../../data_source';
 import {
   getCardLoadState,
@@ -136,6 +137,7 @@ function areSeriesEqual(
       [tooltipSort]="tooltipSort$ | async"
       [ignoreOutliers]="ignoreOutliers$ | async"
       [xAxisType]="xAxisType$ | async"
+      [newXScaleType]="newXScaleType$ | async"
       [scalarSmoothing]="scalarSmoothing$ | async"
       [showFullSize]="showFullSize"
       [isPinned]="isPinned$ | async"
@@ -180,6 +182,21 @@ export class ScalarCardContainer implements CardRenderer, OnInit {
   readonly tooltipSort$ = this.store.select(getMetricsTooltipSort);
   readonly ignoreOutliers$ = this.store.select(getMetricsIgnoreOutliers);
   readonly xAxisType$ = this.store.select(getMetricsXAxisType);
+  readonly newXScaleType$ = this.xAxisType$.pipe(
+    map((xAxisType) => {
+      switch (xAxisType) {
+        case XAxisType.STEP:
+        case XAxisType.RELATIVE:
+          return ScaleType.LINEAR;
+        case XAxisType.WALL_TIME:
+          return ScaleType.TIME;
+        default:
+          const neverType = xAxisType as never;
+          throw new Error(`Invalid xAxisType for line chart. ${neverType}`);
+      }
+    })
+  );
+
   readonly scalarSmoothing$ = this.store.select(getMetricsScalarSmoothing);
   readonly gpuLineChartEnabled$ = this.store.select(getIsGpuChartEnabled);
   readonly smoothingEnabled$ = this.store
@@ -220,7 +237,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit {
       this.store.select(getCardTimeSeries, this.cardId),
     ]);
     const runIdAndPoints$ = settingsAndTimeSeries$.pipe(
-      filter(([xAxisType, runToSeries]) => !!runToSeries),
+      filter(([_, runToSeries]) => !!runToSeries),
       map(
         ([xAxisType, runToSeries]) =>
           ({xAxisType, runToSeries} as {
@@ -283,21 +300,25 @@ export class ScalarCardContainer implements CardRenderer, OnInit {
         this.store.select(getMetricsScalarSmoothing),
         this.store.select(getMetricsXAxisType)
       ),
-      switchMap(([runsData, smoothing, xType]) => {
+      switchMap(([runsData, smoothing, xAxisType]) => {
         const dataSeriesList = runsData.map(({runId, points}) => {
-          return {
-            id: runId,
-            points: points.map((point) => {
-              return {
-                ...point,
-                // Convert time in seconds to milliseconds.
-                // TODO(stephanwlee): when the legacy line chart is removed, do the
-                // conversion at either effects or at `stepSeriesToLineSeries`.
-                x: xType === XAxisType.WALL_TIME ? point.x * 1000 : point.x,
-                wallTime: point.wallTime * 1000,
-              };
-            }),
-          };
+          points = points.map((point) => {
+            // Convert wallTime in seconds to milliseconds.
+            // TODO(stephanwlee): when the legacy line chart is removed, do the conversion at
+            // the effects.
+            const wallTime = point.wallTime * 1000;
+            const x = xAxisType === XAxisType.STEP ? point.x : wallTime;
+            return {...point, x, wallTime};
+          });
+
+          if (xAxisType === XAxisType.RELATIVE && points.length) {
+            const firstPoint = points[0];
+            points = points.map((point) => ({
+              ...point,
+              x: point.x - firstPoint.x,
+            }));
+          }
+          return {id: runId, points};
         });
 
         if (smoothing === 0) {

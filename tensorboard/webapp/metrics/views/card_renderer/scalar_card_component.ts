@@ -37,6 +37,7 @@ import {
   XAxisType as ChartXAxisType,
   YAxisType,
 } from '../../../widgets/line_chart/line_chart_types';
+import {relativeTimeFormatter} from '../../../widgets/line_chart_v2/lib/formatter';
 import {
   RendererType,
   ScaleType,
@@ -122,6 +123,8 @@ export class ScalarCardComponent {
   @Input() showFullSize!: boolean;
   @Input() isPinned!: boolean;
 
+  @Input() newXScaleType!: ScaleType;
+
   // Legacy chart related; to be removed.
   @Input() runColorScale!: RunColorScale;
   @Input() ignoreOutliers!: boolean;
@@ -144,7 +147,9 @@ export class ScalarCardComponent {
   constructor(private readonly ref: ElementRef) {}
 
   yAxisType = YAxisType.LINEAR;
-  newYAxisType = ScaleType.LINEAR;
+  newYScaleType = ScaleType.LINEAR;
+
+  readonly XAxisType = XAxisType;
 
   chartXAxisType() {
     switch (this.xAxisType) {
@@ -166,7 +171,7 @@ export class ScalarCardComponent {
   toggleYAxisType() {
     this.yAxisType =
       this.yAxisType === YAxisType.LINEAR ? YAxisType.LOG : YAxisType.LINEAR;
-    this.newYAxisType =
+    this.newYScaleType =
       this.yAxisType === YAxisType.LINEAR ? ScaleType.LINEAR : ScaleType.LOG10;
   }
 
@@ -188,4 +193,6 @@ export class ScalarCardComponent {
   trackByTooltipDatum(index: number, datum: TooltipDatum) {
     return datum.id;
   }
+
+  readonly relativeXFormatter = relativeTimeFormatter;
 }

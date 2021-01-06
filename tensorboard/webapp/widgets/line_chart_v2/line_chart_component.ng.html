@@ -52,17 +52,19 @@ limitations under the License.
     class="y-axis"
     axis="y"
     [axisExtent]="viewBox.y"
-    [scale]="yScale"
-    [gridCount]="Y_GRID_COUNT"
+    [customFormatter]="customYFormatter"
     [domDim]="domDimensions.yAxis"
+    [gridCount]="Y_GRID_COUNT"
+    [scale]="yScale"
   ></line-chart-axis>
   <line-chart-axis
     #xAxis
     class="x-axis"
     axis="x"
     [axisExtent]="viewBox.x"
-    [scale]="xScale"
-    [gridCount]="X_GRID_COUNT"
+    [customFormatter]="customXFormatter"
     [domDim]="domDimensions.xAxis"
+    [gridCount]="X_GRID_COUNT"
+    [scale]="xScale"
   ></line-chart-axis>
 </div>
