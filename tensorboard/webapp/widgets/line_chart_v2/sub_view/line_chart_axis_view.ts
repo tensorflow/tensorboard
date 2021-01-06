@@ -45,18 +45,10 @@ const DAY_IN_MS = 24 * 1000 * 60 * 60;
       <ng-container *ngFor="let tick of getTicks()">
         <g>
           <text [attr.x]="textXPosition(tick)" [attr.y]="textYPosition(tick)">
-            {{
-              customFormatter
-                ? customFormatter.formatTick(tick)
-                : scale.defaultFormatter.formatTick(tick)
-            }}
+            {{ getFormatter().formatTick(tick) }}
           </text>
           <title>
-            {{
-              customFormatter
-                ? customFormatter.formatReadable(tick)
-                : scale.defaultFormatter.formatReadable(tick)
-            }}
+            {{ getFormatter().formatReadable(tick) }}
           </title>
         </g>
       </ng-container>
@@ -64,18 +56,10 @@ const DAY_IN_MS = 24 * 1000 * 60 * 60;
     <svg *ngIf="shouldShowMajorTicks()" class="major">
       <g *ngFor="let tick of getMajorTicks()">
         <text [attr.x]="textXPosition(tick)" [attr.y]="textYPosition(tick)">
-          {{
-            customFormatter
-              ? customFormatter.formatShort(tick)
-              : scale.defaultFormatter.formatShort(tick)
-          }}
+          {{ getFormatter().formatShort(tick) }}
         </text>
         <title>
-          {{
-            customFormatter
-              ? customFormatter.formatReadable(tick)
-              : scale.defaultFormatter.formatReadable(tick)
-          }}
+          {{ getFormatter().formatReadable(tick) }}
         </title>
       </g>
     </svg>`,
@@ -142,6 +126,10 @@ export class LineChartAxisComponent {
   @Input()
   customFormatter?: Formatter;
 
+  getFormatter(): Formatter {
+    return this.customFormatter ?? this.scale.defaultFormatter;
+  }
+
   /**
    * Returns true if the major ticks must be shown.
    *
@@ -156,11 +144,11 @@ export class LineChartAxisComponent {
       this.scale instanceof TemporalScale &&
       this.axisExtent[1] - this.axisExtent[0] < DAY_IN_MS &&
       minorTickCount > majorTickCount &&
-      this.getMajorTicks().length <= 2
+      majorTickCount <= 2
     );
   }
 
-  getMajorTicks() {
+  getMajorTicks(): number[] {
     return this.scale.ticks(this.axisExtent, 2);
   }
 
