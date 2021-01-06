@@ -214,9 +214,10 @@ export class ScalarCardComponent {
         metadata: {
           ...datum.metadata,
           closest: false,
-          distSqToCursor:
-            (datum.point.x - cursorLoc.x) ** 2 +
-            (datum.point.y - cursorLoc.y) ** 2,
+          distSqToCursor: Math.hypot(
+            datum.point.x - cursorLoc.x,
+            datum.point.y - cursorLoc.y
+          ),
         },
       };
     });
