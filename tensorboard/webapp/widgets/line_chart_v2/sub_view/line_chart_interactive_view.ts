@@ -58,8 +58,8 @@ export interface TooltipDatum<
 > {
   id: string;
   metadata: Metadata;
-  closestPointIndex: number | null;
-  point: PointDatum | null;
+  closestPointIndex: number;
+  point: PointDatum;
 }
 
 enum InteractionState {
@@ -78,6 +78,7 @@ export function scrollStrategyFactory(
 }
 
 export interface TooltipTemplateContext {
+  cursorLocationInDataCoord: {x: number; y: number};
   data: TooltipDatum[];
 }
 
@@ -192,7 +193,7 @@ export class LineChartInteractiveViewComponent
     },
   ];
 
-  cursorXLocation: number | null = null;
+  cursorLocationInDataCoord: {x: number; y: number} | null = null;
   cursoredData: TooltipDatum[] = [];
   tooltipDisplayAttached: boolean = false;
 
@@ -438,7 +439,10 @@ export class LineChartInteractiveViewComponent
   }
 
   private updateTooltip(event: MouseEvent) {
-    this.cursorXLocation = this.getDataX(event.offsetX);
+    this.cursorLocationInDataCoord = {
+      x: this.getDataX(event.offsetX),
+      y: this.getDataY(event.offsetY),
+    };
     this.updateCursoredDataAndTooltipVisibility();
   }
 
@@ -447,13 +451,12 @@ export class LineChartInteractiveViewComponent
   }
 
   private updateCursoredDataAndTooltipVisibility() {
-    if (this.cursorXLocation === null) {
+    const cursorLoc = this.cursorLocationInDataCoord;
+    if (cursorLoc === null) {
       this.cursoredData = [];
       this.tooltipDisplayAttached = false;
       return;
     }
-
-    const cursorXLocation = this.cursorXLocation;
 
     this.cursoredData = this.isCursorInside
       ? (this.seriesData
@@ -467,7 +470,7 @@ export class LineChartInteractiveViewComponent
             return metadata && metadata.visible && !Boolean(metadata.aux);
           })
           .map(({seriesDatum, metadata}) => {
-            const index = findClosestIndex(seriesDatum.points, cursorXLocation);
+            const index = findClosestIndex(seriesDatum.points, cursorLoc.x);
             return {
               id: seriesDatum.id,
               closestPointIndex: index,

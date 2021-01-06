@@ -112,7 +112,11 @@ limitations under the License.
     ></tb-line-chart>
   </ng-template>
 
-  <ng-template #tooltip let-tooltipData="data">
+  <ng-template
+    #tooltip
+    let-tooltipData="data"
+    let-cursorLoc="cursorLocationInDataCoord"
+  >
     <table class="tooltip">
       <thead>
         <tr>
@@ -127,9 +131,12 @@ limitations under the License.
       </thead>
       <tbody>
         <ng-container
-          *ngFor="let datum of tooltipData; trackBy: trackByTooltipDatum"
+          *ngFor="
+            let datum of getCursorAwareTooltipData(tooltipData, cursorLoc);
+            trackBy: trackByTooltipDatum
+          "
         >
-          <tr class="tooltip-row">
+          <tr class="tooltip-row" [class.closest]="datum.metadata.closest">
             <td class="tooltip-row-circle">
               <span [style.backgroundColor]="datum.metadata.color"></span>
             </td>

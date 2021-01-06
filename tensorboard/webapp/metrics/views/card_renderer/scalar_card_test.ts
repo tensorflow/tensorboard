@@ -96,7 +96,10 @@ class TestableLineChart {
     <ng-container
       *ngIf="tooltipTemplate"
       [ngTemplateOutlet]="tooltipTemplate"
-      [ngTemplateOutletContext]="{data: tooltipDataForTesting}"
+      [ngTemplateOutletContext]="{
+        data: tooltipDataForTesting,
+        cursorLocationInDataCoord: cursorLocForTesting
+      }"
     ></ng-container>
   `,
 })
@@ -114,6 +117,7 @@ class TestableGpuLineChart {
   // This input does not exist on real line-chart and is devised to make tooltipTemplate
   // testable without using the real implementation.
   @Input() tooltipDataForTesting: TooltipDatum[] = [];
+  @Input() cursorLocForTesting: {x: number; y: number} = {x: 0, y: 0};
 
   constructor(public readonly changeDetectorRef: ChangeDetectorRef) {}
 }
@@ -1211,6 +1215,32 @@ describe('scalar card', () => {
         lineChart.componentInstance.changeDetectorRef.markForCheck();
       }
 
+      function setCursorLocation(
+        fixture: ComponentFixture<ScalarCardContainer>,
+        cursorLocInDataCoord?: {x: number; y: number}
+      ) {
+        const lineChart = fixture.debugElement.query(Selector.GPU_LINE_CHART);
+
+        lineChart.componentInstance.cursorLocForTesting = cursorLocInDataCoord;
+        lineChart.componentInstance.changeDetectorRef.markForCheck();
+      }
+
+      function assertTooltipRows(
+        fixture: ComponentFixture<ScalarCardContainer>,
+        expectedTableContent: Array<
+          Array<string | ReturnType<typeof jasmine.any>>
+        >
+      ) {
+        const rows = fixture.debugElement.queryAll(Selector.TOOLTIP_ROW);
+        const tableContent = rows.map((row) => {
+          return row
+            .queryAll(By.css('td'))
+            .map((td) => td.nativeElement.textContent.trim());
+        });
+
+        expect(tableContent).toEqual(expectedTableContent);
+      }
+
       it('renders the tooltip using the custom template (no smooth)', fakeAsync(() => {
         store.overrideSelector(selectors.getMetricsScalarSmoothing, 0);
         const fixture = createComponent('card1');
@@ -1258,14 +1288,7 @@ describe('scalar card', () => {
         );
         expect(headerText).toEqual(['', 'Run', 'Value', 'Step', 'Time']);
 
-        const rows = fixture.debugElement.queryAll(Selector.TOOLTIP_ROW);
-        const tableContent = rows.map((row) => {
-          return row
-            .queryAll(By.css('td'))
-            .map((td) => td.nativeElement.textContent);
-        });
-
-        expect(tableContent).toEqual([
+        assertTooltipRows(fixture, [
           ['', 'Row 1', '1000', '10', '1/1/20, 12:00 AM'],
           ['', 'Row 2', '-1000', '1,000', '12/31/20, 12:00 AM'],
         ]);
@@ -1329,14 +1352,7 @@ describe('scalar card', () => {
           'Time',
         ]);
 
-        const rows = fixture.debugElement.queryAll(Selector.TOOLTIP_ROW);
-        const tableContent = rows.map((row) => {
-          return row
-            .queryAll(By.css('td'))
-            .map((td) => td.nativeElement.textContent);
-        });
-
-        expect(tableContent).toEqual([
+        assertTooltipRows(fixture, [
           ['', 'Row 1', '500', '1000', '10', '1/1/20, 12:00 AM'],
           // Print the step with comma for readability. The value is yet optimize for
           // readability (we may use the scientific formatting).
@@ -1416,6 +1432,238 @@ describe('scalar card', () => {
         expect(tableContent).toEqual([
           ['', 'Row 1', '1000', '10', '1/1/20, 12:00 AM', '10 ms'],
           ['', 'Row 2', '-1000', '1,000', '1/5/20, 12:00 AM', '5 day'],
+        ]);
+      }));
+
+      it('sorts by ascending', fakeAsync(() => {
+        store.overrideSelector(
+          selectors.getMetricsTooltipSort,
+          TooltipSort.ASCENDING
+        );
+        store.overrideSelector(selectors.getMetricsScalarSmoothing, 0);
+        const fixture = createComponent('card1');
+        setTooltipData(fixture, [
+          buildTooltipDatum(
+            {
+              id: 'row1',
+              type: SeriesType.ORIGINAL,
+              displayName: 'Row 1',
+              visible: true,
+              color: '#f00',
+              aux: false,
+            },
+            {
+              x: 10,
+              step: 10,
+              y: 1000,
+              value: 1000,
+              wallTime: new Date('2020-01-01').getTime(),
+            }
+          ),
+          buildTooltipDatum(
+            {
+              id: 'row2',
+              type: SeriesType.ORIGINAL,
+              displayName: 'Row 2',
+              visible: true,
+              color: '#0f0',
+              aux: false,
+            },
+            {
+              x: 1000,
+              step: 1000,
+              y: -500,
+              value: -500,
+              wallTime: new Date('2020-12-31').getTime(),
+            }
+          ),
+          buildTooltipDatum(
+            {
+              id: 'row3',
+              type: SeriesType.ORIGINAL,
+              displayName: 'Row 3',
+              visible: true,
+              color: '#00f',
+              aux: false,
+            },
+            {
+              x: 10000,
+              step: 10000,
+              y: 3,
+              value: 3,
+              wallTime: new Date('2021-01-01').getTime(),
+            }
+          ),
+        ]);
+        fixture.detectChanges();
+
+        assertTooltipRows(fixture, [
+          ['', 'Row 2', '-500', '1,000', jasmine.any(String)],
+          ['', 'Row 3', '3', '10,000', jasmine.any(String)],
+          ['', 'Row 1', '1000', '10', jasmine.any(String)],
+        ]);
+      }));
+
+      it('sorts by descending', fakeAsync(() => {
+        store.overrideSelector(
+          selectors.getMetricsTooltipSort,
+          TooltipSort.DESCENDING
+        );
+        store.overrideSelector(selectors.getMetricsScalarSmoothing, 0);
+        const fixture = createComponent('card1');
+        setTooltipData(fixture, [
+          buildTooltipDatum(
+            {
+              id: 'row1',
+              type: SeriesType.ORIGINAL,
+              displayName: 'Row 1',
+              visible: true,
+              color: '#f00',
+              aux: false,
+            },
+            {
+              x: 10,
+              step: 10,
+              y: 1000,
+              value: 1000,
+              wallTime: new Date('2020-01-01').getTime(),
+            }
+          ),
+          buildTooltipDatum(
+            {
+              id: 'row2',
+              type: SeriesType.ORIGINAL,
+              displayName: 'Row 2',
+              visible: true,
+              color: '#0f0',
+              aux: false,
+            },
+            {
+              x: 1000,
+              step: 1000,
+              y: -500,
+              value: -500,
+              wallTime: new Date('2020-12-31').getTime(),
+            }
+          ),
+          buildTooltipDatum(
+            {
+              id: 'row3',
+              type: SeriesType.ORIGINAL,
+              displayName: 'Row 3',
+              visible: true,
+              color: '#00f',
+              aux: false,
+            },
+            {
+              x: 10000,
+              step: 10000,
+              y: 3,
+              value: 3,
+              wallTime: new Date('2021-01-01').getTime(),
+            }
+          ),
+        ]);
+        fixture.detectChanges();
+
+        assertTooltipRows(fixture, [
+          ['', 'Row 1', '1000', '10', jasmine.any(String)],
+          ['', 'Row 3', '3', '10,000', jasmine.any(String)],
+          ['', 'Row 2', '-500', '1,000', jasmine.any(String)],
+        ]);
+      }));
+
+      it('sorts by nearest to the cursor', fakeAsync(() => {
+        store.overrideSelector(
+          selectors.getMetricsTooltipSort,
+          TooltipSort.NEAREST
+        );
+        store.overrideSelector(selectors.getMetricsScalarSmoothing, 0);
+        const fixture = createComponent('card1');
+        setTooltipData(fixture, [
+          buildTooltipDatum(
+            {
+              id: 'row1',
+              type: SeriesType.ORIGINAL,
+              displayName: 'Row 1',
+              visible: true,
+              color: '#f00',
+              aux: false,
+            },
+            {
+              x: 0,
+              step: 0,
+              y: 1000,
+              value: 1000,
+              wallTime: new Date('2020-01-01').getTime(),
+            }
+          ),
+          buildTooltipDatum(
+            {
+              id: 'row2',
+              type: SeriesType.ORIGINAL,
+              displayName: 'Row 2',
+              visible: true,
+              color: '#0f0',
+              aux: false,
+            },
+            {
+              x: 1000,
+              step: 1000,
+              y: -500,
+              value: -500,
+              wallTime: new Date('2020-12-31').getTime(),
+            }
+          ),
+          buildTooltipDatum(
+            {
+              id: 'row3',
+              type: SeriesType.ORIGINAL,
+              displayName: 'Row 3',
+              visible: true,
+              color: '#00f',
+              aux: false,
+            },
+            {
+              x: 10000,
+              step: 10000,
+              y: 3,
+              value: 3,
+              wallTime: new Date('2021-01-01').getTime(),
+            }
+          ),
+        ]);
+        setCursorLocation(fixture, {x: 500, y: -100});
+        fixture.detectChanges();
+        assertTooltipRows(fixture, [
+          ['', 'Row 2', '-500', '1,000', jasmine.any(String)],
+          ['', 'Row 1', '1000', '0', jasmine.any(String)],
+          ['', 'Row 3', '3', '10,000', jasmine.any(String)],
+        ]);
+
+        setCursorLocation(fixture, {x: 500, y: 600});
+        fixture.detectChanges();
+        assertTooltipRows(fixture, [
+          ['', 'Row 1', '1000', '0', jasmine.any(String)],
+          ['', 'Row 2', '-500', '1,000', jasmine.any(String)],
+          ['', 'Row 3', '3', '10,000', jasmine.any(String)],
+        ]);
+
+        setCursorLocation(fixture, {x: 10000, y: -100});
+        fixture.detectChanges();
+        assertTooltipRows(fixture, [
+          ['', 'Row 3', '3', '10,000', jasmine.any(String)],
+          ['', 'Row 2', '-500', '1,000', jasmine.any(String)],
+          ['', 'Row 1', '1000', '0', jasmine.any(String)],
+        ]);
+
+        // Right between row 1 and row 2. When tied, original order is used.
+        setCursorLocation(fixture, {x: 500, y: 250});
+        fixture.detectChanges();
+        assertTooltipRows(fixture, [
+          ['', 'Row 1', '1000', '0', jasmine.any(String)],
+          ['', 'Row 2', '-500', '1,000', jasmine.any(String)],
+          ['', 'Row 3', '3', '10,000', jasmine.any(String)],
         ]);
       }));
     });
