@@ -137,7 +137,7 @@ function areSeriesEqual(
       [tooltipSort]="tooltipSort$ | async"
       [ignoreOutliers]="ignoreOutliers$ | async"
       [xAxisType]="xAxisType$ | async"
-      [newXAxisType]="newXAxisType$ | async"
+      [newXScaleType]="newXScaleType$ | async"
       [scalarSmoothing]="scalarSmoothing$ | async"
       [showFullSize]="showFullSize"
       [isPinned]="isPinned$ | async"
@@ -182,7 +182,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit {
   readonly tooltipSort$ = this.store.select(getMetricsTooltipSort);
   readonly ignoreOutliers$ = this.store.select(getMetricsIgnoreOutliers);
   readonly xAxisType$ = this.store.select(getMetricsXAxisType);
-  readonly newXAxisType$ = this.xAxisType$.pipe(
+  readonly newXScaleType$ = this.xAxisType$.pipe(
     map((xAxisType) => {
       switch (xAxisType) {
         case XAxisType.STEP:
@@ -300,26 +300,23 @@ export class ScalarCardContainer implements CardRenderer, OnInit {
         this.store.select(getMetricsScalarSmoothing),
         this.store.select(getMetricsXAxisType)
       ),
-      switchMap(([runsData, smoothing, xScaleType]) => {
+      switchMap(([runsData, smoothing, xAxisType]) => {
         const dataSeriesList = runsData.map(({runId, points}) => {
           points = points.map((point) => {
             // Convert wallTime in seconds to milliseconds.
             // TODO(stephanwlee): when the legacy line chart is removed, do the conversion at
             // the effects.
             const wallTime = point.wallTime * 1000;
-            const x = xScaleType === XAxisType.STEP ? point.x : wallTime;
+            const x = xAxisType === XAxisType.STEP ? point.x : wallTime;
             return {...point, x, wallTime};
           });
-          switch (xScaleType) {
-            case XAxisType.RELATIVE: {
-              if (!points[0]) break;
-              const firstPoint = points[0];
-              points = points.map((point) => ({
-                ...point,
-                x: point.x - firstPoint.x,
-              }));
-              break;
-            }
+
+          if (xAxisType === XAxisType.RELATIVE && points.length) {
+            const firstPoint = points[0];
+            points = points.map((point) => ({
+              ...point,
+              x: point.x - firstPoint.x,
+            }));
           }
           return {id: runId, points};
         });
