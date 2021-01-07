@@ -7,15 +7,6 @@ package(
 
 licenses(["notice"])
 
-filegroup(
-    name = "test_support_lib",
-    srcs = [
-        ":rxjs_shims.js",
-        "@npm//:node_modules/rxjs/dist/bundles/rxjs.umd.js",
-        "@npm//:node_modules/tslib/tslib.js",
-    ],
-)
-
 tf_ts_library(
     name = "initialize_testbed",
     srcs = [

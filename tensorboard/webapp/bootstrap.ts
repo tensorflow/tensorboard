@@ -20,6 +20,13 @@ import {AppModule} from './app_module';
 // Bootstrap needs to happen after body is ready but we cannot reliably
 // controls the order in which script gets loaded (Vulcanization inlines
 // the script in <head>).
-window.addEventListener('DOMContentLoaded', () => {
+if (
+  document.readyState === 'interactive' ||
+  document.readyState === 'complete'
+) {
   platformBrowser().bootstrapModule(AppModule);
-});
+} else {
+  window.addEventListener('DOMContentLoaded', () => {
+    platformBrowser().bootstrapModule(AppModule);
+  });
+}

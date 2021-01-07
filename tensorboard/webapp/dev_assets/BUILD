@@ -6,7 +6,7 @@
 # //tensorboard/webapp:index.html, we had to create the dev_assets version in
 # a different package. Once we can get rid of zip asset provider and a way to
 # alias asset, we would not need the enitrely different Bazel package.
-load("//tensorboard/defs:defs.bzl", "tf_js_binary", "tf_ng_module")
+load("//tensorboard/defs:defs.bzl", "tf_dev_js_binary", "tf_ng_module")
 load("//tensorboard/defs:web.bzl", "tf_web_library")
 
 package(default_visibility = ["//tensorboard:__pkg__"])
@@ -24,20 +24,11 @@ tf_ng_module(
     ],
 )
 
-tf_js_binary(
+tf_dev_js_binary(
     name = "tb_webapp_binary",
-    compile = 1,
     entry_point = "main_dev.ts",
     deps = [
         ":ng_main",
-        "//tensorboard/webapp/angular:expect_angular_material_tabs",
-        "//tensorboard/webapp/angular:expect_angular_material_toolbar",
-        "@npm//@angular/common",
-        "@npm//@angular/core",
-        "@npm//@angular/platform-browser",
-        "@npm//@ngrx/store",
-        "@npm//rxjs",
-        "@npm//zone.js",
     ],
 )
 
