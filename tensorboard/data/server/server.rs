@@ -61,7 +61,7 @@ impl TensorBoardDataProvider for DataProviderHandler {
                 .map_err(|_| Status::internal(format!("failed to read run data for {:?}", run)))?;
             for time_series in data.scalars.values() {
                 let metadata: &pb::SummaryMetadata = time_series.metadata.as_ref();
-                let plugin_name = match &metadata.plugin_data.as_ref() {
+                let plugin_name = match &metadata.plugin_data {
                     Some(d) => d.plugin_name.clone(),
                     None => String::new(),
                 };
@@ -406,15 +406,18 @@ mod tests {
         let req = Request::new(data::ListPluginsRequest {
             experiment_id: "123".to_string(),
         });
-        let res = handler.list_plugins(req).await.unwrap().into_inner();
-        assert_eq!(
-            res.plugins
-                .into_iter()
-                .map(|p| p.name)
-                .collect::<Vec<_>>()
-                .sort(),
-            vec!["custom_scalars", "scalars"].sort()
-        );
+        let listed_plugins = handler
+            .list_plugins(req)
+            .await
+            .unwrap()
+            .into_inner()
+            .plugins
+            .into_iter()
+            .map(|p| p.name)
+            .collect::<Vec<_>>()
+            .sort();
+        let expected_plugins = vec!["custom_scalars", "scalars"].sort();
+        assert_eq!(listed_plugins, expected_plugins);
     }
 
     #[tokio::test]
@@ -425,13 +428,9 @@ mod tests {
             experiment_id: "123".to_string(),
         });
         let res = handler.list_plugins(req).await.unwrap().into_inner();
-        let expected: Vec<String> = vec![];
         assert_eq!(
-            res.plugins
-                .into_iter()
-                .map(|p| p.name)
-                .collect::<Vec<String>>(),
-            expected
+            res.plugins.into_iter().map(|p| p.name).collect::<Vec<_>>(),
+            Vec::<String>::new()
         );
     }
 
