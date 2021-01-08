@@ -62,12 +62,6 @@ def _tf_dev_js_binary_impl(ctx):
 
     file_list = files.to_list()
 
-    ctx.actions.write(
-        output = ctx.outputs.manifest,
-        content = "\n".join([file.path for file in file_list]),
-        is_executable = False,
-    )
-
     concat_command = """
         output="$1" && shift
         entry_point="$1" && shift
@@ -142,7 +136,6 @@ tf_dev_js_binary = rule(
     },
     outputs = {
         "js": "%{name}.js",
-        "manifest": "%{name}.MF",
     },
     doc = """`tf_dev_js_binary` is a development only js_binary replacement that simply
     contenates modules using UMD/requirejs.""",
