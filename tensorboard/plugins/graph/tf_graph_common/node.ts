@@ -15,7 +15,7 @@ limitations under the License.
 import * as d3 from 'd3';
 import * as _ from 'lodash';
 
-import {Class, selectChild, selectOrCreateChild} from './common';
+import {Class, FontSizeInPx, selectChild, selectOrCreateChild} from './common';
 import * as tf_graph_common from './common';
 import * as contextmenu from './contextmenu';
 import * as edge from './edge';
@@ -432,9 +432,21 @@ function labelBuild(
   // duplicated in styles, we are rounding it to 8px which does not cause any visible
   // jank.
   let fontSize = 8;
+
+  switch (renderNodeInfo.node.type) {
+    case NodeType.META:
+      fontSize = renderNodeInfo.expanded
+        ? FontSizeInPx.Node.EXPANDED_LABEL
+        : FontSizeInPx.Node.SERIES_LABEL;
+      break;
+    case NodeType.OP:
+      fontSize = FontSizeInPx.Node.OP_LABEL;
+      break;
+  }
+
   if (useFontScale) {
     if (text.length > sceneElement.maxMetanodeLabelLength) {
-      text = text.substr(0, sceneElement.maxMetanodeLabelLength - 2) + '...';
+      text = text.substr(0, sceneElement.maxMetanodeLabelLength - 2) + '…';
     }
     let scale = getLabelFontScale(sceneElement);
     label.attr('font-size', scale(text.length) + 'px');
@@ -1399,7 +1411,7 @@ function addAnnotationLabel(
     .attr('dy', '.35em')
     .attr('text-anchor', a.isIn ? 'end' : 'start')
     .text(label);
-  return enforceLabelWidth(txtElement, -1, 8);
+  return enforceLabelWidth(txtElement, -1, FontSizeInPx.Annotation.LABEL);
 }
 function addInteractionForAnnotation(
   selection,

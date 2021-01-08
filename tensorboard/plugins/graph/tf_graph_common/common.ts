@@ -88,6 +88,22 @@ export let Class = {
   ELLIPSISNODE: 'ellipsis',
 };
 
+// Please keep this in sync with tf-graph-scene.html.ts.
+export const FontSizeInPx: Record<string, Record<string, number>> = {
+  Edge: {
+    LABEL: 3.5,
+  },
+  Annotation: {
+    LABEL: 5,
+  },
+  Node: {
+    EXPANDED_LABEL: 9,
+    SERIES_LABEL: 8,
+    OP_LABEL: 6,
+    HEALTH_PILL_STAT_LABEL: 4,
+  },
+};
+
 export const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
 
 /**

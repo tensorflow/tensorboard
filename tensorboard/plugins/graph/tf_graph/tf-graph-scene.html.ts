@@ -14,6 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import {html} from '@polymer/polymer';
 
+// Please keep node font-size/classnames in sync with tf-graph-common/common.ts
 export const template = html`
   <style>
     :host {

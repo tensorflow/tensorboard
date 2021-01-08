@@ -346,7 +346,7 @@ export function maybeTruncateString(
   let start = 0;
   let end = text.length;
   while (start < end) {
-    const middle = Math.round(start + (end - start) / 2);
+    const middle = start + Math.round((end - start) / 2);
     const substring = text.slice(0, middle) + '…';
     if (measureTextWidth(substring, fontSize) <= maxWidth) {
       start = middle;
