@@ -49,14 +49,15 @@ def audio(
         be this name prefixed by any active name scopes.
       data: A `Tensor` representing audio data with shape `[k, t, c]`,
         where `k` is the number of audio clips, `t` is the number of
-        frames, and `c` is the number of channels. Elements should be
-        floating-point values in `[-1.0, 1.0]`. Any of the dimensions may
-        be statically unknown (i.e., `None`).
+        frames, and `c` is the number of channels. To pass batches of data where
+        the frame count is variable, use the `lengths` parameter. Elements
+        should be floating-point values in `[-1.0, 1.0]`. Any of the dimensions
+        may be statically unknown (i.e., `None`).
       sample_rate: An `int` or rank-0 `int32` `Tensor` that represents the
         sample rate, in Hz. Must be positive.
       step: Explicit `int64`-castable monotonic step value for this summary. If
-        omitted, this defaults to `tf.summary.experimental.get_step()`, which must
-        not be None.
+        omitted, this defaults to `tf.summary.experimental.get_step()`, which
+        must not be None.
       max_outputs: Optional `int` or rank-0 integer `Tensor`. At most this
         many audio clips will be emitted at each step. When more than
         `max_outputs` many clips are provided, the first `max_outputs`
@@ -67,8 +68,10 @@ def audio(
       description: Optional long-form description for this summary, as a
         constant `str`. Markdown is supported. Defaults to empty.
       lengths: Optional lengths `Tensor`, shaped `[k]`, where each entry
-        indicates the length of the k'th example in frames. k may be statically
-        unknown (i.e., `None`).
+        indicates the length of the k'th example in frames. Useful when `data`
+        should be interpreted as ragged rather than fixed-length; each example
+        will be truncated accordingly prior to audio encoding. k may be
+        statically unknown (i.e., `None`).
 
     Returns:
       True on success, or false if no summary was emitted because no default
