@@ -96,7 +96,7 @@ def tf_ng_web_test_suite(runtime_deps = [], bootstrap = [], deps = [], **kwargs)
             "//tensorboard/webapp/testing:initialize_testbed",
         ],
         deps = deps + [
-            "//tensorboard/webapp/testing:test_support_lib",
+            "//tensorboard/defs/internal:common_umd_lib",
         ],
         # Lodash runtime dependency that is compatible with requirejs for karma.
         static_files = [
