@@ -26,16 +26,20 @@ import {LineChartGridView} from './line_chart_grid_view';
   template: `
     <line-chart-grid-view
       [viewExtent]="viewBox"
-      [xScale]="scale"
+      [xScale]="xScale"
       [xGridCount]="10"
-      [yScale]="scale"
+      [yScale]="yScale"
       [yGridCount]="5"
       [domDim]="domDim"
     ></line-chart-grid-view>
   `,
 })
 class TestableComponent {
-  scale = createScale(ScaleType.LINEAR);
+  @Input()
+  xScale = createScale(ScaleType.LINEAR);
+
+  @Input()
+  yScale = createScale(ScaleType.LINEAR);
 
   @Input()
   viewBox: Extent = {
@@ -61,24 +65,23 @@ describe('line_chart_v2/sub_view/grid test', () => {
     }).compileComponents();
   });
 
+  // Do note that the coordinates are rounded to the nearest decimals and expectedLines
+  // should only have integers.
   function assertLines(
     debugElements: DebugElement[],
     expectedLines: Array<{x1: number; y1: number; x2: number; y2: number}>
   ) {
     expect(debugElements.length).toBe(expectedLines.length);
-    for (const [index, el] of debugElements.entries()) {
-      expect({
-        x1: el.attributes['x1'],
-        y1: el.attributes['y1'],
-        x2: el.attributes['x2'],
-        y2: el.attributes['y2'],
-      }).toEqual({
-        x1: String(expectedLines[index].x1),
-        y1: String(expectedLines[index].y1),
-        x2: String(expectedLines[index].x2),
-        y2: String(expectedLines[index].y2),
-      });
-    }
+    const actuals = debugElements.map((el) => {
+      return {
+        x1: Math.round(Number(el.attributes['x1'])),
+        y1: Math.round(Number(el.attributes['y1'])),
+        x2: Math.round(Number(el.attributes['x2'])),
+        y2: Math.round(Number(el.attributes['y2'])),
+      };
+    });
+
+    expect(actuals).toEqual(expectedLines);
   }
 
   it('renders grid lines', () => {
@@ -130,6 +133,25 @@ describe('line_chart_v2/sub_view/grid test', () => {
       {x1: 50, y1: 0, x2: 50, y2: 50},
       {x1: 100, y1: 0, x2: 100, y2: 50},
       {x1: 0, y1: 25, x2: 100, y2: 25},
+    ]);
+  });
+
+  it('supports different x and y scales', () => {
+    const fixture = TestBed.createComponent(TestableComponent);
+    fixture.componentInstance.xScale = createScale(ScaleType.LOG10);
+    fixture.componentInstance.yScale = createScale(ScaleType.LINEAR);
+    fixture.componentInstance.viewBox = {
+      x: [1, 1000],
+      y: [1, 1000],
+    };
+    fixture.componentInstance.domDim = {width: 100, height: 100};
+    fixture.detectChanges();
+
+    assertLines(fixture.debugElement.queryAll(ByCss.GRID_LINE), [
+      {x1: 0, y1: 0, x2: 0, y2: 100},
+      {x1: 67, y1: 0, x2: 67, y2: 100},
+      {x1: 0, y1: 50, x2: 100, y2: 50},
+      {x1: 0, y1: 0, x2: 100, y2: 0},
     ]);
   });
 });

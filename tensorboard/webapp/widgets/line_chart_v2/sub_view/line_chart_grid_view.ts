@@ -93,7 +93,7 @@ export class LineChartGridView {
   }
 
   getDomY(dataY: number): number {
-    return this.xScale.forward(
+    return this.yScale.forward(
       this.viewExtent.y,
       getScaleRangeFromDomDim(this.domDim, 'y'),
       dataY
@@ -108,7 +108,7 @@ export class LineChartGridView {
   }
 
   getYTicks() {
-    return this.xScale.ticks(
+    return this.yScale.ticks(
       this.viewExtent.y,
       getDomSizeInformedTickCount(this.domDim.height, this.yGridCount)
     );
