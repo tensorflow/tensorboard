@@ -87,6 +87,7 @@ export enum PluginLoadState {
       }
       .plugins ::ng-deep iframe {
         border: 0;
+        display: block;
         height: 100%;
         width: 100%;
       }

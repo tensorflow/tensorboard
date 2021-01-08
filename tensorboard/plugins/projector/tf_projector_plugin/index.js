@@ -19,6 +19,7 @@ html,
 body,
 iframe {
   border: 0;
+  display: block;
   height: 100%;
   margin: 0;
   width: 100%;
