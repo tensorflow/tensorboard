@@ -392,10 +392,14 @@ mod tests {
 
     #[tokio::test]
     async fn test_list_plugins_multiple_timeseries_different_types() {
-        let mut custom_metadata = pb::SummaryMetadata::default();
-        let mut plugin_data = pb::summary_metadata::PluginData::default();
-        plugin_data.plugin_name = "custom_scalars".to_string();
-        custom_metadata.plugin_data = Some(plugin_data);
+        let plugin_data = pb::summary_metadata::PluginData {
+            plugin_name: "custom_scalars".to_string(),
+            ..Default::default()
+        };
+        let custom_metadata = pb::SummaryMetadata {
+            plugin_data: Some(plugin_data),
+            ..Default::default()
+        };
         let commit = CommitBuilder::new()
             .scalars("train", "xent2", |b| b.build())
             .scalars("train", "xent", |mut b| {
@@ -406,7 +410,7 @@ mod tests {
         let req = Request::new(data::ListPluginsRequest {
             experiment_id: "123".to_string(),
         });
-        let listed_plugins = handler
+        let mut listed_plugins = handler
             .list_plugins(req)
             .await
             .unwrap()
@@ -414,9 +418,10 @@ mod tests {
             .plugins
             .into_iter()
             .map(|p| p.name)
-            .collect::<Vec<_>>()
-            .sort();
-        let expected_plugins = vec!["custom_scalars", "scalars"].sort();
+            .collect::<Vec<_>>();
+        let mut expected_plugins = vec!["custom_scalars", "scalars"];
+        listed_plugins.sort_unstable();
+        expected_plugins.sort_unstable();
         assert_eq!(listed_plugins, expected_plugins);
     }
 
