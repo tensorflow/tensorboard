@@ -341,6 +341,7 @@ export function maybeTruncateString(
   fontSize: number,
   maxWidth: number
 ): string {
+  if (!text) return '';
   if (measureTextWidth(text, fontSize) <= maxWidth) return text;
 
   let start = 0;
