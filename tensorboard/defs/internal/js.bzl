@@ -32,7 +32,15 @@ def _tf_dev_js_binary_impl(ctx):
         module_name = ctx.attr._anonymous_umd_deps[target]
         named_file = ctx.actions.declare_file(file.path + ".named_umd.js")
 
-        # Patch anonymous umd modules to have named in their declarations.
+        # Patch anonymous umd modules to have named in their declarations. For instance,
+        # it converts `define(['exports'], ...` to `define('d3', ['exports'], ...`.
+        # `define`'s argument behaves differently based on arity. For instance:
+        # 1: expects the argument to be a factory function to be invoked. Anonymous and
+        #    no dependency.
+        # 2: expects an array then a function. First arguments define dependencies to be
+        #    injected itno the factory. Anonymous with dependencies.
+        # 3: expects string, an array, then, a function. First argument is name of the
+        #    module. Named module with deps.
         ctx.actions.expand_template(
             template = file,
             output = named_file,
