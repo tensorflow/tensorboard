@@ -13,6 +13,7 @@
 # limitations under the License.
 """JavaScript related TensorBoard build rules."""
 
+load("@bazel_skylib//lib:paths.bzl", "paths")
 load("@build_bazel_rules_nodejs//:providers.bzl", "JSNamedModuleInfo", "NpmPackageInfo", "node_modules_aspect")
 
 def _tf_dev_js_binary_impl(ctx):
@@ -93,7 +94,7 @@ def _tf_dev_js_binary_impl(ctx):
     )
 
 def _get_module_name(ctx, entry_point_file):
-    path_without_ext = entry_point_file.short_path[:-len(entry_point_file.extension) - 1]
+    path_without_ext = paths.replace_extension(entry_point_file.short_path, "")
     return ctx.workspace_name + "/" + path_without_ext
 
 tf_dev_js_binary = rule(
