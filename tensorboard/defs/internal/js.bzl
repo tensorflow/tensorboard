@@ -23,8 +23,9 @@ def _tf_dev_js_binary_impl(ctx):
         if JSNamedModuleInfo in dep:
             # Collect UMD modules compiled by tf_ts_library
             files_depsets.append(dep[JSNamedModuleInfo].sources)
-        elif not NpmPackageInfo in dep and hasattr(dep, "files"):
-            # Collect Bazel's File or UMD modules from a MPM package
+        elif NpmPackageInfo not in dep and hasattr(dep, "files"):
+            # Collect manually specified files or File from npm dependencies. It omits
+            # package.json (i.e., ones in `NpmPackageInfo`).
             files_depsets.append(dep.files)
 
     for target in ctx.attr._anonymous_umd_deps:
@@ -38,7 +39,7 @@ def _tf_dev_js_binary_impl(ctx):
         # 1: expects the argument to be a factory function to be invoked. Anonymous and
         #    no dependency.
         # 2: expects an array then a function. First arguments define dependencies to be
-        #    injected itno the factory. Anonymous with dependencies.
+        #    injected into the factory. Anonymous with dependencies.
         # 3: expects string, an array, then, a function. First argument is name of the
         #    module. Named module with deps.
         ctx.actions.expand_template(
@@ -58,41 +59,42 @@ def _tf_dev_js_binary_impl(ctx):
 
     files = depset(transitive = files_depsets)
 
-    # files can contain package.json that is not even runnable under require.js. Prune it
-    # out.
-    js_files = [
-        f
-        for f in files.to_list()
-        if f.path.endswith(".js")
-    ]
+    file_list = files.to_list()
 
     ctx.actions.write(
         output = ctx.outputs.manifest,
-        content = "\n".join([file.path for file in js_files]),
+        content = "\n".join([file.path for file in file_list]),
         is_executable = False,
     )
 
-    entry_point_module_name = ctx.workspace_name + "/" + _remove_ext(ctx.file.entry_point.short_path)
+    concat_command = """
+        output="$1" && shift
+        entry_point="$1" && shift
+        {
+            awk 'BEGINFILE { print "// file: " FILENAME } { print }' "$@"
+            printf ';require(["%s"]);\n' "${entry_point}"
+        } >"${output}"
+    """
 
-    concat_command = ";".join(
-        [
-            "awk 'BEGINFILE {print \"// file: \"FILENAME}{print}' * " + " ".join([file.path for file in js_files]) + " >" + ctx.outputs.js.path,
-            # `require` the entry module name so it is evaluated.
-            "echo ';require([\"%s\"]);' >>" % entry_point_module_name + ctx.outputs.js.path,
-        ],
+    entry_point_module_name = _get_module_name(ctx, ctx.file.entry_point)
+
+    concat_args = (
+        [ctx.outputs.js.path, entry_point_module_name] +
+        [file.path for file in file_list]
     )
 
     ctx.actions.run_shell(
         mnemonic = "ConcatJs",
         progress_message = "concatenating JavaScript files from dependencies",
-        inputs = js_files,
+        inputs = file_list,
         outputs = [ctx.outputs.js],
         command = concat_command,
+        arguments = concat_args,
     )
 
-def _remove_ext(path):
-    ext_ind = path.rfind(".")
-    return path[:ext_ind]
+def _get_module_name(ctx, entry_point_file):
+    path_without_ext = entry_point_file.short_path[:-len(entry_point_file.extension) - 1]
+    return ctx.workspace_name + "/" + path_without_ext
 
 tf_dev_js_binary = rule(
     _tf_dev_js_binary_impl,
