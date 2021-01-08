@@ -249,9 +249,13 @@ class TfGraph extends LegacyElementMixin(PolymerElement) {
     );
   }
   _buildRenderHierarchy(graphHierarchy) {
-    tf_graph_util.time(
+    // Certain Polymer property setter are dynamically generated and is not properly
+    // typed.
+    const anyThis = this as any;
+
+    const renderGraph = tf_graph_util.time(
       'new tf_graph_render.Hierarchy',
-      function () {
+       () => {
         if (graphHierarchy.root.type !== tf_graph.NodeType.META) {
           // root must be metanode but sometimes Polymer's dom-if has not
           // remove tf-graph element yet in <tf-node-info>
@@ -276,7 +280,7 @@ class TfGraph extends LegacyElementMixin(PolymerElement) {
             endColor: scale.range()[1],
           };
         }
-        this._setColorByParams({
+        anyThis._setColorByParams({
           compute_time: getColorParamsFromScale(
             renderGraph.computeTimeScale as any
           ),
@@ -298,12 +302,12 @@ class TfGraph extends LegacyElementMixin(PolymerElement) {
             };
           }),
         });
-        this._setRenderHierarchy(renderGraph);
-        this.async(function () {
-          this.fire('rendered');
-        });
-      }.bind(this)
+
+        return renderGraph;
+      }
     );
+
+    anyThis._setRenderHierarchy(renderGraph);
   }
   _getVisible(name) {
     if (!name) {
