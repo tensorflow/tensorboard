@@ -42,7 +42,10 @@ describe('Npmi Container', () => {
   });
 
   it('renders npmi component initially with inactive component', () => {
-    store.overrideSelector(getCurrentRouteRunSelection, new Map());
+    store.overrideSelector(
+      getCurrentRouteRunSelection,
+      new Map<string, boolean>()
+    );
     const fixture = TestBed.createComponent(NpmiContainer);
     fixture.detectChanges();
 

@@ -76,7 +76,7 @@ export class TfDomRepeat<T extends {}> extends ArrayUpdateHelper {
    * removed when LRU grows more than size of the 2x_limit.
    */
   @property({type: Object})
-  _lruCachedItems = new Map();
+  _lruCachedItems = new Map<any, any>();
 
   @property({type: Number})
   _cacheSize = 10;

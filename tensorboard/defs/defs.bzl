@@ -66,6 +66,9 @@ def tf_ts_library(strict_checks = True, **kwargs):
         tsconfig = "//:tsconfig-test"
     kwargs.setdefault("deps", []).append("@npm//tslib")
 
+    if strict_checks:
+        kwargs.setdefault("deps", []).append("//tensorboard/defs:strict_types")
+
     ts_library(tsconfig = tsconfig, supports_workers = True, **kwargs)
 
 def tf_ts_devserver(**kwargs):

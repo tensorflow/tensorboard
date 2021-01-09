@@ -159,7 +159,7 @@ class TfHparamsTableView extends LegacyElementMixin(PolymerElement) {
     (this.$.sessionGroupsTable as any).set('detailsOpenedItems', []);
     PolymerDom.flush();
     // Index sessionGroups by name.
-    const sessionGroupsByName = new Map();
+    const sessionGroupsByName = new Map<string, any>();
     this.sessionGroups.forEach((sg: any) => {
       sessionGroupsByName.set(sg.name, sg);
     });

@@ -44,7 +44,7 @@ export class TextV2ServerDataSource implements TextV2DataSource {
       .get<BackendRunToTagsMap>(this.httpPathPrefix + '/tags')
       .pipe(
         map((runToTagObject) => {
-          const runToTag = new Map();
+          const runToTag = new Map<string, string[]>();
           Object.entries(runToTagObject).forEach(([runName, tags]) => {
             runToTag.set(runName, tags);
           });

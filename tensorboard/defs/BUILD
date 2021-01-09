@@ -1,5 +1,6 @@
 load("//tensorboard/defs:protos.bzl", "tb_proto_library")
 load("@build_bazel_rules_nodejs//:index.bzl", "nodejs_binary")
+load("@npm//@bazel/typescript:index.bzl", "ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
@@ -34,7 +35,14 @@ tb_proto_library(
     ],
 )
 
-exports_files(["rollup_config.js"])
+exports_files([
+    "rollup_config.js",
+])
+
+ts_library(
+    name = "strict_types",
+    srcs = ["strict_type_check.d.ts"],
+)
 
 # Custom ts_library compiler that runs tsc_wrapped with angular/compiler-cli statically linked
 # This can be used with worker mode because we don't need the linker at runtime to make

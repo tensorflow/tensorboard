@@ -61,7 +61,10 @@ describe('Npmi Main Container', () => {
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
-    store.overrideSelector(getCurrentRouteRunSelection, new Map());
+    store.overrideSelector(
+      getCurrentRouteRunSelection,
+      new Map<string, boolean>()
+    );
 
     dispatchedActions = [];
     spyOn(store, 'dispatch').and.callFake((action: Action) => {
@@ -70,7 +73,10 @@ describe('Npmi Main Container', () => {
   });
 
   it('renders npmi main component without runs', () => {
-    store.overrideSelector(getCurrentRouteRunSelection, new Map());
+    store.overrideSelector(
+      getCurrentRouteRunSelection,
+      new Map<string, boolean>()
+    );
     const fixture = TestBed.createComponent(MainContainer);
     fixture.detectChanges();
 

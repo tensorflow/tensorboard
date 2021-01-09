@@ -13,13 +13,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+import {StepDatum} from '../data_source';
 import {TextState, TEXT_FEATURE_KEY} from './text_types';
 
-export function buildTextState(override: Partial<TextState>) {
+type RunId = string;
+type TagId = string;
+
+export function buildTextState(override: Partial<TextState>): TextState {
   return {
-    runToTags: new Map(),
-    data: new Map(),
-    visibleRunTags: new Map(),
+    runToTags: new Map<RunId, TagId[]>(),
+    data: new Map<RunId, Map<TagId, StepDatum[]>>(),
+    visibleRunTags: new Map<string, Array<{run: string; tag: string}>>(),
     ...override,
   };
 }

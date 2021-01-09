@@ -151,7 +151,7 @@ export function categorizeTags(
 }
 
 function createTagToRuns(runToTag: RunToTag): Map<string, string[]> {
-  const tagToRun = new Map();
+  const tagToRun = new Map<string, string[]>();
   Object.keys(runToTag).forEach((run) => {
     runToTag[run].forEach((tag) => {
       const runs = tagToRun.get(tag) || [];

@@ -54,7 +54,10 @@ describe('Npmi Results Download', () => {
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
-    store.overrideSelector(selectors.getCurrentRouteRunSelection, new Map());
+    store.overrideSelector(
+      selectors.getCurrentRouteRunSelection,
+      new Map<string, boolean>()
+    );
   });
 
   it('renders disabled button when no annotations are flagged', () => {

@@ -49,7 +49,7 @@ const dataInitialState: RunsDataState = {
   runMetadata: {},
   runsLoadState: {},
   hparamAndMetricSpec: {},
-  selectionState: new Map(),
+  selectionState: new Map<string, Map<string, boolean>>(),
 };
 
 const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
@@ -101,7 +101,7 @@ const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
 
     const eidsBasedKey = serializeExperimentIds(action.experimentIds);
     if (!nextSelectionState.has(eidsBasedKey)) {
-      const selectionMap = new Map();
+      const selectionMap = new Map<string, boolean>();
       const runSelected =
         action.runsForAllExperiments.length <=
         MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT;
@@ -371,8 +371,8 @@ const uiReducer: ActionReducer<RunsUiState, Action> = createReducer(
       return state;
     }
 
-    const newHparamFilters = new Map();
-    const newMetricFilters = new Map();
+    const newHparamFilters = new Map<string, DiscreteFilter | IntervalFilter>();
+    const newMetricFilters = new Map<string, IntervalFilter>();
 
     const discreteHparams = new Map<string, Set<DiscreteHparamValue>>();
     const intervalHparams = new Map<
@@ -438,7 +438,7 @@ const uiReducer: ActionReducer<RunsUiState, Action> = createReducer(
         includeUndefined: true,
         possibleValues: [...values],
         filterValues: [...values],
-      });
+      } as DiscreteFilter);
     }
 
     for (const [name, {minValue, maxValue}] of intervalHparams) {
@@ -449,7 +449,7 @@ const uiReducer: ActionReducer<RunsUiState, Action> = createReducer(
         maxValue,
         filterLowerValue: minValue,
         filterUpperValue: maxValue,
-      });
+      } as IntervalFilter);
     }
 
     for (const metricTag of metricTags) {
