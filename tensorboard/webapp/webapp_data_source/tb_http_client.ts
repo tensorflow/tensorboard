@@ -18,6 +18,8 @@ import {Store} from '@ngrx/store';
 import {Observable} from 'rxjs';
 import {filter, mergeMap, take, withLatestFrom} from 'rxjs/operators';
 
+import {AppRootProvider} from '../app_routing/app_root';
+
 // Intentionally import directly from feature_flag/, not the hourglass
 // AppState/selectors. AppState depends on code from feature directories that
 // use TBHttpClient themselves, so we avoid a possible circular dependency.
@@ -48,15 +50,23 @@ function convertFormDataToObject(formData: FormData) {
 @Injectable()
 export class TBHttpClient implements TBHttpClientInterface {
   constructor(
+    private readonly appRootProvider: AppRootProvider,
     private readonly http: HttpClient,
     private readonly store: Store<State>
   ) {}
+
+  private resolveAppRoot(path: string): string {
+    if (path.startsWith('/')) {
+      return this.appRootProvider.getAbsPathnameWithAppRoot(path);
+    }
+    return path;
+  }
 
   get<ResponseType>(
     path: string,
     options: GetOptions = {}
   ): Observable<ResponseType> {
-    return this.http.get<ResponseType>(path, options);
+    return this.http.get<ResponseType>(this.resolveAppRoot(path), options);
   }
 
   post<ResponseType>(
@@ -69,16 +79,18 @@ export class TBHttpClient implements TBHttpClientInterface {
       take(1),
       withLatestFrom(this.store.select(getIsInColab)),
       mergeMap(([, isInColab]) => {
+        const resolvedPath = this.resolveAppRoot(path);
+
         // Google-internal Colab does not support HTTP POST requests, so we fall
         // back to HTTP GET (even though public Colab supports POST)
         // See b/72932164.
         if (isInColab) {
-          return this.http.get<ResponseType>(path, {
+          return this.http.get<ResponseType>(resolvedPath, {
             headers: options.headers,
             params: convertFormDataToObject(body),
           });
         } else {
-          return this.http.post<ResponseType>(path, body, options);
+          return this.http.post<ResponseType>(resolvedPath, body, options);
         }
       })
     );
@@ -89,13 +101,17 @@ export class TBHttpClient implements TBHttpClientInterface {
     body: any,
     options: PutOptions = {}
   ): Observable<ResponseType> {
-    return this.http.put<ResponseType>(path, body, options);
+    return this.http.put<ResponseType>(
+      this.resolveAppRoot(path),
+      body,
+      options
+    );
   }
 
   delete<ResponseType>(
     path: string,
     options: DeleteOptions = {}
   ): Observable<ResponseType> {
-    return this.http.delete<ResponseType>(path, options);
+    return this.http.delete<ResponseType>(this.resolveAppRoot(path), options);
   }
 }

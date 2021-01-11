@@ -1,4 +1,4 @@
-/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2021 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,12 +13,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {NgModule} from '@angular/core';
-import {HttpClientModule} from '@angular/common/http';
-import {AppRootModule} from '../app_routing/app_root_module';
-import {TBHttpClient} from './tb_http_client';
+
+import {AppRootProvider} from './app_root';
+import {LocationModule} from './location_module';
 
 @NgModule({
-  imports: [HttpClientModule, AppRootModule],
-  providers: [TBHttpClient],
+  imports: [LocationModule],
+  providers: [AppRootProvider],
 })
-export class TBHttpClientModule {}
+export class AppRootModule {}
