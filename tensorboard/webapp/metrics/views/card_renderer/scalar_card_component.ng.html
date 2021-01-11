@@ -83,34 +83,36 @@ limitations under the License.
     *ngIf="loadState === DataLoadState.LOADING"
   ></mat-spinner>
 
-  <line-chart
-    *ngIf="gpuLineChartEnabled; else legacyChart"
-    [preferredRendererType]="RendererType.WEBGL"
-    [seriesData]="dataSeries"
-    [seriesMetadataMap]="chartMetadataMap"
-    [xScaleType]="newXScaleType"
-    [yScaleType]="newYScaleType"
-    [customXFormatter]="xAxisType === XAxisType.RELATIVE ? relativeXFormatter : undefined"
-    [ignoreYOutliers]="ignoreOutliers"
-    [tooltipTemplate]="tooltip"
-  ></line-chart>
-
-  <ng-template #legacyChart>
-    <tb-line-chart
-      [colorScale]="runColorScale"
-      [seriesDataList]="seriesDataList"
-      [tooltipColumns]="tooltipColumns"
-      [tooltipSortingMethod]="tooltipSort"
+  <ng-container *ngIf="isEverVisible">
+    <line-chart
+      *ngIf="gpuLineChartEnabled; else legacyChart"
+      [preferredRendererType]="RendererType.WEBGL"
+      [seriesData]="dataSeries"
+      [seriesMetadataMap]="chartMetadataMap"
+      [xScaleType]="newXScaleType"
+      [yScaleType]="newYScaleType"
+      [customXFormatter]="xAxisType === XAxisType.RELATIVE ? relativeXFormatter : undefined"
       [ignoreYOutliers]="ignoreOutliers"
-      [xAxisType]="chartXAxisType()"
-      [smoothingEnabled]="scalarSmoothing > 0"
-      [smoothingWeight]="scalarSmoothing"
-      [yAxisType]="yAxisType"
-      detectResize
-      [resizeEventDebouncePeriodInMs]="RESIZE_REDRAW_DEBOUNCE_TIME_IN_MS"
-      (onResize)="redraw()"
-    ></tb-line-chart>
-  </ng-template>
+      [tooltipTemplate]="tooltip"
+    ></line-chart>
+
+    <ng-template #legacyChart>
+      <tb-line-chart
+        [colorScale]="runColorScale"
+        [seriesDataList]="seriesDataList"
+        [tooltipColumns]="tooltipColumns"
+        [tooltipSortingMethod]="tooltipSort"
+        [ignoreYOutliers]="ignoreOutliers"
+        [xAxisType]="chartXAxisType()"
+        [smoothingEnabled]="scalarSmoothing > 0"
+        [smoothingWeight]="scalarSmoothing"
+        [yAxisType]="yAxisType"
+        detectResize
+        [resizeEventDebouncePeriodInMs]="RESIZE_REDRAW_DEBOUNCE_TIME_IN_MS"
+        (onResize)="redraw()"
+      ></tb-line-chart>
+    </ng-template>
+  </ng-container>
 
   <ng-template
     #tooltip
