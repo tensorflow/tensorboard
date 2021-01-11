@@ -111,6 +111,7 @@ tf_dev_js_binary = rule(
         # before the `deps`.
         "_ambient_deps": attr.label_list(
             default = [
+                "@npm//:node_modules/requirejs/require.js",
                 ":common_umd_lib",
                 "@npm//:node_modules/reflect-metadata/Reflect.js",
                 "@npm//:node_modules/@angular/localize/bundles/localize-init.umd.js",
