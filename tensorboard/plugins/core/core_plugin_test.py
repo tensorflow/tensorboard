@@ -38,6 +38,9 @@ from tensorboard.plugins.core import core_plugin
 from tensorboard.util import test_util
 
 FAKE_INDEX_HTML = b"<!doctype html><title>fake-index</title>"
+FAKE_INDEX_JS = b"console.log('hello');"
+NO_CACHE_CONTROL_VALUE = "no-cache, must-revalidate"
+ONE_DAY_CACHE_CONTROL_VALUE = "private, max-age=86400"
 
 
 class FakeFlags(object):
@@ -374,6 +377,45 @@ class CorePluginTestBase(object):
             )
 
 
+class CorePluginResourceTEst(tf.test.TestCase):
+    def setUp(self):
+        super(CorePluginResourceTEst, self).setUp()
+        self.logdir = self.get_temp_dir()
+        self.multiplexer = event_multiplexer.EventMultiplexer()
+        provider = data_provider.MultiplexerDataProvider(
+            self.multiplexer, self.logdir
+        )
+        context = base_plugin.TBContext(
+            assets_zip_provider=get_test_assets_zip_provider(),
+            logdir=self.logdir,
+            data_provider=provider,
+        )
+        self.plugin = core_plugin.CorePlugin(context)
+        app = application.TensorBoardWSGI([self.plugin])
+        self.server = werkzeug_test.Client(app, wrappers.BaseResponse)
+
+    def test_js_no_cache(self):
+        response = self.server.get("/index.js?foo=bar")
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(
+            NO_CACHE_CONTROL_VALUE, response.headers.get("Cache-Control")
+        )
+
+    def test_js_cache(self):
+        response = self.server.get("/index.js?_file_hash=meow")
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(
+            ONE_DAY_CACHE_CONTROL_VALUE, response.headers.get("Cache-Control")
+        )
+
+    def test_html_no_cache(self):
+        response = self.server.get("/index.html?_file_hash=meow")
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(
+            NO_CACHE_CONTROL_VALUE, response.headers.get("Cache-Control")
+        )
+
+
 class CorePluginPathPrefixTest(tf.test.TestCase):
     def _send_request(self, path_prefix, pathname):
         multiplexer = event_multiplexer.EventMultiplexer()
@@ -451,6 +493,7 @@ def get_test_assets_zip_provider():
         memfile, mode="w", compression=zipfile.ZIP_DEFLATED
     ) as zf:
         zf.writestr("index.html", FAKE_INDEX_HTML)
+        zf.writestr("index.js", FAKE_INDEX_JS)
     return lambda: contextlib.closing(io.BytesIO(memfile.getvalue()))
 
 
