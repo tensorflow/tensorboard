@@ -25,6 +25,7 @@ use tonic::{Request, Response, Status};
 
 use crate::commit::{self, Commit};
 use crate::downsample;
+use crate::proto::tensorboard as pb;
 use crate::proto::tensorboard::data;
 use crate::types::{Run, Tag, WallTime};
 use data::tensor_board_data_provider_server::TensorBoardDataProvider;
@@ -51,10 +52,29 @@ impl TensorBoardDataProvider for DataProviderHandler {
         &self,
         _request: Request<data::ListPluginsRequest>,
     ) -> Result<Response<data::ListPluginsResponse>, Status> {
-        let mut res: data::ListPluginsResponse = Default::default();
-        res.plugins.push(data::Plugin {
-            name: "scalars".to_string(),
-        });
+        let runs = self.read_runs()?;
+        // Collect set of plugin names.
+        let mut plugin_names = HashSet::new();
+        for (run, data) in runs.iter() {
+            let data = data
+                .read()
+                .map_err(|_| Status::internal(format!("failed to read run data for {:?}", run)))?;
+            for time_series in data.scalars.values() {
+                let metadata: &pb::SummaryMetadata = time_series.metadata.as_ref();
+                let plugin_name = match &metadata.plugin_data {
+                    Some(d) => d.plugin_name.clone(),
+                    None => String::new(),
+                };
+                plugin_names.insert(plugin_name);
+            }
+        }
+        // Move out of set into a new ListPluginsResponse.
+        let res = data::ListPluginsResponse {
+            plugins: plugin_names
+                .into_iter()
+                .map(|name| data::Plugin { name })
+                .collect(),
+        };
         Ok(Response::new(res))
     }
 
@@ -350,6 +370,72 @@ mod tests {
         assert_eq!(
             res.plugins.into_iter().map(|p| p.name).collect::<Vec<_>>(),
             vec!["scalars"]
+        );
+    }
+
+    #[tokio::test]
+    async fn test_list_plugins_multiple_timeseries_same_type() {
+        let commit = CommitBuilder::new()
+            .scalars("train", "xent2", |b| b.build())
+            .scalars("train", "xent", |b| b.build())
+            .build();
+        let handler = sample_handler(commit);
+        let req = Request::new(data::ListPluginsRequest {
+            experiment_id: "123".to_string(),
+        });
+        let res = handler.list_plugins(req).await.unwrap().into_inner();
+        assert_eq!(
+            res.plugins.into_iter().map(|p| p.name).collect::<Vec<_>>(),
+            vec!["scalars"]
+        );
+    }
+
+    #[tokio::test]
+    async fn test_list_plugins_multiple_timeseries_different_types() {
+        let plugin_data = pb::summary_metadata::PluginData {
+            plugin_name: "custom_scalars".to_string(),
+            ..Default::default()
+        };
+        let custom_metadata = pb::SummaryMetadata {
+            plugin_data: Some(plugin_data),
+            ..Default::default()
+        };
+        let commit = CommitBuilder::new()
+            .scalars("train", "xent2", |b| b.build())
+            .scalars("train", "xent", |mut b| {
+                b.metadata(Some(Box::new(custom_metadata))).build()
+            })
+            .build();
+        let handler = sample_handler(commit);
+        let req = Request::new(data::ListPluginsRequest {
+            experiment_id: "123".to_string(),
+        });
+        let mut listed_plugins = handler
+            .list_plugins(req)
+            .await
+            .unwrap()
+            .into_inner()
+            .plugins
+            .into_iter()
+            .map(|p| p.name)
+            .collect::<Vec<_>>();
+        let mut expected_plugins = vec!["custom_scalars", "scalars"];
+        listed_plugins.sort_unstable();
+        expected_plugins.sort_unstable();
+        assert_eq!(listed_plugins, expected_plugins);
+    }
+
+    #[tokio::test]
+    async fn test_list_plugins_no_data() {
+        let commit = CommitBuilder::new().build();
+        let handler = sample_handler(commit);
+        let req = Request::new(data::ListPluginsRequest {
+            experiment_id: "123".to_string(),
+        });
+        let res = handler.list_plugins(req).await.unwrap().into_inner();
+        assert_eq!(
+            res.plugins.into_iter().map(|p| p.name).collect::<Vec<_>>(),
+            Vec::<String>::new()
         );
     }
 
