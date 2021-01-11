@@ -187,7 +187,7 @@ export const PARAMS = {
     /** X-space between each annotation-node and its label. */
     labelOffset: 2,
     /** Defines the max width for annotation label */
-    maxLabelWidth: 120,
+    maxLabelWidth: 40,
   },
   constant: {size: {width: 4, height: 4}},
   series: {

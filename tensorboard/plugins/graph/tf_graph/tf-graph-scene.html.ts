@@ -14,6 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import {html} from '@polymer/polymer';
 
+// Please keep node font-size/classnames in sync with tf-graph-common/common.ts
 export const template = html`
   <style>
     :host {
@@ -272,6 +273,11 @@ export const template = html`
     }
 
     /* --- Node label --- */
+
+    #root,
+    .node {
+      will-change: transform;
+    }
 
     .node > text.nodelabel {
       cursor: pointer;
