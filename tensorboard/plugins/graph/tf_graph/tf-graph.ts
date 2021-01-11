@@ -249,19 +249,20 @@ class TfGraph extends LegacyElementMixin(PolymerElement) {
     );
   }
   _buildRenderHierarchy(graphHierarchy) {
+    if (graphHierarchy.root.type !== tf_graph.NodeType.META) {
+      // root must be metanode but sometimes Polymer's dom-if has not
+      // remove tf-graph element yet in <tf-node-info>
+      // and thus mistakenly pass non-metanode to this module.
+      return;
+    }
+
     // Certain Polymer property setter are dynamically generated and is not properly
     // typed.
     const anyThis = this as any;
 
     const renderGraph = tf_graph_util.time(
       'new tf_graph_render.Hierarchy',
-       () => {
-        if (graphHierarchy.root.type !== tf_graph.NodeType.META) {
-          // root must be metanode but sometimes Polymer's dom-if has not
-          // remove tf-graph element yet in <tf-node-info>
-          // and thus mistakenly pass non-metanode to this module.
-          return;
-        }
+      () => {
         var renderGraph = new tf_graph_render.RenderGraphInfo(
           graphHierarchy,
           !!this.stats /** displayingStats */
