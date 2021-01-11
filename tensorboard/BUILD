@@ -317,6 +317,7 @@ tf_web_library(
         "//tensorboard/webapp/widgets/line_chart_v2/lib/worker:chart_worker.js",
     ],
     path = "/",
+    suppress = ["*"],
     deps = [
         "//tensorboard/webapp/widgets/source_code/monaco:monaco_editor",
         "//tensorboard/webapp/widgets/source_code/monaco:monaco_languages",

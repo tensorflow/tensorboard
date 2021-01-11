@@ -57,3 +57,8 @@ nodejs_binary(
     entry_point = "@npm//:node_modules/@bazel/typescript/internal/tsc_wrapped/tsc_wrapped.js",
     visibility = ["//tensorboard:__subpackages__"],
 )
+
+py_binary(
+    name = "res_digest_suffixer",
+    srcs = ["res_digest_suffixer.py"],
+)
