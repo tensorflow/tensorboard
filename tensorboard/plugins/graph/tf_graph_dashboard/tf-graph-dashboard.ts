@@ -69,105 +69,105 @@ class TfGraphDashboard extends LegacyElementMixin(PolymerElement) {
   static readonly template = html`
     <paper-dialog id="error-dialog" with-backdrop></paper-dialog>
     <tf-dashboard-layout>
-        <tf-graph-controls
-          id="controls"
-          class="sidebar"
-          slot="sidebar"
-          devices-for-stats="{{_devicesForStats}}"
-          color-by-params="[[_colorByParams]]"
-          stats="[[_stats]]"
-          color-by="{{_colorBy}}"
-          datasets="[[_datasets]]"
-          render-hierarchy="[[_renderHierarchy]]"
-          selection="{{_selection}}"
-          selected-file="{{_selectedFile}}"
-          selected-node="{{_selectedNode}}"
-          health-pills-feature-enabled="[[_debuggerDataEnabled]]"
-          health-pills-toggled-on="{{healthPillsToggledOn}}"
-          on-fit-tap="_fit"
-          trace-inputs="{{_traceInputs}}"
-        ></tf-graph-controls>
-        <div class="center" slot="center">
-          <template
-            is="dom-if"
-            if="[[_datasetsState(_datasetsFetched, _datasets, 'EMPTY')]]"
-          >
-            <div style="max-width: 540px; margin: 80px auto 0 auto;">
-              <h3>No graph definition files were found.</h3>
-              <p>
-                To store a graph, create a
-                <code>tf.summary.FileWriter</code>
-                and pass the graph either via the constructor, or by calling its
-                <code>add_graph()</code> method. You may want to check out the
-                <a href="https://www.tensorflow.org/get_started/graph_viz"
-                  >graph visualizer tutorial</a
-                >.
-              </p>
+      <tf-graph-controls
+        id="controls"
+        class="sidebar"
+        slot="sidebar"
+        devices-for-stats="{{_devicesForStats}}"
+        color-by-params="[[_colorByParams]]"
+        stats="[[_stats]]"
+        color-by="{{_colorBy}}"
+        datasets="[[_datasets]]"
+        render-hierarchy="[[_renderHierarchy]]"
+        selection="{{_selection}}"
+        selected-file="{{_selectedFile}}"
+        selected-node="{{_selectedNode}}"
+        health-pills-feature-enabled="[[_debuggerDataEnabled]]"
+        health-pills-toggled-on="{{healthPillsToggledOn}}"
+        on-fit-tap="_fit"
+        trace-inputs="{{_traceInputs}}"
+      ></tf-graph-controls>
+      <div class="center" slot="center">
+        <template
+          is="dom-if"
+          if="[[_datasetsState(_datasetsFetched, _datasets, 'EMPTY')]]"
+        >
+          <div style="max-width: 540px; margin: 80px auto 0 auto;">
+            <h3>No graph definition files were found.</h3>
+            <p>
+              To store a graph, create a
+              <code>tf.summary.FileWriter</code>
+              and pass the graph either via the constructor, or by calling its
+              <code>add_graph()</code> method. You may want to check out the
+              <a href="https://www.tensorflow.org/get_started/graph_viz"
+                >graph visualizer tutorial</a
+              >.
+            </p>
 
-              <p>
-                If you’re new to using TensorBoard, and want to find out how to add
-                data and set up your event files, check out the
-                <a
-                  href="https://github.com/tensorflow/tensorboard/blob/master/README.md"
-                  >README</a
-                >
-                and perhaps the
-                <a
-                  href="https://www.tensorflow.org/get_started/summaries_and_tensorboard"
-                  >TensorBoard tutorial</a
-                >.
-              </p>
+            <p>
+              If you’re new to using TensorBoard, and want to find out how to
+              add data and set up your event files, check out the
+              <a
+                href="https://github.com/tensorflow/tensorboard/blob/master/README.md"
+                >README</a
+              >
+              and perhaps the
+              <a
+                href="https://www.tensorflow.org/get_started/summaries_and_tensorboard"
+                >TensorBoard tutorial</a
+              >.
+            </p>
 
-              <p>
-                If you think TensorBoard is configured properly, please see
-                <a
-                  href="https://github.com/tensorflow/tensorboard/blob/master/README.md#my-tensorboard-isnt-showing-any-data-whats-wrong"
-                  >the section of the README devoted to missing data problems</a
-                >
-                and consider filing an issue on GitHub.
-              </p>
-            </div>
-          </template>
-          <template
-                is="dom-if"
-                if="[[_datasetsState(_datasetsFetched, _datasets, 'PRESENT')]]"
-          >
-            <tf-graph-dashboard-loader
-              id="loader"
-              datasets="[[_datasets]]"
-              selection="[[_selection]]"
-              selected-file="[[_selectedFile]]"
-              out-graph-hierarchy="{{_graphHierarchy}}"
-              out-graph="{{_graph}}"
-              out-stats="{{_stats}}"
-              progress="{{_progress}}"
-              hierarchy-params="[[_hierarchyParams]]"
-              compatibility-provider="[[_compatibilityProvider]]"
-            ></tf-graph-dashboard-loader>
-            <tf-graph-board
-              id="graphboard"
-              devices-for-stats="[[_devicesForStats]]"
-              color-by="[[_colorBy]]"
-              color-by-params="{{_colorByParams}}"
-              graph-hierarchy="[[_graphHierarchy]]"
-              graph="[[_graph]]"
-              hierarchy-params="[[_hierarchyParams]]"
-              progress="[[_progress]]"
-              debugger-data-enabled="[[_debuggerDataEnabled]]"
-              are-health-pills-loading="[[_areHealthPillsLoading]]"
-              debugger-numeric-alerts="[[_debuggerNumericAlerts]]"
-              node-names-to-health-pills="[[_nodeNamesToHealthPills]]"
-              all-steps-mode-enabled="{{allStepsModeEnabled}}"
-              specific-health-pill-step="{{specificHealthPillStep}}"
-              health-pill-step-index="[[_healthPillStepIndex]]"
-              render-hierarchy="{{_renderHierarchy}}"
-              selected-node="{{_selectedNode}}"
-              stats="[[_stats]]"
-              trace-inputs="[[_traceInputs]]"
-            ></tf-graph-board>
-          </template>
-        </div>
-      </tf-dashboard-layout>
+            <p>
+              If you think TensorBoard is configured properly, please see
+              <a
+                href="https://github.com/tensorflow/tensorboard/blob/master/README.md#my-tensorboard-isnt-showing-any-data-whats-wrong"
+                >the section of the README devoted to missing data problems</a
+              >
+              and consider filing an issue on GitHub.
+            </p>
+          </div>
+        </template>
+        <template
+          is="dom-if"
+          if="[[_datasetsState(_datasetsFetched, _datasets, 'PRESENT')]]"
+        >
+          <tf-graph-dashboard-loader
+            id="loader"
+            datasets="[[_datasets]]"
+            selection="[[_selection]]"
+            selected-file="[[_selectedFile]]"
+            out-graph-hierarchy="{{_graphHierarchy}}"
+            out-graph="{{_graph}}"
+            out-stats="{{_stats}}"
+            progress="{{_progress}}"
+            hierarchy-params="[[_hierarchyParams]]"
+            compatibility-provider="[[_compatibilityProvider]]"
+          ></tf-graph-dashboard-loader>
+          <tf-graph-board
+            id="graphboard"
+            devices-for-stats="[[_devicesForStats]]"
+            color-by="[[_colorBy]]"
+            color-by-params="{{_colorByParams}}"
+            graph-hierarchy="[[_graphHierarchy]]"
+            graph="[[_graph]]"
+            hierarchy-params="[[_hierarchyParams]]"
+            progress="[[_progress]]"
+            debugger-data-enabled="[[_debuggerDataEnabled]]"
+            are-health-pills-loading="[[_areHealthPillsLoading]]"
+            debugger-numeric-alerts="[[_debuggerNumericAlerts]]"
+            node-names-to-health-pills="[[_nodeNamesToHealthPills]]"
+            all-steps-mode-enabled="{{allStepsModeEnabled}}"
+            specific-health-pill-step="{{specificHealthPillStep}}"
+            health-pill-step-index="[[_healthPillStepIndex]]"
+            render-hierarchy="{{_renderHierarchy}}"
+            selected-node="{{_selectedNode}}"
+            stats="[[_stats]]"
+            trace-inputs="[[_traceInputs]]"
+          ></tf-graph-board>
+        </template>
+      </div>
+    </tf-dashboard-layout>
     <style>
       :host /deep/ {
         font-family: 'Roboto', sans-serif;
