@@ -290,9 +290,9 @@ describe('metrics selectors', () => {
     });
   });
 
-  describe('getVisibleCardIds', () => {
+  describe('getVisibleCardIdSet', () => {
     beforeEach(() => {
-      selectors.getVisibleCardIds.release();
+      selectors.getVisibleCardIdSet.release();
     });
 
     it('returns an emtpy array', () => {
@@ -301,7 +301,7 @@ describe('metrics selectors', () => {
           visibleCards: new Set(),
         })
       );
-      expect(selectors.getVisibleCardIds(state)).toEqual([]);
+      expect(selectors.getVisibleCardIdSet(state)).toEqual(new Set<string>([]));
     });
 
     it('returns a non-empty array', () => {
@@ -310,7 +310,9 @@ describe('metrics selectors', () => {
           visibleCards: new Set(['card1', 'card2']),
         })
       );
-      expect(selectors.getVisibleCardIds(state)).toEqual(['card1', 'card2']);
+      expect(selectors.getVisibleCardIdSet(state)).toEqual(
+        new Set(['card1', 'card2'])
+      );
     });
   });
 

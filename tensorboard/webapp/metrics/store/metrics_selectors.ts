@@ -155,13 +155,6 @@ export const getVisibleCardIdSet = createSelector(
   }
 );
 
-export const getVisibleCardIds = createSelector(
-  getVisibleCardIdSet,
-  (cardIdSet: Set<CardId>): CardId[] => {
-    return [...cardIdSet];
-  }
-);
-
 /**
  * Returns current list of card data whose metadata is loaded.
  */
