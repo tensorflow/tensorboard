@@ -25,6 +25,7 @@ default-run = "rustboard"
 [dependencies]
 async-stream = "0.3.0"
 async-trait = "0.1.41"
+base64 = "0.13.0"
 byteorder = "1.3.4"
 clap = "3.0.0-beta.2"
 crc = "1.8.1"

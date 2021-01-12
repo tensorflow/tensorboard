@@ -31,6 +31,15 @@ alias(
 )
 
 alias(
+    name = "base64",
+    actual = "@raze__base64__0_13_0//:base64",
+    tags = [
+        "cargo-raze",
+        "manual",
+    ],
+)
+
+alias(
     name = "byteorder",
     actual = "@raze__byteorder__1_3_4//:byteorder",
     tags = [
