@@ -23,14 +23,13 @@ __version__ = "0.1.0a0"
 
 
 def server_binary():
-    """Return the path to a TensorBoard data server binary.
+    """Return the path to a TensorBoard data server binary, if possible.
 
-    Raises:
-      RuntimeError: If the binary cannot be found.
+    Returns:
+      A string path on disk, or `None` if there is no binary bundled
+      with this package.
     """
     path = os.path.join(os.path.dirname(__file__), "bin", "server")
     if not os.path.exists(path):
-        raise RuntimeError(
-            "TensorBoard data server binary missing: should be at %s" % path
-        )
+        return None
     return path

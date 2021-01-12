@@ -66,12 +66,6 @@ class SubprocessServerDataIngester(ingester.DataIngester):
         if self._data_provider:
             return
         server_binary = _get_server_binary()
-        if not os.path.exists(server_binary):
-            raise RuntimeError(
-                "TensorBoard data server not found. This mode is experimental "
-                "and not supported in release builds. If building from source, "
-                "pass --define=link_data_server=true."
-            )
 
         tmpdir = tempfile.TemporaryDirectory(prefix="tensorboard_data_server_")
         port_file_path = os.path.join(tmpdir.name, "port")
@@ -145,9 +139,15 @@ def _make_provider(addr):
 
 
 def _get_server_binary():
+    """Get path to data server binary or raise `RuntimeError`."""
     env_result = os.environ.get(_ENV_DATA_SERVER_BINARY)
     if env_result:
         logging.info("Server binary (from env): %s", env_result)
+        if not os.path.isfile(env_result):
+            raise RuntimeError(
+                "Found environment variable %s=%s, but no such file exists."
+                % (_ENV_DATA_SERVER_BINARY, env_result)
+            )
         return env_result
 
     try:
@@ -157,8 +157,18 @@ def _get_server_binary():
     else:
         pkg_result = tensorboard_data_server.server_binary()
         logging.info("Server binary (from Python package): %s", pkg_result)
+        if pkg_result is None:
+            raise RuntimeError(
+                "TensorBoard data server not supported on this platform."
+            )
         return pkg_result
 
     bundle_result = os.path.join(os.path.dirname(__file__), "server", "server")
     logging.info("Server binary (from bundle): %s", bundle_result)
+    if not os.path.exists(bundle_result):
+        raise RuntimeError(
+            "TensorBoard data server not found. This mode is experimental "
+            "and not supported in release builds. If building from source, "
+            "pass --define=link_data_server=true."
+        )
     return bundle_result

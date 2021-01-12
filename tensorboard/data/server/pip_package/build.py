@@ -37,18 +37,27 @@ import tempfile
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
+        "--out-dir",
+        help="Output directory into which to place the wheel; should already exist",
+        required=True,
+    )
+    binary_group = parser.add_mutually_exclusive_group(required=True)
+    binary_group.add_argument(
         "--server-binary",
         help="Path to the //tensorboard/data/server binary to bundle into the package",
     )
-    parser.add_argument(
-        "--out-dir",
-        help="Output directory into which to place the wheel; should already exist",
+    binary_group.add_argument(
+        "--universal",
+        help="Build a universal package with no server",
+        action="store_true",
     )
     args = parser.parse_args()
 
-    server_binary = os.path.abspath(args.server_binary)
-    if not os.path.isfile(server_binary):
-        raise RuntimeError("No such file: %s" % server_binary)
+    server_binary = None
+    if not args.universal:
+        server_binary = os.path.abspath(args.server_binary)
+        if not os.path.isfile(server_binary):
+            raise RuntimeError("No such file: %s" % server_binary)
 
     TDS = "tensorboard_data_server"  # convenience
 
@@ -59,18 +68,24 @@ def main():
     os.makedirs(tmpdir / TDS / "bin", exist_ok=True)
     shutil.copyfile(srcdir / "setup.py", tmpdir / "setup.py")
     shutil.copyfile(srcdir / TDS / "__init__.py", tmpdir / TDS / "__init__.py")
-    shutil.copyfile(server_binary, tmpdir / TDS / "bin" / "server")
-    os.chmod(tmpdir / TDS / "bin" / "server", 0o700)
+    if server_binary is not None:
+        shutil.copyfile(server_binary, tmpdir / TDS / "bin" / "server")
+        os.chmod(tmpdir / TDS / "bin" / "server", 0o700)
 
-    platform_name = {
-        # using platform tag values from TensorFlow releases
-        "Linux": "manylinux2010",
-        "Darwin": "macosx_10_9",
-    }.get(platform.system())
-    if platform_name is None:
-        raise RuntimeError("Unsupported platform: %r" % (platform.system(),))
-    cpu_name = "x86_64"
-    platform_tag = "%s_%s" % (platform_name, cpu_name)
+    if args.universal:
+        platform_tag = "any"
+    else:
+        platform_name = {
+            # using platform tag values from TensorFlow releases
+            "Linux": "manylinux2010",
+            "Darwin": "macosx_10_9",
+        }.get(platform.system())
+        if platform_name is None:
+            raise RuntimeError(
+                "Unsupported platform: %r" % (platform.system(),)
+            )
+        cpu_name = "x86_64"
+        platform_tag = "%s_%s" % (platform_name, cpu_name)
 
     os.chdir(tmpdir)
     subprocess.run(
