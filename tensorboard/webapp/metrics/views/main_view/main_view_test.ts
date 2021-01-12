@@ -170,7 +170,10 @@ describe('metrics main view', () => {
     store.overrideSelector(getPageSize, 10);
     store.overrideSelector(selectors.getMetricsTagFilter, '');
     store.overrideSelector(getMetricsTagGroupExpansionState, false);
-    store.overrideSelector(selectors.getCurrentRouteRunSelection, new Map());
+    store.overrideSelector(
+      selectors.getCurrentRouteRunSelection,
+      new Map<string, boolean>()
+    );
     store.overrideSelector(selectors.getRunColorMap, {});
   });
 

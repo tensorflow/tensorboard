@@ -64,7 +64,7 @@ def tf_ts_library(strict_checks = True, **kwargs):
         tsconfig = "//:tsconfig-lax"
     elif "test_only" in kwargs and kwargs.get("test_only"):
         tsconfig = "//:tsconfig-test"
-    kwargs.setdefault("deps", []).append("@npm//tslib")
+    kwargs.setdefault("deps", []).extend(["@npm//tslib", "//tensorboard/defs:strict_types"])
 
     ts_library(tsconfig = tsconfig, supports_workers = True, **kwargs)
 

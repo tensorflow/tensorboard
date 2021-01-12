@@ -219,7 +219,7 @@ export class ArrayBufferDataProvider {
    */
   _processMetadata(data: any[] | undefined): unknown[] {
     if (!data) return;
-    const stepToData = new Map();
+    const stepToData = new Map<any, any>();
     for (let i = 0; i < data.length; i++) {
       let dataEntry = data[i];
       if (!stepToData.has(dataEntry.step)) {

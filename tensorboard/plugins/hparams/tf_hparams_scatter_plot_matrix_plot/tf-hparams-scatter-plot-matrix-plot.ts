@@ -490,7 +490,7 @@ class TfHparamsScatterPlotMatrixPlot extends LegacyElementMixin(
         .attr('cy', ({y}) => y)
         .attr('r', 2)
         .attr('fill', fill);
-      const sessionGroupMarkersMap = new Map();
+      const sessionGroupMarkersMap = new Map<any, any[]>();
       _this.sessionGroups.forEach((sessionGroup) => {
         sessionGroupMarkersMap.set(sessionGroup, []);
       });

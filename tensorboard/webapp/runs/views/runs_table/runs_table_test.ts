@@ -197,7 +197,10 @@ describe('runs_table', () => {
       lastLoadedTimeInMs: null,
     });
     store.overrideSelector(getExperiment, null);
-    store.overrideSelector(getCurrentRouteRunSelection, new Map());
+    store.overrideSelector(
+      getCurrentRouteRunSelection,
+      new Map() as ReturnType<typeof getCurrentRouteRunSelection>
+    );
     store.overrideSelector(getRunSelectorPaginationOption, {
       pageIndex: 0,
       pageSize: 10,
@@ -212,8 +215,14 @@ describe('runs_table', () => {
       rowling: 'Harry Potter',
       tolkien: 'The Lord of the Rings',
     });
-    store.overrideSelector(getRunHparamFilterMap, new Map());
-    store.overrideSelector(getRunMetricFilterMap, new Map());
+    store.overrideSelector(
+      getRunHparamFilterMap,
+      new Map() as ReturnType<typeof getRunHparamFilterMap>
+    );
+    store.overrideSelector(
+      getRunMetricFilterMap,
+      new Map() as ReturnType<typeof getRunMetricFilterMap>
+    );
     store.overrideSelector(getExperimentsHparamsAndMetrics, {
       hparams: [],
       metrics: [],

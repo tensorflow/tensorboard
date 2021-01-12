@@ -207,7 +207,10 @@ describe('scalar card', () => {
     selectSpy = spyOn(store, 'select').and.callThrough();
     overlayContainer = TestBed.inject(OverlayContainer);
     resizeTester = TestBed.inject(ResizeDetectorTestingModule);
-    store.overrideSelector(selectors.getCurrentRouteRunSelection, new Map());
+    store.overrideSelector(
+      selectors.getCurrentRouteRunSelection,
+      new Map<string, boolean>()
+    );
     store.overrideSelector(selectors.getExperimentIdForRunId, null);
     store.overrideSelector(selectors.getExperimentIdToAliasMap, {});
     store.overrideSelector(selectors.getRun, null);

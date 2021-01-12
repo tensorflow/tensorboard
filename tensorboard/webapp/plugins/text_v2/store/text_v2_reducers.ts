@@ -81,7 +81,7 @@ const initialState = {
       ]),
     ],
   ]),
-  visibleRunTags: new Map(),
+  visibleRunTags: new Map<string, Array<{run: string; tag: string}>>(),
 };
 
 const reducer = createReducer(initialState);

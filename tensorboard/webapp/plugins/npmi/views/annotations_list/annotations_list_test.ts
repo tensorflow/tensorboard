@@ -53,7 +53,10 @@ describe('Npmi Annotations List Container', () => {
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
-    store.overrideSelector(selectors.getCurrentRouteRunSelection, new Map());
+    store.overrideSelector(
+      selectors.getCurrentRouteRunSelection,
+      new Map<string, boolean>()
+    );
   });
 
   it('renders expanded annotations list', () => {
