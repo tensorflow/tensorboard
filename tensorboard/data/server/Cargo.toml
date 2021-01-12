@@ -35,6 +35,8 @@ log = "0.4.11"
 prost = "0.6.1"
 rand = "0.7.3"
 rand_chacha = "0.2.2"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0.59"
 thiserror = "1.0.21"
 tokio = { version = "0.2.2", features = ["macros"] }
 tonic = "0.3.1"
