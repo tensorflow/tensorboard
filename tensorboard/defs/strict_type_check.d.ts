@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 
 // Type override of lib.es2015.collection.d.ts.
-// Make sure value is not inferred and take anything.
+// Make sure key/value types are not inferred as any.
 interface MapConstructor {
   new <K, V>(): Map<K, V>;
 }
