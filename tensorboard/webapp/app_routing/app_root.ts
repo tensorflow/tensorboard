@@ -38,6 +38,9 @@ export class AppRootProvider {
     return pathname.replace(/\/*$/, '/');
   }
 
+  /**
+   * Returns actual full pathname that includes path prefix of the application.
+   */
   getAbsPathnameWithAppRoot(absPathname: string): string {
     // appRoot has trailing '/'. Remove one so we don't have "//".
     return this.appRoot.slice(0, -1) + absPathname;
