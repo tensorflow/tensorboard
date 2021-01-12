@@ -108,8 +108,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        mode: ['native']
         platform: ['ubuntu-16.04', 'macos-10.15']
         rust_version: ['1.48.0']
+        include:
+          - mode: 'universal'
+            platform: 'ubuntu-16.04'
+            rust_version: '1.48.0'
     steps:
       - uses: actions/checkout@v1
       - uses: actions/setup-python@v1
@@ -117,6 +122,7 @@ jobs:
           python-version: '3.8'
           architecture: 'x64'
       - name: 'Cache Cargo artifacts'
+        if: matrix.mode == 'native'
         uses: actions/cache@v2
         with:
           path: |
@@ -133,6 +139,7 @@ jobs:
             ~/.cargo/.crates2.json
           key: build-data-server-pip-${{ runner.os }}-cargo-${{ matrix.rust_version }}-${{ hashFiles('**/Cargo.lock', '.github/workflows/ci.yml') }}
       - name: 'Install Rust toolchain'
+        if: matrix.mode == 'native'
         uses: actions-rs/toolchain@v1
         with:
           toolchain: ${{ matrix.rust_version }}
@@ -144,20 +151,31 @@ jobs:
             -c ./tensorboard/pip_package/requirements_dev.txt \
             setuptools wheel
       - name: 'Build'
+        if: matrix.mode == 'native'
         run: cd tensorboard/data/server/ && cargo build --release
       - name: 'Test'
+        if: matrix.mode == 'native'
         run: cd tensorboard/data/server/ && cargo test --release
-      - name: 'Package'
+      - name: 'Package (native)'
+        if: matrix.mode == 'native'
         run: |
           rm -rf /tmp/pip_package && mkdir /tmp/pip_package
           python tensorboard/data/server/pip_package/build.py \
             --server-binary tensorboard/data/server/target/release/rustboard \
             --out-dir /tmp/pip_package \
             ;
+      - name: 'Package (universal)'
+        if: matrix.mode == 'universal'
+        run: |
+          rm -rf /tmp/pip_package && mkdir /tmp/pip_package
+          python tensorboard/data/server/pip_package/build.py \
+            --universal \
+            --out-dir /tmp/pip_package \
+            ;
       - name: 'Upload'
         uses: actions/upload-artifact@v2
         with:
-          name: rustboard-${{ matrix.platform }}
+          name: tensorboard-data-server
           path: /tmp/pip_package/*
 
   lint-python-flake8:
