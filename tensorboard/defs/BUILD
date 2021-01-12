@@ -59,6 +59,15 @@ nodejs_binary(
 )
 
 py_binary(
-    name = "res_digest_suffixer",
-    srcs = ["res_digest_suffixer.py"],
+    name = "resource_digest_suffixer",
+    srcs = ["resource_digest_suffixer.py"],
+)
+
+py_test(
+    name = "resource_digest_suffixer_test",
+    srcs = ["resource_digest_suffixer_test.py"],
+    deps = [
+        ":resource_digest_suffixer",
+        "//tensorboard:test",
+    ],
 )

@@ -14,4 +14,4 @@ limitations under the License.
 ==============================================================================*/
 
 // Do note that below path gets replaced with a path with digest on the query params.
-export const RES_PATH = 'chart_worker.js';
+export const RES_PATH = '%CHART_WORKER.js%';

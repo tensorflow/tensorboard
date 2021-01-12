@@ -1,4 +1,4 @@
-load("//tensorboard/defs:defs.bzl", "tf_js_binary", "tf_res_digest_suffixer", "tf_ts_library")
+load("//tensorboard/defs:defs.bzl", "tf_js_binary", "tf_resource_digest_suffixer", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard/webapp/widgets/line_chart_v2/lib:__subpackages__"])
 
@@ -94,9 +94,11 @@ tf_js_binary(
     ],
 )
 
-tf_res_digest_suffixer(
+tf_resource_digest_suffixer(
     name = "worker_resource",
     out = "worker_resource.ts",
-    resources = [":chart_worker.js"],
+    resources = {
+        "%CHART_WORKER.js%": ":chart_worker.js",
+    },
     template = "worker_resource.template.ts",
 )

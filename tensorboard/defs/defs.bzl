@@ -150,12 +150,12 @@ def tf_ng_module(assets = [], **kwargs):
         **kwargs
     )
 
-def tf_res_digest_suffixer(name, resources, template, out):
+def tf_resource_digest_suffixer(name, resources, template, out):
     """Query parameter suffixer for a resource in a template.
 
     In order to facilitate resource caching, the macro suffixes resource declaration in
     a template file by replacing it with one with query parameter,
-    "?_file_md5=[len_8_truncated_md5]".
+    "?_file_hash=[len_8_truncated_md5]".
 
     For example, if a template is "index.html" that contains content like below,
 
@@ -163,15 +163,32 @@ def tf_res_digest_suffixer(name, resources, template, out):
 
     For resources of ["index.js"], it will be replaced with:
 
-        <script src="index.js?_file_md5=486c31fc"></script>
+        <script src="index.js?_file_hash=486c31fc"></script>
+
+    Args:
+        name: Name of the rule.
+        resources: dict of replacement keyword to resource File.
+        template: File that should be replaced
+        out: Name of the output file.
     """
+
+    srcs = [template]
+    args = ["$(location %s)" % template]
+    for res_template_name in resources:
+        srcs.append(resources.get(res_template_name))
+        args.append(res_template_name)
+        args.append("$(location %s)" % resources.get(res_template_name))
 
     native.genrule(
         name = name,
-        srcs = [template] + resources,
+        srcs = srcs,
         outs = [out],
-        cmd = "$(execpath //tensorboard/defs:res_digest_suffixer) $(SRCS) > $@",
-        tools = [
-            "//tensorboard/defs:res_digest_suffixer",
+        cmd = """
+          {
+            $(execpath //tensorboard/defs:resource_digest_suffixer) %s
+          } > $@
+        """ % " ".join(args),
+        exec_tools = [
+            "//tensorboard/defs:resource_digest_suffixer",
         ],
     )
