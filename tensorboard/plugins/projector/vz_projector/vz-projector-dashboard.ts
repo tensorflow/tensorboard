@@ -20,7 +20,7 @@ import {customElement, property} from '@polymer/decorators';
 class VzProjectorDashboard extends PolymerElement {
   static readonly template = html`
     <template is="dom-if" if="[[dataNotFound]]">
-      <div style="max-width: 540px; margin: 80px auto 0 auto;">
+      <div style="max-width: 540px; margin: 0 auto; padding: 80px 0 0">
         <h3>No checkpoint was found.</h3>
         <p>Probable causes:</p>
         <ul>
