@@ -15,7 +15,6 @@
 """Tests for tensorboard.defs.resource_digest_suffixer."""
 
 import os
-import shutil
 
 from tensorboard import test as tb_test
 from tensorboard.defs import resource_digest_suffixer
@@ -31,13 +30,6 @@ class ResourceDigestSuffixerTest(tb_test.TestCase):
             f.write(template)
 
         return full_path
-
-    def tearDown(self):
-        try:
-            shutil.rmtree(self.get_temp_dir())
-        except OSError:
-            # Some tests delete the directory.
-            pass
 
     def test_replacement(self):
         template_path = self.create_file("template", "hello%REPLACE_ME%world")

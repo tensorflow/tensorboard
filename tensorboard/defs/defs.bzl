@@ -167,17 +167,17 @@ def tf_resource_digest_suffixer(name, resources, template, out):
 
     Args:
         name: Name of the rule.
-        resources: dict of replacement keyword to resource File.
-        template: File that should be replaced
+        resources: dict of replacement keyword to resource label.
+        template: Label to file that should be replaced.
         out: Name of the output file.
     """
 
     srcs = [template]
     args = ["$(location %s)" % template]
-    for res_template_name in resources:
-        srcs.append(resources.get(res_template_name))
-        args.append(res_template_name)
-        args.append("$(location %s)" % resources.get(res_template_name))
+    for handlebar, filename in resources.items():
+        srcs.append(filename)
+        args.append(handlebar)
+        args.append("$(location %s)" % filename)
 
     native.genrule(
         name = name,
