@@ -453,7 +453,7 @@ mod tests {
         fn test() {
             let md = GraphDefValue::initial_metadata();
             assert_eq!(&md.plugin_data.unwrap().plugin_name, GRAPHS_PLUGIN_NAME);
-            assert_eq!(md.data_class, pb::DataClass::BlobSequence.into());
+            assert_eq!(md.data_class, i32::from(pb::DataClass::BlobSequence));
         }
     }
 
