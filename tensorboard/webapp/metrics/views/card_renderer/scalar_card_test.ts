@@ -216,7 +216,49 @@ describe('scalar card', () => {
     store.overrideSelector(selectors.getRun, null);
     store.overrideSelector(selectors.getIsGpuChartEnabled, false);
     store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.STEP);
+    store.overrideSelector(selectors.getVisibleCardIdSet, new Set(['card1']));
   });
+
+  it('stamps line chart impl only when card is first visible', fakeAsync(() => {
+    const cardMetadata = {
+      plugin: PluginType.SCALARS,
+      tag: 'tagA',
+      run: null,
+    };
+    provideMockCardRunToSeriesData(
+      selectSpy,
+      PluginType.SCALARS,
+      'card1',
+      cardMetadata,
+      null /* runToSeries */
+    );
+    store.overrideSelector(selectors.getVisibleCardIdSet, new Set(['unknown']));
+
+    const fixture = createComponent('card1');
+
+    const lineChart1 = fixture.debugElement.query(
+      By.directive(TestableLineChart)
+    );
+    expect(lineChart1).toBeNull();
+
+    store.overrideSelector(selectors.getVisibleCardIdSet, new Set(['card1']));
+    store.refreshState();
+    fixture.detectChanges();
+
+    const lineChart2 = fixture.debugElement.query(
+      By.directive(TestableLineChart)
+    );
+    expect(lineChart2).not.toBeNull();
+
+    store.overrideSelector(selectors.getVisibleCardIdSet, new Set(['gone']));
+    store.refreshState();
+    fixture.detectChanges();
+
+    const lineChart3 = fixture.debugElement.query(
+      By.directive(TestableLineChart)
+    );
+    expect(lineChart3).not.toBeNull();
+  }));
 
   it('renders empty chart when there is no data', fakeAsync(() => {
     const cardMetadata = {

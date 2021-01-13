@@ -148,15 +148,15 @@ export class MetricsEffects implements OnInitEffects {
   );
 
   private getVisibleCardFetchInfos(): Observable<CardFetchInfo[]> {
-    const visibleCardIds$ = this.store.select(selectors.getVisibleCardIds);
+    const visibleCardIds$ = this.store.select(selectors.getVisibleCardIdSet);
     return visibleCardIds$.pipe(
       switchMap((cardIds) => {
         // Explicitly notify subscribers that there are no visible cards,
         // since `forkJoin` does not emit when passed an empty array.
-        if (!cardIds.length) {
+        if (!cardIds.size) {
           return of([]);
         }
-        const observables = cardIds.map((cardId) => {
+        const observables = [...cardIds].map((cardId) => {
           return this.store.select(getCardFetchInfo, cardId).pipe(take(1));
         });
         return forkJoin(observables);

@@ -140,18 +140,18 @@ export const getCardMetadata = createSelector(
   }
 );
 
-// A cheap identity selector to skip recomputing selectors.
-const getVisibleCardIdSet = createSelector(
+// A cheap identity selector to skip recomputing selectors when `state` changes.
+const selectVisibleCardIdSet = createSelector(
   selectMetricsState,
   (state): Set<CardId> => {
     return state.visibleCards;
   }
 );
 
-export const getVisibleCardIds = createSelector(
-  getVisibleCardIdSet,
-  (cardIdSet: Set<CardId>): CardId[] => {
-    return [...cardIdSet];
+export const getVisibleCardIdSet = createSelector(
+  selectVisibleCardIdSet,
+  (cardIdSet): Set<CardId> => {
+    return cardIdSet;
   }
 );
 

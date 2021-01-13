@@ -31,6 +31,7 @@ import {
   shareReplay,
   startWith,
   switchMap,
+  takeWhile,
 } from 'rxjs/operators';
 
 import {State} from '../../../app_state';
@@ -42,6 +43,7 @@ import {
   getIsGpuChartEnabled,
   getRun,
   getRunColorMap,
+  getVisibleCardIdSet,
 } from '../../../selectors';
 import {DataLoadState} from '../../../types/data';
 import {RunColorScale} from '../../../types/ui';
@@ -147,6 +149,7 @@ function areSeriesEqual(
       "
       [gpuLineChartEnabled]="gpuLineChartEnabled$ | async"
       [smoothingEnabled]="smoothingEnabled$ | async"
+      [isEverVisible]="isEverVisible$ | async"
       (onFullSizeToggle)="onFullSizeToggle()"
       (onPinClicked)="pinStateChanged.emit($event)"
     ></scalar-card-component>
@@ -178,6 +181,14 @@ export class ScalarCardContainer implements CardRenderer, OnInit {
   isPinned$?: Observable<boolean>;
   dataSeries$?: Observable<ScalarCardDataSeries[]>;
   chartMetadataMap$?: Observable<ScalarCardSeriesMetadataMap>;
+
+  readonly isEverVisible$ = this.store.select(getVisibleCardIdSet).pipe(
+    map((visibleSet) => {
+      return visibleSet.has(this.cardId);
+    }),
+    distinctUntilChanged(),
+    takeWhile((visible) => !visible, true)
+  );
 
   readonly tooltipSort$ = this.store.select(getMetricsTooltipSort);
   readonly ignoreOutliers$ = this.store.select(getMetricsIgnoreOutliers);

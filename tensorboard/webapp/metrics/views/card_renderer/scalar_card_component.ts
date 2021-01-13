@@ -144,6 +144,7 @@ export class ScalarCardComponent {
   @Input() gpuLineChartEnabled!: boolean;
   @Input() dataSeries!: ScalarCardDataSeries[];
   @Input() chartMetadataMap!: ScalarCardSeriesMetadataMap;
+  @Input() isEverVisible!: boolean;
 
   @Output() onFullSizeToggle = new EventEmitter<void>();
   @Output() onPinClicked = new EventEmitter<boolean>();

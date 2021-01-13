@@ -244,7 +244,10 @@ describe('metrics effects', () => {
           DataLoadState.LOADED
         );
         store.overrideSelector(getActivePlugin, METRICS_PLUGIN_ID);
-        store.overrideSelector(selectors.getVisibleCardIds, ['card1', 'card2']);
+        store.overrideSelector(
+          selectors.getVisibleCardIdSet,
+          new Set(['card1', 'card2'])
+        );
         provideCardFetchInfo([{id: 'card1'}, {id: 'card2'}]);
         store.refreshState();
         fetchTimeSeriesSpy.and.returnValue(of([buildTimeSeriesResponse()]));
@@ -289,7 +292,10 @@ describe('metrics effects', () => {
           DataLoadState.LOADING
         );
         store.overrideSelector(getActivePlugin, METRICS_PLUGIN_ID);
-        store.overrideSelector(selectors.getVisibleCardIds, ['card1', 'card2']);
+        store.overrideSelector(
+          selectors.getVisibleCardIdSet,
+          new Set(['card1', 'card2'])
+        );
         provideCardFetchInfo([
           {id: 'card1', loadState: DataLoadState.LOADED},
           {id: 'card2', loadState: DataLoadState.LOADING},
@@ -323,7 +329,10 @@ describe('metrics effects', () => {
         DataLoadState.LOADING
       );
       store.overrideSelector(getActivePlugin, METRICS_PLUGIN_ID);
-      store.overrideSelector(selectors.getVisibleCardIds, ['card1', 'card2']);
+      store.overrideSelector(
+        selectors.getVisibleCardIdSet,
+        new Set(['card1', 'card2'])
+      );
       provideCardFetchInfo([
         {id: 'card1', loadState: DataLoadState.LOADING},
         {id: 'card2', loadState: DataLoadState.LOADING},
@@ -352,7 +361,7 @@ describe('metrics effects', () => {
 
     it('does not re-fetch time series, if no cards are visible', () => {
       store.overrideSelector(getActivePlugin, METRICS_PLUGIN_ID);
-      store.overrideSelector(selectors.getVisibleCardIds, []);
+      store.overrideSelector(selectors.getVisibleCardIdSet, new Set([]));
       store.refreshState();
       fetchTimeSeriesSpy.and.returnValue(of([buildTimeSeriesResponse()]));
 
@@ -367,7 +376,7 @@ describe('metrics effects', () => {
       store.resetSelectors();
       store.overrideSelector(selectors.getRouteId, 'route1');
       store.overrideSelector(getActivePlugin, METRICS_PLUGIN_ID);
-      store.overrideSelector(selectors.getVisibleCardIds, ['card1']);
+      store.overrideSelector(selectors.getVisibleCardIdSet, new Set(['card1']));
       provideCardFetchInfo([{id: 'card1', loadState: DataLoadState.LOADED}]);
       store.overrideSelector(selectors.getExperimentIdsFromRoute, null);
       store.refreshState();
@@ -442,7 +451,10 @@ describe('metrics effects', () => {
         loadState: DataLoadState.NOT_LOADED,
       });
 
-      store.overrideSelector(selectors.getVisibleCardIds, []);
+      store.overrideSelector(
+        selectors.getVisibleCardIdSet,
+        new Set<string>([])
+      );
       store.refreshState();
       actions$.next(
         actions.cardVisibilityChanged({
@@ -454,7 +466,7 @@ describe('metrics effects', () => {
       expect(fetchTimeSeriesSpy).not.toHaveBeenCalled();
       expect(actualActions).toEqual([]);
 
-      store.overrideSelector(selectors.getVisibleCardIds, ['card1']);
+      store.overrideSelector(selectors.getVisibleCardIdSet, new Set(['card1']));
       store.refreshState();
       actions$.next(
         actions.cardVisibilityChanged({
@@ -491,7 +503,7 @@ describe('metrics effects', () => {
       });
 
       // Initial load.
-      store.overrideSelector(selectors.getVisibleCardIds, ['card1']);
+      store.overrideSelector(selectors.getVisibleCardIdSet, new Set(['card1']));
       store.refreshState();
       actions$.next(
         actions.cardVisibilityChanged({
@@ -504,7 +516,7 @@ describe('metrics effects', () => {
       expect(actualActions).toEqual([]);
 
       // Exit.
-      store.overrideSelector(selectors.getVisibleCardIds, []);
+      store.overrideSelector(selectors.getVisibleCardIdSet, new Set([]));
       store.refreshState();
       actions$.next(
         actions.cardVisibilityChanged({
@@ -517,7 +529,7 @@ describe('metrics effects', () => {
       expect(actualActions).toEqual([]);
 
       // Re-enter.
-      store.overrideSelector(selectors.getVisibleCardIds, ['card1']);
+      store.overrideSelector(selectors.getVisibleCardIdSet, new Set(['card1']));
       store.refreshState();
       actions$.next(
         actions.cardVisibilityChanged({
@@ -576,7 +588,10 @@ describe('metrics effects', () => {
         .withArgs([expectedRequests[1]])
         .and.returnValue(of([sampleBackendResponses[1]]));
 
-      store.overrideSelector(selectors.getVisibleCardIds, ['card1', 'card2']);
+      store.overrideSelector(
+        selectors.getVisibleCardIdSet,
+        new Set(['card1', 'card2'])
+      );
       store.refreshState();
       actions$.next(
         actions.cardVisibilityChanged({
@@ -616,7 +631,10 @@ describe('metrics effects', () => {
         );
         fetchTimeSeriesSpy = spyOn(dataSource, 'fetchTimeSeries');
 
-        store.overrideSelector(selectors.getVisibleCardIds, ['card1']);
+        store.overrideSelector(
+          selectors.getVisibleCardIdSet,
+          new Set(['card1'])
+        );
         store.refreshState();
         actions$.next(
           actions.cardVisibilityChanged({
