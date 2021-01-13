@@ -18,7 +18,7 @@ limitations under the License.
 use std::convert::TryInto;
 use std::fmt::Debug;
 
-use crate::commit::{DataLoss, ScalarValue};
+use crate::commit::{BlobSequenceValue, DataLoss, ScalarValue};
 use crate::proto::tensorboard as pb;
 use pb::summary_metadata::PluginData;
 
@@ -65,6 +65,16 @@ impl EventValue {
                 None => Err(DataLoss),
             },
             _ => Err(DataLoss),
+        }
+    }
+
+    /// Consumes this event value and enriches it into a blob sequence.
+    ///
+    /// For now, this succeeds only for graphs.
+    pub fn into_blob_sequence(self) -> Result<BlobSequenceValue, DataLoss> {
+        match self {
+            EventValue::Summary(_) => Err(DataLoss),
+            EventValue::GraphDef(GraphDefValue(blob)) => Ok(BlobSequenceValue(vec![blob])),
         }
     }
 }
@@ -118,6 +128,11 @@ pub struct GraphDefValue(pub Vec<u8>);
 pub struct SummaryValue(pub Box<pb::summary::value::Value>);
 
 impl GraphDefValue {
+    /// Tag name used for run-level graphs.
+    ///
+    /// This must match `tensorboard.plugins.graph.metadata.RUN_GRAPH_NAME`.
+    pub const TAG_NAME: &'static str = "__run_graph__";
+
     /// Determines the metadata for a time series whose first event is a
     /// [`GraphDef`][`EventValue::GraphDef`].
     pub fn initial_metadata() -> Box<pb::SummaryMetadata> {
@@ -450,10 +465,19 @@ mod tests {
         use super::*;
 
         #[test]
-        fn test() {
+        fn test_metadata() {
             let md = GraphDefValue::initial_metadata();
             assert_eq!(&md.plugin_data.unwrap().plugin_name, GRAPHS_PLUGIN_NAME);
             assert_eq!(md.data_class, pb::DataClass::BlobSequence.into());
+        }
+
+        #[test]
+        fn test_enrich_graph_def() {
+            let v = EventValue::GraphDef(GraphDefValue(vec![1, 2, 3, 4]));
+            assert_eq!(
+                v.into_blob_sequence(),
+                Ok(BlobSequenceValue(vec![vec![1, 2, 3, 4]]))
+            );
         }
     }
 

@@ -56,6 +56,9 @@ pub struct RunData {
 
     /// Scalar time series for this run.
     pub scalars: TagStore<ScalarValue>,
+
+    /// Blob sequence time series for this run.
+    pub blob_sequences: TagStore<BlobSequenceValue>,
 }
 
 pub type TagStore<V> = HashMap<Tag, TimeSeries<V>>;
@@ -104,6 +107,12 @@ pub struct DataLoss;
 /// The value of a scalar time series at a single point.
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct ScalarValue(pub f32);
+
+/// The value of a blob sequence time series at a single point.
+///
+/// This value is a sequence of zero or more blobs, stored in memory.
+#[derive(Debug, Clone, PartialEq)]
+pub struct BlobSequenceValue(pub Vec<Vec<u8>>);
 
 #[cfg(test)]
 mod tests {
