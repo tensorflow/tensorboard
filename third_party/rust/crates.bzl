@@ -823,12 +823,52 @@ def raze_fetch_remote_crates():
 
     maybe(
         http_archive,
+        name = "raze__ryu__1_0_5",
+        url = "https://crates.io/api/v1/crates/ryu/1.0.5/download",
+        type = "tar.gz",
+        sha256 = "71d301d4193d031abdd79ff7e3dd721168a9572ef3fe51a1517aba235bd8f86e",
+        strip_prefix = "ryu-1.0.5",
+        build_file = Label("//third_party/rust/remote:BUILD.ryu-1.0.5.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "raze__same_file__1_0_6",
         url = "https://crates.io/api/v1/crates/same-file/1.0.6/download",
         type = "tar.gz",
         sha256 = "93fc1dc3aaa9bfed95e02e6eadabb4baf7e3078b0bd1b4d7b6b0b68378900502",
         strip_prefix = "same-file-1.0.6",
         build_file = Label("//third_party/rust/remote:BUILD.same-file-1.0.6.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "raze__serde__1_0_118",
+        url = "https://crates.io/api/v1/crates/serde/1.0.118/download",
+        type = "tar.gz",
+        sha256 = "06c64263859d87aa2eb554587e2d23183398d617427327cf2b3d0ed8c69e4800",
+        strip_prefix = "serde-1.0.118",
+        build_file = Label("//third_party/rust/remote:BUILD.serde-1.0.118.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "raze__serde_derive__1_0_118",
+        url = "https://crates.io/api/v1/crates/serde_derive/1.0.118/download",
+        type = "tar.gz",
+        sha256 = "c84d3526699cd55261af4b941e4e725444df67aa4f9e6a3564f18030d12672df",
+        strip_prefix = "serde_derive-1.0.118",
+        build_file = Label("//third_party/rust/remote:BUILD.serde_derive-1.0.118.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "raze__serde_json__1_0_61",
+        url = "https://crates.io/api/v1/crates/serde_json/1.0.61/download",
+        type = "tar.gz",
+        sha256 = "4fceb2595057b6891a4ee808f70054bd2d12f0e97f1cbb78689b59f676df325a",
+        strip_prefix = "serde_json-1.0.61",
+        build_file = Label("//third_party/rust/remote:BUILD.serde_json-1.0.61.bazel"),
     )
 
     maybe(
