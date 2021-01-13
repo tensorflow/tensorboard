@@ -27,6 +27,7 @@ rust_library(
     name = "rustboard_core",
     srcs = [
         "lib.rs",
+        "blob_key.rs",
         "cli.rs",
         "commit.rs",
         "data_compat.rs",
@@ -44,6 +45,7 @@ rust_library(
     ] + _checked_in_proto_files,
     edition = "2018",
     deps = [
+        "//third_party/rust:base64",
         "//third_party/rust:byteorder",
         "//third_party/rust:clap",
         "//third_party/rust:crc",
@@ -51,6 +53,8 @@ rust_library(
         "//third_party/rust:futures_core",
         "//third_party/rust:log",
         "//third_party/rust:prost",
+        "//third_party/rust:serde",
+        "//third_party/rust:serde_json",
         "//third_party/rust:rand",
         "//third_party/rust:rand_chacha",
         "//third_party/rust:thiserror",
