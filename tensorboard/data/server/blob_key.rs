@@ -139,7 +139,7 @@ mod tests {
     fn test_bad_json() {
         match "AAAAAA".parse::<BlobKey>().unwrap_err() {
             ParseBlobKeyError::BadJson(_) => (),
-            other => panic!("expected BadBase64(_), got {:?}", other),
+            other => panic!("expected BadJson(_), got {:?}", other),
         };
     }
 }
