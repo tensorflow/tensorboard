@@ -246,35 +246,6 @@ class SummaryV2OpTest(SummaryBaseTest, tf.test.TestCase):
             # Reset to default state for other tests.
             tf2.summary.experimental.set_step(None)
 
-    def test_lengths(self):
-        data = np.array(
-            [[[1.0], [0.0]], [[1.0], [-1.0]], [[0.0], [0.0]]]
-        ).astype(np.float32)
-        lengths = np.array([1, 2, 0]).astype(np.int32)
-        pb = self.audio(
-            "a", data, 44100, step=333, lengths=lengths, max_outputs=2
-        )
-        results = tensor_util.make_ndarray(pb.value[0].tensor)
-
-        self.assertEqual(results.shape, (2, 2))
-        # If lengths are respected, the first example will be 2 bytes shorter
-        # than the second.
-        self.assertLen(results[0, 0], 46)
-        self.assertLen(results[1, 0], 48)
-
-    def test_no_lengths(self):
-        data = np.array(
-            [[[1.0], [0.0]], [[1.0], [-1.0]], [[0.0], [0.0]]]
-        ).astype(np.float32)
-        pb = self.audio("a", data, 44100, step=333, lengths=None, max_outputs=2)
-        results = tensor_util.make_ndarray(pb.value[0].tensor)
-
-        self.assertEqual(results.shape, (2, 2))
-        # If no lengths are provided, both examples contain all samples in the
-        # dense tensor.
-        self.assertLen(results[0, 0], 48)
-        self.assertLen(results[1, 0], 48)
-
 
 if __name__ == "__main__":
     tf.test.main()
