@@ -34,6 +34,7 @@ import {LineChartComponent} from './line_chart_component';
   template: `
     <line-chart
       #chart
+      [enableUpdate]="enableUpdate"
       [preferredRendererType]="preferredRendererType"
       [seriesData]="seriesData"
       [seriesMetadataMap]="seriesMetadataMap"
@@ -66,6 +67,9 @@ class TestableComponent {
 
   @Input()
   fixedViewBox?: Extent;
+
+  @Input()
+  enableUpdate?: boolean;
 
   // WebGL one is harder to test.
   preferredRendererType = RendererType.SVG;
@@ -105,6 +109,7 @@ describe('line_chart_v2/line_chart test', () => {
     seriesMetadataMap: DataSeriesMetadataMap;
     yScaleType: ScaleType;
     fixedViewBox?: Extent;
+    enableUpdate?: boolean;
   }): ComponentFixture<TestableComponent> {
     const fixture = TestBed.createComponent(TestableComponent);
     fixture.componentInstance.seriesData = input.seriesData;
@@ -113,6 +118,10 @@ describe('line_chart_v2/line_chart test', () => {
 
     if (input.fixedViewBox) {
       fixture.componentInstance.fixedViewBox = input.fixedViewBox;
+    }
+
+    if (input.enableUpdate !== undefined) {
+      fixture.componentInstance.enableUpdate = input.enableUpdate;
     }
 
     return fixture;
@@ -348,6 +357,121 @@ describe('line_chart_v2/line_chart test', () => {
     expect(updateViewBoxSpy).toHaveBeenCalledWith({
       x: [-0.1, 1.1],
       y: [-0.1, 1.1],
+    });
+  });
+
+  describe('enableUpdate=false', () => {
+    it('disables any update', () => {
+      const fixture = createComponent({
+        enableUpdate: false,
+        seriesData: [
+          buildSeries({
+            id: 'foo',
+            points: [
+              {x: 0, y: 0},
+              {x: 1, y: -1},
+              {x: 2, y: 1},
+            ],
+          }),
+        ],
+        seriesMetadataMap: {foo: buildMetadata({id: 'foo', visible: true})},
+        yScaleType: ScaleType.LINEAR,
+      });
+      fixture.detectChanges();
+      expect(updateViewBoxSpy).toHaveBeenCalledTimes(0);
+
+      fixture.componentInstance.seriesMetadataMap = {};
+      fixture.detectChanges();
+
+      expect(updateViewBoxSpy).toHaveBeenCalledTimes(0);
+    });
+
+    it('sets update when enableUpdate changes to true', () => {
+      const fixture = createComponent({
+        enableUpdate: false,
+        seriesData: [
+          buildSeries({
+            id: 'foo',
+            points: [
+              {x: 0, y: 0},
+              {x: 1, y: -1},
+              {x: 2, y: 1},
+            ],
+          }),
+        ],
+        seriesMetadataMap: {foo: buildMetadata({id: 'foo', visible: true})},
+        yScaleType: ScaleType.LINEAR,
+      });
+      fixture.detectChanges();
+      expect(updateViewBoxSpy).toHaveBeenCalledTimes(0);
+      expect(updateMetadataSpy).toHaveBeenCalledTimes(0);
+      expect(updateDataSpy).toHaveBeenCalledTimes(0);
+
+      fixture.componentInstance.enableUpdate = true;
+      fixture.detectChanges();
+
+      expect(updateViewBoxSpy).toHaveBeenCalledTimes(1);
+      expect(updateMetadataSpy).toHaveBeenCalledTimes(1);
+      expect(updateDataSpy).toHaveBeenCalledTimes(1);
+    });
+
+    it('queues up viewBox changes and updates default viewBox when update is enabled', () => {
+      const fixture = createComponent({
+        enableUpdate: true,
+        seriesData: [
+          buildSeries({
+            id: 'foo',
+            points: [
+              {x: 0, y: 0},
+              {x: 1, y: -1},
+              {x: 2, y: 1},
+            ],
+          }),
+        ],
+        seriesMetadataMap: {foo: buildMetadata({id: 'foo', visible: true})},
+        yScaleType: ScaleType.LINEAR,
+      });
+      fixture.detectChanges();
+      expect(updateViewBoxSpy).toHaveBeenCalledTimes(1);
+      expect(updateViewBoxSpy.calls.argsFor(0)).toEqual([
+        {
+          x: [-0.2, 2.2],
+          y: [-1.2, 1.2],
+        },
+      ]);
+
+      fixture.componentInstance.enableUpdate = false;
+      fixture.detectChanges();
+
+      fixture.componentInstance.seriesData = [
+        buildSeries({
+          id: 'foo',
+          points: [
+            {x: 0, y: 0},
+            {x: 1, y: -1},
+            {x: 2, y: 1},
+            {x: 3, y: 1},
+          ],
+        }),
+      ];
+      fixture.detectChanges();
+
+      fixture.componentInstance.seriesMetadataMap = {
+        foo: buildMetadata({id: 'foo', visible: false}),
+      };
+      fixture.detectChanges();
+
+      fixture.componentInstance.enableUpdate = true;
+      fixture.detectChanges();
+
+      expect(updateViewBoxSpy).toHaveBeenCalledTimes(2);
+      // No runs are current visible so we set the default view extent.
+      expect(updateViewBoxSpy.calls.argsFor(1)).toEqual([
+        {
+          x: [-0.1, 1.1],
+          y: [-0.1, 1.1],
+        },
+      ]);
     });
   });
 });
