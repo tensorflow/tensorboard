@@ -14,6 +14,7 @@ tf_ng_module(
     ],
     deps = [
         "//tensorboard/webapp:app_state",
+        "//tensorboard/webapp/app_routing:app_root",
         "//tensorboard/webapp/app_routing:internal_utils",
         "//tensorboard/webapp/app_routing:location",
         "//tensorboard/webapp/app_routing:route_registry",
@@ -41,6 +42,7 @@ tf_ts_library(
         "//tensorboard/webapp/angular:expect_angular_platform_browser_animations",
         "//tensorboard/webapp/angular:expect_angular_platform_browser_dynamic_testing",
         "//tensorboard/webapp/angular:expect_ngrx_store_testing",
+        "//tensorboard/webapp/app_routing:app_root",
         "//tensorboard/webapp/app_routing:location",
         "//tensorboard/webapp/app_routing:route_registry",
         "//tensorboard/webapp/app_routing:testing",
