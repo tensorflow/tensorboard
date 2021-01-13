@@ -211,6 +211,45 @@ pub mod test_data {
             self
         }
 
+        /// Adds a blob sequence time series, creating the run if it doesn't exist, and setting its
+        /// start time if unset.
+        ///
+        /// # Examples
+        ///
+        /// ```
+        /// use rustboard_core::commit::{test_data::CommitBuilder, BlobSequenceValue, Commit};
+        ///
+        /// let my_commit: Commit = CommitBuilder::new()
+        ///     .blob_sequences("train", "input_image", |mut b| {
+        ///         b.plugin_name("images")
+        ///             .values(vec![
+        ///                 BlobSequenceValue(vec![b"step0img0".to_vec()]),
+        ///                 BlobSequenceValue(vec![b"step1img0".to_vec(), b"step1img1".to_vec()]),
+        ///             ])
+        ///             .build()
+        ///     })
+        ///     .build();
+        /// ```
+        pub fn blob_sequences(
+            self,
+            run: &str,
+            tag: &str,
+            build: impl FnOnce(BlobSequenceTimeSeriesBuilder) -> TimeSeries<BlobSequenceValue>,
+        ) -> Self {
+            self.with_run_data(Run(run.to_string()), |run_data| {
+                let time_series = build(BlobSequenceTimeSeriesBuilder::default());
+                if let (None, Some((_step, wall_time, _value))) =
+                    (run_data.start_time, time_series.valid_values().next())
+                {
+                    run_data.start_time = Some(wall_time);
+                }
+                run_data
+                    .blob_sequences
+                    .insert(Tag(tag.to_string()), time_series);
+            });
+            self
+        }
+
         /// Ensures that a run is present and sets its start time.
         ///
         /// If you don't care about the start time and the run is going to have data, anyway, you
@@ -301,6 +340,90 @@ pub mod test_data {
                     WallTime::new(f64::from(self.wall_time_start) + (i as f64)).unwrap();
                 let value = (self.eval)(step);
                 rsv.offer(step, (wall_time, Ok(ScalarValue(value))));
+            }
+            rsv.commit(&mut time_series.basin);
+
+            time_series
+        }
+    }
+
+    pub struct BlobSequenceTimeSeriesBuilder {
+        /// Initial step. Increments by `1` for each point.
+        step_start: Step,
+        /// Initial wall time. Increments by `1.0` for each point.
+        wall_time_start: WallTime,
+        /// Raw data for blob sequences in this time series. Defaults to
+        /// `vec![BlobSequenceValue(vec![])]`: i.e., one blob sequence, with one blob, which is
+        /// empty.
+        values: Vec<BlobSequenceValue>,
+        /// Custom summary metadata. Leave `None` to use default.
+        metadata: Option<Box<pb::SummaryMetadata>>,
+    }
+
+    impl Default for BlobSequenceTimeSeriesBuilder {
+        fn default() -> Self {
+            BlobSequenceTimeSeriesBuilder {
+                step_start: Step(0),
+                wall_time_start: WallTime::new(0.0).unwrap(),
+                values: vec![BlobSequenceValue(vec![])],
+                metadata: None,
+            }
+        }
+    }
+
+    /// Creates a summary metadata value with plugin name and data class, but no other contents.
+    fn blank(plugin_name: &str, data_class: pb::DataClass) -> Box<pb::SummaryMetadata> {
+        Box::new(pb::SummaryMetadata {
+            plugin_data: Some(pb::summary_metadata::PluginData {
+                plugin_name: plugin_name.to_string(),
+                ..Default::default()
+            }),
+            data_class: data_class.into(),
+            ..Default::default()
+        })
+    }
+
+    impl BlobSequenceTimeSeriesBuilder {
+        pub fn step_start(&mut self, raw_step: i64) -> &mut Self {
+            self.step_start = Step(raw_step);
+            self
+        }
+        pub fn wall_time_start(&mut self, raw_wall_time: f64) -> &mut Self {
+            self.wall_time_start = WallTime::new(raw_wall_time).unwrap();
+            self
+        }
+        pub fn values(&mut self, values: Vec<BlobSequenceValue>) -> &mut Self {
+            self.values = values;
+            self
+        }
+        pub fn metadata(&mut self, metadata: Option<Box<pb::SummaryMetadata>>) -> &mut Self {
+            self.metadata = metadata;
+            self
+        }
+        /// Sets the metadata to a blank, blob-sequence-class metadata value with the given plugin
+        /// name. Overwrites any existing call to [`metadata`].
+        pub fn plugin_name(&mut self, plugin_name: &str) -> &mut Self {
+            self.metadata(Some(blank(plugin_name, pb::DataClass::BlobSequence)))
+        }
+
+        /// Constructs a scalar time series from the state of this builder.
+        ///
+        /// # Panics
+        ///
+        /// If the wall time of a point would overflow to be infinite.
+        pub fn build(&self) -> TimeSeries<BlobSequenceValue> {
+            let metadata = self
+                .metadata
+                .clone()
+                .unwrap_or_else(|| blank("blobs", pb::DataClass::BlobSequence));
+            let mut time_series = TimeSeries::new(metadata);
+
+            let mut rsv = StageReservoir::new(self.values.len());
+            for (i, value) in self.values.iter().enumerate() {
+                let step = Step(self.step_start.0 + i as i64);
+                let wall_time =
+                    WallTime::new(f64::from(self.wall_time_start) + (i as f64)).unwrap();
+                rsv.offer(step, (wall_time, Ok(value.clone())));
             }
             rsv.commit(&mut time_series.basin);
 
