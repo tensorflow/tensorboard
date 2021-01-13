@@ -1,4 +1,5 @@
-load("//tensorboard/defs:defs.bzl", "tf_js_binary", "tf_ng_module", "tf_ng_web_test_suite", "tf_resource_digest_suffixer", "tf_sass_binary", "tf_sass_library", "tf_svg_bundle")
+load("//tensorboard/defs:defs.bzl", "tf_js_binary", "tf_ng_module", "tf_ng_web_test_suite", "tf_sass_binary", "tf_sass_library", "tf_svg_bundle")
+load("//tensorboard/defs:js.bzl", "tf_resource_digest_suffixer")
 load("//tensorboard/defs:web.bzl", "tf_web_library")
 load("//tensorboard/defs:vulcanize.bzl", "tensorboard_html_binary")
 

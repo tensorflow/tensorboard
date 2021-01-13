@@ -1,4 +1,5 @@
-load("//tensorboard/defs:defs.bzl", "tf_js_binary", "tf_resource_digest_suffixer", "tf_ts_library")
+load("//tensorboard/defs:defs.bzl", "tf_js_binary", "tf_ts_library")
+load("//tensorboard/defs:js.bzl", "tf_resource_digest_suffixer")
 
 package(default_visibility = ["//tensorboard/webapp/widgets/line_chart_v2/lib:__subpackages__"])
 
