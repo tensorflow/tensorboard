@@ -401,7 +401,7 @@ pub mod test_data {
             self
         }
         /// Sets the metadata to a blank, blob-sequence-class metadata value with the given plugin
-        /// name. Overwrites any existing call to [`metadata`].
+        /// name. Overwrites any existing call to [`metadata`][Self::metadata].
         pub fn plugin_name(&mut self, plugin_name: &str) -> &mut Self {
             self.metadata(Some(blank(plugin_name, pb::DataClass::BlobSequence)))
         }
