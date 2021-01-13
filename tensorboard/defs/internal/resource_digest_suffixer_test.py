@@ -17,7 +17,7 @@
 import os
 
 from tensorboard import test as tb_test
-from tensorboard.defs import resource_digest_suffixer
+from tensorboard.defs.internal import resource_digest_suffixer
 
 _EXPECTED_QUERY_FOR_MY_CONTENT = "_file_hash=1d079033"
 
