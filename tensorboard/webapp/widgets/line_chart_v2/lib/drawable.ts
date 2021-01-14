@@ -23,15 +23,26 @@ import {
 import {PaintBrush} from './paint_brush';
 import {ObjectRenderer} from './renderer/renderer_types';
 
-class RenderCacheContainer {
-  private prevFrameCache = new Map<string, any>();
-  private currFrameCache = new Map<string, any>();
+type Cacheable = {};
 
-  getFromPreviousFrame(key: string): any {
-    return this.prevFrameCache.get(key);
+export interface RenderCachePublicApi {
+  getFromPreviousFrame(key: string): Cacheable | null;
+  setToCurrentFrame(key: string, value: Cacheable): void;
+}
+
+class RenderCacheContainer implements RenderCachePublicApi {
+  private prevFrameCache = new Map<string, Cacheable>();
+  private currFrameCache = new Map<string, Cacheable>();
+
+  getFromPreviousFrame(key: string): Cacheable | null {
+    const value = this.prevFrameCache.get(key);
+    return value ?? null;
   }
 
-  setToCurrentFrame(key: string, value: any) {
+  setToCurrentFrame(key: string, value: Cacheable) {
+    if (!value) {
+      console.log(key);
+    }
     this.currFrameCache.set(key, value);
   }
 
@@ -41,7 +52,7 @@ class RenderCacheContainer {
    *
    * It returns cached objects that got removed from the new frame.
    */
-  finalizeFrameAndGetRemoved(): ReadonlyArray<any> {
+  finalizeFrameAndGetRemoved(): ReadonlyArray<Cacheable> {
     const removed = [];
 
     for (const [key, value] of this.prevFrameCache.entries()) {

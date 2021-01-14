@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+import {RenderCachePublicApi} from './drawable';
 import {Point} from './internal_types';
 import {
   CirclePaintOption,
@@ -21,11 +22,8 @@ import {
   TrianglePaintOption,
 } from './renderer/renderer_types';
 
-export interface PaintBrushContext<T = any> {
-  renderCache: {
-    getFromPreviousFrame(cacheKey: string): T;
-    setToCurrentFrame(cacheKey: string, obj: T): void;
-  };
+export interface PaintBrushContext {
+  renderCache: RenderCachePublicApi;
 }
 
 export class PaintBrush {
@@ -40,7 +38,9 @@ export class PaintBrush {
       polyline,
       paintOpt
     );
-    this.context.renderCache.setToCurrentFrame(cacheId, newCacheValue);
+    if (newCacheValue) {
+      this.context.renderCache.setToCurrentFrame(cacheId, newCacheValue);
+    }
   }
 
   setTriangle(cacheId: string, loc: Point, paintOpt: TrianglePaintOption) {
@@ -49,7 +49,9 @@ export class PaintBrush {
       loc,
       paintOpt
     );
-    this.context.renderCache.setToCurrentFrame(cacheId, newCacheValue);
+    if (newCacheValue) {
+      this.context.renderCache.setToCurrentFrame(cacheId, newCacheValue);
+    }
   }
 
   setCircle(cacheId: string, loc: Point, paintOpt: CirclePaintOption) {
@@ -58,6 +60,8 @@ export class PaintBrush {
       loc,
       paintOpt
     );
-    this.context.renderCache.setToCurrentFrame(cacheId, newCacheValue);
+    if (newCacheValue) {
+      this.context.renderCache.setToCurrentFrame(cacheId, newCacheValue);
+    }
   }
 }
