@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Injectable} from '@angular/core';
+import {Inject, Injectable} from '@angular/core';
 import {Actions, createEffect, ofType} from '@ngrx/effects';
 import {Action, createAction, Store} from '@ngrx/store';
 import {merge, Observable, of} from 'rxjs';
@@ -33,6 +33,7 @@ import {
   navigationRequested,
   stateRehydratedFromUrl,
 } from '../actions';
+import {AppRootProvider} from '../app_root';
 import {areRoutesEqual, getRouteId} from '../internal_utils';
 import {Location} from '../location';
 import {ProgrammaticalNavigationModule} from '../programmatical_navigation_module';
@@ -60,13 +61,20 @@ export class AppRoutingEffects {
     private readonly store: Store<State>,
     private readonly location: Location,
     registry: RouteRegistryModule,
-    private readonly programmaticalNavModule: ProgrammaticalNavigationModule
+    private readonly programmaticalNavModule: ProgrammaticalNavigationModule,
+    private readonly appRootProvider: AppRootProvider
   ) {
     this.routeConfigs = registry.getRouteConfigs();
   }
 
   private readonly onNavigationRequested$ = this.actions$.pipe(
-    ofType(navigationRequested)
+    ofType(navigationRequested),
+    map((navigation) => {
+      const resolvedPathname = navigation.pathname.startsWith('/')
+        ? this.appRootProvider.getAbsPathnameWithAppRoot(navigation.pathname)
+        : this.location.getResolvedPath(navigation.pathname);
+      return {...navigation, pathname: resolvedPathname};
+    })
   );
 
   private readonly onInit$: Observable<Navigation> = this.actions$
@@ -83,19 +91,35 @@ export class AppRoutingEffects {
       })
     );
 
+  /**
+   * Input observable must have absolute pathname with, when appRoot is present,
+   * appRoot prefixed (e.g., window.location.pathname).
+   */
   private readonly userInitNavRoute$ = merge(
     this.onNavigationRequested$,
     this.onInit$,
     this.location.onPopState().pipe(
       map((navigation) => {
-        return {...navigation, browserInitiated: true};
+        return {
+          pathname: navigation.pathname,
+          replaceState: navigation.replaceState,
+          browserInitiated: true,
+        };
       })
     )
   ).pipe(
     map<InternalNavigation, InternalNavigation>((navigation) => {
+      // Expect to have absolute navigation here.
+      if (!navigation.pathname.startsWith('/')) {
+        throw new Error(
+          `[App routing] pathname must start with '/'. Got: ${navigation.pathname}`
+        );
+      }
       return {
         ...navigation,
-        pathname: this.location.getResolvedPath(navigation.pathname),
+        pathname: this.appRootProvider.getAppRootlessPathname(
+          navigation.pathname
+        ),
       };
     }),
     map((navigationWithAbsolutePath) => {
@@ -254,18 +278,24 @@ export class AppRoutingEffects {
         }),
         filter(({route}) => {
           return !areRoutesEqual(route, {
-            pathname: this.location.getPath(),
+            pathname: this.appRootProvider.getAppRootlessPathname(
+              this.location.getPath()
+            ),
             queryParams: this.location.getSearch(),
           });
         }),
         tap(({preserveHash, route}) => {
           if (route.navigationOptions.replaceState) {
             this.location.replaceState(
-              this.location.getFullPathFromRouteOrNav(route, preserveHash)
+              this.appRootProvider.getAbsPathnameWithAppRoot(
+                this.location.getFullPathFromRouteOrNav(route, preserveHash)
+              )
             );
           } else {
             this.location.pushState(
-              this.location.getFullPathFromRouteOrNav(route, preserveHash)
+              this.appRootProvider.getAbsPathnameWithAppRoot(
+                this.location.getFullPathFromRouteOrNav(route, preserveHash)
+              )
             );
           }
         })

@@ -20,6 +20,8 @@ import {createURLSearchParamsFromSerializableQueryParams} from './internal_utils
 import {Navigation, Route, SerializableQueryParams} from './types';
 
 export interface LocationInterface {
+  getHref(): string;
+
   getSearch(): SerializableQueryParams;
 
   getHash(): string;
@@ -54,6 +56,10 @@ function isNavigation(
 
 @Injectable()
 export class Location implements LocationInterface {
+  getHref(): string {
+    return utils.getHref();
+  }
+
   getSearch(): SerializableQueryParams {
     const searchParams = new URLSearchParams(window.location.search);
     const serializableSearchParams: SerializableQueryParams = [];
