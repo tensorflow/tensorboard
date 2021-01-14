@@ -409,8 +409,7 @@ class CorePluginPathPrefixTest(tf.test.TestCase):
             % expected_tb_relative_root
         ).encode()
         self.assertEqual(
-            html,
-            expected_meta + FAKE_INDEX_HTML,
+            html, expected_meta + FAKE_INDEX_HTML,
         )
 
     def testIndex_no_path_prefix(self):
