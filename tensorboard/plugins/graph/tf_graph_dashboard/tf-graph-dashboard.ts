@@ -68,70 +68,70 @@ const RunItem = {};
 class TfGraphDashboard extends LegacyElementMixin(PolymerElement) {
   static readonly template = html`
     <paper-dialog id="error-dialog" with-backdrop></paper-dialog>
-    <template
-      is="dom-if"
-      if="[[_datasetsState(_datasetsFetched, _datasets, 'EMPTY')]]"
-    >
-      <div style="max-width: 540px; margin: 80px auto 0 auto;">
-        <h3>No graph definition files were found.</h3>
-        <p>
-          To store a graph, create a
-          <code>tf.summary.FileWriter</code>
-          and pass the graph either via the constructor, or by calling its
-          <code>add_graph()</code> method. You may want to check out the
-          <a href="https://www.tensorflow.org/get_started/graph_viz"
-            >graph visualizer tutorial</a
-          >.
-        </p>
+    <tf-dashboard-layout>
+      <tf-graph-controls
+        id="controls"
+        class="sidebar"
+        slot="sidebar"
+        devices-for-stats="{{_devicesForStats}}"
+        color-by-params="[[_colorByParams]]"
+        stats="[[_stats]]"
+        color-by="{{_colorBy}}"
+        datasets="[[_datasets]]"
+        render-hierarchy="[[_renderHierarchy]]"
+        selection="{{_selection}}"
+        selected-file="{{_selectedFile}}"
+        selected-node="{{_selectedNode}}"
+        health-pills-feature-enabled="[[_debuggerDataEnabled]]"
+        health-pills-toggled-on="{{healthPillsToggledOn}}"
+        on-fit-tap="_fit"
+        trace-inputs="{{_traceInputs}}"
+      ></tf-graph-controls>
+      <div class="center" slot="center">
+        <template
+          is="dom-if"
+          if="[[_datasetsState(_datasetsFetched, _datasets, 'EMPTY')]]"
+        >
+          <div style="max-width: 540px; margin: 80px auto 0 auto;">
+            <h3>No graph definition files were found.</h3>
+            <p>
+              To store a graph, create a
+              <code>tf.summary.FileWriter</code>
+              and pass the graph either via the constructor, or by calling its
+              <code>add_graph()</code> method. You may want to check out the
+              <a href="https://www.tensorflow.org/get_started/graph_viz"
+                >graph visualizer tutorial</a
+              >.
+            </p>
 
-        <p>
-          If you’re new to using TensorBoard, and want to find out how to add
-          data and set up your event files, check out the
-          <a
-            href="https://github.com/tensorflow/tensorboard/blob/master/README.md"
-            >README</a
-          >
-          and perhaps the
-          <a
-            href="https://www.tensorflow.org/get_started/summaries_and_tensorboard"
-            >TensorBoard tutorial</a
-          >.
-        </p>
+            <p>
+              If you’re new to using TensorBoard, and want to find out how to
+              add data and set up your event files, check out the
+              <a
+                href="https://github.com/tensorflow/tensorboard/blob/master/README.md"
+                >README</a
+              >
+              and perhaps the
+              <a
+                href="https://www.tensorflow.org/get_started/summaries_and_tensorboard"
+                >TensorBoard tutorial</a
+              >.
+            </p>
 
-        <p>
-          If you think TensorBoard is configured properly, please see
-          <a
-            href="https://github.com/tensorflow/tensorboard/blob/master/README.md#my-tensorboard-isnt-showing-any-data-whats-wrong"
-            >the section of the README devoted to missing data problems</a
-          >
-          and consider filing an issue on GitHub.
-        </p>
-      </div>
-    </template>
-    <template
-      is="dom-if"
-      if="[[_datasetsState(_datasetsFetched, _datasets, 'PRESENT')]]"
-    >
-      <tf-dashboard-layout>
-        <tf-graph-controls
-          id="controls"
-          class="sidebar"
-          slot="sidebar"
-          devices-for-stats="{{_devicesForStats}}"
-          color-by-params="[[_colorByParams]]"
-          stats="[[_stats]]"
-          color-by="{{_colorBy}}"
-          datasets="[[_datasets]]"
-          render-hierarchy="[[_renderHierarchy]]"
-          selection="{{_selection}}"
-          selected-file="{{_selectedFile}}"
-          selected-node="{{_selectedNode}}"
-          health-pills-feature-enabled="[[_debuggerDataEnabled]]"
-          health-pills-toggled-on="{{healthPillsToggledOn}}"
-          on-fit-tap="_fit"
-          trace-inputs="{{_traceInputs}}"
-        ></tf-graph-controls>
-        <div class="center" slot="center">
+            <p>
+              If you think TensorBoard is configured properly, please see
+              <a
+                href="https://github.com/tensorflow/tensorboard/blob/master/README.md#my-tensorboard-isnt-showing-any-data-whats-wrong"
+                >the section of the README devoted to missing data problems</a
+              >
+              and consider filing an issue on GitHub.
+            </p>
+          </div>
+        </template>
+        <template
+          is="dom-if"
+          if="[[_datasetsState(_datasetsFetched, _datasets, 'PRESENT')]]"
+        >
           <tf-graph-dashboard-loader
             id="loader"
             datasets="[[_datasets]]"
@@ -165,9 +165,9 @@ class TfGraphDashboard extends LegacyElementMixin(PolymerElement) {
             stats="[[_stats]]"
             trace-inputs="[[_traceInputs]]"
           ></tf-graph-board>
-        </div>
-      </tf-dashboard-layout>
-    </template>
+        </template>
+      </div>
+    </tf-dashboard-layout>
     <style>
       :host /deep/ {
         font-family: 'Roboto', sans-serif;
