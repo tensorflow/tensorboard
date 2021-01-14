@@ -109,7 +109,7 @@ export class LineChartComponent implements AfterViewInit, OnChanges, OnDestroy {
 
   /**
    * Optional parameter to tweak whether to propagate update to line chart implementation.
-   * When not specified, it defaults to `true`. When it is `false`, it remembers what has
+   * When not specified, it defaults to `false`. When it is `true`, it remembers what has
    * changed and applies the change when the update is enabled.
    */
   @Input()
