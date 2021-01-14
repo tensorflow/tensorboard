@@ -34,8 +34,6 @@ _HTML_MIME_TYPE = "text/html"
 _CSP_DEFAULT_SRC = "default-src"
 # Whitelist of allowed CSP violations.
 _CSP_IGNORE = {
-    # Allow TensorBoard to be iframed.
-    "frame-ancestors": ["*"],
     # Polymer-based code uses unsafe-inline.
     "style-src": ["'unsafe-inline'", "data:"],
     # Used in canvas
