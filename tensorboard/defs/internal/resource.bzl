@@ -18,7 +18,7 @@ def tf_resource_digest_suffixer(name, resources, template, out):
 
     In order to facilitate resource caching, the macro suffixes resource declaration in
     a template file by replacing it with one with query parameter,
-    "?_file_hash=[len_8_truncated_md5]".
+    "?_file_hash=[len_8_truncated_hash]".
 
     For example, if a template is "index.html" that contains content like below,
 
