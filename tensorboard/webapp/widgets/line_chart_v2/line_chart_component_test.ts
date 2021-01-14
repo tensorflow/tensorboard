@@ -34,7 +34,7 @@ import {LineChartComponent} from './line_chart_component';
   template: `
     <line-chart
       #chart
-      [enableUpdate]="enableUpdate"
+      [disableUpdate]="disableUpdate"
       [preferredRendererType]="preferredRendererType"
       [seriesData]="seriesData"
       [seriesMetadataMap]="seriesMetadataMap"
@@ -69,7 +69,7 @@ class TestableComponent {
   fixedViewBox?: Extent;
 
   @Input()
-  enableUpdate?: boolean;
+  disableUpdate?: boolean;
 
   // WebGL one is harder to test.
   preferredRendererType = RendererType.SVG;
@@ -109,7 +109,7 @@ describe('line_chart_v2/line_chart test', () => {
     seriesMetadataMap: DataSeriesMetadataMap;
     yScaleType: ScaleType;
     fixedViewBox?: Extent;
-    enableUpdate?: boolean;
+    disableUpdate?: boolean;
   }): ComponentFixture<TestableComponent> {
     const fixture = TestBed.createComponent(TestableComponent);
     fixture.componentInstance.seriesData = input.seriesData;
@@ -120,8 +120,8 @@ describe('line_chart_v2/line_chart test', () => {
       fixture.componentInstance.fixedViewBox = input.fixedViewBox;
     }
 
-    if (input.enableUpdate !== undefined) {
-      fixture.componentInstance.enableUpdate = input.enableUpdate;
+    if (input.disableUpdate !== undefined) {
+      fixture.componentInstance.disableUpdate = input.disableUpdate;
     }
 
     return fixture;
@@ -360,10 +360,10 @@ describe('line_chart_v2/line_chart test', () => {
     });
   });
 
-  describe('enableUpdate=false', () => {
+  describe('disableUpdate=true', () => {
     it('disables any update', () => {
       const fixture = createComponent({
-        enableUpdate: false,
+        disableUpdate: true,
         seriesData: [
           buildSeries({
             id: 'foo',
@@ -386,9 +386,9 @@ describe('line_chart_v2/line_chart test', () => {
       expect(updateViewBoxSpy).toHaveBeenCalledTimes(0);
     });
 
-    it('sets update when enableUpdate changes to true', () => {
+    it('sets update when disableUpdate changes to false', () => {
       const fixture = createComponent({
-        enableUpdate: false,
+        disableUpdate: true,
         seriesData: [
           buildSeries({
             id: 'foo',
@@ -407,7 +407,7 @@ describe('line_chart_v2/line_chart test', () => {
       expect(updateMetadataSpy).toHaveBeenCalledTimes(0);
       expect(updateDataSpy).toHaveBeenCalledTimes(0);
 
-      fixture.componentInstance.enableUpdate = true;
+      fixture.componentInstance.disableUpdate = false;
       fixture.detectChanges();
 
       expect(updateViewBoxSpy).toHaveBeenCalledTimes(1);
@@ -417,7 +417,7 @@ describe('line_chart_v2/line_chart test', () => {
 
     it('queues up viewBox changes and updates default viewBox when update is enabled', () => {
       const fixture = createComponent({
-        enableUpdate: true,
+        disableUpdate: false,
         seriesData: [
           buildSeries({
             id: 'foo',
@@ -440,7 +440,7 @@ describe('line_chart_v2/line_chart test', () => {
         },
       ]);
 
-      fixture.componentInstance.enableUpdate = false;
+      fixture.componentInstance.disableUpdate = true;
       fixture.detectChanges();
 
       fixture.componentInstance.seriesData = [
@@ -461,7 +461,7 @@ describe('line_chart_v2/line_chart test', () => {
       };
       fixture.detectChanges();
 
-      fixture.componentInstance.enableUpdate = true;
+      fixture.componentInstance.disableUpdate = false;
       fixture.detectChanges();
 
       expect(updateViewBoxSpy).toHaveBeenCalledTimes(2);

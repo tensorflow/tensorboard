@@ -86,7 +86,7 @@ limitations under the License.
   <ng-container *ngIf="isEverVisible">
     <line-chart
       *ngIf="gpuLineChartEnabled; else legacyChart"
-      [enableUpdate]="isCardVisible"
+      [disableUpdate]="!isCardVisible"
       [preferredRendererType]="RendererType.WEBGL"
       [seriesData]="dataSeries"
       [seriesMetadataMap]="chartMetadataMap"

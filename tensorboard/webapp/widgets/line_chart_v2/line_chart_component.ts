@@ -113,7 +113,7 @@ export class LineChartComponent implements AfterViewInit, OnChanges, OnDestroy {
    * changed and applies the change when the update is enabled.
    */
   @Input()
-  enableUpdate?: boolean;
+  disableUpdate?: boolean;
 
   /**
    * Whether to ignore outlier when computing default viewBox from the dataSeries.
@@ -316,7 +316,7 @@ export class LineChartComponent implements AfterViewInit, OnChanges, OnDestroy {
    * Minimally and imperatively updates the chart library depending on prop changed.
    */
   private updateLineChart() {
-    if (!this.lineChart || this.enableUpdate === false) return;
+    if (!this.lineChart || this.disableUpdate === true) return;
 
     if (this.scaleUpdated) {
       this.scaleUpdated = false;

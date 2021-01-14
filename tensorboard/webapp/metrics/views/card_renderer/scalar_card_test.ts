@@ -111,6 +111,7 @@ class TestableGpuLineChart {
   @Input() xScaleType!: ScaleType;
   @Input() yScaleType!: ScaleType;
   @Input() ignoreYOutliers!: boolean;
+  @Input() disableUpdate?: boolean;
   @Input()
   tooltipTemplate!: TemplateRef<{data: TooltipDatum[]}>;
 
