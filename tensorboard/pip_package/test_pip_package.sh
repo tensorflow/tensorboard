@@ -24,7 +24,7 @@ Test pre-built TensorBoard Pip packages.
 Options:
   --tf-version VERSION: Test against the provided version of TensorFlow,
       given as a Pip package specifier like "tensorflow==2.0.0a0" or
-      "tf-nightly". If empty, will test without installing TensorFlow.
+      "tf-nightly". If empty or "notf", will test without installing TensorFlow.
       Defaults to "tf-nightly".
 EOF
 }
@@ -104,6 +104,9 @@ smoke() (
   smoke_venv="${virtualenvs_root}/venv-${smoke_python}/"
   set +x
   printf '\n\n%70s\n' '' | tr ' ' '='
+  if [ "${tf_version}" = notf ]; then
+      tf_version=
+  fi
   if [ -z "${tf_version}" ]; then
     echo "Smoke testing with ${smoke_python} and no tensorflow..."
   else

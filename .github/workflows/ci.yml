@@ -6,9 +6,6 @@
 # Helpful YAML parser to clarify YAML syntax:
 # https://yaml-online-parser.appspot.com/
 
-# For now, we only use GitHub Actions for lint checks, pending better
-# support for hermetic-style caching. See:
-# https://github.com/actions/cache/issues/109
 name: CI
 
 on:
@@ -18,13 +15,94 @@ on:
       - '[0-9]+.*'
       - 'ci-*'
   pull_request: {}
+  schedule:
+    # 13:00 UTC is 05:00 in Pacific standard time (UTC-8), which is well
+    # after nightly TensorFlow wheels are released (around 2--3 AM) and
+    # just after nightly TensorBoard wheels are released (around 04:15).
+    # (cron syntax: minute hour day-of-month month day-of-week)
+    - cron: '0 13 * * *'
 
 env:
+  # Keep this Bazel version in sync with the `versions.check` directive
+  # in our WORKSPACE file.
+  BAZEL_VERSION: '2.1.0'
+  BAZEL_SHA256SUM: 'e13581d44faad6ac807dd917e682fef20359d26728166ac35dadd8ee653a580d'
   BUILDTOOLS_VERSION: '3.0.0'
   BUILDIFIER_SHA256SUM: 'e92a6793c7134c5431c58fbc34700664f101e5c9b1c1fcd93b97978e8b7f88db'
   BUILDOZER_SHA256SUM: '3d58a0b6972e4535718cdd6c12778170ea7382de7c75bc3728f5719437ffb84d'
 
 jobs:
+  build:
+    runs-on: ubuntu-16.04
+    needs: lint-python-flake8 # fail fast in case of "undefined variable" errors
+    strategy:
+      fail-fast: false
+      matrix:
+        tf_version_id: ['tf-nightly', 'notf']
+        python_version: ['3.7']
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python_version }}
+          architecture: 'x64'
+      - name: 'Set up Bazel'
+        run: |
+          ci/download_bazel.sh "${BAZEL_VERSION}" "${BAZEL_SHA256SUM}" ~/bazel
+          sudo mv ~/bazel /usr/local/bin/bazel
+          sudo chmod +x /usr/local/bin/bazel
+          cp ./ci/bazelrc ~/.bazelrc
+      - name: 'Configure build cache write credentials'
+        env:
+          CREDS: ${{ secrets.BAZEL_CACHE_SERVICE_ACCOUNT_CREDS }}
+          EVENT_TYPE: ${{ github.event_name }}
+        run: |
+          if [ -z "${CREDS}" ]; then
+            printf 'Using read-only cache (no credentials)\n'
+            exit
+          fi
+          if [ "${EVENT_TYPE}" = pull_request ]; then
+            printf 'Using read-only cache (PR build)\n'
+            exit
+          fi
+          printf 'Using writable cache\n'
+          creds_file=/tmp/service_account_creds.json
+          printf '%s\n' "${CREDS}" >"${creds_file}"
+          printf '%s\n' >>~/.bazelrc \
+            "common --google_credentials=${creds_file}" \
+            "common --remote_upload_local_results=true" \
+            ;
+      - name: 'Install Python dependencies'
+        run: |
+          python -m pip install -U pip
+          pip install \
+            -r ./tensorboard/pip_package/requirements.txt \
+            -r ./tensorboard/pip_package/requirements_dev.txt \
+            ;
+      - name: 'Install TensorFlow'
+        run: pip install "${{ matrix.tf_version_id }}"
+        if: matrix.tf_version_id != 'notf'
+      - name: 'Check Pip state'
+        run: pip freeze --all
+      - name: 'Bazel: fetch'
+        run: bazel fetch //tensorboard/...
+      - name: 'Bazel: build'
+        run: bazel build //tensorboard/...
+      - name: 'Bazel: test (with TensorFlow support)'
+        run: bazel test //tensorboard/...
+        if: matrix.tf_version_id != 'notf'
+      - name: 'Bazel: test (non-TensorFlow only)'
+        run: bazel test //tensorboard/... --test_tag_filters="support_notf"
+        if: matrix.tf_version_id == 'notf'
+      - name: 'Bazel: run Pip package test'
+        run: |
+          bazel run //tensorboard/pip_package:test_pip_package -- \
+            --tf-version "${{ matrix.tf_version_id }}"
+      - name: 'Bazel: run manual tests'
+        run: |
+          bazel test //tensorboard/compat/tensorflow_stub:gfile_s3_test &&
+          bazel test //tensorboard/summary/writer:event_file_writer_s3_test
+
   lint-python-flake8:
     runs-on: ubuntu-16.04
     strategy:
@@ -50,7 +128,7 @@ jobs:
         # Use the comment '# noqa: <error code>' to suppress.
         run: flake8 . --count --select=E9,F63,F7,F82,F401 --show-source --statistics
 
-  lint-python:
+  lint-python-yaml-docs:
     runs-on: ubuntu-16.04
     steps:
       - uses: actions/checkout@v1
@@ -58,24 +136,31 @@ jobs:
         with:
           python-version: '3.6'
           architecture: 'x64'
-      - name: 'Install black'
+      - name: 'Install black, yamllint, and the TensorFlow docs notebook tools'
         run: |
           python -m pip install -U pip
-          pip install black -c ./tensorboard/pip_package/requirements_dev.txt
+          nbfmt_version="174c9a5c1cc51a3af1de98d84824c811ecd49029"
+          pip install black yamllint -c ./tensorboard/pip_package/requirements_dev.txt
+          pip install -U git+https://github.com/tensorflow/docs@${nbfmt_version}
       - run: pip freeze --all
       - name: 'Lint Python code for style with Black'
         # You can run `black .` to fix all Black complaints.
         run: black --check --diff .
+      - name: 'Lint YAML for gotchas with yamllint'
+        # Use '# yamllint disable-line rule:foo' to suppress.
+        run: yamllint -c docs/.yamllint docs docs/.yamllint
+      - name: 'Lint Colab notebooks for formatting with nbfmt'
+        run: git ls-files -z '*.ipynb' | xargs -0 python3 -m tensorflow_docs.tools.nbfmt --test
 
   lint-rust:
     runs-on: ubuntu-16.04
     strategy:
       matrix:
-        rust_version: ['1.47.0']
+        rust_version: ['1.48.0']
         cargo_raze_version: ['0.7.0']
     steps:
       - uses: actions/checkout@v1
-      - name: 'Cache Cargo home directory'
+      - name: 'Cache Cargo artifacts'
         uses: actions/cache@v2
         with:
           path: |
@@ -88,7 +173,7 @@ jobs:
             # Needed for installing binaries (`cargo-raze`) with cache
             ~/.cargo/.crates.toml
             ~/.cargo/.crates2.json
-          key: ${{ runner.os }}-cargo-${{ matrix.rust_version }}-${{ matrix.cargo_raze_version }}-${{ hashFiles('**/Cargo.lock', '.github/workflows/ci.yml') }}
+          key: lint-rust-${{ runner.os }}-cargo-${{ matrix.rust_version }}-${{ matrix.cargo_raze_version }}-${{ hashFiles('**/Cargo.lock', '.github/workflows/ci.yml') }}
       - name: 'Install Rust toolchain'
         uses: actions-rs/toolchain@v1
         with:
@@ -101,36 +186,13 @@ jobs:
         uses: actions-rs/clippy-check@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          args: --manifest-path tensorboard/data/server/Cargo.toml
+          args: --tests --manifest-path tensorboard/data/server/Cargo.toml
       - name: 'Check cargo-raze freshness'
         run: |
           rm -rf third_party/rust/
-          (cd tensorboard/data/server/ && cargo generate-lockfile && cargo raze)
+          (cd tensorboard/data/server/ && cargo fetch && cargo raze)
           git add .
           git diff --staged --exit-code
-
-  lint-docs:
-    runs-on: ubuntu-16.04
-    steps:
-      - uses: actions/checkout@v1
-      - uses: actions/setup-python@v1
-        with:
-          python-version: '3.6'
-          architecture: 'x64'
-      - name: 'Install yamllint'
-        run: |
-          python -m pip install -U pip
-          pip install yamllint -c ./tensorboard/pip_package/requirements_dev.txt
-      - run: pip freeze --all
-      - name: 'Lint YAML for gotchas with yamllint'
-        # Use '# yamllint disable-line rule:foo' to suppress.
-        run: yamllint -c docs/.yamllint docs docs/.yamllint
-      - name: 'Install the TensorFlow docs notebook tools'
-        run: |
-          nbfmt_version="174c9a5c1cc51a3af1de98d84824c811ecd49029"
-          python3 -m pip install -U git+https://github.com/tensorflow/docs@${nbfmt_version}
-      - name: 'Use nbfmt to check Colab notebooks for formatting'
-        run: git ls-files -z '*.ipynb' | xargs -0 python3 -m tensorflow_docs.tools.nbfmt --test
 
   lint-frontend:
     runs-on: ubuntu-16.04
@@ -152,7 +214,7 @@ jobs:
       - run: |
           ! git grep -E '"@npm//d3"|"@npm//@types/d3"' 'tensorboard/webapp/**/*BUILD' ':!tensorboard/webapp/third_party/**'
 
-  lint-build:
+  lint-misc: # build, protos, etc.
     runs-on: ubuntu-16.04
     steps:
       - uses: actions/checkout@v1
@@ -179,11 +241,6 @@ jobs:
         # https://github.com/bazelbuild/buildtools/blob/master/buildozer/README.md#error-code
         run: |
           buildozer '//tensorboard/...:%licenses' remove_comment && false || test $? = 3
-
-  lint-proto:
-    runs-on: ubuntu-16.04
-    steps:
-      - uses: actions/checkout@v1
       - name: clang-format lint
         uses: DoozyX/clang-format-lint-action@v0.5
         with:
@@ -192,11 +249,6 @@ jobs:
           exclude: ./tensorboard/compat/proto
           extensions: 'proto'
           clangFormatVersion: 9
-
-  check-misc:
-    runs-on: ubuntu-16.04
-    steps:
-      - uses: actions/checkout@v1
       - run: ./tensorboard/tools/do_not_submit_test.sh
       - run: ./tensorboard/tools/license_test.sh
       - run: ./tensorboard/tools/whitespace_hygiene_test.py
