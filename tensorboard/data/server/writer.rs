@@ -54,6 +54,17 @@ pub trait SummaryWriteExt: Write {
         };
         self.write_event(&event)
     }
+
+    /// Writes a TFRecord containing a TF 1.x `graph_def` event.
+    fn write_graph(&mut self, step: Step, wt: WallTime, bytes: Vec<u8>) -> std::io::Result<()> {
+        let event = pb::Event {
+            step: step.0,
+            wall_time: wt.into(),
+            what: Some(pb::event::What::GraphDef(bytes)),
+            ..Default::default()
+        };
+        self.write_event(&event)
+    }
 }
 
 impl<W: Write> SummaryWriteExt for W {}
@@ -119,6 +130,30 @@ mod tests {
                 }],
                 ..Default::default()
             })),
+            ..Default::default()
+        };
+        assert_eq!(event, &expected);
+    }
+
+    #[test]
+    fn test_graph_roundtrip() {
+        let mut cursor = Cursor::new(Vec::<u8>::new());
+        cursor
+            .write_graph(
+                Step(777),
+                WallTime::new(1234.5).unwrap(),
+                b"my graph".to_vec(),
+            )
+            .unwrap();
+        cursor.set_position(0);
+        let events = read_all_events(cursor).unwrap();
+        assert_eq!(events.len(), 1);
+
+        let event = &events[0];
+        let expected = pb::Event {
+            step: 777,
+            wall_time: 1234.5,
+            what: Some(pb::event::What::GraphDef(b"my graph".to_vec())),
             ..Default::default()
         };
         assert_eq!(event, &expected);

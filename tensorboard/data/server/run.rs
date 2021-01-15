@@ -23,7 +23,7 @@ use std::path::PathBuf;
 use std::sync::RwLock;
 
 use crate::commit;
-use crate::data_compat::{EventValue, SummaryValue};
+use crate::data_compat::{EventValue, GraphDefValue, SummaryValue};
 use crate::event_file::EventFileReader;
 use crate::proto::tensorboard as pb;
 use crate::reservoir::StageReservoir;
@@ -117,15 +117,7 @@ impl StageTimeSeries {
                 );
             }
             DataClass::BlobSequence => {
-                warn!(
-                    "Blob sequence time series not yet supported (tag: {}, plugin: {})",
-                    tag.0,
-                    self.metadata
-                        .plugin_data
-                        .as_ref()
-                        .map(|p| p.plugin_name.as_str())
-                        .unwrap_or("")
-                );
+                self.commit_to(tag, &mut run.blob_sequences, EventValue::into_blob_sequence)
             }
             _ => (),
         };
@@ -270,9 +262,19 @@ fn read_event(
         *start_time = Some(wall_time);
     }
     match e.what {
-        Some(pb::event::What::GraphDef(_)) => {
-            // TODO(@wchargin): Handle run graphs.
-            warn!("`graph_def` events not yet handled");
+        Some(pb::event::What::GraphDef(graph_bytes)) => {
+            let sv = StageValue {
+                wall_time,
+                payload: EventValue::GraphDef(GraphDefValue(graph_bytes)),
+            };
+            use std::collections::hash_map::Entry;
+            let ts = match time_series.entry(Tag(GraphDefValue::TAG_NAME.to_string())) {
+                Entry::Occupied(o) => o.into_mut(),
+                Entry::Vacant(v) => {
+                    v.insert(StageTimeSeries::new(GraphDefValue::initial_metadata()))
+                }
+            };
+            ts.rsv.offer(step, sv);
         }
         Some(pb::event::What::Summary(sum)) => {
             for mut summary_pb_value in sum.value {
@@ -338,6 +340,11 @@ mod test {
         // Write some data points across both files.
         let run = Run("train".to_string());
         let tag = Tag("accuracy".to_string());
+        f1.write_graph(
+            Step(0),
+            WallTime::new(1235.0).unwrap(),
+            b"<sample model graph>".to_vec(),
+        )?;
         f1.write_scalar(&tag, Step(0), WallTime::new(1235.0).unwrap(), 0.25)?;
         f1.write_scalar(&tag, Step(1), WallTime::new(1236.0).unwrap(), 0.50)?;
         f1.write_scalar(&tag, Step(2), WallTime::new(1237.0).unwrap(), 0.75)?;
@@ -371,9 +378,9 @@ mod test {
             .expect("read-locking run data map");
 
         assert_eq!(run_data.scalars.keys().collect::<Vec<_>>(), vec![&tag]);
-        let ts = run_data.scalars.get(&tag).unwrap();
+        let scalar_ts = run_data.scalars.get(&tag).unwrap();
         assert_eq!(
-            *ts.metadata,
+            *scalar_ts.metadata,
             pb::SummaryMetadata {
                 plugin_data: Some(pb::summary_metadata::PluginData {
                     plugin_name: crate::data_compat::SCALARS_PLUGIN_NAME.to_string(),
@@ -383,11 +390,10 @@ mod test {
                 ..Default::default()
             }
         );
-
         // Points should be as expected (no downsampling at these sizes).
         let scalar = commit::ScalarValue;
         assert_eq!(
-            ts.valid_values().collect::<Vec<_>>(),
+            scalar_ts.valid_values().collect::<Vec<_>>(),
             vec![
                 (Step(0), WallTime::new(1235.0).unwrap(), &scalar(0.25)),
                 (Step(1), WallTime::new(1236.0).unwrap(), &scalar(0.50)),
@@ -395,6 +401,32 @@ mod test {
                 (Step(3), WallTime::new(2347.0).unwrap(), &scalar(0.85)),
                 (Step(4), WallTime::new(2348.0).unwrap(), &scalar(0.90)),
             ]
+        );
+
+        let run_graph_tag = Tag(GraphDefValue::TAG_NAME.to_string());
+        assert_eq!(
+            run_data.blob_sequences.keys().collect::<Vec<_>>(),
+            vec![&run_graph_tag]
+        );
+        let graph_ts = run_data.blob_sequences.get(&run_graph_tag).unwrap();
+        assert_eq!(
+            *graph_ts.metadata,
+            pb::SummaryMetadata {
+                plugin_data: Some(pb::summary_metadata::PluginData {
+                    plugin_name: crate::data_compat::GRAPHS_PLUGIN_NAME.to_string(),
+                    ..Default::default()
+                }),
+                data_class: pb::DataClass::BlobSequence.into(),
+                ..Default::default()
+            }
+        );
+        assert_eq!(
+            graph_ts.valid_values().collect::<Vec<_>>(),
+            vec![(
+                Step(0),
+                WallTime::new(1235.0).unwrap(),
+                &commit::BlobSequenceValue(vec![b"<sample model graph>".to_vec()])
+            )]
         );
 
         Ok(())
