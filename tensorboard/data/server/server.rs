@@ -25,7 +25,6 @@ use tonic::{Request, Response, Status};
 
 use crate::commit::{self, Commit};
 use crate::downsample;
-use crate::proto::tensorboard as pb;
 use crate::proto::tensorboard::data;
 use crate::types::{Run, Tag, WallTime};
 use data::tensor_board_data_provider_server::TensorBoardDataProvider;
@@ -59,8 +58,9 @@ impl TensorBoardDataProvider for DataProviderHandler {
             let data = data
                 .read()
                 .map_err(|_| Status::internal(format!("failed to read run data for {:?}", run)))?;
-            for time_series in data.scalars.values() {
-                let metadata: &pb::SummaryMetadata = time_series.metadata.as_ref();
+            for metadata in (data.scalars.values().map(|ts| ts.metadata.as_ref()))
+                .chain(data.blob_sequences.values().map(|ts| ts.metadata.as_ref()))
+            {
                 let plugin_name = match &metadata.plugin_data {
                     Some(d) => d.plugin_name.clone(),
                     None => String::new(),
@@ -348,6 +348,7 @@ mod tests {
     use tonic::Code;
 
     use crate::commit::test_data::CommitBuilder;
+    use crate::proto::tensorboard as pb;
     use crate::types::{Run, Step, Tag};
 
     fn sample_handler(commit: Commit) -> DataProviderHandler {
@@ -361,6 +362,9 @@ mod tests {
     async fn test_list_plugins() {
         let commit = CommitBuilder::new()
             .scalars("train", "xent", |b| b.build())
+            .blob_sequences("train", "input_image", |mut b| {
+                b.plugin_name("images").build()
+            })
             .build();
         let handler = sample_handler(commit);
         let req = Request::new(data::ListPluginsRequest {
@@ -368,8 +372,13 @@ mod tests {
         });
         let res = handler.list_plugins(req).await.unwrap().into_inner();
         assert_eq!(
-            res.plugins.into_iter().map(|p| p.name).collect::<Vec<_>>(),
-            vec!["scalars"]
+            res.plugins
+                .iter()
+                .map(|p| p.name.as_str())
+                .collect::<HashSet<&str>>(),
+            vec!["scalars", "images"]
+                .into_iter()
+                .collect::<HashSet<&str>>(),
         );
     }
 
