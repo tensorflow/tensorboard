@@ -205,7 +205,7 @@ export class LineChartComponent<
   private formatByXAxisType(seriesData: Point<ExtraPointData>[]) {
     return seriesData.map((datum) => {
       if (this.isWallTimeBased(this.xAxisType)) {
-        return {...datum, wall_time: new Date(datum.x)};
+        return {...datum, wall_time: new Date(datum.x * 1000)};
       }
       return {...datum, step: datum.x};
     });

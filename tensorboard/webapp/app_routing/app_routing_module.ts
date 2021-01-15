@@ -16,6 +16,7 @@ import {NgModule} from '@angular/core';
 import {EffectsModule} from '@ngrx/effects';
 import {StoreModule} from '@ngrx/store';
 
+import {AppRootProvider} from './app_root';
 import {AppRoutingEffects} from './effects';
 import {LocationModule} from './location_module';
 import {ProgrammaticalNavigationModule} from './programmatical_navigation_module';
@@ -28,6 +29,6 @@ import {APP_ROUTING_FEATURE_KEY} from './store/app_routing_types';
     EffectsModule.forFeature([AppRoutingEffects]),
     LocationModule,
   ],
-  providers: [ProgrammaticalNavigationModule],
+  providers: [ProgrammaticalNavigationModule, AppRootProvider],
 })
 export class AppRoutingModule {}

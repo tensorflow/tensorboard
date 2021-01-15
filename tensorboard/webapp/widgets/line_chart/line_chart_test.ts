@@ -115,7 +115,7 @@ describe('LineChart', () => {
       {
         seriesId: 'series1',
         metadata: {},
-        points: [{x: 10, y: 20, flavor: 'spicy'}],
+        points: [{x: 1610612159, y: 20, flavor: 'spicy'}],
         visible: true,
       },
     ];
@@ -174,8 +174,10 @@ describe('LineChart', () => {
         'series1',
         [
           {
-            ...fakeSeriesDataList[0].points[0],
-            wall_time: new Date(fakeSeriesDataList[0].points[0].x),
+            x: 1610612159,
+            wall_time: new Date(1610612159 * 1000),
+            y: 20,
+            flavor: 'spicy',
           },
         ],
       ],
@@ -207,8 +209,8 @@ describe('LineChart', () => {
       setSeriesDataCallArgs.push(args);
     });
 
-    const fakePoints1 = [{x: 10, y: 20, flavor: 'spicy'}];
-    const fakePoints2 = [{x: 30, y: 40, flavor: 'bitter'}];
+    const fakePoints1 = [{x: 1610613017, y: 20, flavor: 'spicy'}];
+    const fakePoints2 = [{x: 1610613025, y: 40, flavor: 'bitter'}];
     const fakeSeriesDataList1 = [
       {
         seriesId: 'series1',
@@ -235,7 +237,17 @@ describe('LineChart', () => {
     fixture.detectChanges();
 
     expect(setSeriesDataCallArgs).toEqual([
-      ['series1', [{...fakePoints1[0], wall_time: new Date(fakePoints1[0].x)}]],
+      [
+        'series1',
+        [
+          {
+            x: 1610613017,
+            wall_time: new Date(1610613017 * 1000),
+            y: 20,
+            flavor: 'spicy',
+          },
+        ],
+      ],
     ]);
 
     fixture.componentInstance.xAxisType = XAxisType.STEP;
@@ -243,7 +255,7 @@ describe('LineChart', () => {
 
     expect(setSeriesDataCallArgs).toEqual([
       setSeriesDataCallArgs[0],
-      ['series1', [{...fakePoints1[0], step: fakePoints1[0].x}]],
+      ['series1', [{x: 1610613017, step: 1610613017, y: 20, flavor: 'spicy'}]],
     ]);
 
     fixture.componentInstance.seriesDataList = fakeSeriesDataList2;
@@ -252,7 +264,7 @@ describe('LineChart', () => {
     expect(setSeriesDataCallArgs).toEqual([
       setSeriesDataCallArgs[0],
       setSeriesDataCallArgs[1],
-      ['series2', [{...fakePoints2[0], step: fakePoints2[0].x}]],
+      ['series2', [{x: 1610613025, step: 1610613025, y: 40, flavor: 'bitter'}]],
     ]);
   });
 

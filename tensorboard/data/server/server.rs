@@ -635,6 +635,6 @@ mod tests {
         let map = run_tag_map!(res.runs);
         let train_run = &map[&Run("train".to_string())];
         let xent_data = &train_run[&Tag("xent".to_string())].data.as_ref().unwrap();
-        assert_eq!(xent_data.value, Vec::new());
+        assert_eq!(xent_data.value, Vec::<f32>::new());
     }
 }

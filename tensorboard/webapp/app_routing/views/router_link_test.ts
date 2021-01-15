@@ -22,6 +22,7 @@ import {MockStore, provideMockStore} from '@ngrx/store/testing';
 
 import {State} from '../../app_state';
 import {navigationRequested} from '../actions';
+import {AppRootProvider, TestableAppRootProvider} from '../app_root';
 import {LocationModule} from '../location_module';
 
 import {RouterLinkDirectiveContainer} from './router_link_directive_container';
@@ -36,17 +37,26 @@ class TestableComponent {
 
 describe('router_link', () => {
   let actualDispatches: Action[];
+  let appRootProvider: TestableAppRootProvider;
 
   beforeEach(async () => {
     actualDispatches = [];
+
     await TestBed.configureTestingModule({
       imports: [LocationModule, NoopAnimationsModule],
-      providers: [provideMockStore()],
+      providers: [
+        provideMockStore(),
+        {provide: AppRootProvider, useClass: TestableAppRootProvider},
+      ],
       declarations: [RouterLinkDirectiveContainer, TestableComponent],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
 
     const store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
+    appRootProvider = TestBed.inject(
+      AppRootProvider
+    ) as TestableAppRootProvider;
+
     spyOn(store, 'dispatch').and.callFake((action: Action) => {
       actualDispatches.push(action);
     });
@@ -72,6 +82,18 @@ describe('router_link', () => {
     expect(anchorArr.attributes['href']).toBe('/foobar/baz/');
   });
 
+  it('renders the path as href with appRoot to support path_prefix', () => {
+    appRootProvider.setAppRoot('/qaz/quz/');
+    const anchorStr = createComponentAndGetAnchorDebugElement('/foobar');
+    expect(anchorStr.attributes['href']).toBe('/qaz/quz/foobar/');
+
+    const anchorArr = createComponentAndGetAnchorDebugElement([
+      '/foobar',
+      'baz',
+    ]);
+    expect(anchorArr.attributes['href']).toBe('/qaz/quz/foobar/baz/');
+  });
+
   it('dispatches navigate when clicked on the anchor', () => {
     const link = createComponentAndGetAnchorDebugElement('/foobar');
     const event = new MouseEvent('click');
@@ -80,6 +102,19 @@ describe('router_link', () => {
     expect(actualDispatches).toEqual([
       navigationRequested({
         pathname: '/foobar/',
+      }),
+    ]);
+  });
+
+  it('dispatches programmatical navigation without appRoot', () => {
+    appRootProvider.setAppRoot('/qaz/quz/');
+    const link = createComponentAndGetAnchorDebugElement('../foobar');
+    const event = new MouseEvent('click');
+    link.triggerEventHandler('click', event);
+
+    expect(actualDispatches).toEqual([
+      navigationRequested({
+        pathname: '../foobar/',
       }),
     ]);
   });
