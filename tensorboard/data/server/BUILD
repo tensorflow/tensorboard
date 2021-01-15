@@ -45,6 +45,7 @@ rust_library(
     ] + _checked_in_proto_files,
     edition = "2018",
     deps = [
+        "//third_party/rust:async_stream",
         "//third_party/rust:base64",
         "//third_party/rust:byteorder",
         "//third_party/rust:clap",
@@ -59,6 +60,7 @@ rust_library(
         "//third_party/rust:serde_json",
         "//third_party/rust:thiserror",
         "//third_party/rust:tokio",
+        "//third_party/rust:tokio_stream",
         "//third_party/rust:tonic",
         "//third_party/rust:walkdir",
     ],
