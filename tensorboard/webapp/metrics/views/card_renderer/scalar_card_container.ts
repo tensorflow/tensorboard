@@ -410,7 +410,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit {
           };
 
           metadata.aux = true;
-          metadata.opacity = 0.4;
+          metadata.opacity = 0.25;
         }
         return metadataMap;
       }),

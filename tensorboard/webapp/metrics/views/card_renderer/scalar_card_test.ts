@@ -1096,7 +1096,7 @@ describe('scalar card', () => {
           type: SeriesType.ORIGINAL,
           visible: false,
           color: '#f00',
-          opacity: 0.4,
+          opacity: 0.25,
           aux: true,
         },
         run2: {
@@ -1105,7 +1105,7 @@ describe('scalar card', () => {
           type: SeriesType.ORIGINAL,
           visible: false,
           color: '#0f0',
-          opacity: 0.4,
+          opacity: 0.25,
           aux: true,
         },
         '["smoothed","run1"]': {

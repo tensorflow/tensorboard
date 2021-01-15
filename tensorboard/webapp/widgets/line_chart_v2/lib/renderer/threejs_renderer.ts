@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import * as THREE from 'three';
 
-import {hsl} from '../../../../third_party/d3';
+import {hsl, interpolateHsl} from '../../../../third_party/d3';
 import {Point, Polyline, Rect} from '../internal_types';
 import {ThreeCoordinator} from '../threejs_coordinator';
 import {arePolylinesEqual, isOffscreenCanvasSupported} from '../utils';
@@ -31,10 +31,7 @@ function createOpacityAdjustedColor(hex: string, opacity: number): THREE.Color {
   if (!newD3Color) {
     throw new Error(`d3 failed to recognize the color: ${hex}`);
   }
-  // As per d3 doc, in HSL, lightness channel is multiplied by 0.7 ^ -k.
-  // 1.6 is a random number but 1 - opacity was "not enough" thus increased "k" with 0.6
-  // bias.
-  return new THREE.Color(newD3Color.brighter(1.6 - opacity).hex());
+  return new THREE.Color(interpolateHsl(newD3Color, '#fff')(1 - opacity));
 }
 
 enum CacheType {
