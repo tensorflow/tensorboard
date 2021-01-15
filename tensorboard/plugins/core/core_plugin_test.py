@@ -377,9 +377,9 @@ class CorePluginTestBase(object):
             )
 
 
-class CorePluginResourceTEst(tf.test.TestCase):
+class CorePluginResourceTest(tf.test.TestCase):
     def setUp(self):
-        super(CorePluginResourceTEst, self).setUp()
+        super(CorePluginResourceTest, self).setUp()
         self.logdir = self.get_temp_dir()
         self.multiplexer = event_multiplexer.EventMultiplexer()
         provider = data_provider.MultiplexerDataProvider(
