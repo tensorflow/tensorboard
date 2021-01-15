@@ -36,6 +36,7 @@ logger = tb_logging.get_logger()
 # If no port is specified, try to bind to this port. See help for --port
 # for more details.
 DEFAULT_PORT = 6006
+JS_CACHE_EXPIRATION_IN_SECS = 86400
 
 
 class CorePlugin(base_plugin.TBPlugin):
@@ -118,8 +119,21 @@ class CorePlugin(base_plugin.TBPlugin):
     def _serve_asset(self, path, gzipped_asset_bytes, request):
         """Serves a pre-gzipped static asset from the zip file."""
         mimetype = mimetypes.guess_type(path)[0] or "application/octet-stream"
+
+        # Cache JS resources while keep others do not cache.
+        expires = (
+            JS_CACHE_EXPIRATION_IN_SECS
+            if request.args.get("_file_hash")
+            and mimetype == "application/javascript"
+            else 0
+        )
+
         return http_util.Respond(
-            request, gzipped_asset_bytes, mimetype, content_encoding="gzip"
+            request,
+            gzipped_asset_bytes,
+            mimetype,
+            content_encoding="gzip",
+            expires=expires,
         )
 
     @wrappers.Request.application
