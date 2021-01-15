@@ -62,9 +62,9 @@ class TestableComponent {
 
 describe('line_chart_v2/sub_view/axis test', () => {
   const ByCss = {
-    X_AXIS_LABEL: By.css('line-chart-axis.x .minor text'),
-    X_AXIS_MAJOR_TICK_LABEL: By.css('line-chart-axis.x .major text'),
-    Y_AXIS_LABEL: By.css('line-chart-axis.y text'),
+    X_AXIS_LABEL: By.css('line-chart-axis .x-axis .minor text'),
+    X_AXIS_MAJOR_TICK_LABEL: By.css('line-chart-axis .x-axis .major text'),
+    Y_AXIS_LABEL: By.css('line-chart-axis .y-axis text'),
   };
 
   beforeEach(async () => {
