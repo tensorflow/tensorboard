@@ -30,39 +30,43 @@ const DAY_IN_MS = 24 * 1000 * 60 * 60;
 
 @Component({
   selector: 'line-chart-axis',
-  template: `<svg class="minor">
-      <ng-container *ngIf="axis === 'x'; else yAxisLine">
-        <line x1="0" y1="0" [attr.x2]="domDim.width" y2="0"></line>
-      </ng-container>
-      <ng-template #yAxisLine>
-        <line
-          [attr.x1]="domDim.width"
-          y1="0"
-          [attr.x2]="domDim.width"
-          [attr.y2]="domDim.height"
-        ></line>
-      </ng-template>
-      <ng-container *ngFor="let tick of getTicks()">
-        <g>
+  template: `
+    <div [class]="axis + '-axis'">
+      <svg class="minor">
+        <ng-container *ngIf="axis === 'x'; else yAxisLine">
+          <line x1="0" y1="0" [attr.x2]="domDim.width" y2="0"></line>
+        </ng-container>
+        <ng-template #yAxisLine>
+          <line
+            [attr.x1]="domDim.width"
+            y1="0"
+            [attr.x2]="domDim.width"
+            [attr.y2]="domDim.height"
+          ></line>
+        </ng-template>
+        <ng-container *ngFor="let tick of getTicks()">
+          <g>
+            <text [attr.x]="textXPosition(tick)" [attr.y]="textYPosition(tick)">
+              {{ getFormatter().formatTick(tick) }}
+            </text>
+            <title>
+              {{ getFormatter().formatReadable(tick) }}
+            </title>
+          </g>
+        </ng-container>
+      </svg>
+      <svg *ngIf="shouldShowMajorTicks()" class="major">
+        <g *ngFor="let tick of getMajorTicks()">
           <text [attr.x]="textXPosition(tick)" [attr.y]="textYPosition(tick)">
-            {{ getFormatter().formatTick(tick) }}
+            {{ getFormatter().formatShort(tick) }}
           </text>
           <title>
             {{ getFormatter().formatReadable(tick) }}
           </title>
         </g>
-      </ng-container>
-    </svg>
-    <svg *ngIf="shouldShowMajorTicks()" class="major">
-      <g *ngFor="let tick of getMajorTicks()">
-        <text [attr.x]="textXPosition(tick)" [attr.y]="textYPosition(tick)">
-          {{ getFormatter().formatShort(tick) }}
-        </text>
-        <title>
-          {{ getFormatter().formatReadable(tick) }}
-        </title>
-      </g>
-    </svg>`,
+      </svg>
+    </div>
+  `,
   styles: [
     `
       :host {
@@ -85,20 +89,20 @@ const DAY_IN_MS = 24 * 1000 * 60 * 60;
         user-select: none;
       }
 
-      :host(.x) {
+      .x-axis {
         flex-direction: column;
       }
 
-      :host(.x) text {
+      .x-axis text {
         dominant-baseline: hanging;
         text-anchor: middle;
       }
 
-      :host(.y) {
+      .y-axis {
         flex-direction: row;
       }
 
-      :host(.y) text {
+      .y-axis text {
         dominant-baseline: central;
         text-anchor: end;
       }
@@ -110,7 +114,6 @@ export class LineChartAxisComponent {
   @Input()
   axisExtent!: [number, number];
 
-  @HostBinding('class')
   @Input()
   axis!: 'x' | 'y';
 
