@@ -25,12 +25,12 @@ import {ObjectRenderer} from './renderer/renderer_types';
 
 type Cacheable = {};
 
-export interface RenderCachePublicApi {
+export interface RenderCache {
   getFromPreviousFrame(key: string): Cacheable | null;
   setToCurrentFrame(key: string, value: Cacheable): void;
 }
 
-class RenderCacheContainer implements RenderCachePublicApi {
+class RenderCacheContainer implements RenderCache {
   private prevFrameCache = new Map<string, Cacheable>();
   private currFrameCache = new Map<string, Cacheable>();
 
@@ -40,9 +40,6 @@ class RenderCacheContainer implements RenderCachePublicApi {
   }
 
   setToCurrentFrame(key: string, value: Cacheable) {
-    if (!value) {
-      console.log(key);
-    }
     this.currFrameCache.set(key, value);
   }
 
@@ -108,10 +105,7 @@ export abstract class DataDrawable {
     this.getMetadataMapImpl = config.getMetadataMap;
     this.coordinator = config.coordinator;
     this.renderer = config.renderer;
-    this.paintBrush = new PaintBrush(
-      {renderCache: this.renderCache},
-      this.renderer
-    );
+    this.paintBrush = new PaintBrush(this.renderCache, this.renderer);
   }
 
   setLayoutRect(layout: Rect) {
