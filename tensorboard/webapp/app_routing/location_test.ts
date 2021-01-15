@@ -22,6 +22,15 @@ describe('location', () => {
     location = new Location();
   });
 
+  describe('#getHref', () => {
+    it('returns href', () => {
+      spyOn(TEST_ONLY.utils, 'getHref').and.returnValue(
+        'https://t.b/is/cool/product'
+      );
+      expect(location.getHref()).toBe('https://t.b/is/cool/product');
+    });
+  });
+
   describe('#getResolvedPath', () => {
     it('forms absolute path from current href', () => {
       spyOn(TEST_ONLY.utils, 'getHref').and.returnValue(

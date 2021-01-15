@@ -10,6 +10,7 @@ tf_ng_module(
         "app_routing_module.ts",
     ],
     deps = [
+        ":app_root",
         ":location",
         ":programmatical_navigation_module",
         ":route_registry",
@@ -33,6 +34,17 @@ tf_ng_module(
         ":types",
         "@npm//@angular/core",
         "@npm//rxjs",
+    ],
+)
+
+tf_ng_module(
+    name = "app_root",
+    srcs = [
+        "app_root.ts",
+    ],
+    deps = [
+        ":location",
+        "@npm//@angular/core",
     ],
 )
 
@@ -153,6 +165,7 @@ tf_ng_module(
     name = "app_routing_test",
     testonly = True,
     srcs = [
+        "app_root_test.ts",
         "internal_utils_test.ts",
         "location_test.ts",
         "programmatical_navigation_module_test.ts",
@@ -160,6 +173,7 @@ tf_ng_module(
         "route_registry_module_test.ts",
     ],
     deps = [
+        ":app_root",
         ":internal_utils",
         ":location",
         ":programmatical_navigation_module",

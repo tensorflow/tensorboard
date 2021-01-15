@@ -1,3 +1,11 @@
+# Release 2.4.1
+
+## Bug fixes
+
+- Fixed `--path_prefix` handling (#4423)
+- Removed `frame-ancestors *` CSP directive for compatibility with Electron
+  embeds (#4332) - thanks [@joyceerhl](https://github.com/joyceerhl)
+
 # Release 2.4.0
 
 The 2.4 minor series tracks TensorFlow 2.4.

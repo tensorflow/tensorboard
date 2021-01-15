@@ -1,4 +1,5 @@
 load("//tensorboard/defs:defs.bzl", "tf_js_binary", "tf_ng_module", "tf_ng_web_test_suite", "tf_sass_binary", "tf_sass_library", "tf_svg_bundle")
+load("//tensorboard/defs:js.bzl", "tf_resource_digest_suffixer")
 load("//tensorboard/defs:web.bzl", "tf_web_library")
 load("//tensorboard/defs:vulcanize.bzl", "tensorboard_html_binary")
 
@@ -207,11 +208,30 @@ tf_web_library(
 
 # A Vulcanized html binary for the complete app (both Angular and Polymer parts)
 tensorboard_html_binary(
-    name = "index",
+    name = "index_suffixless",
     input_path = "/index_polymer3.inlined.html",
-    js_path = "/index.js",
-    output_path = "/index.html",
+    # Do note that JavaScript filename is created off of `name` of this target yet the
+    # script tag is created based on the `js_path`. Here, we put the handlebar that is to
+    # be replaced by `:index`.
+    js_path = "/%INDEX.js%",
+    output_path = "/index_suffixless.html",
     deps = [":tensorboard-webapp"],
+)
+
+genrule(
+    name = "index_js",
+    srcs = ["index_suffixless.js"],
+    outs = ["index.js"],
+    cmd = "cat $(SRCS) >$@",
+)
+
+tf_resource_digest_suffixer(
+    name = "index",
+    out = "index.html",
+    resources = {
+        "%INDEX.js%": ":index.js",
+    },
+    template = ":index_suffixless.html",
 )
 
 # Karma has overhead of bootstrap/tearDown. Combine as much testcases

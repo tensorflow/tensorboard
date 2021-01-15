@@ -633,6 +633,16 @@ def raze_fetch_remote_crates():
 
     maybe(
         http_archive,
+        name = "raze__pin_project_lite__0_2_4",
+        url = "https://crates.io/api/v1/crates/pin-project-lite/0.2.4/download",
+        type = "tar.gz",
+        sha256 = "439697af366c49a6d0a010c56a0d97685bc140ce0d377b13a2ea2aa42d64a827",
+        strip_prefix = "pin-project-lite-0.2.4",
+        build_file = Label("//third_party/rust/remote:BUILD.pin-project-lite-0.2.4.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "raze__pin_utils__0_1_0",
         url = "https://crates.io/api/v1/crates/pin-utils/0.1.0/download",
         type = "tar.gz",
@@ -983,12 +993,32 @@ def raze_fetch_remote_crates():
 
     maybe(
         http_archive,
+        name = "raze__tokio__1_0_2",
+        url = "https://crates.io/api/v1/crates/tokio/1.0.2/download",
+        type = "tar.gz",
+        sha256 = "0ca04cec6ff2474c638057b65798f60ac183e5e79d3448bb7163d36a39cff6ec",
+        strip_prefix = "tokio-1.0.2",
+        build_file = Label("//third_party/rust/remote:BUILD.tokio-1.0.2.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "raze__tokio_macros__0_2_6",
         url = "https://crates.io/api/v1/crates/tokio-macros/0.2.6/download",
         type = "tar.gz",
         sha256 = "e44da00bfc73a25f814cd8d7e57a68a5c31b74b3152a0a1d1f590c97ed06265a",
         strip_prefix = "tokio-macros-0.2.6",
         build_file = Label("//third_party/rust/remote:BUILD.tokio-macros-0.2.6.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "raze__tokio_stream__0_1_2",
+        url = "https://crates.io/api/v1/crates/tokio-stream/0.1.2/download",
+        type = "tar.gz",
+        sha256 = "76066865172052eb8796c686f0b441a93df8b08d40a950b062ffb9a426f00edd",
+        strip_prefix = "tokio-stream-0.1.2",
+        build_file = Label("//third_party/rust/remote:BUILD.tokio-stream-0.1.2.bazel"),
     )
 
     maybe(

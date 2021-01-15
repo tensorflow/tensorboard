@@ -38,6 +38,9 @@ from tensorboard.plugins.core import core_plugin
 from tensorboard.util import test_util
 
 FAKE_INDEX_HTML = b"<!doctype html><title>fake-index</title>"
+FAKE_INDEX_JS = b"console.log('hello');"
+NO_CACHE_CONTROL_VALUE = "no-cache, must-revalidate"
+ONE_DAY_CACHE_CONTROL_VALUE = "private, max-age=86400"
 
 
 class FakeFlags(object):
@@ -161,7 +164,11 @@ class CorePluginNoDataTest(tf.test.TestCase):
         self.assertEqual(200, response.status_code)
         self.assertStartsWith(response.headers.get("Content-Type"), "text/html")
         html = response.get_data()
-        self.assertEqual(html, FAKE_INDEX_HTML)
+        self.assertEqual(
+            html,
+            b'<!doctype html><meta name="tb-relative-root" content="./">'
+            + FAKE_INDEX_HTML,
+        )
 
     def testDataPaths_disableAllCaching(self):
         """Test the format of the /data/runs endpoint."""
@@ -370,12 +377,123 @@ class CorePluginTestBase(object):
             )
 
 
+class CorePluginResourceTest(tf.test.TestCase):
+    def setUp(self):
+        super(CorePluginResourceTest, self).setUp()
+        self.logdir = self.get_temp_dir()
+        self.multiplexer = event_multiplexer.EventMultiplexer()
+        provider = data_provider.MultiplexerDataProvider(
+            self.multiplexer, self.logdir
+        )
+        context = base_plugin.TBContext(
+            assets_zip_provider=get_test_assets_zip_provider(),
+            logdir=self.logdir,
+            data_provider=provider,
+        )
+        self.plugin = core_plugin.CorePlugin(context)
+        app = application.TensorBoardWSGI([self.plugin])
+        self.server = werkzeug_test.Client(app, wrappers.BaseResponse)
+
+    def test_js_no_cache(self):
+        response = self.server.get("/index.js?foo=bar")
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(
+            NO_CACHE_CONTROL_VALUE, response.headers.get("Cache-Control")
+        )
+
+    def test_js_cache(self):
+        response = self.server.get("/index.js?_file_hash=meow")
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(
+            ONE_DAY_CACHE_CONTROL_VALUE, response.headers.get("Cache-Control")
+        )
+
+    def test_html_no_cache(self):
+        response = self.server.get("/index.html?_file_hash=meow")
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(
+            NO_CACHE_CONTROL_VALUE, response.headers.get("Cache-Control")
+        )
+
+
+class CorePluginPathPrefixTest(tf.test.TestCase):
+    def _send_request(self, path_prefix, pathname):
+        multiplexer = event_multiplexer.EventMultiplexer()
+        logdir = self.get_temp_dir()
+        provider = data_provider.MultiplexerDataProvider(multiplexer, logdir)
+        context = base_plugin.TBContext(
+            assets_zip_provider=get_test_assets_zip_provider(),
+            logdir=logdir,
+            data_provider=provider,
+            window_title="",
+            flags=FakeFlags(path_prefix=path_prefix),
+        )
+        plugin = core_plugin.CorePlugin(context)
+        app = application.TensorBoardWSGI([plugin], path_prefix=path_prefix)
+        server = werkzeug_test.Client(app, wrappers.BaseResponse)
+        return server.get(pathname)
+
+    def _assert_index(self, response, expected_tb_relative_root):
+        self.assertEqual(200, response.status_code)
+        self.assertStartsWith(response.headers.get("Content-Type"), "text/html")
+        html = response.get_data()
+
+        expected_meta = (
+            '<!doctype html><meta name="tb-relative-root" content="%s">'
+            % expected_tb_relative_root
+        ).encode()
+        self.assertEqual(
+            html,
+            expected_meta + FAKE_INDEX_HTML,
+        )
+
+    def testIndex_no_path_prefix(self):
+        self._assert_index(self._send_request("", "/"), "./")
+        self._assert_index(self._send_request("", "/index.html"), "./")
+
+    def testIndex_path_prefix_foo(self):
+        self._assert_index(self._send_request("/foo", "/foo/"), "./")
+        self._assert_index(self._send_request("/foo", "/foo/index.html"), "./")
+
+    def testIndex_path_prefix_foo_exp_route(self):
+        self._assert_index(
+            self._send_request("/foo", "/foo/experiment/123/"), "../../"
+        )
+
+    def testIndex_path_prefix_foo_incorrect_route(self):
+        self.assertEqual(
+            404, (self._send_request("/foo", "/foo/meow/").status_code)
+        )
+        self.assertEqual(404, (self._send_request("/foo", "/").status_code))
+        self.assertEqual(
+            404, (self._send_request("/foo", "/index.html").status_code)
+        )
+
+        # Missing trailing "/" causes redirection.
+        self.assertEqual(301, (self._send_request("/foo", "/foo").status_code))
+        self.assertEqual(
+            301, (self._send_request("/foo", "/foo/experiment/123").status_code)
+        )
+
+    def testIndex_path_prefix_foo_bar(self):
+        self._assert_index(self._send_request("/foo/bar", "/foo/bar/"), "./")
+        self._assert_index(
+            self._send_request("/foo/bar", "/foo/bar/index.html"), "./"
+        )
+
+    def testIndex_path_prefix_foo_bar_exp_route(self):
+        self._assert_index(
+            self._send_request("/foo/bar", "/foo/bar/experiment/123/"), "../../"
+        )
+
+
 def get_test_assets_zip_provider():
     memfile = io.BytesIO()
     with zipfile.ZipFile(
         memfile, mode="w", compression=zipfile.ZIP_DEFLATED
     ) as zf:
         zf.writestr("index.html", FAKE_INDEX_HTML)
+        zf.writestr("index.js", FAKE_INDEX_JS)
     return lambda: contextlib.closing(io.BytesIO(memfile.getvalue()))
 
 

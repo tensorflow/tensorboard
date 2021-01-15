@@ -19,6 +19,7 @@ import functools
 import gzip
 import io
 import mimetypes
+import posixpath
 import zipfile
 
 from werkzeug import utils
@@ -35,6 +36,7 @@ logger = tb_logging.get_logger()
 # If no port is specified, try to bind to this port. See help for --port
 # for more details.
 DEFAULT_PORT = 6006
+JS_CACHE_EXPIRATION_IN_SECS = 86400
 
 
 class CorePlugin(base_plugin.TBPlugin):
@@ -55,6 +57,7 @@ class CorePlugin(base_plugin.TBPlugin):
         logdir_spec = context.flags.logdir_spec if context.flags else ""
         self._logdir = context.logdir or logdir_spec
         self._window_title = context.window_title
+        self._path_prefix = context.flags.path_prefix if context.flags else None
         self._assets_zip_provider = context.assets_zip_provider
         self._data_provider = context.data_provider
 
@@ -88,7 +91,15 @@ class CorePlugin(base_plugin.TBPlugin):
         with self._assets_zip_provider() as fp:
             with zipfile.ZipFile(fp) as zip_:
                 for path in zip_.namelist():
-                    gzipped_asset_bytes = _gzip(zip_.read(path))
+                    content = zip_.read(path)
+                    # Opt out of gzipping index.html
+                    if path == "index.html":
+                        apps["/" + path] = functools.partial(
+                            self._serve_index, content
+                        )
+                        continue
+
+                    gzipped_asset_bytes = _gzip(content)
                     wsgi_app = functools.partial(
                         self._serve_asset, path, gzipped_asset_bytes
                     )
@@ -108,8 +119,46 @@ class CorePlugin(base_plugin.TBPlugin):
     def _serve_asset(self, path, gzipped_asset_bytes, request):
         """Serves a pre-gzipped static asset from the zip file."""
         mimetype = mimetypes.guess_type(path)[0] or "application/octet-stream"
+
+        # Cache JS resources while keep others do not cache.
+        expires = (
+            JS_CACHE_EXPIRATION_IN_SECS
+            if request.args.get("_file_hash")
+            and mimetype == "application/javascript"
+            else 0
+        )
+
         return http_util.Respond(
-            request, gzipped_asset_bytes, mimetype, content_encoding="gzip"
+            request,
+            gzipped_asset_bytes,
+            mimetype,
+            content_encoding="gzip",
+            expires=expires,
+        )
+
+    @wrappers.Request.application
+    def _serve_index(self, index_asset_bytes, request):
+        """Serves index.html content.
+
+        Note that we opt out of gzipping index.html to write preamble before the
+        resource content. This inflates the resource size from 2x kiB to 1xx
+        kiB, but we require an ability to flush preamble with the HTML content.
+        """
+        relpath = (
+            posixpath.relpath(self._path_prefix, request.script_root)
+            if self._path_prefix
+            else "."
+        )
+        meta_header = (
+            '<!doctype html><meta name="tb-relative-root" content="%s/">'
+            % relpath
+        )
+        content = meta_header.encode("utf-8") + index_asset_bytes
+        # By passing content_encoding, disallow gzipping. Bloats the content
+        # from ~25 kiB to ~120 kiB but reduces CPU usage and avoid 3ms worth of
+        # gzipping.
+        return http_util.Respond(
+            request, content, "text/html", content_encoding="identity"
         )
 
     @wrappers.Request.application

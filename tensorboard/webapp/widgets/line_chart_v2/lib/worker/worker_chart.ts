@@ -31,13 +31,14 @@ import {
   RendererType,
 } from './message_types';
 import {WorkerPool, WorkerProxy} from './worker_pool';
+import {RES_PATH} from './worker_resource';
 
 export class WorkerChart implements Chart {
   private readonly txMessagePort: MessagePort;
   private readonly callbacks: ChartCallbacks;
   private readonly workerInstance: WorkerProxy;
 
-  static readonly workerPool = new WorkerPool('chart_worker.js');
+  static readonly workerPool = new WorkerPool(RES_PATH);
 
   constructor(options: ChartOptions) {
     this.callbacks = options.callbacks;

@@ -38,6 +38,10 @@ export const template = html`
       visibility: hidden;
     }
 
+    text {
+      user-select: none;
+    }
+
     /* --- Node and annotation-node for Metanode --- */
 
     .meta > .nodeshape > rect,

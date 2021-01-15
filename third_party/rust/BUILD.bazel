@@ -175,6 +175,15 @@ alias(
 )
 
 alias(
+    name = "tokio_stream",
+    actual = "@raze__tokio_stream__0_1_2//:tokio_stream",
+    tags = [
+        "cargo-raze",
+        "manual",
+    ],
+)
+
+alias(
     name = "tonic",
     actual = "@raze__tonic__0_3_1//:tonic",
     tags = [
