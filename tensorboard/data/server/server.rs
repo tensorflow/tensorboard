@@ -27,7 +27,6 @@ use tonic::{Request, Response, Status};
 use crate::blob_key::BlobKey;
 use crate::commit::{self, BlobSequenceValue, Commit};
 use crate::downsample;
-use crate::proto::tensorboard as pb;
 use crate::proto::tensorboard::data;
 use crate::types::{Run, Tag, WallTime};
 use data::tensor_board_data_provider_server::TensorBoardDataProvider;
@@ -531,6 +530,7 @@ mod tests {
     use tonic::Code;
 
     use crate::commit::test_data::CommitBuilder;
+    use crate::proto::tensorboard as pb;
     use crate::types::{Run, Step, Tag};
 
     fn sample_handler(commit: Commit) -> DataProviderHandler {

@@ -38,7 +38,6 @@ filegroup(
     name = "jslibs",
     srcs = [
         # Ordering probably matters
-        "//third_party:jspbfix",
         "@com_google_javascript_closure_compiler_externs",
         "externs.js",
         "@com_google_javascript_closure_library//:closure/goog/base.js",

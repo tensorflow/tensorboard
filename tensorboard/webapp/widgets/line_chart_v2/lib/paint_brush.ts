@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+import {RenderCache} from './drawable';
 import {Point} from './internal_types';
 import {
   CirclePaintOption,
@@ -21,43 +22,42 @@ import {
   TrianglePaintOption,
 } from './renderer/renderer_types';
 
-export interface PaintBrushContext<T = any> {
-  renderCache: {
-    getFromPreviousFrame(cacheKey: string): T;
-    setToCurrentFrame(cacheKey: string, obj: T): void;
-  };
-}
-
 export class PaintBrush {
   constructor(
-    private readonly context: PaintBrushContext,
+    private readonly renderCache: RenderCache,
     private readonly renderer: ObjectRenderer
   ) {}
 
   setLine(cacheId: string, polyline: Float32Array, paintOpt: LinePaintOption) {
     const newCacheValue = this.renderer.createOrUpdateLineObject(
-      this.context.renderCache.getFromPreviousFrame(cacheId),
+      this.renderCache.getFromPreviousFrame(cacheId),
       polyline,
       paintOpt
     );
-    this.context.renderCache.setToCurrentFrame(cacheId, newCacheValue);
+    if (newCacheValue) {
+      this.renderCache.setToCurrentFrame(cacheId, newCacheValue);
+    }
   }
 
   setTriangle(cacheId: string, loc: Point, paintOpt: TrianglePaintOption) {
     const newCacheValue = this.renderer.createOrUpdateTriangleObject(
-      this.context.renderCache.getFromPreviousFrame(cacheId),
+      this.renderCache.getFromPreviousFrame(cacheId),
       loc,
       paintOpt
     );
-    this.context.renderCache.setToCurrentFrame(cacheId, newCacheValue);
+    if (newCacheValue) {
+      this.renderCache.setToCurrentFrame(cacheId, newCacheValue);
+    }
   }
 
   setCircle(cacheId: string, loc: Point, paintOpt: CirclePaintOption) {
     const newCacheValue = this.renderer.createOrUpdateCircleObject(
-      this.context.renderCache.getFromPreviousFrame(cacheId),
+      this.renderCache.getFromPreviousFrame(cacheId),
       loc,
       paintOpt
     );
-    this.context.renderCache.setToCurrentFrame(cacheId, newCacheValue);
+    if (newCacheValue) {
+      this.renderCache.setToCurrentFrame(cacheId, newCacheValue);
+    }
   }
 }
