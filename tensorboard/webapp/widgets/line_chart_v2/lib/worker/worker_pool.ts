@@ -55,9 +55,9 @@ export interface WorkerProxy {
 export class WorkerPool {
   private readonly workers: WorkerProxy[] = [];
   constructor(
-    private readonly workerResourcePath: string,
-    private readonly maxPoolSize = 10,
-    private readonly workerFactory: (resourcePath: string) => Worker = getWorker
+    private readonly workerResourcePath: Parameters<typeof getWorker>[0],
+    private readonly maxPoolSize: number = 10,
+    private readonly workerFactory: typeof getWorker = getWorker
   ) {
     // TODO(tensorboard-team): consider pre-allocating with the IdleCallback.
   }
