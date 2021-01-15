@@ -23,15 +23,23 @@ import {
 import {PaintBrush} from './paint_brush';
 import {ObjectRenderer} from './renderer/renderer_types';
 
-class RenderCacheContainer {
-  private prevFrameCache = new Map<string, any>();
-  private currFrameCache = new Map<string, any>();
+type Cacheable = {};
 
-  getFromPreviousFrame(key: string): any {
-    return this.prevFrameCache.get(key);
+export interface RenderCache {
+  getFromPreviousFrame(key: string): Cacheable | null;
+  setToCurrentFrame(key: string, value: Cacheable): void;
+}
+
+class RenderCacheContainer implements RenderCache {
+  private prevFrameCache = new Map<string, Cacheable>();
+  private currFrameCache = new Map<string, Cacheable>();
+
+  getFromPreviousFrame(key: string): Cacheable | null {
+    const value = this.prevFrameCache.get(key);
+    return value ?? null;
   }
 
-  setToCurrentFrame(key: string, value: any) {
+  setToCurrentFrame(key: string, value: Cacheable) {
     this.currFrameCache.set(key, value);
   }
 
@@ -41,7 +49,7 @@ class RenderCacheContainer {
    *
    * It returns cached objects that got removed from the new frame.
    */
-  finalizeFrameAndGetRemoved(): ReadonlyArray<any> {
+  finalizeFrameAndGetRemoved(): ReadonlyArray<Cacheable> {
     const removed = [];
 
     for (const [key, value] of this.prevFrameCache.entries()) {
@@ -97,10 +105,7 @@ export abstract class DataDrawable {
     this.getMetadataMapImpl = config.getMetadataMap;
     this.coordinator = config.coordinator;
     this.renderer = config.renderer;
-    this.paintBrush = new PaintBrush(
-      {renderCache: this.renderCache},
-      this.renderer
-    );
+    this.paintBrush = new PaintBrush(this.renderCache, this.renderer);
   }
 
   setLayoutRect(layout: Rect) {
