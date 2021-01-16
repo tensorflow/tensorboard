@@ -87,13 +87,13 @@ class GrpcDataProvider(provider.DataProvider):
                 tags = {}
                 result[run_entry.run_name] = tags
                 for tag_entry in run_entry.tags:
-                    ts = tag_entry.metadata
+                    time_series = tag_entry.metadata
                     tags[tag_entry.tag_name] = provider.ScalarTimeSeries(
-                        max_step=ts.max_step,
-                        max_wall_time=ts.max_wall_time,
-                        plugin_content=ts.summary_metadata.plugin_data.content,
-                        description=ts.summary_metadata.summary_description,
-                        display_name=ts.summary_metadata.display_name,
+                        max_step=time_series.max_step,
+                        max_wall_time=time_series.max_wall_time,
+                        plugin_content=time_series.summary_metadata.plugin_data.content,
+                        description=time_series.summary_metadata.summary_description,
+                        display_name=time_series.summary_metadata.display_name,
                     )
             return result
 
@@ -126,12 +126,12 @@ class GrpcDataProvider(provider.DataProvider):
                     tags[tag_entry.tag_name] = series
                     d = tag_entry.data
                     for (step, wt, value) in zip(d.step, d.wall_time, d.value):
-                        pt = provider.ScalarDatum(
+                        point = provider.ScalarDatum(
                             step=step,
                             wall_time=wt,
                             value=value,
                         )
-                        series.append(pt)
+                        series.append(point)
             return result
 
     @timing.log_latency
@@ -152,14 +152,14 @@ class GrpcDataProvider(provider.DataProvider):
                 tags = {}
                 result[run_entry.run_name] = tags
                 for tag_entry in run_entry.tags:
-                    ts = tag_entry.metadata
+                    time_series = tag_entry.metadata
                     tags[tag_entry.tag_name] = provider.BlobSequenceTimeSeries(
-                        max_step=ts.max_step,
-                        max_wall_time=ts.max_wall_time,
-                        max_length=ts.max_length,
-                        plugin_content=ts.summary_metadata.plugin_data.content,
-                        description=ts.summary_metadata.summary_description,
-                        display_name=ts.summary_metadata.display_name,
+                        max_step=time_series.max_step,
+                        max_wall_time=time_series.max_wall_time,
+                        max_length=time_series.max_length,
+                        plugin_content=time_series.summary_metadata.plugin_data.content,
+                        description=time_series.summary_metadata.summary_description,
+                        display_name=time_series.summary_metadata.display_name,
                     )
             return result
 
@@ -190,18 +190,20 @@ class GrpcDataProvider(provider.DataProvider):
                     series = []
                     tags[tag_entry.tag_name] = series
                     d = tag_entry.data
-                    for (step, wt, vseq) in zip(d.step, d.wall_time, d.values):
+                    for (step, wt, blob_sequence) in zip(
+                        d.step, d.wall_time, d.values
+                    ):
                         values = []
-                        for ref in vseq.blob_refs:
+                        for ref in blob_sequence.blob_refs:
                             values.append(
                                 provider.BlobReference(
                                     blob_key=ref.blob_key, url=ref.url or None
                                 )
                             )
-                        pt = provider.BlobSequenceDatum(
+                        point = provider.BlobSequenceDatum(
                             step=step, wall_time=wt, values=tuple(values)
                         )
-                        series.append(pt)
+                        series.append(point)
             return result
 
     @timing.log_latency
