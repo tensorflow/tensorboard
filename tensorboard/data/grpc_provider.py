@@ -87,13 +87,13 @@ class GrpcDataProvider(provider.DataProvider):
                 tags = {}
                 result[run_entry.run_name] = tags
                 for tag_entry in run_entry.tags:
-                    ts = tag_entry.metadata
+                    time_series = tag_entry.metadata
                     tags[tag_entry.tag_name] = provider.ScalarTimeSeries(
-                        max_step=ts.max_step,
-                        max_wall_time=ts.max_wall_time,
-                        plugin_content=ts.summary_metadata.plugin_data.content,
-                        description=ts.summary_metadata.summary_description,
-                        display_name=ts.summary_metadata.display_name,
+                        max_step=time_series.max_step,
+                        max_wall_time=time_series.max_wall_time,
+                        plugin_content=time_series.summary_metadata.plugin_data.content,
+                        description=time_series.summary_metadata.summary_description,
+                        display_name=time_series.summary_metadata.display_name,
                     )
             return result
 
@@ -126,13 +126,96 @@ class GrpcDataProvider(provider.DataProvider):
                     tags[tag_entry.tag_name] = series
                     d = tag_entry.data
                     for (step, wt, value) in zip(d.step, d.wall_time, d.value):
-                        pt = provider.ScalarDatum(
+                        point = provider.ScalarDatum(
                             step=step,
                             wall_time=wt,
                             value=value,
                         )
-                        series.append(pt)
+                        series.append(point)
             return result
+
+    @timing.log_latency
+    def list_blob_sequences(
+        self, ctx, experiment_id, plugin_name, run_tag_filter=None
+    ):
+        with timing.log_latency("build request"):
+            req = data_provider_pb2.ListBlobSequencesRequest()
+            req.experiment_id = experiment_id
+            req.plugin_filter.plugin_name = plugin_name
+            _populate_rtf(run_tag_filter, req.run_tag_filter)
+        with timing.log_latency("_stub.ListBlobSequences"):
+            with _translate_grpc_error():
+                res = self._stub.ListBlobSequences(req)
+        with timing.log_latency("build result"):
+            result = {}
+            for run_entry in res.runs:
+                tags = {}
+                result[run_entry.run_name] = tags
+                for tag_entry in run_entry.tags:
+                    time_series = tag_entry.metadata
+                    tags[tag_entry.tag_name] = provider.BlobSequenceTimeSeries(
+                        max_step=time_series.max_step,
+                        max_wall_time=time_series.max_wall_time,
+                        max_length=time_series.max_length,
+                        plugin_content=time_series.summary_metadata.plugin_data.content,
+                        description=time_series.summary_metadata.summary_description,
+                        display_name=time_series.summary_metadata.display_name,
+                    )
+            return result
+
+    @timing.log_latency
+    def read_blob_sequences(
+        self,
+        ctx,
+        experiment_id,
+        plugin_name,
+        downsample=None,
+        run_tag_filter=None,
+    ):
+        with timing.log_latency("build request"):
+            req = data_provider_pb2.ReadBlobSequencesRequest()
+            req.experiment_id = experiment_id
+            req.plugin_filter.plugin_name = plugin_name
+            _populate_rtf(run_tag_filter, req.run_tag_filter)
+            req.downsample.num_points = downsample
+        with timing.log_latency("_stub.ReadBlobSequences"):
+            with _translate_grpc_error():
+                res = self._stub.ReadBlobSequences(req)
+        with timing.log_latency("build result"):
+            result = {}
+            for run_entry in res.runs:
+                tags = {}
+                result[run_entry.run_name] = tags
+                for tag_entry in run_entry.tags:
+                    series = []
+                    tags[tag_entry.tag_name] = series
+                    d = tag_entry.data
+                    for (step, wt, blob_sequence) in zip(
+                        d.step, d.wall_time, d.values
+                    ):
+                        values = []
+                        for ref in blob_sequence.blob_refs:
+                            values.append(
+                                provider.BlobReference(
+                                    blob_key=ref.blob_key, url=ref.url or None
+                                )
+                            )
+                        point = provider.BlobSequenceDatum(
+                            step=step, wall_time=wt, values=tuple(values)
+                        )
+                        series.append(point)
+            return result
+
+    @timing.log_latency
+    def read_blob(self, ctx, blob_key):
+        with timing.log_latency("build request"):
+            req = data_provider_pb2.ReadBlobRequest()
+            req.blob_key = blob_key
+        with timing.log_latency("list(_stub.ReadBlob)"):
+            with _translate_grpc_error():
+                responses = list(self._stub.ReadBlob(req))
+        with timing.log_latency("build result"):
+            return b"".join(res.data for res in responses)
 
 
 @contextlib.contextmanager

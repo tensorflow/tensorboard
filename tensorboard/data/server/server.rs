@@ -13,8 +13,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+use async_stream::try_stream;
 use futures_core::Stream;
-use std::borrow::Borrow;
+use std::borrow::{Borrow, Cow};
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::convert::TryInto;
@@ -23,8 +24,10 @@ use std::pin::Pin;
 use std::sync::{RwLock, RwLockReadGuard};
 use tonic::{Request, Response, Status};
 
-use crate::commit::{self, Commit};
+use crate::blob_key::BlobKey;
+use crate::commit::{self, BlobSequenceValue, Commit};
 use crate::downsample;
+use crate::proto::tensorboard as pb;
 use crate::proto::tensorboard::data;
 use crate::types::{Run, Tag, WallTime};
 use data::tensor_board_data_provider_server::TensorBoardDataProvider;
@@ -43,6 +46,13 @@ impl DataProviderHandler {
             .read()
             .map_err(|_| Status::internal("failed to read commit.runs"))
     }
+}
+
+/// Maximum size (in bytes) of the `data` field of any single [`data::ReadBlobResponse`].
+const BLOB_CHUNK_SIZE: usize = 1024 * 1024 * 8;
+
+fn plugin_name(md: &pb::SummaryMetadata) -> Option<&str> {
+    md.plugin_data.as_ref().map(|pd| pd.plugin_name.as_str())
 }
 
 #[tonic::async_trait]
@@ -132,12 +142,7 @@ impl TensorBoardDataProvider for DataProviderHandler {
                 if !tag_filter.want(tag) {
                     continue;
                 }
-                let plugin_name = ts
-                    .metadata
-                    .plugin_data
-                    .as_ref()
-                    .map(|pd| pd.plugin_name.as_str());
-                if plugin_name != Some(&want_plugin) {
+                if plugin_name(&ts.metadata) != Some(&want_plugin) {
                     continue;
                 }
                 let max_step = match ts.valid_values().last() {
@@ -192,12 +197,7 @@ impl TensorBoardDataProvider for DataProviderHandler {
                 if !tag_filter.want(tag) {
                     continue;
                 }
-                let plugin_name = ts
-                    .metadata
-                    .plugin_data
-                    .as_ref()
-                    .map(|pd| pd.plugin_name.as_str());
-                if plugin_name != Some(&want_plugin) {
+                if plugin_name(&ts.metadata) != Some(&want_plugin) {
                     continue;
                 }
 
@@ -247,16 +247,140 @@ impl TensorBoardDataProvider for DataProviderHandler {
 
     async fn list_blob_sequences(
         &self,
-        _request: Request<data::ListBlobSequencesRequest>,
+        req: Request<data::ListBlobSequencesRequest>,
     ) -> Result<Response<data::ListBlobSequencesResponse>, Status> {
-        Err(Status::unimplemented("not yet implemented"))
+        let req = req.into_inner();
+        let want_plugin = parse_plugin_filter(req.plugin_filter)?;
+        let (run_filter, tag_filter) = parse_rtf(req.run_tag_filter);
+        let runs = self.read_runs()?;
+
+        let mut res: data::ListBlobSequencesResponse = Default::default();
+        for (run, data) in runs.iter() {
+            if !run_filter.want(run) {
+                continue;
+            }
+            let data = data
+                .read()
+                .map_err(|_| Status::internal(format!("failed to read run data for {:?}", run)))?;
+            let mut run_res: data::list_blob_sequences_response::RunEntry = Default::default();
+            for (tag, ts) in &data.blob_sequences {
+                if !tag_filter.want(tag) {
+                    continue;
+                }
+                if plugin_name(&ts.metadata) != Some(&want_plugin) {
+                    continue;
+                }
+                let (mut max_step, mut max_wall_time, mut max_length) = (None, None, None);
+                for (step, wall_time, value) in ts.valid_values() {
+                    if max_step.map_or(true, |s| s < step) {
+                        max_step = Some(step);
+                    }
+                    if max_wall_time.map_or(true, |wt| wt < wall_time) {
+                        max_wall_time = Some(wall_time);
+                    }
+                    if max_length.map_or(true, |len| len < value.0.len()) {
+                        max_length = Some(value.0.len());
+                    }
+                }
+                let (max_step, max_wall_time, max_length) =
+                    match (max_step, max_wall_time, max_length) {
+                        (Some(s), Some(wt), Some(len)) => (s, wt, len),
+                        _ => continue,
+                    };
+                run_res
+                    .tags
+                    .push(data::list_blob_sequences_response::TagEntry {
+                        tag_name: tag.0.clone(),
+                        metadata: Some(data::BlobSequenceMetadata {
+                            max_step: max_step.into(),
+                            max_wall_time: max_wall_time.into(),
+                            max_length: max_length as i64,
+                            summary_metadata: Some(*ts.metadata.clone()),
+                        }),
+                    });
+            }
+            if !run_res.tags.is_empty() {
+                run_res.run_name = run.0.clone();
+                res.runs.push(run_res);
+            }
+        }
+
+        Ok(Response::new(res))
     }
 
     async fn read_blob_sequences(
         &self,
-        _request: Request<data::ReadBlobSequencesRequest>,
+        req: Request<data::ReadBlobSequencesRequest>,
     ) -> Result<Response<data::ReadBlobSequencesResponse>, Status> {
-        Err(Status::unimplemented("not yet implemented"))
+        let req = req.into_inner();
+        let want_plugin = parse_plugin_filter(req.plugin_filter)?;
+        let (run_filter, tag_filter) = parse_rtf(req.run_tag_filter);
+        let num_points = parse_downsample(req.downsample)?;
+        let runs = self.read_runs()?;
+
+        let mut res: data::ReadBlobSequencesResponse = Default::default();
+        for (run, data) in runs.iter() {
+            if !run_filter.want(run) {
+                continue;
+            }
+            let data = data
+                .read()
+                .map_err(|_| Status::internal(format!("failed to read run data for {:?}", run)))?;
+            let mut run_res: data::read_blob_sequences_response::RunEntry = Default::default();
+            for (tag, ts) in &data.blob_sequences {
+                if !tag_filter.want(tag) {
+                    continue;
+                }
+                if plugin_name(&ts.metadata) != Some(&want_plugin) {
+                    continue;
+                }
+
+                let mut points = ts.valid_values().collect::<Vec<_>>();
+                downsample::downsample(&mut points, num_points);
+                let n = points.len();
+                let mut steps = Vec::with_capacity(n);
+                let mut wall_times = Vec::with_capacity(n);
+                let mut values = Vec::with_capacity(n);
+                for (step, wall_time, &BlobSequenceValue(ref value)) in points {
+                    steps.push(step.into());
+                    wall_times.push(wall_time.into());
+                    let eid = req.experiment_id.as_str();
+                    let blob_refs = (0..value.len())
+                        .map(|i| {
+                            let bk = BlobKey {
+                                experiment_id: Cow::Borrowed(eid),
+                                run: Cow::Borrowed(run.0.as_str()),
+                                tag: Cow::Borrowed(tag.0.as_str()),
+                                step,
+                                index: i,
+                            };
+                            data::BlobReference {
+                                blob_key: bk.to_string(),
+                                url: String::new(),
+                            }
+                        })
+                        .collect::<Vec<data::BlobReference>>();
+                    values.push(data::BlobReferenceSequence { blob_refs });
+                }
+
+                run_res
+                    .tags
+                    .push(data::read_blob_sequences_response::TagEntry {
+                        tag_name: tag.0.clone(),
+                        data: Some(data::BlobSequenceData {
+                            step: steps,
+                            wall_time: wall_times,
+                            values,
+                        }),
+                    });
+            }
+            if !run_res.tags.is_empty() {
+                run_res.run_name = run.0.clone();
+                res.runs.push(run_res);
+            }
+        }
+
+        Ok(Response::new(res))
     }
 
     type ReadBlobStream =
@@ -264,9 +388,67 @@ impl TensorBoardDataProvider for DataProviderHandler {
 
     async fn read_blob(
         &self,
-        _request: Request<data::ReadBlobRequest>,
+        req: Request<data::ReadBlobRequest>,
     ) -> Result<Response<Self::ReadBlobStream>, Status> {
-        Err(Status::unimplemented("not yet implemented"))
+        let req = req.into_inner();
+        let bk: BlobKey = req
+            .blob_key
+            .parse()
+            .map_err(|e| Status::invalid_argument(format!("failed to parse blob key: {:?}", e,)))?;
+
+        let runs = self.read_runs()?;
+        let run_data = runs
+            .get(bk.run.as_ref())
+            .ok_or_else(|| Status::not_found(format!("no such run: {:?}", bk.run)))?
+            .read()
+            .map_err(|_| Status::internal(format!("failed to read run data for {:?}", bk.run)))?;
+        let ts = run_data
+            .blob_sequences
+            .get(bk.tag.as_ref())
+            .ok_or_else(|| {
+                Status::not_found(format!("run {:?} has no such tag: {:?}", bk.run, bk.tag))
+            })?;
+        let datum = ts
+            .valid_values()
+            .find_map(
+                |(step, _, value)| {
+                    if step == bk.step {
+                        Some(value)
+                    } else {
+                        None
+                    }
+                },
+            )
+            .ok_or_else(|| {
+                Status::not_found(format!(
+                    "run {:?}, tag {:?} has no step {}; may have been evicted",
+                    bk.run, bk.tag, bk.step.0
+                ))
+            })?;
+        let blobs = &datum.0;
+        let blob = blobs.get(bk.index).ok_or_else(|| {
+            Status::not_found(format!(
+                "blob sequence at run {:?}, tag {:?}, step {:?} has no index {} (length: {})",
+                bk.run,
+                bk.tag,
+                bk.step,
+                bk.index,
+                blobs.len()
+            ))
+        })?;
+        // Clone blob so that we can send it down to the client after dropping the lock.
+        // TODO(@wchargin): Consider replacing this with an `Arc<[u8]>`.
+        let blob = blob.clone();
+        drop(run_data);
+        drop(runs);
+
+        let stream = try_stream! {
+            for chunk in blob.chunks(BLOB_CHUNK_SIZE) {
+                yield data::ReadBlobResponse {data: chunk.to_vec()};
+            }
+        };
+
+        Ok(Response::new(Box::pin(stream) as Self::ReadBlobStream))
     }
 }
 
@@ -345,10 +527,10 @@ impl<T: Hash + Eq> Filter<T> {
 #[allow(clippy::float_cmp)]
 mod tests {
     use super::*;
+    use tokio_stream::StreamExt;
     use tonic::Code;
 
     use crate::commit::test_data::CommitBuilder;
-    use crate::proto::tensorboard as pb;
     use crate::types::{Run, Step, Tag};
 
     fn sample_handler(commit: Commit) -> DataProviderHandler {
@@ -636,5 +818,116 @@ mod tests {
         let train_run = &map[&Run("train".to_string())];
         let xent_data = &train_run[&Tag("xent".to_string())].data.as_ref().unwrap();
         assert_eq!(xent_data.value, Vec::<f32>::new());
+    }
+
+    #[tokio::test]
+    async fn test_blob_sequences() {
+        let commit = CommitBuilder::new()
+            .scalars("train", "accuracy", |b| b.build())
+            .blob_sequences("train", "input", |mut b| {
+                b.plugin_name("images")
+                    .wall_time_start(1234.0)
+                    .values(vec![
+                        BlobSequenceValue(vec![b"step0img0".to_vec(), b"step0img1".to_vec()]),
+                        BlobSequenceValue(vec![b"z".repeat(BLOB_CHUNK_SIZE * 3 / 2)]),
+                    ])
+                    .build()
+            })
+            .blob_sequences("another_run", "input", |mut b| {
+                b.plugin_name("not_images").build()
+            })
+            .build();
+        let handler = sample_handler(commit);
+
+        // List blob sequences and check the response exactly. It doesn't have any blob keys, so
+        // the exact value is well defined.
+        let list_req = Request::new(data::ListBlobSequencesRequest {
+            experiment_id: "123".to_string(),
+            plugin_filter: Some(data::PluginFilter {
+                plugin_name: "images".to_string(),
+            }),
+            run_tag_filter: None,
+        });
+        let list_res = handler
+            .list_blob_sequences(list_req)
+            .await
+            .expect("ListBlobSequences")
+            .into_inner();
+        assert_eq!(
+            list_res,
+            data::ListBlobSequencesResponse {
+                runs: vec![data::list_blob_sequences_response::RunEntry {
+                    run_name: "train".to_string(),
+                    tags: vec![data::list_blob_sequences_response::TagEntry {
+                        tag_name: "input".to_string(),
+                        metadata: Some(data::BlobSequenceMetadata {
+                            max_step: 1,
+                            max_wall_time: 1235.0,
+                            max_length: 2,
+                            summary_metadata: Some(pb::SummaryMetadata {
+                                plugin_data: Some(pb::summary_metadata::PluginData {
+                                    plugin_name: "images".to_string(),
+                                    ..Default::default()
+                                }),
+                                data_class: pb::DataClass::BlobSequence.into(),
+                                ..Default::default()
+                            }),
+                        }),
+                    }],
+                }],
+            }
+        );
+
+        // Read blob sequences and check that its structure is right. The actual blob keys are
+        // opaque, so we don't expect any specific values.
+        let read_req = Request::new(data::ReadBlobSequencesRequest {
+            experiment_id: "123".to_string(),
+            plugin_filter: Some(data::PluginFilter {
+                plugin_name: "images".to_string(),
+            }),
+            downsample: Some(data::Downsample { num_points: 1000 }),
+            run_tag_filter: Some(data::RunTagFilter {
+                runs: Some(data::RunFilter {
+                    names: vec!["train".to_string()],
+                }),
+                tags: Some(data::TagFilter {
+                    names: vec!["input".to_string()],
+                }),
+            }),
+        });
+        let read_res = handler
+            .read_blob_sequences(read_req)
+            .await
+            .expect("ReadBlobSequences")
+            .into_inner();
+        assert_eq!(read_res.runs.len(), 1);
+        assert_eq!(read_res.runs[0].tags.len(), 1);
+        let data = (read_res.runs[0].tags[0].data.as_ref()).expect("blob sequence data");
+
+        assert_eq!(data.step, vec![0, 1]);
+        assert_eq!(data.wall_time, vec![1234.0, 1235.0]);
+        assert_eq!(data.values.len(), 2);
+        assert_eq!(data.values[0].blob_refs.len(), 2);
+        assert_eq!(data.values[1].blob_refs.len(), 1);
+
+        // Read the blob that's supposed to take multiple chunks.
+        let blob_req = Request::new(data::ReadBlobRequest {
+            blob_key: data.values[1].blob_refs[0].blob_key.clone(),
+        });
+        let mut blob_res = handler
+            .read_blob(blob_req)
+            .await
+            .expect("ReadBlob")
+            .into_inner();
+        let mut chunks = Vec::new();
+        while let Some(chunk) = blob_res.next().await {
+            let chunk = chunk.unwrap_or_else(|_| panic!("chunk {}", chunks.len()));
+            chunks.push(chunk.data);
+        }
+        let expected_chunks = vec![
+            b"z".repeat(BLOB_CHUNK_SIZE),
+            b"z".repeat(BLOB_CHUNK_SIZE / 2),
+        ];
+        assert_eq!(chunks, expected_chunks);
     }
 }

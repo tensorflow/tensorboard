@@ -174,6 +174,118 @@ class GrpcDataProviderTest(tb_test.TestCase):
         req.downsample.num_points = 4
         self.stub.ReadScalars.assert_called_once_with(req)
 
+    def test_list_blob_sequences(self):
+        res = data_provider_pb2.ListBlobSequencesResponse()
+        run1 = res.runs.add(run_name="train")
+        tag11 = run1.tags.add(tag_name="input_image")
+        tag11.metadata.max_step = 7
+        tag11.metadata.max_wall_time = 7.77
+        tag11.metadata.max_length = 3
+        tag11.metadata.summary_metadata.plugin_data.content = b"PNG"
+        tag11.metadata.summary_metadata.display_name = "Input image"
+        tag11.metadata.summary_metadata.summary_description = "img"
+        self.stub.ListBlobSequences.return_value = res
+
+        actual = self.provider.list_blob_sequences(
+            self.ctx,
+            experiment_id="123",
+            plugin_name="images",
+            run_tag_filter=provider.RunTagFilter(runs=["val", "train"]),
+        )
+        expected = {
+            "train": {
+                "input_image": provider.BlobSequenceTimeSeries(
+                    max_step=7,
+                    max_wall_time=7.77,
+                    max_length=3,
+                    plugin_content=b"PNG",
+                    description="img",
+                    display_name="Input image",
+                ),
+            },
+        }
+        self.assertEqual(actual, expected)
+
+        req = data_provider_pb2.ListBlobSequencesRequest()
+        req.experiment_id = "123"
+        req.plugin_filter.plugin_name = "images"
+        req.run_tag_filter.runs.names.extend(["train", "val"])  # sorted
+        self.stub.ListBlobSequences.assert_called_once_with(req)
+
+    def test_read_blob_sequences(self):
+        res = data_provider_pb2.ReadBlobSequencesResponse()
+        run = res.runs.add(run_name="test")
+        tag = run.tags.add(tag_name="input_image")
+        tag.data.step.extend([0, 1])
+        tag.data.wall_time.extend([1234.0, 1235.0])
+        seq0 = tag.data.values.add()
+        seq0.blob_refs.add(blob_key="step0img0")
+        seq0.blob_refs.add(blob_key="step0img1")
+        seq1 = tag.data.values.add()
+        seq1.blob_refs.add(blob_key="step1img0")
+        self.stub.ReadBlobSequences.return_value = res
+
+        actual = self.provider.read_blob_sequences(
+            self.ctx,
+            experiment_id="123",
+            plugin_name="images",
+            run_tag_filter=provider.RunTagFilter(runs=["test", "nope"]),
+            downsample=4,
+        )
+        expected = {
+            "test": {
+                "input_image": [
+                    provider.BlobSequenceDatum(
+                        step=0,
+                        wall_time=1234.0,
+                        values=(
+                            provider.BlobReference(blob_key="step0img0"),
+                            provider.BlobReference(blob_key="step0img1"),
+                        ),
+                    ),
+                    provider.BlobSequenceDatum(
+                        step=1,
+                        wall_time=1235.0,
+                        values=(provider.BlobReference(blob_key="step1img0"),),
+                    ),
+                ],
+            },
+        }
+        self.assertEqual(actual, expected)
+
+        req = data_provider_pb2.ReadBlobSequencesRequest()
+        req.experiment_id = "123"
+        req.plugin_filter.plugin_name = "images"
+        req.run_tag_filter.runs.names.extend(["nope", "test"])  # sorted
+        req.downsample.num_points = 4
+        self.stub.ReadBlobSequences.assert_called_once_with(req)
+
+    def test_read_blob(self):
+        responses = [
+            data_provider_pb2.ReadBlobResponse(data=b"hello wo"),
+            data_provider_pb2.ReadBlobResponse(data=b"rld"),
+        ]
+        self.stub.ReadBlob.return_value = responses
+
+        actual = self.provider.read_blob(self.ctx, blob_key="myblob")
+        expected = b"hello world"
+        self.assertEqual(actual, expected)
+
+        req = data_provider_pb2.ReadBlobRequest()
+        req.blob_key = "myblob"
+        self.stub.ReadBlob.assert_called_once_with(req)
+
+    def test_read_blob_error(self):
+        def fake_handler(req):
+            del req  # unused
+            yield data_provider_pb2.ReadBlobResponse(data=b"hello wo"),
+            raise _grpc_error(grpc.StatusCode.NOT_FOUND, "it ran away!")
+
+        self.stub.ReadBlob.side_effect = fake_handler
+
+        with self.assertRaisesRegex(errors.NotFoundError, "it ran away!"):
+            self.provider.read_blob(self.ctx, blob_key="myblob")
+
     def test_rpc_error(self):
         # This error handling is implemented with a context manager used
         # for all the methods, so take `list_plugins` as representative.
