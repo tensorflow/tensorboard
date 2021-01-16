@@ -405,7 +405,7 @@ mod test {
             *scalar_ts.metadata,
             pb::SummaryMetadata {
                 plugin_data: Some(pb::summary_metadata::PluginData {
-                    plugin_name: crate::data_compat::SCALARS_PLUGIN_NAME.to_string(),
+                    plugin_name: crate::data_compat::plugins::SCALARS.to_string(),
                     ..Default::default()
                 }),
                 data_class: pb::DataClass::Scalar.into(),
@@ -433,7 +433,7 @@ mod test {
             *graph_ts.metadata,
             pb::SummaryMetadata {
                 plugin_data: Some(pb::summary_metadata::PluginData {
-                    plugin_name: crate::data_compat::GRAPHS_PLUGIN_NAME.to_string(),
+                    plugin_name: crate::data_compat::plugins::GRAPHS.to_string(),
                     ..Default::default()
                 }),
                 data_class: pb::DataClass::BlobSequence.into(),
@@ -455,8 +455,7 @@ mod test {
             *run_metadata_ts.metadata,
             pb::SummaryMetadata {
                 plugin_data: Some(pb::summary_metadata::PluginData {
-                    plugin_name: crate::data_compat::GRAPH_TAGGED_RUN_METADATA_PLUGIN_NAME
-                        .to_string(),
+                    plugin_name: crate::data_compat::plugins::GRAPH_TAGGED_RUN_METADATA.to_string(),
                     ..Default::default()
                 }),
                 data_class: pb::DataClass::BlobSequence.into(),
