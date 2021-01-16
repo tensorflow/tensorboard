@@ -25,6 +25,7 @@ use std::str::FromStr;
 use std::thread;
 use std::time::{Duration, Instant};
 use tokio::net::TcpListener;
+use tokio_stream::wrappers::TcpListenerStream;
 use tonic::transport::Server;
 
 use crate::commit::Commit;
@@ -165,7 +166,7 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let handler = DataProviderHandler { commit };
     Server::builder()
         .add_service(TensorBoardDataProviderServer::new(handler))
-        .serve_with_incoming(listener)
+        .serve_with_incoming(TcpListenerStream::new(listener))
         .await?;
     Ok(())
 }

@@ -38,13 +38,28 @@ rust_library(
     aliases = {
     },
     crate_features = [
+        "bytes",
         "default",
+        "io-std",
+        "io-util",
+        "libc",
+        "macros",
+        "memchr",
+        "mio",
+        "net",
+        "num_cpus",
+        "rt",
+        "rt-multi-thread",
         "sync",
         "time",
+        "tokio-macros",
     ],
     crate_root = "src/lib.rs",
     crate_type = "lib",
     edition = "2018",
+    proc_macro_deps = [
+        "@raze__tokio_macros__1_0_0//:tokio_macros",
+    ],
     rustc_flags = [
         "--cap-lints=allow",
     ],
@@ -55,6 +70,10 @@ rust_library(
     version = "1.0.2",
     # buildifier: leave-alone
     deps = [
+        "@raze__bytes__1_0_1//:bytes",
+        "@raze__memchr__2_3_4//:memchr",
+        "@raze__mio__0_7_7//:mio",
+        "@raze__num_cpus__1_13_0//:num_cpus",
         "@raze__pin_project_lite__0_2_4//:pin_project_lite",
     ] + selects.with_or({
         # cfg(unix)
@@ -62,6 +81,7 @@ rust_library(
             "@io_bazel_rules_rust//rust/platform:x86_64-apple-darwin",
             "@io_bazel_rules_rust//rust/platform:x86_64-unknown-linux-gnu",
         ): [
+            "@raze__libc__0_2_80//:libc",
         ],
         "//conditions:default": [],
     }) + selects.with_or({
