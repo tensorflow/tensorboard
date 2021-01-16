@@ -23,6 +23,7 @@ use crate::proto::tensorboard as pb;
 use pb::summary_metadata::PluginData;
 
 pub(crate) const SCALARS_PLUGIN_NAME: &str = "scalars";
+pub(crate) const IMAGES_PLUGIN_NAME: &str = "images";
 pub(crate) const GRAPHS_PLUGIN_NAME: &str = "graphs";
 
 /// The inner contents of a single value from an event.
@@ -70,11 +71,29 @@ impl EventValue {
 
     /// Consumes this event value and enriches it into a blob sequence.
     ///
-    /// For now, this succeeds only for graphs.
+    /// For now, this supports `GraphDef`s, summaries with `image`, or summaries with `tensor` set
+    /// to a rank-1 tensor of type `DT_STRING`.
     pub fn into_blob_sequence(self) -> Result<BlobSequenceValue, DataLoss> {
         match self {
-            EventValue::Summary(_) => Err(DataLoss),
             EventValue::GraphDef(GraphDefValue(blob)) => Ok(BlobSequenceValue(vec![blob])),
+            EventValue::Summary(SummaryValue(value_box)) => match *value_box {
+                pb::summary::value::Value::Image(im) => {
+                    let w = format!("{}", im.width).into_bytes();
+                    let h = format!("{}", im.height).into_bytes();
+                    let buf = im.encoded_image_string;
+                    Ok(BlobSequenceValue(vec![w, h, buf]))
+                }
+                pb::summary::value::Value::Tensor(tp) => {
+                    if tp.dtype == i32::from(pb::DataType::DtString)
+                        && tp.tensor_shape.map_or(false, |shape| shape.dim.len() == 1)
+                    {
+                        Ok(BlobSequenceValue(tp.string_val))
+                    } else {
+                        Err(DataLoss)
+                    }
+                }
+                _ => Err(DataLoss),
+            },
         }
     }
 }
@@ -166,12 +185,15 @@ impl SummaryValue {
             // form.
             (Some(md), _) if md.data_class != i32::from(pb::DataClass::Unknown) => Box::new(md),
             (_, Value::SimpleValue(_)) => blank(SCALARS_PLUGIN_NAME, pb::DataClass::Scalar),
+            (_, Value::Image(_)) => blank(IMAGES_PLUGIN_NAME, pb::DataClass::BlobSequence),
             (Some(mut md), _) => {
                 // Use given metadata, but first set data class based on plugin name, if known.
-                #[allow(clippy::single_match)] // will have more patterns later
                 match md.plugin_data.as_ref().map(|pd| pd.plugin_name.as_str()) {
                     Some(SCALARS_PLUGIN_NAME) => {
                         md.data_class = pb::DataClass::Scalar.into();
+                    }
+                    Some(IMAGES_PLUGIN_NAME) => {
+                        md.data_class = pb::DataClass::BlobSequence.into();
                     }
                     _ => {}
                 };
@@ -461,14 +483,70 @@ mod tests {
         }
     }
 
-    mod graphs {
+    mod blob_sequences {
         use super::*;
 
         #[test]
-        fn test_metadata() {
+        fn test_metadata_graph() {
             let md = GraphDefValue::initial_metadata();
             assert_eq!(&md.plugin_data.unwrap().plugin_name, GRAPHS_PLUGIN_NAME);
             assert_eq!(md.data_class, i32::from(pb::DataClass::BlobSequence));
+        }
+
+        #[test]
+        fn test_metadata_tf1x_image() {
+            let v = SummaryValue(Box::new(Value::Image(pb::summary::Image {
+                height: 480,
+                width: 640,
+                colorspace: 3,
+                encoded_image_string: b"\x89PNGabc".to_vec(),
+                ..Default::default()
+            })));
+            let result = v.initial_metadata(None);
+
+            assert_eq!(
+                *result,
+                pb::SummaryMetadata {
+                    plugin_data: Some(PluginData {
+                        plugin_name: IMAGES_PLUGIN_NAME.to_string(),
+                        ..Default::default()
+                    }),
+                    data_class: pb::DataClass::BlobSequence.into(),
+                    ..Default::default()
+                }
+            );
+        }
+
+        #[test]
+        fn test_metadata_tf2x_image_without_dataclass() {
+            let md = pb::SummaryMetadata {
+                plugin_data: Some(PluginData {
+                    plugin_name: IMAGES_PLUGIN_NAME.to_string(),
+                    content: b"preserved!".to_vec(),
+                    ..Default::default()
+                }),
+                ..Default::default()
+            };
+            let v = SummaryValue(Box::new(Value::Tensor(pb::TensorProto {
+                dtype: pb::DataType::DtString.into(),
+                tensor_shape: Some(tensor_shape(&[2])),
+                string_val: vec![b"\x89PNGabc".to_vec(), b"\x89PNGdef".to_vec()],
+                ..Default::default()
+            })));
+            let result = v.initial_metadata(Some(md));
+
+            assert_eq!(
+                *result,
+                pb::SummaryMetadata {
+                    plugin_data: Some(PluginData {
+                        plugin_name: IMAGES_PLUGIN_NAME.to_string(),
+                        content: b"preserved!".to_vec(),
+                        ..Default::default()
+                    }),
+                    data_class: pb::DataClass::BlobSequence.into(),
+                    ..Default::default()
+                }
+            );
         }
 
         #[test]
@@ -478,6 +556,96 @@ mod tests {
                 v.into_blob_sequence(),
                 Ok(BlobSequenceValue(vec![vec![1, 2, 3, 4]]))
             );
+        }
+
+        #[test]
+        fn test_enrich_tf1x_image() {
+            let v = EventValue::Summary(SummaryValue(Box::new(Value::Image(pb::summary::Image {
+                height: 480,
+                width: 640,
+                colorspace: 3,
+                encoded_image_string: b"\x89PNGabc".to_vec(),
+                ..Default::default()
+            }))));
+            let expected = BlobSequenceValue(vec![
+                b"640".to_vec(),
+                b"480".to_vec(),
+                b"\x89PNGabc".to_vec(),
+            ]);
+            assert_eq!(v.into_blob_sequence(), Ok(expected));
+        }
+
+        #[test]
+        fn test_enrich_valid_tensor() {
+            let v = EventValue::Summary(SummaryValue(Box::new(Value::Tensor(pb::TensorProto {
+                dtype: pb::DataType::DtString.into(),
+                tensor_shape: Some(tensor_shape(&[2])),
+                string_val: vec![b"abc".to_vec(), b"defghi".to_vec()],
+                ..Default::default()
+            }))));
+            let expected = BlobSequenceValue(vec![b"abc".to_vec(), b"defghi".to_vec()]);
+            assert_eq!(v.into_blob_sequence(), Ok(expected));
+        }
+
+        #[test]
+        fn test_enrich_valid_empty_tensor() {
+            let v = EventValue::Summary(SummaryValue(Box::new(Value::Tensor(pb::TensorProto {
+                dtype: pb::DataType::DtString.into(),
+                tensor_shape: Some(tensor_shape(&[0])),
+                string_val: vec![],
+                ..Default::default()
+            }))));
+            let expected = BlobSequenceValue(vec![]);
+            assert_eq!(v.into_blob_sequence(), Ok(expected));
+        }
+
+        #[test]
+        fn test_enrich_invalid_empty_tensor() {
+            let v = EventValue::Summary(SummaryValue(Box::new(Value::Tensor(pb::TensorProto {
+                dtype: pb::DataType::DtString.into(),
+                tensor_shape: Some(tensor_shape(&[0, 3])), // bad rank
+                string_val: vec![],
+                ..Default::default()
+            }))));
+            assert_eq!(v.into_blob_sequence(), Err(DataLoss));
+        }
+
+        #[test]
+        fn test_enrich_scalar_tensor() {
+            let v = EventValue::Summary(SummaryValue(Box::new(Value::Tensor(pb::TensorProto {
+                dtype: pb::DataType::DtString.into(),
+                tensor_shape: Some(tensor_shape(&[])),
+                string_val: vec![b"no scalars for you".to_vec()],
+                ..Default::default()
+            }))));
+            assert_eq!(v.into_blob_sequence(), Err(DataLoss));
+        }
+
+        #[test]
+        fn test_enrich_higher_rank_tensor() {
+            let v = EventValue::Summary(SummaryValue(Box::new(Value::Tensor(pb::TensorProto {
+                dtype: pb::DataType::DtString.into(),
+                tensor_shape: Some(tensor_shape(&[2, 2])),
+                string_val: vec![
+                    b"ab".to_vec(),
+                    b"cd".to_vec(),
+                    b"ef".to_vec(),
+                    b"gh".to_vec(),
+                ],
+                ..Default::default()
+            }))));
+            assert_eq!(v.into_blob_sequence(), Err(DataLoss));
+        }
+
+        #[test]
+        fn test_enrich_non_string_tensor() {
+            let v = EventValue::Summary(SummaryValue(Box::new(Value::Tensor(pb::TensorProto {
+                dtype: pb::DataType::DtFloat.into(),
+                tensor_shape: Some(tensor_shape(&[2])),
+                float_val: vec![1.0, 2.0],
+                ..Default::default()
+            }))));
+            assert_eq!(v.into_blob_sequence(), Err(DataLoss));
         }
     }
 
