@@ -73,7 +73,10 @@ impl EventValue {
     ///
     /// For now, this supports `GraphDef`s, summaries with `image`, or summaries with `tensor` set
     /// to a rank-1 tensor of type `DT_STRING`.
-    pub fn into_blob_sequence(self) -> Result<BlobSequenceValue, DataLoss> {
+    pub fn into_blob_sequence(
+        self,
+        _metadata: &pb::SummaryMetadata,
+    ) -> Result<BlobSequenceValue, DataLoss> {
         match self {
             EventValue::GraphDef(GraphDefValue(blob)) => Ok(BlobSequenceValue(vec![blob])),
             EventValue::Summary(SummaryValue(value_box)) => match *value_box {
@@ -553,26 +556,30 @@ mod tests {
         fn test_enrich_graph_def() {
             let v = EventValue::GraphDef(GraphDefValue(vec![1, 2, 3, 4]));
             assert_eq!(
-                v.into_blob_sequence(),
+                v.into_blob_sequence(GraphDefValue::initial_metadata().as_ref()),
                 Ok(BlobSequenceValue(vec![vec![1, 2, 3, 4]]))
             );
         }
 
         #[test]
         fn test_enrich_tf1x_image() {
-            let v = EventValue::Summary(SummaryValue(Box::new(Value::Image(pb::summary::Image {
+            let v = SummaryValue(Box::new(Value::Image(pb::summary::Image {
                 height: 480,
                 width: 640,
                 colorspace: 3,
                 encoded_image_string: b"\x89PNGabc".to_vec(),
                 ..Default::default()
-            }))));
+            })));
+            let md = v.initial_metadata(None);
             let expected = BlobSequenceValue(vec![
                 b"640".to_vec(),
                 b"480".to_vec(),
                 b"\x89PNGabc".to_vec(),
             ]);
-            assert_eq!(v.into_blob_sequence(), Ok(expected));
+            assert_eq!(
+                EventValue::Summary(v).into_blob_sequence(md.as_ref()),
+                Ok(expected)
+            );
         }
 
         #[test]
@@ -584,7 +591,10 @@ mod tests {
                 ..Default::default()
             }))));
             let expected = BlobSequenceValue(vec![b"abc".to_vec(), b"defghi".to_vec()]);
-            assert_eq!(v.into_blob_sequence(), Ok(expected));
+            assert_eq!(
+                v.into_blob_sequence(&blank("myblobs", pb::DataClass::BlobSequence)),
+                Ok(expected)
+            );
         }
 
         #[test]
@@ -596,7 +606,10 @@ mod tests {
                 ..Default::default()
             }))));
             let expected = BlobSequenceValue(vec![]);
-            assert_eq!(v.into_blob_sequence(), Ok(expected));
+            assert_eq!(
+                v.into_blob_sequence(&blank("myblobs", pb::DataClass::BlobSequence)),
+                Ok(expected)
+            );
         }
 
         #[test]
@@ -607,7 +620,10 @@ mod tests {
                 string_val: vec![],
                 ..Default::default()
             }))));
-            assert_eq!(v.into_blob_sequence(), Err(DataLoss));
+            assert_eq!(
+                v.into_blob_sequence(&blank("myblobs", pb::DataClass::BlobSequence)),
+                Err(DataLoss)
+            );
         }
 
         #[test]
@@ -618,7 +634,10 @@ mod tests {
                 string_val: vec![b"no scalars for you".to_vec()],
                 ..Default::default()
             }))));
-            assert_eq!(v.into_blob_sequence(), Err(DataLoss));
+            assert_eq!(
+                v.into_blob_sequence(&blank("myblobs", pb::DataClass::BlobSequence)),
+                Err(DataLoss)
+            );
         }
 
         #[test]
@@ -634,7 +653,10 @@ mod tests {
                 ],
                 ..Default::default()
             }))));
-            assert_eq!(v.into_blob_sequence(), Err(DataLoss));
+            assert_eq!(
+                v.into_blob_sequence(&blank("myblobs", pb::DataClass::BlobSequence)),
+                Err(DataLoss)
+            );
         }
 
         #[test]
@@ -645,7 +667,10 @@ mod tests {
                 float_val: vec![1.0, 2.0],
                 ..Default::default()
             }))));
-            assert_eq!(v.into_blob_sequence(), Err(DataLoss));
+            assert_eq!(
+                v.into_blob_sequence(&blank("myblobs", pb::DataClass::BlobSequence)),
+                Err(DataLoss)
+            );
         }
     }
 

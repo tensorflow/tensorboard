@@ -104,7 +104,7 @@ impl StageTimeSeries {
     fn commit(&mut self, tag: &Tag, run: &mut commit::RunData) {
         use pb::DataClass;
         match self.data_class {
-            DataClass::Scalar => self.commit_to(tag, &mut run.scalars, EventValue::into_scalar),
+            DataClass::Scalar => self.commit_to(tag, &mut run.scalars, |ev, _| ev.into_scalar()),
             DataClass::Tensor => {
                 warn!(
                     "Tensor time series not yet supported (tag: {:?}, plugin: {:?})",
@@ -125,7 +125,7 @@ impl StageTimeSeries {
 
     /// Helper for `commit`: writes staged data for this time series into storage for a statically
     /// known data class.
-    fn commit_to<V, F: FnMut(EventValue) -> Result<V, commit::DataLoss>>(
+    fn commit_to<V, F: FnMut(EventValue, &pb::SummaryMetadata) -> Result<V, commit::DataLoss>>(
         &mut self,
         tag: &Tag,
         store: &mut commit::TagStore<V>,
@@ -134,9 +134,10 @@ impl StageTimeSeries {
         let commit_ts = store
             .entry(tag.clone())
             .or_insert_with(|| commit::TimeSeries::new(self.metadata.clone()));
+        let metadata = self.metadata.as_ref();
         self.rsv
             .commit_map(&mut commit_ts.basin, |StageValue { wall_time, payload }| {
-                (wall_time, enrich(payload))
+                (wall_time, enrich(payload, metadata))
             });
     }
 }
