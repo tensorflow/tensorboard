@@ -23,7 +23,7 @@ use std::path::PathBuf;
 use std::sync::RwLock;
 
 use crate::commit;
-use crate::data_compat::{EventValue, GraphDefValue, SummaryValue};
+use crate::data_compat::{EventValue, GraphDefValue, SummaryValue, TaggedRunMetadataValue};
 use crate::event_file::EventFileReader;
 use crate::proto::tensorboard as pb;
 use crate::reservoir::StageReservoir;
@@ -277,6 +277,21 @@ fn read_event(
             };
             ts.rsv.offer(step, sv);
         }
+        Some(pb::event::What::TaggedRunMetadata(trm_proto)) => {
+            let sv = StageValue {
+                wall_time,
+                payload: EventValue::GraphDef(GraphDefValue(trm_proto.run_metadata)),
+            };
+            use std::collections::hash_map::Entry;
+            let ts = match time_series.entry(Tag(trm_proto.tag)) {
+                Entry::Occupied(o) => o.into_mut(),
+                Entry::Vacant(v) => {
+                    let metadata = TaggedRunMetadataValue::initial_metadata();
+                    v.insert(StageTimeSeries::new(metadata))
+                }
+            };
+            ts.rsv.offer(step, sv);
+        }
         Some(pb::event::What::Summary(sum)) => {
             for mut summary_pb_value in sum.value {
                 let summary_value = match summary_pb_value.value {
@@ -346,6 +361,12 @@ mod test {
             WallTime::new(1235.0).unwrap(),
             b"<sample model graph>".to_vec(),
         )?;
+        f1.write_tagged_run_metadata(
+            &Tag("step0000".to_string()),
+            Step(0),
+            WallTime::new(1235.0).unwrap(),
+            b"<sample run metadata>".to_vec(),
+        )?;
         f1.write_scalar(&tag, Step(0), WallTime::new(1235.0).unwrap(), 0.25)?;
         f1.write_scalar(&tag, Step(1), WallTime::new(1236.0).unwrap(), 0.50)?;
         f1.write_scalar(&tag, Step(2), WallTime::new(1237.0).unwrap(), 0.75)?;
@@ -404,11 +425,9 @@ mod test {
             ]
         );
 
+        assert_eq!(run_data.blob_sequences.len(), 2);
+
         let run_graph_tag = Tag(GraphDefValue::TAG_NAME.to_string());
-        assert_eq!(
-            run_data.blob_sequences.keys().collect::<Vec<_>>(),
-            vec![&run_graph_tag]
-        );
         let graph_ts = run_data.blob_sequences.get(&run_graph_tag).unwrap();
         assert_eq!(
             *graph_ts.metadata,
@@ -427,6 +446,29 @@ mod test {
                 Step(0),
                 WallTime::new(1235.0).unwrap(),
                 &commit::BlobSequenceValue(vec![b"<sample model graph>".to_vec()])
+            )]
+        );
+
+        let run_metadata_tag = Tag("step0000".to_string());
+        let run_metadata_ts = run_data.blob_sequences.get(&run_metadata_tag).unwrap();
+        assert_eq!(
+            *run_metadata_ts.metadata,
+            pb::SummaryMetadata {
+                plugin_data: Some(pb::summary_metadata::PluginData {
+                    plugin_name: crate::data_compat::GRAPH_TAGGED_RUN_METADATA_PLUGIN_NAME
+                        .to_string(),
+                    ..Default::default()
+                }),
+                data_class: pb::DataClass::BlobSequence.into(),
+                ..Default::default()
+            }
+        );
+        assert_eq!(
+            run_metadata_ts.valid_values().collect::<Vec<_>>(),
+            vec![(
+                Step(0),
+                WallTime::new(1235.0).unwrap(),
+                &commit::BlobSequenceValue(vec![b"<sample run metadata>".to_vec()])
             )]
         );
 

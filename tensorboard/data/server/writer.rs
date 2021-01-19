@@ -65,6 +65,27 @@ pub trait SummaryWriteExt: Write {
         };
         self.write_event(&event)
     }
+
+    /// Writes a TFRecord containing a TF 1.x `tagged_run_metadata` event.
+    fn write_tagged_run_metadata(
+        &mut self,
+        tag: &Tag,
+        step: Step,
+        wt: WallTime,
+        run_metadata: Vec<u8>,
+    ) -> std::io::Result<()> {
+        let event = pb::Event {
+            step: step.0,
+            wall_time: wt.into(),
+            what: Some(pb::event::What::TaggedRunMetadata(pb::TaggedRunMetadata {
+                tag: tag.0.clone(),
+                run_metadata,
+                ..Default::default()
+            })),
+            ..Default::default()
+        };
+        self.write_event(&event)
+    }
 }
 
 impl<W: Write> SummaryWriteExt for W {}
@@ -154,6 +175,34 @@ mod tests {
             step: 777,
             wall_time: 1234.5,
             what: Some(pb::event::What::GraphDef(b"my graph".to_vec())),
+            ..Default::default()
+        };
+        assert_eq!(event, &expected);
+    }
+
+    #[test]
+    fn test_tagged_run_metadata_roundtrip() {
+        let mut cursor = Cursor::new(Vec::<u8>::new());
+        cursor
+            .write_tagged_run_metadata(
+                &Tag("step0000".to_string()),
+                Step(777),
+                WallTime::new(1234.5).unwrap(),
+                b"my run metadata".to_vec(),
+            )
+            .unwrap();
+        cursor.set_position(0);
+        let events = read_all_events(cursor).unwrap();
+        assert_eq!(events.len(), 1);
+
+        let event = &events[0];
+        let expected = pb::Event {
+            step: 777,
+            wall_time: 1234.5,
+            what: Some(pb::event::What::TaggedRunMetadata(pb::TaggedRunMetadata {
+                tag: "step0000".to_string(),
+                run_metadata: b"my run metadata".to_vec(),
+            })),
             ..Default::default()
         };
         assert_eq!(event, &expected);

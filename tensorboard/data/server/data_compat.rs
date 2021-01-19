@@ -26,13 +26,15 @@ pub(crate) const SCALARS_PLUGIN_NAME: &str = "scalars";
 pub(crate) const IMAGES_PLUGIN_NAME: &str = "images";
 pub(crate) const AUDIO_PLUGIN_NAME: &str = "audio";
 pub(crate) const GRAPHS_PLUGIN_NAME: &str = "graphs";
+pub(crate) const GRAPH_TAGGED_RUN_METADATA_PLUGIN_NAME: &str = "graph_tagged_run_metadata";
 
 /// The inner contents of a single value from an event.
 ///
 /// This does not include associated step, wall time, tag, or summary metadata information. Step
 /// and wall time are available on every event and just not tracked here. Tag and summary metadata
-/// information are materialized on `Event`s whose `oneof what` is `summary`, but implicit for
-/// graph defs. See [`GraphDefValue::initial_metadata`] and [`SummaryValue::initial_metadata`] for
+/// information are materialized on `Event`s whose `oneof what` is `tagged_run_metadata` or
+/// `summary`, but implicit for graph defs. See [`GraphDefValue::initial_metadata`],
+/// [`TaggedRunMetadataValue::initial_metadata`], and [`SummaryValue::initial_metadata`] for
 /// type-specific helpers to determine summary metadata given appropriate information.
 ///
 /// This is kept as close as possible to the on-disk event representation, since every record in
@@ -46,6 +48,7 @@ pub(crate) const GRAPHS_PLUGIN_NAME: &str = "graphs";
 #[derive(Debug)]
 pub enum EventValue {
     GraphDef(GraphDefValue),
+    TaggedRunMetadata(TaggedRunMetadataValue),
     Summary(SummaryValue),
 }
 
@@ -53,11 +56,12 @@ impl EventValue {
     /// Consumes this event value and enriches it into a scalar.
     ///
     /// This supports `simple_value` (TF 1.x) summaries as well as rank-0 tensors of type
-    /// `DT_FLOAT`. Returns `DataLoss` if the value is a `GraphDef`, is an unsupported summary, or
-    /// is a tensor of the wrong rank.
+    /// `DT_FLOAT`. Returns `DataLoss` if the value is a `GraphDef`, a tagged run metadata proto,
+    /// an unsupported summary, or a tensor of the wrong rank.
     pub fn into_scalar(self) -> Result<ScalarValue, DataLoss> {
         let value_box = match self {
             EventValue::GraphDef(_) => return Err(DataLoss),
+            EventValue::TaggedRunMetadata(_) => return Err(DataLoss),
             EventValue::Summary(SummaryValue(v)) => v,
         };
         match *value_box {
@@ -72,16 +76,20 @@ impl EventValue {
 
     /// Consumes this event value and enriches it into a blob sequence.
     ///
-    /// For now, this supports `GraphDef`s, summaries with `image` or `audio`, or summaries with
-    /// `tensor` set to a rank-1 tensor of type `DT_STRING`. If the summary metadata indicates that
-    /// this is audio data, `tensor` may also be a string tensor of shape `[k, 2]`, in which case
-    /// the second axis is assumed to represent string labels and is dropped entirely.
+    /// For now, this supports `GraphDef`s, tagged run metadata protos, summaries with `image` or
+    /// `audio`, or summaries with `tensor` set to a rank-1 tensor of type `DT_STRING`. If the
+    /// summary metadata indicates that this is audio data, `tensor` may also be a string tensor of
+    /// shape `[k, 2]`, in which case the second axis is assumed to represent string labels and is
+    /// dropped entirely.
     pub fn into_blob_sequence(
         self,
         metadata: &pb::SummaryMetadata,
     ) -> Result<BlobSequenceValue, DataLoss> {
         match self {
             EventValue::GraphDef(GraphDefValue(blob)) => Ok(BlobSequenceValue(vec![blob])),
+            EventValue::TaggedRunMetadata(TaggedRunMetadataValue(run_metadata)) => {
+                Ok(BlobSequenceValue(vec![run_metadata]))
+            }
             EventValue::Summary(SummaryValue(value_box)) => match *value_box {
                 pb::summary::value::Value::Image(im) => {
                     let w = format!("{}", im.width).into_bytes();
@@ -155,6 +163,12 @@ fn tensor_proto_to_scalar(tp: &pb::TensorProto) -> Option<f32> {
 /// plugin metadata, but these are not materialized.
 pub struct GraphDefValue(pub Vec<u8>);
 
+/// A value from an `Event` whose `tagged_run_metadata` field is set.
+///
+/// This contains only the `run_metadata` from the event (not the tag). This itself represents the
+/// encoding of a `RunMetadata` proto, but that is deserialized at the plugin level.
+pub struct TaggedRunMetadataValue(pub Vec<u8>);
+
 /// A value from an `Event` whose `summary` field is set.
 ///
 /// This contains a [`summary::value::Value`], which represents the underlying `oneof value` field
@@ -180,6 +194,17 @@ impl GraphDefValue {
     /// [`GraphDef`][`EventValue::GraphDef`].
     pub fn initial_metadata() -> Box<pb::SummaryMetadata> {
         blank(GRAPHS_PLUGIN_NAME, pb::DataClass::BlobSequence)
+    }
+}
+
+impl TaggedRunMetadataValue {
+    /// Determines the metadata for a time series whose first event is a
+    /// [`TaggedRunMetadata`][`EventValue::TaggedRunMetadata`].
+    pub fn initial_metadata() -> Box<pb::SummaryMetadata> {
+        blank(
+            GRAPH_TAGGED_RUN_METADATA_PLUGIN_NAME,
+            pb::DataClass::BlobSequence,
+        )
     }
 }
 
@@ -232,6 +257,14 @@ impl SummaryValue {
 impl Debug for GraphDefValue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_tuple("GraphDefValue")
+            .field(&format_args!("<{} bytes>", self.0.len()))
+            .finish()
+    }
+}
+
+impl Debug for TaggedRunMetadataValue {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_tuple("TaggedRunMetadataValue")
             .field(&format_args!("<{} bytes>", self.0.len()))
             .finish()
     }
@@ -519,6 +552,16 @@ mod tests {
         }
 
         #[test]
+        fn test_metadata_tagged_run_metadata() {
+            let md = TaggedRunMetadataValue::initial_metadata();
+            assert_eq!(
+                &md.plugin_data.unwrap().plugin_name,
+                GRAPH_TAGGED_RUN_METADATA_PLUGIN_NAME
+            );
+            assert_eq!(md.data_class, i32::from(pb::DataClass::BlobSequence));
+        }
+
+        #[test]
         fn test_metadata_tf1x_image() {
             let v = SummaryValue(Box::new(Value::Image(pb::summary::Image {
                 height: 480,
@@ -631,6 +674,15 @@ mod tests {
         #[test]
         fn test_enrich_graph_def() {
             let v = EventValue::GraphDef(GraphDefValue(vec![1, 2, 3, 4]));
+            assert_eq!(
+                v.into_blob_sequence(GraphDefValue::initial_metadata().as_ref()),
+                Ok(BlobSequenceValue(vec![vec![1, 2, 3, 4]]))
+            );
+        }
+
+        #[test]
+        fn test_enrich_tagged_run_metadata() {
+            let v = EventValue::TaggedRunMetadata(TaggedRunMetadataValue(vec![1, 2, 3, 4]));
             assert_eq!(
                 v.into_blob_sequence(GraphDefValue::initial_metadata().as_ref()),
                 Ok(BlobSequenceValue(vec![vec![1, 2, 3, 4]]))
