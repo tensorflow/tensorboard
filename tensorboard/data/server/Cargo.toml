@@ -15,7 +15,7 @@
 
 [package]
 name = "rustboard"
-version = "0.1.0"
+version = "0.2.0-alpha.0"
 authors = ["The TensorFlow Authors <tensorboard-gardener@google.com>"]
 edition = "2018"
 default-run = "rustboard"
