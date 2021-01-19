@@ -52,6 +52,9 @@ pub struct RunLoader {
 
     /// Reservoir-sampled data and metadata for each time series.
     time_series: HashMap<Tag, StageTimeSeries>,
+
+    /// Whether to compute CRCs for records before parsing as protos.
+    checksum: bool,
 }
 
 #[derive(Debug)]
@@ -147,7 +150,13 @@ impl RunLoader {
             start_time: None,
             files: BTreeMap::new(),
             time_series: HashMap::new(),
+            checksum: true,
         }
+    }
+
+    /// Sets whether to compute checksums for records before parsing them as protos.
+    pub fn checksum(&mut self, yes: bool) {
+        self.checksum = yes;
     }
 
     /// Loads new data given the current set of event files.
@@ -187,7 +196,8 @@ impl RunLoader {
                 Entry::Vacant(v) => {
                     let event_file = match File::open(v.key()) {
                         Ok(file) => {
-                            let reader = EventFileReader::new(BufReader::new(file));
+                            let mut reader = EventFileReader::new(BufReader::new(file));
+                            reader.checksum(self.checksum);
                             EventFile::Active(reader)
                         }
                         // TODO(@wchargin): Improve error handling?

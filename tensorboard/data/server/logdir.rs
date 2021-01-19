@@ -29,6 +29,7 @@ pub struct LogdirLoader<'a> {
     commit: &'a Commit,
     logdir: PathBuf,
     runs: HashMap<Run, RunState>,
+    checksum: bool,
 }
 
 struct RunState {
@@ -80,7 +81,13 @@ impl<'a> LogdirLoader<'a> {
             commit,
             logdir,
             runs: HashMap::new(),
+            checksum: true,
         }
+    }
+
+    /// Sets whether to compute checksums for records before parsing them as protos.
+    pub fn checksum(&mut self, yes: bool) {
+        self.checksum = yes;
     }
 
     /// Performs a complete load cycle: finds all event files and reads data from all runs,
@@ -198,6 +205,7 @@ impl<'a> LogdirLoader<'a> {
 
         // Add new runs, and warn on any path collisions for existing runs.
         for (run_name, event_files) in discoveries {
+            let checksum = self.checksum;
             let run = self
                 .runs
                 .entry(run_name.clone())
@@ -205,7 +213,11 @@ impl<'a> LogdirLoader<'a> {
                     // Values of `discoveries` are non-empty by construction, so it's safe to take the
                     // first relpath.
                     relpath: event_files[0].run_relpath.clone(),
-                    loader: RunLoader::new(),
+                    loader: {
+                        let mut loader = RunLoader::new();
+                        loader.checksum(checksum);
+                        loader
+                    },
                     collided_relpaths: HashSet::new(),
                 });
             for ef in event_files {
