@@ -7,7 +7,6 @@ licenses(["notice"])
 # Protocol buffer packages (as in `package foo.bar;` directives) that we need
 # to compile to Rust bindings.
 _proto_packages = [
-    "demo",
     "tensorboard",
     "tensorboard.data",
 ]
@@ -119,7 +118,6 @@ rust_binary(
 genrule(
     name = "gen_protos",
     srcs = [
-        ":demo.proto",
         "//tensorboard/compat/proto:proto_srcs",
         "//tensorboard/data/proto:proto_srcs",
     ],

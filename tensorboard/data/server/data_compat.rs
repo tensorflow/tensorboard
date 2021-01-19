@@ -71,12 +71,21 @@ impl EventValue {
 
     /// Consumes this event value and enriches it into a blob sequence.
     ///
+<<<<<<< HEAD
     /// For now, this supports `GraphDef`s, summaries with `image`, or summaries with `tensor` set
     /// to a rank-1 tensor of type `DT_STRING`.
     pub fn into_blob_sequence(
         self,
         _metadata: &pb::SummaryMetadata,
     ) -> Result<BlobSequenceValue, DataLoss> {
+||||||| 5acd97e48
+    /// For now, this succeeds only for graphs.
+    pub fn into_blob_sequence(self) -> Result<BlobSequenceValue, DataLoss> {
+=======
+    /// For now, this supports `GraphDef`s, summaries with `image`, or summaries with `tensor` set
+    /// to a rank-1 tensor of type `DT_STRING`.
+    pub fn into_blob_sequence(self) -> Result<BlobSequenceValue, DataLoss> {
+>>>>>>> 486457b334e45c3e950dfde61d5f11055b67fbf3
         match self {
             EventValue::GraphDef(GraphDefValue(blob)) => Ok(BlobSequenceValue(vec![blob])),
             EventValue::Summary(SummaryValue(value_box)) => match *value_box {
@@ -560,6 +569,7 @@ mod tests {
                 Ok(BlobSequenceValue(vec![vec![1, 2, 3, 4]]))
             );
         }
+<<<<<<< HEAD
 
         #[test]
         fn test_enrich_tf1x_image() {
@@ -672,6 +682,99 @@ mod tests {
                 Err(DataLoss)
             );
         }
+||||||| 5acd97e48
+=======
+
+        #[test]
+        fn test_enrich_tf1x_image() {
+            let v = EventValue::Summary(SummaryValue(Box::new(Value::Image(pb::summary::Image {
+                height: 480,
+                width: 640,
+                colorspace: 3,
+                encoded_image_string: b"\x89PNGabc".to_vec(),
+                ..Default::default()
+            }))));
+            let expected = BlobSequenceValue(vec![
+                b"640".to_vec(),
+                b"480".to_vec(),
+                b"\x89PNGabc".to_vec(),
+            ]);
+            assert_eq!(v.into_blob_sequence(), Ok(expected));
+        }
+
+        #[test]
+        fn test_enrich_valid_tensor() {
+            let v = EventValue::Summary(SummaryValue(Box::new(Value::Tensor(pb::TensorProto {
+                dtype: pb::DataType::DtString.into(),
+                tensor_shape: Some(tensor_shape(&[2])),
+                string_val: vec![b"abc".to_vec(), b"defghi".to_vec()],
+                ..Default::default()
+            }))));
+            let expected = BlobSequenceValue(vec![b"abc".to_vec(), b"defghi".to_vec()]);
+            assert_eq!(v.into_blob_sequence(), Ok(expected));
+        }
+
+        #[test]
+        fn test_enrich_valid_empty_tensor() {
+            let v = EventValue::Summary(SummaryValue(Box::new(Value::Tensor(pb::TensorProto {
+                dtype: pb::DataType::DtString.into(),
+                tensor_shape: Some(tensor_shape(&[0])),
+                string_val: vec![],
+                ..Default::default()
+            }))));
+            let expected = BlobSequenceValue(vec![]);
+            assert_eq!(v.into_blob_sequence(), Ok(expected));
+        }
+
+        #[test]
+        fn test_enrich_invalid_empty_tensor() {
+            let v = EventValue::Summary(SummaryValue(Box::new(Value::Tensor(pb::TensorProto {
+                dtype: pb::DataType::DtString.into(),
+                tensor_shape: Some(tensor_shape(&[0, 3])), // bad rank
+                string_val: vec![],
+                ..Default::default()
+            }))));
+            assert_eq!(v.into_blob_sequence(), Err(DataLoss));
+        }
+
+        #[test]
+        fn test_enrich_scalar_tensor() {
+            let v = EventValue::Summary(SummaryValue(Box::new(Value::Tensor(pb::TensorProto {
+                dtype: pb::DataType::DtString.into(),
+                tensor_shape: Some(tensor_shape(&[])),
+                string_val: vec![b"no scalars for you".to_vec()],
+                ..Default::default()
+            }))));
+            assert_eq!(v.into_blob_sequence(), Err(DataLoss));
+        }
+
+        #[test]
+        fn test_enrich_higher_rank_tensor() {
+            let v = EventValue::Summary(SummaryValue(Box::new(Value::Tensor(pb::TensorProto {
+                dtype: pb::DataType::DtString.into(),
+                tensor_shape: Some(tensor_shape(&[2, 2])),
+                string_val: vec![
+                    b"ab".to_vec(),
+                    b"cd".to_vec(),
+                    b"ef".to_vec(),
+                    b"gh".to_vec(),
+                ],
+                ..Default::default()
+            }))));
+            assert_eq!(v.into_blob_sequence(), Err(DataLoss));
+        }
+
+        #[test]
+        fn test_enrich_non_string_tensor() {
+            let v = EventValue::Summary(SummaryValue(Box::new(Value::Tensor(pb::TensorProto {
+                dtype: pb::DataType::DtFloat.into(),
+                tensor_shape: Some(tensor_shape(&[2])),
+                float_val: vec![1.0, 2.0],
+                ..Default::default()
+            }))));
+            assert_eq!(v.into_blob_sequence(), Err(DataLoss));
+        }
+>>>>>>> 486457b334e45c3e950dfde61d5f11055b67fbf3
     }
 
     mod unknown {
