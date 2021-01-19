@@ -149,6 +149,7 @@ function areSeriesEqual(
       "
       [gpuLineChartEnabled]="gpuLineChartEnabled$ | async"
       [smoothingEnabled]="smoothingEnabled$ | async"
+      [isCardVisible]="isCardVisible$ | async"
       [isEverVisible]="isEverVisible$ | async"
       (onFullSizeToggle)="onFullSizeToggle()"
       (onPinClicked)="pinStateChanged.emit($event)"
@@ -182,11 +183,13 @@ export class ScalarCardContainer implements CardRenderer, OnInit {
   dataSeries$?: Observable<ScalarCardDataSeries[]>;
   chartMetadataMap$?: Observable<ScalarCardSeriesMetadataMap>;
 
-  readonly isEverVisible$ = this.store.select(getVisibleCardIdSet).pipe(
+  readonly isCardVisible$ = this.store.select(getVisibleCardIdSet).pipe(
     map((visibleSet) => {
       return visibleSet.has(this.cardId);
     }),
-    distinctUntilChanged(),
+    distinctUntilChanged()
+  );
+  readonly isEverVisible$ = this.isCardVisible$.pipe(
     takeWhile((visible) => !visible, true)
   );
 

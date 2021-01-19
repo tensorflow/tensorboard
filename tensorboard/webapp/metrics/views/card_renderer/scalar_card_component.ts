@@ -140,6 +140,7 @@ export class ScalarCardComponent {
   @Input() seriesDataList!: SeriesDataList;
 
   // gpu chart related props.
+  @Input() isCardVisible!: boolean;
   @Input() smoothingEnabled!: boolean;
   @Input() gpuLineChartEnabled!: boolean;
   @Input() dataSeries!: ScalarCardDataSeries[];
