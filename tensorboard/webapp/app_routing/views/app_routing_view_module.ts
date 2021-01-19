@@ -21,16 +21,15 @@ import {RouterLinkDirectiveContainer} from './router_link_directive_container';
 import {RouterOutletComponent} from './router_outlet_component';
 import {RouterOutletContainer} from './router_outlet_container';
 import {LocationModule} from '../location_module';
-import {AppRootProvider} from '../app_root';
+import {AppRootModule} from '../app_root_module';
 
 @NgModule({
-  imports: [CommonModule, LocationModule, RouteRegistryModule],
+  imports: [CommonModule, AppRootModule, LocationModule, RouteRegistryModule],
   exports: [RouterOutletContainer, RouterLinkDirectiveContainer],
   declarations: [
     RouterOutletContainer,
     RouterOutletComponent,
     RouterLinkDirectiveContainer,
   ],
-  providers: [AppRootProvider],
 })
 export class AppRoutingViewModule {}

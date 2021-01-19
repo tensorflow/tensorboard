@@ -41,6 +41,7 @@ tf_ng_module(
     name = "app_root",
     srcs = [
         "app_root.ts",
+        "app_root_module.ts",
     ],
     deps = [
         ":location",
