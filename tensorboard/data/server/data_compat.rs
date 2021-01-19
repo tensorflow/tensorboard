@@ -76,7 +76,6 @@ impl EventValue {
 
     /// Consumes this event value and enriches it into a blob sequence.
     ///
-<<<<<<< HEAD
     /// For now, this supports `GraphDef`s, tagged run metadata protos, summaries with `image` or
     /// `audio`, or summaries with `tensor` set to a rank-1 tensor of type `DT_STRING`. If the
     /// summary metadata indicates that this is audio data, `tensor` may also be a string tensor of
@@ -86,22 +85,8 @@ impl EventValue {
         self,
         metadata: &pb::SummaryMetadata,
     ) -> Result<BlobSequenceValue, DataLoss> {
-||||||| 5acd97e48
-    /// For now, this succeeds only for graphs.
-    pub fn into_blob_sequence(self) -> Result<BlobSequenceValue, DataLoss> {
-=======
-    /// For now, this supports `GraphDef`s, summaries with `image` or `audio`, or summaries with
-    /// `tensor` set to a rank-1 tensor of type `DT_STRING`. If the summary metadata indicates that
-    /// this is audio data, `tensor` may also be a string tensor of shape `[k, 2]`, in which case
-    /// the second axis is assumed to represent string labels and is dropped entirely.
-    pub fn into_blob_sequence(
-        self,
-        metadata: &pb::SummaryMetadata,
-    ) -> Result<BlobSequenceValue, DataLoss> {
->>>>>>> c0a649a35d03f176ec4e50b3552d5f85e443b916
         match self {
             EventValue::GraphDef(GraphDefValue(blob)) => Ok(BlobSequenceValue(vec![blob])),
-<<<<<<< HEAD
             EventValue::TaggedRunMetadata(TaggedRunMetadataValue(run_metadata)) => {
                 Ok(BlobSequenceValue(vec![run_metadata]))
             }
@@ -141,45 +126,6 @@ impl EventValue {
                 }
                 _ => Err(DataLoss),
             },
-||||||| 5acd97e48
-=======
-            EventValue::Summary(SummaryValue(value_box)) => match *value_box {
-                pb::summary::value::Value::Image(im) => {
-                    let w = format!("{}", im.width).into_bytes();
-                    let h = format!("{}", im.height).into_bytes();
-                    let buf = im.encoded_image_string;
-                    Ok(BlobSequenceValue(vec![w, h, buf]))
-                }
-                pb::summary::value::Value::Audio(au) => {
-                    Ok(BlobSequenceValue(vec![au.encoded_audio_string]))
-                }
-                pb::summary::value::Value::Tensor(mut tp)
-                    if tp.dtype == i32::from(pb::DataType::DtString) =>
-                {
-                    let shape = tp.tensor_shape.unwrap_or_default();
-                    if shape.dim.len() == 1 {
-                        Ok(BlobSequenceValue(tp.string_val))
-                    } else if shape.dim.len() == 2
-                        && shape.dim[1].size == 2
-                        && (metadata
-                            .plugin_data
-                            .as_ref()
-                            .map_or(false, |pd| pd.plugin_name == AUDIO_PLUGIN_NAME))
-                    {
-                        // Extract just the actual audio clips along the first axis.
-                        let audio: Vec<Vec<u8>> = tp
-                            .string_val
-                            .chunks_exact_mut(2)
-                            .map(|chunk| std::mem::take(&mut chunk[0]))
-                            .collect();
-                        Ok(BlobSequenceValue(audio))
-                    } else {
-                        Err(DataLoss)
-                    }
-                }
-                _ => Err(DataLoss),
-            },
->>>>>>> c0a649a35d03f176ec4e50b3552d5f85e443b916
         }
     }
 }
@@ -606,7 +552,6 @@ mod tests {
         }
 
         #[test]
-<<<<<<< HEAD
         fn test_metadata_tagged_run_metadata() {
             let md = TaggedRunMetadataValue::initial_metadata();
             assert_eq!(
@@ -727,119 +672,6 @@ mod tests {
         }
 
         #[test]
-||||||| 5acd97e48
-=======
-        fn test_metadata_tf1x_image() {
-            let v = SummaryValue(Box::new(Value::Image(pb::summary::Image {
-                height: 480,
-                width: 640,
-                colorspace: 3,
-                encoded_image_string: b"\x89PNGabc".to_vec(),
-                ..Default::default()
-            })));
-            let result = v.initial_metadata(None);
-
-            assert_eq!(
-                *result,
-                pb::SummaryMetadata {
-                    plugin_data: Some(PluginData {
-                        plugin_name: IMAGES_PLUGIN_NAME.to_string(),
-                        ..Default::default()
-                    }),
-                    data_class: pb::DataClass::BlobSequence.into(),
-                    ..Default::default()
-                }
-            );
-        }
-
-        #[test]
-        fn test_metadata_tf2x_image_without_dataclass() {
-            let md = pb::SummaryMetadata {
-                plugin_data: Some(PluginData {
-                    plugin_name: IMAGES_PLUGIN_NAME.to_string(),
-                    content: b"preserved!".to_vec(),
-                    ..Default::default()
-                }),
-                ..Default::default()
-            };
-            let v = SummaryValue(Box::new(Value::Tensor(pb::TensorProto {
-                dtype: pb::DataType::DtString.into(),
-                tensor_shape: Some(tensor_shape(&[2])),
-                string_val: vec![b"\x89PNGabc".to_vec(), b"\x89PNGdef".to_vec()],
-                ..Default::default()
-            })));
-            let result = v.initial_metadata(Some(md));
-
-            assert_eq!(
-                *result,
-                pb::SummaryMetadata {
-                    plugin_data: Some(PluginData {
-                        plugin_name: IMAGES_PLUGIN_NAME.to_string(),
-                        content: b"preserved!".to_vec(),
-                        ..Default::default()
-                    }),
-                    data_class: pb::DataClass::BlobSequence.into(),
-                    ..Default::default()
-                }
-            );
-        }
-
-        #[test]
-        fn test_metadata_tf1x_audio() {
-            let v = SummaryValue(Box::new(Value::Audio(pb::summary::Audio {
-                sample_rate: 44100.0,
-                encoded_audio_string: b"RIFFabcd".to_vec(),
-                ..Default::default()
-            })));
-            let result = v.initial_metadata(None);
-
-            assert_eq!(
-                *result,
-                pb::SummaryMetadata {
-                    plugin_data: Some(PluginData {
-                        plugin_name: AUDIO_PLUGIN_NAME.to_string(),
-                        ..Default::default()
-                    }),
-                    data_class: pb::DataClass::BlobSequence.into(),
-                    ..Default::default()
-                }
-            );
-        }
-
-        #[test]
-        fn test_metadata_tf2x_audio_without_dataclass() {
-            let md = pb::SummaryMetadata {
-                plugin_data: Some(PluginData {
-                    plugin_name: AUDIO_PLUGIN_NAME.to_string(),
-                    content: b"preserved!".to_vec(),
-                    ..Default::default()
-                }),
-                ..Default::default()
-            };
-            let v = SummaryValue(Box::new(Value::Tensor(pb::TensorProto {
-                dtype: pb::DataType::DtString.into(),
-                tensor_shape: Some(tensor_shape(&[1, 2])),
-                string_val: vec![b"\x89PNGabc".to_vec(), b"label".to_vec()],
-                ..Default::default()
-            })));
-            let result = v.initial_metadata(Some(md));
-
-            assert_eq!(
-                *result,
-                pb::SummaryMetadata {
-                    plugin_data: Some(PluginData {
-                        plugin_name: AUDIO_PLUGIN_NAME.to_string(),
-                        content: b"preserved!".to_vec(),
-                        ..Default::default()
-                    }),
-                    data_class: pb::DataClass::BlobSequence.into(),
-                    ..Default::default()
-                }
-            );
-        }
-
-        #[test]
->>>>>>> c0a649a35d03f176ec4e50b3552d5f85e443b916
         fn test_enrich_graph_def() {
             let v = EventValue::GraphDef(GraphDefValue(vec![1, 2, 3, 4]));
             assert_eq!(
@@ -847,7 +679,6 @@ mod tests {
                 Ok(BlobSequenceValue(vec![vec![1, 2, 3, 4]]))
             );
         }
-<<<<<<< HEAD
 
         #[test]
         fn test_enrich_tagged_run_metadata() {
@@ -1033,185 +864,6 @@ mod tests {
                 Ok(expected)
             );
         }
-||||||| 5acd97e48
-=======
-
-        #[test]
-        fn test_enrich_tf1x_image() {
-            let v = SummaryValue(Box::new(Value::Image(pb::summary::Image {
-                height: 480,
-                width: 640,
-                colorspace: 3,
-                encoded_image_string: b"\x89PNGabc".to_vec(),
-                ..Default::default()
-            })));
-            let md = v.initial_metadata(None);
-            let expected = BlobSequenceValue(vec![
-                b"640".to_vec(),
-                b"480".to_vec(),
-                b"\x89PNGabc".to_vec(),
-            ]);
-            assert_eq!(
-                EventValue::Summary(v).into_blob_sequence(md.as_ref()),
-                Ok(expected)
-            );
-        }
-
-        #[test]
-        fn test_enrich_valid_tensor() {
-            let v = EventValue::Summary(SummaryValue(Box::new(Value::Tensor(pb::TensorProto {
-                dtype: pb::DataType::DtString.into(),
-                tensor_shape: Some(tensor_shape(&[2])),
-                string_val: vec![b"abc".to_vec(), b"defghi".to_vec()],
-                ..Default::default()
-            }))));
-            let expected = BlobSequenceValue(vec![b"abc".to_vec(), b"defghi".to_vec()]);
-            assert_eq!(
-                v.into_blob_sequence(&blank("myblobs", pb::DataClass::BlobSequence)),
-                Ok(expected)
-            );
-        }
-
-        #[test]
-        fn test_enrich_valid_empty_tensor() {
-            let v = EventValue::Summary(SummaryValue(Box::new(Value::Tensor(pb::TensorProto {
-                dtype: pb::DataType::DtString.into(),
-                tensor_shape: Some(tensor_shape(&[0])),
-                string_val: vec![],
-                ..Default::default()
-            }))));
-            let expected = BlobSequenceValue(vec![]);
-            assert_eq!(
-                v.into_blob_sequence(&blank("myblobs", pb::DataClass::BlobSequence)),
-                Ok(expected)
-            );
-        }
-
-        #[test]
-        fn test_enrich_invalid_empty_tensor() {
-            let v = EventValue::Summary(SummaryValue(Box::new(Value::Tensor(pb::TensorProto {
-                dtype: pb::DataType::DtString.into(),
-                tensor_shape: Some(tensor_shape(&[0, 3])), // bad rank
-                string_val: vec![],
-                ..Default::default()
-            }))));
-            assert_eq!(
-                v.into_blob_sequence(&blank("myblobs", pb::DataClass::BlobSequence)),
-                Err(DataLoss)
-            );
-        }
-
-        #[test]
-        fn test_enrich_scalar_tensor() {
-            let v = EventValue::Summary(SummaryValue(Box::new(Value::Tensor(pb::TensorProto {
-                dtype: pb::DataType::DtString.into(),
-                tensor_shape: Some(tensor_shape(&[])),
-                string_val: vec![b"no scalars for you".to_vec()],
-                ..Default::default()
-            }))));
-            assert_eq!(
-                v.into_blob_sequence(&blank("myblobs", pb::DataClass::BlobSequence)),
-                Err(DataLoss)
-            );
-        }
-
-        #[test]
-        fn test_enrich_higher_rank_tensor() {
-            let v = EventValue::Summary(SummaryValue(Box::new(Value::Tensor(pb::TensorProto {
-                dtype: pb::DataType::DtString.into(),
-                tensor_shape: Some(tensor_shape(&[2, 2])),
-                string_val: vec![
-                    b"ab".to_vec(),
-                    b"cd".to_vec(),
-                    b"ef".to_vec(),
-                    b"gh".to_vec(),
-                ],
-                ..Default::default()
-            }))));
-            assert_eq!(
-                v.into_blob_sequence(&blank("myblobs", pb::DataClass::BlobSequence)),
-                Err(DataLoss)
-            );
-        }
-
-        #[test]
-        fn test_enrich_non_string_tensor() {
-            let v = EventValue::Summary(SummaryValue(Box::new(Value::Tensor(pb::TensorProto {
-                dtype: pb::DataType::DtFloat.into(),
-                tensor_shape: Some(tensor_shape(&[2])),
-                float_val: vec![1.0, 2.0],
-                ..Default::default()
-            }))));
-            assert_eq!(
-                v.into_blob_sequence(&blank("myblobs", pb::DataClass::BlobSequence)),
-                Err(DataLoss)
-            );
-        }
-
-        #[test]
-        fn test_enrich_tf1x_audio() {
-            let v = SummaryValue(Box::new(Value::Audio(pb::summary::Audio {
-                sample_rate: 44100.0,
-                encoded_audio_string: b"RIFFabcd".to_vec(),
-                ..Default::default()
-            })));
-            let md = v.initial_metadata(None);
-            let expected = BlobSequenceValue(vec![b"RIFFabcd".to_vec()]);
-            assert_eq!(
-                EventValue::Summary(v).into_blob_sequence(md.as_ref()),
-                Ok(expected)
-            );
-        }
-
-        #[test]
-        fn test_enrich_audio_without_labels() {
-            let v = EventValue::Summary(SummaryValue(Box::new(Value::Tensor(pb::TensorProto {
-                dtype: pb::DataType::DtString.into(),
-                tensor_shape: Some(tensor_shape(&[3])),
-                string_val: vec![
-                    b"RIFFwav0".to_vec(),
-                    b"RIFFwav1".to_vec(),
-                    b"RIFFwav2".to_vec(),
-                ],
-                ..Default::default()
-            }))));
-            let expected = BlobSequenceValue(vec![
-                b"RIFFwav0".to_vec(),
-                b"RIFFwav1".to_vec(),
-                b"RIFFwav2".to_vec(),
-            ]);
-            assert_eq!(
-                v.into_blob_sequence(&blank(AUDIO_PLUGIN_NAME, pb::DataClass::BlobSequence)),
-                Ok(expected)
-            );
-        }
-
-        #[test]
-        fn test_enrich_audio_with_labels() {
-            let v = EventValue::Summary(SummaryValue(Box::new(Value::Tensor(pb::TensorProto {
-                dtype: pb::DataType::DtString.into(),
-                tensor_shape: Some(tensor_shape(&[3, 2])),
-                string_val: vec![
-                    b"RIFFwav0".to_vec(),
-                    b"label 0".to_vec(),
-                    b"RIFFwav1".to_vec(),
-                    b"label 1".to_vec(),
-                    b"RIFFwav2".to_vec(),
-                    b"label 2".to_vec(),
-                ],
-                ..Default::default()
-            }))));
-            let expected = BlobSequenceValue(vec![
-                b"RIFFwav0".to_vec(),
-                b"RIFFwav1".to_vec(),
-                b"RIFFwav2".to_vec(),
-            ]);
-            assert_eq!(
-                v.into_blob_sequence(&blank(AUDIO_PLUGIN_NAME, pb::DataClass::BlobSequence)),
-                Ok(expected)
-            );
-        }
->>>>>>> c0a649a35d03f176ec4e50b3552d5f85e443b916
     }
 
     mod unknown {
