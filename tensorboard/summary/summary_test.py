@@ -72,7 +72,7 @@ class SummaryExportsBaseTest(object):
 
 class SummaryExportsTest(SummaryExportsBaseTest, unittest.TestCase):
     module = tb_summary
-    allowed = frozenset(("v1", "v2"))
+    allowed = frozenset(("v1", "v2", "writer", "Writer"))
     plugins = frozenset(
         [
             "audio",

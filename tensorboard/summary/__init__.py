@@ -29,3 +29,5 @@ try:
     from tensorboard.summary.v2 import *  # noqa: F401
 except ImportError:
     pass
+
+from tensorboard.summary._writer import Writer  # noqa: F401
