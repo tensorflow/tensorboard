@@ -77,7 +77,7 @@ alias(
 
 alias(
     name = "futures_core",
-    actual = "@raze__futures_core__0_3_8//:futures_core",
+    actual = "@raze__futures_core__0_3_12//:futures_core",
     tags = [
         "cargo-raze",
         "manual",
@@ -95,7 +95,7 @@ alias(
 
 alias(
     name = "prost",
-    actual = "@raze__prost__0_6_1//:prost",
+    actual = "@raze__prost__0_7_0//:prost",
     tags = [
         "cargo-raze",
         "manual",
@@ -104,7 +104,7 @@ alias(
 
 alias(
     name = "prost_build",
-    actual = "@raze__prost_build__0_6_1//:prost_build",
+    actual = "@raze__prost_build__0_7_0//:prost_build",
     tags = [
         "cargo-raze",
         "manual",
@@ -167,7 +167,7 @@ alias(
 
 alias(
     name = "tokio",
-    actual = "@raze__tokio__0_2_22//:tokio",
+    actual = "@raze__tokio__1_0_2//:tokio",
     tags = [
         "cargo-raze",
         "manual",
@@ -185,7 +185,7 @@ alias(
 
 alias(
     name = "tonic",
-    actual = "@raze__tonic__0_3_1//:tonic",
+    actual = "@raze__tonic__0_4_0//:tonic",
     tags = [
         "cargo-raze",
         "manual",
@@ -194,7 +194,7 @@ alias(
 
 alias(
     name = "tonic_build",
-    actual = "@raze__tonic_build__0_3_1//:tonic_build",
+    actual = "@raze__tonic_build__0_4_0//:tonic_build",
     tags = [
         "cargo-raze",
         "manual",

@@ -30,23 +30,23 @@ byteorder = "1.3.4"
 clap = "3.0.0-beta.2"
 crc = "1.8.1"
 env_logger = "0.8.2"
-futures-core = "0.3.6"
+futures-core = "0.3.12"
 log = "0.4.11"
-prost = "0.6.1"
+prost = "0.7.0"
 rand = "0.7.3"
 rand_chacha = "0.2.2"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0.59"
 thiserror = "1.0.21"
-tokio = { version = "0.2.2", features = ["macros"] }
-tokio-stream = "0.1.2"
-tonic = "0.3.1"
+tokio = { version = "1.0.2", features = ["macros", "rt-multi-thread"] }
+tokio-stream = { version = "0.1.2", features = ["net"] }
+tonic = "0.4.0"
 walkdir = "2.3.1"
 
 [dev-dependencies]
-prost-build = "0.6.1"
+prost-build = "0.7.0"
 tempfile = "3.1.0"
-tonic-build = "0.3.1"
+tonic-build = "0.4.0"
 
 [[bin]]
 name = "rustboard"
@@ -92,7 +92,7 @@ additional_flags = [
     "--cfg=wrap_proc_macro",
 ]
 
-[package.metadata.raze.crates.prost-build.'0.6.1']
+[package.metadata.raze.crates.prost-build.'0.7.0']
 gen_buildrs = true
 additional_deps = ["@com_google_protobuf//:protoc"]
 additional_env = { PROTOC = "$(execpath @com_google_protobuf//:protoc)" }
