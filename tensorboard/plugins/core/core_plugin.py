@@ -15,6 +15,7 @@
 """TensorBoard core plugin package."""
 
 
+import argparse
 import functools
 import gzip
 import io
@@ -478,12 +479,11 @@ relevant for db read-only mode. Each thread reloads one run at a time.
         parser.add_argument(
             "--reload_interval",
             metavar="SECONDS",
-            type=float,
+            type=_nonnegative_float,
             default=5.0,
             help="""\
 How often the backend should load more data, in seconds. Set to 0 to
-load just once at startup and a negative number to never reload at all.
-Not relevant for DB read-only mode. (default: %(default)s)\
+load just once at startup. Must be non-negative. (default: %(default)s)\
 """,
         )
 
@@ -632,3 +632,12 @@ def _parse_samples_per_plugin(value):
             k, v = token.strip().split("=")
             result[k] = int(v)
     return result
+
+
+def _nonnegative_float(v):
+    try:
+        v = float(v)
+    except ValueError:
+        raise argparse.ArgumentTypeError("invalid float: %r" % v)
+    if not (v >= 0):  # no NaNs, please
+        raise argparse.ArgumentTypeError("must be non-negative: %r" % v)
