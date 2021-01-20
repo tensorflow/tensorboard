@@ -150,6 +150,11 @@ def _get_server_binary():
             )
         return env_result
 
+    bundle_result = os.path.join(os.path.dirname(__file__), "server", "server")
+    if os.path.exists(bundle_result):
+        logging.info("Server binary (from bundle): %s", bundle_result)
+        return bundle_result
+
     try:
         import tensorboard_data_server
     except ImportError:
@@ -163,12 +168,8 @@ def _get_server_binary():
             )
         return pkg_result
 
-    bundle_result = os.path.join(os.path.dirname(__file__), "server", "server")
-    logging.info("Server binary (from bundle): %s", bundle_result)
-    if not os.path.exists(bundle_result):
-        raise RuntimeError(
-            "TensorBoard data server not found. This mode is experimental "
-            "and not supported in release builds. If building from source, "
-            "pass --define=link_data_server=true."
-        )
-    return bundle_result
+    raise RuntimeError(
+        "TensorBoard data server not found. This mode is experimental "
+        "and not supported in release builds. If building from source, "
+        "pass --define=link_data_server=true."
+    )
