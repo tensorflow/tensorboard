@@ -78,7 +78,10 @@ class SubprocessServerDataIngesterTest(tb_test.TestCase):
         with mock.patch.object(subprocess, "Popen", wraps=fake_popen) as popen:
             with mock.patch.object(grpc, "secure_channel", autospec=True) as sc:
                 logdir = "/tmp/logs"
-                ingester = server_ingester.SubprocessServerDataIngester(logdir)
+                ingester = server_ingester.SubprocessServerDataIngester(
+                    logdir=logdir,
+                    reload_interval=5,
+                )
                 ingester.start()
         self.assertIsInstance(
             ingester.data_provider, grpc_provider.GrpcDataProvider
@@ -87,6 +90,7 @@ class SubprocessServerDataIngesterTest(tb_test.TestCase):
         expected_args = [
             fake_binary,
             "--logdir=/tmp/logs",
+            "--reload=5",
             "--port=0",
             "--port-file=%s" % port_file,
             "--die-after-stdin",
