@@ -32,6 +32,8 @@ pub struct EventFileReader<R> {
     last_wall_time: Option<f64>,
     /// Underlying record reader owned by this event file.
     reader: TfRecordReader<R>,
+    /// Whether to compute CRCs for records before parsing as protos.
+    checksum: bool,
 }
 
 /// Error returned by [`EventFileReader::read_event`].
@@ -68,14 +70,30 @@ impl<R: Read> EventFileReader<R> {
         Self {
             last_wall_time: None,
             reader: TfRecordReader::new(reader),
+            checksum: true,
         }
+    }
+
+    /// Sets whether to compute checksums for records before parsing them as protos.
+    pub fn checksum(&mut self, yes: bool) {
+        self.checksum = yes;
     }
 
     /// Reads the next event from the file.
     pub fn read_event(&mut self) -> Result<Event, ReadEventError> {
         let record = self.reader.read_record()?;
-        record.checksum()?;
-        let event = Event::decode(&record.data[..])?;
+        let event = if self.checksum {
+            record.checksum()?;
+            Event::decode(&record.data[..])?
+        } else {
+            match Event::decode(&record.data[..]) {
+                Ok(proto) => proto,
+                Err(e) => {
+                    record.checksum()?;
+                    return Err(e.into());
+                }
+            }
+        };
         let wall_time = event.wall_time;
         if wall_time.is_nan() {
             return Err(ReadEventError::NanWallTime(event));
@@ -175,6 +193,62 @@ mod tests {
         let last = reader.read_event();
         assert!(last.as_ref().unwrap_err().truncated(), "{:?}", last);
         assert_eq!(reader.last_wall_time(), &Some(1234.5));
+    }
+
+    #[test]
+    fn test_no_checksum() {
+        let event = Event {
+            what: Some(pb::event::What::FileVersion("hello".to_string())),
+            ..Event::default()
+        };
+        let records = vec![
+            TfRecord::from_data(encode_event(&event)),
+            {
+                let mut record = TfRecord::from_data(encode_event(&event));
+                record.data_crc.0 ^= 0x1; // invalidate checksum
+                record
+            },
+            {
+                let mut record = TfRecord::from_data(b"failed proto, failed checksum".to_vec());
+                record.data_crc.0 ^= 0x1; // invalidate checksum
+                record
+            },
+            TfRecord::from_data(b"failed proto, okay checksum".to_vec()),
+        ];
+        let mut file = Vec::new();
+        for record in records {
+            record.write(&mut file).expect("writing record");
+        }
+        let mut reader = EventFileReader::new(Cursor::new(file));
+        reader.checksum(false);
+
+        // First record is genuinely okay.
+        match reader.read_event() {
+            Ok(_) => (),
+            other => panic!("first record: {:?}", other),
+        };
+        // Second record is a valid proto, but invalid record checksum; with `checksum(false)`,
+        // this should not be caught.
+        match reader.read_event() {
+            Ok(_) => (),
+            other => panic!("second record: {:?}", other),
+        };
+        // Third record is an invalid proto with an invalid checksum, so the checksum error should
+        // be caught.
+        match reader.read_event() {
+            Err(ReadEventError::InvalidRecord(_)) => (),
+            other => panic!("third record: {:?}", other),
+        };
+        // Fourth record is an invalid proto with valid checksum, which should still be caught.
+        match reader.read_event() {
+            Err(ReadEventError::InvalidProto(_)) => (),
+            other => panic!("fourth record: {:?}", other),
+        };
+        // After four records, should be done.
+        match reader.read_event() {
+            Err(ReadEventError::ReadRecordError(ReadRecordError::Truncated)) => (),
+            other => panic!("eof: {:?}", other),
+        };
     }
 
     #[test]
