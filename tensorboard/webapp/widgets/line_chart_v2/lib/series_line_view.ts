@@ -131,7 +131,7 @@ export class SeriesLineView extends DataDrawable {
                 color: metadata.color,
                 visible: metadata.visible,
                 opacity: metadata.opacity ?? 1,
-                width: 1,
+                width: 2,
               }
             );
           }
