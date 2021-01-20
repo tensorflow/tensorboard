@@ -86,6 +86,27 @@ struct Opts {
     /// port file is specified but cannot be written, the server will die.
     #[clap(long)]
     port_file: Option<PathBuf>,
+
+    /// Checksum all records (negate with `--no-checksum`)
+    ///
+    /// With `--checksum`, every record will be checksummed before being parsed. With
+    /// `--no-checksum` (the default), records are only checksummed if parsing fails. Skipping
+    /// checksums for records that successfully parse can be significantly faster, but also means
+    /// that some bit flips may not be detected.
+    #[clap(long, multiple_occurrences = true, overrides_with = "no_checksum")]
+    checksum: bool,
+
+    /// Only checksum records that fail to parse
+    ///
+    /// Negates `--checksum`. This is the default.
+    #[clap(
+        long,
+        multiple_occurrences = true,
+        overrides_with = "checksum",
+        hidden = true
+    )]
+    #[allow(unused)]
+    no_checksum: bool,
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
@@ -150,6 +171,7 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .name("Reloader".to_string())
         .spawn({
             let logdir = opts.logdir;
+<<<<<<< HEAD
             let reload = opts.reload;
             move || {
                 let mut loader = LogdirLoader::new(commit, logdir);
@@ -164,6 +186,31 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
                         ReloadStrategy::Once => break,
                     };
                 }
+||||||| 6b085ffd3
+            let reload_interval = opts.reload_interval;
+            move || {
+                let mut loader = LogdirLoader::new(commit, logdir);
+                loop {
+                    info!("Starting load cycle");
+                    let start = Instant::now();
+                    loader.reload();
+                    let end = Instant::now();
+                    info!("Finished load cycle ({:?})", end - start);
+                    thread::sleep(reload_interval.duration());
+                }
+=======
+            let reload_interval = opts.reload_interval;
+            let mut loader = LogdirLoader::new(commit, logdir);
+            // Checksum only if `--checksum` given (i.e., off by default).
+            loader.checksum(opts.checksum);
+            move || loop {
+                info!("Starting load cycle");
+                let start = Instant::now();
+                loader.reload();
+                let end = Instant::now();
+                info!("Finished load cycle ({:?})", end - start);
+                thread::sleep(reload_interval.duration());
+>>>>>>> ec1ec35c5f1f090146dfda702c6adc8965c99998
             }
         })
         .expect("failed to spawn reloader thread");
