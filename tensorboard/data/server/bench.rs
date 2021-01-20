@@ -29,6 +29,12 @@ struct Opts {
     logdir: PathBuf,
     #[clap(long, default_value = "info")]
     log_level: String,
+    // Pair of `--no-checksum` and `--checksum` flags, defaulting to "no checksum".
+    #[clap(long, multiple_occurrences = true, overrides_with = "checksum")]
+    #[allow(unused)]
+    no_checksum: bool,
+    #[clap(long, multiple_occurrences = true, overrides_with = "no_checksum")]
+    checksum: bool,
 }
 
 fn main() {
@@ -37,6 +43,7 @@ fn main() {
 
     let commit = Commit::new();
     let mut loader = LogdirLoader::new(&commit, opts.logdir);
+    loader.checksum(opts.checksum); // if neither `--[no-]checksum` given, defaults to false
 
     info!("Starting load cycle");
     let start = Instant::now();

@@ -36,7 +36,7 @@ use crate::server::DataProviderHandler;
 use data::tensor_board_data_provider_server::TensorBoardDataProviderServer;
 
 #[derive(Clap, Debug)]
-#[clap(name = "rustboard", version = "0.1.0")]
+#[clap(name = "rustboard", version = "0.2.0-alpha.0")]
 struct Opts {
     /// Log directory to load
     ///
@@ -87,6 +87,27 @@ struct Opts {
     /// port file is specified but cannot be written, the server will die.
     #[clap(long)]
     port_file: Option<PathBuf>,
+
+    /// Checksum all records (negate with `--no-checksum`)
+    ///
+    /// With `--checksum`, every record will be checksummed before being parsed. With
+    /// `--no-checksum` (the default), records are only checksummed if parsing fails. Skipping
+    /// checksums for records that successfully parse can be significantly faster, but also means
+    /// that some bit flips may not be detected.
+    #[clap(long, multiple_occurrences = true, overrides_with = "no_checksum")]
+    checksum: bool,
+
+    /// Only checksum records that fail to parse
+    ///
+    /// Negates `--checksum`. This is the default.
+    #[clap(
+        long,
+        multiple_occurrences = true,
+        overrides_with = "checksum",
+        hidden = true
+    )]
+    #[allow(unused)]
+    no_checksum: bool,
 }
 
 /// A duration in seconds.
@@ -149,16 +170,16 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .spawn({
             let logdir = opts.logdir;
             let reload_interval = opts.reload_interval;
-            move || {
-                let mut loader = LogdirLoader::new(commit, logdir);
-                loop {
-                    info!("Starting load cycle");
-                    let start = Instant::now();
-                    loader.reload();
-                    let end = Instant::now();
-                    info!("Finished load cycle ({:?})", end - start);
-                    thread::sleep(reload_interval.duration());
-                }
+            let mut loader = LogdirLoader::new(commit, logdir);
+            // Checksum only if `--checksum` given (i.e., off by default).
+            loader.checksum(opts.checksum);
+            move || loop {
+                info!("Starting load cycle");
+                let start = Instant::now();
+                loader.reload();
+                let end = Instant::now();
+                info!("Finished load cycle ({:?})", end - start);
+                thread::sleep(reload_interval.duration());
             }
         })
         .expect("failed to spawn reloader thread");

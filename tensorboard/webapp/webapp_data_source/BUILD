@@ -42,6 +42,7 @@ tf_ng_module(
     ],
     deps = [
         "//tensorboard/webapp/angular:expect_angular_common_http",
+        "//tensorboard/webapp/app_routing:app_root",
         "//tensorboard/webapp/feature_flag",
         "//tensorboard/webapp/feature_flag:types",
         "//tensorboard/webapp/feature_flag/store",
@@ -65,6 +66,7 @@ tf_ng_module(
         ":http_client_testing",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/angular:expect_ngrx_store_testing",
+        "//tensorboard/webapp/app_routing:app_root",
         "//tensorboard/webapp/core:types",
         "//tensorboard/webapp/feature_flag/store",
         "//tensorboard/webapp/feature_flag/store:types",
