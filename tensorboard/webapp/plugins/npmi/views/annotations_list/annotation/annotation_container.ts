@@ -1,3 +1,4 @@
+import {combineLatest, forkJoin} from 'rxjs';
 /* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,10 +14,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Component, ChangeDetectionStrategy, Input} from '@angular/core';
-import {Store} from '@ngrx/store';
+import {Store, select} from '@ngrx/store';
 import {State} from '../../../../../app_state';
 import {Observable} from 'rxjs';
-import {map} from 'rxjs/operators';
+import {
+  map,
+  filter,
+  startWith,
+  tap,
+  switchMap,
+  mergeMap,
+  merge,
+} from 'rxjs/operators';
 
 import {
   getSelectedAnnotations,
@@ -30,6 +39,7 @@ import * as selectors from '../../../../../selectors';
 import {ValueData} from '../../../store/npmi_types';
 import * as npmiActions from '../../../actions';
 import {RunColorScale} from '../../../../../types/ui';
+import {getExperimentIdsFromRoute} from '../../../../../app_routing/store/app_routing_selectors';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
@@ -51,6 +61,7 @@ import {RunColorScale} from '../../../../../types/ui';
       [showCounts]="showCounts$ | async"
       [sidebarWidth]="sidebarWidth$ | async"
       [colorScale]="runColorScale$ | async"
+      [runNames]="fetches$ | async"
       (onShowSimilarAnnotations)="showSimilarAnnotations()"
     ></annotation-component>
   `,
@@ -83,6 +94,38 @@ export class AnnotationContainer {
         };
       })
     );
+  readonly experimentIds$ = this.store.pipe(select(getExperimentIdsFromRoute));
+  readonly fetches$ = this.experimentIds$.pipe(
+    filter((experimentIds) => Boolean(experimentIds)),
+    switchMap((experimentIds) => {
+      return experimentIds!.map((experimentId) => {
+        return this.store.select(selectors.getRuns, {experimentId});
+      });
+    }),
+    startWith([]),
+    tap((runMaps) => {
+      console.log('runMaps');
+      console.log(runMaps);
+    })
+  );
+  // readonly runNames$ = combineLatest(this.fetches$).pipe(
+  //   map((runs) => {
+  //     console.log(runs);
+  //     return runs;
+  //     // const runMapping: {[runID: string]: string} = {};
+  //     // for (const run of runs) {
+  //     //   runMapping[run.id] = run.name;
+  //     // }
+  //   })
+  // );
+  // readonly runNames$ = this.store
+  //   .pipe(select(selectors.getRuns, {experimentId: 'defaultExperimentId'}))
+  //   .pipe(
+  //     map((run) => {
+  //       console.log(run);
+  //       return run;
+  //     })
+  //   );
 
   constructor(private readonly store: Store<State>) {}
 

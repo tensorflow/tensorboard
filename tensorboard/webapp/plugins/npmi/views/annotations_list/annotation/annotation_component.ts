@@ -55,6 +55,7 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
   // Only to trigger OnChanges to re-render the component.
   @Input() sidebarWidth!: number;
   @Input() colorScale!: RunColorScale;
+  @Input() runNames!: any;
   @ViewChild('chart', {static: true, read: ElementRef})
   private readonly annotationContainer!: ElementRef<HTMLDivElement>;
   @ViewChild('hintClip', {static: true, read: ElementRef})
