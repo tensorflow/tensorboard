@@ -459,7 +459,6 @@ mod test {
             )]
         );
 
-<<<<<<< HEAD
         let run_metadata_tag = Tag("step0000".to_string());
         let run_metadata_ts = run_data.blob_sequences.get(&run_metadata_tag).unwrap();
         assert_eq!(
@@ -482,32 +481,6 @@ mod test {
             )]
         );
 
-||||||| 5acd97e48
-=======
-        let run_metadata_tag = Tag("step0000".to_string());
-        let run_metadata_ts = run_data.blob_sequences.get(&run_metadata_tag).unwrap();
-        assert_eq!(
-            *run_metadata_ts.metadata,
-            pb::SummaryMetadata {
-                plugin_data: Some(pb::summary_metadata::PluginData {
-                    plugin_name: crate::data_compat::GRAPH_TAGGED_RUN_METADATA_PLUGIN_NAME
-                        .to_string(),
-                    ..Default::default()
-                }),
-                data_class: pb::DataClass::BlobSequence.into(),
-                ..Default::default()
-            }
-        );
-        assert_eq!(
-            run_metadata_ts.valid_values().collect::<Vec<_>>(),
-            vec![(
-                Step(0),
-                WallTime::new(1235.0).unwrap(),
-                &commit::BlobSequenceValue(vec![b"<sample run metadata>".to_vec()])
-            )]
-        );
-
->>>>>>> ec1ec35c5f1f090146dfda702c6adc8965c99998
         Ok(())
     }
 }
