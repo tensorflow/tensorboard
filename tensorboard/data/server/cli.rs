@@ -105,6 +105,7 @@ struct Opts {
         overrides_with = "checksum",
         hidden = true
     )]
+    #[allow(unused)]
     no_checksum: bool,
 }
 

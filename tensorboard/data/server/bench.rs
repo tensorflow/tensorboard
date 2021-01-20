@@ -31,6 +31,7 @@ struct Opts {
     log_level: String,
     // Pair of `--no-checksum` and `--checksum` flags, defaulting to "no checksum".
     #[clap(long, multiple_occurrences = true, overrides_with = "checksum")]
+    #[allow(unused)]
     no_checksum: bool,
     #[clap(long, multiple_occurrences = true, overrides_with = "no_checksum")]
     checksum: bool,
