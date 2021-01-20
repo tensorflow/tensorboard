@@ -208,6 +208,7 @@ def installed_packages():
             ]
         ),
     ]
+    salient_extras = frozenset(["tensorboard-data-server"])
 
     found_conflict = False
     for family in expect_unique:
@@ -219,6 +220,8 @@ def installed_packages():
         elif len(actual) > 1:
             logging.warning("conflicting installations: %s", sorted(actual))
             found_conflict = True
+    for package in sorted(salient_extras & packages_set):
+        logging.info("installed: %s", packages[package])
 
     if found_conflict:
         preamble = reflow(
@@ -276,6 +279,33 @@ def tensorflow_python_version():
 
     logging.info("tensorflow.__version__: %r", tf.__version__)
     logging.info("tensorflow.__git_version__: %r", tf.__git_version__)
+
+
+@check
+def tensorboard_data_server_version():
+    try:
+        import tensorboard_data_server
+    except ImportError:
+        logging.info("no data server installed")
+        return
+
+    path = tensorboard_data_server.server_binary()
+    logging.info("data server binary: %r", path)
+    if path is None:
+        return
+
+    try:
+        subprocess_output = subprocess.run(
+            [path, "--version"],
+            capture_output=True,
+            check=True,
+        )
+    except subprocess.CalledProcessError as e:
+        logging.info("failed to check binary version: %s", e)
+    else:
+        logging.info(
+            "data server binary version: %s", subprocess_output.stdout.strip()
+        )
 
 
 @check
