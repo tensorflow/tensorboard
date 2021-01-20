@@ -171,35 +171,7 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .name("Reloader".to_string())
         .spawn({
             let logdir = opts.logdir;
-<<<<<<< HEAD
-            let reload = opts.reload;
-            move || {
-                let mut loader = LogdirLoader::new(commit, logdir);
-                loop {
-                    info!("Starting load cycle");
-                    let start = Instant::now();
-                    loader.reload();
-                    let end = Instant::now();
-                    info!("Finished load cycle ({:?})", end - start);
-                    match reload {
-                        ReloadStrategy::Loop { delay } => thread::sleep(delay),
-                        ReloadStrategy::Once => break,
-                    };
-                }
-||||||| 6b085ffd3
-            let reload_interval = opts.reload_interval;
-            move || {
-                let mut loader = LogdirLoader::new(commit, logdir);
-                loop {
-                    info!("Starting load cycle");
-                    let start = Instant::now();
-                    loader.reload();
-                    let end = Instant::now();
-                    info!("Finished load cycle ({:?})", end - start);
-                    thread::sleep(reload_interval.duration());
-                }
-=======
-            let reload_interval = opts.reload_interval;
+            let reload_strategy = opts.reload;
             let mut loader = LogdirLoader::new(commit, logdir);
             // Checksum only if `--checksum` given (i.e., off by default).
             loader.checksum(opts.checksum);
@@ -209,8 +181,10 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 loader.reload();
                 let end = Instant::now();
                 info!("Finished load cycle ({:?})", end - start);
-                thread::sleep(reload_interval.duration());
->>>>>>> ec1ec35c5f1f090146dfda702c6adc8965c99998
+                match reload_strategy {
+                    ReloadStrategy::Loop { delay } => thread::sleep(delay),
+                    ReloadStrategy::Once => break,
+                };
             }
         })
         .expect("failed to spawn reloader thread");
