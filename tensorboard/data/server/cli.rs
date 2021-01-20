@@ -84,6 +84,9 @@ struct Opts {
     /// path. Useful with `--port 0`. Port will be written as ASCII decimal followed by a newline
     /// (e.g., "6806\n"). If the server fails to start, this file may not be written at all. If the
     /// port file is specified but cannot be written, the server will die.
+    ///
+    /// This also suppresses the "listening on HOST:PORT" line that is otherwise written to stderr
+    /// when the server starts.
     #[clap(long)]
     port_file: Option<PathBuf>,
 }
@@ -123,7 +126,6 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let addr = SocketAddr::new(opts.host, opts.port);
     let listener = TcpListener::bind(addr).await?;
     let bound = listener.local_addr()?;
-    eprintln!("listening on {:?}", bound);
 
     if let Some(port_file) = opts.port_file {
         let port = bound.port();
@@ -137,6 +139,8 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
             std::process::exit(1);
         }
         info!("Wrote port \"{}\" to {}", port, port_file.display());
+    } else {
+        eprintln!("listening on {:?}", bound);
     }
 
     // Leak the commit object, since the Tonic server must have only 'static references. This only
