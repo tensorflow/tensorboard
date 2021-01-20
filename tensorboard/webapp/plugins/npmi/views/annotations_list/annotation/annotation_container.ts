@@ -1,4 +1,3 @@
-import {combineLatest, forkJoin} from 'rxjs';
 /* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,7 +15,7 @@ limitations under the License.
 import {Component, ChangeDetectionStrategy, Input} from '@angular/core';
 import {Store, select} from '@ngrx/store';
 import {State} from '../../../../../app_state';
-import {Observable} from 'rxjs';
+import {Observable, combineLatest} from 'rxjs';
 import {
   map,
   filter,
@@ -98,9 +97,11 @@ export class AnnotationContainer {
   readonly fetches$ = this.experimentIds$.pipe(
     filter((experimentIds) => Boolean(experimentIds)),
     switchMap((experimentIds) => {
-      return experimentIds!.map((experimentId) => {
-        return this.store.select(selectors.getRuns, {experimentId});
-      });
+      return combineLatest(
+        experimentIds!.map((experimentId) => {
+          return this.store.select(selectors.getRuns, {experimentId});
+        })
+      );
     }),
     startWith([]),
     tap((runMaps) => {
