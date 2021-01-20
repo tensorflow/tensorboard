@@ -70,6 +70,7 @@ const DAY_IN_MS = 24 * 1000 * 60 * 60;
   styles: [
     `
       :host {
+        contain: strict;
         display: flex;
         overflow: hidden;
       }
@@ -87,6 +88,12 @@ const DAY_IN_MS = 24 * 1000 * 60 * 60;
       text {
         font-size: 11px;
         user-select: none;
+      }
+
+      .x-axis,
+      .y-axis {
+        height: 100%;
+        width: 100%;
       }
 
       .x-axis {
