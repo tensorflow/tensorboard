@@ -108,6 +108,14 @@ export class LineChartComponent implements AfterViewInit, OnChanges, OnDestroy {
   tooltipTemplate?: TooltipTemplate;
 
   /**
+   * Optional parameter to tweak whether to propagate update to line chart implementation.
+   * When not specified, it defaults to `false`. When it is `true`, it remembers what has
+   * changed and applies the change when the update is enabled.
+   */
+  @Input()
+  disableUpdate?: boolean;
+
+  /**
    * Whether to ignore outlier when computing default viewBox from the dataSeries.
    *
    * Do note that we only take values in between approxmiately 5th to 95th percentiles.
@@ -167,7 +175,8 @@ export class LineChartComponent implements AfterViewInit, OnChanges, OnDestroy {
     }
 
     this.isViewBoxChanged =
-      !this.isViewBoxOverriden && this.shouldUpdateDefaultViewBox(changes);
+      this.isViewBoxChanged ||
+      (!this.isViewBoxOverriden && this.shouldUpdateDefaultViewBox(changes));
 
     this.updateLineChart();
   }
@@ -307,7 +316,7 @@ export class LineChartComponent implements AfterViewInit, OnChanges, OnDestroy {
    * Minimally and imperatively updates the chart library depending on prop changed.
    */
   private updateLineChart() {
-    if (!this.lineChart) return;
+    if (!this.lineChart || this.disableUpdate) return;
 
     if (this.scaleUpdated) {
       this.scaleUpdated = false;

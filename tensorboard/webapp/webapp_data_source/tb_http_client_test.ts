@@ -16,6 +16,10 @@ import {TestBed} from '@angular/core/testing';
 import {Store} from '@ngrx/store';
 import {MockStore} from '@ngrx/store/testing';
 
+import {
+  AppRootProvider,
+  TestableAppRootProvider,
+} from '../app_routing/app_root';
 import {State} from '../feature_flag/store/feature_flag_types';
 import {
   getIsFeatureFlagsLoaded,
@@ -32,16 +36,23 @@ describe('TBHttpClient', () => {
   let tbHttpClient: TBHttpClient;
   let httpMock: HttpTestingController;
   let store: MockStore<State>;
+  let appRootProvider: TestableAppRootProvider;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [TBFeatureFlagTestingModule, TBHttpClientTestingModule],
-      providers: [TBHttpClient],
+      providers: [
+        TBHttpClient,
+        {provide: AppRootProvider, useClass: TestableAppRootProvider},
+      ],
     }).compileComponents();
 
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
     httpMock = TestBed.inject(HttpTestingController);
     tbHttpClient = TestBed.inject(TBHttpClient);
+    appRootProvider = TestBed.inject(
+      AppRootProvider
+    ) as TestableAppRootProvider;
   });
 
   it('waits for feature flags before making POST request', () => {
@@ -90,5 +101,31 @@ describe('TBHttpClient', () => {
         !req.body
       );
     });
+  });
+
+  it('prefixes absolute paths with the app-root', () => {
+    appRootProvider.setAppRoot('/my-path-prefix/');
+
+    tbHttpClient.get('/').subscribe();
+    httpMock.expectOne((req) => req.urlWithParams === '/my-path-prefix/');
+
+    tbHttpClient.get('/foo').subscribe();
+    httpMock.expectOne((req) => req.urlWithParams === '/my-path-prefix/foo');
+
+    tbHttpClient.get('/foo/2').subscribe();
+    httpMock.expectOne((req) => req.urlWithParams === '/my-path-prefix/foo/2');
+  });
+
+  it('does not prefix relative paths and URLs with the app-root', () => {
+    appRootProvider.setAppRoot('/my-path-prefix/');
+
+    tbHttpClient.get('foo').subscribe();
+    httpMock.expectOne((req) => req.urlWithParams === 'foo');
+
+    tbHttpClient.get('foo/2').subscribe();
+    httpMock.expectOne((req) => req.urlWithParams === 'foo/2');
+
+    tbHttpClient.get('./foo').subscribe();
+    httpMock.expectOne((req) => req.urlWithParams === './foo');
   });
 });
