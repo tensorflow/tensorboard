@@ -22,14 +22,21 @@ use crate::commit::{BlobSequenceValue, DataLoss, ScalarValue};
 use crate::proto::tensorboard as pb;
 use pb::summary_metadata::PluginData;
 
-pub(crate) const SCALARS_PLUGIN_NAME: &str = "scalars";
-pub(crate) const IMAGES_PLUGIN_NAME: &str = "images";
-pub(crate) const AUDIO_PLUGIN_NAME: &str = "audio";
-pub(crate) const GRAPHS_PLUGIN_NAME: &str = "graphs";
-pub(crate) const GRAPH_TAGGED_RUN_METADATA_PLUGIN_NAME: &str = "graph_tagged_run_metadata";
-pub(crate) const GRAPH_RUN_METADATA_PLUGIN_NAME: &str = "graph_run_metadata";
-pub(crate) const GRAPH_RUN_METADATA_WITH_GRAPH_PLUGIN_NAME: &str = "graph_run_metadata_graph";
-pub(crate) const GRAPH_KERAS_MODEL_PLUGIN_NAME: &str = "graph_keras_model";
+/// Plugin names with special compatibility considerations.
+///
+/// The constants in this module denote values of the `summary_metadata.plugin_data.plugin_name`
+/// proto field, and must match exactly those values written to disk. The sources of truth are
+/// generally the `tensorboard/plugins/*/metadata.py` files in the TensorBoard repository.
+pub(crate) mod plugin_names {
+    pub const SCALARS: &str = "scalars";
+    pub const IMAGES: &str = "images";
+    pub const AUDIO: &str = "audio";
+    pub const GRAPHS: &str = "graphs";
+    pub const GRAPH_TAGGED_RUN_METADATA: &str = "graph_tagged_run_metadata";
+    pub const GRAPH_RUN_METADATA: &str = "graph_run_metadata";
+    pub const GRAPH_RUN_METADATA_WITH_GRAPH: &str = "graph_run_metadata_graph";
+    pub const GRAPH_KERAS_MODEL: &str = "graph_keras_model";
+}
 
 /// The inner contents of a single value from an event.
 ///
@@ -117,7 +124,7 @@ impl EventValue {
                         Ok(BlobSequenceValue(tp.string_val))
                     } else if shape.dim.len() == 2
                         && shape.dim[1].size == 2
-                        && is_plugin(&metadata, AUDIO_PLUGIN_NAME)
+                        && is_plugin(&metadata, plugin_names::AUDIO)
                     {
                         // Extract just the actual audio clips along the first axis.
                         let audio: Vec<Vec<u8>> = tp
@@ -128,9 +135,9 @@ impl EventValue {
                         Ok(BlobSequenceValue(audio))
                     } else if shape.dim.is_empty()
                         && tp.string_val.len() == 1
-                        && (is_plugin(&metadata, GRAPH_RUN_METADATA_PLUGIN_NAME)
-                            || is_plugin(&metadata, GRAPH_RUN_METADATA_WITH_GRAPH_PLUGIN_NAME)
-                            || is_plugin(&metadata, GRAPH_KERAS_MODEL_PLUGIN_NAME))
+                        && (is_plugin(&metadata, plugin_names::GRAPH_RUN_METADATA)
+                            || is_plugin(&metadata, plugin_names::GRAPH_RUN_METADATA_WITH_GRAPH)
+                            || is_plugin(&metadata, plugin_names::GRAPH_KERAS_MODEL))
                     {
                         let data = tp.string_val.into_iter().next().unwrap();
                         Ok(BlobSequenceValue(vec![data]))
@@ -214,7 +221,7 @@ impl GraphDefValue {
     /// Determines the metadata for a time series whose first event is a
     /// [`GraphDef`][`EventValue::GraphDef`].
     pub fn initial_metadata() -> Box<pb::SummaryMetadata> {
-        blank(GRAPHS_PLUGIN_NAME, pb::DataClass::BlobSequence)
+        blank(plugin_names::GRAPHS, pb::DataClass::BlobSequence)
     }
 }
 
@@ -223,7 +230,7 @@ impl TaggedRunMetadataValue {
     /// [`TaggedRunMetadata`][`EventValue::TaggedRunMetadata`].
     pub fn initial_metadata() -> Box<pb::SummaryMetadata> {
         blank(
-            GRAPH_TAGGED_RUN_METADATA_PLUGIN_NAME,
+            plugin_names::GRAPH_TAGGED_RUN_METADATA,
             pb::DataClass::BlobSequence,
         )
     }
@@ -254,20 +261,20 @@ impl SummaryValue {
             // Any summary metadata that sets its own data class is expected to already be in the right
             // form.
             (Some(md), _) if md.data_class != i32::from(pb::DataClass::Unknown) => Box::new(md),
-            (_, Value::SimpleValue(_)) => blank(SCALARS_PLUGIN_NAME, pb::DataClass::Scalar),
-            (_, Value::Image(_)) => blank(IMAGES_PLUGIN_NAME, pb::DataClass::BlobSequence),
-            (_, Value::Audio(_)) => blank(AUDIO_PLUGIN_NAME, pb::DataClass::BlobSequence),
+            (_, Value::SimpleValue(_)) => blank(plugin_names::SCALARS, pb::DataClass::Scalar),
+            (_, Value::Image(_)) => blank(plugin_names::IMAGES, pb::DataClass::BlobSequence),
+            (_, Value::Audio(_)) => blank(plugin_names::AUDIO, pb::DataClass::BlobSequence),
             (Some(mut md), _) => {
                 // Use given metadata, but first set data class based on plugin name, if known.
                 match md.plugin_data.as_ref().map(|pd| pd.plugin_name.as_str()) {
-                    Some(SCALARS_PLUGIN_NAME) => {
+                    Some(plugin_names::SCALARS) => {
                         md.data_class = pb::DataClass::Scalar.into();
                     }
-                    Some(IMAGES_PLUGIN_NAME)
-                    | Some(AUDIO_PLUGIN_NAME)
-                    | Some(GRAPH_RUN_METADATA_PLUGIN_NAME)
-                    | Some(GRAPH_RUN_METADATA_WITH_GRAPH_PLUGIN_NAME)
-                    | Some(GRAPH_KERAS_MODEL_PLUGIN_NAME) => {
+                    Some(plugin_names::IMAGES)
+                    | Some(plugin_names::AUDIO)
+                    | Some(plugin_names::GRAPH_RUN_METADATA)
+                    | Some(plugin_names::GRAPH_RUN_METADATA_WITH_GRAPH)
+                    | Some(plugin_names::GRAPH_KERAS_MODEL) => {
                         md.data_class = pb::DataClass::BlobSequence.into();
                     }
                     _ => {}
@@ -345,7 +352,7 @@ mod tests {
                 *result,
                 pb::SummaryMetadata {
                     plugin_data: Some(PluginData {
-                        plugin_name: SCALARS_PLUGIN_NAME.to_string(),
+                        plugin_name: plugin_names::SCALARS.to_string(),
                         ..Default::default()
                     }),
                     data_class: pb::DataClass::Scalar.into(),
@@ -358,7 +365,7 @@ mod tests {
         fn test_metadata_tf2x_scalar_tensor_without_dataclass() {
             let md = pb::SummaryMetadata {
                 plugin_data: Some(PluginData {
-                    plugin_name: SCALARS_PLUGIN_NAME.to_string(),
+                    plugin_name: plugin_names::SCALARS.to_string(),
                     content: b"preserved!".to_vec(),
                     ..Default::default()
                 }),
@@ -376,7 +383,7 @@ mod tests {
                 *result,
                 pb::SummaryMetadata {
                     plugin_data: Some(PluginData {
-                        plugin_name: SCALARS_PLUGIN_NAME.to_string(),
+                        plugin_name: plugin_names::SCALARS.to_string(),
                         content: b"preserved!".to_vec(),
                         ..Default::default()
                     }),
@@ -572,7 +579,7 @@ mod tests {
         #[test]
         fn test_metadata_graph() {
             let md = GraphDefValue::initial_metadata();
-            assert_eq!(&md.plugin_data.unwrap().plugin_name, GRAPHS_PLUGIN_NAME);
+            assert_eq!(&md.plugin_data.unwrap().plugin_name, plugin_names::GRAPHS);
             assert_eq!(md.data_class, i32::from(pb::DataClass::BlobSequence));
         }
 
@@ -581,7 +588,7 @@ mod tests {
             let md = TaggedRunMetadataValue::initial_metadata();
             assert_eq!(
                 &md.plugin_data.unwrap().plugin_name,
-                GRAPH_TAGGED_RUN_METADATA_PLUGIN_NAME
+                plugin_names::GRAPH_TAGGED_RUN_METADATA
             );
             assert_eq!(md.data_class, i32::from(pb::DataClass::BlobSequence));
         }
@@ -601,7 +608,7 @@ mod tests {
                 *result,
                 pb::SummaryMetadata {
                     plugin_data: Some(PluginData {
-                        plugin_name: IMAGES_PLUGIN_NAME.to_string(),
+                        plugin_name: plugin_names::IMAGES.to_string(),
                         ..Default::default()
                     }),
                     data_class: pb::DataClass::BlobSequence.into(),
@@ -614,7 +621,7 @@ mod tests {
         fn test_metadata_tf2x_image_without_dataclass() {
             let md = pb::SummaryMetadata {
                 plugin_data: Some(PluginData {
-                    plugin_name: IMAGES_PLUGIN_NAME.to_string(),
+                    plugin_name: plugin_names::IMAGES.to_string(),
                     content: b"preserved!".to_vec(),
                     ..Default::default()
                 }),
@@ -632,7 +639,7 @@ mod tests {
                 *result,
                 pb::SummaryMetadata {
                     plugin_data: Some(PluginData {
-                        plugin_name: IMAGES_PLUGIN_NAME.to_string(),
+                        plugin_name: plugin_names::IMAGES.to_string(),
                         content: b"preserved!".to_vec(),
                         ..Default::default()
                     }),
@@ -655,7 +662,7 @@ mod tests {
                 *result,
                 pb::SummaryMetadata {
                     plugin_data: Some(PluginData {
-                        plugin_name: AUDIO_PLUGIN_NAME.to_string(),
+                        plugin_name: plugin_names::AUDIO.to_string(),
                         ..Default::default()
                     }),
                     data_class: pb::DataClass::BlobSequence.into(),
@@ -668,7 +675,7 @@ mod tests {
         fn test_metadata_tf2x_audio_without_dataclass() {
             let md = pb::SummaryMetadata {
                 plugin_data: Some(PluginData {
-                    plugin_name: AUDIO_PLUGIN_NAME.to_string(),
+                    plugin_name: plugin_names::AUDIO.to_string(),
                     content: b"preserved!".to_vec(),
                     ..Default::default()
                 }),
@@ -686,7 +693,7 @@ mod tests {
                 *result,
                 pb::SummaryMetadata {
                     plugin_data: Some(PluginData {
-                        plugin_name: AUDIO_PLUGIN_NAME.to_string(),
+                        plugin_name: plugin_names::AUDIO.to_string(),
                         content: b"preserved!".to_vec(),
                         ..Default::default()
                     }),
@@ -699,9 +706,9 @@ mod tests {
         #[test]
         fn test_graph_subplugins() {
             for &plugin_name in &[
-                GRAPH_RUN_METADATA_PLUGIN_NAME,
-                GRAPH_RUN_METADATA_WITH_GRAPH_PLUGIN_NAME,
-                GRAPH_KERAS_MODEL_PLUGIN_NAME,
+                plugin_names::GRAPH_RUN_METADATA,
+                plugin_names::GRAPH_RUN_METADATA_WITH_GRAPH,
+                plugin_names::GRAPH_KERAS_MODEL,
             ] {
                 let md = pb::SummaryMetadata {
                     plugin_data: Some(PluginData {
@@ -901,7 +908,7 @@ mod tests {
                 b"RIFFwav2".to_vec(),
             ]);
             assert_eq!(
-                v.into_blob_sequence(&blank(AUDIO_PLUGIN_NAME, pb::DataClass::BlobSequence)),
+                v.into_blob_sequence(&blank(plugin_names::AUDIO, pb::DataClass::BlobSequence)),
                 Ok(expected)
             );
         }
@@ -927,7 +934,7 @@ mod tests {
                 b"RIFFwav2".to_vec(),
             ]);
             assert_eq!(
-                v.into_blob_sequence(&blank(AUDIO_PLUGIN_NAME, pb::DataClass::BlobSequence)),
+                v.into_blob_sequence(&blank(plugin_names::AUDIO, pb::DataClass::BlobSequence)),
                 Ok(expected)
             );
         }
