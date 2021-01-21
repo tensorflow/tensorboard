@@ -19,7 +19,8 @@ export const FEATURE_FLAG_FEATURE_KEY = 'feature';
 
 export interface FeatureFlagState {
   isFeatureFlagsLoaded: boolean;
-  features: FeatureFlags;
+  defaultFlags: FeatureFlags;
+  flagOverrides: Partial<FeatureFlags>;
 }
 
 export interface State {

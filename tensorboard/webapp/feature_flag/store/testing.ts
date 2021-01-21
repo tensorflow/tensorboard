@@ -18,12 +18,12 @@ import {FeatureFlagState, FEATURE_FLAG_FEATURE_KEY} from './feature_flag_types';
 
 export function buildFeatureFlagState(
   override: Partial<FeatureFlagState> = {}
-) {
-  const {features: featuresOverride, ...restOverride} = override;
+): FeatureFlagState {
   return {
     isFeatureFlagsLoaded: false,
-    ...restOverride,
-    features: buildFeatureFlag(featuresOverride),
+    ...override,
+    defaultFlags: buildFeatureFlag(override.defaultFlags),
+    flagOverrides: override.flagOverrides ?? {},
   };
 }
 
