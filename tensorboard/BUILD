@@ -19,6 +19,7 @@ package_group(
 py_binary(
     name = "tensorboard",
     srcs = ["main.py"],
+    data = ["webfiles.zip"],
     main = "main.py",
     srcs_version = "PY3",
     deps = [
@@ -42,6 +43,25 @@ py_library(
     deps = [
         "//tensorboard:expect_absl_logging_installed",
         "//tensorboard/compat:tensorflow",
+    ],
+)
+
+py_binary(
+    name = "dev",
+    srcs = ["main_dev.py"],
+    data = ["dev_webfiles.zip"],
+    main = "main_dev.py",
+    srcs_version = "PY3",
+    deps = [
+        ":default",
+        ":dynamic_plugins",
+        ":lib",
+        ":program",
+        "//tensorboard:expect_absl_flags_installed",
+        "//tensorboard/plugins:base_plugin",
+        "//tensorboard/uploader:uploader_subcommand",
+        "//tensorboard/util:tb_logging",
+        "//tensorboard/util:timing",  # non-strict dep, for patching convenience
     ],
 )
 
@@ -248,7 +268,6 @@ py_library(
 py_library(
     name = "default",
     srcs = ["default.py"],
-    data = ["webfiles.zip"],
     srcs_version = "PY3",
     deps = [
         "//tensorboard:expect_pkg_resources_installed",
@@ -321,6 +340,28 @@ tensorboard_zip_file(
 
 tf_web_library(
     name = "assets",
+    srcs = [
+        "//tensorboard/webapp:index.html",
+        "//tensorboard/webapp:index.js",
+        "//tensorboard/webapp:svg_bundle",
+        "//tensorboard/webapp/widgets/line_chart_v2/lib/worker:chart_worker.js",
+    ],
+    path = "/",
+    suppress = ["strictDependencies"],
+    deps = [
+        "//tensorboard/webapp/widgets/source_code/monaco:monaco_editor",
+        "//tensorboard/webapp/widgets/source_code/monaco:monaco_languages",
+        "@com_google_fonts_roboto",
+    ],
+)
+
+tensorboard_zip_file(
+    name = "dev_webfiles",
+    deps = [":dev_assets"],
+)
+
+tf_web_library(
+    name = "dev_assets",
     srcs = [
         "//tensorboard/webapp:index.html",
         "//tensorboard/webapp:index.js",
