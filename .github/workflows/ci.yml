@@ -14,6 +14,8 @@ on:
       - master
       - '[0-9]+.*'
       - 'ci-*'
+    tags:
+      - '*'
   pull_request: {}
   schedule:
     # 13:00 UTC is 05:00 in Pacific standard time (UTC-8), which is well
