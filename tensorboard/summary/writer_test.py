@@ -88,7 +88,7 @@ class WriterAddScalarTest(tb_test.TestCase):
             wall_time=mock.ANY,
             description=None,
         )
-        kwargs = output.emit_scalar.call_args.kwargs
+        _, kwargs = output.emit_scalar.call_args
         self.assertEqual(np.float32, type(kwargs["data"]))
         self.assertEqual(np.int64, type(kwargs["step"]))
 
@@ -104,7 +104,7 @@ class WriterAddScalarTest(tb_test.TestCase):
             wall_time=mock.ANY,
             description=None,
         )
-        kwargs = output.emit_scalar.call_args.kwargs
+        _, kwargs = output.emit_scalar.call_args
         self.assertEqual(np.float32, type(kwargs["data"]))
         self.assertEqual(np.int64, type(kwargs["step"]))
 
@@ -127,27 +127,24 @@ class WriterAddScalarTest(tb_test.TestCase):
             mock_time.return_value = 12345.678
             w.add_scalar("foo", 42.0, 12)
         output.emit_scalar.assert_called_once()
-        self.assertEqual(
-            12345.678, output.emit_scalar.call_args.kwargs["wall_time"]
-        )
+        _, kwargs = output.emit_scalar.call_args
+        self.assertEqual(12345.678, kwargs["wall_time"])
 
     def test_explicit_wall_time(self):
         output = mock.create_autospec(output_lib.Output)
         w = writer_lib.Writer(output)
         w.add_scalar("foo", 42.0, 12, wall_time=999.999)
         output.emit_scalar.assert_called_once()
-        self.assertEqual(
-            999.999, output.emit_scalar.call_args.kwargs["wall_time"]
-        )
+        _, kwargs = output.emit_scalar.call_args
+        self.assertEqual(999.999, kwargs["wall_time"])
 
     def test_explicit_description(self):
         output = mock.create_autospec(output_lib.Output)
         w = writer_lib.Writer(output)
         w.add_scalar("foo", 42.0, 12, description="fooful")
         output.emit_scalar.assert_called_once()
-        self.assertEqual(
-            "fooful", output.emit_scalar.call_args.kwargs["description"]
-        )
+        _, kwargs = output.emit_scalar.call_args
+        self.assertEqual("fooful", kwargs["description"])
 
     def test_after_close(self):
         output = mock.create_autospec(output_lib.Output)
