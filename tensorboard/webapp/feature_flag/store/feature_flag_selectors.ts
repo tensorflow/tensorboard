@@ -51,18 +51,18 @@ export const getOverridenFeatureFlags = createSelector(
 
 export const getEnabledExperimentalPlugins = createSelector(
   getFeatureFlags,
-  (state) => {
-    return state.enabledExperimentalPlugins;
+  (flags) => {
+    return flags.enabledExperimentalPlugins;
   }
 );
 
-export const getIsInColab = createSelector(getFeatureFlags, (state) => {
-  return state.inColab;
+export const getIsInColab = createSelector(getFeatureFlags, (flags) => {
+  return flags.inColab;
 });
 
 export const getIsGpuChartEnabled = createSelector(
   getFeatureFlags,
-  (state): boolean => {
-    return state.enableGpuChart;
+  (flags): boolean => {
+    return flags.enableGpuChart;
   }
 );
