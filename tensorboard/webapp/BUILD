@@ -115,6 +115,7 @@ tf_ng_module(
         "@npm//@angular/core",
         "@npm//@angular/platform-browser",
         "@npm//@ngrx/store",
+        "@npm//rxjs",
     ],
 )
 
