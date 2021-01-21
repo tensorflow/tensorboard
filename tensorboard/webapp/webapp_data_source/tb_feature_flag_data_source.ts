@@ -36,7 +36,7 @@ const util = {
 @Injectable()
 export class QueryParamsFeatureFlagDataSource extends TBFeatureFlagDataSource {
   getFeatures() {
-    const params = util.getParams();
+    const params = this.getParams();
     // Set feature flag value for query parameters that are explicitly
     // specified. Feature flags for unspecified query parameters remain unset so
     // their values in the underlying state are not inadvertently changed.
@@ -59,6 +59,10 @@ export class QueryParamsFeatureFlagDataSource extends TBFeatureFlagDataSource {
       );
     }
     return featureFlags;
+  }
+
+  protected getParams() {
+    return util.getParams();
   }
 }
 
