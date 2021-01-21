@@ -354,25 +354,7 @@ tf_web_library(
 
 tensorboard_zip_file(
     name = "dev_webfiles",
-    deps = [":dev_assets"],
-)
-
-# Should keep the asset dependencies in sync with :assets.
-tf_web_library(
-    name = "dev_assets",
-    srcs = [
-        "//tensorboard/webapp:index.html",
-        "//tensorboard/webapp:index.js",
-        "//tensorboard/webapp:svg_bundle",
-        "//tensorboard/webapp/widgets/line_chart_v2/lib/worker:chart_worker.js",
-    ],
-    path = "/",
-    suppress = ["strictDependencies"],
-    deps = [
-        "//tensorboard/webapp/widgets/source_code/monaco:monaco_editor",
-        "//tensorboard/webapp/widgets/source_code/monaco:monaco_languages",
-        "@com_google_fonts_roboto",
-    ],
+    deps = ["//tensorboard/webapp/dev_assets"],
 )
 
 # This is a dummy rule used as a numpy dependency in open-source.
