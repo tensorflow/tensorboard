@@ -103,6 +103,17 @@ describe('TBHttpClient', () => {
     });
   });
 
+  it('sets custom header for all POST requests', () => {
+    const body = new FormData();
+    body.append('formKey', 'value');
+    store.overrideSelector(getIsFeatureFlagsLoaded, true);
+    store.overrideSelector(getIsInColab, false);
+    tbHttpClient.post('foo', body).subscribe(jasmine.createSpy());
+    httpMock.expectOne((req) => {
+      return req.headers.has('X-TensorBoard-Post');
+    });
+  });
+
   it('prefixes absolute paths with the app-root', () => {
     appRootProvider.setAppRoot('/my-path-prefix/');
 

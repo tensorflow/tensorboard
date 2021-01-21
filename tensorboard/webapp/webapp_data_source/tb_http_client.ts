@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Injectable} from '@angular/core';
-import {HttpClient} from '@angular/common/http';
+import {HttpClient, HttpHeaders} from '@angular/common/http';
 import {Store} from '@ngrx/store';
 import {Observable} from 'rxjs';
 import {filter, mergeMap, take, withLatestFrom} from 'rxjs/operators';
@@ -80,6 +80,8 @@ export class TBHttpClient implements TBHttpClientInterface {
       withLatestFrom(this.store.select(getIsInColab)),
       mergeMap(([, isInColab]) => {
         const resolvedPath = this.resolveAppRoot(path);
+        options.headers = options.headers ?? new HttpHeaders();
+        options.headers = options.headers.set('X-TensorBoard-Post', '1');
 
         // Google-internal Colab does not support HTTP POST requests, so we fall
         // back to HTTP GET (even though public Colab supports POST)
