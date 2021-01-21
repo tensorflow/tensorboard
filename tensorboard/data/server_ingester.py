@@ -52,9 +52,10 @@ class ExistingServerDataIngester(ingester.DataIngester):
 class SubprocessServerDataIngester(ingester.DataIngester):
     """Start a new data server as a subprocess."""
 
-    def __init__(self, logdir):
+    def __init__(self, logdir, reload_interval):
         self._data_provider = None
         self._logdir = logdir
+        self._reload_interval = reload_interval
 
     @property
     def data_provider(self):
@@ -70,9 +71,15 @@ class SubprocessServerDataIngester(ingester.DataIngester):
         tmpdir = tempfile.TemporaryDirectory(prefix="tensorboard_data_server_")
         port_file_path = os.path.join(tmpdir.name, "port")
 
+        if self._reload_interval <= 0:
+            reload = "once"
+        else:
+            reload = str(int(self._reload_interval))
+
         args = [
             server_binary,
             "--logdir=%s" % (self._logdir,),
+            "--reload=%s" % reload,
             "--port=0",
             "--port-file=%s" % (port_file_path,),
             "--die-after-stdin",

@@ -408,7 +408,8 @@ class TensorBoard(object):
             )
         elif flags.load_fast:
             ingester = server_ingester.SubprocessServerDataIngester(
-                flags.logdir
+                logdir=flags.logdir,
+                reload_interval=flags.reload_interval,
             )
         else:
             ingester = local_ingester.LocalDataIngester(flags)
