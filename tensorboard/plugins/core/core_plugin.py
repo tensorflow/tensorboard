@@ -641,3 +641,4 @@ def _nonnegative_float(v):
         raise argparse.ArgumentTypeError("invalid float: %r" % v)
     if not (v >= 0):  # no NaNs, please
         raise argparse.ArgumentTypeError("must be non-negative: %r" % v)
+    return v
