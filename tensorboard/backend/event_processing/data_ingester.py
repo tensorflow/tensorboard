@@ -89,8 +89,6 @@ class LocalDataIngester(ingester.DataIngester):
 
     def start(self):
         """Starts ingesting data based on the ingester flag configuration."""
-        if self._reload_interval < 0:
-            return
 
         def _reload():
             while True:
