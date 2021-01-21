@@ -24,7 +24,7 @@ py_binary(
     srcs_version = "PY3",
     deps = [
         ":default",
-        ":dynamic_plugins",
+        ":dynamic_plugins",  # loads internal dynamic plugin like projector
         ":lib",
         ":main_lib",
         ":program",
@@ -54,14 +54,12 @@ py_binary(
     srcs_version = "PY3",
     deps = [
         ":default",
-        ":dynamic_plugins",
+        ":dynamic_plugins",  # loads internal dynamic plugin like projector
         ":lib",
         ":program",
         "//tensorboard:expect_absl_flags_installed",
-        "//tensorboard/plugins:base_plugin",
         "//tensorboard/uploader:uploader_subcommand",
         "//tensorboard/util:tb_logging",
-        "//tensorboard/util:timing",  # non-strict dep, for patching convenience
     ],
 )
 
