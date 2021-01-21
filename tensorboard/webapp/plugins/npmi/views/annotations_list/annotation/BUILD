@@ -33,6 +33,7 @@ tf_ng_module(
         "//tensorboard/webapp/plugins/npmi/store:types",
         "//tensorboard/webapp/plugins/npmi/util:metric_type",
         "//tensorboard/webapp/runs/store",
+        "//tensorboard/webapp/runs/store:types",
         "//tensorboard/webapp/third_party:d3",
         "//tensorboard/webapp/types:ui",
         "@npm//@angular/common",

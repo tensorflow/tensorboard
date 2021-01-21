@@ -31,6 +31,7 @@ import {ValueData, SortOrder, AnnotationSort} from '../../../store/npmi_types';
 import * as d3 from '../../../../../third_party/d3';
 import {stripMetricString} from '../../../util/metric_type';
 import {RunColorScale} from '../../../../../types/ui';
+import {Run} from '../../../../../runs/store/runs_types';
 
 @Component({
   selector: 'annotation-component',
@@ -55,7 +56,7 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
   // Only to trigger OnChanges to re-render the component.
   @Input() sidebarWidth!: number;
   @Input() colorScale!: RunColorScale;
-  @Input() runNames!: any;
+  @Input() runMaps!: Run[];
   @ViewChild('chart', {static: true, read: ElementRef})
   private readonly annotationContainer!: ElementRef<HTMLDivElement>;
   @ViewChild('hintClip', {static: true, read: ElementRef})
@@ -274,7 +275,15 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
         }.bind(this)
       )
       .attr('class', `hint-text ${this.textClass}`)
-      .text((d: string) => d.split('/').slice(1).join());
+      .text(
+        function (this: AnnotationComponent, d: string) {
+          const runMap = this.runMaps.find((runMap) => runMap.id === d);
+          if (!runMap) {
+            return '';
+          }
+          return runMap.name;
+        }.bind(this)
+      );
 
     hintTexts.exit().remove();
   }

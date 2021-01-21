@@ -16,15 +16,7 @@ import {Component, ChangeDetectionStrategy, Input} from '@angular/core';
 import {Store, select} from '@ngrx/store';
 import {State} from '../../../../../app_state';
 import {Observable, combineLatest} from 'rxjs';
-import {
-  map,
-  filter,
-  startWith,
-  tap,
-  switchMap,
-  mergeMap,
-  merge,
-} from 'rxjs/operators';
+import {map, filter, switchMap} from 'rxjs/operators';
 
 import {
   getSelectedAnnotations,
@@ -39,6 +31,7 @@ import {ValueData} from '../../../store/npmi_types';
 import * as npmiActions from '../../../actions';
 import {RunColorScale} from '../../../../../types/ui';
 import {getExperimentIdsFromRoute} from '../../../../../app_routing/store/app_routing_selectors';
+import {Run} from '../../../../../runs/store/runs_types';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
@@ -60,7 +53,7 @@ import {getExperimentIdsFromRoute} from '../../../../../app_routing/store/app_ro
       [showCounts]="showCounts$ | async"
       [sidebarWidth]="sidebarWidth$ | async"
       [colorScale]="runColorScale$ | async"
-      [runNames]="fetches$ | async"
+      [runMaps]="runMaps$ | async"
       (onShowSimilarAnnotations)="showSimilarAnnotations()"
     ></annotation-component>
   `,
@@ -94,7 +87,7 @@ export class AnnotationContainer {
       })
     );
   readonly experimentIds$ = this.store.pipe(select(getExperimentIdsFromRoute));
-  readonly fetches$ = this.experimentIds$.pipe(
+  readonly runMaps$ = this.experimentIds$.pipe(
     filter((experimentIds) => Boolean(experimentIds)),
     switchMap((experimentIds) => {
       return combineLatest(
@@ -103,30 +96,11 @@ export class AnnotationContainer {
         })
       );
     }),
-    startWith([]),
-    tap((runMaps) => {
-      console.log('runMaps');
-      console.log(runMaps);
+    map((runMaps) => {
+      let maps: Run[] = [];
+      return maps.concat(...runMaps);
     })
   );
-  // readonly runNames$ = combineLatest(this.fetches$).pipe(
-  //   map((runs) => {
-  //     console.log(runs);
-  //     return runs;
-  //     // const runMapping: {[runID: string]: string} = {};
-  //     // for (const run of runs) {
-  //     //   runMapping[run.id] = run.name;
-  //     // }
-  //   })
-  // );
-  // readonly runNames$ = this.store
-  //   .pipe(select(selectors.getRuns, {experimentId: 'defaultExperimentId'}))
-  //   .pipe(
-  //     map((run) => {
-  //       console.log(run);
-  //       return run;
-  //     })
-  //   );
 
   constructor(private readonly store: Store<State>) {}
 
