@@ -25,6 +25,7 @@ import wsgiref.handlers
 
 import werkzeug
 
+from tensorboard import errors
 from tensorboard.backend import json_util
 
 _DISALLOWED_CHAR_IN_DOMAIN = re.compile(r"\s")
@@ -268,3 +269,36 @@ def Respond(
 def _create_csp_string(*csp_fragments):
     csp_string = " ".join([frag for frag in csp_fragments if frag])
     return csp_string if csp_string else "'none'"
+
+
+def xsrf_custom_header_checker(request):
+    """TensorBoard, without Allow-Control-Allow-Headers[1], disallows custom
+    HTTP header for CORS. This means a cross-site that tries to forge the
+    requests  cannot set the custom header that we check here and thus provide
+    the XSRF protection. This is not the best protection and should not be used
+    in a security critical systems.
+
+    [1]: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Allow-Headers
+    """
+    return request.headers.get("X-TensorBoard-Post") == "1"
+
+
+def xsrf_protected(protector_impl=xsrf_custom_header_checker):
+    def decorator(fn):
+        def checker(*args):
+            maybe_req = args[-1]
+
+            if not isinstance(maybe_req, werkzeug.wrappers.Request):
+                raise RuntimeError(
+                    "Expected the last argument to be Werkzeug Request"
+                )
+
+            ok = protector_impl(maybe_req)
+            if ok:
+                return fn(*args)
+            else:
+                raise errors.PermissionDeniedError("XSRF challenge failed.")
+
+        return checker
+
+    return decorator

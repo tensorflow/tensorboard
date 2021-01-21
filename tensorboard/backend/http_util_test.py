@@ -24,6 +24,7 @@ from unittest import mock
 from werkzeug import test as wtest
 from werkzeug import wrappers
 
+from tensorboard import errors
 from tensorboard import test as tb_test
 from tensorboard.backend import http_util
 
@@ -322,6 +323,60 @@ class RespondTest(tb_test.TestCase):
             "https://tensorflow.org/tensorboard 'self' 'unsafe-eval' 'sha256-abcd'"
         )
         self.assertEqual(r.headers.get("Content-Security-Policy"), expected_csp)
+
+
+class XsrfProtectionTest(tb_test.TestCase):
+    @wrappers.Request.application
+    def unprotected(self, request):
+        return wrappers.Response(
+            response="unprotected", content_type="text/plain"
+        )
+
+    @wrappers.Request.application
+    @http_util.xsrf_protected(http_util.xsrf_custom_header_checker)
+    def protected(self, request):
+        return wrappers.Response(
+            response="protected", content_type="text/plain"
+        )
+
+    def _create_server(self):
+        def app(environ, start_response):
+            req = wrappers.Request(environ)
+            path = req.path
+
+            if path == "/unprotected":
+                return self.unprotected(environ, start_response)
+            elif path == "/protected":
+                return self.protected(environ, start_response)
+            else:
+                raise RuntimeError("Unknown page")
+
+        return wtest.Client(app, wrappers.BaseResponse)
+
+    def test_xsrf_protected(self):
+        r = self._create_server().get(
+            "/protected", headers={"X-TensorBoard-Post": "1"}
+        )
+
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.data, b"protected")
+
+    def test_xsrf_protection_triggered(self):
+        with self.assertRaises(errors.PermissionDeniedError):
+            self._create_server().get("/protected", headers={})
+
+    def test_xsrf_unprotection_header_ignored(self):
+        r = self._create_server().get(
+            "/unprotected", headers={"X-TensorBoard-Post": "1"}
+        )
+
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.data, b"unprotected")
+
+        r = self._create_server().get("/unprotected", headers={})
+
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.data, b"unprotected")
 
 
 def _gzip(bs):

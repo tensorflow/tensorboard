@@ -12,6 +12,7 @@ py_library(
     visibility = ["//visibility:public"],
     deps = [
         ":json_util",
+        "//tensorboard:errors",
         "@org_pocoo_werkzeug",
     ],
 )
@@ -24,6 +25,7 @@ py_test(
     tags = ["support_notf"],
     deps = [
         ":http_util",
+        "//tensorboard:errors",
         "//tensorboard:test",
         "@org_pocoo_werkzeug",
     ],
