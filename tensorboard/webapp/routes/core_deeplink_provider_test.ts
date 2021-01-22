@@ -44,7 +44,7 @@ describe('core deeplink provider', () => {
     store.overrideSelector(selectors.getPinnedCardsWithMetadata, []);
     store.overrideSelector(selectors.getUnresolvedImportedPinnedCards, []);
     store.overrideSelector(selectors.getEnabledExperimentalPlugins, []);
-    store.overrideSelector(selectors.getOverridenFeatureFlags, {});
+    store.overrideSelector(selectors.getIsGpuChartEnabled, false);
 
     queryParamsSerialized = [];
 
@@ -252,30 +252,12 @@ describe('core deeplink provider', () => {
     });
 
     it('serializes enabled fast chart state', () => {
-      store.overrideSelector(selectors.getOverridenFeatureFlags, {
-        enableGpuChart: false,
-      });
-      store.refreshState();
-
-      expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual([
-        {key: 'fastChart', value: 'false'},
-      ]);
-
-      store.overrideSelector(selectors.getOverridenFeatureFlags, {
-        enableGpuChart: true,
-      });
+      store.overrideSelector(selectors.getIsGpuChartEnabled, true);
       store.refreshState();
 
       expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual([
         {key: 'fastChart', value: 'true'},
       ]);
-    });
-
-    it('omits fast chart state if it is not overriden by user and has default value', () => {
-      store.overrideSelector(selectors.getOverridenFeatureFlags, {});
-      store.refreshState();
-
-      expect(queryParamsSerialized).toEqual([[]]);
     });
   });
 });

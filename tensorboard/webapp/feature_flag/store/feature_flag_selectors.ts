@@ -15,7 +15,6 @@ limitations under the License.
 
 import {createSelector, createFeatureSelector} from '@ngrx/store';
 
-import {FeatureFlags} from '../types';
 import {
   FeatureFlagState,
   FEATURE_FLAG_FEATURE_KEY,
@@ -37,32 +36,25 @@ export const getIsFeatureFlagsLoaded = createSelector(
 
 export const getFeatureFlags = createSelector(
   selectFeatureFlagState,
-  (state: FeatureFlagState): FeatureFlags => {
-    return {...state.defaultFlags, ...state.flagOverrides};
-  }
-);
-
-export const getOverridenFeatureFlags = createSelector(
-  selectFeatureFlagState,
-  (state: FeatureFlagState): Partial<FeatureFlags> => {
-    return state.flagOverrides;
+  (state) => {
+    return state.features;
   }
 );
 
 export const getEnabledExperimentalPlugins = createSelector(
-  getFeatureFlags,
-  (flags) => {
-    return flags.enabledExperimentalPlugins;
+  selectFeatureFlagState,
+  (state) => {
+    return state.features.enabledExperimentalPlugins;
   }
 );
 
-export const getIsInColab = createSelector(getFeatureFlags, (flags) => {
-  return flags.inColab;
+export const getIsInColab = createSelector(selectFeatureFlagState, (state) => {
+  return state.features.inColab;
 });
 
 export const getIsGpuChartEnabled = createSelector(
-  getFeatureFlags,
-  (flags): boolean => {
-    return flags.enableGpuChart;
+  selectFeatureFlagState,
+  (state: FeatureFlagState): boolean => {
+    return state.features.enableGpuChart;
   }
 );

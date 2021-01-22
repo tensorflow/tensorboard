@@ -26,12 +26,11 @@ const reducer = createReducer<FeatureFlagState>(
     // Feature flag values have been loaded from a data source. Override current
     // flags with any values specified by the data source and leave values for
     // unspecified properties unchanged.
-
     return {
       ...state,
       isFeatureFlagsLoaded: true,
-      flagOverrides: {
-        ...state.flagOverrides,
+      features: {
+        ...state.features,
         ...features,
       },
     };
