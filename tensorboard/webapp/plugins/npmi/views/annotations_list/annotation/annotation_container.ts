@@ -31,7 +31,6 @@ import {ValueData} from '../../../store/npmi_types';
 import * as npmiActions from '../../../actions';
 import {RunColorScale} from '../../../../../types/ui';
 import {getExperimentIdsFromRoute} from '../../../../../app_routing/store/app_routing_selectors';
-import {Run} from '../../../../../runs/store/runs_types';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
@@ -53,7 +52,7 @@ import {Run} from '../../../../../runs/store/runs_types';
       [showCounts]="showCounts$ | async"
       [sidebarWidth]="sidebarWidth$ | async"
       [colorScale]="runColorScale$ | async"
-      [runMaps]="runMaps$ | async"
+      [runsData]="runsData$ | async"
       (onShowSimilarAnnotations)="showSimilarAnnotations()"
     ></annotation-component>
   `,
@@ -87,7 +86,7 @@ export class AnnotationContainer {
       })
     );
   readonly experimentIds$ = this.store.pipe(select(getExperimentIdsFromRoute));
-  readonly runMaps$ = this.experimentIds$.pipe(
+  readonly runsData$ = this.experimentIds$.pipe(
     filter((experimentIds) => Boolean(experimentIds)),
     switchMap((experimentIds) => {
       return combineLatest(
@@ -96,9 +95,8 @@ export class AnnotationContainer {
         })
       );
     }),
-    map((runMaps) => {
-      let maps: Run[] = [];
-      return maps.concat(...runMaps);
+    map((runs) => {
+      return runs.flat();
     })
   );
 
