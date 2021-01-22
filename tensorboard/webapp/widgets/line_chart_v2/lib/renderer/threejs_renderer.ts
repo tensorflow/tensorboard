@@ -103,14 +103,25 @@ function updatePolylineGeometry(
  * This custom logic handles line thickness, since the 'linewidth' property of
  * THREE.LineBasicMaterial is ignored [1]. Each line segment is a rectangle
  * that is split into 2 triangles [A->B->C] and [C->B->D]. Each triangle has
- * 3 components (x, y, z).
+ * 3 coordinates (x, y, z).
  *
- * Assuming a line segment is as follows:
+ * Assuming a line segment is as follows (thickness = distance from A to B):
  *              A             C
  *              |             |
  * (startPoint) |-------------| (endPoint)
  *              |             |
  *              B             D
+ *
+ * The renderer will draw 2 triangles:
+ *
+ *    ^   A----C
+ *    |   |   /|
+ * dy |   | /  |
+ *    |   |/   |
+ *    v   B----D
+ *
+ *        <---->
+ *          dx
  *
  * [1] https://github.com/mrdoob/three.js/issues/14627
  */
@@ -119,22 +130,21 @@ function updateThickPolylineGeometry(
   flatVec2: Float32Array,
   thickness: number
 ) {
-  const numSegments = flatVec2.length / 2 - 1;
+  const numSegments = Math.max(flatVec2.length / 2 - 1, 0);
   const numVertices = numSegments * 2 * 3;
-  const numComponents = numVertices * 3;
+  const numCoordinates = numVertices * 3;
   let positionAttributes = geometry.attributes[
     'position'
   ] as THREE.BufferAttribute;
   if (!positionAttributes || positionAttributes.count !== numVertices) {
     positionAttributes = new THREE.BufferAttribute(
-      new Float32Array(numComponents),
+      new Float32Array(numCoordinates),
       3
     );
     geometry.addAttribute('position', positionAttributes);
   }
 
   const values = positionAttributes.array as Float32Array;
-  const zeroVec = new THREE.Vector2(0, 0);
   for (let i = 0; i < numSegments; i++) {
     const [x1, y1, x2, y2] = [
       flatVec2[2 * i],
@@ -144,19 +154,15 @@ function updateThickPolylineGeometry(
     ];
     const startPointVec = new THREE.Vector2(x1, y1);
     const endPointVec = new THREE.Vector2(x2, y2);
-    const unitNormalVec = new THREE.Vector2(x2 - x1, y2 - y1)
-      .rotateAround(zeroVec, Math.PI / 2)
-      .setLength(1);
-    const A = startPointVec
-      .clone()
-      .addScaledVector(unitNormalVec, thickness / 2);
-    const B = startPointVec
-      .clone()
-      .addScaledVector(unitNormalVec, -thickness / 2);
-    const C = endPointVec.clone().addScaledVector(unitNormalVec, thickness / 2);
-    const D = endPointVec
-      .clone()
-      .addScaledVector(unitNormalVec, -thickness / 2);
+    const segmentVec = new THREE.Vector2(x2 - x1, y2 - y1);
+    // Take the normal that is 90 degrees counterclockwise of the segment.
+    const normalVec = new THREE.Vector2(-segmentVec.y, segmentVec.x).setLength(
+      thickness / 2
+    );
+    const A = startPointVec.clone().add(normalVec);
+    const B = startPointVec.clone().sub(normalVec);
+    const C = endPointVec.clone().add(normalVec);
+    const D = endPointVec.clone().sub(normalVec);
 
     // Keep each face's vertices in counterclockwise order, to ensure normals
     // point outwards from the screen.
@@ -186,7 +192,7 @@ function updateThickPolylineGeometry(
   }
 
   positionAttributes.needsUpdate = true;
-  geometry.setDrawRange(0, numComponents);
+  geometry.setDrawRange(0, numCoordinates);
   // Need to update the bounding sphere so renderer does not skip rendering
   // this object because it is outside of the camera viewpoint (frustum).
   geometry.computeBoundingSphere();
