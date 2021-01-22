@@ -78,16 +78,16 @@ export class CoreDeepLinkProvider extends DeepLinkProvider {
   ): Observable<SerializableQueryParams> {
     return combineLatest([
       store.select(selectors.getEnabledExperimentalPlugins),
-      store.select(selectors.getOverridenFeatureFlags),
+      store.select(selectors.getIsGpuChartEnabled),
     ]).pipe(
-      map(([experimentalPlugins, overridenFeatureFlags]) => {
+      map(([experimentalPlugins, isGpuChartEnabled]) => {
         const queryParams = experimentalPlugins.map((pluginId) => {
           return {key: EXPERIMENTAL_PLUGIN_QUERY_PARAM_KEY, value: pluginId};
         });
-        if (overridenFeatureFlags.enableGpuChart !== undefined) {
+        if (isGpuChartEnabled) {
           queryParams.push({
             key: GPU_LINE_CHART_QUERY_PARAM_KEY,
-            value: String(overridenFeatureFlags.enableGpuChart),
+            value: 'true',
           });
         }
         return queryParams;
