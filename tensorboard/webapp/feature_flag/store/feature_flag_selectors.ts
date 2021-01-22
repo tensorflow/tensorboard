@@ -38,14 +38,19 @@ export const getIsFeatureFlagsLoaded = createSelector(
 export const getFeatureFlags = createSelector(
   selectFeatureFlagState,
   (state: FeatureFlagState): FeatureFlags => {
-    return {...state.defaultFlags, ...state.flagOverrides};
+    return {
+      ...state.defaultFlags,
+      ...state.flagOverrides,
+      ...state.features,
+    };
   }
 );
 
 export const getOverridenFeatureFlags = createSelector(
   selectFeatureFlagState,
   (state: FeatureFlagState): Partial<FeatureFlags> => {
-    return state.flagOverrides;
+    // Temporarily assume state.flagOverrides can be undefined for sync purposes.
+    return state.flagOverrides || {};
   }
 );
 
