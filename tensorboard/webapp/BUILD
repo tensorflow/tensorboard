@@ -129,6 +129,8 @@ tf_ng_module(
         ":app",
         ":app_state",
         ":selectors",
+        "//tensorboard/webapp/angular:expect_angular_core_testing",
+        "//tensorboard/webapp/angular:expect_ngrx_store_testing",
         "//tensorboard/webapp/app_routing:testing",
         "//tensorboard/webapp/core/actions",
         "@npm//@angular/common",
