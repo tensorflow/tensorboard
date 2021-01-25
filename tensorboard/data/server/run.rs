@@ -189,7 +189,7 @@ impl RunLoader {
         debug!("Starting load for run {:?}", run_name);
         let start = Instant::now();
         self.update_file_set(filenames);
-        self.reload_files();
+        self.reload_files(read_event);
         commit_all(&mut self.data, run_data);
         debug!(
             "Finished load for run {:?} ({:?})",
@@ -235,8 +235,8 @@ impl RunLoader {
         }
     }
 
-    /// Reads data from all active event files.
-    fn reload_files(&mut self) {
+    /// Reads data from all active event files, and calls a handler for each event.
+    fn reload_files<F: FnMut(&mut RunLoaderData, pb::Event)>(&mut self, mut handle_event: F) {
         for (filename, ef) in self.files.iter_mut() {
             let reader = match ef {
                 EventFile::Dead => continue,
@@ -256,7 +256,7 @@ impl RunLoader {
                         break;
                     }
                 };
-                read_event(&mut self.data, event);
+                handle_event(&mut self.data, event);
             }
         }
     }
