@@ -39,14 +39,6 @@ pub struct RunLoader {
     /// The run name associated with this loader. Used primarily for logging; the run name is
     /// canonically defined by the map key under which this RunLoader is stored in LogdirLoader.
     run: Run,
-
-    /// The earliest event `wall_time` seen in any event file in this run.
-    ///
-    /// This is `None` if and only if no events have been seen. Its value may decrease as new
-    /// events are read, but in practice this is expected to be the wall time of the first
-    /// `file_version` event in the first event file.
-    start_time: Option<WallTime>,
-
     /// The event files in this run.
     ///
     /// Event files are sorted and read lexicographically by name, which is designed to coincide
@@ -55,11 +47,11 @@ pub struct RunLoader {
     /// be removed entirely. This way, we know not to just re-open it again at the next load cycle.
     files: BTreeMap<PathBuf, EventFile<BufReader<File>>>,
 
-    /// Reservoir-sampled data and metadata for each time series.
-    time_series: HashMap<Tag, StageTimeSeries>,
-
     /// Whether to compute CRCs for records before parsing as protos.
     checksum: bool,
+
+    /// The data staged by this RunLoader.
+    data: RunLoaderData,
 }
 
 #[derive(Debug)]
@@ -72,6 +64,20 @@ enum EventFile<R> {
     /// the last-read record being very old (note: not yet implemented), or due to the file being
     /// deleted.
     Dead,
+}
+
+/// Holds data staged by a RunLoader that will be commited to the Commit.
+#[derive(Debug)]
+struct RunLoaderData {
+    /// The earliest event `wall_time` seen in any event file in this run.
+    ///
+    /// This is `None` if and only if no events have been seen. Its value may decrease as new
+    /// events are read, but in practice this is expected to be the wall time of the first
+    /// `file_version` event in the first event file.
+    start_time: Option<WallTime>,
+
+    /// Reservoir-sampled data and metadata for each time series.
+    time_series: HashMap<Tag, StageTimeSeries>,
 }
 
 #[derive(Debug)]
@@ -154,10 +160,12 @@ impl RunLoader {
     pub fn new(run: Run) -> Self {
         Self {
             run: run,
-            start_time: None,
             files: BTreeMap::new(),
-            time_series: HashMap::new(),
             checksum: true,
+            data: RunLoaderData {
+                start_time: None,
+                time_series: HashMap::new(),
+            },
         }
     }
 
@@ -248,15 +256,15 @@ impl RunLoader {
                         break;
                     }
                 };
-                read_event(&mut self.time_series, &mut self.start_time, event);
+                read_event(&mut self.data, event);
             }
         }
     }
 
     fn commit_all(&mut self, run_data: &RwLock<commit::RunData>) {
         let mut run = run_data.write().expect("acquiring tags lock");
-        run.start_time = self.start_time;
-        for (tag, ts) in &mut self.time_series {
+        run.start_time = self.data.start_time;
+        for (tag, ts) in &mut self.data.time_series {
             ts.commit(tag, &mut *run);
         }
     }
@@ -266,11 +274,7 @@ impl RunLoader {
 ///
 /// This is a standalone function because it's called from `reload_files` in a context that already
 /// has an exclusive reference into `self.files`, and so can't call methods on `&mut self`.
-fn read_event(
-    time_series: &mut HashMap<Tag, StageTimeSeries>,
-    start_time: &mut Option<WallTime>,
-    e: pb::Event,
-) {
+fn read_event(data: &mut RunLoaderData, e: pb::Event) {
     let step = Step(e.step);
     let wall_time = match WallTime::new(e.wall_time) {
         None => {
@@ -283,8 +287,12 @@ fn read_event(
         }
         Some(wt) => wt,
     };
-    if start_time.map(|start| wall_time < start).unwrap_or(true) {
-        *start_time = Some(wall_time);
+    if data
+        .start_time
+        .map(|start| wall_time < start)
+        .unwrap_or(true)
+    {
+        (*data).start_time = Some(wall_time);
     }
     match e.what {
         Some(pb::event::What::GraphDef(graph_bytes)) => {
@@ -293,7 +301,10 @@ fn read_event(
                 payload: EventValue::GraphDef(GraphDefValue(graph_bytes)),
             };
             use std::collections::hash_map::Entry;
-            let ts = match time_series.entry(Tag(GraphDefValue::TAG_NAME.to_string())) {
+            let ts = match data
+                .time_series
+                .entry(Tag(GraphDefValue::TAG_NAME.to_string()))
+            {
                 Entry::Occupied(o) => o.into_mut(),
                 Entry::Vacant(v) => {
                     v.insert(StageTimeSeries::new(GraphDefValue::initial_metadata()))
@@ -307,7 +318,7 @@ fn read_event(
                 payload: EventValue::GraphDef(GraphDefValue(trm_proto.run_metadata)),
             };
             use std::collections::hash_map::Entry;
-            let ts = match time_series.entry(Tag(trm_proto.tag)) {
+            let ts = match data.time_series.entry(Tag(trm_proto.tag)) {
                 Entry::Occupied(o) => o.into_mut(),
                 Entry::Vacant(v) => {
                     let metadata = TaggedRunMetadataValue::initial_metadata();
@@ -324,7 +335,7 @@ fn read_event(
                 };
 
                 use std::collections::hash_map::Entry;
-                let ts = match time_series.entry(Tag(summary_pb_value.tag)) {
+                let ts = match data.time_series.entry(Tag(summary_pb_value.tag)) {
                     Entry::Occupied(o) => o.into_mut(),
                     Entry::Vacant(v) => {
                         let metadata =
@@ -409,7 +420,7 @@ mod test {
 
         // Start time should be that of the file version event, even though that didn't correspond
         // to any time series.
-        assert_eq!(loader.start_time, Some(WallTime::new(1234.0).unwrap()));
+        assert_eq!(loader.data.start_time, Some(WallTime::new(1234.0).unwrap()));
 
         let runs = commit.runs.read().expect("read-locking runs map");
         let run_data: &commit::RunData = &*runs
