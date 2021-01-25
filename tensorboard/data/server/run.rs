@@ -190,7 +190,7 @@ impl RunLoader {
         let start = Instant::now();
         self.update_file_set(filenames);
         self.reload_files();
-        self.commit_all(run_data);
+        commit_all(&mut self.data, run_data);
         debug!(
             "Finished load for run {:?} ({:?})",
             run_name,
@@ -260,13 +260,17 @@ impl RunLoader {
             }
         }
     }
+}
 
-    fn commit_all(&mut self, run_data: &RwLock<commit::RunData>) {
-        let mut run = run_data.write().expect("acquiring tags lock");
-        run.start_time = self.data.start_time;
-        for (tag, ts) in &mut self.data.time_series {
-            ts.commit(tag, &mut *run);
-        }
+/// Commits all data staged in the run loader into the given run of the commit.
+///
+/// This is a standalone function because it's called from `reload_files` in a context that already
+/// has an exclusive reference into `self.files`, and so can't call methods on `&mut self`.
+fn commit_all(run_loader_data: &mut RunLoaderData, run_data: &RwLock<commit::RunData>) {
+    let mut run = run_data.write().expect("acquiring tags lock");
+    run.start_time = run_loader_data.start_time;
+    for (tag, ts) in &mut run_loader_data.time_series {
+        ts.commit(tag, &mut *run);
     }
 }
 
