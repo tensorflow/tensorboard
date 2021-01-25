@@ -21,7 +21,7 @@ use std::fs::File;
 use std::io::BufReader;
 use std::path::PathBuf;
 use std::sync::RwLock;
-use std::time::Instant;
+use std::time::{Duration, Instant};
 
 use crate::commit;
 use crate::data_compat::{EventValue, GraphDefValue, SummaryValue, TaggedRunMetadataValue};
@@ -156,6 +156,9 @@ impl StageTimeSeries {
     }
 }
 
+/// Minimum time to wait between committing while a run is still loading.
+const COMMIT_INTERVAL: Duration = Duration::from_secs(5);
+
 impl RunLoader {
     pub fn new(run: Run) -> Self {
         Self {
@@ -189,7 +192,23 @@ impl RunLoader {
         debug!("Starting load for run {:?}", run_name);
         let start = Instant::now();
         self.update_file_set(filenames);
-        self.reload_files(read_event);
+        let mut n = 0;
+        let mut last_commit_time = Instant::now();
+        self.reload_files(|run_loader_data, event| {
+            read_event(run_loader_data, event);
+            n += 1;
+            // Reduce overhead of checking elapsed time by only doing it every 100 events.
+            if n % 100 == 0 && last_commit_time.elapsed() >= COMMIT_INTERVAL {
+                debug!(
+                    "Loaded {} events for run {:?} after {:?}",
+                    n,
+                    run_name,
+                    start.elapsed()
+                );
+                commit_all(run_loader_data, run_data);
+                last_commit_time = Instant::now();
+            }
+        });
         commit_all(&mut self.data, run_data);
         debug!(
             "Finished load for run {:?} ({:?})",
