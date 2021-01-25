@@ -133,6 +133,8 @@ pub enum SpecializedType {
     StInvalid = 0,
     /// "tensorflow::TensorList" in the variant type registry.
     StTensorList = 1,
+    /// "tensorflow::data::Optional" in the variant type registry.
+    StOptional = 2,
 }
 /// Protocol buffer representing a handle to a tensorflow resource. Handles are
 /// not valid across executions, but can be serialized back and forth from within
@@ -424,8 +426,7 @@ pub enum DataClass {
     /// processed by data ingestion pipelines.
     Unknown = 0,
     /// Scalar time series. Each `Value` for the corresponding tag must have
-    /// `tensor` set to a rank-0 tensor of floating-point dtype, which will be
-    /// converted to float64.
+    /// `tensor` set to a rank-0 tensor of type `DT_FLOAT` (float32).
     Scalar = 1,
     /// Tensor time series. Each `Value` for the corresponding tag must have
     /// `tensor` set. The tensor value is arbitrary, but should be small to
