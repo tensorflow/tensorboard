@@ -29,6 +29,7 @@ from werkzeug import wrappers
 from tensorboard import plugin_util
 from tensorboard.backend import http_util
 from tensorboard.plugins import base_plugin
+from tensorboard.util import grpc_util
 from tensorboard.util import tb_logging
 
 logger = tb_logging.get_logger()
@@ -345,6 +346,17 @@ unavailable. (default: "default").\
             action="store_true",
             help="""\
 Experimental. Use a data server to accelerate loading.
+""",
+        )
+
+        parser.add_argument(
+            "--grpc_creds_type",
+            type=grpc_util.ChannelCredsType,
+            default=grpc_util.ChannelCredsType.LOCAL,
+            choices=grpc_util.ChannelCredsType.choices(),
+            help="""\
+Experimental. The type of credentials to use to connect to the data server.
+(default: %(default)s)
 """,
         )
 
