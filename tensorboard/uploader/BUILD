@@ -295,6 +295,7 @@ py_library(
     visibility = ["//tensorboard:internal"],
     deps = [
         "//tensorboard:expect_absl_flags_argparse_flags_installed",
+        "//tensorboard/util:grpc_util",
     ],
 )
 
@@ -304,5 +305,6 @@ py_test(
     deps = [
         ":flags_parser",
         "//tensorboard:test",
+        "//tensorboard/util:grpc_util",
     ],
 )
