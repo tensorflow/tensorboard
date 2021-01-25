@@ -15,19 +15,20 @@ limitations under the License.
 
 //! Loader for a single run, with one or more event files.
 
-use log::warn;
+use log::{debug, warn};
 use std::collections::{BTreeMap, HashMap, HashSet};
 use std::fs::File;
 use std::io::BufReader;
 use std::path::PathBuf;
 use std::sync::RwLock;
+use std::time::Instant;
 
 use crate::commit;
 use crate::data_compat::{EventValue, GraphDefValue, SummaryValue, TaggedRunMetadataValue};
 use crate::event_file::EventFileReader;
 use crate::proto::tensorboard as pb;
 use crate::reservoir::StageReservoir;
-use crate::types::{Step, Tag, WallTime};
+use crate::types::{Run, Step, Tag, WallTime};
 
 /// A loader to accumulate reservoir-sampled events in a single TensorBoard run.
 ///
@@ -35,6 +36,10 @@ use crate::types::{Step, Tag, WallTime};
 /// parameterized over a filesystem interface.
 #[derive(Debug)]
 pub struct RunLoader {
+    /// The run name associated with this loader. Used primarily for logging; the run name is
+    /// canonically defined by the map key under which this RunLoader is stored in LogdirLoader.
+    run: Run,
+
     /// The earliest event `wall_time` seen in any event file in this run.
     ///
     /// This is `None` if and only if no events have been seen. Its value may decrease as new
@@ -146,8 +151,9 @@ impl StageTimeSeries {
 }
 
 impl RunLoader {
-    pub fn new() -> Self {
+    pub fn new(run: Run) -> Self {
         Self {
+            run: run,
             start_time: None,
             files: BTreeMap::new(),
             time_series: HashMap::new(),
@@ -171,9 +177,17 @@ impl RunLoader {
     ///
     /// If we need to access `run_data` but the lock is poisoned.
     pub fn reload(&mut self, filenames: Vec<PathBuf>, run_data: &RwLock<commit::RunData>) {
+        let run_name = self.run.0.clone();
+        debug!("Starting load for run {:?}", run_name);
+        let start = Instant::now();
         self.update_file_set(filenames);
         self.reload_files();
         self.commit_all(run_data);
+        debug!(
+            "Finished load for run {:?} ({:?})",
+            run_name,
+            start.elapsed()
+        );
     }
 
     /// Updates the active key set of `self.files` to match the given filenames.
@@ -329,12 +343,6 @@ fn read_event(
     }
 }
 
-impl Default for RunLoader {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
 #[cfg(test)]
 mod test {
     use super::*;
@@ -390,7 +398,7 @@ mod test {
         f1.into_inner()?.sync_all()?;
         f2.into_inner()?.sync_all()?;
 
-        let mut loader = RunLoader::new();
+        let mut loader = RunLoader::new(run.clone());
         let commit = Commit::new();
         commit
             .runs
