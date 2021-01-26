@@ -177,5 +177,13 @@ class VersionMetadataTest(tb_test.TestCase):
         self.assertEqual(result, version.VERSION)
 
 
+class ChannelCredsTypeTest(tb_test.TestCase):
+    def test_all_variants_have_configs(self):
+        for variant in grpc_util.ChannelCredsType.__members__.values():
+            (creds, options) = variant.channel_config()
+            self.assertIsInstance(creds, grpc.ChannelCredentials)
+            self.assertIsInstance(options, list)
+
+
 if __name__ == "__main__":
     tb_test.main()
