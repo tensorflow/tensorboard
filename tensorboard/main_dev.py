@@ -12,14 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""TensorBoard main module.
-
-This module ties together `tensorboard.program` and
-`tensorboard.default_plugins` to provide standard TensorBoard. It's
-meant to be tiny and act as little other than a config file. Those
-wishing to customize the set of plugins or static assets that
-TensorBoard uses can swap out this file with their own.
-"""
+"""TensorBoard dev main module."""
 
 import inspect
 import os
@@ -52,3 +45,7 @@ def run_main():
     except base_plugin.FlagsError as e:
         print("Error: %s" % e, file=sys.stderr)
         sys.exit(1)
+
+
+if __name__ == "__main__":
+    run_main()

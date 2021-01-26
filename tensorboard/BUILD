@@ -56,10 +56,9 @@ py_binary(
         ":default",
         ":dynamic_plugins",  # loads internal dynamic plugin like projector
         ":lib",
+        ":main_lib",
         ":program",
-        "//tensorboard:expect_absl_flags_installed",
         "//tensorboard/uploader:uploader_subcommand",
-        "//tensorboard/util:tb_logging",
     ],
 )
 
