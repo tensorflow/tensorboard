@@ -45,7 +45,7 @@ const DAY_IN_MS = 24 * 1000 * 60 * 60;
           ></line>
         </ng-template>
         <ng-container *ngFor="let tick of getTicks()">
-          <g>
+          <g *ngIf="shouldShowMinorTick(tick, axis)">
             <text [attr.x]="textXPosition(tick)" [attr.y]="textYPosition(tick)">
               {{ getFormatter().formatTick(tick) }}
             </text>
@@ -160,6 +160,17 @@ export class LineChartAxisComponent {
 
   getMajorTicks(): number[] {
     return this.scale.ticks(this.axisExtent, 2);
+  }
+
+  shouldShowMinorTick(tick: number, axis: 'x' | 'y'): boolean {
+    // Hide the tick text when it is too close to the left/right edge.
+    const fractionOfFullExtent =
+      (tick - this.axisExtent[0]) / (this.axisExtent[1] - this.axisExtent[0]);
+    const margin = axis === 'x' ? 0.075 : 0.03;
+    if (fractionOfFullExtent < margin || fractionOfFullExtent > 1 - margin) {
+      return false;
+    }
+    return true;
   }
 
   getTicks(): number[] {
