@@ -131,6 +131,7 @@ tb_proto_library(
     srcs = ["op_def.proto"],
     deps = [
         ":attr_value",
+        ":resource_handle",
         ":types",
     ],
 )
