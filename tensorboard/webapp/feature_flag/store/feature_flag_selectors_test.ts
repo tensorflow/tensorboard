@@ -35,6 +35,49 @@ describe('feature_flag_selectors', () => {
       );
     });
 
+    it('returns legacy `features` if no overrides or `defaultFlags` are given', () => {
+      const state = buildState(
+        buildFeatureFlagState({
+          features: {
+            enabledExperimentalPlugins: ['foo', 'bar'],
+            enableGpuChart: true,
+            inColab: false,
+            scalarsBatchSize: 10,
+          },
+        })
+      );
+
+      expect(selectors.getFeatureFlags(state)).toEqual({
+        enabledExperimentalPlugins: ['foo', 'bar'],
+        enableGpuChart: true,
+        inColab: false,
+        scalarsBatchSize: 10,
+      });
+    });
+
+    it('combines legacy `features` and overrides', () => {
+      const state = buildState(
+        buildFeatureFlagState({
+          features: {
+            enabledExperimentalPlugins: ['foo', 'bar'],
+            enableGpuChart: false,
+            inColab: false,
+            scalarsBatchSize: 10,
+          },
+          flagOverrides: {
+            enabledExperimentalPlugins: ['baz'],
+          },
+        })
+      );
+
+      expect(selectors.getFeatureFlags(state)).toEqual({
+        enabledExperimentalPlugins: ['baz'],
+        enableGpuChart: false,
+        inColab: false,
+        scalarsBatchSize: 10,
+      });
+    });
+
     it('does not combine array flags', () => {
       const state = buildState(
         buildFeatureFlagState({

@@ -39,9 +39,9 @@ export const getFeatureFlags = createSelector(
   selectFeatureFlagState,
   (state: FeatureFlagState): FeatureFlags => {
     return {
+      ...state.features,
       ...state.defaultFlags,
       ...state.flagOverrides,
-      ...state.features,
     };
   }
 );
