@@ -25,12 +25,23 @@ py_binary(
         ":default",
         ":dynamic_plugins",
         ":lib",
+        ":main_lib",
         ":program",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/uploader:uploader_subcommand",
         "//tensorboard/util:tb_logging",
         "//tensorboard/util:timing",  # non-strict dep, for patching convenience
+    ],
+)
+
+py_library(
+    name = "main_lib",
+    srcs = ["main_lib.py"],
+    srcs_version = "PY3",
+    deps = [
+        "//tensorboard:expect_absl_logging_installed",
+        "//tensorboard/compat:tensorflow",
     ],
 )
 
@@ -198,11 +209,11 @@ py_library(
         ":manager",
         ":version",
         "//tensorboard:expect_absl_flags_installed",
-        "//tensorboard:expect_absl_logging_installed",
         "//tensorboard/backend:application",
         "//tensorboard/backend/event_processing:data_ingester",
         "//tensorboard/backend/event_processing:event_file_inspector",
         "//tensorboard/data:server_ingester",
+        "//tensorboard/plugins/core:core_plugin",
         "@org_pocoo_werkzeug",
     ],
 )
