@@ -86,6 +86,8 @@ class SubprocessServerDataIngester(ingester.DataIngester):
         ]
         if logger.isEnabledFor(logging.INFO):
             args.append("--verbose")
+        if logger.isEnabledFor(logging.DEBUG):
+            args.append("--verbose")  # Repeat arg to increase verbosity.
 
         logger.info("Spawning data server: %r", args)
         popen = subprocess.Popen(args, stdin=subprocess.PIPE)
