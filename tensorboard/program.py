@@ -45,7 +45,6 @@ import urllib.parse
 
 from absl import flags as absl_flags
 from absl.flags import argparse_flags
-import absl.logging
 from werkzeug import serving
 
 from tensorboard import manager
@@ -64,16 +63,6 @@ logger = tb_logging.get_logger()
 _SERVE_SUBCOMMAND_NAME = "serve"
 # Internal flag name used to store which subcommand was invoked.
 _SUBCOMMAND_FLAG = "__tensorboard_subcommand"
-
-
-def setup_environment():
-    """Makes recommended modifications to the environment.
-
-    This functions changes global state in the Python process. Calling
-    this function is a good idea, but it can't appropriately be called
-    from library routines.
-    """
-    absl.logging.set_verbosity(absl.logging.WARNING)
 
 
 def get_default_assets_zip_provider():
