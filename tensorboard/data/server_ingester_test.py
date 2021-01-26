@@ -25,13 +25,17 @@ import grpc
 from tensorboard import test as tb_test
 from tensorboard.data import grpc_provider
 from tensorboard.data import server_ingester
+from tensorboard.util import grpc_util
 
 
 class ExistingServerDataIngesterTest(tb_test.TestCase):
     def test(self):
         addr = "localhost:6806"
         with mock.patch.object(grpc, "secure_channel", autospec=True):
-            ingester = server_ingester.ExistingServerDataIngester(addr)
+            ingester = server_ingester.ExistingServerDataIngester(
+                addr,
+                channel_creds_type=grpc_util.ChannelCredsType.LOCAL,
+            )
             ingester.start()
         self.assertIsInstance(
             ingester.data_provider, grpc_provider.GrpcDataProvider
@@ -81,6 +85,7 @@ class SubprocessServerDataIngesterTest(tb_test.TestCase):
                 ingester = server_ingester.SubprocessServerDataIngester(
                     logdir=logdir,
                     reload_interval=5,
+                    channel_creds_type=grpc_util.ChannelCredsType.LOCAL,
                 )
                 ingester.start()
         self.assertIsInstance(

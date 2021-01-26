@@ -387,12 +387,14 @@ class TensorBoard(object):
         flags = self.flags
         if flags.grpc_data_provider:
             ingester = server_ingester.ExistingServerDataIngester(
-                flags.grpc_data_provider
+                flags.grpc_data_provider,
+                channel_creds_type=flags.grpc_creds_type,
             )
         elif flags.load_fast:
             ingester = server_ingester.SubprocessServerDataIngester(
                 logdir=flags.logdir,
                 reload_interval=flags.reload_interval,
+                channel_creds_type=flags.grpc_creds_type,
             )
         else:
             ingester = local_ingester.LocalDataIngester(flags)
