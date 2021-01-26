@@ -75,12 +75,6 @@ def setup_environment():
     """
     absl.logging.set_verbosity(absl.logging.WARNING)
 
-    # The default is HTTP/1.0 for some strange reason. If we don't use
-    # HTTP/1.1 then a new TCP socket and Python thread is created for
-    # each HTTP request. The tradeoff is we must always specify the
-    # Content-Length header, or do chunked encoding for streaming.
-    serving.WSGIRequestHandler.protocol_version = "HTTP/1.1"
-
 
 def get_default_assets_zip_provider():
     """Opens stock TensorBoard web assets collection.
@@ -600,6 +594,17 @@ def with_port_scanning(cls):
     return init
 
 
+class _WSGIRequestHandler(serving.WSGIRequestHandler):
+    """Custom subclass of Werkzeug request handler to use HTTP/1.1."""
+
+    # The default on the http.server is HTTP/1.0 for legacy reasons:
+    # https://docs.python.org/3/library/http.server.html#http.server.BaseHTTPRequestHandler.protocol_version
+    # Override here to use HTTP/1.1 to avoid needing a new TCP socket and Python
+    # thread for each HTTP request. The tradeoff is we must always specify the
+    # Content-Length header, or do chunked encoding for streaming.
+    protocol_version = "HTTP/1.1"
+
+
 class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
     """Implementation of TensorBoardServer using the Werkzeug dev server."""
 
@@ -624,7 +629,9 @@ class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
 
         self._fix_werkzeug_logging()
         try:
-            super(WerkzeugServer, self).__init__(host, port, wsgi_app)
+            super(WerkzeugServer, self).__init__(
+                host, port, wsgi_app, _WSGIRequestHandler
+            )
         except socket.error as e:
             if hasattr(errno, "EACCES") and e.errno == errno.EACCES:
                 raise TensorBoardServerException(
