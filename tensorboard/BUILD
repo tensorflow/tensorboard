@@ -357,6 +357,7 @@ tensorboard_zip_file(
     deps = [":dev_assets"],
 )
 
+# Should keep the asset dependencies in sync with :assets.
 tf_web_library(
     name = "dev_assets",
     srcs = [

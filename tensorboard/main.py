@@ -21,7 +21,8 @@ wishing to customize the set of plugins or static assets that
 TensorBoard uses can swap out this file with their own.
 """
 
-
+import inspect
+import os
 import sys
 
 from absl import app
@@ -35,9 +36,17 @@ from tensorboard.uploader import uploader_subcommand
 def run_main():
     """Initializes flags and calls main()."""
     main_lib.global_init()
+
+    path = os.path.join(
+        os.path.dirname(inspect.getfile(sys._getframe(1))), "webfiles.zip"
+    )
+    if not os.path.exists(path):
+        logger.warning("webfiles.zip static assets not found: %s", path)
+        return None
+
     tensorboard = program.TensorBoard(
         default.get_plugins(),
-        program.get_default_assets_zip_provider(),
+        lambda: open(path, "rb"),
         subcommands=[uploader_subcommand.UploaderSubcommand()],
     )
     try:

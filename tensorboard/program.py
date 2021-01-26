@@ -32,7 +32,6 @@ import argparse
 import atexit
 from collections import defaultdict
 import errno
-import inspect
 import logging
 import mimetypes
 import os
@@ -63,24 +62,6 @@ logger = tb_logging.get_logger()
 _SERVE_SUBCOMMAND_NAME = "serve"
 # Internal flag name used to store which subcommand was invoked.
 _SUBCOMMAND_FLAG = "__tensorboard_subcommand"
-
-
-def get_default_assets_zip_provider():
-    """Opens stock TensorBoard web assets collection.
-
-    Returns:
-      Returns function that returns a newly opened file handle to zip file
-      containing static assets for stock TensorBoard, or None if webfiles.zip
-      could not be found. The value the callback returns must be closed. The
-      paths inside the zip file are considered absolute paths on the web server.
-    """
-    path = os.path.join(
-        os.path.dirname(inspect.getfile(sys._getframe(1))), "webfiles.zip"
-    )
-    if not os.path.exists(path):
-        logger.warning("webfiles.zip static assets not found: %s", path)
-        return None
-    return lambda: open(path, "rb")
 
 
 class TensorBoard(object):
