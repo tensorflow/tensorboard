@@ -162,6 +162,41 @@ describe('runs_selectors', () => {
     });
   });
 
+  describe('#getRunMap', () => {
+    beforeEach(() => {
+      // Clear the memoization.
+      selectors.getRunMap.release();
+    });
+
+    it('returns a map from RunId to Run', () => {
+      const state = buildStateFromRunsState(
+        buildRunsState({
+          runMetadata: {
+            run1: buildRun({id: 'run1'}),
+            run2: buildRun({id: 'run2'}),
+          },
+        })
+      );
+
+      expect(selectors.getRunMap(state)).toEqual(
+        new Map([
+          ['run1', buildRun({id: 'run1'})],
+          ['run2', buildRun({id: 'run2'})],
+        ])
+      );
+    });
+
+    it('returns an empty map if there are no runs', () => {
+      const state = buildStateFromRunsState(
+        buildRunsState({
+          runMetadata: {},
+        })
+      );
+
+      expect(selectors.getRunMap(state)).toEqual(new Map());
+    });
+  });
+
   describe('#getRunsLoadState', () => {
     beforeEach(() => {
       // Clear the memoization.

@@ -19,13 +19,12 @@ import {FeatureFlagState} from './feature_flag_types';
 
 export const initialState: FeatureFlagState = {
   isFeatureFlagsLoaded: false,
-  defaultFlags: {
+  features: {
     enabledExperimentalPlugins: [],
     inColab: false,
     enableGpuChart: false,
     scalarsBatchSize: undefined,
   },
-  flagOverrides: {},
 };
 
 /**
