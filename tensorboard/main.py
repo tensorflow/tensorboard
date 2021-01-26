@@ -36,6 +36,7 @@ os.environ["GCS_READ_CACHE_DISABLED"] = "1"
 
 import sys
 
+from absl import app
 from tensorboard import default
 from tensorboard import program
 from tensorboard.compat import tf
@@ -63,21 +64,10 @@ def run_main():
         subcommands=[uploader_subcommand.UploaderSubcommand()],
     )
     try:
-        from absl import app
-
-        # Import this to check that app.run() will accept the flags_parser argument.
-        from absl.flags import argparse_flags  # noqa: F401
-
         app.run(tensorboard.main, flags_parser=tensorboard.configure)
-        raise AssertionError("absl.app.run() shouldn't return")
-    except ImportError:
-        pass
     except base_plugin.FlagsError as e:
         print("Error: %s" % e, file=sys.stderr)
         sys.exit(1)
-
-    tensorboard.configure(sys.argv)
-    sys.exit(tensorboard.main())
 
 
 if __name__ == "__main__":
