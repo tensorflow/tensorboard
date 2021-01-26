@@ -31,6 +31,9 @@ from tensorboard import main_lib
 from tensorboard import program
 from tensorboard.plugins import base_plugin
 from tensorboard.uploader import uploader_subcommand
+from tensorboard.util import tb_logging
+
+logger = tb_logging.get_logger()
 
 
 def run_main():
