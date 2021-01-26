@@ -32,14 +32,7 @@ const DAY_IN_MS = 24 * 1000 * 60 * 60;
   selector: 'line-chart-axis',
   template: `
     <div [class]="axis + '-axis'">
-      <svg class="line">
-        <ng-container *ngIf="axis === 'x'; else yAxisLine">
-          <line x1="0" y1="0" [attr.x2]="domDim.width" y2="0"></line>
-        </ng-container>
-        <ng-template #yAxisLine>
-          <line x1="0" y1="0" x2="0" [attr.y2]="domDim.height"></line>
-        </ng-template>
-      </svg>
+      <div class="line"></div>
       <svg class="minor ticks">
         <ng-container *ngFor="let tick of getTicks()">
           <g>
@@ -90,6 +83,7 @@ const DAY_IN_MS = 24 * 1000 * 60 * 60;
       }
 
       .line {
+        background-color: #aaa;
         flex: 0 0 1px;
         justify-content: stretch;
       }
