@@ -54,7 +54,7 @@ class TestableComponent {
   };
 }
 
-fdescribe('line_chart_v2/sub_view/grid test', () => {
+describe('line_chart_v2/sub_view/grid test', () => {
   const ByCss = {
     GRID_LINE: By.css('line'),
   };
