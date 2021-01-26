@@ -78,7 +78,7 @@ class TensorBoard(object):
     def __init__(
         self,
         plugins=None,
-        assets_zip_provider=None,
+        assets_zip_provider,
         server_class=None,
         subcommands=None,
     ):
@@ -88,7 +88,8 @@ class TensorBoard(object):
           plugins: A list of TensorBoard plugins to load, as TBPlugin classes or
             TBLoader instances or classes. If not specified, defaults to first-party
             plugins.
-          assets_zip_provider: Delegates to TBContext or uses default if None.
+          assets_zip_provider: A function that provides a zip file containing assets to
+            the application.
           server_class: An optional factory for a `TensorBoardServer` to use
             for serving the TensorBoard WSGI app. If provided, its callable
             signature should match that of `TensorBoardServer.__init__`.
@@ -103,8 +104,6 @@ class TensorBoard(object):
             from tensorboard import default
 
             plugins = default.get_plugins()
-        if assets_zip_provider is None:
-            assets_zip_provider = get_default_assets_zip_provider()
         if server_class is None:
             server_class = create_port_scanning_werkzeug_server
         if subcommands is None:
