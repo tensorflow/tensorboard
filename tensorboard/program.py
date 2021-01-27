@@ -77,8 +77,8 @@ class TensorBoard(object):
 
     def __init__(
         self,
-        plugins=None,
         assets_zip_provider,
+        plugins=None,
         server_class=None,
         subcommands=None,
     ):

@@ -48,8 +48,8 @@ def run_main():
         return None
 
     tensorboard = program.TensorBoard(
-        default.get_plugins(),
         lambda: open(path, "rb"),
+        plugins=default.get_plugins(),
         subcommands=[uploader_subcommand.UploaderSubcommand()],
     )
     try:
