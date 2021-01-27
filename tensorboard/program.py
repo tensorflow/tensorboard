@@ -32,7 +32,6 @@ import argparse
 import atexit
 from collections import defaultdict
 import errno
-import inspect
 import logging
 import mimetypes
 import os
@@ -65,24 +64,6 @@ _SERVE_SUBCOMMAND_NAME = "serve"
 _SUBCOMMAND_FLAG = "__tensorboard_subcommand"
 
 
-def get_default_assets_zip_provider():
-    """Opens stock TensorBoard web assets collection.
-
-    Returns:
-      Returns function that returns a newly opened file handle to zip file
-      containing static assets for stock TensorBoard, or None if webfiles.zip
-      could not be found. The value the callback returns must be closed. The
-      paths inside the zip file are considered absolute paths on the web server.
-    """
-    path = os.path.join(
-        os.path.dirname(inspect.getfile(sys._getframe(1))), "webfiles.zip"
-    )
-    if not os.path.exists(path):
-        logger.warning("webfiles.zip static assets not found: %s", path)
-        return None
-    return lambda: open(path, "rb")
-
-
 class TensorBoard(object):
     """Class for running TensorBoard.
 
@@ -96,18 +77,19 @@ class TensorBoard(object):
 
     def __init__(
         self,
+        assets_zip_provider,
         plugins=None,
-        assets_zip_provider=None,
         server_class=None,
         subcommands=None,
     ):
         """Creates new instance.
 
         Args:
+          assets_zip_provider: A function that provides a zip file containing assets to
+            the application.
           plugins: A list of TensorBoard plugins to load, as TBPlugin classes or
             TBLoader instances or classes. If not specified, defaults to first-party
             plugins.
-          assets_zip_provider: Delegates to TBContext or uses default if None.
           server_class: An optional factory for a `TensorBoardServer` to use
             for serving the TensorBoard WSGI app. If provided, its callable
             signature should match that of `TensorBoardServer.__init__`.
@@ -122,8 +104,6 @@ class TensorBoard(object):
             from tensorboard import default
 
             plugins = default.get_plugins()
-        if assets_zip_provider is None:
-            assets_zip_provider = get_default_assets_zip_provider()
         if server_class is None:
             server_class = create_port_scanning_werkzeug_server
         if subcommands is None:

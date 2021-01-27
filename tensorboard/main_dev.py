@@ -1,4 +1,4 @@
-# Copyright 2015 The TensorFlow Authors. All Rights Reserved.
+# Copyright 2021 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,14 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""TensorBoard main module.
-
-This module ties together `tensorboard.program` and
-`tensorboard.default_plugins` to provide standard TensorBoard. It's
-meant to be tiny and act as little other than a config file. Those
-wishing to customize the set of plugins or static assets that
-TensorBoard uses can swap out this file with their own.
-"""
+"""TensorBoard dev main module."""
 
 import inspect
 import os
@@ -31,9 +24,6 @@ from tensorboard import main_lib
 from tensorboard import program
 from tensorboard.plugins import base_plugin
 from tensorboard.uploader import uploader_subcommand
-from tensorboard.util import tb_logging
-
-logger = tb_logging.get_logger()
 
 
 def run_main():
@@ -41,18 +31,15 @@ def run_main():
     main_lib.global_init()
 
     path = os.path.join(
-        os.path.dirname(inspect.getfile(sys._getframe(0))), "webfiles.zip"
+        os.path.dirname(inspect.getfile(sys._getframe(0))), "dev_webfiles.zip"
     )
-
-    if not os.path.exists(path):
-        logger.warning("webfiles.zip static assets not found: %s", path)
-        return None
 
     tensorboard = program.TensorBoard(
         lambda: open(path, "rb"),
         plugins=default.get_plugins(),
         subcommands=[uploader_subcommand.UploaderSubcommand()],
     )
+
     try:
         app.run(tensorboard.main, flags_parser=tensorboard.configure)
     except base_plugin.FlagsError as e:
