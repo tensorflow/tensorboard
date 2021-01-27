@@ -26,7 +26,6 @@ tf_js_binary(
         "//tensorboard/webapp/angular:expect_angular_material_toolbar",
         "@npm//@angular/common",
         "@npm//@angular/core",
-        "@npm//@angular/material",
         "@npm//@angular/platform-browser",
         "@npm//@ngrx/store",
         "@npm//rxjs",
