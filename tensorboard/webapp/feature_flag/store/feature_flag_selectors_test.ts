@@ -98,15 +98,15 @@ describe('feature_flag_selectors', () => {
     });
   });
 
-  describe('#getOverridenFeatureFlags', () => {
+  describe('#getOverriddenFeatureFlags', () => {
     it('returns empty object if it is not overridden', () => {
       const state = buildState(buildFeatureFlagState());
-      const actual = selectors.getOverridenFeatureFlags(state);
+      const actual = selectors.getOverriddenFeatureFlags(state);
 
       expect(actual).toEqual({});
     });
 
-    it('returns only overriden parts', () => {
+    it('returns only overridden parts', () => {
       const state = buildState(
         buildFeatureFlagState({
           defaultFlags: buildFeatureFlag({
@@ -117,7 +117,7 @@ describe('feature_flag_selectors', () => {
           },
         })
       );
-      const actual = selectors.getOverridenFeatureFlags(state);
+      const actual = selectors.getOverriddenFeatureFlags(state);
 
       expect(actual).toEqual({enableGpuChart: false});
     });
