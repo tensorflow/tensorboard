@@ -50,7 +50,9 @@ pub struct RunLoader {
     /// Whether to compute CRCs for records before parsing as protos.
     checksum: bool,
 
-    /// The data staged by this `RunLoader`.
+    /// The data staged by this `RunLoader`. This is encapsulated in a sub-struct so that these
+    /// fields can be reborrowed within `reload_files` in a context that already has an exclusive
+    /// reference into `self.files`, and hence can't call methods on the whole of `&mut self`.
     data: RunLoaderData,
 }
 
@@ -192,7 +194,7 @@ impl RunLoader {
         let mut n = 0;
         let mut last_commit_time = Instant::now();
         self.reload_files(|run_loader_data, event| {
-            read_event(run_loader_data, event);
+            run_loader_data.read_event(event);
             n += 1;
             // Reduce overhead of checking elapsed time by only doing it every 100 events.
             if n % 100 == 0 && last_commit_time.elapsed() >= COMMIT_INTERVAL {
@@ -202,11 +204,11 @@ impl RunLoader {
                     run_name,
                     start.elapsed()
                 );
-                commit_all(run_loader_data, run_data);
+                run_loader_data.commit_all(run_data);
                 last_commit_time = Instant::now();
             }
         });
-        commit_all(&mut self.data, run_data);
+        self.data.commit_all(run_data);
         debug!(
             "Finished load for run {:?} ({:?})",
             run_name,
@@ -278,95 +280,91 @@ impl RunLoader {
     }
 }
 
-/// Commits all data staged in the run loader into the given run of the commit.
-///
-/// This is a standalone function because it's called from `reload_files` in a context that already
-/// has an exclusive reference into `self.files`, and so can't call methods on `&mut self`.
-fn commit_all(run_loader_data: &mut RunLoaderData, run_data: &RwLock<commit::RunData>) {
-    let mut run = run_data.write().expect("acquiring tags lock");
-    run.start_time = run_loader_data.start_time;
-    for (tag, ts) in &mut run_loader_data.time_series {
-        ts.commit(tag, &mut *run);
+impl RunLoaderData {
+    /// Commits all staged data into the given run of the commit.
+    fn commit_all(&mut self, run_data: &RwLock<commit::RunData>) {
+        let mut run = run_data.write().expect("acquiring tags lock");
+        run.start_time = self.start_time;
+        for (tag, ts) in &mut self.time_series {
+            ts.commit(tag, &mut *run);
+        }
     }
-}
 
-/// Reads a single event into the structures of a run loader.
-///
-/// This is a standalone function because it's called from `reload_files` in a context that already
-/// has an exclusive reference into `self.files`, and so can't call methods on `&mut self`.
-fn read_event(data: &mut RunLoaderData, e: pb::Event) {
-    let step = Step(e.step);
-    let wall_time = match WallTime::new(e.wall_time) {
-        None => {
-            // TODO(@wchargin): Improve error handling.
-            warn!(
-                "Dropping event at step {} with invalid wall time {}",
-                e.step, e.wall_time
-            );
-            return;
+    /// Reads a single event and stages it for future committing.
+    fn read_event(&mut self, e: pb::Event) {
+        let step = Step(e.step);
+        let wall_time = match WallTime::new(e.wall_time) {
+            None => {
+                // TODO(@wchargin): Improve error handling.
+                warn!(
+                    "Dropping event at step {} with invalid wall time {}",
+                    e.step, e.wall_time
+                );
+                return;
+            }
+            Some(wt) => wt,
+        };
+        if self.start_time.map_or(true, |start| wall_time < start) {
+            self.start_time = Some(wall_time);
         }
-        Some(wt) => wt,
-    };
-    if data.start_time.map_or(true, |start| wall_time < start) {
-        data.start_time = Some(wall_time);
-    }
-    match e.what {
-        Some(pb::event::What::GraphDef(graph_bytes)) => {
-            let sv = StageValue {
-                wall_time,
-                payload: EventValue::GraphDef(GraphDefValue(graph_bytes)),
-            };
-            use std::collections::hash_map::Entry;
-            let ts = match data
-                .time_series
-                .entry(Tag(GraphDefValue::TAG_NAME.to_string()))
-            {
-                Entry::Occupied(o) => o.into_mut(),
-                Entry::Vacant(v) => {
-                    v.insert(StageTimeSeries::new(GraphDefValue::initial_metadata()))
-                }
-            };
-            ts.rsv.offer(step, sv);
-        }
-        Some(pb::event::What::TaggedRunMetadata(trm_proto)) => {
-            let sv = StageValue {
-                wall_time,
-                payload: EventValue::GraphDef(GraphDefValue(trm_proto.run_metadata)),
-            };
-            use std::collections::hash_map::Entry;
-            let ts = match data.time_series.entry(Tag(trm_proto.tag)) {
-                Entry::Occupied(o) => o.into_mut(),
-                Entry::Vacant(v) => {
-                    let metadata = TaggedRunMetadataValue::initial_metadata();
-                    v.insert(StageTimeSeries::new(metadata))
-                }
-            };
-            ts.rsv.offer(step, sv);
-        }
-        Some(pb::event::What::Summary(sum)) => {
-            for mut summary_pb_value in sum.value {
-                let summary_value = match summary_pb_value.value {
-                    None => continue,
-                    Some(v) => SummaryValue(Box::new(v)),
-                };
-
-                use std::collections::hash_map::Entry;
-                let ts = match data.time_series.entry(Tag(summary_pb_value.tag)) {
-                    Entry::Occupied(o) => o.into_mut(),
-                    Entry::Vacant(v) => {
-                        let metadata =
-                            summary_value.initial_metadata(summary_pb_value.metadata.take());
-                        v.insert(StageTimeSeries::new(metadata))
-                    }
-                };
+        match e.what {
+            Some(pb::event::What::GraphDef(graph_bytes)) => {
                 let sv = StageValue {
                     wall_time,
-                    payload: EventValue::Summary(summary_value),
+                    payload: EventValue::GraphDef(GraphDefValue(graph_bytes)),
+                };
+                use std::collections::hash_map::Entry;
+                let ts = match self
+                    .time_series
+                    .entry(Tag(GraphDefValue::TAG_NAME.to_string()))
+                {
+                    Entry::Occupied(o) => o.into_mut(),
+                    Entry::Vacant(v) => {
+                        v.insert(StageTimeSeries::new(GraphDefValue::initial_metadata()))
+                    }
                 };
                 ts.rsv.offer(step, sv);
             }
+            Some(pb::event::What::TaggedRunMetadata(trm_proto)) => {
+                let sv = StageValue {
+                    wall_time,
+                    payload: EventValue::GraphDef(GraphDefValue(trm_proto.run_metadata)),
+                };
+                use std::collections::hash_map::Entry;
+                let ts = match self.time_series.entry(Tag(trm_proto.tag)) {
+                    Entry::Occupied(o) => o.into_mut(),
+                    Entry::Vacant(v) => {
+                        let metadata = TaggedRunMetadataValue::initial_metadata();
+                        v.insert(StageTimeSeries::new(metadata))
+                    }
+                };
+                ts.rsv.offer(step, sv);
+            }
+            Some(pb::event::What::Summary(sum)) => {
+                for mut summary_pb_value in sum.value {
+                    let summary_value = match summary_pb_value.value {
+                        None => continue,
+                        Some(v) => SummaryValue(Box::new(v)),
+                    };
+
+                    use std::collections::hash_map::Entry;
+                    let ts = match self.time_series.entry(Tag(summary_pb_value.tag)) {
+                        Entry::Occupied(o) => o.into_mut(),
+                        Entry::Vacant(v) => {
+                            let metadata =
+                                summary_value.initial_metadata(summary_pb_value.metadata.take());
+                            v.insert(StageTimeSeries::new(metadata))
+                        }
+                    };
+                    let sv = StageValue {
+                        wall_time,
+                        payload: EventValue::Summary(summary_value),
+                    };
+                    ts.rsv.offer(step, sv);
+                }
+            }
+            _ => {}
         }
-        _ => {}
     }
 }
 
