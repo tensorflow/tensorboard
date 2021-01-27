@@ -214,7 +214,7 @@ impl<'a> LogdirLoader<'a> {
                     // first relpath.
                     relpath: event_files[0].run_relpath.clone(),
                     loader: {
-                        let mut loader = RunLoader::new();
+                        let mut loader = RunLoader::new(run_name.clone());
                         loader.checksum(checksum);
                         loader
                     },
