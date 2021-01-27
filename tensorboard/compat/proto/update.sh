@@ -41,4 +41,57 @@ find tensorboard/compat/proto/ -type f  -name '*.proto' -exec perl -pi \
   -e 's|tensorflow\.TensorShapeProto|tensorboard.TensorShapeProto|g;' \
   {} +
 
+# Update dependency graph.
+(
+  cd tensorboard/compat/proto/
+
+  {
+    # Keep all organic content from the build file...
+    sed -n '/AUTOMATICALLY GENERATED/q;p' BUILD
+    printf '%s\n' \
+      '# DO NOT EDIT: This line and rest of file are AUTOMATICALLY GENERATED' \
+      '# by tensorboard/compat/proto/update.sh.' \
+      ''
+
+    # ...then regenerate the individual proto targets...
+    for f in *.proto; do
+      printf 'tb_proto_library(\n'
+      printf '    name = "%s",\n' "${f%.proto}"
+      printf '    srcs = ["%s"],\n' "$f"
+      if grep -q '^import "tensorboard/' "$f"; then
+        printf '    deps = [\n'
+        grep '^import "tensorboard/' "$f" | sort |
+          sed -e 's#.*compat/proto/\([^.]*\).*#        ":\1",#'
+        printf '    ],\n'
+      fi
+      printf ')\n\n'
+    done
+
+    # ...as well as `protos_all`.
+    printf '%s\n' \
+      '# Protobuf files copied from the main TensorFlow repository.' \
+      '# Keep this list synced with proto_test.py' \
+      ;
+    printf 'tb_proto_library(\n'
+    printf '    name = "protos_all",\n'
+    printf '    srcs = [],\n'
+    printf '    visibility = ["//visibility:public"],\n'
+    printf '    deps = [\n'
+    for f in *.proto; do
+      printf '        ":%s",\n' "${f%.proto}"
+    done | sort
+    printf '    ],\n'
+    printf ')\n'
+  } | expand -t4 >BUILD.new
+  mv BUILD.new BUILD
+
+  # We made an effort to be style-compliant above, but try to run buildifier if
+  # available, just in case.
+  if command -v buildifier >/dev/null 2>/dev/null; then
+    buildifier BUILD
+  else
+    printf >&2 'warning: buildifier(1) not found; tensorboard/compat/proto/BUILD may have lint errors\n'
+  fi
+)
+
 echo "Protos in tensorboard/compat/proto/ updated! You can now add and commit them."
