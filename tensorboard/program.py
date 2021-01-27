@@ -682,13 +682,21 @@ class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
         return fallback_address
 
     def server_bind(self):
-        """Override to enable IPV4 mapping for IPV6 sockets when desired.
+        """Override to set custom options on the socket."""
+        if self._flags.reuse_port:
+            try:
+                socket.SO_REUSEPORT
+            except AttributeError:
+                raise TensorBoardServerException(
+                    "TensorBoard --reuse_port option is not supported on this platform"
+                )
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
 
-        The main use case for this is so that when no host is specified,
-        TensorBoard can listen on all interfaces for both IPv4 and IPv6
-        connections, rather than having to choose v4 or v6 and hope the
-        browser didn't choose the other one.
-        """
+        # Enable IPV4 mapping for IPV6 sockets when desired.
+        # The main use case for this is so that when no host is specified,
+        # TensorBoard can listen on all interfaces for both IPv4 and IPv6
+        # connections, rather than having to choose v4 or v6 and hope the
+        # browser didn't choose the other one.
         socket_is_v6 = (
             hasattr(socket, "AF_INET6")
             and self.socket.family == socket.AF_INET6
