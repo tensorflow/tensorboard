@@ -85,11 +85,11 @@ class TensorBoard(object):
         """Creates new instance.
 
         Args:
+          assets_zip_provider: A function that provides a zip file containing assets to
+            the application.
           plugins: A list of TensorBoard plugins to load, as TBPlugin classes or
             TBLoader instances or classes. If not specified, defaults to first-party
             plugins.
-          assets_zip_provider: A function that provides a zip file containing assets to
-            the application.
           server_class: An optional factory for a `TensorBoardServer` to use
             for serving the TensorBoard WSGI app. If provided, its callable
             signature should match that of `TensorBoardServer.__init__`.
