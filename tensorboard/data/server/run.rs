@@ -37,7 +37,7 @@ use crate::types::{Run, Step, Tag, WallTime};
 #[derive(Debug)]
 pub struct RunLoader {
     /// The run name associated with this loader. Used primarily for logging; the run name is
-    /// canonically defined by the map key under which this `RunLoader` is stored in LogdirLoader.
+    /// canonically defined by the map key under which this `RunLoader` is stored in `LogdirLoader`.
     run: Run,
     /// The event files in this run.
     ///
@@ -164,7 +164,7 @@ const COMMIT_INTERVAL: Duration = Duration::from_secs(5);
 impl RunLoader {
     pub fn new(run: Run) -> Self {
         Self {
-            run: run,
+            run,
             files: BTreeMap::new(),
             checksum: true,
             data: RunLoaderData::default(),
