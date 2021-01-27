@@ -18,18 +18,108 @@ import {buildFeatureFlagState, buildState} from './testing';
 
 describe('feature_flag_selectors', () => {
   describe('#getFeatureFlags', () => {
-    it('returns value in the store', () => {
+    it('combines default and overrides to make override transparent to users', () => {
       const state = buildState(
         buildFeatureFlagState({
-          features: buildFeatureFlag({
+          defaultFlags: buildFeatureFlag({
             enableGpuChart: true,
           }),
+          flagOverrides: {
+            enableGpuChart: false,
+          },
         })
       );
 
       expect(selectors.getFeatureFlags(state)).toEqual(
-        buildFeatureFlag({enableGpuChart: true})
+        buildFeatureFlag({enableGpuChart: false})
       );
+    });
+
+    it('returns legacy `features` if no overrides or `defaultFlags` are given', () => {
+      const state = buildState(
+        buildFeatureFlagState({
+          features: {
+            enabledExperimentalPlugins: ['foo', 'bar'],
+            enableGpuChart: true,
+            inColab: false,
+            scalarsBatchSize: 10,
+          },
+        })
+      );
+
+      expect(selectors.getFeatureFlags(state)).toEqual({
+        enabledExperimentalPlugins: ['foo', 'bar'],
+        enableGpuChart: true,
+        inColab: false,
+        scalarsBatchSize: 10,
+      });
+    });
+
+    it('combines legacy `features` and overrides', () => {
+      const state = buildState(
+        buildFeatureFlagState({
+          features: {
+            enabledExperimentalPlugins: ['foo', 'bar'],
+            enableGpuChart: false,
+            inColab: false,
+            scalarsBatchSize: 10,
+          },
+          flagOverrides: {
+            enabledExperimentalPlugins: ['baz'],
+          },
+        })
+      );
+
+      expect(selectors.getFeatureFlags(state)).toEqual({
+        enabledExperimentalPlugins: ['baz'],
+        enableGpuChart: false,
+        inColab: false,
+        scalarsBatchSize: 10,
+      });
+    });
+
+    it('does not combine array flags', () => {
+      const state = buildState(
+        buildFeatureFlagState({
+          defaultFlags: buildFeatureFlag({
+            enabledExperimentalPlugins: ['bar'],
+          }),
+          flagOverrides: {
+            enabledExperimentalPlugins: ['foo'],
+          },
+        })
+      );
+
+      expect(selectors.getFeatureFlags(state)).toEqual(
+        buildFeatureFlag({
+          enabledExperimentalPlugins: ['foo'],
+        })
+      );
+    });
+  });
+
+  describe('#getOverridenFeatureFlags', () => {
+    it('returns empty object if it is not overridden', () => {
+      const state = buildState(buildFeatureFlagState());
+      const actual = selectors.getOverridenFeatureFlags(state);
+
+      expect(actual).toEqual({});
+    });
+
+    it('returns only overriden parts', () => {
+      const state = buildState(
+        buildFeatureFlagState({
+          defaultFlags: buildFeatureFlag({
+            enableGpuChart: true,
+          }),
+          flagOverrides: {
+            enableGpuChart: false,
+          },
+        })
+      );
+      const actual = selectors.getOverridenFeatureFlags(state);
+
+      expect(actual).toEqual({enableGpuChart: false});
     });
   });
 
@@ -37,7 +127,7 @@ describe('feature_flag_selectors', () => {
     it('returns value in array', () => {
       const state = buildState(
         buildFeatureFlagState({
-          features: buildFeatureFlag({
+          defaultFlags: buildFeatureFlag({
             enabledExperimentalPlugins: ['bar'],
           }),
         })
@@ -52,7 +142,7 @@ describe('feature_flag_selectors', () => {
     it('returns the proper value', () => {
       let state = buildState(
         buildFeatureFlagState({
-          features: buildFeatureFlag({
+          defaultFlags: buildFeatureFlag({
             inColab: true,
           }),
         })
@@ -61,7 +151,7 @@ describe('feature_flag_selectors', () => {
 
       state = buildState(
         buildFeatureFlagState({
-          features: buildFeatureFlag({
+          defaultFlags: buildFeatureFlag({
             inColab: false,
           }),
         })
@@ -74,7 +164,7 @@ describe('feature_flag_selectors', () => {
     it('returns value in the store', () => {
       const state1 = buildState(
         buildFeatureFlagState({
-          features: buildFeatureFlag({
+          defaultFlags: buildFeatureFlag({
             enableGpuChart: false,
           }),
         })
@@ -85,7 +175,7 @@ describe('feature_flag_selectors', () => {
 
       const state2 = buildState(
         buildFeatureFlagState({
-          features: buildFeatureFlag({
+          defaultFlags: buildFeatureFlag({
             enableGpuChart: true,
           }),
         })
