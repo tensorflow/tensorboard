@@ -44,7 +44,7 @@ describe('core deeplink provider', () => {
     store.overrideSelector(selectors.getPinnedCardsWithMetadata, []);
     store.overrideSelector(selectors.getUnresolvedImportedPinnedCards, []);
     store.overrideSelector(selectors.getEnabledExperimentalPlugins, []);
-    store.overrideSelector(selectors.getOverridenFeatureFlags, {});
+    store.overrideSelector(selectors.getOverriddenFeatureFlags, {});
 
     queryParamsSerialized = [];
 
@@ -252,7 +252,7 @@ describe('core deeplink provider', () => {
     });
 
     it('serializes enabled fast chart state', () => {
-      store.overrideSelector(selectors.getOverridenFeatureFlags, {
+      store.overrideSelector(selectors.getOverriddenFeatureFlags, {
         enableGpuChart: false,
       });
       store.refreshState();
@@ -261,7 +261,7 @@ describe('core deeplink provider', () => {
         {key: 'fastChart', value: 'false'},
       ]);
 
-      store.overrideSelector(selectors.getOverridenFeatureFlags, {
+      store.overrideSelector(selectors.getOverriddenFeatureFlags, {
         enableGpuChart: true,
       });
       store.refreshState();
@@ -271,8 +271,8 @@ describe('core deeplink provider', () => {
       ]);
     });
 
-    it('omits fast chart state if it is not overriden by user and has default value', () => {
-      store.overrideSelector(selectors.getOverridenFeatureFlags, {});
+    it('omits fast chart state if it is not overridden by user and has default value', () => {
+      store.overrideSelector(selectors.getOverriddenFeatureFlags, {});
       store.refreshState();
 
       expect(queryParamsSerialized).toEqual([[]]);

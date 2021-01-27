@@ -16,7 +16,7 @@ limitations under the License.
 /**
  * Does not actually sanitize html.
  *
- * This exported function is overriden in the internal Google repository for
+ * This exported function is overridden in the internal Google repository for
  * compatibility with security libraries used internally at Google.
  */
 export function sanitize(html: string) {

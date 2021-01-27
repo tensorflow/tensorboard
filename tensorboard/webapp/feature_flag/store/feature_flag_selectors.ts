@@ -46,7 +46,7 @@ export const getFeatureFlags = createSelector(
   }
 );
 
-export const getOverridenFeatureFlags = createSelector(
+export const getOverriddenFeatureFlags = createSelector(
   selectFeatureFlagState,
   (state: FeatureFlagState): Partial<FeatureFlags> => {
     // Temporarily assume state.flagOverrides can be undefined for sync purposes.
