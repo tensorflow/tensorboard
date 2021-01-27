@@ -15,6 +15,7 @@ limitations under the License.
 
 //! Conversions from legacy formats.
 
+use prost::Message;
 use std::convert::TryInto;
 use std::fmt::Debug;
 
@@ -262,8 +263,8 @@ impl SummaryValue {
             // form.
             (Some(md), _) if md.data_class != i32::from(pb::DataClass::Unknown) => Box::new(md),
             (_, Value::SimpleValue(_)) => blank(plugin_names::SCALARS, pb::DataClass::Scalar),
-            (_, Value::Image(_)) => blank(plugin_names::IMAGES, pb::DataClass::BlobSequence),
-            (_, Value::Audio(_)) => blank(plugin_names::AUDIO, pb::DataClass::BlobSequence),
+            (_, Value::Image(_)) => tf1x_image_metadata(),
+            (_, Value::Audio(_)) => tf1x_audio_metadata(),
             (Some(mut md), _) => {
                 // Use given metadata, but first set data class based on plugin name, if known.
                 match md.plugin_data.as_ref().map(|pd| pd.plugin_name.as_str()) {
@@ -284,6 +285,50 @@ impl SummaryValue {
             (None, _) => Box::new(pb::SummaryMetadata::default()),
         }
     }
+}
+
+fn tf1x_image_metadata() -> Box<pb::SummaryMetadata> {
+    let plugin_content = pb::ImagePluginData {
+        converted_to_tensor: true,
+        ..Default::default()
+    };
+    let mut encoded_content = Vec::new();
+    plugin_content
+        .encode(&mut encoded_content)
+        // vectors are resizable, so should always be able to encode
+        .expect("failed to encode image metadata");
+
+    Box::new(pb::SummaryMetadata {
+        plugin_data: Some(PluginData {
+            plugin_name: plugin_names::IMAGES.to_string(),
+            content: encoded_content,
+            ..Default::default()
+        }),
+        data_class: pb::DataClass::BlobSequence.into(),
+        ..Default::default()
+    })
+}
+
+fn tf1x_audio_metadata() -> Box<pb::SummaryMetadata> {
+    let plugin_content = pb::AudioPluginData {
+        converted_to_tensor: true,
+        ..Default::default()
+    };
+    let mut encoded_content = Vec::new();
+    plugin_content
+        .encode(&mut encoded_content)
+        // vectors are resizable, so should always be able to encode
+        .expect("failed to encode audio metadata");
+
+    Box::new(pb::SummaryMetadata {
+        plugin_data: Some(PluginData {
+            plugin_name: plugin_names::AUDIO.to_string(),
+            content: encoded_content,
+            ..Default::default()
+        }),
+        data_class: pb::DataClass::BlobSequence.into(),
+        ..Default::default()
+    })
 }
 
 impl Debug for GraphDefValue {
@@ -604,17 +649,11 @@ mod tests {
             })));
             let result = v.initial_metadata(None);
 
-            assert_eq!(
-                *result,
-                pb::SummaryMetadata {
-                    plugin_data: Some(PluginData {
-                        plugin_name: plugin_names::IMAGES.to_string(),
-                        ..Default::default()
-                    }),
-                    data_class: pb::DataClass::BlobSequence.into(),
-                    ..Default::default()
-                }
-            );
+            assert_eq!(result.data_class, i32::from(pb::DataClass::BlobSequence));
+            let plugin_data = result.plugin_data.unwrap();
+            assert_eq!(plugin_data.plugin_name, plugin_names::IMAGES);
+            let plugin_content = pb::ImagePluginData::decode(&plugin_data.content[..]).unwrap();
+            assert_eq!(plugin_content.converted_to_tensor, true);
         }
 
         #[test]
@@ -658,17 +697,11 @@ mod tests {
             })));
             let result = v.initial_metadata(None);
 
-            assert_eq!(
-                *result,
-                pb::SummaryMetadata {
-                    plugin_data: Some(PluginData {
-                        plugin_name: plugin_names::AUDIO.to_string(),
-                        ..Default::default()
-                    }),
-                    data_class: pb::DataClass::BlobSequence.into(),
-                    ..Default::default()
-                }
-            );
+            assert_eq!(result.data_class, i32::from(pb::DataClass::BlobSequence));
+            let plugin_data = result.plugin_data.unwrap();
+            assert_eq!(plugin_data.plugin_name, plugin_names::AUDIO);
+            let plugin_content = pb::AudioPluginData::decode(&plugin_data.content[..]).unwrap();
+            assert_eq!(plugin_content.converted_to_tensor, true);
         }
 
         #[test]
