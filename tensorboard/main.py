@@ -41,8 +41,9 @@ def run_main():
     main_lib.global_init()
 
     path = os.path.join(
-        os.path.dirname(inspect.getfile(sys._getframe(1))), "webfiles.zip"
+        os.path.dirname(inspect.getfile(sys._getframe(0))), "webfiles.zip"
     )
+
     if not os.path.exists(path):
         logger.warning("webfiles.zip static assets not found: %s", path)
         return None

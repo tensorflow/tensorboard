@@ -31,7 +31,7 @@ def run_main():
     main_lib.global_init()
 
     path = os.path.join(
-        os.path.dirname(inspect.getfile(sys._getframe(1))), "dev_webfiles.zip"
+        os.path.dirname(inspect.getfile(sys._getframe(0))), "dev_webfiles.zip"
     )
 
     tensorboard = program.TensorBoard(
