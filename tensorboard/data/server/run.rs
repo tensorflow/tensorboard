@@ -37,7 +37,7 @@ use crate::types::{Run, Step, Tag, WallTime};
 #[derive(Debug)]
 pub struct RunLoader {
     /// The run name associated with this loader. Used primarily for logging; the run name is
-    /// canonically defined by the map key under which this RunLoader is stored in LogdirLoader.
+    /// canonically defined by the map key under which this `RunLoader` is stored in LogdirLoader.
     run: Run,
     /// The event files in this run.
     ///
@@ -50,7 +50,7 @@ pub struct RunLoader {
     /// Whether to compute CRCs for records before parsing as protos.
     checksum: bool,
 
-    /// The data staged by this RunLoader.
+    /// The data staged by this `RunLoader`.
     data: RunLoaderData,
 }
 
@@ -66,8 +66,8 @@ enum EventFile<R> {
     Dead,
 }
 
-/// Holds data staged by a RunLoader that will be commited to the Commit.
-#[derive(Debug)]
+/// Holds data staged by a `RunLoader` that will be committed to the `Commit`.
+#[derive(Debug, Default)]
 struct RunLoaderData {
     /// The earliest event `wall_time` seen in any event file in this run.
     ///
@@ -165,10 +165,7 @@ impl RunLoader {
             run: run,
             files: BTreeMap::new(),
             checksum: true,
-            data: RunLoaderData {
-                start_time: None,
-                time_series: HashMap::new(),
-            },
+            data: RunLoaderData::default(),
         }
     }
 
@@ -310,12 +307,8 @@ fn read_event(data: &mut RunLoaderData, e: pb::Event) {
         }
         Some(wt) => wt,
     };
-    if data
-        .start_time
-        .map(|start| wall_time < start)
-        .unwrap_or(true)
-    {
-        (*data).start_time = Some(wall_time);
+    if data.start_time.map_or(true, |start| wall_time < start) {
+        data.start_time = Some(wall_time);
     }
     match e.what {
         Some(pb::event::What::GraphDef(graph_bytes)) => {
