@@ -287,50 +287,6 @@ impl SummaryValue {
     }
 }
 
-fn tf1x_image_metadata() -> Box<pb::SummaryMetadata> {
-    let plugin_content = pb::ImagePluginData {
-        converted_to_tensor: true,
-        ..Default::default()
-    };
-    let mut encoded_content = Vec::new();
-    plugin_content
-        .encode(&mut encoded_content)
-        // vectors are resizable, so should always be able to encode
-        .expect("failed to encode image metadata");
-
-    Box::new(pb::SummaryMetadata {
-        plugin_data: Some(PluginData {
-            plugin_name: plugin_names::IMAGES.to_string(),
-            content: encoded_content,
-            ..Default::default()
-        }),
-        data_class: pb::DataClass::BlobSequence.into(),
-        ..Default::default()
-    })
-}
-
-fn tf1x_audio_metadata() -> Box<pb::SummaryMetadata> {
-    let plugin_content = pb::AudioPluginData {
-        converted_to_tensor: true,
-        ..Default::default()
-    };
-    let mut encoded_content = Vec::new();
-    plugin_content
-        .encode(&mut encoded_content)
-        // vectors are resizable, so should always be able to encode
-        .expect("failed to encode audio metadata");
-
-    Box::new(pb::SummaryMetadata {
-        plugin_data: Some(PluginData {
-            plugin_name: plugin_names::AUDIO.to_string(),
-            content: encoded_content,
-            ..Default::default()
-        }),
-        data_class: pb::DataClass::BlobSequence.into(),
-        ..Default::default()
-    })
-}
-
 impl Debug for GraphDefValue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_tuple("GraphDefValue")
@@ -349,14 +305,58 @@ impl Debug for TaggedRunMetadataValue {
 
 /// Creates a summary metadata value with plugin name and data class, but no other contents.
 fn blank(plugin_name: &str, data_class: pb::DataClass) -> Box<pb::SummaryMetadata> {
+    blank_with_plugin_content(plugin_name, data_class, Vec::new())
+}
+
+/// Creates a summary metadata value with plugin name, data class, and plugin contents.
+fn blank_with_plugin_content(
+    plugin_name: &str,
+    data_class: pb::DataClass,
+    content: Vec<u8>,
+) -> Box<pb::SummaryMetadata> {
     Box::new(pb::SummaryMetadata {
         plugin_data: Some(PluginData {
             plugin_name: plugin_name.to_string(),
+            content,
             ..Default::default()
         }),
         data_class: data_class.into(),
         ..Default::default()
     })
+}
+
+fn tf1x_image_metadata() -> Box<pb::SummaryMetadata> {
+    let plugin_content = pb::ImagePluginData {
+        converted_to_tensor: true,
+        ..Default::default()
+    };
+    let mut encoded_content = Vec::new();
+    plugin_content
+        .encode(&mut encoded_content)
+        // vectors are resizable, so should always be able to encode
+        .expect("failed to encode image metadata");
+    blank_with_plugin_content(
+        plugin_names::IMAGES,
+        pb::DataClass::BlobSequence,
+        encoded_content,
+    )
+}
+
+fn tf1x_audio_metadata() -> Box<pb::SummaryMetadata> {
+    let plugin_content = pb::AudioPluginData {
+        converted_to_tensor: true,
+        ..Default::default()
+    };
+    let mut encoded_content = Vec::new();
+    plugin_content
+        .encode(&mut encoded_content)
+        // vectors are resizable, so should always be able to encode
+        .expect("failed to encode audio metadata");
+    blank_with_plugin_content(
+        plugin_names::AUDIO,
+        pb::DataClass::BlobSequence,
+        encoded_content,
+    )
 }
 
 #[cfg(test)]
