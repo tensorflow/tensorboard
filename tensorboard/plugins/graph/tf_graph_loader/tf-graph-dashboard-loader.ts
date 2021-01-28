@@ -96,6 +96,9 @@ class TfGraphDashboardLoader extends LegacyElementMixin(PolymerElement) {
   _template = null;
   @observe('selection', 'compatibilityProvider')
   _selectionChanged(): void {
+    if (!this.selection) {
+      return;
+    }
     // selection can change a lot within a microtask.
     // Don't fetch too much too fast and introduce race condition.
     this.debounce('selectionchange', () => {
