@@ -7,6 +7,11 @@ package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])
 
+filegroup(
+    name = "proto_srcs",
+    srcs = glob(["*.proto"]),
+)
+
 py_library(
     name = "images_plugin",
     srcs = ["images_plugin.py"],

@@ -33,6 +33,8 @@ fn main() -> std::io::Result<()> {
             &[
                 "tensorboard/compat/proto/event.proto",
                 "tensorboard/data/proto/data_provider.proto",
+                "tensorboard/plugins/audio/plugin_data.proto",
+                "tensorboard/plugins/image/plugin_data.proto",
             ],
             &["."],
         )

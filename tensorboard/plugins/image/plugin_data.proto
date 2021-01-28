@@ -24,4 +24,9 @@ package tensorboard;
 message ImagePluginData {
   // Version `0` is the only supported version.
   int32 version = 1;
+
+  // Indicates whether this time series data was originally represented
+  // as `Summary.Value.Image` values and has been automatically
+  // converted to bytestring tensors.
+  bool converted_to_tensor = 2;
 }
