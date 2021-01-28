@@ -38,10 +38,6 @@ PLUGIN_NAME_TAGGED_RUN_METADATA = "graph_tagged_run_metadata"
 # graph read from the `graph_def` field of an `Event` proto, which is
 # not attached to a summary and thus does not have a proper tag name of
 # its own. Run level graphs always represent `GraphDef`s (graphs of
-# TensorFlow ops), never conceptual graphs, profile graphs, etc.
-#
-# No other types of graphs are currently supported in the data provider
-# interface; when added, they'll have type-specific name scopes (like
-# `"__op_graph__/foo"`, `"__conceptual_graph__/bar"`) to preclude
-# collisions with this hard-coded string.
+# TensorFlow ops), never conceptual graphs, profile graphs, etc. This is
+# the only tag name used by the `"graphs"` plugin.
 RUN_GRAPH_NAME = "__run_graph__"
