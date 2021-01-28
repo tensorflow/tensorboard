@@ -38,6 +38,7 @@ import {
   YAxisType,
 } from '../../../widgets/line_chart/line_chart_types';
 import {relativeTimeFormatter} from '../../../widgets/line_chart_v2/lib/formatter';
+import {LineChartComponent as NewLineChartComponent} from '../../../widgets/line_chart_v2/line_chart_component';
 import {
   RendererType,
   ScaleType,
@@ -154,6 +155,10 @@ export class ScalarCardComponent {
   @ViewChild(LineChartComponent)
   lineChart?: LineChartComponent<Metadata, StepDatum>;
 
+  // Line chart may not exist when no data is present (*ngIf).
+  @ViewChild(NewLineChartComponent)
+  newLineChart?: NewLineChartComponent;
+
   constructor(private readonly ref: ElementRef) {}
 
   yAxisType = YAxisType.LINEAR;
@@ -188,6 +193,9 @@ export class ScalarCardComponent {
   resetDomain() {
     if (this.lineChart) {
       this.lineChart.resetDomain();
+    }
+    if (this.newLineChart) {
+      this.newLineChart.viewBoxReset();
     }
   }
 
