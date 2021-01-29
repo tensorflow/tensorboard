@@ -14,7 +14,6 @@
 # ==============================================================================
 """TensorBoard dev main module."""
 
-import inspect
 import os
 import sys
 

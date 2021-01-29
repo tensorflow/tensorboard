@@ -21,8 +21,6 @@ wishing to customize the set of plugins or static assets that
 TensorBoard uses can swap out this file with their own.
 """
 
-import inspect
-import os
 import sys
 
 from absl import app
