@@ -172,6 +172,7 @@ tf_ng_module(
     ],
 )
 
+# Compile the prepared Angular app to a JS binary.
 tf_js_binary(
     name = "tb_webapp_binary",
     compile = 1,
