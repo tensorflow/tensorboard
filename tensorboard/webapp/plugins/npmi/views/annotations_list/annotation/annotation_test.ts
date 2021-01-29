@@ -122,11 +122,41 @@ describe('Npmi Annotations List Row', () => {
       run_3: '#FFF',
     });
     store.overrideSelector(getExperimentIdsFromRoute, ['default']);
-    store.overrideSelector(selectors.getRuns, [
-      {id: 'run_1', name: 'run_1', startTime: 0, hparams: null, metrics: null},
-      {id: 'run_2', name: 'run_2', startTime: 0, hparams: null, metrics: null},
-      {id: 'run_3', name: 'run_3', startTime: 0, hparams: null, metrics: null},
-    ]);
+    store.overrideSelector(
+      selectors.getRunMap,
+      new Map([
+        [
+          'run_1',
+          {
+            id: 'run_1',
+            name: 'run_1',
+            startTime: 0,
+            hparams: null,
+            metrics: null,
+          },
+        ],
+        [
+          'run_2',
+          {
+            id: 'run_2',
+            name: 'run_2',
+            startTime: 0,
+            hparams: null,
+            metrics: null,
+          },
+        ],
+        [
+          'run_3',
+          {
+            id: 'run_3',
+            name: 'run_3',
+            startTime: 0,
+            hparams: null,
+            metrics: null,
+          },
+        ],
+      ])
+    );
     const fixture = createComponentInstance();
     fixture.detectChanges();
 
@@ -185,11 +215,41 @@ describe('Npmi Annotations List Row', () => {
       run_3: '#FFF',
     });
     store.overrideSelector(getExperimentIdsFromRoute, ['default']);
-    store.overrideSelector(selectors.getRuns, [
-      {id: 'run_1', name: 'run_1', startTime: 0, hparams: null, metrics: null},
-      {id: 'run_2', name: 'run_2', startTime: 0, hparams: null, metrics: null},
-      {id: 'run_3', name: 'run_3', startTime: 0, hparams: null, metrics: null},
-    ]);
+    store.overrideSelector(
+      selectors.getRunMap,
+      new Map([
+        [
+          'run_1',
+          {
+            id: 'run_1',
+            name: 'run_1',
+            startTime: 0,
+            hparams: null,
+            metrics: null,
+          },
+        ],
+        [
+          'run_2',
+          {
+            id: 'run_2',
+            name: 'run_2',
+            startTime: 0,
+            hparams: null,
+            metrics: null,
+          },
+        ],
+        [
+          'run_3',
+          {
+            id: 'run_3',
+            name: 'run_3',
+            startTime: 0,
+            hparams: null,
+            metrics: null,
+          },
+        ],
+      ])
+    );
     const fixture = createComponentInstance();
     fixture.detectChanges();
 
@@ -206,11 +266,41 @@ describe('Npmi Annotations List Row', () => {
       run_3: '#FFF',
     });
     store.overrideSelector(getExperimentIdsFromRoute, ['default']);
-    store.overrideSelector(selectors.getRuns, [
-      {id: 'run_1', name: 'run_1', startTime: 0, hparams: null, metrics: null},
-      {id: 'run_2', name: 'run_2', startTime: 0, hparams: null, metrics: null},
-      {id: 'run_3', name: 'run_3', startTime: 0, hparams: null, metrics: null},
-    ]);
+    store.overrideSelector(
+      selectors.getRunMap,
+      new Map([
+        [
+          'run_1',
+          {
+            id: 'run_1',
+            name: 'run_1',
+            startTime: 0,
+            hparams: null,
+            metrics: null,
+          },
+        ],
+        [
+          'run_2',
+          {
+            id: 'run_2',
+            name: 'run_2',
+            startTime: 0,
+            hparams: null,
+            metrics: null,
+          },
+        ],
+        [
+          'run_3',
+          {
+            id: 'run_3',
+            name: 'run_3',
+            startTime: 0,
+            hparams: null,
+            metrics: null,
+          },
+        ],
+      ])
+    );
     const fixture = createComponentInstance();
     fixture.detectChanges();
 
@@ -231,11 +321,41 @@ describe('Npmi Annotations List Row', () => {
       run_3: '#FFF',
     });
     store.overrideSelector(getExperimentIdsFromRoute, ['default']);
-    store.overrideSelector(selectors.getRuns, [
-      {id: 'run_1', name: 'run_1', startTime: 0, hparams: null, metrics: null},
-      {id: 'run_2', name: 'run_2', startTime: 0, hparams: null, metrics: null},
-      {id: 'run_3', name: 'run_3', startTime: 0, hparams: null, metrics: null},
-    ]);
+    store.overrideSelector(
+      selectors.getRunMap,
+      new Map([
+        [
+          'run_1',
+          {
+            id: 'run_1',
+            name: 'run_1',
+            startTime: 0,
+            hparams: null,
+            metrics: null,
+          },
+        ],
+        [
+          'run_2',
+          {
+            id: 'run_2',
+            name: 'run_2',
+            startTime: 0,
+            hparams: null,
+            metrics: null,
+          },
+        ],
+        [
+          'run_3',
+          {
+            id: 'run_3',
+            name: 'run_3',
+            startTime: 0,
+            hparams: null,
+            metrics: null,
+          },
+        ],
+      ])
+    );
     const fixture = createComponentInstance();
     fixture.detectChanges();
 
@@ -254,11 +374,41 @@ describe('Npmi Annotations List Row', () => {
       run_3: '#FFF',
     });
     store.overrideSelector(getExperimentIdsFromRoute, ['default']);
-    store.overrideSelector(selectors.getRuns, [
-      {id: 'run_1', name: 'run_1', startTime: 0, hparams: null, metrics: null},
-      {id: 'run_2', name: 'run_2', startTime: 0, hparams: null, metrics: null},
-      {id: 'run_3', name: 'run_3', startTime: 0, hparams: null, metrics: null},
-    ]);
+    store.overrideSelector(
+      selectors.getRunMap,
+      new Map([
+        [
+          'run_1',
+          {
+            id: 'run_1',
+            name: 'run_1',
+            startTime: 0,
+            hparams: null,
+            metrics: null,
+          },
+        ],
+        [
+          'run_2',
+          {
+            id: 'run_2',
+            name: 'run_2',
+            startTime: 0,
+            hparams: null,
+            metrics: null,
+          },
+        ],
+        [
+          'run_3',
+          {
+            id: 'run_3',
+            name: 'run_3',
+            startTime: 0,
+            hparams: null,
+            metrics: null,
+          },
+        ],
+      ])
+    );
     store.overrideSelector(getFlaggedAnnotations, ['annotation_1']);
     const fixture = createComponentInstance();
     fixture.detectChanges();
@@ -286,11 +436,41 @@ describe('Npmi Annotations List Row', () => {
       run_3: '#FFF',
     });
     store.overrideSelector(getExperimentIdsFromRoute, ['default']);
-    store.overrideSelector(selectors.getRuns, [
-      {id: 'run_1', name: 'run_1', startTime: 0, hparams: null, metrics: null},
-      {id: 'run_2', name: 'run_2', startTime: 0, hparams: null, metrics: null},
-      {id: 'run_3', name: 'run_3', startTime: 0, hparams: null, metrics: null},
-    ]);
+    store.overrideSelector(
+      selectors.getRunMap,
+      new Map([
+        [
+          'run_1',
+          {
+            id: 'run_1',
+            name: 'run_1',
+            startTime: 0,
+            hparams: null,
+            metrics: null,
+          },
+        ],
+        [
+          'run_2',
+          {
+            id: 'run_2',
+            name: 'run_2',
+            startTime: 0,
+            hparams: null,
+            metrics: null,
+          },
+        ],
+        [
+          'run_3',
+          {
+            id: 'run_3',
+            name: 'run_3',
+            startTime: 0,
+            hparams: null,
+            metrics: null,
+          },
+        ],
+      ])
+    );
     const fixture = createComponentInstance();
     fixture.detectChanges();
 

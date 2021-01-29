@@ -56,7 +56,7 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
   // Only to trigger OnChanges to re-render the component.
   @Input() sidebarWidth!: number;
   @Input() colorScale!: RunColorScale;
-  @Input() runsData!: Run[];
+  @Input() runIdToRuns!: Map<string, Run>;
   @ViewChild('chart', {static: true, read: ElementRef})
   private readonly annotationContainer!: ElementRef<HTMLDivElement>;
   @ViewChild('hintClip', {static: true, read: ElementRef})
@@ -275,15 +275,9 @@ export class AnnotationComponent implements AfterViewInit, OnChanges {
         }.bind(this)
       )
       .attr('class', `hint-text ${this.textClass}`)
-      .text(
-        function (this: AnnotationComponent, d: string) {
-          const run = this.runsData.find((run) => run.id === d);
-          if (!run) {
-            return '';
-          }
-          return run.name;
-        }.bind(this)
-      );
+      .text((d: string) => {
+        return this.runIdToRuns.get(d)?.name || '';
+      });
 
     hintTexts.exit().remove();
   }

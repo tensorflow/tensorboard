@@ -13,10 +13,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Component, ChangeDetectionStrategy, Input} from '@angular/core';
-import {Store, select} from '@ngrx/store';
+import {Store} from '@ngrx/store';
 import {State} from '../../../../../app_state';
-import {Observable, combineLatest} from 'rxjs';
-import {map, filter, switchMap} from 'rxjs/operators';
+import {Observable} from 'rxjs';
+import {map} from 'rxjs/operators';
 
 import {
   getSelectedAnnotations,
@@ -30,7 +30,6 @@ import * as selectors from '../../../../../selectors';
 import {ValueData} from '../../../store/npmi_types';
 import * as npmiActions from '../../../actions';
 import {RunColorScale} from '../../../../../types/ui';
-import {getExperimentIdsFromRoute} from '../../../../../app_routing/store/app_routing_selectors';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
@@ -52,7 +51,7 @@ import {getExperimentIdsFromRoute} from '../../../../../app_routing/store/app_ro
       [showCounts]="showCounts$ | async"
       [sidebarWidth]="sidebarWidth$ | async"
       [colorScale]="runColorScale$ | async"
-      [runsData]="runsData$ | async"
+      [runIdToRuns]="runIdToRuns$ | async"
       (onShowSimilarAnnotations)="showSimilarAnnotations()"
     ></annotation-component>
   `,
@@ -85,20 +84,7 @@ export class AnnotationContainer {
         };
       })
     );
-  readonly experimentIds$ = this.store.pipe(select(getExperimentIdsFromRoute));
-  readonly runsData$ = this.experimentIds$.pipe(
-    filter((experimentIds) => Boolean(experimentIds)),
-    switchMap((experimentIds) => {
-      return combineLatest(
-        experimentIds!.map((experimentId) => {
-          return this.store.select(selectors.getRuns, {experimentId});
-        })
-      );
-    }),
-    map((runs) => {
-      return runs.flat();
-    })
-  );
+  readonly runIdToRuns$ = this.store.select(selectors.getRunMap);
 
   constructor(private readonly store: Store<State>) {}
 
