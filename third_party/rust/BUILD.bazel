@@ -67,6 +67,15 @@ alias(
 )
 
 alias(
+    name = "crossbeam",
+    actual = "@raze__crossbeam__0_8_0//:crossbeam",
+    tags = [
+        "cargo-raze",
+        "manual",
+    ],
+)
+
+alias(
     name = "env_logger",
     actual = "@raze__env_logger__0_8_2//:env_logger",
     tags = [
