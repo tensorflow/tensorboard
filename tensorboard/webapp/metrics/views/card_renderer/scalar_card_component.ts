@@ -39,11 +39,7 @@ import {
 } from '../../../widgets/line_chart/line_chart_types';
 import {relativeTimeFormatter} from '../../../widgets/line_chart_v2/lib/formatter';
 import {LineChartComponent as NewLineChartComponent} from '../../../widgets/line_chart_v2/line_chart_component';
-import {
-  RendererType,
-  ScaleType,
-  TooltipDatum,
-} from '../../../widgets/line_chart_v2/types';
+import {ScaleType, TooltipDatum} from '../../../widgets/line_chart_v2/types';
 import {ScalarStepDatum} from '../../data_source';
 import {TooltipSort, XAxisType} from '../../types';
 import {
@@ -122,7 +118,6 @@ const DEFAULT_TOOLTIP_COLUMNS: TooltipColumns = [
 export class ScalarCardComponent {
   readonly RESIZE_REDRAW_DEBOUNCE_TIME_IN_MS = RESIZE_REDRAW_DEBOUNCE_TIME_IN_MS;
   readonly DataLoadState = DataLoadState;
-  readonly RendererType = RendererType;
 
   @Input() loadState!: DataLoadState;
   @Input() title!: string;

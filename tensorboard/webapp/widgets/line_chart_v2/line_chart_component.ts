@@ -18,9 +18,11 @@ import {
   ChangeDetectorRef,
   Component,
   ElementRef,
+  Inject,
   Input,
   OnChanges,
   OnDestroy,
+  Optional,
   SimpleChanges,
   ViewChild,
 } from '@angular/core';
@@ -46,6 +48,7 @@ import {
   getRendererType,
 } from './line_chart_internal_utils';
 import {TooltipTemplate} from './sub_view/line_chart_interactive_view';
+import {FORCE_DISABLE_WORKER, PREFERRED_RENDERER} from './types';
 
 export {TooltipTemplate} from './sub_view/line_chart_interactive_view';
 
@@ -79,7 +82,7 @@ export class LineChartComponent implements AfterViewInit, OnChanges, OnDestroy {
   private chartEl?: ElementRef<HTMLCanvasElement | SVGElement>;
 
   @Input()
-  preferredRendererType: RendererType = RendererType.WEBGL;
+  preferredRendererType: RendererType;
 
   @Input()
   seriesData!: DataSeries[];
@@ -145,8 +148,23 @@ export class LineChartComponent implements AfterViewInit, OnChanges, OnDestroy {
   // onChanges.
   private isViewBoxChanged = true;
   private scaleUpdated = true;
+  private forceDisableWorker: boolean;
 
-  constructor(private readonly changeDetector: ChangeDetectorRef) {}
+  constructor(
+    private readonly changeDetector: ChangeDetectorRef,
+    @Optional()
+    @Inject(PREFERRED_RENDERER)
+    preferredRenderer: RendererType | null,
+    @Optional()
+    @Inject(FORCE_DISABLE_WORKER)
+    forceDisableWorker: boolean | null
+  ) {
+    if (preferredRenderer === null) preferredRenderer = RendererType.WEBGL;
+    this.preferredRendererType = preferredRenderer;
+
+    if (forceDisableWorker === null) forceDisableWorker = false;
+    this.forceDisableWorker = forceDisableWorker;
+  }
 
   ngOnChanges(changes: SimpleChanges) {
     // OnChanges only decides whether props need to be updated and do not directly update
@@ -282,7 +300,9 @@ export class LineChartComponent implements AfterViewInit, OnChanges, OnDestroy {
     }
 
     const useWorker =
-      rendererType !== RendererType.SVG && isOffscreenCanvasSupported();
+      rendererType !== RendererType.SVG &&
+      !this.forceDisableWorker &&
+      isOffscreenCanvasSupported();
     const klass = useWorker ? WorkerChart : ChartImpl;
     this.lineChart = new klass(params);
   }

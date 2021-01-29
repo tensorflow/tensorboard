@@ -87,7 +87,6 @@ limitations under the License.
     <line-chart
       *ngIf="gpuLineChartEnabled; else legacyChart"
       [disableUpdate]="!isCardVisible"
-      [preferredRendererType]="RendererType.WEBGL"
       [seriesData]="dataSeries"
       [seriesMetadataMap]="chartMetadataMap"
       [xScaleType]="newXScaleType"

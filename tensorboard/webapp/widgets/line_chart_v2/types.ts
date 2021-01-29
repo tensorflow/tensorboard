@@ -13,6 +13,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+import {InjectionToken} from '@angular/core';
+import {RendererType} from './lib/public_types';
+
 // Only selectively export types that would be used by the user of the line chart.
 export {
   DataSeries,
@@ -23,3 +26,20 @@ export {
   ScaleType,
 } from './lib/public_types';
 export {TooltipDatum} from './sub_view/line_chart_interactive_view';
+
+/**
+ * Line chart by default prefers WEBGL implementation but this flag lets application
+ * tweak the default renderer.
+ */
+export const PREFERRED_RENDERER = new InjectionToken<RendererType>(
+  '[Line Chart] Default Preferred Renderer'
+);
+
+/**
+ * Line chart, when using WEBGL renderer, uses a worker thread when OffscreenCanvas is
+ * supported by the browser. This injection token lets application globally disable the
+ * worker renderering when the value is true.
+ */
+export const FORCE_DISABLE_WORKER = new InjectionToken<boolean>(
+  '[Line Chart] Disable Worker'
+);
