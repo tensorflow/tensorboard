@@ -19,10 +19,10 @@ package_group(
 py_binary(
     name = "tensorboard",
     srcs = ["main.py"],
-    data = ["webfiles.zip"],
     main = "main.py",
     srcs_version = "PY3",
     deps = [
+        ":assets_lib",  # link dep for webfiles assets
         ":default",
         ":dynamic_plugins",  # loads internal dynamic plugin like projector
         ":lib",
@@ -104,6 +104,27 @@ py_test(
     tags = ["support_notf"],
     visibility = ["//tensorboard:internal"],
     deps = [":lib"],
+)
+
+py_library(
+    name = "assets_lib",
+    srcs = ["assets.py"],
+    data = ["webfiles.zip"],
+    srcs_version = "PY3",
+    deps = [
+        "//tensorboard/util:tb_logging",
+    ],
+)
+
+py_test(
+    name = "assets_lib_test",
+    srcs = ["assets_test.py"],
+    main = "assets_test.py",
+    srcs_version = "PY3",
+    deps = [
+        ":assets_lib",
+        "//tensorboard:test",
+    ],
 )
 
 py_library(
