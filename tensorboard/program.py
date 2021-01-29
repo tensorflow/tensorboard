@@ -88,8 +88,10 @@ class TensorBoard(object):
           plugins: A list of TensorBoard plugins to load, as TBPlugin classes or
             TBLoader instances or classes. If not specified, defaults to first-party
             plugins.
-          assets_zip_provider: A function that provides a zip file containing assets to
-            the application.
+          assets_zip_provider: A function that provides a zip file containing
+            assets to the application. If `None`, the default TensorBoard web
+            assets will be used. (If building from source, your binary must
+            explicitly depend on `//tensorboard:assets_lib` if you pass `None`.)
           server_class: An optional factory for a `TensorBoardServer` to use
             for serving the TensorBoard WSGI app. If provided, its callable
             signature should match that of `TensorBoardServer.__init__`.
