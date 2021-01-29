@@ -19,11 +19,9 @@ import {AppModule} from './app_module';
 
 // Bootstrap needs to happen after body is ready but we cannot reliably
 // controls the order in which script gets loaded (Vulcanization inlines
-// the script in <head>).
-if (
-  document.readyState === 'interactive' ||
-  document.readyState === 'complete'
-) {
+// the script in <head>). Also, requirejs used by the dev asset bundling
+// internally seem to bootstrap the entry point after the document is ready.
+if (document.readyState !== 'loading') {
   platformBrowser().bootstrapModule(AppModule);
 } else {
   window.addEventListener('DOMContentLoaded', () => {
