@@ -203,6 +203,35 @@ describe('line_chart_v2/lib/integration test', () => {
 
       expect(callbacks.onDrawEnd).toHaveBeenCalledTimes(1);
     });
+
+    it('updates line when axis changes', () => {
+      chart.resize({width: 100, height: 100});
+      chart.setMetadata({
+        line: buildMetadata({id: 'line', visible: true}),
+      });
+      chart.setViewBox({x: [1, 100], y: [0, 10]});
+      chart.setData([
+        {
+          id: 'line',
+          points: [
+            {x: 1, y: 10},
+            {x: 10, y: 5},
+            {x: 100, y: 6},
+          ],
+        },
+      ]);
+
+      expect(dom.children.length).toBe(1);
+      const before = dom.children[0] as SVGPathElement;
+      expect(before.tagName).toBe('path');
+      expect(before.getAttribute('d')).toBe('M0,0L9.090909004211426,50L100,40');
+
+      chart.setXScaleType(ScaleType.LOG10);
+      expect(dom.children.length).toBe(1);
+      const after = dom.children[0] as SVGPathElement;
+      expect(after.tagName).toBe('path');
+      expect(after.getAttribute('d')).toBe('M0,0L50,50L100,40');
+    });
   });
 
   describe('null handling', () => {
