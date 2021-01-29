@@ -139,5 +139,5 @@ tf_dev_js_binary = rule(
         "js": "%{name}.js",
     },
     doc = """`tf_dev_js_binary` is a development only js_binary replacement that simply
-    contenates modules using UMD/requirejs.""",
+    concatenates modules using UMD/requirejs.""",
 )
