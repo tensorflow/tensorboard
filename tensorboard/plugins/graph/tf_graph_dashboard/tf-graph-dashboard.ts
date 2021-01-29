@@ -87,7 +87,10 @@ class TfGraphDashboard extends LegacyElementMixin(PolymerElement) {
         on-fit-tap="_fit"
         trace-inputs="{{_traceInputs}}"
       ></tf-graph-controls>
-      <div class="center" slot="center">
+      <div
+        class$="center [[_getGraphDisplayClassName(_selectedFile, _datasets)]]"
+        slot="center"
+      >
         <tf-graph-dashboard-loader
           id="loader"
           datasets="[[_datasets]]"
@@ -100,9 +103,7 @@ class TfGraphDashboard extends LegacyElementMixin(PolymerElement) {
           hierarchy-params="[[_hierarchyParams]]"
           compatibility-provider="[[_compatibilityProvider]]"
         ></tf-graph-dashboard-loader>
-        <div
-          class$="no-data-message [[_showComponent(_selectedFile, _datasets, 'false')]]"
-        >
+        <div class="no-data-message">
           <h3>No graph definition files were found.</h3>
           <p>
             To store a graph, create a
@@ -137,9 +138,7 @@ class TfGraphDashboard extends LegacyElementMixin(PolymerElement) {
             and consider filing an issue on GitHub.
           </p>
         </div>
-        <div
-          class$="graphboard [[_showComponent(_selectedFile, _datasets, 'true')]]"
-        >
+        <div class="graphboard">
           <tf-graph-board
             id="graphboard"
             devices-for-stats="[[_devicesForStats]]"
@@ -192,7 +191,11 @@ class TfGraphDashboard extends LegacyElementMixin(PolymerElement) {
         height: 100%;
       }
 
-      .remove {
+      .no-graph .graphboard {
+        display: none;
+      }
+
+      .center:not(.no-graph) .no-data-message {
         display: none;
       }
     </style>
@@ -339,22 +342,9 @@ class TfGraphDashboard extends LegacyElementMixin(PolymerElement) {
   _fit() {
     (this.$$('#graphboard') as any).fit();
   }
-  _showComponent(_selectedFile: any, _datasets: any[], _isGraphboard: string) {
+  _getGraphDisplayClassName(_selectedFile: any, _datasets: any[]) {
     const isDataValid = _selectedFile || _datasets.length;
-    const isGraphboard =
-      _isGraphboard === 'true'
-        ? true
-        : _isGraphboard === 'false'
-        ? false
-        : undefined;
-    if (isGraphboard === undefined) {
-      return '';
-    }
-
-    if ((!isDataValid && !isGraphboard) || (isDataValid && isGraphboard)) {
-      return '';
-    }
-    return 'remove';
+    return isDataValid ? '' : 'no-graph';
   }
   _runObserver = tf_storage.getStringObserver(RUN_STORAGE_KEY, {
     defaultValue: '',
