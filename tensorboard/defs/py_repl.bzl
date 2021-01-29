@@ -27,6 +27,24 @@ _write_file = rule(
     },
 )
 
+def _dedent(text):
+    """Like `textwrap.dedent()` but only supports space indents."""
+    indents = []
+    for line in text.splitlines():
+        stripped = line.lstrip(" ")
+        if not stripped:
+            continue
+        indents.append(len(line) - len(stripped))
+    if not indents:
+        return
+    indent = min(indents)
+    result = []
+    for line in text.splitlines(True):
+        if line.startswith(" " * indent):
+            line = line[indent:]
+        result.append(line)
+    return "".join(result)
+
 def py_repl(name, preamble = None, deps = None):
     """Executable target that runs the python interpeter interactively.
 
@@ -39,15 +57,22 @@ def py_repl(name, preamble = None, deps = None):
 
     Args:
       name: the name of this target
-      preamble: list of strings definining lines of Python code
-        that should be executed when starting the interpreter
+      preamble: list of strings definining self-contained Python statements
+        that should be executed when starting the interpreter. All strings
+        will be dedented (removing leading spaces common to all lines) prior to
+        execution, making this easier to use with triple-quoted string literals.
       deps: py_library targets that should be available as dependencies
         to import into the interpreter
     """
+    if preamble == None:
+        preamble = []
 
-    # Print each line of the preamble before executing it.
-    full_preamble = "\n".join(
-        ["print(" + repr(line) + ")\n" + line for line in preamble],
+    # Print each statement of the preamble before executing it.
+    full_preamble = "".join(
+        [
+            "print({0})\nexec({0})\n".format(repr(_dedent(stmt.rstrip())))
+            for stmt in preamble
+        ],
     )
 
     _write_file(
