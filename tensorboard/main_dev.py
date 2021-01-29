@@ -14,7 +14,6 @@
 # ==============================================================================
 """TensorBoard dev main module."""
 
-import inspect
 import os
 import sys
 
@@ -30,13 +29,10 @@ def run_main():
     """Initializes flags and calls main()."""
     main_lib.global_init()
 
-    path = os.path.join(
-        os.path.dirname(inspect.getfile(sys._getframe(0))), "dev_webfiles.zip"
-    )
-
+    path = os.path.join(os.path.dirname(__file__), "dev_webfiles.zip")
     tensorboard = program.TensorBoard(
-        lambda: open(path, "rb"),
         plugins=default.get_plugins(),
+        assets_zip_provider=lambda: open(path, "rb"),
         subcommands=[uploader_subcommand.UploaderSubcommand()],
     )
 

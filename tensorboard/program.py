@@ -77,19 +77,21 @@ class TensorBoard(object):
 
     def __init__(
         self,
-        assets_zip_provider,
         plugins=None,
+        assets_zip_provider=None,
         server_class=None,
         subcommands=None,
     ):
         """Creates new instance.
 
         Args:
-          assets_zip_provider: A function that provides a zip file containing assets to
-            the application.
           plugins: A list of TensorBoard plugins to load, as TBPlugin classes or
             TBLoader instances or classes. If not specified, defaults to first-party
             plugins.
+          assets_zip_provider: A function that provides a zip file containing
+            assets to the application. If `None`, the default TensorBoard web
+            assets will be used. (If building from source, your binary must
+            explicitly depend on `//tensorboard:assets_lib` if you pass `None`.)
           server_class: An optional factory for a `TensorBoardServer` to use
             for serving the TensorBoard WSGI app. If provided, its callable
             signature should match that of `TensorBoardServer.__init__`.
@@ -104,6 +106,18 @@ class TensorBoard(object):
             from tensorboard import default
 
             plugins = default.get_plugins()
+        if assets_zip_provider is None:
+            try:
+                from tensorboard import assets
+            except ImportError as e:
+                # `tensorboard.assets` is not a strict Bazel dep; clients are
+                # required to either depend on `//tensorboard:assets_lib` or
+                # pass a valid assets provider.
+                raise ImportError(
+                    "No `assets_zip_provider` given, but `tensorboard.assets` "
+                    "could not be imported to resolve defaults"
+                ) from e
+            assets_zip_provider = assets.get_default_assets_zip_provider()
         if server_class is None:
             server_class = create_port_scanning_werkzeug_server
         if subcommands is None:
