@@ -271,6 +271,25 @@ describe('line_chart_v2/line_chart test', () => {
     expect(updateViewBoxSpy.calls.argsFor(2)).toEqual([
       {x: [-0.2, 2.2], y: [-1, 1]},
     ]);
+
+    // and viewBox updates when the data changes to fit the data.
+    fixture.componentInstance.seriesData = [
+      buildSeries({
+        id: 'foo',
+        points: [
+          {x: 0, y: 0},
+          {x: 1, y: -2},
+          {x: 2, y: 1},
+          {x: 3, y: 0},
+          {x: 4, y: 2},
+        ],
+      }),
+    ];
+    fixture.detectChanges();
+    expect(updateViewBoxSpy).toHaveBeenCalledTimes(4);
+    expect(updateViewBoxSpy.calls.argsFor(3)).toEqual([
+      {x: [-0.5, 4.5], y: [-2, 2]},
+    ]);
   });
 
   describe('data change', () => {
