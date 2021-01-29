@@ -37,7 +37,7 @@
     "@bazel/karma": "^2.3.0",
     "@bazel/protractor": "^2.3.0",
     "@bazel/rollup": "^2.3.0",
-    "@bazel/terser": "^2.3.0",
+    "@bazel/terser": "^2.3.2",
     "@bazel/typescript": "^2.3.0",
     "@rollup/plugin-commonjs": "^16.0.0",
     "@rollup/plugin-node-resolve": "^10.0.0",
