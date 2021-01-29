@@ -17,6 +17,9 @@ load("@npm//@bazel/rollup:index.bzl", "rollup_bundle")
 load("@npm//@bazel/karma:index.bzl", "karma_web_test_suite")
 load("@npm//@bazel/typescript:index.bzl", "ts_config", "ts_devserver", "ts_library")
 load("@io_bazel_rules_sass//:defs.bzl", "sass_binary", "sass_library")
+load("//tensorboard/defs/internal:js.bzl", _tf_dev_js_binary = "tf_dev_js_binary")
+
+tf_dev_js_binary = _tf_dev_js_binary
 
 def tensorboard_webcomponent_library(**kwargs):
     """Rules referencing this will be deleted from the codebase soon."""
@@ -93,7 +96,7 @@ def tf_ng_web_test_suite(runtime_deps = [], bootstrap = [], deps = [], **kwargs)
             "//tensorboard/webapp/testing:initialize_testbed",
         ],
         deps = deps + [
-            "//tensorboard/webapp/testing:test_support_lib",
+            "//tensorboard/defs/internal:common_umd_lib",
         ],
         # Lodash runtime dependency that is compatible with requirejs for karma.
         static_files = [

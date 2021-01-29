@@ -157,9 +157,6 @@ tf_ng_module(
     ],
 )
 
-# TODO(stephanwlee): at the moment, there is no development build. Reinstate it.
-# Wrapper that prepares Angular app for deployment, dealing with browser
-# compatibility, Vulcanization, and configuration (e.g. prod vs. dev).
 tf_ng_module(
     name = "ng_main",
     srcs = [
