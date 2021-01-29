@@ -1,3 +1,11 @@
+# Build targets for building development webapp assets.
+#
+# This largely duplicates asset related targets in //tensorboard/webapp.
+# Because we had to create `index.html` to be zippped by the
+# tensorboard_zip_file which ends up having the same target name as
+# //tensorboard/webapp:index.html, we had to create the dev_assets version in
+# a different package. Once we can get rid of zip asset provider and a way to
+# alias asset, we would not need the enitrely different Bazel package.
 load("//tensorboard/defs:defs.bzl", "tf_js_binary", "tf_ng_module")
 load("//tensorboard/defs:web.bzl", "tf_web_library")
 
