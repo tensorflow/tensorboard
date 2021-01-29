@@ -133,6 +133,8 @@ pub enum SpecializedType {
     StInvalid = 0,
     /// "tensorflow::TensorList" in the variant type registry.
     StTensorList = 1,
+    /// "tensorflow::data::Optional" in the variant type registry.
+    StOptional = 2,
 }
 /// Protocol buffer representing a handle to a tensorflow resource. Handles are
 /// not valid across executions, but can be serialized back and forth from within
@@ -424,8 +426,7 @@ pub enum DataClass {
     /// processed by data ingestion pipelines.
     Unknown = 0,
     /// Scalar time series. Each `Value` for the corresponding tag must have
-    /// `tensor` set to a rank-0 tensor of floating-point dtype, which will be
-    /// converted to float64.
+    /// `tensor` set to a rank-0 tensor of type `DT_FLOAT` (float32).
     Scalar = 1,
     /// Tensor time series. Each `Value` for the corresponding tag must have
     /// `tensor` set. The tensor value is arbitrary, but should be small to
@@ -589,4 +590,53 @@ pub enum WorkerShutdownMode {
     NotConfigured = 1,
     WaitForCoordinator = 2,
     ShutdownAfterTimeout = 3,
+}
+/// Audio summaries created by the `tensorboard.plugins.audio.summary`
+/// module will include `SummaryMetadata` whose `plugin_data` field has
+/// as `content` a binary string that is the encoding of an
+/// `AudioPluginData` proto.
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct AudioPluginData {
+    /// Version `0` is the only supported version. It has the following
+    /// semantics:
+    ///
+    ///   - If the tensor shape is rank-2, then `t[:, 0]` represent encoded
+    ///     audio data, and `t[:, 1]` represent corresponding UTF-8 encoded
+    ///     Markdown labels.
+    ///   - If the tensor shape is rank-1, then `t[:]` represent encoded
+    ///     audio data. There are no labels.
+    #[prost(int32, tag="1")]
+    pub version: i32,
+    #[prost(enumeration="audio_plugin_data::Encoding", tag="2")]
+    pub encoding: i32,
+    /// Indicates whether this time series data was originally represented
+    /// as `Summary.Value.Audio` values and has been automatically
+    /// converted to bytestring tensors.
+    #[prost(bool, tag="3")]
+    pub converted_to_tensor: bool,
+}
+/// Nested message and enum types in `AudioPluginData`.
+pub mod audio_plugin_data {
+    #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
+    #[repr(i32)]
+    pub enum Encoding {
+        /// Do not use `UNKNOWN`; it is only present because it must be.
+        Unknown = 0,
+        Wav = 11,
+    }
+}
+/// Image summaries created by the `tensorboard.plugins.image.summary`
+/// module will include `SummaryMetadata` whose `plugin_data` field has
+/// as `content` a binary string that is the encoding of an
+/// `ImagePluginData` proto.
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct ImagePluginData {
+    /// Version `0` is the only supported version.
+    #[prost(int32, tag="1")]
+    pub version: i32,
+    /// Indicates whether this time series data was originally represented
+    /// as `Summary.Value.Image` values and has been automatically
+    /// converted to bytestring tensors.
+    #[prost(bool, tag="2")]
+    pub converted_to_tensor: bool,
 }

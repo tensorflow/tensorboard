@@ -12,6 +12,24 @@ filegroup(
     srcs = glob(["*.proto"]),
 )
 
+py_test(
+    name = "proto_test",
+    size = "small",
+    srcs = ["proto_test.py"],
+    srcs_version = "PY3",
+    tags = [
+        "manual",
+        "notap",
+    ],
+    deps = [
+        ":protos_all_py_pb2",
+        "//tensorboard:expect_tensorflow_installed",
+    ],
+)
+
+# DO NOT EDIT: This line and rest of file are AUTOMATICALLY GENERATED
+# by tensorboard/compat/proto/update.sh.
+
 tb_proto_library(
     name = "allocation_description",
     srcs = ["allocation_description.proto"],
@@ -131,6 +149,7 @@ tb_proto_library(
     srcs = ["op_def.proto"],
     deps = [
         ":attr_value",
+        ":resource_handle",
         ":types",
     ],
 )
@@ -294,20 +313,5 @@ tb_proto_library(
         ":variable",
         ":verifier_config",
         ":versions",
-    ],
-)
-
-py_test(
-    name = "proto_test",
-    size = "small",
-    srcs = ["proto_test.py"],
-    srcs_version = "PY3",
-    tags = [
-        "manual",
-        "notap",
-    ],
-    deps = [
-        ":protos_all_py_pb2",
-        "//tensorboard:expect_tensorflow_installed",
     ],
 )

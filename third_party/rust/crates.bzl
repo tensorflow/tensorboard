@@ -183,12 +183,82 @@ def raze_fetch_remote_crates():
 
     maybe(
         http_archive,
+        name = "raze__const_fn__0_4_5",
+        url = "https://crates.io/api/v1/crates/const_fn/0.4.5/download",
+        type = "tar.gz",
+        sha256 = "28b9d6de7f49e22cf97ad17fc4036ece69300032f45f78f30b4a4482cdc3f4a6",
+        strip_prefix = "const_fn-0.4.5",
+        build_file = Label("//third_party/rust/remote:BUILD.const_fn-0.4.5.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "raze__crc__1_8_1",
         url = "https://crates.io/api/v1/crates/crc/1.8.1/download",
         type = "tar.gz",
         sha256 = "d663548de7f5cca343f1e0a48d14dcfb0e9eb4e079ec58883b7251539fa10aeb",
         strip_prefix = "crc-1.8.1",
         build_file = Label("//third_party/rust/remote:BUILD.crc-1.8.1.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "raze__crossbeam__0_8_0",
+        url = "https://crates.io/api/v1/crates/crossbeam/0.8.0/download",
+        type = "tar.gz",
+        sha256 = "fd01a6eb3daaafa260f6fc94c3a6c36390abc2080e38e3e34ced87393fb77d80",
+        strip_prefix = "crossbeam-0.8.0",
+        build_file = Label("//third_party/rust/remote:BUILD.crossbeam-0.8.0.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "raze__crossbeam_channel__0_5_0",
+        url = "https://crates.io/api/v1/crates/crossbeam-channel/0.5.0/download",
+        type = "tar.gz",
+        sha256 = "dca26ee1f8d361640700bde38b2c37d8c22b3ce2d360e1fc1c74ea4b0aa7d775",
+        strip_prefix = "crossbeam-channel-0.5.0",
+        build_file = Label("//third_party/rust/remote:BUILD.crossbeam-channel-0.5.0.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "raze__crossbeam_deque__0_8_0",
+        url = "https://crates.io/api/v1/crates/crossbeam-deque/0.8.0/download",
+        type = "tar.gz",
+        sha256 = "94af6efb46fef72616855b036a624cf27ba656ffc9be1b9a3c931cfc7749a9a9",
+        strip_prefix = "crossbeam-deque-0.8.0",
+        build_file = Label("//third_party/rust/remote:BUILD.crossbeam-deque-0.8.0.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "raze__crossbeam_epoch__0_9_1",
+        url = "https://crates.io/api/v1/crates/crossbeam-epoch/0.9.1/download",
+        type = "tar.gz",
+        sha256 = "a1aaa739f95311c2c7887a76863f500026092fb1dce0161dab577e559ef3569d",
+        strip_prefix = "crossbeam-epoch-0.9.1",
+        build_file = Label("//third_party/rust/remote:BUILD.crossbeam-epoch-0.9.1.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "raze__crossbeam_queue__0_3_1",
+        url = "https://crates.io/api/v1/crates/crossbeam-queue/0.3.1/download",
+        type = "tar.gz",
+        sha256 = "0f6cb3c7f5b8e51bc3ebb73a2327ad4abdbd119dc13223f14f961d2f38486756",
+        strip_prefix = "crossbeam-queue-0.3.1",
+        build_file = Label("//third_party/rust/remote:BUILD.crossbeam-queue-0.3.1.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "raze__crossbeam_utils__0_8_1",
+        url = "https://crates.io/api/v1/crates/crossbeam-utils/0.8.1/download",
+        type = "tar.gz",
+        sha256 = "02d96d1e189ef58269ebe5b97953da3274d83a93af647c2ddd6f9dab28cedb8d",
+        strip_prefix = "crossbeam-utils-0.8.1",
+        build_file = Label("//third_party/rust/remote:BUILD.crossbeam-utils-0.8.1.bazel"),
     )
 
     maybe(
@@ -469,6 +539,16 @@ def raze_fetch_remote_crates():
         sha256 = "0ee1c47aaa256ecabcaea351eae4a9b01ef39ed810004e298d2511ed284b1525",
         strip_prefix = "memchr-2.3.4",
         build_file = Label("//third_party/rust/remote:BUILD.memchr-2.3.4.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "raze__memoffset__0_6_1",
+        url = "https://crates.io/api/v1/crates/memoffset/0.6.1/download",
+        type = "tar.gz",
+        sha256 = "157b4208e3059a8f9e78d559edc658e13df41410cb3ae03979c83130067fdd87",
+        strip_prefix = "memoffset-0.6.1",
+        build_file = Label("//third_party/rust/remote:BUILD.memoffset-0.6.1.bazel"),
     )
 
     maybe(
@@ -849,6 +929,16 @@ def raze_fetch_remote_crates():
         sha256 = "93fc1dc3aaa9bfed95e02e6eadabb4baf7e3078b0bd1b4d7b6b0b68378900502",
         strip_prefix = "same-file-1.0.6",
         build_file = Label("//third_party/rust/remote:BUILD.same-file-1.0.6.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "raze__scopeguard__1_1_0",
+        url = "https://crates.io/api/v1/crates/scopeguard/1.1.0/download",
+        type = "tar.gz",
+        sha256 = "d29ab0c6d3fc0ee92fe66e2d99f700eab17a8d57d1c1d3b748380fb20baa78cd",
+        strip_prefix = "scopeguard-1.1.0",
+        build_file = Label("//third_party/rust/remote:BUILD.scopeguard-1.1.0.bazel"),
     )
 
     maybe(

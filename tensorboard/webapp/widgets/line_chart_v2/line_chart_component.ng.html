@@ -44,7 +44,7 @@ limitations under the License.
       [domDim]="domDimensions.main"
       [tooltipTemplate]="tooltipTemplate"
       (onViewExtentChange)="onViewBoxChanged($event)"
-      (onViewExtentReset)="onViewBoxReset()"
+      (onViewExtentReset)="viewBoxReset()"
     ></line-chart-interactive-view>
   </div>
   <line-chart-axis
@@ -67,4 +67,5 @@ limitations under the License.
     [gridCount]="X_GRID_COUNT"
     [scale]="xScale"
   ></line-chart-axis>
+  <div class="dot"><span class="rect"></span></div>
 </div>

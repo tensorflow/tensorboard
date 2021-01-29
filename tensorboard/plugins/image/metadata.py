@@ -28,13 +28,18 @@ PLUGIN_NAME = "images"
 PROTO_VERSION = 0
 
 
-def create_summary_metadata(display_name, description):
+def create_summary_metadata(
+    display_name, description, *, converted_to_tensor=None
+):
     """Create a `summary_pb2.SummaryMetadata` proto for image plugin data.
 
     Returns:
       A `summary_pb2.SummaryMetadata` protobuf object.
     """
-    content = plugin_data_pb2.ImagePluginData(version=PROTO_VERSION)
+    content = plugin_data_pb2.ImagePluginData(
+        version=PROTO_VERSION,
+        converted_to_tensor=converted_to_tensor,
+    )
     metadata = summary_pb2.SummaryMetadata(
         display_name=display_name,
         summary_description=description,

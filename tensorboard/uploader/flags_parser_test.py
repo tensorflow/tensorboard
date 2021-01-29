@@ -18,6 +18,7 @@
 from absl.flags import argparse_flags
 
 from tensorboard.uploader import flags_parser
+from tensorboard.util import grpc_util
 from tensorboard import test as tb_test
 
 
@@ -70,6 +71,18 @@ class FlagsParserTest(tb_test.TestCase):
             getattr(flags, flags_parser.SUBCOMMAND_FLAG),
         )
         self.assertEqual(["plugin1", "plugin2"], flags.plugins)
+
+    def test_channel_creds_type_default(self):
+        flags = _define_and_parse_flags(["uploader", "list"])
+        self.assertEqual(grpc_util.ChannelCredsType.SSL, flags.grpc_creds_type)
+
+    def test_channel_creds_type_explicit(self):
+        flags = _define_and_parse_flags(
+            ["uploader", "--grpc_creds_type", "ssl_dev", "list"]
+        )
+        self.assertEqual(
+            grpc_util.ChannelCredsType.SSL_DEV, flags.grpc_creds_type
+        )
 
 
 if __name__ == "__main__":

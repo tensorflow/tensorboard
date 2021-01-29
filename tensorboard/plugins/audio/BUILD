@@ -7,6 +7,11 @@ package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])
 
+filegroup(
+    name = "proto_srcs",
+    srcs = glob(["*.proto"]),
+)
+
 py_library(
     name = "audio_plugin",
     srcs = ["audio_plugin.py"],

@@ -120,6 +120,8 @@ genrule(
     srcs = [
         "//tensorboard/compat/proto:proto_srcs",
         "//tensorboard/data/proto:proto_srcs",
+        "//tensorboard/plugins/audio:proto_srcs",
+        "//tensorboard/plugins/image:proto_srcs",
     ],
     outs = _genproto_files,
     cmd = "$(execpath :gen_protos_tool) $(RULEDIR)",

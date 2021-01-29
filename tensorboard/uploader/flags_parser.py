@@ -17,6 +17,8 @@
 
 import argparse
 
+from tensorboard.util import grpc_util
+
 
 SUBCOMMAND_FLAG = "_uploader__subcommand"
 SUBCOMMAND_KEY_UPLOAD = "UPLOAD"
@@ -61,9 +63,9 @@ def define_flags(parser):
 
     parser.add_argument(
         "--grpc_creds_type",
-        type=str,
-        default="ssl",
-        choices=("local", "ssl", "ssl_dev"),
+        type=grpc_util.ChannelCredsType,
+        default=grpc_util.ChannelCredsType.SSL,
+        choices=grpc_util.ChannelCredsType.choices(),
         help="The type of credentials to use for the gRPC client",
     )
 

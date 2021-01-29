@@ -26,37 +26,59 @@ from tensorboard.plugins import base_plugin
 from tensorboard.plugins.core import core_plugin
 
 
+def fake_asset_provider():
+    pass
+
+
 class TensorBoardTest(tb_test.TestCase):
     """Tests the TensorBoard program."""
 
     def testPlugins_pluginClass(self):
-        tb = program.TensorBoard(plugins=[core_plugin.CorePlugin])
+        tb = program.TensorBoard(
+            plugins=[core_plugin.CorePlugin],
+            assets_zip_provider=fake_asset_provider,
+        )
         self.assertIsInstance(tb.plugin_loaders[0], base_plugin.BasicLoader)
         self.assertIs(tb.plugin_loaders[0].plugin_class, core_plugin.CorePlugin)
 
     def testPlugins_pluginLoaderClass(self):
-        tb = program.TensorBoard(plugins=[core_plugin.CorePluginLoader])
+        tb = program.TensorBoard(
+            plugins=[core_plugin.CorePluginLoader],
+            assets_zip_provider=fake_asset_provider,
+        )
         self.assertIsInstance(
             tb.plugin_loaders[0], core_plugin.CorePluginLoader
         )
 
     def testPlugins_pluginLoader(self):
         loader = core_plugin.CorePluginLoader()
-        tb = program.TensorBoard(plugins=[loader])
+        tb = program.TensorBoard(
+            plugins=[loader],
+            assets_zip_provider=fake_asset_provider,
+        )
         self.assertIs(tb.plugin_loaders[0], loader)
 
     def testPlugins_invalidType(self):
         plugin_instance = core_plugin.CorePlugin(base_plugin.TBContext())
         with self.assertRaisesRegex(TypeError, "CorePlugin"):
-            tb = program.TensorBoard(plugins=[plugin_instance])
+            tb = program.TensorBoard(
+                plugins=[plugin_instance],
+                assets_zip_provider=fake_asset_provider,
+            )
 
     def testConfigure(self):
-        tb = program.TensorBoard(plugins=[core_plugin.CorePluginLoader])
+        tb = program.TensorBoard(
+            plugins=[core_plugin.CorePluginLoader],
+            assets_zip_provider=fake_asset_provider,
+        )
         tb.configure(logdir="foo")
         self.assertEqual(tb.flags.logdir, "foo")
 
     def testConfigure_unknownFlag(self):
-        tb = program.TensorBoard(plugins=[core_plugin.CorePlugin])
+        tb = program.TensorBoard(
+            plugins=[core_plugin.CorePlugin],
+            assets_zip_provider=fake_asset_provider,
+        )
         with self.assertRaisesRegex(ValueError, "Unknown TensorBoard flag"):
             tb.configure(foo="bar")
 
@@ -151,6 +173,7 @@ class SubcommandTest(tb_test.TestCase):
     def testImplicitServe(self):
         tb = program.TensorBoard(
             plugins=[core_plugin.CorePluginLoader],
+            assets_zip_provider=fake_asset_provider,
             subcommands=[_TestSubcommand(lambda parser: None)],
         )
         tb.configure(("tb", "--logdir", "logs", "--path_prefix", "/x///"))
@@ -163,6 +186,7 @@ class SubcommandTest(tb_test.TestCase):
     def testExplicitServe(self):
         tb = program.TensorBoard(
             plugins=[core_plugin.CorePluginLoader],
+            assets_zip_provider=fake_asset_provider,
             subcommands=[_TestSubcommand()],
         )
         tb.configure(
@@ -180,6 +204,7 @@ class SubcommandTest(tb_test.TestCase):
 
         tb = program.TensorBoard(
             plugins=[core_plugin.CorePluginLoader],
+            assets_zip_provider=fake_asset_provider,
             subcommands=[_TestSubcommand(define_flags=define_flags)],
         )
         tb.configure(("tb", "test", "--hello", "world"))
@@ -191,6 +216,7 @@ class SubcommandTest(tb_test.TestCase):
     def testSubcommand_ExitCode(self):
         tb = program.TensorBoard(
             plugins=[core_plugin.CorePluginLoader],
+            assets_zip_provider=fake_asset_provider,
             subcommands=[_TestSubcommand()],
         )
         _TestSubcommand.run.return_value = 77
@@ -200,6 +226,7 @@ class SubcommandTest(tb_test.TestCase):
     def testSubcommand_DoesNotInheritBaseArgs(self):
         tb = program.TensorBoard(
             plugins=[core_plugin.CorePluginLoader],
+            assets_zip_provider=fake_asset_provider,
             subcommands=[_TestSubcommand()],
         )
         with self.assertRaises(SystemExit):
@@ -215,6 +242,7 @@ class SubcommandTest(tb_test.TestCase):
 
         tb = program.TensorBoard(
             plugins=[core_plugin.CorePluginLoader],
+            assets_zip_provider=fake_asset_provider,
             subcommands=[_TestSubcommand(define_flags=define_flags)],
         )
         with self.assertRaises(SystemExit):
@@ -227,6 +255,7 @@ class SubcommandTest(tb_test.TestCase):
         with self.assertRaises(ValueError) as cm:
             tb = program.TensorBoard(
                 plugins=[core_plugin.CorePluginLoader],
+                assets_zip_provider=fake_asset_provider,
                 subcommands=[_TestSubcommand(), _TestSubcommand()],
             )
         self.assertIn("Duplicate subcommand name:", str(cm.exception))
@@ -236,6 +265,7 @@ class SubcommandTest(tb_test.TestCase):
         with self.assertRaises(ValueError) as cm:
             tb = program.TensorBoard(
                 plugins=[core_plugin.CorePluginLoader],
+                assets_zip_provider=fake_asset_provider,
                 subcommands=[_TestSubcommand(name="serve")],
             )
         self.assertIn("Duplicate subcommand name:", str(cm.exception))

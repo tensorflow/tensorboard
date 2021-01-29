@@ -97,19 +97,7 @@ def _run(flags, experiment_url_callback=None):
         sys.stderr.write("\n")  # Extra newline after auth flow messages.
         store.write_credentials(credentials)
 
-    channel_options = None
-    if flags.grpc_creds_type == "local":
-        channel_creds = grpc.local_channel_credentials()
-    elif flags.grpc_creds_type == "ssl":
-        channel_creds = grpc.ssl_channel_credentials()
-    elif flags.grpc_creds_type == "ssl_dev":
-        # Configure the dev cert to use by passing the environment variable
-        # GRPC_DEFAULT_SSL_ROOTS_FILE_PATH=path/to/cert.crt
-        channel_creds = grpc.ssl_channel_credentials()
-        channel_options = [("grpc.ssl_target_name_override", "localhost")]
-    else:
-        msg = "Invalid --grpc_creds_type %s" % flags.grpc_creds_type
-        raise base_plugin.FlagsError(msg)
+    (channel_creds, channel_options) = flags.grpc_creds_type.channel_config()
 
     try:
         server_info = _get_server_info(flags)

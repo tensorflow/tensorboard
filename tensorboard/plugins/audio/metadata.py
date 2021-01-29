@@ -31,14 +31,18 @@ PROTO_VERSION = 0
 Encoding = plugin_data_pb2.AudioPluginData.Encoding
 
 
-def create_summary_metadata(display_name, description, encoding):
+def create_summary_metadata(
+    display_name, description, encoding, *, converted_to_tensor=None
+):
     """Create a `SummaryMetadata` proto for audio plugin data.
 
     Returns:
       A `SummaryMetadata` protobuf object.
     """
     content = plugin_data_pb2.AudioPluginData(
-        version=PROTO_VERSION, encoding=encoding
+        version=PROTO_VERSION,
+        encoding=encoding,
+        converted_to_tensor=converted_to_tensor,
     )
     metadata = summary_pb2.SummaryMetadata(
         display_name=display_name,

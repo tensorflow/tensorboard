@@ -22,15 +22,43 @@ py_binary(
     main = "main.py",
     srcs_version = "PY3",
     deps = [
+        ":assets_lib",  # link dep for webfiles assets
         ":default",
-        ":dynamic_plugins",
+        ":dynamic_plugins",  # loads internal dynamic plugin like projector
         ":lib",
+        ":main_lib",
         ":program",
         "//tensorboard:expect_tensorflow_installed",
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/uploader:uploader_subcommand",
         "//tensorboard/util:tb_logging",
         "//tensorboard/util:timing",  # non-strict dep, for patching convenience
+    ],
+)
+
+py_library(
+    name = "main_lib",
+    srcs = ["main_lib.py"],
+    srcs_version = "PY3",
+    deps = [
+        "//tensorboard:expect_absl_logging_installed",
+        "//tensorboard/compat:tensorflow",
+    ],
+)
+
+py_binary(
+    name = "dev",
+    srcs = ["main_dev.py"],
+    data = ["dev_webfiles.zip"],
+    main = "main_dev.py",
+    srcs_version = "PY3",
+    deps = [
+        ":default",
+        ":dynamic_plugins",  # loads internal dynamic plugin like projector
+        ":lib",
+        ":main_lib",
+        ":program",
+        "//tensorboard/uploader:uploader_subcommand",
     ],
 )
 
@@ -76,6 +104,27 @@ py_test(
     tags = ["support_notf"],
     visibility = ["//tensorboard:internal"],
     deps = [":lib"],
+)
+
+py_library(
+    name = "assets_lib",
+    srcs = ["assets.py"],
+    data = ["webfiles.zip"],
+    srcs_version = "PY3",
+    deps = [
+        "//tensorboard/util:tb_logging",
+    ],
+)
+
+py_test(
+    name = "assets_lib_test",
+    srcs = ["assets_test.py"],
+    main = "assets_test.py",
+    srcs_version = "PY3",
+    deps = [
+        ":assets_lib",
+        "//tensorboard:test",
+    ],
 )
 
 py_library(
@@ -198,11 +247,11 @@ py_library(
         ":manager",
         ":version",
         "//tensorboard:expect_absl_flags_installed",
-        "//tensorboard:expect_absl_logging_installed",
         "//tensorboard/backend:application",
         "//tensorboard/backend/event_processing:data_ingester",
         "//tensorboard/backend/event_processing:event_file_inspector",
         "//tensorboard/data:server_ingester",
+        "//tensorboard/plugins/core:core_plugin",
         "@org_pocoo_werkzeug",
     ],
 )
@@ -237,7 +286,6 @@ py_library(
 py_library(
     name = "default",
     srcs = ["default.py"],
-    data = ["webfiles.zip"],
     srcs_version = "PY3",
     deps = [
         "//tensorboard:expect_pkg_resources_installed",
@@ -323,6 +371,11 @@ tf_web_library(
         "//tensorboard/webapp/widgets/source_code/monaco:monaco_languages",
         "@com_google_fonts_roboto",
     ],
+)
+
+tensorboard_zip_file(
+    name = "dev_webfiles",
+    deps = ["//tensorboard/webapp/dev_assets"],
 )
 
 # This is a dummy rule used as a numpy dependency in open-source.

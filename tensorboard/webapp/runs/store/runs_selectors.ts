@@ -76,6 +76,17 @@ export const getRuns = createSelector(
 );
 
 /**
+ * Returns an Observable that emits a map from RunIds to Runs. Note: the keys
+ * do NOT necessarily correspond to the current route's runs.
+ */
+export const getRunMap = createSelector(
+  getDataState,
+  (state: RunsDataState): Map<string, Run> => {
+    return new Map(Object.entries(state.runMetadata));
+  }
+);
+
+/**
  * Returns Observable that emits load state of the runs list.
  */
 export const getRunsLoadState = createSelector(

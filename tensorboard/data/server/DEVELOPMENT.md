@@ -135,6 +135,14 @@ When done, commit the changes to `Cargo.toml`, `Cargo.lock`, and the
 [crates.io]: https://crates.io/
 [raze]: https://github.com/google/cargo-raze
 
+## Test data
+
+Test datasets are stored on Google Cloud Storage in the world-readable
+`gs://tensorboard-bench-logs` bucket, whose [bucket README] is online. To run
+against this data, use `gsutil` to copy it to your local machine.
+
+[bucket README]: https://storage.googleapis.com/tensorboard-bench-logs/README
+
 ## `grpc_cli` development tips
 
 RustBoard implements a gRPC server. The [`grpc_cli`] tool can be handy for
