@@ -32,6 +32,7 @@ import {
   getShowCounts,
 } from '../../../store';
 import * as selectors from '../../../../../selectors';
+import {buildRun} from '../../../../../runs/store/testing';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
 import {getExperimentIdsFromRoute} from '../../../../../app_routing/store/app_routing_selectors';
@@ -125,36 +126,9 @@ describe('Npmi Annotations List Row', () => {
     store.overrideSelector(
       selectors.getRunMap,
       new Map([
-        [
-          'run_1',
-          {
-            id: 'run_1',
-            name: 'run_1',
-            startTime: 0,
-            hparams: null,
-            metrics: null,
-          },
-        ],
-        [
-          'run_2',
-          {
-            id: 'run_2',
-            name: 'run_2',
-            startTime: 0,
-            hparams: null,
-            metrics: null,
-          },
-        ],
-        [
-          'run_3',
-          {
-            id: 'run_3',
-            name: 'run_3',
-            startTime: 0,
-            hparams: null,
-            metrics: null,
-          },
-        ],
+        ['run_1', buildRun({id: 'run_1'})],
+        ['run_2', buildRun({id: 'run_2'})],
+        ['run_3', buildRun({id: 'run_3'})],
       ])
     );
     const fixture = createComponentInstance();
@@ -218,36 +192,9 @@ describe('Npmi Annotations List Row', () => {
     store.overrideSelector(
       selectors.getRunMap,
       new Map([
-        [
-          'run_1',
-          {
-            id: 'run_1',
-            name: 'run_1',
-            startTime: 0,
-            hparams: null,
-            metrics: null,
-          },
-        ],
-        [
-          'run_2',
-          {
-            id: 'run_2',
-            name: 'run_2',
-            startTime: 0,
-            hparams: null,
-            metrics: null,
-          },
-        ],
-        [
-          'run_3',
-          {
-            id: 'run_3',
-            name: 'run_3',
-            startTime: 0,
-            hparams: null,
-            metrics: null,
-          },
-        ],
+        ['run_1', buildRun({id: 'run_1'})],
+        ['run_2', buildRun({id: 'run_2'})],
+        ['run_3', buildRun({id: 'run_3'})],
       ])
     );
     const fixture = createComponentInstance();
@@ -324,36 +271,9 @@ describe('Npmi Annotations List Row', () => {
     store.overrideSelector(
       selectors.getRunMap,
       new Map([
-        [
-          'run_1',
-          {
-            id: 'run_1',
-            name: 'run_1',
-            startTime: 0,
-            hparams: null,
-            metrics: null,
-          },
-        ],
-        [
-          'run_2',
-          {
-            id: 'run_2',
-            name: 'run_2',
-            startTime: 0,
-            hparams: null,
-            metrics: null,
-          },
-        ],
-        [
-          'run_3',
-          {
-            id: 'run_3',
-            name: 'run_3',
-            startTime: 0,
-            hparams: null,
-            metrics: null,
-          },
-        ],
+        ['run_1', buildRun({id: 'run_1'})],
+        ['run_2', buildRun({id: 'run_2'})],
+        ['run_3', buildRun({id: 'run_3'})],
       ])
     );
     const fixture = createComponentInstance();
@@ -377,36 +297,9 @@ describe('Npmi Annotations List Row', () => {
     store.overrideSelector(
       selectors.getRunMap,
       new Map([
-        [
-          'run_1',
-          {
-            id: 'run_1',
-            name: 'run_1',
-            startTime: 0,
-            hparams: null,
-            metrics: null,
-          },
-        ],
-        [
-          'run_2',
-          {
-            id: 'run_2',
-            name: 'run_2',
-            startTime: 0,
-            hparams: null,
-            metrics: null,
-          },
-        ],
-        [
-          'run_3',
-          {
-            id: 'run_3',
-            name: 'run_3',
-            startTime: 0,
-            hparams: null,
-            metrics: null,
-          },
-        ],
+        ['run_1', buildRun({id: 'run_1'})],
+        ['run_2', buildRun({id: 'run_2'})],
+        ['run_3', buildRun({id: 'run_3'})],
       ])
     );
     store.overrideSelector(getFlaggedAnnotations, ['annotation_1']);
@@ -439,36 +332,9 @@ describe('Npmi Annotations List Row', () => {
     store.overrideSelector(
       selectors.getRunMap,
       new Map([
-        [
-          'run_1',
-          {
-            id: 'run_1',
-            name: 'run_1',
-            startTime: 0,
-            hparams: null,
-            metrics: null,
-          },
-        ],
-        [
-          'run_2',
-          {
-            id: 'run_2',
-            name: 'run_2',
-            startTime: 0,
-            hparams: null,
-            metrics: null,
-          },
-        ],
-        [
-          'run_3',
-          {
-            id: 'run_3',
-            name: 'run_3',
-            startTime: 0,
-            hparams: null,
-            metrics: null,
-          },
-        ],
+        ['run_1', buildRun({id: 'run_1'})],
+        ['run_2', buildRun({id: 'run_2'})],
+        ['run_3', buildRun({id: 'run_3'})],
       ])
     );
     const fixture = createComponentInstance();

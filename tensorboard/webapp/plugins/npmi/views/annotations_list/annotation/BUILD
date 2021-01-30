@@ -65,6 +65,7 @@ tf_ts_library(
         "//tensorboard/webapp/plugins/npmi/store:types",
         "//tensorboard/webapp/plugins/npmi/testing",
         "//tensorboard/webapp/runs/store",
+        "//tensorboard/webapp/runs/store:testing",
         "//tensorboard/webapp/types:ui",
         "@npm//@angular/core",
         "@npm//@angular/platform-browser",
