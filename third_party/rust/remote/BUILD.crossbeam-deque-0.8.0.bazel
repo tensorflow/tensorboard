@@ -36,6 +36,7 @@ rust_library(
     crate_features = [
         "crossbeam-epoch",
         "crossbeam-utils",
+        "default",
         "std",
     ],
     crate_root = "src/lib.rs",

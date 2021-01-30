@@ -43,6 +43,7 @@ rust_library(
     srcs = glob(["**/*.rs"]),
     crate_features = [
         "crossbeam-utils",
+        "default",
         "std",
     ],
     crate_root = "src/lib.rs",
