@@ -237,6 +237,61 @@ describe('line_chart_v2/line_chart test', () => {
     expect(updateDataSpy).toHaveBeenCalledTimes(1);
   });
 
+  it('resets viewBox to default when scaleType changes', () => {
+    const fixture = createComponent({
+      seriesData: [
+        buildSeries({
+          id: 'foo',
+          points: [
+            {x: 0, y: 0},
+            {x: 1, y: -1},
+            {x: 2, y: 1},
+          ],
+        }),
+      ],
+      seriesMetadataMap: {foo: buildMetadata({id: 'foo', visible: true})},
+      yScaleType: ScaleType.LINEAR,
+    });
+    fixture.detectChanges();
+    expect(updateViewBoxSpy).toHaveBeenCalledTimes(1);
+    expect(updateViewBoxSpy.calls.argsFor(0)).toEqual([
+      {x: [-0.2, 2.2], y: [-1.2, 1.2]},
+    ]);
+
+    fixture.componentInstance.triggerViewBoxChange({
+      x: [-5, 5],
+      y: [0, 10],
+    });
+    expect(updateViewBoxSpy).toHaveBeenCalledTimes(2);
+
+    fixture.componentInstance.yScaleType = ScaleType.TIME;
+    fixture.detectChanges();
+
+    expect(updateViewBoxSpy).toHaveBeenCalledTimes(3);
+    expect(updateViewBoxSpy.calls.argsFor(2)).toEqual([
+      {x: [-0.2, 2.2], y: [-1, 1]},
+    ]);
+
+    // and viewBox updates when the data changes to fit the data.
+    fixture.componentInstance.seriesData = [
+      buildSeries({
+        id: 'foo',
+        points: [
+          {x: 0, y: 0},
+          {x: 1, y: -2},
+          {x: 2, y: 1},
+          {x: 3, y: 0},
+          {x: 4, y: 2},
+        ],
+      }),
+    ];
+    fixture.detectChanges();
+    expect(updateViewBoxSpy).toHaveBeenCalledTimes(4);
+    expect(updateViewBoxSpy.calls.argsFor(3)).toEqual([
+      {x: [-0.5, 4.5], y: [-2, 2]},
+    ]);
+  });
+
   describe('data change', () => {
     it('updates data and viewBox when data changes', () => {
       const fixture = createComponent({

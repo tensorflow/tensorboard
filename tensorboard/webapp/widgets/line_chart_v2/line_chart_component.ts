@@ -174,8 +174,13 @@ export class LineChartComponent implements AfterViewInit, OnChanges, OnDestroy {
       this.isMetadataUpdated = true;
     }
 
+    if (this.scaleUpdated) {
+      this.isViewBoxOverridden = false;
+    }
+
     this.isViewBoxChanged =
       this.isViewBoxChanged ||
+      this.scaleUpdated ||
       (!this.isViewBoxOverridden && this.shouldUpdateDefaultViewBox(changes));
 
     this.updateLineChart();
