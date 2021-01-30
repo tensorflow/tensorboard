@@ -32,11 +32,10 @@ def _dedent(text):
     indents = []
     for line in text.splitlines():
         stripped = line.lstrip(" ")
-        if not stripped:
-            continue
-        indents.append(len(line) - len(stripped))
+        if stripped:
+            indents.append(len(line) - len(stripped))
     if not indents:
-        return
+        return text
     indent = min(indents)
     result = []
     for line in text.splitlines(True):
