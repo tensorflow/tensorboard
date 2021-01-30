@@ -26,7 +26,7 @@ def tensorboard_webcomponent_library(**kwargs):
     """Rules referencing this will be deleted from the codebase soon."""
     pass
 
-def tf_js_binary(name, compile, deps, **kwargs):
+def tf_js_binary(name, compile, deps, visibility = None, **kwargs):
     """Rules for creating a JavaScript bundle.
 
     Please refer to https://bazelbuild.github.io/rules_nodejs/Built-ins.html#rollup_bundle
@@ -50,6 +50,7 @@ def tf_js_binary(name, compile, deps, **kwargs):
         ],
         format = "iife",
         sourcemap = "false",
+        visibility = ["//visibility:private"],
         **kwargs
     )
 
@@ -57,15 +58,17 @@ def tf_js_binary(name, compile, deps, **kwargs):
         name = internal_min_name,
         src = internal_rollup_name,
         config_file = "//tensorboard/defs:terser_option.json",
-        visibility = kwargs.get("visibility"),
+        visibility = ["//visibility:private"],
         sourcemap = False,
     )
 
+    # For some reason, terser_minified is not visible from other targets. Copy
+    # or re-export seems to work okay.
     native.genrule(
         name = name,
         srcs = [internal_min_name],
         outs = [name + ".js"],
-        visibility = kwargs.get("visibility"),
+        visibility = visibility,
         cmd = "cat $(SRCS) > $@",
     )
 
