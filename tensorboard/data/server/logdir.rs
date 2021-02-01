@@ -15,68 +15,48 @@ limitations under the License.
 
 //! Loader for many runs under a directory.
 
-use log::{error, warn};
-use std::collections::{HashMap, HashSet};
+use log::warn;
+use std::collections::HashMap;
+use std::io::{self, Read, Seek};
 use std::path::{Path, PathBuf};
-use walkdir::WalkDir;
 
 use crate::commit::Commit;
 use crate::run::RunLoader;
 use crate::types::Run;
 
+/// A TensorBoard log directory, with event files organized into runs.
+pub trait Logdir {
+    /// Type of output stream for reading event files under this log directory.
+    type File: Read + Seek;
+
+    /// Finds all event files under the log directory.
+    ///
+    /// Event files within each run should be emitted in chronological order. Canonically, a file
+    /// is an event file if its basename contains [`EVENT_FILE_BASENAME_INFIX`] as a substring.
+    fn discover(&self) -> io::Result<HashMap<Run, Vec<PathBuf>>>;
+
+    /// Attempts to open an event file for reading.
+    ///
+    /// The `path` should be one of the values returned by a previous call to [`Self::discover`].
+    fn open(&self, path: &Path) -> io::Result<Self::File>;
+}
+
+/// A file is treated as an event file if its basename contains this substring.
+pub const EVENT_FILE_BASENAME_INFIX: &str = "tfevents";
+
 /// A loader for a log directory, connecting a filesystem to a [`Commit`] via [`RunLoader`]s.
-pub struct LogdirLoader<'a> {
+pub struct LogdirLoader<'a, L: Logdir> {
     commit: &'a Commit,
-    logdir: PathBuf,
-    runs: HashMap<Run, RunState>,
+    logdir: L,
+    runs: HashMap<Run, RunLoader<<L as Logdir>::File>>,
     checksum: bool,
 }
 
-struct RunState {
-    /// Stateful loader for this run.
-    loader: RunLoader,
-    /// Path to this run's directory relative to the root logdir.
-    relpath: PathBuf,
-    /// Logdir-relative paths to other directories that normalize to the same name as this run
-    /// after lossy Unicode conversion.
-    ///
-    /// Directories on the filesystem need not be valid Unicode. On Unix, for instance, they're
-    /// arbitrary byte sequences without `\0` or `/`. But TensorBoard wants run names to be strings
-    /// for human display. Thus, we apply [`OsStr::to_string_lossy`] to convert run directory paths
-    /// to run names. As the name suggests, this is a lossy conversion: it replaces non-Unicode
-    /// sequences with U+FFFD. This creates an edge case wherein two different directories may map
-    /// to the same run name. In such a case, we merge the two directories into one run, and print
-    /// a warning.
-    ///
-    /// This set tracks the directories other than `self.relpath` that comprise this run. It is
-    /// non-empty only when we hit this edge case: i.e., when there are multiple filesystem paths
-    /// that are invalid Unicode and collide. It's used for deduplicating warnings, so that we
-    /// don't warn about the directory again on every load cycle.
-    ///
-    /// [`OsStr::to_string_lossy`]: std::ffi::OsStr::to_string_lossy
-    collided_relpaths: HashSet<PathBuf>,
-}
+type Discoveries = HashMap<Run, Vec<PathBuf>>;
 
-/// Record of an event file found under the log directory.
-#[derive(Debug, PartialEq, Eq)]
-struct EventFileDiscovery {
-    run_relpath: PathBuf,
-    event_file: PathBuf,
-}
-/// Record of all event files found under the log directory, grouped by run.
-///
-/// Each value in the map must be non-empty.
-///
-/// Not all `run_relpaths` within one `Vec<_>` value need be the same due to lossy paths. See the
-/// `collided_relpaths` field of [`RunState`] for details.
-struct Discoveries(HashMap<Run, Vec<EventFileDiscovery>>);
-
-/// A file is treated as an event file if its basename contains this substring.
-const EVENT_FILE_BASENAME_INFIX: &str = "tfevents";
-
-impl<'a> LogdirLoader<'a> {
+impl<'a, L: Logdir> LogdirLoader<'a, L> {
     /// Creates a new, empty logdir loader. Does not load any data.
-    pub fn new(commit: &'a Commit, logdir: PathBuf) -> Self {
+    pub fn new(commit: &'a Commit, logdir: L) -> Self {
         LogdirLoader {
             commit,
             logdir,
@@ -93,8 +73,6 @@ impl<'a> LogdirLoader<'a> {
     /// Performs a complete load cycle: finds all event files and reads data from all runs,
     /// updating the shared commit.
     ///
-    /// # Panics
-    ///
     /// If any of the commit locks is poisoned, or if a run is removed from the commit by another
     /// client while this reload is in progress (should not happen if the commit is only being
     /// updated by a single `LogdirLoader`).
@@ -106,60 +84,10 @@ impl<'a> LogdirLoader<'a> {
 
     /// Finds all event files under the log directory and groups them by run.
     fn discover(&self) -> Discoveries {
-        let mut run_map: HashMap<Run, Vec<EventFileDiscovery>> = HashMap::new();
-        let walker = WalkDir::new(&self.logdir)
-            .sort_by(|a, b| a.file_name().cmp(b.file_name()))
-            .follow_links(true);
-        for walkdir_item in walker {
-            let dirent = match walkdir_item {
-                Ok(dirent) => dirent,
-                Err(e) => {
-                    error!("While walking log directory: {}", e);
-                    continue;
-                }
-            };
-            if !dirent.file_type().is_file() {
-                continue;
-            }
-            let filename = dirent.file_name().to_string_lossy();
-            if !filename.contains(EVENT_FILE_BASENAME_INFIX) {
-                continue;
-            }
-            let run_dir = match dirent.path().parent() {
-                Some(parent) => parent,
-                None => {
-                    // I don't know of any circumstance where this can happen, but I would believe
-                    // that some weird filesystem can hit it, so just proceed.
-                    warn!(
-                        "Path {} is a file but has no parent",
-                        dirent.path().display()
-                    );
-                    continue;
-                }
-            };
-            let mut run_relpath = match run_dir.strip_prefix(&self.logdir) {
-                Ok(rp) => rp.to_path_buf(),
-                Err(_) => {
-                    error!(
-                        "Log directory {} is not a prefix of run directory {}",
-                        &self.logdir.display(),
-                        &run_dir.display(),
-                    );
-                    continue;
-                }
-            };
-            // Render the root run as ".", not "".
-            if run_relpath == Path::new("") {
-                run_relpath.push(".");
-            }
-            let run_name = run_relpath.display().to_string();
-            let discovery = EventFileDiscovery {
-                run_relpath,
-                event_file: dirent.into_path(),
-            };
-            run_map.entry(Run(run_name)).or_default().push(discovery);
-        }
-        Discoveries(run_map)
+        self.logdir.discover().unwrap_or_else(|e| {
+            warn!("While loading log directory: {}", e);
+            Default::default()
+        })
     }
 
     /// Updates `self.runs` by adding new runs and removing runs all of whose event files have been
@@ -169,13 +97,11 @@ impl<'a> LogdirLoader<'a> {
     ///
     /// Panics if the `commit.runs` lock is poisoned.
     fn synchronize_runs(&mut self, discoveries: &Discoveries) {
-        let discoveries = &discoveries.0;
-
         // Remove runs with no event files. (This could be cleaner and more efficient with
         // `HashMap::drain_filter`, but that's not yet stabilized.)
         let mut removed: Vec<Run> = Vec::new();
         self.runs.retain(|run, _| {
-            if discoveries.contains_key(run) {
+            if discoveries.get(run).map_or(false, |fs| !fs.is_empty()) {
                 true
             } else {
                 removed.push(run.clone());
@@ -203,33 +129,14 @@ impl<'a> LogdirLoader<'a> {
             }
         }
 
-        // Add new runs, and warn on any path collisions for existing runs.
-        for (run_name, event_files) in discoveries {
+        // Add new runs.
+        for run_name in discoveries.keys() {
             let checksum = self.checksum;
-            let run = self
-                .runs
-                .entry(run_name.clone())
-                .or_insert_with(|| RunState {
-                    // Values of `discoveries` are non-empty by construction, so it's safe to take the
-                    // first relpath.
-                    relpath: event_files[0].run_relpath.clone(),
-                    loader: {
-                        let mut loader = RunLoader::new(run_name.clone());
-                        loader.checksum(checksum);
-                        loader
-                    },
-                    collided_relpaths: HashSet::new(),
-                });
-            for ef in event_files {
-                if ef.run_relpath != run.relpath && !run.collided_relpaths.contains(&ef.run_relpath)
-                {
-                    warn!(
-                        "Merging directories {:?} and {:?}, which both normalize to run {:?}",
-                        run.relpath, ef.run_relpath, run_name.0
-                    );
-                    run.collided_relpaths.insert(ef.run_relpath.clone()); // don't warn again
-                }
-            }
+            self.runs.entry(run_name.clone()).or_insert_with(|| {
+                let mut loader = RunLoader::new(run_name.clone());
+                loader.checksum(checksum);
+                loader
+            });
         }
     }
 
@@ -239,19 +146,18 @@ impl<'a> LogdirLoader<'a> {
     ///
     /// Panics if a run in `self.runs` has no entry in `discoveries`, which should only happen if
     /// `synchronize_runs(&discoveries)` was not called. Panics if any run loader panics.
-    fn load_runs(&mut self, discoveries: Discoveries) {
-        let mut discoveries = discoveries.0;
+    fn load_runs(&mut self, mut discoveries: Discoveries) {
         let commit_runs = self
             .commit
             .runs
             .read()
             .expect("could not acquire runs.data");
-        for (run, run_state) in self.runs.iter_mut() {
-            let event_files = discoveries
+        for (run, loader) in self.runs.iter_mut() {
+            let filenames = discoveries
                 .remove(run)
                 .unwrap_or_else(|| panic!("run in self.runs but not discovered: {:?}", run));
-            let filenames: Vec<PathBuf> = event_files.into_iter().map(|d| d.event_file).collect();
-            run_state.loader.reload(
+            loader.reload(
+                &self.logdir,
                 filenames,
                 commit_runs.get(run).unwrap_or_else(|| {
                     panic!(
@@ -268,8 +174,10 @@ impl<'a> LogdirLoader<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::collections::HashSet;
     use std::fs::{self, File};
 
+    use crate::disk_logdir::DiskLogdir;
     use crate::types::{Step, Tag, WallTime};
     use crate::writer::SummaryWriteExt;
 
@@ -313,13 +221,10 @@ mod tests {
         let root_run = Run(".".to_string());
         let train_run = Run(format!("mnist{}train", std::path::MAIN_SEPARATOR));
         let test_run = Run(format!("mnist{}test", std::path::MAIN_SEPARATOR));
-        // expected logdir-relative paths
-        let root_relpath: PathBuf = ["."].iter().collect();
-        let train_relpath: PathBuf = ["mnist", "train"].iter().collect();
-        let test_relpath: PathBuf = ["mnist", "test"].iter().collect();
 
         let commit = Commit::new();
-        let mut loader = LogdirLoader::new(&commit, logdir.path().to_path_buf());
+        let logdir = DiskLogdir::new(logdir.path().to_path_buf());
+        let mut loader = LogdirLoader::new(&commit, logdir);
 
         // Check that we persist the right run states in the loader.
         loader.reload();
@@ -327,12 +232,6 @@ mod tests {
             .into_iter()
             .collect::<HashSet<_>>();
         assert_eq!(loader.runs.keys().collect::<HashSet<_>>(), expected_runs);
-        assert_eq!(&loader.runs[&root_run].relpath, &root_relpath);
-        assert_eq!(&loader.runs[&train_run].relpath, &train_relpath);
-        assert_eq!(&loader.runs[&test_run].relpath, &test_relpath);
-        for run_state in loader.runs.values() {
-            assert!(run_state.collided_relpaths.is_empty()); // no bad Unicode
-        }
 
         // Check that we persist the right run states in the commit.
         let mut expected_data = HashMap::new();
@@ -379,7 +278,8 @@ mod tests {
         )?;
 
         let commit = Commit::new();
-        let mut loader = LogdirLoader::new(&commit, logdir.path().to_path_buf());
+        let logdir = DiskLogdir::new(logdir.path().to_path_buf());
+        let mut loader = LogdirLoader::new(&commit, logdir);
 
         let get_run_names = || {
             let runs_store = commit.runs.read().unwrap();
@@ -418,44 +318,6 @@ mod tests {
         Ok(())
     }
 
-    #[cfg(target_os = "linux")] // macOS seems to sometimes give EILSEQ on non-UTF-8 filenames
-    #[test]
-    fn test_bad_unicode_collision() -> Result<(), Box<dyn std::error::Error>> {
-        use std::ffi::OsStr;
-        use std::os::unix::ffi::OsStrExt;
-
-        // Generate a bad-Unicode collision.
-        let bad1 = Path::new(OsStr::from_bytes(&b"test\x99.run"[..]));
-        let bad2 = Path::new(OsStr::from_bytes(&b"test\xee.run"[..]));
-        let run1 = Run(bad1.to_string_lossy().into_owned());
-        let run2 = Run(bad2.to_string_lossy().into_owned());
-        assert_ne!(bad1, bad2);
-        assert_eq!(run1, run2);
-        let run = run1;
-        drop(run2);
-
-        let logdir = tempfile::tempdir()?;
-        for &dir_basename in &[bad1, bad2] {
-            let dir = logdir.path().join(dir_basename);
-            fs::create_dir(&dir)?;
-            File::create(dir.join(EVENT_FILE_BASENAME_INFIX))?;
-        }
-
-        let commit = Commit::new();
-        let mut loader = LogdirLoader::new(&commit, logdir.path().to_path_buf());
-        loader.reload();
-
-        assert_eq!(loader.runs.keys().collect::<Vec<_>>(), vec![&run]);
-        let run_state = &loader.runs[&run];
-        assert!(bad1 < bad2);
-        assert_eq!(run_state.relpath, bad1);
-        let mut expected_relpaths = HashSet::new();
-        expected_relpaths.insert(bad2.to_path_buf());
-        assert_eq!(run_state.collided_relpaths, expected_relpaths);
-
-        Ok(())
-    }
-
     #[cfg(unix)]
     #[test]
     fn test_symlink() -> Result<(), Box<dyn std::error::Error>> {
@@ -467,7 +329,8 @@ mod tests {
         File::create(train_dir.join(EVENT_FILE_BASENAME_INFIX))?;
 
         let commit = Commit::new();
-        let mut loader = LogdirLoader::new(&commit, logdir.path().to_path_buf());
+        let logdir = DiskLogdir::new(logdir.path().to_path_buf());
+        let mut loader = LogdirLoader::new(&commit, logdir);
         loader.reload();
 
         assert_eq!(
@@ -489,7 +352,8 @@ mod tests {
         std::os::unix::fs::symlink(&dir2, &dir1)?;
 
         let commit = Commit::new();
-        let mut loader = LogdirLoader::new(&commit, logdir.path().to_path_buf());
+        let logdir = DiskLogdir::new(logdir.path().to_path_buf());
+        let mut loader = LogdirLoader::new(&commit, logdir);
         loader.reload(); // should not hang
         Ok(())
     }

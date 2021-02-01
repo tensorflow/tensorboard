@@ -30,6 +30,7 @@ rust_library(
         "cli.rs",
         "commit.rs",
         "data_compat.rs",
+        "disk_logdir.rs",
         "downsample.rs",
         "event_file.rs",
         "logdir.rs",
