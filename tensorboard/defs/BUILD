@@ -37,7 +37,7 @@ tb_proto_library(
 
 exports_files([
     "rollup_config.js",
-    "terser_option.json",
+    "terser_config.json",
 ])
 
 ts_library(

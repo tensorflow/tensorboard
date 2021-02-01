@@ -35,8 +35,8 @@ def tf_js_binary(name, compile, deps, visibility = None, **kwargs):
 
     # `compile` option is used internally but is not used by rollup_bundle.
     # Discard it.
-    internal_rollup_name = "_internal_" + name + "_dbg"
-    internal_min_name = "_internal_" + name + "_min"
+    internal_rollup_name = name + "_terser_internal_dbg"
+    internal_min_name = name + "_terser_internal_min"
     rollup_bundle(
         name = internal_rollup_name,
         config_file = "//tensorboard/defs:rollup_config.js",
@@ -57,7 +57,7 @@ def tf_js_binary(name, compile, deps, visibility = None, **kwargs):
     terser_minified(
         name = internal_min_name,
         src = internal_rollup_name,
-        config_file = "//tensorboard/defs:terser_option.json",
+        config_file = "//tensorboard/defs:terser_config.json",
         visibility = ["//visibility:private"],
         sourcemap = False,
     )
