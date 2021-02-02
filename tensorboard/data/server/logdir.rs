@@ -25,15 +25,6 @@ use crate::commit::Commit;
 use crate::run::RunLoader;
 use crate::types::Run;
 
-/// A loader for a log directory, connecting a filesystem to a [`Commit`] via [`RunLoader`]s.
-pub struct LogdirLoader<'a, L: Logdir> {
-    thread_pool: rayon::ThreadPool,
-    commit: &'a Commit,
-    logdir: L,
-    runs: HashMap<Run, RunLoader<<L as Logdir>::File>>,
-    checksum: bool,
-}
-
 /// A TensorBoard log directory, with event files organized into runs.
 pub trait Logdir {
     /// Type of output stream for reading event files under this log directory.
@@ -53,6 +44,15 @@ pub trait Logdir {
 
 /// A file is treated as an event file if its basename contains this substring.
 pub const EVENT_FILE_BASENAME_INFIX: &str = "tfevents";
+
+/// A loader for a log directory, connecting a filesystem to a [`Commit`] via [`RunLoader`]s.
+pub struct LogdirLoader<'a, L: Logdir> {
+    thread_pool: rayon::ThreadPool,
+    commit: &'a Commit,
+    logdir: L,
+    runs: HashMap<Run, RunLoader<<L as Logdir>::File>>,
+    checksum: bool,
+}
 
 type Discoveries = HashMap<Run, Vec<PathBuf>>;
 
