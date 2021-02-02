@@ -260,7 +260,8 @@ class TfGraphScene2 extends LegacyElementMixin(PolymerElement) {
       function () {
         // layout the scene for this meta / series node
         tf_graph_layout.layoutScene(renderHierarchy.root);
-      }.bind(this)
+      }.bind(this),
+      tf_graph_util.DebugEventId.RENDER_SCENE_LAYOUT
     );
     tf_graph_util.time(
       'tf-graph-scene (build scene):',
@@ -272,7 +273,8 @@ class TfGraphScene2 extends LegacyElementMixin(PolymerElement) {
         );
         tf_graph_scene.addGraphClickListener(this.$.svg, this);
         this._updateInputTrace();
-      }.bind(this)
+      }.bind(this),
+      tf_graph_util.DebugEventId.RENDER_SCENE_BUILD_SCENE
     );
     // Update the minimap again when the graph is done animating.
     setTimeout(

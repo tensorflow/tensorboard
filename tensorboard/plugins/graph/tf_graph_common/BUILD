@@ -43,3 +43,17 @@ tf_ts_library(
         "@npm//lodash",
     ],
 )
+
+tf_ts_library(
+    name = "test_lib",
+    testonly = True,
+    srcs = [
+        "common_test.ts",
+    ],
+    deps = [
+        ":tf_graph_common",
+        "@npm//@types/jasmine",
+        "@npm//dagre",
+        "@npm//lodash",
+    ]
+)

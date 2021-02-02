@@ -451,7 +451,8 @@ export function build(
         h.xlaClusters = _.keys(xlaClusterNames);
         addNodes(h, graph);
       },
-      tracker
+      tracker,
+      tf_graph_util.DebugEventId.HIERARCHY_ADD_NODES
     )
     .then(() => {
       return tf_graph_util.runAsyncTask(
@@ -469,7 +470,8 @@ export function build(
             );
           }
         },
-        tracker
+        tracker,
+        tf_graph_util.DebugEventId.HIERARCHY_DETECT_SERIES
       );
     })
     .then(() => {
@@ -479,7 +481,8 @@ export function build(
         () => {
           addEdges(h, graph, seriesNames);
         },
-        tracker
+        tracker,
+        tf_graph_util.DebugEventId.HIERARCHY_ADD_EDGES
       );
     })
     .then(() => {
@@ -489,7 +492,8 @@ export function build(
         () => {
           h.templates = template.detect(h, params.verifyTemplate);
         },
-        tracker
+        tracker,
+        tf_graph_util.DebugEventId.HIERARCHY_FIND_SIMILAR_SUBGRAPHS
       );
     })
     .then(() => {

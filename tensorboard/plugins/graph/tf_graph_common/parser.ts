@@ -59,7 +59,8 @@ export function fetchAndParseMetadata(path: string, tracker: ProgressTracker) {
         }
         return fetchPbTxt(path);
       },
-      tracker
+      tracker,
+      tf_graph_util.DebugEventId.FETCH_METADATA_PBTXT_BYTES
     )
     .then((arrayBuffer: ArrayBuffer) => {
       return tf_graph_util.runAsyncPromiseTask(
@@ -70,7 +71,8 @@ export function fetchAndParseMetadata(path: string, tracker: ProgressTracker) {
             ? parseStatsPbTxt(arrayBuffer)
             : Promise.resolve(null);
         },
-        tracker
+        tracker,
+        tf_graph_util.DebugEventId.PARSE_METADATA_PBTXT_INTO_OBJECT
       );
     });
 }
@@ -99,7 +101,8 @@ export function fetchAndParseGraphData(
           return fetchPbTxt(path);
         }
       },
-      tracker
+      tracker,
+      tf_graph_util.DebugEventId.FETCH_PBTXT_BYTES
     )
     .then((arrayBuffer: ArrayBuffer) => {
       return tf_graph_util.runAsyncPromiseTask(
@@ -108,7 +111,8 @@ export function fetchAndParseGraphData(
         () => {
           return parseGraphPbTxt(arrayBuffer);
         },
-        tracker
+        tracker,
+        tf_graph_util.DebugEventId.PARSE_PBTXT_INTO_OBJECT
       );
     });
 }

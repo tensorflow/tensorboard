@@ -305,7 +305,8 @@ class TfGraph extends LegacyElementMixin(PolymerElement) {
         });
 
         return renderGraph;
-      }
+      },
+      tf_graph_util.DebugEventId.RENDER_BUILD_HIERARCHY
     );
 
     anyThis._setRenderHierarchy(renderGraph);

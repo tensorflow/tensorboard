@@ -36,6 +36,7 @@ export function fetchAndConstructHierarchicalGraph(
     50,
     'Namespace hierarchy'
   );
+  const start = Date.now();
   return parser
     .fetchAndParseGraphData(remotePath, pbTxtFile, dataTracker)
     .then(
@@ -67,6 +68,10 @@ export function fetchAndConstructHierarchicalGraph(
         hierarchyParams,
         hierarchyTracker
       );
+      tf_graph_util.notifyDebugEvent({
+        eventId: tf_graph_util.DebugEventId.GRAPH_LOAD_SUCCEEDED,
+        eventValue: Date.now() - start,
+      });
       return {graph, graphHierarchy};
     })
     .catch((e) => {
@@ -74,6 +79,10 @@ export function fetchAndConstructHierarchicalGraph(
       // asynchronous tasks.
       const msg = `Graph visualization failed.\n\n${e}`;
       tracker.reportError(msg, e);
+      tf_graph_util.notifyDebugEvent({
+        eventId: tf_graph_util.DebugEventId.GRAPH_LOAD_FAILED,
+        eventValue: Date.now() - start,
+      });
       // Don't swallow the error.
       throw e;
     });

@@ -1180,7 +1180,8 @@ export function build(
         nodeNames.splice(index);
         return opNodes;
       },
-      tracker
+      tracker,
+      tf_graph_util.DebugEventId.NORMALIZING_NAMES
     )
     .then((opNodes) => {
       // Create the graph data structure from the graphlib library.
@@ -1267,7 +1268,8 @@ export function build(
           });
           return graph;
         },
-        tracker
+        tracker,
+        tf_graph_util.DebugEventId.BUILD_SLIM_GRAPH
       );
     });
 }

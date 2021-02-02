@@ -13,9 +13,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 require.config({
+  /**
+   * If paths are updated here, and Karma is still unable to resolve them,
+   * see the 'static_files' attribute on 'tf_ng_web_test_suite' in
+   * tensoboard/defs/defs.bzl for ways to specify a static path for Karma to
+   * use.
+   */
   paths: {
     lodash: '/base/npm/node_modules/lodash/lodash',
     d3: '/base/npm/node_modules/d3/dist/d3',
     three: '/base/npm/node_modules/three/build/three',
+    dagre: '/base/npm/node_modules/dagre/dist/dagre',
   },
 });
