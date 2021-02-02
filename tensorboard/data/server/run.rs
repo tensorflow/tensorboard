@@ -17,7 +17,7 @@ limitations under the License.
 
 use log::{debug, warn};
 use std::collections::{BTreeMap, HashMap, HashSet};
-use std::io::{Read, Seek};
+use std::io::Read;
 use std::path::PathBuf;
 use std::sync::RwLock;
 use std::time::{Duration, Instant};
@@ -161,7 +161,7 @@ impl StageTimeSeries {
 /// Minimum time to wait between committing while a run is still loading.
 const COMMIT_INTERVAL: Duration = Duration::from_secs(5);
 
-impl<R: Read + Seek> RunLoader<R> {
+impl<R: Read> RunLoader<R> {
     pub fn new(run: Run) -> Self {
         Self {
             run,

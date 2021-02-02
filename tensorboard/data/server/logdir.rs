@@ -17,7 +17,7 @@ limitations under the License.
 
 use log::warn;
 use std::collections::HashMap;
-use std::io::{self, Read, Seek};
+use std::io::{self, Read};
 use std::path::{Path, PathBuf};
 
 use crate::commit::Commit;
@@ -27,7 +27,7 @@ use crate::types::Run;
 /// A TensorBoard log directory, with event files organized into runs.
 pub trait Logdir {
     /// Type of output stream for reading event files under this log directory.
-    type File: Read + Seek;
+    type File: Read;
 
     /// Finds all event files under the log directory.
     ///
