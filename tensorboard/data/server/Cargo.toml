@@ -63,6 +63,9 @@ name = "rustboard_core"
 path = "lib.rs"
 
 [package.metadata.raze]
+default_gen_buildrs = false
+package_aliases_dir = "./cargo"
+rust_rules_workspace_name = "io_bazel_rules_rust"
 workspace_path = "//third_party/rust"
 genmode = "Remote"
 targets = [

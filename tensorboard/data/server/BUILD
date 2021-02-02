@@ -44,25 +44,25 @@ rust_library(
     ] + _checked_in_proto_files,
     edition = "2018",
     deps = [
-        "//third_party/rust:async_stream",
-        "//third_party/rust:base64",
-        "//third_party/rust:byteorder",
-        "//third_party/rust:clap",
-        "//third_party/rust:crc",
-        "//third_party/rust:env_logger",
-        "//third_party/rust:futures_core",
-        "//third_party/rust:log",
-        "//third_party/rust:prost",
-        "//third_party/rust:rand",
-        "//third_party/rust:rand_chacha",
-        "//third_party/rust:rayon",
-        "//third_party/rust:serde",
-        "//third_party/rust:serde_json",
-        "//third_party/rust:thiserror",
-        "//third_party/rust:tokio",
-        "//third_party/rust:tokio_stream",
-        "//third_party/rust:tonic",
-        "//third_party/rust:walkdir",
+        "//tensorboard/data/server/cargo:async_stream",
+        "//tensorboard/data/server/cargo:base64",
+        "//tensorboard/data/server/cargo:byteorder",
+        "//tensorboard/data/server/cargo:clap",
+        "//tensorboard/data/server/cargo:crc",
+        "//tensorboard/data/server/cargo:env_logger",
+        "//tensorboard/data/server/cargo:futures_core",
+        "//tensorboard/data/server/cargo:log",
+        "//tensorboard/data/server/cargo:prost",
+        "//tensorboard/data/server/cargo:rand",
+        "//tensorboard/data/server/cargo:rand_chacha",
+        "//tensorboard/data/server/cargo:rayon",
+        "//tensorboard/data/server/cargo:serde",
+        "//tensorboard/data/server/cargo:serde_json",
+        "//tensorboard/data/server/cargo:thiserror",
+        "//tensorboard/data/server/cargo:tokio",
+        "//tensorboard/data/server/cargo:tokio_stream",
+        "//tensorboard/data/server/cargo:tonic",
+        "//tensorboard/data/server/cargo:walkdir",
     ],
 )
 
@@ -70,7 +70,7 @@ rust_test(
     name = "rustboard_core_test",
     crate = ":rustboard_core",
     deps = [
-        "//third_party/rust:tempfile",
+        "//tensorboard/data/server/cargo:tempfile",
     ],
 )
 
@@ -80,10 +80,10 @@ rust_binary(
     edition = "2018",
     deps = [
         ":rustboard_core",
-        "//third_party/rust:clap",
-        "//third_party/rust:env_logger",
-        "//third_party/rust:log",
-        "//third_party/rust:rayon",
+        "//tensorboard/data/server/cargo:clap",
+        "//tensorboard/data/server/cargo:env_logger",
+        "//tensorboard/data/server/cargo:log",
+        "//tensorboard/data/server/cargo:rayon",
     ],
 )
 
@@ -139,7 +139,7 @@ rust_binary(
     edition = "2018",
     visibility = ["//visibility:private"],
     deps = [
-        "//third_party/rust:tonic_build",
+        "//tensorboard/data/server/cargo:tonic_build",
     ],
 )
 
