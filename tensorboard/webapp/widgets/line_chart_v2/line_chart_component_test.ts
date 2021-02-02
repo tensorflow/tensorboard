@@ -266,7 +266,6 @@ describe('line_chart_v2/line_chart test', () => {
       yScaleType: ScaleType.LINEAR,
     });
     fixture.detectChanges();
-
     expect(updateViewBoxSpy).toHaveBeenCalledTimes(1);
     expect(updateViewBoxSpy.calls.argsFor(0)).toEqual([
       {x: [-0.2, 2.2], y: [-1.2, 1.2]},
@@ -324,6 +323,8 @@ describe('line_chart_v2/line_chart test', () => {
     fixture.detectChanges();
 
     const grid = fixture.debugElement.query(By.directive(FakeGridComponent));
+    // In testable-comp, we hard coded dimension of 200x150. Since we use about
+    // 50px and 30px for y-axis and x-axis, respectively, we have 150x70 here.
     expect(grid.componentInstance.domDim).toEqual({
       width: 150,
       height: 70,
