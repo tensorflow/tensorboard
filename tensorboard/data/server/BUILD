@@ -55,6 +55,7 @@ rust_library(
         "//third_party/rust:prost",
         "//third_party/rust:rand",
         "//third_party/rust:rand_chacha",
+        "//third_party/rust:rayon",
         "//third_party/rust:serde",
         "//third_party/rust:serde_json",
         "//third_party/rust:thiserror",
@@ -82,6 +83,7 @@ rust_binary(
         "//third_party/rust:clap",
         "//third_party/rust:env_logger",
         "//third_party/rust:log",
+        "//third_party/rust:rayon",
     ],
 )
 

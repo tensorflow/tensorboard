@@ -177,7 +177,7 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .spawn({
             let logdir = opts.logdir;
             let reload_strategy = opts.reload;
-            let mut loader = LogdirLoader::new(commit, logdir);
+            let mut loader = LogdirLoader::new(commit, logdir, 0);
             // Checksum only if `--checksum` given (i.e., off by default).
             loader.checksum(opts.checksum);
             move || loop {
