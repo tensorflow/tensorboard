@@ -22,7 +22,7 @@ use std::io::{self, BufReader};
 use std::path::{Path, PathBuf};
 use walkdir::WalkDir;
 
-use crate::logdir::{Logdir, EVENT_FILE_BASENAME_INFIX};
+use crate::logdir::{EventFileBuf, Logdir, EVENT_FILE_BASENAME_INFIX};
 use crate::types::Run;
 
 /// A log directory on local disk.
@@ -40,8 +40,8 @@ impl DiskLogdir {
 impl Logdir for DiskLogdir {
     type File = BufReader<File>;
 
-    fn discover(&self) -> io::Result<HashMap<Run, Vec<PathBuf>>> {
-        let mut run_map: HashMap<Run, Vec<PathBuf>> = HashMap::new();
+    fn discover(&self) -> io::Result<HashMap<Run, Vec<EventFileBuf>>> {
+        let mut run_map: HashMap<Run, Vec<EventFileBuf>> = HashMap::new();
         let walker = WalkDir::new(&self.root)
             .sort_by(|a, b| a.file_name().cmp(b.file_name()))
             .follow_links(true);
@@ -88,12 +88,15 @@ impl Logdir for DiskLogdir {
                 run_relpath.push(".");
             }
             let run = Run(run_relpath.display().to_string());
-            run_map.entry(run).or_default().push(dirent.into_path());
+            run_map
+                .entry(run)
+                .or_default()
+                .push(EventFileBuf(dirent.into_path()));
         }
         Ok(run_map)
     }
 
-    fn open(&self, path: &Path) -> io::Result<Self::File> {
-        File::open(self.root.join(path)).map(BufReader::new)
+    fn open(&self, path: &EventFileBuf) -> io::Result<Self::File> {
+        File::open(self.root.join(&path.0)).map(BufReader::new)
     }
 }

@@ -18,14 +18,13 @@ limitations under the License.
 use log::{debug, warn};
 use std::collections::{BTreeMap, HashMap, HashSet};
 use std::io::Read;
-use std::path::PathBuf;
 use std::sync::RwLock;
 use std::time::{Duration, Instant};
 
 use crate::commit;
 use crate::data_compat::{EventValue, GraphDefValue, SummaryValue, TaggedRunMetadataValue};
 use crate::event_file::EventFileReader;
-use crate::logdir::Logdir;
+use crate::logdir::{EventFileBuf, Logdir};
 use crate::proto::tensorboard as pb;
 use crate::reservoir::StageReservoir;
 use crate::types::{Run, Step, Tag, WallTime};
@@ -45,7 +44,7 @@ pub struct RunLoader<R> {
     /// with actual start time. See [`EventFile::Dead`] for conditions under which an event file
     /// may be dead. Once an event file is added to this map, it may become dead, but it will not
     /// be removed entirely. This way, we know not to just re-open it again at the next load cycle.
-    files: BTreeMap<PathBuf, EventFile<R>>,
+    files: BTreeMap<EventFileBuf, EventFile<R>>,
 
     /// Whether to compute CRCs for records before parsing as protos.
     checksum: bool,
@@ -189,7 +188,7 @@ impl<R: Read> RunLoader<R> {
     pub fn reload(
         &mut self,
         logdir: &impl Logdir<File = R>,
-        filenames: Vec<PathBuf>,
+        filenames: Vec<EventFileBuf>,
         run_data: &RwLock<commit::RunData>,
     ) {
         let run_name = self.run.0.clone();
@@ -225,9 +224,9 @@ impl<R: Read> RunLoader<R> {
     ///
     /// After this function returns, `self.files` may still have keys not in `filenames`, but they
     /// will all map to [`EventFile::Dead`].
-    fn update_file_set(&mut self, logdir: &impl Logdir<File = R>, filenames: Vec<PathBuf>) {
+    fn update_file_set(&mut self, logdir: &impl Logdir<File = R>, filenames: Vec<EventFileBuf>) {
         // Remove any discarded files.
-        let new_file_set: HashSet<&PathBuf> = filenames.iter().collect();
+        let new_file_set: HashSet<&EventFileBuf> = filenames.iter().collect();
         for (k, v) in self.files.iter_mut() {
             if !new_file_set.contains(k) {
                 *v = EventFile::Dead;
@@ -274,7 +273,7 @@ impl<R: Read> RunLoader<R> {
                     Err(ReadRecordError(Truncated)) => break,
                     Err(e) => {
                         // TODO(@wchargin): Improve error handling?
-                        warn!("Read error in {}: {:?}", filename.display(), e);
+                        warn!("Read error in {}: {:?}", filename.0.display(), e);
                         *ef = EventFile::Dead;
                         break;
                     }
@@ -439,7 +438,7 @@ mod test {
             .insert(run.clone(), Default::default());
         loader.reload(
             &logdir,
-            vec![f1_name, f2_name],
+            vec![EventFileBuf(f1_name), EventFileBuf(f2_name)],
             &commit.runs.read().unwrap()[&run],
         );
 

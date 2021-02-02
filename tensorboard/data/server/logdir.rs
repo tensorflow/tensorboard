@@ -19,7 +19,7 @@ use log::warn;
 use rayon::prelude::{IntoParallelIterator, ParallelIterator};
 use std::collections::HashMap;
 use std::io::{self, Read};
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 use crate::commit::Commit;
 use crate::run::RunLoader;
@@ -34,27 +34,50 @@ pub trait Logdir {
     ///
     /// Event files within each run should be emitted in chronological order. Canonically, a file
     /// is an event file if its basename contains [`EVENT_FILE_BASENAME_INFIX`] as a substring.
-    fn discover(&self) -> io::Result<HashMap<Run, Vec<PathBuf>>>;
+    ///
+    /// A `Run` whose corresponding `Vec<EventFileBuf>` is empty is interpreted as if the run were
+    /// absent.
+    fn discover(&self) -> io::Result<HashMap<Run, Vec<EventFileBuf>>>;
 
     /// Attempts to open an event file for reading.
     ///
     /// The `path` should be one of the values returned by a previous call to [`Self::discover`].
-    fn open(&self, path: &Path) -> io::Result<Self::File>;
+    fn open(&self, path: &EventFileBuf) -> io::Result<Self::File>;
 }
+
+/// An opaque reference to an event file within the context of a specific log directory.
+///
+/// Event files are represented as [`PathBuf`]s, but the precise semantics are at the discretion of
+/// the [`Logdir`] implementation. They may or may not represent paths on the user's physical
+/// filesystem. Clients of a [`Logdir`] should treat `EventFileBuf`s as opaque: they should be
+/// returned from [`Logdir::discover`] and passed verbatim to [`Logdir::open`], without inspection
+/// or modification.
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone)]
+pub struct EventFileBuf(pub PathBuf);
 
 /// A file is treated as an event file if its basename contains this substring.
 pub const EVENT_FILE_BASENAME_INFIX: &str = "tfevents";
 
-/// A loader for a log directory, connecting a filesystem to a [`Commit`] via [`RunLoader`]s.
+/// A loader for a [`Logdir`], connecting a filesystem to a [`Commit`] via [`RunLoader`]s.
+///
+/// A `LogdirLoader` is a stateful object. Its [`reload`][Self::reload] method polls the underlying
+/// logdir for the state of the world, reads in all data, and updates the associated commit. Since
+/// a `LogdirLoader` only borrows its commit, other clients may read data from the commit as it's
+/// updated, possibly concurrently.
 pub struct LogdirLoader<'a, L: Logdir> {
+    /// Thread pool used for loading runs in parallel.
     thread_pool: rayon::ThreadPool,
+    /// Shared reference to a commit, updated by [`Self::reload`].
     commit: &'a Commit,
+    /// Log directory providing the source of truth for event file data.
     logdir: L,
+    /// Stateful run loaders for all known runs.
     runs: HashMap<Run, RunLoader<<L as Logdir>::File>>,
+    /// Whether new run loaders should unconditionally verify CRCs (see [`RunLoader::checksum`]).
     checksum: bool,
 }
 
-type Discoveries = HashMap<Run, Vec<PathBuf>>;
+type Discoveries = HashMap<Run, Vec<EventFileBuf>>;
 
 impl<'a, L: Logdir> LogdirLoader<'a, L>
 where
