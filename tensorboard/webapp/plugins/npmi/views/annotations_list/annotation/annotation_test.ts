@@ -31,9 +31,11 @@ import {
   getHiddenAnnotations,
   getShowCounts,
 } from '../../../store';
-import {getRunColorMap} from '../../../../../selectors';
+import * as selectors from '../../../../../selectors';
+import {buildRun} from '../../../../../runs/store/testing';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
+import {getExperimentIdsFromRoute} from '../../../../../app_routing/store/app_routing_selectors';
 
 describe('Npmi Annotations List Row', () => {
   let store: MockStore<State>;
@@ -115,11 +117,20 @@ describe('Npmi Annotations List Row', () => {
   });
 
   it('renders annotation', () => {
-    store.overrideSelector(getRunColorMap, {
+    store.overrideSelector(selectors.getRunColorMap, {
       run_1: '#000',
       run_2: '#AAA',
       run_3: '#FFF',
     });
+    store.overrideSelector(getExperimentIdsFromRoute, ['default']);
+    store.overrideSelector(
+      selectors.getRunMap,
+      new Map([
+        ['run_1', buildRun({id: 'run_1'})],
+        ['run_2', buildRun({id: 'run_2'})],
+        ['run_3', buildRun({id: 'run_3'})],
+      ])
+    );
     const fixture = createComponentInstance();
     fixture.detectChanges();
 
@@ -172,11 +183,20 @@ describe('Npmi Annotations List Row', () => {
 
   it('renders selected annotation', () => {
     store.overrideSelector(getSelectedAnnotations, ['annotation_1']);
-    store.overrideSelector(getRunColorMap, {
+    store.overrideSelector(selectors.getRunColorMap, {
       run_1: '#000',
       run_2: '#AAA',
       run_3: '#FFF',
     });
+    store.overrideSelector(getExperimentIdsFromRoute, ['default']);
+    store.overrideSelector(
+      selectors.getRunMap,
+      new Map([
+        ['run_1', buildRun({id: 'run_1'})],
+        ['run_2', buildRun({id: 'run_2'})],
+        ['run_3', buildRun({id: 'run_3'})],
+      ])
+    );
     const fixture = createComponentInstance();
     fixture.detectChanges();
 
@@ -187,11 +207,47 @@ describe('Npmi Annotations List Row', () => {
 
   it('renders flagged annotation', () => {
     store.overrideSelector(getFlaggedAnnotations, ['annotation_1']);
-    store.overrideSelector(getRunColorMap, {
+    store.overrideSelector(selectors.getRunColorMap, {
       run_1: '#000',
       run_2: '#AAA',
       run_3: '#FFF',
     });
+    store.overrideSelector(getExperimentIdsFromRoute, ['default']);
+    store.overrideSelector(
+      selectors.getRunMap,
+      new Map([
+        [
+          'run_1',
+          {
+            id: 'run_1',
+            name: 'run_1',
+            startTime: 0,
+            hparams: null,
+            metrics: null,
+          },
+        ],
+        [
+          'run_2',
+          {
+            id: 'run_2',
+            name: 'run_2',
+            startTime: 0,
+            hparams: null,
+            metrics: null,
+          },
+        ],
+        [
+          'run_3',
+          {
+            id: 'run_3',
+            name: 'run_3',
+            startTime: 0,
+            hparams: null,
+            metrics: null,
+          },
+        ],
+      ])
+    );
     const fixture = createComponentInstance();
     fixture.detectChanges();
 
@@ -206,11 +262,20 @@ describe('Npmi Annotations List Row', () => {
 
   it('renders hidden annotation', () => {
     store.overrideSelector(getHiddenAnnotations, ['annotation_1']);
-    store.overrideSelector(getRunColorMap, {
+    store.overrideSelector(selectors.getRunColorMap, {
       run_1: '#000',
       run_2: '#AAA',
       run_3: '#FFF',
     });
+    store.overrideSelector(getExperimentIdsFromRoute, ['default']);
+    store.overrideSelector(
+      selectors.getRunMap,
+      new Map([
+        ['run_1', buildRun({id: 'run_1'})],
+        ['run_2', buildRun({id: 'run_2'})],
+        ['run_3', buildRun({id: 'run_3'})],
+      ])
+    );
     const fixture = createComponentInstance();
     fixture.detectChanges();
 
@@ -223,11 +288,20 @@ describe('Npmi Annotations List Row', () => {
 
   it('renders annotation that is both flagged and hidden', () => {
     store.overrideSelector(getHiddenAnnotations, ['annotation_1']);
-    store.overrideSelector(getRunColorMap, {
+    store.overrideSelector(selectors.getRunColorMap, {
       run_1: '#000',
       run_2: '#AAA',
       run_3: '#FFF',
     });
+    store.overrideSelector(getExperimentIdsFromRoute, ['default']);
+    store.overrideSelector(
+      selectors.getRunMap,
+      new Map([
+        ['run_1', buildRun({id: 'run_1'})],
+        ['run_2', buildRun({id: 'run_2'})],
+        ['run_3', buildRun({id: 'run_3'})],
+      ])
+    );
     store.overrideSelector(getFlaggedAnnotations, ['annotation_1']);
     const fixture = createComponentInstance();
     fixture.detectChanges();
@@ -249,11 +323,20 @@ describe('Npmi Annotations List Row', () => {
 
   it('does not render the counts when not active', () => {
     store.overrideSelector(getShowCounts, false);
-    store.overrideSelector(getRunColorMap, {
+    store.overrideSelector(selectors.getRunColorMap, {
       run_1: '#000',
       run_2: '#AAA',
       run_3: '#FFF',
     });
+    store.overrideSelector(getExperimentIdsFromRoute, ['default']);
+    store.overrideSelector(
+      selectors.getRunMap,
+      new Map([
+        ['run_1', buildRun({id: 'run_1'})],
+        ['run_2', buildRun({id: 'run_2'})],
+        ['run_3', buildRun({id: 'run_3'})],
+      ])
+    );
     const fixture = createComponentInstance();
     fixture.detectChanges();
 
