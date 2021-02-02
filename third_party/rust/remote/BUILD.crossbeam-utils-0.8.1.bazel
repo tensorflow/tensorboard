@@ -38,6 +38,7 @@ rust_library(
     name = "crossbeam_utils",
     srcs = glob(["**/*.rs"]),
     crate_features = [
+        "default",
         "lazy_static",
         "std",
     ],

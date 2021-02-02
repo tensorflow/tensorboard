@@ -139,6 +139,15 @@ alias(
 )
 
 alias(
+    name = "rayon",
+    actual = "@raze__rayon__1_5_0//:rayon",
+    tags = [
+        "cargo-raze",
+        "manual",
+    ],
+)
+
+alias(
     name = "serde",
     actual = "@raze__serde__1_0_118//:serde",
     tags = [
