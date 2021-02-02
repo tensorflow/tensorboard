@@ -18,6 +18,7 @@
 files=$(git grep -L "Copyright 20[0-9][0-9] The TensorFlow" \
     'tensorboard/*.*' \
     ':!*.'{pyc,json,png,wav,proto,pbtxt,md,in,rst,cfg,ipynb,svg,lock} \
+    ':!tensorboard/data/server/cargo/' \
     ':!tensorboard/components/tf_imports/*.html')
 
 count=$(echo "$files" | wc -l | awk '{print $1}')
