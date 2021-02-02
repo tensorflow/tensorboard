@@ -44,7 +44,7 @@ def _dedent(text):
         result.append(line)
     return "".join(result)
 
-def py_repl(name, preamble = None, deps = None):
+def py_repl(name, preamble = None, deps = None, **kwargs):
     """Executable target that runs the python interpeter interactively.
 
     This provides a convenient way to interactively explore Python library
@@ -62,6 +62,7 @@ def py_repl(name, preamble = None, deps = None):
         execution, making this easier to use with triple-quoted string literals.
       deps: py_library targets that should be available as dependencies
         to import into the interpreter
+      **kwargs: passed through to the underlying `py_binary` rule
     """
     if preamble == None:
         preamble = []
@@ -85,6 +86,7 @@ def py_repl(name, preamble = None, deps = None):
         srcs = [name + ".py"],
         main = name + ".py",
         deps = deps,
+        **kwargs
     )
 
     _write_file(
