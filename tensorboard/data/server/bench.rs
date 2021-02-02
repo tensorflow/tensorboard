@@ -45,13 +45,11 @@ fn main() {
     init_logging(&opts);
 
     let commit = Commit::new();
-<<<<<<< HEAD
-    let mut loader = LogdirLoader::new(&commit, DiskLogdir::new(opts.logdir));
-||||||| 3fcdea271
-    let mut loader = LogdirLoader::new(&commit, opts.logdir);
-=======
-    let mut loader = LogdirLoader::new(&commit, opts.logdir, opts.reload_threads.unwrap_or(0));
->>>>>>> 30f6489794ebd15a00edd2e460ed082d7aa15162
+    let mut loader = LogdirLoader::new(
+        &commit,
+        DiskLogdir::new(opts.logdir),
+        opts.reload_threads.unwrap_or(0),
+    );
     loader.checksum(opts.checksum); // if neither `--[no-]checksum` given, defaults to false
 
     info!("Starting load cycle");

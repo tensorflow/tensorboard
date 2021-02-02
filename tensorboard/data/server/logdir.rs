@@ -15,47 +15,29 @@ limitations under the License.
 
 //! Loader for many runs under a directory.
 
-<<<<<<< HEAD
 use log::warn;
+use rayon::prelude::{IntoParallelIterator, ParallelIterator};
 use std::collections::HashMap;
 use std::io::{self, Read};
-||||||| 3fcdea271
-use log::{error, warn};
-use std::collections::{HashMap, HashSet};
-=======
-use log::{error, warn};
-use rayon::prelude::{IntoParallelIterator, ParallelIterator};
-use std::collections::{HashMap, HashSet};
->>>>>>> 30f6489794ebd15a00edd2e460ed082d7aa15162
 use std::path::{Path, PathBuf};
 
 use crate::commit::Commit;
 use crate::run::RunLoader;
 use crate::types::Run;
 
-<<<<<<< HEAD
+/// A loader for a log directory, connecting a filesystem to a [`Commit`] via [`RunLoader`]s.
+pub struct LogdirLoader<'a, L: Logdir> {
+    thread_pool: rayon::ThreadPool,
+    commit: &'a Commit,
+    logdir: L,
+    runs: HashMap<Run, RunLoader<<L as Logdir>::File>>,
+    checksum: bool,
+}
+
 /// A TensorBoard log directory, with event files organized into runs.
 pub trait Logdir {
     /// Type of output stream for reading event files under this log directory.
     type File: Read;
-||||||| 3fcdea271
-/// A loader for a log directory, connecting a filesystem to a [`Commit`] via [`RunLoader`]s.
-pub struct LogdirLoader<'a> {
-    commit: &'a Commit,
-    logdir: PathBuf,
-    runs: HashMap<Run, RunState>,
-    checksum: bool,
-}
-=======
-/// A loader for a log directory, connecting a filesystem to a [`Commit`] via [`RunLoader`]s.
-pub struct LogdirLoader<'a> {
-    thread_pool: rayon::ThreadPool,
-    commit: &'a Commit,
-    logdir: PathBuf,
-    runs: HashMap<Run, RunState>,
-    checksum: bool,
-}
->>>>>>> 30f6489794ebd15a00edd2e460ed082d7aa15162
 
     /// Finds all event files under the log directory.
     ///
@@ -72,23 +54,14 @@ pub struct LogdirLoader<'a> {
 /// A file is treated as an event file if its basename contains this substring.
 pub const EVENT_FILE_BASENAME_INFIX: &str = "tfevents";
 
-/// A loader for a log directory, connecting a filesystem to a [`Commit`] via [`RunLoader`]s.
-pub struct LogdirLoader<'a, L: Logdir> {
-    commit: &'a Commit,
-    logdir: L,
-    runs: HashMap<Run, RunLoader<<L as Logdir>::File>>,
-    checksum: bool,
-}
-
 type Discoveries = HashMap<Run, Vec<PathBuf>>;
 
-impl<'a, L: Logdir> LogdirLoader<'a, L> {
+impl<'a, L: Logdir> LogdirLoader<'a, L>
+where
+    L: Sync,
+    <L as Logdir>::File: Sync + Send,
+{
     /// Creates a new, empty logdir loader. Does not load any data.
-<<<<<<< HEAD
-    pub fn new(commit: &'a Commit, logdir: L) -> Self {
-||||||| 3fcdea271
-    pub fn new(commit: &'a Commit, logdir: PathBuf) -> Self {
-=======
     ///
     /// This constructor is heavyweight: it builds a new thread-pool. The thread pool will be
     /// reused for all calls to [`Self::reload`]. If `reload_threads` is `0`, the number of threads
@@ -98,13 +71,12 @@ impl<'a, L: Logdir> LogdirLoader<'a, L> {
     ///
     /// If [`rayon::ThreadPoolBuilder::build`] returns an error; should only happen if there is a
     /// failure to create threads at the OS level.
-    pub fn new(commit: &'a Commit, logdir: PathBuf, reload_threads: usize) -> Self {
+    pub fn new(commit: &'a Commit, logdir: L, reload_threads: usize) -> Self {
         let thread_pool = rayon::ThreadPoolBuilder::new()
             .num_threads(reload_threads)
             .thread_name(|i| format!("Reloader-{:03}", i))
             .build()
             .expect("failed to construct Rayon thread pool");
->>>>>>> 30f6489794ebd15a00edd2e460ed082d7aa15162
         LogdirLoader {
             thread_pool,
             commit,
@@ -201,50 +173,28 @@ impl<'a, L: Logdir> LogdirLoader<'a, L> {
             .runs
             .read()
             .expect("could not acquire runs.data");
-<<<<<<< HEAD
-        for (run, loader) in self.runs.iter_mut() {
-            let filenames = discoveries
-||||||| 3fcdea271
-        for (run, run_state) in self.runs.iter_mut() {
-            let event_files = discoveries
-=======
 
         let mut work_items = Vec::new();
-        for (run, run_state) in self.runs.iter_mut() {
-            let event_files = discoveries
->>>>>>> 30f6489794ebd15a00edd2e460ed082d7aa15162
+        for (run, loader) in self.runs.iter_mut() {
+            let filenames = discoveries
                 .remove(run)
                 .unwrap_or_else(|| panic!("run in self.runs but not discovered: {:?}", run));
-<<<<<<< HEAD
-            loader.reload(
-                &self.logdir,
-                filenames,
-                commit_runs.get(run).unwrap_or_else(|| {
-                    panic!(
-                        "run in self.runs but not in commit.runs \
-||||||| 3fcdea271
-            let filenames: Vec<PathBuf> = event_files.into_iter().map(|d| d.event_file).collect();
-            run_state.loader.reload(
-                filenames,
-                commit_runs.get(run).unwrap_or_else(|| {
-                    panic!(
-                        "run in self.runs but not in commit.runs \
-=======
-            let filenames: Vec<PathBuf> = event_files.into_iter().map(|d| d.event_file).collect();
             let run_data = commit_runs.get(run).unwrap_or_else(|| {
                 panic!(
                     "run in self.runs but not in commit.runs \
->>>>>>> 30f6489794ebd15a00edd2e460ed082d7aa15162
                         (is another client mutating this commit?): {:?}",
                     run
                 )
             });
-            work_items.push((&mut run_state.loader, filenames, run_data));
+            work_items.push((loader, filenames, run_data));
         }
-        self.thread_pool.install(|| {
+        let logdir = &self.logdir;
+        self.thread_pool.install(move || {
             work_items
                 .into_par_iter()
-                .for_each(|(loader, filenames, run_data)| loader.reload(filenames, run_data));
+                .for_each(|(loader, filenames, run_data)| {
+                    loader.reload(logdir, filenames, run_data);
+                });
         });
     }
 }
@@ -301,14 +251,8 @@ mod tests {
         let test_run = Run(format!("mnist{}test", std::path::MAIN_SEPARATOR));
 
         let commit = Commit::new();
-<<<<<<< HEAD
         let logdir = DiskLogdir::new(logdir.path().to_path_buf());
-        let mut loader = LogdirLoader::new(&commit, logdir);
-||||||| 3fcdea271
-        let mut loader = LogdirLoader::new(&commit, logdir.path().to_path_buf());
-=======
-        let mut loader = LogdirLoader::new(&commit, logdir.path().to_path_buf(), 1);
->>>>>>> 30f6489794ebd15a00edd2e460ed082d7aa15162
+        let mut loader = LogdirLoader::new(&commit, logdir, 1);
 
         // Check that we persist the right run states in the loader.
         loader.reload();
@@ -362,14 +306,8 @@ mod tests {
         )?;
 
         let commit = Commit::new();
-<<<<<<< HEAD
         let logdir = DiskLogdir::new(logdir.path().to_path_buf());
-        let mut loader = LogdirLoader::new(&commit, logdir);
-||||||| 3fcdea271
-        let mut loader = LogdirLoader::new(&commit, logdir.path().to_path_buf());
-=======
-        let mut loader = LogdirLoader::new(&commit, logdir.path().to_path_buf(), 1);
->>>>>>> 30f6489794ebd15a00edd2e460ed082d7aa15162
+        let mut loader = LogdirLoader::new(&commit, logdir, 1);
 
         let get_run_names = || {
             let runs_store = commit.runs.read().unwrap();
@@ -408,86 +346,6 @@ mod tests {
         Ok(())
     }
 
-<<<<<<< HEAD
-||||||| 3fcdea271
-    #[cfg(target_os = "linux")] // macOS seems to sometimes give EILSEQ on non-UTF-8 filenames
-    #[test]
-    fn test_bad_unicode_collision() -> Result<(), Box<dyn std::error::Error>> {
-        use std::ffi::OsStr;
-        use std::os::unix::ffi::OsStrExt;
-
-        // Generate a bad-Unicode collision.
-        let bad1 = Path::new(OsStr::from_bytes(&b"test\x99.run"[..]));
-        let bad2 = Path::new(OsStr::from_bytes(&b"test\xee.run"[..]));
-        let run1 = Run(bad1.to_string_lossy().into_owned());
-        let run2 = Run(bad2.to_string_lossy().into_owned());
-        assert_ne!(bad1, bad2);
-        assert_eq!(run1, run2);
-        let run = run1;
-        drop(run2);
-
-        let logdir = tempfile::tempdir()?;
-        for &dir_basename in &[bad1, bad2] {
-            let dir = logdir.path().join(dir_basename);
-            fs::create_dir(&dir)?;
-            File::create(dir.join(EVENT_FILE_BASENAME_INFIX))?;
-        }
-
-        let commit = Commit::new();
-        let mut loader = LogdirLoader::new(&commit, logdir.path().to_path_buf());
-        loader.reload();
-
-        assert_eq!(loader.runs.keys().collect::<Vec<_>>(), vec![&run]);
-        let run_state = &loader.runs[&run];
-        assert!(bad1 < bad2);
-        assert_eq!(run_state.relpath, bad1);
-        let mut expected_relpaths = HashSet::new();
-        expected_relpaths.insert(bad2.to_path_buf());
-        assert_eq!(run_state.collided_relpaths, expected_relpaths);
-
-        Ok(())
-    }
-
-=======
-    #[cfg(target_os = "linux")] // macOS seems to sometimes give EILSEQ on non-UTF-8 filenames
-    #[test]
-    fn test_bad_unicode_collision() -> Result<(), Box<dyn std::error::Error>> {
-        use std::ffi::OsStr;
-        use std::os::unix::ffi::OsStrExt;
-
-        // Generate a bad-Unicode collision.
-        let bad1 = Path::new(OsStr::from_bytes(&b"test\x99.run"[..]));
-        let bad2 = Path::new(OsStr::from_bytes(&b"test\xee.run"[..]));
-        let run1 = Run(bad1.to_string_lossy().into_owned());
-        let run2 = Run(bad2.to_string_lossy().into_owned());
-        assert_ne!(bad1, bad2);
-        assert_eq!(run1, run2);
-        let run = run1;
-        drop(run2);
-
-        let logdir = tempfile::tempdir()?;
-        for &dir_basename in &[bad1, bad2] {
-            let dir = logdir.path().join(dir_basename);
-            fs::create_dir(&dir)?;
-            File::create(dir.join(EVENT_FILE_BASENAME_INFIX))?;
-        }
-
-        let commit = Commit::new();
-        let mut loader = LogdirLoader::new(&commit, logdir.path().to_path_buf(), 1);
-        loader.reload();
-
-        assert_eq!(loader.runs.keys().collect::<Vec<_>>(), vec![&run]);
-        let run_state = &loader.runs[&run];
-        assert!(bad1 < bad2);
-        assert_eq!(run_state.relpath, bad1);
-        let mut expected_relpaths = HashSet::new();
-        expected_relpaths.insert(bad2.to_path_buf());
-        assert_eq!(run_state.collided_relpaths, expected_relpaths);
-
-        Ok(())
-    }
-
->>>>>>> 30f6489794ebd15a00edd2e460ed082d7aa15162
     #[cfg(unix)]
     #[test]
     fn test_symlink() -> Result<(), Box<dyn std::error::Error>> {
@@ -499,14 +357,8 @@ mod tests {
         File::create(train_dir.join(EVENT_FILE_BASENAME_INFIX))?;
 
         let commit = Commit::new();
-<<<<<<< HEAD
         let logdir = DiskLogdir::new(logdir.path().to_path_buf());
-        let mut loader = LogdirLoader::new(&commit, logdir);
-||||||| 3fcdea271
-        let mut loader = LogdirLoader::new(&commit, logdir.path().to_path_buf());
-=======
-        let mut loader = LogdirLoader::new(&commit, logdir.path().to_path_buf(), 1);
->>>>>>> 30f6489794ebd15a00edd2e460ed082d7aa15162
+        let mut loader = LogdirLoader::new(&commit, logdir, 1);
         loader.reload();
 
         assert_eq!(
@@ -528,14 +380,8 @@ mod tests {
         std::os::unix::fs::symlink(&dir2, &dir1)?;
 
         let commit = Commit::new();
-<<<<<<< HEAD
         let logdir = DiskLogdir::new(logdir.path().to_path_buf());
-        let mut loader = LogdirLoader::new(&commit, logdir);
-||||||| 3fcdea271
-        let mut loader = LogdirLoader::new(&commit, logdir.path().to_path_buf());
-=======
-        let mut loader = LogdirLoader::new(&commit, logdir.path().to_path_buf(), 1);
->>>>>>> 30f6489794ebd15a00edd2e460ed082d7aa15162
+        let mut loader = LogdirLoader::new(&commit, logdir, 1);
         loader.reload(); // should not hang
         Ok(())
     }
