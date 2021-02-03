@@ -25,6 +25,10 @@ const STORAGE_BASE: &str = "https://storage.googleapis.com";
 const API_BASE: &str = "https://www.googleapis.com/storage/v1";
 
 /// GCS client.
+///
+/// Cloning a GCS client is cheap and shares the underlying connection pool, as with a
+/// [`reqwest::Client`].
+#[derive(Clone)]
 pub struct Client {
     http: HttpClient,
 }
