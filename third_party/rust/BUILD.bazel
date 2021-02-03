@@ -148,6 +148,15 @@ alias(
 )
 
 alias(
+    name = "reqwest",
+    actual = "@raze__reqwest__0_11_0//:reqwest",
+    tags = [
+        "cargo-raze",
+        "manual",
+    ],
+)
+
+alias(
     name = "serde",
     actual = "@raze__serde__1_0_118//:serde",
     tags = [
