@@ -212,7 +212,7 @@ where
             work_items.push((loader, filenames, run_data));
         }
         let logdir = &self.logdir;
-        self.thread_pool.install(move || {
+        self.thread_pool.install(|| {
             work_items
                 .into_par_iter()
                 .for_each(|(loader, filenames, run_data)| {
