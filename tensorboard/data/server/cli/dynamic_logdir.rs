@@ -42,6 +42,9 @@ impl DynLogdir {
     ///
     /// This succeeds unless the path represents a GCS logdir and no HTTP client can be opened. In
     /// case of failure, errors will be logged to the active logger.
+    ///
+    /// This constructor is heavyweight; it may construct an HTTP client and read a GCS credentials
+    /// file from disk.
     pub fn new(path: PathBuf) -> Option<Self> {
         let path_str = path.to_string_lossy();
         let gcs_path = match path_str.strip_prefix("gs://") {
@@ -52,7 +55,7 @@ impl DynLogdir {
         let mut parts = gcs_path.splitn(2, '/');
         let bucket = parts.next().unwrap().to_string(); // splitn always yields at least one element
         let prefix = parts.next().unwrap_or("").to_string();
-        let client = match gcs::Client::new() {
+        let client = match gcs::Client::new(gcs::Credentials::from_disk()) {
             Err(e) => {
                 error!("Could not open GCS connection: {}", e);
                 return None;

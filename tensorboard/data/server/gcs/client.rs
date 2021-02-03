@@ -16,8 +16,15 @@ limitations under the License.
 //! Client for listing and reading GCS files.
 
 use log::debug;
-use reqwest::{blocking::Client as HttpClient, StatusCode, Url};
+use reqwest::{
+    blocking::{Client as HttpClient, RequestBuilder, Response},
+    StatusCode, Url,
+};
 use std::ops::RangeInclusive;
+use std::sync::Arc;
+use std::time::Duration;
+
+use super::auth::{Credentials, TokenStore};
 
 /// Base URL for direct object reads.
 const STORAGE_BASE: &str = "https://storage.googleapis.com";
@@ -26,22 +33,24 @@ const API_BASE: &str = "https://www.googleapis.com/storage/v1";
 
 /// GCS client.
 ///
-/// Cloning a GCS client is cheap and shares the underlying connection pool, as with a
-/// [`reqwest::Client`].
+/// Cloning a GCS client is cheap and shares the underlying credential store and connection pool,
+/// as with a [`reqwest::Client`].
 #[derive(Clone)]
 pub struct Client {
+    token_store: Arc<TokenStore>,
     http: HttpClient,
 }
 
 impl Client {
-    /// Creates a new GCS client.
+    /// Creates a new GCS client with the given credentials.
     ///
     /// May fail if constructing the underlying HTTP client fails.
-    pub fn new() -> reqwest::Result<Self> {
+    pub fn new(creds: Credentials) -> reqwest::Result<Self> {
         let http = HttpClient::builder()
             .user_agent(format!("tensorboard-data-server/{}", crate::VERSION))
             .build()?;
-        Ok(Self { http })
+        let token_store = Arc::new(TokenStore::new(creds));
+        Ok(Self { http, token_store })
     }
 }
 
@@ -63,6 +72,13 @@ struct ListResponseItem {
 }
 
 impl Client {
+    fn send_authenticated(&self, rb: RequestBuilder) -> reqwest::Result<Response> {
+        let token_lifetime = Duration::from_secs(10);
+        self.token_store
+            .authenticate(rb, &self.http, token_lifetime)
+            .send()
+    }
+
     /// Lists all objects in a bucket matching the given prefix.
     pub fn list(&self, bucket: &str, prefix: &str) -> reqwest::Result<Vec<String>> {
         let mut base_url = Url::parse(API_BASE).unwrap();
@@ -86,7 +102,10 @@ impl Client {
                 "Listing page {} of bucket {:?} (prefix={:?})",
                 page, bucket, prefix
             );
-            let res: ListResponse = self.http.get(url).send()?.error_for_status()?.json()?;
+            let res: ListResponse = self
+                .send_authenticated(self.http.get(url))?
+                .error_for_status()?
+                .json()?;
             results.extend(res.items.into_iter().map(|i| i.name));
             if res.next_page_token.is_none() {
                 break;
@@ -111,7 +130,7 @@ impl Client {
         // With "Range: bytes=a-b", if `b >= 2**63` then GCS ignores the range entirely.
         let max_max = (1 << 63) - 1;
         let range = format!("bytes={}-{}", range.start(), range.end().min(&max_max));
-        let res = self.http.get(url).header("Range", range).send()?;
+        let res = self.send_authenticated(self.http.get(url).header("Range", range))?;
         if res.status() == StatusCode::RANGE_NOT_SATISFIABLE {
             return Ok(Vec::new());
         }

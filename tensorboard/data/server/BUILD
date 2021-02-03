@@ -35,6 +35,7 @@ rust_library(
         "downsample.rs",
         "event_file.rs",
         "gcs.rs",
+        "gcs/auth.rs",
         "gcs/client.rs",
         "gcs/logdir.rs",
         "logdir.rs",
