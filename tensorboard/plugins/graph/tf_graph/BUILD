@@ -18,6 +18,7 @@ tf_ts_library(
         "//tensorboard/components/polymer:legacy_element_mixin",
         "//tensorboard/components/tf_dashboard_common",
         "//tensorboard/plugins/graph/tf_graph_common",
+        "//tensorboard/webapp/tb_debug",
         "@npm//@polymer/decorators",
         "@npm//@polymer/polymer",
         "@npm//@types/d3",

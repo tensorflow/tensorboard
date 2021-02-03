@@ -19,6 +19,7 @@ import * as d3 from 'd3';
 import * as _ from 'lodash';
 
 import '../../../components/polymer/irons_and_papers';
+import * as tb_debug from '../../../webapp/tb_debug';
 import './tf-graph-scene';
 import * as tf_graph from '../tf_graph_common/graph';
 import * as tf_graph_scene from '../tf_graph_common/scene';
@@ -306,7 +307,7 @@ class TfGraph extends LegacyElementMixin(PolymerElement) {
 
         return renderGraph;
       },
-      tf_graph_util.DebugEventId.RENDER_BUILD_HIERARCHY
+      tb_debug.GraphDebugEventId.RENDER_BUILD_HIERARCHY
     );
 
     anyThis._setRenderHierarchy(renderGraph);

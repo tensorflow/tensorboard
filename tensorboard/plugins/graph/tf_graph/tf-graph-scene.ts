@@ -20,6 +20,7 @@ import * as d3 from 'd3';
 
 import './tf-graph-minimap';
 import '../../../components/tf_dashboard_common/tensorboard-color';
+import * as tb_debug from '../../../webapp/tb_debug';
 
 import * as tf_graph from '../tf_graph_common/graph';
 import * as tf_graph_scene from '../tf_graph_common/scene';
@@ -261,7 +262,7 @@ class TfGraphScene2 extends LegacyElementMixin(PolymerElement) {
         // layout the scene for this meta / series node
         tf_graph_layout.layoutScene(renderHierarchy.root);
       }.bind(this),
-      tf_graph_util.DebugEventId.RENDER_SCENE_LAYOUT
+      tb_debug.GraphDebugEventId.RENDER_SCENE_LAYOUT
     );
     tf_graph_util.time(
       'tf-graph-scene (build scene):',
@@ -274,7 +275,7 @@ class TfGraphScene2 extends LegacyElementMixin(PolymerElement) {
         tf_graph_scene.addGraphClickListener(this.$.svg, this);
         this._updateInputTrace();
       }.bind(this),
-      tf_graph_util.DebugEventId.RENDER_SCENE_BUILD_SCENE
+      tb_debug.GraphDebugEventId.RENDER_SCENE_BUILD_SCENE
     );
     // Update the minimap again when the graph is done animating.
     setTimeout(

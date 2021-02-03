@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import * as tf_graph_util from './util';
+import * as tb_debug from '../../../webapp/tb_debug';
 import * as tf_graph_loader from './loader';
 import * as tf_graph_parser from './parser';
 
@@ -38,8 +38,7 @@ describe('graph tests', () => {
       })
     );
 
-    const debugListenerSpy = jasmine.createSpy();
-    tf_graph_util.addDebugEventListener(debugListenerSpy);
+    const debugListenerSpy = spyOn(tb_debug, 'notifyActionEventFromPolymer');
     await tf_graph_loader.fetchAndConstructHierarchicalGraph(
       mockTracker,
       null /* remotePath */,
@@ -51,31 +50,38 @@ describe('graph tests', () => {
       .map((args: any[]) => args[0]);
     expect(firstArgs).toEqual([
       {
-        eventId: tf_graph_util.DebugEventId.NORMALIZING_NAMES,
+        eventCategory: tb_debug.GRAPH_DEBUG_TIMING_EVENT_CATEGORY,
+        eventAction: tb_debug.GraphDebugEventId.NORMALIZING_NAMES,
         eventValue: jasmine.any(Number),
       },
       {
-        eventId: tf_graph_util.DebugEventId.BUILD_SLIM_GRAPH,
+        eventCategory: tb_debug.GRAPH_DEBUG_TIMING_EVENT_CATEGORY,
+        eventAction: tb_debug.GraphDebugEventId.BUILD_SLIM_GRAPH,
         eventValue: jasmine.any(Number),
       },
       {
-        eventId: tf_graph_util.DebugEventId.HIERARCHY_ADD_NODES,
+        eventCategory: tb_debug.GRAPH_DEBUG_TIMING_EVENT_CATEGORY,
+        eventAction: tb_debug.GraphDebugEventId.HIERARCHY_ADD_NODES,
         eventValue: jasmine.any(Number),
       },
       {
-        eventId: tf_graph_util.DebugEventId.HIERARCHY_DETECT_SERIES,
+        eventCategory: tb_debug.GRAPH_DEBUG_TIMING_EVENT_CATEGORY,
+        eventAction: tb_debug.GraphDebugEventId.HIERARCHY_DETECT_SERIES,
         eventValue: jasmine.any(Number),
       },
       {
-        eventId: tf_graph_util.DebugEventId.HIERARCHY_ADD_EDGES,
+        eventCategory: tb_debug.GRAPH_DEBUG_TIMING_EVENT_CATEGORY,
+        eventAction: tb_debug.GraphDebugEventId.HIERARCHY_ADD_EDGES,
         eventValue: jasmine.any(Number),
       },
       {
-        eventId: tf_graph_util.DebugEventId.HIERARCHY_FIND_SIMILAR_SUBGRAPHS,
+        eventCategory: tb_debug.GRAPH_DEBUG_TIMING_EVENT_CATEGORY,
+        eventAction: tb_debug.GraphDebugEventId.HIERARCHY_FIND_SIMILAR_SUBGRAPHS,
         eventValue: jasmine.any(Number),
       },
       {
-        eventId: tf_graph_util.DebugEventId.GRAPH_LOAD_SUCCEEDED,
+        eventCategory: tb_debug.GRAPH_DEBUG_TIMING_EVENT_CATEGORY,
+        eventAction: tb_debug.GraphDebugEventId.GRAPH_LOAD_SUCCEEDED,
         eventValue: jasmine.any(Number),
       },
     ]);
@@ -93,8 +99,7 @@ describe('graph tests', () => {
       })
     );
 
-    const debugListenerSpy = jasmine.createSpy();
-    tf_graph_util.addDebugEventListener(debugListenerSpy);
+    const debugListenerSpy = spyOn(tb_debug, 'notifyActionEventFromPolymer');
 
     try {
       await tf_graph_loader.fetchAndConstructHierarchicalGraph(
@@ -108,7 +113,8 @@ describe('graph tests', () => {
         .map((args: any[]) => args[0]);
       expect(firstArgs).toEqual([
         {
-          eventId: tf_graph_util.DebugEventId.GRAPH_LOAD_FAILED,
+          eventCategory: tb_debug.GRAPH_DEBUG_TIMING_EVENT_CATEGORY,
+          eventAction: tb_debug.GraphDebugEventId.GRAPH_LOAD_FAILED,
           eventValue: jasmine.any(Number),
         },
       ]);

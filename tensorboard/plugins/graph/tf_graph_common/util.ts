@@ -17,60 +17,28 @@ limitations under the License.
  */
 import * as _ from 'lodash';
 
+import {notifyActionEventFromPolymer} from '../../../webapp/tb_debug';
+import {
+  GraphDebugEventId,
+  GRAPH_DEBUG_TIMING_EVENT_CATEGORY,
+} from '../../../webapp/tb_debug/types';
 import {NodeStats, ProgressTracker} from './common';
 
 const ASYNC_TASK_DELAY = 20;
 
-/**
- * Clients outside of the Graph module may register listeners to be notified
- * whenever a debug event occurs. These are intended for debugging only, do not
- * use them as lifecycle hooks in production.
- */
 export interface DebugEvent {
-  eventId: DebugEventId;
+  eventId: GraphDebugEventId;
   // An associated numeric value. For example, this may represent a duration in
   // milliseconds for a timing event.
   eventValue?: number;
 }
 
-export type DebugEventListener = (debugEvent?: DebugEvent) => any;
-const debugEventListeners = [] as Array<DebugEventListener>;
-
-export function addDebugEventListener(listener: DebugEventListener) {
-  debugEventListeners.push(listener);
-}
-
 export function notifyDebugEvent(debugEvent: DebugEvent) {
-  for (const listener of debugEventListeners) {
-    listener(debugEvent);
-  }
-}
-
-export enum DebugEventId {
-  /**
-   * Pre-rendering.
-   */
-  FETCH_PBTXT_BYTES = 'FETCH_PBTXT_BYTES',
-  PARSE_PBTXT_INTO_OBJECT = 'PARSE_PBTXT_INTO_OBJECT',
-  FETCH_METADATA_PBTXT_BYTES = 'FETCH_METADATA_PBTXT_BYTES',
-  PARSE_METADATA_PBTXT_INTO_OBJECT = 'PARSE_METADATA_PBTXT_INTO_OBJECT',
-  NORMALIZING_NAMES = 'NORMALIZING_NAMES',
-  BUILD_SLIM_GRAPH = 'BUILD_SLIM_GRAPH',
-  HIERARCHY_ADD_NODES = 'HIERARCHY_ADD_NODES',
-  HIERARCHY_DETECT_SERIES = 'HIERARCHY_DETECT_SERIES',
-  HIERARCHY_ADD_EDGES = 'HIERARCHY_ADD_EDGES',
-  HIERARCHY_FIND_SIMILAR_SUBGRAPHS = 'HIERARCHY_FIND_SIMILAR_SUBGRAPHS',
-  /**
-   * Rendering.
-   */
-  RENDER_BUILD_HIERARCHY = 'RENDER_BUILD_HIERARCHY',
-  RENDER_SCENE_LAYOUT = 'RENDER_SCENE_LAYOUT',
-  RENDER_SCENE_BUILD_SCENE = 'RENDER_SCENE_BUILD_SCENE',
-  /**
-   * Total graph loading (superset of other phases).
-   */
-  GRAPH_LOAD_SUCCEEDED = 'GRAPH_LOAD_SUCCEEDED',
-  GRAPH_LOAD_FAILED = 'GRAPH_LOAD_FAILED',
+  notifyActionEventFromPolymer({
+    eventCategory: GRAPH_DEBUG_TIMING_EVENT_CATEGORY,
+    eventAction: debugEvent.eventId,
+    eventValue: debugEvent.eventValue,
+  });
 }
 
 /**
@@ -79,7 +47,7 @@ export enum DebugEventId {
 export function time<T>(
   msg: string,
   task: () => T,
-  debugEventId?: DebugEventId
+  debugEventId?: GraphDebugEventId
 ) {
   let start = Date.now();
   let result = task();
@@ -172,7 +140,7 @@ export function runTask<T>(
   incProgressValue: number,
   task: () => T,
   tracker: ProgressTracker,
-  debugEventId?: DebugEventId
+  debugEventId?: GraphDebugEventId
 ): T {
   // Update the progress message to say the current running task.
   tracker.setMessage(msg);
@@ -198,7 +166,7 @@ export function runAsyncTask<T>(
   incProgressValue: number,
   task: () => T,
   tracker: ProgressTracker,
-  debugEventId?: DebugEventId
+  debugEventId?: GraphDebugEventId
 ): Promise<T> {
   return new Promise((resolve, reject) => {
     // Update the progress message to say the current running task.
@@ -230,7 +198,7 @@ export function runAsyncPromiseTask<T>(
   incProgressValue: number,
   task: () => Promise<T>,
   tracker: ProgressTracker,
-  debugEventId?: DebugEventId
+  debugEventId?: GraphDebugEventId
 ): Promise<T> {
   return new Promise((resolve, reject) => {
     let handleError = function (e) {
