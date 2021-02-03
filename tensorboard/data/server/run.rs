@@ -17,25 +17,24 @@ limitations under the License.
 
 use log::{debug, warn};
 use std::collections::{BTreeMap, HashMap, HashSet};
-use std::fs::File;
-use std::io::BufReader;
-use std::path::PathBuf;
+use std::io::Read;
 use std::sync::RwLock;
 use std::time::{Duration, Instant};
 
 use crate::commit;
 use crate::data_compat::{EventValue, GraphDefValue, SummaryValue, TaggedRunMetadataValue};
 use crate::event_file::EventFileReader;
+use crate::logdir::{EventFileBuf, Logdir};
 use crate::proto::tensorboard as pb;
 use crate::reservoir::StageReservoir;
 use crate::types::{Run, Step, Tag, WallTime};
 
 /// A loader to accumulate reservoir-sampled events in a single TensorBoard run.
 ///
-/// For now, a run loader always reads from [`File`]s on disk. In the future, this may be
-/// parameterized over a filesystem interface.
+/// The type `R` represents the types of files read from disk, as in the
+/// [`Logdir::File`][crate::logdir::Logdir::File] associated type.
 #[derive(Debug)]
-pub struct RunLoader {
+pub struct RunLoader<R> {
     /// The run name associated with this loader. Used primarily for logging; the run name is
     /// canonically defined by the map key under which this `RunLoader` is stored in `LogdirLoader`.
     run: Run,
@@ -45,7 +44,7 @@ pub struct RunLoader {
     /// with actual start time. See [`EventFile::Dead`] for conditions under which an event file
     /// may be dead. Once an event file is added to this map, it may become dead, but it will not
     /// be removed entirely. This way, we know not to just re-open it again at the next load cycle.
-    files: BTreeMap<PathBuf, EventFile<BufReader<File>>>,
+    files: BTreeMap<EventFileBuf, EventFile<R>>,
 
     /// Whether to compute CRCs for records before parsing as protos.
     checksum: bool,
@@ -161,7 +160,7 @@ impl StageTimeSeries {
 /// Minimum time to wait between committing while a run is still loading.
 const COMMIT_INTERVAL: Duration = Duration::from_secs(5);
 
-impl RunLoader {
+impl<R: Read> RunLoader<R> {
     pub fn new(run: Run) -> Self {
         Self {
             run,
@@ -186,11 +185,16 @@ impl RunLoader {
     /// # Panics
     ///
     /// If we need to access `run_data` but the lock is poisoned.
-    pub fn reload(&mut self, filenames: Vec<PathBuf>, run_data: &RwLock<commit::RunData>) {
+    pub fn reload(
+        &mut self,
+        logdir: &impl Logdir<File = R>,
+        filenames: Vec<EventFileBuf>,
+        run_data: &RwLock<commit::RunData>,
+    ) {
         let run_name = self.run.0.clone();
         debug!("Starting load for run {:?}", run_name);
         let start = Instant::now();
-        self.update_file_set(filenames);
+        self.update_file_set(logdir, filenames);
         let mut n = 0;
         let mut last_commit_time = Instant::now();
         self.reload_files(|run_loader_data, event| {
@@ -220,9 +224,9 @@ impl RunLoader {
     ///
     /// After this function returns, `self.files` may still have keys not in `filenames`, but they
     /// will all map to [`EventFile::Dead`].
-    fn update_file_set(&mut self, filenames: Vec<PathBuf>) {
+    fn update_file_set(&mut self, logdir: &impl Logdir<File = R>, filenames: Vec<EventFileBuf>) {
         // Remove any discarded files.
-        let new_file_set: HashSet<&PathBuf> = filenames.iter().collect();
+        let new_file_set: HashSet<&EventFileBuf> = filenames.iter().collect();
         for (k, v) in self.files.iter_mut() {
             if !new_file_set.contains(k) {
                 *v = EventFile::Dead;
@@ -235,9 +239,9 @@ impl RunLoader {
             match self.files.entry(filename) {
                 Entry::Occupied(_) => {}
                 Entry::Vacant(v) => {
-                    let event_file = match File::open(v.key()) {
+                    let event_file = match logdir.open(v.key()) {
                         Ok(file) => {
-                            let mut reader = EventFileReader::new(BufReader::new(file));
+                            let mut reader = EventFileReader::new(file);
                             reader.checksum(self.checksum);
                             EventFile::Active(reader)
                         }
@@ -269,7 +273,7 @@ impl RunLoader {
                     Err(ReadRecordError(Truncated)) => break,
                     Err(e) => {
                         // TODO(@wchargin): Improve error handling?
-                        warn!("Read error in {}: {:?}", filename.display(), e);
+                        warn!("Read error in {}: {:?}", filename.0.display(), e);
                         *ef = EventFile::Dead;
                         break;
                     }
@@ -376,6 +380,7 @@ mod test {
 
     use crate::commit::Commit;
     use crate::data_compat::plugin_names;
+    use crate::disk_logdir::DiskLogdir;
     use crate::types::Run;
     use crate::writer::SummaryWriteExt;
 
@@ -424,13 +429,18 @@ mod test {
         f2.into_inner()?.sync_all()?;
 
         let mut loader = RunLoader::new(run.clone());
+        let logdir = DiskLogdir::new(logdir.path().to_path_buf());
         let commit = Commit::new();
         commit
             .runs
             .write()
             .expect("write-locking runs map")
             .insert(run.clone(), Default::default());
-        loader.reload(vec![f1_name, f2_name], &commit.runs.read().unwrap()[&run]);
+        loader.reload(
+            &logdir,
+            vec![EventFileBuf(f1_name), EventFileBuf(f2_name)],
+            &commit.runs.read().unwrap()[&run],
+        );
 
         // Start time should be that of the file version event, even though that didn't correspond
         // to any time series.
