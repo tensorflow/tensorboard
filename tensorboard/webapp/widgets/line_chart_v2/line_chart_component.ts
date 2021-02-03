@@ -189,6 +189,10 @@ export class LineChartComponent implements AfterViewInit, OnChanges, OnDestroy {
   ngAfterViewInit() {
     this.initializeChart();
     this.updateLineChart();
+
+    // After view is initialized, if we ever change the Angular prop that should propagate
+    // to children, we need to retrigger the Angular change.
+    this.changeDetector.detectChanges();
   }
 
   onViewResize() {
