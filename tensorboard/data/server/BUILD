@@ -32,6 +32,8 @@ rust_library(
         "data_compat.rs",
         "downsample.rs",
         "event_file.rs",
+        "gcs.rs",
+        "gcs/client.rs",
         "logdir.rs",
         "masked_crc.rs",
         "reservoir.rs",
@@ -56,6 +58,7 @@ rust_library(
         "//third_party/rust:rand",
         "//third_party/rust:rand_chacha",
         "//third_party/rust:rayon",
+        "//third_party/rust:reqwest",
         "//third_party/rust:serde",
         "//third_party/rust:serde_json",
         "//third_party/rust:thiserror",
@@ -84,6 +87,18 @@ rust_binary(
         "//third_party/rust:env_logger",
         "//third_party/rust:log",
         "//third_party/rust:rayon",
+    ],
+)
+
+rust_binary(
+    name = "gsutil",
+    srcs = ["gcs/gsutil.rs"],
+    edition = "2018",
+    deps = [
+        ":rustboard_core",
+        "//third_party/rust:clap",
+        "//third_party/rust:env_logger",
+        "//third_party/rust:log",
     ],
 )
 
