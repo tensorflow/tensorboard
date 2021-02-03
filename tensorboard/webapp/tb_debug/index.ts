@@ -23,5 +23,4 @@ export * from './types';
  *
  * It is intentionally a no-op. There is no usage tracking in TensorBoard.
  */
-export function notifyActionEventFromPolymer(actionEvent: ActionEvent) {
-}
+export function notifyActionEventFromPolymer(actionEvent: ActionEvent) {}

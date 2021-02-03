@@ -76,7 +76,8 @@ describe('graph tests', () => {
       },
       {
         eventCategory: tb_debug.GRAPH_DEBUG_TIMING_EVENT_CATEGORY,
-        eventAction: tb_debug.GraphDebugEventId.HIERARCHY_FIND_SIMILAR_SUBGRAPHS,
+        eventAction:
+          tb_debug.GraphDebugEventId.HIERARCHY_FIND_SIMILAR_SUBGRAPHS,
         eventValue: jasmine.any(Number),
       },
       {
