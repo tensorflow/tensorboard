@@ -48,6 +48,7 @@ struct ListResponse {
     /// Continuation token; only present when there is more data.
     next_page_token: Option<String>,
     /// List of objects, sorted by name.
+    #[serde(default)] // `items` omitted entirely when there are no results
     items: Vec<ListResponseItem>,
 }
 #[derive(serde::Deserialize)]
