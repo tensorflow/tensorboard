@@ -43,6 +43,7 @@ rust_library(
         "writer.rs",
     ] + _checked_in_proto_files,
     edition = "2018",
+    version = "0.3.0-alpha.0",
     deps = [
         "//third_party/rust:async_stream",
         "//third_party/rust:base64",
