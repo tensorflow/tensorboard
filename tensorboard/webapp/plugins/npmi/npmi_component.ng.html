@@ -19,6 +19,7 @@ limitations under the License.
     *ngIf="runs.size === 0; else dataAvailable"
   ></npmi-inactive-view>
   <ng-template #dataAvailable>
-    <npmi-main></npmi-main>
+    <npmi-main *ngIf="activeView === 'default'"></npmi-main>
+    <npmi-embeddings *ngIf="activeView === 'embeddings'"></npmi-embeddings>
   </ng-template>
 </div>

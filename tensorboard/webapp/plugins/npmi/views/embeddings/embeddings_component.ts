@@ -12,16 +12,26 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
-import {RunId} from '../../core/types';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+} from '@angular/core';
 
 @Component({
-  selector: 'npmi-component',
-  templateUrl: './npmi_component.ng.html',
-  styleUrls: ['./npmi_component.css'],
+  selector: 'embeddings-component',
+  templateUrl: './embeddings_component.ng.html',
+  styleUrls: ['./embeddings_component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class NpmiComponent {
-  @Input() runs!: Map<RunId, boolean>;
-  @Input() activeView!: string;
+export class EmbeddingsComponent {
+  @Input() runActive!: boolean;
+  @Input() sidebarExpanded!: boolean;
+  @Input() sidebarWidth!: number;
+  @Output() toggleSidebarExpanded = new EventEmitter();
+  @Output() resizeTriggered = new EventEmitter<MouseEvent>();
+  @Output() resizeGrabbed = new EventEmitter();
+  @Output() resizeReleased = new EventEmitter();
 }

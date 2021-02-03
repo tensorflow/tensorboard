@@ -45,7 +45,11 @@ export function createNpmiState(override?: Partial<NpmiState>): NpmiState {
     sidebarExpanded: true,
     showCounts: true,
     showHiddenAnnotations: false,
+    viewActive: 'default',
     sidebarWidth: 300,
+    embeddingsMetric: '',
+    embeddingsSidebarExpanded: true,
+    embeddingsSidebarWidth: 500,
     ...override,
   };
 }

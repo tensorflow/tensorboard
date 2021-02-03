@@ -88,10 +88,18 @@ export interface NpmiState {
   sort: AnnotationSort;
   pcExpanded: boolean;
   annotationsExpanded: boolean;
-  sidebarExpanded: boolean;
   showCounts: boolean;
   showHiddenAnnotations: boolean;
+  viewActive: string;
+
+  // only for default view
   sidebarWidth: number;
+  sidebarExpanded: boolean;
+
+  // only for embedding view
+  embeddingsMetric: Metric;
+  embeddingsSidebarWidth: number;
+  embeddingsSidebarExpanded: boolean;
 }
 
 export interface State {

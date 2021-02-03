@@ -97,6 +97,20 @@ describe('Npmi Metric Arithmetic Element Container', () => {
     ]);
   });
 
+  describe('metric embeddings selection', () => {
+    it('dispatches metric selected action on click on chip', () => {
+      const fixture = TestBed.createComponent(MetricArithmeticElementContainer);
+      fixture.componentInstance.metric = 'npmi@test';
+      fixture.detectChanges();
+
+      const chip = fixture.debugElement.query(css.FILTER_CHIP);
+      chip.nativeElement.click();
+      expect(dispatchedActions).toEqual([
+        npmiActions.npmiToggleEmbeddingsView({metric: 'npmi@test'}),
+      ]);
+    });
+  });
+
   describe('input interaction', () => {
     describe('min input', () => {
       it('changes the filter when interacting with the input', () => {
