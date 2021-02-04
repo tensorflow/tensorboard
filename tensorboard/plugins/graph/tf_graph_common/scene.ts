@@ -19,15 +19,11 @@ import * as PolymerDom from '../../../components/polymer/dom';
 import {
   Class as _Class,
   selectChild as _selectChild,
-  selectOrCreateChild,
   SVG_NAMESPACE,
 } from './common';
-import * as edge from './edge';
 import {NodeType, OpNode} from './graph';
 import * as layout from './layout';
-import * as node from './node';
 import * as render from './render';
-import {TfGraphScene} from './tf-graph-scene';
 
 export const selectChild = _selectChild;
 export const Class = _Class;
