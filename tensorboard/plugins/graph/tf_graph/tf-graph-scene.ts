@@ -20,7 +20,7 @@ import * as d3 from 'd3';
 
 import './tf-graph-minimap';
 import '../../../components/tf_dashboard_common/tensorboard-color';
-import * as tb_debug from '../../../webapp/tb_debug';
+import * as tb_debug from '../../../components/tb_debug';
 
 import * as tf_graph from '../tf_graph_common/graph';
 import * as tf_graph_scene from '../tf_graph_common/scene';
