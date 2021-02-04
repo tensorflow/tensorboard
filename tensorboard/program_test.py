@@ -89,6 +89,7 @@ class WerkzeugServerTest(tb_test.TestCase):
         flags = argparse.Namespace()
         kwargs.setdefault("host", None)
         kwargs.setdefault("bind_all", kwargs["host"] is None)
+        kwargs.setdefault("reuse_port", False)
         for k, v in kwargs.items():
             setattr(flags, k, v)
         return flags
