@@ -17,13 +17,22 @@ import {FeatureFlags} from '../types';
 
 export const FEATURE_FLAG_FEATURE_KEY = 'feature';
 
-export interface FeatureFlagState {
+export interface FeatureFlagStateBeforeMigration {
   isFeatureFlagsLoaded: boolean;
-  // Temporarily define `features` while we are migrating and syncing.
   features?: FeatureFlags;
   defaultFlags: FeatureFlags;
   flagOverrides?: Partial<FeatureFlags>;
 }
+
+export interface FeatureFlagStateAfterMigration {
+  isFeatureFlagsLoaded: boolean;
+  defaultFlags: FeatureFlags;
+  flagOverrides?: Partial<FeatureFlags>;
+}
+
+export type FeatureFlagState =
+  | FeatureFlagStateAfterMigration
+  | FeatureFlagStateBeforeMigration;
 
 export interface State {
   [FEATURE_FLAG_FEATURE_KEY]?: FeatureFlagState;
