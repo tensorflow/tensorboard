@@ -21,13 +21,13 @@ export function buildFeatureFlagState(
 ): FeatureFlagState {
   return {
     isFeatureFlagsLoaded: false,
-    features: {
+    features: undefined,
+    defaultFlags: {
       enabledExperimentalPlugins: [],
       enableGpuChart: false,
       inColab: false,
       scalarsBatchSize: 1,
     },
-    defaultFlags: undefined,
     ...override,
     flagOverrides: override.flagOverrides ?? {},
   };
