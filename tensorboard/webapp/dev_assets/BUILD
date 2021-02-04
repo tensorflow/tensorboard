@@ -6,7 +6,7 @@
 # //tensorboard/webapp:index.html, we had to create the dev_assets version in
 # a different package. Once we can get rid of zip asset provider and a way to
 # alias asset, we would not need the enitrely different Bazel package.
-load("//tensorboard/defs:defs.bzl", "tf_dev_js_binary", "tf_ng_module")
+load("//tensorboard/defs:defs.bzl", "tf_dev_js_binary", "tf_js_binary", "tf_ng_module")
 load("//tensorboard/defs:web.bzl", "tf_web_library")
 
 package(default_visibility = ["//tensorboard:__pkg__"])
@@ -40,6 +40,26 @@ tf_web_library(
     path = "/tb-webapp",
 )
 
+# By dropping 'compile', this skips the expensive minification step.
+tf_js_binary(
+    name = "polymer3_lib_binary_no_shim_dev",
+    compile = False,
+    entry_point = "//tensorboard/components:polymer3_lib.ts",
+    deps = ["//tensorboard/components:polymer3_ts_lib"],
+)
+
+# Keep in sync with //tensorboard/components:polymer3_lib_binary.
+genrule(
+    name = "polymer3_lib_binary_dev",
+    srcs = [
+        # Do not sort. order is important.
+        "@npm//:node_modules/web-animations-js/web-animations-next-lite.min.js",
+        ":polymer3_lib_binary_no_shim_dev.js",
+    ],
+    outs = ["polymer3_lib_binary_dev.js"],
+    cmd = "for f in $(SRCS); do cat \"$$f\"; echo; done > $@",
+)
+
 # The index.html used for dev mode needs to use the polymer3 lib specifically
 # for dev mode.
 genrule(
@@ -54,7 +74,7 @@ tf_web_library(
     name = "dev_assets",
     srcs = [
         ":index.html",
-        "//tensorboard/components:polymer3_lib_binary_dev.js",
+        ":polymer3_lib_binary_dev.js",
         "//tensorboard/webapp:styles.css",
         "//tensorboard/webapp:svg_bundle",
         "//tensorboard/webapp/widgets/line_chart_v2/lib/worker:chart_worker.js",
