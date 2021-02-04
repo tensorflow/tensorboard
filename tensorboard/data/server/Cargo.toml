@@ -59,6 +59,10 @@ path = "main.rs"
 name = "bench"
 path = "bench.rs"
 
+[[bin]]
+name = "gsutil"
+path = "gcs/gsutil.rs"
+
 [lib]
 name = "rustboard_core"
 path = "lib.rs"

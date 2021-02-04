@@ -37,7 +37,7 @@ use crate::server::DataProviderHandler;
 use data::tensor_board_data_provider_server::TensorBoardDataProviderServer;
 
 #[derive(Clap, Debug)]
-#[clap(name = "rustboard", version = "0.3.0-alpha.0")]
+#[clap(name = "rustboard", version = crate::VERSION)]
 struct Opts {
     /// Log directory to load
     ///
