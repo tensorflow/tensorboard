@@ -29,7 +29,6 @@ use tokio_stream::wrappers::TcpListenerStream;
 use tonic::transport::Server;
 
 use crate::commit::Commit;
-use crate::disk_logdir::DiskLogdir;
 use crate::logdir::LogdirLoader;
 use crate::proto::tensorboard::data;
 use crate::server::DataProviderHandler;
@@ -180,14 +179,8 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .name("Reloader".to_string())
         .spawn({
             let reload_strategy = opts.reload;
-<<<<<<< HEAD
             let logdir = DynLogdir::new(opts.logdir).unwrap_or_else(|| std::process::exit(1));
             let mut loader = LogdirLoader::new(commit, logdir, 0);
-||||||| d9d56536f
-            let mut loader = LogdirLoader::new(commit, logdir, 0);
-=======
-            let mut loader = LogdirLoader::new(commit, DiskLogdir::new(opts.logdir), 0);
->>>>>>> cd69a8c13a55e5c1f6023148a9af169373fa8cf3
             // Checksum only if `--checksum` given (i.e., off by default).
             loader.checksum(opts.checksum);
             move || loop {
