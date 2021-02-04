@@ -57,7 +57,7 @@ class FakeFlags(object):
         path_prefix="",
         generic_data="true",
         grpc_data_provider="",
-        reuse_port=False
+        reuse_port=False,
     ):
         self.bind_all = bind_all
         self.host = host
