@@ -21,7 +21,6 @@ export function buildFeatureFlagState(
 ): FeatureFlagState {
   return {
     isFeatureFlagsLoaded: false,
-    features: undefined,
     defaultFlags: {
       enabledExperimentalPlugins: [],
       enableGpuChart: false,
