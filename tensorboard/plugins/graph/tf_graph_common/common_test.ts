@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import * as tb_debug from '../../../webapp/tb_debug';
+import * as tb_debug from '../../../components/tb_debug';
 import * as tf_graph_loader from './loader';
 import * as tf_graph_parser from './parser';
 
@@ -102,23 +102,22 @@ describe('graph tests', () => {
 
     const debugListenerSpy = spyOn(tb_debug, 'notifyActionEventFromPolymer');
 
-    try {
-      await tf_graph_loader.fetchAndConstructHierarchicalGraph(
-        mockTracker,
-        null /* remotePath */,
-        null /* pbTxtFile */
-      );
-    } catch {
-      const firstArgs = debugListenerSpy.calls
-        .allArgs()
-        .map((args: any[]) => args[0]);
-      expect(firstArgs).toEqual([
-        {
-          eventCategory: tb_debug.GRAPH_DEBUG_TIMING_EVENT_CATEGORY,
-          eventAction: tb_debug.GraphDebugEventId.GRAPH_LOAD_FAILED,
-          eventValue: jasmine.any(Number),
-        },
-      ]);
-    }
+    const loadPromise = tf_graph_loader.fetchAndConstructHierarchicalGraph(
+      mockTracker,
+      null /* remotePath */,
+      null /* pbTxtFile */
+    );
+    await expectAsync(loadPromise).toBeRejected();
+
+    const firstArgs = debugListenerSpy.calls
+      .allArgs()
+      .map((args: any[]) => args[0]);
+    expect(firstArgs).toEqual([
+      {
+        eventCategory: tb_debug.GRAPH_DEBUG_TIMING_EVENT_CATEGORY,
+        eventAction: tb_debug.GraphDebugEventId.GRAPH_LOAD_FAILED,
+        eventValue: jasmine.any(Number),
+      },
+    ]);
   });
 });

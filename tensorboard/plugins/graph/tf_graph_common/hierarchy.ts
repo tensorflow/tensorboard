@@ -19,7 +19,7 @@ import * as d3 from 'd3';
 import {graphlib} from 'dagre';
 import * as _ from 'lodash';
 
-import * as tb_debug from '../../../webapp/tb_debug/types';
+import * as tb_debug from '../../../components/tb_debug';
 
 import {NodeStats, ProgressTracker} from './common';
 import * as template from './template';

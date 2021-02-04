@@ -17,11 +17,11 @@ limitations under the License.
  */
 import * as _ from 'lodash';
 
-import {notifyActionEventFromPolymer} from '../../../webapp/tb_debug';
+import {notifyActionEventFromPolymer} from '../../../components/tb_debug';
 import {
   GraphDebugEventId,
   GRAPH_DEBUG_TIMING_EVENT_CATEGORY,
-} from '../../../webapp/tb_debug/types';
+} from '../../../components/tb_debug/types';
 import {NodeStats, ProgressTracker} from './common';
 
 const ASYNC_TASK_DELAY = 20;

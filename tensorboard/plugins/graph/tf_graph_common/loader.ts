@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import * as tb_debug from '../../../webapp/tb_debug/types';
+import * as tb_debug from '../../../components/tb_debug';
 
 import * as tf_graph from './graph';
 import * as hierarchy from './hierarchy';
