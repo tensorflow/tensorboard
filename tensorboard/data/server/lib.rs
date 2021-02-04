@@ -21,6 +21,7 @@ pub mod blob_key;
 pub mod cli;
 pub mod commit;
 pub mod data_compat;
+pub mod disk_logdir;
 pub mod downsample;
 pub mod event_file;
 pub mod logdir;
