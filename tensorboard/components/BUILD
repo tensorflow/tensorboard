@@ -1,4 +1,4 @@
-load("//tensorboard/defs:defs.bzl", "tf_js_binary", "tf_ts_library")
+load("//tensorboard/defs:defs.bzl", "tf_dev_js_binary", "tf_js_binary", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
@@ -38,11 +38,31 @@ tf_ts_library(
     ],
 )
 
+# A target for development only. By dropping 'compile', this skips the expensive
+# minification step.
+tf_js_binary(
+    name = "polymer3_lib_binary_no_shim_dev",
+    compile = False,
+    entry_point = ":polymer3_lib.ts",
+    deps = [":polymer3_ts_lib"],
+)
+
 tf_js_binary(
     name = "polymer3_lib_binary_no_shim",
     compile = True,
     entry_point = ":polymer3_lib.ts",
     deps = [":polymer3_ts_lib"],
+)
+
+genrule(
+    name = "polymer3_lib_binary_dev",
+    srcs = [
+        # Do not sort. order is important.
+        "@npm//:node_modules/web-animations-js/web-animations-next-lite.min.js",
+        ":polymer3_lib_binary_no_shim_dev.js",
+    ],
+    outs = ["polymer3_lib_binary_dev.js"],
+    cmd = "for f in $(SRCS); do cat \"$$f\"; echo; done > $@",
 )
 
 genrule(

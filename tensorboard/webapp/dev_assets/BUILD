@@ -40,11 +40,13 @@ tf_web_library(
     path = "/tb-webapp",
 )
 
+# The index.html used for dev mode needs to use the polymer3 lib specifically
+# for dev mode.
 genrule(
     name = "rename_index_html",
     srcs = ["//tensorboard/webapp:index_polymer3.inlined.html"],
     outs = ["index.html"],
-    cmd = "cat $(SRCS) > $@",
+    cmd = "sed 's/polymer3_lib_binary/polymer3_lib_binary_dev/g' $(SRCS) > $@",
 )
 
 # Should keep the asset dependencies in sync with //tensorboard:assets.
@@ -52,7 +54,7 @@ tf_web_library(
     name = "dev_assets",
     srcs = [
         ":index.html",
-        "//tensorboard/components:polymer3_lib_binary.js",
+        "//tensorboard/components:polymer3_lib_binary_dev.js",
         "//tensorboard/webapp:styles.css",
         "//tensorboard/webapp:svg_bundle",
         "//tensorboard/webapp/widgets/line_chart_v2/lib/worker:chart_worker.js",
