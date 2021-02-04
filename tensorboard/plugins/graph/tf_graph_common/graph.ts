@@ -15,8 +15,9 @@ limitations under the License.
 import {graphlib} from 'dagre';
 import * as _ from 'lodash';
 
-import {NodeStats, ProgressTracker} from './common';
+import * as tb_debug from '../../../components/tb_debug';
 
+import {NodeStats, ProgressTracker} from './common';
 import * as tf_graph_proto from './proto';
 import * as tf_graph_util from './util';
 
@@ -1180,7 +1181,8 @@ export function build(
         nodeNames.splice(index);
         return opNodes;
       },
-      tracker
+      tracker,
+      tb_debug.GraphDebugEventId.NORMALIZING_NAMES
     )
     .then((opNodes) => {
       // Create the graph data structure from the graphlib library.
@@ -1267,7 +1269,8 @@ export function build(
           });
           return graph;
         },
-        tracker
+        tracker,
+        tb_debug.GraphDebugEventId.BUILD_SLIM_GRAPH
       );
     });
 }

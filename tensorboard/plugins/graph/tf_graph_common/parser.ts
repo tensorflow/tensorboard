@@ -12,6 +12,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import * as tb_debug from '../../../components/tb_debug';
+
 import {ProgressTracker} from './common';
 import * as tf_graph_proto from './proto';
 import * as tf_graph_util from './util';
@@ -59,7 +61,8 @@ export function fetchAndParseMetadata(path: string, tracker: ProgressTracker) {
         }
         return fetchPbTxt(path);
       },
-      tracker
+      tracker,
+      tb_debug.GraphDebugEventId.FETCH_METADATA_PBTXT_BYTES
     )
     .then((arrayBuffer: ArrayBuffer) => {
       return tf_graph_util.runAsyncPromiseTask(
@@ -70,7 +73,8 @@ export function fetchAndParseMetadata(path: string, tracker: ProgressTracker) {
             ? parseStatsPbTxt(arrayBuffer)
             : Promise.resolve(null);
         },
-        tracker
+        tracker,
+        tb_debug.GraphDebugEventId.PARSE_METADATA_PBTXT_INTO_OBJECT
       );
     });
 }
@@ -99,7 +103,8 @@ export function fetchAndParseGraphData(
           return fetchPbTxt(path);
         }
       },
-      tracker
+      tracker,
+      tb_debug.GraphDebugEventId.FETCH_PBTXT_BYTES
     )
     .then((arrayBuffer: ArrayBuffer) => {
       return tf_graph_util.runAsyncPromiseTask(
@@ -108,7 +113,8 @@ export function fetchAndParseGraphData(
         () => {
           return parseGraphPbTxt(arrayBuffer);
         },
-        tracker
+        tracker,
+        tb_debug.GraphDebugEventId.PARSE_PBTXT_INTO_OBJECT
       );
     });
 }
