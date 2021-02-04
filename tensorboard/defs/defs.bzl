@@ -35,8 +35,7 @@ def tf_js_binary(name, compile, deps, visibility = None, **kwargs):
 
     # `compile` option is used internally but is not used by rollup_bundle.
     # Discard it.
-    internal_rollup_name = name + "_terser_internal_dbg"
-    internal_min_name = name + "_terser_internal_min"
+    internal_rollup_name = name + "_rollup_internal_dbg"
     rollup_bundle(
         name = internal_rollup_name,
         config_file = "//tensorboard/defs:rollup_config.js",
@@ -54,19 +53,23 @@ def tf_js_binary(name, compile, deps, visibility = None, **kwargs):
         **kwargs
     )
 
-    terser_minified(
-        name = internal_min_name,
-        src = internal_rollup_name,
-        config_file = "//tensorboard/defs:terser_config.json",
-        visibility = ["//visibility:private"],
-        sourcemap = False,
-    )
+    if compile:
+        internal_result_name = name + "_terser_internal_min"
+        terser_minified(
+            name = internal_result_name,
+            src = internal_rollup_name,
+            config_file = "//tensorboard/defs:terser_config.json",
+            visibility = ["//visibility:private"],
+            sourcemap = False,
+        )
+    else:
+        internal_result_name = internal_rollup_name
 
     # For some reason, terser_minified is not visible from other targets. Copy
     # or re-export seems to work okay.
     native.genrule(
         name = name,
-        srcs = [internal_min_name],
+        srcs = [internal_result_name],
         outs = [name + ".js"],
         visibility = visibility,
         cmd = "cat $(SRCS) > $@",
