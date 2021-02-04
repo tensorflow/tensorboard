@@ -35,7 +35,7 @@ describe('feature_flag_selectors', () => {
       );
     });
 
-    it('returns legacy `features` if no overrides or `defaultFlags` are given', () => {
+    it('prefers required `defaultFlags` over features', () => {
       const state = buildState(
         buildFeatureFlagState({
           features: {
@@ -44,34 +44,17 @@ describe('feature_flag_selectors', () => {
             inColab: false,
             scalarsBatchSize: 10,
           },
-        })
-      );
-
-      expect(selectors.getFeatureFlags(state)).toEqual({
-        enabledExperimentalPlugins: ['foo', 'bar'],
-        enableGpuChart: true,
-        inColab: false,
-        scalarsBatchSize: 10,
-      });
-    });
-
-    it('combines legacy `features` and overrides', () => {
-      const state = buildState(
-        buildFeatureFlagState({
-          features: {
-            enabledExperimentalPlugins: ['foo', 'bar'],
+          defaultFlags: {
+            enabledExperimentalPlugins: ['foo'],
             enableGpuChart: false,
             inColab: false,
             scalarsBatchSize: 10,
           },
-          flagOverrides: {
-            enabledExperimentalPlugins: ['baz'],
-          },
         })
       );
 
       expect(selectors.getFeatureFlags(state)).toEqual({
-        enabledExperimentalPlugins: ['baz'],
+        enabledExperimentalPlugins: ['foo'],
         enableGpuChart: false,
         inColab: false,
         scalarsBatchSize: 10,

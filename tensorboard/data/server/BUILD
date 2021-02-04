@@ -34,9 +34,15 @@ rust_library(
         "disk_logdir.rs",
         "downsample.rs",
         "event_file.rs",
+<<<<<<< HEAD
         "gcs.rs",
         "gcs/client.rs",
         "gcs/logdir.rs",
+||||||| d9d56536f
+=======
+        "gcs.rs",
+        "gcs/client.rs",
+>>>>>>> cd69a8c13a55e5c1f6023148a9af169373fa8cf3
         "logdir.rs",
         "masked_crc.rs",
         "reservoir.rs",
