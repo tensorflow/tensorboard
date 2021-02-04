@@ -21,6 +21,7 @@ use std::path::PathBuf;
 use std::time::Instant;
 
 use rustboard_core::commit::Commit;
+use rustboard_core::disk_logdir::DiskLogdir;
 use rustboard_core::logdir::LogdirLoader;
 
 #[derive(Clap)]
@@ -44,7 +45,11 @@ fn main() {
     init_logging(&opts);
 
     let commit = Commit::new();
-    let mut loader = LogdirLoader::new(&commit, opts.logdir, opts.reload_threads.unwrap_or(0));
+    let mut loader = LogdirLoader::new(
+        &commit,
+        DiskLogdir::new(opts.logdir),
+        opts.reload_threads.unwrap_or(0),
+    );
     loader.checksum(opts.checksum); // if neither `--[no-]checksum` given, defaults to false
 
     info!("Starting load cycle");
