@@ -72,6 +72,7 @@ class FakeFlags(object):
         self.grpc_data_provider = grpc_data_provider
         self.reuse_port = reuse_port
 
+
 class CorePluginFlagsTest(tf.test.TestCase):
     def testFlag(self):
         loader = core_plugin.CorePluginLoader()
