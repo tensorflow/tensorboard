@@ -32,7 +32,6 @@ import {
   Metaedge,
   MetaedgeImpl,
   Metanode,
-  NAMESPACE_DELIM,
   Node,
   NodeType,
   OpNode,
