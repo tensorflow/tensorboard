@@ -45,7 +45,6 @@ tf_js_binary(
     deps = [":polymer3_ts_lib"],
 )
 
-# Keep in sync with //tensorboard/webapp/dev_assets:polymer3_lib_binary_dev
 genrule(
     name = "polymer3_lib_binary",
     srcs = [
