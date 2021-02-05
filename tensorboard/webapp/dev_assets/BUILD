@@ -40,7 +40,6 @@ tf_web_library(
     path = "/tb-webapp",
 )
 
-# By dropping 'compile', this skips the expensive minification step.
 tf_js_binary(
     name = "polymer3_lib_binary_no_shim_dev",
     compile = True,
@@ -67,7 +66,7 @@ genrule(
     name = "rename_index_html",
     srcs = ["//tensorboard/webapp:index_polymer3.inlined.html"],
     outs = ["index.html"],
-    cmd = "sed 's/polymer3_lib_binary/polymer3_lib_binary_dev/g' $(SRCS) > $@",
+    cmd = "sed 's/polymer3_lib_binary\\.js/polymer3_lib_binary_dev\\.js/g' $(SRCS) > $@",
 )
 
 # Should keep the asset dependencies in sync with //tensorboard:assets.

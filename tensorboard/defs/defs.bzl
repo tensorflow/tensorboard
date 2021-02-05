@@ -60,7 +60,9 @@ def tf_js_binary(
         **kwargs
     )
 
-    if not dev_mode_only:
+    if dev_mode_only:
+        internal_result_name = internal_rollup_name
+    else:
         internal_result_name = name + "_terser_internal_min"
         terser_minified(
             name = internal_result_name,
@@ -69,8 +71,6 @@ def tf_js_binary(
             visibility = ["//visibility:private"],
             sourcemap = False,
         )
-    else:
-        internal_result_name = internal_rollup_name
 
     # For some reason, terser_minified is not visible from other targets. Copy
     # or re-export seems to work okay.
