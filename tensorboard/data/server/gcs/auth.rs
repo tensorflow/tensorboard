@@ -215,7 +215,7 @@ impl Credentials {
     /// [`Self::fetch`] will always return `None`.
     ///
     /// This exists as an optimization so that a [`TokenStore`] doesn't need to check locks all the
-    /// time when the
+    /// time when the credential is anonymous, anyway.
     fn anonymous(&self) -> bool {
         matches!(self, Credentials::Anonymous)
     }

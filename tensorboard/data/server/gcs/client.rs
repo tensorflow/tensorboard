@@ -31,6 +31,9 @@ const STORAGE_BASE: &str = "https://storage.googleapis.com";
 /// Base URL for JSON API access.
 const API_BASE: &str = "https://www.googleapis.com/storage/v1";
 
+/// Refresh access tokens once their remaining lifetime is shorter than this threshold.
+const TOKEN_EXPIRATION_MARGIN: Duration = Duration::from_secs(60);
+
 /// GCS client.
 ///
 /// Cloning a GCS client is cheap and shares the underlying credential store and connection pool,
@@ -73,9 +76,8 @@ struct ListResponseItem {
 
 impl Client {
     fn send_authenticated(&self, rb: RequestBuilder) -> reqwest::Result<Response> {
-        let token_lifetime = Duration::from_secs(10);
         self.token_store
-            .authenticate(rb, &self.http, token_lifetime)
+            .authenticate(rb, &self.http, TOKEN_EXPIRATION_MARGIN)
             .send()
     }
 
