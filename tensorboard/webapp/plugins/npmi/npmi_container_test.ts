@@ -20,22 +20,38 @@ import {TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
 
 import {Store} from '@ngrx/store';
-import {State} from '../../app_state';
-import {getCurrentRouteRunSelection} from './../../selectors';
 import {provideMockStore, MockStore} from '@ngrx/store/testing';
 
+import {State} from '../../app_state';
+import {getCurrentRouteRunSelection} from './../../selectors';
+import {getViewActive} from './store';
+import {appStateFromNpmiState, createNpmiState} from './testing';
+import {createState, createCoreState} from '../../core/testing';
 import {NpmiComponent} from './npmi_component';
 import {NpmiContainer} from './npmi_container';
+import {ViewActive} from './store/npmi_types';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
 describe('Npmi Container', () => {
   let store: MockStore<State>;
+  const css = {
+    INACTIVE_VIEW: By.css('npmi-inactive-view'),
+    MAIN_COMPONENT: By.css('npmi-main'),
+    EMBEDDINGS_COMPONENT: By.css('npmi-embeddings'),
+  };
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [NpmiComponent, NpmiContainer],
-      providers: [provideMockStore({}), NpmiContainer],
+      providers: [
+        provideMockStore({
+          initialState: {
+            ...createState(createCoreState()),
+            ...appStateFromNpmiState(createNpmiState()),
+          },
+        }),
+      ],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
@@ -49,12 +65,14 @@ describe('Npmi Container', () => {
     const fixture = TestBed.createComponent(NpmiContainer);
     fixture.detectChanges();
 
-    const inactiveElement = fixture.debugElement.query(
-      By.css('npmi-inactive-view')
-    );
+    const inactiveElement = fixture.debugElement.query(css.INACTIVE_VIEW);
     expect(inactiveElement).toBeTruthy();
-    const mainElement = fixture.debugElement.query(By.css('npmi-main'));
+    const mainElement = fixture.debugElement.query(css.MAIN_COMPONENT);
     expect(mainElement).toBeNull();
+    const embeddingsElement = fixture.debugElement.query(
+      css.EMBEDDINGS_COMPONENT
+    );
+    expect(embeddingsElement).toBeNull();
   });
 
   it('renders npmi component', () => {
@@ -62,14 +80,36 @@ describe('Npmi Container', () => {
       getCurrentRouteRunSelection,
       new Map([['run_1', true]])
     );
+    store.overrideSelector(getViewActive, ViewActive.DEFAULT);
     const fixture = TestBed.createComponent(NpmiContainer);
     fixture.detectChanges();
 
-    const inactiveElement = fixture.debugElement.query(
-      By.css('npmi-inactive-component')
-    );
+    const inactiveElement = fixture.debugElement.query(css.INACTIVE_VIEW);
     expect(inactiveElement).toBeNull();
-    const npmiElement = fixture.debugElement.query(By.css('npmi-main'));
+    const npmiElement = fixture.debugElement.query(css.MAIN_COMPONENT);
     expect(npmiElement).toBeTruthy();
+    const embeddingsElement = fixture.debugElement.query(
+      css.EMBEDDINGS_COMPONENT
+    );
+    expect(embeddingsElement).toBeNull();
+  });
+
+  it('renders embeddings component', () => {
+    store.overrideSelector(
+      getCurrentRouteRunSelection,
+      new Map([['run_1', true]])
+    );
+    store.overrideSelector(getViewActive, ViewActive.EMBEDDINGS);
+    const fixture = TestBed.createComponent(NpmiContainer);
+    fixture.detectChanges();
+
+    const inactiveElement = fixture.debugElement.query(css.INACTIVE_VIEW);
+    expect(inactiveElement).toBeNull();
+    const npmiElement = fixture.debugElement.query(css.MAIN_COMPONENT);
+    expect(npmiElement).toBeNull();
+    const embeddingsElement = fixture.debugElement.query(
+      css.EMBEDDINGS_COMPONENT
+    );
+    expect(embeddingsElement).toBeTruthy();
   });
 });

@@ -18,6 +18,7 @@ import {
   NPMI_FEATURE_KEY,
   State,
   SortOrder,
+  ViewActive,
 } from '../store/npmi_types';
 
 export function createNpmiState(override?: Partial<NpmiState>): NpmiState {
@@ -45,7 +46,7 @@ export function createNpmiState(override?: Partial<NpmiState>): NpmiState {
     sidebarExpanded: true,
     showCounts: true,
     showHiddenAnnotations: false,
-    viewActive: 'default',
+    viewActive: ViewActive.DEFAULT,
     sidebarWidth: 300,
     embeddingsMetric: '',
     embeddingsSidebarExpanded: true,

@@ -146,7 +146,7 @@ export class AnnotationsListContainer {
   readonly sortedAnnotations$ = combineLatest([
     this.filteredAnnotations$,
     this.store.pipe(select(getAnnotationSort)),
-    this.store.pipe(select(getEmbeddingData)),
+    this.embeddingData$,
   ]).pipe(
     map(([annotations, sort, embeddingData]) => {
       return sortAnnotations(annotations, sort, embeddingData);

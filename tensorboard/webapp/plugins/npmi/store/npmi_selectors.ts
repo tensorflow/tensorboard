@@ -24,6 +24,7 @@ import {
   MetricFilterListing,
   AnnotationSort,
   EmbeddingListing,
+  ViewActive,
 } from './npmi_types';
 
 // HACK: These imports are for type inference.
@@ -154,10 +155,9 @@ export const getShowHiddenAnnotations = createSelector(
   }
 );
 
-
 export const getViewActive = createSelector(
   selectNpmiState,
-  (state: NpmiState): string => {
+  (state: NpmiState): ViewActive => {
     return state.viewActive;
   }
 );

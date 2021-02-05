@@ -32,6 +32,11 @@ export enum ArithmeticKind {
   OPERATOR,
 }
 
+export enum ViewActive {
+  DEFAULT,
+  EMBEDDINGS,
+}
+
 export interface ValueData {
   nPMIValue: number | null;
   countValue: number | null;
@@ -90,7 +95,7 @@ export interface NpmiState {
   annotationsExpanded: boolean;
   showCounts: boolean;
   showHiddenAnnotations: boolean;
-  viewActive: string;
+  viewActive: ViewActive;
 
   // only for default view
   sidebarWidth: number;

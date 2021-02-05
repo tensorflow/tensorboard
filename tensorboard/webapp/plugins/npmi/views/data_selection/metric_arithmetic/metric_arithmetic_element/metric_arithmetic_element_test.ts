@@ -1,3 +1,4 @@
+import {getEmbeddingData} from './../../../../store/npmi_selectors';
 /* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -43,6 +44,7 @@ describe('Npmi Metric Arithmetic Element Container', () => {
     ELEMENT_REMOVE: By.css('.mat-chip-remove'),
     INPUT: By.css('input'),
     VALUE_INVALID: By.css('.value-invalid'),
+    EMBEDDINGS_TOGGLE: By.css('.embeddings-button'),
   };
 
   beforeEach(async () => {
@@ -98,13 +100,43 @@ describe('Npmi Metric Arithmetic Element Container', () => {
   });
 
   describe('metric embeddings selection', () => {
-    it('dispatches metric selected action on click on chip', () => {
+    it('does not render the embeddings button when no embeddings present', () => {
       const fixture = TestBed.createComponent(MetricArithmeticElementContainer);
       fixture.componentInstance.metric = 'npmi@test';
       fixture.detectChanges();
 
-      const chip = fixture.debugElement.query(css.FILTER_CHIP);
-      chip.nativeElement.click();
+      const embeddingsButton = fixture.debugElement.query(
+        css.EMBEDDINGS_TOGGLE
+      );
+      expect(embeddingsButton).toBeNull();
+    });
+
+    it('renders the embeddings button when embeddings present', () => {
+      const fixture = TestBed.createComponent(MetricArithmeticElementContainer);
+      fixture.componentInstance.metric = 'npmi@test';
+      store.overrideSelector(getEmbeddingData, {
+        test: [0.1, 0.04, 1],
+      });
+      fixture.detectChanges();
+
+      const embeddingsButton = fixture.debugElement.query(
+        css.EMBEDDINGS_TOGGLE
+      );
+      expect(embeddingsButton).toBeTruthy();
+    });
+
+    it('dispatches metric selected action on click on chip', () => {
+      const fixture = TestBed.createComponent(MetricArithmeticElementContainer);
+      fixture.componentInstance.metric = 'npmi@test';
+      store.overrideSelector(getEmbeddingData, {
+        test: [0.1, 0.04, 1],
+      });
+      fixture.detectChanges();
+
+      const embeddingsButton = fixture.debugElement.query(
+        css.EMBEDDINGS_TOGGLE
+      );
+      embeddingsButton.nativeElement.click();
       expect(dispatchedActions).toEqual([
         npmiActions.npmiToggleEmbeddingsView({metric: 'npmi@test'}),
       ]);

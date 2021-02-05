@@ -14,7 +14,13 @@ limitations under the License.
 ==============================================================================*/
 import * as actions from '../actions';
 import {reducers} from './npmi_reducers';
-import {DataLoadState, Operator, SortOrder, ArithmeticKind} from './npmi_types';
+import {
+  DataLoadState,
+  Operator,
+  SortOrder,
+  ArithmeticKind,
+  ViewActive,
+} from './npmi_types';
 import {createNpmiState} from '../testing';
 
 describe('npmi_reducers', () => {
@@ -913,20 +919,20 @@ describe('npmi_reducers', () => {
         state,
         actions.npmiToggleEmbeddingsView({metric: 'test'})
       );
-      expect(nextState.viewActive).toBe('embeddings');
+      expect(nextState.viewActive).toBe(ViewActive.EMBEDDINGS);
       expect(nextState.embeddingsMetric).toBe('test');
     });
 
     it('changes the active view from embeddings to default ', () => {
       const state = createNpmiState({
-        viewActive: 'embeddings',
+        viewActive: ViewActive.EMBEDDINGS,
         embeddingsMetric: 'test',
       });
       const nextState = reducers(
         state,
         actions.npmiToggleEmbeddingsView({metric: 'test'})
       );
-      expect(nextState.viewActive).toBe('default');
+      expect(nextState.viewActive).toBe(ViewActive.DEFAULT);
       expect(nextState.embeddingsMetric).toBe('');
     });
 

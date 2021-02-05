@@ -22,8 +22,8 @@ import {Store, Action} from '@ngrx/store';
 import {provideMockStore, MockStore} from '@ngrx/store/testing';
 
 import {State} from '../../../../app_state';
-import {getRunSelection} from './../../../../core/store/core_selectors';
-import {getSidebarExpanded} from '../../store';
+import {getCurrentRouteRunSelection} from './../../../../selectors';
+import {getEmbeddingsSidebarExpanded} from './../../store';
 import {appStateFromNpmiState, createNpmiState} from '../../testing';
 import {createState, createCoreState} from '../../../../core/testing';
 import {EmbeddingsComponent} from './embeddings_component';
@@ -31,6 +31,7 @@ import {EmbeddingsContainer} from './embeddings_container';
 import * as npmiActions from '../../actions';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
+import {NO_ERRORS_SCHEMA} from '@angular/core';
 
 describe('Npmi Embeddings Container', () => {
   let store: MockStore<State>;
@@ -41,7 +42,7 @@ describe('Npmi Embeddings Container', () => {
     SIDE_TOGGLE: By.css('.side-toggle'),
     GRABBER: By.css('.grabber'),
     CONTENT: By.css('.content'),
-    RUN_SELECTOR: By.css('tb-legacy-runs-selector'),
+    RUN_SELECTOR: By.css('runs-selector'),
     BUTTON: By.css('button'),
   };
 
@@ -57,8 +58,13 @@ describe('Npmi Embeddings Container', () => {
           },
         }),
       ],
+      schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
+    store.overrideSelector(
+      getCurrentRouteRunSelection,
+      new Map<string, boolean>()
+    );
 
     dispatchedActions = [];
     spyOn(store, 'dispatch').and.callFake((action: Action) => {
@@ -67,7 +73,10 @@ describe('Npmi Embeddings Container', () => {
   });
 
   it('renders npmi embeddings component without runs', () => {
-    store.overrideSelector(getRunSelection, new Map());
+    store.overrideSelector(
+      getCurrentRouteRunSelection,
+      new Map<string, boolean>()
+    );
     const fixture = TestBed.createComponent(EmbeddingsContainer);
     fixture.detectChanges();
 
@@ -79,7 +88,10 @@ describe('Npmi Embeddings Container', () => {
   });
 
   it('renders npmi embeddings component with run', () => {
-    store.overrideSelector(getRunSelection, new Map([['run_1', true]]));
+    store.overrideSelector(
+      getCurrentRouteRunSelection,
+      new Map([['run_1', true]])
+    );
     const fixture = TestBed.createComponent(EmbeddingsContainer);
     fixture.detectChanges();
 
@@ -91,7 +103,10 @@ describe('Npmi Embeddings Container', () => {
   });
 
   it('renders npmi embeddings component without active run', () => {
-    store.overrideSelector(getRunSelection, new Map([['run_1', false]]));
+    store.overrideSelector(
+      getCurrentRouteRunSelection,
+      new Map([['run_1', false]])
+    );
     const fixture = TestBed.createComponent(EmbeddingsContainer);
     fixture.detectChanges();
 
@@ -104,7 +119,7 @@ describe('Npmi Embeddings Container', () => {
 
   it('renders npmi embeddings component with multiple runs, some active, some inactive', () => {
     store.overrideSelector(
-      getRunSelection,
+      getCurrentRouteRunSelection,
       new Map([
         ['run_1', false],
         ['run_2', true],
@@ -122,7 +137,7 @@ describe('Npmi Embeddings Container', () => {
   });
 
   it('does not render sidebar or grabber when sidebar hidden', () => {
-    store.overrideSelector(getSidebarExpanded, false);
+    store.overrideSelector(getEmbeddingsSidebarExpanded, false);
     const fixture = TestBed.createComponent(EmbeddingsContainer);
     fixture.detectChanges();
 
@@ -133,7 +148,7 @@ describe('Npmi Embeddings Container', () => {
   });
 
   it('dispatches sidebar toggle when disabled and toggle button clicked', () => {
-    store.overrideSelector(getSidebarExpanded, false);
+    store.overrideSelector(getEmbeddingsSidebarExpanded, false);
     const fixture = TestBed.createComponent(EmbeddingsContainer);
     fixture.detectChanges();
     const sideToggle = fixture.debugElement.query(css.SIDE_TOGGLE);

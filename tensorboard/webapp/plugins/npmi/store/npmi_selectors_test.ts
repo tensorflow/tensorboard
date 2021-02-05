@@ -31,8 +31,18 @@ import {
   getShowHiddenAnnotations,
   getSidebarWidth,
   getSidebarExpanded,
+  getViewActive,
+  getEmbeddingsMetric,
+  getEmbeddingsSidebarWidth,
+  getEmbeddingsSidebarExpanded,
 } from './npmi_selectors';
-import {DataLoadState, Operator, SortOrder, ArithmeticKind} from './npmi_types';
+import {
+  DataLoadState,
+  Operator,
+  SortOrder,
+  ArithmeticKind,
+  ViewActive,
+} from './npmi_types';
 import {createNpmiState, createState} from '../testing';
 
 describe('npmi selectors', () => {
@@ -409,16 +419,16 @@ describe('npmi selectors', () => {
   describe('getViewActive', () => {
     it('returns correct initial state', () => {
       const state = createState(createNpmiState());
-      expect(getViewActive(state)).toBe('default');
+      expect(getViewActive(state)).toBe(ViewActive.DEFAULT);
     });
 
     it('returns correct state', () => {
       const state = createState(
         createNpmiState({
-          viewActive: 'embeddings',
+          viewActive: ViewActive.EMBEDDINGS,
         })
       );
-      expect(getViewActive(state)).toBe('embeddings');
+      expect(getViewActive(state)).toBe(ViewActive.EMBEDDINGS);
     });
   });
 

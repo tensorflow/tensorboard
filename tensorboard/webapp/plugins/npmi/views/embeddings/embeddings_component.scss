@@ -47,11 +47,7 @@ limitations under the License.
 }
 
 .run-selector {
-  width: 100%;
-}
-
-.embedding-projection {
-  min-height: 0px;
+  max-height: 100%;
   width: 100%;
 }
 
@@ -73,14 +69,6 @@ limitations under the License.
   cursor: ew-resize;
   height: 100%;
   width: 3px;
-  overflow: hidden;
-  background-color: mat-color($tb-foreground, divider);
-}
-
-.run-divider {
-  content: '';
-  width: 100%;
-  height: 3px;
   overflow: hidden;
   background-color: mat-color($tb-foreground, divider);
 }

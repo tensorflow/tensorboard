@@ -23,6 +23,7 @@ import {
   ArithmeticElement,
   Operator,
   ArithmeticKind,
+  ViewActive,
 } from './npmi_types';
 import * as metricType from '../util/metric_type';
 
@@ -55,7 +56,7 @@ const initialState: NpmiState = {
   showCounts: true,
   showHiddenAnnotations: false,
   sidebarWidth: 300,
-  viewActive: 'default',
+  viewActive: ViewActive.DEFAULT,
   embeddingsMetric: '',
   embeddingsSidebarWidth: 500,
   embeddingsSidebarExpanded: true,
@@ -381,10 +382,10 @@ const reducer = createReducer(
   on(
     actions.npmiToggleEmbeddingsView,
     (state: NpmiState, {metric}): NpmiState => {
-      let viewActive = 'embeddings';
+      let viewActive = ViewActive.EMBEDDINGS;
       let newMetric = metric;
       if (metric === state.embeddingsMetric) {
-        viewActive = 'default';
+        viewActive = ViewActive.DEFAULT;
         newMetric = '';
       }
       return {
@@ -420,7 +421,7 @@ const reducer = createReducer(
         embeddingsSidebarExpanded: !state.embeddingsSidebarExpanded,
       };
     }
-  ),
+  )
 );
 
 export function reducers(state: NpmiState, action: Action) {

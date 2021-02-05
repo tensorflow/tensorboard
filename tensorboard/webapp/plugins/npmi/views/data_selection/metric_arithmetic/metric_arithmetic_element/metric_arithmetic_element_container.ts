@@ -60,13 +60,11 @@ export class MetricArithmeticElementContainer {
       return {min: min, max: max};
     })
   );
-  readonly embeddingsPresent$ = this.store
-    .pipe(select(getEmbeddingData))
-    .pipe(
-      map((embeddingData) => {
-        return Object.keys(embeddingData).length !== 0
-      })
-    );
+  readonly embeddingsPresent$ = this.store.pipe(select(getEmbeddingData)).pipe(
+    map((embeddingData) => {
+      return Object.keys(embeddingData).length !== 0;
+    })
+  );
   readonly embeddingsMetric$ = this.store.pipe(select(getEmbeddingsMetric));
 
   constructor(private readonly store: Store<State>) {}
