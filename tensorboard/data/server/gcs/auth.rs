@@ -247,7 +247,7 @@ impl Debug for RefreshTokenCreds {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("RefreshTokenCreds")
             .field("client_id", &self.client_id)
-            .field("client_secret", &self.client_secret)
+            .field("client_secret", &format_args!("<redacted>"))
             .field("refresh_token", &format_args!("<redacted>"))
             .finish()
     }
