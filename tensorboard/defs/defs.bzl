@@ -26,7 +26,14 @@ def tensorboard_webcomponent_library(**kwargs):
     """Rules referencing this will be deleted from the codebase soon."""
     pass
 
-def tf_js_binary(name, compile, deps, visibility = None, **kwargs):
+def tf_js_binary(
+    name,
+    compile,
+    deps,
+    visibility = None,
+    dev_mode_only = False,
+    **kwargs
+):
     """Rules for creating a JavaScript bundle.
 
     Please refer to https://bazelbuild.github.io/rules_nodejs/Built-ins.html#rollup_bundle
@@ -53,7 +60,7 @@ def tf_js_binary(name, compile, deps, visibility = None, **kwargs):
         **kwargs
     )
 
-    if compile:
+    if not dev_mode_only:
         internal_result_name = name + "_terser_internal_min"
         terser_minified(
             name = internal_result_name,

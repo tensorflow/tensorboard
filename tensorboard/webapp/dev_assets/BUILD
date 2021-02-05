@@ -43,7 +43,8 @@ tf_web_library(
 # By dropping 'compile', this skips the expensive minification step.
 tf_js_binary(
     name = "polymer3_lib_binary_no_shim_dev",
-    compile = False,
+    compile = True,
+    dev_mode_only = True,
     entry_point = "//tensorboard/components:polymer3_lib.ts",
     deps = ["//tensorboard/components:polymer3_ts_lib"],
 )
