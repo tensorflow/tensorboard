@@ -153,7 +153,9 @@ export class SlicingControl {
    */
   render(slicingSpec?: TensorViewSlicingSpec) {
     if (slicingSpec != null) {
-      this.slicingSpec = JSON.parse(JSON.stringify(slicingSpec));
+      this.slicingSpec = JSON.parse(
+        JSON.stringify(slicingSpec)
+      ) as TensorViewSlicingSpec;
     }
     if (this.slicingSpec === null) {
       throw new Error(
@@ -386,7 +388,9 @@ export class SlicingControl {
    *   by SlicingControl.
    */
   setSlicingSpec(slicingSpec: TensorViewSlicingSpec) {
-    this.slicingSpec = JSON.parse(JSON.stringify(slicingSpec));
+    this.slicingSpec = JSON.parse(
+      JSON.stringify(slicingSpec)
+    ) as TensorViewSlicingSpec;
     if (this.slicingSpec === null) {
       throw new Error('Cannot set slicing spec to null.');
     }

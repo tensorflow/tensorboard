@@ -13,8 +13,26 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-// Type override of lib.es2015.collection.d.ts.
-// Make sure key/value types are not inferred as any.
+// Type override of lib.es2015.collection.d.ts. Make sure key/value types are
+// not inferred as any.
 interface MapConstructor {
   new <K, V>(): Map<K, V>;
+}
+
+// Type override of TypeScript's 'src/lib/es5.d.ts'.
+interface JSON {
+  /**
+   * In default TypeScript, `JSON.parse` is typed as:
+   * ```
+   *   parse(
+   *     text: string,
+   *     reviver?: (this: any, key: string, value: any) => any
+   *   ): any
+   * ```
+   * We upgrade some of the `any`s to stricter `unknown`s, and drop the `this`.
+   */
+  parse(
+    text: string,
+    reviver?: (key: string, value: unknown) => unknown
+  ): unknown;
 }

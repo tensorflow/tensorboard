@@ -508,13 +508,17 @@ export class TensorWidgetImpl implements TensorWidget {
         this.tensorView.spec.shape,
         async (slicingSpec: TensorViewSlicingSpec) => {
           if (!areSlicingSpecsCompatible(this.slicingSpec, slicingSpec)) {
-            this.slicingSpec = JSON.parse(JSON.stringify(slicingSpec));
+            this.slicingSpec = JSON.parse(
+              JSON.stringify(slicingSpec)
+            ) as TensorViewSlicingSpec;
             // The dimension arrangement has changed in the slicing spec.
             // The rulers and value divs must be re-created. This is why
             // `render()` is called instead of `renderRulersAndValueDivs()`.
             await this.render();
           } else {
-            this.slicingSpec = JSON.parse(JSON.stringify(slicingSpec));
+            this.slicingSpec = JSON.parse(
+              JSON.stringify(slicingSpec)
+            ) as TensorViewSlicingSpec;
             await this.renderRulersAndValueDivs();
           }
         }
