@@ -62,7 +62,7 @@ export class ServerDataProvider implements DataProvider {
       logging.setErrorMessage(xhr.responseText, 'fetching runs');
     };
     xhr.onload = () => {
-      const runs = JSON.parse(xhr.responseText);
+      const runs = JSON.parse(xhr.responseText) as string[];
       logging.setModalMessage(null, msgId);
       callback(runs);
     };
@@ -147,7 +147,7 @@ export class ServerDataProvider implements DataProvider {
     };
     xhr.onload = () => {
       logging.setModalMessage(null, msgId);
-      const bookmarks = JSON.parse(xhr.responseText);
+      const bookmarks = JSON.parse(xhr.responseText) as State[];
       callback(bookmarks);
     };
     xhr.send();
