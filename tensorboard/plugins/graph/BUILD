@@ -1,5 +1,6 @@
 # Description:
 # TensorBoard plugin for graphs
+load("//tensorboard/defs:defs.bzl", "tf_ng_web_test_suite")
 
 package(default_visibility = ["//tensorboard:internal"])
 
@@ -152,4 +153,11 @@ py_library(
     name = "metadata",
     srcs = ["metadata.py"],
     srcs_version = "PY3",
+)
+
+tf_ng_web_test_suite(
+    name = "karma_test",
+    deps = [
+        "//tensorboard/plugins/graph/tf_graph_common:test_lib",
+    ],
 )

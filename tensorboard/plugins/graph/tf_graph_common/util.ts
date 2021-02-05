@@ -17,18 +17,47 @@ limitations under the License.
  */
 import * as _ from 'lodash';
 
+import {notifyActionEventFromPolymer} from '../../../components/tb_debug';
+import {
+  GraphDebugEventId,
+  GRAPH_DEBUG_TIMING_EVENT_CATEGORY,
+} from '../../../components/tb_debug/types';
 import {NodeStats, ProgressTracker} from './common';
 
 const ASYNC_TASK_DELAY = 20;
+
+export interface DebugEvent {
+  eventId: GraphDebugEventId;
+  // An associated numeric value. For example, this may represent a duration in
+  // milliseconds for a timing event.
+  eventValue?: number;
+}
+
+export function notifyDebugEvent(debugEvent: DebugEvent) {
+  notifyActionEventFromPolymer({
+    eventCategory: GRAPH_DEBUG_TIMING_EVENT_CATEGORY,
+    eventAction: debugEvent.eventId,
+    eventValue: debugEvent.eventValue,
+  });
+}
+
 /**
  * Measure and log a synchronous task.
  */
-export function time<T>(msg: string, task: () => T) {
+export function time<T>(
+  msg: string,
+  task: () => T,
+  debugEventId?: GraphDebugEventId
+) {
   let start = Date.now();
   let result = task();
+  const durationInMs = Date.now() - start;
   /* tslint:disable */
-  console.log(msg, ':', Date.now() - start, 'ms');
+  console.log(msg, ':', durationInMs, 'ms');
   /* tslint:enable */
+  if (debugEventId) {
+    notifyDebugEvent({eventId: debugEventId, eventValue: durationInMs});
+  }
   return result;
 }
 export type Tracker = {
@@ -110,14 +139,15 @@ export function runTask<T>(
   msg: string,
   incProgressValue: number,
   task: () => T,
-  tracker: ProgressTracker
+  tracker: ProgressTracker,
+  debugEventId?: GraphDebugEventId
 ): T {
   // Update the progress message to say the current running task.
   tracker.setMessage(msg);
   // Run the expensive task with a delay that gives enough time for the
   // UI to update.
   try {
-    let result = time(msg, task);
+    let result = time(msg, task, debugEventId);
     // Update the progress value.
     tracker.updateProgress(incProgressValue);
     // Return the result to be used by other tasks.
@@ -135,7 +165,8 @@ export function runAsyncTask<T>(
   msg: string,
   incProgressValue: number,
   task: () => T,
-  tracker: ProgressTracker
+  tracker: ProgressTracker,
+  debugEventId?: GraphDebugEventId
 ): Promise<T> {
   return new Promise((resolve, reject) => {
     // Update the progress message to say the current running task.
@@ -144,7 +175,7 @@ export function runAsyncTask<T>(
     // UI to update.
     setTimeout(function () {
       try {
-        let result = time(msg, task);
+        let result = time(msg, task, debugEventId);
         // Update the progress value.
         tracker.updateProgress(incProgressValue);
         // Return the result to be used by other tasks.
@@ -166,7 +197,8 @@ export function runAsyncPromiseTask<T>(
   msg: string,
   incProgressValue: number,
   task: () => Promise<T>,
-  tracker: ProgressTracker
+  tracker: ProgressTracker,
+  debugEventId?: GraphDebugEventId
 ): Promise<T> {
   return new Promise((resolve, reject) => {
     let handleError = function (e) {
@@ -184,10 +216,12 @@ export function runAsyncPromiseTask<T>(
         let start = Date.now();
         task()
           .then(function (value) {
+            const durationInMs = Date.now() - start;
             /* tslint:disable */
-            console.log(msg, ':', Date.now() - start, 'ms');
+            console.log(msg, ':', durationInMs, 'ms');
             // Update the progress value.
             tracker.updateProgress(incProgressValue);
+            notifyDebugEvent({eventId: debugEventId, eventValue: durationInMs});
             // Return the result to be used by other tasks.
             resolve(value);
           })
