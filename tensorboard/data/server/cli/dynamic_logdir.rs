@@ -42,9 +42,20 @@ impl DynLogdir {
     ///
     /// This succeeds unless the path represents a GCS logdir and no HTTP client can be opened. In
     /// case of failure, errors will be logged to the active logger.
+<<<<<<< HEAD
     ///
     /// This constructor is heavyweight; it may construct an HTTP client and read a GCS credentials
     /// file from disk.
+||||||| 2dcce13d8
+=======
+    ///
+    /// # Panics
+    ///
+    /// May panic in debug mode if called from a thread with an active Tokio runtime; see
+    /// [seanmonstar/reqwest#1017].
+    ///
+    /// [seanmonstar/reqwest#1017]: https://github.com/seanmonstar/reqwest/issues/1017
+>>>>>>> 9e044866cb7df5e4ffe7c8e69b1715bd702f51d2
     pub fn new(path: PathBuf) -> Option<Self> {
         let path_str = path.to_string_lossy();
         let gcs_path = match path_str.strip_prefix("gs://") {

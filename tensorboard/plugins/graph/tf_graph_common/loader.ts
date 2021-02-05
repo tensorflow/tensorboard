@@ -12,6 +12,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import * as tb_debug from '../../../components/tb_debug';
+
 import * as tf_graph from './graph';
 import * as hierarchy from './hierarchy';
 import * as op from './op';
@@ -36,6 +38,7 @@ export function fetchAndConstructHierarchicalGraph(
     50,
     'Namespace hierarchy'
   );
+  const start = Date.now();
   return parser
     .fetchAndParseGraphData(remotePath, pbTxtFile, dataTracker)
     .then(
@@ -67,6 +70,10 @@ export function fetchAndConstructHierarchicalGraph(
         hierarchyParams,
         hierarchyTracker
       );
+      tf_graph_util.notifyDebugEvent({
+        eventId: tb_debug.GraphDebugEventId.GRAPH_LOAD_SUCCEEDED,
+        eventValue: Date.now() - start,
+      });
       return {graph, graphHierarchy};
     })
     .catch((e) => {
@@ -74,6 +81,10 @@ export function fetchAndConstructHierarchicalGraph(
       // asynchronous tasks.
       const msg = `Graph visualization failed.\n\n${e}`;
       tracker.reportError(msg, e);
+      tf_graph_util.notifyDebugEvent({
+        eventId: tb_debug.GraphDebugEventId.GRAPH_LOAD_FAILED,
+        eventValue: Date.now() - start,
+      });
       // Don't swallow the error.
       throw e;
     });

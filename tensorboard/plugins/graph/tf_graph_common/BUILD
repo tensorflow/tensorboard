@@ -33,6 +33,7 @@ tf_ts_library(
     deps = [
         "//tensorboard/components/polymer:dom",
         "//tensorboard/components/polymer:legacy_element_mixin",
+        "//tensorboard/components/tb_debug",
         "//tensorboard/components/tf_dashboard_common",
         "@npm//@polymer/decorators",
         "@npm//@polymer/polymer",
@@ -41,5 +42,18 @@ tf_ts_library(
         "@npm//d3",
         "@npm//dagre",
         "@npm//lodash",
+    ],
+)
+
+tf_ts_library(
+    name = "test_lib",
+    testonly = True,
+    srcs = [
+        "common_test.ts",
+    ],
+    deps = [
+        ":tf_graph_common",
+        "//tensorboard/components/tb_debug",
+        "@npm//@types/jasmine",
     ],
 )
