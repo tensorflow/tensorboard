@@ -175,22 +175,21 @@ impl Credentials {
             }
             Ok(f) => f,
         };
-        match serde_json::from_reader(reader) {
-            Ok(refresh_token) => {
-                info!(
-                    "Using refresh token GCS credentials from {}",
-                    creds_file.display()
-                );
-                Credentials::RefreshToken(RefreshToken(refresh_token))
-            }
+        let creds: RefreshTokenCreds = match serde_json::from_reader(reader) {
             Err(e) => {
                 warn!(
                     "Failed to read GCS credentials file {:?}; will use anonymous credentials: {}",
                     creds_file, e
                 );
-                Credentials::Anonymous
+                return Credentials::Anonymous;
             }
-        }
+            Ok(creds) => creds,
+        };
+        info!(
+            "Using refresh token GCS creds from {}",
+            creds_file.display()
+        );
+        Credentials::RefreshToken(RefreshToken(creds))
     }
 
     /// Determines the file on disk from which credentials might be read, if any.
@@ -198,11 +197,10 @@ impl Credentials {
         if let Some(p) = std::env::var_os("GOOGLE_APPLICATION_CREDENTIALS") {
             return Some(p.into());
         }
-        if let Some(base_config_dir) = std::env::var_os("XDG_CONFIG_HOME")
+        let base_config_dir = std::env::var_os("XDG_CONFIG_HOME")
             .map(PathBuf::from)
-            .or_else(|| std::env::var_os("HOME").map(|p| PathBuf::from(p).join(".config")))
-        {
-            let mut path = base_config_dir;
+            .or_else(|| std::env::var_os("HOME").map(|p| PathBuf::from(p).join(".config")));
+        if let Some(mut path) = base_config_dir {
             path.extend(&["gcloud", "application_default_credentials.json"]);
             if path.is_file() {
                 return Some(path);
@@ -270,7 +268,7 @@ struct OauthTokenResponse {
 }
 impl OauthTokenResponse {
     fn default_expires_in() -> u64 {
-        let v = 3600;
+        let v = 3599; // standard response from Google OAuth servers
         warn!("OAuth response did not set `expires_in`; assuming {}", v);
         v
     }
