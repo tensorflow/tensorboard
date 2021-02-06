@@ -22,6 +22,7 @@ import {
   CirclePaintOption,
   LinePaintOption,
   ObjectRenderer,
+  TrapezoidPaintOption,
   TrianglePaintOption,
 } from './renderer_types';
 
@@ -38,6 +39,7 @@ enum CacheType {
   CIRCLE,
   LINE,
   TRIANGLE,
+  TRAPEZOID,
 }
 
 interface LineCacheValue {
@@ -59,7 +61,17 @@ interface CircleCacheValue {
   data: {loc: Point; radius: number};
 }
 
-type CacheValue = LineCacheValue | TriangleCacheValue | CircleCacheValue;
+interface TrapezoidCacheValue {
+  type: CacheType.TRAPEZOID;
+  obj3d: THREE.Mesh;
+  data: [Point, Point];
+}
+
+type CacheValue =
+  | LineCacheValue
+  | TriangleCacheValue
+  | CircleCacheValue
+  | TrapezoidCacheValue;
 
 /**
  * Updates BufferGeometry with Float32Array that denotes flattened array of Vec2
@@ -404,6 +416,41 @@ export class ThreeRenderer implements ObjectRenderer<CacheValue> {
     if (!geomUpdated) return cached;
     cached.obj3d.position.set(loc.x, loc.y, 0);
     return {type: CacheType.CIRCLE, data: {loc, radius}, obj3d: cached.obj3d};
+  }
+
+  createOrUpdateTrapezoidObject(
+    cached: TrapezoidCacheValue | null,
+    start: Point,
+    end: Point,
+    paintOpt: TrapezoidPaintOption
+  ): TrapezoidCacheValue | null {
+    if (start.y !== end.y) {
+      throw new RangeError('Input error: start.y != end.y.');
+    }
+
+    const {width} = paintOpt;
+    const altitude = (width * Math.sqrt(3)) / 2;
+
+    const shape = new THREE.Shape([
+      new THREE.Vector2(start.x - width / 2, start.y - altitude / 3),
+      new THREE.Vector2(start.x, start.y + (altitude * 2) / 3),
+      new THREE.Vector2(end.x, end.y + (altitude * 2) / 3),
+      new THREE.Vector2(end.x + width / 2, end.y - altitude / 3),
+    ]);
+    shape.autoClose = true;
+    const geom = new THREE.ShapeBufferGeometry(shape);
+
+    if (!cached) {
+      const mesh = this.createMesh(geom as any, paintOpt);
+      if (mesh === null) return null;
+      this.scene.add(mesh);
+      return {type: CacheType.TRAPEZOID, data: [start, end], obj3d: mesh};
+    }
+
+    const geomUpdated = updateObject(cached.obj3d, () => geom, paintOpt);
+    return geomUpdated
+      ? {type: CacheType.TRAPEZOID, data: [start, end], obj3d: cached.obj3d}
+      : cached;
   }
 
   flush() {

@@ -69,6 +69,16 @@ export interface ObjectRenderer<CacheValue = {}> {
     paintOpt: CirclePaintOption
   ): CacheValue | null;
 
+  /**
+   * Draws or enqueues trapezoid drawing operations depending on a renderer.
+   */
+  createOrUpdateTrapezoidObject(
+    cached: CacheValue | null,
+    start: Point,
+    end: Point,
+    paintOpt: TrapezoidPaintOption
+  ): CacheValue | null;
+
   flush(): void;
 
   destroyObject(cachedValue: CacheValue): void;
@@ -86,6 +96,10 @@ export interface LinePaintOption extends PaintOption {
 
 export interface TrianglePaintOption extends PaintOption {
   size: number;
+}
+
+export interface TrapezoidPaintOption extends PaintOption {
+  width: number;
 }
 
 export interface CirclePaintOption extends PaintOption {
