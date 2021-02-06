@@ -15,6 +15,8 @@
 """The TensorBoard Debugger V2 plugin."""
 
 
+import threading
+
 from werkzeug import wrappers
 
 from tensorboard import errors
@@ -50,11 +52,23 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
         """
         super(DebuggerV2Plugin, self).__init__(context)
         self._logdir = context.logdir
-        # TODO(cais): Implement factory for DataProvider that takes into account
-        # the settings.
-        self._data_provider = debug_data_provider.LocalDebuggerV2DataProvider(
-            self._logdir
-        )
+        self._underlying_data_provider = None
+        # Held while initializing `_underlying_data_provider` for the first
+        # time, to make sure that we only construct one.
+        self._data_provider_init_lock = threading.Lock()
+
+    @property
+    def _data_provider(self):
+        if self._underlying_data_provider is not None:
+            return self._underlying_data_provider
+        with self._data_provider_init_lock:
+            if self._underlying_data_provider is not None:
+                return self._underlying_data_provider
+            # TODO(cais): Implement factory for DataProvider that takes into account
+            # the settings.
+            dp = debug_data_provider.LocalDebuggerV2DataProvider(self._logdir)
+            self._underlying_data_provider = dp
+            return dp
 
     def get_plugin_apps(self):
         # TODO(cais): Add routes as they are implemented.
@@ -73,16 +87,8 @@ class DebuggerV2Plugin(base_plugin.TBPlugin):
         }
 
     def is_active(self):
-        """Check whether the Debugger V2 Plugin is always active.
-
-        When no data in the tfdbg v2 format is available, a custom information
-        screen is displayed to instruct the user on how to generate such data
-        to be able to use the plugin.
-
-        Returns:
-          `True` if and only if data in tfdbg v2's DebugEvent format is available.
-        """
-        return bool(self._data_provider.list_runs(experiment_id=""))
+        """The Debugger V2 plugin must be manually selected."""
+        return False
 
     def frontend_metadata(self):
         return base_plugin.FrontendMetadata(
