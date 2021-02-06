@@ -150,7 +150,7 @@ class DebuggerV2PluginTest(tf.test.TestCase):
 
     def testPluginIsActiveWithDataExists(self):
         _generate_tfdbg_v2_data(self.logdir)
-        self.assertTrue(self.plugin.is_active())
+        self.assertFalse(self.plugin.is_active())  # never explicitly active
 
     def testConcurrentCallsToPluginIsActiveWhenNotActive(self):
         results = collections.deque()
@@ -164,20 +164,6 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         for thread in threads:
             thread.join()
         self.assertEqual(list(results), [False] * 4)
-
-    def testConcurrentCallsToPluginIsActiveWhenActive(self):
-        _generate_tfdbg_v2_data(self.logdir)
-        results = collections.deque()
-
-        def query_is_active():
-            results.append(self.plugin.is_active())
-
-        threads = [threading.Thread(target=query_is_active) for _ in range(4)]
-        for thread in threads:
-            thread.start()
-        for thread in threads:
-            thread.join()
-        self.assertEqual(list(results), [True] * 4)
 
     def testServeRunsWithoutExistingRuns(self):
         response = self.server.get(_ROUTE_PREFIX + "/runs")
