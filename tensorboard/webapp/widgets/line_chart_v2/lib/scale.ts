@@ -114,8 +114,8 @@ class Log10Scale implements Scale {
     range: [number, number],
     x: number
   ): number {
-    if (x <= 0) {
-      return range[0];
+    if (!this.isSafeNumber(x)) {
+      return NaN;
     }
 
     const [domainMin, domainMax] = domain;

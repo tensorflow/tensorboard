@@ -22,6 +22,14 @@ import {
   createSeries,
 } from './testing';
 
+function isTriangle(el: Element): boolean {
+  return el.classList.contains('triangle');
+}
+
+function isTrepezoid(el: Element): boolean {
+  return el.classList.contains('trepezoid');
+}
+
 describe('line_chart_v2/lib/integration test', () => {
   let dom: SVGElement;
   let callbacks: ChartCallbacks;
@@ -235,10 +243,6 @@ describe('line_chart_v2/lib/integration test', () => {
   });
 
   describe('null handling', () => {
-    function isTriangle(el: Element): boolean {
-      return el.classList.contains('triangle');
-    }
-
     it('renders all NaNs as triangles at 0s (with size of 12)', () => {
       chart.resize({width: 100, height: 100});
       chart.setViewBox({x: [0, 100], y: [0, 100]});
@@ -318,7 +322,7 @@ describe('line_chart_v2/lib/integration test', () => {
       ]);
     });
 
-    it('puts first NaN value in place of NaN when starts with NaN', () => {
+    it('puts starting NaN value in place of first non-NaN', () => {
       chart.resize({width: 10, height: 10});
       chart.setViewBox({x: [0, 10], y: [0, 10]});
       chart.setMetadata({line: buildMetadata({id: 'line', visible: true})});
@@ -457,6 +461,103 @@ describe('line_chart_v2/lib/integration test', () => {
       expect(circle.nodeName).toBe('circle');
       expect(circle.getAttribute('cx')).toBe('2');
       expect(circle.getAttribute('cy')).toBe('5');
+    });
+  });
+
+  describe('non-positive value handling in log scale', () => {
+    beforeEach(() => {
+      chart.setYScaleType(ScaleType.LOG10);
+    });
+
+    it('renders nothing when every values are unsafe (non-positive)', () => {
+      chart.resize({width: 100, height: 100});
+      chart.setViewBox({x: [0, 100], y: [0, 100]});
+      chart.setMetadata({line: buildMetadata({id: 'line', visible: true})});
+      chart.setData([
+        buildSeries({
+          id: 'line',
+          points: [
+            {x: 0, y: 0},
+            {x: 50, y: NaN},
+            {x: 100, y: Infinity},
+          ],
+        }),
+      ]);
+
+      const children = getDomChildren();
+      expect(children.length).toBe(0);
+    });
+
+    it('breaks line into parts when non-positive appears in the middle', () => {
+      chart.resize({width: 10, height: 10});
+      chart.setViewBox({x: [0, 10], y: [1, 100]});
+      chart.setMetadata({line: buildMetadata({id: 'line', visible: true})});
+      chart.setData([
+        buildSeries({
+          id: 'line',
+          points: [
+            {x: 1, y: 1},
+            {x: 3, y: 10},
+            {x: 5, y: 0},
+            {x: 6, y: -3},
+            {x: 7, y: 1},
+            {x: 9, y: 100},
+          ],
+        }),
+      ]);
+
+      const children = getDomChildren();
+      expect(children.length).toBe(4);
+      const [line1, triangle1, triangle2, line2] = children;
+
+      expect(isTriangle(line1)).toBe(false);
+      assertSvgPathD(line1, [
+        [1, 10],
+        [3, 5],
+      ]);
+      expect(isTriangle(triangle1)).toBe(true);
+      assertSvgPathD(triangle1, [
+        [-1, 8],
+        [11, 8],
+        [5, -2],
+      ]);
+      assertSvgPathD(triangle2, [
+        [0, 8],
+        [12, 8],
+        [6, -2],
+      ]);
+      expect(isTriangle(line2)).toBe(false);
+      assertSvgPathD(line2, [
+        [7, 10],
+        [9, 0],
+      ]);
+    });
+
+    it('renders many consecute non-positive value as trepezoid', () => {
+      chart.resize({width: 100, height: 100});
+      chart.setViewBox({x: [0, 100], y: [0, 100]});
+      chart.setMetadata({line: buildMetadata({id: 'line', visible: true})});
+      chart.setData([
+        buildSeries({
+          id: 'line',
+          points: [
+            {x: 0, y: 1},
+            {x: 1, y: 1},
+            ...new Array(30).fill(0).map((_, index) => {
+              return {x: index + 1, y: 0};
+            }),
+          ],
+        }),
+      ]);
+
+      const children = getDomChildren();
+      expect(children.length).toBe(2);
+      const [line1, trepezoid] = children;
+      assertSvgPathD(line1, [
+        [0, 1],
+        [1, 1],
+      ]);
+      expect(isTrepezoid(trepezoid)).toBe(true);
     });
   });
 });

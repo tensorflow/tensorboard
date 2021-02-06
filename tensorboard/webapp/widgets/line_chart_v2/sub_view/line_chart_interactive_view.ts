@@ -497,7 +497,11 @@ export class LineChartInteractiveViewComponent
   }
 
   shouldRenderTooltipPoint(point: Point | null): boolean {
-    return point !== null && !isNaN(point.x) && !isNaN(point.y);
+    return (
+      point !== null &&
+      this.xScale.isSafeNumber(point.x) &&
+      this.yScale.isSafeNumber(point.y)
+    );
   }
 
   private updateTooltip(event: MouseEvent) {

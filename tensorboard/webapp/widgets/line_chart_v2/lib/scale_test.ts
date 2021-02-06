@@ -143,22 +143,21 @@ describe('line_chart_v2/lib/scale test', () => {
 
     describe('#forward and #reverse', () => {
       it('converts value from domain space to range space', () => {
-        expect(scale.forward([0, 1], [-100, 100], 0)).toBe(-100);
         expect(scale.forward([0, 1], [-100, 0], 0.5)).toBeCloseTo(-0.09, 2);
         expect(scale.forward([0, 1], [-100, 100], 1)).toBe(100);
 
-        expect(scale.forward([0, 1], [-100, 100], -1)).toBe(-100);
         expect(scale.forward([0, 1], [-100, 100], 5)).toBeCloseTo(100, -1);
 
         expect(scale.forward([1, 1000], [0, 1], 100)).toBeCloseTo(0.666, 2);
         expect(scale.forward([0.00001, 1], [0, 5], 0.01)).toBeCloseTo(3);
       });
 
-      // Kind of tentative behavior: it is more correct to return NaN and let
-      // UI elements show the right treatment; we would also need to exclude it
-      // when computed extents but it is out of scope for now.
-      it('handles negative value by treating it min float value', () => {
-        expect(scale.forward([1, 100], [0, 3], -3)).toBe(0);
+      it('handles non-positive value by returning NaN', () => {
+        expect(scale.forward([1, 100], [0, 3], -3)).toBeNaN();
+        expect(scale.forward([1, 100], [0, 3], 0)).toBeNaN();
+        expect(scale.forward([1, 100], [0, 3], -Infinity)).toBeNaN();
+        expect(scale.forward([1, 100], [0, 3], Infinity)).toBeNaN();
+        expect(scale.forward([1, 100], [0, 3], NaN)).toBeNaN();
       });
 
       it('permits negative value in domain by clipping it to min number', () => {
@@ -169,22 +168,17 @@ describe('line_chart_v2/lib/scale test', () => {
       });
 
       it('allows flipping order of the range', () => {
-        expect(scale.forward([0, 1], [100, -100], 0)).toBe(100);
         expect(scale.forward([0, 1], [100, -100], 0.5)).toBeCloseTo(-100, 0);
         expect(scale.forward([0, 1], [100, -100], 1)).toBe(-100);
 
-        // -1 is illegal in especially log domain so it is clipped to min range.
-        expect(scale.forward([0, 1], [100, -100], -1)).toBe(100);
         expect(scale.forward([0, 1], [100, -100], 5)).toBeCloseTo(-100, 0);
       });
 
       it('returns range min value when domain spread is 0', () => {
         expect(scale.forward([1, 1], [0, 100], 1)).toBe(0);
-        expect(scale.forward([1, 1], [0, 100], 0)).toBe(0);
       });
 
       it('does not choke when range spread is 0', () => {
-        expect(scale.forward([0, 1], [100, 100], 0)).toBe(100);
         expect(scale.forward([0, 1], [100, 100], 1)).toBe(100);
       });
 

@@ -52,7 +52,10 @@ export class SeriesLineView extends DataDrawable {
       this.getLayoutRect(),
       [0, 0]
     );
-    const zeroPoint = {x: zeroCoord[0], y: zeroCoord[1]};
+    const zeroPoint =
+      isNaN(zeroCoord[0]) || isNaN(zeroCoord[1])
+        ? null
+        : {x: zeroCoord[0], y: zeroCoord[1]};
 
     let lastLegalNumber: {
       x: number;
@@ -68,7 +71,7 @@ export class SeriesLineView extends DataDrawable {
           this.recordPartition(
             !isPrevValueNaN,
             polyline.slice(partitionStartInd, index),
-            lastLegalNumber === null ? {x, y} : lastLegalNumber
+            lastLegalNumber ?? {x, y}
           )
         );
         partitionStartInd = index;
@@ -81,12 +84,13 @@ export class SeriesLineView extends DataDrawable {
       isPrevValueNaN = hasNaN;
     }
 
-    if (partitionStartInd !== polyline.length - 1) {
+    const nanSubstitute = lastLegalNumber ?? zeroPoint;
+    if (partitionStartInd !== polyline.length - 1 && nanSubstitute) {
       partition.push(
         this.recordPartition(
           !isPrevValueNaN,
           polyline.slice(partitionStartInd, polyline.length),
-          lastLegalNumber ?? zeroPoint
+          nanSubstitute
         )
       );
     }
@@ -137,22 +141,40 @@ export class SeriesLineView extends DataDrawable {
           }
           // Should not render triangles to mark NaNs for auxiliary lines.
         } else if (!metadata.aux) {
-          for (let index = 0; index < polyline.length; index += 2) {
-            this.paintBrush.setTriangle(
-              JSON.stringify([
-                'NaN',
-                series.id,
-                polyline[index],
-                polyline[index + 1],
-              ]),
-              {x: polyline[index], y: polyline[index + 1]},
+          // Cannot render too many objects; it has so much overhead compared to one
+          // object with a lot of coordinates.
+          const paintOptions = {
+            color: metadata.color,
+            visible: metadata.visible,
+            opacity: metadata.opacity ?? 1,
+            size: 12,
+          };
+
+          if (polyline.length > 20) {
+            const start = {x: polyline[0], y: polyline[1]};
+            const end = {
+              x: polyline[polyline.length - 2],
+              y: polyline[polyline.length - 1],
+            };
+            this.paintBrush.setTrapezoid(
+              JSON.stringify(['NaN', series.id, partitionInd, 'trep']),
+              start,
+              end,
               {
                 color: metadata.color,
                 visible: metadata.visible,
                 opacity: metadata.opacity ?? 1,
-                size: 12,
+                altitude: 10,
               }
             );
+          } else {
+            for (let index = 0; index < polyline.length; index += 2) {
+              this.paintBrush.setTriangle(
+                JSON.stringify(['NaN', series.id, partitionInd, index]),
+                {x: polyline[index], y: polyline[index + 1]},
+                paintOptions
+              );
+            }
           }
         }
       }
