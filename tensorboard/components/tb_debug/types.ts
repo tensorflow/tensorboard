@@ -19,12 +19,14 @@ export interface ActionEvent {
   eventValue?: number;
 }
 
+export const GRAPH_DEBUG_ACTION_EVENT_CATEGORY = 'Graph dashboard actions';
 export const GRAPH_DEBUG_TIMING_EVENT_CATEGORY = 'Graph dashboard timings';
 
-export enum GraphDebugEventId {
-  /**
-   * Pre-rendering.
-   */
+/**
+ * Timing-based events, part of `GRAPH_DEBUG_TIMING_EVENT_CATEGORY`.
+ */
+export enum GraphDebugTimingEventId {
+  // Pre-rendering.
   FETCH_PBTXT_BYTES = 'FETCH_PBTXT_BYTES',
   PARSE_PBTXT_INTO_OBJECT = 'PARSE_PBTXT_INTO_OBJECT',
   FETCH_METADATA_PBTXT_BYTES = 'FETCH_METADATA_PBTXT_BYTES',
@@ -35,15 +37,44 @@ export enum GraphDebugEventId {
   HIERARCHY_DETECT_SERIES = 'HIERARCHY_DETECT_SERIES',
   HIERARCHY_ADD_EDGES = 'HIERARCHY_ADD_EDGES',
   HIERARCHY_FIND_SIMILAR_SUBGRAPHS = 'HIERARCHY_FIND_SIMILAR_SUBGRAPHS',
-  /**
-   * Rendering.
-   */
+  // Rendering.
   RENDER_BUILD_HIERARCHY = 'RENDER_BUILD_HIERARCHY',
   RENDER_SCENE_LAYOUT = 'RENDER_SCENE_LAYOUT',
   RENDER_SCENE_BUILD_SCENE = 'RENDER_SCENE_BUILD_SCENE',
-  /**
-   * Total graph loading (superset of other phases).
-   */
+  // Total graph loading (superset of other phases).
   GRAPH_LOAD_SUCCEEDED = 'GRAPH_LOAD_SUCCEEDED',
   GRAPH_LOAD_FAILED = 'GRAPH_LOAD_FAILED',
 }
+
+/**
+ * Non-timing based actions due to user interaction, part of
+ * `GRAPH_DEBUG_ACTION_EVENT_CATEGORY`.
+ */
+export enum GraphDebugActionEventId {
+  // Labeled by state: expanded or collapsed.
+  NODE_EXPANSION_TOGGLED = 'NODE_EXPANSION_TOGGLED',
+  NODE_SEARCH_RESULT_FOCUSED = 'NODE_SEARCH_RESULT_FOCUSED',
+  // Labeled by direction between auxiliary graph and the main graph.
+  NODE_AUXILIARY_EXTRACTION_CHANGED = 'NODE_AUXILIARY_EXTRACTION_CHANGED',
+  // Labeled by graph type: Op, Conceptual, Profile.
+  GRAPH_TYPE_CHANGED = 'GRAPH_TYPE_CHANGED',
+  TRACE_INPUT_MODE_TOGGLED = 'TRACE_INPUT_MODE_TOGGLED',
+  // Labeled by mode: Structure, Device, TPU Compat, etc.
+  NODE_COLOR_MODE_CHANGED = 'NODE_COLOR_MODE_CHANGED',
+  UPLOADED_GRAPH_FROM_FILESYSTEM = 'UPLOADED_GRAPH_FROM_FILESYSTEM',
+}
+
+const graphDebugTimingEventIds = Object.values(
+  GraphDebugTimingEventId
+) as string[];
+
+export function isDebugTimingEventId(eventId: string) {
+  return graphDebugTimingEventIds.includes(eventId);
+}
+
+// Merge the string enums.
+export const GraphDebugEventId = {
+  ...GraphDebugTimingEventId,
+  ...GraphDebugActionEventId,
+};
+export type GraphDebugEventId = typeof GraphDebugEventId;

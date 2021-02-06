@@ -18,8 +18,11 @@ import {computed, customElement, observe, property} from '@polymer/decorators';
 import * as _ from 'lodash';
 
 import '../../../components/polymer/irons_and_papers';
+import * as tb_debug from '../../../components/tb_debug';
 import '../../../components/tf_dashboard_common/tensorboard-color';
 import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
+
+import * as tf_graph_util from '../tf_graph_common/util';
 
 @customElement('tf-graph-node-search')
 class TfGraphNodeSearch extends LegacyElementMixin(PolymerElement) {
@@ -169,5 +172,8 @@ class TfGraphNodeSearch extends LegacyElementMixin(PolymerElement) {
   _matchClicked(e) {
     const node = e.model.item;
     this.set('selectedNode', node);
+    tf_graph_util.notifyDebugEvent({
+      eventId: tb_debug.GraphDebugEventId.NODE_SEARCH_RESULT_FOCUSED,
+    });
   }
 }

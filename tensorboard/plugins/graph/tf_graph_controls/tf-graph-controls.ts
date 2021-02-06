@@ -18,6 +18,7 @@ import {computed, customElement, property} from '@polymer/decorators';
 import * as _ from 'lodash';
 
 import '../../../components/polymer/irons_and_papers';
+import * as tb_debug from '../../../components/tb_debug';
 import * as tf_graph_common from '../tf_graph_common/common';
 import * as tf_graph_render from '../tf_graph_common/render';
 import * as tf_graph_proto from '../tf_graph_common/proto';
@@ -458,7 +459,10 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
         </div>
       </template>
       <div class="control-holder">
-        <paper-radio-group selected="{{_selectedGraphType}}">
+        <paper-radio-group
+          selected="{{_selectedGraphType}}"
+          on-paper-radio-group-changed="_onGraphTypeChangedByUserGesture"
+        >
           <!-- Note that the name has to match that of tf_graph_common.SelectionType. -->
           <paper-radio-button
             name="op_graph"
@@ -479,7 +483,11 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
       </div>
       <div class="control-holder">
         <div>
-          <paper-toggle-button checked="{{traceInputs}}" class="title">
+          <paper-toggle-button
+            checked="{{traceInputs}}"
+            class="title"
+            on-change="_onTraceInputsChangedByUserGesture"
+          >
             Trace inputs
           </paper-toggle-button>
         </div>
@@ -493,7 +501,10 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
       </template>
       <div class="control-holder">
         <div class="title">Color</div>
-        <paper-radio-group selected="{{colorBy}}">
+        <paper-radio-group
+          selected="{{colorBy}}"
+          on-paper-radio-group-changed="_onColorByChangedByUserGesture"
+        >
           <paper-radio-button name="structure">Structure</paper-radio-button>
 
           <paper-radio-button name="device">Device</paper-radio-button>
@@ -1107,6 +1118,27 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
     type: Boolean,
   })
   _legendOpened: boolean = true;
+
+  _onGraphTypeChangedByUserGesture() {
+    tf_graph_util.notifyDebugEvent({
+      eventId: tb_debug.GraphDebugEventId.GRAPH_TYPE_CHANGED,
+      eventLabel: this._selectedGraphType,
+    });
+  }
+
+  _onColorByChangedByUserGesture() {
+    tf_graph_util.notifyDebugEvent({
+      eventId: tb_debug.GraphDebugEventId.NODE_COLOR_MODE_CHANGED,
+      eventLabel: this.colorBy,
+    });
+  }
+
+  _onTraceInputsChangedByUserGesture() {
+    tf_graph_util.notifyDebugEvent({
+      eventId: tb_debug.GraphDebugEventId.TRACE_INPUT_MODE_TOGGLED,
+    });
+  }
+
   _xlaClustersProvided(
     renderHierarchy: tf_graph_render.RenderGraphInfo | null
   ) {
@@ -1289,6 +1321,10 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
     }
     this._setDownloadFilename(filePath);
     this.set('selectedFile', e);
+
+    tf_graph_util.notifyDebugEvent({
+      eventId: tb_debug.GraphDebugEventId.UPLOADED_GRAPH_FROM_FILESYSTEM,
+    });
   }
   _datasetsChanged(newDatasets: Dataset, oldDatasets: Dataset) {
     if (oldDatasets != null) {
