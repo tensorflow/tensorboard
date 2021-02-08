@@ -421,7 +421,7 @@ export class LineChartInteractiveViewComponent
             this.domDim,
             SCROLL_ZOOM_SPEED_FACTOR,
             this.xScale,
-            this.yScale,
+            this.yScale
           ),
         });
 
