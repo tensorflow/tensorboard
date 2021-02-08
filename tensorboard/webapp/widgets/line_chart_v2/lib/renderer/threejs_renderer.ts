@@ -428,9 +428,8 @@ export class ThreeRenderer implements ObjectRenderer<CacheValue> {
       throw new RangeError('Input error: start.y != end.y.');
     }
 
-    const {width} = paintOpt;
-    const altitude = (width * Math.sqrt(3)) / 2;
-
+    const {altitude} = paintOpt;
+    const width = (2 / Math.sqrt(3)) * altitude;
     const shape = new THREE.Shape([
       new THREE.Vector2(start.x - width / 2, start.y - altitude / 3),
       new THREE.Vector2(start.x, start.y + (altitude * 2) / 3),
@@ -441,7 +440,7 @@ export class ThreeRenderer implements ObjectRenderer<CacheValue> {
     const geom = new THREE.ShapeBufferGeometry(shape);
 
     if (!cached) {
-      const mesh = this.createMesh(geom as any, paintOpt);
+      const mesh = this.createMesh(geom, paintOpt);
       if (mesh === null) return null;
       this.scene.add(mesh);
       return {type: CacheType.TRAPEZOID, data: [start, end], obj3d: mesh};

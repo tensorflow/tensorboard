@@ -99,7 +99,7 @@ export interface TrianglePaintOption extends PaintOption {
 }
 
 export interface TrapezoidPaintOption extends PaintOption {
-  width: number;
+  altitude: number;
 }
 
 export interface CirclePaintOption extends PaintOption {

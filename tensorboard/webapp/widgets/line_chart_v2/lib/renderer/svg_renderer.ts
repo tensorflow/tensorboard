@@ -225,8 +225,8 @@ export class SvgRenderer implements ObjectRenderer<CacheValue> {
       throw new RangeError('Input error: start.y != end.y.');
     }
 
-    const {width, color} = paintOpt;
-    const altitude = (width * Math.sqrt(3)) / 2;
+    const {altitude, color} = paintOpt;
+    const width = (2 / Math.sqrt(3)) * altitude;
     const vertices = new Float32Array([
       start.x - width / 2,
       start.y + altitude / 3,
