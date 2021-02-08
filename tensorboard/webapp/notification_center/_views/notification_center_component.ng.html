@@ -1,0 +1,8 @@
+<span (click)="onIconClicked()">icon</span>
+<div *ngFor="let notification of notifications" class="messages">
+  <div class="message">
+    <div>{{notification.date}}</div>
+    <div>{{notification.title}}</div>
+    <div>{{notification.content}}</div>
+  </div>
+</div>
