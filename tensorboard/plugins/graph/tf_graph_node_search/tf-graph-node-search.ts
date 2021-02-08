@@ -173,7 +173,7 @@ class TfGraphNodeSearch extends LegacyElementMixin(PolymerElement) {
     const node = e.model.item;
     this.set('selectedNode', node);
     tf_graph_util.notifyDebugEvent({
-      eventId: tb_debug.GraphDebugEventId.NODE_SEARCH_RESULT_FOCUSED,
+      actionId: tb_debug.GraphDebugEventId.NODE_SEARCH_RESULT_FOCUSED,
     });
   }
 }

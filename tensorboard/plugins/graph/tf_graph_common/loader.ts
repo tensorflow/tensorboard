@@ -71,7 +71,7 @@ export function fetchAndConstructHierarchicalGraph(
         hierarchyTracker
       );
       tf_graph_util.notifyDebugEvent({
-        eventId: tb_debug.GraphDebugEventId.GRAPH_LOAD_SUCCEEDED,
+        timingId: tb_debug.GraphDebugEventId.GRAPH_LOAD_SUCCEEDED,
         eventValue: Date.now() - start,
       });
       return {graph, graphHierarchy};
@@ -82,7 +82,7 @@ export function fetchAndConstructHierarchicalGraph(
       const msg = `Graph visualization failed.\n\n${e}`;
       tracker.reportError(msg, e);
       tf_graph_util.notifyDebugEvent({
-        eventId: tb_debug.GraphDebugEventId.GRAPH_LOAD_FAILED,
+        timingId: tb_debug.GraphDebugEventId.GRAPH_LOAD_FAILED,
         eventValue: Date.now() - start,
       });
       // Don't swallow the error.

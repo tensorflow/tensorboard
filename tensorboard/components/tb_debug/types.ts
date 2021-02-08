@@ -64,14 +64,6 @@ export enum GraphDebugActionEventId {
   UPLOADED_GRAPH_FROM_FILESYSTEM = 'UPLOADED_GRAPH_FROM_FILESYSTEM',
 }
 
-const graphDebugTimingEventIds = Object.values(
-  GraphDebugTimingEventId
-) as string[];
-
-export function isDebugTimingEventId(eventId: string) {
-  return graphDebugTimingEventIds.includes(eventId);
-}
-
 // Merge the string enums.
 export const GraphDebugEventId = {
   ...GraphDebugTimingEventId,

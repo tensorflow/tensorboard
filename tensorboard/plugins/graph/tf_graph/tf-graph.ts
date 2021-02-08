@@ -417,7 +417,7 @@ class TfGraph extends LegacyElementMixin(PolymerElement) {
       this.$.scene.setNodeExpanded(renderNode);
     }, 75);
     tf_graph_util.notifyDebugEvent({
-      eventId: tb_debug.GraphDebugEventId.NODE_EXPANSION_TOGGLED,
+      actionId: tb_debug.GraphDebugEventId.NODE_EXPANSION_TOGGLED,
       eventLabel: renderNode.expanded ? 'expanded' : 'collapsed',
     });
   }
@@ -441,7 +441,7 @@ class TfGraph extends LegacyElementMixin(PolymerElement) {
     this._buildRenderHierarchy(this.graphHierarchy);
 
     tf_graph_util.notifyDebugEvent({
-      eventId: tb_debug.GraphDebugEventId.NODE_AUXILIARY_EXTRACTION_CHANGED,
+      actionId: tb_debug.GraphDebugEventId.NODE_AUXILIARY_EXTRACTION_CHANGED,
       eventLabel:
         renderNode.node.include === tf_graph.InclusionType.INCLUDE
           ? 'Auxiliary to Main'

@@ -1121,21 +1121,21 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
 
   _onGraphTypeChangedByUserGesture() {
     tf_graph_util.notifyDebugEvent({
-      eventId: tb_debug.GraphDebugEventId.GRAPH_TYPE_CHANGED,
+      actionId: tb_debug.GraphDebugEventId.GRAPH_TYPE_CHANGED,
       eventLabel: this._selectedGraphType,
     });
   }
 
   _onColorByChangedByUserGesture() {
     tf_graph_util.notifyDebugEvent({
-      eventId: tb_debug.GraphDebugEventId.NODE_COLOR_MODE_CHANGED,
+      actionId: tb_debug.GraphDebugEventId.NODE_COLOR_MODE_CHANGED,
       eventLabel: this.colorBy,
     });
   }
 
   _onTraceInputsChangedByUserGesture() {
     tf_graph_util.notifyDebugEvent({
-      eventId: tb_debug.GraphDebugEventId.TRACE_INPUT_MODE_TOGGLED,
+      actionId: tb_debug.GraphDebugEventId.TRACE_INPUT_MODE_TOGGLED,
     });
   }
 
@@ -1323,7 +1323,7 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
     this.set('selectedFile', e);
 
     tf_graph_util.notifyDebugEvent({
-      eventId: tb_debug.GraphDebugEventId.UPLOADED_GRAPH_FROM_FILESYSTEM,
+      actionId: tb_debug.GraphDebugEventId.UPLOADED_GRAPH_FROM_FILESYSTEM,
     });
   }
   _datasetsChanged(newDatasets: Dataset, oldDatasets: Dataset) {
