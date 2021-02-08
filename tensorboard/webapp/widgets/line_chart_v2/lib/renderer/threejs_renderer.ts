@@ -431,10 +431,10 @@ export class ThreeRenderer implements ObjectRenderer<CacheValue> {
     const {altitude} = paintOpt;
     const width = (2 / Math.sqrt(3)) * altitude;
     const shape = new THREE.Shape([
-      new THREE.Vector2(start.x - width / 2, start.y - altitude / 3),
-      new THREE.Vector2(start.x, start.y + (altitude * 2) / 3),
-      new THREE.Vector2(end.x, end.y + (altitude * 2) / 3),
-      new THREE.Vector2(end.x + width / 2, end.y - altitude / 3),
+      new THREE.Vector2(start.x - width / 2, start.y - altitude / 2),
+      new THREE.Vector2(start.x, start.y + altitude / 2),
+      new THREE.Vector2(end.x, end.y + altitude / 2),
+      new THREE.Vector2(end.x + width / 2, end.y - altitude / 2),
     ]);
     shape.autoClose = true;
     const geom = new THREE.ShapeBufferGeometry(shape);

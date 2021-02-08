@@ -232,7 +232,7 @@ describe('line_chart_v2/lib/renderer test', () => {
           null,
           {x: 10, y: 100},
           {x: 30, y: 100},
-          {visible: true, color: '#f00', width: 6}
+          {visible: true, color: '#f00', altitude: 6}
         );
 
         expect(el.children.length).toBe(1);
@@ -240,10 +240,10 @@ describe('line_chart_v2/lib/renderer test', () => {
         expect(path.tagName).toBe('path');
         expect(path.style.display).toBe('');
         assertSvgPathD(path, [
-          [7, 102],
+          [7, 103],
           [10, 97],
           [30, 97],
-          [33, 102],
+          [33, 103],
         ]);
         expect(path.style.fill).toBe('rgb(255, 0, 0)');
       });
@@ -253,14 +253,14 @@ describe('line_chart_v2/lib/renderer test', () => {
           null,
           {x: 10, y: 100},
           {x: 30, y: 100},
-          {visible: true, color: '#f00', width: 6}
+          {visible: true, color: '#f00', altitude: 6}
         );
 
         renderer.createOrUpdateTrapezoidObject(
           obj,
           {x: 10, y: 100},
           {x: 50, y: 100},
-          {visible: true, color: '#00f', width: 6}
+          {visible: true, color: '#00f', altitude: 6}
         );
 
         expect(el.children.length).toBe(1);
@@ -268,10 +268,10 @@ describe('line_chart_v2/lib/renderer test', () => {
         expect(path.tagName).toBe('path');
         expect(path.style.display).toBe('');
         assertSvgPathD(path, [
-          [7, 102],
+          [7, 103],
           [10, 97],
           [50, 97],
-          [53, 102],
+          [53, 103],
         ]);
         expect(path.style.fill).toBe('rgb(0, 0, 255)');
       });
@@ -486,13 +486,13 @@ describe('line_chart_v2/lib/renderer test', () => {
           null,
           {x: 100, y: 50},
           {x: 200, y: 50},
-          {visible: true, color: '#0f0', width: 10}
+          {visible: true, color: '#0f0', altitude: 10}
         );
 
         const obj = scene.children[0] as THREE.Mesh;
         assertPositions(
           obj.geometry as THREE.BufferGeometry,
-          new Float32Array([95, 47, 0, 100, 56, 0, 200, 56, 0, 205, 47, 0])
+          new Float32Array([94, 45, 0, 100, 55, 0, 200, 55, 0, 206, 45, 0])
         );
         assertMaterial(obj, '#00ff00', true);
       });
@@ -502,20 +502,20 @@ describe('line_chart_v2/lib/renderer test', () => {
           null,
           {x: 100, y: 50},
           {x: 200, y: 50},
-          {visible: true, color: '#0f0', width: 10}
+          {visible: true, color: '#0f0', altitude: 10}
         );
 
         renderer.createOrUpdateTrapezoidObject(
           cache,
           {x: 100, y: 50},
           {x: 300, y: 50},
-          {visible: true, color: '#f00', width: 10}
+          {visible: true, color: '#f00', altitude: 10}
         );
 
         const obj = scene.children[0] as THREE.Mesh;
         assertPositions(
           obj.geometry as THREE.BufferGeometry,
-          new Float32Array([95, 47, 0, 100, 56, 0, 300, 56, 0, 305, 47, 0])
+          new Float32Array([94, 45, 0, 100, 55, 0, 300, 55, 0, 306, 45, 0])
         );
         assertMaterial(obj, '#ff0000', true);
       });

@@ -229,13 +229,13 @@ export class SvgRenderer implements ObjectRenderer<CacheValue> {
     const width = (2 / Math.sqrt(3)) * altitude;
     const vertices = new Float32Array([
       start.x - width / 2,
-      start.y + altitude / 3,
+      start.y + altitude / 2,
       start.x,
-      start.y - (altitude * 2) / 3,
+      start.y - altitude / 2,
       end.x,
-      end.y - (altitude * 2) / 3,
+      end.y - altitude / 2,
       end.x + width / 2,
-      end.y + altitude / 3,
+      end.y + altitude / 2,
     ]);
 
     const svgPath = createOrUpdateObject(
