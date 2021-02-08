@@ -225,6 +225,57 @@ describe('line_chart_v2/lib/renderer test', () => {
         expect(path.style.fill).toBe('rgb(0, 0, 255)');
       });
     });
+
+    describe('trapezoid', () => {
+      it('creates a path with the right shape', () => {
+        renderer.createOrUpdateTrapezoidObject(
+          null,
+          {x: 10, y: 100},
+          {x: 30, y: 100},
+          {visible: true, color: '#f00', altitude: 6}
+        );
+
+        expect(el.children.length).toBe(1);
+        const path = el.children[0] as SVGPathElement;
+        expect(path.tagName).toBe('path');
+        expect(path.style.display).toBe('');
+        assertSvgPathD(path, [
+          [7, 103],
+          [10, 97],
+          [30, 97],
+          [33, 103],
+        ]);
+        expect(path.style.fill).toBe('rgb(255, 0, 0)');
+      });
+
+      it('updates the path', () => {
+        const obj = renderer.createOrUpdateTrapezoidObject(
+          null,
+          {x: 10, y: 100},
+          {x: 30, y: 100},
+          {visible: true, color: '#f00', altitude: 6}
+        );
+
+        renderer.createOrUpdateTrapezoidObject(
+          obj,
+          {x: 10, y: 100},
+          {x: 50, y: 100},
+          {visible: true, color: '#00f', altitude: 6}
+        );
+
+        expect(el.children.length).toBe(1);
+        const path = el.children[0] as SVGPathElement;
+        expect(path.tagName).toBe('path');
+        expect(path.style.display).toBe('');
+        assertSvgPathD(path, [
+          [7, 103],
+          [10, 97],
+          [50, 97],
+          [53, 103],
+        ]);
+        expect(path.style.fill).toBe('rgb(0, 0, 255)');
+      });
+    });
   });
 
   describe('threejs renderer', () => {
@@ -425,6 +476,47 @@ describe('line_chart_v2/lib/renderer test', () => {
         const obj = scene.children[0] as THREE.Mesh;
         expect(obj.position.x).toBe(50);
         expect(obj.position.y).toBe(100);
+        assertMaterial(obj, '#ff0000', true);
+      });
+    });
+
+    describe('trapezoid', () => {
+      it('creates a Mesh object with path', () => {
+        renderer.createOrUpdateTrapezoidObject(
+          null,
+          {x: 100, y: 50},
+          {x: 200, y: 50},
+          {visible: true, color: '#0f0', altitude: 10}
+        );
+
+        const obj = scene.children[0] as THREE.Mesh;
+        assertPositions(
+          obj.geometry as THREE.BufferGeometry,
+          new Float32Array([94, 45, 0, 100, 55, 0, 200, 55, 0, 206, 45, 0])
+        );
+        assertMaterial(obj, '#00ff00', true);
+      });
+
+      it('updates mesh', () => {
+        const cache = renderer.createOrUpdateTrapezoidObject(
+          null,
+          {x: 100, y: 50},
+          {x: 200, y: 50},
+          {visible: true, color: '#0f0', altitude: 10}
+        );
+
+        renderer.createOrUpdateTrapezoidObject(
+          cache,
+          {x: 100, y: 50},
+          {x: 300, y: 50},
+          {visible: true, color: '#f00', altitude: 10}
+        );
+
+        const obj = scene.children[0] as THREE.Mesh;
+        assertPositions(
+          obj.geometry as THREE.BufferGeometry,
+          new Float32Array([94, 45, 0, 100, 55, 0, 300, 55, 0, 306, 45, 0])
+        );
         assertMaterial(obj, '#ff0000', true);
       });
     });
