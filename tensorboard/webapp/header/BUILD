@@ -33,7 +33,6 @@ tf_ng_module(
         "//tensorboard/webapp/core/actions",
         "//tensorboard/webapp/core/store",
         "//tensorboard/webapp/settings",
-        "//tensorboard/webapp/widgets/markdown_renderer",
         "//tensorboard/webapp/tbdev_upload",
         "//tensorboard/webapp/types",
         "@npm//@angular/common",

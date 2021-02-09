@@ -1,4 +1,4 @@
-load("//tensorboard/defs:defs.bzl", "tf_ng_module")
+load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
@@ -19,5 +19,21 @@ tf_ng_module(
         "@npm//@angular/core",
         "@npm//@types/marked",
         "@npm//marked",
+    ],
+)
+
+
+tf_ts_library(
+    name = "markdown_renderer_tests",
+    testonly = True,
+    srcs = [
+        "markdown_renderer_component_test.ts",
+    ],
+    deps = [
+        "@npm//@angular/common",
+        "@npm//@angular/core",
+        "@npm//@angular/platform-browser",
+        "@npm//@types/jasmine",
+        ":markdown_renderer"
     ],
 )

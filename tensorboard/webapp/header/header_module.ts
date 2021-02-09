@@ -30,7 +30,6 @@ import {HeaderComponent} from './header_component';
 import {PluginSelectorComponent} from './plugin_selector_component';
 import {PluginSelectorContainer} from './plugin_selector_container';
 import {ReloadContainer} from './reload_container';
-import {MarkdownRendererModule} from '../widgets/markdown_renderer/markdown_renderer_module'
 
 @NgModule({
   declarations: [
@@ -51,7 +50,6 @@ import {MarkdownRendererModule} from '../widgets/markdown_renderer/markdown_rend
     CoreModule,
     SettingsModule,
     TbdevUploadModule,
-    MarkdownRendererModule,
   ],
 })
 export class HeaderModule {}
