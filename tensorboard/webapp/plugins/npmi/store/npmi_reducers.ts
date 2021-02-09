@@ -380,7 +380,7 @@ const reducer = createReducer(
     }
   ),
   on(
-    actions.npmiToggleEmbeddingsView,
+    actions.npmiEmbeddingsViewToggled,
     (state: NpmiState, {metric}): NpmiState => {
       let viewActive = ViewActive.EMBEDDINGS;
       let newMetric = metric;
@@ -405,7 +405,7 @@ const reducer = createReducer(
     }
   ),
   on(
-    actions.npmiChangeEmbeddingsSidebarWidth,
+    actions.npmiEmbeddingsSidebarWidthChanged,
     (state: NpmiState, {sidebarWidth}): NpmiState => {
       return {
         ...state,
@@ -414,7 +414,7 @@ const reducer = createReducer(
     }
   ),
   on(
-    actions.npmiToggleEmbeddingsSidebarExpanded,
+    actions.npmiEmbeddingsSidebarExpandedToggled,
     (state: NpmiState): NpmiState => {
       return {
         ...state,

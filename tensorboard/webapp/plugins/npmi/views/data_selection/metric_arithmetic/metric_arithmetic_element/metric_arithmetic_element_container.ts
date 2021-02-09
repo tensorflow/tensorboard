@@ -33,7 +33,7 @@ import * as npmiActions from '../../../../actions';
     <metric-arithmetic-element-component
       [metric]="metric"
       [filterValues]="filterValues$ | async"
-      [embeddingsPresent]="embeddingsPresent$ | async"
+      [hasEmbeddingsData]="hasEmbeddingsData$ | async"
       [embeddingsMetric]="embeddingsMetric$ | async"
       (onRemove)="remove($event)"
       (onSelect)="select($event)"
@@ -60,7 +60,7 @@ export class MetricArithmeticElementContainer {
       return {min: min, max: max};
     })
   );
-  readonly embeddingsPresent$ = this.store.pipe(select(getEmbeddingData)).pipe(
+  readonly hasEmbeddingsData$ = this.store.pipe(select(getEmbeddingData)).pipe(
     map((embeddingData) => {
       return Object.keys(embeddingData).length !== 0;
     })
@@ -74,7 +74,9 @@ export class MetricArithmeticElementContainer {
   }
 
   select(metric: string) {
-    this.store.dispatch(npmiActions.npmiToggleEmbeddingsView({metric: metric}));
+    this.store.dispatch(
+      npmiActions.npmiEmbeddingsViewToggled({metric: metric})
+    );
   }
 
   filterChange(newValues: {min: number; max: number}) {

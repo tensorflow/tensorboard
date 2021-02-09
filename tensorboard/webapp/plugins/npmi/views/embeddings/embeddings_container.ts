@@ -62,13 +62,13 @@ export class EmbeddingsContainer {
   constructor(private readonly store: Store<State>) {}
 
   onToggleSidebarExpanded() {
-    this.store.dispatch(npmiActions.npmiToggleEmbeddingsSidebarExpanded());
+    this.store.dispatch(npmiActions.npmiEmbeddingsSidebarExpandedToggled());
   }
 
   onResizeTriggered(event: MouseEvent) {
     if (this.resizing) {
       this.store.dispatch(
-        npmiActions.npmiChangeEmbeddingsSidebarWidth({
+        npmiActions.npmiEmbeddingsSidebarWidthChanged({
           sidebarWidth: event.clientX,
         })
       );

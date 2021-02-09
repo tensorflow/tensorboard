@@ -917,7 +917,7 @@ describe('npmi_reducers', () => {
       const state = createNpmiState();
       const nextState = reducers(
         state,
-        actions.npmiToggleEmbeddingsView({metric: 'test'})
+        actions.npmiEmbeddingsViewToggled({metric: 'test'})
       );
       expect(nextState.viewActive).toBe(ViewActive.EMBEDDINGS);
       expect(nextState.embeddingsMetric).toBe('test');
@@ -930,7 +930,7 @@ describe('npmi_reducers', () => {
       });
       const nextState = reducers(
         state,
-        actions.npmiToggleEmbeddingsView({metric: 'test'})
+        actions.npmiEmbeddingsViewToggled({metric: 'test'})
       );
       expect(nextState.viewActive).toBe(ViewActive.DEFAULT);
       expect(nextState.embeddingsMetric).toBe('');
@@ -1027,7 +1027,7 @@ describe('npmi_reducers', () => {
       const state = createNpmiState();
       const nextState = reducers(
         state,
-        actions.npmiChangeEmbeddingsSidebarWidth({sidebarWidth: 300})
+        actions.npmiEmbeddingsSidebarWidthChanged({sidebarWidth: 300})
       );
       expect(nextState.embeddingsSidebarWidth).toBe(300);
     });
@@ -1036,7 +1036,7 @@ describe('npmi_reducers', () => {
       const state = createNpmiState();
       const nextState = reducers(
         state,
-        actions.npmiToggleEmbeddingsSidebarExpanded()
+        actions.npmiEmbeddingsSidebarExpandedToggled()
       );
       expect(nextState.embeddingsSidebarExpanded).toBeFalse();
     });
@@ -1045,7 +1045,7 @@ describe('npmi_reducers', () => {
       const state = createNpmiState({embeddingsSidebarExpanded: false});
       const nextState = reducers(
         state,
-        actions.npmiToggleEmbeddingsSidebarExpanded()
+        actions.npmiEmbeddingsSidebarExpandedToggled()
       );
       expect(nextState.embeddingsSidebarExpanded).toBeTrue();
     });

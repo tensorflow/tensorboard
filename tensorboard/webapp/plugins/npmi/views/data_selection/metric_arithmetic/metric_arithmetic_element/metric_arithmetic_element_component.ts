@@ -37,7 +37,7 @@ export class MetricArithmeticElementComponent
   implements OnInit, OnDestroy, OnChanges {
   @Input() metric!: string;
   @Input() filterValues!: {min: number; max: number};
-  @Input() embeddingsPresent!: boolean;
+  @Input() hasEmbeddingsData!: boolean;
   @Input() embeddingsMetric!: string;
   @Output() onRemove = new EventEmitter<string>();
   @Output() onSelect = new EventEmitter<string>();

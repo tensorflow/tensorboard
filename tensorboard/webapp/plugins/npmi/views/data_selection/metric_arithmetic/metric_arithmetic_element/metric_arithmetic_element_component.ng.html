@@ -16,11 +16,11 @@ limitations under the License.
 -->
 <mat-chip class="filter-chip" (removed)="onRemove.emit(metric)">
   <mat-icon
-    *ngIf="embeddingsPresent"
+    *ngIf="hasEmbeddingsData"
     class="embeddings-button"
     svgIcon="group_work_24px"
     (click)="onSelect.emit(metric)"
-    [ngClass]="{'embedding-selected': embeddingsMetric===metric, 'embedding-unselected': embeddingsMetric!==metric}"
+    [ngClass]="{'embedding-selected': embeddingsMetric === metric, 'embedding-unselected': embeddingsMetric !== metric}"
   ></mat-icon>
   {{metric}}
   <div

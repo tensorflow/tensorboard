@@ -157,7 +157,7 @@ describe('Npmi Embeddings Container', () => {
     expansionButton.nativeElement.click();
 
     expect(dispatchedActions).toEqual([
-      npmiActions.npmiToggleEmbeddingsSidebarExpanded(),
+      npmiActions.npmiEmbeddingsSidebarExpandedToggled(),
     ]);
   });
 
@@ -182,7 +182,7 @@ describe('Npmi Embeddings Container', () => {
     const contentElement = fixture.debugElement.query(css.CONTENT);
     contentElement.triggerEventHandler('mousemove', {clientX: 50});
     expect(dispatchedActions).toEqual([
-      npmiActions.npmiChangeEmbeddingsSidebarWidth({sidebarWidth: 50}),
+      npmiActions.npmiEmbeddingsSidebarWidthChanged({sidebarWidth: 50}),
     ]);
   });
 

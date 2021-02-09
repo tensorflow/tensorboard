@@ -138,7 +138,7 @@ describe('Npmi Metric Arithmetic Element Container', () => {
       );
       embeddingsButton.nativeElement.click();
       expect(dispatchedActions).toEqual([
-        npmiActions.npmiToggleEmbeddingsView({metric: 'npmi@test'}),
+        npmiActions.npmiEmbeddingsViewToggled({metric: 'npmi@test'}),
       ]);
     });
   });
