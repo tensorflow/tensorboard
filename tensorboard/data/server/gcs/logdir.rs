@@ -95,7 +95,7 @@ impl Logdir {
 }
 
 /// Read large chunks from GCS to reduce network roundtrips.
-const BUFFER_CAPACITY: usize = 1024 * 1024 * 128;
+const BUFFER_CAPACITY: usize = 1024 * 1024 * 16;
 
 impl crate::logdir::Logdir for Logdir {
     type File = BufReader<File>;
@@ -136,8 +136,7 @@ impl crate::logdir::Logdir for Logdir {
     }
 
     fn open(&self, path: &EventFileBuf) -> io::Result<Self::File> {
-        // Paths as returned by `discover` are always valid unicode.
-        // valid Unicode.
+        // Paths as returned by `discover` are always valid Unicode.
         let mut object = self.prefix.clone();
         object.push_str(path.0.to_string_lossy().as_ref());
         let file = File::new(self.gcs.clone(), self.bucket.clone(), object);
