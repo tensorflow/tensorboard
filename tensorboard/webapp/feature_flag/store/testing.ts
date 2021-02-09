@@ -13,7 +13,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {buildFeatureFlag} from '../testing';
 import {FeatureFlagState, FEATURE_FLAG_FEATURE_KEY} from './feature_flag_types';
 
 export function buildFeatureFlagState(
@@ -21,7 +20,6 @@ export function buildFeatureFlagState(
 ): FeatureFlagState {
   return {
     isFeatureFlagsLoaded: false,
-    features: undefined,
     defaultFlags: {
       enabledExperimentalPlugins: [],
       enableGpuChart: false,

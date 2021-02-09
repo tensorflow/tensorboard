@@ -39,7 +39,7 @@ export const getFeatureFlags = createSelector(
   selectFeatureFlagState,
   (state: FeatureFlagState): FeatureFlags => {
     return {
-      ...state.features,
+      ...('features' in state ? state.features : undefined),
       ...state.defaultFlags,
       ...state.flagOverrides,
     };
