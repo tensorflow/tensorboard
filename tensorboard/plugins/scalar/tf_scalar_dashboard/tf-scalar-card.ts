@@ -453,7 +453,7 @@ export class TfScalarCard extends PolymerElement {
     // defined in tf_color_scale.
     return {
       scale: (name) => {
-        const [, run] = JSON.parse(name);
+        const [, run] = JSON.parse(name) as [string, string];
         return runsColorScale(run);
       },
     };

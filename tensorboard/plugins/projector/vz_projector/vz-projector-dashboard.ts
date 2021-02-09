@@ -97,7 +97,7 @@ class VzProjectorDashboard extends PolymerElement {
     xhr.onload = () => {
       // Set this to true so we only initialize once.
       this._initialized = true;
-      let runs = JSON.parse(xhr.responseText);
+      let runs = JSON.parse(xhr.responseText) as string[];
       this.set('dataNotFound', runs.length === 0);
     };
     xhr.onerror = () => {

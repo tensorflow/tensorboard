@@ -416,6 +416,10 @@ class TfGraph extends LegacyElementMixin(PolymerElement) {
     this.async(function () {
       this.$.scene.setNodeExpanded(renderNode);
     }, 75);
+    tf_graph_util.notifyDebugEvent({
+      actionId: tb_debug.GraphDebugEventId.NODE_EXPANSION_TOGGLED,
+      eventLabel: renderNode.expanded ? 'expanded' : 'collapsed',
+    });
   }
   _nodeToggleExtract(event) {
     // Toggle the include setting of the specified node appropriately.
@@ -435,6 +439,14 @@ class TfGraph extends LegacyElementMixin(PolymerElement) {
     }
     // Rebuild the render hierarchy.
     this._buildRenderHierarchy(this.graphHierarchy);
+
+    tf_graph_util.notifyDebugEvent({
+      actionId: tb_debug.GraphDebugEventId.NODE_AUXILIARY_EXTRACTION_CHANGED,
+      eventLabel:
+        renderNode.node.include === tf_graph.InclusionType.INCLUDE
+          ? 'Auxiliary to Main'
+          : 'Main to Auxiliary',
+    });
   }
   _nodeToggleSeriesGroup(event) {
     // Toggle the group setting of the specified node appropriately.

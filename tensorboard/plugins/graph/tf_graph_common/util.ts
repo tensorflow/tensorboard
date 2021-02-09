@@ -19,26 +19,48 @@ import * as _ from 'lodash';
 
 import {notifyActionEventFromPolymer} from '../../../components/tb_debug';
 import {
-  GraphDebugEventId,
+  GraphDebugActionEventId,
+  GraphDebugTimingEventId,
+  GRAPH_DEBUG_ACTION_EVENT_CATEGORY,
   GRAPH_DEBUG_TIMING_EVENT_CATEGORY,
 } from '../../../components/tb_debug/types';
 import {NodeStats, ProgressTracker} from './common';
 
 const ASYNC_TASK_DELAY = 20;
 
-export interface DebugEvent {
-  eventId: GraphDebugEventId;
-  // An associated numeric value. For example, this may represent a duration in
-  // milliseconds for a timing event.
-  eventValue?: number;
+interface DebugTimingEvent {
+  timingId: GraphDebugTimingEventId;
+  // An associated duration in milliseconds for a timing event.
+  eventValue: number;
+}
+
+interface DebugActionEvent {
+  actionId: GraphDebugActionEventId;
+  eventLabel?: string;
+}
+
+export type DebugEvent = DebugTimingEvent | DebugActionEvent;
+
+function isDebugTimingEvent(
+  debugEvent: DebugEvent
+): debugEvent is DebugTimingEvent {
+  return debugEvent.hasOwnProperty('timingId');
 }
 
 export function notifyDebugEvent(debugEvent: DebugEvent) {
-  notifyActionEventFromPolymer({
-    eventCategory: GRAPH_DEBUG_TIMING_EVENT_CATEGORY,
-    eventAction: debugEvent.eventId,
-    eventValue: debugEvent.eventValue,
-  });
+  if (isDebugTimingEvent(debugEvent)) {
+    notifyActionEventFromPolymer({
+      eventCategory: GRAPH_DEBUG_TIMING_EVENT_CATEGORY,
+      eventAction: debugEvent.timingId,
+      eventValue: debugEvent.eventValue,
+    });
+  } else {
+    notifyActionEventFromPolymer({
+      eventCategory: GRAPH_DEBUG_ACTION_EVENT_CATEGORY,
+      eventAction: debugEvent.actionId,
+      eventLabel: debugEvent.eventLabel,
+    });
+  }
 }
 
 /**
@@ -47,7 +69,7 @@ export function notifyDebugEvent(debugEvent: DebugEvent) {
 export function time<T>(
   msg: string,
   task: () => T,
-  debugEventId?: GraphDebugEventId
+  debugEventId?: GraphDebugTimingEventId
 ) {
   let start = Date.now();
   let result = task();
@@ -56,7 +78,7 @@ export function time<T>(
   console.log(msg, ':', durationInMs, 'ms');
   /* tslint:enable */
   if (debugEventId) {
-    notifyDebugEvent({eventId: debugEventId, eventValue: durationInMs});
+    notifyDebugEvent({timingId: debugEventId, eventValue: durationInMs});
   }
   return result;
 }
@@ -140,7 +162,7 @@ export function runTask<T>(
   incProgressValue: number,
   task: () => T,
   tracker: ProgressTracker,
-  debugEventId?: GraphDebugEventId
+  debugEventId?: GraphDebugTimingEventId
 ): T {
   // Update the progress message to say the current running task.
   tracker.setMessage(msg);
@@ -166,7 +188,7 @@ export function runAsyncTask<T>(
   incProgressValue: number,
   task: () => T,
   tracker: ProgressTracker,
-  debugEventId?: GraphDebugEventId
+  debugEventId?: GraphDebugTimingEventId
 ): Promise<T> {
   return new Promise((resolve, reject) => {
     // Update the progress message to say the current running task.
@@ -198,7 +220,7 @@ export function runAsyncPromiseTask<T>(
   incProgressValue: number,
   task: () => Promise<T>,
   tracker: ProgressTracker,
-  debugEventId?: GraphDebugEventId
+  debugEventId?: GraphDebugTimingEventId
 ): Promise<T> {
   return new Promise((resolve, reject) => {
     let handleError = function (e) {
@@ -221,7 +243,10 @@ export function runAsyncPromiseTask<T>(
             console.log(msg, ':', durationInMs, 'ms');
             // Update the progress value.
             tracker.updateProgress(incProgressValue);
-            notifyDebugEvent({eventId: debugEventId, eventValue: durationInMs});
+            notifyDebugEvent({
+              timingId: debugEventId,
+              eventValue: durationInMs,
+            });
             // Return the result to be used by other tasks.
             resolve(value);
           })
