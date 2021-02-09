@@ -44,7 +44,7 @@
     "@types/d3": "5.7.2",
     "@types/jasmine": "^3.5.10",
     "@types/lodash": "^4.14.158",
-    "@types/marked": "^1.1.0",
+    "@types/marked": "^1.2.2",
     "@types/node": "^13.13.1",
     "@types/requirejs": "^2.1.31",
     "@types/resize-observer-browser": "^0.1.3",
