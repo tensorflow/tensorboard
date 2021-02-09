@@ -35,9 +35,16 @@ use crate::server::DataProviderHandler;
 
 use data::tensor_board_data_provider_server::TensorBoardDataProviderServer;
 
+<<<<<<< HEAD
 mod dynamic_logdir;
 use dynamic_logdir::DynLogdir;
 
+||||||| 1f57f8096
+=======
+pub mod dynamic_logdir;
+use dynamic_logdir::DynLogdir;
+
+>>>>>>> d93cf1347d28970be7e2d189f667aa8af5c27d0a
 #[derive(Clap, Debug)]
 #[clap(name = "rustboard", version = crate::VERSION)]
 struct Opts {

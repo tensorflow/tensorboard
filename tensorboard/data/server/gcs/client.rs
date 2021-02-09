@@ -35,10 +35,18 @@ const API_BASE: &str = "https://www.googleapis.com/storage/v1";
 const TOKEN_EXPIRATION_MARGIN: Duration = Duration::from_secs(60);
 
 /// GCS client.
+<<<<<<< HEAD
 ///
 /// Cloning a GCS client is cheap and shares the underlying credential store and connection pool,
 /// as with a [`reqwest::Client`].
 #[derive(Clone)]
+||||||| 1f57f8096
+=======
+///
+/// Cloning a GCS client is cheap and shares the underlying connection pool, as with a
+/// [`reqwest::Client`].
+#[derive(Clone)]
+>>>>>>> d93cf1347d28970be7e2d189f667aa8af5c27d0a
 pub struct Client {
     token_store: Arc<TokenStore>,
     http: HttpClient,

@@ -118,8 +118,9 @@ tensorboard --logdir /tmp/tfdbg2_logdir
 ```
 
 In the web browser, navigate to TensorBoard’s page at http://localhost:6006. The
-“Debugger V2” plugin should be activated by default, displaying a page that
-looks like the following:
+“Debugger V2” plugin will be inactive by default, so select it from the
+“Inactive plugins” menu at top right. Once selected, it should look like the
+following:
 
 ![Debugger V2 full view screenshot](./images/debugger_v2_1_full_view.png)
 
