@@ -27,7 +27,7 @@ function isTriangle(el: Element): boolean {
 }
 
 function isTrepezoid(el: Element): boolean {
-  return el.classList.contains('trepezoid');
+  return el.classList.contains('trapezoid');
 }
 
 describe('line_chart_v2/lib/integration test', () => {
@@ -533,7 +533,7 @@ describe('line_chart_v2/lib/integration test', () => {
       ]);
     });
 
-    it('renders many consecute non-positive value as trepezoid', () => {
+    it('renders many consecute non-positive value as trapezoid', () => {
       chart.resize({width: 100, height: 100});
       chart.setViewBox({x: [0, 100], y: [0, 100]});
       chart.setMetadata({line: buildMetadata({id: 'line', visible: true})});
@@ -552,12 +552,12 @@ describe('line_chart_v2/lib/integration test', () => {
 
       const children = getDomChildren();
       expect(children.length).toBe(2);
-      const [line1, trepezoid] = children;
+      const [line1, trapezoid] = children;
       assertSvgPathD(line1, [
         [0, 1],
         [1, 1],
       ]);
-      expect(isTrepezoid(trepezoid)).toBe(true);
+      expect(isTrepezoid(trapezoid)).toBe(true);
     });
   });
 });
