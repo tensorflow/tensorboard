@@ -12,7 +12,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {ChangeDetectionStrategy, Component, Input, ViewEncapsulation} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Input,
+  OnChanges,
+  SimpleChange,
+  SimpleChanges,
+  ViewEncapsulation,
+} from '@angular/core';
 import {parse} from 'marked';
 
 @Component({
@@ -20,16 +29,23 @@ import {parse} from 'marked';
   templateUrl: './markdown_renderer_component.ng.html',
   styleUrls: ['./markdown_renderer_component.css'],
   encapsulation: ViewEncapsulation.None,
-  //changeDetection: ChangeDetectionStrategy.OnPush,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class MarkdownRendererComponent {
+export class MarkdownRendererComponent implements OnChanges {
   @Input()
   markdown!: string;
 
   markdownHTML: string = '';
-  
-  async ngOnChanges() {
-    debugger;
-    this.markdownHTML = await parse(this.markdown);
+
+  constructor(public readonly changeDetectorRef: ChangeDetectorRef) {}
+
+  async ngOnChanges(changes: SimpleChanges) {
+    if (changes['markdown']) {
+      const markdownChange: SimpleChange = changes['markdown'];
+      if (markdownChange.previousValue !== this.markdown) {
+        this.markdownHTML = await parse(this.markdown);
+        this.changeDetectorRef.detectChanges();
+      }
+    }
   }
 }
