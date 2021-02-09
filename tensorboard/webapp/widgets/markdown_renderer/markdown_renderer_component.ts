@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component, Input, ViewEncapsulation} from '@angular/core';
+import {ChangeDetectionStrategy, Component, Input, ViewEncapsulation} from '@angular/core';
 import {parse} from 'marked';
 
 @Component({
@@ -20,12 +20,16 @@ import {parse} from 'marked';
   templateUrl: './markdown_renderer_component.ng.html',
   styleUrls: ['./markdown_renderer_component.css'],
   encapsulation: ViewEncapsulation.None,
+  //changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MarkdownRendererComponent {
   @Input()
   markdown!: string;
 
-  convertToHTML(markdown: string) {
-    return parse(markdown);
+  markdownHTML: string = '';
+  
+  async ngOnChanges() {
+    debugger;
+    this.markdownHTML = await parse(this.markdown);
   }
 }

@@ -23,6 +23,8 @@ import {Component} from '@angular/core';
       <tbdev-upload-button></tbdev-upload-button>
       <app-header-reload></app-header-reload>
       <settings-button></settings-button>
+      <markdown-renderer [markdown]="content"></markdown-renderer>
+      
       <a
         class="readme"
         mat-icon-button
@@ -73,4 +75,6 @@ import {Component} from '@angular/core';
     `,
   ],
 })
-export class HeaderComponent {}
+export class HeaderComponent {
+  content = '# title';
+}
