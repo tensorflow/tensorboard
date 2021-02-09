@@ -35,7 +35,7 @@ use crate::server::DataProviderHandler;
 
 use data::tensor_board_data_provider_server::TensorBoardDataProviderServer;
 
-mod dynamic_logdir;
+pub mod dynamic_logdir;
 use dynamic_logdir::DynLogdir;
 
 #[derive(Clap, Debug)]
