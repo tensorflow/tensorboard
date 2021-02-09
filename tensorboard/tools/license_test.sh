@@ -17,6 +17,7 @@
 # tf_imports/*.html define their respective OSS license.
 files=$(git grep -L "Copyright 20[0-9][0-9] The TensorFlow" \
     'tensorboard/*.*' \
+    ':!tensorboard/data/server/cargo/' \
     ':!*.'{pyc,json,png,wav,proto,pbtxt,md,in,rst,cfg,ipynb,svg,lock} \
     ':!tensorboard/components/tf_imports/*.html')
 
