@@ -49,6 +49,15 @@ alias(
 )
 
 alias(
+    name = "bytes",
+    actual = "@raze__bytes__1_0_1//:bytes",
+    tags = [
+        "cargo-raze",
+        "manual",
+    ],
+)
+
+alias(
     name = "clap",
     actual = "@raze__clap__3_0_0_beta_2//:clap",
     tags = [
