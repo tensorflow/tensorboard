@@ -74,7 +74,8 @@ message Compatibility {
 
 message ApiServer {
   // gRPC server URI: <https://github.com/grpc/grpc/blob/master/doc/naming.md>.
-  // For example: "api.tensorboard.dev:443".
+  // A scheme should always be specified, even if that is `dns`.
+  // For example: "dns:///api.tensorboard.dev:443".
   string endpoint = 1;
 }
 
