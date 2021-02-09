@@ -25,6 +25,14 @@ export interface FeatureFlagState {
   flagOverrides?: Partial<FeatureFlags>;
 }
 
+export interface FeatureFlagStateAfterMigration {
+  isFeatureFlagsLoaded: boolean;
+  defaultFlags: FeatureFlags;
+  flagOverrides?: Partial<FeatureFlags>;
+}
+
+type FeatureFlagMigration = FeatureFlagStateAfterMigration | FeatureFlagState;
+
 export interface State {
-  [FEATURE_FLAG_FEATURE_KEY]?: FeatureFlagState;
+  [FEATURE_FLAG_FEATURE_KEY]?: FeatureFlagMigration;
 }
