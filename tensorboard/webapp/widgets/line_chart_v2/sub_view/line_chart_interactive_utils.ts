@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 
 import {bisect} from '../../../third_party/d3';
-import {Dimension, Extent, Point} from '../lib/public_types';
+import {Dimension, Extent, Point, Scale} from '../lib/public_types';
 
 /**
  * @param sortedPoints DataSeries points that requires points to be sorted in `x`.
@@ -47,7 +47,9 @@ export function getProposedViewExtentOnZoom(
   event: WheelEvent,
   viewExtent: Extent,
   domDim: Dimension,
-  scrollZoomSpeedFactor: number
+  scrollZoomSpeedFactor: number,
+  xScale: Scale,
+  yScale: Scale
 ): Extent {
   let scrollDeltaFactor: number;
 
@@ -75,25 +77,22 @@ export function getProposedViewExtentOnZoom(
 
   const {width, height} = domDim;
 
-  // Note that `offsetX` and `offsetY` are in ui coordinate but we want to synthesize the
-  // data coordinate extent.
-  const zoomOriginFactorX = event.offsetX / width;
-  const zoomOriginFactorY = (height - event.offsetY) / height;
-
-  // We want the zoom origin to be exactly at the cursor. This means we need to make sure
-  // to zoom in correct proportion according to the biases.
-  const dataSpreadX = viewExtent.x[1] - viewExtent.x[0];
-  const dataDeltaX = dataSpreadX * zoomFactor;
-  const dataSpreadY = viewExtent.y[1] - viewExtent.y[0];
-  const dataDeltaY = dataSpreadY * zoomFactor;
-
   const proposedX: [number, number] = [
-    viewExtent.x[0] - dataDeltaX * zoomOriginFactorX,
-    viewExtent.x[1] + dataDeltaX * (1 - zoomOriginFactorX),
+    xScale.reverse(viewExtent.x, [0, width], -event.offsetX * zoomFactor),
+    xScale.reverse(
+      viewExtent.x,
+      [0, width],
+      width + (width - event.offsetX) * zoomFactor
+    ),
   ];
+
   const proposedY: [number, number] = [
-    viewExtent.y[0] - dataDeltaY * zoomOriginFactorY,
-    viewExtent.y[1] + dataDeltaY * (1 - zoomOriginFactorY),
+    yScale.reverse(viewExtent.y, [height, 0], -event.offsetY * zoomFactor),
+    yScale.reverse(
+      viewExtent.y,
+      [height, 0],
+      height + (height - event.offsetY) * zoomFactor
+    ),
   ];
 
   return {
