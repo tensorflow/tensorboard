@@ -19,6 +19,7 @@ import {
   CirclePaintOption,
   LinePaintOption,
   ObjectRenderer,
+  TrapezoidPaintOption,
   TrianglePaintOption,
 } from './renderer/renderer_types';
 
@@ -54,6 +55,23 @@ export class PaintBrush {
     const newCacheValue = this.renderer.createOrUpdateCircleObject(
       this.renderCache.getFromPreviousFrame(cacheId),
       loc,
+      paintOpt
+    );
+    if (newCacheValue) {
+      this.renderCache.setToCurrentFrame(cacheId, newCacheValue);
+    }
+  }
+
+  setTrapezoid(
+    cacheId: string,
+    start: Point,
+    end: Point,
+    paintOpt: TrapezoidPaintOption
+  ) {
+    const newCacheValue = this.renderer.createOrUpdateTrapezoidObject(
+      this.renderCache.getFromPreviousFrame(cacheId),
+      start,
+      end,
       paintOpt
     );
     if (newCacheValue) {

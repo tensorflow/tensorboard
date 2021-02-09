@@ -342,6 +342,21 @@ unavailable. (default: "default").\
         )
 
         parser.add_argument(
+            "--reuse_port",
+            metavar="BOOL",
+            # Custom str-to-bool converter since regular bool() doesn't work.
+            type=lambda v: {"true": True, "false": False}.get(v.lower(), v),
+            choices=[True, False],
+            default=False,
+            help="""\
+Enables the SO_REUSEPORT option on the socket opened by TensorBoard's HTTP
+server, for platforms that support it. This is useful in cases when a parent
+process has obtained the port already and wants to delegate access to the
+port to TensorBoard as a subprocess.(default: %(default)s).\
+""",
+        )
+
+        parser.add_argument(
             "--load_fast",
             action="store_true",
             help="""\

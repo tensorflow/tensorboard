@@ -28,9 +28,7 @@ def main():
     webfiles = os.path.join(os.path.dirname(__file__), "rustboard_core_doc.zip")
     data = {}
 
-    pfx = (
-        "bazel-out/k8-fastbuild/bin/tensorboard/data/server/rustboard_core_doc/"
-    )
+    pfx = "tensorboard/data/server/rustboard_core_doc/"
     with open(webfiles, "rb") as fp:
         with zipfile.ZipFile(fp) as zp:
             for path in zp.namelist():

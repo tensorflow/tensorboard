@@ -7,7 +7,7 @@ DO NOT EDIT! Replaced on runs of cargo-raze
 
 # buildifier: disable=load
 load(
-    "@io_bazel_rules_rust//rust:rust.bzl",
+    "@rules_rust//rust:rust.bzl",
     "rust_binary",
     "rust_library",
     "rust_test",
@@ -39,6 +39,7 @@ rust_library(
     ],
     crate_root = "src/lib.rs",
     crate_type = "lib",
+    data = [],
     edition = "2018",
     rustc_flags = [
         "--cap-lints=allow",
@@ -54,7 +55,7 @@ rust_library(
     ] + selects.with_or({
         # cfg(windows)
         (
-            "@io_bazel_rules_rust//rust/platform:x86_64-pc-windows-msvc",
+            "@rules_rust//rust/platform:x86_64-pc-windows-msvc",
         ): [
             "@raze__winapi__0_3_9//:winapi",
             "@raze__winapi_util__0_1_5//:winapi_util",
