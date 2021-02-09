@@ -29,12 +29,14 @@ use tokio_stream::wrappers::TcpListenerStream;
 use tonic::transport::Server;
 
 use crate::commit::Commit;
-use crate::disk_logdir::DiskLogdir;
 use crate::logdir::LogdirLoader;
 use crate::proto::tensorboard::data;
 use crate::server::DataProviderHandler;
 
 use data::tensor_board_data_provider_server::TensorBoardDataProviderServer;
+
+pub mod dynamic_logdir;
+use dynamic_logdir::DynLogdir;
 
 #[derive(Clap, Debug)]
 #[clap(name = "rustboard", version = crate::VERSION)]
@@ -177,19 +179,26 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .name("Reloader".to_string())
         .spawn({
             let reload_strategy = opts.reload;
-            let mut loader = LogdirLoader::new(commit, DiskLogdir::new(opts.logdir), 0);
-            // Checksum only if `--checksum` given (i.e., off by default).
-            loader.checksum(opts.checksum);
-            move || loop {
-                info!("Starting load cycle");
-                let start = Instant::now();
-                loader.reload();
-                let end = Instant::now();
-                info!("Finished load cycle ({:?})", end - start);
-                match reload_strategy {
-                    ReloadStrategy::Loop { delay } => thread::sleep(delay),
-                    ReloadStrategy::Once => break,
-                };
+            let raw_logdir = opts.logdir;
+            let checksum = opts.checksum;
+            move || {
+                // Create the logdir in the child thread, where no async runtime is active (see
+                // docs for `DynLogdir::new`).
+                let logdir = DynLogdir::new(raw_logdir).unwrap_or_else(|| std::process::exit(1));
+                let mut loader = LogdirLoader::new(commit, logdir, 0);
+                // Checksum only if `--checksum` given (i.e., off by default).
+                loader.checksum(checksum);
+                loop {
+                    info!("Starting load cycle");
+                    let start = Instant::now();
+                    loader.reload();
+                    let end = Instant::now();
+                    info!("Finished load cycle ({:?})", end - start);
+                    match reload_strategy {
+                        ReloadStrategy::Loop { delay } => thread::sleep(delay),
+                        ReloadStrategy::Once => break,
+                    };
+                }
             }
         })
         .expect("failed to spawn reloader thread");

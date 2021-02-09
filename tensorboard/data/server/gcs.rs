@@ -16,5 +16,7 @@ limitations under the License.
 //! Google Cloud Storage interop.
 
 mod client;
+mod logdir;
 
 pub use client::Client;
+pub use logdir::Logdir;
