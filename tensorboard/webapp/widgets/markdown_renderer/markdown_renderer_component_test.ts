@@ -21,7 +21,7 @@ import {By} from '@angular/platform-browser';
 import {MarkdownRendererComponent} from './markdown_renderer_component';
 
 @Component({
-  selector: 'markdown-renderer',
+  selector: 'testable-markdown-renderer',
   template: `
   <markdown-renderer [markdown]="content">
   </markdown-renderer>
@@ -32,9 +32,7 @@ class TestableComponent {
   @ViewChild(MarkdownRendererComponent)
   component!: MarkdownRendererComponent;
 
-  @Input()
-  markdown!: string;
-
+  @Input() content!: string;
 }
 
 describe('markdown_renderer/markdown_renderer test', () => {
@@ -45,24 +43,25 @@ describe('markdown_renderer/markdown_renderer test', () => {
       imports: [CommonModule],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
-
   });
 
-  function createComponent(input: {
-      markdown: string;
-  }): ComponentFixture<TestableComponent> {
-    const fixture = TestBed.createComponent(TestableComponent);
-    fixture.componentInstance.markdown = input.markdown;
-
-    return fixture;
+  function createComponent(): ComponentFixture<TestableComponent> {
+    return TestBed.createComponent(TestableComponent);
   }
 
-  it('sets', () => {
-    const fixture = createComponent({
-      markdown: "# title",
-    });
-    fixture.detectChanges();
+  function getComponent(fixture: ComponentFixture<TestableComponent>) {
+    return fixture.nativeElement.querySelector(
+      'markdown-renderer'
+    );
+  }
 
-    expect(1).toBe(0);
+  it('renders markdown into html', async() => {
+    const fixture = createComponent();
+    fixture.componentInstance.content = "# title";
+    await fixture.detectChanges();
+
+    const component = getComponent(fixture);
+    const content = component.querySelector('.content');
+    expect(content.innerHTML.trim()).toBe("<h1>title</h1>");
   });
 });
