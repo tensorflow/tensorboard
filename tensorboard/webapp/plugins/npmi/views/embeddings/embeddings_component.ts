@@ -21,12 +21,12 @@ import {
 } from '@angular/core';
 
 @Component({
-  selector: 'main-component',
-  templateUrl: './main_component.ng.html',
-  styleUrls: ['./main_component.css'],
+  selector: 'embeddings-component',
+  templateUrl: './embeddings_component.ng.html',
+  styleUrls: ['./embeddings_component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class MainComponent {
+export class EmbeddingsComponent {
   @Input() runActive!: boolean;
   @Input() sidebarExpanded!: boolean;
   @Input() sidebarWidth!: number;

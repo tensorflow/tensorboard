@@ -14,7 +14,13 @@ limitations under the License.
 ==============================================================================*/
 import * as actions from '../actions';
 import {reducers} from './npmi_reducers';
-import {DataLoadState, Operator, SortOrder, ArithmeticKind} from './npmi_types';
+import {
+  DataLoadState,
+  Operator,
+  SortOrder,
+  ArithmeticKind,
+  ViewActive,
+} from './npmi_types';
 import {createNpmiState} from '../testing';
 
 describe('npmi_reducers', () => {
@@ -907,6 +913,29 @@ describe('npmi_reducers', () => {
   });
 
   describe('UI Preferences', () => {
+    it('changes the active view from default to embeddings', () => {
+      const state = createNpmiState();
+      const nextState = reducers(
+        state,
+        actions.npmiEmbeddingsViewToggled({metric: 'test'})
+      );
+      expect(nextState.viewActive).toBe(ViewActive.EMBEDDINGS);
+      expect(nextState.embeddingsMetric).toBe('test');
+    });
+
+    it('changes the active view from embeddings to default ', () => {
+      const state = createNpmiState({
+        viewActive: ViewActive.EMBEDDINGS,
+        embeddingsMetric: 'test',
+      });
+      const nextState = reducers(
+        state,
+        actions.npmiEmbeddingsViewToggled({metric: 'test'})
+      );
+      expect(nextState.viewActive).toBe(ViewActive.DEFAULT);
+      expect(nextState.embeddingsMetric).toBe('');
+    });
+
     it('hides the parallel coordinates view', () => {
       const state = createNpmiState();
       const nextState = reducers(
@@ -992,6 +1021,33 @@ describe('npmi_reducers', () => {
         actions.npmiSidebarWidthChanged({sidebarWidth: 500})
       );
       expect(nextState.sidebarWidth).toBe(500);
+    });
+
+    it('changes the embeddings sidebar width', () => {
+      const state = createNpmiState();
+      const nextState = reducers(
+        state,
+        actions.npmiEmbeddingsSidebarWidthChanged({sidebarWidth: 300})
+      );
+      expect(nextState.embeddingsSidebarWidth).toBe(300);
+    });
+
+    it('hides the embeddings sidebar', () => {
+      const state = createNpmiState();
+      const nextState = reducers(
+        state,
+        actions.npmiEmbeddingsSidebarExpandedToggled()
+      );
+      expect(nextState.embeddingsSidebarExpanded).toBeFalse();
+    });
+
+    it('shows the hidden embeddings sidebar', () => {
+      const state = createNpmiState({embeddingsSidebarExpanded: false});
+      const nextState = reducers(
+        state,
+        actions.npmiEmbeddingsSidebarExpandedToggled()
+      );
+      expect(nextState.embeddingsSidebarExpanded).toBeTrue();
     });
   });
 });

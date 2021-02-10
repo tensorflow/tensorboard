@@ -118,6 +118,10 @@ def tensorboard_js_workspace():
                 "http://mirror.tensorflow.org/raw.githubusercontent.com/google/material-design-icons/b3f05bfbf4329a5b63f50a720f867c2bac163f98/src/content/push_pin/materialiconsoutlined/24px.svg",
                 "https://raw.githubusercontent.com/google/material-design-icons/b3f05bfbf4329a5b63f50a720f867c2bac163f98/src/content/push_pin/materialiconsoutlined/24px.svg",
             ],
+            "e86bae3711b455b57ae55b588fab87e8975f04e8ac3c1451632236eb37da8f3b": [
+                "http://mirror.tensorflow.org/raw.githubusercontent.com/google/material-design-icons/3.0.1/action/svg/production/ic_group_work_24px.svg",
+                "https://raw.githubusercontent.com/google/material-design-icons/3.0.1/action/svg/production/ic_group_work_24px.svg",
+            ],
             "925221f8db5bc0358834bbd61bcd082624374e3da86bc64d04db21106fe72458": [
                 "http://mirror.tensorflow.org/raw.githubusercontent.com/google/material-design-icons/b3f05bfbf4329a5b63f50a720f867c2bac163f98/src/action/bug_report/materialicons/24px.svg",
                 "https://raw.githubusercontent.com/google/material-design-icons/b3f05bfbf4329a5b63f50a720f867c2bac163f98/src/action/bug_report/materialicons/24px.svg",
@@ -184,6 +188,7 @@ def tensorboard_js_workspace():
             "ic_search_24px.svg": "search_24px.svg",
             "ic_settings_24px.svg": "settings_24px.svg",
             "ic_visibility_off_24px.svg": "visibility_off_24px.svg",
+            "ic_group_work_24px.svg": "group_work_24px.svg",
             "http://mirror.tensorflow.org/raw.githubusercontent.com/google/material-design-icons/b3f05bfbf4329a5b63f50a720f867c2bac163f98/src/action/bug_report/materialicons/24px.svg": "bug_report_24px.svg",
             "https://raw.githubusercontent.com/google/material-design-icons/b3f05bfbf4329a5b63f50a720f867c2bac163f98/src/action/bug_report/materialicons/24px.svg": "bug_report_24px.svg",
             "http://mirror.tensorflow.org/raw.githubusercontent.com/google/material-design-icons/b3f05bfbf4329a5b63f50a720f867c2bac163f98/src/navigation/close/materialicons/24px.svg": "close_24px.svg",

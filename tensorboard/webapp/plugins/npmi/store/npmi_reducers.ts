@@ -23,6 +23,7 @@ import {
   ArithmeticElement,
   Operator,
   ArithmeticKind,
+  ViewActive,
 } from './npmi_types';
 import * as metricType from '../util/metric_type';
 
@@ -55,6 +56,10 @@ const initialState: NpmiState = {
   showCounts: true,
   showHiddenAnnotations: false,
   sidebarWidth: 300,
+  viewActive: ViewActive.DEFAULT,
+  embeddingsMetric: '',
+  embeddingsSidebarWidth: 500,
+  embeddingsSidebarExpanded: true,
 };
 
 const reducer = createReducer(
@@ -356,7 +361,6 @@ const reducer = createReducer(
       };
     }
   ),
-
   on(
     actions.npmiShowCountsToggled,
     (state: NpmiState): NpmiState => {
@@ -376,11 +380,45 @@ const reducer = createReducer(
     }
   ),
   on(
+    actions.npmiEmbeddingsViewToggled,
+    (state: NpmiState, {metric}): NpmiState => {
+      let viewActive = ViewActive.EMBEDDINGS;
+      let newMetric = metric;
+      if (metric === state.embeddingsMetric) {
+        viewActive = ViewActive.DEFAULT;
+        newMetric = '';
+      }
+      return {
+        ...state,
+        viewActive: viewActive,
+        embeddingsMetric: newMetric,
+      };
+    }
+  ),
+  on(
     actions.npmiSidebarWidthChanged,
     (state: NpmiState, {sidebarWidth}): NpmiState => {
       return {
         ...state,
         sidebarWidth,
+      };
+    }
+  ),
+  on(
+    actions.npmiEmbeddingsSidebarWidthChanged,
+    (state: NpmiState, {sidebarWidth}): NpmiState => {
+      return {
+        ...state,
+        embeddingsSidebarWidth: sidebarWidth,
+      };
+    }
+  ),
+  on(
+    actions.npmiEmbeddingsSidebarExpandedToggled,
+    (state: NpmiState): NpmiState => {
+      return {
+        ...state,
+        embeddingsSidebarExpanded: !state.embeddingsSidebarExpanded,
       };
     }
   )

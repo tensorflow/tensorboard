@@ -122,7 +122,21 @@ export const npmiShowHiddenAnnotationsToggled = createAction(
   '[NPMI] Show Hidden Annotations Toggled'
 );
 
+export const npmiEmbeddingsViewToggled = createAction(
+  '[NPMI] Embeddings View Toggled',
+  props<{metric: string}>()
+);
+
 export const npmiSidebarWidthChanged = createAction(
   '[NPMI] Sidebar Width Changed',
   props<{sidebarWidth: number}>()
+);
+
+export const npmiEmbeddingsSidebarWidthChanged = createAction(
+  '[NPMI] Embeddings Sidebar Width Changed',
+  props<{sidebarWidth: number}>()
+);
+
+export const npmiEmbeddingsSidebarExpandedToggled = createAction(
+  '[NPMI] Toggle Embeddings Sidebar Expanded'
 );
