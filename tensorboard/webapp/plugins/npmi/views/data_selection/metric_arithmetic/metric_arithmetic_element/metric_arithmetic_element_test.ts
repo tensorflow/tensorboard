@@ -1,4 +1,3 @@
-import {getEmbeddingData} from './../../../../store/npmi_selectors';
 /* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,7 +27,10 @@ import {Action, Store} from '@ngrx/store';
 import {provideMockStore, MockStore} from '@ngrx/store/testing';
 
 import {State} from '../../../../../../app_state';
-import {getMetricFilters} from '../../../../store/npmi_selectors';
+import {
+  getMetricFilters,
+  getEmbeddingData,
+} from '../../../../store/npmi_selectors';
 import * as npmiActions from '../../../../actions';
 import {appStateFromNpmiState, createNpmiState} from '../../../../testing';
 import {MetricArithmeticElementContainer} from './metric_arithmetic_element_container';
