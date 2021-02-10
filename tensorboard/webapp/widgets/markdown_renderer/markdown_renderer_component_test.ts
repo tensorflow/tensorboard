@@ -22,10 +22,7 @@ import {MarkdownRendererComponent} from './markdown_renderer_component';
 
 @Component({
   selector: 'testable-markdown-renderer',
-  template: `
-  <markdown-renderer [markdown]="content">
-  </markdown-renderer>
-  `,
+  template: `<markdown-renderer [markdown]="content"> </markdown-renderer>`,
   styles: [''],
 })
 class TestableComponent {
@@ -36,7 +33,6 @@ class TestableComponent {
 }
 
 describe('markdown_renderer/markdown_renderer test', () => {
-
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [TestableComponent, MarkdownRendererComponent],
@@ -50,18 +46,16 @@ describe('markdown_renderer/markdown_renderer test', () => {
   }
 
   function getComponent(fixture: ComponentFixture<TestableComponent>) {
-    return fixture.nativeElement.querySelector(
-      'markdown-renderer'
-    );
+    return fixture.nativeElement.querySelector('markdown-renderer');
   }
 
-  it('renders markdown into html', async() => {
+  it('renders markdown into html', async () => {
     const fixture = createComponent();
-    fixture.componentInstance.content = "# title";
+    fixture.componentInstance.content = '# title';
     await fixture.detectChanges();
 
     const component = getComponent(fixture);
     const content = component.querySelector('.content');
-    expect(content.innerHTML.trim()).toBe("<h1>title</h1>");
+    expect(content.innerHTML.trim()).toBe('<h1>title</h1>');
   });
 });
