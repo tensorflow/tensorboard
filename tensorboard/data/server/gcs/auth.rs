@@ -112,14 +112,14 @@ impl TokenStore {
             return rb;
         }
         let token = self.token.read().expect("failed to read auth token");
-        if let Some(t) = Self::check_expiry(&*token, lifetime) {
+        if let Some(t) = BoundedToken::unwrap_if_valid_for(&*token, lifetime) {
             return t.authenticate(rb);
         }
         drop(token);
         let mut token = self.token.write().expect("failed to write auth token");
         // Check again: may have just been written by a different client, in which case no need to
         // re-fetch.
-        if let Some(t) = Self::check_expiry(&*token, lifetime) {
+        if let Some(t) = BoundedToken::unwrap_if_valid_for(&*token, lifetime) {
             return t.authenticate(rb);
         }
         // If we get here, we need a fresh token.
@@ -134,10 +134,12 @@ impl TokenStore {
             rb
         }
     }
+}
 
+impl BoundedToken {
     /// Checks whether `token` represents a token that will still be valid for at least the given
     /// `lifetime`, and if so returns a reference to the inner access token.
-    fn check_expiry(token: &Option<BoundedToken>, lifetime: Duration) -> Option<&AccessToken> {
+    fn unwrap_if_valid_for(token: &Option<Self>, lifetime: Duration) -> Option<&AccessToken> {
         match token.as_ref() {
             Some(t) if t.valid_at(Instant::now() + lifetime) => Some(&t.access_token),
             _ => None,
