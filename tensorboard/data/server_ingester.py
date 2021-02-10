@@ -192,7 +192,6 @@ def _get_server_binary():
         return pkg_result
 
     raise RuntimeError(
-        "TensorBoard data server not found. This mode is experimental "
-        "and not supported in release builds. If building from source, "
-        "pass --define=link_data_server=true."
+        "TensorBoard data server not found. This mode is experimental. "
+        "If building from source, pass --define=link_data_server=true."
     )
