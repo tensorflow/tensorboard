@@ -24,5 +24,6 @@ require.config({
     d3: '/base/npm/node_modules/d3/dist/d3',
     three: '/base/npm/node_modules/three/build/three',
     dagre: '/base/npm/node_modules/dagre/dist/dagre',
+    marked: '/base/npm/node_modules/marked/lib/marked',
   },
 });
