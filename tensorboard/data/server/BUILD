@@ -53,6 +53,7 @@ rust_library(
         "//tensorboard/data/server/cargo:async_stream",
         "//tensorboard/data/server/cargo:base64",
         "//tensorboard/data/server/cargo:byteorder",
+        "//tensorboard/data/server/cargo:bytes",
         "//tensorboard/data/server/cargo:clap",
         "//tensorboard/data/server/cargo:crc",
         "//tensorboard/data/server/cargo:env_logger",
