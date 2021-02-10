@@ -32,7 +32,6 @@ tf_ts_library(
         ":markdown_renderer",
         "@npm//@angular/common",
         "@npm//@angular/core",
-        "@npm//@angular/platform-browser",
         "@npm//@types/jasmine",
     ],
 )

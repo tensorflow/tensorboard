@@ -16,14 +16,12 @@ limitations under the License.
 import {CommonModule} from '@angular/common';
 import {Component, Input, NO_ERRORS_SCHEMA, ViewChild} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
-import {By} from '@angular/platform-browser';
 
 import {MarkdownRendererComponent} from './markdown_renderer_component';
 
 @Component({
   selector: 'testable-markdown-renderer',
   template: `<markdown-renderer [markdown]="content"> </markdown-renderer>`,
-  styles: [''],
 })
 class TestableComponent {
   @ViewChild(MarkdownRendererComponent)
