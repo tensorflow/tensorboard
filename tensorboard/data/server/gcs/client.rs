@@ -15,6 +15,7 @@ limitations under the License.
 
 //! Client for listing and reading GCS files.
 
+use bytes::Bytes;
 use log::debug;
 use reqwest::{
     blocking::{Client as HttpClient, RequestBuilder, Response},
@@ -126,7 +127,7 @@ impl Client {
         bucket: &str,
         object: &str,
         range: RangeInclusive<u64>,
-    ) -> reqwest::Result<Vec<u8>> {
+    ) -> reqwest::Result<Bytes> {
         let mut url = Url::parse(STORAGE_BASE).unwrap();
         url.path_segments_mut().unwrap().extend(&[bucket, object]);
         // With "Range: bytes=a-b", if `b >= 2**63` then GCS ignores the range entirely.
@@ -134,9 +135,8 @@ impl Client {
         let range = format!("bytes={}-{}", range.start(), range.end().min(&max_max));
         let res = self.send_authenticated(self.http.get(url).header("Range", range))?;
         if res.status() == StatusCode::RANGE_NOT_SATISFIABLE {
-            return Ok(Vec::new());
+            return Ok(Bytes::new());
         }
-        let body = res.error_for_status()?.bytes()?;
-        Ok(body.to_vec())
+        res.error_for_status()?.bytes()
     }
 }
