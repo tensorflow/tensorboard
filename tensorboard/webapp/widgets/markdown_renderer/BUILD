@@ -22,7 +22,6 @@ tf_ng_module(
     ],
 )
 
-
 tf_ts_library(
     name = "markdown_renderer_tests",
     testonly = True,
@@ -30,10 +29,10 @@ tf_ts_library(
         "markdown_renderer_component_test.ts",
     ],
     deps = [
+        ":markdown_renderer",
         "@npm//@angular/common",
         "@npm//@angular/core",
         "@npm//@angular/platform-browser",
         "@npm//@types/jasmine",
-        ":markdown_renderer"
     ],
 )
