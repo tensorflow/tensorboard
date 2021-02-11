@@ -157,7 +157,7 @@ export class SeriesLineView extends DataDrawable {
               y: polyline[polyline.length - 1],
             };
             this.paintBrush.setTrapezoid(
-              JSON.stringify(['NaN', series.id, partitionInd, 'trep']),
+              JSON.stringify(['NaN', series.id, partitionInd, 'trapezoid']),
               start,
               end,
               {
