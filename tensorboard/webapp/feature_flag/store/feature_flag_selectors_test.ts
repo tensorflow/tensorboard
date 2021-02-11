@@ -35,32 +35,6 @@ describe('feature_flag_selectors', () => {
       );
     });
 
-    it('prefers required `defaultFlags` over features', () => {
-      const state = buildState(
-        buildFeatureFlagState({
-          features: {
-            enabledExperimentalPlugins: ['foo', 'bar'],
-            enableGpuChart: true,
-            inColab: false,
-            scalarsBatchSize: 10,
-          },
-          defaultFlags: {
-            enabledExperimentalPlugins: ['foo'],
-            enableGpuChart: false,
-            inColab: false,
-            scalarsBatchSize: 10,
-          },
-        })
-      );
-
-      expect(selectors.getFeatureFlags(state)).toEqual({
-        enabledExperimentalPlugins: ['foo'],
-        enableGpuChart: false,
-        inColab: false,
-        scalarsBatchSize: 10,
-      });
-    });
-
     it('does not combine array flags', () => {
       const state = buildState(
         buildFeatureFlagState({
