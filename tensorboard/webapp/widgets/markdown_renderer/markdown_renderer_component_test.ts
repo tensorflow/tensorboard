@@ -15,7 +15,12 @@ limitations under the License.
 
 import {CommonModule} from '@angular/common';
 import {Component, Input, NO_ERRORS_SCHEMA, ViewChild} from '@angular/core';
-import {ComponentFixture, TestBed} from '@angular/core/testing';
+import {
+  fakeAsync,
+  flush,
+  ComponentFixture,
+  TestBed,
+} from '@angular/core/testing';
 
 import {MarkdownRendererComponent} from './markdown_renderer_component';
 
@@ -47,13 +52,14 @@ describe('markdown_renderer/markdown_renderer test', () => {
     return fixture.nativeElement.querySelector('markdown-renderer');
   }
 
-  it('renders markdown into html', async () => {
+  it('renders markdown into html', fakeAsync(() => {
     const fixture = createComponent();
     fixture.componentInstance.content = '# title';
-    await fixture.detectChanges();
+    fixture.detectChanges();
 
+    flush();
     const component = getComponent(fixture);
     const content = component.querySelector('.content');
     expect(content.innerHTML.trim()).toBe('<h1>title</h1>');
-  });
+  }));
 });
