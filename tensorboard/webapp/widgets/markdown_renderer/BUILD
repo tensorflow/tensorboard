@@ -30,6 +30,7 @@ tf_ts_library(
     ],
     deps = [
         ":markdown_renderer",
+        "//tensorboard/webapp/angular:expect_angular_core_testing",
         "@npm//@angular/common",
         "@npm//@angular/core",
         "@npm//@types/jasmine",
