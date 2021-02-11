@@ -342,6 +342,7 @@ tf_ng_web_test_suite(
         "//tensorboard/webapp/widgets/line_chart_v2/lib/renderer:renderer_test",
         "//tensorboard/webapp/widgets/line_chart_v2/lib/worker:worker_test",
         "//tensorboard/webapp/widgets/line_chart_v2/sub_view:sub_view_tests",
+        "//tensorboard/webapp/widgets/markdown_renderer:markdown_renderer_tests",
         "//tensorboard/webapp/widgets/range_input:range_input_tests",
         "//tensorboard/webapp/widgets/source_code:source_code_container_test_lib",
         "//tensorboard/webapp/widgets/source_code:source_code_test_lib",
