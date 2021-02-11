@@ -317,31 +317,29 @@ impl RunLoaderData {
                     wall_time,
                     payload: EventValue::GraphDef(GraphDefValue(graph_bytes)),
                 };
-                use std::collections::hash_map::Entry;
-                let ts = match self
+                let ts = self
                     .time_series
                     .entry(Tag(GraphDefValue::TAG_NAME.to_string()))
-                {
-                    Entry::Occupied(o) => o.into_mut(),
-                    Entry::Vacant(v) => {
-                        v.insert(StageTimeSeries::new(GraphDefValue::initial_metadata()))
-                    }
-                };
+                    .or_insert_with(|| {
+                        let metadata = GraphDefValue::initial_metadata();
+                        StageTimeSeries::new(metadata)
+                    });
                 ts.rsv.offer(step, sv);
             }
             Some(pb::event::What::TaggedRunMetadata(trm_proto)) => {
                 let sv = StageValue {
                     wall_time,
-                    payload: EventValue::GraphDef(GraphDefValue(trm_proto.run_metadata)),
+                    payload: EventValue::TaggedRunMetadata(TaggedRunMetadataValue(
+                        trm_proto.run_metadata,
+                    )),
                 };
-                use std::collections::hash_map::Entry;
-                let ts = match self.time_series.entry(Tag(trm_proto.tag)) {
-                    Entry::Occupied(o) => o.into_mut(),
-                    Entry::Vacant(v) => {
+                let ts = self
+                    .time_series
+                    .entry(Tag(trm_proto.tag))
+                    .or_insert_with(|| {
                         let metadata = TaggedRunMetadataValue::initial_metadata();
-                        v.insert(StageTimeSeries::new(metadata))
-                    }
-                };
+                        StageTimeSeries::new(metadata)
+                    });
                 ts.rsv.offer(step, sv);
             }
             Some(pb::event::What::Summary(sum)) => {
@@ -350,7 +348,6 @@ impl RunLoaderData {
                         None => continue,
                         Some(v) => SummaryValue(Box::new(v)),
                     };
-
                     use std::collections::hash_map::Entry;
                     let ts = match self.time_series.entry(Tag(summary_pb_value.tag)) {
                         Entry::Occupied(o) => o.into_mut(),
