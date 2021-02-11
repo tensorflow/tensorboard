@@ -131,6 +131,7 @@ tf_dev_js_binary = rule(
                 "@npm//:node_modules/d3/dist/d3.js": "d3",
                 "@npm//:node_modules/three/build/three.js": "three",
                 "@npm//:node_modules/zone.js/dist/zone.js": "zone.js/dist/zone.js",
+                "@npm//:node_modules/marked/lib/marked.js": "marked",
             },
             allow_files = True,
         ),

@@ -12,18 +12,30 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-require.config({
-  /**
-   * If paths are updated here, and Karma is still unable to resolve them,
-   * see the 'static_files' attribute on 'tf_ng_web_test_suite' in
-   * tensoboard/defs/defs.bzl for ways to specify a static path for Karma to
-   * use.
-   */
-  paths: {
-    lodash: '/base/npm/node_modules/lodash/lodash',
-    d3: '/base/npm/node_modules/d3/dist/d3',
-    three: '/base/npm/node_modules/three/build/three',
-    dagre: '/base/npm/node_modules/dagre/dist/dagre',
-    marked: '/base/npm/node_modules/marked/lib/marked',
-  },
-});
+
+markdown-renderer .content > p:first-child {
+  margin-top: 0.3em;
+}
+
+markdown-renderer .content > p:last-child {
+  margin-bottom: 0.3em;
+}
+
+markdown-renderer table {
+  border-collapse: collapse;
+}
+
+markdown-renderer table th {
+  font-weight: 600;
+}
+
+markdown-renderer table th,
+markdown-renderer table td {
+  padding: 6px 13px;
+  border: 1px solid #dfe2e5;
+}
+
+markdown-renderer table tr {
+  background-color: #fff;
+  border-top: 1px solid #c6cbd1;
+}
