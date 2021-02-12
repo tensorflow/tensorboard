@@ -15,7 +15,10 @@ limitations under the License.
 
 //! Core simple types.
 
+use log::error;
 use std::borrow::Borrow;
+use std::collections::HashMap;
+use std::str::FromStr;
 
 /// A step associated with a record, strictly increasing over time within a record stream.
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Copy, Clone)]
@@ -89,13 +92,36 @@ impl Borrow<str> for Run {
     }
 }
 
+/// A map defining how many samples per plugin to keep.
+#[derive(Debug)]
+pub struct PluginSamplingHint(pub HashMap<String, usize>);
+
+impl FromStr for PluginSamplingHint {
+    type Err = <usize as FromStr>::Err;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let mut result = HashMap::new();
+        for pair_str in s.split(',') {
+            let pair: Vec<_> = pair_str.split('=').collect();
+            if pair.len() != 2 {
+                error!("While parsing plugin sampling hint: {}", s);
+                std::process::exit(1);
+            }
+            let num_samples = pair[1]
+                .parse::<usize>()
+                .expect("Cannot parse a non-integer sampling hint");
+            let plugin_name: String = pair[0].to_string();
+            result.insert(plugin_name, num_samples);
+        }
+        Ok(PluginSamplingHint(result))
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
     fn test_tag_hash_map_str_access() {
-        use std::collections::HashMap;
         let mut m: HashMap<Tag, i32> = HashMap::new();
         m.insert(Tag("accuracy".to_string()), 1);
         m.insert(Tag("loss".to_string()), 2);
@@ -106,7 +132,6 @@ mod tests {
 
     #[test]
     fn test_run_hash_map_str_access() {
-        use std::collections::HashMap;
         let mut m: HashMap<Run, i32> = HashMap::new();
         m.insert(Run("train".to_string()), 1);
         m.insert(Run("test".to_string()), 2);
@@ -137,5 +162,19 @@ mod tests {
             WallTime::new(789.0).unwrap(),
         ];
         assert_eq!(actual, expected);
+    }
+
+    #[test]
+    fn test_plugin_sampling_hint() {
+        let samples_per_plugin: &str = "scalars=500,images=0,unknown=10";
+        let mut expected: HashMap<String, usize> = HashMap::new();
+        expected.insert("scalars".to_string(), 500);
+        expected.insert("images".to_string(), 0);
+        expected.insert("unknown".to_string(), 10);
+
+        assert_eq!(
+            PluginSamplingHint::from_str(samples_per_plugin).unwrap().0,
+            expected
+        );
     }
 }

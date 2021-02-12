@@ -18,6 +18,7 @@ limitations under the License.
 use clap::Clap;
 use log::info;
 use std::path::PathBuf;
+use std::sync::Arc;
 use std::time::Instant;
 
 use rustboard_core::cli::dynamic_logdir::DynLogdir;
@@ -46,7 +47,12 @@ fn main() {
 
     let commit = Commit::new();
     let logdir = DynLogdir::new(opts.logdir).expect("DynLogdir::new");
-    let mut loader = LogdirLoader::new(&commit, logdir, opts.reload_threads.unwrap_or(0));
+    let mut loader = LogdirLoader::new(
+        &commit,
+        logdir,
+        opts.reload_threads.unwrap_or(0),
+        Arc::new(None),
+    );
     loader.checksum(opts.checksum); // if neither `--[no-]checksum` given, defaults to false
 
     info!("Starting load cycle");

@@ -22,6 +22,7 @@ use std::io::{Read, Write};
 use std::net::{IpAddr, SocketAddr};
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
+use std::sync::Arc;
 use std::thread;
 use std::time::{Duration, Instant};
 use tokio::net::TcpListener;
@@ -32,6 +33,7 @@ use crate::commit::Commit;
 use crate::logdir::LogdirLoader;
 use crate::proto::tensorboard::data;
 use crate::server::DataProviderHandler;
+use crate::types::PluginSamplingHint;
 
 use data::tensor_board_data_provider_server::TensorBoardDataProviderServer;
 
@@ -114,6 +116,17 @@ struct Opts {
     )]
     #[allow(unused)]
     no_checksum: bool,
+
+    /// Set explicit series sampling
+    ///
+    /// A comma separated list of plugin_name=num_samples pairs to explicitly specify how many
+    /// samples to keep per tag for the specified plugin. For unspecified plugins, series are
+    /// randomly downsampled to reasonable values to prevent out-of-memory errors in long running
+    /// jobs. Setting a plugin's num_samples to `0` will keep all samples for that plugin. For
+    /// instance, `--samples_per_plugin=scalars=500,images=0` keeps 500 events in each scalar series
+    /// and preserves all images.
+    #[clap(long)]
+    samples_per_plugin: Option<PluginSamplingHint>,
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
@@ -174,7 +187,7 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Leak the commit object, since the Tonic server must have only 'static references. This only
     // leaks the outer commit structure (of constant size), not the pointers to the actual data.
     let commit: &'static Commit = Box::leak(Box::new(Commit::new()));
-
+    let psh_ref = Arc::new(opts.samples_per_plugin);
     thread::Builder::new()
         .name("Reloader".to_string())
         .spawn({
@@ -185,7 +198,7 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 // Create the logdir in the child thread, where no async runtime is active (see
                 // docs for `DynLogdir::new`).
                 let logdir = DynLogdir::new(raw_logdir).unwrap_or_else(|| std::process::exit(1));
-                let mut loader = LogdirLoader::new(commit, logdir, 0);
+                let mut loader = LogdirLoader::new(commit, logdir, 0, psh_ref);
                 // Checksum only if `--checksum` given (i.e., off by default).
                 loader.checksum(checksum);
                 loop {

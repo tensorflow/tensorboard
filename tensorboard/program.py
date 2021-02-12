@@ -389,6 +389,7 @@ class TensorBoard(object):
                 logdir=flags.logdir,
                 reload_interval=flags.reload_interval,
                 channel_creds_type=flags.grpc_creds_type,
+                samples_per_plugin=flags.samples_per_plugin,
             )
         else:
             ingester = local_ingester.LocalDataIngester(flags)
