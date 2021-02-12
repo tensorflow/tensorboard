@@ -97,6 +97,54 @@ impl Logdir for DiskLogdir {
     }
 
     fn open(&self, path: &EventFileBuf) -> io::Result<Self::File> {
-        File::open(self.root.join(&path.0)).map(BufReader::new)
+        File::open(&path.0).map(BufReader::new)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::io::{Read, Write};
+
+    fn test_in_logdir(logdir: &Path) -> std::io::Result<()> {
+        let run_dir = logdir.join("train");
+        std::fs::create_dir(&run_dir)?;
+        {
+            let mut f = File::create(run_dir.join("foo.tfevents.123"))?;
+            f.write_all(b"hello")?;
+            f.sync_all()?;
+        }
+
+        let disk_logdir = DiskLogdir::new(logdir.to_path_buf());
+        let discoveries = disk_logdir.discover()?;
+        assert_eq!(discoveries.len(), 1, "{:?}", discoveries);
+        let train_event_files = &discoveries[&Run("train".to_string())];
+        assert_eq!(train_event_files.len(), 1, "{:?}", train_event_files);
+
+        let mut event_file = disk_logdir.open(&train_event_files[0])?;
+        let mut contents = String::new();
+        event_file.read_to_string(&mut contents)?;
+        assert_eq!(contents, "hello");
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_absolute() -> std::io::Result<()> {
+        let tmpdir = tempfile::tempdir_in(".")?;
+        let logdir = tmpdir.path();
+        assert!(logdir.is_absolute(), "expected absolute: {:?}", logdir);
+        test_in_logdir(logdir)
+    }
+
+    #[test]
+    fn test_relative() -> std::io::Result<()> {
+        let tmpdir = tempfile::tempdir_in(".")?;
+        let logdir = tmpdir
+            .path()
+            .strip_prefix(std::env::current_dir()?)
+            .expect("tmpdir not under $PWD");
+        assert!(logdir.is_relative(), "expected relative: {:?}", logdir);
+        test_in_logdir(logdir)
     }
 }
