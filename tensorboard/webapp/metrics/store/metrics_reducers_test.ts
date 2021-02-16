@@ -578,9 +578,7 @@ describe('metrics reducers', () => {
 
     it('changes scalarSmoothing on metricsChangeScalarSmoothing', () => {
       const prevState = buildMetricsState({
-        settings: buildMetricsSettingsState({
-          scalarSmoothing: 0.3,
-        }),
+        settings: buildMetricsSettingsState({scalarSmoothing: 0.3}),
       });
       const nextState = reducers(
         prevState,
@@ -1593,6 +1591,73 @@ describe('metrics reducers', () => {
       expect(nextState.unresolvedImportedPinnedCards).toEqual([
         {plugin: PluginType.SCALARS, tag: 'accuracy'},
       ]);
+    });
+  });
+
+  describe('smoothing hydration', () => {
+    it('rehydrates the smoothing state', () => {
+      const beforeState = buildMetricsState({
+        settings: buildMetricsSettingsState({scalarSmoothing: 0.3}),
+      });
+      const action = routingActions.stateRehydratedFromUrl({
+        routeKind: RouteKind.EXPERIMENT,
+        partialState: {metrics: {pinnedCards: [], smoothing: 0.1}},
+      });
+      const nextState = reducers(beforeState, action);
+
+      expect(nextState.settings.scalarSmoothing).toBe(0.1);
+    });
+
+    it('keeps old state when the rehydrated state is null', () => {
+      const beforeState = buildMetricsState({
+        settings: buildMetricsSettingsState({scalarSmoothing: 0.3}),
+      });
+      const action = routingActions.stateRehydratedFromUrl({
+        routeKind: RouteKind.EXPERIMENT,
+        partialState: {metrics: {pinnedCards: [], smoothing: null}},
+      });
+      const nextState = reducers(beforeState, action);
+
+      expect(nextState.settings.scalarSmoothing).toBe(0.3);
+    });
+
+    it('keeps old state when the rehydrated state is NaN', () => {
+      const beforeState = buildMetricsState({
+        settings: buildMetricsSettingsState({scalarSmoothing: 0.3}),
+      });
+      const action = routingActions.stateRehydratedFromUrl({
+        routeKind: RouteKind.EXPERIMENT,
+        partialState: {metrics: {pinnedCards: [], smoothing: NaN}},
+      });
+      const nextState = reducers(beforeState, action);
+
+      expect(nextState.settings.scalarSmoothing).toBe(0.3);
+    });
+
+    it('clips value to 0', () => {
+      const beforeState = buildMetricsState({
+        settings: buildMetricsSettingsState({scalarSmoothing: 0.3}),
+      });
+      const action = routingActions.stateRehydratedFromUrl({
+        routeKind: RouteKind.EXPERIMENT,
+        partialState: {metrics: {pinnedCards: [], smoothing: -0.1}},
+      });
+      const nextState = reducers(beforeState, action);
+
+      expect(nextState.settings.scalarSmoothing).toBe(0);
+    });
+
+    it('clips value to 0.999', () => {
+      const beforeState = buildMetricsState({
+        settings: buildMetricsSettingsState({scalarSmoothing: 0.3}),
+      });
+      const action = routingActions.stateRehydratedFromUrl({
+        routeKind: RouteKind.EXPERIMENT,
+        partialState: {metrics: {pinnedCards: [], smoothing: 100}},
+      });
+      const nextState = reducers(beforeState, action);
+
+      expect(nextState.settings.scalarSmoothing).toBe(0.999);
     });
   });
 });

@@ -20,6 +20,7 @@ import {skip} from 'rxjs/operators';
 import {SerializableQueryParams} from '../app_routing/types';
 import {State} from '../app_state';
 import {PluginType} from '../metrics/data_source/types';
+import {METRICS_SETTINGS_DEFAULT} from '../metrics/public_types';
 import {appStateFromMetricsState, buildMetricsState} from '../metrics/testing';
 import * as selectors from '../selectors';
 import {CoreDeepLinkProvider} from './core_deeplink_provider';
@@ -45,6 +46,10 @@ describe('core deeplink provider', () => {
     store.overrideSelector(selectors.getUnresolvedImportedPinnedCards, []);
     store.overrideSelector(selectors.getEnabledExperimentalPlugins, []);
     store.overrideSelector(selectors.getOverriddenFeatureFlags, {});
+    store.overrideSelector(
+      selectors.getMetricsScalarSmoothing,
+      METRICS_SETTINGS_DEFAULT.scalarSmoothing
+    );
 
     queryParamsSerialized = [];
 
@@ -61,175 +66,222 @@ describe('core deeplink provider', () => {
   });
 
   describe('time series', () => {
-    it('serializes pinned card state when store updates', () => {
-      store.overrideSelector(selectors.getPinnedCardsWithMetadata, [
-        {
-          cardId: 'card1',
-          plugin: PluginType.SCALARS,
-          tag: 'accuracy',
-          runId: null,
-        },
-      ]);
-      store.overrideSelector(selectors.getUnresolvedImportedPinnedCards, [
-        {
-          plugin: PluginType.SCALARS,
-          tag: 'loss',
-        },
-      ]);
-      store.refreshState();
+    describe('smoothing state', () => {
+      it('serializes the smoothing state to the URL', () => {
+        store.overrideSelector(selectors.getMetricsScalarSmoothing, 0);
+        store.refreshState();
 
-      expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual([
-        {
-          key: 'pinnedCards',
-          value:
-            '[{"plugin":"scalars","tag":"accuracy"},{"plugin":"scalars","tag":"loss"}]',
-        },
-      ]);
+        expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual(
+          [
+            {
+              key: 'smoothing',
+              value: '0',
+            },
+          ]
+        );
+      });
 
-      store.overrideSelector(selectors.getPinnedCardsWithMetadata, [
-        {
-          cardId: 'card1',
-          plugin: PluginType.SCALARS,
-          tag: 'accuracy2',
-          runId: null,
-        },
-      ]);
-      store.overrideSelector(selectors.getUnresolvedImportedPinnedCards, [
-        {
-          plugin: PluginType.SCALARS,
-          tag: 'loss2',
-        },
-      ]);
-      store.refreshState();
+      it('does not reflect default value to the URL', () => {
+        store.overrideSelector(selectors.getMetricsScalarSmoothing, 0.6);
+        store.refreshState();
 
-      expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual([
-        {
-          key: 'pinnedCards',
-          value:
-            '[{"plugin":"scalars","tag":"accuracy2"},{"plugin":"scalars","tag":"loss2"}]',
-        },
-      ]);
-    });
+        expect(queryParamsSerialized.length).toBe(0);
+      });
 
-    it('serializes nothing when states are empty', () => {
-      store.overrideSelector(selectors.getPinnedCardsWithMetadata, []);
-      store.overrideSelector(selectors.getUnresolvedImportedPinnedCards, []);
-      store.refreshState();
+      it('deserializes the state in the URL without much sanitization', () => {
+        const state1 = provider.deserializeQueryParams([
+          {key: 'smoothing', value: '0.3'},
+        ]);
+        expect(state1.metrics.smoothing).toBe(0.3);
 
-      expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual(
-        []
-      );
-    });
+        const state2 = provider.deserializeQueryParams([
+          {key: 'smoothing', value: '-0.3'},
+        ]);
+        expect(state2.metrics.smoothing).toBe(-0.3);
+      });
 
-    it('deserializes empty pinned cards', () => {
-      const state = provider.deserializeQueryParams([]);
-
-      expect(state.metrics).toEqual({pinnedCards: []});
-    });
-
-    it('deserializes valid pinned cards', () => {
-      const state = provider.deserializeQueryParams([
-        {
-          key: 'pinnedCards',
-          value:
-            '[{"plugin":"scalars","tag":"accuracy"},{"plugin":"images","tag":"loss","runId":"exp1/123","sample":5}]',
-        },
-      ]);
-
-      expect(state.metrics).toEqual({
-        pinnedCards: [
-          {plugin: PluginType.SCALARS, tag: 'accuracy'},
-          {
-            plugin: PluginType.IMAGES,
-            tag: 'loss',
-            runId: 'exp1/123',
-            sample: 5,
-          },
-        ],
+      it('deserializes to null when smoothing is not provided', () => {
+        const state = provider.deserializeQueryParams([]);
+        expect(state.metrics.smoothing).toBe(null);
       });
     });
 
-    it('sanitizes pinned cards on deserialization', () => {
-      const cases = [
-        {
-          // malformed URL value
-          serializedValue: 'blah[{"plugin":"scalars","tag":"accuracy"}]',
-          expectedPinnedCards: [],
-        },
-        {
-          // no plugin
-          serializedValue:
-            '[{"tag":"loss"},{"plugin":"scalars","tag":"default"}]',
-          expectedPinnedCards: [{plugin: PluginType.SCALARS, tag: 'default'}],
-        },
-        {
-          // unknown plugin
-          serializedValue:
-            '[{"plugin":"unknown","tag":"loss"},{"plugin":"scalars","tag":"default"}]',
-          expectedPinnedCards: [{plugin: PluginType.SCALARS, tag: 'default'}],
-        },
-        {
-          // tag is not a string
-          serializedValue:
-            '[{"plugin":"scalars","tag":5},{"plugin":"scalars","tag":"default"}]',
-          expectedPinnedCards: [{plugin: PluginType.SCALARS, tag: 'default'}],
-        },
-        {
-          // tag is empty
-          serializedValue:
-            '[{"plugin":"scalars","tag":""},{"plugin":"scalars","tag":"default"}]',
-          expectedPinnedCards: [{plugin: PluginType.SCALARS, tag: 'default'}],
-        },
-        {
-          // runId is not a string
-          serializedValue:
-            '[{"plugin":"images","tag":"loss","runId":123},{"plugin":"scalars","tag":"default"}]',
-          expectedPinnedCards: [{plugin: PluginType.SCALARS, tag: 'default'}],
-        },
-        {
-          // runId is empty
-          serializedValue:
-            '[{"plugin":"images","tag":"loss","runId":""},{"plugin":"scalars","tag":"default"}]',
-          expectedPinnedCards: [{plugin: PluginType.SCALARS, tag: 'default'}],
-        },
-        {
-          // runId provided with multi-run plugin
-          serializedValue:
-            '[{"plugin":"scalars","tag":"loss","runId":"123"},{"plugin":"scalars","tag":"default"}]',
-          expectedPinnedCards: [{plugin: PluginType.SCALARS, tag: 'default'}],
-        },
-        {
-          // sample provided with non-sampled plugin
-          serializedValue:
-            '[{"plugin":"scalars","tag":"loss","sample":5},{"plugin":"scalars","tag":"default"}]',
-          expectedPinnedCards: [{plugin: PluginType.SCALARS, tag: 'default'}],
-        },
-        {
-          // sample is not a number
-          serializedValue:
-            '[{"plugin":"images","tag":"loss","sample":"5"},{"plugin":"scalars","tag":"default"}]',
-          expectedPinnedCards: [{plugin: PluginType.SCALARS, tag: 'default'}],
-        },
-        {
-          // sample is not an integer
-          serializedValue:
-            '[{"plugin":"images","tag":"loss","sample":5.5},{"plugin":"scalars","tag":"default"}]',
-          expectedPinnedCards: [{plugin: PluginType.SCALARS, tag: 'default'}],
-        },
-        {
-          // sample is negative
-          serializedValue:
-            '[{"plugin":"images","tag":"loss","sample":-5},{"plugin":"scalars","tag":"default"}]',
-          expectedPinnedCards: [{plugin: PluginType.SCALARS, tag: 'default'}],
-        },
-      ];
-      for (const {serializedValue, expectedPinnedCards} of cases) {
+    describe('pinned state', () => {
+      it('serializes pinned card state when store updates', () => {
+        store.overrideSelector(selectors.getPinnedCardsWithMetadata, [
+          {
+            cardId: 'card1',
+            plugin: PluginType.SCALARS,
+            tag: 'accuracy',
+            runId: null,
+          },
+        ]);
+        store.overrideSelector(selectors.getUnresolvedImportedPinnedCards, [
+          {
+            plugin: PluginType.SCALARS,
+            tag: 'loss',
+          },
+        ]);
+        store.refreshState();
+
+        expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual(
+          [
+            {
+              key: 'pinnedCards',
+              value:
+                '[{"plugin":"scalars","tag":"accuracy"},{"plugin":"scalars","tag":"loss"}]',
+            },
+          ]
+        );
+
+        store.overrideSelector(selectors.getPinnedCardsWithMetadata, [
+          {
+            cardId: 'card1',
+            plugin: PluginType.SCALARS,
+            tag: 'accuracy2',
+            runId: null,
+          },
+        ]);
+        store.overrideSelector(selectors.getUnresolvedImportedPinnedCards, [
+          {
+            plugin: PluginType.SCALARS,
+            tag: 'loss2',
+          },
+        ]);
+        store.refreshState();
+
+        expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual(
+          [
+            {
+              key: 'pinnedCards',
+              value:
+                '[{"plugin":"scalars","tag":"accuracy2"},{"plugin":"scalars","tag":"loss2"}]',
+            },
+          ]
+        );
+      });
+
+      it('serializes nothing when states are empty', () => {
+        store.overrideSelector(selectors.getPinnedCardsWithMetadata, []);
+        store.overrideSelector(selectors.getUnresolvedImportedPinnedCards, []);
+        store.refreshState();
+
+        expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual(
+          []
+        );
+      });
+
+      it('deserializes empty pinned cards', () => {
+        const state = provider.deserializeQueryParams([]);
+
+        expect(state.metrics.pinnedCards).toEqual([]);
+      });
+
+      it('deserializes valid pinned cards', () => {
         const state = provider.deserializeQueryParams([
-          {key: 'pinnedCards', value: serializedValue},
+          {
+            key: 'pinnedCards',
+            value:
+              '[{"plugin":"scalars","tag":"accuracy"},{"plugin":"images","tag":"loss","runId":"exp1/123","sample":5}]',
+          },
         ]);
 
-        expect(state.metrics).toEqual({pinnedCards: expectedPinnedCards});
-      }
+        expect(state.metrics).toEqual({
+          pinnedCards: [
+            {plugin: PluginType.SCALARS, tag: 'accuracy'},
+            {
+              plugin: PluginType.IMAGES,
+              tag: 'loss',
+              runId: 'exp1/123',
+              sample: 5,
+            },
+          ],
+          smoothing: null,
+        });
+      });
+
+      it('sanitizes pinned cards on deserialization', () => {
+        const cases = [
+          {
+            // malformed URL value
+            serializedValue: 'blah[{"plugin":"scalars","tag":"accuracy"}]',
+            expectedPinnedCards: [],
+          },
+          {
+            // no plugin
+            serializedValue:
+              '[{"tag":"loss"},{"plugin":"scalars","tag":"default"}]',
+            expectedPinnedCards: [{plugin: PluginType.SCALARS, tag: 'default'}],
+          },
+          {
+            // unknown plugin
+            serializedValue:
+              '[{"plugin":"unknown","tag":"loss"},{"plugin":"scalars","tag":"default"}]',
+            expectedPinnedCards: [{plugin: PluginType.SCALARS, tag: 'default'}],
+          },
+          {
+            // tag is not a string
+            serializedValue:
+              '[{"plugin":"scalars","tag":5},{"plugin":"scalars","tag":"default"}]',
+            expectedPinnedCards: [{plugin: PluginType.SCALARS, tag: 'default'}],
+          },
+          {
+            // tag is empty
+            serializedValue:
+              '[{"plugin":"scalars","tag":""},{"plugin":"scalars","tag":"default"}]',
+            expectedPinnedCards: [{plugin: PluginType.SCALARS, tag: 'default'}],
+          },
+          {
+            // runId is not a string
+            serializedValue:
+              '[{"plugin":"images","tag":"loss","runId":123},{"plugin":"scalars","tag":"default"}]',
+            expectedPinnedCards: [{plugin: PluginType.SCALARS, tag: 'default'}],
+          },
+          {
+            // runId is empty
+            serializedValue:
+              '[{"plugin":"images","tag":"loss","runId":""},{"plugin":"scalars","tag":"default"}]',
+            expectedPinnedCards: [{plugin: PluginType.SCALARS, tag: 'default'}],
+          },
+          {
+            // runId provided with multi-run plugin
+            serializedValue:
+              '[{"plugin":"scalars","tag":"loss","runId":"123"},{"plugin":"scalars","tag":"default"}]',
+            expectedPinnedCards: [{plugin: PluginType.SCALARS, tag: 'default'}],
+          },
+          {
+            // sample provided with non-sampled plugin
+            serializedValue:
+              '[{"plugin":"scalars","tag":"loss","sample":5},{"plugin":"scalars","tag":"default"}]',
+            expectedPinnedCards: [{plugin: PluginType.SCALARS, tag: 'default'}],
+          },
+          {
+            // sample is not a number
+            serializedValue:
+              '[{"plugin":"images","tag":"loss","sample":"5"},{"plugin":"scalars","tag":"default"}]',
+            expectedPinnedCards: [{plugin: PluginType.SCALARS, tag: 'default'}],
+          },
+          {
+            // sample is not an integer
+            serializedValue:
+              '[{"plugin":"images","tag":"loss","sample":5.5},{"plugin":"scalars","tag":"default"}]',
+            expectedPinnedCards: [{plugin: PluginType.SCALARS, tag: 'default'}],
+          },
+          {
+            // sample is negative
+            serializedValue:
+              '[{"plugin":"images","tag":"loss","sample":-5},{"plugin":"scalars","tag":"default"}]',
+            expectedPinnedCards: [{plugin: PluginType.SCALARS, tag: 'default'}],
+          },
+        ];
+        for (const {serializedValue, expectedPinnedCards} of cases) {
+          const state = provider.deserializeQueryParams([
+            {key: 'pinnedCards', value: serializedValue},
+          ]);
+
+          expect(state.metrics.pinnedCards).toEqual(expectedPinnedCards);
+        }
+      });
     });
   });
 

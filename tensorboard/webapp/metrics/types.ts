@@ -75,5 +75,6 @@ export interface CardUniqueInfo {
 export interface URLDeserializedState {
   metrics: {
     pinnedCards: CardUniqueInfo[];
+    smoothing: number | null;
   };
 }

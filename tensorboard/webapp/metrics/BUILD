@@ -26,10 +26,22 @@ tf_ng_module(
 )
 
 tf_ts_library(
+    name = "public_types",
+    srcs = [
+        "public_types.ts",
+    ],
+    deps = [
+        ":types",
+        "//tensorboard/webapp/metrics/store:types",
+    ],
+)
+
+tf_ts_library(
     name = "types",
     srcs = [
         "types.ts",
     ],
+    visibility = ["//tensorboard/webapp/metrics:__subpackages__"],
     deps = [
         "//tensorboard/webapp/metrics/data_source:types",
         "//tensorboard/webapp/widgets/histogram:types",

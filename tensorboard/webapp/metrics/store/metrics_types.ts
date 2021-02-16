@@ -184,3 +184,14 @@ export type MetricsState = RouteContextedState<
 export interface State {
   [METRICS_FEATURE_KEY]?: MetricsState;
 }
+
+export const METRICS_SETTINGS_DEFAULT: MetricsState['settings'] = {
+  tooltipSort: TooltipSort.DEFAULT,
+  ignoreOutliers: true,
+  xAxisType: XAxisType.STEP,
+  scalarSmoothing: 0.6,
+  imageBrightnessInMilli: 1000,
+  imageContrastInMilli: 1000,
+  imageShowActualSize: false,
+  histogramMode: HistogramMode.OFFSET,
+};
