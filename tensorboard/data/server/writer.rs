@@ -15,6 +15,7 @@ limitations under the License.
 
 //! Test helpers for writing event files.
 
+use bytes::Bytes;
 use std::io::Write;
 
 use crate::proto::tensorboard as pb;
@@ -56,7 +57,7 @@ pub trait SummaryWriteExt: Write {
     }
 
     /// Writes a TFRecord containing a TF 1.x `graph_def` event.
-    fn write_graph(&mut self, step: Step, wt: WallTime, bytes: Vec<u8>) -> std::io::Result<()> {
+    fn write_graph(&mut self, step: Step, wt: WallTime, bytes: Bytes) -> std::io::Result<()> {
         let event = pb::Event {
             step: step.0,
             wall_time: wt.into(),
@@ -72,7 +73,7 @@ pub trait SummaryWriteExt: Write {
         tag: &Tag,
         step: Step,
         wt: WallTime,
-        run_metadata: Vec<u8>,
+        run_metadata: Bytes,
     ) -> std::io::Result<()> {
         let event = pb::Event {
             step: step.0,
@@ -163,7 +164,7 @@ mod tests {
             .write_graph(
                 Step(777),
                 WallTime::new(1234.5).unwrap(),
-                b"my graph".to_vec(),
+                Bytes::from_static(b"my graph"),
             )
             .unwrap();
         cursor.set_position(0);
@@ -174,7 +175,7 @@ mod tests {
         let expected = pb::Event {
             step: 777,
             wall_time: 1234.5,
-            what: Some(pb::event::What::GraphDef(b"my graph".to_vec())),
+            what: Some(pb::event::What::GraphDef(Bytes::from_static(b"my graph"))),
             ..Default::default()
         };
         assert_eq!(event, &expected);
@@ -188,7 +189,7 @@ mod tests {
                 &Tag("step0000".to_string()),
                 Step(777),
                 WallTime::new(1234.5).unwrap(),
-                b"my run metadata".to_vec(),
+                Bytes::from_static(b"my run metadata"),
             )
             .unwrap();
         cursor.set_position(0);
@@ -201,7 +202,7 @@ mod tests {
             wall_time: 1234.5,
             what: Some(pb::event::What::TaggedRunMetadata(pb::TaggedRunMetadata {
                 tag: "step0000".to_string(),
-                run_metadata: b"my run metadata".to_vec(),
+                run_metadata: Bytes::from_static(b"my run metadata"),
             })),
             ..Default::default()
         };

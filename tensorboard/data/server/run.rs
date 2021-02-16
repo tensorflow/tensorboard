@@ -372,6 +372,7 @@ impl RunLoaderData {
 #[cfg(test)]
 mod test {
     use super::*;
+    use bytes::Bytes;
     use std::fs::File;
     use std::io::BufWriter;
 
@@ -405,13 +406,13 @@ mod test {
         f1.write_graph(
             Step(0),
             WallTime::new(1235.0).unwrap(),
-            b"<sample model graph>".to_vec(),
+            Bytes::from_static(b"<sample model graph>"),
         )?;
         f1.write_tagged_run_metadata(
             &Tag("step0000".to_string()),
             Step(0),
             WallTime::new(1235.0).unwrap(),
-            b"<sample run metadata>".to_vec(),
+            Bytes::from_static(b"<sample run metadata>"),
         )?;
         f1.write_scalar(&tag, Step(0), WallTime::new(1235.0).unwrap(), 0.25)?;
         f1.write_scalar(&tag, Step(1), WallTime::new(1236.0).unwrap(), 0.50)?;
@@ -496,7 +497,7 @@ mod test {
             vec![(
                 Step(0),
                 WallTime::new(1235.0).unwrap(),
-                &commit::BlobSequenceValue(vec![b"<sample model graph>".to_vec()])
+                &commit::BlobSequenceValue(vec![Bytes::from_static(b"<sample model graph>")])
             )]
         );
 
@@ -518,7 +519,7 @@ mod test {
             vec![(
                 Step(0),
                 WallTime::new(1235.0).unwrap(),
-                &commit::BlobSequenceValue(vec![b"<sample run metadata>".to_vec()])
+                &commit::BlobSequenceValue(vec![Bytes::from_static(b"<sample run metadata>")])
             )]
         );
 

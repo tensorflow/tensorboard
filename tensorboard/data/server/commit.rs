@@ -15,6 +15,7 @@ limitations under the License.
 
 //! Shared state for sampled data available to readers.
 
+use bytes::Bytes;
 use std::collections::HashMap;
 use std::sync::RwLock;
 
@@ -112,7 +113,7 @@ pub struct ScalarValue(pub f32);
 ///
 /// This value is a sequence of zero or more blobs, stored in memory.
 #[derive(Debug, Clone, PartialEq)]
-pub struct BlobSequenceValue(pub Vec<Vec<u8>>);
+pub struct BlobSequenceValue(pub Vec<Bytes>);
 
 #[cfg(test)]
 mod tests {
@@ -217,14 +218,18 @@ pub mod test_data {
         /// # Examples
         ///
         /// ```
+        /// use bytes::Bytes;
         /// use rustboard_core::commit::{test_data::CommitBuilder, BlobSequenceValue, Commit};
         ///
         /// let my_commit: Commit = CommitBuilder::new()
         ///     .blob_sequences("train", "input_image", |mut b| {
         ///         b.plugin_name("images")
         ///             .values(vec![
-        ///                 BlobSequenceValue(vec![b"step0img0".to_vec()]),
-        ///                 BlobSequenceValue(vec![b"step1img0".to_vec(), b"step1img1".to_vec()]),
+        ///                 BlobSequenceValue(vec![Bytes::from_static(b"step0img0")]),
+        ///                 BlobSequenceValue(vec![
+        ///                     Bytes::from_static(b"step1img0"),
+        ///                     Bytes::from_static(b"step1img1"),
+        ///                 ]),
         ///             ])
         ///             .build()
         ///     })

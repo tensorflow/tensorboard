@@ -14,6 +14,7 @@ limitations under the License.
 ==============================================================================*/
 
 use async_stream::try_stream;
+use bytes::Bytes;
 use futures_core::Stream;
 use std::borrow::{Borrow, Cow};
 use std::collections::HashMap;
@@ -437,14 +438,13 @@ impl TensorBoardDataProvider for DataProviderHandler {
             ))
         })?;
         // Clone blob so that we can send it down to the client after dropping the lock.
-        // TODO(@wchargin): Consider replacing this with an `Arc<[u8]>`.
-        let blob = blob.clone();
+        let blob = Bytes::clone(blob); // cheap
         drop(run_data);
         drop(runs);
 
         let stream = try_stream! {
             for chunk in blob.chunks(BLOB_CHUNK_SIZE) {
-                yield data::ReadBlobResponse {data: chunk.to_vec()};
+                yield data::ReadBlobResponse {data: blob.slice_ref(chunk)};
             }
         };
 
@@ -828,8 +828,11 @@ mod tests {
                 b.plugin_name("images")
                     .wall_time_start(1234.0)
                     .values(vec![
-                        BlobSequenceValue(vec![b"step0img0".to_vec(), b"step0img1".to_vec()]),
-                        BlobSequenceValue(vec![b"z".repeat(BLOB_CHUNK_SIZE * 3 / 2)]),
+                        BlobSequenceValue(vec![
+                            Bytes::from_static(b"step0img0"),
+                            Bytes::from_static(b"step0img1"),
+                        ]),
+                        BlobSequenceValue(vec![Bytes::from(b"z".repeat(BLOB_CHUNK_SIZE * 3 / 2))]),
                     ])
                     .build()
             })

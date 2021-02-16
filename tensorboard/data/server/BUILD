@@ -159,6 +159,7 @@ rust_binary(
     edition = "2018",
     visibility = ["//visibility:private"],
     deps = [
+        "//tensorboard/data/server/cargo:prost_build",
         "//tensorboard/data/server/cargo:tonic_build",
     ],
 )
