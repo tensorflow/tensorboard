@@ -16,7 +16,7 @@ import {createAction, props} from '@ngrx/store';
 import {
   AnnotationDataListing,
   MetricListing,
-  EmbeddingListing,
+  EmbeddingDataSet,
 } from '../store/npmi_types';
 
 // HACK: Below import is for type inference.
@@ -37,7 +37,7 @@ export const npmiPluginDataLoaded = createAction(
   props<{
     annotationData: AnnotationDataListing;
     metrics: MetricListing;
-    embeddingData: EmbeddingListing;
+    embeddingDataSet?: EmbeddingDataSet;
   }>()
 );
 
@@ -139,4 +139,14 @@ export const npmiEmbeddingsSidebarWidthChanged = createAction(
 
 export const npmiEmbeddingsSidebarExpandedToggled = createAction(
   '[NPMI] Toggle Embeddings Sidebar Expanded'
+);
+
+export const embeddingStatusMessageChanged = createAction(
+  '[NPMI] Change Embedding Status Message',
+  props<{message: string}>()
+);
+
+export const embeddingDataSetChanged = createAction(
+  '[NPMI] Change Embedding DataSet',
+  props<{dataSet: EmbeddingDataSet}>()
 );

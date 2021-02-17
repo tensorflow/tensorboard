@@ -24,6 +24,7 @@ tf_ng_module(
         "npmi_types.ts",
     ],
     deps = [
+        "//tensorboard/webapp/plugins/npmi/util:umap",
         "//tensorboard/webapp/types",
         "@npm//@ngrx/store",
         "@npm//rxjs",

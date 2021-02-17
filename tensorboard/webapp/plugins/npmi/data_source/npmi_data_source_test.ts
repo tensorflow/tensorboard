@@ -19,6 +19,7 @@ import {
 } from '../../../webapp_data_source/tb_http_client_testing';
 
 import {NpmiHttpServerDataSource} from './npmi_data_source';
+import {buildSampleEmbeddingData} from '../testing';
 
 describe('runs_data_source', () => {
   let httpMock: HttpTestingController;
@@ -70,15 +71,11 @@ describe('runs_data_source', () => {
         httpMock
           .expectOne('/experiment/exp1/data/plugin/npmi/embeddings')
           .flush({
-            run_1: [
-              [0.15125, 0.2618],
-              [1.51251, -0.74621],
-            ],
-            run_2: [
-              [1.51251, -0.74621],
-              [-0.8327, -0.1572],
-            ],
+            run_1: [[0.5], [-0.2]],
+            run_2: [[-0.2], [0.1]],
           });
+
+        const embeddingData = buildSampleEmbeddingData();
 
         expect(returnValue).toHaveBeenCalledWith({
           annotationData: {
@@ -121,11 +118,10 @@ describe('runs_data_source', () => {
             'exp1/run_1': ['count@test', 'nPMI@test'],
             'exp1/run_2': ['count@test', 'nPMI@test'],
           },
-          embeddingData: {
-            annotation_1: [0.15125, 0.2618],
-            annotation_2: [1.51251, -0.74621],
-            annotation_3: [-0.8327, -0.1572],
-          },
+          embeddingDataSet: jasmine.objectContaining({
+            ...embeddingData,
+            shuffledDataIndices: jasmine.any(Object),
+          }),
         });
       }
     );
@@ -145,7 +141,7 @@ describe('runs_data_source', () => {
       expect(returnValue).toHaveBeenCalledWith({
         annotationData: {},
         metrics: {},
-        embeddingData: {},
+        embeddingDataSet: undefined,
       });
     });
 
@@ -159,7 +155,7 @@ describe('runs_data_source', () => {
       expect(returnValue).toHaveBeenCalledWith({
         annotationData: {},
         metrics: {},
-        embeddingData: {},
+        embeddingDataSet: undefined,
       });
     });
 

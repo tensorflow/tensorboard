@@ -20,6 +20,14 @@ require.config({
    * use.
    */
   paths: {
+    '@tensorflow/tfjs-core':
+      '/base/npm/node_modules/@tensorflow/tfjs-core/dist/tf-core',
+    '@tensorflow/tfjs-backend-cpu':
+      '/base/npm/node_modules/@tensorflow/tfjs-backend-cpu/dist/tf-backend-cpu',
+    '@tensorflow/tfjs-backend-webgl':
+      '/base/npm/node_modules/@tensorflow/tfjs-backend-webgl/dist/tf-backend-webgl',
+    'umap-js': '/base/npm/node_modules/umap-js/lib/umap-js',
+    seedrandom: '/base/npm/node_modules/seedrandom/lib/alea',
     lodash: '/base/npm/node_modules/lodash/lodash',
     d3: '/base/npm/node_modules/d3/dist/d3',
     three: '/base/npm/node_modules/three/build/three',

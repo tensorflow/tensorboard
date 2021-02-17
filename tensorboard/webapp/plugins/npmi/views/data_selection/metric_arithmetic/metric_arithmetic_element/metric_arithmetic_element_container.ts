@@ -19,7 +19,7 @@ import {map} from 'rxjs/operators';
 
 import {State} from '../../../../store/npmi_types';
 import {
-  getEmbeddingData,
+  getEmbeddingDataSet,
   getEmbeddingsMetric,
   getMetricFilters,
 } from '../../../../store';
@@ -60,11 +60,13 @@ export class MetricArithmeticElementContainer {
       return {min: min, max: max};
     })
   );
-  readonly hasEmbeddingsData$ = this.store.pipe(select(getEmbeddingData)).pipe(
-    map((embeddingData) => {
-      return Object.keys(embeddingData).length !== 0;
-    })
-  );
+  readonly hasEmbeddingsData$ = this.store
+    .pipe(select(getEmbeddingDataSet))
+    .pipe(
+      map((embeddingData) => {
+        return embeddingData !== undefined;
+      })
+    );
   readonly embeddingsMetric$ = this.store.pipe(select(getEmbeddingsMetric));
 
   constructor(private readonly store: Store<State>) {}

@@ -27,13 +27,12 @@ def tensorboard_webcomponent_library(**kwargs):
     pass
 
 def tf_js_binary(
-    name,
-    compile,
-    deps,
-    visibility = None,
-    dev_mode_only = False,
-    **kwargs
-):
+        name,
+        compile,
+        deps,
+        visibility = None,
+        dev_mode_only = False,
+        **kwargs):
     """Rules for creating a JavaScript bundle.
 
     Please refer to https://bazelbuild.github.io/rules_nodejs/Built-ins.html#rollup_bundle
@@ -134,6 +133,13 @@ def tf_ng_web_test_suite(runtime_deps = [], bootstrap = [], deps = [], **kwargs)
         ],
         # Lodash runtime dependency that is compatible with requirejs for karma.
         static_files = [
+            "@npm//:node_modules/@tensorflow/tfjs-core/dist/tf-core.js",
+            "@npm//:node_modules/@tensorflow/tfjs-backend-cpu/dist/tf-backend-cpu.js",
+            "@npm//:node_modules/@tensorflow/tfjs-backend-webgl/dist/tf-backend-webgl.js",
+            "@npm//:node_modules/umap-js/lib/umap-js.js",
+            # tfjs-backend-cpu only uses alea.
+            # https://github.com/tensorflow/tfjs/blob/bca336cd8297cb733e3ddcb3c091eac2eb4d5fc5/tfjs-backend-cpu/src/kernels/Multinomial.ts#L58
+            "@npm//:node_modules/seedrandom/lib/alea.js",
             "@npm//:node_modules/lodash/lodash.js",
             "@npm//:node_modules/d3/dist/d3.js",
             "@npm//:node_modules/three/build/three.js",

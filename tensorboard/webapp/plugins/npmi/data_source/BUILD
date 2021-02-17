@@ -27,6 +27,7 @@ tf_ts_library(
     deps = [
         ":data_source",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
+        "//tensorboard/webapp/plugins/npmi/testing",
         "//tensorboard/webapp/webapp_data_source:http_client_testing",
         "@npm//@angular/common",
         "@npm//@angular/core",

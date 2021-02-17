@@ -21,13 +21,13 @@ import {Subject} from 'rxjs';
 
 import {NpmiHttpServerDataSource} from '../data_source/npmi_data_source';
 import {NpmiEffects} from '.';
-import {createNpmiState} from '../testing';
+import {buildSampleEmbeddingData, createNpmiState} from '../testing';
 import {State} from '../../../app_state';
 import {
   DataLoadState,
   AnnotationDataListing,
   MetricListing,
-  EmbeddingListing,
+  EmbeddingDataSet,
 } from '../store/npmi_types';
 import {getPluginDataLoaded} from '../store/npmi_selectors';
 import * as actions from '../actions';
@@ -74,7 +74,7 @@ describe('npmi effects', () => {
     let fetchDataSubject: Subject<{
       annotationData: AnnotationDataListing;
       metrics: MetricListing;
-      embeddingData: EmbeddingListing;
+      embeddingDataSet: EmbeddingDataSet;
     }>;
 
     beforeEach(() => {
@@ -87,6 +87,7 @@ describe('npmi effects', () => {
     it('loads Plugin Data on plugin open if data is not loaded', () => {
       expect(fetchDataSpy).not.toHaveBeenCalled();
       expect(actualActions).toEqual([]);
+      const embeddingData = buildSampleEmbeddingData();
 
       actions$.next(actions.npmiLoaded());
       fetchDataSubject.next({
@@ -111,10 +112,7 @@ describe('npmi effects', () => {
           ],
         },
         metrics: {run_1: ['count@test', 'npmi@test']},
-        embeddingData: {
-          annotation_new_1: [0.0513, 1.3157],
-          annotation_new_2: [1.0513, 0.3157],
-        },
+        embeddingDataSet: embeddingData,
       });
 
       expect(fetchDataSpy).toHaveBeenCalled();
@@ -142,10 +140,7 @@ describe('npmi effects', () => {
             ],
           },
           metrics: {run_1: ['count@test', 'npmi@test']},
-          embeddingData: {
-            annotation_new_1: [0.0513, 1.3157],
-            annotation_new_2: [1.0513, 0.3157],
-          },
+          embeddingDataSet: embeddingData,
         }),
       ]);
     });

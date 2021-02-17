@@ -16,10 +16,10 @@ import {
   AnnotationDataListing,
   SortOrder,
   AnnotationSort,
-  EmbeddingListing,
+  EmbeddingDataSet,
 } from '../store/npmi_types';
 import {sortAnnotations} from './sort_annotations';
-import {buildSampleAnnotationData} from '../testing';
+import {buildSampleAnnotationData, buildSampleEmbeddingData} from '../testing';
 
 describe('sort annotations utils', () => {
   it('sorts annotations upwards', () => {
@@ -28,7 +28,7 @@ describe('sort annotations utils', () => {
       metric: 'nPMI@test',
       order: SortOrder.ASCENDNG,
     };
-    const annotations = sortAnnotations(annotationData, sort, {});
+    const annotations = sortAnnotations(annotationData, sort, undefined);
     expect(annotations).toEqual([
       'annotation_1',
       'annotation_3',
@@ -42,7 +42,7 @@ describe('sort annotations utils', () => {
       metric: 'nPMI@test',
       order: SortOrder.DESCENDING,
     };
-    const annotations = sortAnnotations(annotationData, sort, {});
+    const annotations = sortAnnotations(annotationData, sort, undefined);
     expect(annotations).toEqual([
       'annotation_3',
       'annotation_1',
@@ -52,14 +52,10 @@ describe('sort annotations utils', () => {
 
   it('sorts annotations by similar embeddings', () => {
     const annotationData: AnnotationDataListing = buildSampleAnnotationData();
+    const embeddingData = buildSampleEmbeddingData();
     const sort: AnnotationSort = {
       metric: 'annotation_1',
       order: SortOrder.SIMILAR,
-    };
-    const embeddingData: EmbeddingListing = {
-      annotation_1: [0.5],
-      annotation_2: [-0.2],
-      annotation_3: [0.1],
     };
     const annotations = sortAnnotations(annotationData, sort, embeddingData);
     expect(annotations).toEqual([
@@ -75,11 +71,7 @@ describe('sort annotations utils', () => {
       metric: 'annotation_2',
       order: SortOrder.DISSIMILAR,
     };
-    const embeddingData: EmbeddingListing = {
-      annotation_1: [0.5],
-      annotation_2: [-0.2],
-      annotation_3: [0.1],
-    };
+    const embeddingData = buildSampleEmbeddingData();
     const annotations = sortAnnotations(annotationData, sort, embeddingData);
     expect(annotations).toEqual([
       'annotation_2',
@@ -94,10 +86,20 @@ describe('sort annotations utils', () => {
       metric: 'annotation_1',
       order: SortOrder.SIMILAR,
     };
-    const embeddingData: EmbeddingListing = {
-      annotation_1: [0.5],
-      annotation_3: [0.1],
-    };
+    const embeddingData = new EmbeddingDataSet({
+      annotation_1: {
+        vector: [0.5],
+        name: 'annotation_1',
+        index: 0,
+        projections: {},
+      },
+      annotation_3: {
+        vector: [0.1],
+        name: 'annotation_3',
+        index: 1,
+        projections: {},
+      },
+    });
     const annotations = sortAnnotations(annotationData, sort, embeddingData);
     expect(annotations).toEqual([
       'annotation_1',
@@ -112,10 +114,20 @@ describe('sort annotations utils', () => {
       metric: 'annotation_1',
       order: SortOrder.SIMILAR,
     };
-    const embeddingData: EmbeddingListing = {
-      annotation_2: [0.5],
-      annotation_3: [0.1],
-    };
+    const embeddingData = new EmbeddingDataSet({
+      annotation_2: {
+        vector: [0.5],
+        name: 'annotation_2',
+        index: 0,
+        projections: {},
+      },
+      annotation_3: {
+        vector: [0.1],
+        name: 'annotation_3',
+        index: 1,
+        projections: {},
+      },
+    });
     const annotations = sortAnnotations(annotationData, sort, embeddingData);
     expect(annotations).toEqual([
       'annotation_1',
@@ -130,10 +142,20 @@ describe('sort annotations utils', () => {
       metric: 'annotation_2',
       order: SortOrder.DISSIMILAR,
     };
-    const embeddingData: EmbeddingListing = {
-      annotation_2: [-0.2],
-      annotation_3: [0.1],
-    };
+    const embeddingData = new EmbeddingDataSet({
+      annotation_2: {
+        vector: [0.5],
+        name: 'annotation_2',
+        index: 0,
+        projections: {},
+      },
+      annotation_3: {
+        vector: [0.1],
+        name: 'annotation_3',
+        index: 1,
+        projections: {},
+      },
+    });
     const annotations = sortAnnotations(annotationData, sort, embeddingData);
     expect(annotations).toEqual([
       'annotation_2',
@@ -148,7 +170,7 @@ describe('sort annotations utils', () => {
       metric: '',
       order: SortOrder.ASCENDNG,
     };
-    const annotations = sortAnnotations(annotationData, sort, {});
+    const annotations = sortAnnotations(annotationData, sort, undefined);
     expect(annotations).toEqual([
       'annotation_1',
       'annotation_2',

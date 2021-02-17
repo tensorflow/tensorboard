@@ -19,6 +19,7 @@ import {
   State,
   SortOrder,
   ViewActive,
+  EmbeddingDataSet,
 } from '../store/npmi_types';
 
 export function createNpmiState(override?: Partial<NpmiState>): NpmiState {
@@ -29,7 +30,6 @@ export function createNpmiState(override?: Partial<NpmiState>): NpmiState {
     },
     annotationData: {},
     runToMetrics: {},
-    embeddingData: {},
     selectedAnnotations: [],
     flaggedAnnotations: [],
     hiddenAnnotations: [],
@@ -51,6 +51,7 @@ export function createNpmiState(override?: Partial<NpmiState>): NpmiState {
     embeddingsMetric: '',
     embeddingsSidebarExpanded: true,
     embeddingsSidebarWidth: 500,
+    embeddingStatusMessage: '',
     ...override,
   };
 }
@@ -158,4 +159,27 @@ export function buildSampleAnnotationData() {
       },
     ],
   };
+}
+
+export function buildSampleEmbeddingData() {
+  return new EmbeddingDataSet({
+    annotation_1: {
+      vector: [0.5],
+      name: 'annotation_1',
+      index: 0,
+      projections: {},
+    },
+    annotation_2: {
+      vector: [-0.2],
+      name: 'annotation_2',
+      index: 1,
+      projections: {},
+    },
+    annotation_3: {
+      vector: [0.1],
+      name: 'annotation_3',
+      index: 2,
+      projections: {},
+    },
+  });
 }

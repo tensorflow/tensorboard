@@ -24,6 +24,7 @@ import {
   Operator,
   ArithmeticKind,
   ViewActive,
+  EmbeddingDataSet,
 } from './npmi_types';
 import * as metricType from '../util/metric_type';
 
@@ -38,7 +39,6 @@ const initialState: NpmiState = {
   },
   annotationData: {},
   runToMetrics: {},
-  embeddingData: {},
   selectedAnnotations: [],
   flaggedAnnotations: [],
   hiddenAnnotations: [],
@@ -60,6 +60,7 @@ const initialState: NpmiState = {
   embeddingsMetric: '',
   embeddingsSidebarWidth: 500,
   embeddingsSidebarExpanded: true,
+  embeddingStatusMessage: '',
 };
 
 const reducer = createReducer(
@@ -90,7 +91,10 @@ const reducer = createReducer(
   ),
   on(
     actions.npmiPluginDataLoaded,
-    (state: NpmiState, {annotationData, metrics, embeddingData}): NpmiState => {
+    (
+      state: NpmiState,
+      {annotationData, metrics, embeddingDataSet}
+    ): NpmiState => {
       const runToMetrics: MetricListing = {};
       for (const key in metrics) {
         // Init Metrics Data
@@ -105,7 +109,7 @@ const reducer = createReducer(
         ...state,
         runToMetrics: runToMetrics,
         annotationData: annotationData,
-        embeddingData: embeddingData,
+        embeddingDataSet: embeddingDataSet,
         pluginDataLoaded: {
           state: DataLoadState.LOADED,
           lastLoadedTimeInMs: Date.now(),
@@ -414,11 +418,37 @@ const reducer = createReducer(
     }
   ),
   on(
+    actions.embeddingStatusMessageChanged,
+    (state: NpmiState, {message}): NpmiState => {
+      return {
+        ...state,
+        embeddingStatusMessage: message,
+      };
+    }
+  ),
+  on(
     actions.npmiEmbeddingsSidebarExpandedToggled,
     (state: NpmiState): NpmiState => {
       return {
         ...state,
         embeddingsSidebarExpanded: !state.embeddingsSidebarExpanded,
+      };
+    }
+  ),
+  on(
+    actions.embeddingDataSetChanged,
+    (state: NpmiState, {dataSet}): NpmiState => {
+      const newDataSet = new EmbeddingDataSet(dataSet.points, {
+        pointKeys: dataSet.pointKeys,
+        shuffledDataIndices: dataSet.shuffledDataIndices,
+        projections: dataSet.projections,
+        hasUmapRun: dataSet.hasUmapRun,
+        umapRun: dataSet.umapRun,
+      });
+      return {
+        ...state,
+        embeddingStatusMessage: '',
+        embeddingDataSet: newDataSet,
       };
     }
   )

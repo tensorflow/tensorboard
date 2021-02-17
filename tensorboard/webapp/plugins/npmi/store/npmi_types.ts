@@ -13,8 +13,19 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {DataLoadState, LoadState} from '../../../types/data';
+import {
+  EmbeddingDataSet,
+  EmbeddingDataPoint,
+  EmbeddingListing,
+} from '../util/umap';
 
-export {DataLoadState, LoadState};
+export {
+  DataLoadState,
+  LoadState,
+  EmbeddingDataSet,
+  EmbeddingDataPoint,
+  EmbeddingListing,
+};
 
 export const NPMI_FEATURE_KEY = 'npmi';
 
@@ -53,10 +64,6 @@ export interface MetricFilterListing {
   [metric: string]: MetricFilter;
 }
 
-export interface EmbeddingListing {
-  [annotation: string]: number[];
-}
-
 export interface MetricFilter {
   max: number;
   min: number;
@@ -80,7 +87,7 @@ export interface NpmiState {
   pluginDataLoaded: LoadState;
   annotationData: AnnotationDataListing;
   runToMetrics: MetricListing;
-  embeddingData: EmbeddingListing;
+  embeddingDataSet?: EmbeddingDataSet;
 
   // based on user interaction
   selectedAnnotations: Annotation[];
@@ -105,6 +112,7 @@ export interface NpmiState {
   embeddingsMetric: Metric;
   embeddingsSidebarWidth: number;
   embeddingsSidebarExpanded: boolean;
+  embeddingStatusMessage: string;
 }
 
 export interface State {

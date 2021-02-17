@@ -175,3 +175,15 @@ tf_ts_library(
         "@npm//rxjs",
     ],
 )
+
+tf_ts_library(
+    name = "umap",
+    srcs = [
+        "umap.ts",
+    ],
+    strict_checks = False,
+    deps = [
+        "//tensorboard/plugins/projector/vz_projector",
+        "@npm//umap-js",
+    ],
+)
