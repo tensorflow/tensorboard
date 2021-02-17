@@ -37,8 +37,10 @@ import {
   CardId,
   CardMetadata,
   CardUniqueInfo,
+  SCALARS_SMOOTHING_MAX,
+  SCALARS_SMOOTHING_MIN,
   URLDeserializedState,
-} from '../types';
+} from '../internal_types';
 import {
   buildOrReturnStateWithPinnedCopy,
   buildOrReturnStateWithUnresolvedImportedPins,
@@ -314,7 +316,13 @@ const reducer = createReducer(
     const hydratedSmoothing = hydratedState.metrics.smoothing;
     const newSmoothing =
       Number.isFinite(hydratedSmoothing) && hydratedSmoothing !== null
-        ? Math.max(0, Math.min(0.999, hydratedSmoothing))
+        ? Math.max(
+            SCALARS_SMOOTHING_MIN,
+            Math.min(
+              SCALARS_SMOOTHING_MAX,
+              Number(hydratedSmoothing.toPrecision(3))
+            )
+          )
         : state.settings.scalarSmoothing;
     const newSettings = {
       ...state.settings,

@@ -25,17 +25,18 @@ import {
   isSampledPlugin,
   isSingleRunPlugin,
 } from '../metrics/data_source/types';
-import {
-  CardUniqueInfo,
-  METRICS_SETTINGS_DEFAULT,
-} from '../metrics/public_types';
+import {CardUniqueInfo, METRICS_SETTINGS_DEFAULT} from '../metrics/types';
 import * as selectors from '../selectors';
 import {getMetricsScalarSmoothing} from '../selectors';
 import {
   EXPERIMENTAL_PLUGIN_QUERY_PARAM_KEY,
   GPU_LINE_CHART_QUERY_PARAM_KEY,
 } from '../webapp_data_source/tb_feature_flag_data_source_types';
-import {DeserializedState, SMOOTHING_KEY} from './core_deeplink_provider_types';
+import {
+  DeserializedState,
+  PINNED_CARDS_KEY,
+  SMOOTHING_KEY,
+} from './core_deeplink_provider_types';
 
 /**
  * Provides deeplinking for the core dashboards page.
@@ -125,7 +126,7 @@ export class CoreDeepLinkProvider extends DeepLinkProvider {
     let smoothing = null;
     for (const {key, value} of queryParams) {
       switch (key) {
-        case 'pinnedCards':
+        case PINNED_CARDS_KEY:
           pinnedCards = extractPinnedCardsFromURLText(value);
           break;
         case SMOOTHING_KEY:

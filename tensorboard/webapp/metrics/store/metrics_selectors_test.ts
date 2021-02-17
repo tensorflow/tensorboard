@@ -13,8 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {DataLoadState} from '../../types/data';
-
 import {PluginType} from '../data_source';
+import {HistogramMode, TooltipSort, XAxisType} from '../internal_types';
 import {
   appStateFromMetricsState,
   buildMetricsSettingsState,
@@ -24,8 +24,6 @@ import {
   createScalarStepData,
   createTimeSeriesData,
 } from '../testing';
-import {HistogramMode, TooltipSort, XAxisType} from '../types';
-
 import * as selectors from './metrics_selectors';
 
 describe('metrics selectors', () => {

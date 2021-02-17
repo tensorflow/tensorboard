@@ -12,10 +12,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {URLDeserializedState as MetricsURLDeserializedState} from '../metrics/public_types';
+import {URLDeserializedState as MetricsURLDeserializedState} from '../metrics/types';
 
 // No need to deserialize the Experimental Plugins as it is immutable and is only read at
 // the start of the application.
 export type DeserializedState = MetricsURLDeserializedState;
 
 export const SMOOTHING_KEY = 'smoothing';
+
+export const PINNED_CARDS_KEY = 'pinnedCards';

@@ -10,7 +10,7 @@ tf_ts_library(
         "index.ts",
     ],
     deps = [
-        "//tensorboard/webapp/metrics:types",
+        "//tensorboard/webapp/metrics:internal_types",
         "//tensorboard/webapp/metrics/data_source",
         "@npm//@ngrx/store",
     ],

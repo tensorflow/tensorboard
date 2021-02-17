@@ -34,7 +34,7 @@ import {
   PinnedCardId,
   TooltipSort,
   XAxisType,
-} from '../types';
+} from '../internal_types';
 
 export const METRICS_FEATURE_KEY = 'metrics';
 

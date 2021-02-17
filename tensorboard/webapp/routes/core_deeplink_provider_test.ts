@@ -20,7 +20,7 @@ import {skip} from 'rxjs/operators';
 import {SerializableQueryParams} from '../app_routing/types';
 import {State} from '../app_state';
 import {PluginType} from '../metrics/data_source/types';
-import {METRICS_SETTINGS_DEFAULT} from '../metrics/public_types';
+import {METRICS_SETTINGS_DEFAULT} from '../metrics/types';
 import {appStateFromMetricsState, buildMetricsState} from '../metrics/testing';
 import * as selectors from '../selectors';
 import {CoreDeepLinkProvider} from './core_deeplink_provider';

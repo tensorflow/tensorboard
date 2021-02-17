@@ -27,7 +27,7 @@ import {
   PinnedCardId,
   TooltipSort,
   XAxisType,
-} from '../types';
+} from '../internal_types';
 
 import * as storeUtils from './metrics_store_internal_utils';
 import {
