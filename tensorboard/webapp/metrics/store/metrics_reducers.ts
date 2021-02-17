@@ -314,20 +314,21 @@ const reducer = createReducer(
     );
 
     const hydratedSmoothing = hydratedState.metrics.smoothing;
-    const newSmoothing =
-      Number.isFinite(hydratedSmoothing) && hydratedSmoothing !== null
-        ? Math.max(
-            SCALARS_SMOOTHING_MIN,
-            Math.min(
-              SCALARS_SMOOTHING_MAX,
-              Number(hydratedSmoothing.toPrecision(3))
-            )
-          )
-        : state.settings.scalarSmoothing;
-    const newSettings = {
-      ...state.settings,
-      scalarSmoothing: newSmoothing,
-    };
+    let newSettings = state.settings;
+
+    if (Number.isFinite(hydratedSmoothing) && hydratedSmoothing !== null) {
+      const newSmoothing = Math.max(
+        SCALARS_SMOOTHING_MIN,
+        Math.min(
+          SCALARS_SMOOTHING_MAX,
+          Number(hydratedSmoothing.toPrecision(3))
+        )
+      );
+      newSettings = {
+        ...state.settings,
+        scalarSmoothing: newSmoothing,
+      };
+    }
 
     return {
       ...state,
