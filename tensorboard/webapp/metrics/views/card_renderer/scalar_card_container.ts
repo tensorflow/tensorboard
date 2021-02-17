@@ -55,6 +55,7 @@ import {
   getCardMetadata,
   getCardTimeSeries,
   getMetricsIgnoreOutliers,
+  getMetricsScalarPartitionNonMonotonicX,
   getMetricsScalarSmoothing,
   getMetricsTooltipSort,
   getMetricsXAxisType,
@@ -65,12 +66,14 @@ import {CardRenderer} from '../metrics_view_types';
 import {getTagDisplayName} from '../utils';
 import {LegacySeriesDataList} from './scalar_card_component';
 import {
+  PartialSeries,
+  PartitionedSeries,
   ScalarCardDataSeries,
   ScalarCardPoint,
   ScalarCardSeriesMetadataMap,
   SeriesType,
 } from './scalar_card_types';
-import {getDisplayNameForRun} from './utils';
+import {getDisplayNameForRun, partitionSeries} from './utils';
 
 type ScalarCardMetadata = CardMetadata & {
   plugin: PluginType.SCALARS;
@@ -98,11 +101,6 @@ function areSeriesDataListEqual(
       })
     );
   });
-}
-
-interface PartialSeries {
-  runId: string;
-  points: ScalarCardPoint[];
 }
 
 function areSeriesEqual(
@@ -315,7 +313,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit {
       return JSON.stringify(['smoothed', seriesId]);
     }
 
-    this.dataSeries$ = partialSeries$.pipe(
+    const normalizedPartialSeries$ = partialSeries$.pipe(
       combineLatestWith(this.store.select(getMetricsXAxisType)),
       // Normalize time and, optionally, compute relative time.
       map(([partialSeries, xAxisType]) => {
@@ -340,54 +338,74 @@ export class ScalarCardContainer implements CardRenderer, OnInit {
 
           return {runId: partial.runId, points: normalizedPoints};
         });
-      }),
-      // Smooth
-      combineLatestWith(this.store.select(getMetricsScalarSmoothing)),
-      switchMap<[PartialSeries[], number], Observable<ScalarCardDataSeries[]>>(
-        ([runsData, smoothing]) => {
-          const cleanedRunsData = runsData.map(({runId: seriesId, points}) => ({
-            id: seriesId,
-            points,
-          }));
-          if (smoothing <= 0) {
-            return of(cleanedRunsData);
-          }
+      })
+    );
 
-          return from(classicSmoothing(cleanedRunsData, smoothing)).pipe(
-            map((smoothedDataSeriesList) => {
-              const smoothedList = cleanedRunsData.map((dataSeries, index) => {
-                return {
-                  id: getSmoothedSeriesId(dataSeries.id),
-                  points: smoothedDataSeriesList[index].points.map(
-                    ({y}, pointIndex) => {
-                      return {...dataSeries.points[pointIndex], y};
-                    }
-                  ),
-                };
-              });
-              return [...cleanedRunsData, ...smoothedList];
-            })
-          );
+    const partitionedSeries$ = normalizedPartialSeries$.pipe(
+      combineLatestWith(
+        this.store.select(getMetricsScalarPartitionNonMonotonicX)
+      ),
+      map<[PartialSeries[], boolean], PartitionedSeries[]>(
+        ([normalizedSeries, enablePartition]) => {
+          if (enablePartition) return partitionSeries(normalizedSeries);
+
+          return normalizedSeries.map((series) => {
+            return {
+              ...series,
+              seriesId: series.runId,
+              partitionIndex: 0,
+              partitionSize: 1,
+            };
+          });
         }
       ),
+      shareReplay(1)
+    );
+
+    this.dataSeries$ = partitionedSeries$.pipe(
+      // Smooth
+      combineLatestWith(this.store.select(getMetricsScalarSmoothing)),
+      switchMap<
+        [PartitionedSeries[], number],
+        Observable<ScalarCardDataSeries[]>
+      >(([runsData, smoothing]) => {
+        const cleanedRunsData = runsData.map(({seriesId, points}) => ({
+          id: seriesId,
+          points,
+        }));
+        if (smoothing <= 0) {
+          return of(cleanedRunsData);
+        }
+
+        return from(classicSmoothing(cleanedRunsData, smoothing)).pipe(
+          map((smoothedDataSeriesList) => {
+            const smoothedList = cleanedRunsData.map((dataSeries, index) => {
+              return {
+                id: getSmoothedSeriesId(dataSeries.id),
+                points: smoothedDataSeriesList[index].points.map(
+                  ({y}, pointIndex) => {
+                    return {...dataSeries.points[pointIndex], y};
+                  }
+                ),
+              };
+            });
+            return [...cleanedRunsData, ...smoothedList];
+          })
+        );
+      }),
       startWith([] as ScalarCardDataSeries[])
     );
 
-    this.chartMetadataMap$ = nonNullRunsToScalarSeries$.pipe(
+    this.chartMetadataMap$ = partitionedSeries$.pipe(
       switchMap<
-        RunToSeries<PluginType.SCALARS>,
-        Observable<Array<{runId: string; displayName: string}>>
-      >((runToSeries) => {
-        const runIds = Object.keys(runToSeries);
-        if (!runIds.length) {
-          return of([]);
-        }
-
+        PartitionedSeries[],
+        Observable<Array<PartitionedSeries & {displayName: string}>>
+      >((partitioned) => {
         return combineLatest(
-          runIds.map((runId) => {
-            return this.getRunDisplayName(runId).pipe(
+          partitioned.map((series) => {
+            return this.getRunDisplayName(series.runId).pipe(
               map((displayName) => {
-                return {runId, displayName};
+                return {...series, displayName};
               })
             );
           })
@@ -403,12 +421,12 @@ export class ScalarCardContainer implements CardRenderer, OnInit {
       // debounce by a microtask to emit only single change for the runs
       // store change.
       debounceTime(0),
-      map(([seriesAndDisplayNames, runSelectionMap, colorMap, smoothing]) => {
+      map(([namedPartitionedSeries, runSelectionMap, colorMap, smoothing]) => {
         const metadataMap: ScalarCardSeriesMetadataMap = {};
         const shouldSmooth = smoothing > 0;
 
-        for (const {runId, displayName} of seriesAndDisplayNames) {
-          metadataMap[runId] = {
+        for (const {seriesId, runId, displayName} of namedPartitionedSeries) {
+          metadataMap[seriesId] = {
             type: SeriesType.ORIGINAL,
             id: runId,
             displayName,
@@ -436,6 +454,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit {
           metadata.aux = true;
           metadata.opacity = 0.25;
         }
+
         return metadataMap;
       }),
       startWith({} as ScalarCardSeriesMetadataMap)

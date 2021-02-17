@@ -218,6 +218,10 @@ describe('scalar card', () => {
     store.overrideSelector(selectors.getIsGpuChartEnabled, false);
     store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.STEP);
     store.overrideSelector(selectors.getVisibleCardIdSet, new Set(['card1']));
+    store.overrideSelector(
+      selectors.getMetricsScalarPartitionNonMonotonicX,
+      false
+    );
   });
 
   it('stamps line chart impl only when card is first visible', fakeAsync(() => {
@@ -1711,6 +1715,165 @@ describe('scalar card', () => {
           ['', 'Row 2', '-500', '1,000', jasmine.any(String)],
           ['', 'Row 3', '3', '10,000', jasmine.any(String)],
         ]);
+      }));
+    });
+
+    describe('non-monotonic increase in x-axis', () => {
+      it('partitions to pseudo runs when steps increase non-monotonically', fakeAsync(() => {
+        store.overrideSelector(
+          selectors.getMetricsScalarPartitionNonMonotonicX,
+          true
+        );
+        store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.STEP);
+        store.overrideSelector(selectors.getRunColorMap, {
+          run1: '#f00',
+          run2: '#0f0',
+        });
+        store.overrideSelector(selectors.getMetricsScalarSmoothing, 0);
+
+        const runToSeries = {
+          run1: [
+            {wallTime: 2, value: 1, step: 1},
+            {wallTime: 4, value: 10, step: 2},
+            {wallTime: 6, value: 30, step: 2},
+            {wallTime: 6, value: 10, step: 1},
+            {wallTime: 3, value: 20, step: 4},
+          ],
+          run2: [{wallTime: 2, value: 1, step: 1}],
+        };
+        provideMockCardRunToSeriesData(
+          selectSpy,
+          PluginType.SCALARS,
+          'card1',
+          null /* metadataOverride */,
+          runToSeries
+        );
+
+        const fixture = createComponent('card1');
+        const lineChart = fixture.debugElement.query(Selector.GPU_LINE_CHART);
+
+        expect(lineChart.componentInstance.seriesData).toEqual([
+          {
+            id: '["run1",0]',
+            points: [
+              {wallTime: 2000, value: 1, step: 1, x: 1, y: 1},
+              {wallTime: 4000, value: 10, step: 2, x: 2, y: 10},
+              {wallTime: 6000, value: 30, step: 2, x: 2, y: 30},
+            ],
+          },
+          {
+            id: '["run1",1]',
+            points: [
+              {wallTime: 6000, value: 10, step: 1, x: 1, y: 10},
+              {wallTime: 3000, value: 20, step: 4, x: 4, y: 20},
+            ],
+          },
+          {
+            id: 'run2',
+            points: [{wallTime: 2000, value: 1, step: 1, x: 1, y: 1}],
+          },
+        ]);
+        expect(lineChart.componentInstance.seriesMetadataMap).toEqual({
+          '["run1",0]': {
+            id: '["run1",0]',
+            displayName: 'run1: 0',
+            type: SeriesType.ORIGINAL,
+            visible: false,
+            color: '#f00',
+            opacity: 0.6,
+            aux: false,
+          },
+          '["run1",1]': {
+            id: '["run1",1]',
+            displayName: 'run1: 1',
+            type: SeriesType.ORIGINAL,
+            visible: false,
+            color: '#f00',
+            opacity: 1,
+            aux: false,
+          },
+          run2: {
+            id: 'run2',
+            displayName: 'run2',
+            type: SeriesType.ORIGINAL,
+            visible: false,
+            color: '#0f0',
+            opacity: 1,
+            aux: false,
+          },
+        });
+      }));
+
+      it('partitions to pseudo runs when wall_time increase non-monotonically', fakeAsync(() => {
+        store.overrideSelector(
+          selectors.getMetricsScalarPartitionNonMonotonicX,
+          true
+        );
+        store.overrideSelector(
+          selectors.getMetricsXAxisType,
+          XAxisType.WALL_TIME
+        );
+        store.overrideSelector(selectors.getRunColorMap, {
+          run1: '#f00',
+          run2: '#0f0',
+        });
+        store.overrideSelector(selectors.getMetricsScalarSmoothing, 0);
+
+        const runToSeries = {
+          run1: [
+            {wallTime: 2, value: 1, step: 1},
+            {wallTime: 4, value: 10, step: 2},
+            {wallTime: 6, value: 30, step: 2},
+            {wallTime: 6, value: 10, step: 1},
+            {wallTime: 3, value: 20, step: 4},
+          ],
+        };
+        provideMockCardRunToSeriesData(
+          selectSpy,
+          PluginType.SCALARS,
+          'card1',
+          null /* metadataOverride */,
+          runToSeries
+        );
+
+        const fixture = createComponent('card1');
+        const lineChart = fixture.debugElement.query(Selector.GPU_LINE_CHART);
+
+        expect(lineChart.componentInstance.seriesData).toEqual([
+          {
+            id: '["run1",0]',
+            points: [
+              {wallTime: 2000, value: 1, step: 1, x: 2000, y: 1},
+              {wallTime: 4000, value: 10, step: 2, x: 4000, y: 10},
+              {wallTime: 6000, value: 30, step: 2, x: 6000, y: 30},
+              {wallTime: 6000, value: 10, step: 1, x: 6000, y: 10},
+            ],
+          },
+          {
+            id: '["run1",1]',
+            points: [{wallTime: 3000, value: 20, step: 4, x: 3000, y: 20}],
+          },
+        ]);
+        expect(lineChart.componentInstance.seriesMetadataMap).toEqual({
+          '["run1",0]': {
+            id: '["run1",0]',
+            displayName: 'run1: 0',
+            type: SeriesType.ORIGINAL,
+            visible: false,
+            color: '#f00',
+            opacity: 0.6,
+            aux: false,
+          },
+          '["run1",1]': {
+            id: '["run1",1]',
+            displayName: 'run1: 1',
+            type: SeriesType.ORIGINAL,
+            visible: false,
+            color: '#f00',
+            opacity: 1,
+            aux: false,
+          },
+        });
       }));
     });
   });
