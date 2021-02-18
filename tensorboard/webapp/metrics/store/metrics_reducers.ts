@@ -13,12 +13,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Action, createReducer, on} from '@ngrx/store';
-import * as coreActions from '../../core/actions';
-import {DataLoadState} from '../../types/data';
 
 import {stateRehydratedFromUrl} from '../../app_routing/actions';
 import {createRouteContextedState} from '../../app_routing/route_contexted_reducer_helper';
 import {RouteKind} from '../../app_routing/types';
+import * as coreActions from '../../core/actions';
+import {DataLoadState} from '../../types/data';
 import {mapObjectValues} from '../../util/lang';
 import {composeReducers} from '../../util/ngrx';
 import * as actions from '../actions';
@@ -35,37 +35,33 @@ import {
 } from '../data_source';
 import {
   CardId,
-  CardUniqueInfo,
   CardMetadata,
-  HistogramMode,
-  TooltipSort,
+  CardUniqueInfo,
+  SCALARS_SMOOTHING_MAX,
+  SCALARS_SMOOTHING_MIN,
   URLDeserializedState,
-  XAxisType,
-} from '../types';
-
+} from '../internal_types';
 import {
-  buildOrReturnStateWithUnresolvedImportedPins,
   buildOrReturnStateWithPinnedCopy,
+  buildOrReturnStateWithUnresolvedImportedPins,
   canCreateNewPins,
   createPluginDataWithLoadable,
   createRunToLoadState,
   getCardId,
-  getPinnedCardId,
   getRunIds,
   getTimeSeriesLoadable,
 } from './metrics_store_internal_utils';
 import {
   CardMetadataMap,
   CardStepIndexMap,
-  CardToPinnedCard,
   MetricsRoutefulState,
   MetricsRoutelessState,
   MetricsState,
   NonSampledPluginTagMetadata,
-  PinnedCardToCard,
   TagMetadata,
   TimeSeriesData,
   TimeSeriesLoadable,
+  METRICS_SETTINGS_DEFAULT,
 } from './metrics_types';
 
 function buildCardMetadataList(tagMetadata: TagMetadata): CardMetadata[] {
@@ -248,16 +244,7 @@ const {initialState, reducers: routeContextReducer} = createRouteContextedState(
       histograms: {},
       images: {},
     },
-    settings: {
-      tooltipSort: TooltipSort.DEFAULT,
-      ignoreOutliers: true,
-      xAxisType: XAxisType.STEP,
-      scalarSmoothing: 0.6,
-      imageBrightnessInMilli: 1000,
-      imageContrastInMilli: 1000,
-      imageShowActualSize: false,
-      histogramMode: HistogramMode.OFFSET,
-    },
+    settings: METRICS_SETTINGS_DEFAULT,
     visibleCards: new Set<CardId>(),
   } as MetricsRoutelessState,
 
@@ -325,9 +312,28 @@ const reducer = createReducer(
       state.pinnedCardToOriginal,
       state.cardStepIndex
     );
+
+    const hydratedSmoothing = hydratedState.metrics.smoothing;
+    let newSettings = state.settings;
+
+    if (Number.isFinite(hydratedSmoothing) && hydratedSmoothing !== null) {
+      const newSmoothing = Math.max(
+        SCALARS_SMOOTHING_MIN,
+        Math.min(
+          SCALARS_SMOOTHING_MAX,
+          Number(hydratedSmoothing.toPrecision(3))
+        )
+      );
+      newSettings = {
+        ...state.settings,
+        scalarSmoothing: newSmoothing,
+      };
+    }
+
     return {
       ...state,
       ...resolvedResult,
+      settings: newSettings,
     };
   }),
   on(coreActions.reload, coreActions.manualReload, (state) => {

@@ -19,7 +19,7 @@ import {
   TimeSeriesRequest,
   TimeSeriesResponse,
 } from '../data_source';
-import {CardId, HistogramMode, TooltipSort, XAxisType} from '../types';
+import {CardId, HistogramMode, TooltipSort, XAxisType} from '../internal_types';
 
 /** @typehack */ import * as _typeHackModels from '@ngrx/store/src/models';
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
