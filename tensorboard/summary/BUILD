@@ -53,6 +53,7 @@ py_test(
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:test",
         "//tensorboard/compat/proto:protos_all_py_pb2",
+        "//tensorboard/util:tensor_util",
     ],
 )
 
@@ -65,6 +66,7 @@ py_library(
     deps = [
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/summary/writer",
+        "//tensorboard/util:tensor_util",
     ],
 )
 
@@ -79,6 +81,7 @@ py_test(
         "//tensorboard:expect_numpy_installed",
         "//tensorboard:test",
         "//tensorboard/compat/proto:protos_all_py_pb2",
+        "//tensorboard/util:tensor_util",
     ],
 )
 

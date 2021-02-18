@@ -20,6 +20,7 @@ import numpy as np
 from tensorboard.compat.proto import summary_pb2
 from tensorboard.summary import _output as output_lib
 from tensorboard.summary import test_util
+from tensorboard.util import tensor_util
 from tensorboard import test as tb_test
 
 
@@ -81,7 +82,9 @@ class DirectoryOutputTest(tb_test.TestCase):
         self.assertEqual(event.wall_time, 123.456)
         summary = event.summary.value[0]
         self.assertEqual(summary.tag, "tag")
-        self.assertEqual(summary.simple_value, 42.0)
+        self.assertEqual(
+            tensor_util.make_ndarray(summary.tensor), np.array(42.0)
+        )
         self.assertEqual(
             summary.metadata.data_class, summary_pb2.DATA_CLASS_SCALAR
         )
