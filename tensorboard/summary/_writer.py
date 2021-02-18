@@ -30,6 +30,9 @@ class Writer:
     """Writes summary data for visualization in TensorBoard.
 
     This class is not thread-safe.
+
+    TODO(#4581): This API should be considered EXPERIMENTAL and subject to
+    backwards-incompatible changes without notice.
     """
 
     def __init__(self, output):

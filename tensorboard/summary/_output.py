@@ -28,6 +28,9 @@ class Output(abc.ABC):
     Implementations of this interface can be passed to Writer to customize
     how summary data is actually persisted (e.g. to disk, to memory, over
     the network, etc.).
+
+    TODO(#4581): This API should be considered EXPERIMENTAL and subject to
+    backwards-incompatible changes without notice.
     """
 
     @abc.abstractmethod
@@ -73,7 +76,11 @@ class Output(abc.ABC):
 
 
 class DirectoryOutput(Output):
-    """Outputs summary data by writing event files to a log directory."""
+    """Outputs summary data by writing event files to a log directory.
+
+    TODO(#4581): This API should be considered EXPERIMENTAL and subject to
+    backwards-incompatible changes without notice.
+    """
 
     def __init__(self, path):
         """Creates a `DirectoryOutput` for the given path."""
@@ -91,7 +98,7 @@ class DirectoryOutput(Output):
         description=None,
     ):
         """See `Output`."""
-        # TODO(nfelt): cache summary metadata to emit only once.
+        # TODO(#4581): cache summary metadata to emit only once.
         summary_metadata = summary_pb2.SummaryMetadata(
             plugin_data=summary_pb2.SummaryMetadata.PluginData(
                 plugin_name=plugin_name, content=tag_metadata
