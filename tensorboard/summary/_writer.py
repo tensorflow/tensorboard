@@ -57,9 +57,9 @@ class Writer:
 
     def close(self):
         """Closes the writer and prevents further use."""
-        if not self._closed:
-            self._output.close()
-            self._closed = True
+        self._check_not_closed()
+        self._output.close()
+        self._closed = True
 
     def add_scalar(self, tag, data, step, *, wall_time=None, description=None):
         """Adds a scalar summary.

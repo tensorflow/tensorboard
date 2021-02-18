@@ -54,6 +54,13 @@ class WriterTest(tb_test.TestCase):
         w.close()
         output.close.assert_called_once()
 
+    def test_close_after_close(self):
+        output = mock.create_autospec(output_lib.Output)
+        w = writer_lib.Writer(output)
+        w.close()
+        with self.assertRaisesRegex(RuntimeError, "already closed"):
+            w.close()
+
 
 class WriterAddScalarTest(tb_test.TestCase):
     def test_real_directory(self):
