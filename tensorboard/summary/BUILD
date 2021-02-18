@@ -38,6 +38,7 @@ py_library(
     deps = [
         ":output",
         "//tensorboard:expect_numpy_installed",
+        "//tensorboard/plugins/scalar:metadata",
     ],
 )
 

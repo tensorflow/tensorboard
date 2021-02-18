@@ -22,6 +22,7 @@ import time
 
 import numpy as np
 
+from tensorboard.plugins.scalar import metadata as scalars_metadata
 from tensorboard.summary import _output
 
 
@@ -81,7 +82,7 @@ class Writer:
         validated_step = _validate_scalar_shape(np.int64(step), "step")
         wall_time = wall_time if wall_time is not None else time.time()
         self._output.emit_scalar(
-            plugin_name="scalars",
+            plugin_name=scalars_metadata.PLUGIN_NAME,
             tag=tag,
             data=validated_data,
             step=validated_step,
