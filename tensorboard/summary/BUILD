@@ -46,6 +46,7 @@ py_test(
     name = "writer_test",
     srcs = ["writer_test.py"],
     srcs_version = "PY3",
+    tags = ["support_notf"],
     deps = [
         ":test_util",
         ":writer",
@@ -71,6 +72,7 @@ py_test(
     name = "output_test",
     srcs = ["output_test.py"],
     srcs_version = "PY3",
+    tags = ["support_notf"],
     deps = [
         ":output",
         ":test_util",

@@ -33,11 +33,11 @@ def read_tfevents_files(logdir):
       logdir: string directory path to read
 
     Returns:
-      An OrderedDict mapping filenames to lists of event_pb2.Event protos read
+      A dict mapping filenames to lists of event_pb2.Event protos read
       from that file.
     """
     filenames = glob.glob(os.path.join(logdir, "*tfevents*"))
-    results = collections.OrderedDict()
+    results = {}
     for filename in sorted(filenames):
         events = []
         reader = pywrap_tensorflow.PyRecordReader_New(filename)

@@ -80,6 +80,7 @@ class DirectoryOutput(Output):
 
     def emit_scalar(
         self,
+        *,
         plugin_name,
         tag,
         data,

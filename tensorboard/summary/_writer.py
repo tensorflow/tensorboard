@@ -27,7 +27,10 @@ from tensorboard.summary import _output
 
 
 class Writer:
-    """Writes summary data for visualization in TensorBoard."""
+    """Writes summary data for visualization in TensorBoard.
+
+    This class is not thread-safe.
+    """
 
     def __init__(self, output):
         """Constructs a Writer.
@@ -43,7 +46,7 @@ class Writer:
         elif isinstance(output, str):
             self._output = _output.DirectoryOutput(output)
         else:
-            raise TypeError("Unsupported output object %r", output)
+            raise TypeError("Unsupported output object %r" % output)
         self._closed = False
 
     def _check_not_closed(self):
