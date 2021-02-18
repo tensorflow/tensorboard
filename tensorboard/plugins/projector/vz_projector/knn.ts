@@ -72,8 +72,8 @@ export function findKNNGPUCosine<T>(
   const bigMatrix = tf.tensor(typedArray, [N, dim]);
   const bigMatrixTransposed = bigMatrix.transpose();
   const bigMatrixSquared = tf.matMul(bigMatrix, bigMatrixTransposed);
-  const cosDist = tf.sub(1, bigMatrixSquared);
-  const splits = tf.split(cosDist, numPieces, 1);
+  const cosDistMatrix = tf.sub(1, bigMatrixSquared);
+  const splits = tf.split(cosDistMatrix, numPieces, 1);
 
   function step(resolve: (result: NearestEntry[][]) => void) {
     let progressMsg =
@@ -83,6 +83,7 @@ export function findKNNGPUCosine<T>(
         progressMsg,
         async () => {
           const B = piece < modulo ? M + 1 : M;
+          // `.data()` returns flattened Float32Array of B * N dimension.
           const partial = await splits[piece].data();
           progress += progressDiff;
           for (let i = 0; i < B; i++) {
@@ -114,7 +115,7 @@ export function findKNNGPUCosine<T>(
             bigMatrix.dispose();
             bigMatrixTransposed.dispose();
             bigMatrixSquared.dispose();
-            cosDist.dispose();
+            cosDistMatrix.dispose();
             splits.forEach((split) => split.dispose());
             resolve(nearest);
           }
