@@ -74,6 +74,7 @@ export function findKNNGPUCosine<T>(
   const bigMatrixSquared = tf.matMul(bigMatrix, bigMatrixTransposed);
   const cosDist = tf.sub(1, bigMatrixSquared);
   const splits = tf.split(cosDist, numPieces, 1);
+
   function step(resolve: (result: NearestEntry[][]) => void) {
     let progressMsg =
       'Finding nearest neighbors: ' + (progress * 100).toFixed() + '%';
@@ -109,7 +110,7 @@ export function findKNNGPUCosine<T>(
             step(resolve);
           } else {
             logging.setModalMessage(null, KNN_GPU_MSG_ID);
-            // Discard all tenosrs and free up the memory.
+            // Discard all tensors and free up the memory.
             bigMatrix.dispose();
             bigMatrixTransposed.dispose();
             bigMatrixSquared.dispose();
