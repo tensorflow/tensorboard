@@ -48,8 +48,8 @@ export function findKNNGPUCosine<T>(
   k: number,
   accessor: (dataPoint: T) => Float32Array
 ): Promise<NearestEntry[][]> {
-  let N = dataPoints.length;
-  let dim = accessor(dataPoints[0]).length;
+  const N = dataPoints.length;
+  const dim = accessor(dataPoints[0]).length;
   // The goal is to compute a large matrix multiplication A*A.T where A is of
   // size NxD and A.T is its transpose. This results in a NxN matrix which
   // could be too big to store on the GPU memory. To avoid memory overflow, we
@@ -59,16 +59,21 @@ export function findKNNGPUCosine<T>(
   // A*A.T will give us NxN matrix holding the cosine distance between every
   // pair of points, which we sort using KMin data structure to obtain the
   // K nearest neighbors for each point.
-  let typedArray = vector.toTypedArray(dataPoints, accessor);
-  const bigMatrix = tf.tensor(typedArray, [N, dim]);
-  let nearest: NearestEntry[][] = new Array(N);
-  let numPieces = Math.ceil(N / OPTIMAL_GPU_BLOCK_SIZE);
+  const nearest: NearestEntry[][] = new Array(N);
+  const numPieces = Math.ceil(N / OPTIMAL_GPU_BLOCK_SIZE);
   let M = Math.floor(N / numPieces);
   let modulo = N % numPieces;
   let offset = 0;
   let progress = 0;
   let progressDiff = 1 / (2 * numPieces);
   let piece = 0;
+
+  const typedArray = vector.toTypedArray(dataPoints, accessor);
+  const bigMatrix = tf.tensor(typedArray, [N, dim]);
+  const bigMatrixTransposed = bigMatrix.transpose();
+  const bigMatrixSquared = tf.matMul(bigMatrix, bigMatrixTransposed);
+  const cosDist = tf.sub(1, bigMatrixSquared);
+  const splits = tf.split(cosDist, numPieces, 1);
   function step(resolve: (result: NearestEntry[][]) => void) {
     let progressMsg =
       'Finding nearest neighbors: ' + (progress * 100).toFixed() + '%';
@@ -76,30 +81,18 @@ export function findKNNGPUCosine<T>(
       .runAsyncTask(
         progressMsg,
         async () => {
-          let B = piece < modulo ? M + 1 : M;
-          let typedB = new Float32Array(B * dim);
-          for (let i = 0; i < B; ++i) {
-            let vector = accessor(dataPoints[offset + i]);
-            for (let d = 0; d < dim; ++d) {
-              typedB[i * dim + d] = vector[d];
-            }
-          }
-          const partialMatrix = tf.tensor(typedB, [dim, B]);
-
-          const result = tf.matMul(bigMatrix, partialMatrix);
-          const partial = await result.array();
-          partialMatrix.dispose();
-          result.dispose();
-
+          const B = piece < modulo ? M + 1 : M;
+          const partial = await splits[piece].data();
           progress += progressDiff;
           for (let i = 0; i < B; i++) {
             let kMin = new KMin<NearestEntry>(k);
             let iReal = offset + i;
             for (let j = 0; j < N; j++) {
+              // Skip diagonal entries.
               if (j === iReal) {
                 continue;
               }
-              let cosDist = 1 - partial[j][i];
+              const cosDist = partial[j * B + i];
               kMin.add(cosDist, {index: j, dist: cosDist});
             }
             nearest[iReal] = kMin.getMinKItems();
@@ -116,7 +109,12 @@ export function findKNNGPUCosine<T>(
             step(resolve);
           } else {
             logging.setModalMessage(null, KNN_GPU_MSG_ID);
+            // Discard all tenosrs and free up the memory.
             bigMatrix.dispose();
+            bigMatrixTransposed.dispose();
+            bigMatrixSquared.dispose();
+            cosDist.dispose();
+            splits.forEach((split) => split.dispose());
             resolve(nearest);
           }
         },
