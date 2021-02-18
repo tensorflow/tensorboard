@@ -59,7 +59,9 @@ class ExistingServerDataIngester(ingester.DataIngester):
 class SubprocessServerDataIngester(ingester.DataIngester):
     """Start a new data server as a subprocess."""
 
-    def __init__(self, logdir, *, reload_interval, channel_creds_type, samples_per_plugin):
+    def __init__(
+        self, logdir, *, reload_interval, channel_creds_type, samples_per_plugin
+    ):
         """Initializes an ingester with the given configuration.
 
         Args:
@@ -94,7 +96,9 @@ class SubprocessServerDataIngester(ingester.DataIngester):
         else:
             reload = str(int(self._reload_interval))
 
-        sample_hint_pairs = ["%s=%s" % (k, v) for k, v in self._samples_per_plugin.items()]
+        sample_hint_pairs = [
+            "%s=%s" % (k, v) for k, v in self._samples_per_plugin.items()
+        ]
         samples_per_plugin = ",".join(sample_hint_pairs)
 
         args = [
