@@ -14,7 +14,6 @@
 # ==============================================================================
 """Utility methods for summary API testing."""
 
-import collections
 import glob
 import os
 
