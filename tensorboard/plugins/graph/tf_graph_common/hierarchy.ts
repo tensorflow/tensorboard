@@ -19,6 +19,8 @@ import * as d3 from 'd3';
 import {graphlib} from 'dagre';
 import * as _ from 'lodash';
 
+import * as tb_debug from '../../../components/tb_debug';
+
 import {NodeStats, ProgressTracker} from './common';
 import * as template from './template';
 import {
@@ -451,7 +453,8 @@ export function build(
         h.xlaClusters = _.keys(xlaClusterNames);
         addNodes(h, graph);
       },
-      tracker
+      tracker,
+      tb_debug.GraphDebugEventId.HIERARCHY_ADD_NODES
     )
     .then(() => {
       return tf_graph_util.runAsyncTask(
@@ -469,7 +472,8 @@ export function build(
             );
           }
         },
-        tracker
+        tracker,
+        tb_debug.GraphDebugEventId.HIERARCHY_DETECT_SERIES
       );
     })
     .then(() => {
@@ -479,7 +483,8 @@ export function build(
         () => {
           addEdges(h, graph, seriesNames);
         },
-        tracker
+        tracker,
+        tb_debug.GraphDebugEventId.HIERARCHY_ADD_EDGES
       );
     })
     .then(() => {
@@ -489,7 +494,8 @@ export function build(
         () => {
           h.templates = template.detect(h, params.verifyTemplate);
         },
-        tracker
+        tracker,
+        tb_debug.GraphDebugEventId.HIERARCHY_FIND_SIMILAR_SUBGRAPHS
       );
     })
     .then(() => {

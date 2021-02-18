@@ -25,7 +25,12 @@ import {
 import {auditTime} from 'rxjs/operators';
 
 import {DropdownOption} from '../../../widgets/dropdown/dropdown_component';
-import {HistogramMode, TooltipSort, XAxisType} from '../../types';
+import {
+  HistogramMode,
+  SCALARS_SMOOTHING_MAX,
+  TooltipSort,
+  XAxisType,
+} from '../../types';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
@@ -35,7 +40,7 @@ const SLIDER_AUDIT_TIME_MS = 250;
  * When smoothing === 1, all lines become flat on the x-axis, which is not
  * useful at all. Use a maximum smoothing value < 1.
  */
-const MAX_SMOOTHING_VALUE = 0.999;
+const MAX_SMOOTHING_VALUE = SCALARS_SMOOTHING_MAX;
 
 /**
  * The smoothing slider has a step size of 0.01. Angular's rounding logic makes

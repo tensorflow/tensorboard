@@ -86,8 +86,10 @@ tf_ng_module(
         "app_container.ng.html",
     ],
     deps = [
+        ":app_state",
         ":mat_icon",
         ":oss_plugins_module",
+        ":selectors",
         ":store_module",
         "//tensorboard/webapp/alert",
         "//tensorboard/webapp/alert/views:alert_snackbar",
@@ -113,6 +115,28 @@ tf_ng_module(
         "@npm//@angular/core",
         "@npm//@angular/platform-browser",
         "@npm//@ngrx/store",
+        "@npm//rxjs",
+    ],
+)
+
+tf_ng_module(
+    name = "app_test",
+    testonly = True,
+    srcs = [
+        "app_test.ts",
+    ],
+    deps = [
+        ":app",
+        ":app_state",
+        ":selectors",
+        "//tensorboard/webapp/angular:expect_angular_core_testing",
+        "//tensorboard/webapp/angular:expect_ngrx_store_testing",
+        "//tensorboard/webapp/app_routing:testing",
+        "//tensorboard/webapp/core/actions",
+        "@npm//@angular/common",
+        "@npm//@angular/core",
+        "@npm//@ngrx/store",
+        "@npm//@types/jasmine",
     ],
 )
 
@@ -133,9 +157,6 @@ tf_ng_module(
     ],
 )
 
-# TODO(stephanwlee): at the moment, there is no development build. Reinstate it.
-# Wrapper that prepares Angular app for deployment, dealing with browser
-# compatibility, Vulcanization, and configuration (e.g. prod vs. dev).
 tf_ng_module(
     name = "ng_main",
     srcs = [
@@ -239,6 +260,7 @@ tf_resource_digest_suffixer(
 tf_ng_web_test_suite(
     name = "karma_test",
     deps = [
+        ":app_test",
         "//tensorboard/webapp/alert:test_lib",
         "//tensorboard/webapp/alert/store:test_lib",
         "//tensorboard/webapp/alert/views:views_test",
@@ -288,6 +310,7 @@ tf_ng_web_test_suite(
         "//tensorboard/webapp/plugins/npmi/views/data_selection/metric_arithmetic/metric_arithmetic_operator:metric_arithmetic_operator_test_lib",
         "//tensorboard/webapp/plugins/npmi/views/data_selection/metric_search:metric_search_test_lib",
         "//tensorboard/webapp/plugins/npmi/views/data_selection/results_download:results_download_test_lib",
+        "//tensorboard/webapp/plugins/npmi/views/embeddings:embeddings_test_lib",
         "//tensorboard/webapp/plugins/npmi/views/main:main_test_lib",
         "//tensorboard/webapp/plugins/npmi/views/selected_annotations:selected_annotations_test_lib",
         "//tensorboard/webapp/plugins/npmi/views/selected_annotations/parallel_coordinates:parallel_coordinates_test_lib",
@@ -319,6 +342,7 @@ tf_ng_web_test_suite(
         "//tensorboard/webapp/widgets/line_chart_v2/lib/renderer:renderer_test",
         "//tensorboard/webapp/widgets/line_chart_v2/lib/worker:worker_test",
         "//tensorboard/webapp/widgets/line_chart_v2/sub_view:sub_view_tests",
+        "//tensorboard/webapp/widgets/markdown_renderer:markdown_renderer_tests",
         "//tensorboard/webapp/widgets/range_input:range_input_tests",
         "//tensorboard/webapp/widgets/source_code:source_code_container_test_lib",
         "//tensorboard/webapp/widgets/source_code:source_code_test_lib",
@@ -362,6 +386,7 @@ tf_svg_bundle(
         "@com_google_material_design_icon//:settings_backup_restore_24px.svg",
         "@com_google_material_design_icon//:settings_overscan_24px.svg",
         "@com_google_material_design_icon//:visibility_off_24px.svg",
+        "@com_google_material_design_icon//:group_work_24px.svg",
         "@com_google_material_design_icon//:warning_24px.svg",
     ],
     out = "icon_bundle.svg",

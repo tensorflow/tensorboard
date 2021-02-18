@@ -24,6 +24,7 @@ import {
   MetricFilterListing,
   AnnotationSort,
   EmbeddingListing,
+  ViewActive,
 } from './npmi_types';
 
 // HACK: These imports are for type inference.
@@ -154,9 +155,37 @@ export const getShowHiddenAnnotations = createSelector(
   }
 );
 
+export const getViewActive = createSelector(
+  selectNpmiState,
+  (state: NpmiState): ViewActive => {
+    return state.viewActive;
+  }
+);
+
 export const getSidebarWidth = createSelector(
   selectNpmiState,
   (state: NpmiState): number => {
     return state.sidebarWidth;
+  }
+);
+
+export const getEmbeddingsMetric = createSelector(
+  selectNpmiState,
+  (state: NpmiState): string => {
+    return state.embeddingsMetric;
+  }
+);
+
+export const getEmbeddingsSidebarWidth = createSelector(
+  selectNpmiState,
+  (state: NpmiState): number => {
+    return state.embeddingsSidebarWidth;
+  }
+);
+
+export const getEmbeddingsSidebarExpanded = createSelector(
+  selectNpmiState,
+  (state: NpmiState): boolean => {
+    return state.embeddingsSidebarExpanded;
   }
 );

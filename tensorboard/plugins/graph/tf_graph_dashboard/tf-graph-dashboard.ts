@@ -87,63 +87,58 @@ class TfGraphDashboard extends LegacyElementMixin(PolymerElement) {
         on-fit-tap="_fit"
         trace-inputs="{{_traceInputs}}"
       ></tf-graph-controls>
-      <div class="center" slot="center">
-        <template
-          is="dom-if"
-          if="[[_datasetsState(_datasetsFetched, _datasets, 'EMPTY')]]"
-        >
-          <div style="max-width: 540px; margin: 80px auto 0 auto;">
-            <h3>No graph definition files were found.</h3>
-            <p>
-              To store a graph, create a
-              <code>tf.summary.FileWriter</code>
-              and pass the graph either via the constructor, or by calling its
-              <code>add_graph()</code> method. You may want to check out the
-              <a href="https://www.tensorflow.org/get_started/graph_viz"
-                >graph visualizer tutorial</a
-              >.
-            </p>
+      <div
+        class$="center [[_getGraphDisplayClassName(_selectedFile, _datasets)]]"
+        slot="center"
+      >
+        <tf-graph-dashboard-loader
+          id="loader"
+          datasets="[[_datasets]]"
+          selection="[[_selection]]"
+          selected-file="[[_selectedFile]]"
+          out-graph-hierarchy="{{_graphHierarchy}}"
+          out-graph="{{_graph}}"
+          out-stats="{{_stats}}"
+          progress="{{_progress}}"
+          hierarchy-params="[[_hierarchyParams]]"
+          compatibility-provider="[[_compatibilityProvider]]"
+        ></tf-graph-dashboard-loader>
+        <div class="no-data-message">
+          <h3>No graph definition files were found.</h3>
+          <p>
+            To store a graph, create a
+            <code>tf.summary.FileWriter</code>
+            and pass the graph either via the constructor, or by calling its
+            <code>add_graph()</code> method. You may want to check out the
+            <a href="https://www.tensorflow.org/get_started/graph_viz"
+              >graph visualizer tutorial</a
+            >.
+          </p>
 
-            <p>
-              If you’re new to using TensorBoard, and want to find out how to
-              add data and set up your event files, check out the
-              <a
-                href="https://github.com/tensorflow/tensorboard/blob/master/README.md"
-                >README</a
-              >
-              and perhaps the
-              <a
-                href="https://www.tensorflow.org/get_started/summaries_and_tensorboard"
-                >TensorBoard tutorial</a
-              >.
-            </p>
+          <p>
+            If you’re new to using TensorBoard, and want to find out how to add
+            data and set up your event files, check out the
+            <a
+              href="https://github.com/tensorflow/tensorboard/blob/master/README.md"
+              >README</a
+            >
+            and perhaps the
+            <a
+              href="https://www.tensorflow.org/get_started/summaries_and_tensorboard"
+              >TensorBoard tutorial</a
+            >.
+          </p>
 
-            <p>
-              If you think TensorBoard is configured properly, please see
-              <a
-                href="https://github.com/tensorflow/tensorboard/blob/master/README.md#my-tensorboard-isnt-showing-any-data-whats-wrong"
-                >the section of the README devoted to missing data problems</a
-              >
-              and consider filing an issue on GitHub.
-            </p>
-          </div>
-        </template>
-        <template
-          is="dom-if"
-          if="[[_datasetsState(_datasetsFetched, _datasets, 'PRESENT')]]"
-        >
-          <tf-graph-dashboard-loader
-            id="loader"
-            datasets="[[_datasets]]"
-            selection="[[_selection]]"
-            selected-file="[[_selectedFile]]"
-            out-graph-hierarchy="{{_graphHierarchy}}"
-            out-graph="{{_graph}}"
-            out-stats="{{_stats}}"
-            progress="{{_progress}}"
-            hierarchy-params="[[_hierarchyParams]]"
-            compatibility-provider="[[_compatibilityProvider]]"
-          ></tf-graph-dashboard-loader>
+          <p>
+            If you think TensorBoard is configured properly, please see
+            <a
+              href="https://github.com/tensorflow/tensorboard/blob/master/README.md#my-tensorboard-isnt-showing-any-data-whats-wrong"
+              >the section of the README devoted to missing data problems</a
+            >
+            and consider filing an issue on GitHub.
+          </p>
+        </div>
+        <div class="graphboard">
           <tf-graph-board
             id="graphboard"
             devices-for-stats="[[_devicesForStats]]"
@@ -165,7 +160,7 @@ class TfGraphDashboard extends LegacyElementMixin(PolymerElement) {
             stats="[[_stats]]"
             trace-inputs="[[_traceInputs]]"
           ></tf-graph-board>
-        </template>
+        </div>
       </div>
     </tf-dashboard-layout>
     <style>
@@ -185,6 +180,23 @@ class TfGraphDashboard extends LegacyElementMixin(PolymerElement) {
 
       paper-dialog {
         padding: 20px;
+      }
+
+      .no-data-message {
+        max-width: 540px;
+        margin: 80px auto 0 auto;
+      }
+
+      .graphboard {
+        height: 100%;
+      }
+
+      .no-graph .graphboard {
+        display: none;
+      }
+
+      .center:not(.no-graph) .no-data-message {
+        display: none;
       }
     </style>
   `;
@@ -291,6 +303,8 @@ class TfGraphDashboard extends LegacyElementMixin(PolymerElement) {
   _compatibilityProvider: object;
   @property({type: Boolean})
   _traceInputs: boolean;
+  @property({type: Object})
+  _selectedFile: any;
   attached() {
     this.set('_isAttached', true);
   }
@@ -327,6 +341,10 @@ class TfGraphDashboard extends LegacyElementMixin(PolymerElement) {
   }
   _fit() {
     (this.$$('#graphboard') as any).fit();
+  }
+  _getGraphDisplayClassName(_selectedFile: any, _datasets: any[]) {
+    const isDataValid = _selectedFile || _datasets.length;
+    return isDataValid ? '' : 'no-graph';
   }
   _runObserver = tf_storage.getStringObserver(RUN_STORAGE_KEY, {
     defaultValue: '',

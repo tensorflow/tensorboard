@@ -14,6 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {RunId} from '../../core/types';
+import {ViewActive} from './store/npmi_types';
 
 @Component({
   selector: 'npmi-component',
@@ -23,4 +24,6 @@ import {RunId} from '../../core/types';
 })
 export class NpmiComponent {
   @Input() runs!: Map<RunId, boolean>;
+  @Input() activeView!: string;
+  readonly ViewActive = ViewActive;
 }

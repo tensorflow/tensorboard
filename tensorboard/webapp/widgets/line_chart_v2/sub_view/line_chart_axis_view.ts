@@ -32,18 +32,8 @@ const DAY_IN_MS = 24 * 1000 * 60 * 60;
   selector: 'line-chart-axis',
   template: `
     <div [class]="axis + '-axis'">
-      <svg class="minor">
-        <ng-container *ngIf="axis === 'x'; else yAxisLine">
-          <line x1="0" y1="0" [attr.x2]="domDim.width" y2="0"></line>
-        </ng-container>
-        <ng-template #yAxisLine>
-          <line
-            [attr.x1]="domDim.width"
-            y1="0"
-            [attr.x2]="domDim.width"
-            [attr.y2]="domDim.height"
-          ></line>
-        </ng-template>
+      <div class="line"></div>
+      <svg class="minor ticks">
         <ng-container *ngFor="let tick of getTicks()">
           <g>
             <text [attr.x]="textXPosition(tick)" [attr.y]="textYPosition(tick)">
@@ -55,7 +45,7 @@ const DAY_IN_MS = 24 * 1000 * 60 * 60;
           </g>
         </ng-container>
       </svg>
-      <svg *ngIf="shouldShowMajorTicks()" class="major">
+      <svg *ngIf="shouldShowMajorTicks()" class="major ticks">
         <g *ngFor="let tick of getMajorTicks()">
           <text [attr.x]="textXPosition(tick)" [attr.y]="textYPosition(tick)">
             {{ getFormatter().formatShort(tick) }}
@@ -75,11 +65,6 @@ const DAY_IN_MS = 24 * 1000 * 60 * 60;
         overflow: hidden;
       }
 
-      svg {
-        height: 100%;
-        width: 100%;
-      }
-
       line {
         stroke: #333;
         stroke-width: 1px;
@@ -92,8 +77,15 @@ const DAY_IN_MS = 24 * 1000 * 60 * 60;
 
       .x-axis,
       .y-axis {
+        display: flex;
         height: 100%;
         width: 100%;
+      }
+
+      .line {
+        background-color: #aaa;
+        flex: 0 0 1px;
+        justify-content: stretch;
       }
 
       .x-axis {
@@ -105,13 +97,47 @@ const DAY_IN_MS = 24 * 1000 * 60 * 60;
         text-anchor: middle;
       }
 
+      .x-axis .ticks {
+        -webkit-mask-image: linear-gradient(
+          to right,
+          #0000 0%,
+          #000 10%,
+          #000 90%,
+          #0000 100%
+        );
+        mask-image: linear-gradient(
+          to right,
+          #0000 0%,
+          #000 10%,
+          #000 90%,
+          #0000 100%
+        );
+      }
+
       .y-axis {
-        flex-direction: row;
+        flex-direction: row-reverse;
       }
 
       .y-axis text {
         dominant-baseline: central;
         text-anchor: end;
+      }
+
+      .y-axis .ticks {
+        -webkit-mask-image: linear-gradient(
+          to bottom,
+          #0000 0%,
+          #000 10%,
+          #000 90%,
+          #0000 100%
+        );
+        mask-image: linear-gradient(
+          to bottom,
+          #0000 0%,
+          #000 10%,
+          #000 90%,
+          #0000 100%
+        );
       }
     `,
   ],

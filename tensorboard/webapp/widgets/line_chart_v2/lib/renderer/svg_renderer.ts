@@ -19,6 +19,7 @@ import {
   CirclePaintOption,
   LinePaintOption,
   ObjectRenderer,
+  TrapezoidPaintOption,
   TrianglePaintOption,
 } from './renderer_types';
 
@@ -212,5 +213,61 @@ export class SvgRenderer implements ObjectRenderer<CacheValue> {
           dom: svgCircle,
           data: loc,
         };
+  }
+
+  createOrUpdateTrapezoidObject(
+    cached: PathCacheValue | null,
+    start: Point,
+    end: Point,
+    paintOpt: TrapezoidPaintOption
+  ): PathCacheValue | null {
+    if (start.y !== end.y) {
+      throw new RangeError('Input error: start.y != end.y.');
+    }
+
+    const {altitude, color} = paintOpt;
+    const width = (2 / Math.sqrt(3)) * altitude;
+    const vertices = new Float32Array([
+      start.x - width / 2,
+      start.y + altitude / 2,
+      start.x,
+      start.y - altitude / 2,
+      end.x,
+      end.y - altitude / 2,
+      end.x + width / 2,
+      end.y + altitude / 2,
+    ]);
+
+    const svgPath = createOrUpdateObject(
+      cached?.dom,
+      () => {
+        const dom = document.createElementNS(
+          'http://www.w3.org/2000/svg',
+          'path'
+        );
+
+        dom.classList.add('trapezoid');
+        dom.style.fill = 'none';
+        const data = this.createPathDString(vertices);
+        dom.setAttribute('d', data + 'Z');
+        this.svg.appendChild(dom);
+        return dom;
+      },
+      (dom) => {
+        // Modifying/overwriting three vertices is cheap enough. Update always.
+        const data = this.createPathDString(vertices);
+        dom.setAttribute('d', data + 'Z');
+        return dom;
+      },
+      paintOpt
+    );
+
+    if (svgPath === null) return null;
+
+    svgPath.style.fill = color;
+    return {
+      dom: svgPath,
+      data: vertices,
+    };
   }
 }

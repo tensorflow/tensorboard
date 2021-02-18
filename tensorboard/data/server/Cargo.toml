@@ -15,7 +15,7 @@
 
 [package]
 name = "rustboard"
-version = "0.2.0-alpha.0"
+version = "0.4.0-alpha.0"
 authors = ["The TensorFlow Authors <tensorboard-gardener@google.com>"]
 edition = "2018"
 default-run = "rustboard"
@@ -27,14 +27,18 @@ async-stream = "0.3.0"
 async-trait = "0.1.41"
 base64 = "0.13.0"
 byteorder = "1.3.4"
+bytes = "1.0.1"
 clap = "3.0.0-beta.2"
 crc = "1.8.1"
+crossbeam = "0.8.0"
 env_logger = "0.8.2"
 futures-core = "0.3.12"
 log = "0.4.11"
 prost = "0.7.0"
 rand = "0.7.3"
 rand_chacha = "0.2.2"
+rayon = "1.5.0"
+reqwest = { version = "0.11.0", features = ["blocking", "json"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0.59"
 thiserror = "1.0.21"
@@ -56,11 +60,18 @@ path = "main.rs"
 name = "bench"
 path = "bench.rs"
 
+[[bin]]
+name = "gsutil"
+path = "gcs/gsutil.rs"
+
 [lib]
 name = "rustboard_core"
 path = "lib.rs"
 
 [package.metadata.raze]
+default_gen_buildrs = false
+package_aliases_dir = "./cargo"
+rust_rules_workspace_name = "rules_rust"
 workspace_path = "//third_party/rust"
 genmode = "Remote"
 targets = [
@@ -83,6 +94,12 @@ additional_flags = [
     "--cfg=has_std",
 ]
 
+[package.metadata.raze.crates.openssl.'0.10.32']
+gen_buildrs = true
+
+[package.metadata.raze.crates.openssl-sys.'0.9.60']
+gen_buildrs = true
+
 [package.metadata.raze.crates.proc-macro-error.'1.0.4']
 gen_buildrs = true
 
@@ -94,5 +111,3 @@ additional_flags = [
 
 [package.metadata.raze.crates.prost-build.'0.7.0']
 gen_buildrs = true
-additional_deps = ["@com_google_protobuf//:protoc"]
-additional_env = { PROTOC = "$(execpath @com_google_protobuf//:protoc)" }

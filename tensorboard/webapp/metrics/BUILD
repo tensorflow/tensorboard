@@ -31,6 +31,18 @@ tf_ts_library(
         "types.ts",
     ],
     deps = [
+        ":internal_types",
+        "//tensorboard/webapp/metrics/store:types",
+    ],
+)
+
+tf_ts_library(
+    name = "internal_types",
+    srcs = [
+        "internal_types.ts",
+    ],
+    visibility = ["//tensorboard/webapp/metrics:__subpackages__"],
+    deps = [
         "//tensorboard/webapp/metrics/data_source:types",
         "//tensorboard/webapp/widgets/histogram:types",
         "//tensorboard/webapp/widgets/line_chart",

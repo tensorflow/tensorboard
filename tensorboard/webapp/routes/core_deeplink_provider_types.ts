@@ -17,3 +17,7 @@ import {URLDeserializedState as MetricsURLDeserializedState} from '../metrics/ty
 // No need to deserialize the Experimental Plugins as it is immutable and is only read at
 // the start of the application.
 export type DeserializedState = MetricsURLDeserializedState;
+
+export const SMOOTHING_KEY = 'smoothing';
+
+export const PINNED_CARDS_KEY = 'pinnedCards';

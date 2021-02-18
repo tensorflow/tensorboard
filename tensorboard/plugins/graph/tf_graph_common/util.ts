@@ -17,18 +17,69 @@ limitations under the License.
  */
 import * as _ from 'lodash';
 
+import {notifyActionEventFromPolymer} from '../../../components/tb_debug';
+import {
+  GraphDebugActionEventId,
+  GraphDebugTimingEventId,
+  GRAPH_DEBUG_ACTION_EVENT_CATEGORY,
+  GRAPH_DEBUG_TIMING_EVENT_CATEGORY,
+} from '../../../components/tb_debug/types';
 import {NodeStats, ProgressTracker} from './common';
 
 const ASYNC_TASK_DELAY = 20;
+
+interface DebugTimingEvent {
+  timingId: GraphDebugTimingEventId;
+  // An associated duration in milliseconds for a timing event.
+  eventValue: number;
+}
+
+interface DebugActionEvent {
+  actionId: GraphDebugActionEventId;
+  eventLabel?: string;
+}
+
+export type DebugEvent = DebugTimingEvent | DebugActionEvent;
+
+function isDebugTimingEvent(
+  debugEvent: DebugEvent
+): debugEvent is DebugTimingEvent {
+  return debugEvent.hasOwnProperty('timingId');
+}
+
+export function notifyDebugEvent(debugEvent: DebugEvent) {
+  if (isDebugTimingEvent(debugEvent)) {
+    notifyActionEventFromPolymer({
+      eventCategory: GRAPH_DEBUG_TIMING_EVENT_CATEGORY,
+      eventAction: debugEvent.timingId,
+      eventValue: debugEvent.eventValue,
+    });
+  } else {
+    notifyActionEventFromPolymer({
+      eventCategory: GRAPH_DEBUG_ACTION_EVENT_CATEGORY,
+      eventAction: debugEvent.actionId,
+      eventLabel: debugEvent.eventLabel,
+    });
+  }
+}
+
 /**
  * Measure and log a synchronous task.
  */
-export function time<T>(msg: string, task: () => T) {
+export function time<T>(
+  msg: string,
+  task: () => T,
+  debugEventId?: GraphDebugTimingEventId
+) {
   let start = Date.now();
   let result = task();
+  const durationInMs = Date.now() - start;
   /* tslint:disable */
-  console.log(msg, ':', Date.now() - start, 'ms');
+  console.log(msg, ':', durationInMs, 'ms');
   /* tslint:enable */
+  if (debugEventId) {
+    notifyDebugEvent({timingId: debugEventId, eventValue: durationInMs});
+  }
   return result;
 }
 export type Tracker = {
@@ -110,14 +161,15 @@ export function runTask<T>(
   msg: string,
   incProgressValue: number,
   task: () => T,
-  tracker: ProgressTracker
+  tracker: ProgressTracker,
+  debugEventId?: GraphDebugTimingEventId
 ): T {
   // Update the progress message to say the current running task.
   tracker.setMessage(msg);
   // Run the expensive task with a delay that gives enough time for the
   // UI to update.
   try {
-    let result = time(msg, task);
+    let result = time(msg, task, debugEventId);
     // Update the progress value.
     tracker.updateProgress(incProgressValue);
     // Return the result to be used by other tasks.
@@ -135,7 +187,8 @@ export function runAsyncTask<T>(
   msg: string,
   incProgressValue: number,
   task: () => T,
-  tracker: ProgressTracker
+  tracker: ProgressTracker,
+  debugEventId?: GraphDebugTimingEventId
 ): Promise<T> {
   return new Promise((resolve, reject) => {
     // Update the progress message to say the current running task.
@@ -144,7 +197,7 @@ export function runAsyncTask<T>(
     // UI to update.
     setTimeout(function () {
       try {
-        let result = time(msg, task);
+        let result = time(msg, task, debugEventId);
         // Update the progress value.
         tracker.updateProgress(incProgressValue);
         // Return the result to be used by other tasks.
@@ -166,7 +219,8 @@ export function runAsyncPromiseTask<T>(
   msg: string,
   incProgressValue: number,
   task: () => Promise<T>,
-  tracker: ProgressTracker
+  tracker: ProgressTracker,
+  debugEventId?: GraphDebugTimingEventId
 ): Promise<T> {
   return new Promise((resolve, reject) => {
     let handleError = function (e) {
@@ -184,10 +238,15 @@ export function runAsyncPromiseTask<T>(
         let start = Date.now();
         task()
           .then(function (value) {
+            const durationInMs = Date.now() - start;
             /* tslint:disable */
-            console.log(msg, ':', Date.now() - start, 'ms');
+            console.log(msg, ':', durationInMs, 'ms');
             // Update the progress value.
             tracker.updateProgress(incProgressValue);
+            notifyDebugEvent({
+              timingId: debugEventId,
+              eventValue: durationInMs,
+            });
             // Return the result to be used by other tasks.
             resolve(value);
           })

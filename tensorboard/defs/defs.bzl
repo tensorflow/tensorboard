@@ -17,12 +17,23 @@ load("@npm//@bazel/rollup:index.bzl", "rollup_bundle")
 load("@npm//@bazel/karma:index.bzl", "karma_web_test_suite")
 load("@npm//@bazel/typescript:index.bzl", "ts_config", "ts_devserver", "ts_library")
 load("@io_bazel_rules_sass//:defs.bzl", "sass_binary", "sass_library")
+load("@npm//@bazel/terser:index.bzl", "terser_minified")
+load("//tensorboard/defs/internal:js.bzl", _tf_dev_js_binary = "tf_dev_js_binary")
+
+tf_dev_js_binary = _tf_dev_js_binary
 
 def tensorboard_webcomponent_library(**kwargs):
     """Rules referencing this will be deleted from the codebase soon."""
     pass
 
-def tf_js_binary(compile, deps, **kwargs):
+def tf_js_binary(
+    name,
+    compile,
+    deps,
+    visibility = None,
+    dev_mode_only = False,
+    **kwargs
+):
     """Rules for creating a JavaScript bundle.
 
     Please refer to https://bazelbuild.github.io/rules_nodejs/Built-ins.html#rollup_bundle
@@ -31,7 +42,9 @@ def tf_js_binary(compile, deps, **kwargs):
 
     # `compile` option is used internally but is not used by rollup_bundle.
     # Discard it.
+    internal_rollup_name = name + "_rollup_internal_dbg"
     rollup_bundle(
+        name = internal_rollup_name,
         config_file = "//tensorboard/defs:rollup_config.js",
         # Must pass `true` here specifically, else the input file argument to
         # Rollup (appended by `rollup_binary`) is interpreted as a value for
@@ -42,7 +55,31 @@ def tf_js_binary(compile, deps, **kwargs):
             "@npm//@rollup/plugin-node-resolve",
         ],
         format = "iife",
+        sourcemap = "false",
+        visibility = ["//visibility:private"],
         **kwargs
+    )
+
+    if dev_mode_only:
+        internal_result_name = internal_rollup_name
+    else:
+        internal_result_name = name + "_terser_internal_min"
+        terser_minified(
+            name = internal_result_name,
+            src = internal_rollup_name,
+            config_file = "//tensorboard/defs:terser_config.json",
+            visibility = ["//visibility:private"],
+            sourcemap = False,
+        )
+
+    # For some reason, terser_minified is not visible from other targets. Copy
+    # or re-export seems to work okay.
+    native.genrule(
+        name = name,
+        srcs = [internal_result_name],
+        outs = [name + ".js"],
+        visibility = visibility,
+        cmd = "cat $(SRCS) > $@",
     )
 
 def tf_ts_config(**kwargs):
@@ -93,13 +130,15 @@ def tf_ng_web_test_suite(runtime_deps = [], bootstrap = [], deps = [], **kwargs)
             "//tensorboard/webapp/testing:initialize_testbed",
         ],
         deps = deps + [
-            "//tensorboard/webapp/testing:test_support_lib",
+            "//tensorboard/defs/internal:common_umd_lib",
         ],
         # Lodash runtime dependency that is compatible with requirejs for karma.
         static_files = [
             "@npm//:node_modules/lodash/lodash.js",
             "@npm//:node_modules/d3/dist/d3.js",
             "@npm//:node_modules/three/build/three.js",
+            "@npm//:node_modules/dagre/dist/dagre.js",
+            "@npm//:node_modules/marked/lib/marked.js",
         ],
         **kwargs
     )

@@ -7,7 +7,7 @@ DO NOT EDIT! Replaced on runs of cargo-raze
 
 # buildifier: disable=load
 load(
-    "@io_bazel_rules_rust//rust:rust.bzl",
+    "@rules_rust//rust:rust.bzl",
     "rust_binary",
     "rust_library",
     "rust_test",
@@ -35,9 +35,12 @@ rust_library(
     srcs = glob(["**/*.rs"]),
     crate_features = [
         "alloc",
+        "once_cell",
+        "std",
     ],
     crate_root = "src/lib.rs",
     crate_type = "lib",
+    data = [],
     edition = "2018",
     rustc_flags = [
         "--cap-lints=allow",
@@ -49,5 +52,6 @@ rust_library(
     version = "0.3.8",
     # buildifier: leave-alone
     deps = [
+        "@raze__once_cell__1_5_2//:once_cell",
     ],
 )

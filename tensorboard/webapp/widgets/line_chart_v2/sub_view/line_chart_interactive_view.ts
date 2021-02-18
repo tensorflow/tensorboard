@@ -163,9 +163,9 @@ export class LineChartInteractiveViewComponent
       originY: 'bottom',
       overlayY: 'top',
     },
-    // Then top
+    // Then top left
     {
-      offsetY: 5,
+      offsetY: -15,
       originX: 'start',
       overlayX: 'start',
       originY: 'top',
@@ -173,7 +173,7 @@ export class LineChartInteractiveViewComponent
     },
     // then top, right aligned
     {
-      offsetX: 5,
+      offsetY: -15,
       originX: 'end',
       overlayX: 'end',
       originY: 'top',
@@ -189,7 +189,7 @@ export class LineChartInteractiveViewComponent
     },
     // then left
     {
-      offsetX: 5,
+      offsetX: -5,
       originX: 'start',
       overlayX: 'end',
       originY: 'top',
@@ -419,7 +419,9 @@ export class LineChartInteractiveViewComponent
             event,
             this.viewExtent,
             this.domDim,
-            SCROLL_ZOOM_SPEED_FACTOR
+            SCROLL_ZOOM_SPEED_FACTOR,
+            this.xScale,
+            this.yScale
           ),
         });
 

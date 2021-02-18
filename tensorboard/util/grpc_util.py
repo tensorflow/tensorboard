@@ -15,6 +15,7 @@
 """Utilities for working with python gRPC stubs."""
 
 
+import enum
 import random
 import time
 
@@ -130,3 +131,42 @@ def extract_version(metadata):
       is listed.
     """
     return dict(metadata).get(_VERSION_METADATA_KEY)
+
+
+@enum.unique
+class ChannelCredsType(enum.Enum):
+    LOCAL = "local"
+    SSL = "ssl"
+    SSL_DEV = "ssl_dev"
+
+    def channel_config(self):
+        """Create channel credentials and options.
+
+        Returns:
+          A tuple `(channel_creds, channel_options)`, where `channel_creds`
+          is a `grpc.ChannelCredentials` and `channel_options` is a
+          (potentially empty) list of `(key, value)` tuples. Both results
+          may be passed to `grpc.secure_channel`.
+        """
+
+        options = []
+        if self == ChannelCredsType.LOCAL:
+            creds = grpc.local_channel_credentials()
+        elif self == ChannelCredsType.SSL:
+            creds = grpc.ssl_channel_credentials()
+        elif self == ChannelCredsType.SSL_DEV:
+            # Configure the dev cert to use by passing the environment variable
+            # GRPC_DEFAULT_SSL_ROOTS_FILE_PATH=path/to/cert.crt
+            creds = grpc.ssl_channel_credentials()
+            options.append(("grpc.ssl_target_name_override", "localhost"))
+        else:
+            raise AssertionError("unhandled ChannelCredsType: %r" % self)
+        return (creds, options)
+
+    @classmethod
+    def choices(cls):
+        return cls.__members__.values()
+
+    def __str__(self):
+        # Use user-facing string, because this is shown for flag choices.
+        return self.value

@@ -25,13 +25,18 @@ import {
   isSampledPlugin,
   isSingleRunPlugin,
 } from '../metrics/data_source/types';
-import {CardUniqueInfo} from '../metrics/types';
+import {CardUniqueInfo, METRICS_SETTINGS_DEFAULT} from '../metrics/types';
 import * as selectors from '../selectors';
+import {getMetricsScalarSmoothing} from '../selectors';
 import {
   EXPERIMENTAL_PLUGIN_QUERY_PARAM_KEY,
   GPU_LINE_CHART_QUERY_PARAM_KEY,
 } from '../webapp_data_source/tb_feature_flag_data_source_types';
-import {DeserializedState} from './core_deeplink_provider_types';
+import {
+  DeserializedState,
+  PINNED_CARDS_KEY,
+  SMOOTHING_KEY,
+} from './core_deeplink_provider_types';
 
 /**
  * Provides deeplinking for the core dashboards page.
@@ -78,16 +83,16 @@ export class CoreDeepLinkProvider extends DeepLinkProvider {
   ): Observable<SerializableQueryParams> {
     return combineLatest([
       store.select(selectors.getEnabledExperimentalPlugins),
-      store.select(selectors.getIsGpuChartEnabled),
+      store.select(selectors.getOverriddenFeatureFlags),
     ]).pipe(
-      map(([experimentalPlugins, isGpuChartEnabled]) => {
+      map(([experimentalPlugins, overriddenFeatureFlags]) => {
         const queryParams = experimentalPlugins.map((pluginId) => {
           return {key: EXPERIMENTAL_PLUGIN_QUERY_PARAM_KEY, value: pluginId};
         });
-        if (isGpuChartEnabled) {
+        if (overriddenFeatureFlags.enableGpuChart !== undefined) {
           queryParams.push({
             key: GPU_LINE_CHART_QUERY_PARAM_KEY,
-            value: 'true',
+            value: String(overriddenFeatureFlags.enableGpuChart),
           });
         }
         return queryParams;
@@ -101,6 +106,12 @@ export class CoreDeepLinkProvider extends DeepLinkProvider {
     return combineLatest([
       this.getMetricsPinnedCards(store),
       this.getFeatureFlagStates(store),
+      store.select(getMetricsScalarSmoothing).pipe(
+        map((smoothing) => {
+          if (smoothing === METRICS_SETTINGS_DEFAULT.scalarSmoothing) return [];
+          return [{key: SMOOTHING_KEY, value: String(smoothing)}];
+        })
+      ),
     ]).pipe(
       map((queryParamList) => {
         return queryParamList.flat();
@@ -112,15 +123,22 @@ export class CoreDeepLinkProvider extends DeepLinkProvider {
     queryParams: SerializableQueryParams
   ): DeserializedState {
     let pinnedCards = null;
+    let smoothing = null;
     for (const {key, value} of queryParams) {
-      if (key === 'pinnedCards') {
-        pinnedCards = extractPinnedCardsFromURLText(value);
-        break;
+      switch (key) {
+        case PINNED_CARDS_KEY:
+          pinnedCards = extractPinnedCardsFromURLText(value);
+          break;
+        case SMOOTHING_KEY:
+          smoothing = Number(value);
+          break;
       }
     }
+
     return {
       metrics: {
         pinnedCards: pinnedCards || [],
+        smoothing,
       },
     };
   }

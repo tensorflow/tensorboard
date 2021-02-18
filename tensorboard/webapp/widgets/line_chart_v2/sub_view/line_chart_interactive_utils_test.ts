@@ -13,10 +13,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+import {createScale, ScaleType} from '../lib/scale';
 import {
   findClosestIndex,
   getProposedViewExtentOnZoom,
 } from './line_chart_interactive_utils';
+
+const linearScale = createScale(ScaleType.LINEAR);
+const logScale = createScale(ScaleType.LOG10);
 
 describe('line_chart_v2/sub_view/interactive_utils test', () => {
   describe('#findClosestIndex', () => {
@@ -114,7 +118,9 @@ describe('line_chart_v2/sub_view/interactive_utils test', () => {
         buildWheelEvent({deltaX: 10, deltaY: 0}),
         {x: [0, 100], y: [-100, 100]},
         {width: 1000, height: 500},
-        1
+        1,
+        linearScale,
+        linearScale
       );
       expect(actualExtent).toEqual({x: [0, 100], y: [-100, 100]});
     });
@@ -128,7 +134,9 @@ describe('line_chart_v2/sub_view/interactive_utils test', () => {
         ),
         {x: [0, 100], y: [-100, 100]},
         {width: 1000, height: 500},
-        1
+        1,
+        linearScale,
+        linearScale
       );
       expect(actualExtent.x[0]).toBeLessThan(0);
       expect(actualExtent.x[1]).toBeGreaterThan(100);
@@ -144,7 +152,9 @@ describe('line_chart_v2/sub_view/interactive_utils test', () => {
         ),
         {x: [0, 100], y: [-100, 100]},
         {width: 1000, height: 500},
-        1
+        1,
+        linearScale,
+        linearScale
       );
       expect(actualExtent.x[0]).toBeGreaterThan(0);
       expect(actualExtent.x[1]).toBeLessThan(100);
@@ -162,7 +172,9 @@ describe('line_chart_v2/sub_view/interactive_utils test', () => {
         ),
         {x: [0, 100], y: [-100, 100]},
         {width: 1000, height: 500},
-        1e100
+        1e100,
+        linearScale,
+        linearScale
       );
       expect(actualExtent.x[0]).toBeGreaterThan(0);
       expect(actualExtent.x[1]).toBeLessThan(100);
@@ -180,7 +192,9 @@ describe('line_chart_v2/sub_view/interactive_utils test', () => {
         ),
         {x: [0, 100], y: [-100, 100]},
         {width: 1000, height: 500},
-        1
+        1,
+        linearScale,
+        linearScale
       );
       expect(actualExtent.x[0]).toBeGreaterThan(0);
       expect(actualExtent.x[1]).toBeLessThan(100);
@@ -199,7 +213,9 @@ describe('line_chart_v2/sub_view/interactive_utils test', () => {
         ),
         {x: [0, 100], y: [-100, 100]},
         {width: 1000, height: 500},
-        1
+        1,
+        linearScale,
+        linearScale
       );
       expect(actualExtent.x[0]).toBeGreaterThan(0);
       expect(actualExtent.x[1]).toBe(100);
@@ -208,6 +224,28 @@ describe('line_chart_v2/sub_view/interactive_utils test', () => {
       // top of the chart, our y-max should not change.
       expect(actualExtent.y[0]).toBeGreaterThan(-100);
       expect(actualExtent.y[1]).toBe(100);
+    });
+
+    it('accounts for scale when zooming in', () => {
+      const actualExtent = getProposedViewExtentOnZoom(
+        buildWheelEvent(
+          {deltaMode: WheelEvent.DOM_DELTA_LINE, deltaY: -1},
+          {offsetX: 500, offsetY: 75}
+        ),
+        {x: [1, 1000], y: [0.01, 100]},
+        {width: 1000, height: 100},
+        0.01,
+        logScale,
+        logScale
+      );
+      // We zoomed right in the middle in X axis where extent is 1, 1000. Actual extent
+      // should be zoomed in "equidistantly" in log10 scale.
+      // log_10(1.318) = 0.1199, exp_10(log_10(1000) - 0.1199) ~ 758.75.
+      expect(actualExtent.x[0]).toBeCloseTo(1.318, 1);
+      expect(actualExtent.x[1]).toBeCloseTo(758.577, 1);
+
+      expect(actualExtent.y[0]).toBeCloseTo(0.012, 2);
+      expect(actualExtent.y[1]).toBeCloseTo(57.5, 0);
     });
   });
 });

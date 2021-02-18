@@ -17,12 +17,18 @@ limitations under the License.
 
 #![allow(clippy::needless_update)] // https://github.com/rust-lang/rust-clippy/issues/6323
 
+/// Package version. Keep in sync with `Cargo.toml`. We don't use `env!("CARGO_PKG_VERSION")`
+/// because of <https://github.com/bazelbuild/rules_rust/issues/573>.
+pub(crate) const VERSION: &str = "0.4.0-alpha.0";
+
 pub mod blob_key;
 pub mod cli;
 pub mod commit;
 pub mod data_compat;
+pub mod disk_logdir;
 pub mod downsample;
 pub mod event_file;
+pub mod gcs;
 pub mod logdir;
 pub mod masked_crc;
 pub mod reservoir;

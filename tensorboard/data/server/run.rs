@@ -15,46 +15,44 @@ limitations under the License.
 
 //! Loader for a single run, with one or more event files.
 
-use log::warn;
+use log::{debug, warn};
 use std::collections::{BTreeMap, HashMap, HashSet};
-use std::fs::File;
-use std::io::BufReader;
-use std::path::PathBuf;
+use std::io::Read;
 use std::sync::RwLock;
+use std::time::{Duration, Instant};
 
 use crate::commit;
 use crate::data_compat::{EventValue, GraphDefValue, SummaryValue, TaggedRunMetadataValue};
 use crate::event_file::EventFileReader;
+use crate::logdir::{EventFileBuf, Logdir};
 use crate::proto::tensorboard as pb;
 use crate::reservoir::StageReservoir;
-use crate::types::{Step, Tag, WallTime};
+use crate::types::{Run, Step, Tag, WallTime};
 
 /// A loader to accumulate reservoir-sampled events in a single TensorBoard run.
 ///
-/// For now, a run loader always reads from [`File`]s on disk. In the future, this may be
-/// parameterized over a filesystem interface.
+/// The type `R` represents the types of files read from disk, as in the
+/// [`Logdir::File`][crate::logdir::Logdir::File] associated type.
 #[derive(Debug)]
-pub struct RunLoader {
-    /// The earliest event `wall_time` seen in any event file in this run.
-    ///
-    /// This is `None` if and only if no events have been seen. Its value may decrease as new
-    /// events are read, but in practice this is expected to be the wall time of the first
-    /// `file_version` event in the first event file.
-    start_time: Option<WallTime>,
-
+pub struct RunLoader<R> {
+    /// The run name associated with this loader. Used primarily for logging; the run name is
+    /// canonically defined by the map key under which this `RunLoader` is stored in `LogdirLoader`.
+    run: Run,
     /// The event files in this run.
     ///
     /// Event files are sorted and read lexicographically by name, which is designed to coincide
     /// with actual start time. See [`EventFile::Dead`] for conditions under which an event file
     /// may be dead. Once an event file is added to this map, it may become dead, but it will not
     /// be removed entirely. This way, we know not to just re-open it again at the next load cycle.
-    files: BTreeMap<PathBuf, EventFile<BufReader<File>>>,
-
-    /// Reservoir-sampled data and metadata for each time series.
-    time_series: HashMap<Tag, StageTimeSeries>,
+    files: BTreeMap<EventFileBuf, EventFile<R>>,
 
     /// Whether to compute CRCs for records before parsing as protos.
     checksum: bool,
+
+    /// The data staged by this `RunLoader`. This is encapsulated in a sub-struct so that these
+    /// fields can be reborrowed within `reload_files` in a context that already has an exclusive
+    /// reference into `self.files`, and hence can't call methods on the whole of `&mut self`.
+    data: RunLoaderData,
 }
 
 #[derive(Debug)]
@@ -67,6 +65,20 @@ enum EventFile<R> {
     /// the last-read record being very old (note: not yet implemented), or due to the file being
     /// deleted.
     Dead,
+}
+
+/// Holds data staged by a `RunLoader` that will be committed to the `Commit`.
+#[derive(Debug, Default)]
+struct RunLoaderData {
+    /// The earliest event `wall_time` seen in any event file in this run.
+    ///
+    /// This is `None` if and only if no events have been seen. Its value may decrease as new
+    /// events are read, but in practice this is expected to be the wall time of the first
+    /// `file_version` event in the first event file.
+    start_time: Option<WallTime>,
+
+    /// Reservoir-sampled data and metadata for each time series.
+    time_series: HashMap<Tag, StageTimeSeries>,
 }
 
 #[derive(Debug)]
@@ -145,13 +157,16 @@ impl StageTimeSeries {
     }
 }
 
-impl RunLoader {
-    pub fn new() -> Self {
+/// Minimum time to wait between committing while a run is still loading.
+const COMMIT_INTERVAL: Duration = Duration::from_secs(5);
+
+impl<R: Read> RunLoader<R> {
+    pub fn new(run: Run) -> Self {
         Self {
-            start_time: None,
+            run,
             files: BTreeMap::new(),
-            time_series: HashMap::new(),
             checksum: true,
+            data: RunLoaderData::default(),
         }
     }
 
@@ -170,19 +185,48 @@ impl RunLoader {
     /// # Panics
     ///
     /// If we need to access `run_data` but the lock is poisoned.
-    pub fn reload(&mut self, filenames: Vec<PathBuf>, run_data: &RwLock<commit::RunData>) {
-        self.update_file_set(filenames);
-        self.reload_files();
-        self.commit_all(run_data);
+    pub fn reload(
+        &mut self,
+        logdir: &impl Logdir<File = R>,
+        filenames: Vec<EventFileBuf>,
+        run_data: &RwLock<commit::RunData>,
+    ) {
+        let run_name = self.run.0.clone();
+        debug!("Starting load for run {:?}", run_name);
+        let start = Instant::now();
+        self.update_file_set(logdir, filenames);
+        let mut n = 0;
+        let mut last_commit_time = Instant::now();
+        self.reload_files(|run_loader_data, event| {
+            run_loader_data.read_event(event);
+            n += 1;
+            // Reduce overhead of checking elapsed time by only doing it every 100 events.
+            if n % 100 == 0 && last_commit_time.elapsed() >= COMMIT_INTERVAL {
+                debug!(
+                    "Loaded {} events for run {:?} after {:?}",
+                    n,
+                    run_name,
+                    start.elapsed()
+                );
+                run_loader_data.commit_all(run_data);
+                last_commit_time = Instant::now();
+            }
+        });
+        self.data.commit_all(run_data);
+        debug!(
+            "Finished load for run {:?} ({:?})",
+            run_name,
+            start.elapsed()
+        );
     }
 
     /// Updates the active key set of `self.files` to match the given filenames.
     ///
     /// After this function returns, `self.files` may still have keys not in `filenames`, but they
     /// will all map to [`EventFile::Dead`].
-    fn update_file_set(&mut self, filenames: Vec<PathBuf>) {
+    fn update_file_set(&mut self, logdir: &impl Logdir<File = R>, filenames: Vec<EventFileBuf>) {
         // Remove any discarded files.
-        let new_file_set: HashSet<&PathBuf> = filenames.iter().collect();
+        let new_file_set: HashSet<&EventFileBuf> = filenames.iter().collect();
         for (k, v) in self.files.iter_mut() {
             if !new_file_set.contains(k) {
                 *v = EventFile::Dead;
@@ -195,9 +239,9 @@ impl RunLoader {
             match self.files.entry(filename) {
                 Entry::Occupied(_) => {}
                 Entry::Vacant(v) => {
-                    let event_file = match File::open(v.key()) {
+                    let event_file = match logdir.open(v.key()) {
                         Ok(file) => {
-                            let mut reader = EventFileReader::new(BufReader::new(file));
+                            let mut reader = EventFileReader::new(file);
                             reader.checksum(self.checksum);
                             EventFile::Active(reader)
                         }
@@ -213,8 +257,8 @@ impl RunLoader {
         }
     }
 
-    /// Reads data from all active event files.
-    fn reload_files(&mut self) {
+    /// Reads data from all active event files, and calls a handler for each event.
+    fn reload_files<F: FnMut(&mut RunLoaderData, pb::Event)>(&mut self, mut handle_event: F) {
         for (filename, ef) in self.files.iter_mut() {
             let reader = match ef {
                 EventFile::Dead => continue,
@@ -229,16 +273,19 @@ impl RunLoader {
                     Err(ReadRecordError(Truncated)) => break,
                     Err(e) => {
                         // TODO(@wchargin): Improve error handling?
-                        warn!("Read error in {}: {:?}", filename.display(), e);
+                        warn!("Read error in {}: {:?}", filename.0.display(), e);
                         *ef = EventFile::Dead;
                         break;
                     }
                 };
-                read_event(&mut self.time_series, &mut self.start_time, event);
+                handle_event(&mut self.data, event);
             }
         }
     }
+}
 
+impl RunLoaderData {
+    /// Commits all staged data into the given run of the commit.
     fn commit_all(&mut self, run_data: &RwLock<commit::RunData>) {
         let mut run = run_data.write().expect("acquiring tags lock");
         run.start_time = self.start_time;
@@ -246,103 +293,92 @@ impl RunLoader {
             ts.commit(tag, &mut *run);
         }
     }
-}
 
-/// Reads a single event into the structures of a run loader.
-///
-/// This is a standalone function because it's called from `reload_files` in a context that already
-/// has an exclusive reference into `self.files`, and so can't call methods on `&mut self`.
-fn read_event(
-    time_series: &mut HashMap<Tag, StageTimeSeries>,
-    start_time: &mut Option<WallTime>,
-    e: pb::Event,
-) {
-    let step = Step(e.step);
-    let wall_time = match WallTime::new(e.wall_time) {
-        None => {
-            // TODO(@wchargin): Improve error handling.
-            warn!(
-                "Dropping event at step {} with invalid wall time {}",
-                e.step, e.wall_time
-            );
-            return;
+    /// Reads a single event and stages it for future committing.
+    fn read_event(&mut self, e: pb::Event) {
+        let step = Step(e.step);
+        let wall_time = match WallTime::new(e.wall_time) {
+            None => {
+                // TODO(@wchargin): Improve error handling.
+                warn!(
+                    "Dropping event at step {} with invalid wall time {}",
+                    e.step, e.wall_time
+                );
+                return;
+            }
+            Some(wt) => wt,
+        };
+        if self.start_time.map_or(true, |start| wall_time < start) {
+            self.start_time = Some(wall_time);
         }
-        Some(wt) => wt,
-    };
-    if start_time.map(|start| wall_time < start).unwrap_or(true) {
-        *start_time = Some(wall_time);
-    }
-    match e.what {
-        Some(pb::event::What::GraphDef(graph_bytes)) => {
-            let sv = StageValue {
-                wall_time,
-                payload: EventValue::GraphDef(GraphDefValue(graph_bytes)),
-            };
-            use std::collections::hash_map::Entry;
-            let ts = match time_series.entry(Tag(GraphDefValue::TAG_NAME.to_string())) {
-                Entry::Occupied(o) => o.into_mut(),
-                Entry::Vacant(v) => {
-                    v.insert(StageTimeSeries::new(GraphDefValue::initial_metadata()))
-                }
-            };
-            ts.rsv.offer(step, sv);
-        }
-        Some(pb::event::What::TaggedRunMetadata(trm_proto)) => {
-            let sv = StageValue {
-                wall_time,
-                payload: EventValue::GraphDef(GraphDefValue(trm_proto.run_metadata)),
-            };
-            use std::collections::hash_map::Entry;
-            let ts = match time_series.entry(Tag(trm_proto.tag)) {
-                Entry::Occupied(o) => o.into_mut(),
-                Entry::Vacant(v) => {
-                    let metadata = TaggedRunMetadataValue::initial_metadata();
-                    v.insert(StageTimeSeries::new(metadata))
-                }
-            };
-            ts.rsv.offer(step, sv);
-        }
-        Some(pb::event::What::Summary(sum)) => {
-            for mut summary_pb_value in sum.value {
-                let summary_value = match summary_pb_value.value {
-                    None => continue,
-                    Some(v) => SummaryValue(Box::new(v)),
-                };
-
-                use std::collections::hash_map::Entry;
-                let ts = match time_series.entry(Tag(summary_pb_value.tag)) {
-                    Entry::Occupied(o) => o.into_mut(),
-                    Entry::Vacant(v) => {
-                        let metadata =
-                            summary_value.initial_metadata(summary_pb_value.metadata.take());
-                        v.insert(StageTimeSeries::new(metadata))
-                    }
-                };
+        match e.what {
+            Some(pb::event::What::GraphDef(graph_bytes)) => {
                 let sv = StageValue {
                     wall_time,
-                    payload: EventValue::Summary(summary_value),
+                    payload: EventValue::GraphDef(GraphDefValue(graph_bytes)),
                 };
+                let ts = self
+                    .time_series
+                    .entry(Tag(GraphDefValue::TAG_NAME.to_string()))
+                    .or_insert_with(|| {
+                        let metadata = GraphDefValue::initial_metadata();
+                        StageTimeSeries::new(metadata)
+                    });
                 ts.rsv.offer(step, sv);
             }
+            Some(pb::event::What::TaggedRunMetadata(trm_proto)) => {
+                let sv = StageValue {
+                    wall_time,
+                    payload: EventValue::TaggedRunMetadata(TaggedRunMetadataValue(
+                        trm_proto.run_metadata,
+                    )),
+                };
+                let ts = self
+                    .time_series
+                    .entry(Tag(trm_proto.tag))
+                    .or_insert_with(|| {
+                        let metadata = TaggedRunMetadataValue::initial_metadata();
+                        StageTimeSeries::new(metadata)
+                    });
+                ts.rsv.offer(step, sv);
+            }
+            Some(pb::event::What::Summary(sum)) => {
+                for mut summary_pb_value in sum.value {
+                    let summary_value = match summary_pb_value.value {
+                        None => continue,
+                        Some(v) => SummaryValue(Box::new(v)),
+                    };
+                    use std::collections::hash_map::Entry;
+                    let ts = match self.time_series.entry(Tag(summary_pb_value.tag)) {
+                        Entry::Occupied(o) => o.into_mut(),
+                        Entry::Vacant(v) => {
+                            let metadata =
+                                summary_value.initial_metadata(summary_pb_value.metadata.take());
+                            v.insert(StageTimeSeries::new(metadata))
+                        }
+                    };
+                    let sv = StageValue {
+                        wall_time,
+                        payload: EventValue::Summary(summary_value),
+                    };
+                    ts.rsv.offer(step, sv);
+                }
+            }
+            _ => {}
         }
-        _ => {}
-    }
-}
-
-impl Default for RunLoader {
-    fn default() -> Self {
-        Self::new()
     }
 }
 
 #[cfg(test)]
 mod test {
     use super::*;
+    use bytes::Bytes;
     use std::fs::File;
     use std::io::BufWriter;
 
     use crate::commit::Commit;
     use crate::data_compat::plugin_names;
+    use crate::disk_logdir::DiskLogdir;
     use crate::types::Run;
     use crate::writer::SummaryWriteExt;
 
@@ -370,13 +406,13 @@ mod test {
         f1.write_graph(
             Step(0),
             WallTime::new(1235.0).unwrap(),
-            b"<sample model graph>".to_vec(),
+            Bytes::from_static(b"<sample model graph>"),
         )?;
         f1.write_tagged_run_metadata(
             &Tag("step0000".to_string()),
             Step(0),
             WallTime::new(1235.0).unwrap(),
-            b"<sample run metadata>".to_vec(),
+            Bytes::from_static(b"<sample run metadata>"),
         )?;
         f1.write_scalar(&tag, Step(0), WallTime::new(1235.0).unwrap(), 0.25)?;
         f1.write_scalar(&tag, Step(1), WallTime::new(1236.0).unwrap(), 0.50)?;
@@ -390,18 +426,23 @@ mod test {
         f1.into_inner()?.sync_all()?;
         f2.into_inner()?.sync_all()?;
 
-        let mut loader = RunLoader::new();
+        let mut loader = RunLoader::new(run.clone());
+        let logdir = DiskLogdir::new(logdir.path().to_path_buf());
         let commit = Commit::new();
         commit
             .runs
             .write()
             .expect("write-locking runs map")
             .insert(run.clone(), Default::default());
-        loader.reload(vec![f1_name, f2_name], &commit.runs.read().unwrap()[&run]);
+        loader.reload(
+            &logdir,
+            vec![EventFileBuf(f1_name), EventFileBuf(f2_name)],
+            &commit.runs.read().unwrap()[&run],
+        );
 
         // Start time should be that of the file version event, even though that didn't correspond
         // to any time series.
-        assert_eq!(loader.start_time, Some(WallTime::new(1234.0).unwrap()));
+        assert_eq!(loader.data.start_time, Some(WallTime::new(1234.0).unwrap()));
 
         let runs = commit.runs.read().expect("read-locking runs map");
         let run_data: &commit::RunData = &*runs
@@ -456,7 +497,7 @@ mod test {
             vec![(
                 Step(0),
                 WallTime::new(1235.0).unwrap(),
-                &commit::BlobSequenceValue(vec![b"<sample model graph>".to_vec()])
+                &commit::BlobSequenceValue(vec![Bytes::from_static(b"<sample model graph>")])
             )]
         );
 
@@ -478,7 +519,7 @@ mod test {
             vec![(
                 Step(0),
                 WallTime::new(1235.0).unwrap(),
-                &commit::BlobSequenceValue(vec![b"<sample run metadata>".to_vec()])
+                &commit::BlobSequenceValue(vec![Bytes::from_static(b"<sample run metadata>")])
             )]
         );
 

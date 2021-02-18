@@ -15,6 +15,7 @@ limitations under the License.
 
 import {createSelector, createFeatureSelector} from '@ngrx/store';
 
+import {FeatureFlags} from '../types';
 import {
   FeatureFlagState,
   FEATURE_FLAG_FEATURE_KEY,
@@ -36,25 +37,36 @@ export const getIsFeatureFlagsLoaded = createSelector(
 
 export const getFeatureFlags = createSelector(
   selectFeatureFlagState,
-  (state) => {
-    return state.features;
+  (state: FeatureFlagState): FeatureFlags => {
+    return {
+      ...state.defaultFlags,
+      ...state.flagOverrides,
+    };
+  }
+);
+
+export const getOverriddenFeatureFlags = createSelector(
+  selectFeatureFlagState,
+  (state: FeatureFlagState): Partial<FeatureFlags> => {
+    // Temporarily assume state.flagOverrides can be undefined for sync purposes.
+    return state.flagOverrides || {};
   }
 );
 
 export const getEnabledExperimentalPlugins = createSelector(
-  selectFeatureFlagState,
-  (state) => {
-    return state.features.enabledExperimentalPlugins;
+  getFeatureFlags,
+  (flags) => {
+    return flags.enabledExperimentalPlugins;
   }
 );
 
-export const getIsInColab = createSelector(selectFeatureFlagState, (state) => {
-  return state.features.inColab;
+export const getIsInColab = createSelector(getFeatureFlags, (flags) => {
+  return flags.inColab;
 });
 
 export const getIsGpuChartEnabled = createSelector(
-  selectFeatureFlagState,
-  (state: FeatureFlagState): boolean => {
-    return state.features.enableGpuChart;
+  getFeatureFlags,
+  (flags): boolean => {
+    return flags.enableGpuChart;
   }
 );

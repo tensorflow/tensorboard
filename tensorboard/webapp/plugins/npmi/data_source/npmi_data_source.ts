@@ -124,7 +124,7 @@ export class NpmiHttpServerDataSource implements NpmiDataSource {
         for (const run of Object.keys(annotations)) {
           for (const annotationIndex in annotations[run]) {
             const annotation = annotations[run][annotationIndex];
-            if (embeddings[run][annotationIndex]) {
+            if (embeddings[run] && embeddings[run][annotationIndex]) {
               embeddingData[annotation] = embeddings[run][annotationIndex];
             }
             const metricToDataElements = new Map<string, ValueData>();

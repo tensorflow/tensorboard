@@ -39,4 +39,9 @@ message AudioPluginData {
   int32 version = 1;
 
   Encoding encoding = 2;
+
+  // Indicates whether this time series data was originally represented
+  // as `Summary.Value.Audio` values and has been automatically
+  // converted to bytestring tensors.
+  bool converted_to_tensor = 3;
 }

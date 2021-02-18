@@ -17,6 +17,7 @@ import {OverlayModule} from '@angular/cdk/overlay';
 import {CommonModule} from '@angular/common';
 import {Component, Input, NO_ERRORS_SCHEMA, ViewChild} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
+import {By} from '@angular/platform-browser';
 
 import {ChartImpl} from './lib/chart';
 import {
@@ -28,6 +29,18 @@ import {
 } from './lib/public_types';
 import {buildMetadata, buildSeries} from './lib/testing';
 import {LineChartComponent} from './line_chart_component';
+
+@Component({
+  selector: 'line-chart-grid-view',
+  template: ``,
+})
+class FakeGridComponent {
+  @Input()
+  viewExtent!: Extent;
+
+  @Input()
+  domDim!: {width: number; height: number};
+}
 
 @Component({
   selector: 'testable-comp',
@@ -90,7 +103,7 @@ describe('line_chart_v2/line_chart test', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [TestableComponent, LineChartComponent],
+      declarations: [TestableComponent, LineChartComponent, FakeGridComponent],
       imports: [CommonModule, OverlayModule],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
@@ -235,6 +248,91 @@ describe('line_chart_v2/line_chart test', () => {
     expect(resizeSpy).toHaveBeenCalledTimes(1);
     expect(updateMetadataSpy).toHaveBeenCalledTimes(1);
     expect(updateDataSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('resets viewBox to default when scaleType changes', () => {
+    const fixture = createComponent({
+      seriesData: [
+        buildSeries({
+          id: 'foo',
+          points: [
+            {x: 0, y: 0},
+            {x: 1, y: -1},
+            {x: 2, y: 1},
+          ],
+        }),
+      ],
+      seriesMetadataMap: {foo: buildMetadata({id: 'foo', visible: true})},
+      yScaleType: ScaleType.LINEAR,
+    });
+    fixture.detectChanges();
+    expect(updateViewBoxSpy).toHaveBeenCalledTimes(1);
+    expect(updateViewBoxSpy.calls.argsFor(0)).toEqual([
+      {x: [-0.2, 2.2], y: [-1.2, 1.2]},
+    ]);
+
+    fixture.componentInstance.triggerViewBoxChange({
+      x: [-5, 5],
+      y: [0, 10],
+    });
+    expect(updateViewBoxSpy).toHaveBeenCalledTimes(2);
+
+    fixture.componentInstance.yScaleType = ScaleType.TIME;
+    fixture.detectChanges();
+
+    expect(updateViewBoxSpy).toHaveBeenCalledTimes(3);
+    expect(updateViewBoxSpy.calls.argsFor(2)).toEqual([
+      {x: [-0.2, 2.2], y: [-1, 1]},
+    ]);
+
+    // and viewBox updates when the data changes to fit the data.
+    fixture.componentInstance.seriesData = [
+      buildSeries({
+        id: 'foo',
+        points: [
+          {x: 0, y: 0},
+          {x: 1, y: -2},
+          {x: 2, y: 1},
+          {x: 3, y: 0},
+          {x: 4, y: 2},
+        ],
+      }),
+    ];
+    fixture.detectChanges();
+    expect(updateViewBoxSpy).toHaveBeenCalledTimes(4);
+    expect(updateViewBoxSpy.calls.argsFor(3)).toEqual([
+      {x: [-0.5, 4.5], y: [-2, 2]},
+    ]);
+  });
+
+  it('sets correct domDim and viewBox on initial render', () => {
+    const fixture = createComponent({
+      seriesData: [
+        buildSeries({
+          id: 'foo',
+          points: [
+            {x: 0, y: 0},
+            {x: 1, y: -1},
+            {x: 2, y: 1},
+          ],
+        }),
+      ],
+      seriesMetadataMap: {foo: buildMetadata({id: 'foo', visible: true})},
+      yScaleType: ScaleType.LINEAR,
+    });
+    fixture.detectChanges();
+
+    const grid = fixture.debugElement.query(By.directive(FakeGridComponent));
+    // In testable-comp, we hard coded dimension of 200x150. Since we use about
+    // 50px and 30px for y-axis and x-axis, respectively, we have 150x70 here.
+    expect(grid.componentInstance.domDim).toEqual({
+      width: 150,
+      height: 70,
+    });
+    expect(grid.componentInstance.viewExtent).toEqual({
+      x: [-0.2, 2.2],
+      y: [-1.2, 1.2],
+    });
   });
 
   describe('data change', () => {

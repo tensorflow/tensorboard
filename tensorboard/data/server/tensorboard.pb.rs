@@ -133,6 +133,8 @@ pub enum SpecializedType {
     StInvalid = 0,
     /// "tensorflow::TensorList" in the variant type registry.
     StTensorList = 1,
+    /// "tensorflow::data::Optional" in the variant type registry.
+    StOptional = 2,
 }
 /// Protocol buffer representing a handle to a tensorflow resource. Handles are
 /// not valid across executions, but can be serialized back and forth from within
@@ -195,8 +197,8 @@ pub struct TensorProto {
     /// can be used for all tensor types. The purpose of this representation is to
     /// reduce serialization overhead during RPC call by avoiding serialization of
     /// many repeated small items.
-    #[prost(bytes="vec", tag="4")]
-    pub tensor_content: ::prost::alloc::vec::Vec<u8>,
+    #[prost(bytes="bytes", tag="4")]
+    pub tensor_content: ::prost::bytes::Bytes,
     // Type specific representations that make it easy to create tensor protos in
     // all languages.  Only the representation corresponding to "dtype" can
     // be set.  The values hold the flattened representation of the tensor in
@@ -216,8 +218,8 @@ pub struct TensorProto {
     #[prost(int32, repeated, tag="7")]
     pub int_val: ::prost::alloc::vec::Vec<i32>,
     /// DT_STRING
-    #[prost(bytes="vec", repeated, tag="8")]
-    pub string_val: ::prost::alloc::vec::Vec<::prost::alloc::vec::Vec<u8>>,
+    #[prost(bytes="bytes", repeated, tag="8")]
+    pub string_val: ::prost::alloc::vec::Vec<::prost::bytes::Bytes>,
     /// DT_COMPLEX64. scomplex_val(2*i) and scomplex_val(2*i+1) are real
     /// and imaginary parts of i-th single precision complex.
     #[prost(float, repeated, tag="9")]
@@ -252,8 +254,8 @@ pub struct VariantTensorDataProto {
     #[prost(string, tag="1")]
     pub type_name: ::prost::alloc::string::String,
     /// Portions of the object that are not Tensors.
-    #[prost(bytes="vec", tag="2")]
-    pub metadata: ::prost::alloc::vec::Vec<u8>,
+    #[prost(bytes="bytes", tag="2")]
+    pub metadata: ::prost::bytes::Bytes,
     /// Tensors contained within objects being serialized.
     #[prost(message, repeated, tag="3")]
     pub tensors: ::prost::alloc::vec::Vec<TensorProto>,
@@ -319,8 +321,8 @@ pub mod summary_metadata {
         pub plugin_name: ::prost::alloc::string::String,
         /// The content to store for the plugin. The best practice is for this to be
         /// a binary serialized protocol buffer.
-        #[prost(bytes="vec", tag="2")]
-        pub content: ::prost::alloc::vec::Vec<u8>,
+        #[prost(bytes="bytes", tag="2")]
+        pub content: ::prost::bytes::Bytes,
     }
 }
 /// A Summary is a set of named values to be displayed by the
@@ -355,8 +357,8 @@ pub mod summary {
         pub colorspace: i32,
         /// Image data in encoded format.  All image formats supported by
         /// image_codec::CoderUtil can be stored here.
-        #[prost(bytes="vec", tag="4")]
-        pub encoded_image_string: ::prost::alloc::vec::Vec<u8>,
+        #[prost(bytes="bytes", tag="4")]
+        pub encoded_image_string: ::prost::bytes::Bytes,
     }
     #[derive(Clone, PartialEq, ::prost::Message)]
     pub struct Audio {
@@ -371,8 +373,8 @@ pub mod summary {
         pub length_frames: i64,
         /// Encoded audio data and its associated RFC 2045 content type (e.g.
         /// "audio/wav").
-        #[prost(bytes="vec", tag="4")]
-        pub encoded_audio_string: ::prost::alloc::vec::Vec<u8>,
+        #[prost(bytes="bytes", tag="4")]
+        pub encoded_audio_string: ::prost::bytes::Bytes,
         #[prost(string, tag="5")]
         pub content_type: ::prost::alloc::string::String,
     }
@@ -405,7 +407,7 @@ pub mod summary {
             #[prost(float, tag="2")]
             SimpleValue(f32),
             #[prost(bytes, tag="3")]
-            ObsoleteOldStyleHistogram(::prost::alloc::vec::Vec<u8>),
+            ObsoleteOldStyleHistogram(::prost::bytes::Bytes),
             #[prost(message, tag="4")]
             Image(super::Image),
             #[prost(message, tag="5")]
@@ -424,8 +426,7 @@ pub enum DataClass {
     /// processed by data ingestion pipelines.
     Unknown = 0,
     /// Scalar time series. Each `Value` for the corresponding tag must have
-    /// `tensor` set to a rank-0 tensor of floating-point dtype, which will be
-    /// converted to float64.
+    /// `tensor` set to a rank-0 tensor of type `DT_FLOAT` (float32).
     Scalar = 1,
     /// Tensor time series. Each `Value` for the corresponding tag must have
     /// `tensor` set. The tensor value is arbitrary, but should be small to
@@ -461,7 +462,7 @@ pub mod event {
         FileVersion(::prost::alloc::string::String),
         /// An encoded version of a GraphDef.
         #[prost(bytes, tag="4")]
-        GraphDef(::prost::alloc::vec::Vec<u8>),
+        GraphDef(::prost::bytes::Bytes),
         /// A summary was generated.
         #[prost(message, tag="5")]
         Summary(super::Summary),
@@ -477,7 +478,7 @@ pub mod event {
         TaggedRunMetadata(super::TaggedRunMetadata),
         /// An encoded version of a MetaGraphDef.
         #[prost(bytes, tag="9")]
-        MetaGraphDef(::prost::alloc::vec::Vec<u8>),
+        MetaGraphDef(::prost::bytes::Bytes),
     }
 }
 /// Protocol buffer used for logging messages to the events file.
@@ -535,8 +536,8 @@ pub struct TaggedRunMetadata {
     pub tag: ::prost::alloc::string::String,
     /// Byte-encoded version of the `RunMetadata` proto in order to allow lazy
     /// deserialization.
-    #[prost(bytes="vec", tag="2")]
-    pub run_metadata: ::prost::alloc::vec::Vec<u8>,
+    #[prost(bytes="bytes", tag="2")]
+    pub run_metadata: ::prost::bytes::Bytes,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct WatchdogConfig {
@@ -589,4 +590,53 @@ pub enum WorkerShutdownMode {
     NotConfigured = 1,
     WaitForCoordinator = 2,
     ShutdownAfterTimeout = 3,
+}
+/// Audio summaries created by the `tensorboard.plugins.audio.summary`
+/// module will include `SummaryMetadata` whose `plugin_data` field has
+/// as `content` a binary string that is the encoding of an
+/// `AudioPluginData` proto.
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct AudioPluginData {
+    /// Version `0` is the only supported version. It has the following
+    /// semantics:
+    ///
+    ///   - If the tensor shape is rank-2, then `t[:, 0]` represent encoded
+    ///     audio data, and `t[:, 1]` represent corresponding UTF-8 encoded
+    ///     Markdown labels.
+    ///   - If the tensor shape is rank-1, then `t[:]` represent encoded
+    ///     audio data. There are no labels.
+    #[prost(int32, tag="1")]
+    pub version: i32,
+    #[prost(enumeration="audio_plugin_data::Encoding", tag="2")]
+    pub encoding: i32,
+    /// Indicates whether this time series data was originally represented
+    /// as `Summary.Value.Audio` values and has been automatically
+    /// converted to bytestring tensors.
+    #[prost(bool, tag="3")]
+    pub converted_to_tensor: bool,
+}
+/// Nested message and enum types in `AudioPluginData`.
+pub mod audio_plugin_data {
+    #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
+    #[repr(i32)]
+    pub enum Encoding {
+        /// Do not use `UNKNOWN`; it is only present because it must be.
+        Unknown = 0,
+        Wav = 11,
+    }
+}
+/// Image summaries created by the `tensorboard.plugins.image.summary`
+/// module will include `SummaryMetadata` whose `plugin_data` field has
+/// as `content` a binary string that is the encoding of an
+/// `ImagePluginData` proto.
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct ImagePluginData {
+    /// Version `0` is the only supported version.
+    #[prost(int32, tag="1")]
+    pub version: i32,
+    /// Indicates whether this time series data was originally represented
+    /// as `Summary.Value.Image` values and has been automatically
+    /// converted to bytestring tensors.
+    #[prost(bool, tag="2")]
+    pub converted_to_tensor: bool,
 }

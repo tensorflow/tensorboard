@@ -15,6 +15,7 @@
 """TensorBoard core plugin package."""
 
 
+import argparse
 import functools
 import gzip
 import io
@@ -28,6 +29,7 @@ from werkzeug import wrappers
 from tensorboard import plugin_util
 from tensorboard.backend import http_util
 from tensorboard.plugins import base_plugin
+from tensorboard.util import grpc_util
 from tensorboard.util import tb_logging
 
 logger = tb_logging.get_logger()
@@ -340,10 +342,36 @@ unavailable. (default: "default").\
         )
 
         parser.add_argument(
+            "--reuse_port",
+            metavar="BOOL",
+            # Custom str-to-bool converter since regular bool() doesn't work.
+            type=lambda v: {"true": True, "false": False}.get(v.lower(), v),
+            choices=[True, False],
+            default=False,
+            help="""\
+Enables the SO_REUSEPORT option on the socket opened by TensorBoard's HTTP
+server, for platforms that support it. This is useful in cases when a parent
+process has obtained the port already and wants to delegate access to the
+port to TensorBoard as a subprocess.(default: %(default)s).\
+""",
+        )
+
+        parser.add_argument(
             "--load_fast",
             action="store_true",
             help="""\
 Experimental. Use a data server to accelerate loading.
+""",
+        )
+
+        parser.add_argument(
+            "--grpc_creds_type",
+            type=grpc_util.ChannelCredsType,
+            default=grpc_util.ChannelCredsType.LOCAL,
+            choices=grpc_util.ChannelCredsType.choices(),
+            help="""\
+Experimental. The type of credentials to use to connect to the data server.
+(default: %(default)s)
 """,
         )
 
@@ -478,12 +506,11 @@ relevant for db read-only mode. Each thread reloads one run at a time.
         parser.add_argument(
             "--reload_interval",
             metavar="SECONDS",
-            type=float,
+            type=_nonnegative_float,
             default=5.0,
             help="""\
 How often the backend should load more data, in seconds. Set to 0 to
-load just once at startup and a negative number to never reload at all.
-Not relevant for DB read-only mode. (default: %(default)s)\
+load just once at startup. Must be non-negative. (default: %(default)s)\
 """,
         )
 
@@ -632,3 +659,13 @@ def _parse_samples_per_plugin(value):
             k, v = token.strip().split("=")
             result[k] = int(v)
     return result
+
+
+def _nonnegative_float(v):
+    try:
+        v = float(v)
+    except ValueError:
+        raise argparse.ArgumentTypeError("invalid float: %r" % v)
+    if not (v >= 0):  # no NaNs, please
+        raise argparse.ArgumentTypeError("must be non-negative: %r" % v)
+    return v

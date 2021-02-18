@@ -19,6 +19,7 @@ import * as d3 from 'd3';
 import * as _ from 'lodash';
 
 import '../../../components/polymer/irons_and_papers';
+import * as tb_debug from '../../../components/tb_debug';
 import './tf-graph-scene';
 import * as tf_graph from '../tf_graph_common/graph';
 import * as tf_graph_scene from '../tf_graph_common/scene';
@@ -305,7 +306,8 @@ class TfGraph extends LegacyElementMixin(PolymerElement) {
         });
 
         return renderGraph;
-      }
+      },
+      tb_debug.GraphDebugEventId.RENDER_BUILD_HIERARCHY
     );
 
     anyThis._setRenderHierarchy(renderGraph);
@@ -414,6 +416,10 @@ class TfGraph extends LegacyElementMixin(PolymerElement) {
     this.async(function () {
       this.$.scene.setNodeExpanded(renderNode);
     }, 75);
+    tf_graph_util.notifyDebugEvent({
+      actionId: tb_debug.GraphDebugEventId.NODE_EXPANSION_TOGGLED,
+      eventLabel: renderNode.expanded ? 'expanded' : 'collapsed',
+    });
   }
   _nodeToggleExtract(event) {
     // Toggle the include setting of the specified node appropriately.
@@ -433,6 +439,14 @@ class TfGraph extends LegacyElementMixin(PolymerElement) {
     }
     // Rebuild the render hierarchy.
     this._buildRenderHierarchy(this.graphHierarchy);
+
+    tf_graph_util.notifyDebugEvent({
+      actionId: tb_debug.GraphDebugEventId.NODE_AUXILIARY_EXTRACTION_CHANGED,
+      eventLabel:
+        renderNode.node.include === tf_graph.InclusionType.INCLUDE
+          ? 'Auxiliary to Main'
+          : 'Main to Auxiliary',
+    });
   }
   _nodeToggleSeriesGroup(event) {
     // Toggle the group setting of the specified node appropriately.

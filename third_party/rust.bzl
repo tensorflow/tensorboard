@@ -16,12 +16,10 @@
 TensorBoard external Rust dependencies (both infrastructure and frontend libs)
 """
 
-load("@io_bazel_rules_rust//rust:repositories.bzl", "rust_repositories")
-load("@io_bazel_rules_rust//:workspace.bzl", "rust_workspace")
+load("@rules_rust//rust:repositories.bzl", "rust_repositories")
 load("//third_party/rust:crates.bzl", "raze_fetch_remote_crates")
 
 def tensorboard_rust_workspace():
     """TensorBoard Rust dependencies."""
-    rust_repositories(version = "1.48.0")
-    rust_workspace()
+    rust_repositories(version = "1.50.0")
     raze_fetch_remote_crates()

@@ -88,8 +88,24 @@ class MigrateValueTest(tf.test.TestCase):
             display_name="k488/audio/0",
             description="",
             encoding=audio_metadata.Encoding.Value("WAV"),
+            converted_to_tensor=True,
+        )
+
+        # Check serialized submessages...
+        plugin_content = audio_metadata.parse_plugin_metadata(
+            new_value.metadata.plugin_data.content
+        )
+        expected_content = audio_metadata.parse_plugin_metadata(
+            expected_metadata.plugin_data.content
+        )
+        self.assertEqual(plugin_content, expected_content)
+        # ...then check full metadata except plugin content, since
+        # serialized forms need not be identical.
+        new_value.metadata.plugin_data.content = (
+            expected_metadata.plugin_data.content
         )
         self.assertEqual(expected_metadata, new_value.metadata)
+
         self.assertTrue(new_value.HasField("tensor"))
         data = tensor_util.make_ndarray(new_value.tensor)
         self.assertEqual((1, 2), data.shape)
@@ -141,9 +157,26 @@ class MigrateValueTest(tf.test.TestCase):
 
         self.assertEqual("mona_lisa/image/0", new_value.tag)
         expected_metadata = image_metadata.create_summary_metadata(
-            display_name="mona_lisa/image/0", description=""
+            display_name="mona_lisa/image/0",
+            description="",
+            converted_to_tensor=True,
+        )
+
+        # Check serialized submessages...
+        plugin_content = image_metadata.parse_plugin_metadata(
+            new_value.metadata.plugin_data.content
+        )
+        expected_content = image_metadata.parse_plugin_metadata(
+            expected_metadata.plugin_data.content
+        )
+        self.assertEqual(plugin_content, expected_content)
+        # ...then check full metadata except plugin content, since
+        # serialized forms need not be identical.
+        new_value.metadata.plugin_data.content = (
+            expected_metadata.plugin_data.content
         )
         self.assertEqual(expected_metadata, new_value.metadata)
+
         self.assertTrue(new_value.HasField("tensor"))
         (width, height, data) = tensor_util.make_ndarray(new_value.tensor)
         self.assertEqual(b"200", width)

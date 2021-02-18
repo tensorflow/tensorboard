@@ -85,10 +85,12 @@ export class ChartImpl implements Chart {
 
   setXScaleType(type: ScaleType) {
     this.coordinator.setXScale(createScale(type));
+    this.scheduleRepaint();
   }
 
   setYScaleType(type: ScaleType) {
     this.coordinator.setYScale(createScale(type));
+    this.scheduleRepaint();
   }
 
   resize(dim: Dimension) {

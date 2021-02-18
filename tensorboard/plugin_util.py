@@ -65,7 +65,10 @@ _ALLOWED_TAGS = [
 class _MarkdownStore(threading.local):
     def __init__(self):
         self.markdown = markdown.Markdown(
-            extensions=["markdown.extensions.tables"]
+            extensions=[
+                "markdown.extensions.tables",
+                "markdown.extensions.fenced_code",
+            ]
         )
 
 

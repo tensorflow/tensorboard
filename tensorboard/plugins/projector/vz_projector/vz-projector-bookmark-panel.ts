@@ -137,7 +137,7 @@ class BookmarkPanel extends LegacyElementMixin(PolymerElement) {
       const fileReader = new FileReader();
       fileReader.onload = (evt) => {
         const str: string = fileReader.result as string;
-        const savedStates = JSON.parse(str);
+        const savedStates = JSON.parse(str) as State[];
         // Verify the bookmarks match.
         if (this.savedStatesValid(savedStates)) {
           this.addStates(savedStates);
@@ -238,7 +238,7 @@ class BookmarkPanel extends LegacyElementMixin(PolymerElement) {
    * viewable states.
    */
   loadSavedStates(serializedStates: string) {
-    this.savedStates = JSON.parse(serializedStates);
+    this.savedStates = JSON.parse(serializedStates) as State[];
     this.updateHasStates();
   }
   /**

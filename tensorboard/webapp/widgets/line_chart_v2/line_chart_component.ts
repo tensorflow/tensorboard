@@ -140,7 +140,7 @@ export class LineChartComponent implements AfterViewInit, OnChanges, OnDestroy {
   private isDataUpdated = false;
   private isMetadataUpdated = false;
   private isFixedViewBoxUpdated = false;
-  private isViewBoxOverriden = false;
+  private isViewBoxOverridden = false;
   // Must set the default view box since it is an optional input and won't trigger
   // onChanges.
   private isViewBoxChanged = true;
@@ -174,9 +174,14 @@ export class LineChartComponent implements AfterViewInit, OnChanges, OnDestroy {
       this.isMetadataUpdated = true;
     }
 
+    if (this.scaleUpdated) {
+      this.isViewBoxOverridden = false;
+    }
+
     this.isViewBoxChanged =
       this.isViewBoxChanged ||
-      (!this.isViewBoxOverriden && this.shouldUpdateDefaultViewBox(changes));
+      this.scaleUpdated ||
+      (!this.isViewBoxOverridden && this.shouldUpdateDefaultViewBox(changes));
 
     this.updateLineChart();
   }
@@ -184,6 +189,10 @@ export class LineChartComponent implements AfterViewInit, OnChanges, OnDestroy {
   ngAfterViewInit() {
     this.initializeChart();
     this.updateLineChart();
+
+    // After view is initialized, if we ever change the Angular prop that should propagate
+    // to children, we need to retrigger the Angular change.
+    this.changeDetector.detectChanges();
   }
 
   onViewResize() {
@@ -336,7 +345,7 @@ export class LineChartComponent implements AfterViewInit, OnChanges, OnDestroy {
 
     if (this.isFixedViewBoxUpdated && this.fixedViewBox) {
       this.viewBox = this.fixedViewBox;
-    } else if (!this.isViewBoxOverriden && this.isViewBoxChanged) {
+    } else if (!this.isViewBoxOverridden && this.isViewBoxChanged) {
       const dataExtent = computeDataSeriesExtent(
         this.seriesData,
         this.seriesMetadataMap,
@@ -362,14 +371,14 @@ export class LineChartComponent implements AfterViewInit, OnChanges, OnDestroy {
   }
 
   onViewBoxChanged({dataExtent}: {dataExtent: Extent}) {
-    this.isViewBoxOverriden = true;
+    this.isViewBoxOverridden = true;
     this.isViewBoxChanged = true;
     this.viewBox = dataExtent;
     this.updateLineChart();
   }
 
-  onViewBoxReset() {
-    this.isViewBoxOverriden = false;
+  viewBoxReset() {
+    this.isViewBoxOverridden = false;
     this.isViewBoxChanged = true;
     this.updateLineChart();
   }

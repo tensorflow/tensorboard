@@ -35,10 +35,10 @@ describe('feature_flag_reducers', () => {
       );
     });
 
-    it('sets the new feature flags onto the state', () => {
+    it('does not overwrite default flags', () => {
       const prevState = buildFeatureFlagState({
         isFeatureFlagsLoaded: false,
-        features: buildFeatureFlag({
+        defaultFlags: buildFeatureFlag({
           enabledExperimentalPlugins: ['foo'],
         }),
       });
@@ -51,17 +51,40 @@ describe('feature_flag_reducers', () => {
         })
       );
 
-      expect(nextState.features).toEqual(
+      expect(nextState.defaultFlags).toEqual(
+        buildFeatureFlag({
+          enabledExperimentalPlugins: ['foo'],
+        })
+      );
+    });
+
+    it('sets the new feature flags onto the state.flagOverrides', () => {
+      const prevState = buildFeatureFlagState({
+        isFeatureFlagsLoaded: false,
+        flagOverrides: buildFeatureFlag({
+          enabledExperimentalPlugins: ['foo'],
+        }),
+      });
+      const nextState = reducers(
+        prevState,
+        actions.partialFeatureFlagsLoaded({
+          features: {
+            enabledExperimentalPlugins: ['foo', 'bar'],
+          },
+        })
+      );
+
+      expect(nextState.flagOverrides).toEqual(
         buildFeatureFlag({
           enabledExperimentalPlugins: ['foo', 'bar'],
         })
       );
     });
 
-    it('ignores unspecified feature flags', () => {
+    it('ignores unspecified feature flag overrides', () => {
       const prevState = buildFeatureFlagState({
         isFeatureFlagsLoaded: false,
-        features: buildFeatureFlag({
+        flagOverrides: buildFeatureFlag({
           enabledExperimentalPlugins: ['foo'],
           inColab: true,
         }),
@@ -75,7 +98,7 @@ describe('feature_flag_reducers', () => {
         })
       );
 
-      expect(nextState.features).toEqual(
+      expect(nextState.flagOverrides).toEqual(
         buildFeatureFlag({
           enabledExperimentalPlugins: ['foo'],
           inColab: false,

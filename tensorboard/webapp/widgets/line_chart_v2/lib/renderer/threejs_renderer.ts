@@ -22,6 +22,7 @@ import {
   CirclePaintOption,
   LinePaintOption,
   ObjectRenderer,
+  TrapezoidPaintOption,
   TrianglePaintOption,
 } from './renderer_types';
 
@@ -38,12 +39,14 @@ enum CacheType {
   CIRCLE,
   LINE,
   TRIANGLE,
+  TRAPEZOID,
 }
 
 interface LineCacheValue {
   type: CacheType.LINE;
-  obj3d: THREE.Line;
+  obj3d: THREE.Mesh;
   data: Polyline;
+  width: number;
 }
 
 interface TriangleCacheValue {
@@ -58,12 +61,23 @@ interface CircleCacheValue {
   data: {loc: Point; radius: number};
 }
 
-type CacheValue = LineCacheValue | TriangleCacheValue | CircleCacheValue;
+interface TrapezoidCacheValue {
+  type: CacheType.TRAPEZOID;
+  obj3d: THREE.Mesh;
+  data: [Point, Point];
+}
+
+type CacheValue =
+  | LineCacheValue
+  | TriangleCacheValue
+  | CircleCacheValue
+  | TrapezoidCacheValue;
 
 /**
- * Updates BufferGeometry with Float32Array that denotes flattened array of Vec2 (<x, y>).
+ * Updates BufferGeometry with Float32Array that denotes flattened array of Vec2
+ * (<x, y>) representing points that form a connected set of line segments.
  */
-function updateGeometryWithVec2Array(
+function updatePolylineGeometry(
   geometry: THREE.BufferGeometry,
   flatVec2: Float32Array
 ) {
@@ -93,13 +107,117 @@ function updateGeometryWithVec2Array(
 }
 
 /**
+ * Updates BufferGeometry with Float32Array that denotes flattened array of Vec2
+ * (<x, y>) representing points that form a connected set of line segments.
+ * Unlike the simpler `updatePolylineGeometry`, this variant constructs more
+ * vertices to support line thickness.
+ *
+ * This custom logic handles line thickness, since the 'linewidth' property of
+ * THREE.LineBasicMaterial is ignored [1]. Each line segment is a rectangle
+ * that is split into 2 triangles [A->B->C] and [C->B->D]. Each triangle has
+ * 3 coordinates (x, y, z).
+ *
+ * Assuming a line segment is as follows (thickness = distance from A to B):
+ *              A             C
+ *              |             |
+ * (startPoint) |-------------| (endPoint)
+ *              |             |
+ *              B             D
+ *
+ * The renderer will draw 2 triangles:
+ *
+ *    ^   A----C
+ *    |   |   /|
+ * dy |   | /  |
+ *    |   |/   |
+ *    v   B----D
+ *
+ *        <---->
+ *          dx
+ *
+ * [1] https://github.com/mrdoob/three.js/issues/14627
+ */
+function updateThickPolylineGeometry(
+  geometry: THREE.BufferGeometry,
+  flatVec2: Float32Array,
+  thickness: number
+) {
+  const numSegments = Math.max(flatVec2.length / 2 - 1, 0);
+  const numVertices = numSegments * 2 * 3;
+  const numCoordinates = numVertices * 3;
+  let positionAttributes = geometry.attributes[
+    'position'
+  ] as THREE.BufferAttribute;
+  if (!positionAttributes || positionAttributes.count !== numVertices) {
+    positionAttributes = new THREE.BufferAttribute(
+      new Float32Array(numCoordinates),
+      3
+    );
+    geometry.addAttribute('position', positionAttributes);
+  }
+
+  const values = positionAttributes.array as Float32Array;
+  for (let i = 0; i < numSegments; i++) {
+    const [x1, y1, x2, y2] = [
+      flatVec2[2 * i],
+      flatVec2[2 * i + 1],
+      flatVec2[2 * i + 2],
+      flatVec2[2 * i + 3],
+    ];
+    const startPointVec = new THREE.Vector2(x1, y1);
+    const endPointVec = new THREE.Vector2(x2, y2);
+    const segmentVec = new THREE.Vector2(x2 - x1, y2 - y1);
+    // Take the normal that is 90 degrees counterclockwise of the segment.
+    const normalVec = new THREE.Vector2(-segmentVec.y, segmentVec.x).setLength(
+      thickness / 2
+    );
+    const A = startPointVec.clone().add(normalVec);
+    const B = startPointVec.clone().sub(normalVec);
+    const C = endPointVec.clone().add(normalVec);
+    const D = endPointVec.clone().sub(normalVec);
+
+    // Keep each face's vertices in counterclockwise order, to ensure normals
+    // point outwards from the screen.
+    const components = [
+      // A->B->C triangle.
+      A.x,
+      A.y,
+      0,
+      B.x,
+      B.y,
+      0,
+      C.x,
+      C.y,
+      0,
+      // C->B->D triangle.
+      C.x,
+      C.y,
+      0,
+      B.x,
+      B.y,
+      0,
+      D.x,
+      D.y,
+      0,
+    ];
+    values.set(components, i * components.length);
+  }
+
+  positionAttributes.needsUpdate = true;
+  geometry.setDrawRange(0, numCoordinates);
+  // Need to update the bounding sphere so renderer does not skip rendering
+  // this object because it is outside of the camera viewpoint (frustum).
+  geometry.computeBoundingSphere();
+}
+
+/**
  * Updates an THREE.Object3D like object with geometry and material. Returns true if
  * geometry is updated (i.e., updateGeometry callback is invoked) and returns false
  * otherwise. It is possible that we minimally update the material without updating the
  * geometry.
  */
 function updateObject(
-  object: THREE.Mesh | THREE.Line,
+  object: THREE.Mesh,
   updateGeometry: (geometry: THREE.BufferGeometry) => THREE.BufferGeometry,
   materialOption: {visible: boolean; color: string; opacity?: number}
 ): boolean {
@@ -165,7 +283,7 @@ export class ThreeRenderer implements ObjectRenderer<CacheValue> {
     const obj3d = cacheValue.obj3d;
     this.scene.remove(obj3d);
 
-    if (obj3d instanceof THREE.Mesh || obj3d instanceof THREE.Line) {
+    if (obj3d instanceof THREE.Mesh) {
       obj3d.geometry.dispose();
       const materials = Array.isArray(obj3d.material)
         ? obj3d.material
@@ -192,23 +310,24 @@ export class ThreeRenderer implements ObjectRenderer<CacheValue> {
         paintOpt.opacity ?? 1
       );
       const geometry = new THREE.BufferGeometry();
-      const material = new THREE.LineBasicMaterial({
-        color: newColor,
-        linewidth: width,
-      });
-      const line = new THREE.Line(geometry, material);
+      const material = new THREE.LineBasicMaterial({color: newColor});
+      const line = new THREE.Mesh(geometry, material);
       material.visible = visible;
-      updateGeometryWithVec2Array(geometry, polyline);
+      updateThickPolylineGeometry(geometry, polyline, width);
       this.scene.add(line);
-      return {type: CacheType.LINE, data: polyline, obj3d: line};
+      return {type: CacheType.LINE, data: polyline, obj3d: line, width};
     }
 
-    const {data: prevPolyline, obj3d: line} = cachedLine;
+    const {data: prevPolyline, obj3d: line, width: prevWidth} = cachedLine;
     const geomUpdated = updateObject(
       line,
       (geometry) => {
-        if (!prevPolyline || !arePolylinesEqual(prevPolyline, polyline)) {
-          updateGeometryWithVec2Array(geometry, polyline);
+        if (
+          width !== prevWidth ||
+          !prevPolyline ||
+          !arePolylinesEqual(prevPolyline, polyline)
+        ) {
+          updateThickPolylineGeometry(geometry, polyline, width);
         }
         return geometry;
       },
@@ -216,16 +335,11 @@ export class ThreeRenderer implements ObjectRenderer<CacheValue> {
     );
     if (!geomUpdated) return cachedLine;
 
-    const material = line.material as THREE.LineBasicMaterial;
-    if (material.linewidth !== width) {
-      material.linewidth = width;
-      material.needsUpdate = true;
-    }
-
     return {
       type: CacheType.LINE,
       data: polyline,
       obj3d: line,
+      width,
     };
   }
 
@@ -259,7 +373,7 @@ export class ThreeRenderer implements ObjectRenderer<CacheValue> {
 
     if (!cached) {
       const geom = new THREE.BufferGeometry();
-      updateGeometryWithVec2Array(geom, vertices);
+      updatePolylineGeometry(geom, vertices);
       const mesh = this.createMesh(geom, paintOpt);
       if (mesh === null) return null;
       this.scene.add(mesh);
@@ -270,7 +384,7 @@ export class ThreeRenderer implements ObjectRenderer<CacheValue> {
       cached.obj3d,
       (geom) => {
         // Updating a geometry with three vertices is cheap enough. Update always.
-        updateGeometryWithVec2Array(geom, vertices);
+        updatePolylineGeometry(geom, vertices);
         return geom;
       },
       paintOpt
@@ -302,6 +416,40 @@ export class ThreeRenderer implements ObjectRenderer<CacheValue> {
     if (!geomUpdated) return cached;
     cached.obj3d.position.set(loc.x, loc.y, 0);
     return {type: CacheType.CIRCLE, data: {loc, radius}, obj3d: cached.obj3d};
+  }
+
+  createOrUpdateTrapezoidObject(
+    cached: TrapezoidCacheValue | null,
+    start: Point,
+    end: Point,
+    paintOpt: TrapezoidPaintOption
+  ): TrapezoidCacheValue | null {
+    if (start.y !== end.y) {
+      throw new RangeError('Input error: start.y != end.y.');
+    }
+
+    const {altitude} = paintOpt;
+    const width = (2 / Math.sqrt(3)) * altitude;
+    const shape = new THREE.Shape([
+      new THREE.Vector2(start.x - width / 2, start.y - altitude / 2),
+      new THREE.Vector2(start.x, start.y + altitude / 2),
+      new THREE.Vector2(end.x, end.y + altitude / 2),
+      new THREE.Vector2(end.x + width / 2, end.y - altitude / 2),
+    ]);
+    shape.autoClose = true;
+    const geom = new THREE.ShapeBufferGeometry(shape);
+
+    if (!cached) {
+      const mesh = this.createMesh(geom, paintOpt);
+      if (mesh === null) return null;
+      this.scene.add(mesh);
+      return {type: CacheType.TRAPEZOID, data: [start, end], obj3d: mesh};
+    }
+
+    const geomUpdated = updateObject(cached.obj3d, () => geom, paintOpt);
+    return geomUpdated
+      ? {type: CacheType.TRAPEZOID, data: [start, end], obj3d: cached.obj3d}
+      : cached;
   }
 
   flush() {

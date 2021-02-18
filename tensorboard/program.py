@@ -32,7 +32,6 @@ import argparse
 import atexit
 from collections import defaultdict
 import errno
-import inspect
 import logging
 import mimetypes
 import os
@@ -45,7 +44,6 @@ import urllib.parse
 
 from absl import flags as absl_flags
 from absl.flags import argparse_flags
-import absl.logging
 from werkzeug import serving
 
 from tensorboard import manager
@@ -64,40 +62,6 @@ logger = tb_logging.get_logger()
 _SERVE_SUBCOMMAND_NAME = "serve"
 # Internal flag name used to store which subcommand was invoked.
 _SUBCOMMAND_FLAG = "__tensorboard_subcommand"
-
-
-def setup_environment():
-    """Makes recommended modifications to the environment.
-
-    This functions changes global state in the Python process. Calling
-    this function is a good idea, but it can't appropriately be called
-    from library routines.
-    """
-    absl.logging.set_verbosity(absl.logging.WARNING)
-
-    # The default is HTTP/1.0 for some strange reason. If we don't use
-    # HTTP/1.1 then a new TCP socket and Python thread is created for
-    # each HTTP request. The tradeoff is we must always specify the
-    # Content-Length header, or do chunked encoding for streaming.
-    serving.WSGIRequestHandler.protocol_version = "HTTP/1.1"
-
-
-def get_default_assets_zip_provider():
-    """Opens stock TensorBoard web assets collection.
-
-    Returns:
-      Returns function that returns a newly opened file handle to zip file
-      containing static assets for stock TensorBoard, or None if webfiles.zip
-      could not be found. The value the callback returns must be closed. The
-      paths inside the zip file are considered absolute paths on the web server.
-    """
-    path = os.path.join(
-        os.path.dirname(inspect.getfile(sys._getframe(1))), "webfiles.zip"
-    )
-    if not os.path.exists(path):
-        logger.warning("webfiles.zip static assets not found: %s", path)
-        return None
-    return lambda: open(path, "rb")
 
 
 class TensorBoard(object):
@@ -124,7 +88,10 @@ class TensorBoard(object):
           plugins: A list of TensorBoard plugins to load, as TBPlugin classes or
             TBLoader instances or classes. If not specified, defaults to first-party
             plugins.
-          assets_zip_provider: Delegates to TBContext or uses default if None.
+          assets_zip_provider: A function that provides a zip file containing
+            assets to the application. If `None`, the default TensorBoard web
+            assets will be used. (If building from source, your binary must
+            explicitly depend on `//tensorboard:assets_lib` if you pass `None`.)
           server_class: An optional factory for a `TensorBoardServer` to use
             for serving the TensorBoard WSGI app. If provided, its callable
             signature should match that of `TensorBoardServer.__init__`.
@@ -140,7 +107,17 @@ class TensorBoard(object):
 
             plugins = default.get_plugins()
         if assets_zip_provider is None:
-            assets_zip_provider = get_default_assets_zip_provider()
+            try:
+                from tensorboard import assets
+            except ImportError as e:
+                # `tensorboard.assets` is not a strict Bazel dep; clients are
+                # required to either depend on `//tensorboard:assets_lib` or
+                # pass a valid assets provider.
+                raise ImportError(
+                    "No `assets_zip_provider` given, but `tensorboard.assets` "
+                    "could not be imported to resolve defaults"
+                ) from e
+            assets_zip_provider = assets.get_default_assets_zip_provider()
         if server_class is None:
             server_class = create_port_scanning_werkzeug_server
         if subcommands is None:
@@ -404,11 +381,14 @@ class TensorBoard(object):
         flags = self.flags
         if flags.grpc_data_provider:
             ingester = server_ingester.ExistingServerDataIngester(
-                flags.grpc_data_provider
+                flags.grpc_data_provider,
+                channel_creds_type=flags.grpc_creds_type,
             )
         elif flags.load_fast:
             ingester = server_ingester.SubprocessServerDataIngester(
-                flags.logdir
+                logdir=flags.logdir,
+                reload_interval=flags.reload_interval,
+                channel_creds_type=flags.grpc_creds_type,
             )
         else:
             ingester = local_ingester.LocalDataIngester(flags)
@@ -599,6 +579,17 @@ def with_port_scanning(cls):
     return init
 
 
+class _WSGIRequestHandler(serving.WSGIRequestHandler):
+    """Custom subclass of Werkzeug request handler to use HTTP/1.1."""
+
+    # The default on the http.server is HTTP/1.0 for legacy reasons:
+    # https://docs.python.org/3/library/http.server.html#http.server.BaseHTTPRequestHandler.protocol_version
+    # Override here to use HTTP/1.1 to avoid needing a new TCP socket and Python
+    # thread for each HTTP request. The tradeoff is we must always specify the
+    # Content-Length header, or do chunked encoding for streaming.
+    protocol_version = "HTTP/1.1"
+
+
 class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
     """Implementation of TensorBoardServer using the Werkzeug dev server."""
 
@@ -623,7 +614,9 @@ class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
 
         self._fix_werkzeug_logging()
         try:
-            super(WerkzeugServer, self).__init__(host, port, wsgi_app)
+            super(WerkzeugServer, self).__init__(
+                host, port, wsgi_app, _WSGIRequestHandler
+            )
         except socket.error as e:
             if hasattr(errno, "EACCES") and e.errno == errno.EACCES:
                 raise TensorBoardServerException(
@@ -703,13 +696,21 @@ class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
         return fallback_address
 
     def server_bind(self):
-        """Override to enable IPV4 mapping for IPV6 sockets when desired.
+        """Override to set custom options on the socket."""
+        if self._flags.reuse_port:
+            try:
+                socket.SO_REUSEPORT
+            except AttributeError:
+                raise TensorBoardServerException(
+                    "TensorBoard --reuse_port option is not supported on this platform"
+                )
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
 
-        The main use case for this is so that when no host is specified,
-        TensorBoard can listen on all interfaces for both IPv4 and IPv6
-        connections, rather than having to choose v4 or v6 and hope the
-        browser didn't choose the other one.
-        """
+        # Enable IPV4 mapping for IPV6 sockets when desired.
+        # The main use case for this is so that when no host is specified,
+        # TensorBoard can listen on all interfaces for both IPv4 and IPv6
+        # connections, rather than having to choose v4 or v6 and hope the
+        # browser didn't choose the other one.
         socket_is_v6 = (
             hasattr(socket, "AF_INET6")
             and self.socket.family == socket.AF_INET6

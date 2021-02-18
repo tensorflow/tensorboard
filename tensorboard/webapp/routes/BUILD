@@ -65,6 +65,7 @@ tf_ts_library(
         "//tensorboard/webapp/app_routing:deep_link_provider",
         "//tensorboard/webapp/app_routing:types",
         "//tensorboard/webapp/metrics:test_lib",
+        "//tensorboard/webapp/metrics:types",
         "//tensorboard/webapp/metrics/data_source:types",
         "@npm//@angular/core",
         "@npm//@ngrx/store",

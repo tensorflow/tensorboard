@@ -110,6 +110,7 @@ py_test(
         ":server_ingester",
         "//tensorboard:expect_grpc_installed",
         "//tensorboard:test",
+        "//tensorboard/util:grpc_util",
     ],
 )
 

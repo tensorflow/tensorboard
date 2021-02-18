@@ -20,6 +20,7 @@ use log::info;
 use std::path::PathBuf;
 use std::time::Instant;
 
+use rustboard_core::cli::dynamic_logdir::DynLogdir;
 use rustboard_core::commit::Commit;
 use rustboard_core::logdir::LogdirLoader;
 
@@ -29,6 +30,8 @@ struct Opts {
     logdir: PathBuf,
     #[clap(long, default_value = "info")]
     log_level: String,
+    #[clap(long)]
+    reload_threads: Option<usize>,
     // Pair of `--no-checksum` and `--checksum` flags, defaulting to "no checksum".
     #[clap(long, multiple_occurrences = true, overrides_with = "checksum")]
     #[allow(unused)]
@@ -42,7 +45,8 @@ fn main() {
     init_logging(&opts);
 
     let commit = Commit::new();
-    let mut loader = LogdirLoader::new(&commit, opts.logdir);
+    let logdir = DynLogdir::new(opts.logdir).expect("DynLogdir::new");
+    let mut loader = LogdirLoader::new(&commit, logdir, opts.reload_threads.unwrap_or(0));
     loader.checksum(opts.checksum); // if neither `--[no-]checksum` given, defaults to false
 
     info!("Starting load cycle");

@@ -17,13 +17,8 @@
 from tensorboard import auth as auth_lib
 
 
-class _TensorBoardRequestContextKey:
-    pass
-
-
-# A `RequestContext` value is stored on WSGI environments under this key
-# (an arbitrary sentinel object).
-_WSGI_KEY = _TensorBoardRequestContextKey()
+# A `RequestContext` value is stored on WSGI environments under this key.
+_WSGI_KEY = "tensorboard.request_context"
 
 
 class RequestContext(object):

@@ -35,8 +35,11 @@ use crate::server::DataProviderHandler;
 
 use data::tensor_board_data_provider_server::TensorBoardDataProviderServer;
 
+pub mod dynamic_logdir;
+use dynamic_logdir::DynLogdir;
+
 #[derive(Clap, Debug)]
-#[clap(name = "rustboard", version = "0.2.0-alpha.0")]
+#[clap(name = "rustboard", version = crate::VERSION)]
 struct Opts {
     /// Log directory to load
     ///
@@ -58,12 +61,12 @@ struct Opts {
     #[clap(long, default_value = "6806")]
     port: u16,
 
-    /// Delay between reload cycles (seconds)
+    /// Seconds to sleep between reloads, or "once"
     ///
     /// Number of seconds to wait between finishing one load cycle and starting the next one. This
-    /// does not include the time for the reload itself.
-    #[clap(long, default_value = "5")]
-    reload_interval: Seconds,
+    /// does not include the time for the reload itself. If "once", data will be loaded only once.
+    #[clap(long, default_value = "5", value_name = "secs")]
+    reload: ReloadStrategy,
 
     /// Use verbose output (-vv for very verbose output)
     #[clap(long = "verbose", short, parse(from_occurrences))]
@@ -113,18 +116,21 @@ struct Opts {
     no_checksum: bool,
 }
 
-/// A duration in seconds.
-#[derive(Debug, Copy, Clone)]
-struct Seconds(u64);
-impl FromStr for Seconds {
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+enum ReloadStrategy {
+    Loop { delay: Duration },
+    Once,
+}
+impl FromStr for ReloadStrategy {
     type Err = <u64 as FromStr>::Err;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        s.parse().map(Seconds)
-    }
-}
-impl Seconds {
-    fn duration(self) -> Duration {
-        Duration::from_secs(self.0)
+        if s == "once" {
+            Ok(ReloadStrategy::Once)
+        } else {
+            Ok(ReloadStrategy::Loop {
+                delay: Duration::from_secs(s.parse()?),
+            })
+        }
     }
 }
 
@@ -172,18 +178,27 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
     thread::Builder::new()
         .name("Reloader".to_string())
         .spawn({
-            let logdir = opts.logdir;
-            let reload_interval = opts.reload_interval;
-            let mut loader = LogdirLoader::new(commit, logdir);
-            // Checksum only if `--checksum` given (i.e., off by default).
-            loader.checksum(opts.checksum);
-            move || loop {
-                info!("Starting load cycle");
-                let start = Instant::now();
-                loader.reload();
-                let end = Instant::now();
-                info!("Finished load cycle ({:?})", end - start);
-                thread::sleep(reload_interval.duration());
+            let reload_strategy = opts.reload;
+            let raw_logdir = opts.logdir;
+            let checksum = opts.checksum;
+            move || {
+                // Create the logdir in the child thread, where no async runtime is active (see
+                // docs for `DynLogdir::new`).
+                let logdir = DynLogdir::new(raw_logdir).unwrap_or_else(|| std::process::exit(1));
+                let mut loader = LogdirLoader::new(commit, logdir, 0);
+                // Checksum only if `--checksum` given (i.e., off by default).
+                loader.checksum(checksum);
+                loop {
+                    info!("Starting load cycle");
+                    let start = Instant::now();
+                    loader.reload();
+                    let end = Instant::now();
+                    info!("Finished load cycle ({:?})", end - start);
+                    match reload_strategy {
+                        ReloadStrategy::Loop { delay } => thread::sleep(delay),
+                        ReloadStrategy::Once => break,
+                    };
+                }
             }
         })
         .expect("failed to spawn reloader thread");
@@ -219,4 +234,22 @@ fn write_port_file(path: &Path, port: u16) -> std::io::Result<()> {
     writeln!(f, "{}", port)?;
     f.sync_all()?;
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_parse_reload() {
+        assert_eq!("once".parse::<ReloadStrategy>(), Ok(ReloadStrategy::Once));
+        assert_eq!(
+            "5".parse::<ReloadStrategy>(),
+            Ok(ReloadStrategy::Loop {
+                delay: Duration::from_secs(5)
+            })
+        );
+        "5s".parse::<ReloadStrategy>()
+            .expect_err("explicit \"s\" trailer should be forbidden");
+    }
 }

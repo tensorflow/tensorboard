@@ -51,6 +51,7 @@ import {RunColorScale} from '../../../../../types/ui';
       [showCounts]="showCounts$ | async"
       [sidebarWidth]="sidebarWidth$ | async"
       [colorScale]="runColorScale$ | async"
+      [runIdToRuns]="runIdToRuns$ | async"
       (onShowSimilarAnnotations)="showSimilarAnnotations()"
     ></annotation-component>
   `,
@@ -83,6 +84,7 @@ export class AnnotationContainer {
         };
       })
     );
+  readonly runIdToRuns$ = this.store.select(selectors.getRunMap);
 
   constructor(private readonly store: Store<State>) {}
 

@@ -26,13 +26,20 @@ fn main() -> std::io::Result<()> {
         dir.push("genproto");
         dir
     };
+    let mut prost_config = prost_build::Config::new();
+    // Generate `bytes::Bytes` struct fields for all `bytes` protobuf fields in the `tensorboard`
+    // package.
+    prost_config.bytes(&[".tensorboard"]);
     tonic_build::configure()
         .out_dir(&out_dir)
         .format(false) // don't run `rustfmt`; shouldn't be needed to build
-        .compile(
+        .compile_with_config(
+            prost_config,
             &[
                 "tensorboard/compat/proto/event.proto",
                 "tensorboard/data/proto/data_provider.proto",
+                "tensorboard/plugins/audio/plugin_data.proto",
+                "tensorboard/plugins/image/plugin_data.proto",
             ],
             &["."],
         )
