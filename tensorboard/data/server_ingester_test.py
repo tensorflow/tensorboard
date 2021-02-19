@@ -99,6 +99,7 @@ class SubprocessServerDataIngesterTest(tb_test.TestCase):
             "--port=0",
             "--port-file=%s" % port_file,
             "--die-after-stdin",
+            "--samples-per-plugin=",
             "--verbose",  # logging is enabled in tests
         ]
         popen.assert_called_once_with(expected_args, stdin=subprocess.PIPE)
