@@ -104,16 +104,16 @@ describe('TBHttpClient', () => {
     });
   });
 
-  describe('XSRF header', () => {
-    it('is not attached to GET requests', () => {
+  describe('for XSRF headers', () => {
+    it('does not attach anything to GET requests', () => {
       tbHttpClient.get('/').subscribe();
       httpMock.expectOne((req) => !req.headers.has(XSRF_REQUIRED_HEADER));
     });
-    it('is attached to POST requests', () => {
+    it('attaches custom header to POST requests', () => {
       tbHttpClient.post('/', new FormData()).subscribe();
       httpMock.expectOne((req) => req.headers.has(XSRF_REQUIRED_HEADER));
     });
-    it('is attached to POST requests sent as GETs due to Colab', () => {
+    it('attaches custom header to POST requests sent as GETs due to Colab', () => {
       store.overrideSelector(getIsFeatureFlagsLoaded, true);
       store.overrideSelector(getIsInColab, true);
       tbHttpClient.post('/', new FormData()).subscribe();
@@ -121,11 +121,11 @@ describe('TBHttpClient', () => {
         (req) => req.method === 'GET' && req.headers.has(XSRF_REQUIRED_HEADER)
       );
     });
-    it('is attached to PUT requests', () => {
+    it('attaches custom header to PUT requests', () => {
       tbHttpClient.put('/', new FormData()).subscribe();
       httpMock.expectOne((req) => req.headers.has(XSRF_REQUIRED_HEADER));
     });
-    it('is attached to DELETE requests', () => {
+    it('attaches custom header to DELETE requests', () => {
       tbHttpClient.delete('/').subscribe();
       httpMock.expectOne((req) => req.headers.has(XSRF_REQUIRED_HEADER));
     });
