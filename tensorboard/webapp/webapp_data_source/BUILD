@@ -71,7 +71,6 @@ tf_ng_module(
         "//tensorboard/webapp/core:types",
         "//tensorboard/webapp/feature_flag/store",
         "//tensorboard/webapp/feature_flag/store:types",
-        "@npm//@angular/common",
         "@npm//@ngrx/store",
         "@npm//@types/jasmine",
     ],
