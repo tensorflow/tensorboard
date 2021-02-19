@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Injectable} from '@angular/core';
-import {HttpClient} from '@angular/common/http';
+import {HttpClient, HttpHeaders} from '@angular/common/http';
 import {Store} from '@ngrx/store';
 import {Observable} from 'rxjs';
 import {filter, mergeMap, take, withLatestFrom} from 'rxjs/operators';
@@ -32,6 +32,7 @@ import {
 import {
   DeleteOptions,
   GetOptions,
+  HttpOptions,
   PostOptions,
   PutOptions,
   TBHttpClientInterface,
@@ -45,6 +46,19 @@ function convertFormDataToObject(formData: FormData) {
     result[key] = value as string;
   }
   return result;
+}
+
+export const XSRF_REQUIRED_HEADER = 'X-XSRF-Protected';
+
+/**
+ * Adds an XSRF header to the given request options.
+ *
+ * The input is not mutated.
+ */
+function withXsrfHeader(options: HttpOptions): HttpOptions {
+  let headers = options.headers || new HttpHeaders();
+  headers = headers.append(XSRF_REQUIRED_HEADER, '1');
+  return {...options, headers};
 }
 
 @Injectable()
@@ -74,6 +88,7 @@ export class TBHttpClient implements TBHttpClientInterface {
     body: FormData,
     options: PostOptions = {}
   ): Observable<ResponseType> {
+    options = withXsrfHeader(options);
     return this.store.select(getIsFeatureFlagsLoaded).pipe(
       filter((isLoaded) => Boolean(isLoaded)),
       take(1),
@@ -104,7 +119,7 @@ export class TBHttpClient implements TBHttpClientInterface {
     return this.http.put<ResponseType>(
       this.resolveAppRoot(path),
       body,
-      options
+      withXsrfHeader(options)
     );
   }
 
@@ -112,6 +127,9 @@ export class TBHttpClient implements TBHttpClientInterface {
     path: string,
     options: DeleteOptions = {}
   ): Observable<ResponseType> {
-    return this.http.delete<ResponseType>(this.resolveAppRoot(path), options);
+    return this.http.delete<ResponseType>(
+      this.resolveAppRoot(path),
+      withXsrfHeader(options)
+    );
   }
 }

@@ -12,6 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {HttpHeaders} from '@angular/common/http';
 import {TestBed} from '@angular/core/testing';
 import {Store} from '@ngrx/store';
 import {MockStore} from '@ngrx/store/testing';
@@ -30,7 +31,7 @@ import {
   HttpTestingController,
   TBHttpClientTestingModule,
 } from './tb_http_client_testing';
-import {TBHttpClient} from './tb_http_client';
+import {TBHttpClient, XSRF_REQUIRED_HEADER} from './tb_http_client';
 
 describe('TBHttpClient', () => {
   let tbHttpClient: TBHttpClient;
@@ -100,6 +101,39 @@ describe('TBHttpClient', () => {
         req.urlWithParams === 'foo?formKey=value' &&
         !req.body
       );
+    });
+  });
+
+  describe('XSRF header', () => {
+    it('is not attached to GET requests', () => {
+      tbHttpClient.get('/').subscribe();
+      httpMock.expectOne((req) => !req.headers.has(XSRF_REQUIRED_HEADER));
+    });
+    it('is attached to POST requests', () => {
+      tbHttpClient.post('/', new FormData()).subscribe();
+      httpMock.expectOne((req) => req.headers.has(XSRF_REQUIRED_HEADER));
+    });
+    it('is attached to POST requests sent as GETs due to Colab', () => {
+      store.overrideSelector(getIsFeatureFlagsLoaded, true);
+      store.overrideSelector(getIsInColab, true);
+      tbHttpClient.post('/', new FormData()).subscribe();
+      httpMock.expectOne(
+        (req) => req.method === 'GET' && req.headers.has(XSRF_REQUIRED_HEADER)
+      );
+    });
+    it('is attached to PUT requests', () => {
+      tbHttpClient.put('/', new FormData()).subscribe();
+      httpMock.expectOne((req) => req.headers.has(XSRF_REQUIRED_HEADER));
+    });
+    it('is attached to DELETE requests', () => {
+      tbHttpClient.delete('/').subscribe();
+      httpMock.expectOne((req) => req.headers.has(XSRF_REQUIRED_HEADER));
+    });
+    it('does not clobber unrelated headers', () => {
+      tbHttpClient
+        .delete('/', {headers: new HttpHeaders('X-Unrelated: 1')})
+        .subscribe();
+      httpMock.expectOne((req) => req.headers.has('X-Unrelated'));
     });
   });
 
