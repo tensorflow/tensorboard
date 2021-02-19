@@ -21,9 +21,9 @@ use std::path::PathBuf;
 use std::sync::Arc;
 use std::time::Instant;
 
-use rustboard_core::cli::dynamic_logdir::DynLogdir;
 use rustboard_core::commit::Commit;
 use rustboard_core::logdir::LogdirLoader;
+use rustboard_core::{cli::dynamic_logdir::DynLogdir, types::PluginSamplingHint};
 
 #[derive(Clap)]
 struct Opts {
@@ -51,7 +51,7 @@ fn main() {
         &commit,
         logdir,
         opts.reload_threads.unwrap_or(0),
-        Arc::new(None),
+        Arc::new(PluginSamplingHint::default()),
     );
     loader.checksum(opts.checksum); // if neither `--[no-]checksum` given, defaults to false
 

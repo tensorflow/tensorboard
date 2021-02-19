@@ -77,7 +77,7 @@ pub struct LogdirLoader<'a, L: Logdir> {
     /// Whether new run loaders should unconditionally verify CRCs (see [`RunLoader::checksum`]).
     checksum: bool,
     /// A map defining how many samples per plugin to keep.
-    plugin_sampling_hint: Arc<Option<PluginSamplingHint>>,
+    plugin_sampling_hint: Arc<PluginSamplingHint>,
 }
 
 type Discoveries = HashMap<Run, Vec<EventFileBuf>>;
@@ -101,7 +101,7 @@ where
         commit: &'a Commit,
         logdir: L,
         reload_threads: usize,
-        plugin_sampling_hint: Arc<Option<PluginSamplingHint>>,
+        plugin_sampling_hint: Arc<PluginSamplingHint>,
     ) -> Self {
         let thread_pool = rayon::ThreadPoolBuilder::new()
             .num_threads(reload_threads)
@@ -285,7 +285,8 @@ mod tests {
 
         let commit = Commit::new();
         let logdir = DiskLogdir::new(logdir.path().to_path_buf());
-        let mut loader = LogdirLoader::new(&commit, logdir, 1, Arc::new(None));
+        let mut loader =
+            LogdirLoader::new(&commit, logdir, 1, Arc::new(PluginSamplingHint::default()));
 
         // Check that we persist the right run states in the loader.
         loader.reload();
@@ -340,7 +341,8 @@ mod tests {
 
         let commit = Commit::new();
         let logdir = DiskLogdir::new(logdir.path().to_path_buf());
-        let mut loader = LogdirLoader::new(&commit, logdir, 1, Arc::new(None));
+        let mut loader =
+            LogdirLoader::new(&commit, logdir, 1, Arc::new(PluginSamplingHint::default()));
 
         let get_run_names = || {
             let runs_store = commit.runs.read().unwrap();
@@ -391,7 +393,8 @@ mod tests {
 
         let commit = Commit::new();
         let logdir = DiskLogdir::new(logdir.path().to_path_buf());
-        let mut loader = LogdirLoader::new(&commit, logdir, 1, Arc::new(None));
+        let mut loader =
+            LogdirLoader::new(&commit, logdir, 1, Arc::new(PluginSamplingHint::default()));
         loader.reload();
 
         assert_eq!(
@@ -414,7 +417,8 @@ mod tests {
 
         let commit = Commit::new();
         let logdir = DiskLogdir::new(logdir.path().to_path_buf());
-        let mut loader = LogdirLoader::new(&commit, logdir, 1, Arc::new(None));
+        let mut loader =
+            LogdirLoader::new(&commit, logdir, 1, Arc::new(PluginSamplingHint::default()));
         loader.reload(); // should not hang
         Ok(())
     }

@@ -119,14 +119,13 @@ struct Opts {
 
     /// Set explicit series sampling
     ///
-    /// A comma separated list of plugin_name=num_samples pairs to explicitly specify how many
+    /// A comma separated list of `plugin_name=num_samples` pairs to explicitly specify how many
     /// samples to keep per tag for the specified plugin. For unspecified plugins, series are
     /// randomly downsampled to reasonable values to prevent out-of-memory errors in long running
-    /// jobs. Setting a plugin's num_samples to `0` will keep all samples for that plugin. For
-    /// instance, `--samples_per_plugin=scalars=500,images=0` keeps 500 events in each scalar series
-    /// and preserves all images.
-    #[clap(long)]
-    samples_per_plugin: Option<PluginSamplingHint>,
+    /// jobs. For instance, `--samples_per_plugin=scalars=500,images=0` keeps 500 events in each
+    /// scalar series and keeps none of the images.
+    #[clap(long, default_value = "", setting(clap::ArgSettings::AllowEmptyValues))]
+    samples_per_plugin: PluginSamplingHint,
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]

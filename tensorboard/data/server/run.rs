@@ -81,7 +81,7 @@ struct RunLoaderData {
     time_series: HashMap<Tag, StageTimeSeries>,
 
     /// A map defining how many samples per plugin to keep.
-    plugin_sampling_hint: Arc<Option<PluginSamplingHint>>,
+    plugin_sampling_hint: Arc<PluginSamplingHint>,
 }
 
 #[derive(Debug)]
@@ -104,8 +104,22 @@ struct StageValue {
 impl StageTimeSeries {
     fn new(
         metadata: Box<pb::SummaryMetadata>,
-        plugin_sampling_hint: Arc<Option<PluginSamplingHint>>,
+        plugin_sampling_hint: Arc<PluginSamplingHint>,
     ) -> Self {
+        let data_class =
+            pb::DataClass::from_i32(metadata.data_class).unwrap_or(pb::DataClass::Unknown);
+        let capacity = StageTimeSeries::capacity(&metadata, plugin_sampling_hint);
+        Self {
+            data_class,
+            metadata,
+            rsv: StageReservoir::new(capacity),
+        }
+    }
+
+    fn capacity(
+        metadata: &Box<pb::SummaryMetadata>,
+        plugin_sampling_hint: Arc<PluginSamplingHint>,
+    ) -> usize {
         let data_class =
             pb::DataClass::from_i32(metadata.data_class).unwrap_or(pb::DataClass::Unknown);
         let mut capacity = match data_class {
@@ -114,23 +128,18 @@ impl StageTimeSeries {
             pb::DataClass::BlobSequence => 10,
             _ => 0,
         };
-        // Override the capacity using the plugin-specific hint.
-        if capacity > 0 {
+
+        // Override the default capacity using the plugin-specific hint.
+        if data_class != pb::DataClass::Unknown {
             if let Some(ref pd) = metadata.plugin_data {
-                if let Some(hint) = &*plugin_sampling_hint {
-                    if let Some(&num_samples) = hint.0.get(&pd.plugin_name) {
-                        // TODO(psybuzz): if the hint prescribes 0 samples, the reservoir should ideally
-                        // be unbounded. For now, it simply creates a reservoir with capacity 0.
-                        capacity = if num_samples > 0 { num_samples } else { 0 };
-                    }
+                if let Some(&num_samples) = plugin_sampling_hint.0.get(&pd.plugin_name) {
+                    // TODO(psybuzz): if the hint prescribes 0 samples, the reservoir should ideally
+                    // be unbounded. For now, it simply creates a reservoir with capacity 0.
+                    capacity = num_samples;
                 }
             }
         }
-        Self {
-            data_class,
-            metadata,
-            rsv: StageReservoir::new(capacity),
-        }
+        capacity
     }
 
     /// Writes all staged data for this time series into the commit.
@@ -179,7 +188,7 @@ impl StageTimeSeries {
 const COMMIT_INTERVAL: Duration = Duration::from_secs(5);
 
 impl<R: Read> RunLoader<R> {
-    pub fn new(run: Run, plugin_sampling_hint: Arc<Option<PluginSamplingHint>>) -> Self {
+    pub fn new(run: Run, plugin_sampling_hint: Arc<PluginSamplingHint>) -> Self {
         Self {
             run,
             files: BTreeMap::new(),
@@ -448,7 +457,7 @@ mod test {
         f1.into_inner()?.sync_all()?;
         f2.into_inner()?.sync_all()?;
 
-        let mut loader = RunLoader::new(run.clone(), Arc::new(None));
+        let mut loader = RunLoader::new(run.clone(), Arc::new(PluginSamplingHint::default()));
         let logdir = DiskLogdir::new(logdir.path().to_path_buf());
         let commit = Commit::new();
         commit
@@ -550,8 +559,6 @@ mod test {
 
     #[test]
     fn test_plugin_sampling_hint() -> Result<(), Box<dyn std::error::Error>> {
-        use std::str::FromStr;
-
         let logdir = tempfile::tempdir()?;
         let f1_name = logdir.path().join("tfevents.123");
         let mut f1 = BufWriter::new(File::create(&f1_name)?);
@@ -582,9 +589,9 @@ mod test {
         // flush, so that the data's there when we read it
         f1.into_inner()?.sync_all()?;
 
-        let plugin_sampling_hint = PluginSamplingHint::from_str("scalars=2").unwrap();
+        let plugin_sampling_hint: PluginSamplingHint = "scalars=2".parse().unwrap();
 
-        let mut loader = RunLoader::new(run.clone(), Arc::new(Some(plugin_sampling_hint)));
+        let mut loader = RunLoader::new(run.clone(), Arc::new(plugin_sampling_hint));
         let logdir = DiskLogdir::new(logdir.path().to_path_buf());
         let commit = Commit::new();
         commit
@@ -605,17 +612,14 @@ mod test {
             .read()
             .expect("read-locking run data map");
 
-        let scalar_ts = run_data.scalars.get(&tag).unwrap();
-        let scalar_ts_values = scalar_ts.valid_values().collect::<Vec<_>>();
-
         // Points for plugins specified in the sampling hint should be downsampled.
-        assert!(scalar_ts_values.len() == 2);
+        let scalar_ts = run_data.scalars.get(&tag).unwrap();
+        assert_eq!(scalar_ts.valid_values().count(), 2);
 
         // Points for plugins that were not specified should be preserved.
         let run_graph_tag = Tag(GraphDefValue::TAG_NAME.to_string());
         let graph_ts = run_data.blob_sequences.get(&run_graph_tag).unwrap();
-        let graph_ts_values = graph_ts.valid_values().collect::<Vec<_>>();
-        assert!(graph_ts_values.len() == 3);
+        assert_eq!(graph_ts.valid_values().count(), 3);
 
         Ok(())
     }

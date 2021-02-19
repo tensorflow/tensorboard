@@ -92,23 +92,33 @@ impl Borrow<str> for Run {
     }
 }
 
+#[derive(Debug, thiserror::Error)]
+pub enum ParsePluginSamplingHintError {
+    #[error("hint components should be of the form `plugin=num_samples`, but found {part:?}")]
+    SyntaxError { part: String },
+    #[error(transparent)]
+    ParseIntError(#[from] std::num::ParseIntError),
+}
+
 /// A map defining how many samples per plugin to keep.
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct PluginSamplingHint(pub HashMap<String, usize>);
 
 impl FromStr for PluginSamplingHint {
-    type Err = <usize as FromStr>::Err;
+    type Err = ParsePluginSamplingHintError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let mut result = HashMap::new();
+        if s.is_empty() {
+            return Ok(PluginSamplingHint(result));
+        }
         for pair_str in s.split(',') {
             let pair: Vec<_> = pair_str.split('=').collect();
-            if pair.len() != 2 {
-                error!("While parsing plugin sampling hint: {}", s);
-                std::process::exit(1);
+            if pair.len() != 2 || pair[0].is_empty() {
+                return Err(ParsePluginSamplingHintError::SyntaxError {
+                    part: pair_str.to_string(),
+                });
             }
-            let num_samples = pair[1]
-                .parse::<usize>()
-                .expect("Cannot parse a non-integer sampling hint");
+            let num_samples = pair[1].parse::<usize>()?;
             let plugin_name: String = pair[0].to_string();
             result.insert(plugin_name, num_samples);
         }
@@ -166,15 +176,33 @@ mod tests {
 
     #[test]
     fn test_plugin_sampling_hint() {
-        let samples_per_plugin: &str = "scalars=500,images=0,unknown=10";
-        let mut expected: HashMap<String, usize> = HashMap::new();
-        expected.insert("scalars".to_string(), 500);
-        expected.insert("images".to_string(), 0);
-        expected.insert("unknown".to_string(), 10);
+        // Parse from a valid hint with arbitrary plugin names.
+        let hint1 = "scalars=500,images=0,unknown=10".parse::<PluginSamplingHint>();
+        let mut expected1: HashMap<String, usize> = HashMap::new();
+        expected1.insert("scalars".to_string(), 500);
+        expected1.insert("images".to_string(), 0);
+        expected1.insert("unknown".to_string(), 10);
+        assert_eq!(hint1.unwrap().0, expected1);
 
-        assert_eq!(
-            PluginSamplingHint::from_str(samples_per_plugin).unwrap().0,
-            expected
-        );
+        // Parse from an empty hint.
+        let hint2 = "".parse::<PluginSamplingHint>();
+        let expected2: HashMap<String, usize> = HashMap::new();
+        assert_eq!(hint2.unwrap().0, expected2);
+
+        // Parse from an invalid hint.
+        match "x=1.5".parse::<PluginSamplingHint>().unwrap_err() {
+            ParsePluginSamplingHintError::ParseIntError(_) => (),
+            other => panic!("expected ParseIntError, got {:?}", other),
+        };
+
+        match "=1".parse::<PluginSamplingHint>().unwrap_err() {
+            ParsePluginSamplingHintError::SyntaxError { part: _ } => (),
+            other => panic!("expected SyntaxError, got {:?}", other),
+        };
+
+        match ",=,".parse::<PluginSamplingHint>().unwrap_err() {
+            ParsePluginSamplingHintError::SyntaxError { part: _ } => (),
+            other => panic!("expected SyntaxError, got {:?}", other),
+        };
     }
 }

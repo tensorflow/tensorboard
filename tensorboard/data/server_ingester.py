@@ -108,9 +108,8 @@ class SubprocessServerDataIngester(ingester.DataIngester):
             "--port=0",
             "--port-file=%s" % (port_file_path,),
             "--die-after-stdin",
+            "--samples-per-plugin=%s" % samples_per_plugin,
         ]
-        if samples_per_plugin:
-            args.append("--samples-per-plugin=%s" % samples_per_plugin)
         if logger.isEnabledFor(logging.INFO):
             args.append("--verbose")
         if logger.isEnabledFor(logging.DEBUG):
