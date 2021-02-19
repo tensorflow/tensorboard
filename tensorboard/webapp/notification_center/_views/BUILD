@@ -36,13 +36,10 @@ tf_ts_library(
     name = "_views_test",
     testonly = True,
     srcs = [
-        "alert_snackbar_test.ts",
+        "notification_center_test.ts",
     ],
     deps = [
-        ":alert_snackbar",
         "//tensorboard/webapp:selectors",
-        "//tensorboard/webapp/alert/store",
-        "//tensorboard/webapp/alert/store:testing",
         "//tensorboard/webapp/angular:expect_angular_cdk_overlay",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/angular:expect_angular_material_button",
