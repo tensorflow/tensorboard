@@ -64,6 +64,7 @@ tf_ng_module(
         ":feature_flag_testing",
         ":http_client",
         ":http_client_testing",
+        "//tensorboard/webapp/angular:expect_angular_common_http",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/angular:expect_ngrx_store_testing",
         "//tensorboard/webapp/app_routing:app_root",
