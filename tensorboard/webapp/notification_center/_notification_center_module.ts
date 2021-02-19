@@ -23,8 +23,6 @@ import {NotificationCenterContainer} from './_views/notification_center_containe
     NotificationCenterComponent,
     NotificationCenterContainer,
   ],
-  exports: [
-    NotificationCenterContainer,
-  ]
+  exports: [NotificationCenterContainer],
 })
 export class NotificationCenterModule {}

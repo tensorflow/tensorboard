@@ -16,4 +16,3 @@ import {createSelector, createFeatureSelector} from '@ngrx/store';
 import {NotificationCenterInfo} from '../types';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
-

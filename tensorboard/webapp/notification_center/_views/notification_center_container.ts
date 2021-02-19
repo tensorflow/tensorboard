@@ -15,7 +15,7 @@ limitations under the License.
 import {Component} from '@angular/core';
 import {createSelector, select, Store} from '@ngrx/store';
 import {State} from '../../app_state';
-import {Notification} from "./view_types";
+import {Notification} from './view_types';
 import {NotificationCenterComponent} from './notification_center_component';
 
 @Component({
@@ -30,9 +30,12 @@ import {NotificationCenterComponent} from './notification_center_component';
 export class NotificationCenterContainer {
   notifications: Notification[] = [];
   constructor(private readonly store: Store<Boolean>) {
-    this.notifications.push({'date': '2020-1-23', 'title': '2.4 release', 'content': '<li>update 1</li><li>update 2</li>'})
+    this.notifications.push({
+      date: '2020-1-23',
+      title: '2.4 release',
+      content: '<li>update 1</li><li>update 2</li>',
+    });
   }
 
-  onIconClicked() {
-  }
+  onIconClicked() {}
 }

@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Component, EventEmitter, Input, Output} from '@angular/core';
-import {Notification} from "./view_types";
+import {Notification} from './view_types';
 
 @Component({
   selector: 'notification-center-component',
@@ -24,8 +24,7 @@ export class NotificationCenterComponent {
   @Input() notifications!: Notification[];
   @Output() onNotificationChanged = new EventEmitter<Boolean>();
 
-  constructor() {
-  }
+  constructor() {}
 
   onIconClicked() {
     this.onNotificationChanged.emit();

@@ -15,6 +15,5 @@ limitations under the License.
 import * as notification_centerReducers from './notification_center_reducers';
 
 describe('notification_center_reducers', () => {
-  it('', () => {
-  });
+  it('', () => {});
 });

@@ -16,7 +16,6 @@ import * as selectors from './notification_center_selectors';
 
 describe('notification_center_selectors', () => {
   describe('', () => {
-    it('', () => {
-    });
+    it('', () => {});
   });
 });

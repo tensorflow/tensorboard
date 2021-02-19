@@ -23,5 +23,5 @@ import {tap} from 'rxjs/operators';
 
 @Injectable()
 export class NotificationCenterEffects {
-  constructor(){}
+  constructor() {}
 }
