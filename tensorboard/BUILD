@@ -88,6 +88,8 @@ py_library(
         ":program",
         "//tensorboard/data:lib_init_only",
         "//tensorboard/summary",
+        "//tensorboard/summary:summary_v1",
+        "//tensorboard/summary:summary_v2",
         "//tensorboard/summary/writer",
     ],
 )

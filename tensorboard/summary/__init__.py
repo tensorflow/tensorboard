@@ -29,3 +29,7 @@ try:
     from tensorboard.summary.v2 import *  # noqa: F401
 except ImportError:
     pass
+
+from tensorboard.summary._output import DirectoryOutput  # noqa: F401
+from tensorboard.summary._output import Output  # noqa: F401
+from tensorboard.summary._writer import Writer  # noqa: F401

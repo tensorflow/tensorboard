@@ -1,20 +1,89 @@
 # Description:
 # Summary API for TensorBoard.
 
+load("//tensorboard/defs:py_repl.bzl", "py_repl")
+
 package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])
 
+# Standard TensorBoard summary writer API build target, which
+# contains all optional dependencies. For a slimmer target see
+# `:summary_minimal`.
 py_library(
     name = "summary",
+    deps = [
+        ":summary_minimal",
+    ],
+)
+
+# Minimal dependency for the TensorBoard summary writer APIs.
+# Does not contain any optional deps, so some APIs may throw
+# exceptions when called if not all their deps are satisfied.
+py_library(
+    name = "summary_minimal",
+    srcs = ["__init__.py"],
+    srcs_version = "PY3",
+    deps = [
+        ":writer",
+    ],
+)
+
+py_library(
+    name = "writer",
     srcs = [
-        "__init__.py",
+        "_writer.py",
     ],
     srcs_version = "PY3",
-    visibility = ["//tensorboard:internal"],
     deps = [
-        ":summary_v1",
-        ":summary_v2",
+        ":output",
+        "//tensorboard:expect_numpy_installed",
+        "//tensorboard/plugins/scalar:metadata",
+    ],
+)
+
+py_test(
+    name = "writer_test",
+    srcs = ["_writer_test.py"],
+    main = "_writer_test.py",
+    srcs_version = "PY3",
+    tags = ["support_notf"],
+    deps = [
+        ":test_util",
+        ":writer",
+        "//tensorboard:expect_numpy_installed",
+        "//tensorboard:test",
+        "//tensorboard/compat/proto:protos_all_py_pb2",
+        "//tensorboard/util:tensor_util",
+    ],
+)
+
+py_library(
+    name = "output",
+    srcs = [
+        "_output.py",
+    ],
+    srcs_version = "PY3",
+    deps = [
+        "//tensorboard/compat/proto:protos_all_py_pb2",
+        "//tensorboard/summary/writer",
+        "//tensorboard/util:tensor_util",
+    ],
+)
+
+py_test(
+    name = "output_test",
+    srcs = ["_output_test.py"],
+    main = "_output_test.py",
+    srcs_version = "PY3",
+    tags = ["support_notf"],
+    deps = [
+        ":output",
+        ":test_util",
+        "//tensorboard:expect_numpy_installed",
+        "//tensorboard:test",
+        "//tensorboard/compat/proto:protos_all_py_pb2",
+        "//tensorboard/util:tensor_util",
     ],
 )
 
@@ -26,6 +95,7 @@ py_library(
     srcs_version = "PY3",
     visibility = ["//visibility:public"],
     deps = [
+        ":summary_minimal",
         "//tensorboard/plugins/audio:summary",
         "//tensorboard/plugins/custom_scalar:summary",
         "//tensorboard/plugins/histogram:summary",
@@ -44,6 +114,7 @@ py_library(
     srcs_version = "PY3",
     visibility = ["//visibility:public"],
     deps = [
+        ":summary_minimal",
         "//tensorboard/plugins/audio:summary_v2",
         "//tensorboard/plugins/histogram:summary_v2",
         "//tensorboard/plugins/image:summary_v2",
@@ -62,6 +133,17 @@ py_test(
         ":summary",
         ":summary_v1",
         ":summary_v2",
+    ],
+)
+
+py_library(
+    name = "test_util",
+    testonly = 1,
+    srcs = ["_test_util.py"],
+    srcs_version = "PY3",
+    deps = [
+        "//tensorboard/compat/proto:protos_all_py_pb2",
+        "//tensorboard/compat/tensorflow_stub",
     ],
 )
 
@@ -97,4 +179,14 @@ py_test(
         ":tf_summary",
         "//tensorboard:expect_tensorflow_installed",
     ],
+)
+
+# REPL for interactive use/testing of the summary APIs.
+py_repl(
+    name = "repl",
+    preamble = [
+        "from tensorboard.summary import Writer",
+        'w = Writer("/tmp/foo")',
+    ],
+    deps = [":summary"],
 )
