@@ -20,7 +20,7 @@ import numpy as np
 from tensorboard.compat.proto import summary_pb2
 from tensorboard.compat.proto import types_pb2
 from tensorboard.summary import _output as output_lib
-from tensorboard.summary import test_util
+from tensorboard.summary import _test_util
 from tensorboard.util import tensor_util
 from tensorboard import test as tb_test
 
@@ -30,7 +30,7 @@ class DirectoryOutputTest(tb_test.TestCase):
         logdir = self.get_temp_dir()
         output = output_lib.DirectoryOutput(logdir)
         output.close()
-        events = test_util.read_tfevents(logdir)
+        events = _test_util.read_tfevents(logdir)
         self.assertLen(events, 1)
         self.assertEqual(events[0].file_version, "brain.Event:2")
 
@@ -52,14 +52,14 @@ class DirectoryOutputTest(tb_test.TestCase):
         # See #4582 discussion for details.
         output.flush()
         # Expect file version and first scalar event.
-        events = test_util.read_tfevents(logdir)
+        events = _test_util.read_tfevents(logdir)
         self.assertLen(events, 2)
         self.assertEqual(events[0].file_version, "brain.Event:2")
         self.assertEqual(events[1].step, 1)
         emit_scalar(2)
         output.close()
         # Now we should see both scalar events.
-        events = test_util.read_tfevents(logdir)
+        events = _test_util.read_tfevents(logdir)
         self.assertLen(events, 3)
         self.assertEqual(events[2].step, 2)
 
@@ -76,7 +76,7 @@ class DirectoryOutputTest(tb_test.TestCase):
             description="desc",
         )
         output.close()
-        events = test_util.read_tfevents(logdir)
+        events = _test_util.read_tfevents(logdir)
         self.assertLen(events, 2)
         event = events[1]
         self.assertEqual(event.step, 12)

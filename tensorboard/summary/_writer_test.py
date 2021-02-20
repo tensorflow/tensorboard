@@ -22,7 +22,7 @@ import numpy as np
 from tensorboard.compat.proto import summary_pb2
 from tensorboard.summary import _output as output_lib
 from tensorboard.summary import _writer as writer_lib
-from tensorboard.summary import test_util
+from tensorboard.summary import _test_util
 from tensorboard.util import tensor_util
 from tensorboard import test as tb_test
 
@@ -32,7 +32,7 @@ class WriterTest(tb_test.TestCase):
         logdir = self.get_temp_dir()
         w = writer_lib.Writer(logdir)
         w.close()
-        events = test_util.read_tfevents(logdir)
+        events = _test_util.read_tfevents(logdir)
         self.assertLen(events, 1)
         self.assertEqual(events[0].file_version, "brain.Event:2")
 
@@ -69,7 +69,7 @@ class WriterAddScalarTest(tb_test.TestCase):
         w = writer_lib.Writer(logdir)
         w.add_scalar("foo", 42.0, 12, wall_time=123.456, description="fooful")
         w.close()
-        events = test_util.read_tfevents(logdir)
+        events = _test_util.read_tfevents(logdir)
         self.assertLen(events, 2)
         self.assertEqual(events[0].file_version, "brain.Event:2")
         event = events[1]

@@ -44,7 +44,8 @@ py_library(
 
 py_test(
     name = "writer_test",
-    srcs = ["writer_test.py"],
+    srcs = ["_writer_test.py"],
+    main = "_writer_test.py",
     srcs_version = "PY3",
     tags = ["support_notf"],
     deps = [
@@ -72,7 +73,8 @@ py_library(
 
 py_test(
     name = "output_test",
-    srcs = ["output_test.py"],
+    srcs = ["_output_test.py"],
+    main = "_output_test.py",
     srcs_version = "PY3",
     tags = ["support_notf"],
     deps = [
@@ -137,7 +139,7 @@ py_test(
 py_library(
     name = "test_util",
     testonly = 1,
-    srcs = ["test_util.py"],
+    srcs = ["_test_util.py"],
     srcs_version = "PY3",
     deps = [
         "//tensorboard/compat/proto:protos_all_py_pb2",
