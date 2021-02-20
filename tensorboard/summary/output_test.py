@@ -18,6 +18,7 @@
 import numpy as np
 
 from tensorboard.compat.proto import summary_pb2
+from tensorboard.compat.proto import types_pb2
 from tensorboard.summary import _output as output_lib
 from tensorboard.summary import test_util
 from tensorboard.util import tensor_util
@@ -85,6 +86,7 @@ class DirectoryOutputTest(tb_test.TestCase):
         self.assertEqual(
             tensor_util.make_ndarray(summary.tensor), np.array(42.0)
         )
+        self.assertEqual(summary.tensor.dtype, types_pb2.DT_FLOAT)
         self.assertEqual(
             summary.metadata.data_class, summary_pb2.DATA_CLASS_SCALAR
         )
