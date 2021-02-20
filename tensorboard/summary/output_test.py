@@ -46,16 +46,16 @@ class DirectoryOutputTest(tb_test.TestCase):
             description="desc",
         )
         emit_scalar(1)
-        events = test_util.read_tfevents(logdir)
-        # Only the file version event should be present.
-        self.assertLen(events, 1)
-        self.assertEqual(events[0].file_version, "brain.Event:2")
+        # We can't assert on the contents of the event file prior to calling
+        # flush() since it's nondeterministic depending on filesystem impl.
+        # See #4582 discussion for details.
         output.flush()
-        emit_scalar(2)
-        # Now we should see just the first scalar event.
+        # Expect file version and first scalar event.
         events = test_util.read_tfevents(logdir)
         self.assertLen(events, 2)
+        self.assertEqual(events[0].file_version, "brain.Event:2")
         self.assertEqual(events[1].step, 1)
+        emit_scalar(2)
         output.close()
         # Now we should see both scalar events.
         events = test_util.read_tfevents(logdir)
