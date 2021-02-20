@@ -2,6 +2,8 @@ load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
+licenses(["notice"])
+
 tf_ng_module(
     name = "notification_center",
     srcs = [

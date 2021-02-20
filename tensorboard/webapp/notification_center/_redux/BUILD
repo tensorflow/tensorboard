@@ -2,6 +2,8 @@ load("//tensorboard/defs:defs.bzl", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard/webapp/notification_center:__subpackages__"])
 
+licenses(["notice"])
+
 tf_ts_library(
     name = "_redux",
     srcs = [
