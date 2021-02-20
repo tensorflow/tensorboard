@@ -2,25 +2,26 @@ load("//tensorboard/defs:defs.bzl", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard/webapp/notification_center:__subpackages__"])
 
+licenses(["notice"])
+
 tf_ts_library(
     name = "_redux",
     srcs = [
+        "notification_center_actions.ts",
+        "notification_center_effects.ts",
         "notification_center_reducers.ts",
         "notification_center_selectors.ts",
-        "notification_center_effects.ts",
-        "notification_center_actions.ts",
     ],
     deps = [
         ":types",
-        "//tensorboard/webapp/notification_center:types",
         "//tensorboard/webapp:app_state",
-        "@npm//@ngrx/store",
+        "//tensorboard/webapp/notification_center:types",
         "@npm//@angular/core",
         "@npm//@ngrx/effects",
+        "@npm//@ngrx/store",
         "@npm//rxjs",
     ],
 )
-
 
 tf_ts_library(
     name = "types",
@@ -31,7 +32,6 @@ tf_ts_library(
         "//tensorboard/webapp/notification_center:types",
     ],
 )
-
 
 tf_ts_library(
     name = "_redux_test",
@@ -46,4 +46,3 @@ tf_ts_library(
         "@npm//@types/jasmine",
     ],
 )
-

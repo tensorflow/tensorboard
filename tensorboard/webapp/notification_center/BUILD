@@ -2,6 +2,8 @@ load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
+licenses(["notice"])
+
 tf_ng_module(
     name = "notification_center",
     srcs = [
@@ -14,10 +16,10 @@ tf_ng_module(
     ],
     deps = [
         "//tensorboard/webapp/notification_center/_redux",
-        "//tensorboard/webapp/notification_center/_views",
         "//tensorboard/webapp/notification_center/_redux:types",
-        "@npm//@angular/core",
+        "//tensorboard/webapp/notification_center/_views",
         "@npm//@angular/common",
+        "@npm//@angular/core",
         "@npm//@ngrx/effects",
         "@npm//@ngrx/store",
     ],
