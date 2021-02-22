@@ -59,7 +59,14 @@ class ExistingServerDataIngester(ingester.DataIngester):
 class SubprocessServerDataIngester(ingester.DataIngester):
     """Start a new data server as a subprocess."""
 
-    def __init__(self, logdir, *, reload_interval, channel_creds_type):
+    def __init__(
+        self,
+        logdir,
+        *,
+        reload_interval,
+        channel_creds_type,
+        samples_per_plugin=None,
+    ):
         """Initializes an ingester with the given configuration.
 
         Args:
@@ -67,11 +74,14 @@ class SubprocessServerDataIngester(ingester.DataIngester):
           reload_interval: Number, as passed to `--reload_interval`.
           channel_creds_type: `grpc_util.ChannelCredsType`, as passed to
             `--grpc_creds_type`.
+          samples_per_plugin: Dict[String, Int], as parsed from
+            `--samples_per_plugin`.
         """
         self._data_provider = None
         self._logdir = logdir
         self._reload_interval = reload_interval
         self._channel_creds_type = channel_creds_type
+        self._samples_per_plugin = samples_per_plugin or {}
 
     @property
     def data_provider(self):
@@ -92,6 +102,11 @@ class SubprocessServerDataIngester(ingester.DataIngester):
         else:
             reload = str(int(self._reload_interval))
 
+        sample_hint_pairs = [
+            "%s=%s" % (k, v) for k, v in self._samples_per_plugin.items()
+        ]
+        samples_per_plugin = ",".join(sample_hint_pairs)
+
         args = [
             server_binary,
             "--logdir=%s" % (self._logdir,),
@@ -100,6 +115,13 @@ class SubprocessServerDataIngester(ingester.DataIngester):
             "--port-file=%s" % (port_file_path,),
             "--die-after-stdin",
         ]
+        # Passing `--samples-per-plugin` conditionally is non-ideal, since
+        # older data servers (0.3.0) will still die when receiving this unknown
+        # flag explicitly. This flag may be provided unconditionally if servers
+        # support `--undefok` in the future.
+        # See https://github.com/clap-rs/clap/issues/2354.
+        if samples_per_plugin:
+            args.append("--samples-per-plugin=%s" % samples_per_plugin)
         if logger.isEnabledFor(logging.INFO):
             args.append("--verbose")
         if logger.isEnabledFor(logging.DEBUG):

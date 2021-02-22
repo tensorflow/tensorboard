@@ -18,7 +18,7 @@ limitations under the License.
 use log::{debug, warn};
 use std::collections::{BTreeMap, HashMap, HashSet};
 use std::io::Read;
-use std::sync::RwLock;
+use std::sync::{Arc, RwLock};
 use std::time::{Duration, Instant};
 
 use crate::commit;
@@ -27,7 +27,7 @@ use crate::event_file::EventFileReader;
 use crate::logdir::{EventFileBuf, Logdir};
 use crate::proto::tensorboard as pb;
 use crate::reservoir::StageReservoir;
-use crate::types::{Run, Step, Tag, WallTime};
+use crate::types::{PluginSamplingHint, Run, Step, Tag, WallTime};
 
 /// A loader to accumulate reservoir-sampled events in a single TensorBoard run.
 ///
@@ -68,7 +68,7 @@ enum EventFile<R> {
 }
 
 /// Holds data staged by a `RunLoader` that will be committed to the `Commit`.
-#[derive(Debug, Default)]
+#[derive(Debug)]
 struct RunLoaderData {
     /// The earliest event `wall_time` seen in any event file in this run.
     ///
@@ -79,6 +79,9 @@ struct RunLoaderData {
 
     /// Reservoir-sampled data and metadata for each time series.
     time_series: HashMap<Tag, StageTimeSeries>,
+
+    /// A map defining how many samples per plugin to keep.
+    plugin_sampling_hint: Arc<PluginSamplingHint>,
 }
 
 #[derive(Debug)]
@@ -99,20 +102,44 @@ struct StageValue {
 }
 
 impl StageTimeSeries {
-    fn new(metadata: Box<pb::SummaryMetadata>) -> Self {
+    fn new(
+        metadata: Box<pb::SummaryMetadata>,
+        plugin_sampling_hint: Arc<PluginSamplingHint>,
+    ) -> Self {
         let data_class =
             pb::DataClass::from_i32(metadata.data_class).unwrap_or(pb::DataClass::Unknown);
-        let capacity = match data_class {
-            pb::DataClass::Scalar => 1000,
-            pb::DataClass::Tensor => 100,
-            pb::DataClass::BlobSequence => 10,
-            _ => 0,
-        };
+        let capacity = StageTimeSeries::capacity(&metadata, plugin_sampling_hint);
         Self {
             data_class,
             metadata,
             rsv: StageReservoir::new(capacity),
         }
+    }
+
+    fn capacity(
+        metadata: &Box<pb::SummaryMetadata>,
+        plugin_sampling_hint: Arc<PluginSamplingHint>,
+    ) -> usize {
+        let data_class =
+            pb::DataClass::from_i32(metadata.data_class).unwrap_or(pb::DataClass::Unknown);
+        let mut capacity = match data_class {
+            pb::DataClass::Scalar => 1000,
+            pb::DataClass::Tensor => 100,
+            pb::DataClass::BlobSequence => 10,
+            _ => 0,
+        };
+
+        // Override the default capacity using the plugin-specific hint.
+        if data_class != pb::DataClass::Unknown {
+            if let Some(ref pd) = metadata.plugin_data {
+                if let Some(&num_samples) = plugin_sampling_hint.0.get(&pd.plugin_name) {
+                    // TODO(psybuzz): if the hint prescribes 0 samples, the reservoir should ideally
+                    // be unbounded. For now, it simply creates a reservoir with capacity 0.
+                    capacity = num_samples;
+                }
+            }
+        }
+        capacity
     }
 
     /// Writes all staged data for this time series into the commit.
@@ -161,12 +188,12 @@ impl StageTimeSeries {
 const COMMIT_INTERVAL: Duration = Duration::from_secs(5);
 
 impl<R: Read> RunLoader<R> {
-    pub fn new(run: Run) -> Self {
+    pub fn new(run: Run, plugin_sampling_hint: Arc<PluginSamplingHint>) -> Self {
         Self {
             run,
             files: BTreeMap::new(),
             checksum: true,
-            data: RunLoaderData::default(),
+            data: RunLoaderData::new(plugin_sampling_hint),
         }
     }
 
@@ -285,6 +312,14 @@ impl<R: Read> RunLoader<R> {
 }
 
 impl RunLoaderData {
+    fn new(plugin_sampling_hint: Arc<PluginSamplingHint>) -> Self {
+        Self {
+            start_time: None,
+            time_series: HashMap::new(),
+            plugin_sampling_hint,
+        }
+    }
+
     /// Commits all staged data into the given run of the commit.
     fn commit_all(&mut self, run_data: &RwLock<commit::RunData>) {
         let mut run = run_data.write().expect("acquiring tags lock");
@@ -311,6 +346,7 @@ impl RunLoaderData {
         if self.start_time.map_or(true, |start| wall_time < start) {
             self.start_time = Some(wall_time);
         }
+        let psh = &self.plugin_sampling_hint;
         match e.what {
             Some(pb::event::What::GraphDef(graph_bytes)) => {
                 let sv = StageValue {
@@ -322,7 +358,7 @@ impl RunLoaderData {
                     .entry(Tag(GraphDefValue::TAG_NAME.to_string()))
                     .or_insert_with(|| {
                         let metadata = GraphDefValue::initial_metadata();
-                        StageTimeSeries::new(metadata)
+                        StageTimeSeries::new(metadata, psh.clone())
                     });
                 ts.rsv.offer(step, sv);
             }
@@ -338,7 +374,7 @@ impl RunLoaderData {
                     .entry(Tag(trm_proto.tag))
                     .or_insert_with(|| {
                         let metadata = TaggedRunMetadataValue::initial_metadata();
-                        StageTimeSeries::new(metadata)
+                        StageTimeSeries::new(metadata, psh.clone())
                     });
                 ts.rsv.offer(step, sv);
             }
@@ -354,7 +390,7 @@ impl RunLoaderData {
                         Entry::Vacant(v) => {
                             let metadata =
                                 summary_value.initial_metadata(summary_pb_value.metadata.take());
-                            v.insert(StageTimeSeries::new(metadata))
+                            v.insert(StageTimeSeries::new(metadata, psh.clone()))
                         }
                     };
                     let sv = StageValue {
@@ -426,7 +462,7 @@ mod test {
         f1.into_inner()?.sync_all()?;
         f2.into_inner()?.sync_all()?;
 
-        let mut loader = RunLoader::new(run.clone());
+        let mut loader = RunLoader::new(run.clone(), Arc::new(PluginSamplingHint::default()));
         let logdir = DiskLogdir::new(logdir.path().to_path_buf());
         let commit = Commit::new();
         commit
@@ -522,6 +558,73 @@ mod test {
                 &commit::BlobSequenceValue(vec![Bytes::from_static(b"<sample run metadata>")])
             )]
         );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_plugin_sampling_hint() -> Result<(), Box<dyn std::error::Error>> {
+        let logdir = tempfile::tempdir()?;
+        let f1_name = logdir.path().join("tfevents.123");
+        let mut f1 = BufWriter::new(File::create(&f1_name)?);
+
+        // Write some data points.
+        let run = Run("train".to_string());
+        let tag = Tag("accuracy".to_string());
+        f1.write_scalar(&tag, Step(0), WallTime::new(1235.0).unwrap(), 0.25)?;
+        f1.write_scalar(&tag, Step(1), WallTime::new(1236.0).unwrap(), 0.50)?;
+        f1.write_scalar(&tag, Step(2), WallTime::new(1237.0).unwrap(), 0.75)?;
+        f1.write_scalar(&tag, Step(3), WallTime::new(1238.0).unwrap(), 1.00)?;
+        // Write some blobs.
+        f1.write_graph(
+            Step(0),
+            WallTime::new(1235.0).unwrap(),
+            Bytes::from_static(b"<sample model graph>"),
+        )?;
+        f1.write_graph(
+            Step(1),
+            WallTime::new(1236.0).unwrap(),
+            Bytes::from_static(b"<sample model graph>"),
+        )?;
+        f1.write_graph(
+            Step(2),
+            WallTime::new(1237.0).unwrap(),
+            Bytes::from_static(b"<sample model graph>"),
+        )?;
+        // flush, so that the data's there when we read it
+        f1.into_inner()?.sync_all()?;
+
+        let plugin_sampling_hint: PluginSamplingHint = "scalars=2".parse().unwrap();
+
+        let mut loader = RunLoader::new(run.clone(), Arc::new(plugin_sampling_hint));
+        let logdir = DiskLogdir::new(logdir.path().to_path_buf());
+        let commit = Commit::new();
+        commit
+            .runs
+            .write()
+            .expect("write-locking runs map")
+            .insert(run.clone(), Default::default());
+        loader.reload(
+            &logdir,
+            vec![EventFileBuf(f1_name)],
+            &commit.runs.read().unwrap()[&run],
+        );
+
+        let runs = commit.runs.read().expect("read-locking runs map");
+        let run_data: &commit::RunData = &*runs
+            .get(&run)
+            .expect("looking up data for run")
+            .read()
+            .expect("read-locking run data map");
+
+        // Points for plugins specified in the sampling hint should be downsampled.
+        let scalar_ts = run_data.scalars.get(&tag).unwrap();
+        assert_eq!(scalar_ts.valid_values().count(), 2);
+
+        // Points for plugins that were not specified should be preserved.
+        let run_graph_tag = Tag(GraphDefValue::TAG_NAME.to_string());
+        let graph_ts = run_data.blob_sequences.get(&run_graph_tag).unwrap();
+        assert_eq!(graph_ts.valid_values().count(), 3);
 
         Ok(())
     }

@@ -20,10 +20,11 @@ use rayon::prelude::{IntoParallelIterator, ParallelIterator};
 use std::collections::HashMap;
 use std::io::{self, Read};
 use std::path::PathBuf;
+use std::sync::Arc;
 
 use crate::commit::Commit;
 use crate::run::RunLoader;
-use crate::types::Run;
+use crate::types::{PluginSamplingHint, Run};
 
 /// A TensorBoard log directory, with event files organized into runs.
 pub trait Logdir {
@@ -75,6 +76,8 @@ pub struct LogdirLoader<'a, L: Logdir> {
     runs: HashMap<Run, RunLoader<<L as Logdir>::File>>,
     /// Whether new run loaders should unconditionally verify CRCs (see [`RunLoader::checksum`]).
     checksum: bool,
+    /// A map defining how many samples per plugin to keep.
+    plugin_sampling_hint: Arc<PluginSamplingHint>,
 }
 
 type Discoveries = HashMap<Run, Vec<EventFileBuf>>;
@@ -94,7 +97,12 @@ where
     ///
     /// If [`rayon::ThreadPoolBuilder::build`] returns an error; should only happen if there is a
     /// failure to create threads at the OS level.
-    pub fn new(commit: &'a Commit, logdir: L, reload_threads: usize) -> Self {
+    pub fn new(
+        commit: &'a Commit,
+        logdir: L,
+        reload_threads: usize,
+        plugin_sampling_hint: Arc<PluginSamplingHint>,
+    ) -> Self {
         let thread_pool = rayon::ThreadPoolBuilder::new()
             .num_threads(reload_threads)
             .thread_name(|i| format!("Reloader-{:03}", i))
@@ -106,6 +114,7 @@ where
             logdir,
             runs: HashMap::new(),
             checksum: true,
+            plugin_sampling_hint,
         }
     }
 
@@ -176,8 +185,9 @@ where
         // Add new runs.
         for run_name in discoveries.keys() {
             let checksum = self.checksum;
+            let plugin_sampling_hint = self.plugin_sampling_hint.clone();
             self.runs.entry(run_name.clone()).or_insert_with(|| {
-                let mut loader = RunLoader::new(run_name.clone());
+                let mut loader = RunLoader::new(run_name.clone(), plugin_sampling_hint);
                 loader.checksum(checksum);
                 loader
             });
@@ -275,7 +285,8 @@ mod tests {
 
         let commit = Commit::new();
         let logdir = DiskLogdir::new(logdir.path().to_path_buf());
-        let mut loader = LogdirLoader::new(&commit, logdir, 1);
+        let mut loader =
+            LogdirLoader::new(&commit, logdir, 1, Arc::new(PluginSamplingHint::default()));
 
         // Check that we persist the right run states in the loader.
         loader.reload();
@@ -330,7 +341,8 @@ mod tests {
 
         let commit = Commit::new();
         let logdir = DiskLogdir::new(logdir.path().to_path_buf());
-        let mut loader = LogdirLoader::new(&commit, logdir, 1);
+        let mut loader =
+            LogdirLoader::new(&commit, logdir, 1, Arc::new(PluginSamplingHint::default()));
 
         let get_run_names = || {
             let runs_store = commit.runs.read().unwrap();
@@ -381,7 +393,8 @@ mod tests {
 
         let commit = Commit::new();
         let logdir = DiskLogdir::new(logdir.path().to_path_buf());
-        let mut loader = LogdirLoader::new(&commit, logdir, 1);
+        let mut loader =
+            LogdirLoader::new(&commit, logdir, 1, Arc::new(PluginSamplingHint::default()));
         loader.reload();
 
         assert_eq!(
@@ -404,7 +417,8 @@ mod tests {
 
         let commit = Commit::new();
         let logdir = DiskLogdir::new(logdir.path().to_path_buf());
-        let mut loader = LogdirLoader::new(&commit, logdir, 1);
+        let mut loader =
+            LogdirLoader::new(&commit, logdir, 1, Arc::new(PluginSamplingHint::default()));
         loader.reload(); // should not hang
         Ok(())
     }
