@@ -68,7 +68,7 @@ enum EventFile<R> {
 }
 
 /// Holds data staged by a `RunLoader` that will be committed to the `Commit`.
-#[derive(Debug, Default)]
+#[derive(Debug)]
 struct RunLoaderData {
     /// The earliest event `wall_time` seen in any event file in this run.
     ///
@@ -193,10 +193,7 @@ impl<R: Read> RunLoader<R> {
             run,
             files: BTreeMap::new(),
             checksum: true,
-            data: RunLoaderData {
-                plugin_sampling_hint,
-                ..RunLoaderData::default()
-            },
+            data: RunLoaderData::new(plugin_sampling_hint),
         }
     }
 
@@ -315,6 +312,14 @@ impl<R: Read> RunLoader<R> {
 }
 
 impl RunLoaderData {
+    fn new(plugin_sampling_hint: Arc<PluginSamplingHint>) -> Self {
+        Self {
+            start_time: None,
+            time_series: HashMap::new(),
+            plugin_sampling_hint,
+        }
+    }
+
     /// Commits all staged data into the given run of the commit.
     fn commit_all(&mut self, run_data: &RwLock<commit::RunData>) {
         let mut run = run_data.write().expect("acquiring tags lock");

@@ -114,8 +114,14 @@ class SubprocessServerDataIngester(ingester.DataIngester):
             "--port=0",
             "--port-file=%s" % (port_file_path,),
             "--die-after-stdin",
-            "--samples-per-plugin=%s" % samples_per_plugin,
         ]
+        # Passing `--samples-per-plugin` conditionally is non-ideal, since
+        # older data servers (0.3.0) will still die when receiving this unknown
+        # flag explicitly. This flag may be provided unconditionally if servers
+        # support `--undefok` in the future.
+        # See https://github.com/clap-rs/clap/issues/2354.
+        if samples_per_plugin:
+            args.append("--samples-per-plugin=%s" % samples_per_plugin)
         if logger.isEnabledFor(logging.INFO):
             args.append("--verbose")
         if logger.isEnabledFor(logging.DEBUG):
