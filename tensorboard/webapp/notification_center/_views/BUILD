@@ -33,25 +33,3 @@ tf_ts_library(
         "@npm//rxjs",
     ],
 )
-
-tf_ts_library(
-    name = "_views_test",
-    testonly = True,
-    srcs = [
-        "notification_center_test.ts",
-    ],
-    deps = [
-        "//tensorboard/webapp:selectors",
-        "//tensorboard/webapp/angular:expect_angular_cdk_overlay",
-        "//tensorboard/webapp/angular:expect_angular_core_testing",
-        "//tensorboard/webapp/angular:expect_angular_material_button",
-        "//tensorboard/webapp/angular:expect_angular_material_snackbar",
-        "//tensorboard/webapp/angular:expect_angular_platform_browser_animations",
-        "//tensorboard/webapp/angular:expect_ngrx_store_testing",
-        "@npm//@angular/core",
-        "@npm//@angular/platform-browser",
-        "@npm//@ngrx/store",
-        "@npm//@types/jasmine",
-        "@npm//rxjs",
-    ],
-)
