@@ -788,7 +788,6 @@ class _TensorBatchedRequestSender(object):
         point.value.CopyFrom(value.tensor)
         util.set_timestamp(point.wall_time, event.wall_time)
 
-        self._num_values += 1
         self._tensor_bytes += point.value.ByteSize()
         if point.value.ByteSize() > self._max_tensor_point_size:
             logger.warning(
@@ -811,6 +810,7 @@ class _TensorBatchedRequestSender(object):
 
         try:
             self._byte_budget_manager.add_point(point)
+            self._num_values += 1
         except _OutOfSpaceError:
             tag_proto.points.pop()
             raise
