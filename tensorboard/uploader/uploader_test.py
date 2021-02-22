@@ -201,7 +201,7 @@ def _create_scalar_request_sender(
     experiment_id=None,
     api=_USE_DEFAULT,
     max_request_size=_USE_DEFAULT,
-    tracker=None
+    tracker=None,
 ):
     if api is _USE_DEFAULT:
         api = _create_mock_client()
@@ -221,7 +221,7 @@ def _create_tensor_request_sender(
     api=_USE_DEFAULT,
     max_request_size=_USE_DEFAULT,
     max_tensor_point_size=_USE_DEFAULT,
-    tracker=None
+    tracker=None,
 ):
     if api is _USE_DEFAULT:
         api = _create_mock_client()
@@ -1312,7 +1312,7 @@ class ScalarBatchedRequestSenderTest(tf.test.TestCase):
             mock_client,
             # Set a limit to request size
             max_request_size=1024,
-            tracker=tracker
+            tracker=tracker,
         )
         self._add_events(sender, "train", _apply_compat(events))
         sender.flush()
@@ -1687,7 +1687,7 @@ class TensorBatchedRequestSenderTest(tf.test.TestCase):
             mock_client,
             # Set a limit to request size
             max_request_size=1024,
-            tracker=tracker
+            tracker=tracker,
         )
         self._add_events(sender, "train", _apply_compat(events))
         sender.flush()
