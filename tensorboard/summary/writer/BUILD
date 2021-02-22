@@ -12,9 +12,17 @@ py_library(
         "record_writer.py",
     ],
     srcs_version = "PY3",
+    # This target depends directly on //tensorboard/compat and on the TF stub to
+    # ensure it doesn't pick up a TF build dependency, which may happen when using
+    # //tensorboard/compat:tensorflow when the code is synced internally.
+    #
+    # TODO(#4581): implement a better abstraction for filesystem layer that includes
+    #   the option to use tf.io.gfile if available, eliminating need to rely on the
+    #   overall switching logic from tensorboard.compat.tf (see also #3666).
     deps = [
-        "//tensorboard/compat:tensorflow",
+        "//tensorboard/compat",
         "//tensorboard/compat/proto:protos_all_py_pb2",
+        "//tensorboard/compat/tensorflow_stub",
     ],
 )
 
