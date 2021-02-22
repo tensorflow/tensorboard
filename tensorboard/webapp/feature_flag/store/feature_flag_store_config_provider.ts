@@ -22,7 +22,7 @@ export const initialState: FeatureFlagState = {
   defaultFlags: {
     enabledExperimentalPlugins: [],
     inColab: false,
-    enableGpuChart: false,
+    enableGpuChart: true,
     scalarsBatchSize: undefined,
   },
   flagOverrides: {},
