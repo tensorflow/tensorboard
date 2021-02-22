@@ -14,6 +14,5 @@ limitations under the License.
 ==============================================================================*/
 import {Action, createReducer, on} from '@ngrx/store';
 import * as actions from './notification_center_actions';
-import {NotificationCenterState} from './notification_center_types';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';

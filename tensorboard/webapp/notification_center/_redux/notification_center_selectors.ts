@@ -13,6 +13,5 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {createSelector, createFeatureSelector} from '@ngrx/store';
-import {NotificationCenterInfo} from '../types';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';

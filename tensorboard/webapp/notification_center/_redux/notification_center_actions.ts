@@ -14,7 +14,5 @@ limitations under the License.
 ==============================================================================*/
 import {createAction, props} from '@ngrx/store';
 
-import {NotificationCenterReport} from '../types';
-
 /** @typehack */ import * as _typeHackModels from '@ngrx/store/src/models';
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
