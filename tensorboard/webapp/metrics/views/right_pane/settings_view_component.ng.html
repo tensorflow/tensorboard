@@ -84,10 +84,9 @@ limitations under the License.
     <mat-icon
       class="info"
       svgIcon="help_outline_24px"
-      matTooltip="Non-monotonic steps can occur when reusing logdir with multiple summary
-      writers and overlapping step numbers. Line chart, without this option, can appear
-      zig zag. This is common when restarting from a checkpoint."
-      matTooltipPosition="before"
+      title="Non-monotonic steps can occur when reusing a logdir with multiple summary writers and overlapping steps. Line charts, without this option enabled, can appear zig zagged. This is common when restarting from a checkpoint.
+
+When enabled, a non-monotonic time series composed of N monotonic pieces will be shown as N monotonic lines."
     ></mat-icon>
   </div>
 </section>

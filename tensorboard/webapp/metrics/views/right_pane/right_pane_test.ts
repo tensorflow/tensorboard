@@ -240,7 +240,6 @@ describe('metrics right_pane', () => {
       const fixture = TestBed.createComponent(SettingsViewContainer);
       fixture.detectChanges();
 
-      // Value can be empty string when invalid.
       const checkbox = select(fixture, '.scalars-partition-x input');
       checkbox.nativeElement.click();
 

@@ -27,7 +27,6 @@ tf_ng_module(
         "//tensorboard/webapp/angular:expect_angular_material_icon",
         "//tensorboard/webapp/angular:expect_angular_material_select",
         "//tensorboard/webapp/angular:expect_angular_material_slider",
-        "//tensorboard/webapp/angular:expect_angular_material_tooltip",
         "//tensorboard/webapp/metrics:types",
         "//tensorboard/webapp/metrics/actions",
         "//tensorboard/webapp/metrics/store",
