@@ -469,6 +469,16 @@ const reducer = createReducer(
       },
     };
   }),
+  on(actions.metricsScalarPartitionNonMonotonicXToggled, (state) => {
+    return {
+      ...state,
+      settings: {
+        ...state.settings,
+        scalarPartitionNonMonotonicX: !state.settings
+          .scalarPartitionNonMonotonicX,
+      },
+    };
+  }),
   on(actions.metricsChangeImageBrightness, (state, {brightnessInMilli}) => {
     return {
       ...state,

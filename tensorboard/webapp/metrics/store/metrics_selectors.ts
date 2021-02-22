@@ -257,47 +257,57 @@ export const getCanCreateNewPins = createSelector(
   }
 );
 
+const selectSettings = createSelector(
+  selectMetricsState,
+  (state): MetricsState['settings'] => state.settings
+);
+
 /**
  * Settings.
  */
 export const getMetricsTooltipSort = createSelector(
-  selectMetricsState,
-  (state): TooltipSort => state.settings.tooltipSort
+  selectSettings,
+  (settings): TooltipSort => settings.tooltipSort
 );
 
 export const getMetricsIgnoreOutliers = createSelector(
-  selectMetricsState,
-  (state): boolean => state.settings.ignoreOutliers
+  selectSettings,
+  (settings): boolean => settings.ignoreOutliers
 );
 
 export const getMetricsXAxisType = createSelector(
-  selectMetricsState,
-  (state): XAxisType => state.settings.xAxisType
+  selectSettings,
+  (settings): XAxisType => settings.xAxisType
 );
 
 export const getMetricsHistogramMode = createSelector(
-  selectMetricsState,
-  (state): HistogramMode => state.settings.histogramMode
+  selectSettings,
+  (settings): HistogramMode => settings.histogramMode
 );
 
 export const getMetricsScalarSmoothing = createSelector(
-  selectMetricsState,
-  (state): number => state.settings.scalarSmoothing
+  selectSettings,
+  (settings): number => settings.scalarSmoothing
+);
+
+export const getMetricsScalarPartitionNonMonotonicX = createSelector(
+  selectSettings,
+  (settings): boolean => settings.scalarPartitionNonMonotonicX
 );
 
 export const getMetricsImageBrightnessInMilli = createSelector(
-  selectMetricsState,
-  (state): number => state.settings.imageBrightnessInMilli
+  selectSettings,
+  (settings): number => settings.imageBrightnessInMilli
 );
 
 export const getMetricsImageContrastInMilli = createSelector(
-  selectMetricsState,
-  (state): number => state.settings.imageContrastInMilli
+  selectSettings,
+  (settings): number => settings.imageContrastInMilli
 );
 
 export const getMetricsImageShowActualSize = createSelector(
-  selectMetricsState,
-  (state): boolean => state.settings.imageShowActualSize
+  selectSettings,
+  (settings): boolean => settings.imageShowActualSize
 );
 
 export const getMetricsTagFilter = createSelector(

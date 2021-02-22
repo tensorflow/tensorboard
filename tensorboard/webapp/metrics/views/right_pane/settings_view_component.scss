@@ -69,6 +69,18 @@ section .control-row:not(:last-child) {
   width: 5em;
 }
 
+.scalars-partition-x {
+  align-items: center;
+  display: flex;
+
+  .info {
+    $_dim: 15px;
+    height: $_dim;
+    margin-left: 5px;
+    width: $_dim;
+  }
+}
+
 mat-slider {
   flex: 1;
   // Reset mat-slider's internal extra space on left/right sides

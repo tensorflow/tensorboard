@@ -20,6 +20,7 @@ import {MatCheckboxModule} from '@angular/material/checkbox';
 import {MatIconModule} from '@angular/material/icon';
 import {MatSelectModule} from '@angular/material/select';
 import {MatSliderModule} from '@angular/material/slider';
+import {MatTooltipModule} from '@angular/material/tooltip';
 
 import {DropdownModule} from '../../../widgets/dropdown/dropdown_module';
 import {RightPaneComponent} from './right_pane_component';
@@ -42,6 +43,7 @@ import {SettingsViewContainer} from './settings_view_container';
     MatIconModule,
     MatSelectModule,
     MatSliderModule,
+    MatTooltipModule,
   ],
 })
 export class RightPaneModule {}

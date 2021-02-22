@@ -585,6 +585,25 @@ describe('metrics reducers', () => {
       expect(nextState.settings.scalarSmoothing).toBe(0.1);
     });
 
+    it('toggles Partition X on metricsScalarPartitionNonMonotonicXToggled', () => {
+      const state1 = buildMetricsState({
+        settings: buildMetricsSettingsState({
+          scalarPartitionNonMonotonicX: true,
+        }),
+      });
+      const state2 = reducers(
+        state1,
+        actions.metricsScalarPartitionNonMonotonicXToggled()
+      );
+      expect(state2.settings.scalarPartitionNonMonotonicX).toBe(false);
+
+      const state3 = reducers(
+        state2,
+        actions.metricsScalarPartitionNonMonotonicXToggled()
+      );
+      expect(state3.settings.scalarPartitionNonMonotonicX).toBe(true);
+    });
+
     it('changes imageBrightnessInMilli on metricsChangeImageBrightness', () => {
       const prevState = buildMetricsState({
         settings: buildMetricsSettingsState({
