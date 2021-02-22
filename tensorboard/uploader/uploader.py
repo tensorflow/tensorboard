@@ -529,7 +529,6 @@ class _ScalarBatchedRequestSender(object):
                 raise RuntimeError("add_event failed despite flush")
 
     def _add_event_internal(self, run_name, event, value, metadata):
-        self._num_values += 1
         run_proto = self._runs.get(run_name)
         if run_proto is None:
             run_proto = self._create_run(run_name)
@@ -539,6 +538,7 @@ class _ScalarBatchedRequestSender(object):
             tag_proto = self._create_tag(run_proto, value.tag, metadata)
             self._tags[(run_name, value.tag)] = tag_proto
         self._create_point(tag_proto, event, value)
+        self._num_values += 1
 
     def flush(self):
         """Sends the active request after removing empty runs and tags.
