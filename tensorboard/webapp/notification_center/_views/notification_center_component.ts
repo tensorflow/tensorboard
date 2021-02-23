@@ -22,6 +22,6 @@ import {Notification} from '../types';
 })
 export class NotificationCenterComponent {
   @Input() notifications!: Notification[];
-  
+
   constructor() {}
 }
