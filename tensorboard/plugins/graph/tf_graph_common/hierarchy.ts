@@ -914,7 +914,11 @@ function groupSeries(
     });
   });
 }
-/** cluster op-nodes with similar op */
+/**
+ * Cluster op-nodes with similar op. This examines only the direct children of
+ * the metagraph, does not recursively check descendants.
+ * @return A map from op to a list of node names.
+ */
 function clusterNodes(
   metagraph: graphlib.Graph
 ): {
