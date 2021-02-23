@@ -25,6 +25,7 @@ import {
   metricsChangeXAxisType,
   metricsResetImageBrightness,
   metricsResetImageContrast,
+  metricsScalarPartitionNonMonotonicXToggled,
   metricsToggleIgnoreOutliers,
   metricsToggleImageShowActualSize,
 } from '../../actions';
@@ -47,6 +48,8 @@ import {HistogramMode, TooltipSort, XAxisType} from '../../types';
       (histogramModeChanged)="onHistogramModeChanged($event)"
       [scalarSmoothing]="scalarSmoothing$ | async"
       (scalarSmoothingChanged)="onScalarSmoothingChanged($event)"
+      [scalarPartitionX]="scalarPartitionX$ | async"
+      (scalarPartitionXToggled)="onScalarPartitionXToggled()"
       [imageBrightnessInMilli]="imageBrightnessInMilli$ | async"
       (imageBrightnessInMilliChanged)="onImageBrightnessInMilliChanged($event)"
       (imageBrightnessReset)="onImageBrightnessReset()"
@@ -73,6 +76,9 @@ export class SettingsViewContainer {
   );
   readonly scalarSmoothing$ = this.store.select(
     selectors.getMetricsScalarSmoothing
+  );
+  readonly scalarPartitionX$ = this.store.select(
+    selectors.getMetricsScalarPartitionNonMonotonicX
   );
   readonly imageBrightnessInMilli$ = this.store.select(
     selectors.getMetricsImageBrightnessInMilli
@@ -102,6 +108,10 @@ export class SettingsViewContainer {
 
   onScalarSmoothingChanged(smoothing: number) {
     this.store.dispatch(metricsChangeScalarSmoothing({smoothing}));
+  }
+
+  onScalarPartitionXToggled() {
+    this.store.dispatch(metricsScalarPartitionNonMonotonicXToggled());
   }
 
   onImageBrightnessInMilliChanged(brightnessInMilli: number) {

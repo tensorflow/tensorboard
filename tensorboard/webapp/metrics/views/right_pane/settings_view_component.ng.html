@@ -74,6 +74,21 @@ limitations under the License.
       >Ignore outliers in chart scaling</mat-checkbox
     >
   </div>
+
+  <div class="control-row scalars-partition-x">
+    <mat-checkbox
+      [checked]="scalarPartitionX"
+      (change)="scalarPartitionXToggled.emit()"
+      >Partition non-monotonic X axis</mat-checkbox
+    >
+    <mat-icon
+      class="info"
+      svgIcon="help_outline_24px"
+      title="Non-monotonic steps can occur when reusing a logdir with multiple summary writers and overlapping steps. Line charts, without this option enabled, can appear zig zagged. This is common when restarting from a checkpoint.
+
+When enabled, a non-monotonic time series composed of N monotonic pieces will be shown as N monotonic lines."
+    ></mat-icon>
+  </div>
 </section>
 
 <section class="Histograms">

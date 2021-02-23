@@ -96,6 +96,9 @@ export class SettingsViewComponent {
     auditTime(SLIDER_AUDIT_TIME_MS)
   );
 
+  @Input() scalarPartitionX!: boolean;
+  @Output() scalarPartitionXToggled = new EventEmitter();
+
   onScalarSmoothingInput(event: Event) {
     const input = event.target as HTMLInputElement;
     if (!input.value) {

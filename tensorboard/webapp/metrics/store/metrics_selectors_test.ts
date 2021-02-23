@@ -592,6 +592,20 @@ describe('metrics selectors', () => {
       expect(selectors.getMetricsScalarSmoothing(state)).toBe(0);
     });
 
+    it('returns scalarPartitionNonMonotonicX', () => {
+      selectors.getMetricsScalarPartitionNonMonotonicX.release();
+      const state = appStateFromMetricsState(
+        buildMetricsState({
+          settings: buildMetricsSettingsState({
+            scalarPartitionNonMonotonicX: false,
+          }),
+        })
+      );
+      expect(selectors.getMetricsScalarPartitionNonMonotonicX(state)).toBe(
+        false
+      );
+    });
+
     it('returns imageBrightnessInMilli when called getMetricsImageBrightnessInMilli', () => {
       selectors.getMetricsImageBrightnessInMilli.release();
       const state = appStateFromMetricsState(

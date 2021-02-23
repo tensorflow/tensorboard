@@ -60,6 +60,10 @@ export const metricsChangeScalarSmoothing = createAction(
   props<{smoothing: number}>()
 );
 
+export const metricsScalarPartitionNonMonotonicXToggled = createAction(
+  '[Metrics] Metrics Setting Partition Non Monotonic X Toggled'
+);
+
 export const metricsChangeImageBrightness = createAction(
   '[Metrics] Metrics Setting Change Image Brightness',
   props<{brightnessInMilli: number}>()

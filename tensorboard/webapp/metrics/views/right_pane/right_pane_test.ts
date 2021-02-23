@@ -76,6 +76,10 @@ describe('metrics right_pane', () => {
       store.overrideSelector(selectors.getMetricsIgnoreOutliers, false);
       store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.STEP);
       store.overrideSelector(selectors.getMetricsScalarSmoothing, 0.2);
+      store.overrideSelector(
+        selectors.getMetricsScalarPartitionNonMonotonicX,
+        false
+      );
       store.overrideSelector(selectors.getMetricsImageBrightnessInMilli, 200);
       store.overrideSelector(selectors.getMetricsImageContrastInMilli, 10);
       store.overrideSelector(selectors.getMetricsImageShowActualSize, false);
@@ -105,6 +109,10 @@ describe('metrics right_pane', () => {
       store.overrideSelector(selectors.getMetricsIgnoreOutliers, false);
       store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.STEP);
       store.overrideSelector(selectors.getMetricsScalarSmoothing, 0.3);
+      store.overrideSelector(
+        selectors.getMetricsScalarPartitionNonMonotonicX,
+        true
+      );
       store.overrideSelector(selectors.getMetricsImageBrightnessInMilli, 100);
       store.overrideSelector(selectors.getMetricsImageContrastInMilli, 200);
       store.overrideSelector(selectors.getMetricsImageShowActualSize, true);
@@ -124,6 +132,10 @@ describe('metrics right_pane', () => {
           'aria-checked'
         ]
       ).toBe('false');
+
+      expect(
+        select(fixture, '.scalars-partition-x input').attributes['aria-checked']
+      ).toBe('true');
 
       const xAxisTypeSelect = select(fixture, '.x-axis-type tb-dropdown');
       expect(xAxisTypeSelect.componentInstance.value).toBe(XAxisType.STEP);
@@ -223,6 +235,18 @@ describe('metrics right_pane', () => {
       expect(scalarSmoothingInput.nativeElement.value).toBe('');
       expect(dispatchSpy).not.toHaveBeenCalled();
     }));
+
+    it('dispatches metricsScalarPartitionNonMonotonicXToggled on toggle', () => {
+      const fixture = TestBed.createComponent(SettingsViewContainer);
+      fixture.detectChanges();
+
+      const checkbox = select(fixture, '.scalars-partition-x input');
+      checkbox.nativeElement.click();
+
+      expect(dispatchSpy).toHaveBeenCalledWith(
+        actions.metricsScalarPartitionNonMonotonicXToggled()
+      );
+    });
 
     it('dispatches metricsToggleIgnoreOutliers on toggle', () => {
       const fixture = TestBed.createComponent(SettingsViewContainer);
