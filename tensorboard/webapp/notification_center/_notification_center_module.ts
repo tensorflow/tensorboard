@@ -13,13 +13,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {NgModule} from '@angular/core';
-import {CommonModule} from '@angular/common';
 import {NotificationCenterComponent} from './_views/notification_center_component';
 import {NotificationCenterContainer} from './_views/notification_center_container';
 
 @NgModule({
   imports: [
-    CommonModule,
     NotificationCenterComponent,
     NotificationCenterContainer,
   ],
