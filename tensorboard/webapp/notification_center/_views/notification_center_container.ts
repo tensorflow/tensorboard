@@ -23,19 +23,14 @@ import {NotificationCenterComponent} from './notification_center_component';
   template: `
     <notification-center-component
       [notifications]="notifications"
-      (onNotificationChanged)="onIconClicked()"
     ></notification-center-component>
   `,
 })
 export class NotificationCenterContainer {
-  notifications: Notification[] = [];
-  constructor(private readonly store: Store<Boolean>) {
-    this.notifications.push({
-      date: '2020-1-23',
-      title: '2.4 release',
-      content: '<li>update 1</li><li>update 2</li>',
-    });
-  }
-
-  onIconClicked() {}
+  notifications: Notification[] = [{
+    date: '2020-1-23',
+    title: '2.4 release',
+    content: '<li>update 1</li><li>update 2</li>',
+  }];
+  constructor(private readonly store: Store<Boolean>) {}
 }

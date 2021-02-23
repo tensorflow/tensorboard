@@ -22,16 +22,6 @@ import {Notification} from '../types';
 })
 export class NotificationCenterComponent {
   @Input() notifications!: Notification[];
-  @Output() onNotificationChanged = new EventEmitter<Boolean>();
-
+  
   constructor() {}
-
-  onIconClicked() {
-    this.onNotificationChanged.emit();
-  }
-
-  onNotificationClicked(event: Event) {
-    event.stopPropagation();
-    this.onNotificationChanged.emit(false);
-  }
 }
