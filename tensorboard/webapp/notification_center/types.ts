@@ -19,7 +19,7 @@ import {State} from '../app_state';
  * A notification chunk displayed in the notification center.
  */
 export type Notification = {
-  date: string;
+  date: Date;
   title: string;
   content: string;
 };
