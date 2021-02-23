@@ -17,10 +17,7 @@ import {NotificationCenterComponent} from './_views/notification_center_componen
 import {NotificationCenterContainer} from './_views/notification_center_container';
 
 @NgModule({
-  imports: [
-    NotificationCenterComponent,
-    NotificationCenterContainer,
-  ],
+  imports: [NotificationCenterComponent, NotificationCenterContainer],
   exports: [NotificationCenterContainer],
 })
 export class NotificationCenterModule {}
