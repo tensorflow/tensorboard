@@ -94,14 +94,18 @@ export function fetchAndParseGraphData(
       async () => {
         const start = Date.now();
         if (pbTxtFile) {
-          const result = await new Promise<ArrayBuffer>(function (resolve, reject) {
+          const result = await new Promise<ArrayBuffer>(function (
+            resolve,
+            reject
+          ) {
             let fileReader = new FileReader();
             fileReader.onload = () => resolve(fileReader.result as ArrayBuffer);
             fileReader.onerror = () => reject(fileReader.error);
             fileReader.readAsArrayBuffer(pbTxtFile);
           });
           tf_graph_util.notifyDebugEvent({
-            timingId: tb_debug.GraphDebugEventId.FETCH_PBTXT_BYTES_FROM_FILESYSTEM,
+            timingId:
+              tb_debug.GraphDebugEventId.FETCH_PBTXT_BYTES_FROM_FILESYSTEM,
             eventValue: Date.now() - start,
           });
           return result;
