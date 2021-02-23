@@ -703,6 +703,7 @@ class _TensorBatchedRequestSender(object):
             tag_proto = self._create_tag(run_proto, value.tag, metadata)
             self._tags[(run_name, value.tag)] = tag_proto
         self._create_point(tag_proto, event, value, run_name)
+        self._num_values += 1
 
     def flush(self):
         """Sends the active request after removing empty runs and tags.
@@ -810,7 +811,6 @@ class _TensorBatchedRequestSender(object):
 
         try:
             self._byte_budget_manager.add_point(point)
-            self._num_values += 1
         except _OutOfSpaceError:
             tag_proto.points.pop()
             raise
