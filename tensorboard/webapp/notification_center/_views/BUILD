@@ -24,9 +24,7 @@ tf_ts_library(
     deps = [
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp:selectors",
-        "//tensorboard/webapp/angular:expect_angular_material_button",
-        "//tensorboard/webapp/angular:expect_angular_material_snackbar",
-        "//tensorboard/webapp/util:string",
+        "//tensorboard/webapp/notification_center:types",
         "@npm//@angular/common",
         "@npm//@angular/core",
         "@npm//@ngrx/store",

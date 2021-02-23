@@ -12,16 +12,4 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Injectable} from '@angular/core';
-import {Actions, createEffect} from '@ngrx/effects';
-import {Store} from '@ngrx/store';
-import {tap} from 'rxjs/operators';
 
-/** @typehack */ import * as _typeHackNgrxEffects from '@ngrx/effects';
-/** @typehack */ import * as _typeHackStore from '@ngrx/store';
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
-
-@Injectable()
-export class NotificationCenterEffects {
-  constructor() {}
-}

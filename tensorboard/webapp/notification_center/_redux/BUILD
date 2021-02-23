@@ -28,9 +28,7 @@ tf_ts_library(
     srcs = [
         "notification_center_types.ts",
     ],
-    deps = [
-        "//tensorboard/webapp/notification_center:types",
-    ],
+    deps = [],
 )
 
 tf_ts_library(

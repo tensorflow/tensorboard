@@ -1,4 +1,4 @@
-/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2021 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@ limitations under the License.
 import {Component} from '@angular/core';
 import {createSelector, select, Store} from '@ngrx/store';
 import {State} from '../../app_state';
-import {Notification} from './view_types';
+import {Notification} from '../types';
 import {NotificationCenterComponent} from './notification_center_component';
 
 @Component({
