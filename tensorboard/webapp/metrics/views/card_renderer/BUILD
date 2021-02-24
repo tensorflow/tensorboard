@@ -230,6 +230,7 @@ tf_ts_library(
         ":image_card",
         ":run_name",
         ":scalar_card",
+        ":scalar_card_types",
         ":utils",
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp:selectors",

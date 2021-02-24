@@ -1769,7 +1769,7 @@ describe('scalar card', () => {
             ],
           },
           {
-            id: 'run2',
+            id: '["run2",0]',
             points: [{wallTime: 2000, value: 1, step: 1, x: 1, y: 1}],
           },
         ]);
@@ -1780,7 +1780,7 @@ describe('scalar card', () => {
             type: SeriesType.ORIGINAL,
             visible: false,
             color: '#f00',
-            opacity: 0.6,
+            opacity: 1,
             aux: false,
           },
           '["run1",1]': {
@@ -1792,8 +1792,8 @@ describe('scalar card', () => {
             opacity: 1,
             aux: false,
           },
-          run2: {
-            id: 'run2',
+          '["run2",0]': {
+            id: '["run2",0]',
             displayName: 'run2',
             type: SeriesType.ORIGINAL,
             visible: false,
@@ -1861,7 +1861,7 @@ describe('scalar card', () => {
             type: SeriesType.ORIGINAL,
             visible: false,
             color: '#f00',
-            opacity: 0.6,
+            opacity: 1,
             aux: false,
           },
           '["run1",1]': {

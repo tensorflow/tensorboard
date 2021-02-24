@@ -13,8 +13,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {buildRun} from '../../../runs/store/testing';
+import {PartialSeries} from './scalar_card_types';
 
-import {getDisplayNameForRun} from './utils';
+import {getDisplayNameForRun, partitionSeries} from './utils';
 
 describe('metrics card_renderer utils test', () => {
   describe('#getDisplayNameForRun', () => {
@@ -36,6 +37,136 @@ describe('metrics card_renderer utils test', () => {
       expect(
         getDisplayNameForRun('rid', buildRun({name: 'foo/bar'}), 'eid')
       ).toBe('eid/foo/bar');
+    });
+  });
+
+  function buildPoints(xs: number[]): PartialSeries['points'] {
+    return xs.map((x) => {
+      return {x, y: x * 10, value: x * 10, wallTime: 0, step: x};
+    });
+  }
+
+  describe('#partitionSeries', () => {
+    it('partitions series when non-monotonic points are detected', () => {
+      const actual = partitionSeries([
+        {
+          runId: 'a',
+          points: buildPoints([1, 2, 2, 1, 5, 10]),
+        },
+        {
+          runId: 'b',
+          points: buildPoints([1, 1, 1]),
+        },
+      ]);
+
+      expect(actual).toEqual([
+        {
+          seriesId: '["a",0]',
+          runId: 'a',
+          points: buildPoints([1, 2, 2]),
+          partitionIndex: 0,
+          partitionSize: 2,
+        },
+        {
+          seriesId: '["a",1]',
+          runId: 'a',
+          points: buildPoints([1, 5, 10]),
+          partitionIndex: 1,
+          partitionSize: 2,
+        },
+        {
+          seriesId: '["b",0]',
+          runId: 'b',
+          points: buildPoints([1, 1, 1]),
+          partitionIndex: 0,
+          partitionSize: 1,
+        },
+      ]);
+    });
+
+    it('handles zero length points', () => {
+      const actual = partitionSeries([
+        {
+          runId: 'a',
+          points: buildPoints([]),
+        },
+      ]);
+
+      expect(actual).toEqual([
+        {
+          seriesId: '["a",0]',
+          runId: 'a',
+          points: [],
+          partitionIndex: 0,
+          partitionSize: 1,
+        },
+      ]);
+    });
+
+    describe('non-finite xs', () => {
+      it('handles only non-finite numbers', () => {
+        const actual = partitionSeries([
+          {
+            runId: 'a',
+            points: buildPoints([Infinity, NaN, -Infinity]),
+          },
+        ]);
+
+        expect(actual).toEqual([
+          {
+            seriesId: '["a",0]',
+            runId: 'a',
+            points: buildPoints([Infinity, NaN, -Infinity]),
+            partitionIndex: 0,
+            partitionSize: 1,
+          },
+        ]);
+      });
+
+      it('disregards non-finite numbers', () => {
+        const actual = partitionSeries([
+          {
+            runId: 'a',
+            points: buildPoints([0, Infinity, NaN, 1, -1]),
+          },
+        ]);
+
+        expect(actual).toEqual([
+          {
+            seriesId: '["a",0]',
+            runId: 'a',
+            points: buildPoints([0, Infinity, NaN, 1]),
+            partitionIndex: 0,
+            partitionSize: 2,
+          },
+          {
+            seriesId: '["a",1]',
+            runId: 'a',
+            points: buildPoints([-1]),
+            partitionIndex: 1,
+            partitionSize: 2,
+          },
+        ]);
+      });
+
+      it('keeps trailing non-finites', () => {
+        const actual = partitionSeries([
+          {
+            runId: 'a',
+            points: buildPoints([-1, Infinity, NaN]),
+          },
+        ]);
+
+        expect(actual).toEqual([
+          {
+            seriesId: '["a",0]',
+            runId: 'a',
+            points: buildPoints([-1, Infinity, NaN]),
+            partitionIndex: 0,
+            partitionSize: 1,
+          },
+        ]);
+      });
     });
   });
 });

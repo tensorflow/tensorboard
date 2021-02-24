@@ -425,11 +425,22 @@ export class ScalarCardContainer implements CardRenderer, OnInit {
         const metadataMap: ScalarCardSeriesMetadataMap = {};
         const shouldSmooth = smoothing > 0;
 
-        for (const {seriesId, runId, displayName} of namedPartitionedSeries) {
+        for (const partitioned of namedPartitionedSeries) {
+          const {
+            seriesId,
+            runId,
+            displayName,
+            partitionIndex,
+            partitionSize,
+          } = partitioned;
+
           metadataMap[seriesId] = {
             type: SeriesType.ORIGINAL,
-            id: runId,
-            displayName,
+            id: seriesId,
+            displayName:
+              partitionSize > 1
+                ? `${displayName}: ${partitionIndex}`
+                : displayName,
             visible: Boolean(runSelectionMap && runSelectionMap.get(runId)),
             color: colorMap[runId] ?? '#fff',
             aux: false,

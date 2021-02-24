@@ -46,6 +46,11 @@ export function partitionSeries(series: PartialSeries[]): PartitionedSeries[] {
     let currentPoints: PartitionedSeries['points'] = [];
 
     for (const point of datum.points) {
+      if (!Number.isFinite(point.x)) {
+        currentPoints.push(point);
+        continue;
+      }
+
       if (point.x < lastXValue) {
         currentPartition.push({
           seriesId: JSON.stringify([datum.runId, currentPartition.length]),
