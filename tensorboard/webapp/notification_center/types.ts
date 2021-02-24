@@ -12,8 +12,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Action, Store} from '@ngrx/store';
-import {State} from '../app_state';
 
 /**
  * A notification chunk displayed in the notification center.

@@ -22,12 +22,7 @@ tf_ts_library(
         "view_types.ts",
     ],
     deps = [
-        "//tensorboard/webapp:app_state",
-        "//tensorboard/webapp:selectors",
         "//tensorboard/webapp/notification_center:types",
-        "@npm//@angular/common",
         "@npm//@angular/core",
-        "@npm//@ngrx/store",
-        "@npm//rxjs",
     ],
 )

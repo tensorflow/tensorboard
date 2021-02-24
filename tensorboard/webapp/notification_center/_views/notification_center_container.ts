@@ -13,8 +13,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Component} from '@angular/core';
-import {createSelector, select, Store} from '@ngrx/store';
-import {State} from '../../app_state';
 import {Notification} from '../types';
 import {NotificationCenterComponent} from './notification_center_component';
 
@@ -23,7 +21,6 @@ import {NotificationCenterComponent} from './notification_center_component';
   template: `
     <notification-center-component
       [notifications]="notifications"
-      (onNotificationChanged)="onIconClicked()"
     ></notification-center-component>
   `,
 })
@@ -35,5 +32,4 @@ export class NotificationCenterContainer {
       content: '<li>update 1</li><li>update 2</li>',
     },
   ];
-  constructor(private readonly store: Store<Boolean>) {}
 }
