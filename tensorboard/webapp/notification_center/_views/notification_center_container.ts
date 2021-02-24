@@ -26,7 +26,7 @@ import {Notification} from '../_redux/notification_center_types';
 export class NotificationCenterContainer {
   notifications: Notification[] = [
     {
-      date: new Date('2020-1-23'),
+      date: 1579766400000,
       title: '2.4 release',
       content: '<li>update 1</li><li>update 2</li>',
     },
