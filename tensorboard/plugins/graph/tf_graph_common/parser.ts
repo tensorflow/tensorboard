@@ -91,17 +91,32 @@ export function fetchAndParseGraphData(
     .runAsyncPromiseTask(
       'Reading graph pbtxt',
       40,
-      () => {
+      async () => {
+        const start = Date.now();
         if (pbTxtFile) {
-          return new Promise<ArrayBuffer>(function (resolve, reject) {
+          const result = await new Promise<ArrayBuffer>(function (
+            resolve,
+            reject
+          ) {
             let fileReader = new FileReader();
             fileReader.onload = () => resolve(fileReader.result as ArrayBuffer);
             fileReader.onerror = () => reject(fileReader.error);
             fileReader.readAsArrayBuffer(pbTxtFile);
           });
-        } else {
-          return fetchPbTxt(path);
+          tf_graph_util.notifyDebugEvent({
+            timingId:
+              tb_debug.GraphDebugEventId.FETCH_PBTXT_BYTES_FROM_FILESYSTEM,
+            eventValue: Date.now() - start,
+          });
+          return result;
         }
+
+        const result = await fetchPbTxt(path);
+        tf_graph_util.notifyDebugEvent({
+          timingId: tb_debug.GraphDebugEventId.FETCH_PBTXT_BYTES_FROM_SERVER,
+          eventValue: Date.now() - start,
+        });
+        return result;
       },
       tracker,
       tb_debug.GraphDebugEventId.FETCH_PBTXT_BYTES
