@@ -41,9 +41,7 @@ export type ScalarCardSeriesMetadata =
   | SmoothedSeriesMetadata
   | OriginalSeriesMetadata;
 
-export type ScalarCardSeriesMetadataMap = DataSeriesMetadataMap<
-  ScalarCardSeriesMetadata
->;
+export type ScalarCardSeriesMetadataMap = DataSeriesMetadataMap<ScalarCardSeriesMetadata>;
 
 export interface ScalarCardPoint extends Point {
   wallTime: number;

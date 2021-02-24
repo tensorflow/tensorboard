@@ -97,9 +97,12 @@ function buildFrontendTagMetadata(
       const frontendTagRunSampledInfo = {} as TagToRunSampledInfo;
       for (const tag in tagRunSampledInfo) {
         if (tagRunSampledInfo.hasOwnProperty(tag)) {
-          frontendTagRunSampledInfo[tag] = buildRunIdKeyedObject<
-            RunSampledInfo
-          >(tagRunSampledInfo[tag], experimentId);
+          frontendTagRunSampledInfo[
+            tag
+          ] = buildRunIdKeyedObject<RunSampledInfo>(
+            tagRunSampledInfo[tag],
+            experimentId
+          );
         }
       }
       tagMetadata[plugin] = {

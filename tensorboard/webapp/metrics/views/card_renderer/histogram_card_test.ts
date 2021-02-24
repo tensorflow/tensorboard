@@ -68,9 +68,7 @@ class TestableHistogramWidget {
   redraw() {}
 }
 
-function createHistogramCardContainer(): ComponentFixture<
-  HistogramCardContainer
-> {
+function createHistogramCardContainer(): ComponentFixture<HistogramCardContainer> {
   const fixture = TestBed.createComponent(HistogramCardContainer);
   fixture.componentInstance.cardId = 'card1';
   fixture.componentInstance.runColorScale = (run: string) => '#fff';

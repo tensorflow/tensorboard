@@ -78,12 +78,8 @@ interface BaseTimeSeriesLoadable<T extends PluginType> {
   runToLoadState: RunToLoadState;
 }
 
-export type ScalarTimeSeriesLoadable = BaseTimeSeriesLoadable<
-  PluginType.SCALARS
->;
-export type HistogramTimeSeriesLoadable = BaseTimeSeriesLoadable<
-  PluginType.HISTOGRAMS
->;
+export type ScalarTimeSeriesLoadable = BaseTimeSeriesLoadable<PluginType.SCALARS>;
+export type HistogramTimeSeriesLoadable = BaseTimeSeriesLoadable<PluginType.HISTOGRAMS>;
 export type ImageTimeSeriesLoadable = BaseTimeSeriesLoadable<PluginType.IMAGES>;
 
 export type TimeSeriesLoadables = {
