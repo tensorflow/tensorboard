@@ -13,8 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Component} from '@angular/core';
-import {Notification} from '../types';
-import {NotificationCenterComponent} from './notification_center_component';
+import {Notification} from '../_redux/notification_center_types';
 
 @Component({
   selector: 'notification-center',

@@ -22,7 +22,7 @@ tf_ts_library(
         "view_types.ts",
     ],
     deps = [
-        "//tensorboard/webapp/notification_center:types",
+        "//tensorboard/webapp/notification_center/_redux:types",
         "@npm//@angular/core",
     ],
 )

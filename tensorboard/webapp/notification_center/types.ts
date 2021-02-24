@@ -12,12 +12,3 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-
-/**
- * A notification chunk displayed in the notification center.
- */
-export type Notification = {
-  date: Date;
-  title: string;
-  content: string;
-};
