@@ -26,7 +26,7 @@ tf_ts_library(
     name = "actions",
     srcs = [
         "notification_center_actions.ts",
-    ]
+    ],
 )
 
 tf_ts_library(
