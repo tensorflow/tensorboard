@@ -198,7 +198,10 @@ def _create_request_sender(
 
 
 def _create_scalar_request_sender(
-    experiment_id=None, api=_USE_DEFAULT, max_request_size=_USE_DEFAULT
+    experiment_id=None,
+    api=_USE_DEFAULT,
+    max_request_size=_USE_DEFAULT,
+    tracker=None,
 ):
     if api is _USE_DEFAULT:
         api = _create_mock_client()
@@ -209,7 +212,7 @@ def _create_scalar_request_sender(
         api=api,
         rpc_rate_limiter=util.RateLimiter(0),
         max_request_size=max_request_size,
-        tracker=upload_tracker.UploadTracker(verbosity=0),
+        tracker=tracker or upload_tracker.UploadTracker(verbosity=0),
     )
 
 
@@ -218,6 +221,7 @@ def _create_tensor_request_sender(
     api=_USE_DEFAULT,
     max_request_size=_USE_DEFAULT,
     max_tensor_point_size=_USE_DEFAULT,
+    tracker=None,
 ):
     if api is _USE_DEFAULT:
         api = _create_mock_client()
@@ -231,7 +235,7 @@ def _create_tensor_request_sender(
         rpc_rate_limiter=util.RateLimiter(0),
         max_request_size=max_request_size,
         max_tensor_point_size=max_tensor_point_size,
-        tracker=upload_tracker.UploadTracker(verbosity=0),
+        tracker=tracker or upload_tracker.UploadTracker(verbosity=0),
     )
 
 
@@ -1302,12 +1306,13 @@ class ScalarBatchedRequestSenderTest(tf.test.TestCase):
             if step > 0:
                 summary.value[0].ClearField("metadata")
             events.append(event_pb2.Event(summary=summary, step=step))
-
+        tracker = upload_tracker.UploadTracker(verbosity=0)
         sender = _create_scalar_request_sender(
             "123",
             mock_client,
             # Set a limit to request size
             max_request_size=1024,
+            tracker=tracker,
         )
         self._add_events(sender, "train", _apply_compat(events))
         sender.flush()
@@ -1337,6 +1342,8 @@ class ScalarBatchedRequestSenderTest(tf.test.TestCase):
                 total_points_in_result += 1
             self.assertLessEqual(request.ByteSize(), 1024)
         self.assertEqual(total_points_in_result, point_count)
+        with self.subTest("Scalar report count correct."):
+            self.assertEqual(tracker._stats.num_scalars, point_count)
 
     def test_prunes_tags_and_runs(self):
         mock_client = _create_mock_client()
@@ -1674,11 +1681,13 @@ class TensorBatchedRequestSenderTest(tf.test.TestCase):
             event.summary.value.add(tag="histo", tensor=tensor_proto)
             events.append(event)
 
+        tracker = upload_tracker.UploadTracker(verbosity=0)
         sender = _create_tensor_request_sender(
             "123",
             mock_client,
             # Set a limit to request size
             max_request_size=1024,
+            tracker=tracker,
         )
         self._add_events(sender, "train", _apply_compat(events))
         sender.flush()
@@ -1705,6 +1714,8 @@ class TensorBatchedRequestSenderTest(tf.test.TestCase):
                 total_points_in_result += 1
             self.assertLessEqual(request.ByteSize(), 1024)
         self.assertEqual(total_points_in_result, point_count)
+        with self.subTest("Tensor report count correct."):
+            self.assertEqual(tracker._stats.num_tensors, point_count)
 
     def test_strip_large_tensors(self):
         # Generate test data with varying tensor point sizes. Use raw bytes.
