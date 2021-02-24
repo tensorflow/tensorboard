@@ -7,7 +7,6 @@ licenses(["notice"])
 tf_ts_library(
     name = "_redux",
     srcs = [
-        "notification_center_actions.ts",
         "notification_center_effects.ts",
         "notification_center_reducers.ts",
         "notification_center_selectors.ts",
@@ -21,6 +20,13 @@ tf_ts_library(
         "@npm//@ngrx/store",
         "@npm//rxjs",
     ],
+)
+
+tf_ts_library(
+    name = "actions",
+    srcs = [
+        "notification_center_actions.ts",
+    ]
 )
 
 tf_ts_library(

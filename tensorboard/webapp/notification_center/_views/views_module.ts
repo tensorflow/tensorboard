@@ -14,10 +14,14 @@ limitations under the License.
 ==============================================================================*/
 import {NgModule} from '@angular/core';
 
-import {NotificationCenterViewModule} from './_views/views_module';
+import {NotificationCenterComponent} from './notification_center_component';
+import {NotificationCenterContainer} from './notification_center_container';
 
+/**
+ * Provides the 'alert snackbar' view.
+ */
 @NgModule({
-  imports: [NotificationCenterViewModule],
-  exports: [NotificationCenterViewModule],
+  declarations: [NotificationCenterContainer, NotificationCenterComponent],
+  exports: [NotificationCenterContainer],
 })
-export class NotificationCenterModule {}
+export class NotificationCenterViewModule {}

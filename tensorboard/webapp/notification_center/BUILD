@@ -9,13 +9,7 @@ tf_ng_module(
     srcs = [
         "_notification_center_module.ts",
     ],
-    assets = [
-        "//tensorboard/webapp/notification_center/_views:notification_center_styles",
-        "//tensorboard/webapp/notification_center/_views:html",
-    ],
     deps = [
-        "//tensorboard/webapp/notification_center/_redux",
-        "//tensorboard/webapp/notification_center/_redux:types",
         "//tensorboard/webapp/notification_center/_views",
         "@npm//@angular/core",
     ],
