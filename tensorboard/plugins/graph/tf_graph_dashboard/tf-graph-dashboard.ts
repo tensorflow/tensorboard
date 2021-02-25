@@ -110,8 +110,8 @@ class TfGraphDashboard extends LegacyElementMixin(PolymerElement) {
             <code>tf.summary.FileWriter</code>
             and pass the graph either via the constructor, or by calling its
             <code>add_graph()</code> method. You may want to check out the
-            <a href="https://www.tensorflow.org/get_started/graph_viz"
-              >graph visualizer tutorial</a
+            <a href="https://www.tensorflow.org/tensorboard/graphs"
+              >examining the TensorFlow graph tutorial</a
             >.
           </p>
 
