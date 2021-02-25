@@ -389,8 +389,8 @@ export class LineChartComponent implements AfterViewInit, OnChanges, OnDestroy {
 
     const nextDataExtent = {
       ...this.viewBox,
-      [axis]: extent
-    }
+      [axis]: extent,
+    };
     this.viewBox = nextDataExtent;
     this.updateLineChart();
   }
