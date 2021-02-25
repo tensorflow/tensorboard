@@ -19,8 +19,8 @@ import {
   State,
   SortOrder,
   ViewActive,
-  EmbeddingDataSet,
 } from '../store/npmi_types';
+import {buildEmbeddingDataSet} from '../util/umap';
 
 export function createNpmiState(override?: Partial<NpmiState>): NpmiState {
   return {
@@ -51,7 +51,6 @@ export function createNpmiState(override?: Partial<NpmiState>): NpmiState {
     embeddingsMetric: '',
     embeddingsSidebarExpanded: true,
     embeddingsSidebarWidth: 500,
-    embeddingStatusMessage: '',
     ...override,
   };
 }
@@ -161,8 +160,12 @@ export function buildSampleAnnotationData() {
   };
 }
 
-export function buildSampleEmbeddingData() {
-  return new EmbeddingDataSet({
+export function createSampleEmbeddingData() {
+  return buildEmbeddingDataSet(createSampleEmbeddingListing());
+}
+
+export function createSampleEmbeddingListing() {
+  return {
     annotation_1: {
       vector: [0.5],
       name: 'annotation_1',
@@ -181,5 +184,5 @@ export function buildSampleEmbeddingData() {
       index: 2,
       projections: {},
     },
-  });
+  };
 }

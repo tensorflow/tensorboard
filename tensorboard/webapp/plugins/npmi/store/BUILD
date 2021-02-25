@@ -14,6 +14,7 @@ tf_ng_module(
         "//tensorboard/webapp/plugins/npmi/actions",
         "//tensorboard/webapp/plugins/npmi/data_source",
         "//tensorboard/webapp/plugins/npmi/util:metric_type",
+        "//tensorboard/webapp/plugins/npmi/util:umap",
         "@npm//@ngrx/store",
     ],
 )

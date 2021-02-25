@@ -24,9 +24,9 @@ import {
   Operator,
   ArithmeticKind,
   ViewActive,
-  EmbeddingDataSet,
 } from './npmi_types';
 import * as metricType from '../util/metric_type';
+import {buildEmbeddingDataSet} from '../util/umap';
 
 // HACK: These imports are for type inference.
 // https://github.com/bazelbuild/rules_nodejs/issues/1013
@@ -60,7 +60,6 @@ const initialState: NpmiState = {
   embeddingsMetric: '',
   embeddingsSidebarWidth: 500,
   embeddingsSidebarExpanded: true,
-  embeddingStatusMessage: '',
 };
 
 const reducer = createReducer(
@@ -418,15 +417,6 @@ const reducer = createReducer(
     }
   ),
   on(
-    actions.embeddingStatusMessageChanged,
-    (state: NpmiState, {message}): NpmiState => {
-      return {
-        ...state,
-        embeddingStatusMessage: message,
-      };
-    }
-  ),
-  on(
     actions.npmiEmbeddingsSidebarExpandedToggled,
     (state: NpmiState): NpmiState => {
       return {
@@ -438,17 +428,9 @@ const reducer = createReducer(
   on(
     actions.embeddingDataSetChanged,
     (state: NpmiState, {dataSet}): NpmiState => {
-      const newDataSet = new EmbeddingDataSet(dataSet.points, {
-        pointKeys: dataSet.pointKeys,
-        shuffledDataIndices: dataSet.shuffledDataIndices,
-        projections: dataSet.projections,
-        hasUmapRun: dataSet.hasUmapRun,
-        umapRun: dataSet.umapRun,
-      });
       return {
         ...state,
-        embeddingStatusMessage: '',
-        embeddingDataSet: newDataSet,
+        embeddingDataSet: dataSet,
       };
     }
   )

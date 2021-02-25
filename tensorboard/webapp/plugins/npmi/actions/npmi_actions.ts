@@ -141,11 +141,6 @@ export const npmiEmbeddingsSidebarExpandedToggled = createAction(
   '[NPMI] Toggle Embeddings Sidebar Expanded'
 );
 
-export const embeddingStatusMessageChanged = createAction(
-  '[NPMI] Change Embedding Status Message',
-  props<{message: string}>()
-);
-
 export const embeddingDataSetChanged = createAction(
   '[NPMI] Change Embedding DataSet',
   props<{dataSet: EmbeddingDataSet}>()

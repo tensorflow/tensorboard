@@ -38,90 +38,78 @@ export interface EmbeddingListing {
  * requires normalizing and shifting the vector space, we make a copy of the
  * data so we can still always create new subsets based on the original data.
  */
-export class EmbeddingDataSet {
+export interface EmbeddingDataSet {
   points: EmbeddingListing;
   pointKeys: string[];
-  shuffledDataIndices: number[] = [];
+  shuffledDataIndices: number[];
   /**
    * This keeps a list of all current projections so you can easily test to see
    * if it's been calculated already.
    */
   projections: {
     [projection: string]: boolean;
-  } = {};
+  };
+
   // UMAP
-  hasUmapRun = false;
-  private umap: UMAP;
-  umapRun = 0;
+  hasUmapRun: boolean;
+  umapRun: number;
+}
 
-  /** Creates a new Dataset */
-  constructor(
-    points: EmbeddingListing,
-    fullProps?: {
-      pointKeys: string[];
-      shuffledDataIndices: number[];
-      projections: {[projection: string]: boolean};
-      hasUmapRun: boolean;
-      umapRun: number;
-    }
-  ) {
-    this.points = points;
-    if (fullProps === undefined) {
-      this.pointKeys = Object.keys(this.points);
-      this.shuffledDataIndices = util.shuffle(
-        util.range(this.pointKeys.length)
-      );
-    } else {
-      this.pointKeys = fullProps.pointKeys;
-      this.shuffledDataIndices = fullProps.shuffledDataIndices;
-      this.projections = fullProps.projections;
-      this.hasUmapRun = fullProps.hasUmapRun;
-      this.umapRun = fullProps.umapRun;
-    }
-  }
+export function buildEmbeddingDataSet(
+  points: EmbeddingListing
+): EmbeddingDataSet {
+  const pointKeys = Object.keys(points);
+  return {
+    points,
+    pointKeys,
+    shuffledDataIndices: util.shuffle(util.range(pointKeys.length)),
+    projections: {},
+    hasUmapRun: false,
+    umapRun: 0,
+  };
+}
 
-  /** Runs UMAP on the data. */
-  async projectUmap(
-    nComponents: number,
-    nNeighbors: number,
-    minDist: number,
-    umapIndices: number[],
-    messageCallback: (message: string) => void,
-    datasetCallback: (dataset: EmbeddingDataSet) => void
-  ) {
-    this.umapRun = this.umapRun + 1;
-    this.projections['umap'] = false;
-    if (umapIndices.length <= nNeighbors) {
-      messageCallback('Error: Please select more data points.');
-      return;
-    }
-    this.hasUmapRun = true;
-    const epochStepSize = 10;
-    const sampledIndices = umapIndices.slice(0, UMAP_SAMPLE_SIZE);
-    const sampledData = sampledIndices.map(
-      (i) => this.points[this.pointKeys[i]].vector
-    );
-    messageCallback('Calculating UMAP');
-    this.umap = new UMAP({nComponents, nNeighbors, minDist});
-    const epochs = this.umap.initializeFit(sampledData);
-    const runNumber = this.umapRun;
-    await this.umap.fitAsync(sampledData, (epochNumber) => {
-      if (this.umapRun !== runNumber) {
-        return false;
-      } else if (epochNumber === epochs) {
-        const result = this.umap.getEmbedding();
-        this.projections['umap'] = true;
-        this.hasUmapRun = true;
-        sampledIndices.forEach((index, i) => {
-          const dataPoint = this.points[this.pointKeys[index]];
-          dataPoint.projections['umap-0'] = result[i][0];
-          dataPoint.projections['umap-1'] = result[i][1];
-        });
-        datasetCallback(this);
-        return false;
-      } else if (epochNumber % epochStepSize === 0) {
-        messageCallback(`UMAP epoch ${epochNumber}/${epochs}`);
-      }
-    });
+/** Runs UMAP on the data. */
+export async function projectUmap(
+  embeddingData: EmbeddingDataSet,
+  nNeighbors: number,
+  minDist: number,
+  umapIndices: number[],
+  messageCallback: (message: string) => void,
+  datasetCallback: (dataset: EmbeddingDataSet) => void
+) {
+  embeddingData.umapRun = embeddingData.umapRun + 1;
+  embeddingData.projections['umap'] = false;
+  if (umapIndices.length <= nNeighbors) {
+    messageCallback('Error: Please select more data points.');
+    return;
   }
+  embeddingData.hasUmapRun = true;
+  const epochStepSize = 10;
+  const sampledIndices = umapIndices.slice(0, UMAP_SAMPLE_SIZE);
+  const sampledData = sampledIndices.map(
+    (i) => embeddingData.points[embeddingData.pointKeys[i]].vector
+  );
+  messageCallback('Calculating UMAP');
+  const umap = new UMAP({nComponents: 2, nNeighbors, minDist});
+  const epochs = umap.initializeFit(sampledData);
+  const runNumber = embeddingData.umapRun;
+  await umap.fitAsync(sampledData, (epochNumber) => {
+    if (embeddingData.umapRun !== runNumber) {
+      return false;
+    } else if (epochNumber === epochs) {
+      const result = umap.getEmbedding();
+      embeddingData.projections['umap'] = true;
+      embeddingData.hasUmapRun = true;
+      sampledIndices.forEach((index, i) => {
+        const dataPoint = embeddingData.points[embeddingData.pointKeys[index]];
+        dataPoint.projections['umap-0'] = result[i][0];
+        dataPoint.projections['umap-1'] = result[i][1];
+      });
+      datasetCallback(embeddingData);
+      return false;
+    } else if (epochNumber % epochStepSize === 0) {
+      messageCallback(`UMAP epoch ${epochNumber}/${epochs}`);
+    }
+  });
 }

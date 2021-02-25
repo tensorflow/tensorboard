@@ -11,6 +11,7 @@ tf_ng_module(
     deps = [
         "//tensorboard/webapp/plugins/npmi/store:types",
         "//tensorboard/webapp/plugins/npmi/util:metric_type",
+        "//tensorboard/webapp/plugins/npmi/util:umap",
         "//tensorboard/webapp/webapp_data_source:http_client",
         "@npm//@angular/common",
         "@npm//@angular/core",

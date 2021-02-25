@@ -44,7 +44,7 @@ import {
   ViewActive,
 } from './npmi_types';
 import {
-  buildSampleEmbeddingData,
+  createSampleEmbeddingData,
   createNpmiState,
   createState,
 } from '../testing';
@@ -165,7 +165,7 @@ describe('npmi selectors', () => {
     });
 
     it('returns the correct data', () => {
-      const embeddingData = buildSampleEmbeddingData();
+      const embeddingData = createSampleEmbeddingData();
       const state = createState(
         createNpmiState({
           embeddingDataSet: embeddingData,

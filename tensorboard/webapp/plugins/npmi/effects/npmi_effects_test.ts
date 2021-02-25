@@ -21,7 +21,7 @@ import {Subject} from 'rxjs';
 
 import {NpmiHttpServerDataSource} from '../data_source/npmi_data_source';
 import {NpmiEffects} from '.';
-import {buildSampleEmbeddingData, createNpmiState} from '../testing';
+import {createSampleEmbeddingData, createNpmiState} from '../testing';
 import {State} from '../../../app_state';
 import {
   DataLoadState,
@@ -87,7 +87,7 @@ describe('npmi effects', () => {
     it('loads Plugin Data on plugin open if data is not loaded', () => {
       expect(fetchDataSpy).not.toHaveBeenCalled();
       expect(actualActions).toEqual([]);
-      const embeddingData = buildSampleEmbeddingData();
+      const embeddingDataSet = createSampleEmbeddingData();
 
       actions$.next(actions.npmiLoaded());
       fetchDataSubject.next({
@@ -112,7 +112,7 @@ describe('npmi effects', () => {
           ],
         },
         metrics: {run_1: ['count@test', 'npmi@test']},
-        embeddingDataSet: embeddingData,
+        embeddingDataSet,
       });
 
       expect(fetchDataSpy).toHaveBeenCalled();
@@ -140,7 +140,7 @@ describe('npmi effects', () => {
             ],
           },
           metrics: {run_1: ['count@test', 'npmi@test']},
-          embeddingDataSet: embeddingData,
+          embeddingDataSet,
         }),
       ]);
     });

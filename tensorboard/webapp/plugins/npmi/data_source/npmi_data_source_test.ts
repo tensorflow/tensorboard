@@ -19,7 +19,7 @@ import {
 } from '../../../webapp_data_source/tb_http_client_testing';
 
 import {NpmiHttpServerDataSource} from './npmi_data_source';
-import {buildSampleEmbeddingData} from '../testing';
+import {createSampleEmbeddingData} from '../testing';
 
 describe('runs_data_source', () => {
   let httpMock: HttpTestingController;
@@ -75,7 +75,7 @@ describe('runs_data_source', () => {
             run_2: [[-0.2], [0.1]],
           });
 
-        const embeddingData = buildSampleEmbeddingData();
+        const embeddingData = createSampleEmbeddingData();
 
         expect(returnValue).toHaveBeenCalledWith({
           annotationData: {

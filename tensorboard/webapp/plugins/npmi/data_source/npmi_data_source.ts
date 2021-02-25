@@ -27,8 +27,8 @@ import {
   AnnotationDataListing,
   ValueData,
   EmbeddingListing,
-  EmbeddingDataSet,
 } from './../store/npmi_types';
+import {EmbeddingDataSet, buildEmbeddingDataSet} from '../util/umap';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
@@ -128,21 +128,20 @@ export class NpmiHttpServerDataSource implements NpmiDataSource {
         for (const run of Object.keys(annotations)) {
           for (const annotationIndex in annotations[run]) {
             const annotation = annotations[run][annotationIndex];
-            if (Object.keys(embeddings).length) {
-              if (
-                embeddings[run][annotationIndex] &&
-                !embeddingDataPoints[annotation] &&
-                embeddings[run][annotationIndex].some((item) => item !== 0)
-              ) {
-                // If not already set
-                embeddingDataPoints[annotation] = {
-                  vector: embeddings[run][annotationIndex],
-                  index: index,
-                  name: annotation,
-                  projections: {},
-                };
-                index = index + 1;
-              }
+            if (
+              Object.keys(embeddings).length &&
+              !embeddingDataPoints[annotation] &&
+              embeddings[run][annotationIndex] &&
+              embeddings[run][annotationIndex].some((item) => item !== 0)
+            ) {
+              // If not already set
+              embeddingDataPoints[annotation] = {
+                vector: embeddings[run][annotationIndex],
+                index: index,
+                name: annotation,
+                projections: {},
+              };
+              index = index + 1;
             }
             const metricToDataElements = new Map<string, ValueData>();
             for (const metricIndex in metrics[run]) {
@@ -177,7 +176,7 @@ export class NpmiHttpServerDataSource implements NpmiDataSource {
           }
         }
         if (Object.keys(embeddingDataPoints).length) {
-          embeddingDataSet = new EmbeddingDataSet(embeddingDataPoints);
+          embeddingDataSet = buildEmbeddingDataSet(embeddingDataPoints);
         }
         return {annotationData, metrics, embeddingDataSet};
       }),

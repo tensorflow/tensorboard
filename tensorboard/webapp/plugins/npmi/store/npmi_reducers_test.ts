@@ -21,7 +21,7 @@ import {
   ArithmeticKind,
   ViewActive,
 } from './npmi_types';
-import {buildSampleEmbeddingData, createNpmiState} from '../testing';
+import {createSampleEmbeddingData, createNpmiState} from '../testing';
 
 describe('npmi_reducers', () => {
   describe('Data loading', () => {
@@ -47,7 +47,7 @@ describe('npmi_reducers', () => {
     it('sets pluginDataLoaded and plugin Data on successful load', () => {
       const state = createNpmiState();
       const t0 = Date.now();
-      const embeddingData = buildSampleEmbeddingData();
+      const embeddingData = createSampleEmbeddingData();
       const nextState = reducers(
         state,
         actions.npmiPluginDataLoaded({
@@ -142,7 +142,7 @@ describe('npmi_reducers', () => {
     });
 
     it('overrides existing annotations on successful loading of annotations', () => {
-      const embeddingData = buildSampleEmbeddingData();
+      const embeddingData = createSampleEmbeddingData();
       const state = createNpmiState({
         pluginDataLoaded: {
           state: DataLoadState.LOADED,
