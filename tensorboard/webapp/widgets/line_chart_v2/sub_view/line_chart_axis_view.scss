@@ -43,52 +43,77 @@ text {
 
 .x-axis {
   flex-direction: column;
+}
 
-  text {
-    dominant-baseline: hanging;
-    text-anchor: middle;
-  }
+.x-axis text {
+  dominant-baseline: hanging;
+  text-anchor: middle;
+}
 
-  .ticks {
-    -webkit-mask-image: linear-gradient(
-      to right,
-      #0000 0%,
-      #000 10%,
-      #000 90%,
-      #0000 100%
-    );
-    mask-image: linear-gradient(
-      to right,
-      #0000 0%,
-      #000 10%,
-      #000 90%,
-      #0000 100%
-    );
-  }
+.x-axis .ticks {
+  -webkit-mask-image: linear-gradient(
+    to right,
+    #0000 0%,
+    #000 10%,
+    #000 90%,
+    #0000 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    #0000 0%,
+    #000 10%,
+    #000 90%,
+    #0000 100%
+  );
 }
 
 .y-axis {
   flex-direction: row-reverse;
+}
 
-  text {
-    dominant-baseline: central;
-    text-anchor: end;
-  }
+.y-axis text {
+  dominant-baseline: central;
+  text-anchor: end;
+}
 
-  .ticks {
-    -webkit-mask-image: linear-gradient(
-      to bottom,
-      #0000 0%,
-      #000 10%,
-      #000 90%,
-      #0000 100%
-    );
-    mask-image: linear-gradient(
-      to bottom,
-      #0000 0%,
-      #000 10%,
-      #000 90%,
-      #0000 100%
-    );
-  }
+.y-axis .ticks {
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    #0000 0%,
+    #000 10%,
+    #000 90%,
+    #0000 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    #0000 0%,
+    #000 10%,
+    #000 90%,
+    #0000 100%
+  );
+}
+
+.extent-edit-input {
+  align-items: center;
+  column-gap: 5px;
+  display: grid;
+  font-size: 12px;
+  grid-template-columns: 30px minmax(auto, 100px);
+  height: 30px;
+  margin: 10px 20px;
+}
+
+.extent-edit-control {
+  align-items: center;
+  display: flex;
+  justify-content: flex-end;
+  margin: 10px 20px;
+}
+
+.extent-edit-control button {
+  font-size: 12px;
+  height: 30px;
+  line-height: 1.4;
+  margin-left: 5px;
+  padding: 0 10px;
 }

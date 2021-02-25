@@ -14,7 +14,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<div [class]="axis + '-axis'">
+<div
+  [class]="axis + '-axis axis'"
+  [matMenuTriggerFor]="manualControl"
+  (menuOpened)="minInput.focus()"
+  title="Click to manually set min & max values"
+>
   <div class="line"></div>
   <svg class="minor ticks">
     <ng-container *ngFor="let tick of getTicks()">
@@ -35,3 +40,37 @@ limitations under the License.
     </g>
   </svg>
 </div>
+<mat-menu
+  #manualControl="matMenu"
+  xPosition="before"
+  [yPosition]="axis === 'y' ? 'above' : 'below'"
+>
+  <div
+    class="extent-edit-input"
+    (click)="$event.stopPropagation()"
+    (keydown)="keydownPreventClose($event)"
+  >
+    <label>min</label>
+    <input #minInput tabindex="1" type="number" [value]="axisExtent[0]" />
+  </div>
+  <div
+    class="extent-edit-input"
+    (click)="$event.stopPropagation()"
+    (keydown)="keydownPreventClose($event)"
+  >
+    <label>max</label>
+    <input #maxInput tabindex="2" type="number" [value]="axisExtent[1]" />
+  </div>
+  <div class="extent-edit-control" (keydown)="keydownPreventClose($event)">
+    <button mat-stroked-button tabindex="4">Cancel</button>
+    <button
+      mat-raised-button
+      color="primary"
+      tabindex="3"
+      class="change"
+      (click)="extentChanged(minInput.value, maxInput.value)"
+    >
+      Change
+    </button>
+  </div>
+</mat-menu>

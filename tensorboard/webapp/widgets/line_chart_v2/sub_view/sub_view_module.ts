@@ -15,6 +15,9 @@ limitations under the License.
 import {OverlayModule} from '@angular/cdk/overlay';
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
+import {MatButtonModule} from '@angular/material/button';
+import {MatInputModule} from '@angular/material/input';
+import {MatMenuModule} from '@angular/material/menu';
 
 import {LineChartAxisComponent} from './line_chart_axis_view';
 import {LineChartGridView} from './line_chart_grid_view';
@@ -36,6 +39,12 @@ import {LineChartInteractiveViewComponent} from './line_chart_interactive_view';
     LineChartInteractiveViewComponent,
     LineChartGridView,
   ],
-  imports: [CommonModule, OverlayModule],
+  imports: [
+    CommonModule,
+    OverlayModule,
+    MatButtonModule,
+    MatInputModule,
+    MatMenuModule,
+  ],
 })
 export class SubViewModule {}
