@@ -167,8 +167,8 @@ def tensorboard_js_workspace():
                 "https://raw.githubusercontent.com/google/material-design-icons/b3f05bfbf4329a5b63f50a720f867c2bac163f98/src/alert/warning/materialicons/24px.svg",
             ],
             "c1f1e1f555e04b9444d6af02d8db242c4dc3d0bb34467f11a6b7c538dfd2f584": [
-                "http://mirror.tensorflow.org/raw.githubusercontent.com/google/material-design-icons/4.0.0/src/social/notifications_none/materialicons/24px.svg",
-                "https://raw.githubusercontent.com/google/material-design-icons/4.0.0/src/social/notifications_none/materialicons/24px.svg",
+                "http://mirror.tensorflow.org/raw.githubusercontent.com/google/material-design-icons/d3d4aca5a7cf50bc68bbd401cefa708e364194e8/src/social/notifications_none/materialicons/24px.svg",
+                "https://raw.githubusercontent.com/google/material-design-icons/d3d4aca5a7cf50bc68bbd401cefa708e364194e8/src/social/notifications_none/materialicons/24px.svg",
             ],
         },
         rename = {
@@ -193,8 +193,8 @@ def tensorboard_js_workspace():
             "ic_settings_24px.svg": "settings_24px.svg",
             "ic_visibility_off_24px.svg": "visibility_off_24px.svg",
             "ic_group_work_24px.svg": "group_work_24px.svg",
-            "http://mirror.tensorflow.org/raw.githubusercontent.com/google/material-design-icons/4.0.0/src/social/notifications_none/materialicons/24px.svg": "notifications_none_24px.svg",
-            "https://raw.githubusercontent.com/google/material-design-icons/4.0.0/src/social/notifications_none/materialicons/24px.svg": "notifications_none_24px.svg",
+            "http://mirror.tensorflow.org/raw.githubusercontent.com/google/material-design-icons/d3d4aca5a7cf50bc68bbd401cefa708e364194e8/src/social/notifications_none/materialicons/24px.svg": "notifications_none_24px.svg",
+            "https://raw.githubusercontent.com/google/material-design-icons/d3d4aca5a7cf50bc68bbd401cefa708e364194e8/src/social/notifications_none/materialicons/24px.svg": "notifications_none_24px.svg",
             "http://mirror.tensorflow.org/raw.githubusercontent.com/google/material-design-icons/b3f05bfbf4329a5b63f50a720f867c2bac163f98/src/action/bug_report/materialicons/24px.svg": "bug_report_24px.svg",
             "https://raw.githubusercontent.com/google/material-design-icons/b3f05bfbf4329a5b63f50a720f867c2bac163f98/src/action/bug_report/materialicons/24px.svg": "bug_report_24px.svg",
             "http://mirror.tensorflow.org/raw.githubusercontent.com/google/material-design-icons/b3f05bfbf4329a5b63f50a720f867c2bac163f98/src/navigation/close/materialicons/24px.svg": "close_24px.svg",
