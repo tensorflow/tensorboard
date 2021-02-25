@@ -101,7 +101,7 @@ function areSeriesDataListEqual(
 }
 
 interface PartialSeries {
-  seriesId: string;
+  runId: string;
   points: ScalarCardPoint[];
 }
 
@@ -117,7 +117,7 @@ function areSeriesEqual(
     const listAPoints = listAVal.points;
     const listBPoints = listBVal.points;
     return (
-      listAVal.seriesId === listBVal.seriesId &&
+      listAVal.runId === listBVal.runId &&
       listAPoints.length === listBPoints.length &&
       listAPoints.every((listAPoint, index) => {
         const listBPoint = listBPoints[index];
@@ -258,13 +258,10 @@ export class ScalarCardContainer implements CardRenderer, OnInit {
       combineLatestWith(this.store.select(getMetricsXAxisType)),
       map(([runToSeries, xAxisType]) => {
         const runIds = Object.keys(runToSeries);
-        const results = runIds.map((seriesId) => {
+        const results = runIds.map((runId) => {
           return {
-            seriesId,
-            points: this.stepSeriesToLineSeries(
-              runToSeries[seriesId],
-              xAxisType
-            ),
+            runId,
+            points: this.stepSeriesToLineSeries(runToSeries[runId], xAxisType),
           };
         });
         return results;
@@ -280,10 +277,11 @@ export class ScalarCardContainer implements CardRenderer, OnInit {
           }
 
           const dataList$ = runIdAndPoints.map((runIdAndPoint) => {
-            return this.getRunDisplayName(runIdAndPoint.seriesId).pipe(
+            return this.getRunDisplayName(runIdAndPoint.runId).pipe(
               map<string, LegacySeriesDataList[number]>((displayName) => {
                 return {
-                  ...runIdAndPoint,
+                  seriesId: runIdAndPoint.runId,
+                  points: runIdAndPoint.points,
                   metadata: {displayName},
                   visible: false,
                 };
@@ -340,14 +338,14 @@ export class ScalarCardContainer implements CardRenderer, OnInit {
             }));
           }
 
-          return {seriesId: partial.seriesId, points: normalizedPoints};
+          return {runId: partial.runId, points: normalizedPoints};
         });
       }),
       // Smooth
       combineLatestWith(this.store.select(getMetricsScalarSmoothing)),
       switchMap<[PartialSeries[], number], Observable<ScalarCardDataSeries[]>>(
         ([runsData, smoothing]) => {
-          const cleanedRunsData = runsData.map(({seriesId, points}) => ({
+          const cleanedRunsData = runsData.map(({runId: seriesId, points}) => ({
             id: seriesId,
             points,
           }));
@@ -378,7 +376,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit {
     this.chartMetadataMap$ = nonNullRunsToScalarSeries$.pipe(
       switchMap<
         RunToSeries<PluginType.SCALARS>,
-        Observable<Array<{seriesId: string; displayName: string}>>
+        Observable<Array<{runId: string; displayName: string}>>
       >((runToSeries) => {
         const runIds = Object.keys(runToSeries);
         if (!runIds.length) {
@@ -386,10 +384,10 @@ export class ScalarCardContainer implements CardRenderer, OnInit {
         }
 
         return combineLatest(
-          runIds.map((seriesId) => {
-            return this.getRunDisplayName(seriesId).pipe(
+          runIds.map((runId) => {
+            return this.getRunDisplayName(runId).pipe(
               map((displayName) => {
-                return {seriesId, displayName};
+                return {runId, displayName};
               })
             );
           })
@@ -409,13 +407,13 @@ export class ScalarCardContainer implements CardRenderer, OnInit {
         const metadataMap: ScalarCardSeriesMetadataMap = {};
         const shouldSmooth = smoothing > 0;
 
-        for (const {seriesId, displayName} of seriesAndDisplayNames) {
-          metadataMap[seriesId] = {
+        for (const {runId, displayName} of seriesAndDisplayNames) {
+          metadataMap[runId] = {
             type: SeriesType.ORIGINAL,
-            id: seriesId,
+            id: runId,
             displayName,
-            visible: Boolean(runSelectionMap && runSelectionMap.get(seriesId)),
-            color: colorMap[seriesId] ?? '#fff',
+            visible: Boolean(runSelectionMap && runSelectionMap.get(runId)),
+            color: colorMap[runId] ?? '#fff',
             aux: false,
             opacity: 1,
           };
