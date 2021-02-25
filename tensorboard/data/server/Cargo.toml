@@ -17,6 +17,7 @@
 name = "rustboard"
 version = "0.4.0-alpha.0"
 authors = ["The TensorFlow Authors <tensorboard-gardener@google.com>"]
+# Keep in sync with `edition` in rustfmt.toml.
 edition = "2018"
 default-run = "rustboard"
 
