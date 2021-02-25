@@ -206,7 +206,7 @@ embeds the latest audio for each tag.
 The Graph Explorer can visualize a TensorBoard graph, enabling inspection of the
 TensorFlow model. To get best use of the graph visualizer, you should use name
 scopes to hierarchically group the ops in your graph - otherwise, the graph may
-be difficult to decipher. For more information, including examples, see 
+be difficult to decipher. For more information, including examples, see
 [examining the TensorFlow graph tutorial](https://www.tensorflow.org/tensorboard/graphs).
 
 ### Embedding Projector
