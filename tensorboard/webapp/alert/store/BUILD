@@ -48,6 +48,7 @@ tf_ts_library(
         ":testing",
         ":types",
         "//tensorboard/webapp/alert/actions",
+        "@npm//@ngrx/store",
         "@npm//@types/jasmine",
     ],
 )
