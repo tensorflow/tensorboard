@@ -61,7 +61,7 @@ import {TooltipSort, XAxisType} from '../../types';
 import {
   ScalarCardComponent,
   ScalarChartEvalPoint,
-  SeriesDataList,
+  LegacySeriesDataList,
   TooltipColumns,
 } from './scalar_card_component';
 import {ScalarCardContainer} from './scalar_card_container';
@@ -78,7 +78,7 @@ import {
 class TestableLineChart {
   @Input() colorScale!: RunColorScale;
   @Input() tooltipColumns!: TooltipColumns;
-  @Input() seriesDataList!: SeriesDataList;
+  @Input() seriesDataList!: LegacySeriesDataList;
   @Input() smoothingEnabled!: boolean;
   @Input() ignoreYOutliers!: boolean;
   @Input() smoothingWeight!: number;

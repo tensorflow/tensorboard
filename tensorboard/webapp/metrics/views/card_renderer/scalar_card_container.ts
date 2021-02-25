@@ -63,7 +63,7 @@ import {
 import {CardId, CardMetadata, XAxisType} from '../../types';
 import {CardRenderer} from '../metrics_view_types';
 import {getTagDisplayName} from '../utils';
-import {SeriesDataList, SeriesPoint} from './scalar_card_component';
+import {LegacySeriesDataList} from './scalar_card_component';
 import {
   ScalarCardDataSeries,
   ScalarCardPoint,
@@ -77,8 +77,8 @@ type ScalarCardMetadata = CardMetadata & {
 };
 
 function areSeriesDataListEqual(
-  listA: SeriesDataList,
-  listB: SeriesDataList
+  listA: LegacySeriesDataList,
+  listB: LegacySeriesDataList
 ): boolean {
   if (listA.length !== listB.length) {
     return false;
@@ -100,14 +100,14 @@ function areSeriesDataListEqual(
   });
 }
 
-interface RunIdAndPoints {
+interface PartialSeries {
   runId: string;
   points: ScalarCardPoint[];
 }
 
 function areSeriesEqual(
-  listA: RunIdAndPoints[],
-  listB: RunIdAndPoints[]
+  listA: PartialSeries[],
+  listB: PartialSeries[]
 ): boolean {
   if (listA.length !== listB.length) {
     return false;
@@ -135,7 +135,7 @@ function areSeriesEqual(
       [runColorScale]="runColorScale"
       [title]="title$ | async"
       [tag]="tag$ | async"
-      [seriesDataList]="seriesDataList$ | async"
+      [seriesDataList]="legacySeriesDataList$ | async"
       [tooltipSort]="tooltipSort$ | async"
       [ignoreOutliers]="ignoreOutliers$ | async"
       [xAxisType]="xAxisType$ | async"
@@ -178,7 +178,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit {
   loadState$?: Observable<DataLoadState>;
   title$?: Observable<string>;
   tag$?: Observable<string>;
-  seriesDataList$?: Observable<SeriesDataList> = of([]);
+  legacySeriesDataList$?: Observable<LegacySeriesDataList> = of([]);
   isPinned$?: Observable<boolean>;
   dataSeries$?: Observable<ScalarCardDataSeries[]>;
   chartMetadataMap$?: Observable<ScalarCardSeriesMetadataMap>;
@@ -246,20 +246,17 @@ export class ScalarCardContainer implements CardRenderer, OnInit {
       })
     );
 
-    const settingsAndTimeSeries$ = combineLatest([
-      this.store.select(getMetricsXAxisType),
-      this.store.select(getCardTimeSeries, this.cardId),
-    ]);
-    const runIdAndPoints$ = settingsAndTimeSeries$.pipe(
-      filter(([_, runToSeries]) => !!runToSeries),
-      map(
-        ([xAxisType, runToSeries]) =>
-          ({xAxisType, runToSeries} as {
-            xAxisType: XAxisType;
-            runToSeries: RunToSeries<PluginType.SCALARS>;
-          })
-      ),
-      map(({xAxisType, runToSeries}) => {
+    const nonNullRunsToScalarSeries$ = this.store
+      .select(getCardTimeSeries, this.cardId)
+      .pipe(
+        filter((runToSeries) => Boolean(runToSeries)),
+        map((runToSeries) => runToSeries as RunToSeries<PluginType.SCALARS>),
+        shareReplay(1)
+      );
+
+    const partialSeries$ = nonNullRunsToScalarSeries$.pipe(
+      combineLatestWith(this.store.select(getMetricsXAxisType)),
+      map(([runToSeries, xAxisType]) => {
         const runIds = Object.keys(runToSeries);
         const results = runIds.map((runId) => {
           return {
@@ -269,22 +266,31 @@ export class ScalarCardContainer implements CardRenderer, OnInit {
         });
         return results;
       }),
-      distinctUntilChanged(areSeriesEqual),
-      shareReplay(1)
+      distinctUntilChanged(areSeriesEqual)
     );
 
-    this.seriesDataList$ = runIdAndPoints$.pipe(
-      switchMap((runIdAndPoints) => {
-        if (!runIdAndPoints.length) {
-          return of([]);
-        }
+    this.legacySeriesDataList$ = partialSeries$.pipe(
+      switchMap<PartialSeries[], Observable<LegacySeriesDataList>>(
+        (runIdAndPoints) => {
+          if (!runIdAndPoints.length) {
+            return of([] as LegacySeriesDataList);
+          }
 
-        return combineLatest(
-          runIdAndPoints.map((runIdAndPoint) => {
-            return this.getRunDisplayNameAndPoints(runIdAndPoint);
-          })
-        );
-      }),
+          const dataList$ = runIdAndPoints.map((runIdAndPoint) => {
+            return this.getRunDisplayName(runIdAndPoint.runId).pipe(
+              map<string, LegacySeriesDataList[number]>((displayName) => {
+                return {
+                  seriesId: runIdAndPoint.runId,
+                  points: runIdAndPoint.points,
+                  metadata: {displayName},
+                  visible: false,
+                };
+              })
+            );
+          });
+          return combineLatest(dataList$);
+        }
+      ),
       combineLatestWith(this.store.select(getCurrentRouteRunSelection)),
       // When the `fetchRunsSucceeded` action fires, the run selection
       // map and the metadata change. To prevent quick fire of changes,
@@ -292,82 +298,98 @@ export class ScalarCardContainer implements CardRenderer, OnInit {
       // store change.
       debounceTime(0),
       map(([result, runSelectionMap]) => {
-        return result.map(({runId, displayName, points}) => {
+        return result.map((seriesData) => {
           return {
-            seriesId: runId,
-            metadata: {displayName},
-            points,
-            visible: Boolean(runSelectionMap && runSelectionMap.get(runId)),
+            ...seriesData,
+            visible: Boolean(
+              runSelectionMap && runSelectionMap.get(seriesData.seriesId)
+            ),
           };
         });
       }),
-      startWith([]),
+      startWith([] as LegacySeriesDataList),
       distinctUntilChanged(areSeriesDataListEqual)
-    );
+    ) as Observable<LegacySeriesDataList>;
 
     function getSmoothedSeriesId(seriesId: string): string {
       return JSON.stringify(['smoothed', seriesId]);
     }
 
-    this.dataSeries$ = runIdAndPoints$.pipe(
-      combineLatestWith(
-        this.store.select(getMetricsScalarSmoothing),
-        this.store.select(getMetricsXAxisType)
-      ),
-      switchMap(([runsData, smoothing, xAxisType]) => {
-        const dataSeriesList = runsData.map(({runId, points}) => {
-          points = points.map((point) => {
-            // Convert wallTime in seconds to milliseconds.
-            // TODO(stephanwlee): when the legacy line chart is removed, do the conversion at
-            // the effects.
+    this.dataSeries$ = partialSeries$.pipe(
+      combineLatestWith(this.store.select(getMetricsXAxisType)),
+      // Normalize time and, optionally, compute relative time.
+      map(([partialSeries, xAxisType]) => {
+        return partialSeries.map((partial) => {
+          // Normalize data and convert wallTime in seconds to milliseconds.
+          // TODO(stephanwlee): when the legacy line chart is removed, do the conversion
+          // at the effects.
+          let normalizedPoints = partial.points.map((point) => {
             const wallTime = point.wallTime * 1000;
             const x = xAxisType === XAxisType.STEP ? point.x : wallTime;
+
             return {...point, x, wallTime};
           });
 
-          if (xAxisType === XAxisType.RELATIVE && points.length) {
-            const firstPoint = points[0];
-            points = points.map((point) => ({
+          if (xAxisType === XAxisType.RELATIVE && normalizedPoints.length) {
+            const firstPoint = normalizedPoints[0];
+            normalizedPoints = normalizedPoints.map((point) => ({
               ...point,
               x: point.x - firstPoint.x,
             }));
           }
-          return {id: runId, points};
+
+          return {runId: partial.runId, points: normalizedPoints};
         });
-
-        if (smoothing === 0) {
-          return of(dataSeriesList);
-        }
-
-        return from(classicSmoothing(dataSeriesList, smoothing)).pipe(
-          map((smoothedDataSeriesList) => {
-            const smoothedList = dataSeriesList.map((dataSeries, index) => {
-              return {
-                id: getSmoothedSeriesId(dataSeries.id),
-                points: smoothedDataSeriesList[index].points.map(
-                  ({y}, pointIndex) => {
-                    return {...dataSeries.points[pointIndex], y};
-                  }
-                ),
-              };
-            });
-            return [...dataSeriesList, ...smoothedList];
-          })
-        );
       }),
-      startWith([]),
-      shareReplay(1)
+      // Smooth
+      combineLatestWith(this.store.select(getMetricsScalarSmoothing)),
+      switchMap<[PartialSeries[], number], Observable<ScalarCardDataSeries[]>>(
+        ([runsData, smoothing]) => {
+          const cleanedRunsData = runsData.map(({runId: seriesId, points}) => ({
+            id: seriesId,
+            points,
+          }));
+          if (smoothing <= 0) {
+            return of(cleanedRunsData);
+          }
+
+          return from(classicSmoothing(cleanedRunsData, smoothing)).pipe(
+            map((smoothedDataSeriesList) => {
+              const smoothedList = cleanedRunsData.map((dataSeries, index) => {
+                return {
+                  id: getSmoothedSeriesId(dataSeries.id),
+                  points: smoothedDataSeriesList[index].points.map(
+                    ({y}, pointIndex) => {
+                      return {...dataSeries.points[pointIndex], y};
+                    }
+                  ),
+                };
+              });
+              return [...cleanedRunsData, ...smoothedList];
+            })
+          );
+        }
+      ),
+      startWith([] as ScalarCardDataSeries[])
     );
 
-    this.chartMetadataMap$ = runIdAndPoints$.pipe(
-      switchMap((runIdAndPoints) => {
-        if (!runIdAndPoints.length) {
+    this.chartMetadataMap$ = nonNullRunsToScalarSeries$.pipe(
+      switchMap<
+        RunToSeries<PluginType.SCALARS>,
+        Observable<Array<{runId: string; displayName: string}>>
+      >((runToSeries) => {
+        const runIds = Object.keys(runToSeries);
+        if (!runIds.length) {
           return of([]);
         }
 
         return combineLatest(
-          runIdAndPoints.map((runIdAndPoint) => {
-            return this.getRunDisplayNameAndPoints(runIdAndPoint);
+          runIds.map((runId) => {
+            return this.getRunDisplayName(runId).pipe(
+              map((displayName) => {
+                return {runId, displayName};
+              })
+            );
           })
         );
       }),
@@ -381,11 +403,11 @@ export class ScalarCardContainer implements CardRenderer, OnInit {
       // debounce by a microtask to emit only single change for the runs
       // store change.
       debounceTime(0),
-      map(([displayNameAndPoints, runSelectionMap, colorMap, smoothing]) => {
+      map(([seriesAndDisplayNames, runSelectionMap, colorMap, smoothing]) => {
         const metadataMap: ScalarCardSeriesMetadataMap = {};
         const shouldSmooth = smoothing > 0;
 
-        for (const {displayName, runId} of displayNameAndPoints) {
+        for (const {runId, displayName} of seriesAndDisplayNames) {
           metadataMap[runId] = {
             type: SeriesType.ORIGINAL,
             id: runId,
@@ -409,7 +431,6 @@ export class ScalarCardContainer implements CardRenderer, OnInit {
             type: SeriesType.DERIVED,
             aux: false,
             originalSeriesId: id,
-            opacity: 1,
           };
 
           metadata.aux = true;
@@ -417,7 +438,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit {
         }
         return metadataMap;
       }),
-      startWith({})
+      startWith({} as ScalarCardSeriesMetadataMap)
     );
 
     this.loadState$ = this.store.select(getCardLoadState, this.cardId);
@@ -437,23 +458,18 @@ export class ScalarCardContainer implements CardRenderer, OnInit {
     this.isPinned$ = this.store.select(getCardPinnedState, this.cardId);
   }
 
-  private getRunDisplayNameAndPoints(runIdAndPoint: {
-    runId: string;
-    points: SeriesPoint[];
-  }): Observable<{runId: string; displayName: string; points: SeriesPoint[]}> {
-    const {runId, points} = runIdAndPoint;
+  private getRunDisplayName(runId: string): Observable<string> {
     return combineLatest([
       this.store.select(getExperimentIdForRunId, {runId}),
       this.store.select(getExperimentIdToAliasMap),
       this.store.select(getRun, {runId}),
     ]).pipe(
       map(([experimentId, idToAlias, run]) => {
-        const displayName = getDisplayNameForRun(
+        return getDisplayNameForRun(
           runId,
           run,
           experimentId ? idToAlias[experimentId] : null
         );
-        return {runId, displayName, points};
       })
     );
   }

@@ -62,7 +62,7 @@ type StepDatum = ScalarStepDatum;
 
 export type SeriesPoint = Point<StepDatum>;
 
-export type SeriesDataList = Array<SeriesData<Metadata, StepDatum>>;
+export type LegacySeriesDataList = Array<SeriesData<Metadata, StepDatum>>;
 
 export type ScalarChartEvalPoint = EvaluationPoint<Metadata, StepDatum>;
 
@@ -138,7 +138,7 @@ export class ScalarCardComponent {
   @Input() runColorScale!: RunColorScale;
   @Input() ignoreOutliers!: boolean;
   @Input() scalarSmoothing!: number;
-  @Input() seriesDataList!: SeriesDataList;
+  @Input() seriesDataList!: LegacySeriesDataList;
 
   // gpu chart related props.
   @Input() isCardVisible!: boolean;
