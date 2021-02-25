@@ -26,10 +26,14 @@ const reducer = createReducer(
   initialState,
   on(
     actions.alertReported,
-    (state: AlertState, {localizedMessage}): AlertState => {
+    (state: AlertState, {localizedMessage, followupAction}): AlertState => {
       return {
         ...state,
-        latestAlert: {localizedMessage, created: Date.now()},
+        latestAlert: {
+          localizedMessage,
+          followupAction,
+          created: Date.now(),
+        },
       };
     }
   )

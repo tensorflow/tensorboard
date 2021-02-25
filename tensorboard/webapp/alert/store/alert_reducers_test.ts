@@ -12,9 +12,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {createAction} from '@ngrx/store';
+
 import * as alertActions from '../actions';
 import * as alertReducers from './alert_reducers';
 import {buildAlertState} from './testing';
+
+const retryForTestAction = createAction('[Test] Action Retried');
 
 describe('alert_reducers', () => {
   it('saves alerts with a timestamp', () => {
@@ -22,20 +26,33 @@ describe('alert_reducers', () => {
     const action1 = alertActions.alertReported({
       localizedMessage: 'Foo1 failed',
     });
+
+    const followupActionGetter = async () => {
+      return retryForTestAction();
+    };
     const action2 = alertActions.alertReported({
       localizedMessage: 'Foo2 failed',
+      followupAction: {
+        localizedLabel: 'Retry Foo2?',
+        getFollowupAction: followupActionGetter,
+      },
     });
     const state1 = buildAlertState({latestAlert: null});
 
     const state2 = alertReducers.reducers(state1, action1);
     expect(state2.latestAlert!).toEqual({
       localizedMessage: 'Foo1 failed',
+      followupAction: undefined,
       created: 123,
     });
 
     const state3 = alertReducers.reducers(state2, action2);
     expect(state3.latestAlert!).toEqual({
       localizedMessage: 'Foo2 failed',
+      followupAction: {
+        localizedLabel: 'Retry Foo2?',
+        getFollowupAction: followupActionGetter,
+      },
       created: 234,
     });
   });
