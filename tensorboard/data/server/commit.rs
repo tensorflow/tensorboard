@@ -45,8 +45,7 @@ impl Commit {
 
 /// Data for a single run.
 ///
-/// This contains all data and metadata for a run. For now, that data includes only scalars;
-/// tensors and blob sequences will come soon.
+/// This contains all data and metadata for a run, including scalars, tensors, and blob sequences.
 #[derive(Debug, Default)]
 pub struct RunData {
     /// The time of the first event recorded for this run.
@@ -57,6 +56,9 @@ pub struct RunData {
 
     /// Scalar time series for this run.
     pub scalars: TagStore<ScalarValue>,
+
+    /// Tensor time series for this run.
+    pub tensors: TagStore<pb::TensorProto>,
 
     /// Blob sequence time series for this run.
     pub blob_sequences: TagStore<BlobSequenceValue>,
@@ -212,6 +214,46 @@ pub mod test_data {
             self
         }
 
+        /// Adds a tensor time series, creating the run if it doesn't exist, and setting its start
+        /// time if unset.
+        ///
+        /// # Examples
+        ///
+        /// ```
+        /// use rustboard_core::commit::{test_data::CommitBuilder, Commit};
+        /// use rustboard_core::proto::tensorboard as pb;
+        /// use rustboard_core::types::Step;
+        ///
+        /// let my_commit: Commit = CommitBuilder::new()
+        ///     .tensors("train", "status", |mut b| {
+        ///         b.plugin_name("text")
+        ///             .eval(|Step(i)| pb::TensorProto {
+        ///                 dtype: pb::DataType::DtString.into(),
+        ///                 string_val: vec![format!("Step {}", i).into()],
+        ///                 ..Default::default()
+        ///             })
+        ///             .build()
+        ///     })
+        ///     .build();
+        /// ```
+        pub fn tensors(
+            self,
+            run: &str,
+            tag: &str,
+            build: impl FnOnce(TensorTimeSeriesBuilder) -> TimeSeries<pb::TensorProto>,
+        ) -> Self {
+            self.with_run_data(Run(run.to_string()), |run_data| {
+                let time_series = build(TensorTimeSeriesBuilder::default());
+                if let (None, Some((_step, wall_time, _value))) =
+                    (run_data.start_time, time_series.valid_values().next())
+                {
+                    run_data.start_time = Some(wall_time);
+                }
+                run_data.tensors.insert(Tag(tag.to_string()), time_series);
+            });
+            self
+        }
+
         /// Adds a blob sequence time series, creating the run if it doesn't exist, and setting its
         /// start time if unset.
         ///
@@ -352,6 +394,96 @@ pub mod test_data {
         }
     }
 
+    pub struct TensorTimeSeriesBuilder {
+        /// Initial step. Increments by `1` for each point.
+        step_start: Step,
+        /// Initial wall time. Increments by `1.0` for each point.
+        wall_time_start: WallTime,
+        /// Number of points in this time series.
+        len: u64,
+        /// Custom summary metadata. Leave `None` to use default.
+        metadata: Option<Box<pb::SummaryMetadata>>,
+        /// Tensor evaluation function, called for each point in the series.
+        ///
+        /// By default, this maps every step to the length-0 float32 vector.
+        eval: Box<dyn Fn(Step) -> pb::TensorProto>,
+    }
+
+    impl Default for TensorTimeSeriesBuilder {
+        fn default() -> Self {
+            TensorTimeSeriesBuilder {
+                step_start: Step(0),
+                wall_time_start: WallTime::new(0.0).unwrap(),
+                len: 1,
+                metadata: None,
+                eval: Box::new(|_| pb::TensorProto {
+                    dtype: pb::DataType::DtFloat.into(),
+                    tensor_shape: Some(pb::TensorShapeProto {
+                        dim: vec![pb::tensor_shape_proto::Dim {
+                            size: 0,
+                            ..Default::default()
+                        }],
+                        ..Default::default()
+                    }),
+                    ..Default::default()
+                }),
+            }
+        }
+    }
+
+    impl TensorTimeSeriesBuilder {
+        pub fn step_start(&mut self, raw_step: i64) -> &mut Self {
+            self.step_start = Step(raw_step);
+            self
+        }
+        pub fn wall_time_start(&mut self, raw_wall_time: f64) -> &mut Self {
+            self.wall_time_start = WallTime::new(raw_wall_time).unwrap();
+            self
+        }
+        pub fn len(&mut self, len: u64) -> &mut Self {
+            self.len = len;
+            self
+        }
+        pub fn metadata(&mut self, metadata: Option<Box<pb::SummaryMetadata>>) -> &mut Self {
+            self.metadata = metadata;
+            self
+        }
+        /// Sets the metadata to a blank, blob-sequence-class metadata value with the given plugin
+        /// name. Overwrites any existing call to [`metadata`][Self::metadata].
+        pub fn plugin_name(&mut self, plugin_name: &str) -> &mut Self {
+            self.metadata(Some(blank(plugin_name, pb::DataClass::Tensor)))
+        }
+        pub fn eval(&mut self, eval: impl Fn(Step) -> pb::TensorProto + 'static) -> &mut Self {
+            self.eval = Box::new(eval);
+            self
+        }
+
+        /// Constructs a tensor time series from the state of this builder.
+        ///
+        /// # Panics
+        ///
+        /// If the wall time of a point would overflow to be infinite.
+        pub fn build(&self) -> TimeSeries<pb::TensorProto> {
+            let metadata = self
+                .metadata
+                .clone()
+                .unwrap_or_else(|| blank("tensors", pb::DataClass::Tensor));
+            let mut time_series = TimeSeries::new(metadata);
+
+            let mut rsv = StageReservoir::new(self.len as usize);
+            for i in 0..self.len {
+                let step = Step(self.step_start.0 + i as i64);
+                let wall_time =
+                    WallTime::new(f64::from(self.wall_time_start) + (i as f64)).unwrap();
+                let value = (self.eval)(step);
+                rsv.offer(step, (wall_time, Ok(value)));
+            }
+            rsv.commit(&mut time_series.basin);
+
+            time_series
+        }
+    }
+
     pub struct BlobSequenceTimeSeriesBuilder {
         /// Initial step. Increments by `1` for each point.
         step_start: Step,
@@ -374,18 +506,6 @@ pub mod test_data {
                 metadata: None,
             }
         }
-    }
-
-    /// Creates a summary metadata value with plugin name and data class, but no other contents.
-    fn blank(plugin_name: &str, data_class: pb::DataClass) -> Box<pb::SummaryMetadata> {
-        Box::new(pb::SummaryMetadata {
-            plugin_data: Some(pb::summary_metadata::PluginData {
-                plugin_name: plugin_name.to_string(),
-                ..Default::default()
-            }),
-            data_class: data_class.into(),
-            ..Default::default()
-        })
     }
 
     impl BlobSequenceTimeSeriesBuilder {
@@ -411,7 +531,7 @@ pub mod test_data {
             self.metadata(Some(blank(plugin_name, pb::DataClass::BlobSequence)))
         }
 
-        /// Constructs a scalar time series from the state of this builder.
+        /// Constructs a blob sequence time series from the state of this builder.
         ///
         /// # Panics
         ///
@@ -434,5 +554,17 @@ pub mod test_data {
 
             time_series
         }
+    }
+
+    /// Creates a summary metadata value with plugin name and data class, but no other contents.
+    fn blank(plugin_name: &str, data_class: pb::DataClass) -> Box<pb::SummaryMetadata> {
+        Box::new(pb::SummaryMetadata {
+            plugin_data: Some(pb::summary_metadata::PluginData {
+                plugin_name: plugin_name.to_string(),
+                ..Default::default()
+            }),
+            data_class: data_class.into(),
+            ..Default::default()
+        })
     }
 }
