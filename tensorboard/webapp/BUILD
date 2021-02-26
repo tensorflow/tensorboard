@@ -380,6 +380,7 @@ tf_svg_bundle(
         "@com_google_material_design_icon//:keep_outline_24px.svg",
         "@com_google_material_design_icon//:line_weight_24px.svg",
         "@com_google_material_design_icon//:more_vert_24px.svg",
+        "@com_google_material_design_icon//:notifications_none_24px.svg",
         "@com_google_material_design_icon//:refresh_24px.svg",
         "@com_google_material_design_icon//:search_24px.svg",
         "@com_google_material_design_icon//:settings_24px.svg",
