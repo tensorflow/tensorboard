@@ -405,7 +405,7 @@ pub mod test_data {
         metadata: Option<Box<pb::SummaryMetadata>>,
         /// Tensor evaluation function, called for each point in the series.
         ///
-        /// By default, this maps every step to the empty float32 tensor.
+        /// By default, this maps every step to the length-0 float32 vector.
         eval: Box<dyn Fn(Step) -> pb::TensorProto>,
     }
 
@@ -418,6 +418,13 @@ pub mod test_data {
                 metadata: None,
                 eval: Box::new(|_| pb::TensorProto {
                     dtype: pb::DataType::DtFloat.into(),
+                    tensor_shape: Some(pb::TensorShapeProto {
+                        dim: vec![pb::tensor_shape_proto::Dim {
+                            size: 0,
+                            ..Default::default()
+                        }],
+                        ..Default::default()
+                    }),
                     ..Default::default()
                 }),
             }
