@@ -113,10 +113,10 @@ impl EventValue {
                     let w = format!("{}", im.width).into_bytes();
                     let h = format!("{}", im.height).into_bytes();
                     let buf = im.encoded_image_string;
-                    Ok(BlobSequenceValue(vec![w.into(), h.into(), buf.into()]))
+                    Ok(BlobSequenceValue(vec![w.into(), h.into(), buf]))
                 }
                 pb::summary::value::Value::Audio(au) => {
-                    Ok(BlobSequenceValue(vec![au.encoded_audio_string.into()]))
+                    Ok(BlobSequenceValue(vec![au.encoded_audio_string]))
                 }
                 pb::summary::value::Value::Tensor(mut tp)
                     if tp.dtype == i32::from(pb::DataType::DtString) =>

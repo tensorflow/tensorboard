@@ -117,7 +117,7 @@ impl StageTimeSeries {
     }
 
     fn capacity(
-        metadata: &Box<pb::SummaryMetadata>,
+        metadata: &pb::SummaryMetadata,
         plugin_sampling_hint: Arc<PluginSamplingHint>,
     ) -> usize {
         let data_class =
