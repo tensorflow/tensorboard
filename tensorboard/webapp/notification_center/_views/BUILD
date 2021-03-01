@@ -22,6 +22,8 @@ tf_ng_module(
         "notification_center_component.ng.html",
     ],
     deps = [
+        "//tensorboard/webapp/angular:expect_angular_material_icon",
+        "//tensorboard/webapp/angular:expect_angular_material_menu",
         "//tensorboard/webapp/notification_center/_redux:types",
         "@npm//@angular/core",
     ],

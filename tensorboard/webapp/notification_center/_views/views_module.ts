@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {NgModule} from '@angular/core';
+import {MatIconModule} from '@angular/material/icon';
+import {MatMenuModule} from '@angular/material/menu';
 
 import {NotificationCenterComponent} from './notification_center_component';
 import {NotificationCenterContainer} from './notification_center_container';
@@ -23,5 +25,6 @@ import {NotificationCenterContainer} from './notification_center_container';
 @NgModule({
   declarations: [NotificationCenterContainer, NotificationCenterComponent],
   exports: [NotificationCenterContainer],
+  imports: [MatIconModule, MatMenuModule],
 })
 export class NotificationCenterViewModule {}
