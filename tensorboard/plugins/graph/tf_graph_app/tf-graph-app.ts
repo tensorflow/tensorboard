@@ -18,6 +18,7 @@ import {customElement, property} from '@polymer/decorators';
 import '../tf_graph_board/tf-graph-board';
 import '../tf_graph_controls/tf-graph-controls';
 import '../tf_graph_loader/tf-graph-loader';
+import * as tf_graph_render from '../tf_graph_common/render';
 import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
 
 /**
@@ -158,7 +159,7 @@ class TfGraphApp extends LegacyElementMixin(PolymerElement) {
   })
   selectedNode: string;
   @property({type: Object})
-  _renderHierarchy: object;
+  _renderHierarchy: tf_graph_render.RenderGraphInfo;
   @property({type: Object})
   _progress: object;
   @property({type: Boolean})

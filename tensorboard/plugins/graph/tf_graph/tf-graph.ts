@@ -86,9 +86,9 @@ class TfGraph extends LegacyElementMixin(PolymerElement) {
     notify: true,
     observer: '_graphChanged',
   })
-  graphHierarchy: object;
+  graphHierarchy: tf_graph.Hierarchy;
   @property({type: Object})
-  basicGraph: object;
+  basicGraph: tf_graph.SlimGraph;
   @property({type: Object})
   stats: object;
   @property({type: Object})
@@ -132,7 +132,7 @@ class TfGraph extends LegacyElementMixin(PolymerElement) {
     readOnly: true,
     notify: true,
   })
-  renderHierarchy: any;
+  renderHierarchy: tf_graph_render.RenderGraphInfo;
   @property({type: Boolean})
   traceInputs: boolean;
   @property({type: Array})
@@ -191,12 +191,12 @@ class TfGraph extends LegacyElementMixin(PolymerElement) {
     if (this.graphHierarchy) {
       if (stats && devicesForStats) {
         tf_graph.joinStatsInfoWithGraph(
-          this.basicGraph as any,
+          this.basicGraph,
           stats as any,
           devicesForStats as any
         );
         tf_graph_hierarchy.joinAndAggregateStats(
-          this.graphHierarchy as any,
+          this.graphHierarchy,
           stats as any
         );
       }
@@ -283,10 +283,8 @@ class TfGraph extends LegacyElementMixin(PolymerElement) {
           };
         }
         anyThis._setColorByParams({
-          compute_time: getColorParamsFromScale(
-            renderGraph.computeTimeScale as any
-          ),
-          memory: getColorParamsFromScale(renderGraph.memoryUsageScale as any),
+          compute_time: getColorParamsFromScale(renderGraph.computeTimeScale),
+          memory: getColorParamsFromScale(renderGraph.memoryUsageScale),
           device: _.map(renderGraph.deviceColorMap.domain(), function (
             deviceName
           ) {
@@ -426,8 +424,8 @@ class TfGraph extends LegacyElementMixin(PolymerElement) {
     var nodeName = event.detail.name;
     this.nodeToggleExtract(nodeName);
   }
-  nodeToggleExtract(nodeName) {
-    var renderNode = this.renderHierarchy.getRenderNodeByName(nodeName);
+  nodeToggleExtract(nodeName: string) {
+    const renderNode = this.renderHierarchy.getRenderNodeByName(nodeName);
     if (renderNode.node.include == tf_graph.InclusionType.INCLUDE) {
       renderNode.node.include = tf_graph.InclusionType.EXCLUDE;
     } else if (renderNode.node.include == tf_graph.InclusionType.EXCLUDE) {
@@ -468,7 +466,7 @@ class TfGraph extends LegacyElementMixin(PolymerElement) {
       'Namespace hierarchy'
     );
     tf_graph_hierarchy
-      .build(this.basicGraph as any, this.hierarchyParams, hierarchyTracker)
+      .build(this.basicGraph, this.hierarchyParams, hierarchyTracker)
       .then(
         function (graphHierarchy) {
           this.set('graphHierarchy', graphHierarchy);

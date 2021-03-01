@@ -1052,7 +1052,7 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
   @property({
     type: Object,
   })
-  renderHierarchy: object;
+  renderHierarchy: tf_graph_render.RenderGraphInfo;
   /**
    * @type {!Selection}
    */

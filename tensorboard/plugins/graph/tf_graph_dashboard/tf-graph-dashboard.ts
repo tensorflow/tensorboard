@@ -29,6 +29,7 @@ import '../tf_graph_board/tf-graph-board';
 import '../tf_graph_controls/tf-graph-controls';
 import '../tf_graph_loader/tf-graph-dashboard-loader';
 import * as tf_graph_op from '../tf_graph_common/op';
+import * as tf_graph_render from '../tf_graph_common/render';
 
 /**
  * The (string) name for the run of the selected dataset in the graph dashboard.
@@ -216,7 +217,7 @@ class TfGraphDashboard extends LegacyElementMixin(PolymerElement) {
   })
   _selectedDataset: number = 0;
   @property({type: Object, observer: '_renderHierarchyChanged'})
-  _renderHierarchy: any;
+  _renderHierarchy: tf_graph_render.RenderGraphInfo;
   @property({
     type: Object,
   })

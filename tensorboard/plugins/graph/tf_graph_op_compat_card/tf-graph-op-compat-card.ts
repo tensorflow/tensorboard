@@ -19,6 +19,7 @@ import * as d3 from 'd3';
 
 import '../../../components/polymer/irons_and_papers';
 import './tf-graph-op-compat-list-item';
+import * as tf_graph from '../tf_graph_common/graph';
 import * as tf_graph_hierarchy from '../tf_graph_common/hierarchy';
 import * as tf_graph_render from '../tf_graph_common/render';
 
@@ -179,11 +180,11 @@ class TfGraphOpCompatCard extends LegacyElementMixin(PolymerElement) {
     </iron-collapse>
   `;
   @property({type: Object})
-  graphHierarchy: any;
+  graphHierarchy: tf_graph.Hierarchy;
   @property({type: Object})
   hierarchyParams: object;
   @property({type: Object})
-  renderHierarchy: any;
+  renderHierarchy: tf_graph_render.RenderGraphInfo;
   @property({type: String})
   nodeTitle: string;
   @property({
