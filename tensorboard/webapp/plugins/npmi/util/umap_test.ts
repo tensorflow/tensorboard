@@ -15,7 +15,7 @@ limitations under the License.
 import {buildEmbeddingDataSet, projectUmap} from './umap';
 import {createSampleEmbeddingListing} from '../testing';
 
-describe('umap utils', () => {
+fdescribe('umap utils', () => {
   it('builds embedding dataset', () => {
     const embeddingListing = createSampleEmbeddingListing();
     const embeddingDataSet = buildEmbeddingDataSet(embeddingListing);
@@ -29,7 +29,7 @@ describe('umap utils', () => {
     expect(embeddingDataSet.umapRun).toBe(0);
   });
 
-  it('projects embedding dataset', (done) => {
+  it('projects embedding dataset', async () => {
     const embeddingDataSet = buildEmbeddingDataSet({
       annotation_1: {
         vector: [0.5, 0.6, 0.1],
@@ -62,25 +62,26 @@ describe('umap utils', () => {
         projections: {},
       },
     });
-    projectUmap(
-      embeddingDataSet,
-      2,
-      0.1,
-      [0, 1, 2, 3, 4],
-      () => {},
-      (resultDataSet) => {
-        expect(resultDataSet.projections.umap).toBeTrue();
-        expect(resultDataSet.hasUmapRun).toBeTrue();
-        for (const key of resultDataSet.pointKeys) {
-          expect(resultDataSet.points[key].projections['umap-0']).toBeTruthy();
-          expect(resultDataSet.points[key].projections['umap-1']).toBeTruthy();
+    await projectUmap(embeddingDataSet, 2, 0.1, [0, 1, 2, 3, 4], () => {}).then(
+      (embeddingDataSet) => {
+        expect(embeddingDataSet.projections.umap).toBeTrue();
+        expect(embeddingDataSet.hasUmapRun).toBeTrue();
+        for (const key of embeddingDataSet.pointKeys) {
+          expect(
+            embeddingDataSet.points[key].projections['umap-0']
+          ).toBeTruthy();
+          expect(
+            embeddingDataSet.points[key].projections['umap-1']
+          ).toBeTruthy();
         }
-        done();
+      },
+      () => {
+        fail('UMAP not working as expected.');
       }
     );
   });
 
-  it('does not project if not more data points than neighbors', (done) => {
+  it('does not project if not more data points than neighbors', async () => {
     const embeddingDataSet = buildEmbeddingDataSet({
       annotation_1: {
         vector: [0.5, 0.6, 0.1],
@@ -113,16 +114,19 @@ describe('umap utils', () => {
         projections: {},
       },
     });
-    projectUmap(
+    return projectUmap(
       embeddingDataSet,
       5,
       0.1,
       [0, 1, 2, 3, 4],
-      (errorMessage) => {
-        expect(errorMessage).toBe('Error: Please select more data points.');
-        done();
-      },
       () => {}
+    ).then(
+      () => {
+        fail('Did project even though not enough data points.');
+      },
+      (message) => {
+        expect(message).toBe('Error: Please select more data points.');
+      }
     );
   });
 });
