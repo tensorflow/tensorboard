@@ -17,7 +17,6 @@ import {NgModule} from '@angular/core';
 import {NotificationCenterViewModule} from './_views/views_module';
 
 @NgModule({
-  imports: [NotificationCenterViewModule],
   exports: [NotificationCenterViewModule],
 })
 export class NotificationCenterModule {}
