@@ -3,6 +3,11 @@ load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_sass_binary", "tf_ts_lib
 package(default_visibility = ["//tensorboard:internal"])
 
 tf_sass_binary(
+    name = "line_chart_axis_view_styles",
+    src = "line_chart_axis_view.scss",
+)
+
+tf_sass_binary(
     name = "line_chart_interactive_view_styles",
     src = "line_chart_interactive_view.scss",
 )
@@ -18,7 +23,9 @@ tf_ng_module(
         "sub_view_module.ts",
     ],
     assets = [
+        ":line_chart_axis_view_styles",
         ":line_chart_interactive_view_styles",
+        "line_chart_axis_view.ng.html",
         "line_chart_interactive_view.ng.html",
     ],
     deps = [
