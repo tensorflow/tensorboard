@@ -8,6 +8,7 @@ tf_ng_module(
     name = "notification_center",
     srcs = [
         "_notification_center_module.ts",
+        "index.ts",
     ],
     deps = [
         "//tensorboard/webapp/notification_center/_views",
