@@ -84,6 +84,50 @@ describe('metrics card_renderer utils test', () => {
       ]);
     });
 
+    it('behaves correctly with non-positive steps', () => {
+      const actual = partitionSeries([
+        {
+          runId: 'a',
+          points: buildPoints([0, -30, -15, -50]),
+        },
+        {
+          runId: 'b',
+          points: buildPoints([-2, -1, 0]),
+        },
+      ]);
+
+      expect(actual).toEqual([
+        {
+          seriesId: '["a",0]',
+          runId: 'a',
+          points: buildPoints([0]),
+          partitionIndex: 0,
+          partitionSize: 3,
+        },
+        {
+          seriesId: '["a",1]',
+          runId: 'a',
+          points: buildPoints([-30, -15]),
+          partitionIndex: 1,
+          partitionSize: 3,
+        },
+        {
+          seriesId: '["a",2]',
+          runId: 'a',
+          points: buildPoints([-50]),
+          partitionIndex: 2,
+          partitionSize: 3,
+        },
+        {
+          seriesId: '["b",0]',
+          runId: 'b',
+          points: buildPoints([-2, -1, 0]),
+          partitionIndex: 0,
+          partitionSize: 1,
+        },
+      ]);
+    });
+
     it('handles zero length points', () => {
       const actual = partitionSeries([
         {
@@ -162,6 +206,25 @@ describe('metrics card_renderer utils test', () => {
             seriesId: '["a",0]',
             runId: 'a',
             points: buildPoints([-1, Infinity, NaN]),
+            partitionIndex: 0,
+            partitionSize: 1,
+          },
+        ]);
+      });
+
+      it('does not put starting infinite in a separate partition', () => {
+        const actual = partitionSeries([
+          {
+            runId: 'a',
+            points: buildPoints([Infinity, 0, 1]),
+          },
+        ]);
+
+        expect(actual).toEqual([
+          {
+            seriesId: '["a",0]',
+            runId: 'a',
+            points: buildPoints([Infinity, 0, 1]),
             partitionIndex: 0,
             partitionSize: 1,
           },

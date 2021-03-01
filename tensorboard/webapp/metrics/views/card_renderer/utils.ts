@@ -42,7 +42,9 @@ export function partitionSeries(series: PartialSeries[]): PartitionedSeries[] {
       PartitionedSeries,
       'partitionSize' | 'partitionIndex'
     >> = [];
-    let lastXValue = datum.points[0]?.x ?? 0;
+    let lastXValue = Number.isFinite(datum.points[0]?.x)
+      ? datum.points[0]!.x
+      : -Infinity;
     let currentPoints: PartitionedSeries['points'] = [];
 
     for (const point of datum.points) {
