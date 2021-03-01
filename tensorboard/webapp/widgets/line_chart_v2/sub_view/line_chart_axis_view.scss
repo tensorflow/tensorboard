@@ -106,6 +106,7 @@ text {
 .extent-edit-control {
   align-items: center;
   display: flex;
+  flex-direction: row-reverse;
   justify-content: flex-end;
   margin: 10px 20px;
 }

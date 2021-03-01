@@ -13,12 +13,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {OverlayContainer, OverlayModule} from '@angular/cdk/overlay';
+import {TestbedHarnessEnvironment} from '@angular/cdk/testing/testbed';
 import {CommonModule} from '@angular/common';
 import {Component, DebugElement, Input} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {MatButtonModule} from '@angular/material/button';
 import {MatInputModule} from '@angular/material/input';
 import {MatMenuModule} from '@angular/material/menu';
+import {MatMenuHarness} from '@angular/material/menu/testing';
 import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 
@@ -340,22 +342,39 @@ describe('line_chart_v2/sub_view/axis test', () => {
   });
 
   describe('extent manual edit', () => {
-    function changeMinMax(
+    const EditorSelector = {
+      INPUT: '.extent-edit-input input',
+      CHANGE: '.extent-edit-change',
+      CANCEL: '.extent-edit-cancel',
+    };
+
+    function setMinMax(
       fixture: ComponentFixture<TestableComponent>,
       min: string,
-      max: string
-    ) {
+      max: string,
+      saveChange: boolean = true
+    ): HTMLElement {
       const el = fixture.debugElement.query(ByCss.X_AXIS);
       el.nativeElement.click();
 
       const overlay = overlayContainer.getContainerElement();
       const [minInput, maxInput] = overlay.querySelectorAll(
-        '.extent-edit-input input'
+        EditorSelector.INPUT
       ) as NodeListOf<HTMLInputElement>;
 
       minInput.value = min;
       maxInput.value = max;
-      (overlay.querySelector('.change') as HTMLElement).click();
+
+      return overlay;
+    }
+
+    function changeMinMax(
+      fixture: ComponentFixture<TestableComponent>,
+      min: string,
+      max: string
+    ) {
+      const overlay = setMinMax(fixture, min, max);
+      (overlay.querySelector(EditorSelector.CHANGE) as HTMLElement).click();
     }
 
     it('shows a edit menu clicking on the axis', () => {
@@ -388,6 +407,31 @@ describe('line_chart_v2/sub_view/axis test', () => {
 
       changeMinMax(fixture, '100', '1');
       expect(extentChanged).toHaveBeenCalledWith([100, 1]);
+    });
+
+    it('resets inputs when the menu when dismissed without saving', async () => {
+      const fixture = TestBed.createComponent(TestableComponent);
+      const loader = TestbedHarnessEnvironment.loader(fixture);
+      fixture.componentInstance.viewBox = {
+        x: [1000, 2000],
+        y: [-1, 1],
+      };
+      fixture.detectChanges();
+      const overlay = setMinMax(fixture, '100', '1');
+
+      const menuTesting = await loader.getHarness(MatMenuHarness);
+      await menuTesting.close();
+
+      expect(overlay.querySelectorAll(EditorSelector.INPUT).length).toBe(0);
+
+      const el = fixture.debugElement.query(ByCss.X_AXIS);
+      el.nativeElement.click();
+
+      const [minInput, maxInput] = overlay.querySelectorAll(
+        EditorSelector.INPUT
+      ) as NodeListOf<HTMLInputElement>;
+      expect(minInput.value).toBe('1000');
+      expect(maxInput.value).toBe('2000');
     });
   });
 });

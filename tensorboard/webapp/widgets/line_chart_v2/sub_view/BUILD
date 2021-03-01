@@ -63,6 +63,7 @@ tf_ts_library(
         ":internal_types",
         ":sub_view",
         "//tensorboard/webapp/angular:expect_angular_cdk_overlay",
+        "//tensorboard/webapp/angular:expect_angular_cdk_testing",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/angular:expect_angular_material_button",
         "//tensorboard/webapp/angular:expect_angular_material_input",
