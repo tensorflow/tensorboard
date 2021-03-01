@@ -141,11 +141,22 @@ tf_ng_module(
 )
 
 tf_ts_library(
+    name = "scalar_card_types",
+    srcs = [
+        "scalar_card_types.ts",
+    ],
+    deps = [
+        "//tensorboard/webapp/widgets/line_chart_v2",
+    ],
+)
+
+tf_ts_library(
     name = "utils",
     srcs = [
         "utils.ts",
     ],
     deps = [
+        ":scalar_card_types",
         "//tensorboard/webapp/runs/store:types",
     ],
 )
@@ -164,13 +175,13 @@ tf_ng_module(
         "scalar_card_component.ts",
         "scalar_card_container.ts",
         "scalar_card_module.ts",
-        "scalar_card_types.ts",
     ],
     assets = [
         ":scalar_card_styles",
         "scalar_card_component.ng.html",
     ],
     deps = [
+        ":scalar_card_types",
         ":utils",
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp:selectors",
@@ -219,6 +230,7 @@ tf_ts_library(
         ":image_card",
         ":run_name",
         ":scalar_card",
+        ":scalar_card_types",
         ":utils",
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp:selectors",

@@ -52,3 +52,18 @@ export interface ScalarCardPoint extends Point {
 }
 
 export type ScalarCardDataSeries = DataSeries<ScalarCardPoint>;
+
+export interface PartialSeries {
+  runId: string;
+  points: ScalarCardPoint[];
+}
+
+export interface PartitionedSeries {
+  // id that uniquely identifies a partitioned series. This may be derived from runId
+  // but is not interchangeable.
+  seriesId: string;
+  partitionIndex: number;
+  partitionSize: number;
+  runId: string;
+  points: ScalarCardPoint[];
+}

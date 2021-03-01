@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Run} from '../../../runs/store/runs_types';
+import {PartialSeries, PartitionedSeries} from './scalar_card_types';
 
 export function getDisplayNameForRun(
   runId: string,
@@ -28,4 +29,55 @@ export function getDisplayNameForRun(
     .join('/');
 
   return displayName;
+}
+
+/**
+ * Partitions runs into pseudo runs when its points have non-monotonically increasing
+ * steps.
+ */
+export function partitionSeries(series: PartialSeries[]): PartitionedSeries[] {
+  const partitionedSeries: PartitionedSeries[] = [];
+  for (const datum of series) {
+    const currentPartition: Array<Omit<
+      PartitionedSeries,
+      'partitionSize' | 'partitionIndex'
+    >> = [];
+    let lastXValue = Number.isFinite(datum.points[0]?.x)
+      ? datum.points[0]!.x
+      : -Infinity;
+    let currentPoints: PartitionedSeries['points'] = [];
+
+    for (const point of datum.points) {
+      if (!Number.isFinite(point.x)) {
+        currentPoints.push(point);
+        continue;
+      }
+
+      if (point.x < lastXValue) {
+        currentPartition.push({
+          seriesId: JSON.stringify([datum.runId, currentPartition.length]),
+          runId: datum.runId,
+          points: currentPoints,
+        });
+        currentPoints = [];
+      }
+      currentPoints.push(point);
+      lastXValue = point.x;
+    }
+
+    currentPartition.push({
+      seriesId: JSON.stringify([datum.runId, currentPartition.length]),
+      runId: datum.runId,
+      points: currentPoints,
+    });
+
+    for (let index = 0; index < currentPartition.length; index++) {
+      partitionedSeries.push({
+        ...currentPartition[index],
+        partitionIndex: index,
+        partitionSize: currentPartition.length,
+      });
+    }
+  }
+  return partitionedSeries;
 }
