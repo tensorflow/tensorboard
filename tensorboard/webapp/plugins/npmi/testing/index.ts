@@ -20,6 +20,7 @@ import {
   SortOrder,
   ViewActive,
 } from '../store/npmi_types';
+import {buildEmbeddingDataSet} from '../util/umap';
 
 export function createNpmiState(override?: Partial<NpmiState>): NpmiState {
   return {
@@ -29,7 +30,6 @@ export function createNpmiState(override?: Partial<NpmiState>): NpmiState {
     },
     annotationData: {},
     runToMetrics: {},
-    embeddingData: {},
     selectedAnnotations: [],
     flaggedAnnotations: [],
     hiddenAnnotations: [],
@@ -157,5 +157,32 @@ export function buildSampleAnnotationData() {
         countValue: 53,
       },
     ],
+  };
+}
+
+export function createSampleEmbeddingData() {
+  return buildEmbeddingDataSet(createSampleEmbeddingListing());
+}
+
+export function createSampleEmbeddingListing() {
+  return {
+    annotation_1: {
+      vector: [0.5],
+      name: 'annotation_1',
+      index: 0,
+      projections: {},
+    },
+    annotation_2: {
+      vector: [-0.2],
+      name: 'annotation_2',
+      index: 1,
+      projections: {},
+    },
+    annotation_3: {
+      vector: [0.1],
+      name: 'annotation_3',
+      index: 2,
+      projections: {},
+    },
   };
 }

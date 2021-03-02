@@ -29,10 +29,14 @@ import {provideMockStore, MockStore} from '@ngrx/store/testing';
 import {State} from '../../../../../../app_state';
 import {
   getMetricFilters,
-  getEmbeddingData,
+  getEmbeddingDataSet,
 } from '../../../../store/npmi_selectors';
 import * as npmiActions from '../../../../actions';
-import {appStateFromNpmiState, createNpmiState} from '../../../../testing';
+import {
+  appStateFromNpmiState,
+  createSampleEmbeddingData,
+  createNpmiState,
+} from '../../../../testing';
 import {MetricArithmeticElementContainer} from './metric_arithmetic_element_container';
 import {MetricArithmeticElementComponent} from './metric_arithmetic_element_component';
 
@@ -115,10 +119,9 @@ describe('Npmi Metric Arithmetic Element Container', () => {
 
     it('renders the embeddings button when embeddings present', () => {
       const fixture = TestBed.createComponent(MetricArithmeticElementContainer);
+      const embeddingData = createSampleEmbeddingData();
       fixture.componentInstance.metric = 'npmi@test';
-      store.overrideSelector(getEmbeddingData, {
-        test: [0.1, 0.04, 1],
-      });
+      store.overrideSelector(getEmbeddingDataSet, embeddingData);
       fixture.detectChanges();
 
       const embeddingsButton = fixture.debugElement.query(
@@ -129,10 +132,9 @@ describe('Npmi Metric Arithmetic Element Container', () => {
 
     it('dispatches metric selected action on click on chip', () => {
       const fixture = TestBed.createComponent(MetricArithmeticElementContainer);
+      const embeddingData = createSampleEmbeddingData();
       fixture.componentInstance.metric = 'npmi@test';
-      store.overrideSelector(getEmbeddingData, {
-        test: [0.1, 0.04, 1],
-      });
+      store.overrideSelector(getEmbeddingDataSet, embeddingData);
       fixture.detectChanges();
 
       const embeddingsButton = fixture.debugElement.query(

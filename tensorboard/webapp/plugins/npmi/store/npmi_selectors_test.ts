@@ -16,7 +16,7 @@ import {
   getPluginDataLoaded,
   getAnnotationData,
   getRunToMetrics,
-  getEmbeddingData,
+  getEmbeddingDataSet,
   getSelectedAnnotations,
   getFlaggedAnnotations,
   getHiddenAnnotations,
@@ -43,7 +43,11 @@ import {
   ArithmeticKind,
   ViewActive,
 } from './npmi_types';
-import {createNpmiState, createState} from '../testing';
+import {
+  createSampleEmbeddingData,
+  createNpmiState,
+  createState,
+} from '../testing';
 
 describe('npmi selectors', () => {
   describe('getPluginDataLoadState', () => {
@@ -154,25 +158,20 @@ describe('npmi selectors', () => {
     });
   });
 
-  describe('getEmbeddingData', () => {
-    it('returns the correct empty object', () => {
+  describe('getEmbeddingDataSet', () => {
+    it('returns correct undefined', () => {
       const state = createState(createNpmiState());
-      expect(getEmbeddingData(state)).toEqual({});
+      expect(getEmbeddingDataSet(state)).toEqual(undefined);
     });
 
     it('returns the correct data', () => {
+      const embeddingData = createSampleEmbeddingData();
       const state = createState(
         createNpmiState({
-          embeddingData: {
-            annotation_new_1: [1.0, 0.5],
-            annotation_new_2: [0.5, -0.5],
-          },
+          embeddingDataSet: embeddingData,
         })
       );
-      expect(getEmbeddingData(state)).toEqual({
-        annotation_new_1: [1.0, 0.5],
-        annotation_new_2: [0.5, -0.5],
-      });
+      expect(getEmbeddingDataSet(state)).toEqual(embeddingData);
     });
   });
 

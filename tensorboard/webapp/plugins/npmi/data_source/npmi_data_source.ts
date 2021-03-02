@@ -28,6 +28,7 @@ import {
   ValueData,
   EmbeddingListing,
 } from './../store/npmi_types';
+import {EmbeddingDataSet, buildEmbeddingDataSet} from '../util/umap';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
@@ -37,7 +38,7 @@ export abstract class NpmiDataSource {
   ): Observable<{
     annotationData: AnnotationDataListing;
     metrics: MetricListing;
-    embeddingData: EmbeddingListing;
+    embeddingDataSet?: EmbeddingDataSet;
   }>;
 }
 
@@ -120,12 +121,27 @@ export class NpmiHttpServerDataSource implements NpmiDataSource {
     ).pipe(
       map(([annotations, metrics, values, embeddings]) => {
         const annotationData: AnnotationDataListing = {};
-        const embeddingData: EmbeddingListing = {};
+        const embeddingDataPoints: EmbeddingListing = {};
+        let embeddingDataSet: EmbeddingDataSet | undefined = undefined;
+        let index = 0;
+
         for (const run of Object.keys(annotations)) {
           for (const annotationIndex in annotations[run]) {
             const annotation = annotations[run][annotationIndex];
-            if (embeddings[run] && embeddings[run][annotationIndex]) {
-              embeddingData[annotation] = embeddings[run][annotationIndex];
+            if (
+              Object.keys(embeddings).length &&
+              !embeddingDataPoints[annotation] &&
+              embeddings[run][annotationIndex] &&
+              embeddings[run][annotationIndex].some((item) => item !== 0)
+            ) {
+              // If not already set
+              embeddingDataPoints[annotation] = {
+                vector: embeddings[run][annotationIndex],
+                index: index,
+                name: annotation,
+                projections: {},
+              };
+              index = index + 1;
             }
             const metricToDataElements = new Map<string, ValueData>();
             for (const metricIndex in metrics[run]) {
@@ -159,7 +175,10 @@ export class NpmiHttpServerDataSource implements NpmiDataSource {
             ];
           }
         }
-        return {annotationData, metrics, embeddingData};
+        if (Object.keys(embeddingDataPoints).length) {
+          embeddingDataSet = buildEmbeddingDataSet(embeddingDataPoints);
+        }
+        return {annotationData, metrics, embeddingDataSet};
       }),
       catchError((error) => {
         if (
@@ -170,7 +189,7 @@ export class NpmiHttpServerDataSource implements NpmiDataSource {
           return of({
             annotationData: {},
             metrics: {},
-            embeddingData: {},
+            embeddingDataSet: undefined,
           });
         }
         return throwError(error);
