@@ -17,6 +17,8 @@ import {PolymerElement, html} from '@polymer/polymer';
 import {customElement, property} from '@polymer/decorators';
 
 import '../../../components/polymer/irons_and_papers';
+import * as tf_graph from '../tf_graph_common/graph';
+import * as tf_graph_render from '../tf_graph_common/render';
 import '../tf_graph_debugger_data_card/tf-graph-debugger-data-card';
 import '../tf_graph_op_compat_card/tf-graph-op-compat-card';
 import './tf-node-info';
@@ -87,11 +89,11 @@ class TfGraphInfo extends LegacyElementMixin(PolymerElement) {
   @property({type: String})
   title: string;
   @property({type: Object})
-  graphHierarchy: object;
+  graphHierarchy: tf_graph.Hierarchy;
   @property({type: Object})
-  graph: object;
+  graph: tf_graph.SlimGraph;
   @property({type: Object})
-  renderHierarchy: object;
+  renderHierarchy: tf_graph_render.RenderGraphInfo;
   @property({type: Object})
   nodeNamesToHealthPills: object;
   @property({

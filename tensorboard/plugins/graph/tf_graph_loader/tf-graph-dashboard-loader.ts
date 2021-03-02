@@ -17,12 +17,13 @@ import {PolymerElement} from '@polymer/polymer';
 import {customElement, observe, property} from '@polymer/decorators';
 
 import * as tf_graph_common from '../tf_graph_common/common';
-import * as tf_graph_controls from '../tf_graph_controls/tf-graph-controls';
+import * as tf_graph from '../tf_graph_common/graph';
 import * as tf_graph_hierarchy from '../tf_graph_common/hierarchy';
 import * as tf_graph_loader from '../tf_graph_common/loader';
 import * as tf_graph_op from '../tf_graph_common/op';
 import * as tf_graph_parser from '../tf_graph_common/parser';
 import * as tf_graph_util from '../tf_graph_common/util';
+import * as tf_graph_controls from '../tf_graph_controls/tf-graph-controls';
 
 import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
 import {getRouter} from '../../../components/tf_backend/router';
@@ -78,13 +79,13 @@ class TfGraphDashboardLoader extends LegacyElementMixin(PolymerElement) {
     readOnly: true, //readonly so outsider can't change this via binding
     notify: true,
   })
-  outGraphHierarchy: object;
+  outGraphHierarchy: tf_graph.Hierarchy;
   @property({
     type: Object,
     readOnly: true, //readonly so outsider can't change this via binding
     notify: true,
   })
-  outGraph: object;
+  outGraph: tf_graph.SlimGraph;
   @property({
     type: Object,
     readOnly: true, // This property produces data.
@@ -192,8 +193,8 @@ class TfGraphDashboardLoader extends LegacyElementMixin(PolymerElement) {
         tracker,
         path,
         pbTxtFile,
-        this.compatibilityProvider as any,
-        this.hierarchyParams as any
+        this.compatibilityProvider,
+        this.hierarchyParams
       )
       .then(
         function ({graph, graphHierarchy}) {

@@ -15,6 +15,7 @@ tf_ts_library(
     deps = [
         "//tensorboard/components/polymer:legacy_element_mixin",
         "//tensorboard/plugins/graph/tf_graph_board",
+        "//tensorboard/plugins/graph/tf_graph_common",
         "//tensorboard/plugins/graph/tf_graph_controls",
         "//tensorboard/plugins/graph/tf_graph_loader",
         "@npm//@polymer/decorators",

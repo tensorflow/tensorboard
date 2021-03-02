@@ -413,7 +413,7 @@ export interface HierarchyParams {
   // into series nodes.
   useGeneralizedSeriesPatterns: boolean;
 }
-export const DefaultHierarchyParams = {
+export const DefaultHierarchyParams: HierarchyParams = {
   verifyTemplate: true,
   seriesNodeMinSize: 5,
   seriesMap: {},

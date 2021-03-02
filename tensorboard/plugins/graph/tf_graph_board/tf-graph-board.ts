@@ -19,6 +19,7 @@ import '../../../components/polymer/irons_and_papers';
 import '../tf_graph_info/tf-graph-info';
 import '../tf_graph/tf-graph';
 import * as tf_graph from '../tf_graph_common/graph';
+import * as tf_graph_render from '../tf_graph_common/render';
 import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
 
 /**
@@ -181,9 +182,9 @@ class TfGraphBoard extends LegacyElementMixin(PolymerElement) {
     </div>
   `;
   @property({type: Object})
-  graphHierarchy: object;
+  graphHierarchy: tf_graph.Hierarchy;
   @property({type: Object})
-  graph: object;
+  graph: tf_graph.SlimGraph;
   @property({type: Object})
   stats: object;
   /**
@@ -206,7 +207,7 @@ class TfGraphBoard extends LegacyElementMixin(PolymerElement) {
     type: Object,
     notify: true,
   })
-  renderHierarchy: any;
+  renderHierarchy: tf_graph_render.RenderGraphInfo;
   // Whether debugger data is enabled for this instance of Tensorboard.
   @property({type: Boolean})
   debuggerDataEnabled: boolean;

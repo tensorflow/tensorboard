@@ -284,7 +284,7 @@ class TfGraphDebuggerDataCard extends LegacyElementMixin(PolymerElement) {
     </paper-material>
   `;
   @property({type: Object})
-  renderHierarchy: any;
+  renderHierarchy: tf_graph_render.RenderGraphInfo;
   @property({
     type: Array,
     notify: true,

@@ -2185,12 +2185,12 @@ export function mapIndexToHue(id: number): number {
  */
 function extractHighDegrees(renderNode: RenderGroupNodeInfo) {
   extractSpecifiedNodes(renderNode);
-  if (PARAMS.outExtractTypes) {
+  if (PARAMS.outExtractTypes.length) {
     extractPredefinedSink(renderNode);
   }
   // This has to come before extract high in-degree to protect the core part
   // that takes many variables.
-  if (PARAMS.inExtractTypes) {
+  if (PARAMS.inExtractTypes.length) {
     extractPredefinedSource(renderNode);
   }
   extractHighInOrOutDegree(renderNode);
