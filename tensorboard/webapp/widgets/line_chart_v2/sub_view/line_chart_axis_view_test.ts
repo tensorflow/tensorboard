@@ -24,6 +24,7 @@ import {MatMenuHarness} from '@angular/material/menu/testing';
 import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 
+import {MatIconTestingModule} from '../../../testing/mat_icon_module';
 import {Extent, Scale, ScaleType} from '../lib/public_types';
 import {createScale} from '../lib/scale';
 import {LineChartAxisComponent} from './line_chart_axis_view';
@@ -78,6 +79,7 @@ describe('line_chart_v2/sub_view/axis test', () => {
     X_AXIS_LABEL: By.css('line-chart-axis .x-axis .minor text'),
     X_AXIS_MAJOR_TICK_LABEL: By.css('line-chart-axis .x-axis .major text'),
     Y_AXIS_LABEL: By.css('line-chart-axis .y-axis text'),
+    X_AXIS_EDIT_BUTTON: By.css('line-chart-axis .x-axis .extent-edit-button'),
   };
 
   beforeEach(async () => {
@@ -86,6 +88,7 @@ describe('line_chart_v2/sub_view/axis test', () => {
       imports: [
         CommonModule,
         MatButtonModule,
+        MatIconTestingModule,
         MatInputModule,
         MatMenuModule,
         NoopAnimationsModule,
@@ -351,10 +354,9 @@ describe('line_chart_v2/sub_view/axis test', () => {
     function setMinMax(
       fixture: ComponentFixture<TestableComponent>,
       min: string,
-      max: string,
-      saveChange: boolean = true
+      max: string
     ): HTMLElement {
-      const el = fixture.debugElement.query(ByCss.X_AXIS);
+      const el = fixture.debugElement.query(ByCss.X_AXIS_EDIT_BUTTON);
       el.nativeElement.click();
 
       const overlay = overlayContainer.getContainerElement();
@@ -399,14 +401,14 @@ describe('line_chart_v2/sub_view/axis test', () => {
       expect(extentChanged).toHaveBeenCalledWith([0, 0.5]);
     });
 
-    it('allows max smaller than min which flips the chart', () => {
+    it('does not allow max to be smaller than min', () => {
       const extentChanged = jasmine.createSpy();
       const fixture = TestBed.createComponent(TestableComponent);
       fixture.componentInstance.onXViewExtentChange = extentChanged;
       fixture.detectChanges();
 
       changeMinMax(fixture, '100', '1');
-      expect(extentChanged).toHaveBeenCalledWith([100, 1]);
+      expect(extentChanged).toHaveBeenCalledWith([1, 100]);
     });
 
     it('resets inputs when the menu when dismissed without saving', async () => {
@@ -424,7 +426,7 @@ describe('line_chart_v2/sub_view/axis test', () => {
 
       expect(overlay.querySelectorAll(EditorSelector.INPUT).length).toBe(0);
 
-      const el = fixture.debugElement.query(ByCss.X_AXIS);
+      const el = fixture.debugElement.query(ByCss.X_AXIS_EDIT_BUTTON);
       el.nativeElement.click();
 
       const [minInput, maxInput] = overlay.querySelectorAll(

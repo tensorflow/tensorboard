@@ -14,24 +14,30 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<div
-  [class]="axis + '-axis axis'"
-  #matMenuTrigger="matMenuTrigger"
-  [matMenuTriggerFor]="manualControl"
-  (menuOpened)="onAxisUpdateMenuOpen(minInput, maxInput, axisExtent)"
-  title="Click to manually set min & max values"
->
+<div [class]="axis + '-axis axis'">
   <div class="line"></div>
-  <svg class="minor ticks">
-    <ng-container *ngFor="let tick of getTicks()">
-      <g>
-        <text [attr.x]="textXPosition(tick)" [attr.y]="textYPosition(tick)">
-          {{ getFormatter().formatTick(tick) }}
-        </text>
-        <title>{{ getFormatter().formatReadable(tick) }}</title>
-      </g>
-    </ng-container>
-  </svg>
+  <div class="minor">
+    <svg class="ticks">
+      <ng-container *ngFor="let tick of getTicks()">
+        <g>
+          <text [attr.x]="textXPosition(tick)" [attr.y]="textYPosition(tick)">
+            {{ getFormatter().formatTick(tick) }}
+          </text>
+          <title>{{ getFormatter().formatReadable(tick) }}</title>
+        </g>
+      </ng-container>
+    </svg>
+    <button
+      class="extent-edit-button"
+      mat-icon-button
+      #matMenuTrigger="matMenuTrigger"
+      [matMenuTriggerFor]="manualControl"
+      (menuOpened)="onAxisUpdateMenuOpen(minInput, maxInput, axisExtent)"
+      title="Click to manually set min & max values"
+    >
+      <mat-icon svgIcon="edit_24px"></mat-icon>
+    </button>
+  </div>
   <svg *ngIf="shouldShowMajorTicks()" class="major ticks">
     <g *ngFor="let tick of getMajorTicks()">
       <text [attr.x]="textXPosition(tick)" [attr.y]="textYPosition(tick)">
@@ -68,9 +74,9 @@ limitations under the License.
       color="primary"
       class="extent-edit-change"
       (click)="
-            extentChanged(minInput.value, maxInput.value);
-            matMenuTrigger.closeMenu()
-          "
+        extentChanged(minInput.value, maxInput.value);
+        matMenuTrigger.closeMenu()
+      "
     >
       Change
     </button>

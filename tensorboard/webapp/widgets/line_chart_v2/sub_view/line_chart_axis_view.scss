@@ -12,6 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+@import 'tensorboard/webapp/theme/tb_theme';
 
 :host {
   contain: strict;
@@ -35,62 +36,92 @@ text {
   width: 100%;
 }
 
+.major,
+.minor {
+  overflow: hidden;
+}
+
 .line {
   background-color: #aaa;
   flex: 0 0 1px;
   justify-content: stretch;
 }
 
+.ticks {
+  height: 100%;
+  position: relative;
+  width: 100%;
+}
+
 .x-axis {
   flex-direction: column;
-}
 
-.x-axis text {
-  dominant-baseline: hanging;
-  text-anchor: middle;
-}
+  text {
+    dominant-baseline: hanging;
+    text-anchor: middle;
+  }
 
-.x-axis .ticks {
-  -webkit-mask-image: linear-gradient(
-    to right,
-    #0000 0%,
-    #000 10%,
-    #000 90%,
-    #0000 100%
-  );
-  mask-image: linear-gradient(
-    to right,
-    #0000 0%,
-    #000 10%,
-    #000 90%,
-    #0000 100%
-  );
+  .ticks {
+    -webkit-mask-image: linear-gradient(
+      to right,
+      #0000 0%,
+      #000 10%,
+      #000 90%,
+      #0000 100%
+    );
+    mask-image: linear-gradient(
+      to right,
+      #0000 0%,
+      #000 10%,
+      #000 90%,
+      #0000 100%
+    );
+  }
 }
 
 .y-axis {
   flex-direction: row-reverse;
+
+  text {
+    dominant-baseline: central;
+    text-anchor: end;
+  }
+
+  .ticks {
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      #0000 0%,
+      #000 10%,
+      #000 90%,
+      #0000 100%
+    );
+    mask-image: linear-gradient(
+      to bottom,
+      #0000 0%,
+      #000 10%,
+      #000 90%,
+      #0000 100%
+    );
+  }
 }
 
-.y-axis text {
-  dominant-baseline: central;
-  text-anchor: end;
-}
+.extent-edit-button {
+  background-color: mat-color($mat-gray, 200);
+  display: none;
+  font-size: 0;
+  height: 24px;
+  line-height: 24px;
+  margin: 5px;
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 24px;
 
-.y-axis .ticks {
-  -webkit-mask-image: linear-gradient(
-    to bottom,
-    #0000 0%,
-    #000 10%,
-    #000 90%,
-    #0000 100%
-  );
-  mask-image: linear-gradient(
-    to bottom,
-    #0000 0%,
-    #000 10%,
-    #000 90%,
-    #0000 100%
-  );
+  mat-icon {
+    height: 16px;
+    width: 16px;
+    line-height: 16px;
+  }
 }
 
 .extent-edit-input {
@@ -109,12 +140,17 @@ text {
   flex-direction: row-reverse;
   justify-content: flex-end;
   margin: 10px 20px;
+
+  button {
+    font-size: 12px;
+    height: 30px;
+    line-height: 1.4;
+    margin-left: 5px;
+    padding: 0 10px;
+  }
 }
 
-.extent-edit-control button {
-  font-size: 12px;
-  height: 30px;
-  line-height: 1.4;
-  margin-left: 5px;
-  padding: 0 10px;
+.axis:hover .extent-edit-button,
+.extent-edit-button:active {
+  display: initial;
 }

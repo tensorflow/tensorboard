@@ -390,6 +390,7 @@ tf_svg_bundle(
         "@com_google_material_design_icon//:visibility_off_24px.svg",
         "@com_google_material_design_icon//:group_work_24px.svg",
         "@com_google_material_design_icon//:warning_24px.svg",
+        "@com_google_material_design_icon//:edit_24px.svg",
     ],
     out = "icon_bundle.svg",
 )

@@ -16,6 +16,7 @@ import {OverlayModule} from '@angular/cdk/overlay';
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
 import {MatButtonModule} from '@angular/material/button';
+import {MatIconModule} from '@angular/material/icon';
 import {MatInputModule} from '@angular/material/input';
 import {MatMenuModule} from '@angular/material/menu';
 
@@ -43,6 +44,7 @@ import {LineChartInteractiveViewComponent} from './line_chart_interactive_view';
     CommonModule,
     OverlayModule,
     MatButtonModule,
+    MatIconModule,
     MatInputModule,
     MatMenuModule,
   ],
