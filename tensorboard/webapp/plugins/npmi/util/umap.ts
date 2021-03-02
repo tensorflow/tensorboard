@@ -23,7 +23,9 @@ export interface EmbeddingDataPoint {
   sequenceIndex?: number;
   index: number;
   projections: {
-    [key: string]: number;
+    umap?: boolean;
+    'umap-0'?: number;
+    'umap-1'?: number;
   };
 }
 
@@ -67,7 +69,8 @@ export function buildEmbeddingDataSet(
   };
 }
 
-/** Runs UMAP on the data. */
+/** Runs UMAP on the data. For performance reasons, this modifies the input
+ * embeddingData.*/
 export async function projectUmap(
   embeddingData: EmbeddingDataSet,
   nNeighbors: number,

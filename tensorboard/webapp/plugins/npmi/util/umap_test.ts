@@ -15,7 +15,7 @@ limitations under the License.
 import {buildEmbeddingDataSet, projectUmap} from './umap';
 import {createSampleEmbeddingListing} from '../testing';
 
-fdescribe('umap utils', () => {
+describe('umap utils', () => {
   it('builds embedding dataset', () => {
     const embeddingListing = createSampleEmbeddingListing();
     const embeddingDataSet = buildEmbeddingDataSet(embeddingListing);
@@ -26,11 +26,10 @@ fdescribe('umap utils', () => {
     );
     expect(embeddingDataSet.projections).toEqual({});
     expect(embeddingDataSet.hasUmapRun).toBeFalse();
-    expect(embeddingDataSet.umapRun).toBe(0);
   });
 
   it('projects embedding dataset', async () => {
-    const embeddingDataSet = buildEmbeddingDataSet({
+    const inputDataSet = buildEmbeddingDataSet({
       annotation_1: {
         vector: [0.5, 0.6, 0.1],
         name: 'annotation_1',
@@ -62,23 +61,19 @@ fdescribe('umap utils', () => {
         projections: {},
       },
     });
-    await projectUmap(embeddingDataSet, 2, 0.1, [0, 1, 2, 3, 4], () => {}).then(
-      (embeddingDataSet) => {
-        expect(embeddingDataSet.projections.umap).toBeTrue();
-        expect(embeddingDataSet.hasUmapRun).toBeTrue();
-        for (const key of embeddingDataSet.pointKeys) {
-          expect(
-            embeddingDataSet.points[key].projections['umap-0']
-          ).toBeTruthy();
-          expect(
-            embeddingDataSet.points[key].projections['umap-1']
-          ).toBeTruthy();
-        }
-      },
-      () => {
-        fail('UMAP not working as expected.');
-      }
+    const embeddingDataSet = await projectUmap(
+      inputDataSet,
+      2,
+      0.1,
+      [0, 1, 2, 3, 4],
+      () => {}
     );
+    expect(embeddingDataSet.projections.umap).toBeTrue();
+    expect(embeddingDataSet.hasUmapRun).toBeTrue();
+    for (const key of embeddingDataSet.pointKeys) {
+      expect(embeddingDataSet.points[key].projections['umap-0']).toBeTruthy();
+      expect(embeddingDataSet.points[key].projections['umap-1']).toBeTruthy();
+    }
   });
 
   it('does not project if not more data points than neighbors', async () => {
