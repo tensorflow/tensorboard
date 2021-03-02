@@ -68,7 +68,7 @@ describe('umap utils', () => {
       [0, 1, 2, 3, 4],
       () => {}
     );
-    expect(embeddingDataSet.projections.umap).toBeTrue();
+    expect(embeddingDataSet.projections['umap']).toBeTrue();
     expect(embeddingDataSet.hasUmapRun).toBeTrue();
     for (const key of embeddingDataSet.pointKeys) {
       expect(embeddingDataSet.points[key].projections['umap-0']).toBeTruthy();
