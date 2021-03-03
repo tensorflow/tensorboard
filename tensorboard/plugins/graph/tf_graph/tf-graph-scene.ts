@@ -665,4 +665,10 @@ class TfGraphScene2 extends LegacyElementMixin(PolymerElement) {
       this.traceInputs
     );
   }
+    
+  // Re-do hierarchy if extraction changes
+  @observe('extractNodes')
+  _updateExtractNodes() {
+    this.renderHierarchy
+  }
 }
