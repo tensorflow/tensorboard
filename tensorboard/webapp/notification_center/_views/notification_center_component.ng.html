@@ -14,17 +14,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<button
-  class="mat-focus-indicator mat-icon-button mat-button-base"
-  mat-icon-button
-  [matMenuTriggerFor]="menu"
->
-  <span class="mat-button-wrapper">
-    <mat-icon
-      class="mat-icon mat-icon-no-color notranslate"
-      svgIcon="notifications_none_24px"
-    ></mat-icon>
-  </span>
+<button mat-icon-button [matMenuTriggerFor]="menu">
+  <mat-icon svgIcon="notifications_none_24px"></mat-icon>
 </button>
 
 <mat-menu #menu="matMenu">
