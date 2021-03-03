@@ -128,10 +128,6 @@ export interface EdgeLabelFunction {
  */
 const PARAMS = {
   /**
-   * Whether to extract high degree nodes from the core part of the graph.
-   */
-  enableExtraction: true,
-  /**
    * The minimum number of nodes for a graph to have in order for high in and
    * out degree nodes to be extracted in auxiliary. The aim here is to prevent
    * nodes from being extracted from small graphs.
@@ -233,14 +229,18 @@ export class RenderGraphInfo {
     [nodeName: string]: boolean;
   };
   root: RenderGroupNodeInfo;
-  traceInputs: Boolean;
+  traceInputs: boolean;
+  extractNodes: boolean;
   edgeLabelFunction: EdgeLabelFunction;
   // An optional function that computes the thickness of an edge given edge
   // data. If not provided, defaults to encoding tensor size in thickness.
   edgeWidthFunction: EdgeThicknessFunction;
-  constructor(hierarchy: tf_graph.Hierarchy, displayingStats: boolean) {
+  constructor(hierarchy: tf_graph.Hierarchy,
+              displayingStats: boolean,
+              extractNodes: boolean) {
     this.hierarchy = hierarchy;
     this.displayingStats = displayingStats;
+    this.extractNodes = extractNodes;
     this.index = {};
     this.renderedOpNames = [];
     this.computeScales();
@@ -942,11 +942,8 @@ export class RenderGraphInfo {
         this.index[edgeObj.v].isFadedOut || this.index[edgeObj.w].isFadedOut;
       coreGraph.setEdge(edgeObj.v, edgeObj.w, renderMetaedgeInfo);
     });
-    if (
-      PARAMS.enableExtraction &&
-      renderGroupNodeInfo.node.type === NodeType.META
-    ) {
-      extractHighDegrees(renderGroupNodeInfo);
+    if (renderGroupNodeInfo.node.type === NodeType.META) {
+      extractHighDegrees(renderGroupNodeInfo, this.extractNodes);
     }
     // If there are functions, it is possible for metanodes to be dynamically
     // added later. Construct the hierarchies for nodes that are predecessors to
@@ -2182,18 +2179,27 @@ export function mapIndexToHue(id: number): number {
  * screw up the graph layout.
  *
  * @param {Render.Node} renderNode Node to manipulate.
+ * @param {boolean} extractNodes Whether to automatically exclude high-degree
+ *   nodes from the main graph. If false, only exclude predefined nodes.
  */
-function extractHighDegrees(renderNode: RenderGroupNodeInfo) {
+function extractHighDegrees(renderNode: RenderGroupNodeInfo,
+                            extractNodes: boolean) {
   extractSpecifiedNodes(renderNode);
+
   if (PARAMS.outExtractTypes.length) {
     extractPredefinedSink(renderNode);
   }
+
   // This has to come before extract high in-degree to protect the core part
   // that takes many variables.
   if (PARAMS.inExtractTypes.length) {
     extractPredefinedSource(renderNode);
   }
-  extractHighInOrOutDegree(renderNode);
+
+  if (extractNodes) {
+    extractHighInOrOutDegree(renderNode);
+  }
+
   if (PARAMS.maxControlDegree) {
     removeControlEdges(renderNode);
   }
