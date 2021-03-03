@@ -57,6 +57,12 @@ export class LineChartAxisComponent {
   @Output()
   onViewExtentChange = new EventEmitter<[number, number]>();
 
+  editMenuOpened = false;
+
+  setEditMenuOpened(opened: boolean): void {
+    this.editMenuOpened = opened;
+  }
+
   getFormatter(): Formatter {
     return this.customFormatter ?? this.scale.defaultFormatter;
   }
@@ -112,6 +118,9 @@ export class LineChartAxisComponent {
   }
 
   keydownPreventClose(event: KeyboardEvent) {
+    // Any keydown or interaction inside mat-menu automatically closes the menu
+    // which is not what we want. Stop the propoagation and do not let mat-menu
+    // know about any keydowns except for `Escape`.
     if (event.key !== 'Escape') {
       event.stopPropagation();
     }

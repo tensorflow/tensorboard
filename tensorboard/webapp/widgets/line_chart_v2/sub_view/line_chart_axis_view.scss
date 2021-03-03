@@ -111,10 +111,9 @@ text {
   font-size: 0;
   height: 24px;
   line-height: 24px;
-  margin: 5px;
   position: absolute;
-  right: 0;
-  top: 0;
+  right: 5px;
+  top: 5px;
   width: 24px;
 
   mat-icon {
@@ -151,6 +150,6 @@ text {
 }
 
 .axis:hover .extent-edit-button,
-.extent-edit-button:active {
+.extent-edit-menu-opened {
   display: initial;
 }

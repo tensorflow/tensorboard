@@ -28,11 +28,16 @@ limitations under the License.
       </ng-container>
     </svg>
     <button
-      class="extent-edit-button"
+      [class.extent-edit-button]="true"
+      [class.extent-edit-menu-opened]="editMenuOpened"
       mat-icon-button
       #matMenuTrigger="matMenuTrigger"
       [matMenuTriggerFor]="manualControl"
-      (menuOpened)="onAxisUpdateMenuOpen(minInput, maxInput, axisExtent)"
+      (menuOpened)="
+        onAxisUpdateMenuOpen(minInput, maxInput, axisExtent);
+        setEditMenuOpened(true)
+      "
+      (menuClosed)="setEditMenuOpened(false)"
       title="Click to manually set min & max values"
     >
       <mat-icon svgIcon="edit_24px"></mat-icon>
