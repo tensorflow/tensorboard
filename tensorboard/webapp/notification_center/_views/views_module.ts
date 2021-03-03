@@ -12,6 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
 import {MatIconModule} from '@angular/material/icon';
 import {MatButtonModule} from '@angular/material/button';
@@ -26,6 +27,6 @@ import {NotificationCenterContainer} from './notification_center_container';
 @NgModule({
   declarations: [NotificationCenterContainer, NotificationCenterComponent],
   exports: [NotificationCenterContainer],
-  imports: [MatButtonModule, MatIconModule, MatMenuModule],
+  imports: [CommonModule, MatButtonModule, MatIconModule, MatMenuModule],
 })
 export class NotificationCenterViewModule {}

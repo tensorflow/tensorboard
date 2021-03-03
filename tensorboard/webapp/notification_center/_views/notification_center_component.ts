@@ -22,4 +22,6 @@ import {Notification} from '../_redux/notification_center_types';
 })
 export class NotificationCenterComponent {
   @Input() notifications!: Notification[];
+  @Input() dateStringList!: string[];
+  @Input() iconList!: string[];
 }

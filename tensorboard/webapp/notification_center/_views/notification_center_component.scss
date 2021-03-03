@@ -12,3 +12,59 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+
+::ng-deep.mat-menu-panel {
+  max-width: none !important;
+  width: 350px;
+}
+
+::ng-deep.cdk-overlay-connected-position-bounding-box {
+  right: 6px !important;
+  top: 71px !important;
+}
+
+.menu-item {
+  padding: 17px 17px 0 17px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.menu-item:last-child {
+  border-bottom: 0;
+}
+
+.notification-menu {
+  font-size: 10px;
+}
+
+.category-icon {
+  height: 16px;
+  vertical-align: middle;
+  width: 16px;
+  color: #4285f4;
+  margin-right: 6px;
+}
+
+.content-wrapper {
+  margin-left: 23px;
+  margin-top: 15px;
+  line-height: 16px;
+}
+
+.title {
+  font-weight: 700;
+  line-height: 16px;
+}
+
+.content {
+  font-size: 12px;
+  line-height: 18px;
+  margin: 0;
+  padding: 0 13px;
+  text-indent: 0;
+}
+
+.extended-buttons {
+  margin: 10px 0 20px;
+  font-size: 12px;
+  font-weight: 700;
+}

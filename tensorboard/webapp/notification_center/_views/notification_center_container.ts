@@ -14,21 +14,38 @@ limitations under the License.
 ==============================================================================*/
 import {Component} from '@angular/core';
 import {Notification} from '../_redux/notification_center_types';
+import {notificationNotes} from './notification_notes';
+
+type StringDict = {
+  [key: string]: string;
+};
+const iconMap: StringDict = {
+  "What's New": 'info_outline_24px',
+};
 
 @Component({
   selector: 'notification-center',
   template: `
     <notification-center-component
       [notifications]="notifications"
+      [dateStringList]="dateStringList"
+      [iconList]="iconList"
     ></notification-center-component>
   `,
 })
 export class NotificationCenterContainer {
-  notifications: Notification[] = [
-    {
-      date: 1579766400000,
-      title: '2.4 release',
-      content: '<li>update 1</li><li>update 2</li>',
-    },
-  ];
+  notifications: Notification[] = notificationNotes;
+  dateStringList: string[] = [];
+  iconList: string[] = [];
+
+  ngOnInit() {
+    for (let notfication of this.notifications) {
+      const dateObj = new Date(notfication.date);
+      const month = dateObj.toLocaleString('en-US', {month: 'long'});
+      const date = dateObj.getDate();
+      const year = dateObj.getFullYear();
+      this.dateStringList.push(`${month} ${date} ${year}`);
+      this.iconList.push(iconMap[notfication.category]);
+    }
+  }
 }

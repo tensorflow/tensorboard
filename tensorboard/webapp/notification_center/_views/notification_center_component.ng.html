@@ -18,6 +18,22 @@ limitations under the License.
   <mat-icon svgIcon="notifications_none_24px"></mat-icon>
 </button>
 
-<mat-menu #menu="matMenu">
-  <div mat-menu-item>notification 1</div>
+<mat-menu #menu="matMenu" id="notification-menu">
+  <div class="notification-menu">
+    <div
+      *ngFor="let notification of notifications; let i = index"
+      class="menu-item"
+    >
+      <div>
+        <mat-icon svgIcon="{{ iconList[i] }}" class="category-icon"></mat-icon>
+        <span>{{ notification.category }}</span>・
+        <span>{{ dateStringList[i] }}</span>
+      </div>
+      <div class="content-wrapper">
+        <span class="title">{{ notification.title }}</span><br />
+        <ul class="content" [innerHTML]="notification.content"></ul>
+        <div class="extended-buttons">READ FULL</div>
+      </div>
+    </div>
+  </div>
 </mat-menu>

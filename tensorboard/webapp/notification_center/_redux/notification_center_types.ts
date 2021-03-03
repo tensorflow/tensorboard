@@ -17,6 +17,7 @@ limitations under the License.
  * A notification chunk displayed in the notification center.
  */
 export type Notification = {
+  category: string;
   date: number;
   title: string;
   content: string;
