@@ -12,14 +12,21 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-
+import {OverlayContainer, OverlayModule} from '@angular/cdk/overlay';
+import {TestbedHarnessEnvironment} from '@angular/cdk/testing/testbed';
 import {CommonModule} from '@angular/common';
 import {Component, DebugElement, Input} from '@angular/core';
-import {TestBed} from '@angular/core/testing';
+import {ComponentFixture, TestBed} from '@angular/core/testing';
+import {MatButtonModule} from '@angular/material/button';
+import {MatInputModule} from '@angular/material/input';
+import {MatMenuModule} from '@angular/material/menu';
+import {MatMenuHarness} from '@angular/material/menu/testing';
 import {By} from '@angular/platform-browser';
+import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 
-import {createScale} from '../lib/scale';
+import {MatIconTestingModule} from '../../../testing/mat_icon_module';
 import {Extent, Scale, ScaleType} from '../lib/public_types';
+import {createScale} from '../lib/scale';
 import {LineChartAxisComponent} from './line_chart_axis_view';
 
 @Component({
@@ -32,6 +39,7 @@ import {LineChartAxisComponent} from './line_chart_axis_view';
       [scale]="scale"
       [gridCount]="10"
       [domDim]="domDim"
+      (onViewExtentChange)="onXViewExtentChange($event)"
     ></line-chart-axis>
     <line-chart-axis
       class="test"
@@ -58,20 +66,37 @@ class TestableComponent {
     width: 100,
     height: 200,
   };
+
+  @Input()
+  onXViewExtentChange: jasmine.Spy = jasmine.createSpy();
 }
 
 describe('line_chart_v2/sub_view/axis test', () => {
+  let overlayContainer: OverlayContainer;
+
   const ByCss = {
+    X_AXIS: By.css('line-chart-axis .x-axis'),
     X_AXIS_LABEL: By.css('line-chart-axis .x-axis .minor text'),
     X_AXIS_MAJOR_TICK_LABEL: By.css('line-chart-axis .x-axis .major text'),
     Y_AXIS_LABEL: By.css('line-chart-axis .y-axis text'),
+    X_AXIS_EDIT_BUTTON: By.css('line-chart-axis .x-axis .extent-edit-button'),
   };
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [TestableComponent, LineChartAxisComponent],
-      imports: [CommonModule],
+      imports: [
+        CommonModule,
+        MatButtonModule,
+        MatIconTestingModule,
+        MatInputModule,
+        MatMenuModule,
+        NoopAnimationsModule,
+        OverlayModule,
+      ],
     }).compileComponents();
+
+    overlayContainer = TestBed.inject(OverlayContainer);
   });
 
   function assertLabels(debugElements: DebugElement[], axisLabels: string[]) {
@@ -316,6 +341,99 @@ describe('line_chart_v2/sub_view/axis test', () => {
         fixture.debugElement.queryAll(ByCss.X_AXIS_MAJOR_TICK_LABEL),
         []
       );
+    });
+  });
+
+  describe('extent manual edit', () => {
+    const EditorSelector = {
+      INPUT: '.extent-edit-input input',
+      CHANGE: '.extent-edit-change',
+      CANCEL: '.extent-edit-cancel',
+    };
+
+    function setMinMax(
+      fixture: ComponentFixture<TestableComponent>,
+      min: string,
+      max: string
+    ): HTMLElement {
+      const el = fixture.debugElement.query(ByCss.X_AXIS_EDIT_BUTTON);
+      el.nativeElement.click();
+
+      const overlay = overlayContainer.getContainerElement();
+      const [minInput, maxInput] = overlay.querySelectorAll(
+        EditorSelector.INPUT
+      ) as NodeListOf<HTMLInputElement>;
+
+      minInput.value = min;
+      maxInput.value = max;
+
+      return overlay;
+    }
+
+    function changeMinMax(
+      fixture: ComponentFixture<TestableComponent>,
+      min: string,
+      max: string
+    ) {
+      const overlay = setMinMax(fixture, min, max);
+      (overlay.querySelector(EditorSelector.CHANGE) as HTMLElement).click();
+    }
+
+    it('shows a edit menu clicking on the axis', () => {
+      const extentChanged = jasmine.createSpy();
+      const fixture = TestBed.createComponent(TestableComponent);
+      fixture.componentInstance.onXViewExtentChange = extentChanged;
+      fixture.detectChanges();
+
+      changeMinMax(fixture, '-0.5', '0.5');
+      expect(extentChanged).toHaveBeenCalledWith([-0.5, 0.5]);
+    });
+
+    it('disallows setting non numbers to input', () => {
+      const extentChanged = jasmine.createSpy();
+      const fixture = TestBed.createComponent(TestableComponent);
+      fixture.componentInstance.onXViewExtentChange = extentChanged;
+      fixture.detectChanges();
+
+      changeMinMax(fixture, 'meow', '0.5');
+      // HTMLInputElement#type=number does some input validation and `el.value` returns
+      // `'0'` when it is set to non-numbers.
+      expect(extentChanged).toHaveBeenCalledWith([0, 0.5]);
+    });
+
+    it('does not allow max to be smaller than min', () => {
+      const extentChanged = jasmine.createSpy();
+      const fixture = TestBed.createComponent(TestableComponent);
+      fixture.componentInstance.onXViewExtentChange = extentChanged;
+      fixture.detectChanges();
+
+      changeMinMax(fixture, '100', '1');
+      expect(extentChanged).toHaveBeenCalledWith([1, 100]);
+    });
+
+    it('resets inputs when the menu when dismissed without saving', async () => {
+      const fixture = TestBed.createComponent(TestableComponent);
+      const loader = TestbedHarnessEnvironment.loader(fixture);
+      fixture.componentInstance.viewBox = {
+        x: [1000, 2000],
+        y: [-1, 1],
+      };
+      fixture.detectChanges();
+      const overlay = setMinMax(fixture, '100', '1');
+
+      const menuTesting = await loader.getHarness(MatMenuHarness);
+      await menuTesting.close();
+
+      expect(overlay.querySelectorAll(EditorSelector.INPUT).length).toBe(0);
+
+      const el = fixture.debugElement.query(ByCss.X_AXIS_EDIT_BUTTON);
+      el.nativeElement.click();
+
+      const [minInput, maxInput] = overlay.querySelectorAll(
+        EditorSelector.INPUT
+      ) as NodeListOf<HTMLInputElement>;
+      expect(minInput.value).toBe('1000');
+      expect(maxInput.value).toBe('2000');
     });
   });
 });

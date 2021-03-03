@@ -39,6 +39,15 @@ tf_ts_library(
     ],
 )
 
+# This is a dummy rule used as a @angular/cdk/testing/testbed dependency.
+tf_ts_library(
+    name = "expect_angular_cdk_testing",
+    srcs = [],
+    deps = [
+        "@npm//@angular/cdk",
+    ],
+)
+
 # This is a dummy rule used as a @angular/core/testing dependency.
 # This is not a replacement for @angular/core dependency.
 tf_ts_library(

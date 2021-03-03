@@ -12,7 +12,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  Input,
+  Output,
+} from '@angular/core';
 
 import {Dimension, Formatter, Scale} from '../lib/public_types';
 import {TemporalScale} from '../lib/scale';
@@ -47,6 +53,15 @@ export class LineChartAxisComponent {
 
   @Input()
   customFormatter?: Formatter;
+
+  @Output()
+  onViewExtentChange = new EventEmitter<[number, number]>();
+
+  editMenuOpened = false;
+
+  setEditMenuOpened(opened: boolean): void {
+    this.editMenuOpened = opened;
+  }
 
   getFormatter(): Formatter {
     return this.customFormatter ?? this.scale.defaultFormatter;
@@ -100,5 +115,38 @@ export class LineChartAxisComponent {
     return this.axis === 'x'
       ? LineChartAxisComponent.TEXT_PADDING
       : this.getDomPos(tick);
+  }
+
+  keydownPreventClose(event: KeyboardEvent) {
+    // Any keydown or interaction inside mat-menu automatically closes the menu
+    // which is not what we want. Stop the propoagation and do not let mat-menu
+    // know about any keydowns except for `Escape`.
+    if (event.key !== 'Escape') {
+      event.stopPropagation();
+    }
+  }
+
+  extentChanged(minValue: string, maxValue: string) {
+    let min = Number(minValue);
+    let max = Number(maxValue);
+
+    if (max < min) {
+      const temp = min;
+      min = max;
+      max = temp;
+    }
+
+    if (!Number.isFinite(min) || !Number.isFinite(max)) return;
+    this.onViewExtentChange.emit([min, max]);
+  }
+
+  onAxisUpdateMenuOpen(
+    minInput: HTMLInputElement,
+    maxInput: HTMLInputElement,
+    axisExtent: [number, number]
+  ): void {
+    minInput.value = String(axisExtent[0]);
+    maxInput.value = String(axisExtent[1]);
+    minInput.focus();
   }
 }

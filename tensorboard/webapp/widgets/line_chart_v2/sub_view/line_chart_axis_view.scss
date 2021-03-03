@@ -12,6 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+@import 'tensorboard/webapp/theme/tb_theme';
 
 :host {
   contain: strict;
@@ -35,10 +36,21 @@ text {
   width: 100%;
 }
 
+.major,
+.minor {
+  overflow: hidden;
+}
+
 .line {
   background-color: #aaa;
   flex: 0 0 1px;
   justify-content: stretch;
+}
+
+.ticks {
+  height: 100%;
+  position: relative;
+  width: 100%;
 }
 
 .x-axis {
@@ -91,4 +103,53 @@ text {
       #0000 100%
     );
   }
+}
+
+.extent-edit-button {
+  background-color: mat-color($mat-gray, 200);
+  display: none;
+  font-size: 0;
+  height: 24px;
+  line-height: 24px;
+  position: absolute;
+  right: 5px;
+  top: 5px;
+  width: 24px;
+
+  mat-icon {
+    height: 16px;
+    width: 16px;
+    line-height: 16px;
+  }
+}
+
+.extent-edit-input {
+  align-items: center;
+  column-gap: 5px;
+  display: grid;
+  font-size: 12px;
+  grid-template-columns: 30px minmax(auto, 100px);
+  height: 30px;
+  margin: 10px 20px;
+}
+
+.extent-edit-control {
+  align-items: center;
+  display: flex;
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+  margin: 10px 20px;
+
+  button {
+    font-size: 12px;
+    height: 30px;
+    line-height: 1.4;
+    margin-left: 5px;
+    padding: 0 10px;
+  }
+}
+
+.axis:hover .extent-edit-button,
+.extent-edit-menu-opened {
+  display: initial;
 }
