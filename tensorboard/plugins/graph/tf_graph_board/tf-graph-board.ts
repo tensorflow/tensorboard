@@ -152,6 +152,7 @@ class TfGraphBoard extends LegacyElementMixin(PolymerElement) {
           handle-node-selected="[[handleNodeSelected]]"
           handle-edge-selected="[[handleEdgeSelected]]"
           trace-inputs="[[traceInputs]]"
+          extract-nodes="[[extractNodes]]"
         ></tf-graph>
       </div>
       <div id="info">
@@ -196,6 +197,8 @@ class TfGraphBoard extends LegacyElementMixin(PolymerElement) {
   progress: object;
   @property({type: Boolean})
   traceInputs: boolean;
+  @property({type: Boolean})
+  extractNodes: boolean;
   @property({type: String})
   colorBy: string;
   @property({
