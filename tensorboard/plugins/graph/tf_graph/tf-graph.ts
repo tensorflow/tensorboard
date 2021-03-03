@@ -77,6 +77,7 @@ class TfGraph extends LegacyElementMixin(PolymerElement) {
           health-pill-step-index="{{healthPillStepIndex}}"
           handle-edge-selected="[[handleEdgeSelected]]"
           trace-inputs="[[traceInputs]]"
+          extract-nodes="[[extractNodes]]"
         ></tf-graph-scene>
       </div>
     </div>
@@ -135,6 +136,8 @@ class TfGraph extends LegacyElementMixin(PolymerElement) {
   renderHierarchy: tf_graph_render.RenderGraphInfo;
   @property({type: Boolean})
   traceInputs: boolean;
+  @property({type: Boolean})
+  extractNodes: boolean;
   @property({type: Array})
   nodeContextMenuItems: unknown[];
   @property({
@@ -173,6 +176,7 @@ class TfGraph extends LegacyElementMixin(PolymerElement) {
     (this.$$('tf-graph-scene') as any).panToNode(nodeName);
   }
   @observe(
+    'extractNodes',
     'graphHierarchy',
     'edgeWidthFunction',
     'handleNodeSelected',
@@ -264,9 +268,10 @@ class TfGraph extends LegacyElementMixin(PolymerElement) {
     const renderGraph = tf_graph_util.time(
       'new tf_graph_render.Hierarchy',
       () => {
-        var renderGraph = new tf_graph_render.RenderGraphInfo(
+        const renderGraph = new tf_graph_render.RenderGraphInfo(
           graphHierarchy,
-          !!this.stats /** displayingStats */
+          !!this.stats, /** displayingStats */
+          !!this.extractNodes
         );
         renderGraph.edgeLabelFunction = this.edgeLabelFunction;
         renderGraph.edgeWidthFunction = this.edgeWidthFunction;
