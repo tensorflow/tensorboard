@@ -14,6 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import {NgModule} from '@angular/core';
 import {MatIconModule} from '@angular/material/icon';
+import {MatButtonModule} from '@angular/material/button';
 import {MatMenuModule} from '@angular/material/menu';
 
 import {NotificationCenterComponent} from './notification_center_component';
@@ -25,6 +26,6 @@ import {NotificationCenterContainer} from './notification_center_container';
 @NgModule({
   declarations: [NotificationCenterContainer, NotificationCenterComponent],
   exports: [NotificationCenterContainer],
-  imports: [MatIconModule, MatMenuModule],
+  imports: [MatButtonModule, MatIconModule, MatMenuModule],
 })
 export class NotificationCenterViewModule {}
