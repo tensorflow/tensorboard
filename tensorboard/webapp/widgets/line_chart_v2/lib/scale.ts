@@ -34,7 +34,7 @@ export function createScale(type: ScaleType): Scale {
 
 const PADDING_RATIO = 0.05;
 
-class LinearScale implements Scale {
+export class LinearScale implements Scale {
   private transform(
     inputSpace: [number, number],
     outputSpace: [number, number],
