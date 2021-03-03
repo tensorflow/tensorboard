@@ -27,6 +27,7 @@ tf_ts_library(
         "tf-graph-scene.ts",
         "tf-node-icon.ts",
         "util.ts",
+        "view_types.ts",
     ],
     strict_checks = False,
     visibility = ["//visibility:public"],
