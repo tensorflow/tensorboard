@@ -77,7 +77,7 @@ describe('line_chart_v2/sub_view/axis test', () => {
   const ByCss = {
     X_AXIS: By.css('line-chart-axis .x-axis'),
     X_AXIS_LABEL: By.css('line-chart-axis .x-axis .minor text'),
-    X_AXIS_MAJOR_TICK_LABEL: By.css('line-chart-axis .x-axis .major text'),
+    X_AXIS_MAJOR_TICK_LABEL: By.css('line-chart-axis .x-axis .major-label'),
     Y_AXIS_LABEL: By.css('line-chart-axis .y-axis text'),
     X_AXIS_EDIT_BUTTON: By.css('line-chart-axis .x-axis .extent-edit-button'),
   };
@@ -104,22 +104,6 @@ describe('line_chart_v2/sub_view/axis test', () => {
       el.nativeElement.textContent.trim()
     );
     expect(actualLabels).toEqual(axisLabels);
-  }
-
-  function assertLabelLoc(
-    debugElements: DebugElement[],
-    expectedLocs: Array<{x: number; y: number}>
-  ) {
-    const expected = expectedLocs.map((loc) => ({
-      x: String(loc.x),
-      y: String(loc.y),
-    }));
-    const actuals = debugElements.map((el) => ({
-      x: String(el.attributes['x']),
-      y: String(el.attributes['y']),
-    }));
-
-    expect(expected).toEqual(actuals);
   }
 
   it('renders tick in human readable format', () => {
@@ -160,32 +144,6 @@ describe('line_chart_v2/sub_view/axis test', () => {
       '0.6',
       '0.8',
       '1',
-    ]);
-  });
-
-  it('aligns y axis to the right edge of its dom', () => {
-    const fixture = TestBed.createComponent(TestableComponent);
-    fixture.detectChanges();
-
-    assertLabelLoc(fixture.debugElement.queryAll(ByCss.Y_AXIS_LABEL), [
-      // -1 is at the bottom of the DOM
-      {x: 95, y: 200},
-      {x: 95, y: 150},
-      {x: 95, y: 100},
-      {x: 95, y: 50},
-      // 1 is at the top.
-      {x: 95, y: 0},
-    ]);
-  });
-
-  it('aligns x axis to the top edge of its dom', () => {
-    const fixture = TestBed.createComponent(TestableComponent);
-    fixture.detectChanges();
-
-    assertLabelLoc(fixture.debugElement.queryAll(ByCss.X_AXIS_LABEL), [
-      {x: 0, y: 5},
-      {x: 50, y: 5},
-      {x: 100, y: 5},
     ]);
   });
 

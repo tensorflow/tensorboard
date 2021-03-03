@@ -29,6 +29,16 @@ import {
 
 const DAY_IN_MS = 24 * 1000 * 60 * 60;
 
+interface MinorTick {
+  value: number;
+  tickFormattedString: string;
+}
+
+interface MajorTick {
+  start: number;
+  tickFormattedString: string;
+}
+
 @Component({
   selector: 'line-chart-axis',
   templateUrl: 'line_chart_axis_view.ng.html',
@@ -59,40 +69,62 @@ export class LineChartAxisComponent {
 
   editMenuOpened = false;
 
-  setEditMenuOpened(opened: boolean): void {
-    this.editMenuOpened = opened;
+  majorTicks: MajorTick[] = [];
+  minorTicks: MinorTick[] = [];
+
+  ngOnChanges() {
+    const {major, minor} = this.getMajorMinorTicks();
+    this.majorTicks = major;
+    this.minorTicks = minor;
   }
 
   getFormatter(): Formatter {
     return this.customFormatter ?? this.scale.defaultFormatter;
   }
 
-  /**
-   * Returns true if the major ticks must be shown.
-   *
-   * Major tick is required for temporal axis since tick string do not have sufficient
-   * information alone and is hard to fit time information without a major ticks.
-   */
-  shouldShowMajorTicks(): boolean {
-    const majorTickCount = this.getMajorTicks().length;
-    const minorTickCount = this.getTicks().length;
-
-    return (
-      this.scale instanceof TemporalScale &&
-      this.axisExtent[1] - this.axisExtent[0] < DAY_IN_MS &&
-      minorTickCount > majorTickCount &&
-      majorTickCount <= 2
-    );
+  trackByMinorTick(tick: MinorTick): number {
+    return tick.value;
   }
 
-  getMajorTicks(): number[] {
-    return this.scale.ticks(this.axisExtent, 2);
+  trackByMajorTick(tick: MajorTick): number {
+    return tick.start;
   }
 
-  getTicks(): number[] {
+  private getMajorTickValues(): number[] {
+    if (this.scale instanceof TemporalScale) {
+      const majorTicks = this.scale.ticks(this.axisExtent, 2);
+      if (
+        this.axisExtent[1] - this.axisExtent[0] < DAY_IN_MS &&
+        majorTicks.length <= 2
+      ) {
+        return majorTicks;
+      }
+    }
+
+    return [];
+  }
+
+  private getMajorMinorTicks(): {major: MajorTick[]; minor: MinorTick[]} {
+    const formatter = this.getFormatter();
     const domSize = this.axis === 'x' ? this.domDim.width : this.domDim.height;
     const maxTickSize = getDomSizeInformedTickCount(domSize, this.gridCount);
-    return this.scale.ticks(this.axisExtent, maxTickSize);
+    const minorTicks: MinorTick[] = [];
+    for (const tickValue of this.scale.ticks(this.axisExtent, maxTickSize)) {
+      minorTicks.push({
+        tickFormattedString: formatter.formatTick(tickValue),
+        value: tickValue,
+      });
+    }
+
+    const majorTicks: MajorTick[] = [];
+    for (const tickValue of this.getMajorTickValues()) {
+      majorTicks.push({
+        tickFormattedString: formatter.formatShort(tickValue),
+        start: tickValue,
+      });
+    }
+
+    return {major: majorTicks, minor: minorTicks};
   }
 
   private getDomPos(data: number): number {
@@ -103,18 +135,59 @@ export class LineChartAxisComponent {
     );
   }
 
-  private static readonly TEXT_PADDING = 5;
-
-  textXPosition(tick: number) {
-    return this.axis === 'x'
-      ? this.getDomPos(tick)
-      : this.domDim.width - LineChartAxisComponent.TEXT_PADDING;
+  textXPosition(tick: number): string {
+    return this.axis === 'x' ? String(this.getDomPos(tick)) : '100%';
   }
 
-  textYPosition(tick: number) {
-    return this.axis === 'x'
-      ? LineChartAxisComponent.TEXT_PADDING
-      : this.getDomPos(tick);
+  textYPosition(tick: number): string {
+    return this.axis === 'x' ? '' : String(this.getDomPos(tick));
+  }
+
+  getMajorXPosition(tick: MajorTick): number {
+    if (this.axis === 'y') return 0;
+
+    return Math.min(this.domDim.width, Math.max(0, this.getDomPos(tick.start)));
+  }
+
+  getMajorWidthString(
+    tick: MajorTick,
+    isLast: boolean,
+    nextTick?: MajorTick
+  ): string {
+    if (this.axis === 'y') return '';
+
+    return (
+      (isLast || !nextTick
+        ? this.domDim.width
+        : this.getMajorXPosition(nextTick)) -
+      this.getMajorXPosition(tick) +
+      'px'
+    );
+  }
+
+  getMajorYPosition(tick: MajorTick): number {
+    if (this.axis === 'x') return 0;
+
+    return (
+      this.domDim.height -
+      Math.min(this.domDim.height, Math.max(0, this.getDomPos(tick.start)))
+    );
+  }
+
+  getMajorHeightString(
+    tick: MajorTick,
+    isLast: boolean,
+    nextTick?: MajorTick
+  ): string {
+    if (this.axis === 'x') return '';
+
+    return (
+      (isLast || !nextTick
+        ? this.domDim.height
+        : this.getMajorYPosition(nextTick)) -
+      this.getMajorYPosition(tick) +
+      'px'
+    );
   }
 
   keydownPreventClose(event: KeyboardEvent) {
@@ -148,5 +221,9 @@ export class LineChartAxisComponent {
     minInput.value = String(axisExtent[0]);
     maxInput.value = String(axisExtent[1]);
     minInput.focus();
+  }
+
+  setEditMenuOpened(opened: boolean): void {
+    this.editMenuOpened = opened;
   }
 }

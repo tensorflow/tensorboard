@@ -18,14 +18,18 @@ limitations under the License.
   <div class="line"></div>
   <div class="minor">
     <svg class="ticks">
-      <ng-container *ngFor="let tick of getTicks()">
-        <g>
-          <text [attr.x]="textXPosition(tick)" [attr.y]="textYPosition(tick)">
-            {{ getFormatter().formatTick(tick) }}
-          </text>
-          <title>{{ getFormatter().formatReadable(tick) }}</title>
-        </g>
-      </ng-container>
+      <g
+        class="minor-tick-label"
+        *ngFor="let tick of minorTicks; trackBy: trackByMinorTick"
+      >
+        <text
+          [attr.x]="textXPosition(tick.value)"
+          [attr.y]="textYPosition(tick.value)"
+        >
+          {{tick.tickFormattedString }}
+        </text>
+        <title>{{ getFormatter().formatReadable(tick.value) }}</title>
+      </g>
     </svg>
     <button
       [class.extent-edit-button]="true"
@@ -43,14 +47,19 @@ limitations under the License.
       <mat-icon svgIcon="edit_24px"></mat-icon>
     </button>
   </div>
-  <svg *ngIf="shouldShowMajorTicks()" class="major ticks">
-    <g *ngFor="let tick of getMajorTicks()">
-      <text [attr.x]="textXPosition(tick)" [attr.y]="textYPosition(tick)">
-        {{ getFormatter().formatShort(tick) }}
-      </text>
-      <title>{{ getFormatter().formatReadable(tick) }}</title>
-    </g>
-  </svg>
+  <div *ngIf="majorTicks.length" class="major ticks">
+    <span
+      *ngFor="let tick of majorTicks; index as i; last as isLast; trackBy: trackByMajorTick"
+      [class.major-label]="true"
+      [class.last]="isLast"
+      [style.left]="getMajorXPosition(tick) + 'px'"
+      [style.width]="getMajorWidthString(tick, isLast, majorTicks[i + 1])"
+      [style.bottom]="getMajorYPosition(tick) + 'px'"
+      [style.height]="getMajorHeightString(tick, isLast, majorTicks[i + 1])"
+      [title]="getFormatter().formatReadable(tick.start)"
+      ><span>{{ tick.tickFormattedString }}</span></span
+    >
+  </div>
 </div>
 <mat-menu
   #manualControl="matMenu"

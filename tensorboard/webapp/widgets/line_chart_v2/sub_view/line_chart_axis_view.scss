@@ -20,11 +20,7 @@ limitations under the License.
   overflow: hidden;
 }
 
-line {
-  stroke: #333;
-  stroke-width: 1px;
-}
-
+.major-label,
 text {
   font-size: 11px;
   user-select: none;
@@ -38,6 +34,7 @@ text {
 
 .major,
 .minor {
+  flex: 1 0;
   overflow: hidden;
 }
 
@@ -53,8 +50,14 @@ text {
   width: 100%;
 }
 
+$_axis-margin: 5px;
+
 .x-axis {
   flex-direction: column;
+
+  .line {
+    margin-bottom: $_axis-margin;
+  }
 
   text {
     dominant-baseline: hanging;
@@ -81,6 +84,10 @@ text {
 
 .y-axis {
   flex-direction: row-reverse;
+
+  .line {
+    margin-left: $_axis-margin;
+  }
 
   text {
     dominant-baseline: central;
@@ -152,4 +159,51 @@ text {
 .axis:hover .extent-edit-button,
 .extent-edit-menu-opened {
   display: initial;
+}
+
+.major {
+  position: relative;
+  overflow: hidden;
+  contain: strict;
+
+  .major-label {
+    align-items: center;
+    box-sizing: border-box;
+    display: inline-flex;
+    justify-content: center;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+  }
+
+  .major-label span {
+    max-width: 100%;
+  }
+}
+
+$_border-style: 1px solid mat-color($mat-gray, 500);
+
+.x-axis .major-label {
+  border-left: $_border-style;
+  padding: 0 5px;
+
+  &.last {
+    border-right: $_border-style;
+  }
+}
+
+.y-axis .major-label {
+  border-bottom: $_border-style;
+  height: 100%;
+  padding: 5px 0;
+  width: 100%;
+
+  &.last {
+    border-top: $_border-style;
+  }
+
+  > span {
+    transform: rotate(-90deg);
+    transform-origin: center;
+  }
 }
