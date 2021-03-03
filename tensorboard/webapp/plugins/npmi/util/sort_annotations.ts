@@ -15,7 +15,7 @@ limitations under the License.
 import {
   AnnotationDataListing,
   AnnotationSort,
-  EmbeddingDataSet,
+  EmbeddingListing,
   SortOrder,
 } from '../store/npmi_types';
 import {stripMetricString} from './metric_type';
@@ -23,21 +23,19 @@ import {stripMetricString} from './metric_type';
 export function sortAnnotations(
   annotationData: AnnotationDataListing,
   sort: AnnotationSort,
-  embeddingData: EmbeddingDataSet | undefined
+  embeddingData: EmbeddingListing
 ): string[] {
   const result = Object.keys(annotationData);
   const similarityBased =
     sort.order === SortOrder.DISSIMILAR || sort.order === SortOrder.SIMILAR;
   if (
     sort.metric === '' ||
-    ((embeddingData === undefined ||
-      embeddingData.points[sort.metric] === undefined) &&
-      similarityBased)
+    (embeddingData[sort.metric] === undefined && similarityBased)
   ) {
     return result;
   }
   const distanceData: {[annotation: string]: number} = similarityBased
-    ? calculateDistances(result, embeddingData!, sort)
+    ? calculateDistances(result, embeddingData, sort)
     : extractExtremeData(result, annotationData, sort);
   return sortData(
     result,
@@ -94,7 +92,7 @@ function extractExtremeData(
 
 function calculateDistances(
   keys: string[],
-  embeddingData: EmbeddingDataSet,
+  embeddingData: EmbeddingListing,
   sort: AnnotationSort
 ) {
   const distances: {[annotation: string]: number} = {};
@@ -108,17 +106,13 @@ function calculateDistances(
     if (annotation === sort.metric) {
       distances[annotation] = sameDistance;
     } else {
-      if (embeddingData.points[annotation] === undefined) {
-        distances[annotation] = extremeDistance;
-      } else {
-        distances[annotation] = embeddingData.points[annotation].vector
-          ? calculateEmbeddingSimilarity(
-              embeddingData.points[sort.metric].vector,
-              embeddingData.points[annotation].vector,
-              extremeDistance
-            )
-          : extremeDistance;
-      }
+      distances[annotation] = embeddingData[annotation]
+        ? calculateEmbeddingSimilarity(
+            embeddingData[sort.metric],
+            embeddingData[annotation],
+            extremeDistance
+          )
+        : extremeDistance;
     }
   }
   return distances;

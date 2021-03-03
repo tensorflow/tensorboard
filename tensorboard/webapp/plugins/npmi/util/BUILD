@@ -105,7 +105,6 @@ tf_ts_library(
     srcs = ["sort_annotations_test.ts"],
     deps = [
         ":sort_annotations",
-        ":umap",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/core/testing",
         "//tensorboard/webapp/plugins/npmi/store:types",
@@ -168,36 +167,6 @@ tf_ts_library(
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/core/testing",
         "//tensorboard/webapp/plugins/npmi/store:types",
-        "@npm//@angular/common",
-        "@npm//@angular/compiler",
-        "@npm//@angular/core",
-        "@npm//@angular/platform-browser",
-        "@npm//@types/jasmine",
-        "@npm//rxjs",
-    ],
-)
-
-tf_ts_library(
-    name = "umap",
-    srcs = [
-        "umap.ts",
-    ],
-    strict_checks = False,
-    deps = [
-        "//tensorboard/plugins/projector/vz_projector",
-        "@npm//umap-js",
-    ],
-)
-
-tf_ts_library(
-    name = "umap_test_lib",
-    testonly = True,
-    srcs = ["umap_test.ts"],
-    deps = [
-        ":umap",
-        "//tensorboard/webapp/angular:expect_angular_core_testing",
-        "//tensorboard/webapp/core/testing",
-        "//tensorboard/webapp/plugins/npmi/testing",
         "@npm//@angular/common",
         "@npm//@angular/compiler",
         "@npm//@angular/core",

@@ -21,7 +21,7 @@ import {
   ArithmeticKind,
   ViewActive,
 } from './npmi_types';
-import {createSampleEmbeddingData, createNpmiState} from '../testing';
+import {createNpmiState} from '../testing';
 
 describe('npmi_reducers', () => {
   describe('Data loading', () => {
@@ -47,7 +47,6 @@ describe('npmi_reducers', () => {
     it('sets pluginDataLoaded and plugin Data on successful load', () => {
       const state = createNpmiState();
       const t0 = Date.now();
-      const embeddingData = createSampleEmbeddingData();
       const nextState = reducers(
         state,
         actions.npmiPluginDataLoaded({
@@ -94,7 +93,9 @@ describe('npmi_reducers', () => {
               'nPMI@test2',
             ],
           },
-          embeddingDataSet: embeddingData,
+          embeddingData: {
+            annotation_1: [0.1257, -1.3256],
+          },
         })
       );
       expect(nextState.pluginDataLoaded.state).toBe(DataLoadState.LOADED);
@@ -138,11 +139,12 @@ describe('npmi_reducers', () => {
       expect(nextState.runToMetrics).toEqual({
         run_1: ['nPMI@test1', 'nPMI@test2'],
       });
-      expect(nextState.embeddingDataSet).toEqual(embeddingData);
+      expect(nextState.embeddingData).toEqual({
+        annotation_1: [0.1257, -1.3256],
+      });
     });
 
     it('overrides existing annotations on successful loading of annotations', () => {
-      const embeddingData = createSampleEmbeddingData();
       const state = createNpmiState({
         pluginDataLoaded: {
           state: DataLoadState.LOADED,
@@ -185,7 +187,9 @@ describe('npmi_reducers', () => {
         runToMetrics: {
           run_1: ['nPMI@test1', 'nPMI@test2'],
         },
-        embeddingDataSet: embeddingData,
+        embeddingData: {
+          annotation_1: [0.1257, -1.3256],
+        },
       });
       const t0 = Date.now();
       const nextState = reducers(
@@ -234,7 +238,9 @@ describe('npmi_reducers', () => {
               'nPMI@newtest2',
             ],
           },
-          embeddingDataSet: embeddingData,
+          embeddingData: {
+            annotation_1: [1.1257, -0.3256],
+          },
         })
       );
       expect(nextState.pluginDataLoaded.state).toBe(DataLoadState.LOADED);
@@ -278,7 +284,9 @@ describe('npmi_reducers', () => {
       expect(nextState.runToMetrics).toEqual({
         run_1: ['nPMI@newtest1', 'nPMI@newtest2'],
       });
-      expect(nextState.embeddingDataSet).toEqual(embeddingData);
+      expect(nextState.embeddingData).toEqual({
+        annotation_1: [1.1257, -0.3256],
+      });
     });
   });
 

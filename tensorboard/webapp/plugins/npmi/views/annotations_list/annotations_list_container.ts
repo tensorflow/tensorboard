@@ -30,7 +30,7 @@ import {
   getSelectedAnnotations,
   getAnnotationSort,
   getAnnotationsRegex,
-  getEmbeddingDataSet,
+  getEmbeddingData,
 } from '../../store';
 import {getCurrentRouteRunSelection} from '../../../../selectors';
 import {
@@ -75,7 +75,7 @@ export class AnnotationsListContainer {
           .map((run) => run[0]);
       })
     );
-  readonly embeddingData$ = this.store.pipe(select(getEmbeddingDataSet));
+  readonly embeddingData$ = this.store.pipe(select(getEmbeddingData));
   readonly numActiveRuns$ = this.activeRuns$.pipe(map((runs) => runs.length));
   readonly activeMetrics$ = combineLatest([
     this.store.select(getRunToMetrics),

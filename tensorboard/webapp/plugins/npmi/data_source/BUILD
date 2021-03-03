@@ -11,7 +11,6 @@ tf_ng_module(
     deps = [
         "//tensorboard/webapp/plugins/npmi/store:types",
         "//tensorboard/webapp/plugins/npmi/util:metric_type",
-        "//tensorboard/webapp/plugins/npmi/util:umap",
         "//tensorboard/webapp/webapp_data_source:http_client",
         "@npm//@angular/common",
         "@npm//@angular/core",
@@ -28,7 +27,6 @@ tf_ts_library(
     deps = [
         ":data_source",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
-        "//tensorboard/webapp/plugins/npmi/testing",
         "//tensorboard/webapp/webapp_data_source:http_client_testing",
         "@npm//@angular/common",
         "@npm//@angular/core",

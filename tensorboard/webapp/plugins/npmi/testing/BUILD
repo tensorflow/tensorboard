@@ -9,7 +9,6 @@ tf_ts_library(
     deps = [
         "//tensorboard/webapp/plugins/npmi/store",
         "//tensorboard/webapp/plugins/npmi/store:types",
-        "//tensorboard/webapp/plugins/npmi/util:umap",
         "@npm//@angular/core",
         "@npm//@ngrx/store",
     ],

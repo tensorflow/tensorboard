@@ -47,8 +47,8 @@ def _tf_dev_js_binary_impl(ctx):
             template = file,
             output = named_file,
             substitutions = {
-                # d3, three, umap-js, and tfjs
-                "define([": "define('%s', [" % module_name,
+                # d3 and three
+                "define(['exports']": "define('%s', ['exports']" % module_name,
                 # Lodash
                 "define(function()": "define('%s', function()" % module_name,
                 # Zone.js
@@ -132,11 +132,6 @@ tf_dev_js_binary = rule(
                 "@npm//:node_modules/three/build/three.js": "three",
                 "@npm//:node_modules/zone.js/dist/zone.js": "zone.js/dist/zone.js",
                 "@npm//:node_modules/marked/lib/marked.js": "marked",
-                "@npm//:node_modules/@tensorflow/tfjs-core/dist/tf-core.js": "@tensorflow/tfjs-core",
-                "@npm//:node_modules/@tensorflow/tfjs-backend-cpu/dist/tf-backend-cpu.js": "@tensorflow/tfjs-backend-cpu",
-                "@npm//:node_modules/@tensorflow/tfjs-backend-webgl/dist/tf-backend-webgl.js": "@tensorflow/tfjs-backend-webgl",
-                "@npm//:node_modules/umap-js/lib/umap-js.js": "umap-js",
-                "@npm//:node_modules/seedrandom/lib/alea.js": "seedrandom",
             },
             allow_files = True,
         ),

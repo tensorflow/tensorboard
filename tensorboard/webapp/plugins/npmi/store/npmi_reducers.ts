@@ -26,7 +26,6 @@ import {
   ViewActive,
 } from './npmi_types';
 import * as metricType from '../util/metric_type';
-import {buildEmbeddingDataSet} from '../util/umap';
 
 // HACK: These imports are for type inference.
 // https://github.com/bazelbuild/rules_nodejs/issues/1013
@@ -39,6 +38,7 @@ const initialState: NpmiState = {
   },
   annotationData: {},
   runToMetrics: {},
+  embeddingData: {},
   selectedAnnotations: [],
   flaggedAnnotations: [],
   hiddenAnnotations: [],
@@ -90,10 +90,7 @@ const reducer = createReducer(
   ),
   on(
     actions.npmiPluginDataLoaded,
-    (
-      state: NpmiState,
-      {annotationData, metrics, embeddingDataSet}
-    ): NpmiState => {
+    (state: NpmiState, {annotationData, metrics, embeddingData}): NpmiState => {
       const runToMetrics: MetricListing = {};
       for (const key in metrics) {
         // Init Metrics Data
@@ -108,7 +105,7 @@ const reducer = createReducer(
         ...state,
         runToMetrics: runToMetrics,
         annotationData: annotationData,
-        embeddingDataSet: embeddingDataSet,
+        embeddingData: embeddingData,
         pluginDataLoaded: {
           state: DataLoadState.LOADED,
           lastLoadedTimeInMs: Date.now(),
@@ -422,15 +419,6 @@ const reducer = createReducer(
       return {
         ...state,
         embeddingsSidebarExpanded: !state.embeddingsSidebarExpanded,
-      };
-    }
-  ),
-  on(
-    actions.embeddingDataSetChanged,
-    (state: NpmiState, {dataSet}): NpmiState => {
-      return {
-        ...state,
-        embeddingDataSet: dataSet,
       };
     }
   )
