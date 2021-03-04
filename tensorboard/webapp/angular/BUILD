@@ -39,9 +39,18 @@ tf_ts_library(
     ],
 )
 
-# This is a dummy rule used as a @angular/cdk/testing/testbed dependency.
+# This is a dummy rule used as a @angular/cdk/testing dependency.
 tf_ts_library(
     name = "expect_angular_cdk_testing",
+    srcs = [],
+    deps = [
+        "@npm//@angular/cdk",
+    ],
+)
+
+# This is a dummy rule used as a @angular/cdk/testing/testbed dependency.
+tf_ts_library(
+    name = "expect_angular_cdk_testing_testbed",
     srcs = [],
     deps = [
         "@npm//@angular/cdk",
@@ -142,6 +151,15 @@ tf_ts_library(
 # This is a dummy rule used as a @angular/material/menu dependency.
 tf_ts_library(
     name = "expect_angular_material_menu",
+    srcs = [],
+    deps = [
+        "@npm//@angular/material",
+    ],
+)
+
+# This is a dummy rule used as a @angular/material/menu/testing dependency.
+tf_ts_library(
+    name = "expect_angular_material_menu_testing",
     srcs = [],
     deps = [
         "@npm//@angular/material",
