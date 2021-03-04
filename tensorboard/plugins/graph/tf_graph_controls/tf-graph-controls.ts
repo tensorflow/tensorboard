@@ -494,7 +494,7 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
       </div>
       <div class="control-holder">
         <div>
-          <paper-toggle-button checked="{{extractNodes}}" class="title">
+          <paper-toggle-button checked="{{autoExtractNodes}}" class="title">
             Auto-extract high-degree nodes
           </paper-toggle-button>
         </div>
@@ -1090,7 +1090,7 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
     type: Boolean,
     notify: true,
   })
-  extractNodes: boolean = false;
+  autoExtractNodes: boolean = false;
   @property({
     type: Number,
     observer: '_selectedTagIndexChanged',
@@ -1369,7 +1369,7 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
     this._selectedTagIndex = 0;
     this._selectedGraphType = this._getDefaultSelectionType();
     this.traceInputs = false; // Set trace input to off-state.
-    this.extractNodes = true;
+    this.autoExtractNodes = true;
     this._setDownloadFilename(
       this.datasets[runIndex] ? this.datasets[runIndex].name : ''
     );
