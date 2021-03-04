@@ -1093,7 +1093,7 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
   autoExtractNodes: boolean = false;
   @property({
     type: Number,
-    observer: '_selectedTagIndexChanged',
+    notify: true,
   })
   _selectedTagIndex: number = 0;
   /**
@@ -1369,7 +1369,6 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
     this._selectedTagIndex = 0;
     this._selectedGraphType = this._getDefaultSelectionType();
     this.traceInputs = false; // Set trace input to off-state.
-    this.autoExtractNodes = true;
     this._setDownloadFilename(
       this.datasets[runIndex] ? this.datasets[runIndex].name : ''
     );
