@@ -50,17 +50,15 @@ text {
   width: 100%;
 }
 
-$_axis-margin: 5px;
-
 .x-axis {
   flex-direction: column;
 
   .line {
-    margin-bottom: $_axis-margin;
+    margin-bottom: 3px;
   }
 
   text {
-    dominant-baseline: hanging;
+    dominant-baseline: text-before-edge;
     text-anchor: middle;
   }
 
@@ -86,7 +84,7 @@ $_axis-margin: 5px;
   flex-direction: row-reverse;
 
   .line {
-    margin-left: $_axis-margin;
+    margin-left: 5px;
   }
 
   text {
