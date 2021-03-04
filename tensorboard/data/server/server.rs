@@ -70,6 +70,7 @@ impl TensorBoardDataProvider for DataProviderHandler {
                 .read()
                 .map_err(|_| Status::internal(format!("failed to read run data for {:?}", run)))?;
             for metadata in (data.scalars.values().map(|ts| ts.metadata.as_ref()))
+                .chain(data.tensors.values().map(|ts| ts.metadata.as_ref()))
                 .chain(data.blob_sequences.values().map(|ts| ts.metadata.as_ref()))
             {
                 let plugin_name = match &metadata.plugin_data {
@@ -642,6 +643,9 @@ mod tests {
     async fn test_list_plugins() {
         let commit = CommitBuilder::new()
             .scalars("train", "xent", |b| b.build())
+            .tensors("train", "weights", |mut b| {
+                b.plugin_name("histograms").build()
+            })
             .blob_sequences("train", "input_image", |mut b| {
                 b.plugin_name("images").build()
             })
@@ -656,7 +660,7 @@ mod tests {
                 .iter()
                 .map(|p| p.name.as_str())
                 .collect::<HashSet<&str>>(),
-            vec!["scalars", "images"]
+            vec!["scalars", "histograms", "images"]
                 .into_iter()
                 .collect::<HashSet<&str>>(),
         );
