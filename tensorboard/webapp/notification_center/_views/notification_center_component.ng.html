@@ -14,3 +14,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
+<button mat-icon-button [matMenuTriggerFor]="menu">
+  <mat-icon svgIcon="notifications_none_24px"></mat-icon>
+</button>
+
+<mat-menu #menu="matMenu">
+  <div mat-menu-item>notification 1</div>
+</mat-menu>
