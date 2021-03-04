@@ -174,9 +174,7 @@ class TfGraph extends LegacyElementMixin(PolymerElement) {
   panToNode(nodeName) {
     (this.$$('tf-graph-scene') as any).panToNode(nodeName);
   }
-  @observe(
-    'autoExtractNodes',
-  )
+  @observe('autoExtractNodes')
   _autoExtractNodesChanged() {
     var graphHierarchy = this.graphHierarchy;
     if (!graphHierarchy) return;
