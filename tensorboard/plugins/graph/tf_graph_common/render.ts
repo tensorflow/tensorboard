@@ -230,17 +230,17 @@ export class RenderGraphInfo {
   };
   root: RenderGroupNodeInfo;
   traceInputs: boolean;
-  extractNodes: boolean;
+  private autoExtractNodes: boolean;
   edgeLabelFunction: EdgeLabelFunction;
   // An optional function that computes the thickness of an edge given edge
   // data. If not provided, defaults to encoding tensor size in thickness.
   edgeWidthFunction: EdgeThicknessFunction;
   constructor(hierarchy: tf_graph.Hierarchy,
               displayingStats: boolean,
-              extractNodes: boolean) {
+              autoExtractNodes: boolean) {
     this.hierarchy = hierarchy;
     this.displayingStats = displayingStats;
-    this.extractNodes = extractNodes;
+    this.autoExtractNodes = autoExtractNodes;
     this.index = {};
     this.renderedOpNames = [];
     this.computeScales();
@@ -943,7 +943,7 @@ export class RenderGraphInfo {
       coreGraph.setEdge(edgeObj.v, edgeObj.w, renderMetaedgeInfo);
     });
     if (renderGroupNodeInfo.node.type === NodeType.META) {
-      extractHighDegrees(renderGroupNodeInfo, this.extractNodes);
+      extractHighDegrees(renderGroupNodeInfo, this.autoExtractNodes);
     }
     // If there are functions, it is possible for metanodes to be dynamically
     // added later. Construct the hierarchies for nodes that are predecessors to
@@ -2179,11 +2179,11 @@ export function mapIndexToHue(id: number): number {
  * screw up the graph layout.
  *
  * @param {Render.Node} renderNode Node to manipulate.
- * @param {boolean} extractNodes Whether to automatically exclude high-degree
+ * @param {boolean} autoExtractNodes Whether to automatically exclude high-degree
  *   nodes from the main graph. If false, only exclude predefined nodes.
  */
 function extractHighDegrees(renderNode: RenderGroupNodeInfo,
-                            extractNodes: boolean) {
+                            autoExtractNodes: boolean) {
   extractSpecifiedNodes(renderNode);
 
   if (PARAMS.outExtractTypes.length) {
@@ -2196,7 +2196,7 @@ function extractHighDegrees(renderNode: RenderGroupNodeInfo,
     extractPredefinedSource(renderNode);
   }
 
-  if (extractNodes) {
+  if (autoExtractNodes) {
     extractHighInOrOutDegree(renderNode);
   }
 
