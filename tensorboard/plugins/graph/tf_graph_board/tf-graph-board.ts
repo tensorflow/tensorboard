@@ -1,3 +1,6 @@
+    for (const node of Object.values(this.graphHierarchy.getNodeMap())) {
+        node.include = tf_graph.InclusionType.UNSPECIFIED;
+    }
 /* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -152,7 +155,7 @@ class TfGraphBoard extends LegacyElementMixin(PolymerElement) {
           handle-node-selected="[[handleNodeSelected]]"
           handle-edge-selected="[[handleEdgeSelected]]"
           trace-inputs="[[traceInputs]]"
-          extract-nodes="[[extractNodes]]"
+          auto-extract-nodes="[[autoExtractNodes]]"
         ></tf-graph>
       </div>
       <div id="info">
@@ -198,7 +201,7 @@ class TfGraphBoard extends LegacyElementMixin(PolymerElement) {
   @property({type: Boolean})
   traceInputs: boolean;
   @property({type: Boolean})
-  extractNodes: boolean;
+  autoExtractNodes: boolean;
   @property({type: String})
   colorBy: string;
   @property({
