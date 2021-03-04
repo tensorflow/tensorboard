@@ -179,7 +179,7 @@ class TfGraph extends LegacyElementMixin(PolymerElement) {
     var graphHierarchy = this.graphHierarchy;
     if (!graphHierarchy) return;
     for (const node of Object.values(graphHierarchy.getNodeMap())) {
-        node.include = tf_graph.InclusionType.UNSPECIFIED;
+      node.include = tf_graph.InclusionType.UNSPECIFIED;
     }
     this._buildRenderHierarchy(graphHierarchy);
   }
@@ -277,7 +277,7 @@ class TfGraph extends LegacyElementMixin(PolymerElement) {
       () => {
         const renderGraph = new tf_graph_render.RenderGraphInfo(
           graphHierarchy,
-          !!this.stats, /** displayingStats */
+          !!this.stats /** displayingStats */,
           this.autoExtractNodes
         );
         renderGraph.edgeLabelFunction = this.edgeLabelFunction;
