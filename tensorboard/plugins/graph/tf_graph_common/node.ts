@@ -779,13 +779,14 @@ export function removeGradientDefinitions(svgRoot: SVGElement) {
  * for the fill inside the svgRoot when necessary.
  */
 export function getFillForNode(
-  templateIndex: (name: string) => number,
+  templateIndex: (name: string) => number | null,
   colorBy: ColorBy,
   renderInfo: render.RenderNodeInfo,
   isExpanded: boolean,
   svgRoot?: SVGElement
 ): string {
   let colorParams = render.MetanodeColors;
+  templateIndex = templateIndex || (() => 0);
   switch (colorBy) {
     case ColorBy.STRUCTURE:
       if (renderInfo.node.type === NodeType.META) {

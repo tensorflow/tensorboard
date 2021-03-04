@@ -43,7 +43,6 @@ import {
   getSeriesNodeName,
   Edges,
   LibraryFunctionData,
-  Hierarchy,
 } from './graph';
 import * as tf_graph from './graph';
 import * as tf_graph_proto from './proto';
@@ -52,40 +51,48 @@ import * as tf_graph_util from './util';
 /**
  * Class for the Graph Hierarchy for TensorFlow graph.
  */
-class HierarchyImpl implements Hierarchy {
+export class Hierarchy {
   root: Metanode;
   libraryFunctions: {
     [key: string]: LibraryFunctionData;
   };
-  templates: {
-    [templateId: string]: string[];
-  };
-  private index: {
-    [nodeName: string]: GroupNode | OpNode;
-  };
   devices: string[];
   xlaClusters: string[];
+  /**
+   * Whether at least one tensor in the graph has shape information.
+   */
   hasShapeInfo = false;
+  /**
+   * The maximum size across all meta edges. Used for scaling thickness.
+   */
   maxMetaEdgeSize = 1;
   orderings: {
     [nodeName: string]: {
       [childName: string]: number;
     };
   };
-  graphOptions: any;
   /**
-   * Constructs a hierarchy.
-   * @param graphOptions Options passed to dagre for creating the graph. Note
-   *   that the `compound` argument will be overridden to true.
+   * Options passed to dagre for creating the graph. Note that the
+   * `compound` argument will be overridden to true.
    */
-  constructor(graphOptions: any) {
-    this.graphOptions = graphOptions || {};
+  graphOptions: tf_graph.LabeledGraphOptions = {};
+
+  private verifyTemplate: boolean;
+  private templates: {
+    [templateId: string]: string[];
+  } | null = null;
+  private index: {
+    [nodeName: string]: GroupNode | OpNode;
+  };
+
+  constructor(params: HierarchyParams) {
     this.graphOptions.compound = true;
+    this.graphOptions.rankdir = params.rankDirection;
     this.root = createMetanode(ROOT_NAME, this.graphOptions);
     this.libraryFunctions = {};
-    this.templates = null;
     this.devices = null;
     this.xlaClusters = null;
+    this.verifyTemplate = params.verifyTemplate;
     /**
      * @type {Object} Dictionary object that maps node name to the node
      * (could be op-node, metanode, or series-node)
@@ -186,7 +193,7 @@ class HierarchyImpl implements Hierarchy {
    * node for a given descendant path. If the descendant corresponds to no
    * immediate child, an error is thrown.
    */
-  getChildName(nodeName: string, descendantName: string): string {
+  private getChildName(nodeName: string, descendantName: string): string {
     // Walk up the hierarchy from the descendant to find the child.
     let currentNode: Node = this.index[descendantName];
     while (currentNode) {
@@ -269,7 +276,7 @@ class HierarchyImpl implements Hierarchy {
     return successors;
   }
   /** Helper method for getPredecessors and getSuccessors */
-  getOneWayEdges(node: GroupNode | OpNode, inEdges: boolean) {
+  private getOneWayEdges(node: GroupNode | OpNode, inEdges: boolean) {
     let edges: Edges = {control: [], regular: []};
     // A node with no parent cannot have any edges.
     if (!node.parentNode || !node.parentNode.isGroupNode) {
@@ -363,13 +370,28 @@ class HierarchyImpl implements Hierarchy {
    * Returns a d3 Ordinal function that can be used to look up the index of
    * a node based on its template id.
    */
-  getTemplateIndex(): (string) => number {
+  getTemplateIndex(): (string) => number | null {
+    if (!this.templates) {
+      return null;
+    }
     let templateNames = d3.keys(this.templates);
+    if (!templateNames.length) {
+      return null;
+    }
     let templateIndex = d3
       .scaleOrdinal()
       .domain(templateNames)
       .range(d3.range(0, templateNames.length));
     return (templateId: string) => <number>templateIndex(templateId);
+  }
+
+  /**
+   * Statically computes the templateId for every MetaNode in the graph, even
+   * if it is never rendered. This may be a very expensive call for large
+   * graphs.
+   */
+  updateTemplates() {
+    this.templates = template.detect(this, this.verifyTemplate);
   }
 }
 /**
@@ -429,8 +451,8 @@ export function build(
   params: HierarchyParams,
   tracker: ProgressTracker
 ): Promise<Hierarchy> {
-  let h = new HierarchyImpl({rankdir: params.rankDirection});
-  let seriesNames: {
+  const h = new Hierarchy(params);
+  const seriesNames: {
     [name: string]: string;
   } = {};
   return tf_graph_util
@@ -492,7 +514,7 @@ export function build(
         'Finding similar subgraphs',
         30,
         () => {
-          h.templates = template.detect(h, params.verifyTemplate);
+          h.updateTemplates();
         },
         tracker,
         tb_debug.GraphDebugEventId.HIERARCHY_FIND_SIMILAR_SUBGRAPHS
@@ -964,7 +986,7 @@ function detectSeriesUsingNumericSuffixes(
     [clusterId: string]: string[];
   },
   metagraph: graphlib.Graph,
-  graphOptions: any
+  graphOptions: tf_graph.LabeledGraphOptions
 ): {
   [seriesName: string]: SeriesNode;
 } {
@@ -1074,7 +1096,7 @@ function detectSeriesAnywhereInNodeName(
     [clusterId: string]: string[];
   },
   metagraph: graphlib.Graph,
-  graphOptions: any
+  graphOptions: tf_graph.LabeledGraphOptions
 ): {
   [seriesName: string]: SeriesNode;
 } {
@@ -1249,7 +1271,7 @@ function addSeriesToDict(
   },
   clusterId: number,
   metagraph: graphlib.Graph,
-  graphOptions: any
+  graphOptions: tf_graph.LabeledGraphOptions
 ) {
   if (seriesNodes.length > 1) {
     let curSeriesName = getSeriesNodeName(

@@ -22,6 +22,7 @@ import * as tf_graph from '../tf_graph_common/graph';
 import * as tf_graph_render from '../tf_graph_common/render';
 import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
 import {ColorBy} from '../tf_graph_common/view_types';
+import {Hierarchy} from '../tf_graph_common/hierarchy';
 
 /**
  * Element for putting tf-graph and tf-graph-info side by side.
@@ -184,7 +185,7 @@ class TfGraphBoard extends LegacyElementMixin(PolymerElement) {
     </div>
   `;
   @property({type: Object})
-  graphHierarchy: tf_graph.Hierarchy;
+  graphHierarchy: Hierarchy;
   @property({type: Object})
   graph: tf_graph.SlimGraph;
   @property({type: Object})
