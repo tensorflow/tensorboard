@@ -184,7 +184,6 @@ tf_ts_library(
     ],
     strict_checks = False,
     deps = [
-        "//tensorboard/plugins/projector/vz_projector",
         "@npm//umap-js",
     ],
 )

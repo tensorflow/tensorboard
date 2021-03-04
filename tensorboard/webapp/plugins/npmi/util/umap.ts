@@ -13,7 +13,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {UMAP} from 'umap-js';
-import * as util from '../../../../plugins/projector/vz_projector/util';
 
 const UMAP_SAMPLE_SIZE = 20000;
 
@@ -56,6 +55,31 @@ export interface EmbeddingDataSet {
   hasUmapRun: boolean;
 }
 
+/**
+ * Shuffles the array in-place in O(n) time using Fisher-Yates algorithm.
+ *
+ * Copied from tensorboard/plugins/projector/vz_projector/util.ts.
+ */
+function shuffle<T>(array: T[]): T[] {
+  let m = array.length;
+  let t: T;
+  let i: number;
+  // While there remain elements to shuffle.
+  while (m) {
+    // Pick a remaining element
+    i = Math.floor(Math.random() * m--);
+    // And swap it with the current element.
+    t = array[m];
+    array[m] = array[i];
+    array[i] = t;
+  }
+  return array;
+}
+
+function range(count: number): number[] {
+  return [...new Array(count)].map((_, index) => index);
+}
+
 export function buildEmbeddingDataSet(
   points: EmbeddingListing
 ): EmbeddingDataSet {
@@ -63,7 +87,7 @@ export function buildEmbeddingDataSet(
   return {
     points,
     pointKeys,
-    shuffledDataIndices: util.shuffle(util.range(pointKeys.length)),
+    shuffledDataIndices: shuffle(range(pointKeys.length)),
     projections: {},
     hasUmapRun: false,
   };
