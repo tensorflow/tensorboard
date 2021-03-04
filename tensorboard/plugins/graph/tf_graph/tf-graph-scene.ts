@@ -44,8 +44,6 @@ class TfGraphScene2 extends LegacyElementMixin(PolymerElement) {
   colorBy: string;
   @property({type: Boolean})
   traceInputs: boolean;
-  @property({type: Boolean})
-  extractNodes: boolean;
 
   // For each render hierarchy, we only fit it to the viewport once (when the scene is attached to
   // the DOM). We do not fit the hierarchy again (unless the user clicks the reset button). For
@@ -664,11 +662,5 @@ class TfGraphScene2 extends LegacyElementMixin(PolymerElement) {
       this.selectedNode,
       this.traceInputs
     );
-  }
-    
-  // Re-do hierarchy if extraction changes
-  @observe('extractNodes')
-  _updateExtractNodes() {
-    this.renderHierarchy
   }
 }
