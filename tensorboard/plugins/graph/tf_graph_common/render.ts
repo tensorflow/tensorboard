@@ -235,9 +235,11 @@ export class RenderGraphInfo {
   // An optional function that computes the thickness of an edge given edge
   // data. If not provided, defaults to encoding tensor size in thickness.
   edgeWidthFunction: EdgeThicknessFunction;
-  constructor(hierarchy: tf_graph.Hierarchy,
-              displayingStats: boolean,
-              autoExtractNodes: boolean) {
+  constructor(
+    hierarchy: tf_graph.Hierarchy,
+    displayingStats: boolean,
+    autoExtractNodes: boolean
+  ) {
     this.hierarchy = hierarchy;
     this.displayingStats = displayingStats;
     this.autoExtractNodes = autoExtractNodes;
@@ -2182,8 +2184,10 @@ export function mapIndexToHue(id: number): number {
  * @param {boolean} autoExtractNodes Whether to automatically exclude high-degree
  *   nodes from the main graph. If false, only exclude predefined nodes.
  */
-function extractHighDegrees(renderNode: RenderGroupNodeInfo,
-                            autoExtractNodes: boolean) {
+function extractHighDegrees(
+  renderNode: RenderGroupNodeInfo,
+  autoExtractNodes: boolean
+) {
   extractSpecifiedNodes(renderNode);
 
   if (PARAMS.outExtractTypes.length) {
