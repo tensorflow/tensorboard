@@ -17,6 +17,7 @@ from unittest import mock
 
 import grpc
 import grpc_testing
+import numpy as np
 
 from tensorboard import errors
 from tensorboard import test as tb_test
@@ -25,6 +26,7 @@ from tensorboard.data import grpc_provider
 from tensorboard.data import provider
 from tensorboard.data.proto import data_provider_pb2
 from tensorboard.data.proto import data_provider_pb2_grpc
+from tensorboard.util import tensor_util
 
 
 def _create_mock_client():
@@ -54,10 +56,11 @@ class GrpcDataProviderTest(tb_test.TestCase):
         res = data_provider_pb2.ListPluginsResponse()
         res.plugins.add(name="scalars")
         res.plugins.add(name="images")
+        res.plugins.add(name="text")
         self.stub.ListPlugins.return_value = res
 
         actual = self.provider.list_plugins(self.ctx, experiment_id="123")
-        self.assertEqual(actual, ["scalars", "images"])
+        self.assertEqual(actual, ["scalars", "images", "text"])
 
         req = data_provider_pb2.ListPluginsRequest()
         req.experiment_id = "123"
@@ -173,6 +176,112 @@ class GrpcDataProviderTest(tb_test.TestCase):
         req.run_tag_filter.runs.names.extend(["nope", "test"])  # sorted
         req.downsample.num_points = 4
         self.stub.ReadScalars.assert_called_once_with(req)
+
+    def test_list_tensors(self):
+        res = data_provider_pb2.ListTensorsResponse()
+        run1 = res.runs.add(run_name="val")
+        tag11 = run1.tags.add(tag_name="weights")
+        tag11.metadata.max_step = 7
+        tag11.metadata.max_wall_time = 7.77
+        tag11.metadata.summary_metadata.plugin_data.content = b"magic"
+        tag11.metadata.summary_metadata.summary_description = "hey"
+        tag12 = run1.tags.add(tag_name="other")
+        tag12.metadata.max_step = 8
+        tag12.metadata.max_wall_time = 8.88
+        run2 = res.runs.add(run_name="test")
+        tag21 = run2.tags.add(tag_name="weights")
+        tag21.metadata.max_step = 9
+        tag21.metadata.max_wall_time = 9.99
+        self.stub.ListTensors.return_value = res
+
+        actual = self.provider.list_tensors(
+            self.ctx,
+            experiment_id="123",
+            plugin_name="histograms",
+            run_tag_filter=provider.RunTagFilter(tags=["weights", "other"]),
+        )
+        expected = {
+            "val": {
+                "weights": provider.TensorTimeSeries(
+                    max_step=7,
+                    max_wall_time=7.77,
+                    plugin_content=b"magic",
+                    description="hey",
+                    display_name="",
+                ),
+                "other": provider.TensorTimeSeries(
+                    max_step=8,
+                    max_wall_time=8.88,
+                    plugin_content=b"",
+                    description="",
+                    display_name="",
+                ),
+            },
+            "test": {
+                "weights": provider.TensorTimeSeries(
+                    max_step=9,
+                    max_wall_time=9.99,
+                    plugin_content=b"",
+                    description="",
+                    display_name="",
+                ),
+            },
+        }
+        self.assertEqual(actual, expected)
+
+        req = data_provider_pb2.ListTensorsRequest()
+        req.experiment_id = "123"
+        req.plugin_filter.plugin_name = "histograms"
+        req.run_tag_filter.tags.names.extend(["other", "weights"])  # sorted
+        self.stub.ListTensors.assert_called_once_with(req)
+
+    def test_read_tensors(self):
+        res = data_provider_pb2.ReadTensorsResponse()
+        run = res.runs.add(run_name="test")
+        tag = run.tags.add(tag_name="weights")
+        tag.data.step.extend([0, 1, 2])
+        tag.data.wall_time.extend([1234.0, 1235.0, 1236.0])
+        tag.data.value.append(tensor_util.make_tensor_proto([0.0, 0.0, 42.0]))
+        tag.data.value.append(tensor_util.make_tensor_proto([1.0, 1.0, 43.0]))
+        tag.data.value.append(tensor_util.make_tensor_proto([2.0, 2.0, 44.0]))
+        self.stub.ReadTensors.return_value = res
+
+        actual = self.provider.read_tensors(
+            self.ctx,
+            experiment_id="123",
+            plugin_name="histograms",
+            run_tag_filter=provider.RunTagFilter(runs=["test", "nope"]),
+            downsample=3,
+        )
+        expected = {
+            "test": {
+                "weights": [
+                    provider.TensorDatum(
+                        step=0,
+                        wall_time=1234.0,
+                        numpy=np.array([0.0, 0.0, 42.0]),
+                    ),
+                    provider.TensorDatum(
+                        step=1,
+                        wall_time=1235.0,
+                        numpy=np.array([1.0, 1.0, 43.0]),
+                    ),
+                    provider.TensorDatum(
+                        step=2,
+                        wall_time=1236.0,
+                        numpy=np.array([2.0, 2.0, 44.0]),
+                    ),
+                ],
+            },
+        }
+        self.assertEqual(actual, expected)
+
+        req = data_provider_pb2.ReadTensorsRequest()
+        req.experiment_id = "123"
+        req.plugin_filter.plugin_name = "histograms"
+        req.run_tag_filter.runs.names.extend(["nope", "test"])  # sorted
+        req.downsample.num_points = 3
+        self.stub.ReadTensors.assert_called_once_with(req)
 
     def test_list_blob_sequences(self):
         res = data_provider_pb2.ListBlobSequencesResponse()
