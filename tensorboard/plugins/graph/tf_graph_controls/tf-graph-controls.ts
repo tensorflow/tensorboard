@@ -1090,10 +1090,10 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
     type: Boolean,
     notify: true,
   })
-  autoExtractNodes: boolean = false;
+  autoExtractNodes: boolean = true;
   @property({
     type: Number,
-    notify: true,
+    observer: '_selectedTagIndexChanged',
   })
   _selectedTagIndex: number = 0;
   /**
