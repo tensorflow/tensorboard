@@ -77,7 +77,6 @@ class TfGraph extends LegacyElementMixin(PolymerElement) {
           health-pill-step-index="{{healthPillStepIndex}}"
           handle-edge-selected="[[handleEdgeSelected]]"
           trace-inputs="[[traceInputs]]"
-          extract-nodes="[[extractNodes]]"
         ></tf-graph-scene>
       </div>
     </div>
@@ -137,7 +136,7 @@ class TfGraph extends LegacyElementMixin(PolymerElement) {
   @property({type: Boolean})
   traceInputs: boolean;
   @property({type: Boolean})
-  extractNodes: boolean;
+  autoExtractNodes: boolean;
   @property({type: Array})
   nodeContextMenuItems: unknown[];
   @property({
@@ -176,7 +175,17 @@ class TfGraph extends LegacyElementMixin(PolymerElement) {
     (this.$$('tf-graph-scene') as any).panToNode(nodeName);
   }
   @observe(
-    'extractNodes',
+    'autoExtractNodes',
+  )
+  _autoExtractNodesChanged() {
+    var graphHierarchy = this.graphHierarchy;
+    if (!graphHierarchy) return;
+    for (const node of Object.values(graphHierarchy.getNodeMap())) {
+        node.include = tf_graph.InclusionType.UNSPECIFIED;
+    }
+    this._buildRenderHierarchy(graphHierarchy);
+  }
+  @observe(
     'graphHierarchy',
     'edgeWidthFunction',
     'handleNodeSelected',
@@ -271,7 +280,7 @@ class TfGraph extends LegacyElementMixin(PolymerElement) {
         const renderGraph = new tf_graph_render.RenderGraphInfo(
           graphHierarchy,
           !!this.stats, /** displayingStats */
-          !!this.extractNodes
+          this.autoExtractNodes
         );
         renderGraph.edgeLabelFunction = this.edgeLabelFunction;
         renderGraph.edgeWidthFunction = this.edgeWidthFunction;
