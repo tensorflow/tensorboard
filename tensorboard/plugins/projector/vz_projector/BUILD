@@ -2,7 +2,7 @@ load("//tensorboard/defs:defs.bzl", "tf_js_binary", "tf_ts_library")
 load("//tensorboard/defs:web.bzl", "tf_web_library")
 load("//tensorboard/defs:vulcanize.bzl", "tensorboard_html_binary")
 
-package(default_visibility = ["//tensorboard:internal"])
+package(default_visibility = ["//tensorboard/plugins/projector:__subpackages__"])
 
 licenses(["notice"])
 
