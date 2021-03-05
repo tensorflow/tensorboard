@@ -87,6 +87,7 @@ class TfGraphDashboard extends LegacyElementMixin(PolymerElement) {
         health-pills-toggled-on="{{healthPillsToggledOn}}"
         on-fit-tap="_fit"
         trace-inputs="{{_traceInputs}}"
+        auto-extract-nodes="{{_autoExtractNodes}}"
       ></tf-graph-controls>
       <div
         class$="center [[_getGraphDisplayClassName(_selectedFile, _datasets)]]"
@@ -160,6 +161,7 @@ class TfGraphDashboard extends LegacyElementMixin(PolymerElement) {
             selected-node="{{_selectedNode}}"
             stats="[[_stats]]"
             trace-inputs="[[_traceInputs]]"
+            auto-extract-nodes="[[_autoExtractNodes]]"
           ></tf-graph-board>
         </div>
       </div>
@@ -304,6 +306,8 @@ class TfGraphDashboard extends LegacyElementMixin(PolymerElement) {
   _compatibilityProvider: object;
   @property({type: Boolean})
   _traceInputs: boolean;
+  @property({type: Boolean})
+  _autoExtractNodes: boolean;
   @property({type: Object})
   _selectedFile: any;
   attached() {

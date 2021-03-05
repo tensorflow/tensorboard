@@ -135,6 +135,8 @@ class TfGraph extends LegacyElementMixin(PolymerElement) {
   renderHierarchy: tf_graph_render.RenderGraphInfo;
   @property({type: Boolean})
   traceInputs: boolean;
+  @property({type: Boolean})
+  autoExtractNodes: boolean;
   @property({type: Array})
   nodeContextMenuItems: unknown[];
   @property({
@@ -171,6 +173,15 @@ class TfGraph extends LegacyElementMixin(PolymerElement) {
    */
   panToNode(nodeName) {
     (this.$$('tf-graph-scene') as any).panToNode(nodeName);
+  }
+  @observe('autoExtractNodes')
+  _autoExtractNodesChanged() {
+    var graphHierarchy = this.graphHierarchy;
+    if (!graphHierarchy) return;
+    for (const node of Object.values(graphHierarchy.getNodeMap())) {
+      node.include = tf_graph.InclusionType.UNSPECIFIED;
+    }
+    this._buildRenderHierarchy(graphHierarchy);
   }
   @observe(
     'graphHierarchy',
@@ -264,9 +275,10 @@ class TfGraph extends LegacyElementMixin(PolymerElement) {
     const renderGraph = tf_graph_util.time(
       'new tf_graph_render.Hierarchy',
       () => {
-        var renderGraph = new tf_graph_render.RenderGraphInfo(
+        const renderGraph = new tf_graph_render.RenderGraphInfo(
           graphHierarchy,
-          !!this.stats /** displayingStats */
+          !!this.stats /** displayingStats */,
+          this.autoExtractNodes
         );
         renderGraph.edgeLabelFunction = this.edgeLabelFunction;
         renderGraph.edgeWidthFunction = this.edgeWidthFunction;

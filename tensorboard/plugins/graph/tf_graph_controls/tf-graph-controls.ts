@@ -492,6 +492,13 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
           </paper-toggle-button>
         </div>
       </div>
+      <div class="control-holder">
+        <div>
+          <paper-toggle-button checked="{{autoExtractNodes}}" class="title">
+            Auto-extract high-degree nodes
+          </paper-toggle-button>
+        </div>
+      </div>
       <template is="dom-if" if="[[healthPillsFeatureEnabled]]">
         <div class="control-holder">
           <paper-toggle-button checked="{{healthPillsToggledOn}}" class="title"
@@ -1079,6 +1086,11 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
     notify: true,
   })
   traceInputs: boolean = false;
+  @property({
+    type: Boolean,
+    notify: true,
+  })
+  autoExtractNodes: boolean = true;
   @property({
     type: Number,
     observer: '_selectedTagIndexChanged',

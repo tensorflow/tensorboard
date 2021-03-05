@@ -97,6 +97,7 @@ class TfGraphApp extends LegacyElementMixin(PolymerElement) {
             selected-file="{{selectedFile}}"
             on-fit-tap="_fit"
             trace-inputs="{{_traceInputs}}"
+            auto-extract-nodes="{{_autoExtractNodes}}"
           ></tf-graph-controls>
           <tf-graph-loader
             id="loader"
@@ -117,6 +118,7 @@ class TfGraphApp extends LegacyElementMixin(PolymerElement) {
             render-hierarchy="{{_renderHierarchy}}"
             selected-node="{{selectedNode}}"
             trace-inputs="[[_traceInputs]]"
+            autoExtractNodes="[[_autoExtractNodes]]"
           ></tf-graph-board>
         </div>
       </div>
@@ -164,6 +166,8 @@ class TfGraphApp extends LegacyElementMixin(PolymerElement) {
   _progress: object;
   @property({type: Boolean})
   _traceInputs: boolean;
+  @property({type: Boolean})
+  _autoExtractNodes: boolean;
   _updateToolbar() {
     (this.$$('.container') as HTMLElement).classList.toggle(
       'no-toolbar',
