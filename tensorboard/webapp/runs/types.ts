@@ -50,3 +50,25 @@ export type ExperimentIdToRunsAndMetadata = Record<
     metadata: HparamsAndMetadata;
   }
 >;
+
+export enum SortType {
+  EXPERIMENT_NAME,
+  HPARAM,
+  METRIC,
+  RUN_NAME,
+}
+
+export interface HparamsSortKey {
+  type: SortType.HPARAM;
+  name: string;
+}
+
+export interface MetricsSortKey {
+  type: SortType.METRIC;
+  tag: string;
+}
+
+export type SortKey =
+  | HparamsSortKey
+  | MetricsSortKey
+  | {type: SortType.RUN_NAME | SortType.EXPERIMENT_NAME};
