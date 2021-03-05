@@ -16,6 +16,7 @@ import {PolymerElement, html} from '@polymer/polymer';
 import {customElement, observe, property} from '@polymer/decorators';
 
 import '../../../components/polymer/irons_and_papers';
+
 import '../tf_graph_info/tf-graph-info';
 import '../tf_graph/tf-graph';
 import * as tf_graph from '../tf_graph_common/graph';
@@ -308,5 +309,30 @@ class TfGraphBoard extends LegacyElementMixin(PolymerElement) {
     this._selectedNodeInclude = node
       ? node.include
       : tf_graph.InclusionType.UNSPECIFIED;
+  }
+  @observe('graph')
+  _slimGraphChanged() {
+    // By default, avoid coloring by 'structure' for large graphs, since it may be very expensive.
+    // Color by 'structure' is still available to users via explicit gesture.
+    if (!this.graph) {
+      return;
+    }
+    const isGraphTooLarge =
+      Object.keys(this.graph.nodes).length > 10000 &&
+      this.graph.edges.length > 10000;
+    if (isGraphTooLarge && this.colorBy === ColorBy.STRUCTURE) {
+      this.colorBy = ColorBy.NONE;
+      this.fire('color-by-changed', this.colorBy);
+    }
+  }
+  @observe('colorBy', 'graphHierarchy')
+  _ensureTemplates() {
+    if (!this.graphHierarchy || this.colorBy !== ColorBy.STRUCTURE) {
+      return;
+    }
+    if (this.graphHierarchy.getTemplateIndex()) {
+      return;
+    }
+    this.graphHierarchy.updateTemplates();
   }
 }

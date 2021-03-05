@@ -20,6 +20,7 @@ limitations under the License.
  * A set of modes, each identifying a particular method for coloring nodes.
  */
 export enum ColorBy {
+  NONE = 'none',
   COMPUTE_TIME = 'compute_time',
   DEVICE = 'device',
   MEMORY = 'memory',
