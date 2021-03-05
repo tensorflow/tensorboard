@@ -301,6 +301,23 @@ impl<R: Read> RunLoader<R> {
     }
 }
 
+// Tensor value assumed for summaries that only store metadata and have no actual value. A length-0
+// float vector is of minimal serialized length (6 bytes) among valid tensors.
+fn null_tensor_proto() -> pb::TensorProto {
+    pb::TensorProto {
+        dtype: pb::DataType::DtString.into(),
+        tensor_shape: Some(pb::TensorShapeProto {
+            dim: vec![pb::tensor_shape_proto::Dim {
+                size: 0,
+                ..Default::default()
+            }],
+            ..Default::default()
+        }),
+        float_val: vec![],
+        ..Default::default()
+    }
+}
+
 impl RunLoaderData {
     fn new(plugin_sampling_hint: Arc<PluginSamplingHint>) -> Self {
         Self {
@@ -371,8 +388,12 @@ impl RunLoaderData {
             Some(pb::event::What::Summary(sum)) => {
                 for mut summary_pb_value in sum.value {
                     let summary_value = match summary_pb_value.value {
-                        None => continue,
                         Some(v) => SummaryValue(Box::new(v)),
+                        // Use standard null tensor as the "summary value" for summary events that
+                        // lack a real value (i.e. that carry only metadata).
+                        None => SummaryValue(Box::new(pb::summary::value::Value::Tensor(
+                            null_tensor_proto(),
+                        ))),
                     };
                     use std::collections::hash_map::Entry;
                     let ts = match self.time_series.entry(Tag(summary_pb_value.tag)) {
@@ -590,6 +611,134 @@ mod test {
                 WallTime::new(1235.0).unwrap(),
                 &commit::BlobSequenceValue(vec![Bytes::from_static(b"<sample run metadata>")])
             )]
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_empty_summary_becomes_null_tensor() -> Result<(), Box<dyn std::error::Error>> {
+        let logdir = tempfile::tempdir()?;
+        let filename = logdir.path().join("tfevents.123");
+        let mut f = BufWriter::new(File::create(&filename)?);
+
+        // Write file version.
+        f.write_event(&pb::Event {
+            wall_time: 1235.0,
+            what: Some(pb::event::What::FileVersion("brain.Event:2".to_string())),
+            ..Default::default()
+        })?;
+        // Write an empty summary with tensor data_class and unknown plugin name.
+        f.write_event(&pb::Event {
+            step: 0,
+            wall_time: 1235.0,
+            what: Some(pb::event::What::Summary(pb::Summary {
+                value: vec![pb::summary::Value {
+                    tag: "unknown_tag".to_string(),
+                    metadata: Some(pb::SummaryMetadata {
+                        plugin_data: Some(pb::summary_metadata::PluginData {
+                            plugin_name: "unknown".to_string(),
+                            ..Default::default()
+                        }),
+                        data_class: pb::DataClass::Tensor.into(),
+                        ..Default::default()
+                    }),
+                    ..Default::default()
+                }],
+                ..Default::default()
+            })),
+            ..Default::default()
+        })?;
+        // Write an empty summary with hparams metadata but no data_class.
+        f.write_event(&pb::Event {
+            step: 0,
+            wall_time: 1235.0,
+            what: Some(pb::event::What::Summary(pb::Summary {
+                value: vec![pb::summary::Value {
+                    tag: "hparams_tag".to_string(),
+                    metadata: Some(pb::SummaryMetadata {
+                        plugin_data: Some(pb::summary_metadata::PluginData {
+                            plugin_name: plugin_names::HPARAMS.to_string(),
+                            ..Default::default()
+                        }),
+                        ..Default::default()
+                    }),
+                    ..Default::default()
+                }],
+                ..Default::default()
+            })),
+            ..Default::default()
+        })?;
+        // flush, so that the data's there when we read it
+        f.into_inner()?.sync_all()?;
+
+        let run = Run("train".to_string());
+        let mut loader = RunLoader::new(run.clone(), Arc::new(PluginSamplingHint::default()));
+        let logdir = DiskLogdir::new(logdir.path().to_path_buf());
+        let commit = Commit::new();
+        commit
+            .runs
+            .write()
+            .expect("write-locking runs map")
+            .insert(run.clone(), Default::default());
+        loader.reload(
+            &logdir,
+            vec![EventFileBuf(filename)],
+            &commit.runs.read().unwrap()[&run],
+        );
+        let runs = commit.runs.read().expect("read-locking runs map");
+        let run_data: &commit::RunData = &*runs
+            .get(&run)
+            .expect("looking up data for run")
+            .read()
+            .expect("read-locking run data map");
+
+        assert_eq!(run_data.tensors.len(), 2);
+        let unknown_ts = run_data
+            .tensors
+            .get(&Tag("unknown_tag".to_string()))
+            .unwrap();
+        assert_eq!(
+            *unknown_ts.metadata,
+            pb::SummaryMetadata {
+                plugin_data: Some(pb::summary_metadata::PluginData {
+                    plugin_name: "unknown".to_string(),
+                    ..Default::default()
+                }),
+                data_class: pb::DataClass::Tensor.into(),
+                ..Default::default()
+            }
+        );
+        assert_eq!(
+            unknown_ts.valid_values().collect::<Vec<_>>(),
+            vec![(
+                Step(0),
+                WallTime::new(1235.0).unwrap(),
+                &null_tensor_proto()
+            )],
+        );
+        let hparams_ts = run_data
+            .tensors
+            .get(&Tag("hparams_tag".to_string()))
+            .unwrap();
+        assert_eq!(
+            *hparams_ts.metadata,
+            pb::SummaryMetadata {
+                plugin_data: Some(pb::summary_metadata::PluginData {
+                    plugin_name: plugin_names::HPARAMS.to_string(),
+                    ..Default::default()
+                }),
+                data_class: pb::DataClass::Tensor.into(),
+                ..Default::default()
+            }
+        );
+        assert_eq!(
+            hparams_ts.valid_values().collect::<Vec<_>>(),
+            vec![(
+                Step(0),
+                WallTime::new(1235.0).unwrap(),
+                &null_tensor_proto()
+            )],
         );
 
         Ok(())
