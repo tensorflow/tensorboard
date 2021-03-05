@@ -124,6 +124,7 @@ py_library(
         "//tensorboard:expect_grpc_installed",
         "//tensorboard/data/proto:protos_all_py_pb2",
         "//tensorboard/data/proto:protos_all_py_pb2_grpc",
+        "//tensorboard/util:tensor_util",
         "//tensorboard/util:timing",
     ],
 )
@@ -141,8 +142,10 @@ py_test(
         "//tensorboard:errors",
         "//tensorboard:expect_grpc_installed",
         "//tensorboard:expect_grpc_testing_installed",
+        "//tensorboard:expect_numpy_installed",
         "//tensorboard:test",
         "//tensorboard/data/proto:protos_all_py_pb2",
         "//tensorboard/data/proto:protos_all_py_pb2_grpc",
+        "//tensorboard/util:tensor_util",
     ],
 )

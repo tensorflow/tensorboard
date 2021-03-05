@@ -70,6 +70,7 @@ impl TensorBoardDataProvider for DataProviderHandler {
                 .read()
                 .map_err(|_| Status::internal(format!("failed to read run data for {:?}", run)))?;
             for metadata in (data.scalars.values().map(|ts| ts.metadata.as_ref()))
+                .chain(data.tensors.values().map(|ts| ts.metadata.as_ref()))
                 .chain(data.blob_sequences.values().map(|ts| ts.metadata.as_ref()))
             {
                 let plugin_name = match &metadata.plugin_data {
@@ -234,16 +235,114 @@ impl TensorBoardDataProvider for DataProviderHandler {
 
     async fn list_tensors(
         &self,
-        _request: Request<data::ListTensorsRequest>,
+        req: Request<data::ListTensorsRequest>,
     ) -> Result<Response<data::ListTensorsResponse>, Status> {
-        Err(Status::unimplemented("not yet implemented"))
+        let req = req.into_inner();
+        let want_plugin = parse_plugin_filter(req.plugin_filter)?;
+        let (run_filter, tag_filter) = parse_rtf(req.run_tag_filter);
+        let runs = self.read_runs()?;
+
+        let mut res: data::ListTensorsResponse = Default::default();
+        for (run, data) in runs.iter() {
+            if !run_filter.want(run) {
+                continue;
+            }
+            let data = data
+                .read()
+                .map_err(|_| Status::internal(format!("failed to read run data for {:?}", run)))?;
+            let mut run_res: data::list_tensors_response::RunEntry = Default::default();
+            for (tag, ts) in &data.tensors {
+                if !tag_filter.want(tag) {
+                    continue;
+                }
+                if plugin_name(&ts.metadata) != Some(&want_plugin) {
+                    continue;
+                }
+                let max_step = match ts.valid_values().last() {
+                    None => continue,
+                    Some((step, _, _)) => step,
+                };
+                // TODO(@wchargin): Consider tracking this on the time series itself?
+                let max_wall_time = ts
+                    .valid_values()
+                    .map(|(_, wt, _)| wt)
+                    .max()
+                    .expect("have valid values for step but not wall time");
+                run_res.tags.push(data::list_tensors_response::TagEntry {
+                    tag_name: tag.0.clone(),
+                    metadata: Some(data::TensorMetadata {
+                        max_step: max_step.into(),
+                        max_wall_time: max_wall_time.into(),
+                        summary_metadata: Some(*ts.metadata.clone()),
+                        ..Default::default()
+                    }),
+                });
+            }
+            if !run_res.tags.is_empty() {
+                run_res.run_name = run.0.clone();
+                res.runs.push(run_res);
+            }
+        }
+
+        Ok(Response::new(res))
     }
 
     async fn read_tensors(
         &self,
-        _request: Request<data::ReadTensorsRequest>,
+        req: Request<data::ReadTensorsRequest>,
     ) -> Result<Response<data::ReadTensorsResponse>, Status> {
-        Err(Status::unimplemented("not yet implemented"))
+        let req = req.into_inner();
+        let want_plugin = parse_plugin_filter(req.plugin_filter)?;
+        let (run_filter, tag_filter) = parse_rtf(req.run_tag_filter);
+        let num_points = parse_downsample(req.downsample)?;
+        let runs = self.read_runs()?;
+
+        let mut res: data::ReadTensorsResponse = Default::default();
+        for (run, data) in runs.iter() {
+            if !run_filter.want(run) {
+                continue;
+            }
+            let data = data
+                .read()
+                .map_err(|_| Status::internal(format!("failed to read run data for {:?}", run)))?;
+            let mut run_res: data::read_tensors_response::RunEntry = Default::default();
+            for (tag, ts) in &data.tensors {
+                if !tag_filter.want(tag) {
+                    continue;
+                }
+                if plugin_name(&ts.metadata) != Some(&want_plugin) {
+                    continue;
+                }
+
+                let mut points = ts.valid_values().collect::<Vec<_>>();
+                downsample::downsample(&mut points, num_points);
+                let n = points.len();
+                let mut steps = Vec::with_capacity(n);
+                let mut wall_times = Vec::with_capacity(n);
+                let mut values = Vec::with_capacity(n);
+                for (step, wall_time, value) in points {
+                    steps.push(step.into());
+                    wall_times.push(wall_time.into());
+                    // Clone the TensorProto to get a copy to send in the response.
+                    values.push(value.clone());
+                }
+
+                run_res.tags.push(data::read_tensors_response::TagEntry {
+                    tag_name: tag.0.clone(),
+                    data: Some(data::TensorData {
+                        step: steps,
+                        wall_time: wall_times,
+                        value: values,
+                    }),
+                });
+            }
+            if !run_res.tags.is_empty() {
+                run_res.run_name = run.0.clone();
+                res.runs.push(run_res);
+            }
+        }
+
+        Ok(Response::new(res))
     }
 
     async fn list_blob_sequences(
@@ -544,6 +643,9 @@ mod tests {
     async fn test_list_plugins() {
         let commit = CommitBuilder::new()
             .scalars("train", "xent", |b| b.build())
+            .tensors("train", "weights", |mut b| {
+                b.plugin_name("histograms").build()
+            })
             .blob_sequences("train", "input_image", |mut b| {
                 b.plugin_name("images").build()
             })
@@ -558,7 +660,7 @@ mod tests {
                 .iter()
                 .map(|p| p.name.as_str())
                 .collect::<HashSet<&str>>(),
-            vec!["scalars", "images"]
+            vec!["scalars", "histograms", "images"]
                 .into_iter()
                 .collect::<HashSet<&str>>(),
         );
@@ -818,6 +920,107 @@ mod tests {
         let train_run = &map[&Run("train".to_string())];
         let xent_data = &train_run[&Tag("xent".to_string())].data.as_ref().unwrap();
         assert_eq!(xent_data.value, Vec::<f32>::new());
+    }
+
+    #[tokio::test]
+    async fn test_list_tensors() {
+        let commit = CommitBuilder::new()
+            .run("run_with_no_data", None)
+            .scalars("train", "accuracy", |b| b.build())
+            .tensors("train", "weights", |b| b.build())
+            .tensors("test", "weights", |mut b| {
+                b.wall_time_start(1235.0).step_start(0).len(3).build()
+            })
+            .build();
+        let handler = sample_handler(commit);
+        let req = Request::new(data::ListTensorsRequest {
+            experiment_id: "123".to_string(),
+            plugin_filter: Some(data::PluginFilter {
+                plugin_name: "tensors".to_string(),
+            }),
+            ..Default::default()
+        });
+        let res = handler.list_tensors(req).await.unwrap().into_inner();
+
+        assert_eq!(res.runs.len(), 2);
+        let map = run_tag_map!(res.runs);
+
+        let test_run = &map[&Run("test".to_string())];
+        assert_eq!(test_run.len(), 1);
+        let weights_metadata = &test_run[&Tag("weights".to_string())]
+            .metadata
+            .as_ref()
+            .unwrap();
+        assert_eq!(weights_metadata.max_step, 2);
+        assert_eq!(weights_metadata.max_wall_time, 1237.0);
+        assert_eq!(
+            weights_metadata
+                .summary_metadata
+                .as_ref()
+                .unwrap()
+                .plugin_data
+                .as_ref()
+                .unwrap()
+                .plugin_name,
+            "tensors".to_string()
+        );
+    }
+
+    #[tokio::test]
+    async fn test_read_tensors() {
+        fn make_string_tensor_proto(value: impl Into<Bytes>) -> pb::TensorProto {
+            pb::TensorProto {
+                dtype: pb::DataType::DtString.into(),
+                tensor_shape: None, // Scalar shape
+                string_val: vec![value.into()],
+                ..Default::default()
+            }
+        };
+        let commit = CommitBuilder::new()
+            .tensors("train", "status", |mut b| {
+                b.plugin_name("text")
+                    .len(3)
+                    .wall_time_start(1235.0)
+                    .step_start(0)
+                    .eval(|Step(i)| make_string_tensor_proto(format!("Step {}", i)))
+                    .build()
+            })
+            .tensors("test", "weights", |b| b.build())
+            .build();
+        let handler = sample_handler(commit);
+        let req = Request::new(data::ReadTensorsRequest {
+            experiment_id: "123".to_string(),
+            plugin_filter: Some(data::PluginFilter {
+                plugin_name: "text".to_string(),
+            }),
+            run_tag_filter: Some(data::RunTagFilter {
+                runs: Some(data::RunFilter {
+                    names: vec!["train".to_string(), "nonexistent".to_string()],
+                }),
+                tags: None,
+            }),
+            downsample: Some(data::Downsample { num_points: 1000 }),
+            ..Default::default()
+        });
+
+        let res = handler.read_tensors(req).await.unwrap().into_inner();
+
+        assert_eq!(res.runs.len(), 1);
+        let map = run_tag_map!(res.runs);
+
+        let train_run = &map[&Run("train".to_string())];
+        assert_eq!(train_run.len(), 1);
+        let status_data = &train_run[&Tag("status".to_string())].data.as_ref().unwrap();
+        assert_eq!(status_data.step, vec![0, 1, 2]);
+        assert_eq!(status_data.wall_time, vec![1235.0, 1236.0, 1237.0]);
+        assert_eq!(
+            status_data.value,
+            vec![
+                make_string_tensor_proto("Step 0"),
+                make_string_tensor_proto("Step 1"),
+                make_string_tensor_proto("Step 2"),
+            ]
+        );
     }
 
     #[tokio::test]
