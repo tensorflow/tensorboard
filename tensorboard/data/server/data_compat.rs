@@ -391,6 +391,7 @@ fn tf1x_audio_metadata() -> Box<pb::SummaryMetadata> {
 mod tests {
     use super::*;
     use pb::summary::value::Value;
+    use std::iter::FromIterator;
 
     fn tensor_shape(dims: &[i64]) -> pb::TensorShapeProto {
         pb::TensorShapeProto {
@@ -403,6 +404,24 @@ mod tests {
                 .collect(),
             ..Default::default()
         }
+    }
+
+    /// Macro to construct `Bytes` from an array of numerics having a `to_le_bytes()` method.
+    ///
+    /// Use like: `let b = to_le_bytes![1.0, 2.0f32];`
+    ///
+    /// Note the suffixed literal, which is necessary so the compiler knows the intended type.
+    //
+    // TODO(Rust 1.51): I think we can avoid intermediate Vecs with array::IntoIter from
+    // https://github.com/rust-lang/rust/pull/80470, e.g. with:
+    //   Bytes::from_iter([].iter().flat_map(|v| array::IntoIter::new(v.to_le_bytes())))
+    macro_rules! to_le_bytes {
+        ($($x:expr),+ $(,)?) => (
+            Bytes::from_iter([$($x),+].iter()
+                .map(|v| v.to_le_bytes())
+                .collect::<Vec<_>>()
+                .concat())
+        );
     }
 
     mod scalars {
@@ -484,13 +503,13 @@ mod tests {
                 pb::TensorProto {
                     dtype: pb::DataType::DtFloat.into(),
                     tensor_shape: Some(tensor_shape(&[])),
-                    tensor_content: Bytes::from(f32::to_le_bytes(0.125).to_vec()),
+                    tensor_content: to_le_bytes![0.125f32],
                     ..Default::default()
                 },
                 pb::TensorProto {
                     dtype: pb::DataType::DtFloat.into(),
                     tensor_shape: None, // no explicit tensor shape; treated as rank 0
-                    tensor_content: Bytes::from(f32::to_le_bytes(0.125).to_vec()),
+                    tensor_content: to_le_bytes![0.125f32],
                     ..Default::default()
                 },
             ];
@@ -518,7 +537,7 @@ mod tests {
                 pb::TensorProto {
                     dtype: pb::DataType::DtFloat.into(),
                     tensor_shape: Some(tensor_shape(&[])),
-                    tensor_content: Bytes::from(f32::to_le_bytes(0.125)[..2].to_vec()),
+                    tensor_content: to_le_bytes![0.125f32].slice(..2),
                     ..Default::default()
                 },
             ];
@@ -546,11 +565,7 @@ mod tests {
                 pb::TensorProto {
                     dtype: pb::DataType::DtFloat.into(),
                     tensor_shape: Some(tensor_shape(&[])),
-                    tensor_content: [f32::to_le_bytes(0.125), f32::to_le_bytes(9.99)]
-                        .iter()
-                        .flatten()
-                        .copied()
-                        .collect(),
+                    tensor_content: to_le_bytes![0.125, 9.99f32],
                     ..Default::default()
                 },
             ];
@@ -615,7 +630,7 @@ mod tests {
                 },
                 pb::TensorProto {
                     dtype: pb::DataType::DtDouble.into(),
-                    tensor_content: Bytes::from(f64::to_le_bytes(123.0).to_vec()),
+                    tensor_content: to_le_bytes![123.0f64],
                     ..Default::default()
                 },
                 pb::TensorProto::default(),
