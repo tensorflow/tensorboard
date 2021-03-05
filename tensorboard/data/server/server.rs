@@ -968,7 +968,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_read_tensors() {
-        fn make_string_tensor_proto<T: Into<Bytes>>(value: T) -> pb::TensorProto {
+        fn make_string_tensor_proto(value: impl Into<Bytes>) -> pb::TensorProto {
             pb::TensorProto {
                 dtype: pb::DataType::DtString.into(),
                 tensor_shape: None, // Scalar shape
