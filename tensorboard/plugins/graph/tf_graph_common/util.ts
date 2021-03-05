@@ -417,3 +417,33 @@ export function maybeTruncateString(
 
   return start === 0 ? text[0] : text.slice(0, start) + '…';
 }
+
+export type EventType = string;
+
+export class Dispatcher {
+  private eventTypeToListeners = new Map<EventType, Function[]>();
+
+  private getListeners(eventType) {
+    if (!this.eventTypeToListeners.has(eventType)) {
+      this.eventTypeToListeners.set(eventType, []);
+    }
+    return this.eventTypeToListeners.get(eventType);
+  }
+
+  addListener(eventType: EventType, listener: Function) {
+    this.getListeners(eventType).push(listener);
+  }
+
+  removeListener(eventType: EventType, listener: Function) {
+    const newListeners = this.getListeners(eventType).filter((x) => {
+      return x !== listener;
+    });
+    this.eventTypeToListeners.set(eventType, newListeners);
+  }
+
+  dispatchEvent(eventType: EventType, payload?: any) {
+    for (const listener of this.getListeners(eventType)) {
+      listener(payload);
+    }
+  }
+}
