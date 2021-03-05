@@ -147,17 +147,7 @@ impl StageTimeSeries {
         use pb::DataClass;
         match self.data_class {
             DataClass::Scalar => self.commit_to(tag, &mut run.scalars, |ev, _| ev.into_scalar()),
-            DataClass::Tensor => {
-                warn!(
-                    "Tensor time series not yet supported (tag: {:?}, plugin: {:?})",
-                    tag.0,
-                    self.metadata
-                        .plugin_data
-                        .as_ref()
-                        .map(|p| p.plugin_name.as_str())
-                        .unwrap_or("")
-                );
-            }
+            DataClass::Tensor => self.commit_to(tag, &mut run.tensors, EventValue::into_tensor),
             DataClass::BlobSequence => {
                 self.commit_to(tag, &mut run.blob_sequences, EventValue::into_blob_sequence)
             }
@@ -450,6 +440,23 @@ mod test {
             WallTime::new(1235.0).unwrap(),
             Bytes::from_static(b"<sample run metadata>"),
         )?;
+        f1.write_tensor(
+            &Tag("weights".to_string()),
+            Step(0),
+            WallTime::new(1235.0).unwrap(),
+            pb::TensorProto {
+                dtype: pb::DataType::DtString.into(),
+                string_val: vec![Bytes::from_static(b"foo")],
+                ..Default::default()
+            },
+            pb::SummaryMetadata {
+                plugin_data: Some(pb::summary_metadata::PluginData {
+                    plugin_name: plugin_names::HISTOGRAMS.to_string(),
+                    ..Default::default()
+                }),
+                ..Default::default()
+            },
+        )?;
         f1.write_scalar(&tag, Step(0), WallTime::new(1235.0).unwrap(), 0.25)?;
         f1.write_scalar(&tag, Step(1), WallTime::new(1236.0).unwrap(), 0.50)?;
         f1.write_scalar(&tag, Step(2), WallTime::new(1237.0).unwrap(), 0.75)?;
@@ -511,6 +518,32 @@ mod test {
                 (Step(3), WallTime::new(2347.0).unwrap(), &scalar(0.85)),
                 (Step(4), WallTime::new(2348.0).unwrap(), &scalar(0.90)),
             ]
+        );
+
+        assert_eq!(run_data.tensors.len(), 1);
+        let tensor_ts = run_data.tensors.get(&Tag("weights".to_string())).unwrap();
+        assert_eq!(
+            *tensor_ts.metadata,
+            pb::SummaryMetadata {
+                plugin_data: Some(pb::summary_metadata::PluginData {
+                    plugin_name: plugin_names::HISTOGRAMS.to_string(),
+                    ..Default::default()
+                }),
+                data_class: pb::DataClass::Tensor.into(),
+                ..Default::default()
+            }
+        );
+        assert_eq!(
+            tensor_ts.valid_values().collect::<Vec<_>>(),
+            vec![(
+                Step(0),
+                WallTime::new(1235.0).unwrap(),
+                &pb::TensorProto {
+                    dtype: pb::DataType::DtString.into(),
+                    string_val: vec![Bytes::from_static(b"foo")],
+                    ..Default::default()
+                }
+            )]
         );
 
         assert_eq!(run_data.blob_sequences.len(), 2);
