@@ -24,6 +24,7 @@ import tensorflow as tf
 
 from google.protobuf import text_format
 from tensorboard import context
+from tensorboard import errors
 from tensorboard.backend.event_processing import data_provider
 from tensorboard.backend.event_processing import (
     plugin_event_multiplexer as event_multiplexer,
@@ -146,12 +147,11 @@ class GraphsPluginV1Test(GraphsPluginBaseTest, tf.test.TestCase):
             writer.add_run_metadata(run_metadata, self._METADATA_TAG)
         writer.close()
 
-    def _get_graph(self, plugin, *args, **kwargs):
+    def _get_graph(self, plugin, run=None, **kwargs):
         """Set up runs, then fetch and return the graph as a proto."""
         (graph_pbtxt, mime_type) = plugin.graph_impl(
             context.RequestContext(),
-            _RUN_WITH_GRAPH_WITH_METADATA[0],
-            *args,
+            run if run is not None else _RUN_WITH_GRAPH_WITH_METADATA[0],
             **kwargs,
         )
         self.assertEqual(mime_type, "text/x-protobuf")
@@ -228,6 +228,17 @@ class GraphsPluginV1Test(GraphsPluginBaseTest, tf.test.TestCase):
             },
             node_names,
         )
+
+    def test_nonexistent(self):
+        plugin = self.load_plugin([_RUN_WITH_GRAPH_WITH_METADATA])
+        with self.assertRaises(errors.NotFoundError):
+            graph = self._get_graph(
+                plugin,
+                run="nope",
+                tag=None,
+                is_conceptual=False,
+                experiment="eid",
+            )
 
     def test_graph_large_attrs(self):
         plugin = self.load_plugin([_RUN_WITH_GRAPH_WITH_METADATA])

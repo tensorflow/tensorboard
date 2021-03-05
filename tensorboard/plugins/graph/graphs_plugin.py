@@ -196,7 +196,7 @@ class GraphsPlugin(base_plugin.TBPlugin):
             return self._data_provider.read_blob(
                 ctx, blob_key=blob_ref.blob_key
             )
-        raise errors.NotFound()
+        raise errors.NotFoundError()
 
     def graph_impl(
         self,
