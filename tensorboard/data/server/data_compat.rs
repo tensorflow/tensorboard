@@ -651,49 +651,42 @@ mod tests {
 
         #[test]
         fn test_metadata_tensor_with_dataclass() {
-            let md = pb::SummaryMetadata {
-                plugin_data: Some(PluginData {
-                    plugin_name: "rando".to_string(),
-                    content: Bytes::from_static(b"preserved!"),
-                    ..Default::default()
-                }),
-                data_class: pb::DataClass::Tensor.into(),
-                ..Default::default()
-            };
+            let md = blank_with_plugin_content(
+                "rando",
+                pb::DataClass::Tensor,
+                Bytes::from_static(b"preserved!"),
+            );
             let v = SummaryValue(Box::new(Value::Tensor(pb::TensorProto {
                 dtype: pb::DataType::DtString.into(),
                 string_val: vec![Bytes::from_static(b"foo")],
                 ..Default::default()
             })));
-            let result = v.initial_metadata(Some(md.clone()));
-            assert_eq!(*result, md);
+            let result = v.initial_metadata(Some(md.as_ref().clone()));
+            assert_eq!(*result, *md);
         }
 
         #[test]
         fn test_metadata_tensor_without_dataclass() {
-            for plugin_name in vec![
+            for plugin_name in &[
                 plugin_names::HISTOGRAMS,
                 plugin_names::TEXT,
                 plugin_names::PR_CURVES,
                 plugin_names::HPARAMS,
             ] {
-                let md = pb::SummaryMetadata {
-                    plugin_data: Some(PluginData {
-                        plugin_name: plugin_name.to_string(),
-                        content: Bytes::from_static(b"preserved!"),
-                        ..Default::default()
-                    }),
-                    ..Default::default()
-                };
+                let md = blank_with_plugin_content(
+                    plugin_name,
+                    pb::DataClass::Unknown,
+                    Bytes::from_static(b"preserved!"),
+                );
                 let v = SummaryValue(Box::new(Value::Tensor(pb::TensorProto {
                     dtype: pb::DataType::DtString.into(),
                     string_val: vec![Bytes::from_static(b"foo")],
                     ..Default::default()
                 })));
-                let result = v.initial_metadata(Some(md.clone()));
+                let result = v.initial_metadata(Some(md.as_ref().clone()));
                 let expected = pb::SummaryMetadata {
                     data_class: pb::DataClass::Tensor.into(),
-                    ..md
+                    ..*md
                 };
                 assert_eq!(*result, expected);
             }
