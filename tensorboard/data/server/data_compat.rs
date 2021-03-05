@@ -38,6 +38,12 @@ pub(crate) mod plugin_names {
     pub const GRAPH_RUN_METADATA: &str = "graph_run_metadata";
     pub const GRAPH_RUN_METADATA_WITH_GRAPH: &str = "graph_run_metadata_graph";
     pub const GRAPH_KERAS_MODEL: &str = "graph_keras_model";
+    pub const HISTOGRAMS: &str = "histograms";
+    pub const TEXT: &str = "text";
+    pub const PR_CURVES: &str = "pr_curves";
+    pub const HPARAMS: &str = "hparams";
+    pub const MESH: &str = "mesh";
+    pub const NPMI: &str = "npmi";
 }
 
 /// The inner contents of a single value from an event.
@@ -82,6 +88,23 @@ impl EventValue {
                 Some(f) => Ok(ScalarValue(f)),
                 None => Err(DataLoss),
             },
+            _ => Err(DataLoss),
+        }
+    }
+
+    /// Consumes this event value and enriches it into a tensor.
+    ///
+    /// This supports summaries with `tensor` populated.
+    //
+    // TODO(#4422): support conversion of other summary types to tensors.
+    pub fn into_tensor(self, _metadata: &pb::SummaryMetadata) -> Result<pb::TensorProto, DataLoss> {
+        let value_box = match self {
+            EventValue::GraphDef(_) => return Err(DataLoss),
+            EventValue::TaggedRunMetadata(_) => return Err(DataLoss),
+            EventValue::Summary(SummaryValue(v)) => v,
+        };
+        match *value_box {
+            pb::summary::value::Value::Tensor(tp) => Ok(tp),
             _ => Err(DataLoss),
         }
     }
@@ -272,6 +295,14 @@ impl SummaryValue {
                     Some(plugin_names::SCALARS) => {
                         md.data_class = pb::DataClass::Scalar.into();
                     }
+                    Some(plugin_names::HISTOGRAMS)
+                    | Some(plugin_names::TEXT)
+                    | Some(plugin_names::HPARAMS)
+                    | Some(plugin_names::PR_CURVES)
+                    | Some(plugin_names::MESH)
+                    | Some(plugin_names::NPMI) => {
+                        md.data_class = pb::DataClass::Tensor.into();
+                    }
                     Some(plugin_names::IMAGES)
                     | Some(plugin_names::AUDIO)
                     | Some(plugin_names::GRAPH_RUN_METADATA)
@@ -446,7 +477,7 @@ mod tests {
         }
 
         #[test]
-        fn test_enrich_valid_tensors() {
+        fn test_enrich_rank_0_tensors() {
             let tensors = vec![
                 pb::TensorProto {
                     dtype: pb::DataType::DtFloat.into(),
@@ -480,7 +511,7 @@ mod tests {
         }
 
         #[test]
-        fn test_enrich_short_tensors() {
+        fn test_enrich_rank_0_tensors_corrupted_with_short_data() {
             let tensors = vec![
                 pb::TensorProto {
                     dtype: pb::DataType::DtFloat.into(),
@@ -508,7 +539,7 @@ mod tests {
         }
 
         #[test]
-        fn test_enrich_long_tensors() {
+        fn test_enrich_rank_0_tensors_corrupted_with_long_data() {
             let tensors = vec![
                 pb::TensorProto {
                     dtype: pb::DataType::DtFloat.into(),
@@ -569,7 +600,7 @@ mod tests {
         }
 
         #[test]
-        fn test_enrich_non_float_tensors() {
+        fn test_enrich_non_float_rank_0_tensors() {
             let tensors = vec![
                 pb::TensorProto {
                     dtype: pb::DataType::DtString.into(),
@@ -616,6 +647,76 @@ mod tests {
             let image_value = Value::Image(pb::summary::Image::default());
             let v = EventValue::Summary(SummaryValue(Box::new(image_value)));
             assert_eq!(v.into_scalar(), Err(DataLoss));
+        }
+    }
+
+    mod tensors {
+        use super::*;
+
+        #[test]
+        fn test_metadata_tensor_with_dataclass() {
+            let md = pb::SummaryMetadata {
+                plugin_data: Some(PluginData {
+                    plugin_name: "rando".to_string(),
+                    content: Bytes::from_static(b"preserved!"),
+                    ..Default::default()
+                }),
+                data_class: pb::DataClass::Tensor.into(),
+                ..Default::default()
+            };
+            let v = SummaryValue(Box::new(Value::Tensor(pb::TensorProto {
+                dtype: pb::DataType::DtString.into(),
+                string_val: vec![Bytes::from_static(b"foo")],
+                ..Default::default()
+            })));
+            let result = v.initial_metadata(Some(md.clone()));
+            assert_eq!(*result, md);
+        }
+
+        #[test]
+        fn test_metadata_tensor_without_dataclass() {
+            for plugin_name in vec![
+                plugin_names::HISTOGRAMS,
+                plugin_names::TEXT,
+                plugin_names::PR_CURVES,
+                plugin_names::HPARAMS,
+                plugin_names::MESH,
+                plugin_names::NPMI,
+            ] {
+                let md = pb::SummaryMetadata {
+                    plugin_data: Some(PluginData {
+                        plugin_name: plugin_name.to_string(),
+                        content: Bytes::from_static(b"preserved!"),
+                        ..Default::default()
+                    }),
+                    ..Default::default()
+                };
+                let v = SummaryValue(Box::new(Value::Tensor(pb::TensorProto {
+                    dtype: pb::DataType::DtString.into(),
+                    string_val: vec![Bytes::from_static(b"foo")],
+                    ..Default::default()
+                })));
+                let result = v.initial_metadata(Some(md.clone()));
+                let expected = pb::SummaryMetadata {
+                    data_class: pb::DataClass::Tensor.into(),
+                    ..md
+                };
+                assert_eq!(*result, expected);
+            }
+        }
+
+        #[test]
+        fn test_enrich_tensor() {
+            let tp = pb::TensorProto {
+                dtype: pb::DataType::DtString.into(),
+                string_val: vec![Bytes::from_static(b"foo")],
+                ..Default::default()
+            };
+            let v = EventValue::Summary(SummaryValue(Box::new(Value::Tensor(tp.clone()))));
+            assert_eq!(
+                v.into_tensor(&blank("mytensors", pb::DataClass::Tensor)),
+                Ok(tp)
+            );
         }
     }
 
@@ -875,7 +976,7 @@ mod tests {
         }
 
         #[test]
-        fn test_enrich_scalar_tensor() {
+        fn test_enrich_rank_0_tensor() {
             let v = EventValue::Summary(SummaryValue(Box::new(Value::Tensor(pb::TensorProto {
                 dtype: pb::DataType::DtString.into(),
                 tensor_shape: Some(tensor_shape(&[])),
@@ -990,7 +1091,7 @@ mod tests {
         use super::*;
 
         #[test]
-        fn test_custom_plugin_with_dataclass() {
+        fn test_metadata_custom_plugin_with_dataclass() {
             let md = pb::SummaryMetadata {
                 plugin_data: Some(PluginData {
                     plugin_name: "myplugin".to_string(),
@@ -1007,7 +1108,7 @@ mod tests {
         }
 
         #[test]
-        fn test_unknown_plugin_no_dataclass() {
+        fn test_metadata_unknown_plugin_no_dataclass() {
             let md = pb::SummaryMetadata {
                 plugin_data: Some(PluginData {
                     plugin_name: "myplugin".to_string(),
@@ -1022,7 +1123,7 @@ mod tests {
         }
 
         #[test]
-        fn test_empty() {
+        fn test_metadata_empty() {
             let v = SummaryValue(Box::new(Value::Tensor(pb::TensorProto::default())));
             let result = v.initial_metadata(None);
             assert_eq!(*result, pb::SummaryMetadata::default());
