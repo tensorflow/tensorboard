@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Component, Input} from '@angular/core';
-import {ViewNotification} from './view_types';
+import {ViewNotificationExt} from './view_types';
 
 @Component({
   selector: 'notification-center-component',
@@ -21,5 +21,5 @@ import {ViewNotification} from './view_types';
   styleUrls: ['./notification_center_component.css'],
 })
 export class NotificationCenterComponent {
-  @Input() aaanotifications!: ViewNotification[];
+  @Input() notifications!: ViewNotificationExt[];
 }

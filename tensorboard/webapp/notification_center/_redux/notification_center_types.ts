@@ -13,12 +13,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+export enum CategoryEnum {
+  WHATS_NEW = "what's new",
+}
+
 /**
  * A notification chunk displayed in the notification center.
  */
 export type Notification = {
-  category: string;
-  date: number;
+  category: CategoryEnum;
+  dateInMs: number;
   title: string;
   content: string;
 };

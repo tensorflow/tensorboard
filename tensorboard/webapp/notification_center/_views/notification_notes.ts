@@ -12,10 +12,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {ViewNotification, ViewNotificationExt} from './view_types';
+import {ViewNotificationExt} from './view_types';
 import {CategoryEnum} from '../_redux/notification_center_types';
 
-export const notificationNotes: ViewNotificationExt[] = [
+export const notificationNotes = [
   {
     category: CategoryEnum.WHATS_NEW,
     dateInMs: 1579766400000,

@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Component} from '@angular/core';
-import {ViewNotification, ViewNotificationExt} from './view_types';
+import {ViewNotificationExt} from './view_types';
 import {notificationNotes} from './notification_notes';
 import {from, Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
@@ -25,25 +25,21 @@ const iconMap = new Map([[CategoryEnum.WHATS_NEW, 'info_outline_24px']]);
   selector: 'notification-center',
   template: `
     <notification-center-component
-      [aaanotifications]="notificationNotes$ | async"
+      [notifications]="notificationNotes$ | async"
     ></notification-center-component>
   `,
 })
 export class NotificationCenterContainer {
-  /*readonly notificationNotes$: Observable<ViewNotificationExt[]> = from(
-    notificationNotes as ViewNotificationExt[]
-  ).pipe(
-    map((notification) => {
-      const viewnotification: ViewNotificationExt = notification;
-      viewnotification.icon = iconMap.get(notification.category)!;
-      return viewnotification;
+  readonly notificationNotes$: Observable<ViewNotificationExt[]> = from([
+    notificationNotes,
+  ]).pipe(
+    map((notifications) => {
+      return notifications.map((notification) => {
+        return {
+          ...notification,
+          icon: iconMap.get(notification.category) ?? null,
+        };
+      });
     })
-  );*/
-
-  // This is okay
-  // readonly notificationNotes$: ViewNotificationExt[] = notificationNotes;
-  // Type 'ViewNotificationExt' is missing the following properties from type 'ViewNotificationExt[]': length, pop, push, concat, and 28 more.
-  readonly notificationNotes$: Observable<ViewNotificationExt[]> = from(
-    notificationNotes
   );
 }

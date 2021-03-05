@@ -17,18 +17,7 @@ import {CategoryEnum, Notification} from '../_redux/notification_center_types';
 /**
  * A notification chunk displayed in the notification center.
  */
-// export interface ViewNotification extends Notification {
-//   icon: string;
-// }
-
-export type ViewNotification = {
-  icon: string;
-  category: CategoryEnum;
-  dateInMs: number;
-  title: string;
-  content: string;
-};
 
 export interface ViewNotificationExt extends Notification {
-  icon: string;
+  icon: string | null;
 }

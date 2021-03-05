@@ -20,11 +20,15 @@ limitations under the License.
 
 <mat-menu #menu="matMenu" class="notification-menu">
   <div>
-    <div *ngFor="let notification of aaanotifications" class="menu-item">
+    <div *ngFor="let notification of notifications" class="menu-item">
       <div>
-        <mat-icon svgIcon="{{ iconList[i] }}" class="category-icon"></mat-icon>
+        <mat-icon
+          svgIcon="{{ notification.icon }}"
+          class="category-icon"
+        ></mat-icon>
         <span>{{ notification.category }}</span>・
-        <span>{{ notification.date | date:'short'}}</span>
+        <span>{{ notification.dateInMs | date:'longDate'}}</span>
+        <span></span>
       </div>
       <div class="content-wrapper">
         <span class="title">{{ notification.title }}</span><br />

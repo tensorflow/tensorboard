@@ -13,16 +13,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-::ng-deep.mat-menu-panel {
-  max-width: none !important;
+::ng-deep .notification-menu.mat-menu-panel {
   width: 350px;
-}
-
-::ng-deep .notification-menu .mat-menu-panel {
-  right: 6px;
-  top: 71px;
-  // max-width: none !important;
-  width: 350px;
+  font-size: 10px;
 }
 
 .menu-item {
