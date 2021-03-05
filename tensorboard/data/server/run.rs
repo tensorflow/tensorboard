@@ -305,7 +305,7 @@ impl<R: Read> RunLoader<R> {
 // float vector is of minimal serialized length (6 bytes) among valid tensors.
 fn null_tensor_proto() -> pb::TensorProto {
     pb::TensorProto {
-        dtype: pb::DataType::DtString.into(),
+        dtype: pb::DataType::DtFloat.into(),
         tensor_shape: Some(pb::TensorShapeProto {
             dim: vec![pb::tensor_shape_proto::Dim {
                 size: 0,
