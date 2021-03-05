@@ -13,39 +13,37 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Component} from '@angular/core';
-import {Notification} from '../_redux/notification_center_types';
+import {ViewNotification, ViewNotificationExt} from './view_types';
 import {notificationNotes} from './notification_notes';
+import {from, Observable} from 'rxjs';
+import {map} from 'rxjs/operators';
+import {CategoryEnum} from '../_redux/notification_center_types';
 
-type StringDict = {
-  [key: string]: string;
-};
-const iconMap: StringDict = {
-  "What's New": 'info_outline_24px',
-};
+const iconMap = new Map([[CategoryEnum.WHATS_NEW, 'info_outline_24px']]);
 
 @Component({
   selector: 'notification-center',
   template: `
     <notification-center-component
-      [notifications]="notifications"
-      [dateStringList]="dateStringList"
-      [iconList]="iconList"
+      [aaanotifications]="notificationNotes$ | async"
     ></notification-center-component>
   `,
 })
 export class NotificationCenterContainer {
-  notifications: Notification[] = notificationNotes;
-  dateStringList: string[] = [];
-  iconList: string[] = [];
+  /*readonly notificationNotes$: Observable<ViewNotificationExt[]> = from(
+    notificationNotes as ViewNotificationExt[]
+  ).pipe(
+    map((notification) => {
+      const viewnotification: ViewNotificationExt = notification;
+      viewnotification.icon = iconMap.get(notification.category)!;
+      return viewnotification;
+    })
+  );*/
 
-  ngOnInit() {
-    for (let notfication of this.notifications) {
-      const dateObj = new Date(notfication.date);
-      const month = dateObj.toLocaleString('en-US', {month: 'long'});
-      const date = dateObj.getDate();
-      const year = dateObj.getFullYear();
-      this.dateStringList.push(`${month} ${date} ${year}`);
-      this.iconList.push(iconMap[notfication.category]);
-    }
-  }
+  // This is okay
+  // readonly notificationNotes$: ViewNotificationExt[] = notificationNotes;
+  // Type 'ViewNotificationExt' is missing the following properties from type 'ViewNotificationExt[]': length, pop, push, concat, and 28 more.
+  readonly notificationNotes$: Observable<ViewNotificationExt[]> = from(
+    notificationNotes
+  );
 }

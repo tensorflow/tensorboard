@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Component, Input} from '@angular/core';
-import {Notification} from '../_redux/notification_center_types';
+import {ViewNotification} from './view_types';
 
 @Component({
   selector: 'notification-center-component',
@@ -21,7 +21,5 @@ import {Notification} from '../_redux/notification_center_types';
   styleUrls: ['./notification_center_component.css'],
 })
 export class NotificationCenterComponent {
-  @Input() notifications!: Notification[];
-  @Input() dateStringList!: string[];
-  @Input() iconList!: string[];
+  @Input() aaanotifications!: ViewNotification[];
 }

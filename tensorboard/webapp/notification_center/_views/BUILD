@@ -29,5 +29,6 @@ tf_ng_module(
         "//tensorboard/webapp/notification_center/_redux:types",
         "@npm//@angular/common",
         "@npm//@angular/core",
+        "@npm//rxjs",
     ],
 )

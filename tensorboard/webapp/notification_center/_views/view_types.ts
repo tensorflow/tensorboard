@@ -12,3 +12,23 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {CategoryEnum, Notification} from '../_redux/notification_center_types';
+
+/**
+ * A notification chunk displayed in the notification center.
+ */
+// export interface ViewNotification extends Notification {
+//   icon: string;
+// }
+
+export type ViewNotification = {
+  icon: string;
+  category: CategoryEnum;
+  dateInMs: number;
+  title: string;
+  content: string;
+};
+
+export interface ViewNotificationExt extends Notification {
+  icon: string;
+}
