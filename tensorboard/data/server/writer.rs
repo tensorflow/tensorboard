@@ -56,6 +56,32 @@ pub trait SummaryWriteExt: Write {
         self.write_event(&event)
     }
 
+    /// Writes a TFRecord containing a TF 2.x `tensor` summary.
+    fn write_tensor(
+        &mut self,
+        tag: &Tag,
+        step: Step,
+        wt: WallTime,
+        tensor: pb::TensorProto,
+        metadata: pb::SummaryMetadata,
+    ) -> std::io::Result<()> {
+        let event = pb::Event {
+            step: step.0,
+            wall_time: wt.into(),
+            what: Some(pb::event::What::Summary(pb::Summary {
+                value: vec![pb::summary::Value {
+                    tag: tag.0.clone(),
+                    value: Some(pb::summary::value::Value::Tensor(tensor)),
+                    metadata: Some(metadata),
+                    ..Default::default()
+                }],
+                ..Default::default()
+            })),
+            ..Default::default()
+        };
+        self.write_event(&event)
+    }
+
     /// Writes a TFRecord containing a TF 1.x `graph_def` event.
     fn write_graph(&mut self, step: Step, wt: WallTime, bytes: Bytes) -> std::io::Result<()> {
         let event = pb::Event {
@@ -148,6 +174,52 @@ mod tests {
                 value: vec![pb::summary::Value {
                     tag: "accuracy".to_string(),
                     value: Some(pb::summary::value::Value::SimpleValue(0.875)),
+                    ..Default::default()
+                }],
+                ..Default::default()
+            })),
+            ..Default::default()
+        };
+        assert_eq!(event, &expected);
+    }
+
+    #[test]
+    fn test_tensor_roundtrip() {
+        let tensor_proto = pb::TensorProto {
+            dtype: pb::DataType::DtString.into(),
+            string_val: vec![Bytes::from_static(b"foo")],
+            ..Default::default()
+        };
+        let summary_metadata = pb::SummaryMetadata {
+            plugin_data: Some(pb::summary_metadata::PluginData {
+                plugin_name: "histograms".to_string(),
+                ..Default::default()
+            }),
+            ..Default::default()
+        };
+        let mut cursor = Cursor::new(Vec::<u8>::new());
+        cursor
+            .write_tensor(
+                &Tag("weights".to_string()),
+                Step(777),
+                WallTime::new(1234.5).unwrap(),
+                tensor_proto.clone(),
+                summary_metadata.clone(),
+            )
+            .unwrap();
+        cursor.set_position(0);
+        let events = read_all_events(cursor).unwrap();
+        assert_eq!(events.len(), 1);
+
+        let event = &events[0];
+        let expected = pb::Event {
+            step: 777,
+            wall_time: 1234.5,
+            what: Some(pb::event::What::Summary(pb::Summary {
+                value: vec![pb::summary::Value {
+                    tag: "weights".to_string(),
+                    value: Some(pb::summary::value::Value::Tensor(tensor_proto)),
+                    metadata: Some(summary_metadata),
                     ..Default::default()
                 }],
                 ..Default::default()
