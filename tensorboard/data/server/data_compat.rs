@@ -146,7 +146,7 @@ impl EventValue {
                         ],
                         ..Default::default()
                     }),
-                    tensor_content: tensor_content,
+                    tensor_content,
                     ..Default::default()
                 })
             }
@@ -778,7 +778,7 @@ mod tests {
                 bucket: vec![0.0, 10.0, 20.0, 20.0, 10.0, 0.0],
                 ..Default::default()
             };
-            let v = EventValue::Summary(SummaryValue(Box::new(Value::Histo(hp.clone()))));
+            let v = EventValue::Summary(SummaryValue(Box::new(Value::Histo(hp))));
             assert_eq!(
                 v.into_tensor(&blank("histogram", pb::DataClass::Tensor)),
                 Ok(pb::TensorProto {
@@ -811,7 +811,7 @@ mod tests {
                 bucket: vec![2.0],
                 ..Default::default()
             };
-            let v = EventValue::Summary(SummaryValue(Box::new(Value::Histo(hp.clone()))));
+            let v = EventValue::Summary(SummaryValue(Box::new(Value::Histo(hp))));
             assert_eq!(
                 v.into_tensor(&blank("histogram", pb::DataClass::Tensor)),
                 Ok(pb::TensorProto {
