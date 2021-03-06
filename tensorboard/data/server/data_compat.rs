@@ -118,10 +118,15 @@ impl EventValue {
                 // extending to -/+ DBL_MAX, but can handle buckets of negative width?
                 //
                 // For consistency with the status quo, we replicate this questionable logic here.
+                if hp.bucket.len() != hp.bucket_limit.len() {
+                    return Err(DataLoss);
+                }
                 let num_buckets = hp.bucket.len();
-                let bucket_edges = || hp.bucket_limit.iter().take(num_buckets - 1).copied();
-                let bucket_lefts = iter::once(hp.min).chain(bucket_edges());
-                let bucket_rights = bucket_edges().chain(iter::once(hp.max));
+                // Skip the last `bucket_limit`; it gets replaced by `hp.max`. It's okay to ignore
+                // the edge case at 0 since `.zip()` will stop immediately in that case anyway.
+                let bucket_edges = &hp.bucket_limit[..usize::saturating_sub(num_buckets, 1)];
+                let bucket_lefts = iter::once(hp.min).chain(bucket_edges.iter().copied());
+                let bucket_rights = bucket_edges.iter().copied().chain(iter::once(hp.max));
                 let bucket_counts = hp.bucket.iter().copied();
                 let tensor_content = bucket_lefts
                     .zip(bucket_rights)
@@ -131,6 +136,7 @@ impl EventValue {
                     .collect::<Vec<_>>()
                     .concat()
                     .into();
+
                 Ok(pb::TensorProto {
                     dtype: pb::DataType::DtDouble.into(),
                     tensor_shape: Some(pb::TensorShapeProto {
@@ -821,6 +827,38 @@ mod tests {
                     ..Default::default()
                 })
             );
+        }
+
+        #[test]
+        fn test_enrich_tf1x_histogram_empty() {
+            let hp = pb::HistogramProto::default();
+            let v = EventValue::Summary(SummaryValue(Box::new(Value::Histo(hp))));
+            assert_eq!(
+                v.into_tensor(&blank("histogram", pb::DataClass::Tensor)),
+                Ok(pb::TensorProto {
+                    dtype: pb::DataType::DtDouble.into(),
+                    tensor_shape: Some(tensor_shape(&[0, 3])),
+                    ..Default::default()
+                })
+            );
+        }
+
+        #[test]
+        fn test_enrich_tf1x_histogram_mismatched_field_lengths() {
+            for (limit_len, bucket_len) in &[(0, 1), (1, 0), (1, 2), (2, 1)] {
+                let hp = pb::HistogramProto {
+                    bucket_limit: vec![0.0; *limit_len],
+                    bucket: vec![0.0; *bucket_len],
+                    ..Default::default()
+                };
+                let v = EventValue::Summary(SummaryValue(Box::new(Value::Histo(hp.clone()))));
+                assert_eq!(
+                    v.into_tensor(&blank("histogram", pb::DataClass::Tensor)),
+                    Err(DataLoss),
+                    "expected error converting proto {:?}",
+                    hp
+                );
+            }
         }
     }
 
