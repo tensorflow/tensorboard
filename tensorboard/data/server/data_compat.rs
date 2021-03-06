@@ -391,7 +391,6 @@ fn tf1x_audio_metadata() -> Box<pb::SummaryMetadata> {
 mod tests {
     use super::*;
     use pb::summary::value::Value;
-    use std::iter::FromIterator;
 
     fn tensor_shape(dims: &[i64]) -> pb::TensorShapeProto {
         pb::TensorShapeProto {
@@ -417,7 +416,7 @@ mod tests {
     //   Bytes::from_iter([].iter().flat_map(|v| array::IntoIter::new(v.to_le_bytes())))
     macro_rules! to_le_bytes {
         ($($x:expr),+ $(,)?) => (
-            Bytes::from_iter([$($x),+].iter()
+            Bytes::from([$($x),+].iter()
                 .map(|v| v.to_le_bytes())
                 .collect::<Vec<_>>()
                 .concat())
