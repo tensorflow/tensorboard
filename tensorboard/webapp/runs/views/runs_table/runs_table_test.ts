@@ -81,7 +81,7 @@ import {
   buildMetricSpec,
   buildRun,
 } from '../../store/testing';
-import {DiscreteFilter, IntervalFilter} from '../../types';
+import {DiscreteFilter, IntervalFilter, SortType} from '../../types';
 
 import {RunsTableComponent} from './runs_table_component';
 import {RunsTableContainer, TEST_ONLY} from './runs_table_container';
@@ -207,7 +207,7 @@ describe('runs_table', () => {
     });
     store.overrideSelector(getRunSelectorRegexFilter, '');
     store.overrideSelector(getRunSelectorSort, {
-      column: null,
+      key: null,
       direction: SortDirection.UNSET,
     });
     store.overrideSelector(getRunColorMap, {});
@@ -868,7 +868,7 @@ describe('runs_table', () => {
       expButton.click();
       expect(dispatchSpy).toHaveBeenCalledWith(
         runSelectorSortChanged({
-          column: 'experiment_name',
+          key: {type: SortType.EXPERIMENT_NAME},
           direction: SortDirection.ASC,
         })
       );
@@ -876,22 +876,17 @@ describe('runs_table', () => {
       runButton.click();
       expect(dispatchSpy).toHaveBeenCalledWith(
         runSelectorSortChanged({
-          column: 'run_name',
+          key: {type: SortType.RUN_NAME},
           direction: SortDirection.ASC,
         })
       );
     });
 
     it('sorts by experiment name', () => {
-      const sortSubject = new ReplaySubject<{
-        column: RunsTableColumn;
-        direction: SortDirection;
-      }>(1);
-      sortSubject.next({
-        column: RunsTableColumn.EXPERIMENT_NAME,
+      store.overrideSelector(getRunSelectorSort, {
+        key: {type: SortType.EXPERIMENT_NAME},
         direction: SortDirection.UNSET,
       });
-      selectSpy.withArgs(getRunSelectorSort).and.returnValue(sortSubject);
       selectSpy
         .withArgs(TEST_ONLY.getRunsLoading, jasmine.any)
         .and.returnValue(of(false));
@@ -925,10 +920,11 @@ describe('runs_table', () => {
         ['The Lord of the Rings', 'The Fellowship of the Ring'],
       ]);
 
-      sortSubject.next({
-        column: RunsTableColumn.EXPERIMENT_NAME,
+      store.overrideSelector(getRunSelectorSort, {
+        key: {type: SortType.EXPERIMENT_NAME},
         direction: SortDirection.ASC,
       });
+      store.refreshState();
       fixture.detectChanges();
 
       expect(getTableRowTextContent(fixture)).toEqual([
@@ -937,10 +933,11 @@ describe('runs_table', () => {
         ['The Lord of the Rings', 'The Fellowship of the Ring'],
       ]);
 
-      sortSubject.next({
-        column: RunsTableColumn.EXPERIMENT_NAME,
+      store.overrideSelector(getRunSelectorSort, {
+        key: {type: SortType.EXPERIMENT_NAME},
         direction: SortDirection.DESC,
       });
+      store.refreshState();
       fixture.detectChanges();
 
       expect(getTableRowTextContent(fixture)).toEqual([
@@ -951,15 +948,10 @@ describe('runs_table', () => {
     });
 
     it('sorts by run name', () => {
-      const sortSubject = new ReplaySubject<{
-        column: RunsTableColumn;
-        direction: SortDirection;
-      }>(1);
-      sortSubject.next({
-        column: RunsTableColumn.RUN_NAME,
+      store.overrideSelector(getRunSelectorSort, {
+        key: {type: SortType.RUN_NAME},
         direction: SortDirection.UNSET,
       });
-      selectSpy.withArgs(getRunSelectorSort).and.returnValue(sortSubject);
       selectSpy
         .withArgs(TEST_ONLY.getRunsLoading, jasmine.any)
         .and.returnValue(of(false));
@@ -995,10 +987,11 @@ describe('runs_table', () => {
         ['The Lord of the Rings', 'The Fellowship of the Ring'],
       ]);
 
-      sortSubject.next({
-        column: RunsTableColumn.RUN_NAME,
+      store.overrideSelector(getRunSelectorSort, {
+        key: {type: SortType.RUN_NAME},
         direction: SortDirection.ASC,
       });
+      store.refreshState();
       fixture.detectChanges();
 
       expect(getTableRowTextContent(fixture)).toEqual([
@@ -1008,10 +1001,11 @@ describe('runs_table', () => {
         ['Harry Potter', "The Philosopher's Stone"],
       ]);
 
-      sortSubject.next({
-        column: RunsTableColumn.RUN_NAME,
+      store.overrideSelector(getRunSelectorSort, {
+        key: {type: SortType.RUN_NAME},
         direction: SortDirection.DESC,
       });
+      store.refreshState();
       fixture.detectChanges();
 
       expect(getTableRowTextContent(fixture)).toEqual([
@@ -2458,6 +2452,206 @@ describe('runs_table', () => {
             })
           );
         });
+      });
+    });
+
+    function setNoFilterHparamsAndMetrics(
+      hparamSpecs: HparamSpec[],
+      metricsSpecs: MetricSpec[]
+    ) {
+      const hparamFilterMap = new Map<
+        string,
+        IntervalFilter | DiscreteFilter
+      >();
+      for (const spec of hparamSpecs) {
+        if (spec.domain.type === DomainType.INTERVAL) {
+          hparamFilterMap.set(
+            spec.name,
+            buildIntervalFilter({
+              includeUndefined: true,
+              filterLowerValue: spec.domain.minValue,
+              filterUpperValue: spec.domain.maxValue,
+            })
+          );
+        } else {
+          hparamFilterMap.set(
+            spec.name,
+            buildDiscreteFilter({
+              includeUndefined: true,
+              filterValues: spec.domain.values,
+            })
+          );
+        }
+      }
+      store.overrideSelector(getRunHparamFilterMap, hparamFilterMap);
+
+      const metricFilterMap = new Map<string, IntervalFilter>();
+      for (const spec of metricsSpecs) {
+        metricFilterMap.set(
+          spec.tag,
+          buildIntervalFilter({
+            includeUndefined: true,
+            filterLowerValue: -Infinity,
+            filterUpperValue: Infinity,
+          })
+        );
+      }
+
+      store.overrideSelector(getRunMetricFilterMap, metricFilterMap);
+    }
+
+    describe('sorting', () => {
+      it('sorts by hparam value', () => {
+        const hparamSpecs = [
+          buildHparamSpec({
+            name: 'batch_size',
+            displayName: 'Batch size',
+            domain: {type: DomainType.INTERVAL, minValue: 16, maxValue: 128},
+          }),
+          buildHparamSpec({
+            name: 'optimizer',
+            displayName: '',
+            domain: {type: DomainType.DISCRETE, values: ['adam', 'sgd']},
+          }),
+        ];
+        const metricSpecs = [
+          buildMetricSpec({tag: 'acc', displayName: 'Accuracy'}),
+          buildMetricSpec({tag: 'loss', displayName: ''}),
+        ];
+        setNoFilterHparamsAndMetrics(hparamSpecs, metricSpecs);
+        store.overrideSelector(getRunSelectorSort, {
+          key: {type: SortType.HPARAM, name: 'batch_size'},
+          direction: SortDirection.DESC,
+        });
+
+        store.overrideSelector(getRuns, [
+          buildRun({
+            id: 'book1',
+            name: 'Book 1',
+            hparams: [{name: 'batch_size', value: 32}],
+          }),
+          buildRun({
+            id: 'book2',
+            name: 'Book 2',
+            hparams: [
+              {name: 'batch_size', value: 128},
+              {name: 'optimizer', value: 'sgd'},
+            ],
+            metrics: [{tag: 'acc', value: 0.91}],
+          }),
+          buildRun({
+            id: 'book3',
+            name: 'Book 3',
+            hparams: [{name: 'optimizer', value: 'adam'}],
+            metrics: [
+              {tag: 'acc', value: 0.7},
+              {tag: 'loss', value: 0},
+            ],
+          }),
+        ]);
+
+        const fixture = createComponent(hparamSpecs, metricSpecs);
+        expect(getTableRowTextContent(fixture)).toEqual([
+          ['Book 2', '128', 'sgd', '0.91', ''],
+          ['Book 1', '32', '', '', ''],
+          ['Book 3', '', 'adam', '0.7', '0'],
+        ]);
+
+        store.overrideSelector(getRunSelectorSort, {
+          key: {type: SortType.HPARAM, name: 'optimizer'},
+          direction: SortDirection.ASC,
+        });
+        store.refreshState();
+        fixture.detectChanges();
+        expect(getTableRowTextContent(fixture)).toEqual([
+          ['Book 3', '', 'adam', '0.7', '0'],
+          ['Book 2', '128', 'sgd', '0.91', ''],
+          ['Book 1', '32', '', '', ''],
+        ]);
+
+        store.overrideSelector(getRunSelectorSort, {
+          key: {type: SortType.HPARAM, name: 'optimizer'},
+          direction: SortDirection.DESC,
+        });
+        store.refreshState();
+        fixture.detectChanges();
+        expect(getTableRowTextContent(fixture)).toEqual([
+          ['Book 2', '128', 'sgd', '0.91', ''],
+          ['Book 3', '', 'adam', '0.7', '0'],
+          ['Book 1', '32', '', '', ''],
+        ]);
+      });
+
+      it('sorts by metric value', () => {
+        const hparamSpecs = [
+          buildHparamSpec({
+            name: 'batch_size',
+            displayName: 'Batch size',
+            domain: {type: DomainType.INTERVAL, minValue: 16, maxValue: 128},
+          }),
+        ];
+        const metricSpecs = [
+          buildMetricSpec({tag: 'acc', displayName: 'Accuracy'}),
+          buildMetricSpec({tag: 'loss', displayName: ''}),
+        ];
+        setNoFilterHparamsAndMetrics(hparamSpecs, metricSpecs);
+        store.overrideSelector(getRunSelectorSort, {
+          key: {type: SortType.METRIC, tag: 'acc'},
+          direction: SortDirection.DESC,
+        });
+
+        store.overrideSelector(getRuns, [
+          buildRun({
+            id: 'book1',
+            name: 'Book 1',
+            hparams: [{name: 'batch_size', value: 32}],
+          }),
+          buildRun({
+            id: 'book2',
+            name: 'Book 2',
+            hparams: [{name: 'batch_size', value: 128}],
+            metrics: [{tag: 'acc', value: 0.91}],
+          }),
+          buildRun({
+            id: 'book3',
+            name: 'Book 3',
+            metrics: [
+              {tag: 'acc', value: 0.7},
+              {tag: 'loss', value: 0},
+            ],
+          }),
+        ]);
+
+        const fixture = createComponent(hparamSpecs, metricSpecs);
+        expect(getTableRowTextContent(fixture)).toEqual([
+          ['Book 2', '128', '0.91', ''],
+          ['Book 3', '', '0.7', '0'],
+          ['Book 1', '32', '', ''],
+        ]);
+
+        store.overrideSelector(getRunSelectorSort, {
+          key: {type: SortType.METRIC, tag: 'acc'},
+          direction: SortDirection.ASC,
+        });
+        store.refreshState();
+        fixture.detectChanges();
+        expect(getTableRowTextContent(fixture)).toEqual([
+          ['Book 3', '', '0.7', '0'],
+          ['Book 2', '128', '0.91', ''],
+          ['Book 1', '32', '', ''],
+        ]);
+
+        store.overrideSelector(getRunSelectorSort, {
+          key: {type: SortType.METRIC, tag: 'loss'},
+          direction: SortDirection.DESC,
+        });
+        store.refreshState();
+        fixture.detectChanges();
+        expect(getTableRowTextContent(fixture)).toEqual([
+          ['Book 3', '', '0.7', '0'],
+          ['Book 2', '128', '0.91', ''],
+          ['Book 1', '32', '', ''],
+        ]);
       });
     });
   });

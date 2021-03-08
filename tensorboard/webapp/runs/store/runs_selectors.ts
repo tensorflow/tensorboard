@@ -13,20 +13,19 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {createFeatureSelector, createSelector} from '@ngrx/store';
+
 import {DataLoadState, LoadState} from '../../types/data';
-
 import {SortDirection} from '../../types/ui';
-import {DiscreteFilter, IntervalFilter} from '../types';
-
+import {DiscreteFilter, IntervalFilter, SortKey} from '../types';
 import {combineHparamAndMetricSpecs} from './runs_selectors_utils';
 import {
   ExperimentToHparamAndMetricSpec,
   HparamAndMetricSpec,
   Run,
-  RUNS_FEATURE_KEY,
   RunsDataState,
   RunsState,
   RunsUiState,
+  RUNS_FEATURE_KEY,
   State,
 } from './runs_types';
 import {serializeExperimentIds} from './utils';
@@ -175,7 +174,7 @@ export const getRunSelectorRegexFilter = createSelector(
  */
 export const getRunSelectorSort = createSelector(
   getUiState,
-  (state: RunsUiState): {column: string | null; direction: SortDirection} => {
+  (state: RunsUiState): {key: SortKey | null; direction: SortDirection} => {
     return state.sort;
   }
 );

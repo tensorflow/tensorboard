@@ -34,7 +34,7 @@ import {
   DiscreteHparamValues,
   IntervalFilter,
 } from '../../types';
-import {DiscreteHparamValue, DomainType} from '../../types';
+import {DiscreteHparamValue, DomainType, SortKey, SortType} from '../../types';
 
 import {HparamSpec, MetricSpec, RunsTableColumn, RunTableItem} from './types';
 
@@ -80,6 +80,7 @@ export class RunsTableComponent implements OnChanges {
   readonly dataSource = new MatTableDataSource<RunTableItem>();
   readonly DomainType = DomainType;
   readonly RunsTableColumn = RunsTableColumn;
+  readonly SortType = SortType;
 
   @Input() showExperimentName!: boolean;
   @Input() columns!: RunsTableColumn[];
@@ -112,7 +113,7 @@ export class RunsTableComponent implements OnChanges {
   }>();
   @Output()
   onSortChange = new EventEmitter<{
-    column: RunsTableColumn;
+    key: SortKey;
     direction: SortDirection;
   }>();
   @Output()
@@ -187,10 +188,10 @@ export class RunsTableComponent implements OnChanges {
       default:
         direction = SortDirection.UNSET;
     }
-    this.onSortChange.emit({
-      column: sort.active as RunsTableColumn,
-      direction,
-    });
+    // HACK: Technically, sort.key is a string but in reality, MatSort supports an object
+    // as the sort.id and, thus, sort.active can be an object.
+    const key = (sort.active as unknown) as SortKey;
+    this.onSortChange.emit({key, direction});
   }
 
   onFilterKeyUp(event: KeyboardEvent) {
