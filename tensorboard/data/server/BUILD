@@ -60,6 +60,7 @@ rust_library(
         "//tensorboard/data/server/cargo:futures_core",
         "//tensorboard/data/server/cargo:log",
         "//tensorboard/data/server/cargo:prost",
+        "//tensorboard/data/server/cargo:prost_types",
         "//tensorboard/data/server/cargo:rand",
         "//tensorboard/data/server/cargo:rand_chacha",
         "//tensorboard/data/server/cargo:rayon",
@@ -144,9 +145,32 @@ genrule(
         "//tensorboard/data/proto:proto_srcs",
         "//tensorboard/plugins/audio:proto_srcs",
         "//tensorboard/plugins/image:proto_srcs",
+        "@com_google_protobuf//:well_known_protos",
     ],
     outs = _genproto_files,
-    cmd = "PROTOC=$(execpath @com_google_protobuf//:protoc) $(execpath :gen_protos_tool) $(RULEDIR)",
+    cmd = """
+        die() { printf >&2 'fatal: %s\\n' "$$@"; exit 1; }
+        export PROTOC=$(execpath @com_google_protobuf//:protoc)
+        # The `:well_known_protos` fileset has source files in the `src/`
+        # directory under the genfiles tree for its workspace. Bazel variable
+        # expansion doesn't provide a way to get that directly (it's not a
+        # target), but we can extract it from the files themselves.
+        f=
+        for f in $(locations @com_google_protobuf//:well_known_protos); do
+            break  # just take one arbitrarily
+        done
+        [ -n "$${f}" ] || die 'no well-known protos in fileset'
+        dir="$$(dirname "$${f}")"
+        while true; do
+            case "$${dir}" in
+                */src) PROTOC_INCLUDE="$${dir}"; break ;;
+                */*) dir="$$(dirname "$${dir}")" ;;
+                *) die 'no `src` directory found for proto: '"$${f}" ;;
+            esac
+        done
+        export PROTOC_INCLUDE
+        exec $(execpath :gen_protos_tool) $(RULEDIR)
+    """,
     tools = [
         ":gen_protos_tool",
         "@com_google_protobuf//:protoc",

@@ -2,12 +2,16 @@ syntax = "proto3";
 
 package tensorboard.data;
 
+import "google/protobuf/timestamp.proto";
+
 import "tensorboard/compat/proto/summary.proto";
 import "tensorboard/compat/proto/tensor.proto";
 
 option go_package = "github.com/tensorflow/tensorboard/tensorboard/data/proto/data_provider_proto";
 
 service TensorBoardDataProvider {
+  // Get metadata about an experiment.
+  rpc GetExperiment(GetExperimentRequest) returns (GetExperimentResponse);
   // List plugins that have data for an experiment.
   rpc ListPlugins(ListPluginsRequest) returns (ListPluginsResponse) {}
   // List runs within an experiment.
@@ -29,6 +33,38 @@ service TensorBoardDataProvider {
       returns (ReadBlobSequencesResponse) {}
   // Read data for a specific blob.
   rpc ReadBlob(ReadBlobRequest) returns (stream ReadBlobResponse) {}
+}
+
+message GetExperimentRequest {
+  string experiment_id = 1;
+}
+
+message GetExperimentResponse {
+  // Human-readable description of the data source.
+  //
+  // This might be an absolute path on disk to a log directory of event files,
+  // a relative path, a URL to a cloud storage bucket, an address for a local
+  // socket server, etc. There does not need to be any way to "dereference" this
+  // address to read the original data directly.
+  string data_location = 1;
+
+  // User-facing experiment name.
+  //
+  // This name is typically set by a user explicitly or automatically set by a
+  // training system.
+  string name = 2;
+
+  // User-facing experiment description.
+  string description = 3;
+
+  // Time that the experiment was created.
+  //
+  // This does not necessarily have any relation to times of events within an
+  // experiment. A new experiment may contain old data, or data may be freshly
+  // written to an experiment after it is created.
+  //
+  // May be unset if no creation time is known.
+  google.protobuf.Timestamp creation_time = 4;
 }
 
 message PluginFilter {
