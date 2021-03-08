@@ -23,7 +23,7 @@ import {DiscreteHparamValues} from '../types';
 /** @typehack */ import * as _typeHackModels from '@ngrx/store/src/models';
 
 export const hparamsDiscreteHparamFilterChanged = createAction(
-  '[Runs] Run Discrete Hparam Filter Changed',
+  '[Hparams] Hparams Discrete Hparam Filter Changed',
   props<{
     experimentId: string;
     hparamName: string;
@@ -33,7 +33,7 @@ export const hparamsDiscreteHparamFilterChanged = createAction(
 );
 
 export const hparamsIntervalHparamFilterChanged = createAction(
-  '[Runs] Run Interval Hparam Filter Changed',
+  '[Hparams] Hparams Interval Hparam Filter Changed',
   props<{
     experimentId: string;
     hparamName: string;
@@ -44,7 +44,7 @@ export const hparamsIntervalHparamFilterChanged = createAction(
 );
 
 export const hparamsMetricFilterChanged = createAction(
-  '[Runs] Run Metric Filter Changed',
+  '[Hparams] Hparams Metric Filter Changed',
   props<{
     experimentId: string;
     metricTag: string;

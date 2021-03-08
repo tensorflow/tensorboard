@@ -26,10 +26,10 @@ import {
 } from './testing';
 
 describe('hparams/_redux/hparams_selectors_test', () => {
-  describe('#getRunHparamFilterMap', () => {
+  describe('#getHparamFilterMap', () => {
     beforeEach(() => {
       // Clear the memoization.
-      selectors.getRunHparamFilterMap.release();
+      selectors.getHparamFilterMap.release();
     });
 
     it('returns default hparam filter map', () => {
@@ -52,7 +52,7 @@ describe('hparams/_redux/hparams_selectors_test', () => {
         })
       );
 
-      expect(selectors.getRunHparamFilterMap(state, 'foo')).toEqual(
+      expect(selectors.getHparamFilterMap(state, 'foo')).toEqual(
         new Map([
           ['optimizer', buildDiscreteFilter({filterValues: ['a', 'b', 'c']})],
         ])
@@ -87,7 +87,7 @@ describe('hparams/_redux/hparams_selectors_test', () => {
         })
       );
 
-      expect(selectors.getRunHparamFilterMap(state, 'foo')).toEqual(
+      expect(selectors.getHparamFilterMap(state, 'foo')).toEqual(
         new Map([
           [
             'optimizer',
@@ -114,14 +114,14 @@ describe('hparams/_redux/hparams_selectors_test', () => {
         })
       );
 
-      expect(selectors.getRunHparamFilterMap(state, 'bar')).toEqual(new Map());
+      expect(selectors.getHparamFilterMap(state, 'bar')).toEqual(new Map());
     });
   });
 
-  describe('#getRunMetricFilterMap', () => {
+  describe('#getMetricFilterMap', () => {
     beforeEach(() => {
       // Clear the memoization.
-      selectors.getRunMetricFilterMap.release();
+      selectors.getMetricFilterMap.release();
     });
 
     it('returns default metric filter map', () => {
@@ -145,7 +145,7 @@ describe('hparams/_redux/hparams_selectors_test', () => {
         })
       );
 
-      expect(selectors.getRunMetricFilterMap(state, 'foo')).toEqual(
+      expect(selectors.getMetricFilterMap(state, 'foo')).toEqual(
         new Map([
           [
             'acc',
@@ -187,7 +187,7 @@ describe('hparams/_redux/hparams_selectors_test', () => {
           },
         })
       );
-      expect(selectors.getRunMetricFilterMap(state, 'foo')).toEqual(
+      expect(selectors.getMetricFilterMap(state, 'foo')).toEqual(
         new Map([
           [
             'acc',
@@ -229,7 +229,7 @@ describe('hparams/_redux/hparams_selectors_test', () => {
           },
         })
       );
-      expect(selectors.getRunMetricFilterMap(state, 'bar')).toEqual(new Map());
+      expect(selectors.getMetricFilterMap(state, 'bar')).toEqual(new Map());
     });
   });
 });

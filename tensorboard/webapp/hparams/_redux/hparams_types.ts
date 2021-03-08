@@ -23,7 +23,7 @@ import {DiscreteFilter, HparamSpec, IntervalFilter, MetricSpec} from '../types';
  */
 export const HPARAMS_FEATURE_KEY = 'hparams';
 
-export type ExperimentId = string;
+type ExperimentId = string;
 
 export interface HparamsMetricsAndFilters {
   hparam: {

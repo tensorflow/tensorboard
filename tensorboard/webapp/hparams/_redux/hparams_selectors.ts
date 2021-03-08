@@ -78,7 +78,7 @@ const getMetricFilter = createSelector(
 /**
  * Returns Observable that emits map of hparam name to filter values.
  */
-export const getRunHparamFilterMap = createSelector(
+export const getHparamFilterMap = createSelector(
   getHparamDefaultFilter,
   getHparamFilter,
   (
@@ -92,7 +92,7 @@ export const getRunHparamFilterMap = createSelector(
 /**
  * Returns Observable that emits map of metric tag to filter values.
  */
-export const getRunMetricFilterMap = createSelector(
+export const getMetricFilterMap = createSelector(
   getMetricDefaultFilter,
   getMetricFilter,
   (defaultFilterMap, filterMap): Map<string, IntervalFilter> => {
