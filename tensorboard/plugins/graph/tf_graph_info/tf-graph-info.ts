@@ -23,6 +23,7 @@ import '../tf_graph_debugger_data_card/tf-graph-debugger-data-card';
 import '../tf_graph_op_compat_card/tf-graph-op-compat-card';
 import './tf-node-info';
 import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
+import {ColorBy} from '../tf_graph_common/view_types';
 
 @customElement('tf-graph-info')
 class TfGraphInfo extends LegacyElementMixin(PolymerElement) {
@@ -102,7 +103,7 @@ class TfGraphInfo extends LegacyElementMixin(PolymerElement) {
   })
   healthPillStepIndex: number;
   @property({type: String})
-  colorBy: string;
+  colorBy: ColorBy;
   @property({type: String})
   compatNodeTitle: string;
   // Two-ways

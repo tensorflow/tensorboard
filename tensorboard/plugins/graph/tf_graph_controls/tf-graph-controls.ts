@@ -28,6 +28,7 @@ import '../../../components/tf_dashboard_common/tensorboard-color';
 import '../tf_graph_common/tf-graph-icon';
 import '../tf_graph_node_search/tf-graph-node-search';
 import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
+import {ColorBy} from '../tf_graph_common/view_types';
 
 interface DeviceNameExclude {
   regex: RegExp;
@@ -79,13 +80,6 @@ interface CurrentDevice {
   suffix: string;
   used: boolean;
   ignoredMsg: string | null;
-}
-export enum ColorBy {
-  COMPUTE_TIME = 'compute_time',
-  MEMORY = 'memory',
-  STRUCTURE = 'structure',
-  XLA_CLUSTER = 'xla_cluster',
-  OP_COMPATIBILITY = 'op_compatibility',
 }
 interface ColorParams {
   minValue: number;
@@ -1035,14 +1029,11 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
     notify: true,
   })
   devicesForStats: object = null;
-  /**
-   * @type {!ColorBy}
-   */
   @property({
     type: String,
     notify: true,
   })
-  colorBy: string = ColorBy.STRUCTURE;
+  colorBy: ColorBy = ColorBy.STRUCTURE;
   @property({
     type: Object,
     notify: true,
@@ -1282,7 +1273,7 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
   get _currentGradientParams(): object {
     var colorByParams = this.colorByParams;
     var colorBy = this.colorBy;
-    if (!this._isGradientColoring(this.stats as any, colorBy as any)) {
+    if (!this._isGradientColoring(this.stats as any, colorBy)) {
       return;
     }
     const params: ColorParams = colorByParams[colorBy];

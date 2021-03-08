@@ -19,6 +19,7 @@ import '../../../components/tf_dashboard_common/tensorboard-color';
 import '../tf_graph_common/tf-node-icon';
 
 import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
+import {ColorBy} from '../tf_graph_common/view_types';
 
 @customElement('tf-node-list-item')
 class TfNodeListItem extends LegacyElementMixin(PolymerElement) {
@@ -116,7 +117,7 @@ class TfNodeListItem extends LegacyElementMixin(PolymerElement) {
   })
   itemType: string;
   @property({type: String})
-  colorBy: string;
+  colorBy: ColorBy;
   @property({type: Object})
   colorByParams: object;
   @property({type: Object})
