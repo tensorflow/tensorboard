@@ -12,8 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {ViewNotificationExt} from './view_types';
-import {CategoryEnum} from '../_redux/notification_center_types';
+import {CategoryEnum, Notification} from '../_redux/notification_center_types';
 
 export const notificationNotes = [
   {
@@ -23,4 +22,4 @@ export const notificationNotes = [
     content:
       '<li>Visualize Scalars, Images, and  Histograms in one place</li><li>Custom colors for runs</li><li>Group previews</li>',
   },
-] as ViewNotificationExt[];
+] as Notification[];

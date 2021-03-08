@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {CategoryEnum, Notification} from '../_redux/notification_center_types';
+import {Notification} from '../_redux/notification_center_types';
 
 /**
  * A notification chunk displayed in the notification center.
