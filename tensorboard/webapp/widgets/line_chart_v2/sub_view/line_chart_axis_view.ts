@@ -34,7 +34,10 @@ interface MinorTick {
   tickFormattedString: string;
 }
 
+// Major tick, unlike the minor tick, spans a range.
 interface MajorTick {
+  // Start of the major tick range. An end is implicitly defined by next major tick while
+  // it can certainly change to explicitly define the end.
   start: number;
   tickFormattedString: string;
 }
