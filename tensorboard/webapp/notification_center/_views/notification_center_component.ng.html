@@ -23,10 +23,14 @@ limitations under the License.
     <div *ngFor="let notification of notifications" class="menu-item">
       <div>
         <mat-icon
+          *ngIf="notification.category"
           svgIcon="{{ notification.icon }}"
           class="category-icon"
         ></mat-icon>
-        <span>{{ notification.category }}</span>・
+        <ng-container [ngSwitch]="notification.category">
+          <span *ngSwitchCase="CategoryEnum.WHATS_NEW">What's new</span>
+        </ng-container>
+        <span *ngIf="notification.category">・</span>
         <span>{{ notification.dateInMs | date:'longDate'}}</span>
         <span></span>
       </div>

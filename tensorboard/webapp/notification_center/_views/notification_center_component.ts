@@ -14,6 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import {Component, Input} from '@angular/core';
 import {ViewNotificationExt} from './view_types';
+import {CategoryEnum} from '../_redux/notification_center_types';
 
 @Component({
   selector: 'notification-center-component',
@@ -21,5 +22,7 @@ import {ViewNotificationExt} from './view_types';
   styleUrls: ['./notification_center_component.css'],
 })
 export class NotificationCenterComponent {
+  readonly CategoryEnum = CategoryEnum;
+
   @Input() notifications!: ViewNotificationExt[];
 }
