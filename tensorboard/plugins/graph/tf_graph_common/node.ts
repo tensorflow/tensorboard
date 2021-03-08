@@ -1359,7 +1359,6 @@ export function buildGroupForAnnotation(
   annotationGroups
     .exit()
     .each(function (a) {
-      let aGroup = d3.select(this);
       // Remove annotation from the index in the scene
       sceneElement.removeAnnotationGroup(a, d);
     })
