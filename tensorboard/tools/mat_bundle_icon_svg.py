@@ -13,17 +13,21 @@
 # limitations under the License.
 # ==============================================================================
 
-# Combines input SVGs as `<defs>` with filename, without extension, as the
-# ids and prints the resulting document.
-#
-# Usage: python mat_bundle_icon_svg.py [in_1.svg] [in_2.svg] ...
-#
-# Do note that the method composes like below:
-# python mat_bundle_icon_svg.py [in_1.svg] [in_2.svg] > out_1.svg
-# python mat_bundle_icon_svg.py [in_3.svg] [out_1.svg] > out_2.svg
-#
-# However, it disallows same SVG (checked by the `id`) appearing more than once.
-# This is to prevent messy duplicated entries in the `srcs`.
+"""Combines input SVGs as `<defs>`.
+
+mat_bundle_icon_svg combines SVGs into a single SVG bundle with sub-SVGs placed
+inside `<defs>` with filename, without extension, as the ids. It prints the
+resulting document to stdout.
+
+Usage: python mat_bundle_icon_svg.py [in_1.svg] [in_2.svg] ...
+
+Do note that the method composes like below:
+python mat_bundle_icon_svg.py [in_1.svg] [in_2.svg] > out_1.svg
+python mat_bundle_icon_svg.py [in_3.svg] [out_1.svg] > out_2.svg
+
+However, it disallows same SVG (checked by the `id`) appearing more than once.
+This is to prevent messy duplicated entries in the `srcs`.
+"""
 
 from os import path
 from xml.dom import getDOMImplementation
@@ -33,16 +37,13 @@ import sys
 
 def combine(files):
     impl = getDOMImplementation()
-
     doc = impl.createDocument(None, "svg", None)
     defs = doc.createElement("defs")
     doc.documentElement.appendChild(defs)
     svgs_to_insert = []
-
     for filename in files:
         partial_doc = minidom.parse(filename)
         partial_defs = partial_doc.getElementsByTagName("defs")
-
         if partial_defs:
             if len(partial_defs) > 1:
                 raise ValueError(
@@ -65,10 +66,8 @@ def combine(files):
 
     svg_ids = set()
     duplicate_ids = set()
-
     for partial_svg in svgs_to_insert:
         svg_id = partial_svg.getAttribute("id")
-
         if not svg_id:
             raise ValueError(
                 "Unexpected document type: expected SVG inside defs contain "
