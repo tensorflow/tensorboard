@@ -21,6 +21,7 @@ import * as _ from 'lodash';
 import '../../../components/polymer/irons_and_papers';
 import * as tb_debug from '../../../components/tb_debug';
 import './tf-graph-scene';
+import {TfGraphScene2} from './tf-graph-scene';
 import * as tf_graph from '../tf_graph_common/graph';
 import * as tf_graph_scene from '../tf_graph_common/scene';
 import * as tf_graph_util from '../tf_graph_common/util';
@@ -333,6 +334,17 @@ class TfGraph extends LegacyElementMixin(PolymerElement) {
     (this.$.scene as any).fit();
   }
   _graphChanged() {
+    if (!this.graphHierarchy) {
+      return;
+    }
+
+    this.graphHierarchy.addListener(
+      tf_graph_hierarchy.HierarchyEvent.TEMPLATES_UPDATED,
+      () => {
+        (this.$.scene as TfGraphScene2).nodeColorsChanged();
+      }
+    );
+
     // When a new graph is loaded, fire this event so that there is no
     // info-card being displayed for the previously-loaded graph.
     this.fire('graph-select');

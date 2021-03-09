@@ -35,7 +35,7 @@ import {TfGraphScene} from '../tf_graph_common/tf-graph-scene';
 import {ColorBy} from '../tf_graph_common/view_types';
 
 @customElement('tf-graph-scene')
-class TfGraphScene2
+export class TfGraphScene2
   extends LegacyElementMixin(PolymerElement)
   implements TfGraphScene {
   static readonly template = template;
@@ -467,13 +467,17 @@ class TfGraphScene2
       functionLibraryTitleStyle.display = 'none';
     }
   }
-  @observe('colorBy')
   /**
    * Called whenever the user changed the 'color by' option in the
    * UI controls.
    */
-  _colorByChanged() {
+  @observe('colorBy')
+  nodeColorsChanged() {
     if (this.renderHierarchy != null) {
+      // Formatters will read `sceneElement.templateIndex` directly.
+      // Ensure that it is up to date.
+      this.templateIndex = this.renderHierarchy.hierarchy.getTemplateIndex();
+
       // We iterate through each svg node and update its state.
       _.each(this._nodeGroupIndex, (nodeGroup, nodeName) => {
         this._updateNodeState(nodeName);
