@@ -18,9 +18,11 @@ import {
   ChangeDetectorRef,
   Component,
   ElementRef,
+  EventEmitter,
   Input,
   OnChanges,
   OnDestroy,
+  Output,
   SimpleChanges,
   ViewChild,
 } from '@angular/core';
@@ -123,6 +125,9 @@ export class LineChartComponent implements AfterViewInit, OnChanges, OnDestroy {
   @Input()
   ignoreYOutliers: boolean = false;
 
+  @Output()
+  readonly isExtentAtDefault = new EventEmitter<{atDefault: boolean}>();
+
   readonly Y_GRID_COUNT = 6;
   readonly X_GRID_COUNT = 10;
 
@@ -176,6 +181,7 @@ export class LineChartComponent implements AfterViewInit, OnChanges, OnDestroy {
 
     if (this.scaleUpdated) {
       this.isViewBoxOverridden = false;
+      this.isExtentAtDefault.emit({atDefault: true});
     }
 
     this.isViewBoxChanged =
@@ -375,12 +381,14 @@ export class LineChartComponent implements AfterViewInit, OnChanges, OnDestroy {
     this.isViewBoxChanged = true;
     this.viewBox = dataExtent;
     this.updateLineChart();
+    this.isExtentAtDefault.emit({atDefault: false});
   }
 
   viewBoxReset() {
     this.isViewBoxOverridden = false;
     this.isViewBoxChanged = true;
     this.updateLineChart();
+    this.isExtentAtDefault.emit({atDefault: true});
   }
 
   onViewBoxChangedFromAxis(extent: [number, number], axis: 'x' | 'y') {
