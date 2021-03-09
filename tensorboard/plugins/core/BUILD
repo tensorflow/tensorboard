@@ -15,6 +15,7 @@ py_library(
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/util:grpc_util",
         "//tensorboard/util:tb_logging",
+        "//tensorboard:version",
         "@org_pocoo_werkzeug",
     ],
 )

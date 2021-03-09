@@ -71,7 +71,7 @@ class ExperimentalNpmiPlugin(
 # Ordering matters. The order in which these lines appear determines the
 # ordering of tabs in TensorBoard's GUI.
 _PLUGINS = [
-    core_plugin.CorePluginLoader,
+    core_plugin.CorePluginLoader(include_debug_info=True),
     scalars_plugin.ScalarsPlugin,
     custom_scalars_plugin.CustomScalarsPlugin,
     images_plugin.ImagesPlugin,
