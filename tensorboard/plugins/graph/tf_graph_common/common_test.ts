@@ -14,9 +14,11 @@ limitations under the License.
 ==============================================================================*/
 import * as tb_debug from '../../../components/tb_debug';
 import * as tf_graph from './graph';
+import * as tf_graph_common from './common';
 import * as tf_graph_hierarchy from './hierarchy';
 import * as tf_graph_loader from './loader';
 import * as tf_graph_parser from './parser';
+import * as tf_graph_proto from './proto';
 
 describe('graph tests', () => {
   let mockTracker: jasmine.SpyObj<any>;
@@ -192,5 +194,197 @@ describe('graph tests', () => {
         ])
       );
     });
+
+    it('groups numeric series of nodes without underscores', async () => {
+      const slimGraph = await graphDefToSlimGraph(
+        await pbtxtToGraphDef(`
+        node {
+          name: "foo1"
+          op: "Add"
+        }
+        node {
+          name: "foo2"
+          op: "Add"
+        }
+        node {
+          name: "foo3"
+          op: "Add"
+        }
+        node {
+          name: "foo4"
+          op: "Add"
+        }
+        node {
+          name: "foo5"
+          op: "Add"
+        }
+      `)
+      );
+      const hierarchy = await tf_graph_hierarchy.build(
+        slimGraph,
+        tf_graph_hierarchy.DefaultHierarchyParams,
+        createProgressTracker()
+      );
+
+      const nodeNames = Object.keys(hierarchy.getNodeMap()).sort();
+      expect(nodeNames).toEqual([
+        '__root__',
+        'foo1',
+        'foo2',
+        'foo3',
+        'foo4',
+        'foo5',
+        'foo[1-5]',
+      ]);
+      expect(hierarchy.getSeriesGroupType('foo[1-5]')).toBe(
+        tf_graph.SeriesGroupingType.GROUP
+      );
+    });
+
+    it('groups numeric series of nodes with underscores', async () => {
+      const slimGraph = await graphDefToSlimGraph(
+        await pbtxtToGraphDef(`
+        node {
+          name: "foo_1"
+          op: "Add"
+        }
+        node {
+          name: "foo_2"
+          op: "Add"
+        }
+        node {
+          name: "foo_3"
+          op: "Add"
+        }
+        node {
+          name: "foo_4"
+          op: "Add"
+        }
+        node {
+          name: "foo_5"
+          op: "Add"
+        }
+      `)
+      );
+      const hierarchy = await tf_graph_hierarchy.build(
+        slimGraph,
+        tf_graph_hierarchy.DefaultHierarchyParams,
+        createProgressTracker()
+      );
+
+      const nodeNames = Object.keys(hierarchy.getNodeMap()).sort();
+      expect(nodeNames).toEqual([
+        '__root__',
+        'foo_1',
+        'foo_2',
+        'foo_3',
+        'foo_4',
+        'foo_5',
+        'foo_[1-5]',
+      ]);
+      expect(hierarchy.getSeriesGroupType('foo_[1-5]')).toBe(
+        tf_graph.SeriesGroupingType.GROUP
+      );
+    });
+
+    it('groups numeric series of nodes with implicit index 0', async () => {
+      const slimGraph = await graphDefToSlimGraph(
+        await pbtxtToGraphDef(`
+        node {
+          name: "foo"
+          op: "Add"
+        }
+        node {
+          name: "foo1"
+          op: "Add"
+        }
+        node {
+          name: "foo2"
+          op: "Add"
+        }
+        node {
+          name: "foo3"
+          op: "Add"
+        }
+        node {
+          name: "foo4"
+          op: "Add"
+        }
+      `)
+      );
+      const hierarchy = await tf_graph_hierarchy.build(
+        slimGraph,
+        tf_graph_hierarchy.DefaultHierarchyParams,
+        createProgressTracker()
+      );
+
+      const nodeNames = Object.keys(hierarchy.getNodeMap()).sort();
+      expect(nodeNames).toEqual([
+        '__root__',
+        'foo',
+        'foo1',
+        'foo2',
+        'foo3',
+        'foo4',
+        'foo[0-4]',
+      ]);
+      expect(hierarchy.getSeriesGroupType('foo[0-4]')).toBe(
+        tf_graph.SeriesGroupingType.GROUP
+      );
+    });
+
+    it('does not group a numeric series of nodes that is too short', async () => {
+      const slimGraph = await graphDefToSlimGraph(
+        await pbtxtToGraphDef(`
+        node {
+          name: "foo1"
+          op: "Add"
+        }
+        node {
+          name: "foo2"
+          op: "Add"
+        }
+        node {
+          name: "foo3"
+          op: "Add"
+        }
+        node {
+          name: "foo4"
+          op: "Add"
+        }
+      `)
+      );
+      const hierarchy = await tf_graph_hierarchy.build(
+        slimGraph,
+        tf_graph_hierarchy.DefaultHierarchyParams,
+        createProgressTracker()
+      );
+
+      const nodeNames = Object.keys(hierarchy.getNodeMap()).sort();
+      expect(nodeNames).toEqual(['__root__', 'foo1', 'foo2', 'foo3', 'foo4']);
+    });
   });
 });
+
+async function pbtxtToGraphDef(text: string): Promise<tf_graph_proto.GraphDef> {
+  const encoder = new TextEncoder();
+  return tf_graph_parser.parseGraphPbTxt(encoder.encode(text));
+}
+
+async function graphDefToSlimGraph(
+  graphDef: tf_graph_proto.GraphDef
+): Promise<tf_graph.SlimGraph> {
+  return tf_graph.build(
+    graphDef,
+    tf_graph.DefaultBuildParams,
+    createProgressTracker()
+  );
+}
+
+function createProgressTracker(): tf_graph_common.ProgressTracker {
+  return {
+    setMessage: () => {},
+    updateProgress: () => {},
+    reportError: () => {},
+  };
+}
