@@ -418,9 +418,32 @@ export function maybeTruncateString(
   return start === 0 ? text[0] : text.slice(0, start) + '…';
 }
 
-export type EventType = string;
-
-export class Dispatcher {
+/**
+ * Extend this subclass to receive event dispatching traits.
+ * Useful for when various locations need to observe changes on
+ * a common instance, who has a limited lifetime.
+ *
+ * This is not intended for use with framework-supported elements.
+ * For example, prefer using `@Output myEmitter` on Angular
+ * Components, or Polymer's `on-myprop-changed` for Polymer
+ * elements, instead.
+ *
+ * Example usage:
+ *
+ * ```
+ * export enum ReactorEvent {EXPLODED}
+ * export class Reactor extends Dispatcher<ReactorEvent> {
+ *   _update() {
+ *     this.dispatchEvent(ReactorEvent.EXPLODED);
+ *   }
+ * }
+ *
+ * // Elsewhere
+ * const r = new Reactor();
+ * r.addEventListener(ReactorEvent.EXPLODED, this._cleanup);
+ * ```
+ */
+export class Dispatcher<EventType = any> {
   private eventTypeToListeners = new Map<EventType, Function[]>();
 
   private getListeners(eventType) {

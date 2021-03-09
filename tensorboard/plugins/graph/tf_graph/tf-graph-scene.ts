@@ -33,10 +33,9 @@ import {template} from './tf-graph-scene.html';
 import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
 import {TfGraphScene} from '../tf_graph_common/tf-graph-scene';
 import {ColorBy} from '../tf_graph_common/view_types';
-import {HierarchyEvent} from '../tf_graph_common/hierarchy';
 
 @customElement('tf-graph-scene')
-class TfGraphScene2
+export class TfGraphScene2
   extends LegacyElementMixin(PolymerElement)
   implements TfGraphScene {
   static readonly template = template;
@@ -258,13 +257,6 @@ class TfGraphScene2
   /** Main method for building the scene */
   _build(renderHierarchy: tf_graph_render.RenderGraphInfo) {
     this.templateIndex = renderHierarchy.hierarchy.getTemplateIndex();
-    renderHierarchy.hierarchy.addListener(
-      HierarchyEvent.TemplatesUpdated,
-      () => {
-        this.templateIndex = renderHierarchy.hierarchy.getTemplateIndex();
-        this._nodeColorsChanged();
-      }
-    );
     tf_graph_util.time(
       'tf-graph-scene (layout):',
       function () {
@@ -480,8 +472,12 @@ class TfGraphScene2
    * UI controls.
    */
   @observe('colorBy')
-  _nodeColorsChanged() {
+  nodeColorsChanged() {
     if (this.renderHierarchy != null) {
+      // Formatters will read `sceneElement.templateIndex` directly.
+      // Ensure that it is up to date.
+      this.templateIndex = this.renderHierarchy.hierarchy.getTemplateIndex();
+
       // We iterate through each svg node and update its state.
       _.each(this._nodeGroupIndex, (nodeGroup, nodeName) => {
         this._updateNodeState(nodeName);

@@ -52,13 +52,13 @@ export enum HierarchyEvent {
   /**
    * Fired when the templates may have been updated. No event payload attached.
    */
-  TemplatesUpdated = 'TemplatesUpdated',
+  TEMPLATES_UPDATED,
 }
 
 /**
  * Class for the Graph Hierarchy for TensorFlow graph.
  */
-export class Hierarchy extends tf_graph_util.Dispatcher {
+export class Hierarchy extends tf_graph_util.Dispatcher<HierarchyEvent> {
   root: Metanode;
   libraryFunctions: {
     [key: string]: LibraryFunctionData;
@@ -379,7 +379,7 @@ export class Hierarchy extends tf_graph_util.Dispatcher {
    * a node based on its template id.
    *
    * When templates update, the Hierarchy will dispatch an event
-   * `HierarchyEvent.TemplateUpdated` to consumers.
+   * `HierarchyEvent.TEMPLATES_UPDATED` to consumers.
    */
   getTemplateIndex(): (string) => number | null {
     if (!this.templates) {
@@ -403,7 +403,7 @@ export class Hierarchy extends tf_graph_util.Dispatcher {
    */
   updateTemplates() {
     this.templates = template.detect(this, this.verifyTemplate);
-    this.dispatchEvent(HierarchyEvent.TemplatesUpdated);
+    this.dispatchEvent(HierarchyEvent.TEMPLATES_UPDATED);
   }
 }
 /**

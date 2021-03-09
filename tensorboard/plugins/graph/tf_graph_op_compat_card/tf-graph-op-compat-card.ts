@@ -262,7 +262,7 @@ class TfGraphOpCompatCard extends LegacyElementMixin(PolymerElement) {
   _graphHierarchyChanged() {
     this._templateIndex = this.graphHierarchy.getTemplateIndex();
     this.graphHierarchy.addListener(
-      tf_graph_hierarchy.HierarchyEvent.TemplatesUpdated,
+      tf_graph_hierarchy.HierarchyEvent.TEMPLATES_UPDATED,
       () => {
         this._templateIndex = this.graphHierarchy.getTemplateIndex();
       }
