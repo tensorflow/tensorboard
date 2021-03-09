@@ -41,9 +41,9 @@ export function getTicksForLinearScale(
   scale: LinearScale,
   formatter: Formatter,
   maxMinorTickCount: number,
-  low: number,
-  high: number
+  lowAndHigh: [number, number]
 ): {minor: MinorTick[]; major: MajorTick[]} {
+  const [low, high] = lowAndHigh;
   const minorTickVals = scale.ticks([low, high], maxMinorTickCount);
 
   const diff = Math.abs(high - low);
@@ -59,7 +59,7 @@ export function getTicksForLinearScale(
     };
   }
 
-  const numFranctionalToKeep = getNumLeadingZerosInFractional(diff);
+  const numFractionalToKeep = getNumLeadingZerosInFractional(diff);
   const majorTickVals = scale.ticks([low, high], 2);
   const minor: MinorTick[] = [];
 
@@ -68,7 +68,7 @@ export function getTicksForLinearScale(
     const [whole, fractional = ''] = String(val).split('.', 2);
     // Rounded to the n
     const flooredNumber = Number(
-      whole + '.' + fractional.slice(0, numFranctionalToKeep)
+      whole + '.' + fractional.slice(0, numFractionalToKeep)
     );
     majorTickValMap.set(flooredNumber, {
       // Put it in the middle. If the flooredNumber is 231.041, then put the axis label
@@ -78,7 +78,7 @@ export function getTicksForLinearScale(
     });
   }
 
-  const maximumDiff = 10 * Math.pow(10, -numFranctionalToKeep);
+  const maximumDiff = 10 * Math.pow(10, -numFractionalToKeep);
 
   for (const val of minorTickVals) {
     for (const flooredMajorVal of majorTickValMap.keys()) {

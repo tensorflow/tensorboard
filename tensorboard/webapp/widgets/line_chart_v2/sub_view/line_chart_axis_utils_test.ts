@@ -25,8 +25,7 @@ describe('line_chart_v2/sub_view/axis_utils test', () => {
         scale,
         scale.defaultFormatter,
         5,
-        1,
-        10
+        [1, 10]
       );
 
       expect(major).toEqual([]);
@@ -44,8 +43,7 @@ describe('line_chart_v2/sub_view/axis_utils test', () => {
         scale,
         scale.defaultFormatter,
         2,
-        1.015,
-        1.115
+        [1.015, 1.115]
       );
 
       expect(major).toEqual([]);
@@ -61,8 +59,7 @@ describe('line_chart_v2/sub_view/axis_utils test', () => {
           scale,
           scale.defaultFormatter,
           2,
-          1.94515,
-          1.9452
+          [1.94515, 1.9452]
         );
 
         expect(major).toEqual([
@@ -83,8 +80,7 @@ describe('line_chart_v2/sub_view/axis_utils test', () => {
           scale,
           scale.defaultFormatter,
           2,
-          1.123456789012345,
-          1.123456789012392
+          [1.123456789012345, 1.123456789012392]
         );
 
         expect(major).toEqual([
@@ -102,8 +98,7 @@ describe('line_chart_v2/sub_view/axis_utils test', () => {
           scale,
           scale.defaultFormatter,
           2,
-          1235000.123451,
-          1235000.123455
+          [1235000.123451, 1235000.123455]
         );
 
         expect(major).toEqual([
@@ -124,8 +119,7 @@ describe('line_chart_v2/sub_view/axis_utils test', () => {
           scale,
           scale.defaultFormatter,
           2,
-          1.9452,
-          1.94515
+          [1.9452, 1.94515]
         );
 
         expect(major).toEqual([

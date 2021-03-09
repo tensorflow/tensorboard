@@ -75,8 +75,7 @@ export class LineChartAxisComponent {
         this.scale,
         this.getFormatter(),
         maxTickSize,
-        this.axisExtent[0],
-        this.axisExtent[1]
+        this.axisExtent
       );
       this.majorTicks = major;
       this.minorTicks = minor;
