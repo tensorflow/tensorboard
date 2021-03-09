@@ -27,13 +27,12 @@ def tensorboard_webcomponent_library(**kwargs):
     pass
 
 def tf_js_binary(
-    name,
-    compile,
-    deps,
-    visibility = None,
-    dev_mode_only = False,
-    **kwargs
-):
+        name,
+        compile,
+        deps,
+        visibility = None,
+        dev_mode_only = False,
+        **kwargs):
     """Rules for creating a JavaScript bundle.
 
     Please refer to https://bazelbuild.github.io/rules_nodejs/Built-ins.html#rollup_bundle
@@ -155,7 +154,7 @@ def tf_svg_bundle(name, srcs, out):
         name = name,
         srcs = srcs,
         outs = [out],
-        cmd = "$(execpath //tensorboard/tools:mat_bundle_icon_svg) $@ $(SRCS)",
+        cmd = "$(execpath //tensorboard/tools:mat_bundle_icon_svg) $(SRCS) > $@",
         tools = [
             "//tensorboard/tools:mat_bundle_icon_svg",
         ],
