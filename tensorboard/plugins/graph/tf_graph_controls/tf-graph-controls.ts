@@ -376,7 +376,6 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
           <iron-icon icon="file-download" class="button-icon"></iron-icon>
           <span class="button-text">Download PNG</span>
         </paper-button>
-        <a href="#" id="graphdownload" class="title" download="graph.png"></a>
       </div>
       <div class="control-holder runs">
         <div class="title">
@@ -1131,6 +1130,8 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
   })
   _legendOpened: boolean = true;
 
+  private _downloadFilename = '';
+
   _onGraphTypeChangedByUserGesture() {
     tf_graph_util.notifyDebugEvent({
       actionId: tb_debug.GraphDebugEventId.GRAPH_TYPE_CHANGED,
@@ -1315,7 +1316,7 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
     };
   }
   download() {
-    (this.$.graphdownload as HTMLElement).click();
+    this.fire('download-image-requested', this._downloadFilename);
   }
   _updateFileInput(e: Event) {
     const file = (e.target as HTMLInputElement).files[0];
@@ -1343,6 +1344,7 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
       // Select the first dataset by default.
       this._selectedRunIndex = 0;
     }
+    this._setDownloadFilename(this.datasets[this._selectedRunIndex]?.name);
   }
   _computeSelection(
     datasets: Dataset,
@@ -1369,9 +1371,7 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
     this._selectedTagIndex = 0;
     this._selectedGraphType = this._getDefaultSelectionType();
     this.traceInputs = false; // Set trace input to off-state.
-    this._setDownloadFilename(
-      this.datasets[runIndex] ? this.datasets[runIndex].name : ''
-    );
+    this._setDownloadFilename(this.datasets[runIndex]?.name);
   }
   _selectedTagIndexChanged(): void {
     this._selectedGraphType = this._getDefaultSelectionType();
@@ -1398,11 +1398,8 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
   _getFile() {
     (this.$$('#file') as HTMLElement).click();
   }
-  _setDownloadFilename(name: string) {
-    (this.$.graphdownload as HTMLElement).setAttribute(
-      'download',
-      name + '.png'
-    );
+  _setDownloadFilename(name?: string) {
+    this._downloadFilename = (name || 'graph') + '.png';
   }
   _statsNotNull(stats: tf_graph_proto.StepStats) {
     return stats !== null;

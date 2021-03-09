@@ -16,6 +16,7 @@ import {PolymerElement, html} from '@polymer/polymer';
 import {customElement, property} from '@polymer/decorators';
 
 import '../tf_graph_board/tf-graph-board';
+import {TfGraphBoard} from '../tf_graph_board/tf-graph-board';
 import '../tf_graph_controls/tf-graph-controls';
 import '../tf_graph_loader/tf-graph-loader';
 import * as tf_graph_render from '../tf_graph_common/render';
@@ -98,6 +99,7 @@ class TfGraphApp extends LegacyElementMixin(PolymerElement) {
             on-fit-tap="_fit"
             trace-inputs="{{_traceInputs}}"
             auto-extract-nodes="{{_autoExtractNodes}}"
+            on-download-image-requested="_onDownloadImageRequested"
           ></tf-graph-controls>
           <tf-graph-loader
             id="loader"
@@ -199,6 +201,11 @@ class TfGraphApp extends LegacyElementMixin(PolymerElement) {
     }
   }
   _fit() {
-    (this.$$('#graphboard') as any).fit();
+    ((this.$$('#graphboard') as unknown) as TfGraphBoard).fit();
+  }
+  _onDownloadImageRequested(filename: string) {
+    ((this.$$('#graphboard') as unknown) as TfGraphBoard).downloadAsImage(
+      filename
+    );
   }
 }

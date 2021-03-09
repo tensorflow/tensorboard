@@ -26,6 +26,7 @@ import * as vz_sorting from '../../../components/vz_sorting/sorting';
 import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
 
 import '../tf_graph_board/tf-graph-board';
+import {TfGraphBoard} from '../tf_graph_board/tf-graph-board';
 import '../tf_graph_controls/tf-graph-controls';
 import '../tf_graph_loader/tf-graph-dashboard-loader';
 import * as tf_graph_op from '../tf_graph_common/op';
@@ -88,6 +89,7 @@ class TfGraphDashboard extends LegacyElementMixin(PolymerElement) {
         on-fit-tap="_fit"
         trace-inputs="{{_traceInputs}}"
         auto-extract-nodes="{{_autoExtractNodes}}"
+        on-download-image-requested="_onDownloadImageRequested"
       ></tf-graph-controls>
       <div
         class$="center [[_getGraphDisplayClassName(_selectedFile, _datasets)]]"
@@ -345,7 +347,12 @@ class TfGraphDashboard extends LegacyElementMixin(PolymerElement) {
     this._maybeFetchHealthPills();
   }
   _fit() {
-    (this.$$('#graphboard') as any).fit();
+    ((this.$$('#graphboard') as unknown) as TfGraphBoard).fit();
+  }
+  _onDownloadImageRequested(event: CustomEvent) {
+    ((this.$$('#graphboard') as unknown) as TfGraphBoard).downloadAsImage(
+      event.detail as string
+    );
   }
   _getGraphDisplayClassName(_selectedFile: any, _datasets: any[]) {
     const isDataValid = _selectedFile || _datasets.length;
