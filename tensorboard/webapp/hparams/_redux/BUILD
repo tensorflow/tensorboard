@@ -69,11 +69,18 @@ tf_ts_library(
     name = "_redux_test_lib",
     testonly = True,
     srcs = [
+        "hparams_reducers_test.ts",
         "hparams_selectors_test.ts",
     ],
     deps = [
+        ":hparams_actions",
+        ":hparams_reducers",
         ":hparams_selectors",
         ":testing",
+        "//tensorboard/webapp/hparams:types",
+        "//tensorboard/webapp/runs/actions",
+        "//tensorboard/webapp/runs/data_source:testing",
+        "//tensorboard/webapp/runs/store:testing",
         "@npm//@types/jasmine",
     ],
 )
