@@ -18,6 +18,7 @@ import * as _ from 'lodash';
 import * as tb_debug from '../../../components/tb_debug';
 
 import {NodeStats, ProgressTracker} from './common';
+import {Hierarchy} from './hierarchy';
 import * as tf_graph_proto from './proto';
 import * as tf_graph_util from './util';
 
@@ -749,7 +750,7 @@ export function createSeriesNode(
   parent: string,
   clusterId: number,
   name: string,
-  graphOptions: any
+  graphOptions: LabeledGraphOptions
 ): SeriesNode {
   return new SeriesNodeImpl(
     prefix,
@@ -810,7 +811,7 @@ class SeriesNodeImpl implements SeriesNode {
     parent: string,
     clusterId: number,
     name: string,
-    graphOptions: any
+    graphOptions: LabeledGraphOptions
   ) {
     this.name = name || getSeriesNodeName(prefix, suffix, parent);
     this.type = NodeType.SERIES;
@@ -1280,10 +1281,9 @@ export function build(
 export function createGraph<N, E>(
   name: string,
   type,
-  opt?: any
+  graphOptions: LabeledGraphOptions = {}
 ): graphlib.Graph {
-  const graphOptions = opt || {};
-  let graph = new graphlib.Graph(graphOptions);
+  const graph = new graphlib.Graph(graphOptions);
   graph.setGraph({
     name: name,
     rankdir: graphOptions.rankdir || 'BT',
@@ -1483,35 +1483,21 @@ export interface LibraryFunctionData {
   // A list of nodes that represent calls to this library function.
   usages: Node[];
 }
-export interface Hierarchy {
-  root: Metanode;
-  libraryFunctions: {
-    [key: string]: LibraryFunctionData;
-  };
-  templates: {
-    [templateId: string]: string[];
-  };
-  /** List of all device names */
-  devices: string[];
-  /** List of all XLA cluster names */
-  xlaClusters: string[];
-  /** True if at least one tensor in the graph has shape information */
-  hasShapeInfo: boolean;
-  /** The maximum size across all meta edges. Used for scaling thickness. */
-  maxMetaEdgeSize: number;
-  graphOptions: any;
-  getNodeMap(): {
-    [nodeName: string]: GroupNode | OpNode;
-  };
-  node(name: string): GroupNode | OpNode;
-  setNode(name: string, node: GroupNode | OpNode): void;
-  getBridgegraph(nodeName: string): graphlib.Graph;
-  getPredecessors(nodeName: string): Edges;
-  getSuccessors(nodeName: string): Edges;
-  getTopologicalOrdering(
-    nodeName: string
-  ): {
-    [childName: string]: number;
-  };
-  getTemplateIndex(): (string) => number;
-}
+
+/**
+ * An extended variant of the options object for `graphlib.Graph`, used
+ * to configure a `graphlib.Graph` at its creation.
+ *
+ * Dagre's constructor has an `opts` object as a parameter, let's call it
+ * 'GraphCtorOptions'. The Graph's `setGraph()` has a `label` parameter,
+ * let's call it `LabelOptions`.
+ *
+ * Since both are configured when a `graphlib.Graph` is first initialized,
+ * TensorBoard's Graph code passes around this hybrid object which includes
+ * properties from both `GraphCtorOptions` (compound) and `LabelOptions`
+ * (rankdir).
+ */
+export type LabeledGraphOptions = {
+  compound?: boolean;
+  rankdir?: string;
+};

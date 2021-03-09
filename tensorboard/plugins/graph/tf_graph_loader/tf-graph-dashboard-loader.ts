@@ -79,7 +79,7 @@ class TfGraphDashboardLoader extends LegacyElementMixin(PolymerElement) {
     readOnly: true, //readonly so outsider can't change this via binding
     notify: true,
   })
-  outGraphHierarchy: tf_graph.Hierarchy;
+  outGraphHierarchy: tf_graph_hierarchy.Hierarchy;
   @property({
     type: Object,
     readOnly: true, //readonly so outsider can't change this via binding

@@ -18,12 +18,12 @@ import * as _ from 'lodash';
 import {
   GroupNode,
   hasSimilarDegreeSequence,
-  Hierarchy,
   Metanode,
   NodeType,
   OpNode,
   SeriesNode,
 } from './graph';
+import {Hierarchy} from './hierarchy';
 
 export function detect(
   h,

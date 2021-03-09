@@ -180,7 +180,7 @@ class TfGraphOpCompatCard extends LegacyElementMixin(PolymerElement) {
     </iron-collapse>
   `;
   @property({type: Object})
-  graphHierarchy: tf_graph.Hierarchy;
+  graphHierarchy: tf_graph_hierarchy.Hierarchy;
   @property({type: Object})
   hierarchyParams: object;
   @property({type: Object})

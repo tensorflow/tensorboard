@@ -87,7 +87,7 @@ class TfGraph extends LegacyElementMixin(PolymerElement) {
     notify: true,
     observer: '_graphChanged',
   })
-  graphHierarchy: tf_graph.Hierarchy;
+  graphHierarchy: tf_graph_hierarchy.Hierarchy;
   @property({type: Object})
   basicGraph: tf_graph.SlimGraph;
   @property({type: Object})
