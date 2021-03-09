@@ -160,15 +160,11 @@ genrule(
             break  # just take one arbitrarily
         done
         [ -n "$${f}" ] || die 'no well-known protos in fileset'
-        dir="$$(dirname "$${f}")"
-        while true; do
-            case "$${dir}" in
-                */src) PROTOC_INCLUDE="$${dir}"; break ;;
-                */*) dir="$$(dirname "$${dir}")" ;;
-                *) die 'no `src` directory found for proto: '"$${f}" ;;
-            esac
-        done
-        export PROTOC_INCLUDE
+        parent_of_src="$${f%/src/*}"
+        if [ "$${parent_of_src}" = "$${f}" ]; then
+            die 'no `src` directory found for proto: '"$${f}"
+        fi
+        export PROTOC_INCLUDE="$${parent_of_src}/src"
         exec $(execpath :gen_protos_tool) $(RULEDIR)
     """,
     tools = [
