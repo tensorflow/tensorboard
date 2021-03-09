@@ -16,7 +16,6 @@ import {PolymerElement, html} from '@polymer/polymer';
 import {customElement, observe, property} from '@polymer/decorators';
 
 import '../../../components/polymer/irons_and_papers';
-
 import '../tf_graph_info/tf-graph-info';
 import '../tf_graph/tf-graph';
 import * as tf_graph from '../tf_graph_common/graph';
@@ -24,6 +23,18 @@ import * as tf_graph_render from '../tf_graph_common/render';
 import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
 import {ColorBy} from '../tf_graph_common/view_types';
 import {Hierarchy} from '../tf_graph_common/hierarchy';
+
+/**
+ * Some UX features, such as 'color by structure', rely on the 'template'
+ * information of a graph. This can be very expensive to compute when the
+ * graph is too large. This object's constants determine what constitutes
+ * a 'large' graph. Graphs that exceed all these constraints should not
+ * have templates computed by default.
+ */
+const MAX_GRAPH_SIZE_TO_COMPUTE_TEMPLATES = {
+  maxNodeCount: 10000,
+  maxEdgeCount: 10000,
+};
 
 /**
  * Element for putting tf-graph and tf-graph-info side by side.
@@ -202,7 +213,10 @@ class TfGraphBoard extends LegacyElementMixin(PolymerElement) {
   traceInputs: boolean;
   @property({type: Boolean})
   autoExtractNodes: boolean;
-  @property({type: String})
+  @property({
+    type: String,
+    notify: true,
+  })
   colorBy: ColorBy;
   @property({
     type: Object,
@@ -317,12 +331,12 @@ class TfGraphBoard extends LegacyElementMixin(PolymerElement) {
     if (!this.graph) {
       return;
     }
+    const {maxNodeCount, maxEdgeCount} = MAX_GRAPH_SIZE_TO_COMPUTE_TEMPLATES;
     const isGraphTooLarge =
-      Object.keys(this.graph.nodes).length > 10000 &&
-      this.graph.edges.length > 10000;
+      Object.keys(this.graph.nodes).length > maxNodeCount &&
+      this.graph.edges.length > maxEdgeCount;
     if (isGraphTooLarge && this.colorBy === ColorBy.STRUCTURE) {
       this.colorBy = ColorBy.NONE;
-      this.fire('color-by-changed', this.colorBy);
     }
   }
   @observe('colorBy', 'graphHierarchy')

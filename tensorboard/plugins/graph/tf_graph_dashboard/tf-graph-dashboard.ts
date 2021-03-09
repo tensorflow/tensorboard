@@ -27,11 +27,9 @@ import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mix
 
 import '../tf_graph_board/tf-graph-board';
 import '../tf_graph_controls/tf-graph-controls';
-import {TfGraphControls} from '../tf_graph_controls/tf-graph-controls';
 import '../tf_graph_loader/tf-graph-dashboard-loader';
 import * as tf_graph_op from '../tf_graph_common/op';
 import * as tf_graph_render from '../tf_graph_common/render';
-import {ColorBy} from '../tf_graph_common/view_types';
 
 /**
  * The (string) name for the run of the selected dataset in the graph dashboard.
@@ -146,7 +144,7 @@ class TfGraphDashboard extends LegacyElementMixin(PolymerElement) {
           <tf-graph-board
             id="graphboard"
             devices-for-stats="[[_devicesForStats]]"
-            color-by="[[_colorBy]]"
+            color-by="{{_colorBy}}"
             color-by-params="{{_colorByParams}}"
             graph-hierarchy="[[_graphHierarchy]]"
             graph="[[_graph]]"
@@ -164,7 +162,6 @@ class TfGraphDashboard extends LegacyElementMixin(PolymerElement) {
             stats="[[_stats]]"
             trace-inputs="[[_traceInputs]]"
             auto-extract-nodes="[[_autoExtractNodes]]"
-            on-color-by-changed="_onBoardColorByChanged"
           ></tf-graph-board>
         </div>
       </div>
@@ -595,9 +592,5 @@ class TfGraphDashboard extends LegacyElementMixin(PolymerElement) {
       return;
     }
     this._requestHealthPills();
-  }
-  _onBoardColorByChanged(event: CustomEvent) {
-    ((this.$
-      .controls as unknown) as TfGraphControls).colorBy = event.detail as ColorBy;
   }
 }
