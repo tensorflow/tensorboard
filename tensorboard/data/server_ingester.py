@@ -109,7 +109,7 @@ class SubprocessServerDataIngester(ingester.DataIngester):
 
         args = [
             server_binary,
-            "--logdir=%s" % (self._logdir,),
+            "--logdir=%s" % os.path.expanduser(self._logdir),
             "--reload=%s" % reload,
             "--port=0",
             "--port-file=%s" % (port_file_path,),

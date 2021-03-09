@@ -79,11 +79,14 @@ class SubprocessServerDataIngesterTest(tb_test.TestCase):
             threading.Thread(target=target).start()
             return result
 
+        tilde_logdir = "~/tmp/logs"
+        expanded_logdir = os.path.expanduser(tilde_logdir)
+        self.assertNotEqual(tilde_logdir, expanded_logdir)
+
         with mock.patch.object(subprocess, "Popen", wraps=fake_popen) as popen:
             with mock.patch.object(grpc, "secure_channel", autospec=True) as sc:
-                logdir = "/tmp/logs"
                 ingester = server_ingester.SubprocessServerDataIngester(
-                    logdir=logdir,
+                    logdir=tilde_logdir,
                     reload_interval=5,
                     channel_creds_type=grpc_util.ChannelCredsType.LOCAL,
                 )
@@ -94,7 +97,7 @@ class SubprocessServerDataIngesterTest(tb_test.TestCase):
 
         expected_args = [
             fake_binary,
-            "--logdir=/tmp/logs",
+            "--logdir=%s" % expanded_logdir,
             "--reload=5",
             "--port=0",
             "--port-file=%s" % port_file,
