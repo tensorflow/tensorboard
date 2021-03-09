@@ -39,7 +39,9 @@ describe('graph tests', () => {
     );
 
     const debugListenerSpy = spyOn(tb_debug, 'notifyActionEventFromPolymer');
-    await tf_graph_loader.fetchAndConstructHierarchicalGraph(
+    const {
+      graphHierarchy,
+    } = await tf_graph_loader.fetchAndConstructHierarchicalGraph(
       mockTracker,
       null /* remotePath */,
       null /* pbTxtFile */
@@ -76,16 +78,21 @@ describe('graph tests', () => {
       },
       {
         eventCategory: tb_debug.GRAPH_DEBUG_TIMING_EVENT_CATEGORY,
-        eventAction:
-          tb_debug.GraphDebugEventId.HIERARCHY_FIND_SIMILAR_SUBGRAPHS,
-        eventValue: jasmine.any(Number),
-      },
-      {
-        eventCategory: tb_debug.GRAPH_DEBUG_TIMING_EVENT_CATEGORY,
         eventAction: tb_debug.GraphDebugEventId.GRAPH_LOAD_SUCCEEDED,
         eventValue: jasmine.any(Number),
       },
     ]);
+    const callCountAfterLoader = debugListenerSpy.calls.count();
+
+    // Computing templates is done lazily.
+    graphHierarchy.updateTemplates();
+
+    expect(debugListenerSpy.calls.count()).toBe(callCountAfterLoader + 1);
+    expect(debugListenerSpy.calls.mostRecent().args[0]).toEqual({
+      eventCategory: tb_debug.GRAPH_DEBUG_TIMING_EVENT_CATEGORY,
+      eventAction: tb_debug.GraphDebugEventId.HIERARCHY_FIND_SIMILAR_SUBGRAPHS,
+      eventValue: jasmine.any(Number),
+    });
   });
 
   it('notifies listeners of events when graph fails to load', async () => {

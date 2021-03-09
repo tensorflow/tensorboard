@@ -144,7 +144,7 @@ class TfGraphDashboard extends LegacyElementMixin(PolymerElement) {
           <tf-graph-board
             id="graphboard"
             devices-for-stats="[[_devicesForStats]]"
-            color-by="[[_colorBy]]"
+            color-by="{{_colorBy}}"
             color-by-params="{{_colorByParams}}"
             graph-hierarchy="[[_graphHierarchy]]"
             graph="[[_graph]]"

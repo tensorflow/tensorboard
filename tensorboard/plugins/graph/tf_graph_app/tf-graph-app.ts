@@ -113,7 +113,7 @@ class TfGraphApp extends LegacyElementMixin(PolymerElement) {
             graph-hierarchy="[[graphHierarchy]]"
             graph="[[graph]]"
             progress="[[_progress]]"
-            color-by="[[colorBy]]"
+            color-by="{{colorBy}}"
             color-by-params="{{colorByParams}}"
             render-hierarchy="{{_renderHierarchy}}"
             selected-node="{{selectedNode}}"

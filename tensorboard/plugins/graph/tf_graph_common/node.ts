@@ -788,12 +788,15 @@ export function getFillForNode(
   let colorParams = render.MetanodeColors;
   templateIndex = templateIndex || (() => 0);
   switch (colorBy) {
+    // The 'none' mode still colors nodes, just ignores the template structural
+    // colors.
+    case ColorBy.NONE:
     case ColorBy.STRUCTURE:
       if (renderInfo.node.type === NodeType.META) {
         let tid = (<Metanode>renderInfo.node).templateId;
-        return tid === null
-          ? colorParams.UNKNOWN
-          : colorParams.STRUCTURE_PALETTE(templateIndex(tid), isExpanded);
+        return colorBy === ColorBy.STRUCTURE && tid !== null
+          ? colorParams.STRUCTURE_PALETTE(templateIndex(tid), isExpanded)
+          : colorParams.UNKNOWN;
       } else if (renderInfo.node.type === NodeType.SERIES) {
         // If expanded, we're showing the background rect, which we want to
         // appear gray. Otherwise we're showing a stack of ellipses which we

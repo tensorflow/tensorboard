@@ -402,8 +402,14 @@ export class Hierarchy extends tf_graph_util.Dispatcher<HierarchyEvent> {
    * graphs.
    */
   updateTemplates() {
-    this.templates = template.detect(this, this.verifyTemplate);
-    this.dispatchEvent(HierarchyEvent.TEMPLATES_UPDATED);
+    tf_graph_util.time(
+      'Finding similar subgraphs',
+      () => {
+        this.templates = template.detect(this, this.verifyTemplate);
+        this.dispatchEvent(HierarchyEvent.TEMPLATES_UPDATED);
+      },
+      tb_debug.GraphDebugEventId.HIERARCHY_FIND_SIMILAR_SUBGRAPHS
+    );
   }
 }
 /**
@@ -470,7 +476,7 @@ export function build(
   return tf_graph_util
     .runAsyncTask(
       'Adding nodes',
-      20,
+      30,
       () => {
         // Get all the possible device and XLA cluster names.
         let deviceNames = {};
@@ -493,7 +499,7 @@ export function build(
     .then(() => {
       return tf_graph_util.runAsyncTask(
         'Detect series',
-        20,
+        30,
         () => {
           if (params.seriesNodeMinSize > 0) {
             groupSeries(
@@ -513,23 +519,12 @@ export function build(
     .then(() => {
       return tf_graph_util.runAsyncTask(
         'Adding edges',
-        30,
+        40,
         () => {
           addEdges(h, graph, seriesNames);
         },
         tracker,
         tb_debug.GraphDebugEventId.HIERARCHY_ADD_EDGES
-      );
-    })
-    .then(() => {
-      return tf_graph_util.runAsyncTask(
-        'Finding similar subgraphs',
-        30,
-        () => {
-          h.updateTemplates();
-        },
-        tracker,
-        tb_debug.GraphDebugEventId.HIERARCHY_FIND_SIMILAR_SUBGRAPHS
       );
     })
     .then(() => {

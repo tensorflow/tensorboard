@@ -109,7 +109,7 @@ const GRADIENT_COMPATIBLE_COLOR_BY: Set<ColorBy> = new Set([
   ColorBy.MEMORY,
 ]);
 @customElement('tf-graph-controls')
-class TfGraphControls extends LegacyElementMixin(PolymerElement) {
+export class TfGraphControls extends LegacyElementMixin(PolymerElement) {
   static readonly template = html`
     <style>
       :host {
@@ -506,13 +506,19 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
           selected="{{colorBy}}"
           on-paper-radio-group-changed="_onColorByChangedByUserGesture"
         >
-          <paper-radio-button name="structure">Structure</paper-radio-button>
+          <paper-radio-button name="[[ColorBy.NONE]]">None</paper-radio-button>
 
-          <paper-radio-button name="device">Device</paper-radio-button>
+          <paper-radio-button name="[[ColorBy.STRUCTURE]]"
+            >Structure</paper-radio-button
+          >
+
+          <paper-radio-button name="[[ColorBy.DEVICE]]"
+            >Device</paper-radio-button
+          >
 
           <paper-radio-button
             id="xla-cluster-radio-button"
-            name="xla_cluster"
+            name="[[ColorBy.XLA_CLUSTER]]"
             disabled="[[!_xlaClustersProvided(renderHierarchy)]]"
           >
             XLA Cluster
@@ -529,7 +535,7 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
 
           <paper-radio-button
             id="compute-time-radio-button"
-            name="compute_time"
+            name="[[ColorBy.COMPUTE_TIME]]"
             disabled="[[!stats]]"
           >
             Compute time
@@ -546,7 +552,7 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
 
           <paper-radio-button
             id="memory-radio-button"
-            name="memory"
+            name="[[ColorBy.MEMORY]]"
             disabled="[[!stats]]"
           >
             Memory
@@ -563,7 +569,7 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
 
           <paper-radio-button
             id="tpu-compatibility-radio-button"
-            name="op_compatibility"
+            name="[[ColorBy.OP_COMPATIBILITY]]"
           >
             TPU Compatibility
           </paper-radio-button>
@@ -1012,6 +1018,9 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
       </iron-collapse>
     </div>
   `;
+  // Expose values for use in template.
+  ColorBy = ColorBy;
+
   // Public API.
   /**
    * @type {?tf_graph_proto.StepStats}

@@ -25,6 +25,18 @@ import {ColorBy} from '../tf_graph_common/view_types';
 import {Hierarchy} from '../tf_graph_common/hierarchy';
 
 /**
+ * Some UX features, such as 'color by structure', rely on the 'template'
+ * information of a graph. This can be very expensive to compute when the
+ * graph is too large. This object's constants determine what constitutes
+ * a 'large' graph. Graphs that exceed all these constraints should not
+ * have templates computed by default.
+ */
+const maxGraphSizeToComputeTemplates = {
+  MAX_NODE_COUNT: 10000,
+  MAX_EDGE_COUNT: 10000,
+};
+
+/**
  * Element for putting tf-graph and tf-graph-info side by side.
  *
  * Example
@@ -201,7 +213,10 @@ class TfGraphBoard extends LegacyElementMixin(PolymerElement) {
   traceInputs: boolean;
   @property({type: Boolean})
   autoExtractNodes: boolean;
-  @property({type: String})
+  @property({
+    type: String,
+    notify: true,
+  })
   colorBy: ColorBy;
   @property({
     type: Object,
@@ -308,5 +323,30 @@ class TfGraphBoard extends LegacyElementMixin(PolymerElement) {
     this._selectedNodeInclude = node
       ? node.include
       : tf_graph.InclusionType.UNSPECIFIED;
+  }
+  @observe('graph')
+  _slimGraphChanged() {
+    // By default, avoid coloring by 'structure' for large graphs, since it may be very expensive.
+    // Color by 'structure' is still available to users via explicit gesture.
+    if (!this.graph) {
+      return;
+    }
+    const {MAX_NODE_COUNT, MAX_EDGE_COUNT} = maxGraphSizeToComputeTemplates;
+    const isGraphTooLarge =
+      Object.keys(this.graph.nodes).length > MAX_NODE_COUNT &&
+      this.graph.edges.length > MAX_EDGE_COUNT;
+    if (isGraphTooLarge && this.colorBy === ColorBy.STRUCTURE) {
+      this.colorBy = ColorBy.NONE;
+    }
+  }
+  @observe('colorBy', 'graphHierarchy')
+  _ensureTemplates() {
+    if (!this.graphHierarchy || this.colorBy !== ColorBy.STRUCTURE) {
+      return;
+    }
+    if (this.graphHierarchy.getTemplateIndex()) {
+      return;
+    }
+    this.graphHierarchy.updateTemplates();
   }
 }
