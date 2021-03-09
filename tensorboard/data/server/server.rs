@@ -36,6 +36,7 @@ use data::tensor_board_data_provider_server::TensorBoardDataProvider;
 /// Data provider gRPC service implementation.
 #[derive(Debug)]
 pub struct DataProviderHandler {
+    pub data_location: String,
     pub commit: &'static Commit,
 }
 
@@ -62,7 +63,10 @@ impl TensorBoardDataProvider for DataProviderHandler {
         &self,
         _request: Request<data::GetExperimentRequest>,
     ) -> Result<Response<data::GetExperimentResponse>, Status> {
-        Err(Status::unimplemented("not yet implemented"))
+        Ok(Response::new(data::GetExperimentResponse {
+            data_location: self.data_location.clone(),
+            ..Default::default()
+        }))
     }
 
     async fn list_plugins(
@@ -641,9 +645,22 @@ mod tests {
 
     fn sample_handler(commit: Commit) -> DataProviderHandler {
         DataProviderHandler {
+            data_location: String::from("./logs/mnist"),
             // Leak the commit object, since the Tonic server must have only 'static references.
             commit: Box::leak(Box::new(commit)),
         }
+    }
+
+    #[tokio::test]
+    async fn test_get_experiment() {
+        let commit = CommitBuilder::new().build();
+        let handler = sample_handler(commit);
+        let req = Request::new(data::GetExperimentRequest {
+            experiment_id: "123".to_string(),
+        });
+        let res = handler.get_experiment(req).await.unwrap().into_inner();
+        assert_eq!(res.data_location, "./logs/mnist"); // from `sample_handler`
+        assert_eq!(res.creation_time, None);
     }
 
     #[tokio::test]

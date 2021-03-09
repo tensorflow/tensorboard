@@ -404,6 +404,35 @@ class ExperimentMetadata(object):
     def creation_time(self):
         return self._creation_time
 
+    def __eq__(self, other):
+        if not isinstance(other, ExperimentMetadata):
+            return False
+        if self._experiment_name != other._experiment_name:
+            return False
+        if self._experiment_description != other._experiment_description:
+            return False
+        if self._creation_time != other._creation_time:
+            return False
+        return True
+
+    def __hash__(self):
+        return hash(
+            (
+                self._experiment_name,
+                self._experiment_description,
+                self._creation_time,
+            )
+        )
+
+    def __repr__(self):
+        return "ExperimentMetadata(%s)" % ", ".join(
+            (
+                "experiment_name=%r" % (self._experiment_name,),
+                "experiment_description=%r" % (self._experiment_description,),
+                "creation_time=%r" % (self._creation_time,),
+            )
+        )
+
 
 class Run(object):
     """Metadata about a run.
