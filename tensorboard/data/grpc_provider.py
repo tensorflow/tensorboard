@@ -47,7 +47,25 @@ class GrpcDataProvider(provider.DataProvider):
         self._stub = stub
 
     def data_location(self, ctx, *, experiment_id):
-        return "grpc://%s" % (self._addr,)
+        req = data_provider_pb2.GetExperimentRequest()
+        req.experiment_id = experiment_id
+        with _translate_grpc_error():
+            res = self._stub.GetExperiment(req)
+        return res.data_location
+
+    def experiment_metadata(self, ctx, *, experiment_id):
+        req = data_provider_pb2.GetExperimentRequest()
+        req.experiment_id = experiment_id
+        with _translate_grpc_error():
+            res = self._stub.GetExperiment(req)
+        if not (res.name or res.description or res.HasField("creation_time")):
+            return None
+        res = provider.ExperimentMetadata(
+            experiment_name=res.name,
+            experiment_description=res.description,
+            creation_time=_timestamp_proto_to_float(res.creation_time),
+        )
+        return res
 
     def list_plugins(self, ctx, *, experiment_id):
         req = data_provider_pb2.ListPluginsRequest()
@@ -306,3 +324,8 @@ def _populate_rtf(run_tag_filter, rtf_proto):
         rtf_proto.runs.names[:] = sorted(run_tag_filter.runs)
     if run_tag_filter.tags is not None:
         rtf_proto.tags.names[:] = sorted(run_tag_filter.tags)
+
+
+def _timestamp_proto_to_float(ts):
+    """Converts `timestamp_pb2.Timestamp` to float seconds since epoch."""
+    return ts.ToNanoseconds() / 1e9

@@ -49,8 +49,73 @@ class GrpcDataProviderTest(tb_test.TestCase):
         self.ctx = context.RequestContext()
 
     def test_data_location(self):
+        res = data_provider_pb2.GetExperimentResponse()
+        res.data_location = "./logs/mnist"
+        self.stub.GetExperiment.return_value = res
+
         actual = self.provider.data_location(self.ctx, experiment_id="123")
-        self.assertEqual(actual, "grpc://localhost:0")
+        self.assertEqual(actual, "./logs/mnist")
+
+        req = data_provider_pb2.GetExperimentRequest()
+        req.experiment_id = "123"
+        self.stub.GetExperiment.assert_called_once_with(req)
+
+    def test_experiment_metadata_when_only_data_location_set(self):
+        res = data_provider_pb2.GetExperimentResponse()
+        self.stub.GetExperiment.return_value = res
+
+        actual = self.provider.experiment_metadata(
+            self.ctx, experiment_id="123"
+        )
+        self.assertIsNone(actual)
+
+        req = data_provider_pb2.GetExperimentRequest()
+        req.experiment_id = "123"
+        self.stub.GetExperiment.assert_called_once_with(req)
+
+    def test_experiment_metadata_with_partial_metadata(self):
+        res = data_provider_pb2.GetExperimentResponse()
+        res.name = "mnist"
+        self.stub.GetExperiment.return_value = res
+
+        actual = self.provider.experiment_metadata(
+            self.ctx, experiment_id="123"
+        )
+        self.assertEqual(
+            actual,
+            provider.ExperimentMetadata(
+                experiment_name="mnist",
+                experiment_description="",
+                creation_time=0,
+            ),
+        )
+
+        req = data_provider_pb2.GetExperimentRequest()
+        req.experiment_id = "123"
+        self.stub.GetExperiment.assert_called_once_with(req)
+
+    def test_experiment_metadata_with_creation_time(self):
+        res = data_provider_pb2.GetExperimentResponse()
+        res.name = "mnist"
+        res.description = "big breakthroughs"
+        res.creation_time.FromMilliseconds(1500)
+        self.stub.GetExperiment.return_value = res
+
+        actual = self.provider.experiment_metadata(
+            self.ctx, experiment_id="123"
+        )
+        self.assertEqual(
+            actual,
+            provider.ExperimentMetadata(
+                experiment_name="mnist",
+                experiment_description="big breakthroughs",
+                creation_time=1.5,
+            ),
+        )
+
+        req = data_provider_pb2.GetExperimentRequest()
+        req.experiment_id = "123"
+        self.stub.GetExperiment.assert_called_once_with(req)
 
     def test_list_plugins(self):
         res = data_provider_pb2.ListPluginsResponse()

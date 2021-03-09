@@ -38,6 +38,31 @@ class ExperimentMetadataTest(tb_test.TestCase):
         self.assertEqual(e1.experiment_description, "Experiment on Foo")
         self.assertEqual(e1.creation_time, 1.25)
 
+    def test_eq(self):
+        def md(**kwargs):
+            kwargs.setdefault("experiment_name", "FooExperiment")
+            kwargs.setdefault("experiment_description", "Experiment on Foo")
+            kwargs.setdefault("creation_time", 1.25)
+            return provider.ExperimentMetadata(**kwargs)
+
+        a1 = md()
+        a2 = md()
+        b = md(experiment_name="BarExperiment")
+        self.assertEqual(a1, a2)
+        self.assertNotEqual(a1, b)
+        self.assertNotEqual(b, object())
+
+    def test_repr(self):
+        x = provider.ExperimentMetadata(
+            experiment_name="FooExperiment",
+            experiment_description="Experiment on Foo",
+            creation_time=1.25,
+        )
+        repr_ = repr(x)
+        self.assertIn(repr(x.experiment_name), repr_)
+        self.assertIn(repr(x.experiment_description), repr_)
+        self.assertIn(repr(x.creation_time), repr_)
+
 
 class RunTest(tb_test.TestCase):
     def test_eq(self):

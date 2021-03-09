@@ -183,6 +183,8 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
         eprintln!("listening on {:?}", bound);
     }
 
+    let data_location = opts.logdir.display().to_string();
+
     // Leak the commit object, since the Tonic server must have only 'static references. This only
     // leaks the outer commit structure (of constant size), not the pointers to the actual data.
     let commit: &'static Commit = Box::leak(Box::new(Commit::new()));
@@ -215,7 +217,10 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
         })
         .expect("failed to spawn reloader thread");
 
-    let handler = DataProviderHandler { commit };
+    let handler = DataProviderHandler {
+        data_location,
+        commit,
+    };
     Server::builder()
         .add_service(TensorBoardDataProviderServer::new(handler))
         .serve_with_incoming(TcpListenerStream::new(listener))
