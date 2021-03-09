@@ -58,6 +58,13 @@ fn plugin_name(md: &pb::SummaryMetadata) -> Option<&str> {
 
 #[tonic::async_trait]
 impl TensorBoardDataProvider for DataProviderHandler {
+    async fn get_experiment(
+        &self,
+        _request: Request<data::GetExperimentRequest>,
+    ) -> Result<Response<data::GetExperimentResponse>, Status> {
+        Err(Status::unimplemented("not yet implemented"))
+    }
+
     async fn list_plugins(
         &self,
         _request: Request<data::ListPluginsRequest>,
