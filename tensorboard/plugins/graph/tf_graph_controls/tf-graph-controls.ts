@@ -109,7 +109,7 @@ const GRADIENT_COMPATIBLE_COLOR_BY: Set<ColorBy> = new Set([
   ColorBy.MEMORY,
 ]);
 @customElement('tf-graph-controls')
-export class TfGraphControls extends LegacyElementMixin(PolymerElement) {
+class TfGraphControls extends LegacyElementMixin(PolymerElement) {
   static readonly template = html`
     <style>
       :host {

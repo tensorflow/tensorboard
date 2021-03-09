@@ -35,7 +35,7 @@ import {TfGraphScene} from '../tf_graph_common/tf-graph-scene';
 import {ColorBy} from '../tf_graph_common/view_types';
 
 @customElement('tf-graph-scene')
-export class TfGraphScene2
+class TfGraphScene2
   extends LegacyElementMixin(PolymerElement)
   implements TfGraphScene {
   static readonly template = template;
