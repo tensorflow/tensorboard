@@ -278,9 +278,13 @@ export const template = html`
 
     /* --- Node label --- */
 
-    #root,
     .node {
-      will-change: transform;
+      /* Provide a hint to browsers to avoid using their static rasterization
+      at initial scale, which looks very pixelated on Chromium when zoomed in.
+      Note that we intentionally do *not* use 'will-change: transform' and
+      'translateZ(0) here, which introduce blurriness on Firefox.
+      See https://github.com/tensorflow/tensorboard/issues/4744 */
+      transform: translateZ(1px);
     }
 
     .node > text.nodelabel {
