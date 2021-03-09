@@ -89,6 +89,10 @@ class SubprocessServerDataIngesterTest(tb_test.TestCase):
                     logdir=tilde_logdir,
                     reload_interval=5,
                     channel_creds_type=grpc_util.ChannelCredsType.LOCAL,
+                    samples_per_plugin={
+                        "scalars": 500,
+                        "images": 0,
+                    },
                 )
                 ingester.start()
         self.assertIsInstance(
@@ -102,6 +106,7 @@ class SubprocessServerDataIngesterTest(tb_test.TestCase):
             "--port=0",
             "--port-file=%s" % port_file,
             "--die-after-stdin",
+            "--samples-per-plugin=scalars=500,images=all",
             "--verbose",  # logging is enabled in tests
         ]
         popen.assert_called_once_with(expected_args, stdin=subprocess.PIPE)

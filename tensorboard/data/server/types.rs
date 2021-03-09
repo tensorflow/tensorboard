@@ -15,10 +15,11 @@ limitations under the License.
 
 //! Core simple types.
 
-use log::error;
 use std::borrow::Borrow;
 use std::collections::HashMap;
 use std::str::FromStr;
+
+use crate::reservoir::Capacity;
 
 /// A step associated with a record, strictly increasing over time within a record stream.
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Copy, Clone)]
@@ -102,7 +103,7 @@ pub enum ParsePluginSamplingHintError {
 
 /// A map defining how many samples per plugin to keep.
 #[derive(Debug, Default)]
-pub struct PluginSamplingHint(pub HashMap<String, usize>);
+pub struct PluginSamplingHint(pub HashMap<String, Capacity>);
 
 impl FromStr for PluginSamplingHint {
     type Err = ParsePluginSamplingHintError;
@@ -118,8 +119,12 @@ impl FromStr for PluginSamplingHint {
                     part: pair_str.to_string(),
                 });
             }
-            let num_samples = pair[1].parse::<usize>()?;
             let plugin_name: String = pair[0].to_string();
+            let num_samples = if pair[1] == "all" {
+                Capacity::Unbounded
+            } else {
+                Capacity::Bounded(pair[1].parse::<usize>()?)
+            };
             result.insert(plugin_name, num_samples);
         }
         Ok(PluginSamplingHint(result))
@@ -176,21 +181,29 @@ mod tests {
 
     #[test]
     fn test_plugin_sampling_hint() {
+        use Capacity::{Bounded, Unbounded};
+
         // Parse from a valid hint with arbitrary plugin names.
-        let hint1 = "scalars=500,images=0,unknown=10".parse::<PluginSamplingHint>();
-        let mut expected1: HashMap<String, usize> = HashMap::new();
-        expected1.insert("scalars".to_string(), 500);
-        expected1.insert("images".to_string(), 0);
-        expected1.insert("unknown".to_string(), 10);
+        let hint1 = "scalars=500,images=0,histograms=all,unknown=10".parse::<PluginSamplingHint>();
+        let mut expected1: HashMap<String, Capacity> = HashMap::new();
+        expected1.insert("scalars".to_string(), Bounded(500));
+        expected1.insert("images".to_string(), Bounded(0));
+        expected1.insert("histograms".to_string(), Unbounded);
+        expected1.insert("unknown".to_string(), Bounded(10));
         assert_eq!(hint1.unwrap().0, expected1);
 
         // Parse from an empty hint.
         let hint2 = "".parse::<PluginSamplingHint>();
-        let expected2: HashMap<String, usize> = HashMap::new();
+        let expected2: HashMap<String, Capacity> = HashMap::new();
         assert_eq!(hint2.unwrap().0, expected2);
 
         // Parse from an invalid hint.
         match "x=1.5".parse::<PluginSamplingHint>().unwrap_err() {
+            ParsePluginSamplingHintError::ParseIntError(_) => (),
+            other => panic!("expected ParseIntError, got {:?}", other),
+        };
+
+        match "x=wat".parse::<PluginSamplingHint>().unwrap_err() {
             ParsePluginSamplingHintError::ParseIntError(_) => (),
             other => panic!("expected ParseIntError, got {:?}", other),
         };

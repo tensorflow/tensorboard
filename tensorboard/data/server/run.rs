@@ -26,7 +26,7 @@ use crate::data_compat::{EventValue, GraphDefValue, SummaryValue, TaggedRunMetad
 use crate::event_file::EventFileReader;
 use crate::logdir::{EventFileBuf, Logdir};
 use crate::proto::tensorboard as pb;
-use crate::reservoir::StageReservoir;
+use crate::reservoir::{Capacity, StageReservoir};
 use crate::types::{PluginSamplingHint, Run, Step, Tag, WallTime};
 
 /// A loader to accumulate reservoir-sampled events in a single TensorBoard run.
@@ -119,23 +119,21 @@ impl StageTimeSeries {
     fn capacity(
         metadata: &pb::SummaryMetadata,
         plugin_sampling_hint: Arc<PluginSamplingHint>,
-    ) -> usize {
+    ) -> Capacity {
         let data_class =
             pb::DataClass::from_i32(metadata.data_class).unwrap_or(pb::DataClass::Unknown);
-        let mut capacity = match data_class {
+        let mut capacity = Capacity::Bounded(match data_class {
             pb::DataClass::Scalar => 1000,
             pb::DataClass::Tensor => 100,
             pb::DataClass::BlobSequence => 10,
             _ => 0,
-        };
+        });
 
         // Override the default capacity using the plugin-specific hint.
         if data_class != pb::DataClass::Unknown {
             if let Some(ref pd) = metadata.plugin_data {
-                if let Some(&num_samples) = plugin_sampling_hint.0.get(&pd.plugin_name) {
-                    // TODO(psybuzz): if the hint prescribes 0 samples, the reservoir should ideally
-                    // be unbounded. For now, it simply creates a reservoir with capacity 0.
-                    capacity = num_samples;
+                if let Some(&hint) = plugin_sampling_hint.0.get(&pd.plugin_name) {
+                    capacity = hint;
                 }
             }
         }
