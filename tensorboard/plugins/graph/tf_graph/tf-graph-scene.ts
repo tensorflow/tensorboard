@@ -31,9 +31,13 @@ import * as tf_graph_render from '../tf_graph_common/render';
 import {template} from './tf-graph-scene.html';
 
 import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
+import {TfGraphScene} from '../tf_graph_common/tf-graph-scene';
+import {ColorBy} from '../tf_graph_common/view_types';
 
 @customElement('tf-graph-scene')
-class TfGraphScene2 extends LegacyElementMixin(PolymerElement) {
+class TfGraphScene2
+  extends LegacyElementMixin(PolymerElement)
+  implements TfGraphScene {
   static readonly template = template;
 
   @property({type: Object})
@@ -41,7 +45,7 @@ class TfGraphScene2 extends LegacyElementMixin(PolymerElement) {
   @property({type: String})
   name: string;
   @property({type: String})
-  colorBy: string;
+  colorBy: ColorBy;
   @property({type: Boolean})
   traceInputs: boolean;
 
@@ -118,7 +122,7 @@ class TfGraphScene2 extends LegacyElementMixin(PolymerElement) {
    * This property is a d3.scale.ordinal object.
    */
   @property({type: Object})
-  templateIndex: Function;
+  templateIndex: (name: string) => number;
 
   /**
    * A minimap object to notify for zoom events.
@@ -232,11 +236,8 @@ class TfGraphScene2 extends LegacyElementMixin(PolymerElement) {
   getGraphSvgRoot(): SVGElement {
     return this.$.svg as SVGElement;
   }
-  /**
-   * @returns {!HTMLElement}
-   */
-  getContextMenu() {
-    return this.$.contextMenu;
+  getContextMenu(): HTMLElement {
+    return this.$.contextMenu as HTMLElement;
   }
   /**
    * Resets the state of the component. Called whenever the whole graph
@@ -254,7 +255,7 @@ class TfGraphScene2 extends LegacyElementMixin(PolymerElement) {
     tf_graph_scene_node.removeGradientDefinitions(this.$.svg as SVGElement);
   }
   /** Main method for building the scene */
-  _build(renderHierarchy) {
+  _build(renderHierarchy: tf_graph_render.RenderGraphInfo) {
     this.templateIndex = renderHierarchy.hierarchy.getTemplateIndex();
     tf_graph_util.time(
       'tf-graph-scene (layout):',
@@ -377,7 +378,6 @@ class TfGraphScene2 extends LegacyElementMixin(PolymerElement) {
   @observe('_isAttached', 'renderHierarchy')
   _animateAndFit() {
     var isAttached = this._isAttached;
-    var renderHierarchy = this.renderHierarchy;
     if (this._hasRenderHierarchyBeenFitOnce || !isAttached) {
       // Do not animate and fit if the scene has already fitted this render hierarchy once. Or if
       // the graph dashboard is not attached (in which case the scene lacks DOM info for fitting).

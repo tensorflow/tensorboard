@@ -19,6 +19,7 @@ use bytes::Bytes;
 use prost::Message;
 use std::convert::TryInto;
 use std::fmt::Debug;
+use std::iter;
 
 use crate::commit::{BlobSequenceValue, DataLoss, ScalarValue};
 use crate::proto::tensorboard as pb;
@@ -92,9 +93,10 @@ impl EventValue {
 
     /// Consumes this event value and enriches it into a tensor.
     ///
-    /// This supports summaries with `tensor` populated.
-    //
-    // TODO(#4422): support conversion of other summary types to tensors.
+    /// This supports:
+    ///
+    ///   - summaries with `tensor` populated;
+    ///   - summaries with TensorFlow 1.x `histogram`.
     pub fn into_tensor(self, _metadata: &pb::SummaryMetadata) -> Result<pb::TensorProto, DataLoss> {
         let value_box = match self {
             EventValue::GraphDef(_) => return Err(DataLoss),
@@ -103,6 +105,57 @@ impl EventValue {
         };
         match *value_box {
             pb::summary::value::Value::Tensor(tp) => Ok(tp),
+            pb::summary::value::Value::Histo(hp) => {
+                // Migrate legacy TF 1.x HistogramProto to TensorProto. The "spec" in summary.proto
+                // says `bucket` and `bucket_limit` are parallel arrays encoding bucket counts and
+                // bucket right edges; the first bucket's left edge is assumed to be -DBL_MAX and
+                // subsequent left edges are defined as the right edge of the preceeding bucket.
+                //
+                // Our conversion logic in data_compat.py however disobeys this and instead sets the
+                // leftmost and rightmost edges to the `min` and `max` values, respectively. This
+                // will result in the outermost buckets having left edge > right edge if they were
+                // originally empty. Apparently the histogram visualization can't handle buckets
+                // extending to -/+ DBL_MAX, but can handle buckets of negative width?
+                //
+                // For consistency with the status quo, we replicate this questionable logic here.
+                if hp.bucket.len() != hp.bucket_limit.len() {
+                    return Err(DataLoss);
+                }
+                let num_buckets = hp.bucket.len();
+                // Skip the last `bucket_limit`; it gets replaced by `hp.max`. It's okay to ignore
+                // the edge case at 0 since `.zip()` will stop immediately in that case anyway.
+                let bucket_edges = &hp.bucket_limit[..usize::saturating_sub(num_buckets, 1)];
+                let bucket_lefts = iter::once(hp.min).chain(bucket_edges.iter().copied());
+                let bucket_rights = bucket_edges.iter().copied().chain(iter::once(hp.max));
+                let bucket_counts = hp.bucket.iter().copied();
+                let tensor_content = bucket_lefts
+                    .zip(bucket_rights)
+                    .zip(bucket_counts)
+                    .flat_map(|((l, r), v)| vec![l, r, v])
+                    .map(f64::to_le_bytes)
+                    .collect::<Vec<_>>()
+                    .concat()
+                    .into();
+
+                Ok(pb::TensorProto {
+                    dtype: pb::DataType::DtDouble.into(),
+                    tensor_shape: Some(pb::TensorShapeProto {
+                        dim: vec![
+                            pb::tensor_shape_proto::Dim {
+                                size: num_buckets as i64,
+                                ..Default::default()
+                            },
+                            pb::tensor_shape_proto::Dim {
+                                size: 3,
+                                ..Default::default()
+                            },
+                        ],
+                        ..Default::default()
+                    }),
+                    tensor_content,
+                    ..Default::default()
+                })
+            }
             _ => Err(DataLoss),
         }
     }
@@ -287,6 +340,7 @@ impl SummaryValue {
             (_, Value::SimpleValue(_)) => blank(plugin_names::SCALARS, pb::DataClass::Scalar),
             (_, Value::Image(_)) => tf1x_image_metadata(),
             (_, Value::Audio(_)) => tf1x_audio_metadata(),
+            (_, Value::Histo(_)) => blank(plugin_names::HISTOGRAMS, pb::DataClass::Tensor),
             (Some(mut md), _) => {
                 // Use given metadata, but first set data class based on plugin name, if known.
                 match md.plugin_data.as_ref().map(|pd| pd.plugin_name.as_str()) {
@@ -718,6 +772,93 @@ mod tests {
                 v.into_tensor(&blank("mytensors", pb::DataClass::Tensor)),
                 Ok(tp)
             );
+        }
+
+        #[test]
+        fn test_enrich_tf1x_histogram() {
+            let hp = pb::HistogramProto {
+                min: -1.999,
+                max: 1.999,
+                num: 60.0,
+                bucket_limit: vec![-2.0, -1.0, 0.0, 1.0, 2.0, f64::MAX],
+                bucket: vec![0.0, 10.0, 20.0, 20.0, 10.0, 0.0],
+                ..Default::default()
+            };
+            let v = EventValue::Summary(SummaryValue(Box::new(Value::Histo(hp))));
+            assert_eq!(
+                v.into_tensor(&blank("histogram", pb::DataClass::Tensor)),
+                Ok(pb::TensorProto {
+                    dtype: pb::DataType::DtDouble.into(),
+                    tensor_shape: Some(tensor_shape(&[6, 3])),
+                    tensor_content: {
+                        #[rustfmt::skip]
+                        let b = to_le_bytes![
+                            -1.999, -2.0, 0.0,
+                            -2.0, -1.0, 10.0,
+                            -1.0, 0.0, 20.0,
+                            0.0, 1.0, 20.0,
+                            1.0, 2.0, 10.0,
+                            2.0, 1.999, 0.0f64
+                        ];
+                        b
+                    },
+                    ..Default::default()
+                })
+            );
+        }
+
+        #[test]
+        fn test_enrich_tf1x_histogram_single_bucket() {
+            let hp = pb::HistogramProto {
+                min: -1.0,
+                max: 1.0,
+                num: 2.0,
+                bucket_limit: vec![f64::MAX],
+                bucket: vec![2.0],
+                ..Default::default()
+            };
+            let v = EventValue::Summary(SummaryValue(Box::new(Value::Histo(hp))));
+            assert_eq!(
+                v.into_tensor(&blank("histogram", pb::DataClass::Tensor)),
+                Ok(pb::TensorProto {
+                    dtype: pb::DataType::DtDouble.into(),
+                    tensor_shape: Some(tensor_shape(&[1, 3])),
+                    tensor_content: to_le_bytes![-1.0, 1.0, 2.0f64],
+                    ..Default::default()
+                })
+            );
+        }
+
+        #[test]
+        fn test_enrich_tf1x_histogram_empty() {
+            let hp = pb::HistogramProto::default();
+            let v = EventValue::Summary(SummaryValue(Box::new(Value::Histo(hp))));
+            assert_eq!(
+                v.into_tensor(&blank("histogram", pb::DataClass::Tensor)),
+                Ok(pb::TensorProto {
+                    dtype: pb::DataType::DtDouble.into(),
+                    tensor_shape: Some(tensor_shape(&[0, 3])),
+                    ..Default::default()
+                })
+            );
+        }
+
+        #[test]
+        fn test_enrich_tf1x_histogram_mismatched_field_lengths() {
+            for (limit_len, bucket_len) in &[(0, 1), (1, 0), (1, 2), (2, 1)] {
+                let hp = pb::HistogramProto {
+                    bucket_limit: vec![0.0; *limit_len],
+                    bucket: vec![0.0; *bucket_len],
+                    ..Default::default()
+                };
+                let v = EventValue::Summary(SummaryValue(Box::new(Value::Histo(hp.clone()))));
+                assert_eq!(
+                    v.into_tensor(&blank("histogram", pb::DataClass::Tensor)),
+                    Err(DataLoss),
+                    "expected error converting proto {:?}",
+                    hp
+                );
+            }
         }
     }
 

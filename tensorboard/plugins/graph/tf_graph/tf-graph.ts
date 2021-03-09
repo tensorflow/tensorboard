@@ -27,6 +27,7 @@ import * as tf_graph_util from '../tf_graph_common/util';
 import * as tf_graph_hierarchy from '../tf_graph_common/hierarchy';
 import * as tf_graph_render from '../tf_graph_common/render';
 import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
+import {ColorBy} from '../tf_graph_common/view_types';
 
 @customElement('tf-graph')
 class TfGraph extends LegacyElementMixin(PolymerElement) {
@@ -86,7 +87,7 @@ class TfGraph extends LegacyElementMixin(PolymerElement) {
     notify: true,
     observer: '_graphChanged',
   })
-  graphHierarchy: tf_graph.Hierarchy;
+  graphHierarchy: tf_graph_hierarchy.Hierarchy;
   @property({type: Object})
   basicGraph: tf_graph.SlimGraph;
   @property({type: Object})
@@ -120,7 +121,7 @@ class TfGraph extends LegacyElementMixin(PolymerElement) {
   })
   highlightedNode: string;
   @property({type: String})
-  colorBy: string;
+  colorBy: ColorBy;
   @property({
     type: Object,
     notify: true,

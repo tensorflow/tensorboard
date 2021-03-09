@@ -20,7 +20,11 @@ import {createAction, props} from '@ngrx/store';
 
 import {SortDirection} from '../../types/ui';
 import {Run} from '../data_source/runs_data_source_types';
-import {DiscreteHparamValues, ExperimentIdToRunsAndMetadata} from '../types';
+import {
+  DiscreteHparamValues,
+  ExperimentIdToRunsAndMetadata,
+  SortKey,
+} from '../types';
 
 /** @typehack */ import * as _typeHackModels from '@ngrx/store/src/models';
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
@@ -74,7 +78,7 @@ export const runSelectorPaginationOptionChanged = createAction(
 
 export const runSelectorSortChanged = createAction(
   '[Runs] Run Selector Sort Changed',
-  props<{column: string; direction: SortDirection}>()
+  props<{key: SortKey; direction: SortDirection}>()
 );
 
 export const runSelectorRegexFilterChanged = createAction(

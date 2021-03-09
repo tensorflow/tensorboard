@@ -22,6 +22,7 @@ import * as tf_graph_scene_node from '../tf_graph_common/node';
 import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
 
 import './tf-graph-icon';
+import {ColorBy} from './view_types';
 
 @customElement('tf-node-icon')
 class TfNodeIcon extends LegacyElementMixin(PolymerElement) {
@@ -71,7 +72,7 @@ class TfNodeIcon extends LegacyElementMixin(PolymerElement) {
   @property({
     type: Object,
   })
-  colorBy: any = 'structural';
+  colorBy: ColorBy = ColorBy.STRUCTURE;
 
   /**
    * Function used by structural coloring algorithm to determine which
@@ -80,7 +81,7 @@ class TfNodeIcon extends LegacyElementMixin(PolymerElement) {
   @property({
     type: Object,
   })
-  templateIndex: object = null;
+  templateIndex: (name: string) => number | null = null;
 
   /** Type of node to draw (ignored if node is set). */
   @property({
@@ -139,16 +140,14 @@ class TfNodeIcon extends LegacyElementMixin(PolymerElement) {
   _computeFillOverride(
     inputNode,
     inputRenderInfo,
-    inputColorBy,
+    inputColorBy: ColorBy,
     inputTemplateIndex,
     inputFill
   ) {
-    if (inputNode && inputRenderInfo && inputColorBy && inputTemplateIndex) {
-      var ns = tf_graph_scene_node;
-      var colorBy = ns.ColorBy[inputColorBy.toUpperCase()];
-      return ns.getFillForNode(
+    if (inputNode && inputRenderInfo && inputTemplateIndex) {
+      return tf_graph_scene_node.getFillForNode(
         inputTemplateIndex,
-        colorBy,
+        inputColorBy,
         inputRenderInfo,
         false
       );
@@ -202,17 +201,15 @@ class TfNodeIcon extends LegacyElementMixin(PolymerElement) {
   }
   _onFillOverrideChanged(newFill, oldFill) {
     const {node, renderInfo, colorBy, templateIndex} = this;
-    const ns = tf_graph_scene_node;
     if (newFill !== oldFill) {
-      ns.removeGradientDefinitions(
+      tf_graph_scene_node.removeGradientDefinitions(
         (this.$.icon as any).getSvgDefinableElement()
       );
     }
-    if (node && renderInfo && colorBy && templateIndex) {
-      const nsColorBy = ns.ColorBy[colorBy.toUpperCase()];
-      ns.getFillForNode(
+    if (node && renderInfo && templateIndex) {
+      tf_graph_scene_node.getFillForNode(
         templateIndex,
-        nsColorBy,
+        colorBy,
         renderInfo as any,
         false,
         (this.$.icon as any).getSvgDefinableElement()

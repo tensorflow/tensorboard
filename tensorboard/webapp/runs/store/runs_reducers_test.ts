@@ -12,15 +12,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {DataLoadState} from '../../types/data';
-
 import {deepFreeze} from '../../testing/lang';
+import {DataLoadState} from '../../types/data';
 import {SortDirection} from '../../types/ui';
 import * as colorUtils from '../../util/colors';
 import * as actions from '../actions';
 import {buildHparamsAndMetadata} from '../data_source/testing';
-import {DiscreteFilter, IntervalFilter} from '../types';
-
+import {DiscreteFilter, IntervalFilter, SortType} from '../types';
 import * as runsReducers from './runs_reducers';
 import {DomainType, MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT} from './runs_types';
 import {
@@ -881,7 +879,7 @@ describe('runs_reducers', () => {
     it('updates the sort changed', () => {
       const state = buildRunsState(undefined, {
         sort: {
-          column: null,
+          key: null,
           direction: SortDirection.UNSET,
         },
       });
@@ -889,13 +887,13 @@ describe('runs_reducers', () => {
       const nextState = runsReducers.reducers(
         state,
         actions.runSelectorSortChanged({
-          column: 'experiment_name',
+          key: {type: SortType.EXPERIMENT_NAME},
           direction: SortDirection.ASC,
         })
       );
 
       expect(nextState.ui.sort).toEqual({
-        column: 'experiment_name',
+        key: {type: SortType.EXPERIMENT_NAME},
         direction: SortDirection.ASC,
       });
     });

@@ -27,6 +27,7 @@ import * as tf_graph_scene_node from '../tf_graph_common/node';
 
 import '../../../components/tf_wbr_string/tf-wbr-string';
 import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
+import {ColorBy} from '../tf_graph_common/view_types';
 
 @customElement('tf-node-info')
 class TfNodeInfo extends LegacyElementMixin(PolymerElement) {
@@ -442,7 +443,7 @@ class TfNodeInfo extends LegacyElementMixin(PolymerElement) {
   renderHierarchy: any;
   /** What to color the nodes by (compute time, memory, device etc.) */
   @property({type: String})
-  colorBy: string;
+  colorBy: ColorBy;
   @property({
     type: Object,
     computed: '_getNode(graphNodeName, graphHierarchy)',

@@ -16,13 +16,15 @@ limitations under the License.
  * @fileoverview Types of experiments that come from the backend.
  */
 
-import {LoadState} from '../../types/data';
-
 import {RouteContextedState} from '../../app_routing/route_contexted_reducer_helper';
+import {LoadState} from '../../types/data';
 import {SortDirection} from '../../types/ui';
-import {HparamValue} from '../data_source/runs_data_source_types';
-import {HparamSpec, MetricSpec} from '../data_source/runs_data_source_types';
-import {DiscreteFilter, IntervalFilter} from '../types';
+import {
+  HparamSpec,
+  HparamValue,
+  MetricSpec,
+} from '../data_source/runs_data_source_types';
+import {DiscreteFilter, IntervalFilter, SortKey} from '../types';
 
 export {Domain, DomainType} from '../data_source/runs_data_source_types';
 
@@ -76,7 +78,7 @@ export interface RunsDataState {
 export interface RunsUiRoutefulState {
   paginationOption: {pageIndex: number; pageSize: number};
   regexFilter: string;
-  sort: {column: string | null; direction: SortDirection};
+  sort: {key: SortKey | null; direction: SortDirection};
 
   // Each route may keep track of its own hparam/metric filter values that
   // overrides the default filters.

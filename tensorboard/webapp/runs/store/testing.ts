@@ -69,7 +69,7 @@ export function buildRunsState(
     ui: {
       paginationOption: {pageIndex: 0, pageSize: 0},
       regexFilter: '',
-      sort: {column: null, direction: SortDirection.UNSET},
+      sort: {key: null, direction: SortDirection.UNSET},
       defaultRunColor: new Map(),
       runColorOverride: new Map(),
       hparamFilters: new Map(),

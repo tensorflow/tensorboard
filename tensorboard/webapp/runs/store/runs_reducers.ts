@@ -19,9 +19,9 @@ import {
   createReducer,
   on,
 } from '@ngrx/store';
-import {DataLoadState} from '../../types/data';
 
 import {createRouteContextedState} from '../../app_routing/route_contexted_reducer_helper';
+import {DataLoadState} from '../../types/data';
 import {SortDirection} from '../../types/ui';
 import * as colorUtils from '../../util/colors';
 import {composeReducers} from '../../util/ngrx';
@@ -32,7 +32,6 @@ import {
   DomainType,
   IntervalFilter,
 } from '../types';
-
 import {
   MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT,
   RunsDataState,
@@ -205,7 +204,7 @@ const {
     },
     regexFilter: '',
     sort: {
-      column: null,
+      key: null,
       direction: SortDirection.UNSET,
     },
     hparamFilters: new Map(),
@@ -248,7 +247,7 @@ const uiReducer: ActionReducer<RunsUiState, Action> = createReducer(
     return {
       ...state,
       sort: {
-        column: action.column,
+        key: action.key,
         direction: action.direction,
       },
     };

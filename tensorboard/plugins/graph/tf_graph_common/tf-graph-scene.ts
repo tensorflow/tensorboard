@@ -13,7 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import * as d3 from 'd3';
-import {RenderNodeInfo} from './render';
+import {Annotation, RenderNodeInfo} from './render';
+import {ColorBy} from './view_types';
 
 type Selection = d3.Selection<any, any, any, any>;
 // This technically extends Polymer.Component whose constructor is not
@@ -22,12 +23,15 @@ export abstract class TfGraphScene extends HTMLElement {
   maxMetanodeLabelLength: number;
   maxMetanodeLabelLengthLargeFont: number;
   maxMetanodeLabelLengthFontSize: number;
-  templateIndex: () => {};
-  colorBy: string;
+  templateIndex: (name: string) => number;
+  colorBy: ColorBy;
   abstract fire(eventName: string, daat: any): void;
   abstract addNodeGroup(name: string, selection: Selection): void;
   abstract removeNodeGroup(name: string): void;
-  abstract removeAnnotationGroup(name: string): void;
+  abstract removeAnnotationGroup(
+    annotation: Annotation,
+    renderNode: RenderNodeInfo
+  ): void;
   abstract isNodeExpanded(node: RenderNodeInfo): boolean;
   abstract isNodeHighlighted(nodeName: string): boolean;
   abstract isNodeSelected(nodeName: string): boolean;

@@ -101,13 +101,13 @@ limitations under the License.
 
           <span
             *ngSwitchCase="RunsTableColumn.EXPERIMENT_NAME"
-            [mat-sort-header]="RunsTableColumn.EXPERIMENT_NAME"
+            [mat-sort-header]="{type: SortType.EXPERIMENT_NAME}"
             >Experiment</span
           >
 
           <span
             *ngSwitchCase="RunsTableColumn.RUN_NAME"
-            [mat-sort-header]="RunsTableColumn.RUN_NAME"
+            [mat-sort-header]="{type: SortType.RUN_NAME}"
             >Run</span
           >
 
@@ -119,6 +119,7 @@ limitations under the License.
         *ngFor="let column of hparamColumns; trackBy: trackByHparamColumn"
         role="columnheader"
         class="column"
+        [mat-sort-header]="{type: SortType.HPARAM, name: column.name}"
       >
         <span class="name">{{ column.displayName || column.name }}</span>
         <ng-container *ngIf="column.filter">
@@ -183,6 +184,7 @@ limitations under the License.
         *ngFor="let column of metricColumns; trackBy: trackByMetricColumn"
         role="columnheader"
         class="column"
+        [mat-sort-header]="{type: SortType.METRIC, tag: column.tag}"
       >
         <span class="name">{{ column.displayName || column.tag }}</span>
         <ng-container *ngIf="column.filter">

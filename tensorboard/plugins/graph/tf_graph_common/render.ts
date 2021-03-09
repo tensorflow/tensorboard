@@ -37,6 +37,7 @@ import {
   OpNode,
   OpNodeImpl,
 } from './graph';
+import {Hierarchy} from './hierarchy';
 import * as tf_graph_util from './util';
 
 export type EdgeData = {
@@ -207,7 +208,7 @@ const nodeDisplayNameRegex = new RegExp(
  * for each node in the graph.
  */
 export class RenderGraphInfo {
-  hierarchy: tf_graph.Hierarchy;
+  hierarchy: Hierarchy;
   private displayingStats: boolean;
   private index: {
     [nodeName: string]: RenderNodeInfo;
@@ -236,7 +237,7 @@ export class RenderGraphInfo {
   // data. If not provided, defaults to encoding tensor size in thickness.
   edgeWidthFunction: EdgeThicknessFunction;
   constructor(
-    hierarchy: tf_graph.Hierarchy,
+    hierarchy: Hierarchy,
     displayingStats: boolean,
     autoExtractNodes: boolean
   ) {
@@ -1853,11 +1854,13 @@ export class RenderGroupNodeInfo extends RenderNodeInfo {
   isolatedOutExtract: RenderNodeInfo[];
   /** Array of nodes to show in the function library scene group. */
   libraryFunctionsExtract: RenderNodeInfo[];
-  constructor(groupNode: GroupNode, graphOptions: any) {
+  constructor(
+    groupNode: GroupNode,
+    graphOptions: tf_graph.LabeledGraphOptions
+  ) {
     super(groupNode);
     let metagraph = groupNode.metagraph;
     let gl = metagraph.graph() as any;
-    graphOptions.compound = true;
     this.coreGraph = createGraph<RenderNodeInfo, RenderMetaedgeInfo>(
       gl.name,
       GraphType.CORE,

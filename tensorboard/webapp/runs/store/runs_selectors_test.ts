@@ -13,9 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {DataLoadState} from '../../types/data';
-
 import {SortDirection} from '../../types/ui';
-
+import {SortType} from '../types';
 import * as selectors from './runs_selectors';
 import {
   buildDiscreteFilter,
@@ -349,12 +348,15 @@ describe('runs_selectors', () => {
     it('returns sort options', () => {
       const state = buildStateFromRunsState(
         buildRunsState(undefined, {
-          sort: {column: 'hey', direction: SortDirection.UNSET},
+          sort: {
+            key: {type: SortType.RUN_NAME},
+            direction: SortDirection.UNSET,
+          },
         })
       );
 
       expect(selectors.getRunSelectorSort(state)).toEqual({
-        column: 'hey',
+        key: {type: SortType.RUN_NAME},
         direction: SortDirection.UNSET,
       });
     });

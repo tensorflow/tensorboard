@@ -39,6 +39,7 @@ import * as tf_graph_scene from './scene';
 import * as tf_graph_util from './util';
 
 import {TfGraphScene} from './tf-graph-scene';
+import {ColorBy} from './view_types';
 
 /**
  * Select or Create a 'g.nodes' group to a given sceneGroup
@@ -729,15 +730,7 @@ function position(nodeGroup, d: render.RenderNodeInfo) {
     }
   }
 }
-/** Enum specifying the options to color nodes by */
-export enum ColorBy {
-  STRUCTURE,
-  DEVICE,
-  XLA_CLUSTER,
-  COMPUTE_TIME,
-  MEMORY,
-  OP_COMPATIBILITY,
-}
+
 function getGradient(
   id: string,
   colors: Array<{
@@ -786,13 +779,14 @@ export function removeGradientDefinitions(svgRoot: SVGElement) {
  * for the fill inside the svgRoot when necessary.
  */
 export function getFillForNode(
-  templateIndex,
-  colorBy,
+  templateIndex: (name: string) => number | null,
+  colorBy: ColorBy,
   renderInfo: render.RenderNodeInfo,
   isExpanded: boolean,
   svgRoot?: SVGElement
 ): string {
   let colorParams = render.MetanodeColors;
+  templateIndex = templateIndex || (() => 0);
   switch (colorBy) {
     case ColorBy.STRUCTURE:
       if (renderInfo.node.type === NodeType.META) {
@@ -880,14 +874,14 @@ export function stylize(
   nodeClass?
 ) {
   nodeClass = nodeClass || Class.Node.SHAPE;
-  let isHighlighted = sceneElement.isNodeHighlighted(renderInfo.node.name);
-  let isSelected = sceneElement.isNodeSelected(renderInfo.node.name);
-  let isExtract =
+  const isHighlighted = sceneElement.isNodeHighlighted(renderInfo.node.name);
+  const isSelected = sceneElement.isNodeSelected(renderInfo.node.name);
+  const isExtract =
     renderInfo.isInExtract ||
     renderInfo.isOutExtract ||
     renderInfo.isLibraryFunction;
-  let isExpanded = renderInfo.expanded && nodeClass !== Class.Annotation.NODE;
-  let isFadedOut = renderInfo.isFadedOut;
+  const isExpanded = renderInfo.expanded && nodeClass !== Class.Annotation.NODE;
+  const isFadedOut = renderInfo.isFadedOut;
   nodeGroup.classed('highlighted', isHighlighted);
   nodeGroup.classed('selected', isSelected);
   nodeGroup.classed('extract', isExtract);
@@ -895,10 +889,12 @@ export function stylize(
   nodeGroup.classed('faded', isFadedOut);
   // Main node always exists here and it will be reached before subscene,
   // so d3 selection is fine here.
-  let node = nodeGroup.select('.' + nodeClass + ' .' + Class.Node.COLOR_TARGET);
-  let fillColor = getFillForNode(
+  const node = nodeGroup.select(
+    '.' + nodeClass + ' .' + Class.Node.COLOR_TARGET
+  );
+  const fillColor = getFillForNode(
     sceneElement.templateIndex,
-    ColorBy[sceneElement.colorBy.toUpperCase()],
+    sceneElement.colorBy,
     renderInfo,
     isExpanded,
     sceneElement.getGraphSvgRoot()
@@ -1364,9 +1360,8 @@ export function buildGroupForAnnotation(
   annotationGroups
     .exit()
     .each(function (a) {
-      let aGroup = d3.select(this);
       // Remove annotation from the index in the scene
-      sceneElement.removeAnnotationGroup(a, d, aGroup);
+      sceneElement.removeAnnotationGroup(a, d);
     })
     .remove();
   return annotationGroups;

@@ -19,6 +19,7 @@ import '../../../components/tf_dashboard_common/tensorboard-color';
 import '../tf_graph_common/tf-node-icon';
 
 import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
+import {ColorBy} from '../tf_graph_common/view_types';
 
 @customElement('tf-graph-op-compat-list-item')
 class TfGraphOpCompatListItem extends LegacyElementMixin(PolymerElement) {
@@ -117,11 +118,11 @@ class TfGraphOpCompatListItem extends LegacyElementMixin(PolymerElement) {
   })
   itemType: string;
   @property({type: String})
-  colorBy: string;
+  colorBy: ColorBy;
   @property({type: Object})
   colorByParams: object;
   @property({type: Object})
-  templateIndex: object;
+  templateIndex: (name: string) => number;
   _itemTypeChanged() {
     if (this.itemType !== 'subnode') {
       this.$['list-item'].classList.add('clickable');

@@ -53,6 +53,8 @@ import {
   DiscreteHparamValues,
   DomainType,
   IntervalFilter,
+  SortKey,
+  SortType,
 } from '../../types';
 
 import {
@@ -73,30 +75,46 @@ const getRunsLoading = createSelector<
 
 function getPropsForSort(
   item: RunTableItem,
-  sortColumn: RunsTableColumn
-): Array<string | number> {
-  switch (sortColumn) {
-    case RunsTableColumn.EXPERIMENT_NAME:
+  key: SortKey
+): Array<string | number | boolean | undefined> {
+  switch (key.type) {
+    case SortType.EXPERIMENT_NAME:
       return [item.experimentAlias, item.run.name, item.run.id];
-    case RunsTableColumn.RUN_NAME:
+    case SortType.RUN_NAME:
       return [item.run.name, item.experimentAlias, item.run.id];
+    case SortType.HPARAM:
+      return [
+        item.hparams.get(key.name),
+        item.run.name,
+        item.experimentAlias,
+        item.run.id,
+      ];
+    case SortType.METRIC:
+      return [
+        item.metrics.get(key.tag),
+        item.run.name,
+        item.experimentAlias,
+        item.run.id,
+      ];
     default:
-      throw new Error(`Not yet implemented: ${sortColumn}`);
+      const _ = key as never;
+      throw new Error(`Not yet implemented: ${_}`);
   }
 }
 
 function sortRunTableItems(
   items: RunTableItem[],
-  sort: {column: RunsTableColumn | null; direction: SortDirection}
+  sort: {key: SortKey | null; direction: SortDirection}
 ): RunTableItem[] {
+  const sortKey = sort.key;
   const sortedItems = [...items];
-  if (!sort.column || sort.direction === SortDirection.UNSET) {
+  if (sortKey === null || sort.direction === SortDirection.UNSET) {
     return sortedItems;
   }
 
   sortedItems.sort((a, b) => {
-    const aProps = getPropsForSort(a, sort.column!);
-    const bProps = getPropsForSort(b, sort.column!);
+    const aProps = getPropsForSort(a, sortKey);
+    const bProps = getPropsForSort(b, sortKey);
     if (aProps.length !== bProps.length) {
       throw new Error(
         'Invariant error: a given sort should result in same number of ' +
@@ -109,6 +127,10 @@ function sortRunTableItems(
       const valB = bProps[index];
       if (valA === valB) {
         continue;
+      }
+
+      if (valA === undefined || valB === undefined) {
+        return valB === undefined ? -1 : 1;
       }
 
       if (typeof valA !== typeof valB) {
@@ -399,9 +421,7 @@ export class RunsTableContainer implements OnInit {
       this.store.select(getRunSelectorSort),
     ]).pipe(
       map(([items, sort]) => {
-        const column = sort.column as RunsTableColumn | null;
-        const direction = sort.direction;
-        return sortRunTableItems(items, {column, direction});
+        return sortRunTableItems(items, sort);
       })
     );
 
@@ -500,7 +520,7 @@ export class RunsTableContainer implements OnInit {
     );
   }
 
-  onSortChange(sort: {column: RunsTableColumn; direction: SortDirection}) {
+  onSortChange(sort: {key: SortKey; direction: SortDirection}) {
     this.store.dispatch(runSelectorSortChanged(sort));
   }
 
