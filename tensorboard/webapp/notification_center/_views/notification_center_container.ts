@@ -13,11 +13,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Component} from '@angular/core';
-import {ViewNotificationExt} from './view_types';
-import {notificationNotes} from './notification_notes';
 import {from, Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
 import {CategoryEnum} from '../_redux/notification_center_types';
+import {notificationNotes} from './notification_notes';
+import {ViewNotificationExt} from './view_types';
 
 const iconMap = new Map([[CategoryEnum.WHATS_NEW, 'info_outline_24px']]);
 
