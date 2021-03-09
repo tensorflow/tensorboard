@@ -31,9 +31,9 @@ import {Hierarchy} from '../tf_graph_common/hierarchy';
  * a 'large' graph. Graphs that exceed all these constraints should not
  * have templates computed by default.
  */
-const MAX_GRAPH_SIZE_TO_COMPUTE_TEMPLATES = {
-  maxNodeCount: 10000,
-  maxEdgeCount: 10000,
+const maxGraphSizeToComputeTemplates = {
+  MAX_NODE_COUNT: 10000,
+  MAX_EDGE_COUNT: 10000,
 };
 
 /**
@@ -331,10 +331,10 @@ class TfGraphBoard extends LegacyElementMixin(PolymerElement) {
     if (!this.graph) {
       return;
     }
-    const {maxNodeCount, maxEdgeCount} = MAX_GRAPH_SIZE_TO_COMPUTE_TEMPLATES;
+    const {MAX_NODE_COUNT, MAX_EDGE_COUNT} = maxGraphSizeToComputeTemplates;
     const isGraphTooLarge =
-      Object.keys(this.graph.nodes).length > maxNodeCount &&
-      this.graph.edges.length > maxEdgeCount;
+      Object.keys(this.graph.nodes).length > MAX_NODE_COUNT &&
+      this.graph.edges.length > MAX_EDGE_COUNT;
     if (isGraphTooLarge && this.colorBy === ColorBy.STRUCTURE) {
       this.colorBy = ColorBy.NONE;
     }
