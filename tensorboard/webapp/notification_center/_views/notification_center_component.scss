@@ -14,13 +14,13 @@ limitations under the License.
 ==============================================================================*/
 
 ::ng-deep .notification-menu.mat-menu-panel {
-  width: 350px;
   font-size: 10px;
+  width: 350px;
 }
 
 .menu-item {
-  padding: 15px 15px 0 15px;
   border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  padding: 15px 15px 0 15px;
 }
 
 .menu-item:last-child {
@@ -32,33 +32,34 @@ limitations under the License.
 }
 
 .category-icon {
+  color: #4285f4;
   height: 15px;
+  margin-right: 6px;
   vertical-align: middle;
   width: 15px;
-  color: #4285f4;
-  margin-right: 6px;
 }
 
 .content-wrapper {
+  line-height: 15px;
   margin-left: 20px;
   margin-top: 15px;
-  line-height: 15px;
 }
 
 .title {
+  font-size: 12px;
+  line-height: 1.33;
   margin: 15px 0 0 0;
-  line-height: 15px;
 }
 
 .content {
-  font-size: 12px;
-  line-height: 20px;
+  font-size: 14px;
+  line-height: 1.33;
   margin: 0;
   text-indent: 0;
 }
 
 .extended-buttons {
-  margin: 10px 0 20px;
   font-size: 12px;
   font-weight: 700;
+  margin: 10px 0 20px;
 }
