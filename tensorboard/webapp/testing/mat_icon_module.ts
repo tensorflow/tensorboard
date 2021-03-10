@@ -41,6 +41,7 @@ const KNOWN_SVG_ICON = new Set([
   'keep_outline_24px',
   'line_weight_24px',
   'more_vert_24px',
+  'notifications_none_24px',
   'refresh_24px',
   'search_24px',
   'settings_24px',
