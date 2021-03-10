@@ -1130,7 +1130,7 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
   })
   _legendOpened: boolean = true;
 
-  _downloadFilename = '';
+  _downloadFilename = 'graph.png';
 
   _onGraphTypeChangedByUserGesture() {
     tf_graph_util.notifyDebugEvent({
