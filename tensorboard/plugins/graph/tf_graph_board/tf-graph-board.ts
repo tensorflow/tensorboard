@@ -18,7 +18,6 @@ import {customElement, observe, property} from '@polymer/decorators';
 import '../../../components/polymer/irons_and_papers';
 import '../tf_graph_info/tf-graph-info';
 import '../tf_graph/tf-graph';
-import {TfGraph} from '../tf_graph/tf-graph';
 import * as tf_graph from '../tf_graph_common/graph';
 import * as tf_graph_render from '../tf_graph_common/render';
 import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
@@ -44,7 +43,7 @@ const maxGraphSizeToComputeTemplates = {
  * <tf-graph-board graph=[[graph]]></tf-graph-board>
  */
 @customElement('tf-graph-board')
-export class TfGraphBoard extends LegacyElementMixin(PolymerElement) {
+class TfGraphBoard extends LegacyElementMixin(PolymerElement) {
   static readonly template = html`
     <style>
       ::host {
@@ -294,12 +293,12 @@ export class TfGraphBoard extends LegacyElementMixin(PolymerElement) {
   @property({type: Object})
   handleEdgeSelected: object;
   fit() {
-    ((this.$.graph as unknown) as TfGraph).fit();
+    (this.$.graph as any).fit();
   }
   async downloadAsImage(filename: string) {
-    const blob = await ((this.$.graph as unknown) as TfGraph).getImageBlob();
+    const blob = await (this.$.graph as any).getImageBlob();
     const element = document.createElement('a');
-    element.href = URL.createObjectURL(blob);
+    (element as any).href = (URL as any).createObjectURL(blob);
     element.download = filename;
     element.click();
     URL.revokeObjectURL(element.href);

@@ -145,7 +145,9 @@ export class Minimap {
    */
   getImageBlob(): Promise<Blob> {
     return new Promise<Blob>((resolve) => {
-      this.downloadCanvas.toBlob((blob) => resolve(blob), 'image/png');
+      this.downloadCanvas.toBlob((blob) => {
+        resolve(blob);
+      }, 'image/png');
     });
   }
   /**

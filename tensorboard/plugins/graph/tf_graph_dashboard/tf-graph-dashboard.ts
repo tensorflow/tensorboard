@@ -26,7 +26,6 @@ import * as vz_sorting from '../../../components/vz_sorting/sorting';
 import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
 
 import '../tf_graph_board/tf-graph-board';
-import {TfGraphBoard} from '../tf_graph_board/tf-graph-board';
 import '../tf_graph_controls/tf-graph-controls';
 import '../tf_graph_loader/tf-graph-dashboard-loader';
 import * as tf_graph_op from '../tf_graph_common/op';
@@ -347,12 +346,10 @@ class TfGraphDashboard extends LegacyElementMixin(PolymerElement) {
     this._maybeFetchHealthPills();
   }
   _fit() {
-    ((this.$$('#graphboard') as unknown) as TfGraphBoard).fit();
+    (this.$$('#graphboard') as any).fit();
   }
   _onDownloadImageRequested(event: CustomEvent) {
-    ((this.$$('#graphboard') as unknown) as TfGraphBoard).downloadAsImage(
-      event.detail as string
-    );
+    (this.$$('#graphboard') as any).downloadAsImage(event.detail as string);
   }
   _getGraphDisplayClassName(_selectedFile: any, _datasets: any[]) {
     const isDataValid = _selectedFile || _datasets.length;
