@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 
 export enum CategoryEnum {
-  NONE = '',
+  NONE,
   WHATS_NEW = "what's new",
 }
 
