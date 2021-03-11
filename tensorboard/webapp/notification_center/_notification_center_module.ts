@@ -13,10 +13,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {NgModule} from '@angular/core';
+import {StoreModule} from '@ngrx/store';
 
+import {reducers} from './_redux/notification_center_reducers';
+import {NOTIFICATION_FEATURE_KEY} from './_redux/notification_center_types';
 import {NotificationCenterViewModule} from './_views/views_module';
 
 @NgModule({
+  imports: [StoreModule.forFeature(NOTIFICATION_FEATURE_KEY, reducers)],
   exports: [NotificationCenterViewModule],
 })
 export class NotificationCenterModule {}

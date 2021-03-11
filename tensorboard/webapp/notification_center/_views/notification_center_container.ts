@@ -33,25 +33,12 @@ const iconMap = new Map([[CategoryEnum.WHATS_NEW, 'info_outline_24px']]);
 })
 export class NotificationCenterContainer {
   notificationNotes$: Observable<ViewNotificationExt[]> = observableOf([]);
-  // from([
-  //   notificationNotes,
-  // ]).pipe(
-  //   map((notifications) => {
-  //     return notifications.map((notification) => {
-  //       return {
-  //         ...notification,
-  //         icon: iconMap.get(notification.category) ?? null,
-  //       };
-  //     });
-  //   })
-  // );
 
   constructor(private readonly store: Store<State>) {}
 
   ngOnInit() {
-    // Type 'MemoizedSelector<State, Notification | null, DefaultProjectorFn<Notification | null>>' is not assignable to type '"eventListeners"'.
-    this.store.select(getNotifications).pipe(
-      map((notifications: Notification[]) => {
+    this.notificationNotes$ = this.store.select(getNotifications).pipe(
+      map((notifications) => {
         return notifications.map((notification) => {
           return {
             ...notification,

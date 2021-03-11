@@ -26,12 +26,12 @@ export interface Notification {
   dateInMs: number;
   title: string;
   content: string;
-};
+}
 
 export const NOTIFICATION_FEATURE_KEY = 'notification';
 
 export interface NotificationState {
-  notifications: Notification[] | [];
+  notifications: Notification[];
 }
 
 export interface State {
