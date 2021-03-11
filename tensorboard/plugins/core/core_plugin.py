@@ -183,6 +183,7 @@ class CorePlugin(base_plugin.TBPlugin):
         )
 
         environment = {
+            "version": version.VERSION,
             "data_location": data_location,
             "window_title": self._window_title,
         }
@@ -196,7 +197,6 @@ class CorePlugin(base_plugin.TBPlugin):
             )
         if self._include_debug_info:
             environment["debug"] = {
-                "version": version.VERSION,
                 "data_provider": str(self._data_provider),
                 "flags": self._render_flags(),
             }
