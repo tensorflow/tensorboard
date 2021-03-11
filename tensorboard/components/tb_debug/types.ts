@@ -44,7 +44,10 @@ export enum GraphDebugTimingEventId {
   RENDER_BUILD_HIERARCHY = 'RENDER_BUILD_HIERARCHY',
   RENDER_SCENE_LAYOUT = 'RENDER_SCENE_LAYOUT',
   RENDER_SCENE_BUILD_SCENE = 'RENDER_SCENE_BUILD_SCENE',
-  // Total graph loading (superset of other phases).
+  // Total graph loading (superset of other phases). Note that after [1],
+  // this timing no longer includes `HIERARCHY_FIND_SIMILAR_SUBGRAPHS`,
+  // which is computed lazily.
+  // [1] https://github.com/tensorflow/tensorboard/pull/4742
   GRAPH_LOAD_SUCCEEDED = 'GRAPH_LOAD_SUCCEEDED',
   GRAPH_LOAD_FAILED = 'GRAPH_LOAD_FAILED',
 }

@@ -376,7 +376,6 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
           <iron-icon icon="file-download" class="button-icon"></iron-icon>
           <span class="button-text">Download PNG</span>
         </paper-button>
-        <a href="#" id="graphdownload" class="title" download="graph.png"></a>
       </div>
       <div class="control-holder runs">
         <div class="title">
@@ -506,13 +505,19 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
           selected="{{colorBy}}"
           on-paper-radio-group-changed="_onColorByChangedByUserGesture"
         >
-          <paper-radio-button name="structure">Structure</paper-radio-button>
+          <paper-radio-button name="[[ColorBy.NONE]]">None</paper-radio-button>
 
-          <paper-radio-button name="device">Device</paper-radio-button>
+          <paper-radio-button name="[[ColorBy.STRUCTURE]]"
+            >Structure</paper-radio-button
+          >
+
+          <paper-radio-button name="[[ColorBy.DEVICE]]"
+            >Device</paper-radio-button
+          >
 
           <paper-radio-button
             id="xla-cluster-radio-button"
-            name="xla_cluster"
+            name="[[ColorBy.XLA_CLUSTER]]"
             disabled="[[!_xlaClustersProvided(renderHierarchy)]]"
           >
             XLA Cluster
@@ -529,7 +534,7 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
 
           <paper-radio-button
             id="compute-time-radio-button"
-            name="compute_time"
+            name="[[ColorBy.COMPUTE_TIME]]"
             disabled="[[!stats]]"
           >
             Compute time
@@ -546,7 +551,7 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
 
           <paper-radio-button
             id="memory-radio-button"
-            name="memory"
+            name="[[ColorBy.MEMORY]]"
             disabled="[[!stats]]"
           >
             Memory
@@ -563,7 +568,7 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
 
           <paper-radio-button
             id="tpu-compatibility-radio-button"
-            name="op_compatibility"
+            name="[[ColorBy.OP_COMPATIBILITY]]"
           >
             TPU Compatibility
           </paper-radio-button>
@@ -1012,6 +1017,9 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
       </iron-collapse>
     </div>
   `;
+  // Expose values for use in template.
+  ColorBy = ColorBy;
+
   // Public API.
   /**
    * @type {?tf_graph_proto.StepStats}
@@ -1121,6 +1129,8 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
     type: Boolean,
   })
   _legendOpened: boolean = true;
+
+  _downloadFilename = 'graph.png';
 
   _onGraphTypeChangedByUserGesture() {
     tf_graph_util.notifyDebugEvent({
@@ -1306,7 +1316,7 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
     };
   }
   download() {
-    (this.$.graphdownload as HTMLElement).click();
+    this.fire('download-image-requested', this._downloadFilename);
   }
   _updateFileInput(e: Event) {
     const file = (e.target as HTMLInputElement).files[0];
@@ -1334,6 +1344,7 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
       // Select the first dataset by default.
       this._selectedRunIndex = 0;
     }
+    this._setDownloadFilename(this.datasets[this._selectedRunIndex]?.name);
   }
   _computeSelection(
     datasets: Dataset,
@@ -1360,9 +1371,7 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
     this._selectedTagIndex = 0;
     this._selectedGraphType = this._getDefaultSelectionType();
     this.traceInputs = false; // Set trace input to off-state.
-    this._setDownloadFilename(
-      this.datasets[runIndex] ? this.datasets[runIndex].name : ''
-    );
+    this._setDownloadFilename(this.datasets[runIndex]?.name);
   }
   _selectedTagIndexChanged(): void {
     this._selectedGraphType = this._getDefaultSelectionType();
@@ -1389,11 +1398,8 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
   _getFile() {
     (this.$$('#file') as HTMLElement).click();
   }
-  _setDownloadFilename(name: string) {
-    (this.$.graphdownload as HTMLElement).setAttribute(
-      'download',
-      name + '.png'
-    );
+  _setDownloadFilename(name?: string) {
+    this._downloadFilename = (name || 'graph') + '.png';
   }
   _statsNotNull(stats: tf_graph_proto.StepStats) {
     return stats !== null;

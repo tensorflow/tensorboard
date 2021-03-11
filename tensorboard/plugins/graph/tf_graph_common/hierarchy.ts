@@ -48,10 +48,17 @@ import * as tf_graph from './graph';
 import * as tf_graph_proto from './proto';
 import * as tf_graph_util from './util';
 
+export enum HierarchyEvent {
+  /**
+   * Fired when the templates may have been updated. No event payload attached.
+   */
+  TEMPLATES_UPDATED,
+}
+
 /**
  * Class for the Graph Hierarchy for TensorFlow graph.
  */
-export class Hierarchy {
+export class Hierarchy extends tf_graph_util.Dispatcher<HierarchyEvent> {
   root: Metanode;
   libraryFunctions: {
     [key: string]: LibraryFunctionData;
@@ -86,6 +93,7 @@ export class Hierarchy {
   };
 
   constructor(params: HierarchyParams) {
+    super();
     this.graphOptions.compound = true;
     this.graphOptions.rankdir = params.rankDirection;
     this.root = createMetanode(ROOT_NAME, this.graphOptions);
@@ -369,6 +377,9 @@ export class Hierarchy {
   /**
    * Returns a d3 Ordinal function that can be used to look up the index of
    * a node based on its template id.
+   *
+   * When templates update, the Hierarchy will dispatch an event
+   * `HierarchyEvent.TEMPLATES_UPDATED` to consumers.
    */
   getTemplateIndex(): (string) => number | null {
     if (!this.templates) {
@@ -391,7 +402,14 @@ export class Hierarchy {
    * graphs.
    */
   updateTemplates() {
-    this.templates = template.detect(this, this.verifyTemplate);
+    tf_graph_util.time(
+      'Finding similar subgraphs',
+      () => {
+        this.templates = template.detect(this, this.verifyTemplate);
+        this.dispatchEvent(HierarchyEvent.TEMPLATES_UPDATED);
+      },
+      tb_debug.GraphDebugEventId.HIERARCHY_FIND_SIMILAR_SUBGRAPHS
+    );
   }
 }
 /**
@@ -458,7 +476,7 @@ export function build(
   return tf_graph_util
     .runAsyncTask(
       'Adding nodes',
-      20,
+      30,
       () => {
         // Get all the possible device and XLA cluster names.
         let deviceNames = {};
@@ -481,7 +499,7 @@ export function build(
     .then(() => {
       return tf_graph_util.runAsyncTask(
         'Detect series',
-        20,
+        30,
         () => {
           if (params.seriesNodeMinSize > 0) {
             groupSeries(
@@ -501,23 +519,12 @@ export function build(
     .then(() => {
       return tf_graph_util.runAsyncTask(
         'Adding edges',
-        30,
+        40,
         () => {
           addEdges(h, graph, seriesNames);
         },
         tracker,
         tb_debug.GraphDebugEventId.HIERARCHY_ADD_EDGES
-      );
-    })
-    .then(() => {
-      return tf_graph_util.runAsyncTask(
-        'Finding similar subgraphs',
-        30,
-        () => {
-          h.updateTemplates();
-        },
-        tracker,
-        tb_debug.GraphDebugEventId.HIERARCHY_FIND_SIMILAR_SUBGRAPHS
       );
     })
     .then(() => {

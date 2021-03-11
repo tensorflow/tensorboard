@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 
 import {PolymerElement, html} from '@polymer/polymer';
-import {computed, customElement, property} from '@polymer/decorators';
+import {computed, customElement, observe, property} from '@polymer/decorators';
 import * as d3 from 'd3';
 
 import '../../../components/polymer/irons_and_papers';
@@ -199,11 +199,8 @@ class TfGraphOpCompatCard extends LegacyElementMixin(PolymerElement) {
     type: String,
   })
   _opIncompatColor: string = tf_graph_render.OpNodeColors.INCOMPATIBLE;
-  @computed('graphHierarchy')
-  get _templateIndex(): object {
-    var graphHierarchy = this.graphHierarchy;
-    return graphHierarchy.getTemplateIndex();
-  }
+  @property({type: Object})
+  _templateIndex: (name: string) => number | null = null;
   _getNode(nodeName, graphHierarchy) {
     return graphHierarchy.node(nodeName);
   }
@@ -260,5 +257,15 @@ class TfGraphOpCompatCard extends LegacyElementMixin(PolymerElement) {
       return graphHierarchy.root.compatibilityHistogram.incompatible;
     }
     return 0;
+  }
+  @observe('graphHierarchy')
+  _graphHierarchyChanged() {
+    this._templateIndex = this.graphHierarchy.getTemplateIndex();
+    this.graphHierarchy.addListener(
+      tf_graph_hierarchy.HierarchyEvent.TEMPLATES_UPDATED,
+      () => {
+        this._templateIndex = this.graphHierarchy.getTemplateIndex();
+      }
+    );
   }
 }

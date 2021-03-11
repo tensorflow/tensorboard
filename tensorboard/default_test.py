@@ -42,7 +42,7 @@ class FakeEntryPoint(pkg_resources.EntryPoint):
         """
         return cls("foo", "bar")
 
-    def load(self):
+    def resolve(self):
         """Returns FakePlugin instead of resolving module.
 
         Returns:

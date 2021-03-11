@@ -14,13 +14,14 @@ limitations under the License.
 ==============================================================================*/
 
 import {PolymerElement, html} from '@polymer/polymer';
-import {computed, customElement, property} from '@polymer/decorators';
+import {computed, customElement, observe, property} from '@polymer/decorators';
 import * as _ from 'lodash';
 
 import '../../../components/polymer/irons_and_papers';
 import '../tf_graph_common/tf-node-icon';
 import './tf-node-list-item';
 import * as tf_graph from '../tf_graph_common/graph';
+import * as tf_graph_hierarchy from '../tf_graph_common/hierarchy';
 import * as tf_graph_util from '../tf_graph_common/util';
 import * as tf_graph_scene_edge from '../tf_graph_common/edge';
 import * as tf_graph_scene_node from '../tf_graph_common/node';
@@ -438,7 +439,7 @@ class TfNodeInfo extends LegacyElementMixin(PolymerElement) {
   @property({type: String})
   graphNodeName: string;
   @property({type: Object})
-  graphHierarchy: any;
+  graphHierarchy: tf_graph_hierarchy.Hierarchy;
   @property({type: Object})
   renderHierarchy: any;
   /** What to color the nodes by (compute time, memory, device etc.) */
@@ -478,13 +479,10 @@ class TfNodeInfo extends LegacyElementMixin(PolymerElement) {
   _auxButtonText: string;
   @property({type: String})
   _groupButtonText: string;
+  @property({type: Object})
+  _templateIndex: (name: string) => number | null = null;
   expandNode() {
     this.fire('_node.expand', (this as any).node);
-  }
-  @computed('graphHierarchy')
-  get _templateIndex(): object {
-    var graphHierarchy = this.graphHierarchy;
-    return graphHierarchy.getTemplateIndex();
   }
   _getNode(graphNodeName, graphHierarchy) {
     return graphHierarchy.node(graphNodeName);
@@ -736,5 +734,15 @@ class TfNodeInfo extends LegacyElementMixin(PolymerElement) {
   }
   _isInSeries(node) {
     return tf_graph_scene_node.canBeInSeries(node);
+  }
+  @observe('graphHierarchy')
+  _graphHierarchyChanged() {
+    this._templateIndex = this.graphHierarchy.getTemplateIndex();
+    this.graphHierarchy.addListener(
+      tf_graph_hierarchy.HierarchyEvent.TEMPLATES_UPDATED,
+      () => {
+        this._templateIndex = this.graphHierarchy.getTemplateIndex();
+      }
+    );
   }
 }

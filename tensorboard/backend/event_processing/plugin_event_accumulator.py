@@ -159,6 +159,7 @@ class EventAccumulator(object):
         self._generator_mutex = threading.Lock()
 
         self.purge_orphaned_data = purge_orphaned_data
+        self._seen_session_start = False
 
         self.most_recent_step = -1
         self.most_recent_wall_time = -1
@@ -510,11 +511,16 @@ class EventAccumulator(object):
     def _CheckForRestartAndMaybePurge(self, event):
         """Check and discard expired events using SessionLog.START.
 
-        Check for a SessionLog.START event and purge all previously seen events
-        with larger steps, because they are out of date. Because of supervisor
-        threading, it is possible that this logic will cause the first few event
-        messages to be discarded since supervisor threading does not guarantee
-        that the START message is deterministically written first.
+        The first SessionLog.START event in a run indicates the start of a
+        supervisor session. Subsequent SessionLog.START events indicate a
+        *restart*, which may need to preempt old events. This method checks
+        for a session restart event and purges all previously seen events whose
+        step is larger than or equal to this event's step.
+
+        Because of supervisor threading, it is possible that this logic will
+        cause the first few event messages to be discarded since supervisor
+        threading does not guarantee that the START message is deterministically
+        written first.
 
         This method is preferred over _CheckForOutOfOrderStepAndMaybePurge which
         can inadvertently discard events due to supervisor threading.
@@ -523,11 +529,13 @@ class EventAccumulator(object):
           event: The event to use as reference. If the event is a START event, all
             previously seen events with a greater event.step will be purged.
         """
-        if (
-            event.HasField("session_log")
-            and event.session_log.status == event_pb2.SessionLog.START
-        ):
-            self._Purge(event, by_tags=False)
+        if event.session_log.status != event_pb2.SessionLog.START:
+            return
+        if not self._seen_session_start:
+            # Initial start event: does not indicate a restart.
+            self._seen_session_start = True
+            return
+        self._Purge(event, by_tags=False)
 
     def _CheckForOutOfOrderStepAndMaybePurge(self, event):
         """Check for out-of-order event.step and discard expired events for

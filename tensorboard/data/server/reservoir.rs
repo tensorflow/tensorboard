@@ -81,8 +81,8 @@ pub struct StageReservoir<T, C = ChaCha20Rng> {
     /// Total capacity of this reservoir.
     ///
     /// The combined physical capacities of `committed_steps` and `staged_items` may exceed this,
-    /// but their combined lengths will not. Behavior is undefined if `capacity == 0`.
-    capacity: usize,
+    /// but their combined lengths will not.
+    capacity: Capacity,
     /// Reservoir control, to determine whether and whither a given new record should be included.
     ctl: C,
     /// Estimate of the total number of non-preempted records passed in the stream so far,
@@ -98,6 +98,24 @@ pub struct StageReservoir<T, C = ChaCha20Rng> {
     /// Exception: when `capacity == 0`, `seen` is always `0` as well. A reservoir with no capacity
     /// is inert and has no need to track `seen`.
     seen: usize,
+}
+
+/// Reservoir capacity, determining if and when items should start being evicted.
+#[derive(PartialEq, Eq, Debug, Copy, Clone)]
+pub enum Capacity {
+    /// The reservoir may have arbitrarily many records.
+    ///
+    /// An unbounded reservoir still supports preemption, but otherwise behaves like a normal
+    /// vector.
+    Unbounded,
+    /// The reservoir may have at most a fixed number of records.
+    Bounded(usize),
+}
+
+impl From<usize> for Capacity {
+    fn from(n: usize) -> Self {
+        Capacity::Bounded(n)
+    }
 }
 
 /// A buffer of records that have been committed and not yet evicted from the reservoir.
@@ -154,8 +172,8 @@ impl<T> StageReservoir<T, ChaCha20Rng> {
     /// All reservoirs created by this function will use the same sequence of random numbers.
     ///
     /// This function does not allocate. Reservoir capacity is allocated as records are offered.
-    pub fn new(capacity: usize) -> Self {
-        Self::with_control(capacity, ChaCha20Rng::seed_from_u64(0))
+    pub fn new(capacity: impl Into<Capacity>) -> Self {
+        Self::with_control(capacity.into(), ChaCha20Rng::seed_from_u64(0))
     }
 }
 
@@ -163,11 +181,11 @@ impl<T, C: ReservoirControl> StageReservoir<T, C> {
     /// Creates a new reservoir with the specified capacity and reservoir control.
     ///
     /// This function does not allocate. Reservoir capacity is allocated as records are offered.
-    pub fn with_control(capacity: usize, ctl: C) -> Self {
+    pub fn with_control(capacity: impl Into<Capacity>, ctl: C) -> Self {
         Self {
             committed_steps: Vec::new(),
             staged_items: Vec::new(),
-            capacity,
+            capacity: capacity.into(),
             ctl,
             seen: 0,
         }
@@ -179,24 +197,26 @@ impl<T, C: ReservoirControl> StageReservoir<T, C> {
     /// records kept form a simple random sample of the stream (or at least approximately so in the
     /// case of preemptions).
     pub fn offer(&mut self, step: Step, v: T) {
-        if self.capacity == 0 {
+        if self.capacity == Capacity::Bounded(0) {
             return;
         }
         self.preempt(step);
         self.seen += 1;
 
-        // If we can hold every record that we've seen, we can add this record unconditionally.
-        // Otherwise, we need to roll a destination---even if there's available space, to avoid
-        // bias right after a preemption.
-        if self.seen > self.capacity {
-            let dst = self.ctl.destination(self.seen);
-            if dst >= self.capacity {
-                // Didn't make the cut? Keep-last only.
-                self.pop();
-            } else if self.len() >= self.capacity {
-                // No room? Evict the destination.
-                // From `if`-guards, we know `dst < self.capacity <= self.len()`, so this is safe.
-                self.remove(dst);
+        if let Capacity::Bounded(capacity) = self.capacity {
+            // If we can hold every record that we've seen, we can add this record unconditionally.
+            // Otherwise, we need to roll a destination---even if there's available space, to avoid
+            // bias right after a preemption.
+            if self.seen > capacity {
+                let dst = self.ctl.destination(self.seen);
+                if dst >= capacity {
+                    // Didn't make the cut? Keep-last only.
+                    self.pop();
+                } else if self.len() >= capacity {
+                    // No room? Evict the destination.
+                    // From `if`-guards, we know `dst < capacity <= self.len()`, so this is safe.
+                    self.remove(dst);
+                }
             }
         }
         // In any case, add to end.
@@ -540,6 +560,43 @@ mod tests {
                 _ => (),
             }
         }
+    }
+
+    #[test]
+    fn test_unbounded() {
+        let mut rsv = StageReservoir::new(Capacity::Unbounded);
+        let mut head = Basin::new();
+
+        rsv.commit(&mut head);
+        assert_eq!(head.as_slice(), &[]);
+
+        rsv.offer(Step(0), "before");
+        rsv.offer(Step(1), "before");
+        rsv.offer(Step(2), "before");
+        rsv.offer(Step(4), "before");
+        rsv.commit(&mut head);
+        assert_eq!(
+            head.as_slice(),
+            &[
+                (Step(0), "before"),
+                (Step(1), "before"),
+                (Step(2), "before"),
+                (Step(4), "before")
+            ]
+        );
+
+        rsv.offer(Step(2), "after");
+        rsv.offer(Step(5), "after");
+        rsv.commit(&mut head);
+        assert_eq!(
+            head.as_slice(),
+            &[
+                (Step(0), "before"),
+                (Step(1), "before"),
+                (Step(2), "after"),
+                (Step(5), "after")
+            ]
+        );
     }
 
     #[test]

@@ -326,11 +326,14 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
         """
         gen = _EventGenerator(self)
         acc = ea.EventAccumulator(gen)
+        slog = event_pb2.SessionLog(status=event_pb2.SessionLog.START)
+
         gen.AddEvent(
             event_pb2.Event(wall_time=0, step=1, file_version="brain.Event:2")
         )
 
         gen.AddScalarTensor("s1", wall_time=1, step=100, value=20)
+        gen.AddEvent(event_pb2.Event(wall_time=1, step=100, session_log=slog))
         gen.AddScalarTensor("s1", wall_time=1, step=200, value=20)
         gen.AddScalarTensor("s1", wall_time=1, step=300, value=20)
         gen.AddScalarTensor("s1", wall_time=1, step=400, value=20)
@@ -338,7 +341,6 @@ class MockingEventAccumulatorTest(EventAccumulatorTest):
         gen.AddScalarTensor("s2", wall_time=1, step=202, value=20)
         gen.AddScalarTensor("s2", wall_time=1, step=203, value=20)
 
-        slog = event_pb2.SessionLog(status=event_pb2.SessionLog.START)
         gen.AddEvent(event_pb2.Event(wall_time=2, step=201, session_log=slog))
         acc.Reload()
         self.assertEqual([x.step for x in acc.Tensors("s1")], [100, 200])

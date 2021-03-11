@@ -98,6 +98,7 @@ class TfGraphApp extends LegacyElementMixin(PolymerElement) {
             on-fit-tap="_fit"
             trace-inputs="{{_traceInputs}}"
             auto-extract-nodes="{{_autoExtractNodes}}"
+            on-download-image-requested="_onDownloadImageRequested"
           ></tf-graph-controls>
           <tf-graph-loader
             id="loader"
@@ -113,7 +114,7 @@ class TfGraphApp extends LegacyElementMixin(PolymerElement) {
             graph-hierarchy="[[graphHierarchy]]"
             graph="[[graph]]"
             progress="[[_progress]]"
-            color-by="[[colorBy]]"
+            color-by="{{colorBy}}"
             color-by-params="{{colorByParams}}"
             render-hierarchy="{{_renderHierarchy}}"
             selected-node="{{selectedNode}}"
@@ -200,5 +201,8 @@ class TfGraphApp extends LegacyElementMixin(PolymerElement) {
   }
   _fit() {
     (this.$$('#graphboard') as any).fit();
+  }
+  _onDownloadImageRequested(filename: string) {
+    (this.$$('#graphboard') as any).downloadAsImage(filename);
   }
 }

@@ -103,13 +103,14 @@ class SubprocessServerDataIngester(ingester.DataIngester):
             reload = str(int(self._reload_interval))
 
         sample_hint_pairs = [
-            "%s=%s" % (k, v) for k, v in self._samples_per_plugin.items()
+            "%s=%s" % (k, "all" if v == 0 else v)
+            for k, v in self._samples_per_plugin.items()
         ]
         samples_per_plugin = ",".join(sample_hint_pairs)
 
         args = [
             server_binary,
-            "--logdir=%s" % (self._logdir,),
+            "--logdir=%s" % os.path.expanduser(self._logdir),
             "--reload=%s" % reload,
             "--port=0",
             "--port-file=%s" % (port_file_path,),

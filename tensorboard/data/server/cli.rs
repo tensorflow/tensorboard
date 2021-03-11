@@ -121,9 +121,10 @@ struct Opts {
     ///
     /// A comma separated list of `plugin_name=num_samples` pairs to explicitly specify how many
     /// samples to keep per tag for the specified plugin. For unspecified plugins, series are
-    /// randomly downsampled to reasonable values to prevent out-of-memory errors in long running
-    /// jobs. For instance, `--samples_per_plugin=scalars=500,images=0` keeps 500 events in each
-    /// scalar series and keeps none of the images.
+    /// randomly downsampled to reasonable values to prevent out-of-memory errors in long-running
+    /// jobs. Each `num_samples` may be the special token `all` to retain all data without
+    /// downsampling. For instance, `--samples_per_plugin=scalars=500,images=all,audio=0` keeps 500
+    /// events in each scalar series, all of the images, and none of the audio.
     #[clap(long, default_value = "", setting(clap::ArgSettings::AllowEmptyValues))]
     samples_per_plugin: PluginSamplingHint,
 }

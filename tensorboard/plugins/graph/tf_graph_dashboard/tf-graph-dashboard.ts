@@ -88,6 +88,7 @@ class TfGraphDashboard extends LegacyElementMixin(PolymerElement) {
         on-fit-tap="_fit"
         trace-inputs="{{_traceInputs}}"
         auto-extract-nodes="{{_autoExtractNodes}}"
+        on-download-image-requested="_onDownloadImageRequested"
       ></tf-graph-controls>
       <div
         class$="center [[_getGraphDisplayClassName(_selectedFile, _datasets)]]"
@@ -144,7 +145,7 @@ class TfGraphDashboard extends LegacyElementMixin(PolymerElement) {
           <tf-graph-board
             id="graphboard"
             devices-for-stats="[[_devicesForStats]]"
-            color-by="[[_colorBy]]"
+            color-by="{{_colorBy}}"
             color-by-params="{{_colorByParams}}"
             graph-hierarchy="[[_graphHierarchy]]"
             graph="[[_graph]]"
@@ -346,6 +347,9 @@ class TfGraphDashboard extends LegacyElementMixin(PolymerElement) {
   }
   _fit() {
     (this.$$('#graphboard') as any).fit();
+  }
+  _onDownloadImageRequested(event: CustomEvent) {
+    (this.$$('#graphboard') as any).downloadAsImage(event.detail as string);
   }
   _getGraphDisplayClassName(_selectedFile: any, _datasets: any[]) {
     const isDataValid = _selectedFile || _datasets.length;

@@ -332,7 +332,21 @@ class TfGraph extends LegacyElementMixin(PolymerElement) {
   fit() {
     (this.$.scene as any).fit();
   }
+  getImageBlob(): Promise<Blob> {
+    return (this.$.scene as any).getImageBlob();
+  }
   _graphChanged() {
+    if (!this.graphHierarchy) {
+      return;
+    }
+
+    this.graphHierarchy.addListener(
+      tf_graph_hierarchy.HierarchyEvent.TEMPLATES_UPDATED,
+      () => {
+        (this.$.scene as any).nodeColorsChanged();
+      }
+    );
+
     // When a new graph is loaded, fire this event so that there is no
     // info-card being displayed for the previously-loaded graph.
     this.fire('graph-select');

@@ -8,11 +8,17 @@ py_binary(
     deps = ["//tensorboard:expect_tensorflow_installed"],
 )
 
-sh_binary(
+py_binary(
     name = "mat_bundle_icon_svg",
-    srcs = ["mat_bundle_icon_svg.sh"],
-    visibility = [
-        "//tensorboard:internal",
+    srcs = ["mat_bundle_icon_svg.py"],
+)
+
+py_test(
+    name = "mat_bundle_icon_svg_test",
+    srcs = ["mat_bundle_icon_svg_test.py"],
+    deps = [
+        ":mat_bundle_icon_svg",
+        "//tensorboard:test",
     ],
 )
 
