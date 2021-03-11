@@ -295,6 +295,14 @@ class TfGraphBoard extends LegacyElementMixin(PolymerElement) {
   fit() {
     (this.$.graph as any).fit();
   }
+  async downloadAsImage(filename: string) {
+    const blob = await (this.$.graph as any).getImageBlob();
+    const element = document.createElement('a');
+    (element as any).href = (URL as any).createObjectURL(blob);
+    element.download = filename;
+    element.click();
+    URL.revokeObjectURL(element.href);
+  }
   /** True if the progress is not complete yet (< 100 %). */
   _isNotComplete(progress) {
     return progress.value < 100;

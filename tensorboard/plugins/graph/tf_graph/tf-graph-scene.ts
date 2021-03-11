@@ -27,6 +27,7 @@ import * as tf_graph_scene from '../tf_graph_common/scene';
 import * as tf_graph_scene_node from '../tf_graph_common/node';
 import * as tf_graph_util from '../tf_graph_common/util';
 import * as tf_graph_layout from '../tf_graph_common/layout';
+import * as tf_graph_minimap from '../tf_graph_common/minimap';
 import * as tf_graph_render from '../tf_graph_common/render';
 import {template} from './tf-graph-scene.html';
 
@@ -126,10 +127,8 @@ class TfGraphScene2
 
   /**
    * A minimap object to notify for zoom events.
-   * This property is a tf.scene.Minimap object.
    */
-  @property({type: Object})
-  minimap: object;
+  private minimap: tf_graph_minimap.Minimap;
 
   /*
    * Dictionary for easily stylizing nodes when state changes.
@@ -496,6 +495,9 @@ class TfGraphScene2
         this._zoomed = false;
       }.bind(this)
     );
+  }
+  getImageBlob(): Promise<Blob> {
+    return this.minimap.getImageBlob();
   }
   isNodeSelected(n) {
     return n === this.selectedNode;

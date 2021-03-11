@@ -332,6 +332,9 @@ class TfGraph extends LegacyElementMixin(PolymerElement) {
   fit() {
     (this.$.scene as any).fit();
   }
+  getImageBlob(): Promise<Blob> {
+    return (this.$.scene as any).getImageBlob();
+  }
   _graphChanged() {
     if (!this.graphHierarchy) {
       return;
