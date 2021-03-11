@@ -13,10 +13,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Component} from '@angular/core';
-import {from, Observable} from 'rxjs';
+import {Store} from '@ngrx/store';
+import {Observable, of as observableOf} from 'rxjs';
 import {map} from 'rxjs/operators';
+import {State} from '../../app_state';
+import {getNotifications} from '../_redux/notification_center_selectors';
 import {CategoryEnum} from '../_redux/notification_center_types';
-import {notificationNotes} from './notification_notes';
 import {ViewNotificationExt} from './view_types';
 
 const iconMap = new Map([[CategoryEnum.WHATS_NEW, 'info_outline_24px']]);
@@ -30,16 +32,33 @@ const iconMap = new Map([[CategoryEnum.WHATS_NEW, 'info_outline_24px']]);
   `,
 })
 export class NotificationCenterContainer {
-  readonly notificationNotes$: Observable<ViewNotificationExt[]> = from([
-    notificationNotes,
-  ]).pipe(
-    map((notifications) => {
-      return notifications.map((notification) => {
-        return {
-          ...notification,
-          icon: iconMap.get(notification.category) ?? null,
-        };
-      });
-    })
-  );
+  notificationNotes$: Observable<ViewNotificationExt[]> = observableOf([]);
+  // from([
+  //   notificationNotes,
+  // ]).pipe(
+  //   map((notifications) => {
+  //     return notifications.map((notification) => {
+  //       return {
+  //         ...notification,
+  //         icon: iconMap.get(notification.category) ?? null,
+  //       };
+  //     });
+  //   })
+  // );
+
+  constructor(private readonly store: Store<State>) {}
+
+  ngOnInit() {
+    // Type 'MemoizedSelector<State, Notification | null, DefaultProjectorFn<Notification | null>>' is not assignable to type '"eventListeners"'.
+    this.store.select(getNotifications).pipe(
+      map((notifications: Notification[]) => {
+        return notifications.map((notification) => {
+          return {
+            ...notification,
+            icon: iconMap.get(notification.category) ?? null,
+          };
+        });
+      })
+    );
+  }
 }

@@ -52,6 +52,7 @@ tf_ng_module(
     ],
     deps = [
         "//tensorboard/webapp/alert/store",
+        "//tensorboard/webapp/notification_center/_redux",
         "//tensorboard/webapp/app_routing/store",
         "//tensorboard/webapp/experiments/store:selectors",
         "//tensorboard/webapp/feature_flag/store",
@@ -151,6 +152,7 @@ tf_ng_module(
         "//tensorboard/webapp/experiments/store:types",
         "//tensorboard/webapp/feature_flag/store:types",
         "//tensorboard/webapp/metrics/store:types",
+        "//tensorboard/webapp/notification_center/_redux:types",
         "//tensorboard/webapp/plugins/npmi/store:types",
         "//tensorboard/webapp/plugins/text_v2/store:types",
         "//tensorboard/webapp/runs/store:types",

@@ -17,5 +17,7 @@ export * from './app_routing/store/app_routing_selectors';
 export * from './experiments/store/experiments_selectors';
 export * from './feature_flag/store/feature_flag_selectors';
 export * from './metrics/store/metrics_selectors';
+export * from './notification_center/_redux/notification_center_selectors';
 export * from './runs/store/runs_selectors';
 export * from './util/ui_selectors';
+

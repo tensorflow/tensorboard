@@ -14,7 +14,6 @@ tf_ng_module(
     srcs = [
         "notification_center_component.ts",
         "notification_center_container.ts",
-        "notification_notes.ts",
         "view_types.ts",
         "views_module.ts",
     ],
@@ -23,12 +22,16 @@ tf_ng_module(
         "notification_center_component.ng.html",
     ],
     deps = [
+        "//tensorboard/webapp:app_state",
+        "//tensorboard/webapp:selectors",
         "//tensorboard/webapp/angular:expect_angular_material_button",
         "//tensorboard/webapp/angular:expect_angular_material_icon",
         "//tensorboard/webapp/angular:expect_angular_material_menu",
         "//tensorboard/webapp/notification_center/_redux:types",
+        "//tensorboard/webapp/notification_center/_redux",
         "@npm//@angular/common",
         "@npm//@angular/core",
+        "@npm//@ngrx/store",
         "@npm//rxjs",
     ],
 )

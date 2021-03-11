@@ -21,9 +21,19 @@ export enum CategoryEnum {
 /**
  * A notification chunk displayed in the notification center.
  */
-export type Notification = {
+export interface Notification {
   category: CategoryEnum;
   dateInMs: number;
   title: string;
   content: string;
 };
+
+export const NOTIFICATION_FEATURE_KEY = 'notification';
+
+export interface NotificationState {
+  notifications: Notification[] | [];
+}
+
+export interface State {
+  [NOTIFICATION_FEATURE_KEY]?: NotificationState;
+}
