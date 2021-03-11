@@ -45,10 +45,10 @@ tf_ts_library(
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/angular:expect_angular_material_button",
         "//tensorboard/webapp/angular:expect_angular_material_snackbar",
+        "//tensorboard/webapp/testing:mat_icon",
         "@npm//@angular/common",
         "@npm//@angular/platform-browser",
         "@npm//@types/jasmine",
         "@npm//rxjs",
-        "//tensorboard/webapp/testing:mat_icon",
     ],
 )
