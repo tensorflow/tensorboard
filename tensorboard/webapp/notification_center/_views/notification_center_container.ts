@@ -13,22 +13,33 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Component} from '@angular/core';
-import {Notification} from '../_redux/notification_center_types';
+import {from, Observable} from 'rxjs';
+import {map} from 'rxjs/operators';
+import {CategoryEnum} from '../_redux/notification_center_types';
+import {notificationNotes} from './notification_notes';
+import {ViewNotificationExt} from './view_types';
+
+const iconMap = new Map([[CategoryEnum.WHATS_NEW, 'info_outline_24px']]);
 
 @Component({
   selector: 'notification-center',
   template: `
     <notification-center-component
-      [notifications]="notifications"
+      [notifications]="notificationNotes$ | async"
     ></notification-center-component>
   `,
 })
 export class NotificationCenterContainer {
-  notifications: Notification[] = [
-    {
-      date: 1579766400000,
-      title: '2.4 release',
-      content: '<li>update 1</li><li>update 2</li>',
-    },
-  ];
+  readonly notificationNotes$: Observable<ViewNotificationExt[]> = from([
+    notificationNotes,
+  ]).pipe(
+    map((notifications) => {
+      return notifications.map((notification) => {
+        return {
+          ...notification,
+          icon: iconMap.get(notification.category) ?? null,
+        };
+      });
+    })
+  );
 }

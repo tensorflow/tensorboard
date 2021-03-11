@@ -14,6 +14,7 @@ tf_ng_module(
     srcs = [
         "notification_center_component.ts",
         "notification_center_container.ts",
+        "notification_notes.ts",
         "view_types.ts",
         "views_module.ts",
     ],
@@ -26,6 +27,8 @@ tf_ng_module(
         "//tensorboard/webapp/angular:expect_angular_material_icon",
         "//tensorboard/webapp/angular:expect_angular_material_menu",
         "//tensorboard/webapp/notification_center/_redux:types",
+        "@npm//@angular/common",
         "@npm//@angular/core",
+        "@npm//rxjs",
     ],
 )
