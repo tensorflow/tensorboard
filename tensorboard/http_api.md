@@ -161,12 +161,22 @@ Example response:
 
 Returns environment in which the TensorBoard app is running.
 
+The `version` is the Pip version string of the TensorBoard server, like
+`"2.4.0a0"`.
+
+The `window_title` is the value of the `--window_title` flag.
+
 The `data_location` is a user-readable string describing the source from which
 TensorBoard is reading data, such as a directory on disk.
+
+The response may also include a `debug` field, with information that may be
+useful for humans inspecting the system. The contents and structure of `debug`
+are subject to change.
 
 Example response:
 
     {
+      "version": "2.4.0",
       "window_title": "Custom Name",
       "data_location": "/Users/tbuser/tensorboard_data/"
     }

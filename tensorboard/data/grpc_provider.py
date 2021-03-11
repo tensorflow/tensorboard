@@ -46,6 +46,9 @@ class GrpcDataProvider(provider.DataProvider):
         self._addr = addr
         self._stub = stub
 
+    def __str__(self):
+        return "GrpcDataProvider(addr=%r)" % self._addr
+
     def data_location(self, ctx, *, experiment_id):
         req = data_provider_pb2.GetExperimentRequest()
         req.experiment_id = experiment_id

@@ -41,6 +41,9 @@ class MultiplexerDataProvider(provider.DataProvider):
         self._multiplexer = multiplexer
         self._logdir = logdir
 
+    def __str__(self):
+        return "MultiplexerDataProvider(logdir=%r)" % self._logdir
+
     def _validate_context(self, ctx):
         if type(ctx).__name__ != "RequestContext":
             raise TypeError("ctx must be a RequestContext; got: %r" % (ctx,))

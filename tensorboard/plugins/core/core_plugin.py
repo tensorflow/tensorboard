@@ -31,6 +31,7 @@ from tensorboard.backend import http_util
 from tensorboard.plugins import base_plugin
 from tensorboard.util import grpc_util
 from tensorboard.util import tb_logging
+from tensorboard import version
 
 logger = tb_logging.get_logger()
 
@@ -50,18 +51,24 @@ class CorePlugin(base_plugin.TBPlugin):
 
     plugin_name = "core"
 
-    def __init__(self, context):
+    def __init__(self, context, include_debug_info=None):
         """Instantiates CorePlugin.
 
         Args:
           context: A base_plugin.TBContext instance.
+          include_debug_info: If true, `/data/environment` will include some
+            basic information like the TensorBoard server version. Disabled by
+            default to prevent surprising information leaks in custom builds of
+            TensorBoard.
         """
+        self._flags = context.flags
         logdir_spec = context.flags.logdir_spec if context.flags else ""
         self._logdir = context.logdir or logdir_spec
         self._window_title = context.window_title
         self._path_prefix = context.flags.path_prefix if context.flags else None
         self._assets_zip_provider = context.assets_zip_provider
         self._data_provider = context.data_provider
+        self._include_debug_info = bool(include_debug_info)
 
     def is_active(self):
         return True
@@ -165,13 +172,7 @@ class CorePlugin(base_plugin.TBPlugin):
 
     @wrappers.Request.application
     def _serve_environment(self, request):
-        """Serve a JSON object containing some base properties used by the
-        frontend.
-
-        * data_location is either a path to a directory or an address to a
-          database (depending on which mode TensorBoard is running in).
-        * window_title is the title of the TensorBoard web page.
-        """
+        """Serve a JSON object describing the TensorBoard parameters."""
         ctx = plugin_util.context(request.environ)
         experiment = plugin_util.experiment_id(request.environ)
         data_location = self._data_provider.data_location(
@@ -182,6 +183,7 @@ class CorePlugin(base_plugin.TBPlugin):
         )
 
         environment = {
+            "version": version.VERSION,
             "data_location": data_location,
             "window_title": self._window_title,
         }
@@ -193,11 +195,36 @@ class CorePlugin(base_plugin.TBPlugin):
                     "creation_time": experiment_metadata.creation_time,
                 }
             )
+        if self._include_debug_info:
+            environment["debug"] = {
+                "data_provider": str(self._data_provider),
+                "flags": self._render_flags(),
+            }
         return http_util.Respond(
             request,
             environment,
             "application/json",
         )
+
+    def _render_flags(self):
+        """Return a JSON-and-human-friendly version of `self._flags`.
+
+        Like `json.loads(json.dumps(self._flags, default=str))` but
+        without the wasteful serialization overhead.
+        """
+        if self._flags is None:
+            return None
+
+        def go(x):
+            if isinstance(x, (type(None), str, int, float)):
+                return x
+            if isinstance(x, (list, tuple)):
+                return [go(v) for v in x]
+            if isinstance(x, dict):
+                return {str(k): go(v) for (k, v) in x.items()}
+            return str(x)
+
+        return go(vars(self._flags))
 
     @wrappers.Request.application
     def _serve_logdir(self, request):
@@ -269,6 +296,9 @@ class CorePlugin(base_plugin.TBPlugin):
 
 class CorePluginLoader(base_plugin.TBLoader):
     """CorePlugin factory."""
+
+    def __init__(self, include_debug_info=None):
+        self._include_debug_info = include_debug_info
 
     def define_flags(self, parser):
         """Adds standard TensorBoard CLI flags to parser."""
@@ -640,7 +670,7 @@ flag.\
 
     def load(self, context):
         """Creates CorePlugin instance."""
-        return CorePlugin(context)
+        return CorePlugin(context, include_debug_info=self._include_debug_info)
 
 
 def _gzip(bytestring):

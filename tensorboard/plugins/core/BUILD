@@ -11,6 +11,7 @@ py_library(
     srcs_version = "PY3",
     deps = [
         "//tensorboard:plugin_util",
+        "//tensorboard:version",
         "//tensorboard/backend:http_util",
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/util:grpc_util",
