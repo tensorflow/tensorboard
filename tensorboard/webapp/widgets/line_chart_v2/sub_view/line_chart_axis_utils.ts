@@ -13,8 +13,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {Formatter} from '../lib/public_types';
+import {Formatter, Scale} from '../lib/public_types';
 import {LinearScale} from '../lib/scale';
+
+const DAY_IN_MS = 24 * 1000 * 60 * 60;
 
 export interface MinorTick {
   value: number;
@@ -37,6 +39,53 @@ function getNumLeadingZerosInFractional(value: number): number {
   return 0;
 }
 
+export function getTicks(
+  scale: Scale,
+  formatter: Formatter,
+  maxMinorTickCount: number,
+  lowAndHigh: [number, number]
+): {minor: MinorTick[]; major: MajorTick[]} {
+  const minorTickVals = scale.ticks(lowAndHigh, maxMinorTickCount);
+  return {
+    major: [],
+    minor: minorTickVals.map((tickVal) => {
+      return {
+        value: tickVal,
+        tickFormattedString: formatter.formatTick(tickVal),
+      };
+    }),
+  };
+}
+
+export function getTicksForTemporalScale(
+  scale: Scale,
+  formatter: Formatter,
+  maxMinorTickCount: number,
+  lowAndHigh: [number, number]
+): {minor: MinorTick[]; major: MajorTick[]} {
+  const [low, high] = lowAndHigh;
+  let majorTicks = scale.ticks(lowAndHigh, 2);
+  if (high - low >= DAY_IN_MS || majorTicks.length > 2) {
+    majorTicks = [];
+  }
+
+  const minorTickVals = scale.ticks(lowAndHigh, maxMinorTickCount);
+  return {
+    major: majorTicks.map((tickVal) => {
+      return {
+        start: tickVal,
+        tickFormattedString: formatter.formatShort(tickVal),
+      };
+    }),
+    minor: minorTickVals.map((tickVal) => {
+      return {
+        value: tickVal,
+        tickFormattedString: formatter.formatTick(tickVal),
+      };
+    }),
+  };
+}
+
 export function getTicksForLinearScale(
   scale: LinearScale,
   formatter: Formatter,
@@ -44,21 +93,12 @@ export function getTicksForLinearScale(
   lowAndHigh: [number, number]
 ): {minor: MinorTick[]; major: MajorTick[]} {
   const [low, high] = lowAndHigh;
-  const minorTickVals = scale.ticks([low, high], maxMinorTickCount);
-
   const diff = Math.abs(high - low);
   if (diff > 1e-3) {
-    return {
-      major: [],
-      minor: minorTickVals.map((tickVal) => {
-        return {
-          value: tickVal,
-          tickFormattedString: formatter.formatTick(tickVal),
-        };
-      }),
-    };
+    return getTicks(scale, formatter, maxMinorTickCount, lowAndHigh);
   }
 
+  const minorTickVals = scale.ticks([low, high], maxMinorTickCount);
   const numFractionalToKeep = getNumLeadingZerosInFractional(diff);
   const majorTickVals = scale.ticks([low, high], 2);
   const minor: MinorTick[] = [];

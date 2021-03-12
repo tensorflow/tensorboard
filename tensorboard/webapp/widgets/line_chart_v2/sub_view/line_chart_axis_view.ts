@@ -26,12 +26,12 @@ import {
   getScaleRangeFromDomDim,
 } from './chart_view_utils';
 import {
+  getTicks,
   getTicksForLinearScale,
+  getTicksForTemporalScale,
   MajorTick,
   MinorTick,
 } from './line_chart_axis_utils';
-
-const DAY_IN_MS = 24 * 1000 * 60 * 60;
 
 @Component({
   selector: 'line-chart-axis',
@@ -67,23 +67,35 @@ export class LineChartAxisComponent {
   minorTicks: MinorTick[] = [];
 
   ngOnChanges() {
+    let ticks: {minor: MinorTick[]; major: MajorTick[]} | null = null;
+    const domSize = this.axis === 'x' ? this.domDim.width : this.domDim.height;
+    const maxTickSize = getDomSizeInformedTickCount(domSize, this.gridCount);
+
     if (this.scale instanceof LinearScale) {
-      const domSize =
-        this.axis === 'x' ? this.domDim.width : this.domDim.height;
-      const maxTickSize = getDomSizeInformedTickCount(domSize, this.gridCount);
-      const {major, minor} = getTicksForLinearScale(
+      ticks = getTicksForLinearScale(
         this.scale,
         this.getFormatter(),
         maxTickSize,
         this.axisExtent
       );
-      this.majorTicks = major;
-      this.minorTicks = minor;
+    } else if (this.scale instanceof TemporalScale) {
+      ticks = getTicksForTemporalScale(
+        this.scale,
+        this.getFormatter(),
+        maxTickSize,
+        this.axisExtent
+      );
     } else {
-      const {major, minor} = this.getMajorMinorTicks();
-      this.majorTicks = major;
-      this.minorTicks = minor;
+      ticks = getTicks(
+        this.scale,
+        this.getFormatter(),
+        maxTickSize,
+        this.axisExtent
+      );
     }
+
+    this.majorTicks = ticks.major;
+    this.minorTicks = ticks.minor;
   }
 
   getFormatter(): Formatter {
@@ -96,43 +108,6 @@ export class LineChartAxisComponent {
 
   trackByMajorTick(tick: MajorTick): number {
     return tick.start;
-  }
-
-  private getMajorTickValues(): number[] {
-    if (this.scale instanceof TemporalScale) {
-      const majorTicks = this.scale.ticks(this.axisExtent, 2);
-      if (
-        this.axisExtent[1] - this.axisExtent[0] < DAY_IN_MS &&
-        majorTicks.length <= 2
-      ) {
-        return majorTicks;
-      }
-    }
-
-    return [];
-  }
-
-  private getMajorMinorTicks(): {major: MajorTick[]; minor: MinorTick[]} {
-    const formatter = this.getFormatter();
-    const domSize = this.axis === 'x' ? this.domDim.width : this.domDim.height;
-    const maxTickSize = getDomSizeInformedTickCount(domSize, this.gridCount);
-    const minorTicks: MinorTick[] = [];
-    for (const tickValue of this.scale.ticks(this.axisExtent, maxTickSize)) {
-      minorTicks.push({
-        tickFormattedString: formatter.formatTick(tickValue),
-        value: tickValue,
-      });
-    }
-
-    const majorTicks: MajorTick[] = [];
-    for (const tickValue of this.getMajorTickValues()) {
-      majorTicks.push({
-        tickFormattedString: formatter.formatShort(tickValue),
-        start: tickValue,
-      });
-    }
-
-    return {major: majorTicks, minor: minorTicks};
   }
 
   private getDomPos(data: number): number {
