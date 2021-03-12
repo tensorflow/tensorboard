@@ -12,3 +12,50 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import * as selectors from './notification_center_selectors';
+import {CategoryEnum} from './notification_center_types';
+import {
+  buildNotificationState,
+  buildStateFromNotificationState,
+} from './testing';
+
+describe('notification_center_selectors', () => {
+  describe('getNotification', () => {
+    beforeEach(() => {
+      // Clear the memoization.
+      selectors.getNotifications.release();
+    });
+
+    it('returns empty list when there is no notification', () => {
+      const state = buildStateFromNotificationState(
+        buildNotificationState({
+          notifications: [],
+        })
+      );
+      expect(selectors.getNotifications(state)).toEqual([]);
+    });
+
+    it('returns the notifications', () => {
+      const state = buildStateFromNotificationState(
+        buildNotificationState({
+          notifications: [
+            {
+              category: CategoryEnum.NONE,
+              dateInMs: 1579766400000,
+              title: 'test title',
+              content: '<li>test</li>',
+            },
+          ],
+        })
+      );
+      expect(selectors.getNotifications(state)).toEqual([
+        {
+          category: CategoryEnum.NONE,
+          dateInMs: 1579766400000,
+          title: 'test title',
+          content: '<li>test</li>',
+        },
+      ]);
+    });
+  });
+});

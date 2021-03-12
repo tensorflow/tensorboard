@@ -45,15 +45,31 @@ tf_ts_library(
     deps = [],
 )
 
+
 tf_ts_library(
-    name = "_redux_test",
+    name = "testing",
     testonly = True,
     srcs = [
-        "notification_center_reducers_test.ts",
-        "notification_center_selectors_test.ts",
+        "testing.ts",
     ],
     deps = [
         ":_redux",
         ":types",
+    ],
+)
+
+tf_ts_library(
+    name = "_redux_test",
+    testonly = True,
+    visibility = ["//tensorboard:internal"],
+    srcs = [
+        # "notification_center_reducers_test.ts",
+        "notification_center_selectors_test.ts",
+    ],
+    deps = [
+        ":_redux",
+        ":testing",
+        ":types",
+        "@npm//@types/jasmine",
     ],
 )
