@@ -19,9 +19,9 @@ import {Notification} from './notification_center_types';
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
 /**
- * Fires when an alert is to be reported.
+ * Fires when the bell icon is clicked.
  */
-export const notificationReported = createAction(
+export const notificationBellClicked = createAction(
   '[Notification] Notification Bell Clicked',
   props<Notification>()
 );
