@@ -26,7 +26,7 @@ import {
   getScaleRangeFromDomDim,
 } from './chart_view_utils';
 import {
-  getTicks,
+  getStandardTicks,
   getTicksForLinearScale,
   getTicksForTemporalScale,
   MajorTick,
@@ -86,7 +86,7 @@ export class LineChartAxisComponent {
         this.axisExtent
       );
     } else {
-      ticks = getTicks(
+      ticks = getStandardTicks(
         this.scale,
         this.getFormatter(),
         maxTickSize,

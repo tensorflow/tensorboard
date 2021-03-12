@@ -39,7 +39,7 @@ function getNumLeadingZerosInFractional(value: number): number {
   return 0;
 }
 
-export function getTicks(
+export function getStandardTicks(
   scale: Scale,
   formatter: Formatter,
   maxMinorTickCount: number,
@@ -66,9 +66,11 @@ export function getTicksForTemporalScale(
   const [low, high] = lowAndHigh;
   let majorTicks = scale.ticks(lowAndHigh, 2);
   if (high - low >= DAY_IN_MS || majorTicks.length > 2) {
-    majorTicks = [];
+    // Return standard ticks.
+    return getStandardTicks(scale, formatter, maxMinorTickCount, lowAndHigh);
   }
 
+  // Do something special for this special case.
   const minorTickVals = scale.ticks(lowAndHigh, maxMinorTickCount);
   return {
     major: majorTicks.map((tickVal) => {
@@ -95,9 +97,11 @@ export function getTicksForLinearScale(
   const [low, high] = lowAndHigh;
   const diff = Math.abs(high - low);
   if (diff > 1e-3) {
-    return getTicks(scale, formatter, maxMinorTickCount, lowAndHigh);
+    // Return standard ticks.
+    return getStandardTicks(scale, formatter, maxMinorTickCount, lowAndHigh);
   }
 
+  // Do something special for this special case.
   const minorTickVals = scale.ticks([low, high], maxMinorTickCount);
   const numFractionalToKeep = getNumLeadingZerosInFractional(diff);
   const majorTickVals = scale.ticks([low, high], 2);
