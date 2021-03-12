@@ -139,7 +139,6 @@ export class NpmiHttpServerDataSource implements NpmiDataSource {
                 vector: embeddings[run][annotationIndex],
                 index: index,
                 name: annotation,
-                projections: {},
               };
               index = index + 1;
             }

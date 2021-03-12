@@ -21,10 +21,9 @@ export interface EmbeddingDataPoint {
   name: string;
   sequenceIndex?: number;
   index: number;
-  projections: {
-    umap?: boolean;
-    'umap-0'?: number;
-    'umap-1'?: number;
+  projection?: {
+    x: number;
+    y: number;
   };
 }
 
@@ -43,13 +42,6 @@ export interface EmbeddingDataSet {
   points: EmbeddingListing;
   pointKeys: string[];
   shuffledDataIndices: number[];
-  /**
-   * This keeps a list of all current projections so you can easily test to see
-   * if it's been calculated already.
-   */
-  projections: {
-    [projection: string]: boolean;
-  };
 
   // UMAP
   hasUmapRun: boolean;
@@ -88,7 +80,6 @@ export function buildEmbeddingDataSet(
     points,
     pointKeys,
     shuffledDataIndices: shuffle(range(pointKeys.length)),
-    projections: {},
     hasUmapRun: false,
   };
 }
@@ -103,7 +94,6 @@ export async function projectUmap(
   messageCallback: (message: string) => void
 ): Promise<EmbeddingDataSet> {
   return new Promise((resolve, reject) => {
-    embeddingData.projections['umap'] = false;
     if (umapIndices.length <= nNeighbors) {
       reject('Error: Please select more data points.');
       return;
@@ -120,13 +110,12 @@ export async function projectUmap(
     umap.fitAsync(sampledData, (epochNumber) => {
       if (epochNumber === epochs) {
         const result = umap.getEmbedding();
-        embeddingData.projections['umap'] = true;
         embeddingData.hasUmapRun = true;
         sampledIndices.forEach((index, i) => {
-          const dataPoint =
-            embeddingData.points[embeddingData.pointKeys[index]];
-          dataPoint.projections['umap-0'] = result[i][0];
-          dataPoint.projections['umap-1'] = result[i][1];
+          embeddingData.points[embeddingData.pointKeys[index]].projection = {
+            x: result[i][0],
+            y: result[i][1],
+          };
         });
         resolve(embeddingData);
       } else if (epochNumber % epochStepSize === 0) {

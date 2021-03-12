@@ -91,13 +91,11 @@ describe('sort annotations utils', () => {
         vector: [0.5],
         name: 'annotation_1',
         index: 0,
-        projections: {},
       },
       annotation_3: {
         vector: [0.1],
         name: 'annotation_3',
         index: 1,
-        projections: {},
       },
     });
     const annotations = sortAnnotations(annotationData, sort, embeddingData);
@@ -119,13 +117,11 @@ describe('sort annotations utils', () => {
         vector: [0.5],
         name: 'annotation_2',
         index: 0,
-        projections: {},
       },
       annotation_3: {
         vector: [0.1],
         name: 'annotation_3',
         index: 1,
-        projections: {},
       },
     });
     const annotations = sortAnnotations(annotationData, sort, embeddingData);
@@ -147,13 +143,11 @@ describe('sort annotations utils', () => {
         vector: [0.5],
         name: 'annotation_2',
         index: 0,
-        projections: {},
       },
       annotation_3: {
         vector: [0.1],
         name: 'annotation_3',
         index: 1,
-        projections: {},
       },
     });
     const annotations = sortAnnotations(annotationData, sort, embeddingData);

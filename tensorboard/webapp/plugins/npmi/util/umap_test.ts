@@ -24,7 +24,6 @@ describe('umap utils', () => {
     expect(embeddingDataSet.shuffledDataIndices.length).toBe(
       Object.keys(embeddingListing).length
     );
-    expect(embeddingDataSet.projections).toEqual({});
     expect(embeddingDataSet.hasUmapRun).toBeFalse();
   });
 
@@ -34,31 +33,26 @@ describe('umap utils', () => {
         vector: [0.5, 0.6, 0.1],
         name: 'annotation_1',
         index: 0,
-        projections: {},
       },
       annotation_2: {
         vector: [-0.2, 0.3, 0.5],
         name: 'annotation_2',
         index: 1,
-        projections: {},
       },
       annotation_3: {
         vector: [0.1, -0.5, -0.8],
         name: 'annotation_3',
         index: 2,
-        projections: {},
       },
       annotation_4: {
         vector: [0.1, 0.5, 0.8],
         name: 'annotation_4',
         index: 2,
-        projections: {},
       },
       annotation_5: {
         vector: [0.3, 0.5, -0.3],
         name: 'annotation_5',
         index: 2,
-        projections: {},
       },
     });
     const embeddingDataSet = await projectUmap(
@@ -68,11 +62,9 @@ describe('umap utils', () => {
       [0, 1, 2, 3, 4],
       () => {}
     );
-    expect(embeddingDataSet.projections['umap']).toBeTrue();
     expect(embeddingDataSet.hasUmapRun).toBeTrue();
     for (const key of embeddingDataSet.pointKeys) {
-      expect(embeddingDataSet.points[key].projections['umap-0']).toBeTruthy();
-      expect(embeddingDataSet.points[key].projections['umap-1']).toBeTruthy();
+      expect(embeddingDataSet.points[key].projection).toBeTruthy();
     }
   });
 
@@ -82,31 +74,26 @@ describe('umap utils', () => {
         vector: [0.5, 0.6, 0.1],
         name: 'annotation_1',
         index: 0,
-        projections: {},
       },
       annotation_2: {
         vector: [-0.2, 0.3, 0.5],
         name: 'annotation_2',
         index: 1,
-        projections: {},
       },
       annotation_3: {
         vector: [0.1, -0.5, -0.8],
         name: 'annotation_3',
         index: 2,
-        projections: {},
       },
       annotation_4: {
         vector: [0.1, 0.5, 0.8],
         name: 'annotation_4',
         index: 2,
-        projections: {},
       },
       annotation_5: {
         vector: [0.3, 0.5, -0.3],
         name: 'annotation_5',
         index: 2,
-        projections: {},
       },
     });
     return projectUmap(
