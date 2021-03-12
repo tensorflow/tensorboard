@@ -15,19 +15,16 @@ limitations under the License.
 import {Action, createReducer, on} from '@ngrx/store';
 import * as actions from './notification_center_actions';
 import {NotificationState} from './notification_center_types';
-import {notificationNotes} from './notification_notes'
+import {notificationNotes} from './notification_notes';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
 const initialState: NotificationState = {
-    notifications: notificationNotes,
+  notifications: notificationNotes,
 };
 
-const reducer = createReducer(
-  initialState,
-);
+const reducer = createReducer(initialState);
 
 export function reducers(state: NotificationState | undefined, action: Action) {
   return reducer(state, action);
 }
-

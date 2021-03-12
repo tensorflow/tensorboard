@@ -14,8 +14,8 @@ tf_ts_library(
     ],
     visibility = ["//tensorboard:internal"],
     deps = [
-        ":types",
         ":actions",
+        ":types",
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp/notification_center:types",
         "@npm//@angular/core",
@@ -38,13 +38,12 @@ tf_ts_library(
 
 tf_ts_library(
     name = "types",
-    visibility = ["//tensorboard:internal"],
     srcs = [
         "notification_center_types.ts",
     ],
+    visibility = ["//tensorboard:internal"],
     deps = [],
 )
-
 
 tf_ts_library(
     name = "testing",
@@ -61,11 +60,11 @@ tf_ts_library(
 tf_ts_library(
     name = "_redux_test",
     testonly = True,
-    visibility = ["//tensorboard:internal"],
     srcs = [
         # "notification_center_reducers_test.ts",
         "notification_center_selectors_test.ts",
     ],
+    visibility = ["//tensorboard:internal"],
     deps = [
         ":_redux",
         ":testing",

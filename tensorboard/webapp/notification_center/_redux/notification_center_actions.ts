@@ -12,8 +12,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import { createAction, props } from '@ngrx/store';
-import { Notification } from './notification_center_types';
+import {createAction, props} from '@ngrx/store';
+import {Notification} from './notification_center_types';
 
 /** @typehack */ import * as _typeHackModels from '@ngrx/store/src/models';
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
