@@ -531,6 +531,7 @@ py_library(
     deps = [
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/plugins/audio:metadata",
+        "//tensorboard/plugins/custom_scalar:metadata",
         "//tensorboard/plugins/graph:metadata",
         "//tensorboard/plugins/histogram:metadata",
         "//tensorboard/plugins/hparams:metadata",
