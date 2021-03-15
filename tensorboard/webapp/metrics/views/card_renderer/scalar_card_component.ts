@@ -147,7 +147,6 @@ export class ScalarCardComponent {
   @Input() dataSeries!: ScalarCardDataSeries[];
   @Input() chartMetadataMap!: ScalarCardSeriesMetadataMap;
   @Input() isEverVisible!: boolean;
-  isExtentAtDefault = false;
 
   @Output() onFullSizeToggle = new EventEmitter<void>();
   @Output() onPinClicked = new EventEmitter<boolean>();

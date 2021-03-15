@@ -53,7 +53,6 @@ class FakeGridComponent {
       [seriesMetadataMap]="seriesMetadataMap"
       [yScaleType]="yScaleType"
       [fixedViewBox]="fixedViewBox"
-      (isExtentAtDefault)="isExtentAtDefault($event)"
     ></line-chart>
   `,
   styles: [
@@ -84,9 +83,6 @@ class TestableComponent {
 
   @Input()
   disableUpdate?: boolean;
-
-  @Input()
-  isExtentAtDefault: (event: {atDefault: boolean}) => void = () => {};
 
   // WebGL one is harder to test.
   preferredRendererType = RendererType.SVG;
@@ -577,9 +573,8 @@ describe('line_chart_v2/line_chart test', () => {
     });
   });
 
-  describe('extent at default', () => {
-    it('emits when viewBox is overriden or reset', () => {
-      const isExtentAtDefaultSpy = jasmine.createSpy();
+  describe('#getIsViewBoxOverridden', () => {
+    it('returns its internal state', () => {
       const fixture = createComponent({
         seriesData: [
           buildSeries({
@@ -594,40 +589,20 @@ describe('line_chart_v2/line_chart test', () => {
         seriesMetadataMap: {foo: buildMetadata({id: 'foo', visible: true})},
         yScaleType: ScaleType.LINEAR,
       });
-      fixture.componentInstance.isExtentAtDefault = isExtentAtDefaultSpy;
       fixture.detectChanges();
 
-      expect(isExtentAtDefaultSpy).toHaveBeenCalledTimes(1);
+      expect(fixture.componentInstance.chart.getIsViewBoxOverridden()).toBe(
+        false
+      );
 
       fixture.componentInstance.triggerViewBoxChange({
         x: [-5, 5],
         y: [0, 10],
       });
-      expect(isExtentAtDefaultSpy).toHaveBeenCalledTimes(2);
 
-      fixture.componentInstance.chart.viewBoxReset();
-      expect(isExtentAtDefaultSpy).toHaveBeenCalledTimes(3);
-      expect(isExtentAtDefaultSpy.calls.allArgs()).toEqual([
-        [{atDefault: true}],
-        [{atDefault: false}],
-        [{atDefault: true}],
-      ]);
-
-      // Changing the data fits the domain to the data but does not emit the extent
-      // change.
-      fixture.componentInstance.seriesData = [
-        buildSeries({
-          id: 'foo',
-          points: [
-            {x: 0, y: 0},
-            {x: 1, y: -1},
-            {x: 2, y: 1},
-            {x: 3, y: 1},
-          ],
-        }),
-      ];
-      fixture.detectChanges();
-      expect(isExtentAtDefaultSpy).toHaveBeenCalledTimes(3);
+      expect(fixture.componentInstance.chart.getIsViewBoxOverridden()).toBe(
+        true
+      );
     });
   });
 });

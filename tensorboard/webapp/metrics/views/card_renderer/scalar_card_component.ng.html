@@ -66,11 +66,11 @@ limitations under the License.
       </button>
       <button
         mat-menu-item
-        [disabled]="!seriesDataList || !seriesDataList.length || isExtentAtDefault"
+        [disabled]="!seriesDataList || !seriesDataList.length || (newLineChart && !newLineChart.getIsViewBoxOverridden())"
         (click)="resetDomain()"
         [title]="
-            isExtentAtDefault ?
-                'Line chart is already fitted to data. When data updates, line chart '
+            (newLineChart && !newLineChart.getIsViewBoxOverridden) ?
+                'Line chart is already fitted to data. When data updates, the line chart '
                 + 'will auto fit to its domain.' :
                 ''
         "
@@ -101,7 +101,6 @@ limitations under the License.
       [customXFormatter]="xAxisType === XAxisType.RELATIVE ? relativeXFormatter : undefined"
       [ignoreYOutliers]="ignoreOutliers"
       [tooltipTemplate]="tooltip"
-      (isExtentAtDefault)="isExtentAtDefault = $event.atDefault"
     ></line-chart>
 
     <ng-template #legacyChart>
