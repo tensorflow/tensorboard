@@ -22,7 +22,7 @@ import {MatIconTestingModule} from '../../testing/mat_icon_module';
 import {NotificationCenterComponent} from './notification_center_component';
 import {NotificationCenterContainer} from './notification_center_container';
 
-describe('alert snackbar', () => {
+describe('notification center', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [
@@ -51,5 +51,14 @@ describe('alert snackbar', () => {
     );
 
     expect(notificationMenu).toBeTruthy();
+    expect(
+      notificationMenu.nativeNode.querySelector('.title').textContent
+    ).toBe('2.4 release');
+    expect(
+      notificationMenu.nativeNode.querySelector('.category-icon').textContent
+    ).toBe('info_outline_24px');
+    expect(
+      notificationMenu.nativeNode.querySelector('.content li').textContent
+    ).toBe('Visualize Scalars, Images, and  Histograms in one place');
   });
 });

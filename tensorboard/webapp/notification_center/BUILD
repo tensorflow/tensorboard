@@ -23,3 +23,13 @@ tf_ts_library(
     ],
     deps = [],
 )
+
+tf_ts_library(
+    name = "notification_center_test",
+    srcs = [],
+    testonly = True,
+    visibility = ["//tensorboard:internal"],
+    deps = [
+        "//tensorboard/webapp/notification_center/_views:_views_test"
+    ],
+)
