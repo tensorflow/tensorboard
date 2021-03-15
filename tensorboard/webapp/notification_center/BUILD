@@ -1,4 +1,4 @@
-load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_ts_library")
+load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_ng_web_test_suite", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
@@ -24,7 +24,7 @@ tf_ts_library(
     deps = [],
 )
 
-tf_ts_library(
+tf_ng_web_test_suite(
     name = "notification_center_test",
     testonly = True,
     srcs = [],
