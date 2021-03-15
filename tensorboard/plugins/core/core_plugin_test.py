@@ -232,11 +232,12 @@ class CorePluginExperimentMetadataTest(tf.test.TestCase):
         class FakeDataProvider(object):
             def data_location(self, ctx, *, experiment_id):
                 del experiment_id  # Unused.
-                return ""
+                return "fallback (do not use me)"
 
             def experiment_metadata(self, ctx, *, experiment_id):
                 del experiment_id  # Unused.
                 return provider.ExperimentMetadata(
+                    data_location="/tmp/logs",
                     experiment_name="Experiment #5 (実験＃5)",
                     experiment_description="Take five (😊)",
                     creation_time=1234.5,
@@ -252,7 +253,7 @@ class CorePluginExperimentMetadataTest(tf.test.TestCase):
         self.server = werkzeug_test.Client(app, wrappers.BaseResponse)
 
         parsed_object = self._get_json(self.server, "/data/environment")
-        self.assertEqual(parsed_object["data_location"], "")
+        self.assertEqual(parsed_object["data_location"], "/tmp/logs")
         self.assertEqual(parsed_object["window_title"], None)
         self.assertEqual(
             parsed_object["experiment_name"], "Experiment #5 (実験＃5)"
@@ -262,13 +263,38 @@ class CorePluginExperimentMetadataTest(tf.test.TestCase):
         )
         self.assertEqual(parsed_object["creation_time"], 1234.5)
 
+    def testGetEnvironmentDataWithDataLocationFallback(self):
+        """Test environment route returns correct metadata about experiment."""
+
+        class FakeDataProvider(object):
+            def data_location(self, ctx, *, experiment_id):
+                del experiment_id  # Unused.
+                return "fallback (pick me)"
+
+            def experiment_metadata(self, ctx, *, experiment_id):
+                del experiment_id  # Unused.
+                # note: no data location provided
+                return provider.ExperimentMetadata(experiment_name="name")
+
+        self.context = base_plugin.TBContext(
+            flags=FakeFlags(generic_data="true"),
+            data_provider=FakeDataProvider(),
+        )
+
+        self.plugin = core_plugin.CorePlugin(self.context)
+        app = application.TensorBoardWSGI([self.plugin])
+        self.server = werkzeug_test.Client(app, wrappers.BaseResponse)
+
+        parsed_object = self._get_json(self.server, "/data/environment")
+        self.assertEqual(parsed_object["data_location"], "fallback (pick me)")
+
     def testGetEnvironmentDataWithNoExperimentMetadata(self):
         """Test environment route works when no experiment metadata exists."""
 
         class FakeDataProvider(object):
             def data_location(self, ctx, *, experiment_id):
                 del experiment_id  # Unused.
-                return ""
+                return "/tmp/logs"
 
             def experiment_metadata(self, ctx, *, experiment_id):
                 del experiment_id  # Unused.
@@ -284,7 +310,7 @@ class CorePluginExperimentMetadataTest(tf.test.TestCase):
         self.server = werkzeug_test.Client(app, wrappers.BaseResponse)
 
         parsed_object = self._get_json(self.server, "/data/environment")
-        self.assertEqual(parsed_object["data_location"], "")
+        self.assertEqual(parsed_object["data_location"], "/tmp/logs")
         self.assertEqual(parsed_object["window_title"], None)
         self.assertNotIn("experiment_name", parsed_object)
         self.assertNotIn("experiment_description", parsed_object)

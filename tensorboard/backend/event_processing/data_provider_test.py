@@ -128,6 +128,11 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
         result = provider.data_location(self.ctx, experiment_id="unused")
         self.assertEqual(result, self.logdir)
 
+    def test_experiment_metadata(self):
+        provider = self.create_provider()
+        result = provider.experiment_metadata(self.ctx, experiment_id="unused")
+        self.assertEqual(result.data_location, self.logdir)
+
     def test_list_plugins_with_no_graph(self):
         provider = self.create_provider()
         result = provider.list_plugins(self.ctx, experiment_id="unused")
