@@ -32,6 +32,7 @@ from tensorboard.plugins.graph import metadata as graphs_metadata
 from tensorboard.plugins.histogram import metadata as histograms_metadata
 from tensorboard.plugins.hparams import metadata as hparams_metadata
 from tensorboard.plugins.image import metadata as images_metadata
+from tensorboard.plugins.mesh import metadata as mesh_metadata
 from tensorboard.plugins.pr_curve import metadata as pr_curves_metadata
 from tensorboard.plugins.scalar import metadata as scalars_metadata
 from tensorboard.plugins.text import metadata as text_metadata
@@ -141,6 +142,8 @@ def _migrate_value(value, initial_metadata):
         return _migrate_pr_curve_value(value)
     if plugin_name == custom_scalars_metadata.PLUGIN_NAME:
         return _migrate_custom_scalars_value(value)
+    if plugin_name == mesh_metadata.PLUGIN_NAME:
+        return _migrate_mesh_value(value)
     if plugin_name in [
         graphs_metadata.PLUGIN_NAME_RUN_METADATA,
         graphs_metadata.PLUGIN_NAME_RUN_METADATA_WITH_GRAPH,
@@ -202,6 +205,12 @@ def _migrate_pr_curve_value(value):
 
 
 def _migrate_custom_scalars_value(value):
+    if value.HasField("metadata"):
+        value.metadata.data_class = summary_pb2.DATA_CLASS_TENSOR
+    return (value,)
+
+
+def _migrate_mesh_value(value):
     if value.HasField("metadata"):
         value.metadata.data_class = summary_pb2.DATA_CLASS_TENSOR
     return (value,)

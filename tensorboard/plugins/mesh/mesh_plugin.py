@@ -18,10 +18,13 @@ import numpy as np
 from werkzeug import wrappers
 
 from tensorboard.backend import http_util
+from tensorboard.data import provider
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.mesh import metadata
 from tensorboard.plugins.mesh import plugin_data_pb2
-from tensorboard.util import tensor_util
+from tensorboard import plugin_util
+
+_DEFAULT_DOWNSAMPLING = 100  # meshes per time series
 
 
 class MeshPlugin(base_plugin.TBPlugin):
@@ -36,28 +39,42 @@ class MeshPlugin(base_plugin.TBPlugin):
           context: A base_plugin.TBContext instance. A magic container that
             TensorBoard uses to make objects available to the plugin.
         """
-        # Retrieve the multiplexer from the context and store a reference to it.
-        self._multiplexer = context.multiplexer
+        self._data_provider = context.data_provider
+        self._downsample_to = (context.sampling_hints or {}).get(
+            self.plugin_name, _DEFAULT_DOWNSAMPLING
+        )
 
-    def _instance_tag_metadata(self, run, instance_tag):
+    def _instance_tag_metadata(self, ctx, experiment, run, instance_tag):
         """Gets the `MeshPluginData` proto for an instance tag."""
-        summary_metadata = self._multiplexer.SummaryMetadata(run, instance_tag)
-        content = summary_metadata.plugin_data.content
+        results = self._data_provider.list_tensors(
+            ctx,
+            experiment_id=experiment,
+            plugin_name=metadata.PLUGIN_NAME,
+            run_tag_filter=provider.RunTagFilter(
+                runs=[run], tags=[instance_tag]
+            ),
+        )
+        content = results[run][instance_tag].plugin_content
         return metadata.parse_plugin_metadata(content)
 
-    def _tag(self, run, instance_tag):
+    def _tag(self, ctx, experiment, run, instance_tag):
         """Gets the user-facing tag name for an instance tag."""
-        return self._instance_tag_metadata(run, instance_tag).name
+        return self._instance_tag_metadata(
+            ctx, experiment, run, instance_tag
+        ).name
 
-    def _instance_tags(self, run, tag):
+    def _instance_tags(self, ctx, experiment, run, tag):
         """Gets the instance tag names for a user-facing tag."""
-        index = self._multiplexer.GetAccumulator(run).PluginTagToContent(
-            metadata.PLUGIN_NAME
+        index = self._data_provider.list_tensors(
+            ctx,
+            experiment_id=experiment,
+            plugin_name=metadata.PLUGIN_NAME,
+            run_tag_filter=provider.RunTagFilter(runs=[run]),
         )
         return [
             instance_tag
-            for (instance_tag, content) in index.items()
-            if tag == metadata.parse_plugin_metadata(content).name
+            for (instance_tag, ts) in index.get(run, {}).items()
+            if tag == metadata.parse_plugin_metadata(ts.plugin_content).name
         ]
 
     @wrappers.Request.application
@@ -72,10 +89,12 @@ class MeshPlugin(base_plugin.TBPlugin):
           are all the runs. Each run is mapped to a (potentially empty)
           list of all tags that are relevant to this plugin.
         """
-        # This is a dictionary mapping from run to (tag to string content).
-        # To be clear, the values of the dictionary are dictionaries.
-        all_runs = self._multiplexer.PluginRunToTagToContent(
-            MeshPlugin.plugin_name
+        ctx = plugin_util.context(request.environ)
+        experiment = plugin_util.experiment_id(request.environ)
+        all_runs = self._data_provider.list_tensors(
+            ctx,
+            experiment_id=experiment,
+            plugin_name=metadata.PLUGIN_NAME,
         )
 
         # tagToContent is itself a dictionary mapping tag name to string
@@ -83,12 +102,14 @@ class MeshPlugin(base_plugin.TBPlugin):
         # to obtain a list of tags associated with each run. For each tag estimate
         # number of samples.
         response = dict()
-        for run, tag_to_content in all_runs.items():
+        for run, tags in all_runs.items():
             response[run] = dict()
-            for instance_tag, _ in tag_to_content.items():
+            for instance_tag in tags:
                 # Make sure we only operate on user-defined tags here.
-                tag = self._tag(run, instance_tag)
-                meta = self._instance_tag_metadata(run, instance_tag)
+                tag = self._tag(ctx, experiment, run, instance_tag)
+                meta = self._instance_tag_metadata(
+                    ctx, experiment, run, instance_tag
+                )
                 # Batch size must be defined, otherwise we don't know how many
                 # samples were there.
                 response[run][tag] = {"samples": meta.shape[0]}
@@ -117,20 +138,19 @@ class MeshPlugin(base_plugin.TBPlugin):
     def frontend_metadata(self):
         return base_plugin.FrontendMetadata(element_name="mesh-dashboard")
 
-    def _get_sample(self, tensor_event, sample):
+    def _get_sample(self, tensor_datum, sample):
         """Returns a single sample from a batch of samples."""
-        data = tensor_util.make_ndarray(tensor_event.tensor_proto)
-        return data[sample].tolist()
+        return tensor_datum.numpy[sample].tolist()
 
     def _get_tensor_metadata(
         self, event, content_type, components, data_shape, config
     ):
-        """Converts a TensorEvent into a JSON-compatible response.
+        """Converts a TensorDatum into a JSON-compatible response.
 
         Args:
-          event: TensorEvent object containing data in proto format.
+          event: TensorDatum object containing data in proto format.
           content_type: enum plugin_data_pb2.MeshPluginData.ContentType value,
-            representing content type in TensorEvent.
+            representing content type in TensorDatum.
           components: Bitmask representing all parts (vertices, colors, etc.) that
             belong to the summary.
           data_shape: list of dimensions sizes of the tensor.
@@ -149,19 +169,31 @@ class MeshPlugin(base_plugin.TBPlugin):
         }
 
     def _get_tensor_data(self, event, sample):
-        """Convert a TensorEvent into a JSON-compatible response."""
+        """Convert a TensorDatum into a JSON-compatible response."""
         data = self._get_sample(event, sample)
         return data
 
     def _collect_tensor_events(self, request, step=None):
         """Collects list of tensor events based on request."""
+        ctx = plugin_util.context(request.environ)
+        experiment = plugin_util.experiment_id(request.environ)
         run = request.args.get("run")
         tag = request.args.get("tag")
 
         tensor_events = []  # List of tuples (meta, tensor) that contain tag.
-        for instance_tag in self._instance_tags(run, tag):
-            tensors = self._multiplexer.Tensors(run, instance_tag)
-            meta = self._instance_tag_metadata(run, instance_tag)
+        for instance_tag in self._instance_tags(ctx, experiment, run, tag):
+            tensors = self._data_provider.read_tensors(
+                ctx,
+                experiment_id=experiment,
+                plugin_name=metadata.PLUGIN_NAME,
+                run_tag_filter=provider.RunTagFilter(
+                    runs=[run], tags=[instance_tag]
+                ),
+                downsample=self._downsample_to,
+            )[run][instance_tag]
+            meta = self._instance_tag_metadata(
+                ctx, experiment, run, instance_tag
+            )
             tensor_events += [(meta, tensor) for tensor in tensors]
 
         if step is not None:
