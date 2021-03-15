@@ -61,8 +61,6 @@ class GrpcDataProvider(provider.DataProvider):
         req.experiment_id = experiment_id
         with _translate_grpc_error():
             res = self._stub.GetExperiment(req)
-        if not (res.name or res.description or res.HasField("creation_time")):
-            return None
         res = provider.ExperimentMetadata(
             experiment_name=res.name,
             experiment_description=res.description,

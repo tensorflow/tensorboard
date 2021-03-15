@@ -131,11 +131,10 @@ class DataProvider(metaclass=abc.ABCMeta):
           experiment_id:  ID of the experiment in question.
 
         Returns:
-          If the metadata does not exist, `None`.
-          Otherwise, an `ExperimentMetadata` object containing metadata about
-            the experiment.
+          An `ExperimentMetadata` object containing metadata about the
+          experiment.
         """
-        return None
+        return ExperimentMetadata()
 
     def list_plugins(self, ctx=None, *, experiment_id):
         """List all plugins that own data in a given experiment.
@@ -379,6 +378,9 @@ class DataProvider(metaclass=abc.ABCMeta):
 class ExperimentMetadata(object):
     """Metadata about an experiment.
 
+    All fields have default values: i.e., they will always be present on
+    the object, but may be omitted in a constructor call.
+
     Attributes:
       experiment_name: A user-facing name for the experiment (as a `str`).
       experiment_description: A user-facing description for the experiment
@@ -387,7 +389,13 @@ class ExperimentMetadata(object):
         seconds since the epoch.
     """
 
-    def __init__(self, experiment_name, experiment_description, creation_time):
+    def __init__(
+        self,
+        *,
+        experiment_name="",
+        experiment_description="",
+        creation_time=0,
+    ):
         self._experiment_name = experiment_name
         self._experiment_description = experiment_description
         self._creation_time = creation_time
@@ -404,25 +412,21 @@ class ExperimentMetadata(object):
     def creation_time(self):
         return self._creation_time
 
+    def _as_tuple(self):
+        """Helper for `__eq__` and `__hash__`."""
+        return (
+            self._experiment_name,
+            self._experiment_description,
+            self._creation_time,
+        )
+
     def __eq__(self, other):
         if not isinstance(other, ExperimentMetadata):
             return False
-        if self._experiment_name != other._experiment_name:
-            return False
-        if self._experiment_description != other._experiment_description:
-            return False
-        if self._creation_time != other._creation_time:
-            return False
-        return True
+        return self._as_tuple() == other._as_tuple()
 
     def __hash__(self):
-        return hash(
-            (
-                self._experiment_name,
-                self._experiment_description,
-                self._creation_time,
-            )
-        )
+        return hash(self._as_tuple())
 
     def __repr__(self):
         return "ExperimentMetadata(%s)" % ", ".join(

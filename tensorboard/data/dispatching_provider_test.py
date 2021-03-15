@@ -39,7 +39,7 @@ class PlaceholderDataProvider(provider.DataProvider):
         return "%s://%s" % (self._name, experiment_id)
 
     def experiment_metadata(self, ctx, *, experiment_id):
-        return None
+        return provider.ExperimentMetadata()
 
     def list_plugins(self, ctx, *, experiment_id):
         self._validate_eid(experiment_id)
