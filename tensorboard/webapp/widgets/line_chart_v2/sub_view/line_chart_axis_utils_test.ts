@@ -13,10 +13,165 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {LinearScale} from '../lib/scale';
-import {getTicksForLinearScale} from './line_chart_axis_utils';
+import {createScale, LinearScale, ScaleType, TemporalScale} from '../lib/scale';
+import {
+  getStandardTicks,
+  getTicksForLinearScale,
+  getTicksForTemporalScale,
+} from './line_chart_axis_utils';
 
 describe('line_chart_v2/sub_view/axis_utils test', () => {
+  describe('#getStandardTicks', () => {
+    const scale = createScale(ScaleType.LOG10);
+
+    it('returns no major ticks', () => {
+      const {major, minor} = getStandardTicks(
+        scale,
+        scale.defaultFormatter,
+        5,
+        [1, 10]
+      );
+
+      expect(major).toEqual([]);
+      expect(minor).toEqual([
+        {value: 1, tickFormattedString: '1'},
+        {value: 2, tickFormattedString: '2'},
+        {value: 3, tickFormattedString: '3'},
+        {value: 4, tickFormattedString: '4'},
+        {value: 5, tickFormattedString: '5'},
+        {value: 6, tickFormattedString: '6'},
+        {value: 7, tickFormattedString: '7'},
+        {value: 8, tickFormattedString: '8'},
+        {value: 9, tickFormattedString: '9'},
+        {value: 10, tickFormattedString: '10'},
+      ]);
+    });
+  });
+
+  describe('#getTicksForTemporalScale', () => {
+    const scale = new TemporalScale();
+
+    it('returns temporal ticks', () => {
+      const {major, minor} = getTicksForTemporalScale(
+        scale,
+        scale.defaultFormatter,
+        5,
+        [
+          new Date('2000/01/01 5:00').getTime(),
+          new Date('2000/01/01 10:00').getTime(),
+        ]
+      );
+
+      expect(major).toEqual([
+        {
+          start: new Date('2000/01/01 6:00').getTime(),
+          tickFormattedString: 'Jan 1, 2000, 6:00:00 AM',
+        },
+        {
+          start: new Date('2000/01/01 9:00').getTime(),
+          tickFormattedString: 'Jan 1, 2000, 9:00:00 AM',
+        },
+      ]);
+      expect(minor).toEqual([
+        {
+          value: new Date('2000/01/01 5:00').getTime(),
+          tickFormattedString: '05 AM',
+        },
+        {
+          value: new Date('2000/01/01 6:00').getTime(),
+          tickFormattedString: '06 AM',
+        },
+        {
+          value: new Date('2000/01/01 7:00').getTime(),
+          tickFormattedString: '07 AM',
+        },
+        {
+          value: new Date('2000/01/01 8:00').getTime(),
+          tickFormattedString: '08 AM',
+        },
+        {
+          value: new Date('2000/01/01 9:00').getTime(),
+          tickFormattedString: '09 AM',
+        },
+        {
+          value: new Date('2000/01/01 10:00').getTime(),
+          tickFormattedString: '10 AM',
+        },
+      ]);
+    });
+
+    it('returns only minor when d3 ticks return less than 2 major axes', () => {
+      const {major, minor} = getTicksForTemporalScale(
+        scale,
+        scale.defaultFormatter,
+        5,
+        [
+          new Date('2000/01/01 1:00').getTime(),
+          new Date('2000/01/01 2:00').getTime(),
+        ]
+      );
+      expect(major).toEqual([]);
+      expect(minor).toEqual([
+        {
+          value: new Date('2000/01/01 1:00').getTime(),
+          tickFormattedString: '01 AM',
+        },
+        {
+          value: new Date('2000/01/01 1:15').getTime(),
+          tickFormattedString: '01:15',
+        },
+        {
+          value: new Date('2000/01/01 1:30').getTime(),
+          tickFormattedString: '01:30',
+        },
+        {
+          value: new Date('2000/01/01 1:45').getTime(),
+          tickFormattedString: '01:45',
+        },
+        {
+          value: new Date('2000/01/01 2:00').getTime(),
+          tickFormattedString: '02 AM',
+        },
+      ]);
+    });
+
+    it('does not return major when diff in time is greater than or equal to 1d', () => {
+      const {major, minor} = getTicksForTemporalScale(
+        scale,
+        scale.defaultFormatter,
+        5,
+        [
+          new Date('2000/01/01 00:00').getTime(),
+          new Date('2000/01/05 00:00').getTime(),
+        ]
+      );
+
+      expect(major).toEqual([]);
+      expect(minor).toEqual([
+        {
+          value: new Date('2000/01/01 0:00').getTime(),
+          tickFormattedString: '2000',
+        },
+        {
+          value: new Date('2000/01/02 0:00').getTime(),
+          tickFormattedString: 'Jan 02',
+        },
+        {
+          value: new Date('2000/01/03 0:00').getTime(),
+          tickFormattedString: 'Mon 03',
+        },
+        {
+          value: new Date('2000/01/04 0:00').getTime(),
+          tickFormattedString: 'Tue 04',
+        },
+        {
+          value: new Date('2000/01/05 0:00').getTime(),
+          tickFormattedString: 'Wed 05',
+        },
+      ]);
+    });
+  });
+
   describe('#getTicksForLinearScale', () => {
     const scale = new LinearScale();
 
