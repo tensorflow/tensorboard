@@ -49,12 +49,6 @@ class SubprocessServerDataIngesterTest(tb_test.TestCase):
         fake_binary = os.path.join(self.get_temp_dir(), "server")
         with open(fake_binary, "wb"):
             pass
-        self.enter_context(
-            mock.patch.dict(
-                os.environ,
-                {server_ingester._ENV_DATA_SERVER_BINARY: fake_binary},
-            )
-        )
 
         real_popen = subprocess.Popen
         port_file = None  # value of `--port-file` to be stashed here
@@ -86,6 +80,7 @@ class SubprocessServerDataIngesterTest(tb_test.TestCase):
         with mock.patch.object(subprocess, "Popen", wraps=fake_popen) as popen:
             with mock.patch.object(grpc, "secure_channel", autospec=True) as sc:
                 ingester = server_ingester.SubprocessServerDataIngester(
+                    server_binary=fake_binary,
                     logdir=tilde_logdir,
                     reload_interval=5,
                     channel_creds_type=grpc_util.ChannelCredsType.LOCAL,

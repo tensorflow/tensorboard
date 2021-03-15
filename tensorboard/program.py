@@ -376,23 +376,35 @@ class TensorBoard(object):
         mimetypes.add_type("font/woff2", ".woff2")
         mimetypes.add_type("text/html", ".html")
 
-    def _make_data_provider(self):
-        """Returns `(data_provider, deprecated_multiplexer)`."""
+    def _make_data_ingester(self):
         flags = self.flags
         if flags.grpc_data_provider:
-            ingester = server_ingester.ExistingServerDataIngester(
+            return server_ingester.ExistingServerDataIngester(
                 flags.grpc_data_provider,
                 channel_creds_type=flags.grpc_creds_type,
             )
-        elif flags.load_fast:
-            ingester = server_ingester.SubprocessServerDataIngester(
-                logdir=flags.logdir,
-                reload_interval=flags.reload_interval,
-                channel_creds_type=flags.grpc_creds_type,
-                samples_per_plugin=flags.samples_per_plugin,
-            )
-        else:
-            ingester = local_ingester.LocalDataIngester(flags)
+        if flags.load_fast in ("auto", "true"):
+            try:
+                server_binary = server_ingester.get_server_binary()
+            except server_ingester.NoDataServerError as e:
+                if flags.load_fast == "true":
+                    msg = "Option --load_fast=true not available: %s\n" % e
+                    sys.stderr.write(msg)
+                    sys.exit(1)
+                logger.info("No data server: %s", e)
+            else:
+                return server_ingester.SubprocessServerDataIngester(
+                    server_binary=server_binary,
+                    logdir=flags.logdir,
+                    reload_interval=flags.reload_interval,
+                    channel_creds_type=flags.grpc_creds_type,
+                    samples_per_plugin=flags.samples_per_plugin,
+                )
+        return local_ingester.LocalDataIngester(flags)
+
+    def _make_data_provider(self):
+        """Returns `(data_provider, deprecated_multiplexer)`."""
+        ingester = self._make_data_ingester()
 
         # Stash ingester so that it can avoid GCing Windows file handles.
         # (See comment in `SubprocessServerDataIngester.start` for details.)
