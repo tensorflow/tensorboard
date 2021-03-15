@@ -70,7 +70,6 @@ export function getTicksForTemporalScale(
     return getStandardTicks(scale, formatter, maxMinorTickCount, lowAndHigh);
   }
 
-  // Do something special for this special case.
   const minorTickVals = scale.ticks(lowAndHigh, maxMinorTickCount);
   return {
     major: majorTicks.map((tickVal) => {
@@ -101,7 +100,6 @@ export function getTicksForLinearScale(
     return getStandardTicks(scale, formatter, maxMinorTickCount, lowAndHigh);
   }
 
-  // Do something special for this special case.
   const minorTickVals = scale.ticks([low, high], maxMinorTickCount);
   const numFractionalToKeep = getNumLeadingZerosInFractional(diff);
   const majorTickVals = scale.ticks([low, high], 2);
