@@ -26,10 +26,10 @@ tf_ts_library(
 
 tf_ts_library(
     name = "notification_center_test",
-    srcs = [],
     testonly = True,
+    srcs = [],
     visibility = ["//tensorboard:internal"],
     deps = [
-        "//tensorboard/webapp/notification_center/_views:_views_test"
+        "//tensorboard/webapp/notification_center/_views:_views_test",
     ],
 )
