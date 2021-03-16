@@ -175,26 +175,18 @@ class CorePlugin(base_plugin.TBPlugin):
         """Serve a JSON object describing the TensorBoard parameters."""
         ctx = plugin_util.context(request.environ)
         experiment = plugin_util.experiment_id(request.environ)
-        experiment_metadata = self._data_provider.experiment_metadata(
+        md = self._data_provider.experiment_metadata(
             ctx, experiment_id=experiment
         )
-        data_location = (
-            experiment_metadata and experiment_metadata.data_location
-        ) or self._data_provider.data_location(ctx, experiment_id=experiment)
 
         environment = {
             "version": version.VERSION,
-            "data_location": data_location,
+            "data_location": md.data_location,
             "window_title": self._window_title,
+            "experiment_name": md.experiment_name,
+            "experiment_description": md.experiment_description,
+            "creation_time": md.creation_time,
         }
-        if experiment_metadata is not None:
-            environment.update(
-                {
-                    "experiment_name": experiment_metadata.experiment_name,
-                    "experiment_description": experiment_metadata.experiment_description,
-                    "creation_time": experiment_metadata.creation_time,
-                }
-            )
         if self._include_debug_info:
             environment["debug"] = {
                 "data_provider": str(self._data_provider),

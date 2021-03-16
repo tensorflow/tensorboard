@@ -83,10 +83,6 @@ class MultiplexerDataProvider(provider.DataProvider):
         except ValueError as e:
             return None
 
-    def data_location(self, ctx=None, *, experiment_id):
-        metadata = self.experiment_metadata(ctx, experiment_id=experiment_id)
-        return metadata.data_location
-
     def experiment_metadata(self, ctx=None, *, experiment_id):
         self._validate_context(ctx)
         self._validate_experiment_id(experiment_id)

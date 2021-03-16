@@ -49,10 +49,6 @@ class GrpcDataProvider(provider.DataProvider):
     def __str__(self):
         return "GrpcDataProvider(addr=%r)" % self._addr
 
-    def data_location(self, ctx, *, experiment_id):
-        metadata = self.experiment_metadata(ctx, experiment_id=experiment_id)
-        return metadata.data_location
-
     def experiment_metadata(self, ctx, *, experiment_id):
         req = data_provider_pb2.GetExperimentRequest()
         req.experiment_id = experiment_id

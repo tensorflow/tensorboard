@@ -123,11 +123,6 @@ class MultiplexerDataProviderTest(tf.test.TestCase):
         multiplexer = self.create_multiplexer()
         return data_provider.MultiplexerDataProvider(multiplexer, self.logdir)
 
-    def test_data_location(self):
-        provider = self.create_provider()
-        result = provider.data_location(self.ctx, experiment_id="unused")
-        self.assertEqual(result, self.logdir)
-
     def test_experiment_metadata(self):
         provider = self.create_provider()
         result = provider.experiment_metadata(self.ctx, experiment_id="unused")

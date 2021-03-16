@@ -102,7 +102,6 @@ class DispatchingDataProvider(provider.DataProvider):
 
         return wrapper
 
-    data_location = _simple_delegate(lambda p: p.data_location)
     experiment_metadata = _simple_delegate(lambda p: p.experiment_metadata)
     list_plugins = _simple_delegate(lambda p: p.list_plugins)
     list_runs = _simple_delegate(lambda p: p.list_runs)

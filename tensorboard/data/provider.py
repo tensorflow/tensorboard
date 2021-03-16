@@ -104,22 +104,6 @@ class DataProvider(metaclass=abc.ABCMeta):
     If not implemented, optional methods may return `None`.
     """
 
-    def data_location(self, ctx=None, *, experiment_id):
-        """Render a human-readable description of the data source.
-
-        For instance, this might return a path to a directory on disk.
-
-        The default implementation always returns the empty string.
-
-        Args:
-          ctx: A TensorBoard `RequestContext` value.
-          experiment_id: ID of enclosing experiment.
-
-        Returns:
-          A string, which may be empty.
-        """
-        return ""
-
     def experiment_metadata(self, ctx=None, *, experiment_id):
         """Retrieve metadata of a given experiment.
 

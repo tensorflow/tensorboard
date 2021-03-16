@@ -48,18 +48,6 @@ class GrpcDataProviderTest(tb_test.TestCase):
         self.provider = grpc_provider.GrpcDataProvider(addr, self.stub)
         self.ctx = context.RequestContext()
 
-    def test_data_location(self):
-        res = data_provider_pb2.GetExperimentResponse()
-        res.data_location = "./logs/mnist"
-        self.stub.GetExperiment.return_value = res
-
-        actual = self.provider.data_location(self.ctx, experiment_id="123")
-        self.assertEqual(actual, "./logs/mnist")
-
-        req = data_provider_pb2.GetExperimentRequest()
-        req.experiment_id = "123"
-        self.stub.GetExperiment.assert_called_once_with(req)
-
     def test_experiment_metadata_when_only_data_location_set(self):
         res = data_provider_pb2.GetExperimentResponse()
         self.stub.GetExperiment.return_value = res
