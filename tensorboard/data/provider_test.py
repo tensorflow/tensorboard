@@ -33,16 +33,19 @@ class ExperimentMetadataTest(tb_test.TestCase):
 
     def test_attributes(self):
         e1 = provider.ExperimentMetadata(
+            data_location="/tmp/logs",
             experiment_name="FooExperiment",
             experiment_description="Experiment on Foo",
             creation_time=1.25,
         )
+        self.assertEqual(e1.data_location, "/tmp/logs")
         self.assertEqual(e1.experiment_name, "FooExperiment")
         self.assertEqual(e1.experiment_description, "Experiment on Foo")
         self.assertEqual(e1.creation_time, 1.25)
 
     def test_eq(self):
         def md(**kwargs):
+            kwargs.setdefault("data_location", "/tmp/logs")
             kwargs.setdefault("experiment_name", "FooExperiment")
             kwargs.setdefault("experiment_description", "Experiment on Foo")
             kwargs.setdefault("creation_time", 1.25)
@@ -57,11 +60,13 @@ class ExperimentMetadataTest(tb_test.TestCase):
 
     def test_repr(self):
         x = provider.ExperimentMetadata(
+            data_location="/tmp/logs",
             experiment_name="FooExperiment",
             experiment_description="Experiment on Foo",
             creation_time=1.25,
         )
         repr_ = repr(x)
+        self.assertIn(repr(x.data_location), repr_)
         self.assertIn(repr(x.experiment_name), repr_)
         self.assertIn(repr(x.experiment_description), repr_)
         self.assertIn(repr(x.creation_time), repr_)
