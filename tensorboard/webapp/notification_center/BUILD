@@ -27,7 +27,6 @@ tf_ts_library(
 tf_ng_web_test_suite(
     name = "notification_center_test",
     testonly = True,
-    srcs = [],
     deps = [
         "//tensorboard/webapp/notification_center/_views:_views_test",
     ],
