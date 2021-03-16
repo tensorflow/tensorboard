@@ -28,6 +28,9 @@ class DataProviderTest(tb_test.TestCase):
 
 
 class ExperimentMetadataTest(tb_test.TestCase):
+    def test_defaults(self):
+        provider.ExperimentMetadata()
+
     def test_attributes(self):
         e1 = provider.ExperimentMetadata(
             experiment_name="FooExperiment",
