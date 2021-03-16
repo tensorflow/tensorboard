@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import {Component} from '@angular/core';
 import {Store} from '@ngrx/store';
-import {Observable, of as observableOf} from 'rxjs';
+import {Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
 import {State} from '../../app_state';
 import {getNotifications} from '../_redux/notification_center_selectors';
@@ -32,12 +32,9 @@ const iconMap = new Map([[CategoryEnum.WHATS_NEW, 'info_outline_24px']]);
   `,
 })
 export class NotificationCenterContainer {
-  notificationNotes$: Observable<ViewNotificationExt[]> = observableOf([]);
-
-  constructor(private readonly store: Store<State>) {}
-
-  ngOnInit() {
-    this.notificationNotes$ = this.store.select(getNotifications).pipe(
+  notificationNotes$: Observable<ViewNotificationExt[]> = this.store
+    .select(getNotifications)
+    .pipe(
       map((notifications) => {
         return notifications.map((notification) => {
           return {
@@ -47,5 +44,6 @@ export class NotificationCenterContainer {
         });
       })
     );
-  }
+
+  constructor(private readonly store: Store<State>) {}
 }
