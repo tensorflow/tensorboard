@@ -61,7 +61,6 @@ tf_ts_library(
     name = "_redux_test",
     testonly = True,
     srcs = [
-        # "notification_center_reducers_test.ts",
         "notification_center_selectors_test.ts",
     ],
     visibility = ["//tensorboard:internal"],
