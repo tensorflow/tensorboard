@@ -1,4 +1,4 @@
-load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_sass_binary")
+load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_sass_binary", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard/webapp/notification_center:__subpackages__"])
 
@@ -29,6 +29,28 @@ tf_ng_module(
         "//tensorboard/webapp/notification_center/_redux:types",
         "@npm//@angular/common",
         "@npm//@angular/core",
+        "@npm//rxjs",
+    ],
+)
+
+tf_ts_library(
+    name = "_views_test",
+    testonly = True,
+    srcs = [
+        "notification_center_test.ts",
+    ],
+    visibility = ["//tensorboard:internal"],
+    deps = [
+        ":_views",
+        "//tensorboard/webapp/angular:expect_angular_core_testing",
+        "//tensorboard/webapp/angular:expect_angular_material_button",
+        "//tensorboard/webapp/angular:expect_angular_material_menu",
+        "//tensorboard/webapp/angular:expect_angular_material_snackbar",
+        "//tensorboard/webapp/angular:expect_angular_platform_browser_animations",
+        "//tensorboard/webapp/testing:mat_icon",
+        "@npm//@angular/common",
+        "@npm//@angular/platform-browser",
+        "@npm//@types/jasmine",
         "@npm//rxjs",
     ],
 )
