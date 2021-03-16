@@ -43,7 +43,6 @@ pub(crate) mod plugin_names {
     pub const TEXT: &str = "text";
     pub const PR_CURVES: &str = "pr_curves";
     pub const HPARAMS: &str = "hparams";
-    pub const CUSTOM_SCALARS: &str = "custom_scalars";
     pub const MESH: &str = "mesh";
 }
 
@@ -353,7 +352,6 @@ impl SummaryValue {
                     | Some(plugin_names::TEXT)
                     | Some(plugin_names::HPARAMS)
                     | Some(plugin_names::PR_CURVES)
-                    | Some(plugin_names::CUSTOM_SCALARS)
                     | Some(plugin_names::MESH) => {
                         md.data_class = pb::DataClass::Tensor.into();
                     }
@@ -744,7 +742,6 @@ mod tests {
                 plugin_names::TEXT,
                 plugin_names::PR_CURVES,
                 plugin_names::HPARAMS,
-                plugin_names::CUSTOM_SCALARS,
                 plugin_names::MESH,
             ] {
                 let md = blank_with_plugin_content(

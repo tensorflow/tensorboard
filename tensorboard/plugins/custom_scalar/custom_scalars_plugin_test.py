@@ -165,6 +165,7 @@ class CustomScalarsPluginTest(tf.test.TestCase):
         plugin_name_to_instance = {}
         context = base_plugin.TBContext(
             logdir=logdir,
+            multiplexer=multiplexer,
             data_provider=provider,
             plugin_name_to_instance=plugin_name_to_instance,
         )
@@ -231,9 +232,8 @@ class CustomScalarsPluginTest(tf.test.TestCase):
             np.testing.assert_allclose(step + 1, entry[2])
 
     def testMergedLayout(self):
-        ctx = context.RequestContext()
         parsed_layout = layout_pb2.Layout()
-        json_format.Parse(self.plugin.layout_impl(ctx, "exp_id"), parsed_layout)
+        json_format.Parse(self.plugin.layout_impl(), parsed_layout)
         correct_layout = layout_pb2.Layout(
             category=[
                 # A category with this name is also present in a layout for a
@@ -293,19 +293,15 @@ class CustomScalarsPluginTest(tf.test.TestCase):
 
     def testLayoutFromSingleRun(self):
         # The foo directory contains 1 single layout.
-        ctx = context.RequestContext()
         local_plugin = self.createPlugin(os.path.join(self.logdir, "foo"))
         parsed_layout = layout_pb2.Layout()
-        json_format.Parse(
-            local_plugin.layout_impl(ctx, "exp_id"), parsed_layout
-        )
+        json_format.Parse(local_plugin.layout_impl(), parsed_layout)
         self.assertProtoEquals(self.foo_layout, parsed_layout)
 
     def testNoLayoutFound(self):
         # The bar directory contains no layout.
-        ctx = context.RequestContext()
         local_plugin = self.createPlugin(os.path.join(self.logdir, "bar"))
-        self.assertDictEqual({}, local_plugin.layout_impl(ctx, "exp_id"))
+        self.assertDictEqual({}, local_plugin.layout_impl())
 
     def testIsActive(self):
         self.assertFalse(self.plugin.is_active())

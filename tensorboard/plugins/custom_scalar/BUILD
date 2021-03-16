@@ -21,6 +21,7 @@ py_library(
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/plugins/scalar:metadata",
         "//tensorboard/plugins/scalar:scalars_plugin",
+        "//tensorboard/util:tensor_util",
         "@org_pocoo_werkzeug",
     ],
 )

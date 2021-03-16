@@ -31,12 +31,12 @@ from werkzeug import wrappers
 from tensorboard import plugin_util
 from tensorboard.backend import http_util
 from tensorboard.compat import tf
-from tensorboard.data import provider
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.custom_scalar import layout_pb2
 from tensorboard.plugins.custom_scalar import metadata
 from tensorboard.plugins.scalar import metadata as scalars_metadata
 from tensorboard.plugins.scalar import scalars_plugin
+from tensorboard.util import tensor_util
 
 
 # The name of the property in the response for whether the regex is valid.
@@ -63,7 +63,7 @@ class CustomScalarsPlugin(base_plugin.TBPlugin):
           context: A base_plugin.TBContext instance.
         """
         self._logdir = context.logdir
-        self._data_provider = context.data_provider
+        self._multiplexer = context.multiplexer
         self._plugin_name_to_instance = context.plugin_name_to_instance
 
     def _get_scalars_plugin(self):
@@ -214,11 +214,8 @@ class CustomScalarsPlugin(base_plugin.TBPlugin):
             }
 
         # Fetch the tags for the run. Filter for tags that match the regex.
-        run_to_data = self._data_provider.list_scalars(
-            ctx,
-            experiment_id=experiment,
-            plugin_name=scalars_metadata.PLUGIN_NAME,
-            run_tag_filter=provider.RunTagFilter(runs=[run]),
+        run_to_data = self._multiplexer.PluginRunToTagToContent(
+            scalars_metadata.PLUGIN_NAME
         )
 
         tag_to_data = None
@@ -267,29 +264,29 @@ class CustomScalarsPlugin(base_plugin.TBPlugin):
 
         The response is an empty object if no layout could be found.
         """
-        ctx = plugin_util.context(request.environ)
-        experiment = plugin_util.experiment_id(request.environ)
-        body = self.layout_impl(ctx, experiment)
+        body = self.layout_impl()
         return http_util.Respond(request, body, "application/json")
 
-    def layout_impl(self, ctx, experiment):
+    def layout_impl(self):
         # Keep a mapping between and category so we do not create duplicate
         # categories.
         title_to_category = {}
 
         merged_layout = None
-        data = self._data_provider.read_tensors(
-            ctx,
-            experiment_id=experiment,
-            plugin_name=metadata.PLUGIN_NAME,
-            run_tag_filter=provider.RunTagFilter(
-                tags=[metadata.CONFIG_SUMMARY_TAG]
-            ),
-            downsample=1,
+        runs = list(
+            self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME)
         )
-        for run in sorted(data):
-            points = data[run][metadata.CONFIG_SUMMARY_TAG]
-            content = points[0].numpy.item()
+        runs.sort()
+        for run in runs:
+            tensor_events = self._multiplexer.Tensors(
+                run, metadata.CONFIG_SUMMARY_TAG
+            )
+
+            # This run has a layout. Merge it with the ones currently found.
+            string_array = tensor_util.make_ndarray(
+                tensor_events[0].tensor_proto
+            )
+            content = string_array.item()
             layout_proto = layout_pb2.Layout()
             layout_proto.ParseFromString(tf.compat.as_bytes(content))
 
