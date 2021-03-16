@@ -19,28 +19,19 @@ import {
   Input,
   Output,
 } from '@angular/core';
-
 import {Dimension, Formatter, Scale} from '../lib/public_types';
-import {TemporalScale} from '../lib/scale';
+import {LinearScale, TemporalScale} from '../lib/scale';
 import {
   getDomSizeInformedTickCount,
   getScaleRangeFromDomDim,
 } from './chart_view_utils';
-
-const DAY_IN_MS = 24 * 1000 * 60 * 60;
-
-interface MinorTick {
-  value: number;
-  tickFormattedString: string;
-}
-
-// Major tick, unlike the minor tick, spans a range.
-interface MajorTick {
-  // Start of the major tick range. An end is implicitly defined by next major tick while
-  // it can certainly change to explicitly define the end.
-  start: number;
-  tickFormattedString: string;
-}
+import {
+  getStandardTicks,
+  getTicksForLinearScale,
+  getTicksForTemporalScale,
+  MajorTick,
+  MinorTick,
+} from './line_chart_axis_utils';
 
 @Component({
   selector: 'line-chart-axis',
@@ -76,9 +67,35 @@ export class LineChartAxisComponent {
   minorTicks: MinorTick[] = [];
 
   ngOnChanges() {
-    const {major, minor} = this.getMajorMinorTicks();
-    this.majorTicks = major;
-    this.minorTicks = minor;
+    let ticks: {minor: MinorTick[]; major: MajorTick[]} | null = null;
+    const domSize = this.axis === 'x' ? this.domDim.width : this.domDim.height;
+    const maxTickSize = getDomSizeInformedTickCount(domSize, this.gridCount);
+
+    if (this.scale instanceof LinearScale) {
+      ticks = getTicksForLinearScale(
+        this.scale,
+        this.getFormatter(),
+        maxTickSize,
+        this.axisExtent
+      );
+    } else if (this.scale instanceof TemporalScale) {
+      ticks = getTicksForTemporalScale(
+        this.scale,
+        this.getFormatter(),
+        maxTickSize,
+        this.axisExtent
+      );
+    } else {
+      ticks = getStandardTicks(
+        this.scale,
+        this.getFormatter(),
+        maxTickSize,
+        this.axisExtent
+      );
+    }
+
+    this.majorTicks = ticks.major;
+    this.minorTicks = ticks.minor;
   }
 
   getFormatter(): Formatter {
@@ -91,43 +108,6 @@ export class LineChartAxisComponent {
 
   trackByMajorTick(tick: MajorTick): number {
     return tick.start;
-  }
-
-  private getMajorTickValues(): number[] {
-    if (this.scale instanceof TemporalScale) {
-      const majorTicks = this.scale.ticks(this.axisExtent, 2);
-      if (
-        this.axisExtent[1] - this.axisExtent[0] < DAY_IN_MS &&
-        majorTicks.length <= 2
-      ) {
-        return majorTicks;
-      }
-    }
-
-    return [];
-  }
-
-  private getMajorMinorTicks(): {major: MajorTick[]; minor: MinorTick[]} {
-    const formatter = this.getFormatter();
-    const domSize = this.axis === 'x' ? this.domDim.width : this.domDim.height;
-    const maxTickSize = getDomSizeInformedTickCount(domSize, this.gridCount);
-    const minorTicks: MinorTick[] = [];
-    for (const tickValue of this.scale.ticks(this.axisExtent, maxTickSize)) {
-      minorTicks.push({
-        tickFormattedString: formatter.formatTick(tickValue),
-        value: tickValue,
-      });
-    }
-
-    const majorTicks: MajorTick[] = [];
-    for (const tickValue of this.getMajorTickValues()) {
-      majorTicks.push({
-        tickFormattedString: formatter.formatShort(tickValue),
-        start: tickValue,
-      });
-    }
-
-    return {major: majorTicks, minor: minorTicks};
   }
 
   private getDomPos(data: number): number {

@@ -16,6 +16,7 @@ tf_ng_module(
     name = "sub_view",
     srcs = [
         "chart_view_utils.ts",
+        "line_chart_axis_utils.ts",
         "line_chart_axis_view.ts",
         "line_chart_grid_view.ts",
         "line_chart_interactive_utils.ts",
@@ -54,6 +55,7 @@ tf_ts_library(
     name = "sub_view_tests",
     testonly = True,
     srcs = [
+        "line_chart_axis_utils_test.ts",
         "line_chart_axis_view_test.ts",
         "line_chart_grid_view_test.ts",
         "line_chart_interactive_utils_test.ts",
