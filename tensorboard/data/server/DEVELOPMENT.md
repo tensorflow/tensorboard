@@ -57,8 +57,8 @@ useful in conjunction with `ibazel` to restart the server when you make changes.
 The server doesn’t have to be running when TensorBoard starts.
 
 To tell TensorBoard to start the server as a subprocess, build with
-`--define=link_data_server=true` and pass `--load_fast` to TensorBoard along
-with a normal `--logdir`. Thus:
+`--define=link_data_server=true` and pass `--load_fast=true` to TensorBoard
+along with a normal `--logdir`. Thus:
 
 ```
 bazel run -c opt --define=link_data_server=true //tensorboard -- \
@@ -75,8 +75,8 @@ for any reason.
 
 As an alternative to `--define=link_data_server=true`, you can set the
 `TENSORBOARD_DATA_SERVER_BINARY` environment variable to the path to a data
-server binary, and pass `--load_fast`. If running with `bazel run`, this should
-be an absolute path.
+server binary, and pass `--load_fast=true`. If running with `bazel run`, this
+should be an absolute path.
 
 As another alternative, you can install the `tensorboard_data_server` package
 into your virtualenv. To do so, run:
