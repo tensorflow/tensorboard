@@ -572,4 +572,37 @@ describe('line_chart_v2/line_chart test', () => {
       ]);
     });
   });
+
+  describe('#getIsViewBoxOverridden', () => {
+    it('returns its internal state', () => {
+      const fixture = createComponent({
+        seriesData: [
+          buildSeries({
+            id: 'foo',
+            points: [
+              {x: 0, y: 0},
+              {x: 1, y: -1},
+              {x: 2, y: 1},
+            ],
+          }),
+        ],
+        seriesMetadataMap: {foo: buildMetadata({id: 'foo', visible: true})},
+        yScaleType: ScaleType.LINEAR,
+      });
+      fixture.detectChanges();
+
+      expect(fixture.componentInstance.chart.getIsViewBoxOverridden()).toBe(
+        false
+      );
+
+      fixture.componentInstance.triggerViewBoxChange({
+        x: [-5, 5],
+        y: [0, 10],
+      });
+
+      expect(fixture.componentInstance.chart.getIsViewBoxOverridden()).toBe(
+        true
+      );
+    });
+  });
 });

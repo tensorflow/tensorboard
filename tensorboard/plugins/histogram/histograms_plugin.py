@@ -19,8 +19,6 @@ this plugin.
 """
 
 
-import random
-
 from werkzeug import wrappers
 
 from tensorboard import errors
@@ -118,12 +116,6 @@ class HistogramsPlugin(base_plugin.TBPlugin):
             raise errors.NotFoundError(
                 "No histogram tag %r for run %r" % (tag, run)
             )
-        # Downsample again, even though the data provider is supposed to,
-        # because the multiplexer provider currently doesn't. (For
-        # well-behaved data providers, this is a no-op.)
-        if downsample_to is not None:
-            rng = random.Random(0)
-            histograms = _downsample(rng, histograms, downsample_to)
         events = [(e.wall_time, e.step, e.numpy.tolist()) for e in histograms]
         return (events, "application/json")
 
@@ -145,29 +137,3 @@ class HistogramsPlugin(base_plugin.TBPlugin):
             ctx, tag, run, experiment=experiment, downsample_to=self.SAMPLE_SIZE
         )
         return http_util.Respond(request, body, mime_type)
-
-
-def _downsample(rng, xs, k):
-    """Uniformly choose a maximal at-most-`k`-subsequence of `xs`.
-
-    If `k` is larger than `xs`, then the contents of `xs` itself will be
-    returned.
-
-    This differs from `random.sample` in that it returns a subsequence
-    (i.e., order is preserved) and that it permits `k > len(xs)`.
-
-    Args:
-      rng: A `random` interface.
-      xs: A sequence (`collections.abc.Sequence`).
-      k: A non-negative integer.
-
-    Returns:
-      A new list whose elements are a subsequence of `xs` of length
-      `min(k, len(xs))`, uniformly selected among such subsequences.
-    """
-
-    if k > len(xs):
-        return list(xs)
-    indices = rng.sample(range(len(xs)), k)
-    indices.sort()
-    return [xs[i] for i in indices]
