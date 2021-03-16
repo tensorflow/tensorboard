@@ -140,14 +140,10 @@ def _migrate_value(value, initial_metadata):
         return _migrate_hparams_value(value)
     if plugin_name == pr_curves_metadata.PLUGIN_NAME:
         return _migrate_pr_curve_value(value)
-<<<<<<< HEAD
-    if plugin_name == custom_scalars_metadata.PLUGIN_NAME:
-        return _migrate_custom_scalars_value(value)
-||||||| b16ed7cd5
-=======
     if plugin_name == mesh_metadata.PLUGIN_NAME:
         return _migrate_mesh_value(value)
->>>>>>> 2c04039362c85cc26dee98df9510e2f6775fb1a7
+    if plugin_name == custom_scalars_metadata.PLUGIN_NAME:
+        return _migrate_custom_scalars_value(value)
     if plugin_name in [
         graphs_metadata.PLUGIN_NAME_RUN_METADATA,
         graphs_metadata.PLUGIN_NAME_RUN_METADATA_WITH_GRAPH,
@@ -208,22 +204,18 @@ def _migrate_pr_curve_value(value):
     return (value,)
 
 
-<<<<<<< HEAD
-def _migrate_custom_scalars_value(value):
-    if value.HasField("metadata"):
-        value.metadata.data_class = summary_pb2.DATA_CLASS_TENSOR
-    return (value,)
-
-
-||||||| b16ed7cd5
-=======
 def _migrate_mesh_value(value):
     if value.HasField("metadata"):
         value.metadata.data_class = summary_pb2.DATA_CLASS_TENSOR
     return (value,)
 
 
->>>>>>> 2c04039362c85cc26dee98df9510e2f6775fb1a7
+def _migrate_custom_scalars_value(value):
+    if value.HasField("metadata"):
+        value.metadata.data_class = summary_pb2.DATA_CLASS_TENSOR
+    return (value,)
+
+
 def _migrate_graph_sub_plugin_value(value):
     if value.HasField("metadata"):
         value.metadata.data_class = summary_pb2.DATA_CLASS_BLOB_SEQUENCE

@@ -43,12 +43,8 @@ pub(crate) mod plugin_names {
     pub const TEXT: &str = "text";
     pub const PR_CURVES: &str = "pr_curves";
     pub const HPARAMS: &str = "hparams";
-<<<<<<< HEAD
-    pub const CUSTOM_SCALARS: &str = "custom_scalars";
-||||||| b16ed7cd5
-=======
     pub const MESH: &str = "mesh";
->>>>>>> 2c04039362c85cc26dee98df9510e2f6775fb1a7
+    pub const CUSTOM_SCALARS: &str = "custom_scalars";
 }
 
 /// The inner contents of a single value from an event.
@@ -356,15 +352,9 @@ impl SummaryValue {
                     Some(plugin_names::HISTOGRAMS)
                     | Some(plugin_names::TEXT)
                     | Some(plugin_names::HPARAMS)
-<<<<<<< HEAD
                     | Some(plugin_names::PR_CURVES)
+                    | Some(plugin_names::MESH)
                     | Some(plugin_names::CUSTOM_SCALARS) => {
-||||||| b16ed7cd5
-                    | Some(plugin_names::PR_CURVES) => {
-=======
-                    | Some(plugin_names::PR_CURVES)
-                    | Some(plugin_names::MESH) => {
->>>>>>> 2c04039362c85cc26dee98df9510e2f6775fb1a7
                         md.data_class = pb::DataClass::Tensor.into();
                     }
                     Some(plugin_names::IMAGES)
@@ -754,12 +744,8 @@ mod tests {
                 plugin_names::TEXT,
                 plugin_names::PR_CURVES,
                 plugin_names::HPARAMS,
-<<<<<<< HEAD
-                plugin_names::CUSTOM_SCALARS,
-||||||| b16ed7cd5
-=======
                 plugin_names::MESH,
->>>>>>> 2c04039362c85cc26dee98df9510e2f6775fb1a7
+                plugin_names::CUSTOM_SCALARS,
             ] {
                 let md = blank_with_plugin_content(
                     plugin_name,
