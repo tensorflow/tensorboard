@@ -25,6 +25,7 @@ from unittest import mock
 from werkzeug import test as werkzeug_test
 from werkzeug import wrappers
 from tensorboard.backend import application
+from tensorboard.backend.event_processing import data_provider
 from tensorboard.backend.event_processing import (
     plugin_event_multiplexer as event_multiplexer,
 )
@@ -137,13 +138,16 @@ class MeshPluginTest(tf.test.TestCase):
                         )
 
         # Start a server that will receive requests.
-        self.multiplexer = event_multiplexer.EventMultiplexer(
+        multiplexer = event_multiplexer.EventMultiplexer(
             {
                 "bar": bar_directory,
             }
         )
+        provider = data_provider.MultiplexerDataProvider(
+            multiplexer, self.log_dir
+        )
         self.context = base_plugin.TBContext(
-            logdir=self.log_dir, multiplexer=self.multiplexer
+            logdir=self.log_dir, data_provider=provider
         )
         self.plugin = mesh_plugin.MeshPlugin(self.context)
         # Wait until after plugin construction to reload the multiplexer because the
@@ -152,7 +156,7 @@ class MeshPluginTest(tf.test.TestCase):
         # TODO(https://github.com/tensorflow/tensorboard/issues/2579): Eliminate the
         # caching of data at construction time and move this Reload() up to just
         # after the multiplexer is created.
-        self.multiplexer.Reload()
+        multiplexer.Reload()
         wsgi_app = application.TensorBoardWSGI([self.plugin])
         self.server = werkzeug_test.Client(wsgi_app, wrappers.BaseResponse)
         self.routes = self.plugin.get_plugin_apps()

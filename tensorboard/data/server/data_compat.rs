@@ -43,6 +43,7 @@ pub(crate) mod plugin_names {
     pub const TEXT: &str = "text";
     pub const PR_CURVES: &str = "pr_curves";
     pub const HPARAMS: &str = "hparams";
+    pub const MESH: &str = "mesh";
 }
 
 /// The inner contents of a single value from an event.
@@ -350,7 +351,8 @@ impl SummaryValue {
                     Some(plugin_names::HISTOGRAMS)
                     | Some(plugin_names::TEXT)
                     | Some(plugin_names::HPARAMS)
-                    | Some(plugin_names::PR_CURVES) => {
+                    | Some(plugin_names::PR_CURVES)
+                    | Some(plugin_names::MESH) => {
                         md.data_class = pb::DataClass::Tensor.into();
                     }
                     Some(plugin_names::IMAGES)
@@ -740,6 +742,7 @@ mod tests {
                 plugin_names::TEXT,
                 plugin_names::PR_CURVES,
                 plugin_names::HPARAMS,
+                plugin_names::MESH,
             ] {
                 let md = blank_with_plugin_content(
                     plugin_name,

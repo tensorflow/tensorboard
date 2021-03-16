@@ -535,6 +535,7 @@ py_library(
         "//tensorboard/plugins/histogram:metadata",
         "//tensorboard/plugins/hparams:metadata",
         "//tensorboard/plugins/image:metadata",
+        "//tensorboard/plugins/mesh:metadata",
         "//tensorboard/plugins/pr_curve:metadata",
         "//tensorboard/plugins/scalar:metadata",
         "//tensorboard/plugins/text:metadata",
