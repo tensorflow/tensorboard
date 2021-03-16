@@ -160,7 +160,15 @@ export class CardLazyLoader implements OnInit, OnDestroy {
     private readonly store: Store<State>
   ) {}
 
-  onCardIntersection(enteredCards: Set<CardId>, exitedCards: Set<CardId>) {
+  onCardIntersection(enteredCardIds: Set<CardId>, exitedCardIds: Set<CardId>) {
+    // WIP: Technically, `cardId` is not unique in the DOM. Will change promptly
+    // to pass actual uniqueId.
+    const enteredCards = [...enteredCardIds].map((cardId) => {
+      return {cardId, uniqueId: cardId};
+    });
+    const exitedCards = [...exitedCardIds].map((cardId) => {
+      return {cardId, uniqueId: cardId};
+    });
     this.store.dispatch(
       actions.cardVisibilityChanged({enteredCards, exitedCards})
     );

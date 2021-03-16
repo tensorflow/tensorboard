@@ -43,7 +43,7 @@ import {
   getIsGpuChartEnabled,
   getRun,
   getRunColorMap,
-  getVisibleCardIdSet,
+  getVisibleCardIdMap,
 } from '../../../selectors';
 import {DataLoadState} from '../../../types/data';
 import {RunColorScale} from '../../../types/ui';
@@ -181,9 +181,11 @@ export class ScalarCardContainer implements CardRenderer, OnInit {
   dataSeries$?: Observable<ScalarCardDataSeries[]>;
   chartMetadataMap$?: Observable<ScalarCardSeriesMetadataMap>;
 
-  readonly isCardVisible$ = this.store.select(getVisibleCardIdSet).pipe(
-    map((visibleSet) => {
-      return visibleSet.has(this.cardId);
+  readonly isCardVisible$ = this.store.select(getVisibleCardIdMap).pipe(
+    map((visibileCardMap) => {
+      // WIP. Temporary while upgrading to introduce globally unique card Id.
+      const cardUniqueId = this.cardId;
+      return visibileCardMap.has(cardUniqueId);
     }),
     distinctUntilChanged()
   );

@@ -245,7 +245,7 @@ const {initialState, reducers: routeContextReducer} = createRouteContextedState(
       images: {},
     },
     settings: METRICS_SETTINGS_DEFAULT,
-    visibleCards: new Set<CardId>(),
+    visibleCards: new Map<string, CardId>(),
   } as MetricsRoutelessState,
 
   /** onRouteIdChanged */
@@ -255,7 +255,7 @@ const {initialState, reducers: routeContextReducer} = createRouteContextedState(
       // Reset visible cards in case we resume a route that was left dirty.
       // Since visibility tracking is async, the state may not have received
       // 'exited card' updates when it was cached by the router.
-      visibleCards: new Set<CardId>(),
+      visibleCards: new Map<string, CardId>(),
     };
   }
 );
@@ -686,18 +686,20 @@ const reducer = createReducer(
     return {...state, tagGroupExpanded};
   }),
   on(actions.cardVisibilityChanged, (state, {enteredCards, exitedCards}) => {
-    if (enteredCards.size === 0 && exitedCards.size === 0) {
+    if (enteredCards.length === 0 && exitedCards.length === 0) {
       return state;
     }
 
-    const visibleCards = new Set(state.visibleCards);
-    enteredCards.forEach((cardId) => {
-      visibleCards.add(cardId);
+    const enteredCardMap = new Map<string, CardId>();
+    enteredCards.forEach(({uniqueId, cardId}) => {
+      enteredCardMap.set(uniqueId, cardId);
     });
-    exitedCards.forEach((cardId) => {
-      visibleCards.delete(cardId);
 
-      if (enteredCards.has(cardId)) {
+    const visibleCards = new Map([...state.visibleCards, ...enteredCardMap]);
+    exitedCards.forEach(({uniqueId}) => {
+      visibleCards.delete(uniqueId);
+
+      if (enteredCardMap.has(uniqueId)) {
         throw new Error(
           `A 'cardVisibilityChanged' with an invalid ` +
             `payload contains overlapping sets`

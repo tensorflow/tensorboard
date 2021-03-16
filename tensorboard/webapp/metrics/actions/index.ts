@@ -19,7 +19,13 @@ import {
   TimeSeriesRequest,
   TimeSeriesResponse,
 } from '../data_source';
-import {CardId, HistogramMode, TooltipSort, XAxisType} from '../internal_types';
+import {
+  CardDomUniqueId,
+  CardId,
+  HistogramMode,
+  TooltipSort,
+  XAxisType,
+} from '../internal_types';
 
 /** @typehack */ import * as _typeHackModels from '@ngrx/store/src/models';
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
@@ -108,11 +114,11 @@ export const fetchTimeSeriesLoaded = createAction(
 
 /**
  * An event when some cards enter or exit the viewport. The card sets must be
- * mutually exclusive.
+ * mutually exclusive by their `uniqueId`s.
  */
 export const cardVisibilityChanged = createAction(
   '[Metrics] Card Visibility Changed',
-  props<{enteredCards: Set<CardId>; exitedCards: Set<CardId>}>()
+  props<{enteredCards: CardDomUniqueId[]; exitedCards: CardDomUniqueId[]}>()
 );
 
 export const cardStepSliderChanged = createAction(

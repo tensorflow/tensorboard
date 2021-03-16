@@ -47,11 +47,20 @@ export type NonPinnedCardId = string;
 export type PinnedCardId = string;
 
 /**
- * A unique identifier to a specific card instance in the UI. This is an opaque
- * ID, meaning that consumers should never peer into/parse it and never assume
- * that it will always be a string.
+ * A unique identifier for a card data that is used to communicate between the store and
+ * the view. There may be multiple card DOMs sharing the cardId. This is an opaque ID,
+ * meaning that consumers should never peer into/parse it and never assume that it will
+ * always be a string.
  */
 export type CardId = NonPinnedCardId | PinnedCardId;
+
+/**
+ * Key uniquely identifying a card DOM for a `cardId`.
+ */
+export interface CardDomUniqueId {
+  uniqueId: string;
+  cardId: string;
+}
 
 export type CardIdWithMetadata = CardMetadata & {
   cardId: CardId;

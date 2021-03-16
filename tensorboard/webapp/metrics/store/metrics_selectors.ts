@@ -141,17 +141,17 @@ export const getCardMetadata = createSelector(
 );
 
 // A cheap identity selector to skip recomputing selectors when `state` changes.
-const selectVisibleCardIdSet = createSelector(
+const selectVisibleCardDomUniqueIdMap = createSelector(
   selectMetricsState,
-  (state): Set<CardId> => {
+  (state): Map<string, CardId> => {
     return state.visibleCards;
   }
 );
 
-export const getVisibleCardIdSet = createSelector(
-  selectVisibleCardIdSet,
-  (cardIdSet): Set<CardId> => {
-    return cardIdSet;
+export const getVisibleCardIdMap = createSelector(
+  selectVisibleCardDomUniqueIdMap,
+  (cardIdMap): Map<string, CardId> => {
+    return cardIdMap;
   }
 );
 

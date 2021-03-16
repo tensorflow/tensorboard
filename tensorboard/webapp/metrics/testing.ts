@@ -87,7 +87,7 @@ function buildBlankState(): MetricsState {
     unresolvedImportedPinnedCards: [],
     cardMetadataMap: {},
     cardStepIndex: {},
-    visibleCards: new Set(),
+    visibleCards: new Map<string, string>(),
     tagFilter: '',
     tagGroupExpanded: new Map(),
   };

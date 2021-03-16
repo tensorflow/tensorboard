@@ -183,7 +183,7 @@ export interface MetricsRoutelessState {
     imageShowActualSize: boolean;
     histogramMode: HistogramMode;
   };
-  visibleCards: Set<CardId>;
+  visibleCards: Map<string, CardId>;
 }
 
 export type MetricsState = RouteContextedState<

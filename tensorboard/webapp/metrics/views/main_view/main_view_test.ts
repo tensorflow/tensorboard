@@ -396,8 +396,10 @@ describe('metrics main view', () => {
 
         expect(dispatchedActions).toEqual([
           actions.cardVisibilityChanged({
-            enteredCards: new Set([directives[0].cardId]),
-            exitedCards: new Set(),
+            enteredCards: [
+              {uniqueId: directives[0].cardId, cardId: directives[0].cardId},
+            ],
+            exitedCards: [],
           }),
         ]);
 
@@ -421,12 +423,19 @@ describe('metrics main view', () => {
 
         expect(dispatchedActions).toEqual([
           actions.cardVisibilityChanged({
-            enteredCards: new Set([directives[0].cardId]),
-            exitedCards: new Set(),
+            enteredCards: [
+              {uniqueId: directives[0].cardId, cardId: directives[0].cardId},
+            ],
+            exitedCards: [],
           }),
           actions.cardVisibilityChanged({
-            enteredCards: new Set([directives[1].cardId, directives[2].cardId]),
-            exitedCards: new Set([directives[0].cardId]),
+            enteredCards: [
+              {uniqueId: directives[1].cardId, cardId: directives[1].cardId},
+              {uniqueId: directives[2].cardId, cardId: directives[2].cardId},
+            ],
+            exitedCards: [
+              {uniqueId: directives[0].cardId, cardId: directives[0].cardId},
+            ],
           }),
         ]);
       });
@@ -457,8 +466,10 @@ describe('metrics main view', () => {
         // The more recent entry does not intersect.
         expect(dispatchedActions).toEqual([
           actions.cardVisibilityChanged({
-            enteredCards: new Set(),
-            exitedCards: new Set([directives[0].cardId]),
+            enteredCards: [],
+            exitedCards: [
+              {uniqueId: directives[0].cardId, cardId: directives[0].cardId},
+            ],
           }),
         ]);
 
@@ -477,12 +488,16 @@ describe('metrics main view', () => {
 
         expect(dispatchedActions).toEqual([
           actions.cardVisibilityChanged({
-            enteredCards: new Set(),
-            exitedCards: new Set([directives[0].cardId]),
+            enteredCards: [],
+            exitedCards: [
+              {uniqueId: directives[0].cardId, cardId: directives[0].cardId},
+            ],
           }),
           actions.cardVisibilityChanged({
-            enteredCards: new Set([directives[0].cardId]),
-            exitedCards: new Set(),
+            enteredCards: [
+              {uniqueId: directives[0].cardId, cardId: directives[0].cardId},
+            ],
+            exitedCards: [],
           }),
         ]);
       });

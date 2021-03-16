@@ -245,8 +245,11 @@ describe('metrics effects', () => {
         );
         store.overrideSelector(getActivePlugin, METRICS_PLUGIN_ID);
         store.overrideSelector(
-          selectors.getVisibleCardIdSet,
-          new Set(['card1', 'card2'])
+          selectors.getVisibleCardIdMap,
+          new Map([
+            ['uniq1', 'card1'],
+            ['uniq2', 'card2'],
+          ])
         );
         provideCardFetchInfo([{id: 'card1'}, {id: 'card2'}]);
         store.refreshState();
@@ -293,8 +296,11 @@ describe('metrics effects', () => {
         );
         store.overrideSelector(getActivePlugin, METRICS_PLUGIN_ID);
         store.overrideSelector(
-          selectors.getVisibleCardIdSet,
-          new Set(['card1', 'card2'])
+          selectors.getVisibleCardIdMap,
+          new Map([
+            ['uniq1', 'card1'],
+            ['uniq2', 'card2'],
+          ])
         );
         provideCardFetchInfo([
           {id: 'card1', loadState: DataLoadState.LOADED},
@@ -330,8 +336,11 @@ describe('metrics effects', () => {
       );
       store.overrideSelector(getActivePlugin, METRICS_PLUGIN_ID);
       store.overrideSelector(
-        selectors.getVisibleCardIdSet,
-        new Set(['card1', 'card2'])
+        selectors.getVisibleCardIdMap,
+        new Map([
+          ['uniq1', 'card1'],
+          ['uniq2', 'card2'],
+        ])
       );
       provideCardFetchInfo([
         {id: 'card1', loadState: DataLoadState.LOADING},
@@ -361,7 +370,10 @@ describe('metrics effects', () => {
 
     it('does not re-fetch time series, if no cards are visible', () => {
       store.overrideSelector(getActivePlugin, METRICS_PLUGIN_ID);
-      store.overrideSelector(selectors.getVisibleCardIdSet, new Set([]));
+      store.overrideSelector(
+        selectors.getVisibleCardIdMap,
+        new Map<string, string>()
+      );
       store.refreshState();
       fetchTimeSeriesSpy.and.returnValue(of([buildTimeSeriesResponse()]));
 
@@ -376,7 +388,10 @@ describe('metrics effects', () => {
       store.resetSelectors();
       store.overrideSelector(selectors.getRouteId, 'route1');
       store.overrideSelector(getActivePlugin, METRICS_PLUGIN_ID);
-      store.overrideSelector(selectors.getVisibleCardIdSet, new Set(['card1']));
+      store.overrideSelector(
+        selectors.getVisibleCardIdMap,
+        new Map([['uniq1', 'card1']])
+      );
       provideCardFetchInfo([{id: 'card1', loadState: DataLoadState.LOADED}]);
       store.overrideSelector(selectors.getExperimentIdsFromRoute, null);
       store.refreshState();
@@ -429,8 +444,8 @@ describe('metrics effects', () => {
 
       actions$.next(
         actions.cardVisibilityChanged({
-          enteredCards: new Set(),
-          exitedCards: new Set(),
+          enteredCards: [],
+          exitedCards: [],
         })
       );
 
@@ -452,26 +467,29 @@ describe('metrics effects', () => {
       });
 
       store.overrideSelector(
-        selectors.getVisibleCardIdSet,
-        new Set<string>([])
+        selectors.getVisibleCardIdMap,
+        new Map<string, string>()
       );
       store.refreshState();
       actions$.next(
         actions.cardVisibilityChanged({
-          enteredCards: new Set(),
-          exitedCards: new Set(['card1']),
+          enteredCards: [],
+          exitedCards: [{uniqueId: 'uniq1', cardId: 'card1'}],
         })
       );
 
       expect(fetchTimeSeriesSpy).not.toHaveBeenCalled();
       expect(actualActions).toEqual([]);
 
-      store.overrideSelector(selectors.getVisibleCardIdSet, new Set(['card1']));
+      store.overrideSelector(
+        selectors.getVisibleCardIdMap,
+        new Map([['uniq1', 'card1']])
+      );
       store.refreshState();
       actions$.next(
         actions.cardVisibilityChanged({
-          enteredCards: new Set(['card1']),
-          exitedCards: new Set(),
+          enteredCards: [{uniqueId: 'uniq1', cardId: 'card1'}],
+          exitedCards: [],
         })
       );
 
@@ -503,12 +521,15 @@ describe('metrics effects', () => {
       });
 
       // Initial load.
-      store.overrideSelector(selectors.getVisibleCardIdSet, new Set(['card1']));
+      store.overrideSelector(
+        selectors.getVisibleCardIdMap,
+        new Map([['uniq1', 'card1']])
+      );
       store.refreshState();
       actions$.next(
         actions.cardVisibilityChanged({
-          enteredCards: new Set(['card1']),
-          exitedCards: new Set(),
+          enteredCards: [{uniqueId: 'uniq1', cardId: 'card1'}],
+          exitedCards: [],
         })
       );
 
@@ -516,12 +537,15 @@ describe('metrics effects', () => {
       expect(actualActions).toEqual([]);
 
       // Exit.
-      store.overrideSelector(selectors.getVisibleCardIdSet, new Set([]));
+      store.overrideSelector(
+        selectors.getVisibleCardIdMap,
+        new Map<string, string>()
+      );
       store.refreshState();
       actions$.next(
         actions.cardVisibilityChanged({
-          enteredCards: new Set(),
-          exitedCards: new Set(['card1']),
+          enteredCards: [],
+          exitedCards: [{uniqueId: 'uniq1', cardId: 'card1'}],
         })
       );
 
@@ -529,12 +553,15 @@ describe('metrics effects', () => {
       expect(actualActions).toEqual([]);
 
       // Re-enter.
-      store.overrideSelector(selectors.getVisibleCardIdSet, new Set(['card1']));
+      store.overrideSelector(
+        selectors.getVisibleCardIdMap,
+        new Map([['uniq1', 'card1']])
+      );
       store.refreshState();
       actions$.next(
         actions.cardVisibilityChanged({
-          enteredCards: new Set(['card1']),
-          exitedCards: new Set(),
+          enteredCards: [{uniqueId: 'uniq1', cardId: 'card1'}],
+          exitedCards: [],
         })
       );
 
@@ -589,14 +616,20 @@ describe('metrics effects', () => {
         .and.returnValue(of([sampleBackendResponses[1]]));
 
       store.overrideSelector(
-        selectors.getVisibleCardIdSet,
-        new Set(['card1', 'card2'])
+        selectors.getVisibleCardIdMap,
+        new Map([
+          ['uniq1', 'card1'],
+          ['uniq2', 'card2'],
+        ])
       );
       store.refreshState();
       actions$.next(
         actions.cardVisibilityChanged({
-          enteredCards: new Set(['card1', 'card2']),
-          exitedCards: new Set(),
+          enteredCards: [
+            {uniqueId: 'uniq1', cardId: 'card1'},
+            {uniqueId: 'uniq2', cardId: 'card2'},
+          ],
+          exitedCards: [],
         })
       );
 
@@ -632,14 +665,14 @@ describe('metrics effects', () => {
         fetchTimeSeriesSpy = spyOn(dataSource, 'fetchTimeSeries');
 
         store.overrideSelector(
-          selectors.getVisibleCardIdSet,
-          new Set(['card1'])
+          selectors.getVisibleCardIdMap,
+          new Map([['uniq1', 'card1']])
         );
         store.refreshState();
         actions$.next(
           actions.cardVisibilityChanged({
-            enteredCards: new Set(['card1']),
-            exitedCards: new Set(),
+            enteredCards: [{uniqueId: 'uniq1', cardId: 'card1'}],
+            exitedCards: [],
           })
         );
 

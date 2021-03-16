@@ -500,7 +500,10 @@ describe('metrics reducers', () => {
   describe('route id changes', () => {
     it('resets data when mounting a new route', () => {
       const prevState = buildMetricsState({
-        visibleCards: new Set(['card1', 'card2']),
+        visibleCards: new Map([
+          ['card1', 'a'],
+          ['card2', 'b'],
+        ]),
       });
 
       const navigateFrom1to2 = routingActions.navigated({
@@ -528,7 +531,7 @@ describe('metrics reducers', () => {
       nextState = reducers(nextState, navigateFrom2to1);
 
       const expectedState = buildMetricsState({
-        visibleCards: new Set(),
+        visibleCards: new Map(),
       });
       expect(nextState.visibleCards).toEqual(expectedState.visibleCards);
     });
@@ -1197,26 +1200,26 @@ describe('metrics reducers', () => {
   describe('card visibility', () => {
     it('no-ops when nothing is changed', () => {
       const beforeState = buildMetricsState({
-        visibleCards: new Set(['card1']),
+        visibleCards: new Map([['card1', 'a']]),
       });
 
       const action = actions.cardVisibilityChanged({
-        enteredCards: new Set(),
-        exitedCards: new Set(),
+        enteredCards: [],
+        exitedCards: [],
       });
       const nextState = reducers(beforeState, action);
-      expect(nextState.visibleCards).toEqual(new Set(['card1']));
+      expect(nextState.visibleCards).toEqual(new Map([['card1', 'a']]));
       expect(nextState).toBe(beforeState);
     });
 
     it('handles bad payloads', () => {
       const beforeState = buildMetricsState({
-        visibleCards: new Set(['card1']),
+        visibleCards: new Map(),
       });
 
       const action = actions.cardVisibilityChanged({
-        enteredCards: new Set(['duplicateCard']),
-        exitedCards: new Set(['duplicateCard']),
+        enteredCards: [{uniqueId: 'duplicateCard', cardId: 'a'}],
+        exitedCards: [{uniqueId: 'duplicateCard', cardId: 'b'}],
       });
       let nextState = beforeState;
       expect(() => {
@@ -1227,16 +1230,50 @@ describe('metrics reducers', () => {
 
     it('handles adding and removing cards', () => {
       const beforeState = buildMetricsState({
-        visibleCards: new Set(['existingCard1', 'existingCard2']),
+        visibleCards: new Map([
+          ['existingCard1', 'a'],
+          ['existingCard2', 'b'],
+        ]),
       });
 
       const action = actions.cardVisibilityChanged({
-        enteredCards: new Set(['existingCard1', 'newCard1']),
-        exitedCards: new Set(['existingCard2', 'newCard2']),
+        enteredCards: [
+          {uniqueId: 'existingCard1', cardId: 'a'},
+          {uniqueId: 'newCard1', cardId: 'c'},
+        ],
+        exitedCards: [
+          {uniqueId: 'existingCard2', cardId: 'b'},
+          {uniqueId: 'newCard2', cardId: 'c'},
+        ],
       });
       const nextState = reducers(beforeState, action);
       expect(nextState.visibleCards).toEqual(
-        new Set(['existingCard1', 'newCard1'])
+        new Map([
+          ['existingCard1', 'a'],
+          ['newCard1', 'c'],
+        ])
+      );
+    });
+
+    it('allows duplicate cardId as long as uniqueIds are unique', () => {
+      const beforeState = buildMetricsState({
+        visibleCards: new Map([['existingCard1', 'a']]),
+      });
+
+      const action = actions.cardVisibilityChanged({
+        enteredCards: [
+          {uniqueId: 'newCard1', cardId: 'a'},
+          {uniqueId: 'newCard2', cardId: 'a'},
+        ],
+        exitedCards: [{uniqueId: 'newCard3', cardId: 'a'}],
+      });
+      const nextState = reducers(beforeState, action);
+      expect(nextState.visibleCards).toEqual(
+        new Map([
+          ['existingCard1', 'a'],
+          ['newCard1', 'a'],
+          ['newCard2', 'a'],
+        ])
       );
     });
   });

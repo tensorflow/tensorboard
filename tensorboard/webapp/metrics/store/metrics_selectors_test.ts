@@ -288,28 +288,36 @@ describe('metrics selectors', () => {
     });
   });
 
-  describe('getVisibleCardIdSet', () => {
+  describe('getVisibleCardIdMap', () => {
     beforeEach(() => {
-      selectors.getVisibleCardIdSet.release();
+      selectors.getVisibleCardIdMap.release();
     });
 
     it('returns an emtpy array', () => {
       const state = appStateFromMetricsState(
         buildMetricsState({
-          visibleCards: new Set(),
+          visibleCards: new Map(),
         })
       );
-      expect(selectors.getVisibleCardIdSet(state)).toEqual(new Set<string>([]));
+      expect(selectors.getVisibleCardIdMap(state)).toEqual(
+        new Map<string, string>()
+      );
     });
 
     it('returns a non-empty array', () => {
       const state = appStateFromMetricsState(
         buildMetricsState({
-          visibleCards: new Set(['card1', 'card2']),
+          visibleCards: new Map([
+            ['uniq1', 'card1'],
+            ['uniq2', 'card2'],
+          ]),
         })
       );
-      expect(selectors.getVisibleCardIdSet(state)).toEqual(
-        new Set(['card1', 'card2'])
+      expect(selectors.getVisibleCardIdMap(state)).toEqual(
+        new Map([
+          ['uniq1', 'card1'],
+          ['uniq2', 'card2'],
+        ])
       );
     });
   });

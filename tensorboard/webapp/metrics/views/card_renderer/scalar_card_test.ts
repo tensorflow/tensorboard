@@ -217,7 +217,10 @@ describe('scalar card', () => {
     store.overrideSelector(selectors.getRun, null);
     store.overrideSelector(selectors.getIsGpuChartEnabled, false);
     store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.STEP);
-    store.overrideSelector(selectors.getVisibleCardIdSet, new Set(['card1']));
+    store.overrideSelector(
+      selectors.getVisibleCardIdMap,
+      new Map([['card1', 'a']])
+    );
     store.overrideSelector(
       selectors.getMetricsScalarPartitionNonMonotonicX,
       false
@@ -237,7 +240,10 @@ describe('scalar card', () => {
       cardMetadata,
       null /* runToSeries */
     );
-    store.overrideSelector(selectors.getVisibleCardIdSet, new Set(['unknown']));
+    store.overrideSelector(
+      selectors.getVisibleCardIdMap,
+      new Map([['unknown', 'a']])
+    );
 
     const fixture = createComponent('card1');
 
@@ -246,7 +252,10 @@ describe('scalar card', () => {
     );
     expect(lineChart1).toBeNull();
 
-    store.overrideSelector(selectors.getVisibleCardIdSet, new Set(['card1']));
+    store.overrideSelector(
+      selectors.getVisibleCardIdMap,
+      new Map([['card1', 'a']])
+    );
     store.refreshState();
     fixture.detectChanges();
 
@@ -255,7 +264,10 @@ describe('scalar card', () => {
     );
     expect(lineChart2).not.toBeNull();
 
-    store.overrideSelector(selectors.getVisibleCardIdSet, new Set(['gone']));
+    store.overrideSelector(
+      selectors.getVisibleCardIdMap,
+      new Map([['gone', 'a']])
+    );
     store.refreshState();
     fixture.detectChanges();
 
