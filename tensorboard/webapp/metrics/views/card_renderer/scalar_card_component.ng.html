@@ -66,8 +66,14 @@ limitations under the License.
       </button>
       <button
         mat-menu-item
-        [disabled]="!seriesDataList || !seriesDataList.length"
+        [disabled]="!seriesDataList || !seriesDataList.length || (newLineChart && !newLineChart.getIsViewBoxOverridden())"
         (click)="resetDomain()"
+        [title]="
+            (newLineChart && !newLineChart.getIsViewBoxOverridden) ?
+                'Line chart is already fitted to data. When data updates, the line chart '
+                + 'will auto fit to its domain.' :
+                ''
+        "
         i18n-aria-label="A button that resets line chart domain to the data"
         aria-label="Fit line chart domains to data"
       >

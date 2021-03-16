@@ -175,12 +175,12 @@ class CorePlugin(base_plugin.TBPlugin):
         """Serve a JSON object describing the TensorBoard parameters."""
         ctx = plugin_util.context(request.environ)
         experiment = plugin_util.experiment_id(request.environ)
-        data_location = self._data_provider.data_location(
-            ctx, experiment_id=experiment
-        )
         experiment_metadata = self._data_provider.experiment_metadata(
             ctx, experiment_id=experiment
         )
+        data_location = (
+            experiment_metadata and experiment_metadata.data_location
+        ) or self._data_provider.data_location(ctx, experiment_id=experiment)
 
         environment = {
             "version": version.VERSION,
@@ -388,9 +388,12 @@ port to TensorBoard as a subprocess.(default: %(default)s).\
 
         parser.add_argument(
             "--load_fast",
-            action="store_true",
+            type=str,
+            default="false",
+            choices=["false", "auto", "true"],
             help="""\
-Experimental. Use a data server to accelerate loading.
+Experimental. Use a data server to accelerate loading. Set to "auto" to use a
+data server only if installed.
 """,
         )
 

@@ -50,20 +50,16 @@ class GrpcDataProvider(provider.DataProvider):
         return "GrpcDataProvider(addr=%r)" % self._addr
 
     def data_location(self, ctx, *, experiment_id):
-        req = data_provider_pb2.GetExperimentRequest()
-        req.experiment_id = experiment_id
-        with _translate_grpc_error():
-            res = self._stub.GetExperiment(req)
-        return res.data_location
+        metadata = self.experiment_metadata(ctx, experiment_id=experiment_id)
+        return metadata.data_location
 
     def experiment_metadata(self, ctx, *, experiment_id):
         req = data_provider_pb2.GetExperimentRequest()
         req.experiment_id = experiment_id
         with _translate_grpc_error():
             res = self._stub.GetExperiment(req)
-        if not (res.name or res.description or res.HasField("creation_time")):
-            return None
         res = provider.ExperimentMetadata(
+            data_location=res.data_location,
             experiment_name=res.name,
             experiment_description=res.description,
             creation_time=_timestamp_proto_to_float(res.creation_time),
