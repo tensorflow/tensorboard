@@ -67,7 +67,7 @@ class GrpcDataProviderTest(tb_test.TestCase):
         actual = self.provider.experiment_metadata(
             self.ctx, experiment_id="123"
         )
-        self.assertIsNone(actual)
+        self.assertEqual(actual, provider.ExperimentMetadata())
 
         req = data_provider_pb2.GetExperimentRequest()
         req.experiment_id = "123"

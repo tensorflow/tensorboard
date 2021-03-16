@@ -84,9 +84,13 @@ class MultiplexerDataProvider(provider.DataProvider):
             return None
 
     def data_location(self, ctx=None, *, experiment_id):
+        metadata = self.experiment_metadata(ctx, experiment_id=experiment_id)
+        return metadata.data_location
+
+    def experiment_metadata(self, ctx=None, *, experiment_id):
         self._validate_context(ctx)
         self._validate_experiment_id(experiment_id)
-        return str(self._logdir)
+        return provider.ExperimentMetadata(data_location=self._logdir)
 
     def list_plugins(self, ctx=None, *, experiment_id):
         self._validate_context(ctx)

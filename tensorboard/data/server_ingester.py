@@ -61,6 +61,7 @@ class SubprocessServerDataIngester(ingester.DataIngester):
 
     def __init__(
         self,
+        server_binary,
         logdir,
         *,
         reload_interval,
@@ -70,6 +71,7 @@ class SubprocessServerDataIngester(ingester.DataIngester):
         """Initializes an ingester with the given configuration.
 
         Args:
+          server_binary: Path to data server binary to launch.
           logdir: String, as passed to `--logdir`.
           reload_interval: Number, as passed to `--reload_interval`.
           channel_creds_type: `grpc_util.ChannelCredsType`, as passed to
@@ -77,6 +79,7 @@ class SubprocessServerDataIngester(ingester.DataIngester):
           samples_per_plugin: Dict[String, Int], as parsed from
             `--samples_per_plugin`.
         """
+        self._server_binary = server_binary
         self._data_provider = None
         self._logdir = logdir
         self._reload_interval = reload_interval
@@ -92,7 +95,6 @@ class SubprocessServerDataIngester(ingester.DataIngester):
     def start(self):
         if self._data_provider:
             return
-        server_binary = _get_server_binary()
 
         tmpdir = tempfile.TemporaryDirectory(prefix="tensorboard_data_server_")
         port_file_path = os.path.join(tmpdir.name, "port")
@@ -109,7 +111,7 @@ class SubprocessServerDataIngester(ingester.DataIngester):
         samples_per_plugin = ",".join(sample_hint_pairs)
 
         args = [
-            server_binary,
+            self._server_binary,
             "--logdir=%s" % os.path.expanduser(self._logdir),
             "--reload=%s" % reload,
             "--port=0",
@@ -184,13 +186,17 @@ def _make_provider(addr, channel_creds_type):
     return grpc_provider.GrpcDataProvider(addr, stub)
 
 
-def _get_server_binary():
-    """Get path to data server binary or raise `RuntimeError`."""
+class NoDataServerError(RuntimeError):
+    pass
+
+
+def get_server_binary():
+    """Get path to data server binary or raise `NoDataServerError`."""
     env_result = os.environ.get(_ENV_DATA_SERVER_BINARY)
     if env_result:
         logging.info("Server binary (from env): %s", env_result)
         if not os.path.isfile(env_result):
-            raise RuntimeError(
+            raise NoDataServerError(
                 "Found environment variable %s=%s, but no such file exists."
                 % (_ENV_DATA_SERVER_BINARY, env_result)
             )
@@ -209,12 +215,12 @@ def _get_server_binary():
         pkg_result = tensorboard_data_server.server_binary()
         logging.info("Server binary (from Python package): %s", pkg_result)
         if pkg_result is None:
-            raise RuntimeError(
+            raise NoDataServerError(
                 "TensorBoard data server not supported on this platform."
             )
         return pkg_result
 
-    raise RuntimeError(
+    raise NoDataServerError(
         "TensorBoard data server not found. This mode is experimental. "
         "If building from source, pass --define=link_data_server=true."
     )
