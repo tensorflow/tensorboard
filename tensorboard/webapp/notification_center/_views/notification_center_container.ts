@@ -19,7 +19,10 @@ import {map} from 'rxjs/operators';
 import {State} from '../../app_state';
 import {getNotifications} from '../_redux/notification_center_selectors';
 import {CategoryEnum} from '../_redux/notification_center_types';
-import {ViewNotificationExt} from './view_types';
+import {
+  NOTIFICATION_LAST_READ_DATE_KEY,
+  ViewNotificationExt,
+} from './view_types';
 
 const iconMap = new Map([[CategoryEnum.WHATS_NEW, 'info_outline_24px']]);
 
@@ -38,6 +41,13 @@ export class NotificationCenterContainer {
   > = this.store.select(getNotifications).pipe(
     map((notifications) => {
       return notifications.map((notification) => {
+        console.log('notification.dateInMs:', notification.dateInMs);
+        if (
+          this.lastReadDate !== null &&
+          parseInt(this.lastReadDate) < notification.dateInMs
+        ) {
+          this.hasUnreadMessages = true;
+        }
         return {
           ...notification,
           icon: iconMap.get(notification.category) ?? null,
@@ -46,8 +56,13 @@ export class NotificationCenterContainer {
     })
   );
   hasUnreadMessages = false;
+  lastReadDate: string | null = '';
 
   constructor(private readonly store: Store<State>) {}
 
-  ngOnInit() {}
+  ngOnInit() {
+    this.lastReadDate = window.localStorage.getItem(
+      NOTIFICATION_LAST_READ_DATE_KEY
+    );
+  }
 }

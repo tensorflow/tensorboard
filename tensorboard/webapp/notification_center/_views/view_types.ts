@@ -17,7 +17,11 @@ import {Notification} from '../_redux/notification_center_types';
 /**
  * A notification chunk displayed in the notification center.
  */
-
 export interface ViewNotificationExt extends Notification {
   icon: string | null;
 }
+
+/**
+ * The key used to record the latest read timestamp in local storage.
+ */
+export const NOTIFICATION_LAST_READ_DATE_KEY = 'notificaitonLastReadDateInMs';
