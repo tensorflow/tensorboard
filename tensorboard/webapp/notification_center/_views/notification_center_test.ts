@@ -18,11 +18,28 @@ import {MatButtonModule} from '@angular/material/button';
 import {MatMenuModule} from '@angular/material/menu';
 import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
+import {Store} from '@ngrx/store';
+import {MockStore, provideMockStore} from '@ngrx/store/testing';
+import {State} from '../../app_state';
 import {MatIconTestingModule} from '../../testing/mat_icon_module';
+import * as selectors from '../_redux/notification_center_selectors';
+import {CategoryEnum, Notification} from '../_redux/notification_center_types';
 import {NotificationCenterComponent} from './notification_center_component';
 import {NotificationCenterContainer} from './notification_center_container';
 
+const notificationNotes = [
+  {
+    category: CategoryEnum.WHATS_NEW,
+    dateInMs: 1579766400000,
+    title: '2.4 release',
+    content:
+      '<li>Visualize Scalars, Images, and  Histograms in one place</li><li>Custom colors for runs</li><li>Group previews</li>',
+  },
+] as Notification[];
+
 describe('notification center', () => {
+  let store: MockStore<State>;
+
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [
@@ -33,7 +50,14 @@ describe('notification center', () => {
         NoopAnimationsModule,
       ],
       declarations: [NotificationCenterContainer, NotificationCenterComponent],
+      providers: [
+        provideMockStore({
+          initialState: [],
+        }),
+      ],
     }).compileComponents();
+    store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
+    store.overrideSelector(selectors.getNotifications, notificationNotes);
   });
 
   it('loads notification module', () => {
