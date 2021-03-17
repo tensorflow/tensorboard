@@ -23,19 +23,9 @@ import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {State} from '../../app_state';
 import {MatIconTestingModule} from '../../testing/mat_icon_module';
 import * as selectors from '../_redux/notification_center_selectors';
-import {CategoryEnum, Notification} from '../_redux/notification_center_types';
+import {CategoryEnum} from '../_redux/notification_center_types';
 import {NotificationCenterComponent} from './notification_center_component';
 import {NotificationCenterContainer} from './notification_center_container';
-
-const notificationNotes = [
-  {
-    category: CategoryEnum.WHATS_NEW,
-    dateInMs: 1579766400000,
-    title: '2.4 release',
-    content:
-      '<li>Visualize Scalars, Images, and  Histograms in one place</li><li>Custom colors for runs</li><li>Group previews</li>',
-  },
-] as Notification[];
 
 describe('notification center', () => {
   let store: MockStore<State>;
@@ -60,7 +50,14 @@ describe('notification center', () => {
   });
 
   it('loads notification module', () => {
-    store.overrideSelector(selectors.getNotifications, notificationNotes);
+    store.overrideSelector(selectors.getNotifications, [
+      {
+        category: CategoryEnum.WHATS_NEW,
+        dateInMs: 1579766400000,
+        title: 'test title',
+        content: 'test content',
+      },
+    ]);
     const fixture = TestBed.createComponent(NotificationCenterContainer);
     fixture.detectChanges();
 
@@ -77,12 +74,12 @@ describe('notification center', () => {
     expect(notificationMenu).toBeTruthy();
     expect(
       notificationMenu.nativeNode.querySelector('.title').textContent
-    ).toBe('2.4 release');
+    ).toBe('test title');
     expect(
       notificationMenu.nativeNode.querySelector('.category-icon').textContent
     ).toBe('info_outline_24px');
     expect(
-      notificationMenu.nativeNode.querySelector('.content li').textContent
-    ).toBe('Visualize Scalars, Images, and  Histograms in one place');
+      notificationMenu.nativeNode.querySelector('.content').textContent
+    ).toBe('test content');
   });
 });
