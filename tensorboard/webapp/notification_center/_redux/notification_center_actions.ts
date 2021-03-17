@@ -22,6 +22,5 @@ import {Notification} from './notification_center_types';
  * Fires when the bell icon is clicked.
  */
 export const notificationBellClicked = createAction(
-  '[Notification] Notification Bell Clicked',
-  props<Notification>()
+  '[Notification] Notification Bell Clicked'
 );

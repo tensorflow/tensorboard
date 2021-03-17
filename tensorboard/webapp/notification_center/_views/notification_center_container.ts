@@ -32,18 +32,18 @@ const iconMap = new Map([[CategoryEnum.WHATS_NEW, 'info_outline_24px']]);
   `,
 })
 export class NotificationCenterContainer {
-  notificationNotes$: Observable<ViewNotificationExt[]> = this.store
-    .select(getNotifications)
-    .pipe(
-      map((notifications) => {
-        return notifications.map((notification) => {
-          return {
-            ...notification,
-            icon: iconMap.get(notification.category) ?? null,
-          };
-        });
-      })
-    );
+  readonly notificationNotes$: Observable<
+    ViewNotificationExt[]
+  > = this.store.select(getNotifications).pipe(
+    map((notifications) => {
+      return notifications.map((notification) => {
+        return {
+          ...notification,
+          icon: iconMap.get(notification.category) ?? null,
+        };
+      });
+    })
+  );
 
   constructor(private readonly store: Store<State>) {}
 }

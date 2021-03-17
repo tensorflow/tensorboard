@@ -57,10 +57,10 @@ describe('notification center', () => {
       ],
     }).compileComponents();
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
-    store.overrideSelector(selectors.getNotifications, notificationNotes);
   });
 
   it('loads notification module', () => {
+    store.overrideSelector(selectors.getNotifications, notificationNotes);
     const fixture = TestBed.createComponent(NotificationCenterContainer);
     fixture.detectChanges();
 
