@@ -392,7 +392,7 @@ class TensorBoard(object):
                 flags.grpc_data_provider,
                 channel_creds_type=flags.grpc_creds_type,
             )
-        if flags.load_fast in ("auto", "true"):
+        if _should_use_data_server(flags.load_fast, flags.logdir):
             try:
                 server_binary = server_ingester.get_server_binary()
             except server_ingester.NoDataServerError as e:
@@ -439,6 +439,23 @@ class TensorBoard(object):
             deprecated_multiplexer,
         )
         return self.server_class(app, self.flags)
+
+
+def _should_use_data_server(load_fast_flag, logdir):
+    if load_fast_flag == "false":
+        return False
+    if load_fast_flag == "true":
+        return True
+    assert load_fast_flag == "auto", load_fast_flag
+
+    if not logdir:
+        # Maybe using `--logdir_spec` or something. Not supported.
+        return False
+    if "://" not in logdir:
+        return True
+    if logdir.startswith("gs://"):
+        return True
+    return False
 
 
 class TensorBoardSubcommand(metaclass=ABCMeta):
