@@ -63,6 +63,15 @@ _SERVE_SUBCOMMAND_NAME = "serve"
 # Internal flag name used to store which subcommand was invoked.
 _SUBCOMMAND_FLAG = "__tensorboard_subcommand"
 
+# Message printed when we actually use the data server, so that users are not
+# caught terribly by surprise.
+_DATA_SERVER_MESSAGE = """
+NOTE: Using experimental fast data loading logic. To disable, pass
+    "--load_fast=false" and report issues on GitHub. More details:
+    https://github.com/tensorflow/tensorboard/issues/4784
+
+"""
+
 
 class TensorBoard(object):
     """Class for running TensorBoard.
@@ -393,6 +402,9 @@ class TensorBoard(object):
                     sys.exit(1)
                 logger.info("No data server: %s", e)
             else:
+                if flags.load_fast == "auto":
+                    sys.stderr.write(_DATA_SERVER_MESSAGE)
+                    sys.stderr.flush()
                 return server_ingester.SubprocessServerDataIngester(
                     server_binary=server_binary,
                     logdir=flags.logdir,
