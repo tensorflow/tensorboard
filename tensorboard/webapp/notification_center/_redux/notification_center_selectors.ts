@@ -12,3 +12,23 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {createFeatureSelector, createSelector} from '@ngrx/store';
+import {
+  Notification,
+  NotificationState,
+  NOTIFICATION_FEATURE_KEY,
+  State,
+} from './notification_center_types';
+
+/** @typehack */ import * as _typeHackStore from '@ngrx/store';
+
+const selectNotifications = createFeatureSelector<State, NotificationState>(
+  NOTIFICATION_FEATURE_KEY
+);
+
+export const getNotifications = createSelector(
+  selectNotifications,
+  (state: NotificationState): Notification[] => {
+    return state.notifications;
+  }
+);
