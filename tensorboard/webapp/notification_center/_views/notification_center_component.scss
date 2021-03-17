@@ -13,6 +13,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+.red-dot {
+  background-color: #D93025;
+  border-radius: 5px;
+  height: 10px;
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  width: 10px;
+}
+
 ::ng-deep .notification-menu.mat-menu-panel {
   font-size: 10px;
   width: 350px;
@@ -63,3 +73,4 @@ limitations under the License.
   font-weight: 700;
   margin: 10px 0 20px;
 }
+

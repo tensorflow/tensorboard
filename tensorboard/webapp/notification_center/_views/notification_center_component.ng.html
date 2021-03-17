@@ -19,6 +19,7 @@ limitations under the License.
   [matMenuTriggerFor]="menu"
   aria-label="Display notification messages"
 >
+  <div *ngIf="hasUnreadMessages" class="red-dot"></div>
   <mat-icon svgIcon="notifications_none_24px"></mat-icon>
 </button>
 

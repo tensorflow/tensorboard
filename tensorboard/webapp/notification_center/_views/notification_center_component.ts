@@ -25,4 +25,5 @@ export class NotificationCenterComponent {
   readonly CategoryEnum = CategoryEnum;
 
   @Input() notifications!: ViewNotificationExt[];
+  @Input() hasUnreadMessages!: boolean;
 }

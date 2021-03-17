@@ -28,6 +28,7 @@ const iconMap = new Map([[CategoryEnum.WHATS_NEW, 'info_outline_24px']]);
   template: `
     <notification-center-component
       [notifications]="notificationNotes$ | async"
+      [hasUnreadMessages]="hasUnreadMessages"
     ></notification-center-component>
   `,
 })
@@ -44,6 +45,9 @@ export class NotificationCenterContainer {
       });
     })
   );
+  hasUnreadMessages = false;
 
   constructor(private readonly store: Store<State>) {}
+
+  ngOnInit() {}
 }
