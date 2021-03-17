@@ -12,15 +12,23 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {NgModule} from '@angular/core';
-import {StoreModule} from '@ngrx/store';
+import {
+  NotificationState,
+  NOTIFICATION_FEATURE_KEY,
+  State,
+} from './notification_center_types';
 
-import {reducers} from './_redux/notification_center_reducers';
-import {NOTIFICATION_FEATURE_KEY} from './_redux/notification_center_types';
-import {NotificationCenterViewModule} from './_views/views_module';
+export function buildNotificationState(
+  override: Partial<NotificationState>
+): NotificationState {
+  return {
+    notifications: [],
+    ...override,
+  };
+}
 
-@NgModule({
-  imports: [StoreModule.forFeature(NOTIFICATION_FEATURE_KEY, reducers)],
-  exports: [NotificationCenterViewModule],
-})
-export class NotificationCenterModule {}
+export function buildStateFromNotificationState(
+  runsState: NotificationState
+): State {
+  return {[NOTIFICATION_FEATURE_KEY]: runsState};
+}

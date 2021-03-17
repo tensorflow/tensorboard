@@ -11,8 +11,11 @@ tf_ng_module(
         "index.ts",
     ],
     deps = [
+        "//tensorboard/webapp/notification_center/_redux",
+        "//tensorboard/webapp/notification_center/_redux:types",
         "//tensorboard/webapp/notification_center/_views",
         "@npm//@angular/core",
+        "@npm//@ngrx/store",
     ],
 )
 
@@ -28,6 +31,7 @@ tf_ng_web_test_suite(
     name = "notification_center_test",
     testonly = True,
     deps = [
+        "//tensorboard/webapp/notification_center/_redux:_redux_test",
         "//tensorboard/webapp/notification_center/_views:_views_test",
     ],
 )

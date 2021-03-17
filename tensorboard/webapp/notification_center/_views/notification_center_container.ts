@@ -13,10 +13,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Component} from '@angular/core';
-import {from, Observable} from 'rxjs';
+import {Store} from '@ngrx/store';
+import {Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
+import {State} from '../../app_state';
+import {getNotifications} from '../_redux/notification_center_selectors';
 import {CategoryEnum} from '../_redux/notification_center_types';
-import {notificationNotes} from './notification_notes';
 import {ViewNotificationExt} from './view_types';
 
 const iconMap = new Map([[CategoryEnum.WHATS_NEW, 'info_outline_24px']]);
@@ -30,9 +32,9 @@ const iconMap = new Map([[CategoryEnum.WHATS_NEW, 'info_outline_24px']]);
   `,
 })
 export class NotificationCenterContainer {
-  readonly notificationNotes$: Observable<ViewNotificationExt[]> = from([
-    notificationNotes,
-  ]).pipe(
+  readonly notificationNotes$: Observable<
+    ViewNotificationExt[]
+  > = this.store.select(getNotifications).pipe(
     map((notifications) => {
       return notifications.map((notification) => {
         return {
@@ -42,4 +44,6 @@ export class NotificationCenterContainer {
       });
     })
   );
+
+  constructor(private readonly store: Store<State>) {}
 }
