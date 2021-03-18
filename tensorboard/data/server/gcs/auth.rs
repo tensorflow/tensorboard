@@ -255,7 +255,7 @@ struct ApplicationCreds {
 ///
 /// Currently, we only support OAuth refresh tokens, not service account private keys.
 #[derive(Debug, thiserror::Error)]
-#[error("unsupported credentials of type {:?}; only OAuth refresh tokens supported", .creds_type)]
+#[error("unsupported GCS credentials of type {creds_type:?}; only OAuth refresh tokens supported")]
 pub struct UnsupportedCredentialsError {
     /// The `"type"` field found in the credentials JSON file, for informational purposes.
     creds_type: String,
