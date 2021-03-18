@@ -172,7 +172,7 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
     debug!("Parsed options: {:?}", opts);
     let data_location = opts.logdir.display().to_string();
 
-    // Create the outside an async runtime (see docs for `DynLogdir::new`).
+    // Create the logdir outside an async runtime (see docs for `DynLogdir::new`).
     let (raw_logdir, error_file) = (opts.logdir, opts.error_file);
     let logdir = tokio::task::spawn_blocking(|| DynLogdir::new(raw_logdir))
         .await?
@@ -280,13 +280,15 @@ fn write_startup_error(path: Option<&Path>, error: dynamic_logdir::Error) {
         f.sync_all()?;
         Ok(())
     };
-    let should_write_to_stderr = match path {
-        None => true,
-        Some(p) => write_to_file(p).is_err(),
-    };
-    if should_write_to_stderr {
-        eprintln!("fatal: {}", error);
+    if let Some(p) = path {
+        if let Err(e) = write_to_file(p) {
+            info!("Failed to write error to {:?}: {}", p, e);
+        } else {
+            return;
+        }
     }
+    // fall back to stderr if no path given or if write failed
+    eprintln!("fatal: {}", error);
 }
 
 #[cfg(test)]

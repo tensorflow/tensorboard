@@ -98,8 +98,15 @@ impl DynLogdir {
     }
 }
 
+/// [RFC 3986, section 3.1][rfc] specifies:
+///
+/// ```text
+/// scheme      = ALPHA *( ALPHA / DIGIT / "+" / "-" / "." )
+/// ```
+///
+/// [rfc]: https://tools.ietf.org/html/rfc3986#section-3.1
 fn is_protocol(s: &str) -> bool {
-    if s.is_empty() || !s.is_ascii() {
+    if !s.chars().nth(0).map_or(false, |c| c.is_ascii_alphabetic()) {
         return false;
     }
     s.chars()
