@@ -26,6 +26,38 @@ from tensorboard.util import tensor_util
 def text(name, data, step=None, description=None):
     """Write a text summary.
 
+    See also `tf.summary.scalar`, `tf.summary.SummaryWriter`, `tf.summary.image`.
+
+    Logs text tensor values for later visualization and analysis in TensorBoard.  Like
+    `tf.summary.scalar` points, text points are each associated with a `step` and a
+    `name`.  All the points with the same `name` constitute a time series of text values.
+
+    For Example:
+    ```python
+    test_summary_writer = tf.summary.create_file_writer('test/text_demo_log_dir')
+    with test_summary_writer.as_default():
+        tf.summary.text('first_text', 'hello world!', step=0)
+        tf.summary.text('first_text', 'nice to meet you!', step=1)
+    ```
+
+    The text summary can also contain Markdown, and TensorBoard will render the text
+    as such.
+
+    ```python
+    with test_summary_writer.as_default():
+        table_as_markdown_text = '''
+              | *hello* | *there* |
+              |---------|---------|
+              | this    | is      |
+              | a       | table   |
+        '''
+        tf.summary.text('markdown_text', table_as_markdown_text, step=0)
+    ```
+
+    Since text is tensor valued, each text point may be a tensor of string values.
+    rank-1 and rank-2 tensors are rendered as tables in TensorBoard.  For higher ranked
+    tensors, you'll see just a 2D slice of the data.
+
     Arguments:
       name: A name for this summary. The summary tag used for TensorBoard will
         be this name prefixed by any active name scopes.
