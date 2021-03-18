@@ -47,7 +47,9 @@ struct Opts {
     ///
     /// Directory to recursively scan for event files (files matching the `*tfevents*` glob). This
     /// directory, its descendants, and its event files will be periodically polled for new data.
-    #[clap(long)]
+    ///
+    /// If this log directory is invalid or unsupported, exits with status 8.
+    #[clap(long, setting(clap::ArgSettings::AllowEmptyValues))]
     logdir: PathBuf,
 
     /// Bind to this IP address
@@ -95,6 +97,14 @@ struct Opts {
     /// when the server starts.
     #[clap(long)]
     port_file: Option<PathBuf>,
+
+    /// Write startup errors to this file
+    ///
+    /// If the logdir is invalid or unsupported, write the error message to this file instead of to
+    /// stderr. That way, you can capture this output while still keeping stderr open for normal
+    /// logging.
+    #[clap(long)]
+    error_file: Option<PathBuf>,
 
     /// Checksum all records (negate with `--no-checksum`)
     ///
@@ -147,6 +157,10 @@ impl FromStr for ReloadStrategy {
     }
 }
 
+/// Exit code for failure of [`DynLogdir::new`].
+// Keep in sync with docs on `Opts::logdir`.
+const EXIT_BAD_LOGDIR: i32 = 8;
+
 #[tokio::main]
 pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let opts = Opts::parse();
@@ -156,6 +170,16 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
         _ => LevelFilter::max(),
     });
     debug!("Parsed options: {:?}", opts);
+    let data_location = opts.logdir.display().to_string();
+
+    // Create the outside an async runtime (see docs for `DynLogdir::new`).
+    let (raw_logdir, error_file) = (opts.logdir, opts.error_file);
+    let logdir = tokio::task::spawn_blocking(|| DynLogdir::new(raw_logdir))
+        .await?
+        .unwrap_or_else(|e| {
+            write_startup_error(error_file.as_ref().map(|p| p.as_ref()), e);
+            std::process::exit(EXIT_BAD_LOGDIR);
+        });
 
     if opts.die_after_stdin {
         thread::Builder::new()
@@ -184,8 +208,6 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
         eprintln!("listening on {:?}", bound);
     }
 
-    let data_location = opts.logdir.display().to_string();
-
     // Leak the commit object, since the Tonic server must have only 'static references. This only
     // leaks the outer commit structure (of constant size), not the pointers to the actual data.
     let commit: &'static Commit = Box::leak(Box::new(Commit::new()));
@@ -194,12 +216,8 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .name("Reloader".to_string())
         .spawn({
             let reload_strategy = opts.reload;
-            let raw_logdir = opts.logdir;
             let checksum = opts.checksum;
             move || {
-                // Create the logdir in the child thread, where no async runtime is active (see
-                // docs for `DynLogdir::new`).
-                let logdir = DynLogdir::new(raw_logdir).unwrap_or_else(|| std::process::exit(1));
                 let mut loader = LogdirLoader::new(commit, logdir, 0, psh_ref);
                 // Checksum only if `--checksum` given (i.e., off by default).
                 loader.checksum(checksum);
@@ -252,6 +270,23 @@ fn write_port_file(path: &Path, port: u16) -> std::io::Result<()> {
     writeln!(f, "{}", port)?;
     f.sync_all()?;
     Ok(())
+}
+
+/// Writes error to the given file, or to stderr as a fallback.
+fn write_startup_error(path: Option<&Path>, error: dynamic_logdir::Error) {
+    let write_to_file = |path: &Path| -> std::io::Result<()> {
+        let mut f = File::create(path)?;
+        writeln!(f, "{}", error)?;
+        f.sync_all()?;
+        Ok(())
+    };
+    let should_write_to_stderr = match path {
+        None => true,
+        Some(p) => write_to_file(p).is_err(),
+    };
+    if should_write_to_stderr {
+        eprintln!("fatal: {}", error);
+    }
 }
 
 #[cfg(test)]

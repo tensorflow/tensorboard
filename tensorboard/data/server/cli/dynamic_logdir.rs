@@ -15,7 +15,7 @@ limitations under the License.
 
 //! Log directory as specified by user arguments.
 
-use log::{error, warn};
+use log::error;
 use std::collections::HashMap;
 use std::io::{self, Read};
 use std::path::PathBuf;
@@ -37,6 +37,21 @@ pub enum DynFile {
     Gcs(<gcs::Logdir as Logdir>::File),
 }
 
+#[derive(Debug, thiserror::Error)]
+pub enum Error {
+    #[error("empty --logdir")]
+    EmptyLogdir,
+    #[error("unknown protocol {:?} in logdir {}", .protocol, .full_logdir.display())]
+    UnknownProtocol {
+        protocol: String,
+        full_logdir: PathBuf,
+    },
+    #[error(transparent)]
+    GcsCredentialsError(#[from] gcs::CredentialsError),
+    #[error(transparent)]
+    GcsClientError(#[from] gcs::ClientError),
+}
+
 impl DynLogdir {
     /// Parses a `DynLogdir` from a user-supplied path.
     ///
@@ -52,29 +67,43 @@ impl DynLogdir {
     /// [seanmonstar/reqwest#1017].
     ///
     /// [seanmonstar/reqwest#1017]: https://github.com/seanmonstar/reqwest/issues/1017
-    pub fn new(path: PathBuf) -> Option<Self> {
+    pub fn new(path: PathBuf) -> Result<Self, Error> {
         let path_str = path.to_string_lossy();
-        let gcs_path = match path_str.strip_prefix("gs://") {
-            // Assume that anything not starting with `gs://` is a path on disk.
-            None => return Some(DynLogdir::Disk(DiskLogdir::new(path))),
-            Some(p) => p,
-        };
+        if path_str.is_empty() {
+            return Err(Error::EmptyLogdir);
+        }
+
+        let protocol_parts: Vec<&str> = path_str.splitn(2, "://").collect();
+        if protocol_parts.len() < 2 || !is_protocol(protocol_parts[0]) {
+            // Interpret as path on disk.
+            return Ok(DynLogdir::Disk(DiskLogdir::new(path)));
+        }
+
+        let (protocol, subpath) = (protocol_parts[0], protocol_parts[1]);
+        match protocol {
+            "gs" => Self::new_gcs(subpath),
+            _ => Err(Error::UnknownProtocol {
+                protocol: protocol.to_string(),
+                full_logdir: path,
+            }),
+        }
+    }
+
+    fn new_gcs(gcs_path: &str) -> Result<Self, Error> {
         let mut parts = gcs_path.splitn(2, '/');
         let bucket = parts.next().unwrap().to_string(); // splitn always yields at least one element
         let prefix = parts.next().unwrap_or("").to_string();
-        let creds = gcs::Credentials::from_disk().unwrap_or_else(|e| {
-            warn!("Using anonymous GCS credentials: {}", e);
-            Default::default()
-        });
-        let client = match gcs::Client::new(creds) {
-            Err(e) => {
-                error!("Could not open GCS connection: {}", e);
-                return None;
-            }
-            Ok(c) => c,
-        };
-        Some(DynLogdir::Gcs(gcs::Logdir::new(client, bucket, prefix)))
+        let client = gcs::Client::new(gcs::Credentials::from_disk()?)?;
+        Ok(DynLogdir::Gcs(gcs::Logdir::new(client, bucket, prefix)))
     }
+}
+
+fn is_protocol(s: &str) -> bool {
+    if s.is_empty() || !s.is_ascii() {
+        return false;
+    }
+    s.chars()
+        .all(|c| c.is_ascii_alphanumeric() || c == '+' || c == '-' || c == '.')
 }
 
 impl crate::logdir::Logdir for DynLogdir {

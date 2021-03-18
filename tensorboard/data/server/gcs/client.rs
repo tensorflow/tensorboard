@@ -45,14 +45,19 @@ pub struct Client {
     http: HttpClient,
 }
 
+#[derive(Debug, thiserror::Error)]
+#[error("failed to initialize GCS client: {0}")]
+pub struct ClientError(#[source] reqwest::Error);
+
 impl Client {
     /// Creates a new GCS client with the given credentials.
     ///
     /// May fail if constructing the underlying HTTP client fails.
-    pub fn new(creds: Credentials) -> reqwest::Result<Self> {
+    pub fn new(creds: Credentials) -> Result<Self, ClientError> {
         let http = HttpClient::builder()
             .user_agent(format!("tensorboard-data-server/{}", crate::VERSION))
-            .build()?;
+            .build()
+            .map_err(ClientError)?;
         let token_store = Arc::new(TokenStore::new(creds));
         Ok(Self { http, token_store })
     }
