@@ -15,7 +15,7 @@ limitations under the License.
 
 //! Log directory as specified by user arguments.
 
-use log::error;
+use log::{error, warn};
 use std::collections::HashMap;
 use std::io::{self, Read};
 use std::path::PathBuf;
@@ -62,7 +62,11 @@ impl DynLogdir {
         let mut parts = gcs_path.splitn(2, '/');
         let bucket = parts.next().unwrap().to_string(); // splitn always yields at least one element
         let prefix = parts.next().unwrap_or("").to_string();
-        let client = match gcs::Client::new(gcs::Credentials::from_disk()) {
+        let creds = gcs::Credentials::from_disk().unwrap_or_else(|e| {
+            warn!("Using anonymous GCS credentials: {}", e);
+            Default::default()
+        });
+        let client = match gcs::Client::new(creds) {
             Err(e) => {
                 error!("Could not open GCS connection: {}", e);
                 return None;
