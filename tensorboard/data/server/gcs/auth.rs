@@ -149,6 +149,7 @@ impl BoundedToken {
 
 /// The user's persistent credentials, if any. This represents all the information needed to
 /// request access tokens.
+#[derive(Debug)]
 pub enum Credentials {
     Anonymous,
     RefreshToken(RefreshToken),
@@ -156,42 +157,48 @@ pub enum Credentials {
 // public wrapper struct to hide private implementation details
 pub struct RefreshToken(RefreshTokenCreds);
 
+impl Default for Credentials {
+    fn default() -> Self {
+        Self::Anonymous
+    }
+}
+
+#[derive(Debug, thiserror::Error)]
+pub enum CredentialsError {
+    #[error("failed to open GCS credentials file {}: {}", .0.display(), .1)]
+    Unreadable(PathBuf, std::io::Error),
+    #[error("failed to parse GCS credentials file {}: {}", .0.display(), .1)]
+    Unparseable(PathBuf, serde_json::Error),
+    #[error("{1} (credentials file {0})")]
+    Unsupported(PathBuf, UnsupportedCredentialsError),
+}
+
 impl Credentials {
     /// Reads credentials from disk.
     ///
     /// The path is taken from the `GOOGLE_APPLICATION_CREDENTIALS` environment variable if set,
     /// else `"${XDG_CONFIG_HOME-${HOME}/.config}/gcloud/application_default_credentials.json"`. If
-    /// the credentials file is not found or not readable, anonymous credentials will be used.
-    pub fn from_disk() -> Self {
+    /// the credentials file is not found or not readable, this will return an error value; call
+    /// [`unwrap_or_default`][Result::unwrap_or_default] to fall back to anonymous credentials.
+    pub fn from_disk() -> Result<Self, CredentialsError> {
         let creds_file = match Self::credentials_file() {
-            None => return Credentials::Anonymous,
+            None => return Ok(Credentials::Anonymous),
             Some(f) => f,
         };
         let reader = match File::open(&creds_file).map(BufReader::new) {
-            Err(e) => {
-                warn!(
-                    "Failed to open GCS credentials file {:?}; will use anonymous credentials: {}",
-                    creds_file, e
-                );
-                return Credentials::Anonymous;
-            }
+            Err(e) => return Err(CredentialsError::Unreadable(creds_file, e)),
             Ok(f) => f,
         };
-        let creds: RefreshTokenCreds = match serde_json::from_reader(reader) {
-            Err(e) => {
-                warn!(
-                    "Failed to read GCS credentials file {:?}; will use anonymous credentials: {}",
-                    creds_file, e
-                );
-                return Credentials::Anonymous;
-            }
+        let app_creds: ApplicationCreds = match serde_json::from_reader(reader) {
+            Err(e) => return Err(CredentialsError::Unparseable(creds_file, e)),
+            Ok(app_creds) => app_creds,
+        };
+        let creds = match app_creds.into_credentials() {
+            Err(e) => return Err(CredentialsError::Unsupported(creds_file, e)),
             Ok(creds) => creds,
         };
-        info!(
-            "Using refresh token GCS creds from {}",
-            creds_file.display()
-        );
-        Credentials::RefreshToken(RefreshToken(creds))
+        info!("Using GCS creds from {}", creds_file.display());
+        Ok(creds)
     }
 
     /// Determines the file on disk from which credentials might be read, if any.
@@ -235,6 +242,42 @@ impl Credentials {
     }
 }
 
+/// Partial structure of the `GOOGLE_APPLICATION_CREDENTIALS` file.
+#[derive(Deserialize)]
+struct ApplicationCreds {
+    r#type: Option<String>,
+    client_id: Option<String>,
+    client_secret: Option<String>,
+    refresh_token: Option<String>,
+}
+
+/// User's credentials may be valid, but are not supported.
+///
+/// Currently, we only support OAuth refresh tokens, not service account private keys.
+#[derive(Debug, thiserror::Error)]
+#[error("unsupported credentials of type {:?}; only OAuth refresh tokens supported", .creds_type)]
+pub struct UnsupportedCredentialsError {
+    /// The `"type"` field found in the credentials JSON file, for informational purposes.
+    creds_type: String,
+}
+
+impl ApplicationCreds {
+    fn into_credentials(self) -> Result<Credentials, UnsupportedCredentialsError> {
+        match (self.client_id, self.client_secret, self.refresh_token) {
+            (Some(client_id), Some(client_secret), Some(refresh_token)) => {
+                Ok(Credentials::RefreshToken(RefreshToken(RefreshTokenCreds {
+                    client_id,
+                    client_secret,
+                    refresh_token,
+                })))
+            }
+            _ => Err(UnsupportedCredentialsError {
+                creds_type: self.r#type.unwrap_or_default(),
+            }),
+        }
+    }
+}
+
 /// Persistent credentials in the form of an OAuth refresh token. Can be posted to an OAuth token
 /// endpoint to obtain a short-lived access token.
 #[derive(Deserialize)]
@@ -250,6 +293,11 @@ impl Debug for RefreshTokenCreds {
             .field("client_secret", &format_args!("<redacted>"))
             .field("refresh_token", &format_args!("<redacted>"))
             .finish()
+    }
+}
+impl Debug for RefreshToken {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:?}", &self.0)
     }
 }
 
