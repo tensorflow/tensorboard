@@ -32,3 +32,10 @@ export const getNotifications = createSelector(
     return state.notifications;
   }
 );
+
+export const hasUnreadMessages = createSelector(
+  selectNotifications,
+  (state: NotificationState): boolean => {
+    return state.hasUnreadMessages;
+  }
+);

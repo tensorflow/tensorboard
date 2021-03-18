@@ -17,7 +17,11 @@ import {Store} from '@ngrx/store';
 import {Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
 import {State} from '../../app_state';
-import {getNotifications} from '../_redux/notification_center_selectors';
+import * as actions from '../_redux/notification_center_actions';
+import {
+  getNotifications,
+  hasUnreadMessages,
+} from '../_redux/notification_center_selectors';
 import {CategoryEnum} from '../_redux/notification_center_types';
 import {
   NOTIFICATION_LAST_READ_DATE_KEY,
@@ -31,7 +35,8 @@ const iconMap = new Map([[CategoryEnum.WHATS_NEW, 'info_outline_24px']]);
   template: `
     <notification-center-component
       [notifications]="notificationNotes$ | async"
-      [hasUnreadMessages]="hasUnreadMessages"
+      [hasUnreadMessages]="hasUnreadMessages$ | async"
+      (bellIconClicked)="onBellIconClicked()"
     ></notification-center-component>
   `,
 })
@@ -41,13 +46,6 @@ export class NotificationCenterContainer {
   > = this.store.select(getNotifications).pipe(
     map((notifications) => {
       return notifications.map((notification) => {
-        console.log('notification.dateInMs:', notification.dateInMs);
-        if (
-          this.lastReadDate !== null &&
-          parseInt(this.lastReadDate) < notification.dateInMs
-        ) {
-          this.hasUnreadMessages = true;
-        }
         return {
           ...notification,
           icon: iconMap.get(notification.category) ?? null,
@@ -55,14 +53,12 @@ export class NotificationCenterContainer {
       });
     })
   );
-  hasUnreadMessages = false;
+  hasUnreadMessages$ = this.store.select(hasUnreadMessages);
   lastReadDate: string | null = '';
 
   constructor(private readonly store: Store<State>) {}
 
-  ngOnInit() {
-    this.lastReadDate = window.localStorage.getItem(
-      NOTIFICATION_LAST_READ_DATE_KEY
-    );
+  onBellIconClicked() {
+    this.store.dispatch(actions.notificationBellClicked());
   }
 }

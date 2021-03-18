@@ -17,13 +17,23 @@ import * as actions from './notification_center_actions';
 import {NotificationState} from './notification_center_types';
 import {notificationNotes} from './notification_notes';
 
-/** @typehack */ import * as _typeHackStore from '@ngrx/store';
-
 const initialState: NotificationState = {
   notifications: notificationNotes,
+  hasUnreadMessages: false,
 };
 
-const reducer = createReducer(initialState);
+const reducer = createReducer(
+  initialState,
+  on(
+    actions.notificationBellClicked,
+    (state: NotificationState): NotificationState => {
+      return {
+        ...state,
+        hasUnreadMessages: false,
+      };
+    }
+  )
+);
 
 export function reducers(state: NotificationState | undefined, action: Action) {
   return reducer(state, action);

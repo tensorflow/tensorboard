@@ -28,6 +28,7 @@ tf_ng_module(
         "//tensorboard/webapp/angular:expect_angular_material_icon",
         "//tensorboard/webapp/angular:expect_angular_material_menu",
         "//tensorboard/webapp/notification_center/_redux",
+        "//tensorboard/webapp/notification_center/_redux:actions",
         "//tensorboard/webapp/notification_center/_redux:types",
         "@npm//@angular/common",
         "@npm//@angular/core",
