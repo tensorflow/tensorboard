@@ -27,12 +27,14 @@ from tensorboard.util import lazy_tensor_creator
 def image(name, data, step=None, max_outputs=3, description=None):
     """Write an image summary.
 
-    This method writes a set of images to the current log directory.
-    The written data appears in TensorBoard's 'Images' dashboard.
+    Logs a set of images to the current log directory for later analysis
+    in TensorBoard's 'Images' dashboard. Like `tf.summary.scalar` points,
+    each set of images is associated with a `step` and a `name`.  All the
+    image sets with the same `name` constitute a time series of image sets.
 
     This example writes 2 random grayscale images:
 
-    ```
+    ```python
     writer = tf.summary.create_file_writer('logs')
     with writer.as_default():
       image1 = tf.random.normal(shape=[8, 8])
@@ -42,9 +44,10 @@ def image(name, data, step=None, max_outputs=3, description=None):
 
     To avoid clipping, data should be converted to one of the following:
     - floating point values in the range [0,1]
+    or
     - uint8 values in the range [0,255]
 
-    ```
+    ```python
     # Using division to convert the origional dtype=Int32 value into
     # dtype=float64.
     rgb_image_scaled = tf.constant([
