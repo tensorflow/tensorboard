@@ -15,7 +15,7 @@ limitations under the License.
 
 //! Log directory as specified by user arguments.
 
-use log::{error, warn};
+use log::error;
 use std::collections::HashMap;
 use std::io::{self, Read};
 use std::path::PathBuf;
@@ -93,7 +93,6 @@ impl DynLogdir {
         let mut parts = gcs_path.splitn(2, '/');
         let bucket = parts.next().unwrap().to_string(); // splitn always yields at least one element
         let prefix = parts.next().unwrap_or("").to_string();
-<<<<<<< HEAD
         let client = gcs::Client::new(gcs::Credentials::from_disk()?)?;
         Ok(DynLogdir::Gcs(gcs::Logdir::new(client, bucket, prefix)))
     }
@@ -102,29 +101,6 @@ impl DynLogdir {
 fn is_protocol(s: &str) -> bool {
     if s.is_empty() || !s.is_ascii() {
         return false;
-||||||| abc8b03bb
-        let client = match gcs::Client::new(gcs::Credentials::from_disk()) {
-            Err(e) => {
-                error!("Could not open GCS connection: {}", e);
-                return None;
-            }
-            Ok(c) => c,
-        };
-        Some(DynLogdir::Gcs(gcs::Logdir::new(client, bucket, prefix)))
-=======
-        let creds = gcs::Credentials::from_disk().unwrap_or_else(|e| {
-            warn!("Using anonymous GCS credentials: {}", e);
-            Default::default()
-        });
-        let client = match gcs::Client::new(creds) {
-            Err(e) => {
-                error!("Could not open GCS connection: {}", e);
-                return None;
-            }
-            Ok(c) => c,
-        };
-        Some(DynLogdir::Gcs(gcs::Logdir::new(client, bucket, prefix)))
->>>>>>> 186d901ad94f3995f33d09388bde6368422f2470
     }
     s.chars()
         .all(|c| c.is_ascii_alphanumeric() || c == '+' || c == '-' || c == '.')
