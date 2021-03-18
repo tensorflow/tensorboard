@@ -51,6 +51,7 @@ tf_ts_library(
         "//tensorboard/webapp/angular:expect_angular_material_menu",
         "//tensorboard/webapp/angular:expect_angular_material_snackbar",
         "//tensorboard/webapp/angular:expect_angular_platform_browser_animations",
+        "//tensorboard/webapp/angular:expect_ngrx_store_testing",
         "//tensorboard/webapp/notification_center/_redux",
         "//tensorboard/webapp/notification_center/_redux:types",
         "//tensorboard/webapp/testing:mat_icon",
