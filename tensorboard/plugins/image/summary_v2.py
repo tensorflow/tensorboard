@@ -27,6 +27,36 @@ from tensorboard.util import lazy_tensor_creator
 def image(name, data, step=None, max_outputs=3, description=None):
     """Write an image summary.
 
+    This method writes a set of images to the current log directory.
+    The written data appears in TensorBoard's 'Images' dashboard.
+
+    This example writes 2 random grayscale images:
+
+    ```
+    writer = tf.summary.create_file_writer('logs')
+    with writer.as_default():
+      image1 = tf.random.normal(shape=[8, 8])
+      image2 = tf.random.normal(shape=[8, 8])
+      tf.summary.image("grayscale noise", [image1, image2], step=0)
+    ```
+
+    To avoid clipping, data should be converted to one of the following:
+    - floating point values in the range [0,1]
+    - uint8 values in the range [0,255]
+
+    ```
+    # Using division to convert the origional dtype=Int32 value into
+    # dtype=float64.
+    rgb_image_scaled = tf.constant([
+      [[255, 127, 0], [0, 127, 255]],
+    ]) / 255
+
+    rgb_image_uint8 = tf.constant([
+      [[255, 255, 0], [0, 127, 255]],
+    ], dtype=tf.uint8)
+    tf.summary.image("rgb picture", [rgb_image_scaled, rgb_image_uint8], step=0)
+    ```
+
     Arguments:
       name: A name for this summary. The summary tag used for TensorBoard will
         be this name prefixed by any active name scopes.
@@ -35,7 +65,8 @@ def image(name, data, step=None, max_outputs=3, description=None):
         width of the images, and `c` is the number of channels, which
         should be 1, 2, 3, or 4 (grayscale, grayscale with alpha, RGB, RGBA).
         Any of the dimensions may be statically unknown (i.e., `None`).
-        Floating point data will be clipped to the range [0,1).
+        Floating point data will be clipped to the range [0,1]. Other data types
+        may be clipped into an allowed range for safe casting to uint8.
       step: Explicit `int64`-castable monotonic step value for this summary. If
         omitted, this defaults to `tf.summary.experimental.get_step()`, which must
         not be None.
