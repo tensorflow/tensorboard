@@ -58,6 +58,8 @@ def text(name, data, step=None, description=None):
     rank-1 and rank-2 tensors are rendered as tables in TensorBoard.  For higher ranked
     tensors, you'll see just a 2D slice of the data.
 
+    Demo notebook at https://www.tensorflow.org/tensorboard/text_summaries.
+
     Arguments:
       name: A name for this summary. The summary tag used for TensorBoard will
         be this name prefixed by any active name scopes.
