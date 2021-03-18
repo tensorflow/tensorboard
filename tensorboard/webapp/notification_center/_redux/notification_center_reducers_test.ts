@@ -25,6 +25,6 @@ describe('notification reducers', () => {
     });
 
     const state2 = notificationReducers.reducers(state1, action1);
-    //expect(state2.hasUnreadMessages).toEqual(false);
+    expect(state2.hasUnreadMessages).toEqual(false);
   });
 });
