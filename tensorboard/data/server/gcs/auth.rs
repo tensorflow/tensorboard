@@ -242,6 +242,7 @@ impl Credentials {
     }
 }
 
+<<<<<<< HEAD
 /// Partial structure of the `GOOGLE_APPLICATION_CREDENTIALS` file.
 #[derive(Deserialize)]
 struct ApplicationCreds {
@@ -278,6 +279,45 @@ impl ApplicationCreds {
     }
 }
 
+||||||| abc8b03bb
+=======
+/// Partial structure of the `GOOGLE_APPLICATION_CREDENTIALS` file.
+#[derive(Deserialize)]
+struct ApplicationCreds {
+    r#type: Option<String>,
+    client_id: Option<String>,
+    client_secret: Option<String>,
+    refresh_token: Option<String>,
+}
+
+/// User's credentials may be valid, but are not supported.
+///
+/// Currently, we only support OAuth refresh tokens, not service account private keys.
+#[derive(Debug, thiserror::Error)]
+#[error("unsupported credentials of type {:?}; only OAuth refresh tokens supported", .creds_type)]
+pub struct UnsupportedCredentialsError {
+    /// The `"type"` field found in the credentials JSON file, for informational purposes.
+    creds_type: String,
+}
+
+impl ApplicationCreds {
+    fn into_credentials(self) -> Result<Credentials, UnsupportedCredentialsError> {
+        match (self.client_id, self.client_secret, self.refresh_token) {
+            (Some(client_id), Some(client_secret), Some(refresh_token)) => {
+                Ok(Credentials::RefreshToken(RefreshToken(RefreshTokenCreds {
+                    client_id,
+                    client_secret,
+                    refresh_token,
+                })))
+            }
+            _ => Err(UnsupportedCredentialsError {
+                creds_type: self.r#type.unwrap_or_default(),
+            }),
+        }
+    }
+}
+
+>>>>>>> 186d901ad94f3995f33d09388bde6368422f2470
 /// Persistent credentials in the form of an OAuth refresh token. Can be posted to an OAuth token
 /// endpoint to obtain a short-lived access token.
 #[derive(Deserialize)]
