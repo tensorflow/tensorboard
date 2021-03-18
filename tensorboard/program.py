@@ -65,11 +65,19 @@ _SUBCOMMAND_FLAG = "__tensorboard_subcommand"
 
 # Message printed when we actually use the data server, so that users are not
 # caught terribly by surprise.
-_DATA_SERVER_MESSAGE = """
+_DATA_SERVER_ADVISORY_MESSAGE = """
 NOTE: Using experimental fast data loading logic. To disable, pass
     "--load_fast=false" and report issues on GitHub. More details:
     https://github.com/tensorflow/tensorboard/issues/4784
 
+"""
+
+# Message printed with `--load_fast=true` if the data server could not start up.
+# To be formatted with one `DataServerStartupError` interpoland.
+_DATA_SERVER_STARTUP_ERROR_MESSAGE_TEMPLATE = """\
+Could not start data server: %s.
+    Try with --load_fast=false and report issues on GitHub. Details:
+    https://github.com/tensorflow/tensorboard/issues/4784
 """
 
 
@@ -386,13 +394,17 @@ class TensorBoard(object):
         mimetypes.add_type("text/html", ".html")
 
     def _make_data_ingester(self):
+        """Determines the right data ingester, starts it, and returns it."""
         flags = self.flags
         if flags.grpc_data_provider:
-            return server_ingester.ExistingServerDataIngester(
+            ingester = server_ingester.ExistingServerDataIngester(
                 flags.grpc_data_provider,
                 channel_creds_type=flags.grpc_creds_type,
             )
-        if _should_use_data_server(flags.load_fast, flags.logdir):
+            ingester.start()
+            return ingester
+
+        if flags.load_fast in ("auto", "true"):
             try:
                 server_binary = server_ingester.get_server_binary()
             except server_ingester.NoDataServerError as e:
@@ -402,27 +414,41 @@ class TensorBoard(object):
                     sys.exit(1)
                 logger.info("No data server: %s", e)
             else:
-                if flags.load_fast == "auto":
-                    sys.stderr.write(_DATA_SERVER_MESSAGE)
-                    sys.stderr.flush()
-                return server_ingester.SubprocessServerDataIngester(
+                ingester = server_ingester.SubprocessServerDataIngester(
                     server_binary=server_binary,
                     logdir=flags.logdir,
                     reload_interval=flags.reload_interval,
                     channel_creds_type=flags.grpc_creds_type,
                     samples_per_plugin=flags.samples_per_plugin,
                 )
-        return local_ingester.LocalDataIngester(flags)
+                try:
+                    ingester.start()
+                except server_ingester.DataServerStartupError as e:
+                    if flags.load_fast == "true":
+                        msg = _DATA_SERVER_STARTUP_ERROR_MESSAGE_TEMPLATE % e
+                        sys.stderr.write(msg)
+                        sys.exit(1)
+                    logger.info(
+                        "Data server error: %s; falling back to multiplexer",
+                        e,
+                    )
+                else:
+                    if flags.load_fast == "auto":
+                        sys.stderr.write(_DATA_SERVER_ADVISORY_MESSAGE)
+                        sys.stderr.flush()
+                    return ingester
+
+        ingester = local_ingester.LocalDataIngester(flags)
+        ingester.start()
+        return ingester
 
     def _make_data_provider(self):
         """Returns `(data_provider, deprecated_multiplexer)`."""
         ingester = self._make_data_ingester()
-
         # Stash ingester so that it can avoid GCing Windows file handles.
         # (See comment in `SubprocessServerDataIngester.start` for details.)
         self._ingester = ingester
 
-        ingester.start()
         deprecated_multiplexer = None
         if isinstance(ingester, local_ingester.LocalDataIngester):
             deprecated_multiplexer = ingester.deprecated_multiplexer
@@ -439,23 +465,6 @@ class TensorBoard(object):
             deprecated_multiplexer,
         )
         return self.server_class(app, self.flags)
-
-
-def _should_use_data_server(load_fast_flag, logdir):
-    if load_fast_flag == "false":
-        return False
-    if load_fast_flag == "true":
-        return True
-    assert load_fast_flag == "auto", load_fast_flag
-
-    if not logdir:
-        # Maybe using `--logdir_spec` or something. Not supported.
-        return False
-    if "://" not in logdir:
-        return True
-    if logdir.startswith("gs://"):
-        return True
-    return False
 
 
 class TensorBoardSubcommand(metaclass=ABCMeta):

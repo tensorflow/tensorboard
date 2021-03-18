@@ -393,7 +393,7 @@ port to TensorBoard as a subprocess.(default: %(default)s).\
             choices=["false", "auto", "true"],
             help="""\
 Experimental. Use a data server to accelerate loading. Set to "auto" to use a
-data server only if installed.
+data server only if installed and supported for this invocation.
 """,
         )
 

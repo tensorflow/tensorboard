@@ -22,6 +22,7 @@ import tempfile
 import time
 
 import grpc
+import pkg_resources
 
 from tensorboard.data import grpc_provider
 from tensorboard.data import ingester
@@ -71,7 +72,7 @@ class SubprocessServerDataIngester(ingester.DataIngester):
         """Initializes an ingester with the given configuration.
 
         Args:
-          server_binary: Path to data server binary to launch.
+          server_binary: `ServerBinary` to launch.
           logdir: String, as passed to `--logdir`.
           reload_interval: Number, as passed to `--reload_interval`.
           channel_creds_type: `grpc_util.ChannelCredsType`, as passed to
@@ -98,6 +99,7 @@ class SubprocessServerDataIngester(ingester.DataIngester):
 
         tmpdir = tempfile.TemporaryDirectory(prefix="tensorboard_data_server_")
         port_file_path = os.path.join(tmpdir.name, "port")
+        error_file_path = os.path.join(tmpdir.name, "startup_error")
 
         if self._reload_interval <= 0:
             reload = "once"
@@ -111,7 +113,7 @@ class SubprocessServerDataIngester(ingester.DataIngester):
         samples_per_plugin = ",".join(sample_hint_pairs)
 
         args = [
-            self._server_binary,
+            self._server_binary.path,
             "--logdir=%s" % os.path.expanduser(self._logdir),
             "--reload=%s" % reload,
             "--samples-per-plugin=%s" % samples_per_plugin,
@@ -119,6 +121,8 @@ class SubprocessServerDataIngester(ingester.DataIngester):
             "--port-file=%s" % (port_file_path,),
             "--die-after-stdin",
         ]
+        if self._server_binary.at_least_version("0.5.0a0"):
+            args.append("--error-file=%s" % (error_file_path,))
         if logger.isEnabledFor(logging.INFO):
             args.append("--verbose")
         if logger.isEnabledFor(logging.DEBUG):
@@ -139,18 +143,15 @@ class SubprocessServerDataIngester(ingester.DataIngester):
         time.sleep(0.01)
         for i in range(20):
             if popen.poll() is not None:
-                raise RuntimeError(
-                    "Data server exited with %d; check stderr for details"
-                    % popen.poll()
-                )
+                msg = (_maybe_read_file(error_file_path) or "").strip()
+                if not msg:
+                    msg = (
+                        "exited with %d; check stderr for details"
+                        % popen.poll()
+                    )
+                raise DataServerStartupError(msg)
             logger.info("Polling for data server port (attempt %d)", i)
-            port_file_contents = None
-            try:
-                with open(port_file_path) as infile:
-                    port_file_contents = infile.read()
-            except OSError as e:
-                if e.errno != errno.ENOENT:
-                    raise
+            port_file_contents = _maybe_read_file(port_file_path)
             logger.info("Port file contents: %r", port_file_contents)
             if (port_file_contents or "").endswith("\n"):
                 port = int(port_file_contents)
@@ -158,7 +159,7 @@ class SubprocessServerDataIngester(ingester.DataIngester):
             # Else, not done writing yet.
             time.sleep(0.5)
         if port is None:
-            raise RuntimeError(
+            raise DataServerStartupError(
                 "Timed out while waiting for data server to start. "
                 "It may still be running as pid %d." % popen.pid
             )
@@ -170,6 +171,17 @@ class SubprocessServerDataIngester(ingester.DataIngester):
             popen.pid,
             addr,
         )
+
+
+def _maybe_read_file(path):
+    """Read a file, or return `None` on ENOENT specifically."""
+    try:
+        with open(path) as infile:
+            return infile.read()
+    except OSError as e:
+        if e.errno == errno.ENOENT:
+            return None
+        raise
 
 
 def _make_provider(addr, channel_creds_type):
@@ -184,8 +196,59 @@ class NoDataServerError(RuntimeError):
     pass
 
 
+class DataServerStartupError(RuntimeError):
+    pass
+
+
+class ServerBinary:
+    """Information about a data server binary."""
+
+    def __init__(self, path, version):
+        """Initializes a `ServerBinary`.
+
+        Args:
+          path: String path to executable on disk.
+          version: PEP 396-compliant version string, or `None` if
+            unknown or not applicable. Binaries at unknown versions are
+            assumed to be bleeding-edge: if you bring your own binary,
+            it's on you to make sure that it's up to date.
+        """
+        self._path = path
+        self._version = (
+            pkg_resources.parse_version(version)
+            if version is not None
+            else version
+        )
+
+    @property
+    def path(self):
+        return self._path
+
+    def at_least_version(self, required_version):
+        """Test whether the binary's version is at least the given one.
+
+        Useful for gating features that are available in the latest data
+        server builds from head, but not yet released to PyPI. For
+        example, if v0.4.0 is the latest published version, you can
+        check `at_least_version("0.5.0a0")` to include both prereleases
+        at head and the eventual final release of v0.5.0.
+
+        If this binary's version was set to `None` at construction time,
+        this method always returns `True`.
+
+        Args:
+          required_version: PEP 396-compliant version string.
+
+        Returns:
+          Boolean.
+        """
+        if self._version is None:
+            return True
+        return self._version >= pkg_resources.parse_version(required_version)
+
+
 def get_server_binary():
-    """Get path to data server binary or raise `NoDataServerError`."""
+    """Get `ServerBinary` info or raise `NoDataServerError`."""
     env_result = os.environ.get(_ENV_DATA_SERVER_BINARY)
     if env_result:
         logging.info("Server binary (from env): %s", env_result)
@@ -194,12 +257,12 @@ def get_server_binary():
                 "Found environment variable %s=%s, but no such file exists."
                 % (_ENV_DATA_SERVER_BINARY, env_result)
             )
-        return env_result
+        return ServerBinary(env_result, version=None)
 
     bundle_result = os.path.join(os.path.dirname(__file__), "server", "server")
     if os.path.exists(bundle_result):
         logging.info("Server binary (from bundle): %s", bundle_result)
-        return bundle_result
+        return ServerBinary(bundle_result, version=None)
 
     try:
         import tensorboard_data_server
@@ -207,12 +270,15 @@ def get_server_binary():
         pass
     else:
         pkg_result = tensorboard_data_server.server_binary()
-        logging.info("Server binary (from Python package): %s", pkg_result)
+        version = tensorboard_data_server.__version__
+        logging.info(
+            "Server binary (from Python package v%s): %s", version, pkg_result
+        )
         if pkg_result is None:
             raise NoDataServerError(
                 "TensorBoard data server not supported on this platform."
             )
-        return pkg_result
+        return ServerBinary(pkg_result, version)
 
     raise NoDataServerError(
         "TensorBoard data server not found. This mode is experimental. "
