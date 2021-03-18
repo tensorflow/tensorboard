@@ -23,6 +23,7 @@ export function buildNotificationState(
 ): NotificationState {
   return {
     notifications: [],
+    hasUnreadMessages: false,
     ...override,
   };
 }

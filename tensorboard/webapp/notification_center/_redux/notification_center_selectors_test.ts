@@ -24,6 +24,7 @@ describe('notification_center_selectors', () => {
     beforeEach(() => {
       // Clear the memoization.
       selectors.getNotifications.release();
+      selectors.hasUnreadMessages.release();
     });
 
     it('returns empty list when there is no notification', () => {
@@ -56,6 +57,17 @@ describe('notification_center_selectors', () => {
           content: '<li>test</li>',
         },
       ]);
+    });
+
+    it('returns hasUnreadMessages', () => {
+      const state = buildStateFromNotificationState(
+        buildNotificationState({
+          notifications: [],
+          hasUnreadMessages: true,
+        })
+      );
+
+      expect(selectors.hasUnreadMessages(state)).toBeTruthy();
     });
   });
 });

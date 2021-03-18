@@ -29,6 +29,7 @@ const selectNotifications = createFeatureSelector<State, NotificationState>(
 export const getNotifications = createSelector(
   selectNotifications,
   (state: NotificationState): Notification[] => {
+    console.log('state.notifications state:', state); // state.notifications state:', Object{notifications: [Object{category: ..., dateInMs: ..., title: ..., content: ...}], hasUnreadMessages: false}
     return state.notifications;
   }
 );
@@ -36,6 +37,7 @@ export const getNotifications = createSelector(
 export const hasUnreadMessages = createSelector(
   selectNotifications,
   (state: NotificationState): boolean => {
+    console.log('state:', state); // undefined, why???
     return state.hasUnreadMessages;
   }
 );
