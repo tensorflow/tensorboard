@@ -12,6 +12,3 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-// effects read from BE and local storge
-// use `  ngrxOnInitEffects` that's when stroe will be ready (otherwise in construct it might not(?))
-// example google3/third_party/tensorboard/google/ui/app/user/effects/user_effects.ts
