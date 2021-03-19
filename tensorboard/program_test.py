@@ -82,6 +82,13 @@ class TensorBoardTest(tb_test.TestCase):
         with self.assertRaisesRegex(ValueError, "Unknown TensorBoard flag"):
             tb.configure(foo="bar")
 
+    def test_should_use_data_server(self):
+        f = program._should_use_data_server
+        self.assertTrue(f("logs/mnist/"))
+        self.assertTrue(f("gs://logs"))
+        self.assertFalse(f(""))
+        self.assertFalse(f("notgs://logs"))
+
 
 class WerkzeugServerTest(tb_test.TestCase):
     """Tests the default Werkzeug implementation of TensorBoardServer.

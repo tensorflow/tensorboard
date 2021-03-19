@@ -393,6 +393,20 @@ class TensorBoard(object):
         mimetypes.add_type("font/woff2", ".woff2")
         mimetypes.add_type("text/html", ".html")
 
+    def _start_subprocess_data_ingester(self):
+        """Creates, starts, and returns a `SubprocessServerDataIngester`."""
+        flags = self.flags
+        server_binary = server_ingester.get_server_binary()
+        ingester = server_ingester.SubprocessServerDataIngester(
+            server_binary=server_binary,
+            logdir=flags.logdir,
+            reload_interval=flags.reload_interval,
+            channel_creds_type=flags.grpc_creds_type,
+            samples_per_plugin=flags.samples_per_plugin,
+        )
+        ingester.start()
+        return ingester
+
     def _make_data_ingester(self):
         """Determines the right data ingester, starts it, and returns it."""
         flags = self.flags
@@ -404,39 +418,27 @@ class TensorBoard(object):
             ingester.start()
             return ingester
 
-        if flags.load_fast in ("auto", "true"):
+        if flags.load_fast == "true":
             try:
-                server_binary = server_ingester.get_server_binary()
+                return self._start_subprocess_data_ingester()
             except server_ingester.NoDataServerError as e:
-                if flags.load_fast == "true":
-                    msg = "Option --load_fast=true not available: %s\n" % e
-                    sys.stderr.write(msg)
-                    sys.exit(1)
+                msg = "Option --load_fast=true not available: %s\n" % e
+                sys.stderr.write(msg)
+                sys.exit(1)
+            except server_ingester.DataServerStartupError as e:
+                msg = _DATA_SERVER_STARTUP_ERROR_MESSAGE_TEMPLATE % e
+                sys.stderr.write(msg)
+                sys.exit(1)
+
+        if flags.load_fast == "auto" and _should_use_data_server(flags.logdir):
+            try:
+                return self._start_subprocess_data_ingester()
+            except server_ingester.NoDataServerError as e:
                 logger.info("No data server: %s", e)
-            else:
-                ingester = server_ingester.SubprocessServerDataIngester(
-                    server_binary=server_binary,
-                    logdir=flags.logdir,
-                    reload_interval=flags.reload_interval,
-                    channel_creds_type=flags.grpc_creds_type,
-                    samples_per_plugin=flags.samples_per_plugin,
+            except server_ingester.DataServerStartupError as e:
+                logger.info(
+                    "Data server error: %s; falling back to multiplexer", e
                 )
-                try:
-                    ingester.start()
-                except server_ingester.DataServerStartupError as e:
-                    if flags.load_fast == "true":
-                        msg = _DATA_SERVER_STARTUP_ERROR_MESSAGE_TEMPLATE % e
-                        sys.stderr.write(msg)
-                        sys.exit(1)
-                    logger.info(
-                        "Data server error: %s; falling back to multiplexer",
-                        e,
-                    )
-                else:
-                    if flags.load_fast == "auto":
-                        sys.stderr.write(_DATA_SERVER_ADVISORY_MESSAGE)
-                        sys.stderr.flush()
-                    return ingester
 
         ingester = local_ingester.LocalDataIngester(flags)
         ingester.start()
@@ -465,6 +467,17 @@ class TensorBoard(object):
             deprecated_multiplexer,
         )
         return self.server_class(app, self.flags)
+
+
+def _should_use_data_server(logdir):
+    if not logdir:
+        # Maybe using `--logdir_spec` or something. Not supported.
+        return False
+    if "://" not in logdir:
+        return True
+    if logdir.startswith("gs://"):
+        return True
+    return False
 
 
 class TensorBoardSubcommand(metaclass=ABCMeta):
