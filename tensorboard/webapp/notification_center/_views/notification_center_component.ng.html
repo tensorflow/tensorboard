@@ -27,7 +27,6 @@ limitations under the License.
 <mat-menu #menu="matMenu" class="notification-menu">
   <div>
     <div *ngFor="let notification of notifications" class="menu-item" >
-      <div [ngClass]="[notification.hasRead ? 'hasread' : '']">
         <div>
           <mat-icon
             *ngIf="notification.icon"
@@ -47,7 +46,6 @@ limitations under the License.
           <div class="content" [innerHTML]="notification.content"></div>
           <div class="extended-buttons">READ FULL</div>
         </div>
-      </div>
     </div>
   </div>
 </mat-menu>
