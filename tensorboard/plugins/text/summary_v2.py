@@ -28,13 +28,13 @@ def text(name, data, step=None, description=None):
 
     See also `tf.summary.scalar`, `tf.summary.SummaryWriter`, `tf.summary.image`.
 
-    Logs text tensor values for later visualization and analysis in TensorBoard.  Like
+    Logs text Tensor values for later visualization and analysis in TensorBoard.  Like
     `tf.summary.scalar` points, text points are each associated with a `step` and a
     `name`.  All the points with the same `name` constitute a time series of text values.
 
     For Example:
     ```python
-    test_summary_writer = tf.summary.create_file_writer('test/text_demo_log_dir')
+    test_summary_writer = tf.summary.create_file_writer('test/logdir')
     with test_summary_writer.as_default():
         tf.summary.text('first_text', 'hello world!', step=0)
         tf.summary.text('first_text', 'nice to meet you!', step=1)
@@ -54,16 +54,16 @@ def text(name, data, step=None, description=None):
         tf.summary.text('markdown_text', table_as_markdown_text, step=0)
     ```
 
-    Since text is tensor valued, each text point may be a tensor of string values.
-    rank-1 and rank-2 tensors are rendered as tables in TensorBoard.  For higher ranked
-    tensors, you'll see just a 2D slice of the data.
+    Since text is Tensor valued, each text point may be a Tensor of string values.
+    rank-1 and rank-2 Tensors are rendered as tables in TensorBoard.  For higher ranked
+    Tensors, you'll see just a 2D slice of the data.
 
     Demo notebook at https://www.tensorflow.org/tensorboard/text_summaries.
 
     Arguments:
       name: A name for this summary. The summary tag used for TensorBoard will
         be this name prefixed by any active name scopes.
-      data: A UTF-8 string tensor value.
+      data: A UTF-8 string Tensor value.
       step: Explicit `int64`-castable monotonic step value for this summary. If
         omitted, this defaults to `tf.summary.experimental.get_step()`, which must
         not be None.
