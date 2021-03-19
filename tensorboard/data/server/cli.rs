@@ -170,6 +170,7 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
         _ => LevelFilter::max(),
     });
     debug!("Parsed options: {:?}", opts);
+<<<<<<< HEAD
     let data_location = opts.logdir.display().to_string();
 
     // Create the outside an async runtime (see docs for `DynLogdir::new`).
@@ -180,6 +181,19 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
             write_startup_error(error_file.as_ref().map(|p| p.as_ref()), e);
             std::process::exit(EXIT_BAD_LOGDIR);
         });
+||||||| 186d901ad
+=======
+    let data_location = opts.logdir.display().to_string();
+
+    // Create the logdir outside an async runtime (see docs for `DynLogdir::new`).
+    let (raw_logdir, error_file) = (opts.logdir, opts.error_file);
+    let logdir = tokio::task::spawn_blocking(|| DynLogdir::new(raw_logdir))
+        .await?
+        .unwrap_or_else(|e| {
+            write_startup_error(error_file.as_ref().map(|p| p.as_ref()), e);
+            std::process::exit(EXIT_BAD_LOGDIR);
+        });
+>>>>>>> 49ece345a801bf630c4cfa42ae06b8ca2c81b131
 
     if opts.die_after_stdin {
         thread::Builder::new()
@@ -272,6 +286,7 @@ fn write_port_file(path: &Path, port: u16) -> std::io::Result<()> {
     Ok(())
 }
 
+<<<<<<< HEAD
 /// Writes error to the given file, or to stderr as a fallback.
 fn write_startup_error(path: Option<&Path>, error: dynamic_logdir::Error) {
     let write_to_file = |path: &Path| -> std::io::Result<()> {
@@ -289,6 +304,28 @@ fn write_startup_error(path: Option<&Path>, error: dynamic_logdir::Error) {
     }
 }
 
+||||||| 186d901ad
+=======
+/// Writes error to the given file, or to stderr as a fallback.
+fn write_startup_error(path: Option<&Path>, error: dynamic_logdir::Error) {
+    let write_to_file = |path: &Path| -> std::io::Result<()> {
+        let mut f = File::create(path)?;
+        writeln!(f, "{}", error)?;
+        f.sync_all()?;
+        Ok(())
+    };
+    if let Some(p) = path {
+        if let Err(e) = write_to_file(p) {
+            info!("Failed to write error to {:?}: {}", p, e);
+        } else {
+            return;
+        }
+    }
+    // fall back to stderr if no path given or if write failed
+    eprintln!("fatal: {}", error);
+}
+
+>>>>>>> 49ece345a801bf630c4cfa42ae06b8ca2c81b131
 #[cfg(test)]
 mod tests {
     use super::*;
