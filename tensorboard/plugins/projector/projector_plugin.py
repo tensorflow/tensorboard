@@ -120,7 +120,7 @@ class EmbeddingMetadata(object):
           ValueError: If `column_values` is not 1D array, or of length `num_points`,
               or the `name` is already used.
         """
-        # Sanity checks.
+        # Confidence checks.
         if isinstance(column_values, list) and isinstance(
             column_values[0], list
         ):
@@ -461,7 +461,7 @@ class ProjectorPlugin(base_plugin.TBPlugin):
                 if ckpt_path:
                     config.model_checkpoint_path = ckpt_path
 
-            # Sanity check for the checkpoint file existing.
+            # Confidence check for the checkpoint file existing.
             if (
                 config.model_checkpoint_path
                 and _using_tf()

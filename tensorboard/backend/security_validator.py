@@ -29,7 +29,7 @@ logger = tb_logging.get_logger()
 
 _HTML_MIME_TYPE = "text/html"
 _CSP_DEFAULT_SRC = "default-src"
-# Whitelist of allowed CSP violations.
+# List of explicitly allowed CSP violations.
 _CSP_IGNORE = {
     # Polymer-based code uses unsafe-inline.
     "style-src": ["'unsafe-inline'", "data:"],
@@ -128,9 +128,9 @@ class SecurityValidatorMiddleware(object):
                 # TensorBoard trusts request and resources originating its server. Also,
                 # it can selectively trust domains as long as they use https protocol.
                 # Lastly, it can allow 'none' directive.
-                # TODO(stephanwlee): allow configuration for whitelist of domains for
+                # TODO(stephanwlee): allow configuration for allowlist of domains for
                 # stricter enforcement.
-                # TODO(stephanwlee): deprecate the sha-based whitelisting.
+                # TODO(stephanwlee): deprecate the sha-based allowlisting.
                 if (
                     value == "'self'"
                     or value == "'none'"

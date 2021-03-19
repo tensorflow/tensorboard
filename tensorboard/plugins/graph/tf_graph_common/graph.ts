@@ -192,7 +192,7 @@ export interface OpNode extends Node {
   // Whether op is compatible with its assigned device.  Currently, if an op
   // is not specified a device, the device is defaulted to the TPU.
   // Furthermore, all ops are considered compatible for CPU and GPU devices,
-  // while a whitelist of compatible ops are specified for the TPU.
+  // while an allowlist of compatible ops are specified for the TPU.
   // Reference: opValid func in op.ts.
   compatible: boolean;
   // This field is only defined if the op node represents an input_arg to a
@@ -995,7 +995,7 @@ export const DefaultBuildParams: BuildParams = {
   enableEmbedding: true,
   inEmbeddingTypes: ['Const'],
   outEmbeddingTypes: ['^[a-zA-Z]+Summary$'],
-  // This is the whitelist of inputs on op types that are considered
+  // This is the allowlist of inputs on op types that are considered
   // reference edges. "Assign 0" indicates that the first input to
   // an OpNode with operation type "Assign" is a reference edge.
   refEdges: {

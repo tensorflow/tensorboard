@@ -57,7 +57,7 @@ def visualize_embeddings(logdir, config):
     # Convert from `tf.compat.v1.summary.FileWriter` if necessary.
     logdir = getattr(logdir, "get_logdir", lambda: logdir)()
 
-    # Sanity checks.
+    # Confidence checks.
     if logdir is None:
         raise ValueError("Expected logdir to be a path, but got None")
 

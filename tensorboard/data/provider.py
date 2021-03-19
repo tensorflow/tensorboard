@@ -989,7 +989,7 @@ class RunTagFilter(object):
         """Construct a `RunTagFilter`.
 
         A time series passes this filter if both its run *and* its tag are
-        included in the corresponding whitelists.
+        included in the corresponding allowlists.
 
         Order and multiplicity are ignored; `runs` and `tags` are treated as
         sets.

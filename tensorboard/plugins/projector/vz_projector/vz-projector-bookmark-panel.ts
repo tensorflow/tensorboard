@@ -247,7 +247,7 @@ class BookmarkPanel extends LegacyElementMixin(PolymerElement) {
   private updateHasStates() {
     this.hasStates = this.savedStates.length !== 0;
   }
-  /** Sanity checks a State array to ensure it matches the current dataset. */
+  /** Checks a State array to ensure it matches the current dataset. */
   private savedStatesValid(states: State[]): boolean {
     for (let i = 0; i < states.length; i++) {
       if (

@@ -35,7 +35,7 @@ export type D3HistogramBin = {
 // TypeScript can't deal with d3's style of overloading and
 // polymorphism, and constantly fails to select the correct overload.
 // This module was converted from working non-TypeScript code, so we
-// grandfather it in untyped.
+// preserve it untyped.
 const d3: any = d3Typed;
 
 export interface VzHistogramTimeseries extends HTMLElement {

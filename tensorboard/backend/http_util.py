@@ -94,8 +94,8 @@ def Respond(
     """Construct a werkzeug Response.
 
     Responses are transmitted to the browser with compression if: a) the browser
-    supports it; b) it's sane to compress the content_type in question; and c)
-    the content isn't already compressed, as indicated by the content_encoding
+    supports it; b) it's sensible to compress the content_type in question; and
+    c) the content isn't already compressed, as indicated by the content_encoding
     parameter.
 
     Browser and proxy caching is completely disabled by default. If the expires
@@ -126,10 +126,10 @@ def Respond(
       expires: Second duration for browser caching.
       content_encoding: Encoding if content is already encoded, e.g. 'gzip'.
       encoding: Input charset if content parameter has byte strings.
-      csp_scripts_sha256s: List of base64 serialized sha256 of whitelisted script
-        elements for script-src of the Content-Security-Policy. If it is None, the
-        HTML will disallow any script to execute. It is only be used when the
-        content_type is text/html.
+      csp_scripts_sha256s: List of base64 serialized sha256 hashes of allowlisted
+        script elements for script-src of the Content-Security-Policy. If it is
+        None, the HTML will disallow any script to execute. It is only be used
+        when the content_type is text/html.
       headers: Any additional headers to include on the response, as a
         list of key-value tuples: e.g., `[("Allow", "GET")]`. In case of
         conflict, these may be overridden with headers added by this function.
