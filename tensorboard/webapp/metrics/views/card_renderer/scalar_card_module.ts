@@ -23,6 +23,7 @@ import {LineChartModule} from '../../../widgets/line_chart/line_chart_module';
 import {LineChartModule as LineChartV2Module} from '../../../widgets/line_chart_v2/line_chart_module';
 import {ResizeDetectorModule} from '../../../widgets/resize_detector_module';
 import {TruncatedPathModule} from '../../../widgets/text/truncated_path_module';
+import {DataDownloadModule} from './data_download_module';
 import {ScalarCardComponent} from './scalar_card_component';
 import {ScalarCardContainer} from './scalar_card_container';
 
@@ -31,6 +32,7 @@ import {ScalarCardContainer} from './scalar_card_container';
   exports: [ScalarCardContainer],
   imports: [
     CommonModule,
+    DataDownloadModule,
     LineChartModule,
     LineChartV2Module,
     MatButtonModule,

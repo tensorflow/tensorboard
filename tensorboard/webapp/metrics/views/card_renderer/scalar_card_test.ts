@@ -21,6 +21,7 @@ import {
   TestBed,
   tick,
 } from '@angular/core/testing';
+import {MatDialogModule} from '@angular/material/dialog';
 import {MatMenuModule} from '@angular/material/menu';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import {By} from '@angular/platform-browser';
@@ -184,6 +185,7 @@ describe('scalar card', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [
+        MatDialogModule,
         MatIconTestingModule,
         MatMenuModule,
         MatProgressSpinnerModule,

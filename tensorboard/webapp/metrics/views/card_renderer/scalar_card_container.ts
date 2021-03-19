@@ -129,10 +129,12 @@ function areSeriesEqual(
   selector: 'scalar-card',
   template: `
     <scalar-card-component
+      [cardId]="cardId"
       [loadState]="loadState$ | async"
       [runColorScale]="runColorScale"
       [title]="title$ | async"
       [tag]="tag$ | async"
+      [runIds]="runIds$ | async"
       [seriesDataList]="legacySeriesDataList$ | async"
       [tooltipSort]="tooltipSort$ | async"
       [ignoreOutliers]="ignoreOutliers$ | async"
@@ -176,6 +178,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit {
   loadState$?: Observable<DataLoadState>;
   title$?: Observable<string>;
   tag$?: Observable<string>;
+  runIds$?: Observable<string[]>;
   legacySeriesDataList$?: Observable<LegacySeriesDataList> = of([]);
   isPinned$?: Observable<boolean>;
   dataSeries$?: Observable<ScalarCardDataSeries[]>;
@@ -251,6 +254,12 @@ export class ScalarCardContainer implements CardRenderer, OnInit {
         map((runToSeries) => runToSeries as RunToSeries<PluginType.SCALARS>),
         shareReplay(1)
       );
+
+    this.runIds$ = nonNullRunsToScalarSeries$.pipe(
+      map((runToSeries) => {
+        return Object.keys(runToSeries);
+      })
+    );
 
     const partialSeries$ = nonNullRunsToScalarSeries$.pipe(
       combineLatestWith(this.store.select(getMetricsXAxisType)),

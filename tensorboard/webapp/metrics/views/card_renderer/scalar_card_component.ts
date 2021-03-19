@@ -21,6 +21,7 @@ import {
   Output,
   ViewChild,
 } from '@angular/core';
+import {MatDialog} from '@angular/material/dialog';
 
 import {DataLoadState} from '../../../types/data';
 import {RunColorScale} from '../../../types/ui';
@@ -46,6 +47,7 @@ import {
 } from '../../../widgets/line_chart_v2/types';
 import {ScalarStepDatum} from '../../data_source';
 import {TooltipSort, XAxisType} from '../../types';
+import {DataDownloadDialogContainer} from './data_download_dialog_container';
 import {
   ScalarCardDataSeries,
   ScalarCardSeriesMetadata,
@@ -124,8 +126,10 @@ export class ScalarCardComponent {
   readonly DataLoadState = DataLoadState;
   readonly RendererType = RendererType;
 
+  @Input() cardId!: string;
   @Input() loadState!: DataLoadState;
   @Input() title!: string;
+  @Input() runIds!: string[];
   @Input() tag!: string;
   @Input() tooltipSort!: TooltipSort;
   @Input() xAxisType!: XAxisType;
@@ -159,7 +163,7 @@ export class ScalarCardComponent {
   @ViewChild(NewLineChartComponent)
   newLineChart?: NewLineChartComponent;
 
-  constructor(private readonly ref: ElementRef) {}
+  constructor(private readonly ref: ElementRef, private dialog: MatDialog) {}
 
   yAxisType = YAxisType.LINEAR;
   newYScaleType = ScaleType.LINEAR;
@@ -257,5 +261,11 @@ export class ScalarCardComponent {
           return a.metadata.distSqToCursor - b.metadata.distSqToCursor;
         });
     }
+  }
+
+  openDataDownloadDialog(): void {
+    this.dialog.open(DataDownloadDialogContainer, {
+      data: {cardId: this.cardId},
+    });
   }
 }

@@ -266,7 +266,34 @@ export class TBMetricsDataSource implements MetricsDataSource {
       );
   }
 
-  imageUrl(imageId: ImageId) {
+  imageUrl(imageId: ImageId): string {
     return `${HTTP_PATH_PREFIX}/imageData?imageId=${imageId}`;
+  }
+
+  downloadUrl(
+    pluginId: PluginType,
+    tag: string,
+    runId: string,
+    downloadType: 'json' | 'csv'
+  ): string {
+    const {run, experimentId} = parseRunId(runId);
+    let pluginAndRoute: string;
+    switch (pluginId) {
+      case PluginType.SCALARS:
+        pluginAndRoute = 'scalars/scalars';
+        break;
+      default:
+        throw new Error(
+          `Not implemented: downloadUrl for ${pluginId} is not implemented yet`
+        );
+    }
+
+    if (!experimentId) {
+      throw new Error(
+        'experimentId is empty; it is required to form downloadUrl.'
+      );
+    }
+    const params = new URLSearchParams({tag, run, format: downloadType});
+    return `/experiment/${experimentId}/data/plugin/${pluginAndRoute}?${params}`;
   }
 }
