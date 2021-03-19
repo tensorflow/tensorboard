@@ -84,17 +84,10 @@ class TensorBoardTest(tb_test.TestCase):
 
     def test_should_use_data_server(self):
         f = program._should_use_data_server
-
-        self.assertFalse(f("false", "logs/mnist/"))
-
-        self.assertTrue(f("true", "logs/mnist/"))
-        self.assertTrue(f("true", "wat://logs"))
-        self.assertTrue(f("true", ""))
-
-        self.assertTrue(f("auto", "logs/mnist/"))
-        self.assertTrue(f("auto", "gs://logs"))
-        self.assertFalse(f("auto", ""))
-        self.assertFalse(f("auto", "notgs://logs"))
+        self.assertTrue(f("logs/mnist/"))
+        self.assertTrue(f("gs://logs"))
+        self.assertFalse(f(""))
+        self.assertFalse(f("notgs://logs"))
 
 
 class WerkzeugServerTest(tb_test.TestCase):

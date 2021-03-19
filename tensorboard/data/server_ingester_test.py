@@ -16,6 +16,7 @@
 
 import os
 import subprocess
+import tempfile
 import threading
 import time
 from unittest import mock
@@ -46,25 +47,29 @@ class SubprocessServerDataIngesterTest(tb_test.TestCase):
     def test(self):
         # Create a fake server binary so that the `os.path.exists` check
         # passes.
-        fake_binary = os.path.join(self.get_temp_dir(), "server")
-        with open(fake_binary, "wb"):
+        fake_binary_path = os.path.join(self.get_temp_dir(), "server")
+        with open(fake_binary_path, "wb"):
             pass
+        binary_info = server_ingester.ServerBinary(
+            fake_binary_path, version=None
+        )
+
+        tmpdir = tempfile.TemporaryDirectory()
+        self.enter_context(
+            mock.patch.object(
+                tempfile, "TemporaryDirectory", return_value=tmpdir
+            )
+        )
+        port_file = os.path.join(tmpdir.name, "port")
+        error_file = os.path.join(tmpdir.name, "startup_error")
 
         real_popen = subprocess.Popen
-        port_file = None  # value of `--port-file` to be stashed here
-
         # Stub out `subprocess.Popen` to write the port file.
         def fake_popen(subprocess_args, *args, **kwargs):
             def target():
                 time.sleep(0.2)  # wait one cycle
-                for arg in subprocess_args:
-                    port_file_prefix = "--port-file="
-                    if not arg.startswith(port_file_prefix):
-                        continue
-                    nonlocal port_file
-                    port_file = arg[len(port_file_prefix) :]
-                    with open(port_file, "w") as outfile:
-                        outfile.write("23456\n")
+                with open(port_file, "w") as outfile:
+                    outfile.write("23456\n")
 
             result = mock.create_autospec(real_popen, instance=True)
             result.stdin = mock.Mock()
@@ -80,7 +85,7 @@ class SubprocessServerDataIngesterTest(tb_test.TestCase):
         with mock.patch.object(subprocess, "Popen", wraps=fake_popen) as popen:
             with mock.patch.object(grpc, "secure_channel", autospec=True) as sc:
                 ingester = server_ingester.SubprocessServerDataIngester(
-                    server_binary=fake_binary,
+                    server_binary=binary_info,
                     logdir=tilde_logdir,
                     reload_interval=5,
                     channel_creds_type=grpc_util.ChannelCredsType.LOCAL,
@@ -95,19 +100,39 @@ class SubprocessServerDataIngesterTest(tb_test.TestCase):
         )
 
         expected_args = [
-            fake_binary,
+            fake_binary_path,
             "--logdir=%s" % expanded_logdir,
             "--reload=5",
             "--samples-per-plugin=scalars=500,images=all",
             "--port=0",
             "--port-file=%s" % port_file,
             "--die-after-stdin",
+            "--error-file=%s" % error_file,
             "--verbose",  # logging is enabled in tests
         ]
         popen.assert_called_once_with(expected_args, stdin=subprocess.PIPE)
         sc.assert_called_once_with(
             "localhost:23456", mock.ANY, options=mock.ANY
         )
+
+
+class ServerInfoTest(tb_test.TestCase):
+    def test_version_none(self):
+        b = server_ingester.ServerBinary("./server", version=None)
+        self.assertTrue(b.at_least_version("0.1.0"))
+        self.assertTrue(b.at_least_version("999.999.999"))
+
+    def test_version_final_release(self):
+        b = server_ingester.ServerBinary("./server", version="0.4.0")
+        self.assertTrue(b.at_least_version("0.4.0"))
+        self.assertFalse(b.at_least_version("0.5.0a0"))
+        self.assertFalse(b.at_least_version("0.5.0"))
+
+    def test_version_prerelease(self):
+        b = server_ingester.ServerBinary("./server", version="0.5.0a0")
+        self.assertTrue(b.at_least_version("0.4.0"))
+        self.assertTrue(b.at_least_version("0.5.0a0"))
+        self.assertFalse(b.at_least_version("0.5.0"))
 
 
 if __name__ == "__main__":
