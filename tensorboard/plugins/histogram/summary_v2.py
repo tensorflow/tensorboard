@@ -41,6 +41,8 @@ DEFAULT_BUCKET_COUNT = 30
 def histogram(name, data, step=None, buckets=None, description=None):
     """Write a histogram summary.
 
+    See also `tf.summary.scalar`, `tf.summary.SummaryWriter`.
+
     Logs a histogram to the current log directory for later analysis in
     TensorBoard's 'Histograms' and 'Distributions' dashboards (one histogram
     will appear in both). Like `tf.summary.scalar` points, each histogram is
@@ -50,8 +52,8 @@ def histogram(name, data, step=None, buckets=None, description=None):
     This example writes 2 histograms:
 
     ```python
-    writer = tf.summary.create_file_writer('logs')
-    with writer.as_default():
+    test_summary_writer = tf.summary.create_file_writer('test/logs')
+    with test_summary_writer.as_default():
       tf.summary.histogram("activations", [-10, 0, 10], step=0)
       tf.summary.histogram("initial weights", tf.random.normal([5]), step=0)
     ```
@@ -60,8 +62,8 @@ def histogram(name, data, step=None, buckets=None, description=None):
     thereof) at specific layers in a neural network, over time.
 
     ```python
-    writer = tf.summary.create_file_writer('logs')
-    with writer.as_default():
+    test_summary_writer = tf.summary.create_file_writer('test/logs')
+    with test_summary_writer.as_default():
       for step in steps:
         # After computing activations...
         tf.summary.histogram("layer1/activate", layer1_activate, step=step)
