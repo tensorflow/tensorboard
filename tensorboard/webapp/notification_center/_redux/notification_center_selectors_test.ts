@@ -24,7 +24,7 @@ describe('notification_center_selectors', () => {
     beforeEach(() => {
       // Clear the memoization.
       selectors.getNotifications.release();
-      selectors.hasUnreadMessages.release();
+      selectors.getLastReadTime.release();
     });
 
     it('returns empty list when there is no notification', () => {
@@ -59,15 +59,14 @@ describe('notification_center_selectors', () => {
       ]);
     });
 
-    it('returns hasUnreadMessages', () => {
+    it('get last read timestamp', () => {
       const state = buildStateFromNotificationState(
         buildNotificationState({
-          notifications: [],
-          hasUnreadMessages: true,
+          lastReadTimestamp: 1235813,
         })
       );
 
-      expect(selectors.hasUnreadMessages(state)).toBeTruthy();
+      expect(selectors.getLastReadTime(state)).toBe(1235813);
     });
   });
 });
