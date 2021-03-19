@@ -33,6 +33,7 @@ export const NOTIFICATION_FEATURE_KEY = 'notification';
 export interface NotificationState {
   notifications: Notification[];
   hasUnreadMessages: boolean;
+  lastReadTimestamp: number;
 }
 
 export interface State {

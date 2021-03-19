@@ -17,9 +17,11 @@ import * as actions from './notification_center_actions';
 import {NotificationState} from './notification_center_types';
 import {notificationNotes} from './notification_notes';
 
+// need to get rid of this
 const initialState: NotificationState = {
   notifications: notificationNotes,
   hasUnreadMessages: false,
+  lastReadTimestamp: 0,
 };
 
 const reducer = createReducer(

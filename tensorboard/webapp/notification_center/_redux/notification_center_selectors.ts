@@ -41,3 +41,10 @@ export const hasUnreadMessages = createSelector(
     return state.hasUnreadMessages;
   }
 );
+
+export const getLastReadTime = createSelector(
+  selectNotifications,
+  (state: NotificationState): number => {
+    return state.lastReadTimestamp;
+  }
+);

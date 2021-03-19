@@ -14,19 +14,16 @@ limitations under the License.
 ==============================================================================*/
 import {Component} from '@angular/core';
 import {Store} from '@ngrx/store';
-import {Observable} from 'rxjs';
-import {map} from 'rxjs/operators';
+import {combineLatest, Observable} from 'rxjs';
+import {map, shareReplay} from 'rxjs/operators';
 import {State} from '../../app_state';
 import * as actions from '../_redux/notification_center_actions';
 import {
+  getLastReadTime,
   getNotifications,
-  hasUnreadMessages,
 } from '../_redux/notification_center_selectors';
 import {CategoryEnum} from '../_redux/notification_center_types';
-import {
-  NOTIFICATION_LAST_READ_DATE_KEY,
-  ViewNotificationExt,
-} from './view_types';
+import {ViewNotificationExt} from './view_types';
 
 const iconMap = new Map([[CategoryEnum.WHATS_NEW, 'info_outline_24px']]);
 
@@ -41,24 +38,47 @@ const iconMap = new Map([[CategoryEnum.WHATS_NEW, 'info_outline_24px']]);
   `,
 })
 export class NotificationCenterContainer {
+  // get notificaiton and also the lastRead from store
   readonly notificationNotes$: Observable<
     ViewNotificationExt[]
-  > = this.store.select(getNotifications).pipe(
-    map((notifications) => {
+  > = combineLatest([
+    this.store.select(getNotifications),
+    this.store.select(getLastReadTime),
+  ]).pipe(
+    map(([notifications, lastReadTime]) => {
       return notifications.map((notification) => {
+        // calculate the read-ness of each notification
         return {
           ...notification,
+          hasRead: notification.dateInMs - lastReadTime < 0,
           icon: iconMap.get(notification.category) ?? null,
         };
       });
+    }),
+    shareReplay()
+  );
+  hasUnreadMessages$ = combineLatest([
+    this.store.select(getNotifications),
+    this.store.select(getLastReadTime),
+  ]).pipe(
+    map(([notifications, lastReadTime]) => {
+      for (let notification of notifications) {
+        if (notification.dateInMs - lastReadTime > 0) {
+          console.log('hasUnreadMessages$ return true');
+          return true;
+        }
+      }
+      console.log('hasUnreadMessages$ return false');
+      return false;
     })
   );
-  hasUnreadMessages$ = this.store.select(hasUnreadMessages);
-  lastReadDate: string | null = '';
+
+  lastReadTime$ = this.store.select(getLastReadTime);
 
   constructor(private readonly store: Store<State>) {}
 
   onBellIconClicked() {
     this.store.dispatch(actions.notificationBellClicked());
+    // update
   }
 }
