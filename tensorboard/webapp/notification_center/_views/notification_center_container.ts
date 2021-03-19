@@ -38,7 +38,6 @@ const iconMap = new Map([[CategoryEnum.WHATS_NEW, 'info_outline_24px']]);
   `,
 })
 export class NotificationCenterContainer {
-  // get notificaiton and also the lastRead from store
   readonly notificationNotes$: Observable<
     ViewNotificationExt[]
   > = combineLatest([
@@ -47,36 +46,25 @@ export class NotificationCenterContainer {
   ]).pipe(
     map(([notifications, lastReadTime]) => {
       return notifications.map((notification) => {
-        // calculate the read-ness of each notification
         return {
           ...notification,
-          hasRead: notification.dateInMs - lastReadTime < 0,
+          hasRead: notification.dateInMs < lastReadTime,
           icon: iconMap.get(notification.category) ?? null,
         };
       });
     }),
     shareReplay()
   );
-  hasUnreadMessages$ = combineLatest([
-    this.store.select(getNotifications),
-    this.store.select(getLastReadTime),
-  ]).pipe(
-    map(([notifications, lastReadTime]) => {
-      for (let notification of notifications) {
-        if (notification.dateInMs - lastReadTime > 0) {
-          return true;
-        }
-      }
-      return false;
+
+  readonly hasUnreadMessages$ = this.notificationNotes$.pipe(
+    map((notifications) => {
+      return notifications.some(({hasRead}) => !hasRead);
     })
   );
-
-  lastReadTime$ = this.store.select(getLastReadTime);
 
   constructor(private readonly store: Store<State>) {}
 
   onBellIconClicked() {
     this.store.dispatch(actions.notificationBellClicked());
-    // update
   }
 }

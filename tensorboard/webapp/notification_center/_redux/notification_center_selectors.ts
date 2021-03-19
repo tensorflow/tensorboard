@@ -34,14 +34,6 @@ export const getNotifications = createSelector(
   }
 );
 
-export const hasUnreadMessages = createSelector(
-  selectNotifications,
-  (state: NotificationState): boolean => {
-    console.log('state:', state); // undefined, why???
-    return state.hasUnreadMessages;
-  }
-);
-
 export const getLastReadTime = createSelector(
   selectNotifications,
   (state: NotificationState): number => {
