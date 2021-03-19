@@ -41,6 +41,34 @@ DEFAULT_BUCKET_COUNT = 30
 def histogram(name, data, step=None, buckets=None, description=None):
     """Write a histogram summary.
 
+    Logs a histogram to the current log directory for later analysis in
+    TensorBoard's 'Histograms' and 'Distributions' dashboards (one histogram
+    will appear in both). Like `tf.summary.scalar` points, each histogram is
+    associated with a `step` and a `name`. All the histograms with the same
+    `name` constitute a time series of histograms.
+
+    This example writes 2 histograms:
+
+    ```python
+    writer = tf.summary.create_file_writer('logs')
+    with writer.as_default():
+      tf.summary.histogram("activations", [-10, 0, 10], step=0)
+      tf.summary.histogram("initial weights", tf.random.normal([5]), step=0)
+    ```
+
+    A common use case is to examine the changing activation patterns (or lack
+    thereof) at specific layers in a neural network, over time.
+
+    ```python
+    writer = tf.summary.create_file_writer('logs')
+    with writer.as_default():
+      for step in steps:
+        # After computing activations...
+        tf.summary.histogram("layer1/activate", layer1_activate, step=step)
+        tf.summary.histogram("layer2/activate", layer2_activate, step=step)
+        tf.summary.histogram("layer3/activate", layer3_activate, step=step)
+    ```
+
     Arguments:
       name: A name for this summary. The summary tag used for TensorBoard will
         be this name prefixed by any active name scopes.
