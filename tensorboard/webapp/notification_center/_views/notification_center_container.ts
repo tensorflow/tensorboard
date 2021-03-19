@@ -64,11 +64,9 @@ export class NotificationCenterContainer {
     map(([notifications, lastReadTime]) => {
       for (let notification of notifications) {
         if (notification.dateInMs - lastReadTime > 0) {
-          console.log('hasUnreadMessages$ return true');
           return true;
         }
       }
-      console.log('hasUnreadMessages$ return false');
       return false;
     })
   );

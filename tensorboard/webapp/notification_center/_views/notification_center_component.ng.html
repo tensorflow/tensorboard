@@ -26,25 +26,27 @@ limitations under the License.
 
 <mat-menu #menu="matMenu" class="notification-menu">
   <div>
-    <div *ngFor="let notification of notifications" class="menu-item">
-      <div>
-        <mat-icon
-          *ngIf="notification.icon"
-          svgIcon="{{ notification.icon }}"
-          class="category-icon"
-        ></mat-icon>
-        <ng-container [ngSwitch]="notification.category">
-          <span *ngSwitchCase="CategoryEnum.WHATS_NEW">What's new</span>
-        </ng-container>
-        <span *ngIf="notification.icon">・</span>
-        <span [title]="notification.dateInMs | date:'full'"
-          >{{ notification.dateInMs | date:'medium'}}</span
-        >
-      </div>
-      <div class="content-wrapper">
-        <h3 class="title">{{ notification.title }}</h3>
-        <div class="content" [innerHTML]="notification.content"></div>
-        <div class="extended-buttons">READ FULL</div>
+    <div *ngFor="let notification of notifications" class="menu-item" >
+      <div [ngClass]="[notification.hasRead ? 'hasread' : '']">
+        <div>
+          <mat-icon
+            *ngIf="notification.icon"
+            svgIcon="{{ notification.icon }}"
+            class="category-icon"
+          ></mat-icon>
+          <ng-container [ngSwitch]="notification.category">
+            <span *ngSwitchCase="CategoryEnum.WHATS_NEW">What's new</span>
+          </ng-container>
+          <span *ngIf="notification.icon">・</span>
+          <span [title]="notification.dateInMs | date:'full'"
+            >{{ notification.dateInMs | date:'medium'}}</span
+          >
+        </div>
+        <div class="content-wrapper">
+          <h3 class="title">{{ notification.title }}</h3>
+          <div class="content" [innerHTML]="notification.content"></div>
+          <div class="extended-buttons">READ FULL</div>
+        </div>
       </div>
     </div>
   </div>
