@@ -27,6 +27,8 @@ from tensorboard.util import lazy_tensor_creator
 def image(name, data, step=None, max_outputs=3, description=None):
     """Write an image summary.
 
+    See also `tf.summary.scalar`, `tf.summary.SummaryWriter`.
+
     Logs a set of images to the current log directory for later analysis
     in TensorBoard's 'Images' dashboard. Like `tf.summary.scalar` points,
     each set of images is associated with a `step` and a `name`.  All the
@@ -35,8 +37,8 @@ def image(name, data, step=None, max_outputs=3, description=None):
     This example writes 2 random grayscale images:
 
     ```python
-    writer = tf.summary.create_file_writer('logs')
-    with writer.as_default():
+    test_summary_writer = tf.summary.create_file_writer('test/logs')
+    with test_summary_writer.as_default():
       image1 = tf.random.normal(shape=[8, 8])
       image2 = tf.random.normal(shape=[8, 8])
       tf.summary.image("grayscale noise", [image1, image2], step=0)
