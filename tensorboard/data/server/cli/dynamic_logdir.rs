@@ -93,29 +93,6 @@ impl DynLogdir {
         let mut parts = gcs_path.splitn(2, '/');
         let bucket = parts.next().unwrap().to_string(); // splitn always yields at least one element
         let prefix = parts.next().unwrap_or("").to_string();
-<<<<<<< HEAD
-        let client = gcs::Client::new(gcs::Credentials::from_disk()?)?;
-        Ok(DynLogdir::Gcs(gcs::Logdir::new(client, bucket, prefix)))
-    }
-}
-
-fn is_protocol(s: &str) -> bool {
-    if s.is_empty() || !s.is_ascii() {
-        return false;
-||||||| 186d901ad
-        let creds = gcs::Credentials::from_disk().unwrap_or_else(|e| {
-            warn!("Using anonymous GCS credentials: {}", e);
-            Default::default()
-        });
-        let client = match gcs::Client::new(creds) {
-            Err(e) => {
-                error!("Could not open GCS connection: {}", e);
-                return None;
-            }
-            Ok(c) => c,
-        };
-        Some(DynLogdir::Gcs(gcs::Logdir::new(client, bucket, prefix)))
-=======
         let client = gcs::Client::new(gcs::Credentials::from_disk()?)?;
         Ok(DynLogdir::Gcs(gcs::Logdir::new(client, bucket, prefix)))
     }
@@ -131,7 +108,6 @@ fn is_protocol(s: &str) -> bool {
 fn is_protocol(s: &str) -> bool {
     if !s.chars().next().map_or(false, |c| c.is_ascii_alphabetic()) {
         return false;
->>>>>>> 49ece345a801bf630c4cfa42ae06b8ca2c81b131
     }
     s.chars()
         .all(|c| c.is_ascii_alphanumeric() || c == '+' || c == '-' || c == '.')
