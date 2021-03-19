@@ -29,37 +29,39 @@ def image(name, data, step=None, max_outputs=3, description=None):
 
     See also `tf.summary.scalar`, `tf.summary.SummaryWriter`.
 
-    Logs a set of images to the current log directory for later analysis
-    in TensorBoard's 'Images' dashboard. Like `tf.summary.scalar` points,
-    each set of images is associated with a `step` and a `name`.  All the
-    image sets with the same `name` constitute a time series of image sets.
+    Writes a collection of images to the current default summary writer. Data
+    appears in TensorBoard's 'Images' dashboard. Like `tf.summary.scalar` points,
+    each collection of images is associated with a `step` and a `name`.  All the
+    image collections with the same `name` constitute a time series of image
+    collections.
 
     This example writes 2 random grayscale images:
 
     ```python
-    test_summary_writer = tf.summary.create_file_writer('test/logs')
-    with test_summary_writer.as_default():
-      image1 = tf.random.normal(shape=[8, 8])
-      image2 = tf.random.normal(shape=[8, 8])
-      tf.summary.image("grayscale noise", [image1, image2], step=0)
+    w = tf.summary.create_file_writer('test/logs')
+    with w.as_default():
+      image1 = tf.random.uniform(shape=[8, 8, 1])
+      image2 = tf.random.uniform(shape=[8, 8, 1])
+      tf.summary.image("grayscale_noise", [image1, image2], step=0)
     ```
 
     To avoid clipping, data should be converted to one of the following:
-    - floating point values in the range [0,1]
-    or
+
+    - floating point values in the range [0,1], or
     - uint8 values in the range [0,255]
 
     ```python
-    # Using division to convert the origional dtype=Int32 value into
-    # dtype=float64.
-    rgb_image_scaled = tf.constant([
-      [[255, 127, 0], [0, 127, 255]],
-    ]) / 255
+    # Convert the original dtype=int32 `Tensor` into `dtype=float64`.
+    rgb_image_float = tf.constant([
+      [[100, 0, 0], [0, 50, 100]],
+    ]) / 100
+    tf.summary.image("picture", [rgb_image_float], step=0)
 
+    # Convert original dtype=uint8 `Tensor` into proper range.
     rgb_image_uint8 = tf.constant([
-      [[255, 255, 0], [0, 127, 255]],
-    ], dtype=tf.uint8)
-    tf.summary.image("rgb picture", [rgb_image_scaled, rgb_image_uint8], step=0)
+      [[1, 1, 0], [0, 0, 1]],
+    ], dtype=tf.uint8) * 255
+    tf.summary.image("picture", [rgb_image_uint8], step=1)
     ```
 
     Arguments:
@@ -71,7 +73,8 @@ def image(name, data, step=None, max_outputs=3, description=None):
         should be 1, 2, 3, or 4 (grayscale, grayscale with alpha, RGB, RGBA).
         Any of the dimensions may be statically unknown (i.e., `None`).
         Floating point data will be clipped to the range [0,1]. Other data types
-        may be clipped into an allowed range for safe casting to uint8.
+        will be clipped into an allowed range for safe casting to uint8, using
+        `tf.image.convert_image_dtype`.
       step: Explicit `int64`-castable monotonic step value for this summary. If
         omitted, this defaults to `tf.summary.experimental.get_step()`, which must
         not be None.
