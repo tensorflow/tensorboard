@@ -40,7 +40,7 @@ def scalar(name, data, step=None, description=None):
     For example:
 
     ```python
-    test_summary_writer = tf.summary.create_file_writer('test/demo_log_dir')
+    test_summary_writer = tf.summary.create_file_writer('test/logdir')
     with test_summary_writer.as_default():
         tf.summary.scalar('loss', 0.345, step=1)
         tf.summary.scalar('loss', 0.234, step=2)
