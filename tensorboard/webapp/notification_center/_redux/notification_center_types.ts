@@ -29,6 +29,7 @@ export interface Notification {
 }
 
 export const NOTIFICATION_FEATURE_KEY = 'notification';
+export const NOTIFICATION_LAST_READ_TIME_KEY = 'last_read_notificaiton_timestamp'
 
 export interface NotificationState {
   notifications: Notification[];

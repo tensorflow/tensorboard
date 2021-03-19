@@ -14,12 +14,19 @@ limitations under the License.
 ==============================================================================*/
 import {Action, createReducer, on} from '@ngrx/store';
 import * as actions from './notification_center_actions';
-import {NotificationState} from './notification_center_types';
+import {
+  NotificationState,
+  NOTIFICATION_LAST_READ_TIME_KEY,
+} from './notification_center_types';
 import {notificationNotes} from './notification_notes';
 
 const initialState: NotificationState = {
   notifications: notificationNotes,
-  lastReadTimestamp: 0,
+  lastReadTimestamp: window.localStorage.getItem(
+    NOTIFICATION_LAST_READ_TIME_KEY
+  )
+    ? parseInt(window.localStorage.getItem(NOTIFICATION_LAST_READ_TIME_KEY)!)
+    : 0,
 };
 
 const reducer = createReducer(
@@ -27,9 +34,14 @@ const reducer = createReducer(
   on(
     actions.notificationBellClicked,
     (state: NotificationState): NotificationState => {
+      const timeNow = Date.now();
+      window.localStorage.setItem(
+        NOTIFICATION_LAST_READ_TIME_KEY,
+        timeNow.toString()
+      );
       return {
         ...state,
-        lastReadTimestamp: Date.now(),
+        lastReadTimestamp: timeNow,
       };
     }
   )
