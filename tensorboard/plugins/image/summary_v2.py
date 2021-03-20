@@ -53,8 +53,8 @@ def image(name, data, step=None, max_outputs=3, description=None):
     ```python
     # Convert the original dtype=int32 `Tensor` into `dtype=float64`.
     rgb_image_float = tf.constant([
-      [[100, 0, 0], [0, 50, 100]],
-    ]) / 100
+      [[1000, 0, 0], [0, 500, 1000]],
+    ]) / 1000
     tf.summary.image("picture", [rgb_image_float], step=0)
 
     # Convert original dtype=uint8 `Tensor` into proper range.
