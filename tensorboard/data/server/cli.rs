@@ -19,7 +19,6 @@ use clap::Clap;
 use log::{debug, error, info, LevelFilter};
 use std::fs::File;
 use std::io::{Read, Write};
-use std::net::{IpAddr, SocketAddr};
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
 use std::sync::Arc;
@@ -52,12 +51,12 @@ struct Opts {
     #[clap(long, setting(clap::ArgSettings::AllowEmptyValues))]
     logdir: PathBuf,
 
-    /// Bind to this IP address
+    /// Bind to this host name
     ///
-    /// IP address to bind this server to. May be an IPv4 address (e.g., 127.0.0.1 or 0.0.0.0) or
-    /// an IPv6 address (e.g., ::1 or ::0).
-    #[clap(long, default_value = "::1")]
-    host: IpAddr,
+    /// Host to bind this server to. May be an IPv4 address (e.g., 127.0.0.1 or 0.0.0.0), an IPv6
+    /// address (e.g., ::1 or ::0), or a string like `localhost` to pass to `getaddrinfo(3)`.
+    #[clap(long, default_value = "localhost")]
+    host: String,
 
     /// Bind to this port
     ///
@@ -160,6 +159,7 @@ impl FromStr for ReloadStrategy {
 /// Exit code for failure of [`DynLogdir::new`].
 // Keep in sync with docs on `Opts::logdir`.
 const EXIT_BAD_LOGDIR: i32 = 8;
+const EXIT_FAILED_TO_BIND: i32 = 9;
 
 #[tokio::main]
 pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -172,12 +172,14 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
     debug!("Parsed options: {:?}", opts);
     let data_location = opts.logdir.display().to_string();
 
+    let error_file_path = opts.error_file.as_ref().map(PathBuf::as_ref);
+
     // Create the logdir outside an async runtime (see docs for `DynLogdir::new`).
-    let (raw_logdir, error_file) = (opts.logdir, opts.error_file);
+    let raw_logdir = opts.logdir;
     let logdir = tokio::task::spawn_blocking(|| DynLogdir::new(raw_logdir))
         .await?
         .unwrap_or_else(|e| {
-            write_startup_error(error_file.as_ref().map(|p| p.as_ref()), e);
+            write_startup_error(error_file_path, &e.to_string());
             std::process::exit(EXIT_BAD_LOGDIR);
         });
 
@@ -188,8 +190,12 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
             .expect("failed to spawn stdin watcher thread");
     }
 
-    let addr = SocketAddr::new(opts.host, opts.port);
-    let listener = TcpListener::bind(addr).await?;
+    let addr = (opts.host.as_str(), opts.port);
+    let listener = TcpListener::bind(addr).await.unwrap_or_else(|e| {
+        let msg = format!("failed to bind to {:?}: {}", addr, e);
+        write_startup_error(error_file_path, &msg);
+        std::process::exit(EXIT_FAILED_TO_BIND);
+    });
     let bound = listener.local_addr()?;
 
     if let Some(port_file) = opts.port_file {
@@ -273,7 +279,7 @@ fn write_port_file(path: &Path, port: u16) -> std::io::Result<()> {
 }
 
 /// Writes error to the given file, or to stderr as a fallback.
-fn write_startup_error(path: Option<&Path>, error: dynamic_logdir::Error) {
+fn write_startup_error(path: Option<&Path>, error: &str) {
     let write_to_file = |path: &Path| -> std::io::Result<()> {
         let mut f = File::create(path)?;
         writeln!(f, "{}", error)?;
