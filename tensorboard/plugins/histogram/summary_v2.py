@@ -43,32 +43,41 @@ def histogram(name, data, step=None, buckets=None, description=None):
 
     See also `tf.summary.scalar`, `tf.summary.SummaryWriter`.
 
-    Logs a histogram to the current log directory for later analysis in
-    TensorBoard's 'Histograms' and 'Distributions' dashboards (one histogram
-    will appear in both). Like `tf.summary.scalar` points, each histogram is
-    associated with a `step` and a `name`. All the histograms with the same
-    `name` constitute a time series of histograms.
+    Writes a histogram to the current default summary writer, for later analysis
+    in TensorBoard's 'Histograms' and 'Distributions' dashboards (data written
+    using this API will appear in both places). Like `tf.summary.scalar` points,
+    each histogram is associated with a `step` and a `name`. All the histograms
+    with the same `name` constitute a time series of histograms.
+
+    When higher order `Tensor`s are flattened to produce a histogram of all
+    entries within.
 
     This example writes 2 histograms:
 
     ```python
-    test_summary_writer = tf.summary.create_file_writer('test/logs')
-    with test_summary_writer.as_default():
-      tf.summary.histogram("activations", [-10, 0, 10], step=0)
-      tf.summary.histogram("initial weights", tf.random.normal([5]), step=0)
+    w = tf.summary.create_file_writer('test/logs')
+    with w.as_default():
+        tf.summary.histogram("activations", tf.random.uniform([100, 50]), step=0)
+        tf.summary.histogram("initial_weights", tf.random.normal([1000]), step=0)
     ```
 
     A common use case is to examine the changing activation patterns (or lack
     thereof) at specific layers in a neural network, over time.
 
     ```python
-    test_summary_writer = tf.summary.create_file_writer('test/logs')
-    with test_summary_writer.as_default():
-      for step in steps:
-        # After computing activations...
-        tf.summary.histogram("layer1/activate", layer1_activate, step=step)
-        tf.summary.histogram("layer2/activate", layer2_activate, step=step)
-        tf.summary.histogram("layer3/activate", layer3_activate, step=step)
+    w = tf.summary.create_file_writer('test/logs')
+    with w.as_default():
+    for step in range(100):
+        # Generate fake "activations".
+        activations = [
+            tf.random.normal([1000], mean=step, stddev=1),
+            tf.random.normal([1000], mean=step, stddev=10),
+            tf.random.normal([1000], mean=step, stddev=100),
+        ]
+
+        tf.summary.histogram("layer1/activate", activations[0], step=step)
+        tf.summary.histogram("layer2/activate", activations[1], step=step)
+        tf.summary.histogram("layer3/activate", activations[2], step=step)
     ```
 
     Arguments:
