@@ -33,7 +33,7 @@ const iconMap = new Map([[CategoryEnum.WHATS_NEW, 'info_outline_24px']]);
     <notification-center-component
       [notifications]="notificationNotes$ | async"
       [hasUnreadMessages]="hasUnreadMessages$ | async"
-      (bellIconClicked)="onBellIconClicked()"
+      (bellButtonClicked)="onBellButtonClicked()"
     ></notification-center-component>
   `,
 })
@@ -64,7 +64,7 @@ export class NotificationCenterContainer {
 
   constructor(private readonly store: Store<State>) {}
 
-  onBellIconClicked() {
+  onBellButtonClicked() {
     this.store.dispatch(actions.notificationBellClicked());
   }
 }

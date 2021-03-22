@@ -27,5 +27,5 @@ export class NotificationCenterComponent {
   @Input() notifications!: ViewNotificationExt[];
   @Input() hasUnreadMessages!: boolean;
 
-  @Output() bellIconClicked = new EventEmitter<void>();
+  @Output() bellButtonClicked = new EventEmitter<void>();
 }
