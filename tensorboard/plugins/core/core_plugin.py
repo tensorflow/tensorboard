@@ -389,11 +389,14 @@ port to TensorBoard as a subprocess.(default: %(default)s).\
         parser.add_argument(
             "--load_fast",
             type=str,
-            default="false",
+            default="auto",
             choices=["false", "auto", "true"],
             help="""\
-Experimental. Use a data server to accelerate loading. Set to "auto" to use a
-data server only if installed and supported for this invocation.
+Use alternate mechanism to load data. Typically 100x faster or more. Set to
+"auto" to use this new mode only if only if installed and supported for this
+invocation. Set to "true" to suppress the advisory note and hard-fail if the
+fast codepath is not available. Set to "false" to always fall back to legacy
+loading. (default: %(default)s)
 """,
         )
 
