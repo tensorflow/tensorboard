@@ -51,13 +51,13 @@ export class ScatterPlotVisualizerPolylines implements ScatterPlotVisualizer {
     this.polylines = [];
     for (let i = 0; i < this.dataSet.sequences.length; i++) {
       const geometry = new THREE.BufferGeometry();
-      geometry.addAttribute('position', this.polylinePositionBuffer[i]);
-      geometry.addAttribute('color', this.polylineColorBuffer[i]);
+      geometry.setAttribute('position', this.polylinePositionBuffer[i]);
+      geometry.setAttribute('color', this.polylineColorBuffer[i]);
       const material = new THREE.LineBasicMaterial({
         linewidth: 1, // unused default, overwritten by width array.
         opacity: 1.0, // unused default, overwritten by opacity array.
         transparent: true,
-        vertexColors: THREE.VertexColors as any,
+        vertexColors: true,
       });
       const polyline = new THREE.LineSegments(geometry, material);
       polyline.frustumCulled = false;
@@ -131,10 +131,14 @@ export class ScatterPlotVisualizerPolylines implements ScatterPlotVisualizer {
       const mat = this.polylines[i].material as THREE.LineBasicMaterial;
       mat.opacity = renderContext.polylineOpacities[i];
       mat.linewidth = renderContext.polylineWidths[i];
-      (this.polylineColorBuffer[i] as any).setArray(
-        renderContext.polylineColors[i]
+
+      const newColor = new THREE.BufferAttribute(
+        renderContext.polylineColors[i],
+        3
       );
-      this.polylineColorBuffer[i].needsUpdate = true;
+      this.polylineColorBuffer[i] = newColor;
+      newColor.needsUpdate = true;
+      this.polylines[i].geometry.setAttribute('color', newColor);
     }
   }
   onPickingRender(renderContext: RenderContext) {}

@@ -71,7 +71,7 @@ const VERTEX_SHADER = `
       gl_Position = projectionMatrix * mvPosition;
     }`;
 const FRAGMENT_SHADER = `
-    uniform sampler2D texture;
+    uniform sampler2D shaderTexture;
     uniform bool picking;
     varying vec2 vUv;
     varying vec3 vColor;
@@ -80,7 +80,7 @@ const FRAGMENT_SHADER = `
       if (picking) {
         gl_FragColor = vec4(vColor, 1.0);
       } else {
-        vec4 fromTexture = texture2D(texture, vUv);
+        vec4 fromTexture = texture2D(shaderTexture, vUv);
         gl_FragColor = vec4(vColor, 1.0) * fromTexture;
       }
     }`;
@@ -179,7 +179,7 @@ export class ScatterPlotVisualizer3DLabels implements ScatterPlotVisualizer {
     }
     this.glyphTexture = this.createGlyphTexture();
     this.uniforms = {
-      texture: {type: 't'},
+      shaderTexture: {type: 't'},
       picking: {type: 'bool'},
     };
     this.material = new THREE.ShaderMaterial({
@@ -210,10 +210,10 @@ export class ScatterPlotVisualizer3DLabels implements ScatterPlotVisualizer {
     let uv = new THREE.BufferAttribute(uvArray, UV_ELEMENTS_PER_ENTRY);
     let colors = new THREE.BufferAttribute(colorsArray, RGB_ELEMENTS_PER_ENTRY);
     this.geometry = new THREE.BufferGeometry();
-    this.geometry.addAttribute('posObj', positionObject);
-    this.geometry.addAttribute('position', this.positions);
-    this.geometry.addAttribute('uv', uv);
-    this.geometry.addAttribute('color', colors);
+    this.geometry.setAttribute('posObj', positionObject);
+    this.geometry.setAttribute('position', this.positions);
+    this.geometry.setAttribute('uv', uv);
+    this.geometry.setAttribute('color', colors);
     let lettersSoFar = 0;
     for (let i = 0; i < pointCount; i++) {
       const label = this.labelStrings[i];
@@ -275,8 +275,8 @@ export class ScatterPlotVisualizer3DLabels implements ScatterPlotVisualizer {
     ) {
       return;
     }
-    const colors = this.geometry.getAttribute('color') as THREE.BufferAttribute;
-    (colors as any).setArray(this.renderColors);
+    const colors = new THREE.BufferAttribute(this.renderColors, 3);
+    this.geometry.setAttribute('color', colors);
     const n = pointColors.length / XYZ_ELEMENTS_PER_ENTRY;
     let src = 0;
     for (let i = 0; i < n; ++i) {
@@ -319,10 +319,10 @@ export class ScatterPlotVisualizer3DLabels implements ScatterPlotVisualizer {
     if (this.geometry == null) {
       return;
     }
-    this.material.uniforms.texture.value = this.glyphTexture.texture;
+    this.material.uniforms.shaderTexture.value = this.glyphTexture.texture;
     this.material.uniforms.picking.value = true;
-    const colors = this.geometry.getAttribute('color') as THREE.BufferAttribute;
-    (colors as any).setArray(this.pickingColors);
+    const colors = new THREE.BufferAttribute(this.pickingColors, 3);
+    this.geometry.setAttribute('color', colors);
     colors.needsUpdate = true;
   }
   onRender(rc: RenderContext) {
@@ -333,10 +333,10 @@ export class ScatterPlotVisualizer3DLabels implements ScatterPlotVisualizer {
       return;
     }
     this.colorLabels(rc.pointColors);
-    this.material.uniforms.texture.value = this.glyphTexture.texture;
+    this.material.uniforms.shaderTexture.value = this.glyphTexture.texture;
     this.material.uniforms.picking.value = false;
-    const colors = this.geometry.getAttribute('color') as THREE.BufferAttribute;
-    (colors as any).setArray(this.renderColors);
+    const colors = new THREE.BufferAttribute(this.renderColors, 3);
+    this.geometry.setAttribute('color', colors);
     colors.needsUpdate = true;
   }
   onPointPositionsChanged(newPositions: Float32Array) {
