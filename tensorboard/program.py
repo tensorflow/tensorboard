@@ -35,6 +35,7 @@ import errno
 import logging
 import mimetypes
 import os
+import shlex
 import signal
 import socket
 import sys
@@ -403,6 +404,7 @@ class TensorBoard(object):
             reload_interval=flags.reload_interval,
             channel_creds_type=flags.grpc_creds_type,
             samples_per_plugin=flags.samples_per_plugin,
+            extra_flags=shlex.split(flags.extra_data_server_flags),
         )
         ingester.start()
         return ingester

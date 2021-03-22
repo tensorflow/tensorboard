@@ -398,6 +398,17 @@ data server only if installed and supported for this invocation.
         )
 
         parser.add_argument(
+            "--extra_data_server_flags",
+            type=str,
+            default="",
+            help="""\
+Experimental. With `--load_fast`, pass these additional command-line flags to
+the data server. Subject to POSIX word splitting per `shlex.split`. Meant for
+debugging; not officially supported.
+""",
+        )
+
+        parser.add_argument(
             "--grpc_creds_type",
             type=grpc_util.ChannelCredsType,
             default=grpc_util.ChannelCredsType.LOCAL,
