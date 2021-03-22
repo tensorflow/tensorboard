@@ -30,6 +30,34 @@ from tensorboard.util import tensor_util
 def scalar(name, data, step=None, description=None):
     """Write a scalar summary.
 
+    See also `tf.summary.image`, `tf.summary.histogram`, `tf.summary.SummaryWriter`.
+
+    Writes simple numeric values for later analysis in TensorBoard.  Writes go to
+    the current default summary writer. Each summary point is associated with an
+    integral `step` value. This enables the incremental logging of time series
+    data.  A common usage of this API is to log loss during training to produce
+    a loss curve.
+
+    For example:
+
+    ```python
+    test_summary_writer = tf.summary.create_file_writer('test/logdir')
+    with test_summary_writer.as_default():
+        tf.summary.scalar('loss', 0.345, step=1)
+        tf.summary.scalar('loss', 0.234, step=2)
+        tf.summary.scalar('loss', 0.123, step=3)
+    ```
+
+    Multiple independent time series may be logged by giving each series a unique
+    `name` value.
+
+    See [Get started with TensorBoard](https://www.tensorflow.org/tensorboard/get_started)
+    for more examples of effective usage of `tf.summary.scalar`.
+
+    In general, this API expects that data points are logged iwth a monotonically
+    increasing step value. Duplicate points for a single step or points logged out
+    of order by step are not guaranteed to display as desired in TensorBoard.
+
     Arguments:
       name: A name for this summary. The summary tag used for TensorBoard will
         be this name prefixed by any active name scopes.
