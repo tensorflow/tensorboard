@@ -64,7 +64,7 @@ describe('notification_center_selectors', () => {
         buildNotificationState(buildNotificationState({}))
       );
 
-      expect(selectors.getLastReadTime(state)).toBeNull();
+      expect(selectors.getLastReadTime(state)).toBe(-1);
     });
 
     it('returns last read non-null timestamp', () => {
