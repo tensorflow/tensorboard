@@ -59,7 +59,15 @@ describe('notification_center_selectors', () => {
       ]);
     });
 
-    it('get last read timestamp', () => {
+    it('returns last read null timestamp', () => {
+      const state = buildStateFromNotificationState(
+        buildNotificationState(buildNotificationState({}))
+      );
+
+      expect(selectors.getLastReadTime(state)).toBeNull();
+    });
+
+    it('returns last read non-null timestamp', () => {
       const state = buildStateFromNotificationState(
         buildNotificationState({
           lastReadTimestamp: 1235813,

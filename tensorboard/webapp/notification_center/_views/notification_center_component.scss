@@ -12,9 +12,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+@import 'tensorboard/webapp/theme/tb_theme';
 
 .red-dot {
-  background-color: #d93025;
+  background-color:  mat-color($mat-red, 700); // #d93025;
   border-radius: 5px;
   height: 10px;
   position: absolute;
@@ -42,7 +43,7 @@ limitations under the License.
 }
 
 .category-icon {
-  color: #4285f4;
+  color: mat-color($mat-blue, 700);
   height: 15px;
   margin-right: 6px;
   vertical-align: middle;

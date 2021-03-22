@@ -33,7 +33,7 @@ export const NOTIFICATION_LAST_READ_TIME_KEY = 'lastReadNotificaitonTimestamp';
 
 export interface NotificationState {
   notifications: Notification[];
-  lastReadTimestamp: number;
+  lastReadTimestamp: number | null;
 }
 
 export interface State {

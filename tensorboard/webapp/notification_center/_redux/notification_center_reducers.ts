@@ -26,7 +26,7 @@ const initialState: NotificationState = {
     NOTIFICATION_LAST_READ_TIME_KEY
   )
     ? parseInt(window.localStorage.getItem(NOTIFICATION_LAST_READ_TIME_KEY)!)
-    : 0,
+    : null,
 };
 
 const reducer = createReducer(
@@ -34,6 +34,7 @@ const reducer = createReducer(
   on(
     actions.notificationBellClicked,
     (state: NotificationState): NotificationState => {
+      // TODO: move update last read timestamp to DataSource
       const timeNow = Date.now();
       window.localStorage.setItem(
         NOTIFICATION_LAST_READ_TIME_KEY,
