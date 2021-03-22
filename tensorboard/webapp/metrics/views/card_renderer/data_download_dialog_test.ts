@@ -43,7 +43,7 @@ describe('metrics/views/data_download_dialog', () => {
 
   const ByCss = {
     SELECT: By.css('select'),
-    SELECT_OPTION: By.css('select option[value]'),
+    SELECT_OPTION: By.css('select option:not([value=""])'),
     DOWNLOAD: By.css('a'),
   };
 
