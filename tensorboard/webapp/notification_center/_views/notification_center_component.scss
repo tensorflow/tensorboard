@@ -14,14 +14,20 @@ limitations under the License.
 ==============================================================================*/
 @import 'tensorboard/webapp/theme/tb_theme';
 
+$_dim: 10px;
+
+.notification-icon-button {
+  position: relative;
+}
+
 .red-dot {
   background-color: mat-color($mat-red, 700);
-  border-radius: 5px;
-  height: 10px;
+  border-radius: $_dim / 2;
+  height: $_dim;
   position: absolute;
-  right: 10px;
+  right: $_dim;
   top: 10px;
-  width: 10px;
+  width: $_dim;
 }
 
 ::ng-deep .notification-menu.mat-menu-panel {
