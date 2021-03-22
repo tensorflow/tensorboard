@@ -221,6 +221,7 @@ tf_ng_module(
         ":utils",
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp:selectors",
+        "//tensorboard/webapp/angular:expect_angular_cdk_overlay",
         "//tensorboard/webapp/angular:expect_angular_material_button",
         "//tensorboard/webapp/angular:expect_angular_material_dialog",
         "//tensorboard/webapp/angular:expect_angular_material_icon",

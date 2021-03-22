@@ -204,6 +204,60 @@ describe('metrics/views/data_download_dialog', () => {
     expect(pathAndQueries).toEqual(['/url1', '/url2']);
   });
 
+  it('does not throw even if user deselects a run', async () => {
+    const fixture = await createComponent('card1');
+    const downloadUrlSpy = spyOn(dataSource, 'downloadUrl');
+    downloadUrlSpy
+      .withArgs(PluginType.SCALARS, 'tag1', 'exp1/run2', 'json')
+      .and.returnValue('/url1');
+    downloadUrlSpy
+      .withArgs(PluginType.SCALARS, 'tag1', 'exp1/run2', 'csv')
+      .and.returnValue('/url2');
+    store.overrideSelector(getCardMetadata, {
+      plugin: PluginType.SCALARS,
+      tag: 'tag1',
+      runId: null,
+    });
+    store.overrideSelector(getCardTimeSeries, {
+      'exp1/run1': createScalarStepData(),
+      'exp1/run2': createScalarStepData(),
+    });
+    store.overrideSelector(
+      getRunMap,
+      new Map([
+        [
+          'exp1/run1',
+          buildRun({
+            id: 'exp1/run1',
+            name: 'Run 1',
+          }),
+        ],
+        [
+          'exp1/run2',
+          buildRun({
+            id: 'exp1/run2',
+            name: 'Run dos',
+          }),
+        ],
+      ])
+    );
+    fixture.detectChanges();
+
+    const selectEl = fixture.debugElement.query(ByCss.SELECT).nativeElement;
+    const noRun = selectEl.querySelector('option[value=""]');
+    noRun.click();
+    fixture.detectChanges();
+
+    const downloadLinks = fixture.debugElement.queryAll(ByCss.DOWNLOAD);
+    for (const link of downloadLinks) {
+      expect(link.properties['disabled']).toBe(true);
+    }
+    const pathAndQueries = downloadLinks.map((link) => {
+      return link.nativeElement.href.slice(link.nativeElement.origin.length);
+    });
+    expect(pathAndQueries).toEqual(['', '']);
+  });
+
   it('forms correct url even if run names are all the same', async () => {
     const fixture = await createComponent('card1');
     const downloadUrlSpy = spyOn(dataSource, 'downloadUrl');

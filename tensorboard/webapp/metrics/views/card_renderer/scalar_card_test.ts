@@ -13,7 +13,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {OverlayContainer} from '@angular/cdk/overlay';
-import {ChangeDetectorRef, Component, Input, TemplateRef} from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  Inject,
+  Input,
+  TemplateRef,
+} from '@angular/core';
 import {
   ComponentFixture,
   fakeAsync,
@@ -21,7 +27,7 @@ import {
   TestBed,
   tick,
 } from '@angular/core/testing';
-import {MatDialogModule} from '@angular/material/dialog';
+import {MatDialogModule, MAT_DIALOG_DATA} from '@angular/material/dialog';
 import {MatMenuModule} from '@angular/material/menu';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import {By} from '@angular/platform-browser';
@@ -60,9 +66,9 @@ import {
 } from '../../testing';
 import {TooltipSort, XAxisType} from '../../types';
 import {
+  LegacySeriesDataList,
   ScalarCardComponent,
   ScalarChartEvalPoint,
-  LegacySeriesDataList,
   TooltipColumns,
 } from './scalar_card_component';
 import {ScalarCardContainer} from './scalar_card_container';
@@ -124,6 +130,19 @@ class TestableGpuLineChart {
   constructor(public readonly changeDetectorRef: ChangeDetectorRef) {}
 }
 
+// DataDownloadContainer pulls in entire redux and, for this test, we don't want to
+// know about their data requirements.
+@Component({
+  selector: 'testable-data-download-dialog',
+  template: `{{ cardId }}`,
+})
+class TestableDataDownload {
+  cardId = 'hello';
+  constructor(@Inject(MAT_DIALOG_DATA) data: {cardId: string}) {
+    this.cardId = data.cardId;
+  }
+}
+
 describe('scalar card', () => {
   let store: MockStore<State>;
   let selectSpy: jasmine.Spy;
@@ -151,6 +170,7 @@ describe('scalar card', () => {
   ): ComponentFixture<ScalarCardContainer> {
     const fixture = TestBed.createComponent(ScalarCardContainer);
     fixture.componentInstance.cardId = cardId;
+    fixture.componentInstance.DataDownloadComponent = TestableDataDownload;
     // Let the observables to be subscribed.
     fixture.detectChanges();
     // Flush the debounce on the `seriesDataList$`.
@@ -196,6 +216,7 @@ describe('scalar card', () => {
       declarations: [
         ScalarCardContainer,
         ScalarCardComponent,
+        TestableDataDownload,
         TestableLineChart,
         TestableGpuLineChart,
       ],
@@ -1878,5 +1899,23 @@ describe('scalar card', () => {
         });
       }));
     });
+  });
+
+  describe('data download', () => {
+    it('opens a data download dialog when user clicks on download', fakeAsync(() => {
+      const fixture = createComponent('card1');
+      fixture.detectChanges();
+
+      openOverflowMenu(fixture);
+      getMenuButton('Open data download dialog').click();
+      fixture.detectChanges();
+      flush();
+
+      const node = overlayContainer
+        .getContainerElement()
+        .querySelector('testable-data-download-dialog');
+
+      expect(node!.textContent).toBe('card1');
+    }));
   });
 });

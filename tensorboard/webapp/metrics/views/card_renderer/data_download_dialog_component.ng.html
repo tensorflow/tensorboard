@@ -43,7 +43,7 @@ limitations under the License.
         [value]="selectedRunId || ''"
         (change)="runSelected.emit($event.target.value)"
       >
-        <option selected>-</option>
+        <option selected [value]="''">-</option>
         <!-- There is no guarantee that the run.name is unique but run.id is.-->
         <option *ngFor="let run of runs" [value]="run.id">{{run.name}}</option>
       </select>
@@ -55,14 +55,14 @@ limitations under the License.
         mat-stroked-button
         [disabled]="!downloadUrlJson"
         [download]="getDownloadName('json')"
-        [href]="downloadUrlJson"
+        [attr.href]="downloadUrlJson"
         >JSON</a
       >
       <a
         mat-stroked-button
         [disabled]="!downloadUrlCsv"
         [download]="getDownloadName('csv')"
-        [href]="downloadUrlCsv"
+        [attr.href]="downloadUrlCsv"
         >CSV</a
       >
     </div>

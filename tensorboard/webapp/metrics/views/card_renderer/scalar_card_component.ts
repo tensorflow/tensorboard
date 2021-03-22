@@ -12,6 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {ComponentType} from '@angular/cdk/overlay';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -47,7 +48,6 @@ import {
 } from '../../../widgets/line_chart_v2/types';
 import {ScalarStepDatum} from '../../data_source';
 import {TooltipSort, XAxisType} from '../../types';
-import {DataDownloadDialogContainer} from './data_download_dialog_container';
 import {
   ScalarCardDataSeries,
   ScalarCardSeriesMetadata,
@@ -121,7 +121,7 @@ const DEFAULT_TOOLTIP_COLUMNS: TooltipColumns = [
   styleUrls: ['scalar_card_component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ScalarCardComponent {
+export class ScalarCardComponent<Downloader> {
   readonly RESIZE_REDRAW_DEBOUNCE_TIME_IN_MS = RESIZE_REDRAW_DEBOUNCE_TIME_IN_MS;
   readonly DataLoadState = DataLoadState;
   readonly RendererType = RendererType;
@@ -129,13 +129,13 @@ export class ScalarCardComponent {
   @Input() cardId!: string;
   @Input() loadState!: DataLoadState;
   @Input() title!: string;
-  @Input() runIds!: string[];
   @Input() tag!: string;
   @Input() tooltipSort!: TooltipSort;
   @Input() xAxisType!: XAxisType;
   @Input() showFullSize!: boolean;
   @Input() isPinned!: boolean;
 
+  @Input() DataDownloadComponent!: ComponentType<Downloader>;
   @Input() newXScaleType!: ScaleType;
 
   // Legacy chart related; to be removed.
@@ -264,7 +264,7 @@ export class ScalarCardComponent {
   }
 
   openDataDownloadDialog(): void {
-    this.dialog.open(DataDownloadDialogContainer, {
+    this.dialog.open(this.DataDownloadComponent, {
       data: {cardId: this.cardId},
     });
   }
