@@ -14,18 +14,18 @@ limitations under the License.
 ==============================================================================*/
 @import 'tensorboard/webapp/theme/tb_theme';
 
-$_dim: 10px;
 
 .notification-icon-button {
   position: relative;
 }
 
 .red-dot {
+  $_dim: 10px;
   background-color: mat-color($mat-red, 700);
   border-radius: $_dim / 2;
   height: $_dim;
   position: absolute;
-  right: $_dim;
+  right: 10px;
   top: 10px;
   width: $_dim;
 }

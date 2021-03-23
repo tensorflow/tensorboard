@@ -17,7 +17,7 @@ import * as notificationReducers from './notification_center_reducers';
 import {buildNotificationState} from './testing';
 
 describe('notification reducers', () => {
-  it('set lastReadTimestamp to current after bell icon clicked', () => {
+  it('sets lastReadTimestamp to current after bell icon clicked', () => {
     const action1 = notificationActions.notificationBellClicked();
     const state1 = buildNotificationState({
       notifications: [],

@@ -21,8 +21,3 @@ export interface ViewNotificationExt extends Notification {
   icon: string | null;
   hasRead: boolean;
 }
-
-/**
- * The key used to record the latest read timestamp in local storage.
- */
-export const NOTIFICATION_LAST_READ_DATE_KEY = 'notificaitonLastReadDateInMs';

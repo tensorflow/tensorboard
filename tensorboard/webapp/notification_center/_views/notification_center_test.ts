@@ -92,7 +92,7 @@ describe('notification center', () => {
     ).toBe('test content');
   });
 
-  it('red dot appears when unread notifications exist', () => {
+  it('appears when unread notifications exist', () => {
     const fixture = TestBed.createComponent(NotificationCenterContainer);
     fixture.detectChanges();
 
@@ -105,35 +105,37 @@ describe('notification center', () => {
     expect(recordedActions[0]).toEqual(actions.notificationBellClicked());
   });
 
-  it('red dot appears when unread notifications exist', () => {
-    store.overrideSelector(selectors.getNotifications, [
-      {
-        category: CategoryEnum.WHATS_NEW,
-        dateInMs: 1,
-        title: 'test title',
-        content: 'test content',
-      },
-    ]);
-    store.overrideSelector(selectors.getLastReadTime, 0);
-    const fixture = TestBed.createComponent(NotificationCenterContainer);
-    fixture.detectChanges();
-    const reddot = fixture.debugElement.query(By.css('.red-dot'));
-    expect(reddot).toBeTruthy();
-  });
+  describe('unread dot (red dot)', () => {
+    it('appears when unread notifications exist', () => {
+      store.overrideSelector(selectors.getNotifications, [
+        {
+          category: CategoryEnum.WHATS_NEW,
+          dateInMs: 1,
+          title: 'test title',
+          content: 'test content',
+        },
+      ]);
+      store.overrideSelector(selectors.getLastReadTime, 0);
+      const fixture = TestBed.createComponent(NotificationCenterContainer);
+      fixture.detectChanges();
+      const reddot = fixture.debugElement.query(By.css('.red-dot'));
+      expect(reddot).toBeTruthy();
+    });
 
-  it('red dot does not appears when no unread notifications', () => {
-    store.overrideSelector(selectors.getNotifications, [
-      {
-        category: CategoryEnum.WHATS_NEW,
-        dateInMs: 0,
-        title: 'test title',
-        content: 'test content',
-      },
-    ]);
-    store.overrideSelector(selectors.getLastReadTime, 1);
-    const fixture = TestBed.createComponent(NotificationCenterContainer);
-    fixture.detectChanges();
-    const reddot = fixture.debugElement.query(By.css('.red-dot'));
-    expect(reddot).toBeNull();
+    it('does not appear when no unread notifications', () => {
+      store.overrideSelector(selectors.getNotifications, [
+        {
+          category: CategoryEnum.WHATS_NEW,
+          dateInMs: 0,
+          title: 'test title',
+          content: 'test content',
+        },
+      ]);
+      store.overrideSelector(selectors.getLastReadTime, 1);
+      const fixture = TestBed.createComponent(NotificationCenterContainer);
+      fixture.detectChanges();
+      const reddot = fixture.debugElement.query(By.css('.red-dot'));
+      expect(reddot).toBeNull();
+    });
   });
 });
