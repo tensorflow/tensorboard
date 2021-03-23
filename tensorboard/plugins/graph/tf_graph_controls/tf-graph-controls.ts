@@ -152,7 +152,7 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
       }
 
       table tr {
-        height: 19px;
+        height: 20px;
       }
 
       table td {
@@ -174,12 +174,18 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
       }
 
       .legend-toolbar {
+        appearance: none;
+        background-color: inherit;
         border-top: 1px solid #ccc;
         border-bottom: 1px solid #ccc;
+        border-right: none;
+        border-left: none;
         cursor: pointer;
+        font: inherit;
         display: flex;
-        justify-content: space-between;
         align-items: center;
+        justify-content: space-between;
+        width: 100%;
       }
 
       .legend-toolbar,
@@ -301,9 +307,7 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
       }
 
       .hidden-input {
-        height: 0px;
-        width: 0px;
-        overflow: hidden;
+        display: none;
       }
 
       .allcontrols .control-holder {
@@ -355,6 +359,10 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
 
       .color-text {
         overflow: hidden;
+      }
+
+      .color-text.gradient-container {
+        margin: 0 5px;
       }
 
       /** Override inline styles that suppress pointer events for disabled buttons. Otherwise, the */
@@ -612,24 +620,19 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
       </div>
     </div>
     <div class="legend-holder">
-      <div class="legend-toolbar" on-click="_toggleLegendOpen">
+      <button class="legend-toolbar" on-click="_toggleLegendOpen">
         <span class="toggle-legend-text">Legend</span>
-        <paper-icon-button
+        <iron-icon
           icon="[[_getToggleLegendIcon(_legendOpened)]]"
           class="toggle-legend-button"
         >
-        </paper-icon-button>
-      </div>
+        </iron-icon>
+      </button>
       <iron-collapse opened="[[_legendOpened]]" class="legend-content">
         <!-- Color-mode-specific legend items -->
         <div>
           <template is="dom-if" if="[[_isGradientColoring(stats, colorBy)]]">
-            <svg
-              width="140"
-              height="20"
-              style="margin: 0 5px"
-              class="color-text"
-            >
+            <svg width="140" height="20" class="color-text gradient-container">
               <defs>
                 <linearGradient
                   id="linearGradient"
