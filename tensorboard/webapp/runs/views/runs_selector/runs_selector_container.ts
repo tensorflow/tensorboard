@@ -36,7 +36,9 @@ import {RunsTableColumn} from '../runs_table/types';
 export class RunsSelectorContainer {
   @Input() showHparamsAndMetrics?: boolean;
 
-  readonly experimentIds$ = this.store.select(getExperimentIdsFromRoute);
+  readonly experimentIds$ = this.store
+    .select(getExperimentIdsFromRoute)
+    .pipe(map((experimentIdsOrNull) => experimentIdsOrNull ?? []));
   readonly columns$ = this.store.select(getExperimentIdsFromRoute).pipe(
     map((ids) => {
       return [

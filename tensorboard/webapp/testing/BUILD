@@ -24,6 +24,8 @@ tf_ng_module(
         "mat_icon_module.ts",
     ],
     deps = [
+        "//tensorboard/webapp/angular:expect_angular_material_icon",
+        "//tensorboard/webapp/angular:expect_angular_material_icon_testing",
         "@npm//@angular/core",
     ],
 )
@@ -54,6 +56,31 @@ tf_ng_module(
     deps = [
         "//tensorboard/webapp/angular:expect_angular_cdk_overlay",
         "@npm//@angular/core",
+    ],
+)
+
+tf_ng_module(
+    name = "integration_test_module",
+    srcs = [
+        "integration_test_module.ts",
+    ],
+    deps = [
+        ":mat_icon",
+        "//tensorboard/webapp:reducer_config",
+        "//tensorboard/webapp/angular:expect_angular_core_testing",
+        "//tensorboard/webapp/angular:expect_angular_platform_browser_animations",
+        "//tensorboard/webapp/angular:expect_angular_platform_browser_dynamic_testing",
+        "//tensorboard/webapp/app_routing",
+        "//tensorboard/webapp/app_routing:route_config",
+        "//tensorboard/webapp/app_routing:route_registry",
+        "//tensorboard/webapp/app_routing:types",
+        "//tensorboard/webapp/core",
+        "//tensorboard/webapp/deeplink",
+        "//tensorboard/webapp/feature_flag",
+        "//tensorboard/webapp/runs",
+        "@npm//@angular/core",
+        "@npm//@ngrx/effects",
+        "@npm//@ngrx/store",
     ],
 )
 
