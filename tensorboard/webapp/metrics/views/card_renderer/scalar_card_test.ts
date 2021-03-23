@@ -1907,7 +1907,7 @@ describe('scalar card', () => {
       fixture.detectChanges();
 
       openOverflowMenu(fixture);
-      getMenuButton('Open data download dialog').click();
+      getMenuButton('Open dialog to download data').click();
       fixture.detectChanges();
       flush();
 

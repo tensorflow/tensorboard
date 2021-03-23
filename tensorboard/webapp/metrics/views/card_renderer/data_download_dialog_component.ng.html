@@ -34,7 +34,7 @@ limitations under the License.
 
   <mat-dialog-content>
     <mat-form-field class="run-selector" appearance="fill">
-      <mat-label>Select a run to download a data</mat-label>
+      <mat-label>Select a run to download a data for a series</mat-label>
       <select
         matNativeControl
         name="run"
@@ -49,9 +49,8 @@ limitations under the License.
       </select>
     </mat-form-field>
 
-    <div class="donwload-controls">
-      <span>Download as…</span
-      ><a
+    <div class="download-controls">
+      <span>Download as…</span>&nbsp;<a
         mat-stroked-button
         [disabled]="!downloadUrlJson"
         [download]="getDownloadName('json')"

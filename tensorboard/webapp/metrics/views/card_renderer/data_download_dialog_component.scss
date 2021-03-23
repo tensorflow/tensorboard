@@ -14,22 +14,9 @@ limitations under the License.
 ==============================================================================*/
 @import 'tensorboard/webapp/theme/tb_theme';
 
-:host {
-  width: 400px;
-}
-
 h2 {
-  align-items: baseline;
-  display: flex;
   font-size: 1.25em;
-
-  .tag-name {
-    display: inline-block;
-    font-size: monospace;
-    max-width: 20ch;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
+  overflow-wrap: break-word;
 }
 
 .run-selector {
@@ -37,10 +24,10 @@ h2 {
   width: 100%;
 }
 
-.donwload-controls {
+.download-controls {
   font-size: 0.9em;
 
   a {
-    margin-left: 10px;
+    margin: 3px 10px 3px 0;
   }
 }
