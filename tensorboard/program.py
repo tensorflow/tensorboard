@@ -432,7 +432,10 @@ class TensorBoard(object):
 
         if flags.load_fast == "auto" and _should_use_data_server(flags.logdir):
             try:
-                return self._start_subprocess_data_ingester()
+                ingester = self._start_subprocess_data_ingester()
+                sys.stderr.write(_DATA_SERVER_ADVISORY_MESSAGE)
+                sys.stderr.flush()
+                return ingester
             except server_ingester.NoDataServerError as e:
                 logger.info("No data server: %s", e)
             except server_ingester.DataServerStartupError as e:
