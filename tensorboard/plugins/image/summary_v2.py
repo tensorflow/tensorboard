@@ -37,28 +37,32 @@ def image(name, data, step=None, max_outputs=3, description=None):
 
     This example writes 2 random grayscale images:
 
-    >>> w = tf.summary.create_file_writer('test/logs')
-    >>> with w.as_default():
-    ...   image1 = tf.random.uniform(shape=[8, 8, 1])
-    ...   image2 = tf.random.uniform(shape=[8, 8, 1])
-    ...   tf.summary.image("grayscale_noise", [image1, image2], step=0)
+    ```python
+    w = tf.summary.create_file_writer('test/logs')
+    with w.as_default():
+      image1 = tf.random.uniform(shape=[8, 8, 1])
+      image2 = tf.random.uniform(shape=[8, 8, 1])
+      tf.summary.image("grayscale_noise", [image1, image2], step=0)
+    ```
 
     To avoid clipping, data should be converted to one of the following:
 
     - floating point values in the range [0,1], or
     - uint8 values in the range [0,255]
 
-    >>> # Convert the original dtype=int32 `Tensor` into `dtype=float64`.
-    >>> rgb_image_float = tf.constant([
-    ...   [[1000, 0, 0], [0, 500, 1000]],
-    ... ]) / 1000
-    >>> tf.summary.image("picture", [rgb_image_float], step=0)
+    ```python
+    # Convert the original dtype=int32 `Tensor` into `dtype=float64`.
+    rgb_image_float = tf.constant([
+      [[1000, 0, 0], [0, 500, 1000]],
+    ]) / 1000
+    tf.summary.image("picture", [rgb_image_float], step=0)
 
-    >>> # Convert original dtype=uint8 `Tensor` into proper range.
-    >>> rgb_image_uint8 = tf.constant([
-    ...   [[1, 1, 0], [0, 0, 1]],
-    ... ], dtype=tf.uint8) * 255
-    >>> tf.summary.image("picture", [rgb_image_uint8], step=1)
+    # Convert original dtype=uint8 `Tensor` into proper range.
+    rgb_image_uint8 = tf.constant([
+      [[1, 1, 0], [0, 0, 1]],
+    ], dtype=tf.uint8) * 255
+    tf.summary.image("picture", [rgb_image_uint8], step=1)
+    ```
 
     Arguments:
       name: A name for this summary. The summary tag used for TensorBoard will
