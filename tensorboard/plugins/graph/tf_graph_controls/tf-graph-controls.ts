@@ -118,6 +118,11 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
         flex-direction: column;
         font-size: 12px;
         width: 100%;
+        --tb-graph-controls-text-color: #555;
+        --tb-graph-controls-title-font-size: 14px;
+        --tb-graph-controls-subtitle-font-size: 14px;
+        --paper-input-container-shared-input-style_-_font-size: 14px;
+        --paper-font-subhead_-_font-size: 14px;
       }
 
       paper-dropdown-menu {
@@ -137,19 +142,17 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
 
       .run-dropdown {
         --paper-input-container: {
-          padding: 8px 0 8px 10px;
-        }
-      }
-
-      .color-dropdown {
-        --paper-input-container: {
-          padding: 9px 0 0 13px;
+          padding: 5px 0 5px 5px;
         }
       }
 
       table {
         border-collapse: collapse;
         border-spacing: 0;
+      }
+
+      table tr {
+        height: 20px;
       }
 
       table td {
@@ -165,11 +168,29 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
 
       .legend-holder {
         background: #e9e9e9;
-        border-top: 1px solid #ccc;
         box-sizing: border-box;
-        color: #555;
-        padding: 15px 20px;
+        color: var(--tb-graph-controls-text-color);
         width: 100%;
+      }
+
+      .legend-toolbar {
+        appearance: none;
+        background-color: inherit;
+        border-top: 1px solid #ccc;
+        border-bottom: 1px solid #ccc;
+        border-right: none;
+        border-left: none;
+        cursor: pointer;
+        font: inherit;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+      }
+
+      .legend-toolbar,
+      .legend-content {
+        padding: 8px 20px;
       }
 
       .toggle-legend-button {
@@ -179,7 +200,7 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
       }
 
       .toggle-legend-text {
-        vertical-align: middle;
+        font-size: var(--tb-graph-controls-subtitle-font-size);
       }
 
       paper-radio-button {
@@ -221,7 +242,7 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
       }
 
       .title {
-        font-size: 16px;
+        font-size: var(--tb-graph-controls-title-font-size);
         margin: 8px 5px 8px 0;
         color: black;
       }
@@ -259,9 +280,12 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
       }
 
       .control-holder .icon-button {
-        font-size: 14px;
+        font-size: var(--tb-graph-controls-subtitle-font-size);
         margin: 0 -5px;
         padding: 5px;
+        display: flex;
+        justify-content: flex-start;
+        color: var(--tb-graph-controls-text-color);
       }
 
       .button-text {
@@ -283,9 +307,7 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
       }
 
       .hidden-input {
-        height: 0px;
-        width: 0px;
-        overflow: hidden;
+        display: none;
       }
 
       .allcontrols .control-holder {
@@ -294,16 +316,29 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
         justify-content: space-between;
       }
 
-      .allcontrols .control-holder paper-radio-group {
-        margin-top: 5px;
+      .allcontrols .control-holder.control-options {
+        padding: 0 0 15px 15px;
+        flex-direction: column;
+      }
+
+      .allcontrols .control-holder paper-toggle-button {
+        margin-bottom: 5px;
       }
 
       span.counter {
-        font-size: 13px;
+        font-size: var(--tb-graph-controls-subtitle-font-size);
         color: gray;
+        margin-left: 4px;
       }
 
-      .runs paper-item {
+      .runs-row .title,
+      .tags-row .title {
+        display: flex;
+        align-items: baseline;
+      }
+
+      .runs-row paper-item,
+      .tags-row paper-item {
         --paper-item: {
           white-space: nowrap;
         }
@@ -324,6 +359,10 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
 
       .color-text {
         overflow: hidden;
+      }
+
+      .color-text.gradient-container {
+        margin: 0 5px;
       }
 
       /** Override inline styles that suppress pointer events for disabled buttons. Otherwise, the */
@@ -364,7 +403,7 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
       <div class="control-holder">
         <paper-button class="icon-button" on-tap="_fit" alt="Fit to screen">
           <iron-icon icon="aspect-ratio" class="button-icon"></iron-icon>
-          <span class="button-text">Fit to Screen</span>
+          <span class="button-text">Fit to screen</span>
         </paper-button>
       </div>
       <div class="control-holder">
@@ -377,7 +416,30 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
           <span class="button-text">Download PNG</span>
         </paper-button>
       </div>
-      <div class="control-holder runs">
+      <template is="dom-if" if="[[showUploadButton]]">
+        <div class="control-holder">
+          <paper-button
+            class="icon-button"
+            on-click="_getFile"
+            alt="Upload file"
+            title="Upload a pbtxt file to view a graph from the local filesystem"
+          >
+            <iron-icon icon="file-upload" class="button-icon"></iron-icon>
+            <span class="button-text">Upload file</span>
+          </paper-button>
+
+          <div class="hidden-input">
+            <input
+              type="file"
+              id="file"
+              name="file"
+              on-change="_updateFileInput"
+              accept=".pbtxt"
+            />
+          </div>
+        </div>
+      </template>
+      <div class="control-holder runs-row">
         <div class="title">
           Run <span class="counter">([[datasets.length]])</span>
         </div>
@@ -400,7 +462,7 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
         </paper-dropdown-menu>
       </div>
       <template is="dom-if" if="[[showSessionRunsDropdown]]">
-        <div class="control-holder">
+        <div class="control-holder tags-row">
           <div class="title">
             Tag
             <span class="counter"
@@ -429,29 +491,8 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
           </paper-dropdown-menu>
         </div>
       </template>
-      <template is="dom-if" if="[[showUploadButton]]">
-        <div class="control-holder">
-          <div class="title">Upload</div>
-          <paper-button
-            raised
-            class="upload-button"
-            on-click="_getFile"
-            title="Upload a graph pbtxt file to view the graph"
-          >
-            Choose File
-          </paper-button>
-          <div class="hidden-input">
-            <input
-              type="file"
-              id="file"
-              name="file"
-              on-change="_updateFileInput"
-              accept=".pbtxt"
-            />
-          </div>
-        </div>
-      </template>
-      <div class="control-holder">
+      <div class="title">Graph type</div>
+      <div class="control-holder control-options">
         <paper-radio-group
           selected="{{_selectedGraphType}}"
           on-paper-radio-group-changed="_onGraphTypeChangedByUserGesture"
@@ -460,12 +501,12 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
           <paper-radio-button
             name="op_graph"
             disabled="[[_getSelectionOpGraphDisabled(datasets, _selectedRunIndex, _selectedTagIndex)]]"
-            >Graph</paper-radio-button
+            >Op graph</paper-radio-button
           >
           <paper-radio-button
             name="conceptual_graph"
             disabled="[[_getSelectionConceptualGraphDisabled(datasets, _selectedRunIndex, _selectedTagIndex)]]"
-            >Conceptual Graph</paper-radio-button
+            >Conceptual graph</paper-radio-button
           >
           <paper-radio-button
             name="profile"
@@ -474,33 +515,27 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
           >
         </paper-radio-group>
       </div>
-      <div class="control-holder">
-        <div>
-          <paper-toggle-button
-            checked="{{traceInputs}}"
-            class="title"
-            on-change="_onTraceInputsChangedByUserGesture"
-          >
-            Trace inputs
-          </paper-toggle-button>
-        </div>
-      </div>
-      <div class="control-holder">
-        <div>
-          <paper-toggle-button checked="{{autoExtractNodes}}" class="title">
-            Auto-extract high-degree nodes
-          </paper-toggle-button>
-        </div>
+      <div class="title">Node options</div>
+      <div class="control-holder control-options">
+        <paper-toggle-button
+          checked="{{traceInputs}}"
+          on-change="_onTraceInputsChangedByUserGesture"
+        >
+          Trace inputs
+        </paper-toggle-button>
+        <paper-toggle-button checked="{{autoExtractNodes}}">
+          Auto-extract high-degree nodes
+        </paper-toggle-button>
       </div>
       <template is="dom-if" if="[[healthPillsFeatureEnabled]]">
         <div class="control-holder">
-          <paper-toggle-button checked="{{healthPillsToggledOn}}" class="title"
+          <paper-toggle-button checked="{{healthPillsToggledOn}}"
             >Show health pills</paper-toggle-button
           >
         </div>
       </template>
-      <div class="control-holder">
-        <div class="title">Color</div>
+      <div class="title">Color by</div>
+      <div class="control-holder control-options">
         <paper-radio-group
           selected="{{colorBy}}"
           on-paper-radio-group-changed="_onColorByChangedByUserGesture"
@@ -520,7 +555,7 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
             name="[[ColorBy.XLA_CLUSTER]]"
             disabled="[[!_xlaClustersProvided(renderHierarchy)]]"
           >
-            XLA Cluster
+            XLA cluster
           </paper-radio-button>
           <paper-tooltip
             animation-delay="0"
@@ -570,7 +605,7 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
             id="tpu-compatibility-radio-button"
             name="[[ColorBy.OP_COMPATIBILITY]]"
           >
-            TPU Compatibility
+            TPU compatibility
           </paper-radio-button>
           <paper-tooltip
             animation-delay="0"
@@ -583,184 +618,189 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
         </paper-radio-group>
         <span class="spacer"></span>
       </div>
-      <div>
-        <template is="dom-if" if="[[_isGradientColoring(stats, colorBy)]]">
-          <svg width="140" height="20" style="margin: 0 5px" class="color-text">
-            <defs>
-              <linearGradient
-                id="linearGradient"
-                x1="0%"
-                y1="0%"
-                x2="100%"
-                y2="0%"
-              >
-                <stop
-                  class="start"
-                  offset="0%"
-                  stop-color$="[[_currentGradientParams.startColor]]"
-                ></stop>
-                <stop
-                  class="end"
-                  offset="100%"
-                  stop-color$="[[_currentGradientParams.endColor]]"
-                ></stop>
-              </linearGradient>
-            </defs>
-            <rect
-              x="0"
-              y="0"
-              width="135"
-              height="20"
-              fill="url(#linearGradient)"
-              stroke="black"
-            ></rect>
-          </svg>
-          <div class="domainValues color-text">
-            <div class="domainStart">[[_currentGradientParams.minValue]]</div>
-            <div class="domainEnd">[[_currentGradientParams.maxValue]]</div>
-          </div>
-          <br style="clear: both" />
-          <div>Devices included in stats:</div>
-          <div class="deviceList">
-            <template is="dom-repeat" items="[[_currentDevices]]">
-              <div class="color-legend-row devices-checkbox">
-                <span
-                  ><input
-                    type="checkbox"
-                    value$="[[item.device]]"
-                    checked$="[[item.used]]"
-                    on-click="_deviceCheckboxClicked"
-                /></span>
-                <span>[[item.suffix]]</span>
-                <template is="dom-if" if="[[item.ignoredMsg]]">
-                  <paper-icon-button
-                    icon="help"
-                    class="help-icon"
-                  ></paper-icon-button>
-                  <paper-tooltip position="right" offset="0" animation-delay="0"
-                    >[[item.ignoredMsg]]</paper-tooltip
-                  >
-                </template>
+    </div>
+    <div class="legend-holder">
+      <button class="legend-toolbar" on-click="_toggleLegendOpen">
+        <span class="toggle-legend-text">Legend</span>
+        <iron-icon
+          icon="[[_getToggleLegendIcon(_legendOpened)]]"
+          class="toggle-legend-button"
+        >
+        </iron-icon>
+      </button>
+      <iron-collapse opened="[[_legendOpened]]" class="legend-content">
+        <!-- Color-mode-specific legend items -->
+        <div>
+          <template is="dom-if" if="[[_isGradientColoring(stats, colorBy)]]">
+            <svg width="140" height="20" class="color-text gradient-container">
+              <defs>
+                <linearGradient
+                  id="linearGradient"
+                  x1="0%"
+                  y1="0%"
+                  x2="100%"
+                  y2="0%"
+                >
+                  <stop
+                    class="start"
+                    offset="0%"
+                    stop-color$="[[_currentGradientParams.startColor]]"
+                  ></stop>
+                  <stop
+                    class="end"
+                    offset="100%"
+                    stop-color$="[[_currentGradientParams.endColor]]"
+                  ></stop>
+                </linearGradient>
+              </defs>
+              <rect
+                x="0"
+                y="0"
+                width="135"
+                height="20"
+                fill="url(#linearGradient)"
+                stroke="black"
+              ></rect>
+            </svg>
+            <div class="domainValues color-text">
+              <div class="domainStart">[[_currentGradientParams.minValue]]</div>
+              <div class="domainEnd">[[_currentGradientParams.maxValue]]</div>
+            </div>
+            <br style="clear: both" />
+            <div>Devices included in stats:</div>
+            <div class="deviceList">
+              <template is="dom-repeat" items="[[_currentDevices]]">
+                <div class="color-legend-row devices-checkbox">
+                  <span
+                    ><input
+                      type="checkbox"
+                      value$="[[item.device]]"
+                      checked$="[[item.used]]"
+                      on-click="_deviceCheckboxClicked"
+                  /></span>
+                  <span>[[item.suffix]]</span>
+                  <template is="dom-if" if="[[item.ignoredMsg]]">
+                    <paper-icon-button
+                      icon="help"
+                      class="help-icon"
+                    ></paper-icon-button>
+                    <paper-tooltip
+                      position="right"
+                      offset="0"
+                      animation-delay="0"
+                      >[[item.ignoredMsg]]</paper-tooltip
+                    >
+                  </template>
+                </div>
+              </template>
+            </div>
+          </template>
+          <template is="dom-if" if="[[_equals(colorBy, 'structure')]]">
+            <div class="color-text">
+              <div class="color-legend-row">
+                <span class="label"> colors </span>
+                <span class="color-legend-value">same substructure</span>
               </div>
-            </template>
-          </div>
-        </template>
-        <template is="dom-if" if="[[_equals(colorBy, 'structure')]]">
-          <div class="color-text">
-            <div class="color-legend-row">
-              <span class="label"> colors </span>
-              <span class="color-legend-value">same substructure</span>
-            </div>
-            <div class="color-legend-row">
-              <tf-graph-icon
-                type="META"
-                height="16"
-                fill-override="#eee"
-                stroke-override="#a6a6a6"
-              ></tf-graph-icon>
-              <span class="color-legend-value">unique substructure</span>
-            </div>
-          </div>
-        </template>
-        <template is="dom-if" if="[[_equals(colorBy, 'device')]]">
-          <div>
-            <template is="dom-repeat" items="[[_currentDeviceParams]]">
               <div class="color-legend-row">
                 <tf-graph-icon
                   type="META"
                   height="16"
-                  fill-override="[[item.color]]"
+                  fill-override="#eee"
                   stroke-override="#a6a6a6"
                 ></tf-graph-icon>
-                <span class="color-legend-value">[[item.device]]</span>
+                <span class="color-legend-value">unique substructure</span>
               </div>
-            </template>
-            <div class="color-legend-row">
-              <tf-graph-icon
-                type="META"
-                height="16"
-                fill-override="#eee"
-                stroke-override="#a6a6a6"
-              ></tf-graph-icon>
-              <span class="color-legend-value">unknown device</span>
             </div>
-          </div>
-        </template>
-        <template is="dom-if" if="[[_equals(colorBy, 'xla_cluster')]]">
-          <div>
-            <template is="dom-repeat" items="[[_currentXlaClusterParams]]">
+          </template>
+          <template is="dom-if" if="[[_equals(colorBy, 'device')]]">
+            <div>
+              <template is="dom-repeat" items="[[_currentDeviceParams]]">
+                <div class="color-legend-row">
+                  <tf-graph-icon
+                    type="META"
+                    height="16"
+                    fill-override="[[item.color]]"
+                    stroke-override="#a6a6a6"
+                  ></tf-graph-icon>
+                  <span class="color-legend-value">[[item.device]]</span>
+                </div>
+              </template>
+              <div class="color-legend-row">
+                <tf-graph-icon
+                  type="META"
+                  height="16"
+                  fill-override="#eee"
+                  stroke-override="#a6a6a6"
+                ></tf-graph-icon>
+                <span class="color-legend-value">unknown device</span>
+              </div>
+            </div>
+          </template>
+          <template is="dom-if" if="[[_equals(colorBy, 'xla_cluster')]]">
+            <div>
+              <template is="dom-repeat" items="[[_currentXlaClusterParams]]">
+                <div class="color-legend-row">
+                  <svg>
+                    <use
+                      xmlns:xlink="http://www.w3.org/1999/xlink"
+                      xlink:href="#unfilled-rect"
+                      x="0"
+                      y="0"
+                      style="fill:[[item.color]]"
+                    ></use>
+                  </svg>
+                  <span class="color-legend-value">[[item.xla_cluster]]</span>
+                </div>
+              </template>
               <div class="color-legend-row">
                 <svg>
                   <use
                     xmlns:xlink="http://www.w3.org/1999/xlink"
-                    xlink:href="#unfilled-rect"
+                    xlink:href="#grey-rect"
                     x="0"
                     y="0"
-                    style="fill:[[item.color]]"
                   ></use>
                 </svg>
-                <span class="color-legend-value">[[item.xla_cluster]]</span>
+                <span class="color-legend-value">unknown XLA cluster</span>
               </div>
-            </template>
-            <div class="color-legend-row">
-              <svg>
-                <use
-                  xmlns:xlink="http://www.w3.org/1999/xlink"
-                  xlink:href="#grey-rect"
-                  x="0"
-                  y="0"
-                ></use>
-              </svg>
-              <span class="color-legend-value">unknown XLA cluster</span>
             </div>
-          </div>
-        </template>
-        <template is="dom-if" if="[[_equals(colorBy, 'op_compatibility')]]">
-          <div class="color-text">
-            <div class="color-legend-row">
-              <tf-graph-icon
-                type="OP"
-                height="16"
-                fill-override="#0f9d58"
-                stroke-override="#ccc"
-              ></tf-graph-icon>
-              <span class="color-legend-value">Valid Op</span>
+          </template>
+          <template is="dom-if" if="[[_equals(colorBy, 'op_compatibility')]]">
+            <div class="color-text">
+              <div class="color-legend-row">
+                <tf-graph-icon
+                  type="OP"
+                  height="16"
+                  fill-override="#0f9d58"
+                  stroke-override="#ccc"
+                ></tf-graph-icon>
+                <span class="color-legend-value">Valid Op</span>
+              </div>
+              <div class="color-legend-row">
+                <tf-graph-icon
+                  type="OP"
+                  height="16"
+                  fill-override="#db4437"
+                  stroke-override="#ccc"
+                ></tf-graph-icon>
+                <span class="color-legend-value">Invalid Op</span>
+              </div>
             </div>
+          </template>
+          <template is="dom-if" if="[[_statsNotNull(stats)]]">
             <div class="color-legend-row">
-              <tf-graph-icon
-                type="OP"
-                height="16"
-                fill-override="#db4437"
-                stroke-override="#ccc"
-              ></tf-graph-icon>
-              <span class="color-legend-value">Invalid Op</span>
+              <tf-graph-icon type="META" height="16" faded></tf-graph-icon>
+              <span class="color-legend-value">unused substructure</span>
             </div>
-          </div>
-        </template>
-        <template is="dom-if" if="[[_statsNotNull(stats)]]">
-          <div class="color-legend-row">
-            <tf-graph-icon type="META" height="16" faded></tf-graph-icon>
-            <span class="color-legend-value">unused substructure</span>
-          </div>
-        </template>
-      </div>
-    </div>
-    <div class="legend-holder">
-      <paper-icon-button
-        icon="[[_getToggleLegendIcon(_legendOpened)]]"
-        on-click="_toggleLegendOpen"
-        class="toggle-legend-button"
-      >
-      </paper-icon-button>
-      <span class="toggle-legend-text">
-        [[_getToggleText(_legendOpened)]]
-      </span>
-      <iron-collapse opened="[[_legendOpened]]">
+          </template>
+        </div>
+
+        <!-- Common legend items -->
         <div>
           <table>
             <tbody>
               <tr>
-                <td><div class="title">Graph</div></td>
+                <td></td>
                 <td>(* = expandable)</td>
               </tr>
               <tr>
@@ -1406,9 +1446,6 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
   }
   _toggleLegendOpen(): void {
     this.set('_legendOpened', !this._legendOpened);
-  }
-  _getToggleText(legendOpened: boolean): string {
-    return legendOpened ? 'Close legend.' : 'Expand legend.';
   }
   _getToggleLegendIcon(legendOpened: boolean): string {
     // This seems counter-intuitive, but actually makes sense because the

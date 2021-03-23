@@ -30,7 +30,7 @@ class TfGraphNodeSearch extends LegacyElementMixin(PolymerElement) {
     <div id="search-container">
       <paper-input
         id="runs-regex"
-        label="Search nodes. Regexes supported."
+        label="Search nodes (regex)"
         value="{{_rawRegexInput}}"
       >
       </paper-input>
