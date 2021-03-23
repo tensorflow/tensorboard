@@ -22,7 +22,7 @@ import {notificationNotes} from './notification_notes';
 
 const initialState: NotificationState = {
   notifications: notificationNotes,
-  lastReadTimestamp: window.localStorage.getItem(
+  lastReadTimestampInMs: window.localStorage.getItem(
     NOTIFICATION_LAST_READ_TIME_KEY
   )
     ? parseInt(window.localStorage.getItem(NOTIFICATION_LAST_READ_TIME_KEY)!)
@@ -42,7 +42,7 @@ const reducer = createReducer(
       );
       return {
         ...state,
-        lastReadTimestamp: timeNow,
+        lastReadTimestampInMs: timeNow,
       };
     }
   )

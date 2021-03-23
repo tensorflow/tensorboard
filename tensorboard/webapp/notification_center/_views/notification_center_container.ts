@@ -44,11 +44,11 @@ export class NotificationCenterContainer {
     this.store.select(getNotifications),
     this.store.select(getLastReadTime),
   ]).pipe(
-    map(([notifications, lastReadTime]) => {
+    map(([notifications, lastReadTimestampInMs]) => {
       return notifications.map((notification) => {
         return {
           ...notification,
-          hasRead: notification.dateInMs < lastReadTime,
+          hasRead: notification.dateInMs < lastReadTimestampInMs,
           icon: iconMap.get(notification.category) ?? null,
         };
       });

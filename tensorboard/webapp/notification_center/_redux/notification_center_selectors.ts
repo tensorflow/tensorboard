@@ -36,6 +36,6 @@ export const getNotifications = createSelector(
 export const getLastReadTime = createSelector(
   selectNotifications,
   (state: NotificationState): number => {
-    return state.lastReadTimestamp ?? -1;
+    return state.lastReadTimestampInMs ?? -1;
   }
 );

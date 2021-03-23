@@ -17,14 +17,14 @@ import * as notificationReducers from './notification_center_reducers';
 import {buildNotificationState} from './testing';
 
 describe('notification reducers', () => {
-  it('sets lastReadTimestamp to current after bell icon clicked', () => {
+  it('sets lastReadTimestampInMs to current after bell icon clicked', () => {
     const action1 = notificationActions.notificationBellClicked();
     const state1 = buildNotificationState({
       notifications: [],
-      lastReadTimestamp: 0,
+      lastReadTimestampInMs: 0,
     });
 
     const state2 = notificationReducers.reducers(state1, action1);
-    expect(state2.lastReadTimestamp).toBeLessThanOrEqual(Date.now());
+    expect(state2.lastReadTimestampInMs).toBeLessThanOrEqual(Date.now());
   });
 });

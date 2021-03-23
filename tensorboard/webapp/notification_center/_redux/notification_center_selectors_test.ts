@@ -70,7 +70,7 @@ describe('notification_center_selectors', () => {
     it('returns last read non-null timestamp', () => {
       const state = buildStateFromNotificationState(
         buildNotificationState({
-          lastReadTimestamp: 1235813,
+          lastReadTimestampInMs: 1235813,
         })
       );
 
