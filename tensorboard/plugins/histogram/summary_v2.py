@@ -54,26 +54,31 @@ def histogram(name, data, step=None, buckets=None, description=None):
 
     This example writes 2 histograms:
 
-    >>> w = tf.summary.create_file_writer('test/logs')
-    >>> with w.as_default():
-    ...     tf.summary.histogram("activations", tf.random.uniform([100, 50]), step=0)
-    ...     tf.summary.histogram("initial_weights", tf.random.normal([1000]), step=0)
+    ```python
+    w = tf.summary.create_file_writer('test/logs')
+    with w.as_default():
+        tf.summary.histogram("activations", tf.random.uniform([100, 50]), step=0)
+        tf.summary.histogram("initial_weights", tf.random.normal([1000]), step=0)
+    ```
 
     A common use case is to examine the changing activation patterns (or lack
     thereof) at specific layers in a neural network, over time.
 
-    >>> w = tf.summary.create_file_writer('test/logs')
-    >>> with w.as_default():
-    >>> for step in range(100):
-    ...     # Generate fake "activations".
-    ...     activations = [
-    ...         tf.random.normal([1000], mean=step, stddev=1),
-    ...         tf.random.normal([1000], mean=step, stddev=10),
-    ...         tf.random.normal([1000], mean=step, stddev=100),
-    ...     ]
-    ...     tf.summary.histogram("layer1/activate", activations[0], step=step)
-    ...     tf.summary.histogram("layer2/activate", activations[1], step=step)
-    ...     tf.summary.histogram("layer3/activate", activations[2], step=step)
+    ```python
+    w = tf.summary.create_file_writer('test/logs')
+    with w.as_default():
+    for step in range(100):
+        # Generate fake "activations".
+        activations = [
+            tf.random.normal([1000], mean=step, stddev=1),
+            tf.random.normal([1000], mean=step, stddev=10),
+            tf.random.normal([1000], mean=step, stddev=100),
+        ]
+
+        tf.summary.histogram("layer1/activate", activations[0], step=step)
+        tf.summary.histogram("layer2/activate", activations[1], step=step)
+        tf.summary.histogram("layer3/activate", activations[2], step=step)
+    ```
 
     Arguments:
       name: A name for this summary. The summary tag used for TensorBoard will
