@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component, Input} from '@angular/core';
+import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {CategoryEnum} from '../_redux/notification_center_types';
 import {ViewNotificationExt} from './view_types';
 
@@ -25,4 +25,7 @@ export class NotificationCenterComponent {
   readonly CategoryEnum = CategoryEnum;
 
   @Input() notifications!: ViewNotificationExt[];
+  @Input() hasUnreadMessages!: boolean;
+
+  @Output() bellButtonClicked = new EventEmitter<void>();
 }

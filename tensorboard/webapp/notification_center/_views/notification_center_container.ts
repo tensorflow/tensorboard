@@ -14,10 +14,14 @@ limitations under the License.
 ==============================================================================*/
 import {Component} from '@angular/core';
 import {Store} from '@ngrx/store';
-import {Observable} from 'rxjs';
-import {map} from 'rxjs/operators';
+import {combineLatest, Observable} from 'rxjs';
+import {map, shareReplay} from 'rxjs/operators';
 import {State} from '../../app_state';
-import {getNotifications} from '../_redux/notification_center_selectors';
+import * as actions from '../_redux/notification_center_actions';
+import {
+  getLastReadTime,
+  getNotifications,
+} from '../_redux/notification_center_selectors';
 import {CategoryEnum} from '../_redux/notification_center_types';
 import {ViewNotificationExt} from './view_types';
 
@@ -28,22 +32,39 @@ const iconMap = new Map([[CategoryEnum.WHATS_NEW, 'info_outline_24px']]);
   template: `
     <notification-center-component
       [notifications]="notificationNotes$ | async"
+      [hasUnreadMessages]="hasUnreadMessages$ | async"
+      (bellButtonClicked)="onBellButtonClicked()"
     ></notification-center-component>
   `,
 })
 export class NotificationCenterContainer {
   readonly notificationNotes$: Observable<
     ViewNotificationExt[]
-  > = this.store.select(getNotifications).pipe(
-    map((notifications) => {
+  > = combineLatest([
+    this.store.select(getNotifications),
+    this.store.select(getLastReadTime),
+  ]).pipe(
+    map(([notifications, lastReadTimestampInMs]) => {
       return notifications.map((notification) => {
         return {
           ...notification,
+          hasRead: notification.dateInMs < lastReadTimestampInMs,
           icon: iconMap.get(notification.category) ?? null,
         };
       });
+    }),
+    shareReplay()
+  );
+
+  readonly hasUnreadMessages$ = this.notificationNotes$.pipe(
+    map((notifications) => {
+      return notifications.some(({hasRead}) => !hasRead);
     })
   );
 
   constructor(private readonly store: Store<State>) {}
+
+  onBellButtonClicked() {
+    this.store.dispatch(actions.notificationBellClicked());
+  }
 }

@@ -14,16 +14,39 @@ limitations under the License.
 ==============================================================================*/
 import {Action, createReducer, on} from '@ngrx/store';
 import * as actions from './notification_center_actions';
-import {NotificationState} from './notification_center_types';
+import {
+  NotificationState,
+  NOTIFICATION_LAST_READ_TIME_KEY,
+} from './notification_center_types';
 import {notificationNotes} from './notification_notes';
-
-/** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
 const initialState: NotificationState = {
   notifications: notificationNotes,
+  lastReadTimestampInMs: window.localStorage.getItem(
+    NOTIFICATION_LAST_READ_TIME_KEY
+  )
+    ? parseInt(window.localStorage.getItem(NOTIFICATION_LAST_READ_TIME_KEY)!)
+    : null,
 };
 
-const reducer = createReducer(initialState);
+const reducer = createReducer(
+  initialState,
+  on(
+    actions.notificationBellClicked,
+    (state: NotificationState): NotificationState => {
+      // TODO: move update last read timestamp to DataSource
+      const timeNow = Date.now();
+      window.localStorage.setItem(
+        NOTIFICATION_LAST_READ_TIME_KEY,
+        timeNow.toString()
+      );
+      return {
+        ...state,
+        lastReadTimestampInMs: timeNow,
+      };
+    }
+  )
+);
 
 export function reducers(state: NotificationState | undefined, action: Action) {
   return reducer(state, action);

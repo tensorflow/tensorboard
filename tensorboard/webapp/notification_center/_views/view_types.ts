@@ -17,7 +17,7 @@ import {Notification} from '../_redux/notification_center_types';
 /**
  * A notification chunk displayed in the notification center.
  */
-
 export interface ViewNotificationExt extends Notification {
   icon: string | null;
+  hasRead: boolean;
 }

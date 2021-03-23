@@ -24,6 +24,7 @@ describe('notification_center_selectors', () => {
     beforeEach(() => {
       // Clear the memoization.
       selectors.getNotifications.release();
+      selectors.getLastReadTime.release();
     });
 
     it('returns empty list when there is no notification', () => {
@@ -56,6 +57,24 @@ describe('notification_center_selectors', () => {
           content: '<li>test</li>',
         },
       ]);
+    });
+
+    it('returns last read null timestamp', () => {
+      const state = buildStateFromNotificationState(
+        buildNotificationState(buildNotificationState({}))
+      );
+
+      expect(selectors.getLastReadTime(state)).toBe(-1);
+    });
+
+    it('returns last read non-null timestamp', () => {
+      const state = buildStateFromNotificationState(
+        buildNotificationState({
+          lastReadTimestampInMs: 1235813,
+        })
+      );
+
+      expect(selectors.getLastReadTime(state)).toBe(1235813);
     });
   });
 });

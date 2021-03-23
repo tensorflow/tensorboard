@@ -12,6 +12,22 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+@import 'tensorboard/webapp/theme/tb_theme';
+
+.notification-icon-button {
+  position: relative;
+}
+
+.red-dot {
+  $_dim: 10px;
+  background-color: mat-color($mat-red, 700);
+  border-radius: $_dim / 2;
+  height: $_dim;
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  width: $_dim;
+}
 
 ::ng-deep .notification-menu.mat-menu-panel {
   font-size: 10px;
@@ -32,7 +48,7 @@ limitations under the License.
 }
 
 .category-icon {
-  color: #4285f4;
+  color: mat-color($mat-blue, 700);
   height: 15px;
   margin-right: 6px;
   vertical-align: middle;

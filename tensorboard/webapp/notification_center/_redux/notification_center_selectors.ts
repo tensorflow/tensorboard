@@ -32,3 +32,10 @@ export const getNotifications = createSelector(
     return state.notifications;
   }
 );
+
+export const getLastReadTime = createSelector(
+  selectNotifications,
+  (state: NotificationState): number => {
+    return state.lastReadTimestampInMs ?? -1;
+  }
+);

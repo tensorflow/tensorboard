@@ -29,9 +29,14 @@ export interface Notification {
 }
 
 export const NOTIFICATION_FEATURE_KEY = 'notification';
+/**
+ * The key used to record the last read timestamp in local storage.
+ */
+export const NOTIFICATION_LAST_READ_TIME_KEY = 'notificaitonLastReadTimestamp';
 
 export interface NotificationState {
   notifications: Notification[];
+  lastReadTimestampInMs: number | null;
 }
 
 export interface State {

@@ -18,7 +18,10 @@ limitations under the License.
   mat-icon-button
   [matMenuTriggerFor]="menu"
   aria-label="Display notification messages"
+  class="notification-icon-button"
+  (click)="bellButtonClicked.emit()"
 >
+  <div *ngIf="hasUnreadMessages" class="red-dot"></div>
   <mat-icon svgIcon="notifications_none_24px"></mat-icon>
 </button>
 

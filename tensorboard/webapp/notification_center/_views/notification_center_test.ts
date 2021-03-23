@@ -18,17 +18,20 @@ import {MatButtonModule} from '@angular/material/button';
 import {MatMenuModule} from '@angular/material/menu';
 import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
-import {Store} from '@ngrx/store';
+import {Action, createAction, Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {State} from '../../app_state';
 import {MatIconTestingModule} from '../../testing/mat_icon_module';
+import * as actions from '../_redux/notification_center_actions';
 import * as selectors from '../_redux/notification_center_selectors';
 import {CategoryEnum} from '../_redux/notification_center_types';
 import {NotificationCenterComponent} from './notification_center_component';
 import {NotificationCenterContainer} from './notification_center_container';
+const testAction = createAction('[Notification] Notification Bell Clicked');
 
 describe('notification center', () => {
   let store: MockStore<State>;
+  let recordedActions: Action[] = [];
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -47,6 +50,12 @@ describe('notification center', () => {
       ],
     }).compileComponents();
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
+    recordedActions = [];
+    spyOn(store, 'dispatch').and.callFake((action: Action) => {
+      recordedActions.push(action);
+    });
+    store.overrideSelector(selectors.getNotifications, []);
+    store.overrideSelector(selectors.getLastReadTime, 0);
   });
 
   it('loads notification module', () => {
@@ -81,5 +90,52 @@ describe('notification center', () => {
     expect(
       notificationMenu.nativeNode.querySelector('.content').textContent
     ).toBe('test content');
+  });
+
+  it('appears when unread notifications exist', () => {
+    const fixture = TestBed.createComponent(NotificationCenterContainer);
+    fixture.detectChanges();
+
+    const menuButton = fixture.debugElement.query(
+      By.css('[aria-label="Display notification messages"]')
+    );
+    menuButton.nativeElement.click();
+    fixture.detectChanges();
+
+    expect(recordedActions[0]).toEqual(actions.notificationBellClicked());
+  });
+
+  describe('unread dot (red dot)', () => {
+    it('appears when unread notifications exist', () => {
+      store.overrideSelector(selectors.getNotifications, [
+        {
+          category: CategoryEnum.WHATS_NEW,
+          dateInMs: 1,
+          title: 'test title',
+          content: 'test content',
+        },
+      ]);
+      store.overrideSelector(selectors.getLastReadTime, 0);
+      const fixture = TestBed.createComponent(NotificationCenterContainer);
+      fixture.detectChanges();
+      const reddot = fixture.debugElement.query(By.css('.red-dot'));
+      expect(reddot).toBeTruthy();
+    });
+
+    it('does not appear when no unread notifications', () => {
+      store.overrideSelector(selectors.getNotifications, [
+        {
+          category: CategoryEnum.WHATS_NEW,
+          dateInMs: 0,
+          title: 'test title',
+          content: 'test content',
+        },
+      ]);
+      store.overrideSelector(selectors.getLastReadTime, 1);
+      const fixture = TestBed.createComponent(NotificationCenterContainer);
+      fixture.detectChanges();
+      const reddot = fixture.debugElement.query(By.css('.red-dot'));
+      expect(reddot).toBeNull();
+    });
   });
 });
