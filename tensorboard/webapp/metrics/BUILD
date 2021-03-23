@@ -85,6 +85,7 @@ tf_ts_library(
         "//tensorboard/webapp/metrics/store:types",
         "//tensorboard/webapp/metrics/views",
         "//tensorboard/webapp/testing:integration_test_module",
+        "@npm//@angular/platform-browser",
         "@npm//@ngrx/store",
         "@npm//@types/jasmine",
     ],

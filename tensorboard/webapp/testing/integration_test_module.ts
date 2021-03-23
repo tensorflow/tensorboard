@@ -58,7 +58,7 @@ export class TestableComponent {}
 
 // Fake route definition to prevent route redirection due to the `defaultRoute` on the
 // real one.
-function provideRoute(): RouteDef[] {
+export function provideRoute(): RouteDef[] {
   return [
     {
       routeKind: RouteKind.EXPERIMENT,
@@ -80,5 +80,7 @@ function provideRoute(): RouteDef[] {
     NgrxEffectsModule.forRoot([]),
   ],
   providers: [{provide: HashDeepLinker, useClass: TestableNoopHashDeepLinker}],
+  declarations: [TestableComponent],
+  exports: [TestableComponent],
 })
 export class IntegrationTestSetupModule {}

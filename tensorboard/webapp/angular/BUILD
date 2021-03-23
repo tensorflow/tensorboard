@@ -139,6 +139,15 @@ tf_ts_library(
     ],
 )
 
+# This is a dummy rule used as a @angular/material/icon/testing dependency.
+tf_ts_library(
+    name = "expect_angular_material_icon_testing",
+    srcs = [],
+    deps = [
+        "@npm//@angular/material",
+    ],
+)
+
 # This is a dummy rule used as a @angular/material/input dependency.
 tf_ts_library(
     name = "expect_angular_material_input",

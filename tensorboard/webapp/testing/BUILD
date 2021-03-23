@@ -25,6 +25,7 @@ tf_ng_module(
     ],
     deps = [
         "//tensorboard/webapp/angular:expect_angular_material_icon",
+        "//tensorboard/webapp/angular:expect_angular_material_icon_testing",
         "@npm//@angular/core",
     ],
 )
