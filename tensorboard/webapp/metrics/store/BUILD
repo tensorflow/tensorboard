@@ -1,4 +1,4 @@
-load("//tensorboard/defs:defs.bzl", "tf_ts_library")
+load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
@@ -24,6 +24,19 @@ tf_ts_library(
         "//tensorboard/webapp/util:lang",
         "//tensorboard/webapp/util:ngrx",
         "//tensorboard/webapp/util:types",
+        "@npm//@ngrx/store",
+    ],
+)
+
+tf_ng_module(
+    name = "metrics_initial_state_provider",
+    srcs = [
+        "metrics_initial_state_provider.ts",
+    ],
+    deps = [
+        ":store",
+        ":types",
+        "@npm//@angular/core",
         "@npm//@ngrx/store",
     ],
 )

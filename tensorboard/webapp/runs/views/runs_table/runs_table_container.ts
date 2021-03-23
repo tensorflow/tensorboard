@@ -16,7 +16,7 @@ import {ChangeDetectionStrategy, Component, Input, OnInit} from '@angular/core';
 import {createSelector, Store} from '@ngrx/store';
 import {DataLoadState, LoadState} from '../../../types/data';
 import {combineLatest, Observable, of} from 'rxjs';
-import {combineLatestWith, map, shareReplay} from 'rxjs/operators';
+import {combineLatestWith, map, shareReplay, startWith} from 'rxjs/operators';
 
 import {State} from '../../../app_state';
 import {
@@ -435,7 +435,8 @@ export class RunsTableContainer implements OnInit {
         }
         const {pageSize, pageIndex} = paginationOption;
         return items.slice(pageIndex * pageSize, (pageIndex + 1) * pageSize);
-      })
+      }),
+      startWith([])
     );
 
     return slicedItems;

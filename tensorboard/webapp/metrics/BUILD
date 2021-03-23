@@ -15,6 +15,7 @@ tf_ng_module(
         "//tensorboard/webapp/metrics/data_source",
         "//tensorboard/webapp/metrics/effects",
         "//tensorboard/webapp/metrics/store",
+        "//tensorboard/webapp/metrics/store:metrics_initial_state_provider",
         "//tensorboard/webapp/metrics/views",
         "//tensorboard/webapp/plugins:plugin_registry",
         "//tensorboard/webapp/runs/views/runs_selector",
@@ -66,5 +67,25 @@ tf_ts_library(
         "@npm//@angular/core",
         "@npm//@types/jasmine",
         "@npm//rxjs",
+    ],
+)
+
+tf_ts_library(
+    name = "integration_test",
+    testonly = True,
+    srcs = [
+        "metrics_integration_test.ts",
+    ],
+    deps = [
+        ":metrics",
+        "//tensorboard/webapp/angular:expect_angular_core_testing",
+        "//tensorboard/webapp/angular:expect_angular_platform_browser_animations",
+        "//tensorboard/webapp/angular:expect_angular_platform_browser_dynamic_testing",
+        "//tensorboard/webapp/metrics/store:metrics_initial_state_provider",
+        "//tensorboard/webapp/metrics/store:types",
+        "//tensorboard/webapp/metrics/views",
+        "//tensorboard/webapp/testing:integration_test_module",
+        "@npm//@ngrx/store",
+        "@npm//@types/jasmine",
     ],
 )

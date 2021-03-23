@@ -260,6 +260,8 @@ const {initialState, reducers: routeContextReducer} = createRouteContextedState(
   }
 );
 
+export const INITIAL_STATE = initialState;
+
 const reducer = createReducer(
   initialState,
   on(stateRehydratedFromUrl, (state, {routeKind, partialState}) => {
@@ -758,7 +760,7 @@ const reducer = createReducer(
   })
 );
 
-export function reducers(state: MetricsState, action: Action) {
+export function reducers(state: MetricsState | undefined, action: Action) {
   return composeReducers(reducer, routeContextReducer)(state, action);
 }
 

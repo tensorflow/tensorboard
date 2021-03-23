@@ -280,6 +280,7 @@ tf_ng_web_test_suite(
         "//tensorboard/webapp/feature_flag/effects:effects_test_lib",
         "//tensorboard/webapp/feature_flag/store:store_test_lib",
         "//tensorboard/webapp/header:test_lib",
+        "//tensorboard/webapp/metrics:integration_test",
         "//tensorboard/webapp/metrics:test_lib",
         "//tensorboard/webapp/metrics/data_source:metrics_data_source_test",
         "//tensorboard/webapp/metrics/effects:effects_test",

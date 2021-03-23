@@ -22,7 +22,12 @@ import {RunsSelectorModule} from '../runs/views/runs_selector/runs_selector_modu
 
 import {METRICS_PLUGIN_ID, MetricsDataSourceModule} from './data_source';
 import {MetricsEffects} from './effects';
-import {METRICS_FEATURE_KEY, reducers} from './store';
+import {METRICS_FEATURE_KEY, METRICS_SETTINGS_DEFAULT, reducers} from './store';
+import {
+  getConfig,
+  METRICS_INITIAL_SETTINGS,
+  METRICS_STORE_CONFIG_TOKEN,
+} from './store/metrics_initial_state_provider';
 import {MetricsDashboardContainer} from './views/metrics_container';
 import {MetricsViewsModule} from './views/metrics_views_module';
 import {AlertActionModule} from '../alert/alert_action_module';
@@ -65,9 +70,24 @@ export function alertActionProvider() {
     ),
     MetricsDataSourceModule,
     MetricsViewsModule,
-    StoreModule.forFeature(METRICS_FEATURE_KEY, reducers),
+    StoreModule.forFeature(
+      METRICS_FEATURE_KEY,
+      reducers,
+      METRICS_STORE_CONFIG_TOKEN
+    ),
     EffectsModule.forFeature([MetricsEffects]),
     AlertActionModule.registerAlertActions(alertActionProvider),
+  ],
+  providers: [
+    {
+      provide: METRICS_STORE_CONFIG_TOKEN,
+      useFactory: getConfig,
+      deps: [METRICS_INITIAL_SETTINGS],
+    },
+    {
+      provide: METRICS_INITIAL_SETTINGS,
+      useValue: METRICS_SETTINGS_DEFAULT,
+    },
   ],
   entryComponents: [MetricsDashboardContainer],
 })

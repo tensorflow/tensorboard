@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Component, Input, NgModule} from '@angular/core';
+import {MatIconTestingModule as RealMatIconTestingModule} from '@angular/material/icon/testing';
 
 // Keep in sync with the 'svg_bundle' target in tensorboard/webapp/BUILD.
 const KNOWN_SVG_ICON = new Set([
@@ -107,5 +108,6 @@ export class MatIcon {
 @NgModule({
   exports: [MatIcon],
   declarations: [MatIcon],
+  imports: [RealMatIconTestingModule],
 })
 export class MatIconTestingModule {}
