@@ -437,10 +437,23 @@ export class MeshViewer extends THREE.EventDispatcher {
     }) as any;
     const geometry = new THREE.BufferGeometry();
     // Flattens the [N, 3] shaped `vertices` into a N*3 length array.
+    // THREE.BufferAttribute expects values to be a shallow list, with the
+    // itemSize specified.
     const flatPoints = new Float32Array(vertices.flat());
     geometry.setAttribute('position', new THREE.BufferAttribute(flatPoints, 3));
 
-    // Flattens the [N, 3] shaped `faces` into a N*3 length array of indices.
+    /**
+     * Flattens the [N, 3] shaped `faces` into a N*3 length array of indices.
+     * This array of integers corresponds to triplets in the 'position'
+     * attribute. For example,
+     *   flatPoints = new Float32Array([7.5, 0, 0, 8.5, 0, 0, 9.5, 0, 0]);
+     *   vertexIndicesPerFace = new Uint16Array([2, 0, 1]);
+     *
+     * corresponds to 1 face with vertices
+     *   vertex1 at (9.5, 0, 0)
+     *   vertex2 at (7.5, 0, 0)
+     *   vertex3 at (8.5, 0, 0)
+     */
     const vertexIndicesPerFace = new Uint16Array(faces.flat());
 
     if (colors && colors.length) {
