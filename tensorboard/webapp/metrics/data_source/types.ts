@@ -173,6 +173,12 @@ export abstract class MetricsDataSource {
     requests: TimeSeriesRequest[]
   ): Observable<TimeSeriesResponse[]>;
   abstract imageUrl(imageId: ImageId): string;
+  abstract downloadUrl(
+    pluginId: PluginType,
+    tag: string,
+    runId: string,
+    downloadType: 'json' | 'csv'
+  ): string;
 }
 
 export function isFailedTimeSeriesResponse(

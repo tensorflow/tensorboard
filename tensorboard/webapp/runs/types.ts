@@ -23,6 +23,7 @@ export {
   DiscreteHparamValue,
   DiscreteHparamValues,
   DomainType,
+  Run,
 } from './data_source/runs_data_source_types';
 
 export interface DiscreteFilter {

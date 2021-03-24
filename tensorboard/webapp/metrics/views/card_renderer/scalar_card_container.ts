@@ -12,6 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {ComponentType} from '@angular/cdk/overlay';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -33,7 +34,6 @@ import {
   switchMap,
   takeWhile,
 } from 'rxjs/operators';
-
 import {State} from '../../../app_state';
 import {
   getCardPinnedState,
@@ -64,6 +64,7 @@ import {
 import {CardId, CardMetadata, XAxisType} from '../../types';
 import {CardRenderer} from '../metrics_view_types';
 import {getTagDisplayName} from '../utils';
+import {DataDownloadDialogContainer} from './data_download_dialog_container';
 import {LegacySeriesDataList} from './scalar_card_component';
 import {
   PartialSeries,
@@ -129,6 +130,8 @@ function areSeriesEqual(
   selector: 'scalar-card',
   template: `
     <scalar-card-component
+      [cardId]="cardId"
+      [DataDownloadComponent]="DataDownloadComponent"
       [loadState]="loadState$ | async"
       [runColorScale]="runColorScale"
       [title]="title$ | async"
@@ -166,6 +169,12 @@ function areSeriesEqual(
 export class ScalarCardContainer implements CardRenderer, OnInit {
   constructor(private readonly store: Store<State>) {}
 
+  // Angular Component constructor for DataDownload dialog. It is customizable for
+  // testability, without mocking out data for the component's internals, but defaults to
+  // the DataDownloadDialogContainer.
+  @Input() DataDownloadComponent: ComponentType<
+    any
+  > = DataDownloadDialogContainer;
   @Input() cardId!: CardId;
   @Input() groupName!: string | null;
   @Input() runColorScale!: RunColorScale;

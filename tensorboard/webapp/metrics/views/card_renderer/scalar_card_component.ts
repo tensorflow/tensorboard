@@ -12,6 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {ComponentType} from '@angular/cdk/overlay';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -21,6 +22,7 @@ import {
   Output,
   ViewChild,
 } from '@angular/core';
+import {MatDialog} from '@angular/material/dialog';
 
 import {DataLoadState} from '../../../types/data';
 import {RunColorScale} from '../../../types/ui';
@@ -119,11 +121,12 @@ const DEFAULT_TOOLTIP_COLUMNS: TooltipColumns = [
   styleUrls: ['scalar_card_component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ScalarCardComponent {
+export class ScalarCardComponent<Downloader> {
   readonly RESIZE_REDRAW_DEBOUNCE_TIME_IN_MS = RESIZE_REDRAW_DEBOUNCE_TIME_IN_MS;
   readonly DataLoadState = DataLoadState;
   readonly RendererType = RendererType;
 
+  @Input() cardId!: string;
   @Input() loadState!: DataLoadState;
   @Input() title!: string;
   @Input() tag!: string;
@@ -132,6 +135,7 @@ export class ScalarCardComponent {
   @Input() showFullSize!: boolean;
   @Input() isPinned!: boolean;
 
+  @Input() DataDownloadComponent!: ComponentType<Downloader>;
   @Input() newXScaleType!: ScaleType;
 
   // Legacy chart related; to be removed.
@@ -159,7 +163,7 @@ export class ScalarCardComponent {
   @ViewChild(NewLineChartComponent)
   newLineChart?: NewLineChartComponent;
 
-  constructor(private readonly ref: ElementRef) {}
+  constructor(private readonly ref: ElementRef, private dialog: MatDialog) {}
 
   yAxisType = YAxisType.LINEAR;
   newYScaleType = ScaleType.LINEAR;
@@ -257,5 +261,11 @@ export class ScalarCardComponent {
           return a.metadata.distSqToCursor - b.metadata.distSqToCursor;
         });
     }
+  }
+
+  openDataDownloadDialog(): void {
+    this.dialog.open(this.DataDownloadComponent, {
+      data: {cardId: this.cardId},
+    });
   }
 }

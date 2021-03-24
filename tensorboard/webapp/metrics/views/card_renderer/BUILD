@@ -37,6 +37,41 @@ tf_ng_module(
 )
 
 tf_sass_binary(
+    name = "data_download_dialog_styles",
+    src = "data_download_dialog_component.scss",
+)
+
+tf_ng_module(
+    name = "data_download_dialog",
+    srcs = [
+        "data_download_dialog_component.ts",
+        "data_download_dialog_container.ts",
+        "data_download_module.ts",
+    ],
+    assets = [
+        ":data_download_dialog_styles",
+        "data_download_dialog_component.ng.html",
+    ],
+    deps = [
+        "//tensorboard/webapp:app_state",
+        "//tensorboard/webapp:selectors",
+        "//tensorboard/webapp/angular:expect_angular_material_button",
+        "//tensorboard/webapp/angular:expect_angular_material_dialog",
+        "//tensorboard/webapp/angular:expect_angular_material_input",
+        "//tensorboard/webapp/angular:expect_angular_material_select",
+        "//tensorboard/webapp/metrics:types",
+        "//tensorboard/webapp/metrics/data_source",
+        "//tensorboard/webapp/metrics/data_source:types",
+        "//tensorboard/webapp/runs:types",
+        "@npm//@angular/common",
+        "@npm//@angular/core",
+        "@npm//@angular/forms",
+        "@npm//@ngrx/store",
+        "@npm//rxjs",
+    ],
+)
+
+tf_sass_binary(
     name = "histogram_card_styles",
     src = "histogram_card_component.scss",
     deps = [
@@ -181,11 +216,14 @@ tf_ng_module(
         "scalar_card_component.ng.html",
     ],
     deps = [
+        ":data_download_dialog",
         ":scalar_card_types",
         ":utils",
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp:selectors",
+        "//tensorboard/webapp/angular:expect_angular_cdk_overlay",
         "//tensorboard/webapp/angular:expect_angular_material_button",
+        "//tensorboard/webapp/angular:expect_angular_material_dialog",
         "//tensorboard/webapp/angular:expect_angular_material_icon",
         "//tensorboard/webapp/angular:expect_angular_material_menu",
         "//tensorboard/webapp/angular:expect_angular_material_progress_spinner",
@@ -218,6 +256,7 @@ tf_ts_library(
     srcs = [
         "card_lazy_loader_test.ts",
         "card_view_test.ts",
+        "data_download_dialog_test.ts",
         "histogram_card_test.ts",
         "image_card_test.ts",
         "run_name_test.ts",
@@ -226,6 +265,7 @@ tf_ts_library(
     ],
     deps = [
         ":card_renderer",
+        ":data_download_dialog",
         ":histogram_card",
         ":image_card",
         ":run_name",
@@ -237,8 +277,11 @@ tf_ts_library(
         "//tensorboard/webapp/angular:expect_angular_cdk_overlay",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/angular:expect_angular_material_button",
+        "//tensorboard/webapp/angular:expect_angular_material_dialog",
+        "//tensorboard/webapp/angular:expect_angular_material_input",
         "//tensorboard/webapp/angular:expect_angular_material_menu",
         "//tensorboard/webapp/angular:expect_angular_material_progress_spinner",
+        "//tensorboard/webapp/angular:expect_angular_material_select",
         "//tensorboard/webapp/angular:expect_angular_material_slider",
         "//tensorboard/webapp/angular:expect_angular_platform_browser_animations",
         "//tensorboard/webapp/angular:expect_ngrx_store_testing",
@@ -259,6 +302,7 @@ tf_ts_library(
         "//tensorboard/webapp/widgets/line_chart_v2/lib:formatter",
         "//tensorboard/webapp/widgets/text:truncated_path",
         "@npm//@angular/core",
+        "@npm//@angular/forms",
         "@npm//@angular/platform-browser",
         "@npm//@ngrx/store",
         "@npm//@types/jasmine",

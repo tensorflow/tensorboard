@@ -295,6 +295,15 @@ export class TestingMetricsDataSource implements MetricsDataSource {
   imageUrl(imageId: ImageId) {
     return '';
   }
+
+  downloadUrl(
+    pluginId: PluginType,
+    tag: string,
+    runId: string,
+    downloadType: 'json' | 'csv'
+  ) {
+    return '';
+  }
 }
 
 export function provideTestingMetricsDataSource() {

@@ -299,4 +299,41 @@ describe('TBMetricsDataSource test', () => {
       ]);
     });
   });
+
+  describe('#downloadUrl', () => {
+    it('forms correct Url', () => {
+      expect(
+        dataSource.downloadUrl(PluginType.SCALARS, 'tag1', 'exp1/run1', 'json')
+      ).toBe(
+        '/experiment/exp1/data/plugin/scalars/scalars?tag=tag1&run=run1&format=json'
+      );
+      expect(
+        dataSource.downloadUrl(PluginType.SCALARS, 'tag1', 'exp1/run1', 'csv')
+      ).toBe(
+        '/experiment/exp1/data/plugin/scalars/scalars?tag=tag1&run=run1&format=csv'
+      );
+      expect(
+        dataSource.downloadUrl(PluginType.SCALARS, 'tag1', 'e2/run1', 'json')
+      ).toBe(
+        '/experiment/e2/data/plugin/scalars/scalars?tag=tag1&run=run1&format=json'
+      );
+      expect(
+        dataSource.downloadUrl(PluginType.SCALARS, 'tag1', 'e2/run1', 'csv')
+      ).toBe(
+        '/experiment/e2/data/plugin/scalars/scalars?tag=tag1&run=run1&format=csv'
+      );
+    });
+
+    it('throws for histogram data type', () => {
+      expect(() =>
+        dataSource.downloadUrl(PluginType.HISTOGRAMS, 'tag1', 'e/r', 'json')
+      ).toThrowError(/Not implemented/);
+    });
+
+    it('throws when experiment id is missing', () => {
+      expect(() =>
+        dataSource.downloadUrl(PluginType.SCALARS, 'tag1', 'run1', 'json')
+      ).toThrowError(/experimentId is empty/);
+    });
+  });
 });
