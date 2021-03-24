@@ -218,12 +218,13 @@ class TfGraphOpCompatCard extends LegacyElementMixin(PolymerElement) {
     }
   }
   @computed('graphHierarchy')
-  get _incompatibleOpNodes(): object {
+  get _incompatibleOpNodes(): Array<tf_graph.GroupNode | tf_graph.OpNode> {
     const graphHierarchy = this.graphHierarchy;
-    if (graphHierarchy && graphHierarchy.root) {
-      this.async(this._resizeList.bind(this, '#incompatibleOpsList'));
-      return tf_graph_hierarchy.getIncompatibleOps(graphHierarchy);
+    if (!graphHierarchy || !graphHierarchy.root) {
+      return [];
     }
+    this.async(this._resizeList.bind(this, '#incompatibleOpsList'));
+    return tf_graph_hierarchy.getIncompatibleOps(graphHierarchy);
   }
   @computed('graphHierarchy')
   get _opCompatScore(): number {

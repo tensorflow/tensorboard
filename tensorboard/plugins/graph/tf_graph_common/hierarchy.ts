@@ -600,9 +600,11 @@ export function joinAndAggregateStats(
     }
   });
 }
-export function getIncompatibleOps(hierarchy: Hierarchy) {
-  let nodes: (GroupNode | OpNode)[] = [];
-  let addedSeriesNodes: {
+export function getIncompatibleOps(
+  hierarchy: Hierarchy
+): Array<GroupNode | OpNode> {
+  const nodes: Array<GroupNode | OpNode> = [];
+  const addedSeriesNodes: {
     [seriesName: string]: SeriesNode;
   } = {};
   _.each(hierarchy.root.leaves(), (leaf) => {
@@ -897,9 +899,8 @@ function groupSeries(
         child.owningSeries = seriesName;
       }
     });
-    // If the series contains less than the threshold number of nodes and
-    // this series has not been adding to the series map, then set this
-    // series to be shown ungrouped in the map.
+    // If the series contains less than the threshold number of nodes, then set
+    // this series to be shown ungrouped in the map.
     if (
       nodeMemberNames.length < threshold &&
       hierarchy.getSeriesGroupType(seriesNode.name) ===
