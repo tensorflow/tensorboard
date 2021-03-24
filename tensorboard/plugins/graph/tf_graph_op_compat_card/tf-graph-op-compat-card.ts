@@ -182,8 +182,6 @@ class TfGraphOpCompatCard extends LegacyElementMixin(PolymerElement) {
   @property({type: Object})
   graphHierarchy: tf_graph_hierarchy.Hierarchy;
   @property({type: Object})
-  hierarchyParams: object;
-  @property({type: Object})
   renderHierarchy: tf_graph_render.RenderGraphInfo;
   @property({type: String})
   nodeTitle: string;
@@ -219,16 +217,12 @@ class TfGraphOpCompatCard extends LegacyElementMixin(PolymerElement) {
       list.fire('iron-resize');
     }
   }
-  @computed('graphHierarchy', 'hierarchyParams')
+  @computed('graphHierarchy')
   get _incompatibleOpNodes(): object {
-    var graphHierarchy = this.graphHierarchy;
-    var hierarchyParams = this.hierarchyParams;
+    const graphHierarchy = this.graphHierarchy;
     if (graphHierarchy && graphHierarchy.root) {
       this.async(this._resizeList.bind(this, '#incompatibleOpsList'));
-      return tf_graph_hierarchy.getIncompatibleOps(
-        graphHierarchy,
-        hierarchyParams as any
-      );
+      return tf_graph_hierarchy.getIncompatibleOps(graphHierarchy);
     }
   }
   @computed('graphHierarchy')

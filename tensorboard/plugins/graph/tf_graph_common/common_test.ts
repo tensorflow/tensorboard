@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import * as tb_debug from '../../../components/tb_debug';
+import * as tf_graph from './graph';
+import * as tf_graph_hierarchy from './hierarchy';
 import * as tf_graph_loader from './loader';
 import * as tf_graph_parser from './parser';
 
@@ -126,5 +128,69 @@ describe('graph tests', () => {
         eventValue: jasmine.any(Number),
       },
     ]);
+  });
+
+  describe('Graph Hierarchy', () => {
+    it('does not mutate the provided seriesMap by reference', () => {
+      const readonlySeriesMap = new Map([
+        ['fooNode', tf_graph.SeriesGroupingType.UNGROUP],
+        ['barNode', tf_graph.SeriesGroupingType.GROUP],
+      ]);
+      const params = {
+        ...tf_graph_hierarchy.DefaultHierarchyParams,
+        seriesMap: readonlySeriesMap,
+      };
+
+      const hierarchy = new tf_graph_hierarchy.Hierarchy(params);
+      hierarchy.setSeriesGroupType(
+        'barNode',
+        tf_graph.SeriesGroupingType.UNGROUP
+      );
+
+      // The Hierarchy's map should update.
+      expect(hierarchy.getSeriesGroupType('barNode')).toBe(
+        tf_graph.SeriesGroupingType.UNGROUP
+      );
+
+      // The original map should not.
+      expect(params.seriesMap.get('barNode')).toBe(
+        tf_graph.SeriesGroupingType.GROUP
+      );
+    });
+
+    it('builds a toggled seriesMap', () => {
+      const hierarchy = new tf_graph_hierarchy.Hierarchy({
+        ...tf_graph_hierarchy.DefaultHierarchyParams,
+        seriesMap: new Map([
+          ['fooNode', tf_graph.SeriesGroupingType.UNGROUP],
+          ['barNode', tf_graph.SeriesGroupingType.GROUP],
+        ]),
+      });
+
+      const result1 = hierarchy.buildSeriesGroupMapToggled('fooNode');
+      expect(result1).toEqual(
+        new Map([
+          ['fooNode', tf_graph.SeriesGroupingType.GROUP],
+          ['barNode', tf_graph.SeriesGroupingType.GROUP],
+        ])
+      );
+
+      const result2 = hierarchy.buildSeriesGroupMapToggled('barNode');
+      expect(result2).toEqual(
+        new Map([
+          ['fooNode', tf_graph.SeriesGroupingType.UNGROUP],
+          ['barNode', tf_graph.SeriesGroupingType.UNGROUP],
+        ])
+      );
+
+      const result3 = hierarchy.buildSeriesGroupMapToggled('unknownNode');
+      expect(result3).toEqual(
+        new Map([
+          ['fooNode', tf_graph.SeriesGroupingType.UNGROUP],
+          ['barNode', tf_graph.SeriesGroupingType.GROUP],
+          ['unknownNode', tf_graph.SeriesGroupingType.UNGROUP],
+        ])
+      );
+    });
   });
 });

@@ -22,7 +22,7 @@ import * as tf_graph from '../tf_graph_common/graph';
 import * as tf_graph_render from '../tf_graph_common/render';
 import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
 import {ColorBy} from '../tf_graph_common/view_types';
-import {Hierarchy} from '../tf_graph_common/hierarchy';
+import * as tf_graph_hierarchy from '../tf_graph_common/hierarchy';
 
 /**
  * Some UX features, such as 'color by structure', rely on the 'template'
@@ -174,7 +174,6 @@ class TfGraphBoard extends LegacyElementMixin(PolymerElement) {
           id="graph-info"
           title="selected"
           graph-hierarchy="[[graphHierarchy]]"
-          hierarchy-params="[[hierarchyParams]]"
           render-hierarchy="[[renderHierarchy]]"
           graph="[[graph]]"
           selected-node="{{selectedNode}}"
@@ -197,9 +196,14 @@ class TfGraphBoard extends LegacyElementMixin(PolymerElement) {
     </div>
   `;
   @property({type: Object})
-  graphHierarchy: Hierarchy;
+  graphHierarchy: tf_graph_hierarchy.Hierarchy;
   @property({type: Object})
   graph: tf_graph.SlimGraph;
+  // TODO(psybuzz): ideally, this would be a required property and the component
+  // that owns <tf-graph-board> and the graph loader should create these params.
+  @property({type: Object})
+  hierarchyParams: tf_graph_hierarchy.HierarchyParams =
+    tf_graph_hierarchy.DefaultHierarchyParams;
   @property({type: Object})
   stats: object;
   /**

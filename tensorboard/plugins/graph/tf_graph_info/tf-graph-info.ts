@@ -63,7 +63,6 @@ class TfGraphInfo extends LegacyElementMixin(PolymerElement) {
     <template is="dom-if" if="[[_equals(colorBy, 'op_compatibility')]]">
       <tf-graph-op-compat-card
         graph-hierarchy="[[graphHierarchy]]"
-        hierarchy-params="[[hierarchyParams]]"
         render-hierarchy="[[renderHierarchy]]"
         color-by="[[colorBy]]"
         node-title="[[compatNodeTitle]]"

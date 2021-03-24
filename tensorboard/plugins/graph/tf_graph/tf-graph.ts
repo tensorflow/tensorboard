@@ -95,7 +95,7 @@ class TfGraph extends LegacyElementMixin(PolymerElement) {
   @property({type: Object})
   devicesForStats: object;
   @property({type: Object})
-  hierarchyParams: any;
+  hierarchyParams: tf_graph_hierarchy.HierarchyParams;
   @property({
     type: Object,
     notify: true,
@@ -479,9 +479,6 @@ class TfGraph extends LegacyElementMixin(PolymerElement) {
     this.nodeToggleSeriesGroup(nodeName);
   }
   nodeToggleSeriesGroup(nodeName) {
-    // Toggle the group setting of the specified node appropriately.
-    tf_graph.toggleNodeSeriesGroup(this.hierarchyParams.seriesMap, nodeName);
-    // Rebuild the render hierarchy with the updated series grouping map.
     this.set('progress', {
       value: 0,
       msg: '',
@@ -492,8 +489,15 @@ class TfGraph extends LegacyElementMixin(PolymerElement) {
       100,
       'Namespace hierarchy'
     );
+
+    // Toggle the node's group type, setting to 'UNGROUP' if unspecified.
+    const newHierarchyParams = {
+      ...this.hierarchyParams,
+      seriesMap: this.graphHierarchy.buildSeriesGroupMapToggled(nodeName),
+    };
+
     tf_graph_hierarchy
-      .build(this.basicGraph, this.hierarchyParams, hierarchyTracker)
+      .build(this.basicGraph, newHierarchyParams, hierarchyTracker)
       .then(
         function (graphHierarchy) {
           this.set('graphHierarchy', graphHierarchy);
