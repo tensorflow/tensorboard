@@ -1452,22 +1452,6 @@ export function getGroupSeriesNodeButtonString(group: SeriesGroupingType) {
     return 'Group this series of nodes';
   }
 }
-/**
- * Toggle the node series grouping option in the provided map, setting it
- * to ungroup if the series is not already in the map.
- */
-export function toggleNodeSeriesGroup(
-  map: {
-    [name: string]: SeriesGroupingType;
-  },
-  name: string
-) {
-  if (!(name in map) || map[name] === SeriesGroupingType.GROUP) {
-    map[name] = SeriesGroupingType.UNGROUP;
-  } else {
-    map[name] = SeriesGroupingType.GROUP;
-  }
-}
 
 export interface Edges {
   control: Metaedge[];

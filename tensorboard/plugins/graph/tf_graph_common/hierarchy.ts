@@ -55,6 +55,9 @@ export enum HierarchyEvent {
   TEMPLATES_UPDATED,
 }
 
+// A map from the name of a series node to its grouping type.
+type SeriesGroupMap = Map<string, tf_graph.SeriesGroupingType>;
+
 /**
  * Class for the Graph Hierarchy for TensorFlow graph.
  */
@@ -91,6 +94,7 @@ export class Hierarchy extends tf_graph_util.Dispatcher<HierarchyEvent> {
   private index: {
     [nodeName: string]: GroupNode | OpNode;
   };
+  private readonly seriesGroupMap: SeriesGroupMap;
 
   constructor(params: HierarchyParams) {
     super();
@@ -98,6 +102,7 @@ export class Hierarchy extends tf_graph_util.Dispatcher<HierarchyEvent> {
     this.graphOptions.rankdir = params.rankDirection;
     this.root = createMetanode(ROOT_NAME, this.graphOptions);
     this.libraryFunctions = {};
+    this.seriesGroupMap = new Map(params.seriesMap);
     this.devices = null;
     this.xlaClusters = null;
     this.verifyTemplate = params.verifyTemplate;
@@ -108,6 +113,24 @@ export class Hierarchy extends tf_graph_util.Dispatcher<HierarchyEvent> {
     this.index = {};
     this.index[ROOT_NAME] = this.root;
     this.orderings = {};
+  }
+  getSeriesGroupType(nodeName: string): tf_graph.SeriesGroupingType {
+    // If grouping was not specified, assume it should be grouped by default.
+    return (
+      this.seriesGroupMap.get(nodeName) ?? tf_graph.SeriesGroupingType.GROUP
+    );
+  }
+  setSeriesGroupType(nodeName: string, groupType: tf_graph.SeriesGroupingType) {
+    return this.seriesGroupMap.set(nodeName, groupType);
+  }
+  buildSeriesGroupMapToggled(
+    nodeName: string
+  ): Map<string, tf_graph.SeriesGroupingType> {
+    const newGroupType =
+      this.getSeriesGroupType(nodeName) === tf_graph.SeriesGroupingType.GROUP
+        ? tf_graph.SeriesGroupingType.UNGROUP
+        : tf_graph.SeriesGroupingType.GROUP;
+    return new Map([...this.seriesGroupMap, [nodeName, newGroupType]]);
   }
   getNodeMap(): {
     [nodeName: string]: GroupNode | OpNode;
@@ -442,9 +465,8 @@ function findEdgeTargetsInGraph(
 export interface HierarchyParams {
   verifyTemplate: boolean;
   seriesNodeMinSize: number;
-  seriesMap: {
-    [name: string]: tf_graph.SeriesGroupingType;
-  };
+  // The initial map of explicit series group types.
+  seriesMap: SeriesGroupMap;
   // This string is supplied to dagre as the 'rankdir' property for laying out
   // the graph. TB, BT, LR, or RL. The default is 'BT' (bottom to top).
   rankDirection: string;
@@ -456,7 +478,7 @@ export interface HierarchyParams {
 export const DefaultHierarchyParams: HierarchyParams = {
   verifyTemplate: true,
   seriesNodeMinSize: 5,
-  seriesMap: {},
+  seriesMap: new Map(),
   rankDirection: 'BT',
   useGeneralizedSeriesPatterns: false,
 };
@@ -579,11 +601,10 @@ export function joinAndAggregateStats(
   });
 }
 export function getIncompatibleOps(
-  hierarchy: Hierarchy,
-  hierarchyParams: HierarchyParams
-) {
-  let nodes: (GroupNode | OpNode)[] = [];
-  let addedSeriesNodes: {
+  hierarchy: Hierarchy
+): Array<GroupNode | OpNode> {
+  const nodes: Array<GroupNode | OpNode> = [];
+  const addedSeriesNodes: {
     [seriesName: string]: SeriesNode;
   } = {};
   _.each(hierarchy.root.leaves(), (leaf) => {
@@ -593,9 +614,8 @@ export function getIncompatibleOps(
       if (!opNode.compatible) {
         if (opNode.owningSeries) {
           if (
-            hierarchyParams &&
-            hierarchyParams.seriesMap[opNode.owningSeries] ===
-              tf_graph.SeriesGroupingType.UNGROUP
+            hierarchy.getSeriesGroupType(opNode.owningSeries) ===
+            tf_graph.SeriesGroupingType.UNGROUP
           ) {
             // For un-grouped series node, add each node individually
             nodes.push(opNode);
@@ -843,9 +863,7 @@ function groupSeries(
     [name: string]: string;
   },
   threshold: number,
-  map: {
-    [name: string]: tf_graph.SeriesGroupingType;
-  },
+  seriesMap: SeriesGroupMap,
   useGeneralizedSeriesPatterns: boolean
 ) {
   let metagraph = metanode.metagraph;
@@ -857,7 +875,7 @@ function groupSeries(
         hierarchy,
         seriesNames,
         threshold,
-        map,
+        seriesMap,
         useGeneralizedSeriesPatterns
       );
     }
@@ -881,16 +899,22 @@ function groupSeries(
         child.owningSeries = seriesName;
       }
     });
-    // If the series contains less than the threshold number of nodes and
-    // this series has not been adding to the series map, then set this
-    // series to be shown ungrouped in the map.
-    if (nodeMemberNames.length < threshold && !(seriesNode.name in map)) {
-      map[seriesNode.name] = tf_graph.SeriesGroupingType.UNGROUP;
+    // If the series contains less than the threshold number of nodes, then set
+    // this series to be shown ungrouped in the map.
+    if (
+      nodeMemberNames.length < threshold &&
+      hierarchy.getSeriesGroupType(seriesNode.name) ===
+        tf_graph.SeriesGroupingType.GROUP
+    ) {
+      hierarchy.setSeriesGroupType(
+        seriesNode.name,
+        tf_graph.SeriesGroupingType.UNGROUP
+      );
     }
     // If the series is in the map as ungrouped then do not group the series.
     if (
-      seriesNode.name in map &&
-      map[seriesNode.name] === tf_graph.SeriesGroupingType.UNGROUP
+      hierarchy.getSeriesGroupType(seriesNode.name) ===
+      tf_graph.SeriesGroupingType.UNGROUP
     ) {
       return;
     }
