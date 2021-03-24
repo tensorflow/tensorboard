@@ -394,9 +394,9 @@ port to TensorBoard as a subprocess.(default: %(default)s).\
             help="""\
 Use alternate mechanism to load data. Typically 100x faster or more, but only
 available on some platforms and invocations. Defaults to "auto" to use this new
-mode only if only if available, otherwise falling back to the legacy loading
-path. Set to "true" to suppress the advisory note and hard-fail if the fast
-codepath is not available. Set to "false" to always fall back. Feedback/issues:
+mode only if available, otherwise falling back to the legacy loading path. Set
+to "true" to suppress the advisory note and hard-fail if the fast codepath is
+not available. Set to "false" to always fall back. Feedback/issues:
 https://github.com/tensorflow/tensorboard/issues/4784
 (default: %(default)s)
 """,
