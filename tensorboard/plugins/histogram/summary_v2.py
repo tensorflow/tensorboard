@@ -49,8 +49,8 @@ def histogram(name, data, step=None, buckets=None, description=None):
     each histogram is associated with a `step` and a `name`. All the histograms
     with the same `name` constitute a time series of histograms.
 
-    When higher order `Tensor`s are flattened to produce a histogram of all
-    entries within.
+    The histogram is calculated over all the elements of the given `Tensor`
+    without regard to its shape or rank.
 
     This example writes 2 histograms:
 
@@ -83,7 +83,8 @@ def histogram(name, data, step=None, buckets=None, description=None):
     Arguments:
       name: A name for this summary. The summary tag used for TensorBoard will
         be this name prefixed by any active name scopes.
-      data: A `Tensor` of any shape. Must be castable to `float64`.
+      data: A `Tensor` of any shape. The histogram is computed over its elements,
+        which must be castable to `float64`.
       step: Explicit `int64`-castable monotonic step value for this summary. If
         omitted, this defaults to `tf.summary.experimental.get_step()`, which must
         not be None.
