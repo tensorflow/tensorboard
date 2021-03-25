@@ -120,7 +120,7 @@
     "numeric": "^1.2.6",
     "plottable": "^3.9.0",
     "rxjs": "7.0.0-beta.0",
-    "three": "~0.108.0",
+    "three": "~0.125.0",
     "umap-js": "^1.3.2",
     "web-animations-js": "^2.3.2",
     "zone.js": "^0.10.2"

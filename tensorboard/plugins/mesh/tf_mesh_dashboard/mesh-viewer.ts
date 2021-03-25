@@ -337,7 +337,7 @@ export class MeshViewer extends THREE.EventDispatcher {
     };
     // Determine what colors will be used.
     if (colors && colors.length == points.length) {
-      defaultConfig.material['vertexColors'] = THREE.VertexColors;
+      defaultConfig.material['vertexColors'] = true;
     } else {
       defaultConfig.material['color'] = this._runColor;
     }
@@ -345,24 +345,18 @@ export class MeshViewer extends THREE.EventDispatcher {
       config,
       defaultConfig
     ) as PointCloudConfig;
-    var geometry = new THREE.Geometry();
-    points.forEach(function (point) {
-      var p = new THREE.Vector3(point[0], point[1], point[2]);
-      const scale = 1;
-      p.x = point[0] * scale;
-      p.y = point[1] * scale;
-      p.z = point[2] * scale;
-      geometry.vertices.push(p);
-    });
+    const geometry = new THREE.BufferGeometry();
+    // Flattens the [N, 3] shaped `points` into a N*3 length array.
+    const flatPoints = new Float32Array(points.flat());
+    geometry.setAttribute('position', new THREE.BufferAttribute(flatPoints, 3));
+
     if (colors && colors.length == points.length) {
-      colors.forEach(function (color) {
-        const c = new THREE.Color(
-          color[0] / 255,
-          color[1] / 255,
-          color[2] / 255
-        );
-        geometry.colors.push(c);
-      });
+      // Flattens the N colors into a N*3 length array.
+      const flatColors = new Float32Array(colors.flat());
+      for (let i = 0; i < flatColors.length; i++) {
+        flatColors[i] = flatColors[i] / 255;
+      }
+      geometry.setAttribute('color', new THREE.BufferAttribute(flatColors, 3));
     }
     var material = new THREE[pc_config.material.cls](pc_config.material);
     var mesh = new THREE.Points(geometry, material);
@@ -441,46 +435,50 @@ export class MeshViewer extends THREE.EventDispatcher {
         metalness: 0,
       },
     }) as any;
-    let geometry = new THREE.Geometry();
-    vertices.forEach(function (point) {
-      let p = new THREE.Vector3(point[0], point[1], point[2]);
-      const scale = 1;
-      p.x = point[0] * scale;
-      p.y = point[1] * scale;
-      p.z = point[2] * scale;
-      geometry.vertices.push(p);
-    });
-    faces.forEach(function (face_indices) {
-      let face = new THREE.Face3(
-        face_indices[0],
-        face_indices[1],
-        face_indices[2]
-      );
-      if (colors && colors.length) {
-        const face_colors = [
-          colors[face_indices[0]],
-          colors[face_indices[1]],
-          colors[face_indices[2]],
-        ];
-        for (let i = 0; i < face_colors.length; i++) {
-          const vertex_color = face_colors[i];
-          let color = new THREE.Color(
-            vertex_color[0] / 255,
-            vertex_color[1] / 255,
-            vertex_color[2] / 255
-          );
-          face.vertexColors.push(color);
-        }
-      }
-      geometry.faces.push(face);
-    });
+    const geometry = new THREE.BufferGeometry();
+    // Flattens the [N, 3] shaped `vertices` into a N*3 length array.
+    // THREE.BufferAttribute expects values to be a shallow list, with the
+    // itemSize specified.
+    const flatPoints = new Float32Array(vertices.flat());
+    geometry.setAttribute('position', new THREE.BufferAttribute(flatPoints, 3));
+
+    /**
+     * Flattens the [N, 3] shaped `faces` into a N*3 length array of indices.
+     * This array of integers corresponds to triplets in the 'position'
+     * attribute. For example,
+     *   flatPoints = new Float32Array([7.5, 0, 0, 8.5, 0, 0, 9.5, 0, 0]);
+     *   vertexIndicesPerFace = new Uint16Array([2, 0, 1]);
+     *
+     * corresponds to 1 face with vertices
+     *   vertex1 at (9.5, 0, 0)
+     *   vertex2 at (7.5, 0, 0)
+     *   vertex3 at (8.5, 0, 0)
+     */
+    const vertexIndicesPerFace = new Uint16Array(faces.flat());
+
     if (colors && colors.length) {
+      // Flat colors is a N*3*3 length array of colors, where there are N faces,
+      // each face has 3 colors, and each color has 3 components (RGB).
+      const flatColors = colors.flat();
+      for (let i = 0; i < flatColors.length; i++) {
+        flatColors[i] = flatColors[i] / 255;
+      }
+      geometry.setAttribute(
+        'color',
+        new THREE.BufferAttribute(new Float32Array(flatColors), 3)
+      );
+
       mesh_config.material = mesh_config.material || {};
-      mesh_config.material.vertexColors = THREE.VertexColors;
+      mesh_config.material.vertexColors = true;
     }
+
     geometry.center();
     geometry.computeBoundingSphere();
+    // We intentionally set the index before `computeVertexNormals()`, which may
+    // check for indexed values.
+    geometry.setIndex(new THREE.BufferAttribute(vertexIndicesPerFace, 1));
     geometry.computeVertexNormals();
+
     let material = new THREE[mesh_config.material.cls](mesh_config.material);
     let mesh = new THREE.Mesh(geometry, material);
     mesh.castShadow = true;
