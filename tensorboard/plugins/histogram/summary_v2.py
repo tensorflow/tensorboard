@@ -41,10 +41,50 @@ DEFAULT_BUCKET_COUNT = 30
 def histogram(name, data, step=None, buckets=None, description=None):
     """Write a histogram summary.
 
+    See also `tf.summary.scalar`, `tf.summary.SummaryWriter`.
+
+    Writes a histogram to the current default summary writer, for later analysis
+    in TensorBoard's 'Histograms' and 'Distributions' dashboards (data written
+    using this API will appear in both places). Like `tf.summary.scalar` points,
+    each histogram is associated with a `step` and a `name`. All the histograms
+    with the same `name` constitute a time series of histograms.
+
+    The histogram is calculated over all the elements of the given `Tensor`
+    without regard to its shape or rank.
+
+    This example writes 2 histograms:
+
+    ```python
+    w = tf.summary.create_file_writer('test/logs')
+    with w.as_default():
+        tf.summary.histogram("activations", tf.random.uniform([100, 50]), step=0)
+        tf.summary.histogram("initial_weights", tf.random.normal([1000]), step=0)
+    ```
+
+    A common use case is to examine the changing activation patterns (or lack
+    thereof) at specific layers in a neural network, over time.
+
+    ```python
+    w = tf.summary.create_file_writer('test/logs')
+    with w.as_default():
+    for step in range(100):
+        # Generate fake "activations".
+        activations = [
+            tf.random.normal([1000], mean=step, stddev=1),
+            tf.random.normal([1000], mean=step, stddev=10),
+            tf.random.normal([1000], mean=step, stddev=100),
+        ]
+
+        tf.summary.histogram("layer1/activate", activations[0], step=step)
+        tf.summary.histogram("layer2/activate", activations[1], step=step)
+        tf.summary.histogram("layer3/activate", activations[2], step=step)
+    ```
+
     Arguments:
       name: A name for this summary. The summary tag used for TensorBoard will
         be this name prefixed by any active name scopes.
-      data: A `Tensor` of any shape. Must be castable to `float64`.
+      data: A `Tensor` of any shape. The histogram is computed over its elements,
+        which must be castable to `float64`.
       step: Explicit `int64`-castable monotonic step value for this summary. If
         omitted, this defaults to `tf.summary.experimental.get_step()`, which must
         not be None.
