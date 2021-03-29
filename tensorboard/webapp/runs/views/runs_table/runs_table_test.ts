@@ -36,19 +36,26 @@ import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
-import {DataLoadState} from '../../../types/data';
 import {of, ReplaySubject} from 'rxjs';
 
 import {State} from '../../../app_state';
 import {buildExperiment} from '../../../experiments/store/testing';
 import {
+  actions as hparamsActions,
+  selectors as hparamsSelectors,
+} from '../../../hparams';
+import {
+  buildDiscreteFilter,
+  buildHparamSpec,
+  buildIntervalFilter,
+  buildMetricSpec,
+} from '../../../hparams/testing';
+import {DiscreteFilter, IntervalFilter} from '../../../hparams/types';
+import {
   getCurrentRouteRunSelection,
   getExperiment,
   getExperimentIdToAliasMap,
-  getExperimentsHparamsAndMetrics,
   getRunColorMap,
-  getRunHparamFilterMap,
-  getRunMetricFilterMap,
   getRuns,
   getRunSelectorPaginationOption,
   getRunSelectorRegexFilter,
@@ -57,13 +64,11 @@ import {
 } from '../../../selectors';
 import {sendKeys} from '../../../testing/dom';
 import {MatIconTestingModule} from '../../../testing/mat_icon_module';
+import {DataLoadState} from '../../../types/data';
 import {SortDirection} from '../../../types/ui';
 import {RangeInputModule} from '../../../widgets/range_input/range_input_module';
 import {
   runColorChanged,
-  runDiscreteHparamFilterChanged,
-  runIntervalHparamFilterChanged,
-  runMetricFilterChanged,
   runPageSelectionToggled,
   runSelectionToggled,
   runSelectorPaginationOptionChanged,
@@ -74,15 +79,8 @@ import {
 } from '../../actions';
 import {DomainType} from '../../data_source/runs_data_source_types';
 import {Run} from '../../store/runs_types';
-import {
-  buildDiscreteFilter,
-  buildHparamSpec,
-  buildIntervalFilter,
-  buildMetricSpec,
-  buildRun,
-} from '../../store/testing';
-import {DiscreteFilter, IntervalFilter, SortType} from '../../types';
-
+import {buildRun} from '../../store/testing';
+import {SortType} from '../../types';
 import {RunsTableComponent} from './runs_table_component';
 import {RunsTableContainer, TEST_ONLY} from './runs_table_container';
 import {HparamSpec, MetricSpec, RunsTableColumn} from './types';
@@ -216,17 +214,20 @@ describe('runs_table', () => {
       tolkien: 'The Lord of the Rings',
     });
     store.overrideSelector(
-      getRunHparamFilterMap,
-      new Map() as ReturnType<typeof getRunHparamFilterMap>
+      hparamsSelectors.getExperimentsHparamsAndMetricsSpecs,
+      {
+        hparams: [],
+        metrics: [],
+      }
     );
     store.overrideSelector(
-      getRunMetricFilterMap,
-      new Map() as ReturnType<typeof getRunMetricFilterMap>
+      hparamsSelectors.getHparamFilterMap,
+      new Map() as ReturnType<typeof hparamsSelectors.getHparamFilterMap>
     );
-    store.overrideSelector(getExperimentsHparamsAndMetrics, {
-      hparams: [],
-      metrics: [],
-    });
+    store.overrideSelector(
+      hparamsSelectors.getMetricFilterMap,
+      new Map() as ReturnType<typeof hparamsSelectors.getMetricFilterMap>
+    );
     dispatchSpy = spyOn(store, 'dispatch');
     overlayContainer = TestBed.inject(OverlayContainer);
   });
@@ -1623,10 +1624,13 @@ describe('runs_table', () => {
       metricSpecs: MetricSpec[],
       showHparamsAndMetrics = true
     ) {
-      store.overrideSelector(getExperimentsHparamsAndMetrics, {
-        hparams: hparamSpecs,
-        metrics: metricSpecs,
-      });
+      store.overrideSelector(
+        hparamsSelectors.getExperimentsHparamsAndMetricsSpecs,
+        {
+          hparams: hparamSpecs,
+          metrics: metricSpecs,
+        }
+      );
       store.overrideSelector(getExperimentIdToAliasMap, {library: 'Library'});
       const fixture = TestBed.createComponent(RunsTableContainer);
       fixture.componentInstance.experimentIds = ['library'];
@@ -1653,7 +1657,7 @@ describe('runs_table', () => {
         buildMetricSpec({tag: 'loss', displayName: ''}),
       ];
       store.overrideSelector(
-        getRunHparamFilterMap,
+        hparamsSelectors.getHparamFilterMap,
         new Map([
           [
             'batch_size',
@@ -1666,7 +1670,7 @@ describe('runs_table', () => {
         ])
       );
       store.overrideSelector(
-        getRunMetricFilterMap,
+        hparamsSelectors.getMetricFilterMap,
         new Map([
           [
             'acc',
@@ -1788,8 +1792,14 @@ describe('runs_table', () => {
           buildMetricSpec({tag: 'acc', displayName: 'Accuracy'}),
           buildMetricSpec({tag: 'loss', displayName: ''}),
         ];
-        store.overrideSelector(getRunHparamFilterMap, buildHparamFilterMap());
-        store.overrideSelector(getRunMetricFilterMap, buildMetricFilterMap());
+        store.overrideSelector(
+          hparamsSelectors.getHparamFilterMap,
+          buildHparamFilterMap()
+        );
+        store.overrideSelector(
+          hparamsSelectors.getMetricFilterMap,
+          buildMetricFilterMap()
+        );
       });
 
       it('filters by discrete hparams', () => {
@@ -1812,7 +1822,7 @@ describe('runs_table', () => {
           buildRun({id: 'id4', name: 'Book 4', hparams: []}),
         ]);
         store.overrideSelector(
-          getRunHparamFilterMap,
+          hparamsSelectors.getHparamFilterMap,
           buildHparamFilterMap([
             [
               'foo',
@@ -1849,7 +1859,7 @@ describe('runs_table', () => {
           buildRun({id: 'id4', name: 'Book 4', hparams: []}),
         ]);
         store.overrideSelector(
-          getRunHparamFilterMap,
+          hparamsSelectors.getHparamFilterMap,
           buildHparamFilterMap([
             [
               'foo',
@@ -1887,7 +1897,7 @@ describe('runs_table', () => {
           buildRun({id: 'id4', name: 'Book 4', hparams: []}),
         ]);
         store.overrideSelector(
-          getRunHparamFilterMap,
+          hparamsSelectors.getHparamFilterMap,
           buildHparamFilterMap([
             [
               'qaz',
@@ -1928,7 +1938,7 @@ describe('runs_table', () => {
           }),
         ]);
         store.overrideSelector(
-          getRunMetricFilterMap,
+          hparamsSelectors.getMetricFilterMap,
           buildMetricFilterMap([
             [
               'acc',
@@ -1965,7 +1975,7 @@ describe('runs_table', () => {
           buildRun({id: 'id3', name: 'Book 3', metrics: []}),
         ]);
         store.overrideSelector(
-          getRunMetricFilterMap,
+          hparamsSelectors.getMetricFilterMap,
           buildMetricFilterMap([
             [
               'acc',
@@ -2014,7 +2024,7 @@ describe('runs_table', () => {
           buildRun({id: 'id4', name: 'Book 4', hparams: []}),
         ]);
         store.overrideSelector(
-          getRunHparamFilterMap,
+          hparamsSelectors.getHparamFilterMap,
           new Map([
             [
               'foo',
@@ -2026,7 +2036,7 @@ describe('runs_table', () => {
           ])
         );
         store.overrideSelector(
-          getRunMetricFilterMap,
+          hparamsSelectors.getMetricFilterMap,
           new Map([
             [
               'acc',
@@ -2076,7 +2086,7 @@ describe('runs_table', () => {
         ]);
 
         store.overrideSelector(
-          getRunHparamFilterMap,
+          hparamsSelectors.getHparamFilterMap,
           buildHparamFilterMap([
             [
               'foo',
@@ -2092,7 +2102,7 @@ describe('runs_table', () => {
         fixture.detectChanges();
 
         store.overrideSelector(
-          getRunHparamFilterMap,
+          hparamsSelectors.getHparamFilterMap,
           buildHparamFilterMap([
             [
               'foo',
@@ -2145,7 +2155,7 @@ describe('runs_table', () => {
 
         it('shows discrete hparams with checkboxes', () => {
           store.overrideSelector(
-            getRunHparamFilterMap,
+            hparamsSelectors.getHparamFilterMap,
             buildHparamFilterMap([
               [
                 'foo',
@@ -2176,7 +2186,7 @@ describe('runs_table', () => {
 
         it('dispatches hparam action when clicking on the checkbox', () => {
           store.overrideSelector(
-            getRunHparamFilterMap,
+            hparamsSelectors.getHparamFilterMap,
             buildHparamFilterMap([
               [
                 'foo',
@@ -2202,7 +2212,8 @@ describe('runs_table', () => {
           ) as HTMLElement;
           checkbox.click();
           expect(dispatchSpy).toHaveBeenCalledWith(
-            runDiscreteHparamFilterChanged({
+            hparamsActions.hparamsDiscreteHparamFilterChanged({
+              experimentIds: ['library'],
               hparamName: 'foo',
               includeUndefined: false,
               filterValues: ['bar'],
@@ -2212,7 +2223,7 @@ describe('runs_table', () => {
 
         it('dispatches includeUndefined change for discrete hparam change', () => {
           store.overrideSelector(
-            getRunHparamFilterMap,
+            hparamsSelectors.getHparamFilterMap,
             buildHparamFilterMap([
               [
                 'foo',
@@ -2238,7 +2249,8 @@ describe('runs_table', () => {
           ) as HTMLElement;
           checkbox.click();
           expect(dispatchSpy).toHaveBeenCalledWith(
-            runDiscreteHparamFilterChanged({
+            hparamsActions.hparamsDiscreteHparamFilterChanged({
+              experimentIds: ['library'],
               hparamName: 'foo',
               includeUndefined: true,
               filterValues: ['bar', 'faz'],
@@ -2248,7 +2260,7 @@ describe('runs_table', () => {
 
         it('shows interval hparams with tb-range-input', () => {
           store.overrideSelector(
-            getRunHparamFilterMap,
+            hparamsSelectors.getHparamFilterMap,
             buildHparamFilterMap([
               [
                 'batch_size',
@@ -2277,7 +2289,7 @@ describe('runs_table', () => {
 
         it('dispatches hparam action when tb-range-input changes', () => {
           store.overrideSelector(
-            getRunHparamFilterMap,
+            hparamsSelectors.getHparamFilterMap,
             buildHparamFilterMap([
               [
                 'batch_size',
@@ -2304,7 +2316,8 @@ describe('runs_table', () => {
           minValue.value = '32';
           minValue.dispatchEvent(new Event('change'));
           expect(dispatchSpy).toHaveBeenCalledWith(
-            runIntervalHparamFilterChanged({
+            hparamsActions.hparamsIntervalHparamFilterChanged({
+              experimentIds: ['library'],
               hparamName: 'batch_size',
               includeUndefined: true,
               filterLowerValue: 32,
@@ -2315,7 +2328,7 @@ describe('runs_table', () => {
 
         it('dispatches includeUndefined change for interval hparam change', () => {
           store.overrideSelector(
-            getRunHparamFilterMap,
+            hparamsSelectors.getHparamFilterMap,
             buildHparamFilterMap([
               [
                 'batch_size',
@@ -2341,7 +2354,8 @@ describe('runs_table', () => {
           ) as HTMLElement;
           checkbox.click();
           expect(dispatchSpy).toHaveBeenCalledWith(
-            runIntervalHparamFilterChanged({
+            hparamsActions.hparamsIntervalHparamFilterChanged({
+              experimentIds: ['library'],
               hparamName: 'batch_size',
               includeUndefined: false,
               filterLowerValue: 16,
@@ -2352,7 +2366,7 @@ describe('runs_table', () => {
 
         it('shows metric value with tb-range-input based on runs', () => {
           store.overrideSelector(
-            getRunMetricFilterMap,
+            hparamsSelectors.getMetricFilterMap,
             buildMetricFilterMap([
               [
                 'acc',
@@ -2381,7 +2395,7 @@ describe('runs_table', () => {
 
         it('dispatches metric action when tb-range-input changes', () => {
           store.overrideSelector(
-            getRunMetricFilterMap,
+            hparamsSelectors.getMetricFilterMap,
             buildMetricFilterMap([
               [
                 'acc',
@@ -2408,7 +2422,8 @@ describe('runs_table', () => {
           maxValue.value = '0.32';
           maxValue.dispatchEvent(new Event('change'));
           expect(dispatchSpy).toHaveBeenCalledWith(
-            runMetricFilterChanged({
+            hparamsActions.hparamsMetricFilterChanged({
+              experimentIds: ['library'],
               metricTag: 'acc',
               includeUndefined: false,
               filterLowerValue: 0.25,
@@ -2419,7 +2434,7 @@ describe('runs_table', () => {
 
         it('dispatches metric action for includeUndefined change', () => {
           store.overrideSelector(
-            getRunMetricFilterMap,
+            hparamsSelectors.getMetricFilterMap,
             buildMetricFilterMap([
               [
                 'acc',
@@ -2444,7 +2459,8 @@ describe('runs_table', () => {
           input.click();
 
           expect(dispatchSpy).toHaveBeenCalledWith(
-            runMetricFilterChanged({
+            hparamsActions.hparamsMetricFilterChanged({
+              experimentIds: ['library'],
               metricTag: 'acc',
               includeUndefined: true,
               filterLowerValue: 0.25,
@@ -2456,7 +2472,7 @@ describe('runs_table', () => {
 
       it('does not sort because you click on the filter menu button', () => {
         store.overrideSelector(
-          getRunHparamFilterMap,
+          hparamsSelectors.getHparamFilterMap,
           buildHparamFilterMap([
             [
               'foo',
@@ -2467,7 +2483,7 @@ describe('runs_table', () => {
           ])
         );
         store.overrideSelector(
-          getRunMetricFilterMap,
+          hparamsSelectors.getMetricFilterMap,
           buildMetricFilterMap([
             [
               'acc',
@@ -2522,7 +2538,10 @@ describe('runs_table', () => {
           );
         }
       }
-      store.overrideSelector(getRunHparamFilterMap, hparamFilterMap);
+      store.overrideSelector(
+        hparamsSelectors.getHparamFilterMap,
+        hparamFilterMap
+      );
 
       const metricFilterMap = new Map<string, IntervalFilter>();
       for (const spec of metricsSpecs) {
@@ -2536,7 +2555,10 @@ describe('runs_table', () => {
         );
       }
 
-      store.overrideSelector(getRunMetricFilterMap, metricFilterMap);
+      store.overrideSelector(
+        hparamsSelectors.getMetricFilterMap,
+        metricFilterMap
+      );
     }
 
     describe('sorting', () => {
