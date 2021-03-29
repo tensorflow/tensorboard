@@ -529,7 +529,7 @@ async function slimGraphToHierarchy(
   return tf_graph_hierarchy.build(
     slimGraph,
     tf_graph_hierarchy.DefaultHierarchyParams,
-    createProgressTracker()
+    createNoopProgressTracker()
   );
 }
 
@@ -544,11 +544,11 @@ async function graphDefToSlimGraph(
   return tf_graph.build(
     graphDef,
     tf_graph.DefaultBuildParams,
-    createProgressTracker()
+    createNoopProgressTracker()
   );
 }
 
-function createProgressTracker(): tf_graph_common.ProgressTracker {
+function createNoopProgressTracker(): tf_graph_common.ProgressTracker {
   return {
     setMessage: () => {},
     updateProgress: () => {},
