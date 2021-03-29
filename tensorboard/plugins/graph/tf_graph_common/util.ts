@@ -82,11 +82,6 @@ export function time<T>(
   }
   return result;
 }
-export type Tracker = {
-  setMessage: (msg: string) => void;
-  updateProgress: (value: number) => void;
-  reportError: (msg: string, error: Error) => void;
-};
 /**
  * Creates a tracker that sets the progress property of the
  * provided polymer component. The provided component must have
@@ -94,7 +89,7 @@ export type Tracker = {
  * property is an object with a numerical 'value' property and a
  * string 'msg' property.
  */
-export function getTracker(polymerComponent: any): Tracker {
+export function getTracker(polymerComponent: any): ProgressTracker {
   return {
     setMessage: function (msg) {
       polymerComponent.set('progress', {

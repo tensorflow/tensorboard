@@ -86,7 +86,7 @@ export function fetchAndParseGraphData(
   path: string,
   pbTxtFile: Blob,
   tracker: ProgressTracker
-) {
+): Promise<tf_graph_proto.GraphDef> {
   return tf_graph_util
     .runAsyncPromiseTask(
       'Reading graph pbtxt',
@@ -315,10 +315,10 @@ function parsePbtxtFile(
   }
   // Run through the file a line at a time.
   return streamParse(input, function (line: string) {
+    line = line.trim();
     if (!line) {
       return;
     }
-    line = line.trim();
     switch (line[line.length - 1]) {
       case '{': // create new object
         let name = line.substring(0, line.length - 2).trim();

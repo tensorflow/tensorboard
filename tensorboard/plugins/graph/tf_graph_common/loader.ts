@@ -14,6 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import * as tb_debug from '../../../components/tb_debug';
 
+import * as tf_graph_common from './common';
 import * as tf_graph from './graph';
 import * as hierarchy from './hierarchy';
 import * as op from './op';
@@ -25,7 +26,7 @@ export type GraphAndHierarchy = {
   graphHierarchy: hierarchy.Hierarchy;
 };
 export function fetchAndConstructHierarchicalGraph(
-  tracker: tf_graph_util.Tracker,
+  tracker: tf_graph_common.ProgressTracker,
   remotePath: string | null,
   pbTxtFile: Blob | null,
   compatibilityProvider: op.CompatibilityProvider = new op.TpuCompatibilityProvider(),

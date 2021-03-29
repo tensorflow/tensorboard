@@ -1039,11 +1039,11 @@ function detectSeriesUsingNumericSuffixes(
     // number at the end of the name after an underscore, which is allowed to
     // vary.
     _.each(members, function (name: string) {
-      let isGroup = name.charAt(name.length - 1) === '*';
-      let namepath = name.split('/');
-      let leaf = namepath[namepath.length - 1];
-      let parent = namepath.slice(0, namepath.length - 1).join('/');
-      let matches = leaf.match(/^(\D*)_(\d+)$/);
+      const isGroup = name.charAt(name.length - 1) === '*';
+      const namepath = name.split('/');
+      const leaf = namepath[namepath.length - 1];
+      const parent = namepath.slice(0, namepath.length - 1).join('/');
+      const matches = leaf.match(/^(\D*)(\d+)$/);
       let prefix;
       let id;
       let suffix = '';
@@ -1057,9 +1057,9 @@ function detectSeriesUsingNumericSuffixes(
         id = 0;
         suffix = isGroup ? '*' : '';
       }
-      let seriesName = getSeriesNodeName(prefix, suffix, parent);
+      const seriesName = getSeriesNodeName(prefix, suffix, parent);
       candidatesDict[seriesName] = candidatesDict[seriesName] || [];
-      let seriesNode = createSeriesNode(
+      const seriesNode = createSeriesNode(
         prefix,
         suffix,
         parent,
