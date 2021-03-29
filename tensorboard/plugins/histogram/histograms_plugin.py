@@ -27,7 +27,10 @@ from tensorboard.backend import http_util
 from tensorboard.data import provider
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.histogram import metadata
+from tensorboard.util import tb_logging
 
+
+logger = tb_logging.get_logger()
 
 _DEFAULT_DOWNSAMPLING = 500  # histograms per time series
 
@@ -57,6 +60,7 @@ class HistogramsPlugin(base_plugin.TBPlugin):
             self.plugin_name, _DEFAULT_DOWNSAMPLING
         )
         self._data_provider = context.data_provider
+        self._warned_about_new_metadata = False
 
     def get_plugin_apps(self):
         return {
@@ -81,11 +85,28 @@ class HistogramsPlugin(base_plugin.TBPlugin):
                 description = plugin_util.markdown_to_safe_html(
                     metadatum.description
                 )
+                md = metadata.parse_plugin_metadata(metadatum.plugin_content)
+                if md.version != 0:
+                    self._maybe_warn_about_new_metadata(run, tag, md.version)
+                    continue
                 result[run][tag] = {
                     "displayName": metadatum.display_name,
                     "description": description,
                 }
         return result
+
+    def _maybe_warn_about_new_metadata(self, run, tag, version):
+        if self._warned_about_new_metadata:
+            return
+        self._warned_about_new_metadata = True
+        logger.warning(
+            "Some histogram data is too new to be read by this version of "
+            "TensorBoard. Upgrading TensorBoard may fix this. "
+            "(sample: run %r, tag %r, data version %r)",
+            run,
+            tag,
+            version,
+        )
 
     def frontend_metadata(self):
         return base_plugin.FrontendMetadata(
