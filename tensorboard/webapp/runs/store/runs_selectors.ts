@@ -16,11 +16,8 @@ import {createFeatureSelector, createSelector} from '@ngrx/store';
 
 import {DataLoadState, LoadState} from '../../types/data';
 import {SortDirection} from '../../types/ui';
-import {DiscreteFilter, IntervalFilter, SortKey} from '../types';
-import {combineHparamAndMetricSpecs} from './runs_selectors_utils';
+import {SortKey} from '../types';
 import {
-  ExperimentToHparamAndMetricSpec,
-  HparamAndMetricSpec,
   Run,
   RunsDataState,
   RunsState,
@@ -101,32 +98,6 @@ export const getRunsLoadState = createSelector(
 );
 
 /**
- * `selectHparamAndMetricSpec` is meant for performance optimization that
- * leverages the memoization.
- */
-const selectHparamAndMetricSpec = createSelector(
-  getDataState,
-  (state: RunsDataState): ExperimentToHparamAndMetricSpec => {
-    return state.hparamAndMetricSpec;
-  }
-);
-
-/**
- * Returns Observable that emits hparams and metrics specs of experiments.
- */
-export const getExperimentsHparamsAndMetrics = createSelector(
-  selectHparamAndMetricSpec,
-  (
-    record: ExperimentToHparamAndMetricSpec,
-    props: {experimentIds: string[]}
-  ): HparamAndMetricSpec => {
-    return combineHparamAndMetricSpecs(
-      ...props.experimentIds.map((eid) => record[eid]).filter(Boolean)
-    );
-  }
-);
-
-/**
  * Returns Observable that emits selection state of runs. If the runs for the
  * current route are desired, please see ui_selectors.ts's
  * getCurrentRouteRunSelection instead.
@@ -191,59 +162,5 @@ export const getRunColorMap = createSelector(
       colorObject[key] = value;
     });
     return colorObject;
-  }
-);
-
-// Cheap identity selectors to skip recomputing selectors.
-const getHparamDefaultFilter = createSelector(
-  getUiState,
-  (state): Map<string, IntervalFilter | DiscreteFilter> => {
-    return state.hparamDefaultFilters;
-  }
-);
-
-const getHparamFilter = createSelector(
-  getUiState,
-  (state): Map<string, IntervalFilter | DiscreteFilter> => {
-    return state.hparamFilters;
-  }
-);
-
-const getMetricDefaultFilter = createSelector(
-  getUiState,
-  (state): Map<string, IntervalFilter> => {
-    return state.metricDefaultFilters;
-  }
-);
-
-const getMetricFilter = createSelector(
-  getUiState,
-  (state): Map<string, IntervalFilter> => {
-    return state.metricFilters;
-  }
-);
-
-/**
- * Returns Observable that emits map of hparam name to filter values.
- */
-export const getRunHparamFilterMap = createSelector(
-  getHparamDefaultFilter,
-  getHparamFilter,
-  (
-    defaultFilterMap,
-    filterMap
-  ): Map<string, IntervalFilter | DiscreteFilter> => {
-    return new Map([...defaultFilterMap, ...filterMap]);
-  }
-);
-
-/**
- * Returns Observable that emits map of metric tag to filter values.
- */
-export const getRunMetricFilterMap = createSelector(
-  getMetricDefaultFilter,
-  getMetricFilter,
-  (defaultFilterMap, filterMap): Map<string, IntervalFilter> => {
-    return new Map([...defaultFilterMap, ...filterMap]);
   }
 );

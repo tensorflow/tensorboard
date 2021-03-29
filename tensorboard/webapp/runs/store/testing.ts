@@ -18,19 +18,11 @@ limitations under the License.
 
 import {SortDirection} from '../../types/ui';
 import {
-  DatasetType,
-  HparamSpec,
-  HparamsValueType,
-  MetricSpec,
-} from '../data_source/runs_data_source_types';
-import {DiscreteFilter, DomainType, IntervalFilter} from '../types';
-
-import {
   Run,
-  RUNS_FEATURE_KEY,
   RunsDataState,
   RunsState,
   RunsUiState,
+  RUNS_FEATURE_KEY,
   State,
 } from './runs_types';
 
@@ -62,7 +54,6 @@ export function buildRunsState(
       runIdToExpId: {},
       runMetadata: {},
       runsLoadState: {},
-      hparamAndMetricSpec: {},
       selectionState: new Map(),
       ...dataOverride,
     },
@@ -72,10 +63,6 @@ export function buildRunsState(
       sort: {key: null, direction: SortDirection.UNSET},
       defaultRunColor: new Map(),
       runColorOverride: new Map(),
-      hparamFilters: new Map(),
-      metricFilters: new Map(),
-      hparamDefaultFilters: new Map(),
-      metricDefaultFilters: new Map(),
       ...uiOverride,
     },
   };
@@ -86,55 +73,4 @@ export function buildRunsState(
  */
 export function buildStateFromRunsState(runsState: RunsState): State {
   return {[RUNS_FEATURE_KEY]: runsState};
-}
-
-export function buildHparamSpec(
-  override: Partial<HparamSpec> = {}
-): HparamSpec {
-  return {
-    description: '',
-    displayName: 'Sample Param',
-    domain: {type: DomainType.INTERVAL, minValue: 0, maxValue: 1},
-    name: 'sample_param',
-    type: HparamsValueType.DATA_TYPE_FLOAT64,
-    ...override,
-  };
-}
-
-export function buildMetricSpec(
-  override: Partial<MetricSpec> = {}
-): MetricSpec {
-  return {
-    tag: 'tag',
-    displayName: 'Tag',
-    description: 'This is a tags',
-    datasetType: DatasetType.DATASET_TRAINING,
-    ...override,
-  };
-}
-
-export function buildDiscreteFilter(
-  override: Partial<DiscreteFilter> = {}
-): DiscreteFilter {
-  return {
-    type: DomainType.DISCRETE,
-    includeUndefined: true,
-    possibleValues: [1, 10, 100],
-    filterValues: [1, 100],
-    ...override,
-  };
-}
-
-export function buildIntervalFilter(
-  override: Partial<IntervalFilter> = {}
-): IntervalFilter {
-  return {
-    type: DomainType.INTERVAL,
-    includeUndefined: true,
-    minValue: 0,
-    maxValue: 100,
-    filterLowerValue: 5,
-    filterUpperValue: 10,
-    ...override,
-  };
 }

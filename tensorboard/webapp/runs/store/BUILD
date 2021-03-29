@@ -48,7 +48,6 @@ tf_ts_library(
 tf_ts_library(
     name = "types",
     srcs = [
-        "runs_selectors_utils.ts",
         "runs_types.ts",
     ],
     deps = [
@@ -78,7 +77,6 @@ tf_ts_library(
     srcs = [
         "runs_reducers_test.ts",
         "runs_selectors_test.ts",
-        "runs_selectors_utils_test.ts",
         "utils_test.ts",
     ],
     deps = [

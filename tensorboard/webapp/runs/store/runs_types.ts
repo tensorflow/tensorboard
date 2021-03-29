@@ -19,12 +19,8 @@ limitations under the License.
 import {RouteContextedState} from '../../app_routing/route_contexted_reducer_helper';
 import {LoadState} from '../../types/data';
 import {SortDirection} from '../../types/ui';
-import {
-  HparamSpec,
-  HparamValue,
-  MetricSpec,
-} from '../data_source/runs_data_source_types';
-import {DiscreteFilter, IntervalFilter, SortKey} from '../types';
+import {HparamValue} from '../data_source/runs_data_source_types';
+import {SortKey} from '../types';
 
 export {Domain, DomainType} from '../data_source/runs_data_source_types';
 
@@ -46,18 +42,6 @@ export const RUNS_FEATURE_KEY = 'runs';
 
 export type ExperimentId = string;
 export type RunId = string;
-type HparamName = string;
-type MetricName = string;
-
-export interface HparamAndMetricSpec {
-  hparams: HparamSpec[];
-  metrics: MetricSpec[];
-}
-
-export type ExperimentToHparamAndMetricSpec = Record<
-  ExperimentId,
-  HparamAndMetricSpec
->;
 
 /**
  * Interface that describes shape of the `data` state in the runs feature.
@@ -67,7 +51,6 @@ export interface RunsDataState {
   runIdToExpId: Record<RunId, ExperimentId>;
   runMetadata: Record<RunId, Run>;
   runsLoadState: Record<ExperimentId, LoadState>;
-  hparamAndMetricSpec: ExperimentToHparamAndMetricSpec;
   // Run selection is tied to a list of experimentIds which is somewhat related
   // to route but not strictly. For instance, if we want to render the
   // run-selector in both experiment list and dashboard routes sharing the
@@ -79,17 +62,10 @@ export interface RunsUiRoutefulState {
   paginationOption: {pageIndex: number; pageSize: number};
   regexFilter: string;
   sort: {key: SortKey | null; direction: SortDirection};
-
-  // Each route may keep track of its own hparam/metric filter values that
-  // overrides the default filters.
-  hparamFilters: Map<HparamName, DiscreteFilter | IntervalFilter>;
-  metricFilters: Map<MetricName, IntervalFilter>;
   runColorOverride: Map<RunId, string>;
 }
 
 export interface RunsUiRoutelessState {
-  hparamDefaultFilters: Map<HparamName, DiscreteFilter | IntervalFilter>;
-  metricDefaultFilters: Map<MetricName, IntervalFilter>;
   defaultRunColor: Map<RunId, string>;
 }
 
