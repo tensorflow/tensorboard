@@ -34,12 +34,10 @@ class PlaceholderDataProvider(provider.DataProvider):
         if eid not in self._eids:
             raise errors.NotFoundError("%r not in %r" % (eid, self._eids))
 
-    def data_location(self, ctx, *, experiment_id):
-        self._validate_eid(experiment_id)
-        return "%s://%s" % (self._name, experiment_id)
-
     def experiment_metadata(self, ctx, *, experiment_id):
-        return provider.ExperimentMetadata()
+        self._validate_eid(experiment_id)
+        data_location = "%s://%s" % (self._name, experiment_id)
+        return provider.ExperimentMetadata(data_location=data_location)
 
     def list_plugins(self, ctx, *, experiment_id):
         self._validate_eid(experiment_id)
@@ -200,28 +198,36 @@ class DispatchingDataProviderTest(tb_test.TestCase):
             providers
         )
 
-    def test_data_location(self):
+    def test_experiment_metadata(self):
         self.assertEqual(
-            self.with_unpfx.data_location(_ctx(), experiment_id="foo:123"),
-            self.foo_provider.data_location(_ctx(), experiment_id="123"),
+            self.with_unpfx.experiment_metadata(
+                _ctx(), experiment_id="foo:123"
+            ),
+            self.foo_provider.experiment_metadata(_ctx(), experiment_id="123"),
         )
         self.assertEqual(
-            self.with_unpfx.data_location(_ctx(), experiment_id="bar:a:b:c"),
-            self.bar_provider.data_location(_ctx(), experiment_id="a:b:c"),
+            self.with_unpfx.experiment_metadata(
+                _ctx(), experiment_id="bar:a:b:c"
+            ),
+            self.bar_provider.experiment_metadata(
+                _ctx(), experiment_id="a:b:c"
+            ),
         )
         self.assertEqual(
-            self.with_unpfx.data_location(_ctx(), experiment_id="baz"),
-            self.baz_provider.data_location(_ctx(), experiment_id="baz"),
+            self.with_unpfx.experiment_metadata(_ctx(), experiment_id="baz"),
+            self.baz_provider.experiment_metadata(_ctx(), experiment_id="baz"),
         )
         with self.assertRaisesRegex(
             errors.NotFoundError, "Unknown prefix in experiment ID: 'quux:hmm'"
         ):
-            self.with_unpfx.data_location(_ctx(), experiment_id="quux:hmm")
+            self.with_unpfx.experiment_metadata(
+                _ctx(), experiment_id="quux:hmm"
+            )
         with self.assertRaisesRegex(
             errors.NotFoundError,
             "No data provider found for unprefixed experiment ID: 'quux'",
         ):
-            self.without_unpfx.data_location(_ctx(), experiment_id="quux")
+            self.without_unpfx.experiment_metadata(_ctx(), experiment_id="quux")
 
     def test_scalars(self):
         listing = self.with_unpfx.list_scalars(
