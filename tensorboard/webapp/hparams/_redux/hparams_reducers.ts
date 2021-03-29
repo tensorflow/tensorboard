@@ -15,155 +15,214 @@ limitations under the License.
 import {Action, ActionReducer, createReducer, on} from '@ngrx/store';
 
 import {fetchRunsSucceeded} from '../../runs/actions';
-import * as actions from './hparams_actions';
 import {
   DiscreteFilter,
   DiscreteHparamValue,
+  DiscreteHparamValues,
   DomainType,
   IntervalFilter,
-} from '../types';
-import {ExperimentToHparams, HparamsState} from './hparams_types';
+} from '../_types';
+import * as actions from './hparams_actions';
+import {ExperimentToHparams, HparamsState} from './types';
+import {
+  combineDefaultHparamFilters,
+  combineDefaultMetricFilters,
+  getIdFromExperimentIds,
+} from './utils';
 
-const initialState: HparamsState = {data: {}};
+const initialState: HparamsState = {specs: {}, filters: {}};
 
 const reducer: ActionReducer<HparamsState, Action> = createReducer(
   initialState,
   on(actions.hparamsDiscreteHparamFilterChanged, (state, action) => {
-    const {experimentId, hparamName, filterValues, includeUndefined} = action;
-    const data = state.data[experimentId];
+    const {experimentIds, hparamName, filterValues, includeUndefined} = action;
+    const id = getIdFromExperimentIds(experimentIds);
+    const filter = state.filters[id] ?? {
+      metrics: new Map<string, DiscreteFilter | IntervalFilter>(),
+      hparams: new Map<string, DiscreteFilter | IntervalFilter>(),
+    };
 
-    // Unknown experimentId. Ignore.
-    if (!data) return state;
-
-    const defaultFilter = data.hparam.defaultFilters.get(hparamName);
-    if (!defaultFilter) {
-      throw new Error(`Unknown hparams: ${hparamName}`);
-    }
-
-    if (defaultFilter.type === DomainType.INTERVAL) {
-      throw new Error(
-        `Invariant error: Hparams filter is INTERVAL but got a DISCRETE change`
+    const existingFilter = filter.hparams.get(hparamName);
+    if (existingFilter && existingFilter.type !== DomainType.DISCRETE) {
+      throw new RangeError(
+        `New discrete filter of ${hparamName} conflicts existing filter of ` +
+          DomainType[existingFilter.type]
       );
     }
-    const existingFilter = {
-      ...defaultFilter,
-      ...data.hparam.filters.get(hparamName),
-    } as DiscreteFilter;
 
-    const newHparamFilters = new Map(data.hparam.filters);
+    const defaultFilter = combineDefaultHparamFilters(
+      experimentIds
+        .filter((eid) => {
+          return Boolean(state.specs[eid]);
+        })
+        .map((eid) => {
+          return state.specs[eid].hparam.defaultFilters;
+        })
+    ).get(hparamName);
+
+    if (!defaultFilter) {
+      throw new Error(
+        `Cannot set hparam, ${hparamName}, when it is not known for ` +
+          `experimentIds: ${experimentIds.join(', ')}`
+      );
+    }
+
+    if (defaultFilter.type !== DomainType.DISCRETE) {
+      throw new Error(
+        `Cannot set ${hparamName} when default filter is not of interval type.`
+      );
+    }
+
+    const possibleValues = new Set<DiscreteHparamValue>(
+      defaultFilter.possibleValues
+    );
+    const illegalValues = [...filterValues].filter(
+      (value) => !possibleValues.has(value)
+    );
+    if (illegalValues.length) {
+      throw new Error(
+        `New filter for ${hparamName} has more than one value that is not ` +
+          `present in the spec. Bad values: ${illegalValues.join(', ')}`
+      );
+    }
+
+    const newHparamFilters = new Map(filter.hparams);
     newHparamFilters.set(hparamName, {
-      ...existingFilter,
+      ...(existingFilter as DiscreteFilter | undefined),
+      type: DomainType.DISCRETE,
       includeUndefined,
+      possibleValues: [...possibleValues] as DiscreteHparamValues,
       filterValues,
     });
 
     return {
       ...state,
-      data: {
-        ...state.data,
-        [experimentId]: {
-          ...data,
-          hparam: {
-            ...data.hparam,
-            filters: newHparamFilters,
-          },
+      filters: {
+        ...state.filters,
+        [id]: {
+          ...filter,
+          hparams: newHparamFilters,
         },
       },
     };
   }),
   on(actions.hparamsIntervalHparamFilterChanged, (state, action) => {
     const {
-      experimentId,
+      experimentIds,
       hparamName,
       filterLowerValue,
       filterUpperValue,
       includeUndefined,
     } = action;
+    const id = getIdFromExperimentIds(experimentIds);
+    const filter = state.filters[id] ?? {
+      metrics: new Map(),
+      hparams: new Map(),
+    };
 
-    const data = state.data[experimentId];
-
-    // Unknown experimentId. Ignore.
-    if (!data) return state;
-
-    const defaultFilter = data.hparam.defaultFilters.get(hparamName);
-
-    if (!defaultFilter) {
-      throw new Error(`Unknown hparams: ${hparamName}`);
-    }
-
-    if (defaultFilter.type === DomainType.DISCRETE) {
-      throw new Error(
-        `Invariant error: Hparams filter is DISCRETE but got an INTERVAL change`
+    const existingFilter = filter.hparams.get(hparamName);
+    if (existingFilter && existingFilter.type !== DomainType.INTERVAL) {
+      throw new RangeError(
+        `New interval filter of ${hparamName} conflicts existing filter of ` +
+          DomainType[existingFilter.type]
       );
     }
-    const existingFilter = {
-      ...defaultFilter,
-      ...data.hparam.filters.get(hparamName),
-    } as IntervalFilter;
 
-    const newHparamFilters = new Map(data.hparam.filters);
+    const defaultFilter = combineDefaultHparamFilters(
+      experimentIds
+        .filter((eid) => {
+          return Boolean(state.specs[eid]);
+        })
+        .map((eid) => {
+          return state.specs[eid].hparam.defaultFilters;
+        })
+    ).get(hparamName);
+
+    if (!defaultFilter) {
+      throw new Error(
+        `Cannot set hpara, ${hparamName}, when it is not known for ` +
+          `experimentIds: ${experimentIds.join(', ')}`
+      );
+    }
+
+    if (defaultFilter.type !== DomainType.INTERVAL) {
+      throw new Error(
+        `Cannot set ${hparamName} when default filter is not of interval type.`
+      );
+    }
+
+    const newHparamFilters = new Map(filter.hparams);
     newHparamFilters.set(hparamName, {
-      ...existingFilter,
+      ...(existingFilter as IntervalFilter | undefined),
+      type: DomainType.INTERVAL,
       includeUndefined,
+      minValue: defaultFilter.minValue,
+      maxValue: defaultFilter.maxValue,
       filterLowerValue,
       filterUpperValue,
     });
 
     return {
       ...state,
-      data: {
-        ...state.data,
-        [experimentId]: {
-          ...data,
-          hparam: {
-            ...data.hparam,
-            filters: newHparamFilters,
-          },
+      filters: {
+        ...state.filters,
+        [id]: {
+          ...filter,
+          hparams: newHparamFilters,
         },
       },
     };
   }),
   on(actions.hparamsMetricFilterChanged, (state, action) => {
     const {
-      experimentId,
+      experimentIds,
       metricTag,
       filterLowerValue,
       filterUpperValue,
       includeUndefined,
     } = action;
+    const id = getIdFromExperimentIds(experimentIds);
+    const filter = state.filters[id] ?? {
+      metrics: new Map(),
+      hparams: new Map(),
+    };
 
-    const data = state.data[experimentId];
+    const defaultFilter = combineDefaultMetricFilters(
+      experimentIds
+        .filter((eid) => {
+          return Boolean(state.specs[eid]);
+        })
+        .map((eid) => {
+          return state.specs[eid].metric.defaultFilters;
+        })
+    ).get(metricTag);
 
-    // Unknown experimentId. Ignore.
-    if (!data) return state;
-
-    const defaultFilter = data.metric.defaultFilters.get(metricTag);
     if (!defaultFilter) {
-      throw new Error(`Unknown metric: ${metricTag}`);
+      throw new Error(
+        `Cannot set metric, ${metricTag}, when it is not known for ` +
+          `experimentIds: ${experimentIds.join(', ')}`
+      );
     }
-    const existingFilter = {
-      ...defaultFilter,
-      ...data.metric.filters.get(metricTag),
-    } as IntervalFilter;
 
-    const newMetricFilters = new Map(data.metric.filters);
+    const existingFilter = filter.metrics.get(metricTag);
+    const newMetricFilters = new Map(filter.metrics);
     newMetricFilters.set(metricTag, {
-      ...existingFilter,
+      ...(existingFilter as IntervalFilter | undefined),
+      type: DomainType.INTERVAL,
       includeUndefined,
+      minValue: defaultFilter.minValue,
+      maxValue: defaultFilter.maxValue,
       filterLowerValue,
       filterUpperValue,
-    });
+    } as IntervalFilter);
 
     return {
       ...state,
-      data: {
-        ...state.data,
-        [experimentId]: {
-          ...data,
-          metric: {
-            ...data.metric,
-            filters: newMetricFilters,
-          },
+      filters: {
+        ...state.filters,
+        [id]: {
+          ...filter,
+          metrics: newMetricFilters,
         },
       },
     };
@@ -182,7 +241,7 @@ const reducer: ActionReducer<HparamsState, Action> = createReducer(
       return state;
     }
 
-    const eidToHparams: ExperimentToHparams = {...state.data};
+    const eidToHparams: ExperimentToHparams = {...state.specs};
 
     // Arbitrary ordered collection of metric values collected across
     // experiments and runs to compute extents of metrics.
@@ -260,17 +319,19 @@ const reducer: ActionReducer<HparamsState, Action> = createReducer(
           maxValue,
           filterLowerValue: minValue,
           filterUpperValue: maxValue,
-        } as IntervalFilter);
+        });
       }
       for (const metricTag of metricTags) {
         const minAndMax = metricValueMinAndMax.get(metricTag);
+        const min = minAndMax?.min ?? 0;
+        const max = minAndMax?.max ?? 0;
         newMetricFilters.set(metricTag, {
           type: DomainType.INTERVAL,
           includeUndefined: true,
-          minValue: minAndMax?.min ?? 0,
-          maxValue: minAndMax?.max ?? 0,
-          filterLowerValue: minAndMax?.min ?? 0,
-          filterUpperValue: minAndMax?.max ?? 0,
+          minValue: min,
+          maxValue: max,
+          filterLowerValue: min,
+          filterUpperValue: max,
         });
       }
 
@@ -290,7 +351,7 @@ const reducer: ActionReducer<HparamsState, Action> = createReducer(
 
     return {
       ...state,
-      data: eidToHparams,
+      specs: eidToHparams,
     };
   })
 );

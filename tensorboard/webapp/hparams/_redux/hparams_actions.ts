@@ -25,7 +25,7 @@ import {DiscreteHparamValues} from '../types';
 export const hparamsDiscreteHparamFilterChanged = createAction(
   '[Hparams] Hparams Discrete Hparam Filter Changed',
   props<{
-    experimentId: string;
+    experimentIds: string[];
     hparamName: string;
     filterValues: DiscreteHparamValues;
     includeUndefined: boolean;
@@ -35,7 +35,7 @@ export const hparamsDiscreteHparamFilterChanged = createAction(
 export const hparamsIntervalHparamFilterChanged = createAction(
   '[Hparams] Hparams Interval Hparam Filter Changed',
   props<{
-    experimentId: string;
+    experimentIds: string[];
     hparamName: string;
     filterLowerValue: number;
     filterUpperValue: number;
@@ -46,7 +46,7 @@ export const hparamsIntervalHparamFilterChanged = createAction(
 export const hparamsMetricFilterChanged = createAction(
   '[Hparams] Hparams Metric Filter Changed',
   props<{
-    experimentId: string;
+    experimentIds: string[];
     metricTag: string;
     filterLowerValue: number;
     filterUpperValue: number;

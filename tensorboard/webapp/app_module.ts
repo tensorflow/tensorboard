@@ -36,6 +36,7 @@ import {RunsModule} from './runs/runs_module';
 import {SettingsModule} from './settings/settings_module';
 import {StoreModule} from './store_module';
 import {TensorBoardWrapperModule} from './tb_wrapper/tb_wrapper_module';
+import {HparamsModule} from './hparams/hparams_module';
 
 @NgModule({
   declarations: [AppContainer],
@@ -54,6 +55,7 @@ import {TensorBoardWrapperModule} from './tb_wrapper/tb_wrapper_module';
     ExperimentsModule,
     HashStorageModule,
     HeaderModule,
+    HparamsModule,
     MatIconModule,
     PageTitleModule,
     PluginsModule,

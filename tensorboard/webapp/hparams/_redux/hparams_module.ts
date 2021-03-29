@@ -12,7 +12,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {NgModule} from '@angular/core';
+import {StoreModule} from '@ngrx/store';
 
-export * from './_types';
+import {HPARAMS_FEATURE_KEY} from './types';
+import {reducers} from './hparams_reducers';
 
-export {State} from './_redux/types';
+@NgModule({
+  imports: [StoreModule.forFeature(HPARAMS_FEATURE_KEY, reducers)],
+})
+export class HparamsModule {}

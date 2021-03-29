@@ -11,6 +11,7 @@ tf_ng_module(
     ],
     deps = [
         "//tensorboard/webapp/alert:alert_action",
+        "//tensorboard/webapp/hparams",
         "//tensorboard/webapp/runs/actions",
         "//tensorboard/webapp/runs/data_source",
         "//tensorboard/webapp/runs/effects",
