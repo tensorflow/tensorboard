@@ -50,50 +50,47 @@ _GRPC_RETRYABLE_STATUS_CODES = frozenset(
 # gRPC metadata key whose value contains the client version.
 _VERSION_METADATA_KEY = "tensorboard-version"
 
-
-def async_call(
-    api_method,
-    request,
-    completion_handler,
-    ):
-    """Call a gRPC stub API method.
-
-    This only supports unary-unary RPCs: i.e., no streaming on either end.
-    Streamed RPCs will generally need application-level pagination support,
-    because after a gRPC error one must retry the entire request; there is no
-    "retry-resume" functionality.
-
-    Args:
-      api_method: Callable for the API method to invoke.
-      request: Request protocol buffer to pass to the API method.
-      completion_handler: A callback which takes the resolved future as an
-        argument and completes the computation.
-
-    Returns:
-      None.  All computation relying on the return value of the gRPC should
-        be done in the completion_handler.
-    """
-    # We can't actually use api_method.__name__ because it's not a real method,
-    # it's a special gRPC callable instance that doesn't expose the method name.
-    rpc_name = request.__class__.__name__.replace("Request", "")
-    logger.debug("Async RPC call %s with request: %r", rpc_name, request)
-    future = api_method.future(
-        request,
-        timeout=_GRPC_DEFAULT_TIMEOUT_SECS,
-        metadata=version_metadata(),
-    )
-    future.add_done_callback(completion_handler)
-
 def async_call_with_retries(
     api_method,
     request,
     completion_handler,
     num_remaining_tries=_GRPC_RETRY_MAX_ATTEMPTS - 1,
+    num_tries_so_far=0,
     clock=None
     ):
-    """ TO DO DO NOT SUBMIT...
+    """Initiate an asynchronous call to a gRPC stub, with retry logic.
+
+    This is similar to the `async_call` API, except that the call is handled
+    asynchronously, and the completion may be handled by another thread. The
+    caller must provide a `completion_handler` argument which will handle the
+    result or exception rising from the gRPC completion.
+
+    Retries are handled by recursively calling into this API with fewer
+    remaining retries, as controlled through the `num_remaining_retries`
+    argument.  Setting `num_remaining_retries` to zero will make just
+    one attempt at the gRPC call.
+
+    Retries are handled with jittered exponential backoff to spread out failures
+    due to request spikes.
+
+    This only supports unary-unary RPCs: i.e., no streaming on either end.
+
+    Args:
+      api_method: Callable for the API method to invoke.
+      request: Request protocol buffer to pass to the API method.
+      completion_handler: A function which takes a `grpc.Future` object as an
+        argument and performs the necessary operations on the gRPC response
+        or error, as required.
+      num_remaining_retries: A non-negative integer which indicates how many
+        more attempts should be made to the gRPC endpoint if this try fails
+        within an error code which could be recovered from.  Set to zero
+        to call with no retries.
+      num_tries_so_far: A non-negative integer indicating how many attempts
+        have been made so far for this gRPC.  Used to compute backoff time.
+      clock: an interface object supporting `time()` and `sleep()` methods
+        like the standard `time` module; if not passed, uses the normal module.
+
     """
-    print("calling async_call_with_retries")
     if num_remaining_tries < 0:
         # This should not happen in the course of normal operations and
         # indicates a bug in the implementation.
@@ -111,8 +108,8 @@ def async_call_with_retries(
     # The continuation should wrap the completion_handler such that:
     #   * If the grpc call succeeds, we should invoke the completion_handler.
     #   * If there are no more retries, we should invoke the completion_handler.
-    # Otherwise, we should invoke async_call_with_retries with one less
-    # retry.
+    #   * Otherwise, we should invoke async_call_with_retries with one less
+    #     retry.
     #
     def retry_handler(future):
         e = future.exception()
@@ -129,18 +126,22 @@ def async_call_with_retries(
                 completion_handler(future)
                 return
             # If able to retry, wait then do so.
-            num_attempts = _GRPC_RETRY_MAX_ATTEMPTS - num_remaining_tries
-            backoff_secs = _compute_backoff_seconds(num_attempts)
+            backoff_secs = _compute_backoff_seconds(num_tries_so_far + 1)
             clock.sleep(backoff_secs)
             async_call_with_retries(
-                api_method, request, completion_handler, num_remaining_tries - 1, clock)
+                api_method=api_method,
+                request=request,
+                completion_handler=completion_handler,
+                num_remaining_tries=num_remaining_tries - 1,
+                num_tries_so_far=num_tries_so_far + 1,
+                clock=clock)
 
     future.add_done_callback(retry_handler)
 
 
 
 def _compute_backoff_seconds(num_attempts):
-    """Compute wait time between attempts."""
+    """Compute appropriate wait time between RPC attempts."""
     jitter_factor = random.uniform(
         _GRPC_RETRY_JITTER_FACTOR_MIN, _GRPC_RETRY_JITTER_FACTOR_MAX
     )
@@ -156,6 +157,9 @@ def call_with_retries(api_method, request, clock=None):
     Streamed RPCs will generally need application-level pagination support,
     because after a gRPC error one must retry the entire request; there is no
     "retry-resume" functionality.
+
+    Retries are handled with jittered exponential backoff to spread out failures
+    due to request spikes.
 
     Args:
       api_method: Callable for the API method to invoke.
