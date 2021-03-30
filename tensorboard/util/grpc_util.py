@@ -51,6 +51,104 @@ _GRPC_RETRYABLE_STATUS_CODES = frozenset(
 _VERSION_METADATA_KEY = "tensorboard-version"
 
 
+def async_call(
+    api_method,
+    request,
+    completion_handler,
+    ):
+    """Call a gRPC stub API method.
+
+    This only supports unary-unary RPCs: i.e., no streaming on either end.
+    Streamed RPCs will generally need application-level pagination support,
+    because after a gRPC error one must retry the entire request; there is no
+    "retry-resume" functionality.
+
+    Args:
+      api_method: Callable for the API method to invoke.
+      request: Request protocol buffer to pass to the API method.
+      completion_handler: A callback which takes the resolved future as an
+        argument and completes the computation.
+
+    Returns:
+      None.  All computation relying on the return value of the gRPC should
+        be done in the completion_handler.
+    """
+    # We can't actually use api_method.__name__ because it's not a real method,
+    # it's a special gRPC callable instance that doesn't expose the method name.
+    rpc_name = request.__class__.__name__.replace("Request", "")
+    logger.debug("Async RPC call %s with request: %r", rpc_name, request)
+    future = api_method.future(
+        request,
+        timeout=_GRPC_DEFAULT_TIMEOUT_SECS,
+        metadata=version_metadata(),
+    )
+    future.add_done_callback(completion_handler)
+
+def async_call_with_retries(
+    api_method,
+    request,
+    completion_handler,
+    num_remaining_tries=_GRPC_RETRY_MAX_ATTEMPTS - 1,
+    clock=None
+    ):
+    """ TO DO DO NOT SUBMIT...
+    """
+    print("calling async_call_with_retries")
+    if num_remaining_tries < 0:
+        # This should not happen in the course of normal operations and
+        # indicates a bug in the implementation.
+        raise ValueError(
+            "num_remaining_tries=%d. expected >= 0." % num_remaining_tries)
+    # We can't actually use api_method.__name__ because it's not a real method,
+    # it's a special gRPC callable instance that doesn't expose the method name.
+    rpc_name = request.__class__.__name__.replace("Request", "")
+    logger.debug("Async RPC call %s with request: %r", rpc_name, request)
+    future = api_method.future(
+        request,
+        timeout=_GRPC_DEFAULT_TIMEOUT_SECS,
+        metadata=version_metadata(),
+    )
+    # The continuation should wrap the completion_handler such that:
+    #   * If the grpc call succeeds, we should invoke the completion_handler.
+    #   * If there are no more retries, we should invoke the completion_handler.
+    # Otherwise, we should invoke async_call_with_retries with one less
+    # retry.
+    #
+    def retry_handler(future):
+        e = future.exception()
+        if e is None:
+            completion_handler(future)
+            return
+        else:
+            logger.info("RPC call %s got error %s", rpc_name, e)
+            # If unable to retry, proceed to completion_handler.
+            if e.code() not in _GRPC_RETRYABLE_STATUS_CODES:
+                completion_handler(future)
+                return
+            if num_remaining_tries <= 0:
+                completion_handler(future)
+                return
+            # If able to retry, wait then do so.
+            num_attempts = _GRPC_RETRY_MAX_ATTEMPTS - num_remaining_tries
+            backoff_secs = _compute_backoff_seconds(num_attempts)
+            clock.sleep(backoff_secs)
+            async_call_with_retries(
+                api_method, request, completion_handler, num_remaining_tries - 1, clock)
+
+    future.add_done_callback(retry_handler)
+
+
+
+def _compute_backoff_seconds(num_attempts):
+    """Compute wait time between attempts."""
+    jitter_factor = random.uniform(
+        _GRPC_RETRY_JITTER_FACTOR_MIN, _GRPC_RETRY_JITTER_FACTOR_MAX
+    )
+    backoff_secs = (
+        _GRPC_RETRY_EXPONENTIAL_BASE ** num_attempts
+    ) * jitter_factor
+    return backoff_secs
+
 def call_with_retries(api_method, request, clock=None):
     """Call a gRPC stub API method, with automatic retry logic.
 
@@ -93,12 +191,7 @@ def call_with_retries(api_method, request, clock=None):
                 raise
             if num_attempts >= _GRPC_RETRY_MAX_ATTEMPTS:
                 raise
-        jitter_factor = random.uniform(
-            _GRPC_RETRY_JITTER_FACTOR_MIN, _GRPC_RETRY_JITTER_FACTOR_MAX
-        )
-        backoff_secs = (
-            _GRPC_RETRY_EXPONENTIAL_BASE ** num_attempts
-        ) * jitter_factor
+        backoff_secs = _compute_backoff_seconds(num_attempts)
         logger.info(
             "RPC call %s attempted %d times, retrying in %.1f seconds",
             rpc_name,
