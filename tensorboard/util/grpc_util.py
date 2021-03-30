@@ -50,14 +50,15 @@ _GRPC_RETRYABLE_STATUS_CODES = frozenset(
 # gRPC metadata key whose value contains the client version.
 _VERSION_METADATA_KEY = "tensorboard-version"
 
+
 def async_call_with_retries(
     api_method,
     request,
     completion_handler,
     num_remaining_tries=_GRPC_RETRY_MAX_ATTEMPTS - 1,
     num_tries_so_far=0,
-    clock=None
-    ):
+    clock=None,
+):
     """Initiate an asynchronous call to a gRPC stub, with retry logic.
 
     This is similar to the `async_call` API, except that the call is handled
@@ -95,7 +96,8 @@ def async_call_with_retries(
         # This should not happen in the course of normal operations and
         # indicates a bug in the implementation.
         raise ValueError(
-            "num_remaining_tries=%d. expected >= 0." % num_remaining_tries)
+            "num_remaining_tries=%d. expected >= 0." % num_remaining_tries
+        )
     # We can't actually use api_method.__name__ because it's not a real method,
     # it's a special gRPC callable instance that doesn't expose the method name.
     rpc_name = request.__class__.__name__.replace("Request", "")
@@ -134,10 +136,10 @@ def async_call_with_retries(
                 completion_handler=completion_handler,
                 num_remaining_tries=num_remaining_tries - 1,
                 num_tries_so_far=num_tries_so_far + 1,
-                clock=clock)
+                clock=clock,
+            )
 
     future.add_done_callback(retry_handler)
-
 
 
 def _compute_backoff_seconds(num_attempts):
@@ -149,6 +151,7 @@ def _compute_backoff_seconds(num_attempts):
         _GRPC_RETRY_EXPONENTIAL_BASE ** num_attempts
     ) * jitter_factor
     return backoff_secs
+
 
 def call_with_retries(api_method, request, clock=None):
     """Call a gRPC stub API method, with automatic retry logic.
