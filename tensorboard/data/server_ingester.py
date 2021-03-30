@@ -68,6 +68,7 @@ class SubprocessServerDataIngester(ingester.DataIngester):
         reload_interval,
         channel_creds_type,
         samples_per_plugin=None,
+        extra_flags=None,
     ):
         """Initializes an ingester with the given configuration.
 
@@ -79,6 +80,8 @@ class SubprocessServerDataIngester(ingester.DataIngester):
             `--grpc_creds_type`.
           samples_per_plugin: Dict[String, Int], as parsed from
             `--samples_per_plugin`.
+          extra_flags: List of extra string flags to be passed to the
+            data server without further interpretation.
         """
         self._server_binary = server_binary
         self._data_provider = None
@@ -86,6 +89,7 @@ class SubprocessServerDataIngester(ingester.DataIngester):
         self._reload_interval = reload_interval
         self._channel_creds_type = channel_creds_type
         self._samples_per_plugin = samples_per_plugin or {}
+        self._extra_flags = list(extra_flags or [])
 
     @property
     def data_provider(self):
@@ -127,6 +131,7 @@ class SubprocessServerDataIngester(ingester.DataIngester):
             args.append("--verbose")
         if logger.isEnabledFor(logging.DEBUG):
             args.append("--verbose")  # Repeat arg to increase verbosity.
+        args.extend(self._extra_flags)
 
         logger.info("Spawning data server: %r", args)
         popen = subprocess.Popen(args, stdin=subprocess.PIPE)

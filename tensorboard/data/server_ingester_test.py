@@ -93,6 +93,7 @@ class SubprocessServerDataIngesterTest(tb_test.TestCase):
                         "scalars": 500,
                         "images": 0,
                     },
+                    extra_flags=["--extra-flags", "--for-fun"],
                 )
                 ingester.start()
         self.assertIsInstance(
@@ -109,6 +110,8 @@ class SubprocessServerDataIngesterTest(tb_test.TestCase):
             "--die-after-stdin",
             "--error-file=%s" % error_file,
             "--verbose",  # logging is enabled in tests
+            "--extra-flags",
+            "--for-fun",
         ]
         popen.assert_called_once_with(expected_args, stdin=subprocess.PIPE)
         sc.assert_called_once_with(
