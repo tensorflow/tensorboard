@@ -17,9 +17,6 @@
 
 from tensorboard.compat.proto import summary_pb2
 from tensorboard.plugins.scalar import plugin_data_pb2
-from tensorboard.util import tb_logging
-
-logger = tb_logging.get_logger()
 
 PLUGIN_NAME = "scalars"
 
@@ -60,12 +57,5 @@ def parse_plugin_metadata(content):
     result = plugin_data_pb2.ScalarPluginData.FromString(content)
     if result.version == 0:
         return result
-    else:
-        logger.warning(
-            "Unknown metadata version: %s. The latest version known to "
-            "this build of TensorBoard is %s; perhaps a newer build is "
-            "available?",
-            result.version,
-            PROTO_VERSION,
-        )
-        return result
+    # No other versions known at this time, so no migrations to do.
+    return result

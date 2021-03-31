@@ -57,6 +57,10 @@ class ScalarsPlugin(base_plugin.TBPlugin):
             self.plugin_name, _DEFAULT_DOWNSAMPLING
         )
         self._data_provider = context.data_provider
+        self._version_checker = plugin_util._MetadataVersionChecker(
+            data_kind="scalar",
+            latest_known_version=0,
+        )
 
     def get_plugin_apps(self):
         return {
@@ -82,6 +86,9 @@ class ScalarsPlugin(base_plugin.TBPlugin):
         result = {run: {} for run in mapping}
         for (run, tag_to_content) in mapping.items():
             for (tag, metadatum) in tag_to_content.items():
+                md = metadata.parse_plugin_metadata(metadatum.plugin_content)
+                if not self._version_checker.ok(md.version, run, tag):
+                    continue
                 description = plugin_util.markdown_to_safe_html(
                     metadatum.description
                 )

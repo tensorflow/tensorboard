@@ -592,6 +592,7 @@ py_library(
     deps = [
         ":context",
         "//tensorboard/backend:experiment_id",
+        "//tensorboard/util:tb_logging",
         "@org_mozilla_bleach",
         "@org_pythonhosted_markdown",
     ],
