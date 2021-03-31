@@ -21,6 +21,9 @@ from tensorboard.data import provider
 from tensorboard.backend import http_util
 from tensorboard.plugins import base_plugin
 from tensorboard.plugins.pr_curve import metadata
+from tensorboard.util import tb_logging
+
+logger = tb_logging.get_logger()
 
 _DEFAULT_DOWNSAMPLING = 100  # PR curves per time series
 
@@ -41,6 +44,7 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
         self._downsample_to = (context.sampling_hints or {}).get(
             metadata.PLUGIN_NAME, _DEFAULT_DOWNSAMPLING
         )
+        self._warned_about_new_metadata = False
 
     @wrappers.Request.application
     def pr_curves_route(self, request):
@@ -145,6 +149,10 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
         result = {run: {} for run in mapping}
         for (run, tag_to_time_series) in mapping.items():
             for (tag, time_series) in tag_to_time_series.items():
+                md = metadata.parse_plugin_metadata(time_series.plugin_content)
+                if md.version != 0:
+                    self._maybe_warn_about_new_metadata(run, tag, md.version)
+                    continue
                 result[run][tag] = {
                     "displayName": time_series.display_name,
                     "description": plugin_util.markdown_to_safe_html(
@@ -152,6 +160,19 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
                     ),
                 }
         return result
+
+    def _maybe_warn_about_new_metadata(self, run, tag, version):
+        if self._warned_about_new_metadata:
+            return
+        self._warned_about_new_metadata = True
+        logger.warning(
+            "Some PR curve data is too new to be read by this version of "
+            "TensorBoard. Upgrading TensorBoard may fix this. "
+            "(sample: run %r, tag %r, data version %r)",
+            run,
+            tag,
+            version,
+        )
 
     def get_plugin_apps(self):
         """Gets all routes offered by the plugin.
