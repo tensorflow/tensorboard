@@ -257,6 +257,7 @@ jobs:
         with:
           toolchain: ${{ matrix.rust_version }}
           default: true
+          components: rustfmt, clippy
       - name: 'Install cargo-raze'
         run: cargo install cargo-raze --version ${{ matrix.cargo_raze_version }}
       - name: 'Run Rustfmt'
