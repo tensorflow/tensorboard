@@ -145,6 +145,7 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           toolchain: ${{ matrix.rust_version }}
+          default: true
       - name: 'Install Python packaging deps'
         run: |
           python -m pip install -U pip
@@ -255,6 +256,7 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           toolchain: ${{ matrix.rust_version }}
+          default: true
       - name: 'Install cargo-raze'
         run: cargo install cargo-raze --version ${{ matrix.cargo_raze_version }}
       - name: 'Run Rustfmt'
