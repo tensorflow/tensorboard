@@ -18,6 +18,7 @@ tf_ts_library(
         ":types",
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp/notification_center:types",
+        "//tensorboard/webapp/notification_center/data_source",
         "@npm//@angular/core",
         "@npm//@ngrx/effects",
         "@npm//@ngrx/store",
@@ -32,6 +33,7 @@ tf_ts_library(
     ],
     deps = [
         ":types",
+        "//tensorboard/webapp/notification_center/data_source:types",
         "@npm//@ngrx/store",
     ],
 )

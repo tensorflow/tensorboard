@@ -27,6 +27,7 @@ tf_ts_library(
     ],
     deps = [
         "@npm//rxjs",
+        "//tensorboard/webapp/notification_center/_redux:types",
     ],
 )
 

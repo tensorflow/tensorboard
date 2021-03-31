@@ -17,10 +17,10 @@ import {Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
 import {TBHttpClient} from '../../webapp_data_source/tb_http_client';
 import {
-  BackendNotificationRequest,
-  BackendNotificationResponse,
-} from './notification_center_backend_types';
-import {NotificationCenterDataSource} from './types';
+  NotificationCenterDataSource,
+  NotificationCenterRequest,
+  NotificationCenterResponse,
+} from './types';
 
 /**
  * An implementation of NotificationCenterDataSource that treats RunIds as identifiers
@@ -31,15 +31,15 @@ export class TBNotificationCenterDataSource
   implements NotificationCenterDataSource {
   constructor(private readonly http: TBHttpClient) {}
 
-  private fetchNotificationBackendRequest(
-    backendRequest: BackendNotificationRequest
-  ): Observable<{response: BackendNotificationResponse}> {
+  fetchNotification(
+    request: NotificationCenterRequest
+  ): Observable<{response: NotificationCenterResponse}> {
     const body = new FormData();
-    body.append('requests', JSON.stringify([backendRequest]));
+    body.append('requests', JSON.stringify([request]));
     return this.http
-      .post<BackendNotificationResponse[]>(`/notifications`, body)
+      .post<NotificationCenterResponse[]>(`data/notifications`, body)
       .pipe(
-        map((responses: BackendNotificationResponse[]) => {
+        map((responses: NotificationCenterResponse[]) => {
           return {response: responses[0]};
         })
       );

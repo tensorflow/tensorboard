@@ -40,4 +40,11 @@ export const notificationNotes = [
   - Custom colors for runs
   - Group previews`,
   },
+  {
+    category: CategoryEnum.WHATS_NEW,
+    dateInMs: 1616697269620,
+    title: '2.5 release',
+    content:
+      '<li>Visualize Scalars, Images, and  Histograms in one place</li><li>Custom colors for runs</li><li>Group previews</li>',
+  },
 ] as Notification[];

@@ -12,4 +12,28 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-export abstract class NotificationCenterDataSource {}
+import {Observable} from 'rxjs';
+import {Notification} from '../_redux/notification_center_types';
+
+export interface NotificationCenterRequest {
+  runId: string;
+}
+
+export interface NotificationCenterSuccessfulResponse {
+  notificaitons: Notification[];
+  error?: undefined;
+}
+
+export interface NotificationCenterFailedResponse {
+  error: string;
+}
+
+export type NotificationCenterResponse =
+  | NotificationCenterSuccessfulResponse
+  | NotificationCenterFailedResponse;
+
+export abstract class NotificationCenterDataSource {
+  abstract fetchNotification(
+    request: NotificationCenterRequest
+  ): Observable<{response: NotificationCenterResponse}>;
+}
