@@ -999,7 +999,7 @@ mod tests {
                 string_val: vec![value.into()],
                 ..Default::default()
             }
-        };
+        }
         let commit = CommitBuilder::new()
             .tensors("train", "status", |mut b| {
                 b.plugin_name("text")

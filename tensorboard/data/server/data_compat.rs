@@ -468,16 +468,11 @@ mod tests {
     /// Use like: `let b = to_le_bytes![1.0, 2.0f32];`
     ///
     /// Note the suffixed literal, which is necessary so the compiler knows the intended type.
-    //
-    // TODO(Rust 1.51): I think we can avoid intermediate Vecs with array::IntoIter from
-    // https://github.com/rust-lang/rust/pull/80470, e.g. with:
-    //   Bytes::from_iter([].iter().flat_map(|v| array::IntoIter::new(v.to_le_bytes())))
     macro_rules! to_le_bytes {
         ($($x:expr),+ $(,)?) => (
-            Bytes::from([$($x),+].iter()
-                .map(|v| v.to_le_bytes())
-                .collect::<Vec<_>>()
-                .concat())
+            [$($x),+].iter()
+                .flat_map(|v| std::array::IntoIter::new(v.to_le_bytes()))
+                .collect::<Bytes>()
         );
     }
 
