@@ -40,9 +40,9 @@ export class NotificationCenterEffects implements OnInitEffects {
     return initAction();
   }
 
-  private fetchTimeSeries(request: NotificationCenterRequest) {
-    return this.dataSource.fetchNotification([request]).pipe(
-      tap((responses: NotificationCenterResponse) => {
+  private fetchNotification(request: NotificationCenterRequest) {
+    return this.dataSource.fetchNotification(request).pipe(
+      tap((responses) => {
         console.log('NotificationCenterResponse:', responses);
         // const errors = responses.filter(isFailedTimeSeriesResponse);
         // if (errors.length) {
