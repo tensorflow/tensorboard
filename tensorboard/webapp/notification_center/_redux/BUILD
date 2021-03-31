@@ -10,7 +10,6 @@ tf_ts_library(
         "notification_center_effects.ts",
         "notification_center_reducers.ts",
         "notification_center_selectors.ts",
-        "notification_notes.ts",
     ],
     visibility = ["//tensorboard:internal"],
     deps = [
@@ -19,6 +18,7 @@ tf_ts_library(
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp/notification_center:types",
         "//tensorboard/webapp/notification_center/data_source",
+        "//tensorboard/webapp/app_routing:route_contexted_reducer_helper",
         "@npm//@angular/core",
         "@npm//@ngrx/effects",
         "@npm//@ngrx/store",
