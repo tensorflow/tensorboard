@@ -92,6 +92,8 @@ def async_call_with_retries(
         like the standard `time` module; if not passed, uses the normal module.
 
     """
+    if clock is None:
+        clock = time
     if num_remaining_tries < 0:
         # This should not happen in the course of normal operations and
         # indicates a bug in the implementation.
