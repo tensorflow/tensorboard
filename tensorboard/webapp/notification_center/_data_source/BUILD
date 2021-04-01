@@ -5,7 +5,7 @@ package(default_visibility = ["//tensorboard:internal"])
 licenses(["notice"])
 
 tf_ng_module(
-    name = "data_source",
+    name = "_data_source",
     srcs = [
         "index.ts",
         "notification_center_data_source.ts",

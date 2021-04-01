@@ -14,7 +14,7 @@ tf_ng_module(
         "//tensorboard/webapp/notification_center/_redux",
         "//tensorboard/webapp/notification_center/_redux:types",
         "//tensorboard/webapp/notification_center/_views",
-        "//tensorboard/webapp/notification_center/data_source",
+        "//tensorboard/webapp/notification_center/_data_source",
         "@npm//@angular/core",
         "@npm//@ngrx/effects",
         "@npm//@ngrx/store",

@@ -15,7 +15,7 @@ limitations under the License.
 import {NgModule} from '@angular/core';
 import {EffectsModule} from '@ngrx/effects';
 import {StoreModule} from '@ngrx/store';
-import {NotificationCenterDataSourceModule} from './data_source';
+import {NotificationCenterDataSourceModule} from './_data_source';
 import {NotificationCenterEffects} from './_redux/notification_center_effects';
 import {reducers} from './_redux/notification_center_reducers';
 import {NOTIFICATION_FEATURE_KEY} from './_redux/notification_center_types';

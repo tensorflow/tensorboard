@@ -18,7 +18,7 @@ tf_ng_module(
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp/app_routing:route_contexted_reducer_helper",
         "//tensorboard/webapp/notification_center:types",
-        "//tensorboard/webapp/notification_center/data_source",
+        "//tensorboard/webapp/notification_center/_data_source",
         "@npm//@angular/core",
         "@npm//@ngrx/effects",
         "@npm//@ngrx/store",
@@ -33,7 +33,7 @@ tf_ts_library(
     ],
     deps = [
         ":types",
-        "//tensorboard/webapp/notification_center/data_source:types",
+        "//tensorboard/webapp/notification_center/_data_source:types",
         "@npm//@ngrx/store",
     ],
 )

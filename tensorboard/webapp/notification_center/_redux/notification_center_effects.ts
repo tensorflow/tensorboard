@@ -18,7 +18,7 @@ import {Action, createAction, Store} from '@ngrx/store';
 import {Observable, of} from 'rxjs';
 import {catchError, map, mergeMap} from 'rxjs/operators';
 import {State} from '../../app_state';
-import {NotificationCenterDataSource} from '../data_source/index';
+import {NotificationCenterDataSource} from '../_data_source/index';
 
 /** @typehack */ import * as _typeHackNgrxEffects from '@ngrx/effects';
 /** @typehack */ import * as _typeHackModels from '@ngrx/store/src/models';
