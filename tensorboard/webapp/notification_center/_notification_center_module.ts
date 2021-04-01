@@ -12,15 +12,20 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {NgModule} from '@angular/core';
-import {StoreModule} from '@ngrx/store';
+import { NgModule } from '@angular/core';
+import { EffectsModule } from '@ngrx/effects';
+import { StoreModule } from '@ngrx/store';
+import { NotificationCenterEffects } from './_redux/notification_center_effects';
+import { reducers } from './_redux/notification_center_reducers';
+import { NOTIFICATION_FEATURE_KEY } from './_redux/notification_center_types';
+import { NotificationCenterViewModule } from './_views/views_module';
 
-import {reducers} from './_redux/notification_center_reducers';
-import {NOTIFICATION_FEATURE_KEY} from './_redux/notification_center_types';
-import {NotificationCenterViewModule} from './_views/views_module';
 
 @NgModule({
-  imports: [StoreModule.forFeature(NOTIFICATION_FEATURE_KEY, reducers)],
+  imports: [
+    StoreModule.forFeature(NOTIFICATION_FEATURE_KEY, reducers)
+    EffectsModule.forFeature([NotificationCenterEffects]),
+  ],
   exports: [NotificationCenterViewModule],
 })
 export class NotificationCenterModule {}

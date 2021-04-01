@@ -13,18 +13,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Injectable} from '@angular/core';
-import {Actions, OnInitEffects} from '@ngrx/effects';
+import {Actions, createEffect, ofType, OnInitEffects} from '@ngrx/effects';
 import {Action, createAction, Store} from '@ngrx/store';
 import {of} from 'rxjs';
-import {catchError, tap} from 'rxjs/operators';
+import {catchError, map, mergeMap} from 'rxjs/operators';
 import {State} from '../../app_state';
-import {
-  NotificationCenterDataSource,
-  NotificationCenterRequest,
-  NotificationCenterResponse,
-} from '../data_source/index';
+import {NotificationCenterDataSource} from '../data_source/index';
 
-const initAction = createAction('[NotificationCenter Effects] Init');
+/** @typehack */ import * as _typeHackNgrxEffects from '@ngrx/effects';
+/** @typehack */ import * as _typeHackModels from '@ngrx/store/src/models';
+/** @typehack */ import * as _typeHackStore from '@ngrx/store';
+
+export const initAction = createAction('[NotificationCenter Effects] Init');
 
 @Injectable()
 export class NotificationCenterEffects implements OnInitEffects {
@@ -40,19 +40,35 @@ export class NotificationCenterEffects implements OnInitEffects {
     return initAction();
   }
 
-  private fetchNotification(request: NotificationCenterRequest) {
-    return this.dataSource.fetchNotification(request).pipe(
-      tap((responses) => {
+  /**
+   * Ensures runs are loaded when a run table is shown.
+   *
+   * @export
+   */
+  initialNotificaitonFetch$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(initAction),
+      mergeMap(() => {
+        console.log('createEffect');
+        return this.fetchNotification();
+      })
+    );
+  },{dispatch: false});
+
+  private fetchNotification() {
+    return this.dataSource.fetchNotification().pipe(
+      map((responses) => {
         console.log('NotificationCenterResponse:', responses);
         // const errors = responses.filter(isFailedTimeSeriesResponse);
         // if (errors.length) {
         //   console.error('Time series response contained errors:', errors);
         // }
         // this.store.dispatch(actions.fetchTimeSeriesLoaded({response: responses[0]});
+        return initAction();
       }),
       catchError(() => {
         // this.store.dispatch(actions.fetchTimeSeriesFailed({request}));
-        return of(null);
+        return of(initAction());
       })
     );
   }

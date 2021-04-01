@@ -31,17 +31,9 @@ export class TBNotificationCenterDataSource
   implements NotificationCenterDataSource {
   constructor(private readonly http: TBHttpClient) {}
 
-  fetchNotification(request: NotificationCenterRequest) {
-    return this.fetchNotificationBackendRequest(request);
-  }
-
-  private fetchNotificationBackendRequest(
-    request: NotificationCenterRequest
-  ): Observable<{response: NotificationCenterResponse}> {
-    const body = new FormData();
-    body.append('requests', JSON.stringify([request]));
+  fetchNotification(): Observable<{response: NotificationCenterResponse}> {
     return this.http
-      .post<NotificationCenterResponse[]>(`data/notifications`, body)
+      .get<NotificationCenterResponse[]>(`data/notifications`)
       .pipe(
         map((responses: NotificationCenterResponse[]) => {
           return {response: responses[0]};

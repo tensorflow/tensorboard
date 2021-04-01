@@ -20,7 +20,7 @@ export interface NotificationCenterRequest {
 }
 
 export interface NotificationCenterSuccessfulResponse {
-  notificaitons: Notification[];
+  notifications: Notification[];
   error?: undefined;
 }
 
@@ -33,7 +33,7 @@ export type NotificationCenterResponse =
   | NotificationCenterFailedResponse;
 
 export abstract class NotificationCenterDataSource {
-  abstract fetchNotification(
-    request: NotificationCenterRequest
-  ): Observable<{response: NotificationCenterResponse}>;
+  abstract fetchNotification(): Observable<{
+    response: NotificationCenterResponse;
+  }>;
 }
