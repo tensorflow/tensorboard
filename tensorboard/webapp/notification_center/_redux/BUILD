@@ -1,10 +1,10 @@
-load("//tensorboard/defs:defs.bzl", "tf_ts_library")
+load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard/webapp/notification_center:__subpackages__"])
 
 licenses(["notice"])
 
-tf_ts_library(
+tf_ng_module(
     name = "_redux",
     srcs = [
         "notification_center_effects.ts",
@@ -16,9 +16,9 @@ tf_ts_library(
         ":actions",
         ":types",
         "//tensorboard/webapp:app_state",
+        "//tensorboard/webapp/app_routing:route_contexted_reducer_helper",
         "//tensorboard/webapp/notification_center:types",
         "//tensorboard/webapp/notification_center/data_source",
-        "//tensorboard/webapp/app_routing:route_contexted_reducer_helper",
         "@npm//@angular/core",
         "@npm//@ngrx/effects",
         "@npm//@ngrx/store",

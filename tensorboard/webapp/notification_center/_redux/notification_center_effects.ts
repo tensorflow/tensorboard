@@ -15,7 +15,7 @@ limitations under the License.
 import {Injectable} from '@angular/core';
 import {Actions, createEffect, ofType, OnInitEffects} from '@ngrx/effects';
 import {Action, createAction, Store} from '@ngrx/store';
-import {of} from 'rxjs';
+import {Observable, of} from 'rxjs';
 import {catchError, map, mergeMap} from 'rxjs/operators';
 import {State} from '../../app_state';
 import {NotificationCenterDataSource} from '../data_source/index';
