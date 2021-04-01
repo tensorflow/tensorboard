@@ -38,7 +38,6 @@ const reducer: ActionReducer<HparamsState, Action> = createReducer(
     const {experimentIds, hparamName, filterValues, includeUndefined} = action;
     const id = getIdFromExperimentIds(experimentIds);
     const filter = state.filters[id] ?? {
-      metrics: new Map<string, DiscreteFilter | IntervalFilter>(),
       hparams: new Map<string, DiscreteFilter | IntervalFilter>(),
     };
 
