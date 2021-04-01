@@ -69,7 +69,7 @@ const reducer: ActionReducer<HparamsState, Action> = createReducer(
 
     if (defaultFilter.type !== DomainType.DISCRETE) {
       throw new Error(
-        `Cannot set ${hparamName} when default filter is not of interval type.`
+        `Cannot set ${hparamName} when default filter is not of discrete type.`
       );
     }
 
