@@ -18,7 +18,6 @@ import {map} from 'rxjs/operators';
 import {TBHttpClient} from '../../webapp_data_source/tb_http_client';
 import {
   NotificationCenterDataSource,
-  NotificationCenterRequest,
   NotificationCenterResponse,
 } from './types';
 
@@ -32,12 +31,11 @@ export class TBNotificationCenterDataSource
   constructor(private readonly http: TBHttpClient) {}
 
   fetchNotification(): Observable<{response: NotificationCenterResponse}> {
-    return this.http
-      .get<NotificationCenterResponse[]>(`data/notifications`)
-      .pipe(
-        map((responses: NotificationCenterResponse[]) => {
-          return {response: responses[0]};
-        })
-      );
+    return this.http.get<NotificationCenterResponse>(`data/notifications`).pipe(
+      map((responses: NotificationCenterResponse) => {
+        console.log('responses:', responses);
+        return {response: responses};
+      })
+    );
   }
 }

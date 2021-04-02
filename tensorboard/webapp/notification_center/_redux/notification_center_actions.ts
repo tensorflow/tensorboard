@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import {createAction, props} from '@ngrx/store';
 import {Notification, } from './notification_center_types';
-import {NotificationCenterRequest, NotificationCenterResponse} from '../_data_source/types';
+import {NotificationCenterResponse} from '../_data_source/types';
 
 /** @typehack */ import * as _typeHackModels from '@ngrx/store/src/models';
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
@@ -28,7 +28,6 @@ export const notificationBellClicked = createAction(
 
 export const fetchNotificationsFailed = createAction(
   '[Notification] Fetch Notification Request Failed',
-  props<{request: NotificationCenterRequest}>()
 );
 
 export const fetchNotificationsLoaded = createAction(

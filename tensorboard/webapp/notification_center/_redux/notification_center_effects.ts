@@ -50,12 +50,12 @@ export class NotificationCenterEffects implements OnInitEffects {
       ofType(initAction),
       mergeMap(() => {
         console.log('createEffect');
-        return this.fetchNotification();
+        return this.fetchNotification().pipe(map(() => void {}));
       })
     );
   },{dispatch: false});
 
-  private fetchNotification() {
+  private fetchNotification(): Observable<Action> {
     return this.dataSource.fetchNotification().pipe(
       map((responses) => {
         console.log('NotificationCenterResponse:', responses);

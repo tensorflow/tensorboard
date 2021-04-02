@@ -15,10 +15,6 @@ limitations under the License.
 import {Observable} from 'rxjs';
 import {Notification} from '../_redux/notification_center_types';
 
-export interface NotificationCenterRequest {
-  runId: string;
-}
-
 export interface NotificationCenterSuccessfulResponse {
   notifications: Notification[];
   error?: undefined;

@@ -32,6 +32,7 @@ from tensorboard.plugins import base_plugin
 from tensorboard.util import grpc_util
 from tensorboard.util import tb_logging
 from tensorboard import version
+from enum import Enum
 
 logger = tb_logging.get_logger()
 
@@ -41,6 +42,9 @@ logger = tb_logging.get_logger()
 DEFAULT_PORT = 6006
 JS_CACHE_EXPIRATION_IN_SECS = 86400
 
+class NotificationCategoryEnum(Enum):
+    NONE = 1
+    WHATS_NEW = 2
 
 class CorePlugin(base_plugin.TBPlugin):
     """Core plugin for TensorBoard.
@@ -296,7 +300,24 @@ class CorePlugin(base_plugin.TBPlugin):
         sorting on the run name. Tags are sorted by its name,
         displayName, and lastly, inserted time.
         """
-        results = []
+        notifications = [{
+            'category': 'whats new',
+            'dateInMs': 1579766400000,
+            'title': '2.4 release',
+            'content':
+            '<li>Visualize Scalars, Images, and  Histograms in one place</li><li>Custom colors for runs</li><li>Group previews</li>',
+        },
+        {
+            'category': 'whats new',
+            'dateInMs': 1616697269620,
+            'title': '2.5 release',
+            'content':
+            '<li>Visualize Scalars, Images, and  Histograms in one place</li><li>Custom colors for runs</li><li>Group previews</li>',
+        },]
+
+        results = {
+            'notifications': notifications,
+        }
         print('_serve_notifications')
         return http_util.Respond(request, results, "application/json")
 
