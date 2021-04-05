@@ -43,6 +43,10 @@ class MeshPlugin(base_plugin.TBPlugin):
         self._downsample_to = (context.sampling_hints or {}).get(
             self.plugin_name, _DEFAULT_DOWNSAMPLING
         )
+        self._version_checker = plugin_util._MetadataVersionChecker(
+            data_kind="mesh",
+            latest_known_version=0,
+        )
 
     def _instance_tag_metadata(self, ctx, experiment, run, instance_tag):
         """Gets the `MeshPluginData` proto for an instance tag."""
@@ -104,7 +108,10 @@ class MeshPlugin(base_plugin.TBPlugin):
         response = dict()
         for run, tags in all_runs.items():
             response[run] = dict()
-            for instance_tag in tags:
+            for (instance_tag, metadatum) in tags.items():
+                md = metadata.parse_plugin_metadata(metadatum.plugin_content)
+                if not self._version_checker.ok(md.version, run, instance_tag):
+                    continue
                 # Make sure we only operate on user-defined tags here.
                 tag = self._tag(ctx, experiment, run, instance_tag)
                 meta = self._instance_tag_metadata(

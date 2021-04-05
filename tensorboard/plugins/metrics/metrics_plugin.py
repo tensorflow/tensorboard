@@ -266,6 +266,18 @@ class MetricsPlugin(base_plugin.TBPlugin):
             ),
             "images": sampling_hints.get(image_metadata.PLUGIN_NAME, 10),
         }
+        self._scalar_version_checker = plugin_util._MetadataVersionChecker(
+            data_kind="scalar time series",
+            latest_known_version=0,
+        )
+        self._histogram_version_checker = plugin_util._MetadataVersionChecker(
+            data_kind="histogram time series",
+            latest_known_version=0,
+        )
+        self._image_version_checker = plugin_util._MetadataVersionChecker(
+            data_kind="image time series",
+            latest_known_version=0,
+        )
 
     def frontend_metadata(self):
         return base_plugin.FrontendMetadata(
@@ -308,26 +320,53 @@ class MetricsPlugin(base_plugin.TBPlugin):
             experiment_id=experiment,
             plugin_name=scalar_metadata.PLUGIN_NAME,
         )
+        scalar_mapping = self._filter_by_version(
+            scalar_mapping,
+            scalar_metadata.parse_plugin_metadata,
+            self._scalar_version_checker,
+        )
+
         histogram_mapping = self._data_provider.list_tensors(
             ctx,
             experiment_id=experiment,
             plugin_name=histogram_metadata.PLUGIN_NAME,
         )
+        if histogram_mapping is None:
+            histogram_mapping = {}
+        histogram_mapping = self._filter_by_version(
+            histogram_mapping,
+            histogram_metadata.parse_plugin_metadata,
+            self._histogram_version_checker,
+        )
+
         image_mapping = self._data_provider.list_blob_sequences(
             ctx,
             experiment_id=experiment,
             plugin_name=image_metadata.PLUGIN_NAME,
         )
-        # Not all data providers support tensors and/or blob sequences.
-        if histogram_mapping is None:
-            histogram_mapping = {}
         if image_mapping is None:
             image_mapping = {}
+        image_mapping = self._filter_by_version(
+            image_mapping,
+            image_metadata.parse_plugin_metadata,
+            self._image_version_checker,
+        )
 
         result = {}
         result["scalars"] = _format_basic_mapping(scalar_mapping)
         result["histograms"] = _format_basic_mapping(histogram_mapping)
         result["images"] = _format_image_mapping(image_mapping)
+        return result
+
+    def _filter_by_version(self, mapping, parse_metadata, version_checker):
+        """Filter `DataProvider.list_*` output by summary metadata version."""
+        result = {run: {} for run in mapping}
+        for (run, tag_to_content) in mapping.items():
+            for (tag, metadatum) in tag_to_content.items():
+                md = parse_metadata(metadatum.plugin_content)
+                if not version_checker.ok(md.version, run, tag):
+                    continue
+                result[run][tag] = metadatum
         return result
 
     @wrappers.Request.application

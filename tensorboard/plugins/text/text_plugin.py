@@ -209,6 +209,10 @@ class TextPlugin(base_plugin.TBPlugin):
             self.plugin_name, _DEFAULT_DOWNSAMPLING
         )
         self._data_provider = context.data_provider
+        self._version_checker = plugin_util._MetadataVersionChecker(
+            data_kind="text",
+            latest_known_version=0,
+        )
 
     def is_active(self):
         return False  # `list_plugins` as called by TB core suffices
@@ -222,10 +226,14 @@ class TextPlugin(base_plugin.TBPlugin):
             experiment_id=experiment,
             plugin_name=metadata.PLUGIN_NAME,
         )
-        return {
-            run: list(tag_to_content)
-            for (run, tag_to_content) in mapping.items()
-        }
+        result = {run: [] for run in mapping}
+        for (run, tag_to_content) in mapping.items():
+            for (tag, metadatum) in tag_to_content.items():
+                md = metadata.parse_plugin_metadata(metadatum.plugin_content)
+                if not self._version_checker.ok(md.version, run, tag):
+                    continue
+                result[run].append(tag)
+        return result
 
     @wrappers.Request.application
     def tags_route(self, request):

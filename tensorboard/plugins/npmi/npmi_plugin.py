@@ -70,6 +70,10 @@ class NpmiPlugin(base_plugin.TBPlugin):
             self.plugin_name, _DEFAULT_DOWNSAMPLING
         )
         self._data_provider = context.data_provider
+        self._version_checker = plugin_util._MetadataVersionChecker(
+            data_kind="nPMI",
+            latest_known_version=0,
+        )
 
     def get_plugin_apps(self):
         return {
@@ -103,6 +107,9 @@ class NpmiPlugin(base_plugin.TBPlugin):
         for (run, tag_to_content) in mapping.items():
             result[run] = []
             for (tag, metadatum) in tag_to_content.items():
+                md = metadata.parse_plugin_metadata(metadatum.plugin_content)
+                if not self._version_checker.ok(md.version, run, tag):
+                    continue
                 content = metadata.parse_plugin_metadata(
                     metadatum.plugin_content
                 )

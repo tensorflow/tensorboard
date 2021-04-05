@@ -15,8 +15,6 @@
 """Tests for util functions to create/parse mesh plugin metadata."""
 
 
-from unittest import mock
-
 import tensorflow as tf
 from tensorboard.plugins.mesh import metadata
 from tensorboard.plugins.mesh import plugin_data_pb2
@@ -72,20 +70,6 @@ class MetadataTest(tf.test.TestCase):
         self.assertEqual(self.shape, parsed_metadata.shape)
         self.assertEqual(self.json_config, parsed_metadata.json_config)
         self.assertEqual(self.components, parsed_metadata.components)
-
-    def test_metadata_version(self):
-        """Tests that only the latest version of metadata is supported."""
-        with mock.patch.object(
-            metadata, "get_current_version", return_value=100
-        ):
-            self._create_metadata()
-        # Change the version.
-        with mock.patch.object(metadata, "get_current_version", return_value=1):
-            # Try to parse metadata from a prior version.
-            with self.assertRaises(ValueError):
-                metadata.parse_plugin_metadata(
-                    self.summary_metadata.plugin_data.content
-                )
 
     def test_tensor_shape(self):
         """Tests that target tensor should be of particular shape."""

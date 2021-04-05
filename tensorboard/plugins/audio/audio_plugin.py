@@ -52,6 +52,10 @@ class AudioPlugin(base_plugin.TBPlugin):
         self._downsample_to = (context.sampling_hints or {}).get(
             self.plugin_name, _DEFAULT_DOWNSAMPLING
         )
+        self._version_checker = plugin_util._MetadataVersionChecker(
+            data_kind="audio",
+            latest_known_version=0,
+        )
 
     def get_plugin_apps(self):
         return {
@@ -99,6 +103,9 @@ class AudioPlugin(base_plugin.TBPlugin):
         result = {run: {} for run in mapping}
         for (run, tag_to_time_series) in mapping.items():
             for (tag, time_series) in tag_to_time_series.items():
+                md = metadata.parse_plugin_metadata(time_series.plugin_content)
+                if not self._version_checker.ok(md.version, run, tag):
+                    continue
                 description = plugin_util.markdown_to_safe_html(
                     time_series.description
                 )

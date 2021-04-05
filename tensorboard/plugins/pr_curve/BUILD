@@ -29,7 +29,6 @@ py_library(
         "//tensorboard/backend:http_util",
         "//tensorboard/data:provider",
         "//tensorboard/plugins:base_plugin",
-        "//tensorboard/util:tb_logging",
         "@org_pocoo_werkzeug",
     ],
 )
