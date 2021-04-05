@@ -112,11 +112,11 @@ jobs:
       matrix:
         mode: ['native']
         platform: ['ubuntu-16.04', 'macos-10.15']
-        rust_version: ['1.50.0']
+        rust_version: ['1.51.0']
         include:
           - mode: 'universal'
             platform: 'ubuntu-16.04'
-            rust_version: '1.50.0'
+            rust_version: '1.51.0'
     steps:
       - uses: actions/checkout@v1
       - uses: actions/setup-python@v1
@@ -145,6 +145,7 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           toolchain: ${{ matrix.rust_version }}
+          default: true
       - name: 'Install Python packaging deps'
         run: |
           python -m pip install -U pip
@@ -233,7 +234,7 @@ jobs:
     runs-on: ubuntu-16.04
     strategy:
       matrix:
-        rust_version: ['1.50.0']
+        rust_version: ['1.51.0']
         cargo_raze_version: ['0.9.2']
     steps:
       - uses: actions/checkout@v1
@@ -255,6 +256,8 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           toolchain: ${{ matrix.rust_version }}
+          default: true
+          components: rustfmt, clippy
       - name: 'Install cargo-raze'
         run: cargo install cargo-raze --version ${{ matrix.cargo_raze_version }}
       - name: 'Run Rustfmt'
