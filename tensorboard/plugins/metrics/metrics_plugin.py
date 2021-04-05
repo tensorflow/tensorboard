@@ -49,12 +49,17 @@ _SINGLE_RUN_PLUGINS = frozenset(
 _SAMPLED_PLUGINS = frozenset([image_metadata.PLUGIN_NAME])
 
 
-def _get_tag_description_info(mapping):
+def _get_tag_description_info(mapping, parse_metadata, version_checker):
     """Gets maps from tags to descriptions, and descriptions to runs.
 
     Args:
         mapping: a nested map `d` such that `d[run][tag]` is a time series
           produced by DataProvider's `list_*` methods.
+        parse_metadata: Data type-specific `metadata.parse_plugin_metadata`
+          function to take a bytestring to a value with an int `version`
+          property.
+        version_checker: `plugin_util._MetadataVersionChecker` for this
+          data type.
 
     Returns:
         A tuple containing
@@ -67,6 +72,9 @@ def _get_tag_description_info(mapping):
     description_to_runs = collections.defaultdict(set)
     for (run, tag_to_content) in mapping.items():
         for (tag, metadatum) in tag_to_content.items():
+            md = parse_metadata(metadatum.plugin_content)
+            if not version_checker.ok(md.version, run, tag):
+                continue
             description = metadatum.description
             if len(description):
                 tag_to_descriptions[tag].add(description)
@@ -101,12 +109,17 @@ def _build_combined_description(descriptions, description_to_runs):
     return header + "\n".join(prefixed_descriptions)
 
 
-def _get_tag_to_description(mapping):
+def _get_tag_to_description(mapping, parse_metadata, version_checker):
     """Returns a map of tags to descriptions.
 
     Args:
         mapping: a nested map `d` such that `d[run][tag]` is a time series
           produced by DataProvider's `list_*` methods.
+        parse_metadata: Data type-specific `metadata.parse_plugin_metadata`
+          function to take a bytestring to a value with an int `version`
+          property.
+        version_checker: `plugin_util._MetadataVersionChecker` for this
+          data type.
 
     Returns:
         A map from tag strings to description HTML strings. E.g.
@@ -117,7 +130,7 @@ def _get_tag_to_description(mapping):
         }
     """
     tag_to_descriptions, description_to_runs = _get_tag_description_info(
-        mapping
+        mapping, parse_metadata, version_checker
     )
 
     result = {}
@@ -134,26 +147,44 @@ def _get_tag_to_description(mapping):
     return result
 
 
-def _get_run_tag_info(mapping):
+def _get_run_tag_info(mapping, parse_metadata, version_checker):
     """Returns a map of run names to a list of tag names.
 
     Args:
         mapping: a nested map `d` such that `d[run][tag]` is a time series
           produced by DataProvider's `list_*` methods.
+        parse_metadata: Data type-specific `metadata.parse_plugin_metadata`
+          function to take a bytestring to a value with an int `version`
+          property.
+        version_checker: `plugin_util._MetadataVersionChecker` for this
+          data type.
 
     Returns:
         A map from run strings to a list of tag strings. E.g.
             {"loss001a": ["actor/loss", "critic/loss"], ...}
     """
-    return {run: sorted(mapping[run]) for run in mapping}
+    result = {run: [] for run in mapping}
+    for (run, tag_to_content) in mapping.items():
+        for (tag, metadatum) in tag_to_content.items():
+            md = parse_metadata(metadatum.plugin_content)
+            if not version_checker.ok(md.version, run, tag):
+                continue
+            result[run].append(tag)
+    return result
+    #return {run: sorted(mapping[run]) for run in mapping}
 
 
-def _format_basic_mapping(mapping):
+def _format_basic_mapping(mapping, parse_metadata, version_checker):
     """Prepares a scalar or histogram mapping for client consumption.
 
     Args:
         mapping: a nested map `d` such that `d[run][tag]` is a time series
           produced by DataProvider's `list_*` methods.
+        parse_metadata: Data type-specific `metadata.parse_plugin_metadata`
+          function to take a bytestring to a value with an int `version`
+          property.
+        version_checker: `plugin_util._MetadataVersionChecker` for this
+          data type.
 
     Returns:
         A dict with the following fields:
@@ -161,8 +192,12 @@ def _format_basic_mapping(mapping):
             tagDescriptions: the return type of `_get_tag_to_description`
     """
     return {
-        "runTagInfo": _get_run_tag_info(mapping),
-        "tagDescriptions": _get_tag_to_description(mapping),
+        "runTagInfo": _get_run_tag_info(
+            mapping, parse_metadata, version_checker
+        ),
+        "tagDescriptions": _get_tag_to_description(
+            mapping, parse_metadata, version_checker
+        ),
     }
 
 
@@ -198,11 +233,16 @@ def _format_image_blob_sequence_datum(sorted_datum_list, sample):
     return step_data
 
 
-def _get_tag_run_image_info(mapping):
+def _get_tag_run_image_info(mapping, parse_metadata, version_checker):
     """Returns a map of tag names to run information.
 
     Args:
         mapping: the result of DataProvider's `list_blob_sequences`.
+        parse_metadata: Data type-specific `metadata.parse_plugin_metadata`
+          function to take a bytestring to a value with an int `version`
+          property.
+        version_checker: `plugin_util._MetadataVersionChecker` for this
+          data type.
 
     Returns:
         A nested map from run strings to tag string to image info, where image
@@ -218,17 +258,25 @@ def _get_tag_run_image_info(mapping):
     tag_run_image_info = collections.defaultdict(dict)
     for (run, tag_to_content) in mapping.items():
         for (tag, metadatum) in tag_to_content.items():
+            md = parse_metadata(metadatum.plugin_content)
+            if not version_checker.ok(md.version, run, tag):
+                continue
             tag_run_image_info[tag][run] = {
                 "maxSamplesPerStep": metadatum.max_length - 2  # width, height
             }
     return dict(tag_run_image_info)
 
 
-def _format_image_mapping(mapping):
+def _format_image_mapping(mapping, parse_metadata, version_checker):
     """Prepares an image mapping for client consumption.
 
     Args:
         mapping: the result of DataProvider's `list_blob_sequences`.
+        parse_metadata: Data type-specific `metadata.parse_plugin_metadata`
+          function to take a bytestring to a value with an int `version`
+          property.
+        version_checker: `plugin_util._MetadataVersionChecker` for this
+          data type.
 
     Returns:
         A dict with the following fields:
@@ -236,8 +284,12 @@ def _format_image_mapping(mapping):
             tagDescriptions: the return type of `_get_tag_description_info`
     """
     return {
-        "tagDescriptions": _get_tag_to_description(mapping),
-        "tagRunSampledInfo": _get_tag_run_image_info(mapping),
+        "tagDescriptions": _get_tag_to_description(
+            mapping, parse_metadata, version_checker
+        ),
+        "tagRunSampledInfo": _get_tag_run_image_info(
+            mapping, parse_metadata, version_checker
+        ),
     }
 
 
@@ -266,6 +318,18 @@ class MetricsPlugin(base_plugin.TBPlugin):
             ),
             "images": sampling_hints.get(image_metadata.PLUGIN_NAME, 10),
         }
+        self._scalar_version_checker = plugin_util._MetadataVersionChecker(
+            data_kind="scalar time series",
+            latest_known_version=0,
+        )
+        self._histogram_version_checker = plugin_util._MetadataVersionChecker(
+            data_kind="histogram time series",
+            latest_known_version=0,
+        )
+        self._image_version_checker = plugin_util._MetadataVersionChecker(
+            data_kind="image time series",
+            latest_known_version=0,
+        )
 
     def frontend_metadata(self):
         return base_plugin.FrontendMetadata(
@@ -325,9 +389,21 @@ class MetricsPlugin(base_plugin.TBPlugin):
             image_mapping = {}
 
         result = {}
-        result["scalars"] = _format_basic_mapping(scalar_mapping)
-        result["histograms"] = _format_basic_mapping(histogram_mapping)
-        result["images"] = _format_image_mapping(image_mapping)
+        result["scalars"] = _format_basic_mapping(
+            scalar_mapping,
+            scalar_metadata.parse_plugin_metadata,
+            self._scalar_version_checker,
+        )
+        result["histograms"] = _format_basic_mapping(
+            histogram_mapping,
+            histogram_metadata.parse_plugin_metadata,
+            self._histogram_version_checker,
+        )
+        result["images"] = _format_image_mapping(
+            image_mapping,
+            image_metadata.parse_plugin_metadata,
+            self._image_version_checker,
+        )
         return result
 
     @wrappers.Request.application

@@ -123,12 +123,6 @@ def parse_plugin_metadata(content):
     if not isinstance(content, bytes):
         raise TypeError("Content type must be bytes.")
     result = plugin_data_pb2.MeshPluginData.FromString(content)
-    if not 0 <= result.version <= get_current_version():
-        raise ValueError(
-            "Unknown metadata version: %s. The latest version known to "
-            "this build of TensorBoard is %s; perhaps a newer build is "
-            "available?" % (result.version, get_current_version())
-        )
     # Add components field to older version of the proto.
     if result.components == 0:
         result.components = get_components_bitmask(
