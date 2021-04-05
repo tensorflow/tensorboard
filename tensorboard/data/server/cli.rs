@@ -214,17 +214,16 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
         eprintln!("listening on {:?}", bound);
     }
 
-    // Leak the commit object, since the Tonic server must have only 'static references. This only
-    // leaks the outer commit structure (of constant size), not the pointers to the actual data.
-    let commit: &'static Commit = Box::leak(Box::new(Commit::new()));
+    let commit = Arc::new(Commit::new());
     let psh_ref = Arc::new(opts.samples_per_plugin);
     thread::Builder::new()
         .name("Reloader".to_string())
         .spawn({
             let reload_strategy = opts.reload;
             let checksum = opts.checksum;
+            let commit = Arc::clone(&commit);
             move || {
-                let mut loader = LogdirLoader::new(commit, logdir, 0, psh_ref);
+                let mut loader = LogdirLoader::new(&commit, logdir, 0, psh_ref);
                 // Checksum only if `--checksum` given (i.e., off by default).
                 loader.checksum(checksum);
                 loop {

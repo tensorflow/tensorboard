@@ -22,7 +22,7 @@ use std::collections::HashSet;
 use std::convert::TryInto;
 use std::hash::Hash;
 use std::pin::Pin;
-use std::sync::{RwLock, RwLockReadGuard};
+use std::sync::{Arc, RwLock, RwLockReadGuard};
 use tonic::{Request, Response, Status};
 
 use crate::blob_key::BlobKey;
@@ -37,7 +37,7 @@ use data::tensor_board_data_provider_server::TensorBoardDataProvider;
 #[derive(Debug)]
 pub struct DataProviderHandler {
     pub data_location: String,
-    pub commit: &'static Commit,
+    pub commit: Arc<Commit>,
 }
 
 impl DataProviderHandler {
@@ -646,8 +646,7 @@ mod tests {
     fn sample_handler(commit: Commit) -> DataProviderHandler {
         DataProviderHandler {
             data_location: String::from("./logs/mnist"),
-            // Leak the commit object, since the Tonic server must have only 'static references.
-            commit: Box::leak(Box::new(commit)),
+            commit: Arc::new(commit),
         }
     }
 
