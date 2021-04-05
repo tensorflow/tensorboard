@@ -171,7 +171,6 @@ def _get_run_tag_info(mapping, parse_metadata, version_checker):
                 continue
             result[run].append(tag)
     return result
-    #return {run: sorted(mapping[run]) for run in mapping}
 
 
 def _format_basic_mapping(mapping, parse_metadata, version_checker):

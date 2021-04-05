@@ -15,8 +15,6 @@
 """Tests for util functions to create/parse mesh plugin metadata."""
 
 
-from unittest import mock
-
 import tensorflow as tf
 from tensorboard.plugins.mesh import metadata
 from tensorboard.plugins.mesh import plugin_data_pb2
