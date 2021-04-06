@@ -25,7 +25,6 @@ from tensorboard import plugin_util
 from tensorboard.backend import http_util
 from tensorboard.data import provider
 from tensorboard.plugins import base_plugin
-from tensorboard.util import tensor_util
 from tensorboard.plugins.scalar import metadata
 
 _SCALAR_PLUGIN_NAME = metadata.PLUGIN_NAME
