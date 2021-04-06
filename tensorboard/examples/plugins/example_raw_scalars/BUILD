@@ -9,6 +9,36 @@ package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])
 
+genrule(
+    name = "lib_copy",
+    srcs = [
+        "//tensorboard/components/experimental/plugin_lib:plugin_lib_bin.js",
+    ],
+    outs = [
+        "tensorboard_plugin_example_raw_scalars/static/lib.js",
+    ],
+    cmd = "cat $(SRCS) > $@",
+)
+
+sh_binary(
+    name = "develop",
+    srcs = [
+        "develop.sh",
+    ],
+    data = [
+        "setup.py",
+        ":lib_copy",
+        "//tensorboard/pip_package",
+    ] + glob([
+        "tensorboard_plugin_example_raw_scalars/*.py",
+        "tensorboard_plugin_example_raw_scalars/static/**",
+    ]),
+    tags = [
+        "manual",
+        "support_notf",
+    ],
+)
+
 sh_test(
     name = "smoke_test",
     size = "large",

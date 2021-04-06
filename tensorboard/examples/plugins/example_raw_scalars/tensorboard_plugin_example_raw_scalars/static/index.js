@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // =============================================================================
+// Loads TensorBoard library on the window object.
+import './lib.js';
 
 import * as Model from './model.js';
 import * as Views from './views.js';
@@ -46,8 +48,14 @@ export async function render() {
   // Call once for the initial view.
   updatePreviewBound();
 
+  const updatedTime = document.createElement('p');
+  tb_plugin_lib.experimental.core.setOnReload(() => {
+    updatedTime.textContent = `Reloaded at ${new Date().toLocaleString()}`;
+  });
+
   document.body.appendChild(stylesheet);
   document.body.appendChild(header);
+  document.body.appendChild(updatedTime);
   document.body.appendChild(runSelector);
   document.body.appendChild(previewContainer);
 }
