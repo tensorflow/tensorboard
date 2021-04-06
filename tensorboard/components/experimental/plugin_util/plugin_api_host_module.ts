@@ -1,4 +1,4 @@
-/* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2021 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -12,23 +12,26 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {NgModule} from '@angular/core';
-import {CommonModule} from '@angular/common';
 
-import {PluginsContainer} from './plugins_container';
-import {PluginsComponent} from './plugins_component';
-import {CoreModule} from '../core/core_module';
-import {PluginRegistryModule} from './plugin_registry_module';
-import {PluginApiHostModule} from '../../components/experimental/plugin_util/plugin_api_host_module';
+import {NgModule} from '@angular/core';
+
+import {PluginCoreApiHostImpl} from './core-host-impl';
+import {Ipc, registerPluginIframe} from './plugin-host-ipc';
+import {PluginRunsApiHostImpl} from './runs-host-impl';
 
 @NgModule({
-  declarations: [PluginsContainer, PluginsComponent],
-  exports: [PluginsContainer],
-  imports: [
-    CoreModule,
-    CommonModule,
-    PluginRegistryModule,
-    PluginApiHostModule,
-  ],
+  providers: [Ipc, PluginCoreApiHostImpl, PluginRunsApiHostImpl],
 })
-export class PluginsModule {}
+export class PluginApiHostModule {
+  constructor(
+    coreImpl: PluginCoreApiHostImpl,
+    runsImpl: PluginRunsApiHostImpl
+  ) {
+    coreImpl.init();
+    runsImpl.init();
+  }
+
+  registerPluginIframe(iframe: HTMLIFrameElement, pluginId: string): void {
+    registerPluginIframe(iframe, pluginId);
+  }
+}

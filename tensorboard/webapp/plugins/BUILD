@@ -16,6 +16,7 @@ tf_ng_module(
     ],
     deps = [
         ":plugin_registry",
+        "//tensorboard/components/experimental/plugin_util:plugin_host",
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp/core",
         "//tensorboard/webapp/core:types",

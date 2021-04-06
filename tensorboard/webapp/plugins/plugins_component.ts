@@ -39,10 +39,7 @@ import {
   CustomElementLoadingMechanism,
 } from '../types/api';
 import {PluginRegistryModule} from './plugin_registry_module';
-
-interface ExperimentalPluginHostLib extends HTMLElement {
-  registerPluginIframe(iframe: HTMLIFrameElement, plugin_id: string): void;
-}
+import {PluginApiHostModule} from '../../components/experimental/plugin_util/plugin_api_host_module';
 
 interface PolymerDashboard extends HTMLElement {
   reload?: () => void;
@@ -96,13 +93,10 @@ export enum PluginLoadState {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PluginsComponent implements OnChanges {
-  private readonly experimentPluginHostLib = document.createElement(
-    'tf-experimental-plugin-host-lib'
-  ) as ExperimentalPluginHostLib;
-
   constructor(
     private readonly componentFactoryResolver: ComponentFactoryResolver,
-    private readonly pluginRegistry: PluginRegistryModule
+    private readonly pluginRegistry: PluginRegistryModule,
+    private readonly pluginApiHost: PluginApiHostModule
   ) {}
 
   @ViewChild('pluginContainer', {static: true, read: ElementRef})
@@ -237,10 +231,7 @@ export class PluginsComponent implements OnChanges {
           'src',
           `data/plugin_entry.html?name=${plugin.id}`
         );
-        this.experimentPluginHostLib.registerPluginIframe(
-          pluginElement,
-          plugin.id
-        );
+        this.pluginApiHost.registerPluginIframe(pluginElement, plugin.id);
         this.pluginsContainer.nativeElement.appendChild(pluginElement);
         break;
       }

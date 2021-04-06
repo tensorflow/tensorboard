@@ -15,23 +15,33 @@ limitations under the License.
 /**
  * Implements core plugin APIs.
  */
-import {listen} from './plugin-host-ipc';
-import {getUrlDict} from '../../tf_storage';
+import {Injectable} from '@angular/core';
 
-listen('experimental.GetURLPluginData', (context) => {
-  if (!context) {
-    return;
+import {Ipc} from './plugin-host-ipc';
+import * as tf_storage from '../../tf_storage';
+import {MessageId} from './message_types';
+
+@Injectable({providedIn: 'root'})
+export class PluginCoreApiHostImpl {
+  constructor(private readonly ipc: Ipc) {}
+
+  init() {
+    this.ipc.listen(MessageId.GET_URL_DATA, (context) => {
+      if (!context) {
+        return;
+      }
+      const prefix = `p.${context.pluginName}.`;
+      const result: {
+        [key: string]: string;
+      } = {};
+      const urlDict = tf_storage.getUrlDict();
+      for (let key in urlDict) {
+        if (key.startsWith(prefix)) {
+          const pluginKey = key.substring(prefix.length);
+          result[pluginKey] = urlDict[key];
+        }
+      }
+      return result;
+    });
   }
-  const prefix = `p.${context.pluginName}.`;
-  const result: {
-    [key: string]: string;
-  } = {};
-  const urlDict = getUrlDict();
-  for (let key in urlDict) {
-    if (key.startsWith(prefix)) {
-      const pluginKey = key.substring(prefix.length);
-      result[pluginKey] = urlDict[key];
-    }
-  }
-  return result;
-});
+}
