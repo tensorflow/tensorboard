@@ -21,7 +21,9 @@ import os
 from werkzeug import wrappers
 
 from tensorboard import errors
+from tensorboard import plugin_util
 from tensorboard.backend import http_util
+from tensorboard.data import provider
 from tensorboard.plugins import base_plugin
 from tensorboard.util import tensor_util
 from tensorboard.plugins.scalar import metadata
@@ -41,7 +43,7 @@ class ExampleRawScalarsPlugin(base_plugin.TBPlugin):
         Args:
           context: A base_plugin.TBContext instance.
         """
-        self._multiplexer = context.multiplexer
+        self._data_provider = context.data_provider
 
     def get_plugin_apps(self):
         return {
@@ -58,8 +60,12 @@ class ExampleRawScalarsPlugin(base_plugin.TBPlugin):
         for a specific run+tag. Responds with a map of the form:
         {runName: [tagName, tagName, ...]}
         """
-        run_tag_mapping = self._multiplexer.PluginRunToTagToContent(
-            _SCALAR_PLUGIN_NAME
+        ctx = plugin_util.context(request.environ)
+        experiment = plugin_util.experiment_id(request.environ)
+        run_tag_mapping = self._data_provider.list_scalars(
+            ctx,
+            experiment_id=experiment,
+            plugin_name=metadata.PLUGIN_NAME,
         )
         run_info = {run: list(tags) for (run, tags) in run_tag_mapping.items()}
 
@@ -97,14 +103,12 @@ class ExampleRawScalarsPlugin(base_plugin.TBPlugin):
         When there are no runs with scalar data, TensorBoard will hide the plugin
         from the main navigation bar.
         """
-        return bool(
-            self._multiplexer.PluginRunToTagToContent(_SCALAR_PLUGIN_NAME)
-        )
+        return True
 
     def frontend_metadata(self):
         return base_plugin.FrontendMetadata(es_module_path="/static/index.js")
 
-    def scalars_impl(self, tag, run):
+    def scalars_impl(self, ctx, experiment, tag, run):
         """Returns scalar data for the specified tag and run.
 
         For details on how to use tags and runs, see
@@ -122,15 +126,15 @@ class ExampleRawScalarsPlugin(base_plugin.TBPlugin):
           errors.NotFoundError: if run+tag pair has no scalar data.
         """
         try:
-            tensor_events = self._multiplexer.Tensors(run, tag)
-            values = [
-                (
-                    tensor_event.wall_time,
-                    tensor_event.step,
-                    tensor_util.make_ndarray(tensor_event.tensor_proto).item(),
-                )
-                for tensor_event in tensor_events
-            ]
+            all_scalars = self._data_provider.read_scalars(
+                ctx,
+                experiment_id=experiment,
+                plugin_name=metadata.PLUGIN_NAME,
+                downsample=5000,
+                run_tag_filter=provider.RunTagFilter(runs=[run], tags=[tag]),
+            )
+            scalars = all_scalars.get(run, {}).get(tag, None)
+            values = [(x.wall_time, x.step, x.value) for x in scalars]
         except KeyError:
             raise errors.NotFoundError(
                 "No scalar data for run=%r, tag=%r" % (run, tag)
@@ -142,5 +146,7 @@ class ExampleRawScalarsPlugin(base_plugin.TBPlugin):
         """Given a tag and single run, return array of ScalarEvents."""
         tag = request.args.get("tag")
         run = request.args.get("run")
-        body = self.scalars_impl(tag, run)
+        ctx = plugin_util.context(request.environ)
+        experiment = plugin_util.experiment_id(request.environ)
+        body = self.scalars_impl(ctx, experiment, tag, run)
         return http_util.Respond(request, body, "application/json")
