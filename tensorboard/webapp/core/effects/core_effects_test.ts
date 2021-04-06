@@ -75,7 +75,7 @@ describe('core_effects', () => {
 
     fetchPolymerRunsSubjects = [];
     createElementSpy = spyOn(document, 'createElement');
-    createElementSpy.withArgs('tf-backend').and.returnValue({
+    createElementSpy.withArgs('tf-backend').and.returnValue(({
       tf_backend: {
         runsStore: {
           refresh() {
@@ -85,7 +85,7 @@ describe('core_effects', () => {
           },
         },
       },
-    });
+    } as unknown) as HTMLElement);
     createElementSpy.and.callThrough();
 
     coreEffects = TestBed.inject(CoreEffects);
