@@ -13,12 +13,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Injectable} from '@angular/core';
-import {of} from 'rxjs';
+import {Observable, of} from 'rxjs';
 
 import {BackendHparamsValueType, DatasetType} from './runs_backend_types';
 import {
   DomainType,
   HparamsAndMetadata,
+  Run,
   RunsDataSource,
 } from './runs_data_source_types';
 
@@ -52,11 +53,11 @@ export function buildHparamsAndMetadata(
 
 @Injectable()
 export class TestingRunsDataSource implements RunsDataSource {
-  fetchRuns(experimentId: string) {
+  fetchRuns(experimentId: string): Observable<Run[]> {
     return of([]);
   }
 
-  fetchHparamsMetadata(experimentId: string) {
+  fetchHparamsMetadata(experimentId: string): Observable<HparamsAndMetadata> {
     return of({
       hparamSpecs: [],
       metricSpecs: [],

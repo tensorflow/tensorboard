@@ -103,12 +103,12 @@ describe('graph tests', () => {
     // Use mock data instead of fetching from a file. This may skip parser
     // related events.
     spyOn(tf_graph_parser, 'fetchAndParseGraphData').and.returnValue(
-      Promise.resolve({
+      Promise.resolve(({
         // Graphs with no 'node' objects are invalid.
         node: undefined,
         versions: [],
         library: {function: []},
-      })
+      } as unknown) as tf_graph_proto.GraphDef)
     );
 
     const debugListenerSpy = spyOn(tb_debug, 'notifyActionEventFromPolymer');

@@ -53,7 +53,11 @@ describe('loadMonaco shim', () => {
     spyOn(TEST_ONLY.utils, 'getWindow').and.returnValue(
       windowWithRequireAndMonaco
     );
-    requireSpy = spyOn(windowWithRequireAndMonaco, 'require').and.callThrough();
+
+    requireSpy = spyOn(
+      windowWithRequireAndMonaco as any,
+      'require'
+    ).and.callThrough();
   });
 
   afterEach(() => {
