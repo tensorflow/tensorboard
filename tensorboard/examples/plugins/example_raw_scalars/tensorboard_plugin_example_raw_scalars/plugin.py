@@ -122,23 +122,22 @@ class ExampleRawScalarsPlugin(base_plugin.TBPlugin):
           the data series.
 
         Raises:
-          errors.NotFoundError: if run+tag pair has no scalar data.
+          NotFoundError if there are no scalars data for provided `run` and
+          `tag`.
         """
-        try:
-            all_scalars = self._data_provider.read_scalars(
-                ctx,
-                experiment_id=experiment,
-                plugin_name=metadata.PLUGIN_NAME,
-                downsample=5000,
-                run_tag_filter=provider.RunTagFilter(runs=[run], tags=[tag]),
-            )
-            scalars = all_scalars.get(run, {}).get(tag, None)
-            values = [(x.wall_time, x.step, x.value) for x in scalars]
-        except KeyError:
+        all_scalars = self._data_provider.read_scalars(
+            ctx,
+            experiment_id=experiment,
+            plugin_name=metadata.PLUGIN_NAME,
+            downsample=5000,
+            run_tag_filter=provider.RunTagFilter(runs=[run], tags=[tag]),
+        )
+        scalars = all_scalars.get(run, {}).get(tag, None)
+        if scalars is None:
             raise errors.NotFoundError(
                 "No scalar data for run=%r, tag=%r" % (run, tag)
             )
-        return values
+        return [(x.wall_time, x.step, x.value) for x in scalars]
 
     @wrappers.Request.application
     def scalars_route(self, request):
