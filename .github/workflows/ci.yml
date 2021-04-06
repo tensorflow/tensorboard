@@ -40,7 +40,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        tf_version_id: ['tf-nightly', 'notf']
+        tf_version_id: ['tensorflow==2.5.0rc0', 'notf']
         python_version: ['3.7']
     steps:
       - uses: actions/checkout@v1
