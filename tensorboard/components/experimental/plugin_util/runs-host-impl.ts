@@ -38,37 +38,32 @@ export class PluginRunsApiHostImpl {
         if (!experimentIds) {
           return of([]);
         }
-        const runs$ = experimentIds.map((experimentId) => {
+        const runObservables = experimentIds.map((experimentId) => {
           return this.store.select(getRuns, {experimentId});
         });
 
-        return combineLatest(runs$).pipe(
+        return combineLatest(runObservables).pipe(
           map((runsList) => {
+            return runsList.flat();
+          }),
+          distinctUntilChanged((before, after) => {
+            return (
+              before.length === after.length &&
+              before.every((val, index) => after[index].id === val.id)
+            );
+          }),
+          map((runs) => {
             // Current API contract is to return list of experiment names instead
             // of their ids.
-            const runNames = new Set<string>();
-            for (const run of runsList.flat()) {
-              runNames.add(run.name);
-            }
-
-            return Array.from(runNames);
+            return runs.map(({name}) => name);
           })
         );
       })
     );
 
-    getRuns$
-      .pipe(
-        distinctUntilChanged((before, after) => {
-          return (
-            before.length === after.length &&
-            before.every((val, index) => after[index] === val)
-          );
-        })
-      )
-      .subscribe((runs) => {
-        this.ipc.broadcast(MessageId.RUNS_CHANGED, runs);
-      });
+    getRuns$.subscribe((runs) => {
+      this.ipc.broadcast(MessageId.RUNS_CHANGED, runs);
+    });
 
     this.ipc.listen(MessageId.GET_RUNS, () => {
       return getRuns$.pipe(take(1)).toPromise();

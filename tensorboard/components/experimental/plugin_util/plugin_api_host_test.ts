@@ -109,10 +109,6 @@ describe('plugin_api_host test', () => {
                 name: 'hello',
               }),
               buildRun({
-                id: '2',
-                name: 'world',
-              }),
-              buildRun({
                 id: '1',
                 name: 'TensorBoard',
               }),
@@ -133,11 +129,13 @@ describe('plugin_api_host test', () => {
         expect(broadcastSpy).toHaveBeenCalledWith(MessageId.RUNS_CHANGED, [
           'hello',
           'world',
+          // different experiment id.
+          'hello',
           'TensorBoard',
         ]);
       });
 
-      it('broadcasts only when runs changes', () => {
+      it('broadcasts only when runs changes (run id)', () => {
         runApi.init();
 
         store.overrideSelector(getRuns, [
@@ -165,7 +163,7 @@ describe('plugin_api_host test', () => {
           }),
         ]);
         store.refreshState();
-        expect(broadcastSpy).toHaveBeenCalledTimes(2);
+        expect(broadcastSpy).toHaveBeenCalledTimes(3);
       });
     });
 
