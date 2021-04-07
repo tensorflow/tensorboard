@@ -36,38 +36,32 @@ export class NotificationCenterEffects implements OnInitEffects {
 
   /** @export */
   ngrxOnInitEffects(): Action {
-    console.log('ngrxOnInitEffects');
     return initAction();
   }
 
   /**
-   * Ensures runs are loaded when a run table is shown.
+   * Initiates notifications fetching.
    *
    * @export
    */
-  initialNotificaitonFetch$ = createEffect(() => {
-    return this.actions$.pipe(
-      ofType(initAction),
-      mergeMap(() => {
-        console.log('createEffect');
-        return this.fetchNotification().pipe(map(() => void {}));
-      })
-    );
-  },{dispatch: false});
+  initialNotificaitonFetch$ = createEffect(
+    () => {
+      return this.actions$.pipe(
+        ofType(initAction),
+        mergeMap(() => {
+          return this.fetchNotification().pipe(map(() => void {}));
+        })
+      );
+    },
+    {dispatch: false}
+  );
 
   private fetchNotification(): Observable<Action> {
     return this.dataSource.fetchNotification().pipe(
-      map((responses) => {
-        console.log('NotificationCenterResponse:', responses);
-        // const errors = responses.filter(isFailedTimeSeriesResponse);
-        // if (errors.length) {
-        //   console.error('Time series response contained errors:', errors);
-        // }
-        // this.store.dispatch(actions.fetchTimeSeriesLoaded({response: responses[0]});
+      map(() => {
         return initAction();
       }),
       catchError(() => {
-        // this.store.dispatch(actions.fetchTimeSeriesFailed({request}));
         return of(initAction());
       })
     );
