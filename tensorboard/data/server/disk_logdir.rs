@@ -15,7 +15,7 @@ limitations under the License.
 
 //! Log directories on local disk.
 
-use log::{error, warn};
+use log::{error, info, warn};
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::{self, BufReader};
@@ -49,7 +49,15 @@ impl Logdir for DiskLogdir {
             let dirent = match walkdir_item {
                 Ok(dirent) => dirent,
                 Err(e) => {
-                    error!("While walking log directory: {}", e);
+                    // TensorBoard traditionally doesn't complain loudly about non-existent
+                    // directories, since the logdir may be created after TensorBoard starts.
+                    if e.io_error()
+                        .map_or(false, |e| e.kind() == io::ErrorKind::NotFound)
+                    {
+                        info!("While walking log directory: {}", e);
+                    } else {
+                        warn!("While walking log directory: {}", e);
+                    }
                     continue;
                 }
             };
