@@ -24,8 +24,8 @@ import {PluginRunsApiHostImpl} from './runs-host-impl';
 })
 export class PluginApiHostModule {
   constructor(
-    coreImpl: PluginCoreApiHostImpl,
-    runsImpl: PluginRunsApiHostImpl
+    runsImpl: PluginRunsApiHostImpl,
+    coreImpl: PluginCoreApiHostImpl
   ) {
     coreImpl.init();
     runsImpl.init();

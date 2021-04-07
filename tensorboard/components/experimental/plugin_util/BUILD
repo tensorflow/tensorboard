@@ -18,7 +18,7 @@ tf_ts_library(
     ],
 )
 
-tf_ts_library(
+tf_ng_module(
     name = "host_internals",
     srcs = [
         "plugin-host-ipc.ts",
