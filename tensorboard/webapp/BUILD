@@ -53,6 +53,7 @@ tf_ng_module(
     deps = [
         "//tensorboard/webapp/alert/store",
         "//tensorboard/webapp/app_routing/store",
+        "//tensorboard/webapp/core/store",
         "//tensorboard/webapp/experiments/store:selectors",
         "//tensorboard/webapp/feature_flag/store",
         "//tensorboard/webapp/metrics/store",

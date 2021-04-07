@@ -16,4 +16,5 @@ export enum MessageId {
   RUNS_CHANGED = 'experimental.RunsChanged',
   GET_RUNS = 'experimental.GetRuns',
   GET_URL_DATA = 'experimental.GetURLPluginData',
+  DATA_RELOADED = 'experimental.DataReloaded',
 }

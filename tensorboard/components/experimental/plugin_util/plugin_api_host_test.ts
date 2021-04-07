@@ -19,7 +19,12 @@ import {of} from 'rxjs';
 
 import {State} from '../../../webapp/app_state';
 import {buildRun} from '../../../webapp/runs/store/testing';
-import {getExperimentIdsFromRoute, getRuns} from '../../../webapp/selectors';
+import {
+  getPluginsListLoaded,
+  getExperimentIdsFromRoute,
+  getRuns,
+} from '../../../webapp/selectors';
+import {DataLoadState} from '../../../webapp/types/data';
 import * as tf_storage from '../../tf_storage';
 import {PluginCoreApiHostImpl} from './core-host-impl';
 import {MessageId} from './message_types';
@@ -48,6 +53,11 @@ describe('plugin_api_host test', () => {
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
     store.overrideSelector(getExperimentIdsFromRoute, ['e1']);
     store.overrideSelector(getRuns, []);
+    store.overrideSelector(getPluginsListLoaded, {
+      state: DataLoadState.NOT_LOADED,
+      failureCode: null,
+      lastLoadedTimeInMs: null,
+    });
     selectSpy = spyOn(store, 'select').and.callThrough();
 
     const ipc = TestBed.inject(Ipc);
@@ -259,6 +269,44 @@ describe('plugin_api_host test', () => {
           a: '1',
           b: 'b',
         });
+      });
+    });
+
+    describe('#experimental.DataReloaded', () => {
+      it('calls callback when last updated time changes', () => {
+        coreApi.init();
+
+        store.overrideSelector(getPluginsListLoaded, {
+          state: DataLoadState.NOT_LOADED,
+          failureCode: null,
+          lastLoadedTimeInMs: null,
+        });
+        store.refreshState();
+        expect(broadcastSpy).toHaveBeenCalledTimes(0);
+
+        store.overrideSelector(getPluginsListLoaded, {
+          state: DataLoadState.LOADED,
+          failureCode: null,
+          lastLoadedTimeInMs: 1,
+        });
+        store.refreshState();
+        expect(broadcastSpy).toHaveBeenCalledTimes(1);
+
+        store.overrideSelector(getPluginsListLoaded, {
+          state: DataLoadState.LOADED,
+          failureCode: null,
+          lastLoadedTimeInMs: 1,
+        });
+        store.refreshState();
+        expect(broadcastSpy).toHaveBeenCalledTimes(1);
+
+        store.overrideSelector(getPluginsListLoaded, {
+          state: DataLoadState.LOADED,
+          failureCode: null,
+          lastLoadedTimeInMs: 2,
+        });
+        store.refreshState();
+        expect(broadcastSpy).toHaveBeenCalledTimes(2);
       });
     });
   });
