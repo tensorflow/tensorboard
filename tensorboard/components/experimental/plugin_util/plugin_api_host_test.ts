@@ -12,32 +12,20 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Injectable} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
 import {Store} from '@ngrx/store';
-import {provideMockStore, MockStore} from '@ngrx/store/testing';
+import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {of} from 'rxjs';
 
-import {buildRun} from '../../../webapp/runs/store/testing';
 import {State} from '../../../webapp/app_state';
+import {buildRun} from '../../../webapp/runs/store/testing';
 import {getExperimentIdsFromRoute, getRuns} from '../../../webapp/selectors';
-import {Ipc, PluginHostCallback} from './plugin-host-ipc';
-import {MessageType, PayloadType} from './message';
-import {PluginRunsApiHostImpl} from './runs-host-impl';
+import * as tf_storage from '../../tf_storage';
 import {PluginCoreApiHostImpl} from './core-host-impl';
 import {MessageId} from './message_types';
-import * as tf_storage from '../../tf_storage';
-
-@Injectable()
-export class NoopIpc {
-  broadcast(type: MessageType, payload: PayloadType): Promise<PayloadType[]> {
-    return new Promise((resolve) => {
-      resolve([]);
-    });
-  }
-  listen(type: MessageType, callback: PluginHostCallback): void {}
-  unlisten(type: MessageType): void {}
-}
+import {Ipc} from './plugin-host-ipc';
+import {PluginRunsApiHostImpl} from './runs-host-impl';
+import {NoopIpc} from './testing';
 
 describe('plugin_api_host test', () => {
   let store: MockStore<State>;

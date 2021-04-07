@@ -49,6 +49,20 @@ tf_ng_module(
 )
 
 tf_ng_module(
+    name = "testing",
+    testonly = True,
+    srcs = [
+        "testing.ts",
+    ],
+    deps = [
+        ":host_internals",
+        ":message",
+        ":plugin_host",
+        "@npm//@angular/core",
+    ],
+)
+
+tf_ng_module(
     name = "plugin_host_test",
     testonly = True,
     srcs = [
@@ -59,6 +73,7 @@ tf_ng_module(
         ":message",
         ":message_types",
         ":plugin_host",
+        ":testing",
         "//tensorboard/components/tf_storage",
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp:selectors",

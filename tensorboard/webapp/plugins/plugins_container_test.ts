@@ -44,6 +44,10 @@ import {TestingDebuggerModule} from '../../plugins/debugger_v2/tf_debugger_v2_pl
 import {buildFeatureFlag} from '../feature_flag/testing';
 import {getFeatureFlags} from '../feature_flag/store/feature_flag_selectors';
 import {getIsFeatureFlagsLoaded} from '../feature_flag/store/feature_flag_selectors';
+import {
+  PluginApiHostModule,
+  getTestingProvider,
+} from '../../components/experimental/plugin_util/testing';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
@@ -95,6 +99,7 @@ interface TbElement extends HTMLElement {
 describe('plugins_component', () => {
   let store: MockStore<State>;
   let createElementSpy: jasmine.Spy;
+  let pluginApiHost: PluginApiHostModule;
 
   const PLUGINS = {
     bar: {
@@ -137,7 +142,12 @@ describe('plugins_component', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      providers: [provideMockStore(), PluginsContainer, PluginRegistryModule],
+      providers: [
+        provideMockStore(),
+        PluginsContainer,
+        PluginRegistryModule,
+        getTestingProvider(),
+      ],
       declarations: [
         PluginsContainer,
         PluginsComponent,
@@ -166,6 +176,8 @@ describe('plugins_component', () => {
       .and.returnValue({
         registerPluginIframe: () => {},
       });
+
+    pluginApiHost = TestBed.inject(PluginApiHostModule);
   });
 
   describe('plugin DOM creation', () => {
@@ -219,12 +231,10 @@ describe('plugins_component', () => {
     });
 
     it('creates an element for IFRAME type of plugin', async () => {
-      const registerPluginIframeSpy = jasmine.createSpy();
-      createElementSpy
-        .withArgs('tf-experimental-plugin-host-lib')
-        .and.returnValue({
-          registerPluginIframe: registerPluginIframeSpy,
-        });
+      const registerPluginIframeSpy = spyOn(
+        pluginApiHost,
+        'registerPluginIframe'
+      );
       const fixture = TestBed.createComponent(PluginsContainer);
       fixture.detectChanges();
 
