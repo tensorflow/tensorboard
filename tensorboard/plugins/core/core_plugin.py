@@ -302,6 +302,7 @@ class CorePlugin(base_plugin.TBPlugin):
         sorting on the run name. Tags are sorted by its name,
         displayName, and lastly, inserted time.
         """
+        # TODO: move this to note file
         notifications = [
             {
                 "category": "whats new",
