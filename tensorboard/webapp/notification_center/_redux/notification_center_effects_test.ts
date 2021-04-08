@@ -20,7 +20,10 @@ import {Subject} from 'rxjs';
 import {State} from '../../app_state';
 import {TBHttpClientTestingModule} from '../../webapp_data_source/tb_http_client_testing';
 import {NotificationCenterDataSource} from '../_data_source';
-import {NotificationCenterEffects, TEST_ONLY} from './notification_center_effects';
+import {
+  NotificationCenterEffects,
+  TEST_ONLY,
+} from './notification_center_effects';
 import * as selectors from './notification_center_selectors';
 import {provideTestingNotificationCenterDataSource} from './testing';
 
@@ -61,11 +64,11 @@ describe('notification center effects', () => {
     store.overrideSelector(selectors.getLastReadTime, 0);
     effects.initialNotificaitonFetch$.subscribe();
 
-      fetchNotificationSubject = new Subject();
-      fetchNotificationsSpy = spyOn(
-        dataSource,
-        'fetchNotification'
-      ).and.returnValue(fetchNotificationSubject);
+    fetchNotificationSubject = new Subject();
+    fetchNotificationsSpy = spyOn(
+      dataSource,
+      'fetchNotification'
+    ).and.returnValue(fetchNotificationSubject);
   });
 
   it('fetch initial notifications', () => {

@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {createAction, props} from '@ngrx/store';
-import {Notification, } from './notification_center_types';
+import {Notification} from './notification_center_types';
 import {NotificationCenterResponse} from '../_data_source/types';
 
 /** @typehack */ import * as _typeHackModels from '@ngrx/store/src/models';
@@ -27,7 +27,7 @@ export const notificationBellClicked = createAction(
 );
 
 export const fetchNotificationsFailed = createAction(
-  '[Notification] Fetch Notification Request Failed',
+  '[Notification] Fetch Notification Request Failed'
 );
 
 export const fetchNotificationsLoaded = createAction(

@@ -60,7 +60,7 @@ const reducer = createReducer(
       state: NotificationState,
       {response}: {response: NotificationCenterResponse}
     ): NotificationState => {
-      if(response.notifications){
+      if (response.notifications) {
         return {
           ...state,
           notifications: response.notifications!,
