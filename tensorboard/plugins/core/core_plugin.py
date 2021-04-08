@@ -14,7 +14,6 @@
 # ==============================================================================
 """TensorBoard core plugin package."""
 
-
 import argparse
 import functools
 import gzip
@@ -42,9 +41,11 @@ logger = tb_logging.get_logger()
 DEFAULT_PORT = 6006
 JS_CACHE_EXPIRATION_IN_SECS = 86400
 
+
 class NotificationCategoryEnum(Enum):
     NONE = 1
     WHATS_NEW = 2
+
 
 class CorePlugin(base_plugin.TBPlugin):
     """Core plugin for TensorBoard.
@@ -300,16 +301,17 @@ class CorePlugin(base_plugin.TBPlugin):
         sorting on the run name. Tags are sorted by its name,
         displayName, and lastly, inserted time.
         """
-        notifications = [{
-            'category': 'whats new',
-            'dateInMs': 1579766400000,
-            'title': '2.4 release',
-            'content':
-            '<li>Visualize Scalars, Images, and  Histograms in one place</li><li>Custom colors for runs</li><li>Group previews</li>',
-        },]
+        notifications = [
+            {
+                "category": "whats new",
+                "dateInMs": 1579766400000,
+                "title": "2.4 release",
+                "content": "<li>Visualize Scalars, Images, and  Histograms in one place</li><li>Custom colors for runs</li><li>Group previews</li>",
+            },
+        ]
 
         results = {
-            'notifications': notifications,
+            "notifications": notifications,
         }
         return http_util.Respond(request, results, "application/json")
 
