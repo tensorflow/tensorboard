@@ -71,3 +71,7 @@ export class NotificationCenterEffects implements OnInitEffects {
     );
   }
 }
+
+export const TEST_ONLY = {
+  initAction,
+};

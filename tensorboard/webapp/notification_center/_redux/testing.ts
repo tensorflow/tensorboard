@@ -12,11 +12,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {Injectable} from '@angular/core';
+import {of} from 'rxjs';
+import {NotificationCenterDataSource} from '../_data_source';
 import {
   NotificationState,
   NOTIFICATION_FEATURE_KEY,
   State,
 } from './notification_center_types';
+
+/** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
 export function buildNotificationState(
   override: Partial<NotificationState>
@@ -32,4 +37,41 @@ export function buildStateFromNotificationState(
   runsState: NotificationState
 ): State {
   return {[NOTIFICATION_FEATURE_KEY]: runsState};
+}
+
+@Injectable()
+export class TestingNotificationCenterDataSource
+  implements NotificationCenterDataSource {
+  fetchNotification() {
+    return of({
+      response: {notifications: [], error: ''},
+    });
+  }
+}
+
+export function provideTestingNotificationCenterDataSource() {
+  return [
+    TestingNotificationCenterDataSource,
+    {
+      provide: NotificationCenterDataSource,
+      useExisting: TestingNotificationCenterDataSource,
+    },
+  ];
+}
+
+export function buildDataSourceNotificationdata(): DataSourceTagMetadata {
+  return {
+    scalars: {
+      tagDescriptions: {},
+      runTagInfo: {},
+    },
+    histograms: {
+      tagDescriptions: {},
+      runTagInfo: {},
+    },
+    images: {
+      tagDescriptions: {},
+      tagRunSampledInfo: {},
+    },
+  };
 }

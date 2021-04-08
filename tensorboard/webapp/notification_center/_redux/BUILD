@@ -56,6 +56,9 @@ tf_ts_library(
     deps = [
         ":_redux",
         ":types",
+        "//tensorboard/webapp/notification_center/_data_source",
+        "@npm//@angular/core",
+        "@npm//rxjs",
     ],
 )
 
@@ -63,6 +66,7 @@ tf_ts_library(
     name = "_redux_test",
     testonly = True,
     srcs = [
+        "notification_center_effects_test.ts",
         "notification_center_reducers_test.ts",
         "notification_center_selectors_test.ts",
     ],
@@ -71,6 +75,14 @@ tf_ts_library(
         ":actions",
         ":testing",
         ":types",
+        "//tensorboard/webapp/angular:expect_angular_core_testing",
+        "//tensorboard/webapp/angular:expect_ngrx_store_testing",
+        "//tensorboard/webapp:app_state",
+        "//tensorboard/webapp/core/testing",
+        "//tensorboard/webapp/notification_center/_data_source",
+        "//tensorboard/webapp/webapp_data_source:http_client_testing",
+        "@npm//@ngrx/effects",
         "@npm//@types/jasmine",
+        "@npm//rxjs",
     ],
 )
