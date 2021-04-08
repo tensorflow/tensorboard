@@ -306,19 +306,11 @@ class CorePlugin(base_plugin.TBPlugin):
             'title': '2.4 release',
             'content':
             '<li>Visualize Scalars, Images, and  Histograms in one place</li><li>Custom colors for runs</li><li>Group previews</li>',
-        },
-        {
-            'category': 'whats new',
-            'dateInMs': 1616697269620,
-            'title': '2.5 release',
-            'content':
-            '<li>Visualize Scalars, Images, and  Histograms in one place</li><li>Custom colors for runs</li><li>Group previews</li>',
         },]
 
         results = {
             'notifications': notifications,
         }
-        print('_serve_notifications')
         return http_util.Respond(request, results, "application/json")
 
 

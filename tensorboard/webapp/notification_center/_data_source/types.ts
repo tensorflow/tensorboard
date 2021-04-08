@@ -21,6 +21,7 @@ export interface NotificationCenterSuccessfulResponse {
 }
 
 export interface NotificationCenterFailedResponse {
+  notifications?: Notification[];
   error: string;
 }
 

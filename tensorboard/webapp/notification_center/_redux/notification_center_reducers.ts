@@ -14,6 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import {Action, createReducer, on} from '@ngrx/store';
 import {createRouteContextedState} from '../../app_routing/route_contexted_reducer_helper';
+import {NotificationCenterResponse} from '../_data_source';
 import * as actions from './notification_center_actions';
 import {
   NotificationState,
@@ -51,6 +52,21 @@ const reducer = createReducer(
         ...state,
         lastReadTimestampInMs: timeNow,
       };
+    }
+  ),
+  on(
+    actions.fetchNotificationsLoaded,
+    (
+      state: NotificationState,
+      {response}: {response: NotificationCenterResponse}
+    ): NotificationState => {
+      if(response.notifications){
+        return {
+          ...state,
+          notifications: response.notifications!,
+        };
+      }
+      return state;
     }
   )
 );

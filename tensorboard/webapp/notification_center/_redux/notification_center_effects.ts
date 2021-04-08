@@ -19,6 +19,8 @@ import {Observable, of} from 'rxjs';
 import {catchError, map, mergeMap} from 'rxjs/operators';
 import {State} from '../../app_state';
 import {NotificationCenterDataSource} from '../_data_source/index';
+import {Notification} from './notification_center_types';
+import * as actions from './notification_center_actions';
 
 /** @typehack */ import * as _typeHackNgrxEffects from '@ngrx/effects';
 /** @typehack */ import * as _typeHackModels from '@ngrx/store/src/models';
@@ -48,21 +50,23 @@ export class NotificationCenterEffects implements OnInitEffects {
     () => {
       return this.actions$.pipe(
         ofType(initAction),
-        mergeMap(() => {
-          return this.fetchNotification().pipe(map(() => void {}));
-        })
+        mergeMap(() => this.fetchNotification())
       );
     },
     {dispatch: false}
   );
 
-  private fetchNotification(): Observable<Action> {
+  private fetchNotification() {
     return this.dataSource.fetchNotification().pipe(
-      map(() => {
-        return initAction();
+      map((response) => {
+        if (response.response.notifications) {
+          this.store.dispatch(actions.fetchNotificationsLoaded(response));
+        }
+        this.store.dispatch(actions.fetchNotificationsFailed());
       }),
       catchError(() => {
-        return of(initAction());
+        this.store.dispatch(actions.fetchNotificationsFailed());
+        return of([]);
       })
     );
   }
