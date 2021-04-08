@@ -11,10 +11,10 @@ tf_ng_module(
         "index.ts",
     ],
     deps = [
+        "//tensorboard/webapp/notification_center/_data_source",
         "//tensorboard/webapp/notification_center/_redux",
         "//tensorboard/webapp/notification_center/_redux:types",
         "//tensorboard/webapp/notification_center/_views",
-        "//tensorboard/webapp/notification_center/_data_source",
         "@npm//@angular/core",
         "@npm//@ngrx/effects",
         "@npm//@ngrx/store",
