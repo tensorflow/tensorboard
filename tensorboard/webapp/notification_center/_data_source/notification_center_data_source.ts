@@ -22,8 +22,7 @@ import {
 } from './types';
 
 /**
- * An implementation of NotificationCenterDataSource that treats RunIds as identifiers
- * containing run name and experimentId.
+ * An implementation of NotificationCenterDataSource that fetchs notifications.
  */
 @Injectable()
 export class TBNotificationCenterDataSource

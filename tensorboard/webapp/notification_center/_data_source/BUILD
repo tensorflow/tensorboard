@@ -42,19 +42,3 @@ tf_ts_library(
         "//tensorboard/webapp/notification_center/_redux:types",
     ],
 )
-
-# tf_ts_library(
-#     name = "notification_center_data_source_test",
-#     testonly = True,
-#     srcs = [
-#         "notification_center_data_source_test.ts",
-#     ],
-#     deps = [
-#         ":backend_types",
-#         ":data_source",
-#         ":types",
-#         "//tensorboard/webapp/angular:expect_angular_core_testing",
-#         "//tensorboard/webapp/webapp_data_source:http_client_testing",
-#         "@npm//@types/jasmine",
-#     ],
-# )

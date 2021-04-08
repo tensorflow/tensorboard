@@ -60,8 +60,6 @@ describe('notification center effects', () => {
     });
     effects = TestBed.inject(NotificationCenterEffects);
     dataSource = TestBed.inject(NotificationCenterDataSource);
-    store.overrideSelector(selectors.getNotifications, []);
-    store.overrideSelector(selectors.getLastReadTime, 0);
     effects.initialNotificaitonFetch$.subscribe();
 
     fetchNotificationSubject = new Subject();
@@ -72,12 +70,6 @@ describe('notification center effects', () => {
   });
 
   it('fetch initial notifications', () => {
-    // store.overrideSelector(
-    //   getMetricsNotificationLoaded,
-    //   DataLoadState.LOADING
-    // );
-    // store.overrideSelector(getActivePlugin, METRICS_PLUGIN_ID);
-    // store.refreshState();
     actions$.next(TEST_ONLY.initAction());
     fetchNotificationSubject.next(buildDataSourceNotification());
     expect(fetchTagMetadataSpy).toHaveBeenCalled();

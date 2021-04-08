@@ -21,21 +21,14 @@ import {
   NOTIFICATION_LAST_READ_TIME_KEY,
 } from './notification_center_types';
 
-const {initialState, reducers: routeContextReducer} = createRouteContextedState(
-  {
-    // Backend data.
-    notifications: [],
-    lastReadTimestampInMs: window.localStorage.getItem(
-      NOTIFICATION_LAST_READ_TIME_KEY
-    )
-      ? parseInt(window.localStorage.getItem(NOTIFICATION_LAST_READ_TIME_KEY)!)
-      : null,
-  } as NotificationState,
-  {},
-  (state) => {
-    return {...state};
-  }
-);
+const initialState: NotificationState = {
+  notifications: [],
+  lastReadTimestampInMs: window.localStorage.getItem(
+    NOTIFICATION_LAST_READ_TIME_KEY
+  )
+    ? parseInt(window.localStorage.getItem(NOTIFICATION_LAST_READ_TIME_KEY)!)
+    : null,
+};
 
 const reducer = createReducer(
   initialState,
