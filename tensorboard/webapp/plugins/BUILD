@@ -16,6 +16,7 @@ tf_ng_module(
     ],
     deps = [
         ":plugin_registry",
+        "//tensorboard/components/experimental/plugin_util:plugin_host",
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp/core",
         "//tensorboard/webapp/core:types",
@@ -51,6 +52,7 @@ tf_ts_library(
     deps = [
         ":plugin_registry",
         ":plugins",
+        "//tensorboard/components/experimental/plugin_util:testing",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/testing",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/angular:expect_ngrx_store_testing",

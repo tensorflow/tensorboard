@@ -15,13 +15,58 @@ limitations under the License.
 /**
  * Implements run related plugin APIs.
  */
-import {broadcast, listen} from './plugin-host-ipc';
-import {runsStore} from '../../tf_backend/tf-backend';
+import {Injectable} from '@angular/core';
+import {Store} from '@ngrx/store';
+import {combineLatest, of} from 'rxjs';
+import {distinctUntilChanged, map, mergeMap, take} from 'rxjs/operators';
 
-listen('experimental.GetRuns', () => {
-  return runsStore.getRuns();
-});
+import {State} from '../../../webapp/app_state';
+import {getExperimentIdsFromRoute, getRuns} from '../../../webapp/selectors';
+import {MessageId} from './message_types';
+import {Ipc} from './plugin-host-ipc';
 
-runsStore.addListener(() => {
-  return broadcast('experimental.RunsChanged', runsStore.getRuns());
-});
+@Injectable({providedIn: 'root'})
+export class PluginRunsApiHostImpl {
+  constructor(
+    private readonly ipc: Ipc,
+    private readonly store: Store<State>
+  ) {}
+
+  init() {
+    const getRuns$ = this.store.select(getExperimentIdsFromRoute).pipe(
+      mergeMap((experimentIds) => {
+        if (!experimentIds) {
+          return of([]);
+        }
+        const runObservables = experimentIds.map((experimentId) => {
+          return this.store.select(getRuns, {experimentId});
+        });
+
+        return combineLatest(runObservables).pipe(
+          map((runsList) => {
+            return runsList.flat();
+          }),
+          distinctUntilChanged((before, after) => {
+            return (
+              before.length === after.length &&
+              before.every((val, index) => after[index].id === val.id)
+            );
+          }),
+          map((runs) => {
+            // Current API contract is to return list of experiment names instead
+            // of their ids.
+            return runs.map(({name}) => name);
+          })
+        );
+      })
+    );
+
+    getRuns$.subscribe((runs) => {
+      this.ipc.broadcast(MessageId.RUNS_CHANGED, runs);
+    });
+
+    this.ipc.listen(MessageId.GET_RUNS, () => {
+      return getRuns$.pipe(take(1)).toPromise();
+    });
+  }
+}

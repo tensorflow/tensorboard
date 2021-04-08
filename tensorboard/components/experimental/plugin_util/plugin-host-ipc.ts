@@ -12,6 +12,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {Injectable} from '@angular/core';
+
 import {IPC, MessageCallback, MessageType, PayloadType} from './message';
 
 /**
@@ -93,7 +95,7 @@ function wrapCallbackWithContext(
  * const someList = await broadcast('v1.some.type.guest.understands');
  * // do fun things with someList.
  */
-export function broadcast(
+function broadcast(
   type: MessageType,
   payload: PayloadType
 ): Promise<PayloadType[]> {
@@ -110,7 +112,7 @@ export function broadcast(
 /**
  * Subscribes to messages of a type specified for all frames.
  */
-export function listen(type: MessageType, callback: PluginHostCallback) {
+function listen(type: MessageType, callback: PluginHostCallback) {
   listeners.set(type, callback);
   for (const ipc of portIPCs) {
     const callbackWithContext = wrapCallbackWithContext(callback, ipc);
@@ -121,9 +123,24 @@ export function listen(type: MessageType, callback: PluginHostCallback) {
 /**
  * Unsubscribes to messages of a type specified for all frames.
  */
-export function unlisten(type: MessageType) {
+function unlisten(type: MessageType) {
   listeners.delete(type);
   for (const ipc of portIPCs) {
     ipc.unlisten(type);
+  }
+}
+
+@Injectable()
+export class Ipc {
+  broadcast(type: MessageType, payload: PayloadType): Promise<PayloadType[]> {
+    return broadcast(type, payload);
+  }
+
+  listen(type: MessageType, callback: PluginHostCallback): void {
+    listen(type, callback);
+  }
+
+  unlisten(type: MessageType): void {
+    unlisten(type);
   }
 }
