@@ -17,10 +17,10 @@ limitations under the License.
  */
 import {Injectable} from '@angular/core';
 import {Store} from '@ngrx/store';
-import {distinctUntilChanged, filter, map} from 'rxjs/operators';
+import {distinctUntilChanged, filter} from 'rxjs/operators';
 
 import {State} from '../../../webapp/app_state';
-import {getLastLoadedTimeInMs} from '../../../webapp/selectors';
+import {getAppLastLoadedTimeInMs} from '../../../webapp/selectors';
 import * as tf_storage from '../../tf_storage';
 import {MessageId} from './message_types';
 import {Ipc} from './plugin-host-ipc';
@@ -52,7 +52,7 @@ export class PluginCoreApiHostImpl {
     });
 
     this.store
-      .select(getLastLoadedTimeInMs)
+      .select(getAppLastLoadedTimeInMs)
       .pipe(
         filter((lastLoadedTimeInMs) => lastLoadedTimeInMs !== null),
         distinctUntilChanged()

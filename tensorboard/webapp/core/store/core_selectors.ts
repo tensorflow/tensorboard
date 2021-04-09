@@ -35,7 +35,10 @@ export const getPluginsListLoaded = createSelector(
   (state: CoreState): PluginsListLoadState => state.pluginsListLoaded
 );
 
-export const getLastLoadedTimeInMs = createSelector(
+// TODO(tensorboard-team): AppLastLoaded is currently derived from plugins listing loaded
+// state which should be disentangled. Fix this by having a separate state for remembering
+// when the application data was last loaded.
+export const getAppLastLoadedTimeInMs = createSelector(
   getPluginsListLoaded,
   (loadedState: PluginsListLoadState): number | null =>
     loadedState.lastLoadedTimeInMs

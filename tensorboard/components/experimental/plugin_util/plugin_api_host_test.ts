@@ -20,7 +20,7 @@ import {of} from 'rxjs';
 import {State} from '../../../webapp/app_state';
 import {buildRun} from '../../../webapp/runs/store/testing';
 import {
-  getLastLoadedTimeInMs,
+  getAppLastLoadedTimeInMs,
   getExperimentIdsFromRoute,
   getRuns,
 } from '../../../webapp/selectors';
@@ -53,7 +53,7 @@ describe('plugin_api_host test', () => {
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
     store.overrideSelector(getExperimentIdsFromRoute, ['e1']);
     store.overrideSelector(getRuns, []);
-    store.overrideSelector(getLastLoadedTimeInMs, null);
+    store.overrideSelector(getAppLastLoadedTimeInMs, null);
     selectSpy = spyOn(store, 'select').and.callThrough();
 
     const ipc = TestBed.inject(Ipc);
@@ -272,19 +272,19 @@ describe('plugin_api_host test', () => {
       it('calls callback when last updated time changes', () => {
         coreApi.init();
 
-        store.overrideSelector(getLastLoadedTimeInMs, null);
+        store.overrideSelector(getAppLastLoadedTimeInMs, null);
         store.refreshState();
         expect(broadcastSpy).toHaveBeenCalledTimes(0);
 
-        store.overrideSelector(getLastLoadedTimeInMs, 1);
+        store.overrideSelector(getAppLastLoadedTimeInMs, 1);
         store.refreshState();
         expect(broadcastSpy).toHaveBeenCalledTimes(1);
 
-        store.overrideSelector(getLastLoadedTimeInMs, 1);
+        store.overrideSelector(getAppLastLoadedTimeInMs, 1);
         store.refreshState();
         expect(broadcastSpy).toHaveBeenCalledTimes(1);
 
-        store.overrideSelector(getLastLoadedTimeInMs, 2);
+        store.overrideSelector(getAppLastLoadedTimeInMs, 2);
         store.refreshState();
         expect(broadcastSpy).toHaveBeenCalledTimes(2);
       });
