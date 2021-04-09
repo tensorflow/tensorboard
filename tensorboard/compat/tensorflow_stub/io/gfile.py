@@ -188,12 +188,7 @@ class LocalFileSystem(object):
 
     def makedirs(self, path):
         """Creates a directory and all parent/intermediate directories."""
-        try:
-            os.makedirs(path)
-        except FileExistsError:
-            raise errors.AlreadyExistsError(
-                None, None, "Directory already exists"
-            )
+        os.makedirs(path, exist_ok=True)
 
     def stat(self, filename):
         """Returns file statistics for a given path."""
@@ -383,15 +378,12 @@ class S3FileSystem(object):
 
     def makedirs(self, dirname):
         """Creates a directory and all parent/intermediate directories."""
-        if self.exists(dirname):
-            raise errors.AlreadyExistsError(
-                None, None, "Directory already exists"
-            )
-        client = boto3.client("s3", endpoint_url=self._s3_endpoint)
-        bucket, path = self.bucket_and_path(dirname)
-        if not path.endswith("/"):
-            path += "/"  # This will make sure we don't override a file
-        client.put_object(Body="", Bucket=bucket, Key=path)
+        if not self.exists(dirname):
+            client = boto3.client("s3", endpoint_url=self._s3_endpoint)
+            bucket, path = self.bucket_and_path(dirname)
+            if not path.endswith("/"):
+                path += "/"  # This will make sure we don't override a file
+            client.put_object(Body="", Bucket=bucket, Key=path)
 
     def stat(self, filename):
         """Returns file statistics for a given path."""
@@ -657,10 +649,6 @@ def makedirs(path):
 
     Args:
       path: string, name of the directory to be created
-
-    Raises:
-      errors.AlreadyExistsError: If leaf directory already exists or
-        cannot be created.
     """
     return get_filesystem(path).makedirs(path)
 
