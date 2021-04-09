@@ -19,13 +19,20 @@ import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {Subject} from 'rxjs';
 import {State} from '../../app_state';
 import {TBHttpClientTestingModule} from '../../webapp_data_source/tb_http_client_testing';
-import {NotificationCenterDataSource} from '../_data_source';
+import {
+  NotificationCenterDataSource,
+  NotificationCenterResponse,
+} from '../_data_source';
+import * as actions from './notification_center_actions';
 import {
   NotificationCenterEffects,
   TEST_ONLY,
 } from './notification_center_effects';
-import * as selectors from './notification_center_selectors';
-import {provideTestingNotificationCenterDataSource} from './testing';
+import {CategoryEnum} from './notification_center_types';
+import {
+  buildDataSourceNotification,
+  provideTestingNotificationCenterDataSource,
+} from './testing';
 
 describe('notification center effects', () => {
   let dataSource: NotificationCenterDataSource;
@@ -34,6 +41,7 @@ describe('notification center effects', () => {
   let actions$: Subject<Action>;
   let actualActions: Action[] = [];
   let fetchNotificationsSpy: jasmine.Spy;
+  let fetchNotificationSubject: Subject<{response: NotificationCenterResponse}>;
 
   beforeEach(async () => {
     actions$ = new Subject<Action>();
@@ -69,10 +77,31 @@ describe('notification center effects', () => {
     ).and.returnValue(fetchNotificationSubject);
   });
 
-  it('fetch initial notifications', () => {
+  it('fetches initial notifications success', () => {
     actions$.next(TEST_ONLY.initAction());
-    fetchNotificationSubject.next(buildDataSourceNotification());
-    expect(fetchTagMetadataSpy).toHaveBeenCalled();
-    expect(actualActions).toEqual([]);
+    fetchNotificationSubject.next({response: buildDataSourceNotification()});
+    expect(fetchNotificationsSpy).toHaveBeenCalled();
+    expect(actualActions).toEqual([
+      actions.fetchNotificationsLoaded({
+        response: {
+          notifications: [
+            {
+              category: CategoryEnum.WHATS_NEW,
+              dateInMs: 0,
+              title: 'test',
+              content: 'test',
+            },
+          ],
+          error: '',
+        },
+      }),
+    ]);
+  });
+
+  it('fetches initial notifications failure', () => {
+    actions$.next(TEST_ONLY.initAction());
+    fetchNotificationSubject.next({response: {error: 'error'}});
+    expect(fetchNotificationsSpy).toHaveBeenCalled();
+    expect(actualActions).toEqual([actions.fetchNotificationsFailed()]);
   });
 });

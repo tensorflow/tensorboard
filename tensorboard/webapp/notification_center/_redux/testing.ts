@@ -14,8 +14,12 @@ limitations under the License.
 ==============================================================================*/
 import {Injectable} from '@angular/core';
 import {of} from 'rxjs';
-import {NotificationCenterDataSource} from '../_data_source';
 import {
+  NotificationCenterDataSource,
+  NotificationCenterResponse  as DataSourceNotifications,
+} from '../_data_source';
+import {
+  CategoryEnum,
   NotificationState,
   NOTIFICATION_FEATURE_KEY,
   State,
@@ -59,19 +63,16 @@ export function provideTestingNotificationCenterDataSource() {
   ];
 }
 
-export function buildDataSourceNotificationdata(): DataSourceTagMetadata {
+export function buildDataSourceNotification(): DataSourceNotifications {
   return {
-    scalars: {
-      tagDescriptions: {},
-      runTagInfo: {},
-    },
-    histograms: {
-      tagDescriptions: {},
-      runTagInfo: {},
-    },
-    images: {
-      tagDescriptions: {},
-      tagRunSampledInfo: {},
-    },
+    notifications: [
+      {
+        category: CategoryEnum.WHATS_NEW,
+        dateInMs: 0,
+        title: 'test',
+        content: 'test',
+      },
+    ],
+    error: '',
   };
 }
