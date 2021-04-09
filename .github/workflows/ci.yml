@@ -124,7 +124,7 @@ jobs:
           python-version: '3.8'
           architecture: 'x64'
       - name: 'Cache Cargo artifacts'
-        if: matrix.mode == 'native'
+        if: false
         uses: actions/cache@v2
         with:
           path: |
