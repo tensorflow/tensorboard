@@ -16,7 +16,7 @@ import {Injectable} from '@angular/core';
 import {of} from 'rxjs';
 import {
   NotificationCenterDataSource,
-  NotificationCenterResponse  as DataSourceNotifications,
+  NotificationCenterResponse as DataSourceNotifications,
 } from '../_data_source';
 import {
   CategoryEnum,
