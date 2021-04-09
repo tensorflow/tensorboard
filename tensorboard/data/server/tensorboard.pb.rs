@@ -466,8 +466,9 @@ pub mod event {
         /// A summary was generated.
         #[prost(message, tag="5")]
         Summary(super::Summary),
-        /// The user output a log message. Not all messages are logged, only ones
-        /// generated via the Python tensorboard_logging module.
+        /// The user output a log message. This was theoretically used by the defunct
+        /// tensorboard_logging module, which has since been removed; this field is
+        /// now deprecated and should not be used.
         #[prost(message, tag="6")]
         LogMessage(super::LogMessage),
         /// The state of the session which can be used for restarting after crashes.
@@ -482,6 +483,9 @@ pub mod event {
     }
 }
 /// Protocol buffer used for logging messages to the events file.
+///
+/// This was theoretically used by the defunct tensorboard_logging module, which
+/// has been removed; this message is now deprecated and should not be used.
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct LogMessage {
     #[prost(enumeration="log_message::Level", tag="1")]
