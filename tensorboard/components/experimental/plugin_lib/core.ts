@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {sendMessage} from './plugin-guest';
+import {listen, sendMessage} from './plugin-guest';
 
 /**
  * When called from a plugin with plugin_name `N`, it returns a promise which
@@ -22,4 +22,12 @@ import {sendMessage} from './plugin-guest';
  */
 export async function getURLPluginData() {
   return sendMessage('experimental.GetURLPluginData');
+}
+
+/**
+ * Listen to when data reloads on TensorBoard. There are two ways in which
+ * data reloads--(1) automatic refresh and (2) user clicks on a reload button.
+ */
+export function setOnReload(callback: () => void) {
+  listen('experimental.DataReloaded', callback);
 }

@@ -19,7 +19,12 @@ import {of} from 'rxjs';
 
 import {State} from '../../../webapp/app_state';
 import {buildRun} from '../../../webapp/runs/store/testing';
-import {getExperimentIdsFromRoute, getRuns} from '../../../webapp/selectors';
+import {
+  getAppLastLoadedTimeInMs,
+  getExperimentIdsFromRoute,
+  getRuns,
+} from '../../../webapp/selectors';
+import {DataLoadState} from '../../../webapp/types/data';
 import * as tf_storage from '../../tf_storage';
 import {PluginCoreApiHostImpl} from './core-host-impl';
 import {MessageId} from './message_types';
@@ -48,6 +53,7 @@ describe('plugin_api_host test', () => {
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
     store.overrideSelector(getExperimentIdsFromRoute, ['e1']);
     store.overrideSelector(getRuns, []);
+    store.overrideSelector(getAppLastLoadedTimeInMs, null);
     selectSpy = spyOn(store, 'select').and.callThrough();
 
     const ipc = TestBed.inject(Ipc);
@@ -259,6 +265,28 @@ describe('plugin_api_host test', () => {
           a: '1',
           b: 'b',
         });
+      });
+    });
+
+    describe('#experimental.DataReloaded', () => {
+      it('calls callback when last updated time changes', () => {
+        coreApi.init();
+
+        store.overrideSelector(getAppLastLoadedTimeInMs, null);
+        store.refreshState();
+        expect(broadcastSpy).toHaveBeenCalledTimes(0);
+
+        store.overrideSelector(getAppLastLoadedTimeInMs, 1);
+        store.refreshState();
+        expect(broadcastSpy).toHaveBeenCalledTimes(1);
+
+        store.overrideSelector(getAppLastLoadedTimeInMs, 1);
+        store.refreshState();
+        expect(broadcastSpy).toHaveBeenCalledTimes(1);
+
+        store.overrideSelector(getAppLastLoadedTimeInMs, 2);
+        store.refreshState();
+        expect(broadcastSpy).toHaveBeenCalledTimes(2);
       });
     });
   });

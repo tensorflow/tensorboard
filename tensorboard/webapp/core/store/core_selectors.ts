@@ -12,16 +12,15 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {createFeatureSelector, createSelector} from '@ngrx/store';
 
-import {createSelector, createFeatureSelector} from '@ngrx/store';
 import {Environment, PluginId, PluginsListing} from '../../types/api';
 import {
   CoreState,
-  State,
   CORE_FEATURE_KEY,
   PluginsListLoadState,
+  State,
 } from './core_types';
-import {Run, RunId} from '../types';
 
 // HACK: These imports are for type inference.
 // https://github.com/bazelbuild/rules_nodejs/issues/1013
@@ -34,6 +33,15 @@ const selectCoreState = createFeatureSelector<State, CoreState>(
 export const getPluginsListLoaded = createSelector(
   selectCoreState,
   (state: CoreState): PluginsListLoadState => state.pluginsListLoaded
+);
+
+// TODO(tensorboard-team): AppLastLoaded is currently derived from plugins listing loaded
+// state which should be disentangled. Fix this by having a separate state for remembering
+// when the application data was last loaded.
+export const getAppLastLoadedTimeInMs = createSelector(
+  getPluginsListLoaded,
+  (loadedState: PluginsListLoadState): number | null =>
+    loadedState.lastLoadedTimeInMs
 );
 
 export const getActivePlugin = createSelector(

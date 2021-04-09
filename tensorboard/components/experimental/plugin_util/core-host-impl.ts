@@ -16,14 +16,21 @@ limitations under the License.
  * Implements core plugin APIs.
  */
 import {Injectable} from '@angular/core';
+import {Store} from '@ngrx/store';
+import {distinctUntilChanged, filter} from 'rxjs/operators';
 
-import {Ipc} from './plugin-host-ipc';
+import {State} from '../../../webapp/app_state';
+import {getAppLastLoadedTimeInMs} from '../../../webapp/selectors';
 import * as tf_storage from '../../tf_storage';
 import {MessageId} from './message_types';
+import {Ipc} from './plugin-host-ipc';
 
 @Injectable({providedIn: 'root'})
 export class PluginCoreApiHostImpl {
-  constructor(private readonly ipc: Ipc) {}
+  constructor(
+    private readonly ipc: Ipc,
+    private readonly store: Store<State>
+  ) {}
 
   init() {
     this.ipc.listen(MessageId.GET_URL_DATA, (context) => {
@@ -43,5 +50,15 @@ export class PluginCoreApiHostImpl {
       }
       return result;
     });
+
+    this.store
+      .select(getAppLastLoadedTimeInMs)
+      .pipe(
+        filter((lastLoadedTimeInMs) => lastLoadedTimeInMs !== null),
+        distinctUntilChanged()
+      )
+      .subscribe(() => {
+        this.ipc.broadcast(MessageId.DATA_RELOADED, void {});
+      });
   }
 }
