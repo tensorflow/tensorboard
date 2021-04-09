@@ -20,7 +20,7 @@ import {Store} from '@ngrx/store';
 import {distinctUntilChanged, filter, map} from 'rxjs/operators';
 
 import {State} from '../../../webapp/app_state';
-import {getPluginsListLoaded} from '../../../webapp/selectors';
+import {getLastLoadedTimeInMs} from '../../../webapp/selectors';
 import * as tf_storage from '../../tf_storage';
 import {MessageId} from './message_types';
 import {Ipc} from './plugin-host-ipc';
@@ -52,11 +52,8 @@ export class PluginCoreApiHostImpl {
     });
 
     this.store
-      .select(getPluginsListLoaded)
+      .select(getLastLoadedTimeInMs)
       .pipe(
-        map((loaded) => {
-          return loaded.lastLoadedTimeInMs;
-        }),
         filter((lastLoadedTimeInMs) => lastLoadedTimeInMs !== null),
         distinctUntilChanged()
       )
