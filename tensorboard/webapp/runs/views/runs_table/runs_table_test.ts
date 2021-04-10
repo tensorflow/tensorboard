@@ -2453,6 +2453,45 @@ describe('runs_table', () => {
           );
         });
       });
+
+      it('does not sort because you click on the filter menu button', () => {
+        store.overrideSelector(
+          getRunHparamFilterMap,
+          buildHparamFilterMap([
+            [
+              'foo',
+              buildDiscreteFilter({
+                possibleValues: ['faz', 'bar', 'baz'],
+              }),
+            ],
+          ])
+        );
+        store.overrideSelector(
+          getRunMetricFilterMap,
+          buildMetricFilterMap([
+            [
+              'acc',
+              buildIntervalFilter({
+                includeUndefined: false,
+                filterLowerValue: 0.25,
+                filterUpperValue: 1,
+              }),
+            ],
+          ])
+        );
+        const fixture = createComponent(TEST_HPARAM_SPECS, TEST_METRIC_SPECS);
+        fixture.detectChanges();
+
+        const columnHeaders = fixture.nativeElement.querySelectorAll(
+          Selector.HEADER_COLUMN
+        );
+        columnHeaders[3].querySelector('button').click();
+        columnHeaders[4].querySelector('button').click();
+
+        for (const [action] of dispatchSpy.calls.allArgs()) {
+          expect(action.type).not.toBe(runSelectorSortChanged.type);
+        }
+      });
     });
 
     function setNoFilterHparamsAndMetrics(
