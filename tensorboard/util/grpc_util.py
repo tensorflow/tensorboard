@@ -52,13 +52,13 @@ _VERSION_METADATA_KEY = "tensorboard-version"
 
 
 def async_call_with_retries(
-    api_method, request, completion_handler, clock=None
+    api_method, request, done_callback, clock=None
 ):
     """Initiate an asynchronous call to a gRPC stub, with retry logic.
 
     This is similar to the `async_call` API, except that the call is handled
     asynchronously, and the completion may be handled by another thread. The
-    caller must provide a `completion_handler` argument which will handle the
+    caller must provide a `done_callback` argument which will handle the
     result or exception rising from the gRPC completion.
 
     Retries are handled with jittered exponential backoff to spread out failures
@@ -69,9 +69,10 @@ def async_call_with_retries(
     Args:
       api_method: Callable for the API method to invoke.
       request: Request protocol buffer to pass to the API method.
-      completion_handler: A function which takes a `grpc.Future` object as an
+      done_callback: A function which takes a `grpc.Future` object as an
         argument and performs the necessary operations on the gRPC response
-        or error, as required.
+        or error, as required.  See the gRPC documentation for more details
+        https://grpc.github.io/grpc/python/grpc.html#grpc.Future.add_done_callback
       num_remaining_retries: A non-negative integer which indicates how many
         more attempts should be made to the gRPC endpoint if this try fails
         within an error code which could be recovered from.  Set to zero
@@ -85,7 +86,7 @@ def async_call_with_retries(
     return _async_call_with_retries(
         api_method=api_method,
         request=request,
-        completion_handler=completion_handler,
+        done_callback=done_callback,
         num_remaining_tries=_GRPC_RETRY_MAX_ATTEMPTS - 1,
         num_tries_so_far=0,
         clock=clock,
@@ -95,7 +96,7 @@ def async_call_with_retries(
 def _async_call_with_retries(
     api_method,
     request,
-    completion_handler,
+    done_callback,
     clock=None,
     num_remaining_tries=_GRPC_RETRY_MAX_ATTEMPTS - 1,
     num_tries_so_far=0,
@@ -112,7 +113,7 @@ def _async_call_with_retries(
     Args:
       api_method: See `async_call_with_retries`.
       request: See `async_call_with_retries`.
-      completion_handler:  See `async_call_with_retries`.
+      done_callback:  See `async_call_with_retries`.
       clock:  See `async_call_with_retries`.
       num_remaining_retries: A non-negative integer which indicates how many
         more attempts should be made to the gRPC endpoint if this try fails
@@ -139,25 +140,25 @@ def _async_call_with_retries(
         timeout=_GRPC_DEFAULT_TIMEOUT_SECS,
         metadata=version_metadata(),
     )
-    # The continuation should wrap the completion_handler such that:
-    #   * If the grpc call succeeds, we should invoke the completion_handler.
-    #   * If there are no more retries, we should invoke the completion_handler.
+    # The continuation should wrap the done_callback such that:
+    #   * If the grpc call succeeds, we should invoke the done_callback.
+    #   * If there are no more retries, we should invoke the done_callback.
     #   * Otherwise, we should invoke _async_call_with_retries with one less
     #     retry.
     #
     def retry_handler(future):
         e = future.exception()
         if e is None:
-            completion_handler(future)
+            done_callback(future)
             return
         else:
             logger.info("RPC call %s got error %s", rpc_name, e)
-            # If unable to retry, proceed to completion_handler.
+            # If unable to retry, proceed to done_callback.
             if e.code() not in _GRPC_RETRYABLE_STATUS_CODES:
-                completion_handler(future)
+                done_callback(future)
                 return
             if num_remaining_tries <= 0:
-                completion_handler(future)
+                done_callback(future)
                 return
             # If able to retry, wait then do so.
             backoff_secs = _compute_backoff_seconds(num_tries_so_far + 1)
@@ -171,7 +172,7 @@ def _async_call_with_retries(
             _async_call_with_retries(
                 api_method=api_method,
                 request=request,
-                completion_handler=completion_handler,
+                done_callback=done_callback,
                 num_remaining_tries=num_remaining_tries - 1,
                 num_tries_so_far=num_tries_so_far + 1,
                 clock=clock,

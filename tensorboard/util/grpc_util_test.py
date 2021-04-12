@@ -185,7 +185,7 @@ class AsyncCallWithRetriesTest(tb_test.TestCase):
             grpc_util.async_call_with_retries(
                 client.TestRpc,
                 make_request(42),
-                completion_handler=wrapped_mock_callback,
+                done_callback=wrapped_mock_callback,
             )
             # Keep the test alive until the event is triggered.
             keep_alive_event.wait()
@@ -212,7 +212,7 @@ class AsyncCallWithRetriesTest(tb_test.TestCase):
         with server.run() as client:
             # Execute `async_call_with_retries` with the callback.
             grpc_util.async_call_with_retries(
-                client.TestRpc, make_request(42), completion_handler=check_value
+                client.TestRpc, make_request(42), done_callback=check_value
             )
             # Keep the test alive until the event is triggered.
             keep_alive_event.wait()
@@ -242,7 +242,7 @@ class AsyncCallWithRetriesTest(tb_test.TestCase):
             grpc_util.async_call_with_retries(
                 client.TestRpc,
                 make_request(42),
-                completion_handler=check_exception,
+                done_callback=check_exception,
             )
             # Keep the test alive until the event is triggered.
             keep_alive_event.wait()
@@ -283,7 +283,7 @@ class AsyncCallWithRetriesTest(tb_test.TestCase):
                 client.TestRpc,
                 make_request(42),
                 clock=fake_time,
-                completion_handler=check_exception,
+                done_callback=check_exception,
             )
             # Keep the test alive until the event is triggered.
             keep_alive_event.wait()
@@ -319,7 +319,7 @@ class AsyncCallWithRetriesTest(tb_test.TestCase):
                 client.TestRpc,
                 make_request(42),
                 clock=fake_time,
-                completion_handler=check_value,
+                done_callback=check_value,
             )
             # Keep the test alive until the event is triggered.
             keep_alive_event.wait()
