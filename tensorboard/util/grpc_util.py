@@ -51,9 +51,7 @@ _GRPC_RETRYABLE_STATUS_CODES = frozenset(
 _VERSION_METADATA_KEY = "tensorboard-version"
 
 
-def async_call_with_retries(
-    api_method, request, done_callback, clock=None
-):
+def async_call_with_retries(api_method, request, done_callback, clock=None):
     """Initiate an asynchronous call to a gRPC stub, with retry logic.
 
     This is similar to the `async_call` API, except that the call is handled
