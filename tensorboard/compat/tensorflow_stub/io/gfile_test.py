@@ -78,8 +78,7 @@ class GFileTest(tb_test.TestCase):
         temp_dir = self.get_temp_dir()
         self._CreateDeepDirectoryStructure(temp_dir)
         new_dir = os.path.join(temp_dir, "bar", "baz")
-        with self.assertRaises(errors.AlreadyExistsError):
-            gfile.makedirs(new_dir)
+        gfile.makedirs(new_dir)
 
     def testWalk(self):
         temp_dir = self.get_temp_dir()

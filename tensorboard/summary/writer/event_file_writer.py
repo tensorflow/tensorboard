@@ -69,8 +69,7 @@ class EventFileWriter(object):
             pending events and summaries to disk.
         """
         self._logdir = logdir
-        if not tf.io.gfile.exists(logdir):
-            tf.io.gfile.makedirs(logdir)
+        tf.io.gfile.makedirs(logdir)
         self._file_name = (
             os.path.join(
                 logdir,
