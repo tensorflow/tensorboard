@@ -43,8 +43,8 @@ jobs:
         tf_version_id: ['tf-nightly', 'notf']
         python_version: ['3.7']
     steps:
-      - uses: actions/checkout@v1
-      - uses: actions/setup-python@v1
+      - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e
+      - uses: actions/setup-python@152ba7c4dd6521b8e9c93f72d362ce03bf6c4f20
         with:
           python-version: ${{ matrix.python_version }}
           architecture: 'x64'
@@ -118,14 +118,14 @@ jobs:
             platform: 'ubuntu-16.04'
             rust_version: '1.51.0'
     steps:
-      - uses: actions/checkout@v1
-      - uses: actions/setup-python@v1
+      - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e
+      - uses: actions/setup-python@152ba7c4dd6521b8e9c93f72d362ce03bf6c4f20
         with:
           python-version: '3.8'
           architecture: 'x64'
       - name: 'Cache Cargo artifacts'
         if: matrix.mode == 'native'
-        uses: actions/cache@v2
+        uses: actions/cache@1a9e2138d905efd099035b49d8b7a3888c653ca8
         with:
           path: |
             tensorboard/data/server/target/
@@ -142,7 +142,7 @@ jobs:
           key: build-data-server-pip-${{ runner.os }}-cargo-${{ matrix.rust_version }}-${{ hashFiles('**/Cargo.lock', '.github/workflows/ci.yml') }}
       - name: 'Install Rust toolchain'
         if: matrix.mode == 'native'
-        uses: actions-rs/toolchain@v1
+        uses: actions-rs/toolchain@16499b5e05bf2e26879000db0c1d13f7e13fa3af
         with:
           toolchain: ${{ matrix.rust_version }}
           default: true
@@ -176,7 +176,7 @@ jobs:
             --out-dir /tmp/pip_package \
             ;
       - name: 'Upload'
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@ee69f02b3dfdecd58bb31b4d133da38ba6fe3700
         with:
           name: tensorboard-data-server
           path: /tmp/pip_package/*
@@ -191,8 +191,8 @@ jobs:
         # changes, and we want to catch them all.
         python_version: ['3.6', '3.7']
     steps:
-      - uses: actions/checkout@v1
-      - uses: actions/setup-python@v1
+      - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e
+      - uses: actions/setup-python@152ba7c4dd6521b8e9c93f72d362ce03bf6c4f20
         with:
           python-version: ${{ matrix.python_version }}
           architecture: 'x64'
@@ -209,8 +209,8 @@ jobs:
   lint-python-yaml-docs:
     runs-on: ubuntu-16.04
     steps:
-      - uses: actions/checkout@v1
-      - uses: actions/setup-python@v1
+      - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e
+      - uses: actions/setup-python@152ba7c4dd6521b8e9c93f72d362ce03bf6c4f20
         with:
           python-version: '3.6'
           architecture: 'x64'
@@ -237,9 +237,9 @@ jobs:
         rust_version: ['1.51.0']
         cargo_raze_version: ['0.9.2']
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e
       - name: 'Cache Cargo artifacts'
-        uses: actions/cache@v2
+        uses: actions/cache@1a9e2138d905efd099035b49d8b7a3888c653ca8
         with:
           path: |
             tensorboard/data/server/target/
@@ -253,7 +253,7 @@ jobs:
             ~/.cargo/.crates2.json
           key: lint-rust-${{ runner.os }}-cargo-${{ matrix.rust_version }}-${{ matrix.cargo_raze_version }}-${{ hashFiles('**/Cargo.lock', '.github/workflows/ci.yml') }}
       - name: 'Install Rust toolchain'
-        uses: actions-rs/toolchain@v1
+        uses: actions-rs/toolchain@16499b5e05bf2e26879000db0c1d13f7e13fa3af
         with:
           toolchain: ${{ matrix.rust_version }}
           default: true
@@ -263,7 +263,7 @@ jobs:
       - name: 'Run Rustfmt'
         run: (cd tensorboard/data/server/ && cargo fmt -- --check)
       - name: 'Run Clippy'
-        uses: actions-rs/clippy-check@v1
+        uses: actions-rs/clippy-check@b5b5f21f4797c02da247df37026fcd0a5024aa4d
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           args: --tests --manifest-path tensorboard/data/server/Cargo.toml
@@ -277,8 +277,8 @@ jobs:
   lint-frontend:
     runs-on: ubuntu-16.04
     steps:
-      - uses: actions/checkout@v1
-      - uses: actions/setup-node@v1
+      - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e
+      - uses: actions/setup-node@56899e050abffc08c2b3b61f3ec6a79a9dc3223d
       - run: yarn install --ignore-engines
         # You can run `yarn fix-lint` to fix all Prettier complaints.
       - run: yarn lint
@@ -299,7 +299,7 @@ jobs:
   lint-misc: # build, protos, etc.
     runs-on: ubuntu-16.04
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e
       - name: 'Set up Buildifier'
         run: |
           ci/download_buildifier.sh "${BUILDTOOLS_VERSION}" "${BUILDIFIER_SHA256SUM}" ~/buildifier
@@ -324,7 +324,7 @@ jobs:
         run: |
           buildozer '//tensorboard/...:%licenses' remove_comment && false || test $? = 3
       - name: clang-format lint
-        uses: DoozyX/clang-format-lint-action@v0.5
+        uses: DoozyX/clang-format-lint-action@0138140a2adaafd3032a3ff37f66366fd7dc88e0
         with:
           source: ./tensorboard
           # Exclude tensorboard/compat because the source of truth is TensorFlow.
