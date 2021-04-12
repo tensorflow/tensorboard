@@ -46,7 +46,7 @@ export function buildStateFromNotificationState(
 @Injectable()
 export class TestingNotificationCenterDataSource
   implements NotificationCenterDataSource {
-  fetchNotification() {
+  fetchNotifications() {
     return of({
       response: {notifications: [], error: ''},
     });

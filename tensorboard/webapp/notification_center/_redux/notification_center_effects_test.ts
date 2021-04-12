@@ -73,7 +73,7 @@ describe('notification center effects', () => {
     fetchNotificationSubject = new Subject();
     fetchNotificationsSpy = spyOn(
       dataSource,
-      'fetchNotification'
+      'fetchNotifications'
     ).and.returnValue(fetchNotificationSubject);
   });
 
