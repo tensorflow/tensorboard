@@ -15,7 +15,8 @@ limitations under the License.
 /**
  * @fileoverview Types produced only by the backend data source.
  *
- * Types defined in `plugins/metrics/http_api.md`.
+ * TODO(japie1235813): add api document
+ * Types defined in `plugins/notification_center/http_api.md`.
  */
 import {Notification} from '../_redux/notification_center_types';
 

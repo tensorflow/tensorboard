@@ -68,7 +68,7 @@ describe('notification center effects', () => {
     });
     effects = TestBed.inject(NotificationCenterEffects);
     dataSource = TestBed.inject(NotificationCenterDataSource);
-    effects.initialNotificaitonFetch$.subscribe();
+    effects.initialNotificationFetch$.subscribe();
 
     fetchNotificationSubject = new Subject();
     fetchNotificationsSpy = spyOn(

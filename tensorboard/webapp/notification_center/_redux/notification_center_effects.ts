@@ -46,7 +46,7 @@ export class NotificationCenterEffects implements OnInitEffects {
    *
    * @export
    */
-  initialNotificaitonFetch$ = createEffect(
+  initialNotificationFetch$ = createEffect(
     () => {
       return this.actions$.pipe(
         ofType(initAction),
@@ -57,7 +57,7 @@ export class NotificationCenterEffects implements OnInitEffects {
   );
 
   private fetchNotification() {
-    return this.dataSource.fetchNotification().pipe(
+    return this.dataSource.fetchNotifications().pipe(
       map((response) => {
         if (response.response.notifications) {
           this.store.dispatch(actions.fetchNotificationsLoaded(response));
