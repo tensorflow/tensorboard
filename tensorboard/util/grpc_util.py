@@ -131,6 +131,12 @@ def async_call_with_retries(
                 return
             # If able to retry, wait then do so.
             backoff_secs = _compute_backoff_seconds(num_tries_so_far + 1)
+            logger.info(
+                "RPC call %s attempted %d times, retrying in %.1f seconds",
+                rpc_name,
+                num_tries_so_far,
+                backoff_secs,
+            )
             clock.sleep(backoff_secs)
             async_call_with_retries(
                 api_method=api_method,
