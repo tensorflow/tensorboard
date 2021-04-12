@@ -485,6 +485,7 @@ class CorePluginNotificationTest(tf.test.TestCase):
         notifications_json = self._get_json(self.server, "/data/notifications")
         self.assertEqual(notifications_json, [])
 
+
 def get_test_assets_zip_provider():
     memfile = io.BytesIO()
     with zipfile.ZipFile(

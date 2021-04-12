@@ -32,7 +32,6 @@ from tensorboard.plugins import base_plugin
 from tensorboard.util import grpc_util
 from tensorboard.util import tb_logging
 from tensorboard import version
-from enum import Enum
 
 logger = tb_logging.get_logger()
 
