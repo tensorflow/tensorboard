@@ -48,7 +48,7 @@ describe('TBNotificationCenterDataSource test', () => {
 
   it('fetch notifications', () => {
     const resultSpy = jasmine.createSpy();
-    dataSource.fetchNotification().subscribe(resultSpy);
+    dataSource.fetchNotifications().subscribe(resultSpy);
 
     const req = httpMock.expectOne('data/notifications');
     req.flush({
