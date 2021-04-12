@@ -480,10 +480,10 @@ class CorePluginPathPrefixTest(tf.test.TestCase):
 
 
 class CorePluginNotificationTest(tf.test.TestCase):
-    def testRuns(self):
+    def testNotifications(self):
         """Test the format of the /data/notifications endpoint."""
         notifications_json = self._get_json(self.server, "/data/notifications")
-        self.assertEqual(notifications_json, [])
+        self.assertEqual(notifications_json, {"notifications": []})
 
 
 def get_test_assets_zip_provider():
