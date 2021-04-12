@@ -52,12 +52,7 @@ _VERSION_METADATA_KEY = "tensorboard-version"
 
 
 def async_call_with_retries(
-    api_method,
-    request,
-    completion_handler,
-    num_remaining_tries=_GRPC_RETRY_MAX_ATTEMPTS - 1,
-    num_tries_so_far=0,
-    clock=None,
+    api_method, request, completion_handler, clock=None
 ):
     """Initiate an asynchronous call to a gRPC stub, with retry logic.
 
@@ -65,11 +60,6 @@ def async_call_with_retries(
     asynchronously, and the completion may be handled by another thread. The
     caller must provide a `completion_handler` argument which will handle the
     result or exception rising from the gRPC completion.
-
-    Retries are handled by recursively calling into this API with fewer
-    remaining retries, as controlled through the `num_remaining_retries`
-    argument.  Setting `num_remaining_retries` to zero will make just
-    one attempt at the gRPC call.
 
     Retries are handled with jittered exponential backoff to spread out failures
     due to request spikes.
@@ -92,6 +82,46 @@ def async_call_with_retries(
         like the standard `time` module; if not passed, uses the normal module.
 
     """
+    return _async_call_with_retries(
+        api_method=api_method,
+        request=request,
+        completion_handler=completion_handler,
+        num_remaining_tries=_GRPC_RETRY_MAX_ATTEMPTS - 1,
+        num_tries_so_far=0,
+        clock=clock,
+    )
+
+
+def _async_call_with_retries(
+    api_method,
+    request,
+    completion_handler,
+    clock=None,
+    num_remaining_tries=_GRPC_RETRY_MAX_ATTEMPTS - 1,
+    num_tries_so_far=0,
+):
+    """Helps `async_call_with_retries` recursion by exposing depth as args.
+
+    Retries are handled by recursively calling into this API with fewer
+    remaining retries, as controlled through the `num_remaining_retries`
+    argument.  Setting `num_remaining_retries` to zero will make just
+    one attempt at the gRPC call.
+
+    See `async_call_with_retries` documentation for details on expected usage.
+
+    Args:
+      api_method: See `async_call_with_retries`.
+      request: See `async_call_with_retries`.
+      completion_handler:  See `async_call_with_retries`.
+      clock:  See `async_call_with_retries`.
+      num_remaining_retries: A non-negative integer which indicates how many
+        more attempts should be made to the gRPC endpoint if this try fails
+        within an error code which could be recovered from.  Set to zero
+        to call with no retries.
+      num_tries_so_far: A non-negative integer indicating how many attempts
+        have been made so far for this gRPC.  Used to compute backoff time.
+    """
+
     if clock is None:
         clock = time
     if num_remaining_tries < 0:
@@ -112,7 +142,7 @@ def async_call_with_retries(
     # The continuation should wrap the completion_handler such that:
     #   * If the grpc call succeeds, we should invoke the completion_handler.
     #   * If there are no more retries, we should invoke the completion_handler.
-    #   * Otherwise, we should invoke async_call_with_retries with one less
+    #   * Otherwise, we should invoke _async_call_with_retries with one less
     #     retry.
     #
     def retry_handler(future):
@@ -138,7 +168,7 @@ def async_call_with_retries(
                 backoff_secs,
             )
             clock.sleep(backoff_secs)
-            async_call_with_retries(
+            _async_call_with_retries(
                 api_method=api_method,
                 request=request,
                 completion_handler=completion_handler,

@@ -268,23 +268,20 @@ class AsyncCallWithRetriesTest(tb_test.TestCase):
         def check_exception(future):
             raised = future.exception()
             self.assertEqual(grpc.StatusCode.UNAVAILABLE, raised.code())
-            self.assertEqual("just a sec 6.", raised.details())
-            self.assertLen(attempt_times, 6)
+            self.assertEqual("just a sec 5.", raised.details())
+            self.assertLen(attempt_times, 5)
             self.assertBetween(attempt_times[1] - attempt_times[0], 2, 4)
             self.assertBetween(attempt_times[2] - attempt_times[1], 4, 8)
             self.assertBetween(attempt_times[3] - attempt_times[2], 8, 16)
             self.assertBetween(attempt_times[4] - attempt_times[3], 16, 32)
-            self.assertBetween(attempt_times[5] - attempt_times[4], 32, 64)
             keep_alive_event.set()
 
         server = TestGrpcServer(handler)
         with server.run() as client:
-            # Execute `async_call_with_retries` with the callback.  Call
-            # with explicit num retries (5) instead of default.
+            # Execute `async_call_with_retries` with the callback.
             grpc_util.async_call_with_retries(
                 client.TestRpc,
                 make_request(42),
-                num_remaining_tries=5,
                 clock=fake_time,
                 completion_handler=check_exception,
             )
