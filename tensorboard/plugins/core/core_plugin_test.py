@@ -368,6 +368,11 @@ class CorePluginTestBase(object):
                 ["run1", "avocado", "zebra", "ox", "enigmatic", "mysterious"],
             )
 
+    def testNotifications(self):
+        """Test the format of the /data/notifications endpoint."""
+        notifications_json = self._get_json(self.server, "/data/notifications")
+        self.assertEqual(notifications_json, {"notifications": []})
+
 
 class CorePluginResourceTest(tf.test.TestCase):
     def setUp(self):
@@ -477,13 +482,6 @@ class CorePluginPathPrefixTest(tf.test.TestCase):
         self._assert_index(
             self._send_request("/foo/bar", "/foo/bar/experiment/123/"), "../../"
         )
-
-
-class CorePluginNotificationTest(tf.test.TestCase):
-    def testNotifications(self):
-        """Test the format of the /data/notifications endpoint."""
-        notifications_json = self._get_json(self.server, "/data/notifications")
-        self.assertEqual(notifications_json, {"notifications": []})
 
 
 def get_test_assets_zip_provider():
