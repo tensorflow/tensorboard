@@ -87,9 +87,9 @@ describe('notification center effects', () => {
           notifications: [
             {
               category: CategoryEnum.WHATS_NEW,
-              dateInMs: 0,
-              title: 'test',
-              content: 'test',
+              dateInMs: 123,
+              title: 'test title',
+              content: 'random content',
             },
           ],
           error: '',
