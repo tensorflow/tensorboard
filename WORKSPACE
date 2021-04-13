@@ -90,6 +90,13 @@ http_archive(
         "http://mirror.tensorflow.org/github.com/tensorflow/tensorflow/archive/v2.3.0.tar.gz",  # 2020-07-23
         "https://github.com/tensorflow/tensorflow/archive/v2.3.0.tar.gz",
     ],
+    patches = [
+        # Patch TF's python_configure.bzl to ensure it reconfigures its python
+        # toolchain when environment variables like `PATH` and `PYTHONPATH`
+        # change, to avoid the stale genrule py_binary issue described in:
+        # https://github.com/tensorflow/tensorboard/issues/4862
+        "//third_party:tensorflow.patch",
+    ],
 )
 
 load("@org_tensorflow//tensorflow:workspace.bzl", "tf_workspace")
