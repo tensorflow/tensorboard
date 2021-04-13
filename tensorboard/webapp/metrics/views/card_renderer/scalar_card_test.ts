@@ -779,6 +779,56 @@ describe('scalar card', () => {
     expect(visibleRunIds).toEqual(['run3']);
   }));
 
+  describe('controls', () => {
+    const ByCss = {
+      FIT_TO_DOMAIN: By.css('[aria-label="Fit line chart domains to data"]'),
+    };
+
+    it('resets domain when user clicks on reset button', fakeAsync(() => {
+      const runToSeries = {
+        run1: [{wallTime: 100, value: 1, step: 333}],
+        run2: [{wallTime: 100, value: 1, step: 333}],
+        run3: [{wallTime: 100, value: 1, step: 333}],
+      };
+      provideMockCardRunToSeriesData(
+        selectSpy,
+        PluginType.SCALARS,
+        'card1',
+        null /* metadataOverride */,
+        runToSeries
+      );
+      const fixture = createComponent('card1');
+
+      const lineChartEl = fixture.debugElement.query(
+        By.directive(TestableLineChart)
+      );
+      const resetDomainSpy = spyOn(
+        lineChartEl.componentInstance,
+        'resetDomain'
+      );
+
+      fixture.debugElement.query(ByCss.FIT_TO_DOMAIN).nativeElement.click();
+      fixture.detectChanges();
+
+      expect(resetDomainSpy).toHaveBeenCalledTimes(1);
+    }));
+
+    it('disables the resetDomain button when there are no runs', fakeAsync(() => {
+      const runToSeries = {};
+      provideMockCardRunToSeriesData(
+        selectSpy,
+        PluginType.SCALARS,
+        'card1',
+        null /* metadataOverride */,
+        runToSeries
+      );
+      const fixture = createComponent('card1');
+
+      const button = fixture.debugElement.query(ByCss.FIT_TO_DOMAIN);
+      expect(button.properties['disabled']).toBe(true);
+    }));
+  });
+
   describe('overflow menu', () => {
     beforeEach(() => {
       const runToSeries = {
@@ -815,46 +865,6 @@ describe('scalar card', () => {
       expect(lineChartEl.componentInstance.yAxisType).toBe(YAxisType.LINEAR);
 
       // Clicking on overflow menu and mat button enqueue asyncs. Flush them.
-      flush();
-    }));
-
-    it('resets domain when user clicks on reset button', fakeAsync(() => {
-      const fixture = createComponent('card1');
-
-      const lineChartEl = fixture.debugElement.query(
-        By.directive(TestableLineChart)
-      );
-      const resetDomainSpy = spyOn(
-        lineChartEl.componentInstance,
-        'resetDomain'
-      );
-
-      openOverflowMenu(fixture);
-      getMenuButton('Fit line chart domains to data').click();
-      fixture.detectChanges();
-
-      expect(resetDomainSpy).toHaveBeenCalledTimes(1);
-
-      // Clicking on overflow menu and mat button enqueue asyncs. Flush them.
-      flush();
-    }));
-
-    it('disables the resetDomain button when there are no runs', fakeAsync(() => {
-      const runToSeries = {};
-      provideMockCardRunToSeriesData(
-        selectSpy,
-        PluginType.SCALARS,
-        'card1',
-        null /* metadataOverride */,
-        runToSeries
-      );
-      const fixture = createComponent('card1');
-
-      openOverflowMenu(fixture);
-      const button = getMenuButton('Fit line chart domains to data');
-      expect(button.disabled).toBe(true);
-
-      // Clicking on overflow menu enqueues async.
       flush();
     }));
   });

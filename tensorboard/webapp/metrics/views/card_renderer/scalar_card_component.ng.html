@@ -23,6 +23,21 @@ limitations under the License.
   <span class="controls">
     <button
       mat-icon-button
+      [disabled]="!seriesDataList || !seriesDataList.length || (newLineChart && !newLineChart.getIsViewBoxOverridden())"
+      (click)="resetDomain()"
+      [title]="
+            (newLineChart && !newLineChart.getIsViewBoxOverridden()) ?
+                'Line chart is already fitted to data. When data updates, the line chart '
+                + 'will auto fit to its domain.' :
+                'Fit line chart domains to data'
+        "
+      i18n-aria-label="A button that resets line chart domain to the data"
+      aria-label="Fit line chart domains to data"
+    >
+      <mat-icon svgIcon="settings_overscan_24px"></mat-icon>
+    </button>
+    <button
+      mat-icon-button
       class="pin-button"
       i18n-aria-label="A button to pin a card."
       aria-label="Pin card"
@@ -63,22 +78,6 @@ limitations under the License.
       >
         <mat-icon svgIcon="line_weight_24px"></mat-icon>
         <span>Toggle Y-axis log scale</span>
-      </button>
-      <button
-        mat-menu-item
-        [disabled]="!seriesDataList || !seriesDataList.length || (newLineChart && !newLineChart.getIsViewBoxOverridden())"
-        (click)="resetDomain()"
-        [title]="
-            (newLineChart && !newLineChart.getIsViewBoxOverridden) ?
-                'Line chart is already fitted to data. When data updates, the line chart '
-                + 'will auto fit to its domain.' :
-                ''
-        "
-        i18n-aria-label="A button that resets line chart domain to the data"
-        aria-label="Fit line chart domains to data"
-      >
-        <mat-icon svgIcon="settings_overscan_24px"></mat-icon>
-        <span>Fit domain to data</span>
       </button>
       <button
         mat-menu-item
