@@ -79,3 +79,15 @@ limitations under the License.
   font-weight: 700;
   margin: 10px 0 20px;
 }
+
+// Unlike other markdown usage, we cannot make the entire notification center
+// scrollable when there is a big code block.
+.content ::ng-deep {
+  // If there is a long word without any break, we need to wrap it because the
+  // notification center content area is really small.
+  overflow-wrap: break-word;
+
+  pre {
+    overflow: auto;
+  }
+}

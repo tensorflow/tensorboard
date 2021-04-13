@@ -44,7 +44,10 @@ limitations under the License.
       </div>
       <div class="content-wrapper">
         <h3 class="title">{{ notification.title }}</h3>
-        <div class="content" [innerHTML]="notification.content"></div>
+        <markdown-renderer
+          class="content"
+          [markdown]="notification.content"
+        ></markdown-renderer>
         <div class="extended-buttons">READ FULL</div>
       </div>
     </div>
