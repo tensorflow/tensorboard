@@ -50,13 +50,13 @@ export class NotificationCenterEffects implements OnInitEffects {
     () => {
       return this.actions$.pipe(
         ofType(initAction),
-        mergeMap(() => this.fetchNotification())
+        mergeMap(() => this.fetchNotifications())
       );
     },
     {dispatch: false}
   );
 
-  private fetchNotification() {
+  private fetchNotifications(): Observable<void> {
     return this.dataSource.fetchNotifications().pipe(
       map((response) => {
         if (response.response.notifications) {
@@ -67,7 +67,7 @@ export class NotificationCenterEffects implements OnInitEffects {
       }),
       catchError(() => {
         this.store.dispatch(actions.fetchNotificationsFailed());
-        return of([]);
+        return of();
       })
     );
   }
