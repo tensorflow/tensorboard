@@ -163,89 +163,53 @@ class CallWithRetriesTest(tb_test.TestCase):
 
 
 class AsyncCallWithRetriesTest(tb_test.TestCase):
-    def test_aync_call_with_retries_invokes_callback(self):
+    def test_aync_call_with_retries_completes(self):
         # Setup: Basic server, echos input.
         def handler(request, _):
             return make_response(request.nonce)
 
-        # Set up a callback which:
-        # 1) Records that it has been executed (mock_callback).
-        # 2) Triggers the keep_alive_event, notifying when it is ok
-        #    to kill the server.
-        keep_alive_event = threading.Event()
-        mock_callback = mock.Mock()
-
-        def wrapped_mock_callback(future):
-            mock_callback(future)
-            keep_alive_event.set()
-
         server = TestGrpcServer(handler)
         with server.run() as client:
-            # Execute `async_call_with_retries` with the callback.
-            grpc_util.async_call_with_retries(
+            # Execute `async_call_with_retries`
+            future = grpc_util.async_call_with_retries(
                 client.TestRpc,
                 make_request(42),
-                done_callback=wrapped_mock_callback,
             )
-            # Keep the test alive until the event is triggered.
-            keep_alive_event.wait()
-
-        # Expect: callback is invoked.
-        mock_callback.assert_called_once()
+            # Wait for completion & collect result
+            future.result(2)
 
     def test_aync_call_with_retries_succeeds(self):
         # Setup: Basic server, echos input.
         def handler(request, _):
             return make_response(request.nonce)
 
-        # Set up a callback which:
-        # 1) Verifies the correct value has been returned in the future.
-        # 2) Triggers the keep_alive_event, notifying when it is ok
-        #    to kill the server.
-        keep_alive_event = threading.Event()
-
-        def check_value(future):
-            self.assertEqual(make_response(42), future.result())
-            keep_alive_event.set()
-
         server = TestGrpcServer(handler)
         with server.run() as client:
             # Execute `async_call_with_retries` with the callback.
-            grpc_util.async_call_with_retries(
-                client.TestRpc, make_request(42), done_callback=check_value
+            future = grpc_util.async_call_with_retries(
+                client.TestRpc, make_request(42)
             )
-            # Keep the test alive until the event is triggered.
-            keep_alive_event.wait()
+            # Verify the correct value has been returned in the future.
+            self.assertEqual(make_response(42), future.result(2))
 
     def test_async_call_with_retries_fails_immediately_on_permanent_error(self):
         # Setup: Server which fails with an ISE.
         def handler(_, context):
             context.abort(grpc.StatusCode.INTERNAL, "death_ray")
 
-        # Set up a callback which:
-        # 1) Verifies the future raises an Exception which is the right type and
-        #    carries the right message.
-        # 2) Triggers the keep_alive_event, notifying when it is ok
-        #    to kill the server.
-        keep_alive_event = threading.Event()
-
-        def check_exception(future):
-            raised = future.exception()
-            self.assertIsInstance(raised, grpc.RpcError)
-            self.assertEqual(grpc.StatusCode.INTERNAL, raised.code())
-            self.assertEqual("death_ray", raised.details())
-            keep_alive_event.set()
-
         server = TestGrpcServer(handler)
         with server.run() as client:
-            # Execute `async_call_with_retries` with the callback.
-            grpc_util.async_call_with_retries(
+            # Execute `async_call_with_retries`
+            future = grpc_util.async_call_with_retries(
                 client.TestRpc,
                 make_request(42),
-                done_callback=check_exception,
             )
-            # Keep the test alive until the event is triggered.
-            keep_alive_event.wait()
+            # Expect that the future raises an Exception which is the
+            # right type and carries the right message.
+            with self.assertRaises(grpc.RpcError) as raised:
+                future.result(2)
+            self.assertEqual(grpc.StatusCode.INTERNAL, raised.exception.code())
+            self.assertEqual("death_ray", raised.exception.details())
 
     def test_async_with_retries_fails_after_backoff_on_nonpermanent_error(self):
         attempt_times = []
@@ -258,35 +222,28 @@ class AsyncCallWithRetriesTest(tb_test.TestCase):
                 grpc.StatusCode.UNAVAILABLE, f"just a sec {len(attempt_times)}."
             )
 
-        # Set up a callback which:
-        # 1) Verifies the final raised Exception against expectations.
-        # 2) Verifies the number of attempts and delays between them.
-        # 3) Triggers the keep_alive_event, notifying when it is ok
-        #    to kill the server.
-        keep_alive_event = threading.Event()
-
-        def check_exception(future):
-            raised = future.exception()
-            self.assertEqual(grpc.StatusCode.UNAVAILABLE, raised.code())
-            self.assertEqual("just a sec 5.", raised.details())
+        server = TestGrpcServer(handler)
+        with server.run() as client:
+            # Execute `async_call_with_retries` against the scripted server.
+            future = grpc_util.async_call_with_retries(
+                client.TestRpc,
+                make_request(42),
+                clock=fake_time,
+            )
+            # Expect that the future raises an Exception which is the right
+            # type and carries the right message.
+            with self.assertRaises(grpc.RpcError) as raised:
+                future.result(2)
+            self.assertEqual(
+                grpc.StatusCode.UNAVAILABLE, raised.exception.code()
+            )
+            self.assertEqual("just a sec 5.", raised.exception.details())
+            # Verify the number of attempts and delays between them.
             self.assertLen(attempt_times, 5)
             self.assertBetween(attempt_times[1] - attempt_times[0], 2, 4)
             self.assertBetween(attempt_times[2] - attempt_times[1], 4, 8)
             self.assertBetween(attempt_times[3] - attempt_times[2], 8, 16)
             self.assertBetween(attempt_times[4] - attempt_times[3], 16, 32)
-            keep_alive_event.set()
-
-        server = TestGrpcServer(handler)
-        with server.run() as client:
-            # Execute `async_call_with_retries` with the callback.
-            grpc_util.async_call_with_retries(
-                client.TestRpc,
-                make_request(42),
-                clock=fake_time,
-                done_callback=check_exception,
-            )
-            # Keep the test alive until the event is triggered.
-            keep_alive_event.wait()
 
     def test_async_with_retries_succeeds_after_backoff_on_transient_error(self):
         attempt_times = []
@@ -299,30 +256,21 @@ class AsyncCallWithRetriesTest(tb_test.TestCase):
                 context.abort(grpc.StatusCode.UNAVAILABLE, "foo")
             return make_response(request.nonce)
 
-        # Set up a callback which:
-        # 1) Verifies the response contains the expected value.
-        # 2) Verifies the number of attempts and delays between them.
-        # 3) Triggers the keep_alive_event, notifying when it is ok
-        #    to kill the server.
-        keep_alive_event = threading.Event()
-
-        def check_value(future):
-            self.assertEqual(make_response(42), future.result())
-            self.assertLen(attempt_times, 3)
-            self.assertBetween(attempt_times[1] - attempt_times[0], 2, 4)
-            self.assertBetween(attempt_times[2] - attempt_times[1], 4, 8)
-            keep_alive_event.set()
-
         server = TestGrpcServer(handler)
         with server.run() as client:
-            grpc_util.async_call_with_retries(
+            # Execute `async_call_with_retries` against the scripted server.
+            future = grpc_util.async_call_with_retries(
                 client.TestRpc,
                 make_request(42),
                 clock=fake_time,
-                done_callback=check_value,
             )
-            # Keep the test alive until the event is triggered.
-            keep_alive_event.wait()
+            # Expect:
+            # 1) The response contains the expected value.
+            # 2) The number of attempts and delays between them.
+            self.assertEqual(make_response(42), future.result(2))
+            self.assertLen(attempt_times, 3)
+            self.assertBetween(attempt_times[1] - attempt_times[0], 2, 4)
+            self.assertBetween(attempt_times[2] - attempt_times[1], 4, 8)
 
 
 class VersionMetadataTest(tb_test.TestCase):

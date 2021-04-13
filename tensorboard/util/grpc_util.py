@@ -16,7 +16,9 @@
 
 
 import enum
+import functools
 import random
+import threading
 import time
 
 import grpc
@@ -51,7 +53,56 @@ _GRPC_RETRYABLE_STATUS_CODES = frozenset(
 _VERSION_METADATA_KEY = "tensorboard-version"
 
 
-def async_call_with_retries(api_method, request, done_callback, clock=None):
+class AsyncCallFuture:
+    """Encapsulates the future value of a retriable async gRPC request.
+
+    Abstracts over the set of futures returned by a set of gRPC calls
+    comprising a single logical gRPC request with retries.  Communicates
+    to the caller the result or exception resulting from the request.
+
+    Args:
+      completion_event: The constructor should provide a thredding.Event which
+        will be used to communicate when the set of gRPC requests is complete.
+    """
+
+    def __init__(self, completion_event):
+        self._active_grpc_future = None
+        self._active_grpc_future_lock = threading.Lock()
+        self._completion_event = completion_event
+
+    def _set_active_future(self, grpc_future):
+        if grpc_future is None:
+            raise RuntimeError(
+                "_set_active_future invoked with grpc_future=None"
+            )
+        # TODO() maybe add validation logic here that future is not None.
+        with self._active_grpc_future_lock:
+            self._active_grpc_future = grpc_future
+
+    def result(self, timeout):
+        """Analogous to `grpc.Future.result`. Returns the value or exception.
+
+        This method will wait until the full set of gRPC requests is complete
+        and then act as `grpc.Future.result` for the single gRPC invocation
+        corresponding to the first successful call or final failure, as
+        appropriate.
+
+        Args:
+          timeout: How long to wait in seconds before giving up and raising
+
+        Returns:
+          The result of the future corresponding to the single gRPC
+          corresponding to the successful call or final failure, as
+          appropriate.
+        """
+        self._completion_event.wait(timeout)
+        with self._active_grpc_future_lock:
+            if self._active_grpc_future is None:
+                raise RuntimeError("AsyncFuture never had an active future set")
+            return self._active_grpc_future.result()
+
+
+def async_call_with_retries(api_method, request, clock=None):
     """Initiate an asynchronous call to a gRPC stub, with retry logic.
 
     This is similar to the `async_call` API, except that the call is handled
@@ -67,116 +118,62 @@ def async_call_with_retries(api_method, request, done_callback, clock=None):
     Args:
       api_method: Callable for the API method to invoke.
       request: Request protocol buffer to pass to the API method.
-      done_callback: A function which takes a `grpc.Future` object as an
-        argument and performs the necessary operations on the gRPC response
-        or error, as required.  See the gRPC documentation for more details
-        https://grpc.github.io/grpc/python/grpc.html#grpc.Future.add_done_callback
-      num_remaining_retries: A non-negative integer which indicates how many
-        more attempts should be made to the gRPC endpoint if this try fails
-        within an error code which could be recovered from.  Set to zero
-        to call with no retries.
-      num_tries_so_far: A non-negative integer indicating how many attempts
-        have been made so far for this gRPC.  Used to compute backoff time.
       clock: an interface object supporting `time()` and `sleep()` methods
         like the standard `time` module; if not passed, uses the normal module.
 
+    Returns:
+      An `AsyncCallFuture` which will encapsulate the `grpc.Future`
+      corresponding to the gRPC call which either completes successfully or
+      represents the final try.
     """
-    return _async_call_with_retries(
-        api_method=api_method,
-        request=request,
-        done_callback=done_callback,
-        num_remaining_tries=_GRPC_RETRY_MAX_ATTEMPTS - 1,
-        num_tries_so_far=0,
-        clock=clock,
-    )
-
-
-def _async_call_with_retries(
-    api_method,
-    request,
-    done_callback,
-    clock=None,
-    num_remaining_tries=_GRPC_RETRY_MAX_ATTEMPTS - 1,
-    num_tries_so_far=0,
-):
-    """Helps `async_call_with_retries` recursion by exposing depth as args.
-
-    Retries are handled by recursively calling into this API with fewer
-    remaining retries, as controlled through the `num_remaining_retries`
-    argument.  Setting `num_remaining_retries` to zero will make just
-    one attempt at the gRPC call.
-
-    See `async_call_with_retries` documentation for details on expected usage.
-
-    Args:
-      api_method: See `async_call_with_retries`.
-      request: See `async_call_with_retries`.
-      done_callback:  See `async_call_with_retries`.
-      clock:  See `async_call_with_retries`.
-      num_remaining_retries: A non-negative integer which indicates how many
-        more attempts should be made to the gRPC endpoint if this try fails
-        within an error code which could be recovered from.  Set to zero
-        to call with no retries.
-      num_tries_so_far: A non-negative integer indicating how many attempts
-        have been made so far for this gRPC.  Used to compute backoff time.
-    """
-
     if clock is None:
         clock = time
-    if num_remaining_tries < 0:
-        # This should not happen in the course of normal operations and
-        # indicates a bug in the implementation.
-        raise ValueError(
-            "num_remaining_tries=%d. expected >= 0." % num_remaining_tries
+    logger.debug("Async RPC call %s with request: %r", api_method, request)
+
+    completion_event = threading.Event()
+    async_future = AsyncCallFuture(completion_event)
+
+    def async_call(handler):
+        """Invokes the gRPC future and orchestrates it via the AsyncCallFuture."""
+        future = api_method.future(
+            request,
+            timeout=_GRPC_DEFAULT_TIMEOUT_SECS,
+            metadata=version_metadata(),
         )
-    # We can't actually use api_method.__name__ because it's not a real method,
-    # it's a special gRPC callable instance that doesn't expose the method name.
-    rpc_name = request.__class__.__name__.replace("Request", "")
-    logger.debug("Async RPC call %s with request: %r", rpc_name, request)
-    future = api_method.future(
-        request,
-        timeout=_GRPC_DEFAULT_TIMEOUT_SECS,
-        metadata=version_metadata(),
-    )
-    # The continuation should wrap the done_callback such that:
-    #   * If the grpc call succeeds, we should invoke the done_callback.
-    #   * If there are no more retries, we should invoke the done_callback.
-    #   * Otherwise, we should invoke _async_call_with_retries with one less
-    #     retry.
-    #
-    def retry_handler(future):
+        # Ensure we set the active future before invoking thedone callback, to avoid
+        # the case where the done callback completes immediately and triggers
+        # completion event while async_future still holds the old future.
+        async_future._set_active_future(future)
+        future.add_done_callback(handler)
+
+    # retry_handler is the continuation of the `async_call`.  It should:
+    #   * If the grpc call succeeds: trigger the `completion_event`.
+    #   * If there are no more retries: trigger the `completion_event`.
+    #   * Otherwise, invoke a new async_call with the same
+    #     retry_handler.
+    def retry_handler(future, num_attempts):
         e = future.exception()
         if e is None:
-            done_callback(future)
+            completion_event.set()
             return
         else:
-            logger.info("RPC call %s got error %s", rpc_name, e)
-            # If unable to retry, proceed to done_callback.
+            logger.info("RPC call %s got error %s", api_method, e)
+            # If unable to retry, proceed to completion.
             if e.code() not in _GRPC_RETRYABLE_STATUS_CODES:
-                done_callback(future)
+                completion_event.set()
                 return
-            if num_remaining_tries <= 0:
-                done_callback(future)
+            if num_attempts >= _GRPC_RETRY_MAX_ATTEMPTS:
+                completion_event.set()
                 return
             # If able to retry, wait then do so.
-            backoff_secs = _compute_backoff_seconds(num_tries_so_far + 1)
-            logger.info(
-                "RPC call %s attempted %d times, retrying in %.1f seconds",
-                rpc_name,
-                num_tries_so_far,
-                backoff_secs,
-            )
+            backoff_secs = _compute_backoff_seconds(num_attempts)
             clock.sleep(backoff_secs)
-            _async_call_with_retries(
-                api_method=api_method,
-                request=request,
-                done_callback=done_callback,
-                num_remaining_tries=num_remaining_tries - 1,
-                num_tries_so_far=num_tries_so_far + 1,
-                clock=clock,
+            async_call(
+                functools.partial(retry_handler, num_attempts=num_attempts + 1)
             )
 
-    future.add_done_callback(retry_handler)
+    async_call(functools.partial(retry_handler, num_attempts=1))
+    return async_future
 
 
 def _compute_backoff_seconds(num_attempts):
