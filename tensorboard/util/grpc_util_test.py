@@ -18,7 +18,6 @@
 import contextlib
 import hashlib
 import threading
-from unittest import mock
 
 from concurrent import futures
 import grpc
