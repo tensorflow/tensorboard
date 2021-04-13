@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {CommonModule} from '@angular/common';
+import {NO_ERRORS_SCHEMA} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
 import {MatButtonModule} from '@angular/material/button';
 import {MatMenuModule} from '@angular/material/menu';
@@ -48,6 +49,7 @@ describe('notification center', () => {
           initialState: [],
         }),
       ],
+      schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
     recordedActions = [];
@@ -87,9 +89,10 @@ describe('notification center', () => {
     expect(
       notificationMenu.nativeNode.querySelector('.category-icon').textContent
     ).toBe('info_outline_24px');
-    expect(
-      notificationMenu.nativeNode.querySelector('.content').textContent
-    ).toBe('test content');
+    const markdownContentComponent = notificationMenu.nativeNode.querySelector(
+      '.content'
+    );
+    expect(markdownContentComponent.markdown).toBe('test content');
   });
 
   it('appears when unread notifications exist', () => {

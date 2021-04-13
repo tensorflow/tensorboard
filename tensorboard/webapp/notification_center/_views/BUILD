@@ -30,6 +30,7 @@ tf_ng_module(
         "//tensorboard/webapp/notification_center/_redux",
         "//tensorboard/webapp/notification_center/_redux:actions",
         "//tensorboard/webapp/notification_center/_redux:types",
+        "//tensorboard/webapp/widgets/markdown_renderer",
         "@npm//@angular/common",
         "@npm//@angular/core",
         "@npm//@ngrx/store",
