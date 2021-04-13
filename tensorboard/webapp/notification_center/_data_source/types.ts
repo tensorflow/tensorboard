@@ -30,7 +30,5 @@ export type NotificationCenterResponse =
   | NotificationCenterFailedResponse;
 
 export abstract class NotificationCenterDataSource {
-  abstract fetchNotifications(): Observable<{
-    response: NotificationCenterResponse;
-  }>;
+  abstract fetchNotifications(): Observable<NotificationCenterResponse>;
 }

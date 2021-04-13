@@ -29,10 +29,10 @@ export class TBNotificationCenterDataSource
   implements NotificationCenterDataSource {
   constructor(private readonly http: TBHttpClient) {}
 
-  fetchNotifications(): Observable<{response: NotificationCenterResponse}> {
+  fetchNotifications(): Observable<NotificationCenterResponse> {
     return this.http.get<NotificationCenterResponse>(`data/notifications`).pipe(
       map((responses: NotificationCenterResponse) => {
-        return {response: responses};
+        return responses;
       })
     );
   }

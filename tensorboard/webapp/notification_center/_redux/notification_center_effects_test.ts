@@ -41,7 +41,7 @@ describe('notification center effects', () => {
   let actions$: Subject<Action>;
   let actualActions: Action[] = [];
   let fetchNotificationsSpy: jasmine.Spy;
-  let fetchNotificationSubject: Subject<{response: NotificationCenterResponse}>;
+  let fetchNotificationSubject: Subject<NotificationCenterResponse>;
 
   beforeEach(async () => {
     actions$ = new Subject<Action>();
@@ -79,28 +79,26 @@ describe('notification center effects', () => {
 
   it('fetches initial notifications success', () => {
     actions$.next(TEST_ONLY.initAction());
-    fetchNotificationSubject.next({response: buildDataSourceNotification()});
+    fetchNotificationSubject.next(buildDataSourceNotification());
     expect(fetchNotificationsSpy).toHaveBeenCalled();
     expect(actualActions).toEqual([
       actions.fetchNotificationsLoaded({
-        response: {
-          notifications: [
-            {
-              category: CategoryEnum.WHATS_NEW,
-              dateInMs: 123,
-              title: 'test title',
-              content: 'random content',
-            },
-          ],
-          error: '',
-        },
+        notifications: [
+          {
+            category: CategoryEnum.WHATS_NEW,
+            dateInMs: 123,
+            title: 'test title',
+            content: 'random content',
+          },
+        ],
+        error: '',
       }),
     ]);
   });
 
   it('fetches initial notifications failure', () => {
     actions$.next(TEST_ONLY.initAction());
-    fetchNotificationSubject.next({response: {error: 'error'}});
+    fetchNotificationSubject.next({error: 'error'});
     expect(fetchNotificationsSpy).toHaveBeenCalled();
     expect(actualActions).toEqual([actions.fetchNotificationsFailed()]);
   });

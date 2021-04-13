@@ -32,5 +32,5 @@ export const fetchNotificationsFailed = createAction(
 
 export const fetchNotificationsLoaded = createAction(
   '[Notification] Fetch Notification Response Loaded',
-  props<{response: NotificationCenterResponse}>()
+  props<NotificationCenterResponse>()
 );

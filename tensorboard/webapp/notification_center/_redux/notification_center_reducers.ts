@@ -51,7 +51,7 @@ const reducer = createReducer(
     actions.fetchNotificationsLoaded,
     (
       state: NotificationState,
-      {response}: {response: NotificationCenterResponse}
+      response: NotificationCenterResponse,
     ): NotificationState => {
       if (response.notifications) {
         return {

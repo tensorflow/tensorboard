@@ -48,7 +48,7 @@ export class TestingNotificationCenterDataSource
   implements NotificationCenterDataSource {
   fetchNotifications() {
     return of({
-      response: {notifications: [], error: ''},
+      notifications: [], error: '',
     });
   }
 }
