@@ -28,7 +28,6 @@ tf_ts_library(
     name = "polymer3_interop_helper",
     srcs = ["polymer3_interop_helper.ts"],
     deps = [
-        "//tensorboard/components/experimental/plugin_util:plugin_host",
         "//tensorboard/components/tf_backend",
         "//tensorboard/components/tf_color_scale",
         "//tensorboard/components/tf_globals",

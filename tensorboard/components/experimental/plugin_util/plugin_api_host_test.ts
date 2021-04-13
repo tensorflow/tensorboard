@@ -24,8 +24,7 @@ import {
   getExperimentIdsFromRoute,
   getRuns,
 } from '../../../webapp/selectors';
-import {DataLoadState} from '../../../webapp/types/data';
-import * as tf_storage from '../../tf_storage';
+import * as tf_storage_utils from '../../tf_storage/storage_utils';
 import {PluginCoreApiHostImpl} from './core-host-impl';
 import {MessageId} from './message_types';
 import {Ipc} from './plugin-host-ipc';
@@ -248,16 +247,16 @@ describe('plugin_api_host test', () => {
             }
           );
 
-        getUrlDictSpy = spyOnProperty(tf_storage, 'getUrlDict', 'get');
+        getUrlDictSpy = spyOn(tf_storage_utils, 'getUrlDict');
       });
 
       it('returns url data from the tf storage', () => {
-        getUrlDictSpy.and.returnValue(() => ({
+        getUrlDictSpy.and.returnValue({
           globalThing: 'hey',
           'p.plugin_id.a': '1',
           'p.plugin_id.b': 'b',
           'p.another_plugn.b': '2',
-        }));
+        });
 
         coreApi.init();
         const actual = triggerGetUrlData({pluginName: 'plugin_id'});
