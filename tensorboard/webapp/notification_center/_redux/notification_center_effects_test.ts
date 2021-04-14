@@ -16,7 +16,8 @@ import {TestBed} from '@angular/core/testing';
 import {provideMockActions} from '@ngrx/effects/testing';
 import {Action, Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
-import {Subject} from 'rxjs';
+import {Subject, throwError} from 'rxjs';
+
 import {State} from '../../app_state';
 import {TBHttpClientTestingModule} from '../../webapp_data_source/tb_http_client_testing';
 import {
@@ -57,7 +58,7 @@ describe('notification center effects', () => {
           initialState: {
             notifications: [],
             lastReadTimestampInMs: -1,
-          },
+          }
         }),
       ],
     }).compileComponents();
@@ -79,6 +80,7 @@ describe('notification center effects', () => {
 
   it('fetches initial notifications success', () => {
     actions$.next(TEST_ONLY.initAction());
+    fetchNotificationsSpy.and.returnValue(fetchNotificationSubject);
     fetchNotificationSubject.next(createNotification());
 
     expect(fetchNotificationsSpy).toHaveBeenCalled();
@@ -92,14 +94,14 @@ describe('notification center effects', () => {
             content: 'random content',
           },
         ],
-        error: '',
       }),
     ]);
   });
 
-  it('fetches initial notifications failure', () => {
+  it('dispatches failed action when notification fetch failed', () => {
+    fetchNotificationsSpy.and.returnValue(throwError(new Error('Request failed')));
     actions$.next(TEST_ONLY.initAction());
-    fetchNotificationSubject.next({error: 'error'});
+
     expect(fetchNotificationsSpy).toHaveBeenCalled();
     expect(actualActions).toEqual([actions.fetchNotificationsFailed()]);
   });
