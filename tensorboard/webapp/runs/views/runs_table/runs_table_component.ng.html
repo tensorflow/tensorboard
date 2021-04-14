@@ -123,11 +123,13 @@ limitations under the License.
       >
         <span class="name">{{ column.displayName || column.name }}</span>
         <ng-container *ngIf="column.filter">
+          <!-- stopPropagation prevents click from sorting. -->
           <button
             mat-icon-button
             [matMenuTriggerFor]="filterMenu"
             i18n-aria-label="A button that opens a menu that lets user set hparam filter conditions"
             [attr.aria-label]="'Filter hparam ' + (column.displayName || column.name)"
+            (click)="$event.stopPropagation()"
           >
             <mat-icon svgIcon="filter_alt_24px"></mat-icon>
           </button>
@@ -188,11 +190,13 @@ limitations under the License.
       >
         <span class="name">{{ column.displayName || column.tag }}</span>
         <ng-container *ngIf="column.filter">
+          <!-- stopPropagation prevents click from sorting. -->
           <button
             mat-icon-button
             [matMenuTriggerFor]="filterMenu"
             i18n-aria-label="A button that opens a menu that lets user set metric filter conditions"
             [attr.aria-label]="'Filter metric ' + (column.displayName || column.tag)"
+            (click)="$event.stopPropagation()"
           >
             <mat-icon svgIcon="filter_alt_24px"></mat-icon>
           </button>
