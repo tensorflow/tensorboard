@@ -63,7 +63,7 @@ export function provideTestingNotificationCenterDataSource() {
   ];
 }
 
-export function buildDataSourceNotification(): DataSourceNotifications {
+export function createNotification(): DataSourceNotifications {
   return {
     notifications: [
       {

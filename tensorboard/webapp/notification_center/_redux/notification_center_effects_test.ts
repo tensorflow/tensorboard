@@ -30,7 +30,7 @@ import {
 } from './notification_center_effects';
 import {CategoryEnum} from './notification_center_types';
 import {
-  buildDataSourceNotification,
+  createNotification,
   provideTestingNotificationCenterDataSource,
 } from './testing';
 
@@ -79,7 +79,8 @@ describe('notification center effects', () => {
 
   it('fetches initial notifications success', () => {
     actions$.next(TEST_ONLY.initAction());
-    fetchNotificationSubject.next(buildDataSourceNotification());
+    fetchNotificationSubject.next(createNotification());
+
     expect(fetchNotificationsSpy).toHaveBeenCalled();
     expect(actualActions).toEqual([
       actions.fetchNotificationsLoaded({
