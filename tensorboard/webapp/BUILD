@@ -93,6 +93,7 @@ tf_ng_module(
         ":oss_plugins_module",
         ":selectors",
         ":store_module",
+        "//tensorboard/components/experimental/plugin_util:plugin_host",
         "//tensorboard/webapp/alert",
         "//tensorboard/webapp/alert/views:alert_snackbar",
         "//tensorboard/webapp/angular:expect_angular_platform_browser_animations",

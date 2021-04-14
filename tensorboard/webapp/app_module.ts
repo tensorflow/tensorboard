@@ -31,6 +31,7 @@ import {HeaderModule} from './header/header_module';
 import {MatIconModule} from './mat_icon_module';
 import {OssPluginsModule} from './oss_plugins_module';
 import {PluginsModule} from './plugins/plugins_module';
+import {PluginApiHostModule} from '../components/experimental/plugin_util/plugin_api_host_module';
 import {routesFactory} from './routes';
 import {RunsModule} from './runs/runs_module';
 import {SettingsModule} from './settings/settings_module';
@@ -58,6 +59,7 @@ import {HparamsModule} from './hparams/hparams_module';
     HparamsModule,
     MatIconModule,
     PageTitleModule,
+    PluginApiHostModule,
     PluginsModule,
     RunsModule,
     SettingsModule,

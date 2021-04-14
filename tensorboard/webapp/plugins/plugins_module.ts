@@ -19,16 +19,10 @@ import {PluginsContainer} from './plugins_container';
 import {PluginsComponent} from './plugins_component';
 import {CoreModule} from '../core/core_module';
 import {PluginRegistryModule} from './plugin_registry_module';
-import {PluginApiHostModule} from '../../components/experimental/plugin_util/plugin_api_host_module';
 
 @NgModule({
   declarations: [PluginsContainer, PluginsComponent],
   exports: [PluginsContainer],
-  imports: [
-    CoreModule,
-    CommonModule,
-    PluginRegistryModule,
-    PluginApiHostModule,
-  ],
+  imports: [CoreModule, CommonModule, PluginRegistryModule],
 })
 export class PluginsModule {}
