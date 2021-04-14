@@ -54,6 +54,10 @@ describe('app_routing_selectors', () => {
         },
       });
     });
+
+    it('returns undefined if no AppRoutingState', () => {
+      expect(selectors.getActiveRoute({})).toBeUndefined();
+    });
   });
 
   describe('getRouteKind', () => {
@@ -76,6 +80,10 @@ describe('app_routing_selectors', () => {
       );
 
       expect(selectors.getRouteKind(state)).toBe(RouteKind.EXPERIMENT);
+    });
+
+    it('returns UNKNOWN route kind if no AppRoutingState', () => {
+      expect(selectors.getRouteKind({})).toEqual(RouteKind.UNKNOWN);
     });
   });
 
@@ -101,6 +109,10 @@ describe('app_routing_selectors', () => {
       expect(selectors.getRouteParams(state)).toEqual({
         experimentId: '234',
       });
+    });
+
+    it('returns no params if no AppRoutingState', () => {
+      expect(selectors.getRouteParams({})).toEqual({});
     });
   });
 
@@ -145,6 +157,10 @@ describe('app_routing_selectors', () => {
       );
 
       expect(selectors.getExperimentIdToAliasMap(state)).toEqual({});
+    });
+
+    it('returns an empty map if no AppRoutingState', () => {
+      expect(selectors.getExperimentIdToAliasMap({})).toEqual({});
     });
   });
 });

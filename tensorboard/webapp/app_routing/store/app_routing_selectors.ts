@@ -36,14 +36,14 @@ const getAppRoutingState = createFeatureSelector<State, AppRoutingState>(
 export const getActiveRoute = createSelector(
   getAppRoutingState,
   (state: AppRoutingState) => {
-    return state.activeRoute;
+    return state?.activeRoute;
   }
 );
 
 export const getNextRouteForRouterOutletOnly = createSelector(
   getAppRoutingState,
   (state: AppRoutingState): Route | null => {
-    return state.nextRoute;
+    return state?.nextRoute;
   }
 );
 
