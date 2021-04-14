@@ -14,3 +14,4 @@
 # ==============================================================================
 
 *.pb.rs -merge linguist-generated=true
+descriptor.bin -diff -merge linguist-generated=true

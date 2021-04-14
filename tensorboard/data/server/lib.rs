@@ -54,4 +54,6 @@ pub mod proto {
             include!("tensorboard.data.pb.rs");
         }
     }
+    /// Protobuf-encoded file descriptor set for all message types, used for gRPC reflection.
+    pub const FILE_DESCRIPTOR_SET: &'static [u8] = include_bytes!("descriptor.bin");
 }

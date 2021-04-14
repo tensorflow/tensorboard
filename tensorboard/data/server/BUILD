@@ -16,11 +16,15 @@ _proto_packages = [
 # and must match the output of `prost_build`.
 _genproto_files = ["genproto/%s.rs" % pkg for pkg in _proto_packages]
 
+_generated_file_descriptor_set = "genproto/descriptor.bin"
+
 # Source files with Rust protobuf bindings. These are automatically
 # materialized in the source tree from the generated bindings by the
 # `:update_protos` script, and kept in sync via `:update_protos_test`. These
 # don't match the raw generated code exactly: e.g., we add license headers.
 _checked_in_proto_files = ["%s.pb.rs" % pkg for pkg in _proto_packages]
+
+_checked_in_file_descriptor_set = "descriptor.bin"
 
 rust_library(
     name = "rustboard_core",
@@ -48,6 +52,7 @@ rust_library(
         "types.rs",
         "writer.rs",
     ] + _checked_in_proto_files,
+    compile_data = [_checked_in_file_descriptor_set],
     edition = "2018",
     deps = [
         "//tensorboard/data/server/cargo:async_stream",
@@ -71,12 +76,14 @@ rust_library(
         "//tensorboard/data/server/cargo:tokio",
         "//tensorboard/data/server/cargo:tokio_stream",
         "//tensorboard/data/server/cargo:tonic",
+        "//tensorboard/data/server/cargo:tonic_reflection",
         "//tensorboard/data/server/cargo:walkdir",
     ],
 )
 
 rust_test(
     name = "rustboard_core_test",
+    compile_data = [_checked_in_file_descriptor_set],
     crate = ":rustboard_core",
     deps = [
         "//tensorboard/data/server/cargo:tempfile",
@@ -111,11 +118,13 @@ rust_binary(
 rust_doc_test(
     name = "rustboard_core_doc_test",
     dep = ":rustboard_core",
+    tags = ["manual"],  # https://github.com/bazelbuild/rules_rust/issues/689
 )
 
 rust_doc(
     name = "rustboard_core_doc",
     dep = ":rustboard_core",
+    tags = ["manual"],  # https://github.com/bazelbuild/rules_rust/issues/689
 )
 
 py_binary(
@@ -124,6 +133,7 @@ py_binary(
     data = [":rustboard_core_doc.zip"],
     python_version = "PY3",
     srcs_version = "PY3",
+    tags = ["manual"],  # https://github.com/bazelbuild/rules_rust/issues/689
     deps = [
         "@org_pocoo_werkzeug",
     ],
@@ -147,7 +157,7 @@ genrule(
         "//tensorboard/plugins/image:proto_srcs",
         "@com_google_protobuf//:well_known_protos",
     ],
-    outs = _genproto_files,
+    outs = _genproto_files + [_generated_file_descriptor_set],
     cmd = """
         die() { printf >&2 'fatal: %s\\n' "$$@"; exit 1; }
         export PROTOC=$(execpath @com_google_protobuf//:protoc)
@@ -187,8 +197,8 @@ rust_binary(
 py_binary(
     name = "update_protos",
     srcs = ["update_protos.py"],
-    args = ["--update"] + _proto_packages,
-    data = _genproto_files,
+    args = ["--update"] + _proto_packages + ["descriptor.bin"],
+    data = _genproto_files + [_generated_file_descriptor_set],
     python_version = "PY3",
     srcs_version = "PY3",
 )
@@ -196,8 +206,11 @@ py_binary(
 py_test(
     name = "update_protos_test",
     srcs = ["update_protos.py"],
-    args = ["--check"] + _proto_packages,
-    data = _genproto_files + glob(_checked_in_proto_files),
+    args = ["--check"] + _proto_packages + ["descriptor.bin"],
+    data = _genproto_files + glob(_checked_in_proto_files) + [
+        _generated_file_descriptor_set,
+        _checked_in_file_descriptor_set,
+    ],
     main = "update_protos.py",
     python_version = "PY3",
     srcs_version = "PY3",
