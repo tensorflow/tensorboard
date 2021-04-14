@@ -30,10 +30,6 @@ export class TBNotificationCenterDataSource
   constructor(private readonly http: TBHttpClient) {}
 
   fetchNotifications(): Observable<NotificationCenterResponse> {
-    return this.http.get<NotificationCenterResponse>(`data/notifications`).pipe(
-      map((responses: NotificationCenterResponse) => {
-        return responses;
-      })
-    );
+    return this.http.get<NotificationCenterResponse>(`data/notifications`);
   }
 }

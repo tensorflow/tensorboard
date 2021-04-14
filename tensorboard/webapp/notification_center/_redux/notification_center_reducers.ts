@@ -56,7 +56,7 @@ const reducer = createReducer(
       if (response.notifications) {
         return {
           ...state,
-          notifications: response.notifications!,
+          notifications: response.notifications,
         };
       }
       return state;

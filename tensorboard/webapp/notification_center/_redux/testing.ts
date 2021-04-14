@@ -49,7 +49,6 @@ export class TestingNotificationCenterDataSource
   fetchNotifications() {
     return of({
       notifications: [],
-      error: '',
     });
   }
 }
@@ -74,6 +73,5 @@ export function buildDataSourceNotification(): DataSourceNotifications {
         content: 'random content',
       },
     ],
-    error: '',
   };
 }

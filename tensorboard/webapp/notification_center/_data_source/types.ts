@@ -13,21 +13,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Observable} from 'rxjs';
+
 import {Notification} from '../_redux/notification_center_types';
 
-export interface NotificationCenterSuccessfulResponse {
+export interface NotificationCenterResponse {
   notifications: Notification[];
-  error?: undefined;
 }
-
-export interface NotificationCenterFailedResponse {
-  notifications?: Notification[];
-  error: string;
-}
-
-export type NotificationCenterResponse =
-  | NotificationCenterSuccessfulResponse
-  | NotificationCenterFailedResponse;
 
 export abstract class NotificationCenterDataSource {
   abstract fetchNotifications(): Observable<NotificationCenterResponse>;
