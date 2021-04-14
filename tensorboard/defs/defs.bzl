@@ -14,8 +14,8 @@
 """External-only delegates for various BUILD rules."""
 
 load("@npm//@bazel/rollup:index.bzl", "rollup_bundle")
-load("@npm//@bazel/karma:index.bzl", "karma_web_test_suite")
-load("@npm//@bazel/typescript:index.bzl", "ts_config", "ts_devserver", "ts_library")
+load("@npm//@bazel/concatjs:index.bzl", "karma_web_test_suite")
+load("@npm//@bazel/typescript:index.bzl", "ts_config", "ts_library")
 load("@io_bazel_rules_sass//:defs.bzl", "sass_binary", "sass_library")
 load("@npm//@bazel/terser:index.bzl", "terser_minified")
 load("//tensorboard/defs/internal:js.bzl", _tf_dev_js_binary = "tf_dev_js_binary")
@@ -103,11 +103,6 @@ def tf_ts_library(strict_checks = True, **kwargs):
     kwargs.setdefault("deps", []).extend(["@npm//tslib", "//tensorboard/defs:strict_types"])
 
     ts_library(tsconfig = tsconfig, supports_workers = True, **kwargs)
-
-def tf_ts_devserver(**kwargs):
-    """TensorBoard wrapper for the rule for a TypeScript dev server."""
-
-    ts_devserver(**kwargs)
 
 def tf_ng_web_test_suite(runtime_deps = [], bootstrap = [], deps = [], **kwargs):
     """TensorBoard wrapper for the rule for a Karma web test suite.

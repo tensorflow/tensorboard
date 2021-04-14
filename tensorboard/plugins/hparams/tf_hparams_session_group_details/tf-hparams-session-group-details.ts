@@ -169,7 +169,7 @@ class TfHparamsSessionGroupDetails extends mixinBehaviors(
       // of sessions is at most the size of the palette.
       // Note that this method is called every time the user moves
       // over the metric plot, so it needs to be reasonably fast.
-      const sessionName = JSON.parse(seriesName)[1];
+      const sessionName = (JSON.parse(seriesName) as any[])[1];
       const sessionIndex = this._indexOfSession.get(sessionName);
       const palette = tf_color_scale.standard;
       return palette[
