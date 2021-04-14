@@ -18,6 +18,7 @@
 import contextlib
 import hashlib
 import threading
+import time
 
 from concurrent import futures
 import grpc
@@ -162,21 +163,6 @@ class CallWithRetriesTest(tb_test.TestCase):
 
 
 class AsyncCallWithRetriesTest(tb_test.TestCase):
-    def test_aync_call_with_retries_completes(self):
-        # Setup: Basic server, echos input.
-        def handler(request, _):
-            return make_response(request.nonce)
-
-        server = TestGrpcServer(handler)
-        with server.run() as client:
-            # Execute `async_call_with_retries`
-            future = grpc_util.async_call_with_retries(
-                client.TestRpc,
-                make_request(42),
-            )
-            # Wait for completion & collect result
-            future.result(2)
-
     def test_aync_call_with_retries_succeeds(self):
         # Setup: Basic server, echos input.
         def handler(request, _):
@@ -190,6 +176,24 @@ class AsyncCallWithRetriesTest(tb_test.TestCase):
             )
             # Verify the correct value has been returned in the future.
             self.assertEqual(make_response(42), future.result(2))
+
+    def test_aync_call_raises_at_timeout(self):
+        # Setup: Server waits 0.5 seconds before echoing.
+        def handler(request, _):
+            time.sleep(0.5)
+            return make_response(request.nonce)
+
+        server = TestGrpcServer(handler)
+        with server.run() as client:
+            # Execute `async_call_with_retries` with the callback.
+            future = grpc_util.async_call_with_retries(
+                client.TestRpc, make_request(42)
+            )
+            # Request the result in 0.01s, critically less time than the server
+            # will take to respond. Verify that request will cause an
+            # appropriate exception.
+            with self.assertRaisesRegex(grpc.FutureTimeoutError, "timed out"):
+                future.result(0.01)
 
     def test_async_call_with_retries_fails_immediately_on_permanent_error(self):
         # Setup: Server which fails with an ISE.

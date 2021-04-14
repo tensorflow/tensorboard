@@ -61,7 +61,7 @@ class AsyncCallFuture:
     to the caller the result or exception resulting from the request.
 
     Args:
-      completion_event: The constructor should provide a thredding.Event which
+      completion_event: The constructor should provide a `threding.Event` which
         will be used to communicate when the set of gRPC requests is complete.
     """
 
@@ -73,9 +73,8 @@ class AsyncCallFuture:
     def _set_active_future(self, grpc_future):
         if grpc_future is None:
             raise RuntimeError(
-                "_set_active_future invoked with grpc_future=None"
+                "_set_active_future invoked with grpc_future=None."
             )
-        # TODO() maybe add validation logic here that future is not None.
         with self._active_grpc_future_lock:
             self._active_grpc_future = grpc_future
 
@@ -88,14 +87,22 @@ class AsyncCallFuture:
         appropriate.
 
         Args:
-          timeout: How long to wait in seconds before giving up and raising
+          timeout: How long to wait in seconds before giving up and raising.
 
         Returns:
           The result of the future corresponding to the single gRPC
-          corresponding to the successful call or final failure, as
-          appropriate.
+          corresponding to the successful call.
+
+        Raises:
+          * `grpc.FutureTimeoutError` if timeout seconds elapse before the gRPC
+          calls could complete, including waits and retries.
+          * The exception corresponding to the last non-retryable gRPC request
+          in the case that a successful gRPC request was not made.
         """
-        self._completion_event.wait(timeout)
+        if not self._completion_event.wait(timeout):
+            raise grpc.FutureTimeoutError(
+                f"AsyncCallFuture timed out after {timeout} seconds"
+            )
         with self._active_grpc_future_lock:
             if self._active_grpc_future is None:
                 raise RuntimeError("AsyncFuture never had an active future set")
@@ -140,9 +147,10 @@ def async_call_with_retries(api_method, request, clock=None):
             timeout=_GRPC_DEFAULT_TIMEOUT_SECS,
             metadata=version_metadata(),
         )
-        # Ensure we set the active future before invoking thedone callback, to avoid
-        # the case where the done callback completes immediately and triggers
-        # completion event while async_future still holds the old future.
+        # Ensure we set the active future before invoking the done callback, to
+        # avoid the case where the done callback completes immediately and
+        # triggers completion event while async_future still holds the old
+        # future.
         async_future._set_active_future(future)
         future.add_done_callback(handler)
 
