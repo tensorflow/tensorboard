@@ -260,9 +260,9 @@ class CorePluginExperimentMetadataTest(tf.test.TestCase):
         self.assertEqual(parsed_object["creation_time"], 1234.5)
 
 
-class CorePluginTestBase(object):
+class CorePluginTest(tf.test.TestCase):
     def setUp(self):
-        super(CorePluginTestBase, self).setUp()
+        super().setUp()
         self.logdir = self.get_temp_dir()
         self.multiplexer = event_multiplexer.EventMultiplexer()
         provider = data_provider.MultiplexerDataProvider(
@@ -276,9 +276,6 @@ class CorePluginTestBase(object):
         self.plugin = core_plugin.CorePlugin(context)
         app = application.TensorBoardWSGI([self.plugin])
         self.server = werkzeug_test.Client(app, wrappers.BaseResponse)
-
-    def create_multiplexer(self):
-        raise NotImplementedError()
 
     def _add_run(self, run_name):
         run_path = os.path.join(self.logdir, run_name)
