@@ -12,7 +12,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {NgModule} from '@angular/core';
 
-export * from './_types';
+import {HparamsModule as ReduxModule} from './_redux/hparams_module';
 
-export {State} from './_redux/types';
+@NgModule({
+  imports: [ReduxModule],
+})
+export class HparamsModule {}

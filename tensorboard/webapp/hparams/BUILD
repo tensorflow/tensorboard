@@ -1,4 +1,4 @@
-load("//tensorboard/defs:defs.bzl", "tf_ng_web_test_suite", "tf_ts_library")
+load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_ng_web_test_suite", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
@@ -9,7 +9,34 @@ tf_ts_library(
     srcs = [
         "types.ts",
     ],
-    deps = ["//tensorboard/webapp/runs/data_source"],
+    deps = [
+        ":_types",
+        "//tensorboard/webapp/hparams/_redux:types",
+    ],
+)
+
+tf_ts_library(
+    name = "_types",
+    srcs = [
+        "_types.ts",
+    ],
+    deps = [
+        "//tensorboard/webapp/runs/data_source",
+    ],
+)
+
+tf_ng_module(
+    name = "hparams",
+    srcs = [
+        "hparams_module.ts",
+        "index.ts",
+    ],
+    deps = [
+        "//tensorboard/webapp/hparams/_redux:hparams_actions",
+        "//tensorboard/webapp/hparams/_redux:hparams_module",
+        "//tensorboard/webapp/hparams/_redux:hparams_selectors",
+        "@npm//@angular/core",
+    ],
 )
 
 tf_ng_web_test_suite(

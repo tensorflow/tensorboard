@@ -14,49 +14,67 @@ limitations under the License.
 ==============================================================================*/
 
 import {
-  HparamsValueType,
+  DatasetType,
+  DiscreteFilter,
   DomainType,
   HparamSpec,
-  MetricSpec,
-  DiscreteFilter,
-  DatasetType,
+  HparamsValueType,
   IntervalFilter,
-} from '../types';
+  MetricSpec,
+} from '../_types';
 import {
   HparamsMetricsAndFilters,
   HparamsState,
   HPARAMS_FEATURE_KEY,
   State,
-} from './hparams_types';
+} from './types';
+import {getIdFromExperimentIds} from './utils';
 
-export function buildHparam(
-  override: Partial<HparamsMetricsAndFilters['hparam']> = {}
-): HparamsMetricsAndFilters['hparam'] {
+export function buildSpecs(
+  experimentId: string,
+  override: Partial<HparamsMetricsAndFilters> = {}
+): Record<string, HparamsMetricsAndFilters> {
+  const {
+    hparam = {
+      specs: [],
+      defaultFilters: new Map(),
+    },
+    metric = {
+      specs: [],
+      defaultFilters: new Map(),
+    },
+  } = override;
+
   return {
-    specs: [],
-    filters: new Map(),
-    defaultFilters: new Map(),
-    ...override,
+    [experimentId]: {hparam, metric},
   };
 }
 
-export function buildMetric(
-  override: Partial<HparamsMetricsAndFilters['metric']> = {}
-): HparamsMetricsAndFilters['metric'] {
+export function buildFilterState(
+  experimentIds: string[],
+  override: Partial<HparamsState['filters'][string]> = {}
+): HparamsState['filters'] {
+  const {hparams = new Map(), metrics = new Map()} = override;
+
   return {
-    specs: [],
-    filters: new Map(),
-    defaultFilters: new Map(),
-    ...override,
+    [getIdFromExperimentIds(experimentIds)]: {
+      hparams,
+      metrics,
+    },
   };
 }
+
 export function buildHparamsState(
-  dataOverride?: Partial<HparamsState['data']>
+  specOverrides?: Partial<HparamsState['specs']>,
+  filterOverrides?: Partial<HparamsState['filters']>
 ): HparamsState {
   return {
-    data: {
-      ...dataOverride,
+    specs: {
+      ...specOverrides,
     } as Record<string, HparamsMetricsAndFilters>,
+    filters: {
+      ...filterOverrides,
+    } as HparamsState['filters'],
   };
 }
 

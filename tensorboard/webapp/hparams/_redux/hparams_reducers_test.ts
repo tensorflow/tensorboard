@@ -21,44 +21,44 @@ import * as actions from './hparams_actions';
 import {reducers} from './hparams_reducers';
 import {
   buildDiscreteFilter,
-  buildHparam,
   buildHparamSpec,
   buildHparamsState,
   buildIntervalFilter,
-  buildMetric,
   buildMetricSpec,
+  buildSpecs,
+  buildFilterState,
 } from './testing';
 
 describe('hparams/_redux/hparams_reducers_test', () => {
   describe('fetchRunsSucceeded', () => {
     it('sets hparams and metrics specs', () => {
       const state = buildHparamsState({
-        foo: {
-          hparam: buildHparam({
+        ...buildSpecs('foo', {
+          hparam: {
             specs: [buildHparamSpec({name: 'h1'})],
             defaultFilters: new Map([
               [
                 'h1',
                 buildIntervalFilter({
-                  minValue: 0.5,
-                  maxValue: 0.7,
+                  filterLowerValue: 0.5,
+                  filterUpperValue: 0.7,
                 }),
               ],
             ]),
-          }),
-          metric: buildMetric({
+          },
+          metric: {
             specs: [buildMetricSpec({tag: 'm1'})],
             defaultFilters: new Map([
               [
                 'm1',
                 buildIntervalFilter({
-                  minValue: 0.5,
-                  maxValue: 0.5,
+                  filterLowerValue: 0.5,
+                  filterUpperValue: 0.5,
                 }),
               ],
             ]),
-          }),
-        },
+          },
+        }),
       });
 
       const action = fetchRunsSucceeded({
@@ -111,7 +111,7 @@ describe('hparams/_redux/hparams_reducers_test', () => {
 
       const nextState = reducers(state, action);
 
-      expect(nextState.data['foo'].hparam.specs).toEqual([
+      expect(nextState.specs['foo'].hparam.specs).toEqual([
         buildHparamSpec({
           name: 'h1',
           domain: {type: DomainType.INTERVAL, minValue: 0, maxValue: 1},
@@ -124,7 +124,7 @@ describe('hparams/_redux/hparams_reducers_test', () => {
           },
         }),
       ]);
-      expect(nextState.data['foo'].hparam.defaultFilters).toEqual(
+      expect(nextState.specs['foo'].hparam.defaultFilters).toEqual(
         new Map<string, DiscreteFilter | IntervalFilter>([
           [
             'h1',
@@ -145,12 +145,12 @@ describe('hparams/_redux/hparams_reducers_test', () => {
         ])
       );
 
-      expect(nextState.data['foo'].metric.specs).toEqual([
+      expect(nextState.specs['foo'].metric.specs).toEqual([
         buildMetricSpec({tag: 'm1'}),
         buildMetricSpec({tag: 'm2'}),
         buildMetricSpec({tag: 'm3'}),
       ]);
-      expect(nextState.data['foo'].metric.defaultFilters).toEqual(
+      expect(nextState.specs['foo'].metric.defaultFilters).toEqual(
         new Map([
           [
             'm1',
@@ -187,20 +187,18 @@ describe('hparams/_redux/hparams_reducers_test', () => {
   describe('hparamsIntervalHparamFilterChanged', () => {
     it('sets initial interval hparam filter', () => {
       const state = buildHparamsState({
-        foo: {
-          hparam: buildHparam({
+        ...buildSpecs('foo', {
+          hparam: {
             specs: [buildHparamSpec({name: 'dropout'})],
             defaultFilters: new Map([['dropout', buildIntervalFilter()]]),
-            filters: new Map(),
-          }),
-          metric: buildMetric(),
-        },
+          },
+        }),
       });
 
       const nextState = reducers(
         state,
         actions.hparamsIntervalHparamFilterChanged({
-          experimentId: 'foo',
+          experimentIds: ['foo'],
           hparamName: 'dropout',
           includeUndefined: true,
           filterLowerValue: 0.5,
@@ -208,7 +206,7 @@ describe('hparams/_redux/hparams_reducers_test', () => {
         })
       );
 
-      expect(nextState.data['foo'].hparam.filters).toEqual(
+      expect(nextState.filters['["foo"]'].hparams).toEqual(
         new Map([
           [
             'dropout',
@@ -223,30 +221,31 @@ describe('hparams/_redux/hparams_reducers_test', () => {
     });
 
     it('updates existing interval hparam filter', () => {
-      const state = buildHparamsState({
-        foo: {
-          hparam: buildHparam({
+      const state = buildHparamsState(
+        buildSpecs('foo', {
+          hparam: {
             specs: [buildHparamSpec({name: 'dropout'})],
             defaultFilters: new Map([['dropout', buildIntervalFilter()]]),
-            filters: new Map([
-              [
-                'dropout',
-                buildIntervalFilter({
-                  includeUndefined: true,
-                  filterLowerValue: 0.003,
-                  filterUpperValue: 0.5,
-                }),
-              ],
-            ]),
-          }),
-          metric: buildMetric(),
-        },
-      });
+          },
+        }),
+        buildFilterState(['foo'], {
+          hparams: new Map([
+            [
+              'dropout',
+              buildIntervalFilter({
+                includeUndefined: true,
+                filterLowerValue: 0.003,
+                filterUpperValue: 0.5,
+              }),
+            ],
+          ]),
+        })
+      );
 
       const nextState = reducers(
         state,
         actions.hparamsIntervalHparamFilterChanged({
-          experimentId: 'foo',
+          experimentIds: ['foo'],
           hparamName: 'dropout',
           includeUndefined: true,
           filterLowerValue: 0.5,
@@ -254,7 +253,7 @@ describe('hparams/_redux/hparams_reducers_test', () => {
         })
       );
 
-      expect(nextState.data['foo'].hparam.filters).toEqual(
+      expect(nextState.filters['["foo"]'].hparams).toEqual(
         new Map([
           [
             'dropout',
@@ -269,19 +268,17 @@ describe('hparams/_redux/hparams_reducers_test', () => {
     });
 
     it('throws error when setting interval hparam that did not exist', () => {
-      const state = buildHparamsState({
-        foo: {
-          hparam: buildHparam({
+      const state = buildHparamsState(
+        buildSpecs('foo', {
+          hparam: {
             specs: [buildHparamSpec({name: 'dropout'})],
             defaultFilters: new Map([['dropout', buildIntervalFilter()]]),
-            filters: new Map(),
-          }),
-          metric: buildMetric(),
-        },
-      });
+          },
+        })
+      );
 
       const action = actions.hparamsIntervalHparamFilterChanged({
-        experimentId: 'foo',
+        experimentIds: ['foo'],
         hparamName: 'random_seed',
         includeUndefined: true,
         filterLowerValue: 0.5,
@@ -292,19 +289,17 @@ describe('hparams/_redux/hparams_reducers_test', () => {
     });
 
     it('throws when setting interval on discrete hparam', () => {
-      const state = buildHparamsState({
-        foo: {
-          hparam: buildHparam({
+      const state = buildHparamsState(
+        buildSpecs('foo', {
+          hparam: {
             specs: [buildHparamSpec({name: 'dropout'})],
             defaultFilters: new Map([['dropout', buildDiscreteFilter()]]),
-            filters: new Map(),
-          }),
-          metric: buildMetric(),
-        },
-      });
+          },
+        })
+      );
 
       const action = actions.hparamsIntervalHparamFilterChanged({
-        experimentId: 'foo',
+        experimentIds: ['foo'],
         hparamName: 'dropout',
         includeUndefined: true,
         filterLowerValue: 0.5,
@@ -317,9 +312,9 @@ describe('hparams/_redux/hparams_reducers_test', () => {
 
   describe('hparamsDiscreteHparamFilterChanged', () => {
     it('sets initial discrete hparam filter', () => {
-      const state = buildHparamsState({
-        foo: {
-          hparam: buildHparam({
+      const state = buildHparamsState(
+        buildSpecs('foo', {
+          hparam: {
             specs: [buildHparamSpec({name: 'dropout'})],
             defaultFilters: new Map([
               [
@@ -330,23 +325,22 @@ describe('hparams/_redux/hparams_reducers_test', () => {
                 }),
               ],
             ]),
-            filters: new Map(),
-          }),
-          metric: buildMetric(),
-        },
-      });
+          },
+        }),
+        buildFilterState(['foo'], {hparams: new Map()})
+      );
 
       const nextState = reducers(
         state,
         actions.hparamsDiscreteHparamFilterChanged({
-          experimentId: 'foo',
+          experimentIds: ['foo'],
           hparamName: 'dropout',
           includeUndefined: true,
           filterValues: [10, 100],
         })
       );
 
-      expect(nextState.data['foo'].hparam.filters).toEqual(
+      expect(nextState.filters['["foo"]'].hparams).toEqual(
         new Map([
           [
             'dropout',
@@ -360,9 +354,9 @@ describe('hparams/_redux/hparams_reducers_test', () => {
     });
 
     it('updates existing discrete hparam filter', () => {
-      const state = buildHparamsState({
-        foo: {
-          hparam: buildHparam({
+      const state = buildHparamsState(
+        buildSpecs('foo', {
+          hparam: {
             specs: [buildHparamSpec({name: 'dropout'})],
             defaultFilters: new Map([
               [
@@ -373,31 +367,32 @@ describe('hparams/_redux/hparams_reducers_test', () => {
                 }),
               ],
             ]),
-            filters: new Map([
-              [
-                'dropout',
-                buildDiscreteFilter({
-                  includeUndefined: true,
-                  filterValues: [2, 200],
-                }),
-              ],
-            ]),
-          }),
-          metric: buildMetric(),
-        },
-      });
+          },
+        }),
+        buildFilterState(['foo'], {
+          hparams: new Map([
+            [
+              'dropout',
+              buildDiscreteFilter({
+                includeUndefined: true,
+                filterValues: [2, 200],
+              }),
+            ],
+          ]),
+        })
+      );
 
       const nextState = reducers(
         state,
         actions.hparamsDiscreteHparamFilterChanged({
-          experimentId: 'foo',
+          experimentIds: ['foo'],
           hparamName: 'dropout',
           includeUndefined: true,
           filterValues: [10, 100],
         })
       );
 
-      expect(nextState.data['foo'].hparam.filters).toEqual(
+      expect(nextState.filters['["foo"]'].hparams).toEqual(
         new Map([
           [
             'dropout',
@@ -411,19 +406,18 @@ describe('hparams/_redux/hparams_reducers_test', () => {
     });
 
     it('throws error when setting discrete hparam that did not exist', () => {
-      const state = buildHparamsState({
-        foo: {
-          hparam: buildHparam({
+      const state = buildHparamsState(
+        buildSpecs('foo', {
+          hparam: {
             specs: [buildHparamSpec({name: 'dropout'})],
             defaultFilters: new Map([]),
-            filters: new Map([]),
-          }),
-          metric: buildMetric(),
-        },
-      });
+          },
+        }),
+        buildFilterState(['foo'], {hparams: new Map()})
+      );
 
       const action = actions.hparamsDiscreteHparamFilterChanged({
-        experimentId: 'foo',
+        experimentIds: ['foo'],
         hparamName: 'optimizer',
         includeUndefined: true,
         filterValues: ['adam', 'adagrad'],
@@ -433,19 +427,20 @@ describe('hparams/_redux/hparams_reducers_test', () => {
     });
 
     it('throws when setting discrete change on interval hparam', () => {
-      const state = buildHparamsState({
-        foo: {
-          hparam: buildHparam({
+      const state = buildHparamsState(
+        buildSpecs('foo', {
+          hparam: {
             specs: [buildHparamSpec({name: 'dropout'})],
             defaultFilters: new Map([['dropout', buildIntervalFilter()]]),
-            filters: new Map([['dropout', buildIntervalFilter()]]),
-          }),
-          metric: buildMetric(),
-        },
-      });
+          },
+        }),
+        buildFilterState(['foo'], {
+          hparams: new Map([['dropout', buildIntervalFilter()]]),
+        })
+      );
 
       const action = actions.hparamsDiscreteHparamFilterChanged({
-        experimentId: 'foo',
+        experimentIds: ['foo'],
         hparamName: 'dropout',
         includeUndefined: true,
         filterValues: ['adam', 'adagrad'],
@@ -457,10 +452,9 @@ describe('hparams/_redux/hparams_reducers_test', () => {
 
   describe('hparamsMetricFilterChanged', () => {
     it('sets initial metric filters', () => {
-      const state = buildHparamsState({
-        foo: {
-          hparam: buildHparam(),
-          metric: buildMetric({
+      const state = buildHparamsState(
+        buildSpecs('foo', {
+          metric: {
             specs: [buildMetricSpec({tag: 'loss'})],
             defaultFilters: new Map([
               [
@@ -472,14 +466,14 @@ describe('hparams/_redux/hparams_reducers_test', () => {
                 }),
               ],
             ]),
-          }),
-        },
-      });
+          },
+        })
+      );
 
       const nextState = reducers(
         state,
         actions.hparamsMetricFilterChanged({
-          experimentId: 'foo',
+          experimentIds: ['foo'],
           metricTag: 'loss',
           includeUndefined: false,
           filterLowerValue: 0.1,
@@ -487,7 +481,7 @@ describe('hparams/_redux/hparams_reducers_test', () => {
         })
       );
 
-      expect(nextState.data['foo'].metric.filters).toEqual(
+      expect(nextState.filters['["foo"]'].metrics).toEqual(
         new Map([
           [
             'loss',
@@ -502,10 +496,9 @@ describe('hparams/_redux/hparams_reducers_test', () => {
     });
 
     it('updates existing metric filters', () => {
-      const state = buildHparamsState({
-        foo: {
-          hparam: buildHparam(),
-          metric: buildMetric({
+      const state = buildHparamsState(
+        buildSpecs('foo', {
+          metric: {
             specs: [buildMetricSpec({tag: 'loss'})],
             defaultFilters: new Map([
               [
@@ -517,24 +510,26 @@ describe('hparams/_redux/hparams_reducers_test', () => {
                 }),
               ],
             ]),
-            filters: new Map([
-              [
-                'loss',
-                buildIntervalFilter({
-                  includeUndefined: true,
-                  filterLowerValue: 0.2,
-                  filterUpperValue: 0.5,
-                }),
-              ],
-            ]),
-          }),
-        },
-      });
+          },
+        }),
+        buildFilterState(['foo'], {
+          metrics: new Map([
+            [
+              'loss',
+              buildIntervalFilter({
+                includeUndefined: true,
+                filterLowerValue: 0.2,
+                filterUpperValue: 0.5,
+              }),
+            ],
+          ]),
+        })
+      );
 
       const nextState = reducers(
         state,
         actions.hparamsMetricFilterChanged({
-          experimentId: 'foo',
+          experimentIds: ['foo'],
           metricTag: 'loss',
           includeUndefined: false,
           filterLowerValue: 0.1,
@@ -542,7 +537,7 @@ describe('hparams/_redux/hparams_reducers_test', () => {
         })
       );
 
-      expect(nextState.data['foo'].metric.filters).toEqual(
+      expect(nextState.filters['["foo"]'].metrics).toEqual(
         new Map([
           [
             'loss',
@@ -557,17 +552,17 @@ describe('hparams/_redux/hparams_reducers_test', () => {
     });
 
     it('throws error if it sets filter that does not exist', () => {
-      const state = buildHparamsState({
-        foo: {
-          hparam: buildHparam(),
-          metric: buildMetric({
+      const state = buildHparamsState(
+        buildSpecs('foo', {
+          metric: {
             specs: [buildMetricSpec({tag: 'loss'})],
-          }),
-        },
-      });
+            defaultFilters: new Map(),
+          },
+        })
+      );
 
       const action = actions.hparamsMetricFilterChanged({
-        experimentId: 'foo',
+        experimentIds: ['foo'],
         metricTag: 'accuracy',
         includeUndefined: true,
         filterLowerValue: 0,

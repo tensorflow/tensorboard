@@ -1,16 +1,40 @@
-load("//tensorboard/defs:defs.bzl", "tf_ts_library")
+load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])
 
 tf_ts_library(
-    name = "hparams_types",
+    name = "utils",
     srcs = [
-        "hparams_types.ts",
+        "utils.ts",
     ],
     deps = [
         "//tensorboard/webapp/hparams:types",
+    ],
+)
+
+tf_ts_library(
+    name = "types",
+    srcs = [
+        "types.ts",
+    ],
+    deps = [
+        "//tensorboard/webapp/hparams:_types",
+    ],
+)
+
+tf_ng_module(
+    name = "hparams_module",
+    srcs = [
+        "hparams_module.ts",
+    ],
+    deps = [
+        ":hparams_reducers",
+        ":types",
+        "//tensorboard/webapp/hparams:types",
+        "@npm//@angular/core",
+        "@npm//@ngrx/store",
     ],
 )
 
@@ -32,8 +56,9 @@ tf_ts_library(
     ],
     deps = [
         ":hparams_actions",
-        ":hparams_types",
-        "//tensorboard/webapp/hparams:types",
+        ":types",
+        ":utils",
+        "//tensorboard/webapp/hparams:_types",
         "//tensorboard/webapp/runs/actions",
         "@npm//@ngrx/store",
     ],
@@ -43,10 +68,12 @@ tf_ts_library(
     name = "hparams_selectors",
     srcs = [
         "hparams_selectors.ts",
+        "hparams_selectors_utils.ts",
     ],
     deps = [
         ":hparams_actions",
-        ":hparams_types",
+        ":types",
+        ":utils",
         "//tensorboard/webapp/hparams:types",
         "//tensorboard/webapp/runs/actions",
         "@npm//@ngrx/store",
@@ -60,8 +87,9 @@ tf_ts_library(
         "testing.ts",
     ],
     deps = [
-        ":hparams_types",
-        "//tensorboard/webapp/hparams:types",
+        ":types",
+        ":utils",
+        "//tensorboard/webapp/hparams:_types",
     ],
 )
 
@@ -71,12 +99,15 @@ tf_ts_library(
     srcs = [
         "hparams_reducers_test.ts",
         "hparams_selectors_test.ts",
+        "hparams_selectors_utils_test.ts",
+        "utils_test.ts",
     ],
     deps = [
         ":hparams_actions",
         ":hparams_reducers",
         ":hparams_selectors",
         ":testing",
+        ":utils",
         "//tensorboard/webapp/hparams:types",
         "//tensorboard/webapp/runs/actions",
         "//tensorboard/webapp/runs/data_source:testing",
