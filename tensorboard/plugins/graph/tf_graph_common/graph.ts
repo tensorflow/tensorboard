@@ -859,7 +859,7 @@ function extractOutputShapes(
   for (let i = 0; i < attr.length; i++) {
     let {key, value} = attr[i];
     if (key === OUTPUT_SHAPES_KEY) {
-      if (!value.list.shape) {
+      if (!value.list || !value.list.shape) {
         // The OUTPUT_SHAPES_KEY lacks a value. We know nothing about the shape.
         return null;
       }
