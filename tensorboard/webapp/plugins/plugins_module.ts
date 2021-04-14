@@ -23,10 +23,6 @@ import {PluginRegistryModule} from './plugin_registry_module';
 @NgModule({
   declarations: [PluginsContainer, PluginsComponent],
   exports: [PluginsContainer],
-  imports: [
-    CoreModule,
-    CommonModule,
-    PluginRegistryModule,
-  ],
+  imports: [CoreModule, CommonModule, PluginRegistryModule],
 })
 export class PluginsModule {}
