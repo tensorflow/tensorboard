@@ -18,11 +18,9 @@ import {
   HttpTestingController,
   TBHttpClientTestingModule,
 } from '../../webapp_data_source/tb_http_client_testing';
+import {NotificationCenterDataSource} from './backend_types';
 import {TBNotificationCenterDataSource} from './notification_center_data_source';
-import {
-  NotificationCenterDataSource,
-  NotificationCenterResponse,
-} from './types';
+import {buildNotificationResponse} from './testing';
 
 describe('TBNotificationCenterDataSource test', () => {
   let httpMock: HttpTestingController;
@@ -47,15 +45,23 @@ describe('TBNotificationCenterDataSource test', () => {
     httpMock.verify();
   });
 
-  it('fetch notifications', () => {
+  it('fetches empty notifications', () => {
     const resultSpy = jasmine.createSpy();
     dataSource.fetchNotifications().subscribe(resultSpy);
 
     const req = httpMock.expectOne('data/notifications');
-    req.flush({
-      notifications: [{}],
-    });
+    req.flush({notifications: [{}]});
 
     expect(resultSpy).toHaveBeenCalledWith({notifications: [{}]});
+  });
+
+  it('fetches non-empty notifications', () => {
+    const resultSpy = jasmine.createSpy();
+    dataSource.fetchNotifications().subscribe(resultSpy);
+
+    const req = httpMock.expectOne('data/notifications');
+    req.flush(buildNotificationResponse());
+
+    expect(resultSpy).toHaveBeenCalledWith(buildNotificationResponse());
   });
 });
