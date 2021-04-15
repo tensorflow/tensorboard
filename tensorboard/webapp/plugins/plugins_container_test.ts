@@ -99,7 +99,6 @@ interface TbElement extends HTMLElement {
 describe('plugins_component', () => {
   let store: MockStore<State>;
   let createElementSpy: jasmine.Spy;
-  let pluginApiHost: PluginApiHostModule;
 
   const PLUGINS = {
     bar: {
@@ -140,13 +139,19 @@ describe('plugins_component', () => {
     store.refreshState();
   }
 
-  beforeEach(async () => {
+  /**
+   * Configures default behavior of the MockStore.
+   * Call this only after all providers have been configured as it will freeze
+   * the TestBed configuration.
+   */
+  async function setup(providersOverride?: any[]) {
     await TestBed.configureTestingModule({
       providers: [
         provideMockStore(),
         PluginsContainer,
         PluginRegistryModule,
         getTestingProvider(),
+        ...(providersOverride ? providersOverride : []),
       ],
       declarations: [
         PluginsContainer,
@@ -154,7 +159,8 @@ describe('plugins_component', () => {
         CustomizedErrorTemplatesComponent,
       ],
       imports: [TestingDebuggerModule, ExtraDashboardModule],
-    }).compileComponents();
+    });
+
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
     store.overrideSelector(getPlugins, PLUGINS);
     store.overrideSelector(getActivePlugin, null);
@@ -176,11 +182,13 @@ describe('plugins_component', () => {
       .and.returnValue({
         registerPluginIframe: () => {},
       });
-
-    pluginApiHost = TestBed.inject(PluginApiHostModule);
-  });
+  }
 
   describe('plugin DOM creation', () => {
+    beforeEach(async () => {
+      await setup();
+    });
+
     it('creates no plugin when there is no activePlugin', () => {
       const fixture = TestBed.createComponent(PluginsContainer);
       fixture.detectChanges();
@@ -231,6 +239,7 @@ describe('plugins_component', () => {
     });
 
     it('creates an element for IFRAME type of plugin', async () => {
+      const pluginApiHost = TestBed.inject(PluginApiHostModule);
       const registerPluginIframeSpy = spyOn(
         pluginApiHost,
         'registerPluginIframe'
@@ -359,6 +368,24 @@ describe('plugins_component', () => {
     });
   });
 
+  describe('plugin DOM creation without PluginApiHostModule', () => {
+    beforeEach(async () => {
+      // Provide no PluginApiHostModule instance.
+      await setup([{provide: PluginApiHostModule, useValue: null}]);
+    });
+
+    it('throws error for IFRAME type of plugin', async () => {
+      const fixture = TestBed.createComponent(PluginsContainer);
+      fixture.detectChanges();
+
+      setActivePlugin('foo');
+
+      expect(() => fixture.detectChanges()).toThrow(
+        new Error('IFRAME-based plugins not supported: foo')
+      );
+    });
+  });
+
   describe('reload', () => {
     function setLastLoadedTime(
       timeInMs: number | null,
@@ -377,7 +404,8 @@ describe('plugins_component', () => {
     let betaEl: TbElement;
     let gammaEl: TbElement;
 
-    beforeEach(() => {
+    beforeEach(async () => {
+      await setup();
       const PLUGINS = {
         alpha: {
           disable_reload: false,
@@ -528,6 +556,10 @@ describe('plugins_component', () => {
   });
 
   describe('warning pages', () => {
+    beforeEach(async () => {
+      await setup();
+    });
+
     it('does not show any warning while fetching when list was never fetched', () => {
       store.overrideSelector(getPlugins, {});
       store.overrideSelector(getPluginsListLoaded, {
