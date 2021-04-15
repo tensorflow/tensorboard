@@ -14,12 +14,11 @@ limitations under the License.
 ==============================================================================*/
 import {Injectable} from '@angular/core';
 import {Observable} from 'rxjs';
-
 import {TBHttpClient} from '../../webapp_data_source/tb_http_client';
 import {
   NotificationCenterDataSource,
   NotificationCenterResponse,
-} from './backend_types';
+} from './types';
 
 /**
  * An implementation of NotificationCenterDataSource that fetchs notifications.
@@ -30,6 +29,6 @@ export class TBNotificationCenterDataSource
   constructor(private readonly http: TBHttpClient) {}
 
   fetchNotifications(): Observable<NotificationCenterResponse> {
-    return this.http.get<NotificationCenterResponse>(`data/notifications`);
+    return this.http.get<NotificationCenterResponse>(`data/changelogs`);
   }
 }
