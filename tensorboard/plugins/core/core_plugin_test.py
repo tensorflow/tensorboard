@@ -172,6 +172,27 @@ class CorePluginNoDataTest(tf.test.TestCase):
             + FAKE_INDEX_HTML,
         )
 
+    def test_js_no_cache(self):
+        response = self.server.get("/index.js?foo=bar")
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(
+            NO_CACHE_CONTROL_VALUE, response.headers.get("Cache-Control")
+        )
+
+    def test_js_cache(self):
+        response = self.server.get("/index.js?_file_hash=meow")
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(
+            ONE_DAY_CACHE_CONTROL_VALUE, response.headers.get("Cache-Control")
+        )
+
+    def test_html_no_cache(self):
+        response = self.server.get("/index.html?_file_hash=meow")
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(
+            NO_CACHE_CONTROL_VALUE, response.headers.get("Cache-Control")
+        )
+
     def testDataPaths_disableAllCaching(self):
         """Test the format of the /data/runs endpoint."""
         for path in ("/data/runs", "/data/logdir"):
@@ -369,45 +390,6 @@ class CorePluginTest(tf.test.TestCase):
         """Test the format of the /data/notifications endpoint."""
         notifications_json = self._get_json(self.server, "/data/notifications")
         self.assertEqual(notifications_json, {"notifications": []})
-
-
-class CorePluginResourceTest(tf.test.TestCase):
-    def setUp(self):
-        super(CorePluginResourceTest, self).setUp()
-        self.logdir = self.get_temp_dir()
-        self.multiplexer = event_multiplexer.EventMultiplexer()
-        provider = data_provider.MultiplexerDataProvider(
-            self.multiplexer, self.logdir
-        )
-        context = base_plugin.TBContext(
-            assets_zip_provider=get_test_assets_zip_provider(),
-            logdir=self.logdir,
-            data_provider=provider,
-        )
-        self.plugin = core_plugin.CorePlugin(context)
-        app = application.TensorBoardWSGI([self.plugin])
-        self.server = werkzeug_test.Client(app, wrappers.BaseResponse)
-
-    def test_js_no_cache(self):
-        response = self.server.get("/index.js?foo=bar")
-        self.assertEqual(200, response.status_code)
-        self.assertEqual(
-            NO_CACHE_CONTROL_VALUE, response.headers.get("Cache-Control")
-        )
-
-    def test_js_cache(self):
-        response = self.server.get("/index.js?_file_hash=meow")
-        self.assertEqual(200, response.status_code)
-        self.assertEqual(
-            ONE_DAY_CACHE_CONTROL_VALUE, response.headers.get("Cache-Control")
-        )
-
-    def test_html_no_cache(self):
-        response = self.server.get("/index.html?_file_hash=meow")
-        self.assertEqual(200, response.status_code)
-        self.assertEqual(
-            NO_CACHE_CONTROL_VALUE, response.headers.get("Cache-Control")
-        )
 
 
 class CorePluginPathPrefixTest(tf.test.TestCase):
