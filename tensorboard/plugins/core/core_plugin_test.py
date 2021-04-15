@@ -211,45 +211,7 @@ class CorePluginNoDataTest(tf.test.TestCase):
         parsed_object = self._get_json(self.server, "/data/environment")
         self.assertEqual(parsed_object["data_location"], self.get_temp_dir())
 
-    def testEnvironmentDebugOffByDefault(self):
-        parsed_object = self._get_json(self.server, "/data/environment")
-        self.assertNotIn("debug", parsed_object)
-
-    def testEnvironmentDebugOnExplicitly(self):
-        multiplexer = event_multiplexer.EventMultiplexer()
-        logdir = self.get_temp_dir()
-        provider = data_provider.MultiplexerDataProvider(multiplexer, logdir)
-        context = base_plugin.TBContext(
-            assets_zip_provider=get_test_assets_zip_provider(),
-            logdir=logdir,
-            data_provider=provider,
-            window_title="title foo",
-        )
-        plugin = core_plugin.CorePlugin(context, include_debug_info=True)
-        app = application.TensorBoardWSGI([plugin])
-        server = werkzeug_test.Client(app, wrappers.BaseResponse)
-
-        parsed_object = self._get_json(server, "/data/environment")
-        self.assertIn("debug", parsed_object)
-
-    def testLogdir(self):
-        """Test the format of the data/logdir endpoint."""
-        parsed_object = self._get_json(self.server, "/data/logdir")
-        self.assertEqual(parsed_object, {"logdir": self.get_temp_dir()})
-
-
-class CorePluginExperimentMetadataTest(tf.test.TestCase):
-    def _get_json(self, server, path):
-        response = server.get(path)
-        self.assertEqual(200, response.status_code)
-        self.assertEqual(
-            "application/json", response.headers.get("Content-Type")
-        )
-        return json.loads(response.get_data().decode("utf-8"))
-
-    def testGetEnvironmentDataWithExperimentMetadata(self):
-        """Test environment route returns correct metadata about experiment."""
-
+    def testEnvironmentWithExperimentMetadata(self):
         class FakeDataProvider(object):
             def experiment_metadata(self, ctx, *, experiment_id):
                 del experiment_id  # Unused.
@@ -280,6 +242,31 @@ class CorePluginExperimentMetadataTest(tf.test.TestCase):
         )
         self.assertEqual(parsed_object["creation_time"], 1234.5)
 
+    def testEnvironmentDebugOffByDefault(self):
+        parsed_object = self._get_json(self.server, "/data/environment")
+        self.assertNotIn("debug", parsed_object)
+
+    def testEnvironmentDebugOnExplicitly(self):
+        multiplexer = event_multiplexer.EventMultiplexer()
+        logdir = self.get_temp_dir()
+        provider = data_provider.MultiplexerDataProvider(multiplexer, logdir)
+        context = base_plugin.TBContext(
+            assets_zip_provider=get_test_assets_zip_provider(),
+            logdir=logdir,
+            data_provider=provider,
+            window_title="title foo",
+        )
+        plugin = core_plugin.CorePlugin(context, include_debug_info=True)
+        app = application.TensorBoardWSGI([plugin])
+        server = werkzeug_test.Client(app, wrappers.BaseResponse)
+
+        parsed_object = self._get_json(server, "/data/environment")
+        self.assertIn("debug", parsed_object)
+
+    def testLogdir(self):
+        """Test the format of the data/logdir endpoint."""
+        parsed_object = self._get_json(self.server, "/data/logdir")
+        self.assertEqual(parsed_object, {"logdir": self.get_temp_dir()})
 
 class CorePluginTest(tf.test.TestCase):
     def setUp(self):
