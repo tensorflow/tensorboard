@@ -151,7 +151,7 @@ describe('plugins_component', () => {
         PluginsContainer,
         PluginRegistryModule,
         getTestingProvider(),
-        ...providersOverride ? providersOverride : [],
+        ...(providersOverride ? providersOverride : []),
       ],
       declarations: [
         PluginsContainer,
