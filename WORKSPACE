@@ -4,11 +4,10 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 http_archive(
     name = "io_bazel_rules_webtesting",
-    sha256 = "f89ca8e91ac53b3c61da356c685bf03e927f23b97b086cc593db8edc088c143f",
+    sha256 = "9bb461d5ef08e850025480bab185fd269242d4e533bca75bfb748001ceb343c3",
     urls = [
-        # tag 0.3.1 resolves to commit afa8c4435ed8fd832046dab807ef998a26779ecb (2019-04-03 14:10:32 -0700)
-        "http://mirror.tensorflow.org/github.com/bazelbuild/rules_webtesting/releases/download/0.3.1/rules_webtesting.tar.gz",
-        "https://github.com/bazelbuild/rules_webtesting/releases/download/0.3.1/rules_webtesting.tar.gz",
+        "http://mirror.tensorflow.org/github.com/bazelbuild/rules_webtesting/releases/download/0.3.3/rules_webtesting.tar.gz",
+        "https://github.com/bazelbuild/rules_webtesting/releases/download/0.3.3/rules_webtesting.tar.gz",
     ],
 )
 
@@ -40,10 +39,10 @@ rules_closure_dependencies(
 
 http_archive(
     name = "build_bazel_rules_nodejs",
-    sha256 = "4952ef879704ab4ad6729a29007e7094aef213ea79e9f2e94cbe1c9a753e63ef",
+    sha256 = "1134ec9b7baee008f1d54f0483049a97e53a57cd3913ec9d6db625549c98395a",
     urls = [
-        "http://mirror.tensorflow.org/github.com/bazelbuild/rules_nodejs/releases/download/2.2.0/rules_nodejs-2.2.0.tar.gz",
-        "https://github.com/bazelbuild/rules_nodejs/releases/download/2.2.0/rules_nodejs-2.2.0.tar.gz",
+        "http://mirror.tensorflow.org/github.com/bazelbuild/rules_nodejs/releases/download/3.4.0/rules_nodejs-3.4.0.tar.gz",
+        "https://github.com/bazelbuild/rules_nodejs/releases/download/3.4.0/rules_nodejs-3.4.0.tar.gz",
     ],
 )
 
@@ -62,11 +61,11 @@ yarn_install(
 
 http_archive(
     name = "io_bazel_rules_sass",
-    sha256 = "9dcfba04e4af896626f4760d866f895ea4291bc30bf7287887cefcf4707b6a62",
-    strip_prefix = "rules_sass-1.26.3",
+    sha256 = "9ad74e6e75a86939f4349b31d43bb1db4279e4f2a139c5ebaf56cf99feea1faa",
+    strip_prefix = "rules_sass-1.32.8",
     urls = [
-        "http://mirror.tensorflow.org/github.com/bazelbuild/rules_sass/archive/1.26.3.zip",
-        "https://github.com/bazelbuild/rules_sass/archive/1.26.3.zip",
+        "http://mirror.tensorflow.org/github.com/bazelbuild/rules_sass/archive/1.32.8.zip",
+        "https://github.com/bazelbuild/rules_sass/archive/1.32.8.zip",
     ],
 )
 
@@ -74,11 +73,6 @@ http_archive(
 load("@npm//@bazel/protractor:package.bzl", "npm_bazel_protractor_dependencies")
 
 npm_bazel_protractor_dependencies()
-
-# Load @bazel/karma dependencies
-load("@npm//@bazel/karma:package.bzl", "npm_bazel_karma_dependencies")
-
-npm_bazel_karma_dependencies()
 
 http_archive(
     name = "org_tensorflow",

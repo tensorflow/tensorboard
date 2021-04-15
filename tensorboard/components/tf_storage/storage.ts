@@ -86,7 +86,7 @@ export const {
   getObserver: getObjectObserver,
   disposeBinding: disposeObjectBinding,
 } = makeBindings(
-  (s) => JSON.parse(atob(s)),
+  (s) => JSON.parse(atob(s)) as Record<string, string>,
   (o) => btoa(JSON.stringify(o))
 );
 export interface StorageOptions<T> {
