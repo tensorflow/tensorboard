@@ -58,7 +58,7 @@ describe('notification center effects', () => {
           initialState: {
             notifications: [],
             lastReadTimestampInMs: -1,
-          }
+          },
         }),
       ],
     }).compileComponents();
@@ -99,7 +99,9 @@ describe('notification center effects', () => {
   });
 
   it('dispatches failed action when notification fetch failed', () => {
-    fetchNotificationsSpy.and.returnValue(throwError(new Error('Request failed')));
+    fetchNotificationsSpy.and.returnValue(
+      throwError(new Error('Request failed'))
+    );
     actions$.next(TEST_ONLY.initAction());
 
     expect(fetchNotificationsSpy).toHaveBeenCalled();
