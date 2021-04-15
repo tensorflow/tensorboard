@@ -7,11 +7,18 @@ licenses(["notice"])
 tf_ts_library(
     name = "tf_globals",
     srcs = [
-        "globals.ts",
         "globals-polymer.ts",
     ],
     deps = [
+        ":tf_globals_lib",
         "@npm//@polymer/decorators",
         "@npm//@polymer/polymer",
+    ],
+)
+
+tf_ts_library(
+    name = "tf_globals_lib",
+    srcs = [
+        "globals.ts",
     ],
 )
