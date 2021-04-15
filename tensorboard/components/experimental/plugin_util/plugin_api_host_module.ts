@@ -14,6 +14,8 @@ limitations under the License.
 ==============================================================================*/
 
 import {NgModule} from '@angular/core';
+import {AppRoutingModule} from '../../../webapp/app_routing/app_routing_module';
+import {RunsModule} from '../../../webapp/runs/runs_module';
 
 import {PluginCoreApiHostImpl} from './core-host-impl';
 import {Ipc, registerPluginIframe} from './plugin-host-ipc';
@@ -21,6 +23,7 @@ import {PluginRunsApiHostImpl} from './runs-host-impl';
 
 @NgModule({
   providers: [Ipc, PluginCoreApiHostImpl, PluginRunsApiHostImpl],
+  imports: [AppRoutingModule, RunsModule]
 })
 export class PluginApiHostModule {
   constructor(
