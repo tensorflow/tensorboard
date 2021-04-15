@@ -13,10 +13,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Action, createReducer, on} from '@ngrx/store';
-import {createRouteContextedState} from '../../app_routing/route_contexted_reducer_helper';
-import {NotificationCenterResponse} from '../_data_source';
+
 import * as actions from './notification_center_actions';
 import {
+  Notification,
   NotificationState,
   NOTIFICATION_LAST_READ_TIME_KEY,
 } from './notification_center_types';
@@ -51,12 +51,9 @@ const reducer = createReducer(
     actions.fetchNotificationsLoaded,
     (
       state: NotificationState,
-      response: NotificationCenterResponse
+      {notifications}: {notifications: Notification[]}
     ): NotificationState => {
-      return {
-        ...state,
-        notifications: response.notifications,
-      };
+      return {...state, notifications};
     }
   )
 );

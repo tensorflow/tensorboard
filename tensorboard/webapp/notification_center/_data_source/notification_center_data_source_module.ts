@@ -16,7 +16,7 @@ import {NgModule} from '@angular/core';
 
 import {TBHttpClientModule} from '../../webapp_data_source/tb_http_client_module';
 import {TBNotificationCenterDataSource} from './notification_center_data_source';
-import {NotificationCenterDataSource} from './types';
+import {NotificationCenterDataSource} from './backend_types';
 
 @NgModule({
   imports: [TBHttpClientModule],

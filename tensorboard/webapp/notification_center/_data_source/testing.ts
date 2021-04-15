@@ -15,11 +15,11 @@ limitations under the License.
 import {Injectable} from '@angular/core';
 import {of} from 'rxjs';
 
-import {CategoryEnum, Notification} from '../_redux/notification_center_types';
 import {
   NotificationCenterDataSource,
   NotificationCenterResponse,
-} from './types';
+  BackendNotification,
+} from './backend_types';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
@@ -44,12 +44,11 @@ export function provideTestingNotificationCenterDataSource() {
 }
 
 export function buildNotificationResponse(
-  notifications?: Notification[]
+  notifications?: BackendNotification[]
 ): NotificationCenterResponse {
   return {
     notifications: notifications ?? [
       {
-        category: CategoryEnum.WHATS_NEW,
         dateInMs: 123,
         title: 'test title',
         content: 'random content',

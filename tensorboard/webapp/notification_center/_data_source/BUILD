@@ -22,10 +22,9 @@ tf_ng_module(
 tf_ts_library(
     name = "types",
     srcs = [
-        "types.ts",
+        "backend_types.ts",
     ],
     deps = [
-        "//tensorboard/webapp/notification_center/_redux:types",
         "@npm//rxjs",
     ],
 )

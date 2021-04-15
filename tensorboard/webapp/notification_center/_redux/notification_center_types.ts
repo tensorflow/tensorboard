@@ -12,6 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {BackendNotification} from '../_data_source/backend_types';
 
 export enum CategoryEnum {
   NONE,
@@ -21,11 +22,8 @@ export enum CategoryEnum {
 /**
  * A notification chunk displayed in the notification center.
  */
-export interface Notification {
+export interface Notification extends BackendNotification {
   category: CategoryEnum;
-  dateInMs: number;
-  title: string;
-  content: string;
 }
 
 export const NOTIFICATION_FEATURE_KEY = 'notification';

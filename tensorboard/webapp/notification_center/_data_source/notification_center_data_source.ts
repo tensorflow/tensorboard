@@ -19,7 +19,7 @@ import {TBHttpClient} from '../../webapp_data_source/tb_http_client';
 import {
   NotificationCenterDataSource,
   NotificationCenterResponse,
-} from './types';
+} from './backend_types';
 
 /**
  * An implementation of NotificationCenterDataSource that fetchs notifications.

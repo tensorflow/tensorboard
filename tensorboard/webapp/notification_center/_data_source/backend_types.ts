@@ -14,12 +14,19 @@ limitations under the License.
 ==============================================================================*/
 import {Observable} from 'rxjs';
 
-import {Notification} from '../_redux/notification_center_types';
-
 export interface NotificationCenterResponse {
-  notifications: Notification[];
+  notifications: BackendNotification[];
 }
 
 export abstract class NotificationCenterDataSource {
   abstract fetchNotifications(): Observable<NotificationCenterResponse>;
+}
+
+/**
+ * A notification from backend.
+ */
+export interface BackendNotification {
+  dateInMs: number;
+  title: string;
+  content: string;
 }

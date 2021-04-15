@@ -44,7 +44,9 @@ tf_ts_library(
         "notification_center_types.ts",
     ],
     visibility = ["//tensorboard:internal"],
-    deps = [],
+    deps = [
+        "//tensorboard/webapp/notification_center/_data_source:types",
+    ],
 )
 
 tf_ts_library(
