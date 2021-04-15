@@ -7,7 +7,7 @@
     "doc": "docs"
   },
   "scripts": {
-    "postinstall": "ngcc && find . -type f -name '*.ngfactory.js' -o -name '*.ngsummary.json' -exec rm {} \\;",
+    "postinstall": "ngcc",
     "build": "bazel build //...",
     "test": "ibazel test //...",
     "lint": "prettier --check 'tensorboard/**/*.'{css,html,js,ts,scss} .github/**/*.yml",
