@@ -18,6 +18,7 @@
 import contextlib
 import hashlib
 import threading
+import time
 
 from concurrent import futures
 import grpc
@@ -159,6 +160,120 @@ class CallWithRetriesTest(tb_test.TestCase):
             grpc_util.extract_version(grpc_util.version_metadata())
         )
         self.assertEqual(make_response(expected_nonce), response)
+
+
+class AsyncCallWithRetriesTest(tb_test.TestCase):
+    def test_aync_call_with_retries_succeeds(self):
+        # Setup: Basic server, echos input.
+        def handler(request, _):
+            return make_response(request.nonce)
+
+        server = TestGrpcServer(handler)
+        with server.run() as client:
+            # Execute `async_call_with_retries` with the callback.
+            future = grpc_util.async_call_with_retries(
+                client.TestRpc, make_request(42)
+            )
+            # Verify the correct value has been returned in the future.
+            self.assertEqual(make_response(42), future.result(2))
+
+    def test_aync_call_raises_at_timeout(self):
+        # Setup: Server waits 0.5 seconds before echoing.
+        def handler(request, _):
+            time.sleep(0.5)
+            return make_response(request.nonce)
+
+        server = TestGrpcServer(handler)
+        with server.run() as client:
+            # Execute `async_call_with_retries` with the callback.
+            future = grpc_util.async_call_with_retries(
+                client.TestRpc, make_request(42)
+            )
+            # Request the result in 0.01s, critically less time than the server
+            # will take to respond. Verify that request will cause an
+            # appropriate exception.
+            with self.assertRaisesRegex(grpc.FutureTimeoutError, "timed out"):
+                future.result(0.01)
+
+    def test_async_call_with_retries_fails_immediately_on_permanent_error(self):
+        # Setup: Server which fails with an ISE.
+        def handler(_, context):
+            context.abort(grpc.StatusCode.INTERNAL, "death_ray")
+
+        server = TestGrpcServer(handler)
+        with server.run() as client:
+            # Execute `async_call_with_retries`
+            future = grpc_util.async_call_with_retries(
+                client.TestRpc,
+                make_request(42),
+            )
+            # Expect that the future raises an Exception which is the
+            # right type and carries the right message.
+            with self.assertRaises(grpc.RpcError) as raised:
+                future.result(2)
+            self.assertEqual(grpc.StatusCode.INTERNAL, raised.exception.code())
+            self.assertEqual("death_ray", raised.exception.details())
+
+    def test_async_with_retries_fails_after_backoff_on_nonpermanent_error(self):
+        attempt_times = []
+        fake_time = test_util.FakeTime()
+
+        # Setup: Server which always fails with an UNAVAILABLE error.
+        def handler(_, context):
+            attempt_times.append(fake_time.time())
+            context.abort(
+                grpc.StatusCode.UNAVAILABLE, f"just a sec {len(attempt_times)}."
+            )
+
+        server = TestGrpcServer(handler)
+        with server.run() as client:
+            # Execute `async_call_with_retries` against the scripted server.
+            future = grpc_util.async_call_with_retries(
+                client.TestRpc,
+                make_request(42),
+                clock=fake_time,
+            )
+            # Expect that the future raises an Exception which is the right
+            # type and carries the right message.
+            with self.assertRaises(grpc.RpcError) as raised:
+                future.result(2)
+            self.assertEqual(
+                grpc.StatusCode.UNAVAILABLE, raised.exception.code()
+            )
+            self.assertEqual("just a sec 5.", raised.exception.details())
+            # Verify the number of attempts and delays between them.
+            self.assertLen(attempt_times, 5)
+            self.assertBetween(attempt_times[1] - attempt_times[0], 2, 4)
+            self.assertBetween(attempt_times[2] - attempt_times[1], 4, 8)
+            self.assertBetween(attempt_times[3] - attempt_times[2], 8, 16)
+            self.assertBetween(attempt_times[4] - attempt_times[3], 16, 32)
+
+    def test_async_with_retries_succeeds_after_backoff_on_transient_error(self):
+        attempt_times = []
+        fake_time = test_util.FakeTime()
+
+        # Setup: Server which passes on the third attempt.
+        def handler(request, context):
+            attempt_times.append(fake_time.time())
+            if len(attempt_times) < 3:
+                context.abort(grpc.StatusCode.UNAVAILABLE, "foo")
+            return make_response(request.nonce)
+
+        server = TestGrpcServer(handler)
+        with server.run() as client:
+            # Execute `async_call_with_retries` against the scripted server.
+            future = grpc_util.async_call_with_retries(
+                client.TestRpc,
+                make_request(42),
+                clock=fake_time,
+            )
+            # Expect:
+            # 1) The response contains the expected value.
+            # 2) The number of attempts and delays between them.
+            self.assertEqual(make_response(42), future.result(2))
+            self.assertLen(attempt_times, 3)
+            self.assertBetween(attempt_times[1] - attempt_times[0], 2, 4)
+            self.assertBetween(attempt_times[2] - attempt_times[1], 4, 8)
 
 
 class VersionMetadataTest(tb_test.TestCase):

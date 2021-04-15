@@ -59,6 +59,7 @@ tf_ts_library(
         "//tensorboard/webapp/notification_center/_redux:types",
         "//tensorboard/webapp/testing:mat_icon",
         "@npm//@angular/common",
+        "@npm//@angular/core",
         "@npm//@angular/platform-browser",
         "@npm//@ngrx/store",
         "@npm//@types/jasmine",
