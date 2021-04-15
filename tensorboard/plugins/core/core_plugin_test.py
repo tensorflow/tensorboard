@@ -368,6 +368,11 @@ class CorePluginTestBase(object):
                 ["run1", "avocado", "zebra", "ox", "enigmatic", "mysterious"],
             )
 
+    def testNotifications(self):
+        """Test the format of the /data/notifications endpoint."""
+        notifications_json = self._get_json(self.server, "/data/notifications")
+        self.assertEqual(notifications_json, {"notifications": []})
+
 
 class CorePluginResourceTest(tf.test.TestCase):
     def setUp(self):

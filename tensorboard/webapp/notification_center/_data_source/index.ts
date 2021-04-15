@@ -12,25 +12,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {createAction, props} from '@ngrx/store';
-
-import {Notification} from './notification_center_types';
-
-/** @typehack */ import * as _typeHackModels from '@ngrx/store/src/models';
-/** @typehack */ import * as _typeHackStore from '@ngrx/store';
-
-/**
- * Fires when the bell icon is clicked.
- */
-export const notificationBellClicked = createAction(
-  '[Notification] Notification Bell Clicked'
-);
-
-export const fetchNotificationsFailed = createAction(
-  '[Notification] Fetch Notification Request Failed'
-);
-
-export const fetchNotificationsLoaded = createAction(
-  '[Notification] Fetch Notification Response Loaded',
-  props<{notifications: Notification[]}>()
-);
+export * from './notification_center_data_source';
+export * from './notification_center_data_source_module';
+export * from './backend_types';
