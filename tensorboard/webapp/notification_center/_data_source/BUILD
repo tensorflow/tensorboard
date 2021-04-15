@@ -22,10 +22,24 @@ tf_ng_module(
 tf_ts_library(
     name = "types",
     srcs = [
-        "types.ts",
+        "backend_types.ts",
     ],
     deps = [
+        "@npm//rxjs",
+    ],
+)
+
+tf_ts_library(
+    name = "testing",
+    testonly = True,
+    srcs = [
+        "testing.ts",
+    ],
+    deps = [
+        ":_data_source",
+        ":types",
         "//tensorboard/webapp/notification_center/_redux:types",
+        "@npm//@angular/core",
         "@npm//rxjs",
     ],
 )

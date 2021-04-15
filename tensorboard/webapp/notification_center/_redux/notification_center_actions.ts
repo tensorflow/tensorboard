@@ -13,8 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {createAction, props} from '@ngrx/store';
+
 import {Notification} from './notification_center_types';
-import {NotificationCenterResponse} from '../_data_source/types';
 
 /** @typehack */ import * as _typeHackModels from '@ngrx/store/src/models';
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
@@ -32,5 +32,5 @@ export const fetchNotificationsFailed = createAction(
 
 export const fetchNotificationsLoaded = createAction(
   '[Notification] Fetch Notification Response Loaded',
-  props<NotificationCenterResponse>()
+  props<{notifications: Notification[]}>()
 );

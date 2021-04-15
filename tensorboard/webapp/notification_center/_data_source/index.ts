@@ -14,4 +14,4 @@ limitations under the License.
 ==============================================================================*/
 export * from './notification_center_data_source';
 export * from './notification_center_data_source_module';
-export * from './types';
+export * from './backend_types';

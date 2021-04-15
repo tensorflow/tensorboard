@@ -31,9 +31,9 @@ import {
 } from './notification_center_effects';
 import {CategoryEnum} from './notification_center_types';
 import {
-  createNotification,
+  buildNotificationResponse,
   provideTestingNotificationCenterDataSource,
-} from './testing';
+} from '../_data_source/testing';
 
 describe('notification center effects', () => {
   let dataSource: NotificationCenterDataSource;
@@ -54,12 +54,7 @@ describe('notification center effects', () => {
         provideMockActions(actions$),
         provideTestingNotificationCenterDataSource(),
         NotificationCenterEffects,
-        provideMockStore({
-          initialState: {
-            notifications: [],
-            lastReadTimestampInMs: -1,
-          },
-        }),
+        provideMockStore(),
       ],
     }).compileComponents();
 
@@ -78,10 +73,10 @@ describe('notification center effects', () => {
     ).and.returnValue(fetchNotificationSubject);
   });
 
-  it('fetches initial notifications success', () => {
+  it('fetches notifications on initial load', () => {
     actions$.next(TEST_ONLY.initAction());
     fetchNotificationsSpy.and.returnValue(fetchNotificationSubject);
-    fetchNotificationSubject.next(createNotification());
+    fetchNotificationSubject.next(buildNotificationResponse());
 
     expect(fetchNotificationsSpy).toHaveBeenCalled();
     expect(actualActions).toEqual([
