@@ -144,7 +144,23 @@ describe('plugins_component', () => {
    * Call this only after all providers have been configured as it will freeze
    * the TestBed configuration.
    */
-  function configureMockStore() {
+  async function setup(providersOverride?: any[]) {
+    await TestBed.configureTestingModule({
+      providers: [
+        provideMockStore(),
+        PluginsContainer,
+        PluginRegistryModule,
+        getTestingProvider(),
+        ...providersOverride ? providersOverride : [],
+      ],
+      declarations: [
+        PluginsContainer,
+        PluginsComponent,
+        CustomizedErrorTemplatesComponent,
+      ],
+      imports: [TestingDebuggerModule, ExtraDashboardModule],
+    });
+
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
     store.overrideSelector(getPlugins, PLUGINS);
     store.overrideSelector(getActivePlugin, null);
@@ -159,23 +175,6 @@ describe('plugins_component', () => {
     });
     store.overrideSelector(getIsFeatureFlagsLoaded, true);
     store.overrideSelector(getFeatureFlags, buildFeatureFlag());
-  }
-
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      providers: [
-        provideMockStore(),
-        PluginsContainer,
-        PluginRegistryModule,
-        getTestingProvider(),
-      ],
-      declarations: [
-        PluginsContainer,
-        PluginsComponent,
-        CustomizedErrorTemplatesComponent,
-      ],
-      imports: [TestingDebuggerModule, ExtraDashboardModule],
-    });
 
     createElementSpy = spyOn(document, 'createElement').and.callThrough();
     createElementSpy
@@ -183,11 +182,11 @@ describe('plugins_component', () => {
       .and.returnValue({
         registerPluginIframe: () => {},
       });
-  });
+  }
 
   describe('plugin DOM creation', () => {
-    beforeEach(() => {
-      configureMockStore();
+    beforeEach(async () => {
+      await setup();
     });
 
     it('creates no plugin when there is no activePlugin', () => {
@@ -237,6 +236,30 @@ describe('plugins_component', () => {
       expect(nativeElement.childElementCount).toBe(1);
       const pluginElement = nativeElement.children[0];
       expect(pluginElement.tagName).toBe('TB-BAR');
+    });
+
+    it('creates an element for IFRAME type of plugin', async () => {
+      const pluginApiHost = TestBed.inject(PluginApiHostModule);
+      const registerPluginIframeSpy = spyOn(
+        pluginApiHost,
+        'registerPluginIframe'
+      );
+      const fixture = TestBed.createComponent(PluginsContainer);
+      fixture.detectChanges();
+
+      setActivePlugin('foo');
+
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      const {nativeElement} = fixture.debugElement.query(By.css('.plugins'));
+      expect(nativeElement.childElementCount).toBe(1);
+      const pluginElement = nativeElement.children[0];
+      expectPluginIframe(pluginElement, 'foo');
+      expect(registerPluginIframeSpy).toHaveBeenCalledWith(
+        pluginElement,
+        'foo'
+      );
     });
 
     it('keeps instance of plugin after being inactive but hides it', async () => {
@@ -345,38 +368,13 @@ describe('plugins_component', () => {
     });
   });
 
-  describe('IFRAME plugin DOM creation', () => {
-    it('creates an element for IFRAME type of plugin', async () => {
-      configureMockStore();
-      const pluginApiHost = TestBed.inject(PluginApiHostModule);
-      const registerPluginIframeSpy = spyOn(
-        pluginApiHost,
-        'registerPluginIframe'
-      );
-      const fixture = TestBed.createComponent(PluginsContainer);
-      fixture.detectChanges();
-
-      setActivePlugin('foo');
-
-      fixture.detectChanges();
-      await fixture.whenStable();
-
-      const {nativeElement} = fixture.debugElement.query(By.css('.plugins'));
-      expect(nativeElement.childElementCount).toBe(1);
-      const pluginElement = nativeElement.children[0];
-      expectPluginIframe(pluginElement, 'foo');
-      expect(registerPluginIframeSpy).toHaveBeenCalledWith(
-        pluginElement,
-        'foo'
-      );
+  describe('plugin DOM creation without PluginApiHostModule', () => {
+    beforeEach(async () => {
+      // Provide no PluginApiHostModule instance.
+      await setup([{provide: PluginApiHostModule, useValue: null}]);
     });
 
-    it('throws error for IFRAME type of plugin when no PluginApiHostModule', async () => {
-      // Provide no PluginApiHostModule instance.
-      // Note: Must be called before configureMockStore(), whose call to
-      // TestBed.inject() will freeze the TestBed configuration.
-      TestBed.overrideProvider(PluginApiHostModule, {useValue: null});
-      configureMockStore();
+    it('throws error for IFRAME type of plugin', async () => {
       const fixture = TestBed.createComponent(PluginsContainer);
       fixture.detectChanges();
 
@@ -406,8 +404,8 @@ describe('plugins_component', () => {
     let betaEl: TbElement;
     let gammaEl: TbElement;
 
-    beforeEach(() => {
-      configureMockStore();
+    beforeEach(async () => {
+      await setup();
       const PLUGINS = {
         alpha: {
           disable_reload: false,
@@ -558,8 +556,8 @@ describe('plugins_component', () => {
   });
 
   describe('warning pages', () => {
-    beforeEach(() => {
-      configureMockStore();
+    beforeEach(async () => {
+      await setup();
     });
 
     it('does not show any warning while fetching when list was never fetched', () => {
