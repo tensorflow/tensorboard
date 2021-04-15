@@ -53,13 +53,10 @@ const reducer = createReducer(
       state: NotificationState,
       response: NotificationCenterResponse
     ): NotificationState => {
-      if (response.notifications) {
-        return {
-          ...state,
-          notifications: response.notifications,
-        };
-      }
-      return state;
+      return {
+        ...state,
+        notifications: response.notifications ?? state.notifications,
+      };
     }
   )
 );

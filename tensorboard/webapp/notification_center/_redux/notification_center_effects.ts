@@ -59,9 +59,7 @@ export class NotificationCenterEffects implements OnInitEffects {
   private fetchNotifications(): Observable<void> {
     return this.dataSource.fetchNotifications().pipe(
       map((response) => {
-        if (response.notifications) {
-          this.store.dispatch(actions.fetchNotificationsLoaded(response));
-        }
+        this.store.dispatch(actions.fetchNotificationsLoaded(response));
       }),
       catchError(() => {
         this.store.dispatch(actions.fetchNotificationsFailed());
