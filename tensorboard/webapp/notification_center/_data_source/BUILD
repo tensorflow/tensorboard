@@ -45,18 +45,6 @@ tf_ts_library(
 )
 
 tf_ts_library(
-    name = "testing",
-    srcs = [
-        "testing.ts",
-    ],
-    deps = [
-        ":_data_source",
-        "@npm//@angular/core",
-        "@npm//rxjs",
-    ],
-)
-
-tf_ts_library(
     name = "_data_source_test",
     testonly = True,
     srcs = [
