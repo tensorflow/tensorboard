@@ -372,6 +372,9 @@ describe('plugins_component', () => {
     });
 
     it('throws error for IFRAME type of plugin when no PluginApiHostModule', async () => {
+      // Provide no PluginApiHostModule instance.
+      // Note: Must be called before configureMockStore(), whose call to
+      // TestBed.inject() will freeze the TestBed configuration.
       TestBed.overrideProvider(PluginApiHostModule, {useValue: null});
       configureMockStore();
       const fixture = TestBed.createComponent(PluginsContainer);
