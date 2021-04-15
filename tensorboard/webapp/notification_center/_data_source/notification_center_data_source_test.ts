@@ -53,11 +53,8 @@ describe('TBNotificationCenterDataSource test', () => {
     const req = httpMock.expectOne('data/notifications');
     req.flush({
       notifications: [{}],
-      error: '',
-    } as NotificationCenterResponse);
-
-    expect(resultSpy).toHaveBeenCalledWith({
-      response: {notifications: [{}], error: ''},
     });
+
+    expect(resultSpy).toHaveBeenCalledWith({notifications: [{}]});
   });
 });

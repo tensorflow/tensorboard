@@ -5,13 +5,14 @@ package(default_visibility = ["//tensorboard:internal"])
 licenses(["notice"])
 
 tf_ng_module(
-    name = "_data_source",
+    name = "data_source",
     srcs = [
         "index.ts",
         "notification_center_data_source.ts",
         "notification_center_data_source_module.ts",
     ],
     deps = [
+        ":backend_types",
         ":types",
         "//tensorboard/webapp/webapp_data_source:http_client",
         "@npm//@angular/core",
@@ -22,48 +23,35 @@ tf_ng_module(
 tf_ts_library(
     name = "types",
     srcs = [
-        "backend_types.ts",
+        "types.ts",
     ],
     deps = [
+        "//tensorboard/webapp/notification_center/_redux:types",
         "@npm//rxjs",
     ],
 )
 
 tf_ts_library(
-    name = "testing",
-    testonly = True,
+    name = "backend_types",
     srcs = [
-        "testing.ts",
+        "notification_center_backend_types.ts",
     ],
+    visibility = ["//visibility:private"],
     deps = [
-        ":_data_source",
         ":types",
         "//tensorboard/webapp/notification_center/_redux:types",
-        "@npm//@angular/core",
-        "@npm//rxjs",
     ],
 )
 
 tf_ts_library(
-    name = "testing",
-    srcs = [
-        "testing.ts",
-    ],
-    deps = [
-        ":_data_source",
-        "@npm//@angular/core",
-        "@npm//rxjs",
-    ],
-)
-
-tf_ts_library(
-    name = "_data_source_test",
+    name = "notification_center_data_source_test",
     testonly = True,
     srcs = [
         "notification_center_data_source_test.ts",
     ],
     deps = [
-        ":_data_source",
+        ":backend_types",
+        ":data_source",
         ":types",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/webapp_data_source:http_client_testing",
