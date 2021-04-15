@@ -61,8 +61,6 @@ export class NotificationCenterEffects implements OnInitEffects {
       map((response) => {
         if (response.notifications) {
           this.store.dispatch(actions.fetchNotificationsLoaded(response));
-        } else {
-          this.store.dispatch(actions.fetchNotificationsFailed());
         }
       }),
       catchError(() => {
