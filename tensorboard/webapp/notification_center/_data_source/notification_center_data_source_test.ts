@@ -12,8 +12,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {TestBed} from '@angular/core/testing';
+import {TestBed, fakeAsync, flush} from '@angular/core/testing';
 
+import {HttpErrorResponse} from '../../webapp_data_source/tb_http_client';
 import {
   HttpTestingController,
   TBHttpClientTestingModule,
@@ -21,6 +22,7 @@ import {
 import {NotificationCenterDataSource} from './backend_types';
 import {TBNotificationCenterDataSource} from './notification_center_data_source';
 import {buildNotificationResponse} from './testing';
+import {throwError} from 'rxjs';
 
 describe('TBNotificationCenterDataSource test', () => {
   let httpMock: HttpTestingController;
@@ -48,7 +50,6 @@ describe('TBNotificationCenterDataSource test', () => {
   it('fetches empty notifications', () => {
     const resultSpy = jasmine.createSpy();
     dataSource.fetchNotifications().subscribe(resultSpy);
-
     const req = httpMock.expectOne('data/notifications');
     req.flush({notifications: [{}]});
 
@@ -58,10 +59,30 @@ describe('TBNotificationCenterDataSource test', () => {
   it('fetches non-empty notifications', () => {
     const resultSpy = jasmine.createSpy();
     dataSource.fetchNotifications().subscribe(resultSpy);
-
     const req = httpMock.expectOne('data/notifications');
     req.flush(buildNotificationResponse());
 
     expect(resultSpy).toHaveBeenCalledWith(buildNotificationResponse());
+  });
+
+  it('throws error when notification fetch failed', () => {
+    const error = new ErrorEvent('Request failed');
+    const errorResponse = {
+      url: 'data/notifications',
+      status: 123,
+      statusText: 'something went wrong',
+    };
+    const resultSpy = jasmine.createSpy();
+    const errorSpy = jasmine.createSpy();
+
+    dataSource.fetchNotifications().subscribe(resultSpy, errorSpy);
+    httpMock.expectOne('data/notifications').error(error, errorResponse);
+
+    const httpErrorResponse = new HttpErrorResponse({
+      error,
+      ...errorResponse,
+    });
+    expect(resultSpy).not.toHaveBeenCalled();
+    expect(errorSpy).toHaveBeenCalledWith(httpErrorResponse);
   });
 });
