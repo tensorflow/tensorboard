@@ -1413,42 +1413,52 @@ def raze_fetch_remote_crates():
 
     maybe(
         http_archive,
-        name = "raze__tokio_util__0_6_1",
-        url = "https://crates.io/api/v1/crates/tokio-util/0.6.1/download",
+        name = "raze__tokio_util__0_6_6",
+        url = "https://crates.io/api/v1/crates/tokio-util/0.6.6/download",
         type = "tar.gz",
-        sha256 = "12ae4751faa60b9f96dd8344d74592e5a17c0c9a220413dbc6942d14139bbfcc",
-        strip_prefix = "tokio-util-0.6.1",
-        build_file = Label("//third_party/rust/remote:BUILD.tokio-util-0.6.1.bazel"),
+        sha256 = "940a12c99365c31ea8dd9ba04ec1be183ffe4920102bb7122c2f515437601e8e",
+        strip_prefix = "tokio-util-0.6.6",
+        build_file = Label("//third_party/rust/remote:BUILD.tokio-util-0.6.6.bazel"),
     )
 
     maybe(
         http_archive,
-        name = "raze__tonic__0_4_0",
-        url = "https://crates.io/api/v1/crates/tonic/0.4.0/download",
+        name = "raze__tonic__0_4_2",
+        url = "https://crates.io/api/v1/crates/tonic/0.4.2/download",
         type = "tar.gz",
-        sha256 = "3ba8f479158947373b6df40cf48f4779bb25c99ca3c661bd95e0ab1963ad8b0e",
-        strip_prefix = "tonic-0.4.0",
-        build_file = Label("//third_party/rust/remote:BUILD.tonic-0.4.0.bazel"),
+        sha256 = "556dc31b450f45d18279cfc3d2519280273f460d5387e6b7b24503e65d206f8b",
+        strip_prefix = "tonic-0.4.2",
+        build_file = Label("//third_party/rust/remote:BUILD.tonic-0.4.2.bazel"),
     )
 
     maybe(
         http_archive,
-        name = "raze__tonic_build__0_4_0",
-        url = "https://crates.io/api/v1/crates/tonic-build/0.4.0/download",
+        name = "raze__tonic_build__0_4_2",
+        url = "https://crates.io/api/v1/crates/tonic-build/0.4.2/download",
         type = "tar.gz",
-        sha256 = "c1e8546fd40d56d28089835c0a81bb396848103b00f888aea42d46eb5974df07",
-        strip_prefix = "tonic-build-0.4.0",
-        build_file = Label("//third_party/rust/remote:BUILD.tonic-build-0.4.0.bazel"),
+        sha256 = "c695de27302f4697191dda1c7178131a8cb805463dda02864acb80fe1322fdcf",
+        strip_prefix = "tonic-build-0.4.2",
+        build_file = Label("//third_party/rust/remote:BUILD.tonic-build-0.4.2.bazel"),
     )
 
     maybe(
         http_archive,
-        name = "raze__tower__0_4_3",
-        url = "https://crates.io/api/v1/crates/tower/0.4.3/download",
+        name = "raze__tonic_reflection__0_1_0",
+        url = "https://crates.io/api/v1/crates/tonic-reflection/0.1.0/download",
         type = "tar.gz",
-        sha256 = "855703d368d4c9321ccc1efe1b0fe436c3f20b102b25060707ebe6b4502bdefb",
-        strip_prefix = "tower-0.4.3",
-        build_file = Label("//third_party/rust/remote:BUILD.tower-0.4.3.bazel"),
+        sha256 = "56498d20188550337ea6c48ecf59d11646382dbfcd61051fb98c1093cfae3c21",
+        strip_prefix = "tonic-reflection-0.1.0",
+        build_file = Label("//third_party/rust/remote:BUILD.tonic-reflection-0.1.0.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "raze__tower__0_4_6",
+        url = "https://crates.io/api/v1/crates/tower/0.4.6/download",
+        type = "tar.gz",
+        sha256 = "f715efe02c0862926eb463e49368d38ddb119383475686178e32e26d15d06a66",
+        strip_prefix = "tower-0.4.6",
+        build_file = Label("//third_party/rust/remote:BUILD.tower-0.4.6.bazel"),
     )
 
     maybe(
