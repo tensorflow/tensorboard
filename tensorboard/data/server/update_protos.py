@@ -23,6 +23,10 @@ import sys
 _BAZEL_DIR = os.path.join("tensorboard", "data", "server")
 _REPO_DIR = os.path.dirname(os.readlink(__file__))
 
+# Basename for the gRPC file descriptor set. The same basename is used
+# for the generated file and the source file.
+_FILE_DESCRIPTOR_SET = "descriptor.bin"
+
 _RUST_LICENSE = """\
 /* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 
@@ -42,19 +46,28 @@ limitations under the License.
 """
 
 
+def pkg_basename(pkg, rust_extension):
+    if pkg == _FILE_DESCRIPTOR_SET:
+        return _FILE_DESCRIPTOR_SET
+    else:
+        return "%s%s" % (pkg, rust_extension)
+
+
 def expected_contents(pkg):
-    src = os.path.join(_BAZEL_DIR, "genproto", "%s.rs" % pkg)
+    src = os.path.join(_BAZEL_DIR, "genproto", pkg_basename(pkg, ".rs"))
     with open(src, "rb") as infile:
         contents = infile.read()
-    return _RUST_LICENSE.encode("utf-8") + contents
+    if pkg != _FILE_DESCRIPTOR_SET:
+        contents = _RUST_LICENSE.encode("utf-8") + contents
+    return contents
 
 
 def repo_file_path(pkg):
-    return os.path.join(_REPO_DIR, "%s.pb.rs" % pkg)
+    return os.path.join(_REPO_DIR, pkg_basename(pkg, ".pb.rs"))
 
 
 def runfiles_file_path(pkg):
-    return os.path.join(_BAZEL_DIR, "%s.pb.rs" % pkg)
+    return os.path.join(_BAZEL_DIR, pkg_basename(pkg, ".pb.rs"))
 
 
 def update(proto_packages):

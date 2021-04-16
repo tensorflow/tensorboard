@@ -174,6 +174,11 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let error_file_path = opts.error_file.as_ref().map(PathBuf::as_ref);
 
+    let reflection = tonic_reflection::server::Builder::configure()
+        .register_encoded_file_descriptor_set(crate::proto::FILE_DESCRIPTOR_SET)
+        .build()
+        .expect("failed to create gRPC reflection servicer");
+
     // Create the logdir outside an async runtime (see docs for `DynLogdir::new`).
     let raw_logdir = opts.logdir;
     let logdir = tokio::task::spawn_blocking(|| DynLogdir::new(raw_logdir))
@@ -247,6 +252,7 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
     Server::builder()
         .add_service(TensorBoardDataProviderServer::new(handler))
+        .add_service(reflection)
         .serve_with_incoming(TcpListenerStream::new(listener))
         .await?;
     Ok(())
