@@ -121,5 +121,6 @@ build_data_dependencies = ["@com_google_protobuf//:protoc"]
 
 [package.metadata.raze.crates.tonic-reflection.'0.1.0'.buildrs_additional_environment_variables]
 PROTOC = "$(execpath @com_google_protobuf//:protoc)"
-# we don't have easy access to a rustfmt binary, so make it a no-op
+# We don't have easy access to a rustfmt binary, so make it a no-op.
+# https://github.com/bazelbuild/rules_rust/issues/87
 RUSTFMT = "/bin/true"
