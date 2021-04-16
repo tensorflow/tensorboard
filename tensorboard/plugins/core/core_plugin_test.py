@@ -130,21 +130,30 @@ class CorePluginFlagsTest(tf.test.TestCase):
         self.assertIn(repr("noslash"), msg)
 
 
-class CorePluginNoDataTest(tf.test.TestCase):
+class CorePluginTest(tf.test.TestCase):
     def setUp(self):
-        super(CorePluginNoDataTest, self).setUp()
-        multiplexer = event_multiplexer.EventMultiplexer()
-        logdir = self.get_temp_dir()
-        provider = data_provider.MultiplexerDataProvider(multiplexer, logdir)
+        super().setUp()
+        self.multiplexer = event_multiplexer.EventMultiplexer()
+        self.logdir = self.get_temp_dir()
+        provider = data_provider.MultiplexerDataProvider(
+            self.multiplexer, self.logdir
+        )
         context = base_plugin.TBContext(
             assets_zip_provider=get_test_assets_zip_provider(),
-            logdir=logdir,
+            logdir=self.logdir,
             data_provider=provider,
             window_title="title foo",
         )
         self.plugin = core_plugin.CorePlugin(context)
         app = application.TensorBoardWSGI([self.plugin])
         self.server = werkzeug_test.Client(app, wrappers.BaseResponse)
+
+    def _add_run(self, run_name):
+        run_path = os.path.join(self.logdir, run_name)
+        with test_util.FileWriter(run_path) as writer:
+            writer.add_test_summary("foo")
+        self.multiplexer.AddRunsFromDirectory(self.logdir)
+        self.multiplexer.Reload()
 
     def _get_json(self, server, path):
         response = server.get(path)
@@ -267,38 +276,6 @@ class CorePluginNoDataTest(tf.test.TestCase):
         """Test the format of the data/logdir endpoint."""
         parsed_object = self._get_json(self.server, "/data/logdir")
         self.assertEqual(parsed_object, {"logdir": self.get_temp_dir()})
-
-class CorePluginTest(tf.test.TestCase):
-    def setUp(self):
-        super().setUp()
-        self.logdir = self.get_temp_dir()
-        self.multiplexer = event_multiplexer.EventMultiplexer()
-        provider = data_provider.MultiplexerDataProvider(
-            self.multiplexer, self.logdir
-        )
-        context = base_plugin.TBContext(
-            assets_zip_provider=get_test_assets_zip_provider(),
-            logdir=self.logdir,
-            data_provider=provider,
-        )
-        self.plugin = core_plugin.CorePlugin(context)
-        app = application.TensorBoardWSGI([self.plugin])
-        self.server = werkzeug_test.Client(app, wrappers.BaseResponse)
-
-    def _add_run(self, run_name):
-        run_path = os.path.join(self.logdir, run_name)
-        with test_util.FileWriter(run_path) as writer:
-            writer.add_test_summary("foo")
-        self.multiplexer.AddRunsFromDirectory(self.logdir)
-        self.multiplexer.Reload()
-
-    def _get_json(self, server, path):
-        response = server.get(path)
-        self.assertEqual(200, response.status_code)
-        self.assertEqual(
-            "application/json", response.headers.get("Content-Type")
-        )
-        return json.loads(response.get_data().decode("utf-8"))
 
     def testRuns(self):
         """Test the format of the /data/runs endpoint."""
