@@ -39,7 +39,7 @@ tf_ng_module(
     deps = [
         ":host_internals",
         ":message_types",
-        "//tensorboard/components/tf_storage",
+        "//tensorboard/components/tf_storage:tf_storage_lib",
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp:selectors",
         "@npm//@angular/core",
@@ -74,7 +74,7 @@ tf_ng_module(
         ":message_types",
         ":plugin_host",
         ":testing",
-        "//tensorboard/components/tf_storage",
+        "//tensorboard/components/tf_storage:tf_storage_lib",
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp:selectors",
         "//tensorboard/webapp/angular:expect_angular_core_testing",

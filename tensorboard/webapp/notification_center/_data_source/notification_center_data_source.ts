@@ -12,25 +12,24 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {createAction, props} from '@ngrx/store';
+import {Injectable} from '@angular/core';
+import {Observable} from 'rxjs';
 
-import {Notification} from './notification_center_types';
-
-/** @typehack */ import * as _typeHackModels from '@ngrx/store/src/models';
-/** @typehack */ import * as _typeHackStore from '@ngrx/store';
+import {TBHttpClient} from '../../webapp_data_source/tb_http_client';
+import {
+  NotificationCenterDataSource,
+  NotificationCenterResponse,
+} from './backend_types';
 
 /**
- * Fires when the bell icon is clicked.
+ * An implementation of NotificationCenterDataSource that fetchs notifications.
  */
-export const notificationBellClicked = createAction(
-  '[Notification] Notification Bell Clicked'
-);
+@Injectable()
+export class TBNotificationCenterDataSource
+  implements NotificationCenterDataSource {
+  constructor(private readonly http: TBHttpClient) {}
 
-export const fetchNotificationsFailed = createAction(
-  '[Notification] Fetch Notification Request Failed'
-);
-
-export const fetchNotificationsLoaded = createAction(
-  '[Notification] Fetch Notification Response Loaded',
-  props<{notifications: Notification[]}>()
-);
+  fetchNotifications(): Observable<NotificationCenterResponse> {
+    return this.http.get<NotificationCenterResponse>(`data/notifications`);
+  }
+}

@@ -8,16 +8,27 @@ tf_ts_library(
     name = "tf_storage",
     srcs = [
         "index.ts",
-        "listeners.ts",
         "storage.ts",
         "tf-storage-polymer.ts",
     ],
     strict_checks = False,
     deps = [
-        "//tensorboard/components/tf_globals",
+        ":tf_storage_lib",
         "@npm//@polymer/decorators",
         "@npm//@polymer/polymer",
         "@npm//@types/lodash",
         "@npm//lodash",
+    ],
+)
+
+tf_ts_library(
+    name = "tf_storage_lib",
+    srcs = [
+        "listeners.ts",
+        "storage_utils.ts",
+    ],
+    strict_checks = False,
+    deps = [
+        "//tensorboard/components/tf_globals:tf_globals_lib",
     ],
 )

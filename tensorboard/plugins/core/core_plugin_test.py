@@ -130,21 +130,30 @@ class CorePluginFlagsTest(tf.test.TestCase):
         self.assertIn(repr("noslash"), msg)
 
 
-class CorePluginNoDataTest(tf.test.TestCase):
+class CorePluginTest(tf.test.TestCase):
     def setUp(self):
-        super(CorePluginNoDataTest, self).setUp()
-        multiplexer = event_multiplexer.EventMultiplexer()
-        logdir = self.get_temp_dir()
-        provider = data_provider.MultiplexerDataProvider(multiplexer, logdir)
+        super().setUp()
+        self.multiplexer = event_multiplexer.EventMultiplexer()
+        self.logdir = self.get_temp_dir()
+        provider = data_provider.MultiplexerDataProvider(
+            self.multiplexer, self.logdir
+        )
         context = base_plugin.TBContext(
             assets_zip_provider=get_test_assets_zip_provider(),
-            logdir=logdir,
+            logdir=self.logdir,
             data_provider=provider,
             window_title="title foo",
         )
         self.plugin = core_plugin.CorePlugin(context)
         app = application.TensorBoardWSGI([self.plugin])
         self.server = werkzeug_test.Client(app, wrappers.BaseResponse)
+
+    def _add_run(self, run_name):
+        run_path = os.path.join(self.logdir, run_name)
+        with test_util.FileWriter(run_path) as writer:
+            writer.add_test_summary("foo")
+        self.multiplexer.AddRunsFromDirectory(self.logdir)
+        self.multiplexer.Reload()
 
     def _get_json(self, server, path):
         response = server.get(path)
@@ -172,6 +181,27 @@ class CorePluginNoDataTest(tf.test.TestCase):
             + FAKE_INDEX_HTML,
         )
 
+    def test_js_no_cache(self):
+        response = self.server.get("/index.js?foo=bar")
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(
+            NO_CACHE_CONTROL_VALUE, response.headers.get("Cache-Control")
+        )
+
+    def test_js_cache(self):
+        response = self.server.get("/index.js?_file_hash=meow")
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(
+            ONE_DAY_CACHE_CONTROL_VALUE, response.headers.get("Cache-Control")
+        )
+
+    def test_html_no_cache(self):
+        response = self.server.get("/index.html?_file_hash=meow")
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(
+            NO_CACHE_CONTROL_VALUE, response.headers.get("Cache-Control")
+        )
+
     def testDataPaths_disableAllCaching(self):
         """Test the format of the /data/runs endpoint."""
         for path in ("/data/runs", "/data/logdir"):
@@ -190,45 +220,7 @@ class CorePluginNoDataTest(tf.test.TestCase):
         parsed_object = self._get_json(self.server, "/data/environment")
         self.assertEqual(parsed_object["data_location"], self.get_temp_dir())
 
-    def testEnvironmentDebugOffByDefault(self):
-        parsed_object = self._get_json(self.server, "/data/environment")
-        self.assertNotIn("debug", parsed_object)
-
-    def testEnvironmentDebugOnExplicitly(self):
-        multiplexer = event_multiplexer.EventMultiplexer()
-        logdir = self.get_temp_dir()
-        provider = data_provider.MultiplexerDataProvider(multiplexer, logdir)
-        context = base_plugin.TBContext(
-            assets_zip_provider=get_test_assets_zip_provider(),
-            logdir=logdir,
-            data_provider=provider,
-            window_title="title foo",
-        )
-        plugin = core_plugin.CorePlugin(context, include_debug_info=True)
-        app = application.TensorBoardWSGI([plugin])
-        server = werkzeug_test.Client(app, wrappers.BaseResponse)
-
-        parsed_object = self._get_json(server, "/data/environment")
-        self.assertIn("debug", parsed_object)
-
-    def testLogdir(self):
-        """Test the format of the data/logdir endpoint."""
-        parsed_object = self._get_json(self.server, "/data/logdir")
-        self.assertEqual(parsed_object, {"logdir": self.get_temp_dir()})
-
-
-class CorePluginExperimentMetadataTest(tf.test.TestCase):
-    def _get_json(self, server, path):
-        response = server.get(path)
-        self.assertEqual(200, response.status_code)
-        self.assertEqual(
-            "application/json", response.headers.get("Content-Type")
-        )
-        return json.loads(response.get_data().decode("utf-8"))
-
-    def testGetEnvironmentDataWithExperimentMetadata(self):
-        """Test environment route returns correct metadata about experiment."""
-
+    def testEnvironmentWithExperimentMetadata(self):
         class FakeDataProvider(object):
             def experiment_metadata(self, ctx, *, experiment_id):
                 del experiment_id  # Unused.
@@ -259,41 +251,31 @@ class CorePluginExperimentMetadataTest(tf.test.TestCase):
         )
         self.assertEqual(parsed_object["creation_time"], 1234.5)
 
+    def testEnvironmentDebugOffByDefault(self):
+        parsed_object = self._get_json(self.server, "/data/environment")
+        self.assertNotIn("debug", parsed_object)
 
-class CorePluginTestBase(object):
-    def setUp(self):
-        super(CorePluginTestBase, self).setUp()
-        self.logdir = self.get_temp_dir()
-        self.multiplexer = event_multiplexer.EventMultiplexer()
-        provider = data_provider.MultiplexerDataProvider(
-            self.multiplexer, self.logdir
-        )
+    def testEnvironmentDebugOnExplicitly(self):
+        multiplexer = event_multiplexer.EventMultiplexer()
+        logdir = self.get_temp_dir()
+        provider = data_provider.MultiplexerDataProvider(multiplexer, logdir)
         context = base_plugin.TBContext(
             assets_zip_provider=get_test_assets_zip_provider(),
-            logdir=self.logdir,
+            logdir=logdir,
             data_provider=provider,
+            window_title="title foo",
         )
-        self.plugin = core_plugin.CorePlugin(context)
-        app = application.TensorBoardWSGI([self.plugin])
-        self.server = werkzeug_test.Client(app, wrappers.BaseResponse)
+        plugin = core_plugin.CorePlugin(context, include_debug_info=True)
+        app = application.TensorBoardWSGI([plugin])
+        server = werkzeug_test.Client(app, wrappers.BaseResponse)
 
-    def create_multiplexer(self):
-        raise NotImplementedError()
+        parsed_object = self._get_json(server, "/data/environment")
+        self.assertIn("debug", parsed_object)
 
-    def _add_run(self, run_name):
-        run_path = os.path.join(self.logdir, run_name)
-        with test_util.FileWriter(run_path) as writer:
-            writer.add_test_summary("foo")
-        self.multiplexer.AddRunsFromDirectory(self.logdir)
-        self.multiplexer.Reload()
-
-    def _get_json(self, server, path):
-        response = server.get(path)
-        self.assertEqual(200, response.status_code)
-        self.assertEqual(
-            "application/json", response.headers.get("Content-Type")
-        )
-        return json.loads(response.get_data().decode("utf-8"))
+    def testLogdir(self):
+        """Test the format of the data/logdir endpoint."""
+        parsed_object = self._get_json(self.server, "/data/logdir")
+        self.assertEqual(parsed_object, {"logdir": self.get_temp_dir()})
 
     def testRuns(self):
         """Test the format of the /data/runs endpoint."""
@@ -368,44 +350,10 @@ class CorePluginTestBase(object):
                 ["run1", "avocado", "zebra", "ox", "enigmatic", "mysterious"],
             )
 
-
-class CorePluginResourceTest(tf.test.TestCase):
-    def setUp(self):
-        super(CorePluginResourceTest, self).setUp()
-        self.logdir = self.get_temp_dir()
-        self.multiplexer = event_multiplexer.EventMultiplexer()
-        provider = data_provider.MultiplexerDataProvider(
-            self.multiplexer, self.logdir
-        )
-        context = base_plugin.TBContext(
-            assets_zip_provider=get_test_assets_zip_provider(),
-            logdir=self.logdir,
-            data_provider=provider,
-        )
-        self.plugin = core_plugin.CorePlugin(context)
-        app = application.TensorBoardWSGI([self.plugin])
-        self.server = werkzeug_test.Client(app, wrappers.BaseResponse)
-
-    def test_js_no_cache(self):
-        response = self.server.get("/index.js?foo=bar")
-        self.assertEqual(200, response.status_code)
-        self.assertEqual(
-            NO_CACHE_CONTROL_VALUE, response.headers.get("Cache-Control")
-        )
-
-    def test_js_cache(self):
-        response = self.server.get("/index.js?_file_hash=meow")
-        self.assertEqual(200, response.status_code)
-        self.assertEqual(
-            ONE_DAY_CACHE_CONTROL_VALUE, response.headers.get("Cache-Control")
-        )
-
-    def test_html_no_cache(self):
-        response = self.server.get("/index.html?_file_hash=meow")
-        self.assertEqual(200, response.status_code)
-        self.assertEqual(
-            NO_CACHE_CONTROL_VALUE, response.headers.get("Cache-Control")
-        )
+    def testNotifications(self):
+        """Test the format of the /data/notifications endpoint."""
+        notifications_json = self._get_json(self.server, "/data/notifications")
+        self.assertEqual(notifications_json, {"notifications": []})
 
 
 class CorePluginPathPrefixTest(tf.test.TestCase):

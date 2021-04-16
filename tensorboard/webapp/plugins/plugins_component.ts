@@ -24,6 +24,7 @@ import {
   ElementRef,
   Input,
   OnChanges,
+  Optional,
   SimpleChanges,
   ViewChild,
   ComponentFactoryResolver,
@@ -96,7 +97,7 @@ export class PluginsComponent implements OnChanges {
   constructor(
     private readonly componentFactoryResolver: ComponentFactoryResolver,
     private readonly pluginRegistry: PluginRegistryModule,
-    private readonly pluginApiHost: PluginApiHostModule
+    @Optional() private readonly pluginApiHost: PluginApiHostModule
   ) {}
 
   @ViewChild('pluginContainer', {static: true, read: ElementRef})
@@ -225,6 +226,12 @@ export class PluginsComponent implements OnChanges {
         break;
       }
       case LoadingMechanismType.IFRAME: {
+        if (!this.pluginApiHost) {
+          // In order to support iframe-based plugins the top-level module
+          // (often named 'AppModule') needs to import PluginApiHostModule.
+          throw Error(`IFRAME-based plugins not supported: ${plugin.id}`);
+        }
+
         pluginElement = document.createElement('iframe');
         // Ideally should use the DOMSanitizer but it is not usable in TypeScript.
         pluginElement.setAttribute(

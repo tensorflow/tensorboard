@@ -230,7 +230,7 @@ alias(
 
 alias(
     name = "tonic",
-    actual = "@raze__tonic__0_4_0//:tonic",
+    actual = "@raze__tonic__0_4_2//:tonic",
     tags = [
         "cargo-raze",
         "manual",
@@ -239,7 +239,16 @@ alias(
 
 alias(
     name = "tonic_build",
-    actual = "@raze__tonic_build__0_4_0//:tonic_build",
+    actual = "@raze__tonic_build__0_4_2//:tonic_build",
+    tags = [
+        "cargo-raze",
+        "manual",
+    ],
+)
+
+alias(
+    name = "tonic_reflection",
+    actual = "@raze__tonic_reflection__0_1_0//:tonic_reflection",
     tags = [
         "cargo-raze",
         "manual",
