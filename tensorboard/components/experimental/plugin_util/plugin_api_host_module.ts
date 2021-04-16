@@ -23,7 +23,7 @@ import {PluginRunsApiHostImpl} from './runs-host-impl';
 
 @NgModule({
   providers: [Ipc, PluginCoreApiHostImpl, PluginRunsApiHostImpl],
-  imports: [AppRoutingModule, RunsModule]
+  imports: [AppRoutingModule, RunsModule],
 })
 export class PluginApiHostModule {
   constructor(
