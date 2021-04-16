@@ -1,4 +1,4 @@
-/* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,16 +13,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {NgModule} from '@angular/core';
-import {CommonModule} from '@angular/common';
 
-import {PluginsContainer} from './plugins_container';
-import {PluginsComponent} from './plugins_component';
-import {CoreModule} from '../core/core_module';
-import {PluginRegistryModule} from './plugin_registry_module';
+import {TBHttpClientModule} from '../../webapp_data_source/tb_http_client_module';
+import {TBNotificationCenterDataSource} from './notification_center_data_source';
+import {NotificationCenterDataSource} from './backend_types';
 
 @NgModule({
-  declarations: [PluginsContainer, PluginsComponent],
-  exports: [PluginsContainer],
-  imports: [CoreModule, CommonModule, PluginRegistryModule],
+  imports: [TBHttpClientModule],
+  providers: [
+    {
+      provide: NotificationCenterDataSource,
+      useClass: TBNotificationCenterDataSource,
+    },
+  ],
 })
-export class PluginsModule {}
+export class NotificationCenterDataSourceModule {}

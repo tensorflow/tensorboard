@@ -261,7 +261,7 @@ export class MeshViewer extends THREE.EventDispatcher {
   updateScene(currentStep, domElement) {
     let config = {};
     if ('config' in currentStep && currentStep.config) {
-      config = JSON.parse(currentStep.config);
+      config = JSON.parse(currentStep.config) as {};
     }
     // This event is an opportunity for UI-responsible component (parent) to set
     // proper canvas size.

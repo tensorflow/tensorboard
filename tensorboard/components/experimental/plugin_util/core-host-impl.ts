@@ -21,7 +21,7 @@ import {distinctUntilChanged, filter} from 'rxjs/operators';
 
 import {State} from '../../../webapp/app_state';
 import {getAppLastLoadedTimeInMs} from '../../../webapp/selectors';
-import * as tf_storage from '../../tf_storage';
+import * as tf_storage_utils from '../../tf_storage/storage_utils';
 import {MessageId} from './message_types';
 import {Ipc} from './plugin-host-ipc';
 
@@ -41,7 +41,7 @@ export class PluginCoreApiHostImpl {
       const result: {
         [key: string]: string;
       } = {};
-      const urlDict = tf_storage.getUrlDict();
+      const urlDict = tf_storage_utils.getUrlDict();
       for (let key in urlDict) {
         if (key.startsWith(prefix)) {
           const pluginKey = key.substring(prefix.length);

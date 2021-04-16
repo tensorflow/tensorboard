@@ -242,7 +242,7 @@ export class RequestManager {
       );
       req.onload = function () {
         if (req.status === 200) {
-          resolve(JSON.parse(req.responseText));
+          resolve(JSON.parse(req.responseText) as any);
         } else {
           reject(new RequestNetworkError(req, url));
         }
