@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Supports TensorBoard.dev uploader by batching gRPC requests."""
+"""Supports TensorBoard.dev uploader by batching WriteScalar gRPC requests."""
 
 import contextlib
 import grpc
@@ -22,7 +22,7 @@ from tensorboard.uploader.proto import write_service_pb2
 
 from tensorboard.uploader import util
 from tensorboard.uploader import uploader_errors
-from tensorboard.uploader.batching import byte_budget_manager
+from tensorboard.uploader.orchestration import byte_budget_manager
 from tensorboard.util import grpc_util
 from tensorboard.util import tb_logging
 from tensorboard.util import tensor_util

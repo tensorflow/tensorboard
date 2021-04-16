@@ -29,13 +29,13 @@ from tensorboard import data_compat
 from tensorboard import dataclass_compat
 from tensorboard.uploader.proto import write_service_pb2
 from tensorboard.uploader.proto import write_service_pb2_grpc
-from tensorboard.uploader.batching import byte_budget_manager
+from tensorboard.uploader.orchestration import byte_budget_manager
+from tensorboard.uploader.orchestration import scalar_batched_request_sender
 from tensorboard.uploader import test_util
 from tensorboard.uploader import upload_tracker
 from tensorboard.uploader import logdir_loader
 from tensorboard.uploader import util
 from tensorboard.uploader import uploader_errors
-from tensorboard.uploader.batching import scalar_batched_request_sender
 from tensorboard.compat.proto import event_pb2
 from tensorboard.compat.proto import summary_pb2
 from tensorboard.compat.proto import types_pb2

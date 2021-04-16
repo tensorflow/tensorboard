@@ -16,7 +16,7 @@
 
 from tensorboard import test as tb_test
 
-from tensorboard.uploader.batching import byte_budget_manager
+from tensorboard.uploader.orchestration import byte_budget_manager
 from tensorboard.uploader.proto import write_service_pb2
 
 
