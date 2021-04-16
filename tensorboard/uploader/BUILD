@@ -110,6 +110,7 @@ py_library(
         "//tensorboard/backend/event_processing:io_wrapper",
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/plugins/graph:metadata",
+        "//tensorboard/uploader/batching:byte_budget_manager",
         "//tensorboard/uploader/proto:protos_all_py_pb2",
         "//tensorboard/util:grpc_util",
         "//tensorboard/util:tb_logging",

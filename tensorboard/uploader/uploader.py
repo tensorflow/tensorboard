@@ -30,6 +30,7 @@ from tensorboard.uploader import logdir_loader
 from tensorboard.uploader import upload_tracker
 from tensorboard.uploader import util
 from tensorboard.uploader import uploader_errors
+from tensorboard.uploader.batching import byte_budget_manager
 from tensorboard.backend import process_graph
 from tensorboard.backend.event_processing import directory_loader
 from tensorboard.backend.event_processing import event_file_loader
@@ -47,11 +48,6 @@ _MIN_LOGDIR_POLL_INTERVAL_SECS = 5
 # Age in seconds of last write after which an event file is considered inactive.
 # TODO(@nfelt): consolidate with TensorBoard --reload_multifile default logic.
 _EVENT_FILE_INACTIVE_SECS = 4000
-
-# Maximum length of a base-128 varint as used to encode a 64-bit value
-# (without the "msb of last byte is bit 63" optimization, to be
-# compatible with protobuf and golang varints).
-_MAX_VARINT64_LENGTH_BYTES = 10
 
 logger = tb_logging.get_logger()
 
@@ -299,16 +295,6 @@ def delete_experiment(writer_client, experiment_id):
         raise
 
 
-class _OutOfSpaceError(Exception):
-    """Action could not proceed without overflowing request budget.
-
-    This is a signaling exception (like `StopIteration`) used internally
-    by `_*RequestSender`; it does not mean that anything has gone wrong.
-    """
-
-    pass
-
-
 class _BatchedRequestSender(object):
     """Helper class for building requests that fit under a size limit.
 
@@ -481,7 +467,8 @@ class _ScalarBatchedRequestSender(object):
         self._experiment_id = experiment_id
         self._api = api
         self._rpc_rate_limiter = rpc_rate_limiter
-        self._byte_budget_manager = _ByteBudgetManager(max_request_size)
+        self._byte_budget_manager = byte_budget_manager.ByteBudgetManager(
+            max_request_size)
         self._tracker = tracker
 
         self._runs = {}  # cache: map from run name to `Run` proto in request
@@ -508,13 +495,13 @@ class _ScalarBatchedRequestSender(object):
         """
         try:
             self._add_event_internal(run_name, event, value, metadata)
-        except _OutOfSpaceError:
+        except byte_budget_manager.OutOfSpaceError:
             self.flush()
             # Try again.  This attempt should never produce OutOfSpaceError
             # because we just flushed.
             try:
                 self._add_event_internal(run_name, event, value, metadata)
-            except _OutOfSpaceError:
+            except byte_budget_manager.OutOfSpaceError:
                 raise RuntimeError("add_event failed despite flush")
 
     def _add_event_internal(self, run_name, event, value, metadata):
@@ -564,8 +551,8 @@ class _ScalarBatchedRequestSender(object):
           The `WriteScalarRequest.Run` that was added to `request.runs`.
 
         Raises:
-          _OutOfSpaceError: If adding the run would exceed the remaining
-            request budget.
+          byte_budget_manager.OutOfSpaceError: If adding the run would exceed
+            the remaining request budget.
         """
         run_proto = self._request.runs.add(name=run_name)
         self._byte_budget_manager.add_run(run_proto)
@@ -584,8 +571,8 @@ class _ScalarBatchedRequestSender(object):
           The `WriteScalarRequest.Tag` that was added to `run_proto.tags`.
 
         Raises:
-          _OutOfSpaceError: If adding the tag would exceed the remaining
-            request budget.
+          byte_budget_manager.OutOfSpaceError: If adding the tag would exceed
+            the remaining request budget.
         """
         tag_proto = run_proto.tags.add(name=tag_name)
         tag_proto.metadata.CopyFrom(metadata)
@@ -601,8 +588,8 @@ class _ScalarBatchedRequestSender(object):
           value: Scalar `Summary.Value` proto with the actual scalar data.
 
         Raises:
-          _OutOfSpaceError: If adding the point would exceed the remaining
-            request budget.
+          byte_budget_manager.OutOfSpaceError: If adding the point would exceed
+            the remaining request budget.
         """
         point = tag_proto.points.add()
         point.step = event.step
@@ -611,7 +598,7 @@ class _ScalarBatchedRequestSender(object):
         util.set_timestamp(point.wall_time, event.wall_time)
         try:
             self._byte_budget_manager.add_point(point)
-        except _OutOfSpaceError:
+        except byte_budget_manager.OutOfSpaceError:
             tag_proto.points.pop()
             raise
 
@@ -641,7 +628,8 @@ class _TensorBatchedRequestSender(object):
         self._experiment_id = experiment_id
         self._api = api
         self._rpc_rate_limiter = rpc_rate_limiter
-        self._byte_budget_manager = _ByteBudgetManager(max_request_size)
+        self._byte_budget_manager = byte_budget_manager.ByteBudgetManager(
+            max_request_size)
         self._max_tensor_point_size = max_tensor_point_size
         self._tracker = tracker
 
@@ -673,13 +661,13 @@ class _TensorBatchedRequestSender(object):
         """
         try:
             self._add_event_internal(run_name, event, value, metadata)
-        except _OutOfSpaceError:
+        except byte_budget_manager.OutOfSpaceError:
             self.flush()
             # Try again.  This attempt should never produce OutOfSpaceError
             # because we just flushed.
             try:
                 self._add_event_internal(run_name, event, value, metadata)
-            except _OutOfSpaceError:
+            except byte_budget_manager.OutOfSpaceError:
                 raise RuntimeError("add_event failed despite flush")
 
     def _add_event_internal(self, run_name, event, value, metadata):
@@ -732,8 +720,8 @@ class _TensorBatchedRequestSender(object):
           The `WriteTensorRequest.Run` that was added to `request.runs`.
 
         Raises:
-          _OutOfSpaceError: If adding the run would exceed the remaining
-            request budget.
+          byte_budget_manager.OutOfSpaceError: If adding the run would exceed
+            the remaining request budget.
         """
         run_proto = self._request.runs.add(name=run_name)
         self._byte_budget_manager.add_run(run_proto)
@@ -752,8 +740,8 @@ class _TensorBatchedRequestSender(object):
           The `WriteTensorRequest.Tag` that was added to `run_proto.tags`.
 
         Raises:
-          _OutOfSpaceError: If adding the tag would exceed the remaining
-            request budget.
+          byte_budget_manager.OutOfSpaceError: If adding the tag would exceed
+            the remaining request budget.
         """
         tag_proto = run_proto.tags.add(name=tag_name)
         tag_proto.metadata.CopyFrom(metadata)
@@ -770,8 +758,8 @@ class _TensorBatchedRequestSender(object):
           run_name: Name of the wrong, only used for error reporting.
 
         Raises:
-          _OutOfSpaceError: If adding the point would exceed the remaining
-            request budget.
+          byte_budget_manager.OutOfSpaceError: If adding the point would exceed
+            the remaining request budget.
         """
         point = tag_proto.points.add()
         point.step = event.step
@@ -800,7 +788,7 @@ class _TensorBatchedRequestSender(object):
 
         try:
             self._byte_budget_manager.add_point(point)
-        except _OutOfSpaceError:
+        except byte_budget_manager.OutOfSpaceError:
             tag_proto.points.pop()
             raise
 
@@ -816,119 +804,6 @@ class _TensorBatchedRequestSender(object):
                 "The tensor has tag '%s' and is at step %d and wall_time %.6f.\n\n"
                 "Original error:\n%s" % (tag, step, wall_time, error)
             )
-
-
-class _ByteBudgetManager(object):
-    """Helper class for managing the request byte budget for certain RPCs.
-
-    This should be used for RPCs that organize data by Runs, Tags, and Points,
-    specifically WriteScalar and WriteTensor.
-
-    Any call to add_run(), add_tag(), or add_point() may raise an
-    _OutOfSpaceError, which is non-fatal. It signals to the caller that they
-    should flush the current request and begin a new one.
-
-    For more information on the protocol buffer encoding and how byte cost
-    can be calculated, visit:
-
-    https://developers.google.com/protocol-buffers/docs/encoding
-    """
-
-    def __init__(self, max_bytes):
-        # The remaining number of bytes that we may yet add to the request.
-        self._byte_budget = None  # type: int
-        self._max_bytes = max_bytes
-
-    def reset(self, base_request):
-        """Resets the byte budget and calculates the cost of the base request.
-
-        Args:
-          base_request: Base request.
-
-        Raises:
-          _OutOfSpaceError: If the size of the request exceeds the entire
-            request byte budget.
-        """
-        self._byte_budget = self._max_bytes
-        self._byte_budget -= base_request.ByteSize()
-        if self._byte_budget < 0:
-            raise RuntimeError("Byte budget too small for base request")
-
-    def add_run(self, run_proto):
-        """Integrates the cost of a run proto into the byte budget.
-
-        Args:
-          run_proto: The proto representing a run.
-
-        Raises:
-          _OutOfSpaceError: If adding the run would exceed the remaining request
-            budget.
-        """
-        cost = (
-            # The size of the run proto without any tag fields set.
-            run_proto.ByteSize()
-            # The size of the varint that describes the length of the run
-            # proto. We can't yet know the final size of the run proto -- we
-            # haven't yet set any tag or point values -- so we can't know the
-            # final size of this length varint. We conservatively assume it is
-            # maximum size.
-            + _MAX_VARINT64_LENGTH_BYTES
-            # The size of the proto key.
-            + 1
-        )
-        if cost > self._byte_budget:
-            raise _OutOfSpaceError()
-        self._byte_budget -= cost
-
-    def add_tag(self, tag_proto):
-        """Integrates the cost of a tag proto into the byte budget.
-
-        Args:
-          tag_proto: The proto representing a tag.
-
-        Raises:
-          _OutOfSpaceError: If adding the tag would exceed the remaining request
-           budget.
-        """
-        cost = (
-            # The size of the tag proto without any tag fields set.
-            tag_proto.ByteSize()
-            # The size of the varint that describes the length of the tag
-            # proto. We can't yet know the final size of the tag proto -- we
-            # haven't yet set any point values -- so we can't know the final
-            # size of this length varint. We conservatively assume it is maximum
-            # size.
-            + _MAX_VARINT64_LENGTH_BYTES
-            # The size of the proto key.
-            + 1
-        )
-        if cost > self._byte_budget:
-            raise _OutOfSpaceError()
-        self._byte_budget -= cost
-
-    def add_point(self, point_proto):
-        """Integrates the cost of a point proto into the byte budget.
-
-        Args:
-          point_proto: The proto representing a point.
-
-        Raises:
-          _OutOfSpaceError: If adding the point would exceed the remaining request
-           budget.
-        """
-        submessage_cost = point_proto.ByteSize()
-        cost = (
-            # The size of the point proto.
-            submessage_cost
-            # The size of the varint that describes the length of the point
-            # proto.
-            + _varint_cost(submessage_cost)
-            # The size of the proto key.
-            + 1
-        )
-        if cost > self._byte_budget:
-            raise _OutOfSpaceError()
-        self._byte_budget -= cost
 
 
 class _BlobRequestSender(object):

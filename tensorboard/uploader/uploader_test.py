@@ -40,6 +40,7 @@ from tensorboard.uploader import uploader as uploader_lib
 from tensorboard.uploader import logdir_loader
 from tensorboard.uploader import util
 from tensorboard.uploader import uploader_errors
+from tensorboard.uploader.batching import byte_budget_manager
 from tensorboard.compat.proto import event_pb2
 from tensorboard.compat.proto import graph_pb2
 from tensorboard.compat.proto import summary_pb2
@@ -1361,10 +1362,10 @@ class ScalarBatchedRequestSenderTest(tf.test.TestCase):
             nonlocal add_point_call_count
             add_point_call_count += 1
             if add_point_call_count == 2:
-                raise uploader_lib._OutOfSpaceError()
+                raise byte_budget_manager.OutOfSpaceError()
 
         with mock.patch.object(
-            uploader_lib._ByteBudgetManager,
+            byte_budget_manager.ByteBudgetManager,
             "add_point",
             mock_add_point,
         ):
@@ -1812,10 +1813,10 @@ class TensorBatchedRequestSenderTest(tf.test.TestCase):
             nonlocal add_point_call_count
             add_point_call_count += 1
             if add_point_call_count == 2:
-                raise uploader_lib._OutOfSpaceError()
+                raise byte_budget_manager.OutOfSpaceError()
 
         with mock.patch.object(
-            uploader_lib._ByteBudgetManager,
+            byte_budget_manager.ByteBudgetManager,
             "add_point",
             mock_add_point,
         ):
