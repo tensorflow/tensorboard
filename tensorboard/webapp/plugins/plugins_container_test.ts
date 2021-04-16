@@ -144,7 +144,6 @@ describe('plugins_component', () => {
    * Call this only after all providers have been configured as it will freeze
    * the TestBed configuration.
    */
-
   async function setup(providersOverride?: any[]) {
     await TestBed.configureTestingModule({
       providers: [
@@ -170,6 +169,12 @@ describe('plugins_component', () => {
       lastLoadedTimeInMs: null,
       failureCode: null,
     });
+    store.overrideSelector(getEnvironment, {
+      data_location: 'foobar',
+      window_title: 'Tests!',
+    });
+    store.overrideSelector(getIsFeatureFlagsLoaded, true);
+    store.overrideSelector(getFeatureFlags, buildFeatureFlag());
 
     createElementSpy = spyOn(document, 'createElement').and.callThrough();
     createElementSpy
