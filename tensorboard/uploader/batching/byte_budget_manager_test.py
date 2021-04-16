@@ -19,8 +19,8 @@ from tensorboard import test as tb_test
 from tensorboard.uploader.batching import byte_budget_manager
 from tensorboard.uploader.proto import write_service_pb2
 
-class ByteBudgetManagerTest(tb_test.TestCase):
 
+class ByteBudgetManagerTest(tb_test.TestCase):
     def test_reset_subtracts_base_request(self):
         # Setup: a ByteBudgetManager with a budget.
         max_request_size = 128 * (2 ** 10)  # 128KiB
@@ -34,7 +34,7 @@ class ByteBudgetManagerTest(tb_test.TestCase):
         self.assertLess(remaining_budget, max_request_size)
 
     def test_counts_points_bytes(self):
-       # Setup: a ByteBudgetManager with a budget.
+        # Setup: a ByteBudgetManager with a budget.
         max_request_size = 128 * (2 ** 10)  # 128KiB
         mgr = byte_budget_manager.ByteBudgetManager(max_request_size)
         mgr.reset(write_service_pb2.WriteScalarRequest())
@@ -50,7 +50,7 @@ class ByteBudgetManagerTest(tb_test.TestCase):
         self.assertLess(ending_budget, starting_budget)
 
     def test_counts_tags_bytes(self):
-       # Setup: a ByteBudgetManager with a budget.
+        # Setup: a ByteBudgetManager with a budget.
         max_request_size = 128 * (2 ** 10)  # 128KiB
         mgr = byte_budget_manager.ByteBudgetManager(max_request_size)
         mgr.reset(write_service_pb2.WriteScalarRequest())
@@ -65,7 +65,7 @@ class ByteBudgetManagerTest(tb_test.TestCase):
         self.assertLess(ending_budget, starting_budget)
 
     def test_counts_runs_bytes(self):
-       # Setup: a ByteBudgetManager with a budget.
+        # Setup: a ByteBudgetManager with a budget.
         max_request_size = 128 * (2 ** 10)  # 128KiB
         mgr = byte_budget_manager.ByteBudgetManager(max_request_size)
         mgr.reset(write_service_pb2.WriteScalarRequest())
@@ -79,7 +79,7 @@ class ByteBudgetManagerTest(tb_test.TestCase):
         self.assertLess(ending_budget, starting_budget)
 
     def test_overrunning_budget_raises_out_of_space_error(self):
-       # Setup: a ByteBudgetManager with a very small budget.
+        # Setup: a ByteBudgetManager with a very small budget.
         max_request_size = 128  # 128B
         mgr = byte_budget_manager.ByteBudgetManager(max_request_size)
         mgr.reset(write_service_pb2.WriteScalarRequest())

@@ -26,6 +26,7 @@ class OutOfSpaceError(Exception):
     This is a signaling exception (like `StopIteration`) used
     by `*RequestSender`; it does not mean that anything has gone wrong.
     """
+
     pass
 
 
