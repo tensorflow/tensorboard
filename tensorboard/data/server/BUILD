@@ -207,7 +207,7 @@ py_test(
     name = "update_protos_test",
     srcs = ["update_protos.py"],
     args = ["--check"] + _proto_packages + ["descriptor.bin"],
-    data = _genproto_files + glob(_checked_in_proto_files) + [
+    data = _genproto_files + _checked_in_proto_files + [
         _generated_file_descriptor_set,
         _checked_in_file_descriptor_set,
     ],
