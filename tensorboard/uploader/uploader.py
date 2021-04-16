@@ -30,6 +30,7 @@ from tensorboard.uploader import logdir_loader
 from tensorboard.uploader import upload_tracker
 from tensorboard.uploader import util
 from tensorboard.uploader import uploader_errors
+from tensorboard.uploader.orchestration import batched_request_sender
 from tensorboard.uploader.orchestration import blob_request_sender
 from tensorboard.uploader.orchestration import byte_budget_manager
 from tensorboard.uploader.orchestration import scalar_batched_request_sender
@@ -179,7 +180,7 @@ class TensorBoardUploader(object):
         response = grpc_util.call_with_retries(
             self._api.CreateExperiment, request
         )
-        self._request_sender = _BatchedRequestSender(
+        self._request_sender = batched_request_sender.BatchedRequestSender(
             response.experiment_id,
             self._api,
             allowed_plugins=self._allowed_plugins,
@@ -298,176 +299,6 @@ def delete_experiment(writer_client, experiment_id):
         raise
 
 
-class _BatchedRequestSender(object):
-    """Helper class for building requests that fit under a size limit.
-
-    This class maintains stateful request builders for each of the possible
-    request types (scalars, tensors, and blobs).  These accumulate batches
-    independently, each maintaining its own byte budget and emitting a request
-    when the batch becomes full.  As a consequence, events of different types
-    will likely be sent to the backend out of order.  E.g., in the extreme case,
-    a single tensor-flavored request may be sent only when the event stream is
-    exhausted, even though many more recent scalar events were sent earlier.
-
-    This class is not threadsafe. Use external synchronization if
-    calling its methods concurrently.
-    """
-
-    def __init__(
-        self,
-        experiment_id,
-        api,
-        allowed_plugins,
-        upload_limits,
-        rpc_rate_limiter,
-        tensor_rpc_rate_limiter,
-        blob_rpc_rate_limiter,
-        tracker,
-    ):
-        # Map from `(run_name, tag_name)` to `SummaryMetadata` if the time
-        # series is a scalar time series, else to `_NON_SCALAR_TIME_SERIES`.
-        self._tag_metadata = {}
-        self._allowed_plugins = frozenset(allowed_plugins)
-        self._tracker = tracker
-        self._scalar_request_sender = scalar_batched_request_sender.ScalarBatchedRequestSender(
-            experiment_id,
-            api,
-            rpc_rate_limiter,
-            upload_limits.max_scalar_request_size,
-            tracker=self._tracker,
-        )
-        self._tensor_request_sender = tensor_batched_request_sender.TensorBatchedRequestSender(
-            experiment_id,
-            api,
-            tensor_rpc_rate_limiter,
-            upload_limits.max_tensor_request_size,
-            upload_limits.max_tensor_point_size,
-            tracker=self._tracker,
-        )
-        self._blob_request_sender = blob_request_sender.BlobRequestSender(
-            experiment_id,
-            api,
-            blob_rpc_rate_limiter,
-            upload_limits.max_blob_request_size,
-            upload_limits.max_blob_size,
-            tracker=self._tracker,
-        )
-        self._tracker = tracker
-
-    def send_requests(self, run_to_events):
-        """Accepts a stream of TF events and sends batched write RPCs.
-
-        Each sent request will be batched, the size of each batch depending on
-        the type of data (Scalar vs Tensor vs Blob) being sent.
-
-        Args:
-          run_to_events: Mapping from run name to generator of `tf.Event`
-            values, as returned by `LogdirLoader.get_run_events`.
-
-        Raises:
-          RuntimeError: If no progress can be made because even a single
-          point is too large (say, due to a gigabyte-long tag name).
-        """
-
-        for (run_name, event, value) in self._run_values(run_to_events):
-            time_series_key = (run_name, value.tag)
-
-            # The metadata for a time series is memorized on the first event.
-            # If later events arrive with a mismatching plugin_name, they are
-            # ignored with a warning.
-            metadata = self._tag_metadata.get(time_series_key)
-            first_in_time_series = False
-            if metadata is None:
-                first_in_time_series = True
-                metadata = value.metadata
-                self._tag_metadata[time_series_key] = metadata
-
-            plugin_name = metadata.plugin_data.plugin_name
-            # TODO(cais): Call self._tracker.add_plugin_name() to track the
-            # data for what plugins have been uploaded.
-            if value.HasField("metadata") and (
-                plugin_name != value.metadata.plugin_data.plugin_name
-            ):
-                logger.warning(
-                    "Mismatching plugin names for %s.  Expected %s, found %s.",
-                    time_series_key,
-                    metadata.plugin_data.plugin_name,
-                    value.metadata.plugin_data.plugin_name,
-                )
-                continue
-            if plugin_name not in self._allowed_plugins:
-                if first_in_time_series:
-                    logger.info(
-                        "Skipping time series %r with unsupported plugin name %r",
-                        time_series_key,
-                        plugin_name,
-                    )
-                continue
-
-            if metadata.data_class == summary_pb2.DATA_CLASS_SCALAR:
-                self._scalar_request_sender.add_event(
-                    run_name, event, value, metadata
-                )
-            elif metadata.data_class == summary_pb2.DATA_CLASS_TENSOR:
-                self._tensor_request_sender.add_event(
-                    run_name, event, value, metadata
-                )
-            elif metadata.data_class == summary_pb2.DATA_CLASS_BLOB_SEQUENCE:
-                self._blob_request_sender.add_event(
-                    run_name, event, value, metadata
-                )
-
-        self._scalar_request_sender.flush()
-        self._tensor_request_sender.flush()
-        self._blob_request_sender.flush()
-
-    def _run_values(self, run_to_events):
-        """Helper generator to create a single stream of work items.
-
-        Note that `dataclass_compat` may emit multiple variants of
-        the same event, for backwards compatibility.  Thus this stream should
-        be filtered to obtain the desired version of each event.  Here, we
-        ignore any event that does not have a `summary` field.
-
-        Furthermore, the events emitted here could contain values that do not
-        have `metadata.data_class` set; these too should be ignored.  In
-        `_send_summary_value(...)` above, we switch on `metadata.data_class`
-        and drop any values with an unknown (i.e., absent or unrecognized)
-        `data_class`.
-        """
-        # Note that this join in principle has deletion anomalies: if the input
-        # stream contains runs with no events, or events with no values, we'll
-        # lose that information. This is not a problem: we would need to prune
-        # such data from the request anyway.
-        for (run_name, events) in run_to_events.items():
-            for event in events:
-                _filter_graph_defs(event)
-                for value in event.summary.value:
-                    yield (run_name, event, value)
-
-
-@contextlib.contextmanager
-def _request_logger(request, runs=None):
-    upload_start_time = time.time()
-    request_bytes = request.ByteSize()
-    logger.info("Trying request of %d bytes", request_bytes)
-    yield
-    upload_duration_secs = time.time() - upload_start_time
-    if runs:
-        logger.info(
-            "Upload for %d runs (%d bytes) took %.3f seconds",
-            len(runs),
-            request_bytes,
-            upload_duration_secs,
-        )
-    else:
-        logger.info(
-            "Upload of (%d bytes) took %.3f seconds",
-            request_bytes,
-            upload_duration_secs,
-        )
-
-
 def _varint_cost(n):
     """Computes the size of `n` encoded as an unsigned base-128 varint.
 
@@ -495,20 +326,6 @@ def _prune_empty_tags_and_runs(request):
         if not run.tags:
             del request.runs[run_idx]
 
-
-def _filter_graph_defs(event):
-    for v in event.summary.value:
-        if v.metadata.plugin_data.plugin_name != graphs_metadata.PLUGIN_NAME:
-            continue
-        if v.tag == graphs_metadata.RUN_GRAPH_NAME:
-            data = list(v.tensor.string_val)
-            filtered_data = [_filtered_graph_bytes(x) for x in data]
-            filtered_data = [x for x in filtered_data if x is not None]
-            if filtered_data != data:
-                new_tensor = tensor_util.make_tensor_proto(
-                    filtered_data, dtype=types_pb2.DT_STRING
-                )
-                v.tensor.CopyFrom(new_tensor)
 
 
 def _filtered_graph_bytes(graph_bytes):

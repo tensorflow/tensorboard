@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Supports TensorBoard.dev uploader by batching WriteTensor gRPC requests."""
+"""Supports TensorBoard.dev uploader by managing blob writes."""
 
 import contextlib
 import grpc
@@ -22,21 +22,11 @@ from tensorboard.uploader.proto import write_service_pb2
 
 from tensorboard.uploader import util
 from tensorboard.uploader import uploader_errors
-from tensorboard.uploader.orchestration import byte_budget_manager
 from tensorboard.util import grpc_util
 from tensorboard.util import tb_logging
 from tensorboard.util import tensor_util
 
 logger = tb_logging.get_logger()
-
-
-def _prune_empty_tags_and_runs(request):
-    for (run_idx, run) in reversed(list(enumerate(request.runs))):
-        for (tag_idx, tag) in reversed(list(enumerate(run.tags))):
-            if not tag.points:
-                del run.tags[tag_idx]
-        if not run.tags:
-            del request.runs[run_idx]
 
 
 @contextlib.contextmanager
@@ -60,8 +50,11 @@ def _request_logger(request, runs=None):
             upload_duration_secs,
         )
 
+
 class BlobRequestSender(object):
     """Uploader for blob-type event data.
+
+    Analog to `TensorBatchedRequestSender` and `ScalarBatchedRequestSender`.
 
     Unlike the TensorBatchedRequestSender and ScalarBatchedRequestSender, this
     class does not accumulate events in batches; every blob is sent

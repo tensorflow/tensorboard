@@ -110,6 +110,7 @@ py_library(
         "//tensorboard/backend/event_processing:io_wrapper",
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/plugins/graph:metadata",
+        "//tensorboard/uploader/orchestration:batched_request_sender",
         "//tensorboard/uploader/orchestration:blob_request_sender",
         "//tensorboard/uploader/orchestration:byte_budget_manager",
         "//tensorboard/uploader/orchestration:scalar_batched_request_sender",
