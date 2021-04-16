@@ -48,7 +48,7 @@ rust_library(
         "cargo-raze",
         "manual",
     ],
-    version = "0.6.1",
+    version = "0.6.6",
     # buildifier: leave-alone
     deps = [
         "@raze__bytes__1_0_1//:bytes",
@@ -57,7 +57,6 @@ rust_library(
         "@raze__log__0_4_11//:log",
         "@raze__pin_project_lite__0_2_4//:pin_project_lite",
         "@raze__tokio__1_0_2//:tokio",
-        "@raze__tokio_stream__0_1_2//:tokio_stream",
     ],
 )
 
@@ -76,6 +75,12 @@ rust_library(
 # Unsupported target "io_stream_reader" with type "test" omitted
 
 # Unsupported target "length_delimited" with type "test" omitted
+
+# Unsupported target "mpsc" with type "test" omitted
+
+# Unsupported target "poll_semaphore" with type "test" omitted
+
+# Unsupported target "reusable_box" with type "test" omitted
 
 # Unsupported target "sync_cancellation_token" with type "test" omitted
 

@@ -51,7 +51,7 @@ rust_library(
         "cargo-raze",
         "manual",
     ],
-    version = "0.4.0",
+    version = "0.4.2",
     # buildifier: leave-alone
     deps = [
         "@raze__proc_macro2__1_0_24//:proc_macro2",

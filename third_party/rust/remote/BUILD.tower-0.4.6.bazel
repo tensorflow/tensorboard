@@ -52,6 +52,8 @@ rust_library(
         "timeout",
         "tokio",
         "tokio-stream",
+        "tokio-util",
+        "tracing",
         "util",
     ],
     crate_root = "src/lib.rs",
@@ -65,7 +67,7 @@ rust_library(
         "cargo-raze",
         "manual",
     ],
-    version = "0.4.3",
+    version = "0.4.6",
     # buildifier: leave-alone
     deps = [
         "@raze__futures_core__0_3_12//:futures_core",
@@ -76,6 +78,7 @@ rust_library(
         "@raze__slab__0_4_2//:slab",
         "@raze__tokio__1_0_2//:tokio",
         "@raze__tokio_stream__0_1_2//:tokio_stream",
+        "@raze__tokio_util__0_6_6//:tokio_util",
         "@raze__tower_layer__0_3_1//:tower_layer",
         "@raze__tower_service__0_3_0//:tower_service",
         "@raze__tracing__0_1_21//:tracing",
