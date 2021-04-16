@@ -114,18 +114,6 @@ additional_flags = [
 
 [package.metadata.raze.crates.prost-build.'0.7.0']
 gen_buildrs = true
-<<<<<<< HEAD
-
-[package.metadata.raze.crates.tonic-reflection.'0.1.0']
-gen_buildrs = true
-build_data_dependencies = ["@com_google_protobuf//:protoc"]
-
-[package.metadata.raze.crates.tonic-reflection.'0.1.0'.buildrs_additional_environment_variables]
-PROTOC = "$(execpath @com_google_protobuf//:protoc)"
-# we don't have easy access to a rustfmt binary, so make it a no-op
-RUSTFMT = "/bin/true"
-||||||| 078337fa9
-=======
 
 [package.metadata.raze.crates.tonic-reflection.'0.1.0']
 gen_buildrs = true
@@ -136,4 +124,3 @@ PROTOC = "$(execpath @com_google_protobuf//:protoc)"
 # We don't have easy access to a rustfmt binary, so make it a no-op.
 # https://github.com/bazelbuild/rules_rust/issues/87
 RUSTFMT = "/bin/true"
->>>>>>> ec3d6cbb5f18f31e46afafed1b849f596767bddf
