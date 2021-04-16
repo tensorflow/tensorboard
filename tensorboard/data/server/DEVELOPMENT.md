@@ -152,8 +152,6 @@ change into the root directory for the TensorBoard repository, and run:
 
 ```
 grpc_cli \
-    --channel_creds_type=insecure \
-    --protofiles tensorboard/data/proto/data_provider.proto \
     call localhost:6806 \
     TensorBoardDataProvider.ListScalars '
         experiment_id: "123"
@@ -161,28 +159,11 @@ grpc_cli \
     '
 ```
 
-For this to work, you will need to create a symlink called `google` at the root
-of your TensorBoard repository that points to the corresponding directory of
-well-known types. For example:
-
-```
-ln -s ~/git/protobuf/src/google/ .
-```
-
-Once the [Tonic support for gRPC reflection][reflection] is released, this will
-not be necessary.
-
 The `localhost:6806` argument should point to your running server. The
 `ListScalars` identifier should name the RPC method that you want to invoke. And
 the quoted string is the text format encoding of the request message.
 
 You should know:
-
--   You should be in the root directory of the repository to refer to the
-    `.proto` file, because it imports other protos under `tensorboard/compat/`
-    via relative path. If you really want to run at non-root, try setting
-    `--proto-path` to the path to the root repository (keep `--protofiles` as a
-    path relative to that directory).
 
 -   If your `grpc_cli` invocation fails because the response size is too large,
     apply the following patch and rebuild `grpc_cli`:
@@ -209,7 +190,6 @@ You should know:
 
 [`grpc_cli`]: https://github.com/grpc/grpc/blob/master/doc/command_line_tool.md
 [grpc/grpc#24734]: https://github.com/grpc/grpc/issues/24374
-[reflection]: https://github.com/hyperium/tonic/issues/165
 
 ## Style
 
