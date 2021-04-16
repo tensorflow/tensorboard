@@ -26,12 +26,14 @@ fn main() -> std::io::Result<()> {
         dir.push("genproto");
         dir
     };
+    let file_descriptor = out_dir.join("descriptor.bin");
     let mut prost_config = prost_build::Config::new();
     // Generate `bytes::Bytes` struct fields for all `bytes` protobuf fields in the `tensorboard`
     // package.
     prost_config.bytes(&[".tensorboard"]);
     tonic_build::configure()
         .out_dir(&out_dir)
+        .file_descriptor_set_path(&file_descriptor)
         .format(false) // don't run `rustfmt`; shouldn't be needed to build
         .compile_with_config(
             prost_config,

@@ -13,15 +13,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Action, createReducer, on} from '@ngrx/store';
+
 import * as actions from './notification_center_actions';
 import {
+  Notification,
   NotificationState,
   NOTIFICATION_LAST_READ_TIME_KEY,
 } from './notification_center_types';
-import {notificationNotes} from './notification_notes';
 
 const initialState: NotificationState = {
-  notifications: notificationNotes,
+  notifications: [],
   lastReadTimestampInMs: window.localStorage.getItem(
     NOTIFICATION_LAST_READ_TIME_KEY
   )
@@ -44,6 +45,15 @@ const reducer = createReducer(
         ...state,
         lastReadTimestampInMs: timeNow,
       };
+    }
+  ),
+  on(
+    actions.fetchNotificationsLoaded,
+    (
+      state: NotificationState,
+      {notifications}: {notifications: Notification[]}
+    ): NotificationState => {
+      return {...state, notifications};
     }
   )
 );

@@ -12,25 +12,21 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {createAction, props} from '@ngrx/store';
+import {Observable} from 'rxjs';
 
-import {Notification} from './notification_center_types';
+export interface NotificationCenterResponse {
+  notifications: BackendNotification[];
+}
 
-/** @typehack */ import * as _typeHackModels from '@ngrx/store/src/models';
-/** @typehack */ import * as _typeHackStore from '@ngrx/store';
+export abstract class NotificationCenterDataSource {
+  abstract fetchNotifications(): Observable<NotificationCenterResponse>;
+}
 
 /**
- * Fires when the bell icon is clicked.
+ * A notification from backend.
  */
-export const notificationBellClicked = createAction(
-  '[Notification] Notification Bell Clicked'
-);
-
-export const fetchNotificationsFailed = createAction(
-  '[Notification] Fetch Notification Request Failed'
-);
-
-export const fetchNotificationsLoaded = createAction(
-  '[Notification] Fetch Notification Response Loaded',
-  props<{notifications: Notification[]}>()
-);
+export interface BackendNotification {
+  dateInMs: number;
+  title: string;
+  content: string;
+}

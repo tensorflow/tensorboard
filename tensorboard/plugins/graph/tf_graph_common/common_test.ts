@@ -521,6 +521,40 @@ describe('graph tests', () => {
       ]);
     });
   });
+
+  describe('Graph Normalizing Names', () => {
+    it('handles node with empty _output_shapes attr', async () => {
+      const pbtxt = `
+        node {
+          name: "foo1"
+          op: "Add"
+          attr {
+            key: "_output_shapes"
+            value {
+            }
+          }
+        }
+      `;
+      await graphDefToSlimGraph(await pbtxtToGraphDef(pbtxt));
+    });
+
+    it('handles node with _output_shapes attr having only single shape', async () => {
+      const pbtxt = `
+        node {
+          name: "foo1"
+          op: "Add"
+          attr {
+            key: "_output_shapes"
+            value {
+              shape {
+              }
+            }
+          }
+        }
+      `;
+      await graphDefToSlimGraph(await pbtxtToGraphDef(pbtxt));
+    });
+  });
 });
 
 async function slimGraphToHierarchy(

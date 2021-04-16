@@ -82,6 +82,7 @@ class CorePlugin(base_plugin.TBPlugin):
             "/data/runs": self._serve_runs,
             "/data/experiments": self._serve_experiments,
             "/data/experiment_runs": self._serve_experiment_runs,
+            "/data/notifications": self._serve_notifications,
             "/data/window_properties": self._serve_window_properties,
             "/events": self._redirect_to_index,
             "/favicon.ico": self._send_404_without_logging,
@@ -283,6 +284,12 @@ class CorePlugin(base_plugin.TBPlugin):
         displayName, and lastly, inserted time.
         """
         results = []
+        return http_util.Respond(request, results, "application/json")
+
+    @wrappers.Request.application
+    def _serve_notifications(self, request):
+        """Serve JSON payload of notifications to show in the UI."""
+        results = {"notifications": []}
         return http_util.Respond(request, results, "application/json")
 
 

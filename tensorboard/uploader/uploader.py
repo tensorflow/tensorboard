@@ -29,6 +29,7 @@ from tensorboard.uploader.proto import write_service_pb2
 from tensorboard.uploader import logdir_loader
 from tensorboard.uploader import upload_tracker
 from tensorboard.uploader import util
+from tensorboard.uploader import uploader_errors
 from tensorboard.backend import process_graph
 from tensorboard.backend.event_processing import directory_loader
 from tensorboard.backend.event_processing import event_file_loader
@@ -264,11 +265,11 @@ def update_experiment_metadata(
         grpc_util.call_with_retries(writer_client.UpdateExperiment, request)
     except grpc.RpcError as e:
         if e.code() == grpc.StatusCode.NOT_FOUND:
-            raise ExperimentNotFoundError()
+            raise uploader_errors.ExperimentNotFoundError()
         if e.code() == grpc.StatusCode.PERMISSION_DENIED:
-            raise PermissionDeniedError()
+            raise uploader_errors.PermissionDeniedError()
         if e.code() == grpc.StatusCode.INVALID_ARGUMENT:
-            raise InvalidArgumentError(e.details())
+            raise uploader_errors.InvalidArgumentError(e.details())
         raise
 
 
@@ -292,22 +293,10 @@ def delete_experiment(writer_client, experiment_id):
         grpc_util.call_with_retries(writer_client.DeleteExperiment, request)
     except grpc.RpcError as e:
         if e.code() == grpc.StatusCode.NOT_FOUND:
-            raise ExperimentNotFoundError()
+            raise uploader_errors.ExperimentNotFoundError()
         if e.code() == grpc.StatusCode.PERMISSION_DENIED:
-            raise PermissionDeniedError()
+            raise uploader_errors.PermissionDeniedError()
         raise
-
-
-class InvalidArgumentError(RuntimeError):
-    pass
-
-
-class ExperimentNotFoundError(RuntimeError):
-    pass
-
-
-class PermissionDeniedError(RuntimeError):
-    pass
 
 
 class _OutOfSpaceError(Exception):
@@ -560,7 +549,7 @@ class _ScalarBatchedRequestSender(object):
                 grpc_util.call_with_retries(self._api.WriteScalar, request)
             except grpc.RpcError as e:
                 if e.code() == grpc.StatusCode.NOT_FOUND:
-                    raise ExperimentNotFoundError()
+                    raise uploader_errors.ExperimentNotFoundError()
                 logger.error("Upload call failed with error %s", e)
 
         self._new_request()
@@ -728,7 +717,7 @@ class _TensorBatchedRequestSender(object):
                     grpc_util.call_with_retries(self._api.WriteTensor, request)
                 except grpc.RpcError as e:
                     if e.code() == grpc.StatusCode.NOT_FOUND:
-                        raise ExperimentNotFoundError()
+                        raise uploader_errors.ExperimentNotFoundError()
                     logger.error("Upload call failed with error %s", e)
 
         self._new_request()
@@ -1071,7 +1060,7 @@ class _BlobRequestSender(object):
                 blob_sequence_id = response.blob_sequence_id
             except grpc.RpcError as e:
                 if e.code() == grpc.StatusCode.NOT_FOUND:
-                    raise ExperimentNotFoundError()
+                    raise uploader_errors.ExperimentNotFoundError()
                 logger.error("Upload call failed with error %s", e)
                 # TODO(soergel): clean up
                 raise

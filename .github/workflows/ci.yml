@@ -146,6 +146,7 @@ jobs:
         with:
           toolchain: ${{ matrix.rust_version }}
           default: true
+          components: rustfmt
       - name: 'Install Python packaging deps'
         run: |
           python -m pip install -U pip
