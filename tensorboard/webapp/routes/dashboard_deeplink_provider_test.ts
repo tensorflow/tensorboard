@@ -23,11 +23,11 @@ import {PluginType} from '../metrics/data_source/types';
 import {METRICS_SETTINGS_DEFAULT} from '../metrics/types';
 import {appStateFromMetricsState, buildMetricsState} from '../metrics/testing';
 import * as selectors from '../selectors';
-import {CoreDeepLinkProvider} from './core_deeplink_provider';
+import {DashboardDeepLinkProvider} from './dashboard_deeplink_provider';
 
 describe('core deeplink provider', () => {
   let store: MockStore<State>;
-  let provider: CoreDeepLinkProvider;
+  let provider: DashboardDeepLinkProvider;
   let queryParamsSerialized: SerializableQueryParams[];
 
   beforeEach(async () => {
@@ -53,7 +53,7 @@ describe('core deeplink provider', () => {
 
     queryParamsSerialized = [];
 
-    provider = new CoreDeepLinkProvider();
+    provider = new DashboardDeepLinkProvider();
     provider
       .serializeStateToQueryParams(store)
       .pipe(

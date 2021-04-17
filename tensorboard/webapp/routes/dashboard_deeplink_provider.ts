@@ -36,13 +36,13 @@ import {
   DeserializedState,
   PINNED_CARDS_KEY,
   SMOOTHING_KEY,
-} from './core_deeplink_provider_types';
+} from './dashboard_deeplink_provider_types';
 
 /**
  * Provides deeplinking for the core dashboards page.
  */
 @Injectable()
-export class CoreDeepLinkProvider extends DeepLinkProvider {
+export class DashboardDeepLinkProvider extends DeepLinkProvider {
   private getMetricsPinnedCards(
     store: Store<State>
   ): Observable<SerializableQueryParams> {
