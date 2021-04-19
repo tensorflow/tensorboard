@@ -108,6 +108,16 @@ class AsyncCallFuture:
                 raise RuntimeError("AsyncFuture never had an active future set")
             return self._active_grpc_future.result()
 
+    def done(self):
+        """Analogous to `grpc.Future.done`.
+
+        Returns:
+          True if a result is ready.  Does not block.
+        """
+        with self._active_grpc_future_lock:
+            if self._active_grpc_future is None:
+                raise RuntimeError("AsyncFuture never had an active future set")
+            return self._active_grpc_future.done()
 
 def async_call_with_retries(api_method, request, clock=None):
     """Initiate an asynchronous call to a gRPC stub, with retry logic.

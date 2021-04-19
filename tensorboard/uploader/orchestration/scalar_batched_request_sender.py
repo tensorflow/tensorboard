@@ -91,6 +91,7 @@ class ScalarBatchedRequestSender(object):
             max_request_size
         )
         self._tracker = tracker
+        self._grpc_futures = []
 
         self._runs = {}  # cache: map from run name to `Run` proto in request
         self._tags = (
@@ -148,19 +149,40 @@ class ScalarBatchedRequestSender(object):
             return
 
         self._rpc_rate_limiter.tick()
+        self.complete_grpc_futures(grpc_futures)
 
         with _request_logger(
             request, request.runs
         ), self._tracker.scalars_tracker(self._num_values):
-            try:
-                # TODO(@nfelt): execute this RPC asynchronously.
-                grpc_util.call_with_retries(self._api.WriteScalar, request)
-            except grpc.RpcError as e:
-                if e.code() == grpc.StatusCode.NOT_FOUND:
-                    raise uploader_errors.ExperimentNotFoundError()
-                logger.error("Upload call failed with error %s", e)
+            future = grpc_util.async_call_with_retries(
+                self._api.WriteScalar, request)
+            self._grpc_futures.append(future)
 
         self._new_request()
+
+    def complete_grpc_futures(self, grpc_futures):
+        """Handle any excptions."""
+        done_futures = []
+        # Check if any exceptions raised, collect indicies of futures which can
+        # be removed.
+        for i, future in enumerate(self._grpc_futures):
+            if future.done():
+                try:
+                    # We don't actually do anything with the results from the
+                    # WriteScalar RPCs, but if we did, it would go here.  This
+                    # call to result will raise any exception caused in the
+                    # gRPC call.
+                    future.result()
+                    done_futures.append(i)
+                except grpc.RpcError as e:
+                    if e.code() == grpc.StatusCode.NOT_FOUND:
+                        raise uploader_errors.ExperimentNotFoundError()
+                    logger.error("Upload call failed with error %s", e)
+        # Remove all the completed futures.
+        done_futures.sort(reverse=True)
+        for i in done_futures:
+            self._grpc_futures.pop(i)
+
 
     def _create_run(self, run_name):
         """Adds a run to the live request, if there's space.
@@ -222,3 +244,4 @@ class ScalarBatchedRequestSender(object):
         except byte_budget_manager.OutOfSpaceError:
             tag_proto.points.pop()
             raise
+        # Check if any exceptions raised.
