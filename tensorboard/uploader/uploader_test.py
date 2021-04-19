@@ -39,7 +39,6 @@ from tensorboard.uploader import upload_tracker
 from tensorboard.uploader import uploader as uploader_lib
 from tensorboard.uploader import logdir_loader
 from tensorboard.uploader import util
-from tensorboard.uploader import uploader_errors
 from tensorboard.compat.proto import event_pb2
 from tensorboard.compat.proto import graph_pb2
 from tensorboard.compat.proto import summary_pb2
@@ -1180,7 +1179,7 @@ class ScalarBatchedRequestSenderTest(tf.test.TestCase):
 
         error = test_util.grpc_error(grpc.StatusCode.NOT_FOUND, "nope")
         mock_client.WriteScalar.side_effect = error
-        with self.assertRaises(uploader_errors.ExperimentNotFoundError):
+        with self.assertRaises(uploader_lib.ExperimentNotFoundError):
             sender.flush()
 
     def test_no_budget_for_base_request(self):
@@ -1552,7 +1551,7 @@ class TensorBatchedRequestSenderTest(tf.test.TestCase):
 
         error = test_util.grpc_error(grpc.StatusCode.NOT_FOUND, "nope")
         mock_client.WriteTensor.side_effect = error
-        with self.assertRaises(uploader_errors.ExperimentNotFoundError):
+        with self.assertRaises(uploader_lib.ExperimentNotFoundError):
             sender.flush()
 
     def test_no_budget_for_base_request(self):
@@ -1900,7 +1899,7 @@ class DeleteExperimentTest(tf.test.TestCase):
         error = test_util.grpc_error(grpc.StatusCode.NOT_FOUND, "nope")
         mock_client.DeleteExperiment.side_effect = error
 
-        with self.assertRaises(uploader_errors.ExperimentNotFoundError):
+        with self.assertRaises(uploader_lib.ExperimentNotFoundError):
             uploader_lib.delete_experiment(mock_client, "123")
 
     def test_unauthorized(self):
@@ -1908,7 +1907,7 @@ class DeleteExperimentTest(tf.test.TestCase):
         error = test_util.grpc_error(grpc.StatusCode.PERMISSION_DENIED, "nope")
         mock_client.DeleteExperiment.side_effect = error
 
-        with self.assertRaises(uploader_errors.PermissionDeniedError):
+        with self.assertRaises(uploader_lib.PermissionDeniedError):
             uploader_lib.delete_experiment(mock_client, "123")
 
     def test_internal_error(self):
@@ -1959,7 +1958,7 @@ class UpdateExperimentMetadataTest(tf.test.TestCase):
         error = test_util.grpc_error(grpc.StatusCode.NOT_FOUND, "nope")
         mock_client.UpdateExperiment.side_effect = error
 
-        with self.assertRaises(uploader_errors.ExperimentNotFoundError):
+        with self.assertRaises(uploader_lib.ExperimentNotFoundError):
             uploader_lib.update_experiment_metadata(mock_client, "123", name="")
 
     def test_unauthorized(self):
@@ -1967,7 +1966,7 @@ class UpdateExperimentMetadataTest(tf.test.TestCase):
         error = test_util.grpc_error(grpc.StatusCode.PERMISSION_DENIED, "nope")
         mock_client.UpdateExperiment.side_effect = error
 
-        with self.assertRaises(uploader_errors.PermissionDeniedError):
+        with self.assertRaises(uploader_lib.PermissionDeniedError):
             uploader_lib.update_experiment_metadata(mock_client, "123", name="")
 
     def test_invalid_argument(self):
@@ -1977,7 +1976,7 @@ class UpdateExperimentMetadataTest(tf.test.TestCase):
         )
         mock_client.UpdateExperiment.side_effect = error
 
-        with self.assertRaises(uploader_errors.InvalidArgumentError) as cm:
+        with self.assertRaises(uploader_lib.InvalidArgumentError) as cm:
             uploader_lib.update_experiment_metadata(mock_client, "123", name="")
         msg = str(cm.exception)
         self.assertIn("too many", msg)

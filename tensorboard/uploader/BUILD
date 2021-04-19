@@ -101,7 +101,6 @@ py_library(
     deps = [
         ":logdir_loader",
         ":upload_tracker",
-        ":uploader_errors",
         ":util",
         "//tensorboard:expect_grpc_installed",
         "//tensorboard/backend:process_graph",
@@ -308,12 +307,4 @@ py_test(
         "//tensorboard:test",
         "//tensorboard/util:grpc_util",
     ],
-)
-
-py_library(
-    name = "uploader_errors",
-    srcs = ["uploader_errors.py"],
-    srcs_version = "PY3",
-    visibility = ["//tensorboard:internal"],
-    deps = [],
 )
