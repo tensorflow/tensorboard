@@ -10,7 +10,7 @@ tf_ts_library(
         "index.ts",
     ],
     deps = [
-        ":core_deeplink_provider",
+        ":dashboard_deeplink_provider",
         "//tensorboard/webapp/app_routing:route_config",
         "//tensorboard/webapp/app_routing:types",
         "//tensorboard/webapp/tb_wrapper",
@@ -19,9 +19,9 @@ tf_ts_library(
 )
 
 tf_ts_library(
-    name = "core_deeplink_provider_types",
+    name = "dashboard_deeplink_provider_types",
     srcs = [
-        "core_deeplink_provider_types.ts",
+        "dashboard_deeplink_provider_types.ts",
     ],
     deps = [
         "//tensorboard/webapp/metrics:types",
@@ -29,12 +29,12 @@ tf_ts_library(
 )
 
 tf_ts_library(
-    name = "core_deeplink_provider",
+    name = "dashboard_deeplink_provider",
     srcs = [
-        "core_deeplink_provider.ts",
+        "dashboard_deeplink_provider.ts",
     ],
     deps = [
-        ":core_deeplink_provider_types",
+        ":dashboard_deeplink_provider_types",
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp:selectors",
         "//tensorboard/webapp/app_routing:deep_link_provider",
@@ -54,10 +54,10 @@ tf_ts_library(
     name = "routes_test_lib",
     testonly = True,
     srcs = [
-        "core_deeplink_provider_test.ts",
+        "dashboard_deeplink_provider_test.ts",
     ],
     deps = [
-        ":core_deeplink_provider",
+        ":dashboard_deeplink_provider",
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp:selectors",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
