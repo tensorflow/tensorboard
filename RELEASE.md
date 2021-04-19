@@ -1,3 +1,44 @@
+# Release 2.5.0
+
+## Features
+- New data loading mode: typically loads between 100× and 350× faster
+  - On by default when applicable; pass `--load_fast false` to disable
+  - For details, or to provide feedback, see #4784
+- Time Series
+  - Improved line charts with GPU acceleration (#4695)
+    - On by default; use `?fastChart=false` to fallback to the older version. Please give us feedback before you use the fallback mechanism.
+    - Support manual extent changes (#4711)
+  - Monotonic option for "zigzag" charts (#4696)
+- Graphs
+  - Added toggle to disable high-degree node extraction (#4722)
+  - "Color by structure" is now opt-in for large graphs; improves load performance by up to 77% in some cases (#4742)
+  - Combine graph by prefixing with unique name (#4334)
+- Text
+  - Support fenced code blocks in Markdown (#4585)
+- Histograms
+  - Most recent step gets the most salient color. (#4374)
+- Support http server port reuse (#4616) – thanks @zuston.
+
+## Bug fixes
+- Graphs
+  - Fixed "Download as PNG" button (#4759)
+  - Fixed "Ungroup this series" button (#4817)
+  - Now collapses more series (abc1, abc2, …, abc5 → abc[1-5]) (#4803)
+- Core
+  - Removed scrollbars on no data views for plugins (#4525)
+  - Error message is JS is disabled (#4401)
+- Projector: fix the KNN algorithm caused projections to be incorrect. (#4687)
+- Windows: fixed the issue where TensorBoard notebook magic would hang when first launched (#4407, #4300)
+- Time series: Time axis on scalar chart read walltime incorrectly (#4541)
+- Graph events inconsistently evicted after session log START event (#4743)
+
+## TensorBoard.dev updates
+- Text summaries now uploaded
+
+## Breaking changes
+- Projector plugin will not work with `--logdir_spec` (#4494) (may not have worked before)
+- Drop support for negative `--reload_interval`, which instructed TensorBoard to not read any data at all
+
 # Release 2.4.1
 
 ## Bug fixes
@@ -374,9 +415,9 @@ The 1.15 minor series tracks TensorFlow 1.15.
 [example-plugin]: https://github.com/tensorflow/tensorboard/tree/1.15/tensorboard/examples/plugins/example_basic#readme
 
 ## Bug fixes
-- #2614 - “Toggle All Runs” button now behaves correctly on the first click when
+- #2614 - "Toggle All Runs" button now behaves correctly on the first click when
   many runs are loaded (PR #2633)
-- Scalar charts should no longer “become tiny” on certain kinds of rendering
+- Scalar charts should no longer "become tiny" on certain kinds of rendering
   failures (PR #2605)
 - #2028 - TensorBoard now logs less verbosely with Werkzeug 0.15.0 and up; it
   now behaves the same across Werkzeug versions (PR #2383)
