@@ -29,6 +29,8 @@ from tensorboard.util import tensor_util
 
 logger = tb_logging.get_logger()
 
+# How long to wait for a response on a scalar write request.
+_SCALAR_WRITE_TIMEOUT_SECS = 30
 
 def _prune_empty_tags_and_runs(request):
     for (run_idx, run) in reversed(list(enumerate(request.runs))):
@@ -149,7 +151,7 @@ class ScalarBatchedRequestSender(object):
             return
 
         self._rpc_rate_limiter.tick()
-        self.complete_grpc_futures(grpc_futures)
+        self._groom_grpc_futures()
 
         with _request_logger(
             request, request.runs
@@ -160,8 +162,8 @@ class ScalarBatchedRequestSender(object):
 
         self._new_request()
 
-    def complete_grpc_futures(self, grpc_futures):
-        """Handle any excptions."""
+    def _groom_grpc_futures(self):
+        """Handle any excptions, remove completed futures."""
         done_futures = []
         # Check if any exceptions raised, collect indicies of futures which can
         # be removed.
@@ -172,7 +174,7 @@ class ScalarBatchedRequestSender(object):
                     # WriteScalar RPCs, but if we did, it would go here.  This
                     # call to result will raise any exception caused in the
                     # gRPC call.
-                    future.result()
+                    future.result(_SCALAR_WRITE_TIMEOUT_SECS)
                     done_futures.append(i)
                 except grpc.RpcError as e:
                     if e.code() == grpc.StatusCode.NOT_FOUND:
@@ -182,6 +184,15 @@ class ScalarBatchedRequestSender(object):
         done_futures.sort(reverse=True)
         for i in done_futures:
             self._grpc_futures.pop(i)
+
+    def complete_all_pending_futures(self):
+        """Continuously checks the futures until they are done.
+
+        This is guaranteed to complete if the underlying gRPC future
+        requests are made with timeouts.
+        """
+        while self._grpc_futures:
+            self._groom_grpc_futures()
 
 
     def _create_run(self, run_name):

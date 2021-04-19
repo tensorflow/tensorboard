@@ -189,9 +189,13 @@ class BatchedRequestSender(object):
                     run_name, event, value, metadata
                 )
 
+        # Send requests corresponding to whatever remaining events.
         self._scalar_request_sender.flush()
         self._tensor_request_sender.flush()
         self._blob_request_sender.flush()
+        # Wait for asynchronous calls to complete.
+        self._scalar_request_sender.complete_all_pending_futures()
+
 
     def _run_values(self, run_to_events):
         """Helper generator to create a single stream of work items.

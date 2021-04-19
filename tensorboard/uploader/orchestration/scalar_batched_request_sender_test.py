@@ -57,7 +57,8 @@ def _apply_compat(events):
             yield event
 
 
-def _create_mock_client():
+
+def _create_mock_client(grpc_exception=None):
     # Create a stub instance (using a test channel) in order to derive a mock
     # from it with autospec enabled. Mocking TensorBoardWriterServiceStub itself
     # doesn't work with autospec because grpc constructs stubs via metaclassing.
@@ -66,6 +67,30 @@ def _create_mock_client():
     )
     stub = write_service_pb2_grpc.TensorBoardWriterServiceStub(test_channel)
     mock_client = mock.create_autospec(stub)
+
+    # Some surgery is required to make the mock object returned from the call to
+    # gRPC's `future` async endpoint act like the `grpc.Future` it is supposed
+    # to be. It needs to somewhat faithfully reproduce the following methods
+    # which are used in the grpc_util.async_call_with_retries machinery.
+    #  *  `done`
+    #  *  `result`
+    #  *  `exception`
+    grpc_future = mock.MagicMock()
+    grpc_future.done.return_value = True
+    if grpc_exception:
+        grpc_future.result.side_effect = grpc_exception
+        grpc_future.exception.return_value = grpc_exception
+    else:
+        grpc_future.exception.return_value = None
+    mock_client.WriteScalar.future.return_value = grpc_future
+
+    # This is reimplementing the gRPC future behavior wherein a callback
+    # can be invoked when the future is complete.  In this case, the callback
+    # must be invoked with the grpc_future as its argument.
+    def _invoke_callback(handler):
+        handler(grpc_future)
+
+    grpc_future.add_done_callback.side_effect = _invoke_callback
     return mock_client
 
 
@@ -117,8 +142,9 @@ class ScalarBatchedRequestSenderTest(tf.test.TestCase):
         )
         self._add_events(sender, "", events)
         sender.flush()
+        sender.complete_all_pending_futures()
 
-        requests = [c[0][0] for c in mock_client.WriteScalar.call_args_list]
+        requests = [c[0][0] for c in mock_client.WriteScalar.future.call_args_list]
         self.assertLen(requests, 1)
         self.assertLen(requests[0].runs, 1)
         return requests[0].runs[0]
@@ -205,18 +231,22 @@ class ScalarBatchedRequestSenderTest(tf.test.TestCase):
         )
         self.assertProtoEquals(run_proto, expected_run_proto)
 
-    def test_propagates_experiment_deletion(self):
+    def test_async_propagates_experiment_deletion(self):
+        # Setup: A client which return a grpc_error when asked to write.
         event = event_pb2.Event(step=1)
         event.summary.value.add(tag="foo", simple_value=1.0)
 
-        mock_client = _create_mock_client()
-        sender = _create_scalar_request_sender("123", mock_client)
-        self._add_events(sender, "run", _apply_compat([event]))
-
         error = test_util.grpc_error(grpc.StatusCode.NOT_FOUND, "nope")
-        mock_client.WriteScalar.side_effect = error
+        mock_client = _create_mock_client(grpc_exception=error)
+        sender = _create_scalar_request_sender("123", mock_client)
+        # Execute: sender.add_event on all the events.
+        self._add_events(sender, "run", _apply_compat([event]))
+        # Expect: Exception is raised, but it is the transforemd
+        # uploader exception, not the original grpc exception.
         with self.assertRaises(uploader_errors.ExperimentNotFoundError):
             sender.flush()
+            sender.complete_all_pending_futures()
+
 
     def test_no_budget_for_base_request(self):
         mock_client = _create_mock_client()
@@ -263,7 +293,8 @@ class ScalarBatchedRequestSenderTest(tf.test.TestCase):
         self._add_events(sender, long_run_1, _apply_compat([event_1]))
         self._add_events(sender, long_run_2, _apply_compat([event_2]))
         sender.flush()
-        requests = [c[0][0] for c in mock_client.WriteScalar.call_args_list]
+        sender.complete_all_pending_futures()
+        requests = [c[0][0] for c in mock_client.WriteScalar.future.call_args_list]
 
         for request in requests:
             _clear_wall_times(request)
@@ -306,7 +337,8 @@ class ScalarBatchedRequestSenderTest(tf.test.TestCase):
         )
         self._add_events(sender, "train", _apply_compat([event]))
         sender.flush()
-        requests = [c[0][0] for c in mock_client.WriteScalar.call_args_list]
+        sender.complete_all_pending_futures()
+        requests = [c[0][0] for c in mock_client.WriteScalar.future.call_args_list]
         for request in requests:
             _clear_wall_times(request)
 
@@ -352,7 +384,8 @@ class ScalarBatchedRequestSenderTest(tf.test.TestCase):
         )
         self._add_events(sender, "train", _apply_compat(events))
         sender.flush()
-        requests = [c[0][0] for c in mock_client.WriteScalar.call_args_list]
+        sender.complete_all_pending_futures()
+        requests = [c[0][0] for c in mock_client.WriteScalar.future.call_args_list]
         for request in requests:
             _clear_wall_times(request)
 
@@ -407,7 +440,8 @@ class ScalarBatchedRequestSenderTest(tf.test.TestCase):
             self._add_events(sender, "train", _apply_compat([event_1]))
             self._add_events(sender, "test", _apply_compat([event_2]))
             sender.flush()
-        requests = [c[0][0] for c in mock_client.WriteScalar.call_args_list]
+            sender.complete_all_pending_futures()
+        requests = [c[0][0] for c in mock_client.WriteScalar.future.call_args_list]
         for request in requests:
             _clear_wall_times(request)
 
