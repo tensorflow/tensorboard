@@ -72,7 +72,7 @@ richness of the debug information enables users to narrow in on obscure bugs.
 
 ```py
 tf.debugging.experimental.enable_dump_debug_info(
-    logdir="/tmp/tfdbg2_logdir",
+    "/tmp/tfdbg2_logdir",
     tensor_debug_mode="FULL_HEALTH",
     circular_buffer_size=-1)
 ```
