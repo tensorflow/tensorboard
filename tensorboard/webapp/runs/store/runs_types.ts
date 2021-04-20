@@ -51,11 +51,25 @@ export interface RunsDataState {
   runIdToExpId: Record<RunId, ExperimentId>;
   runMetadata: Record<RunId, Run>;
   runsLoadState: Record<ExperimentId, LoadState>;
-  // Run selection is tied to a list of experimentIds which is somewhat related
-  // to route but not strictly. For instance, if we want to render the
-  // run-selector in both experiment list and dashboard routes sharing the
-  // state, they need to share a key.
+  /**
+   * Map from a 'key' to a `RunId` to boolean whether the run is selected.
+   * The 'key' is a serialization of multiple experiment IDs.
+   *
+   * Run selection is tied to a list of experimentIds which is somewhat related
+   * to route but not strictly. For instance, if we want to render the
+   * run-selector in both experiment list and dashboard routes sharing the
+   * state, they need to share a key.
+   *
+   * TODO: this belongs in UI state not data state.
+   */
   selectionState: Map<string, Map<RunId, boolean>>;
+  /**
+   * Map from a 'key' to boolean whether the new runs should be selected by
+   * default. The 'key' is a serialization of multiple experiment IDs.
+   *
+   * TODO: this belongs in UI state not data state.
+   */
+  shouldAutoSelectRuns: Map<string, boolean>;
 }
 
 export interface RunsUiRoutefulState {

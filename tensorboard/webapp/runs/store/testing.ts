@@ -55,6 +55,7 @@ export function buildRunsState(
       runMetadata: {},
       runsLoadState: {},
       selectionState: new Map(),
+      shouldAutoSelectRuns: new Map(),
       ...dataOverride,
     },
     ui: {
