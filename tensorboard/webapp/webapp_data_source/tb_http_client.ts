@@ -85,7 +85,7 @@ export class TBHttpClient implements TBHttpClientInterface {
 
   post<ResponseType>(
     path: string,
-    body: FormData,
+    body: Parameters<typeof HttpClient.prototype.post>[1],
     options: PostOptions = {}
   ): Observable<ResponseType> {
     options = withXsrfHeader(options);
@@ -113,7 +113,7 @@ export class TBHttpClient implements TBHttpClientInterface {
 
   put<ResponseType>(
     path: string,
-    body: any,
+    body: Parameters<typeof HttpClient.prototype.put>[1],
     options: PutOptions = {}
   ): Observable<ResponseType> {
     return this.http.put<ResponseType>(
