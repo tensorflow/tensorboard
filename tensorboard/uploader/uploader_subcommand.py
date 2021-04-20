@@ -610,6 +610,9 @@ def _get_server_info(flags):
     # line, but only if the server accepted our initial handshake.
     if flags.api_endpoint and server_info.api_server.endpoint:
         server_info.api_server.endpoint = flags.api_endpoint
+    print("SERVER_INFO SERVER_INFO SERVER_INFO")
+    print(server_info)
+    print("SERVER_INFO SERVER_INFO SERVER_INFO")
     return server_info
 
 

@@ -39,6 +39,9 @@ class RateLimiter(object):
             self._last_called_secs + self._interval_secs - self._time.time()
         )
         if wait_secs > 0:
+            print("RATE_LIMIT.TICK")
+            print(f"Waiting {wait_secs} secs on a {self._interval_secs} interval.")
+            print("RATE_LIMIT.TICK")
             self._time.sleep(wait_secs)
         self._last_called_secs = self._time.time()
 
