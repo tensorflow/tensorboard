@@ -62,6 +62,46 @@ class RequestContextTest(tb_test.TestCase):
         self.assertEqual(req_context.remote_ip, REMOTE_IP)
         self.assertEqual(req_context.x_forwarded_for, X_FORWARDED_FOR_IPS)
 
+    def test_replace(self):
+        environ1 = {"one": "two", "three": "four"}
+        auth1 = auth_lib.AuthContext({}, environ1)
+        environ2 = {"one": "two"}
+        auth2 = auth_lib.AuthContext({}, environ2)
+        remote_ip1 = ipaddress.ip_address("192.168.0.1")
+        remote_ip2 = ipaddress.ip_address("192.168.0.2")
+        x_forwarded_for_ips1 = (remote_ip1, REMOTE_IP)
+        x_forwarded_for_ips2 = (remote_ip2, REMOTE_IP)
+
+        req_context = context.RequestContext(
+            auth=auth1,
+            remote_ip=remote_ip1,
+            x_forwarded_for=x_forwarded_for_ips1,
+        )
+        self.assertEqual(req_context.auth, auth1)
+        self.assertEqual(req_context.remote_ip, remote_ip1)
+        self.assertEqual(req_context.x_forwarded_for, x_forwarded_for_ips1)
+
+        req_context_new = req_context.replace(auth=auth2)
+        self.assertEqual(req_context_new.auth, auth2)
+        self.assertEqual(req_context_new.remote_ip, req_context.remote_ip)
+        self.assertEqual(
+            req_context_new.x_forwarded_for, req_context.x_forwarded_for
+        )
+
+        req_context_new = req_context.replace(remote_ip=remote_ip2)
+        self.assertEqual(req_context_new.auth, req_context.auth)
+        self.assertEqual(req_context_new.remote_ip, remote_ip2)
+        self.assertEqual(
+            req_context_new.x_forwarded_for, req_context.x_forwarded_for
+        )
+
+        req_context_new = req_context.replace(
+            x_forwarded_for=x_forwarded_for_ips2
+        )
+        self.assertEqual(req_context_new.auth, req_context.auth)
+        self.assertEqual(req_context_new.remote_ip, req_context.remote_ip)
+        self.assertEqual(req_context_new.x_forwarded_for, x_forwarded_for_ips2)
+
 
 if __name__ == "__main__":
     tb_test.main()
