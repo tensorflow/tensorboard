@@ -350,10 +350,33 @@ class CorePluginTest(tf.test.TestCase):
                 ["run1", "avocado", "zebra", "ox", "enigmatic", "mysterious"],
             )
 
-    def testNotifications(self):
-        """Test the format of the /data/notifications endpoint."""
+    def testNotificationsEmptyFallback(self):
+        """Test the fallback empty output of the /data/notifications endpoint."""
         notifications_json = self._get_json(self.server, "/data/notifications")
         self.assertEqual(notifications_json, {"notifications": []})
+
+    def testNotifications(self):
+        """Test that the /data/notifications endpoint serves static JSON file."""
+
+        class FakeDataProvider(object):
+            pass
+
+        self.context = base_plugin.TBContext(
+            assets_zip_provider=get_test_assets_zip_provider(
+                extra_paths_to_content={
+                    "notifications_note.json": b'{"notifications": ["foo"]}',
+                }
+            ),
+            flags=FakeFlags(
+                generic_data="true",
+            ),
+            data_provider=FakeDataProvider(),
+        )
+        self.plugin = core_plugin.CorePlugin(self.context)
+        app = application.TensorBoardWSGI([self.plugin])
+        self.server = werkzeug_test.Client(app, wrappers.BaseResponse)
+        notifications_json = self._get_json(self.server, "/data/notifications")
+        self.assertEqual(notifications_json, {"notifications": ["foo"]})
 
 
 class CorePluginPathPrefixTest(tf.test.TestCase):
@@ -427,13 +450,16 @@ class CorePluginPathPrefixTest(tf.test.TestCase):
         )
 
 
-def get_test_assets_zip_provider():
+def get_test_assets_zip_provider(extra_paths_to_content=None):
+    extra_paths_to_content = extra_paths_to_content or {}
     memfile = io.BytesIO()
     with zipfile.ZipFile(
         memfile, mode="w", compression=zipfile.ZIP_DEFLATED
     ) as zf:
         zf.writestr("index.html", FAKE_INDEX_HTML)
         zf.writestr("index.js", FAKE_INDEX_JS)
+        for path, content in extra_paths_to_content.items():
+            zf.writestr(path, content)
     return lambda: contextlib.closing(io.BytesIO(memfile.getvalue()))
 
 

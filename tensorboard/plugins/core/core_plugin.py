@@ -92,6 +92,14 @@ class CorePlugin(base_plugin.TBPlugin):
             "/images": self._redirect_to_index,
         }
         apps.update(self._static_handlers)
+        remappings = {
+            # Serve notifications from static JSON file if present.
+            "/data/notifications": "/notifications_note.json",
+        }
+        for src, dest in remappings.items():
+            handler = apps.get(dest)
+            if handler:
+                apps[src] = handler
         return apps
 
     def get_static_handlers(self):
@@ -289,7 +297,13 @@ class CorePlugin(base_plugin.TBPlugin):
 
     @wrappers.Request.application
     def _serve_notifications(self, request):
-        """Serve JSON payload of notifications to show in the UI."""
+        """Serve JSON payload of notifications to show in the UI.
+
+        Typically this endpoint is mapped to the static file handler for
+        `/notifications_note.json` so this handler is never called; it exists
+        as a fallback for cases where the static file is not present. See
+        `get_static_handlers()`.
+        """
         results = {"notifications": []}
         return http_util.Respond(request, results, "application/json")
 
