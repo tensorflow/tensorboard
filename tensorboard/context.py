@@ -80,8 +80,8 @@ class RequestContext(object):
           A new context like this one but with the specified updates.
         """
         kwargs.setdefault("auth", self.auth)
-        kwargs.setdefault("auth", self.remote_ip)
-        kwargs.setdefault("auth", self.x_forwarded_for)
+        kwargs.setdefault("remote_ip", self.remote_ip)
+        kwargs.setdefault("x_forwarded_for", self.x_forwarded_for)
         return type(self)(**kwargs)
 
 
