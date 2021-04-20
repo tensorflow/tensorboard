@@ -69,6 +69,7 @@ class CorePlugin(base_plugin.TBPlugin):
         self._assets_zip_provider = context.assets_zip_provider
         self._data_provider = context.data_provider
         self._include_debug_info = bool(include_debug_info)
+        self._static_handlers = self.get_static_handlers()
 
     def is_active(self):
         return True
@@ -90,10 +91,10 @@ class CorePlugin(base_plugin.TBPlugin):
             "/histograms": self._redirect_to_index,
             "/images": self._redirect_to_index,
         }
-        apps.update(self.get_resource_apps())
+        apps.update(self._static_handlers)
         return apps
 
-    def get_resource_apps(self):
+    def get_static_handlers(self):
         apps = {}
         if not self._assets_zip_provider:
             return apps
