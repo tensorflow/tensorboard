@@ -29,7 +29,7 @@ _REQUEST_TIMEOUT_SECONDS = 10
 
 # Minimum interval between initiating write WriteScalar RPCs, if not specified
 # by server_info, in milliseconds
-_DEFAULT_MIN_SCALAR_REQUEST_INTERVAL = 5000
+_DEFAULT_MIN_SCALAR_REQUEST_INTERVAL = 100
 
 # Minimum interval between initiating write WriteTensor RPCs, if not specified
 # by server_info, in milliseconds.
