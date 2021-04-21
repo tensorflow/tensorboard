@@ -98,7 +98,8 @@ const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
     const runCount = action.runsForAllExperiments.length;
     if (runCount > 0) {
       const eidsBasedKey = serializeExperimentIds(action.experimentIds);
-      let selectNewRunsByDefault = state.shouldAutoSelectRuns.get(eidsBasedKey) ?? null;
+      let selectNewRunsByDefault =
+        state.shouldAutoSelectRuns.get(eidsBasedKey) ?? null;
       if (selectNewRunsByDefault === null) {
         selectNewRunsByDefault = runCount <= MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT;
 

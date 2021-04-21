@@ -234,9 +234,7 @@ describe('runs_reducers', () => {
         selectionState: new Map([
           ['["b"]', new Map([['existingRun1', false]])],
         ]),
-        shouldAutoSelectRuns: new Map([
-          ['["b"]', true],
-        ]),
+        shouldAutoSelectRuns: new Map([['["b"]', true]]),
       });
 
       const manyNewRuns = createFakeRuns(MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT + 1);
@@ -265,12 +263,8 @@ describe('runs_reducers', () => {
     it('auto-unselects new runs from preference, even if num <= N', () => {
       const existingRuns = [buildRun({id: 'existingRun1'})];
       let state = buildRunsState({
-        selectionState: new Map([
-          ['["b"]', new Map([['existingRun1', true]])],
-        ]),
-        shouldAutoSelectRuns: new Map([
-          ['["b"]', false],
-        ]),
+        selectionState: new Map([['["b"]', new Map([['existingRun1', true]])]]),
+        shouldAutoSelectRuns: new Map([['["b"]', false]]),
       });
 
       const fewNewRuns = createFakeRuns(1);
