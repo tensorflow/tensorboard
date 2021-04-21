@@ -302,32 +302,5 @@ describe('core deeplink provider', () => {
         {key: 'experimentalPlugin', value: 'baz'},
       ]);
     });
-
-    it('serializes enabled fast chart state', () => {
-      store.overrideSelector(selectors.getOverriddenFeatureFlags, {
-        enableGpuChart: false,
-      });
-      store.refreshState();
-
-      expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual([
-        {key: 'fastChart', value: 'false'},
-      ]);
-
-      store.overrideSelector(selectors.getOverriddenFeatureFlags, {
-        enableGpuChart: true,
-      });
-      store.refreshState();
-
-      expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual([
-        {key: 'fastChart', value: 'true'},
-      ]);
-    });
-
-    it('omits fast chart state if it is not overridden by user and has default value', () => {
-      store.overrideSelector(selectors.getOverriddenFeatureFlags, {});
-      store.refreshState();
-
-      expect(queryParamsSerialized).toEqual([[]]);
-    });
   });
 });
