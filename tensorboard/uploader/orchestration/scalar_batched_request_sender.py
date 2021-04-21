@@ -17,6 +17,7 @@
 import contextlib
 import grpc
 import time
+import uuid
 
 from tensorboard.uploader.proto import write_service_pb2
 
@@ -93,7 +94,8 @@ class ScalarBatchedRequestSender(object):
             max_request_size
         )
         self._tracker = tracker
-        self._grpc_futures = []
+        # map from uuid to grpc future.
+        self._grpc_futures = {}
 
         self._runs = {}  # cache: map from run name to `Run` proto in request
         self._tags = (
@@ -156,9 +158,11 @@ class ScalarBatchedRequestSender(object):
         with _request_logger(
             request, request.runs
         ), self._tracker.scalars_tracker(self._num_values):
+            future_key = uuid.uuid4()
+            print("initating retryable async %s" % future_key)
             future = grpc_util.async_call_with_retries(
                 self._api.WriteScalar, request)
-            self._grpc_futures.append(future)
+            self._grpc_futures[future_key]=future
 
         self._new_request()
 
@@ -167,23 +171,34 @@ class ScalarBatchedRequestSender(object):
         done_futures = []
         # Check if any exceptions raised, collect indicies of futures which can
         # be removed.
-        for i, future in enumerate(self._grpc_futures):
-            if future.done():
+        print('_groom_rpc_futures: there are %d futures:' % len(self._grpc_futures))
+        for key, future in self._grpc_futures.items():
+            print('   %s' % key)
+
+        for key, future in self._grpc_futures.items():
+            if not future.done():
+                print('(-) %s still waiting.' % key)
+            else:
                 try:
+                    print('(A) %s done() is true.' % key)
                     # We don't actually do anything with the results from the
                     # WriteScalar RPCs, but if we did, it would go here.  This
                     # call to result will raise any exception caused in the
                     # gRPC call.
                     future.result(_SCALAR_WRITE_TIMEOUT_SECS)
-                    done_futures.append(i)
+                    print('(B) %s got result.' % key)
+                    done_futures.append(key)
                 except grpc.RpcError as e:
+                    print('(X) %s raised error.' % key)
                     if e.code() == grpc.StatusCode.NOT_FOUND:
                         raise uploader_errors.ExperimentNotFoundError()
                     logger.error("Upload call failed with error %s", e)
         # Remove all the completed futures.
-        done_futures.sort(reverse=True)
-        for i in done_futures:
-            self._grpc_futures.pop(i)
+        for key in done_futures:
+            print('(C) %s removing tracking.' % key)
+            del self._grpc_futures[key]
+        print('_groom_rpc_futures done.')
+        print('.')
 
     def complete_all_pending_futures(self):
         """Continuously checks the futures until they are done.
@@ -193,6 +208,7 @@ class ScalarBatchedRequestSender(object):
         """
         while self._grpc_futures:
             self._groom_grpc_futures()
+            time.sleep(0.5)
 
 
     def _create_run(self, run_name):
