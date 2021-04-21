@@ -1,7 +1,7 @@
 load("//tensorboard/defs:defs.bzl", "tf_js_binary", "tf_ng_module", "tf_ng_web_test_suite", "tf_sass_binary", "tf_sass_library", "tf_svg_bundle")
 load("//tensorboard/defs:js.bzl", "tf_resource_digest_suffixer")
 load("//tensorboard/defs:web.bzl", "tf_web_library")
-load("//tensorboard/defs:vulcanize.bzl", "tensorboard_html_binary")
+load("//tensorboard/defs/internal:html.bzl", "tb_combine_html")
 
 package(default_visibility = ["//tensorboard:internal"])
 
@@ -234,7 +234,7 @@ tf_web_library(
 )
 
 # A Vulcanized html binary for the complete app (both Angular and Polymer parts)
-tensorboard_html_binary(
+tb_combine_html(
     name = "index_suffixless",
     input_path = "/index_polymer3.inlined.html",
     # Do note that JavaScript filename is created off of `name` of this target yet the

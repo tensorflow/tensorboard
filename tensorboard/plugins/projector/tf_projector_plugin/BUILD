@@ -1,5 +1,5 @@
 load("//tensorboard/defs:web.bzl", "tf_web_library")
-load("//tensorboard/defs:vulcanize.bzl", "tensorboard_html_binary")
+load("//tensorboard/defs/internal:html.bzl", "tb_combine_html")
 
 package(default_visibility = ["//tensorboard:internal"])
 
@@ -16,9 +16,8 @@ tf_web_library(
     path = "/tf-projector",
 )
 
-tensorboard_html_binary(
+tb_combine_html(
     name = "projector_binary",
-    compile = False,
     input_path = "/tf-projector/tf-projector-plugin.html",
     js_path = "/projector_binary.js",
     output_path = "/tf-projector/projector_binary.html",

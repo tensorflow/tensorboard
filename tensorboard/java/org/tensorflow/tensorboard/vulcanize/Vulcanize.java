@@ -30,21 +30,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
-import com.google.javascript.jscomp.BasicErrorManager;
-import com.google.javascript.jscomp.CheckLevel;
-import com.google.javascript.jscomp.CompilationLevel;
-import com.google.javascript.jscomp.Compiler;
-import com.google.javascript.jscomp.CompilerOptions;
-import com.google.javascript.jscomp.DependencyOptions;
-import com.google.javascript.jscomp.DiagnosticGroup;
-import com.google.javascript.jscomp.DiagnosticGroups;
-import com.google.javascript.jscomp.DiagnosticType;
-import com.google.javascript.jscomp.JSError;
-import com.google.javascript.jscomp.PropertyRenamingPolicy;
-import com.google.javascript.jscomp.Result;
-import com.google.javascript.jscomp.SourceFile;
-import com.google.javascript.jscomp.WarningsGuard;
-import com.google.javascript.jscomp.deps.ModuleLoader;
 import com.google.protobuf.TextFormat;
 import io.bazel.rules.closure.Webpath;
 import io.bazel.rules.closure.webfiles.BuildInfo.Webfiles;
@@ -90,70 +75,30 @@ public final class Vulcanize {
   private static final Pattern INLINE_SOURCE_MAP_PATTERN =
       Pattern.compile("//# sourceMappingURL=.*");
 
-  private static final Pattern IGNORE_PATHS_PATTERN =
-      Pattern.compile("/(?:polymer|marked-element)/.*");
-
-  private static final ImmutableSet<String> EXTRA_JSDOC_TAGS =
-      ImmutableSet.of("attribute", "hero", "group", "required");
-
-  private static final Pattern SCRIPT_DELIMITER_PATTERN =
-      Pattern.compile("//# sourceURL=build:/([^\n]+)");
-
-  private static final String SCRIPT_DELIMITER = "//# sourceURL=build:/%name%";
-
   private static final Parser parser = Parser.htmlParser();
   private static final Map<Webpath, Path> webfiles = new HashMap<>();
   private static final Set<Webpath> alreadyInlined = new HashSet<>();
   private static final Set<String> legalese = new HashSet<>();
   private static final List<String> licenses = new ArrayList<>();
   private static final List<Webpath> stack = new ArrayList<>();
-  private static final Map<String, SourceFile> externs = new LinkedHashMap<>();
-  private static final List<SourceFile> sourcesFromJsLibraries = new ArrayList<>();
   private static final Map<Webpath, String> sourcesFromScriptTags = new LinkedHashMap<>();
   private static final Map<Webpath, Node> sourceTags = new LinkedHashMap<>();
-  private static final Multimap<Webpath, String> suppressions = HashMultimap.create();
-  private static CompilationLevel compilationLevel;
   private static Webpath outputPath;
   private static Node firstScript;
   private static Node licenseComment;
-  private static int insideDemoSnippet;
-  private static boolean testOnly;
-  private static boolean wantsCompile;
-  private static final List<Pattern> ignoreRegExs = new ArrayList<>();
-
-  // This is the default argument to Vulcanize for when the path_regexs_for_noinline attribute in
-  // third_party/tensorboard/defs/vulcanize.bzl is not set.
-  private static final String NO_NOINLINE_FILE_PROVIDED = "NO_REGEXS";
 
   private static final Pattern ABS_URI_PATTERN = Pattern.compile("^(?:/|[A-Za-z][A-Za-z0-9+.-]*:)");
 
   public static void main(String[] args) throws IOException {
     int argIdx = 0;
-    compilationLevel = CompilationLevel.fromString(args[argIdx++]);
-    wantsCompile = args[argIdx++].equals("true");
-    testOnly = args[argIdx++].equals("true");
     Webpath inputPath = Webpath.get(args[argIdx++]);
     outputPath = Webpath.get(args[argIdx++]);
     Webpath jsPath = Webpath.get(args[argIdx++]);
     Path output = Paths.get(args[argIdx++]);
     Path jsOutput = Paths.get(args[argIdx++]);
-    if (!args[argIdx++].equals(NO_NOINLINE_FILE_PROVIDED)) {
-      String ignoreFile = new String(Files.readAllBytes(Paths.get(args[argIdx])), UTF_8);
-      Arrays.asList(ignoreFile.split("\n"))
-          .forEach((str) -> ignoreRegExs.add(Pattern.compile(str)));
-    }
+
     while (argIdx < args.length) {
       final String arg = args[argIdx++];
-      if (arg.endsWith(".js")) {
-        String code = new String(Files.readAllBytes(Paths.get(arg)), UTF_8);
-        SourceFile sourceFile = SourceFile.fromCode(arg, code);
-        if (code.contains("@externs")) {
-          externs.put(arg, sourceFile);
-        } else {
-          sourcesFromJsLibraries.add(sourceFile);
-        }
-        continue;
-      }
       if (!arg.endsWith(".pbtxt")) {
         continue;
       }
@@ -165,18 +110,10 @@ public final class Vulcanize {
     stack.add(inputPath);
     Document document = parse(Files.readAllBytes(webfiles.get(inputPath)));
     transform(document);
-    if (wantsCompile) {
-      compile();
-    } else if (firstScript != null) {
+    if (firstScript != null) {
       firstScript.before(
           new Element(Tag.valueOf("script"), firstScript.baseUri())
               .appendChild(new DataNode("var CLOSURE_NO_DEPS = true;", firstScript.baseUri())));
-      for (SourceFile source : sourcesFromJsLibraries) {
-        String code = source.getCode();
-        firstScript.before(
-            new Element(Tag.valueOf("script"), firstScript.baseUri())
-                .appendChild(new DataNode(code, firstScript.baseUri())));
-      }
     }
     if (licenseComment != null) {
       licenseComment.attr("comment", String.format("\n%s\n", Joiner.on("\n\n").join(licenses)));
@@ -255,39 +192,19 @@ public final class Vulcanize {
   }
 
   private static Node enterNode(Node node) throws IOException {
-    if (node.nodeName().equals("demo-snippet")) {
-      insideDemoSnippet++;
-    }
-    if (insideDemoSnippet > 0) {
-      return node;
-    }
     if (node instanceof Element) {
       String href = node.attr("href");
-      // Ignore any files that match any of the ignore regular expressions.
-      boolean ignoreFile = false;
-      for (Pattern pattern : ignoreRegExs) {
-        if (pattern.matcher(href).find()) {
-          ignoreFile = true;
-          break;
-        }
-      }
-      if (!ignoreFile) {
-        if (isExternalCssNode(node)
-            && !shouldIgnoreUri(href)) {
-          node = visitStylesheet(node);
-        } else if (node.nodeName().equals("link")
-            && node.attr("rel").equals("import")) {
-          // Inline HTML.
-          node = visitHtmlImport(node);
-        } else if (node.nodeName().equals("script")
-            && !shouldIgnoreUri(node.attr("src"))
-            && !node.hasAttr("jscomp-ignore")) {
-          if (wantsCompile) {
-            node = visitScript(node);
-          } else {
-            node = inlineScript(node);
-          }
-        }
+      if (isExternalCssNode(node)
+          && !shouldIgnoreUri(href)) {
+        node = visitStylesheet(node);
+      } else if (node.nodeName().equals("link")
+          && node.attr("rel").equals("import")) {
+        // Inline HTML.
+        node = visitHtmlImport(node);
+      } else if (node.nodeName().equals("script")
+          && !shouldIgnoreUri(node.attr("src"))
+          && !node.hasAttr("jscomp-ignore")) {
+        node = inlineScript(node);
       }
       rootifyAttribute(node, "href");
       rootifyAttribute(node, "src");
@@ -312,8 +229,6 @@ public final class Vulcanize {
   private static Node leaveNode(Node node) {
     if (node instanceof Document) {
       stack.remove(stack.size() - 1);
-    } else if (node.nodeName().equals("demo-snippet")) {
-      insideDemoSnippet--;
     }
     return node;
   }
@@ -345,18 +260,9 @@ public final class Vulcanize {
     }
     boolean wantsMinify = getAttrTransitive(node, "jscomp-minify").isPresent();
 
-    if (node.hasAttr("jscomp-externs")) {
-      String filePath = getWebfile(path).toString();
-      SourceFile sourceFile = SourceFile.fromCode(filePath, script);
-      externs.put(filePath, sourceFile);
-      // Remove script tag of extern since it is not needed at the run time.
-      return replaceNode(node, new TextNode("", node.baseUri()));
-    } else if (node.attr("src").endsWith(".min.js")
+    if (node.attr("src").endsWith(".min.js")
         || getAttrTransitive(node, "jscomp-nocompile").isPresent()
         || wantsMinify) {
-      if (wantsMinify) {
-        script = minify(path, script);
-      }
       Node newScript =
           new Element(Tag.valueOf("script"), node.baseUri(), node.attributes())
               .appendChild(new DataNode(script, node.baseUri()))
@@ -367,14 +273,6 @@ public final class Vulcanize {
     } else {
       sourcesFromScriptTags.put(path, script);
       sourceTags.put(path, node);
-      Optional<String> suppress = getAttrTransitive(node, "jscomp-suppress");
-      if (suppress.isPresent()) {
-        if (suppress.get().isEmpty()) {
-          suppressions.put(path, "*");
-        } else {
-          suppressions.putAll(path, Splitter.on(' ').split(suppress.get()));
-        }
-      }
       return node;
     }
   }
@@ -435,174 +333,6 @@ public final class Vulcanize {
     return verifyNotNull(webfiles.get(path), "Bad ref: %s -> %s", me(), path);
   }
 
-  private static void compile() {
-    if (sourcesFromScriptTags.isEmpty()) {
-      return;
-    }
-
-    CompilerOptions options = new CompilerOptions();
-    compilationLevel.setOptionsForCompilationLevel(options);
-    options.setModuleResolutionMode(ModuleLoader.ResolutionMode.NODE);
-
-    // Nice options.
-    options.setColorizeErrorOutput(true);
-    options.setContinueAfterErrors(true);
-    options.setLanguageOut(CompilerOptions.LanguageMode.ECMASCRIPT_2015);
-    options.setGenerateExports(true);
-    options.setStrictModeInput(false);
-    options.setExtraAnnotationNames(EXTRA_JSDOC_TAGS);
-
-    // Strict mode gets in the way of concatenating all script tags as script
-    // tags assume different modes. Disable global strict imposed by JSComp.
-    // A function can still have a "use strict" inside.
-    options.setEmitUseStrict(false);
-
-    // So we can chop JS binary back up into the original script tags.
-    options.setPrintInputDelimiter(true);
-    options.setInputDelimiter(SCRIPT_DELIMITER);
-
-    // Optimizations that are too advanced for us right now.
-    options.setPropertyRenaming(PropertyRenamingPolicy.OFF);
-    options.setCheckGlobalThisLevel(CheckLevel.OFF);
-    options.setRemoveUnusedPrototypeProperties(false);
-    options.setRemoveUnusedClassProperties(false);
-    // Prevent Polymer bound method (invisible to JSComp) to be over-optimized.
-    options.setInlineFunctions(CompilerOptions.Reach.NONE);
-    options.setDevirtualizeMethods(false);
-
-    // Dependency management.
-    options.setClosurePass(true);
-    // TODO turn dependency pruning back on. ES6 modules are currently (incorrectly) considered
-    // moochers. Once the compiler no longer considers them moochers the dependencies will be in an
-    // incorrect order. The compiler will put moochers first, then other explicit entry points
-    // (if something is both an entry point and a moocher it goes first). vz-example-viewer.ts
-    // generates an ES6 module JS, and it will soon no longer be considered a moocher and be moved
-    // after its use in some moochers. To reenable dependency pruning, either the TS generation
-    // should not generate an ES6 module (a file with just goog.requires is a moocher!),
-    // or vz-example-viewer should be explicitly imported by the code that uses it. Alternatively,
-    // we could ensure that the input order to the compiler is correct and all inputs are used, and
-    // turn off both sorting and pruning.
-    options.setDependencyOptions(DependencyOptions.sortOnly());
-
-    // Polymer pass.
-    options.setPolymerVersion(2);
-
-    // Debug flags.
-    if (testOnly) {
-      options.setPrettyPrint(true);
-      options.setGeneratePseudoNames(true);
-      options.setExportTestFunctions(true);
-    }
-
-    // Don't print warnings from <script jscomp-suppress="group1 group2" ...> tags.
-    ImmutableMultimap<DiagnosticType, String> diagnosticGroups = initDiagnosticGroups();
-    options.addWarningsGuard(
-        new WarningsGuard() {
-          @Override
-          public CheckLevel level(JSError error) {
-            if (error.getSourceName() == null) {
-              return null;
-            }
-            if (error.getDefaultLevel() == CheckLevel.WARNING
-                && isErrorFromTranspiledTypescriptCode(error)) {
-              // Let's put our faith in the TypeScript compiler. At least until we have tsickle as
-              // part of our build process.
-              return CheckLevel.OFF;
-            }
-            if (error.getDefaultLevel() == CheckLevel.WARNING
-                && (error.getSourceName().startsWith("/iron-")
-                    || error.getSourceName().startsWith("/neon-")
-                    || error.getSourceName().startsWith("/paper-"))) {
-              // Suppress warnings in the Polymer standard libraries.
-              return CheckLevel.OFF;
-            }
-            if (error.getSourceName().startsWith("javascript/externs")
-                || error
-                    .getSourceName()
-                    .contains("com_google_javascript_closure_compiler_externs")) {
-              // TODO(@jart): Figure out why these "mismatch of the removeEventListener property on
-              //             type" warnings are showing up.
-              //             https://github.com/google/closure-compiler/pull/1959
-              return CheckLevel.OFF;
-            }
-            if (error.getSourceName().endsWith("externs/webcomponents-externs.js")) {
-              // TODO(stephanwlee): Figure out why above externs cause variable
-              // declare issue. Seems to do with usage of `let` in Polymer 2.x
-              // branch.
-              // Ref: #2425.
-              return CheckLevel.WARNING;
-            }
-            if (IGNORE_PATHS_PATTERN.matcher(error.getSourceName()).matches()) {
-              return CheckLevel.OFF;
-            }
-            if ((error.getSourceName().startsWith("/tf-")
-                    || error.getSourceName().startsWith("/vz-"))
-                && error.getType().key.equals("JSC_VAR_MULTIPLY_DECLARED_ERROR")) {
-              // TODO(@jart): Remove when tf/vz components/plugins are ES6 modules.
-              return CheckLevel.OFF;
-            }
-            if (error.getType().key.equals("JSC_POLYMER_UNQUALIFIED_BEHAVIOR")
-                || error.getType().key.equals("JSC_POLYMER_UNANNOTATED_BEHAVIOR")) {
-              return CheckLevel.OFF; // TODO(@jart): What is wrong with this thing?
-            }
-            Collection<String> codes = suppressions.get(Webpath.get(error.getSourceName()));
-            if (codes.contains("*") || codes.contains(error.getType().key)) {
-              return CheckLevel.OFF;
-            }
-            for (String group : diagnosticGroups.get(error.getType())) {
-              if (codes.contains(group)) {
-                return CheckLevel.OFF;
-              }
-            }
-            return null;
-          }
-        });
-
-    // Get reverse topological script tags and their web paths, which js_library stuff first.
-    List<SourceFile> sauce = Lists.newArrayList(sourcesFromJsLibraries);
-    for (Map.Entry<Webpath, String> source : sourcesFromScriptTags.entrySet()) {
-      sauce.add(SourceFile.fromCode(source.getKey().toString(), source.getValue()));
-    }
-
-    List<SourceFile> externsList = new ArrayList<>(externs.values());
-
-    // Compile everything into a single script.
-    Compiler compiler = new Compiler();
-    compiler.disableThreads();
-    Result result = compiler.compile(externsList, sauce, options);
-    if (!result.success) {
-      System.exit(1);
-    }
-    String jsBlob = compiler.toSource();
-    // Split apart the JS blob and put it back in the original <script> locations.
-    Deque<Map.Entry<Webpath, Node>> tags = new ArrayDeque<>();
-    tags.addAll(sourceTags.entrySet());
-    Matcher matcher = SCRIPT_DELIMITER_PATTERN.matcher(jsBlob);
-    verify(matcher.find(), "Nothing found in compiled JS blob!");
-    Webpath path = Webpath.get(matcher.group(1));
-    int start = 0;
-    while (matcher.find()) {
-      if (sourceTags.containsKey(path)) {
-        swapScript(tags, path, jsBlob.substring(start, matcher.start()));
-        start = matcher.start();
-      }
-      path = Webpath.get(matcher.group(1));
-    }
-    swapScript(tags, path, jsBlob.substring(start));
-    verify(tags.isEmpty(), "<script> wasn't compiled: %s", tags);
-  }
-
-  private static boolean isErrorFromTranspiledTypescriptCode(JSError error) {
-    // We perform this check by looking for a concomitant .d.ts webfile which is generated by the
-    // TypeScript compiler. Ideally we would use SourceExcerptProvider to determine the original
-    // source name, but WarningsGuard objects do not appear to have access to that.
-    String path = error.getSourceName();
-    if (!path.endsWith(".js")) {
-      return false;
-    }
-    return webfiles.containsKey(Webpath.get(path.substring(0, path.length() - 3) + ".d.ts"));
-  }
-
   private static void swapScript(
       Deque<Map.Entry<Webpath, Node>> tags, Webpath path, String script) {
     verify(!tags.isEmpty(), "jscomp compiled %s after last <script>?!", path);
@@ -614,25 +344,6 @@ public final class Vulcanize {
             .appendChild(new DataNode(script, tag.baseUri())));
   }
 
-  private static String minify(Webpath path, String script) {
-    CompilerOptions options = new CompilerOptions();
-    options.skipAllCompilerPasses();
-    options.setLanguageIn(CompilerOptions.LanguageMode.ECMASCRIPT_2016);
-    options.setLanguageOut(CompilerOptions.LanguageMode.ECMASCRIPT5);
-    options.setContinueAfterErrors(true);
-    CompilationLevel.SIMPLE_OPTIMIZATIONS.setOptionsForCompilationLevel(options);
-    if (testOnly) {
-      options.setPrettyPrint(true);
-      options.setGeneratePseudoNames(true);
-    }
-    Compiler compiler = new Compiler(new JsPrintlessErrorManager());
-    compiler.disableThreads();
-    compiler.compile(
-        ImmutableList.of(),
-        ImmutableList.of(SourceFile.fromCode(path.toString(), script)),
-        options);
-    return compiler.toSource();
-  }
 
   private static void handleLicense(String text) {
     if (legalese.add(CharMatcher.whitespace().removeFrom(text))) {
@@ -721,17 +432,6 @@ public final class Vulcanize {
         // The following are intended to filter out URLs with Polymer variables.
         || (uri.contains("[[") && uri.contains("]]"))
         || (uri.contains("{{") && uri.contains("}}"));
-  }
-
-  private static ImmutableMultimap<DiagnosticType, String> initDiagnosticGroups() {
-    Multimap<DiagnosticType, String> builder = HashMultimap.create();
-    for (Map.Entry<String, DiagnosticGroup> group :
-        DiagnosticGroups.getRegisteredGroups().entrySet()) {
-      for (DiagnosticType type : group.getValue().getTypes()) {
-        builder.put(type, group.getKey());
-      }
-    }
-    return ImmutableMultimap.copyOf(builder);
   }
 
   private static String extractScriptContent(Document document) throws IOException {
@@ -900,15 +600,6 @@ public final class Vulcanize {
     public void tail(Node node, int depth) {
       // Copying is done during the `head`. No need to do any work.
     }
-  }
-
-  private static final class JsPrintlessErrorManager extends BasicErrorManager {
-
-    @Override
-    public void println(CheckLevel level, JSError error) {}
-
-    @Override
-    public void printSummary() {}
   }
 
   private Vulcanize() {}

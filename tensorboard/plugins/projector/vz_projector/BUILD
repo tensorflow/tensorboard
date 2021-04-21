@@ -1,6 +1,6 @@
 load("//tensorboard/defs:defs.bzl", "tf_js_binary", "tf_ts_library")
 load("//tensorboard/defs:web.bzl", "tf_web_library")
-load("//tensorboard/defs:vulcanize.bzl", "tensorboard_html_binary")
+load("//tensorboard/defs/internal:html.bzl", "tb_combine_html")
 
 package(default_visibility = ["//tensorboard/plugins/projector:__subpackages__"])
 
@@ -113,9 +113,8 @@ tf_web_library(
     ],
 )
 
-tensorboard_html_binary(
+tb_combine_html(
     name = "standalone",
-    compile = False,
     input_path = "/standalone_lib.html",
     js_path = "/standalone.js",
     output_path = "/standalone.html",
