@@ -85,7 +85,8 @@ export class TBHttpClient implements TBHttpClientInterface {
 
   post<ResponseType>(
     path: string,
-    body: FormData,
+    // Angular's HttpClient is typed exactly this way.
+    body: any | null,
     options: PostOptions = {}
   ): Observable<ResponseType> {
     options = withXsrfHeader(options);
@@ -113,7 +114,8 @@ export class TBHttpClient implements TBHttpClientInterface {
 
   put<ResponseType>(
     path: string,
-    body: any,
+    // Angular's HttpClient is typed exactly this way.
+    body: any | null,
     options: PutOptions = {}
   ): Observable<ResponseType> {
     return this.http.put<ResponseType>(
