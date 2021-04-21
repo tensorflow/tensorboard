@@ -163,6 +163,9 @@ export class ScalarCardComponent<Downloader> {
   @ViewChild(NewLineChartComponent)
   newLineChart?: NewLineChartComponent;
 
+  // Controls whether to enable/disable the fit-to-domain button.
+  isViewBoxOverridden: boolean = !this.gpuLineChartEnabled;
+
   constructor(private readonly ref: ElementRef, private dialog: MatDialog) {}
 
   yAxisType = YAxisType.LINEAR;

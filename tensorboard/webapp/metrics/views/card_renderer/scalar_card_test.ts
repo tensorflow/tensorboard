@@ -16,8 +16,10 @@ import {OverlayContainer} from '@angular/cdk/overlay';
 import {
   ChangeDetectorRef,
   Component,
+  EventEmitter,
   Inject,
   Input,
+  Output,
   TemplateRef,
 } from '@angular/core';
 import {
@@ -122,6 +124,9 @@ class TestableGpuLineChart {
   @Input()
   tooltipTemplate!: TemplateRef<{data: TooltipDatum[]}>;
 
+  @Output()
+  onViewBoxOverridden = new EventEmitter<boolean>();
+
   // This input does not exist on real line-chart and is devised to make tooltipTemplate
   // testable without using the real implementation.
   @Input() tooltipDataForTesting: TooltipDatum[] = [];
@@ -148,6 +153,10 @@ describe('scalar card', () => {
   let selectSpy: jasmine.Spy;
   let overlayContainer: OverlayContainer;
   let resizeTester: ResizeDetectorTestingModule;
+
+  const ByCss = {
+    FIT_TO_DOMAIN: By.css('[aria-label="Fit line chart domains to data"]'),
+  };
 
   function openOverflowMenu(fixture: ComponentFixture<ScalarCardContainer>) {
     const menuButton = fixture.debugElement.query(
@@ -780,10 +789,6 @@ describe('scalar card', () => {
   }));
 
   describe('controls', () => {
-    const ByCss = {
-      FIT_TO_DOMAIN: By.css('[aria-label="Fit line chart domains to data"]'),
-    };
-
     it('resets domain when user clicks on reset button', fakeAsync(() => {
       const runToSeries = {
         run1: [{wallTime: 100, value: 1, step: 333}],
@@ -1907,6 +1912,35 @@ describe('scalar card', () => {
             aux: false,
           },
         });
+      }));
+    });
+
+    describe('fit to domain', () => {
+      it('disables the fit to domain when data fits doamin already', fakeAsync(() => {
+        const runToSeries = {
+          run1: [{wallTime: 2, value: 1, step: 1}],
+        };
+        provideMockCardRunToSeriesData(
+          selectSpy,
+          PluginType.SCALARS,
+          'card1',
+          null /* metadataOverride */,
+          runToSeries
+        );
+
+        const fixture = createComponent('card1');
+        const lineChart = fixture.debugElement.query(Selector.GPU_LINE_CHART);
+
+        lineChart.componentInstance.onViewBoxOverridden.emit(false);
+        fixture.detectChanges();
+
+        const fitToDomain = fixture.debugElement.query(ByCss.FIT_TO_DOMAIN);
+        expect(fitToDomain.properties['disabled']).toBe(true);
+
+        lineChart.componentInstance.onViewBoxOverridden.emit(true);
+        fixture.detectChanges();
+
+        expect(fitToDomain.properties['disabled']).toBe(false);
       }));
     });
   });
