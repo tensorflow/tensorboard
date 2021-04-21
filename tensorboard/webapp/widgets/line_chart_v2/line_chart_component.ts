@@ -18,15 +18,14 @@ import {
   ChangeDetectorRef,
   Component,
   ElementRef,
-  EventEmitter,
   Input,
   OnChanges,
   OnDestroy,
   OnInit,
-  Output,
   SimpleChanges,
   ViewChild,
 } from '@angular/core';
+import {Observable, ReplaySubject} from 'rxjs';
 
 import {ChartImpl} from './lib/chart';
 import {Chart} from './lib/chart_types';
@@ -111,8 +110,7 @@ export class LineChartComponent
   @Input()
   tooltipTemplate?: TooltipTemplate;
 
-  @Output()
-  onViewBoxOverridden = new EventEmitter<boolean>();
+  private onViewBoxOverridden = new ReplaySubject<boolean>(1);
 
   /**
    * Optional parameter to tweak whether to propagate update to line chart implementation.
@@ -157,7 +155,7 @@ export class LineChartComponent
 
   ngOnInit() {
     // Let the parent component know if its initial value.
-    this.onViewBoxOverridden.emit(this.isViewBoxOverridden);
+    this.onViewBoxOverridden.next(this.isViewBoxOverridden);
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -399,8 +397,12 @@ export class LineChartComponent
     const prevValue = this.isViewBoxOverridden;
     this.isViewBoxOverridden = newValue;
     if (prevValue !== newValue) {
-      this.onViewBoxOverridden.emit(newValue);
+      this.onViewBoxOverridden.next(newValue);
     }
+  }
+
+  getIsViewBoxOverridden(): Observable<boolean> {
+    return this.onViewBoxOverridden;
   }
 
   onViewBoxChangedFromAxis(extent: [number, number], axis: 'x' | 'y') {

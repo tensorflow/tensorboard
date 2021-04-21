@@ -82,9 +82,6 @@ export class ScalarCardComponent<Downloader> {
   @ViewChild(LineChartComponent)
   lineChart?: LineChartComponent;
 
-  // Controls whether to enable/disable the fit-to-domain button.
-  isViewBoxOverridden: boolean = false;
-
   constructor(private readonly ref: ElementRef, private dialog: MatDialog) {}
 
   yScaleType = ScaleType.LINEAR;

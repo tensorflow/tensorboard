@@ -33,6 +33,7 @@ tf_ng_module(
         "//tensorboard/webapp/widgets/line_chart_v2/sub_view",
         "@npm//@angular/common",
         "@npm//@angular/core",
+        "@npm//rxjs",
     ],
 )
 
