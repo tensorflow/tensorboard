@@ -358,7 +358,7 @@ class CorePluginTest(tf.test.TestCase):
 
         self.assertEqual(302, (response.status_code))
         self.assertStartsWith(content_type, "text/html")
-        redirect_link = "<a href=\"notifications_note.json\">"
+        redirect_link = '<a href="notifications_note.json">'
         self.assertIn(redirect_link, content)
 
 
