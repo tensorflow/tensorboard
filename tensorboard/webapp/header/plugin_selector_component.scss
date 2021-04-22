@@ -12,6 +12,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+@import 'tensorboard/webapp/theme/tb_theme';
+
 :host {
   align-items: center;
   display: flex;
@@ -99,7 +101,47 @@ mat-option {
     height: 100%;
   }
 
-  mat-tab-header:not(.mat-tab-header-pagination-controls-enabled) {
-    padding: 0 36px;
+  mat-tab-header {
+    .mat-tab-list {
+      // 36px is the size of the chevron. Please see [1] for the reason.
+      padding: 0 36px;
+    }
+
+    > {
+      :first-child,
+      .mat-tab-label-container,
+      :last-child {
+        // [1]: Reason for customizing the mat-tab-header.
+        //
+        // Default mat-tab only renders the directional overflow chevron when
+        // width of the label container is smaller than mat-tab-header. This
+        // causes visual jank when user resizes the screen as the mat-tab with
+        // the chevron appears to have more padding (visually; directional
+        // chevron can have `visibility: hidden` in case it is not needed and
+        // appear as padding). To have the same experience as the Polymer based
+        // Material tab header, we always set the padding of 36px on each sides
+        // but that causes the scroll calculation to be incorrect and causes a
+        // bug [2].
+        // To work around it, we make everything `position: absolute`.
+        // [2]: https://github.com/tensorflow/tensorboard/issues/4841
+        bottom: 0;
+        position: absolute;
+        top: 0;
+      }
+
+      :first-child,
+      .mat-tab-label-container {
+        left: 0;
+      }
+
+      :last-child,
+      .mat-tab-label-container {
+        right: 0;
+      }
+
+      .mat-tab-header-pagination {
+        background-color: mat-color($tb-primary, 700);
+      }
+    }
   }
 }
