@@ -161,44 +161,4 @@ describe('card view test', () => {
       }),
     ]);
   });
-
-  it(`throttles updates to colorScale`, fakeAsync(() => {
-    store.overrideSelector(selectors.getRunColorMap, {run1: '#000'});
-    const fixture = TestBed.createComponent(CardViewContainer);
-    fixture.componentInstance.cardId = 'cardId';
-    fixture.componentInstance.pluginType = PluginType.SCALARS;
-    fixture.detectChanges();
-
-    const scalarCard = fixture.debugElement.query(By.css('scalar-card'));
-    expect(scalarCard.componentInstance.runColorScale('run1')).toBe('#000');
-
-    store.overrideSelector(selectors.getRunColorMap, {run1: '#555'});
-    store.refreshState();
-    fixture.detectChanges();
-
-    expect(scalarCard.componentInstance.runColorScale('run1')).toBe('#000');
-
-    store.overrideSelector(selectors.getRunColorMap, {run1: '#aaa'});
-    store.refreshState();
-    fixture.detectChanges();
-
-    tick(TEST_ONLY.RUN_COLOR_UPDATE_THROTTLE_TIME_IN_MS);
-    fixture.detectChanges();
-
-    expect(scalarCard.componentInstance.runColorScale('run1')).toBe('#aaa');
-    flush();
-  }));
-
-  it('getting unknown color throws error', () => {
-    store.overrideSelector(selectors.getRunColorMap, {run1: '#000'});
-    const fixture = TestBed.createComponent(CardViewContainer);
-    fixture.componentInstance.cardId = 'cardId';
-    fixture.componentInstance.pluginType = PluginType.SCALARS;
-    fixture.detectChanges();
-
-    const scalarCard = fixture.debugElement.query(By.css('scalar-card'));
-    expect(() => {
-      scalarCard.componentInstance.runColorScale('meow');
-    }).toThrowError(Error, '[Color scale] unknown runId: meow.');
-  });
 });
