@@ -16,7 +16,7 @@ import {Injectable} from '@angular/core';
 import {Actions, createEffect, ofType, OnInitEffects} from '@ngrx/effects';
 import {Action, createAction, Store} from '@ngrx/store';
 import {EMPTY, Observable} from 'rxjs';
-import {catchError, map, mergeMap} from 'rxjs/operators';
+import {catchError, concatMap, map, mergeMap} from 'rxjs/operators';
 
 import {State} from '../../app_state';
 import {NotificationCenterDataSource} from '../_data_source/index';
@@ -85,7 +85,7 @@ export class NotificationCenterEffects implements OnInitEffects {
     () => {
       return this.actions$.pipe(
         ofType(actions.notificationBellClicked),
-        mergeMap(() => this.dataSource.updateLastReadTimeStampInMs())
+        concatMap(() => this.dataSource.updateLastReadTimeStampInMs())
       );
     },
     {dispatch: false}
