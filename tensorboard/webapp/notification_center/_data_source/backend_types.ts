@@ -35,4 +35,4 @@ export interface BackendNotification {
 /**
  * The key used to record the last read timestamp in local storage.
  */
- export const NOTIFICATION_LAST_READ_TIME_KEY = 'notificaitonLastReadTimestamp';
+export const NOTIFICATION_LAST_READ_TIME_KEY = 'notificaitonLastReadTimestamp';

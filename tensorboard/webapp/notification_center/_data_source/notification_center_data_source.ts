@@ -19,7 +19,7 @@ import {TBHttpClient} from '../../webapp_data_source/tb_http_client';
 import {
   NotificationCenterDataSource,
   NotificationCenterResponse,
-  NOTIFICATION_LAST_READ_TIME_KEY
+  NOTIFICATION_LAST_READ_TIME_KEY,
 } from './backend_types';
 
 /**
