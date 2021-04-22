@@ -77,7 +77,7 @@ export class NotificationCenterEffects implements OnInitEffects {
   }
 
   /**
-   * Updates last read timestamp.
+   * Updates last read timestamp on bell clicked.
    *
    * @export
    */

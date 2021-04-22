@@ -86,17 +86,16 @@ describe('TBNotificationCenterDataSource test', () => {
     expect(errorSpy).toHaveBeenCalledWith(httpErrorResponse);
   });
 
-
   describe('LastReadTimestamp in local storage test', () => {
-    const store: {[key: string]: string} = {};
+    const mocklocalStorage: {[key: string]: string} = {};
     const TEST_TIME_STAMP = '1235813';
 
     beforeEach(async () => {
       spyOn(window.localStorage, 'setItem').and.callFake((key:string, value:string): string =>  {
-        return store[key] = TEST_TIME_STAMP;
+        return mocklocalStorage[key] = TEST_TIME_STAMP;
       });
       spyOn(localStorage, 'getItem').and.callFake( (key:string): string | null => {
-        return store[key] || null;
+        return mocklocalStorage[key] || null;
        });
     });
 
