@@ -67,6 +67,7 @@ describe('notification center effects', () => {
     effects = TestBed.inject(NotificationCenterEffects);
     dataSource = TestBed.inject(NotificationCenterDataSource);
     effects.initialNotificationFetch$.subscribe();
+    effects.updateLastReadTimestampInMs$.subscribe();
 
     fetchNotificationSubject = new Subject();
     fetchNotificationsSpy = spyOn(
@@ -78,7 +79,7 @@ describe('notification center effects', () => {
     updateLastReadTimestampInMsSpy = spyOn(
       dataSource,
       'updateLastReadTimeStampInMs'
-    ).and.callFake(() => updateLastReadTimestampInMsSubject);
+    );
   });
 
   it('fetches notifications on initial load', () => {
@@ -115,6 +116,5 @@ describe('notification center effects', () => {
     actions$.next(actions.notificationBellClicked());
 
     expect(updateLastReadTimestampInMsSpy).toHaveBeenCalled();
-    expect(actualActions).toEqual([actions.notificationBellClicked()]);
   });
 });
