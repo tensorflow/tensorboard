@@ -26,6 +26,10 @@ export const notificationBellClicked = createAction(
   '[Notification] Notification Bell Clicked'
 );
 
+export const notifcationLastReadTimeUpdated = createAction(
+  '[Notification] Notification Last Read Timestamp Updated'
+);
+
 export const fetchNotificationsFailed = createAction(
   '[Notification] Fetch Notification Request Failed'
 );
@@ -34,3 +38,4 @@ export const fetchNotificationsLoaded = createAction(
   '[Notification] Fetch Notification Response Loaded',
   props<{notifications: Notification[]}>()
 );
+
