@@ -31,6 +31,10 @@ export class TestingNotificationCenterDataSource
       notifications: [],
     });
   }
+
+  updateLastReadTimeStampInMs() {
+    return of();
+  }
 }
 
 export function provideTestingNotificationCenterDataSource() {

@@ -18,16 +18,11 @@ import * as actions from './notification_center_actions';
 import {
   Notification,
   NotificationState,
-  NOTIFICATION_LAST_READ_TIME_KEY,
 } from './notification_center_types';
 
 const initialState: NotificationState = {
   notifications: [],
-  lastReadTimestampInMs: window.localStorage.getItem(
-    NOTIFICATION_LAST_READ_TIME_KEY
-  )
-    ? parseInt(window.localStorage.getItem(NOTIFICATION_LAST_READ_TIME_KEY)!)
-    : null,
+  lastReadTimestampInMs: null,
 };
 
 const reducer = createReducer(
@@ -35,12 +30,7 @@ const reducer = createReducer(
   on(
     actions.notificationBellClicked,
     (state: NotificationState): NotificationState => {
-      // TODO: move update last read timestamp to DataSource
       const timeNow = Date.now();
-      window.localStorage.setItem(
-        NOTIFICATION_LAST_READ_TIME_KEY,
-        timeNow.toString()
-      );
       return {
         ...state,
         lastReadTimestampInMs: timeNow,

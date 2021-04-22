@@ -75,6 +75,21 @@ export class NotificationCenterEffects implements OnInitEffects {
       })
     );
   }
+
+  /**
+   * Updates last read timestamp.
+   *
+   * @export
+   */
+   updateLastReadTimestampInMs$ = createEffect(
+    () => {
+      return this.actions$.pipe(
+        ofType(actions.notificationBellClicked),
+        mergeMap(() => this.dataSource.updateLastReadTimeStampInMs())
+      );
+    },
+    {dispatch: false}
+  );
 }
 
 export const TEST_ONLY = {

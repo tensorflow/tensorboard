@@ -19,7 +19,7 @@ import {
   HttpTestingController,
   TBHttpClientTestingModule,
 } from '../../webapp_data_source/tb_http_client_testing';
-import {NotificationCenterDataSource} from './backend_types';
+import {NotificationCenterDataSource, NOTIFICATION_LAST_READ_TIME_KEY} from './backend_types';
 import {TBNotificationCenterDataSource} from './notification_center_data_source';
 import {buildNotificationResponse} from './testing';
 import {throwError} from 'rxjs';
@@ -84,5 +84,26 @@ describe('TBNotificationCenterDataSource test', () => {
     });
     expect(resultSpy).not.toHaveBeenCalled();
     expect(errorSpy).toHaveBeenCalledWith(httpErrorResponse);
+  });
+
+
+  describe('LastReadTimestamp in local storage test', () => {
+    const store: {[key: string]: string} = {};
+    const TEST_TIME_STAMP = '1235813';
+
+    beforeEach(async () => {
+      spyOn(window.localStorage, 'setItem').and.callFake((key:string, value:string): string =>  {
+        return store[key] = TEST_TIME_STAMP;
+      });
+      spyOn(localStorage, 'getItem').and.callFake( (key:string): string | null => {
+        return store[key] || null;
+       });
+    });
+
+    it('updates last read timestamp in local storge', () => {
+      dataSource.updateLastReadTimeStampInMs();
+
+      expect(window.localStorage.getItem(NOTIFICATION_LAST_READ_TIME_KEY)).toBe(TEST_TIME_STAMP);
+    });
   });
 });
