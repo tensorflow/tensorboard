@@ -182,10 +182,10 @@ describe('scalar card', () => {
       // would be populated by ViewChild decorator.
       scalarCardComponent.componentInstance.lineChart =
         lineChartComponent.componentInstance;
+      // lineChart property is now set; let the template re-render with
+      // `lineChart` checks correctly return the right value.
+      lineChartComponent.componentInstance.changeDetectorRef.markForCheck();
     }
-    // lineChart property is now set; let the template re-render with
-    // `lineChart` checks correctly return the right value.
-    lineChartComponent.componentInstance.changeDetectorRef.markForCheck();
     fixture.detectChanges();
     return fixture;
   }
