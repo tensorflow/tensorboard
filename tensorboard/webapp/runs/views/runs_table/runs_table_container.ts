@@ -14,31 +14,36 @@ limitations under the License.
 ==============================================================================*/
 import {ChangeDetectionStrategy, Component, Input, OnInit} from '@angular/core';
 import {createSelector, Store} from '@ngrx/store';
-import {DataLoadState, LoadState} from '../../../types/data';
 import {combineLatest, Observable, of} from 'rxjs';
 import {combineLatestWith, map, shareReplay, startWith} from 'rxjs/operators';
 
+import {DataLoadState, LoadState} from '../../../types/data';
 import {State} from '../../../app_state';
 import {
   getCurrentRouteRunSelection,
   getExperiment,
   getExperimentIdToAliasMap,
-  getExperimentsHparamsAndMetrics,
   getRunColorMap,
-  getRunHparamFilterMap,
-  getRunMetricFilterMap,
   getRuns,
   getRunSelectorPaginationOption,
   getRunSelectorRegexFilter,
   getRunSelectorSort,
   getRunsLoadState,
 } from '../../../selectors';
+import {
+  actions as hparamsActions,
+  selectors as hparamsSelectors,
+} from '../../../hparams';
+import {
+  DiscreteFilter,
+  IntervalFilter,
+  DiscreteHparamValue,
+  DiscreteHparamValues,
+  DomainType,
+} from '../../../hparams/types';
 import {SortDirection} from '../../../types/ui';
 import {
   runColorChanged,
-  runDiscreteHparamFilterChanged,
-  runIntervalHparamFilterChanged,
-  runMetricFilterChanged,
   runPageSelectionToggled,
   runSelectionToggled,
   runSelectorPaginationOptionChanged,
@@ -47,15 +52,7 @@ import {
   runsSelectAll,
   runTableShown,
 } from '../../actions';
-import {
-  DiscreteFilter,
-  DiscreteHparamValue,
-  DiscreteHparamValues,
-  DomainType,
-  IntervalFilter,
-  SortKey,
-  SortType,
-} from '../../types';
+import {SortKey, SortType} from '../../types';
 
 import {
   HparamColumn,
@@ -308,13 +305,16 @@ export class RunsTableContainer implements OnInit {
 
     if (this.showHparamsAndMetrics) {
       const getHparamAndMetrics$ = this.store.select(
-        getExperimentsHparamsAndMetrics,
+        hparamsSelectors.getExperimentsHparamsAndMetricsSpecs,
         {experimentIds: this.experimentIds}
       );
 
       // combineLatest, when initializing, emits twice
       this.hparamColumns$ = combineLatest([
-        this.store.select(getRunHparamFilterMap),
+        this.store.select(
+          hparamsSelectors.getHparamFilterMap,
+          this.experimentIds
+        ),
         getHparamAndMetrics$,
       ]).pipe(
         map(([filterMap, {hparams}]) => {
@@ -332,7 +332,10 @@ export class RunsTableContainer implements OnInit {
       );
 
       this.metricColumns$ = combineLatest([
-        this.store.select(getRunMetricFilterMap),
+        this.store.select(
+          hparamsSelectors.getMetricFilterMap,
+          this.experimentIds
+        ),
         getHparamAndMetrics$,
       ]).pipe(
         map(([filterMap, {metrics}]) => {
@@ -388,8 +391,14 @@ export class RunsTableContainer implements OnInit {
         });
       }),
       combineLatestWith(
-        this.store.select(getRunHparamFilterMap),
-        this.store.select(getRunMetricFilterMap)
+        this.store.select(
+          hparamsSelectors.getHparamFilterMap,
+          this.experimentIds
+        ),
+        this.store.select(
+          hparamsSelectors.getMetricFilterMap,
+          this.experimentIds
+        )
       ),
       map(([items, hparamFilters, metricFilters]) => {
         if (!this.showHparamsAndMetrics) {
@@ -540,7 +549,8 @@ export class RunsTableContainer implements OnInit {
   }) {
     const {hparamName, filterValues, includeUndefined} = event;
     this.store.dispatch(
-      runDiscreteHparamFilterChanged({
+      hparamsActions.hparamsDiscreteHparamFilterChanged({
+        experimentIds: this.experimentIds,
         hparamName,
         filterValues,
         includeUndefined,
@@ -551,7 +561,8 @@ export class RunsTableContainer implements OnInit {
   onHparamIntervalFilterChanged(event: IntervalFilterChange) {
     const {name, filterLowerValue, filterUpperValue, includeUndefined} = event;
     this.store.dispatch(
-      runIntervalHparamFilterChanged({
+      hparamsActions.hparamsIntervalHparamFilterChanged({
+        experimentIds: this.experimentIds,
         hparamName: name,
         filterLowerValue,
         filterUpperValue,
@@ -563,7 +574,8 @@ export class RunsTableContainer implements OnInit {
   onMetricFilterChanged(event: IntervalFilterChange) {
     const {name, includeUndefined, filterLowerValue, filterUpperValue} = event;
     this.store.dispatch(
-      runMetricFilterChanged({
+      hparamsActions.hparamsMetricFilterChanged({
+        experimentIds: this.experimentIds,
         metricTag: name,
         includeUndefined,
         filterLowerValue,

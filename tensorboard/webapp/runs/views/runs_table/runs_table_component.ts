@@ -30,11 +30,13 @@ import {MatTableDataSource} from '@angular/material/table';
 
 import {SortDirection} from '../../../types/ui';
 import {
-  DiscreteFilter,
   DiscreteHparamValues,
+  DiscreteHparamValue,
+  DomainType,
+  DiscreteFilter,
   IntervalFilter,
-} from '../../types';
-import {DiscreteHparamValue, DomainType, SortKey, SortType} from '../../types';
+} from '../../../hparams/types';
+import {SortKey, SortType} from '../../types';
 
 import {HparamSpec, MetricSpec, RunsTableColumn, RunTableItem} from './types';
 

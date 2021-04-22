@@ -39,6 +39,17 @@ tf_ng_module(
     ],
 )
 
+tf_ts_library(
+    name = "testing",
+    testonly = True,
+    srcs = [
+        "testing.ts",
+    ],
+    deps = [
+        "//tensorboard/webapp/hparams/_redux:testing",
+    ],
+)
+
 tf_ng_web_test_suite(
     name = "karma_test",
     deps = [
