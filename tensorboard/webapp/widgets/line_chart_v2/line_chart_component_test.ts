@@ -53,7 +53,6 @@ class FakeGridComponent {
       [seriesMetadataMap]="seriesMetadataMap"
       [yScaleType]="yScaleType"
       [fixedViewBox]="fixedViewBox"
-      (onViewBoxOverridden)="onViewBoxOverridden && onViewBoxOverridden($event)"
     ></line-chart>
   `,
   styles: [
@@ -84,9 +83,6 @@ class TestableComponent {
 
   @Input()
   disableUpdate?: boolean;
-
-  @Input()
-  onViewBoxOverridden?: (overridden: boolean) => void;
 
   // WebGL one is harder to test.
   preferredRendererType = RendererType.SVG;
@@ -127,7 +123,6 @@ describe('line_chart_v2/line_chart test', () => {
     yScaleType: ScaleType;
     fixedViewBox?: Extent;
     disableUpdate?: boolean;
-    onViewBoxOverridden?: (overridden: boolean) => void;
   }): ComponentFixture<TestableComponent> {
     const fixture = TestBed.createComponent(TestableComponent);
     fixture.componentInstance.seriesData = input.seriesData;
@@ -140,10 +135,6 @@ describe('line_chart_v2/line_chart test', () => {
 
     if (input.disableUpdate !== undefined) {
       fixture.componentInstance.disableUpdate = input.disableUpdate;
-    }
-
-    if (input.onViewBoxOverridden) {
-      fixture.componentInstance.onViewBoxOverridden = input.onViewBoxOverridden;
     }
 
     return fixture;
@@ -582,7 +573,7 @@ describe('line_chart_v2/line_chart test', () => {
     });
   });
 
-  describe('#isViewBoxOverridden', () => {
+  describe('#getIsViewBoxOverridden', () => {
     it('emits when viewBox changes', () => {
       const onViewBoxOverridden = jasmine.createSpy();
       const fixture = createComponent({
@@ -598,10 +589,13 @@ describe('line_chart_v2/line_chart test', () => {
         ],
         seriesMetadataMap: {foo: buildMetadata({id: 'foo', visible: true})},
         yScaleType: ScaleType.LINEAR,
-        onViewBoxOverridden,
       });
       fixture.componentInstance.yScaleType = ScaleType.LINEAR;
       fixture.detectChanges();
+
+      fixture.componentInstance.chart
+        .getIsViewBoxOverridden()
+        .subscribe(onViewBoxOverridden);
 
       // Initial value.
       expect(onViewBoxOverridden).toHaveBeenCalledOnceWith(false);

@@ -23,10 +23,10 @@ limitations under the License.
   <span class="controls">
     <button
       mat-icon-button
-      [disabled]="!isViewBoxOverridden"
+      [disabled]="!lineChart || !(lineChart.getIsViewBoxOverridden() | async)"
       (click)="resetDomain()"
       [title]="
-          isViewBoxOverridden ?
+          !lineChart || !(lineChart.getIsViewBoxOverridden() | async) ?
               'Fit line chart domains to data' :
               'Line chart is already fitted to data. When data updates, the line chart '
                 + 'will auto fit to its domain.'

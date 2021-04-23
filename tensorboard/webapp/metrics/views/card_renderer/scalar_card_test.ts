@@ -36,7 +36,7 @@ import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
-import {of, ReplaySubject} from 'rxjs';
+import {Observable, of, ReplaySubject} from 'rxjs';
 
 import {State} from '../../../app_state';
 import {Run} from '../../../runs/store/runs_types';
@@ -104,8 +104,10 @@ class TestableLineChart {
   @Input() tooltipDataForTesting: TooltipDatum[] = [];
   @Input() cursorLocForTesting: {x: number; y: number} = {x: 0, y: 0};
 
-  getIsViewBoxOverridden() {
-    return false;
+  private isViewBoxOverridden = new ReplaySubject<boolean>(1);
+
+  getIsViewBoxOverridden(): Observable<boolean> {
+    return this.isViewBoxOverridden;
   }
 
   viewBoxReset() {}
@@ -180,7 +182,11 @@ describe('scalar card', () => {
       // would be populated by ViewChild decorator.
       scalarCardComponent.componentInstance.lineChart =
         lineChartComponent.componentInstance;
+      // lineChart property is now set; let the template re-render with
+      // `lineChart` checks correctly return the right value.
+      lineChartComponent.componentInstance.changeDetectorRef.markForCheck();
     }
+    fixture.detectChanges();
     return fixture;
   }
 
@@ -1563,7 +1569,7 @@ describe('scalar card', () => {
   });
 
   describe('fit to domain', () => {
-    it('disables the fit to domain when data fits doamin already', fakeAsync(() => {
+    it('disables the fit to domain when data fits domain already', fakeAsync(() => {
       const runToSeries = {
         run1: [{wallTime: 2, value: 1, step: 1}],
       };
@@ -1574,17 +1580,18 @@ describe('scalar card', () => {
         null /* metadataOverride */,
         runToSeries
       );
+      store.overrideSelector(selectors.getVisibleCardIdSet, new Set(['card1']));
 
       const fixture = createComponent('card1');
       const lineChart = fixture.debugElement.query(Selector.LINE_CHART);
 
-      lineChart.componentInstance.onViewBoxOverridden.emit(false);
+      lineChart.componentInstance.getIsViewBoxOverridden().next(false);
       fixture.detectChanges();
 
       const fitToDomain = fixture.debugElement.query(Selector.FIT_TO_DOMAIN);
       expect(fitToDomain.properties['disabled']).toBe(true);
 
-      lineChart.componentInstance.onViewBoxOverridden.emit(true);
+      lineChart.componentInstance.getIsViewBoxOverridden().next(true);
       fixture.detectChanges();
 
       expect(fitToDomain.properties['disabled']).toBe(false);
@@ -1606,7 +1613,7 @@ describe('scalar card', () => {
       const fixture = createComponent('card1');
 
       const lineChart = fixture.debugElement.query(Selector.LINE_CHART);
-      lineChart.componentInstance.onViewBoxOverridden.emit(true);
+      lineChart.componentInstance.getIsViewBoxOverridden().next(true);
       fixture.detectChanges();
 
       const viewBoxResetSpy = spyOn(
