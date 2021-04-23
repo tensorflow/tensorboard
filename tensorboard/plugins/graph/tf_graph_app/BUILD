@@ -1,6 +1,5 @@
 load("//tensorboard/defs:defs.bzl", "tf_js_binary", "tf_ts_library")
-load("//tensorboard/defs:web.bzl", "tf_web_library")
-load("//tensorboard/defs/internal:html.bzl", "tb_combine_html")
+load("//tensorboard/defs:web.bzl", "tb_combine_html", "tf_web_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 

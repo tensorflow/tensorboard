@@ -22,14 +22,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
-import com.google.common.base.Splitter;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Multimap;
 import com.google.protobuf.TextFormat;
 import io.bazel.rules.closure.Webpath;
 import io.bazel.rules.closure.webfiles.BuildInfo.Webfiles;
@@ -42,10 +35,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -53,7 +43,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Attribute;
@@ -247,36 +236,6 @@ public final class Vulcanize {
     }
   }
 
-  private static Node visitScript(Node node) throws IOException {
-    Webpath path;
-    String script;
-    if (node.attr("src").isEmpty()) {
-      path = makeSyntheticName(".js");
-      script = getInlineScriptFromNode(node);
-    } else {
-      path = me().lookup(Webpath.get(node.attr("src")));
-      script = new String(Files.readAllBytes(getWebfile(path)), UTF_8);
-      script = INLINE_SOURCE_MAP_PATTERN.matcher(script).replaceAll("");
-    }
-    boolean wantsMinify = getAttrTransitive(node, "jscomp-minify").isPresent();
-
-    if (node.attr("src").endsWith(".min.js")
-        || getAttrTransitive(node, "jscomp-nocompile").isPresent()
-        || wantsMinify) {
-      Node newScript =
-          new Element(Tag.valueOf("script"), node.baseUri(), node.attributes())
-              .appendChild(new DataNode(script, node.baseUri()))
-              .removeAttr("src")
-              .removeAttr("jscomp-minify")
-              .removeAttr("jscomp-nocompile");
-      return replaceNode(node, newScript);
-    } else {
-      sourcesFromScriptTags.put(path, script);
-      sourceTags.put(path, node);
-      return node;
-    }
-  }
-
   private static Node visitStylesheet(Node node) throws IOException {
     Webpath href = me().lookup(Webpath.get(node.attr("href")));
     return replaceNode(
@@ -332,18 +291,6 @@ public final class Vulcanize {
   private static Path getWebfile(Webpath path) {
     return verifyNotNull(webfiles.get(path), "Bad ref: %s -> %s", me(), path);
   }
-
-  private static void swapScript(
-      Deque<Map.Entry<Webpath, Node>> tags, Webpath path, String script) {
-    verify(!tags.isEmpty(), "jscomp compiled %s after last <script>?!", path);
-    Webpath want = tags.getFirst().getKey();
-    verify(path.equals(want), "<script> tag for %s should come before %s", path, want);
-    Node tag = tags.removeFirst().getValue();
-    tag.replaceWith(
-        new Element(Tag.valueOf("script"), tag.baseUri())
-            .appendChild(new DataNode(script, tag.baseUri())));
-  }
-
 
   private static void handleLicense(String text) {
     if (legalese.add(CharMatcher.whitespace().removeFrom(text))) {

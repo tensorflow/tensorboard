@@ -15,7 +15,7 @@
 """Rule for building the HTML binary."""
 
 load("@io_bazel_rules_closure//closure:defs.bzl", "closure_js_aspect")
-load("@io_bazel_rules_closure//closure/private:defs.bzl", "collect_js", "long_path", "unfurl")
+load("@io_bazel_rules_closure//closure/private:defs.bzl", "collect_js", "long_path", "unfurl")  # buildifier: disable=bzl-visibility
 
 def _tb_combine_html_impl(ctx):
     """Compiles HTMLs into one HTML.
