@@ -21,7 +21,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Joiner;
-import com.google.common.base.Optional;
 import com.google.common.collect.Iterables;
 import com.google.protobuf.TextFormat;
 import io.bazel.rules.closure.Webpath;
@@ -36,10 +35,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
-import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -70,8 +67,6 @@ public final class Vulcanize {
   private static final Set<String> legalese = new HashSet<>();
   private static final List<String> licenses = new ArrayList<>();
   private static final List<Webpath> stack = new ArrayList<>();
-  private static final Map<Webpath, String> sourcesFromScriptTags = new LinkedHashMap<>();
-  private static final Map<Webpath, Node> sourceTags = new LinkedHashMap<>();
   private static Webpath outputPath;
   private static Node firstScript;
   private static Node licenseComment;
@@ -269,16 +264,6 @@ public final class Vulcanize {
     return result;
   }
 
-  private static Optional<String> getAttrTransitive(Node node, String attr) {
-    while (node != null) {
-      if (node.hasAttr(attr)) {
-        return Optional.of(node.attr(attr));
-      }
-      node = node.parent();
-    }
-    return Optional.absent();
-  }
-
   private static Node replaceNode(Node oldNode, Node newNode) {
     oldNode.replaceWith(newNode);
     return newNode;
@@ -300,16 +285,6 @@ public final class Vulcanize {
 
   private static Webpath me() {
     return Iterables.getLast(stack);
-  }
-
-  private static Webpath makeSyntheticName(String extension) {
-    String me = me().toString();
-    Webpath result = Webpath.get(me + extension);
-    int n = 2;
-    while (sourcesFromScriptTags.containsKey(result)) {
-      result = Webpath.get(String.format("%s-%d%s", me, n++, extension));
-    }
-    return result;
   }
 
   private static void rootifyAttribute(Node node, String attribute) {
@@ -334,16 +309,6 @@ public final class Vulcanize {
    */
   private static Boolean isAbsolutePath(Webpath path) {
     return path.isAbsolute() || ABS_URI_PATTERN.matcher(path.toString()).find();
-  }
-
-  private static String getInlineScriptFromNode(Node node) {
-    StringBuilder sb = new StringBuilder();
-    for (Node child : node.childNodes()) {
-      if (child instanceof DataNode) {
-        sb.append(((DataNode) child).getWholeData());
-      }
-    }
-    return sb.toString();
   }
 
   private static Document parse(byte[] bytes) {
