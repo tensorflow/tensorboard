@@ -90,13 +90,17 @@ describe('TBNotificationCenterDataSource test', () => {
   });
 
   describe('LastReadTimestamp in local storage test', () => {
-    const mocklocalStorage: {[key: string]: string} = {};
-    const TEST_TIME_STAMP = '1235813';
+    let TEST_TIME_STAMP_STRING = '-1';
+    const INIT_LAST_READ_TIMES_TAMP_STRING = '1235813';
+    const mocklocalStorage: {[key: string]: string} = {
+      [NOTIFICATION_LAST_READ_TIME_KEY]: INIT_LAST_READ_TIMES_TAMP_STRING
+    };
 
     beforeEach(async () => {
       spyOn(window.localStorage, 'setItem').and.callFake(
         (key: string, value: string): string => {
-          return (mocklocalStorage[key] = TEST_TIME_STAMP);
+          TEST_TIME_STAMP_STRING = value;
+          return mocklocalStorage[key] = value;
         }
       );
       spyOn(localStorage, 'getItem').and.callFake((key: string):
@@ -107,10 +111,12 @@ describe('TBNotificationCenterDataSource test', () => {
     });
 
     it('updates last read timestamp in local storge', () => {
-      dataSource.updateLastReadTimeStampInMs();
+      const resultSpy = jasmine.createSpy();
+      dataSource.updateAndGetLastReadTimeStampInMs().subscribe(resultSpy);
 
+      expect(resultSpy).toHaveBeenCalledWith(parseInt(INIT_LAST_READ_TIMES_TAMP_STRING));
       expect(window.localStorage.getItem(NOTIFICATION_LAST_READ_TIME_KEY)).toBe(
-        TEST_TIME_STAMP
+        TEST_TIME_STAMP_STRING
       );
     });
   });

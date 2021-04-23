@@ -105,7 +105,8 @@ describe('notification center', () => {
     menuButton.nativeElement.click();
     fixture.detectChanges();
 
-    expect(recordedActions[0]).toEqual(actions.notificationBellClicked());
+    expect(recordedActions[0]).toEqual(actions.initAction());
+    expect(recordedActions[1]).toEqual(actions.notificationBellClicked());
   });
 
   describe('unread dot (red dot)', () => {

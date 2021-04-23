@@ -43,8 +43,8 @@ describe('notification center effects', () => {
   let actualActions: Action[] = [];
   let fetchNotificationsSpy: jasmine.Spy;
   let fetchNotificationSubject: Subject<NotificationCenterResponse>;
-  let updateLastReadTimestampInMsSpy: jasmine.Spy;
-  let updateLastReadTimestampInMsSubject: Subject<NotificationCenterResponse>;
+  let updateAndGetLastReadTimestampInMsSpy: jasmine.Spy;
+  let updateAndGetLastReadTimestampInMsSubject: Subject<NotificationCenterResponse>;
 
   beforeEach(async () => {
     actions$ = new Subject<Action>();
@@ -75,11 +75,11 @@ describe('notification center effects', () => {
       'fetchNotifications'
     ).and.returnValue(fetchNotificationSubject);
 
-    updateLastReadTimestampInMsSubject = new Subject();
-    updateLastReadTimestampInMsSpy = spyOn(
+    updateAndGetLastReadTimestampInMsSubject = new Subject();
+    updateAndGetLastReadTimestampInMsSpy = spyOn(
       dataSource,
-      'updateLastReadTimeStampInMs'
-    ).and.returnValue(of());
+      'updateAndGetLastReadTimeStampInMs'
+    ).and.returnValue(of(1235813));
   });
 
   it('fetches notifications on initial load', () => {
@@ -115,6 +115,6 @@ describe('notification center effects', () => {
   it('updates last ream timestamp', () => {
     actions$.next(actions.notificationBellClicked());
 
-    expect(updateLastReadTimestampInMsSpy).toHaveBeenCalled();
+    expect(updateAndGetLastReadTimestampInMsSpy).toHaveBeenCalled();
   });
 });
