@@ -358,7 +358,7 @@ class CorePluginTest(tf.test.TestCase):
 
         self.assertEqual(302, (response.status_code))
         self.assertStartsWith(content_type, "text/html")
-        self.assertIn('/notifications_note.json', location)
+        self.assertIn("/notifications_note.json", location)
 
 
 class CorePluginPathPrefixTest(tf.test.TestCase):
