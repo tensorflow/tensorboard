@@ -39,8 +39,6 @@ def _tb_combine_html_impl(ctx):
     )
 
     # vulcanize
-    ignore_regexs_file_set = depset()
-    ignore_regexs_file_path = "NO_REGEXS"
     ctx.actions.run(
         inputs = depset(transitive = [
             manifests,
@@ -114,10 +112,21 @@ def _tb_combine_html_impl(ctx):
 tb_combine_html = rule(
     implementation = _tb_combine_html_impl,
     attrs = {
-        "input_path": attr.string(mandatory = True),
-        "output_path": attr.string(mandatory = True),
-        # If specified, it extracts scripts into {name}.js and inserts <script src="{js_path}">.
-        "js_path": attr.string(),
+        "input_path": attr.string(
+            mandatory = True,
+            doc = """Entry point webpath of a HTML.""",
+        ),
+        "output_path": attr.string(
+            mandatory = True,
+            doc = """Webpath of an output file. Do not confuse with the output
+                HTML filename which is `{name}.html`.
+            """,
+        ),
+        "js_path": attr.string(
+            doc = """If specified, rule extracts all scripts into {name}.js and
+                inserts `<script src="{js_path}">`.
+            """,
+        ),
         "data": attr.label_list(allow_files = True),
         "deps": attr.label_list(aspects = [closure_js_aspect], mandatory = True),
         "_Vulcanize": attr.label(
