@@ -228,46 +228,15 @@ describe('runs_reducers', () => {
       );
     });
 
-    it('auto-selects new runs from preference, even if num > N', () => {
+    it('auto-selects new runs if total num <= N', () => {
       const existingRuns = [buildRun({id: 'existingRun1'})];
       let state = buildRunsState({
         selectionState: new Map([
           ['["b"]', new Map([['existingRun1', false]])],
         ]),
-        shouldAutoSelectRuns: new Map([['["b"]', true]]),
       });
 
-      const manyNewRuns = createFakeRuns(MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT + 1);
-      state = runsReducers.reducers(
-        state,
-        actions.fetchRunsSucceeded({
-          experimentIds: ['b'],
-          runsForAllExperiments: [...existingRuns, ...manyNewRuns],
-          newRunsAndMetadata: {
-            b: {
-              runs: manyNewRuns,
-              metadata: buildHparamsAndMetadata({}),
-            },
-          },
-        })
-      );
-
-      const selections = [...state.data.selectionState.get('["b"]')!.entries()];
-      expect(selections.length).toBe(manyNewRuns.length + existingRuns.length);
-      // Existing runs that were unselected should remain so.
-      for (const [runId, isSelected] of selections) {
-        expect(isSelected).toBe(runId !== 'existingRun1');
-      }
-    });
-
-    it('auto-unselects new runs from preference, even if num <= N', () => {
-      const existingRuns = [buildRun({id: 'existingRun1'})];
-      let state = buildRunsState({
-        selectionState: new Map([['["b"]', new Map([['existingRun1', true]])]]),
-        shouldAutoSelectRuns: new Map([['["b"]', false]]),
-      });
-
-      const fewNewRuns = createFakeRuns(1);
+      const fewNewRuns = createFakeRuns(MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT - 1);
       state = runsReducers.reducers(
         state,
         actions.fetchRunsSucceeded({
@@ -284,70 +253,41 @@ describe('runs_reducers', () => {
 
       const selections = [...state.data.selectionState.get('["b"]')!.entries()];
       expect(selections.length).toBe(fewNewRuns.length + existingRuns.length);
+      // Existing runs that were unselected should remain so.
+      const selectedAsExpected = selections.every(([runId, isSelected]) => {
+        return isSelected === (runId !== 'existingRun1');
+      });
+      expect(selectedAsExpected).toBe(true);
+    });
+
+    it('does not auto-select new runs if total num > N', () => {
+      const existingRuns = [buildRun({id: 'existingRun1'})];
+      let state = buildRunsState({
+        selectionState: new Map([['["b"]', new Map([['existingRun1', true]])]]),
+      });
+
+      const manyNewRuns = createFakeRuns(MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT);
+      state = runsReducers.reducers(
+        state,
+        actions.fetchRunsSucceeded({
+          experimentIds: ['b'],
+          runsForAllExperiments: [...existingRuns, ...manyNewRuns],
+          newRunsAndMetadata: {
+            b: {
+              runs: manyNewRuns,
+              metadata: buildHparamsAndMetadata({}),
+            },
+          },
+        })
+      );
+
+      const selections = [...state.data.selectionState.get('["b"]')!.entries()];
+      expect(selections.length).toBe(manyNewRuns.length + existingRuns.length);
       // Existing runs that were selected should remain so.
-      for (const [runId, isSelected] of selections) {
-        expect(isSelected).toBe(runId === 'existingRun1');
-      }
-    });
-
-    it('auto-selects runs if num <= N, if no preference is set', () => {
-      const state = buildRunsState({selectionState: new Map()});
-
-      const action = actions.fetchRunsSucceeded({
-        experimentIds: ['id1'],
-        runsForAllExperiments: [
-          buildRun({id: 'baz'}),
-          buildRun({id: 'foo'}),
-          buildRun({id: 'qaz'}),
-        ],
-        newRunsAndMetadata: {
-          id1: {
-            runs: [
-              buildRun({id: 'baz'}),
-              buildRun({id: 'foo'}),
-              buildRun({id: 'qaz'}),
-            ],
-            metadata: buildHparamsAndMetadata({}),
-          },
-        },
+      const selectedAsExpected = selections.every(([runId, isSelected]) => {
+        return isSelected === (runId === 'existingRun1');
       });
-      const nextState = runsReducers.reducers(state, action);
-
-      expect(action.runsForAllExperiments.length).toBeLessThanOrEqual(
-        MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT
-      );
-      expect(nextState.data.selectionState).toEqual(
-        new Map([
-          [
-            '["id1"]',
-            new Map([
-              ['baz', true],
-              ['foo', true],
-              ['qaz', true],
-            ]),
-          ],
-        ])
-      );
-    });
-
-    it('auto-unselects new runs if num > N, if no preference is set', () => {
-      const state = buildRunsState({selectionState: new Map()});
-
-      const fakeRuns = createFakeRuns(MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT * 1.5);
-      const action = actions.fetchRunsSucceeded({
-        experimentIds: ['b'],
-        runsForAllExperiments: fakeRuns,
-        newRunsAndMetadata: {
-          b: {
-            runs: fakeRuns,
-            metadata: buildHparamsAndMetadata({}),
-          },
-        },
-      });
-      const nextState = runsReducers.reducers(state, action);
-
-      const selections = nextState.data.selectionState.get('["b"]')!.values();
-      expect([...selections].every((x) => x === false)).toBe(true);
+      expect(selectedAsExpected).toBe(true);
     });
   });
 
@@ -520,62 +460,6 @@ describe('runs_reducers', () => {
               ['bar', false],
             ]),
           ],
-        ])
-      );
-    });
-
-    it('remembers the most recent page toggle value', () => {
-      let state = buildRunsState({
-        selectionState: new Map([
-          [
-            '["eid1"]',
-            new Map([
-              ['foo', true],
-              ['bar', false],
-            ]),
-          ],
-          [
-            '["eid1","eid2"]',
-            new Map([
-              ['foo', true],
-              ['bar', false],
-            ]),
-          ],
-        ]),
-        shouldAutoSelectRuns: new Map([['["eid1"]', true]]),
-      });
-
-      state = runsReducers.reducers(
-        state,
-        actions.runPageSelectionToggled({
-          experimentIds: ['eid1'],
-          runIds: ['foo', 'bar'],
-        })
-      );
-
-      expect(state.data.shouldAutoSelectRuns).toEqual(
-        new Map([['["eid1"]', true]])
-      );
-
-      state = runsReducers.reducers(
-        state,
-        actions.runPageSelectionToggled({
-          experimentIds: ['eid1'],
-          runIds: ['foo', 'bar'],
-        })
-      );
-      state = runsReducers.reducers(
-        state,
-        actions.runPageSelectionToggled({
-          experimentIds: ['eid1', 'eid2'],
-          runIds: ['foo', 'bar'],
-        })
-      );
-
-      expect(state.data.shouldAutoSelectRuns).toEqual(
-        new Map([
-          ['["eid1"]', false],
-          ['["eid1","eid2"]', true],
         ])
       );
     });

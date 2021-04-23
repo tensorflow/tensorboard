@@ -63,13 +63,6 @@ export interface RunsDataState {
    * TODO: this belongs in UI state not data state.
    */
   selectionState: Map<string, Map<RunId, boolean>>;
-  /**
-   * Map from a 'key' to boolean whether the new runs should be selected by
-   * default. The 'key' is a serialization of multiple experiment IDs.
-   *
-   * TODO: this belongs in UI state not data state.
-   */
-  shouldAutoSelectRuns: Map<string, boolean>;
 }
 
 export interface RunsUiRoutefulState {
@@ -111,4 +104,4 @@ export interface State {
  * equal to MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT in an experiment, we default
  * select all runs.
  */
-export const MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT = 40;
+export const MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT = 500;

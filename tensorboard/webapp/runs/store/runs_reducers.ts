@@ -42,7 +42,6 @@ const dataInitialState: RunsDataState = {
   runMetadata: {},
   runsLoadState: {},
   selectionState: new Map<string, Map<string, boolean>>(),
-  shouldAutoSelectRuns: new Map<string, boolean>(),
 };
 
 const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
@@ -86,39 +85,17 @@ const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
       }
     }
 
-    /**
-     * Auto-select new runs based on the saved preference, or based on the
-     * number of runs.
-     *
-     * Known caveat: subsequent reloads after the first may result
-     * in selecting a large number of runs automatically, incuring a
-     * performance cost.
-     */
-    let nextShouldAutoSelectRunsMap = state.shouldAutoSelectRuns;
-    const runCount = action.runsForAllExperiments.length;
-    if (runCount > 0) {
-      const eidsBasedKey = serializeExperimentIds(action.experimentIds);
-      let selectNewRunsByDefault =
-        state.shouldAutoSelectRuns.get(eidsBasedKey) ?? null;
-      if (selectNewRunsByDefault === null) {
-        selectNewRunsByDefault = runCount <= MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT;
-
-        nextShouldAutoSelectRunsMap = new Map([
-          ...state.shouldAutoSelectRuns,
-          [eidsBasedKey, selectNewRunsByDefault],
-        ]);
+    // Populate selection states for previously unseen runs.
+    const eidsBasedKey = serializeExperimentIds(action.experimentIds);
+    const selectionMap = new Map(nextSelectionState.get(eidsBasedKey) ?? []);
+    const runSelected =
+      action.runsForAllExperiments.length <= MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT;
+    for (const run of action.runsForAllExperiments) {
+      if (!selectionMap.has(run.id)) {
+        selectionMap.set(run.id, runSelected);
       }
-
-      const nextSelectionMap = nextSelectionState.has(eidsBasedKey)
-        ? new Map(nextSelectionState.get(eidsBasedKey)!)
-        : new Map<string, boolean>();
-      for (const run of action.runsForAllExperiments) {
-        if (!nextSelectionMap.has(run.id)) {
-          nextSelectionMap.set(run.id, selectNewRunsByDefault);
-        }
-      }
-      nextSelectionState.set(eidsBasedKey, nextSelectionMap);
     }
+    nextSelectionState.set(eidsBasedKey, selectionMap);
 
     return {
       ...state,
@@ -126,7 +103,6 @@ const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
       runIdToExpId: nextRunIdToExpId,
       runMetadata: nextRunMetadata,
       runsLoadState: nextRunsLoadState,
-      shouldAutoSelectRuns: nextShouldAutoSelectRunsMap,
       selectionState: nextSelectionState,
     };
   }),
@@ -171,10 +147,6 @@ const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
     return {
       ...state,
       selectionState: nextSelectionState,
-      shouldAutoSelectRuns: new Map([
-        ...state.shouldAutoSelectRuns,
-        [stateKey, nextValue],
-      ]),
     };
   }),
   on(runsActions.runsSelectAll, (state, {experimentIds}) => {

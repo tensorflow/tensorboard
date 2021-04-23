@@ -12,12 +12,31 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
+import {MatSnackBar} from '@angular/material/snack-bar';
 import {Store} from '@ngrx/store';
-import {map} from 'rxjs/operators';
+import {Subject} from 'rxjs';
+import {
+  distinctUntilChanged,
+  filter,
+  map,
+  switchMap,
+  take,
+  takeUntil,
+} from 'rxjs/operators';
 
 import {State} from '../../../app_state';
-import {getExperimentIdsFromRoute} from '../../../selectors';
+import {
+  getCurrentRouteRunSelection,
+  getExperimentIdsFromRoute,
+} from '../../../selectors';
+import {MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT} from '../../store/runs_types';
 import {RunsTableColumn} from '../runs_table/types';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
@@ -33,12 +52,15 @@ import {RunsTableColumn} from '../runs_table/types';
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class RunsSelectorContainer {
+export class RunsSelectorContainer implements OnInit, OnDestroy {
   @Input() showHparamsAndMetrics?: boolean;
 
-  readonly experimentIds$ = this.store
-    .select(getExperimentIdsFromRoute)
-    .pipe(map((experimentIdsOrNull) => experimentIdsOrNull ?? []));
+  readonly experimentIds$ = this.store.select(getExperimentIdsFromRoute).pipe(
+    map((experimentIdsOrNull) => experimentIdsOrNull ?? []),
+    distinctUntilChanged((a, b) => {
+      return a.every((experimentId, index) => b[index] === experimentId);
+    })
+  );
   readonly columns$ = this.store.select(getExperimentIdsFromRoute).pipe(
     map((ids) => {
       return [
@@ -49,6 +71,51 @@ export class RunsSelectorContainer {
       ].filter((col) => col !== null) as RunsTableColumn[];
     })
   );
+  private readonly ngUnsubscribe = new Subject();
 
-  constructor(private readonly store: Store<State>) {}
+  constructor(
+    private readonly store: Store<State>,
+    private readonly snackBar: MatSnackBar
+  ) {}
+
+  ngOnInit() {
+    // Notify the user that new runs may not be selected. Avoid showing it too
+    // often, since it would be annoying to see the alert re-appear on every
+    // auto-reload (assuming a new run per reload).
+    const runsExceedsLimitForRoute$ = this.experimentIds$.pipe(
+      takeUntil(this.ngUnsubscribe),
+      switchMap(() => {
+        // Returns an Observable that emits once and completes when the current
+        // route's run count goes over the limit.
+        return this.store.select(getCurrentRouteRunSelection).pipe(
+          distinctUntilChanged((a, b) => {
+            return a === b;
+          }),
+          filter((runSelectionMap: Map<string, boolean> | null) => {
+            if (!runSelectionMap) {
+              return false;
+            }
+            return runSelectionMap.size > MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT;
+          }),
+          take(1)
+        );
+      })
+    );
+    runsExceedsLimitForRoute$.subscribe(() => {
+      const text =
+        `The number of runs is over ` +
+        `${MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT}. New runs are unselected ` +
+        `for performance reasons.`;
+      this.snackBar.open(text, 'DISMISS', {
+        duration: 5000,
+        horizontalPosition: 'start',
+        verticalPosition: 'bottom',
+      });
+    });
+  }
+
+  ngOnDestroy() {
+    this.ngUnsubscribe.next();
+    this.ngUnsubscribe.complete();
+  }
 }

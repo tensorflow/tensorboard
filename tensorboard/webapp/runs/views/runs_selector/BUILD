@@ -12,6 +12,7 @@ tf_ng_module(
         "runs_selector_module.ts",
     ],
     deps = [
+        "//tensorboard/webapp/angular:expect_angular_material_snackbar",
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp:selectors",
         "//tensorboard/webapp/runs/store:types",
@@ -35,8 +36,10 @@ tf_ts_library(
         "//tensorboard/webapp:selectors",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/angular:expect_angular_platform_browser_animations",
+        "//tensorboard/webapp/angular:expect_angular_material_snackbar",
         "//tensorboard/webapp/angular:expect_ngrx_store_testing",
         "//tensorboard/webapp/runs/store:testing",
+        "//tensorboard/webapp/runs/store:types",
         "//tensorboard/webapp/runs/views/runs_table",
         "@npm//@angular/core",
         "@npm//@angular/platform-browser",
