@@ -27,12 +27,6 @@ import * as colorUtils from '../../util/colors';
 import {composeReducers} from '../../util/ngrx';
 import * as runsActions from '../actions';
 import {
-  DiscreteFilter,
-  DiscreteHparamValue,
-  DomainType,
-  IntervalFilter,
-} from '../types';
-import {
   MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT,
   RunsDataState,
   RunsState,
@@ -47,7 +41,6 @@ const dataInitialState: RunsDataState = {
   runIdToExpId: {},
   runMetadata: {},
   runsLoadState: {},
-  hparamAndMetricSpec: {},
   selectionState: new Map<string, Map<string, boolean>>(),
 };
 
@@ -70,7 +63,6 @@ const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
     const nextRunMetadata = {...state.runMetadata};
     const nextRunIdToExpId = {...state.runIdToExpId};
     const nextRunsLoadState = {...state.runsLoadState};
-    const nextHparamAndMetricSpec = {...state.hparamAndMetricSpec};
     const nextSelectionState = new Map(state.selectionState);
 
     for (const eid of Object.keys(action.newRunsAndMetadata)) {
@@ -91,11 +83,6 @@ const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
         };
         nextRunIdToExpId[run.id] = eid;
       }
-
-      nextHparamAndMetricSpec[eid] = {
-        hparams: metadata.hparamSpecs,
-        metrics: metadata.metricSpecs,
-      };
     }
 
     const eidsBasedKey = serializeExperimentIds(action.experimentIds);
@@ -126,7 +113,6 @@ const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
       runIdToExpId: nextRunIdToExpId,
       runMetadata: nextRunMetadata,
       runsLoadState: nextRunsLoadState,
-      hparamAndMetricSpec: nextHparamAndMetricSpec,
       selectionState: nextSelectionState,
     };
   }),
@@ -272,203 +258,6 @@ const uiReducer: ActionReducer<RunsUiState, Action> = createReducer(
     nextRunColorOverride.set(runId, newColor);
 
     return {...state, runColorOverride: nextRunColorOverride};
-  }),
-  on(
-    runsActions.runDiscreteHparamFilterChanged,
-    (state, {hparamName, filterValues, includeUndefined}) => {
-      const defaultFilter = state.hparamDefaultFilters.get(hparamName);
-      if (!defaultFilter) {
-        throw new Error(`Unknown hparams: ${hparamName}`);
-      }
-      if (defaultFilter.type === DomainType.INTERVAL) {
-        throw new Error(
-          `Invariant error: Hparams filter is INTERVAL but got a ' +
-               'DISCRETE change`
-        );
-      }
-
-      const existingFilter = {
-        ...defaultFilter,
-        ...state.hparamFilters.get(hparamName),
-      } as DiscreteFilter;
-      const newHparamFilters = new Map(state.hparamFilters);
-      newHparamFilters.set(hparamName, {
-        ...existingFilter,
-        includeUndefined,
-        filterValues,
-      });
-      return {...state, hparamFilters: newHparamFilters};
-    }
-  ),
-  on(runsActions.runIntervalHparamFilterChanged, (state, action) => {
-    const {
-      hparamName,
-      filterLowerValue,
-      filterUpperValue,
-      includeUndefined,
-    } = action;
-    const defaultFilter = state.hparamDefaultFilters.get(hparamName);
-    if (!defaultFilter) {
-      throw new Error(`Unknown hparams: ${hparamName}`);
-    }
-    if (defaultFilter.type === DomainType.DISCRETE) {
-      throw new Error(
-        `Invariant error: Hparams filter is DISCRETE but got a ' +
-               'INTERVAL change`
-      );
-    }
-
-    const existingFilter = {
-      ...defaultFilter,
-      ...state.hparamFilters.get(hparamName),
-    } as IntervalFilter;
-    const newHparamFilters = new Map(state.hparamFilters);
-    newHparamFilters.set(hparamName, {
-      ...existingFilter,
-      includeUndefined,
-      filterLowerValue,
-      filterUpperValue,
-    });
-    return {...state, hparamFilters: newHparamFilters};
-  }),
-  on(runsActions.runMetricFilterChanged, (state, change) => {
-    const {
-      metricTag,
-      filterLowerValue,
-      filterUpperValue,
-      includeUndefined,
-    } = change;
-    const defaultFilter = state.metricDefaultFilters.get(metricTag);
-    if (!defaultFilter) {
-      throw new Error(`Unknown metric: ${metricTag}`);
-    }
-
-    const existingFilter = {
-      ...defaultFilter,
-      ...state.metricFilters.get(metricTag),
-    } as IntervalFilter;
-    const newMetricFilters = new Map(state.metricFilters);
-    newMetricFilters.set(metricTag, {
-      ...existingFilter,
-      filterLowerValue,
-      filterUpperValue,
-      includeUndefined,
-    });
-    return {...state, metricFilters: newMetricFilters};
-  }),
-  /**
-   * Sets default filter values.
-   *
-   * Implementation note: hparam values are defined as part of the spec but
-   * metrics are defined with the `runToHparamsAndMetrics`. We need to collect
-   * all the values for metrics, then compute the bound to create the default
-   * filter value. When the metric values are missing, we set the bound to (0,
-   * 1).
-   */
-  on(runsActions.fetchRunsSucceeded, (state, action) => {
-    if (Object.keys(action.newRunsAndMetadata).length === 0) {
-      return state;
-    }
-
-    const newHparamFilters = new Map<string, DiscreteFilter | IntervalFilter>();
-    const newMetricFilters = new Map<string, IntervalFilter>();
-
-    const discreteHparams = new Map<string, Set<DiscreteHparamValue>>();
-    const intervalHparams = new Map<
-      string,
-      {minValue: number; maxValue: number}
-    >();
-    // Arbitrary ordered collection of metric values collected across
-    // experiments and runs to compute extents of metrics.
-    const metricValueMinAndMax = new Map<string, {min: number; max: number}>();
-    const metricTags = new Set<string>();
-
-    for (const eid of Object.keys(action.newRunsAndMetadata)) {
-      const {runs, metadata} = action.newRunsAndMetadata[eid];
-      // Tabulate all the metric values from runs.
-      for (const run of runs) {
-        const hparamAndMetrics = metadata.runToHparamsAndMetrics[run.id];
-        if (!hparamAndMetrics) {
-          continue;
-        }
-        for (const metric of hparamAndMetrics.metrics) {
-          const minAndMax = metricValueMinAndMax.get(metric.tag);
-          metricValueMinAndMax.set(metric.tag, {
-            min: minAndMax
-              ? Math.min(minAndMax.min, metric.value)
-              : metric.value,
-            max: minAndMax
-              ? Math.max(minAndMax.max, metric.value)
-              : metric.value,
-          });
-        }
-      }
-
-      // Record and combine all hparam specs (multiple experiments can
-      // have hparams of same name but disjoint set of domain).
-      for (const {name, domain} of metadata.hparamSpecs) {
-        if (domain.type === DomainType.DISCRETE) {
-          const values = discreteHparams.get(name) || new Set();
-          for (const value of domain.values) {
-            values.add(value);
-          }
-          discreteHparams.set(name, values);
-        } else {
-          const existing = intervalHparams.get(name);
-          intervalHparams.set(name, {
-            minValue: existing
-              ? Math.min(domain.minValue, existing.minValue)
-              : domain.minValue,
-            maxValue: existing
-              ? Math.max(domain.maxValue, existing.maxValue)
-              : domain.maxValue,
-          });
-        }
-      }
-
-      for (const metricSpec of metadata.metricSpecs) {
-        metricTags.add(metricSpec.tag);
-      }
-    }
-
-    for (const [name, values] of discreteHparams) {
-      newHparamFilters.set(name, {
-        type: DomainType.DISCRETE,
-        includeUndefined: true,
-        possibleValues: [...values],
-        filterValues: [...values],
-      } as DiscreteFilter);
-    }
-
-    for (const [name, {minValue, maxValue}] of intervalHparams) {
-      newHparamFilters.set(name, {
-        type: DomainType.INTERVAL,
-        includeUndefined: true,
-        minValue,
-        maxValue,
-        filterLowerValue: minValue,
-        filterUpperValue: maxValue,
-      } as IntervalFilter);
-    }
-
-    for (const metricTag of metricTags) {
-      const minAndMax = metricValueMinAndMax.get(metricTag);
-
-      newMetricFilters.set(metricTag, {
-        type: DomainType.INTERVAL,
-        includeUndefined: true,
-        minValue: minAndMax?.min ?? 0,
-        maxValue: minAndMax?.max ?? 0,
-        filterLowerValue: minAndMax?.min ?? 0,
-        filterUpperValue: minAndMax?.max ?? 0,
-      });
-    }
-
-    return {
-      ...state,
-      hparamDefaultFilters: newHparamFilters,
-      metricDefaultFilters: newMetricFilters,
-    };
   })
 );
 

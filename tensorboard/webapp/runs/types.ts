@@ -12,37 +12,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {
-  DiscreteHparamValues,
-  DomainType,
-  HparamsAndMetadata,
-  Run,
-} from './data_source/runs_data_source_types';
+import {HparamsAndMetadata, Run} from './data_source/runs_data_source_types';
 
-export {
-  DiscreteHparamValue,
-  DiscreteHparamValues,
-  DomainType,
-  Run,
-} from './data_source/runs_data_source_types';
-
-export interface DiscreteFilter {
-  type: DomainType.DISCRETE;
-  includeUndefined: boolean;
-  possibleValues: DiscreteHparamValues;
-  // Subset of `possibleValues`
-  filterValues: DiscreteHparamValues;
-}
-
-export interface IntervalFilter {
-  type: DomainType.INTERVAL;
-  includeUndefined: boolean;
-  minValue: number;
-  maxValue: number;
-  // Filter values have to be in between min and max values (inclusive).
-  filterLowerValue: number;
-  filterUpperValue: number;
-}
+export {Run} from './data_source/runs_data_source_types';
 
 export type ExperimentIdToRunsAndMetadata = Record<
   string,
