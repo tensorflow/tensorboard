@@ -67,7 +67,7 @@ describe('notification center effects', () => {
     effects = TestBed.inject(NotificationCenterEffects);
     dataSource = TestBed.inject(NotificationCenterDataSource);
     effects.initialNotificationFetch$.subscribe();
-    effects.updateLastReadTimestampInMs$.subscribe();
+    effects.updateAndGetLastReadTimestampInMs$.subscribe();
 
     fetchNotificationSubject = new Subject();
     fetchNotificationsSpy = spyOn(

@@ -81,7 +81,7 @@ export class NotificationCenterEffects implements OnInitEffects {
    *
    * @export
    */
-  updateLastReadTimestampInMs$ = createEffect(
+  updateAndGetLastReadTimestampInMs$ = createEffect(
     () => {
       return this.actions$.pipe(
         ofType(actions.notificationBellClicked, actions.initAction),
