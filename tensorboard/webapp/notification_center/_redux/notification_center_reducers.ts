@@ -35,10 +35,7 @@ const reducer = createReducer(
   ),
   on(
     actions.notifcationLastReadTimeUpdated,
-    (
-      state: NotificationState,
-      {time}: {time: number}
-    ): NotificationState => {
+    (state: NotificationState, {time}: {time: number}): NotificationState => {
       return {
         ...state,
         lastReadTimestampInMs: time,

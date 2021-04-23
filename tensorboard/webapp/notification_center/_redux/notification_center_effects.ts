@@ -88,8 +88,11 @@ export class NotificationCenterEffects implements OnInitEffects {
         concatMap(() => {
           return this.dataSource.updateAndGetLastReadTimeStampInMs().pipe(
             map((time) => {
-            this.store.dispatch(actions.notifcationLastReadTimeUpdated({time}));
-          }));
+              this.store.dispatch(
+                actions.notifcationLastReadTimeUpdated({time})
+              );
+            })
+          );
         })
       );
     },

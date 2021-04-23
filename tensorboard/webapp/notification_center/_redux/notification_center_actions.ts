@@ -22,9 +22,7 @@ import {Notification} from './notification_center_types';
 /**
  * Fires when the notification component loads.
  */
- export const initAction = createAction(
-  '[Notification] Initilization'
-);
+export const initAction = createAction('[Notification] Initilization');
 
 /**
  * Fires when the bell icon is clicked.
@@ -49,4 +47,3 @@ export const fetchNotificationsLoaded = createAction(
   '[Notification] Fetch Notification Response Loaded',
   props<{notifications: Notification[]}>()
 );
-

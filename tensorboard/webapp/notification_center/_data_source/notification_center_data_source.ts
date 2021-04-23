@@ -35,7 +35,8 @@ export class TBNotificationCenterDataSource
   }
 
   updateAndGetLastReadTimeStampInMs(): Observable<number> {
-    const lasReadTime = window.localStorage.getItem(NOTIFICATION_LAST_READ_TIME_KEY) ?? '-1';
+    const lasReadTime =
+      window.localStorage.getItem(NOTIFICATION_LAST_READ_TIME_KEY) ?? '-1';
     const timeNow = Date.now();
     window.localStorage.setItem(
       NOTIFICATION_LAST_READ_TIME_KEY,
