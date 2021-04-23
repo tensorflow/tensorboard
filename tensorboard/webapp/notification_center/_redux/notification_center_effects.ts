@@ -84,8 +84,13 @@ export class NotificationCenterEffects implements OnInitEffects {
   updateLastReadTimestampInMs$ = createEffect(
     () => {
       return this.actions$.pipe(
-        ofType(actions.notificationBellClicked),
-        concatMap(() => this.dataSource.updateLastReadTimeStampInMs())
+        ofType(actions.notificationBellClicked, actions.initAction),
+        concatMap(() => {
+          return this.dataSource.updateAndGetLastReadTimeStampInMs().pipe(
+            map((time) => {
+            this.store.dispatch(actions.notifcationLastReadTimeUpdated({time}));
+          }));
+        })
       );
     },
     {dispatch: false}

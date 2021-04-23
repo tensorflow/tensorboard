@@ -25,22 +25,24 @@ const initialState: NotificationState = {
 const reducer = createReducer(
   initialState,
   on(
-    actions.notificationBellClicked,
-    (state: NotificationState): NotificationState => {
-      const timeNow = Date.now();
-      return {
-        ...state,
-        lastReadTimestampInMs: timeNow,
-      };
-    }
-  ),
-  on(
     actions.fetchNotificationsLoaded,
     (
       state: NotificationState,
       {notifications}: {notifications: Notification[]}
     ): NotificationState => {
       return {...state, notifications};
+    }
+  ),
+  on(
+    actions.notifcationLastReadTimeUpdated,
+    (
+      state: NotificationState,
+      {time}: {time: number}
+    ): NotificationState => {
+      return {
+        ...state,
+        lastReadTimestampInMs: time,
+      };
     }
   )
 );

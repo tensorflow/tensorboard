@@ -20,6 +20,13 @@ import {Notification} from './notification_center_types';
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
 /**
+ * Fires when the notification component loads.
+ */
+ export const initAction = createAction(
+  '[Notification] Initilization'
+);
+
+/**
  * Fires when the bell icon is clicked.
  */
 export const notificationBellClicked = createAction(
@@ -27,9 +34,13 @@ export const notificationBellClicked = createAction(
 );
 
 export const notifcationLastReadTimeUpdated = createAction(
-  '[Notification] Notification Last Read Timestamp Updated'
+  '[Notification] Notification Last Read Timestamp Updated',
+  props<{time: number}>()
 );
 
+/**
+ * Fires when the response from server is recieved.
+ */
 export const fetchNotificationsFailed = createAction(
   '[Notification] Fetch Notification Request Failed'
 );

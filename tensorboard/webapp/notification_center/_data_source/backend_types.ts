@@ -20,7 +20,7 @@ export interface NotificationCenterResponse {
 
 export abstract class NotificationCenterDataSource {
   abstract fetchNotifications(): Observable<NotificationCenterResponse>;
-  abstract updateLastReadTimeStampInMs(): Observable<void>;
+  abstract updateAndGetLastReadTimeStampInMs(): Observable<number>;
 }
 
 /**

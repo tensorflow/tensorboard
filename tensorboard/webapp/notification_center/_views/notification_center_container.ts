@@ -62,7 +62,9 @@ export class NotificationCenterContainer {
     })
   );
 
-  constructor(private readonly store: Store<State>) {}
+  constructor(private readonly store: Store<State>) {
+    this.store.dispatch(actions.initAction());
+  }
 
   onBellButtonClicked() {
     this.store.dispatch(actions.notificationBellClicked());

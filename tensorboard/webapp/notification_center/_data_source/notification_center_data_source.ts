@@ -34,12 +34,14 @@ export class TBNotificationCenterDataSource
     return this.http.get<NotificationCenterResponse>(`data/notifications`);
   }
 
-  updateLastReadTimeStampInMs(): Observable<void> {
+  updateAndGetLastReadTimeStampInMs(): Observable<number> {
+
+    const lasReadTime = window.localStorage.getItem(NOTIFICATION_LAST_READ_TIME_KEY) ?? '-1';
     const timeNow = Date.now();
     window.localStorage.setItem(
       NOTIFICATION_LAST_READ_TIME_KEY,
       timeNow.toString()
     );
-    return of();
+    return of(parseInt(lasReadTime));
   }
 }
