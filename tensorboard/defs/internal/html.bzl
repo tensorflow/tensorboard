@@ -128,7 +128,13 @@ tb_combine_html = rule(
             """,
         ),
         "data": attr.label_list(allow_files = True),
-        "deps": attr.label_list(aspects = [closure_js_aspect], mandatory = True),
+        "deps": attr.label_list(
+            aspects = [closure_js_aspect],
+            mandatory = True,
+            doc = """Dependencies of `input_path` that provides `webfiles`.
+                Normally, they should be targets using `tf_web_library`s.
+            """,
+        ),
         "_Vulcanize": attr.label(
             default = Label("//tensorboard/java/org/tensorflow/tensorboard/vulcanize:Vulcanize"),
             executable = True,
