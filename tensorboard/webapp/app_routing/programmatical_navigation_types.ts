@@ -15,7 +15,7 @@ limitations under the License.
 import {InjectionToken} from '@angular/core';
 import {Action, ActionCreator, Creator} from '@ngrx/store';
 
-import {CompareRouteParams, ExperimentRouteParams, RouteKind} from './types';
+import {ExperimentRouteParams, RouteKind} from './types';
 
 export const NAVIGATION_PROVIDER = new InjectionToken<NavigationLambda[]>(
   '[App Routing] Programmatical Navigation Provider'
@@ -28,7 +28,9 @@ export interface NavigateToExperiment {
 
 export interface NavigateToCompare {
   routeKind: RouteKind.COMPARE_EXPERIMENT;
-  routeParams: CompareRouteParams;
+  routeParams: {
+    aliasAndExperimentIds: Array<{alias: string; id: string}>;
+  };
 }
 
 export interface NavigateToExperiments {

@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Inject, Injectable} from '@angular/core';
+import {Injectable} from '@angular/core';
 import {Actions, createEffect, ofType} from '@ngrx/effects';
 import {Action, createAction, Store} from '@ngrx/store';
 import {merge, Observable, of} from 'rxjs';
@@ -34,13 +34,17 @@ import {
   stateRehydratedFromUrl,
 } from '../actions';
 import {AppRootProvider} from '../app_root';
-import {areRoutesEqual, getRouteId} from '../internal_utils';
+import {
+  areRoutesEqual,
+  getRouteId,
+  serializeCompareExperimentParams,
+} from '../internal_utils';
 import {Location} from '../location';
 import {ProgrammaticalNavigationModule} from '../programmatical_navigation_module';
 import {RouteConfigs} from '../route_config';
 import {RouteRegistryModule} from '../route_registry_module';
 import {getActiveRoute} from '../store/app_routing_selectors';
-import {Navigation, Route} from '../types';
+import {Navigation, Route, RouteKind, RouteParams} from '../types';
 
 /** @typehack */ import * as _typeHackNgrxEffects from '@ngrx/effects';
 /** @typehack */ import * as _typeHackModels from '@ngrx/store/src/models';
@@ -144,7 +148,26 @@ export class AppRoutingEffects {
       return nav !== null;
     }),
     map((programmaticalNavigation) => {
-      const {routeKind, routeParams} = programmaticalNavigation!;
+      const nav = programmaticalNavigation!;
+      const routeKind = nav.routeKind;
+
+      // TODO(stephanwlee): currently, the RouteParams is ill-typed and you can
+      // currently add any property without any type error. Better type it.
+      let routeParams: RouteParams;
+      switch (nav.routeKind) {
+        case RouteKind.COMPARE_EXPERIMENT:
+          routeParams = {
+            experimentIds: serializeCompareExperimentParams(
+              nav.routeParams.aliasAndExperimentIds
+            ),
+          };
+          break;
+        default:
+          routeParams = nav.routeParams;
+      }
+      return {routeKind, routeParams};
+    }),
+    map(({routeKind, routeParams}) => {
       const routeMatch = this.routeConfigs
         ? this.routeConfigs.matchByRouteKind(routeKind, routeParams)
         : null;
