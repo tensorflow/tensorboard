@@ -19,7 +19,6 @@ import {Notification} from './notification_center_types';
 /** @typehack */ import * as _typeHackModels from '@ngrx/store/src/models';
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
-
 /**
  * Fires when the bell icon is clicked.
  */

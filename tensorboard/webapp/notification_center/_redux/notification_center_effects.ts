@@ -77,18 +77,21 @@ export class NotificationCenterEffects implements OnInitEffects {
     );
   }
 
-  private readonly notifcationLastReadTimeUpdated$ =
-  this.actions$.pipe(
+  private readonly notifcationLastReadTimeUpdated$ = this.actions$.pipe(
     ofType(actions.notificationBellClicked),
     concatMap(() => this.dataSource.updateLastReadTimeStampToNow()),
-    tap((time: number) => this.store.dispatch(actions.notifcationLastReadTimeUpdated({time})))
-  )
+    tap((time: number) =>
+      this.store.dispatch(actions.notifcationLastReadTimeUpdated({time}))
+    )
+  );
 
   private readonly lastReadTimestampInitialized$ = this.actions$.pipe(
     ofType(initAction),
     concatMap(() => this.dataSource.getLastReadTimeStampInMs()),
-    tap((time: number) => this.store.dispatch(actions.lastReadTimestampInitialized({time})))
-  )
+    tap((time: number) =>
+      this.store.dispatch(actions.lastReadTimestampInitialized({time}))
+    )
+  );
 
   /**
    * Updates last read timestamp.
@@ -96,7 +99,11 @@ export class NotificationCenterEffects implements OnInitEffects {
    * @export
    */
   updateLastReadTimestampInMs$ = createEffect(
-    () => combineLatest([this.notifcationLastReadTimeUpdated$, this.lastReadTimestampInitialized$]),
+    () =>
+      combineLatest([
+        this.notifcationLastReadTimeUpdated$,
+        this.lastReadTimestampInitialized$,
+      ]),
     {dispatch: false}
   );
 }

@@ -124,7 +124,9 @@ describe('TBNotificationCenterDataSource test', () => {
       const resultSpy = jasmine.createSpy();
       dataSource.getLastReadTimeStampInMs().subscribe(resultSpy);
 
-      expect(resultSpy).toHaveBeenCalledWith(Number(INIT_LAST_READ_TIME_STAMP_STRING));
+      expect(resultSpy).toHaveBeenCalledWith(
+        Number(INIT_LAST_READ_TIME_STAMP_STRING)
+      );
     });
 
     it('gets updated last read timestamp in local storge', () => {

@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Injectable} from '@angular/core';
-import  {Observable, of} from 'rxjs';
+import {Observable, of} from 'rxjs';
 
 import {TBHttpClient} from '../../webapp_data_source/tb_http_client';
 import {

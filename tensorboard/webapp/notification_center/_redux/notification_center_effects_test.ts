@@ -12,28 +12,27 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import { TestBed } from '@angular/core/testing';
-import { provideMockActions } from '@ngrx/effects/testing';
-import { Action, Store } from '@ngrx/store';
-import { MockStore, provideMockStore } from '@ngrx/store/testing';
-import { of, Subject, throwError } from 'rxjs';
-import { State } from '../../app_state';
-import { TBHttpClientTestingModule } from '../../webapp_data_source/tb_http_client_testing';
+import {TestBed} from '@angular/core/testing';
+import {provideMockActions} from '@ngrx/effects/testing';
+import {Action, Store} from '@ngrx/store';
+import {MockStore, provideMockStore} from '@ngrx/store/testing';
+import {of, Subject, throwError} from 'rxjs';
+import {State} from '../../app_state';
+import {TBHttpClientTestingModule} from '../../webapp_data_source/tb_http_client_testing';
 import {
   NotificationCenterDataSource,
-  NotificationCenterResponse
+  NotificationCenterResponse,
 } from '../_data_source';
 import {
   buildNotificationResponse,
-  provideTestingNotificationCenterDataSource
+  provideTestingNotificationCenterDataSource,
 } from '../_data_source/testing';
 import * as actions from './notification_center_actions';
 import {
   NotificationCenterEffects,
-  TEST_ONLY
+  TEST_ONLY,
 } from './notification_center_effects';
-import { CategoryEnum } from './notification_center_types';
-
+import {CategoryEnum} from './notification_center_types';
 
 describe('notification center effects', () => {
   let dataSource: NotificationCenterDataSource;
@@ -116,7 +115,10 @@ describe('notification center effects', () => {
     actions$.next(TEST_ONLY.initAction());
 
     expect(fetchNotificationsSpy).toHaveBeenCalled();
-    expect(actualActions).toEqual([actions.fetchNotificationsFailed(), actions.lastReadTimestampInitialized({time: 1235813})]);
+    expect(actualActions).toEqual([
+      actions.fetchNotificationsFailed(),
+      actions.lastReadTimestampInitialized({time: 1235813}),
+    ]);
   });
 
   it('updates last ream timestamp', () => {
