@@ -13,10 +13,8 @@ java_binary(
     deps = [
         "@com_google_guava",
         "@com_google_protobuf//:protobuf_java",
-        "@io_bazel_rules_closure//closure/compiler",
         "@io_bazel_rules_closure//java/io/bazel/rules/closure:webpath",
         "@io_bazel_rules_closure//java/io/bazel/rules/closure/webfiles:build_info_java_proto",
-        "@io_bazel_rules_closure//java/org/jsoup/nodes",
         "@org_jsoup",
     ],
 )
