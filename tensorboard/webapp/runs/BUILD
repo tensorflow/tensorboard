@@ -10,7 +10,6 @@ tf_ng_module(
         "runs_module.ts",
     ],
     deps = [
-        "//tensorboard/webapp/alert",
         "//tensorboard/webapp/alert:alert_action",
         "//tensorboard/webapp/hparams",
         "//tensorboard/webapp/runs/actions",

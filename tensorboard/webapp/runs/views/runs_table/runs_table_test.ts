@@ -34,10 +34,11 @@ import {MatSortModule} from '@angular/material/sort';
 import {MatTableModule} from '@angular/material/table';
 import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
-import {Store} from '@ngrx/store';
+import {Action, Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {of, ReplaySubject} from 'rxjs';
 
+import * as alertActions from '../../../alert/actions';
 import {State} from '../../../app_state';
 import {buildExperiment} from '../../../experiments/store/testing';
 import {
@@ -55,6 +56,7 @@ import {
   getCurrentRouteRunSelection,
   getExperiment,
   getExperimentIdToAliasMap,
+  getRouteId,
   getRunColorMap,
   getRuns,
   getRunSelectorPaginationOption,
@@ -78,9 +80,10 @@ import {
   runTableShown,
 } from '../../actions';
 import {DomainType} from '../../data_source/runs_data_source_types';
-import {Run} from '../../store/runs_types';
+import {MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT, Run} from '../../store/runs_types';
 import {buildRun} from '../../store/testing';
 import {SortType} from '../../types';
+
 import {RunsTableComponent} from './runs_table_component';
 import {RunsTableContainer, TEST_ONLY} from './runs_table_container';
 import {HparamSpec, MetricSpec, RunsTableColumn} from './types';
@@ -138,6 +141,7 @@ describe('runs_table', () => {
   let store: MockStore<State>;
   let dispatchSpy: jasmine.Spy;
   let overlayContainer: OverlayContainer;
+  let actualActions: Action[];
 
   function createComponent(
     experimentIds: string[],
@@ -188,6 +192,8 @@ describe('runs_table', () => {
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
 
+    actualActions = [];
+
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
     store.overrideSelector(getRuns, []);
     store.overrideSelector(getRunsLoadState, {
@@ -228,7 +234,9 @@ describe('runs_table', () => {
       hparamsSelectors.getMetricFilterMap,
       new Map() as ReturnType<typeof hparamsSelectors.getMetricFilterMap>
     );
-    dispatchSpy = spyOn(store, 'dispatch');
+    dispatchSpy = spyOn(store, 'dispatch').and.callFake((action: Action) => {
+      actualActions.push(action);
+    });
     overlayContainer = TestBed.inject(OverlayContainer);
   });
 
@@ -1615,6 +1623,178 @@ describe('runs_table', () => {
           experimentIds: ['rowling'],
         })
       );
+    });
+  });
+
+  fdescribe('"too many runs" alert', () => {
+    function createRunSelectionMap(runCount: number): Map<string, boolean> {
+      const map = new Map<string, boolean>();
+      for (let i = 0; i < runCount; i++) {
+        map.set(`run${i}`, true);
+      }
+      return map;
+    }
+
+    function createRuns(runCount: number): Run[] {
+      const runs = [];
+      for (let i = 0; i < runCount; i++) {
+        runs.push(
+          buildRun({
+            id: `run${i}`,
+            name: `run${i}`,
+          })
+        );
+      }
+      return runs;
+    }
+
+    const tooManyRunsAlertMessage = jasmine.stringMatching('exceeds');
+
+    it('triggers when number of runs exceeds limit', () => {
+      store.overrideSelector(getRouteId, '123');
+      // selectSpy.withArgs(getRuns, {experimentId: 'book'}).and.returnValue(runs);
+      store.overrideSelector(
+        getRuns,
+        createRuns(MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT)
+      );
+      const fixture = createComponent(
+        ['exp1'],
+        [RunsTableColumn.CHECKBOX, RunsTableColumn.RUN_NAME]
+      );
+      fixture.detectChanges();
+
+      expect(actualActions).toEqual([runTableShown({experimentIds: ['exp1']})]);
+
+      // Change # of runs to 1 over limit.
+      store.overrideSelector(
+        getRuns,
+        createRuns(MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT + 1)
+      );
+      store.refreshState();
+
+      expect(actualActions).toEqual([
+        runTableShown({experimentIds: ['exp1']}),
+        alertActions.alertReported({
+          localizedMessage: tooManyRunsAlertMessage as any,
+        }),
+      ]);
+    });
+
+    it('does not show when the table has no checkbox column', () => {
+      store.overrideSelector(getRouteId, '123');
+      // selectSpy.withArgs(getRuns, {experimentId: 'book'}).and.returnValue(runs);
+      store.overrideSelector(
+        getRuns,
+        createRuns(MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT + 1)
+      );
+      const fixture = createComponent(['exp1'], [RunsTableColumn.RUN_NAME]);
+      fixture.detectChanges();
+
+      expect(actualActions).toEqual([runTableShown({experimentIds: ['exp1']})]);
+    });
+
+    it('does not show when already shown', () => {
+      store.overrideSelector(getRouteId, '123');
+      store.overrideSelector(
+        getRuns,
+        createRuns(MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT + 1)
+      );
+      const fixture = createComponent(
+        ['exp1'],
+        [RunsTableColumn.CHECKBOX, RunsTableColumn.RUN_NAME]
+      );
+      fixture.detectChanges();
+
+      expect(actualActions).toEqual([
+        alertActions.alertReported({
+          localizedMessage: tooManyRunsAlertMessage as any,
+        }),
+        runTableShown({experimentIds: ['exp1']}),
+      ]);
+
+      store.overrideSelector(
+        getRuns,
+        createRuns(MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT + 2)
+      );
+      store.refreshState();
+
+      expect(actualActions).toEqual([
+        alertActions.alertReported({
+          localizedMessage: tooManyRunsAlertMessage as any,
+        }),
+        runTableShown({experimentIds: ['exp1']}),
+      ]);
+    });
+
+    it('re-shows after a new route with too many runs', () => {
+      store.overrideSelector(getRouteId, '123');
+      store.overrideSelector(
+        getRuns,
+        createRuns(MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT + 1)
+      );
+      const fixture = createComponent(
+        ['exp1'],
+        [RunsTableColumn.CHECKBOX, RunsTableColumn.RUN_NAME]
+      );
+      fixture.detectChanges();
+
+      expect(actualActions).toEqual([
+        alertActions.alertReported({
+          localizedMessage: tooManyRunsAlertMessage as any,
+        }),
+        runTableShown({experimentIds: ['exp1']}),
+      ]);
+
+      store.overrideSelector(getRouteId, '456');
+      store.overrideSelector(
+        getRuns,
+        createRuns(MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT + 1)
+      );
+      store.refreshState();
+
+      expect(actualActions).toEqual([
+        alertActions.alertReported({
+          localizedMessage: tooManyRunsAlertMessage as any,
+        }),
+        runTableShown({experimentIds: ['exp1']}),
+        alertActions.alertReported({
+          localizedMessage: tooManyRunsAlertMessage as any,
+        }),
+      ]);
+    });
+
+    it('does not re-show after a new route with too few runs', () => {
+      store.overrideSelector(getRouteId, '123');
+      store.overrideSelector(
+        getRuns,
+        createRuns(MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT + 1)
+      );
+      const fixture = createComponent(
+        ['exp1'],
+        [RunsTableColumn.CHECKBOX, RunsTableColumn.RUN_NAME]
+      );
+      fixture.detectChanges();
+
+      expect(actualActions).toEqual([
+        alertActions.alertReported({
+          localizedMessage: tooManyRunsAlertMessage as any,
+        }),
+        runTableShown({experimentIds: ['exp1']}),
+      ]);
+
+      store.overrideSelector(getRouteId, '456');
+      store.overrideSelector(
+        getRuns,
+        createRuns(MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT)
+      );
+      store.refreshState();
+
+      expect(actualActions).toEqual([
+        alertActions.alertReported({
+          localizedMessage: tooManyRunsAlertMessage as any,
+        }),
+        runTableShown({experimentIds: ['exp1']}),
+      ]);
     });
   });
 

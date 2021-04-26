@@ -29,6 +29,7 @@ import {MatSortModule} from '@angular/material/sort';
 import {MatTableModule} from '@angular/material/table';
 import {ColorPickerModule} from 'ngx-color-picker';
 
+import {AlertModule} from '../../../alert/alert_module';
 import {RangeInputModule} from '../../../widgets/range_input/range_input_module';
 import {RunsTableComponent} from './runs_table_component';
 import {RunsTableContainer} from './runs_table_container';
@@ -47,6 +48,7 @@ import {RunsTableContainer} from './runs_table_container';
     MatSortModule,
     MatTableModule,
     RangeInputModule,
+    AlertModule,
   ],
   exports: [RunsTableContainer],
   declarations: [RunsTableContainer, RunsTableComponent],
