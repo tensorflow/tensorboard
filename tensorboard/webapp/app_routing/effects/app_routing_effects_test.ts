@@ -16,7 +16,7 @@ limitations under the License.
 import {Component} from '@angular/core';
 import {fakeAsync, flush, TestBed, tick} from '@angular/core/testing';
 import {provideMockActions} from '@ngrx/effects/testing';
-import {Action, createAction, Store} from '@ngrx/store';
+import {Action, createAction, props, Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {of, ReplaySubject} from 'rxjs';
 
@@ -26,6 +26,7 @@ import {navigationRequested} from '../actions';
 import {AppRootProvider, TestableAppRootProvider} from '../app_root';
 import {Location} from '../location';
 import {
+  NavigateToCompare,
   NavigateToExperiments,
   ProgrammaticalNavigationModule,
 } from '../programmatical_navigation_module';
@@ -40,6 +41,10 @@ import {AppRoutingEffects, TEST_ONLY} from './app_routing_effects';
 class TestableComponent {}
 
 const testAction = createAction('[TEST] test actions');
+const testNavToCompareAction = createAction(
+  '[TEST] test nav to compare',
+  props<NavigateToCompare['routeParams']>()
+);
 
 describe('app_routing_effects', () => {
   let effects: AppRoutingEffects;
@@ -87,10 +92,10 @@ describe('app_routing_effects', () => {
       ];
     }
 
-    function programmaticalNavigationFactory() {
+    function programmaticalNavToListviewFactory() {
       return {
         actionCreator: testAction,
-        lambda: (action: typeof testAction) => {
+        lambda: (action: ReturnType<typeof testAction>) => {
           return {
             routeKind: RouteKind.EXPERIMENTS,
             routeParams: {},
@@ -99,11 +104,26 @@ describe('app_routing_effects', () => {
       };
     }
 
+    function programmaticalCompareNavigationFactory() {
+      return {
+        actionCreator: testNavToCompareAction,
+        lambda: (action: ReturnType<typeof testNavToCompareAction>) => {
+          return {
+            routeKind: RouteKind.COMPARE_EXPERIMENT,
+            routeParams: action,
+          } as NavigateToCompare;
+        },
+      };
+    }
+
     await TestBed.configureTestingModule({
       imports: [
         RouteRegistryModule.registerRoutes(routeFactory),
         ProgrammaticalNavigationModule.registerProgrammaticalNavigation(
-          programmaticalNavigationFactory
+          programmaticalNavToListviewFactory
+        ),
+        ProgrammaticalNavigationModule.registerProgrammaticalNavigation(
+          programmaticalCompareNavigationFactory
         ),
       ],
       providers: [
@@ -534,6 +554,33 @@ describe('app_routing_effects', () => {
               routeKind: RouteKind.EXPERIMENTS,
               params: {},
               pathname: '/experiments',
+              queryParams: [],
+            }),
+          }),
+        ]);
+      });
+
+      it('translates programmatical compare nav correctly', () => {
+        store.overrideSelector(getActiveRoute, null);
+        store.refreshState();
+
+        action.next(
+          testNavToCompareAction({
+            aliasAndExperimentIds: [
+              {alias: 'bar', id: 'foo'},
+              {alias: 'omega', id: 'alpha'},
+            ],
+          })
+        );
+
+        expect(actualActions).toEqual([
+          actions.navigating({
+            after: buildRoute({
+              routeKind: RouteKind.COMPARE_EXPERIMENT,
+              params: {
+                experimentIds: 'bar:foo,omega:alpha',
+              },
+              pathname: '/compare',
               queryParams: [],
             }),
           }),

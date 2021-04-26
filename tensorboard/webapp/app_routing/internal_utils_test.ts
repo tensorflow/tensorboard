@@ -44,6 +44,35 @@ describe('app_routing/utils', () => {
     });
   });
 
+  describe('#serializeCompareExperimentParams', () => {
+    it('serializes to empty string with an empty input', () => {
+      expect(utils.serializeCompareExperimentParams([])).toBe('');
+    });
+
+    it('serializes alias and displayName', () => {
+      const input = [
+        {alias: 'foo', id: 'bar'},
+        {alias: 'baz', id: 'baz'},
+      ];
+      expect(utils.serializeCompareExperimentParams(input)).toBe(
+        'foo:bar,baz:baz'
+      );
+    });
+
+    it('does not deduplicate or validate', () => {
+      const input = [
+        {alias: 'foo', id: 'bar'},
+        // does not deduplicate
+        {alias: 'tar', id: 'bar'},
+        {alias: 'foo', id: 'bang'},
+        {alias: '', id: ''},
+      ];
+      expect(utils.serializeCompareExperimentParams(input)).toBe(
+        'foo:bar,tar:bar,foo:bang,:'
+      );
+    });
+  });
+
   describe('#getExperimentIdsFromRouteParams', () => {
     it('returns ids from compare route', () => {
       const actual = utils.getExperimentIdsFromRouteParams(

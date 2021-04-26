@@ -101,11 +101,18 @@ describe('programmatical navigation module test', () => {
     function provider2() {
       return {
         actionCreator: testAction,
-        lambda: (action: typeof testAction) => {
+        lambda: (action: typeof testAction): NavigateToCompare => {
           return {
             routeKind: RouteKind.COMPARE_EXPERIMENT,
-            routeParams: {experimentIds: 'foo'},
-          } as NavigateToCompare;
+            routeParams: {
+              aliasAndExperimentIds: [
+                {
+                  alias: 'Foo',
+                  id: 'foo',
+                },
+              ],
+            },
+          };
         },
       };
     }
