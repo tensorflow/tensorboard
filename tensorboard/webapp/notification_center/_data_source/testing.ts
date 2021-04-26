@@ -32,8 +32,12 @@ export class TestingNotificationCenterDataSource
     });
   }
 
-  updateAndGetLastReadTimeStampInMs() {
-    return of(1235813);
+  updateLastReadTimeStampToNow() {
+    return of(123);
+  }
+
+  getLastReadTimeStampInMs() {
+    return of(456);
   }
 }
 

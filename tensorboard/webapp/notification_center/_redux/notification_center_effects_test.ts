@@ -12,28 +12,28 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {TestBed} from '@angular/core/testing';
-import {provideMockActions} from '@ngrx/effects/testing';
-import {Action, Store} from '@ngrx/store';
-import {MockStore, provideMockStore} from '@ngrx/store/testing';
-import {Subject, of, throwError} from 'rxjs';
-
-import {State} from '../../app_state';
-import {TBHttpClientTestingModule} from '../../webapp_data_source/tb_http_client_testing';
+import { TestBed } from '@angular/core/testing';
+import { provideMockActions } from '@ngrx/effects/testing';
+import { Action, Store } from '@ngrx/store';
+import { MockStore, provideMockStore } from '@ngrx/store/testing';
+import { of, Subject, throwError } from 'rxjs';
+import { State } from '../../app_state';
+import { TBHttpClientTestingModule } from '../../webapp_data_source/tb_http_client_testing';
 import {
   NotificationCenterDataSource,
-  NotificationCenterResponse,
+  NotificationCenterResponse
 } from '../_data_source';
+import {
+  buildNotificationResponse,
+  provideTestingNotificationCenterDataSource
+} from '../_data_source/testing';
 import * as actions from './notification_center_actions';
 import {
   NotificationCenterEffects,
-  TEST_ONLY,
+  TEST_ONLY
 } from './notification_center_effects';
-import {CategoryEnum} from './notification_center_types';
-import {
-  buildNotificationResponse,
-  provideTestingNotificationCenterDataSource,
-} from '../_data_source/testing';
+import { CategoryEnum } from './notification_center_types';
+
 
 describe('notification center effects', () => {
   let dataSource: NotificationCenterDataSource;
@@ -43,8 +43,10 @@ describe('notification center effects', () => {
   let actualActions: Action[] = [];
   let fetchNotificationsSpy: jasmine.Spy;
   let fetchNotificationSubject: Subject<NotificationCenterResponse>;
-  let updateAndGetLastReadTimestampInMsSpy: jasmine.Spy;
+  let updateLastReadTimeStampToNowSpy: jasmine.Spy;
   let updateAndGetLastReadTimestampInMsSubject: Subject<NotificationCenterResponse>;
+  let getLastReadTimeStampInMsSpy: jasmine.Spy;
+  let getLastReadTimeStampInMsSubject: Subject<NotificationCenterResponse>;
 
   beforeEach(async () => {
     actions$ = new Subject<Action>();
@@ -67,7 +69,7 @@ describe('notification center effects', () => {
     effects = TestBed.inject(NotificationCenterEffects);
     dataSource = TestBed.inject(NotificationCenterDataSource);
     effects.initialNotificationFetch$.subscribe();
-    effects.updateAndGetLastReadTimestampInMs$.subscribe();
+    effects.updateLastReadTimestampInMs$.subscribe();
 
     fetchNotificationSubject = new Subject();
     fetchNotificationsSpy = spyOn(
@@ -76,9 +78,13 @@ describe('notification center effects', () => {
     ).and.returnValue(fetchNotificationSubject);
 
     updateAndGetLastReadTimestampInMsSubject = new Subject();
-    updateAndGetLastReadTimestampInMsSpy = spyOn(
+    updateLastReadTimeStampToNowSpy = spyOn(
       dataSource,
-      'updateAndGetLastReadTimeStampInMs'
+      'updateLastReadTimeStampToNow'
+    ).and.returnValue(of(1235813));
+    getLastReadTimeStampInMsSpy = spyOn(
+      dataSource,
+      'getLastReadTimeStampInMs'
     ).and.returnValue(of(1235813));
   });
 
@@ -89,6 +95,7 @@ describe('notification center effects', () => {
 
     expect(fetchNotificationsSpy).toHaveBeenCalled();
     expect(actualActions).toEqual([
+      actions.lastReadTimestampInitialized({time: 1235813}),
       actions.fetchNotificationsLoaded({
         notifications: [
           {
@@ -109,12 +116,12 @@ describe('notification center effects', () => {
     actions$.next(TEST_ONLY.initAction());
 
     expect(fetchNotificationsSpy).toHaveBeenCalled();
-    expect(actualActions).toEqual([actions.fetchNotificationsFailed()]);
+    expect(actualActions).toEqual([actions.fetchNotificationsFailed(), actions.lastReadTimestampInitialized({time: 1235813})]);
   });
 
   it('updates last ream timestamp', () => {
     actions$.next(actions.notificationBellClicked());
 
-    expect(updateAndGetLastReadTimestampInMsSpy).toHaveBeenCalled();
+    expect(updateLastReadTimeStampToNowSpy).toHaveBeenCalled();
   });
 });

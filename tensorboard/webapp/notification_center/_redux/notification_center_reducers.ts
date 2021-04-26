@@ -41,6 +41,15 @@ const reducer = createReducer(
         lastReadTimestampInMs: time,
       };
     }
+  ),
+  on(
+    actions.lastReadTimestampInitialized,
+    (state: NotificationState, {time}: {time: number}): NotificationState => {
+      return {
+        ...state,
+        lastReadTimestampInMs: time,
+      };
+    }
   )
 );
 

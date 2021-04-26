@@ -90,36 +90,49 @@ describe('TBNotificationCenterDataSource test', () => {
   });
 
   describe('LastReadTimestamp in local storage test', () => {
-    let TEST_TIME_STAMP_STRING = '-1';
-    const INIT_LAST_READ_TIMES_TAMP_STRING = '1235813';
-    const mocklocalStorage: {[key: string]: string} = {
-      [NOTIFICATION_LAST_READ_TIME_KEY]: INIT_LAST_READ_TIMES_TAMP_STRING,
-    };
+    const INIT_LAST_READ_TIME_STAMP_STRING = '31412';
+    const UPADED_TIME_STAMP_STRING = '1235813';
+    let testTimeStampString = '-1';
+    let mocklocalStorage: {[key: string]: string};
 
     beforeEach(async () => {
       spyOn(window.localStorage, 'setItem').and.callFake(
         (key: string, value: string): string => {
-          TEST_TIME_STAMP_STRING = value;
-          return (mocklocalStorage[key] = value);
+          testTimeStampString = UPADED_TIME_STAMP_STRING;
+          return (mocklocalStorage[key] = UPADED_TIME_STAMP_STRING);
         }
       );
       spyOn(localStorage, 'getItem').and.callFake((key: string):
         | string
         | null => {
-        return mocklocalStorage[key] || null;
+        return mocklocalStorage[key] ?? null;
       });
+
+      mocklocalStorage = {
+        [NOTIFICATION_LAST_READ_TIME_KEY]: INIT_LAST_READ_TIME_STAMP_STRING,
+      };
     });
 
     it('updates last read timestamp in local storge', () => {
       const resultSpy = jasmine.createSpy();
-      dataSource.updateAndGetLastReadTimeStampInMs().subscribe(resultSpy);
+      dataSource.updateLastReadTimeStampToNow().subscribe(resultSpy);
 
-      expect(resultSpy).toHaveBeenCalledWith(
-        parseInt(INIT_LAST_READ_TIMES_TAMP_STRING)
-      );
-      expect(window.localStorage.getItem(NOTIFICATION_LAST_READ_TIME_KEY)).toBe(
-        TEST_TIME_STAMP_STRING
-      );
+      expect(testTimeStampString).toBe(UPADED_TIME_STAMP_STRING);
+    });
+
+    it('gets initial last read timestamp in local storge', () => {
+      const resultSpy = jasmine.createSpy();
+      dataSource.getLastReadTimeStampInMs().subscribe(resultSpy);
+
+      expect(resultSpy).toHaveBeenCalledWith(Number(INIT_LAST_READ_TIME_STAMP_STRING));
+    });
+
+    it('gets updated last read timestamp in local storge', () => {
+      const resultSpy = jasmine.createSpy();
+      dataSource.updateLastReadTimeStampToNow();
+      dataSource.getLastReadTimeStampInMs().subscribe(resultSpy);
+
+      expect(resultSpy).toHaveBeenCalledWith(1235813);
     });
   });
 });
