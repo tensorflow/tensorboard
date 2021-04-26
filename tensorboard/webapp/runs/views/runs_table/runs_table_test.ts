@@ -1626,15 +1626,7 @@ describe('runs_table', () => {
     });
   });
 
-  fdescribe('"too many runs" alert', () => {
-    function createRunSelectionMap(runCount: number): Map<string, boolean> {
-      const map = new Map<string, boolean>();
-      for (let i = 0; i < runCount; i++) {
-        map.set(`run${i}`, true);
-      }
-      return map;
-    }
-
+  describe('"too many runs" alert', () => {
     function createRuns(runCount: number): Run[] {
       const runs = [];
       for (let i = 0; i < runCount; i++) {
@@ -1652,7 +1644,6 @@ describe('runs_table', () => {
 
     it('triggers when number of runs exceeds limit', () => {
       store.overrideSelector(getRouteId, '123');
-      // selectSpy.withArgs(getRuns, {experimentId: 'book'}).and.returnValue(runs);
       store.overrideSelector(
         getRuns,
         createRuns(MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT)
@@ -1682,7 +1673,6 @@ describe('runs_table', () => {
 
     it('does not show when the table has no checkbox column', () => {
       store.overrideSelector(getRouteId, '123');
-      // selectSpy.withArgs(getRuns, {experimentId: 'book'}).and.returnValue(runs);
       store.overrideSelector(
         getRuns,
         createRuns(MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT + 1)
