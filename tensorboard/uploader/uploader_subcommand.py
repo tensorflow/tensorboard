@@ -23,7 +23,7 @@ import textwrap
 
 from absl import logging
 import grpc
-import tensorflow as tf
+from tensorboard.compat import tf
 
 from tensorboard.uploader.proto import experiment_pb2
 from tensorboard.uploader.proto import export_service_pb2_grpc
