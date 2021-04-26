@@ -234,6 +234,7 @@ describe('runs_table', () => {
       hparamsSelectors.getMetricFilterMap,
       new Map() as ReturnType<typeof hparamsSelectors.getMetricFilterMap>
     );
+    store.overrideSelector(getRouteId, '123');
     dispatchSpy = spyOn(store, 'dispatch').and.callFake((action: Action) => {
       actualActions.push(action);
     });
