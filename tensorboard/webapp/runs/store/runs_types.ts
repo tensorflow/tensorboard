@@ -60,7 +60,7 @@ export interface RunsDataState {
    * run-selector in both experiment list and dashboard routes sharing the
    * state, they need to share a key.
    *
-   * TODO: this belongs in UI state not data state.
+   * TODO(psybuzz): this belongs in UI state not data state.
    */
   selectionState: Map<string, Map<RunId, boolean>>;
 }

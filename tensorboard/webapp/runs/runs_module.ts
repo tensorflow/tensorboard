@@ -19,6 +19,7 @@ limitations under the License.
 import {NgModule} from '@angular/core';
 import {EffectsModule} from '@ngrx/effects';
 import {StoreModule} from '@ngrx/store';
+import {AlertModule} from '../alert/alert_module';
 import {AlertActionModule} from '../alert/alert_action_module';
 import {HparamsModule} from '../hparams/hparams_module';
 import * as actions from './actions';
@@ -47,6 +48,7 @@ export function alertActionProvider() {
     EffectsModule.forFeature([RunsEffects]),
     RunsDataSourceModule,
     AlertActionModule.registerAlertActions(alertActionProvider),
+    AlertModule,
     // Used for reading the hparams state in the runs-table component.
     HparamsModule,
   ],

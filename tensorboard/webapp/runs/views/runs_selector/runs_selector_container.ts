@@ -19,7 +19,6 @@ import {
   OnDestroy,
   OnInit,
 } from '@angular/core';
-import {MatSnackBar} from '@angular/material/snack-bar';
 import {Store} from '@ngrx/store';
 import {Subject} from 'rxjs';
 import {
@@ -31,6 +30,7 @@ import {
   takeUntil,
 } from 'rxjs/operators';
 
+import {alertReported} from '../../../alert/actions';
 import {State} from '../../../app_state';
 import {
   getCurrentRouteRunSelection,
@@ -73,10 +73,7 @@ export class RunsSelectorContainer implements OnInit, OnDestroy {
   );
   private readonly ngUnsubscribe = new Subject();
 
-  constructor(
-    private readonly store: Store<State>,
-    private readonly snackBar: MatSnackBar
-  ) {}
+  constructor(private readonly store: Store<State>) {}
 
   ngOnInit() {
     // Notify the user that new runs may not be selected. Avoid showing it too
@@ -103,14 +100,10 @@ export class RunsSelectorContainer implements OnInit, OnDestroy {
     );
     runsExceedsLimitForRoute$.subscribe(() => {
       const text =
-        `The number of runs is over ` +
+        `The number of runs exceeds ` +
         `${MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT}. New runs are unselected ` +
         `for performance reasons.`;
-      this.snackBar.open(text, 'DISMISS', {
-        duration: 5000,
-        horizontalPosition: 'start',
-        verticalPosition: 'bottom',
-      });
+      this.store.dispatch(alertReported({localizedMessage: text}));
     });
   }
 
