@@ -19,7 +19,10 @@ import {
   HttpTestingController,
   TBHttpClientTestingModule,
 } from '../../webapp_data_source/tb_http_client_testing';
-import {NotificationCenterDataSource} from './backend_types';
+import {
+  NotificationCenterDataSource,
+  NOTIFICATION_LAST_READ_TIME_KEY,
+} from './backend_types';
 import {TBNotificationCenterDataSource} from './notification_center_data_source';
 import {buildNotificationResponse} from './testing';
 import {throwError} from 'rxjs';
@@ -84,5 +87,54 @@ describe('TBNotificationCenterDataSource test', () => {
     });
     expect(resultSpy).not.toHaveBeenCalled();
     expect(errorSpy).toHaveBeenCalledWith(httpErrorResponse);
+  });
+
+  describe('LastReadTimestamp in local storage test', () => {
+    const INIT_LAST_READ_TIME_STAMP_STRING = '31412';
+    const UPADED_TIME_STAMP_STRING = '1235813';
+    let testTimeStampString = '-1';
+    let mocklocalStorage: {[key: string]: string};
+
+    beforeEach(async () => {
+      spyOn(window.localStorage, 'setItem').and.callFake(
+        (key: string, value: string): string => {
+          testTimeStampString = UPADED_TIME_STAMP_STRING;
+          return (mocklocalStorage[key] = UPADED_TIME_STAMP_STRING);
+        }
+      );
+      spyOn(localStorage, 'getItem').and.callFake((key: string):
+        | string
+        | null => {
+        return mocklocalStorage[key] ?? null;
+      });
+
+      mocklocalStorage = {
+        [NOTIFICATION_LAST_READ_TIME_KEY]: INIT_LAST_READ_TIME_STAMP_STRING,
+      };
+    });
+
+    it('updates last read timestamp in local storge', () => {
+      const resultSpy = jasmine.createSpy();
+      dataSource.updateLastReadTimeStampToNow().subscribe(resultSpy);
+
+      expect(testTimeStampString).toBe(UPADED_TIME_STAMP_STRING);
+    });
+
+    it('gets initial last read timestamp in local storge', () => {
+      const resultSpy = jasmine.createSpy();
+      dataSource.getLastReadTimeStampInMs().subscribe(resultSpy);
+
+      expect(resultSpy).toHaveBeenCalledWith(
+        Number(INIT_LAST_READ_TIME_STAMP_STRING)
+      );
+    });
+
+    it('gets updated last read timestamp in local storge', () => {
+      const resultSpy = jasmine.createSpy();
+      dataSource.updateLastReadTimeStampToNow();
+      dataSource.getLastReadTimeStampInMs().subscribe(resultSpy);
+
+      expect(resultSpy).toHaveBeenCalledWith(1235813);
+    });
   });
 });

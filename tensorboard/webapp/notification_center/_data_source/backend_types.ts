@@ -20,6 +20,8 @@ export interface NotificationCenterResponse {
 
 export abstract class NotificationCenterDataSource {
   abstract fetchNotifications(): Observable<NotificationCenterResponse>;
+  abstract updateLastReadTimeStampToNow(): Observable<number>;
+  abstract getLastReadTimeStampInMs(): Observable<number>;
 }
 
 /**
@@ -30,3 +32,8 @@ export interface BackendNotification {
   title: string;
   content: string;
 }
+
+/**
+ * The key used to record the last read timestamp in local storage.
+ */
+export const NOTIFICATION_LAST_READ_TIME_KEY = 'notificationLastReadTimestamp';

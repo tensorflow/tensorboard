@@ -15,38 +15,15 @@ limitations under the License.
 import {Action, createReducer, on} from '@ngrx/store';
 
 import * as actions from './notification_center_actions';
-import {
-  Notification,
-  NotificationState,
-  NOTIFICATION_LAST_READ_TIME_KEY,
-} from './notification_center_types';
+import {Notification, NotificationState} from './notification_center_types';
 
 const initialState: NotificationState = {
   notifications: [],
-  lastReadTimestampInMs: window.localStorage.getItem(
-    NOTIFICATION_LAST_READ_TIME_KEY
-  )
-    ? parseInt(window.localStorage.getItem(NOTIFICATION_LAST_READ_TIME_KEY)!)
-    : null,
+  lastReadTimestampInMs: null,
 };
 
 const reducer = createReducer(
   initialState,
-  on(
-    actions.notificationBellClicked,
-    (state: NotificationState): NotificationState => {
-      // TODO: move update last read timestamp to DataSource
-      const timeNow = Date.now();
-      window.localStorage.setItem(
-        NOTIFICATION_LAST_READ_TIME_KEY,
-        timeNow.toString()
-      );
-      return {
-        ...state,
-        lastReadTimestampInMs: timeNow,
-      };
-    }
-  ),
   on(
     actions.fetchNotificationsLoaded,
     (
@@ -54,6 +31,24 @@ const reducer = createReducer(
       {notifications}: {notifications: Notification[]}
     ): NotificationState => {
       return {...state, notifications};
+    }
+  ),
+  on(
+    actions.notifcationLastReadTimeUpdated,
+    (state: NotificationState, {time}: {time: number}): NotificationState => {
+      return {
+        ...state,
+        lastReadTimestampInMs: time,
+      };
+    }
+  ),
+  on(
+    actions.lastReadTimestampInitialized,
+    (state: NotificationState, {time}: {time: number}): NotificationState => {
+      return {
+        ...state,
+        lastReadTimestampInMs: time,
+      };
     }
   )
 );

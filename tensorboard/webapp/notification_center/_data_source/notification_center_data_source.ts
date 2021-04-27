@@ -13,12 +13,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Injectable} from '@angular/core';
-import {Observable} from 'rxjs';
+import {Observable, of} from 'rxjs';
 
 import {TBHttpClient} from '../../webapp_data_source/tb_http_client';
 import {
   NotificationCenterDataSource,
   NotificationCenterResponse,
+  NOTIFICATION_LAST_READ_TIME_KEY,
 } from './backend_types';
 
 /**
@@ -31,5 +32,20 @@ export class TBNotificationCenterDataSource
 
   fetchNotifications(): Observable<NotificationCenterResponse> {
     return this.http.get<NotificationCenterResponse>(`data/notifications`);
+  }
+
+  updateLastReadTimeStampToNow(): Observable<number> {
+    const timeNow = Date.now();
+    window.localStorage.setItem(
+      NOTIFICATION_LAST_READ_TIME_KEY,
+      timeNow.toString()
+    );
+    return of(timeNow);
+  }
+
+  getLastReadTimeStampInMs(): Observable<number> {
+    const lastReadTime =
+      window.localStorage.getItem(NOTIFICATION_LAST_READ_TIME_KEY) ?? '-1';
+    return of(Number(lastReadTime));
   }
 }
