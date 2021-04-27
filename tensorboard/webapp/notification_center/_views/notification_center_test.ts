@@ -155,6 +155,11 @@ describe('notification center', () => {
         },
       ]);
       const fixture = TestBed.createComponent(NotificationCenterContainer);
+    fixture.detectChanges();
+      const menuButton = fixture.debugElement.query(
+        By.css('[aria-label="Display notification messages"]')
+      );
+      menuButton.nativeElement.click();
       fixture.detectChanges();
 
       const linkElement = fixture.debugElement.query(
@@ -173,6 +178,12 @@ describe('notification center', () => {
         },
       ]);
       const fixture = TestBed.createComponent(NotificationCenterContainer);
+      fixture.detectChanges();
+
+      const menuButton = fixture.debugElement.query(
+        By.css('[aria-label="Display notification messages"]')
+      );
+      menuButton.nativeElement.click();
       fixture.detectChanges();
 
       const linkElement = fixture.debugElement.query(
