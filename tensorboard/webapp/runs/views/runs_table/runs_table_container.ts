@@ -291,7 +291,7 @@ export class RunsTableContainer implements OnInit, OnDestroy {
       map((itemsForExperiments: RunTableItem[][]) => {
         const items = [] as RunTableItem[];
         return items.concat(...itemsForExperiments);
-      }),
+      })
     );
     this.allUnsortedRunTableItems$ = rawAllUnsortedRunTableItems$.pipe(
       shareReplay(1)
