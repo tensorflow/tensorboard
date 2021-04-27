@@ -157,7 +157,9 @@ describe('notification center', () => {
       const fixture = TestBed.createComponent(NotificationCenterContainer);
       fixture.detectChanges();
 
-      const linkElement = fixture.debugElement.query(By.css('.extended-buttons a'));
+      const linkElement = fixture.debugElement.query(
+        By.css('.extended-buttons a')
+      );
       expect(linkElement).toBeTruthy();
     });
 
@@ -167,13 +169,15 @@ describe('notification center', () => {
           category: CategoryEnum.WHATS_NEW,
           dateInMs: 1,
           title: 'test title',
-          content: 'test content'
+          content: 'test content',
         },
       ]);
       const fixture = TestBed.createComponent(NotificationCenterContainer);
       fixture.detectChanges();
 
-      const linkElement = fixture.debugElement.query(By.css('.extended-buttons a'));
+      const linkElement = fixture.debugElement.query(
+        By.css('.extended-buttons a')
+      );
       expect(linkElement).toBeNull();
     });
   });
