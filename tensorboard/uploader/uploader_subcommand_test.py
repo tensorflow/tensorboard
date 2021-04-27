@@ -204,7 +204,7 @@ class UploadIntentTest(tf.test.TestCase):
             mock_stdout_write.call_args_list[-1][0][0],
         )
 
-    def testListIntendSetsExperimentMask(self):
+    def testListIntentSetsExperimentMask(self):
         mock_server_info = mock.MagicMock()
         mock_channel = mock.MagicMock()
         expected_mask = experiment_pb2.ExperimentMask(
@@ -224,9 +224,10 @@ class UploadIntentTest(tf.test.TestCase):
         ):
             intent = uploader_subcommand._ListIntent()
             intent.execute(mock_server_info, mock_channel)
-            actual_mask = exporter_lib.list_experiments.call_args[1]["fieldmask"]
+            actual_mask = exporter_lib.list_experiments.call_args[1][
+                "fieldmask"
+            ]
             self.assertEquals(actual_mask, expected_mask)
-
 
 
 if __name__ == "__main__":
