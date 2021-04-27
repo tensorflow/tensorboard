@@ -40,7 +40,7 @@ export class TBNotificationCenterDataSource
       NOTIFICATION_LAST_READ_TIME_KEY,
       timeNow.toString()
     );
-    return of(Number(timeNow));
+    return of(timeNow);
   }
 
   getLastReadTimeStampInMs(): Observable<number> {
