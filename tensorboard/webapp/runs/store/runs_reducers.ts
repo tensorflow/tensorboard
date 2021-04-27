@@ -85,27 +85,17 @@ const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
       }
     }
 
+    // Populate selection states for previously unseen runs.
     const eidsBasedKey = serializeExperimentIds(action.experimentIds);
-    if (!nextSelectionState.has(eidsBasedKey)) {
-      const selectionMap = new Map<string, boolean>();
-      const runSelected =
-        action.runsForAllExperiments.length <=
-        MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT;
-      for (const run of action.runsForAllExperiments) {
+    const selectionMap = new Map(nextSelectionState.get(eidsBasedKey) ?? []);
+    const runSelected =
+      action.runsForAllExperiments.length <= MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT;
+    for (const run of action.runsForAllExperiments) {
+      if (!selectionMap.has(run.id)) {
         selectionMap.set(run.id, runSelected);
       }
-      nextSelectionState.set(eidsBasedKey, selectionMap);
-    } else {
-      // There could be new runs that were previously unseen.
-      // Populate their selection states.
-      const selectionMap = new Map(nextSelectionState.get(eidsBasedKey)!);
-      for (const run of action.runsForAllExperiments) {
-        if (!selectionMap.has(run.id)) {
-          selectionMap.set(run.id, false);
-        }
-      }
-      nextSelectionState.set(eidsBasedKey, selectionMap);
     }
+    nextSelectionState.set(eidsBasedKey, selectionMap);
 
     return {
       ...state,

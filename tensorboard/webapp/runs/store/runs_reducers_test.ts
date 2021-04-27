@@ -20,7 +20,7 @@ import * as actions from '../actions';
 import {buildHparamsAndMetadata} from '../data_source/testing';
 import {SortType} from '../types';
 import * as runsReducers from './runs_reducers';
-import {MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT} from './runs_types';
+import {MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT, Run} from './runs_types';
 import {buildRun, buildRunsState} from './testing';
 
 describe('runs_reducers', () => {
@@ -125,6 +125,12 @@ describe('runs_reducers', () => {
   });
 
   describe('fetchRunsSucceeded', () => {
+    function createFakeRuns(count: number): Run[] {
+      return [...new Array(count)].map((unused, index) => {
+        return buildRun({id: `id1_${index}`});
+      });
+    }
+
     it('updates experiment and loadState', () => {
       // Zone.js installs mock clock and gets in the way of Jasmine mockClock.
       spyOn(Date, 'now').and.returnValue(12345);
@@ -222,74 +228,66 @@ describe('runs_reducers', () => {
       );
     });
 
-    it('selects runs if num runs are less than N', () => {
-      const state = buildRunsState({selectionState: new Map()});
-
-      const action = actions.fetchRunsSucceeded({
-        experimentIds: ['id1'],
-        runsForAllExperiments: [
-          buildRun({id: 'baz'}),
-          buildRun({id: 'foo'}),
-          buildRun({id: 'qaz'}),
-        ],
-        newRunsAndMetadata: {
-          id1: {
-            runs: [
-              buildRun({id: 'baz'}),
-              buildRun({id: 'foo'}),
-              buildRun({id: 'qaz'}),
-            ],
-            metadata: buildHparamsAndMetadata({}),
-          },
-        },
+    it('auto-selects new runs if total num <= N', () => {
+      const existingRuns = [buildRun({id: 'existingRun1'})];
+      let state = buildRunsState({
+        selectionState: new Map([
+          ['["b"]', new Map([['existingRun1', false]])],
+        ]),
       });
-      const nextState = runsReducers.reducers(state, action);
 
-      expect(action.runsForAllExperiments.length).toBeLessThanOrEqual(
-        MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT
+      const fewNewRuns = createFakeRuns(MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT - 1);
+      state = runsReducers.reducers(
+        state,
+        actions.fetchRunsSucceeded({
+          experimentIds: ['b'],
+          runsForAllExperiments: [...existingRuns, ...fewNewRuns],
+          newRunsAndMetadata: {
+            b: {
+              runs: fewNewRuns,
+              metadata: buildHparamsAndMetadata({}),
+            },
+          },
+        })
       );
-      expect(nextState.data.selectionState).toEqual(
-        new Map([
-          [
-            '["id1"]',
-            new Map([
-              ['baz', true],
-              ['foo', true],
-              ['qaz', true],
-            ]),
-          ],
-        ])
-      );
+
+      const selections = [...state.data.selectionState.get('["b"]')!.entries()];
+      expect(selections.length).toBe(fewNewRuns.length + existingRuns.length);
+      // Existing runs that were unselected should remain so.
+      const selectedAsExpected = selections.every(([runId, isSelected]) => {
+        return isSelected === (runId !== 'existingRun1');
+      });
+      expect(selectedAsExpected).toBe(true);
     });
 
-    it('sets all selectionState to false if num runs exceeded N', () => {
-      const state = buildRunsState({selectionState: new Map()});
-
-      const action = actions.fetchRunsSucceeded({
-        experimentIds: ['b'],
-        runsForAllExperiments: [
-          ...new Array(MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT * 1.5),
-        ].map((unused, index) => {
-          return buildRun({id: `id1_${index}`});
-        }),
-        newRunsAndMetadata: {
-          b: {
-            runs: [...new Array(MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT * 1.5)].map(
-              (unused, index) => {
-                return buildRun({id: `id1_${index}`});
-              }
-            ),
-            metadata: buildHparamsAndMetadata({}),
-          },
-        },
+    it('does not auto-select new runs if total num > N', () => {
+      const existingRuns = [buildRun({id: 'existingRun1'})];
+      let state = buildRunsState({
+        selectionState: new Map([['["b"]', new Map([['existingRun1', true]])]]),
       });
-      const nextState = runsReducers.reducers(state, action);
 
-      Array.from(nextState.data.selectionState.get('["b"]')!.values()).forEach(
-        (value) => {
-          expect(value).toBe(false);
-        }
+      const manyNewRuns = createFakeRuns(MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT);
+      state = runsReducers.reducers(
+        state,
+        actions.fetchRunsSucceeded({
+          experimentIds: ['b'],
+          runsForAllExperiments: [...existingRuns, ...manyNewRuns],
+          newRunsAndMetadata: {
+            b: {
+              runs: manyNewRuns,
+              metadata: buildHparamsAndMetadata({}),
+            },
+          },
+        })
       );
+
+      const selections = [...state.data.selectionState.get('["b"]')!.entries()];
+      expect(selections.length).toBe(manyNewRuns.length + existingRuns.length);
+      // Existing runs that were selected should remain so.
+      const selectedAsExpected = selections.every(([runId, isSelected]) => {
+        return isSelected === (runId === 'existingRun1');
+      });
+      expect(selectedAsExpected).toBe(true);
     });
   });
 

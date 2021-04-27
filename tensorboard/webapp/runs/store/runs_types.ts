@@ -51,10 +51,17 @@ export interface RunsDataState {
   runIdToExpId: Record<RunId, ExperimentId>;
   runMetadata: Record<RunId, Run>;
   runsLoadState: Record<ExperimentId, LoadState>;
-  // Run selection is tied to a list of experimentIds which is somewhat related
-  // to route but not strictly. For instance, if we want to render the
-  // run-selector in both experiment list and dashboard routes sharing the
-  // state, they need to share a key.
+  /**
+   * Map from a 'key' to a `RunId` to boolean whether the run is selected.
+   * The 'key' is a serialization of multiple experiment IDs.
+   *
+   * Run selection is tied to a list of experimentIds which is somewhat related
+   * to route but not strictly. For instance, if we want to render the
+   * run-selector in both experiment list and dashboard routes sharing the
+   * state, they need to share a key.
+   *
+   * TODO(psybuzz): this belongs in UI state not data state.
+   */
   selectionState: Map<string, Map<RunId, boolean>>;
 }
 
@@ -97,4 +104,4 @@ export interface State {
  * equal to MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT in an experiment, we default
  * select all runs.
  */
-export const MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT = 40;
+export const MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT = 500;
