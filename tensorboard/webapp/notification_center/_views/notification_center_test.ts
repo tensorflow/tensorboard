@@ -144,7 +144,7 @@ describe('notification center', () => {
     });
   });
   describe('full note link', () => {
-    it('does not appear when the link is provided', () => {
+    it('appears when the link is provided', () => {
       store.overrideSelector(selectors.getNotifications, [
         {
           category: CategoryEnum.WHATS_NEW,
