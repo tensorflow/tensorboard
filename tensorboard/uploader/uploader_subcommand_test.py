@@ -159,7 +159,7 @@ class UploadIntentTest(tf.test.TestCase):
             intent.execute(server_info, mock_channel)
         mock_experiment_url_callback.assert_called_once_with(expected_url)
 
-    def tstUploadIntentDryRunNonOneShotInterrupted(self):
+    def testUploadIntentDryRunNonOneShotInterrupted(self):
         mock_server_info = mock.MagicMock()
         mock_channel = mock.MagicMock()
         mock_stdout_write = mock.MagicMock()
