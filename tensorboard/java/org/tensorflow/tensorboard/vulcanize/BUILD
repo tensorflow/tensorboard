@@ -29,16 +29,3 @@ java_binary(
         "@io_bazel_rules_closure//java/io/bazel/rules/closure/webfiles:build_info_java_proto",
     ],
 )
-
-# These JS files are always taken into consideration by the Closure Compiler
-# when vulcanizing, per vulcanize.bzl.
-filegroup(
-    name = "jslibs",
-    srcs = [
-        # Ordering probably matters
-        "@com_google_javascript_closure_compiler_externs",
-        "externs.js",
-        "@com_google_javascript_closure_library//:closure/goog/base.js",
-    ],
-    visibility = ["//visibility:public"],
-)
