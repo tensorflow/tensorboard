@@ -311,6 +311,8 @@ class _ListIntent(_Intent):
             channel
         )
         fieldmask = experiment_pb2.ExperimentMask(
+            name=True,
+            description=True,
             create_time=True,
             update_time=True,
             num_runs=True,
