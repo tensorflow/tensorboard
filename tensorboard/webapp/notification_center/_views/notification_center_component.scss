@@ -78,6 +78,10 @@ limitations under the License.
   font-size: 12px;
   font-weight: 700;
   margin: 10px 0 20px;
+  a {
+    text-decoration: inherit;
+    color: inherit;
+  }
 }
 
 // Unlike other markdown usage, we cannot make the entire notification center

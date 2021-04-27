@@ -48,7 +48,7 @@ limitations under the License.
           class="content"
           [markdown]="notification.content"
         ></markdown-renderer>
-        <div class="extended-buttons">READ FULL</div>
+        <div class="extended-buttons"><a *ngIf="notification.fullNoteLink" href="{{notification.fullNoteLink}}">READ FULL</a></div>
       </div>
     </div>
   </div>

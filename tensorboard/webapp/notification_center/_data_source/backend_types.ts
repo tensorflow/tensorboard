@@ -31,6 +31,7 @@ export interface BackendNotification {
   dateInMs: number;
   title: string;
   content: string;
+  fullNoteLink?: string;
 }
 
 /**

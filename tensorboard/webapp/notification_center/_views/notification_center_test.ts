@@ -121,6 +121,7 @@ describe('notification center', () => {
       store.overrideSelector(selectors.getLastReadTime, 0);
       const fixture = TestBed.createComponent(NotificationCenterContainer);
       fixture.detectChanges();
+
       const reddot = fixture.debugElement.query(By.css('.red-dot'));
       expect(reddot).toBeTruthy();
     });
@@ -137,8 +138,43 @@ describe('notification center', () => {
       store.overrideSelector(selectors.getLastReadTime, 1);
       const fixture = TestBed.createComponent(NotificationCenterContainer);
       fixture.detectChanges();
+
       const reddot = fixture.debugElement.query(By.css('.red-dot'));
       expect(reddot).toBeNull();
+    });
+  });
+  describe('full note link', () => {
+    it('does not appear when the link is provided', () => {
+      store.overrideSelector(selectors.getNotifications, [
+        {
+          category: CategoryEnum.WHATS_NEW,
+          dateInMs: 1,
+          title: 'test title',
+          content: 'test content',
+          fullNoteLink: 'http://google.com',
+        },
+      ]);
+      const fixture = TestBed.createComponent(NotificationCenterContainer);
+      fixture.detectChanges();
+
+      const linkElement = fixture.debugElement.query(By.css('.extended-buttons a'));
+      expect(linkElement).toBeTruthy();
+    });
+
+    it('does not appear when the link is provided', () => {
+      store.overrideSelector(selectors.getNotifications, [
+        {
+          category: CategoryEnum.WHATS_NEW,
+          dateInMs: 1,
+          title: 'test title',
+          content: 'test content'
+        },
+      ]);
+      const fixture = TestBed.createComponent(NotificationCenterContainer);
+      fixture.detectChanges();
+
+      const linkElement = fixture.debugElement.query(By.css('.extended-buttons a'));
+      expect(linkElement).toBeNull();
     });
   });
 });
