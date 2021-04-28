@@ -107,8 +107,6 @@ tf_ng_module(
         "//tensorboard/webapp/app_routing:route_registry",
         "//tensorboard/webapp/app_routing/views",
         "//tensorboard/webapp/core",
-        "//tensorboard/webapp/core/actions",
-        "//tensorboard/webapp/core/store",
         "//tensorboard/webapp/core/views:hash_storage",
         "//tensorboard/webapp/core/views:page_title",
         "//tensorboard/webapp/experiments",
@@ -124,8 +122,6 @@ tf_ng_module(
         "//tensorboard/webapp/tb_wrapper",
         "@npm//@angular/core",
         "@npm//@angular/platform-browser",
-        "@npm//@ngrx/store",
-        "@npm//rxjs",
     ],
 )
 
