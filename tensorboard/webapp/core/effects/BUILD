@@ -15,6 +15,7 @@ tf_ng_module(
         "//tensorboard/webapp/app_routing/actions",
         "//tensorboard/webapp/app_routing/store",
         "//tensorboard/webapp/app_routing/store:types",
+        "//tensorboard/webapp/core:state",
         "//tensorboard/webapp/core:types",
         "//tensorboard/webapp/core/actions",
         "//tensorboard/webapp/core/store",

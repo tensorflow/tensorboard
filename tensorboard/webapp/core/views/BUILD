@@ -10,6 +10,7 @@ tf_ng_module(
         "hash_storage_module.ts",
     ],
     deps = [
+        "//tensorboard/webapp/core:state",
         "//tensorboard/webapp/core/actions",
         "//tensorboard/webapp/core/store",
         "//tensorboard/webapp/deeplink",
@@ -28,6 +29,7 @@ tf_ng_module(
         "page_title_module.ts",
     ],
     deps = [
+        "//tensorboard/webapp/core:state",
         "//tensorboard/webapp/core/store",
         "@npm//@angular/common",
         "@npm//@angular/core",

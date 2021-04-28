@@ -8,10 +8,10 @@ tf_ng_module(
         "core_initial_state_provider.ts",
         "core_reducers.ts",
         "core_selectors.ts",
-        "core_types.ts",
         "index.ts",
     ],
     deps = [
+        ":types",
         "//tensorboard/webapp/core:types",
         "//tensorboard/webapp/core/actions",
         "//tensorboard/webapp/deeplink",
@@ -19,6 +19,17 @@ tf_ng_module(
         "@npm//@angular/core",
         "@npm//@ngrx/store",
         "@npm//rxjs",
+    ],
+)
+
+tf_ng_module(
+    name = "types",
+    srcs = [
+        "core_types.ts",
+    ],
+    deps = [
+        "//tensorboard/webapp/core:types",
+        "//tensorboard/webapp/types",
     ],
 )
 

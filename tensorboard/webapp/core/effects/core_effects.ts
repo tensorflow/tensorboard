@@ -33,9 +33,7 @@ import {
 
 import {navigated} from '../../app_routing/actions';
 import {getRouteId} from '../../app_routing/store/app_routing_selectors';
-import {State as AppRoutingState} from '../../app_routing/store/app_routing_types';
 import {RouteKind} from '../../app_routing/types';
-import {State} from '../../app_state';
 import {getEnabledExperimentalPlugins} from '../../feature_flag/store/feature_flag_selectors';
 import {DataLoadState} from '../../types/data';
 import {
@@ -55,17 +53,18 @@ import {
   polymerRunsFetchSucceeded,
   reload,
 } from '../actions';
+import {State} from '../state';
 import {getActivePlugin, getPluginsListLoaded} from '../store';
 import {PluginsListFailureCode} from '../types';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 /** @typehack */ import * as _typeHackNgrxEffects from '@ngrx/effects';
 
-// 10ms of throttle is somewhat random but it does following:
+// throttle + 10ms are somewhat random but it does following:
 // - when an app uses both router and manually fires coreLoaded, we prevent
 //   double requests.
 // - when using debounceTime(0), we see a brief moment of flicker when app
-//   bootstraps. To mitigate this, we use `leading: true`.
+//   bootstraps. To mitigate this, we use `leading: true` with `throttleTime`.
 const DATA_LOAD_COND_THROTTLE_IN_MS = 10;
 
 @Injectable()
@@ -222,7 +221,7 @@ export class CoreEffects {
 
   constructor(
     private actions$: Actions,
-    private store: Store<State & AppRoutingState>,
+    private store: Store<State>,
     private webappDataSource: TBServerDataSource
   ) {}
 }

@@ -132,7 +132,7 @@ tf_ng_module(
     ],
     deps = [
         "//tensorboard/webapp/app_routing/store:types",
-        "//tensorboard/webapp/core/store",
+        "//tensorboard/webapp/core/store:types",
         "//tensorboard/webapp/experiments/store:types",
         "//tensorboard/webapp/feature_flag/store:types",
         "//tensorboard/webapp/hparams:types",
