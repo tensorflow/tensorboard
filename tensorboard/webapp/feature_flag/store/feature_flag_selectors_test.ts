@@ -22,16 +22,16 @@ describe('feature_flag_selectors', () => {
       const state = buildState(
         buildFeatureFlagState({
           defaultFlags: buildFeatureFlag({
-            enableGpuChart: true,
+            enabledExperimentalPlugins: [],
           }),
           flagOverrides: {
-            enableGpuChart: false,
+            enabledExperimentalPlugins: ['foo'],
           },
         })
       );
 
       expect(selectors.getFeatureFlags(state)).toEqual(
-        buildFeatureFlag({enableGpuChart: false})
+        buildFeatureFlag({enabledExperimentalPlugins: ['foo']})
       );
     });
 
@@ -67,16 +67,16 @@ describe('feature_flag_selectors', () => {
       const state = buildState(
         buildFeatureFlagState({
           defaultFlags: buildFeatureFlag({
-            enableGpuChart: true,
+            enabledExperimentalPlugins: [],
           }),
           flagOverrides: {
-            enableGpuChart: false,
+            enabledExperimentalPlugins: ['foo'],
           },
         })
       );
       const actual = selectors.getOverriddenFeatureFlags(state);
 
-      expect(actual).toEqual({enableGpuChart: false});
+      expect(actual).toEqual({enabledExperimentalPlugins: ['foo']});
     });
   });
 
