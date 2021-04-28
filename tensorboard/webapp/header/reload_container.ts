@@ -13,17 +13,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Component} from '@angular/core';
-import {Store, createSelector} from '@ngrx/store';
+import {createSelector, Store} from '@ngrx/store';
 import {Observable} from 'rxjs';
-import {map, withLatestFrom} from 'rxjs/operators';
+import {combineLatestWith, map} from 'rxjs/operators';
 
-import {State} from '../core/store/core_types';
-import {
-  getPlugins,
-  getActivePlugin,
-  getPluginsListLoaded,
-} from '../core/store/core_selectors';
 import {manualReload} from '../core/actions';
+import {
+  getActivePlugin,
+  getAppLastLoadedTimeInMs,
+  getCoreDataLoadedState,
+  getPlugins,
+} from '../core/store/core_selectors';
+import {State} from '../core/store/core_types';
 import {DataLoadState} from '../types/data';
 
 const isReloadDisabledByPlugin = createSelector(
@@ -82,21 +83,17 @@ export class ReloadContainer {
   );
 
   isReloading$: Observable<boolean> = this.store
-    .select(getPluginsListLoaded)
+    .select(getCoreDataLoadedState)
     .pipe(
-      withLatestFrom(this.reloadDisabled$),
-      map(([loaded, reloadDisabled]) => {
-        return !reloadDisabled && loaded.state === DataLoadState.LOADING;
+      combineLatestWith(this.reloadDisabled$),
+      map(([loadState, reloadDisabled]) => {
+        return !reloadDisabled && loadState === DataLoadState.LOADING;
       })
     );
 
-  lastLoadedTimeInMs$: Observable<number | null> = this.store
-    .select(getPluginsListLoaded)
-    .pipe(
-      map((loaded) => {
-        return loaded.lastLoadedTimeInMs;
-      })
-    );
+  lastLoadedTimeInMs$: Observable<number | null> = this.store.select(
+    getAppLastLoadedTimeInMs
+  );
 
   constructor(private readonly store: Store<State>) {}
 

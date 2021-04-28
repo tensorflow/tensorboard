@@ -33,17 +33,14 @@ export class AppContainer {
     private readonly store: Store<State>,
     readonly vcRef: ViewContainerRef
   ) {
-    // Wait for route to be initialized before dispatching a coreLoaded.
-    this.store
-      .select(getActiveRoute)
-      .pipe(
-        filter((route) => Boolean(route)),
-        take(1)
-      )
-      .subscribe(() => {
-        // TODO(stephanwlee): deprecated coreLoaded and use the router actions when all
-        // apps are using the router.s
-        this.store.dispatch(coreLoaded());
-      });
+    // // Wait for route to be initialized before dispatching a coreLoaded.
+    // this.store
+    //   .select(getActiveRoute)
+    //   .pipe(
+    //     filter((route) => Boolean(route)),
+    //     take(1)
+    //   )
+    //   .subscribe(() => {
+    //   });
   }
 }

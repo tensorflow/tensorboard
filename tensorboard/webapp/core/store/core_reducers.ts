@@ -72,6 +72,43 @@ const reducer = createReducer(
     }
   ),
   on(
+    actions.polymerRunsFetchRequested,
+    (state: CoreState): CoreState => {
+      return {
+        ...state,
+        polymerRunsLoadState: {
+          ...state.polymerRunsLoadState,
+          state: DataLoadState.LOADING,
+        },
+      };
+    }
+  ),
+  on(
+    actions.polymerRunsFetchSucceeded,
+    (state: CoreState): CoreState => {
+      return {
+        ...state,
+        polymerRunsLoadState: {
+          ...state.polymerRunsLoadState,
+          state: DataLoadState.LOADED,
+          lastLoadedTimeInMs: Date.now(),
+        },
+      };
+    }
+  ),
+  on(
+    actions.polymerRunsFetchFailed,
+    (state: CoreState): CoreState => {
+      return {
+        ...state,
+        polymerRunsLoadState: {
+          ...state.polymerRunsLoadState,
+          state: DataLoadState.FAILED,
+        },
+      };
+    }
+  ),
+  on(
     actions.environmentLoaded,
     (state: CoreState, {environment}): CoreState => {
       return {...state, environment: environment};

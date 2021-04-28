@@ -29,6 +29,7 @@ export interface CoreState {
   activePlugin: PluginId | null;
   plugins: PluginsListing;
   pluginsListLoaded: PluginsListLoadState;
+  polymerRunsLoadState: LoadState;
   reloadPeriodInMs: number;
   reloadEnabled: boolean;
   // Size of a page in a general paginated view that is configurable by user via
@@ -91,6 +92,10 @@ export const initialState: CoreState = {
   environment: {
     data_location: '',
     window_title: '',
+  },
+  polymerRunsLoadState: {
+    state: DataLoadState.NOT_LOADED,
+    lastLoadedTimeInMs: null,
   },
   polymerInteropRuns: [],
   polymerInteropRunSelection: new Set(),

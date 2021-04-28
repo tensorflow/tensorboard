@@ -12,34 +12,35 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {TestBed} from '@angular/core/testing';
-
+import {fakeAsync, TestBed, tick} from '@angular/core/testing';
 import {provideMockActions} from '@ngrx/effects/testing';
 import {Action, Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
-import {Subject, ReplaySubject, of} from 'rxjs';
+import {of, ReplaySubject, Subject} from 'rxjs';
 
-import {CoreEffects} from './core_effects';
-import * as coreActions from '../actions';
+import {navigated} from '../../app_routing/actions';
+import {getRouteId} from '../../app_routing/store/app_routing_selectors';
+import {buildRoute} from '../../app_routing/testing';
+import {RouteKind} from '../../app_routing/types';
 import {State} from '../../app_state';
-
+import {getEnabledExperimentalPlugins} from '../../feature_flag/store/feature_flag_selectors';
+import {PluginsListing} from '../../types/api';
+import {DataLoadState} from '../../types/data';
 import {
+  HttpTestingController,
+  TBHttpClientTestingModule,
+} from '../../webapp_data_source/tb_http_client_testing';
+import {TBServerDataSource} from '../../webapp_data_source/tb_server_data_source';
+import * as coreActions from '../actions';
+import {getActivePlugin, getPluginsListLoaded} from '../store';
+import {
+  createCoreState,
   createEnvironment,
   createPluginMetadata,
   createState,
-  createCoreState,
 } from '../testing';
 import {PluginsListFailureCode, Run} from '../types';
-
-import {PluginsListing} from '../../types/api';
-import {DataLoadState} from '../../types/data';
-import {TBServerDataSource} from '../../webapp_data_source/tb_server_data_source';
-import {getEnabledExperimentalPlugins} from '../../feature_flag/store/feature_flag_selectors';
-import {
-  TBHttpClientTestingModule,
-  HttpTestingController,
-} from '../../webapp_data_source/tb_http_client_testing';
-import {getActivePlugin} from '../store';
+import {CoreEffects, TEST_ONLY} from './core_effects';
 
 describe('core_effects', () => {
   let httpMock: HttpTestingController;
@@ -103,6 +104,8 @@ describe('core_effects', () => {
       .and.returnValue(of(createEnvironment()));
 
     store.overrideSelector(getEnabledExperimentalPlugins, []);
+    store.overrideSelector(getRouteId, 'foo');
+    store.overrideSelector(getActivePlugin, null);
   });
 
   afterEach(() => {
@@ -110,7 +113,16 @@ describe('core_effects', () => {
   });
 
   [
-    {specSetName: '#coreLoaded', onAction: coreActions.coreLoaded()},
+    {
+      specSetName: '#navigated',
+      onAction: navigated({
+        before: null,
+        after: buildRoute({
+          routeKind: RouteKind.EXPERIMENT,
+        }),
+      }),
+    },
+    {specSetName: '#coreLoaded (legacy)', onAction: coreActions.coreLoaded()},
     {specSetName: '#reload', onAction: coreActions.reload()},
     {specSetName: '#manualReload', onAction: coreActions.manualReload()},
   ].forEach(({specSetName, onAction}) => {
@@ -140,6 +152,8 @@ describe('core_effects', () => {
           coreActions.environmentLoaded({
             environment: createEnvironment(),
           }),
+          coreActions.polymerRunsFetchRequested(),
+          coreActions.polymerRunsFetchSucceeded(),
           coreActions.pluginsListingLoaded({
             plugins: pluginsListing,
           }),
@@ -153,14 +167,19 @@ describe('core_effects', () => {
           .expectOne('data/plugins_listing')
           .error(new ErrorEvent('FakeError'), {status: 404});
 
+        fetchPolymerRunsSubjects[0].next([{id: '1', name: 'Run 1'}]);
+        fetchPolymerRunsSubjects[0].complete();
+
         expect(recordedActions).toEqual([
           coreActions.pluginsListingRequested(),
           coreActions.environmentLoaded({
             environment: createEnvironment(),
           }),
+          coreActions.polymerRunsFetchRequested(),
           coreActions.pluginsListingFailed({
             failureCode: PluginsListFailureCode.NOT_FOUND,
           }),
+          coreActions.polymerRunsFetchSucceeded(),
         ]);
       });
 
@@ -196,25 +215,23 @@ describe('core_effects', () => {
             coreActions.environmentLoaded({
               environment: createEnvironment(),
             }),
+            coreActions.polymerRunsFetchRequested(),
             coreActions.pluginsListingLoaded({
               plugins: pluginsListing,
             }),
+            coreActions.polymerRunsFetchSucceeded(),
           ]);
         }
       );
 
-      it('ignores the action when loadState is loading', () => {
-        store.setState(
-          createState(
-            createCoreState({
-              pluginsListLoaded: {
-                state: DataLoadState.LOADING,
-                lastLoadedTimeInMs: null,
-                failureCode: null,
-              },
-            })
-          )
-        );
+      it('ignores the action when loadState is loading', fakeAsync(() => {
+        store.overrideSelector(getRouteId, 'foo');
+        store.overrideSelector(getPluginsListLoaded, {
+          state: DataLoadState.LOADING,
+          lastLoadedTimeInMs: null,
+          failureCode: null,
+        });
+        store.refreshState();
         const pluginsListing: PluginsListing = {
           core: createPluginMetadata('Core'),
         };
@@ -227,17 +244,14 @@ describe('core_effects', () => {
 
         expect(recordedActions).toEqual([]);
 
-        store.setState(
-          createState(
-            createCoreState({
-              pluginsListLoaded: {
-                state: DataLoadState.FAILED,
-                lastLoadedTimeInMs: null,
-                failureCode: PluginsListFailureCode.NOT_FOUND,
-              },
-            })
-          )
-        );
+        store.overrideSelector(getPluginsListLoaded, {
+          state: DataLoadState.FAILED,
+          lastLoadedTimeInMs: null,
+          failureCode: PluginsListFailureCode.NOT_FOUND,
+        });
+        store.overrideSelector(getRouteId, 'bar');
+        store.refreshState();
+        tick(TEST_ONLY.DATA_LOAD_COND_THROTTLE_IN_MS);
 
         action.next(onAction);
         httpMock.expectOne('data/plugins_listing').flush(pluginsListing);
@@ -248,27 +262,81 @@ describe('core_effects', () => {
           coreActions.environmentLoaded({
             environment: createEnvironment(),
           }),
+          coreActions.polymerRunsFetchRequested(),
           coreActions.pluginsListingLoaded({
             plugins: pluginsListing,
           }),
+          coreActions.polymerRunsFetchSucceeded(),
         ]);
 
-        store.setState(
-          createState(
-            createCoreState({
-              pluginsListLoaded: {
-                state: DataLoadState.LOADING,
-                lastLoadedTimeInMs: null,
-                failureCode: null,
-              },
-            })
-          )
-        );
+        store.overrideSelector(getPluginsListLoaded, {
+          state: DataLoadState.LOADING,
+          lastLoadedTimeInMs: null,
+          failureCode: null,
+        });
+        store.overrideSelector(getRouteId, 'baz');
+        store.refreshState();
+        tick(TEST_ONLY.DATA_LOAD_COND_THROTTLE_IN_MS);
 
         action.next(onAction);
         httpMock.expectNone('data/plugins_listing');
-      });
+        tick(TEST_ONLY.DATA_LOAD_COND_THROTTLE_IN_MS);
+      }));
     });
+  });
+
+  describe('#navigated', () => {
+    beforeEach(() => {
+      coreEffects.fetchWebAppData$.subscribe(() => {});
+    });
+
+    it('ignores navigated when routeId is not changed', fakeAsync(() => {
+      store.overrideSelector(getRouteId, 'foo');
+      store.overrideSelector(getPluginsListLoaded, {
+        state: DataLoadState.NOT_LOADED,
+        lastLoadedTimeInMs: null,
+        failureCode: null,
+      });
+      store.refreshState();
+
+      action.next(
+        navigated({
+          before: null,
+          after: buildRoute({
+            routeKind: RouteKind.EXPERIMENT,
+          }),
+        })
+      );
+
+      httpMock.expectOne('data/plugins_listing').flush({
+        core: createPluginMetadata('Core'),
+      } as PluginsListing);
+      tick(TEST_ONLY.DATA_LOAD_COND_THROTTLE_IN_MS);
+
+      action.next(
+        navigated({
+          before: null,
+          after: buildRoute({
+            routeKind: RouteKind.EXPERIMENT,
+          }),
+        })
+      );
+      httpMock.expectNone('data/plugins_listing');
+      tick(TEST_ONLY.DATA_LOAD_COND_THROTTLE_IN_MS);
+
+      store.overrideSelector(getRouteId, 'bar');
+      store.refreshState();
+      action.next(
+        navigated({
+          before: null,
+          after: buildRoute({
+            routeKind: RouteKind.EXPERIMENT,
+          }),
+        })
+      );
+      httpMock.expectOne('data/plugins_listing');
+      tick(TEST_ONLY.DATA_LOAD_COND_THROTTLE_IN_MS);
+    }));
   });
 
   describe('#dispatchChangePlugin', () => {

@@ -364,4 +364,59 @@ describe('core reducer', () => {
       );
     });
   });
+
+  describe('#polymerRunsFetchRequested', () => {
+    it('sets polymerRunsLoadState to LOADING', () => {
+      const state = createCoreState({
+        polymerRunsLoadState: {
+          state: DataLoadState.LOADED,
+          lastLoadedTimeInMs: 1,
+        },
+      });
+
+      const nextState = reducers(state, actions.polymerRunsFetchRequested());
+
+      expect(nextState.polymerRunsLoadState).toEqual({
+        state: DataLoadState.LOADING,
+        lastLoadedTimeInMs: 1,
+      });
+    });
+  });
+
+  describe('#polymerRunsFetchSucceeded', () => {
+    it('sets polymerRunsLoadState to LOADED', () => {
+      spyOn(Date, 'now').and.returnValue(5);
+      const state = createCoreState({
+        polymerRunsLoadState: {
+          state: DataLoadState.LOADING,
+          lastLoadedTimeInMs: 1,
+        },
+      });
+
+      const nextState = reducers(state, actions.polymerRunsFetchSucceeded());
+
+      expect(nextState.polymerRunsLoadState).toEqual({
+        state: DataLoadState.LOADED,
+        lastLoadedTimeInMs: 5,
+      });
+    });
+  });
+
+  describe('#polymerRunsFetchFailed', () => {
+    it('sets polymerRunsLoadState to FAILED', () => {
+      const state = createCoreState({
+        polymerRunsLoadState: {
+          state: DataLoadState.LOADING,
+          lastLoadedTimeInMs: 1,
+        },
+      });
+
+      const nextState = reducers(state, actions.polymerRunsFetchFailed());
+
+      expect(nextState.polymerRunsLoadState).toEqual({
+        state: DataLoadState.FAILED,
+        lastLoadedTimeInMs: 1,
+      });
+    });
+  });
 });

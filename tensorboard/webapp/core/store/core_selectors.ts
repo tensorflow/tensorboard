@@ -15,6 +15,7 @@ limitations under the License.
 import {createFeatureSelector, createSelector} from '@ngrx/store';
 
 import {Environment, PluginId, PluginsListing} from '../../types/api';
+import {DataLoadState, LoadState} from '../../types/data';
 import {
   CoreState,
   CORE_FEATURE_KEY,
@@ -35,13 +36,58 @@ export const getPluginsListLoaded = createSelector(
   (state: CoreState): PluginsListLoadState => state.pluginsListLoaded
 );
 
-// TODO(tensorboard-team): AppLastLoaded is currently derived from plugins listing loaded
-// state which should be disentangled. Fix this by having a separate state for remembering
-// when the application data was last loaded.
+export const getPolymerRunsLoadState = createSelector(
+  selectCoreState,
+  (state: CoreState): LoadState => state.polymerRunsLoadState
+);
+
+export const getCoreDataLoadedState = createSelector(
+  getPluginsListLoaded,
+  getPolymerRunsLoadState,
+  ({state: pluginsLoadState}, {state: runsLoadState}): DataLoadState => {
+    if (pluginsLoadState === runsLoadState) {
+      return pluginsLoadState;
+    }
+    if (
+      pluginsLoadState === DataLoadState.LOADING ||
+      runsLoadState === DataLoadState.LOADING
+    ) {
+      return DataLoadState.LOADING;
+    }
+    if (
+      pluginsLoadState === DataLoadState.FAILED ||
+    ) {
+      return DataLoadState.FAILED;
+    }
+    // State is LOADED only when both states are `LOADED` which is handled by
+    // the first if statement.
+    return DataLoadState.NOT_LOADED;
+  }
+);
+
+// TODO(tensorboard-team): AppLastLoaded is currently derived from only plugins
+// listing loaded state and runs load state. It should be broken down further
+// (such as the environments) and derive this state from the combination of
+// other core data load state.
 export const getAppLastLoadedTimeInMs = createSelector(
   getPluginsListLoaded,
-  (loadedState: PluginsListLoadState): number | null =>
-    loadedState.lastLoadedTimeInMs
+  getPolymerRunsLoadState,
+  (
+    pluginListLoadState: PluginsListLoadState,
+    runsLoadState: LoadState
+  ): number | null => {
+    if (
+      pluginListLoadState.lastLoadedTimeInMs === null &&
+      runsLoadState.lastLoadedTimeInMs === null
+    ) {
+      return null;
+    }
+
+    return Math.max(
+      pluginListLoadState.lastLoadedTimeInMs ?? -1,
+      runsLoadState.lastLoadedTimeInMs ?? -1
+    );
+  }
 );
 
 export const getActivePlugin = createSelector(
