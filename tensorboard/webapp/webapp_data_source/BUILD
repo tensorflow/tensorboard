@@ -10,6 +10,7 @@ tf_ng_module(
     ],
     deps = [
         ":http_client",
+        "//tensorboard/webapp:tb_polymer_interop_types",
         "//tensorboard/webapp/core:types",
         "//tensorboard/webapp/types",
         "@npm//@angular/common",

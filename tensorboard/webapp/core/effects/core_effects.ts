@@ -54,7 +54,7 @@ export class CoreEffects {
   // Ngrx assumes all Effect classes have properties that inherit from the base
   // JS Object. `tf_backend` does not, so we wrap it.
   private readonly tfBackend = {
-    ref: (document.createElement('tf-backend') as any).tf_backend,
+    ref: document.createElement('tf-backend').tf_backend,
   };
 
   /**

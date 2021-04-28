@@ -1,4 +1,4 @@
-load("//tensorboard/defs:defs.bzl", "tf_js_binary", "tf_ng_module", "tf_ng_web_test_suite", "tf_sass_binary", "tf_sass_library", "tf_svg_bundle")
+load("//tensorboard/defs:defs.bzl", "tf_js_binary", "tf_ng_module", "tf_ng_web_test_suite", "tf_sass_binary", "tf_sass_library", "tf_svg_bundle", "tf_ts_library")
 load("//tensorboard/defs:js.bzl", "tf_resource_digest_suffixer")
 load("//tensorboard/defs:web.bzl", "tb_combine_html", "tf_web_library")
 
@@ -71,6 +71,13 @@ tf_ng_module(
         "//tensorboard/webapp/angular:expect_angular_material_icon",
         "@npm//@angular/core",
         "@npm//@angular/platform-browser",
+    ],
+)
+
+tf_ts_library(
+    name = "tb_polymer_interop_types",
+    srcs = [
+        "tb_polymer_interop_types.ts",
     ],
 )
 
