@@ -41,6 +41,7 @@ tf_js_binary(
     name = "polymer3_lib_binary_no_shim",
     compile = True,
     entry_point = ":polymer3_lib.ts",
+    includes_polymer = True,
     deps = [":polymer3_ts_lib"],
 )
 

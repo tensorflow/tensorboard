@@ -92,6 +92,7 @@ tf_js_binary(
     name = "standalone_bundle",
     compile = 1,
     entry_point = "bundle.ts",
+    includes_polymer = True,
     deps = [
         ":vz_projector",
     ],
