@@ -12,8 +12,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {State as AppRoutingState} from '../app_routing/store/app_routing_types';
-import {State as FeatureFlagState} from '../feature_flag/store/feature_flag_types';
-import {State as CoreState} from './store/core_types';
+// import {State as AppRoutingState} from '../app_routing/store/app_routing_types';
+// import {State as FeatureFlagState} from '../feature_flag/store/feature_flag_types';
+// import {State as CoreState} from './store/core_types';
 
-export type State = CoreState & AppRoutingState & FeatureFlagState;
+// export type State = CoreState & AppRoutingState & FeatureFlagState;
+
+export {State} from '../app_state';

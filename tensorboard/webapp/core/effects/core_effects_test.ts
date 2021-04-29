@@ -167,7 +167,7 @@ describe('core_effects', () => {
           .expectOne('data/plugins_listing')
           .error(new ErrorEvent('FakeError'), {status: 404});
 
-        fetchPolymerRunsSubjects[0].next([{id: '1', name: 'Run 1'}]);
+        fetchPolymerRunsSubjects[0].error('No runs!');
         fetchPolymerRunsSubjects[0].complete();
 
         expect(recordedActions).toEqual([
@@ -179,7 +179,7 @@ describe('core_effects', () => {
           coreActions.pluginsListingFailed({
             failureCode: PluginsListFailureCode.NOT_FOUND,
           }),
-          coreActions.polymerRunsFetchSucceeded(),
+          coreActions.polymerRunsFetchFailed(),
         ]);
       });
 
@@ -251,7 +251,7 @@ describe('core_effects', () => {
         });
         store.overrideSelector(getRouteId, 'bar');
         store.refreshState();
-        tick(TEST_ONLY.DATA_LOAD_COND_THROTTLE_IN_MS);
+        tick(TEST_ONLY.DATA_LOAD_CONDITIONAL_THROTTLE_IN_MS);
 
         action.next(onAction);
         httpMock.expectOne('data/plugins_listing').flush(pluginsListing);
@@ -276,11 +276,11 @@ describe('core_effects', () => {
         });
         store.overrideSelector(getRouteId, 'baz');
         store.refreshState();
-        tick(TEST_ONLY.DATA_LOAD_COND_THROTTLE_IN_MS);
+        tick(TEST_ONLY.DATA_LOAD_CONDITIONAL_THROTTLE_IN_MS);
 
         action.next(onAction);
         httpMock.expectNone('data/plugins_listing');
-        tick(TEST_ONLY.DATA_LOAD_COND_THROTTLE_IN_MS);
+        tick(TEST_ONLY.DATA_LOAD_CONDITIONAL_THROTTLE_IN_MS);
       }));
     });
   });
@@ -311,7 +311,7 @@ describe('core_effects', () => {
       httpMock.expectOne('data/plugins_listing').flush({
         core: createPluginMetadata('Core'),
       } as PluginsListing);
-      tick(TEST_ONLY.DATA_LOAD_COND_THROTTLE_IN_MS);
+      tick(TEST_ONLY.DATA_LOAD_CONDITIONAL_THROTTLE_IN_MS);
 
       action.next(
         navigated({
@@ -322,7 +322,7 @@ describe('core_effects', () => {
         })
       );
       httpMock.expectNone('data/plugins_listing');
-      tick(TEST_ONLY.DATA_LOAD_COND_THROTTLE_IN_MS);
+      tick(TEST_ONLY.DATA_LOAD_CONDITIONAL_THROTTLE_IN_MS);
 
       store.overrideSelector(getRouteId, 'bar');
       store.refreshState();
@@ -335,7 +335,7 @@ describe('core_effects', () => {
         })
       );
       httpMock.expectOne('data/plugins_listing');
-      tick(TEST_ONLY.DATA_LOAD_COND_THROTTLE_IN_MS);
+      tick(TEST_ONLY.DATA_LOAD_CONDITIONAL_THROTTLE_IN_MS);
     }));
   });
 

@@ -60,15 +60,15 @@ export const pluginsListingFailed = createAction(
 );
 
 export const polymerRunsFetchRequested = createAction(
-  '[Core] Polymer Comp Runs Fetch Requested'
+  '[Core] Polymer Component Runs Fetch Requested'
 );
 
 export const polymerRunsFetchSucceeded = createAction(
-  '[Core] Polymer Comp Runs Fetch Successful'
+  '[Core] Polymer Component Runs Fetch Successful'
 );
 
 export const polymerRunsFetchFailed = createAction(
-  '[Core] Polymer Comp Runs Fetch Failed'
+  '[Core] Polymer Component Runs Fetch Failed'
 );
 
 /**

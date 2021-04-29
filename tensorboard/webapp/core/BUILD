@@ -33,8 +33,6 @@ tf_ts_library(
         "state.ts",
     ],
     deps = [
-        "//tensorboard/webapp/app_routing/store:types",
-        "//tensorboard/webapp/core/store:types",
-        "//tensorboard/webapp/feature_flag/store:types",
+        "//tensorboard/webapp:app_state",
     ],
 )

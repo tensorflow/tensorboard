@@ -65,7 +65,7 @@ import {PluginsListFailureCode} from '../types';
 //   double requests.
 // - when using debounceTime(0), we see a brief moment of flicker when app
 //   bootstraps. To mitigate this, we use `leading: true` with `throttleTime`.
-const DATA_LOAD_COND_THROTTLE_IN_MS = 10;
+const DATA_LOAD_CONDITIONAL_THROTTLE_IN_MS = 10;
 
 @Injectable()
 export class CoreEffects {
@@ -89,6 +89,9 @@ export class CoreEffects {
   }
 
   private readonly onDashboardLoad$ = merge(
+    // Loading dashboard data on `coreLoaded` is temporary; not all TB apps
+    // use the router. For those router-less applications, we have to support
+    // the legacy `coreLoaded`.
     this.actions$.pipe(ofType(coreLoaded)),
     this.actions$.pipe(
       ofType(navigated),
@@ -104,12 +107,20 @@ export class CoreEffects {
       })
     )
   ).pipe(
-    throttleTime(DATA_LOAD_COND_THROTTLE_IN_MS, undefined, {leading: true})
+    throttleTime(DATA_LOAD_CONDITIONAL_THROTTLE_IN_MS, undefined, {
+      leading: true,
+    })
   );
 
-  // Emits when data should be refreshed.
+  // Emits when data should be refreshed. We do not reload the data while the
+  // data is already being fetched.
+  //
   // HACK: currently, plugins list loaded state is used as a proxy to know
-  // whether the data is being reloaded or not. This should change to
+  // whether the data is being reloaded or not. This should change to either
+  // application load state (via `getCoreDataLoadedState`) or have it broken
+  // down to more granular checks (e.g., `pluginsListingReload$` should check
+  // the pluginsListLoaded state while the `runsReload$` should check the
+  // polymerRunsLoadState).
   private readonly onDataReload$ = merge(
     this.onDashboardLoad$,
     this.actions$.pipe(ofType(reload, manualReload))
@@ -227,5 +238,5 @@ export class CoreEffects {
 }
 
 export const TEST_ONLY = {
-  DATA_LOAD_COND_THROTTLE_IN_MS,
+  DATA_LOAD_CONDITIONAL_THROTTLE_IN_MS,
 };
