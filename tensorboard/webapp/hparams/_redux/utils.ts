@@ -22,7 +22,7 @@ import {
 } from '../types';
 
 export function getIdFromExperimentIds(experimentIds: string[]): string {
-  return JSON.stringify(experimentIds.sort());
+  return JSON.stringify([...experimentIds].sort());
 }
 
 export function combineDefaultHparamFilters(
