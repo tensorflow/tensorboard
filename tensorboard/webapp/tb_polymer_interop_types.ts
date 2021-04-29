@@ -13,10 +13,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 declare global {
-  interface Document {
-    createElement(name: 'tf-backend'): TfBackendElement;
-    createElement(name: 'tf-globals'): TfGlobalsElement;
-    createElement(name: 'tf-storage'): TfStorageElement;
+  // createElement type uses the TagNameMap underneath and returns the right type.
+  interface HTMLElementTagNameMap {
+    'tf-backend': TfBackendElement;
+    'tf-globals': TfGlobalsElement;
+    'tf-storage': TfStorageElement;
   }
 }
 

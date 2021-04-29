@@ -12,6 +12,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import '../../tb_polymer_interop_types';
+
 import {Injectable} from '@angular/core';
 import {Store} from '@ngrx/store';
 import {Actions, ofType, createEffect} from '@ngrx/effects';
@@ -26,6 +28,7 @@ import {
   distinctUntilChanged,
   take,
 } from 'rxjs/operators';
+
 import {
   coreLoaded,
   environmentLoaded,
