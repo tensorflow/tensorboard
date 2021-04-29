@@ -10,6 +10,7 @@ tf_ng_module(
     ],
     deps = [
         "//tensorboard/webapp:app_state",
+        "//tensorboard/webapp:tb_polymer_interop_types",
         "//tensorboard/webapp/core:types",
         "//tensorboard/webapp/core/actions",
         "//tensorboard/webapp/core/store",

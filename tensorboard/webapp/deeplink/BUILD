@@ -11,6 +11,7 @@ tf_ng_module(
         "types.ts",
     ],
     deps = [
+        "//tensorboard/webapp:tb_polymer_interop_types",
         "@npm//@angular/core",
     ],
 )

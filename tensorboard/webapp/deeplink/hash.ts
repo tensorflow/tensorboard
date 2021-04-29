@@ -15,33 +15,20 @@ limitations under the License.
 
 import {Injectable} from '@angular/core';
 
+import {TfStorageElement} from '../tb_polymer_interop_types';
 import {DeepLinkerInterface, SetStringOption} from './types';
 
 // TODO(tensorboard-team): merge this module with tf_storage/storage.ts when
 // tf_ts_library can be referenced by tf_web_library.
 const TAB = '__tab__';
 
-interface TfGlobalsElement extends HTMLElement {
-  tf_globals: {
-    setUseHash(use: boolean): void;
-  };
-}
-
-interface TfStorageElement extends HTMLElement {
-  tf_storage: {
-    setString(key: string, value: string, options?: SetStringOption): void;
-    getString(key: string): string;
-    migrateLegacyURLScheme(): void;
-  };
-}
-
 @Injectable()
 export class HashDeepLinker implements DeepLinkerInterface {
   private readonly tfStorage: TfStorageElement;
 
   constructor() {
-    this.tfStorage = document.createElement('tf-storage') as TfStorageElement;
-    const tfGlobals = document.createElement('tf-globals') as TfGlobalsElement;
+    this.tfStorage = document.createElement('tf-storage');
+    const tfGlobals = document.createElement('tf-globals');
 
     // Note: `migrateLegacyURLScheme()` must be called before `setUseHash`, so
     // that tfStorage reads from the actual URL, not the fake hash for tests
