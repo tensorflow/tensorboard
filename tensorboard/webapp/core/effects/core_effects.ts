@@ -24,7 +24,6 @@ import {
   filter,
   map,
   mergeMap,
-  share,
   take,
   tap,
   throttleTime,
@@ -129,8 +128,7 @@ export class CoreEffects {
       this.store.select(getPluginsListLoaded),
       this.store.select(getEnabledExperimentalPlugins)
     ),
-    filter(([, {state}]) => state !== DataLoadState.LOADING),
-    share()
+    filter(([, {state}]) => state !== DataLoadState.LOADING)
   );
 
   /**
