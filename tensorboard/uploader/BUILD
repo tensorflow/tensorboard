@@ -76,6 +76,7 @@ py_library(
         "//tensorboard:expect_absl_logging_installed",
         "//tensorboard:expect_grpc_installed",
         "//tensorboard:program",
+        "//tensorboard/compat:tensorflow",
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/uploader/proto:protos_all_py_pb2_grpc",
     ],

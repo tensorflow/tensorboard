@@ -23,6 +23,7 @@ import textwrap
 
 from absl import logging
 import grpc
+from tensorboard.compat import tf
 
 from tensorboard.uploader.proto import experiment_pb2
 from tensorboard.uploader.proto import export_service_pb2_grpc
@@ -416,7 +417,7 @@ class UploadIntent(_Intent):
             verbosity=self.verbosity,
             one_shot=self.one_shot,
         )
-        if self.one_shot and not os.path.isdir(self.logdir):
+        if self.one_shot and not tf.io.gfile.isdir(self.logdir):
             print("%s: No such directory." % self.logdir)
             print(
                 "User specified `one_shot` mode with an unavailable "
