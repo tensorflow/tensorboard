@@ -38,12 +38,13 @@ def tf_js_binary(
 
     Args:
         name: Name of the target.
-        compile: whether to compile when bundling.
+        compile: whether to compile when bundling. Only used internally.
         deps: dependencies of the js_binary.
         visibility: visibility of the target.
         dev_mode_only: whether the binary is for development. When True, it will
           omit the Terser.
-        includes_polymer: whether this binary is contains Polymer.
+        includes_polymer: whether this binary contains Polymer. Only used
+          internally.
         **kwargs: keyword arguments to rollup_bundle. Please refer to
           https://bazelbuild.github.io/rules_nodejs/Built-ins.html#rollup_bundle
           for more details.
