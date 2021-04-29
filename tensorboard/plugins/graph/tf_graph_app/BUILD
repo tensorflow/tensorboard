@@ -26,6 +26,7 @@ tf_js_binary(
     name = "tf_graph_app_js_binary",
     compile = True,
     entry_point = ":tf-graph-app.ts",
+    includes_polymer = True,
     deps = [":tf_graph_app"],
 )
 
