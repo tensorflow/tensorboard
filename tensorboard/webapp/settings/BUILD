@@ -14,6 +14,7 @@ tf_ng_module(
         "dialog_component.css",
     ],
     deps = [
+        "//tensorboard/webapp:tb_polymer_interop_types",
         "//tensorboard/webapp/angular:expect_angular_material_button",
         "//tensorboard/webapp/angular:expect_angular_material_checkbox",
         "//tensorboard/webapp/angular:expect_angular_material_dialog",

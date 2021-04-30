@@ -12,6 +12,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import '../../tb_polymer_interop_types';
+
 import {
   Component,
   ElementRef,
@@ -28,20 +30,6 @@ import {
   TimeProperty,
 } from './histogram_types';
 
-export interface VzHistogramTimeSeries extends HTMLElement {
-  mode: HistogramMode;
-  timeProperty: TimeProperty;
-  colorScale: ColorScale;
-  setSeriesData: (name: string, data: VzHistogramDatum[]) => void;
-  redraw(): void;
-}
-
-interface VzHistogramDatum {
-  wall_time: number;
-  step: number;
-  bins: Array<{x: number; dx: number; y: number}>;
-}
-
 @Component({
   selector: 'tb-histogram',
   template: '',
@@ -54,7 +42,7 @@ interface VzHistogramDatum {
   ],
 })
 export class HistogramComponent implements OnInit, OnChanges {
-  private readonly element: VzHistogramTimeSeries;
+  private readonly element = document.createElement('vz-histogram-timeseries');
 
   @Input() mode: HistogramMode = HistogramMode.OFFSET;
 
@@ -72,10 +60,6 @@ export class HistogramComponent implements OnInit, OnChanges {
   @Input() data!: HistogramData;
 
   constructor(private readonly host: ElementRef) {
-    this.element = document.createElement(
-      'vz-histogram-timeseries'
-    ) as VzHistogramTimeSeries;
-
     // Must set optional input values here since they won't be part of the
     // ngOnChanges if the parent does not override the value.
     this.element.mode = this.mode;

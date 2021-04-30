@@ -15,8 +15,9 @@ limitations under the License.
 import {Component, Input} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
+import {VzHistogramTimeSeriesElement} from '../../tb_polymer_interop_types';
 
-import {HistogramComponent, VzHistogramTimeSeries} from './histogram_component';
+import {HistogramComponent} from './histogram_component';
 import {
   ColorScale,
   HistogramData,
@@ -68,7 +69,7 @@ describe('histogram', () => {
     // properties.
     const vzHistogram = document.createElement(
       'testable-vz-histogram-timeseries'
-    ) as VzHistogramTimeSeries;
+    ) as VzHistogramTimeSeriesElement;
     setSeriesDataSpy = jasmine.createSpy();
     vzHistogram.setSeriesData = setSeriesDataSpy;
     redrawSpy = jasmine.createSpy();
@@ -77,7 +78,7 @@ describe('histogram', () => {
     spyOn(document, 'createElement')
       .and.callThrough()
       .withArgs('vz-histogram-timeseries')
-      .and.returnValue((vzHistogram as unknown) as VzHistogramTimeSeries);
+      .and.returnValue(vzHistogram);
   });
 
   function createComponent(
