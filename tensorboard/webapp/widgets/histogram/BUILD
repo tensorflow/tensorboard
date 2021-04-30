@@ -27,6 +27,7 @@ tf_ts_library(
     deps = [
         ":histogram",
         ":types",
+        "//tensorboard/webapp:tb_polymer_interop_types",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/angular:expect_angular_platform_browser_animations",
         "@npm//@angular/core",
