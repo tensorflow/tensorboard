@@ -56,6 +56,7 @@ export const getCoreDataLoadedState = createSelector(
     }
     if (
       pluginsLoadState === DataLoadState.FAILED ||
+      runsLoadState === DataLoadState.FAILED
     ) {
       return DataLoadState.FAILED;
     }
@@ -69,6 +70,14 @@ export const getCoreDataLoadedState = createSelector(
 // listing loaded state and runs load state. It should be broken down further
 // (such as the environments) and derive this state from the combination of
 // other core data load state.
+/**
+ * Returns last _successful_ loaded time of the applicational state where an
+ * applicational state is defined as combinations of plugins listing, runs, and
+ * environment.
+ *
+ * When `getCoreDataLoadedState` returns LOADING, `getAppLastLoadedTimeInMs`
+ * returns loaded time for the minimum timestamp of all load states.
+ */
 export const getAppLastLoadedTimeInMs = createSelector(
   getPluginsListLoaded,
   getPolymerRunsLoadState,
@@ -77,15 +86,21 @@ export const getAppLastLoadedTimeInMs = createSelector(
     runsLoadState: LoadState
   ): number | null => {
     if (
-      pluginListLoadState.lastLoadedTimeInMs === null &&
+      pluginListLoadState.lastLoadedTimeInMs === null ||
       runsLoadState.lastLoadedTimeInMs === null
     ) {
       return null;
     }
+    if (pluginListLoadState.state === runsLoadState.state) {
+      return Math.max(
+        pluginListLoadState.lastLoadedTimeInMs,
+        runsLoadState.lastLoadedTimeInMs
+      );
+    }
 
-    return Math.max(
-      pluginListLoadState.lastLoadedTimeInMs ?? -1,
-      runsLoadState.lastLoadedTimeInMs ?? -1
+    return Math.min(
+      pluginListLoadState.lastLoadedTimeInMs,
+      runsLoadState.lastLoadedTimeInMs
     );
   }
 );

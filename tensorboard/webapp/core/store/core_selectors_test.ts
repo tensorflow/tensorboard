@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import * as selectors from './core_selectors';
 import {createState, createCoreState} from '../testing';
-import {DataLoadState} from '../../types/data';
+import {DataLoadState, LoadState} from '../../types/data';
 import {PluginsListFailureCode} from '../types';
 import {PluginsListLoadState} from './core_types';
 
@@ -102,33 +102,47 @@ describe('core selectors', () => {
 
   describe('#getAppLastLoadedTimeInMs', () => {
     function assert(
-      runsLastLoadedTimeInMs: number | null,
-      pluginsListingLastLoadedTimeInMs: number | null,
+      runsLoadState: LoadState,
+      pluginsListingLoadState: PluginsListLoadState,
       expectedTimeInMs: number | null
     ) {
       selectors.getAppLastLoadedTimeInMs.release();
 
       const state = createState(
         createCoreState({
-          polymerRunsLoadState: {
-            state: DataLoadState.LOADED,
-            lastLoadedTimeInMs: runsLastLoadedTimeInMs,
-          },
-          pluginsListLoaded: {
-            state: DataLoadState.LOADED,
-            lastLoadedTimeInMs: pluginsListingLastLoadedTimeInMs,
-            failureCode: null,
-          },
+          polymerRunsLoadState: runsLoadState,
+          pluginsListLoaded: pluginsListingLoadState,
         })
       );
       expect(selectors.getAppLastLoadedTimeInMs(state)).toBe(expectedTimeInMs);
     }
 
-    it('combines data load time of plugins listing and runs by taking max', () => {
-      assert(2, 3, 3);
-      assert(1, null, 1);
-      assert(null, 5, 5);
-      assert(null, null, null);
+    it('takes max of plugins listing and runs load time when both are LOADED', () => {
+      assert(
+        {
+          state: DataLoadState.LOADED,
+          lastLoadedTimeInMs: 3,
+        },
+        {
+          state: DataLoadState.LOADED,
+          lastLoadedTimeInMs: 5,
+          failureCode: null,
+        },
+        5
+      );
+
+      assert(
+        {
+          state: DataLoadState.LOADED,
+          lastLoadedTimeInMs: null,
+        },
+        {
+          state: DataLoadState.LOADED,
+          lastLoadedTimeInMs: 5,
+          failureCode: null,
+        },
+        5
+      );
     });
   });
 });

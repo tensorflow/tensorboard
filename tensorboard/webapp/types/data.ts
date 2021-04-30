@@ -22,8 +22,22 @@ export enum DataLoadState {
   FAILED,
 }
 
-export interface LoadState {
-  state: DataLoadState;
+export interface LoadedState {
+  state: DataLoadState.LOADED;
+  // Time of last successful load. Time since epoch.
+  lastLoadedTimeInMs: number;
+}
+
+export interface NotLoadedState {
+  state: DataLoadState.NOT_LOADED;
+  // Time of last successful load. Time since epoch.
+  lastLoadedTimeInMs: null;
+}
+
+export interface OtherLoadedState {
+  state: DataLoadState.LOADING | DataLoadState.FAILED;
   // Time of last successful load. Time since epoch.
   lastLoadedTimeInMs: number | null;
 }
+
+export type LoadState = LoadedState | NotLoadedState | OtherLoadedState;
