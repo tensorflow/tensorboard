@@ -12,6 +12,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+export {HistogramMode, TimeProperty} from '../../tb_polymer_interop_types';
+
 export interface ColorScale {
   (runName: string): string;
 }
@@ -32,14 +34,3 @@ export interface HistogramDatum {
 }
 
 export type HistogramData = HistogramDatum[];
-
-export enum TimeProperty {
-  STEP = 'step',
-  WALL_TIME = 'wall_time',
-  RELATIVE = 'relative',
-}
-
-export enum HistogramMode {
-  OFFSET = 'offset',
-  OVERLAY = 'overlay',
-}

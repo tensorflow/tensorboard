@@ -12,6 +12,7 @@ tf_ng_module(
     ],
     deps = [
         ":types",
+        "//tensorboard/webapp:tb_polymer_interop_types",
         "@npm//@angular/core",
     ],
 )
@@ -38,5 +39,8 @@ tf_ts_library(
     srcs = [
         "histogram_types.ts",
         "histogram_util.ts",
+    ],
+    deps = [
+        "//tensorboard/webapp:tb_polymer_interop_types",
     ],
 )

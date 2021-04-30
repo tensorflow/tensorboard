@@ -18,6 +18,8 @@ declare global {
     'tf-backend': TfBackendElement;
     'tf-globals': TfGlobalsElement;
     'tf-storage': TfStorageElement;
+    'tf-paginated-view-store': TfPaginatedViewStoreElement;
+    'vz-histogram-timeseries': VzHistogramTimeSeriesElement;
   }
 }
 
@@ -71,4 +73,49 @@ export interface TfBackend {
 export interface TfBackendElement extends HTMLElement {
   /** @export */
   tf_backend: TfBackend;
+}
+
+export interface TfPaginatedView {
+  /** @export */
+  setLimit(limit: number): void;
+}
+
+export interface TfPaginatedViewStoreElement extends HTMLElement {
+  /** @export */
+  tf_paginated_view: TfPaginatedView;
+}
+
+export interface VzHistogramDatum {
+  /** @export */
+  wall_time: number;
+  /** @export */
+  step: number;
+  /** @export */
+  bins: Array<{x: number; dx: number; y: number}>;
+}
+
+export enum TimeProperty {
+  STEP = 'step',
+  WALL_TIME = 'wall_time',
+  RELATIVE = 'relative',
+}
+
+export enum HistogramMode {
+  OFFSET = 'offset',
+  OVERLAY = 'overlay',
+}
+
+export interface VzHistogramTimeSeriesElement extends HTMLElement {
+  /** @export */
+  mode: HistogramMode;
+  /** @export */
+  timeProperty: TimeProperty;
+  /** @export */
+  colorScale: {
+    (runName: string): string;
+  };
+  /** @export */
+  setSeriesData: (name: string, data: VzHistogramDatum[]) => void;
+  /** @export */
+  redraw(): void;
 }

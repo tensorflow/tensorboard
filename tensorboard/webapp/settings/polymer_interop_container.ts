@@ -12,6 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import '../tb_polymer_interop_types';
 
 import {Component, ChangeDetectionStrategy} from '@angular/core';
 import {Store, select} from '@ngrx/store';
@@ -21,12 +22,6 @@ import {takeUntil, distinctUntilChanged} from 'rxjs/operators';
 import {State, getPageSize} from '../core/store';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
-
-interface TfPaginatedViewStore extends HTMLElement {
-  tf_paginated_view: {
-    setLimit(limit: number): void;
-  };
-}
 
 /**
  * SettingsPolymerInterop is a temporary interop module that writes settings in
@@ -45,9 +40,9 @@ interface TfPaginatedViewStore extends HTMLElement {
 export class SettingsPolymerInteropContainer {
   private readonly ngUnsubscribe = new Subject();
   private readonly getPageSize$ = this.store.pipe(select(getPageSize));
-  private readonly paginatedViewStore = (document.createElement(
+  private readonly paginatedViewStore = document.createElement(
     'tf-paginated-view-store'
-  ) as TfPaginatedViewStore).tf_paginated_view;
+  ).tf_paginated_view;
 
   constructor(private store: Store<State>) {}
 
