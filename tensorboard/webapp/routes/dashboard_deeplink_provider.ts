@@ -28,10 +28,7 @@ import {
 import {CardUniqueInfo, METRICS_SETTINGS_DEFAULT} from '../metrics/types';
 import * as selectors from '../selectors';
 import {getMetricsScalarSmoothing} from '../selectors';
-import {
-  EXPERIMENTAL_PLUGIN_QUERY_PARAM_KEY,
-  GPU_LINE_CHART_QUERY_PARAM_KEY,
-} from '../webapp_data_source/tb_feature_flag_data_source_types';
+import {EXPERIMENTAL_PLUGIN_QUERY_PARAM_KEY} from '../webapp_data_source/tb_feature_flag_data_source_types';
 import {
   DeserializedState,
   PINNED_CARDS_KEY,
@@ -89,12 +86,6 @@ export class DashboardDeepLinkProvider extends DeepLinkProvider {
         const queryParams = experimentalPlugins.map((pluginId) => {
           return {key: EXPERIMENTAL_PLUGIN_QUERY_PARAM_KEY, value: pluginId};
         });
-        if (overriddenFeatureFlags.enableGpuChart !== undefined) {
-          queryParams.push({
-            key: GPU_LINE_CHART_QUERY_PARAM_KEY,
-            value: String(overriddenFeatureFlags.enableGpuChart),
-          });
-        }
         return queryParams;
       })
     );

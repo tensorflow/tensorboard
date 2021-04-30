@@ -18,8 +18,6 @@ export interface FeatureFlags {
   enabledExperimentalPlugins: string[];
   // Whether the TensorBoard is being run inside Colab output cell.
   inColab: boolean;
-  // Whether to enable our experimental GPU line chart.
-  enableGpuChart: boolean;
   // Maximum number of runs to include in a request to get scalar data.
   // `undefined` indicates that we should rely on defaults defined in the
   // dashboards code.

@@ -22,16 +22,16 @@ describe('feature_flag_selectors', () => {
       const state = buildState(
         buildFeatureFlagState({
           defaultFlags: buildFeatureFlag({
-            enableGpuChart: true,
+            enabledExperimentalPlugins: [],
           }),
           flagOverrides: {
-            enableGpuChart: false,
+            enabledExperimentalPlugins: ['foo'],
           },
         })
       );
 
       expect(selectors.getFeatureFlags(state)).toEqual(
-        buildFeatureFlag({enableGpuChart: false})
+        buildFeatureFlag({enabledExperimentalPlugins: ['foo']})
       );
     });
 
@@ -67,16 +67,16 @@ describe('feature_flag_selectors', () => {
       const state = buildState(
         buildFeatureFlagState({
           defaultFlags: buildFeatureFlag({
-            enableGpuChart: true,
+            enabledExperimentalPlugins: [],
           }),
           flagOverrides: {
-            enableGpuChart: false,
+            enabledExperimentalPlugins: ['foo'],
           },
         })
       );
       const actual = selectors.getOverriddenFeatureFlags(state);
 
-      expect(actual).toEqual({enableGpuChart: false});
+      expect(actual).toEqual({enabledExperimentalPlugins: ['foo']});
     });
   });
 
@@ -114,32 +114,6 @@ describe('feature_flag_selectors', () => {
         })
       );
       expect(selectors.getIsInColab(state)).toEqual(false);
-    });
-  });
-
-  describe('#getIsGpuChartEnabled', () => {
-    it('returns value in the store', () => {
-      const state1 = buildState(
-        buildFeatureFlagState({
-          defaultFlags: buildFeatureFlag({
-            enableGpuChart: false,
-          }),
-        })
-      );
-      const actual1 = selectors.getIsGpuChartEnabled(state1);
-
-      expect(actual1).toBe(false);
-
-      const state2 = buildState(
-        buildFeatureFlagState({
-          defaultFlags: buildFeatureFlag({
-            enableGpuChart: true,
-          }),
-        })
-      );
-      const actual2 = selectors.getIsGpuChartEnabled(state2);
-
-      expect(actual2).toBe(true);
     });
   });
 });
