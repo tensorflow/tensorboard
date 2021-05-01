@@ -76,7 +76,8 @@ export const getCoreDataLoadedState = createSelector(
  * environment.
  *
  * When `getCoreDataLoadedState` returns LOADING, `getAppLastLoadedTimeInMs`
- * returns loaded time for the minimum timestamp of all load states.
+ * returns loaded time for the minimum timestamp of all load states while, when
+ * both are loaded, it returns the max of all last loaded time.
  */
 export const getAppLastLoadedTimeInMs = createSelector(
   getPluginsListLoaded,

@@ -130,18 +130,165 @@ describe('core selectors', () => {
         },
         5
       );
+    });
 
+    it('returns null when both are not loaded', () => {
       assert(
         {
-          state: DataLoadState.LOADED,
+          state: DataLoadState.NOT_LOADED,
+          lastLoadedTimeInMs: null,
+        },
+        {
+          state: DataLoadState.NOT_LOADED,
+          lastLoadedTimeInMs: null,
+          failureCode: null,
+        },
+        null
+      );
+    });
+
+    it('returns max values when both are LOADING', () => {
+      assert(
+        {
+          state: DataLoadState.LOADING,
+          lastLoadedTimeInMs: null,
+        },
+        {
+          state: DataLoadState.LOADING,
+          lastLoadedTimeInMs: null,
+          failureCode: null,
+        },
+        null
+      );
+      assert(
+        {
+          state: DataLoadState.LOADING,
+          // This timestamp was from previously successful load.
+          lastLoadedTimeInMs: 3,
+        },
+        {
+          state: DataLoadState.LOADING,
+          // This timestamp was from previously successful load.
+          lastLoadedTimeInMs: 7,
+          failureCode: null,
+        },
+        7
+      );
+    });
+
+    it('returns max values when both are FAILED', () => {
+      assert(
+        {
+          state: DataLoadState.FAILED,
+          lastLoadedTimeInMs: null,
+        },
+        {
+          state: DataLoadState.FAILED,
+          lastLoadedTimeInMs: null,
+          failureCode: PluginsListFailureCode.NOT_FOUND,
+        },
+        null
+      );
+      assert(
+        {
+          state: DataLoadState.FAILED,
+          // This timestamp was from previously successful load.
+          lastLoadedTimeInMs: 3,
+        },
+        {
+          state: DataLoadState.FAILED,
+          // This timestamp was from previously successful load.
+          lastLoadedTimeInMs: 7,
+          failureCode: PluginsListFailureCode.NOT_FOUND,
+        },
+        7
+      );
+    });
+
+    it('returns lower value when one of two is still loading', () => {
+      assert(
+        {
+          state: DataLoadState.LOADING,
+          // never successfully loaded before.
           lastLoadedTimeInMs: null,
         },
         {
           state: DataLoadState.LOADED,
+          lastLoadedTimeInMs: 1,
+          failureCode: null,
+        },
+        null
+      );
+      assert(
+        {
+          state: DataLoadState.LOADED,
+          lastLoadedTimeInMs: 5,
+        },
+        {
+          state: DataLoadState.LOADING,
+          // previously successfully loaded at t=1
+          lastLoadedTimeInMs: 1,
+          failureCode: null,
+        },
+        1
+      );
+    });
+
+    it('returns lower value when one of two has failed to load', () => {
+      assert(
+        {
+          state: DataLoadState.LOADED,
+          lastLoadedTimeInMs: 5,
+        },
+        {
+          state: DataLoadState.FAILED,
+          // never successfully loaded before.
+          lastLoadedTimeInMs: null,
+          failureCode: PluginsListFailureCode.NOT_FOUND,
+        },
+        null
+      );
+      assert(
+        {
+          state: DataLoadState.LOADED,
+          lastLoadedTimeInMs: 5,
+        },
+        {
+          state: DataLoadState.FAILED,
+          // never successfully loaded before.
+          lastLoadedTimeInMs: 2,
+          failureCode: PluginsListFailureCode.NOT_FOUND,
+        },
+        2
+      );
+    });
+
+    it('returns null when one is loading and another is not loaded', () => {
+      assert(
+        {
+          state: DataLoadState.NOT_LOADED,
+          lastLoadedTimeInMs: null,
+        },
+        {
+          state: DataLoadState.LOADING,
+          // never successfully loaded before.
+          lastLoadedTimeInMs: null,
+          failureCode: null,
+        },
+        null
+      );
+      assert(
+        {
+          state: DataLoadState.NOT_LOADED,
+          lastLoadedTimeInMs: null,
+        },
+        {
+          state: DataLoadState.LOADING,
+          // never successfully loaded before.
           lastLoadedTimeInMs: 5,
           failureCode: null,
         },
-        5
+        null
       );
     });
   });
