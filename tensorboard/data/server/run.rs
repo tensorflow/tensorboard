@@ -419,7 +419,7 @@ mod test {
     use super::*;
     use bytes::Bytes;
     use std::fs::File;
-    use std::io::BufWriter;
+    use std::io::{BufWriter, Write};
 
     use crate::commit::Commit;
     use crate::data_compat::plugin_names;

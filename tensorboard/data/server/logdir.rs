@@ -237,6 +237,7 @@ mod tests {
     use super::*;
     use std::collections::HashSet;
     use std::fs::{self, File};
+    use std::io::Write;
 
     use crate::disk_logdir::DiskLogdir;
     use crate::types::{Step, Tag, WallTime};
