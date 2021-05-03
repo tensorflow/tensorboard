@@ -119,7 +119,9 @@ export class PluginsContainer {
     })
   );
 
-  readonly lastLoadedTimeInMs$ = this.store.select(getCoreDataLastLoadedTimeInMs);
+  readonly lastLoadedTimeInMs$ = this.store.select(
+    getCoreDataLastLoadedTimeInMs
+  );
   readonly dataLocation$ = this.store.select(getEnvironment).pipe(
     map((env) => {
       return env.data_location;
