@@ -26,7 +26,7 @@ import {TestingDebuggerModule} from '../../plugins/debugger_v2/tf_debugger_v2_pl
 import {State} from '../core/store';
 import {
   getActivePlugin,
-  getAppLastLoadedTimeInMs,
+  getCoreDataLastLoadedTimeInMs,
   getEnvironment,
   getPlugins,
   getPluginsListLoaded,
@@ -175,7 +175,7 @@ describe('plugins_component', () => {
     });
     store.overrideSelector(getIsFeatureFlagsLoaded, true);
     store.overrideSelector(getFeatureFlags, buildFeatureFlag());
-    store.overrideSelector(getAppLastLoadedTimeInMs, null);
+    store.overrideSelector(getCoreDataLastLoadedTimeInMs, null);
 
     createElementSpy = spyOn(document, 'createElement').and.callThrough();
     createElementSpy
@@ -398,7 +398,7 @@ describe('plugins_component', () => {
         lastLoadedTimeInMs: timeInMs,
         failureCode: null,
       });
-      store.overrideSelector(getAppLastLoadedTimeInMs, timeInMs);
+      store.overrideSelector(getCoreDataLastLoadedTimeInMs, timeInMs);
       store.refreshState();
     }
 

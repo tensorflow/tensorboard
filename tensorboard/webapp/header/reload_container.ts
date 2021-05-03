@@ -20,7 +20,7 @@ import {combineLatestWith, map} from 'rxjs/operators';
 import {manualReload} from '../core/actions';
 import {
   getActivePlugin,
-  getAppLastLoadedTimeInMs,
+  getCoreDataLastLoadedTimeInMs,
   getCoreDataLoadedState,
   getPlugins,
 } from '../core/store/core_selectors';
@@ -92,7 +92,7 @@ export class ReloadContainer {
     );
 
   lastLoadedTimeInMs$: Observable<number | null> = this.store.select(
-    getAppLastLoadedTimeInMs
+    getCoreDataLastLoadedTimeInMs
   );
 
   constructor(private readonly store: Store<State>) {}

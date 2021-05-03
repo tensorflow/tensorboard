@@ -28,6 +28,8 @@ export const CORE_FEATURE_KEY = 'core';
 export interface CoreState {
   activePlugin: PluginId | null;
   plugins: PluginsListing;
+  // LoadState of all data that is critical for applicational operations.
+  coreDataLoadState: LoadState;
   pluginsListLoaded: PluginsListLoadState;
   polymerRunsLoadState: LoadState;
   reloadPeriodInMs: number;
@@ -81,6 +83,10 @@ export interface State {
 export const initialState: CoreState = {
   activePlugin: null,
   plugins: {},
+  coreDataLoadState: {
+    state: DataLoadState.NOT_LOADED,
+    lastLoadedTimeInMs: null,
+  },
   pluginsListLoaded: {
     state: DataLoadState.NOT_LOADED,
     lastLoadedTimeInMs: null,

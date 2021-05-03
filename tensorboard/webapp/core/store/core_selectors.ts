@@ -42,67 +42,20 @@ export const getPolymerRunsLoadState = createSelector(
 );
 
 export const getCoreDataLoadedState = createSelector(
-  getPluginsListLoaded,
-  getPolymerRunsLoadState,
-  ({state: pluginsLoadState}, {state: runsLoadState}): DataLoadState => {
-    if (pluginsLoadState === runsLoadState) {
-      return pluginsLoadState;
-    }
-    if (
-      pluginsLoadState === DataLoadState.LOADING ||
-      runsLoadState === DataLoadState.LOADING
-    ) {
-      return DataLoadState.LOADING;
-    }
-    if (
-      pluginsLoadState === DataLoadState.FAILED ||
-      runsLoadState === DataLoadState.FAILED
-    ) {
-      return DataLoadState.FAILED;
-    }
-    // State is LOADED only when both states are `LOADED` which is handled by
-    // the first if statement.
-    return DataLoadState.NOT_LOADED;
+  selectCoreState,
+  (state: CoreState): DataLoadState => {
+    return state.coreDataLoadState.state;
   }
 );
-
-// TODO(tensorboard-team): AppLastLoaded is currently derived from only plugins
-// listing loaded state and runs load state. It should be broken down further
-// (such as the environments) and derive this state from the combination of
-// other core data load state.
 /**
  * Returns last _successful_ loaded time of the applicational state where an
  * applicational state is defined as combinations of plugins listing, runs, and
  * environment.
- *
- * When `getCoreDataLoadedState` returns LOADING, `getAppLastLoadedTimeInMs`
- * returns loaded time for the minimum timestamp of all load states while, when
- * both are loaded, it returns the max of all last loaded time.
  */
-export const getAppLastLoadedTimeInMs = createSelector(
-  getPluginsListLoaded,
-  getPolymerRunsLoadState,
-  (
-    pluginListLoadState: PluginsListLoadState,
-    runsLoadState: LoadState
-  ): number | null => {
-    if (
-      pluginListLoadState.lastLoadedTimeInMs === null ||
-      runsLoadState.lastLoadedTimeInMs === null
-    ) {
-      return null;
-    }
-    if (pluginListLoadState.state === runsLoadState.state) {
-      return Math.max(
-        pluginListLoadState.lastLoadedTimeInMs,
-        runsLoadState.lastLoadedTimeInMs
-      );
-    }
-
-    return Math.min(
-      pluginListLoadState.lastLoadedTimeInMs,
-      runsLoadState.lastLoadedTimeInMs
-    );
+export const getCoreDataLastLoadedTimeInMs = createSelector(
+  selectCoreState,
+  (coreState: CoreState): number | null => {
+    return coreState.coreDataLoadState.lastLoadedTimeInMs;
   }
 );
 

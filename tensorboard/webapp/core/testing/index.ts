@@ -55,6 +55,10 @@ export function createCoreState(override?: Partial<CoreState>): CoreState {
   return {
     activePlugin: null,
     plugins: {},
+    coreDataLoadState: {
+      state: DataLoadState.NOT_LOADED,
+      lastLoadedTimeInMs: null,
+    },
     pluginsListLoaded: {
       state: DataLoadState.NOT_LOADED,
       lastLoadedTimeInMs: null,

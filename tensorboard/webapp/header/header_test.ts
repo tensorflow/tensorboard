@@ -27,7 +27,7 @@ import {changePlugin, manualReload} from '../core/actions';
 import {State} from '../core/store';
 import {
   getActivePlugin,
-  getAppLastLoadedTimeInMs,
+  getCoreDataLastLoadedTimeInMs,
   getCoreDataLoadedState,
   getPlugins,
 } from '../core/store/core_selectors';
@@ -85,7 +85,7 @@ describe('header test', () => {
       bar: createPluginMetadata('Barber'),
     });
     store.overrideSelector(getActivePlugin, 'foo');
-    store.overrideSelector(getAppLastLoadedTimeInMs, null);
+    store.overrideSelector(getCoreDataLastLoadedTimeInMs, null);
     store.overrideSelector(getCoreDataLoadedState, DataLoadState.NOT_LOADED);
   });
 
@@ -182,7 +182,7 @@ describe('header test', () => {
     it('renders the time of refresh in title', () => {
       store.overrideSelector(getCoreDataLoadedState, DataLoadState.LOADED);
       store.overrideSelector(
-        getAppLastLoadedTimeInMs,
+        getCoreDataLastLoadedTimeInMs,
         new Date('2000-01-01').getTime()
       );
       const fixture = TestBed.createComponent(HeaderComponent);
@@ -198,7 +198,7 @@ describe('header test', () => {
 
     it('renders "Loading" if it was never loaded before', () => {
       store.overrideSelector(getCoreDataLoadedState, DataLoadState.NOT_LOADED);
-      store.overrideSelector(getAppLastLoadedTimeInMs, null);
+      store.overrideSelector(getCoreDataLastLoadedTimeInMs, null);
       const fixture = TestBed.createComponent(HeaderComponent);
       fixture.detectChanges();
 

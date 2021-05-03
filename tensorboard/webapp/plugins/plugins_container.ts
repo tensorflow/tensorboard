@@ -27,7 +27,7 @@ import {
   getActivePlugin,
   getPluginsListLoaded,
   getEnvironment,
-  getAppLastLoadedTimeInMs,
+  getCoreDataLastLoadedTimeInMs,
 } from '../core/store';
 import {PluginsListFailureCode} from '../core/types';
 import {PluginMetadata} from '../types/api';
@@ -119,7 +119,7 @@ export class PluginsContainer {
     })
   );
 
-  readonly lastLoadedTimeInMs$ = this.store.select(getAppLastLoadedTimeInMs);
+  readonly lastLoadedTimeInMs$ = this.store.select(getCoreDataLastLoadedTimeInMs);
   readonly dataLocation$ = this.store.select(getEnvironment).pipe(
     map((env) => {
       return env.data_location;
