@@ -485,8 +485,8 @@ mod test {
         f2.write_scalar(&tag, Step(3), WallTime::new(2347.0).unwrap(), 0.85)?;
         f2.write_scalar(&tag, Step(4), WallTime::new(2348.0).unwrap(), 0.90)?;
         // flush, so that the data's there when we read it
-        f1.into_inner()?.sync_all()?;
-        f2.into_inner()?.sync_all()?;
+        f1.into_inner()?.flush()?;
+        f2.into_inner()?.flush()?;
 
         let mut loader = RunLoader::new(run.clone(), Arc::new(PluginSamplingHint::default()));
         let logdir = DiskLogdir::new(logdir.path().to_path_buf());
@@ -668,7 +668,7 @@ mod test {
             ..Default::default()
         })?;
         // flush, so that the data's there when we read it
-        f.into_inner()?.sync_all()?;
+        f.into_inner()?.flush()?;
 
         let run = Run("train".to_string());
         let mut loader = RunLoader::new(run.clone(), Arc::new(PluginSamplingHint::default()));
@@ -772,7 +772,7 @@ mod test {
             Bytes::from_static(b"<sample model graph>"),
         )?;
         // flush, so that the data's there when we read it
-        f1.into_inner()?.sync_all()?;
+        f1.into_inner()?.flush()?;
 
         let plugin_sampling_hint: PluginSamplingHint = "scalars=2".parse().unwrap();
 

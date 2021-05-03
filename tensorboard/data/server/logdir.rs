@@ -256,23 +256,23 @@ mod tests {
         let mut root_file = File::create(logdir.path().join("tfevents.123"))?;
         root_file.write_scalar(&tag, Step(0), WallTime::new(1234.0).unwrap(), 0.75)?;
         root_file.write_scalar(&tag, Step(1), WallTime::new(1235.0).unwrap(), 0.875)?;
-        root_file.sync_all()?;
+        root_file.flush()?;
         drop(root_file);
 
         let mut train_file1 = File::create(train_dir.join("tfevents.234"))?;
         train_file1.write_scalar(&tag, Step(4), WallTime::new(2234.0).unwrap(), 0.125)?;
         train_file1.write_scalar(&tag, Step(5), WallTime::new(2235.0).unwrap(), 0.25)?;
-        train_file1.sync_all()?;
+        train_file1.flush()?;
         drop(train_file1);
 
         let mut train_file2 = File::create(train_dir.join("tfevents.345"))?;
         train_file2.write_scalar(&tag, Step(6), WallTime::new(2236.0).unwrap(), 0.375)?;
-        train_file2.sync_all()?;
+        train_file2.flush()?;
         drop(train_file2);
 
         let mut test_file = File::create(test_dir.join("tfevents.456"))?;
         test_file.write_scalar(&tag, Step(8), WallTime::new(3456.0).unwrap(), 0.5)?;
-        test_file.sync_all()?;
+        test_file.flush()?;
         drop(test_file);
 
         // decoy file
