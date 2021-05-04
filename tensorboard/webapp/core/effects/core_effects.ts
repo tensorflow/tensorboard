@@ -145,6 +145,10 @@ export class CoreEffects {
             this.webappDataSource.fetchPluginsListing(
               enabledExperimentalPlugins
             ),
+            // TODO(tensorboard-team): consider brekaing the environments out of
+            // the pluginsListingLoaded; currently, plugins listing load state
+            // is connected to the environments which is not ideal. Have its own
+            // load state.
             this.fetchEnvironment()
           ).pipe(
             map(([plugins]) => {
