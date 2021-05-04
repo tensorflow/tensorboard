@@ -32,6 +32,7 @@ tf_ng_module(
         "//tensorboard/webapp/core",
         "//tensorboard/webapp/core/actions",
         "//tensorboard/webapp/core/store",
+        "//tensorboard/webapp/core/store:types",
         "//tensorboard/webapp/settings",
         "//tensorboard/webapp/tbdev_upload",
         "//tensorboard/webapp/types",
