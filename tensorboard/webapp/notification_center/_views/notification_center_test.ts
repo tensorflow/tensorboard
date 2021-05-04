@@ -167,7 +167,7 @@ describe('notification center', () => {
       );
 
       expect(linkElement).toBeTruthy();
-      expect(linkElement.nativeElement.href).toEqual('http://google.com');
+      expect(linkElement.nativeElement.href).toEqual('https://google.com/');
     });
 
     it('does not appear when the link is provided', () => {
