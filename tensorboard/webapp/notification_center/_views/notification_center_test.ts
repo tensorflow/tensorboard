@@ -151,7 +151,7 @@ describe('notification center', () => {
           dateInMs: 1,
           title: 'test title',
           content: 'test content',
-          fullNoteLink: 'http://google.com',
+          fullNoteLink: 'https://google.com',
         },
       ]);
       const fixture = TestBed.createComponent(NotificationCenterContainer);
@@ -165,7 +165,9 @@ describe('notification center', () => {
       const linkElement = fixture.debugElement.query(
         By.css('.extended-buttons a')
       );
+
       expect(linkElement).toBeTruthy();
+      expect(linkElement.nativeElement.href).toEqual('http://google.com');
     });
 
     it('does not appear when the link is provided', () => {
@@ -189,10 +191,11 @@ describe('notification center', () => {
       const linkElement = fixture.debugElement.query(
         By.css('.extended-buttons a')
       );
+
       expect(linkElement).toBeNull();
     });
 
-    it('does not appear when the link is suspicious', () => {
+    fit('does not appear when the link is suspicious', () => {
       store.overrideSelector(selectors.getNotifications, [
         {
           category: CategoryEnum.WHATS_NEW,
@@ -214,7 +217,9 @@ describe('notification center', () => {
       const linkElement = fixture.debugElement.query(
         By.css('.extended-buttons a')
       );
-      expect(linkElement).toBeNull();
+
+      expect(linkElement).toBeTruthy();
+      expect(linkElement.nativeElement.href).toContain('unsafe:');
     });
   });
 });
