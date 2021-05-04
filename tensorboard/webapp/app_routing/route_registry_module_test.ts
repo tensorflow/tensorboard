@@ -31,6 +31,12 @@ class Experiment {}
 })
 class Experiments {}
 
+@Component({
+  selector: 'not_found',
+  template: 'Unknown route',
+})
+class NotFound {}
+
 describe('route_registry_module', () => {
   let registry: RouteRegistryModule;
 
@@ -47,12 +53,17 @@ describe('route_registry_module', () => {
           path: '/experiments',
           ngComponent: Experiments,
         },
+        {
+          routeKind: RouteKind.UNKNOWN,
+          path: '/crabs',
+          ngComponent: NotFound,
+        },
       ];
     }
 
     await TestBed.configureTestingModule({
       imports: [RouteRegistryModule.registerRoutes(routeFactory)],
-      declarations: [Experiments, Experiment],
+      declarations: [Experiments, Experiment, NotFound],
     }).compileComponents();
 
     registry = TestBed.inject<RouteRegistryModule>(RouteRegistryModule);
@@ -66,7 +77,9 @@ describe('route_registry_module', () => {
       expect(registry.getNgComponentByRouteKind(RouteKind.EXPERIMENTS)).toBe(
         Experiments
       );
-      expect(registry.getNgComponentByRouteKind(RouteKind.UNKNOWN)).toBeNull();
+      expect(registry.getNgComponentByRouteKind(RouteKind.UNKNOWN)).toBe(
+        NotFound
+      );
     });
   });
 });
