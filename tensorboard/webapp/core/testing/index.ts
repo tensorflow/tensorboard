@@ -55,6 +55,10 @@ export function createCoreState(override?: Partial<CoreState>): CoreState {
   return {
     activePlugin: null,
     plugins: {},
+    coreDataLoadState: {
+      state: DataLoadState.NOT_LOADED,
+      lastLoadedTimeInMs: null,
+    },
     pluginsListLoaded: {
       state: DataLoadState.NOT_LOADED,
       lastLoadedTimeInMs: null,
@@ -64,6 +68,10 @@ export function createCoreState(override?: Partial<CoreState>): CoreState {
     reloadEnabled: true,
     pageSize: 10,
     environment: createEnvironment(),
+    polymerRunsLoadState: {
+      state: DataLoadState.NOT_LOADED,
+      lastLoadedTimeInMs: null,
+    },
     polymerInteropRuns: [],
     polymerInteropRunSelection: new Set(),
     ...override,
