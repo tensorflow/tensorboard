@@ -56,6 +56,7 @@ impl Client {
     pub fn new(creds: Credentials) -> Result<Self, ClientError> {
         let http = HttpClient::builder()
             .user_agent(format!("tensorboard-data-server/{}", crate::VERSION))
+            .use_rustls_tls()
             .build()
             .map_err(ClientError)?;
         let token_store = Arc::new(TokenStore::new(creds));
