@@ -94,6 +94,7 @@ import {
   getLoadedStackFrames,
   getAlertsLoaded,
   getSourceFileList,
+  getDebuggerRunsLoaded,
 } from '../store';
 import {
   AlertType,
@@ -641,7 +642,6 @@ describe('Debugger effects', () => {
       debuggerLoaded(),
       reload(),
       manualReload(),
-      changePlugin({plugin: 'hello'}),
     ] as Action[]) {
       it(`run list loading on ${triggerAction.type}: empty runs`, () => {
         const fetchRuns = createFetchRunsSpy({});
@@ -808,6 +808,90 @@ describe('Debugger effects', () => {
         });
       });
     }
+
+    describe(`for action: ${changePlugin.type}`, () => {
+      it(
+        'fetchs runs and dispatches `debuggerDataPollOnset` if data was not ' +
+          'loaded before',
+        () => {
+          const fetchRuns = createFetchRunsSpy({});
+          store.overrideSelector(getDebuggerRunsLoaded, {
+            state: DataLoadState.NOT_LOADED,
+            lastLoadedTimeInMs: null,
+          });
+          store.overrideSelector(getActivePlugin, 'unknown');
+          store.overrideSelector(getDebuggerRunListing, {});
+          store.refreshState();
+
+          action.next(changePlugin({plugin: PLUGIN_ID}));
+          expect(dispatchedActions).toEqual([]);
+
+          store.overrideSelector(getActivePlugin, PLUGIN_ID);
+          store.refreshState();
+          action.next(changePlugin({plugin: PLUGIN_ID}));
+
+          expect(fetchRuns).toHaveBeenCalled();
+          expect(dispatchedActions).toEqual([
+            debuggerDataPollOnset(),
+            debuggerRunsRequested(),
+            debuggerRunsLoaded({runs: {}}),
+          ]);
+
+          store.overrideSelector(getDebuggerRunsLoaded, {
+            state: DataLoadState.FAILED,
+            lastLoadedTimeInMs: null,
+          });
+          store.refreshState();
+          action.next(changePlugin({plugin: PLUGIN_ID}));
+
+          expect(fetchRuns).toHaveBeenCalledTimes(2);
+          expect(dispatchedActions).toEqual([
+            debuggerDataPollOnset(),
+            debuggerRunsRequested(),
+            debuggerRunsLoaded({runs: {}}),
+            debuggerDataPollOnset(),
+            debuggerRunsRequested(),
+            debuggerRunsLoaded({runs: {}}),
+          ]);
+
+          store.overrideSelector(getDebuggerRunsLoaded, {
+            state: DataLoadState.FAILED,
+            // non-null value means the data was loaded at least once before.
+            lastLoadedTimeInMs: 3,
+          });
+          store.refreshState();
+          action.next(changePlugin({plugin: PLUGIN_ID}));
+
+          expect(fetchRuns).toHaveBeenCalledTimes(2);
+          expect(dispatchedActions.length).toBe(6);
+        }
+      );
+
+      it(
+        'does not bootstrap data by fetching runs and dispatching actions when ' +
+          'data is already loaded once',
+        () => {
+          const fetchRuns = createFetchRunsSpy({});
+          store.overrideSelector(getDebuggerRunsLoaded, {
+            state: DataLoadState.LOADED,
+            lastLoadedTimeInMs: 3,
+          });
+          store.overrideSelector(getActivePlugin, 'unknown');
+          store.overrideSelector(getDebuggerRunListing, {});
+          store.refreshState();
+
+          action.next(changePlugin({plugin: PLUGIN_ID}));
+          expect(dispatchedActions).toEqual([]);
+
+          store.overrideSelector(getActivePlugin, PLUGIN_ID);
+          store.refreshState();
+          action.next(changePlugin({plugin: PLUGIN_ID}));
+
+          expect(fetchRuns).not.toHaveBeenCalled();
+          expect(dispatchedActions).toEqual([]);
+        }
+      );
+    });
 
     for (const dataAlreadyExists of [false, true]) {
       it(

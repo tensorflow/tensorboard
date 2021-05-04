@@ -279,8 +279,23 @@ export class DebuggerEffects {
   }
 
   private onCoreReload(): Observable<void> {
-    return this.actions$.pipe(
-      ofType(manualReload, reload, changePlugin),
+    return merge(
+      this.actions$.pipe(ofType(manualReload, reload)),
+      // Load the debugger data if it was never loaded before and now becomes
+      // an active plugin.
+      this.actions$.pipe(ofType(changePlugin)).pipe(
+        // We use debugger runs loaded state as a proxy to the debugger state
+        // being or not.
+        withLatestFrom(this.store.select(getDebuggerRunsLoaded)),
+        filter(([, loadState]) => {
+          return (
+            loadState.state === DataLoadState.NOT_LOADED ||
+            (loadState.state === DataLoadState.FAILED &&
+              loadState.lastLoadedTimeInMs === null)
+          );
+        })
+      )
+    ).pipe(
       withLatestFrom(this.store.select(getActivePlugin)),
       filter(([, plugin]) => plugin === PLUGIN_ID),
       tap(() => this.store.dispatch(debuggerDataPollOnset())),
