@@ -191,5 +191,30 @@ describe('notification center', () => {
       );
       expect(linkElement).toBeNull();
     });
+
+    it('does not appear when the link is suspicious', () => {
+      store.overrideSelector(selectors.getNotifications, [
+        {
+          category: CategoryEnum.WHATS_NEW,
+          dateInMs: 1,
+          title: 'test title',
+          content: 'test content',
+          fullNoteLink: "data:text/html,<script>alert('hi');</script>",
+        },
+      ]);
+      const fixture = TestBed.createComponent(NotificationCenterContainer);
+      fixture.detectChanges();
+
+      const menuButton = fixture.debugElement.query(
+        By.css('[aria-label="Display notification messages"]')
+      );
+      menuButton.nativeElement.click();
+      fixture.detectChanges();
+
+      const linkElement = fixture.debugElement.query(
+        By.css('.extended-buttons a')
+      );
+      expect(linkElement).toBeNull();
+    });
   });
 });
