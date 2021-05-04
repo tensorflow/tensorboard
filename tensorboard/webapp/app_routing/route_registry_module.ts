@@ -48,7 +48,7 @@ export class RouteRegistryModule {
     }
     this.routeConfigs = new RouteConfigs(configs);
     configs.forEach((config) => {
-      if (config.routeKind) {
+      if (config.routeKind !== null) {
         this.routeKindToNgComponent.set(config.routeKind, config.ngComponent);
       }
     });
