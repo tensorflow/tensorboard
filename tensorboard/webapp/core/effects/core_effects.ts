@@ -17,13 +17,15 @@ import '../../tb_polymer_interop_types';
 import {Injectable} from '@angular/core';
 import {Actions, createEffect, ofType} from '@ngrx/effects';
 import {Store} from '@ngrx/store';
-import {EMPTY, from, merge, zip} from 'rxjs';
+import {EMPTY, from, merge, of, zip} from 'rxjs';
 import {
   catchError,
+  delay,
   distinctUntilChanged,
   filter,
   map,
   mergeMap,
+  switchMap,
   take,
   tap,
   throttleTime,
@@ -31,7 +33,11 @@ import {
 } from 'rxjs/operators';
 
 import {navigated} from '../../app_routing/actions';
-import {getRouteId} from '../../app_routing/store/app_routing_selectors';
+import {
+  getExperimentIdToAliasMap,
+  getRouteId,
+  getRouteKind,
+} from '../../app_routing/store/app_routing_selectors';
 import {RouteKind} from '../../app_routing/types';
 import {getEnabledExperimentalPlugins} from '../../feature_flag/store/feature_flag_selectors';
 import {DataLoadState} from '../../types/data';
@@ -53,18 +59,24 @@ import {
   reload,
 } from '../actions';
 import {State} from '../state';
-import {getActivePlugin, getPluginsListLoaded} from '../store';
+import {
+  getActivePlugin,
+  getPluginsListLoaded,
+  getPolymerRunsLoadState,
+} from '../store';
 import {PluginsListFailureCode} from '../types';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 /** @typehack */ import * as _typeHackNgrxEffects from '@ngrx/effects';
 
-// throttle + 10ms are somewhat random but it does following:
+// throttle + 1ms are somewhat random but it does following:
 // - when an app uses both router and manually fires coreLoaded, we prevent
 //   double requests.
 // - when using debounceTime(0), we see a brief moment of flicker when app
 //   bootstraps. To mitigate this, we use `leading: true` with `throttleTime`.
-const DATA_LOAD_CONDITIONAL_THROTTLE_IN_MS = 10;
+const DATA_LOAD_CONDITIONAL_THROTTLE_IN_MS = 1;
+
+const ALIAS_CHANGE_RUNS_RELOAD_THROTTLE_IN_MS = 500;
 
 @Injectable()
 export class CoreEffects {
@@ -87,49 +99,31 @@ export class CoreEffects {
     return from(this.tfBackend.ref.runsStore.refresh());
   }
 
-  private readonly onDashboardLoad$ = merge(
+  private readonly onDashboardLoad$ =
     // Loading dashboard data on `coreLoaded` is temporary; not all TB apps
     // use the router. For those router-less applications, we have to support
     // the legacy `coreLoaded`.
-    this.actions$.pipe(ofType(coreLoaded)),
-    this.actions$.pipe(
-      ofType(navigated),
-      filter(({after}) => {
+    merge(
+      this.actions$.pipe(
+        ofType(coreLoaded, navigated),
+        withLatestFrom(this.store.select(getRouteId)),
+        distinctUntilChanged(([, beforeRouteId], [, afterRouteId]) => {
+          return beforeRouteId === afterRouteId;
+        })
+      ),
+      this.actions$.pipe(ofType(reload, manualReload))
+    ).pipe(
+      withLatestFrom(this.store.select(getRouteKind)),
+      filter(([, routeKind]) => {
         return (
-          after.routeKind === RouteKind.COMPARE_EXPERIMENT ||
-          after.routeKind === RouteKind.EXPERIMENT
+          routeKind === RouteKind.COMPARE_EXPERIMENT ||
+          routeKind === RouteKind.EXPERIMENT
         );
       }),
-      withLatestFrom(this.store.select(getRouteId)),
-      distinctUntilChanged(([, beforeRouteId], [, afterRouteId]) => {
-        return beforeRouteId === afterRouteId;
+      throttleTime(DATA_LOAD_CONDITIONAL_THROTTLE_IN_MS, undefined, {
+        leading: true,
       })
-    )
-  ).pipe(
-    throttleTime(DATA_LOAD_CONDITIONAL_THROTTLE_IN_MS, undefined, {
-      leading: true,
-    })
-  );
-
-  // Emits when data should be refreshed. We do not reload the data while the
-  // data is already being fetched.
-  //
-  // HACK: currently, plugins list loaded state is used as a proxy to know
-  // whether the data is being reloaded or not. This should change to either
-  // application load state (via `getCoreDataLoadedState`) or have it broken
-  // down to more granular checks (e.g., `pluginsListingReload$` should check
-  // the pluginsListLoaded state while the `runsReload$` should check the
-  // polymerRunsLoadState).
-  private readonly onDataReload$ = merge(
-    this.onDashboardLoad$,
-    this.actions$.pipe(ofType(reload, manualReload))
-  ).pipe(
-    withLatestFrom(
-      this.store.select(getPluginsListLoaded),
-      this.store.select(getEnabledExperimentalPlugins)
-    ),
-    filter(([, {state}]) => state !== DataLoadState.LOADING)
-  );
+    );
 
   /**
    * Requires to be exported for JSCompiler. JSCompiler, otherwise,
@@ -138,7 +132,12 @@ export class CoreEffects {
   /** @export */
   readonly fetchWebAppData$ = createEffect(
     () => {
-      const pluginsListingReload$ = this.onDataReload$.pipe(
+      const pluginsListingReload$ = this.onDashboardLoad$.pipe(
+        withLatestFrom(
+          this.store.select(getPluginsListLoaded),
+          this.store.select(getEnabledExperimentalPlugins)
+        ),
+        filter(([, {state}]) => state !== DataLoadState.LOADING),
         tap(() => this.store.dispatch(pluginsListingRequested())),
         mergeMap(([, , enabledExperimentalPlugins]) => {
           return zip(
@@ -172,11 +171,54 @@ export class CoreEffects {
         })
       );
 
-      const runsReload$ = this.onDataReload$.pipe(
+      const runsReload$ = this.onDashboardLoad$.pipe(
+        map(([, routeKind]) => routeKind),
+        switchMap((routeKind) => {
+          if (routeKind !== RouteKind.COMPARE_EXPERIMENT) {
+            return of([]);
+          }
+
+          return this.store.select(getExperimentIdToAliasMap).pipe(
+            distinctUntilChanged((beforeAliasDict, afterAliasDict) => {
+              const entries = Object.entries(beforeAliasDict);
+              const afterAliasMap = new Map(Object.entries(afterAliasDict));
+              if (entries.length !== afterAliasMap.size) {
+                return false;
+              }
+              for (const [experimentId, alias] of entries) {
+                if (afterAliasMap.get(experimentId) !== alias) {
+                  return false;
+                }
+              }
+              return true;
+            }),
+            // HACK: arbitrary microtask delay.
+            // aliasChange leads to route changes and route changes causes
+            // navigated. Because our requests are depnended on curernt route,
+            // we must make the request only after the URL has been modified.
+            // While we can subscribe to `navigated` without
+            // `distinctUntilChanged` on routeId, it is hard to throttle quick
+            // aliasMap change while immediately making a request for a real
+            // navigation. Instead of more elaborate rxjs techniques, we are
+            // using `delay(0)` to give the router a chance to modify the URL
+            // before making the request.
+            delay(0),
+            // Prevent changes in the alias map not to over-trigger requests;
+            // However, we want to use throttle instead of debounce since we
+            // need to emit on `leading` so it does not cause 500ms delay on
+            // page load.
+            throttleTime(ALIAS_CHANGE_RUNS_RELOAD_THROTTLE_IN_MS, undefined, {
+              leading: true,
+              trailing: true,
+            })
+          );
+        }),
+        withLatestFrom(this.store.select(getPolymerRunsLoadState)),
+        filter(([, loadState]) => loadState.state !== DataLoadState.LOADING),
         tap(() => {
           this.store.dispatch(polymerRunsFetchRequested());
         }),
-        mergeMap(() => {
+        switchMap(() => {
           return this.refreshPolymerRuns();
         }),
         tap(() => {
@@ -241,4 +283,5 @@ export class CoreEffects {
 
 export const TEST_ONLY = {
   DATA_LOAD_CONDITIONAL_THROTTLE_IN_MS,
+  ALIAS_CHANGE_RUNS_RELOAD_THROTTLE_IN_MS,
 };
