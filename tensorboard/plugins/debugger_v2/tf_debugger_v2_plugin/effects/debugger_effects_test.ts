@@ -122,6 +122,8 @@ import {
   POLLING_BACKOFF_FACTOR,
   TEST_ONLY,
 } from './debugger_effects';
+import {getActivePlugin} from '../../../../webapp/core/store';
+import {PLUGIN_ID} from '../types';
 
 describe('getCurrentPollingInterval', () => {
   it('constants are valid', () => {
@@ -385,6 +387,7 @@ describe('Debugger effects', () => {
     dispatchSpy = spyOn(store, 'dispatch').and.callFake((action: Action) => {
       dispatchedActions.push(action);
     });
+    store.overrideSelector(getActivePlugin, '');
   });
 
   function createAndSubscribeToDebuggerEffectsWithEmptyRepeater() {
@@ -637,7 +640,9 @@ describe('Debugger effects', () => {
     ] as Action[]) {
       it(`run list loading on ${triggerAction.type}: empty runs`, () => {
         const fetchRuns = createFetchRunsSpy({});
+        store.overrideSelector(getActivePlugin, PLUGIN_ID);
         store.overrideSelector(getDebuggerRunListing, {});
+        store.refreshState();
 
         action.next(triggerAction);
 
@@ -681,6 +686,7 @@ describe('Debugger effects', () => {
               graph_execution_digests: [],
             }
           );
+          store.overrideSelector(getActivePlugin, PLUGIN_ID);
           store.overrideSelector(getDebuggerRunListing, runListingForTest);
           store.overrideSelector(getNumExecutionsLoaded, {
             state: DataLoadState.NOT_LOADED,
@@ -729,6 +735,7 @@ describe('Debugger effects', () => {
             state: DataLoadState.NOT_LOADED,
             lastLoadedTimeInMs: null,
           });
+          store.overrideSelector(getActivePlugin, PLUGIN_ID);
           store.overrideSelector(getActiveRunId, runId);
           store.overrideSelector(getNumExecutions, numExecutions);
           store.overrideSelector(getExecutionPageSize, pageSize);
