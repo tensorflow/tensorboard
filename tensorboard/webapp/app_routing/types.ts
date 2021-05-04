@@ -34,11 +34,21 @@ export enum RouteKind {
 
 export const DEFAULT_EXPERIMENT_ID = 'defaultExperimentId';
 
-export interface CompareRouteParams {
+/**
+ * `declare` to express this as a public API that is not to be mangleable.
+ * Because `experimentIds` are declared in routes as string literals, we cannot
+ * mangle the property name.
+ */
+export declare interface CompareRouteParams {
   experimentIds: string;
 }
 
-export interface ExperimentRouteParams {
+/**
+ * `declare` to express this as a public API that is not to be mangleable.
+ * Because `experimentIds` are declared in routes as string literals, we cannot
+ * mangle the property name.
+ */
+export declare interface ExperimentRouteParams {
   experimentId: string;
 }
 
