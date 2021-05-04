@@ -353,12 +353,10 @@ class CorePluginTest(tf.test.TestCase):
     def testNotificationsRedirectSuccess(self):
         """Test that the /data/notifications endpoint redirect to /notifications_note.json."""
         response = self.server.get("/data/notifications")
-        content_type = response.headers.get("Content-Type")
-        location = response.headers.get("Location")
-
-        self.assertEqual(302, (response.status_code))
-        self.assertStartsWith(content_type, "text/html")
-        self.assertIn("/notifications_note.json", location)
+        self.assertEqual(302, response.status_code)
+        self.assertEqual(
+            "../notifications_note.json", response.headers.get("Location")
+        )
 
 
 class CorePluginPathPrefixTest(tf.test.TestCase):
