@@ -31,7 +31,11 @@ import {
 } from 'rxjs/operators';
 
 import {State as AppState} from '../../../../webapp/app_state';
-import {manualReload, reload} from '../../../../webapp/core/actions';
+import {
+  changePlugin,
+  manualReload,
+  reload,
+} from '../../../../webapp/core/actions';
 import {getActivePlugin} from '../../../../webapp/core/store';
 import {
   alertsOfTypeLoaded,
@@ -276,7 +280,7 @@ export class DebuggerEffects {
 
   private onCoreReload(): Observable<void> {
     return this.actions$.pipe(
-      ofType(manualReload, reload),
+      ofType(manualReload, reload, changePlugin),
       withLatestFrom(this.store.select(getActivePlugin)),
       filter(([, plugin]) => plugin === PLUGIN_ID),
       tap(() => this.store.dispatch(debuggerDataPollOnset())),

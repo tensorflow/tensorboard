@@ -18,7 +18,11 @@ import {Action, Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {empty, Observable, of, ReplaySubject, timer} from 'rxjs';
 import {take} from 'rxjs/operators';
-import {manualReload, reload} from '../../../../webapp/core/actions';
+import {
+  changePlugin,
+  manualReload,
+  reload,
+} from '../../../../webapp/core/actions';
 import {
   alertsOfTypeLoaded,
   alertTypeFocusToggled,
@@ -637,6 +641,7 @@ describe('Debugger effects', () => {
       debuggerLoaded(),
       reload(),
       manualReload(),
+      changePlugin({plugin: 'hello'}),
     ] as Action[]) {
       it(`run list loading on ${triggerAction.type}: empty runs`, () => {
         const fetchRuns = createFetchRunsSpy({});
@@ -782,6 +787,26 @@ describe('Debugger effects', () => {
           ]);
         }
       );
+    }
+
+    for (const triggerAction of [
+      reload(),
+      manualReload(),
+      changePlugin({plugin: 'hello'}),
+    ]) {
+      describe(`for action: ${triggerAction.type}`, () => {
+        it(`ignores action when debugger plugin is not active`, () => {
+          const fetchRuns = createFetchRunsSpy({});
+          store.overrideSelector(getActivePlugin, 'unknown');
+          store.overrideSelector(getDebuggerRunListing, {});
+          store.refreshState();
+
+          action.next(triggerAction);
+
+          expect(fetchRuns).not.toHaveBeenCalled();
+          expect(dispatchedActions).toEqual([]);
+        });
+      });
     }
 
     for (const dataAlreadyExists of [false, true]) {
