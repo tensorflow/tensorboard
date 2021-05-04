@@ -195,7 +195,7 @@ describe('notification center', () => {
       expect(linkElement).toBeNull();
     });
 
-    fit('does not appear when the link is suspicious', () => {
+    it('does not appear when the link is suspicious', () => {
       store.overrideSelector(selectors.getNotifications, [
         {
           category: CategoryEnum.WHATS_NEW,
