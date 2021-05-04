@@ -27,7 +27,6 @@ import {
   getActivePlugin,
   getPluginsListLoaded,
   getEnvironment,
-  getCoreDataLastLoadedTimeInMs,
 } from '../core/store';
 import {PluginsListFailureCode} from '../core/types';
 import {PluginMetadata} from '../types/api';
@@ -52,6 +51,13 @@ const activePlugin = createSelector(
   (plugins, id): UiPluginMetadata | null => {
     if (!id || !plugins[id]) return null;
     return Object.assign({id}, plugins[id]);
+  }
+);
+
+const lastLoadedTimeInMs = createSelector(
+  getPluginsListLoaded,
+  (loadState: LoadState) => {
+    return loadState.lastLoadedTimeInMs;
   }
 );
 
@@ -119,9 +125,7 @@ export class PluginsContainer {
     })
   );
 
-  readonly lastLoadedTimeInMs$ = this.store.select(
-    getCoreDataLastLoadedTimeInMs
-  );
+  readonly lastLoadedTimeInMs$ = this.store.select(lastLoadedTimeInMs);
   readonly dataLocation$ = this.store.select(getEnvironment).pipe(
     map((env) => {
       return env.data_location;

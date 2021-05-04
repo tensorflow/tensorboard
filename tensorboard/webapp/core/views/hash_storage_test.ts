@@ -19,7 +19,7 @@ import {provideMockStore, MockStore} from '@ngrx/store/testing';
 import {CommonModule} from '@angular/common';
 
 import {getActivePlugin} from '../store';
-import {State} from '../state';
+import {State} from '../store/core_types';
 import {pluginUrlHashChanged} from '../actions';
 import {SetStringOption} from '../../deeplink/types';
 
