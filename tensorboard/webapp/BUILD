@@ -123,7 +123,6 @@ tf_ng_module(
         "//tensorboard/webapp/settings",
         "//tensorboard/webapp/tb_wrapper",
         "@npm//@angular/core",
-        "@npm//@angular/localize",
         "@npm//@angular/platform-browser",
         "@npm//@ngrx/store",
         "@npm//rxjs",
@@ -179,6 +178,7 @@ tf_ng_module(
     deps = [
         ":app",
         "@npm//@angular/core",
+        "@npm//@angular/localize",
         "@npm//@angular/platform-browser",
         "@npm//@angular/router",
         "@npm//zone.js",
