@@ -178,6 +178,7 @@ tf_ng_module(
     deps = [
         ":app",
         "@npm//@angular/core",
+        "@npm//@angular/localize",
         "@npm//@angular/platform-browser",
         "@npm//@angular/router",
         "@npm//zone.js",
