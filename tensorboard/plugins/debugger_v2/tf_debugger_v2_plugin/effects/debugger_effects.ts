@@ -285,7 +285,7 @@ export class DebuggerEffects {
       // an active plugin.
       this.actions$.pipe(ofType(changePlugin)).pipe(
         // We use debugger runs loaded state as a proxy to the debugger state
-        // being or not.
+        // being loaded.
         withLatestFrom(this.store.select(getDebuggerRunsLoaded)),
         filter(([, loadState]) => {
           return (
