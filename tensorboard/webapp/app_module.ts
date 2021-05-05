@@ -13,6 +13,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {NgModule} from '@angular/core';
+// Angular 9+ using Ivy apps that potentially do i18n, even transitively, must
+// import this module, which adds a global symbol at runtime.
+// https://angular.io/guide/migration-localize
+import '@angular/localize/init'
 import {BrowserModule} from '@angular/platform-browser';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 

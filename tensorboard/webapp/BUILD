@@ -123,6 +123,7 @@ tf_ng_module(
         "//tensorboard/webapp/settings",
         "//tensorboard/webapp/tb_wrapper",
         "@npm//@angular/core",
+        "@npm//@angular/localize",
         "@npm//@angular/platform-browser",
         "@npm//@ngrx/store",
         "@npm//rxjs",
