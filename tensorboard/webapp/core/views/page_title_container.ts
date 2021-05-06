@@ -17,7 +17,7 @@ import {Store, select} from '@ngrx/store';
 import {distinctUntilChanged, map} from 'rxjs/operators';
 
 import {getEnvironment} from '../store';
-import {State} from '../store/core_types';
+import {State} from '../state';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 

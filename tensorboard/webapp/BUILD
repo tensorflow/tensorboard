@@ -107,8 +107,6 @@ tf_ng_module(
         "//tensorboard/webapp/app_routing:route_registry",
         "//tensorboard/webapp/app_routing/views",
         "//tensorboard/webapp/core",
-        "//tensorboard/webapp/core/actions",
-        "//tensorboard/webapp/core/store",
         "//tensorboard/webapp/core/views:hash_storage",
         "//tensorboard/webapp/core/views:page_title",
         "//tensorboard/webapp/experiments",
@@ -124,29 +122,6 @@ tf_ng_module(
         "//tensorboard/webapp/tb_wrapper",
         "@npm//@angular/core",
         "@npm//@angular/platform-browser",
-        "@npm//@ngrx/store",
-        "@npm//rxjs",
-    ],
-)
-
-tf_ng_module(
-    name = "app_test",
-    testonly = True,
-    srcs = [
-        "app_test.ts",
-    ],
-    deps = [
-        ":app",
-        ":app_state",
-        ":selectors",
-        "//tensorboard/webapp/angular:expect_angular_core_testing",
-        "//tensorboard/webapp/angular:expect_ngrx_store_testing",
-        "//tensorboard/webapp/app_routing:testing",
-        "//tensorboard/webapp/core/actions",
-        "@npm//@angular/common",
-        "@npm//@angular/core",
-        "@npm//@ngrx/store",
-        "@npm//@types/jasmine",
     ],
 )
 
@@ -273,7 +248,6 @@ tf_resource_digest_suffixer(
 tf_ng_web_test_suite(
     name = "karma_test",
     deps = [
-        ":app_test",
         "//tensorboard/webapp/alert:test_lib",
         "//tensorboard/webapp/alert/store:test_lib",
         "//tensorboard/webapp/alert/views:views_test",
