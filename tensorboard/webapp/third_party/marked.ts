@@ -21,4 +21,4 @@ import * as markedImport from 'marked';
 
 // You cannot `export * from 'marked';` due to below error[1].
 // [1]: 'marked' uses 'export =' and cannot be used with 'export *'.
-export const marked = markedImport;
+export import marked = markedImport;
