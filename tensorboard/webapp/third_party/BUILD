@@ -22,3 +22,12 @@ tf_ts_library(
         "@npm//@tensorflow/tfjs-core",
     ],
 )
+
+tf_ts_library(
+    name = "marked",
+    srcs = ["marked.ts"],
+    deps = [
+        "@npm//@types/marked",
+        "@npm//marked",
+    ],
+)

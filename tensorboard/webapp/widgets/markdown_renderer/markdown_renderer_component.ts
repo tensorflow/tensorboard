@@ -22,7 +22,7 @@ import {
   SimpleChanges,
   ViewEncapsulation,
 } from '@angular/core';
-import {parse} from 'marked';
+import {marked} from '../../third_party/marked';
 
 @Component({
   selector: 'markdown-renderer',
@@ -43,7 +43,7 @@ export class MarkdownRendererComponent implements OnChanges {
     if (changes['markdown']) {
       const markdownChange: SimpleChange = changes['markdown'];
       if (markdownChange.previousValue !== this.markdown) {
-        this.markdownHTML = await parse(this.markdown);
+        this.markdownHTML = await marked.parse(this.markdown);
         this.changeDetectorRef.detectChanges();
       }
     }
