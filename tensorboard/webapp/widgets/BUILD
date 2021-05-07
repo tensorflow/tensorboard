@@ -1,4 +1,4 @@
-load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_ts_library")
+load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_ng_web_test_suite", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
@@ -42,5 +42,13 @@ tf_ng_module(
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "@npm//@angular/core",
         "@npm//@angular/platform-browser",
+    ],
+)
+
+tf_ng_web_test_suite(
+    name = "karma_test",
+    deps = [
+        ":resize_detector_test",
+        "//tensorboard/webapp/widgets/resizable_input:resizable_input_tests",
     ],
 )
