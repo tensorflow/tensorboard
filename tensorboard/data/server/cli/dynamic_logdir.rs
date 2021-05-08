@@ -200,6 +200,42 @@ mod tests {
     }
 
     #[test]
+    fn test_parse_gcs_no_prefix() {
+        let p = PathBuf::from("gs://tensorboard-bench-logs");
+        assert_eq!(
+            ParsedLogdir::from_path(p).unwrap(),
+            ParsedLogdir::Gcs {
+                bucket: "tensorboard-bench-logs".to_string(),
+                prefix: "".to_string(),
+            },
+        );
+    }
+
+    #[test]
+    fn test_parse_gcs_empty_prefix() {
+        let p = PathBuf::from("gs://tensorboard-bench-logs/");
+        assert_eq!(
+            ParsedLogdir::from_path(p).unwrap(),
+            ParsedLogdir::Gcs {
+                bucket: "tensorboard-bench-logs".to_string(),
+                prefix: "".to_string(),
+            },
+        );
+    }
+
+    #[test]
+    fn test_parse_gcs_with_prefix() {
+        let p = PathBuf::from("gs://tensorboard-bench-logs/mnist");
+        assert_eq!(
+            ParsedLogdir::from_path(p).unwrap(),
+            ParsedLogdir::Gcs {
+                bucket: "tensorboard-bench-logs".to_string(),
+                prefix: "mnist".to_string(),
+            },
+        );
+    }
+
+    #[test]
     fn test_parse_empty() {
         match ParsedLogdir::from_path(PathBuf::new()) {
             Err(Error::EmptyLogdir) => (),
