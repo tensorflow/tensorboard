@@ -52,6 +52,45 @@ pub enum Error {
     GcsClientError(#[from] gcs::ClientError),
 }
 
+/// A `--logdir` flag value after parsing but before any impure operations like reading
+/// credentials or opening an HTTP client.
+#[derive(Debug, PartialEq, Eq)]
+enum ParsedLogdir {
+    Disk(PathBuf),
+    Gcs { bucket: String, prefix: String },
+}
+
+impl ParsedLogdir {
+    pub fn from_path(path: PathBuf) -> Result<Self, Error> {
+        let path_str = path.to_string_lossy();
+        if path_str.is_empty() {
+            return Err(Error::EmptyLogdir);
+        }
+
+        let protocol_parts: Vec<&str> = path_str.splitn(2, "://").collect();
+        if protocol_parts.len() < 2 || !is_protocol(protocol_parts[0]) {
+            // Interpret as path on disk.
+            return Ok(ParsedLogdir::Disk(path));
+        }
+
+        let (protocol, subpath) = (protocol_parts[0], protocol_parts[1]);
+        match protocol {
+            "gs" => Ok(Self::parse_gcs(subpath)),
+            _ => Err(Error::UnknownProtocol {
+                protocol: protocol.to_string(),
+                full_logdir: path,
+            }),
+        }
+    }
+
+    fn parse_gcs(gcs_path: &str) -> Self {
+        let mut parts = gcs_path.splitn(2, '/');
+        let bucket = parts.next().unwrap().to_string(); // splitn always yields at least one element
+        let prefix = parts.next().unwrap_or("").to_string();
+        ParsedLogdir::Gcs { bucket, prefix }
+    }
+}
+
 impl DynLogdir {
     /// Parses a `DynLogdir` from a user-supplied path.
     ///
@@ -68,33 +107,13 @@ impl DynLogdir {
     ///
     /// [seanmonstar/reqwest#1017]: https://github.com/seanmonstar/reqwest/issues/1017
     pub fn new(path: PathBuf) -> Result<Self, Error> {
-        let path_str = path.to_string_lossy();
-        if path_str.is_empty() {
-            return Err(Error::EmptyLogdir);
+        match ParsedLogdir::from_path(path)? {
+            ParsedLogdir::Disk(path) => Ok(DynLogdir::Disk(DiskLogdir::new(path))),
+            ParsedLogdir::Gcs { bucket, prefix } => {
+                let client = gcs::Client::new(gcs::Credentials::from_disk()?)?;
+                Ok(DynLogdir::Gcs(gcs::Logdir::new(client, bucket, prefix)))
+            }
         }
-
-        let protocol_parts: Vec<&str> = path_str.splitn(2, "://").collect();
-        if protocol_parts.len() < 2 || !is_protocol(protocol_parts[0]) {
-            // Interpret as path on disk.
-            return Ok(DynLogdir::Disk(DiskLogdir::new(path)));
-        }
-
-        let (protocol, subpath) = (protocol_parts[0], protocol_parts[1]);
-        match protocol {
-            "gs" => Self::new_gcs(subpath),
-            _ => Err(Error::UnknownProtocol {
-                protocol: protocol.to_string(),
-                full_logdir: path,
-            }),
-        }
-    }
-
-    fn new_gcs(gcs_path: &str) -> Result<Self, Error> {
-        let mut parts = gcs_path.splitn(2, '/');
-        let bucket = parts.next().unwrap().to_string(); // splitn always yields at least one element
-        let prefix = parts.next().unwrap_or("").to_string();
-        let client = gcs::Client::new(gcs::Credentials::from_disk()?)?;
-        Ok(DynLogdir::Gcs(gcs::Logdir::new(client, bucket, prefix)))
     }
 }
 
@@ -136,6 +155,66 @@ impl Read for DynFile {
         match self {
             Self::Disk(x) => x.read(buf),
             Self::Gcs(x) => x.read(buf),
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_parse_disk_absolute() {
+        let p = PathBuf::from("/path/to/data");
+        assert_eq!(
+            ParsedLogdir::from_path(p.clone()).unwrap(),
+            ParsedLogdir::Disk(p),
+        );
+    }
+
+    #[test]
+    fn test_parse_disk_relative() {
+        let p = PathBuf::from("path/to/data");
+        assert_eq!(
+            ParsedLogdir::from_path(p.clone()).unwrap(),
+            ParsedLogdir::Disk(p),
+        );
+    }
+
+    #[test]
+    fn test_parse_disk_unc() {
+        let p = PathBuf::from(r#"C:\path\to\data"#);
+        assert_eq!(
+            ParsedLogdir::from_path(p.clone()).unwrap(),
+            ParsedLogdir::Disk(p),
+        );
+    }
+
+    #[test]
+    fn test_parse_colonslashslash_but_not_protocol() {
+        let p = PathBuf::from("protocols_cant_have_underscores://hmm");
+        assert_eq!(
+            ParsedLogdir::from_path(p.clone()).unwrap(),
+            ParsedLogdir::Disk(p),
+        );
+    }
+
+    #[test]
+    fn test_parse_empty() {
+        match ParsedLogdir::from_path(PathBuf::new()) {
+            Err(Error::EmptyLogdir) => (),
+            other => panic!("{:?}", other),
+        }
+    }
+
+    #[test]
+    fn test_parse_unknown_protocol() {
+        match ParsedLogdir::from_path(PathBuf::from("wat://wot")) {
+            Err(Error::UnknownProtocol {
+                protocol,
+                full_logdir,
+            }) if protocol == "wat" && full_logdir == PathBuf::from("wat://wot") => (),
+            other => panic!("{:?}", other),
         }
     }
 }
