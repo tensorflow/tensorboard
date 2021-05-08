@@ -59,6 +59,8 @@ impl Client {
             .build()
             .map_err(ClientError)?;
         let token_store = Arc::new(TokenStore::new(creds));
+        #[allow(clippy::inconsistent_struct_constructor)]
+        // ^ https://github.com/rust-lang/rust-clippy/issues/7192
         Ok(Self { http, token_store })
     }
 }
