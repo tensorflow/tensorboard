@@ -898,7 +898,7 @@ mod tests {
             let plugin_data = result.plugin_data.unwrap();
             assert_eq!(plugin_data.plugin_name, plugin_names::IMAGES);
             let plugin_content = pb::ImagePluginData::decode(&plugin_data.content[..]).unwrap();
-            assert_eq!(plugin_content.converted_to_tensor, true);
+            assert!(plugin_content.converted_to_tensor);
         }
 
         #[test]
@@ -949,7 +949,7 @@ mod tests {
             let plugin_data = result.plugin_data.unwrap();
             assert_eq!(plugin_data.plugin_name, plugin_names::AUDIO);
             let plugin_content = pb::AudioPluginData::decode(&plugin_data.content[..]).unwrap();
-            assert_eq!(plugin_content.converted_to_tensor, true);
+            assert!(plugin_content.converted_to_tensor);
         }
 
         #[test]

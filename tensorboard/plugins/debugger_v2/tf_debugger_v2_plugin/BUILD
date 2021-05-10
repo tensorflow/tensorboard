@@ -19,6 +19,7 @@ tf_ng_module(
         "debugger_component.ng.html",
     ],
     deps = [
+        ":types",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/actions",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/data_source",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/effects",
@@ -31,12 +32,20 @@ tf_ng_module(
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/source_files",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/stack_trace",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/timeline",
+        "//tensorboard/webapp/core",
         "//tensorboard/webapp/plugins:plugin_registry",
         "@npm//@angular/common",
         "@npm//@angular/core",
         "@npm//@ngrx/effects",
         "@npm//@ngrx/store",
         "@npm//rxjs",
+    ],
+)
+
+tf_ts_library(
+    name = "types",
+    srcs = [
+        "types.ts",
     ],
 )
 

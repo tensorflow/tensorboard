@@ -224,7 +224,7 @@ export class ScatterPlotVisualizerSprites implements ScatterPlotVisualizer {
       depthTest: haveImage,
       depthWrite: haveImage,
       fog: true,
-      blending: THREE.MultiplyBlending,
+      blending: THREE.NormalBlending,
     });
   }
   private createPickingMaterial(haveImage: boolean): THREE.ShaderMaterial {

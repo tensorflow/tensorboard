@@ -15,10 +15,9 @@ tf_ng_module(
         "markdown_renderer_component.ng.html",
     ],
     deps = [
+        "//tensorboard/webapp/third_party:marked",
         "@npm//@angular/common",
         "@npm//@angular/core",
-        "@npm//@types/marked",
-        "@npm//marked",
     ],
 )
 

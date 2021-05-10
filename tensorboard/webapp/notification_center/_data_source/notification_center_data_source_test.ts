@@ -53,7 +53,7 @@ describe('TBNotificationCenterDataSource test', () => {
   it('fetches empty notifications', () => {
     const resultSpy = jasmine.createSpy();
     dataSource.fetchNotifications().subscribe(resultSpy);
-    const req = httpMock.expectOne('data/notifications');
+    const req = httpMock.expectOne('/data/notifications');
     req.flush({notifications: [{}]});
 
     expect(resultSpy).toHaveBeenCalledWith({notifications: [{}]});
@@ -62,7 +62,7 @@ describe('TBNotificationCenterDataSource test', () => {
   it('fetches non-empty notifications', () => {
     const resultSpy = jasmine.createSpy();
     dataSource.fetchNotifications().subscribe(resultSpy);
-    const req = httpMock.expectOne('data/notifications');
+    const req = httpMock.expectOne('/data/notifications');
     req.flush(buildNotificationResponse());
 
     expect(resultSpy).toHaveBeenCalledWith(buildNotificationResponse());
@@ -71,7 +71,7 @@ describe('TBNotificationCenterDataSource test', () => {
   it('throws error when notification fetch failed', () => {
     const error = new ErrorEvent('Request failed');
     const errorResponse = {
-      url: 'data/notifications',
+      url: '/data/notifications',
       status: 123,
       statusText: 'something went wrong',
     };
@@ -79,7 +79,7 @@ describe('TBNotificationCenterDataSource test', () => {
     const errorSpy = jasmine.createSpy();
 
     dataSource.fetchNotifications().subscribe(resultSpy, errorSpy);
-    httpMock.expectOne('data/notifications').error(error, errorResponse);
+    httpMock.expectOne('/data/notifications').error(error, errorResponse);
 
     const httpErrorResponse = new HttpErrorResponse({
       error,

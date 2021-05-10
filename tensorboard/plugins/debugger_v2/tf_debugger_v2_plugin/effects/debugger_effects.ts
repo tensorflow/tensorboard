@@ -13,8 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Injectable} from '@angular/core';
-import {Action, Store} from '@ngrx/store';
 import {Actions, createEffect, ofType} from '@ngrx/effects';
+import {Action, Store} from '@ngrx/store';
 import {merge, Observable, of, timer} from 'rxjs';
 import {
   debounceTime,
@@ -29,19 +29,26 @@ import {
   tap,
   withLatestFrom,
 } from 'rxjs/operators';
-import {manualReload, reload} from '../../../../webapp/core/actions';
+
+import {State as AppState} from '../../../../webapp/app_state';
+import {
+  changePlugin,
+  manualReload,
+  reload,
+} from '../../../../webapp/core/actions';
+import {getActivePlugin} from '../../../../webapp/core/store';
 import {
   alertsOfTypeLoaded,
   alertTypeFocusToggled,
   debuggerDataPollOnset,
   debuggerLoaded,
-  debuggerRunsRequested,
   debuggerRunsLoaded,
+  debuggerRunsRequested,
   debuggerUnloaded,
   executionDataLoaded,
   executionDigestFocused,
-  executionDigestsRequested,
   executionDigestsLoaded,
+  executionDigestsRequested,
   executionScrollLeft,
   executionScrollRight,
   executionScrollToIndex,
@@ -60,11 +67,16 @@ import {
   numGraphExecutionsRequested,
   sourceFileListLoaded,
   sourceFileListRequested,
-  sourceLineFocused,
   sourceFileLoaded,
   sourceFileRequested,
+  sourceLineFocused,
   stackFramesLoaded,
 } from '../actions';
+import {
+  AlertsResponse,
+  SourceFileListResponse,
+  Tfdbg2HttpServerDataSource,
+} from '../data_source/tfdbg2_data_source';
 import {
   getActiveRunId,
   getAlertsFocusType,
@@ -77,18 +89,18 @@ import {
   getExecutionScrollBeginIndex,
   getFocusedSourceFileContent,
   getFocusedSourceFileIndex,
+  getGraphExecutionDataLoadingPages,
   getGraphExecutionDataPageLoadedSizes,
   getGraphExecutionDisplayCount,
   getGraphExecutionPageSize,
   getGraphExecutionScrollBeginIndex,
-  getGraphExecutionDataLoadingPages,
-  getNumExecutions,
-  getNumExecutionsLoaded,
   getLoadedAlertsOfFocusedType,
   getLoadedExecutionData,
   getLoadedStackFrames,
   getLoadingGraphOps,
   getNumAlertsOfFocusedType,
+  getNumExecutions,
+  getNumExecutionsLoaded,
   getNumGraphExecutions,
   getNumGraphExecutionsLoaded,
   getPollSilenceTimeMs,
@@ -102,16 +114,14 @@ import {
   InfNanAlert,
   SourceFileSpec,
   StackFrame,
-  State,
+  State as DebuggerState,
 } from '../store/debugger_types';
-import {
-  AlertsResponse,
-  Tfdbg2HttpServerDataSource,
-  SourceFileListResponse,
-} from '../data_source/tfdbg2_data_source';
+import {PLUGIN_ID} from '../types';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 /** @typehack */ import * as _typeHackNgrxEffects from '@ngrx/effects';
+
+type State = AppState & DebuggerState;
 
 // Minimum polling interval in milliseconds.
 export const MIN_POLLING_INTERVAL_MS = 2e3;
@@ -269,8 +279,25 @@ export class DebuggerEffects {
   }
 
   private onCoreReload(): Observable<void> {
-    return this.actions$.pipe(
-      ofType(manualReload, reload),
+    return merge(
+      this.actions$.pipe(ofType(manualReload, reload)),
+      // Load the debugger data if it was never loaded before and now becomes
+      // an active plugin.
+      this.actions$.pipe(ofType(changePlugin)).pipe(
+        // We use debugger runs loaded state as a proxy to the debugger state
+        // being loaded.
+        withLatestFrom(this.store.select(getDebuggerRunsLoaded)),
+        filter(([, loadState]) => {
+          return (
+            loadState.state === DataLoadState.NOT_LOADED ||
+            (loadState.state === DataLoadState.FAILED &&
+              loadState.lastLoadedTimeInMs === null)
+          );
+        })
+      )
+    ).pipe(
+      withLatestFrom(this.store.select(getActivePlugin)),
+      filter(([, plugin]) => plugin === PLUGIN_ID),
       tap(() => this.store.dispatch(debuggerDataPollOnset())),
       map(() => void null)
     );

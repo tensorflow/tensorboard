@@ -1,4 +1,4 @@
-load("//tensorboard/defs:defs.bzl", "tf_ng_module")
+load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
@@ -19,9 +19,19 @@ tf_ng_module(
     ],
 )
 
-tf_ng_module(
+tf_ts_library(
     name = "types",
     srcs = [
         "types.ts",
+    ],
+)
+
+tf_ts_library(
+    name = "state",
+    srcs = [
+        "state.ts",
+    ],
+    deps = [
+        "//tensorboard/webapp:app_state",
     ],
 )
