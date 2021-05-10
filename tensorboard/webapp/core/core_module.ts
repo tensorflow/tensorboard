@@ -25,10 +25,14 @@ import {
   CORE_STORE_CONFIG_TOKEN,
   getConfig,
 } from './store/core_initial_state_provider';
+import {AppRoutingModule} from '../app_routing/app_routing_module';
 import {HashDeepLinker} from '../deeplink';
+import {FeatureFlagModule} from '../feature_flag/feature_flag_module';
 
 @NgModule({
   imports: [
+    AppRoutingModule,
+    FeatureFlagModule,
     EffectsModule.forFeature([CoreEffects]),
     StoreModule.forFeature(CORE_FEATURE_KEY, reducers, CORE_STORE_CONFIG_TOKEN),
     TBServerDataSourceModule,
