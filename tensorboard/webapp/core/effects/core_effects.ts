@@ -15,56 +15,42 @@ limitations under the License.
 import '../../tb_polymer_interop_types';
 
 import {Injectable} from '@angular/core';
-import {Actions, createEffect, ofType} from '@ngrx/effects';
 import {Store} from '@ngrx/store';
-import {EMPTY, from, merge, zip} from 'rxjs';
+import {Actions, ofType, createEffect} from '@ngrx/effects';
+import {EMPTY, from, zip} from 'rxjs';
 import {
-  catchError,
-  distinctUntilChanged,
-  filter,
   map,
   mergeMap,
-  take,
-  tap,
-  throttleTime,
+  catchError,
   withLatestFrom,
+  filter,
+  tap,
+  distinctUntilChanged,
+  take,
 } from 'rxjs/operators';
 
-import {navigated} from '../../app_routing/actions';
-import {getRouteId} from '../../app_routing/store/app_routing_selectors';
-import {RouteKind} from '../../app_routing/types';
-import {getEnabledExperimentalPlugins} from '../../feature_flag/store/feature_flag_selectors';
+import {
+  coreLoaded,
+  environmentLoaded,
+  manualReload,
+  reload,
+  pluginsListingRequested,
+  pluginsListingLoaded,
+  pluginsListingFailed,
+  changePlugin,
+} from '../actions';
+import {getPluginsListLoaded, getActivePlugin} from '../store';
+import {PluginsListFailureCode} from '../types';
 import {DataLoadState} from '../../types/data';
 import {
   TBServerDataSource,
   TBServerError,
 } from '../../webapp_data_source/tb_server_data_source';
-import {
-  changePlugin,
-  coreLoaded,
-  environmentLoaded,
-  manualReload,
-  pluginsListingFailed,
-  pluginsListingLoaded,
-  pluginsListingRequested,
-  polymerRunsFetchFailed,
-  polymerRunsFetchRequested,
-  polymerRunsFetchSucceeded,
-  reload,
-} from '../actions';
-import {State} from '../state';
-import {getActivePlugin, getPluginsListLoaded} from '../store';
-import {PluginsListFailureCode} from '../types';
+import {getEnabledExperimentalPlugins} from '../../feature_flag/store/feature_flag_selectors';
+import {State} from '../../app_state';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 /** @typehack */ import * as _typeHackNgrxEffects from '@ngrx/effects';
-
-// throttle + 10ms are somewhat random but it does following:
-// - when an app uses both router and manually fires coreLoaded, we prevent
-//   double requests.
-// - when using debounceTime(0), we see a brief moment of flicker when app
-//   bootstraps. To mitigate this, we use `leading: true` with `throttleTime`.
-const DATA_LOAD_CONDITIONAL_THROTTLE_IN_MS = 10;
 
 @Injectable()
 export class CoreEffects {
@@ -87,69 +73,28 @@ export class CoreEffects {
     return from(this.tfBackend.ref.runsStore.refresh());
   }
 
-  private readonly onDashboardLoad$ = merge(
-    // Loading dashboard data on `coreLoaded` is temporary; not all TB apps
-    // use the router. For those router-less applications, we have to support
-    // the legacy `coreLoaded`.
-    this.actions$.pipe(ofType(coreLoaded)),
-    this.actions$.pipe(
-      ofType(navigated),
-      filter(({after}) => {
-        return (
-          after.routeKind === RouteKind.COMPARE_EXPERIMENT ||
-          after.routeKind === RouteKind.EXPERIMENT
-        );
-      }),
-      withLatestFrom(this.store.select(getRouteId)),
-      distinctUntilChanged(([, beforeRouteId], [, afterRouteId]) => {
-        return beforeRouteId === afterRouteId;
-      })
-    )
-  ).pipe(
-    throttleTime(DATA_LOAD_CONDITIONAL_THROTTLE_IN_MS, undefined, {
-      leading: true,
-    })
-  );
-
-  // Emits when data should be refreshed. We do not reload the data while the
-  // data is already being fetched.
-  //
-  // HACK: currently, plugins list loaded state is used as a proxy to know
-  // whether the data is being reloaded or not. This should change to either
-  // application load state (via `getCoreDataLoadedState`) or have it broken
-  // down to more granular checks (e.g., `pluginsListingReload$` should check
-  // the pluginsListLoaded state while the `runsReload$` should check the
-  // polymerRunsLoadState).
-  private readonly onDataReload$ = merge(
-    this.onDashboardLoad$,
-    this.actions$.pipe(ofType(reload, manualReload))
-  ).pipe(
-    withLatestFrom(
-      this.store.select(getPluginsListLoaded),
-      this.store.select(getEnabledExperimentalPlugins)
-    ),
-    filter(([, {state}]) => state !== DataLoadState.LOADING)
-  );
-
   /**
    * Requires to be exported for JSCompiler. JSCompiler, otherwise,
    * think it is unused property and deadcode eliminate away.
    */
   /** @export */
   readonly fetchWebAppData$ = createEffect(
-    () => {
-      const pluginsListingReload$ = this.onDataReload$.pipe(
+    () =>
+      this.actions$.pipe(
+        ofType(coreLoaded, reload, manualReload),
+        withLatestFrom(
+          this.store.select(getPluginsListLoaded),
+          this.store.select(getEnabledExperimentalPlugins)
+        ),
+        filter(([, {state}]) => state !== DataLoadState.LOADING),
         tap(() => this.store.dispatch(pluginsListingRequested())),
         mergeMap(([, , enabledExperimentalPlugins]) => {
           return zip(
             this.webappDataSource.fetchPluginsListing(
               enabledExperimentalPlugins
             ),
-            // TODO(tensorboard-team): consider brekaing the environments out of
-            // the pluginsListingLoaded; currently, plugins listing load state
-            // is connected to the environments which is not ideal. Have its own
-            // load state.
-            this.fetchEnvironment()
+            this.fetchEnvironment(),
+            this.refreshPolymerRuns()
           ).pipe(
             map(([plugins]) => {
               this.store.dispatch(pluginsListingLoaded({plugins}));
@@ -170,26 +115,7 @@ export class CoreEffects {
             })
           );
         })
-      );
-
-      const runsReload$ = this.onDataReload$.pipe(
-        tap(() => {
-          this.store.dispatch(polymerRunsFetchRequested());
-        }),
-        mergeMap(() => {
-          return this.refreshPolymerRuns();
-        }),
-        tap(() => {
-          this.store.dispatch(polymerRunsFetchSucceeded());
-        }),
-        catchError(() => {
-          this.store.dispatch(polymerRunsFetchFailed());
-          return EMPTY;
-        })
-      );
-
-      return merge(pluginsListingReload$, runsReload$);
-    },
+      ),
     {dispatch: false}
   );
 
@@ -207,10 +133,8 @@ export class CoreEffects {
    */
   readonly dispatchChangePlugin$ = createEffect(
     () => {
-      return merge(
-        this.onDashboardLoad$,
-        this.actions$.pipe(ofType(pluginsListingLoaded))
-      ).pipe(
+      return this.actions$.pipe(
+        ofType(coreLoaded, pluginsListingLoaded),
         withLatestFrom(this.store.select(getActivePlugin)),
         map(([, activePlugin]) => activePlugin),
         distinctUntilChanged(),
@@ -238,7 +162,3 @@ export class CoreEffects {
     private webappDataSource: TBServerDataSource
   ) {}
 }
-
-export const TEST_ONLY = {
-  DATA_LOAD_CONDITIONAL_THROTTLE_IN_MS,
-};

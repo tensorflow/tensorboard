@@ -102,21 +102,6 @@ describe('core reducer', () => {
         PluginsListFailureCode.NOT_FOUND
       );
     });
-
-    it('sets the coreDataLoadState as loading', () => {
-      const state = createCoreState({
-        coreDataLoadState: {
-          state: DataLoadState.NOT_LOADED,
-          lastLoadedTimeInMs: null,
-        },
-      });
-      const nextState = reducers(state, actions.pluginsListingRequested());
-
-      expect(nextState.coreDataLoadState).toEqual({
-        state: DataLoadState.LOADING,
-        lastLoadedTimeInMs: null,
-      });
-    });
   });
 
   describe('#pluginsListingFailed', () => {
@@ -174,26 +159,6 @@ describe('core reducer', () => {
       expect(nextState.pluginsListLoaded.failureCode).toEqual(
         PluginsListFailureCode.NOT_FOUND
       );
-    });
-
-    it('sets the coreDataLoadState as failed', () => {
-      const state = createCoreState({
-        coreDataLoadState: {
-          state: DataLoadState.LOADING,
-          lastLoadedTimeInMs: 3,
-        },
-      });
-      const nextState = reducers(
-        state,
-        actions.pluginsListingFailed({
-          failureCode: PluginsListFailureCode.NOT_FOUND,
-        })
-      );
-
-      expect(nextState.coreDataLoadState).toEqual({
-        state: DataLoadState.FAILED,
-        lastLoadedTimeInMs: 3,
-      });
     });
   });
 
@@ -292,62 +257,6 @@ describe('core reducer', () => {
       );
 
       expect(nextState.pluginsListLoaded.failureCode).toBeNull();
-    });
-
-    describe('coreLoadedState', () => {
-      it('sets state to LOADED when polymerRuns are loaded', () => {
-        const state = createCoreState({
-          pluginsListLoaded: {
-            lastLoadedTimeInMs: null,
-            state: DataLoadState.LOADING,
-            failureCode: PluginsListFailureCode.UNKNOWN,
-          },
-          coreDataLoadState: {
-            state: DataLoadState.LOADING,
-            lastLoadedTimeInMs: 3,
-          },
-          polymerRunsLoadState: {
-            lastLoadedTimeInMs: 5,
-            state: DataLoadState.LOADED,
-          },
-        });
-        const nextState = reducers(
-          state,
-          actions.pluginsListingLoaded({plugins: createPluginsListing()})
-        );
-
-        expect(nextState.coreDataLoadState).toEqual({
-          lastLoadedTimeInMs: 1000,
-          state: DataLoadState.LOADED,
-        });
-      });
-
-      it('noops when polymerRuns are not loaded', () => {
-        const state = createCoreState({
-          pluginsListLoaded: {
-            lastLoadedTimeInMs: null,
-            state: DataLoadState.LOADING,
-            failureCode: PluginsListFailureCode.UNKNOWN,
-          },
-          coreDataLoadState: {
-            state: DataLoadState.FAILED,
-            lastLoadedTimeInMs: null,
-          },
-          polymerRunsLoadState: {
-            lastLoadedTimeInMs: null,
-            state: DataLoadState.FAILED,
-          },
-        });
-        const nextState = reducers(
-          state,
-          actions.pluginsListingLoaded({plugins: createPluginsListing()})
-        );
-
-        expect(nextState.coreDataLoadState).toEqual({
-          state: DataLoadState.FAILED,
-          lastLoadedTimeInMs: null,
-        });
-      });
     });
   });
 
@@ -453,152 +362,6 @@ describe('core reducer', () => {
       expect(nextState.polymerInteropRunSelection).toEqual(
         new Set(['1', '2', '4'])
       );
-    });
-  });
-
-  describe('#polymerRunsFetchRequested', () => {
-    it('sets polymerRunsLoadState to LOADING', () => {
-      const state = createCoreState({
-        polymerRunsLoadState: {
-          state: DataLoadState.LOADED,
-          lastLoadedTimeInMs: 1,
-        },
-      });
-
-      const nextState = reducers(state, actions.polymerRunsFetchRequested());
-
-      expect(nextState.polymerRunsLoadState).toEqual({
-        state: DataLoadState.LOADING,
-        lastLoadedTimeInMs: 1,
-      });
-    });
-
-    it('sets coreLoadedState to LOADING', () => {
-      const state = createCoreState({
-        coreDataLoadState: {
-          state: DataLoadState.FAILED,
-          lastLoadedTimeInMs: 3,
-        },
-        polymerRunsLoadState: {
-          lastLoadedTimeInMs: 3,
-          state: DataLoadState.NOT_LOADED,
-        },
-      });
-      const nextState = reducers(state, actions.polymerRunsFetchRequested());
-
-      expect(nextState.coreDataLoadState).toEqual({
-        lastLoadedTimeInMs: 3,
-        state: DataLoadState.LOADING,
-      });
-    });
-  });
-
-  describe('#polymerRunsFetchSucceeded', () => {
-    it('sets polymerRunsLoadState to LOADED', () => {
-      spyOn(Date, 'now').and.returnValue(5);
-      const state = createCoreState({
-        polymerRunsLoadState: {
-          state: DataLoadState.LOADING,
-          lastLoadedTimeInMs: 1,
-        },
-      });
-
-      const nextState = reducers(state, actions.polymerRunsFetchSucceeded());
-
-      expect(nextState.polymerRunsLoadState).toEqual({
-        state: DataLoadState.LOADED,
-        lastLoadedTimeInMs: 5,
-      });
-    });
-
-    describe('coreLoadedState', () => {
-      it('sets state to LOADED when pluginsListing is loaded', () => {
-        spyOn(Date, 'now').and.returnValue(10);
-
-        const state = createCoreState({
-          pluginsListLoaded: {
-            lastLoadedTimeInMs: 3,
-            state: DataLoadState.LOADED,
-            failureCode: null,
-          },
-          coreDataLoadState: {
-            state: DataLoadState.LOADING,
-            lastLoadedTimeInMs: 3,
-          },
-          polymerRunsLoadState: {
-            lastLoadedTimeInMs: null,
-            state: DataLoadState.LOADING,
-          },
-        });
-        const nextState = reducers(state, actions.polymerRunsFetchSucceeded());
-
-        expect(nextState.coreDataLoadState).toEqual({
-          lastLoadedTimeInMs: 10,
-          state: DataLoadState.LOADED,
-        });
-      });
-
-      it('noops when pluginsListing is not loaded', () => {
-        spyOn(Date, 'now').and.returnValue(10);
-        const state = createCoreState({
-          pluginsListLoaded: {
-            lastLoadedTimeInMs: null,
-            state: DataLoadState.LOADING,
-            failureCode: null,
-          },
-          coreDataLoadState: {
-            state: DataLoadState.LOADING,
-            lastLoadedTimeInMs: null,
-          },
-          polymerRunsLoadState: {
-            lastLoadedTimeInMs: null,
-            state: DataLoadState.LOADING,
-          },
-        });
-        const nextState = reducers(state, actions.polymerRunsFetchSucceeded());
-
-        expect(nextState.coreDataLoadState).toEqual({
-          state: DataLoadState.LOADING,
-          lastLoadedTimeInMs: null,
-        });
-      });
-    });
-  });
-
-  describe('#polymerRunsFetchFailed', () => {
-    it('sets polymerRunsLoadState to FAILED', () => {
-      const state = createCoreState({
-        polymerRunsLoadState: {
-          state: DataLoadState.LOADING,
-          lastLoadedTimeInMs: 1,
-        },
-      });
-
-      const nextState = reducers(state, actions.polymerRunsFetchFailed());
-
-      expect(nextState.polymerRunsLoadState).toEqual({
-        state: DataLoadState.FAILED,
-        lastLoadedTimeInMs: 1,
-      });
-    });
-
-    it('sets coreLoadedState to FAILED', () => {
-      const state = createCoreState({
-        coreDataLoadState: {
-          state: DataLoadState.LOADING,
-          lastLoadedTimeInMs: 3,
-        },
-        polymerRunsLoadState: {
-          lastLoadedTimeInMs: null,
-          state: DataLoadState.LOADING,
-        },
-      });
-      const nextState = reducers(state, actions.polymerRunsFetchFailed());
-
-      expect(nextState.coreDataLoadState).toEqual({
-        lastLoadedTimeInMs: 3,
-        state: DataLoadState.FAILED,
-      });
     });
   });
 });
