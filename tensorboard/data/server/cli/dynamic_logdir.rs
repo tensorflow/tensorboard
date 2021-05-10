@@ -67,27 +67,22 @@ impl ParsedLogdir {
             return Err(Error::EmptyLogdir);
         }
 
-        let protocol_parts: Vec<&str> = path_str.splitn(2, "://").collect();
-        if protocol_parts.len() < 2 || !is_protocol(protocol_parts[0]) {
-            // Interpret as path on disk.
-            return Ok(ParsedLogdir::Disk(path));
-        }
-
-        let (protocol, subpath) = (protocol_parts[0], protocol_parts[1]);
+        let (protocol, subpath) = match path_str.split_once("://") {
+            Some((p, s)) if is_protocol(p) => (p, s),
+            // Otherwise, interpret as path on disk.
+            _ => return Ok(ParsedLogdir::Disk(path)),
+        };
         match protocol {
-            "gs" => Ok(Self::parse_gcs(subpath)),
+            "gs" => {
+                let (bucket, prefix) = subpath.split_once('/').unwrap_or((subpath, ""));
+                let (bucket, prefix) = (bucket.to_string(), prefix.to_string());
+                Ok(ParsedLogdir::Gcs { bucket, prefix })
+            }
             _ => Err(Error::UnknownProtocol {
                 protocol: protocol.to_string(),
                 full_logdir: path,
             }),
         }
-    }
-
-    fn parse_gcs(gcs_path: &str) -> Self {
-        let mut parts = gcs_path.splitn(2, '/');
-        let bucket = parts.next().unwrap().to_string(); // splitn always yields at least one element
-        let prefix = parts.next().unwrap_or("").to_string();
-        ParsedLogdir::Gcs { bucket, prefix }
     }
 }
 
