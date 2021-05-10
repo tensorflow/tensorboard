@@ -43,6 +43,7 @@ tf_ng_module(
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp:selectors",
         "//tensorboard/webapp/app_routing",
+        "//tensorboard/webapp/core",
         "//tensorboard/webapp/runs",
         "@npm//@angular/core",
         "@npm//@ngrx/store",
