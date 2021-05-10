@@ -8,10 +8,10 @@ tf_ng_module(
         "core_module.ts",
     ],
     deps = [
+        "//tensorboard/webapp/app_routing",
         "//tensorboard/webapp/core/actions",
         "//tensorboard/webapp/core/effects",
         "//tensorboard/webapp/core/store",
-        "//tensorboard/webapp/app_routing",
         "//tensorboard/webapp/deeplink",
         "//tensorboard/webapp/feature_flag",
         "//tensorboard/webapp/webapp_data_source",
