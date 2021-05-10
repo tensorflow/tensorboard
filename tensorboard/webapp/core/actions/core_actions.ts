@@ -38,9 +38,6 @@ export const pluginUrlHashChanged = createAction(
   props<{plugin: PluginId}>()
 );
 
-/**
- * @deprecated View should not fire coreLoaded to trigger data re-fetch.
- */
 export const coreLoaded = createAction('[Core] Loaded');
 
 export const manualReload = createAction('[Core] User Triggered Reload');
@@ -57,18 +54,6 @@ export const pluginsListingLoaded = createAction(
 export const pluginsListingFailed = createAction(
   '[Core] PluginListing Fetch Failed',
   props<{failureCode: PluginsListFailureCode}>()
-);
-
-export const polymerRunsFetchRequested = createAction(
-  '[Core] Polymer Component Runs Fetch Requested'
-);
-
-export const polymerRunsFetchSucceeded = createAction(
-  '[Core] Polymer Component Runs Fetch Successful'
-);
-
-export const polymerRunsFetchFailed = createAction(
-  '[Core] Polymer Component Runs Fetch Failed'
 );
 
 /**

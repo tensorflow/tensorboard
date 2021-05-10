@@ -16,7 +16,7 @@ import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {Store, select} from '@ngrx/store';
 
 import {getActivePlugin} from '../store';
-import {State} from '../state';
+import {State} from '../store/core_types';
 import {pluginUrlHashChanged} from '../actions';
 
 import {ChangedProp} from './hash_storage_component';
