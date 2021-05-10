@@ -20,8 +20,8 @@ use std::io::Write;
 
 use rustboard_core::gcs;
 
-#[clap(name = "gsutil")]
 #[derive(Clap, Debug)]
+#[clap(name = "gsutil")]
 struct Opts {
     #[clap(long, default_value = "info")]
     log_level: String,
