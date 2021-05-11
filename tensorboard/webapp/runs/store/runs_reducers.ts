@@ -26,6 +26,7 @@ import {SortDirection} from '../../types/ui';
 import * as colorUtils from '../../util/colors';
 import {composeReducers} from '../../util/ngrx';
 import * as runsActions from '../actions';
+import {GroupByKey} from '../types';
 import {
   MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT,
   RunsDataState,
@@ -186,6 +187,7 @@ const {
     hparamFilters: new Map(),
     metricFilters: new Map(),
     runColorOverride: new Map(),
+    groupBy: GroupByKey.RUN,
   } as RunsUiRoutefulState,
   {
     hparamDefaultFilters: new Map(),

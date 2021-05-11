@@ -20,7 +20,7 @@ import {RouteContextedState} from '../../app_routing/route_contexted_reducer_hel
 import {LoadState} from '../../types/data';
 import {SortDirection} from '../../types/ui';
 import {HparamValue} from '../data_source/runs_data_source_types';
-import {SortKey} from '../types';
+import {GroupByKey, SortKey} from '../types';
 
 export {Domain, DomainType} from '../data_source/runs_data_source_types';
 
@@ -70,6 +70,7 @@ export interface RunsUiRoutefulState {
   regexFilter: string;
   sort: {key: SortKey | null; direction: SortDirection};
   runColorOverride: Map<RunId, string>;
+  groupBy: GroupByKey;
 }
 
 export interface RunsUiRoutelessState {
