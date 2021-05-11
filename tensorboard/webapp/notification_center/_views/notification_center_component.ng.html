@@ -39,7 +39,7 @@ limitations under the License.
         </ng-container>
         <span *ngIf="notification.icon">・</span>
         <span [title]="notification.dateInMs | date:'full'"
-          >{{ notification.dateInMs | date:'medium'}}</span
+          >{{ notification.dateInMs | date:'EEE MMM d, y'}}</span
         >
       </div>
       <div class="content-wrapper">
