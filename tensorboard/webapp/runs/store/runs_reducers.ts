@@ -170,6 +170,10 @@ const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
   })
 );
 
+const initialSort: RunsUiRoutefulState['sort'] = {
+  key: null,
+  direction: SortDirection.UNSET,
+};
 const {
   initialState: uiInitialState,
   reducers: uiRouteContextReducers,
@@ -180,20 +184,13 @@ const {
       pageSize: 10,
     },
     regexFilter: '',
-    sort: {
-      key: null,
-      direction: SortDirection.UNSET,
-    },
-    hparamFilters: new Map(),
-    metricFilters: new Map(),
-    runColorOverride: new Map(),
+    sort: initialSort,
+    runColorOverride: new Map<string, string>(),
     groupBy: GroupByKey.RUN,
-  } as RunsUiRoutefulState,
+  },
   {
-    hparamDefaultFilters: new Map(),
-    metricDefaultFilters: new Map(),
-    defaultRunColor: new Map(),
-  } as RunsUiRoutelessState
+    defaultRunColor: new Map<string, string>(),
+  }
 );
 
 const uiReducer: ActionReducer<RunsUiState, Action> = createReducer(
