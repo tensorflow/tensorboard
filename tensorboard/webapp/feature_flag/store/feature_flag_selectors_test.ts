@@ -116,4 +116,29 @@ describe('feature_flag_selectors', () => {
       expect(selectors.getIsInColab(state)).toEqual(false);
     });
   });
+
+  describe('#getEnabledColorGroup', () => {
+    it('returns the proper value', () => {
+      let state = buildState(
+        buildFeatureFlagState({
+          defaultFlags: buildFeatureFlag({
+            enabledColorGroup: false,
+          }),
+        })
+      );
+      expect(selectors.getEnabledColorGroup(state)).toEqual(false);
+
+      state = buildState(
+        buildFeatureFlagState({
+          defaultFlags: buildFeatureFlag({
+            enabledColorGroup: false,
+          }),
+          flagOverrides: {
+            enabledColorGroup: true,
+          },
+        })
+      );
+      expect(selectors.getEnabledColorGroup(state)).toEqual(true);
+    });
+  });
 });

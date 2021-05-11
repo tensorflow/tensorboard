@@ -24,6 +24,7 @@ export function buildFeatureFlagState(
       enabledExperimentalPlugins: [],
       inColab: false,
       scalarsBatchSize: 1,
+      enabledColorGroup: false,
     },
     ...override,
     flagOverrides: override.flagOverrides ?? {},
