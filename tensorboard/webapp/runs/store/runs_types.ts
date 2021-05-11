@@ -71,6 +71,8 @@ export interface RunsUiRoutefulState {
   sort: {key: SortKey | null; direction: SortDirection};
   runColorOverride: Map<RunId, string>;
   groupBy: GroupByKey;
+  // Index of the color palette to be used in the next assgined group.
+  nextGroupColorIndex: number;
 }
 
 export interface RunsUiRoutelessState {

@@ -23,7 +23,7 @@ import {
 import {createRouteContextedState} from '../../app_routing/route_contexted_reducer_helper';
 import {DataLoadState} from '../../types/data';
 import {SortDirection} from '../../types/ui';
-import * as colorUtils from '../../util/colors';
+import {CHART_COLOR_PALLETE} from '../../util/colors';
 import {composeReducers} from '../../util/ngrx';
 import * as runsActions from '../actions';
 import {GroupByKey} from '../types';
@@ -187,6 +187,7 @@ const {
     sort: initialSort,
     runColorOverride: new Map<string, string>(),
     groupBy: GroupByKey.RUN,
+    nextGroupColorIndex: 0,
   },
   {
     defaultRunColor: new Map<string, string>(),
@@ -228,17 +229,22 @@ const uiReducer: ActionReducer<RunsUiState, Action> = createReducer(
     };
   }),
   on(runsActions.fetchRunsSucceeded, (state, action) => {
+    let nextGroupColorIndex = state.nextGroupColorIndex;
     const nextDefaultRunColor = new Map(state.defaultRunColor);
 
     action.runsForAllExperiments
       .filter((run) => !Boolean(nextDefaultRunColor.get(run.id)))
       .forEach((run) => {
-        nextDefaultRunColor.set(run.id, colorUtils.getNextChartColor());
+        const color = CHART_COLOR_PALLETE[nextGroupColorIndex];
+        nextGroupColorIndex =
+          (nextGroupColorIndex + 1) % CHART_COLOR_PALLETE.length;
+        nextDefaultRunColor.set(run.id, color);
       });
 
     return {
       ...state,
       defaultRunColor: nextDefaultRunColor,
+      nextGroupColorIndex,
     };
   }),
   on(runsActions.runColorChanged, (state, {runId, newColor}) => {
