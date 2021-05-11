@@ -183,17 +183,13 @@ const {
     sort: {
       key: null,
       direction: SortDirection.UNSET,
-    },
-    hparamFilters: new Map(),
-    metricFilters: new Map(),
-    runColorOverride: new Map(),
+    } as RunsUiRoutefulState['sort'],
+    runColorOverride: new Map<string, string>(),
     groupBy: GroupByKey.RUN,
-  } as RunsUiRoutefulState,
+  },
   {
-    hparamDefaultFilters: new Map(),
-    metricDefaultFilters: new Map(),
-    defaultRunColor: new Map(),
-  } as RunsUiRoutelessState
+    defaultRunColor: new Map<string, string>(),
+  }
 );
 
 const uiReducer: ActionReducer<RunsUiState, Action> = createReducer(
