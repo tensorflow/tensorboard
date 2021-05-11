@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 
 export interface FeatureFlags {
-  // Color grouping to manually enable.
+  // Whether to enable experimental semantic color grouping feature.
   enabledColorGroup: boolean;
   // experimental plugins to manually enable.
   enabledExperimentalPlugins: string[];
