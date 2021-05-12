@@ -24,7 +24,6 @@ import {
   getExperimentIdsFromRoute,
   getRuns,
 } from '../../../webapp/selectors';
-import * as tf_storage_utils from '../../tf_storage/storage_utils';
 import {PluginCoreApiHostImpl} from './core-host-impl';
 import {MessageId} from './message_types';
 import {Ipc} from './plugin-host-ipc';
@@ -236,7 +235,6 @@ describe('plugin_api_host test', () => {
       let triggerGetUrlData: (context: {
         pluginName: string;
       }) => Record<string, string> = () => ({});
-      let getUrlDictSpy: jasmine.Spy;
 
       beforeEach(() => {
         listenSpy
@@ -246,17 +244,23 @@ describe('plugin_api_host test', () => {
               triggerGetUrlData = callback;
             }
           );
-
-        getUrlDictSpy = spyOn(tf_storage_utils, 'getUrlDict');
       });
 
       it('returns url data from the tf storage', () => {
-        getUrlDictSpy.and.returnValue({
-          globalThing: 'hey',
-          'p.plugin_id.a': '1',
-          'p.plugin_id.b': 'b',
-          'p.another_plugn.b': '2',
-        });
+        // Do not rely on Polymer bundle in the test.
+        const createElementSpy = spyOn(document, 'createElement');
+        createElementSpy.withArgs('tf-storage').and.returnValue({
+          tf_storage: {
+            getUrlHashDict: () => {
+              return {
+                'globalThing': 'hey',
+                'p.plugin_id.a': '1',
+                'p.plugin_id.b': 'b',
+                'p.another_plugn.b': '2',
+              }
+            },
+          },
+        } as any);
 
         coreApi.init();
         const actual = triggerGetUrlData({pluginName: 'plugin_id'});
