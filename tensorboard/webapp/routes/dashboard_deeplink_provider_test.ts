@@ -302,5 +302,32 @@ describe('core deeplink provider', () => {
         {key: 'experimentalPlugin', value: 'baz'},
       ]);
     });
+
+    it('serializes enableColorGroup state', () => {
+      store.overrideSelector(selectors.getOverriddenFeatureFlags, {
+        enabledColorGroup: true,
+      });
+      store.refreshState();
+
+      expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual([
+        {key: 'enableColorGroup', value: 'true'},
+      ]);
+
+      store.overrideSelector(selectors.getOverriddenFeatureFlags, {
+        enabledColorGroup: false,
+      });
+      store.refreshState();
+
+      expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual([
+        {key: 'enableColorGroup', value: 'false'},
+      ]);
+
+      store.overrideSelector(selectors.getOverriddenFeatureFlags, {});
+      store.refreshState();
+
+      expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual(
+        []
+      );
+    });
   });
 });
