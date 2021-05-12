@@ -190,8 +190,8 @@ describe('runs_reducers', () => {
     });
 
     it('assigns default color to new runs', () => {
-      const state = buildRunsState(undefined, {
-        defaultRunColor: new Map([
+      const state = buildRunsState({
+        defaultColor: new Map([
           ['foo', '#aaa'],
           ['bar', '#bbb'],
         ]),
@@ -226,7 +226,7 @@ describe('runs_reducers', () => {
 
       const nextState = runsReducers.reducers(state, action);
 
-      expect(nextState.ui.defaultRunColor).toEqual(
+      expect(nextState.data.defaultColor).toEqual(
         new Map([
           ['foo', '#aaa'],
           ['bar', '#bbb'],
@@ -238,7 +238,7 @@ describe('runs_reducers', () => {
           ['lambda', colorUtils.CHART_COLOR_PALLETE[3]],
         ])
       );
-      expect(nextState.ui.nextGroupColorIndex).toBe(4);
+      expect(nextState.data.nextGroupColorIndex).toBe(4);
     });
 
     it('auto-selects new runs if total num <= N', () => {
@@ -592,8 +592,8 @@ describe('runs_reducers', () => {
 
   describe('runColorChanged', () => {
     it('updates color for the run', () => {
-      const state = buildRunsState(undefined, {
-        runColorOverride: new Map([['foo', '#aaa']]),
+      const state = buildRunsState({
+        colorOverride: new Map([['foo', '#aaa']]),
       });
 
       const nextState = runsReducers.reducers(
@@ -604,12 +604,12 @@ describe('runs_reducers', () => {
         })
       );
 
-      expect(nextState.ui.runColorOverride).toEqual(new Map([['foo', '#000']]));
+      expect(nextState.data.colorOverride).toEqual(new Map([['foo', '#000']]));
     });
 
     it('sets run color for a value that did not exist', () => {
-      const state = buildRunsState(undefined, {
-        runColorOverride: new Map([['foo', '#aaa']]),
+      const state = buildRunsState({
+        colorOverride: new Map([['foo', '#aaa']]),
       });
 
       const nextState = runsReducers.reducers(
@@ -620,7 +620,7 @@ describe('runs_reducers', () => {
         })
       );
 
-      expect(nextState.ui.runColorOverride).toEqual(
+      expect(nextState.data.colorOverride).toEqual(
         new Map([
           ['foo', '#aaa'],
           ['bar', '#fff'],

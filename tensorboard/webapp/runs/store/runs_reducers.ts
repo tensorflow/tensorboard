@@ -29,21 +29,32 @@ import * as runsActions from '../actions';
 import {GroupByKey} from '../types';
 import {
   MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT,
+  RunsDataRoutefulState,
+  RunsDataRoutelessState,
   RunsDataState,
   RunsState,
   RunsUiRoutefulState,
-  RunsUiRoutelessState,
   RunsUiState,
 } from './runs_types';
 import {serializeExperimentIds} from './utils';
 
-const dataInitialState: RunsDataState = {
-  runIds: {},
-  runIdToExpId: {},
-  runMetadata: {},
-  runsLoadState: {},
-  selectionState: new Map<string, Map<string, boolean>>(),
-};
+const {
+  initialState: dataInitialState,
+  reducers: dataRouteContextReducers,
+} = createRouteContextedState<RunsDataRoutefulState, RunsDataRoutelessState>(
+  {
+    colorOverride: new Map(),
+    defaultColor: new Map(),
+    nextGroupColorIndex: 0,
+  },
+  {
+    runIds: {},
+    runIdToExpId: {},
+    runMetadata: {},
+    runsLoadState: {},
+    selectionState: new Map<string, Map<string, boolean>>(),
+  }
+);
 
 const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
   dataInitialState,
@@ -167,7 +178,37 @@ const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
       ...state,
       selectionState: nextSelectionState,
     };
+  }),
+  on(runsActions.fetchRunsSucceeded, (state, {runsForAllExperiments}) => {
+    let {nextGroupColorIndex} = state;
+    const defaultColor = new Map(state.defaultColor);
+
+    runsForAllExperiments
+      .filter((run) => !Boolean(defaultColor.get(run.id)))
+      .forEach((run) => {
+        const color = CHART_COLOR_PALLETE[nextGroupColorIndex];
+        nextGroupColorIndex =
+          (nextGroupColorIndex + 1) % CHART_COLOR_PALLETE.length;
+        defaultColor.set(run.id, color);
+      });
+
+    return {
+      ...state,
+      defaultColor,
+      nextGroupColorIndex,
+    };
+  }),
+  on(runsActions.runColorChanged, (state, {runId, newColor}) => {
+    const nextRunColorOverride = new Map(state.colorOverride);
+    nextRunColorOverride.set(runId, newColor);
+
+    return {...state, colorOverride: nextRunColorOverride};
   })
+);
+
+const routeStatefulDataReducers = composeReducers(
+  dataReducer,
+  dataRouteContextReducers
 );
 
 const initialSort: RunsUiRoutefulState['sort'] = {
@@ -185,13 +226,9 @@ const {
     },
     regexFilter: '',
     sort: initialSort,
-    runColorOverride: new Map<string, string>(),
     groupBy: GroupByKey.RUN,
-    nextGroupColorIndex: 0,
   },
-  {
-    defaultRunColor: new Map<string, string>(),
-  }
+  {}
 );
 
 const uiReducer: ActionReducer<RunsUiState, Action> = createReducer(
@@ -227,32 +264,6 @@ const uiReducer: ActionReducer<RunsUiState, Action> = createReducer(
         direction: action.direction,
       },
     };
-  }),
-  on(runsActions.fetchRunsSucceeded, (state, action) => {
-    let nextGroupColorIndex = state.nextGroupColorIndex;
-    const nextDefaultRunColor = new Map(state.defaultRunColor);
-
-    action.runsForAllExperiments
-      .filter((run) => !Boolean(nextDefaultRunColor.get(run.id)))
-      .forEach((run) => {
-        const color = CHART_COLOR_PALLETE[nextGroupColorIndex];
-        nextGroupColorIndex =
-          (nextGroupColorIndex + 1) % CHART_COLOR_PALLETE.length;
-        nextDefaultRunColor.set(run.id, color);
-      });
-
-    return {
-      ...state,
-      defaultRunColor: nextDefaultRunColor,
-      nextGroupColorIndex,
-    };
-  }),
-  on(runsActions.runColorChanged, (state, {runId, newColor}) => {
-    const nextRunColorOverride = new Map(state.runColorOverride);
-
-    nextRunColorOverride.set(runId, newColor);
-
-    return {...state, runColorOverride: nextRunColorOverride};
   })
 );
 
@@ -266,7 +277,7 @@ const routeStatefulUiReducers = composeReducers(
  */
 export function reducers(state: RunsState, action: Action) {
   return combineReducers({
-    data: dataReducer,
+    data: routeStatefulDataReducers,
     ui: routeStatefulUiReducers,
   })(state, action);
 }
