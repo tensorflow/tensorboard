@@ -13,4 +13,4 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 export {NotificationCenterModule} from './_notification_center_module';
-export {* as notificationActions} from './_redux/notification_center_actions';
+export * as notificationActions from './_redux/notification_center_actions';
