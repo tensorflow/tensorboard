@@ -190,12 +190,12 @@ describe('runs_reducers', () => {
     });
 
     it('assigns default color to new runs', () => {
-      spyOn(colorUtils, 'getNextChartColor').and.returnValues('#ccc', '#ddd');
       const state = buildRunsState(undefined, {
         defaultRunColor: new Map([
           ['foo', '#aaa'],
           ['bar', '#bbb'],
         ]),
+        nextGroupColorIndex: 5,
       });
       const action = actions.fetchRunsSucceeded({
         experimentIds: ['eid1'],
@@ -203,6 +203,10 @@ describe('runs_reducers', () => {
           buildRun({id: 'baz'}),
           buildRun({id: 'foo'}),
           buildRun({id: 'qaz'}),
+          buildRun({id: 'alpha'}),
+          buildRun({id: 'beta'}),
+          buildRun({id: 'gamma'}),
+          buildRun({id: 'lambda'}),
         ],
         newRunsAndMetadata: {
           eid1: {
@@ -210,6 +214,10 @@ describe('runs_reducers', () => {
               buildRun({id: 'baz'}),
               buildRun({id: 'foo'}),
               buildRun({id: 'qaz'}),
+              buildRun({id: 'alpha'}),
+              buildRun({id: 'beta'}),
+              buildRun({id: 'gamma'}),
+              buildRun({id: 'lambda'}),
             ],
             metadata: buildHparamsAndMetadata({}),
           },
@@ -222,10 +230,15 @@ describe('runs_reducers', () => {
         new Map([
           ['foo', '#aaa'],
           ['bar', '#bbb'],
-          ['baz', '#ccc'],
-          ['qaz', '#ddd'],
+          ['baz', colorUtils.CHART_COLOR_PALLETE[5]],
+          ['qaz', colorUtils.CHART_COLOR_PALLETE[6]],
+          ['alpha', colorUtils.CHART_COLOR_PALLETE[0]],
+          ['beta', colorUtils.CHART_COLOR_PALLETE[1]],
+          ['gamma', colorUtils.CHART_COLOR_PALLETE[2]],
+          ['lambda', colorUtils.CHART_COLOR_PALLETE[3]],
         ])
       );
+      expect(nextState.ui.nextGroupColorIndex).toBe(4);
     });
 
     it('auto-selects new runs if total num <= N', () => {

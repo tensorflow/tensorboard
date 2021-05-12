@@ -65,6 +65,7 @@ export function buildRunsState(
       defaultRunColor: new Map(),
       runColorOverride: new Map(),
       groupBy: GroupByKey.RUN,
+      nextGroupColorIndex: 0,
       ...uiOverride,
     },
   };
