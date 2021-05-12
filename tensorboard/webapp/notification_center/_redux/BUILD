@@ -55,6 +55,7 @@ tf_ts_library(
     srcs = [
         "testing.ts",
     ],
+    visibility = ["//tensorboard:internal"],
     deps = [
         ":types",
     ],
