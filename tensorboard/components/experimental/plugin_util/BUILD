@@ -78,6 +78,7 @@ tf_ng_module(
         "//tensorboard/components/tf_storage:tf_storage_lib",
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp:selectors",
+        "//tensorboard/webapp:tb_polymer_interop_types",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/angular:expect_ngrx_store_testing",
         "//tensorboard/webapp/runs/store:testing",

@@ -24,6 +24,7 @@ import {
   getExperimentIdsFromRoute,
   getRuns,
 } from '../../../webapp/selectors';
+import {TfStorageElement} from '../../../webapp/tb_polymer_interop_types';
 import {PluginCoreApiHostImpl} from './core-host-impl';
 import {MessageId} from './message_types';
 import {Ipc} from './plugin-host-ipc';
@@ -249,18 +250,18 @@ describe('plugin_api_host test', () => {
       it('returns url data from the tf storage', () => {
         // Do not rely on Polymer bundle in the test.
         const createElementSpy = spyOn(document, 'createElement');
-        createElementSpy.withArgs('tf-storage').and.returnValue({
+        createElementSpy.withArgs('tf-storage').and.returnValue(({
           tf_storage: {
             getUrlHashDict: () => {
               return {
-                'globalThing': 'hey',
+                globalThing: 'hey',
                 'p.plugin_id.a': '1',
                 'p.plugin_id.b': 'b',
                 'p.another_plugn.b': '2',
-              }
+              };
             },
           },
-        } as any);
+        } as unknown) as TfStorageElement);
 
         coreApi.init();
         const actual = triggerGetUrlData({pluginName: 'plugin_id'});
