@@ -21,7 +21,7 @@ import {distinctUntilChanged, filter} from 'rxjs/operators';
 
 import {State} from '../../../webapp/app_state';
 import {getAppLastLoadedTimeInMs} from '../../../webapp/selectors';
-import * as tf_storage_utils from '../../tf_storage/storage_utils';
+import {TfStorageElement} from '../../../webapp/tb_polymer_interop_types';
 import {MessageId} from './message_types';
 import {Ipc} from './plugin-host-ipc';
 
@@ -33,6 +33,7 @@ export class PluginCoreApiHostImpl {
   ) {}
 
   init() {
+    const tfStorage: TfStorageElement = document.createElement('tf-storage');
     this.ipc.listen(MessageId.GET_URL_DATA, (context) => {
       if (!context) {
         return;
@@ -41,7 +42,7 @@ export class PluginCoreApiHostImpl {
       const result: {
         [key: string]: string;
       } = {};
-      const urlDict = tf_storage_utils.getUrlDict();
+      const urlDict = tfStorage.tf_storage.getUrlHashDict();
       for (let key in urlDict) {
         if (key.startsWith(prefix)) {
           const pluginKey = key.substring(prefix.length);
