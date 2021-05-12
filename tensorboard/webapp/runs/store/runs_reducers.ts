@@ -36,16 +36,17 @@ import {
   RunsUiRoutefulState,
   RunsUiState,
 } from './runs_types';
-import {serializeExperimentIds} from './utils';
+import {groupRuns, serializeExperimentIds} from './utils';
 
 const {
   initialState: dataInitialState,
   reducers: dataRouteContextReducers,
 } = createRouteContextedState<RunsDataRoutefulState, RunsDataRoutelessState>(
   {
-    colorOverride: new Map(),
-    defaultColor: new Map(),
-    nextGroupColorIndex: 0,
+    runColorOverride: new Map(),
+    defaultRunColor: new Map(),
+    groupToColor: new Map(),
+    groupBy: {key: GroupByKey.RUN},
   },
   {
     runIds: {},
@@ -180,29 +181,36 @@ const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
     };
   }),
   on(runsActions.fetchRunsSucceeded, (state, {runsForAllExperiments}) => {
-    let {nextGroupColorIndex} = state;
-    const defaultColor = new Map(state.defaultColor);
+    const groupToColor = new Map(state.groupToColor);
+    const defaultRunColor = new Map(state.defaultRunColor);
 
-    runsForAllExperiments
-      .filter((run) => !Boolean(defaultColor.get(run.id)))
-      .forEach((run) => {
-        const color = CHART_COLOR_PALLETE[nextGroupColorIndex];
-        nextGroupColorIndex =
-          (nextGroupColorIndex + 1) % CHART_COLOR_PALLETE.length;
-        defaultColor.set(run.id, color);
-      });
+    const groups = groupRuns(
+      state.groupBy,
+      runsForAllExperiments,
+      state.runIdToExpId
+    );
+    Object.entries(groups).forEach(([groupId, runs]) => {
+      const color =
+        groupToColor.get(groupId) ??
+        CHART_COLOR_PALLETE[groupToColor.size % CHART_COLOR_PALLETE.length];
+      groupToColor.set(groupId, color);
+
+      for (const run of runs) {
+        defaultRunColor.set(run.id, color);
+      }
+    });
 
     return {
       ...state,
-      defaultColor,
-      nextGroupColorIndex,
+      defaultRunColor,
+      groupToColor,
     };
   }),
   on(runsActions.runColorChanged, (state, {runId, newColor}) => {
-    const nextRunColorOverride = new Map(state.colorOverride);
+    const nextRunColorOverride = new Map(state.runColorOverride);
     nextRunColorOverride.set(runId, newColor);
 
-    return {...state, colorOverride: nextRunColorOverride};
+    return {...state, runColorOverride: nextRunColorOverride};
   })
 );
 
@@ -226,7 +234,6 @@ const {
     },
     regexFilter: '',
     sort: initialSort,
-    groupBy: GroupByKey.RUN,
   },
   {}
 );

@@ -30,6 +30,10 @@ tf_ts_library(
     visibility = [
         "//visibility:private",
     ],
+    deps = [
+        ":types",
+        "//tensorboard/webapp/runs:types",
+    ],
 )
 
 tf_ts_library(

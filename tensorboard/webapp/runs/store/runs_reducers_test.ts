@@ -18,7 +18,7 @@ import {SortDirection} from '../../types/ui';
 import * as colorUtils from '../../util/colors';
 import * as actions from '../actions';
 import {buildHparamsAndMetadata} from '../data_source/testing';
-import {SortType} from '../types';
+import {GroupByKey, SortType} from '../types';
 import * as runsReducers from './runs_reducers';
 import {MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT, Run} from './runs_types';
 import {buildRun, buildRunsState} from './testing';
@@ -191,11 +191,20 @@ describe('runs_reducers', () => {
 
     it('assigns default color to new runs', () => {
       const state = buildRunsState({
-        defaultColor: new Map([
+        groupBy: {
+          key: GroupByKey.RUN,
+        },
+        defaultRunColor: new Map([
           ['foo', '#aaa'],
           ['bar', '#bbb'],
         ]),
-        nextGroupColorIndex: 5,
+        groupToColor: new Map([
+          ['foo', '#aaa'],
+          ['bar', '#bbb'],
+          ['1', '#ccc'],
+          ['2', '#ddd'],
+          ['3', '#eee'],
+        ]),
       });
       const action = actions.fetchRunsSucceeded({
         experimentIds: ['eid1'],
@@ -226,7 +235,7 @@ describe('runs_reducers', () => {
 
       const nextState = runsReducers.reducers(state, action);
 
-      expect(nextState.data.defaultColor).toEqual(
+      expect(nextState.data.defaultRunColor).toEqual(
         new Map([
           ['foo', '#aaa'],
           ['bar', '#bbb'],
@@ -238,7 +247,67 @@ describe('runs_reducers', () => {
           ['lambda', colorUtils.CHART_COLOR_PALLETE[3]],
         ])
       );
-      expect(nextState.data.nextGroupColorIndex).toBe(4);
+    });
+
+    describe('advanced grouping', () => {
+      it('assigns default color to by experiment', () => {
+        const state = buildRunsState({
+          groupBy: {
+            key: GroupByKey.EXPERIMENT,
+          },
+          defaultRunColor: new Map([
+            ['foo', '#aaa'],
+            ['bar', '#aaa'],
+          ]),
+          groupToColor: new Map([['eid1', '#aaa']]),
+        });
+        const action = actions.fetchRunsSucceeded({
+          experimentIds: ['eid1', 'eid2'],
+          runsForAllExperiments: [
+            buildRun({id: 'baz'}),
+            buildRun({id: 'foo'}),
+            buildRun({id: 'qaz'}),
+            buildRun({id: 'alpha'}),
+            buildRun({id: 'beta'}),
+            buildRun({id: 'gamma'}),
+            buildRun({id: 'lambda'}),
+          ],
+          newRunsAndMetadata: {
+            eid1: {
+              runs: [
+                buildRun({id: 'baz'}),
+                buildRun({id: 'foo'}),
+                buildRun({id: 'qaz'}),
+              ],
+              metadata: buildHparamsAndMetadata({}),
+            },
+            eid2: {
+              runs: [
+                buildRun({id: 'alpha'}),
+                buildRun({id: 'beta'}),
+                buildRun({id: 'gamma'}),
+                buildRun({id: 'lambda'}),
+              ],
+              metadata: buildHparamsAndMetadata({}),
+            },
+          },
+        });
+
+        const nextState = runsReducers.reducers(state, action);
+
+        expect(nextState.data.defaultRunColor).toEqual(
+          new Map([
+            ['foo', '#aaa'],
+            ['bar', '#aaa'],
+            ['baz', '#aaa'],
+            ['qaz', '#aaa'],
+            ['alpha', colorUtils.CHART_COLOR_PALLETE[1]],
+            ['beta', colorUtils.CHART_COLOR_PALLETE[1]],
+            ['gamma', colorUtils.CHART_COLOR_PALLETE[1]],
+            ['lambda', colorUtils.CHART_COLOR_PALLETE[1]],
+          ])
+        );
+      });
     });
 
     it('auto-selects new runs if total num <= N', () => {
@@ -593,7 +662,7 @@ describe('runs_reducers', () => {
   describe('runColorChanged', () => {
     it('updates color for the run', () => {
       const state = buildRunsState({
-        colorOverride: new Map([['foo', '#aaa']]),
+        runColorOverride: new Map([['foo', '#aaa']]),
       });
 
       const nextState = runsReducers.reducers(
@@ -604,12 +673,14 @@ describe('runs_reducers', () => {
         })
       );
 
-      expect(nextState.data.colorOverride).toEqual(new Map([['foo', '#000']]));
+      expect(nextState.data.runColorOverride).toEqual(
+        new Map([['foo', '#000']])
+      );
     });
 
     it('sets run color for a value that did not exist', () => {
       const state = buildRunsState({
-        colorOverride: new Map([['foo', '#aaa']]),
+        runColorOverride: new Map([['foo', '#aaa']]),
       });
 
       const nextState = runsReducers.reducers(
@@ -620,7 +691,7 @@ describe('runs_reducers', () => {
         })
       );
 
-      expect(nextState.data.colorOverride).toEqual(
+      expect(nextState.data.runColorOverride).toEqual(
         new Map([
           ['foo', '#aaa'],
           ['bar', '#fff'],

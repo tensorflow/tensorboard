@@ -20,7 +20,7 @@ import {RouteContextedState} from '../../app_routing/route_contexted_reducer_hel
 import {LoadState} from '../../types/data';
 import {SortDirection} from '../../types/ui';
 import {HparamValue} from '../data_source/runs_data_source_types';
-import {GroupByKey, SortKey} from '../types';
+import {GroupBy, SortKey} from '../types';
 
 export {Domain, DomainType} from '../data_source/runs_data_source_types';
 
@@ -47,10 +47,10 @@ export type RunId = string;
 export type RouteKey = string;
 
 export interface RunsDataRoutefulState {
-  colorOverride: Map<RunId, string>;
-  defaultColor: Map<RunId, string>;
-  // Index of the color palette to be used in the next assgined group.
-  nextGroupColorIndex: number;
+  runColorOverride: Map<RunId, string>;
+  defaultRunColor: Map<RunId, string>;
+  groupToColor: Map<string, string>;
+  groupBy: GroupBy;
 }
 
 export interface RunsDataRoutelessState {
@@ -83,7 +83,6 @@ export interface RunsUiRoutefulState {
   paginationOption: {pageIndex: number; pageSize: number};
   regexFilter: string;
   sort: {key: SortKey | null; direction: SortDirection};
-  groupBy: GroupByKey;
 }
 
 export interface RunsUiRoutelessState {}

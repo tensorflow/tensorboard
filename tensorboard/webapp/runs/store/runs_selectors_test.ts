@@ -329,7 +329,7 @@ describe('runs_selectors', () => {
     it('returns color map by runs', () => {
       const state = buildStateFromRunsState(
         buildRunsState({
-          defaultColor: new Map([
+          defaultRunColor: new Map([
             ['foo', '#aaa'],
             ['bar', '#bbb'],
           ]),
@@ -345,11 +345,11 @@ describe('runs_selectors', () => {
     it('combines override with the default colors', () => {
       const state = buildStateFromRunsState(
         buildRunsState({
-          defaultColor: new Map([
+          defaultRunColor: new Map([
             ['foo', '#aaa'],
             ['bar', '#bbb'],
           ]),
-          colorOverride: new Map([['foo', '#000']]),
+          runColorOverride: new Map([['foo', '#000']]),
         })
       );
 

@@ -12,6 +12,37 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {GroupBy, GroupByKey, Run} from '../types';
+import {ExperimentId, RunId} from './runs_types';
+
 export function serializeExperimentIds(experimentIds: string[]): string {
   return JSON.stringify(experimentIds.slice().sort());
+}
+
+export function groupRuns(
+  groupBy: GroupBy,
+  runs: Run[],
+  runIdToExpId: Readonly<Record<RunId, ExperimentId>>
+): {[groupId: string]: Run[]} {
+  const runGroups: {[groupId: string]: Run[]} = {};
+  switch (groupBy.key) {
+    case GroupByKey.RUN:
+      for (const run of runs) {
+        runGroups[run.id] = [run];
+      }
+      break;
+    case GroupByKey.EXPERIMENT:
+      for (const run of runs) {
+        const experimentId = runIdToExpId[run.id];
+        const runs = runGroups[experimentId] || [];
+        runs.push(run);
+        runGroups[experimentId] = runs;
+      }
+      break;
+
+    case GroupByKey.REGEX:
+      throw new Error('Not implemented');
+    default:
+  }
+  return runGroups;
 }

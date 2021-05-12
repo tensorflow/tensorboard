@@ -12,7 +12,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {serializeExperimentIds} from './utils';
+import {GroupByKey} from '../types';
+import {buildRun} from './testing';
+import {groupRuns, serializeExperimentIds} from './utils';
 
 describe('run store utils test', () => {
   describe('#serializeExperimentIds', () => {
@@ -27,6 +29,66 @@ describe('run store utils test', () => {
       const b = serializeExperimentIds(['b', 'a', 'c']);
 
       expect(a).toBe(b);
+    });
+  });
+
+  describe('#groupRuns', () => {
+    describe('by runs', () => {
+      it('groups runs by run ids', () => {
+        const actual = groupRuns(
+          {key: GroupByKey.RUN},
+          [
+            buildRun({id: 'eid1/alpha', name: 'alpha'}),
+            buildRun({id: 'eid1/beta', name: 'beta'}),
+            buildRun({id: 'eid2/beta', name: 'beta'}),
+            buildRun({id: 'eid2/gamma', name: 'gamma'}),
+          ],
+          {
+            'eid1/alpha': 'eid1',
+            'eid1/beta': 'eid1',
+            'eid2/beta': 'eid2',
+            'eid2/gamma': 'eid2',
+          }
+        );
+
+        expect(actual).toEqual({
+          'eid1/alpha': [buildRun({id: 'eid1/alpha', name: 'alpha'})],
+          'eid1/beta': [buildRun({id: 'eid1/beta', name: 'beta'})],
+          'eid2/beta': [buildRun({id: 'eid2/beta', name: 'beta'})],
+          'eid2/gamma': [buildRun({id: 'eid2/gamma', name: 'gamma'})],
+        });
+      });
+    });
+
+    describe('by experiment', () => {
+      it('groups runs by experiment ids', () => {
+        const actual = groupRuns(
+          {key: GroupByKey.EXPERIMENT},
+          [
+            buildRun({id: 'eid1/alpha', name: 'alpha'}),
+            buildRun({id: 'eid1/beta', name: 'beta'}),
+            buildRun({id: 'eid2/beta', name: 'beta'}),
+            buildRun({id: 'eid2/gamma', name: 'gamma'}),
+          ],
+          {
+            'eid1/alpha': 'eid1',
+            'eid1/beta': 'eid1',
+            'eid2/beta': 'eid2',
+            'eid2/gamma': 'eid2',
+          }
+        );
+
+        expect(actual).toEqual({
+          eid1: [
+            buildRun({id: 'eid1/alpha', name: 'alpha'}),
+            buildRun({id: 'eid1/beta', name: 'beta'}),
+          ],
+          eid2: [
+            buildRun({id: 'eid2/beta', name: 'beta'}),
+            buildRun({id: 'eid2/gamma', name: 'gamma'}),
+          ],
+        });
+      });
     });
   });
 });

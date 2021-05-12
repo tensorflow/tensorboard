@@ -156,7 +156,7 @@ export const getRunSelectorSort = createSelector(
 export const getRunColorMap = createSelector(
   getDataState,
   (state: RunsDataState): Record<string, string> => {
-    const map = new Map([...state.defaultColor, ...state.colorOverride]);
+    const map = new Map([...state.defaultRunColor, ...state.runColorOverride]);
     const colorObject: Record<string, string> = {};
     map.forEach((value, key) => {
       colorObject[key] = value;
