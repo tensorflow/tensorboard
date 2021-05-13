@@ -163,6 +163,7 @@ py_library(
     name = "context",
     srcs = ["context.py"],
     srcs_version = "PY3",
+    visibility = ["//visibility:public"],
     deps = [
         ":auth",
     ],

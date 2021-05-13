@@ -19,9 +19,9 @@ export function buildFeatureFlag(
   override: Partial<FeatureFlags> = {}
 ): FeatureFlags {
   return {
+    enabledColorGroup: false,
     enabledExperimentalPlugins: [],
     inColab: false,
-    enableGpuChart: false,
     scalarsBatchSize: undefined,
     ...override,
   };

@@ -15,8 +15,8 @@ limitations under the License.
 import {Injectable} from '@angular/core';
 import {Actions, createEffect, ofType, OnInitEffects} from '@ngrx/effects';
 import {Action, createAction, Store} from '@ngrx/store';
-import {EMPTY, Observable} from 'rxjs';
-import {catchError, map, mergeMap} from 'rxjs/operators';
+import {combineLatest, EMPTY, Observable, merge} from 'rxjs';
+import {catchError, concatMap, map, mergeMap, tap} from 'rxjs/operators';
 
 import {State} from '../../app_state';
 import {NotificationCenterDataSource} from '../_data_source/index';
@@ -25,6 +25,7 @@ import {CategoryEnum} from './notification_center_types';
 
 /** @typehack */ import * as _typeHackNgrxEffects from '@ngrx/effects';
 /** @typehack */ import * as _typeHackModels from '@ngrx/store/src/models';
+/** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
 export const initAction = createAction('[NotificationCenter Effects] Init');
 
@@ -75,6 +76,36 @@ export class NotificationCenterEffects implements OnInitEffects {
       })
     );
   }
+
+  private readonly notifcationLastReadTimeUpdated$ = this.actions$.pipe(
+    ofType(actions.notificationBellClicked),
+    concatMap(() => this.dataSource.updateLastReadTimeStampToNow()),
+    tap((time: number) =>
+      this.store.dispatch(actions.notifcationLastReadTimeUpdated({time}))
+    )
+  );
+
+  private readonly lastReadTimestampInitialized$ = this.actions$.pipe(
+    ofType(initAction),
+    concatMap(() => this.dataSource.getLastReadTimeStampInMs()),
+    tap((time: number) =>
+      this.store.dispatch(actions.lastReadTimestampInitialized({time}))
+    )
+  );
+
+  /**
+   * Updates last read timestamp.
+   *
+   * @export
+   */
+  updateLastReadTimestampInMs$ = createEffect(
+    () =>
+      combineLatest([
+        this.notifcationLastReadTimeUpdated$,
+        this.lastReadTimestampInitialized$,
+      ]),
+    {dispatch: false}
+  );
 }
 
 export const TEST_ONLY = {

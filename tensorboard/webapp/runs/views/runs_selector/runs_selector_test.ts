@@ -18,16 +18,10 @@ import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
-import {of} from 'rxjs';
 
 import {State} from '../../../app_state';
-import {
-  getExperimentIdsFromRoute,
-  getExperimentsHparamsAndMetrics,
-} from '../../../selectors';
-import {buildMetricSpec} from '../../store/testing';
+import {getExperimentIdsFromRoute} from '../../../selectors';
 import {RunsTableColumn} from '../runs_table/types';
-
 import {RunsSelectorComponent} from './runs_selector_component';
 import {RunsSelectorContainer} from './runs_selector_container';
 
@@ -44,10 +38,6 @@ describe('runs selector test', () => {
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
-    store.overrideSelector(getExperimentsHparamsAndMetrics, {
-      hparams: [],
-      metrics: [],
-    });
     selectSpy = spyOn(store, 'select').and.callThrough();
   });
 
@@ -93,22 +83,6 @@ describe('runs selector test', () => {
         RunsTableColumn.RUN_NAME,
         RunsTableColumn.RUN_COLOR,
       ]);
-    });
-
-    describe('hparams and metrics', () => {
-      beforeEach(() => {
-        store.overrideSelector(getExperimentIdsFromRoute, ['123', '456']);
-        selectSpy
-          .withArgs(getExperimentsHparamsAndMetrics, {
-            experimentIds: ['123', '456'],
-          })
-          .and.returnValue(
-            of({
-              hparams: [],
-              metrics: [buildMetricSpec({tag: 'foo'})],
-            })
-          );
-      });
     });
   });
 });

@@ -22,9 +22,9 @@ export function buildFeatureFlagState(
     isFeatureFlagsLoaded: false,
     defaultFlags: {
       enabledExperimentalPlugins: [],
-      enableGpuChart: false,
       inColab: false,
       scalarsBatchSize: 1,
+      enabledColorGroup: false,
     },
     ...override,
     flagOverrides: override.flagOverrides ?? {},

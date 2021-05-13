@@ -64,9 +64,6 @@ export const getIsInColab = createSelector(getFeatureFlags, (flags) => {
   return flags.inColab;
 });
 
-export const getIsGpuChartEnabled = createSelector(
-  getFeatureFlags,
-  (flags): boolean => {
-    return flags.enableGpuChart;
-  }
-);
+export const getEnabledColorGroup = createSelector(getFeatureFlags, (flags) => {
+  return flags.enabledColorGroup;
+});

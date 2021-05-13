@@ -7,9 +7,6 @@ tf_ts_library(
     srcs = [
         "index.ts",
     ],
-    visibility = [
-        "//tensorboard/webapp/alert:__subpackages__",
-    ],
     deps = [
         "//tensorboard/webapp/alert:types",
         "@npm//@ngrx/store",

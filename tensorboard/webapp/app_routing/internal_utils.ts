@@ -54,6 +54,12 @@ export function parseCompareExperimentStr(
   });
 }
 
+export function serializeCompareExperimentParams(
+  params: Array<{alias: string; id: string}>
+): string {
+  return params.map(({alias, id}) => `${alias}:${id}`).join(',');
+}
+
 /**
  * Returns experimentIds from route parameter. For a route that does not contain
  * any experiment ids, it returns null.

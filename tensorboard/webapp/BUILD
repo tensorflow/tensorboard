@@ -1,7 +1,6 @@
-load("//tensorboard/defs:defs.bzl", "tf_js_binary", "tf_ng_module", "tf_ng_web_test_suite", "tf_sass_binary", "tf_sass_library", "tf_svg_bundle")
+load("//tensorboard/defs:defs.bzl", "tf_js_binary", "tf_ng_module", "tf_ng_web_test_suite", "tf_sass_binary", "tf_sass_library", "tf_svg_bundle", "tf_ts_library")
 load("//tensorboard/defs:js.bzl", "tf_resource_digest_suffixer")
-load("//tensorboard/defs:web.bzl", "tf_web_library")
-load("//tensorboard/defs:vulcanize.bzl", "tensorboard_html_binary")
+load("//tensorboard/defs:web.bzl", "tb_combine_html", "tf_web_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
@@ -72,6 +71,13 @@ tf_ng_module(
         "//tensorboard/webapp/angular:expect_angular_material_icon",
         "@npm//@angular/core",
         "@npm//@angular/platform-browser",
+    ],
+)
+
+tf_ts_library(
+    name = "tb_polymer_interop_types",
+    srcs = [
+        "tb_polymer_interop_types.ts",
     ],
 )
 
@@ -172,6 +178,7 @@ tf_ng_module(
     deps = [
         ":app",
         "@npm//@angular/core",
+        "@npm//@angular/localize",
         "@npm//@angular/platform-browser",
         "@npm//@angular/router",
         "@npm//zone.js",
@@ -234,7 +241,7 @@ tf_web_library(
 )
 
 # A Vulcanized html binary for the complete app (both Angular and Polymer parts)
-tensorboard_html_binary(
+tb_combine_html(
     name = "index_suffixless",
     input_path = "/index_polymer3.inlined.html",
     # Do note that JavaScript filename is created off of `name` of this target yet the
@@ -344,7 +351,6 @@ tf_ng_web_test_suite(
         "//tensorboard/webapp/widgets:resize_detector_test",
         "//tensorboard/webapp/widgets:resize_detector_testing",
         "//tensorboard/webapp/widgets/histogram:histogram_test",
-        "//tensorboard/webapp/widgets/line_chart:line_chart_test",
         "//tensorboard/webapp/widgets/line_chart_v2:line_chart_v2_tests",
         "//tensorboard/webapp/widgets/line_chart_v2/lib:lib_tests",
         "//tensorboard/webapp/widgets/line_chart_v2/lib/renderer:renderer_test",

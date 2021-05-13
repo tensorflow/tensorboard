@@ -19,12 +19,8 @@ limitations under the License.
 import {RouteContextedState} from '../../app_routing/route_contexted_reducer_helper';
 import {LoadState} from '../../types/data';
 import {SortDirection} from '../../types/ui';
-import {
-  HparamSpec,
-  HparamValue,
-  MetricSpec,
-} from '../data_source/runs_data_source_types';
-import {DiscreteFilter, IntervalFilter, SortKey} from '../types';
+import {HparamValue} from '../data_source/runs_data_source_types';
+import {GroupByKey, SortKey} from '../types';
 
 export {Domain, DomainType} from '../data_source/runs_data_source_types';
 
@@ -46,52 +42,51 @@ export const RUNS_FEATURE_KEY = 'runs';
 
 export type ExperimentId = string;
 export type RunId = string;
-type HparamName = string;
-type MetricName = string;
 
-export interface HparamAndMetricSpec {
-  hparams: HparamSpec[];
-  metrics: MetricSpec[];
+// 'RouteKey' is a serialization of multiple experiment IDs.
+export type RouteKey = string;
+
+export interface RunsDataRoutefulState {
+  colorOverride: Map<RunId, string>;
+  defaultColor: Map<RunId, string>;
+  // Index of the color palette to be used in the next assgined group.
+  nextGroupColorIndex: number;
 }
 
-export type ExperimentToHparamAndMetricSpec = Record<
-  ExperimentId,
-  HparamAndMetricSpec
->;
-
-/**
- * Interface that describes shape of the `data` state in the runs feature.
- */
-export interface RunsDataState {
+export interface RunsDataRoutelessState {
   runIds: Record<ExperimentId, RunId[]>;
   runIdToExpId: Record<RunId, ExperimentId>;
   runMetadata: Record<RunId, Run>;
   runsLoadState: Record<ExperimentId, LoadState>;
-  hparamAndMetricSpec: ExperimentToHparamAndMetricSpec;
-  // Run selection is tied to a list of experimentIds which is somewhat related
-  // to route but not strictly. For instance, if we want to render the
-  // run-selector in both experiment list and dashboard routes sharing the
-  // state, they need to share a key.
-  selectionState: Map<string, Map<RunId, boolean>>;
+  /**
+   * Map from a 'key' to a `RunId` to boolean whether the run is selected.
+   *
+   * Run selection is tied to a list of experimentIds which is somewhat related
+   * to route but not strictly. For instance, if we want to render the
+   * run-selector in both experiment list and dashboard routes sharing the
+   * state, they need to share a key.
+   *
+   * TODO(psybuzz): this belongs in UI state not data state.
+   */
+  selectionState: Map<RouteKey, Map<RunId, boolean>>;
 }
+
+/**
+ * Interface that describes shape of the `data` state in the runs feature.
+ */
+export type RunsDataState = RouteContextedState<
+  RunsDataRoutefulState,
+  RunsDataRoutelessState
+>;
 
 export interface RunsUiRoutefulState {
   paginationOption: {pageIndex: number; pageSize: number};
   regexFilter: string;
   sort: {key: SortKey | null; direction: SortDirection};
-
-  // Each route may keep track of its own hparam/metric filter values that
-  // overrides the default filters.
-  hparamFilters: Map<HparamName, DiscreteFilter | IntervalFilter>;
-  metricFilters: Map<MetricName, IntervalFilter>;
-  runColorOverride: Map<RunId, string>;
+  groupBy: GroupByKey;
 }
 
-export interface RunsUiRoutelessState {
-  hparamDefaultFilters: Map<HparamName, DiscreteFilter | IntervalFilter>;
-  metricDefaultFilters: Map<MetricName, IntervalFilter>;
-  defaultRunColor: Map<RunId, string>;
-}
+export interface RunsUiRoutelessState {}
 
 /**
  * Interface that describes shape of the `ui` state in the runs feature.
@@ -121,4 +116,4 @@ export interface State {
  * equal to MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT in an experiment, we default
  * select all runs.
  */
-export const MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT = 40;
+export const MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT = 500;

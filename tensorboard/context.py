@@ -32,9 +32,14 @@ class RequestContext(object):
 
     Fields:
       auth: An `AuthContext`, which may be empty but is never `None`.
+      remote_ip: An `ipaddress.IPv4Address` or `ipaddress.IPv6Address` or None.
+        Best guess of the IP Address of the end user.
+      x_forwarded_for: A tuple of `ipaddress.IPv4Address` or `ipaddress.IPv6Address`,
+        which may be empty but is never None. This should be parsed value of X-Forwarded-For
+        HTTP header from the request.
     """
 
-    def __init__(self, auth=None):
+    def __init__(self, auth=None, remote_ip=None, x_forwarded_for=None):
         """Create a request context.
 
         The argument list is sorted and may be extended in the future;
@@ -46,10 +51,20 @@ class RequestContext(object):
           and will be replaced with default values if appropriate.
         """
         self._auth = auth if auth is not None else auth_lib.AuthContext.empty()
+        self._remote_ip = remote_ip
+        self._x_forwarded_for = x_forwarded_for or ()
 
     @property
     def auth(self):
         return self._auth
+
+    @property
+    def remote_ip(self):
+        return self._remote_ip
+
+    @property
+    def x_forwarded_for(self):
+        return self._x_forwarded_for
 
     def replace(self, **kwargs):
         """Create a copy of this context with updated key-value pairs.
@@ -65,6 +80,8 @@ class RequestContext(object):
           A new context like this one but with the specified updates.
         """
         kwargs.setdefault("auth", self.auth)
+        kwargs.setdefault("remote_ip", self.remote_ip)
+        kwargs.setdefault("x_forwarded_for", self.x_forwarded_for)
         return type(self)(**kwargs)
 
 

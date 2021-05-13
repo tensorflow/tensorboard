@@ -16,8 +16,10 @@ import {OverlayContainer} from '@angular/cdk/overlay';
 import {
   ChangeDetectorRef,
   Component,
+  EventEmitter,
   Inject,
   Input,
+  Output,
   TemplateRef,
 } from '@angular/core';
 import {
@@ -34,7 +36,7 @@ import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
-import {of, ReplaySubject} from 'rxjs';
+import {Observable, of, ReplaySubject} from 'rxjs';
 
 import {State} from '../../../app_state';
 import {Run} from '../../../runs/store/runs_types';
@@ -42,12 +44,6 @@ import {buildRun} from '../../../runs/store/testing';
 import * as selectors from '../../../selectors';
 import {MatIconTestingModule} from '../../../testing/mat_icon_module';
 import {DataLoadState} from '../../../types/data';
-import {RunColorScale} from '../../../types/ui';
-import {
-  XAxisType as ChartXAxisType,
-  YAxisType,
-} from '../../../widgets/line_chart/line_chart_types';
-import {TooltipSortingMethod} from '../../../widgets/line_chart/polymer_interop_types';
 import {Formatter} from '../../../widgets/line_chart_v2/lib/formatter';
 import {
   DataSeries,
@@ -59,42 +55,20 @@ import {
 import {ResizeDetectorTestingModule} from '../../../widgets/resize_detector_testing_module';
 import {TruncatedPathModule} from '../../../widgets/text/truncated_path_module';
 import {PluginType} from '../../data_source';
+import {getMetricsScalarSmoothing} from '../../store';
 import {
   appStateFromMetricsState,
   buildMetricsState,
   provideMockCardRunToSeriesData,
 } from '../../testing';
 import {TooltipSort, XAxisType} from '../../types';
-import {
-  LegacySeriesDataList,
-  ScalarCardComponent,
-  ScalarChartEvalPoint,
-  TooltipColumns,
-} from './scalar_card_component';
+import {ScalarCardComponent} from './scalar_card_component';
 import {ScalarCardContainer} from './scalar_card_container';
 import {
   ScalarCardPoint,
   ScalarCardSeriesMetadata,
   SeriesType,
 } from './scalar_card_types';
-
-@Component({
-  selector: 'tb-line-chart',
-  template: '',
-})
-class TestableLineChart {
-  @Input() colorScale!: RunColorScale;
-  @Input() tooltipColumns!: TooltipColumns;
-  @Input() seriesDataList!: LegacySeriesDataList;
-  @Input() smoothingEnabled!: boolean;
-  @Input() ignoreYOutliers!: boolean;
-  @Input() smoothingWeight!: number;
-  @Input() xAxisType!: ChartXAxisType;
-  @Input() yAxisType!: YAxisType;
-  @Input() tooltipSortingMethod!: TooltipSortingMethod;
-  redraw() {}
-  resetDomain() {}
-}
 
 @Component({
   selector: 'line-chart',
@@ -110,7 +84,7 @@ class TestableLineChart {
     ></ng-container>
   `,
 })
-class TestableGpuLineChart {
+class TestableLineChart {
   @Input() customXFormatter?: Formatter;
   @Input() preferredRendererType!: RendererType;
   @Input() seriesData!: DataSeries[];
@@ -122,10 +96,21 @@ class TestableGpuLineChart {
   @Input()
   tooltipTemplate!: TemplateRef<{data: TooltipDatum[]}>;
 
+  @Output()
+  onViewBoxOverridden = new EventEmitter<boolean>();
+
   // This input does not exist on real line-chart and is devised to make tooltipTemplate
   // testable without using the real implementation.
   @Input() tooltipDataForTesting: TooltipDatum[] = [];
   @Input() cursorLocForTesting: {x: number; y: number} = {x: 0, y: 0};
+
+  private isViewBoxOverridden = new ReplaySubject<boolean>(1);
+
+  getIsViewBoxOverridden(): Observable<boolean> {
+    return this.isViewBoxOverridden;
+  }
+
+  viewBoxReset() {}
 
   constructor(public readonly changeDetectorRef: ChangeDetectorRef) {}
 }
@@ -148,6 +133,13 @@ describe('scalar card', () => {
   let selectSpy: jasmine.Spy;
   let overlayContainer: OverlayContainer;
   let resizeTester: ResizeDetectorTestingModule;
+
+  const Selector = {
+    FIT_TO_DOMAIN: By.css('[aria-label="Fit line chart domains to data"]'),
+    LINE_CHART: By.directive(TestableLineChart),
+    TOOLTIP_HEADER_COLUMN: By.css('table.tooltip th'),
+    TOOLTIP_ROW: By.css('table.tooltip .tooltip-row'),
+  };
 
   function openOverflowMenu(fixture: ComponentFixture<ScalarCardContainer>) {
     const menuButton = fixture.debugElement.query(
@@ -173,17 +165,15 @@ describe('scalar card', () => {
     fixture.componentInstance.DataDownloadComponent = TestableDataDownload;
     // Let the observables to be subscribed.
     fixture.detectChanges();
-    // Flush the debounce on the `seriesDataList$`.
+    // Flush the debounce on the `seriesData$`.
     tick(0);
-    // Redraw based on the flushed `seriesDataList$`.
+    // Redraw based on the flushed `seriesData$`.
     fixture.detectChanges();
 
     const scalarCardComponent = fixture.debugElement.query(
       By.directive(ScalarCardComponent)
     );
-    const lineChartComponent = fixture.debugElement.query(
-      By.directive(TestableLineChart)
-    );
+    const lineChartComponent = fixture.debugElement.query(Selector.LINE_CHART);
 
     // LineChart is rendered inside *ngIf. Set it only when it is rendered.
     if (lineChartComponent) {
@@ -192,13 +182,17 @@ describe('scalar card', () => {
       // would be populated by ViewChild decorator.
       scalarCardComponent.componentInstance.lineChart =
         lineChartComponent.componentInstance;
+      // lineChart property is now set; let the template re-render with
+      // `lineChart` checks correctly return the right value.
+      lineChartComponent.componentInstance.changeDetectorRef.markForCheck();
     }
+    fixture.detectChanges();
     return fixture;
   }
 
   function triggerStoreUpdate() {
     store.refreshState();
-    // Flush the debounce on the `seriesDataList$`.
+    // Flush the debounce on the `seriesData$`.
     tick(0);
   }
 
@@ -218,7 +212,6 @@ describe('scalar card', () => {
         ScalarCardComponent,
         TestableDataDownload,
         TestableLineChart,
-        TestableGpuLineChart,
       ],
       providers: [
         provideMockStore({
@@ -238,170 +231,171 @@ describe('scalar card', () => {
     store.overrideSelector(selectors.getExperimentIdForRunId, null);
     store.overrideSelector(selectors.getExperimentIdToAliasMap, {});
     store.overrideSelector(selectors.getRun, null);
-    store.overrideSelector(selectors.getIsGpuChartEnabled, false);
     store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.STEP);
     store.overrideSelector(selectors.getVisibleCardIdSet, new Set(['card1']));
     store.overrideSelector(
       selectors.getMetricsScalarPartitionNonMonotonicX,
       false
     );
+    store.overrideSelector(selectors.getMetricsScalarSmoothing, 0);
+    store.overrideSelector(selectors.getMetricsIgnoreOutliers, false);
+    store.overrideSelector(
+      selectors.getMetricsTooltipSort,
+      TooltipSort.DEFAULT
+    );
+    store.overrideSelector(selectors.getRunColorMap, {});
   });
 
-  it('stamps line chart impl only when card is first visible', fakeAsync(() => {
-    const cardMetadata = {
-      plugin: PluginType.SCALARS,
-      tag: 'tagA',
-      run: null,
-    };
-    provideMockCardRunToSeriesData(
-      selectSpy,
-      PluginType.SCALARS,
-      'card1',
-      cardMetadata,
-      null /* runToSeries */
-    );
-    store.overrideSelector(selectors.getVisibleCardIdSet, new Set(['unknown']));
+  describe('basic renders', () => {
+    it('stamps line chart impl only when card is first visible', fakeAsync(() => {
+      const cardMetadata = {
+        plugin: PluginType.SCALARS,
+        tag: 'tagA',
+        run: null,
+      };
+      provideMockCardRunToSeriesData(
+        selectSpy,
+        PluginType.SCALARS,
+        'card1',
+        cardMetadata,
+        null /* runToSeries */
+      );
+      store.overrideSelector(
+        selectors.getVisibleCardIdSet,
+        new Set(['unknown'])
+      );
 
-    const fixture = createComponent('card1');
+      const fixture = createComponent('card1');
 
-    const lineChart1 = fixture.debugElement.query(
-      By.directive(TestableLineChart)
-    );
-    expect(lineChart1).toBeNull();
+      const lineChart1 = fixture.debugElement.query(Selector.LINE_CHART);
+      expect(lineChart1).toBeNull();
 
-    store.overrideSelector(selectors.getVisibleCardIdSet, new Set(['card1']));
-    store.refreshState();
-    fixture.detectChanges();
+      store.overrideSelector(selectors.getVisibleCardIdSet, new Set(['card1']));
+      store.refreshState();
+      fixture.detectChanges();
 
-    const lineChart2 = fixture.debugElement.query(
-      By.directive(TestableLineChart)
-    );
-    expect(lineChart2).not.toBeNull();
+      const lineChart2 = fixture.debugElement.query(Selector.LINE_CHART);
+      expect(lineChart2).not.toBeNull();
 
-    store.overrideSelector(selectors.getVisibleCardIdSet, new Set(['gone']));
-    store.refreshState();
-    fixture.detectChanges();
+      store.overrideSelector(selectors.getVisibleCardIdSet, new Set(['gone']));
+      store.refreshState();
+      fixture.detectChanges();
 
-    const lineChart3 = fixture.debugElement.query(
-      By.directive(TestableLineChart)
-    );
-    expect(lineChart3).not.toBeNull();
-  }));
+      const lineChart3 = fixture.debugElement.query(Selector.LINE_CHART);
+      expect(lineChart3).not.toBeNull();
+    }));
 
-  it('renders empty chart when there is no data', fakeAsync(() => {
-    const cardMetadata = {
-      plugin: PluginType.SCALARS,
-      tag: 'tagA',
-      run: null,
-    };
-    provideMockCardRunToSeriesData(
-      selectSpy,
-      PluginType.SCALARS,
-      'card1',
-      cardMetadata,
-      null /* runToSeries */
-    );
+    it('renders empty chart when there is no data', fakeAsync(() => {
+      const cardMetadata = {
+        plugin: PluginType.SCALARS,
+        tag: 'tagA',
+        run: null,
+      };
+      provideMockCardRunToSeriesData(
+        selectSpy,
+        PluginType.SCALARS,
+        'card1',
+        cardMetadata,
+        null /* runToSeries */
+      );
 
-    const fixture = createComponent('card1');
+      const fixture = createComponent('card1');
 
-    const metadataEl = fixture.debugElement.query(By.css('.heading'));
-    expect(metadataEl.nativeElement.textContent).toContain('tagA');
+      const metadataEl = fixture.debugElement.query(By.css('.heading'));
+      expect(metadataEl.nativeElement.textContent).toContain('tagA');
 
-    const lineChartEl = fixture.debugElement.query(
-      By.directive(TestableLineChart)
-    );
-    expect(lineChartEl).toBeTruthy();
-    expect(lineChartEl.componentInstance.seriesDataList.length).toBe(0);
-  }));
+      const lineChartEl = fixture.debugElement.query(Selector.LINE_CHART);
+      expect(lineChartEl).toBeTruthy();
+      expect(lineChartEl.componentInstance.seriesData.length).toBe(0);
+    }));
 
-  it('renders loading spinner when loading', fakeAsync(() => {
-    provideMockCardRunToSeriesData(selectSpy, PluginType.SCALARS, 'card1');
-    store.overrideSelector(
-      selectors.getCardLoadState,
-      DataLoadState.NOT_LOADED
-    );
-    triggerStoreUpdate();
+    it('renders loading spinner when loading', fakeAsync(() => {
+      provideMockCardRunToSeriesData(selectSpy, PluginType.SCALARS, 'card1');
+      store.overrideSelector(
+        selectors.getCardLoadState,
+        DataLoadState.NOT_LOADED
+      );
+      triggerStoreUpdate();
 
-    const fixture = createComponent('card1');
-    let loadingEl = fixture.debugElement.query(By.css('mat-spinner'));
-    expect(loadingEl).not.toBeTruthy();
+      const fixture = createComponent('card1');
+      let loadingEl = fixture.debugElement.query(By.css('mat-spinner'));
+      expect(loadingEl).not.toBeTruthy();
 
-    store.overrideSelector(selectors.getCardLoadState, DataLoadState.LOADING);
-    triggerStoreUpdate();
-    fixture.detectChanges();
-    loadingEl = fixture.debugElement.query(By.css('mat-spinner'));
-    expect(loadingEl).toBeTruthy();
+      store.overrideSelector(selectors.getCardLoadState, DataLoadState.LOADING);
+      triggerStoreUpdate();
+      fixture.detectChanges();
+      loadingEl = fixture.debugElement.query(By.css('mat-spinner'));
+      expect(loadingEl).toBeTruthy();
 
-    store.overrideSelector(selectors.getCardLoadState, DataLoadState.LOADED);
-    triggerStoreUpdate();
-    fixture.detectChanges();
-    loadingEl = fixture.debugElement.query(By.css('mat-spinner'));
-    expect(loadingEl).not.toBeTruthy();
+      store.overrideSelector(selectors.getCardLoadState, DataLoadState.LOADED);
+      triggerStoreUpdate();
+      fixture.detectChanges();
+      loadingEl = fixture.debugElement.query(By.css('mat-spinner'));
+      expect(loadingEl).not.toBeTruthy();
 
-    store.overrideSelector(selectors.getCardLoadState, DataLoadState.FAILED);
-    triggerStoreUpdate();
-    fixture.detectChanges();
-    loadingEl = fixture.debugElement.query(By.css('mat-spinner'));
-    expect(loadingEl).not.toBeTruthy();
-  }));
+      store.overrideSelector(selectors.getCardLoadState, DataLoadState.FAILED);
+      triggerStoreUpdate();
+      fixture.detectChanges();
+      loadingEl = fixture.debugElement.query(By.css('mat-spinner'));
+      expect(loadingEl).not.toBeTruthy();
+    }));
 
-  it('renders data', fakeAsync(() => {
-    const cardMetadata = {
-      plugin: PluginType.SCALARS,
-      tag: 'tagA',
-      run: null,
-    };
-    const runToSeries = {
-      run1: [
-        {wallTime: 100, value: 1, step: 333},
-        {wallTime: 101, value: 2, step: 555},
-      ],
-    };
-    provideMockCardRunToSeriesData(
-      selectSpy,
-      PluginType.SCALARS,
-      'card1',
-      cardMetadata,
-      runToSeries
-    );
-    store.overrideSelector(
-      selectors.getCurrentRouteRunSelection,
-      new Map([['run1', true]])
-    );
-    store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.STEP);
-    selectSpy
-      .withArgs(selectors.getRun, {runId: 'run1'})
-      .and.returnValue(of(buildRun({name: 'Run1 name'})));
+    it('renders data', fakeAsync(() => {
+      store.overrideSelector(getMetricsScalarSmoothing, 0);
+      const cardMetadata = {
+        plugin: PluginType.SCALARS,
+        tag: 'tagA',
+        run: null,
+      };
+      const runToSeries = {
+        run1: [
+          {wallTime: 100, value: 1, step: 333},
+          {wallTime: 101, value: 2, step: 555},
+        ],
+      };
+      provideMockCardRunToSeriesData(
+        selectSpy,
+        PluginType.SCALARS,
+        'card1',
+        cardMetadata,
+        runToSeries
+      );
+      store.overrideSelector(
+        selectors.getCurrentRouteRunSelection,
+        new Map([['run1', true]])
+      );
+      store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.STEP);
+      selectSpy
+        .withArgs(selectors.getRun, {runId: 'run1'})
+        .and.returnValue(of(buildRun({name: 'Run1 name'})));
 
-    const fixture = createComponent('card1');
+      const fixture = createComponent('card1');
 
-    const metadataEl = fixture.debugElement.query(By.css('.heading'));
-    const emptyEl = fixture.debugElement.query(By.css('.empty-message'));
-    expect(metadataEl.nativeElement.textContent).toContain('tagA');
-    expect(emptyEl).not.toBeTruthy();
+      const metadataEl = fixture.debugElement.query(By.css('.heading'));
+      const emptyEl = fixture.debugElement.query(By.css('.empty-message'));
+      expect(metadataEl.nativeElement.textContent).toContain('tagA');
+      expect(emptyEl).not.toBeTruthy();
 
-    const lineChartEl = fixture.debugElement.query(
-      By.directive(TestableLineChart)
-    );
-    expect(lineChartEl).toBeTruthy();
+      const lineChartEl = fixture.debugElement.query(Selector.LINE_CHART);
+      expect(lineChartEl).toBeTruthy();
 
-    expect(lineChartEl.componentInstance.seriesDataList.length).toBe(1);
-    const {
-      seriesId,
-      metadata,
-      points,
-      visible,
-    } = lineChartEl.componentInstance.seriesDataList[0];
-    expect(seriesId).toBe('run1');
-    expect(metadata).toEqual({displayName: 'Run1 name'});
-    expect(visible).toBe(true);
-    expect(
-      points.map((p: {x: number; y: number}) => ({x: p.x, y: p.y}))
-    ).toEqual([
-      {x: 333, y: 1},
-      {x: 555, y: 2},
-    ]);
-  }));
+      expect(lineChartEl.componentInstance.seriesData.length).toBe(1);
+      const {id, points} = lineChartEl.componentInstance.seriesData[0];
+      expect(id).toBe('run1');
+      expect(
+        points.map((p: {x: number; y: number}) => ({x: p.x, y: p.y}))
+      ).toEqual([
+        {x: 333, y: 1},
+        {x: 555, y: 2},
+      ]);
+      const {
+        visible,
+        displayName,
+      } = lineChartEl.componentInstance.seriesMetadataMap[id];
+      expect(displayName).toBe('Run1 name');
+      expect(visible).toBe(true);
+    }));
+  });
 
   describe('displayName', () => {
     beforeEach(() => {
@@ -411,6 +405,7 @@ describe('scalar card', () => {
         run: null,
       };
       const runToSeries = {run1: [{wallTime: 101, value: 2, step: 555}]};
+      store.overrideSelector(getMetricsScalarSmoothing, 0);
       provideMockCardRunToSeriesData(
         selectSpy,
         PluginType.SCALARS,
@@ -434,16 +429,11 @@ describe('scalar card', () => {
 
       const fixture = createComponent('card1');
 
-      const lineChartEl = fixture.debugElement.query(
-        By.directive(TestableLineChart)
-      );
-      const {
-        seriesId,
-        metadata,
-      } = lineChartEl.componentInstance.seriesDataList[0];
-
-      expect(seriesId).toBe('run1');
-      expect(metadata).toEqual({displayName: 'existing_exp/Run1 name'});
+      const lineChartEl = fixture.debugElement.query(Selector.LINE_CHART);
+      const {displayName} = lineChartEl.componentInstance.seriesMetadataMap[
+        'run1'
+      ];
+      expect(displayName).toBe('existing_exp/Run1 name');
     }));
 
     it('sets run id if a run and experiment are not found', fakeAsync(() => {
@@ -457,16 +447,11 @@ describe('scalar card', () => {
 
       const fixture = createComponent('card1');
 
-      const lineChartEl = fixture.debugElement.query(
-        By.directive(TestableLineChart)
-      );
-      const {
-        seriesId,
-        metadata,
-      } = lineChartEl.componentInstance.seriesDataList[0];
-
-      expect(seriesId).toBe('run1');
-      expect(metadata).toEqual({displayName: 'run1'});
+      const lineChartEl = fixture.debugElement.query(Selector.LINE_CHART);
+      const {displayName} = lineChartEl.componentInstance.seriesMetadataMap[
+        'run1'
+      ];
+      expect(displayName).toBe('run1');
     }));
 
     it('shows experiment id and "..." if only run is not found (maybe loading)', fakeAsync(() => {
@@ -482,17 +467,13 @@ describe('scalar card', () => {
 
       const fixture = createComponent('card1');
 
-      const lineChartEl = fixture.debugElement.query(
-        By.directive(TestableLineChart)
-      );
-      expect(lineChartEl.componentInstance.seriesDataList.length).toBe(1);
+      const lineChartEl = fixture.debugElement.query(Selector.LINE_CHART);
+      expect(lineChartEl.componentInstance.seriesData.length).toBe(1);
 
-      const {
-        seriesId,
-        metadata,
-      } = lineChartEl.componentInstance.seriesDataList[0];
-      expect(seriesId).toBe('run1');
-      expect(metadata).toEqual({displayName: 'existing_exp/...'});
+      const {displayName} = lineChartEl.componentInstance.seriesMetadataMap[
+        'run1'
+      ];
+      expect(displayName).toBe('existing_exp/...');
     }));
 
     it('updates displayName with run when run populates', fakeAsync(() => {
@@ -514,11 +495,11 @@ describe('scalar card', () => {
       triggerStoreUpdate();
       fixture.detectChanges();
 
-      const lineChartEl = fixture.debugElement.query(
-        By.directive(TestableLineChart)
-      );
-      const {metadata} = lineChartEl.componentInstance.seriesDataList[0];
-      expect(metadata).toEqual({displayName: 'existing_exp/Foobar'});
+      const lineChartEl = fixture.debugElement.query(Selector.LINE_CHART);
+      const {displayName} = lineChartEl.componentInstance.seriesMetadataMap[
+        'run1'
+      ];
+      expect(displayName).toBe('existing_exp/Foobar');
     }));
   });
 
@@ -549,8 +530,12 @@ describe('scalar card', () => {
         {x: 555, y: 2},
       ],
       wallTime: [
-        {x: 100, y: 1},
-        {x: 101, y: 2},
+        {x: 100000, y: 1},
+        {x: 101000, y: 2},
+      ],
+      relative: [
+        {x: 0, y: 1},
+        {x: 1000, y: 2},
       ],
     };
 
@@ -568,265 +553,33 @@ describe('scalar card', () => {
       {
         name: 'relative',
         xType: XAxisType.RELATIVE,
-        expectedPoints: expectedPoints.wallTime,
+        expectedPoints: expectedPoints.relative,
       },
     ];
     for (const spec of specs) {
       it(`formats series data when xAxisType is: ${spec.name}`, fakeAsync(() => {
+        store.overrideSelector(selectors.getMetricsScalarSmoothing, 0);
         store.overrideSelector(selectors.getMetricsXAxisType, spec.xType);
         selectSpy
           .withArgs(selectors.getRun, {runId: 'run1'})
           .and.returnValue(of(buildRun({name: 'Run1 name'})));
         const fixture = createComponent('card1');
 
-        const lineChartEl = fixture.debugElement.query(
-          By.directive(TestableLineChart)
-        );
-        expect(lineChartEl.componentInstance.seriesDataList.length).toBe(1);
+        const lineChartEl = fixture.debugElement.query(Selector.LINE_CHART);
+        expect(lineChartEl.componentInstance.seriesData.length).toBe(1);
+        const {id, points} = lineChartEl.componentInstance.seriesData[0];
         const {
-          seriesId,
-          metadata,
-          points,
           visible,
-        } = lineChartEl.componentInstance.seriesDataList[0];
-        expect(seriesId).toBe('run1');
-        expect(metadata).toEqual({displayName: 'Run1 name'});
+          displayName,
+        } = lineChartEl.componentInstance.seriesMetadataMap['run1'];
+        expect(id).toBe('run1');
+        expect(displayName).toBe('Run1 name');
         expect(visible).toBe(true);
         expect(
           points.map((p: {x: number; y: number}) => ({x: p.x, y: p.y}))
         ).toEqual(spec.expectedPoints);
       }));
     }
-  });
-
-  it('uses proper default tooltip columns', fakeAsync(() => {
-    const pointData1 = [
-      {x: 10, y: 20, step: 10, wallTime: 120, value: 20},
-      {x: 11, y: -20, step: 11, wallTime: 125, value: -20},
-    ];
-    const pointData2 = [{x: 12, y: 2, step: 12, wallTime: 130, value: 2}];
-    const dataset1 = {
-      metadata: () => ({meta: {displayName: 'run1'}}),
-      data: () => pointData1,
-    };
-    const dataset2 = {
-      metadata: () => ({meta: {displayName: 'run2'}}),
-      data: () => pointData2,
-    };
-    const testChartPoints: ScalarChartEvalPoint[] = [
-      {datum: pointData1[0], dataset: dataset1},
-      {datum: pointData1[1], dataset: dataset1},
-      {datum: pointData2[0], dataset: dataset2},
-    ];
-
-    const fixture = createComponent('cardId');
-    const tooltipColumns: TooltipColumns = fixture.debugElement.query(
-      By.directive(ScalarCardComponent)
-    ).componentInstance.tooltipColumns;
-    const results = tooltipColumns.map((column) => {
-      return {
-        title: column.title,
-        results: testChartPoints.map((d) => column.evaluate(d)),
-      };
-    });
-
-    const resultsWithoutTime = results.filter((r) => r.title !== 'Time');
-    expect(resultsWithoutTime).toEqual([
-      {
-        title: 'Name',
-        results: ['run1', 'run1', 'run2'],
-      },
-      {
-        title: 'Value',
-        results: ['20', '-20', '2'],
-      },
-      {
-        title: 'Step',
-        results: ['10', '11', '12'],
-      },
-      {
-        title: 'Relative',
-        results: ['0s', '5s', '0s'],
-      },
-    ]);
-  }));
-
-  it('respects settings from the store', fakeAsync(() => {
-    const runToSeries = {
-      run1: [
-        {wallTime: 100, value: 1, step: 333},
-        {wallTime: 101, value: 2, step: 555},
-      ],
-    };
-    const expectedPoints = {
-      step: [
-        {x: 333, y: 1},
-        {x: 555, y: 2},
-      ],
-      wallTime: [
-        {x: 100, y: 1},
-        {x: 101, y: 2},
-      ],
-    };
-    provideMockCardRunToSeriesData(
-      selectSpy,
-      PluginType.SCALARS,
-      'card1',
-      null /* metadataOverride */,
-      runToSeries
-    );
-    store.overrideSelector(
-      selectors.getCurrentRouteRunSelection,
-      new Map([['run1', true]])
-    );
-    store.overrideSelector(
-      selectors.getMetricsTooltipSort,
-      TooltipSort.ASCENDING
-    );
-    store.overrideSelector(selectors.getMetricsIgnoreOutliers, true);
-    store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.STEP);
-    store.overrideSelector(selectors.getMetricsScalarSmoothing, 1);
-
-    const fixture = createComponent('card1');
-
-    const lineChart = fixture.debugElement.query(
-      By.directive(TestableLineChart)
-    ).componentInstance;
-    expect(lineChart.tooltipSortingMethod).toBe(TooltipSort.ASCENDING);
-    expect(lineChart.ignoreYOutliers).toBe(true);
-    expect(lineChart.xAxisType).toBe(ChartXAxisType.STEP);
-    expect(lineChart.smoothingEnabled).toBe(true);
-    expect(lineChart.smoothingWeight).toBe(1);
-    expect(lineChart.seriesDataList.length).toBe(1);
-    const pointsBefore = lineChart.seriesDataList[0].points.map(
-      (p: {x: number; y: number}) => {
-        return {x: p.x, y: p.y};
-      }
-    );
-    expect(pointsBefore).toEqual(expectedPoints.step);
-
-    store.overrideSelector(
-      selectors.getMetricsTooltipSort,
-      TooltipSort.DESCENDING
-    );
-    store.overrideSelector(selectors.getMetricsIgnoreOutliers, false);
-    store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.WALL_TIME);
-    store.overrideSelector(selectors.getMetricsScalarSmoothing, 0);
-    triggerStoreUpdate();
-
-    fixture.detectChanges();
-
-    expect(lineChart.tooltipSortingMethod).toBe(TooltipSort.DESCENDING);
-    expect(lineChart.ignoreYOutliers).toBe(false);
-    expect(lineChart.xAxisType).toBe(ChartXAxisType.WALL_TIME);
-    expect(lineChart.smoothingEnabled).toBe(false);
-    expect(lineChart.smoothingWeight).toBe(0);
-    expect(lineChart.seriesDataList.length).toBe(1);
-    const pointsAfter = lineChart.seriesDataList[0].points.map(
-      (p: {x: number; y: number}) => {
-        return {x: p.x, y: p.y};
-      }
-    );
-    expect(pointsAfter).toEqual(expectedPoints.wallTime);
-  }));
-
-  it('respects run selection state', fakeAsync(() => {
-    const runToSeries = {
-      run1: [{wallTime: 100, value: 1, step: 333}],
-      run2: [{wallTime: 100, value: 1, step: 333}],
-      run3: [{wallTime: 100, value: 1, step: 333}],
-    };
-    provideMockCardRunToSeriesData(
-      selectSpy,
-      PluginType.SCALARS,
-      'card1',
-      null /* metadataOverride */,
-      runToSeries
-    );
-    store.overrideSelector(
-      selectors.getCurrentRouteRunSelection,
-      new Map([
-        ['run1', true],
-        ['run2', false],
-      ])
-    );
-
-    const fixture = createComponent('card1');
-
-    const lineChart = fixture.debugElement.query(
-      By.directive(TestableLineChart)
-    ).componentInstance as TestableLineChart;
-    let visibleRunIds = lineChart.seriesDataList
-      .filter((x) => x.visible)
-      .map((x) => x.seriesId);
-    expect(lineChart.seriesDataList.length).toBe(3);
-    expect(visibleRunIds).toEqual(['run1']);
-
-    store.overrideSelector(
-      selectors.getCurrentRouteRunSelection,
-      new Map([
-        ['run1', false],
-        ['run3', true],
-      ])
-    );
-    triggerStoreUpdate();
-    fixture.detectChanges();
-
-    visibleRunIds = lineChart.seriesDataList
-      .filter((x) => x.visible)
-      .map((x) => x.seriesId);
-    expect(lineChart.seriesDataList.length).toBe(3);
-    expect(visibleRunIds).toEqual(['run3']);
-  }));
-
-  describe('controls', () => {
-    const ByCss = {
-      FIT_TO_DOMAIN: By.css('[aria-label="Fit line chart domains to data"]'),
-    };
-
-    it('resets domain when user clicks on reset button', fakeAsync(() => {
-      const runToSeries = {
-        run1: [{wallTime: 100, value: 1, step: 333}],
-        run2: [{wallTime: 100, value: 1, step: 333}],
-        run3: [{wallTime: 100, value: 1, step: 333}],
-      };
-      provideMockCardRunToSeriesData(
-        selectSpy,
-        PluginType.SCALARS,
-        'card1',
-        null /* metadataOverride */,
-        runToSeries
-      );
-      const fixture = createComponent('card1');
-
-      const lineChartEl = fixture.debugElement.query(
-        By.directive(TestableLineChart)
-      );
-      const resetDomainSpy = spyOn(
-        lineChartEl.componentInstance,
-        'resetDomain'
-      );
-
-      fixture.debugElement.query(ByCss.FIT_TO_DOMAIN).nativeElement.click();
-      fixture.detectChanges();
-
-      expect(resetDomainSpy).toHaveBeenCalledTimes(1);
-    }));
-
-    it('disables the resetDomain button when there are no runs', fakeAsync(() => {
-      const runToSeries = {};
-      provideMockCardRunToSeriesData(
-        selectSpy,
-        PluginType.SCALARS,
-        'card1',
-        null /* metadataOverride */,
-        runToSeries
-      );
-      const fixture = createComponent('card1');
-
-      const button = fixture.debugElement.query(ByCss.FIT_TO_DOMAIN);
-      expect(button.properties['disabled']).toBe(true);
-    }));
   });
 
   describe('overflow menu', () => {
@@ -846,23 +599,21 @@ describe('scalar card', () => {
       );
     });
 
-    it('toggles yAxisType when you click on button in overflow menu', fakeAsync(() => {
+    it('toggles yScaleType when you click on button in overflow menu', fakeAsync(() => {
       const fixture = createComponent('card1');
 
       openOverflowMenu(fixture);
       getMenuButton('Toggle Y-axis log scale on line chart').click();
       fixture.detectChanges();
 
-      const lineChartEl = fixture.debugElement.query(
-        By.directive(TestableLineChart)
-      );
-      expect(lineChartEl.componentInstance.yAxisType).toBe(YAxisType.LOG);
+      const lineChartEl = fixture.debugElement.query(Selector.LINE_CHART);
+      expect(lineChartEl.componentInstance.yScaleType).toBe(ScaleType.LOG10);
 
       openOverflowMenu(fixture);
       getMenuButton('Toggle Y-axis log scale on line chart').click();
       fixture.detectChanges();
 
-      expect(lineChartEl.componentInstance.yAxisType).toBe(YAxisType.LINEAR);
+      expect(lineChartEl.componentInstance.yScaleType).toBe(ScaleType.LINEAR);
 
       // Clicking on overflow menu and mat button enqueue asyncs. Flush them.
       flush();
@@ -903,39 +654,8 @@ describe('scalar card', () => {
     }));
   });
 
-  describe('resize', () => {
-    beforeEach(() => {
-      const runToSeries = {
-        run1: [
-          {wallTime: 100, value: 1, step: 333},
-          {wallTime: 101, value: 2, step: 555},
-        ],
-      };
-      provideMockCardRunToSeriesData(
-        selectSpy,
-        PluginType.SCALARS,
-        'card1',
-        null /* metadataOverride */,
-        runToSeries
-      );
-    });
-
-    it('calls redraw on resize', fakeAsync(() => {
-      const fixture = createComponent('card1');
-      const lineChartComponent = fixture.debugElement.query(
-        By.directive(TestableLineChart)
-      );
-
-      const redrawSpy = spyOn(lineChartComponent.componentInstance, 'redraw');
-
-      resizeTester.simulateResize(fixture);
-
-      expect(redrawSpy).toHaveBeenCalledTimes(1);
-    }));
-  });
-
   describe('perf', () => {
-    it('does not update `seriesDataList` for irrelevant runSelection changes', fakeAsync(() => {
+    it('does not update `seriesData` for irrelevant runSelection changes', fakeAsync(() => {
       const runToSeries = {run1: []};
       provideMockCardRunToSeriesData(
         selectSpy,
@@ -951,9 +671,9 @@ describe('scalar card', () => {
 
       const fixture = createComponent('card1');
       const lineChartComponent = fixture.debugElement.query(
-        By.directive(TestableLineChart)
+        Selector.LINE_CHART
       );
-      const before = lineChartComponent.componentInstance.seriesDataList;
+      const before = lineChartComponent.componentInstance.seriesData;
 
       store.overrideSelector(
         selectors.getCurrentRouteRunSelection,
@@ -965,42 +685,51 @@ describe('scalar card', () => {
       triggerStoreUpdate();
       fixture.detectChanges();
 
-      const after = lineChartComponent.componentInstance.seriesDataList;
+      const after = lineChartComponent.componentInstance.seriesData;
       expect(before).toBe(after);
     }));
 
-    it('updates `seriesDataList` for relevant runSelection changes', fakeAsync(() => {
-      const runToSeries = {run1: []};
-      provideMockCardRunToSeriesData(
-        selectSpy,
-        PluginType.SCALARS,
-        'card1',
-        null /* metadataOverride */,
-        runToSeries
-      );
-      store.overrideSelector(
-        selectors.getCurrentRouteRunSelection,
-        new Map([['run1', true]])
-      );
+    it(
+      'does not update `seriesData` for relevant runSelection changes but only ' +
+        'changes the metadataMap',
+      fakeAsync(() => {
+        const runToSeries = {run1: []};
+        provideMockCardRunToSeriesData(
+          selectSpy,
+          PluginType.SCALARS,
+          'card1',
+          null /* metadataOverride */,
+          runToSeries
+        );
+        store.overrideSelector(
+          selectors.getCurrentRouteRunSelection,
+          new Map([['run1', true]])
+        );
 
-      const fixture = createComponent('card1');
-      const lineChartComponent = fixture.debugElement.query(
-        By.directive(TestableLineChart)
-      );
-      const before = lineChartComponent.componentInstance.seriesDataList;
+        const fixture = createComponent('card1');
+        const lineChartComponent = fixture.debugElement.query(
+          Selector.LINE_CHART
+        );
+        const beforeSeries = lineChartComponent.componentInstance.seriesData;
+        const beforeMap =
+          lineChartComponent.componentInstance.seriesMetadataMap;
 
-      store.overrideSelector(
-        selectors.getCurrentRouteRunSelection,
-        new Map([['run1', false]])
-      );
-      triggerStoreUpdate();
-      fixture.detectChanges();
+        store.overrideSelector(
+          selectors.getCurrentRouteRunSelection,
+          new Map([['run1', false]])
+        );
+        triggerStoreUpdate();
+        fixture.detectChanges();
 
-      const after = lineChartComponent.componentInstance.seriesDataList;
-      expect(before).not.toBe(after);
-    }));
+        const afterSeries = lineChartComponent.componentInstance.seriesData;
+        const afterMap = lineChartComponent.componentInstance.seriesMetadataMap;
 
-    it('updates `seriesDataList` for xAxisType changes', fakeAsync(() => {
+        expect(beforeSeries).toBe(afterSeries);
+        expect(beforeMap).not.toBe(afterMap);
+      })
+    );
+
+    it('updates `seriesData` for xAxisType changes', fakeAsync(() => {
       const runToSeries = {
         run1: [
           {wallTime: 100, value: 1, step: 333},
@@ -1022,9 +751,9 @@ describe('scalar card', () => {
 
       const fixture = createComponent('card1');
       const lineChartComponent = fixture.debugElement.query(
-        By.directive(TestableLineChart)
+        Selector.LINE_CHART
       );
-      const before = lineChartComponent.componentInstance.seriesDataList;
+      const before = lineChartComponent.componentInstance.seriesData;
 
       store.overrideSelector(
         selectors.getMetricsXAxisType,
@@ -1033,62 +762,655 @@ describe('scalar card', () => {
       triggerStoreUpdate();
       fixture.detectChanges();
 
-      const after = lineChartComponent.componentInstance.seriesDataList;
+      const after = lineChartComponent.componentInstance.seriesData;
       expect(before).not.toBe(after);
-    }));
-
-    it('does not call the redraw when the card is invisible', fakeAsync(() => {
-      const fixture = createComponent('card1');
-      const lineChartComponent = fixture.debugElement.query(
-        By.directive(TestableLineChart)
-      );
-
-      const redrawSpy = spyOn(lineChartComponent.componentInstance, 'redraw');
-
-      fixture.nativeElement.style.display = 'none';
-      resizeTester.simulateResize(fixture);
-      expect(redrawSpy).not.toHaveBeenCalled();
-
-      fixture.nativeElement.style.display = 'block';
-      resizeTester.simulateResize(fixture);
-      expect(redrawSpy).toHaveBeenCalledTimes(1);
     }));
   });
 
-  describe('gpu line chart integration', () => {
-    beforeEach(() => {
-      store.overrideSelector(selectors.getIsGpuChartEnabled, true);
-      store.overrideSelector(selectors.getRunColorMap, {});
-      store.overrideSelector(selectors.getMetricsScalarSmoothing, 0.1);
+  it('passes data series and metadata with smoothed values', fakeAsync(() => {
+    store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.STEP);
+    store.overrideSelector(selectors.getRunColorMap, {
+      run1: '#f00',
+      run2: '#0f0',
     });
+    store.overrideSelector(selectors.getMetricsScalarSmoothing, 0.1);
 
-    const Selector = {
-      GPU_LINE_CHART: By.directive(TestableGpuLineChart),
-      SVG_LINE_CHART: By.directive(TestableLineChart),
-      TOOLTIP_HEADER_COLUMN: By.css('table.tooltip th'),
-      TOOLTIP_ROW: By.css('table.tooltip .tooltip-row'),
+    const runToSeries = {
+      run1: [
+        {wallTime: 2, value: 1, step: 1},
+        {wallTime: 4, value: 10, step: 2},
+      ],
+      run2: [{wallTime: 2, value: 1, step: 1}],
     };
+    provideMockCardRunToSeriesData(
+      selectSpy,
+      PluginType.SCALARS,
+      'card1',
+      null /* metadataOverride */,
+      runToSeries
+    );
 
-    it('renders the gpu line chart instead of svg one', fakeAsync(() => {
+    const fixture = createComponent('card1');
+    const lineChart = fixture.debugElement.query(Selector.LINE_CHART);
+
+    expect(lineChart.componentInstance.seriesData).toEqual([
+      {
+        id: 'run1',
+        points: [
+          // Keeps the data structure as is but do notice adjusted wallTime and
+          // line_chart_v2 required "x" and "y" props.
+          {wallTime: 2000, value: 1, step: 1, x: 1, y: 1},
+          {wallTime: 4000, value: 10, step: 2, x: 2, y: 10},
+        ],
+      },
+      {id: 'run2', points: [{wallTime: 2000, value: 1, step: 1, x: 1, y: 1}]},
+      {
+        id: '["smoothed","run1"]',
+        points: [
+          {wallTime: 2000, value: 1, step: 1, x: 1, y: 1},
+          // Exact smoothed value is not too important.
+          {wallTime: 4000, value: 10, step: 2, x: 2, y: jasmine.any(Number)},
+        ],
+      },
+      {
+        id: '["smoothed","run2"]',
+        points: [{wallTime: 2000, value: 1, step: 1, x: 1, y: 1}],
+      },
+    ]);
+    expect(lineChart.componentInstance.seriesMetadataMap).toEqual({
+      run1: {
+        id: 'run1',
+        displayName: 'run1',
+        type: SeriesType.ORIGINAL,
+        visible: false,
+        color: '#f00',
+        opacity: 0.25,
+        aux: true,
+      },
+      run2: {
+        id: 'run2',
+        displayName: 'run2',
+        type: SeriesType.ORIGINAL,
+        visible: false,
+        color: '#0f0',
+        opacity: 0.25,
+        aux: true,
+      },
+      '["smoothed","run1"]': {
+        id: '["smoothed","run1"]',
+        displayName: 'run1',
+        type: SeriesType.DERIVED,
+        originalSeriesId: 'run1',
+        visible: false,
+        color: '#f00',
+        opacity: 1,
+        aux: false,
+      },
+      '["smoothed","run2"]': {
+        id: '["smoothed","run2"]',
+        displayName: 'run2',
+        type: SeriesType.DERIVED,
+        originalSeriesId: 'run2',
+        visible: false,
+        color: '#0f0',
+        opacity: 1,
+        aux: false,
+      },
+    });
+  }));
+
+  it('does not set smoothed series when it is disabled,', fakeAsync(() => {
+    store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.STEP);
+    store.overrideSelector(selectors.getRunColorMap, {
+      run1: '#f00',
+      run2: '#0f0',
+    });
+    store.overrideSelector(selectors.getMetricsScalarSmoothing, 0);
+    const runToSeries = {
+      run1: [
+        {wallTime: 2, value: 1, step: 1},
+        {wallTime: 4, value: 10, step: 2},
+      ],
+      run2: [{wallTime: 2, value: 1, step: 1}],
+    };
+    provideMockCardRunToSeriesData(
+      selectSpy,
+      PluginType.SCALARS,
+      'card1',
+      null /* metadataOverride */,
+      runToSeries
+    );
+
+    const fixture = createComponent('card1');
+    const lineChart = fixture.debugElement.query(Selector.LINE_CHART);
+
+    expect(lineChart.componentInstance.seriesData).toEqual([
+      {
+        id: 'run1',
+        points: [
+          // Keeps the data structure as is but requires "x" and "y" props.
+          {wallTime: 2000, value: 1, step: 1, x: 1, y: 1},
+          {wallTime: 4000, value: 10, step: 2, x: 2, y: 10},
+        ],
+      },
+      {id: 'run2', points: [{wallTime: 2000, value: 1, step: 1, x: 1, y: 1}]},
+    ]);
+    expect(lineChart.componentInstance.seriesMetadataMap).toEqual({
+      run1: {
+        id: 'run1',
+        displayName: 'run1',
+        type: SeriesType.ORIGINAL,
+        visible: false,
+        color: '#f00',
+        opacity: 1,
+        aux: false,
+      },
+      run2: {
+        id: 'run2',
+        displayName: 'run2',
+        type: SeriesType.ORIGINAL,
+        visible: false,
+        color: '#0f0',
+        opacity: 1,
+        aux: false,
+      },
+    });
+  }));
+
+  describe('tooltip', () => {
+    function buildTooltipDatum(
+      metadata?: ScalarCardSeriesMetadata,
+      point: Partial<ScalarCardPoint> = {}
+    ): TooltipDatum<ScalarCardSeriesMetadata, ScalarCardPoint> {
+      return {
+        id: metadata?.id ?? 'a',
+        metadata: {
+          type: SeriesType.ORIGINAL,
+          id: 'a',
+          displayName: 'A name',
+          visible: true,
+          color: '#f00',
+          ...metadata,
+        },
+        closestPointIndex: 0,
+        point: {x: 0, y: 0, value: 0, step: 0, wallTime: 0, ...point},
+      };
+    }
+
+    function setTooltipData(
+      fixture: ComponentFixture<ScalarCardContainer>,
+      tooltipData: TooltipDatum[]
+    ) {
+      const lineChart = fixture.debugElement.query(Selector.LINE_CHART);
+
+      lineChart.componentInstance.tooltipDataForTesting = tooltipData;
+      lineChart.componentInstance.changeDetectorRef.markForCheck();
+    }
+
+    function setCursorLocation(
+      fixture: ComponentFixture<ScalarCardContainer>,
+      cursorLocInDataCoord?: {x: number; y: number}
+    ) {
+      const lineChart = fixture.debugElement.query(Selector.LINE_CHART);
+
+      lineChart.componentInstance.cursorLocForTesting = cursorLocInDataCoord;
+      lineChart.componentInstance.changeDetectorRef.markForCheck();
+    }
+
+    function assertTooltipRows(
+      fixture: ComponentFixture<ScalarCardContainer>,
+      expectedTableContent: Array<
+        Array<string | ReturnType<typeof jasmine.any>>
+      >
+    ) {
+      const rows = fixture.debugElement.queryAll(Selector.TOOLTIP_ROW);
+      const tableContent = rows.map((row) => {
+        return row
+          .queryAll(By.css('td'))
+          .map((td) => td.nativeElement.textContent.trim());
+      });
+
+      expect(tableContent).toEqual(expectedTableContent);
+    }
+
+    it('renders the tooltip using the custom template (no smooth)', fakeAsync(() => {
+      store.overrideSelector(selectors.getMetricsScalarSmoothing, 0);
       const fixture = createComponent('card1');
-      expect(fixture.debugElement.query(Selector.SVG_LINE_CHART)).toBeNull();
-      expect(
-        fixture.debugElement.query(Selector.GPU_LINE_CHART)
-      ).not.toBeNull();
+      setTooltipData(fixture, [
+        buildTooltipDatum(
+          {
+            id: 'row1',
+            type: SeriesType.ORIGINAL,
+            displayName: 'Row 1',
+            visible: true,
+            color: '#00f',
+          },
+          {
+            x: 10,
+            step: 10,
+            y: 1000,
+            value: 1000,
+            wallTime: new Date('2020-01-01').getTime(),
+          }
+        ),
+        buildTooltipDatum(
+          {
+            id: 'row2',
+            type: SeriesType.ORIGINAL,
+            displayName: 'Row 2',
+            visible: true,
+            color: '#0f0',
+          },
+          {
+            x: 1000,
+            step: 1000,
+            y: -1000,
+            value: -1000,
+            wallTime: new Date('2020-12-31').getTime(),
+          }
+        ),
+      ]);
+      fixture.detectChanges();
+
+      const headerCols = fixture.debugElement.queryAll(
+        Selector.TOOLTIP_HEADER_COLUMN
+      );
+      const headerText = headerCols.map((col) => col.nativeElement.textContent);
+      expect(headerText).toEqual(['', 'Run', 'Value', 'Step', 'Time']);
+
+      assertTooltipRows(fixture, [
+        ['', 'Row 1', '1000', '10', '1/1/20, 12:00 AM'],
+        ['', 'Row 2', '-1000', '1,000', '12/31/20, 12:00 AM'],
+      ]);
     }));
 
-    it('passes data series and metadata with smoothed values', fakeAsync(() => {
+    it('renders the tooltip using the custom template (smooth)', fakeAsync(() => {
+      store.overrideSelector(selectors.getMetricsScalarSmoothing, 0.5);
+      const fixture = createComponent('card1');
+      setTooltipData(fixture, [
+        buildTooltipDatum(
+          {
+            id: 'smoothed_row1',
+            type: SeriesType.DERIVED,
+            displayName: 'Row 1',
+            visible: true,
+            color: '#00f',
+            aux: false,
+            originalSeriesId: 'row1',
+          },
+          {
+            x: 10,
+            step: 10,
+            y: 500,
+            value: 1000,
+            wallTime: new Date('2020-01-01').getTime(),
+          }
+        ),
+        buildTooltipDatum(
+          {
+            id: 'smoothed_row2',
+            type: SeriesType.DERIVED,
+            displayName: 'Row 2',
+            visible: true,
+            color: '#0f0',
+            aux: false,
+            originalSeriesId: 'row2',
+          },
+          {
+            x: 1000,
+            step: 1000,
+            y: -500,
+            value: -1000,
+            wallTime: new Date('2020-12-31').getTime(),
+          }
+        ),
+      ]);
+      fixture.detectChanges();
+
+      const headerCols = fixture.debugElement.queryAll(
+        Selector.TOOLTIP_HEADER_COLUMN
+      );
+      const headerText = headerCols.map((col) => col.nativeElement.textContent);
+      expect(headerText).toEqual([
+        '',
+        'Run',
+        'Smoothed',
+        'Value',
+        'Step',
+        'Time',
+      ]);
+
+      assertTooltipRows(fixture, [
+        ['', 'Row 1', '500', '1000', '10', '1/1/20, 12:00 AM'],
+        // Print the step with comma for readability. The value is yet optimize for
+        // readability (we may use the scientific formatting).
+        ['', 'Row 2', '-500', '-1000', '1,000', '12/31/20, 12:00 AM'],
+      ]);
+    }));
+
+    it('shows relative time when XAxisType is RELATIVE', fakeAsync(() => {
+      store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.RELATIVE);
+      store.overrideSelector(selectors.getMetricsScalarSmoothing, 0);
+      const fixture = createComponent('card1');
+      setTooltipData(fixture, [
+        buildTooltipDatum(
+          {
+            id: 'smoothed_row1',
+            type: SeriesType.DERIVED,
+            displayName: 'Row 1',
+            visible: true,
+            color: '#00f',
+            aux: false,
+            originalSeriesId: 'row1',
+          },
+          {
+            x: 10,
+            step: 10,
+            y: 1000,
+            value: 1000,
+            wallTime: new Date('2020-01-01').getTime(),
+          }
+        ),
+        buildTooltipDatum(
+          {
+            id: 'smoothed_row2',
+            type: SeriesType.DERIVED,
+            displayName: 'Row 2',
+            visible: true,
+            color: '#0f0',
+            aux: false,
+            originalSeriesId: 'row2',
+          },
+          {
+            x: 432000000,
+            step: 1000,
+            y: -1000,
+            value: -1000,
+            wallTime: new Date('2020-01-05').getTime(),
+          }
+        ),
+      ]);
+      fixture.detectChanges();
+
+      const headerCols = fixture.debugElement.queryAll(
+        Selector.TOOLTIP_HEADER_COLUMN
+      );
+      const headerText = headerCols.map((col) => col.nativeElement.textContent);
+      expect(headerText).toEqual([
+        '',
+        'Run',
+        'Value',
+        'Step',
+        'Time',
+        'Relative',
+      ]);
+
+      const rows = fixture.debugElement.queryAll(Selector.TOOLTIP_ROW);
+      const tableContent = rows.map((row) => {
+        return row
+          .queryAll(By.css('td'))
+          .map((td) => td.nativeElement.textContent.trim());
+      });
+
+      expect(tableContent).toEqual([
+        ['', 'Row 1', '1000', '10', '1/1/20, 12:00 AM', '10 ms'],
+        ['', 'Row 2', '-1000', '1,000', '1/5/20, 12:00 AM', '5 day'],
+      ]);
+    }));
+
+    it('sorts by ascending', fakeAsync(() => {
+      store.overrideSelector(
+        selectors.getMetricsTooltipSort,
+        TooltipSort.ASCENDING
+      );
+      store.overrideSelector(selectors.getMetricsScalarSmoothing, 0);
+      const fixture = createComponent('card1');
+      setTooltipData(fixture, [
+        buildTooltipDatum(
+          {
+            id: 'row1',
+            type: SeriesType.ORIGINAL,
+            displayName: 'Row 1',
+            visible: true,
+            color: '#f00',
+            aux: false,
+          },
+          {
+            x: 10,
+            step: 10,
+            y: 1000,
+            value: 1000,
+            wallTime: new Date('2020-01-01').getTime(),
+          }
+        ),
+        buildTooltipDatum(
+          {
+            id: 'row2',
+            type: SeriesType.ORIGINAL,
+            displayName: 'Row 2',
+            visible: true,
+            color: '#0f0',
+            aux: false,
+          },
+          {
+            x: 1000,
+            step: 1000,
+            y: -500,
+            value: -500,
+            wallTime: new Date('2020-12-31').getTime(),
+          }
+        ),
+        buildTooltipDatum(
+          {
+            id: 'row3',
+            type: SeriesType.ORIGINAL,
+            displayName: 'Row 3',
+            visible: true,
+            color: '#00f',
+            aux: false,
+          },
+          {
+            x: 10000,
+            step: 10000,
+            y: 3,
+            value: 3,
+            wallTime: new Date('2021-01-01').getTime(),
+          }
+        ),
+      ]);
+      fixture.detectChanges();
+
+      assertTooltipRows(fixture, [
+        ['', 'Row 2', '-500', '1,000', jasmine.any(String)],
+        ['', 'Row 3', '3', '10,000', jasmine.any(String)],
+        ['', 'Row 1', '1000', '10', jasmine.any(String)],
+      ]);
+    }));
+
+    it('sorts by descending', fakeAsync(() => {
+      store.overrideSelector(
+        selectors.getMetricsTooltipSort,
+        TooltipSort.DESCENDING
+      );
+      store.overrideSelector(selectors.getMetricsScalarSmoothing, 0);
+      const fixture = createComponent('card1');
+      setTooltipData(fixture, [
+        buildTooltipDatum(
+          {
+            id: 'row1',
+            type: SeriesType.ORIGINAL,
+            displayName: 'Row 1',
+            visible: true,
+            color: '#f00',
+            aux: false,
+          },
+          {
+            x: 10,
+            step: 10,
+            y: 1000,
+            value: 1000,
+            wallTime: new Date('2020-01-01').getTime(),
+          }
+        ),
+        buildTooltipDatum(
+          {
+            id: 'row2',
+            type: SeriesType.ORIGINAL,
+            displayName: 'Row 2',
+            visible: true,
+            color: '#0f0',
+            aux: false,
+          },
+          {
+            x: 1000,
+            step: 1000,
+            y: -500,
+            value: -500,
+            wallTime: new Date('2020-12-31').getTime(),
+          }
+        ),
+        buildTooltipDatum(
+          {
+            id: 'row3',
+            type: SeriesType.ORIGINAL,
+            displayName: 'Row 3',
+            visible: true,
+            color: '#00f',
+            aux: false,
+          },
+          {
+            x: 10000,
+            step: 10000,
+            y: 3,
+            value: 3,
+            wallTime: new Date('2021-01-01').getTime(),
+          }
+        ),
+      ]);
+      fixture.detectChanges();
+
+      assertTooltipRows(fixture, [
+        ['', 'Row 1', '1000', '10', jasmine.any(String)],
+        ['', 'Row 3', '3', '10,000', jasmine.any(String)],
+        ['', 'Row 2', '-500', '1,000', jasmine.any(String)],
+      ]);
+    }));
+
+    it('sorts by nearest to the cursor', fakeAsync(() => {
+      store.overrideSelector(
+        selectors.getMetricsTooltipSort,
+        TooltipSort.NEAREST
+      );
+      store.overrideSelector(selectors.getMetricsScalarSmoothing, 0);
+      const fixture = createComponent('card1');
+      setTooltipData(fixture, [
+        buildTooltipDatum(
+          {
+            id: 'row1',
+            type: SeriesType.ORIGINAL,
+            displayName: 'Row 1',
+            visible: true,
+            color: '#f00',
+            aux: false,
+          },
+          {
+            x: 0,
+            step: 0,
+            y: 1000,
+            value: 1000,
+            wallTime: new Date('2020-01-01').getTime(),
+          }
+        ),
+        buildTooltipDatum(
+          {
+            id: 'row2',
+            type: SeriesType.ORIGINAL,
+            displayName: 'Row 2',
+            visible: true,
+            color: '#0f0',
+            aux: false,
+          },
+          {
+            x: 1000,
+            step: 1000,
+            y: -500,
+            value: -500,
+            wallTime: new Date('2020-12-31').getTime(),
+          }
+        ),
+        buildTooltipDatum(
+          {
+            id: 'row3',
+            type: SeriesType.ORIGINAL,
+            displayName: 'Row 3',
+            visible: true,
+            color: '#00f',
+            aux: false,
+          },
+          {
+            x: 10000,
+            step: 10000,
+            y: 3,
+            value: 3,
+            wallTime: new Date('2021-01-01').getTime(),
+          }
+        ),
+      ]);
+      setCursorLocation(fixture, {x: 500, y: -100});
+      fixture.detectChanges();
+      assertTooltipRows(fixture, [
+        ['', 'Row 2', '-500', '1,000', jasmine.any(String)],
+        ['', 'Row 1', '1000', '0', jasmine.any(String)],
+        ['', 'Row 3', '3', '10,000', jasmine.any(String)],
+      ]);
+
+      setCursorLocation(fixture, {x: 500, y: 600});
+      fixture.detectChanges();
+      assertTooltipRows(fixture, [
+        ['', 'Row 1', '1000', '0', jasmine.any(String)],
+        ['', 'Row 2', '-500', '1,000', jasmine.any(String)],
+        ['', 'Row 3', '3', '10,000', jasmine.any(String)],
+      ]);
+
+      setCursorLocation(fixture, {x: 10000, y: -100});
+      fixture.detectChanges();
+      assertTooltipRows(fixture, [
+        ['', 'Row 3', '3', '10,000', jasmine.any(String)],
+        ['', 'Row 2', '-500', '1,000', jasmine.any(String)],
+        ['', 'Row 1', '1000', '0', jasmine.any(String)],
+      ]);
+
+      // Right between row 1 and row 2. When tied, original order is used.
+      setCursorLocation(fixture, {x: 500, y: 250});
+      fixture.detectChanges();
+      assertTooltipRows(fixture, [
+        ['', 'Row 1', '1000', '0', jasmine.any(String)],
+        ['', 'Row 2', '-500', '1,000', jasmine.any(String)],
+        ['', 'Row 3', '3', '10,000', jasmine.any(String)],
+      ]);
+    }));
+  });
+
+  describe('non-monotonic increase in x-axis', () => {
+    it('partitions to pseudo runs when steps increase non-monotonically', fakeAsync(() => {
+      store.overrideSelector(
+        selectors.getMetricsScalarPartitionNonMonotonicX,
+        true
+      );
       store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.STEP);
       store.overrideSelector(selectors.getRunColorMap, {
         run1: '#f00',
         run2: '#0f0',
       });
-      store.overrideSelector(selectors.getMetricsScalarSmoothing, 0.1);
+      store.overrideSelector(selectors.getMetricsScalarSmoothing, 0);
 
       const runToSeries = {
         run1: [
           {wallTime: 2, value: 1, step: 1},
           {wallTime: 4, value: 10, step: 2},
+          {wallTime: 6, value: 30, step: 2},
+          {wallTime: 6, value: 10, step: 1},
+          {wallTime: 3, value: 20, step: 4},
         ],
         run2: [{wallTime: 2, value: 1, step: 1}],
       };
@@ -1101,66 +1423,52 @@ describe('scalar card', () => {
       );
 
       const fixture = createComponent('card1');
-      const lineChart = fixture.debugElement.query(Selector.GPU_LINE_CHART);
+      const lineChart = fixture.debugElement.query(Selector.LINE_CHART);
 
       expect(lineChart.componentInstance.seriesData).toEqual([
         {
-          id: 'run1',
+          id: '["run1",0]',
           points: [
-            // Keeps the data structure as is but do notice adjusted wallTime and
-            // line_chart_v2 required "x" and "y" props.
             {wallTime: 2000, value: 1, step: 1, x: 1, y: 1},
             {wallTime: 4000, value: 10, step: 2, x: 2, y: 10},
+            {wallTime: 6000, value: 30, step: 2, x: 2, y: 30},
           ],
         },
-        {id: 'run2', points: [{wallTime: 2000, value: 1, step: 1, x: 1, y: 1}]},
         {
-          id: '["smoothed","run1"]',
+          id: '["run1",1]',
           points: [
-            {wallTime: 2000, value: 1, step: 1, x: 1, y: 1},
-            // Exact smoothed value is not too important.
-            {wallTime: 4000, value: 10, step: 2, x: 2, y: jasmine.any(Number)},
+            {wallTime: 6000, value: 10, step: 1, x: 1, y: 10},
+            {wallTime: 3000, value: 20, step: 4, x: 4, y: 20},
           ],
         },
         {
-          id: '["smoothed","run2"]',
+          id: '["run2",0]',
           points: [{wallTime: 2000, value: 1, step: 1, x: 1, y: 1}],
         },
       ]);
       expect(lineChart.componentInstance.seriesMetadataMap).toEqual({
-        run1: {
-          id: 'run1',
-          displayName: 'run1',
+        '["run1",0]': {
+          id: '["run1",0]',
+          displayName: 'run1: 0',
           type: SeriesType.ORIGINAL,
-          visible: false,
-          color: '#f00',
-          opacity: 0.25,
-          aux: true,
-        },
-        run2: {
-          id: 'run2',
-          displayName: 'run2',
-          type: SeriesType.ORIGINAL,
-          visible: false,
-          color: '#0f0',
-          opacity: 0.25,
-          aux: true,
-        },
-        '["smoothed","run1"]': {
-          id: '["smoothed","run1"]',
-          displayName: 'run1',
-          type: SeriesType.DERIVED,
-          originalSeriesId: 'run1',
           visible: false,
           color: '#f00',
           opacity: 1,
           aux: false,
         },
-        '["smoothed","run2"]': {
-          id: '["smoothed","run2"]',
+        '["run1",1]': {
+          id: '["run1",1]',
+          displayName: 'run1: 1',
+          type: SeriesType.ORIGINAL,
+          visible: false,
+          color: '#f00',
+          opacity: 1,
+          aux: false,
+        },
+        '["run2",0]': {
+          id: '["run2",0]',
           displayName: 'run2',
-          type: SeriesType.DERIVED,
-          originalSeriesId: 'run2',
+          type: SeriesType.ORIGINAL,
           visible: false,
           color: '#0f0',
           opacity: 1,
@@ -1169,19 +1477,29 @@ describe('scalar card', () => {
       });
     }));
 
-    it('does not set smoothed series when it is disabled,', fakeAsync(() => {
-      store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.STEP);
+    it('partitions to pseudo runs when wall_time increase non-monotonically', fakeAsync(() => {
+      store.overrideSelector(
+        selectors.getMetricsScalarPartitionNonMonotonicX,
+        true
+      );
+      store.overrideSelector(
+        selectors.getMetricsXAxisType,
+        XAxisType.WALL_TIME
+      );
       store.overrideSelector(selectors.getRunColorMap, {
         run1: '#f00',
         run2: '#0f0',
       });
       store.overrideSelector(selectors.getMetricsScalarSmoothing, 0);
+
       const runToSeries = {
         run1: [
           {wallTime: 2, value: 1, step: 1},
           {wallTime: 4, value: 10, step: 2},
+          {wallTime: 6, value: 30, step: 2},
+          {wallTime: 6, value: 10, step: 1},
+          {wallTime: 3, value: 20, step: 4},
         ],
-        run2: [{wallTime: 2, value: 1, step: 1}],
       };
       provideMockCardRunToSeriesData(
         selectSpy,
@@ -1192,723 +1510,44 @@ describe('scalar card', () => {
       );
 
       const fixture = createComponent('card1');
-      const lineChart = fixture.debugElement.query(Selector.GPU_LINE_CHART);
+      const lineChart = fixture.debugElement.query(Selector.LINE_CHART);
 
       expect(lineChart.componentInstance.seriesData).toEqual([
         {
-          id: 'run1',
+          id: '["run1",0]',
           points: [
-            // Keeps the data structure as is but requires "x" and "y" props.
-            {wallTime: 2000, value: 1, step: 1, x: 1, y: 1},
-            {wallTime: 4000, value: 10, step: 2, x: 2, y: 10},
+            {wallTime: 2000, value: 1, step: 1, x: 2000, y: 1},
+            {wallTime: 4000, value: 10, step: 2, x: 4000, y: 10},
+            {wallTime: 6000, value: 30, step: 2, x: 6000, y: 30},
+            {wallTime: 6000, value: 10, step: 1, x: 6000, y: 10},
           ],
         },
-        {id: 'run2', points: [{wallTime: 2000, value: 1, step: 1, x: 1, y: 1}]},
+        {
+          id: '["run1",1]',
+          points: [{wallTime: 3000, value: 20, step: 4, x: 3000, y: 20}],
+        },
       ]);
       expect(lineChart.componentInstance.seriesMetadataMap).toEqual({
-        run1: {
-          id: 'run1',
-          displayName: 'run1',
+        '["run1",0]': {
+          id: '["run1",0]',
+          displayName: 'run1: 0',
           type: SeriesType.ORIGINAL,
           visible: false,
           color: '#f00',
           opacity: 1,
           aux: false,
         },
-        run2: {
-          id: 'run2',
-          displayName: 'run2',
+        '["run1",1]': {
+          id: '["run1",1]',
+          displayName: 'run1: 1',
           type: SeriesType.ORIGINAL,
           visible: false,
-          color: '#0f0',
+          color: '#f00',
           opacity: 1,
           aux: false,
         },
       });
     }));
-
-    it('sets relative wallTime value to x when XAxisType is RELATIVE', fakeAsync(() => {
-      store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.RELATIVE);
-      store.overrideSelector(selectors.getRunColorMap, {
-        run1: '#f00',
-        run2: '#0f0',
-      });
-      store.overrideSelector(selectors.getMetricsScalarSmoothing, 0);
-      const runToSeries = {
-        run1: [
-          {wallTime: 2, value: 1, step: 1},
-          {wallTime: 4, value: 10, step: 2},
-          {wallTime: 2, value: 5, step: 3},
-          {wallTime: 0, value: 0, step: 4},
-        ],
-        run2: [{wallTime: 2, value: 1, step: 1}],
-      };
-      provideMockCardRunToSeriesData(
-        selectSpy,
-        PluginType.SCALARS,
-        'card1',
-        null /* metadataOverride */,
-        runToSeries
-      );
-
-      const fixture = createComponent('card1');
-      const lineChart = fixture.debugElement.query(Selector.GPU_LINE_CHART);
-
-      expect(lineChart.componentInstance.seriesData).toEqual([
-        {
-          id: 'run1',
-          points: [
-            {wallTime: 2000, value: 1, step: 1, x: 0, y: 1},
-            {wallTime: 4000, value: 10, step: 2, x: 2000, y: 10},
-            {wallTime: 2000, value: 5, step: 3, x: 0, y: 5},
-            {wallTime: 0, value: 0, step: 4, x: -2000, y: 0},
-          ],
-        },
-        {id: 'run2', points: [{wallTime: 2000, value: 1, step: 1, x: 0, y: 1}]},
-      ]);
-    }));
-
-    describe('tooltip', () => {
-      function buildTooltipDatum(
-        metadata?: ScalarCardSeriesMetadata,
-        point: Partial<ScalarCardPoint> = {}
-      ): TooltipDatum<ScalarCardSeriesMetadata, ScalarCardPoint> {
-        return {
-          id: metadata?.id ?? 'a',
-          metadata: {
-            type: SeriesType.ORIGINAL,
-            id: 'a',
-            displayName: 'A name',
-            visible: true,
-            color: '#f00',
-            ...metadata,
-          },
-          closestPointIndex: 0,
-          point: {x: 0, y: 0, value: 0, step: 0, wallTime: 0, ...point},
-        };
-      }
-
-      function setTooltipData(
-        fixture: ComponentFixture<ScalarCardContainer>,
-        tooltipData: TooltipDatum[]
-      ) {
-        const lineChart = fixture.debugElement.query(Selector.GPU_LINE_CHART);
-
-        lineChart.componentInstance.tooltipDataForTesting = tooltipData;
-        lineChart.componentInstance.changeDetectorRef.markForCheck();
-      }
-
-      function setCursorLocation(
-        fixture: ComponentFixture<ScalarCardContainer>,
-        cursorLocInDataCoord?: {x: number; y: number}
-      ) {
-        const lineChart = fixture.debugElement.query(Selector.GPU_LINE_CHART);
-
-        lineChart.componentInstance.cursorLocForTesting = cursorLocInDataCoord;
-        lineChart.componentInstance.changeDetectorRef.markForCheck();
-      }
-
-      function assertTooltipRows(
-        fixture: ComponentFixture<ScalarCardContainer>,
-        expectedTableContent: Array<
-          Array<string | ReturnType<typeof jasmine.any>>
-        >
-      ) {
-        const rows = fixture.debugElement.queryAll(Selector.TOOLTIP_ROW);
-        const tableContent = rows.map((row) => {
-          return row
-            .queryAll(By.css('td'))
-            .map((td) => td.nativeElement.textContent.trim());
-        });
-
-        expect(tableContent).toEqual(expectedTableContent);
-      }
-
-      it('renders the tooltip using the custom template (no smooth)', fakeAsync(() => {
-        store.overrideSelector(selectors.getMetricsScalarSmoothing, 0);
-        const fixture = createComponent('card1');
-        setTooltipData(fixture, [
-          buildTooltipDatum(
-            {
-              id: 'row1',
-              type: SeriesType.ORIGINAL,
-              displayName: 'Row 1',
-              visible: true,
-              color: '#00f',
-            },
-            {
-              x: 10,
-              step: 10,
-              y: 1000,
-              value: 1000,
-              wallTime: new Date('2020-01-01').getTime(),
-            }
-          ),
-          buildTooltipDatum(
-            {
-              id: 'row2',
-              type: SeriesType.ORIGINAL,
-              displayName: 'Row 2',
-              visible: true,
-              color: '#0f0',
-            },
-            {
-              x: 1000,
-              step: 1000,
-              y: -1000,
-              value: -1000,
-              wallTime: new Date('2020-12-31').getTime(),
-            }
-          ),
-        ]);
-        fixture.detectChanges();
-
-        const headerCols = fixture.debugElement.queryAll(
-          Selector.TOOLTIP_HEADER_COLUMN
-        );
-        const headerText = headerCols.map(
-          (col) => col.nativeElement.textContent
-        );
-        expect(headerText).toEqual(['', 'Run', 'Value', 'Step', 'Time']);
-
-        assertTooltipRows(fixture, [
-          ['', 'Row 1', '1000', '10', '1/1/20, 12:00 AM'],
-          ['', 'Row 2', '-1000', '1,000', '12/31/20, 12:00 AM'],
-        ]);
-      }));
-
-      it('renders the tooltip using the custom template (smooth)', fakeAsync(() => {
-        store.overrideSelector(selectors.getMetricsScalarSmoothing, 0.5);
-        const fixture = createComponent('card1');
-        setTooltipData(fixture, [
-          buildTooltipDatum(
-            {
-              id: 'smoothed_row1',
-              type: SeriesType.DERIVED,
-              displayName: 'Row 1',
-              visible: true,
-              color: '#00f',
-              aux: false,
-              originalSeriesId: 'row1',
-            },
-            {
-              x: 10,
-              step: 10,
-              y: 500,
-              value: 1000,
-              wallTime: new Date('2020-01-01').getTime(),
-            }
-          ),
-          buildTooltipDatum(
-            {
-              id: 'smoothed_row2',
-              type: SeriesType.DERIVED,
-              displayName: 'Row 2',
-              visible: true,
-              color: '#0f0',
-              aux: false,
-              originalSeriesId: 'row2',
-            },
-            {
-              x: 1000,
-              step: 1000,
-              y: -500,
-              value: -1000,
-              wallTime: new Date('2020-12-31').getTime(),
-            }
-          ),
-        ]);
-        fixture.detectChanges();
-
-        const headerCols = fixture.debugElement.queryAll(
-          Selector.TOOLTIP_HEADER_COLUMN
-        );
-        const headerText = headerCols.map(
-          (col) => col.nativeElement.textContent
-        );
-        expect(headerText).toEqual([
-          '',
-          'Run',
-          'Smoothed',
-          'Value',
-          'Step',
-          'Time',
-        ]);
-
-        assertTooltipRows(fixture, [
-          ['', 'Row 1', '500', '1000', '10', '1/1/20, 12:00 AM'],
-          // Print the step with comma for readability. The value is yet optimize for
-          // readability (we may use the scientific formatting).
-          ['', 'Row 2', '-500', '-1000', '1,000', '12/31/20, 12:00 AM'],
-        ]);
-      }));
-
-      it('shows relative time when XAxisType is RELATIVE', fakeAsync(() => {
-        store.overrideSelector(
-          selectors.getMetricsXAxisType,
-          XAxisType.RELATIVE
-        );
-        store.overrideSelector(selectors.getMetricsScalarSmoothing, 0);
-        const fixture = createComponent('card1');
-        setTooltipData(fixture, [
-          buildTooltipDatum(
-            {
-              id: 'smoothed_row1',
-              type: SeriesType.DERIVED,
-              displayName: 'Row 1',
-              visible: true,
-              color: '#00f',
-              aux: false,
-              originalSeriesId: 'row1',
-            },
-            {
-              x: 10,
-              step: 10,
-              y: 1000,
-              value: 1000,
-              wallTime: new Date('2020-01-01').getTime(),
-            }
-          ),
-          buildTooltipDatum(
-            {
-              id: 'smoothed_row2',
-              type: SeriesType.DERIVED,
-              displayName: 'Row 2',
-              visible: true,
-              color: '#0f0',
-              aux: false,
-              originalSeriesId: 'row2',
-            },
-            {
-              x: 432000000,
-              step: 1000,
-              y: -1000,
-              value: -1000,
-              wallTime: new Date('2020-01-05').getTime(),
-            }
-          ),
-        ]);
-        fixture.detectChanges();
-
-        const headerCols = fixture.debugElement.queryAll(
-          Selector.TOOLTIP_HEADER_COLUMN
-        );
-        const headerText = headerCols.map(
-          (col) => col.nativeElement.textContent
-        );
-        expect(headerText).toEqual([
-          '',
-          'Run',
-          'Value',
-          'Step',
-          'Time',
-          'Relative',
-        ]);
-
-        const rows = fixture.debugElement.queryAll(Selector.TOOLTIP_ROW);
-        const tableContent = rows.map((row) => {
-          return row
-            .queryAll(By.css('td'))
-            .map((td) => td.nativeElement.textContent.trim());
-        });
-
-        expect(tableContent).toEqual([
-          ['', 'Row 1', '1000', '10', '1/1/20, 12:00 AM', '10 ms'],
-          ['', 'Row 2', '-1000', '1,000', '1/5/20, 12:00 AM', '5 day'],
-        ]);
-      }));
-
-      it('sorts by ascending', fakeAsync(() => {
-        store.overrideSelector(
-          selectors.getMetricsTooltipSort,
-          TooltipSort.ASCENDING
-        );
-        store.overrideSelector(selectors.getMetricsScalarSmoothing, 0);
-        const fixture = createComponent('card1');
-        setTooltipData(fixture, [
-          buildTooltipDatum(
-            {
-              id: 'row1',
-              type: SeriesType.ORIGINAL,
-              displayName: 'Row 1',
-              visible: true,
-              color: '#f00',
-              aux: false,
-            },
-            {
-              x: 10,
-              step: 10,
-              y: 1000,
-              value: 1000,
-              wallTime: new Date('2020-01-01').getTime(),
-            }
-          ),
-          buildTooltipDatum(
-            {
-              id: 'row2',
-              type: SeriesType.ORIGINAL,
-              displayName: 'Row 2',
-              visible: true,
-              color: '#0f0',
-              aux: false,
-            },
-            {
-              x: 1000,
-              step: 1000,
-              y: -500,
-              value: -500,
-              wallTime: new Date('2020-12-31').getTime(),
-            }
-          ),
-          buildTooltipDatum(
-            {
-              id: 'row3',
-              type: SeriesType.ORIGINAL,
-              displayName: 'Row 3',
-              visible: true,
-              color: '#00f',
-              aux: false,
-            },
-            {
-              x: 10000,
-              step: 10000,
-              y: 3,
-              value: 3,
-              wallTime: new Date('2021-01-01').getTime(),
-            }
-          ),
-        ]);
-        fixture.detectChanges();
-
-        assertTooltipRows(fixture, [
-          ['', 'Row 2', '-500', '1,000', jasmine.any(String)],
-          ['', 'Row 3', '3', '10,000', jasmine.any(String)],
-          ['', 'Row 1', '1000', '10', jasmine.any(String)],
-        ]);
-      }));
-
-      it('sorts by descending', fakeAsync(() => {
-        store.overrideSelector(
-          selectors.getMetricsTooltipSort,
-          TooltipSort.DESCENDING
-        );
-        store.overrideSelector(selectors.getMetricsScalarSmoothing, 0);
-        const fixture = createComponent('card1');
-        setTooltipData(fixture, [
-          buildTooltipDatum(
-            {
-              id: 'row1',
-              type: SeriesType.ORIGINAL,
-              displayName: 'Row 1',
-              visible: true,
-              color: '#f00',
-              aux: false,
-            },
-            {
-              x: 10,
-              step: 10,
-              y: 1000,
-              value: 1000,
-              wallTime: new Date('2020-01-01').getTime(),
-            }
-          ),
-          buildTooltipDatum(
-            {
-              id: 'row2',
-              type: SeriesType.ORIGINAL,
-              displayName: 'Row 2',
-              visible: true,
-              color: '#0f0',
-              aux: false,
-            },
-            {
-              x: 1000,
-              step: 1000,
-              y: -500,
-              value: -500,
-              wallTime: new Date('2020-12-31').getTime(),
-            }
-          ),
-          buildTooltipDatum(
-            {
-              id: 'row3',
-              type: SeriesType.ORIGINAL,
-              displayName: 'Row 3',
-              visible: true,
-              color: '#00f',
-              aux: false,
-            },
-            {
-              x: 10000,
-              step: 10000,
-              y: 3,
-              value: 3,
-              wallTime: new Date('2021-01-01').getTime(),
-            }
-          ),
-        ]);
-        fixture.detectChanges();
-
-        assertTooltipRows(fixture, [
-          ['', 'Row 1', '1000', '10', jasmine.any(String)],
-          ['', 'Row 3', '3', '10,000', jasmine.any(String)],
-          ['', 'Row 2', '-500', '1,000', jasmine.any(String)],
-        ]);
-      }));
-
-      it('sorts by nearest to the cursor', fakeAsync(() => {
-        store.overrideSelector(
-          selectors.getMetricsTooltipSort,
-          TooltipSort.NEAREST
-        );
-        store.overrideSelector(selectors.getMetricsScalarSmoothing, 0);
-        const fixture = createComponent('card1');
-        setTooltipData(fixture, [
-          buildTooltipDatum(
-            {
-              id: 'row1',
-              type: SeriesType.ORIGINAL,
-              displayName: 'Row 1',
-              visible: true,
-              color: '#f00',
-              aux: false,
-            },
-            {
-              x: 0,
-              step: 0,
-              y: 1000,
-              value: 1000,
-              wallTime: new Date('2020-01-01').getTime(),
-            }
-          ),
-          buildTooltipDatum(
-            {
-              id: 'row2',
-              type: SeriesType.ORIGINAL,
-              displayName: 'Row 2',
-              visible: true,
-              color: '#0f0',
-              aux: false,
-            },
-            {
-              x: 1000,
-              step: 1000,
-              y: -500,
-              value: -500,
-              wallTime: new Date('2020-12-31').getTime(),
-            }
-          ),
-          buildTooltipDatum(
-            {
-              id: 'row3',
-              type: SeriesType.ORIGINAL,
-              displayName: 'Row 3',
-              visible: true,
-              color: '#00f',
-              aux: false,
-            },
-            {
-              x: 10000,
-              step: 10000,
-              y: 3,
-              value: 3,
-              wallTime: new Date('2021-01-01').getTime(),
-            }
-          ),
-        ]);
-        setCursorLocation(fixture, {x: 500, y: -100});
-        fixture.detectChanges();
-        assertTooltipRows(fixture, [
-          ['', 'Row 2', '-500', '1,000', jasmine.any(String)],
-          ['', 'Row 1', '1000', '0', jasmine.any(String)],
-          ['', 'Row 3', '3', '10,000', jasmine.any(String)],
-        ]);
-
-        setCursorLocation(fixture, {x: 500, y: 600});
-        fixture.detectChanges();
-        assertTooltipRows(fixture, [
-          ['', 'Row 1', '1000', '0', jasmine.any(String)],
-          ['', 'Row 2', '-500', '1,000', jasmine.any(String)],
-          ['', 'Row 3', '3', '10,000', jasmine.any(String)],
-        ]);
-
-        setCursorLocation(fixture, {x: 10000, y: -100});
-        fixture.detectChanges();
-        assertTooltipRows(fixture, [
-          ['', 'Row 3', '3', '10,000', jasmine.any(String)],
-          ['', 'Row 2', '-500', '1,000', jasmine.any(String)],
-          ['', 'Row 1', '1000', '0', jasmine.any(String)],
-        ]);
-
-        // Right between row 1 and row 2. When tied, original order is used.
-        setCursorLocation(fixture, {x: 500, y: 250});
-        fixture.detectChanges();
-        assertTooltipRows(fixture, [
-          ['', 'Row 1', '1000', '0', jasmine.any(String)],
-          ['', 'Row 2', '-500', '1,000', jasmine.any(String)],
-          ['', 'Row 3', '3', '10,000', jasmine.any(String)],
-        ]);
-      }));
-    });
-
-    describe('non-monotonic increase in x-axis', () => {
-      it('partitions to pseudo runs when steps increase non-monotonically', fakeAsync(() => {
-        store.overrideSelector(
-          selectors.getMetricsScalarPartitionNonMonotonicX,
-          true
-        );
-        store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.STEP);
-        store.overrideSelector(selectors.getRunColorMap, {
-          run1: '#f00',
-          run2: '#0f0',
-        });
-        store.overrideSelector(selectors.getMetricsScalarSmoothing, 0);
-
-        const runToSeries = {
-          run1: [
-            {wallTime: 2, value: 1, step: 1},
-            {wallTime: 4, value: 10, step: 2},
-            {wallTime: 6, value: 30, step: 2},
-            {wallTime: 6, value: 10, step: 1},
-            {wallTime: 3, value: 20, step: 4},
-          ],
-          run2: [{wallTime: 2, value: 1, step: 1}],
-        };
-        provideMockCardRunToSeriesData(
-          selectSpy,
-          PluginType.SCALARS,
-          'card1',
-          null /* metadataOverride */,
-          runToSeries
-        );
-
-        const fixture = createComponent('card1');
-        const lineChart = fixture.debugElement.query(Selector.GPU_LINE_CHART);
-
-        expect(lineChart.componentInstance.seriesData).toEqual([
-          {
-            id: '["run1",0]',
-            points: [
-              {wallTime: 2000, value: 1, step: 1, x: 1, y: 1},
-              {wallTime: 4000, value: 10, step: 2, x: 2, y: 10},
-              {wallTime: 6000, value: 30, step: 2, x: 2, y: 30},
-            ],
-          },
-          {
-            id: '["run1",1]',
-            points: [
-              {wallTime: 6000, value: 10, step: 1, x: 1, y: 10},
-              {wallTime: 3000, value: 20, step: 4, x: 4, y: 20},
-            ],
-          },
-          {
-            id: '["run2",0]',
-            points: [{wallTime: 2000, value: 1, step: 1, x: 1, y: 1}],
-          },
-        ]);
-        expect(lineChart.componentInstance.seriesMetadataMap).toEqual({
-          '["run1",0]': {
-            id: '["run1",0]',
-            displayName: 'run1: 0',
-            type: SeriesType.ORIGINAL,
-            visible: false,
-            color: '#f00',
-            opacity: 1,
-            aux: false,
-          },
-          '["run1",1]': {
-            id: '["run1",1]',
-            displayName: 'run1: 1',
-            type: SeriesType.ORIGINAL,
-            visible: false,
-            color: '#f00',
-            opacity: 1,
-            aux: false,
-          },
-          '["run2",0]': {
-            id: '["run2",0]',
-            displayName: 'run2',
-            type: SeriesType.ORIGINAL,
-            visible: false,
-            color: '#0f0',
-            opacity: 1,
-            aux: false,
-          },
-        });
-      }));
-
-      it('partitions to pseudo runs when wall_time increase non-monotonically', fakeAsync(() => {
-        store.overrideSelector(
-          selectors.getMetricsScalarPartitionNonMonotonicX,
-          true
-        );
-        store.overrideSelector(
-          selectors.getMetricsXAxisType,
-          XAxisType.WALL_TIME
-        );
-        store.overrideSelector(selectors.getRunColorMap, {
-          run1: '#f00',
-          run2: '#0f0',
-        });
-        store.overrideSelector(selectors.getMetricsScalarSmoothing, 0);
-
-        const runToSeries = {
-          run1: [
-            {wallTime: 2, value: 1, step: 1},
-            {wallTime: 4, value: 10, step: 2},
-            {wallTime: 6, value: 30, step: 2},
-            {wallTime: 6, value: 10, step: 1},
-            {wallTime: 3, value: 20, step: 4},
-          ],
-        };
-        provideMockCardRunToSeriesData(
-          selectSpy,
-          PluginType.SCALARS,
-          'card1',
-          null /* metadataOverride */,
-          runToSeries
-        );
-
-        const fixture = createComponent('card1');
-        const lineChart = fixture.debugElement.query(Selector.GPU_LINE_CHART);
-
-        expect(lineChart.componentInstance.seriesData).toEqual([
-          {
-            id: '["run1",0]',
-            points: [
-              {wallTime: 2000, value: 1, step: 1, x: 2000, y: 1},
-              {wallTime: 4000, value: 10, step: 2, x: 4000, y: 10},
-              {wallTime: 6000, value: 30, step: 2, x: 6000, y: 30},
-              {wallTime: 6000, value: 10, step: 1, x: 6000, y: 10},
-            ],
-          },
-          {
-            id: '["run1",1]',
-            points: [{wallTime: 3000, value: 20, step: 4, x: 3000, y: 20}],
-          },
-        ]);
-        expect(lineChart.componentInstance.seriesMetadataMap).toEqual({
-          '["run1",0]': {
-            id: '["run1",0]',
-            displayName: 'run1: 0',
-            type: SeriesType.ORIGINAL,
-            visible: false,
-            color: '#f00',
-            opacity: 1,
-            aux: false,
-          },
-          '["run1",1]': {
-            id: '["run1",1]',
-            displayName: 'run1: 1',
-            type: SeriesType.ORIGINAL,
-            visible: false,
-            color: '#f00',
-            opacity: 1,
-            aux: false,
-          },
-        });
-      }));
-    });
   });
 
   describe('data download', () => {
@@ -1926,6 +1565,66 @@ describe('scalar card', () => {
         .querySelector('testable-data-download-dialog');
 
       expect(node!.textContent).toBe('card1');
+    }));
+  });
+
+  describe('fit to domain', () => {
+    it('disables the fit to domain when data fits domain already', fakeAsync(() => {
+      const runToSeries = {
+        run1: [{wallTime: 2, value: 1, step: 1}],
+      };
+      provideMockCardRunToSeriesData(
+        selectSpy,
+        PluginType.SCALARS,
+        'card1',
+        null /* metadataOverride */,
+        runToSeries
+      );
+      store.overrideSelector(selectors.getVisibleCardIdSet, new Set(['card1']));
+
+      const fixture = createComponent('card1');
+      const lineChart = fixture.debugElement.query(Selector.LINE_CHART);
+
+      lineChart.componentInstance.getIsViewBoxOverridden().next(false);
+      fixture.detectChanges();
+
+      const fitToDomain = fixture.debugElement.query(Selector.FIT_TO_DOMAIN);
+      expect(fitToDomain.properties['disabled']).toBe(true);
+
+      lineChart.componentInstance.getIsViewBoxOverridden().next(true);
+      fixture.detectChanges();
+
+      expect(fitToDomain.properties['disabled']).toBe(false);
+    }));
+
+    it('resets domain when user clicks on reset button', fakeAsync(() => {
+      const runToSeries = {
+        run1: [{wallTime: 100, value: 1, step: 333}],
+        run2: [{wallTime: 100, value: 1, step: 333}],
+        run3: [{wallTime: 100, value: 1, step: 333}],
+      };
+      provideMockCardRunToSeriesData(
+        selectSpy,
+        PluginType.SCALARS,
+        'card1',
+        null /* metadataOverride */,
+        runToSeries
+      );
+      const fixture = createComponent('card1');
+
+      const lineChart = fixture.debugElement.query(Selector.LINE_CHART);
+      lineChart.componentInstance.getIsViewBoxOverridden().next(true);
+      fixture.detectChanges();
+
+      const viewBoxResetSpy = spyOn(
+        lineChart.componentInstance,
+        'viewBoxReset'
+      );
+
+      fixture.debugElement.query(Selector.FIT_TO_DOMAIN).nativeElement.click();
+      fixture.detectChanges();
+
+      expect(viewBoxResetSpy).toHaveBeenCalledTimes(1);
     }));
   });
 });

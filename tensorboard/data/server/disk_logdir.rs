@@ -120,7 +120,7 @@ mod tests {
         {
             let mut f = File::create(run_dir.join("foo.tfevents.123"))?;
             f.write_all(b"hello")?;
-            f.sync_all()?;
+            f.flush()?;
         }
 
         let disk_logdir = DiskLogdir::new(logdir.to_path_buf());

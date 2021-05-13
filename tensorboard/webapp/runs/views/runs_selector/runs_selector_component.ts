@@ -14,7 +14,6 @@ limitations under the License.
 ==============================================================================*/
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 
-import {HparamAndMetricSpec} from '../../store/runs_types';
 import {RunsTableColumn} from '../runs_table/types';
 
 @Component({
@@ -40,5 +39,4 @@ export class RunsSelectorComponent {
   @Input() experimentIds!: string[];
   @Input() showHparamsAndMetrics?: boolean;
   @Input() columns!: RunsTableColumn[];
-  @Input() hparamAndMetricSpecs!: HparamAndMetricSpec;
 }

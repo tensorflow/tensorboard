@@ -25,6 +25,7 @@ load("@io_bazel_rules_closure//closure/private:defs.bzl",
      "difference",
      "long_path",
      "unfurl")
+load("//tensorboard/defs/internal:html.bzl", _tb_combine_html = "tb_combine_html")
 
 def _tf_web_library(ctx):
   if not ctx.attr.srcs:
@@ -270,3 +271,5 @@ tf_web_library = rule(
         "_closure_library_base": CLOSURE_LIBRARY_BASE_ATTR,
     },
 )
+
+tb_combine_html = _tb_combine_html

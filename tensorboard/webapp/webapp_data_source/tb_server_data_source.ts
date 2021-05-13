@@ -12,6 +12,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import '../tb_polymer_interop_types';
+
 import {Injectable} from '@angular/core';
 import {from, forkJoin, throwError, Observable} from 'rxjs';
 import {catchError, map} from 'rxjs/operators';
@@ -52,7 +54,7 @@ export class TBServerError {
 @Injectable()
 export class TBServerDataSource {
   // TODO(soergel): implements WebappDataSource
-  private tfBackend = (document.createElement('tf-backend') as any).tf_backend;
+  private tfBackend = document.createElement('tf-backend').tf_backend;
 
   constructor(private http: TBHttpClient) {}
 

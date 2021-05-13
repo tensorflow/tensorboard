@@ -90,7 +90,7 @@ function updatePolylineGeometry(
       new Float32Array(numVertices * 3),
       3
     );
-    geometry.addAttribute('position', positionAttributes);
+    geometry.setAttribute('position', positionAttributes);
   }
   const values = positionAttributes.array as number[];
   for (let index = 0; index < numVertices; index++) {
@@ -153,7 +153,7 @@ function updateThickPolylineGeometry(
       new Float32Array(numCoordinates),
       3
     );
-    geometry.addAttribute('position', positionAttributes);
+    geometry.setAttribute('position', positionAttributes);
   }
 
   const values = positionAttributes.array as Float32Array;

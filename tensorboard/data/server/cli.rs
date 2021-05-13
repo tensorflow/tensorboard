@@ -279,7 +279,7 @@ fn die_after_stdin() {
 fn write_port_file(path: &Path, port: u16) -> std::io::Result<()> {
     let mut f = File::create(path)?;
     writeln!(f, "{}", port)?;
-    f.sync_all()?;
+    f.flush()?;
     Ok(())
 }
 
@@ -288,7 +288,7 @@ fn write_startup_error(path: Option<&Path>, error: &str) {
     let write_to_file = |path: &Path| -> std::io::Result<()> {
         let mut f = File::create(path)?;
         writeln!(f, "{}", error)?;
-        f.sync_all()?;
+        f.flush()?;
         Ok(())
     };
     if let Some(p) = path {

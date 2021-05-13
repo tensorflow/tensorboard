@@ -34,19 +34,18 @@ import {
   switchMap,
   takeWhile,
 } from 'rxjs/operators';
+
 import {State} from '../../../app_state';
 import {
   getCardPinnedState,
   getCurrentRouteRunSelection,
   getExperimentIdForRunId,
   getExperimentIdToAliasMap,
-  getIsGpuChartEnabled,
   getRun,
   getRunColorMap,
   getVisibleCardIdSet,
 } from '../../../selectors';
 import {DataLoadState} from '../../../types/data';
-import {RunColorScale} from '../../../types/ui';
 import {classicSmoothing} from '../../../widgets/line_chart_v2/data_transformer';
 import {ScaleType} from '../../../widgets/line_chart_v2/types';
 import {PluginType, ScalarStepDatum} from '../../data_source';
@@ -65,7 +64,6 @@ import {CardId, CardMetadata, XAxisType} from '../../types';
 import {CardRenderer} from '../metrics_view_types';
 import {getTagDisplayName} from '../utils';
 import {DataDownloadDialogContainer} from './data_download_dialog_container';
-import {LegacySeriesDataList} from './scalar_card_component';
 import {
   PartialSeries,
   PartitionedSeries,
@@ -79,30 +77,6 @@ import {getDisplayNameForRun, partitionSeries} from './utils';
 type ScalarCardMetadata = CardMetadata & {
   plugin: PluginType.SCALARS;
 };
-
-function areSeriesDataListEqual(
-  listA: LegacySeriesDataList,
-  listB: LegacySeriesDataList
-): boolean {
-  if (listA.length !== listB.length) {
-    return false;
-  }
-  return listA.every((listAVal, index) => {
-    const listBVal = listB[index];
-    const listAPoints = listAVal.points;
-    const listBPoints = listBVal.points;
-    return (
-      listAVal.seriesId === listBVal.seriesId &&
-      listAVal.metadata.displayName === listBVal.metadata.displayName &&
-      listAVal.visible === listBVal.visible &&
-      listAPoints.length === listBPoints.length &&
-      listAPoints.every((listAPoint, index) => {
-        const listBPoint = listBPoints[index];
-        return listAPoint.x === listBPoint.x && listAPoint.y === listBPoint.y;
-      })
-    );
-  });
-}
 
 function areSeriesEqual(
   listA: PartialSeries[],
@@ -131,27 +105,21 @@ function areSeriesEqual(
   template: `
     <scalar-card-component
       [cardId]="cardId"
+      [chartMetadataMap]="chartMetadataMap$ | async"
       [DataDownloadComponent]="DataDownloadComponent"
-      [loadState]="loadState$ | async"
-      [runColorScale]="runColorScale"
-      [title]="title$ | async"
-      [tag]="tag$ | async"
-      [seriesDataList]="legacySeriesDataList$ | async"
-      [tooltipSort]="tooltipSort$ | async"
+      [dataSeries]="dataSeries$ | async"
       [ignoreOutliers]="ignoreOutliers$ | async"
-      [xAxisType]="xAxisType$ | async"
-      [newXScaleType]="newXScaleType$ | async"
-      [scalarSmoothing]="scalarSmoothing$ | async"
-      [showFullSize]="showFullSize"
-      [isPinned]="isPinned$ | async"
-      [dataSeries]="(gpuLineChartEnabled$ | async) ? (dataSeries$ | async) : []"
-      [chartMetadataMap]="
-        (gpuLineChartEnabled$ | async) ? (chartMetadataMap$ | async) : {}
-      "
-      [gpuLineChartEnabled]="gpuLineChartEnabled$ | async"
-      [smoothingEnabled]="smoothingEnabled$ | async"
       [isCardVisible]="isCardVisible$ | async"
       [isEverVisible]="isEverVisible$ | async"
+      [isPinned]="isPinned$ | async"
+      [loadState]="loadState$ | async"
+      [showFullSize]="showFullSize"
+      [smoothingEnabled]="smoothingEnabled$ | async"
+      [tag]="tag$ | async"
+      [title]="title$ | async"
+      [tooltipSort]="tooltipSort$ | async"
+      [xAxisType]="xAxisType$ | async"
+      [xScaleType]="xScaleType$ | async"
       (onFullSizeToggle)="onFullSizeToggle()"
       (onPinClicked)="pinStateChanged.emit($event)"
     ></scalar-card-component>
@@ -177,7 +145,6 @@ export class ScalarCardContainer implements CardRenderer, OnInit {
   > = DataDownloadDialogContainer;
   @Input() cardId!: CardId;
   @Input() groupName!: string | null;
-  @Input() runColorScale!: RunColorScale;
   @Output() fullWidthChanged = new EventEmitter<boolean>();
   @Output() fullHeightChanged = new EventEmitter<boolean>();
   @Output() pinStateChanged = new EventEmitter<boolean>();
@@ -185,7 +152,6 @@ export class ScalarCardContainer implements CardRenderer, OnInit {
   loadState$?: Observable<DataLoadState>;
   title$?: Observable<string>;
   tag$?: Observable<string>;
-  legacySeriesDataList$?: Observable<LegacySeriesDataList> = of([]);
   isPinned$?: Observable<boolean>;
   dataSeries$?: Observable<ScalarCardDataSeries[]>;
   chartMetadataMap$?: Observable<ScalarCardSeriesMetadataMap>;
@@ -200,10 +166,10 @@ export class ScalarCardContainer implements CardRenderer, OnInit {
     takeWhile((visible) => !visible, true)
   );
 
-  readonly tooltipSort$ = this.store.select(getMetricsTooltipSort);
   readonly ignoreOutliers$ = this.store.select(getMetricsIgnoreOutliers);
+  readonly tooltipSort$ = this.store.select(getMetricsTooltipSort);
   readonly xAxisType$ = this.store.select(getMetricsXAxisType);
-  readonly newXScaleType$ = this.xAxisType$.pipe(
+  readonly xScaleType$ = this.store.select(getMetricsXAxisType).pipe(
     map((xAxisType) => {
       switch (xAxisType) {
         case XAxisType.STEP:
@@ -219,7 +185,6 @@ export class ScalarCardContainer implements CardRenderer, OnInit {
   );
 
   readonly scalarSmoothing$ = this.store.select(getMetricsScalarSmoothing);
-  readonly gpuLineChartEnabled$ = this.store.select(getIsGpuChartEnabled);
   readonly smoothingEnabled$ = this.store
     .select(getMetricsScalarSmoothing)
     .pipe(map((smoothing) => smoothing > 0));
@@ -275,48 +240,6 @@ export class ScalarCardContainer implements CardRenderer, OnInit {
       }),
       distinctUntilChanged(areSeriesEqual)
     );
-
-    this.legacySeriesDataList$ = partialSeries$.pipe(
-      switchMap<PartialSeries[], Observable<LegacySeriesDataList>>(
-        (runIdAndPoints) => {
-          if (!runIdAndPoints.length) {
-            return of([] as LegacySeriesDataList);
-          }
-
-          const dataList$ = runIdAndPoints.map((runIdAndPoint) => {
-            return this.getRunDisplayName(runIdAndPoint.runId).pipe(
-              map<string, LegacySeriesDataList[number]>((displayName) => {
-                return {
-                  seriesId: runIdAndPoint.runId,
-                  points: runIdAndPoint.points,
-                  metadata: {displayName},
-                  visible: false,
-                };
-              })
-            );
-          });
-          return combineLatest(dataList$);
-        }
-      ),
-      combineLatestWith(this.store.select(getCurrentRouteRunSelection)),
-      // When the `fetchRunsSucceeded` action fires, the run selection
-      // map and the metadata change. To prevent quick fire of changes,
-      // debounce by a microtask to emit only single change for the runs
-      // store change.
-      debounceTime(0),
-      map(([result, runSelectionMap]) => {
-        return result.map((seriesData) => {
-          return {
-            ...seriesData,
-            visible: Boolean(
-              runSelectionMap && runSelectionMap.get(seriesData.seriesId)
-            ),
-          };
-        });
-      }),
-      startWith([] as LegacySeriesDataList),
-      distinctUntilChanged(areSeriesDataListEqual)
-    ) as Observable<LegacySeriesDataList>;
 
     function getSmoothedSeriesId(seriesId: string): string {
       return JSON.stringify(['smoothed', seriesId]);

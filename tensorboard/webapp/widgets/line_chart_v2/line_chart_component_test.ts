@@ -574,7 +574,8 @@ describe('line_chart_v2/line_chart test', () => {
   });
 
   describe('#getIsViewBoxOverridden', () => {
-    it('returns its internal state', () => {
+    it('emits when viewBox changes', () => {
+      const onViewBoxOverridden = jasmine.createSpy();
       const fixture = createComponent({
         seriesData: [
           buildSeries({
@@ -589,20 +590,30 @@ describe('line_chart_v2/line_chart test', () => {
         seriesMetadataMap: {foo: buildMetadata({id: 'foo', visible: true})},
         yScaleType: ScaleType.LINEAR,
       });
+      fixture.componentInstance.yScaleType = ScaleType.LINEAR;
       fixture.detectChanges();
 
-      expect(fixture.componentInstance.chart.getIsViewBoxOverridden()).toBe(
-        false
-      );
+      fixture.componentInstance.chart
+        .getIsViewBoxOverridden()
+        .subscribe(onViewBoxOverridden);
+
+      // Initial value.
+      expect(onViewBoxOverridden).toHaveBeenCalledOnceWith(false);
 
       fixture.componentInstance.triggerViewBoxChange({
         x: [-5, 5],
         y: [0, 10],
       });
 
-      expect(fixture.componentInstance.chart.getIsViewBoxOverridden()).toBe(
-        true
-      );
+      expect(onViewBoxOverridden.calls.allArgs()).toEqual([[false], [true]]);
+
+      fixture.componentInstance.yScaleType = ScaleType.TIME;
+      fixture.detectChanges();
+      expect(onViewBoxOverridden.calls.allArgs()).toEqual([
+        [false],
+        [true],
+        [false],
+      ]);
     });
   });
 });

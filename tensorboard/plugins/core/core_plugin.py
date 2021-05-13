@@ -289,8 +289,13 @@ class CorePlugin(base_plugin.TBPlugin):
     @wrappers.Request.application
     def _serve_notifications(self, request):
         """Serve JSON payload of notifications to show in the UI."""
-        results = {"notifications": []}
-        return http_util.Respond(request, results, "application/json")
+        response = utils.redirect("../notifications_note.json")
+        # Disable Werkzeug's automatic Location header correction routine, which
+        # absolutizes relative paths "to be RFC conformant" [1], but this is
+        # based on an outdated HTTP/1.1 RFC; the current one allows them:
+        # https://tools.ietf.org/html/rfc7231#section-7.1.2
+        response.autocorrect_location_header = False
+        return response
 
 
 class CorePluginLoader(base_plugin.TBLoader):

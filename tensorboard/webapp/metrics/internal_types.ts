@@ -13,12 +13,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {HistogramMode} from '../widgets/histogram/histogram_types';
-import {TooltipSortingMethod} from '../widgets/line_chart/polymer_interop_types';
 
 import {PluginType} from './data_source/types';
 
 export {HistogramMode};
-export {TooltipSortingMethod as TooltipSort};
+
+export enum TooltipSort {
+  DEFAULT = 'default',
+  ASCENDING = 'ascending',
+  DESCENDING = 'descending',
+  NEAREST = 'nearest',
+}
 
 export enum XAxisType {
   STEP,

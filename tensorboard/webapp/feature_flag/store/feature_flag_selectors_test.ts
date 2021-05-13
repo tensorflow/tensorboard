@@ -22,16 +22,16 @@ describe('feature_flag_selectors', () => {
       const state = buildState(
         buildFeatureFlagState({
           defaultFlags: buildFeatureFlag({
-            enableGpuChart: true,
+            enabledExperimentalPlugins: [],
           }),
           flagOverrides: {
-            enableGpuChart: false,
+            enabledExperimentalPlugins: ['foo'],
           },
         })
       );
 
       expect(selectors.getFeatureFlags(state)).toEqual(
-        buildFeatureFlag({enableGpuChart: false})
+        buildFeatureFlag({enabledExperimentalPlugins: ['foo']})
       );
     });
 
@@ -67,16 +67,16 @@ describe('feature_flag_selectors', () => {
       const state = buildState(
         buildFeatureFlagState({
           defaultFlags: buildFeatureFlag({
-            enableGpuChart: true,
+            enabledExperimentalPlugins: [],
           }),
           flagOverrides: {
-            enableGpuChart: false,
+            enabledExperimentalPlugins: ['foo'],
           },
         })
       );
       const actual = selectors.getOverriddenFeatureFlags(state);
 
-      expect(actual).toEqual({enableGpuChart: false});
+      expect(actual).toEqual({enabledExperimentalPlugins: ['foo']});
     });
   });
 
@@ -117,29 +117,28 @@ describe('feature_flag_selectors', () => {
     });
   });
 
-  describe('#getIsGpuChartEnabled', () => {
-    it('returns value in the store', () => {
-      const state1 = buildState(
+  describe('#getEnabledColorGroup', () => {
+    it('returns the proper value', () => {
+      let state = buildState(
         buildFeatureFlagState({
           defaultFlags: buildFeatureFlag({
-            enableGpuChart: false,
+            enabledColorGroup: false,
           }),
         })
       );
-      const actual1 = selectors.getIsGpuChartEnabled(state1);
+      expect(selectors.getEnabledColorGroup(state)).toEqual(false);
 
-      expect(actual1).toBe(false);
-
-      const state2 = buildState(
+      state = buildState(
         buildFeatureFlagState({
           defaultFlags: buildFeatureFlag({
-            enableGpuChart: true,
+            enabledColorGroup: false,
           }),
+          flagOverrides: {
+            enabledColorGroup: true,
+          },
         })
       );
-      const actual2 = selectors.getIsGpuChartEnabled(state2);
-
-      expect(actual2).toBe(true);
+      expect(selectors.getEnabledColorGroup(state)).toEqual(true);
     });
   });
 });

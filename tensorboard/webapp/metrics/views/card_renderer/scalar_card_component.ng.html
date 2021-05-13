@@ -23,14 +23,14 @@ limitations under the License.
   <span class="controls">
     <button
       mat-icon-button
-      [disabled]="!seriesDataList || !seriesDataList.length || (newLineChart && !newLineChart.getIsViewBoxOverridden())"
+      [disabled]="!lineChart || !(lineChart.getIsViewBoxOverridden() | async)"
       (click)="resetDomain()"
       [title]="
-            (newLineChart && !newLineChart.getIsViewBoxOverridden()) ?
-                'Line chart is already fitted to data. When data updates, the line chart '
-                + 'will auto fit to its domain.' :
-                'Fit line chart domains to data'
-        "
+          !lineChart || !(lineChart.getIsViewBoxOverridden() | async) ?
+              'Fit line chart domains to data' :
+              'Line chart is already fitted to data. When data updates, the line chart '
+                + 'will auto fit to its domain.'
+      "
       i18n-aria-label="A button that resets line chart domain to the data"
       aria-label="Fit line chart domains to data"
     >
@@ -72,7 +72,7 @@ limitations under the License.
     <mat-menu #menu="matMenu">
       <button
         mat-menu-item
-        (click)="toggleYAxisType()"
+        (click)="toggleYScaleType()"
         i18n-aria-label="A button that toggles log scale on y-axis on a line chart"
         aria-label="Toggle Y-axis log scale on line chart"
       >
@@ -98,34 +98,17 @@ limitations under the License.
 
   <ng-container *ngIf="isEverVisible">
     <line-chart
-      *ngIf="gpuLineChartEnabled; else legacyChart"
       [disableUpdate]="!isCardVisible"
       [preferredRendererType]="RendererType.WEBGL"
       [seriesData]="dataSeries"
       [seriesMetadataMap]="chartMetadataMap"
-      [xScaleType]="newXScaleType"
-      [yScaleType]="newYScaleType"
+      [xScaleType]="xScaleType"
+      [yScaleType]="yScaleType"
       [customXFormatter]="xAxisType === XAxisType.RELATIVE ? relativeXFormatter : undefined"
       [ignoreYOutliers]="ignoreOutliers"
       [tooltipTemplate]="tooltip"
+      (onViewBoxOverridden)="isViewBoxOverridden = $event"
     ></line-chart>
-
-    <ng-template #legacyChart>
-      <tb-line-chart
-        [colorScale]="runColorScale"
-        [seriesDataList]="seriesDataList"
-        [tooltipColumns]="tooltipColumns"
-        [tooltipSortingMethod]="tooltipSort"
-        [ignoreYOutliers]="ignoreOutliers"
-        [xAxisType]="chartXAxisType()"
-        [smoothingEnabled]="scalarSmoothing > 0"
-        [smoothingWeight]="scalarSmoothing"
-        [yAxisType]="yAxisType"
-        detectResize
-        [resizeEventDebouncePeriodInMs]="RESIZE_REDRAW_DEBOUNCE_TIME_IN_MS"
-        (onResize)="redraw()"
-      ></tb-line-chart>
-    </ng-template>
   </ng-container>
 
   <ng-template

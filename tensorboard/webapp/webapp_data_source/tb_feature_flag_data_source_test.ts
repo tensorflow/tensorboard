@@ -68,27 +68,6 @@ describe('tb_feature_flag_data_source', () => {
         expect(dataSource.getFeatures()).toEqual({inColab: false});
       });
 
-      it('returns enableGpuChart=false when `fastChart` is empty', () => {
-        spyOn(TEST_ONLY.util, 'getParams').and.returnValue(
-          new URLSearchParams('fastChart=')
-        );
-        expect(dataSource.getFeatures()).toEqual({enableGpuChart: false});
-      });
-
-      it('returns enableGpuChart=true when `fastChart` is `true`', () => {
-        spyOn(TEST_ONLY.util, 'getParams').and.returnValue(
-          new URLSearchParams('fastChart=true')
-        );
-        expect(dataSource.getFeatures()).toEqual({enableGpuChart: true});
-      });
-
-      it('returns enableGpuChart=false when `fastChart` is "false"', () => {
-        spyOn(TEST_ONLY.util, 'getParams').and.returnValue(
-          new URLSearchParams('fastChart=false')
-        );
-        expect(dataSource.getFeatures()).toEqual({enableGpuChart: false});
-      });
-
       it('returns scalarsBatchSize from the query params', () => {
         spyOn(TEST_ONLY.util, 'getParams').and.returnValue(
           new URLSearchParams('scalarsBatchSize=12')
@@ -110,7 +89,6 @@ describe('tb_feature_flag_data_source', () => {
         expect(dataSource.getFeatures()).toEqual({
           enabledExperimentalPlugins: ['a'],
           inColab: false,
-          enableGpuChart: true,
           scalarsBatchSize: 16,
         });
       });

@@ -26,6 +26,19 @@ export const notificationBellClicked = createAction(
   '[Notification] Notification Bell Clicked'
 );
 
+export const notifcationLastReadTimeUpdated = createAction(
+  '[Notification] Notification Last Read Timestamp Updated',
+  props<{time: number}>()
+);
+
+export const lastReadTimestampInitialized = createAction(
+  '[Notification] Notification Last Read Timestamp Initialized',
+  props<{time: number}>()
+);
+
+/**
+ * Fires when the response from server is recieved.
+ */
 export const fetchNotificationsFailed = createAction(
   '[Notification] Fetch Notification Request Failed'
 );

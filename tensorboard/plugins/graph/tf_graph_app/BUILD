@@ -1,6 +1,5 @@
 load("//tensorboard/defs:defs.bzl", "tf_js_binary", "tf_ts_library")
-load("//tensorboard/defs:web.bzl", "tf_web_library")
-load("//tensorboard/defs:vulcanize.bzl", "tensorboard_html_binary")
+load("//tensorboard/defs:web.bzl", "tb_combine_html", "tf_web_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
@@ -27,6 +26,7 @@ tf_js_binary(
     name = "tf_graph_app_js_binary",
     compile = True,
     entry_point = ":tf-graph-app.ts",
+    includes_polymer = True,
     deps = [":tf_graph_app"],
 )
 
@@ -42,9 +42,8 @@ tf_web_library(
     ],
 )
 
-tensorboard_html_binary(
+tb_combine_html(
     name = "binary",
-    compile = False,
     input_path = "/tf-graph-app.html",
     output_path = "/index.html",
     deps = [

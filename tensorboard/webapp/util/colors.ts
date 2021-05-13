@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-const CHART_COLOR_PALLETE = [
+export const CHART_COLOR_PALLETE = [
   '#425066', // Slate 1
   '#12b5cb', // Cyan 600
   '#e52592', // Pink 600
@@ -21,14 +21,3 @@ const CHART_COLOR_PALLETE = [
   '#7cb342', // Lt green 600
   '#e8710a', // Orange 600
 ];
-
-let colorIndex = 0;
-
-/**
- * Returns hex color for charts.
- */
-export function getNextChartColor(): string {
-  const color = CHART_COLOR_PALLETE[colorIndex];
-  colorIndex = (colorIndex + 1) % CHART_COLOR_PALLETE.length;
-  return color;
-}

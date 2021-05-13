@@ -31,6 +31,12 @@ describe('hparams/_redux/utils test', () => {
         '["1","bar","foo"]'
       );
     });
+
+    it('does not mutate the original experimentIds', () => {
+      const experimentIds = ['b', 'a'];
+      getIdFromExperimentIds(experimentIds);
+      expect(experimentIds).toEqual(['b', 'a']);
+    });
   });
 
   describe('#combineDefaultHparamFilters', () => {

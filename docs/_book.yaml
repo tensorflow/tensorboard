@@ -21,6 +21,8 @@ upper_tabs:
         path: /tensorboard/image_summaries
       - title: "Model graphs"
         path: /tensorboard/graphs
+      - title: "Text data"
+        path: /tensorboard/text_summaries
       - title: "Hyperparameter tuning"
         path: /tensorboard/hyperparameter_tuning_with_hparams
       - title: "Embedding projector"

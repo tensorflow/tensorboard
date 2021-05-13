@@ -12,33 +12,56 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {ChangeDetectionStrategy, Component, Input, OnInit} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  OnInit,
+  OnDestroy,
+} from '@angular/core';
 import {createSelector, Store} from '@ngrx/store';
-import {DataLoadState, LoadState} from '../../../types/data';
-import {combineLatest, Observable, of} from 'rxjs';
-import {combineLatestWith, map, shareReplay, startWith} from 'rxjs/operators';
+import {combineLatest, Observable, of, Subject} from 'rxjs';
+import {
+  combineLatestWith,
+  filter,
+  map,
+  share,
+  shareReplay,
+  startWith,
+  switchMap,
+  take,
+  takeUntil,
+} from 'rxjs/operators';
 
+import {DataLoadState, LoadState} from '../../../types/data';
+import * as alertActions from '../../../alert/actions';
 import {State} from '../../../app_state';
 import {
   getCurrentRouteRunSelection,
   getExperiment,
   getExperimentIdToAliasMap,
-  getExperimentsHparamsAndMetrics,
+  getRouteId,
   getRunColorMap,
-  getRunHparamFilterMap,
-  getRunMetricFilterMap,
   getRuns,
   getRunSelectorPaginationOption,
   getRunSelectorRegexFilter,
   getRunSelectorSort,
   getRunsLoadState,
 } from '../../../selectors';
+import {
+  actions as hparamsActions,
+  selectors as hparamsSelectors,
+} from '../../../hparams';
+import {
+  DiscreteFilter,
+  IntervalFilter,
+  DiscreteHparamValue,
+  DiscreteHparamValues,
+  DomainType,
+} from '../../../hparams/types';
 import {SortDirection} from '../../../types/ui';
 import {
   runColorChanged,
-  runDiscreteHparamFilterChanged,
-  runIntervalHparamFilterChanged,
-  runMetricFilterChanged,
   runPageSelectionToggled,
   runSelectionToggled,
   runSelectorPaginationOptionChanged,
@@ -47,15 +70,8 @@ import {
   runsSelectAll,
   runTableShown,
 } from '../../actions';
-import {
-  DiscreteFilter,
-  DiscreteHparamValue,
-  DiscreteHparamValues,
-  DomainType,
-  IntervalFilter,
-  SortKey,
-  SortType,
-} from '../../types';
+import {SortKey, SortType} from '../../types';
+import {MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT} from '../../store/runs_types';
 
 import {
   HparamColumn,
@@ -216,7 +232,7 @@ function matchFilter(
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class RunsTableContainer implements OnInit {
+export class RunsTableContainer implements OnInit, OnDestroy {
   private allUnsortedRunTableItems$?: Observable<RunTableItem[]>;
   loading$: Observable<boolean> | null = null;
   filteredItemsLength$?: Observable<number>;
@@ -254,6 +270,7 @@ export class RunsTableContainer implements OnInit {
   sortOption$ = this.store.select(getRunSelectorSort);
   paginationOption$ = this.store.select(getRunSelectorPaginationOption);
   regexFilter$ = this.store.select(getRunSelectorRegexFilter);
+  private readonly ngUnsubscribe = new Subject();
 
   constructor(private readonly store: Store<State>) {}
 
@@ -268,13 +285,15 @@ export class RunsTableContainer implements OnInit {
       this.getRunTableItemsForExperiment(id)
     );
 
-    this.allUnsortedRunTableItems$ = combineLatest(
+    const rawAllUnsortedRunTableItems$ = combineLatest(
       getRunTableItemsPerExperiment
     ).pipe(
       map((itemsForExperiments: RunTableItem[][]) => {
         const items = [] as RunTableItem[];
         return items.concat(...itemsForExperiments);
-      }),
+      })
+    );
+    this.allUnsortedRunTableItems$ = rawAllUnsortedRunTableItems$.pipe(
       shareReplay(1)
     );
     this.allItemsLength$ = this.allUnsortedRunTableItems$.pipe(
@@ -308,13 +327,16 @@ export class RunsTableContainer implements OnInit {
 
     if (this.showHparamsAndMetrics) {
       const getHparamAndMetrics$ = this.store.select(
-        getExperimentsHparamsAndMetrics,
+        hparamsSelectors.getExperimentsHparamsAndMetricsSpecs,
         {experimentIds: this.experimentIds}
       );
 
       // combineLatest, when initializing, emits twice
       this.hparamColumns$ = combineLatest([
-        this.store.select(getRunHparamFilterMap),
+        this.store.select(
+          hparamsSelectors.getHparamFilterMap,
+          this.experimentIds
+        ),
         getHparamAndMetrics$,
       ]).pipe(
         map(([filterMap, {hparams}]) => {
@@ -332,7 +354,10 @@ export class RunsTableContainer implements OnInit {
       );
 
       this.metricColumns$ = combineLatest([
-        this.store.select(getRunMetricFilterMap),
+        this.store.select(
+          hparamsSelectors.getMetricFilterMap,
+          this.experimentIds
+        ),
         getHparamAndMetrics$,
       ]).pipe(
         map(([filterMap, {metrics}]) => {
@@ -350,7 +375,49 @@ export class RunsTableContainer implements OnInit {
       );
     }
 
+    /**
+     * For consumers who show checkboxes, notify users that new runs may not be
+     * selected by default. Avoid showing it more than once per route, since it
+     * would be annoying to see the alert on every auto-reload (assuming a new
+     * run per reload).
+     *
+     * Warning: this pattern is not recommended in general. Dispatching
+     * `alertReported` would be better handled in a Ngrx Reducer in response
+     * to `fetchRunsSucceeded` or via the declared alert registrations using
+     * `alertFromAction`. Unfortunately, those currently have no way of knowing
+     * whether a run table is actually shown (with checkboxes), so we make a
+     * special exception here. A more 'Ngrx pure' approach would require making
+     * the store aware of the visibility of any run tables.
+     */
+    if (this.columns.includes(RunsTableColumn.CHECKBOX)) {
+      const runsExceedLimitForRoute$ = this.store.select(getRouteId).pipe(
+        takeUntil(this.ngUnsubscribe),
+        switchMap(() => {
+          return rawAllUnsortedRunTableItems$.pipe(
+            filter((runTableItems: RunTableItem[]) => {
+              return runTableItems.length > MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT;
+            }),
+            take(1)
+          );
+        })
+      );
+      runsExceedLimitForRoute$.subscribe(() => {
+        const text =
+          `The number of runs exceeds ` +
+          `${MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT}. New runs are unselected ` +
+          `for performance reasons.`;
+        this.store.dispatch(
+          alertActions.alertReported({localizedMessage: text})
+        );
+      });
+    }
+
     this.store.dispatch(runTableShown({experimentIds: this.experimentIds}));
+  }
+
+  ngOnDestroy() {
+    this.ngUnsubscribe.next();
+    this.ngUnsubscribe.complete();
   }
 
   private getFilteredItems$(runItems$: Observable<RunTableItem[]>) {
@@ -388,8 +455,14 @@ export class RunsTableContainer implements OnInit {
         });
       }),
       combineLatestWith(
-        this.store.select(getRunHparamFilterMap),
-        this.store.select(getRunMetricFilterMap)
+        this.store.select(
+          hparamsSelectors.getHparamFilterMap,
+          this.experimentIds
+        ),
+        this.store.select(
+          hparamsSelectors.getMetricFilterMap,
+          this.experimentIds
+        )
       ),
       map(([items, hparamFilters, metricFilters]) => {
         if (!this.showHparamsAndMetrics) {
@@ -540,7 +613,8 @@ export class RunsTableContainer implements OnInit {
   }) {
     const {hparamName, filterValues, includeUndefined} = event;
     this.store.dispatch(
-      runDiscreteHparamFilterChanged({
+      hparamsActions.hparamsDiscreteHparamFilterChanged({
+        experimentIds: this.experimentIds,
         hparamName,
         filterValues,
         includeUndefined,
@@ -551,7 +625,8 @@ export class RunsTableContainer implements OnInit {
   onHparamIntervalFilterChanged(event: IntervalFilterChange) {
     const {name, filterLowerValue, filterUpperValue, includeUndefined} = event;
     this.store.dispatch(
-      runIntervalHparamFilterChanged({
+      hparamsActions.hparamsIntervalHparamFilterChanged({
+        experimentIds: this.experimentIds,
         hparamName: name,
         filterLowerValue,
         filterUpperValue,
@@ -563,7 +638,8 @@ export class RunsTableContainer implements OnInit {
   onMetricFilterChanged(event: IntervalFilterChange) {
     const {name, includeUndefined, filterLowerValue, filterUpperValue} = event;
     this.store.dispatch(
-      runMetricFilterChanged({
+      hparamsActions.hparamsMetricFilterChanged({
+        experimentIds: this.experimentIds,
         metricTag: name,
         includeUndefined,
         filterLowerValue,

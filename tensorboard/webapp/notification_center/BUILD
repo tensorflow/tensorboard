@@ -13,6 +13,7 @@ tf_ng_module(
     deps = [
         "//tensorboard/webapp/notification_center/_data_source",
         "//tensorboard/webapp/notification_center/_redux",
+        "//tensorboard/webapp/notification_center/_redux:actions",
         "//tensorboard/webapp/notification_center/_redux:types",
         "//tensorboard/webapp/notification_center/_views",
         "@npm//@angular/core",

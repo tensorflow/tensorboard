@@ -16,15 +16,7 @@ import {DataLoadState} from '../../types/data';
 import {SortDirection} from '../../types/ui';
 import {SortType} from '../types';
 import * as selectors from './runs_selectors';
-import {
-  buildDiscreteFilter,
-  buildHparamSpec,
-  buildIntervalFilter,
-  buildMetricSpec,
-  buildRun,
-  buildRunsState,
-  buildStateFromRunsState,
-} from './testing';
+import {buildRun, buildRunsState, buildStateFromRunsState} from './testing';
 
 describe('runs_selectors', () => {
   describe('#getExperimentIdForRunId', () => {
@@ -233,40 +225,6 @@ describe('runs_selectors', () => {
     });
   });
 
-  describe('#getExperimentsHparamsAndMetrics', () => {
-    beforeEach(() => {
-      // Clear the memoization.
-      selectors.getExperimentsHparamsAndMetrics.release();
-    });
-
-    it('returns hparams and metrics of experimentIds passed', () => {
-      const state = buildStateFromRunsState(
-        buildRunsState({
-          hparamAndMetricSpec: {
-            id1: {
-              hparams: [buildHparamSpec({name: 'param1'})],
-              metrics: [buildMetricSpec({tag: 'acc'})],
-            },
-            id2: {hparams: [], metrics: [buildMetricSpec({tag: 'loss'})]},
-            id3: {hparams: [], metrics: [buildMetricSpec({tag: 'xent'})]},
-          },
-        })
-      );
-
-      expect(
-        selectors.getExperimentsHparamsAndMetrics(state, {
-          experimentIds: ['id1', 'id2'],
-        })
-      ).toEqual({
-        hparams: [buildHparamSpec({name: 'param1'})],
-        metrics: [
-          buildMetricSpec({tag: 'acc'}),
-          buildMetricSpec({tag: 'loss'}),
-        ],
-      });
-    });
-  });
-
   describe('#getRunSelectionMap', () => {
     beforeEach(() => {
       // Clear the memoization.
@@ -370,8 +328,8 @@ describe('runs_selectors', () => {
 
     it('returns color map by runs', () => {
       const state = buildStateFromRunsState(
-        buildRunsState(undefined, {
-          defaultRunColor: new Map([
+        buildRunsState({
+          defaultColor: new Map([
             ['foo', '#aaa'],
             ['bar', '#bbb'],
           ]),
@@ -386,12 +344,12 @@ describe('runs_selectors', () => {
 
     it('combines override with the default colors', () => {
       const state = buildStateFromRunsState(
-        buildRunsState(undefined, {
-          defaultRunColor: new Map([
+        buildRunsState({
+          defaultColor: new Map([
             ['foo', '#aaa'],
             ['bar', '#bbb'],
           ]),
-          runColorOverride: new Map([['foo', '#000']]),
+          colorOverride: new Map([['foo', '#000']]),
         })
       );
 
@@ -399,131 +357,6 @@ describe('runs_selectors', () => {
         foo: '#000',
         bar: '#bbb',
       });
-    });
-  });
-
-  describe('#getRunHparamFilterMap', () => {
-    beforeEach(() => {
-      // Clear the memoization.
-      selectors.getRunHparamFilterMap.release();
-    });
-
-    it('returns default hparam filter map', () => {
-      const state = buildStateFromRunsState(
-        buildRunsState(undefined, {
-          hparamDefaultFilters: new Map([['optimizer', buildDiscreteFilter()]]),
-        })
-      );
-
-      expect(selectors.getRunHparamFilterMap(state)).toEqual(
-        new Map([['optimizer', buildDiscreteFilter()]])
-      );
-    });
-
-    it('returns custom hparam filter map', () => {
-      const state = buildStateFromRunsState(
-        buildRunsState(undefined, {
-          hparamDefaultFilters: new Map([
-            [
-              'optimizer',
-              buildDiscreteFilter({
-                filterValues: ['a', 'b', 'c'],
-              }),
-            ],
-          ]),
-          hparamFilters: new Map([
-            [
-              'optimizer',
-              buildDiscreteFilter({
-                filterValues: ['d', 'e', 'f'],
-              }),
-            ],
-          ]),
-        })
-      );
-
-      expect(selectors.getRunHparamFilterMap(state)).toEqual(
-        new Map([
-          [
-            'optimizer',
-            buildDiscreteFilter({
-              filterValues: ['d', 'e', 'f'],
-            }),
-          ],
-        ])
-      );
-    });
-  });
-
-  describe('#getRunMetricFilterMap', () => {
-    beforeEach(() => {
-      // Clear the memoization.
-      selectors.getRunMetricFilterMap.release();
-    });
-
-    it('returns default metric filter map', () => {
-      const state = buildStateFromRunsState(
-        buildRunsState(undefined, {
-          metricDefaultFilters: new Map([
-            [
-              'loss',
-              buildIntervalFilter({
-                minValue: 0.1,
-                maxValue: 1,
-              }),
-            ],
-          ]),
-        })
-      );
-
-      expect(selectors.getRunMetricFilterMap(state)).toEqual(
-        new Map([
-          [
-            'loss',
-            buildIntervalFilter({
-              minValue: 0.1,
-              maxValue: 1,
-            }),
-          ],
-        ])
-      );
-    });
-
-    it('returns custom metric filter map', () => {
-      const state = buildStateFromRunsState(
-        buildRunsState(undefined, {
-          metricDefaultFilters: new Map([
-            [
-              'loss',
-              buildIntervalFilter({
-                minValue: 100,
-                maxValue: 200,
-              }),
-            ],
-          ]),
-          metricFilters: new Map([
-            [
-              'loss',
-              buildIntervalFilter({
-                minValue: 0.1,
-                maxValue: 1,
-              }),
-            ],
-          ]),
-        })
-      );
-
-      expect(selectors.getRunMetricFilterMap(state)).toEqual(
-        new Map([
-          [
-            'loss',
-            buildIntervalFilter({
-              minValue: 0.1,
-              maxValue: 1,
-            }),
-          ],
-        ])
-      );
     });
   });
 });

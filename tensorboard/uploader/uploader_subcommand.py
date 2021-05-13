@@ -23,6 +23,7 @@ import textwrap
 
 from absl import logging
 import grpc
+from tensorboard.compat import tf
 
 from tensorboard.uploader.proto import experiment_pb2
 from tensorboard.uploader.proto import export_service_pb2_grpc
@@ -34,7 +35,6 @@ from tensorboard.uploader import flags_parser
 from tensorboard.uploader import formatters
 from tensorboard.uploader import server_info as server_info_lib
 from tensorboard.uploader import uploader as uploader_lib
-from tensorboard.uploader import uploader_errors
 from tensorboard.uploader.proto import server_info_pb2
 from tensorboard import program
 from tensorboard.plugins import base_plugin
@@ -206,12 +206,12 @@ class _DeleteExperimentIntent(_Intent):
             )
         try:
             uploader_lib.delete_experiment(api_client, experiment_id)
-        except uploader_errors.ExperimentNotFoundError:
+        except uploader_lib.ExperimentNotFoundError:
             _die(
                 "No such experiment %s. Either it never existed or it has "
                 "already been deleted." % experiment_id
             )
-        except uploader_errors.PermissionDeniedError:
+        except uploader_lib.PermissionDeniedError:
             _die(
                 "Cannot delete experiment %s because it is owned by a "
                 "different user." % experiment_id
@@ -263,17 +263,17 @@ class _UpdateMetadataIntent(_Intent):
                 name=self.name,
                 description=self.description,
             )
-        except uploader_errors.ExperimentNotFoundError:
+        except uploader_lib.ExperimentNotFoundError:
             _die(
                 "No such experiment %s. Either it never existed or it has "
                 "already been deleted." % experiment_id
             )
-        except uploader_errors.PermissionDeniedError:
+        except uploader_lib.PermissionDeniedError:
             _die(
                 "Cannot modify experiment %s because it is owned by a "
                 "different user." % experiment_id
             )
-        except uploader_errors.InvalidArgumentError as e:
+        except uploader_lib.InvalidArgumentError as e:
             _die("Server cannot modify experiment as requested: %s" % e)
         except grpc.RpcError as e:
             _die("Internal error modifying experiment: %s" % e)
@@ -312,6 +312,8 @@ class _ListIntent(_Intent):
             channel
         )
         fieldmask = experiment_pb2.ExperimentMask(
+            name=True,
+            description=True,
             create_time=True,
             update_time=True,
             num_runs=True,
@@ -415,7 +417,7 @@ class UploadIntent(_Intent):
             verbosity=self.verbosity,
             one_shot=self.one_shot,
         )
-        if self.one_shot and not os.path.isdir(self.logdir):
+        if self.one_shot and not tf.io.gfile.isdir(self.logdir):
             print("%s: No such directory." % self.logdir)
             print(
                 "User specified `one_shot` mode with an unavailable "
@@ -443,7 +445,7 @@ class UploadIntent(_Intent):
         interrupted = False
         try:
             uploader.start_uploading()
-        except uploader_errors.ExperimentNotFoundError:
+        except uploader_lib.ExperimentNotFoundError:
             print("Experiment was deleted; uploading has been cancelled")
             return
         except KeyboardInterrupt:

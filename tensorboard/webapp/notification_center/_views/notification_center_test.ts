@@ -121,6 +121,7 @@ describe('notification center', () => {
       store.overrideSelector(selectors.getLastReadTime, 0);
       const fixture = TestBed.createComponent(NotificationCenterContainer);
       fixture.detectChanges();
+
       const reddot = fixture.debugElement.query(By.css('.red-dot'));
       expect(reddot).toBeTruthy();
     });
@@ -137,8 +138,88 @@ describe('notification center', () => {
       store.overrideSelector(selectors.getLastReadTime, 1);
       const fixture = TestBed.createComponent(NotificationCenterContainer);
       fixture.detectChanges();
+
       const reddot = fixture.debugElement.query(By.css('.red-dot'));
       expect(reddot).toBeNull();
+    });
+  });
+  describe('full note link', () => {
+    it('appears when the link is provided', () => {
+      store.overrideSelector(selectors.getNotifications, [
+        {
+          category: CategoryEnum.WHATS_NEW,
+          dateInMs: 1,
+          title: 'test title',
+          content: 'test content',
+          fullNoteLink: 'https://google.com',
+        },
+      ]);
+      const fixture = TestBed.createComponent(NotificationCenterContainer);
+      fixture.detectChanges();
+      const menuButton = fixture.debugElement.query(
+        By.css('[aria-label="Display notification messages"]')
+      );
+      menuButton.nativeElement.click();
+      fixture.detectChanges();
+
+      const linkElement = fixture.debugElement.query(
+        By.css('.extended-buttons a')
+      );
+
+      expect(linkElement).toBeTruthy();
+      expect(linkElement.nativeElement.href).toEqual('https://google.com/');
+    });
+
+    it('does not appear when the link is provided', () => {
+      store.overrideSelector(selectors.getNotifications, [
+        {
+          category: CategoryEnum.WHATS_NEW,
+          dateInMs: 1,
+          title: 'test title',
+          content: 'test content',
+        },
+      ]);
+      const fixture = TestBed.createComponent(NotificationCenterContainer);
+      fixture.detectChanges();
+
+      const menuButton = fixture.debugElement.query(
+        By.css('[aria-label="Display notification messages"]')
+      );
+      menuButton.nativeElement.click();
+      fixture.detectChanges();
+
+      const linkElement = fixture.debugElement.query(
+        By.css('.extended-buttons a')
+      );
+
+      expect(linkElement).toBeNull();
+    });
+
+    it('does not appear when the link is suspicious', () => {
+      store.overrideSelector(selectors.getNotifications, [
+        {
+          category: CategoryEnum.WHATS_NEW,
+          dateInMs: 1,
+          title: 'test title',
+          content: 'test content',
+          fullNoteLink: "data:text/html,<script>alert('hi');</script>",
+        },
+      ]);
+      const fixture = TestBed.createComponent(NotificationCenterContainer);
+      fixture.detectChanges();
+
+      const menuButton = fixture.debugElement.query(
+        By.css('[aria-label="Display notification messages"]')
+      );
+      menuButton.nativeElement.click();
+      fixture.detectChanges();
+
+      const linkElement = fixture.debugElement.query(
+        By.css('.extended-buttons a')
+      );
+
+      expect(linkElement).toBeTruthy();
+      expect(linkElement.nativeElement.href).toContain('unsafe:');
     });
   });
 });

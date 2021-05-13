@@ -12,6 +12,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import '../../tb_polymer_interop_types';
+
 import {Injectable} from '@angular/core';
 import {Store} from '@ngrx/store';
 import {Actions, ofType, createEffect} from '@ngrx/effects';
@@ -26,6 +28,7 @@ import {
   distinctUntilChanged,
   take,
 } from 'rxjs/operators';
+
 import {
   coreLoaded,
   environmentLoaded,
@@ -54,7 +57,7 @@ export class CoreEffects {
   // Ngrx assumes all Effect classes have properties that inherit from the base
   // JS Object. `tf_backend` does not, so we wrap it.
   private readonly tfBackend = {
-    ref: (document.createElement('tf-backend') as any).tf_backend,
+    ref: document.createElement('tf-backend').tf_backend,
   };
 
   /**

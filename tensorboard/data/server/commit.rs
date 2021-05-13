@@ -14,6 +14,7 @@ limitations under the License.
 ==============================================================================*/
 
 //! Shared state for sampled data available to readers.
+#![allow(clippy::len_without_is_empty)] // https://github.com/rust-lang/rust-clippy/issues/7191
 
 use bytes::Bytes;
 use std::collections::HashMap;

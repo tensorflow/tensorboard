@@ -20,11 +20,7 @@ import {createAction, props} from '@ngrx/store';
 
 import {SortDirection} from '../../types/ui';
 import {Run} from '../data_source/runs_data_source_types';
-import {
-  DiscreteHparamValues,
-  ExperimentIdToRunsAndMetadata,
-  SortKey,
-} from '../types';
+import {ExperimentIdToRunsAndMetadata, SortKey} from '../types';
 
 /** @typehack */ import * as _typeHackModels from '@ngrx/store/src/models';
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
@@ -94,33 +90,4 @@ export const runColorChanged = createAction(
 export const runTableShown = createAction(
   '[Runs] Run Table Shown',
   props<{experimentIds: string[]}>()
-);
-
-export const runDiscreteHparamFilterChanged = createAction(
-  '[Runs] Run Discrete Hparam Filter Changed',
-  props<{
-    hparamName: string;
-    filterValues: DiscreteHparamValues;
-    includeUndefined: boolean;
-  }>()
-);
-
-export const runIntervalHparamFilterChanged = createAction(
-  '[Runs] Run Interval Hparam Filter Changed',
-  props<{
-    hparamName: string;
-    filterLowerValue: number;
-    filterUpperValue: number;
-    includeUndefined: boolean;
-  }>()
-);
-
-export const runMetricFilterChanged = createAction(
-  '[Runs] Run Metric Filter Changed',
-  props<{
-    metricTag: string;
-    filterLowerValue: number;
-    filterUpperValue: number;
-    includeUndefined: boolean;
-  }>()
 );

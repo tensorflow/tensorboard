@@ -18,17 +18,10 @@ import {SortDirection} from '../../types/ui';
 import * as colorUtils from '../../util/colors';
 import * as actions from '../actions';
 import {buildHparamsAndMetadata} from '../data_source/testing';
-import {DiscreteFilter, IntervalFilter, SortType} from '../types';
+import {SortType} from '../types';
 import * as runsReducers from './runs_reducers';
-import {DomainType, MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT} from './runs_types';
-import {
-  buildDiscreteFilter,
-  buildHparamSpec,
-  buildIntervalFilter,
-  buildMetricSpec,
-  buildRun,
-  buildRunsState,
-} from './testing';
+import {MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT, Run} from './runs_types';
+import {buildRun, buildRunsState} from './testing';
 
 describe('runs_reducers', () => {
   [
@@ -132,6 +125,12 @@ describe('runs_reducers', () => {
   });
 
   describe('fetchRunsSucceeded', () => {
+    function createFakeRuns(count: number): Run[] {
+      return [...new Array(count)].map((unused, index) => {
+        return buildRun({id: `id1_${index}`});
+      });
+    }
+
     it('updates experiment and loadState', () => {
       // Zone.js installs mock clock and gets in the way of Jasmine mockClock.
       spyOn(Date, 'now').and.returnValue(12345);
@@ -191,12 +190,12 @@ describe('runs_reducers', () => {
     });
 
     it('assigns default color to new runs', () => {
-      spyOn(colorUtils, 'getNextChartColor').and.returnValues('#ccc', '#ddd');
-      const state = buildRunsState(undefined, {
-        defaultRunColor: new Map([
+      const state = buildRunsState({
+        defaultColor: new Map([
           ['foo', '#aaa'],
           ['bar', '#bbb'],
         ]),
+        nextGroupColorIndex: 5,
       });
       const action = actions.fetchRunsSucceeded({
         experimentIds: ['eid1'],
@@ -204,6 +203,10 @@ describe('runs_reducers', () => {
           buildRun({id: 'baz'}),
           buildRun({id: 'foo'}),
           buildRun({id: 'qaz'}),
+          buildRun({id: 'alpha'}),
+          buildRun({id: 'beta'}),
+          buildRun({id: 'gamma'}),
+          buildRun({id: 'lambda'}),
         ],
         newRunsAndMetadata: {
           eid1: {
@@ -211,6 +214,10 @@ describe('runs_reducers', () => {
               buildRun({id: 'baz'}),
               buildRun({id: 'foo'}),
               buildRun({id: 'qaz'}),
+              buildRun({id: 'alpha'}),
+              buildRun({id: 'beta'}),
+              buildRun({id: 'gamma'}),
+              buildRun({id: 'lambda'}),
             ],
             metadata: buildHparamsAndMetadata({}),
           },
@@ -219,397 +226,81 @@ describe('runs_reducers', () => {
 
       const nextState = runsReducers.reducers(state, action);
 
-      expect(nextState.ui.defaultRunColor).toEqual(
+      expect(nextState.data.defaultColor).toEqual(
         new Map([
           ['foo', '#aaa'],
           ['bar', '#bbb'],
-          ['baz', '#ccc'],
-          ['qaz', '#ddd'],
+          ['baz', colorUtils.CHART_COLOR_PALLETE[5]],
+          ['qaz', colorUtils.CHART_COLOR_PALLETE[6]],
+          ['alpha', colorUtils.CHART_COLOR_PALLETE[0]],
+          ['beta', colorUtils.CHART_COLOR_PALLETE[1]],
+          ['gamma', colorUtils.CHART_COLOR_PALLETE[2]],
+          ['lambda', colorUtils.CHART_COLOR_PALLETE[3]],
         ])
       );
+      expect(nextState.data.nextGroupColorIndex).toBe(4);
     });
 
-    it('selects runs if num runs are less than N', () => {
-      const state = buildRunsState({selectionState: new Map()});
-
-      const action = actions.fetchRunsSucceeded({
-        experimentIds: ['id1'],
-        runsForAllExperiments: [
-          buildRun({id: 'baz'}),
-          buildRun({id: 'foo'}),
-          buildRun({id: 'qaz'}),
-        ],
-        newRunsAndMetadata: {
-          id1: {
-            runs: [
-              buildRun({id: 'baz'}),
-              buildRun({id: 'foo'}),
-              buildRun({id: 'qaz'}),
-            ],
-            metadata: buildHparamsAndMetadata({}),
-          },
-        },
-      });
-      const nextState = runsReducers.reducers(state, action);
-
-      expect(action.runsForAllExperiments.length).toBeLessThanOrEqual(
-        MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT
-      );
-      expect(nextState.data.selectionState).toEqual(
-        new Map([
-          [
-            '["id1"]',
-            new Map([
-              ['baz', true],
-              ['foo', true],
-              ['qaz', true],
-            ]),
-          ],
-        ])
-      );
-    });
-
-    it('sets all selectionState to false if num runs exceeded N', () => {
-      const state = buildRunsState({selectionState: new Map()});
-
-      const action = actions.fetchRunsSucceeded({
-        experimentIds: ['b'],
-        runsForAllExperiments: [
-          ...new Array(MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT * 1.5),
-        ].map((unused, index) => {
-          return buildRun({id: `id1_${index}`});
-        }),
-        newRunsAndMetadata: {
-          b: {
-            runs: [...new Array(MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT * 1.5)].map(
-              (unused, index) => {
-                return buildRun({id: `id1_${index}`});
-              }
-            ),
-            metadata: buildHparamsAndMetadata({}),
-          },
-        },
-      });
-      const nextState = runsReducers.reducers(state, action);
-
-      Array.from(nextState.data.selectionState.get('["b"]')!.values()).forEach(
-        (value) => {
-          expect(value).toBe(false);
-        }
-      );
-    });
-
-    it('sets hparam and metric specs on experiment level', () => {
-      const state = buildRunsState({
-        hparamAndMetricSpec: {},
-      });
-
-      const action = actions.fetchRunsSucceeded({
-        experimentIds: [],
-        runsForAllExperiments: [],
-        newRunsAndMetadata: {
-          eid1: {
-            runs: [],
-            metadata: buildHparamsAndMetadata({
-              hparamSpecs: [buildHparamSpec({name: 'hparamName'})],
-              metricSpecs: [],
-            }),
-          },
-        },
-      });
-      const nextState = runsReducers.reducers(state, action);
-
-      expect(nextState.data.hparamAndMetricSpec).toEqual({
-        eid1: {
-          hparams: [buildHparamSpec({name: 'hparamName'})],
-          metrics: [],
-        },
-      });
-    });
-
-    it('sets hparam and metric filter on ui state', () => {
-      const state = buildRunsState(undefined, {
-        hparamFilters: new Map(),
-        metricFilters: new Map(),
-      });
-
-      const action = actions.fetchRunsSucceeded({
-        experimentIds: [],
-        runsForAllExperiments: [],
-        newRunsAndMetadata: {
-          eid1: {
-            runs: [
-              buildRun({id: 'r1'}),
-              buildRun({id: 'r2'}),
-              buildRun({id: 'r3'}),
-            ],
-            metadata: buildHparamsAndMetadata({
-              runToHparamsAndMetrics: {
-                r1: {
-                  hparams: [],
-                  metrics: [{tag: 'm1', trainingStep: 1, value: 1}],
-                },
-                r2: {
-                  hparams: [],
-                  metrics: [{tag: 'm1', trainingStep: 1, value: 0.1}],
-                },
-                r3: {
-                  hparams: [],
-                  metrics: [{tag: 'm2', trainingStep: 1, value: 100}],
-                },
-              },
-              hparamSpecs: [
-                buildHparamSpec({
-                  name: 'h1',
-                  domain: {type: DomainType.INTERVAL, minValue: 0, maxValue: 1},
-                }),
-                buildHparamSpec({
-                  name: 'h2',
-                  domain: {
-                    type: DomainType.DISCRETE,
-                    values: ['a', 'b', 'c'],
-                  },
-                }),
-              ],
-              metricSpecs: [
-                buildMetricSpec({tag: 'm1'}),
-                buildMetricSpec({tag: 'm2'}),
-                buildMetricSpec({tag: 'm3'}),
-              ],
-            }),
-          },
-        },
-      });
-      const nextState = runsReducers.reducers(state, action);
-
-      expect(nextState.ui.hparamDefaultFilters).toEqual(
-        new Map<string, DiscreteFilter | IntervalFilter>([
-          [
-            'h1',
-            buildIntervalFilter({
-              includeUndefined: true,
-              minValue: 0,
-              maxValue: 1,
-              filterLowerValue: 0,
-              filterUpperValue: 1,
-            }),
-          ],
-          [
-            'h2',
-            buildDiscreteFilter({
-              includeUndefined: true,
-              possibleValues: ['a', 'b', 'c'],
-              filterValues: ['a', 'b', 'c'],
-            }),
-          ],
-        ])
-      );
-      expect(nextState.ui.metricDefaultFilters).toEqual(
-        new Map([
-          [
-            'm1',
-            buildIntervalFilter({
-              includeUndefined: true,
-              minValue: 0.1,
-              maxValue: 1,
-              filterLowerValue: 0.1,
-              filterUpperValue: 1,
-            }),
-          ],
-          [
-            'm2',
-            buildIntervalFilter({
-              includeUndefined: true,
-              minValue: 100,
-              maxValue: 100,
-              filterLowerValue: 100,
-              filterUpperValue: 100,
-            }),
-          ],
-          [
-            'm3',
-            buildIntervalFilter({
-              includeUndefined: true,
-              minValue: 0,
-              maxValue: 0,
-              filterLowerValue: 0,
-              filterUpperValue: 0,
-            }),
-          ],
-        ])
-      );
-    });
-
-    it('combines hparam and metrics across experiments', () => {
-      const state = buildRunsState(undefined, {
-        hparamFilters: new Map(),
-        metricFilters: new Map(),
-      });
-
-      const action = actions.fetchRunsSucceeded({
-        experimentIds: [],
-        runsForAllExperiments: [],
-        newRunsAndMetadata: {
-          eid1: {
-            runs: [buildRun({id: 'r1'})],
-            metadata: buildHparamsAndMetadata({
-              runToHparamsAndMetrics: {
-                r1: {
-                  hparams: [],
-                  metrics: [{tag: 'm1', trainingStep: 0, value: 1}],
-                },
-              },
-              hparamSpecs: [
-                buildHparamSpec({
-                  name: 'h1',
-                  domain: {type: DomainType.INTERVAL, minValue: 5, maxValue: 9},
-                }),
-                buildHparamSpec({
-                  name: 'h2',
-                  domain: {
-                    type: DomainType.DISCRETE,
-                    values: ['a', 'b', 'c'],
-                  },
-                }),
-              ],
-              metricSpecs: [
-                buildMetricSpec({tag: 'm1'}),
-                buildMetricSpec({tag: 'm2'}),
-              ],
-            }),
-          },
-          eid2: {
-            runs: [buildRun({id: 'r2'})],
-            metadata: buildHparamsAndMetadata({
-              runToHparamsAndMetrics: {
-                r2: {
-                  hparams: [],
-                  metrics: [
-                    {tag: 'm1', trainingStep: 1, value: 5},
-                    {tag: 'm2', trainingStep: 1, value: 2},
-                  ],
-                },
-              },
-              hparamSpecs: [
-                buildHparamSpec({
-                  name: 'h1',
-                  domain: {
-                    type: DomainType.INTERVAL,
-                    minValue: 0,
-                    maxValue: 100,
-                  },
-                }),
-                buildHparamSpec({
-                  name: 'h2',
-                  domain: {
-                    type: DomainType.DISCRETE,
-                    values: ['c', 'd'],
-                  },
-                }),
-              ],
-              metricSpecs: [
-                buildMetricSpec({tag: 'm1'}),
-                buildMetricSpec({tag: 'm2'}),
-                buildMetricSpec({tag: 'm3'}),
-              ],
-            }),
-          },
-        },
-      });
-      const nextState = runsReducers.reducers(state, action);
-
-      expect(nextState.ui.hparamDefaultFilters).toEqual(
-        new Map<string, DiscreteFilter | IntervalFilter>([
-          [
-            'h1',
-            buildIntervalFilter({
-              includeUndefined: true,
-              minValue: 0,
-              maxValue: 100,
-              filterLowerValue: 0,
-              filterUpperValue: 100,
-            }),
-          ],
-          [
-            'h2',
-            buildDiscreteFilter({
-              includeUndefined: true,
-              possibleValues: ['a', 'b', 'c', 'd'],
-              filterValues: ['a', 'b', 'c', 'd'],
-            }),
-          ],
-        ])
-      );
-      expect(nextState.ui.metricDefaultFilters).toEqual(
-        new Map([
-          [
-            'm1',
-            buildIntervalFilter({
-              includeUndefined: true,
-              minValue: 1,
-              maxValue: 5,
-              filterLowerValue: 1,
-              filterUpperValue: 5,
-            }),
-          ],
-          [
-            'm2',
-            buildIntervalFilter({
-              includeUndefined: true,
-              minValue: 2,
-              maxValue: 2,
-              filterLowerValue: 2,
-              filterUpperValue: 2,
-            }),
-          ],
-          [
-            'm3',
-            buildIntervalFilter({
-              includeUndefined: true,
-              minValue: 0,
-              maxValue: 0,
-              filterLowerValue: 0,
-              filterUpperValue: 0,
-            }),
-          ],
-        ])
-      );
-    });
-
-    it('does not overwrite the filter information when result in empty', () => {
-      const state = buildRunsState(undefined, {
-        hparamDefaultFilters: new Map([
-          [
-            'conv_layers',
-            buildDiscreteFilter({
-              includeUndefined: true,
-              possibleValues: ['a'],
-              filterValues: ['a'],
-            }),
-          ],
+    it('auto-selects new runs if total num <= N', () => {
+      const existingRuns = [buildRun({id: 'existingRun1'})];
+      let state = buildRunsState({
+        selectionState: new Map([
+          ['["b"]', new Map([['existingRun1', false]])],
         ]),
-        metricFilters: new Map(),
       });
 
-      const action = actions.fetchRunsSucceeded({
-        experimentIds: [],
-        runsForAllExperiments: [],
-        newRunsAndMetadata: {},
-      });
-      const nextState = runsReducers.reducers(state, action);
-
-      expect(nextState.ui.hparamDefaultFilters).toEqual(
-        new Map([
-          [
-            'conv_layers',
-            buildDiscreteFilter({
-              includeUndefined: true,
-              possibleValues: ['a'],
-              filterValues: ['a'],
-            }),
-          ],
-        ])
+      const fewNewRuns = createFakeRuns(MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT - 1);
+      state = runsReducers.reducers(
+        state,
+        actions.fetchRunsSucceeded({
+          experimentIds: ['b'],
+          runsForAllExperiments: [...existingRuns, ...fewNewRuns],
+          newRunsAndMetadata: {
+            b: {
+              runs: fewNewRuns,
+              metadata: buildHparamsAndMetadata({}),
+            },
+          },
+        })
       );
+
+      const selections = [...state.data.selectionState.get('["b"]')!.entries()];
+      expect(selections.length).toBe(fewNewRuns.length + existingRuns.length);
+      // Existing runs that were unselected should remain so.
+      const selectedAsExpected = selections.every(([runId, isSelected]) => {
+        return isSelected === (runId !== 'existingRun1');
+      });
+      expect(selectedAsExpected).toBe(true);
+    });
+
+    it('does not auto-select new runs if total num > N', () => {
+      const existingRuns = [buildRun({id: 'existingRun1'})];
+      let state = buildRunsState({
+        selectionState: new Map([['["b"]', new Map([['existingRun1', true]])]]),
+      });
+
+      const manyNewRuns = createFakeRuns(MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT);
+      state = runsReducers.reducers(
+        state,
+        actions.fetchRunsSucceeded({
+          experimentIds: ['b'],
+          runsForAllExperiments: [...existingRuns, ...manyNewRuns],
+          newRunsAndMetadata: {
+            b: {
+              runs: manyNewRuns,
+              metadata: buildHparamsAndMetadata({}),
+            },
+          },
+        })
+      );
+
+      const selections = [...state.data.selectionState.get('["b"]')!.entries()];
+      expect(selections.length).toBe(manyNewRuns.length + existingRuns.length);
+      // Existing runs that were selected should remain so.
+      const selectedAsExpected = selections.every(([runId, isSelected]) => {
+        return isSelected === (runId === 'existingRun1');
+      });
+      expect(selectedAsExpected).toBe(true);
     });
   });
 
@@ -901,8 +592,8 @@ describe('runs_reducers', () => {
 
   describe('runColorChanged', () => {
     it('updates color for the run', () => {
-      const state = buildRunsState(undefined, {
-        runColorOverride: new Map([['foo', '#aaa']]),
+      const state = buildRunsState({
+        colorOverride: new Map([['foo', '#aaa']]),
       });
 
       const nextState = runsReducers.reducers(
@@ -913,12 +604,12 @@ describe('runs_reducers', () => {
         })
       );
 
-      expect(nextState.ui.runColorOverride).toEqual(new Map([['foo', '#000']]));
+      expect(nextState.data.colorOverride).toEqual(new Map([['foo', '#000']]));
     });
 
     it('sets run color for a value that did not exist', () => {
-      const state = buildRunsState(undefined, {
-        runColorOverride: new Map([['foo', '#aaa']]),
+      const state = buildRunsState({
+        colorOverride: new Map([['foo', '#aaa']]),
       });
 
       const nextState = runsReducers.reducers(
@@ -929,317 +620,12 @@ describe('runs_reducers', () => {
         })
       );
 
-      expect(nextState.ui.runColorOverride).toEqual(
+      expect(nextState.data.colorOverride).toEqual(
         new Map([
           ['foo', '#aaa'],
           ['bar', '#fff'],
         ])
       );
-    });
-  });
-
-  describe('runIntervalHparamFilterChanged', () => {
-    it('sets initial interval hparam filter', () => {
-      const state = buildRunsState(undefined, {
-        hparamDefaultFilters: new Map([['dropout', buildIntervalFilter()]]),
-      });
-
-      const nextState = runsReducers.reducers(
-        state,
-        actions.runIntervalHparamFilterChanged({
-          hparamName: 'dropout',
-          includeUndefined: true,
-          filterLowerValue: 0.5,
-          filterUpperValue: 0.5,
-        })
-      );
-
-      expect(nextState.ui.hparamFilters).toEqual(
-        new Map([
-          [
-            'dropout',
-            buildIntervalFilter({
-              includeUndefined: true,
-              filterLowerValue: 0.5,
-              filterUpperValue: 0.5,
-            }),
-          ],
-        ])
-      );
-    });
-
-    it('updates existing interval hparam filter', () => {
-      const state = buildRunsState(undefined, {
-        hparamDefaultFilters: new Map([['dropout', buildIntervalFilter()]]),
-        hparamFilters: new Map([
-          [
-            'dropout',
-            buildIntervalFilter({
-              includeUndefined: true,
-              filterLowerValue: 0.003,
-              filterUpperValue: 0.5,
-            }),
-          ],
-        ]),
-      });
-
-      const nextState = runsReducers.reducers(
-        state,
-        actions.runIntervalHparamFilterChanged({
-          hparamName: 'dropout',
-          includeUndefined: true,
-          filterLowerValue: 0.5,
-          filterUpperValue: 0.5,
-        })
-      );
-
-      expect(nextState.ui.hparamFilters).toEqual(
-        new Map([
-          [
-            'dropout',
-            buildIntervalFilter({
-              includeUndefined: true,
-              filterLowerValue: 0.5,
-              filterUpperValue: 0.5,
-            }),
-          ],
-        ])
-      );
-    });
-
-    it('throws error when setting interval hparam that did not exist', () => {
-      const state = buildRunsState(undefined, {
-        hparamDefaultFilters: new Map(),
-        hparamFilters: new Map([['dropout', buildIntervalFilter()]]),
-      });
-
-      const action = actions.runIntervalHparamFilterChanged({
-        hparamName: 'random_seed',
-        includeUndefined: true,
-        filterLowerValue: 0.5,
-        filterUpperValue: 0.5,
-      });
-
-      expect(() => runsReducers.reducers(state, action)).toThrow();
-    });
-
-    it('throws when setting interval on discrete hparam', () => {
-      const state = buildRunsState(undefined, {
-        hparamDefaultFilters: new Map([['dropout', buildDiscreteFilter()]]),
-      });
-
-      const action = actions.runIntervalHparamFilterChanged({
-        hparamName: 'dropout',
-        includeUndefined: true,
-        filterLowerValue: 0.5,
-        filterUpperValue: 0.5,
-      });
-
-      expect(() => runsReducers.reducers(state, action)).toThrow();
-    });
-  });
-
-  describe('runDiscreteHparamFilterChanged', () => {
-    it('sets initial discrete hparam filter', () => {
-      const state = buildRunsState(undefined, {
-        hparamDefaultFilters: new Map([
-          [
-            'dropout',
-            buildDiscreteFilter({
-              includeUndefined: true,
-              filterValues: [1, 10, 100],
-            }),
-          ],
-        ]),
-      });
-
-      const nextState = runsReducers.reducers(
-        state,
-        actions.runDiscreteHparamFilterChanged({
-          hparamName: 'dropout',
-          includeUndefined: true,
-          filterValues: [10, 100],
-        })
-      );
-
-      expect(nextState.ui.hparamFilters).toEqual(
-        new Map([
-          [
-            'dropout',
-            buildDiscreteFilter({
-              includeUndefined: true,
-              filterValues: [10, 100],
-            }),
-          ],
-        ])
-      );
-    });
-
-    it('updates existing discrete hparam filter', () => {
-      const state = buildRunsState(undefined, {
-        hparamDefaultFilters: new Map([
-          [
-            'dropout',
-            buildDiscreteFilter({
-              includeUndefined: true,
-              filterValues: [1, 10, 100],
-            }),
-          ],
-        ]),
-        hparamFilters: new Map([
-          [
-            'dropout',
-            buildDiscreteFilter({
-              includeUndefined: true,
-              filterValues: [2, 200],
-            }),
-          ],
-        ]),
-      });
-
-      const nextState = runsReducers.reducers(
-        state,
-        actions.runDiscreteHparamFilterChanged({
-          hparamName: 'dropout',
-          includeUndefined: true,
-          filterValues: [10, 100],
-        })
-      );
-
-      expect(nextState.ui.hparamFilters).toEqual(
-        new Map([
-          [
-            'dropout',
-            buildDiscreteFilter({
-              includeUndefined: true,
-              filterValues: [10, 100],
-            }),
-          ],
-        ])
-      );
-    });
-
-    it('throws error when setting discrete hparam that did not exist', () => {
-      const state = buildRunsState(undefined, {
-        hparamDefaultFilters: new Map(),
-      });
-
-      const action = actions.runDiscreteHparamFilterChanged({
-        hparamName: 'optimizer',
-        includeUndefined: true,
-        filterValues: ['adam', 'adagrad'],
-      });
-
-      expect(() => runsReducers.reducers(state, action)).toThrow();
-    });
-
-    it('throws when setting discrete change on interval hparam', () => {
-      const state = buildRunsState(undefined, {
-        hparamDefaultFilters: new Map([['dropout', buildIntervalFilter()]]),
-        hparamFilters: new Map([['dropout', buildIntervalFilter()]]),
-      });
-
-      const action = actions.runDiscreteHparamFilterChanged({
-        hparamName: 'dropout',
-        includeUndefined: true,
-        filterValues: ['adam', 'adagrad'],
-      });
-
-      expect(() => runsReducers.reducers(state, action)).toThrow();
-    });
-  });
-
-  describe('runMetricFilterChanged', () => {
-    it('sets initial metric filters', () => {
-      const state = buildRunsState(undefined, {
-        metricDefaultFilters: new Map([
-          [
-            'loss',
-            buildIntervalFilter({
-              includeUndefined: true,
-              filterLowerValue: 0.2,
-              filterUpperValue: 0.5,
-            }),
-          ],
-        ]),
-      });
-
-      const nextState = runsReducers.reducers(
-        state,
-        actions.runMetricFilterChanged({
-          metricTag: 'loss',
-          includeUndefined: false,
-          filterLowerValue: 0.1,
-          filterUpperValue: 0.5,
-        })
-      );
-
-      expect(nextState.ui.metricFilters).toEqual(
-        new Map([
-          [
-            'loss',
-            buildIntervalFilter({
-              includeUndefined: false,
-              filterLowerValue: 0.1,
-              filterUpperValue: 0.5,
-            }),
-          ],
-        ])
-      );
-    });
-
-    it('updates existing metric filters', () => {
-      const state = buildRunsState(undefined, {
-        metricDefaultFilters: new Map([['loss', buildIntervalFilter()]]),
-        metricFilters: new Map([
-          [
-            'loss',
-            buildIntervalFilter({
-              includeUndefined: true,
-              filterLowerValue: 0.2,
-              filterUpperValue: 0.5,
-            }),
-          ],
-        ]),
-      });
-
-      const nextState = runsReducers.reducers(
-        state,
-        actions.runMetricFilterChanged({
-          metricTag: 'loss',
-          includeUndefined: false,
-          filterLowerValue: 0.1,
-          filterUpperValue: 0.5,
-        })
-      );
-
-      expect(nextState.ui.metricFilters).toEqual(
-        new Map([
-          [
-            'loss',
-            buildIntervalFilter({
-              includeUndefined: false,
-              filterLowerValue: 0.1,
-              filterUpperValue: 0.5,
-            }),
-          ],
-        ])
-      );
-    });
-
-    it('throws error if it sets filter that does not exist', () => {
-      const state = buildRunsState(undefined, {
-        metricDefaultFilters: new Map([['loss', buildIntervalFilter()]]),
-        metricFilters: new Map([['loss', buildIntervalFilter()]]),
-      });
-
-      const action = actions.runMetricFilterChanged({
-        metricTag: 'accuracy',
-        includeUndefined: true,
-        filterLowerValue: 0,
-        filterUpperValue: 1,
-      });
-      expect(() => runsReducers.reducers(state, action)).toThrow();
     });
   });
 });

@@ -20,9 +20,9 @@ import {FeatureFlagState} from './feature_flag_types';
 export const initialState: FeatureFlagState = {
   isFeatureFlagsLoaded: false,
   defaultFlags: {
+    enabledColorGroup: false,
     enabledExperimentalPlugins: [],
     inColab: false,
-    enableGpuChart: true,
     scalarsBatchSize: undefined,
   },
   flagOverrides: {},
