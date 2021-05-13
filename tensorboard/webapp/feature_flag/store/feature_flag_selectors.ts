@@ -63,3 +63,7 @@ export const getEnabledExperimentalPlugins = createSelector(
 export const getIsInColab = createSelector(getFeatureFlags, (flags) => {
   return flags.inColab;
 });
+
+export const getEnabledColorGroup = createSelector(getFeatureFlags, (flags) => {
+  return flags.enabledColorGroup;
+});

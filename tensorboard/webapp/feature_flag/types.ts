@@ -14,6 +14,8 @@ limitations under the License.
 ==============================================================================*/
 
 export interface FeatureFlags {
+  // Whether to enable experimental semantic color grouping feature.
+  enabledColorGroup: boolean;
   // experimental plugins to manually enable.
   enabledExperimentalPlugins: string[];
   // Whether the TensorBoard is being run inside Colab output cell.

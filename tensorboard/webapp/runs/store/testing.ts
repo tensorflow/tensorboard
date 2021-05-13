@@ -17,6 +17,7 @@ limitations under the License.
  */
 
 import {SortDirection} from '../../types/ui';
+import {GroupByKey} from '../types';
 import {
   Run,
   RunsDataState,
@@ -55,14 +56,16 @@ export function buildRunsState(
       runMetadata: {},
       runsLoadState: {},
       selectionState: new Map(),
+      defaultColor: new Map(),
+      colorOverride: new Map(),
+      nextGroupColorIndex: 0,
       ...dataOverride,
     },
     ui: {
       paginationOption: {pageIndex: 0, pageSize: 0},
       regexFilter: '',
       sort: {key: null, direction: SortDirection.UNSET},
-      defaultRunColor: new Map(),
-      runColorOverride: new Map(),
+      groupBy: GroupByKey.RUN,
       ...uiOverride,
     },
   };

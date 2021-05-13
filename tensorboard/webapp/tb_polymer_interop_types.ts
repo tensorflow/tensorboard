@@ -44,17 +44,14 @@ export interface SetStringOption {
   useLocationReplace?: boolean;
 }
 
-export interface TfStorage {
-  /** @export */
+export declare interface TfStorage {
   setString(key: string, value: string, options?: SetStringOption): void;
-  /** @export */
   getString(key: string): string;
-  /** @export */
   migrateLegacyURLScheme(): void;
+  getUrlHashDict(): Record<string, string>;
 }
 
-export interface TfStorageElement extends HTMLElement {
-  /** @export */
+export declare interface TfStorageElement extends HTMLElement {
   tf_storage: TfStorage;
 }
 

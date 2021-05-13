@@ -64,7 +64,6 @@ tf_ts_library(
     name = "util_tests",
     testonly = True,
     srcs = [
-        "colors_test.ts",
         "lang_test.ts",
         "ngrx_test.ts",
         "string_test.ts",

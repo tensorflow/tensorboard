@@ -15,35 +15,37 @@ limitations under the License.
 import {DebugElement, NO_ERRORS_SCHEMA} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
 import {MatButtonModule} from '@angular/material/button';
-import {MatSelectModule} from '@angular/material/select';
 import {MatTabsModule} from '@angular/material/tabs';
 import {MatToolbarModule} from '@angular/material/toolbar';
+import {MatSelectModule} from '@angular/material/select';
 import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {Store} from '@ngrx/store';
-import {MockStore, provideMockStore} from '@ngrx/store/testing';
+import {provideMockStore, MockStore} from '@ngrx/store/testing';
 
-import {changePlugin, manualReload} from '../core/actions';
-import {State} from '../core/store';
-import {
-  getActivePlugin,
-  getCoreDataLastLoadedTimeInMs,
-  getCoreDataLoadedState,
-  getPlugins,
-} from '../core/store/core_selectors';
-import {
-  buildPluginMetadata,
-  createCoreState,
-  createPluginMetadata,
-  createState,
-} from '../core/testing';
 import {MatIconTestingModule} from '../testing/mat_icon_module';
-import {PluginId} from '../types/api';
-import {DataLoadState} from '../types/data';
 import {HeaderComponent} from './header_component';
 import {PluginSelectorComponent} from './plugin_selector_component';
 import {PluginSelectorContainer} from './plugin_selector_container';
 import {ReloadContainer} from './reload_container';
+import {
+  getPluginsListLoaded,
+  getActivePlugin,
+  getPlugins,
+} from '../core/store/core_selectors';
+import {DataLoadState} from '../types/data';
+
+import {changePlugin, manualReload} from '../core/actions';
+import {State} from '../core/store';
+import {
+  createPluginMetadata,
+  createState,
+  createCoreState,
+  buildPluginMetadata,
+} from '../core/testing';
+import {PluginId} from '../types/api';
+
+/** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
 describe('header test', () => {
   let store: MockStore<State>;
@@ -85,8 +87,6 @@ describe('header test', () => {
       bar: createPluginMetadata('Barber'),
     });
     store.overrideSelector(getActivePlugin, 'foo');
-    store.overrideSelector(getCoreDataLastLoadedTimeInMs, null);
-    store.overrideSelector(getCoreDataLoadedState, DataLoadState.NOT_LOADED);
   });
 
   function assertDebugElementText(el: DebugElement, text: string) {
@@ -180,11 +180,11 @@ describe('header test', () => {
     });
 
     it('renders the time of refresh in title', () => {
-      store.overrideSelector(getCoreDataLoadedState, DataLoadState.LOADED);
-      store.overrideSelector(
-        getCoreDataLastLoadedTimeInMs,
-        new Date('2000-01-01').getTime()
-      );
+      store.overrideSelector(getPluginsListLoaded, {
+        state: DataLoadState.LOADED,
+        lastLoadedTimeInMs: new Date('2000/01/01').getTime(),
+        failureCode: null,
+      });
       const fixture = TestBed.createComponent(HeaderComponent);
       fixture.detectChanges();
 
@@ -197,8 +197,11 @@ describe('header test', () => {
     });
 
     it('renders "Loading" if it was never loaded before', () => {
-      store.overrideSelector(getCoreDataLoadedState, DataLoadState.NOT_LOADED);
-      store.overrideSelector(getCoreDataLastLoadedTimeInMs, null);
+      store.overrideSelector(getPluginsListLoaded, {
+        state: DataLoadState.NOT_LOADED,
+        lastLoadedTimeInMs: null,
+        failureCode: null,
+      });
       const fixture = TestBed.createComponent(HeaderComponent);
       fixture.detectChanges();
 
@@ -209,7 +212,11 @@ describe('header test', () => {
     });
 
     it('spins the indicator when loading', () => {
-      store.overrideSelector(getCoreDataLoadedState, DataLoadState.NOT_LOADED);
+      store.overrideSelector(getPluginsListLoaded, {
+        state: DataLoadState.NOT_LOADED,
+        lastLoadedTimeInMs: null,
+        failureCode: null,
+      });
       const fixture = TestBed.createComponent(HeaderComponent);
       fixture.detectChanges();
 
@@ -218,7 +225,11 @@ describe('header test', () => {
       );
       expect(buttonBefore.classes['loading']).not.toBeDefined();
 
-      store.overrideSelector(getCoreDataLoadedState, DataLoadState.LOADING);
+      store.overrideSelector(getPluginsListLoaded, {
+        state: DataLoadState.LOADING,
+        lastLoadedTimeInMs: null,
+        failureCode: null,
+      });
       store.refreshState();
       fixture.detectChanges();
 
@@ -229,7 +240,11 @@ describe('header test', () => {
     });
 
     it('stops spinner when going from loading to loaded', () => {
-      store.overrideSelector(getCoreDataLoadedState, DataLoadState.LOADING);
+      store.overrideSelector(getPluginsListLoaded, {
+        state: DataLoadState.LOADING,
+        lastLoadedTimeInMs: null,
+        failureCode: null,
+      });
       const fixture = TestBed.createComponent(HeaderComponent);
       fixture.detectChanges();
 
@@ -238,7 +253,11 @@ describe('header test', () => {
       );
       expect(buttonBefore.classes['loading']).toBe(true);
 
-      store.overrideSelector(getCoreDataLoadedState, DataLoadState.LOADED);
+      store.overrideSelector(getPluginsListLoaded, {
+        state: DataLoadState.LOADED,
+        lastLoadedTimeInMs: 1,
+        failureCode: null,
+      });
       store.refreshState();
       fixture.detectChanges();
 
@@ -266,7 +285,11 @@ describe('header test', () => {
     });
 
     it('does not spin the spinner when reload is disabled', () => {
-      store.overrideSelector(getCoreDataLoadedState, DataLoadState.LOADING);
+      store.overrideSelector(getPluginsListLoaded, {
+        state: DataLoadState.LOADING,
+        lastLoadedTimeInMs: null,
+        failureCode: null,
+      });
       store.overrideSelector(getPlugins, {
         foo: buildPluginMetadata({
           disable_reload: true,

@@ -20,11 +20,11 @@ import {of} from 'rxjs';
 import {State} from '../../../webapp/app_state';
 import {buildRun} from '../../../webapp/runs/store/testing';
 import {
-  getCoreDataLastLoadedTimeInMs,
+  getAppLastLoadedTimeInMs,
   getExperimentIdsFromRoute,
   getRuns,
 } from '../../../webapp/selectors';
-import * as tf_storage_utils from '../../tf_storage/storage_utils';
+import {TfStorageElement} from '../../../webapp/tb_polymer_interop_types';
 import {PluginCoreApiHostImpl} from './core-host-impl';
 import {MessageId} from './message_types';
 import {Ipc} from './plugin-host-ipc';
@@ -52,7 +52,7 @@ describe('plugin_api_host test', () => {
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
     store.overrideSelector(getExperimentIdsFromRoute, ['e1']);
     store.overrideSelector(getRuns, []);
-    store.overrideSelector(getCoreDataLastLoadedTimeInMs, null);
+    store.overrideSelector(getAppLastLoadedTimeInMs, null);
     selectSpy = spyOn(store, 'select').and.callThrough();
 
     const ipc = TestBed.inject(Ipc);
@@ -236,7 +236,6 @@ describe('plugin_api_host test', () => {
       let triggerGetUrlData: (context: {
         pluginName: string;
       }) => Record<string, string> = () => ({});
-      let getUrlDictSpy: jasmine.Spy;
 
       beforeEach(() => {
         listenSpy
@@ -246,17 +245,23 @@ describe('plugin_api_host test', () => {
               triggerGetUrlData = callback;
             }
           );
-
-        getUrlDictSpy = spyOn(tf_storage_utils, 'getUrlDict');
       });
 
       it('returns url data from the tf storage', () => {
-        getUrlDictSpy.and.returnValue({
-          globalThing: 'hey',
-          'p.plugin_id.a': '1',
-          'p.plugin_id.b': 'b',
-          'p.another_plugn.b': '2',
-        });
+        // Do not rely on Polymer bundle in the test.
+        const createElementSpy = spyOn(document, 'createElement');
+        createElementSpy.withArgs('tf-storage').and.returnValue(({
+          tf_storage: {
+            getUrlHashDict: () => {
+              return {
+                globalThing: 'hey',
+                'p.plugin_id.a': '1',
+                'p.plugin_id.b': 'b',
+                'p.another_plugn.b': '2',
+              };
+            },
+          },
+        } as unknown) as TfStorageElement);
 
         coreApi.init();
         const actual = triggerGetUrlData({pluginName: 'plugin_id'});
@@ -271,19 +276,19 @@ describe('plugin_api_host test', () => {
       it('calls callback when last updated time changes', () => {
         coreApi.init();
 
-        store.overrideSelector(getCoreDataLastLoadedTimeInMs, null);
+        store.overrideSelector(getAppLastLoadedTimeInMs, null);
         store.refreshState();
         expect(broadcastSpy).toHaveBeenCalledTimes(0);
 
-        store.overrideSelector(getCoreDataLastLoadedTimeInMs, 1);
+        store.overrideSelector(getAppLastLoadedTimeInMs, 1);
         store.refreshState();
         expect(broadcastSpy).toHaveBeenCalledTimes(1);
 
-        store.overrideSelector(getCoreDataLastLoadedTimeInMs, 1);
+        store.overrideSelector(getAppLastLoadedTimeInMs, 1);
         store.refreshState();
         expect(broadcastSpy).toHaveBeenCalledTimes(1);
 
-        store.overrideSelector(getCoreDataLastLoadedTimeInMs, 2);
+        store.overrideSelector(getAppLastLoadedTimeInMs, 2);
         store.refreshState();
         expect(broadcastSpy).toHaveBeenCalledTimes(2);
       });

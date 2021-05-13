@@ -31,10 +31,6 @@ const reducer = createReducer(
     (state: CoreState): CoreState => {
       return {
         ...state,
-        coreDataLoadState: {
-          ...state.coreDataLoadState,
-          state: DataLoadState.LOADING,
-        },
         pluginsListLoaded: {
           ...state.pluginsListLoaded,
           state: DataLoadState.LOADING,
@@ -47,10 +43,6 @@ const reducer = createReducer(
     (state: CoreState, {failureCode}): CoreState => {
       return {
         ...state,
-        coreDataLoadState: {
-          ...state.coreDataLoadState,
-          state: DataLoadState.FAILED,
-        },
         pluginsListLoaded: {
           ...state.pluginsListLoaded,
           state: DataLoadState.FAILED,
@@ -67,81 +59,14 @@ const reducer = createReducer(
           return plugins[pluginId].enabled;
         }) || null;
       const activePlugin = state.activePlugin || firstEnabledPluginId;
-      const lastLoadedTimeInMs = Date.now();
-      let coreDataLoadState = state.coreDataLoadState;
-
-      if (state.polymerRunsLoadState.state === DataLoadState.LOADED) {
-        coreDataLoadState = {
-          state: DataLoadState.LOADED,
-          lastLoadedTimeInMs,
-        };
-      }
-
       return {
         ...state,
         activePlugin,
-        coreDataLoadState,
         plugins,
         pluginsListLoaded: {
           state: DataLoadState.LOADED,
-          lastLoadedTimeInMs,
+          lastLoadedTimeInMs: Date.now(),
           failureCode: null,
-        },
-      };
-    }
-  ),
-  on(
-    actions.polymerRunsFetchRequested,
-    (state: CoreState): CoreState => {
-      return {
-        ...state,
-        coreDataLoadState: {
-          ...state.coreDataLoadState,
-          state: DataLoadState.LOADING,
-        },
-        polymerRunsLoadState: {
-          ...state.polymerRunsLoadState,
-          state: DataLoadState.LOADING,
-        },
-      };
-    }
-  ),
-  on(
-    actions.polymerRunsFetchSucceeded,
-    (state: CoreState): CoreState => {
-      const lastLoadedTimeInMs = Date.now();
-      let coreDataLoadState = state.coreDataLoadState;
-
-      if (state.pluginsListLoaded.state === DataLoadState.LOADED) {
-        coreDataLoadState = {
-          state: DataLoadState.LOADED,
-          lastLoadedTimeInMs,
-        };
-      }
-
-      return {
-        ...state,
-        coreDataLoadState,
-        polymerRunsLoadState: {
-          ...state.polymerRunsLoadState,
-          state: DataLoadState.LOADED,
-          lastLoadedTimeInMs,
-        },
-      };
-    }
-  ),
-  on(
-    actions.polymerRunsFetchFailed,
-    (state: CoreState): CoreState => {
-      return {
-        ...state,
-        coreDataLoadState: {
-          ...state.coreDataLoadState,
-          state: DataLoadState.FAILED,
-        },
-        polymerRunsLoadState: {
-          ...state.polymerRunsLoadState,
-          state: DataLoadState.FAILED,
         },
       };
     }

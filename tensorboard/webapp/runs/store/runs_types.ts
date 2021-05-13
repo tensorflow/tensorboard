@@ -20,7 +20,7 @@ import {RouteContextedState} from '../../app_routing/route_contexted_reducer_hel
 import {LoadState} from '../../types/data';
 import {SortDirection} from '../../types/ui';
 import {HparamValue} from '../data_source/runs_data_source_types';
-import {SortKey} from '../types';
+import {GroupByKey, SortKey} from '../types';
 
 export {Domain, DomainType} from '../data_source/runs_data_source_types';
 
@@ -43,17 +43,23 @@ export const RUNS_FEATURE_KEY = 'runs';
 export type ExperimentId = string;
 export type RunId = string;
 
-/**
- * Interface that describes shape of the `data` state in the runs feature.
- */
-export interface RunsDataState {
+// 'RouteKey' is a serialization of multiple experiment IDs.
+export type RouteKey = string;
+
+export interface RunsDataRoutefulState {
+  colorOverride: Map<RunId, string>;
+  defaultColor: Map<RunId, string>;
+  // Index of the color palette to be used in the next assgined group.
+  nextGroupColorIndex: number;
+}
+
+export interface RunsDataRoutelessState {
   runIds: Record<ExperimentId, RunId[]>;
   runIdToExpId: Record<RunId, ExperimentId>;
   runMetadata: Record<RunId, Run>;
   runsLoadState: Record<ExperimentId, LoadState>;
   /**
    * Map from a 'key' to a `RunId` to boolean whether the run is selected.
-   * The 'key' is a serialization of multiple experiment IDs.
    *
    * Run selection is tied to a list of experimentIds which is somewhat related
    * to route but not strictly. For instance, if we want to render the
@@ -62,19 +68,25 @@ export interface RunsDataState {
    *
    * TODO(psybuzz): this belongs in UI state not data state.
    */
-  selectionState: Map<string, Map<RunId, boolean>>;
+  selectionState: Map<RouteKey, Map<RunId, boolean>>;
 }
+
+/**
+ * Interface that describes shape of the `data` state in the runs feature.
+ */
+export type RunsDataState = RouteContextedState<
+  RunsDataRoutefulState,
+  RunsDataRoutelessState
+>;
 
 export interface RunsUiRoutefulState {
   paginationOption: {pageIndex: number; pageSize: number};
   regexFilter: string;
   sort: {key: SortKey | null; direction: SortDirection};
-  runColorOverride: Map<RunId, string>;
+  groupBy: GroupByKey;
 }
 
-export interface RunsUiRoutelessState {
-  defaultRunColor: Map<RunId, string>;
-}
+export interface RunsUiRoutelessState {}
 
 /**
  * Interface that describes shape of the `ui` state in the runs feature.

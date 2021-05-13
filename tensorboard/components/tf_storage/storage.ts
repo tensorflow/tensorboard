@@ -31,6 +31,8 @@ import {
   writeComponent,
 } from './storage_utils';
 
+export {getUrlDict as getUrlHashDict} from './storage_utils';
+
 /**
  * The name of the property for users to set on a Polymer component
  * in order for its stored properties to be stored in the URI unambiguously.
