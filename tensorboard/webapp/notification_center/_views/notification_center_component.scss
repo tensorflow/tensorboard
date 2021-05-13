@@ -30,7 +30,8 @@ limitations under the License.
 }
 
 ::ng-deep .notification-menu.mat-menu-panel {
-  font-size: 10px;
+  font-size: 13px;
+  max-width: 350px;
   width: 350px;
 }
 
@@ -44,7 +45,7 @@ limitations under the License.
 }
 
 .notification-menu {
-  font-size: 10px;
+  font-size: 13px;
 }
 
 .category-icon {
@@ -62,20 +63,20 @@ limitations under the License.
 }
 
 .title {
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.33;
   margin: 15px 0 0 0;
 }
 
 .content {
-  font-size: 14px;
+  font-size: 13px;
   line-height: 1.33;
   margin: 0;
   text-indent: 0;
 }
 
 .extended-buttons {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   margin: 10px 0 20px;
   a {
