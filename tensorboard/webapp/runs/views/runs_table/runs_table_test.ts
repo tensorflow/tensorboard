@@ -54,6 +54,7 @@ import {
 import {DiscreteFilter, IntervalFilter} from '../../../hparams/types';
 import {
   getCurrentRouteRunSelection,
+  getEnabledColorGroup,
   getExperiment,
   getExperimentIdToAliasMap,
   getRouteId,
@@ -83,7 +84,8 @@ import {DomainType} from '../../data_source/runs_data_source_types';
 import {MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT, Run} from '../../store/runs_types';
 import {buildRun} from '../../store/testing';
 import {SortType} from '../../types';
-
+import {RunsGroupMenuButtonComponent} from './runs_group_menu_button_component';
+import {RunsGroupMenuButtonContainer} from './runs_group_menu_button_container';
 import {RunsTableComponent} from './runs_table_component';
 import {RunsTableContainer, TEST_ONLY} from './runs_table_container';
 import {HparamSpec, MetricSpec, RunsTableColumn} from './types';
@@ -169,6 +171,12 @@ describe('runs_table', () => {
     });
   }
 
+  function getOverlayMenuItems() {
+    return Array.from(
+      overlayContainer.getContainerElement().querySelectorAll('[mat-menu-item]')
+    );
+  }
+
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [
@@ -183,6 +191,8 @@ describe('runs_table', () => {
         RangeInputModule,
       ],
       declarations: [
+        RunsGroupMenuButtonComponent,
+        RunsGroupMenuButtonContainer,
         RunsTableComponent,
         RunsTableContainer,
         RunsTableContainer,
@@ -235,6 +245,7 @@ describe('runs_table', () => {
       new Map() as ReturnType<typeof hparamsSelectors.getMetricFilterMap>
     );
     store.overrideSelector(getRouteId, '123');
+    store.overrideSelector(getEnabledColorGroup, false);
     dispatchSpy = spyOn(store, 'dispatch').and.callFake((action: Action) => {
       actualActions.push(action);
     });
@@ -527,6 +538,62 @@ describe('runs_table', () => {
       expect(
         book2Color.querySelector('button').classList.contains('no-color')
       ).toBe(true);
+    });
+
+    describe('color grouping render', () => {
+      it('renders the menu for color grouping when the feature is enabled', () => {
+        store.overrideSelector(getEnabledColorGroup, true);
+        const fixture = createComponent(
+          ['book'],
+          [RunsTableColumn.RUN_NAME, RunsTableColumn.RUN_COLOR]
+        );
+        fixture.detectChanges();
+
+        const menuButton = fixture.debugElement.query(
+          By.directive(RunsGroupMenuButtonContainer)
+        );
+        expect(menuButton).toBeTruthy();
+      });
+
+      it('renders "experiments", "runs" and "regex"', () => {
+        store.overrideSelector(getEnabledColorGroup, true);
+        const fixture = createComponent(
+          ['book'],
+          [RunsTableColumn.RUN_NAME, RunsTableColumn.RUN_COLOR]
+        );
+        fixture.detectChanges();
+
+        const menuButton = fixture.debugElement
+          .query(By.directive(RunsGroupMenuButtonContainer))
+          .query(By.css('button'));
+        menuButton.nativeElement.click();
+
+        const items = getOverlayMenuItems();
+
+        expect(items.map((element) => element.textContent)).toEqual([
+          'Experiments',
+          'Runs',
+          'Regex',
+        ]);
+      });
+
+      it(
+        'does not render the menu when color column is not specified even ' +
+          'when the feature is enabled',
+        () => {
+          store.overrideSelector(getEnabledColorGroup, true);
+          const fixture = createComponent(
+            ['book'],
+            [RunsTableColumn.RUN_NAME, RunsTableColumn.EXPERIMENT_NAME]
+          );
+          fixture.detectChanges();
+
+          const menuButton = fixture.debugElement.query(
+            By.directive(RunsGroupMenuButtonContainer)
+          );
+          expect(menuButton).toBeFalsy();
+        }
+      );
     });
 
     it('dispatches `runColorChanged` when color changes', () => {
@@ -2293,14 +2360,6 @@ describe('runs_table', () => {
       });
 
       describe('filtering ui', () => {
-        function getOverlayMenuItems() {
-          return Array.from(
-            overlayContainer
-              .getContainerElement()
-              .querySelectorAll('[mat-menu-item]')
-          );
-        }
-
         beforeEach(() => {
           store.overrideSelector(getRuns, [
             buildRun({

@@ -12,6 +12,8 @@ tf_sass_binary(
 tf_ng_module(
     name = "runs_table",
     srcs = [
+        "runs_group_menu_button_component.ts",
+        "runs_group_menu_button_container.ts",
         "runs_table_component.ts",
         "runs_table_container.ts",
         "runs_table_module.ts",
