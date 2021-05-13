@@ -2,7 +2,7 @@
 
 @wchargin, 2020-10-29
 
-**Status:** Implementation in progress.
+**Status:** Shipped in TensorBoard 2.5.0.
 
 ## Purpose
 
