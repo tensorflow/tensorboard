@@ -25,6 +25,10 @@ mat-icon {
   margin-right: 5px;
 }
 
+tb-filter-input {
+  flex-grow: 1;
+}
+
 :host {
   color: mat-color($tb-foreground, text);
   font-size: 13px;

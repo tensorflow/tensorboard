@@ -21,9 +21,9 @@ import {
   Output,
   ViewChild,
 } from '@angular/core';
-import {MatAutocompleteTrigger} from '@angular/material/autocomplete';
 
 import {escapeForRegex} from '../../../util/string';
+import {FilterInputComponent} from '../../../widgets/filter_input/filter_input_component';
 
 @Component({
   selector: 'metrics-tag-filter-component',
@@ -37,12 +37,12 @@ export class MetricsFilterInputComponent {
   @Input() completions!: string[];
   @Output() onRegexFilterValueChange = new EventEmitter<string>();
 
-  @ViewChild(MatAutocompleteTrigger, {static: true})
-  autocompleteTrigger!: MatAutocompleteTrigger;
+  @ViewChild(FilterInputComponent)
+  filterInput!: FilterInputComponent;
 
   onFilterKeyUp(event: KeyboardEvent) {
     if (event.key === 'Enter') {
-      this.autocompleteTrigger.closePanel();
+      this.filterInput.getAutocompleteTrigger().closePanel();
     }
   }
 

@@ -126,9 +126,16 @@ export function sendKey<T>(
     el.setSelectionRange(startingCursorIndex, startingCursorIndex);
   }
 
+  // Use to override default options on programmatic events to be closer to
+  // user-initiated events, which bubble and cancel.
+  const baseEventOptions = {
+    bubbles: true,
+    cancellable: true,
+  };
+
   // Convert typing to object. Sadly, because keyCode is deprecated, it is not
   // typed properly.
-  const keyboardEventArg = {key, keyCode} as {};
+  const keyboardEventArg = {...baseEventOptions, key, keyCode} as {};
   el.dispatchEvent(new KeyboardEvent('keydown', keyboardEventArg));
 
   // This is technically incorrect. For modifier key event, the keydown triggers
@@ -144,10 +151,10 @@ export function sendKey<T>(
   }
 
   if (emitKeyPressAndInput) {
-    el.dispatchEvent(new InputEvent('input', {data: key}));
+    el.dispatchEvent(new InputEvent('input', {...baseEventOptions, data: key}));
   }
 
-  document.dispatchEvent(new Event('selectionchange'));
+  document.dispatchEvent(new Event('selectionchange', baseEventOptions));
 
   el.dispatchEvent(new KeyboardEvent('keyup', keyboardEventArg));
   fixture.detectChanges();
