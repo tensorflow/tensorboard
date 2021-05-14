@@ -29,7 +29,7 @@ import {
   metricsToggleIgnoreOutliers,
   metricsToggleImageShowActualSize,
 } from '../../actions';
-import * as selectors from '../../store/metrics_selectors';
+import * as selectors from '../../../selectors';
 import {HistogramMode, TooltipSort, XAxisType} from '../../types';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
@@ -38,6 +38,7 @@ import {HistogramMode, TooltipSort, XAxisType} from '../../types';
   selector: 'metrics-dashboard-settings',
   template: `
     <metrics-dashboard-settings-component
+      [isImageSupportEnabled]="isImageSupportEnabled$ | async"
       [tooltipSort]="tooltipSort$ | async"
       (tooltipSortChanged)="onTooltipSortChanged($event)"
       [ignoreOutliers]="ignoreOutliers$ | async"
@@ -65,6 +66,10 @@ import {HistogramMode, TooltipSort, XAxisType} from '../../types';
 })
 export class SettingsViewContainer {
   constructor(private readonly store: Store<State>) {}
+
+  readonly isImageSupportEnabled$ = this.store.select(
+    selectors.getIsMetricsImageSupportEnabled
+  );
 
   readonly tooltipSort$ = this.store.select(selectors.getMetricsTooltipSort);
   readonly ignoreOutliers$ = this.store.select(

@@ -141,4 +141,29 @@ describe('feature_flag_selectors', () => {
       expect(selectors.getEnabledColorGroup(state)).toEqual(true);
     });
   });
+
+  describe('#getIsMetricsImageSupportEnabled', () => {
+    it('returns the proper value', () => {
+      let state = buildState(
+        buildFeatureFlagState({
+          defaultFlags: buildFeatureFlag({
+            metricsImageSupportEnabled: false,
+          }),
+        })
+      );
+      expect(selectors.getIsMetricsImageSupportEnabled(state)).toEqual(false);
+
+      state = buildState(
+        buildFeatureFlagState({
+          defaultFlags: buildFeatureFlag({
+            metricsImageSupportEnabled: false,
+          }),
+          flagOverrides: {
+            metricsImageSupportEnabled: true,
+          },
+        })
+      );
+      expect(selectors.getIsMetricsImageSupportEnabled(state)).toEqual(true);
+    });
+  });
 });

@@ -24,6 +24,7 @@ export const initialState: FeatureFlagState = {
     enabledExperimentalPlugins: [],
     inColab: false,
     scalarsBatchSize: undefined,
+    metricsImageSupportEnabled: true,
   },
   flagOverrides: {},
 };

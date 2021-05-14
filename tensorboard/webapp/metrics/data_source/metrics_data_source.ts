@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import {Injectable} from '@angular/core';
 import {forkJoin, Observable, of} from 'rxjs';
-import {map, tap} from 'rxjs/operators';
+import {filter, map, take, tap, withLatestFrom} from 'rxjs/operators';
 
 import {LocalStorage} from '../../util/local_storage';
 import {TBHttpClient} from '../../webapp_data_source/tb_http_client';
@@ -41,6 +41,12 @@ import {
   TimeSeriesResponse,
   PersistableSettings,
 } from './types';
+import {
+  getIsFeatureFlagsLoaded,
+  getIsMetricsImageSupportEnabled,
+} from '../../feature_flag/store/feature_flag_selectors';
+import {Store} from '@ngrx/store';
+import {State as FeatureFlagAppState} from '../../feature_flag/store/feature_flag_types';
 
 const HTTP_PATH_PREFIX = 'data/plugin/timeseries';
 
@@ -186,7 +192,8 @@ function buildCombinedTagMetadata(results: TagMetadata[]): TagMetadata {
 export class TBMetricsDataSource implements MetricsDataSource {
   constructor(
     private readonly http: TBHttpClient,
-    private readonly localStorage: LocalStorage
+    private readonly localStorage: LocalStorage,
+    private readonly store: Store<FeatureFlagAppState>
   ) {}
 
   fetchTagMetadata(experimentIds: string[]) {
@@ -198,8 +205,26 @@ export class TBMetricsDataSource implements MetricsDataSource {
         })
       );
     });
+    const isImagesSupported$ = this.store.select(getIsFeatureFlagsLoaded).pipe(
+      filter(Boolean),
+      take(1),
+      withLatestFrom(this.store.select(getIsMetricsImageSupportEnabled)),
+      map(([, isImagesSupported]) => {
+        return isImagesSupported;
+      })
+    );
     return forkJoin(fetches).pipe(
-      map((results) => buildCombinedTagMetadata(results))
+      withLatestFrom(isImagesSupported$),
+      map(([results, isImagesSupported]) => {
+        const tagMetadata = buildCombinedTagMetadata(results);
+        if (!isImagesSupported) {
+          tagMetadata[PluginType.IMAGES] = {
+            tagDescriptions: {},
+            tagRunSampledInfo: {},
+          };
+        }
+        return tagMetadata;
+      })
     );
   }
 
