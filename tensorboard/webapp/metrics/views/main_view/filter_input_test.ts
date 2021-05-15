@@ -23,7 +23,7 @@ import {Action, Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
 
 import {State} from '../../../app_state';
-import {KeyType, sendKey, sendKeys} from '../../../testing/dom';
+import {sendKeys} from '../../../testing/dom';
 import {MatIconTestingModule} from '../../../testing/mat_icon_module';
 import {getAutocompleteOptions} from '../../../testing/material';
 import {FilterInputModule} from '../../../widgets/filter_input/filter_input_module';
@@ -225,29 +225,6 @@ describe('metrics filter input', () => {
       fixture.detectChanges();
 
       expect(fixture.debugElement.query(By.css('.error-icon'))).not.toBeNull();
-    });
-
-    it('closes autocomplete on Enter', () => {
-      store.overrideSelector(selectors.getMetricsTagFilter, '');
-      const fixture = TestBed.createComponent(MetricsFilterInputContainer);
-      fixture.detectChanges();
-
-      const input = fixture.debugElement.query(By.css('input'));
-      input.nativeElement.focus();
-      fixture.detectChanges();
-
-      const options = getAutocompleteOptions(overlayContainer);
-      expect(options.length).toBeGreaterThan(1);
-
-      sendKey(fixture, input, {
-        type: KeyType.SPECIAL,
-        prevString: input.properties.value,
-        key: 'Enter',
-        startingCursorIndex: input.properties.selectionStart,
-      });
-
-      const options2 = getAutocompleteOptions(overlayContainer);
-      expect(options2.length).toBe(0);
     });
   });
 });

@@ -125,25 +125,8 @@ $_border-color: #0000001f;
   display: flex;
   align-items: center;
   height: 48px;
-  padding: 0 16px;
+  padding: 0 16px 0 21px;
   border-bottom: 1px solid mat-color($tb-foreground, border);
-}
-
-.run-filter {
-  display: flex;
-  color: mat-color($tb-foreground, text);
-  flex: 1;
-
-  mat-icon {
-    color: mat-color($tb-foreground, secondary-text);
-    flex: none;
-    margin-left: 5px;
-    margin-right: 5px;
-  }
-
-  tb-filter-input {
-    flex-grow: 1;
-  }
 }
 
 // Prevents the table column for checkbox and run_color from growing beyond

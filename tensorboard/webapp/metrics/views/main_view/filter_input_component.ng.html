@@ -15,12 +15,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <div class="tag-filter">
-  <mat-icon svgIcon="search_24px"></mat-icon>
   <tb-filter-input
     placeholder="Filter tags (regex)"
     [value]="regexFilterValue"
     (input)="onRegexFilterValueChange.emit($event.target.value)"
-    (keyup)="onFilterKeyUp($event)"
     [matAutocomplete]="filterMatches"
   ></tb-filter-input>
   <mat-icon

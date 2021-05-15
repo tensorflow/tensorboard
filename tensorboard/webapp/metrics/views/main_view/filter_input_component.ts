@@ -19,11 +19,9 @@ import {
   HostBinding,
   Input,
   Output,
-  ViewChild,
 } from '@angular/core';
 
 import {escapeForRegex} from '../../../util/string';
-import {FilterInputComponent} from '../../../widgets/filter_input/filter_input_component';
 
 @Component({
   selector: 'metrics-tag-filter-component',
@@ -36,15 +34,6 @@ export class MetricsFilterInputComponent {
   @HostBinding('class.valid') @Input() isRegexFilterValid!: boolean;
   @Input() completions!: string[];
   @Output() onRegexFilterValueChange = new EventEmitter<string>();
-
-  @ViewChild(FilterInputComponent)
-  filterInput!: FilterInputComponent;
-
-  onFilterKeyUp(event: KeyboardEvent) {
-    if (event.key === 'Enter') {
-      this.filterInput.getAutocompleteTrigger().closePanel();
-    }
-  }
 
   onCompletionAccepted(completion: string) {
     this.onRegexFilterValueChange.emit(escapeForRegex(completion));

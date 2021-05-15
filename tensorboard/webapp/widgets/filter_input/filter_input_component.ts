@@ -21,39 +21,33 @@ import {MatAutocompleteTrigger} from '@angular/material/autocomplete';
 @Component({
   selector: 'tb-filter-input',
   template: `
+    <mat-icon svgIcon="search_24px"></mat-icon>
+
+    <!-- Note: to allow falsy 'matAutocomplete' values, we need 'matAutocompleteDisabled'
+    to prevent runtime errors. -->
     <input
       type="text"
       autocomplete="off"
       [placeholder]="placeholder"
       [matAutocomplete]="matAutocomplete"
       [matAutocompleteDisabled]="!matAutocomplete"
+      [value]="value"
+      (keyup)="onInputKeyUp($event)"
     />
   `,
-  styles: [
-    `
-      :host {
-        display: flex;
-      }
-
-      input {
-        font: inherit;
-        border: none;
-        outline: none;
-        padding: 0;
-        width: 100%;
-      }
-    `,
-  ],
+  styleUrls: [`filter_input_component.css`],
 })
 export class FilterInputComponent {
-  @Input() value!: string;
+  @Input() value: string = '';
   @Input() matAutocomplete?: string;
-  @Input() placeholder?: string;
+  @Input() placeholder: string = '';
 
   @ViewChild(MatAutocompleteTrigger)
-  autocompleteTrigger!: MatAutocompleteTrigger;
+  private autocompleteTrigger!: MatAutocompleteTrigger;
 
-  getAutocompleteTrigger(): MatAutocompleteTrigger {
-    return this.autocompleteTrigger;
+  onInputKeyUp(event: KeyboardEvent) {
+    if (event.key === 'Enter') {
+      this.autocompleteTrigger.closePanel();
+    }
   }
 }

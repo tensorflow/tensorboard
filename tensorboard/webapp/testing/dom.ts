@@ -128,9 +128,9 @@ export function sendKey<T>(
 
   // Use to override default options on programmatic events to be closer to
   // user-initiated events, which bubble and cancel.
-  const baseEventOptions = {
+  const baseEventOptions: EventInit = {
     bubbles: true,
-    cancellable: true,
+    cancelable: true,
   };
 
   // Convert typing to object. Sadly, because keyCode is deprecated, it is not
