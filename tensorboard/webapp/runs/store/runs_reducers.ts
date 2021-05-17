@@ -208,41 +208,48 @@ const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
       groupKeyToColorString,
     };
   }),
-  on(runsActions.runGroupByChanged, (state: RunsDataState, {experimentIds, groupBy}): RunsDataState => {
-    // Reset the groupKeyToColorString
-    const groupKeyToColorString = new Map<string, string>();
-    const defaultRunColorForGroupBy = new Map(state.defaultRunColorForGroupBy);
+  on(
+    runsActions.runGroupByChanged,
+    (state: RunsDataState, {experimentIds, groupBy}): RunsDataState => {
+      // Reset the groupKeyToColorString
+      const groupKeyToColorString = new Map<string, string>();
+      const defaultRunColorForGroupBy = new Map(
+        state.defaultRunColorForGroupBy
+      );
 
-    const allRuns = experimentIds
-      .flatMap((experimentId) => {
-        return state.runIds[experimentId];
-      })
-      .map((runId) => {
-        return state.runMetadata[runId];
-      })
-      .filter(Boolean);
+      const allRuns = experimentIds
+        .flatMap((experimentId) => {
+          return state.runIds[experimentId];
+        })
+        .map((runId) => {
+          return state.runMetadata[runId];
+        })
+        .filter(Boolean);
 
-    const groups = groupRuns(groupBy, allRuns, state.runIdToExpId);
+      const groups = groupRuns(groupBy, allRuns, state.runIdToExpId);
 
-    Object.entries(groups).forEach(([groupId, runs]) => {
-      const color =
-        groupKeyToColorString.get(groupId) ??
-        CHART_COLOR_PALLETE[groupKeyToColorString.size % CHART_COLOR_PALLETE.length];
-      groupKeyToColorString.set(groupId, color);
+      Object.entries(groups).forEach(([groupId, runs]) => {
+        const color =
+          groupKeyToColorString.get(groupId) ??
+          CHART_COLOR_PALLETE[
+            groupKeyToColorString.size % CHART_COLOR_PALLETE.length
+          ];
+        groupKeyToColorString.set(groupId, color);
 
-      for (const run of runs) {
-        defaultRunColorForGroupBy.set(run.id, color);
-      }
-    });
+        for (const run of runs) {
+          defaultRunColorForGroupBy.set(run.id, color);
+        }
+      });
 
-    return {
-      ...state,
-      defaultRunColorForGroupBy,
-      groupKeyToColorString,
-      // Resets the color override when the groupBy changes.
-      runColorOverrideForGroupBy: new Map(),
-    };
-  }),
+      return {
+        ...state,
+        defaultRunColorForGroupBy,
+        groupKeyToColorString,
+        // Resets the color override when the groupBy changes.
+        runColorOverrideForGroupBy: new Map(),
+      };
+    }
+  ),
   on(runsActions.runColorChanged, (state, {runId, newColor}) => {
     const nextRunColorOverride = new Map(state.runColorOverrideForGroupBy);
     nextRunColorOverride.set(runId, newColor);
