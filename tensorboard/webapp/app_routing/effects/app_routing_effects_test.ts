@@ -642,7 +642,7 @@ describe('app_routing_effects', () => {
       });
 
       function navigateAndExpect(
-        navigation: Navigation,
+        navigation: Navigation | Route,
         expected: {pushStateUrl: null | string; replaceStateUrl: null | string}
       ) {
         fakeAsync(() => {
