@@ -29,12 +29,12 @@ import {
   getReloadPeriodInMs,
   State,
   getPageSize,
-} from '../core/store';
+} from '../../core/store';
 import {
   toggleReloadEnabled,
   changeReloadPeriod,
   changePageSize,
-} from '../core/actions';
+} from '../../core/actions';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 

@@ -20,7 +20,7 @@ import {provideMockStore, MockStore} from '@ngrx/store/testing';
 
 import {SettingsPolymerInteropContainer} from './polymer_interop_container';
 
-import {getPageSize, State} from '../core/store';
+import {getPageSize, State} from '../../core/store';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
