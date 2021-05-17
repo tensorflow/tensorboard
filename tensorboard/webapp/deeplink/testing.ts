@@ -20,7 +20,7 @@ import {DeepLinkerInterface} from './';
  * Prevent reading or modification of real hashes.
  */
  @Injectable()
-class TestableNoopHashDeepLinker implements DeepLinkerInterface {
+export class TestableNoopHashDeepLinker implements DeepLinkerInterface {
    getString(key: string): string {
      return '';
    }

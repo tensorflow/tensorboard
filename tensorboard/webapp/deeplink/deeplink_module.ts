@@ -14,9 +14,10 @@ limitations under the License.
 ==============================================================================*/
 import {NgModule} from '@angular/core';
 
+import {DeepLinkerInterface} from './types';
 import {HashDeepLinker} from './hash';
 
 @NgModule({
-  providers: [HashDeepLinker],
+  providers: [{provide: DeepLinkerInterface, useClass: HashDeepLinker}],
 })
 export class DeepLinkModule {}

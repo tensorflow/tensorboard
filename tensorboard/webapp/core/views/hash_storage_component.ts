@@ -24,8 +24,7 @@ import {
   EventEmitter,
 } from '@angular/core';
 
-import {HashDeepLinker} from '../../deeplink/hash';
-import {SetStringOption} from '../../deeplink/types';
+import {DeepLinkerInterface, SetStringOption} from '../../deeplink/types';
 export enum ChangedProp {
   ACTIVE_PLUGIN,
 }
@@ -38,7 +37,7 @@ export enum ChangedProp {
 export class HashStorageComponent implements OnInit, OnChanges, OnDestroy {
   private readonly onHashChange = this.onHashChangedImpl.bind(this);
 
-  constructor(private readonly deepLinker: HashDeepLinker) {}
+  constructor(private readonly deepLinker: DeepLinkerInterface) {}
 
   @Input()
   activePluginId!: string | null;
