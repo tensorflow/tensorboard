@@ -31,7 +31,6 @@ import {FeatureFlagModule} from '../feature_flag/feature_flag_module';
 import {RunsModule} from '../runs/runs_module';
 import {MatIconTestingModule} from './mat_icon_module';
 
-
 @Component({
   selector: 'test',
   template: 'hello',

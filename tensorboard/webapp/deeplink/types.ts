@@ -22,7 +22,11 @@ export interface SetStringOption {
 
 export abstract class DeepLinkerInterface {
   abstract getString(key: string): string;
-  abstract setString(key: string, value: string, options?: SetStringOption): void;
+  abstract setString(
+    key: string,
+    value: string,
+    options?: SetStringOption
+  ): void;
   abstract getPluginId(): string;
   abstract setPluginId(pluginId: string, options?: SetStringOption): void;
 }

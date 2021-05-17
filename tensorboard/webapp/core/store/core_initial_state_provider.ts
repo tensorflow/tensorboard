@@ -25,7 +25,9 @@ export const CORE_STORE_CONFIG_TOKEN = new InjectionToken<
   StoreConfig<CoreState>
 >('Core Feature Config');
 
-export function getConfig(deepLinker: DeepLinkerInterface): StoreConfig<CoreState> {
+export function getConfig(
+  deepLinker: DeepLinkerInterface
+): StoreConfig<CoreState> {
   return {
     initialState: {
       ...initialState,

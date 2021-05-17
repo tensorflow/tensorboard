@@ -19,23 +19,25 @@ import {DeepLinkerInterface} from './';
 /**
  * Prevent reading or modification of real hashes.
  */
- @Injectable()
+@Injectable()
 export class TestableNoopHashDeepLinker implements DeepLinkerInterface {
-   getString(key: string): string {
-     return '';
-   }
-   setString(key: string, value: string): void {
-     // noop
-   }
-   getPluginId(): string {
-     return '';
-   }
-   setPluginId(pluginId: string): void {
-     // noop
-   }
- }
+  getString(key: string): string {
+    return '';
+  }
+  setString(key: string, value: string): void {
+    // noop
+  }
+  getPluginId(): string {
+    return '';
+  }
+  setPluginId(pluginId: string): void {
+    // noop
+  }
+}
 
 @NgModule({
-  providers: [{provide: DeepLinkerInterface, useClass: TestableNoopHashDeepLinker}],
+  providers: [
+    {provide: DeepLinkerInterface, useClass: TestableNoopHashDeepLinker},
+  ],
 })
 export class TestableNoopHashDeepLinkerModule {}
