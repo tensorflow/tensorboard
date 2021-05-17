@@ -1,6 +1,6 @@
 load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_ts_library")
 
-package(default_visibility = ["//tensorboard:internal"])
+package(default_visibility = ["//tensorboard/webapp/settings:__subpackages__"])
 
 tf_ng_module(
     name = "_views",

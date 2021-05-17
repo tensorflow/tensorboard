@@ -12,18 +12,22 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {NgModule} from '@angular/core';
+import {createAction, props} from '@ngrx/store';
 
-import {CoreModule} from '../core/core_module';
-import {SettingsModule as DataModule} from './_redux/settings_data_module';
-import {SettingsModule as ViewModule} from './_views/settings_module';
+import {TooltipSort} from '../../metrics/types';
 
-@NgModule({
-  exports: [ViewModule],
-  imports: [
-    // Uses core redux state.
-    CoreModule,
-    DataModule,
-  ],
-})
-export class SettingsModule {}
+/** @typehack */ import * as _typeHackModels from '@ngrx/store/src/models';
+
+export const tooltipSortChanged = createAction(
+  '[Settings] Global TimeSeries Tooltip Sort Setting Changed',
+  props<{sort: TooltipSort}>()
+);
+
+export const scalarSmoothingChanged = createAction(
+  '[Settings] Global TimeSeries Scalar Smoothing Setting Changed',
+  props<{smoothing: number}>()
+);
+
+export const ignoreOutliersToggled = createAction(
+  '[Settings] Global TimeSeries Ignore Outlier Setting Toggled'
+);
