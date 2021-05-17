@@ -194,11 +194,11 @@ describe('runs_reducers', () => {
         groupBy: {
           key: GroupByKey.RUN,
         },
-        defaultRunColor: new Map([
+        defaultRunColorForGroupBy: new Map([
           ['foo', '#aaa'],
           ['bar', '#bbb'],
         ]),
-        groupToColor: new Map([
+        groupKeyToColorString: new Map([
           ['foo', '#aaa'],
           ['bar', '#bbb'],
           ['1', '#ccc'],
@@ -235,7 +235,7 @@ describe('runs_reducers', () => {
 
       const nextState = runsReducers.reducers(state, action);
 
-      expect(nextState.data.defaultRunColor).toEqual(
+      expect(nextState.data.defaultRunColorForGroupBy).toEqual(
         new Map([
           ['foo', '#aaa'],
           ['bar', '#bbb'],
@@ -255,16 +255,19 @@ describe('runs_reducers', () => {
           groupBy: {
             key: GroupByKey.EXPERIMENT,
           },
-          defaultRunColor: new Map([
+          defaultRunColorForGroupBy: new Map([
             ['foo', '#aaa'],
+            // `bar` is not present in neither experiment for `runsForAllExperiments` below;
+            // pretend like there is a data inconsistency.
             ['bar', '#aaa'],
           ]),
-          groupToColor: new Map([['eid1', '#aaa']]),
+          groupKeyToColorString: new Map([['eid1', '#aaa']]),
         });
         const action = actions.fetchRunsSucceeded({
           experimentIds: ['eid1', 'eid2'],
           runsForAllExperiments: [
             buildRun({id: 'baz'}),
+            // `foo` already exists in the state.
             buildRun({id: 'foo'}),
             buildRun({id: 'qaz'}),
             buildRun({id: 'alpha'}),
@@ -295,7 +298,7 @@ describe('runs_reducers', () => {
 
         const nextState = runsReducers.reducers(state, action);
 
-        expect(nextState.data.defaultRunColor).toEqual(
+        expect(nextState.data.defaultRunColorForGroupBy).toEqual(
           new Map([
             ['foo', '#aaa'],
             ['bar', '#aaa'],
@@ -662,7 +665,7 @@ describe('runs_reducers', () => {
   describe('runColorChanged', () => {
     it('updates color for the run', () => {
       const state = buildRunsState({
-        runColorOverride: new Map([['foo', '#aaa']]),
+        runColorOverrideForGroupBy: new Map([['foo', '#aaa']]),
       });
 
       const nextState = runsReducers.reducers(
@@ -673,14 +676,14 @@ describe('runs_reducers', () => {
         })
       );
 
-      expect(nextState.data.runColorOverride).toEqual(
+      expect(nextState.data.runColorOverrideForGroupBy).toEqual(
         new Map([['foo', '#000']])
       );
     });
 
     it('sets run color for a value that did not exist', () => {
       const state = buildRunsState({
-        runColorOverride: new Map([['foo', '#aaa']]),
+        runColorOverrideForGroupBy: new Map([['foo', '#aaa']]),
       });
 
       const nextState = runsReducers.reducers(
@@ -691,7 +694,7 @@ describe('runs_reducers', () => {
         })
       );
 
-      expect(nextState.data.runColorOverride).toEqual(
+      expect(nextState.data.runColorOverrideForGroupBy).toEqual(
         new Map([
           ['foo', '#aaa'],
           ['bar', '#fff'],

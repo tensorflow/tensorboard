@@ -43,9 +43,9 @@ const {
   reducers: dataRouteContextReducers,
 } = createRouteContextedState<RunsDataRoutefulState, RunsDataRoutelessState>(
   {
-    runColorOverride: new Map(),
-    defaultRunColor: new Map(),
-    groupToColor: new Map(),
+    runColorOverrideForGroupBy: new Map(),
+    defaultRunColorForGroupBy: new Map(),
+    groupKeyToColorString: new Map(),
     groupBy: {key: GroupByKey.RUN},
   },
   {
@@ -181,8 +181,8 @@ const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
     };
   }),
   on(runsActions.fetchRunsSucceeded, (state, {runsForAllExperiments}) => {
-    const groupToColor = new Map(state.groupToColor);
-    const defaultRunColor = new Map(state.defaultRunColor);
+    const groupKeyToColorString = new Map(state.groupKeyToColorString);
+    const defaultRunColorForGroupBy = new Map(state.defaultRunColorForGroupBy);
 
     const groups = groupRuns(
       state.groupBy,
@@ -191,26 +191,28 @@ const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
     );
     Object.entries(groups).forEach(([groupId, runs]) => {
       const color =
-        groupToColor.get(groupId) ??
-        CHART_COLOR_PALLETE[groupToColor.size % CHART_COLOR_PALLETE.length];
-      groupToColor.set(groupId, color);
+        groupKeyToColorString.get(groupId) ??
+        CHART_COLOR_PALLETE[
+          groupKeyToColorString.size % CHART_COLOR_PALLETE.length
+        ];
+      groupKeyToColorString.set(groupId, color);
 
       for (const run of runs) {
-        defaultRunColor.set(run.id, color);
+        defaultRunColorForGroupBy.set(run.id, color);
       }
     });
 
     return {
       ...state,
-      defaultRunColor,
-      groupToColor,
+      defaultRunColorForGroupBy,
+      groupKeyToColorString,
     };
   }),
   on(runsActions.runColorChanged, (state, {runId, newColor}) => {
-    const nextRunColorOverride = new Map(state.runColorOverride);
+    const nextRunColorOverride = new Map(state.runColorOverrideForGroupBy);
     nextRunColorOverride.set(runId, newColor);
 
-    return {...state, runColorOverride: nextRunColorOverride};
+    return {...state, runColorOverrideForGroupBy: nextRunColorOverride};
   })
 );
 

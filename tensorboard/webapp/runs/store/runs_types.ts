@@ -47,9 +47,9 @@ export type RunId = string;
 export type RouteKey = string;
 
 export interface RunsDataRoutefulState {
-  runColorOverride: Map<RunId, string>;
-  defaultRunColor: Map<RunId, string>;
-  groupToColor: Map<string, string>;
+  defaultRunColorForGroupBy: Map<RunId, string>;
+  runColorOverrideForGroupBy: Map<RunId, string>;
+  groupKeyToColorString: Map<string, string>;
   groupBy: GroupBy;
 }
 
