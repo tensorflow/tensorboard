@@ -36,6 +36,7 @@ const KNOWN_SVG_ICON = new Set([
   'fullscreen_24px',
   'fullscreen_exit_24px',
   'get_app_24px',
+  'palette_24px',
   'help_outline_24px',
   'image_search_24px',
   'info_outline_24px',

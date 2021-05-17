@@ -25,7 +25,6 @@ import {
   combineLatestWith,
   filter,
   map,
-  share,
   shareReplay,
   startWith,
   switchMap,
@@ -38,6 +37,7 @@ import * as alertActions from '../../../alert/actions';
 import {State} from '../../../app_state';
 import {
   getCurrentRouteRunSelection,
+  getEnabledColorGroup,
   getExperiment,
   getExperimentIdToAliasMap,
   getRouteId,
@@ -202,6 +202,7 @@ function matchFilter(
       [loading]="loading$ | async"
       [paginationOption]="paginationOption$ | async"
       [regexFilter]="regexFilter$ | async"
+      [showGroupControl]="showGroupControl$ | async"
       [sortOption]="sortOption$ | async"
       [usePagination]="usePagination"
       (onSelectionToggle)="onRunSelectionToggle($event)"
@@ -239,6 +240,7 @@ export class RunsTableContainer implements OnInit, OnDestroy {
   allItemsLength$?: Observable<number>;
   pageItems$?: Observable<RunTableItem[]>;
   numSelectedItems$?: Observable<number>;
+  showGroupControl$?: Observable<boolean>;
 
   hparamColumns$: Observable<HparamColumn[]> = of([]);
   metricColumns$: Observable<MetricColumn[]> = of([]);
@@ -411,6 +413,14 @@ export class RunsTableContainer implements OnInit, OnDestroy {
         );
       });
     }
+
+    this.showGroupControl$ = this.store.select(getEnabledColorGroup).pipe(
+      map((featureEnabled) => {
+        return (
+          featureEnabled && this.columns.includes(RunsTableColumn.RUN_COLOR)
+        );
+      })
+    );
 
     this.store.dispatch(runTableShown({experimentIds: this.experimentIds}));
   }

@@ -31,6 +31,8 @@ import {ColorPickerModule} from 'ngx-color-picker';
 import {AlertModule} from '../../../alert/alert_module';
 import {FilterInputModule} from '../../../widgets/filter_input/filter_input_module';
 import {RangeInputModule} from '../../../widgets/range_input/range_input_module';
+import {RunsGroupMenuButtonComponent} from './runs_group_menu_button_component';
+import {RunsGroupMenuButtonContainer} from './runs_group_menu_button_container';
 import {RunsTableComponent} from './runs_table_component';
 import {RunsTableContainer} from './runs_table_container';
 
@@ -51,6 +53,11 @@ import {RunsTableContainer} from './runs_table_container';
     AlertModule,
   ],
   exports: [RunsTableContainer],
-  declarations: [RunsTableContainer, RunsTableComponent],
+  declarations: [
+    RunsGroupMenuButtonComponent,
+    RunsGroupMenuButtonContainer,
+    RunsTableComponent,
+    RunsTableContainer,
+  ],
 })
 export class RunsTableModule {}
