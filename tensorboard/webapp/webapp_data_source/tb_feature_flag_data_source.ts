@@ -15,6 +15,7 @@ limitations under the License.
 import {Injectable} from '@angular/core';
 
 import {
+  ENABLE_COLOR_GROUP_QUERY_PARAM_KEY,
   EXPERIMENTAL_PLUGIN_QUERY_PARAM_KEY,
   SCALARS_BATCH_SIZE_PARAM_KEY,
   TBFeatureFlagDataSource,
@@ -52,6 +53,11 @@ export class QueryParamsFeatureFlagDataSource extends TBFeatureFlagDataSource {
       featureFlags.scalarsBatchSize = Number(
         params.get(SCALARS_BATCH_SIZE_PARAM_KEY)
       );
+    }
+
+    if (params.has(ENABLE_COLOR_GROUP_QUERY_PARAM_KEY)) {
+      featureFlags.enabledColorGroup =
+        params.get(ENABLE_COLOR_GROUP_QUERY_PARAM_KEY) !== 'false';
     }
     return featureFlags;
   }

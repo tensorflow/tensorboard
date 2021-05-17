@@ -77,6 +77,19 @@ describe('tb_feature_flag_data_source', () => {
         });
       });
 
+      it('returns enableColorGroup from the query params', () => {
+        spyOn(TEST_ONLY.util, 'getParams').and.returnValues(
+          new URLSearchParams('enableColorGroup=false'),
+          new URLSearchParams('enableColorGroup='),
+          new URLSearchParams('enableColorGroup=true'),
+          new URLSearchParams('enableColorGroup=foo')
+        );
+        expect(dataSource.getFeatures()).toEqual({enabledColorGroup: false});
+        expect(dataSource.getFeatures()).toEqual({enabledColorGroup: true});
+        expect(dataSource.getFeatures()).toEqual({enabledColorGroup: true});
+        expect(dataSource.getFeatures()).toEqual({enabledColorGroup: true});
+      });
+
       it('returns all flag values when they are all set', () => {
         spyOn(TEST_ONLY.util, 'getParams').and.returnValue(
           new URLSearchParams(
