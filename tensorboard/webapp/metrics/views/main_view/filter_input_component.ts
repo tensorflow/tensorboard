@@ -19,9 +19,7 @@ import {
   HostBinding,
   Input,
   Output,
-  ViewChild,
 } from '@angular/core';
-import {MatAutocompleteTrigger} from '@angular/material/autocomplete';
 
 import {escapeForRegex} from '../../../util/string';
 
@@ -36,15 +34,6 @@ export class MetricsFilterInputComponent {
   @HostBinding('class.valid') @Input() isRegexFilterValid!: boolean;
   @Input() completions!: string[];
   @Output() onRegexFilterValueChange = new EventEmitter<string>();
-
-  @ViewChild(MatAutocompleteTrigger, {static: true})
-  autocompleteTrigger!: MatAutocompleteTrigger;
-
-  onFilterKeyUp(event: KeyboardEvent) {
-    if (event.key === 'Enter') {
-      this.autocompleteTrigger.closePanel();
-    }
-  }
 
   onCompletionAccepted(completion: string) {
     this.onRegexFilterValueChange.emit(escapeForRegex(completion));

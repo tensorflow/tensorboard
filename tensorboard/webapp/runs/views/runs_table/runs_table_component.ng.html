@@ -15,16 +15,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <div class="filter-row">
-  <div class="run-filter">
-    <mat-icon svgIcon="search_24px"></mat-icon>
-    <input
-      #filter
-      matInput
-      autocomplete="off"
-      (keyup)="onFilterKeyUp($event)"
-      placeholder="Filter runs (regex)"
-    />
-  </div>
+  <tb-filter-input
+    class="run-filter"
+    (keyup)="onFilterKeyUp($event)"
+    placeholder="Filter runs (regex)"
+  ></tb-filter-input>
 </div>
 <div class="table-container">
   <div role="table">

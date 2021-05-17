@@ -68,6 +68,7 @@ import {sendKeys} from '../../../testing/dom';
 import {MatIconTestingModule} from '../../../testing/mat_icon_module';
 import {DataLoadState} from '../../../types/data';
 import {SortDirection} from '../../../types/ui';
+import {FilterInputModule} from '../../../widgets/filter_input/filter_input_module';
 import {RangeInputModule} from '../../../widgets/range_input/range_input_module';
 import {
   runColorChanged,
@@ -180,6 +181,7 @@ describe('runs_table', () => {
         MatSortModule,
         MatTableModule,
         NoopAnimationsModule,
+        FilterInputModule,
         RangeInputModule,
       ],
       declarations: [
