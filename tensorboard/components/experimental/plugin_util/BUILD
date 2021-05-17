@@ -39,7 +39,6 @@ tf_ng_module(
     deps = [
         ":host_internals",
         ":message_types",
-        "//tensorboard/components/tf_storage",
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp:selectors",
         "//tensorboard/webapp:tb_polymer_interop_types",

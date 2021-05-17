@@ -20,11 +20,13 @@ import {AppRootModule} from './app_root_module';
 import {AppRoutingEffects} from './effects';
 import {LocationModule} from './location_module';
 import {ProgrammaticalNavigationModule} from './programmatical_navigation_module';
+import {RouteRegistryModule} from './route_registry_module';
 import {reducers} from './store/app_routing_reducers';
 import {APP_ROUTING_FEATURE_KEY} from './store/app_routing_types';
 
 @NgModule({
   imports: [
+    RouteRegistryModule,
     StoreModule.forFeature(APP_ROUTING_FEATURE_KEY, reducers),
     EffectsModule.forFeature([AppRoutingEffects]),
     AppRootModule,

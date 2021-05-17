@@ -17,7 +17,6 @@ import {NO_ERRORS_SCHEMA} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
 import {MatAutocompleteModule} from '@angular/material/autocomplete';
 import {MatButtonModule} from '@angular/material/button';
-import {MatInputModule} from '@angular/material/input';
 import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {Action, Store} from '@ngrx/store';
@@ -27,6 +26,7 @@ import {State} from '../../../app_state';
 import {sendKeys} from '../../../testing/dom';
 import {MatIconTestingModule} from '../../../testing/mat_icon_module';
 import {getAutocompleteOptions} from '../../../testing/material';
+import {FilterInputModule} from '../../../widgets/filter_input/filter_input_module';
 import {metricsTagFilterChanged} from '../../actions';
 import {PluginType} from '../../data_source';
 import * as selectors from '../../store/metrics_selectors';
@@ -47,7 +47,7 @@ describe('metrics filter input', () => {
         MatAutocompleteModule,
         MatButtonModule,
         MatIconTestingModule,
-        MatInputModule,
+        FilterInputModule,
       ],
       declarations: [MetricsFilterInputComponent, MetricsFilterInputContainer],
       providers: [
@@ -225,26 +225,6 @@ describe('metrics filter input', () => {
       fixture.detectChanges();
 
       expect(fixture.debugElement.query(By.css('.error-icon'))).not.toBeNull();
-    });
-
-    it('closes autocomplete on Enter', () => {
-      store.overrideSelector(selectors.getMetricsTagFilter, '');
-      const fixture = TestBed.createComponent(MetricsFilterInputContainer);
-      fixture.detectChanges();
-
-      const input = fixture.debugElement.query(By.css('input'));
-      input.nativeElement.focus();
-      fixture.detectChanges();
-
-      const options = getAutocompleteOptions(overlayContainer);
-      expect(options.length).toBeGreaterThan(1);
-
-      input.nativeElement.dispatchEvent(
-        new KeyboardEvent('keyup', {key: 'Enter'})
-      );
-
-      const options2 = getAutocompleteOptions(overlayContainer);
-      expect(options2.length).toBe(0);
     });
   });
 });

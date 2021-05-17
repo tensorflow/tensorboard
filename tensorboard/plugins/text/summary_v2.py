@@ -24,7 +24,7 @@ from tensorboard.util import tensor_util
 
 
 def text(name, data, step=None, description=None):
-    """Write a text summary.
+    r"""Write a text summary.
 
     See also `tf.summary.scalar`, `tf.summary.SummaryWriter`, `tf.summary.image`.
 

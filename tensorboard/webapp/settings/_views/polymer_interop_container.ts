@@ -12,14 +12,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import '../tb_polymer_interop_types';
+import '../../tb_polymer_interop_types';
 
 import {Component, ChangeDetectionStrategy} from '@angular/core';
 import {Store, select} from '@ngrx/store';
 import {Subject} from 'rxjs';
 import {takeUntil, distinctUntilChanged} from 'rxjs/operators';
 
-import {State, getPageSize} from '../core/store';
+import {State, getPageSize} from '../../core/store';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 

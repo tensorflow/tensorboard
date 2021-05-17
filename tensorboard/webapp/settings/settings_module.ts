@@ -1,4 +1,4 @@
-/* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2021 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,35 +13,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {NgModule} from '@angular/core';
-import {CommonModule} from '@angular/common';
-import {FormsModule, ReactiveFormsModule} from '@angular/forms';
-import {MatButtonModule} from '@angular/material/button';
-import {MatCheckboxModule} from '@angular/material/checkbox';
-import {MatDialogModule} from '@angular/material/dialog';
-import {MatIconModule} from '@angular/material/icon';
-import {MatInputModule} from '@angular/material/input';
 
-import {SettingsButtonComponent} from './settings_button_component';
-import {SettingsDialogComponent} from './dialog_component';
-import {SettingsPolymerInteropContainer} from './polymer_interop_container';
+import {SettingsModule as ViewModule} from './_views/settings_module';
 
 @NgModule({
-  declarations: [
-    SettingsButtonComponent,
-    SettingsDialogComponent,
-    SettingsPolymerInteropContainer,
-  ],
-  exports: [SettingsButtonComponent, SettingsPolymerInteropContainer],
-  entryComponents: [SettingsDialogComponent],
-  imports: [
-    CommonModule,
-    FormsModule,
-    ReactiveFormsModule,
-    MatButtonModule,
-    MatCheckboxModule,
-    MatDialogModule,
-    MatIconModule,
-    MatInputModule,
-  ],
+  exports: [ViewModule],
 })
 export class SettingsModule {}

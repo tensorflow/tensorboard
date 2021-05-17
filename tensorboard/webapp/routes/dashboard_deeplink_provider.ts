@@ -28,7 +28,10 @@ import {
 import {CardUniqueInfo, METRICS_SETTINGS_DEFAULT} from '../metrics/types';
 import * as selectors from '../selectors';
 import {getMetricsScalarSmoothing} from '../selectors';
-import {EXPERIMENTAL_PLUGIN_QUERY_PARAM_KEY} from '../webapp_data_source/tb_feature_flag_data_source_types';
+import {
+  ENABLE_COLOR_GROUP_QUERY_PARAM_KEY,
+  EXPERIMENTAL_PLUGIN_QUERY_PARAM_KEY,
+} from '../webapp_data_source/tb_feature_flag_data_source_types';
 import {
   DeserializedState,
   PINNED_CARDS_KEY,
@@ -86,6 +89,12 @@ export class DashboardDeepLinkProvider extends DeepLinkProvider {
         const queryParams = experimentalPlugins.map((pluginId) => {
           return {key: EXPERIMENTAL_PLUGIN_QUERY_PARAM_KEY, value: pluginId};
         });
+        if (typeof overriddenFeatureFlags.enabledColorGroup === 'boolean') {
+          queryParams.push({
+            key: ENABLE_COLOR_GROUP_QUERY_PARAM_KEY,
+            value: String(overriddenFeatureFlags.enabledColorGroup),
+          });
+        }
         return queryParams;
       })
     );

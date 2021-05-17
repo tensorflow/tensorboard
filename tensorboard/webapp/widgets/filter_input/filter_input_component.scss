@@ -1,4 +1,4 @@
-/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2021 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,29 +14,23 @@ limitations under the License.
 ==============================================================================*/
 @import 'tensorboard/webapp/theme/tb_theme';
 
-.tag-filter {
-  display: flex;
-  position: relative;
-}
-
-tb-filter-input {
-  flex-grow: 1;
-}
-
 :host {
-  color: mat-color($tb-foreground, text);
+  display: flex;
+  font-size: 13px;
+}
 
-  &:not(.valid) {
-    $_error-color: mat-color($tb-warn, 800);
+mat-icon {
+  color: mat-color($tb-foreground, secondary-text);
+  flex: none;
+  margin-right: 5px;
+}
 
-    color: $_error-color;
-
-    .error-icon {
-      color: $_error-color;
-
-      // Allow the autocomplete width calculation to ignore the icon size.
-      position: absolute;
-      right: 0;
-    }
-  }
+input {
+  caret-color: currentColor;
+  color: currentColor;
+  font: inherit;
+  border: none;
+  outline: none;
+  padding: 0;
+  flex-grow: 1;
 }

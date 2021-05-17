@@ -50,8 +50,19 @@ export enum GroupByKey {
   // Group runs by run names.
   RUN,
   // Group all runs under the same experimentId is grouped as a group.
-  EXERPIMENT,
+  EXPERIMENT,
   // Group runs by regex that matches on the run name. The specification for
   // the grouping is to be defined.
   REGEX,
 }
+
+export interface BaseGroupBy {
+  key: GroupByKey.EXPERIMENT | GroupByKey.RUN;
+}
+
+export interface RegexGroupBy {
+  key: GroupByKey.REGEX;
+  regexString: string;
+}
+
+export type GroupBy = BaseGroupBy | RegexGroupBy;

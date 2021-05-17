@@ -21,7 +21,6 @@ import {NgModule} from '@angular/core';
 import {MatButtonModule} from '@angular/material/button';
 import {MatCheckboxModule} from '@angular/material/checkbox';
 import {MatIconModule} from '@angular/material/icon';
-import {MatInputModule} from '@angular/material/input';
 import {MatMenuModule} from '@angular/material/menu';
 import {MatPaginatorModule} from '@angular/material/paginator';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
@@ -30,6 +29,7 @@ import {MatTableModule} from '@angular/material/table';
 import {ColorPickerModule} from 'ngx-color-picker';
 
 import {AlertModule} from '../../../alert/alert_module';
+import {FilterInputModule} from '../../../widgets/filter_input/filter_input_module';
 import {RangeInputModule} from '../../../widgets/range_input/range_input_module';
 import {RunsTableComponent} from './runs_table_component';
 import {RunsTableContainer} from './runs_table_container';
@@ -38,10 +38,10 @@ import {RunsTableContainer} from './runs_table_container';
   imports: [
     ColorPickerModule,
     CommonModule,
+    FilterInputModule,
     MatButtonModule,
     MatCheckboxModule,
     MatIconModule,
-    MatInputModule,
     MatMenuModule,
     MatPaginatorModule,
     MatProgressSpinnerModule,
