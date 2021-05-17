@@ -25,8 +25,7 @@ import {
   CORE_STORE_CONFIG_TOKEN,
   getConfig,
 } from './store/core_initial_state_provider';
-import {DeepLinkModule} from '../deeplink/deeplink_module';
-import {HashDeepLinker} from '../deeplink';
+import {DeepLinkerInterface} from '../deeplink';
 
 @NgModule({
   imports: [
@@ -37,7 +36,7 @@ import {HashDeepLinker} from '../deeplink';
   providers: [
     {
       provide: CORE_STORE_CONFIG_TOKEN,
-      deps: [HashDeepLinker],
+      deps: [DeepLinkerInterface],
       useFactory: getConfig,
     },
   ],

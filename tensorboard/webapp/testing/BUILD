@@ -75,7 +75,7 @@ tf_ng_module(
         "//tensorboard/webapp/app_routing:route_registry",
         "//tensorboard/webapp/app_routing:types",
         "//tensorboard/webapp/core",
-        "//tensorboard/webapp/deeplink",
+        "//tensorboard/webapp/deeplink:testing",
         "//tensorboard/webapp/feature_flag",
         "//tensorboard/webapp/runs",
         "@npm//@angular/core",

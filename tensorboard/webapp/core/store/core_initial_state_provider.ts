@@ -16,7 +16,7 @@ import {InjectionToken} from '@angular/core';
 import {StoreConfig} from '@ngrx/store';
 
 import {CoreState} from './core_types';
-import {HashDeepLinker} from '../../deeplink';
+import {DeepLinkerInterface} from '../../deeplink';
 import {initialState} from './core_types';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
@@ -25,7 +25,7 @@ export const CORE_STORE_CONFIG_TOKEN = new InjectionToken<
   StoreConfig<CoreState>
 >('Core Feature Config');
 
-export function getConfig(deepLinker: HashDeepLinker): StoreConfig<CoreState> {
+export function getConfig(deepLinker: DeepLinkerInterface): StoreConfig<CoreState> {
   return {
     initialState: {
       ...initialState,

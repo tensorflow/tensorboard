@@ -14,7 +14,6 @@ limitations under the License.
 ==============================================================================*/
 import {getConfig} from './core_initial_state_provider';
 import {DeepLinkerInterface, SetStringOption} from '../../deeplink/types';
-import {HashDeepLinker} from '../../deeplink/hash';
 import {CoreState} from './core_types';
 
 class TestableDeepLinker implements DeepLinkerInterface {
@@ -38,11 +37,11 @@ class TestableDeepLinker implements DeepLinkerInterface {
 
 describe('core_initial_state_provider', () => {
   describe('#getConfig', () => {
-    let deeplinker: HashDeepLinker;
+    let deeplinker: TestableDeepLinker;
     let getPluginIdSpy: jasmine.Spy;
 
     beforeEach(() => {
-      deeplinker = new TestableDeepLinker() as HashDeepLinker;
+      deeplinker = new TestableDeepLinker();
       getPluginIdSpy = spyOn(deeplinker, 'getPluginId').and.returnValue('foo');
     });
 
