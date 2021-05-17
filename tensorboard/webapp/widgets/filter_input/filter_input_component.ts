@@ -43,7 +43,7 @@ export class FilterInputComponent {
   @Input() placeholder: string = '';
 
   @ViewChild(MatAutocompleteTrigger)
-  private autocompleteTrigger!: MatAutocompleteTrigger;
+  private readonly autocompleteTrigger!: MatAutocompleteTrigger;
 
   onInputKeyUp(event: KeyboardEvent) {
     if (event.key === 'Enter') {

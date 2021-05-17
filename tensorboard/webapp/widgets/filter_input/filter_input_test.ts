@@ -114,9 +114,9 @@ describe('filter input widget', () => {
 
     sendKey(fixture, input, {
       type: KeyType.SPECIAL,
-      prevString: input.properties.value,
+      prevString: input.properties['value'],
       key: 'Enter',
-      startingCursorIndex: input.properties.selectionStart,
+      startingCursorIndex: input.properties['selectionStart'],
     });
 
     const options2 = getAutocompleteOptions(overlayContainer);
