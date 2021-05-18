@@ -8,6 +8,7 @@ tf_ng_module(
         "settings_actions.ts",
         "settings_data_module.ts",
         "settings_reducers.ts",
+        "settings_selectors.ts",
         "settings_types.ts",
     ],
     deps = [

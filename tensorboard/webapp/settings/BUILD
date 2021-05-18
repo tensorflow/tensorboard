@@ -18,6 +18,7 @@ tf_ng_module(
 tf_ng_web_test_suite(
     name = "karma_test",
     deps = [
+        "//tensorboard/webapp/settings/_redux:test_lib",
         "//tensorboard/webapp/settings/_views:test_lib",
     ],
 )

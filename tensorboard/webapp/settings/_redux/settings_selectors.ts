@@ -17,34 +17,45 @@ import {createFeatureSelector, createSelector} from '@ngrx/store';
 import {TooltipSort} from '../../metrics/types';
 import {State, SettingsState, SETTINGS_FEATURE_KEY} from './settings_types';
 
+// HACK: These imports are for type inference.
+// https://github.com/bazelbuild/rules_nodejs/issues/1013
+/** @typehack */ import * as _typeHackSelector from '@ngrx/store/src/selector';
+
 const selectSettingsState = createFeatureSelector<State, SettingsState>(
   SETTINGS_FEATURE_KEY
 );
 
-const selectTimeSeriesSettings = createSelector(
-  selectSettingsState,
-  (state: SettingsState) => {
-    return state.timeSeries;
-  }
-);
+const selectTimeSeriesSettings = createSelector<
+  State,
+  SettingsState,
+  SettingsState['timeSeries']
+>(selectSettingsState, (state: SettingsState): SettingsState['timeSeries'] => {
+  return state.timeSeries;
+});
 
-export const getGlobalTimeSeriesSmoothing = createSelector(
-  selectTimeSeriesSettings,
-  (state: SettingsState['timeSeries']): number => {
-    return state.scalarSmoothing;
-  }
-);
+export const getGlobalTimeSeriesSmoothing = createSelector<
+  State,
+  SettingsState['timeSeries'],
+  number
+>(selectTimeSeriesSettings, (state: SettingsState['timeSeries']): number => {
+  return state.scalarSmoothing;
+});
 
-export const getGlobalTimeSeriesTooltipSort = createSelector(
+export const getGlobalTimeSeriesTooltipSort = createSelector<
+  State,
+  SettingsState['timeSeries'],
+  TooltipSort
+>(
   selectTimeSeriesSettings,
   (state: SettingsState['timeSeries']): TooltipSort => {
     return state.tooltipSort;
   }
 );
 
-export const getGlobalTimeSeriesIgnoreOutliers = createSelector(
-  selectTimeSeriesSettings,
-  (state: SettingsState['timeSeries']): boolean => {
-    return state.ignoreOutliers;
-  }
-);
+export const getGlobalTimeSeriesIgnoreOutliers = createSelector<
+  State,
+  SettingsState['timeSeries'],
+  boolean
+>(selectTimeSeriesSettings, (state: SettingsState['timeSeries']): boolean => {
+  return state.ignoreOutliers;
+});
