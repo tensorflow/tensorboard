@@ -9,6 +9,11 @@ tf_sass_binary(
     src = "runs_table_component.scss",
 )
 
+tf_sass_binary(
+    name = "runs_group_menu_button_styles",
+    src = "runs_group_menu_button_component.scss",
+)
+
 tf_ng_module(
     name = "runs_table",
     srcs = [
@@ -20,6 +25,7 @@ tf_ng_module(
         "types.ts",
     ],
     assets = [
+        ":runs_group_menu_button_styles",
         ":runs_table_styles",
         "runs_table_component.ng.html",
     ],
@@ -41,6 +47,7 @@ tf_ng_module(
         "//tensorboard/webapp/runs:types",
         "//tensorboard/webapp/runs/actions",
         "//tensorboard/webapp/runs/data_source",
+        "//tensorboard/webapp/runs/store:selectors",
         "//tensorboard/webapp/runs/store:types",
         "//tensorboard/webapp/types",
         "//tensorboard/webapp/types:ui",

@@ -12,19 +12,43 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {ChangeDetectionStrategy, Component} from '@angular/core';
+import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {Store} from '@ngrx/store';
+import {Observable} from 'rxjs';
 
 import {State} from '../../../app_state';
+import {runGroupByChanged} from '../../actions';
+import {getRunGroupBy} from '../../store/runs_selectors';
+import {GroupBy} from '../../types';
 
 /**
  * Renders run grouping menu controls.
  */
 @Component({
   selector: 'runs-group-menu-button',
-  template: `<runs-group-menu-button-component></runs-group-menu-button-component>`,
+  template: `
+    <runs-group-menu-button-component
+      [selectedGroupBy]="selectedGroupBy$ | async"
+      (onGroupByChange)="onGroupByChange($event)"
+    ></runs-group-menu-button-component>
+  `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RunsGroupMenuButtonContainer {
+  @Input() experimentIds!: string[];
+
   constructor(private readonly store: Store<State>) {}
+
+  readonly selectedGroupBy$: Observable<GroupBy> = this.store.select(
+    getRunGroupBy
+  );
+
+  onGroupByChange(groupBy: GroupBy) {
+    this.store.dispatch(
+      runGroupByChanged({
+        experimentIds: this.experimentIds,
+        groupBy,
+      })
+    );
+  }
 }

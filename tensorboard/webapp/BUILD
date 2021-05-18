@@ -379,6 +379,7 @@ tf_svg_bundle(
         "@com_google_material_design_icon//:clear_24px.svg",
         "@com_google_material_design_icon//:close_24px.svg",
         "@com_google_material_design_icon//:content_copy_24px.svg",
+        "@com_google_material_design_icon//:done_24px.svg",
         "@com_google_material_design_icon//:edit_24px.svg",
         "@com_google_material_design_icon//:error_24px.svg",
         "@com_google_material_design_icon//:expand_less_24px.svg",

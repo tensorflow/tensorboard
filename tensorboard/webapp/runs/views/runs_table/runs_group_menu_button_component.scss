@@ -1,0 +1,39 @@
+/* Copyright 2021 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+==============================================================================*/
+@import 'tensorboard/webapp/theme/tb_theme';
+
+::ng-deep .run-table-color-group-by {
+  $_icon-size: 20px;
+  font-size: 16px;
+
+  .label {
+    color: mat-color($tb-foreground, secondary-text);
+    font-size: 0.9em;
+    margin: 10px 0;
+    padding: 0 16px;
+    pointer-events: none;
+  }
+
+  button {
+    display: grid;
+    gap: 2px 10px;
+    grid-template-columns: $_icon-size auto;
+  }
+
+  mat-icon {
+    height: $_icon-size;
+    width: $_icon-size;
+  }
+}

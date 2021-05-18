@@ -59,6 +59,7 @@ import {
   getExperimentIdToAliasMap,
   getRouteId,
   getRunColorMap,
+  getRunGroupBy,
   getRuns,
   getRunSelectorPaginationOption,
   getRunSelectorRegexFilter,
@@ -73,6 +74,7 @@ import {FilterInputModule} from '../../../widgets/filter_input/filter_input_modu
 import {RangeInputModule} from '../../../widgets/range_input/range_input_module';
 import {
   runColorChanged,
+  runGroupByChanged,
   runPageSelectionToggled,
   runSelectionToggled,
   runSelectorPaginationOptionChanged,
@@ -84,7 +86,7 @@ import {
 import {DomainType} from '../../data_source/runs_data_source_types';
 import {MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT, Run} from '../../store/runs_types';
 import {buildRun} from '../../store/testing';
-import {SortType} from '../../types';
+import {GroupByKey, SortType} from '../../types';
 import {RunsGroupMenuButtonComponent} from './runs_group_menu_button_component';
 import {RunsGroupMenuButtonContainer} from './runs_group_menu_button_container';
 import {RunsTableComponent} from './runs_table_component';
@@ -248,6 +250,7 @@ describe('runs_table', () => {
     );
     store.overrideSelector(getRouteId, '123');
     store.overrideSelector(getEnabledColorGroup, false);
+    store.overrideSelector(getRunGroupBy, {key: GroupByKey.RUN});
     dispatchSpy = spyOn(store, 'dispatch').and.callFake((action: Action) => {
       actualActions.push(action);
     });
@@ -572,11 +575,86 @@ describe('runs_table', () => {
 
         const items = getOverlayMenuItems();
 
-        expect(items.map((element) => element.textContent)).toEqual([
-          'Experiments',
-          'Runs',
-          'Regex',
-        ]);
+        expect(
+          items.map((element) => element.querySelector('label')!.textContent)
+        ).toEqual(['Experiments', 'Runs', 'Regex']);
+      });
+
+      it('renders a check for a menu item that has groupBy', () => {
+        store.overrideSelector(getEnabledColorGroup, true);
+        store.overrideSelector(getRunGroupBy, {key: GroupByKey.EXPERIMENT});
+        const fixture = createComponent(
+          ['book'],
+          [RunsTableColumn.RUN_NAME, RunsTableColumn.RUN_COLOR]
+        );
+        fixture.detectChanges();
+
+        const menuButton = fixture.debugElement
+          .query(By.directive(RunsGroupMenuButtonContainer))
+          .query(By.css('button'));
+        menuButton.nativeElement.click();
+
+        const items = getOverlayMenuItems();
+
+        expect(
+          items.map((element) => Boolean(element.querySelector('mat-icon')))
+        ).toEqual([true, false, false]);
+
+        store.overrideSelector(getRunGroupBy, {
+          key: GroupByKey.REGEX,
+          regexString: 'hello',
+        });
+        store.refreshState();
+        fixture.detectChanges();
+
+        expect(
+          items.map((element) => Boolean(element.querySelector('mat-icon')))
+        ).toEqual([false, false, true]);
+      });
+
+      it('dispatches `runGroupByChanged` when a menu item is clicked', () => {
+        store.overrideSelector(getEnabledColorGroup, true);
+        store.overrideSelector(getRunGroupBy, {key: GroupByKey.EXPERIMENT});
+        const fixture = createComponent(
+          ['book'],
+          [RunsTableColumn.RUN_NAME, RunsTableColumn.RUN_COLOR]
+        );
+        fixture.detectChanges();
+
+        const menuButton = fixture.debugElement
+          .query(By.directive(RunsGroupMenuButtonContainer))
+          .query(By.css('button'));
+        menuButton.nativeElement.click();
+
+        const items = getOverlayMenuItems();
+
+        const [experiments, runs, regex] = items as HTMLElement[];
+        experiments.click();
+
+        expect(dispatchSpy).toHaveBeenCalledWith(
+          runGroupByChanged({
+            experimentIds: ['book'],
+            groupBy: {key: GroupByKey.EXPERIMENT},
+          })
+        );
+
+        runs.click();
+        expect(dispatchSpy).toHaveBeenCalledWith(
+          runGroupByChanged({
+            experimentIds: ['book'],
+            groupBy: {key: GroupByKey.RUN},
+          })
+        );
+
+        regex.click();
+        expect(dispatchSpy).toHaveBeenCalledWith(
+          runGroupByChanged({
+            experimentIds: ['book'],
+            // regexString is hardcoded to '' for now; should be fixed when
+            // regex support is properly implemented.
+            groupBy: {key: GroupByKey.REGEX, regexString: ''},
+          })
+        );
       });
 
       it(

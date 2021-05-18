@@ -190,6 +190,7 @@ function matchFilter(
   selector: 'runs-table',
   template: `
     <runs-table-component
+      [experimentIds]="experimentIds"
       [useFlexibleLayout]="useFlexibleLayout"
       [numSelectedItems]="numSelectedItems$ | async"
       [columns]="columns"
