@@ -29,6 +29,7 @@ tf_ng_module(
     deps = [
         ":_redux",
         "//tensorboard/webapp/angular:expect_ngrx_store_testing",
+        "//tensorboard/webapp/metrics:types",
         "@npm//@angular/common",
         "@npm//@angular/compiler",
         "@npm//@angular/core",
