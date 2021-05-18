@@ -218,13 +218,8 @@ const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
       );
 
       const allRuns = experimentIds
-        .flatMap((experimentId) => {
-          return state.runIds[experimentId];
-        })
-        .map((runId) => {
-          return state.runMetadata[runId];
-        })
-        .filter(Boolean);
+        .flatMap((experimentId) => state.runIds[experimentId])
+        .map((runId) => state.runMetadata[runId]);
 
       const groups = groupRuns(groupBy, allRuns, state.runIdToExpId);
 
@@ -243,6 +238,7 @@ const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
 
       return {
         ...state,
+        groupBy,
         defaultRunColorForGroupBy,
         groupKeyToColorString,
         // Resets the color override when the groupBy changes.

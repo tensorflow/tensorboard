@@ -746,6 +746,7 @@ describe('runs_reducers', () => {
         })
       );
 
+      expect(nextState.data.groupBy).toEqual({key: GroupByKey.EXPERIMENT});
       expect(nextState.data.groupKeyToColorString).toEqual(
         new Map([
           ['eid1', colorUtils.CHART_COLOR_PALLETE[0]],
@@ -803,6 +804,7 @@ describe('runs_reducers', () => {
         })
       );
 
+      expect(nextState.data.groupBy).toEqual({key: GroupByKey.RUN});
       expect(nextState.data.groupKeyToColorString).toEqual(
         new Map([
           ['run1', colorUtils.CHART_COLOR_PALLETE[0]],
