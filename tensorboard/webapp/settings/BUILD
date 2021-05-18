@@ -8,6 +8,7 @@ tf_ng_module(
         "settings_module.ts",
     ],
     deps = [
+        "//tensorboard/webapp/core",
         "//tensorboard/webapp/settings/_views",
         "@npm//@angular/core",
     ],

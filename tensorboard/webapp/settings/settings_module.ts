@@ -14,9 +14,14 @@ limitations under the License.
 ==============================================================================*/
 import {NgModule} from '@angular/core';
 
+import {CoreModule} from '../core/core_module';
 import {SettingsModule as ViewModule} from './_views/settings_module';
 
 @NgModule({
   exports: [ViewModule],
+  imports: [
+    // Uses core redux state.
+    CoreModule,
+  ],
 })
 export class SettingsModule {}
