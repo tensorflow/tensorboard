@@ -37,7 +37,7 @@ export interface State {
 }
 
 export const DEFAULT_TIMESERIES_SETTINGS: SettingsState['timeSeries'] = {
-  tooltipSort: TooltipSort.DESCENDING,
-  ignoreOutliers: false,
-  scalarSmoothing: 0,
+  tooltipSort: TooltipSort.DEFAULT,
+  ignoreOutliers: true,
+  scalarSmoothing: 0.6,
 };
