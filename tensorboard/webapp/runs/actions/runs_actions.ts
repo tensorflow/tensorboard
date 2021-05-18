@@ -20,7 +20,7 @@ import {createAction, props} from '@ngrx/store';
 
 import {SortDirection} from '../../types/ui';
 import {Run} from '../data_source/runs_data_source_types';
-import {ExperimentIdToRunsAndMetadata, SortKey} from '../types';
+import {ExperimentIdToRunsAndMetadata, GroupBy, SortKey} from '../types';
 
 /** @typehack */ import * as _typeHackModels from '@ngrx/store/src/models';
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
@@ -90,4 +90,9 @@ export const runColorChanged = createAction(
 export const runTableShown = createAction(
   '[Runs] Run Table Shown',
   props<{experimentIds: string[]}>()
+);
+
+export const runGroupByChanged = createAction(
+  '[Runs] Run Group By Changed',
+  props<{experimentIds: string[]; groupBy: GroupBy}>()
 );
