@@ -16,7 +16,7 @@ import {createFeatureSelector, createSelector} from '@ngrx/store';
 
 import {DataLoadState, LoadState} from '../../types/data';
 import {SortDirection} from '../../types/ui';
-import {SortKey} from '../types';
+import {GroupBy, SortKey} from '../types';
 import {
   Run,
   RunsDataState,
@@ -110,6 +110,16 @@ export const getRunSelectionMap = createSelector(
   ): Map<string, boolean> => {
     const stateKey = serializeExperimentIds(props.experimentIds);
     return dataState.selectionState.get(stateKey) || new Map();
+  }
+);
+
+/**
+ * Returns current run grouping setting.
+ */
+export const getRunGroupBy = createSelector(
+  getDataState,
+  (dataState: RunsDataState): GroupBy => {
+    return dataState.groupBy;
   }
 );
 
