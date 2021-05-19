@@ -14,9 +14,13 @@ limitations under the License.
 ==============================================================================*/
 import {HistogramMode} from '../widgets/histogram/histogram_types';
 
-import {PluginType} from './data_source/types';
-
 export {HistogramMode};
+
+export enum PluginType {
+  SCALARS = 'scalars',
+  HISTOGRAMS = 'histograms',
+  IMAGES = 'images',
+}
 
 export enum TooltipSort {
   DEFAULT = 'default',

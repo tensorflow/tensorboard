@@ -44,7 +44,6 @@ tf_ts_library(
     ],
     visibility = ["//tensorboard/webapp/metrics:__subpackages__"],
     deps = [
-        "//tensorboard/webapp/metrics/data_source:types",
         "//tensorboard/webapp/widgets/histogram:types",
     ],
 )

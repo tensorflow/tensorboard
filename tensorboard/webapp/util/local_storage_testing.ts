@@ -1,4 +1,4 @@
-/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2021 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -12,15 +12,23 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {NgModule} from '@angular/core';
+import {Injectable, NgModule} from '@angular/core';
 
-import {LocalStorageModule} from '../../util/local_storage';
-import {TBHttpClientModule} from '../../webapp_data_source/tb_http_client_module';
-import {TBMetricsDataSource} from './metrics_data_source';
-import {MetricsDataSource} from './types';
+import {LocalStorage} from './local_storage';
+
+@Injectable()
+export class TestingLocalStorage {
+  setItem(key: string, value: string): void {}
+  getItem(key: string): string {
+    return '';
+  }
+  removeItem(key: string): void {}
+}
 
 @NgModule({
-  imports: [TBHttpClientModule, LocalStorageModule],
-  providers: [{provide: MetricsDataSource, useClass: TBMetricsDataSource}],
+  providers: [
+    TestingLocalStorage,
+    {provide: LocalStorage, useExisting: TestingLocalStorage},
+  ],
 })
-export class MetricsDataSourceModule {}
+export class LocalStorageTestingModule {}

@@ -14,29 +14,36 @@ limitations under the License.
 ==============================================================================*/
 import {TestBed} from '@angular/core/testing';
 import {
+  LocalStorageTestingModule,
+  TestingLocalStorage,
+} from '../../util/local_storage_testing';
+import {
   HttpTestingController,
   TBHttpClientTestingModule,
 } from '../../webapp_data_source/tb_http_client_testing';
+import {TooltipSort} from '../internal_types';
 
 import {
   BackendTagMetadata,
   BackendTimeSeriesResponse,
 } from './metrics_backend_types';
-import {TBMetricsDataSource} from './metrics_data_source';
+import {TEST_ONLY, TBMetricsDataSource} from './metrics_data_source';
 import {MetricsDataSource, PluginType} from './types';
 
 describe('TBMetricsDataSource test', () => {
   let httpMock: HttpTestingController;
   let dataSource: MetricsDataSource;
+  let localStorage: TestingLocalStorage;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TBHttpClientTestingModule],
+      imports: [TBHttpClientTestingModule, LocalStorageTestingModule],
       providers: [{provide: MetricsDataSource, useClass: TBMetricsDataSource}],
     }).compileComponents();
 
     httpMock = TestBed.inject(HttpTestingController);
     dataSource = TestBed.inject(MetricsDataSource);
+    localStorage = TestBed.inject(TestingLocalStorage);
   });
 
   afterEach(() => {
@@ -334,6 +341,133 @@ describe('TBMetricsDataSource test', () => {
       expect(() =>
         dataSource.downloadUrl(PluginType.SCALARS, 'tag1', 'run1', 'json')
       ).toThrowError(/experimentId is empty/);
+    });
+  });
+
+  describe('#getSettings', () => {
+    let getItemSpy: jasmine.Spy;
+
+    beforeEach(() => {
+      getItemSpy = spyOn(localStorage, 'getItem');
+    });
+
+    it('deserializes stringified state', async () => {
+      getItemSpy.and.returnValue(
+        '{"ignoreOutliers":false,"scalarSmoothing":0.3,"tooltipSort":"ascending"}'
+      );
+      const value = await dataSource.getSettings().toPromise();
+      expect(value).toEqual({
+        scalarSmoothing: 0.3,
+        tooltipSort: TooltipSort.ASCENDING,
+        ignoreOutliers: false,
+      });
+    });
+
+    it('omits state that is not present or deserializable', async () => {
+      getItemSpy.and.returnValue(
+        '{"ignoreOutliers":true,"scalarSmoothing":null,"tooltipSort":"meow"}'
+      );
+      const value = await dataSource.getSettings().toPromise();
+      expect(value).toEqual({
+        ignoreOutliers: true,
+      });
+    });
+
+    it('returns an empty value when the serialized state is empty', async () => {
+      getItemSpy.and.returnValue(undefined);
+      const value = await dataSource.getSettings().toPromise();
+      expect(value).toEqual({});
+    });
+
+    it('returns an empty state  when serialized state is not an object', async () => {
+      getItemSpy.and.returnValue('malformedjson');
+      const value = await dataSource.getSettings().toPromise();
+      expect(value).toEqual({});
+    });
+  });
+
+  describe('#setSettings', () => {
+    let setItemSpy: jasmine.Spy;
+    let getItemSpy: jasmine.Spy;
+
+    beforeEach(() => {
+      getItemSpy = spyOn(localStorage, 'getItem').and.returnValue('');
+      setItemSpy = spyOn(localStorage, 'setItem');
+    });
+
+    it('sets settings as string to localStorage', () => {
+      dataSource
+        .setSettings({
+          scalarSmoothing: 0.3,
+          tooltipSort: TooltipSort.ASCENDING,
+          ignoreOutliers: false,
+        })
+        .subscribe(jasmine.createSpy());
+      expect(setItemSpy).toHaveBeenCalledWith(
+        TEST_ONLY.LOCAL_STORAGE_KEY,
+        '{"ignoreOutliers":false,"scalarSmoothing":0.3,' +
+          '"tooltipSort":"ascending"}'
+      );
+    });
+
+    it('sets NaN as `null` even if that is in the settings', () => {
+      dataSource
+        .setSettings({
+          scalarSmoothing: NaN,
+          tooltipSort: TooltipSort.ASCENDING,
+          ignoreOutliers: false,
+        })
+        .subscribe(jasmine.createSpy());
+      expect(setItemSpy).toHaveBeenCalledWith(
+        TEST_ONLY.LOCAL_STORAGE_KEY,
+        '{"ignoreOutliers":false,"scalarSmoothing":null,' +
+          '"tooltipSort":"ascending"}'
+      );
+    });
+
+    it('persists partial state without creating a dense payload', () => {
+      dataSource
+        .setSettings({
+          tooltipSort: TooltipSort.ASCENDING,
+        })
+        .subscribe(jasmine.createSpy());
+      expect(setItemSpy).toHaveBeenCalledWith(
+        TEST_ONLY.LOCAL_STORAGE_KEY,
+        '{"tooltipSort":"ascending"}'
+      );
+    });
+
+    it('combines already persisted partial state on top of new one', () => {
+      getItemSpy.and.returnValue(
+        '{"scalarSmoothing":0.3,"tooltipSort":"default"}'
+      );
+
+      dataSource
+        .setSettings({
+          tooltipSort: TooltipSort.ASCENDING,
+        })
+        .subscribe(jasmine.createSpy());
+      expect(setItemSpy).toHaveBeenCalledWith(
+        TEST_ONLY.LOCAL_STORAGE_KEY,
+        '{"scalarSmoothing":0.3,"tooltipSort":"ascending"}'
+      );
+    });
+
+    it('removes existing bad value while setting a new ones', () => {
+      // smoothing cannot be "meow".
+      getItemSpy.and.returnValue(
+        '{"scalarSmoothing":"meow","tooltipSort":"default"}'
+      );
+
+      dataSource
+        .setSettings({
+          tooltipSort: TooltipSort.DEFAULT,
+        })
+        .subscribe(jasmine.createSpy());
+      expect(setItemSpy).toHaveBeenCalledWith(
+        TEST_ONLY.LOCAL_STORAGE_KEY,
+        '{"tooltipSort":"default"}'
+      );
     });
   });
 });
