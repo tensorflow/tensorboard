@@ -20,7 +20,7 @@ import * as d3 from 'd3';
 import * as tf_hparams_utils from '../tf_hparams_utils/tf-hparams-utils';
 import {AxesCollection} from './axes';
 import {LinesCollection, LineType, SessionGroupHandle} from './lines';
-import * as tf_hparams_query_pane from '../tf_hparams_query_pane/schema.d';
+import * as tf_hparams_query_pane from '../tf_hparams_types/types';
 
 import * as tf_hparams_api from '../types';
 
