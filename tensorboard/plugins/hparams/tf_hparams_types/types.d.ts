@@ -12,11 +12,30 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+
+export interface HparamInfo {
+  description: string;
+  displayName: string;
+  name: string;
+  type:
+    | 'DATA_TYPE_UNSET'
+    | 'DATA_TYPE_STRING'
+    | 'DATA_TYPE_BOOL'
+    | 'DATA_TYPE_FLOAT64';
+}
+
+export interface MetricInfo {
+  datasetType: 'DATASET_UNKNOWN' | 'DATASET_TRAINING' | 'DATASET_VALIDATION';
+  description: string;
+  displayName: string;
+  name: {tag: string; group: string};
+}
+
 export interface Schema {
   hparamColumn: Array<{
-    hparamInfo: Object;
+    hparamInfo: HparamInfo;
   }>;
   metricColumn: Array<{
-    metricInfo: Object;
+    metricInfo: MetricInfo;
   }>;
 }

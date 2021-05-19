@@ -17,8 +17,8 @@ tf_ts_library(
     deps = [
         "//tensorboard/components/polymer:legacy_element_mixin",
         "//tensorboard/plugins/hparams:types",
-        "//tensorboard/plugins/hparams/tf_hparams_query_pane:schema_d_ts",
         "//tensorboard/plugins/hparams/tf_hparams_session_group_values",
+        "//tensorboard/plugins/hparams/tf_hparams_types",
         "//tensorboard/plugins/hparams/tf_hparams_utils",
         "@npm//@polymer/decorators",
         "@npm//@polymer/polymer",

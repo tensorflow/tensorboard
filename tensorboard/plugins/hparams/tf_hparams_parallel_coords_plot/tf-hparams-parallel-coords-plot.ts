@@ -60,16 +60,27 @@ limitations under the License.
  *
  * See the individual class comments in the respective files for more details.
  */
-import {PolymerElement, html} from '@polymer/polymer';
 import {customElement, observe, property} from '@polymer/decorators';
-import * as _ from 'lodash';
+import {html, PolymerElement} from '@polymer/polymer';
 import * as d3 from 'd3';
-
-import * as tf_hparams_utils from '../tf_hparams_utils/tf-hparams-utils';
-import '../tf_hparams_session_group_values/tf-hparams-session-group-values';
-import * as tf_hparams_parallel_coords_plot_interaction_manager from './interaction_manager';
+import * as _ from 'lodash';
 
 import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
+import '../tf_hparams_session_group_values/tf-hparams-session-group-values';
+import {HparamInfo, MetricInfo, Schema} from '../tf_hparams_types/types';
+import * as tf_hparams_utils from '../tf_hparams_utils/tf-hparams-utils';
+import * as tf_hparams_parallel_coords_plot_interaction_manager from './interaction_manager';
+
+interface Option {
+  configuration: {
+    columnsVisibility: boolean[];
+    schema: Schema;
+    visibleSchema: {
+      hparamInfos: HparamInfo[];
+      metricInfos: MetricInfo[];
+    };
+  };
+}
 
 @customElement('tf-hparams-parallel-coords-plot')
 class TfHparamsParallelCoordsPlot extends LegacyElementMixin(PolymerElement) {
@@ -136,9 +147,13 @@ class TfHparamsParallelCoordsPlot extends LegacyElementMixin(PolymerElement) {
   // See the property description in tf-hparams-query-pane.html
   @property({type: Array})
   sessionGroups: any[];
+
   // See the description in tf-hparams-scale-and-color-controls.html
   @property({type: Object})
-  options: any;
+  options: Option;
+
+  private _prevOptions?: Option;
+
   // The last session group that was clicked on or null if no
   // session group was clicked on yet.
   /**
@@ -179,17 +194,21 @@ class TfHparamsParallelCoordsPlot extends LegacyElementMixin(PolymerElement) {
   // element. Defined in tf-hparams-parallel-coords-plot.ts.
   @property({type: Object})
   _interactionManager: any;
+
   @observe('options.*', 'sessionGroups.*')
   _optionsOrSessionGroupsChanged() {
     if (!this.options) {
       return;
     }
-    const configuration = this.options.configuration;
+
+    const {configuration: prevConfig} = this._prevOptions ?? {};
+    const {configuration: nextConfig} = this.options;
     // See if we need to redraw from scratch. We redraw from scratch if
     // this is initialization or if configuration.schema has changed.
     if (
       this._interactionManager === undefined ||
-      !_.isEqual(this._interactionManager.schema(), configuration.schema)
+      !_.isEqual(prevConfig.schema, nextConfig.schema) ||
+      !_.isEqual(prevConfig.columnsVisibility, nextConfig.columnsVisibility)
     ) {
       // Remove any pre-existing DOM children of our SVG.
       d3.select(this.$.svg as SVGElement)
@@ -197,7 +216,7 @@ class TfHparamsParallelCoordsPlot extends LegacyElementMixin(PolymerElement) {
         .remove();
       const svgProps = new tf_hparams_parallel_coords_plot_interaction_manager.SVGProperties(
         this.$.svg as HTMLElement,
-        tf_hparams_utils.numColumns(configuration.schema)
+        nextConfig.columnsVisibility.filter(Boolean).length
       );
       // Listen to DOM changes underneath this.$.svg, and apply local CSS
       // scoping rules so that our rules in the <style> section above
@@ -205,7 +224,7 @@ class TfHparamsParallelCoordsPlot extends LegacyElementMixin(PolymerElement) {
       this.scopeSubtree(this.$.svg as SVGElement, true);
       this._interactionManager = new tf_hparams_parallel_coords_plot_interaction_manager.InteractionManager(
         svgProps,
-        configuration.schema,
+        nextConfig.schema,
         (sessionGroup) => this.closestSessionGroupChanged(sessionGroup),
         (sessionGroup) => this.selectedSessionGroupChanged(sessionGroup)
       );
@@ -216,6 +235,7 @@ class TfHparamsParallelCoordsPlot extends LegacyElementMixin(PolymerElement) {
       this._validSessionGroups
     );
     this.redrawCount++;
+    this._prevOptions = this.options;
   }
   closestSessionGroupChanged(sessionGroup) {
     this.closestSessionGroup = sessionGroup;

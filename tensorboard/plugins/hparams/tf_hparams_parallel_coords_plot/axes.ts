@@ -18,7 +18,7 @@ import * as d3 from 'd3';
 import * as tf_hparams_parallel_coords_plot_interaction_manager from './interaction_manager';
 import * as tf_hparams_utils from '../tf_hparams_utils/tf-hparams-utils';
 import * as tf_hparams_parallel_coords_plot_utils from './utils';
-import * as tf_hparams_query_pane from '../tf_hparams_query_pane/schema.d';
+import {Schema} from '../tf_hparams_types/types';
 import * as tf_hparams_api from '../types';
 
 export enum ScaleType {
@@ -120,7 +120,7 @@ export class Axis {
    */
   public constructor(
     svgProps: tf_hparams_parallel_coords_plot_interaction_manager.SVGProperties,
-    schema: tf_hparams_query_pane.Schema,
+    schema: Schema,
     interactionManager: tf_hparams_parallel_coords_plot_interaction_manager.InteractionManager,
     colIndex: number
   ) {
@@ -362,7 +362,7 @@ export class Axis {
     return new AlwaysPassingBrushFilter();
   }
   private readonly _svgProps: tf_hparams_parallel_coords_plot_interaction_manager.SVGProperties;
-  private readonly _schema: tf_hparams_query_pane.Schema;
+  private readonly _schema: Schema;
   private readonly _interactionManager: tf_hparams_parallel_coords_plot_interaction_manager.InteractionManager;
   private readonly _colIndex: number;
   private _isDisplayed: boolean;
@@ -379,7 +379,7 @@ export class Axis {
 export class AxesCollection {
   public constructor(
     svgProps: tf_hparams_parallel_coords_plot_interaction_manager.SVGProperties,
-    schema: tf_hparams_query_pane.Schema,
+    schema: Schema,
     interactionManager: tf_hparams_parallel_coords_plot_interaction_manager.InteractionManager
   ) {
     this._svgProps = svgProps;
@@ -556,7 +556,7 @@ export class AxesCollection {
       );
   }
   private _svgProps: tf_hparams_parallel_coords_plot_interaction_manager.SVGProperties;
-  private _schema: tf_hparams_query_pane.Schema;
+  private _schema: Schema;
   private _axes: Axis[];
   /**
    * The current assignment of stationary positions to axes.
