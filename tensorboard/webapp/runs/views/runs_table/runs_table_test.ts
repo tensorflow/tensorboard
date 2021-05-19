@@ -580,37 +580,47 @@ describe('runs_table', () => {
         ).toEqual(['Experiments', 'Runs', 'Regex']);
       });
 
-      it('renders a check for a menu item that has groupBy', () => {
-        store.overrideSelector(getEnabledColorGroup, true);
-        store.overrideSelector(getRunGroupBy, {key: GroupByKey.EXPERIMENT});
-        const fixture = createComponent(
-          ['book'],
-          [RunsTableColumn.RUN_NAME, RunsTableColumn.RUN_COLOR]
-        );
-        fixture.detectChanges();
+      it(
+        'renders a check icon and aria-checked for the current groupBy menu ' +
+          'item',
+        () => {
+          store.overrideSelector(getEnabledColorGroup, true);
+          store.overrideSelector(getRunGroupBy, {key: GroupByKey.EXPERIMENT});
+          const fixture = createComponent(
+            ['book'],
+            [RunsTableColumn.RUN_NAME, RunsTableColumn.RUN_COLOR]
+          );
+          fixture.detectChanges();
 
-        const menuButton = fixture.debugElement
-          .query(By.directive(RunsGroupMenuButtonContainer))
-          .query(By.css('button'));
-        menuButton.nativeElement.click();
+          const menuButton = fixture.debugElement
+            .query(By.directive(RunsGroupMenuButtonContainer))
+            .query(By.css('button'));
+          menuButton.nativeElement.click();
 
-        const items = getOverlayMenuItems();
+          const items = getOverlayMenuItems();
 
-        expect(
-          items.map((element) => Boolean(element.querySelector('mat-icon')))
-        ).toEqual([true, false, false]);
+          expect(
+            items.map((element) => element.getAttribute('aria-checked'))
+          ).toEqual(['true', 'false', 'false']);
+          expect(
+            items.map((element) => Boolean(element.querySelector('mat-icon')))
+          ).toEqual([true, false, false]);
 
-        store.overrideSelector(getRunGroupBy, {
-          key: GroupByKey.REGEX,
-          regexString: 'hello',
-        });
-        store.refreshState();
-        fixture.detectChanges();
+          store.overrideSelector(getRunGroupBy, {
+            key: GroupByKey.REGEX,
+            regexString: 'hello',
+          });
+          store.refreshState();
+          fixture.detectChanges();
 
-        expect(
-          items.map((element) => Boolean(element.querySelector('mat-icon')))
-        ).toEqual([false, false, true]);
-      });
+          expect(
+            items.map((element) => element.getAttribute('aria-checked'))
+          ).toEqual(['false', 'false', 'true']);
+          expect(
+            items.map((element) => Boolean(element.querySelector('mat-icon')))
+          ).toEqual([false, false, true]);
+        }
+      );
 
       it('dispatches `runGroupByChanged` when a menu item is clicked', () => {
         store.overrideSelector(getEnabledColorGroup, true);

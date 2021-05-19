@@ -37,6 +37,7 @@ import {GroupBy, GroupByKey} from '../../types';
       <button
         mat-menu-item
         role="menuitemradio"
+        [attr.aria-checked]="selectedGroupBy.key === GroupByKey.EXPERIMENT"
         (click)="onGroupByChange.emit({key: GroupByKey.EXPERIMENT})"
       >
         <span>
@@ -45,11 +46,12 @@ import {GroupBy, GroupByKey} from '../../types';
             svgIcon="done_24px"
           ></mat-icon>
         </span>
-        <label>Experiments</label>
+        <label>Experiment</label>
       </button>
       <button
         mat-menu-item
         role="menuitemradio"
+        [attr.aria-checked]="selectedGroupBy.key === GroupByKey.RUN"
         (click)="onGroupByChange.emit({key: GroupByKey.RUN})"
       >
         <span>
@@ -58,11 +60,12 @@ import {GroupBy, GroupByKey} from '../../types';
             svgIcon="done_24px"
           ></mat-icon>
         </span>
-        <label>Runs</label>
+        <label>Run</label>
       </button>
       <button
         mat-menu-item
         role="menuitemradio"
+        [attr.aria-checked]="selectedGroupBy.key === GroupByKey.REGEX"
         (click)="onGroupByChange.emit({key: GroupByKey.REGEX, regexString: ''})"
       >
         <span>
