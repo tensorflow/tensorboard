@@ -64,6 +64,8 @@ export function alertActionProvider() {
 @NgModule({
   imports: [
     CommonModule,
+    AppRoutingModule,
+    CoreModule,
     PluginRegistryModule.forPlugin(
       METRICS_PLUGIN_ID,
       MetricsDashboardContainer
@@ -77,8 +79,6 @@ export function alertActionProvider() {
     ),
     EffectsModule.forFeature([MetricsEffects]),
     AlertActionModule.registerAlertActions(alertActionProvider),
-    AppRoutingModule,
-    CoreModule,
   ],
   providers: [
     {

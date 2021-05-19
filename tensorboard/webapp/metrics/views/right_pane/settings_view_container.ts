@@ -14,6 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {Store} from '@ngrx/store';
+import {filter, map, take, withLatestFrom} from 'rxjs/operators';
 
 import {State} from '../../../app_state';
 import {
@@ -67,9 +68,18 @@ import {HistogramMode, TooltipSort, XAxisType} from '../../types';
 export class SettingsViewContainer {
   constructor(private readonly store: Store<State>) {}
 
-  readonly isImageSupportEnabled$ = this.store.select(
-    selectors.getIsMetricsImageSupportEnabled
-  );
+  readonly isImageSupportEnabled$ = this.store
+    .select(selectors.getIsFeatureFlagsLoaded)
+    .pipe(
+      filter(Boolean),
+      take(1),
+      withLatestFrom(
+        this.store.select(selectors.getIsMetricsImageSupportEnabled)
+      ),
+      map(([, isImagesSupported]) => {
+        return isImagesSupported;
+      })
+    );
 
   readonly tooltipSort$ = this.store.select(selectors.getMetricsTooltipSort);
   readonly ignoreOutliers$ = this.store.select(

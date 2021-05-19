@@ -24,7 +24,6 @@ tf_ng_module(
         ":metrics_container_styles",
     ],
     deps = [
-        "//tensorboard/webapp/feature_flag",
         "//tensorboard/webapp/metrics/views/main_view",
         "//tensorboard/webapp/metrics/views/right_pane",
         "//tensorboard/webapp/runs/views/runs_selector",
