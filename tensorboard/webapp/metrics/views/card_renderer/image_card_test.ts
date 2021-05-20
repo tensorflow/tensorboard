@@ -24,20 +24,16 @@ import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {State} from '../../../app_state';
 import {DataLoadState} from '../../../types/data';
 
+import {MatIconTestingModule} from '../../../testing/mat_icon_module';
+import {TruncatedPathModule} from '../../../widgets/text/truncated_path_module';
+import * as actions from '../../actions';
+import {ImageId, MetricsDataSource, PluginType} from '../../data_source';
+import * as selectors from '../../store/metrics_selectors';
 import {
   getExperimentIdForRunId,
   getExperimentIdToAliasMap,
   getRun,
 } from '../../../selectors';
-import {MatIconTestingModule} from '../../../testing/mat_icon_module';
-import {TruncatedPathModule} from '../../../widgets/text/truncated_path_module';
-import * as actions from '../../actions';
-import {
-  MetricsDataSource,
-  MetricsDataSourceModule,
-  PluginType,
-} from '../../data_source';
-import * as selectors from '../../store/metrics_selectors';
 import {
   appStateFromMetricsState,
   buildMetricsState,
@@ -74,6 +70,12 @@ function createImageCardContainer(cardId: CardId) {
   return fixture;
 }
 
+class MockMetricsDataSource {
+  imageUrl(imageId: ImageId): string {
+    return `imageData?imageId=${imageId}`;
+  }
+}
+
 describe('image card', () => {
   let store: MockStore<State>;
   let selectSpy: jasmine.Spy;
@@ -84,7 +86,6 @@ describe('image card', () => {
     await TestBed.configureTestingModule({
       imports: [
         NoopAnimationsModule,
-        MetricsDataSourceModule,
         MatButtonModule,
         MatIconTestingModule,
         MatProgressSpinnerModule,
@@ -97,6 +98,7 @@ describe('image card', () => {
         provideMockStore({
           initialState: appStateFromMetricsState(buildMetricsState()),
         }),
+        {provide: MetricsDataSource, useClass: MockMetricsDataSource},
       ],
     }).compileComponents();
 

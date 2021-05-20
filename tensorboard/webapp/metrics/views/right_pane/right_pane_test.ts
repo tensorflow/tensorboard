@@ -87,6 +87,7 @@ describe('metrics right_pane', () => {
         selectors.getMetricsHistogramMode,
         HistogramMode.OFFSET
       );
+      store.overrideSelector(selectors.getIsFeatureFlagsLoaded, true);
       store.overrideSelector(selectors.getIsMetricsImageSupportEnabled, true);
     });
 

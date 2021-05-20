@@ -141,7 +141,7 @@ tf_ng_module(
         ":http_client",
         "//tensorboard/webapp/angular:expect_angular_common_http_testing",
         "//tensorboard/webapp/angular:expect_ngrx_store_testing",
-        "//tensorboard/webapp/feature_flag/store:store_test_lib",
+        "//tensorboard/webapp/feature_flag/store:testing",
         "@npm//@angular/core",
         "@npm//@ngrx/store",
     ],
