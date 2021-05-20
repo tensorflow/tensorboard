@@ -47,7 +47,7 @@ def convert_embeddings(out_path, embeddings_path):
     with open(embeddings_path, "rb") as f:
         embeddings = np.load(f)
     embeddings_tensor = tf.convert_to_tensor(embeddings)
-    writer = tf.compat.v2.summary.create_file_writer(out_path)
+    writer = tf.summary.create_file_writer(out_path)
     with writer.as_default():
         summary.npmi_embeddings(embeddings_tensor, 1)
     writer.close()
