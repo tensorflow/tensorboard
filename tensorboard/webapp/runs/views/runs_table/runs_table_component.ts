@@ -84,6 +84,7 @@ export class RunsTableComponent implements OnChanges {
   readonly RunsTableColumn = RunsTableColumn;
   readonly SortType = SortType;
 
+  @Input() experimentIds!: string[];
   @Input() showExperimentName!: boolean;
   @Input() columns!: RunsTableColumn[];
   @Input() hparamColumns!: HparamSpec[];
