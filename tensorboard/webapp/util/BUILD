@@ -1,4 +1,4 @@
-load("//tensorboard/defs:defs.bzl", "tf_ts_library")
+load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
@@ -57,6 +57,24 @@ tf_ts_library(
         "//tensorboard/webapp/app_routing/store",
         "//tensorboard/webapp/runs/store:selectors",
         "@npm//@ngrx/store",
+    ],
+)
+
+tf_ng_module(
+    name = "local_storage",
+    srcs = ["local_storage.ts"],
+    deps = [
+        "@npm//@angular/core",
+    ],
+)
+
+tf_ng_module(
+    name = "local_storage_testing",
+    testonly = True,
+    srcs = ["local_storage_testing.ts"],
+    deps = [
+        ":local_storage",
+        "@npm//@angular/core",
     ],
 )
 

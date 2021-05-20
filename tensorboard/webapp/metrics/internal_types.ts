@@ -14,10 +14,18 @@ limitations under the License.
 ==============================================================================*/
 import {HistogramMode} from '../widgets/histogram/histogram_types';
 
-import {PluginType} from './data_source/types';
-
 export {HistogramMode};
 
+export enum PluginType {
+  SCALARS = 'scalars',
+  HISTOGRAMS = 'histograms',
+  IMAGES = 'images',
+}
+
+// When adding a new value to the enum, please implement the deserializer on
+// data_source/metrics_data_source.ts.
+// When editing a value of the enum, please write a backward compatible
+// deserializer in data_source/metrics_data_source.ts.
 export enum TooltipSort {
   DEFAULT = 'default',
   ASCENDING = 'ascending',

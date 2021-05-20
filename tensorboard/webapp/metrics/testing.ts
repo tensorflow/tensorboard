@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import {Injectable} from '@angular/core';
 import {DataLoadState} from '../types/data';
-import {of} from 'rxjs';
+import {of, Observable} from 'rxjs';
 
 import {State} from '../app_state';
 import {HistogramMode} from '../widgets/histogram/histogram_types';
@@ -24,6 +24,7 @@ import {
   ImageId,
   ImageStepDatum,
   MetricsDataSource,
+  PersistableSettings,
   PluginType,
   ScalarStepDatum,
   TagMetadata as DataSourceTagMetadata,
@@ -303,6 +304,14 @@ export class TestingMetricsDataSource implements MetricsDataSource {
     downloadType: 'json' | 'csv'
   ) {
     return '';
+  }
+
+  setSettings(partialSetting: Partial<PersistableSettings>): Observable<void> {
+    return of();
+  }
+
+  getSettings(): Observable<Partial<PersistableSettings>> {
+    return of({});
   }
 }
 
