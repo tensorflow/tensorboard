@@ -84,6 +84,7 @@ export class RunsTableComponent implements OnChanges {
   readonly RunsTableColumn = RunsTableColumn;
   readonly SortType = SortType;
 
+  @Input() experimentIds!: string[];
   @Input() showExperimentName!: boolean;
   @Input() columns!: RunsTableColumn[];
   @Input() hparamColumns!: HparamSpec[];
@@ -92,6 +93,7 @@ export class RunsTableComponent implements OnChanges {
   @Input() filteredItemsLength!: number;
   @Input() useFlexibleLayout!: boolean;
   @Input() usePagination!: boolean;
+  @Input() showGroupControl!: boolean;
 
   /**
    * `RunTableItem`s for a given page.

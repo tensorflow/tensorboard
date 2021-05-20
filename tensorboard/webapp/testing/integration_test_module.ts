@@ -26,29 +26,10 @@ import {RouteDef} from '../app_routing/route_config_types';
 import {RouteRegistryModule} from '../app_routing/route_registry_module';
 import {RouteKind} from '../app_routing/types';
 import {CoreModule} from '../core/core_module';
-import {DeepLinkerInterface, HashDeepLinker} from '../deeplink';
+import {TestableNoopHashDeepLinkerModule} from '../deeplink/testing';
 import {FeatureFlagModule} from '../feature_flag/feature_flag_module';
 import {RunsModule} from '../runs/runs_module';
 import {MatIconTestingModule} from './mat_icon_module';
-
-/**
- * Prevent reading or modification of real hashes.
- */
-@Injectable()
-export class TestableNoopHashDeepLinker implements DeepLinkerInterface {
-  getString(key: string): string {
-    return '';
-  }
-  setString(key: string, value: string): void {
-    // noop
-  }
-  getPluginId(): string {
-    return '';
-  }
-  setPluginId(pluginId: string): void {
-    // noop
-  }
-}
 
 @Component({
   selector: 'test',
@@ -75,11 +56,11 @@ export function provideRoute(): RouteDef[] {
     CoreModule,
     AppRoutingModule,
     RunsModule,
+    TestableNoopHashDeepLinkerModule,
     RouteRegistryModule.registerRoutes(provideRoute),
     NgrxStoreModule.forRoot([]),
     NgrxEffectsModule.forRoot([]),
   ],
-  providers: [{provide: HashDeepLinker, useClass: TestableNoopHashDeepLinker}],
   declarations: [TestableComponent],
   exports: [TestableComponent],
 })

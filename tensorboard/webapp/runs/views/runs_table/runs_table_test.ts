@@ -54,10 +54,12 @@ import {
 import {DiscreteFilter, IntervalFilter} from '../../../hparams/types';
 import {
   getCurrentRouteRunSelection,
+  getEnabledColorGroup,
   getExperiment,
   getExperimentIdToAliasMap,
   getRouteId,
   getRunColorMap,
+  getRunGroupBy,
   getRuns,
   getRunSelectorPaginationOption,
   getRunSelectorRegexFilter,
@@ -72,6 +74,7 @@ import {FilterInputModule} from '../../../widgets/filter_input/filter_input_modu
 import {RangeInputModule} from '../../../widgets/range_input/range_input_module';
 import {
   runColorChanged,
+  runGroupByChanged,
   runPageSelectionToggled,
   runSelectionToggled,
   runSelectorPaginationOptionChanged,
@@ -83,8 +86,9 @@ import {
 import {DomainType} from '../../data_source/runs_data_source_types';
 import {MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT, Run} from '../../store/runs_types';
 import {buildRun} from '../../store/testing';
-import {SortType} from '../../types';
-
+import {GroupByKey, SortType} from '../../types';
+import {RunsGroupMenuButtonComponent} from './runs_group_menu_button_component';
+import {RunsGroupMenuButtonContainer} from './runs_group_menu_button_container';
 import {RunsTableComponent} from './runs_table_component';
 import {RunsTableContainer, TEST_ONLY} from './runs_table_container';
 import {HparamSpec, MetricSpec, RunsTableColumn} from './types';
@@ -170,6 +174,12 @@ describe('runs_table', () => {
     });
   }
 
+  function getOverlayMenuItems() {
+    return Array.from(
+      overlayContainer.getContainerElement().querySelectorAll('[mat-menu-item]')
+    );
+  }
+
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [
@@ -185,6 +195,8 @@ describe('runs_table', () => {
         RangeInputModule,
       ],
       declarations: [
+        RunsGroupMenuButtonComponent,
+        RunsGroupMenuButtonContainer,
         RunsTableComponent,
         RunsTableContainer,
         RunsTableContainer,
@@ -237,6 +249,8 @@ describe('runs_table', () => {
       new Map() as ReturnType<typeof hparamsSelectors.getMetricFilterMap>
     );
     store.overrideSelector(getRouteId, '123');
+    store.overrideSelector(getEnabledColorGroup, false);
+    store.overrideSelector(getRunGroupBy, {key: GroupByKey.RUN});
     dispatchSpy = spyOn(store, 'dispatch').and.callFake((action: Action) => {
       actualActions.push(action);
     });
@@ -529,6 +543,147 @@ describe('runs_table', () => {
       expect(
         book2Color.querySelector('button').classList.contains('no-color')
       ).toBe(true);
+    });
+
+    describe('color grouping render', () => {
+      it('renders the menu for color grouping when the feature is enabled', () => {
+        store.overrideSelector(getEnabledColorGroup, true);
+        const fixture = createComponent(
+          ['book'],
+          [RunsTableColumn.RUN_NAME, RunsTableColumn.RUN_COLOR]
+        );
+        fixture.detectChanges();
+
+        const menuButton = fixture.debugElement.query(
+          By.directive(RunsGroupMenuButtonContainer)
+        );
+        expect(menuButton).toBeTruthy();
+      });
+
+      it('renders "Experiment", "Run" and "Regex"', () => {
+        store.overrideSelector(getEnabledColorGroup, true);
+        const fixture = createComponent(
+          ['book'],
+          [RunsTableColumn.RUN_NAME, RunsTableColumn.RUN_COLOR]
+        );
+        fixture.detectChanges();
+
+        const menuButton = fixture.debugElement
+          .query(By.directive(RunsGroupMenuButtonContainer))
+          .query(By.css('button'));
+        menuButton.nativeElement.click();
+
+        const items = getOverlayMenuItems();
+
+        expect(
+          items.map((element) => element.querySelector('label')!.textContent)
+        ).toEqual(['Experiment', 'Run', 'Regex']);
+      });
+
+      it(
+        'renders a check icon and aria-checked for the current groupBy menu ' +
+          'item',
+        () => {
+          store.overrideSelector(getEnabledColorGroup, true);
+          store.overrideSelector(getRunGroupBy, {key: GroupByKey.EXPERIMENT});
+          const fixture = createComponent(
+            ['book'],
+            [RunsTableColumn.RUN_NAME, RunsTableColumn.RUN_COLOR]
+          );
+          fixture.detectChanges();
+
+          const menuButton = fixture.debugElement
+            .query(By.directive(RunsGroupMenuButtonContainer))
+            .query(By.css('button'));
+          menuButton.nativeElement.click();
+
+          const items = getOverlayMenuItems();
+
+          expect(
+            items.map((element) => element.getAttribute('aria-checked'))
+          ).toEqual(['true', 'false', 'false']);
+          expect(
+            items.map((element) => Boolean(element.querySelector('mat-icon')))
+          ).toEqual([true, false, false]);
+
+          store.overrideSelector(getRunGroupBy, {
+            key: GroupByKey.REGEX,
+            regexString: 'hello',
+          });
+          store.refreshState();
+          fixture.detectChanges();
+
+          expect(
+            items.map((element) => element.getAttribute('aria-checked'))
+          ).toEqual(['false', 'false', 'true']);
+          expect(
+            items.map((element) => Boolean(element.querySelector('mat-icon')))
+          ).toEqual([false, false, true]);
+        }
+      );
+
+      it('dispatches `runGroupByChanged` when a menu item is clicked', () => {
+        store.overrideSelector(getEnabledColorGroup, true);
+        store.overrideSelector(getRunGroupBy, {key: GroupByKey.EXPERIMENT});
+        const fixture = createComponent(
+          ['book'],
+          [RunsTableColumn.RUN_NAME, RunsTableColumn.RUN_COLOR]
+        );
+        fixture.detectChanges();
+
+        const menuButton = fixture.debugElement
+          .query(By.directive(RunsGroupMenuButtonContainer))
+          .query(By.css('button'));
+        menuButton.nativeElement.click();
+
+        const items = getOverlayMenuItems();
+
+        const [experiments, runs, regex] = items as HTMLElement[];
+        experiments.click();
+
+        expect(dispatchSpy).toHaveBeenCalledWith(
+          runGroupByChanged({
+            experimentIds: ['book'],
+            groupBy: {key: GroupByKey.EXPERIMENT},
+          })
+        );
+
+        runs.click();
+        expect(dispatchSpy).toHaveBeenCalledWith(
+          runGroupByChanged({
+            experimentIds: ['book'],
+            groupBy: {key: GroupByKey.RUN},
+          })
+        );
+
+        regex.click();
+        expect(dispatchSpy).toHaveBeenCalledWith(
+          runGroupByChanged({
+            experimentIds: ['book'],
+            // regexString is hardcoded to '' for now; should be fixed when
+            // regex support is properly implemented.
+            groupBy: {key: GroupByKey.REGEX, regexString: ''},
+          })
+        );
+      });
+
+      it(
+        'does not render the menu when color column is not specified even ' +
+          'when the feature is enabled',
+        () => {
+          store.overrideSelector(getEnabledColorGroup, true);
+          const fixture = createComponent(
+            ['book'],
+            [RunsTableColumn.RUN_NAME, RunsTableColumn.EXPERIMENT_NAME]
+          );
+          fixture.detectChanges();
+
+          const menuButton = fixture.debugElement.query(
+            By.directive(RunsGroupMenuButtonContainer)
+          );
+          expect(menuButton).toBeFalsy();
+        }
+      );
     });
 
     it('dispatches `runColorChanged` when color changes', () => {
@@ -2295,14 +2450,6 @@ describe('runs_table', () => {
       });
 
       describe('filtering ui', () => {
-        function getOverlayMenuItems() {
-          return Array.from(
-            overlayContainer
-              .getContainerElement()
-              .querySelectorAll('[mat-menu-item]')
-          );
-        }
-
         beforeEach(() => {
           store.overrideSelector(getRuns, [
             buildRun({

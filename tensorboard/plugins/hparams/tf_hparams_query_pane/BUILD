@@ -6,13 +6,6 @@ package(default_visibility =
 licenses(["notice"])
 
 tf_ts_library(
-    name = "schema_d_ts",
-    srcs = [
-        "schema.d.ts",
-    ],
-)
-
-tf_ts_library(
     name = "tf_hparams_query_pane",
     srcs = [
         "tf-hparams-query-pane.ts",

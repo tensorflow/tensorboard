@@ -153,7 +153,7 @@ describe('app_routing_effects', () => {
     store.overrideSelector(getActiveRoute, null);
   });
 
-  describe('fireNavigatedIfValidRoute$', () => {
+  describe('navigate$', () => {
     let actualActions: Action[];
 
     beforeEach(() => {
@@ -163,7 +163,7 @@ describe('app_routing_effects', () => {
       spyOn(store, 'dispatch').and.callFake((action: Action) => {
         actualActions.push(action);
       });
-      effects.fireNavigatedIfValidRoute$.subscribe((action) => {
+      effects.navigate$.subscribe((action) => {
         actualActions.push(action);
       });
     });
@@ -231,6 +231,52 @@ describe('app_routing_effects', () => {
           }),
         }),
       ]);
+    });
+
+    describe('order of events', () => {
+      it(
+        'dispatches navigating, waits (for UI to clear prev route page), ' +
+          'changes url, then dispatches navigated',
+        fakeAsync(() => {
+          store.overrideSelector(getActiveRoute, null);
+          store.refreshState();
+
+          action.next(
+            actions.navigationRequested({
+              pathname: '/experiments',
+            })
+          );
+
+          expect(actualActions).toEqual([
+            actions.navigating({
+              after: buildRoute({
+                routeKind: RouteKind.EXPERIMENTS,
+                params: {},
+                pathname: '/experiments',
+                queryParams: [],
+              }),
+            }),
+          ]);
+          expect(pushStateSpy).not.toHaveBeenCalled();
+
+          tick();
+
+          expect(pushStateSpy).toHaveBeenCalledOnceWith('/experiments');
+
+          expect(actualActions).toEqual([
+            jasmine.any(Object),
+            actions.navigated({
+              before: null,
+              after: buildRoute({
+                routeKind: RouteKind.EXPERIMENTS,
+                params: {},
+                pathname: '/experiments',
+                queryParams: [],
+              }),
+            }),
+          ]);
+        })
+      );
     });
 
     describe('deeplink reads', () => {
@@ -587,190 +633,183 @@ describe('app_routing_effects', () => {
         ]);
       });
     });
-  });
 
-  describe('changeBrowserUrl$', () => {
-    let replaceStateSpy: jasmine.Spy;
+    describe('url changes', () => {
+      let replaceStateSpy: jasmine.Spy;
 
-    beforeEach(() => {
-      effects = TestBed.inject(AppRoutingEffects);
-      effects.changeBrowserUrl$.subscribe(() => {});
-      replaceStateSpy = spyOn(location, 'replaceState');
-    });
-
-    it('noops if the new route matches current URL', () => {
-      const activeRoute = buildRoute({
-        routeKind: RouteKind.EXPERIMENTS,
-        pathname: '/experiments',
-        queryParams: [],
-        navigationOptions: {
-          replaceState: false,
-        },
+      beforeEach(() => {
+        replaceStateSpy = spyOn(location, 'replaceState');
       });
-      store.overrideSelector(getActiveRoute, activeRoute);
-      store.refreshState();
-      getHashSpy.and.returnValue('');
-      getPathSpy.and.returnValue('/experiments');
-      getSearchSpy.and.returnValue([]);
 
-      action.next(
-        actions.navigated({
-          before: null,
-          after: activeRoute,
-        })
-      );
+      function navigateAndExpect(
+        navigation: Navigation | Route,
+        expected: {pushStateUrl: null | string; replaceStateUrl: null | string}
+      ) {
+        fakeAsync(() => {
+          action.next(actions.navigationRequested(navigation));
 
-      expect(pushStateSpy).not.toHaveBeenCalled();
-      expect(replaceStateSpy).not.toHaveBeenCalled();
-    });
+          tick();
+          if (expected.pushStateUrl === null) {
+            expect(pushStateSpy).not.toHaveBeenCalled();
+          } else {
+            expect(pushStateSpy).toHaveBeenCalledWith(expected.pushStateUrl);
+          }
 
-    it('pushes state if path and search do not match new route on navigated', () => {
-      const activeRoute = buildRoute({
-        routeKind: RouteKind.EXPERIMENTS,
-        pathname: '/experiments',
-        queryParams: [],
-        navigationOptions: {
-          replaceState: false,
-        },
+          if (expected.replaceStateUrl === null) {
+            expect(replaceStateSpy).not.toHaveBeenCalled();
+          } else {
+            expect(replaceStateSpy).toHaveBeenCalledWith(
+              expected.replaceStateUrl
+            );
+          }
+        })();
+      }
+
+      it('noops if the new route matches current URL', () => {
+        const activeRoute = buildRoute({
+          routeKind: RouteKind.EXPERIMENTS,
+          pathname: '/experiments',
+          queryParams: [],
+          navigationOptions: {
+            replaceState: false,
+          },
+        });
+        store.overrideSelector(getActiveRoute, activeRoute);
+        store.refreshState();
+        getHashSpy.and.returnValue('');
+        getPathSpy.and.returnValue('/experiments');
+        getSearchSpy.and.returnValue([]);
+
+        navigateAndExpect(activeRoute, {
+          pushStateUrl: null,
+          replaceStateUrl: null,
+        });
       });
-      store.overrideSelector(getActiveRoute, activeRoute);
-      store.refreshState();
-      getHashSpy.and.returnValue('');
-      getPathSpy.and.returnValue('meow');
-      getSearchSpy.and.returnValue([]);
 
-      action.next(
-        actions.navigated({
-          before: null,
-          after: activeRoute,
-        })
-      );
+      it('pushes state if path and search do not match new route on navigated', () => {
+        const activeRoute = buildRoute({
+          routeKind: RouteKind.EXPERIMENTS,
+          pathname: '/experiments',
+          queryParams: [],
+          navigationOptions: {
+            replaceState: false,
+          },
+        });
+        store.overrideSelector(getActiveRoute, activeRoute);
+        store.refreshState();
+        getHashSpy.and.returnValue('');
+        getPathSpy.and.returnValue('meow');
+        getSearchSpy.and.returnValue([]);
 
-      expect(pushStateSpy).toHaveBeenCalledWith('/experiments');
-    });
-
-    it('replaces state if route navigationOption says so', () => {
-      const activeRoute = buildRoute({
-        routeKind: RouteKind.EXPERIMENTS,
-        pathname: '/experiments',
-        queryParams: [],
-        navigationOptions: {
-          replaceState: true,
-        },
+        navigateAndExpect(
+          {pathname: '/experiment/123'},
+          {
+            pushStateUrl: '/experiment/123',
+            replaceStateUrl: null,
+          }
+        );
       });
-      store.overrideSelector(getActiveRoute, activeRoute);
-      store.refreshState();
-      getHashSpy.and.returnValue('');
-      getPathSpy.and.returnValue('meow');
-      getSearchSpy.and.returnValue([]);
 
-      action.next(
-        actions.navigated({
-          before: null,
-          after: activeRoute,
-        })
-      );
+      it('replaces state if route navigationOption says so', () => {
+        const activeRoute = buildRoute({
+          routeKind: RouteKind.EXPERIMENTS,
+          pathname: '/experiments',
+          queryParams: [],
+          navigationOptions: {
+            replaceState: true,
+          },
+        });
+        store.overrideSelector(getActiveRoute, activeRoute);
+        store.refreshState();
+        getHashSpy.and.returnValue('');
+        getPathSpy.and.returnValue('meow');
+        getSearchSpy.and.returnValue([]);
 
-      expect(pushStateSpy).not.toHaveBeenCalled();
-      expect(replaceStateSpy).toHaveBeenCalledWith('/experiments');
-    });
-
-    it('preserves hash upon replace for initial navigation', () => {
-      const activeRoute = buildRoute({
-        routeKind: RouteKind.EXPERIMENTS,
-        pathname: '/experiments',
-        queryParams: [],
-        navigationOptions: {
-          replaceState: true,
-        },
+        navigateAndExpect(
+          {pathname: '/experiments', replaceState: true},
+          {
+            pushStateUrl: null,
+            replaceStateUrl: '/experiments',
+          }
+        );
       });
-      store.overrideSelector(getActiveRoute, activeRoute);
-      store.refreshState();
-      getHashSpy.and.returnValue('#foo');
-      getPathSpy.and.returnValue('meow');
-      getSearchSpy.and.returnValue([]);
 
-      action.next(
-        actions.navigated({
-          before: null,
-          after: activeRoute,
-        })
-      );
+      it('preserves hash upon replace for initial navigation', () => {
+        store.overrideSelector(getActiveRoute, null);
+        store.refreshState();
+        getHashSpy.and.returnValue('#foo');
+        getPathSpy.and.returnValue('meow');
+        getSearchSpy.and.returnValue([]);
 
-      expect(replaceStateSpy).toHaveBeenCalledWith('/experiments#foo');
-    });
-
-    // This hash preservation spec may become obsolete. If we enable app_routing
-    // to properly set the URL hash, and all TB embedders use app_routing, then
-    // this spec can be removed.
-    it('preserves hash upon navigations to the same route id', () => {
-      const activeRoute = buildRoute({
-        routeKind: RouteKind.EXPERIMENT,
-        pathname: '/experiment',
-        queryParams: [],
-        navigationOptions: {
-          replaceState: true,
-        },
+        navigateAndExpect(
+          {pathname: '/experiments', replaceState: true},
+          {
+            pushStateUrl: null,
+            replaceStateUrl: '/experiments#foo',
+          }
+        );
       });
-      const nextActiveRoute = buildRoute({
-        routeKind: RouteKind.EXPERIMENT,
-        pathname: '/experiment',
-        queryParams: [{key: 'q', value: 'new_value'}],
-        navigationOptions: {
-          replaceState: true,
-        },
+
+      // This hash preservation spec may become obsolete. If we enable app_routing
+      // to properly set the URL hash, and all TB embedders use app_routing, then
+      // this spec can be removed.
+      it('preserves hash upon navigations to the same route id', () => {
+        const activeRoute = buildRoute({
+          routeKind: RouteKind.EXPERIMENT,
+          pathname: '/experiment',
+          params: {experimentId: '123'},
+          queryParams: [],
+          navigationOptions: {
+            replaceState: true,
+          },
+        });
+        const nextActiveRoute = buildRoute({
+          routeKind: RouteKind.EXPERIMENT,
+          pathname: '/experiment',
+          queryParams: [{key: 'q', value: 'new_value'}],
+          navigationOptions: {
+            replaceState: true,
+          },
+        });
+        store.overrideSelector(getActiveRoute, activeRoute);
+        store.refreshState();
+        getHashSpy.and.returnValue('#foo');
+        getPathSpy.and.returnValue('meow');
+        getSearchSpy.and.returnValue([]);
+
+        navigateAndExpect(
+          {pathname: '/experiment/123', replaceState: true},
+          {
+            pushStateUrl: null,
+            replaceStateUrl: '/experiment/123#foo',
+          }
+        );
       });
-      store.overrideSelector(getActiveRoute, nextActiveRoute);
-      store.refreshState();
-      getHashSpy.and.returnValue('#foo');
-      getPathSpy.and.returnValue('meow');
-      getSearchSpy.and.returnValue([]);
 
-      action.next(
-        actions.navigated({
-          before: activeRoute,
-          after: nextActiveRoute,
-        })
-      );
+      it('discards hash upon navigations to a new route id', () => {
+        const activeRoute = buildRoute({
+          routeKind: RouteKind.EXPERIMENTS,
+          pathname: '/experiments',
+          queryParams: [],
+          navigationOptions: {
+            replaceState: true,
+          },
+        });
 
-      expect(replaceStateSpy).toHaveBeenCalledWith(
-        '/experiment?q=new_value#foo'
-      );
-    });
+        store.overrideSelector(getActiveRoute, activeRoute);
+        store.refreshState();
+        getHashSpy.and.returnValue('#foo');
+        getPathSpy.and.returnValue('meow');
+        getSearchSpy.and.returnValue([]);
 
-    it('discards hash upon navigations to a new route id', () => {
-      const activeRoute = buildRoute({
-        routeKind: RouteKind.EXPERIMENTS,
-        pathname: '/experiments',
-        queryParams: [],
-        navigationOptions: {
-          replaceState: true,
-        },
+        navigateAndExpect(
+          {pathname: '/experiment/123', replaceState: true},
+          {
+            pushStateUrl: null,
+            replaceStateUrl: '/experiment/123',
+          }
+        );
       });
-      const nextActiveRoute = buildRoute({
-        routeKind: RouteKind.EXPERIMENT,
-        pathname: '/experiment',
-        // Changing route params produces a new route id.
-        params: {experimentId: '123'},
-        queryParams: [],
-        navigationOptions: {
-          replaceState: true,
-        },
-      });
-      store.overrideSelector(getActiveRoute, nextActiveRoute);
-      store.refreshState();
-      getHashSpy.and.returnValue('#foo');
-      getPathSpy.and.returnValue('meow');
-      getSearchSpy.and.returnValue([]);
-
-      action.next(
-        actions.navigated({
-          before: activeRoute,
-          after: nextActiveRoute,
-        })
-      );
-
-      expect(replaceStateSpy).toHaveBeenCalledWith('/experiment');
     });
   });
 
@@ -783,7 +822,7 @@ describe('app_routing_effects', () => {
 
       effects = TestBed.inject(AppRoutingEffects);
       const dispatchSpy = spyOn(store, 'dispatch');
-      effects.fireNavigatedIfValidRoute$.subscribe((action) => {
+      effects.navigate$.subscribe((action) => {
         actualActions.push(action);
       });
 
@@ -791,9 +830,17 @@ describe('app_routing_effects', () => {
       dispatchSpy.and.callFake((action: Action) => {
         actualActions.push(action);
       });
-
-      effects.changeBrowserUrl$.subscribe(() => {});
     }
+
+    let getResolvedPathSpy: jasmine.Spy;
+
+    beforeEach(() => {
+      getResolvedPathSpy = spyOn(location, 'getResolvedPath')
+        .withArgs('/experiment/123')
+        .and.returnValue('/experiment/123')
+        .withArgs('/experiments')
+        .and.returnValue('/experiments');
+    });
 
     it('navigates to default route if popstated to path without prefix', fakeAsync(() => {
       setAppRootAndSubscribe('/foo/bar/');
@@ -869,7 +916,7 @@ describe('app_routing_effects', () => {
     it('navigates with appRoot aware path when navRequest with relPath', fakeAsync(() => {
       setAppRootAndSubscribe('/foo/bar/');
 
-      spyOn(location, 'getResolvedPath')
+      getResolvedPathSpy
         .withArgs('../experiment/123')
         .and.returnValue('/foo/bar/experiment/123');
 
@@ -896,26 +943,20 @@ describe('app_routing_effects', () => {
     describe('change url', () => {
       it('navigates to URL with path prefix prefixed', fakeAsync(() => {
         setAppRootAndSubscribe('/foo/bar/baz/');
-        const activeRoute = buildRoute({
-          routeKind: RouteKind.EXPERIMENTS,
-          pathname: '/experiments',
-          queryParams: [],
-          navigationOptions: {
-            replaceState: false,
-          },
-        });
-        store.overrideSelector(getActiveRoute, activeRoute);
+
+        store.overrideSelector(getActiveRoute, null);
         store.refreshState();
         getHashSpy.and.returnValue('');
         getPathSpy.and.returnValue('');
         getSearchSpy.and.returnValue([]);
 
         action.next(
-          actions.navigated({
-            before: null,
-            after: activeRoute,
+          actions.navigationRequested({
+            pathname: '/experiments',
           })
         );
+
+        tick();
 
         expect(pushStateSpy).toHaveBeenCalledWith('/foo/bar/baz/experiments');
       }));

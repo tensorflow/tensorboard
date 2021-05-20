@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import {DataLoadState} from '../../types/data';
 import {SortDirection} from '../../types/ui';
-import {SortType} from '../types';
+import {GroupByKey, SortType} from '../types';
 import * as selectors from './runs_selectors';
 import {buildRun, buildRunsState, buildStateFromRunsState} from './testing';
 
@@ -356,6 +356,29 @@ describe('runs_selectors', () => {
       expect(selectors.getRunColorMap(state)).toEqual({
         foo: '#000',
         bar: '#bbb',
+      });
+    });
+  });
+
+  describe('#getRunGroupBy', () => {
+    beforeEach(() => {
+      // Clear the memoization.
+      selectors.getRunGroupBy.release();
+    });
+
+    it('returns color map by runs', () => {
+      const state = buildStateFromRunsState(
+        buildRunsState({
+          groupBy: {
+            key: GroupByKey.REGEX,
+            regexString: 'hello',
+          },
+        })
+      );
+
+      expect(selectors.getRunGroupBy(state)).toEqual({
+        key: GroupByKey.REGEX,
+        regexString: 'hello',
       });
     });
   });

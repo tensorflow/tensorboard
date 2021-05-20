@@ -25,7 +25,7 @@ import {SetStringOption} from '../../deeplink/types';
 
 import {HashStorageContainer} from './hash_storage_container';
 import {HashStorageComponent} from './hash_storage_component';
-import {HashDeepLinker, DeepLinkerInterface} from '../../deeplink';
+import {DeepLinkerInterface} from '../../deeplink';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
@@ -52,14 +52,14 @@ describe('hash storage test', () => {
       providers: [
         provideMockStore(),
         HashStorageContainer,
-        {provide: HashDeepLinker, useClass: TestableDeeplinker},
+        {provide: DeepLinkerInterface, useClass: TestableDeeplinker},
       ],
       declarations: [HashStorageContainer, HashStorageComponent],
     }).compileComponents();
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
     dispatchSpy = spyOn(store, 'dispatch');
 
-    const deepLinker = TestBed.inject(HashDeepLinker);
+    const deepLinker = TestBed.inject(DeepLinkerInterface);
     setPluginIdSpy = spyOn(deepLinker, 'setPluginId');
     getPluginIdSpy = spyOn(deepLinker, 'getPluginId');
   });

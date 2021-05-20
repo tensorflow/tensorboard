@@ -197,8 +197,8 @@ export class AppRoutingEffects {
   /**
    * @export
    */
-  fireNavigatedIfValidRoute$ = createEffect(() => {
-    return this.validatedRoute$.pipe(
+  navigate$ = createEffect(() => {
+    const dispatchNavigating$ = this.validatedRoute$.pipe(
       tap(({routeMatch, options}) => {
         if (options.browserInitiated && routeMatch.deepLinkProvider) {
           const rehydratingState = routeMatch.deepLinkProvider.deserializeQueryParams(
@@ -258,74 +258,71 @@ export class AppRoutingEffects {
         // sequentially.
         this.store.dispatch(navigating({after: route}));
       }),
-      // Let the router-outlet flush the change in a microtask.
-      debounceTime(0),
+      // Inject some async-ness so:
+      // 1. the router-outlet flush the change in a microtask.
+      // 2. we do not have composite action (synchronous dispatchment of
+      //    actions).
+      debounceTime(0)
+    );
+
+    const changeUrl$ = dispatchNavigating$.pipe(
       withLatestFrom(this.store.select(getActiveRoute)),
-      map(([route, oldRoute]) => {
+      map(([nextRoute, oldRoute]) => {
+        // The URL hash can be set via HashStorageComponent (which uses
+        // Polymer's tf-storage). DeepLinkProviders also modify the URL when
+        // a provider's serializeStateToQueryParams() emits. These result in
+        // the URL updated without the previous hash. HashStorageComponent
+        // makes no attempt to restore the hash, so it is dropped.
+
+        // This results in bad behavior when refreshing (e.g. lost active
+        // plugin) and when changing dashboards (e.g. lost tagFilter).
+
+        // TODO(b/169799696): either AppRouting should manage the URL entirely
+        // (including hash), or we make the app wait for AppRouting to
+        // initialize before setting the active plugin hash.
+        // See https://github.com/tensorflow/tensorboard/issues/4207.
+        const preserveHash =
+          oldRoute === null ||
+          nextRoute === null ||
+          getRouteId(oldRoute.routeKind, oldRoute.params) ===
+            getRouteId(nextRoute.routeKind, nextRoute.params);
+        return {
+          preserveHash,
+          route: nextRoute,
+        };
+      }),
+      tap(({preserveHash, route}) => {
+        const shouldUpdateHistory = !areRoutesEqual(route, {
+          pathname: this.appRootProvider.getAppRootlessPathname(
+            this.location.getPath()
+          ),
+          queryParams: this.location.getSearch(),
+        });
+        if (!shouldUpdateHistory) return;
+
+        if (route.navigationOptions.replaceState) {
+          this.location.replaceState(
+            this.appRootProvider.getAbsPathnameWithAppRoot(
+              this.location.getFullPathFromRouteOrNav(route, preserveHash)
+            )
+          );
+        } else {
+          this.location.pushState(
+            this.appRootProvider.getAbsPathnameWithAppRoot(
+              this.location.getFullPathFromRouteOrNav(route, preserveHash)
+            )
+          );
+        }
+      })
+    );
+
+    return changeUrl$.pipe(
+      withLatestFrom(this.store.select(getActiveRoute)),
+      map(([{route}, oldRoute]) => {
         return navigated({before: oldRoute, after: route});
       })
     );
   });
-
-  // TODO(stephanwlee): move this to a "view".
-  /** @export */
-  changeBrowserUrl$ = createEffect(
-    () => {
-      return this.actions$.pipe(
-        ofType(navigated),
-        withLatestFrom(this.store.select(getActiveRoute)),
-        filter(([, route]) => Boolean(route)),
-        map(([navigatedAction, route]) => {
-          // The URL hash can be set via HashStorageComponent (which uses
-          // Polymer's tf-storage). DeepLinkProviders also modify the URL when
-          // a provider's serializeStateToQueryParams() emits. These result in
-          // the URL updated without the previous hash. HashStorageComponent
-          // makes no attempt to restore the hash, so it is dropped.
-
-          // This results in bad behavior when refreshing (e.g. lost active
-          // plugin) and when changing dashboards (e.g. lost tagFilter).
-
-          // TODO(b/169799696): either AppRouting should manage the URL entirely
-          // (including hash), or we make the app wait for AppRouting to
-          // initialize before setting the active plugin hash.
-          // See https://github.com/tensorflow/tensorboard/issues/4207.
-          const oldRoute = navigatedAction.before;
-          const preserveHash =
-            oldRoute === null ||
-            getRouteId(oldRoute.routeKind, oldRoute.params) ===
-              getRouteId(route!.routeKind, route!.params);
-          return {
-            preserveHash,
-            route: route!,
-          };
-        }),
-        filter(({route}) => {
-          return !areRoutesEqual(route, {
-            pathname: this.appRootProvider.getAppRootlessPathname(
-              this.location.getPath()
-            ),
-            queryParams: this.location.getSearch(),
-          });
-        }),
-        tap(({preserveHash, route}) => {
-          if (route.navigationOptions.replaceState) {
-            this.location.replaceState(
-              this.appRootProvider.getAbsPathnameWithAppRoot(
-                this.location.getFullPathFromRouteOrNav(route, preserveHash)
-              )
-            );
-          } else {
-            this.location.pushState(
-              this.appRootProvider.getAbsPathnameWithAppRoot(
-                this.location.getFullPathFromRouteOrNav(route, preserveHash)
-              )
-            );
-          }
-        })
-      );
-    },
-    {dispatch: false}
-  );
 
   /** @export */
   ngrxOnInitEffects(): Action {

@@ -57,6 +57,7 @@ def _generate_tfdbg_v2_data(
       logarithm_times: Optionally take logarithm of the final `x` file _ times
         iteratively, in order to produce nans.
     """
+    x = tf.constant([1, 3, 3, 7], dtype=tf.float32)
     writer = tf.debugging.experimental.enable_dump_debug_info(
         logdir, circular_buffer_size=-1, tensor_debug_mode=tensor_debug_mode
     )
@@ -81,7 +82,6 @@ def _generate_tfdbg_v2_data(
             times = tf.constant(3, dtype=tf.int32)
             return repeated_add(unstack_and_sum(x), times)
 
-        x = tf.constant([1, 3, 3, 7], dtype=tf.float32)
         for i in range(3):
             assert my_function(x).numpy() == 42.0
 

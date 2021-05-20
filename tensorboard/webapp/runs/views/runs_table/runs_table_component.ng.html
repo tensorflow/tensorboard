@@ -106,7 +106,12 @@ limitations under the License.
             >Run</span
           >
 
-          <span *ngSwitchCase="RunsTableColumn.RUN_COLOR"></span>
+          <span *ngSwitchCase="RunsTableColumn.RUN_COLOR">
+            <runs-group-menu-button
+              *ngIf="showGroupControl"
+              [experimentIds]="experimentIds"
+            ></runs-group-menu-button>
+          </span>
         </ng-container>
       </span>
 

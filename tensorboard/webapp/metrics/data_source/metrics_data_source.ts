@@ -13,10 +13,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Injectable} from '@angular/core';
-import {TBHttpClient} from '../../webapp_data_source/tb_http_client';
-import {forkJoin, Observable} from 'rxjs';
-import {map} from 'rxjs/operators';
+import {forkJoin, Observable, of} from 'rxjs';
+import {map, tap} from 'rxjs/operators';
 
+import {LocalStorage} from '../../util/local_storage';
+import {TBHttpClient} from '../../webapp_data_source/tb_http_client';
+import {TooltipSort} from '../internal_types';
 import {
   BackendTagMetadata,
   BackendTimeSeriesRequest,
@@ -37,9 +39,23 @@ import {
   TagToRunSampledInfo,
   TimeSeriesRequest,
   TimeSeriesResponse,
+  PersistableSettings,
 } from './types';
 
 const HTTP_PATH_PREFIX = 'data/plugin/timeseries';
+
+// Key for partial settings state persisted in LocalStorage.
+const LOCAL_STORAGE_KEY = '_tb_global_settings.timeseries';
+
+/**
+ * `declare` so it does not get mangled or mangled differently when
+ * compiler changes.
+ */
+declare interface SerializableSettings {
+  scalarSmoothing?: number;
+  tooltipSort?: string;
+  ignoreOutliers?: boolean;
+}
 
 function parseRunId(runId: string): {run: string; experimentId: string} {
   const slashIndex = runId.indexOf('/');
@@ -168,7 +184,10 @@ function buildCombinedTagMetadata(results: TagMetadata[]): TagMetadata {
  */
 @Injectable()
 export class TBMetricsDataSource implements MetricsDataSource {
-  constructor(private readonly http: TBHttpClient) {}
+  constructor(
+    private readonly http: TBHttpClient,
+    private readonly localStorage: LocalStorage
+  ) {}
 
   fetchTagMetadata(experimentIds: string[]) {
     const fetches = experimentIds.map((experimentId) => {
@@ -296,4 +315,95 @@ export class TBMetricsDataSource implements MetricsDataSource {
     const params = new URLSearchParams({tag, run, format: downloadType});
     return `/experiment/${experimentId}/data/plugin/${pluginAndRoute}?${params}`;
   }
+
+  private serializeSettings(settings: Partial<PersistableSettings>): string {
+    const serializableSettings: SerializableSettings = {
+      ignoreOutliers: settings.ignoreOutliers,
+      scalarSmoothing: settings.scalarSmoothing,
+      // TooltipSort is a string enum and has string values; no need to
+      // serialize it differently to account for their unintended changes.
+      tooltipSort: settings.tooltipSort,
+    };
+    return JSON.stringify(serializableSettings);
+  }
+
+  private deserializeSettings(
+    serialized: string
+  ): Partial<PersistableSettings> {
+    const settings: Partial<PersistableSettings> = {};
+    let unsanitizedObject: Record<string, string | number | boolean>;
+    try {
+      unsanitizedObject = JSON.parse(serialized) as Record<
+        string,
+        string | number | boolean
+      >;
+    } catch (e) {
+      return settings;
+    }
+
+    if (
+      unsanitizedObject.hasOwnProperty('scalarSmoothing') &&
+      typeof unsanitizedObject.scalarSmoothing === 'number'
+    ) {
+      settings.scalarSmoothing = unsanitizedObject.scalarSmoothing;
+    }
+
+    if (
+      unsanitizedObject.hasOwnProperty('ignoreOutliers') &&
+      typeof unsanitizedObject.ignoreOutliers === 'boolean'
+    ) {
+      settings.ignoreOutliers = unsanitizedObject.ignoreOutliers;
+    }
+
+    if (
+      unsanitizedObject.hasOwnProperty('tooltipSort') &&
+      typeof unsanitizedObject.tooltipSort === 'string'
+    ) {
+      let value: TooltipSort | null = null;
+      switch (unsanitizedObject.tooltipSort) {
+        case TooltipSort.ASCENDING:
+          value = TooltipSort.ASCENDING;
+          break;
+        case TooltipSort.DESCENDING:
+          value = TooltipSort.DESCENDING;
+          break;
+        case TooltipSort.DEFAULT:
+          value = TooltipSort.DEFAULT;
+          break;
+        case TooltipSort.NEAREST:
+          value = TooltipSort.NEAREST;
+          break;
+        default:
+        // Deliberately fallthrough; may have TooltipSort from a newer version
+        // of TensorBoard where there is an enum that this version is unaware
+        // of.
+      }
+      if (value !== null) {
+        settings.tooltipSort = value;
+      }
+    }
+
+    return settings;
+  }
+
+  setSettings(partialSetting: Partial<PersistableSettings>): Observable<void> {
+    return this.getSettings().pipe(
+      tap((currentPartialSettings) => {
+        this.localStorage.setItem(
+          LOCAL_STORAGE_KEY,
+          this.serializeSettings({...currentPartialSettings, ...partialSetting})
+        );
+      }),
+      map(() => void null)
+    );
+  }
+
+  getSettings(): Observable<Partial<PersistableSettings>> {
+    const persisted = this.localStorage.getItem(LOCAL_STORAGE_KEY) ?? '{}';
+    return of(this.deserializeSettings(persisted));
+  }
 }
+
+export const TEST_ONLY = {
+  LOCAL_STORAGE_KEY,
+};

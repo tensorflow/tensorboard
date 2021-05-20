@@ -702,4 +702,126 @@ describe('runs_reducers', () => {
       );
     });
   });
+
+  describe('on runGroupByChanged', () => {
+    it('reassigns color to EXPERIMENT from RUN', () => {
+      const state = buildRunsState({
+        groupBy: {key: GroupByKey.RUN},
+        runIds: {
+          eid1: ['run1', 'run2'],
+          eid2: ['run3', 'run4'],
+        },
+        runIdToExpId: {
+          run1: 'eid1',
+          run2: 'eid1',
+          run3: 'eid2',
+          run4: 'eid2',
+        },
+        runMetadata: {
+          run1: buildRun({id: 'run1'}),
+          run2: buildRun({id: 'run2'}),
+          run3: buildRun({id: 'run3'}),
+          run4: buildRun({id: 'run4'}),
+        },
+        groupKeyToColorString: new Map([
+          ['run1', '#aaa'],
+          ['run2', '#bbb'],
+          ['run3', '#ccc'],
+          ['run4', '#ddd'],
+        ]),
+        defaultRunColorForGroupBy: new Map([
+          ['run1', '#aaa'],
+          ['run2', '#bbb'],
+          ['run3', '#ccc'],
+          ['run4', '#ddd'],
+        ]),
+        runColorOverrideForGroupBy: new Map([['run1', '#aaa']]),
+      });
+
+      const nextState = runsReducers.reducers(
+        state,
+        actions.runGroupByChanged({
+          experimentIds: ['eid1', 'eid2'],
+          groupBy: {key: GroupByKey.EXPERIMENT},
+        })
+      );
+
+      expect(nextState.data.groupBy).toEqual({key: GroupByKey.EXPERIMENT});
+      expect(nextState.data.groupKeyToColorString).toEqual(
+        new Map([
+          ['eid1', colorUtils.CHART_COLOR_PALLETE[0]],
+          ['eid2', colorUtils.CHART_COLOR_PALLETE[1]],
+        ])
+      );
+      expect(nextState.data.defaultRunColorForGroupBy).toEqual(
+        new Map([
+          ['run1', colorUtils.CHART_COLOR_PALLETE[0]],
+          ['run2', colorUtils.CHART_COLOR_PALLETE[0]],
+          ['run3', colorUtils.CHART_COLOR_PALLETE[1]],
+          ['run4', colorUtils.CHART_COLOR_PALLETE[1]],
+        ])
+      );
+      expect(nextState.data.runColorOverrideForGroupBy).toEqual(new Map());
+    });
+
+    it('reassigns color to RUN from EXPERIMENT', () => {
+      const state = buildRunsState({
+        groupBy: {key: GroupByKey.EXPERIMENT},
+        runIds: {
+          eid1: ['run1', 'run2'],
+          eid2: ['run3', 'run4'],
+        },
+        runIdToExpId: {
+          run1: 'eid1',
+          run2: 'eid1',
+          run3: 'eid2',
+          run4: 'eid2',
+        },
+        runMetadata: {
+          run1: buildRun({id: 'run1'}),
+          run2: buildRun({id: 'run2'}),
+          run3: buildRun({id: 'run3'}),
+          run4: buildRun({id: 'run4'}),
+        },
+        groupKeyToColorString: new Map([
+          ['eid1', '#aaa'],
+          ['eid2', '#bbb'],
+        ]),
+        defaultRunColorForGroupBy: new Map([
+          ['run1', '#aaa'],
+          ['run2', '#aaa'],
+          ['run3', '#bbb'],
+          ['run4', '#bbb'],
+        ]),
+        runColorOverrideForGroupBy: new Map([['run1', '#ccc']]),
+      });
+
+      const nextState = runsReducers.reducers(
+        state,
+        actions.runGroupByChanged({
+          experimentIds: ['eid1', 'eid2'],
+          groupBy: {key: GroupByKey.RUN},
+        })
+      );
+
+      expect(nextState.data.groupBy).toEqual({key: GroupByKey.RUN});
+      expect(nextState.data.groupKeyToColorString).toEqual(
+        new Map([
+          ['run1', colorUtils.CHART_COLOR_PALLETE[0]],
+          ['run2', colorUtils.CHART_COLOR_PALLETE[1]],
+          ['run3', colorUtils.CHART_COLOR_PALLETE[2]],
+          ['run4', colorUtils.CHART_COLOR_PALLETE[3]],
+        ])
+      );
+      expect(nextState.data.defaultRunColorForGroupBy).toEqual(
+        new Map([
+          ['run1', colorUtils.CHART_COLOR_PALLETE[0]],
+          ['run2', colorUtils.CHART_COLOR_PALLETE[1]],
+          ['run3', colorUtils.CHART_COLOR_PALLETE[2]],
+          ['run4', colorUtils.CHART_COLOR_PALLETE[3]],
+        ])
+      );
+      expect(nextState.data.runColorOverrideForGroupBy).toEqual(new Map());
+    });
+  });
 });

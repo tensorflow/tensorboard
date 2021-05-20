@@ -22,7 +22,7 @@ import * as tf_hparams_parallel_coords_plot_utils from './utils';
 import {AxesCollection} from './axes';
 import * as tf_hparams_parallel_coords_plot_interaction_manager from './interaction_manager';
 
-import * as tf_hparams_query_pane from '../tf_hparams_query_pane/schema.d';
+import * as tf_hparams_query_pane from '../tf_hparams_types/types';
 
 import * as tf_hparams_api from '../types';
 

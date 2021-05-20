@@ -28,3 +28,14 @@ tf_ng_module(
         "@npm//@types/jasmine",
     ],
 )
+
+tf_ng_module(
+    name = "testing",
+    srcs = [
+        "testing.ts",
+    ],
+    deps = [
+        ":deeplink",
+        "@npm//@angular/core",
+    ],
+)

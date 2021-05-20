@@ -366,10 +366,10 @@ tf_ng_web_test_suite(
 
 tf_svg_bundle(
     name = "svg_bundle",
+    # When modifying below, please make sure to update
+    # //tensorboard/webapp/testing/mat_icon_module.ts.
+    # 'com_google_material_design_icon' in third_party/js.bzl
     srcs = [
-        # When modifying below, please make sure to update
-        # //tensorboard/webapp/testing/mat_icon_module.ts.
-        # 'com_google_material_design_icon' in third_party/js.bzl
         "@com_google_material_design_icon//:arrow_downward_24px.svg",
         "@com_google_material_design_icon//:arrow_upward_24px.svg",
         "@com_google_material_design_icon//:bug_report_24px.svg",
@@ -379,6 +379,7 @@ tf_svg_bundle(
         "@com_google_material_design_icon//:clear_24px.svg",
         "@com_google_material_design_icon//:close_24px.svg",
         "@com_google_material_design_icon//:content_copy_24px.svg",
+        "@com_google_material_design_icon//:done_24px.svg",
         "@com_google_material_design_icon//:edit_24px.svg",
         "@com_google_material_design_icon//:error_24px.svg",
         "@com_google_material_design_icon//:expand_less_24px.svg",
@@ -397,6 +398,7 @@ tf_svg_bundle(
         "@com_google_material_design_icon//:line_weight_24px.svg",
         "@com_google_material_design_icon//:more_vert_24px.svg",
         "@com_google_material_design_icon//:notifications_none_24px.svg",
+        "@com_google_material_design_icon//:palette_24px.svg",
         "@com_google_material_design_icon//:refresh_24px.svg",
         "@com_google_material_design_icon//:search_24px.svg",
         "@com_google_material_design_icon//:settings_24px.svg",

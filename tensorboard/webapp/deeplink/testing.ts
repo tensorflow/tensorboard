@@ -12,16 +12,32 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {NgModule} from '@angular/core';
 
-import {CoreModule} from '../core/core_module';
-import {SettingsModule as ViewModule} from './_views/settings_module';
+import {Injectable, NgModule} from '@angular/core';
+import {DeepLinkerInterface} from './';
+
+/**
+ * Prevent reading or modification of real hashes.
+ */
+@Injectable()
+export class TestableNoopHashDeepLinker implements DeepLinkerInterface {
+  getString(key: string): string {
+    return '';
+  }
+  setString(key: string, value: string): void {
+    // noop
+  }
+  getPluginId(): string {
+    return '';
+  }
+  setPluginId(pluginId: string): void {
+    // noop
+  }
+}
 
 @NgModule({
-  exports: [ViewModule],
-  imports: [
-    // Uses core redux state.
-    CoreModule,
+  providers: [
+    {provide: DeepLinkerInterface, useClass: TestableNoopHashDeepLinker},
   ],
 })
-export class SettingsModule {}
+export class TestableNoopHashDeepLinkerModule {}

@@ -20,9 +20,13 @@ export interface SetStringOption {
   useLocationReplace?: boolean;
 }
 
-export interface DeepLinkerInterface {
-  getString(key: string): string;
-  setString(key: string, value: string, options?: SetStringOption): void;
-  getPluginId(): string;
-  setPluginId(pluginId: string, options?: SetStringOption): void;
+export abstract class DeepLinkerInterface {
+  abstract getString(key: string): string;
+  abstract setString(
+    key: string,
+    value: string,
+    options?: SetStringOption
+  ): void;
+  abstract getPluginId(): string;
+  abstract setPluginId(pluginId: string, options?: SetStringOption): void;
 }
