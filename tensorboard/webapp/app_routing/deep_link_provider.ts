@@ -37,7 +37,6 @@ import {SerializableQueryParams} from './types';
  */
 @Injectable()
 export abstract class DeepLinkProvider {
-
   /**
    * Returns an Observable that the app router will listen to.  The router
    * should respond to each emission by updating the URL query params with the
