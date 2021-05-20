@@ -22,6 +22,10 @@ export enum PluginType {
   IMAGES = 'images',
 }
 
+// When adding a new value to the enum, please implement the deserializer on
+// data_source/metrics_data_source.ts.
+// When editing a value of the enum, please write a backward compatible
+// deserializer in data_source/metrics_data_source.ts.
 export enum TooltipSort {
   DEFAULT = 'default',
   ASCENDING = 'ascending',

@@ -165,11 +165,11 @@ export interface ImageStepDatum {
   imageId: ImageId;
 }
 
-export type PersistableSettings = {
+export interface PersistableSettings {
   scalarSmoothing: number;
   tooltipSort: TooltipSort;
   ignoreOutliers: boolean;
-};
+}
 
 export abstract class MetricsDataSource {
   abstract fetchTagMetadata(experimentIds: string[]): Observable<TagMetadata>;

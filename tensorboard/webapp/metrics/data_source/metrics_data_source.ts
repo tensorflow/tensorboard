@@ -372,9 +372,16 @@ export class TBMetricsDataSource implements MetricsDataSource {
           value = TooltipSort.NEAREST;
           break;
         default:
-        // Deliberately fallthrough; may have TooltipSort from a newer version
-        // of TensorBoard where there is an enum that this version is unaware
-        // of.
+          if (TooltipSort[unsanitizedObject.tooltipSort]) {
+            const _ = unsanitizedObject.tooltipSort as never;
+            throw new RangeError(
+              `TooltipSort persistence case not handled properly: ${unsanitizedObject.tooltipSort}`
+            );
+          } else {
+            // Deliberately fallthrough; may have TooltipSort from a newer version
+            // of TensorBoard where there is an enum that this version is unaware
+            // of.
+          }
       }
       if (value !== null) {
         settings.tooltipSort = value;
