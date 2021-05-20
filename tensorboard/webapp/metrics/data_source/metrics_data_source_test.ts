@@ -374,12 +374,12 @@ describe('TBMetricsDataSource test', () => {
     });
 
     it('returns an empty value when the serialized state is empty', async () => {
-      getItemSpy.and.returnValue(undefined);
+      getItemSpy.and.returnValue(null);
       const value = await dataSource.getSettings().toPromise();
       expect(value).toEqual({});
     });
 
-    it('returns an empty state  when serialized state is not an object', async () => {
+    it('returns an empty state when serialized state is not an object', async () => {
       getItemSpy.and.returnValue('malformedjson');
       const value = await dataSource.getSettings().toPromise();
       expect(value).toEqual({});

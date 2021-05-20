@@ -20,8 +20,8 @@ export class LocalStorage {
     localStorage.setItem(key, value);
   }
 
-  getItem(key: string): string {
-    return localStorage.getItem(key) ?? '';
+  getItem(key: string): string | null {
+    return localStorage.getItem(key);
   }
 
   removeItem(key: string): void {
