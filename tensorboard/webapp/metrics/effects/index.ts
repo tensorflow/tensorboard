@@ -15,9 +15,6 @@ limitations under the License.
 import {Injectable} from '@angular/core';
 import {Actions, createEffect, ofType, OnInitEffects} from '@ngrx/effects';
 import {Action, createAction, createSelector, Store} from '@ngrx/store';
-import * as coreActions from '../../core/actions';
-import {getActivePlugin} from '../../core/store';
-import {DataLoadState} from '../../types/data';
 import {forkJoin, merge, Observable, of} from 'rxjs';
 import {
   catchError,
@@ -31,14 +28,20 @@ import {
 } from 'rxjs/operators';
 
 import * as routingActions from '../../app_routing/actions';
+import {stateRehydratedFromUrl} from '../../app_routing/actions';
+import {RouteKind} from '../../app_routing/types';
 import {State} from '../../app_state';
+import * as coreActions from '../../core/actions';
+import {getActivePlugin} from '../../core/store';
 import * as selectors from '../../selectors';
+import {DataLoadState} from '../../types/data';
 import * as actions from '../actions';
 import {
   isFailedTimeSeriesResponse,
   isSingleRunPlugin,
-  METRICS_PLUGIN_ID,
   MetricsDataSource,
+  METRICS_PLUGIN_ID,
+  PersistableSettings,
   TagMetadata,
   TimeSeriesRequest,
   TimeSeriesResponse,
@@ -46,9 +49,12 @@ import {
 import {
   getCardLoadState,
   getCardMetadata,
+  getMetricsIgnoreOutliers,
+  getMetricsScalarSmoothing,
   getMetricsTagMetadataLoaded,
+  getMetricsTooltipSort,
 } from '../store';
-import {CardId, CardMetadata} from '../types';
+import {CardId, CardMetadata, URLDeserializedState} from '../types';
 
 /** @typehack */ import * as _typeHackNgrxEffects from '@ngrx/effects';
 /** @typehack */ import * as _typeHackModels from '@ngrx/store/src/models';
@@ -269,7 +275,7 @@ export class MetricsEffects implements OnInitEffects {
    * - fetchTimeSeriesFailed
    */
   /** @export */
-  readonly allEffects$ = createEffect(
+  readonly dataEffects$ = createEffect(
     () => {
       return merge(
         /**
@@ -285,6 +291,78 @@ export class MetricsEffects implements OnInitEffects {
     },
     {dispatch: false}
   );
+
+  /** @export */
+  readonly setSettingsToStorage$: Observable<void> = createEffect(
+    () => {
+      return merge(
+        this.actions$.pipe(
+          ofType(actions.metricsChangeScalarSmoothing),
+          withLatestFrom(this.store.select(getMetricsScalarSmoothing)),
+          map(([, scalarSmoothing]) => ({scalarSmoothing}))
+        ),
+        // The smoothing value is persisted both in URL and global setting.
+        // Since we want URL one takes precedence over the global setting, when
+        // the url contains the smoothing, we write the values in the URL into
+        // LocalStorage. This is so that user does not get confused when they
+        // manually specify smoothing value in URL then remove it. To elaborate
+        // on this, imagine below:
+        // 1. user drags smoothing to set it to 0.5 and persist it.
+        // 2. user opens a URL (from bookmark) or manually reset smoothing to 0
+        //    with `/?smoothing=0`. TensorBoard shows smoothing=0.
+        // 3. user removes `?smoothing=0` from URL. Without below, TensorBoard
+        //    will show 0.5 which can be very surprising. With below, it is now
+        //    0, your last TensorBoard value.
+        this.actions$.pipe(
+          ofType(stateRehydratedFromUrl),
+          filter(({routeKind}) => {
+            return (
+              routeKind === RouteKind.EXPERIMENT ||
+              routeKind === RouteKind.COMPARE_EXPERIMENT
+            );
+          }),
+          map(({partialState}) => {
+            return partialState as URLDeserializedState;
+          }),
+          filter((partialState) => {
+            const hydratedSmoothing = partialState.metrics.smoothing;
+            return (
+              Number.isFinite(hydratedSmoothing) && hydratedSmoothing !== null
+            );
+          }),
+          withLatestFrom(this.store.select(getMetricsScalarSmoothing)),
+          map(([, scalarSmoothing]) => ({scalarSmoothing}))
+        ),
+        this.actions$.pipe(
+          ofType(actions.metricsChangeTooltipSort),
+          withLatestFrom(this.store.select(getMetricsTooltipSort)),
+          map(([, tooltipSort]) => ({tooltipSort}))
+        ),
+        this.actions$.pipe(
+          ofType(actions.metricsToggleIgnoreOutliers),
+          withLatestFrom(this.store.select(getMetricsIgnoreOutliers)),
+          map(([, ignoreOutliers]) => ({ignoreOutliers}))
+        )
+      ).pipe(
+        switchMap((partialSetting: Partial<PersistableSettings>) => {
+          return this.dataSource.setSettings(partialSetting);
+        }),
+        map(() => void null)
+      );
+    },
+    {dispatch: false}
+  );
+
+  /** @export */
+  readonly readSettingsFromStorage$: Observable<Action> = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(initAction),
+      switchMap(() => this.dataSource.getSettings()),
+      map((partialSettings) =>
+        actions.metricsPersistedSettingsRead({partialSettings})
+      )
+    );
+  });
 }
 
 export const TEST_ONLY = {
