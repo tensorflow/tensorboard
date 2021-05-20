@@ -16,9 +16,7 @@
 from absl import app
 from absl import logging
 import tensorflow as tf
-from tensorboard.plugins.text.summary_v2 import text
 
-tf.compat.v1.enable_v2_behavior()
 
 # Directory into which to write tensorboard data.
 LOGDIR = "/tmp/text_demo"
@@ -32,7 +30,7 @@ def simple_example(step):
     # UTF-8. Here's a simple example, wherein we greet the user on each
     # step:
     greeting = tf.constant("hello from step %d! 😊" % step)
-    text("greeting", greeting, step)
+    tf.summary.text("greeting", greeting, step)
 
 
 def simple_example_with_pagination(step):
@@ -47,7 +45,7 @@ def simple_example_with_pagination(step):
     for i in range(36):
         greeting = tf.constant("hello from step %d! 😊" % step)
         tag = "card%d/greeting" % (i + 1)
-        text(tag, greeting, step)
+        tf.summary.text(tag, greeting, step)
 
 
 def markdown_table(step):
@@ -72,7 +70,7 @@ def markdown_table(step):
     table = tf.strings.join([header_row, "---|---", table_body], separator="\n")
     preamble = "We conducted an experiment and found the following data:\n\n"
     result = tf.strings.join([preamble, table])
-    text("chocolate_study", result, step)
+    tf.summary.text("chocolate_study", result, step)
 
 
 def higher_order_tensors(step):
@@ -107,7 +105,7 @@ def higher_order_tensors(step):
     # The result, `table_full`, is a rank-2 string tensor of shape
     # `[step + 1, step + 1]`. We can pass it directly to the summary, and
     # we'll get a nicely formatted table in TensorBoard.
-    text("multiplication_table", table_full, step)
+    tf.summary.text("multiplication_table", table_full, step)
 
 
 def create_run(logdir, run_name):
@@ -137,6 +135,14 @@ def run_all(logdir):
 def main(unused_argv):
     logging.set_verbosity(logging.INFO)
     logging.info("Saving output to %s." % LOGDIR)
+    logging.info(
+        "To view results in your browser, run `tensorboard --logdir %s`"
+        % LOGDIR
+    )
+    logging.info(
+        "Logs can be uploaded publicly to TensorBoard.dev via "
+        + "`tensorboard dev upload --logdir %s`" % LOGDIR
+    )
     run_all(LOGDIR)
     logging.info("Done. Output saved to %s." % LOGDIR)
 
