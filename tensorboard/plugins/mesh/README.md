@@ -27,13 +27,13 @@ and some colors associated with each point. Check out a simple example with
 static mesh:
 
 ```python
-from tensorboard.plugins.mesh import summary as mesh_summary
+from tensorboard.plugins.mesh import summary_v2 as mesh_summary
 ...
 
 point_cloud = tf.constant([[[0.19, 0.78, 0.02], ...]], shape=[1, 1064, 3])
 point_colors = tf.constant([[[128, 104, 227], ...]], shape=[1, 1064, 3])
 
-summary = mesh_summary.op('point_cloud', vertices=point_cloud, colors=point_colors)
+summary = mesh_summary.mesh('point_cloud', vertices=point_cloud, colors=point_colors)
 ```
 
 **NOTE:** The `colors` tensor is optional in this case but can be useful to
@@ -43,14 +43,14 @@ A mesh can be represented by a point cloud together with a set of faces,
 where each face is represented by a list of indices of vertices in
 clockwise order around the face. This plugin currently only supports
 triangular faces. Construct a mesh by including the `faces` parameter to
-`mesh_summary.op`:
+`mesh_summary.mesh`:
 
 ```python
 mesh = tf.constant([[[0.19, 0.78, 0.02], ...]], shape=[1, 1064, 3])
 colors = tf.constant([[[128, 104, 227], ...]], shape=[1, 1064, 3])
 faces = tf.constant([[[13, 78, 54], ...]], shape=[1, 752, 3])
 
-summary = mesh_summary.op('mesh', vertices=mesh, colors=colors, faces=faces)
+summary = mesh_summary.mesh('mesh', vertices=mesh, colors=colors, faces=faces)
 ```
 
 The `colors` tensor is optional for mesh summaries.
@@ -66,7 +66,7 @@ representing a valid [THREE.js](https://threejs.org) class name.
 
 ```python
 camera_config = {'cls': 'PerspectiveCamera'}
-summary = mesh_summary.op(
+summary = mesh_summary.mesh(
     "mesh",
     vertices=mesh,
     colors=colors,
