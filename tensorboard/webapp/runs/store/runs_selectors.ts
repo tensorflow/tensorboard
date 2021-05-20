@@ -167,8 +167,8 @@ export const getRunColorMap = createSelector(
   getDataState,
   (state: RunsDataState): Record<string, string> => {
     const map = new Map([
-      ...state.runColorOverrideForGroupBy,
       ...state.defaultRunColorForGroupBy,
+      ...state.runColorOverrideForGroupBy,
     ]);
     const colorObject: Record<string, string> = {};
     map.forEach((value, key) => {
