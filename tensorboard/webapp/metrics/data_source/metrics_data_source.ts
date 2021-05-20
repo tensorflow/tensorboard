@@ -43,7 +43,9 @@ import {
 } from './types';
 
 const HTTP_PATH_PREFIX = 'data/plugin/timeseries';
-const LOCAL_STORAGE_KEY = '_tb_global_settings';
+
+// Key for partial settings state persisted in LocalStorage.
+const LOCAL_STORAGE_KEY = '_tb_global_settings.timeseries';
 
 /**
  * `declare` so it does not get mangled or mangled differently when
