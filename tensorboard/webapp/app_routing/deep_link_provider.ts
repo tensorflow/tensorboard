@@ -26,24 +26,44 @@ import {SerializableQueryParams} from './types';
  * to the URL parameters should change app state, or, in the other direction,
  * when an update to the state should cause a change in the URL parameters,
  * that logic should be invoked through a `DeepLinkProvider`.
+ *
+ * TensorBoard router considers the URL as a view. A subset of state
+ * gets projected onto it, just like a HTML input element. The
+ * DeepLinkProvider provides state that would be projected onto the
+ * "view" and, inversely, read state from the "view".
+ *
+ * Since the state to be reflected onto the URL bar differs by a
+ * route, we have a DeepLinkProvider per route.
  */
 @Injectable()
 export abstract class DeepLinkProvider {
 
   /**
-   * Modifies the URL to match the state of the app.
+   * Returns an Observable that the app router will listen to.  The router
+   * should respond to each emission by updating the URL query params with the
+   * new values. The emitted query params should fully replace the query params
+   * in the URL, rather than be appended to them.
+   *
    * @param store The ngrx store containing the state of the app.
-   * @return An observable which will emit the query parameters matching the state.
+   * @return An observable which will emit the query parameters to update
+   *     the URL.
    */
   abstract serializeStateToQueryParams(
     store: Store<State>
   ): Observable<SerializableQueryParams>;
 
   /**
-   * Given the query params, updates the ngrx state to match.
+   * When the URL changes, the router dispatches a `stateRehydratedFromUrl`
+   * action [1], and calls this method to generate the action's payload.
+   * Specifically, the resulting objection of this method becomes the
+   * `partialState` field on the payload.
+   *
+   * [1] webapp/app_routing/actions/app_routing_actions.ts
+   *
    * @param queryParams TensorBoard URL SeralizableQueryParams that should be used
    *     to update the app state.
-   * @return A JS object describing a patch that should be made to the ngrx state.
+   * @return A JS object to be packaged within the `stateRehydratedFromUrl`
+   *    action sufficient that the reducer should be able to update the State.
    */
   abstract deserializeQueryParams(queryParams: SerializableQueryParams): object;
 }
