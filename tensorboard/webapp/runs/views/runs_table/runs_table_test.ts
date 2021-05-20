@@ -560,7 +560,7 @@ describe('runs_table', () => {
         expect(menuButton).toBeTruthy();
       });
 
-      it('renders "experiments", "runs" and "regex"', () => {
+      it('renders "Experiment", "Run" and "Regex"', () => {
         store.overrideSelector(getEnabledColorGroup, true);
         const fixture = createComponent(
           ['book'],
@@ -577,7 +577,7 @@ describe('runs_table', () => {
 
         expect(
           items.map((element) => element.querySelector('label')!.textContent)
-        ).toEqual(['Experiments', 'Runs', 'Regex']);
+        ).toEqual(['Experiment', 'Run', 'Regex']);
       });
 
       it(
