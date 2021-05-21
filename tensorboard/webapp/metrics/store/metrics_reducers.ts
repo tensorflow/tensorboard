@@ -338,7 +338,7 @@ const reducer = createReducer(
       settings: newSettings,
     };
   }),
-  on(actions.metricsPersistedSettingsRead, (state, {partialSettings}) => {
+  on(actions.fetchPersistedSettingsSucceeded, (state, {partialSettings}) => {
     return {
       ...state,
       settings: {

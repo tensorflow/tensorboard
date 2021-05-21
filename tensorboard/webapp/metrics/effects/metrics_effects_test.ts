@@ -696,7 +696,7 @@ describe('metrics effects', () => {
       getSettingsSpy = spyOn(dataSource, 'getSettings');
     });
 
-    it('dispatches `metricsPersistedSettingsRead` on init', () => {
+    it('dispatches `fetchPersistedSettingsSucceeded` on init', () => {
       getSettingsSpy.and.returnValue(
         of({
           ignoreOutliers: false,
@@ -705,7 +705,7 @@ describe('metrics effects', () => {
       actions$.next(TEST_ONLY.initAction());
 
       expect(actualActions).toEqual([
-        actions.metricsPersistedSettingsRead({
+        actions.fetchPersistedSettingsSucceeded({
           partialSettings: {
             ignoreOutliers: false,
           },

@@ -302,11 +302,11 @@ export class MetricsEffects implements OnInitEffects {
           map(([, scalarSmoothing]) => ({scalarSmoothing}))
         ),
         // The smoothing value is persisted both in URL and global setting.
-        // Since we want URL one takes precedence over the global setting, when
-        // the url contains the smoothing, we write the values in the URL into
-        // LocalStorage. This is so that user does not get confused when they
-        // manually specify smoothing value in URL then remove it. To elaborate
-        // on this, imagine below:
+        // Since we want URL one to take precedence over the global setting,
+        // when the URL contains the smoothing, we write the values in the URL
+        // into LocalStorage. This is so that user does not get confused when
+        // they manually specify smoothing value in URL then remove it. To
+        // elaborate on this, imagine below:
         // 1. user drags smoothing to set it to 0.5 and persist it.
         // 2. user opens a URL (from bookmark) or manually reset smoothing to 0
         //    with `/?smoothing=0`. TensorBoard shows smoothing=0.
@@ -326,9 +326,7 @@ export class MetricsEffects implements OnInitEffects {
           }),
           filter((partialState) => {
             const hydratedSmoothing = partialState.metrics.smoothing;
-            return (
-              Number.isFinite(hydratedSmoothing) && hydratedSmoothing !== null
-            );
+            return Number.isFinite(hydratedSmoothing);
           }),
           withLatestFrom(this.store.select(getMetricsScalarSmoothing)),
           map(([, scalarSmoothing]) => ({scalarSmoothing}))
@@ -346,8 +344,7 @@ export class MetricsEffects implements OnInitEffects {
       ).pipe(
         switchMap((partialSetting: Partial<PersistableSettings>) => {
           return this.dataSource.setSettings(partialSetting);
-        }),
-        map(() => void null)
+        })
       );
     },
     {dispatch: false}
@@ -359,7 +356,7 @@ export class MetricsEffects implements OnInitEffects {
       ofType(initAction),
       switchMap(() => this.dataSource.getSettings()),
       map((partialSettings) =>
-        actions.metricsPersistedSettingsRead({partialSettings})
+        actions.fetchPersistedSettingsSucceeded({partialSettings})
       )
     );
   });

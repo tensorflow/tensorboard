@@ -136,7 +136,7 @@ export const cardPinStateToggled = createAction(
   props<{cardId: CardId; canCreateNewPins: boolean; wasPinned: boolean}>()
 );
 
-export const metricsPersistedSettingsRead = createAction(
-  '[Metrics] Persisted Settings Read',
+export const fetchPersistedSettingsSucceeded = createAction(
+  '[Metrics] Fetch Persisted Settings Succeeded',
   props<{partialSettings: Partial<PersistableSettings>}>()
 );

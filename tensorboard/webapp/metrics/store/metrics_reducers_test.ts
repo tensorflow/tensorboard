@@ -1691,7 +1691,7 @@ describe('metrics reducers', () => {
     });
   });
 
-  describe('#metricsPersistedSettingsRead', () => {
+  describe('#fetchPersistedSettingsSucceeded', () => {
     it('adds partial state from the action to the settings', () => {
       const beforeState = buildMetricsState({
         settings: buildMetricsSettingsState({
@@ -1703,7 +1703,7 @@ describe('metrics reducers', () => {
 
       const nextState = reducers(
         beforeState,
-        actions.metricsPersistedSettingsRead({
+        actions.fetchPersistedSettingsSucceeded({
           partialSettings: {
             scalarSmoothing: 0,
             ignoreOutliers: true,
