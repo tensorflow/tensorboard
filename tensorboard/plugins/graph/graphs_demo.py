@@ -44,9 +44,9 @@ def _silence_deprecation_warnings():
         return _nullcontext()
 
 
-def graph_writing():
+def write_graph():
     """Demonstrate basic graph writing."""
-    logdir = os.path.join(LOGDIR, "graph_writing")
+    logdir = os.path.join(LOGDIR, "write_graph")
 
     @tf.function
     def f():
@@ -130,9 +130,9 @@ def profile():
 def main():
     # Create three demo graphs.
     with _silence_deprecation_warnings():
-        graph_writing()
-        keras()
+        write_graph()
         profile()
+        keras()
 
     print(
         "To view results of all graphs in your browser, run `tensorboard --logdir %s`"
