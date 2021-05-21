@@ -123,21 +123,24 @@ def profile():
 
     with tf.summary.create_file_writer(logdir).as_default():
         for step in range(3):
-            tf.summary.trace_on(profiler=True)
-            print(f(step).numpy())
-            tf.summary.trace_export("prof_f", step=step, profiler_outdir=logdir)
+            # Suppress the profiler deprecation warnings from tf.summary.trace_*.
+            with _silence_deprecation_warnings():
+                tf.summary.trace_on(profiler=True)
+                print(f(step).numpy())
+                tf.summary.trace_export(
+                    "prof_f", step=step, profiler_outdir=logdir
+                )
 
-            tf.summary.trace_on(profiler=False)
-            print(g(step).numpy())
-            tf.summary.trace_export("prof_g", step=step)
+                tf.summary.trace_on(profiler=False)
+                print(g(step).numpy())
+                tf.summary.trace_export("prof_g", step=step)
 
 
 def main():
     # Create three demo graphs.
-    with _silence_deprecation_warnings():
-        write_graph()
-        profile()
-        keras()
+    write_graph()
+    profile()
+    keras()
 
     print(
         "To view results of all graphs in your browser, run `tensorboard --logdir %s`"
