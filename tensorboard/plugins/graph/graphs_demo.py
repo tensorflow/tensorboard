@@ -19,12 +19,29 @@ more specialized data types. See function docstrings for details about
 what runs have what data.
 """
 
+import contextlib
 import os
 import tensorflow as tf
 import numpy as np
 
 # Directory into which to write the data for tensorboard to read.
 LOGDIR = "/tmp/graphs_demo"
+
+@contextlib.contextmanager
+def _nullcontext():
+    """Pre-Python-3.7-compatible standin for contextlib.nullcontext."""
+    yield
+
+
+def _silence_deprecation_warnings():
+    """Context manager that best-effort silences TF deprecation warnings."""
+    try:
+        # Learn this one weird trick to make TF deprecation warnings go away.
+        from tensorflow.python.util import deprecation
+
+        return deprecation.silence()
+    except (ImportError, AttributeError):
+        return _nullcontext()
 
 
 def graph_writing():
@@ -112,9 +129,10 @@ def profile():
 
 def main():
     # Create three demo graphs.
-    graph_writing()
-    keras()
-    profile()
+    with _silence_deprecation_warnings():
+        graph_writing()
+        keras()
+        profile()
 
     print(
         "To view results of all graphs in your browser, run `tensorboard --logdir %s`"
