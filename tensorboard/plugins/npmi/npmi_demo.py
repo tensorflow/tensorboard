@@ -23,8 +23,6 @@ import numpy as np
 from tensorboard.plugins.npmi import summary
 from tensorboard.plugins.npmi import npmi_demo_data
 
-tf.compat.v1.enable_eager_execution()
-
 # Directory into which to write tensorboard data.
 LOGDIR = "/tmp/npmi_demo"
 
@@ -60,6 +58,10 @@ def setup_all(logdir, verbose=False):
 
 def main(unused_argv):
     print("Saving output to %s." % LOGDIR)
+    print(
+        "To view results in your browser, run `tensorboard --logdir %s`"
+        % LOGDIR
+    )
     setup_all(LOGDIR, verbose=True)
     print("Done. Output saved to %s." % LOGDIR)
 
