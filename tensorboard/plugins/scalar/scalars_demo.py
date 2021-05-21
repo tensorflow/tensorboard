@@ -28,13 +28,13 @@ STEPS = 1000
 
 
 @tf.function
-def one_step(temperature, ambient_temperature, heat_coefficient, step):
+def one_step(temp, ambient_temperature, heat_coefficient, step):
     """Runs one step of the temperature simulation.
 
     Will update the `temperature` argument with one step of heat diffusion.
 
     Arguments:
-      temperature: The tf.Variable containing the value being updated.  Akin
+      temp: The tf.Variable containing the value being updated.  Akin
         to a weight in a model.
       ambient_temperature: The `tf.Constant` value the temperature is being
         drawn towards.
@@ -45,14 +45,14 @@ def one_step(temperature, ambient_temperature, heat_coefficient, step):
     with tf.name_scope("temperature"):
         tf.summary.scalar(
             name="current",
-            data=temperature,
+            data=temp,
             step=step,
             description="The temperature of the object, in Kelvins.",
         )
         # Compute how much the object's temperature differs from that of
         #  its environment, and track this, too: likewise, as
         # "temperature/difference_to_ambient".
-        ambient_difference = temperature - ambient_temperature
+        ambient_difference = temp - ambient_temperature
         tf.summary.scalar(
             name="difference_to_ambient",
             data=ambient_difference,
@@ -77,7 +77,7 @@ def one_step(temperature, ambient_temperature, heat_coefficient, step):
         description="The change in temperature from the previous "
         "step, in Kelvins.",
     )
-    temperature.assign_add(delta)
+    temp.assign_add(delta)
 
 
 def run(initial_temperature, ambient_temperature, heat_coefficient):
@@ -101,9 +101,9 @@ def run(initial_temperature, ambient_temperature, heat_coefficient):
         conductivity
     """
     tf.random.set_seed(0)
-    temperature = tf.Variable(initial_temperature)
+    temp = tf.Variable(initial_temperature)
     for step in tf.range(STEPS, dtype=tf.int64):
-        one_step(temperature, ambient_temperature, heat_coefficient, step)
+        one_step(temp, ambient_temperature, heat_coefficient, step)
 
 
 def run_all(logdir, verbose=False):
