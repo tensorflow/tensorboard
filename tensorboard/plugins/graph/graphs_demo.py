@@ -59,6 +59,10 @@ def write_graph():
         if hasattr(tf.summary, "graph"):
             # Emit a simple graph.
             tf.summary.graph(f.get_concrete_function().graph)
+        else:
+            print(
+                "Could not find tf.summary.graph(); use TF 2.5.0+ to run full demo"
+            )
 
 
 def keras():
