@@ -28,6 +28,7 @@ tf_ng_module(
         ":runs_group_menu_button_styles",
         ":runs_table_styles",
         "runs_table_component.ng.html",
+        "runs_group_menu_button.ng.html",
     ],
     deps = [
         "//tensorboard/webapp:app_state",

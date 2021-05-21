@@ -24,60 +24,7 @@ import {GroupBy, GroupByKey} from '../../types';
 
 @Component({
   selector: 'runs-group-menu-button-component',
-  template: `
-    <button
-      mat-icon-button
-      title="Group runs by..."
-      [matMenuTriggerFor]="groupByMenu"
-    >
-      <mat-icon svgIcon="palette_24px"></mat-icon>
-    </button>
-    <mat-menu #groupByMenu="matMenu" class="run-table-color-group-by">
-      <div class="label">Color runs by</div>
-      <button
-        mat-menu-item
-        role="menuitemradio"
-        [attr.aria-checked]="selectedGroupBy.key === GroupByKey.EXPERIMENT"
-        (click)="onGroupByChange.emit({key: GroupByKey.EXPERIMENT})"
-      >
-        <span>
-          <mat-icon
-            *ngIf="selectedGroupBy.key === GroupByKey.EXPERIMENT"
-            svgIcon="done_24px"
-          ></mat-icon>
-        </span>
-        <label>Experiment</label>
-      </button>
-      <button
-        mat-menu-item
-        role="menuitemradio"
-        [attr.aria-checked]="selectedGroupBy.key === GroupByKey.RUN"
-        (click)="onGroupByChange.emit({key: GroupByKey.RUN})"
-      >
-        <span>
-          <mat-icon
-            *ngIf="selectedGroupBy.key === GroupByKey.RUN"
-            svgIcon="done_24px"
-          ></mat-icon>
-        </span>
-        <label>Run</label>
-      </button>
-      <button
-        mat-menu-item
-        role="menuitemradio"
-        [attr.aria-checked]="selectedGroupBy.key === GroupByKey.REGEX"
-        (click)="onGroupByChange.emit({key: GroupByKey.REGEX, regexString: ''})"
-      >
-        <span>
-          <mat-icon
-            *ngIf="selectedGroupBy.key === GroupByKey.REGEX"
-            svgIcon="done_24px"
-          ></mat-icon>
-        </span>
-        <label>Regex</label>
-      </button>
-    </mat-menu>
-  `,
+  templateUrl: 'runs_group_menu_button.ng.html',
   styleUrls: ['runs_group_menu_button_component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
