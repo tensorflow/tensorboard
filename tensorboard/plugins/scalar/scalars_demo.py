@@ -42,24 +42,25 @@ def one_step(temperature, ambient_temperature, heat_coefficient, step):
       step: tf.int64 value of the current step number.  Used in the
         `summary.scalar` API.
     """
-    tf.summary.scalar(
-        name="current",
-        data=temperature,
-        step=step,
-        description="The temperature of the object, in Kelvins.",
-    )
-    # Compute how much the object's temperature differs from that of
-    #  its environment, and track this, too: likewise, as
-    # "temperature/difference_to_ambient".
-    ambient_difference = temperature - ambient_temperature
-    tf.summary.scalar(
-        name="difference_to_ambient",
-        data=ambient_difference,
-        step=step,
-        description="The difference between the ambient "
-        "temperature and the temperature of the "
-        "object under simulation, in Kelvins.",
-    )
+    with tf.name_scope("temperature"):
+        tf.summary.scalar(
+            name="current",
+            data=temperature,
+            step=step,
+            description="The temperature of the object, in Kelvins.",
+        )
+        # Compute how much the object's temperature differs from that of
+        #  its environment, and track this, too: likewise, as
+        # "temperature/difference_to_ambient".
+        ambient_difference = temperature - ambient_temperature
+        tf.summary.scalar(
+            name="difference_to_ambient",
+            data=ambient_difference,
+            step=step,
+            description="The difference between the ambient "
+            "temperature and the temperature of the "
+            "object under simulation, in Kelvins.",
+        )
     # Newton suggested that the rate of change of the temperature of
     # an object is directly proportional to this
     # `ambient_difference` above, where the proportionality constant
@@ -101,9 +102,8 @@ def run(initial_temperature, ambient_temperature, heat_coefficient):
     """
     tf.random.set_seed(0)
     temperature = tf.Variable(initial_temperature)
-    with tf.name_scope("temperature"):
-        for step in tf.range(STEPS, dtype=tf.int64):
-            one_step(temperature, ambient_temperature, heat_coefficient, step)
+    for step in tf.range(STEPS, dtype=tf.int64):
+        one_step(temperature, ambient_temperature, heat_coefficient, step)
 
 
 def run_all(logdir, verbose=False):
