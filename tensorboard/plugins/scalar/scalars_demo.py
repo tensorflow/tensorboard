@@ -18,10 +18,7 @@
 import os.path
 
 from absl import app
-import tensorflow.compat.v1 as tf
-from tensorboard.plugins.scalar import summary
-
-tf.disable_v2_behavior()
+import tensorflow as tf
 
 # Directory into which to write tensorboard data.
 LOGDIR = "/tmp/scalars_demo"
@@ -55,74 +52,47 @@ def run(
       heat_coefficient: float; a measure of the object's thermal
         conductivity
     """
-    tf.reset_default_graph()
-    tf.set_random_seed(0)
-
+    tf.random.set_seed(0)
+    temperature = initial_temperature
     with tf.name_scope("temperature"):
-        # Create a mutable variable to hold the object's temperature, and
-        # create a scalar summary to track its value over time. The name of
-        # the summary will appear as "temperature/current" due to the
-        # name-scope above.
-        temperature = tf.Variable(
-            tf.constant(initial_temperature), name="temperature"
-        )
-        summary.op(
-            "current",
-            temperature,
-            display_name="Temperature",
-            description="The temperature of the object under "
-            "simulation, in Kelvins.",
-        )
-
-        # Compute how much the object's temperature differs from that of its
-        # environment, and track this, too: likewise, as
-        # "temperature/difference_to_ambient".
-        ambient_difference = temperature - ambient_temperature
-        summary.op(
-            "difference_to_ambient",
-            ambient_difference,
-            display_name="Difference to ambient temperature",
-            description="The difference between the ambient "
-            "temperature and the temperature of the "
-            "object under simulation, in Kelvins.",
-        )
-
-    # Newton suggested that the rate of change of the temperature of an
-    # object is directly proportional to this `ambient_difference` above,
-    # where the proportionality constant is what we called the heat
-    # coefficient. But in real life, not everything is quite so clean, so
-    # we'll add in some noise. (The value of 50 is arbitrary, chosen to
-    # make the data look somewhat interesting. :-) )
-    noise = 50 * tf.random.normal([])
-    delta = -heat_coefficient * (ambient_difference + noise)
-    summary.op(
-        "delta",
-        delta,
-        description="The change in temperature from the previous "
-        "step, in Kelvins.",
-    )
-
-    # Collect all the scalars that we want to keep track of.
-    summ = tf.summary.merge_all()
-
-    # Now, augment the current temperature by this delta that we computed,
-    # blocking the assignment on summary collection to avoid race conditions
-    # and ensure that the summary always reports the pre-update value.
-    with tf.control_dependencies([summ]):
-        update_step = temperature.assign_add(delta)
-
-    sess = tf.Session()
-    writer = tf.summary.FileWriter(os.path.join(logdir, run_name))
-    writer.add_graph(sess.graph)
-    sess.run(tf.global_variables_initializer())
-    for step in range(STEPS):
-        # By asking TensorFlow to compute the update step, we force it to
-        # change the value of the temperature variable. We don't actually
-        # care about this value, so we discard it; instead, we grab the
-        # summary data computed along the way.
-        (s, _) = sess.run([summ, update_step])
-        writer.add_summary(s, global_step=step)
-    writer.close()
+        writer = tf.summary.create_file_writer(os.path.join(logdir, run_name))
+        with writer.as_default():
+            for step in range(STEPS):
+                tf.summary.scalar(
+                    name="current",
+                    data=temperature,
+                    step=step,
+                    description="The temperature of the object, in Kelvins.",
+                )
+                # Compute how much the object's temperature differs from that of
+                #  its environment, and track this, too: likewise, as
+                # "temperature/difference_to_ambient".
+                ambient_difference = temperature - ambient_temperature
+                tf.summary.scalar(
+                    name="difference_to_ambient",
+                    data=ambient_difference,
+                    step=step,
+                    description="The difference between the ambient "
+                    "temperature and the temperature of the "
+                    "object under simulation, in Kelvins.",
+                )
+                # Newton suggested that the rate of change of the temperature of
+                # an object is directly proportional to this
+                # `ambient_difference` above, where the proportionality constant
+                # is what we called the heat coefficient. But in real life, not
+                # everything is quite so clean, so we'll add in some noise. (The
+                # value of 50 is arbitrary, chosen to
+                # make the data look somewhat interesting. :-) )
+                noise = 50 * tf.random.normal([])
+                delta = -heat_coefficient * (ambient_difference + noise)
+                tf.summary.scalar(
+                    name="delta",
+                    data=delta,
+                    step=step,
+                    description="The change in temperature from the previous "
+                    "step, in Kelvins.",
+                )
+                temperature += delta
 
 
 def run_all(logdir, verbose=False):
@@ -154,6 +124,23 @@ def run_all(logdir, verbose=False):
 def main(unused_argv):
     print("Saving output to %s." % LOGDIR)
     run_all(LOGDIR, verbose=True)
+    print(
+        """
+You can now view the scalars in this logdir:
+
+Run TensorBoard locally:
+
+    tensorboard --logdir=%s
+
+Upload to TensorBoard.dev:
+
+    tensorboard dev upload \\
+      --logdir=%s \\
+      --name=\"Scalars demo.\" \\
+      --one_shot
+"""
+        % (LOGDIR, LOGDIR)
+    )
     print("Done. Output saved to %s." % LOGDIR)
 
 
