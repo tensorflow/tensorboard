@@ -19,47 +19,46 @@ more specialized data types. See function docstrings for details about
 what runs have what data.
 """
 
+import contextlib
 import os
-
 import tensorflow as tf
 import numpy as np
 
+# Directory into which to write the data for tensorboard to read.
 LOGDIR = "/tmp/graphs_demo"
 
 
-def main():
-    tagged()
-    profile()
-    keras()
+@contextlib.contextmanager
+def _nullcontext():
+    """Pre-Python-3.7-compatible standin for contextlib.nullcontext."""
+    yield
 
 
-def tagged():
-    """Create run graph data with `TaggedRunMetadata`.
+def _silence_deprecation_warnings():
+    """Context manager that best-effort silences TF deprecation warnings."""
+    try:
+        # Learn this one weird trick to make TF deprecation warnings go away.
+        from tensorflow.python.util import deprecation
 
-    The `tagged` run has a top-level run graph as well as steps
-    `step_0000` through `step_0002`, each with profile data.
-    """
-    logdir = os.path.join(LOGDIR, "tagged")
-    with tf.compat.v1.Graph().as_default():
-        with tf.compat.v1.Session() as sess:
-            step_tensor = tf.compat.v1.placeholder(shape=(), dtype=tf.int32)
-            output = step_tensor * 2
+        return deprecation.silence()
+    except (ImportError, AttributeError):
+        return _nullcontext()
 
-            writer = tf.compat.v1.summary.FileWriter(logdir)
-            with writer:
-                writer.add_graph(sess.graph)
-                for step in range(3):
-                    feed_dict = {step_tensor: step}
-                    run_options = tf.compat.v1.RunOptions()
-                    run_options.trace_level = tf.compat.v1.RunOptions.FULL_TRACE
-                    run_metadata = tf.compat.v1.RunMetadata()
-                    s = sess.run(
-                        output,
-                        feed_dict=feed_dict,
-                        options=run_options,
-                        run_metadata=run_metadata,
-                    )
-                    writer.add_run_metadata(run_metadata, "step_%04d" % step)
+
+def write_graph():
+    """Demonstrate basic graph writing."""
+    logdir = os.path.join(LOGDIR, "write_graph")
+
+    @tf.function
+    def f():
+        x = tf.constant(2)
+        y = tf.constant(3)
+        return x ** y
+
+    with tf.summary.create_file_writer(logdir).as_default():
+        if hasattr(tf.summary, "graph"):
+            # Emit a simple graph.
+            tf.summary.graph(f.get_concrete_function().graph)
 
 
 def keras():
@@ -127,6 +126,19 @@ def profile():
             tf.summary.trace_on(profiler=False)
             print(g(step).numpy())
             tf.summary.trace_export("prof_g", step=step)
+
+
+def main():
+    # Create three demo graphs.
+    with _silence_deprecation_warnings():
+        write_graph()
+        profile()
+        keras()
+
+    print(
+        "To view results of all graphs in your browser, run `tensorboard --logdir %s`"
+        % LOGDIR
+    )
 
 
 if __name__ == "__main__":
