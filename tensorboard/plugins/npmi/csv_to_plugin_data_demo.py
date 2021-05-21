@@ -23,8 +23,6 @@ from absl import app
 from absl import flags
 from tensorboard.plugins.npmi import summary
 
-tf.compat.v1.enable_eager_execution()
-
 FLAGS = flags.FLAGS
 
 flags.DEFINE_string(
