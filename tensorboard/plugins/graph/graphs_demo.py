@@ -20,46 +20,27 @@ what runs have what data.
 """
 
 import os
-
 import tensorflow as tf
 import numpy as np
 
+# Directory into which to write the data for tensorboard to read.
 LOGDIR = "/tmp/graphs_demo"
 
 
-def main():
-    tagged()
-    profile()
-    keras()
+def graph_writing():
+    """Demonstrate basic graph writing."""
+    logdir = os.path.join(LOGDIR, "graph_writing")
 
+    @tf.function
+    def f():
+        x = tf.constant(2)
+        y = tf.constant(3)
+        return x**y
 
-def tagged():
-    """Create run graph data with `TaggedRunMetadata`.
-
-    The `tagged` run has a top-level run graph as well as steps
-    `step_0000` through `step_0002`, each with profile data.
-    """
-    logdir = os.path.join(LOGDIR, "tagged")
-    with tf.compat.v1.Graph().as_default():
-        with tf.compat.v1.Session() as sess:
-            step_tensor = tf.compat.v1.placeholder(shape=(), dtype=tf.int32)
-            output = step_tensor * 2
-
-            writer = tf.compat.v1.summary.FileWriter(logdir)
-            with writer:
-                writer.add_graph(sess.graph)
-                for step in range(3):
-                    feed_dict = {step_tensor: step}
-                    run_options = tf.compat.v1.RunOptions()
-                    run_options.trace_level = tf.compat.v1.RunOptions.FULL_TRACE
-                    run_metadata = tf.compat.v1.RunMetadata()
-                    s = sess.run(
-                        output,
-                        feed_dict=feed_dict,
-                        options=run_options,
-                        run_metadata=run_metadata,
-                    )
-                    writer.add_run_metadata(run_metadata, "step_%04d" % step)
+    with tf.summary.create_file_writer(logdir).as_default():
+        if hasattr(tf.summary, "graph"):
+            # Emit a simple graph.
+            tf.summary.graph(f.get_concrete_function().graph)
 
 
 def keras():
@@ -127,6 +108,18 @@ def profile():
             tf.summary.trace_on(profiler=False)
             print(g(step).numpy())
             tf.summary.trace_export("prof_g", step=step)
+
+
+def main():
+    # Create three demo graphs.
+    graph_writing()
+    keras()
+    profile()
+
+    print(
+        "To view results of all graphs in your browser, run `tensorboard --logdir %s`"
+        % LOGDIR
+    )
 
 
 if __name__ == "__main__":
