@@ -15,8 +15,9 @@ limitations under the License.
 import {
   numberFormatter,
   relativeTimeFormatter,
-  wallTimeFormatter,
+  siNumberFormatter,
   TEST_ONLY,
+  wallTimeFormatter,
 } from './formatter';
 
 describe('line_chart_v2/lib/formatter test', () => {
@@ -58,12 +59,25 @@ describe('line_chart_v2/lib/formatter test', () => {
         expect(numberFormatter.formatReadable(3.01)).toBe('3.01');
         expect(numberFormatter.formatReadable(9999)).toBe('9,999');
         expect(numberFormatter.formatReadable(0.09)).toBe('0.09');
-        expect(numberFormatter.formatReadable(1.004e6)).toBe('1,004,000');
-        expect(numberFormatter.formatReadable(-1.004e6)).toBe('-1,004,000');
-        expect(numberFormatter.formatReadable(0.00005)).toBe('0.00005');
-        expect(numberFormatter.formatReadable(1e5 + 0.00005)).toBe(
-          '100,000.00005'
-        );
+        expect(numberFormatter.formatReadable(1.004e6)).toBe('1e+6');
+        expect(numberFormatter.formatReadable(-1.004e6)).toBe('-1e+6');
+        expect(numberFormatter.formatReadable(0.00005)).toBe('5e-5');
+        expect(numberFormatter.formatReadable(1e5 + 0.00005)).toBe('1e+5');
+      });
+    });
+
+    describe('formatLong', () => {
+      it('formats with localization', () => {
+        expect(numberFormatter.formatLong(1)).toBe('1');
+        expect(numberFormatter.formatLong(5)).toBe('5');
+        expect(numberFormatter.formatLong(-100.4)).toBe('-100.4');
+        expect(numberFormatter.formatLong(3.01)).toBe('3.01');
+        expect(numberFormatter.formatLong(9999)).toBe('9,999');
+        expect(numberFormatter.formatLong(0.09)).toBe('0.09');
+        expect(numberFormatter.formatLong(1.004e6)).toBe('1,004,000');
+        expect(numberFormatter.formatLong(-1.004e6)).toBe('-1,004,000');
+        expect(numberFormatter.formatLong(0.00005)).toBe('0.00005');
+        expect(numberFormatter.formatLong(1e5 + 0.00005)).toBe('100,000.00005');
       });
     });
   });
@@ -73,31 +87,32 @@ describe('line_chart_v2/lib/formatter test', () => {
       {name: 'formatTick', fn: relativeTimeFormatter.formatTick},
       {name: 'formatShort', fn: relativeTimeFormatter.formatShort},
       {name: 'formatReadable', fn: relativeTimeFormatter.formatReadable},
+      {name: 'formatLong', fn: relativeTimeFormatter.formatLong},
     ]) {
       describe(name, () => {
         it('formats time difference in appropriate unit', () => {
           expect(fn(0)).toBe('0');
-          expect(fn(100)).toBe('100ms');
-          expect(fn(999)).toBe('999ms');
-          expect(fn(1000)).toBe('1sec');
-          expect(fn(4023)).toBe('4.023sec');
-          expect(fn(60023)).toBe('1min');
-          expect(fn(61523)).toBe('1.025min');
-          expect(fn(3700000)).toBe('1.028hr');
-          expect(fn(86400000 * 3)).toBe('3day');
-          expect(fn(31536000000 * 5)).toBe('5yr');
+          expect(fn(100)).toBe('100 ms');
+          expect(fn(999)).toBe('999 ms');
+          expect(fn(1000)).toBe('1 sec');
+          expect(fn(4023)).toBe('4.023 sec');
+          expect(fn(60023)).toBe('1 min');
+          expect(fn(61523)).toBe('1.025 min');
+          expect(fn(3700000)).toBe('1.028 hr');
+          expect(fn(86400000 * 3)).toBe('3 day');
+          expect(fn(31536000000 * 5)).toBe('5 yr');
         });
 
         it('formats negative time difference in appropriate unit', () => {
-          expect(fn(-100)).toBe('-100ms');
-          expect(fn(-999)).toBe('-999ms');
-          expect(fn(-1000)).toBe('-1sec');
-          expect(fn(-4023)).toBe('-4.023sec');
-          expect(fn(-60023)).toBe('-1min');
-          expect(fn(-61523)).toBe('-1.025min');
-          expect(fn(-3700000)).toBe('-1.028hr');
-          expect(fn(-86400000 * 3)).toBe('-3day');
-          expect(fn(-31536000000 * 5)).toBe('-5yr');
+          expect(fn(-100)).toBe('-100 ms');
+          expect(fn(-999)).toBe('-999 ms');
+          expect(fn(-1000)).toBe('-1 sec');
+          expect(fn(-4023)).toBe('-4.023 sec');
+          expect(fn(-60023)).toBe('-1 min');
+          expect(fn(-61523)).toBe('-1.025 min');
+          expect(fn(-3700000)).toBe('-1.028 hr');
+          expect(fn(-86400000 * 3)).toBe('-3 day');
+          expect(fn(-31536000000 * 5)).toBe('-5 yr');
         });
       });
     }
@@ -138,8 +153,45 @@ describe('line_chart_v2/lib/formatter test', () => {
         // jasmine + Angular seems to mock out the timezone by default (to UTC).
         expect(
           wallTimeFormatter.formatReadable(new Date('2020-1-5 13:23').getTime())
-        ).toBe('Jan 5, 2020, 1:23:00.000 PM UTC');
+        ).toBe('Jan 5, 2020, 1:23:00 PM UTC');
       });
     });
+
+    describe('formatLong', () => {
+      it('formats using localization', () => {
+        // jasmine + Angular seems to mock out the timezone by default (to UTC).
+        expect(
+          wallTimeFormatter.formatLong(new Date('2020-1-5 13:23').getTime())
+        ).toBe('January 5, 2020, 1:23:00.000 PM UTC');
+      });
+    });
+  });
+
+  describe('#siNumberFormatter', () => {
+    for (const {name, fn} of [
+      {name: 'formatTick', fn: siNumberFormatter.formatTick},
+      {name: 'formatShort', fn: siNumberFormatter.formatShort},
+      {name: 'formatReadable', fn: siNumberFormatter.formatReadable},
+      {name: 'formatLong', fn: siNumberFormatter.formatLong},
+    ]) {
+      describe(`#${name}`, () => {
+        it('formats without si-suffix for number less than 10k', () => {
+          expect(fn(1)).toBe('1');
+          expect(fn(5)).toBe('5');
+          expect(fn(-100.4)).toBe('-100.4');
+          expect(fn(3.01)).toBe('3.01');
+          expect(fn(9999)).toBe('9,999');
+          expect(fn(9999.9123)).toBe('9,999.912');
+          expect(fn(0.09)).toBe('0.09');
+          expect(fn(10000)).toBe('10k');
+          expect(fn(10001)).toBe('10k');
+          expect(fn(-10000)).toBe('-10k');
+          expect(fn(-10001)).toBe('-10k');
+          expect(fn(-10101)).toBe('-10.1k');
+          expect(fn(-1.004e6)).toBe('-1M');
+          expect(fn(0.00005)).toBe('50µ');
+        });
+      });
+    }
   });
 });
