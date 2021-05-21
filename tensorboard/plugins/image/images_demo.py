@@ -29,18 +29,23 @@ LOGDIR = "/tmp/images_demo"
 
 
 def run_all(logdir):
-  w = tf.summary.create_file_writer(logdir)
-  tf.random.set_seed(0)
-  with w.as_default():
-    for x in range(5):
-      image1 = tf.random.uniform(shape=[8, 8, 1])
-      image2 = tf.random.uniform(shape=[8, 8, 1])
-      tf.summary.image("grayscale_noise", [image1, image2], step=x)
-      # Convert the original dtype=int32 `Tensor` into `dtype=float64`.
-      rgb_image_float = tf.constant([
-          [[1000 - 100 * x, 0, 0], [0, 500, 1000 - 100 * x]],
-      ]) / 1000
-      tf.summary.image("picture", [rgb_image_float], step=x)
+    w = tf.summary.create_file_writer(logdir)
+    tf.random.set_seed(0)
+    with w.as_default():
+        for x in range(5):
+            image1 = tf.random.uniform(shape=[8, 8, 1])
+            image2 = tf.random.uniform(shape=[8, 8, 1])
+            tf.summary.image("grayscale_noise", [image1, image2], step=x)
+            # Convert the original dtype=int32 `Tensor` into `dtype=float64`.
+            rgb_image_float = (
+                tf.constant(
+                    [
+                        [[1000 - 100 * x, 0, 0], [0, 500, 1000 - 100 * x]],
+                    ]
+                )
+                / 1000
+            )
+            tf.summary.image("picture", [rgb_image_float], step=x)
 
 
 def main(unused_argv):
