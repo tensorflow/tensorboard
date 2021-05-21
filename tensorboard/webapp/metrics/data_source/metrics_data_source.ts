@@ -331,11 +331,10 @@ export class TBMetricsDataSource implements MetricsDataSource {
     serialized: string
   ): Partial<PersistableSettings> {
     const settings: Partial<PersistableSettings> = {};
-    let unsanitizedObject: Record<string, string | number | boolean>;
+    let unsanitizedObject: Partial<SerializableSettings>;
     try {
-      unsanitizedObject = JSON.parse(serialized) as Record<
-        string,
-        string | number | boolean
+      unsanitizedObject = JSON.parse(serialized) as Partial<
+        SerializableSettings
       >;
     } catch (e) {
       return settings;
