@@ -29,9 +29,19 @@ STEPS = 1000
 
 @tf.function
 def one_step(temperature, ambient_temperature, heat_coefficient, step):
-    print("XXXXXXXXXXXXXXXXXXXXXX")
-    print("I AM BEING RETRACED!!!!!!")
-    print(temperature, ambient_temperature, heat_coefficient, step)
+    """Runs one step of the temperature simulation.
+
+    Will update the `temperature` argument with one step of heat diffusion.
+
+    Arguments:
+      temperature: The tf.Variable containing the value being updated.  Akin
+        to a weight in a model.
+      ambient_temperature: The `tf.Constant` value the temperature is being
+        drawn towards.
+      heat_coefficient: tf.Constant describing rate of diffusion.
+      step: tf.int64 value of the current step number.  Used in the
+        `summary.scalar` API.
+    """
     tf.summary.scalar(
         name="current",
         data=temperature,
