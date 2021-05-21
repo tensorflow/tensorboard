@@ -26,6 +26,7 @@ import {MatDialog} from '@angular/material/dialog';
 
 import {DataLoadState} from '../../../types/data';
 import {
+  Formatter,
   numberFormatter,
   relativeTimeFormatter,
   siNumberFormatter,
@@ -108,6 +109,18 @@ export class ScalarCardComponent<Downloader> {
   readonly relativeXFormatter = relativeTimeFormatter;
   readonly valueFormatter = numberFormatter;
   readonly stepFormatter = siNumberFormatter;
+
+  getCustomXFormatter(): Formatter | undefined {
+    switch (this.xAxisType) {
+      case XAxisType.RELATIVE:
+        return relativeTimeFormatter;
+      case XAxisType.STEP:
+        return siNumberFormatter;
+      case XAxisType.WALL_TIME:
+      default:
+        return undefined;
+    }
+  }
 
   getCursorAwareTooltipData(
     tooltipData: TooltipDatum<ScalarCardSeriesMetadata>[],

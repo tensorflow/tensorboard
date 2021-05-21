@@ -104,7 +104,7 @@ limitations under the License.
       [seriesMetadataMap]="chartMetadataMap"
       [xScaleType]="xScaleType"
       [yScaleType]="yScaleType"
-      [customXFormatter]="xAxisType === XAxisType.RELATIVE ? relativeXFormatter : undefined"
+      [customXFormatter]="getCustomXFormatter()"
       [ignoreYOutliers]="ignoreOutliers"
       [tooltipTemplate]="tooltip"
       (onViewBoxOverridden)="isViewBoxOverridden = $event"
