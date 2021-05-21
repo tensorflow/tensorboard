@@ -101,9 +101,26 @@ export function getTicksForLinearScale(
   }
 
   const minorTickVals = scale.ticks([low, high], maxMinorTickCount);
-  const numFractionalToKeep = getNumLeadingZerosInFractional(diff);
   const majorTickVals = scale.ticks([low, high], 2);
   const minor: MinorTick[] = [];
+
+  let numFractionalToKeep = getNumLeadingZerosInFractional(diff);
+
+  // In case the low and highs are 0 and [0, 1), e.g., [0, 0.0001], we would
+  // like to keep a bit more fractionals than other cases. For example, For
+  // above example, the `diff` is `0.0001` and `numFractionalToKeep` is
+  // 3 (number of leading zeros after decimals). That would effectively make
+  // majorTickVal just `0` and provide very awkward UX. For that case, we want
+  // to keep one extra fractional number.
+  if (
+    diff < 1 &&
+    majorTickVals.every((tickVal) => {
+      const absTickVal = Math.abs(tickVal);
+      return absTickVal >= 0 && absTickVal < 1;
+    })
+  ) {
+    numFractionalToKeep += 1;
+  }
 
   const majorTickValMap = new Map<number, MajorTick>();
   for (const val of majorTickVals) {
@@ -123,8 +140,8 @@ export function getTicksForLinearScale(
   const maximumDiff = 10 * Math.pow(10, -numFractionalToKeep);
 
   for (const val of minorTickVals) {
-    for (const flooredMajorVal of majorTickValMap.keys()) {
-      const diff = Math.abs(val - flooredMajorVal);
+    for (const flooredMajorVal of [...majorTickValMap.keys()].reverse()) {
+      const diff = val - flooredMajorVal;
       if (diff >= 0 && diff < maximumDiff) {
         // `diff` can have very minute number because of IEEE 754.
         const remainder = String(val).slice(String(flooredMajorVal).length);

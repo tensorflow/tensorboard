@@ -288,6 +288,52 @@ describe('line_chart_v2/sub_view/axis_utils test', () => {
           {value: 1.94516, tickFormattedString: '…6'},
         ]);
       });
+
+      it('handles 0 and small number close to 0 well', () => {
+        const {major, minor} = getTicksForLinearScale(
+          scale,
+          scale.defaultFormatter,
+          2,
+          [0, 0.0001999]
+        );
+        expect(major).toEqual([
+          {start: 0, tickFormattedString: '0'},
+          {start: 0.0001, tickFormattedString: '1e-4'},
+        ]);
+        expect(minor).toEqual([
+          {value: 0, tickFormattedString: '…0'},
+          {value: 0.0001, tickFormattedString: '…0'},
+        ]);
+      });
+
+      it('handles extent close to 0s well', () => {
+        const {major, minor} = getTicksForLinearScale(
+          scale,
+          scale.defaultFormatter,
+          2,
+          [0.000001, 0.0001999]
+        );
+        expect(major).toEqual([{start: 0.0001, tickFormattedString: '1e-4'}]);
+        expect(minor).toEqual([{value: 0.0001, tickFormattedString: '…0'}]);
+      });
+
+      it('handles negative extent close to 0s well', () => {
+        const {major, minor} = getTicksForLinearScale(
+          scale,
+          scale.defaultFormatter,
+          2,
+          [-0.000001999, -0.00001]
+        );
+
+        expect(major).toEqual([
+          {start: -0.000005, tickFormattedString: '-5e-6'},
+          {start: -0.00001, tickFormattedString: '-1e-5'},
+        ]);
+        expect(minor).toEqual([
+          {value: -0.000005, tickFormattedString: '…5'},
+          {value: -0.00001, tickFormattedString: '…0'},
+        ]);
+      });
     });
   });
 });
