@@ -27,6 +27,7 @@ import numpy as np
 # Directory into which to write the data for tensorboard to read.
 LOGDIR = "/tmp/graphs_demo"
 
+
 @contextlib.contextmanager
 def _nullcontext():
     """Pre-Python-3.7-compatible standin for contextlib.nullcontext."""
@@ -52,7 +53,7 @@ def write_graph():
     def f():
         x = tf.constant(2)
         y = tf.constant(3)
-        return x**y
+        return x ** y
 
     with tf.summary.create_file_writer(logdir).as_default():
         if hasattr(tf.summary, "graph"):
