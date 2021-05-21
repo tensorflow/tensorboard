@@ -54,8 +54,8 @@ export abstract class DeepLinkProvider {
   /**
    * When the URL changes, the router dispatches a `stateRehydratedFromUrl`
    * action [1], and calls this method to generate the action's payload.
-   * Specifically, the resulting objection of this method becomes the
-   * `partialState` field on the payload.
+   * Specifically, the result of this method becomes the `partialState`
+   * field on the payload.
    *
    * [1] webapp/app_routing/actions/app_routing_actions.ts
    *
