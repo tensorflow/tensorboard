@@ -19,24 +19,16 @@
 from absl import app
 import tensorflow as tf
 
-from tensorboard.plugins.histogram import summary as histogram_summary
-
 # Directory into which to write tensorboard data.
 LOGDIR = "/tmp/histograms_demo"
 
-
-def run_all(logdir, verbose=False, num_summaries=400):
-    """Generate a bunch of histogram data, and write it to logdir."""
-    del verbose
-
-    tf.compat.v1.set_random_seed(0)
-
-    k = tf.compat.v1.placeholder(tf.float32)
-
+def run(k):
+    tf.random.set_seed(0)
     # Make a normal distribution, with a shifting mean
     mean_moving_normal = tf.random.normal(shape=[1000], mean=(5 * k), stddev=1)
+
     # Record that distribution into a histogram summary
-    histogram_summary.op(
+    tf.summary.histogram(
         "normal/moving_mean",
         mean_moving_normal,
         description="A normal distribution whose mean changes " "over time.",
@@ -45,7 +37,7 @@ def run_all(logdir, verbose=False, num_summaries=400):
     # Make a normal distribution with shrinking variance
     shrinking_normal = tf.random.normal(shape=[1000], mean=0, stddev=1 - (k))
     # Record that distribution too
-    histogram_summary.op(
+    tf.summary.histogram(
         "normal/shrinking_variance",
         shrinking_normal,
         description="A normal distribution whose variance "
@@ -55,7 +47,7 @@ def run_all(logdir, verbose=False, num_summaries=400):
     # Let's combine both of those distributions into one dataset
     normal_combined = tf.concat([mean_moving_normal, shrinking_normal], 0)
     # We add another histogram summary to record the combined distribution
-    histogram_summary.op(
+    tf.summary.histogram(
         "normal/bimodal",
         normal_combined,
         description="A combination of two normal distributions, "
@@ -67,7 +59,7 @@ def run_all(logdir, verbose=False, num_summaries=400):
 
     # Add a gamma distribution
     gamma = tf.random.gamma(shape=[1000], alpha=k)
-    histogram_summary.op(
+    tf.summary.histogram(
         "gamma",
         gamma,
         description="A gamma distribution whose shape "
@@ -75,8 +67,8 @@ def run_all(logdir, verbose=False, num_summaries=400):
     )
 
     # And a poisson distribution
-    poisson = tf.compat.v1.random_poisson(shape=[1000], lam=k)
-    histogram_summary.op(
+    poisson = tf.random.poisson(shape=[1000], lam=k)
+    tf.summary.histogram(
         "poisson",
         poisson,
         description="A Poisson distribution, which only "
@@ -85,7 +77,7 @@ def run_all(logdir, verbose=False, num_summaries=400):
 
     # And a uniform distribution
     uniform = tf.random.uniform(shape=[1000], maxval=k * 10)
-    histogram_summary.op(
+    tf.summary.histogram(
         "uniform", uniform, description="A simple uniform distribution."
     )
 
@@ -98,7 +90,7 @@ def run_all(logdir, verbose=False, num_summaries=400):
         uniform,
     ]
     all_combined = tf.concat(all_distributions, 0)
-    histogram_summary.op(
+    tf.summary.histogram(
         "all_combined",
         all_combined,
         description="An amalgamation of five distributions: a "
@@ -107,19 +99,17 @@ def run_all(logdir, verbose=False, num_summaries=400):
         "two normal distributions.",
     )
 
-    summaries = tf.compat.v1.summary.merge_all()
+def run_all(logdir, verbose=False, num_summaries=400):
+    """Generate a bunch of histogram data, and write it to logdir."""
+    del verbose
 
-    # Setup a session and summary writer
-    sess = tf.compat.v1.Session()
-    writer = tf.summary.FileWriter(logdir)
-
-    # Setup a loop and write the summaries to disk
-    N = num_summaries
-    for step in range(N):
-        k_val = step / float(N)
-        summ = sess.run(summaries, feed_dict={k: k_val})
-        writer.add_summary(summ, global_step=step)
-
+    writer = tf.summary.create_file_writer(logdir)
+    with writer.as_default():
+        for step in range(num_summaries):
+            tf.summary.experimental.set_step(step)
+            k = step / float(num_summaries)
+            run(k)
+            writer.flush()
 
 def main(unused_argv):
     print("Running histograms demo. Output saving to %s." % LOGDIR)
