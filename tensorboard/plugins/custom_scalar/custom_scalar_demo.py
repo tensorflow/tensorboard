@@ -12,115 +12,115 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Create sample PR curve summary data.
-
-The logic below logs scalar data and then lays out the custom scalars
-dashboard.
-"""
-
+"""Create sample custom scalar summary data."""
 
 from absl import app
 import tensorflow as tf
 
-from tensorboard.summary import v1 as summary_lib
+from tensorboard.plugins.custom_scalar import summary as cs_summary
 from tensorboard.plugins.custom_scalar import layout_pb2
 
 
 LOGDIR = "/tmp/custom_scalar_demo"
 
 
-def run():
+def run(logdir):
     """Run custom scalar demo and generate event files."""
-    step = tf.compat.v1.placeholder(tf.float32, shape=[])
+    tf.random.set_seed(0)
+    writer = tf.summary.create_file_writer(logdir)
+    with writer.as_default():
+        for step in range(42):
+            write_scalars(step)
+        # We only need to specify the layout once (instead of per step).
+        tf.summary.experimental.write_raw_pb(
+            create_layout_summary().SerializeToString(), step=0
+        )
 
+
+def write_scalars(step):
+    x = tf.cast(step, dtype=tf.float32)
     with tf.name_scope("loss"):
         # Specify 2 different loss values, each tagged differently.
-        summary_lib.scalar("foo", tf.pow(0.9, step))
-        summary_lib.scalar("bar", tf.pow(0.85, step + 2))
+        tf.summary.scalar("foo", tf.pow(0.9, x), step=step)
+        tf.summary.scalar("bar", tf.pow(0.85, x + 2), step=step)
 
         # Log metric baz as well as upper and lower bounds for a margin chart.
-        middle_baz_value = step + 4 * tf.random.uniform([]) - 2
-        summary_lib.scalar("baz", middle_baz_value)
-        summary_lib.scalar(
-            "baz_lower", middle_baz_value - 6.42 - tf.random.uniform([])
+        middle_baz_value = x + 4 * tf.random.uniform([]) - 2
+        tf.summary.scalar("baz", middle_baz_value, step=step)
+        tf.summary.scalar(
+            "baz_lower",
+            middle_baz_value - 6.42 - tf.random.uniform([]),
+            step=step,
         )
-        summary_lib.scalar(
-            "baz_upper", middle_baz_value + 6.42 + tf.random.uniform([])
+        tf.summary.scalar(
+            "baz_upper",
+            middle_baz_value + 6.42 + tf.random.uniform([]),
+            step=step,
         )
-
     with tf.name_scope("trigFunctions"):
-        summary_lib.scalar("cosine", tf.cos(step))
-        summary_lib.scalar("sine", tf.sin(step))
-        summary_lib.scalar("tangent", tf.tan(step))
+        tf.summary.scalar("cosine", tf.cos(x), step=step)
+        tf.summary.scalar("sine", tf.sin(x), step=step)
+        tf.summary.scalar("tangent", tf.tan(x), step=step)
 
-    merged_summary = tf.compat.v1.summary.merge_all()
 
-    with tf.compat.v1.Session() as sess, tf.summary.FileWriter(
-        LOGDIR
-    ) as writer:
-        # We only need to specify the layout once (instead of per step).
-        layout_summary = summary_lib.custom_scalar_pb(
-            layout_pb2.Layout(
-                category=[
-                    layout_pb2.Category(
-                        title="losses",
-                        chart=[
-                            layout_pb2.Chart(
-                                title="losses",
-                                multiline=layout_pb2.MultilineChartContent(
-                                    tag=[r"loss(?!.*margin.*)"],
-                                ),
+def create_layout_summary():
+    return cs_summary.pb(
+        layout_pb2.Layout(
+            category=[
+                layout_pb2.Category(
+                    title="losses",
+                    chart=[
+                        layout_pb2.Chart(
+                            title="losses",
+                            multiline=layout_pb2.MultilineChartContent(
+                                tag=[r"loss(?!.*margin.*)"],
                             ),
-                            layout_pb2.Chart(
-                                title="baz",
-                                margin=layout_pb2.MarginChartContent(
-                                    series=[
-                                        layout_pb2.MarginChartContent.Series(
-                                            value="loss/baz/scalar_summary",
-                                            lower="loss/baz_lower/scalar_summary",
-                                            upper="loss/baz_upper/scalar_summary",
-                                        ),
-                                    ],
-                                ),
+                        ),
+                        layout_pb2.Chart(
+                            title="baz",
+                            margin=layout_pb2.MarginChartContent(
+                                series=[
+                                    layout_pb2.MarginChartContent.Series(
+                                        value="loss/baz",
+                                        lower="loss/baz_lower",
+                                        upper="loss/baz_upper",
+                                    ),
+                                ],
                             ),
-                        ],
-                    ),
-                    layout_pb2.Category(
-                        title="trig functions",
-                        chart=[
-                            layout_pb2.Chart(
-                                title="wave trig functions",
-                                multiline=layout_pb2.MultilineChartContent(
-                                    tag=[
-                                        r"trigFunctions/cosine",
-                                        r"trigFunctions/sine",
-                                    ],
-                                ),
+                        ),
+                    ],
+                ),
+                layout_pb2.Category(
+                    title="trig functions",
+                    chart=[
+                        layout_pb2.Chart(
+                            title="wave trig functions",
+                            multiline=layout_pb2.MultilineChartContent(
+                                tag=[
+                                    r"trigFunctions/cosine",
+                                    r"trigFunctions/sine",
+                                ],
                             ),
-                            # The range of tangent is different. Give it its own chart.
-                            layout_pb2.Chart(
-                                title="tan",
-                                multiline=layout_pb2.MultilineChartContent(
-                                    tag=[r"trigFunctions/tangent"],
-                                ),
+                        ),
+                        # The range of tangent is different. Give it its own chart.
+                        layout_pb2.Chart(
+                            title="tan",
+                            multiline=layout_pb2.MultilineChartContent(
+                                tag=[r"trigFunctions/tangent"],
                             ),
-                        ],
-                        # This category we care less about. Make it initially closed.
-                        closed=True,
-                    ),
-                ]
-            )
+                        ),
+                    ],
+                    # This category we care less about. Make it initially closed.
+                    closed=True,
+                ),
+            ]
         )
-        writer.add_summary(layout_summary)
-
-        for i in range(42):
-            summary = sess.run(merged_summary, feed_dict={step: i})
-            writer.add_summary(summary, global_step=i)
+    )
 
 
 def main(unused_argv):
     print("Saving output to %s." % LOGDIR)
-    run()
+    run(LOGDIR)
     print("Done. Output saved to %s." % LOGDIR)
 
 
