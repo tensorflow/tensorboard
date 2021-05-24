@@ -342,22 +342,28 @@ describe('runs_selectors', () => {
       });
     });
 
-    it('combines override with the default colors', () => {
-      const state = buildStateFromRunsState(
-        buildRunsState({
-          runColorOverrideForGroupBy: new Map([
-            ['foo', '#aaa'],
-            ['bar', '#bbb'],
-          ]),
-          defaultRunColorForGroupBy: new Map([['foo', '#000']]),
-        })
-      );
+    it(
+      'combines override with the default colors where override takes ' +
+        'precedence',
+      () => {
+        const state = buildStateFromRunsState(
+          buildRunsState({
+            runColorOverrideForGroupBy: new Map([['foo', '#aaa']]),
+            defaultRunColorForGroupBy: new Map([
+              ['foo', '#000'],
+              ['bar', '#bbb'],
+            ]),
+          })
+        );
 
-      expect(selectors.getRunColorMap(state)).toEqual({
-        foo: '#000',
-        bar: '#bbb',
-      });
-    });
+        expect(selectors.getRunColorMap(state)).toEqual({
+          // "#aaa" comes from the override for `foo`.
+          foo: '#aaa',
+          // "#bbb" is un-overridden default color of `bar`.
+          bar: '#bbb',
+        });
+      }
+    );
   });
 
   describe('#getRunGroupBy', () => {
