@@ -28,7 +28,7 @@ limitations under the License.
         >
           {{ tick.tickFormattedString }}
         </text>
-        <title>{{ getFormatter().formatReadable(tick.value) }}</title>
+        <title>{{ getFormatter().formatLong(tick.value) }}</title>
       </g>
     </svg>
     <button
@@ -56,7 +56,7 @@ limitations under the License.
       [style.width]="getMajorWidthString(tick, isLast, majorTicks[i + 1])"
       [style.bottom]="getMajorYPosition(tick) + 'px'"
       [style.height]="getMajorHeightString(tick, isLast, majorTicks[i + 1])"
-      [title]="getFormatter().formatReadable(tick.start)"
+      [title]="getFormatter().formatLong(tick.start)"
       ><span>{{ tick.tickFormattedString }}</span></span
     >
   </div>

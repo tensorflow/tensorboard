@@ -37,7 +37,18 @@ export interface Formatter {
    * Possible usage: tooltips on a line chart.
    */
   formatReadable(x: number): string;
+
+  /**
+   * Represents a number in a long form of a human readable string. The string
+   * should not lose information and must follow localization.
+   *
+   * Possible usage: on `title` attributes to show raw values.
+   */
+  formatLong(x: number): string;
 }
+
+const LARGE_NUMBER = 10000;
+const SMALL_NUMBER = 0.001;
 
 /**
  * ================
@@ -46,7 +57,7 @@ export interface Formatter {
  */
 
 const d3NumberFormatter = format('.2~e');
-const d3TrimFormatter = format('~');
+const d3ShortFormatter = format('.4~r');
 const d3LongFormatter = format(',~');
 
 function formatNumberShort(x: number): string {
@@ -55,19 +66,48 @@ function formatNumberShort(x: number): string {
   }
 
   const absNum = Math.abs(x);
-  if (absNum >= 100000 || absNum < 0.001) {
+  if (absNum >= LARGE_NUMBER || absNum < SMALL_NUMBER) {
     return d3NumberFormatter(x);
   }
 
-  return d3TrimFormatter(x);
+  return d3ShortFormatter(x);
 }
 
 export const numberFormatter: Formatter = {
   formatTick: formatNumberShort,
   formatShort: formatNumberShort,
   formatReadable(x: number): string {
+    const absNum = Math.abs(x);
+    if (absNum >= LARGE_NUMBER || absNum < SMALL_NUMBER) {
+      return d3NumberFormatter(x);
+    }
     return d3LongFormatter(x);
   },
+  formatLong: d3LongFormatter,
+};
+
+/**
+ * ===================
+ * SI NUMBER FORMATTER
+ * ===================
+ */
+
+const d3SiFormatter = format('0.3~s');
+const d3SiSmallNumberFormatter = format(',.3~f');
+
+function formatSiNumber(x: number): string {
+  const absNum = Math.abs(x);
+  if (absNum >= LARGE_NUMBER || absNum < SMALL_NUMBER) {
+    return d3SiFormatter(x);
+  }
+  return d3SiSmallNumberFormatter(x);
+}
+
+export const siNumberFormatter: Formatter = {
+  formatTick: formatSiNumber,
+  formatShort: formatSiNumber,
+  formatReadable: formatSiNumber,
+  formatLong: formatSiNumber,
 };
 
 /**
@@ -112,6 +152,7 @@ export const relativeTimeFormatter: Formatter = {
   formatTick: formatRelativeTime,
   formatShort: formatRelativeTime,
   formatReadable: formatRelativeTime,
+  formatLong: formatRelativeTime,
 };
 
 /**
@@ -140,10 +181,22 @@ export const wallTimeFormatter: Formatter = {
     });
   },
   formatReadable(x: number): string {
-    // "Nov 19, 2012, 7:00:00.551 PM PST"
+    // "Nov 19, 2012, 7:00:00 PM PST"
     return new Date(x).toLocaleString(localeOverride, {
       year: 'numeric',
       month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: 'numeric',
+      second: 'numeric',
+      timeZoneName: 'short',
+    });
+  },
+  formatLong(x: number): string {
+    // "November 19, 2012, 7:00:00.551 PM PST"
+    return new Date(x).toLocaleString(localeOverride, {
+      year: 'numeric',
+      month: 'long',
       day: 'numeric',
       hour: 'numeric',
       minute: 'numeric',

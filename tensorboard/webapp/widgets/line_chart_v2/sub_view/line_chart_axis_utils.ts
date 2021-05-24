@@ -134,7 +134,7 @@ export function getTicksForLinearScale(
       // at 231.0415 which is not the most ideal but certainly better than 231.041.
       start: flooredNumber,
       tickFormattedString:
-        flooredNumber === 0 ? '—' : formatter.formatShort(flooredNumber),
+        flooredNumber === 0 ? '—' : formatter.formatReadable(flooredNumber),
     });
   }
 

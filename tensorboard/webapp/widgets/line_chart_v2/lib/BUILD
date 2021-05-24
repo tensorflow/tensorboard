@@ -158,6 +158,7 @@ tf_ts_library(
     srcs = [
         "coordinator_test.ts",
         "drawable_test.ts",
+        "formatter_test.ts",
         "integration_test.ts",
         "scale_test.ts",
     ],
@@ -168,6 +169,7 @@ tf_ts_library(
         ":chart",
         ":coordinator",
         ":drawable",
+        ":formatter",
         ":internal_types",
         ":public_types",
         ":scale",

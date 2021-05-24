@@ -1041,8 +1041,8 @@ describe('scalar card', () => {
           {
             x: 10,
             step: 10,
-            y: 500,
-            value: 1000,
+            y: 10002000,
+            value: 10001337,
             wallTime: new Date('2020-01-01').getTime(),
           }
         ),
@@ -1059,8 +1059,8 @@ describe('scalar card', () => {
           {
             x: 1000,
             step: 1000,
-            y: -500,
-            value: -1000,
+            y: -0.0005,
+            value: -0.9312345,
             wallTime: new Date('2020-12-31').getTime(),
           }
         ),
@@ -1081,10 +1081,10 @@ describe('scalar card', () => {
       ]);
 
       assertTooltipRows(fixture, [
-        ['', 'Row 1', '500', '1000', '10', '1/1/20, 12:00 AM'],
+        ['', 'Row 1', '1e+7', '1e+7', '10', '1/1/20, 12:00 AM'],
         // Print the step with comma for readability. The value is yet optimize for
         // readability (we may use the scientific formatting).
-        ['', 'Row 2', '-500', '-1000', '1,000', '12/31/20, 12:00 AM'],
+        ['', 'Row 2', '-5e-4', '-0.9312', '1,000', '12/31/20, 12:00 AM'],
       ]);
     }));
 
@@ -1222,7 +1222,7 @@ describe('scalar card', () => {
 
       assertTooltipRows(fixture, [
         ['', 'Row 2', '-500', '1,000', jasmine.any(String)],
-        ['', 'Row 3', '3', '10,000', jasmine.any(String)],
+        ['', 'Row 3', '3', '10k', jasmine.any(String)],
         ['', 'Row 1', '1000', '10', jasmine.any(String)],
       ]);
     }));
@@ -1291,7 +1291,7 @@ describe('scalar card', () => {
 
       assertTooltipRows(fixture, [
         ['', 'Row 1', '1000', '10', jasmine.any(String)],
-        ['', 'Row 3', '3', '10,000', jasmine.any(String)],
+        ['', 'Row 3', '3', '10k', jasmine.any(String)],
         ['', 'Row 2', '-500', '1,000', jasmine.any(String)],
       ]);
     }));
@@ -1361,7 +1361,7 @@ describe('scalar card', () => {
       assertTooltipRows(fixture, [
         ['', 'Row 2', '-500', '1,000', jasmine.any(String)],
         ['', 'Row 1', '1000', '0', jasmine.any(String)],
-        ['', 'Row 3', '3', '10,000', jasmine.any(String)],
+        ['', 'Row 3', '3', '10k', jasmine.any(String)],
       ]);
 
       setCursorLocation(fixture, {x: 500, y: 600});
@@ -1369,13 +1369,13 @@ describe('scalar card', () => {
       assertTooltipRows(fixture, [
         ['', 'Row 1', '1000', '0', jasmine.any(String)],
         ['', 'Row 2', '-500', '1,000', jasmine.any(String)],
-        ['', 'Row 3', '3', '10,000', jasmine.any(String)],
+        ['', 'Row 3', '3', '10k', jasmine.any(String)],
       ]);
 
       setCursorLocation(fixture, {x: 10000, y: -100});
       fixture.detectChanges();
       assertTooltipRows(fixture, [
-        ['', 'Row 3', '3', '10,000', jasmine.any(String)],
+        ['', 'Row 3', '3', '10k', jasmine.any(String)],
         ['', 'Row 2', '-500', '1,000', jasmine.any(String)],
         ['', 'Row 1', '1000', '0', jasmine.any(String)],
       ]);
@@ -1386,7 +1386,7 @@ describe('scalar card', () => {
       assertTooltipRows(fixture, [
         ['', 'Row 1', '1000', '0', jasmine.any(String)],
         ['', 'Row 2', '-500', '1,000', jasmine.any(String)],
-        ['', 'Row 3', '3', '10,000', jasmine.any(String)],
+        ['', 'Row 3', '3', '10k', jasmine.any(String)],
       ]);
     }));
   });

@@ -25,7 +25,11 @@ import {
 import {MatDialog} from '@angular/material/dialog';
 
 import {DataLoadState} from '../../../types/data';
-import {relativeTimeFormatter} from '../../../widgets/line_chart_v2/lib/formatter';
+import {
+  numberFormatter,
+  relativeTimeFormatter,
+  siNumberFormatter,
+} from '../../../widgets/line_chart_v2/lib/formatter';
 import {LineChartComponent} from '../../../widgets/line_chart_v2/line_chart_component';
 import {
   RendererType,
@@ -102,6 +106,8 @@ export class ScalarCardComponent<Downloader> {
   }
 
   readonly relativeXFormatter = relativeTimeFormatter;
+  readonly valueFormatter = numberFormatter;
+  readonly stepFormatter = siNumberFormatter;
 
   getCursorAwareTooltipData(
     tooltipData: TooltipDatum<ScalarCardSeriesMetadata>[],

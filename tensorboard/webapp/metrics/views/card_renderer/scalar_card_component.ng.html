@@ -140,10 +140,12 @@ limitations under the License.
               <span [style.backgroundColor]="datum.metadata.color"></span>
             </td>
             <td class="name">{{ datum.metadata.displayName }}</td>
-            <td *ngIf="smoothingEnabled">{{ datum.point.y }}</td>
-            <td>{{ datum.point.value }}</td>
+            <td *ngIf="smoothingEnabled">
+              {{ valueFormatter.formatShort(datum.point.y) }}
+            </td>
+            <td>{{ valueFormatter.formatShort(datum.point.value) }}</td>
             <!-- Print the step with comma for readability. -->
-            <td>{{ datum.point.step | number }}</td>
+            <td>{{ stepFormatter.formatShort(datum.point.step) }}</td>
             <td>{{ datum.point.wallTime | date: 'short' }}</td>
             <td *ngIf="xAxisType === XAxisType.RELATIVE">
               {{ relativeXFormatter.formatReadable(datum.point.x) }}
