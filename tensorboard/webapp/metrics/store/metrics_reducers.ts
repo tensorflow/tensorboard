@@ -338,6 +338,15 @@ const reducer = createReducer(
       settings: newSettings,
     };
   }),
+  on(actions.fetchPersistedSettingsSucceeded, (state, {partialSettings}) => {
+    return {
+      ...state,
+      settings: {
+        ...state.settings,
+        ...partialSettings,
+      },
+    };
+  }),
   on(coreActions.reload, coreActions.manualReload, (state) => {
     const nextTagMetadataLoaded =
       state.tagMetadataLoaded === DataLoadState.LOADING

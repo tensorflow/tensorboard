@@ -8,6 +8,7 @@ tf_ng_module(
     deps = [
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp:selectors",
+        "//tensorboard/webapp/app_routing:types",
         "//tensorboard/webapp/app_routing/actions",
         "//tensorboard/webapp/core/actions",
         "//tensorboard/webapp/core/store",

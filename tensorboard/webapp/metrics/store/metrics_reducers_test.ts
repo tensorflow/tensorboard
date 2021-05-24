@@ -1690,4 +1690,30 @@ describe('metrics reducers', () => {
       expect(nextState.settings.scalarSmoothing).toBe(0.232);
     });
   });
+
+  describe('#fetchPersistedSettingsSucceeded', () => {
+    it('adds partial state from the action to the settings', () => {
+      const beforeState = buildMetricsState({
+        settings: buildMetricsSettingsState({
+          scalarSmoothing: 0.3,
+          ignoreOutliers: false,
+          tooltipSort: TooltipSort.ASCENDING,
+        }),
+      });
+
+      const nextState = reducers(
+        beforeState,
+        actions.fetchPersistedSettingsSucceeded({
+          partialSettings: {
+            scalarSmoothing: 0,
+            ignoreOutliers: true,
+          },
+        })
+      );
+
+      expect(nextState.settings.scalarSmoothing).toBe(0);
+      expect(nextState.settings.ignoreOutliers).toBe(true);
+      expect(nextState.settings.tooltipSort).toBe(TooltipSort.ASCENDING);
+    });
+  });
 });
