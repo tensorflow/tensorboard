@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {TestBed} from '@angular/core/testing';
+import {lastValueFrom} from 'rxjs';
+
 import {
   LocalStorageTestingModule,
   TestingLocalStorage,
@@ -355,7 +357,7 @@ describe('TBMetricsDataSource test', () => {
       getItemSpy.and.returnValue(
         '{"ignoreOutliers":false,"scalarSmoothing":0.3,"tooltipSort":"ascending"}'
       );
-      const value = await dataSource.getSettings().toPromise();
+      const value = await lastValueFrom(dataSource.getSettings());
       expect(value).toEqual({
         scalarSmoothing: 0.3,
         tooltipSort: TooltipSort.ASCENDING,
@@ -367,7 +369,7 @@ describe('TBMetricsDataSource test', () => {
       getItemSpy.and.returnValue(
         '{"ignoreOutliers":true,"scalarSmoothing":null,"tooltipSort":"meow"}'
       );
-      const value = await dataSource.getSettings().toPromise();
+      const value = await lastValueFrom(dataSource.getSettings());
       expect(value).toEqual({
         ignoreOutliers: true,
       });
@@ -375,13 +377,13 @@ describe('TBMetricsDataSource test', () => {
 
     it('returns an empty value when the serialized state is empty', async () => {
       getItemSpy.and.returnValue(null);
-      const value = await dataSource.getSettings().toPromise();
+      const value = await lastValueFrom(dataSource.getSettings());
       expect(value).toEqual({});
     });
 
     it('returns an empty state when serialized state is not an object', async () => {
       getItemSpy.and.returnValue('malformedjson');
-      const value = await dataSource.getSettings().toPromise();
+      const value = await lastValueFrom(dataSource.getSettings());
       expect(value).toEqual({});
     });
   });

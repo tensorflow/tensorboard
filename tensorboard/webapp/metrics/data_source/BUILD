@@ -59,5 +59,6 @@ tf_ts_library(
         "//tensorboard/webapp/util:local_storage_testing",
         "//tensorboard/webapp/webapp_data_source:http_client_testing",
         "@npm//@types/jasmine",
+        "@npm//rxjs",
     ],
 )
