@@ -133,7 +133,8 @@ export function getTicksForLinearScale(
       // Put it in the middle. If the flooredNumber is 231.041, then put the axis label
       // at 231.0415 which is not the most ideal but certainly better than 231.041.
       start: flooredNumber,
-      tickFormattedString: formatter.formatShort(flooredNumber),
+      tickFormattedString:
+        flooredNumber === 0 ? '—' : formatter.formatShort(flooredNumber),
     });
   }
 
@@ -144,11 +145,22 @@ export function getTicksForLinearScale(
       const diff = val - flooredMajorVal;
       if (diff >= 0 && diff < maximumDiff) {
         // `diff` can have very minute number because of IEEE 754.
-        const remainder = String(val).slice(String(flooredMajorVal).length);
-        minor.push({
-          value: val,
-          tickFormattedString: `…${remainder || '0'}`,
-        });
+
+        // When major axis is `0`, there is no right way to truncate it. Use the
+        // real formatter in that case.
+        if (flooredMajorVal === 0) {
+          minor.push({
+            value: val,
+            tickFormattedString: formatter.formatTick(val),
+          });
+        } else {
+          const remainder = String(val).slice(String(flooredMajorVal).length);
+          minor.push({
+            value: val,
+            tickFormattedString: `…${remainder || '0'}`,
+          });
+        }
+
         break;
       }
     }
