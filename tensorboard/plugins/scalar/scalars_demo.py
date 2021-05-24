@@ -127,6 +127,9 @@ def run_all(logdir, verbose=False):
                     os.path.join(logdir, run_name)
                 )
                 with writer.as_default():
+                    # Arguments wrapped in tf.constant to prevent unwanted
+                    # retracing.  See retracing logic details at
+                    # https://www.tensorflow.org/guide/function
                     run(
                         tf.constant(initial_temperature),
                         tf.constant(ambient_temperature),
