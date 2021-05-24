@@ -18,12 +18,12 @@
 
 from absl import app
 import tensorflow as tf
+import os
 
 # Directory into which to write tensorboard data.
 LOGDIR = "/tmp/histograms_demo"
 
 def run(k):
-    tf.random.set_seed(0)
     # Make a normal distribution, with a shifting mean
     mean_moving_normal = tf.random.normal(shape=[1000], mean=(5 * k), stddev=1)
 
@@ -99,11 +99,10 @@ def run(k):
         "two normal distributions.",
     )
 
-def run_all(logdir, verbose=False, num_summaries=400):
+def run_all(logdir, num_summaries=400):
     """Generate a bunch of histogram data, and write it to logdir."""
-    del verbose
-
-    writer = tf.summary.create_file_writer(logdir)
+    tf.random.set_seed(0)
+    writer = tf.summary.create_file_writer(os.path.join(logdir, 'my_run_name'))
     with writer.as_default():
         for step in range(num_summaries):
             tf.summary.experimental.set_step(step)
