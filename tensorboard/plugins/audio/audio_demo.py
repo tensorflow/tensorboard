@@ -63,8 +63,6 @@ def run(wave_name, wave_constructor, step):
     f_max = 880.0
     t = step / (FLAGS.steps - 1)
     frequency = f_min * (1.0 - t) + f_max * t
-    tf.summary.scalar("frequency", frequency, step)
-
     waveform = wave_constructor(frequency)
 
     # Optionally generate a description that will appear in TensorBoard
@@ -79,7 +77,8 @@ def run(wave_name, wave_constructor, step):
         source,
     )
 
-    # Write the audio waveform summary.
+    # Write the audio waveform summary. The `waveform` is a
+    # [num_clips, num_frames, num_channels] shaped tensor.
     tf.summary.audio(
         "waveform",
         waveform,
@@ -102,6 +101,21 @@ def square_wave(frequency):
     return tf.sign(sine_wave(frequency))
 
 
+def bisine_wave(frequency):
+    """Emit two sine waves, in stereo at different octaves."""
+    # Generate 2 sine waves, each of which is a [1, _samples(), 1] shaped tensor.
+    sine_hi = sine_wave(frequency)
+    sine_lo = sine_wave(frequency / 2.0)
+
+    # Concatenating along axis 2 produces a [1, _samples(), 2] shaped tensor, a
+    # stereo (2 channel) audio waveform.
+    sample1 = tf.concat([sine_lo, sine_hi], axis=2)
+    sample2 = tf.concat([sine_hi, sine_lo], axis=2)
+
+    # Return [2, _samples(), 2], representing 2 audio clips.
+    return tf.concat([sample1, sample2], axis=0)
+
+
 def run_all(base_logdir):
     """Generate waves of the shapes defined above.
 
@@ -113,6 +127,7 @@ def run_all(base_logdir):
     waves = [
         ("sine_wave", sine_wave),
         ("square_wave", square_wave),
+        ("bisine_wave", bisine_wave),
     ]
     for wave_name, wave_constructor in waves:
         logdir = os.path.join(base_logdir, wave_name)
