@@ -24,7 +24,7 @@ export function groupRuns(
   runs: Run[],
   runIdToExpId: Readonly<Record<RunId, ExperimentId>>
 ): {[groupId: string]: Run[]} {
-  const runGroups: {[groupId: string]: Run[]} = {};
+  let runGroups: {[groupId: string]: Run[]} = {};
   switch (groupBy.key) {
     case GroupByKey.RUN:
       for (const run of runs) {
@@ -41,7 +41,58 @@ export function groupRuns(
       break;
 
     case GroupByKey.REGEX:
-      throw new Error('Not implemented');
+      if (!groupBy.regexString) {
+        //TODO(japie1235813): props users when the input is invalid
+        throw new Error('Invalid regex');
+      }
+
+      // TODO(japie1235813): add additonal `\` to convert string to regex, which
+      // makes `new RegExp()` construct properly
+      // For example, convert `foo\d+bar` to `foo\\d+bar`
+
+      try {
+        new RegExp(groupBy.regexString);
+      } catch(e) {
+        //TODO(japie1235813): props users when the input is invalid
+        throw new Error('Invalid regex');
+      }
+
+      const regExp = new RegExp(groupBy.regexString);
+      // Checks if there is capture group in regex.
+      let isCaptureGroup = false;
+
+      for (const run of runs) {
+        let matches = (run.name).match(regExp)
+          if (matches) {
+          if(matches.length > 1) {
+            matches = matches.slice(1)
+            isCaptureGroup = true;
+          }
+          const id = matches.length === 1 ? matches[0] : matches.join('_');
+          const runs = runGroups[id] || [];
+          runs.push(run);
+          runGroups[id] = runs;
+        } else {
+          runGroups[run.id] = [run];
+        }
+      }
+
+      if (!isCaptureGroup) {
+        // No capture group in regex string. Groups all the matched runs together.
+        const matchedRuns = [];
+        runGroups = {};
+        for (const run of runs) {
+          let matches = (run.name).match(regExp)
+          if (matches) {
+            matchedRuns.push(run);
+            delete runGroups[run.id];
+          } else {
+            runGroups[run.id] = [run];
+          }
+        }
+        runGroups['matches'] = matchedRuns;
+      }
+      break;
     default:
   }
   return runGroups;

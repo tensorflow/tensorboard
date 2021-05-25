@@ -94,7 +94,7 @@ describe('run store utils test', () => {
     describe('by regex', () => {
       it('groups runs by regex without capture group', () => {
         const actual = groupRuns(
-          {key: GroupByKey.REGEX, regexString: '/foo\d+bar/'},
+          {key: GroupByKey.REGEX, regexString: 'foo\\d+bar'},
           [
             buildRun({id: 'eid1/alpha', name: 'foo1bar1'}),
             buildRun({id: 'eid1/beta', name: 'foo1bar2'}),
@@ -110,22 +110,20 @@ describe('run store utils test', () => {
         );
 
         expect(actual).toEqual({
-          'eid1/alpha': [
+          'matches': [
             buildRun({id: 'eid1/alpha', name: 'foo1bar1'}),
             buildRun({id: 'eid1/beta', name: 'foo1bar2'}),
-          ],
-          'eid2/beta': [
             buildRun({id: 'eid2/beta', name: 'foo2bar1'}),
           ],
           'eid2/gamma': [
-            buildRun({id: 'eid2/gamma', name: 'foo2bar1'}),
+            buildRun({id: 'eid2/gamma', name: 'gamma'}),
           ],
         });
       });
 
       it('groups runs by regex with one capture group', () => {
         const actual = groupRuns(
-          {key: GroupByKey.REGEX, regexString: '/foo(\d+)bar/'},
+          {key: GroupByKey.REGEX, regexString: 'foo(\\d+)bar'},
           [
             buildRun({id: 'eid1/alpha', name: 'foo1bar1'}),
             buildRun({id: 'eid1/beta', name: 'foo1bar2'}),
@@ -143,7 +141,7 @@ describe('run store utils test', () => {
         expect(actual).toEqual({
           '1': [
             buildRun({id: 'eid1/alpha', name: 'foo1bar1'}),
-            buildRun({id: 'eid1/beta', name: 'foo1bar1'}),
+            buildRun({id: 'eid1/beta', name: 'foo1bar2'}),
           ],
           '2': [
             buildRun({id: 'eid2/beta', name: 'foo2bar1'}),
@@ -154,7 +152,7 @@ describe('run store utils test', () => {
 
       it('groups runs by regex with multiple capture group', () => {
         const actual = groupRuns(
-          {key: GroupByKey.REGEX, regexString: '/foo(\d+)bar(\d+)/'},
+          {key: GroupByKey.REGEX, regexString: 'foo(\\d+)bar(\\d+)'},
           [
             buildRun({id: 'eid1/alpha', name: 'foo1bar1'}),
             buildRun({id: 'eid1/beta', name: 'foo2bar1'}),
