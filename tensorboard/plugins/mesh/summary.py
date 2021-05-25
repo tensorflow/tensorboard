@@ -12,7 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Mesh summaries and TensorFlow operations to create them."""
+"""Mesh summaries and TensorFlow operations to create them.
+
+This file is deprecated. See `summary_v2.py` instead.
+"""
 
 import json
 import tensorflow as tf
@@ -105,6 +108,8 @@ def op(
 ):
     """Creates a TensorFlow summary op for mesh rendering.
 
+    DEPRECATED: see `summary_v2.py` instead.
+
     Args:
       name: A name for this summary operation.
       vertices: Tensor of shape `[dim_1, ..., dim_n, 3]` representing the 3D
@@ -178,6 +183,8 @@ def pb(
     config_dict=None,
 ):
     """Create a mesh summary to save in pb format.
+
+    DEPRECATED: see `summary_v2.py` instead.
 
     Args:
       name: A name for this summary operation.

@@ -169,20 +169,9 @@ py_test(
 py_binary(
     name = "mesh_demo",
     srcs = ["mesh_demo.py"],
-    srcs_version = "PY3",
-    deps = [
-        ":demo_utils",
-        ":summary",
-        "//tensorboard:expect_absl_app_installed",
-        "//tensorboard:expect_absl_flags_installed",
-        "//tensorboard:expect_numpy_installed",
-        "//tensorboard:expect_tensorflow_installed",
+    data = [
+        ":test_data",
     ],
-)
-
-py_binary(
-    name = "mesh_demo_v2",
-    srcs = ["mesh_demo_v2.py"],
     srcs_version = "PY3",
     deps = [
         ":demo_utils",
