@@ -191,7 +191,7 @@ describe('runs_reducers', () => {
 
     it('assigns default color to new runs', () => {
       const state = buildRunsState({
-        groupBy: {
+        initialGroupBy: {
           key: GroupByKey.RUN,
         },
         defaultRunColorForGroupBy: new Map([
@@ -252,7 +252,10 @@ describe('runs_reducers', () => {
     describe('advanced grouping', () => {
       it('assigns default color to by experiment', () => {
         const state = buildRunsState({
-          groupBy: {
+          initialGroupBy: {
+            key: GroupByKey.RUN,
+          },
+          userSetGroupBy: {
             key: GroupByKey.EXPERIMENT,
           },
           defaultRunColorForGroupBy: new Map([
@@ -706,7 +709,7 @@ describe('runs_reducers', () => {
   describe('on runGroupByChanged', () => {
     it('reassigns color to EXPERIMENT from RUN', () => {
       const state = buildRunsState({
-        groupBy: {key: GroupByKey.RUN},
+        initialGroupBy: {key: GroupByKey.RUN},
         runIds: {
           eid1: ['run1', 'run2'],
           eid2: ['run3', 'run4'],
@@ -746,7 +749,10 @@ describe('runs_reducers', () => {
         })
       );
 
-      expect(nextState.data.groupBy).toEqual({key: GroupByKey.EXPERIMENT});
+      expect(nextState.data.initialGroupBy).toEqual({key: GroupByKey.RUN});
+      expect(nextState.data.userSetGroupBy).toEqual({
+        key: GroupByKey.EXPERIMENT,
+      });
       expect(nextState.data.groupKeyToColorString).toEqual(
         new Map([
           ['eid1', colorUtils.CHART_COLOR_PALLETE[0]],
@@ -766,7 +772,8 @@ describe('runs_reducers', () => {
 
     it('reassigns color to RUN from EXPERIMENT', () => {
       const state = buildRunsState({
-        groupBy: {key: GroupByKey.EXPERIMENT},
+        initialGroupBy: {key: GroupByKey.EXPERIMENT},
+        userSetGroupBy: {key: GroupByKey.EXPERIMENT},
         runIds: {
           eid1: ['run1', 'run2'],
           eid2: ['run3', 'run4'],
@@ -804,7 +811,7 @@ describe('runs_reducers', () => {
         })
       );
 
-      expect(nextState.data.groupBy).toEqual({key: GroupByKey.RUN});
+      expect(nextState.data.userSetGroupBy).toEqual({key: GroupByKey.RUN});
       expect(nextState.data.groupKeyToColorString).toEqual(
         new Map([
           ['run1', colorUtils.CHART_COLOR_PALLETE[0]],

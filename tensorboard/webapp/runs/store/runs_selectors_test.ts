@@ -366,18 +366,61 @@ describe('runs_selectors', () => {
     );
   });
 
+  describe('#getRunUserSetGroupBy', () => {
+    beforeEach(() => {
+      // Clear the memoization.
+      selectors.getRunUserSetGroupBy.release();
+    });
+
+    it('returns groupBy set by user when it is present', () => {
+      const state = buildStateFromRunsState(
+        buildRunsState({
+          userSetGroupBy: {
+            key: GroupByKey.REGEX,
+            regexString: 'hello',
+          },
+          initialGroupBy: {
+            key: GroupByKey.RUN,
+          },
+        })
+      );
+
+      expect(selectors.getRunUserSetGroupBy(state)).toEqual({
+        key: GroupByKey.REGEX,
+        regexString: 'hello',
+      });
+    });
+
+    it('returns null if user never has set one', () => {
+      const state = buildStateFromRunsState(
+        buildRunsState({
+          userSetGroupBy: undefined,
+          initialGroupBy: {
+            key: GroupByKey.RUN,
+          },
+        })
+      );
+
+      expect(selectors.getRunUserSetGroupBy(state)).toBe(null);
+    });
+  });
+
   describe('#getRunGroupBy', () => {
     beforeEach(() => {
       // Clear the memoization.
+      selectors.getRunUserSetGroupBy.release();
       selectors.getRunGroupBy.release();
     });
 
-    it('returns color map by runs', () => {
+    it('returns groupBy set by user when it is present', () => {
       const state = buildStateFromRunsState(
         buildRunsState({
-          groupBy: {
+          userSetGroupBy: {
             key: GroupByKey.REGEX,
             regexString: 'hello',
+          },
+          initialGroupBy: {
+            key: GroupByKey.RUN,
           },
         })
       );
@@ -385,6 +428,21 @@ describe('runs_selectors', () => {
       expect(selectors.getRunGroupBy(state)).toEqual({
         key: GroupByKey.REGEX,
         regexString: 'hello',
+      });
+    });
+
+    it('returns initial group by if user never has set one', () => {
+      const state = buildStateFromRunsState(
+        buildRunsState({
+          userSetGroupBy: undefined,
+          initialGroupBy: {
+            key: GroupByKey.RUN,
+          },
+        })
+      );
+
+      expect(selectors.getRunGroupBy(state)).toEqual({
+        key: GroupByKey.RUN,
       });
     });
   });

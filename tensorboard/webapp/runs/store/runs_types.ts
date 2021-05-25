@@ -50,7 +50,8 @@ export interface RunsDataRoutefulState {
   defaultRunColorForGroupBy: Map<RunId, string>;
   runColorOverrideForGroupBy: Map<RunId, string>;
   groupKeyToColorString: Map<string, string>;
-  groupBy: GroupBy;
+  userSetGroupBy?: GroupBy;
+  initialGroupBy: GroupBy;
 }
 
 export interface RunsDataRoutelessState {
