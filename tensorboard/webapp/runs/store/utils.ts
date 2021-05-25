@@ -43,7 +43,7 @@ export function groupRuns(
     case GroupByKey.REGEX:
       if (!groupBy.regexString) {
         //TODO(japie1235813): props users when the input is invalid
-        throw new Error('Invalid regex');
+        throw new Error('Empty regex string.');
       }
 
       // TODO(japie1235813): add additonal `\` to convert string to regex, which
@@ -52,9 +52,9 @@ export function groupRuns(
 
       try {
         new RegExp(groupBy.regexString);
-      } catch(e) {
+      } catch (e) {
         //TODO(japie1235813): props users when the input is invalid
-        throw new Error('Invalid regex');
+        throw new Error('Invalid regex.');
       }
 
       const regExp = new RegExp(groupBy.regexString);
@@ -62,10 +62,10 @@ export function groupRuns(
       let isCaptureGroup = false;
 
       for (const run of runs) {
-        let matches = (run.name).match(regExp)
-          if (matches) {
-          if(matches.length > 1) {
-            matches = matches.slice(1)
+        let matches = run.name.match(regExp);
+        if (matches) {
+          if (matches.length > 1) {
+            matches = matches.slice(1);
             isCaptureGroup = true;
           }
           const id = matches.length === 1 ? matches[0] : matches.join('_');
@@ -82,7 +82,7 @@ export function groupRuns(
         const matchedRuns = [];
         runGroups = {};
         for (const run of runs) {
-          let matches = (run.name).match(regExp)
+          let matches = run.name.match(regExp);
           if (matches) {
             matchedRuns.push(run);
             delete runGroups[run.id];
