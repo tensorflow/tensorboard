@@ -14,7 +14,6 @@
 # ==============================================================================
 """Simple demo which displays constant 3D mesh."""
 
-
 from absl import app
 from absl import flags
 import numpy as np
@@ -27,12 +26,13 @@ from tensorboard.plugins.mesh import demo_utils
 flags.DEFINE_string(
     "logdir", "/tmp/mesh_demo", "Directory to write event logs to."
 )
-flags.DEFINE_string("mesh_path", None, "Path to PLY file to visualize.")
 
 FLAGS = flags.FLAGS
 
 # Max number of steps to run training with.
 _MAX_STEPS = 10
+
+DEMO_PLY_MESH_PATH = "tensorboard/plugins/mesh/test_data/icosphere.ply"
 
 
 def train_step(vertices, faces, colors, config_dict, step):
@@ -52,16 +52,11 @@ def train_step(vertices, faces, colors, config_dict, step):
 
 def run():
     """Runs training steps with a mesh summary."""
-    # Flag mesh_path is required.
-    if FLAGS.mesh_path is None:
-        raise ValueError(
-            "Flag --mesh_path is required and must contain path to PLY file."
-        )
     # Camera and scene configuration.
     config_dict = {"camera": {"cls": "PerspectiveCamera", "fov": 75}}
 
     # Read sample PLY file.
-    vertices, colors, faces = demo_utils.read_ascii_ply(FLAGS.mesh_path)
+    vertices, colors, faces = demo_utils.read_ascii_ply(DEMO_PLY_MESH_PATH)
 
     # Add batch dimension.
     vertices = np.expand_dims(vertices, 0)
