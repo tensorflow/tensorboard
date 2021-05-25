@@ -169,10 +169,10 @@ py_test(
 py_binary(
     name = "mesh_demo",
     srcs = ["mesh_demo.py"],
-    srcs_version = "PY3",
     data = [
         ":test_data",
     ],
+    srcs_version = "PY3",
     deps = [
         ":demo_utils",
         ":summary_v2",
