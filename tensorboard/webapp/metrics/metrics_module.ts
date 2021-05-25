@@ -16,9 +16,10 @@ import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
 import {EffectsModule} from '@ngrx/effects';
 import {Action, StoreModule} from '@ngrx/store';
-import {PluginRegistryModule} from '../plugins/plugin_registry_module';
 
-import {RunsSelectorModule} from '../runs/views/runs_selector/runs_selector_module';
+import {AppRoutingModule} from '../app_routing/app_routing_module';
+import {CoreModule} from '../core/core_module';
+import {PluginRegistryModule} from '../plugins/plugin_registry_module';
 
 import {METRICS_PLUGIN_ID, MetricsDataSourceModule} from './data_source';
 import {MetricsEffects} from './effects';
@@ -63,7 +64,8 @@ export function alertActionProvider() {
 @NgModule({
   imports: [
     CommonModule,
-    RunsSelectorModule,
+    AppRoutingModule,
+    CoreModule,
     PluginRegistryModule.forPlugin(
       METRICS_PLUGIN_ID,
       MetricsDashboardContainer

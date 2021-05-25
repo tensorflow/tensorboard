@@ -67,3 +67,10 @@ export const getIsInColab = createSelector(getFeatureFlags, (flags) => {
 export const getEnabledColorGroup = createSelector(getFeatureFlags, (flags) => {
   return flags.enabledColorGroup;
 });
+
+export const getIsMetricsImageSupportEnabled = createSelector(
+  getFeatureFlags,
+  (flags) => {
+    return flags.metricsImageSupportEnabled;
+  }
+);

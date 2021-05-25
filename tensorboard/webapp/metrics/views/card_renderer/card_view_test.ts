@@ -22,14 +22,14 @@ import {
 import {fakeAsync, flush, TestBed, tick} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
-import {Action, Store} from '@ngrx/store';
+import {Action, Store, StoreModule} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {State} from '../../../app_state';
 
 import * as selectors from '../../../selectors';
 import {RunColorScale} from '../../../types/ui';
 import * as actions from '../../actions';
-import {MetricsDataSourceModule, PluginType} from '../../data_source';
+import {PluginType} from '../../data_source';
 import {appStateFromMetricsState, buildMetricsState} from '../../testing';
 
 import {CardViewComponent} from './card_view_component';
@@ -52,7 +52,7 @@ describe('card view test', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [NoopAnimationsModule, MetricsDataSourceModule],
+      imports: [NoopAnimationsModule],
       declarations: [CardViewComponent, CardViewContainer, TestableScalarCard],
       providers: [
         provideMockStore({

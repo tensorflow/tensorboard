@@ -13,8 +13,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {TestBed} from '@angular/core/testing';
+import {Store} from '@ngrx/store';
+import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {lastValueFrom} from 'rxjs';
 
+import {State} from '../../app_state';
+import {buildFeatureFlag} from '../../feature_flag/testing';
+import * as selectors from '../../selectors';
 import {
   LocalStorageTestingModule,
   TestingLocalStorage,
@@ -36,16 +41,24 @@ describe('TBMetricsDataSource test', () => {
   let httpMock: HttpTestingController;
   let dataSource: MetricsDataSource;
   let localStorage: TestingLocalStorage;
+  let store: MockStore<State>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [TBHttpClientTestingModule, LocalStorageTestingModule],
-      providers: [{provide: MetricsDataSource, useClass: TBMetricsDataSource}],
+      providers: [
+        {provide: MetricsDataSource, useClass: TBMetricsDataSource},
+        provideMockStore(),
+      ],
     }).compileComponents();
 
     httpMock = TestBed.inject(HttpTestingController);
     dataSource = TestBed.inject(MetricsDataSource);
     localStorage = TestBed.inject(TestingLocalStorage);
+    store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
+    store.overrideSelector(selectors.getFeatureFlags, buildFeatureFlag());
+    store.overrideSelector(selectors.getIsFeatureFlagsLoaded, true);
+    store.overrideSelector(selectors.getIsMetricsImageSupportEnabled, true);
   });
 
   afterEach(() => {
@@ -58,6 +71,31 @@ describe('TBMetricsDataSource test', () => {
       dataSource.fetchTagMetadata([]).subscribe(resultSpy);
 
       expect(resultSpy).not.toHaveBeenCalled();
+    });
+
+    it('removes image data when it is unsupported', () => {
+      store.overrideSelector(selectors.getIsMetricsImageSupportEnabled, false);
+      const resultSpy = jasmine.createSpy();
+      dataSource.fetchTagMetadata(['exp1']).subscribe(resultSpy);
+
+      const req = httpMock.expectOne(
+        '/experiment/exp1/data/plugin/timeseries/tags'
+      );
+      const testResponse: BackendTagMetadata = {
+        scalars: {tagDescriptions: {}, runTagInfo: {}},
+        histograms: {tagDescriptions: {}, runTagInfo: {}},
+        images: {
+          tagDescriptions: {tag3: 'foo'},
+          tagRunSampledInfo: {tag3: {run1: {maxSamplesPerStep: 1}}},
+        },
+      };
+      req.flush(testResponse);
+
+      expect(resultSpy).toHaveBeenCalledWith({
+        scalars: {tagDescriptions: {}, runTagInfo: {}},
+        histograms: {tagDescriptions: {}, runTagInfo: {}},
+        images: {tagDescriptions: {}, tagRunSampledInfo: {}},
+      });
     });
 
     it('converts run names to runIds', () => {

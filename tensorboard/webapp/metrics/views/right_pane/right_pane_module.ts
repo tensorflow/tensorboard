@@ -21,6 +21,7 @@ import {MatIconModule} from '@angular/material/icon';
 import {MatSelectModule} from '@angular/material/select';
 import {MatSliderModule} from '@angular/material/slider';
 
+import {FeatureFlagModule} from '../../../feature_flag/feature_flag_module';
 import {DropdownModule} from '../../../widgets/dropdown/dropdown_module';
 import {RightPaneComponent} from './right_pane_component';
 import {SettingsViewComponent} from './settings_view_component';
@@ -42,6 +43,7 @@ import {SettingsViewContainer} from './settings_view_container';
     MatIconModule,
     MatSelectModule,
     MatSliderModule,
+    FeatureFlagModule,
   ],
 })
 export class RightPaneModule {}

@@ -11,6 +11,8 @@ tf_ng_module(
     ],
     deps = [
         "//tensorboard/webapp/alert:alert_action",
+        "//tensorboard/webapp/app_routing",
+        "//tensorboard/webapp/core",
         "//tensorboard/webapp/metrics/actions",
         "//tensorboard/webapp/metrics/data_source",
         "//tensorboard/webapp/metrics/effects",
@@ -18,7 +20,6 @@ tf_ng_module(
         "//tensorboard/webapp/metrics/store:metrics_initial_state_provider",
         "//tensorboard/webapp/metrics/views",
         "//tensorboard/webapp/plugins:plugin_registry",
-        "//tensorboard/webapp/runs/views/runs_selector",
         "@npm//@angular/common",
         "@npm//@angular/core",
         "@npm//@ngrx/effects",

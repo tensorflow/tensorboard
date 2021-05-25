@@ -27,11 +27,11 @@ import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
-import {State} from '../../../app_state';
 
+import {State} from '../../../app_state';
 import {DropdownModule} from '../../../widgets/dropdown/dropdown_module';
 import * as actions from '../../actions';
-import * as selectors from '../../store/metrics_selectors';
+import * as selectors from '../../../selectors';
 import {HistogramMode, TooltipSort, XAxisType} from '../../types';
 
 import {RightPaneComponent} from './right_pane_component';
@@ -87,6 +87,8 @@ describe('metrics right_pane', () => {
         selectors.getMetricsHistogramMode,
         HistogramMode.OFFSET
       );
+      store.overrideSelector(selectors.getIsFeatureFlagsLoaded, true);
+      store.overrideSelector(selectors.getIsMetricsImageSupportEnabled, true);
     });
 
     function getMatSliderValue(el: DebugElement): string {
@@ -170,6 +172,22 @@ describe('metrics right_pane', () => {
           'aria-checked'
         ]
       ).toBe('true');
+    });
+
+    it('hides settings if images are not supported', () => {
+      store.overrideSelector(selectors.getIsMetricsImageSupportEnabled, false);
+      const fixture = TestBed.createComponent(SettingsViewContainer);
+      fixture.detectChanges();
+
+      expect(
+        fixture.debugElement.query(By.css('.image-brightness'))
+      ).not.toBeTruthy();
+      expect(
+        fixture.debugElement.query(By.css('.image-contrast'))
+      ).not.toBeTruthy();
+      expect(
+        fixture.debugElement.query(By.css('.image-show-actual-size'))
+      ).not.toBeTruthy();
     });
 
     it('dispatches smoothing changed action on input', fakeAsync(() => {

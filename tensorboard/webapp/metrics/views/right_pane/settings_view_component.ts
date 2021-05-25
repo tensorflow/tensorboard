@@ -59,6 +59,8 @@ const MAX_SMOOTHING_SLIDER_VALUE = 0.99;
 export class SettingsViewComponent {
   constructor(@Inject(LOCALE_ID) private readonly locale: string) {}
 
+  @Input() isImageSupportEnabled!: boolean;
+
   readonly TooltipSortDropdownOptions: DropdownOption[] = [
     {value: TooltipSort.DEFAULT, displayText: 'Default'},
     {value: TooltipSort.ASCENDING, displayText: 'Ascending'},

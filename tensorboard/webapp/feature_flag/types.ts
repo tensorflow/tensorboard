@@ -26,4 +26,6 @@ export interface FeatureFlags {
   //
   // See: https://github.com/tensorflow/tensorboard/blob/master/tensorboard/plugins/scalar/tf_scalar_dashboard/tf-scalar-card.ts
   scalarsBatchSize: number | undefined;
+  // Whether the Time Series dashboards supports showing Image summary data.
+  metricsImageSupportEnabled: boolean;
 }

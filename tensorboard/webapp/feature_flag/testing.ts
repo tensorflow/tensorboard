@@ -23,6 +23,7 @@ export function buildFeatureFlag(
     enabledExperimentalPlugins: [],
     inColab: false,
     scalarsBatchSize: undefined,
+    metricsImageSupportEnabled: true,
     ...override,
   };
 }
