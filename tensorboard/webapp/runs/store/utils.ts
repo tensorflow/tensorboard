@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {GroupBy, GroupByKey, Run} from '../types';
+import {GroupBy, GroupByKey, Run, RunGroup} from '../types';
 import {ExperimentId, RunId} from './runs_types';
 
 export function serializeExperimentIds(experimentIds: string[]): string {
@@ -23,8 +23,14 @@ export function groupRuns(
   groupBy: GroupBy,
   runs: Run[],
   runIdToExpId: Readonly<Record<RunId, ExperimentId>>
-): {[groupId: string]: Run[]} {
+): RunGroup {
+  let runGroup: RunGroup = {
+    matches: {},
+    nonMatches: [],
+  };
   let runGroups: {[groupId: string]: Run[]} = {};
+  let nonMatches: Run[] = [];
+
   switch (groupBy.key) {
     case GroupByKey.RUN:
       for (const run of runs) {
@@ -73,9 +79,10 @@ export function groupRuns(
           runs.push(run);
           runGroups[id] = runs;
         } else {
-          runGroups[run.id] = [run];
+          nonMatches.push(run);
         }
       }
+      runGroup.nonMatches = nonMatches;
 
       if (!isCaptureGroup) {
         // No capture group in regex string. Groups all the matched runs together.
@@ -86,8 +93,6 @@ export function groupRuns(
           if (matches) {
             matchedRuns.push(run);
             delete runGroups[run.id];
-          } else {
-            runGroups[run.id] = [run];
           }
         }
         runGroups['matches'] = matchedRuns;
@@ -95,5 +100,6 @@ export function groupRuns(
       break;
     default:
   }
-  return runGroups;
+  runGroup.matches = runGroups;
+  return runGroup;
 }
