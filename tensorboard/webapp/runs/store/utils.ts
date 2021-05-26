@@ -68,7 +68,7 @@ export function groupRuns(
           // In case regex string does not have a capturing group, we use pseudo group id of `pseudo_group`.
           const id = hasCapturingGroup
             ? JSON.stringify(matchesList)
-            : ('pseudo_group' as string);
+            : 'pseudo_group';
           const runs = matches[id] || [];
           runs.push(run);
           matches[id] = runs;
