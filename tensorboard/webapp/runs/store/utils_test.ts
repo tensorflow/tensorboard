@@ -190,7 +190,7 @@ describe('run store utils test', () => {
               buildRun({id: 'eid1/alpha', name: 'foo1bar1'}),
               buildRun({id: 'eid1/beta', name: 'foo1bar2'}),
             ],
-            ' ["foo2bar","2"]': [
+            '["foo2bar","2"]': [
               buildRun({id: 'eid2/beta', name: 'foo2bar1'}),
               buildRun({id: 'eid2/gamma', name: 'foo2bar3'}),
             ],
