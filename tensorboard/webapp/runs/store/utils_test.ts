@@ -175,11 +175,11 @@ describe('run store utils test', () => {
         );
 
         expect(actual).toEqual({
-          '1': [
+          '[\"1\"]': [
             buildRun({id: 'eid1/alpha', name: 'foo1bar1'}),
             buildRun({id: 'eid1/beta', name: 'foo1bar2'}),
           ],
-          '2': [
+          '[\"2\"]': [
             buildRun({id: 'eid2/beta', name: 'foo2bar1'}),
             buildRun({id: 'eid2/gamma', name: 'foo2bar3'}),
           ],
@@ -204,9 +204,9 @@ describe('run store utils test', () => {
         );
 
         expect(actual).toEqual({
-          '1_1': [buildRun({id: 'eid1/alpha', name: 'foo1bar1'})],
-          '2_1': [buildRun({id: 'eid1/beta', name: 'foo2bar1'})],
-          '2_2': [
+          '[\"1\",\"1\"]': [buildRun({id: 'eid1/alpha', name: 'foo1bar1'})],
+          '[\"2\",\"1\"]': [buildRun({id: 'eid1/beta', name: 'foo2bar1'})],
+          '[\"2\",\"2\"]': [
             buildRun({id: 'eid2/beta', name: 'foo2bar2'}),
             buildRun({id: 'eid2/gamma', name: 'foo2bar2bar'}),
           ],

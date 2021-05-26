@@ -42,22 +42,22 @@ export function groupRuns(
 
     case GroupByKey.REGEX:
       if (!groupBy.regexString) {
-        //TODO(japie1235813): props users the input is invalid
+        //TODO(japie1235813): propagate invalidity of regex string to user more gracefully
         break;
       }
+      let regExp: RegExp;
 
       // TODO(japie1235813): add additonal `\` to convert string to regex, which
       // makes `new RegExp()` construct properly
       // For example, convert `foo\d+bar` to `foo\\d+bar`
 
       try {
-        new RegExp(groupBy.regexString);
+        regExp = new RegExp(groupBy.regexString);
       } catch (e) {
-        //TODO(japie1235813): props users the input is invalid
+        //TODO(japie1235813): propagate invalidity of regex string to user more gracefully
         break;
       }
 
-      const regExp = new RegExp(groupBy.regexString);
       // Checks if there is capture group in regex.
       let isCaptureGroup = false;
 
@@ -68,7 +68,7 @@ export function groupRuns(
             matches = matches.slice(1);
             isCaptureGroup = true;
           }
-          const id = matches.length === 1 ? matches[0] : matches.join('_');
+          const id = JSON.stringify(matches);
           const runs = runGroups[id] || [];
           runs.push(run);
           runGroups[id] = runs;
