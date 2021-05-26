@@ -92,34 +92,27 @@ describe('run store utils test', () => {
     });
 
     describe('by regex', () => {
-      it('throws error when the regex is empty', () => {
-        let errorMessage = '';
-        try {
-          groupRuns(
-            {key: GroupByKey.REGEX, regexString: ''},
-            [
-              buildRun({id: 'eid1/alpha', name: 'foo1bar1'}),
-              buildRun({id: 'eid1/beta', name: 'foo1bar2'}),
-              buildRun({id: 'eid2/beta', name: 'foo2bar1'}),
-              buildRun({id: 'eid2/gamma', name: 'gamma'}),
-            ],
-            {
-              'eid1/alpha': 'eid1',
-              'eid1/beta': 'eid1',
-              'eid2/beta': 'eid2',
-              'eid2/gamma': 'eid2',
-            }
-          );
-        } catch (error) {
-          errorMessage = error.message;
-        }
-        expect(errorMessage).toBe('Empty regex string.');
+      it('do not change the group when the regex is empty', () => {
+        const actual = groupRuns(
+          {key: GroupByKey.REGEX, regexString: ''},
+          [
+            buildRun({id: 'eid1/alpha', name: 'foo1bar1'}),
+            buildRun({id: 'eid1/beta', name: 'foo1bar2'}),
+            buildRun({id: 'eid2/beta', name: 'foo2bar1'}),
+            buildRun({id: 'eid2/gamma', name: 'gamma'}),
+          ],
+          {
+            'eid1/alpha': 'eid1',
+            'eid1/beta': 'eid1',
+            'eid2/beta': 'eid2',
+            'eid2/gamma': 'eid2',
+          }
+        );
+        expect(actual).toEqual({});
       });
 
-      it('throws error when the regex is invalid', () => {
-        let errorMessage = '';
-        try {
-          groupRuns(
+      it('do not change the group when the regex is invalid', () => {
+         const actual = groupRuns(
             {key: GroupByKey.REGEX, regexString: 'foo\\d+)bar'},
             [
               buildRun({id: 'eid1/alpha', name: 'foo1bar1'}),
@@ -134,10 +127,7 @@ describe('run store utils test', () => {
               'eid2/gamma': 'eid2',
             }
           );
-        } catch (error) {
-          errorMessage = error.message;
-        }
-        expect(errorMessage).toBe('Invalid regex.');
+        expect(actual).toEqual({});
       });
 
       it('groups runs by regex without capture group', () => {

@@ -42,8 +42,8 @@ export function groupRuns(
 
     case GroupByKey.REGEX:
       if (!groupBy.regexString) {
-        //TODO(japie1235813): props users when the input is invalid
-        throw new Error('Empty regex string.');
+        //TODO(japie1235813): props users the input is invalid
+        break;
       }
 
       // TODO(japie1235813): add additonal `\` to convert string to regex, which
@@ -53,8 +53,8 @@ export function groupRuns(
       try {
         new RegExp(groupBy.regexString);
       } catch (e) {
-        //TODO(japie1235813): props users when the input is invalid
-        throw new Error('Invalid regex.');
+        //TODO(japie1235813): props users the input is invalid
+        break;
       }
 
       const regExp = new RegExp(groupBy.regexString);
