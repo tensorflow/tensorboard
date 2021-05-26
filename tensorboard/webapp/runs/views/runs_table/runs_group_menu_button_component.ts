@@ -24,7 +24,7 @@ import {GroupBy, GroupByKey} from '../../types';
 
 @Component({
   selector: 'runs-group-menu-button-component',
-  templateUrl: 'runs_group_menu_button.ng.html',
+  templateUrl: 'runs_group_menu_button_component.ng.html',
   styleUrls: ['runs_group_menu_button_component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
