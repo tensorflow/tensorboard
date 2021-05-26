@@ -71,3 +71,12 @@ export interface RegexGroupBy {
 }
 
 export type GroupBy = BaseGroupBy | RegexGroupBy;
+
+/**
+ * The runs-related state created by deserializing a URL.
+ */
+export interface URLDeserializedState {
+  runs: {
+    groupBy: GroupBy|null;
+  };
+}

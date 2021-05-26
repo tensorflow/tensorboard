@@ -25,6 +25,7 @@ tf_ts_library(
     ],
     deps = [
         "//tensorboard/webapp/metrics:types",
+        "//tensorboard/webapp/runs:types",
     ],
 )
 
@@ -42,6 +43,7 @@ tf_ts_library(
         "//tensorboard/webapp/app_routing:types",
         "//tensorboard/webapp/metrics:types",
         "//tensorboard/webapp/metrics/data_source:types",
+        "//tensorboard/webapp/runs:types",
         "//tensorboard/webapp/tb_wrapper",
         "//tensorboard/webapp/webapp_data_source:feature_flag_types",
         "@npm//@angular/core",
@@ -67,6 +69,7 @@ tf_ts_library(
         "//tensorboard/webapp/metrics:test_lib",
         "//tensorboard/webapp/metrics:types",
         "//tensorboard/webapp/metrics/data_source:types",
+        "//tensorboard/webapp/runs:types",
         "@npm//@angular/core",
         "@npm//@ngrx/store",
         "@npm//@types/jasmine",

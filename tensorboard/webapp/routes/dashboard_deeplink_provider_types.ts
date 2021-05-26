@@ -13,11 +13,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {URLDeserializedState as MetricsURLDeserializedState} from '../metrics/types';
+import {URLDeserializedState as RunsURLDeserializedState} from '../runs/types';
 
 // No need to deserialize the Experimental Plugins as it is immutable and is only read at
 // the start of the application.
-export type DeserializedState = MetricsURLDeserializedState;
+export type DeserializedState = MetricsURLDeserializedState &
+  RunsURLDeserializedState;
 
 export const SMOOTHING_KEY = 'smoothing';
 
 export const PINNED_CARDS_KEY = 'pinnedCards';
+
+export const COLOR_GROUP_KEY = 'colorGroup';

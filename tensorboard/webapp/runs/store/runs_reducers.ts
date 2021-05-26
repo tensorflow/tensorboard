@@ -19,14 +19,16 @@ import {
   createReducer,
   on,
 } from '@ngrx/store';
+import {stateRehydratedFromUrl} from '../../app_routing/actions';
 
 import {createRouteContextedState} from '../../app_routing/route_contexted_reducer_helper';
+import {RouteKind} from '../../app_routing/types';
 import {DataLoadState} from '../../types/data';
 import {SortDirection} from '../../types/ui';
 import {CHART_COLOR_PALLETE} from '../../util/colors';
 import {composeReducers} from '../../util/ngrx';
 import * as runsActions from '../actions';
-import {GroupByKey} from '../types';
+import {GroupByKey, URLDeserializedState} from '../types';
 import {
   MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT,
   RunsDataRoutefulState,
@@ -59,6 +61,25 @@ const {
 
 const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
   dataInitialState,
+  on(stateRehydratedFromUrl, (state, {routeKind, partialState}) => {
+    if (
+      routeKind !== RouteKind.COMPARE_EXPERIMENT &&
+      routeKind !== RouteKind.EXPERIMENT
+    ) {
+      return state;
+    }
+
+    const dehydratedState = partialState as URLDeserializedState;
+    const groupBy = dehydratedState.runs.groupBy;
+    if (!groupBy) {
+      return state;
+    }
+
+    return {
+      ...state,
+      userSetGroupBy: groupBy,
+    };
+  }),
   on(runsActions.fetchRunsRequested, (state, action) => {
     const nextRunsLoadState = {...state.runsLoadState};
     for (const eid of action.requestedExperimentIds) {

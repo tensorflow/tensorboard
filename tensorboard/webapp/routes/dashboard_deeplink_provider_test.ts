@@ -23,6 +23,7 @@ import {PluginType} from '../metrics/data_source/types';
 import {appStateFromMetricsState, buildMetricsState} from '../metrics/testing';
 import * as selectors from '../selectors';
 import {DashboardDeepLinkProvider} from './dashboard_deeplink_provider';
+import {GroupBy, GroupByKey} from '../runs/types';
 
 describe('core deeplink provider', () => {
   let store: MockStore<State>;
@@ -46,6 +47,7 @@ describe('core deeplink provider', () => {
     store.overrideSelector(selectors.getEnabledExperimentalPlugins, []);
     store.overrideSelector(selectors.getOverriddenFeatureFlags, {});
     store.overrideSelector(selectors.getMetricsSettingOverrides, {});
+    store.overrideSelector(selectors.getRunUserSetGroupBy, null);
 
     queryParamsSerialized = [];
 
@@ -104,6 +106,23 @@ describe('core deeplink provider', () => {
       it('deserializes to null when smoothing is not provided', () => {
         const state = provider.deserializeQueryParams([]);
         expect(state.metrics.smoothing).toBe(null);
+      });
+
+      it('deserializes color group information', () => {
+        function assert(value: string, expectedGroupBy: GroupBy | null) {
+          const state = provider.deserializeQueryParams([
+            {key: 'colorGroup', value},
+          ]);
+          expect(state.runs.groupBy).toEqual(expectedGroupBy);
+        }
+        assert('experiment', {key: GroupByKey.EXPERIMENT});
+        assert('run', {key: GroupByKey.RUN});
+        assert('regex:', {key: GroupByKey.REGEX, regexString: ''});
+        assert('regex:hello', {key: GroupByKey.REGEX, regexString: 'hello'});
+        assert('', null);
+        assert('regex', null);
+        assert('runs', null);
+        assert('experiments', null);
       });
     });
 
@@ -287,8 +306,6 @@ describe('core deeplink provider', () => {
   });
 
   describe('feature flag', () => {
-    beforeEach(() => {});
-
     it('serializes enabled experimental plugins', () => {
       store.overrideSelector(selectors.getEnabledExperimentalPlugins, [
         'foo',
@@ -329,6 +346,71 @@ describe('core deeplink provider', () => {
       expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual(
         []
       );
+    });
+  });
+
+  describe('runs', () => {
+    it('does not put state in the URL when user set color group is null', () => {
+      // Setting from `null` to `null` does not actually trigger the provider so
+      // we have to set it: `null` -> something else -> `null` to test this
+      // case.
+      store.overrideSelector(selectors.getRunUserSetGroupBy, {
+        key: GroupByKey.EXPERIMENT,
+      });
+      store.refreshState();
+
+      store.overrideSelector(selectors.getRunUserSetGroupBy, null);
+      store.refreshState();
+      expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual(
+        []
+      );
+    });
+
+    it('serializes user set color group settings', () => {
+      store.overrideSelector(selectors.getRunUserSetGroupBy, {
+        key: GroupByKey.EXPERIMENT,
+      });
+      store.refreshState();
+      expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual([
+        {key: 'colorGroup', value: 'experiment'},
+      ]);
+
+      store.overrideSelector(selectors.getRunUserSetGroupBy, {
+        key: GroupByKey.RUN,
+      });
+      store.refreshState();
+      expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual([
+        {key: 'colorGroup', value: 'run'},
+      ]);
+
+      store.overrideSelector(selectors.getRunUserSetGroupBy, {
+        key: GroupByKey.REGEX,
+        regexString: 'hello',
+      });
+      store.refreshState();
+      expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual([
+        {key: 'colorGroup', value: 'regex:hello'},
+      ]);
+    });
+
+    it('serializes interesting regex strings', () => {
+      store.overrideSelector(selectors.getRunUserSetGroupBy, {
+        key: GroupByKey.REGEX,
+        regexString: '',
+      });
+      store.refreshState();
+      expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual([
+        {key: 'colorGroup', value: 'regex:'},
+      ]);
+
+      store.overrideSelector(selectors.getRunUserSetGroupBy, {
+        key: GroupByKey.REGEX,
+        regexString: 'hello/(world)',
+      });
+      store.refreshState();
+      expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual([
+        {key: 'colorGroup', value: 'regex:hello/(world)'},
+      ]);
     });
   });
 });

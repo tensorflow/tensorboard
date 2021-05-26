@@ -26,12 +26,14 @@ import {
   isSingleRunPlugin,
 } from '../metrics/data_source/types';
 import {CardUniqueInfo} from '../metrics/types';
+import {GroupBy, GroupByKey} from '../runs/types';
 import * as selectors from '../selectors';
 import {
   ENABLE_COLOR_GROUP_QUERY_PARAM_KEY,
   EXPERIMENTAL_PLUGIN_QUERY_PARAM_KEY,
 } from '../webapp_data_source/tb_feature_flag_data_source_types';
 import {
+  COLOR_GROUP_KEY,
   DeserializedState,
   PINNED_CARDS_KEY,
   SMOOTHING_KEY,
@@ -118,6 +120,28 @@ export class DashboardDeepLinkProvider extends DeepLinkProvider {
           return [];
         })
       ),
+      store.select(selectors.getRunUserSetGroupBy).pipe(
+        map((groupBy) => {
+          if (!groupBy) return [];
+          let value: string;
+
+          switch (groupBy.key) {
+            case GroupByKey.EXPERIMENT:
+              value = 'experiment';
+              break;
+            case GroupByKey.RUN:
+              value = 'run';
+              break;
+            case GroupByKey.REGEX:
+              value = `regex:${groupBy.regexString}`;
+              break;
+            default:
+              throw new RangeError(`Serialization not implemented`);
+          }
+
+          return [{key: COLOR_GROUP_KEY, value}];
+        })
+      ),
     ]).pipe(
       map((queryParamList) => {
         return queryParamList.flat();
@@ -130,6 +154,8 @@ export class DashboardDeepLinkProvider extends DeepLinkProvider {
   ): DeserializedState {
     let pinnedCards = null;
     let smoothing = null;
+    let groupBy: GroupBy | null = null;
+
     for (const {key, value} of queryParams) {
       switch (key) {
         case PINNED_CARDS_KEY:
@@ -138,6 +164,22 @@ export class DashboardDeepLinkProvider extends DeepLinkProvider {
         case SMOOTHING_KEY:
           smoothing = Number(value);
           break;
+        case COLOR_GROUP_KEY: {
+          switch (value) {
+            case 'experiment':
+              groupBy = {key: GroupByKey.EXPERIMENT};
+              break;
+            case 'run':
+              groupBy = {key: GroupByKey.RUN};
+              break;
+          }
+
+          if (value.startsWith('regex:')) {
+            const [, regexString] = value.split(':', 2);
+            groupBy = {key: GroupByKey.REGEX, regexString};
+          }
+          break;
+        }
       }
     }
 
@@ -145,6 +187,9 @@ export class DashboardDeepLinkProvider extends DeepLinkProvider {
       metrics: {
         pinnedCards: pinnedCards || [],
         smoothing,
+      },
+      runs: {
+        groupBy,
       },
     };
   }
