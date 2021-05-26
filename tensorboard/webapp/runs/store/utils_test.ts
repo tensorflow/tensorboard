@@ -92,7 +92,7 @@ describe('run store utils test', () => {
     });
 
     describe('by regex', () => {
-      it('do not change the group when the regex is empty', () => {
+      it('does not group when the regex is empty ', () => {
         const actual = groupRuns(
           {key: GroupByKey.REGEX, regexString: ''},
           [
@@ -108,11 +108,13 @@ describe('run store utils test', () => {
             'eid2/gamma': 'eid2',
           }
         );
-        expect(actual.matches).toEqual({});
-        // expect(actual.nonMatches).toEqual([]);
+        expect(actual).toEqual({
+          matches: {},
+          nonMatches: [],
+        });
       });
 
-      it('do not change the group when the regex is invalid', () => {
+      it('does not group when the regex is invalid', () => {
         const actual = groupRuns(
           {key: GroupByKey.REGEX, regexString: 'foo\\d+)bar'},
           [
@@ -128,7 +130,10 @@ describe('run store utils test', () => {
             'eid2/gamma': 'eid2',
           }
         );
-        expect(actual.matches).toEqual({});
+        expect(actual).toEqual({
+          matches: {},
+          nonMatches: [],
+        });
       });
 
       it('groups runs by regex without capture group', () => {
@@ -148,16 +153,16 @@ describe('run store utils test', () => {
           }
         );
 
-        expect(actual.matches).toEqual({
-          matches: [
-            buildRun({id: 'eid1/alpha', name: 'foo1bar1'}),
-            buildRun({id: 'eid1/beta', name: 'foo1bar2'}),
-            buildRun({id: 'eid2/beta', name: 'foo2bar1'}),
-          ],
+        expect(actual).toEqual({
+          matches: {
+            pseudo_group: [
+              buildRun({id: 'eid1/alpha', name: 'foo1bar1'}),
+              buildRun({id: 'eid1/beta', name: 'foo1bar2'}),
+              buildRun({id: 'eid2/beta', name: 'foo2bar1'}),
+            ],
+          },
+          nonMatches: [buildRun({id: 'eid2/gamma', name: 'gamma'})],
         });
-        expect(actual.nonMatches).toEqual([
-          buildRun({id: 'eid2/gamma', name: 'gamma'}),
-        ]);
       });
 
       it('groups runs by regex with one capture group', () => {
@@ -179,19 +184,19 @@ describe('run store utils test', () => {
           }
         );
 
-        expect(actual.matches).toEqual({
-          '["1"]': [
-            buildRun({id: 'eid1/alpha', name: 'foo1bar1'}),
-            buildRun({id: 'eid1/beta', name: 'foo1bar2'}),
-          ],
-          '["2"]': [
-            buildRun({id: 'eid2/beta', name: 'foo2bar1'}),
-            buildRun({id: 'eid2/gamma', name: 'foo2bar3'}),
-          ],
+        expect(actual).toEqual({
+          matches: {
+            '["1"]': [
+              buildRun({id: 'eid1/alpha', name: 'foo1bar1'}),
+              buildRun({id: 'eid1/beta', name: 'foo1bar2'}),
+            ],
+            '["2"]': [
+              buildRun({id: 'eid2/beta', name: 'foo2bar1'}),
+              buildRun({id: 'eid2/gamma', name: 'foo2bar3'}),
+            ],
+          },
+          nonMatches: [buildRun({id: 'eid2/gamma', name: 'gamma'})],
         });
-        expect(actual.nonMatches).toEqual([
-          buildRun({id: 'eid2/alpha', name: 'alpha'}),
-        ]);
       });
 
       it('groups runs by regex with multiple capture group', () => {
@@ -213,17 +218,17 @@ describe('run store utils test', () => {
           }
         );
 
-        expect(actual.matches).toEqual({
-          '["1","1"]': [buildRun({id: 'eid1/alpha', name: 'foo1bar1'})],
-          '["2","1"]': [buildRun({id: 'eid1/beta', name: 'foo2bar1'})],
-          '["2","2"]': [
-            buildRun({id: 'eid2/beta', name: 'foo2bar2'}),
-            buildRun({id: 'eid2/gamma', name: 'foo2bar2bar'}),
-          ],
+        expect(actual).toEqual({
+          matches: {
+            '["1","1"]': [buildRun({id: 'eid1/alpha', name: 'foo1bar1'})],
+            '["2","1"]': [buildRun({id: 'eid1/beta', name: 'foo2bar1'})],
+            '["2","2"]': [
+              buildRun({id: 'eid2/beta', name: 'foo2bar2'}),
+              buildRun({id: 'eid2/gamma', name: 'foo2bar2bar'}),
+            ],
+          },
+          nonMatches: [buildRun({id: 'eid2/alpha', name: 'alpha'})],
         });
-        expect(actual.nonMatches).toEqual([
-          buildRun({id: 'eid2/alpha', name: 'alpha'}),
-        ]);
       });
     });
   });

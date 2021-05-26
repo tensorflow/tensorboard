@@ -24,25 +24,22 @@ export function groupRuns(
   runs: Run[],
   runIdToExpId: Readonly<Record<RunId, ExperimentId>>
 ): RunGroup {
-  let runGroup: RunGroup = {
-    matches: {},
-    nonMatches: [],
-  };
-  let runGroups: {[groupId: string]: Run[]} = {};
-  let nonMatches: Run[] = [];
+  const matches: {[id: string]: Run[]} = {};
+  const nonMatches: Run[] = [];
+  const runGroup: RunGroup = {matches, nonMatches};
 
   switch (groupBy.key) {
     case GroupByKey.RUN:
       for (const run of runs) {
-        runGroups[run.id] = [run];
+        matches[run.id] = [run];
       }
       break;
     case GroupByKey.EXPERIMENT:
       for (const run of runs) {
         const experimentId = runIdToExpId[run.id];
-        const runs = runGroups[experimentId] || [];
+        const runs = matches[experimentId] || [];
         runs.push(run);
-        runGroups[experimentId] = runs;
+        matches[experimentId] = runs;
       }
       break;
 
@@ -64,42 +61,23 @@ export function groupRuns(
         break;
       }
 
-      // Checks if there is capture group in regex.
-      let isCaptureGroup = false;
-
       for (const run of runs) {
-        let matches = run.name.match(regExp);
-        if (matches) {
-          if (matches.length > 1) {
-            matches = matches.slice(1);
-            isCaptureGroup = true;
-          }
-          const id = JSON.stringify(matches);
-          const runs = runGroups[id] || [];
+        const matchesList = run.name.match(regExp);
+        if (matchesList) {
+          const hasCapturingGroup = matchesList.length > 1;
+          // In case regex string does not have a capturing group, we use pseudo group id of `pseudo_group`.
+          const id = hasCapturingGroup
+            ? JSON.stringify(matchesList)
+            : ('pseudo_group' as string);
+          const runs = matches[id] || [];
           runs.push(run);
-          runGroups[id] = runs;
+          matches[id] = runs;
         } else {
           nonMatches.push(run);
         }
       }
-      runGroup.nonMatches = nonMatches;
-
-      if (!isCaptureGroup) {
-        // No capture group in regex string. Groups all the matched runs together.
-        const matchedRuns = [];
-        runGroups = {};
-        for (const run of runs) {
-          let matches = run.name.match(regExp);
-          if (matches) {
-            matchedRuns.push(run);
-            delete runGroups[run.id];
-          }
-        }
-        runGroups['matches'] = matchedRuns;
-      }
       break;
     default:
   }
-  runGroup.matches = runGroups;
   return runGroup;
 }
