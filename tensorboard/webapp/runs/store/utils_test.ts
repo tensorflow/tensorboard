@@ -165,12 +165,14 @@ describe('run store utils test', () => {
             buildRun({id: 'eid1/beta', name: 'foo1bar2'}),
             buildRun({id: 'eid2/beta', name: 'foo2bar1'}),
             buildRun({id: 'eid2/gamma', name: 'foo2bar3'}),
+            buildRun({id: 'eid2/alpha', name: 'alpha'}),
           ],
           {
             'eid1/alpha': 'eid1',
             'eid1/beta': 'eid1',
             'eid2/beta': 'eid2',
             'eid2/gamma': 'eid2',
+            'eid2/alpha': 'eid2',
           }
         );
 
@@ -183,6 +185,7 @@ describe('run store utils test', () => {
             buildRun({id: 'eid2/beta', name: 'foo2bar1'}),
             buildRun({id: 'eid2/gamma', name: 'foo2bar3'}),
           ],
+          'eid2/alpha': [buildRun({id: 'eid2/alpha', name: 'alpha'})],
         });
       });
 
@@ -194,12 +197,14 @@ describe('run store utils test', () => {
             buildRun({id: 'eid1/beta', name: 'foo2bar1'}),
             buildRun({id: 'eid2/beta', name: 'foo2bar2'}),
             buildRun({id: 'eid2/gamma', name: 'foo2bar2bar'}),
+            buildRun({id: 'eid2/alpha', name: 'alpha'}),
           ],
           {
             'eid1/alpha': 'eid1',
             'eid1/beta': 'eid1',
             'eid2/beta': 'eid2',
             'eid2/gamma': 'eid2',
+            'eid2/alpha': 'eid2',
           }
         );
 
@@ -210,6 +215,7 @@ describe('run store utils test', () => {
             buildRun({id: 'eid2/beta', name: 'foo2bar2'}),
             buildRun({id: 'eid2/gamma', name: 'foo2bar2bar'}),
           ],
+          'eid2/alpha': [buildRun({id: 'eid2/alpha', name: 'alpha'})],
         });
       });
     });
