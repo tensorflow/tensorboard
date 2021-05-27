@@ -41,14 +41,21 @@ $tb-foreground: map_merge(
   )
 );
 
-$tb-theme: map_merge(
-  $tb-theme,
+$tb-background: map_merge(
+  $mat-light-theme-background,
   (
-    foreground: $tb-foreground,
+    // Default is `map.get($grey-palette, 50)`.
+    background: #fff
   )
 );
 
-$tb-background: map-get($tb-theme, background);
+$tb-theme: map_merge(
+  $tb-theme,
+  (
+    background: $tb-background,
+    foreground: $tb-foreground,
+  )
+);
 
 // Include all theme-styles for the components based on the current theme.
 @include angular-material-theme($tb-theme);
