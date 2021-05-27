@@ -167,7 +167,7 @@ describe('run store utils test', () => {
 
       it('groups runs by regex with one capture group', () => {
         const actual = groupRuns(
-          {key: GroupByKey.REGEX, regexString: 'foo(\\d+)bar'},
+          {key: GroupByKey.REGEX, regexString: 'foo(\\d+)bar.*'},
           [
             buildRun({id: 'eid1/alpha', name: 'foo1bar1'}),
             buildRun({id: 'eid1/beta', name: 'foo1bar2'}),
@@ -186,11 +186,11 @@ describe('run store utils test', () => {
 
         expect(actual).toEqual({
           matches: {
-            '["foo1bar","1"]': [
+            '["1"]': [
               buildRun({id: 'eid1/alpha', name: 'foo1bar1'}),
               buildRun({id: 'eid1/beta', name: 'foo1bar2'}),
             ],
-            '["foo2bar","2"]': [
+            '["2"]': [
               buildRun({id: 'eid2/beta', name: 'foo2bar1'}),
               buildRun({id: 'eid2/gamma', name: 'foo2bar3'}),
             ],
@@ -201,7 +201,7 @@ describe('run store utils test', () => {
 
       it('groups runs by regex with multiple capture group', () => {
         const actual = groupRuns(
-          {key: GroupByKey.REGEX, regexString: 'foo(\\d+)bar(\\d+)'},
+          {key: GroupByKey.REGEX, regexString: 'foo(\\d+)bar(\\d+).*'},
           [
             buildRun({id: 'eid1/alpha', name: 'foo1bar1'}),
             buildRun({id: 'eid1/beta', name: 'foo2bar1'}),
@@ -220,13 +220,13 @@ describe('run store utils test', () => {
 
         expect(actual).toEqual({
           matches: {
-            '["foo1bar1","1","1"]': [
+            '["1","1"]': [
               buildRun({id: 'eid1/alpha', name: 'foo1bar1'}),
             ],
-            '["foo2bar1","2","1"]': [
+            '["2","1"]': [
               buildRun({id: 'eid1/beta', name: 'foo2bar1'}),
             ],
-            '["foo2bar2","2","2"]': [
+            '["2","2"]': [
               buildRun({id: 'eid2/beta', name: 'foo2bar2'}),
               buildRun({id: 'eid2/gamma', name: 'foo2bar2bar'}),
             ],
