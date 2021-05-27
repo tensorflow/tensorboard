@@ -61,6 +61,7 @@ tf_ts_library(
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp:selectors",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
+        "//tensorboard/webapp/angular:expect_ngrx_store_testing",
         "//tensorboard/webapp/feature_flag:testing",
         "//tensorboard/webapp/metrics:internal_types",
         "//tensorboard/webapp/util:local_storage_testing",
