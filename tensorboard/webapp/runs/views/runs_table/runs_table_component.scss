@@ -20,14 +20,19 @@ $_font-size: 13px;
 
 :host {
   background-color: #fff;
-  display: block;
+  display: flex;
+  flex-direction: column;
   font-size: $_font-size;
   overflow: hidden;
 }
 
+.filter-row {
+  flex: none;
+}
+
 .table-container {
   contain: layout paint;
-  height: 100%;
+  flex-grow: 1;
   max-width: 100%;
   overflow-x: auto;
   overflow-y: auto;
