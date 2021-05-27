@@ -259,7 +259,7 @@ const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
       ...state,
       regexFilter: action.regexString,
     };
-  }),
+  })
 );
 
 const routeStatefulDataReducers = composeReducers(
