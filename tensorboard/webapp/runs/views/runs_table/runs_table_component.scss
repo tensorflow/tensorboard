@@ -60,6 +60,16 @@ $_border-color: #0000001f;
   .header {
     color: mat-color($tb-foreground, text);
     white-space: nowrap;
+
+    // Allows table header to remain sticky to the scrollable container.
+    [role='columnheader'] {
+      background-color: mat-color($tb-background, background);
+      position: sticky;
+      top: 0;
+      // Unlike <thead><tr>, we need to manually "lift" the elements up so it
+      // masks table rows underneath.
+      z-index: 1;
+    }
   }
 
   [role='row'] {
