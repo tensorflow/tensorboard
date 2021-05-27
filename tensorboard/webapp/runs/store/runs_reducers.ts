@@ -47,6 +47,8 @@ const {
     defaultRunColorForGroupBy: new Map(),
     groupKeyToColorString: new Map(),
     initialGroupBy: {key: GroupByKey.RUN},
+    colorGroupRegexString: '',
+    regexFilter: '',
   },
   {
     runIds: {},
