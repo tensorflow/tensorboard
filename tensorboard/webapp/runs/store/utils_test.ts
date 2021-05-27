@@ -220,12 +220,8 @@ describe('run store utils test', () => {
 
         expect(actual).toEqual({
           matches: {
-            '["1","1"]': [
-              buildRun({id: 'eid1/alpha', name: 'foo1bar1'}),
-            ],
-            '["2","1"]': [
-              buildRun({id: 'eid1/beta', name: 'foo2bar1'}),
-            ],
+            '["1","1"]': [buildRun({id: 'eid1/alpha', name: 'foo1bar1'})],
+            '["2","1"]': [buildRun({id: 'eid1/beta', name: 'foo2bar1'})],
             '["2","2"]': [
               buildRun({id: 'eid2/beta', name: 'foo2bar2'}),
               buildRun({id: 'eid2/gamma', name: 'foo2bar2bar'}),
