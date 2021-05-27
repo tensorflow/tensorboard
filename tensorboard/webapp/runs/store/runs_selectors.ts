@@ -114,12 +114,30 @@ export const getRunSelectionMap = createSelector(
 );
 
 /**
+ * Returns user defined run grouping setting.
+ *
+ * User can define it by either specifying it in URL or by interacting with the
+ * color group by menu. Returns `null` if user has not defined one and is
+ * currently its default.
+ *
+ * @see getRunGroupBy for actual groupBy that you should use for a view. This
+ * selector was meant to be for settings persistence.
+ */
+export const getRunUserSetGroupBy = createSelector(
+  getDataState,
+  (dataState: RunsDataState): GroupBy | null => {
+    return dataState.userSetGroupBy ?? null;
+  }
+);
+
+/**
  * Returns current run grouping setting.
  */
 export const getRunGroupBy = createSelector(
+  getRunUserSetGroupBy,
   getDataState,
-  (dataState: RunsDataState): GroupBy => {
-    return dataState.groupBy;
+  (userSetGroupBy: GroupBy | null, dataState: RunsDataState): GroupBy => {
+    return userSetGroupBy ?? dataState.initialGroupBy;
   }
 );
 
