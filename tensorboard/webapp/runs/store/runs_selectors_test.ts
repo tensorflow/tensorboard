@@ -290,7 +290,7 @@ describe('runs_selectors', () => {
 
     it('returns regex filter', () => {
       const state = buildStateFromRunsState(
-        buildRunsState(undefined, {regexFilter: 'meow'})
+        buildRunsState({regexFilter: 'meow'}, undefined)
       );
 
       expect(selectors.getRunSelectorRegexFilter(state)).toBe('meow');

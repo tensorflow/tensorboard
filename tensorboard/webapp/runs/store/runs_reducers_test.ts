@@ -611,21 +611,20 @@ describe('runs_reducers', () => {
 
   describe('runSelectorRegexFilterChanged', () => {
     it('updates the regex filter', () => {
-      const state = buildRunsState(undefined, {
+      const state = buildRunsState( {
         regexFilter: 'foo',
-      });
+      },undefined,);
 
       const nextState = runsReducers.reducers(
         state,
         actions.runSelectorRegexFilterChanged({regexString: 'foo rocks'})
       );
 
-      expect(nextState.ui.regexFilter).toBe('foo rocks');
+      expect(nextState.data.regexFilter).toBe('foo rocks');
     });
 
     it('resets the pagination index', () => {
-      const state = buildRunsState(undefined, {
-        regexFilter: 'foo',
+      const state = buildRunsState({regexFilter: 'foo'}, {
         paginationOption: {
           pageSize: 10,
           pageIndex: 100,
