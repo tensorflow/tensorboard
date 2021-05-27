@@ -51,7 +51,7 @@ describe('run store utils test', () => {
           }
         );
 
-        expect(actual).toEqual({
+        expect(actual.matches).toEqual({
           'eid1/alpha': [buildRun({id: 'eid1/alpha', name: 'alpha'})],
           'eid1/beta': [buildRun({id: 'eid1/beta', name: 'beta'})],
           'eid2/beta': [buildRun({id: 'eid2/beta', name: 'beta'})],
@@ -78,7 +78,7 @@ describe('run store utils test', () => {
           }
         );
 
-        expect(actual).toEqual({
+        expect(actual.matches).toEqual({
           eid1: [
             buildRun({id: 'eid1/alpha', name: 'alpha'}),
             buildRun({id: 'eid1/beta', name: 'beta'}),
@@ -87,6 +87,147 @@ describe('run store utils test', () => {
             buildRun({id: 'eid2/beta', name: 'beta'}),
             buildRun({id: 'eid2/gamma', name: 'gamma'}),
           ],
+        });
+      });
+    });
+
+    describe('by regex', () => {
+      it('does not group when the regex is empty ', () => {
+        const actual = groupRuns(
+          {key: GroupByKey.REGEX, regexString: ''},
+          [
+            buildRun({id: 'eid1/alpha', name: 'foo1bar1'}),
+            buildRun({id: 'eid1/beta', name: 'foo1bar2'}),
+            buildRun({id: 'eid2/beta', name: 'foo2bar1'}),
+            buildRun({id: 'eid2/gamma', name: 'gamma'}),
+          ],
+          {
+            'eid1/alpha': 'eid1',
+            'eid1/beta': 'eid1',
+            'eid2/beta': 'eid2',
+            'eid2/gamma': 'eid2',
+          }
+        );
+        expect(actual).toEqual({
+          matches: {},
+          nonMatches: [],
+        });
+      });
+
+      it('does not group when the regex is invalid', () => {
+        const actual = groupRuns(
+          {key: GroupByKey.REGEX, regexString: 'foo\\d+)bar'},
+          [
+            buildRun({id: 'eid1/alpha', name: 'foo1bar1'}),
+            buildRun({id: 'eid1/beta', name: 'foo1bar2'}),
+            buildRun({id: 'eid2/beta', name: 'foo2bar1'}),
+            buildRun({id: 'eid2/gamma', name: 'gamma'}),
+          ],
+          {
+            'eid1/alpha': 'eid1',
+            'eid1/beta': 'eid1',
+            'eid2/beta': 'eid2',
+            'eid2/gamma': 'eid2',
+          }
+        );
+        expect(actual).toEqual({
+          matches: {},
+          nonMatches: [],
+        });
+      });
+
+      it('groups runs by regex without capture group', () => {
+        const actual = groupRuns(
+          {key: GroupByKey.REGEX, regexString: 'foo\\d+bar'},
+          [
+            buildRun({id: 'eid1/alpha', name: 'foo1bar1'}),
+            buildRun({id: 'eid1/beta', name: 'foo1bar2'}),
+            buildRun({id: 'eid2/beta', name: 'foo2bar1'}),
+            buildRun({id: 'eid2/gamma', name: 'gamma'}),
+          ],
+          {
+            'eid1/alpha': 'eid1',
+            'eid1/beta': 'eid1',
+            'eid2/beta': 'eid2',
+            'eid2/gamma': 'eid2',
+          }
+        );
+
+        expect(actual).toEqual({
+          matches: {
+            pseudo_group: [
+              buildRun({id: 'eid1/alpha', name: 'foo1bar1'}),
+              buildRun({id: 'eid1/beta', name: 'foo1bar2'}),
+              buildRun({id: 'eid2/beta', name: 'foo2bar1'}),
+            ],
+          },
+          nonMatches: [buildRun({id: 'eid2/gamma', name: 'gamma'})],
+        });
+      });
+
+      it('groups runs by regex with one capture group', () => {
+        const actual = groupRuns(
+          {key: GroupByKey.REGEX, regexString: 'foo(\\d+)bar.*'},
+          [
+            buildRun({id: 'eid1/alpha', name: 'foo1bar1'}),
+            buildRun({id: 'eid1/beta', name: 'foo1bar2'}),
+            buildRun({id: 'eid2/beta', name: 'foo2bar1'}),
+            buildRun({id: 'eid2/gamma', name: 'foo2bar3'}),
+            buildRun({id: 'eid2/alpha', name: 'alpha'}),
+          ],
+          {
+            'eid1/alpha': 'eid1',
+            'eid1/beta': 'eid1',
+            'eid2/beta': 'eid2',
+            'eid2/gamma': 'eid2',
+            'eid2/alpha': 'eid2',
+          }
+        );
+
+        expect(actual).toEqual({
+          matches: {
+            '["1"]': [
+              buildRun({id: 'eid1/alpha', name: 'foo1bar1'}),
+              buildRun({id: 'eid1/beta', name: 'foo1bar2'}),
+            ],
+            '["2"]': [
+              buildRun({id: 'eid2/beta', name: 'foo2bar1'}),
+              buildRun({id: 'eid2/gamma', name: 'foo2bar3'}),
+            ],
+          },
+          nonMatches: [buildRun({id: 'eid2/alpha', name: 'alpha'})],
+        });
+      });
+
+      it('groups runs by regex with multiple capture group', () => {
+        const actual = groupRuns(
+          {key: GroupByKey.REGEX, regexString: 'foo(\\d+)bar(\\d+).*'},
+          [
+            buildRun({id: 'eid1/alpha', name: 'foo1bar1'}),
+            buildRun({id: 'eid1/beta', name: 'foo2bar1'}),
+            buildRun({id: 'eid2/beta', name: 'foo2bar2'}),
+            buildRun({id: 'eid2/gamma', name: 'foo2bar2bar'}),
+            buildRun({id: 'eid2/alpha', name: 'alpha'}),
+          ],
+          {
+            'eid1/alpha': 'eid1',
+            'eid1/beta': 'eid1',
+            'eid2/beta': 'eid2',
+            'eid2/gamma': 'eid2',
+            'eid2/alpha': 'eid2',
+          }
+        );
+
+        expect(actual).toEqual({
+          matches: {
+            '["1","1"]': [buildRun({id: 'eid1/alpha', name: 'foo1bar1'})],
+            '["2","1"]': [buildRun({id: 'eid1/beta', name: 'foo2bar1'})],
+            '["2","2"]': [
+              buildRun({id: 'eid2/beta', name: 'foo2bar2'}),
+              buildRun({id: 'eid2/gamma', name: 'foo2bar2bar'}),
+            ],
+          },
+          nonMatches: [buildRun({id: 'eid2/alpha', name: 'alpha'})],
         });
       });
     });

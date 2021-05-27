@@ -189,7 +189,7 @@ const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
       runsForAllExperiments,
       state.runIdToExpId
     );
-    Object.entries(groups).forEach(([groupId, runs]) => {
+    Object.entries(groups.matches).forEach(([groupId, runs]) => {
       const color =
         groupKeyToColorString.get(groupId) ??
         CHART_COLOR_PALLETE[
@@ -223,7 +223,7 @@ const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
 
       const groups = groupRuns(groupBy, allRuns, state.runIdToExpId);
 
-      Object.entries(groups).forEach(([groupId, runs]) => {
+      Object.entries(groups.matches).forEach(([groupId, runs]) => {
         const color =
           groupKeyToColorString.get(groupId) ??
           CHART_COLOR_PALLETE[

@@ -24,6 +24,11 @@ export type ExperimentIdToRunsAndMetadata = Record<
   }
 >;
 
+export interface RunGroup {
+  matches: Record<string, Run[]>;
+  nonMatches: Run[];
+}
+
 export enum SortType {
   EXPERIMENT_NAME,
   HPARAM,

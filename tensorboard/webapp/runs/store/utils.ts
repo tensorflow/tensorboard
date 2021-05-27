@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {GroupBy, GroupByKey, Run} from '../types';
+import {GroupBy, GroupByKey, Run, RunGroup} from '../types';
 import {ExperimentId, RunId} from './runs_types';
 
 export function serializeExperimentIds(experimentIds: string[]): string {
@@ -23,26 +23,61 @@ export function groupRuns(
   groupBy: GroupBy,
   runs: Run[],
   runIdToExpId: Readonly<Record<RunId, ExperimentId>>
-): {[groupId: string]: Run[]} {
-  const runGroups: {[groupId: string]: Run[]} = {};
+): RunGroup {
+  const matches: {[id: string]: Run[]} = {};
+  const nonMatches: Run[] = [];
+  const runGroup: RunGroup = {matches, nonMatches};
+
   switch (groupBy.key) {
     case GroupByKey.RUN:
       for (const run of runs) {
-        runGroups[run.id] = [run];
+        matches[run.id] = [run];
       }
       break;
     case GroupByKey.EXPERIMENT:
       for (const run of runs) {
         const experimentId = runIdToExpId[run.id];
-        const runs = runGroups[experimentId] || [];
+        const runs = matches[experimentId] || [];
         runs.push(run);
-        runGroups[experimentId] = runs;
+        matches[experimentId] = runs;
       }
       break;
 
     case GroupByKey.REGEX:
-      throw new Error('Not implemented');
+      if (!groupBy.regexString) {
+        //TODO(japie1235813): propagate invalidity of regex string to user more gracefully
+        break;
+      }
+      let regExp: RegExp;
+
+      // TODO(japie1235813): add additonal `\` to convert string to regex, which
+      // makes `new RegExp()` construct properly
+      // For example, convert `foo\d+bar` to `foo\\d+bar`
+
+      try {
+        regExp = new RegExp(groupBy.regexString);
+      } catch (e) {
+        //TODO(japie1235813): propagate invalidity of regex string to user more gracefully
+        break;
+      }
+
+      for (const run of runs) {
+        const matchesList = run.name.match(regExp);
+        if (matchesList) {
+          const hasCapturingGroup = matchesList.length > 1;
+          // In case regex string does not have a capturing group, we use pseudo group id of `pseudo_group`.
+          const id = hasCapturingGroup
+            ? JSON.stringify(matchesList.slice(1))
+            : 'pseudo_group';
+          const runs = matches[id] || [];
+          runs.push(run);
+          matches[id] = runs;
+        } else {
+          nonMatches.push(run);
+        }
+      }
+      break;
     default:
   }
-  return runGroups;
+  return runGroup;
 }
