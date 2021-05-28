@@ -30,7 +30,8 @@ export class CustomizableComponentType {}
   selector: 'parent-component',
   template: `
     <tb-customization [customizableComponent]="customizableComponent">
-      <div class="default">Showing Default Text!</div>
+      <span>Showing </span>
+      <span>Default Text!</span>
     </tb-customization>
   `,
 })
@@ -58,7 +59,7 @@ export class ParentComponentModule {}
   selector: 'customizable-component',
   template: ` <div>Showing Customized Text!</div> `,
 })
-export class CustomizableComponent implements CustomizableComponentType {}
+export class CustomizableComponent {}
 
 /**
  * Declares and provides the implementation of CustomizableComponentType.
@@ -75,16 +76,16 @@ export class CustomizableComponent implements CustomizableComponentType {}
 })
 export class CustomizableComponentModule {}
 
+async function setUp(extraImports: any[] = []) {
+  await TestBed.configureTestingModule({
+    imports: [CustomizationModule, ...extraImports],
+    declarations: [ParentComponent],
+  }).compileComponents();
+}
+
 describe('tb-customization', () => {
   it('renders default if no customization provided', async () => {
-    await TestBed.configureTestingModule({
-      imports: [
-        CustomizationModule,
-        // Note: Notably not importing the module that provides the
-        // implementation of CustomizableComponentType.
-      ],
-      declarations: [ParentComponent],
-    }).compileComponents();
+    await setUp();
 
     const fixture = TestBed.createComponent(ParentComponent);
     fixture.detectChanges();
@@ -94,15 +95,9 @@ describe('tb-customization', () => {
   });
 
   it('renders customization if provided', async () => {
-    await TestBed.configureTestingModule({
-      imports: [
-        CustomizationModule,
-        // In this test we import the Module that provides an implementation
-        // of CustomizableComponentType.
-        CustomizableComponentModule,
-      ],
-      declarations: [ParentComponent],
-    }).compileComponents();
+    // In this test we import the Module that provides an implementation
+    // of CustomizableComponentType.
+    await setUp([CustomizableComponentModule]);
 
     const fixture = TestBed.createComponent(ParentComponent);
     fixture.detectChanges();
