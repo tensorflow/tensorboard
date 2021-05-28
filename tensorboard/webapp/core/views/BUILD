@@ -36,14 +36,33 @@ tf_ng_module(
     ],
 )
 
+tf_ng_module(
+    name = "dark_mode_supporter",
+    srcs = [
+        "dark_mode_supporter_container.ts",
+        "dark_mode_supporter_module.ts",
+    ],
+    deps = [
+        "//tensorboard/webapp:app_state",
+        "//tensorboard/webapp:selectors",
+        "@npm//@angular/core",
+        "@npm//@ngrx/store",
+        "@npm//rxjs",
+    ],
+)
+
 tf_ts_library(
     name = "test_lib",
     testonly = True,
     srcs = [
+        "dark_mode_supporter_test.ts",
         "hash_storage_test.ts",
     ],
     deps = [
+        ":dark_mode_supporter",
         ":hash_storage",
+        "//tensorboard/webapp:app_state",
+        "//tensorboard/webapp:selectors",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/angular:expect_angular_platform_browser_animations",
         "//tensorboard/webapp/angular:expect_ngrx_store_testing",

@@ -16,6 +16,7 @@ import {Injectable} from '@angular/core';
 
 import {
   ENABLE_COLOR_GROUP_QUERY_PARAM_KEY,
+  ENABLE_DARK_MODE_QUERY_PARAM_KEY,
   EXPERIMENTAL_PLUGIN_QUERY_PARAM_KEY,
   SCALARS_BATCH_SIZE_PARAM_KEY,
   TBFeatureFlagDataSource,
@@ -32,6 +33,27 @@ const util = {
     return initialURLSearchParams;
   },
 };
+
+const DARK_MODE_MEDIA_QUERY = '(prefers-color-scheme: dark)';
+
+@Injectable()
+export class MediaQueryFeatureFlagDataSource extends TBFeatureFlagDataSource {
+  getFeatures() {
+    // Set feature flag value for query parameters that are explicitly
+    // specified. Feature flags for unspecified query parameters remain unset so
+    // their values in the underlying state are not inadvertently changed.
+    const featureFlags: Partial<FeatureFlags> = {};
+    const enableDarkMode = window.matchMedia(DARK_MODE_MEDIA_QUERY).matches;
+
+    // When media query matches positively, it certainly means user wants it but
+    // it is not definitive otherwise (i.e., query params can override it).
+    if (enableDarkMode) {
+      featureFlags.enableDarkMode = true;
+    }
+
+    return featureFlags;
+  }
+}
 
 @Injectable()
 export class QueryParamsFeatureFlagDataSource extends TBFeatureFlagDataSource {
@@ -59,6 +81,12 @@ export class QueryParamsFeatureFlagDataSource extends TBFeatureFlagDataSource {
       featureFlags.enabledColorGroup =
         params.get(ENABLE_COLOR_GROUP_QUERY_PARAM_KEY) !== 'false';
     }
+
+    if (params.has(ENABLE_DARK_MODE_QUERY_PARAM_KEY)) {
+      featureFlags.enableDarkMode =
+        params.get(ENABLE_DARK_MODE_QUERY_PARAM_KEY) !== 'false';
+    }
+
     return featureFlags;
   }
 
@@ -67,4 +95,4 @@ export class QueryParamsFeatureFlagDataSource extends TBFeatureFlagDataSource {
   }
 }
 
-export const TEST_ONLY = {util};
+export const TEST_ONLY = {util, DARK_MODE_MEDIA_QUERY};

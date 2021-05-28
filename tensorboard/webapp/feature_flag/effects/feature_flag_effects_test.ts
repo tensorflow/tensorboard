@@ -13,47 +13,77 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+import {Injectable, NgModule} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
 import {provideMockActions} from '@ngrx/effects/testing';
-import {Action, Store} from '@ngrx/store';
-import {MockStore, provideMockStore} from '@ngrx/store/testing';
+import {Action} from '@ngrx/store';
 import {ReplaySubject} from 'rxjs';
 
 import {
+  TBFeatureFlagDataSource,
+  TbFeatureFlagDataSources,
   TBFeatureFlagTestingModule,
   TestingTBFeatureFlagDataSource,
 } from '../../webapp_data_source/tb_feature_flag_testing';
 import {partialFeatureFlagsLoaded} from '../actions/feature_flag_actions';
-import {State} from '../store/feature_flag_types';
 import {buildFeatureFlag} from '../testing';
+import {FeatureFlags} from '../types';
 import {FeatureFlagEffects} from './feature_flag_effects';
+
+@Injectable()
+export class OneFeatureFlagDataSource extends TBFeatureFlagDataSource {
+  getFeatures(): Partial<FeatureFlags> {
+    return buildFeatureFlag();
+  }
+}
+
+@Injectable()
+export class TwoFeatureFlagDataSource extends TBFeatureFlagDataSource {
+  getFeatures(): Partial<FeatureFlags> {
+    return buildFeatureFlag();
+  }
+}
+
+@NgModule({
+  providers: [
+    OneFeatureFlagDataSource,
+    {
+      provide: TbFeatureFlagDataSources,
+      useExisting: OneFeatureFlagDataSource,
+      multi: true,
+    },
+    TwoFeatureFlagDataSource,
+    {
+      provide: TbFeatureFlagDataSources,
+      useExisting: TwoFeatureFlagDataSource,
+      multi: true,
+    },
+  ],
+})
+export class MutliFeatureFlagProvider {}
 
 describe('feature_flag_effects', () => {
   let actions: ReplaySubject<Action>;
-  let store: MockStore<State>;
   let dataSource: TestingTBFeatureFlagDataSource;
   let effects: FeatureFlagEffects;
+  let recordedActions: Action[];
 
   beforeEach(async () => {
+    recordedActions = [];
     actions = new ReplaySubject<Action>(1);
     await TestBed.configureTestingModule({
-      imports: [TBFeatureFlagTestingModule],
-      providers: [
-        provideMockActions(actions),
-        FeatureFlagEffects,
-        provideMockStore(),
-      ],
+      providers: [provideMockActions(actions), FeatureFlagEffects],
     }).compileComponents();
-    effects = TestBed.inject(FeatureFlagEffects);
-    store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
-    dataSource = TestBed.inject(TestingTBFeatureFlagDataSource);
   });
 
   describe('getFeatureFlags$', () => {
-    let recordedActions: Action[];
+    beforeEach(async () => {
+      await TestBed.configureTestingModule({
+        imports: [TBFeatureFlagTestingModule],
+      });
 
-    beforeEach(() => {
-      recordedActions = [];
+      effects = TestBed.inject(FeatureFlagEffects);
+      dataSource = TestBed.inject(TestingTBFeatureFlagDataSource);
       effects.getFeatureFlags$.subscribe((action) => {
         recordedActions.push(action);
       });
@@ -77,6 +107,106 @@ describe('feature_flag_effects', () => {
           }),
         }),
       ]);
+    });
+  });
+
+  describe('multi data sources', () => {
+    let dataSourceOne: OneFeatureFlagDataSource;
+    let dataSourceTwo: TwoFeatureFlagDataSource;
+
+    beforeEach(async () => {
+      await TestBed.configureTestingModule({
+        imports: [MutliFeatureFlagProvider],
+      });
+
+      effects = TestBed.inject(FeatureFlagEffects);
+      dataSourceOne = TestBed.inject(OneFeatureFlagDataSource);
+      dataSourceTwo = TestBed.inject(TwoFeatureFlagDataSource);
+    });
+
+    describe('getFeatureFlags$', () => {
+      beforeEach(() => {
+        effects.getFeatureFlags$.subscribe((action) => {
+          recordedActions.push(action);
+        });
+      });
+
+      it(
+        'loads features from multiple sources but in order (later ones ' +
+          'override preceding ones)',
+        () => {
+          spyOn(dataSourceOne, 'getFeatures').and.returnValue({
+            inColab: false,
+            enabledColorGroup: true,
+          });
+          spyOn(dataSourceTwo, 'getFeatures').and.returnValue({
+            // DataSourceTwo appears second in the provider list so this should
+            // override the first one.
+            inColab: true,
+            enableDarkMode: false,
+          });
+
+          actions.next(effects.ngrxOnInitEffects());
+
+          expect(recordedActions).toEqual([
+            partialFeatureFlagsLoaded({
+              features: {
+                inColab: true,
+                enabledColorGroup: true,
+                enableDarkMode: false,
+              },
+            }),
+          ]);
+        }
+      );
+    });
+  });
+
+  describe('multi data sources + single data source', () => {
+    let dataSourceOne: OneFeatureFlagDataSource;
+    let dataSourceTwo: TwoFeatureFlagDataSource;
+
+    beforeEach(async () => {
+      await TestBed.configureTestingModule({
+        imports: [MutliFeatureFlagProvider, TBFeatureFlagTestingModule],
+      });
+
+      effects = TestBed.inject(FeatureFlagEffects);
+      dataSourceOne = TestBed.inject(OneFeatureFlagDataSource);
+      dataSourceTwo = TestBed.inject(TwoFeatureFlagDataSource);
+    });
+
+    describe('getFeatureFlags$', () => {
+      beforeEach(() => {
+        effects.getFeatureFlags$.subscribe((action) => {
+          recordedActions.push(action);
+        });
+      });
+
+      it('honors the multi data source over the single one', () => {
+        spyOn(dataSourceOne, 'getFeatures').and.returnValue({
+          inColab: false,
+          enabledColorGroup: true,
+        });
+        spyOn(dataSourceTwo, 'getFeatures').and.returnValue({
+          // DataSourceTwo appears second in the provider list so this should
+          // override the first one.
+          inColab: true,
+          enableDarkMode: false,
+        });
+
+        actions.next(effects.ngrxOnInitEffects());
+
+        expect(recordedActions).toEqual([
+          partialFeatureFlagsLoaded({
+            features: {
+              inColab: true,
+              enabledColorGroup: true,
+              enableDarkMode: false,
+            },
+          }),
+        ]);
+      });
     });
   });
 });

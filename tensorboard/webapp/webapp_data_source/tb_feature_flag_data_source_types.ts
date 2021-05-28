@@ -12,10 +12,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Injectable} from '@angular/core';
+import {Injectable, InjectionToken} from '@angular/core';
 
 import {FeatureFlags} from '../feature_flag/types';
 
+/**
+ * @deprecated @see TBFeatureFlagDataSource
+ */
 @Injectable()
 export abstract class TBFeatureFlagDataSource {
   /**
@@ -31,8 +34,17 @@ export abstract class TBFeatureFlagDataSource {
   abstract getFeatures(): Partial<FeatureFlags>;
 }
 
+/**
+ * Provides feature flag informations.
+ */
+export const TbFeatureFlagDataSources = new InjectionToken<
+  TBFeatureFlagDataSource
+>('TensorBoard Feature Flag Data Sources');
+
 export const EXPERIMENTAL_PLUGIN_QUERY_PARAM_KEY = 'experimentalPlugin';
 
 export const SCALARS_BATCH_SIZE_PARAM_KEY = 'scalarsBatchSize';
 
 export const ENABLE_COLOR_GROUP_QUERY_PARAM_KEY = 'enableColorGroup';
+
+export const ENABLE_DARK_MODE_QUERY_PARAM_KEY = 'darkMode';

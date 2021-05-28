@@ -8,6 +8,7 @@ tf_ng_module(
         "feature_flag_effects.ts",
     ],
     deps = [
+        "//tensorboard/webapp/feature_flag:types",
         "//tensorboard/webapp/feature_flag/actions",
         "//tensorboard/webapp/webapp_data_source:feature_flag_types",
         "@npm//@angular/core",
@@ -28,6 +29,7 @@ tf_ng_module(
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/angular:expect_ngrx_store_testing",
         "//tensorboard/webapp/feature_flag:testing",
+        "//tensorboard/webapp/feature_flag:types",
         "//tensorboard/webapp/feature_flag/actions",
         "//tensorboard/webapp/feature_flag/store:types",
         "//tensorboard/webapp/webapp_data_source:feature_flag_testing",

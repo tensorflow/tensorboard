@@ -1,4 +1,4 @@
-/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2021 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -12,19 +12,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {NgModule} from '@angular/core';
 
-import {FeatureFlags} from './types';
+import {DarkModeSupportContainer} from './dark_mode_supporter_container';
 
-export function buildFeatureFlag(
-  override: Partial<FeatureFlags> = {}
-): FeatureFlags {
-  return {
-    enableDarkMode: false,
-    enabledColorGroup: false,
-    enabledExperimentalPlugins: [],
-    inColab: false,
-    scalarsBatchSize: undefined,
-    metricsImageSupportEnabled: true,
-    ...override,
-  };
-}
+@NgModule({
+  declarations: [DarkModeSupportContainer],
+  exports: [DarkModeSupportContainer],
+})
+export class DarkModeSupportModule {}
