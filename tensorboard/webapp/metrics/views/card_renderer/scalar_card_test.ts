@@ -44,7 +44,11 @@ import {buildRun} from '../../../runs/store/testing';
 import * as selectors from '../../../selectors';
 import {MatIconTestingModule} from '../../../testing/mat_icon_module';
 import {DataLoadState} from '../../../types/data';
-import {Formatter} from '../../../widgets/line_chart_v2/lib/formatter';
+import {
+  Formatter,
+  relativeTimeFormatter,
+  siNumberFormatter,
+} from '../../../widgets/line_chart_v2/lib/formatter';
 import {
   DataSeries,
   DataSeriesMetadataMap,
@@ -55,7 +59,7 @@ import {
 import {ResizeDetectorTestingModule} from '../../../widgets/resize_detector_testing_module';
 import {TruncatedPathModule} from '../../../widgets/text/truncated_path_module';
 import {PluginType} from '../../data_source';
-import {getMetricsScalarSmoothing} from '../../store';
+import {getMetricsScalarSmoothing, getMetricsXAxisType} from '../../store';
 import {
   appStateFromMetricsState,
   buildMetricsState,
@@ -395,6 +399,86 @@ describe('scalar card', () => {
       expect(displayName).toBe('Run1 name');
       expect(visible).toBe(true);
     }));
+
+    describe('custom x axis formatter', () => {
+      it('uses SI unit formatter when xAxisType is STEP', fakeAsync(() => {
+        store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.STEP);
+
+        const cardMetadata = {
+          plugin: PluginType.SCALARS,
+          tag: 'tagA',
+          run: null,
+        };
+        provideMockCardRunToSeriesData(
+          selectSpy,
+          PluginType.SCALARS,
+          'card1',
+          cardMetadata,
+          null /* runToSeries */
+        );
+
+        const fixture = createComponent('card1');
+
+        expect(
+          fixture.debugElement.query(Selector.LINE_CHART).componentInstance
+            .customXFormatter
+        ).toBe(siNumberFormatter);
+      }));
+
+      it('uses relative time formatter when xAxisType is RELATIVE', fakeAsync(() => {
+        store.overrideSelector(
+          selectors.getMetricsXAxisType,
+          XAxisType.RELATIVE
+        );
+
+        const cardMetadata = {
+          plugin: PluginType.SCALARS,
+          tag: 'tagA',
+          run: null,
+        };
+        provideMockCardRunToSeriesData(
+          selectSpy,
+          PluginType.SCALARS,
+          'card1',
+          cardMetadata,
+          null /* runToSeries */
+        );
+
+        const fixture = createComponent('card1');
+
+        expect(
+          fixture.debugElement.query(Selector.LINE_CHART).componentInstance
+            .customXFormatter
+        ).toBe(relativeTimeFormatter);
+      }));
+
+      it('does not specify a custom X formatter for xAxisType WALL_TIME', fakeAsync(() => {
+        store.overrideSelector(
+          selectors.getMetricsXAxisType,
+          XAxisType.WALL_TIME
+        );
+
+        const cardMetadata = {
+          plugin: PluginType.SCALARS,
+          tag: 'tagA',
+          run: null,
+        };
+        provideMockCardRunToSeriesData(
+          selectSpy,
+          PluginType.SCALARS,
+          'card1',
+          cardMetadata,
+          null /* runToSeries */
+        );
+
+        const fixture = createComponent('card1');
+
+        expect(
+          fixture.debugElement.query(Selector.LINE_CHART).componentInstance
+            .customXFormatter
+        ).toBe(undefined);
+      }));
+    });
   });
 
   describe('displayName', () => {
