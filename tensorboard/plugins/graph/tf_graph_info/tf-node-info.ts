@@ -50,7 +50,7 @@ class TfNodeInfo extends LegacyElementMixin(PolymerElement) {
         float: left;
         width: 30%;
         word-wrap: break-word;
-        color: #565656;
+        color: var(--secondary-text-color);
         font-size: 11pt;
         font-weight: 400;
       }
@@ -58,7 +58,7 @@ class TfNodeInfo extends LegacyElementMixin(PolymerElement) {
       .attr-right {
         margin-left: 30%;
         word-wrap: break-word;
-        color: #565656;
+        color: var(--secondary-text-color);
         font-weight: 400;
       }
 
@@ -76,7 +76,7 @@ class TfNodeInfo extends LegacyElementMixin(PolymerElement) {
       }
 
       .sub-list-table-cell {
-        color: #565656;
+        color: var(--secondary-text-color);
         display: table-cell;
         font-size: 11pt;
         font-weight: 400;
@@ -86,7 +86,7 @@ class TfNodeInfo extends LegacyElementMixin(PolymerElement) {
 
       paper-item {
         padding: 0;
-        background: #e9e9e9;
+        background: var(--primary-background-color);
       }
 
       paper-item-body[two-line] {
@@ -114,8 +114,8 @@ class TfNodeInfo extends LegacyElementMixin(PolymerElement) {
       }
 
       .subtitle {
+        color: var(--secondary-text-color);
         font-size: 12pt;
-        color: #5e5e5e;
       }
 
       .controlLine {

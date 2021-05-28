@@ -47,6 +47,14 @@ class TfHparamsScatterPlotMatrixPlot extends LegacyElementMixin(
         font: 10px sans-serif;
       }
 
+      text {
+        fill: currentColor;
+      }
+
+      .frame rect {
+        stroke: currentColor;
+      }
+
       /* The closest data point marker to the mouse pointer. We use !important
          to override the inline style that sets the regular style of a marker.
       */

@@ -27,7 +27,7 @@ class TfGraphOpCompatListItem extends LegacyElementMixin(PolymerElement) {
     <style>
       #list-item {
         width: 100%;
-        color: #565656;
+        color: var(--secondary-text-color);
         font-size: 11pt;
         font-weight: 400;
         position: relative;

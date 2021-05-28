@@ -31,6 +31,7 @@ class TfGraphInfo extends LegacyElementMixin(PolymerElement) {
   static readonly template = html`
     <style>
       :host {
+        background: var(--secondary-background-color);
         font-size: 12px;
         margin: 0;
         padding: 0;

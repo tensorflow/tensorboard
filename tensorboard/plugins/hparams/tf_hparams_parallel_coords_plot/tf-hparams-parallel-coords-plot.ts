@@ -91,6 +91,12 @@ class TfHparamsParallelCoordsPlot extends LegacyElementMixin(PolymerElement) {
     <style>
       :host {
         display: block;
+        --tf-hparams-parallel-coords-plot-axis-shadow: 0 1px 0 #fff,
+          1px 0 0 #fff, 0 -1px 0 #fff, -1px 0 0 #fff;
+      }
+      :host-context(body.dark-mode) {
+        --tf-hparams-parallel-coords-plot-axis-shadow: 0 1px 0 #000,
+          1px 0 0 #000, 0 -1px 0 #000, -1px 0 0 #000;
       }
       svg {
         font: 10px sans-serif;
@@ -138,8 +144,8 @@ class TfHparamsParallelCoordsPlot extends LegacyElementMixin(PolymerElement) {
       }
 
       .axis text {
-        text-shadow: 0 1px 0 #fff, 1px 0 0 #fff, 0 -1px 0 #fff, -1px 0 0 #fff;
-        fill: #000;
+        text-shadow: var(--tf-hparams-parallel-coords-plot-axis-shadow);
+        fill: currentColor;
         cursor: move;
       }
     </style>

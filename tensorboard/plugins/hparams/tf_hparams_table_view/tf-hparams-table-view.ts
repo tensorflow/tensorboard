@@ -104,6 +104,16 @@ class TfHparamsTableView extends LegacyElementMixin(PolymerElement) {
       :host {
         display: inline;
       }
+
+      :host-context(body.dark-mode) {
+        --lumo-base-color: #303030;
+        --lumo-body-text-color: #fff;
+      }
+
+      :host-context(body.dark-mode) vaadin-grid {
+        --_lumo-grid-secondary-border-color: #505050;
+      }
+
       .table-cell {
         white-space: nowrap;
         text-overflow: ellipsis;

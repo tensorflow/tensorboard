@@ -49,6 +49,15 @@ class TfProfileRedirectDashboard extends LegacyElementMixin(PolymerElement) {
     </div>
 
     <style>
+      :host {
+        display: block;
+        height: 100%;
+        left: 0;
+        position: absolute;
+        top: 0;
+        width: 100%;
+      }
+
       .message {
         margin: 80px auto 0 auto;
         max-width: 540px;

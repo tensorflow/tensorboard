@@ -17,6 +17,10 @@ import {html} from '@polymer/polymer';
 // Please keep node font-size/classnames in sync with tf-graph-common/common.ts
 export const template = html`
   <style>
+    :host-context(body.dark-mode) {
+      filter: invert(1);
+    }
+
     :host {
       display: flex;
       font-size: 20px;

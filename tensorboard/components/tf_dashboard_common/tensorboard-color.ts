@@ -29,6 +29,7 @@ style.textContent = `
     --tb-secondary-text-color: var(--paper-grey-800);
     --tb-raised-button-shadow-color: rgba(0, 0, 0, 0.2);
     --primary-background-color: #fff;
+    --secondary-background-color: #e9e9e9;
   }
 
   :root .dark-mode {
@@ -38,7 +39,9 @@ style.textContent = `
     --tb-secondary-text-color: var(--paper-grey-400);
     --tb-raised-button-shadow-color: rgba(255, 255, 255, 0.5);
     --primary-text-color: #fff;
+    --secondary-text-color: var(--paper-grey-400);
     --primary-background-color: #303030;  /* material grey A400. */
+    --secondary-background-color: #505050;
   }
 `;
 document.head.appendChild(style);
