@@ -8,8 +8,8 @@ tf_ng_module(
         "customizable_component.ts",
         "customization_module.ts",
     ],
-    deps = [     
-        "@npm//@angular/common",   
+    deps = [
+        "@npm//@angular/common",
         "@npm//@angular/core",
     ],
 )
