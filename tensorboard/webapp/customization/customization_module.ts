@@ -22,5 +22,4 @@ import {CustomizableComponent} from './customizable_component';
   declarations: [CustomizableComponent],
   exports: [CustomizableComponent],
 })
-export class CustomizationModule {
-}
+export class CustomizationModule {}

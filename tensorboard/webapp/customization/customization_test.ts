@@ -26,17 +26,18 @@ export class CustomizableComponentType {}
 /**
  * Parent class that uses the <tb-customization> component.
  */
- @Component({
+@Component({
   selector: 'parent-component',
   template: `
-      <tb-customization [customizableComponent]="customizableComponent">
-        <div class="default">Showing Default Text!</div>
-      </tb-customization>
-  `
+    <tb-customization [customizableComponent]="customizableComponent">
+      <div class="default">Showing Default Text!</div>
+    </tb-customization>
+  `,
 })
 export class ParentComponent {
-  constructor(@Optional() readonly customizableComponent:
-                  CustomizableComponentType) {}
+  constructor(
+    @Optional() readonly customizableComponent: CustomizableComponentType
+  ) {}
 }
 
 /**
@@ -47,8 +48,7 @@ export class ParentComponent {
   declarations: [ParentComponent],
   entryComponents: [ParentComponent],
 })
-export class ParentComponentModule {
-}
+export class ParentComponentModule {}
 
 /**
  * An implementation of CustomizableComponentType to be provided and injected
@@ -56,12 +56,9 @@ export class ParentComponentModule {
  */
 @Component({
   selector: 'customizable-component',
-  template: `
-      <div>Showing Customized Text!</div>
-  `
+  template: ` <div>Showing Customized Text!</div> `,
 })
-export class CustomizableComponent implements CustomizableComponentType {
-}
+export class CustomizableComponent implements CustomizableComponentType {}
 
 /**
  * Declares and provides the implementation of CustomizableComponentType.
@@ -69,53 +66,48 @@ export class CustomizableComponent implements CustomizableComponentType {
 @NgModule({
   declarations: [CustomizableComponent],
   entryComponents: [CustomizableComponent],
-  providers: [{
-    provide: CustomizableComponentType,
-    useClass: CustomizableComponent,
-  }]
+  providers: [
+    {
+      provide: CustomizableComponentType,
+      useClass: CustomizableComponent,
+    },
+  ],
 })
-export class CustomizableComponentModule {
-}
+export class CustomizableComponentModule {}
 
 describe('tb-customization', () => {
   it('renders default if no customization provided', async () => {
-    await TestBed
-        .configureTestingModule({
-          imports: [
-            CustomizationModule,
-            // Note: Notably not importing the module that provides the
-            // implementation of CustomizableComponentType.
-          ],
-          declarations: [
-            ParentComponent,
-          ],
-        })
-        .compileComponents();
+    await TestBed.configureTestingModule({
+      imports: [
+        CustomizationModule,
+        // Note: Notably not importing the module that provides the
+        // implementation of CustomizableComponentType.
+      ],
+      declarations: [ParentComponent],
+    }).compileComponents();
 
     const fixture = TestBed.createComponent(ParentComponent);
     fixture.detectChanges();
-    expect(fixture.debugElement.nativeElement.textContent)
-        .toBe('Showing Default Text!');
+    expect(fixture.debugElement.nativeElement.textContent).toBe(
+      'Showing Default Text!'
+    );
   });
 
   it('renders customization if provided', async () => {
-    await TestBed
-        .configureTestingModule({
-          imports: [
-            CustomizationModule,
-            // In this test we import the Module that provides an implementation
-            // of CustomizableComponentType.
-            CustomizableComponentModule,
-          ],
-          declarations: [
-            ParentComponent,
-          ],
-        })
-        .compileComponents();
+    await TestBed.configureTestingModule({
+      imports: [
+        CustomizationModule,
+        // In this test we import the Module that provides an implementation
+        // of CustomizableComponentType.
+        CustomizableComponentModule,
+      ],
+      declarations: [ParentComponent],
+    }).compileComponents();
 
     const fixture = TestBed.createComponent(ParentComponent);
     fixture.detectChanges();
-    expect(fixture.debugElement.nativeElement.textContent)
-        .toBe('Showing Customized Text!');
+    expect(fixture.debugElement.nativeElement.textContent).toBe(
+      'Showing Customized Text!'
+    );
   });
 });
