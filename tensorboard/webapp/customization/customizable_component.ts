@@ -29,49 +29,48 @@ import {
  *
  * Cookbook:
  *
- * 1. Define an empty marker class that a Component will have to implement in
- *    order to be recognized as the customization:
+ * 1. Define a customizable Component, for example a button:
  *
- *    export class SomeCustomComponentType {};
+ *    const CustomizableButton = new InjectionToken<Type<unknown>>('Customizable Button');
  *
  * 2. Where the customization point is desired, use this Component to wrap some
  *    default behavior. Bind to some possibly-empty variable with the
  *    [customizableComponent] attribute:
  *
- *    <tb-customization [customizableComponent]="customComponentIfProvided">
- *      <div>This is the default content.</div>
+ *    <tb-customization [customizableComponent]="customButtonIfProvided">
+ *      <button mat-button>I am the default button.</button>
  *    </tb-customization>
  *
  * 3. In the constructor of the component containing the customization point,
- *    optionally inject an instance of SomeCustomComponentType:
+ *    optionally inject a custom button:
  *
  *    constructor(
- *        @Optional readonly customComponentIfProvided: SomeCustomComponentType)
+ *      @Optional() @Inject(CustomizableButton)
+ *      readonly customButtonIfProvided: Type<unknown>)
  *
  * If you do not wish to customize the behavior for a certain TensorBoard
- * service, you're done. The TensorBoard service will receive the default
- * behavior.
+ * service (in this case, a button), you're done. The TensorBoard service
+ * will receive the default behavior.
  *
- * However, if you need to define a customization for a TensorBoard service:
+ * However, if you need to define a customization for the button:
  *
- * 4. Define a Component implementation of SomeCustomComponentType with the
- *    customized behavior:
+ * 4. Define a Component with your customization:
  *
  *    @Injectable()
  *    @Component({
- *      selector: 'my-custom-component',
- *      template: '<div>This is the customized content.</div>'
- *    });
- *    export class MyCustomComponent implements SomeCustomComponentType {}
+ *      selector: 'my-custom-button-component',
+ *      template: '<button mat-button>I am a special button!</button>'
+ *    })
+ *    export class MyCustomButtonComponent {}
  *
  * 5. Provide the customized Component in an NgModule:
  *
  *    @NgModule({
- *      declarations: [MyCustomComponent],
- *      entryComponents: [MyCustomComponent],
+ *      declarations: [MyCustomButtonComponent],
+ *      entryComponents: [MyCustomButtonComponent],
  *      providers: [{
- *        provide: SomeCustomComponentType,
- *        useClass: MyCustomComponent,
+ *        provide: CustomizableButton,
+ *        useClass: MyCustomButtonComponent,
  *      }]
  *    })
  */
