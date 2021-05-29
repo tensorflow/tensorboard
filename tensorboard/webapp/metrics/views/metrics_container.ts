@@ -17,10 +17,12 @@ import {ChangeDetectionStrategy, Component} from '@angular/core';
 @Component({
   selector: 'metrics-dashboard',
   template: `
-    <nav>
-      <runs-selector></runs-selector>
-    </nav>
-    <metrics-main-view></metrics-main-view>
+    <div class="plugin-view">
+      <nav>
+        <runs-selector></runs-selector>
+      </nav>
+      <metrics-main-view></metrics-main-view>
+    </div>
   `,
   styleUrls: ['metrics_container.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,

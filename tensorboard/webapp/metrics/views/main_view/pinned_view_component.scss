@@ -19,11 +19,10 @@ limitations under the License.
   @include metrics-card-group-toolbar;
   display: flex;
   align-items: center;
-  border-bottom: 1px solid mat-color($tb-foreground, border);
 }
 
 mat-icon {
-  color: mat-color($tb-foreground, secondary-text);
+  @include tb-theme-foreground-prop(color, secondary-text);
   flex: none;
   margin-right: 5px;
 }
@@ -43,7 +42,7 @@ mat-icon {
 }
 
 .empty-message {
-  color: mat-color($tb-foreground, secondary-text);
+  @include tb-theme-foreground-prop(color, secondary-text);
   text-align: center;
   padding: 16px;
   font-size: 13px;

@@ -73,13 +73,12 @@ $_title-to-heading-gap: 12px;
 }
 
 .controls {
-  color: mat-color($tb-foreground, secondary-text);
+  @include metrics-card-controls;
   grid-area: controls;
   justify-self: flex-end;
   flex-shrink: 0;
   // TODO(psybuzz) do not use negative margin.
   margin-right: -1 * $_title-to-heading-gap;
-  white-space: nowrap;
 }
 
 .spinner {
