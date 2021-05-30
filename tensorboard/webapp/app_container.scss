@@ -12,6 +12,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+@import 'tensorboard/webapp/theme/tb_theme';
+
 html,
 body {
   font-family: Roboto, sans-serif;
@@ -31,6 +33,10 @@ app-header {
   box-shadow: 0 1px 3px 3px rgba(0, 0, 0, 0.25);
   flex: 0 0;
   z-index: 1; /* The box shadow needs to extend out of the app-header. */
+
+  @include tb-dark-theme {
+    box-shadow: 0 1px 3px 3px rgba(#fff, 0.1);
+  }
 }
 
 main {

@@ -5,8 +5,13 @@ package(default_visibility = ["//tensorboard:internal"])
 licenses(["notice"])
 
 tf_sass_binary(
-    name = "styles",
+    name = "plugin_selector_styles",
     src = "plugin_selector_component.scss",
+)
+
+tf_sass_binary(
+    name = "header_styles",
+    src = "header_component.scss",
 )
 
 tf_ng_module(
@@ -20,7 +25,8 @@ tf_ng_module(
         "types.ts",
     ],
     assets = [
-        ":styles",
+        ":plugin_selector_styles",
+        ":header_styles",
         "plugin_selector_component.ng.html",
     ],
     deps = [

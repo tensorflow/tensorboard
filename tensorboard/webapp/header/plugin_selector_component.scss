@@ -57,7 +57,7 @@ mat-option {
   // Override mat-tab styling. By default, mat-tab has the right styling but,
   // here, we are using it under dark header background. Must invert the color.
 
-  &.mat-primary .mat-ink-bar {
+  &.mat-primary .mat-tab-list .mat-ink-bar {
     background-color: currentColor;
   }
 
@@ -140,7 +140,7 @@ mat-option {
       }
 
       .mat-tab-header-pagination {
-        background-color: mat-color($tb-primary);
+        @include tb-theme-background-prop(background-color, app-bar);
       }
     }
   }

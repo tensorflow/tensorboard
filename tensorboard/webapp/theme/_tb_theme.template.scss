@@ -40,12 +40,12 @@ $tb-foreground: map_merge(
     link: mat-color($mat-blue, 700),
   )
 );
-
 $tb-background: map_merge(
   $mat-light-theme-background,
   (
+    app-bar: mat-color($tb-primary, 700),
     // Default is `map.get($grey-palette, 50)`.
-    background: #fff
+    background: #fff,
   )
 );
 
@@ -64,7 +64,19 @@ $tb-dark-foreground: map_merge(
     border: #555,
   )
 );
-$tb-dark-background: map-get($tb-dark-theme, background);
+$tb-dark-background: map_merge(
+  map-get($tb-dark-theme, background),
+  (
+    app-bar: mat-color($tb-primary, 900),
+  )
+);
+$tb-dark-theme: map_merge(
+  $tb-dark-theme,
+  (
+    background: $tb-dark-background,
+    foreground: $tb-dark-foreground,
+  )
+);
 
 /**
  * Mixin to facilitate styling an Angular component for the dark mode.

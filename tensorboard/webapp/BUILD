@@ -81,6 +81,11 @@ tf_ts_library(
     ],
 )
 
+tf_sass_binary(
+    name = "app_styles",
+    src = "app_container.scss",
+)
+
 # Angular module for the top-level app component together with all of its
 # injectable dependencies.  I.e., the entire Angular app.
 tf_ng_module(
@@ -90,7 +95,7 @@ tf_ng_module(
         "app_module.ts",
     ],
     assets = [
-        "app_container.css",
+        ":app_styles",
         "app_container.ng.html",
     ],
     deps = [
