@@ -29,7 +29,13 @@ self.addEventListener('message', (event: MessageEvent) => {
 });
 
 function createPortHandler(port: MessagePort, initMessage: InitMessage) {
-  const {canvas, devicePixelRatio, dim, rendererType} = initMessage;
+  const {
+    canvas,
+    devicePixelRatio,
+    dim,
+    rendererType,
+    useDarkMode,
+  } = initMessage;
 
   const lineChartCallbacks = {
     onDrawEnd: () => {
@@ -48,6 +54,7 @@ function createPortHandler(port: MessagePort, initMessage: InitMessage) {
         callbacks: lineChartCallbacks,
         container: canvas,
         devicePixelRatio,
+        useDarkMode,
       };
       break;
     default:
@@ -77,6 +84,10 @@ function createPortHandler(port: MessagePort, initMessage: InitMessage) {
       }
       case HostToGuestEvent.DOM_RESIZED: {
         lineChart.resize(message.dim);
+        break;
+      }
+      case HostToGuestEvent.DARK_MODE_UPDATED: {
+        lineChart.setUseDarkMode(message.useDarkMode);
         break;
       }
       case HostToGuestEvent.SCALE_UPDATED: {

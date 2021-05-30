@@ -82,6 +82,8 @@ export interface ObjectRenderer<CacheValue = {}> {
   flush(): void;
 
   destroyObject(cachedValue: CacheValue): void;
+
+  setUseDarkMode(useDarkMode: boolean): void;
 }
 
 interface PaintOption {

@@ -22,6 +22,7 @@ limitations under the License.
 
 .major-label,
 text {
+  fill: currentColor;
   font-size: 11px;
   user-select: none;
 }
@@ -136,6 +137,13 @@ text {
   grid-template-columns: 30px minmax(auto, 100px);
   height: 30px;
   margin: 10px 20px;
+
+  input {
+    background-color: inherit;
+    border-radius: 4px;
+    border-style: solid;
+    color: inherit;
+  }
 }
 
 .extent-edit-control {

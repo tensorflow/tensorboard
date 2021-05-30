@@ -76,6 +76,11 @@ export class SvgRenderer implements ObjectRenderer<CacheValue> {
     this.svg.removeChild(cachedValue.dom);
   }
 
+  setUseDarkMode(useDarkMode: boolean): void {
+    // No need to do anything for SVG render since the color will be inherited
+    // at CSS level anyways.
+  }
+
   private createPathDString(polyline: Polyline): string {
     if (!polyline.length) {
       return '';

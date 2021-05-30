@@ -48,6 +48,7 @@ describe('line_chart_v2/lib/integration test', () => {
       container: dom,
       callbacks,
       domDimension: {width: 200, height: 100},
+      useDarkMode: false,
     });
     chart.setXScaleType(ScaleType.LINEAR);
     chart.setYScaleType(ScaleType.LINEAR);

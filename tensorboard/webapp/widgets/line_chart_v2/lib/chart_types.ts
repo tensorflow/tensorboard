@@ -35,6 +35,8 @@ export interface Chart {
 
   setYScaleType(type: ScaleType): void;
 
+  setUseDarkMode(useDarkMode: boolean): void;
+
   dispose(): void;
 }
 
@@ -45,6 +47,7 @@ export interface ChartCallbacks {
 export interface BaseChartOptions {
   callbacks: ChartCallbacks;
   domDimension: Dimension;
+  useDarkMode: boolean;
 }
 
 export interface SvgChartOptions extends BaseChartOptions {

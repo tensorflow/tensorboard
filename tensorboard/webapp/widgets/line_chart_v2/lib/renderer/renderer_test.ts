@@ -362,6 +362,64 @@ describe('line_chart_v2/lib/renderer test', () => {
       assertMaterial(lineObject, '#00ff00', true);
     });
 
+    describe('opacity support', () => {
+      it('sets opacity adjusted color against #fff when using light mode', () => {
+        renderer.setUseDarkMode(false);
+        renderer.createOrUpdateLineObject(
+          null,
+          new Float32Array([0, 5, 5, 50]),
+          {visible: true, color: '#0f0', width: 3, opacity: 0.2}
+        );
+
+        const lineObject = scene.children[0] as THREE.Mesh;
+        assertMaterial(lineObject, '#ccffcc', true);
+      });
+
+      it('sets opacity adjusted color against dark when using dark mode', () => {
+        renderer.setUseDarkMode(true);
+        renderer.createOrUpdateLineObject(
+          null,
+          new Float32Array([0, 5, 5, 50]),
+          {visible: true, color: '#0f0', width: 3, opacity: 0.2}
+        );
+
+        const lineObject = scene.children[0] as THREE.Mesh;
+        assertMaterial(lineObject, '#334d33', true);
+      });
+
+      it('updates color when tweaking opacity', () => {
+        const object1 = renderer.createOrUpdateLineObject(
+          null,
+          new Float32Array([0, 10, 10, 100]),
+          {visible: true, color: '#f00', width: 6, opacity: 0.1}
+        );
+
+        const object2 = renderer.createOrUpdateLineObject(
+          object1,
+          new Float32Array(0),
+          {
+            visible: true,
+            color: '#f00',
+            width: 6,
+            opacity: 0.5,
+          }
+        );
+
+        const lineObject2 = scene.children[0] as THREE.Mesh;
+        assertMaterial(lineObject2, '#ff8080', true);
+
+        renderer.createOrUpdateLineObject(object2, new Float32Array(0), {
+          visible: true,
+          color: '#f00',
+          width: 6,
+          opacity: 1,
+        });
+
+        const lineObject3 = scene.children[0] as THREE.Mesh;
+        assertMaterial(lineObject3, '#ff0000', true);
+      });
+    });
+
     it('updates object when going from non-emtpy polyline to an empty one', () => {
       const cacheObject = renderer.createOrUpdateLineObject(
         null,

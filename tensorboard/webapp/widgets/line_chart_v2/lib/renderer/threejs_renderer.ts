@@ -26,13 +26,17 @@ import {
   TrianglePaintOption,
 } from './renderer_types';
 
-function createOpacityAdjustedColor(hex: string, opacity: number): THREE.Color {
+function createOpacityAdjustedColor(
+  baseColorHex: string,
+  hex: string,
+  opacity: number
+): THREE.Color {
   if (opacity === 1) return new THREE.Color(hex);
   const newD3Color = hsl(hex);
   if (!newD3Color) {
     throw new Error(`d3 failed to recognize the color: ${hex}`);
   }
-  return new THREE.Color(interpolateHsl(newD3Color, '#fff')(1 - opacity));
+  return new THREE.Color(interpolateHsl(newD3Color, baseColorHex)(1 - opacity));
 }
 
 enum CacheType {
@@ -217,6 +221,7 @@ function updateThickPolylineGeometry(
  * geometry.
  */
 function updateObject(
+  baseColorHex: string,
   object: THREE.Mesh,
   updateGeometry: (geometry: THREE.BufferGeometry) => THREE.BufferGeometry,
   materialOption: {visible: boolean; color: string; opacity?: number}
@@ -235,7 +240,11 @@ function updateObject(
 
   if (!visible) return false;
 
-  const newColor = createOpacityAdjustedColor(color, opacity ?? 1);
+  const newColor = createOpacityAdjustedColor(
+    baseColorHex,
+    color,
+    opacity ?? 1
+  );
 
   const newGeom = updateGeometry(object.geometry as THREE.BufferGeometry);
   if (object.geometry !== newGeom) {
@@ -254,6 +263,7 @@ function updateObject(
 export class ThreeRenderer implements ObjectRenderer<CacheValue> {
   private readonly renderer: THREE.WebGLRenderer;
   private readonly scene = new THREE.Scene();
+  private backgroundColor: string = '#fff';
 
   constructor(
     canvas: HTMLCanvasElement | OffscreenCanvas,
@@ -294,6 +304,12 @@ export class ThreeRenderer implements ObjectRenderer<CacheValue> {
     }
   }
 
+  setUseDarkMode(useDarkMode: boolean): void {
+    this.backgroundColor = useDarkMode ? '#303030' : '#ffffff';
+    // Normally, we should invoke `setClearColor` but we are using
+    // `alpha: false` mode in threejs (transparent) so it does not matter.
+  }
+
   createOrUpdateLineObject(
     cachedLine: LineCacheValue | null,
     polyline: Polyline,
@@ -306,6 +322,7 @@ export class ThreeRenderer implements ObjectRenderer<CacheValue> {
 
     if (!cachedLine) {
       const newColor = createOpacityAdjustedColor(
+        this.backgroundColor,
         paintOpt.color,
         paintOpt.opacity ?? 1
       );
@@ -320,6 +337,7 @@ export class ThreeRenderer implements ObjectRenderer<CacheValue> {
 
     const {data: prevPolyline, obj3d: line, width: prevWidth} = cachedLine;
     const geomUpdated = updateObject(
+      this.backgroundColor,
       line,
       (geometry) => {
         if (
@@ -350,7 +368,11 @@ export class ThreeRenderer implements ObjectRenderer<CacheValue> {
     if (!materialOption.visible) return null;
 
     const {visible, color, opacity} = materialOption;
-    const newColor = createOpacityAdjustedColor(color, opacity ?? 1);
+    const newColor = createOpacityAdjustedColor(
+      this.backgroundColor,
+      color,
+      opacity ?? 1
+    );
     const material = new THREE.MeshBasicMaterial({color: newColor, visible});
     return new THREE.Mesh(geometry, material);
   }
@@ -381,6 +403,7 @@ export class ThreeRenderer implements ObjectRenderer<CacheValue> {
     }
 
     const geomUpdated = updateObject(
+      this.backgroundColor,
       cached.obj3d,
       (geom) => {
         // Updating a geometry with three vertices is cheap enough. Update always.
@@ -412,7 +435,12 @@ export class ThreeRenderer implements ObjectRenderer<CacheValue> {
 
     // geometry/vertices are created by CircleBufferGeometry and it is quite complex.
     // Since it has N vertices (N < 20), update always.
-    const geomUpdated = updateObject(cached.obj3d, () => geom, paintOpt);
+    const geomUpdated = updateObject(
+      this.backgroundColor,
+      cached.obj3d,
+      () => geom,
+      paintOpt
+    );
     if (!geomUpdated) return cached;
     cached.obj3d.position.set(loc.x, loc.y, 0);
     return {type: CacheType.CIRCLE, data: {loc, radius}, obj3d: cached.obj3d};
@@ -446,7 +474,12 @@ export class ThreeRenderer implements ObjectRenderer<CacheValue> {
       return {type: CacheType.TRAPEZOID, data: [start, end], obj3d: mesh};
     }
 
-    const geomUpdated = updateObject(cached.obj3d, () => geom, paintOpt);
+    const geomUpdated = updateObject(
+      this.backgroundColor,
+      cached.obj3d,
+      () => geom,
+      paintOpt
+    );
     return geomUpdated
       ? {type: CacheType.TRAPEZOID, data: [start, end], obj3d: cached.obj3d}
       : cached;

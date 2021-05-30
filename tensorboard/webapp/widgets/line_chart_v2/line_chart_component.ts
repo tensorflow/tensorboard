@@ -82,6 +82,9 @@ export class LineChartComponent
   private chartEl?: ElementRef<HTMLCanvasElement | SVGElement>;
 
   @Input()
+  useDarkMode: boolean = false;
+
+  @Input()
   preferredRendererType: RendererType = RendererType.WEBGL;
 
   @Input()
@@ -146,6 +149,7 @@ export class LineChartComponent
   private isMetadataUpdated = false;
   private isFixedViewBoxUpdated = false;
   private isViewBoxOverridden = false;
+  private useDarkModeUpdated = false;
   // Must set the default view box since it is an optional input and won't trigger
   // onChanges.
   private isViewBoxChanged = true;
@@ -182,6 +186,10 @@ export class LineChartComponent
 
     if (changes['seriesMetadataMap']) {
       this.isMetadataUpdated = true;
+    }
+
+    if (changes['useDarkMode']) {
+      this.useDarkModeUpdated = true;
     }
 
     if (this.scaleUpdated) {
@@ -281,6 +289,7 @@ export class LineChartComponent
           container: this.chartEl!.nativeElement as SVGElement,
           callbacks,
           domDimension: this.domDimensions.main,
+          useDarkMode: this.useDarkMode,
         };
         break;
       }
@@ -291,6 +300,7 @@ export class LineChartComponent
           devicePixelRatio: window.devicePixelRatio,
           callbacks,
           domDimension: this.domDimensions.main,
+          useDarkMode: this.useDarkMode,
         };
         break;
       default:
@@ -351,6 +361,11 @@ export class LineChartComponent
     if (this.isDataUpdated) {
       this.isDataUpdated = false;
       this.lineChart.setData(this.seriesData);
+    }
+
+    if (this.useDarkModeUpdated) {
+      this.useDarkModeUpdated = false;
+      this.lineChart.setUseDarkMode(this.useDarkMode);
     }
 
     if (this.isFixedViewBoxUpdated && this.fixedViewBox) {
