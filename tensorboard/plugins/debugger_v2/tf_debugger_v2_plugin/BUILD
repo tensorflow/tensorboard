@@ -1,8 +1,13 @@
-load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_ng_web_test_suite", "tf_ts_library")
+load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_ng_web_test_suite", "tf_sass_binary", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])
+
+tf_sass_binary(
+    name = "debugger_component_style",
+    src = "debugger_component.scss",
+)
 
 # TODO(cais): Consider replacing old debuger plugin with this before launch,
 # instead of having two versions of debugger co-exist, which may be confusing to
@@ -15,7 +20,7 @@ tf_ng_module(
         "debugger_module.ts",
     ],
     assets = [
-        "debugger_component.css",
+        ":debugger_component_style",
         "debugger_component.ng.html",
     ],
     deps = [

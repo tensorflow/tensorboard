@@ -12,10 +12,17 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+@import 'tensorboard/webapp/theme/tb_theme';
+@import '../common/lib';
+
+.op-container,
+.op-name {
+  color: inherit;
+  background-color: inherit;
+}
 
 .op-container {
-  background-color: transparent;
-  border: 2px solid #c6cad1;
+  @include tb-theme-foreground-prop(border, border, 2px solid);
   border-radius: 4px;
   box-shadow: 1px 3px #eee;
   cursor: pointer;
@@ -23,6 +30,9 @@ limitations under the License.
   padding: 2px 6px;
   text-align: right;
   width: 200px;
+  @include tb-dark-theme {
+    box-shadow: 1px 3px mat-color($mat-gray, 600);
+  }
 }
 
 .op-container:focus {
@@ -38,7 +48,6 @@ limitations under the License.
 }
 
 .op-name {
-  background-color: transparent;
   border: none;
   cursor: pointer;
   display: inline-block;
@@ -54,17 +63,8 @@ limitations under the License.
 }
 
 .op-type {
-  background-color: #e3e5e8;
-  border: 1px solid #c0c0c0;
-  border-radius: 4px;
-  display: inline-block;
-  font-family: 'Roboto Mono', monospace;
-  font-size: 10px;
-  height: 14px;
-  line-height: 14px;
+  @include debugger-op-type;
   margin-top: 3px;
-  padding: 1px 3px;
-  width: max-content;
 }
 
 .self-op-name {
@@ -73,5 +73,5 @@ limitations under the License.
 }
 
 .slot {
-  color: #707070;
+  @include tb-theme-foreground-prop(color, secondary-text);
 }

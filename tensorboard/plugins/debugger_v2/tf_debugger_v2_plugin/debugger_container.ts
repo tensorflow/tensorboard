@@ -30,6 +30,14 @@ import {getActiveRunId, getDebuggerRunListing} from './store';
       [activeRunId]="activeRunId$ | async"
     ></debugger-component>
   `,
+  styles: [
+    `
+      :host {
+        display: block;
+        height: 100%;
+      }
+    `,
+  ],
 })
 export class DebuggerContainer implements OnInit, OnDestroy {
   readonly runs$ = this.store.pipe(select(getDebuggerRunListing));

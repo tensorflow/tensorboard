@@ -1,8 +1,13 @@
-load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_ts_library")
+load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_sass_binary", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])
+
+tf_sass_binary(
+    name = "execution_data_styles",
+    src = "execution_data_component.scss",
+)
 
 tf_ng_module(
     name = "execution_data",
@@ -12,7 +17,7 @@ tf_ng_module(
         "execution_data_module.ts",
     ],
     assets = [
-        "execution_data_component.css",
+        ":execution_data_styles",
         "execution_data_component.ng.html",
     ],
     deps = [

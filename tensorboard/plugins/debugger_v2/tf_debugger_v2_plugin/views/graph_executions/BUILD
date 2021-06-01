@@ -1,8 +1,16 @@
-load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_ts_library")
+load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_sass_binary", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])
+
+tf_sass_binary(
+    name = "graph_executions_styles",
+    src = "graph_executions_component.scss",
+    deps = [
+        "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/common:style_lib",
+    ],
+)
 
 tf_ng_module(
     name = "graph_executions",
@@ -12,7 +20,7 @@ tf_ng_module(
         "graph_executions_module.ts",
     ],
     assets = [
-        "graph_executions_component.css",
+        ":graph_executions_styles",
         "graph_executions_component.ng.html",
     ],
     deps = [

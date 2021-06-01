@@ -12,9 +12,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+@import 'tensorboard/webapp/theme/tb_theme';
 
 .header-section {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+  @include tb-theme-foreground-prop(border-bottom, border, 1px solid);
   display: flex;
   height: 24px;
   padding-bottom: 6px;
