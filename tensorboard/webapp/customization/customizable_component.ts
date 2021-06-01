@@ -83,7 +83,7 @@ import {
   `,
 })
 export class CustomizableComponent implements OnInit {
-  @Input() customizableComponent!: {constructor: Type<unknown>} | null;
+  @Input() customizableComponent!: {constructor: Type<unknown>} | undefined;
 
   constructor(
     private readonly viewContainerRef: ViewContainerRef,
