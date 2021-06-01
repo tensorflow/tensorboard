@@ -20,6 +20,7 @@ tf_ng_module(
     srcs = ["customization_test.ts"],
     deps = [
         ":customization",
+        "//tensorboard/webapp/angular:expect_angular_core_testing",
         "@npm//@angular/core",
         "@npm//@types/jasmine",
     ],
