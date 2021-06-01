@@ -385,11 +385,11 @@ describe('core deeplink provider', () => {
 
       store.overrideSelector(selectors.getRunUserSetGroupBy, {
         key: GroupByKey.REGEX,
-        regexString: 'hello',
+        regexString: 'hello:world',
       });
       store.refreshState();
       expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual([
-        {key: 'colorGroup', value: 'regex:hello'},
+        {key: 'colorGroup', value: 'regex:hello:world'},
       ]);
     });
 
@@ -405,11 +405,11 @@ describe('core deeplink provider', () => {
 
       store.overrideSelector(selectors.getRunUserSetGroupBy, {
         key: GroupByKey.REGEX,
-        regexString: 'hello/(world)',
+        regexString: 'hello/(world):goodbye',
       });
       store.refreshState();
       expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual([
-        {key: 'colorGroup', value: 'regex:hello/(world)'},
+        {key: 'colorGroup', value: 'regex:hello/(world):goodbye'},
       ]);
     });
   });

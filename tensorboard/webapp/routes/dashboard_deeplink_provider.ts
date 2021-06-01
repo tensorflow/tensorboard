@@ -39,6 +39,8 @@ import {
   SMOOTHING_KEY,
 } from './dashboard_deeplink_provider_types';
 
+const COLOR_GROUP_REGEX_VALUE_PREFIX = 'regex:';
+
 /**
  * Provides deeplinking for the core dashboards page.
  */
@@ -133,7 +135,7 @@ export class DashboardDeepLinkProvider extends DeepLinkProvider {
               value = 'run';
               break;
             case GroupByKey.REGEX:
-              value = `regex:${groupBy.regexString}`;
+              value = `${COLOR_GROUP_REGEX_VALUE_PREFIX}${groupBy.regexString}`;
               break;
             default:
               throw new RangeError(`Serialization not implemented`);
@@ -174,8 +176,10 @@ export class DashboardDeepLinkProvider extends DeepLinkProvider {
               break;
           }
 
-          if (value.startsWith('regex:')) {
-            const [, regexString] = value.split(':', 2);
+          if (value.startsWith(COLOR_GROUP_REGEX_VALUE_PREFIX)) {
+            const regexString = value.slice(
+              COLOR_GROUP_REGEX_VALUE_PREFIX.length
+            );
             groupBy = {key: GroupByKey.REGEX, regexString};
           }
           break;
