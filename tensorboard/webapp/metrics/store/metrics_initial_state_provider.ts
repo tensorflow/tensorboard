@@ -17,7 +17,7 @@ import {InjectionToken} from '@angular/core';
 import {StoreConfig} from '@ngrx/store';
 
 import {INITIAL_STATE} from './metrics_reducers';
-import {MetricsState} from './metrics_types';
+import {MetricsSettings, MetricsState} from './metrics_types';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
@@ -26,11 +26,11 @@ export const METRICS_STORE_CONFIG_TOKEN = new InjectionToken<
 >('Metrics Store Config');
 
 export const METRICS_INITIAL_SETTINGS = new InjectionToken<
-  StoreConfig<MetricsState['settings'] | null>
+  StoreConfig<MetricsSettings | null>
 >('Metrics Initial Settings Config');
 
 export function getConfig(
-  settings: MetricsState['settings']
+  settings: MetricsSettings
 ): StoreConfig<MetricsState> {
   if (!settings) {
     return {
