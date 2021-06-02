@@ -538,6 +538,9 @@ describe('metrics reducers', () => {
     it('changes tooltipSort on metricsChangeTooltipSort', () => {
       const prevState = buildMetricsState({
         settings: buildMetricsSettingsState({
+          tooltipSort: TooltipSort.DEFAULT,
+        }),
+        settingOverrides: buildMetricsSettingsState({
           tooltipSort: TooltipSort.ASCENDING,
         }),
       });
@@ -545,7 +548,8 @@ describe('metrics reducers', () => {
         prevState,
         actions.metricsChangeTooltipSort({sort: TooltipSort.NEAREST})
       );
-      expect(nextState.settings.tooltipSort).toBe(TooltipSort.NEAREST);
+      expect(nextState.settings.tooltipSort).toBe(TooltipSort.DEFAULT);
+      expect(nextState.settingOverrides.tooltipSort).toBe(TooltipSort.NEAREST);
     });
 
     it('changes ignoreOutliers on metricsToggleIgnoreOutliers', () => {
@@ -553,12 +557,14 @@ describe('metrics reducers', () => {
         settings: buildMetricsSettingsState({
           ignoreOutliers: true,
         }),
+        settingOverrides: {},
       });
       const nextState = reducers(
         prevState,
         actions.metricsToggleIgnoreOutliers()
       );
-      expect(nextState.settings.ignoreOutliers).toBe(false);
+      expect(nextState.settings.ignoreOutliers).toBe(true);
+      expect(nextState.settingOverrides.ignoreOutliers).toBe(false);
     });
 
     it('changes xAxisType on metricsChangeXAxisType', () => {
@@ -566,23 +572,28 @@ describe('metrics reducers', () => {
         settings: buildMetricsSettingsState({
           xAxisType: XAxisType.STEP,
         }),
+        settingOverrides: {},
       });
       const nextState = reducers(
         prevState,
         actions.metricsChangeXAxisType({xAxisType: XAxisType.WALL_TIME})
       );
-      expect(nextState.settings.xAxisType).toBe(XAxisType.WALL_TIME);
+      expect(nextState.settingOverrides.xAxisType).toBe(XAxisType.WALL_TIME);
     });
 
     it('changes scalarSmoothing on metricsChangeScalarSmoothing', () => {
       const prevState = buildMetricsState({
         settings: buildMetricsSettingsState({scalarSmoothing: 0.3}),
+        settingOverrides: {
+          scalarSmoothing: 0.5,
+        },
       });
       const nextState = reducers(
         prevState,
         actions.metricsChangeScalarSmoothing({smoothing: 0.1})
       );
-      expect(nextState.settings.scalarSmoothing).toBe(0.1);
+      expect(nextState.settings.scalarSmoothing).toBe(0.3);
+      expect(nextState.settingOverrides.scalarSmoothing).toBe(0.1);
     });
 
     it('toggles Partition X on metricsScalarPartitionNonMonotonicXToggled', () => {
@@ -590,18 +601,19 @@ describe('metrics reducers', () => {
         settings: buildMetricsSettingsState({
           scalarPartitionNonMonotonicX: true,
         }),
+        settingOverrides: {},
       });
       const state2 = reducers(
         state1,
         actions.metricsScalarPartitionNonMonotonicXToggled()
       );
-      expect(state2.settings.scalarPartitionNonMonotonicX).toBe(false);
+      expect(state2.settingOverrides.scalarPartitionNonMonotonicX).toBe(false);
 
       const state3 = reducers(
         state2,
         actions.metricsScalarPartitionNonMonotonicXToggled()
       );
-      expect(state3.settings.scalarPartitionNonMonotonicX).toBe(true);
+      expect(state3.settingOverrides.scalarPartitionNonMonotonicX).toBe(true);
     });
 
     it('changes imageBrightnessInMilli on metricsChangeImageBrightness', () => {
@@ -609,12 +621,13 @@ describe('metrics reducers', () => {
         settings: buildMetricsSettingsState({
           imageBrightnessInMilli: 300,
         }),
+        settingOverrides: {},
       });
       const nextState = reducers(
         prevState,
         actions.metricsChangeImageBrightness({brightnessInMilli: 1000})
       );
-      expect(nextState.settings.imageBrightnessInMilli).toBe(1000);
+      expect(nextState.settingOverrides.imageBrightnessInMilli).toBe(1000);
     });
 
     it('changes imageContrastInMilli on metricsChangeImageContrast', () => {
@@ -622,12 +635,13 @@ describe('metrics reducers', () => {
         settings: buildMetricsSettingsState({
           imageContrastInMilli: 200,
         }),
+        settingOverrides: {},
       });
       const nextState = reducers(
         prevState,
         actions.metricsChangeImageContrast({contrastInMilli: 500})
       );
-      expect(nextState.settings.imageContrastInMilli).toBe(500);
+      expect(nextState.settingOverrides.imageContrastInMilli).toBe(500);
     });
 
     it('resets imageBrightnessInMilli', () => {
@@ -635,12 +649,16 @@ describe('metrics reducers', () => {
         settings: buildMetricsSettingsState({
           imageBrightnessInMilli: 300,
         }),
+        settingOverrides: {
+          imageBrightnessInMilli: 0,
+        },
       });
       const nextState = reducers(
         prevState,
         actions.metricsResetImageBrightness()
       );
-      expect(nextState.settings.imageBrightnessInMilli).toBe(1000);
+      expect(nextState.settings.imageBrightnessInMilli).toBe(300);
+      expect(nextState.settingOverrides.imageBrightnessInMilli).toBe(undefined);
     });
 
     it('resets imageContrastInMilli', () => {
@@ -648,12 +666,16 @@ describe('metrics reducers', () => {
         settings: buildMetricsSettingsState({
           imageContrastInMilli: 300,
         }),
+        settingOverrides: {
+          imageContrastInMilli: 5000,
+        },
       });
       const nextState = reducers(
         prevState,
         actions.metricsResetImageContrast()
       );
-      expect(nextState.settings.imageContrastInMilli).toBe(1000);
+      expect(nextState.settings.imageContrastInMilli).toBe(300);
+      expect(nextState.settingOverrides.imageContrastInMilli).toBe(undefined);
     });
 
     it('changes imageShowActualSize on metricsToggleImageShowActualSize', () => {
@@ -661,12 +683,13 @@ describe('metrics reducers', () => {
         settings: buildMetricsSettingsState({
           imageShowActualSize: true,
         }),
+        settingOverrides: {},
       });
       const nextState = reducers(
         prevState,
         actions.metricsToggleImageShowActualSize()
       );
-      expect(nextState.settings.imageShowActualSize).toBe(false);
+      expect(nextState.settingOverrides.imageShowActualSize).toBe(false);
     });
 
     it('changes histogramMode on metricsChangeHistogramMode', () => {
@@ -674,6 +697,7 @@ describe('metrics reducers', () => {
         settings: buildMetricsSettingsState({
           histogramMode: HistogramMode.OFFSET,
         }),
+        settingOverrides: {},
       });
       const nextState = reducers(
         prevState,
@@ -681,7 +705,9 @@ describe('metrics reducers', () => {
           histogramMode: HistogramMode.OVERLAY,
         })
       );
-      expect(nextState.settings.histogramMode).toBe(HistogramMode.OVERLAY);
+      expect(nextState.settingOverrides.histogramMode).toBe(
+        HistogramMode.OVERLAY
+      );
     });
   });
 
@@ -1614,7 +1640,8 @@ describe('metrics reducers', () => {
   describe('smoothing hydration', () => {
     it('rehydrates the smoothing state', () => {
       const beforeState = buildMetricsState({
-        settings: buildMetricsSettingsState({scalarSmoothing: 0.3}),
+        settings: buildMetricsSettingsState({scalarSmoothing: 1}),
+        settingOverrides: {scalarSmoothing: 0.5},
       });
       const action = routingActions.stateRehydratedFromUrl({
         routeKind: RouteKind.EXPERIMENT,
@@ -1622,12 +1649,13 @@ describe('metrics reducers', () => {
       });
       const nextState = reducers(beforeState, action);
 
-      expect(nextState.settings.scalarSmoothing).toBe(0.1);
+      expect(nextState.settings.scalarSmoothing).toBe(1);
+      expect(nextState.settingOverrides.scalarSmoothing).toBe(0.1);
     });
 
     it('keeps old state when the rehydrated state is null', () => {
       const beforeState = buildMetricsState({
-        settings: buildMetricsSettingsState({scalarSmoothing: 0.3}),
+        settingOverrides: {scalarSmoothing: 0.5},
       });
       const action = routingActions.stateRehydratedFromUrl({
         routeKind: RouteKind.EXPERIMENT,
@@ -1635,12 +1663,25 @@ describe('metrics reducers', () => {
       });
       const nextState = reducers(beforeState, action);
 
-      expect(nextState.settings.scalarSmoothing).toBe(0.3);
+      expect(nextState.settingOverrides.scalarSmoothing).toBe(0.5);
+    });
+
+    it('keeps old state when the rehydrated state is null (empty override)', () => {
+      const beforeState = buildMetricsState({
+        settingOverrides: {},
+      });
+      const action = routingActions.stateRehydratedFromUrl({
+        routeKind: RouteKind.EXPERIMENT,
+        partialState: {metrics: {pinnedCards: [], smoothing: null}},
+      });
+      const nextState = reducers(beforeState, action);
+
+      expect(nextState.settingOverrides.scalarSmoothing).toBe(undefined);
     });
 
     it('keeps old state when the rehydrated state is NaN', () => {
       const beforeState = buildMetricsState({
-        settings: buildMetricsSettingsState({scalarSmoothing: 0.3}),
+        settingOverrides: buildMetricsSettingsState({scalarSmoothing: 0.3}),
       });
       const action = routingActions.stateRehydratedFromUrl({
         routeKind: RouteKind.EXPERIMENT,
@@ -1648,12 +1689,12 @@ describe('metrics reducers', () => {
       });
       const nextState = reducers(beforeState, action);
 
-      expect(nextState.settings.scalarSmoothing).toBe(0.3);
+      expect(nextState.settingOverrides.scalarSmoothing).toBe(0.3);
     });
 
     it('clips value to 0', () => {
       const beforeState = buildMetricsState({
-        settings: buildMetricsSettingsState({scalarSmoothing: 0.3}),
+        settingOverrides: buildMetricsSettingsState({scalarSmoothing: 0.3}),
       });
       const action = routingActions.stateRehydratedFromUrl({
         routeKind: RouteKind.EXPERIMENT,
@@ -1661,12 +1702,12 @@ describe('metrics reducers', () => {
       });
       const nextState = reducers(beforeState, action);
 
-      expect(nextState.settings.scalarSmoothing).toBe(0);
+      expect(nextState.settingOverrides.scalarSmoothing).toBe(0);
     });
 
     it('clips value to 0.999', () => {
       const beforeState = buildMetricsState({
-        settings: buildMetricsSettingsState({scalarSmoothing: 0.3}),
+        settingOverrides: buildMetricsSettingsState({scalarSmoothing: 0.3}),
       });
       const action = routingActions.stateRehydratedFromUrl({
         routeKind: RouteKind.EXPERIMENT,
@@ -1674,12 +1715,12 @@ describe('metrics reducers', () => {
       });
       const nextState = reducers(beforeState, action);
 
-      expect(nextState.settings.scalarSmoothing).toBe(0.999);
+      expect(nextState.settingOverrides.scalarSmoothing).toBe(0.999);
     });
 
     it('rounds to the 3 significant digits to prevent weird numbers', () => {
       const beforeState = buildMetricsState({
-        settings: buildMetricsSettingsState({scalarSmoothing: 0.3}),
+        settingOverrides: buildMetricsSettingsState({scalarSmoothing: 0.3}),
       });
       const action = routingActions.stateRehydratedFromUrl({
         routeKind: RouteKind.EXPERIMENT,
@@ -1687,18 +1728,21 @@ describe('metrics reducers', () => {
       });
       const nextState = reducers(beforeState, action);
 
-      expect(nextState.settings.scalarSmoothing).toBe(0.232);
+      expect(nextState.settingOverrides.scalarSmoothing).toBe(0.232);
     });
   });
 
   describe('#fetchPersistedSettingsSucceeded', () => {
-    it('adds partial state from the action to the settings', () => {
+    it('adds partial state from the action to the (default) settings', () => {
       const beforeState = buildMetricsState({
         settings: buildMetricsSettingsState({
           scalarSmoothing: 0.3,
           ignoreOutliers: false,
           tooltipSort: TooltipSort.ASCENDING,
         }),
+        settingOverrides: {
+          scalarSmoothing: 0.5,
+        },
       });
 
       const nextState = reducers(
@@ -1714,6 +1758,7 @@ describe('metrics reducers', () => {
       expect(nextState.settings.scalarSmoothing).toBe(0);
       expect(nextState.settings.ignoreOutliers).toBe(true);
       expect(nextState.settings.tooltipSort).toBe(TooltipSort.ASCENDING);
+      expect(nextState.settingOverrides.scalarSmoothing).toBe(0.5);
     });
   });
 });

@@ -245,6 +245,7 @@ const {initialState, reducers: routeContextReducer} = createRouteContextedState(
       images: {},
     },
     settings: METRICS_SETTINGS_DEFAULT,
+    settingOverrides: {},
     visibleCards: new Set<CardId>(),
   } as MetricsRoutelessState,
 
@@ -316,7 +317,7 @@ const reducer = createReducer(
     );
 
     const hydratedSmoothing = hydratedState.metrics.smoothing;
-    let newSettings = state.settings;
+    let newSettings = state.settingOverrides;
 
     if (Number.isFinite(hydratedSmoothing) && hydratedSmoothing !== null) {
       const newSmoothing = Math.max(
@@ -327,7 +328,7 @@ const reducer = createReducer(
         )
       );
       newSettings = {
-        ...state.settings,
+        ...state.settingOverrides,
         scalarSmoothing: newSmoothing,
       };
     }
@@ -335,7 +336,7 @@ const reducer = createReducer(
     return {
       ...state,
       ...resolvedResult,
-      settings: newSettings,
+      settingOverrides: newSettings,
     };
   }),
   on(actions.fetchPersistedSettingsSucceeded, (state, {partialSettings}) => {
@@ -447,26 +448,29 @@ const reducer = createReducer(
   on(actions.metricsChangeTooltipSort, (state, {sort}) => {
     return {
       ...state,
-      settings: {
-        ...state.settings,
+      settingOverrides: {
+        ...state.settingOverrides,
         tooltipSort: sort,
       },
     };
   }),
   on(actions.metricsToggleIgnoreOutliers, (state) => {
+    const nextIgnoreOutliers = !(
+      state.settingOverrides.ignoreOutliers ?? state.settings.ignoreOutliers
+    );
     return {
       ...state,
-      settings: {
-        ...state.settings,
-        ignoreOutliers: !state.settings.ignoreOutliers,
+      settingOverrides: {
+        ...state.settingOverrides,
+        ignoreOutliers: nextIgnoreOutliers,
       },
     };
   }),
   on(actions.metricsChangeXAxisType, (state, {xAxisType}) => {
     return {
       ...state,
-      settings: {
-        ...state.settings,
+      settingOverrides: {
+        ...state.settingOverrides,
         xAxisType,
       },
     };
@@ -474,27 +478,30 @@ const reducer = createReducer(
   on(actions.metricsChangeScalarSmoothing, (state, {smoothing}) => {
     return {
       ...state,
-      settings: {
-        ...state.settings,
+      settingOverrides: {
+        ...state.settingOverrides,
         scalarSmoothing: smoothing,
       },
     };
   }),
   on(actions.metricsScalarPartitionNonMonotonicXToggled, (state) => {
+    const nextScalarPartitionNonMonotonicX = !(
+      state.settingOverrides.scalarPartitionNonMonotonicX ??
+      state.settings.scalarPartitionNonMonotonicX
+    );
     return {
       ...state,
-      settings: {
-        ...state.settings,
-        scalarPartitionNonMonotonicX: !state.settings
-          .scalarPartitionNonMonotonicX,
+      settingOverrides: {
+        ...state.settingOverrides,
+        scalarPartitionNonMonotonicX: nextScalarPartitionNonMonotonicX,
       },
     };
   }),
   on(actions.metricsChangeImageBrightness, (state, {brightnessInMilli}) => {
     return {
       ...state,
-      settings: {
-        ...state.settings,
+      settingOverrides: {
+        ...state.settingOverrides,
         imageBrightnessInMilli: brightnessInMilli,
       },
     };
@@ -502,8 +509,8 @@ const reducer = createReducer(
   on(actions.metricsChangeImageContrast, (state, {contrastInMilli}) => {
     return {
       ...state,
-      settings: {
-        ...state.settings,
+      settingOverrides: {
+        ...state.settingOverrides,
         imageContrastInMilli: contrastInMilli,
       },
     };
@@ -511,35 +518,39 @@ const reducer = createReducer(
   on(actions.metricsResetImageBrightness, (state) => {
     return {
       ...state,
-      settings: {
-        ...state.settings,
-        imageBrightnessInMilli: initialState.settings.imageBrightnessInMilli,
+      settingOverrides: {
+        ...state.settingOverrides,
+        imageBrightnessInMilli: undefined,
       },
     };
   }),
   on(actions.metricsResetImageContrast, (state) => {
     return {
       ...state,
-      settings: {
-        ...state.settings,
-        imageContrastInMilli: initialState.settings.imageContrastInMilli,
+      settingOverrides: {
+        ...state.settingOverrides,
+        imageContrastInMilli: undefined,
       },
     };
   }),
   on(actions.metricsToggleImageShowActualSize, (state) => {
+    const nextImageShowActualSize = !(
+      state.settingOverrides.imageShowActualSize ??
+      state.settings.imageShowActualSize
+    );
     return {
       ...state,
-      settings: {
-        ...state.settings,
-        imageShowActualSize: !state.settings.imageShowActualSize,
+      settingOverrides: {
+        ...state.settingOverrides,
+        imageShowActualSize: nextImageShowActualSize,
       },
     };
   }),
   on(actions.metricsChangeHistogramMode, (state, {histogramMode}) => {
     return {
       ...state,
-      settings: {
-        ...state.settings,
+      settingOverrides: {
+        ...state.settingOverrides,
         histogramMode,
       },
     };

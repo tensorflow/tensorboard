@@ -13,27 +13,27 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {createFeatureSelector, createSelector} from '@ngrx/store';
-import {DataLoadState} from '../../types/data';
 
 import {State} from '../../app_state';
+import {DataLoadState} from '../../types/data';
 import {DeepReadonly} from '../../util/types';
 import {
   CardId,
   CardIdWithMetadata,
-  CardUniqueInfo,
   CardMetadata,
+  CardUniqueInfo,
   HistogramMode,
   NonPinnedCardId,
   PinnedCardId,
   TooltipSort,
   XAxisType,
 } from '../internal_types';
-
 import * as storeUtils from './metrics_store_internal_utils';
 import {
   CardMetadataMap,
-  METRICS_FEATURE_KEY,
+  MetricsSettings,
   MetricsState,
+  METRICS_FEATURE_KEY,
   RunToSeries,
   TagMetadata,
 } from './metrics_types';
@@ -259,12 +259,24 @@ export const getCanCreateNewPins = createSelector(
 
 const selectSettings = createSelector(
   selectMetricsState,
-  (state): MetricsState['settings'] => state.settings
+  (state): MetricsSettings => {
+    return {
+      ...state.settings,
+      ...state.settingOverrides,
+    };
+  }
 );
 
 /**
  * Settings.
  */
+export const getMetricsSettingOverrides = createSelector(
+  selectMetricsState,
+  (state): Partial<MetricsSettings> => {
+    return state.settingOverrides;
+  }
+);
+
 export const getMetricsTooltipSort = createSelector(
   selectSettings,
   (settings): TooltipSort => settings.tooltipSort

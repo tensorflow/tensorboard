@@ -37,14 +37,14 @@ import {
   TimeSeriesData,
 } from './store';
 import * as selectors from './store/metrics_selectors';
-import {RunToSeries, StepDatum} from './store/metrics_types';
+import {MetricsSettings, RunToSeries, StepDatum} from './store/metrics_types';
 import {CardId, CardMetadata, TooltipSort, XAxisType} from './types';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
 export function buildMetricsSettingsState(
-  overrides?: Partial<MetricsState['settings']>
-): MetricsState['settings'] {
+  overrides?: Partial<MetricsSettings>
+): MetricsSettings {
   return {
     tooltipSort: TooltipSort.NEAREST,
     ignoreOutliers: false,
@@ -82,6 +82,7 @@ function buildBlankState(): MetricsState {
       images: {},
     },
     settings: buildMetricsSettingsState(),
+    settingOverrides: {},
     cardList: [],
     cardToPinnedCopy: new Map(),
     pinnedCardToOriginal: new Map(),

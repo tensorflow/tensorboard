@@ -20,7 +20,6 @@ import {skip} from 'rxjs/operators';
 import {SerializableQueryParams} from '../app_routing/types';
 import {State} from '../app_state';
 import {PluginType} from '../metrics/data_source/types';
-import {METRICS_SETTINGS_DEFAULT} from '../metrics/types';
 import {appStateFromMetricsState, buildMetricsState} from '../metrics/testing';
 import * as selectors from '../selectors';
 import {DashboardDeepLinkProvider} from './dashboard_deeplink_provider';
@@ -46,10 +45,7 @@ describe('core deeplink provider', () => {
     store.overrideSelector(selectors.getUnresolvedImportedPinnedCards, []);
     store.overrideSelector(selectors.getEnabledExperimentalPlugins, []);
     store.overrideSelector(selectors.getOverriddenFeatureFlags, {});
-    store.overrideSelector(
-      selectors.getMetricsScalarSmoothing,
-      METRICS_SETTINGS_DEFAULT.scalarSmoothing
-    );
+    store.overrideSelector(selectors.getMetricsSettingOverrides, {});
 
     queryParamsSerialized = [];
 
@@ -68,7 +64,9 @@ describe('core deeplink provider', () => {
   describe('time series', () => {
     describe('smoothing state', () => {
       it('serializes the smoothing state to the URL', () => {
-        store.overrideSelector(selectors.getMetricsScalarSmoothing, 0);
+        store.overrideSelector(selectors.getMetricsSettingOverrides, {
+          scalarSmoothing: 0,
+        });
         store.refreshState();
 
         expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual(
@@ -81,11 +79,14 @@ describe('core deeplink provider', () => {
         );
       });
 
-      it('does not reflect default value to the URL', () => {
-        store.overrideSelector(selectors.getMetricsScalarSmoothing, 0.6);
+      it('does not reflect state when there is no override', () => {
+        store.overrideSelector(selectors.getMetricsSettingOverrides, {});
+
         store.refreshState();
 
-        expect(queryParamsSerialized.length).toBe(0);
+        expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual(
+          []
+        );
       });
 
       it('deserializes the state in the URL without much sanitization', () => {

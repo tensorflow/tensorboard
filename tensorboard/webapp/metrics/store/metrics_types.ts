@@ -153,36 +153,41 @@ export interface MetricsRoutefulState {
   tagGroupExpanded: Map<string, boolean>;
 }
 
+export interface MetricsSettings {
+  tooltipSort: TooltipSort;
+  ignoreOutliers: boolean;
+  xAxisType: XAxisType;
+  scalarSmoothing: number;
+  /**
+   * https://github.com/tensorflow/tensorboard/issues/3732
+   *
+   * When a ML job restarts from a checkpoint or if a user writes to the same logdir
+   * with overlapping steps, TensorBoard shows a zig-zag lines which tend to confuse
+   * users. This setting guarantees that each line forms a monotonic increases in x-axis
+   * by creating a pseudo-runs by partitioning the runs on the client side. In the
+   * future, we may fix this at the log writing, reading, or backend response time.
+   */
+  scalarPartitionNonMonotonicX: boolean;
+  /**
+   * A non-negative, unitless number. A value of 5000 corresponds to 500%
+   * increased brightness from normal.
+   */
+  imageBrightnessInMilli: number;
+  /**
+   * A non-negative, unitless number. A value of 5000 corresponds to 500%
+   * increased contrast from normal.
+   */
+  imageContrastInMilli: number;
+  imageShowActualSize: boolean;
+  histogramMode: HistogramMode;
+}
+
 export interface MetricsRoutelessState {
   timeSeriesData: TimeSeriesData;
-  settings: {
-    tooltipSort: TooltipSort;
-    ignoreOutliers: boolean;
-    xAxisType: XAxisType;
-    scalarSmoothing: number;
-    /**
-     * https://github.com/tensorflow/tensorboard/issues/3732
-     *
-     * When a ML job restarts from a checkpoint or if a user writes to the same logdir
-     * with overlapping steps, TensorBoard shows a zig-zag lines which tend to confuse
-     * users. This setting guarantees that each line forms a monotonic increases in x-axis
-     * by creating a pseudo-runs by partitioning the runs on the client side. In the
-     * future, we may fix this at the log writing, reading, or backend response time.
-     */
-    scalarPartitionNonMonotonicX: boolean;
-    /**
-     * A non-negative, unitless number. A value of 5000 corresponds to 500%
-     * increased brightness from normal.
-     */
-    imageBrightnessInMilli: number;
-    /**
-     * A non-negative, unitless number. A value of 5000 corresponds to 500%
-     * increased contrast from normal.
-     */
-    imageContrastInMilli: number;
-    imageShowActualSize: boolean;
-    histogramMode: HistogramMode;
-  };
+  // Default settings. For the legacy reasons, we cannot change the name of the
+  // prop. It either is set by application or a user via settings storage.
+  settings: MetricsSettings;
+  settingOverrides: Partial<MetricsSettings>;
   visibleCards: Set<CardId>;
 }
 
@@ -195,7 +200,7 @@ export interface State {
   [METRICS_FEATURE_KEY]?: MetricsState;
 }
 
-export const METRICS_SETTINGS_DEFAULT: MetricsState['settings'] = {
+export const METRICS_SETTINGS_DEFAULT: MetricsSettings = {
   tooltipSort: TooltipSort.DEFAULT,
   ignoreOutliers: true,
   xAxisType: XAxisType.STEP,

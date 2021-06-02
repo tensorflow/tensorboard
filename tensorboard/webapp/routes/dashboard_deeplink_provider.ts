@@ -15,7 +15,7 @@ limitations under the License.
 import {Injectable} from '@angular/core';
 import {Store} from '@ngrx/store';
 import {combineLatest, Observable} from 'rxjs';
-import {map} from 'rxjs/operators';
+import {filter, map} from 'rxjs/operators';
 
 import {DeepLinkProvider} from '../app_routing/deep_link_provider';
 import {SerializableQueryParams} from '../app_routing/types';
@@ -25,9 +25,8 @@ import {
   isSampledPlugin,
   isSingleRunPlugin,
 } from '../metrics/data_source/types';
-import {CardUniqueInfo, METRICS_SETTINGS_DEFAULT} from '../metrics/types';
+import {CardUniqueInfo} from '../metrics/types';
 import * as selectors from '../selectors';
-import {getMetricsScalarSmoothing} from '../selectors';
 import {
   ENABLE_COLOR_GROUP_QUERY_PARAM_KEY,
   EXPERIMENTAL_PLUGIN_QUERY_PARAM_KEY,
@@ -106,10 +105,17 @@ export class DashboardDeepLinkProvider extends DeepLinkProvider {
     return combineLatest([
       this.getMetricsPinnedCards(store),
       this.getFeatureFlagStates(store),
-      store.select(getMetricsScalarSmoothing).pipe(
-        map((smoothing) => {
-          if (smoothing === METRICS_SETTINGS_DEFAULT.scalarSmoothing) return [];
-          return [{key: SMOOTHING_KEY, value: String(smoothing)}];
+      store.select(selectors.getMetricsSettingOverrides).pipe(
+        map((settingOverrides) => {
+          if (Number.isFinite(settingOverrides.scalarSmoothing)) {
+            return [
+              {
+                key: SMOOTHING_KEY,
+                value: String(settingOverrides.scalarSmoothing),
+              },
+            ];
+          }
+          return [];
         })
       ),
     ]).pipe(
