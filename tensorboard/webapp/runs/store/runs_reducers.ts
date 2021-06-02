@@ -61,6 +61,22 @@ const {
 
 const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
   dataInitialState,
+  // Color grouping potentially is an expensive operation and assigning colors
+  // on route changes may not actually be effective at all. Because we are
+  // using RouteContextedState, color assignment and groupBy information should
+  // not go out of sync. That is, for a given route, the condition in which the
+  // colors get assigned are (1) when user changes groupBy and (2) when new
+  // runs are fetched (new runs added or runs removed). Both of those cases
+  // are handled by their respective reducer functions and, while there is no
+  // strong guarantees at the moment, because we are using RouteContextedState,
+  // even if new runs are fetched for a routeId that is not active, refresh of
+  // a background experiment data will not result in correct state update.
+  // While user can change groupBy state in the URL to trigger (1), that will
+  // result in browser postback and the app will rebootstrap anyways.
+  //
+  // Given above, and given that user can go back and forth in history to cause
+  // `stateRehydratedFromUrl` often, it would be computationally wasteful to
+  // reassign the color as it will exactly be the same.
   on(stateRehydratedFromUrl, (state, {routeKind, partialState}) => {
     if (
       routeKind !== RouteKind.COMPARE_EXPERIMENT &&

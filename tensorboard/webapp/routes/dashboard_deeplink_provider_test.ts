@@ -111,7 +111,7 @@ describe('core deeplink provider', () => {
       it('deserializes color group information', () => {
         function assert(value: string, expectedGroupBy: GroupBy | null) {
           const state = provider.deserializeQueryParams([
-            {key: 'colorGroup', value},
+            {key: 'runColorGroup', value},
           ]);
           expect(state.runs.groupBy).toEqual(expectedGroupBy);
         }
@@ -372,7 +372,7 @@ describe('core deeplink provider', () => {
       });
       store.refreshState();
       expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual([
-        {key: 'colorGroup', value: 'experiment'},
+        {key: 'runColorGroup', value: 'experiment'},
       ]);
 
       store.overrideSelector(selectors.getRunUserSetGroupBy, {
@@ -380,7 +380,7 @@ describe('core deeplink provider', () => {
       });
       store.refreshState();
       expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual([
-        {key: 'colorGroup', value: 'run'},
+        {key: 'runColorGroup', value: 'run'},
       ]);
 
       store.overrideSelector(selectors.getRunUserSetGroupBy, {
@@ -389,7 +389,7 @@ describe('core deeplink provider', () => {
       });
       store.refreshState();
       expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual([
-        {key: 'colorGroup', value: 'regex:hello:world'},
+        {key: 'runColorGroup', value: 'regex:hello:world'},
       ]);
     });
 
@@ -400,7 +400,7 @@ describe('core deeplink provider', () => {
       });
       store.refreshState();
       expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual([
-        {key: 'colorGroup', value: 'regex:'},
+        {key: 'runColorGroup', value: 'regex:'},
       ]);
 
       store.overrideSelector(selectors.getRunUserSetGroupBy, {
@@ -409,7 +409,7 @@ describe('core deeplink provider', () => {
       });
       store.refreshState();
       expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual([
-        {key: 'colorGroup', value: 'regex:hello/(world):goodbye'},
+        {key: 'runColorGroup', value: 'regex:hello/(world):goodbye'},
       ]);
     });
   });

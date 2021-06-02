@@ -845,7 +845,13 @@ describe('runs_reducers', () => {
         state,
         stateRehydratedFromUrl({
           routeKind: RouteKind.EXPERIMENTS,
-          partialState: {},
+          partialState: {
+            runs: {
+              groupBy: {
+                key: GroupByKey.EXPERIMENT,
+              },
+            },
+          },
         })
       );
 
@@ -900,12 +906,6 @@ describe('runs_reducers', () => {
       });
     });
 
-    // Color grouping potentially is an expensive operation and assigning colors
-    // on route changes may not actually be effective at all. Because we are
-    // using RouteContextState, color assignment and groupBy information should
-    // not go out of sync. It would only be used to assign initial groupBy
-    // information from URL that will often trigger a run fetch which will be
-    // handled separately by the fetchRuns flow.
     it('does not change the default colors by the new groupBy', () => {
       const state = buildRunsState({
         initialGroupBy: {key: GroupByKey.EXPERIMENT},

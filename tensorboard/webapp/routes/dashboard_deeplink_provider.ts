@@ -33,7 +33,7 @@ import {
   EXPERIMENTAL_PLUGIN_QUERY_PARAM_KEY,
 } from '../webapp_data_source/tb_feature_flag_data_source_types';
 import {
-  COLOR_GROUP_KEY,
+  RUN_COLOR_GROUP_KEY,
   DeserializedState,
   PINNED_CARDS_KEY,
   SMOOTHING_KEY,
@@ -141,7 +141,7 @@ export class DashboardDeepLinkProvider extends DeepLinkProvider {
               throw new RangeError(`Serialization not implemented`);
           }
 
-          return [{key: COLOR_GROUP_KEY, value}];
+          return [{key: RUN_COLOR_GROUP_KEY, value}];
         })
       ),
     ]).pipe(
@@ -166,7 +166,7 @@ export class DashboardDeepLinkProvider extends DeepLinkProvider {
         case SMOOTHING_KEY:
           smoothing = Number(value);
           break;
-        case COLOR_GROUP_KEY: {
+        case RUN_COLOR_GROUP_KEY: {
           switch (value) {
             case 'experiment':
               groupBy = {key: GroupByKey.EXPERIMENT};

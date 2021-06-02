@@ -24,4 +24,4 @@ export const SMOOTHING_KEY = 'smoothing';
 
 export const PINNED_CARDS_KEY = 'pinnedCards';
 
-export const COLOR_GROUP_KEY = 'colorGroup';
+export const RUN_COLOR_GROUP_KEY = 'runColorGroup';
