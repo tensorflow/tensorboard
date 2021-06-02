@@ -26,16 +26,20 @@ import {
   isSingleRunPlugin,
 } from '../metrics/data_source/types';
 import {CardUniqueInfo} from '../metrics/types';
+import {GroupBy, GroupByKey} from '../runs/types';
 import * as selectors from '../selectors';
 import {
   ENABLE_COLOR_GROUP_QUERY_PARAM_KEY,
   EXPERIMENTAL_PLUGIN_QUERY_PARAM_KEY,
 } from '../webapp_data_source/tb_feature_flag_data_source_types';
 import {
+  RUN_COLOR_GROUP_KEY,
   DeserializedState,
   PINNED_CARDS_KEY,
   SMOOTHING_KEY,
 } from './dashboard_deeplink_provider_types';
+
+const COLOR_GROUP_REGEX_VALUE_PREFIX = 'regex:';
 
 /**
  * Provides deeplinking for the core dashboards page.
@@ -118,6 +122,28 @@ export class DashboardDeepLinkProvider extends DeepLinkProvider {
           return [];
         })
       ),
+      store.select(selectors.getRunUserSetGroupBy).pipe(
+        map((groupBy) => {
+          if (!groupBy) return [];
+          let value: string;
+
+          switch (groupBy.key) {
+            case GroupByKey.EXPERIMENT:
+              value = 'experiment';
+              break;
+            case GroupByKey.RUN:
+              value = 'run';
+              break;
+            case GroupByKey.REGEX:
+              value = `${COLOR_GROUP_REGEX_VALUE_PREFIX}${groupBy.regexString}`;
+              break;
+            default:
+              throw new RangeError(`Serialization not implemented`);
+          }
+
+          return [{key: RUN_COLOR_GROUP_KEY, value}];
+        })
+      ),
     ]).pipe(
       map((queryParamList) => {
         return queryParamList.flat();
@@ -130,6 +156,8 @@ export class DashboardDeepLinkProvider extends DeepLinkProvider {
   ): DeserializedState {
     let pinnedCards = null;
     let smoothing = null;
+    let groupBy: GroupBy | null = null;
+
     for (const {key, value} of queryParams) {
       switch (key) {
         case PINNED_CARDS_KEY:
@@ -138,6 +166,24 @@ export class DashboardDeepLinkProvider extends DeepLinkProvider {
         case SMOOTHING_KEY:
           smoothing = Number(value);
           break;
+        case RUN_COLOR_GROUP_KEY: {
+          switch (value) {
+            case 'experiment':
+              groupBy = {key: GroupByKey.EXPERIMENT};
+              break;
+            case 'run':
+              groupBy = {key: GroupByKey.RUN};
+              break;
+          }
+
+          if (value.startsWith(COLOR_GROUP_REGEX_VALUE_PREFIX)) {
+            const regexString = value.slice(
+              COLOR_GROUP_REGEX_VALUE_PREFIX.length
+            );
+            groupBy = {key: GroupByKey.REGEX, regexString};
+          }
+          break;
+        }
       }
     }
 
@@ -145,6 +191,9 @@ export class DashboardDeepLinkProvider extends DeepLinkProvider {
       metrics: {
         pinnedCards: pinnedCards || [],
         smoothing,
+      },
+      runs: {
+        groupBy,
       },
     };
   }

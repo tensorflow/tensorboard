@@ -12,13 +12,15 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {stateRehydratedFromUrl} from '../../app_routing/actions';
+import {RouteKind} from '../../app_routing/types';
 import {deepFreeze} from '../../testing/lang';
 import {DataLoadState} from '../../types/data';
 import {SortDirection} from '../../types/ui';
 import * as colorUtils from '../../util/colors';
 import * as actions from '../actions';
 import {buildHparamsAndMetadata} from '../data_source/testing';
-import {GroupByKey, SortType} from '../types';
+import {GroupByKey, SortType, URLDeserializedState} from '../types';
 import * as runsReducers from './runs_reducers';
 import {MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT, Run} from './runs_types';
 import {buildRun, buildRunsState} from './testing';
@@ -829,6 +831,145 @@ describe('runs_reducers', () => {
         ])
       );
       expect(nextState.data.runColorOverrideForGroupBy).toEqual(new Map());
+    });
+  });
+
+  describe('#stateRehydratedFromUrl', () => {
+    it('ignores non-dashboard routeKind', () => {
+      const state = buildRunsState({
+        initialGroupBy: {key: GroupByKey.EXPERIMENT},
+        userSetGroupBy: {key: GroupByKey.RUN},
+      });
+
+      const nextState = runsReducers.reducers(
+        state,
+        stateRehydratedFromUrl({
+          routeKind: RouteKind.EXPERIMENTS,
+          partialState: {
+            runs: {
+              groupBy: {
+                key: GroupByKey.EXPERIMENT,
+              },
+            },
+          },
+        })
+      );
+
+      expect(nextState.data.userSetGroupBy).toEqual({key: GroupByKey.RUN});
+    });
+
+    it('sets userSetGroupBy to the value provided', () => {
+      const state = buildRunsState({
+        initialGroupBy: {key: GroupByKey.REGEX, regexString: ''},
+        userSetGroupBy: {key: GroupByKey.RUN},
+      });
+
+      const partialState: URLDeserializedState = {
+        runs: {
+          groupBy: {key: GroupByKey.EXPERIMENT},
+        },
+      };
+      const nextState = runsReducers.reducers(
+        state,
+        stateRehydratedFromUrl({
+          routeKind: RouteKind.EXPERIMENT,
+          partialState,
+        })
+      );
+
+      expect(nextState.data.userSetGroupBy).toEqual({
+        key: GroupByKey.EXPERIMENT,
+      });
+    });
+
+    it('ignores the action if the partialState does not contain groupBy', () => {
+      const state = buildRunsState({
+        initialGroupBy: {key: GroupByKey.EXPERIMENT},
+        userSetGroupBy: {key: GroupByKey.RUN},
+      });
+
+      const partialState: URLDeserializedState = {
+        runs: {
+          groupBy: null,
+        },
+      };
+      const nextState = runsReducers.reducers(
+        state,
+        stateRehydratedFromUrl({
+          routeKind: RouteKind.EXPERIMENT,
+          partialState,
+        })
+      );
+
+      expect(nextState.data.userSetGroupBy).toEqual({
+        key: GroupByKey.RUN,
+      });
+    });
+
+    it('does not change the default colors by the new groupBy', () => {
+      const state = buildRunsState({
+        initialGroupBy: {key: GroupByKey.EXPERIMENT},
+        userSetGroupBy: {key: GroupByKey.RUN},
+        runIds: {
+          eid1: ['run1', 'run2'],
+          eid2: ['run3', 'run4'],
+        },
+        runIdToExpId: {
+          run1: 'eid1',
+          run2: 'eid1',
+          run3: 'eid2',
+          run4: 'eid2',
+        },
+        runMetadata: {
+          run1: buildRun({id: 'run1'}),
+          run2: buildRun({id: 'run2'}),
+          run3: buildRun({id: 'run3'}),
+          run4: buildRun({id: 'run4'}),
+        },
+        groupKeyToColorString: new Map([
+          ['run1', '#aaa'],
+          ['run2', '#bbb'],
+          ['run3', '#ccc'],
+          ['run4', '#ddd'],
+        ]),
+        defaultRunColorForGroupBy: new Map([
+          ['run1', '#aaa'],
+          ['run2', '#bbb'],
+          ['run3', '#ccc'],
+          ['run4', '#ddd'],
+        ]),
+        runColorOverrideForGroupBy: new Map([['run1', '#ccc']]),
+      });
+
+      const partialState: URLDeserializedState = {
+        runs: {
+          groupBy: {key: GroupByKey.EXPERIMENT},
+        },
+      };
+      const nextState = runsReducers.reducers(
+        state,
+        stateRehydratedFromUrl({
+          routeKind: RouteKind.COMPARE_EXPERIMENT,
+          partialState,
+        })
+      );
+
+      expect(nextState.data.defaultRunColorForGroupBy).toEqual(
+        new Map([
+          ['run1', '#aaa'],
+          ['run2', '#bbb'],
+          ['run3', '#ccc'],
+          ['run4', '#ddd'],
+        ])
+      );
+      expect(nextState.data.groupKeyToColorString).toEqual(
+        new Map([
+          ['run1', '#aaa'],
+          ['run2', '#bbb'],
+          ['run3', '#ccc'],
+          ['run4', '#ddd'],
+        ])
+      );
     });
   });
 });

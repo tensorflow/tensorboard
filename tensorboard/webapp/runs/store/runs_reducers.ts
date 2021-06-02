@@ -19,14 +19,16 @@ import {
   createReducer,
   on,
 } from '@ngrx/store';
+import {stateRehydratedFromUrl} from '../../app_routing/actions';
 
 import {createRouteContextedState} from '../../app_routing/route_contexted_reducer_helper';
+import {RouteKind} from '../../app_routing/types';
 import {DataLoadState} from '../../types/data';
 import {SortDirection} from '../../types/ui';
 import {CHART_COLOR_PALLETE} from '../../util/colors';
 import {composeReducers} from '../../util/ngrx';
 import * as runsActions from '../actions';
-import {GroupByKey} from '../types';
+import {GroupByKey, URLDeserializedState} from '../types';
 import {
   MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT,
   RunsDataRoutefulState,
@@ -59,6 +61,41 @@ const {
 
 const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
   dataInitialState,
+  // Color grouping potentially is an expensive operation and assigning colors
+  // on route changes may not actually be effective at all. Because we are
+  // using RouteContextedState, color assignment and groupBy information should
+  // not go out of sync. That is, for a given route, the condition in which the
+  // colors get assigned are (1) when user changes groupBy and (2) when new
+  // runs are fetched (new runs added or runs removed). Both of those cases
+  // are handled by their respective reducer functions and, while there is no
+  // strong guarantees at the moment, because we are using RouteContextedState,
+  // even if new runs are fetched for a routeId that is not active, refresh of
+  // a background experiment data will not result in correct state update.
+  // While user can change groupBy state in the URL to trigger (1), that will
+  // result in browser postback and the app will rebootstrap anyways.
+  //
+  // Given above, and given that user can go back and forth in history to cause
+  // `stateRehydratedFromUrl` often, it would be computationally wasteful to
+  // reassign the color as it will exactly be the same.
+  on(stateRehydratedFromUrl, (state, {routeKind, partialState}) => {
+    if (
+      routeKind !== RouteKind.COMPARE_EXPERIMENT &&
+      routeKind !== RouteKind.EXPERIMENT
+    ) {
+      return state;
+    }
+
+    const dehydratedState = partialState as URLDeserializedState;
+    const groupBy = dehydratedState.runs.groupBy;
+    if (!groupBy) {
+      return state;
+    }
+
+    return {
+      ...state,
+      userSetGroupBy: groupBy,
+    };
+  }),
   on(runsActions.fetchRunsRequested, (state, action) => {
     const nextRunsLoadState = {...state.runsLoadState};
     for (const eid of action.requestedExperimentIds) {
