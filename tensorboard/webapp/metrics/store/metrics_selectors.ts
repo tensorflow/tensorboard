@@ -272,7 +272,7 @@ const selectSettings = createSelector(
  */
 export const getMetricsSettingOverrides = createSelector(
   selectMetricsState,
-  (state): MetricsState['settingOverrides'] => {
+  (state): Partial<MetricsSettings> => {
     return state.settingOverrides;
   }
 );

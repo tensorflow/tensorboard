@@ -516,19 +516,21 @@ const reducer = createReducer(
     };
   }),
   on(actions.metricsResetImageBrightness, (state) => {
-    const settingOverrides = {...state.settingOverrides};
-    delete settingOverrides['imageBrightnessInMilli'];
     return {
       ...state,
-      settingOverrides,
+      settingOverrides: {
+        ...state.settingOverrides,
+        imageBrightnessInMilli: undefined,
+      },
     };
   }),
   on(actions.metricsResetImageContrast, (state) => {
-    const settingOverrides = {...state.settingOverrides};
-    delete settingOverrides['imageContrastInMilli'];
     return {
       ...state,
-      settingOverrides,
+      settingOverrides: {
+        ...state.settingOverrides,
+        imageContrastInMilli: undefined,
+      },
     };
   }),
   on(actions.metricsToggleImageShowActualSize, (state) => {
