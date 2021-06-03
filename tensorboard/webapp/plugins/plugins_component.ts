@@ -58,39 +58,7 @@ export enum PluginLoadState {
 @Component({
   selector: 'plugins-component',
   templateUrl: './plugins_component.ng.html',
-  styles: [
-    `
-      :host {
-        display: block;
-        position: relative;
-      }
-      .plugins {
-        height: 100%;
-        position: relative;
-      }
-      .warning {
-        background-color: #fff;
-        bottom: 0;
-        left: 0;
-        position: absolute;
-        right: 0;
-        top: 0;
-      }
-      .warning-message {
-        margin: 80px auto 0;
-        max-width: 540px;
-      }
-      .last-reload-time {
-        font-style: italic;
-      }
-      .plugins ::ng-deep iframe {
-        border: 0;
-        display: block;
-        height: 100%;
-        width: 100%;
-      }
-    `,
-  ],
+  styleUrls: ['plugins_component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PluginsComponent implements OnChanges {

@@ -144,6 +144,14 @@ class VzLineChart2<SeriesMetadata = {}> extends LegacyElementMixin(
         opacity: 0.2;
         stroke-width: 1px;
       }
+
+      .plottable .axis text {
+        fill: currentColor;
+      }
+
+      .plottable .gridlines line {
+        stroke: var(--tb-secondary-text-color);
+      }
     </style>
   `;
 

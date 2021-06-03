@@ -146,13 +146,14 @@ class TfCategoryPaginatedView<CategoryItem> extends TfDomRepeat<CategoryItem> {
       }
 
       .heading {
-        background-color: white;
+        background-color: inherit;
         border: none;
+        color: inherit;
         cursor: pointer;
         width: 100%;
         font-size: 15px;
         line-height: 1;
-        box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2);
+        box-shadow: 0 1px 5px var(--tb-raised-button-shadow-color);
         padding: 10px 15px;
         display: flex;
         align-items: center;
@@ -204,7 +205,7 @@ class TfCategoryPaginatedView<CategoryItem> extends TfDomRepeat<CategoryItem> {
       .content {
         display: flex;
         flex-direction: column;
-        background: white;
+        background: inherit;
         border-bottom-left-radius: 2px;
         border-bottom-right-radius: 2px;
         border-top: none;

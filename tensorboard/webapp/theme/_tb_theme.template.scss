@@ -41,24 +41,33 @@ $tb-foreground: map_merge(
   )
 );
 
-$tb-background: map_merge(
-  $mat-light-theme-background,
-  (
-    // Default is `map.get($grey-palette, 50)`.
-    background: #fff
-  )
-);
-
 $tb-theme: map_merge(
   $tb-theme,
   (
-    background: $tb-background,
     foreground: $tb-foreground,
   )
 );
+
+$tb-background: map-get($tb-theme, background);
+
+$tb-dark-theme: mat-dark-theme($tb-primary, $tb-accent, $tb-warn);
+$tb-dark-foreground: map-get($tb-dark-theme, foreground);
+$tb-dark-background: map-get($tb-dark-theme, background);
+
+@mixin tb-dark-theme {
+  @at-root :host-context(body.dark-mode) #{&} {
+    @content;
+  }
+}
 
 // Apply themed style for the global stylesheet (styles.scss).
 @mixin tb-global-themed-styles() {
   // Include all theme-styles for the components based on the current theme.
   @include angular-material-theme($tb-theme);
+
+  @include tb-dark-theme {
+    background-color: map-get($tb-dark-background, background);
+
+    @include angular-material-theme($tb-dark-theme);
+  }
 }

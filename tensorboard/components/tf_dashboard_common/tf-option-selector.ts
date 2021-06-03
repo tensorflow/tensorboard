@@ -46,7 +46,7 @@ class TfOptionSelector extends LegacyElementMixin(PolymerElement) {
       }
 
       h3 {
-        color: var(--paper-grey-800);
+        color: var(--tb-secondary-text-color);
         display: block;
         font-size: 14px;
         font-weight: normal;

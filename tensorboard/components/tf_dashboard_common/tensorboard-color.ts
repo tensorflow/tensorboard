@@ -24,7 +24,21 @@ style.textContent = `
     --tb-grey-lighter: #f3f3f3;
     --tb-ui-dark-accent: #757575;
     --tb-ui-light-accent: #e0e0e0;
+    --tb-ui-border: var(--paper-grey-300);
     --tb-graph-faded: #e0d4b3;
+    --tb-secondary-text-color: var(--paper-grey-800);
+    --tb-raised-button-shadow-color: rgba(0, 0, 0, 0.2);
+    --primary-background-color: #fff;
+  }
+
+  :root .dark-mode {
+    --tb-ui-border: var(--paper-grey-700);
+    --tb-ui-dark-accent: var(--paper-grey-400);
+    --tb-ui-light-accent: var(--paper-grey-600);
+    --tb-secondary-text-color: var(--paper-grey-400);
+    --tb-raised-button-shadow-color: rgba(255, 255, 255, 0.5);
+    --primary-text-color: #fff;
+    --primary-background-color: #303030;  /* material grey A400. */
   }
 `;
 document.head.appendChild(style);
