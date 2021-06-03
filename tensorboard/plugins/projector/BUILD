@@ -112,7 +112,5 @@ py_binary(
     srcs_version = "PY3",
     deps = [
         ":projector",
-        "//tensorboard:expect_tensorflow_datasets_installed",
-        "//tensorboard:expect_tensorflow_installed",
     ],
 )

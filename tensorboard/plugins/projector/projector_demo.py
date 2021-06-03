@@ -12,96 +12,120 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
+"""Generates demo data for the TensorBoard projector plugin.
 
+For a more complete walkthrough, please see one of the following tutorials:
+
+- https://www.tensorflow.org/tensorboard/tensorboard_projector_plugin
+- https://www.tensorflow.org/tutorials/text/word_embeddings
+"""
 
 import os
-import tensorflow as tf  # Requires Tensorflow >=2.1
+import string
+
+from absl import app
+from absl import flags
 from tensorboard.plugins import projector
-import tensorflow_datasets as tfds
 
-# This demo expands upon the word embeddings tutorial found
-# here: https://www.tensorflow.org/tutorials/text/word_embeddings)
-# and is intended to demonstrate the use of the embedding projector.
-
-LOG_DIR = "/tmp/projector_demo"  # Tensorboard log dir
-METADATA_FNAME = "meta.tsv"  # Labels will be stored here
-STEP = 0
-
-# Load imdb reviews dataset
-(train_data, test_data), info = tfds.load(
-    "imdb_reviews/subwords8k",
-    split=(tfds.Split.TRAIN, tfds.Split.TEST),
-    with_info=True,
-    as_supervised=True,
+flags.DEFINE_string(
+    "logdir", "/tmp/projector_demo", "Directory to write data to."
 )
-encoder = info.features["text"].encoder
-
-# shuffle, pad, and train the data.
-train_batches = train_data.shuffle(1000).padded_batch(
-    10, padded_shapes=((None,), ())
-)
-test_batches = test_data.shuffle(1000).padded_batch(
-    10, padded_shapes=((None,), ())
-)
-train_batch, train_labels = next(iter(train_batches))
-embedding_dim = 16
-
-# Create a basic embedding layer
-embedding = tf.keras.layers.Embedding(encoder.vocab_size, embedding_dim)
-model = tf.keras.Sequential(
-    [
-        embedding,
-        tf.keras.layers.GlobalAveragePooling1D(),
-        tf.keras.layers.Dense(16, activation="relu"),
-        tf.keras.layers.Dense(1),
-    ]
-)
-
-# Compile model
-model.compile(
-    optimizer="adam",
-    loss=tf.keras.losses.BinaryCrossentropy(from_logits=True),
-    metrics=["accuracy"],
-)
-
-# Train model
-history = model.fit(
-    train_batches, epochs=1, validation_data=test_batches, validation_steps=20
-)
-
-# Fetch the embedding layer and get the weights.
-# Make sure to remove the first element, as it is padding.
-weights = tf.Variable(model.layers[0].get_weights()[0][1:])
+FLAGS = flags.FLAGS
 
 
-def register_embedding(weights, labels, log_dir) -> None:
-    """Saves a metadata file (labels) and a checkpoint (derived from weights)
-    and configures the Embedding Projector to read from the appropriate locations.
+def tensor_for_label(label):
+    """Fake embedding based on occurrence of 26 ASCII letters in the label."""
+    return tuple(0.1 if c in label else -0.1 for c in string.ascii_lowercase)
 
-    Args:
-      weights: tf.Variable with the weights of the embedding layer to be displayed.
-      labels: list of labels corresponding to the weights.
-      logdir: Directory into which to store the config file, as a `str`.
-    """
 
-    # Create a checkpoint from embedding, the filename and key are
-    # name of the tensor.
-    checkpoint = tf.train.Checkpoint(embedding=weights)
-    checkpoint.save(os.path.join(LOG_DIR, "embedding.ckpt"))
+def write_embedding(log_dir):
+    """Writes embedding data and projector configuration to the logdir."""
+    metadata_filename = "metadata.tsv"
+    tensor_filename = "tensor.tsv"
 
-    # Save Labels separately on a line-by-line manner.
-    with open(os.path.join(log_dir, METADATA_FNAME), "w") as f:
-        for label in labels:
+    labels = ANIMALS.strip().splitlines()
+    labels_to_tensors = {label: tensor_for_label(label) for label in labels}
+    os.makedirs(log_dir, exist_ok=True)
+    with open(os.path.join(log_dir, metadata_filename), "w") as f:
+        for label in labels_to_tensors:
             f.write("{}\n".format(label))
+    with open(os.path.join(log_dir, tensor_filename), "w") as f:
+        for tensor in labels_to_tensors.values():
+            f.write("{}\n".format("\t".join(str(x) for x in tensor)))
 
-    # Set up config
     config = projector.ProjectorConfig()
     embedding = config.embeddings.add()
-    # The name of the tensor will be suffixed by `/.ATTRIBUTES/VARIABLE_VALUE`
-    embedding.tensor_name = "embedding/.ATTRIBUTES/VARIABLE_VALUE"
-    embedding.metadata_path = METADATA_FNAME
+    embedding.metadata_path = metadata_filename
+    embedding.tensor_path = tensor_filename
     projector.visualize_embeddings(log_dir, config)
 
 
-# Save Files
-register_embedding(weights, encoder.subwords, LOG_DIR)
+def main(unused_argv):
+    print("Saving output to %s." % FLAGS.logdir)
+    write_embedding(FLAGS.logdir)
+    print("Done. Output saved to %s." % FLAGS.logdir)
+
+
+ANIMALS = """
+aardvark
+alligator
+antelope
+armadillo
+badger
+bat
+bear
+beaver
+bison
+buffalo
+camel
+cheetah
+cow
+coyote
+dog
+dolphin
+elephant
+emu
+fox
+gerbil
+giraffe
+gnu
+hamster
+hedgehog
+hippopotamus
+hyena
+kangaroo
+koala
+leopard
+lion
+mink
+mole
+moose
+mouse
+opossum
+otter
+ox
+panda
+pig
+porpoise
+raccoon
+rat
+reindeer
+rhinoceros
+seal
+shark
+snake
+squid
+squirrel
+tiger
+turtle
+wallaby
+walrus
+whale
+wolf
+wombat
+yak
+"""
+
+
+if __name__ == "__main__":
+    app.run(main)
