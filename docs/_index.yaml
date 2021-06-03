@@ -29,6 +29,10 @@ landing_page:
       - label: Get started
         path: /tensorboard/get_started
         classname: button
+      - label: Get started with TensorBoard.dev
+        path: https://tensorboard.dev
+        classname: button
+
   - classname: devsite-landing-row-cards
     items:
     - heading: "TensorBoard.dev: a new way to share your ML experiment results"
