@@ -14,6 +14,9 @@ limitations under the License.
 ==============================================================================*/
 
 export interface FeatureFlags {
+  // Whether user wants to use dark mode. It can be set via browser setting
+  // (media query).
+  enableDarkMode: boolean;
   // Whether to enable experimental semantic color grouping feature.
   enabledColorGroup: boolean;
   // experimental plugins to manually enable.

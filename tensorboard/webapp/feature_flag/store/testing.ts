@@ -21,6 +21,7 @@ export function buildFeatureFlagState(
   return {
     isFeatureFlagsLoaded: false,
     defaultFlags: {
+      enableDarkMode: false,
       enabledExperimentalPlugins: [],
       inColab: false,
       scalarsBatchSize: 1,

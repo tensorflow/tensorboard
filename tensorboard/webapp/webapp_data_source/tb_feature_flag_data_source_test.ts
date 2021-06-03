@@ -22,16 +22,21 @@ import {
 describe('tb_feature_flag_data_source', () => {
   describe('QueryParamsFeatureFlagDataSource', () => {
     let dataSource: QueryParamsFeatureFlagDataSource;
+    let matchMediaSpy: jasmine.Spy;
+
     beforeEach(async () => {
       await TestBed.configureTestingModule({
         providers: [QueryParamsFeatureFlagDataSource],
       }).compileComponents();
 
       dataSource = TestBed.inject(QueryParamsFeatureFlagDataSource);
+      matchMediaSpy = spyOn(window, 'matchMedia').and.returnValue({
+        matches: false,
+      } as MediaQueryList);
     });
 
     describe('getFeatures', () => {
-      it('returns empy values when params are empty', () => {
+      it('returns empty values when params are empty', () => {
         spyOn(TEST_ONLY.util, 'getParams').and.returnValue(
           new URLSearchParams('')
         );
@@ -104,6 +109,33 @@ describe('tb_feature_flag_data_source', () => {
           inColab: false,
           scalarsBatchSize: 16,
         });
+      });
+    });
+
+    describe('media query feature flag', () => {
+      describe('getFeatures', () => {
+        function fakeMediaQuery(matchDarkMode: boolean) {
+          matchMediaSpy
+            .withArgs(TEST_ONLY.DARK_MODE_MEDIA_QUERY)
+            // MediaQueryList interface is hard to implement. Cheat.
+            .and.returnValue({matches: matchDarkMode} as MediaQueryList);
+        }
+
+        it('returns enableDarkMode when media query matches dark mode', () => {
+          fakeMediaQuery(true);
+          expect(dataSource.getFeatures()).toEqual({
+            enableDarkMode: true,
+          });
+        });
+
+        it(
+          'does not return a feature flags when media query does not match ' +
+            'dark mode',
+          () => {
+            fakeMediaQuery(false);
+            expect(dataSource.getFeatures()).toEqual({});
+          }
+        );
       });
     });
   });

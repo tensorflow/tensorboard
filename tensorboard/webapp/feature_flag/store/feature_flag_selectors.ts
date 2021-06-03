@@ -53,6 +53,13 @@ export const getOverriddenFeatureFlags = createSelector(
   }
 );
 
+export const getDarkModeEnabled = createSelector(
+  getFeatureFlags,
+  (flags): boolean => {
+    return flags.enableDarkMode;
+  }
+);
+
 export const getEnabledExperimentalPlugins = createSelector(
   getFeatureFlags,
   (flags) => {

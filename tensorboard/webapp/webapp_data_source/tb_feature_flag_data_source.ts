@@ -16,6 +16,7 @@ import {Injectable} from '@angular/core';
 
 import {
   ENABLE_COLOR_GROUP_QUERY_PARAM_KEY,
+  ENABLE_DARK_MODE_QUERY_PARAM_KEY,
   EXPERIMENTAL_PLUGIN_QUERY_PARAM_KEY,
   SCALARS_BATCH_SIZE_PARAM_KEY,
   TBFeatureFlagDataSource,
@@ -33,6 +34,11 @@ const util = {
   },
 };
 
+const DARK_MODE_MEDIA_QUERY = '(prefers-color-scheme: dark)';
+
+// TODO(tensorboard-team): QueryParamsFeatureFlagDataSource now is a misnomer as
+// it also sources the data from media query as well as the query parameter.
+// Decide how to move forward with more sources of the data + composability.
 @Injectable()
 export class QueryParamsFeatureFlagDataSource extends TBFeatureFlagDataSource {
   getFeatures() {
@@ -40,7 +46,7 @@ export class QueryParamsFeatureFlagDataSource extends TBFeatureFlagDataSource {
     // Set feature flag value for query parameters that are explicitly
     // specified. Feature flags for unspecified query parameters remain unset so
     // their values in the underlying state are not inadvertently changed.
-    const featureFlags: Partial<FeatureFlags> = {};
+    const featureFlags: Partial<FeatureFlags> = this.getPartialFeaturesFromMediaQuery();
     if (params.has(EXPERIMENTAL_PLUGIN_QUERY_PARAM_KEY)) {
       featureFlags.enabledExperimentalPlugins = params.getAll(
         EXPERIMENTAL_PLUGIN_QUERY_PARAM_KEY
@@ -59,12 +65,31 @@ export class QueryParamsFeatureFlagDataSource extends TBFeatureFlagDataSource {
       featureFlags.enabledColorGroup =
         params.get(ENABLE_COLOR_GROUP_QUERY_PARAM_KEY) !== 'false';
     }
+
+    if (params.has(ENABLE_DARK_MODE_QUERY_PARAM_KEY)) {
+      featureFlags.enableDarkMode =
+        params.get(ENABLE_DARK_MODE_QUERY_PARAM_KEY) !== 'false';
+    }
+
     return featureFlags;
   }
 
   protected getParams() {
     return util.getParams();
   }
+
+  protected getPartialFeaturesFromMediaQuery(): {enableDarkMode?: boolean} {
+    const featureFlags: {enableDarkMode?: boolean} = {};
+    const enableDarkMode = window.matchMedia(DARK_MODE_MEDIA_QUERY).matches;
+
+    // When media query matches positively, it certainly means user wants it but
+    // it is not definitive otherwise (i.e., query params can override it).
+    if (enableDarkMode) {
+      featureFlags.enableDarkMode = true;
+    }
+
+    return featureFlags;
+  }
 }
 
-export const TEST_ONLY = {util};
+export const TEST_ONLY = {util, DARK_MODE_MEDIA_QUERY};

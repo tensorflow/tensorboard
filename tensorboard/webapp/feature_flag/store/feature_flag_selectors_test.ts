@@ -80,6 +80,43 @@ describe('feature_flag_selectors', () => {
     });
   });
 
+  describe('#getDarkModeEnabled', () => {
+    it('returns the proper value', () => {
+      let state = buildState(
+        buildFeatureFlagState({
+          defaultFlags: buildFeatureFlag({
+            enableDarkMode: true,
+          }),
+        })
+      );
+      expect(selectors.getDarkModeEnabled(state)).toEqual(true);
+
+      state = buildState(
+        buildFeatureFlagState({
+          defaultFlags: buildFeatureFlag({
+            enableDarkMode: false,
+          }),
+          flagOverrides: {
+            enableDarkMode: true,
+          },
+        })
+      );
+      expect(selectors.getDarkModeEnabled(state)).toEqual(true);
+
+      state = buildState(
+        buildFeatureFlagState({
+          defaultFlags: buildFeatureFlag({
+            enableDarkMode: false,
+          }),
+          flagOverrides: {
+            enableDarkMode: false,
+          },
+        })
+      );
+      expect(selectors.getDarkModeEnabled(state)).toEqual(false);
+    });
+  });
+
   describe('#getEnabledExperimentalPlugins', () => {
     it('returns value in array', () => {
       const state = buildState(

@@ -36,3 +36,5 @@ export const EXPERIMENTAL_PLUGIN_QUERY_PARAM_KEY = 'experimentalPlugin';
 export const SCALARS_BATCH_SIZE_PARAM_KEY = 'scalarsBatchSize';
 
 export const ENABLE_COLOR_GROUP_QUERY_PARAM_KEY = 'enableColorGroup';
+
+export const ENABLE_DARK_MODE_QUERY_PARAM_KEY = 'darkMode';

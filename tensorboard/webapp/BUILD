@@ -109,6 +109,7 @@ tf_ng_module(
         "//tensorboard/webapp/core",
         "//tensorboard/webapp/core/actions",
         "//tensorboard/webapp/core/store",
+        "//tensorboard/webapp/core/views:dark_mode_supporter",
         "//tensorboard/webapp/core/views:hash_storage",
         "//tensorboard/webapp/core/views:page_title",
         "//tensorboard/webapp/experiments",
