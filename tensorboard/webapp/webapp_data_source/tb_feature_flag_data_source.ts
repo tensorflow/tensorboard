@@ -84,7 +84,9 @@ export class QueryParamsFeatureFlagDataSource extends TBFeatureFlagDataSource {
 
     // When media query matches positively, it certainly means user wants it but
     // it is not definitive otherwise (i.e., query params can override it).
-    if (enableDarkMode) {
+    // TODO(stephanwlee): enable the feature when most of the UI is actually
+    // ready for usage.
+    if (enableDarkMode && false) {
       featureFlags.enableDarkMode = true;
     }
 
