@@ -57,5 +57,8 @@ $tb-theme: map_merge(
   )
 );
 
-// Include all theme-styles for the components based on the current theme.
-@include angular-material-theme($tb-theme);
+// Apply themed style for the global stylesheet (styles.scss).
+@mixin tb-global-themed-styles() {
+  // Include all theme-styles for the components based on the current theme.
+  @include angular-material-theme($tb-theme);
+}
