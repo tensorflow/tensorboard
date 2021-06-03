@@ -79,9 +79,6 @@ export class QueryParamsFeatureFlagDataSource extends TBFeatureFlagDataSource {
   }
 
   protected getPartialFeaturesFromMediaQuery(): {enableDarkMode?: boolean} {
-    // Set feature flag value for query parameters that are explicitly
-    // specified. Feature flags for unspecified query parameters remain unset so
-    // their values in the underlying state are not inadvertently changed.
     const featureFlags: {enableDarkMode?: boolean} = {};
     const enableDarkMode = window.matchMedia(DARK_MODE_MEDIA_QUERY).matches;
 

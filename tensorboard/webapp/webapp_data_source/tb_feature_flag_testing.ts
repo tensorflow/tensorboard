@@ -18,8 +18,6 @@ import {Injectable, NgModule} from '@angular/core';
 import {buildFeatureFlag} from '../feature_flag/testing';
 import {TBFeatureFlagDataSource} from './tb_feature_flag_data_source_types';
 
-export {TBFeatureFlagDataSource} from './tb_feature_flag_data_source_types';
-
 @Injectable()
 export class TestingTBFeatureFlagDataSource extends TBFeatureFlagDataSource {
   getFeatures() {
