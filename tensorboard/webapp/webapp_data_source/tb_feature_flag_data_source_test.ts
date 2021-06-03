@@ -123,11 +123,9 @@ describe('tb_feature_flag_data_source', () => {
 
         it('returns enableDarkMode when media query matches dark mode', () => {
           fakeMediaQuery(true);
-          expect(dataSource.getFeatures()).toEqual({
-            // TODO(stephanwlee): the feature is hard disabled for now until it
-            // actually ready. Expect this value to be `true` when ready.
-            enableDarkMode: false,
-          });
+          // TODO(stephanwlee): the feature is hard disabled for now until it
+          // actually ready. Expect this value to be `true` when ready.
+          expect(dataSource.getFeatures()).toEqual({});
         });
 
         it(
