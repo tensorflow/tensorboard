@@ -14,7 +14,6 @@ limitations under the License.
 ==============================================================================*/
 import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {Store} from '@ngrx/store';
-import {distinctUntilChanged} from 'rxjs/operators';
 
 import {State} from '../../app_state';
 import {getDarkModeEnabled} from '../../selectors';
@@ -33,11 +32,8 @@ import {getDarkModeEnabled} from '../../selectors';
 })
 export class DarkModeSupportContainer {
   constructor(store: Store<State>) {
-    store
-      .select(getDarkModeEnabled)
-      .pipe(distinctUntilChanged())
-      .subscribe((darkMode) => {
-        document.body.classList.toggle('dark-mode', darkMode);
-      });
+    store.select(getDarkModeEnabled).subscribe((darkMode) => {
+      document.body.classList.toggle('dark-mode', darkMode);
+    });
   }
 }

@@ -47,7 +47,6 @@ tf_ng_module(
         "//tensorboard/webapp:selectors",
         "@npm//@angular/core",
         "@npm//@ngrx/store",
-        "@npm//rxjs",
     ],
 )
 
