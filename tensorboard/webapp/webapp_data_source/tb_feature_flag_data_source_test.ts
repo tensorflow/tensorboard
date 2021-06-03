@@ -15,59 +15,24 @@ limitations under the License.
 import {TestBed} from '@angular/core/testing';
 
 import {
-  MediaQueryFeatureFlagDataSource,
   QueryParamsFeatureFlagDataSource,
   TEST_ONLY,
 } from './tb_feature_flag_data_source';
 
 describe('tb_feature_flag_data_source', () => {
-  describe('MediaQueryFeatureFlag', () => {
-    let dataSource: MediaQueryFeatureFlagDataSource;
-    let matchMediaSpy: jasmine.Spy;
-
-    beforeEach(async () => {
-      await TestBed.configureTestingModule({
-        providers: [MediaQueryFeatureFlagDataSource],
-      }).compileComponents();
-
-      dataSource = TestBed.inject(MediaQueryFeatureFlagDataSource);
-      matchMediaSpy = spyOn(window, 'matchMedia');
-    });
-
-    describe('getFeatures', () => {
-      function fakeMediaQuery(matchDarkMode: boolean) {
-        matchMediaSpy
-          .withArgs(TEST_ONLY.DARK_MODE_MEDIA_QUERY)
-          // MediaQueryList interface is hard to implement. Cheat.
-          .and.returnValue({matches: matchDarkMode} as MediaQueryList);
-      }
-
-      it('returns enableDarkMode when media query matches dark mode', () => {
-        fakeMediaQuery(true);
-        expect(dataSource.getFeatures()).toEqual({
-          enableDarkMode: true,
-        });
-      });
-
-      it(
-        'does not return a feature flags when media query does not match ' +
-          'dark mode',
-        () => {
-          fakeMediaQuery(false);
-          expect(dataSource.getFeatures()).toEqual({});
-        }
-      );
-    });
-  });
-
   describe('QueryParamsFeatureFlagDataSource', () => {
     let dataSource: QueryParamsFeatureFlagDataSource;
+    let matchMediaSpy: jasmine.Spy;
+
     beforeEach(async () => {
       await TestBed.configureTestingModule({
         providers: [QueryParamsFeatureFlagDataSource],
       }).compileComponents();
 
       dataSource = TestBed.inject(QueryParamsFeatureFlagDataSource);
+      matchMediaSpy = spyOn(window, 'matchMedia').and.returnValue({
+        matches: false,
+      } as MediaQueryList);
     });
 
     describe('getFeatures', () => {
@@ -146,8 +111,32 @@ describe('tb_feature_flag_data_source', () => {
         });
       });
     });
+
+    describe('media query feature flag', () => {
+      describe('getFeatures', () => {
+        function fakeMediaQuery(matchDarkMode: boolean) {
+          matchMediaSpy
+            .withArgs(TEST_ONLY.DARK_MODE_MEDIA_QUERY)
+            // MediaQueryList interface is hard to implement. Cheat.
+            .and.returnValue({matches: matchDarkMode} as MediaQueryList);
+        }
+
+        it('returns enableDarkMode when media query matches dark mode', () => {
+          fakeMediaQuery(true);
+          expect(dataSource.getFeatures()).toEqual({
+            enableDarkMode: true,
+          });
+        });
+
+        it(
+          'does not return a feature flags when media query does not match ' +
+            'dark mode',
+          () => {
+            fakeMediaQuery(false);
+            expect(dataSource.getFeatures()).toEqual({});
+          }
+        );
+      });
+    });
   });
 });
-function DARK_MODE_MEDIA_QUERY(DARK_MODE_MEDIA_QUERY: any) {
-  throw new Error('Function not implemented.');
-}

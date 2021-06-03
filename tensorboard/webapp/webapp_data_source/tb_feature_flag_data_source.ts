@@ -36,25 +36,9 @@ const util = {
 
 const DARK_MODE_MEDIA_QUERY = '(prefers-color-scheme: dark)';
 
-@Injectable()
-export class MediaQueryFeatureFlagDataSource extends TBFeatureFlagDataSource {
-  getFeatures() {
-    // Set feature flag value for query parameters that are explicitly
-    // specified. Feature flags for unspecified query parameters remain unset so
-    // their values in the underlying state are not inadvertently changed.
-    const featureFlags: Partial<FeatureFlags> = {};
-    const enableDarkMode = window.matchMedia(DARK_MODE_MEDIA_QUERY).matches;
-
-    // When media query matches positively, it certainly means user wants it but
-    // it is not definitive otherwise (i.e., query params can override it).
-    if (enableDarkMode) {
-      featureFlags.enableDarkMode = true;
-    }
-
-    return featureFlags;
-  }
-}
-
+// TODO(tensorboard-team): QueryParamsFeatureFlagDataSource now is a misnomer as
+// it also sources the data from media query as well as the query parameter.
+// Decide how to move forward with more sources of the data + composability.
 @Injectable()
 export class QueryParamsFeatureFlagDataSource extends TBFeatureFlagDataSource {
   getFeatures() {
@@ -62,7 +46,7 @@ export class QueryParamsFeatureFlagDataSource extends TBFeatureFlagDataSource {
     // Set feature flag value for query parameters that are explicitly
     // specified. Feature flags for unspecified query parameters remain unset so
     // their values in the underlying state are not inadvertently changed.
-    const featureFlags: Partial<FeatureFlags> = {};
+    const featureFlags: Partial<FeatureFlags> = this.getPartialFeaturesFromMediaQuery();
     if (params.has(EXPERIMENTAL_PLUGIN_QUERY_PARAM_KEY)) {
       featureFlags.enabledExperimentalPlugins = params.getAll(
         EXPERIMENTAL_PLUGIN_QUERY_PARAM_KEY
@@ -92,6 +76,22 @@ export class QueryParamsFeatureFlagDataSource extends TBFeatureFlagDataSource {
 
   protected getParams() {
     return util.getParams();
+  }
+
+  protected getPartialFeaturesFromMediaQuery(): {enableDarkMode?: boolean} {
+    // Set feature flag value for query parameters that are explicitly
+    // specified. Feature flags for unspecified query parameters remain unset so
+    // their values in the underlying state are not inadvertently changed.
+    const featureFlags: {enableDarkMode?: boolean} = {};
+    const enableDarkMode = window.matchMedia(DARK_MODE_MEDIA_QUERY).matches;
+
+    // When media query matches positively, it certainly means user wants it but
+    // it is not definitive otherwise (i.e., query params can override it).
+    if (enableDarkMode) {
+      featureFlags.enableDarkMode = true;
+    }
+
+    return featureFlags;
   }
 }
 

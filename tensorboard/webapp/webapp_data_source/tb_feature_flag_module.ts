@@ -15,34 +15,14 @@ limitations under the License.
 
 import {NgModule} from '@angular/core';
 
-import {
-  TBFeatureFlagDataSource,
-  TbFeatureFlagDataSources,
-} from './tb_feature_flag_data_source_types';
-import {
-  MediaQueryFeatureFlagDataSource,
-  QueryParamsFeatureFlagDataSource,
-} from './tb_feature_flag_data_source';
+import {TBFeatureFlagDataSource} from './tb_feature_flag_data_source_types';
+import {QueryParamsFeatureFlagDataSource} from './tb_feature_flag_data_source';
 
 @NgModule({
   providers: [
-    // TODO(stephanwlee): remove below comments when TensorBoard mostly looks
-    // okay with dark mode enabled automatically based on the media query.
-    // {
-    //   provide: TBFeatureFlagDataSources,
-    //   useClass: MediaQueryFeatureFlagDataSource,
-    //   multi: true,
-    // },
-    // QueryParameter provider should appear the last as it should
-    // override feature flags from any other sources.
     {
       provide: TBFeatureFlagDataSource,
       useClass: QueryParamsFeatureFlagDataSource,
-    },
-    {
-      provide: TbFeatureFlagDataSources,
-      useExisting: TBFeatureFlagDataSource,
-      multi: true,
     },
   ],
 })

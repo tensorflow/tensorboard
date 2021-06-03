@@ -34,6 +34,10 @@ describe('dark mode supporter test', () => {
     store.overrideSelector(getDarkModeEnabled, false);
   });
 
+  afterEach(() => {
+    document.body.classList.remove('dark-mode');
+  });
+
   it('sets class name on body when dark mode is enabled', () => {
     store.overrideSelector(getDarkModeEnabled, false);
     const fixture = TestBed.createComponent(DarkModeSupportContainer);

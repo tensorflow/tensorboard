@@ -13,17 +13,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {Inject, Injectable, Optional} from '@angular/core';
+import {Injectable} from '@angular/core';
 import {createAction, Action} from '@ngrx/store';
 import {Actions, ofType, createEffect} from '@ngrx/effects';
 import {map} from 'rxjs/operators';
 
-import {
-  TbFeatureFlagDataSources,
-  TBFeatureFlagDataSource,
-} from '../../webapp_data_source/tb_feature_flag_data_source_types';
+import {TBFeatureFlagDataSource} from '../../webapp_data_source/tb_feature_flag_data_source_types';
 import {partialFeatureFlagsLoaded} from '../actions/feature_flag_actions';
-import {FeatureFlags} from '../types';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 /** @typehack */ import * as _typeHackNgrx from '@ngrx/store/src/models';
@@ -34,17 +30,12 @@ const effectsInitialized = createAction('[FEATURE FLAG] Effects Init');
 
 @Injectable()
 export class FeatureFlagEffects {
-  private readonly dataSources: TBFeatureFlagDataSource[];
-
   /** @export */
   readonly getFeatureFlags$ = createEffect(() =>
     this.actions$.pipe(
       ofType(effectsInitialized),
       map(() => {
-        const features: Partial<FeatureFlags> = {};
-        for (const dataSource of this.dataSources) {
-          Object.assign(features, dataSource.getFeatures());
-        }
+        const features = this.dataSource.getFeatures();
         return partialFeatureFlagsLoaded({features});
       })
     )
@@ -52,24 +43,8 @@ export class FeatureFlagEffects {
 
   constructor(
     private readonly actions$: Actions,
-    @Optional()
-    dataSource: TBFeatureFlagDataSource,
-    @Optional()
-    @Inject(TbFeatureFlagDataSources)
-    dataSources: TBFeatureFlagDataSource[]
-  ) {
-    // Remove below when all applications are migrated to
-    // TbFeatureFlagDataSources.
-    if (dataSources) {
-      this.dataSources = dataSources;
-    } else if (dataSource) {
-      this.dataSources = [dataSource];
-    } else {
-      throw new RangeError(
-        'Requires one of `TBFeatureFlagDataSource` or `TbFeatureFlagDataSources`'
-      );
-    }
-  }
+    private readonly dataSource: TBFeatureFlagDataSource
+  ) {}
 
   /** @export */
   ngrxOnInitEffects(): Action {

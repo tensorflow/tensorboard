@@ -16,9 +16,6 @@ import {Injectable, InjectionToken} from '@angular/core';
 
 import {FeatureFlags} from '../feature_flag/types';
 
-/**
- * @deprecated @see TBFeatureFlagDataSource
- */
 @Injectable()
 export abstract class TBFeatureFlagDataSource {
   /**
@@ -33,13 +30,6 @@ export abstract class TBFeatureFlagDataSource {
    */
   abstract getFeatures(): Partial<FeatureFlags>;
 }
-
-/**
- * Provides feature flag informations.
- */
-export const TbFeatureFlagDataSources = new InjectionToken<
-  TBFeatureFlagDataSource
->('TensorBoard Feature Flag Data Sources');
 
 export const EXPERIMENTAL_PLUGIN_QUERY_PARAM_KEY = 'experimentalPlugin';
 
