@@ -40,15 +40,20 @@ $tb-foreground: map_merge(
     link: mat-color($mat-blue, 700),
   )
 );
+$tb-background: map_merge(
+  $mat-light-theme-background,
+  (
+    background: #fff,
+  )
+);
 
 $tb-theme: map_merge(
   $tb-theme,
   (
     foreground: $tb-foreground,
+    background: $tb-background,
   )
 );
-
-$tb-background: map-get($tb-theme, background);
 
 $tb-dark-theme: mat-dark-theme($tb-primary, $tb-accent, $tb-warn);
 $tb-dark-foreground: map-get($tb-dark-theme, foreground);
