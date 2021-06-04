@@ -1,8 +1,13 @@
-load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_ts_library")
+load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_sass_binary", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])
+
+tf_sass_binary(
+    name = "plugins_component_styles",
+    src = "plugins_component.scss",
+)
 
 tf_ng_module(
     name = "plugins",
@@ -12,6 +17,7 @@ tf_ng_module(
         "plugins_module.ts",
     ],
     assets = [
+        ":plugins_component_styles",
         "plugins_component.ng.html",
     ],
     deps = [

@@ -20,6 +20,7 @@ limitations under the License.
 }
 
 nav {
+  background-color: mat-color($tb-background, background);
   border-right: 1px solid mat-color($tb-foreground, border);
   flex: none;
   width: 340px;

@@ -76,12 +76,12 @@ class TfRunsSelector extends LegacyElementMixin(PolymerElement) {
         padding-bottom: 10px;
       }
       #top-text {
+        color: var(--tb-secondary-text-color);
         width: 100%;
         flex-grow: 0;
         flex-shrink: 0;
         padding-right: 16px;
         box-sizing: border-box;
-        color: var(--paper-grey-800);
       }
       tf-multi-checkbox {
         display: flex;
@@ -95,7 +95,7 @@ class TfRunsSelector extends LegacyElementMixin(PolymerElement) {
         color: var(--tb-ui-dark-accent);
       }
       #tooltip-help {
-        color: var(--paper-grey-800);
+        color: var(--tb-secondary-text-color);
         margin: 0;
         font-weight: normal;
         font-size: 14px;

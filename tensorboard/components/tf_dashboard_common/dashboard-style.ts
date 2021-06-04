@@ -64,7 +64,7 @@ registerStyleDomModule({
       }
 
       .sidebar-section {
-        border-top: solid 1px rgba(0, 0, 0, 0.12);
+        border-top: solid 1px var(--tb-ui-border);
         margin-right: 10px;
         padding: var(--sidebar-vertical-padding) 0
           var(--sidebar-vertical-padding) var(--sidebar-left-padding);
@@ -99,7 +99,7 @@ registerStyleDomModule({
       }
 
       .sidebar-section h3 {
-        color: var(--paper-grey-800);
+        color: var(--tb-secondary-text-color);
         display: block;
         font-size: 14px;
         font-weight: normal;

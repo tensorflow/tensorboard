@@ -50,7 +50,7 @@ class TfSmoothingInput extends PolymerElement {
     </div>
     <style>
       .title {
-        color: var(--paper-grey-800);
+        color: var(--tb-secondary-text-color);
         margin: 0;
         font-weight: normal;
         font-size: 14px;

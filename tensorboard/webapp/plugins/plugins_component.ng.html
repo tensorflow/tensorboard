@@ -14,7 +14,15 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<div #pluginContainer class="plugins">
+<div
+  #pluginContainer
+  [ngClass]="{
+    'plugins': true,
+    'is-first-party-plugin': (
+      activeKnownPlugin?.loading_mechanism.type !== LoadingMechanismType.IFRAME
+    )
+  }"
+>
   <!-- let Polymer-based components render from JS -->
   <!-- let iframe based component render from JS to prevent flickering from prop changes. -->
 
