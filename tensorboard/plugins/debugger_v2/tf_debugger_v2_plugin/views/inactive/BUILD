@@ -4,19 +4,12 @@ package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])
 
-py_binary(
-    name = "inline_images",
-    srcs = ["inline_images.py"],
-    python_version = "PY3",
-    srcs_version = "PY3",
-)
-
 genrule(
     name = "gen_inactive_component.ng.html",
     srcs = ["inactive_component.uninlined.ng.html"] + glob(["images/*.png"]),
     outs = ["inactive_component.ng.html"],
-    cmd = "$(execpath //tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/inactive:inline_images) $(SRCS) >'$@'",
-    exec_tools = [":inline_images"],
+    cmd = "$(execpath //tensorboard/defs:inline_images) $(SRCS) >'$@'",
+    exec_tools = ["//tensorboard/defs:inline_images"],
 )
 
 tf_ng_module(
