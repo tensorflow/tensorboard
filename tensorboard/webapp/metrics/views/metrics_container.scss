@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 @import 'tensorboard/webapp/theme/tb_theme';
 
-.plugin-view {
+:host {
   display: flex;
   height: 100%;
 }

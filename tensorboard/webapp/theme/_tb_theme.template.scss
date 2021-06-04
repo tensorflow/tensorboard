@@ -96,24 +96,24 @@ $tb-dark-background: map-get($tb-dark-theme, background);
   $object-name,
   $foreground-or-background,
   $dark-foreground-or-background,
-  $property,
-  $name,
-  $value
+  $css-property,
+  $dict-name,
+  $css-value-prefix
 ) {
-  $light-color: map-get($foreground-or-background, $name);
-  $dark-color: map-get($dark-foreground-or-background, $name);
+  $light-color: map-get($foreground-or-background, $dict-name);
+  $dark-color: map-get($dark-foreground-or-background, $dict-name);
 
   @if (not $light-color) {
-    @error "Name '#{$name}' is not found in light #{$object-name}.";
+    @error "Name '#{$dict-name}' is not found in light #{$object-name}.";
   }
   @if (not $dark-color) {
-    @error "Name '#{$name}' is not found in dark #{$object-name}.";
+    @error "Name '#{$dict-name}' is not found in dark #{$object-name}.";
   }
 
-  #{$property}: $value $light-color;
+  #{$css-property}: $css-value-prefix $light-color;
 
   @include tb-dark-theme {
-    #{$property}: $value $dark-color;
+    #{$css-property}: $css-value-prefix $dark-color;
   }
 }
 
@@ -139,14 +139,18 @@ $tb-dark-background: map-get($tb-dark-theme, background);
  *   @include tb-theme-foreground-prop(color, secondary-text);
  * }
  */
-@mixin tb-theme-foreground-prop($property, $name, $value: null) {
+@mixin tb-theme-foreground-prop(
+  $css-property,
+  $dict-name,
+  $css-value-prefix: null
+) {
   @include _interal-tb-theme-prop-color(
     foreground,
     $tb-foreground,
     $tb-dark-foreground,
-    $property,
-    $name,
-    $value
+    $css-property,
+    $dict-name,
+    $css-value-prefix
   );
 }
 
@@ -168,14 +172,18 @@ $tb-dark-background: map-get($tb-dark-theme, background);
  *   // }
  * }
  */
-@mixin tb-theme-background-prop($property, $name, $value: null) {
+@mixin tb-theme-background-prop(
+  $css-property,
+  $dict-name,
+  $css-value-prefix: null
+) {
   @include _interal-tb-theme-prop-color(
     background,
     $tb-background,
     $tb-dark-background,
-    $property,
-    $name,
-    $value
+    $css-property,
+    $dict-name,
+    $css-value-prefix
   );
 }
 
