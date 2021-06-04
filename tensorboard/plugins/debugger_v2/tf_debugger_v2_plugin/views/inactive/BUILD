@@ -1,5 +1,4 @@
-load("//tensorboard/defs:defs.bzl", "tf_ng_module")
-load("//tensorboard/defs/internal:resource.bzl", "tf_inline_images")
+load("//tensorboard/defs:defs.bzl", "tf_inline_images", "tf_ng_module")
 
 package(default_visibility = ["//tensorboard:internal"])
 

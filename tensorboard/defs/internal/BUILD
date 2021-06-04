@@ -24,10 +24,3 @@ filegroup(
         "@npm//:node_modules/tslib/tslib.js",
     ],
 )
-
-py_binary(
-    name = "inline_images",
-    srcs = ["inline_images.py"],
-    python_version = "PY3",
-    srcs_version = "PY3",
-)

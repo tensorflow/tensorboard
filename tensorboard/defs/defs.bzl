@@ -200,3 +200,24 @@ def tf_ng_module(assets = [], **kwargs):
         angular_assets = assets,
         **kwargs
     )
+
+def tf_inline_images(name, html_template, images, out):
+    """Inline png images in html.
+
+    Replaces %*.png% in the input .html file with a data URI containing the
+    base64-encoded image content of the corresopnding .png files in the images/
+    subdirectory.
+
+   Args:
+     name: Name of the rule.
+     html_template: Name of the uninlined .html file.
+     images: .png images to be inlined.
+     out: Name of the output (inlined) .html file.
+    """
+    native.genrule(
+        name=name,
+        srcs=[html_template] + images,
+        outs=[out],
+        cmd="$(execpath //tensorboard/defs:inline_images) $(SRCS) >'$@'",
+        exec_tools=["//tensorboard/defs:inline_images"],
+    )
