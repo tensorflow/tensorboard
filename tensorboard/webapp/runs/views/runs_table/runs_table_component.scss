@@ -45,24 +45,21 @@ $_font-size: 13px;
   }
 
   mat-paginator {
-    border-top: 1px solid mat-color($tb-foreground, border);
+    @include tb-theme-foreground-prop(border-top, border, 1px solid);
     padding-bottom: 12px;
   }
 }
-
-$_border-color: #0000001f;
 
 [role='table'] {
   display: table;
   width: 100%;
 
   .header {
-    color: mat-color($tb-foreground, text);
     white-space: nowrap;
 
     // Allows table header to remain sticky to the scrollable container.
     [role='columnheader'] {
-      background-color: mat-color($tb-background, background);
+      @include tb-theme-background-prop(background-color, background);
       position: sticky;
       top: 0;
       // Unlike <thead><tr>, we need to manually "lift" the elements up so it
@@ -77,7 +74,7 @@ $_border-color: #0000001f;
     height: $_table-content-row-min-height;
 
     .column {
-      border-bottom: 1px solid $_border-color;
+      @include tb-theme-foreground-prop(border-bottom, border, 1px solid);
       display: table-cell;
 
       padding: 5px;
@@ -106,9 +103,7 @@ $_border-color: #0000001f;
 .no-runs {
   align-items: center;
   border: 0;
-  border-bottom-width: 1px;
-  border-color: $_border-color;
-  border-style: solid;
+  @include tb-theme-foreground-prop(border-bottom, border, 1px solid);
   display: flex;
   height: 48px;
   padding: 0 24px;
@@ -136,11 +131,11 @@ $_border-color: #0000001f;
 }
 
 .filter-row {
+  @include tb-theme-foreground-prop(border-bottom, border, 1px solid);
   display: flex;
   align-items: center;
   height: 48px;
   padding: 0 16px 0 21px;
-  border-bottom: 1px solid mat-color($tb-foreground, border);
 
   tb-filter-input {
     flex-grow: 1;
@@ -195,5 +190,13 @@ $_border-color: #0000001f;
   .mat-checkbox-label {
     overflow: hidden;
     text-overflow: ellipsis;
+  }
+}
+
+@include tb-dark-theme {
+  :host.flex-layout {
+    mat-paginator {
+      border-top-color: mat-color($tb-dark-foreground, border);
+    }
   }
 }

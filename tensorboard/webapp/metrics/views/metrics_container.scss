@@ -24,6 +24,11 @@ nav {
   border-right: 1px solid mat-color($tb-foreground, border);
   flex: none;
   width: 340px;
+
+  @include tb-dark-theme {
+    background-color: map-get($tb-dark-background, background);
+    border-right-color: mat-color($tb-dark-foreground, border);
+  }
 }
 
 metrics-main-view {

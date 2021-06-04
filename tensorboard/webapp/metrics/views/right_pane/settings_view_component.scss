@@ -15,17 +15,17 @@ limitations under the License.
 @import 'tensorboard/webapp/theme/tb_theme';
 
 :host {
-  color: mat-color($tb-foreground, secondary-text);
+  @include tb-theme-foreground-prop(color, secondary-text);
   font-size: 12px;
 }
 
 section {
-  border-bottom: 1px solid mat-color($tb-foreground, border);
+  @include tb-theme-foreground-prop(border-bottom, border, 1px solid);
   padding: 16px;
 }
 
 .section-title {
-  color: mat-color($tb-foreground, text);
+  @include tb-theme-foreground-prop(color, text);
   text-transform: uppercase;
   font-weight: 500;
   font-size: 13px;
@@ -53,12 +53,18 @@ section .control-row:not(:last-child) {
   }
 
   .slider-input {
+    background-color: inherit;
     border: 1px solid mat-color($tf-slate, 500);
     border-radius: 2px;
     box-sizing: border-box;
+    color: inherit;
     height: 100%;
     margin-left: 12px;
     padding: 0 4px;
+
+    @include tb-dark-theme {
+      border-color: mat-color($tf-slate, 700);
+    }
   }
 }
 

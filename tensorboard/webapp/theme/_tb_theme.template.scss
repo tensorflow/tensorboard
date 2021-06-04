@@ -40,6 +40,7 @@ $tb-foreground: map_merge(
     link: mat-color($mat-blue, 700),
   )
 );
+
 $tb-background: map_merge(
   $mat-light-theme-background,
   (
@@ -57,9 +58,32 @@ $tb-theme: map_merge(
 );
 
 $tb-dark-theme: mat-dark-theme($tb-primary, $tb-accent, $tb-warn);
-$tb-dark-foreground: map-get($tb-dark-theme, foreground);
+$tb-dark-foreground: map_merge(
+  map-get($tb-dark-theme, foreground),
+  (
+    border: #555,
+  )
+);
 $tb-dark-background: map-get($tb-dark-theme, background);
 
+/**
+ * Mixin to facilitate styling an Angular component for the dark mode.
+ * For customization that uses theming object (tb-foreground or tb-background),
+ * please refer to `tb-theme-foreground-prop` and `tb-theme-background-prop`.
+ *
+ * For a large amount of customization, instead of the *-prop API, prefer to use
+ * this tb-dark-theme mixin.
+ *
+ * Example usage:
+ *
+ * div {
+ *   color: red;
+ *   background: blue;
+ *   @include tb-dark-theme {
+ *     background: purple;
+ *   }
+ * }
+ */
 @mixin tb-dark-theme {
   @each $selector in & {
     @at-root :host-context(body.dark-mode) #{$selector} {
@@ -68,12 +92,109 @@ $tb-dark-background: map-get($tb-dark-theme, background);
   }
 }
 
+@mixin _interal-tb-theme-prop-color(
+  $object-name,
+  $foreground-or-background,
+  $dark-foreground-or-background,
+  $css-property,
+  $dict-name,
+  $css-value-prefix
+) {
+  $light-color: map-get($foreground-or-background, $dict-name);
+  $dark-color: map-get($dark-foreground-or-background, $dict-name);
+
+  @if (not $light-color) {
+    @error "Name '#{$dict-name}' is not found in light #{$object-name}.";
+  }
+  @if (not $dark-color) {
+    @error "Name '#{$dict-name}' is not found in dark #{$object-name}.";
+  }
+
+  #{$css-property}: $css-value-prefix $light-color;
+
+  @include tb-dark-theme {
+    #{$css-property}: $css-value-prefix $dark-color;
+  }
+}
+
+/**
+ * Styles an Angular component for a given CSS property using foreground theming
+ * dictionary. This mixin also facilitates theming for the dark mode.
+ *
+ * Example usage:
+ *
+ * div {
+ *   color: red;
+ *   @include tb-theme-foreground-prop(border-left, border, 5px solid);
+ *   // `tb-foreground` has the `border` key. Above generates:
+ *   // div[ngcomponentweirdid] {
+ *   //   border-left: 1px solid map_get($tb-foreground, border);
+ *   // }
+ *   // :host-context(body.dark-mode) div[ngcomponentweirdid] {
+ *   //   border-left: 1px solid map_get($tb-dark-foreground, border);
+ *   // }
+ *   //
+ *   // Third argument is optional. In the example below, `color` only takes
+ *   // color value so it is not needed.
+ *   @include tb-theme-foreground-prop(color, secondary-text);
+ * }
+ */
+@mixin tb-theme-foreground-prop(
+  $css-property,
+  $dict-name,
+  $css-value-prefix: null
+) {
+  @include _interal-tb-theme-prop-color(
+    foreground,
+    $tb-foreground,
+    $tb-dark-foreground,
+    $css-property,
+    $dict-name,
+    $css-value-prefix
+  );
+}
+
+/**
+ * Styles an Angular component for a given CSS property using background theming
+ * dictionary. This mixin also facilitates theming for the dark mode.
+ *
+ * Example usage:
+ *
+ * div {
+ *   color: red;
+ *   @include tb-theme-background-prop(backgroud-color, background);
+ *   // Above generates:
+ *   // div[ngcomponentweirdid] {
+ *   //   backgroud-color: map_get($tb-background, background);
+ *   // }
+ *   // :host-context(body.dark-mode) div[ngcomponentweirdid] {
+ *   //   backgroud-color: map_get($tb-dark-background, background);
+ *   // }
+ * }
+ */
+@mixin tb-theme-background-prop(
+  $css-property,
+  $dict-name,
+  $css-value-prefix: null
+) {
+  @include _interal-tb-theme-prop-color(
+    background,
+    $tb-background,
+    $tb-dark-background,
+    $css-property,
+    $dict-name,
+    $css-value-prefix
+  );
+}
+
 // Apply themed style for the global stylesheet (styles.scss).
 @mixin tb-global-themed-styles() {
   // Include all theme-styles for the components based on the current theme.
   @include angular-material-theme($tb-theme);
 
-  @include tb-dark-theme {
+  // Cannot use `tb-dark-theme` as :host-context in the global stylesheet is
+  // meaningless.
+  body.dark-mode {
     background-color: map-get($tb-dark-background, background);
 
     @include angular-material-theme($tb-dark-theme);

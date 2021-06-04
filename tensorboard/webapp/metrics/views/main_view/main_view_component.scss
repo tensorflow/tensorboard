@@ -15,8 +15,6 @@ limitations under the License.
 @import 'tensorboard/webapp/theme/tb_theme';
 @import '../common';
 
-$_foreground-border-color: mat-color($tb-foreground, border);
-
 :host {
   display: flex;
   flex-direction: column;
@@ -24,21 +22,20 @@ $_foreground-border-color: mat-color($tb-foreground, border);
 }
 
 .toolbar {
+  @include tb-theme-foreground-prop(border-bottom, border, 1px solid);
   flex: none;
   display: flex;
   align-items: center;
   justify-content: space-between;
   height: 48px;
   padding: 0 $metrics-preferred-gap;
-  background-color: #fff;
-  border-bottom: 1px solid $_foreground-border-color;
 
   metrics-tag-filter {
     flex: 1 1 100px;
   }
 
   .right-items {
-    border-left: 1px solid $_foreground-border-color;
+    @include tb-theme-foreground-prop(border-left, border, 1px solid);
     margin-left: $metrics-preferred-gap;
     padding-left: $metrics-preferred-gap;
   }
@@ -64,24 +61,28 @@ $_foreground-border-color: mat-color($tb-foreground, border);
   display: flex;
   flex-direction: column;
 
+  @include tb-dark-theme {
+    // There are no slate color that looks very natural and nice.
+    background-color: #3a3a3a;
+  }
+
   metrics-filtered-view,
   metrics-pinned-view {
-    border-bottom: 1px solid $_foreground-border-color;
+    @include tb-theme-foreground-prop(border-bottom, border, 1px solid);
   }
 }
 
 .sidebar {
+  @include tb-theme-foreground-prop(border-left, border, 1px solid);
   flex: 0 0 250px;
-  background-color: #fff;
-  border-left: 1px solid $_foreground-border-color;
 
   .header {
+    @include tb-theme-foreground-prop(border-bottom, border, 1px solid);
     display: flex;
     align-items: center;
     justify-content: space-between;
     height: 42px;
     padding: 0 $metrics-preferred-gap;
-    border-bottom: 1px solid $_foreground-border-color;
 
     .title {
       font-size: 18px;
@@ -93,12 +94,16 @@ $_foreground-border-color: mat-color($tb-foreground, border);
 }
 
 /** TODO(psybuzz): consider making a tb-button instead. */
-.settings-button {
+:host .settings-button {
   color: mat-color($tb-foreground, secondary-text);
   display: inline-flex;
 
+  @include tb-dark-theme {
+    color: mat-color($tb-dark-foreground, secondary-text);
+  }
+
   &.checked {
-    background-color: mat-color($mat-gray, 300);
+    @include tb-theme-background-prop(background-color, selected-button);
     border-color: mat-color($mat-gray, 300);
   }
 

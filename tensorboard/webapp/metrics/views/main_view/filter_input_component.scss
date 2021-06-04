@@ -24,7 +24,7 @@ tb-filter-input {
 }
 
 :host {
-  color: mat-color($tb-foreground, text);
+  @include tb-theme-foreground-prop(color, text);
 
   &:not(.valid) {
     $_error-color: mat-color($tb-warn, 800);

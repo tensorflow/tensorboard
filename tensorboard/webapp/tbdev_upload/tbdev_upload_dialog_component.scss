@@ -34,7 +34,7 @@ h3 {
 }
 
 p {
-  color: map-get($tb-foreground, text);
+  @include tb-theme-foreground-prop(color, text);
   font-size: 12px;
   line-height: 1.5;
 }
@@ -51,6 +51,10 @@ p {
   display: flex;
   justify-content: space-between;
   padding: 2px 12px;
+
+  @include tb-dark-theme {
+    background-color: mat-color($mat-grey, 700);
+  }
 }
 
 pre {

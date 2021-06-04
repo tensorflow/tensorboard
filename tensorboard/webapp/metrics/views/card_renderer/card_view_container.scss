@@ -14,8 +14,6 @@ limitations under the License.
 ==============================================================================*/
 @import 'tensorboard/webapp/theme/tb_theme';
 
-$_background: map-get($tb-theme, background);
-
 :host {
-  background-color: mat-color($_background, card);
+  @include tb-theme-background-prop(background-color, background);
 }

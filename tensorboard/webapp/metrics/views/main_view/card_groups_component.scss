@@ -17,10 +17,9 @@ limitations under the License.
 
 .group-toolbar {
   @include metrics-card-group-toolbar;
+  @include tb-theme-foreground-prop(border-top, border, 1px solid);
   display: flex;
   align-items: center;
-  border-top: 1px solid mat-color($tb-foreground, border);
-  border-bottom: 1px solid mat-color($tb-foreground, border);
 }
 
 .card-group:first-of-type .group-toolbar {
