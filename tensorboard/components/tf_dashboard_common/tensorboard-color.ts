@@ -41,7 +41,7 @@ style.textContent = `
     --primary-text-color: #fff;
     --secondary-text-color: var(--paper-grey-400);
     --primary-background-color: #303030;  /* material grey A400. */
-    --secondary-background-color: #505050;
+    --secondary-background-color: #3a3a3a;
   }
 `;
 document.head.appendChild(style);

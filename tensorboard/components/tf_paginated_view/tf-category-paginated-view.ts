@@ -146,7 +146,7 @@ class TfCategoryPaginatedView<CategoryItem> extends TfDomRepeat<CategoryItem> {
       }
 
       .heading {
-        background-color: inherit;
+        background-color: var(--primary-background-color);
         border: none;
         color: inherit;
         cursor: pointer;
@@ -205,7 +205,7 @@ class TfCategoryPaginatedView<CategoryItem> extends TfDomRepeat<CategoryItem> {
       .content {
         display: flex;
         flex-direction: column;
-        background: inherit;
+        background-color: var(--primary-background-color);
         border-bottom-left-radius: 2px;
         border-bottom-right-radius: 2px;
         border-top: none;
