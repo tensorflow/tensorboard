@@ -164,8 +164,7 @@ class MeshDashboard extends PolymerElement {
         display: block;
         padding: 5px;
       }
-      .sidebar-section h3.title {
-        color: var(--paper-grey-800);
+      .sidebar-section h3 {
         margin: 0;
         font-weight: normal;
         font-size: 14px;

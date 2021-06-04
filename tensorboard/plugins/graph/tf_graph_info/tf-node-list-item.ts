@@ -27,7 +27,7 @@ class TfNodeListItem extends LegacyElementMixin(PolymerElement) {
     <style>
       #list-item {
         width: 100%;
-        color: #565656;
+        color: var(--secondary-text-color);
         font-size: 11pt;
         font-weight: 400;
         position: relative;
@@ -36,6 +36,11 @@ class TfNodeListItem extends LegacyElementMixin(PolymerElement) {
 
       #list-item:hover {
         background-color: var(--google-yellow-100);
+      }
+
+      :host-context(body.dark-mode) #list-item:hover {
+        background-color: var(--paper-yellow-900);
+        color: #fff;
       }
 
       .clickable {

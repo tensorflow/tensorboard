@@ -113,16 +113,24 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
   static readonly template = html`
     <style>
       :host {
-        color: gray;
+        color: #555;
         display: flex;
         flex-direction: column;
         font-size: 12px;
         width: 100%;
+        --tb-graph-controls-title-color: #000;
+        --tb-graph-controls-legend-text-color: #000;
         --tb-graph-controls-text-color: #555;
         --tb-graph-controls-title-font-size: 14px;
         --tb-graph-controls-subtitle-font-size: 14px;
         --paper-input-container-shared-input-style_-_font-size: 14px;
         --paper-font-subhead_-_font-size: 14px;
+      }
+
+      :host-context(body.dark-mode) {
+        --tb-graph-controls-title-color: #fff;
+        --tb-graph-controls-legend-text-color: #f3f3f3;
+        --tb-graph-controls-text-color: #eee;
       }
 
       paper-dropdown-menu {
@@ -167,7 +175,7 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
       }
 
       .legend-holder {
-        background: #e9e9e9;
+        background: var(--secondary-background-color);
         box-sizing: border-box;
         color: var(--tb-graph-controls-text-color);
         width: 100%;
@@ -181,6 +189,7 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
         border-right: none;
         border-left: none;
         cursor: pointer;
+        color: var(--tb-graph-controls-legend-text-color);
         font: inherit;
         display: flex;
         align-items: center;
@@ -244,7 +253,7 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
       .title {
         font-size: var(--tb-graph-controls-title-font-size);
         margin: 8px 5px 8px 0;
-        color: black;
+        color: var(--tb-graph-controls-title-color);
       }
       .title small {
         font-weight: normal;

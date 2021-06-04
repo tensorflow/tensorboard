@@ -32,9 +32,14 @@ class TfDashboardLayout extends PolymerElement {
     <style include="scrollbar-style"></style>
     <style>
       :host {
+        background-color: #f5f5f5;
         display: flex;
         flex-direction: row;
         height: 100%;
+      }
+
+      :host-context(body.dark-mode) {
+        background-color: var(--secondary-background-color);
       }
 
       #sidebar {

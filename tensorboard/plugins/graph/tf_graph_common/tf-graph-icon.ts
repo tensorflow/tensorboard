@@ -36,6 +36,10 @@ class TfGraphIcon extends LegacyElementMixin(PolymerElement) {
         font-size: 0;
       }
 
+      :host-context(body.dark-mode) svg {
+        filter: invert(1);
+      }
+
       .faded-rect {
         fill: url(#rectHatch);
       }

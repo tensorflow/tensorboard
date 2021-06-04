@@ -43,7 +43,8 @@ $tb-foreground: map_merge(
 $tb-background: map_merge(
   $mat-light-theme-background,
   (
-    background: #fff,
+    // Default is `map.get($grey-palette, 50)`.
+    background: #fff
   )
 );
 
@@ -60,8 +61,10 @@ $tb-dark-foreground: map-get($tb-dark-theme, foreground);
 $tb-dark-background: map-get($tb-dark-theme, background);
 
 @mixin tb-dark-theme {
-  @at-root :host-context(body.dark-mode) #{&} {
-    @content;
+  @each $selector in & {
+    @at-root :host-context(body.dark-mode) #{$selector} {
+      @content;
+    }
   }
 }
 

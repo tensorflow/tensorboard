@@ -47,7 +47,7 @@ class TfGraphOpCompatCard extends LegacyElementMixin(PolymerElement) {
 
       paper-item {
         padding: 0;
-        background: #e9e9e9;
+        background: var(--secondary-background-color);
       }
 
       paper-item-body[two-line] {
@@ -70,8 +70,8 @@ class TfGraphOpCompatCard extends LegacyElementMixin(PolymerElement) {
       }
 
       .subtitle {
+        color: var(--secondary-text-color);
         font-size: 12pt;
-        color: #5e5e5e;
       }
 
       .toggle-button {
@@ -88,6 +88,14 @@ class TfGraphOpCompatCard extends LegacyElementMixin(PolymerElement) {
       div.op-compat-display {
         margin-top: 10px;
         display: inline-block;
+      }
+
+      /**
+       * Sadly, because the whole body is inverted in color, legends also need
+       * to be inverted.
+       **/
+      :host-context(body.dark-mode) div.op-compat-display {
+        filter: invert(1);
       }
 
       svg.op-compat {
