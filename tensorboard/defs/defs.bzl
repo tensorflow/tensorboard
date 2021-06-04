@@ -223,7 +223,7 @@ def tf_inline_pngs(name, html_template, images, out):
             "path_to/my_file.png",
         ] + glob("some_folder/*.png"),
         out = "my_filename.html",
-    )   
+    )
 
    Args:
      name: Name of the rule.
