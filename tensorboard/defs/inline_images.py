@@ -27,6 +27,7 @@ import sys
 MIME_TYPE = "image/png"
 
 
+# TODO(#5039): Generalize this utility for more than just PNGs using mimetypes.
 def inline_images():
     input_html_path = sys.argv[1]
     image_files = sys.argv[2:]

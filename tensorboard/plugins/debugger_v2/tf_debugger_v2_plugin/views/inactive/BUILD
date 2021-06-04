@@ -1,10 +1,10 @@
-load("//tensorboard/defs:defs.bzl", "tf_inline_images", "tf_ng_module")
+load("//tensorboard/defs:defs.bzl", "tf_inline_pngs", "tf_ng_module")
 
 package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])
 
-tf_inline_images(
+tf_inline_pngs(
     name = "gen_inactive_component.ng.html",
     out = "inactive_component.ng.html",
     html_template = "inactive_component.uninlined.ng.html",
