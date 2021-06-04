@@ -1,15 +1,15 @@
 load("//tensorboard/defs:defs.bzl", "tf_ng_module")
+load("//tensorboard/defs/internal:resource.bzl", "tf_inline_images")
 
 package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])
 
-genrule(
+tf_inline_images(
     name = "gen_inactive_component.ng.html",
-    srcs = ["inactive_component.uninlined.ng.html"] + glob(["images/*.png"]),
-    outs = ["inactive_component.ng.html"],
-    cmd = "$(execpath //tensorboard/defs:inline_images) $(SRCS) >'$@'",
-    exec_tools = ["//tensorboard/defs:inline_images"],
+    out = "inactive_component.ng.html",
+    html_template = "inactive_component.uninlined.ng.html",
+    images = glob(["images/*.png"]),
 )
 
 tf_ng_module(

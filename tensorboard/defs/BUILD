@@ -6,13 +6,6 @@ package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])
 
-py_binary(
-    name = "inline_images",
-    srcs = ["inline_images.py"],
-    python_version = "PY3",
-    srcs_version = "PY3",
-)
-
 py_test(
     name = "tb_proto_library_test",
     srcs = ["tb_proto_library_test.py"],
