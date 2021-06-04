@@ -86,9 +86,9 @@ export class QueryParamsFeatureFlagDataSource extends TBFeatureFlagDataSource {
     // it is not definitive otherwise (i.e., query params can override it).
     // TODO(stephanwlee): enable the feature when most of the UI is actually
     // ready for usage.
-    if (enableDarkMode && false) {
-      featureFlags.enableDarkMode = true;
-    }
+    // if (enableDarkMode) {
+    //   featureFlags.enableDarkMode = true;
+    // }
 
     return featureFlags;
   }
