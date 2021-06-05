@@ -305,7 +305,7 @@ export class ThreeRenderer implements ObjectRenderer<CacheValue> {
   }
 
   setUseDarkMode(useDarkMode: boolean): void {
-    this.backgroundColor = useDarkMode ? '#303030' : '#ffffff';
+    this.backgroundColor = useDarkMode ? '#303030' : '#fff';
     // Normally, we should invoke `setClearColor` but we are using
     // `alpha: false` mode in threejs (transparent) so it does not matter.
   }
