@@ -25,6 +25,10 @@ LOGDIR = "/tmp/histograms_demo"
 
 
 def run(k, step):
+    """
+    Arguments:
+        k: a float in the range [0, 1] that affects the histogram values written by the run.
+    """
     # Make a normal distribution, with a shifting mean
     mean_moving_normal = tf.random.normal(shape=[1000], mean=(5 * k), stddev=1)
 
