@@ -24,7 +24,7 @@ import os
 LOGDIR = "/tmp/histograms_demo"
 
 
-def run(k):
+def run(k, step):
     # Make a normal distribution, with a shifting mean
     mean_moving_normal = tf.random.normal(shape=[1000], mean=(5 * k), stddev=1)
 
@@ -33,6 +33,7 @@ def run(k):
         "normal/moving_mean",
         mean_moving_normal,
         description="A normal distribution whose mean changes " "over time.",
+        step=step,
     )
 
     # Make a normal distribution with shrinking variance
@@ -43,6 +44,7 @@ def run(k):
         shrinking_normal,
         description="A normal distribution whose variance "
         "shrinks over time.",
+        step=step,
     )
 
     # Let's combine both of those distributions into one dataset
@@ -56,6 +58,7 @@ def run(k):
         "shrinking variance. The result is a "
         "distribution that starts as unimodal and "
         "becomes more and more bimodal over time.",
+        step=step,
     )
 
     # Add a gamma distribution
@@ -65,6 +68,7 @@ def run(k):
         gamma,
         description="A gamma distribution whose shape "
         "parameter, α, changes over time.",
+        step=step,
     )
 
     # And a poisson distribution
@@ -74,12 +78,13 @@ def run(k):
         poisson,
         description="A Poisson distribution, which only "
         "takes on integer values.",
+        step=step,
     )
 
     # And a uniform distribution
     uniform = tf.random.uniform(shape=[1000], maxval=k * 10)
     tf.summary.histogram(
-        "uniform", uniform, description="A simple uniform distribution."
+        "uniform", uniform, description="A simple uniform distribution.", step=step,
     )
 
     # Finally, combine everything together!
@@ -98,6 +103,7 @@ def run(k):
         "uniform distribution, a gamma "
         "distribution, a Poisson distribution, and "
         "two normal distributions.",
+        step=step,
     )
 
 
@@ -107,10 +113,17 @@ def run_all(logdir, num_summaries=400):
     writer = tf.summary.create_file_writer(os.path.join(logdir, "my_run_name"))
     with writer.as_default():
         for step in range(num_summaries):
-            tf.summary.experimental.set_step(step)
             k = step / float(num_summaries)
-            run(k)
+            run(k, step)
             writer.flush()
+    print(
+        "To view results in your browser, run `tensorboard --logdir %s/my_run_name`"
+        % LOGDIR
+    )
+    print(
+        "Logs can be uploaded publicly to TensorBoard.dev via "
+        + "`tensorboard dev upload --logdir %s/my_run_name`" % LOGDIR
+    )
 
 
 def main(unused_argv):
