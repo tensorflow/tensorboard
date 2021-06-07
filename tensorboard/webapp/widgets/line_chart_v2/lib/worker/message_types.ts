@@ -27,6 +27,7 @@ export enum HostToGuestEvent {
   VIEW_BOX_UPDATED,
   INIT,
   DOM_RESIZED,
+  DARK_MODE_UPDATED,
 }
 
 export interface InitMessage {
@@ -36,6 +37,7 @@ export interface InitMessage {
   dim: Dimension;
   // Cannot support SVG in the offscreen.
   rendererType: RendererType.WEBGL;
+  useDarkMode: boolean;
 }
 
 export interface UpdateViewBoxMessage {
@@ -66,12 +68,18 @@ export interface ScaleUpdateMessage {
   scaleType: ScaleType;
 }
 
+export interface DarkModeUpdatedMessage {
+  type: HostToGuestEvent.DARK_MODE_UPDATED;
+  useDarkMode: boolean;
+}
+
 export type HostToGuestMessage =
-  | UpdateViewBoxMessage
+  | DarkModeUpdatedMessage
   | ResizeMessage
   | ScaleUpdateMessage
+  | SeriesMetadataChangedMessage
   | SeriesUpdateMessage
-  | SeriesMetadataChangedMessage;
+  | UpdateViewBoxMessage;
 
 export enum GuestToMainType {
   ON_REDRAW_END,

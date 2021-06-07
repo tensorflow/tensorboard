@@ -16,7 +16,7 @@ limitations under the License.
 -->
 
 <div
-  class="container"
+  [ngClass]="{'container': true, 'dark-mode': useDarkMode}"
   detectResize
   (onResize)="onViewResize()"
   [resizeEventDebouncePeriodInMs]="0"

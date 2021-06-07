@@ -68,6 +68,7 @@ export class WorkerChart implements Chart {
       devicePixelRatio: window.devicePixelRatio,
       dim: options.domDimension,
       rendererType: options.type,
+      useDarkMode: options.useDarkMode,
     };
 
     this.workerInstance.postMessage(initMessage, [canvas, channel.port2]);
@@ -119,6 +120,13 @@ export class WorkerChart implements Chart {
       // Need to transfer the ownership to the worker.
       [compactData.flattenedSeries]
     );
+  }
+
+  setUseDarkMode(useDarkMode: boolean): void {
+    this.sendMessage({
+      type: HostToGuestEvent.DARK_MODE_UPDATED,
+      useDarkMode,
+    });
   }
 
   private sendMessage(

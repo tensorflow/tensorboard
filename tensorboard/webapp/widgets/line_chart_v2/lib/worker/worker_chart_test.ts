@@ -47,6 +47,21 @@ describe('line_chart_v2/lib/worker_chart test', () => {
       callbacks: {onDrawEnd: onDrawEndSpy},
       container: document.createElement('canvas'),
       domDimension: {width: 100, height: 200},
+      useDarkMode: false,
+    });
+  });
+
+  it('posts dark mode change messages', () => {
+    chart.setUseDarkMode(false);
+    expect(channelTxSpy).toHaveBeenCalledWith({
+      type: HostToGuestEvent.DARK_MODE_UPDATED,
+      useDarkMode: false,
+    });
+
+    chart.setUseDarkMode(true);
+    expect(channelTxSpy).toHaveBeenCalledWith({
+      type: HostToGuestEvent.DARK_MODE_UPDATED,
+      useDarkMode: true,
     });
   });
 

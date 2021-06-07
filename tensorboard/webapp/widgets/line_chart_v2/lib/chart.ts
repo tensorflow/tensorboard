@@ -72,6 +72,8 @@ export class ChartImpl implements Chart {
       }
     }
 
+    this.renderer.setUseDarkMode(option.useDarkMode);
+
     this.seriesLineView = new SeriesLineView({
       renderer: this.renderer,
       coordinator: this.coordinator,
@@ -137,6 +139,11 @@ export class ChartImpl implements Chart {
 
   setData(data: DataSeries[]) {
     this.seriesLineView.setData(data);
+    this.scheduleRepaint();
+  }
+
+  setUseDarkMode(useDarkMode: boolean) {
+    this.renderer.setUseDarkMode(useDarkMode);
     this.scheduleRepaint();
   }
 

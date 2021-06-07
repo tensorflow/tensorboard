@@ -12,13 +12,15 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+@import 'tensorboard/webapp/theme/tb_theme';
+
 :host {
   contain: strict;
   display: inline-block;
 }
 
 .container {
-  background: #fff;
+  background: inherit;
   display: grid;
   height: 100%;
   overflow: hidden;
@@ -28,6 +30,13 @@ limitations under the License.
     'dot xaxis';
   grid-template-columns: 50px 1fr;
   grid-auto-rows: 1fr 30px;
+
+  // Unlike other Angular components, we may use this component outside
+  // of the Angular app and want to control the dark mode styling based on
+  // the component prop alone.
+  &.dark-mode {
+    color: map-get($tb-dark-foreground, text);
+  }
 }
 
 .series-view {

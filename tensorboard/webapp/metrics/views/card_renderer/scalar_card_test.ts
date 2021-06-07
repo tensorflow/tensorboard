@@ -97,6 +97,7 @@ class TestableLineChart {
   @Input() yScaleType!: ScaleType;
   @Input() ignoreYOutliers!: boolean;
   @Input() disableUpdate?: boolean;
+  @Input() useDarkMode?: boolean;
   @Input()
   tooltipTemplate!: TemplateRef<{data: TooltipDatum[]}>;
 
@@ -248,6 +249,7 @@ describe('scalar card', () => {
       TooltipSort.DEFAULT
     );
     store.overrideSelector(selectors.getRunColorMap, {});
+    store.overrideSelector(selectors.getDarkModeEnabled, false);
   });
 
   describe('basic renders', () => {
@@ -479,6 +481,21 @@ describe('scalar card', () => {
         ).toBe(undefined);
       }));
     });
+
+    it('sets useDarkMode when using dark mode', fakeAsync(() => {
+      store.overrideSelector(selectors.getDarkModeEnabled, false);
+      const fixture = createComponent('card1');
+      fixture.detectChanges();
+
+      const lineChartEl = fixture.debugElement.query(Selector.LINE_CHART);
+      expect(lineChartEl.componentInstance.useDarkMode).toBe(false);
+
+      store.overrideSelector(selectors.getDarkModeEnabled, true);
+      store.refreshState();
+      fixture.detectChanges();
+
+      expect(lineChartEl.componentInstance.useDarkMode).toBe(true);
+    }));
   });
 
   describe('displayName', () => {

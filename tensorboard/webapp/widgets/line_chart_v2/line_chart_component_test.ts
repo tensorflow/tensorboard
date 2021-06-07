@@ -53,6 +53,7 @@ class FakeGridComponent {
       [seriesMetadataMap]="seriesMetadataMap"
       [yScaleType]="yScaleType"
       [fixedViewBox]="fixedViewBox"
+      [useDarkMode]="useDarkMode"
     ></line-chart>
   `,
   styles: [
@@ -83,6 +84,9 @@ class TestableComponent {
 
   @Input()
   disableUpdate?: boolean;
+
+  @Input()
+  useDarkMode: boolean = false;
 
   // WebGL one is harder to test.
   preferredRendererType = RendererType.SVG;
@@ -614,6 +618,34 @@ describe('line_chart_v2/line_chart test', () => {
         [true],
         [false],
       ]);
+    });
+  });
+
+  describe('dark mode support', () => {
+    it('sets class dark-mode', () => {
+      const fixture = createComponent({
+        seriesData: [
+          buildSeries({
+            id: 'foo',
+            points: [
+              {x: 0, y: 0},
+              {x: 1, y: -1},
+              {x: 2, y: 1},
+            ],
+          }),
+        ],
+        seriesMetadataMap: {foo: buildMetadata({id: 'foo', visible: true})},
+        yScaleType: ScaleType.LINEAR,
+      });
+      fixture.componentInstance.useDarkMode = false;
+      fixture.detectChanges();
+
+      expect(fixture.debugElement.query(By.css('.dark-mode'))).toBeFalsy();
+
+      fixture.componentInstance.useDarkMode = true;
+      fixture.detectChanges();
+
+      expect(fixture.debugElement.query(By.css('.dark-mode'))).toBeTruthy();
     });
   });
 });

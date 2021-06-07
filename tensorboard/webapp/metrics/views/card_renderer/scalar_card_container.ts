@@ -39,6 +39,7 @@ import {State} from '../../../app_state';
 import {
   getCardPinnedState,
   getCurrentRouteRunSelection,
+  getDarkModeEnabled,
   getExperimentIdForRunId,
   getExperimentIdToAliasMap,
   getRun,
@@ -120,6 +121,7 @@ function areSeriesEqual(
       [tooltipSort]="tooltipSort$ | async"
       [xAxisType]="xAxisType$ | async"
       [xScaleType]="xScaleType$ | async"
+      [useDarkMode]="useDarkMode$ | async"
       (onFullSizeToggle)="onFullSizeToggle()"
       (onPinClicked)="pinStateChanged.emit($event)"
     ></scalar-card-component>
@@ -166,6 +168,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit {
     takeWhile((visible) => !visible, true)
   );
 
+  readonly useDarkMode$ = this.store.select(getDarkModeEnabled);
   readonly ignoreOutliers$ = this.store.select(getMetricsIgnoreOutliers);
   readonly tooltipSort$ = this.store.select(getMetricsTooltipSort);
   readonly xAxisType$ = this.store.select(getMetricsXAxisType);

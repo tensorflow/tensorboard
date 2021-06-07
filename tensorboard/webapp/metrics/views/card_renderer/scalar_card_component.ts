@@ -79,6 +79,7 @@ export class ScalarCardComponent<Downloader> {
   @Input() tooltipSort!: TooltipSort;
   @Input() xAxisType!: XAxisType;
   @Input() xScaleType!: ScaleType;
+  @Input() useDarkMode!: boolean;
 
   @Output() onFullSizeToggle = new EventEmitter<void>();
   @Output() onPinClicked = new EventEmitter<boolean>();
