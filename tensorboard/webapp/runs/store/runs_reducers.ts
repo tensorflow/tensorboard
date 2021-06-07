@@ -49,6 +49,8 @@ const {
     defaultRunColorForGroupBy: new Map(),
     groupKeyToColorString: new Map(),
     initialGroupBy: {key: GroupByKey.RUN},
+    colorGroupRegexString: '',
+    regexFilter: '',
   },
   {
     runIds: {},
@@ -288,6 +290,12 @@ const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
     nextRunColorOverride.set(runId, newColor);
 
     return {...state, runColorOverrideForGroupBy: nextRunColorOverride};
+  }),
+  on(runsActions.runSelectorRegexFilterChanged, (state, action) => {
+    return {
+      ...state,
+      regexFilter: action.regexString,
+    };
   })
 );
 
@@ -309,7 +317,6 @@ const {
       pageIndex: 0,
       pageSize: 10,
     },
-    regexFilter: '',
     sort: initialSort,
   },
   {}
@@ -332,7 +339,6 @@ const uiReducer: ActionReducer<RunsUiState, Action> = createReducer(
   on(runsActions.runSelectorRegexFilterChanged, (state, action) => {
     return {
       ...state,
-      regexFilter: action.regexString,
       paginationOption: {
         ...state.paginationOption,
         // Reset the page index to 0 to emulate mat-table behavior.

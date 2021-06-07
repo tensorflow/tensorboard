@@ -141,6 +141,16 @@ export const getRunGroupBy = createSelector(
   }
 );
 
+/**
+ * Returns Observable that emits regex filter on the run selector.
+ */
+export const getRunSelectorRegexFilter = createSelector(
+  getDataState,
+  (state: RunsDataState): string => {
+    return state.regexFilter;
+  }
+);
+
 const getUiState = createSelector(
   getRunsState,
   (state: RunsState): RunsUiState => {
@@ -155,16 +165,6 @@ export const getRunSelectorPaginationOption = createSelector(
   getUiState,
   (state: RunsUiState): {pageIndex: number; pageSize: number} => {
     return state.paginationOption;
-  }
-);
-
-/**
- * Returns Observable that emits regex filter on the run selector.
- */
-export const getRunSelectorRegexFilter = createSelector(
-  getUiState,
-  (state: RunsUiState): string => {
-    return state.regexFilter;
   }
 );
 

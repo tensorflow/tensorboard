@@ -60,11 +60,12 @@ export function buildRunsState(
       defaultRunColorForGroupBy: new Map(),
       groupKeyToColorString: new Map(),
       initialGroupBy: {key: GroupByKey.RUN},
+      colorGroupRegexString: '',
+      regexFilter: '',
       ...dataOverride,
     },
     ui: {
       paginationOption: {pageIndex: 0, pageSize: 0},
-      regexFilter: '',
       sort: {key: null, direction: SortDirection.UNSET},
       ...uiOverride,
     },

@@ -52,6 +52,8 @@ export interface RunsDataRoutefulState {
   groupKeyToColorString: Map<string, string>;
   userSetGroupBy?: GroupBy;
   initialGroupBy: GroupBy;
+  colorGroupRegexString: string;
+  regexFilter: string;
 }
 
 export interface RunsDataRoutelessState {
@@ -82,7 +84,6 @@ export type RunsDataState = RouteContextedState<
 
 export interface RunsUiRoutefulState {
   paginationOption: {pageIndex: number; pageSize: number};
-  regexFilter: string;
   sort: {key: SortKey | null; direction: SortDirection};
 }
 
