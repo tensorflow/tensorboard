@@ -59,6 +59,7 @@ limitations under the License.
 .op-type {
   @include debugger-op-type;
   direction: rtl;
+  display: block;
 }
 
 .tensor-container {

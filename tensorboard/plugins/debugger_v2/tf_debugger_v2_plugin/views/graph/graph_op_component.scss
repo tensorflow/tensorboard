@@ -64,6 +64,7 @@ limitations under the License.
 
 .op-type {
   @include debugger-op-type;
+  display: inline-block;
   margin-top: 3px;
 }
 
