@@ -84,7 +84,10 @@ def run(k, step):
     # And a uniform distribution
     uniform = tf.random.uniform(shape=[1000], maxval=k * 10)
     tf.summary.histogram(
-        "uniform", uniform, description="A simple uniform distribution.", step=step,
+        "uniform",
+        uniform,
+        description="A simple uniform distribution.",
+        step=step,
     )
 
     # Finally, combine everything together!
