@@ -109,6 +109,7 @@ describe('Source Code Component', () => {
 
     beforeEach(async () => {
       fixture = TestBed.createComponent(TestableComponent);
+      fixture.componentInstance.lines = lines1;
       fixture.detectChanges();
       await loadMonacoShim.loadMonaco();
       fixture.detectChanges();
@@ -116,7 +117,6 @@ describe('Source Code Component', () => {
 
     it('switches to a different line in the same file', () => {
       const component = fixture.componentInstance;
-      component.lines = lines1;
       component.focusedLineno = 2;
       fixture.detectChanges();
       component.focusedLineno = 1;

@@ -73,6 +73,7 @@ export class SourceCodeComponent implements OnChanges {
       this.editor = this.monaco.editor.create(
         this.codeViewerContainer.nativeElement,
         {
+          value: (this.lines ?? []).join('\n'),
           language: DEFAULT_CODE_LANGUAGE,
           readOnly: true,
           fontSize: DEFAULT_CODE_FONT_SIZE,
@@ -83,15 +84,8 @@ export class SourceCodeComponent implements OnChanges {
       );
     }
 
-    const currentLines: string[] | null = changes['monaco']
-      ? this.lines
-      : changes['lines']
-      ? changes['lines'].currentValue
-      : null;
-
-    if (currentLines) {
-      const value = currentLines.join('\n');
-      this.editor.setValue(value);
+    if (this.editor && changes['lines'] && this.lines) {
+      this.editor.setValue(this.lines.join('\n'));
     }
 
     const currentFocusedLineno: number | null = changes['monaco']
