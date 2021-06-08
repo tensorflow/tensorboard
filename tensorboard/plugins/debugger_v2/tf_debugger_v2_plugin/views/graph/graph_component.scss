@@ -12,6 +12,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+@import 'tensorboard/webapp/theme/tb_theme';
+@import '../common/lib';
 
 :host {
   overflow-y: auto;
@@ -50,10 +52,8 @@ limitations under the License.
 }
 
 .input-slot-header {
-  /** NOTE: If this is changed, change the corresponding color in
-      graph_execution_component.css as well.
-      TODO(b/160229578): deduplication using tf_sass_library. */
-  background-color: #fff099;
+  @include debugger-highlight-background;
+
   margin-bottom: 5px;
 }
 

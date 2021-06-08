@@ -12,10 +12,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+@import 'tensorboard/webapp/theme/tb_theme';
 
 .bottom-section {
   box-sizing: border-box;
-  border-top: 1px solid rgba(0, 0, 0, 0.12);
+  @include tb-theme-foreground-prop(border-top, border, 1px solid);
   display: flex;
   flex-grow: 1;
   height: 34%;
@@ -24,7 +25,6 @@ limitations under the License.
 
 .debugger-container {
   box-sizing: border-box;
-  background-color: #fff;
   height: 100%;
   overflow: hidden;
 }
@@ -38,7 +38,7 @@ limitations under the License.
 }
 
 tf-debugger-v2-alerts {
-  border-right: 1px solid rgba(0, 0, 0, 0.12);
+  @include tb-theme-foreground-prop(border-right, border, 1px solid);
   display: inline-block;
   margin-right: 10px;
   min-width: 160px;
@@ -77,7 +77,7 @@ tf-debugger-v2-timeline {
 }
 
 tf-debugger-v2-graph {
-  border-top: 1px solid rgba(0, 0, 0, 0.12);
+  @include tb-theme-foreground-prop(border-top, border, 1px solid);
   display: block;
   margin-top: 5px;
 }

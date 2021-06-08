@@ -12,9 +12,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+@import 'tensorboard/webapp/theme/tb_theme';
+@import '../common/lib';
 
 .graph-executions-container {
-  border-left: 1px solid rgba(0, 0, 0, 0.12);
+  @include tb-theme-foreground-prop(border-left, border, 1px solid);
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -27,7 +29,7 @@ limitations under the License.
 }
 
 .graph-execution-index {
-  color: #757575;
+  @include tb-theme-foreground-prop(color, secondary-text);
   display: inline-block;
   padding-right: 4px;
   text-align: right;
@@ -47,9 +49,7 @@ limitations under the License.
 }
 
 .input-of-focus {
-  /** NOTE: If this is changed, change the corresponding color in
-      graph_component.css as well. */
-  background-color: #fff099;
+  @include debugger-highlight-background;
 }
 
 .loading-spinner {
@@ -57,17 +57,9 @@ limitations under the License.
 }
 
 .op-type {
-  background-color: #e3e5e8;
-  border: 1px solid #c0c0c0;
-  border-radius: 4px;
+  @include debugger-op-type;
   direction: rtl;
   display: block;
-  font-family: 'Roboto Mono', monospace;
-  font-size: 10px;
-  height: 14px;
-  line-height: 14px;
-  padding: 1px 3px;
-  width: max-content;
 }
 
 .tensor-container {
@@ -75,7 +67,7 @@ limitations under the License.
 }
 
 .tensor-item {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+  @include tb-theme-foreground-prop(border-bottom, border, 1px solid);
   display: flex;
   flex-wrap: nowrap;
   height: 38px;
@@ -90,6 +82,7 @@ limitations under the License.
   background-color: transparent;
   border: none;
   box-sizing: border-box;
+  color: inherit;
   cursor: pointer;
   direction: rtl;
   display: block;
