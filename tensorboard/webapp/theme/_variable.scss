@@ -18,3 +18,6 @@ limitations under the License.
 $tb-primary: mat-palette($tf-orange, 700, 400, 800);
 $tb-accent: mat-palette($tf-orange);
 $tb-warn: mat-palette($mat-red);
+
+$tb-dark-primary: mat-palette($tf-orange, 800, 600, 900);
+$tb-dark-accent: $tb-dark-primary;
