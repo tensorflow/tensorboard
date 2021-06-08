@@ -127,7 +127,7 @@ export const getRunUserSetGroupBy = createSelector(
   getDataState,
   (dataState: RunsDataState): GroupBy | null => {
     const result: GroupBy = {key: null};
-    result.key =  dataState.userSetGroupBy ?? null;
+    result.key = dataState.userSetGroupBy ?? null;
     if (dataState.userSetGroupBy === GroupByKey.REGEX) {
       result.regexString = dataState.colorGroupRegexString ?? null;
     }
@@ -143,10 +143,18 @@ export const getRunGroupBy = createSelector(
   getDataState,
   (userSetGroupBy: GroupBy | null, dataState: RunsDataState): GroupBy => {
     const regexString = dataState.colorGroupRegexString;
-    if (userSetGroupBy && userSetGroupBy.hasOwnProperty('key') && userSetGroupBy.key) {
-      return regexString ? {key: userSetGroupBy.key, regexString} : userSetGroupBy;
+    if (
+      userSetGroupBy &&
+      userSetGroupBy.hasOwnProperty('key') &&
+      userSetGroupBy.key
+    ) {
+      return regexString
+        ? {key: userSetGroupBy.key, regexString}
+        : userSetGroupBy;
     }
-    return regexString ? {key: dataState.initialGroupBy, regexString} : {key: dataState.initialGroupBy};
+    return regexString
+      ? {key: dataState.initialGroupBy, regexString}
+      : {key: dataState.initialGroupBy};
   }
 );
 

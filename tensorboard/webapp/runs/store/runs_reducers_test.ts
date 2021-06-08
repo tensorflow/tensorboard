@@ -834,8 +834,8 @@ describe('runs_reducers', () => {
   describe('#stateRehydratedFromUrl', () => {
     it('ignores non-dashboard routeKind', () => {
       const state = buildRunsState({
-        initialGroupBy:GroupByKey.EXPERIMENT,
-        userSetGroupBy:GroupByKey.RUN,
+        initialGroupBy: GroupByKey.EXPERIMENT,
+        userSetGroupBy: GroupByKey.RUN,
       });
 
       const nextState = runsReducers.reducers(

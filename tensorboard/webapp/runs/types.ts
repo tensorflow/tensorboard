@@ -64,7 +64,7 @@ export enum GroupByKey {
 export type GroupBy = {
   key: GroupByKey | null;
   regexString?: string;
-}
+};
 
 /**
  * The runs-related state created by deserializing a URL.
