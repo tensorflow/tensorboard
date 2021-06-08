@@ -359,11 +359,14 @@ const reducer = createReducer(
         // Try to put the execution digest that corresponds to the first
         // alert at the center of the view.
         if (executionIndices[0] !== undefined) {
-          newState.executions.scrollBeginIndex = Math.max(
-            0,
-            Number(executionIndices[0]) -
-              Math.floor(newState.executions.displayCount / 2)
-          );
+          newState.executions = {
+            ...newState.executions,
+            scrollBeginIndex: Math.max(
+              0,
+              Number(executionIndices[0]) -
+                Math.floor(newState.executions.displayCount / 2)
+            ),
+          };
         }
       }
       return newState;
@@ -904,7 +907,7 @@ const reducer = createReducer(
       const newNumFiles = sourceFileList.sourceFiles.length;
       const {fileContents} = newState.sourceCode;
       for (let i = 0; i < newNumFiles; ++i) {
-        fileContents[i] = state.sourceCode.fileContents[i] || {
+        fileContents[i] = state.sourceCode.fileContents[i] ?? {
           loadState: DataLoadState.NOT_LOADED,
           lines: null,
         };
@@ -947,8 +950,10 @@ const reducer = createReducer(
         sourceFileSpec
       );
       if (fileIndex >= 0) {
-        newState.sourceCode.fileContents[fileIndex].loadState =
-          DataLoadState.LOADING;
+        newState.sourceCode.fileContents.splice(fileIndex, 1, {
+          ...newState.sourceCode.fileContents[fileIndex],
+          loadState: DataLoadState.LOADING,
+        });
       } else {
         throw new Error(
           `Cannot find the following file in file list: ` +
@@ -977,10 +982,10 @@ const reducer = createReducer(
         sourceFileResponse
       );
       if (fileIndex >= 0) {
-        newState.sourceCode.fileContents[fileIndex] = {
+        newState.sourceCode.fileContents.splice(fileIndex, 1, {
           loadState: DataLoadState.LOADED,
           lines: sourceFileResponse.lines,
-        };
+        });
       } else {
         throw new Error(
           `Cannot find the following file in file list: ` +

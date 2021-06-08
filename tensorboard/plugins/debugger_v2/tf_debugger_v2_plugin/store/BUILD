@@ -73,6 +73,7 @@ tf_ts_library(
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/actions",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/data_source",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/testing",
+        "//tensorboard/webapp/testing:lang",
         "@npm//@types/jasmine",
     ],
 )
