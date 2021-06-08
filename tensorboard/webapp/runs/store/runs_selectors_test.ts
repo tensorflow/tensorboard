@@ -376,8 +376,8 @@ describe('runs_selectors', () => {
       const state = buildStateFromRunsState(
         buildRunsState({
           colorGroupRegexString: 'hello',
-          initialGroupBy: GroupByKey.RUN,
-          userSetGroupBy: GroupByKey.REGEX,
+          initialGroupBy: {key: GroupByKey.RUN},
+          userSetGroupByKey: GroupByKey.REGEX,
         })
       );
 
@@ -390,12 +390,12 @@ describe('runs_selectors', () => {
     it('returns null if user never has set one', () => {
       const state = buildStateFromRunsState(
         buildRunsState({
-          userSetGroupBy: undefined,
-          initialGroupBy: GroupByKey.RUN,
+          initialGroupBy: {key: GroupByKey.RUN},
+          userSetGroupByKey: null,
         })
       );
 
-      expect(selectors.getRunUserSetGroupBy(state)).toEqual({key: null});
+      expect(selectors.getRunUserSetGroupBy(state)).toEqual({key: GroupByKey.RUN});
     });
   });
 
@@ -410,8 +410,8 @@ describe('runs_selectors', () => {
       const state = buildStateFromRunsState(
         buildRunsState({
           colorGroupRegexString: 'hello',
-          userSetGroupBy: GroupByKey.REGEX,
-          initialGroupBy: GroupByKey.RUN,
+          initialGroupBy: {key: GroupByKey.RUN},
+          userSetGroupByKey: GroupByKey.REGEX,
         })
       );
 
@@ -424,8 +424,8 @@ describe('runs_selectors', () => {
     it('returns initial group by if user never has set one', () => {
       const state = buildStateFromRunsState(
         buildRunsState({
-          userSetGroupBy: undefined,
-          initialGroupBy: GroupByKey.RUN,
+          initialGroupBy: {key: GroupByKey.RUN},
+          userSetGroupByKey: null,
         })
       );
 

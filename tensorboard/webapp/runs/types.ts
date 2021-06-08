@@ -61,10 +61,16 @@ export enum GroupByKey {
   REGEX,
 }
 
-export type GroupBy = {
-  key: GroupByKey | null;
-  regexString?: string;
-};
+export interface BaseGroupBy {
+  key: GroupByKey.EXPERIMENT | GroupByKey.RUN;
+}
+
+export interface RegexGroupBy {
+  key: GroupByKey.REGEX;
+  regexString: string;
+}
+
+export type GroupBy = BaseGroupBy | RegexGroupBy;
 
 /**
  * The runs-related state created by deserializing a URL.

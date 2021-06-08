@@ -38,7 +38,7 @@ import {
   RunsUiRoutefulState,
   RunsUiState,
 } from './runs_types';
-import {groupRuns, serializeExperimentIds} from './utils';
+import {createGroupBy, groupRuns, serializeExperimentIds} from './utils';
 
 const {
   initialState: dataInitialState,
@@ -48,7 +48,8 @@ const {
     runColorOverrideForGroupBy: new Map(),
     defaultRunColorForGroupBy: new Map(),
     groupKeyToColorString: new Map(),
-    initialGroupBy: GroupByKey.RUN,
+    initialGroupBy: {key: GroupByKey.RUN},
+    userSetGroupByKey: null,
     colorGroupRegexString: '',
     regexFilter: '',
   },
@@ -95,7 +96,7 @@ const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
 
     return {
       ...state,
-      userSetGroupBy: groupBy.key ?? undefined,
+      userSetGroupByKey: groupBy.key ?? undefined,
     };
   }),
   on(runsActions.fetchRunsRequested, (state, action) => {
@@ -224,7 +225,7 @@ const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
     const defaultRunColorForGroupBy = new Map(state.defaultRunColorForGroupBy);
 
     const groups = groupRuns(
-      {key: state.userSetGroupBy ?? state.initialGroupBy, regexString: ''},
+      state.userSetGroupByKey ? createGroupBy(state.userSetGroupByKey, state.colorGroupRegexString) : state.initialGroupBy,
       runsForAllExperiments,
       state.runIdToExpId
     );
@@ -277,7 +278,7 @@ const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
 
       return {
         ...state,
-        userSetGroupBy: groupBy.key ?? undefined,
+        userSetGroupByKey: groupBy.key ?? undefined,
         defaultRunColorForGroupBy,
         groupKeyToColorString,
         // Resets the color override when the groupBy changes.

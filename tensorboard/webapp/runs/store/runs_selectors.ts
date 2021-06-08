@@ -25,7 +25,7 @@ import {
   RUNS_FEATURE_KEY,
   State,
 } from './runs_types';
-import {serializeExperimentIds} from './utils';
+import {createGroupBy, serializeExperimentIds} from './utils';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
@@ -126,12 +126,7 @@ export const getRunSelectionMap = createSelector(
 export const getRunUserSetGroupBy = createSelector(
   getDataState,
   (dataState: RunsDataState): GroupBy | null => {
-    const result: GroupBy = {key: null};
-    result.key = dataState.userSetGroupBy ?? null;
-    if (dataState.userSetGroupBy === GroupByKey.REGEX) {
-      result.regexString = dataState.colorGroupRegexString ?? null;
-    }
-    return result;
+    return dataState.userSetGroupByKey ? createGroupBy(dataState.userSetGroupByKey, dataState.colorGroupRegexString) : null;
   }
 );
 
@@ -142,19 +137,7 @@ export const getRunGroupBy = createSelector(
   getRunUserSetGroupBy,
   getDataState,
   (userSetGroupBy: GroupBy | null, dataState: RunsDataState): GroupBy => {
-    const regexString = dataState.colorGroupRegexString;
-    if (
-      userSetGroupBy &&
-      userSetGroupBy.hasOwnProperty('key') &&
-      userSetGroupBy.key
-    ) {
-      return regexString
-        ? {key: userSetGroupBy.key, regexString}
-        : userSetGroupBy;
-    }
-    return regexString
-      ? {key: dataState.initialGroupBy, regexString}
-      : {key: dataState.initialGroupBy};
+    return userSetGroupBy ?? dataState.initialGroupBy;
   }
 );
 
