@@ -21,6 +21,7 @@ import {
   SimpleChanges,
   ViewChild,
 } from '@angular/core';
+
 import {
   DEFAULT_CODE_FONT_SIZE,
   DEFAULT_CODE_LANGUAGE,
@@ -43,6 +44,9 @@ export class SourceCodeComponent implements OnChanges {
   @Input()
   monaco: typeof monaco | null = null;
 
+  @Input()
+  useDarkMode!: boolean;
+
   @ViewChild('codeViewerContainer', {static: true, read: ElementRef})
   private readonly codeViewerContainer!: ElementRef<HTMLDivElement>;
 
@@ -56,33 +60,32 @@ export class SourceCodeComponent implements OnChanges {
     }
   }
 
+  private getMonacoThemeString(): 'vs' | 'vs-dark' {
+    return this.useDarkMode ? 'vs-dark' : 'vs';
+  }
+
   ngOnChanges(changes: SimpleChanges): void {
     if (this.monaco === null) {
       return;
     }
-    const currentLines: string[] | null = changes['monaco']
-      ? this.lines
-      : changes['lines']
-      ? changes['lines'].currentValue
-      : null;
-    if (currentLines) {
-      const value = currentLines.join('\n');
-      if (this.editor === null) {
-        this.editor = this.monaco.editor.create(
-          this.codeViewerContainer.nativeElement,
-          {
-            value,
-            language: DEFAULT_CODE_LANGUAGE,
-            readOnly: true,
-            fontSize: DEFAULT_CODE_FONT_SIZE,
-            minimap: {
-              enabled: true,
-            },
-          }
-        );
-      } else {
-        this.editor.setValue(value);
-      }
+
+    if (this.editor === null) {
+      this.editor = this.monaco.editor.create(
+        this.codeViewerContainer.nativeElement,
+        {
+          value: (this.lines ?? []).join('\n'),
+          language: DEFAULT_CODE_LANGUAGE,
+          readOnly: true,
+          fontSize: DEFAULT_CODE_FONT_SIZE,
+          minimap: {
+            enabled: true,
+          },
+        }
+      );
+    }
+
+    if (this.editor && changes['lines'] && this.lines) {
+      this.editor.setValue(this.lines.join('\n'));
     }
 
     const currentFocusedLineno: number | null = changes['monaco']
@@ -121,6 +124,10 @@ export class SourceCodeComponent implements OnChanges {
           },
         },
       ]);
+    }
+
+    if (changes['useDarkMode']) {
+      this.editor.setTheme(this.getMonacoThemeString());
     }
   }
 }

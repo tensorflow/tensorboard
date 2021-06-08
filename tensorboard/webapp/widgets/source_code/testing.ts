@@ -54,6 +54,7 @@ export function setUpMonacoFakes() {
             'layout',
             'revealLineInCenter',
             'setValue',
+            'setTheme',
           ]);
           return spies.editorSpy;
         },

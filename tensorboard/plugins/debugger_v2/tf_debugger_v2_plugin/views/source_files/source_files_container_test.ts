@@ -28,7 +28,12 @@ import {
 } from '../../../../../webapp/widgets/source_code/testing';
 import {DebuggerComponent} from '../../debugger_component';
 import {DebuggerContainer} from '../../debugger_container';
-import {DataLoadState, State} from '../../store/debugger_types';
+import {getDarkModeEnabled} from '../../../../../webapp/selectors';
+import {
+  DataLoadState,
+  State as DebuggerState,
+} from '../../store/debugger_types';
+import {State as OtherAppState} from '../../../../../webapp/app_state';
 import {createDebuggerState, createState} from '../../testing';
 import {AlertsModule} from '../alerts/alerts_module';
 import {ExecutionDataModule} from '../execution_data/execution_data_module';
@@ -45,8 +50,10 @@ import {SourceFilesModule} from './source_files_module';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
+type AppState = DebuggerState & OtherAppState;
+
 describe('Source Files Container', () => {
-  let store: MockStore<State>;
+  let store: MockStore<AppState>;
   let dispatchSpy: jasmine.Spy;
 
   beforeEach(async () => {
@@ -65,8 +72,9 @@ describe('Source Files Container', () => {
       ],
       providers: [provideMockStore(), DebuggerContainer],
     }).compileComponents();
-    store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
+    store = TestBed.inject<Store<AppState>>(Store) as MockStore<AppState>;
     dispatchSpy = spyOn(store, 'dispatch');
+    store.overrideSelector(getDarkModeEnabled, false);
   });
 
   afterEach(() => {
