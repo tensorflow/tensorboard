@@ -12,6 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {deepFreeze} from '../../../../webapp/testing/lang';
 import * as actions from '../actions';
 import {ExecutionDigestsResponse} from '../data_source/tfdbg2_data_source';
 import {reducers} from './debugger_reducers';
@@ -47,7 +48,7 @@ describe('Debugger graphs reducers', () => {
       it(`sets correct focusType (${focusType}) from no-focus initial state`, () => {
         const state = createDebuggerState();
         const nextState = reducers(
-          state,
+          deepFreeze(state),
           actions.alertTypeFocusToggled({
             alertType: focusType,
           })
@@ -63,7 +64,7 @@ describe('Debugger graphs reducers', () => {
         }),
       });
       const nextState = reducers(
-        state,
+        deepFreeze(state),
         actions.alertTypeFocusToggled({
           alertType: AlertType.INF_NAN_ALERT,
         })
@@ -78,7 +79,7 @@ describe('Debugger graphs reducers', () => {
         }),
       });
       const nextState = reducers(
-        state,
+        deepFreeze(state),
         actions.alertTypeFocusToggled({
           alertType: AlertType.INF_NAN_ALERT,
         })
@@ -104,7 +105,7 @@ describe('Debugger graphs reducers', () => {
           }),
         });
         const nextState = reducers(
-          state,
+          deepFreeze(state),
           actions.alertTypeFocusToggled({
             alertType: AlertType.INF_NAN_ALERT,
           })
@@ -117,7 +118,10 @@ describe('Debugger graphs reducers', () => {
   describe('Runs loading', () => {
     it('sets runsLoaded to loading on requesting runs', () => {
       const state = createDebuggerState();
-      const nextState = reducers(state, actions.debuggerRunsRequested());
+      const nextState = reducers(
+        deepFreeze(state),
+        actions.debuggerRunsRequested()
+      );
       expect(nextState.runsLoaded.state).toBe(DataLoadState.LOADING);
       expect(nextState.runsLoaded.lastLoadedTimeInMs).toBeNull();
     });
@@ -126,7 +130,10 @@ describe('Debugger graphs reducers', () => {
       const state = createDebuggerState({
         runsLoaded: {state: DataLoadState.LOADING, lastLoadedTimeInMs: null},
       });
-      const nextState = reducers(state, actions.debuggerRunsRequestFailed());
+      const nextState = reducers(
+        deepFreeze(state),
+        actions.debuggerRunsRequestFailed()
+      );
       expect(nextState.runsLoaded.state).toBe(DataLoadState.FAILED);
       expect(nextState.runsLoaded.lastLoadedTimeInMs).toBeNull();
     });
@@ -135,7 +142,7 @@ describe('Debugger graphs reducers', () => {
       const state = createDebuggerState();
       const t0 = Date.now();
       const nextState = reducers(
-        state,
+        deepFreeze(state),
         actions.debuggerRunsLoaded({
           runs: {
             foo_debugger_run: {
@@ -171,7 +178,7 @@ describe('Debugger graphs reducers', () => {
       });
       const t0 = Date.now();
       const nextState = reducers(
-        state,
+        deepFreeze(state),
         actions.debuggerRunsLoaded({
           runs: {
             bar_debugger_run: {
@@ -199,7 +206,7 @@ describe('Debugger graphs reducers', () => {
       const state = createDebuggerState();
       const t0 = Date.now();
       const nextState = reducers(
-        state,
+        deepFreeze(state),
         actions.debuggerRunsLoaded({
           runs: {
             __default_debugger_run__: {
@@ -228,7 +235,7 @@ describe('Debugger graphs reducers', () => {
       },
     });
     const nextState = reducers(
-      state,
+      deepFreeze(state),
       actions.debuggerRunsLoaded({
         runs: {
           __default_debugger_run__: {
@@ -246,7 +253,10 @@ describe('Debugger graphs reducers', () => {
       lastDataPollOnsetTimeMs: 0,
     });
     const t0 = Date.now();
-    const nextState = reducers(state, actions.debuggerDataPollOnset());
+    const nextState = reducers(
+      deepFreeze(state),
+      actions.debuggerDataPollOnset()
+    );
     expect(nextState.lastDataPollOnsetTimeMs).toBeGreaterThanOrEqual(t0);
   });
 
@@ -254,7 +264,10 @@ describe('Debugger graphs reducers', () => {
     const state = createDebuggerState({
       activeRunId: '__default_debugger_run__',
     });
-    const nextState = reducers(state, actions.numAlertsAndBreakdownRequested());
+    const nextState = reducers(
+      deepFreeze(state),
+      actions.numAlertsAndBreakdownRequested()
+    );
     expect(nextState.alerts.alertsLoaded.state).toEqual(DataLoadState.LOADING);
     expect(nextState.alerts.alertsLoaded.lastLoadedTimeInMs).toBeNull();
   });
@@ -271,7 +284,7 @@ describe('Debugger graphs reducers', () => {
     });
     const t0 = Date.now();
     const nextState = reducers(
-      state,
+      deepFreeze(state),
       actions.numAlertsAndBreakdownLoaded({
         numAlerts: 30,
         alertsBreakdown: {
@@ -308,7 +321,7 @@ describe('Debugger graphs reducers', () => {
     });
     const t0 = Date.now();
     const nextState = reducers(
-      state,
+      deepFreeze(state),
       actions.numAlertsAndBreakdownLoaded({
         numAlerts: 31,
         alertsBreakdown: {
@@ -343,7 +356,7 @@ describe('Debugger graphs reducers', () => {
       }),
     });
     const nextState = reducers(
-      state,
+      deepFreeze(state),
       actions.numAlertsAndBreakdownLoaded({
         numAlerts: 30,
         alertsBreakdown: {
@@ -395,7 +408,7 @@ describe('Debugger graphs reducers', () => {
             graph_execution_trace_index: firstAlertGraphExecutionIndex * 2,
           });
           const nextState = reducers(
-            state,
+            deepFreeze(state),
             actions.alertsOfTypeLoaded({
               numAlerts: 2,
               alertsBreakdown: {
@@ -484,7 +497,7 @@ describe('Debugger graphs reducers', () => {
       }); // `alerts` state is in a non-empty initial state.
 
       const nextState = reducers(
-        state,
+        deepFreeze(state),
         actions.alertsOfTypeLoaded({
           numAlerts: 2,
           alertsBreakdown: {
@@ -550,7 +563,7 @@ describe('Debugger graphs reducers', () => {
       });
 
       const nextState = reducers(
-        state,
+        deepFreeze(state),
         actions.alertsOfTypeLoaded({
           numAlerts: 3,
           alertsBreakdown: {
@@ -591,7 +604,10 @@ describe('Debugger graphs reducers', () => {
       },
       activeRunId: '__default_debugger_run__',
     });
-    const nextState = reducers(state, actions.numExecutionsRequested());
+    const nextState = reducers(
+      deepFreeze(state),
+      actions.numExecutionsRequested()
+    );
     expect(nextState.executions.numExecutionsLoaded.state).toBe(
       DataLoadState.LOADING
     );
@@ -632,7 +648,7 @@ describe('Debugger graphs reducers', () => {
     });
     const t0 = Date.now();
     const nextState = reducers(
-      state,
+      deepFreeze(state),
       actions.numExecutionsLoaded({numExecutions: 1337})
     );
     expect(nextState.executions.numExecutionsLoaded.state).toBe(
@@ -681,7 +697,7 @@ describe('Debugger graphs reducers', () => {
     });
     const t0 = Date.now();
     const nextState = reducers(
-      state,
+      deepFreeze(state),
       actions.numExecutionsLoaded({numExecutions: 0})
     );
     expect(nextState.executions.numExecutionsLoaded.state).toBe(
@@ -720,7 +736,7 @@ describe('Debugger graphs reducers', () => {
       }),
     });
     const nextState = reducers(
-      state,
+      deepFreeze(state),
       actions.executionDigestsRequested({
         begin: 0,
         end: 100,
@@ -1035,7 +1051,7 @@ describe('Debugger graphs reducers', () => {
         opTypes
       );
       const nextState = reducers(
-        state,
+        deepFreeze(state),
         actions.executionScrollToIndex({index: scrollIndex})
       );
       expect(nextState.executions.scrollBeginIndex).toBe(scrollIndex);
@@ -1479,7 +1495,7 @@ describe('Debugger graphs reducers', () => {
       }),
     });
     const nextState = reducers(
-      state,
+      deepFreeze(state),
       actions.sourceFileRequested({
         host_name: 'foo_host',
         file_path: '/tmp/model.py',
@@ -1525,7 +1541,7 @@ describe('Debugger graphs reducers', () => {
     });
     expect(() =>
       reducers(
-        state,
+        deepFreeze(state),
         actions.sourceFileRequested({
           host_name: 'foo_host',
           file_path: '/tmp/i_am_unknown.py',
@@ -1572,7 +1588,7 @@ describe('Debugger graphs reducers', () => {
       }),
     });
     const nextState = reducers(
-      state,
+      deepFreeze(state),
       actions.sourceFileLoaded({
         host_name: 'foo_host',
         file_path: '/tmp/model.py',
@@ -1627,7 +1643,7 @@ describe('Debugger graphs reducers', () => {
     });
     expect(() =>
       reducers(
-        state,
+        deepFreeze(state),
         actions.sourceFileLoaded({
           host_name: 'foo_host',
           file_path: '/tmp/i_am_unknown.py',
@@ -1654,7 +1670,10 @@ describe('Debugger graphs reducers', () => {
       const state = createDebuggerState({
         activeRunId: '__default_debugger_run__',
       });
-      const nextState = reducers(state, actions.numGraphExecutionsRequested());
+      const nextState = reducers(
+        deepFreeze(state),
+        actions.numGraphExecutionsRequested()
+      );
       expect(nextState.graphExecutions.numExecutionsLoaded.state).toBe(
         DataLoadState.LOADING
       );
@@ -1675,7 +1694,7 @@ describe('Debugger graphs reducers', () => {
       });
       const t0 = Date.now();
       const nextState = reducers(
-        state,
+        deepFreeze(state),
         actions.numGraphExecutionsLoaded({numGraphExecutions: 12345})
       );
       expect(nextState.graphExecutions.numExecutionsLoaded.state).toBe(
@@ -1708,7 +1727,7 @@ describe('Debugger graphs reducers', () => {
       });
       const t0 = Date.now();
       const nextState = reducers(
-        state,
+        deepFreeze(state),
         actions.numGraphExecutionsLoaded({numGraphExecutions: 12345})
       );
       expect(nextState.graphExecutions.numExecutionsLoaded.state).toBe(
@@ -1733,7 +1752,7 @@ describe('Debugger graphs reducers', () => {
         }),
       });
       const nextState = reducers(
-        state,
+        deepFreeze(state),
         actions.graphExecutionDataRequested({pageIndex: 4321})
       );
       expect(nextState.graphExecutions.graphExecutionDataLoadingPages).toEqual([
@@ -1759,7 +1778,7 @@ describe('Debugger graphs reducers', () => {
         }),
       });
       const nextState = reducers(
-        state,
+        deepFreeze(state),
         actions.graphExecutionDataLoaded({
           begin: 2,
           end: 4,
@@ -1801,7 +1820,7 @@ describe('Debugger graphs reducers', () => {
         }),
       });
       const nextState = reducers(
-        state,
+        deepFreeze(state),
         actions.graphExecutionDataLoaded({
           begin: 2,
           end: 4,
@@ -1837,7 +1856,7 @@ describe('Debugger graphs reducers', () => {
         }),
       });
       const nextState = reducers(
-        state,
+        deepFreeze(state),
         actions.graphExecutionScrollToIndex({index: 1337})
       );
       expect(nextState.graphExecutions.scrollBeginIndex).toBe(1337);
@@ -1847,7 +1866,10 @@ describe('Debugger graphs reducers', () => {
       it(`throws error for invalid scroll index: ${index}`, () => {
         const state = createDebuggerState();
         expect(() =>
-          reducers(state, actions.graphExecutionScrollToIndex({index}))
+          reducers(
+            deepFreeze(state),
+            actions.graphExecutionScrollToIndex({index})
+          )
         ).toThrowError(/.*scroll.*negative or non-integer/);
       });
     }
