@@ -395,7 +395,9 @@ describe('runs_selectors', () => {
         })
       );
 
-      expect(selectors.getRunUserSetGroupBy(state)).toEqual({key: GroupByKey.RUN});
+      expect(selectors.getRunUserSetGroupBy(state)).toEqual({
+        key: GroupByKey.RUN,
+      });
     });
   });
 

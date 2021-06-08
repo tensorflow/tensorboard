@@ -85,7 +85,10 @@ export function groupRuns(
 /**
  * Util function for composing `GroupBy` key and regex string.
  */
-export function createGroupBy(groupByKey: GroupByKey, regexString: string | null): GroupBy {
+export function createGroupBy(
+  groupByKey: GroupByKey,
+  regexString: string | null
+): GroupBy {
   switch (groupByKey) {
     case GroupByKey.REGEX:
       return {key: groupByKey, regexString: regexString ?? ''};

@@ -126,7 +126,12 @@ export const getRunSelectionMap = createSelector(
 export const getRunUserSetGroupBy = createSelector(
   getDataState,
   (dataState: RunsDataState): GroupBy | null => {
-    return dataState.userSetGroupByKey ? createGroupBy(dataState.userSetGroupByKey, dataState.colorGroupRegexString) : null;
+    return dataState.userSetGroupByKey
+      ? createGroupBy(
+          dataState.userSetGroupByKey,
+          dataState.colorGroupRegexString
+        )
+      : null;
   }
 );
 
