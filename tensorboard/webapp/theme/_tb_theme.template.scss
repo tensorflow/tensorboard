@@ -26,6 +26,10 @@ limitations under the License.
 // Include non-theme styles for core.
 @include mat-core();
 
+$tb-dark-primary: $tb-primary !default;
+$tb-dark-accent: $tb-accent !default;
+$tb-dark-warn: $tb-warn !default;
+
 $tb-theme: mat-light-theme($tb-primary, $tb-accent, $tb-warn);
 
 // Overriding mat-light-theme-foreground variables.
@@ -57,7 +61,11 @@ $tb-theme: map_merge(
   )
 );
 
-$tb-dark-theme: mat-dark-theme($tb-primary, $tb-accent, $tb-warn);
+$tb-dark-theme: mat-dark-theme(
+  $tb-dark-primary,
+  $tb-dark-accent,
+  $tb-dark-warn
+);
 $tb-dark-foreground: map_merge(
   map-get($tb-dark-theme, foreground),
   (
