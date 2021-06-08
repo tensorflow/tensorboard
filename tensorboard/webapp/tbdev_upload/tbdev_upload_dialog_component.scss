@@ -40,7 +40,6 @@ p {
 }
 
 .anchor-text {
-  color: map-get($tb-foreground, link);
   text-decoration: none;
 }
 
@@ -73,12 +72,14 @@ code {
 }
 
 .close-button {
-  color: map-get($tb-foreground, secondary-text);
+  @include tb-theme-foreground-prop(color, secondary-text);
   text-transform: uppercase;
   margin-right: 8px;
 }
 
-.learn-more-button {
-  color: map-get($tb-foreground, link);
+// Overly increase specificity to work around material component styling under
+// dark mode.
+:host .learn-more-button {
+  @include tb-theme-foreground-prop(color, link);
   text-transform: uppercase;
 }
