@@ -395,7 +395,7 @@ describe('runs_selectors', () => {
         })
       );
 
-      expect(selectors.getRunUserSetGroupBy(state)).toBe({key: null});
+      expect(selectors.getRunUserSetGroupBy(state)).toEqual({key: null});
     });
   });
 
