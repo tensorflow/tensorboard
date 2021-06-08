@@ -375,13 +375,9 @@ describe('runs_selectors', () => {
     it('returns groupBy set by user when it is present', () => {
       const state = buildStateFromRunsState(
         buildRunsState({
-          userSetGroupBy: {
-            key: GroupByKey.REGEX,
-            regexString: 'hello',
-          },
-          initialGroupBy: {
-            key: GroupByKey.RUN,
-          },
+          colorGroupRegexString: 'hello',
+          initialGroupBy: GroupByKey.RUN,
+          userSetGroupBy: GroupByKey.REGEX,
         })
       );
 
@@ -395,9 +391,7 @@ describe('runs_selectors', () => {
       const state = buildStateFromRunsState(
         buildRunsState({
           userSetGroupBy: undefined,
-          initialGroupBy: {
-            key: GroupByKey.RUN,
-          },
+          initialGroupBy: GroupByKey.RUN,
         })
       );
 
@@ -415,13 +409,9 @@ describe('runs_selectors', () => {
     it('returns groupBy set by user when it is present', () => {
       const state = buildStateFromRunsState(
         buildRunsState({
-          userSetGroupBy: {
-            key: GroupByKey.REGEX,
-            regexString: 'hello',
-          },
-          initialGroupBy: {
-            key: GroupByKey.RUN,
-          },
+          colorGroupRegexString: 'hello',
+          userSetGroupBy: GroupByKey.REGEX,
+          initialGroupBy: GroupByKey.RUN,
         })
       );
 
@@ -435,9 +425,7 @@ describe('runs_selectors', () => {
       const state = buildStateFromRunsState(
         buildRunsState({
           userSetGroupBy: undefined,
-          initialGroupBy: {
-            key: GroupByKey.RUN,
-          },
+          initialGroupBy: GroupByKey.RUN,
         })
       );
 

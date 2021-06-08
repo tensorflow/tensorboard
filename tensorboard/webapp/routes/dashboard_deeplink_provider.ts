@@ -124,7 +124,7 @@ export class DashboardDeepLinkProvider extends DeepLinkProvider {
       ),
       store.select(selectors.getRunUserSetGroupBy).pipe(
         map((groupBy) => {
-          if (!groupBy) return [];
+          if (!groupBy || groupBy.key === null) return [];
           let value: string;
 
           switch (groupBy.key) {

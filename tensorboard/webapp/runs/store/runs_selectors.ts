@@ -16,7 +16,7 @@ import {createFeatureSelector, createSelector} from '@ngrx/store';
 
 import {DataLoadState, LoadState} from '../../types/data';
 import {SortDirection} from '../../types/ui';
-import {GroupBy, SortKey} from '../types';
+import {GroupBy, GroupByKey, SortKey} from '../types';
 import {
   Run,
   RunsDataState,
@@ -126,7 +126,12 @@ export const getRunSelectionMap = createSelector(
 export const getRunUserSetGroupBy = createSelector(
   getDataState,
   (dataState: RunsDataState): GroupBy | null => {
-    return dataState.userSetGroupBy ?? null;
+    const result: GroupBy = {key: null};
+    result.key =  dataState.userSetGroupBy ?? null;
+    if (dataState.userSetGroupBy === GroupByKey.REGEX) {
+      result.regexString = dataState.colorGroupRegexString ?? null;
+    }
+    return result;
   }
 );
 
@@ -137,7 +142,11 @@ export const getRunGroupBy = createSelector(
   getRunUserSetGroupBy,
   getDataState,
   (userSetGroupBy: GroupBy | null, dataState: RunsDataState): GroupBy => {
-    return userSetGroupBy ?? dataState.initialGroupBy;
+    const regexString = dataState.colorGroupRegexString;
+    if (userSetGroupBy && userSetGroupBy.hasOwnProperty('key') && userSetGroupBy.key) {
+      return regexString ? {key: userSetGroupBy.key, regexString} : userSetGroupBy;
+    }
+    return regexString ? {key: dataState.initialGroupBy, regexString} : {key: dataState.initialGroupBy};
   }
 );
 

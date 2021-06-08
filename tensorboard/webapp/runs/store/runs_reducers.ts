@@ -48,7 +48,7 @@ const {
     runColorOverrideForGroupBy: new Map(),
     defaultRunColorForGroupBy: new Map(),
     groupKeyToColorString: new Map(),
-    initialGroupBy: {key: GroupByKey.RUN},
+    initialGroupBy: GroupByKey.RUN,
     colorGroupRegexString: '',
     regexFilter: '',
   },
@@ -95,7 +95,7 @@ const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
 
     return {
       ...state,
-      userSetGroupBy: groupBy,
+      userSetGroupBy: groupBy.key ?? undefined,
     };
   }),
   on(runsActions.fetchRunsRequested, (state, action) => {
@@ -224,7 +224,7 @@ const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
     const defaultRunColorForGroupBy = new Map(state.defaultRunColorForGroupBy);
 
     const groups = groupRuns(
-      state.userSetGroupBy ?? state.initialGroupBy,
+      {key: state.userSetGroupBy ?? state.initialGroupBy, regexString: ''},
       runsForAllExperiments,
       state.runIdToExpId
     );
@@ -277,7 +277,7 @@ const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
 
       return {
         ...state,
-        userSetGroupBy: groupBy,
+        userSetGroupBy: groupBy.key ?? undefined,
         defaultRunColorForGroupBy,
         groupKeyToColorString,
         // Resets the color override when the groupBy changes.
