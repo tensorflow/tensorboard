@@ -44,15 +44,15 @@ $tf-slate: (
    several orange values, but only one of them (--tb-orange-strong) is used
    widely. */
 $tf-orange: (
-  100: mat-color($mat-orange, 500),
-  200: mat-color($mat-orange, 500),
-  300: mat-color($mat-orange, 500),
-  400: mat-color($mat-orange, 500),
+  100: mat-color($mat-orange, 100),
+  200: mat-color($mat-orange, 200),
+  300: mat-color($mat-orange, 300),
+  400: mat-color($mat-orange, 400),
   500: mat-color($mat-orange, 500),
-  600: mat-color($mat-orange, 700),
+  600: mat-color($mat-orange, 600),
   700: mat-color($mat-orange, 700),
-  800: mat-color($mat-orange, 700),
-  900: mat-color($mat-orange, 700),
+  800: mat-color($mat-orange, 800),
+  900: mat-color($mat-orange, 900),
   contrast: (
     100: $dark-primary-text,
     200: $dark-primary-text,

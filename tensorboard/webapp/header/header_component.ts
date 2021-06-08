@@ -17,7 +17,7 @@ import {Component} from '@angular/core';
 @Component({
   selector: 'app-header',
   template: `
-    <mat-toolbar color="primary">
+    <mat-toolbar>
       <span class="brand">TensorBoard</span>
       <plugin-selector class="plugins"></plugin-selector>
       <tbdev-upload-button></tbdev-upload-button>
@@ -35,42 +35,6 @@ import {Component} from '@angular/core';
       </a>
     </mat-toolbar>
   `,
-  styles: [
-    `
-      mat-toolbar {
-        align-items: center;
-        display: flex;
-        height: 64px;
-        overflow: hidden;
-        width: 100%;
-      }
-
-      tbdev-upload-button.shown {
-        margin: 0 8px 0 16px;
-      }
-
-      .brand,
-      .readme,
-      app-header-reload,
-      settings-button {
-        flex: 0 0 auto;
-      }
-
-      .brand {
-        letter-spacing: -0.025em;
-        margin-left: 10px;
-        text-rendering: optimizeLegibility;
-      }
-
-      .plugins {
-        align-items: center;
-        display: flex;
-        flex: 1 1 auto;
-        font-size: 14px;
-        height: 100%;
-        overflow: hidden;
-      }
-    `,
-  ],
+  styleUrls: ['header_component.css'],
 })
 export class HeaderComponent {}

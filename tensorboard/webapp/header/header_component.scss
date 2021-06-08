@@ -1,4 +1,4 @@
-/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2021 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -12,24 +12,37 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-@import 'tensorboard/webapp/theme/tb_theme';
-
-/* Override material styling with more precise selector. */
-:host button.mat-stroked-button {
-  background-color: mat-color($tb-primary, 500);
-  border: 1px solid map-get($tb-foreground, border);
-
-  @include tb-dark-theme {
-    background-color: mat-color($tb-primary, 800);
-  }
+mat-toolbar {
+  align-items: center;
+  color: #fff;
+  display: flex;
+  height: 64px;
+  overflow: hidden;
+  width: 100%;
 }
 
-.button-contents {
+tbdev-upload-button.shown {
+  margin: 0 8px 0 16px;
+}
+
+.brand,
+.readme,
+app-header-reload,
+settings-button {
+  flex: 0 0 auto;
+}
+
+.brand {
+  letter-spacing: -0.025em;
+  margin-left: 10px;
+  text-rendering: optimizeLegibility;
+}
+
+.plugins {
   align-items: center;
   display: flex;
-  text-transform: uppercase;
-}
-
-mat-icon {
-  margin-right: 6px;
+  flex: 1 1 auto;
+  font-size: 14px;
+  height: 100%;
+  overflow: hidden;
 }
