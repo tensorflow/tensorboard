@@ -23,6 +23,8 @@ tf_ng_module(
     deps = [
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/store",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/store:types",
+        "//tensorboard/webapp:app_state",
+        "//tensorboard/webapp:selectors",
         "//tensorboard/webapp/widgets/source_code",
         "@npm//@angular/common",
         "@npm//@angular/core",
@@ -49,6 +51,8 @@ tf_ts_library(
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/inactive",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/stack_trace",
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/timeline",
+        "//tensorboard/webapp:app_state",
+        "//tensorboard/webapp:selectors",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/angular:expect_ngrx_store_testing",
         "//tensorboard/webapp/widgets/source_code:load_monaco",

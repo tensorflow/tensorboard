@@ -37,6 +37,7 @@ import {loadMonaco} from './load_monaco_shim';
       [lines]="lines"
       [focusedLineno]="focusedLineno"
       [monaco]="monaco$ | async"
+      [useDarkMode]="useDarkMode"
     ></source-code-component>
   `,
 })
@@ -48,6 +49,9 @@ export class SourceCodeContainer implements OnInit {
   // Line number to scroll to and highlight, 1-based.
   @Input()
   focusedLineno: number | null = null;
+
+  @Input()
+  useDarkMode: boolean = false;
 
   monaco$: Observable<typeof monaco> | null = null;
 

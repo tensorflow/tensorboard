@@ -35,4 +35,7 @@ export class SourceFilesComponent {
 
   @Input()
   focusedSourceLineSpec: StackFrame | null = null;
+
+  @Input()
+  useDarkMode!: boolean;
 }
