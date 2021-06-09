@@ -67,6 +67,34 @@ describe('Source Code Component', () => {
     'model.add(tf.keras.layers.Dense(1))',
   ];
 
+  it('creates editor with proper paremeter', async () => {
+    const fixture = TestBed.createComponent(TestableComponent);
+    const component = fixture.componentInstance;
+    component.lines = lines1;
+    component.focusedLineno = 2;
+    component.useDarkMode = true;
+    fixture.detectChanges();
+    // Simlulate loading monaco and setting the `monaco` input after loading.
+    await loadMonacoShim.loadMonaco();
+    fixture.detectChanges();
+
+    expect(fakes.fakeMonaco.editor.create).toHaveBeenCalledOnceWith(
+      jasmine.any(HTMLElement),
+      {
+        value: 'import tensorflow as tf\n\nprint("hello, world")',
+        language: 'python',
+        readOnly: true,
+        fontSize: 10,
+        minimap: {enabled: true},
+      }
+    );
+    expect(spies.editorSpy.revealLineInCenter).toHaveBeenCalledOnceWith(
+      2,
+      fakes.fakeMonaco.editor.ScrollType.Smooth
+    );
+    expect(spies.editorSpy.setTheme).toHaveBeenCalledOnceWith('vs-dark');
+  });
+
   it('renders a file and change to a new file', async () => {
     const fixture = TestBed.createComponent(TestableComponent);
     const component = fixture.componentInstance;
@@ -139,15 +167,17 @@ describe('Source Code Component', () => {
     });
 
     it('uses different theme when `useDarkMode` changes', () => {
+      // Forget the calls from initialization.
+      spies.editorSpy.setTheme.calls.reset();
       const component = fixture.componentInstance;
 
       component.useDarkMode = true;
       fixture.detectChanges();
-      expect(spies.editorSpy!.setTheme).toHaveBeenCalledOnceWith('vs-dark');
+      expect(spies.editorSpy.setTheme).toHaveBeenCalledOnceWith('vs-dark');
 
       component.useDarkMode = false;
       fixture.detectChanges();
-      expect(spies.editorSpy!.setTheme.calls.allArgs()).toEqual([
+      expect(spies.editorSpy.setTheme.calls.allArgs()).toEqual([
         ['vs-dark'],
         ['vs'],
       ]);
