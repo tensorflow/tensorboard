@@ -48,7 +48,7 @@ $tb-foreground: map_merge(
 $tb-background: map_merge(
   $mat-light-theme-background,
   (
-    app-bar: mat-color($tb-primary, 700),
+    app-bar: mat-color($tb-primary, default),
     // Default is `map.get($grey-palette, 50)`.
     background: #fff,
   )
@@ -79,7 +79,7 @@ $tb-dark-foreground: map_merge(
 $tb-dark-background: map_merge(
   map-get($tb-dark-theme, background),
   (
-    app-bar: mat-color($tb-primary, 900),
+    app-bar: mat-color($tb-dark-primary, default),
   )
 );
 $tb-dark-theme: map_merge(
