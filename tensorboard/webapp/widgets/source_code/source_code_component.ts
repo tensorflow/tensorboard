@@ -68,6 +68,7 @@ export class SourceCodeComponent implements OnChanges {
     if (this.monaco === null) {
       return;
     }
+    const editorNewlyCreated = changes['monaco'] && this.editor === null;
 
     if (this.editor === null) {
       this.editor = this.monaco.editor.create(
@@ -84,16 +85,15 @@ export class SourceCodeComponent implements OnChanges {
       );
     }
 
-    if (this.editor && changes['lines'] && this.lines) {
+    if (changes['lines'] && this.lines) {
       this.editor.setValue(this.lines.join('\n'));
     }
 
-    const currentFocusedLineno: number | null = changes['monaco']
-      ? this.focusedLineno
-      : changes['focusedLineno']
-      ? changes['focusedLineno'].currentValue
-      : null;
-    if (currentFocusedLineno && this.lines && this.monaco !== null) {
+    const currentFocusedLineno: number | null =
+      editorNewlyCreated || changes['focusedLineno']
+        ? this.focusedLineno
+        : null;
+    if (currentFocusedLineno && this.lines) {
       this.editor.revealLineInCenter(
         currentFocusedLineno,
         this.monaco.editor.ScrollType.Smooth
@@ -126,7 +126,7 @@ export class SourceCodeComponent implements OnChanges {
       ]);
     }
 
-    if (changes['useDarkMode']) {
+    if (editorNewlyCreated || changes['useDarkMode']) {
       this.editor.setTheme(this.getMonacoThemeString());
     }
   }

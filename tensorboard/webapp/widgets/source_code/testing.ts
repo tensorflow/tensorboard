@@ -46,18 +46,21 @@ export const windowWithRequireAndMonaco: any = window;
 
 export function setUpMonacoFakes() {
   async function fakeLoadMonaco() {
+    const create = jasmine
+      .createSpy('fakeMonaco.editor.create')
+      .and.callFake(() => {
+        spies.editorSpy = jasmine.createSpyObj('editorSpy', [
+          'deltaDecorations',
+          'layout',
+          'revealLineInCenter',
+          'setValue',
+          'setTheme',
+        ]);
+        return spies.editorSpy;
+      });
     fakes.fakeMonaco = {
       editor: {
-        create: () => {
-          spies.editorSpy = jasmine.createSpyObj('editorSpy', [
-            'deltaDecorations',
-            'layout',
-            'revealLineInCenter',
-            'setValue',
-            'setTheme',
-          ]);
-          return spies.editorSpy;
-        },
+        create,
         createDiffEditor: () => {
           spies.diffEditorSpy = jasmine.createSpyObj('diffEditorSpy', [
             'layout',
