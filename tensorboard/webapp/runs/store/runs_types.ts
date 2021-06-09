@@ -51,7 +51,7 @@ export interface RunsDataRoutefulState {
   runColorOverrideForGroupBy: Map<RunId, string>;
   groupKeyToColorString: Map<string, string>;
   initialGroupBy: GroupBy;
-  userSetGroupByKey?: GroupByKey | null;
+  userSetGroupByKey: GroupByKey | null;
   colorGroupRegexString: string;
   regexFilter: string;
 }

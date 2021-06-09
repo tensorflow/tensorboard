@@ -126,7 +126,7 @@ export const getRunSelectionMap = createSelector(
 export const getRunUserSetGroupBy = createSelector(
   getDataState,
   (dataState: RunsDataState): GroupBy | null => {
-    return dataState.userSetGroupByKey
+    return dataState.userSetGroupByKey !== null
       ? createGroupBy(
           dataState.userSetGroupByKey,
           dataState.colorGroupRegexString

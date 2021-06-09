@@ -234,25 +234,25 @@ describe('run store utils test', () => {
   });
 
   describe('creatGroupBy', () => {
-    it('group by run', () => {
+    it('groups by run', () => {
       const actual = createGroupBy(GroupByKey.RUN);
 
       expect(actual).toEqual({key: GroupByKey.RUN});
     });
 
-    it('group by experiment', () => {
+    it('groups by experiment', () => {
       const actual = createGroupBy(GroupByKey.EXPERIMENT);
 
       expect(actual).toEqual({key: GroupByKey.EXPERIMENT});
     });
 
-    it('group by regex', () => {
+    it('groups by regex', () => {
       const actual = createGroupBy(GroupByKey.REGEX, 'hello');
 
       expect(actual).toEqual({key: GroupByKey.REGEX, regexString: 'hello'});
     });
 
-    it('group by regex without regexString', () => {
+    it('groups by regex without regexString', () => {
       const actual = createGroupBy(GroupByKey.REGEX);
 
       expect(actual).toEqual({key: GroupByKey.REGEX, regexString: ''});

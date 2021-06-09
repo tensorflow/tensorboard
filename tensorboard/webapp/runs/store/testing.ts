@@ -60,6 +60,7 @@ export function buildRunsState(
       defaultRunColorForGroupBy: new Map(),
       groupKeyToColorString: new Map(),
       initialGroupBy: {key: GroupByKey.RUN},
+      userSetGroupByKey: null,
       colorGroupRegexString: '',
       regexFilter: '',
       ...dataOverride,
