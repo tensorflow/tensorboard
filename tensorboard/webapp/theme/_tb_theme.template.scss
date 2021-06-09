@@ -42,6 +42,7 @@ $tb-foreground: map_merge(
     // TB specific variable.
     border: #ebebeb,
     link: mat-color($mat-blue, 700),
+    link-visited: mat-color($mat-purple, 700),
   )
 );
 $tb-background: map_merge(
@@ -70,6 +71,9 @@ $tb-dark-foreground: map_merge(
   map-get($tb-dark-theme, foreground),
   (
     border: #555,
+    disabled-text: mat-color($mat-gray, 700),
+    link: mat-color($mat-blue, 400),
+    link-visited: mat-color($mat-purple, 300),
   )
 );
 $tb-dark-background: map_merge(
@@ -212,10 +216,26 @@ $tb-dark-theme: map_merge(
   // Include all theme-styles for the components based on the current theme.
   @include angular-material-theme($tb-theme);
 
+  a {
+    color: map-get($tb-foreground, link);
+
+    &:visited {
+      color: map-get($tb-foreground, link-visited);
+    }
+  }
+
   // Cannot use `tb-dark-theme` as :host-context in the global stylesheet is
   // meaningless.
   body.dark-mode {
     background-color: map-get($tb-dark-background, background);
+
+    a {
+      color: map-get($tb-dark-foreground, link);
+
+      &:visited {
+        color: map-get($tb-dark-foreground, link-visited);
+      }
+    }
 
     @include angular-material-theme($tb-dark-theme);
   }
