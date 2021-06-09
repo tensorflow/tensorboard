@@ -280,7 +280,7 @@ const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
 
       return {
         ...state,
-        userSetGroupByKey: groupBy.key ?? undefined,
+        userSetGroupByKey: groupBy.key,
         defaultRunColorForGroupBy,
         groupKeyToColorString,
         // Resets the color override when the groupBy changes.

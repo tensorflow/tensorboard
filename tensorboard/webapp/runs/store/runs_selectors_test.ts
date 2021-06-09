@@ -395,9 +395,7 @@ describe('runs_selectors', () => {
         })
       );
 
-      expect(selectors.getRunUserSetGroupBy(state)).toEqual({
-        key: GroupByKey.RUN,
-      });
+      expect(selectors.getRunUserSetGroupBy(state)).toEqual(null);
     });
   });
 
@@ -420,6 +418,21 @@ describe('runs_selectors', () => {
       expect(selectors.getRunGroupBy(state)).toEqual({
         key: GroupByKey.REGEX,
         regexString: 'hello',
+      });
+    });
+
+    it('returns groupBy set by user with regexString overridden', () => {
+      const state = buildStateFromRunsState(
+        buildRunsState({
+          colorGroupRegexString: '',
+          initialGroupBy: {key: GroupByKey.REGEX, regexString: 'hello'},
+          userSetGroupByKey: GroupByKey.REGEX,
+        })
+      );
+
+      expect(selectors.getRunGroupBy(state)).toEqual({
+        key: GroupByKey.REGEX,
+        regexString: '',
       });
     });
 
