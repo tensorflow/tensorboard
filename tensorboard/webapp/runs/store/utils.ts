@@ -87,7 +87,7 @@ export function groupRuns(
  */
 export function createGroupBy(
   groupByKey: GroupByKey,
-  regexString?: string | null
+  regexString?: string
 ): GroupBy {
   switch (groupByKey) {
     case GroupByKey.REGEX:
