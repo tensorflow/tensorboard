@@ -211,7 +211,7 @@ The value-clipping fix to this bug will look something like:
 
 ```py
   diff = -(labels *
-           tf.clip_by_value(tf.math.log(probs), 1e-6, 1.))
+           tf.math.log(tf.clip_by_value(probs), 1e-6, 1.))
 ```
 
 It will resolve the numerical instability in this TF2 program and cause the MLP
