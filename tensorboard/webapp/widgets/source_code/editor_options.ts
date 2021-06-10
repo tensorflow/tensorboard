@@ -18,3 +18,7 @@ limitations under the License.
 export const DEFAULT_CODE_LANGUAGE = 'python';
 export const DEFAULT_CODE_FONT_SIZE = 10;
 export const RESIZE_DEBOUNCE_INTERVAL_MS = 50;
+
+export function getMonacoThemeString(useDarkMode: boolean): 'vs' | 'vs-dark' {
+  return useDarkMode ? 'vs-dark' : 'vs';
+}

@@ -86,13 +86,14 @@ describe('Source Code Component', () => {
         readOnly: true,
         fontSize: 10,
         minimap: {enabled: true},
+        theme: 'vs-dark',
       }
     );
     expect(spies.editorSpy.revealLineInCenter).toHaveBeenCalledOnceWith(
       2,
       fakes.fakeMonaco.editor.ScrollType.Smooth
     );
-    expect(spies.editorSpy.setTheme).toHaveBeenCalledOnceWith('vs-dark');
+    expect(fakes.fakeMonaco.editor.setTheme).not.toHaveBeenCalled();
   });
 
   it('renders a file and change to a new file', async () => {
@@ -168,16 +169,18 @@ describe('Source Code Component', () => {
 
     it('uses different theme when `useDarkMode` changes', () => {
       // Forget the calls from initialization.
-      spies.editorSpy.setTheme.calls.reset();
+      fakes.fakeMonaco.editor.setTheme.calls.reset();
       const component = fixture.componentInstance;
 
       component.useDarkMode = true;
       fixture.detectChanges();
-      expect(spies.editorSpy.setTheme).toHaveBeenCalledOnceWith('vs-dark');
+      expect(fakes.fakeMonaco.editor.setTheme).toHaveBeenCalledOnceWith(
+        'vs-dark'
+      );
 
       component.useDarkMode = false;
       fixture.detectChanges();
-      expect(spies.editorSpy.setTheme.calls.allArgs()).toEqual([
+      expect(fakes.fakeMonaco.editor.setTheme.calls.allArgs()).toEqual([
         ['vs-dark'],
         ['vs'],
       ]);
