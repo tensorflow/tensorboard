@@ -28,6 +28,7 @@ def run(k, step):
     """
     Arguments:
         k: a float in the range [0, 1] that affects the histogram values written by the run.
+        step: an integer value to use for writing summaries.
     """
     # Make a normal distribution, with a shifting mean
     mean_moving_normal = tf.random.normal(shape=[1000], mean=(5 * k), stddev=1)
@@ -117,19 +118,19 @@ def run(k, step):
 def run_all(logdir, num_summaries=400):
     """Generate a bunch of histogram data, and write it to logdir."""
     tf.random.set_seed(0)
-    writer = tf.summary.create_file_writer(os.path.join(logdir, "my_run_name"))
+    writer = tf.summary.create_file_writer(logdir)
     with writer.as_default():
         for step in range(num_summaries):
             k = step / float(num_summaries)
             run(k, step)
             writer.flush()
     print(
-        "To view results in your browser, run `tensorboard --logdir %s/my_run_name`"
+        "To view results in your browser, run `tensorboard --logdir %s`"
         % LOGDIR
     )
     print(
         "Logs can be uploaded publicly to TensorBoard.dev via "
-        + "`tensorboard dev upload --logdir %s/my_run_name`" % LOGDIR
+        + "`tensorboard dev upload --logdir %s`" % LOGDIR
     )
 
 
