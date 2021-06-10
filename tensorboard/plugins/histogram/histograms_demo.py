@@ -18,7 +18,6 @@
 
 from absl import app
 import tensorflow as tf
-import os
 
 # Directory into which to write tensorboard data.
 LOGDIR = "/tmp/histograms_demo"
