@@ -25,6 +25,7 @@ import {
 import {
   DEFAULT_CODE_FONT_SIZE,
   DEFAULT_CODE_LANGUAGE,
+  getMonacoThemeString,
   RESIZE_DEBOUNCE_INTERVAL_MS,
 } from './editor_options';
 
@@ -60,10 +61,6 @@ export class SourceCodeComponent implements OnChanges {
     }
   }
 
-  private getMonacoThemeString(): 'vs' | 'vs-dark' {
-    return this.useDarkMode ? 'vs-dark' : 'vs';
-  }
-
   ngOnChanges(changes: SimpleChanges): void {
     if (this.monaco === null) {
       return;
@@ -81,6 +78,7 @@ export class SourceCodeComponent implements OnChanges {
           minimap: {
             enabled: true,
           },
+          theme: getMonacoThemeString(this.useDarkMode),
         }
       );
     }
@@ -126,8 +124,8 @@ export class SourceCodeComponent implements OnChanges {
       ]);
     }
 
-    if (editorNewlyCreated || changes['useDarkMode']) {
-      this.editor.setTheme(this.getMonacoThemeString());
+    if (changes['useDarkMode']) {
+      this.monaco.editor.setTheme(getMonacoThemeString(this.useDarkMode));
     }
   }
 }

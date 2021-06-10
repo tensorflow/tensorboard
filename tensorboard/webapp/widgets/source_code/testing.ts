@@ -54,7 +54,6 @@ export function setUpMonacoFakes() {
           'layout',
           'revealLineInCenter',
           'setValue',
-          'setTheme',
         ]);
         return spies.editorSpy;
       });
@@ -77,6 +76,7 @@ export function setUpMonacoFakes() {
           Immediate: 1,
           Smooth: 0,
         },
+        setTheme: jasmine.createSpy('monaco.editor.setTheme'),
       },
       Range: FakeRange,
     };

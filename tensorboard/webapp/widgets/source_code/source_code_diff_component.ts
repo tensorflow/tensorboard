@@ -23,6 +23,7 @@ import {
 } from '@angular/core';
 import {
   DEFAULT_CODE_FONT_SIZE,
+  getMonacoThemeString,
   RESIZE_DEBOUNCE_INTERVAL_MS,
 } from './editor_options';
 
@@ -62,6 +63,9 @@ export class SourceCodeDiffComponent implements OnChanges {
   @Input()
   monaco: typeof monaco | null = null;
 
+  @Input()
+  useDarkMode!: boolean;
+
   @ViewChild('codeViewerContainer', {static: true, read: ElementRef})
   private readonly codeViewerContainer!: ElementRef<HTMLDivElement>;
 
@@ -91,6 +95,7 @@ export class SourceCodeDiffComponent implements OnChanges {
             enabled: true,
           },
           renderSideBySide: this.renderSideBySide,
+          theme: getMonacoThemeString(this.useDarkMode),
         }
       );
     }
@@ -104,6 +109,10 @@ export class SourceCodeDiffComponent implements OnChanges {
 
     if (changes['renderSideBySide']) {
       this.editor.updateOptions({renderSideBySide: this.renderSideBySide});
+    }
+
+    if (changes['useDarkMode']) {
+      this.monaco.editor.setTheme(getMonacoThemeString(this.useDarkMode));
     }
   }
 }

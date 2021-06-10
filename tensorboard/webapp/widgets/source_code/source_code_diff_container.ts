@@ -32,6 +32,7 @@ import {loadMonaco} from './load_monaco_shim';
       [secondText]="secondText"
       [renderSideBySide]="renderSideBySide"
       [monaco]="monaco$ | async"
+      [useDarkMode]="useDarkMode"
     ></source-code-diff-component>
   `,
   styles: [
@@ -53,6 +54,9 @@ export class SourceCodeDiffContainer implements OnInit {
 
   @Input()
   renderSideBySide: boolean = true;
+
+  @Input()
+  useDarkMode: boolean = false;
 
   monaco$: Observable<typeof monaco> | null = null;
 
