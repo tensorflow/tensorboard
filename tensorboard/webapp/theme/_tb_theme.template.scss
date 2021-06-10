@@ -26,9 +26,16 @@ limitations under the License.
 // Include non-theme styles for core.
 @include mat-core();
 
+// Value for `app-bar` property in $tb-background. Can specify an override in
+// _variable.scss to specifically customize this value.
+$tb-app-bar-color: mat-color($tb-primary, default) !default;
+
 $tb-dark-primary: $tb-primary !default;
 $tb-dark-accent: $tb-accent !default;
 $tb-dark-warn: $tb-warn !default;
+// Value for `app-bar` property in $tb-dark-background. Can specify an override
+// in _variable.scss to specifically customize this value.
+$tb-dark-app-bar-color: mat-color($tb-dark-primary, default) !default;
 
 $tb-theme: mat-light-theme($tb-primary, $tb-accent, $tb-warn);
 
@@ -48,7 +55,7 @@ $tb-foreground: map_merge(
 $tb-background: map_merge(
   $mat-light-theme-background,
   (
-    app-bar: mat-color($tb-primary, default),
+    app-bar: $tb-app-bar-color,
     // Default is `map.get($grey-palette, 50)`.
     background: #fff,
   )
@@ -79,7 +86,7 @@ $tb-dark-foreground: map_merge(
 $tb-dark-background: map_merge(
   map-get($tb-dark-theme, background),
   (
-    app-bar: mat-color($tb-dark-primary, default),
+    app-bar: $tb-dark-app-bar-color,
   )
 );
 $tb-dark-theme: map_merge(
