@@ -375,13 +375,9 @@ describe('runs_selectors', () => {
     it('returns groupBy set by user when it is present', () => {
       const state = buildStateFromRunsState(
         buildRunsState({
-          userSetGroupBy: {
-            key: GroupByKey.REGEX,
-            regexString: 'hello',
-          },
-          initialGroupBy: {
-            key: GroupByKey.RUN,
-          },
+          colorGroupRegexString: 'hello',
+          initialGroupBy: {key: GroupByKey.RUN},
+          userSetGroupByKey: GroupByKey.REGEX,
         })
       );
 
@@ -394,14 +390,12 @@ describe('runs_selectors', () => {
     it('returns null if user never has set one', () => {
       const state = buildStateFromRunsState(
         buildRunsState({
-          userSetGroupBy: undefined,
-          initialGroupBy: {
-            key: GroupByKey.RUN,
-          },
+          initialGroupBy: {key: GroupByKey.RUN},
+          userSetGroupByKey: null,
         })
       );
 
-      expect(selectors.getRunUserSetGroupBy(state)).toBe(null);
+      expect(selectors.getRunUserSetGroupBy(state)).toEqual(null);
     });
   });
 
@@ -415,13 +409,9 @@ describe('runs_selectors', () => {
     it('returns groupBy set by user when it is present', () => {
       const state = buildStateFromRunsState(
         buildRunsState({
-          userSetGroupBy: {
-            key: GroupByKey.REGEX,
-            regexString: 'hello',
-          },
-          initialGroupBy: {
-            key: GroupByKey.RUN,
-          },
+          colorGroupRegexString: 'hello',
+          initialGroupBy: {key: GroupByKey.RUN},
+          userSetGroupByKey: GroupByKey.REGEX,
         })
       );
 
@@ -431,13 +421,26 @@ describe('runs_selectors', () => {
       });
     });
 
+    it('returns groupBy set by user with regexString overridden', () => {
+      const state = buildStateFromRunsState(
+        buildRunsState({
+          colorGroupRegexString: '',
+          initialGroupBy: {key: GroupByKey.REGEX, regexString: 'hello'},
+          userSetGroupByKey: GroupByKey.REGEX,
+        })
+      );
+
+      expect(selectors.getRunGroupBy(state)).toEqual({
+        key: GroupByKey.REGEX,
+        regexString: '',
+      });
+    });
+
     it('returns initial group by if user never has set one', () => {
       const state = buildStateFromRunsState(
         buildRunsState({
-          userSetGroupBy: undefined,
-          initialGroupBy: {
-            key: GroupByKey.RUN,
-          },
+          initialGroupBy: {key: GroupByKey.RUN},
+          userSetGroupByKey: null,
         })
       );
 

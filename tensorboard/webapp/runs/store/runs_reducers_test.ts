@@ -193,9 +193,7 @@ describe('runs_reducers', () => {
 
     it('assigns default color to new runs', () => {
       const state = buildRunsState({
-        initialGroupBy: {
-          key: GroupByKey.RUN,
-        },
+        initialGroupBy: {key: GroupByKey.RUN},
         defaultRunColorForGroupBy: new Map([
           ['foo', '#aaa'],
           ['bar', '#bbb'],
@@ -254,12 +252,8 @@ describe('runs_reducers', () => {
     describe('advanced grouping', () => {
       it('assigns default color to by experiment', () => {
         const state = buildRunsState({
-          initialGroupBy: {
-            key: GroupByKey.RUN,
-          },
-          userSetGroupBy: {
-            key: GroupByKey.EXPERIMENT,
-          },
+          initialGroupBy: {key: GroupByKey.RUN},
+          userSetGroupByKey: GroupByKey.EXPERIMENT,
           defaultRunColorForGroupBy: new Map([
             ['foo', '#aaa'],
             // `bar` is not present in neither experiment for `runsForAllExperiments` below;
@@ -757,9 +751,7 @@ describe('runs_reducers', () => {
       );
 
       expect(nextState.data.initialGroupBy).toEqual({key: GroupByKey.RUN});
-      expect(nextState.data.userSetGroupBy).toEqual({
-        key: GroupByKey.EXPERIMENT,
-      });
+      expect(nextState.data.userSetGroupByKey).toEqual(GroupByKey.EXPERIMENT);
       expect(nextState.data.groupKeyToColorString).toEqual(
         new Map([
           ['eid1', colorUtils.CHART_COLOR_PALLETE[0]],
@@ -780,7 +772,7 @@ describe('runs_reducers', () => {
     it('reassigns color to RUN from EXPERIMENT', () => {
       const state = buildRunsState({
         initialGroupBy: {key: GroupByKey.EXPERIMENT},
-        userSetGroupBy: {key: GroupByKey.EXPERIMENT},
+        userSetGroupByKey: GroupByKey.EXPERIMENT,
         runIds: {
           eid1: ['run1', 'run2'],
           eid2: ['run3', 'run4'],
@@ -818,7 +810,7 @@ describe('runs_reducers', () => {
         })
       );
 
-      expect(nextState.data.userSetGroupBy).toEqual({key: GroupByKey.RUN});
+      expect(nextState.data.userSetGroupByKey).toEqual(GroupByKey.RUN);
       expect(nextState.data.groupKeyToColorString).toEqual(
         new Map([
           ['run1', colorUtils.CHART_COLOR_PALLETE[0]],
@@ -843,7 +835,7 @@ describe('runs_reducers', () => {
     it('ignores non-dashboard routeKind', () => {
       const state = buildRunsState({
         initialGroupBy: {key: GroupByKey.EXPERIMENT},
-        userSetGroupBy: {key: GroupByKey.RUN},
+        userSetGroupByKey: GroupByKey.RUN,
       });
 
       const nextState = runsReducers.reducers(
@@ -860,13 +852,14 @@ describe('runs_reducers', () => {
         })
       );
 
-      expect(nextState.data.userSetGroupBy).toEqual({key: GroupByKey.RUN});
+      expect(nextState.data.userSetGroupByKey).toEqual(GroupByKey.RUN);
     });
 
     it('sets userSetGroupBy to the value provided', () => {
       const state = buildRunsState({
+        colorGroupRegexString: '',
         initialGroupBy: {key: GroupByKey.REGEX, regexString: ''},
-        userSetGroupBy: {key: GroupByKey.RUN},
+        userSetGroupByKey: GroupByKey.RUN,
       });
 
       const partialState: URLDeserializedState = {
@@ -882,15 +875,13 @@ describe('runs_reducers', () => {
         })
       );
 
-      expect(nextState.data.userSetGroupBy).toEqual({
-        key: GroupByKey.EXPERIMENT,
-      });
+      expect(nextState.data.userSetGroupByKey).toEqual(GroupByKey.EXPERIMENT);
     });
 
     it('ignores the action if the partialState does not contain groupBy', () => {
       const state = buildRunsState({
         initialGroupBy: {key: GroupByKey.EXPERIMENT},
-        userSetGroupBy: {key: GroupByKey.RUN},
+        userSetGroupByKey: GroupByKey.RUN,
       });
 
       const partialState: URLDeserializedState = {
@@ -906,15 +897,13 @@ describe('runs_reducers', () => {
         })
       );
 
-      expect(nextState.data.userSetGroupBy).toEqual({
-        key: GroupByKey.RUN,
-      });
+      expect(nextState.data.userSetGroupByKey).toEqual(GroupByKey.RUN);
     });
 
     it('does not change the default colors by the new groupBy', () => {
       const state = buildRunsState({
         initialGroupBy: {key: GroupByKey.EXPERIMENT},
-        userSetGroupBy: {key: GroupByKey.RUN},
+        userSetGroupByKey: GroupByKey.RUN,
         runIds: {
           eid1: ['run1', 'run2'],
           eid2: ['run3', 'run4'],

@@ -16,7 +16,7 @@ import {createFeatureSelector, createSelector} from '@ngrx/store';
 
 import {DataLoadState, LoadState} from '../../types/data';
 import {SortDirection} from '../../types/ui';
-import {GroupBy, SortKey} from '../types';
+import {GroupBy, GroupByKey, SortKey} from '../types';
 import {
   Run,
   RunsDataState,
@@ -25,7 +25,7 @@ import {
   RUNS_FEATURE_KEY,
   State,
 } from './runs_types';
-import {serializeExperimentIds} from './utils';
+import {createGroupBy, serializeExperimentIds} from './utils';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
@@ -126,7 +126,12 @@ export const getRunSelectionMap = createSelector(
 export const getRunUserSetGroupBy = createSelector(
   getDataState,
   (dataState: RunsDataState): GroupBy | null => {
-    return dataState.userSetGroupBy ?? null;
+    return dataState.userSetGroupByKey !== null
+      ? createGroupBy(
+          dataState.userSetGroupByKey,
+          dataState.colorGroupRegexString
+        )
+      : null;
   }
 );
 

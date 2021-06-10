@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import {GroupByKey} from '../types';
 import {buildRun} from './testing';
-import {groupRuns, serializeExperimentIds} from './utils';
+import {createGroupBy, groupRuns, serializeExperimentIds} from './utils';
 
 describe('run store utils test', () => {
   describe('#serializeExperimentIds', () => {
@@ -230,6 +230,32 @@ describe('run store utils test', () => {
           nonMatches: [buildRun({id: 'eid2/alpha', name: 'alpha'})],
         });
       });
+    });
+  });
+
+  describe('creatGroupBy', () => {
+    it('groups by run', () => {
+      const actual = createGroupBy(GroupByKey.RUN);
+
+      expect(actual).toEqual({key: GroupByKey.RUN});
+    });
+
+    it('groups by experiment', () => {
+      const actual = createGroupBy(GroupByKey.EXPERIMENT);
+
+      expect(actual).toEqual({key: GroupByKey.EXPERIMENT});
+    });
+
+    it('groups by regex', () => {
+      const actual = createGroupBy(GroupByKey.REGEX, 'hello');
+
+      expect(actual).toEqual({key: GroupByKey.REGEX, regexString: 'hello'});
+    });
+
+    it('groups by regex without regexString', () => {
+      const actual = createGroupBy(GroupByKey.REGEX);
+
+      expect(actual).toEqual({key: GroupByKey.REGEX, regexString: ''});
     });
   });
 });

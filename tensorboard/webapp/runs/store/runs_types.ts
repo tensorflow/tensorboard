@@ -20,7 +20,7 @@ import {RouteContextedState} from '../../app_routing/route_contexted_reducer_hel
 import {LoadState} from '../../types/data';
 import {SortDirection} from '../../types/ui';
 import {HparamValue} from '../data_source/runs_data_source_types';
-import {GroupBy, SortKey} from '../types';
+import {GroupBy, GroupByKey, SortKey} from '../types';
 
 export {Domain, DomainType} from '../data_source/runs_data_source_types';
 
@@ -50,8 +50,8 @@ export interface RunsDataRoutefulState {
   defaultRunColorForGroupBy: Map<RunId, string>;
   runColorOverrideForGroupBy: Map<RunId, string>;
   groupKeyToColorString: Map<string, string>;
-  userSetGroupBy?: GroupBy;
   initialGroupBy: GroupBy;
+  userSetGroupByKey: GroupByKey | null;
   colorGroupRegexString: string;
   regexFilter: string;
 }
