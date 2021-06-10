@@ -92,7 +92,6 @@ export function createGroupBy(
   switch (groupByKey) {
     case GroupByKey.REGEX:
       return {key: groupByKey, regexString: regexString ?? ''};
-      break;
     case GroupByKey.RUN:
     case GroupByKey.EXPERIMENT:
     default:
