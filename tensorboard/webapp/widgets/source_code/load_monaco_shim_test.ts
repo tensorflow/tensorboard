@@ -75,15 +75,9 @@ describe('loadMonaco shim', () => {
     expect(requireSpy).not.toHaveBeenCalled();
   });
 
-  it('rejects if require.js is unavailable', async (done) => {
+  it('rejects if require.js is unavailable', async () => {
     delete windowWithRequireAndMonaco.require;
-    // TODO(cais): Use async matchers such as toBeRejectedWithError once they
-    // are available.
-    try {
-      await loadMonaco();
-      done.fail();
-    } catch (e) {
-      done();
-    }
+
+    await expectAsync(loadMonaco()).toBeRejected();
   });
 });
