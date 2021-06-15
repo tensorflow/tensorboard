@@ -88,8 +88,10 @@ tf_ts_library(
     deps = [":sptree"],
 )
 
+################# Standalone development #################
+
 tf_js_binary(
-    name = "standalone_bundle",
+    name = "standalone_bundle_no_vendor",
     compile = 1,
     entry_point = "bundle.ts",
     includes_polymer = True,
@@ -98,7 +100,16 @@ tf_js_binary(
     ],
 )
 
-################# Standalone development #################
+genrule(
+    name = "standalone_bundle_js",
+    srcs = [
+        # DO NOT SORT.
+        # internal: umap_runtime_dep
+        ":standalone_bundle_no_vendor.js",
+    ],
+    outs = ["standalone_bundle.js"],
+    cmd = "cat $(SRCS) > $@",
+)
 
 tf_web_library(
     name = "standalone_lib",
