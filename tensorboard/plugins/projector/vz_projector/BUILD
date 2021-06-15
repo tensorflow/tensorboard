@@ -91,7 +91,6 @@ tf_ts_library(
 tf_js_binary(
     name = "standalone_bundle",
     compile = 1,
-    dev_mode_only = True,
     entry_point = "bundle.ts",
     includes_polymer = True,
     deps = [
