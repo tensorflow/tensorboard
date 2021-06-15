@@ -62,9 +62,10 @@ export function findKNNGPUCosDistNorm<T>(
   // pair of points, which we sort using KMin data structure to obtain the
   // K nearest neighbors for each point.
   const nearest: NearestEntry[][] = new Array(N);
-  const numPieces = Math.ceil(N / OPTIMAL_GPU_BLOCK_SIZE);
-  let actualPieceSize = Math.floor(N / numPieces);
-  let modulo = N % numPieces;
+  let numPieces = Math.ceil(N / OPTIMAL_GPU_BLOCK_SIZE);
+  const actualPieceSize = Math.floor(N / numPieces);
+  const modulo = N % actualPieceSize;
+  numPieces += modulo ? 1 : 0;
   let offset = 0;
   let progress = 0;
   let progressDiff = 1 / (2 * numPieces);
@@ -88,7 +89,11 @@ export function findKNNGPUCosDistNorm<T>(
     ];
     maybePaddedCosDistMatrix = tf.pad(cosDistMatrix, padding);
   }
-  const splits = tf.split(maybePaddedCosDistMatrix, numPieces, 0);
+  const splits = tf.split(
+    maybePaddedCosDistMatrix,
+    new Array(numPieces).fill(actualPieceSize),
+    0
+  );
 
   function step(resolve: (result: NearestEntry[][]) => void) {
     let progressMsg =
@@ -97,7 +102,6 @@ export function findKNNGPUCosDistNorm<T>(
       .runAsyncTask(
         progressMsg,
         async () => {
-          const B = piece < modulo ? actualPieceSize + 1 : actualPieceSize;
           // `.data()` returns flattened Float32Array of B * N dimension.
           // For matrix of
           // [ 1  2 ]
@@ -105,9 +109,10 @@ export function findKNNGPUCosDistNorm<T>(
           // `.data()` returns [1, 2, 3, 4].
           const partial = await splits[piece].data();
           progress += progressDiff;
-          for (let i = 0; i < B; i++) {
+          for (let i = 0; i < actualPieceSize; i++) {
             let kMin = new KMin<NearestEntry>(k);
             let iReal = offset + i;
+            if (iReal >= N) break;
             for (let j = 0; j < N; j++) {
               // Skip diagonal entries.
               if (j === iReal) {
@@ -124,7 +129,7 @@ export function findKNNGPUCosDistNorm<T>(
             nearest[iReal] = kMin.getMinKItems();
           }
           progress += progressDiff;
-          offset += B;
+          offset += actualPieceSize;
           piece++;
         },
         KNN_GPU_MSG_ID
