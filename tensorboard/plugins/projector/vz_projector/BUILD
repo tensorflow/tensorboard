@@ -1,4 +1,4 @@
-load("//tensorboard/defs:defs.bzl", "tf_js_binary", "tf_ts_library")
+load("//tensorboard/defs:defs.bzl", "tf_js_binary", "tf_ng_web_test_suite", "tf_ts_library")
 load("//tensorboard/defs:web.bzl", "tb_combine_html", "tf_web_library")
 
 package(default_visibility = ["//tensorboard/plugins/projector:__subpackages__"])
@@ -91,6 +91,7 @@ tf_ts_library(
 tf_js_binary(
     name = "standalone_bundle",
     compile = 1,
+    dev_mode_only = True,
     entry_point = "bundle.ts",
     includes_polymer = True,
     deps = [
@@ -120,5 +121,26 @@ tb_combine_html(
     output_path = "/standalone.html",
     deps = [
         ":standalone_lib",
+    ],
+)
+
+################# Test ##################
+
+tf_ts_library(
+    name = "vz_projector_test_lib",
+    testonly = True,
+    srcs = [
+        "knn_test.ts",
+    ],
+    deps = [
+        ":vz_projector",
+        "@npm//@types/jasmine",
+    ],
+)
+
+tf_ng_web_test_suite(
+    name = "vz_projector_test",
+    deps = [
+        ":vz_projector_test_lib",
     ],
 )

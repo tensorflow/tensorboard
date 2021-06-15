@@ -454,14 +454,28 @@ export class DataSet {
     // Handle the case where we've previously found the nearest neighbors.
     const previouslyComputedNNeighbors =
       this.nearest && this.nearest.length ? this.nearest[0].length : 0;
-    if (this.nearest != null && previouslyComputedNNeighbors >= nNeighbors) {
+    if (
+      this.nearest != null &&
+      this.nearest.length >= data.length &&
+      previouslyComputedNNeighbors >= nNeighbors
+    ) {
       return Promise.resolve(
-        this.nearest.map((neighbors) => neighbors.slice(0, nNeighbors))
+        this.nearest
+          // `this.points` is only set and constructor and `data` is subset of
+          // it. If `nearest` is calculated with N = 1000 sampled points before
+          // and we are asked to calculate KNN ofN = 50, pretend like we
+          // recalculated the KNN for N = 50 by taking first 50 of result from
+          // N = 1000.
+          .slice(0, data.length)
+          // NearestEntry has list of K-nearest vector indices at given index.
+          // Hence, if we already precomputed K = 100 before and later seek
+          // K-10, we just have ot take the first ten.
+          .map((neighbors) => neighbors.slice(0, nNeighbors))
       );
     } else {
       const knnGpuEnabled = (await util.hasWebGLSupport()) && !IS_FIREFOX;
       const result = await (knnGpuEnabled
-        ? knn.findKNNGPUCosine(data, nNeighbors, (d) => d.vector)
+        ? knn.findKNNGPUCosDistNorm(data, nNeighbors, (d) => d.vector)
         : knn.findKNN(
             data,
             nNeighbors,

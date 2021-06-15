@@ -34,16 +34,18 @@ export type NearestEntry = {
 const OPTIMAL_GPU_BLOCK_SIZE = 256;
 /** Id of message box used for knn gpu progress bar. */
 const KNN_GPU_MSG_ID = 'knn-gpu';
+
 /**
  * Returns the K nearest neighbors for each vector where the distance
  * computation is done on the GPU (WebGL) using cosine distance.
  *
  * @param dataPoints List of data points, where each data point holds an
- *   n-dimensional vector.
+ *   n-dimensional vector. Assumes that the vector is already normalized to unit
+ *   norm.
  * @param k Number of nearest neighbors to find.
  * @param accessor A method that returns the vector, given the data point.
  */
-export function findKNNGPUCosine<T>(
+export function findKNNGPUCosDistNorm<T>(
   dataPoints: T[],
   k: number,
   accessor: (dataPoint: T) => Float32Array
@@ -61,7 +63,7 @@ export function findKNNGPUCosine<T>(
   // K nearest neighbors for each point.
   const nearest: NearestEntry[][] = new Array(N);
   const numPieces = Math.ceil(N / OPTIMAL_GPU_BLOCK_SIZE);
-  let M = Math.floor(N / numPieces);
+  let actualPieceSize = Math.floor(N / numPieces);
   let modulo = N % numPieces;
   let offset = 0;
   let progress = 0;
@@ -70,10 +72,23 @@ export function findKNNGPUCosine<T>(
 
   const typedArray = vector.toTypedArray(dataPoints, accessor);
   const bigMatrix = tf.tensor(typedArray, [N, dim]);
-  const bigMatrixTransposed = bigMatrix.transpose();
+  const bigMatrixTransposed = tf.transpose(bigMatrix);
+  // 1 - A * A^T.
   const bigMatrixSquared = tf.matMul(bigMatrix, bigMatrixTransposed);
   const cosDistMatrix = tf.sub(1, bigMatrixSquared);
-  const splits = tf.split(cosDistMatrix, numPieces, 1);
+
+  let maybePaddedCosDistMatrix = cosDistMatrix;
+  if (actualPieceSize * numPieces > N) {
+    // Expect the input to be rank 2 (though it is not typed that way) so we
+    // want to pad the first dimension so we split very evenly (all splitted
+    // tensor have exactly the same dimesion).
+    const padding: Array<[number, number]> = [
+      [0, actualPieceSize * numPieces - N],
+      [0, 0],
+    ];
+    maybePaddedCosDistMatrix = tf.pad(cosDistMatrix, padding);
+  }
+  const splits = tf.split(maybePaddedCosDistMatrix, numPieces, 0);
 
   function step(resolve: (result: NearestEntry[][]) => void) {
     let progressMsg =
@@ -82,8 +97,12 @@ export function findKNNGPUCosine<T>(
       .runAsyncTask(
         progressMsg,
         async () => {
-          const B = piece < modulo ? M + 1 : M;
+          const B = piece < modulo ? actualPieceSize + 1 : actualPieceSize;
           // `.data()` returns flattened Float32Array of B * N dimension.
+          // For matrix of
+          // [ 1  2 ]
+          // [ 3  4 ],
+          // `.data()` returns [1, 2, 3, 4].
           const partial = await splits[piece].data();
           progress += progressDiff;
           for (let i = 0; i < B; i++) {
@@ -94,8 +113,13 @@ export function findKNNGPUCosine<T>(
               if (j === iReal) {
                 continue;
               }
-              const cosDist = partial[j * B + i];
-              kMin.add(cosDist, {index: j, dist: cosDist});
+              // Access i * N's row at `j` column.
+              // Reach row has N entries and j-th index has cosine distance
+              // between iReal vs. j-th vectors.
+              const cosDist = partial[i * N + j];
+              if (cosDist >= 0) {
+                kMin.add(cosDist, {index: j, dist: cosDist});
+              }
             }
             nearest[iReal] = kMin.getMinKItems();
           }
@@ -253,3 +277,5 @@ export function findKNNofPoint<T>(
   }
   return kMin.getMinKItems();
 }
+
+export const TEST_ONLY = {OPTIMAL_GPU_BLOCK_SIZE};
