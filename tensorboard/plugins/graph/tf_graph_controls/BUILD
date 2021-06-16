@@ -11,6 +11,7 @@ tf_ts_library(
     ],
     strict_checks = False,
     deps = [
+        "//tensorboard/components/polymer:dark_mode_mixin",
         "//tensorboard/components/polymer:irons_and_papers",
         "//tensorboard/components/polymer:legacy_element_mixin",
         "//tensorboard/components/tb_debug",

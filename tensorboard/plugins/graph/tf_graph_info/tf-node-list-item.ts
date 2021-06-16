@@ -18,11 +18,12 @@ import {customElement, property} from '@polymer/decorators';
 import '../../../components/tf_dashboard_common/tensorboard-color';
 import '../tf_graph_common/tf-node-icon';
 
+import {DarkModeMixin} from '../../../components/polymer/dark_mode_mixin';
 import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
 import {ColorBy} from '../tf_graph_common/view_types';
 
 @customElement('tf-node-list-item')
-class TfNodeListItem extends LegacyElementMixin(PolymerElement) {
+class TfNodeListItem extends LegacyElementMixin(DarkModeMixin(PolymerElement)) {
   static readonly template = html`
     <style>
       #list-item {
@@ -38,7 +39,7 @@ class TfNodeListItem extends LegacyElementMixin(PolymerElement) {
         background-color: var(--google-yellow-100);
       }
 
-      :host-context(body.dark-mode) #list-item:hover {
+      :host(.dark-mode) #list-item:hover {
         background-color: var(--paper-yellow-900);
         color: #fff;
       }

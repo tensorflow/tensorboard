@@ -16,6 +16,7 @@ limitations under the License.
 import {PolymerElement, html} from '@polymer/polymer';
 import {computed, customElement, property} from '@polymer/decorators';
 
+import {DarkModeMixin} from '../../../components/polymer/dark_mode_mixin';
 import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
 import '../../../components/tf_dashboard_common/tensorboard-color';
 
@@ -29,14 +30,14 @@ export enum GraphIconType {
   SUMMARY = 'SUMMARY',
 }
 @customElement('tf-graph-icon')
-class TfGraphIcon extends LegacyElementMixin(PolymerElement) {
+class TfGraphIcon extends LegacyElementMixin(DarkModeMixin(PolymerElement)) {
   static readonly template = html`
     <style>
       :host {
         font-size: 0;
       }
 
-      :host-context(body.dark-mode) svg {
+      :host(.dark-mode) svg {
         filter: invert(1);
       }
 

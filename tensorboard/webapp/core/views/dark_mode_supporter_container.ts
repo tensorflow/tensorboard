@@ -33,6 +33,8 @@ import {getDarkModeEnabled} from '../../selectors';
 export class DarkModeSupportContainer {
   constructor(store: Store<State>) {
     store.select(getDarkModeEnabled).subscribe((darkMode) => {
+      // When changing the class name `dark-mode`, we need to update the
+      // DarkModeMixin which relies on the class name.
       document.body.classList.toggle('dark-mode', darkMode);
     });
   }

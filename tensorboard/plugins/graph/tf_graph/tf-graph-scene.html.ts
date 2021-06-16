@@ -17,7 +17,7 @@ import {html} from '@polymer/polymer';
 // Please keep node font-size/classnames in sync with tf-graph-common/common.ts
 export const template = html`
   <style>
-    :host-context(body.dark-mode) {
+    :host(.dark-mode) {
       filter: invert(1);
     }
 
