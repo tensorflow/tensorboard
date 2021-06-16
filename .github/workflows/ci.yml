@@ -106,7 +106,7 @@ jobs:
       - name: 'Bazel: run Pip package test (non-TensorFlow only)'
         run: |
           bazel run //tensorboard/pip_package:test_pip_package -- \
-            --tf-version notf"
+            --tf-version notf
         if: matrix.tf_version_id == 'notf'
       - name: 'Bazel: run manual tests'
         run: |
