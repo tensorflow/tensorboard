@@ -21,9 +21,12 @@ import * as PolymerDom from '../../../components/polymer/dom';
 import '../tf_hparams_session_group_details/tf-hparams-session-group-details';
 import * as tf_hparams_utils from '../tf_hparams_utils/tf-hparams-utils';
 import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
+import {DarkModeMixin} from '../../../components/polymer/dark_mode_mixin';
 
 @customElement('tf-hparams-table-view')
-class TfHparamsTableView extends LegacyElementMixin(PolymerElement) {
+class TfHparamsTableView extends LegacyElementMixin(
+  DarkModeMixin(PolymerElement)
+) {
   static readonly template = html`
     <vaadin-grid
       class="session-group-table"
@@ -105,12 +108,12 @@ class TfHparamsTableView extends LegacyElementMixin(PolymerElement) {
         display: inline;
       }
 
-      :host-context(body.dark-mode) {
+      :host(.dark-mode) {
         --lumo-base-color: #303030;
         --lumo-body-text-color: #fff;
       }
 
-      :host-context(body.dark-mode) vaadin-grid {
+      :host(.dark-mode) vaadin-grid {
         --_lumo-grid-secondary-border-color: #505050;
       }
 

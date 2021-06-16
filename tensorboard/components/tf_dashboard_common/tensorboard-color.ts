@@ -30,6 +30,7 @@ style.textContent = `
     --tb-raised-button-shadow-color: rgba(0, 0, 0, 0.2);
     --primary-background-color: #fff;
     --secondary-background-color: #e9e9e9;
+    --tb-layout-background-color: #f5f5f5;
   }
 
   :root .dark-mode {
@@ -42,6 +43,7 @@ style.textContent = `
     --secondary-text-color: var(--paper-grey-400);
     --primary-background-color: #303030;  /* material grey A400. */
     --secondary-background-color: #3a3a3a;
+    --tb-layout-background-color: #3a3a3a;
   }
 `;
 document.head.appendChild(style);

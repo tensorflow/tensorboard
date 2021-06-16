@@ -24,9 +24,12 @@ import * as tf_graph_hierarchy from '../tf_graph_common/hierarchy';
 import * as tf_graph_render from '../tf_graph_common/render';
 
 import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
+import {DarkModeMixin} from '../../../components/polymer/dark_mode_mixin';
 
 @customElement('tf-graph-op-compat-card')
-class TfGraphOpCompatCard extends LegacyElementMixin(PolymerElement) {
+class TfGraphOpCompatCard extends LegacyElementMixin(
+  DarkModeMixin(PolymerElement)
+) {
   static readonly template = html`
     <style>
       :host {
@@ -94,7 +97,7 @@ class TfGraphOpCompatCard extends LegacyElementMixin(PolymerElement) {
        * Sadly, because the whole body is inverted in color, legends also need
        * to be inverted.
        **/
-      :host-context(body.dark-mode) div.op-compat-display {
+      :host(.dark-mode) div.op-compat-display {
         filter: invert(1);
       }
 

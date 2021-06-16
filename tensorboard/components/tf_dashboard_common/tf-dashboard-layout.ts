@@ -18,9 +18,10 @@ import {customElement} from '@polymer/decorators';
 
 import './tensorboard-color';
 import './scrollbar-style';
+import {DarkModeMixin} from '../polymer/dark_mode_mixin';
 
 @customElement('tf-dashboard-layout')
-class TfDashboardLayout extends PolymerElement {
+class TfDashboardLayout extends DarkModeMixin(PolymerElement) {
   static readonly template = html`
     <div id="sidebar">
       <slot name="sidebar"></slot>
@@ -38,7 +39,7 @@ class TfDashboardLayout extends PolymerElement {
         height: 100%;
       }
 
-      :host-context(body.dark-mode) {
+      :host(.dark-mode) {
         background-color: var(--secondary-background-color);
       }
 

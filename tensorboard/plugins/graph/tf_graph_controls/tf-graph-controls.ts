@@ -27,6 +27,7 @@ import * as tf_graph_util from '../tf_graph_common/util';
 import '../../../components/tf_dashboard_common/tensorboard-color';
 import '../tf_graph_common/tf-graph-icon';
 import '../tf_graph_node_search/tf-graph-node-search';
+import {DarkModeMixin} from '../../../components/polymer/dark_mode_mixin';
 import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
 import {ColorBy} from '../tf_graph_common/view_types';
 
@@ -109,7 +110,9 @@ const GRADIENT_COMPATIBLE_COLOR_BY: Set<ColorBy> = new Set([
   ColorBy.MEMORY,
 ]);
 @customElement('tf-graph-controls')
-class TfGraphControls extends LegacyElementMixin(PolymerElement) {
+class TfGraphControls extends LegacyElementMixin(
+  DarkModeMixin(PolymerElement)
+) {
   static readonly template = html`
     <style>
       :host {
@@ -127,7 +130,7 @@ class TfGraphControls extends LegacyElementMixin(PolymerElement) {
         --paper-font-subhead_-_font-size: 14px;
       }
 
-      :host-context(body.dark-mode) {
+      :host(.dark-mode) {
         --tb-graph-controls-title-color: #fff;
         --tb-graph-controls-legend-text-color: #f3f3f3;
         --tb-graph-controls-text-color: #eee;

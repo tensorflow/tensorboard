@@ -15,6 +15,7 @@ tf_ts_library(
     ],
     strict_checks = False,
     deps = [
+        "//tensorboard/components/polymer:dark_mode_mixin",
         "//tensorboard/components/polymer:legacy_element_mixin",
         "//tensorboard/plugins/hparams:types",
         "//tensorboard/plugins/hparams/tf_hparams_session_group_values",

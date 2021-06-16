@@ -32,6 +32,7 @@ tf_ts_library(
     strict_checks = False,
     visibility = ["//visibility:public"],
     deps = [
+        "//tensorboard/components/polymer:dark_mode_mixin",
         "//tensorboard/components/polymer:dom",
         "//tensorboard/components/polymer:legacy_element_mixin",
         "//tensorboard/components/tb_debug",

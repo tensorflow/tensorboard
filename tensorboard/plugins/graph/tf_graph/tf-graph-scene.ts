@@ -31,13 +31,14 @@ import * as tf_graph_minimap from '../tf_graph_common/minimap';
 import * as tf_graph_render from '../tf_graph_common/render';
 import {template} from './tf-graph-scene.html';
 
+import {DarkModeMixin} from '../../../components/polymer/dark_mode_mixin';
 import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
 import {TfGraphScene} from '../tf_graph_common/tf-graph-scene';
 import {ColorBy} from '../tf_graph_common/view_types';
 
 @customElement('tf-graph-scene')
 class TfGraphScene2
-  extends LegacyElementMixin(PolymerElement)
+  extends LegacyElementMixin(DarkModeMixin(PolymerElement))
   implements TfGraphScene {
   static readonly template = template;
 

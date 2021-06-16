@@ -65,6 +65,7 @@ import {html, PolymerElement} from '@polymer/polymer';
 import * as d3 from 'd3';
 import * as _ from 'lodash';
 
+import {DarkModeMixin} from '../../../components/polymer/dark_mode_mixin';
 import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
 import '../tf_hparams_session_group_values/tf-hparams-session-group-values';
 import {HparamInfo, MetricInfo, Schema} from '../tf_hparams_types/types';
@@ -83,7 +84,9 @@ interface Option {
 }
 
 @customElement('tf-hparams-parallel-coords-plot')
-class TfHparamsParallelCoordsPlot extends LegacyElementMixin(PolymerElement) {
+class TfHparamsParallelCoordsPlot extends LegacyElementMixin(
+  DarkModeMixin(PolymerElement)
+) {
   static readonly template = html`
     <div id="container">
       <svg id="svg"></svg>
@@ -94,7 +97,7 @@ class TfHparamsParallelCoordsPlot extends LegacyElementMixin(PolymerElement) {
         --tf-hparams-parallel-coords-plot-axis-shadow: 0 1px 0 #fff,
           1px 0 0 #fff, 0 -1px 0 #fff, -1px 0 0 #fff;
       }
-      :host-context(body.dark-mode) {
+      :host(.dark-mode) {
         --tf-hparams-parallel-coords-plot-axis-shadow: 0 1px 0 #000,
           1px 0 0 #000, 0 -1px 0 #000, -1px 0 0 #000;
       }

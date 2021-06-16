@@ -25,6 +25,16 @@ tf_ts_library(
 )
 
 tf_ts_library(
+    name = "dark_mode_mixin",
+    srcs = [
+        "dark_mode_mixin.ts",
+    ],
+    deps = [
+        "@npm//@polymer/polymer",
+    ],
+)
+
+tf_ts_library(
     name = "legacy_element_mixin",
     srcs = [
         "legacy_element_mixin.ts",
