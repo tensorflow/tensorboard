@@ -32,6 +32,8 @@ env:
   BUILDTOOLS_VERSION: '3.0.0'
   BUILDIFIER_SHA256SUM: 'e92a6793c7134c5431c58fbc34700664f101e5c9b1c1fcd93b97978e8b7f88db'
   BUILDOZER_SHA256SUM: '3d58a0b6972e4535718cdd6c12778170ea7382de7c75bc3728f5719437ffb84d'
+  # See https://github.com/tensorflow/tensorboard/pull/5068.
+  TENSORFLOW_VERSION: 'tf-nightly==2.6.0.dev20210614'
 
 jobs:
   build:
@@ -40,7 +42,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        tf_version_id: ['tensorflow', 'notf']
+        tf_version_id: ['tf', 'notf']
         python_version: ['3.7']
     steps:
       - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e
@@ -75,7 +77,7 @@ jobs:
             "common --remote_upload_local_results=true" \
             ;
       - name: 'Install TensorFlow'
-        run: pip install "${{ matrix.tf_version_id }}"
+        run: pip install "${TENSORFLOW_VERSION}"
         if: matrix.tf_version_id != 'notf'
       - name: 'Install Python dependencies'
         run: |
@@ -96,10 +98,16 @@ jobs:
       - name: 'Bazel: test (non-TensorFlow only)'
         run: bazel test //tensorboard/... --test_tag_filters="support_notf"
         if: matrix.tf_version_id == 'notf'
-      - name: 'Bazel: run Pip package test'
+      - name: 'Bazel: run Pip package test (with TensorFlow support)'
         run: |
           bazel run //tensorboard/pip_package:test_pip_package -- \
-            --tf-version "${{ matrix.tf_version_id }}"
+            --tf-version "${TENSORFLOW_VERSION}"
+        if: matrix.tf_version_id != 'notf'
+      - name: 'Bazel: run Pip package test (non-TensorFlow only)'
+        run: |
+          bazel run //tensorboard/pip_package:test_pip_package -- \
+            --tf-version notf"
+        if: matrix.tf_version_id == 'notf'
       - name: 'Bazel: run manual tests'
         run: |
           bazel test //tensorboard/compat/tensorflow_stub:gfile_s3_test &&
