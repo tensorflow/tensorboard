@@ -117,6 +117,43 @@ describe('feature_flag_selectors', () => {
     });
   });
 
+  describe('#getIsAutoDarkModeAllowed', () => {
+    it('returns the proper value', () => {
+      let state = buildState(
+        buildFeatureFlagState({
+          defaultFlags: buildFeatureFlag({
+            isAutoDarkModeAllowed: true,
+          }),
+        })
+      );
+      expect(selectors.getIsAutoDarkModeAllowed(state)).toEqual(true);
+
+      state = buildState(
+        buildFeatureFlagState({
+          defaultFlags: buildFeatureFlag({
+            isAutoDarkModeAllowed: false,
+          }),
+          flagOverrides: {
+            isAutoDarkModeAllowed: true,
+          },
+        })
+      );
+      expect(selectors.getIsAutoDarkModeAllowed(state)).toEqual(true);
+
+      state = buildState(
+        buildFeatureFlagState({
+          defaultFlags: buildFeatureFlag({
+            isAutoDarkModeAllowed: false,
+          }),
+          flagOverrides: {
+            isAutoDarkModeAllowed: false,
+          },
+        })
+      );
+      expect(selectors.getIsAutoDarkModeAllowed(state)).toEqual(false);
+    });
+  });
+
   describe('#getEnabledExperimentalPlugins', () => {
     it('returns value in array', () => {
       const state = buildState(

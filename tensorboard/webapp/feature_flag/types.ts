@@ -17,6 +17,11 @@ export interface FeatureFlags {
   // Whether user wants to use dark mode. It can be set via browser setting
   // (media query).
   enableDarkMode: boolean;
+  // Whether the dark mode feature is enabled or disabled at the application
+  // level. Temporary flag to gate the feature until it is more feature
+  // complete (it is badly broken on Firefox). The feature is still available
+  // when using the query parameter, `?darkMode`.
+  isAutoDarkModeAllowed: boolean;
   // Whether to enable experimental semantic color grouping feature.
   enabledColorGroup: boolean;
   // experimental plugins to manually enable.

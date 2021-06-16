@@ -24,6 +24,7 @@ import {
   TestingTBFeatureFlagDataSource,
 } from '../../webapp_data_source/tb_feature_flag_testing';
 import {partialFeatureFlagsLoaded} from '../actions/feature_flag_actions';
+import {getIsAutoDarkModeAllowed} from '../store/feature_flag_selectors';
 import {State} from '../store/feature_flag_types';
 import {buildFeatureFlag} from '../testing';
 import {FeatureFlagEffects} from './feature_flag_effects';
@@ -47,6 +48,7 @@ describe('feature_flag_effects', () => {
     effects = TestBed.inject(FeatureFlagEffects);
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
     dataSource = TestBed.inject(TestingTBFeatureFlagDataSource);
+    store.overrideSelector(getIsAutoDarkModeAllowed, false);
   });
 
   describe('getFeatureFlags$', () => {
