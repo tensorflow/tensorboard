@@ -131,16 +131,22 @@ def histogram(name, data, step=None, buckets=None, description=None):
                 metadata=summary_metadata,
             )
 
-    # `_buckets()` has dynamic output shapes which is not supported on TPU's. As so, place
-    # the bucketing ops on outside compilation cluster so that the function in executed on CPU.
-    # TODO(https://github.com/tensorflow/tensorboard/issues/2885): Remove this special
-    # handling once dynamic shapes are supported on TPU's.
+    # `_buckets()` has dynamic output shapes which is not supported on TPU's.
+    # To address this, explicitly mark this logic for outside compilation so it
+    # will be executed on the CPU, and skip it entirely if we aren't actually
+    # recording summaries to avoid overhead of transferring data.
+    # TODO(https://github.com/tensorflow/tensorboard/issues/2885): Remove this
+    # special handling once the format no longer requires dynamic output shapes.
     if isinstance(
         tf.distribute.get_strategy(),
         (tf.distribute.experimental.TPUStrategy, tf.distribute.TPUStrategy),
     ):
-        return tf.compat.v1.tpu.outside_compilation(
-            histogram_summary, data, buckets, summary_metadata, step
+        return tf.cond(
+            tf.summary.should_record_summaries(),
+            lambda: tf.compat.v1.tpu.outside_compilation(
+                histogram_summary, data, buckets, summary_metadata, step
+            ),
+            lambda: False,
         )
     return histogram_summary(data, buckets, summary_metadata, step)
 
