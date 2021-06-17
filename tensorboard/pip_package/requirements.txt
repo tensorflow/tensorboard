@@ -16,8 +16,6 @@
 # Non-vendored runtime dependencies of TensorBoard.
 
 absl-py >= 0.4
-# futures is a backport of the python 3.2+ concurrent.futures module
-futures >= 3.1.1; python_version < "3"
 grpcio >= 1.24.3
 google-auth >= 1.6.3, < 2
 google-auth-oauthlib >= 0.4.1, < 0.5
@@ -29,6 +27,4 @@ setuptools >= 41.0.0
 tensorboard-data-server >= 0.6.0, < 0.7.0
 tensorboard-plugin-wit >= 1.6.0
 werkzeug >= 0.11.15
-# python3 specifically requires wheel 0.26
-wheel; python_version < "3"
-wheel >= 0.26; python_version >= "3"
+wheel >= 0.26
