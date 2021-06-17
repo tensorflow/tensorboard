@@ -19,6 +19,7 @@ export function buildFeatureFlag(
   override: Partial<FeatureFlags> = {}
 ): FeatureFlags {
   return {
+    isAutoDarkModeAllowed: false,
     enableDarkMode: false,
     enabledColorGroup: false,
     enabledExperimentalPlugins: [],

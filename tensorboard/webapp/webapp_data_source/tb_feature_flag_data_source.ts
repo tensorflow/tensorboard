@@ -41,12 +41,14 @@ const DARK_MODE_MEDIA_QUERY = '(prefers-color-scheme: dark)';
 // Decide how to move forward with more sources of the data + composability.
 @Injectable()
 export class QueryParamsFeatureFlagDataSource extends TBFeatureFlagDataSource {
-  getFeatures() {
+  getFeatures(enableMediaQuery: boolean = false) {
     const params = this.getParams();
     // Set feature flag value for query parameters that are explicitly
     // specified. Feature flags for unspecified query parameters remain unset so
     // their values in the underlying state are not inadvertently changed.
-    const featureFlags: Partial<FeatureFlags> = this.getPartialFeaturesFromMediaQuery();
+    const featureFlags: Partial<FeatureFlags> = enableMediaQuery
+      ? this.getPartialFeaturesFromMediaQuery()
+      : {};
     if (params.has(EXPERIMENTAL_PLUGIN_QUERY_PARAM_KEY)) {
       featureFlags.enabledExperimentalPlugins = params.getAll(
         EXPERIMENTAL_PLUGIN_QUERY_PARAM_KEY
@@ -84,11 +86,9 @@ export class QueryParamsFeatureFlagDataSource extends TBFeatureFlagDataSource {
 
     // When media query matches positively, it certainly means user wants it but
     // it is not definitive otherwise (i.e., query params can override it).
-    // TODO(stephanwlee): enable the feature when most of the UI is actually
-    // ready for usage.
-    // if (enableDarkMode) {
-    //   featureFlags.enableDarkMode = true;
-    // }
+    if (enableDarkMode) {
+      featureFlags.enableDarkMode = true;
+    }
 
     return featureFlags;
   }

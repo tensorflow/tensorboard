@@ -34,7 +34,10 @@ tf_ts_library(
     name = "testing",
     testonly = True,
     srcs = ["testing.ts"],
-    deps = [":types"],
+    deps = [
+        ":types",
+        "//tensorboard/webapp/feature_flag:testing",
+    ],
 )
 
 tf_ng_module(

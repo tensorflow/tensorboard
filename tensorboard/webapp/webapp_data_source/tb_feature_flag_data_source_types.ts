@@ -28,7 +28,7 @@ export abstract class TBFeatureFlagDataSource {
    * The data source may leave some or all feature flags unspecified if it does
    * not have enough information to provide values.
    */
-  abstract getFeatures(): Partial<FeatureFlags>;
+  abstract getFeatures(enableMediaQuery?: boolean): Partial<FeatureFlags>;
 }
 
 export const EXPERIMENTAL_PLUGIN_QUERY_PARAM_KEY = 'experimentalPlugin';

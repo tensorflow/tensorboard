@@ -20,6 +20,7 @@ import {FeatureFlagState} from './feature_flag_types';
 export const initialState: FeatureFlagState = {
   isFeatureFlagsLoaded: false,
   defaultFlags: {
+    isAutoDarkModeAllowed: false,
     enableDarkMode: false,
     enabledColorGroup: false,
     enabledExperimentalPlugins: [],

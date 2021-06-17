@@ -14,20 +14,14 @@ limitations under the License.
 ==============================================================================*/
 
 import {FeatureFlagState, FEATURE_FLAG_FEATURE_KEY} from './feature_flag_types';
+import {buildFeatureFlag} from '../testing';
 
 export function buildFeatureFlagState(
   override: Partial<FeatureFlagState> = {}
 ): FeatureFlagState {
   return {
     isFeatureFlagsLoaded: false,
-    defaultFlags: {
-      enableDarkMode: false,
-      enabledExperimentalPlugins: [],
-      inColab: false,
-      scalarsBatchSize: 1,
-      enabledColorGroup: false,
-      metricsImageSupportEnabled: true,
-    },
+    defaultFlags: buildFeatureFlag(),
     ...override,
     flagOverrides: override.flagOverrides ?? {},
   };

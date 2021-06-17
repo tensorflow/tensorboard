@@ -14,12 +14,14 @@ limitations under the License.
 ==============================================================================*/
 
 import {Injectable} from '@angular/core';
-import {createAction, Action} from '@ngrx/store';
+import {createAction, Action, Store} from '@ngrx/store';
 import {Actions, ofType, createEffect} from '@ngrx/effects';
-import {map} from 'rxjs/operators';
+import {map, combineLatestWith} from 'rxjs/operators';
 
 import {TBFeatureFlagDataSource} from '../../webapp_data_source/tb_feature_flag_data_source_types';
 import {partialFeatureFlagsLoaded} from '../actions/feature_flag_actions';
+import {getIsAutoDarkModeAllowed} from '../store/feature_flag_selectors';
+import {State} from '../store/feature_flag_types';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 /** @typehack */ import * as _typeHackNgrx from '@ngrx/store/src/models';
@@ -34,8 +36,9 @@ export class FeatureFlagEffects {
   readonly getFeatureFlags$ = createEffect(() =>
     this.actions$.pipe(
       ofType(effectsInitialized),
-      map(() => {
-        const features = this.dataSource.getFeatures();
+      combineLatestWith(this.store.select(getIsAutoDarkModeAllowed)),
+      map(([, isDarkModeAllowed]) => {
+        const features = this.dataSource.getFeatures(isDarkModeAllowed);
         return partialFeatureFlagsLoaded({features});
       })
     )
@@ -43,6 +46,7 @@ export class FeatureFlagEffects {
 
   constructor(
     private readonly actions$: Actions,
+    private readonly store: Store<State>,
     private readonly dataSource: TBFeatureFlagDataSource
   ) {}
 
