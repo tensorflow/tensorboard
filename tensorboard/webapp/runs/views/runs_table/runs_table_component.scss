@@ -193,10 +193,8 @@ $_font-size: 13px;
   }
 }
 
-@include tb-dark-theme {
-  :host.flex-layout {
-    mat-paginator {
-      border-top-color: mat-color($tb-dark-foreground, border);
-    }
+mat-paginator {
+  @include tb-dark-theme {
+    background-color: map-get($tb-dark-background, background);
   }
 }
