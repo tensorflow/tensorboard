@@ -25,12 +25,15 @@ $_thumb-size: 12px;
     'lower-input upper-input'
     'slider slider';
   font-size: 0;
-  lower-width: 100px;
+  min-width: 100px;
   padding: $_thumb-size / 2;
 }
 
 input {
+  background-color: inherit;
+  border-style: solid;
   box-sizing: border-box;
+  color: inherit;
   overflow: hidden;
   width: 100%;
 }
@@ -56,19 +59,18 @@ input {
 }
 
 .slider-track {
-  background: map-get($tb-foreground, slider-off);
+  @include tb-theme-foreground-prop(background, slider-off);
   height: 2px;
   width: 100%;
 }
 
 .slider-track-fill {
-  background: mat-color($tb-primary);
   position: absolute;
   height: 2px;
 }
 
 .thumb {
-  background: mat-color($tb-primary);
+  @include tb-theme-foreground-prop(box-sadhow, slider-off, 0 0 0 1px);
   border-radius: 100%;
   display: inline-block;
   height: $_thumb-size;
@@ -77,11 +79,19 @@ input {
   top: 0;
   transform-origin: center;
   transition: transform 0.3s ease;
-  box-shadow: 0 0 0 1px map-get($tb-foreground, slider-off);
   width: $_thumb-size;
   will-change: transform;
 }
 
 .thumb.active {
   transform: scale(1.2);
+}
+
+.slider-track-fill,
+.thumb {
+  background: mat-color($tb-primary);
+
+  @include tb-dark-theme {
+    background: mat-color($tb-dark-primary);
+  }
 }
