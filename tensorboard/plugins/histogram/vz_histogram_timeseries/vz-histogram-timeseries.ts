@@ -17,6 +17,7 @@ import {PolymerElement, html} from '@polymer/polymer';
 import {customElement, observe, property} from '@polymer/decorators';
 import * as d3Typed from 'd3';
 
+import {DarkModeMixin} from '../../../components/polymer/dark_mode_mixin';
 import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
 
 // Copied from `tf-histogram-dashboard/histogramCore`; TODO(wchargin):
@@ -45,7 +46,7 @@ export interface VzHistogramTimeseries extends HTMLElement {
 
 @customElement('vz-histogram-timeseries')
 class _VzHistogramTimeseries
-  extends LegacyElementMixin(PolymerElement)
+  extends LegacyElementMixin(DarkModeMixin(PolymerElement))
   implements VzHistogramTimeseries {
   static readonly template = html`
     <div id="tooltip"><span></span></div>
@@ -65,11 +66,23 @@ class _VzHistogramTimeseries
 
     <style>
       :host {
+        color: #aaa;
         display: flex;
         flex-direction: column;
         flex-grow: 1;
         flex-shrink: 1;
         position: relative;
+        --vz-histogram-timeseries-hover-bg-color: #fff;
+        --vz-histogram-timeseries-outline-color: #fff;
+        --vz-histogram-timeseries-hover-outline-color: #000;
+      }
+
+      :host(.dark-mode) {
+        --vz-histogram-timeseries-hover-bg-color: var(
+          --primary-background-color
+        );
+        --vz-histogram-timeseries-outline-color: var(--paper-grey-600);
+        --vz-histogram-timeseries-hover-outline-color: #fff;
       }
 
       svg {
@@ -79,6 +92,10 @@ class _VzHistogramTimeseries
         width: 100%;
         flex-grow: 1;
         flex-shrink: 1;
+      }
+
+      text {
+        fill: currentColor;
       }
 
       #tooltip {
@@ -116,7 +133,7 @@ class _VzHistogramTimeseries
       }
 
       .hover.hover-closest circle {
-        fill: black !important;
+        fill: var(--vz-histogram-timeseries-hover-outline-color) !important;
       }
 
       .hover.hover-closest text {
@@ -130,12 +147,12 @@ class _VzHistogramTimeseries
 
       .outline {
         fill: none;
-        stroke: white;
+        stroke: var(--vz-histogram-timeseries-outline-color);
         stroke-opacity: 0.5;
       }
 
       .outline.outline-hover {
-        stroke: black !important;
+        stroke: var(--vz-histogram-timeseries-hover-outline-color) !important;
         stroke-opacity: 1;
       }
 
@@ -166,13 +183,20 @@ class _VzHistogramTimeseries
       .x-axis-hover line,
       .y-axis-hover line,
       .y-slice-axis-hover line {
-        stroke: black;
+        stroke: currentColor;
       }
 
       .x-axis-hover rect,
       .y-axis-hover rect,
       .y-slice-axis-hover rect {
-        fill: white;
+        fill: var(--vz-histogram-timeseries-hover-bg-color);
+      }
+
+      #tooltip,
+      .x-axis-hover text,
+      .y-axis-hover text,
+      .y-slice-axis-hover text {
+        color: var(--vz-histogram-timeseries-hover-outline-color);
       }
 
       .axis {
@@ -548,7 +572,7 @@ class _VzHistogramTimeseries
             ')'
         )
         .style('stroke', function (d) {
-          return mode === 'offset' ? 'white' : fillColor(timeAccessor(d));
+          return mode === 'offset' ? '' : fillColor(timeAccessor(d));
         })
         .style('fill-opacity', function (d) {
           return mode === 'offset' ? 1 : 0;

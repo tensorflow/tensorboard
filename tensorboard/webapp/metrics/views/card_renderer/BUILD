@@ -157,12 +157,20 @@ tf_ng_module(
     ],
 )
 
+tf_sass_binary(
+    name = "run_name_styles",
+    src = "run_name_component.scss",
+)
+
 tf_ng_module(
     name = "run_name",
     srcs = [
         "run_name_component.ts",
         "run_name_container.ts",
         "run_name_module.ts",
+    ],
+    assets = [
+        ":run_name_styles",
     ],
     deps = [
         ":utils",

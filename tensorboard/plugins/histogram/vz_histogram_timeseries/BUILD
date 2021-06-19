@@ -9,6 +9,7 @@ tf_ts_library(
     srcs = ["vz-histogram-timeseries.ts"],
     strict_checks = False,
     deps = [
+        "//tensorboard/components/polymer:dark_mode_mixin",
         "//tensorboard/components/polymer:legacy_element_mixin",
         "@npm//@polymer/decorators",
         "@npm//@polymer/polymer",
