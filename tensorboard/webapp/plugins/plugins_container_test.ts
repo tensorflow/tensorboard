@@ -16,40 +16,40 @@ import {Component} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
 import {Store} from '@ngrx/store';
-import {provideMockStore, MockStore} from '@ngrx/store/testing';
-
-import {PluginsContainer} from './plugins_container';
-import {PluginsComponent} from './plugins_component';
-import {PluginRegistryModule} from './plugin_registry_module';
-import {ExtraDashboardModule} from './testing';
+import {MockStore, provideMockStore} from '@ngrx/store/testing';
 
 import {
-  PluginId,
-  LoadingMechanismType,
-  CustomElementLoadingMechanism,
-  IframeLoadingMechanism,
-  NgElementLoadingMechanism,
-  NoLoadingMechanism,
-} from '../types/api';
-import {DataLoadState} from '../types/data';
+  getTestingProvider,
+  PluginApiHostModule,
+} from '../../components/experimental/plugin_util/testing';
+import {TestingDebuggerModule} from '../../plugins/debugger_v2/tf_debugger_v2_plugin/testing';
 import {State} from '../core/store';
 import {
-  getPlugins,
   getActivePlugin,
-  getPluginsListLoaded,
+  getAppLastLoadedTimeInMs,
   getEnvironment,
+  getPlugins,
+  getPluginsListLoaded,
 } from '../core/store/core_selectors';
 import {PluginsListFailureCode} from '../core/types';
-import {TestingDebuggerModule} from '../../plugins/debugger_v2/tf_debugger_v2_plugin/testing';
-import {buildFeatureFlag} from '../feature_flag/testing';
-import {getFeatureFlags} from '../feature_flag/store/feature_flag_selectors';
-import {getIsFeatureFlagsLoaded} from '../feature_flag/store/feature_flag_selectors';
 import {
-  PluginApiHostModule,
-  getTestingProvider,
-} from '../../components/experimental/plugin_util/testing';
-
-/** @typehack */ import * as _typeHackStore from '@ngrx/store';
+  getFeatureFlags,
+  getIsFeatureFlagsLoaded,
+} from '../feature_flag/store/feature_flag_selectors';
+import {buildFeatureFlag} from '../feature_flag/testing';
+import {
+  CustomElementLoadingMechanism,
+  IframeLoadingMechanism,
+  LoadingMechanismType,
+  NgElementLoadingMechanism,
+  NoLoadingMechanism,
+  PluginId,
+} from '../types/api';
+import {DataLoadState} from '../types/data';
+import {PluginsComponent} from './plugins_component';
+import {PluginsContainer} from './plugins_container';
+import {PluginRegistryModule} from './plugin_registry_module';
+import {ExtraDashboardModule} from './testing';
 
 function expectPluginIframe(element: HTMLElement, name: string) {
   expect(element.tagName).toBe('IFRAME');
@@ -175,6 +175,7 @@ describe('plugins_component', () => {
     });
     store.overrideSelector(getIsFeatureFlagsLoaded, true);
     store.overrideSelector(getFeatureFlags, buildFeatureFlag());
+    store.overrideSelector(getAppLastLoadedTimeInMs, null);
 
     createElementSpy = spyOn(document, 'createElement').and.callThrough();
     createElementSpy
@@ -397,6 +398,7 @@ describe('plugins_component', () => {
         lastLoadedTimeInMs: timeInMs,
         failureCode: null,
       });
+      store.overrideSelector(getAppLastLoadedTimeInMs, timeInMs);
       store.refreshState();
     }
 

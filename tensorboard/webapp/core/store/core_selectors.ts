@@ -15,6 +15,7 @@ limitations under the License.
 import {createFeatureSelector, createSelector} from '@ngrx/store';
 
 import {Environment, PluginId, PluginsListing} from '../../types/api';
+import {DataLoadState, LoadState} from '../../types/data';
 import {
   CoreState,
   CORE_FEATURE_KEY,
@@ -35,13 +36,27 @@ export const getPluginsListLoaded = createSelector(
   (state: CoreState): PluginsListLoadState => state.pluginsListLoaded
 );
 
-// TODO(tensorboard-team): AppLastLoaded is currently derived from plugins listing loaded
-// state which should be disentangled. Fix this by having a separate state for remembering
-// when the application data was last loaded.
+export const getPolymerRunsLoadState = createSelector(
+  selectCoreState,
+  (state: CoreState): LoadState => state.polymerRunsLoadState
+);
+
+export const getCoreDataLoadedState = createSelector(
+  selectCoreState,
+  (state: CoreState): DataLoadState => {
+    return state.coreDataLoadState.state;
+  }
+);
+/**
+ * Returns last _successful_ loaded time of the applicational state where an
+ * applicational state is defined as combinations of plugins listing, runs, and
+ * environment.
+ */
 export const getAppLastLoadedTimeInMs = createSelector(
-  getPluginsListLoaded,
-  (loadedState: PluginsListLoadState): number | null =>
-    loadedState.lastLoadedTimeInMs
+  selectCoreState,
+  (coreState: CoreState): number | null => {
+    return coreState.coreDataLoadState.lastLoadedTimeInMs;
+  }
 );
 
 export const getActivePlugin = createSelector(
