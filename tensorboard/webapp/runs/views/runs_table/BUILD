@@ -17,6 +17,8 @@ tf_sass_binary(
 tf_ng_module(
     name = "runs_table",
     srcs = [
+        "regex_edit_dialog_component.ts",
+        "regex_edit_dialog_container.ts",
         "runs_group_menu_button_component.ts",
         "runs_group_menu_button_container.ts",
         "runs_table_component.ts",
@@ -27,6 +29,7 @@ tf_ng_module(
     assets = [
         ":runs_group_menu_button_styles",
         ":runs_table_styles",
+        "regex_edit_dialog.ng.html",
         "runs_table_component.ng.html",
         "runs_group_menu_button_component.ng.html",
     ],
@@ -37,6 +40,9 @@ tf_ng_module(
         "//tensorboard/webapp/alert/actions",
         "//tensorboard/webapp/angular:expect_angular_material_button",
         "//tensorboard/webapp/angular:expect_angular_material_checkbox",
+        "//tensorboard/webapp/angular:expect_angular_material_dialog",
+        "//tensorboard/webapp/angular:expect_angular_material_form_field",
+        "//tensorboard/webapp/angular:expect_angular_material_input",
         "//tensorboard/webapp/angular:expect_angular_material_icon",
         "//tensorboard/webapp/angular:expect_angular_material_menu",
         "//tensorboard/webapp/angular:expect_angular_material_paginator",
@@ -67,6 +73,7 @@ tf_ts_library(
     testonly = True,
     srcs = [
         "runs_table_test.ts",
+        "regex_edit_dialog_test.ts",
     ],
     deps = [
         ":runs_table",
@@ -80,6 +87,7 @@ tf_ts_library(
         "//tensorboard/webapp/angular:expect_angular_material_paginator",
         "//tensorboard/webapp/angular:expect_angular_material_progress_spinner",
         "//tensorboard/webapp/angular:expect_angular_material_sort",
+        "//tensorboard/webapp/angular:expect_angular_platform_browser_dynamic_testing",
         "//tensorboard/webapp/angular:expect_angular_material_table",
         "//tensorboard/webapp/angular:expect_angular_platform_browser_animations",
         "//tensorboard/webapp/angular:expect_ngrx_store_testing",
