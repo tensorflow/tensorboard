@@ -122,6 +122,32 @@ describe('regex_edit_dialog', () => {
     );
   });
 
+  it('clicks Cancel button close the dialog', () => {
+    const fixture = createComponent(['rose']);
+    fixture.detectChanges();
+
+    const buttons = fixture.debugElement.queryAll(
+      By.css('div[mat-dialog-actions] button')
+    );
+    buttons[0].nativeElement.click();
+
+    expect(matDialogRefSpy.close).toHaveBeenCalled();
+  });
+
+  it('clicks Cancel button does not update the regex string', () => {
+    const fixture = createComponent(['rose']);
+    fixture.detectChanges();
+
+    const input = fixture.debugElement.query(By.css('input'));
+    input.nativeElement.value = 'test';
+    const buttons = fixture.debugElement.queryAll(
+      By.css('div[mat-dialog-actions] button')
+    );
+    buttons[0].nativeElement.click();
+
+    expect(dispatchSpy).not.toHaveBeenCalled();
+  });
+
   it('clicks Save button close the dialog', () => {
     const fixture = createComponent(['rose']);
     fixture.detectChanges();
@@ -167,6 +193,23 @@ describe('regex_edit_dialog', () => {
       runGroupByChanged({
         experimentIds: ['rose'],
         groupBy: {key: GroupByKey.REGEX, regexString: 'test'},
+      })
+    );
+  });
+
+  it('presess enter key close the dialog', () => {
+    const fixture = createComponent(['rose']);
+    fixture.detectChanges();
+
+    const input = fixture.debugElement.query(By.css('input'));
+    const event = new KeyboardEvent('keydown', {key: 'enter'});
+    input.nativeElement.dispatchEvent(event);
+    fixture.detectChanges();
+
+    expect(dispatchSpy).toHaveBeenCalledWith(
+      runGroupByChanged({
+        experimentIds: ['rose'],
+        groupBy: {key: GroupByKey.REGEX, regexString: 'test regex string'},
       })
     );
   });
