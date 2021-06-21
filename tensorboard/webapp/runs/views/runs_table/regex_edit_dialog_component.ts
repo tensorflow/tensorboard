@@ -12,9 +12,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { MatDialogRef } from '@angular/material/dialog';
-
+import {Component, EventEmitter, Input, Output} from '@angular/core';
+import {MatDialogRef} from '@angular/material/dialog';
 
 @Component({
   selector: 'regex-edit-dialog-component',
@@ -25,8 +24,9 @@ export class RegexEditDialogComponent {
 
   @Output() onSave = new EventEmitter<string>();
 
-  constructor(public readonly dialogRef:
-                  MatDialogRef<RegexEditDialogComponent>) {}
+  constructor(
+    public readonly dialogRef: MatDialogRef<RegexEditDialogComponent>
+  ) {}
 
   onEnter(regexString: string) {
     this.onSaveClick(regexString);
