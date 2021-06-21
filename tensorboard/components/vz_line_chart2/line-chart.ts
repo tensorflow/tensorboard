@@ -169,7 +169,11 @@ export class LineChart {
     this.xAccessor = xComponents.accessor;
     this.xScale = xComponents.scale;
     this.xAxis = xComponents.axis;
-    (this.xAxis.margin(0) as Plottable.Axes.Numeric).tickLabelPadding(3);
+    // Default margin is 15 pixels but we do not need it. Setting it to zero
+    // makes space calculation a bit too tight and hide axis label by mistake.
+    // To workaround the tight tolerance issue, we add 1px of margin.
+    // See https://github.com/tensorflow/tensorboard/issues/5077.
+    (this.xAxis.margin(1) as Plottable.Axes.Numeric).tickLabelPadding(3);
     if (xAxisFormatter) {
       this.xAxis.formatter(xAxisFormatter);
     }
