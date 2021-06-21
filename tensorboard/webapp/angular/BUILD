@@ -139,7 +139,6 @@ tf_ts_library(
     ],
 )
 
-
 # This is a dummy rule used as a @angular/material/icon dependency.
 tf_ts_library(
     name = "expect_angular_material_icon",
