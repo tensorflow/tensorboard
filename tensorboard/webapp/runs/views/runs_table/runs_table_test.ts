@@ -37,7 +37,6 @@ import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {Action, Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {of, ReplaySubject} from 'rxjs';
-
 import * as alertActions from '../../../alert/actions';
 import {State} from '../../../app_state';
 import {buildExperiment} from '../../../experiments/store/testing';
@@ -560,7 +559,8 @@ describe('runs_table', () => {
         expect(menuButton).toBeTruthy();
       });
 
-      it('renders "Experiment", "Run" and "Regex"', () => {
+      /* TODO(japie1235813): Brings back group by regex. */
+      it('renders "Experiment" and "Run"', () => {
         store.overrideSelector(getEnabledColorGroup, true);
         const fixture = createComponent(
           ['book'],
@@ -577,7 +577,7 @@ describe('runs_table', () => {
 
         expect(
           items.map((element) => element.querySelector('label')!.textContent)
-        ).toEqual(['Experiment', 'Run', 'Regex']);
+        ).toEqual(['Experiment', 'Run']);
       });
 
       it(
@@ -599,13 +599,15 @@ describe('runs_table', () => {
 
           const items = getOverlayMenuItems();
 
+          /* TODO(japie1235813): Brings back group by regex. */
           expect(
             items.map((element) => element.getAttribute('aria-checked'))
-          ).toEqual(['true', 'false', 'false']);
+          ).toEqual(['true', 'false']);
           expect(
             items.map((element) => Boolean(element.querySelector('mat-icon')))
-          ).toEqual([true, false, false]);
+          ).toEqual([true, false]);
 
+          /* TODO(japie1235813): Brings back group by regex.
           store.overrideSelector(getRunGroupBy, {
             key: GroupByKey.REGEX,
             regexString: 'hello',
@@ -619,6 +621,7 @@ describe('runs_table', () => {
           expect(
             items.map((element) => Boolean(element.querySelector('mat-icon')))
           ).toEqual([false, false, true]);
+          */
         }
       );
 
@@ -638,7 +641,7 @@ describe('runs_table', () => {
 
         const items = getOverlayMenuItems();
 
-        const [experiments, runs, regex] = items as HTMLElement[];
+        const [experiments, runs] = items as HTMLElement[];
         experiments.click();
 
         expect(dispatchSpy).toHaveBeenCalledWith(
@@ -656,6 +659,7 @@ describe('runs_table', () => {
           })
         );
 
+        /* TODO(japie1235813): Brings back group by regex.
         regex.click();
         expect(dispatchSpy).toHaveBeenCalledWith(
           runGroupByChanged({
@@ -665,6 +669,7 @@ describe('runs_table', () => {
             groupBy: {key: GroupByKey.REGEX, regexString: ''},
           })
         );
+        */
       });
 
       it(
