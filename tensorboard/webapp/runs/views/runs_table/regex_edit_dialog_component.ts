@@ -12,12 +12,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component, EventEmitter, Input, Output} from '@angular/core';
+import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from '@angular/core';
 import {MatDialogRef} from '@angular/material/dialog';
 
 @Component({
   selector: 'regex-edit-dialog-component',
   templateUrl: 'regex_edit_dialog.ng.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RegexEditDialogComponent {
   @Input() regexString!: string;
