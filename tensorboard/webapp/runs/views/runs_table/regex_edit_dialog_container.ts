@@ -16,14 +16,11 @@ import {Component, Inject} from '@angular/core';
 import {MatDialogRef, MAT_DIALOG_DATA} from '@angular/material/dialog';
 import {Store} from '@ngrx/store';
 import {Observable} from 'rxjs';
+
 import {State} from '../../../app_state';
 import {runGroupByChanged} from '../../actions';
-import {getRegexString} from '../../store/runs_selectors';
+import {getColorGroupRegexString} from '../../store/runs_selectors';
 import {GroupByKey} from '../../types';
-
-export interface RegexDialogData {
-  regexString: string;
-}
 
 @Component({
   selector: 'regex-edit-dialog',
@@ -34,9 +31,9 @@ export interface RegexDialogData {
 })
 export class RegexEditDialogContainer {
   readonly groupByRegexString$: Observable<string> = this.store.select(
-    getRegexString
+    getColorGroupRegexString
   );
-  experimentIds: string[] = [];
+  experimentIds: string[];
 
   constructor(
     private readonly store: Store<State>,

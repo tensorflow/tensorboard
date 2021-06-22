@@ -204,7 +204,7 @@ export const getRunColorMap = createSelector(
 /**
  * Returns Observable that emits color grouping regex string.
  */
-export const getRegexString = createSelector(
+export const getColorGroupRegexString = createSelector(
   getDataState,
   (state: RunsDataState): string => {
     return state.colorGroupRegexString;

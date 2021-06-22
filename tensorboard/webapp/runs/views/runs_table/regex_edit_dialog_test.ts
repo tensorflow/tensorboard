@@ -25,8 +25,10 @@ import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {Action, Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
+
 import {State} from '../../../app_state';
-import {getRegexString} from '../../../selectors';
+import {getColorGroupRegexString} from '../../../selectors';
+import {KeyType, sendKey, SendKeyArgs} from '../../../testing/dom';
 import {runGroupByChanged} from '../../actions';
 import {GroupByKey} from '../../types';
 import {RegexEditDialogComponent} from './regex_edit_dialog_component';
@@ -67,7 +69,7 @@ describe('regex_edit_dialog', () => {
     actualActions = [];
 
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
-    store.overrideSelector(getRegexString, 'test regex string');
+    store.overrideSelector(getColorGroupRegexString, 'test regex string');
 
     dispatchSpy = spyOn(store, 'dispatch').and.callFake((action: Action) => {
       actualActions.push(action);
@@ -84,12 +86,18 @@ describe('regex_edit_dialog', () => {
     expect(dialog).toBeTruthy();
   });
 
-  it('clicks Save button omits groupby regex with regex string', () => {
+  it('emits groupby action with regexString when clicking on save button', () => {
     const fixture = createComponent(['rose']);
     fixture.detectChanges();
 
     const input = fixture.debugElement.query(By.css('input'));
-    input.nativeElement.value = 'test(\\d+)';
+    const keyArgs: SendKeyArgs = {
+      key: 'test(\\d+)',
+      prevString: '',
+      type: KeyType.CHARACTER,
+      startingCursorIndex: 0,
+    };
+    sendKey(fixture, input, keyArgs);
     const buttons = fixture.debugElement.queryAll(
       By.css('div[mat-dialog-actions] button')
     );
@@ -103,12 +111,18 @@ describe('regex_edit_dialog', () => {
     );
   });
 
-  it('clicks Save button omits groupby regex with non-regex string', () => {
+  it('emits groupby action with non regexString when clicking on save button', () => {
     const fixture = createComponent(['rose']);
     fixture.detectChanges();
 
     const input = fixture.debugElement.query(By.css('input'));
-    input.nativeElement.value = 'test';
+    const keyArgs: SendKeyArgs = {
+      key: 'test',
+      prevString: '',
+      type: KeyType.CHARACTER,
+      startingCursorIndex: 0,
+    };
+    sendKey(fixture, input, keyArgs);
     const buttons = fixture.debugElement.queryAll(
       By.css('div[mat-dialog-actions] button')
     );
@@ -122,49 +136,18 @@ describe('regex_edit_dialog', () => {
     );
   });
 
-  it('clicks Cancel button close the dialog', () => {
-    const fixture = createComponent(['rose']);
-    fixture.detectChanges();
-
-    const buttons = fixture.debugElement.queryAll(
-      By.css('div[mat-dialog-actions] button')
-    );
-    buttons[0].nativeElement.click();
-
-    expect(matDialogRefSpy.close).toHaveBeenCalled();
-  });
-
-  it('clicks Cancel button does not update the regex string', () => {
+  it('emits groupby action with empty string when clicking on save button', () => {
     const fixture = createComponent(['rose']);
     fixture.detectChanges();
 
     const input = fixture.debugElement.query(By.css('input'));
-    input.nativeElement.value = 'test';
-    const buttons = fixture.debugElement.queryAll(
-      By.css('div[mat-dialog-actions] button')
-    );
-    buttons[0].nativeElement.click();
-
-    expect(dispatchSpy).not.toHaveBeenCalled();
-  });
-
-  it('clicks Save button close the dialog', () => {
-    const fixture = createComponent(['rose']);
-    fixture.detectChanges();
-
-    const buttons = fixture.debugElement.queryAll(
-      By.css('div[mat-dialog-actions] button')
-    );
-    buttons[1].nativeElement.click();
-    expect(matDialogRefSpy.close).toHaveBeenCalled();
-  });
-
-  it('clicks Save button omits groupby regex with empty string', () => {
-    const fixture = createComponent(['rose']);
-    fixture.detectChanges();
-
-    const input = fixture.debugElement.query(By.css('input'));
-    input.nativeElement.value = '';
+    const keyArgs: SendKeyArgs = {
+      key: '',
+      prevString: '',
+      type: KeyType.CHARACTER,
+      startingCursorIndex: 0,
+    };
+    sendKey(fixture, input, keyArgs);
 
     const buttons = fixture.debugElement.queryAll(
       By.css('div[mat-dialog-actions] button')
@@ -179,15 +162,61 @@ describe('regex_edit_dialog', () => {
     );
   });
 
-  it('presess enter key omits groupby regex with the regex string', () => {
+  it('closes the dialog when clicking on cancel button ', () => {
+    const fixture = createComponent(['rose']);
+    fixture.detectChanges();
+
+    const buttons = fixture.debugElement.queryAll(
+      By.css('div[mat-dialog-actions] button')
+    );
+    buttons[0].nativeElement.click();
+
+    expect(matDialogRefSpy.close).toHaveBeenCalled();
+  });
+
+  it('not emits groupby action when clicking on cancel button', () => {
     const fixture = createComponent(['rose']);
     fixture.detectChanges();
 
     const input = fixture.debugElement.query(By.css('input'));
-    input.nativeElement.value = 'test';
-    const event = new KeyboardEvent('keydown', {key: 'enter'});
-    input.nativeElement.dispatchEvent(event);
+    const keyArgs: SendKeyArgs = {
+      key: 'test',
+      prevString: '',
+      type: KeyType.CHARACTER,
+      startingCursorIndex: 0,
+    };
+    sendKey(fixture, input, keyArgs);
+    const buttons = fixture.debugElement.queryAll(
+      By.css('div[mat-dialog-actions] button')
+    );
+    buttons[0].nativeElement.click();
+
+    expect(dispatchSpy).not.toHaveBeenCalled();
+  });
+
+  it('closes the dialog when clicking on save button ', () => {
+    const fixture = createComponent(['rose']);
     fixture.detectChanges();
+
+    const buttons = fixture.debugElement.queryAll(
+      By.css('div[mat-dialog-actions] button')
+    );
+    buttons[1].nativeElement.click();
+    expect(matDialogRefSpy.close).toHaveBeenCalled();
+  });
+
+  it('omits groupby action with regex string when pressing enter key ', () => {
+    const fixture = createComponent(['rose']);
+    fixture.detectChanges();
+
+    const input = fixture.debugElement.query(By.css('input'));
+    const keyArgs: SendKeyArgs = {
+      key: 'Enter',
+      prevString: 'test',
+      type: KeyType.CHARACTER,
+      startingCursorIndex: 0,
+    };
+    sendKey(fixture, input, keyArgs);
 
     expect(dispatchSpy).toHaveBeenCalledWith(
       runGroupByChanged({
@@ -197,14 +226,18 @@ describe('regex_edit_dialog', () => {
     );
   });
 
-  it('presess enter key close the dialog', () => {
+  it('closes the dialog when pressing enter key', () => {
     const fixture = createComponent(['rose']);
     fixture.detectChanges();
 
     const input = fixture.debugElement.query(By.css('input'));
-    const event = new KeyboardEvent('keydown', {key: 'enter'});
-    input.nativeElement.dispatchEvent(event);
-    fixture.detectChanges();
+    const keyArgs: SendKeyArgs = {
+      key: 'Enter',
+      prevString: 'test regex string',
+      type: KeyType.SPECIAL,
+      startingCursorIndex: 10,
+    };
+    sendKey(fixture, input, keyArgs);
 
     expect(dispatchSpy).toHaveBeenCalledWith(
       runGroupByChanged({
