@@ -198,7 +198,7 @@ py_test(
 
 py_library(
     name = "keras",
-    srcs = ["keras.py"],
+    srcs = ["_keras.py"],
     srcs_version = "PY3",
     deps = [
         ":protos_all_py_pb2",
@@ -211,7 +211,8 @@ py_library(
 py_test(
     name = "keras_test",
     size = "small",
-    srcs = ["keras_test.py"],
+    srcs = ["_keras_test.py"],
+    main = "_keras_test.py",
     srcs_version = "PY3",
     deps = [
         ":api",

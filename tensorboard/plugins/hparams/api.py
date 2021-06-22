@@ -110,7 +110,7 @@ TensorBoard repository for an end-to-end MNIST example.
 """
 
 
-from tensorboard.plugins.hparams import keras
+from tensorboard.plugins.hparams import _keras
 from tensorboard.plugins.hparams import summary_v2
 
 
@@ -125,8 +125,8 @@ hparams_pb = summary_v2.hparams_pb
 hparams_config = summary_v2.hparams_config
 hparams_config_pb = summary_v2.hparams_config_pb
 
-KerasCallback = keras.Callback
+KerasCallback = _keras.Callback
 
 
-del keras
+del _keras
 del summary_v2
