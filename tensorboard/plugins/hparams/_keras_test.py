@@ -20,7 +20,7 @@ from unittest import mock
 from google.protobuf import text_format
 import tensorflow as tf
 
-from tensorboard.plugins.hparams import keras
+from tensorboard.plugins.hparams import _keras
 from tensorboard.plugins.hparams import metadata
 from tensorboard.plugins.hparams import plugin_data_pb2
 from tensorboard.plugins.hparams import summary_v2 as hp
@@ -50,7 +50,7 @@ class CallbackTest(tf.test.TestCase):
         )
         self.model.compile(loss="mse", optimizer=self.hparams["optimizer"])
         self.trial_id = "my_trial"
-        self.callback = keras.Callback(
+        self.callback = _keras.Callback(
             writer, self.hparams, trial_id=self.trial_id
         )
 
@@ -167,7 +167,7 @@ class CallbackTest(tf.test.TestCase):
             TypeError,
             "writer must be a `SummaryWriter` or `str`, not None",
         ):
-            keras.Callback(writer=None, hparams={})
+            _keras.Callback(writer=None, hparams={})
 
     def test_duplicate_hparam_names_across_object_and_string(self):
         hparams = {
@@ -177,7 +177,7 @@ class CallbackTest(tf.test.TestCase):
         with self.assertRaisesRegex(
             ValueError, "multiple values specified for hparam 'foo'"
         ):
-            keras.Callback(self.get_temp_dir(), hparams)
+            _keras.Callback(self.get_temp_dir(), hparams)
 
     def test_duplicate_hparam_names_from_two_objects(self):
         hparams = {
@@ -187,13 +187,13 @@ class CallbackTest(tf.test.TestCase):
         with self.assertRaisesRegex(
             ValueError, "multiple values specified for hparam 'foo'"
         ):
-            keras.Callback(self.get_temp_dir(), hparams)
+            _keras.Callback(self.get_temp_dir(), hparams)
 
     def test_invalid_trial_id(self):
         with self.assertRaisesRegex(
             TypeError, "`trial_id` should be a `str`, but got: 12"
         ):
-            keras.Callback(self.get_temp_dir(), {}, trial_id=12)
+            _keras.Callback(self.get_temp_dir(), {}, trial_id=12)
 
 
 if __name__ == "__main__":
