@@ -78,6 +78,11 @@ const DATA_LOAD_CONDITIONAL_THROTTLE_IN_MS = 1;
 
 const ALIAS_CHANGE_RUNS_RELOAD_THROTTLE_IN_MS = 500;
 
+const DASHBOARD_ROUTE_KIND = new Set([
+  RouteKind.COMPARE_EXPERIMENT,
+  RouteKind.EXPERIMENT,
+]);
+
 @Injectable()
 export class CoreEffects {
   // Ngrx assumes all Effect classes have properties that inherit from the base
@@ -114,12 +119,7 @@ export class CoreEffects {
       this.actions$.pipe(ofType(reload, manualReload))
     ).pipe(
       withLatestFrom(this.store.select(getRouteKind)),
-      filter(([, routeKind]) => {
-        return (
-          routeKind === RouteKind.COMPARE_EXPERIMENT ||
-          routeKind === RouteKind.EXPERIMENT
-        );
-      }),
+      filter(([, routeKind]) => DASHBOARD_ROUTE_KIND.has(routeKind)),
       throttleTime(DATA_LOAD_CONDITIONAL_THROTTLE_IN_MS, undefined, {
         leading: true,
       })
@@ -230,8 +230,20 @@ export class CoreEffects {
             })
           );
         }),
-        withLatestFrom(this.store.select(getPolymerRunsLoadState)),
-        filter(([, loadState]) => loadState.state !== DataLoadState.LOADING),
+        withLatestFrom(
+          this.store.select(getRouteKind),
+          this.store.select(getPolymerRunsLoadState)
+        ),
+        filter(([, routeKind, loadState]) => {
+          // While the same check was applied earlier, `delay` + `throttleTime`
+          // makes it unpredictable and we can sometimes make requests for the
+          // wrong route. This check prevents making the request in wrong
+          // hostname in a fool proof way.
+          return (
+            DASHBOARD_ROUTE_KIND.has(routeKind) &&
+            loadState.state !== DataLoadState.LOADING
+          );
+        }),
         tap(() => {
           this.store.dispatch(polymerRunsFetchRequested());
         }),
