@@ -26,7 +26,7 @@ $_thumb-size: 12px;
     'slider slider';
   font-size: 0;
   min-width: 100px;
-  padding: $_thumb-size / 2;
+  padding: $_thumb-size * 0.5;
 }
 
 input {
@@ -74,7 +74,7 @@ input {
   border-radius: 100%;
   display: inline-block;
   height: $_thumb-size;
-  margin-left: -$_thumb-size / 2;
+  margin-left: -$_thumb-size * 0.5;
   position: absolute;
   top: 0;
   transform-origin: center;

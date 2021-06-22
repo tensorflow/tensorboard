@@ -21,7 +21,7 @@ limitations under the License.
 .red-dot {
   $_dim: 10px;
   background-color: mat-color($mat-red, 700);
-  border-radius: $_dim / 2;
+  border-radius: $_dim * 0.5;
   height: $_dim;
   position: absolute;
   right: 10px;
