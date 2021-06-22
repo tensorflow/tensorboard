@@ -20,7 +20,7 @@ export function buildFeatureFlagState(
   override: Partial<FeatureFlagState> = {}
 ): FeatureFlagState {
   return {
-    isFeatureFlagsLoaded: false,
+    isFeatureFlagsLoaded: true,
     defaultFlags: buildFeatureFlag(),
     ...override,
     flagOverrides: override.flagOverrides ?? {},
