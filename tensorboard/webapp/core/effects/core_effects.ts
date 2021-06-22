@@ -178,6 +178,9 @@ export class CoreEffects {
             return of([]);
           }
 
+          // If alias map changes, we need to refetch the list of runs as
+          // Polymer's run selector and tags rely on run names including the
+          // alias.
           return this.store.select(getExperimentIdToAliasMap).pipe(
             distinctUntilChanged((beforeAliasDict, afterAliasDict) => {
               const entries = Object.entries(beforeAliasDict);
@@ -193,13 +196,27 @@ export class CoreEffects {
               return true;
             }),
             // HACK: arbitrary microtask delay.
-            // aliasChange leads to route changes and route changes causes
-            // navigated. Because our requests are depnended on curernt route,
-            // we must make the request only after the URL has been modified.
+            // An alias change -> route change -> browser url change ->
+            // `navigated` action. Because we, especially Polymer code, makes
+            // requests under a relative path, we must make requests only after
+            // the URL has been modified to reflect new alias or experiment id.
+            //
             // While we can subscribe to `navigated` without
-            // `distinctUntilChanged` on routeId, it is hard to throttle quick
-            // aliasMap change while immediately making a request for a real
-            // navigation. Instead of more elaborate rxjs techniques, we are
+            // `distinctUntilChanged` on `routeId` (alias changes do not cause
+            // `routeId` to change), it is hard to throttle quick
+            // alias Map changes while immediately making a request for a real
+            // navigation. For example, for route A and route B:
+            //
+            //   0   100   600   700
+            //   A -> A' -> A" -> B
+            //   ↑          ↑     ↑
+            //  req  noop  req   req
+            //
+            // Above, we would like to make the request on `routeId` changes
+            // immediately while debouncing alias changes while on the same
+            // `routeId`.
+            //
+            // Instead of more elaborate rxjs techniques, we are
             // using `delay(0)` to give the router a chance to modify the URL
             // before making the request.
             delay(0),
