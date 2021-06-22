@@ -19,7 +19,11 @@ import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {of, ReplaySubject, Subject} from 'rxjs';
 
 import {navigated} from '../../app_routing/actions';
-import {getRouteId} from '../../app_routing/store/app_routing_selectors';
+import {
+  getExperimentIdToAliasMap,
+  getRouteId,
+  getRouteKind,
+} from '../../app_routing/store/app_routing_selectors';
 import {buildRoute} from '../../app_routing/testing';
 import {RouteKind} from '../../app_routing/types';
 import {State} from '../../app_state';
@@ -32,7 +36,12 @@ import {
 } from '../../webapp_data_source/tb_http_client_testing';
 import {TBServerDataSource} from '../../webapp_data_source/tb_server_data_source';
 import * as coreActions from '../actions';
-import {getActivePlugin, getPluginsListLoaded} from '../store';
+import {polymerRunsFetchRequested} from '../actions';
+import {
+  getActivePlugin,
+  getPluginsListLoaded,
+  getPolymerRunsLoadState,
+} from '../store';
 import {
   createCoreState,
   createEnvironment,
@@ -106,6 +115,12 @@ describe('core_effects', () => {
     store.overrideSelector(getEnabledExperimentalPlugins, []);
     store.overrideSelector(getRouteId, 'foo');
     store.overrideSelector(getActivePlugin, null);
+    store.overrideSelector(getExperimentIdToAliasMap, {});
+    store.overrideSelector(getRouteKind, RouteKind.EXPERIMENT);
+    store.overrideSelector(getPolymerRunsLoadState, {
+      state: DataLoadState.NOT_LOADED,
+      lastLoadedTimeInMs: null,
+    });
   });
 
   afterEach(() => {
@@ -231,6 +246,10 @@ describe('core_effects', () => {
           lastLoadedTimeInMs: null,
           failureCode: null,
         });
+        store.overrideSelector(getPolymerRunsLoadState, {
+          state: DataLoadState.LOADING,
+          lastLoadedTimeInMs: null,
+        });
         store.refreshState();
         const pluginsListing: PluginsListing = {
           core: createPluginMetadata('Core'),
@@ -248,6 +267,10 @@ describe('core_effects', () => {
           state: DataLoadState.FAILED,
           lastLoadedTimeInMs: null,
           failureCode: PluginsListFailureCode.NOT_FOUND,
+        });
+        store.overrideSelector(getPolymerRunsLoadState, {
+          state: DataLoadState.FAILED,
+          lastLoadedTimeInMs: null,
         });
         store.overrideSelector(getRouteId, 'bar');
         store.refreshState();
@@ -337,6 +360,255 @@ describe('core_effects', () => {
       httpMock.expectOne('data/plugins_listing');
       tick(TEST_ONLY.DATA_LOAD_CONDITIONAL_THROTTLE_IN_MS);
     }));
+
+    it('fetches polymer runs when alias map changes when in comparison', fakeAsync(() => {
+      store.overrideSelector(getRouteKind, RouteKind.COMPARE_EXPERIMENT);
+      store.overrideSelector(getRouteId, 'foo');
+      store.overrideSelector(getExperimentIdToAliasMap, {
+        eid1: 'alias 1',
+        eid2: 'alias 2',
+      });
+      store.overrideSelector(getPluginsListLoaded, {
+        state: DataLoadState.LOADED,
+        lastLoadedTimeInMs: 5,
+        failureCode: null,
+      });
+      store.overrideSelector(getPolymerRunsLoadState, {
+        state: DataLoadState.NOT_LOADED,
+        lastLoadedTimeInMs: null,
+      });
+      store.refreshState();
+      const pluginsListing: PluginsListing = {
+        core: createPluginMetadata('Core'),
+      };
+
+      action.next(
+        navigated({
+          before: null,
+          after: buildRoute({
+            routeKind: RouteKind.COMPARE_EXPERIMENT,
+          }),
+        })
+      );
+      tick();
+
+      httpMock.expectOne('data/plugins_listing').flush(pluginsListing);
+      fetchPolymerRunsSubjects[0].next([{id: '1', name: 'Run 1'}]);
+      fetchPolymerRunsSubjects[0].complete();
+
+      // Do not really care about actions up to here; it is covered elsewhere.
+      recordedActions = [];
+
+      store.overrideSelector(getRouteId, 'foo');
+      store.refreshState();
+      tick(TEST_ONLY.DATA_LOAD_CONDITIONAL_THROTTLE_IN_MS);
+      action.next(
+        navigated({
+          before: null,
+          after: buildRoute({
+            routeKind: RouteKind.COMPARE_EXPERIMENT,
+          }),
+        })
+      );
+      tick(TEST_ONLY.ALIAS_CHANGE_RUNS_RELOAD_THROTTLE_IN_MS * 2);
+      expect(recordedActions).toEqual([]);
+      tick(TEST_ONLY.DATA_LOAD_CONDITIONAL_THROTTLE_IN_MS);
+
+      store.overrideSelector(getExperimentIdToAliasMap, {
+        eid1: 'alias 1',
+        eid2: 'alias 2.1',
+      });
+      store.refreshState();
+      tick(TEST_ONLY.ALIAS_CHANGE_RUNS_RELOAD_THROTTLE_IN_MS * 2);
+      expect(recordedActions).toEqual([polymerRunsFetchRequested()]);
+
+      // Alias map content is the same so nothing.
+      store.overrideSelector(getExperimentIdToAliasMap, {
+        eid1: 'alias 1',
+        eid2: 'alias 2.1',
+      });
+      store.refreshState();
+      tick(TEST_ONLY.ALIAS_CHANGE_RUNS_RELOAD_THROTTLE_IN_MS * 2);
+      expect(recordedActions).toEqual([polymerRunsFetchRequested()]);
+
+      // Alias map changes rapidly so we get request immediately once then once
+      // again after the throttle time is over.
+      store.overrideSelector(getExperimentIdToAliasMap, {
+        eid1: 'alias 1',
+        eid2: 'alias 2.2',
+      });
+      store.refreshState();
+
+      store.overrideSelector(getExperimentIdToAliasMap, {
+        eid1: 'alias 1',
+        eid2: 'alias 2.3',
+      });
+      store.refreshState();
+      tick();
+      expect(recordedActions).toEqual([
+        polymerRunsFetchRequested(),
+        polymerRunsFetchRequested(),
+      ]);
+
+      tick(TEST_ONLY.ALIAS_CHANGE_RUNS_RELOAD_THROTTLE_IN_MS);
+      expect(recordedActions).toEqual([
+        polymerRunsFetchRequested(),
+        polymerRunsFetchRequested(),
+        polymerRunsFetchRequested(),
+      ]);
+    }));
+
+    it(
+      'does not react to alias change when navigated from COMPARE ' +
+        'to EXPERIMENT',
+      fakeAsync(() => {
+        store.overrideSelector(getRouteKind, RouteKind.COMPARE_EXPERIMENT);
+        store.overrideSelector(getRouteId, 'foo');
+        store.overrideSelector(getExperimentIdToAliasMap, {
+          eid1: 'alias 1',
+          eid2: 'alias 2',
+        });
+        store.overrideSelector(getPluginsListLoaded, {
+          state: DataLoadState.LOADED,
+          lastLoadedTimeInMs: 5,
+          failureCode: null,
+        });
+        store.overrideSelector(getPolymerRunsLoadState, {
+          state: DataLoadState.NOT_LOADED,
+          lastLoadedTimeInMs: null,
+        });
+        store.refreshState();
+        const pluginsListing: PluginsListing = {
+          core: createPluginMetadata('Core'),
+        };
+
+        action.next(
+          navigated({
+            before: null,
+            after: buildRoute({
+              routeKind: RouteKind.COMPARE_EXPERIMENT,
+            }),
+          })
+        );
+        tick();
+        httpMock.expectOne('data/plugins_listing').flush(pluginsListing);
+        fetchPolymerRunsSubjects[0].next([{id: '1', name: 'Run 1'}]);
+        fetchPolymerRunsSubjects[0].complete();
+
+        // Do not really care about actions up to here; it is covered elsewhere.
+
+        recordedActions = [];
+
+        store.overrideSelector(getRouteKind, RouteKind.EXPERIMENT);
+        store.overrideSelector(getRouteId, 'bar');
+        store.refreshState();
+
+        tick(TEST_ONLY.DATA_LOAD_CONDITIONAL_THROTTLE_IN_MS);
+        action.next(
+          navigated({
+            before: null,
+            after: buildRoute({
+              routeKind: RouteKind.EXPERIMENT,
+            }),
+          })
+        );
+
+        httpMock.expectOne('data/plugins_listing').flush(pluginsListing);
+
+        expect(recordedActions).toEqual([
+          coreActions.pluginsListingRequested(),
+          coreActions.environmentLoaded({
+            environment: createEnvironment(),
+          }),
+          coreActions.polymerRunsFetchRequested(),
+          coreActions.pluginsListingLoaded({
+            plugins: pluginsListing,
+          }),
+        ]);
+        tick(TEST_ONLY.DATA_LOAD_CONDITIONAL_THROTTLE_IN_MS);
+
+        store.overrideSelector(getExperimentIdToAliasMap, {
+          eid1: 'alias 1',
+          eid2: 'alias 2.1',
+        });
+        store.refreshState();
+
+        // Alias map changed but for the experiment route, it does not matter
+        // and does not cause runs to be fetched.
+        expect(recordedActions).toEqual([
+          coreActions.pluginsListingRequested(),
+          coreActions.environmentLoaded({
+            environment: createEnvironment(),
+          }),
+          coreActions.polymerRunsFetchRequested(),
+          coreActions.pluginsListingLoaded({
+            plugins: pluginsListing,
+          }),
+        ]);
+      })
+    );
+
+    it(
+      'does not react to alias change when navigated from COMPARE ' +
+        'to EXPERIMENTS',
+      fakeAsync(() => {
+        store.overrideSelector(getRouteKind, RouteKind.COMPARE_EXPERIMENT);
+        store.overrideSelector(getRouteId, 'foo');
+        store.overrideSelector(getExperimentIdToAliasMap, {
+          eid1: 'alias 1',
+          eid2: 'alias 2',
+        });
+        store.overrideSelector(getPluginsListLoaded, {
+          state: DataLoadState.LOADED,
+          lastLoadedTimeInMs: 5,
+          failureCode: null,
+        });
+        store.overrideSelector(getPolymerRunsLoadState, {
+          state: DataLoadState.NOT_LOADED,
+          lastLoadedTimeInMs: null,
+        });
+        store.refreshState();
+        const pluginsListing: PluginsListing = {
+          core: createPluginMetadata('Core'),
+        };
+
+        action.next(
+          navigated({
+            before: null,
+            after: buildRoute({
+              routeKind: RouteKind.COMPARE_EXPERIMENT,
+            }),
+          })
+        );
+        tick();
+        httpMock.expectOne('data/plugins_listing').flush(pluginsListing);
+        fetchPolymerRunsSubjects[0].next([{id: '1', name: 'Run 1'}]);
+        fetchPolymerRunsSubjects[0].complete();
+
+        tick(TEST_ONLY.DATA_LOAD_CONDITIONAL_THROTTLE_IN_MS);
+
+        // Do not really care about actions up to here; it is covered elsewhere.
+        recordedActions = [];
+
+        store.overrideSelector(getRouteKind, RouteKind.EXPERIMENTS);
+        store.overrideSelector(getRouteId, 'bar');
+        // Alias map resets to an empty object when changing the routeKind.
+        store.overrideSelector(getExperimentIdToAliasMap, {});
+        store.refreshState();
+
+        action.next(
+          navigated({
+            before: null,
+            after: buildRoute({
+              routeKind: RouteKind.EXPERIMENTS,
+            }),
+          })
+        );
+
+        expect(recordedActions).toEqual([]);
+        tick(TEST_ONLY.ALIAS_CHANGE_RUNS_RELOAD_THROTTLE_IN_MS * 2);
+      })
+    );
   });
 
   describe('#dispatchChangePlugin', () => {
