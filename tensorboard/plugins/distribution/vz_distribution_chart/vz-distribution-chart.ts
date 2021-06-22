@@ -178,6 +178,9 @@ class _VzDistributionChart
         flex-grow: 1;
         flex-shrink: 1;
       }
+      .plottable .axis text {
+        fill: currentColor;
+      }
     </style>
   `;
 

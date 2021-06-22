@@ -91,8 +91,8 @@ $_second-row-height: 15px;
 
 .run,
 .step {
+  @include tb-theme-foreground-prop(color, secondary-text);
   font-size: 13px;
-  color: mat-color($tb-foreground, secondary-text);
   height: $_second-row-height;
 }
 
