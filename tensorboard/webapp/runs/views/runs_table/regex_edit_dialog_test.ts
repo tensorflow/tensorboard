@@ -39,16 +39,6 @@ describe('regex_edit_dialog', () => {
   let dispatchSpy: jasmine.Spy;
   let store: MockStore<State>;
   const matDialogRefSpy = jasmine.createSpyObj('MatDialogRef', ['close']);
-  const experimentIds = ['book'];
-
-  function createComponent(experimentIds: string[]) {
-    const fixture = TestBed.createComponent(RegexEditDialogContainer);
-    fixture.componentInstance.experimentIds = experimentIds;
-
-    fixture.detectChanges();
-
-    return fixture;
-  }
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -62,19 +52,25 @@ describe('regex_edit_dialog', () => {
       providers: [
         provideMockStore(),
         {provide: MatDialogRef, useValue: matDialogRefSpy},
-        {provide: MAT_DIALOG_DATA, useValue: {experimentIds}},
       ],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
-    actualActions = [];
+  });
+
+  function createComponent(experimentIds: string[]) {
+    TestBed.overrideProvider(MAT_DIALOG_DATA, {useValue: {experimentIds}});
 
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
     store.overrideSelector(getColorGroupRegexString, 'test regex string');
-
+    actualActions = [];
     dispatchSpy = spyOn(store, 'dispatch').and.callFake((action: Action) => {
       actualActions.push(action);
     });
-  });
+
+    // Let consumer tweak the component further before the `fixture.detectChanges()` or just
+    // invoke it here for convenience.
+    return TestBed.createComponent(RegexEditDialogContainer);
+  }
 
   it('renders regex edit dialog', () => {
     const fixture = createComponent(['rose']);
