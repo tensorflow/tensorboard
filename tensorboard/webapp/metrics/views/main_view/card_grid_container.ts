@@ -20,7 +20,7 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import {Store} from '@ngrx/store';
-import {getPageSize} from '../../../core/store/core_selectors';
+import {selectors as settingsSelectors} from '../../../settings';
 import {BehaviorSubject, combineLatest, Observable, of} from 'rxjs';
 import {map, shareReplay, switchMap, tap} from 'rxjs/operators';
 
@@ -64,7 +64,7 @@ export class CardGridContainer implements OnChanges {
 
   readonly numPages$ = combineLatest([
     this.items$,
-    this.store.select(getPageSize),
+    this.store.select(settingsSelectors.getPageSize),
   ]).pipe(
     map(([items, pageSize]) => {
       return Math.ceil(items.length / pageSize);
@@ -81,7 +81,7 @@ export class CardGridContainer implements OnChanges {
 
   readonly showPaginationControls$ = combineLatest([
     this.numPages$,
-    this.store.select(getPageSize),
+    this.store.select(settingsSelectors.getPageSize),
     this.isGroupExpanded$,
   ]).pipe(
     map(([numPages, pageSize, isGroupExpanded]) => {
@@ -94,7 +94,7 @@ export class CardGridContainer implements OnChanges {
 
   readonly isGroupExpandable$ = combineLatest([
     this.items$,
-    this.store.select(getPageSize),
+    this.store.select(settingsSelectors.getPageSize),
   ]).pipe(
     map(([items, pageSize]) => {
       if (
@@ -132,7 +132,7 @@ export class CardGridContainer implements OnChanges {
 
   readonly pagedItems$ = combineLatest([
     this.items$,
-    this.store.select(getPageSize),
+    this.store.select(settingsSelectors.getPageSize),
     this.normalizedPageIndex$,
     this.isGroupExpanded$,
   ]).pipe(

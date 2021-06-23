@@ -18,7 +18,7 @@ import {Store, select} from '@ngrx/store';
 import {combineLatest} from 'rxjs';
 import {distinctUntilChanged} from 'rxjs/operators';
 
-import {getReloadEnabled, getReloadPeriodInMs, State} from '../core/store';
+import {selectors as settingsSelectors, State} from '../settings';
 import {reload} from '../core/actions';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
@@ -30,9 +30,9 @@ import {reload} from '../core/actions';
 })
 export class ReloaderComponent {
   private readonly onVisibilityChange = this.onVisibilityChangeImpl.bind(this);
-  private readonly reloadEnabled$ = this.store.pipe(select(getReloadEnabled));
+  private readonly reloadEnabled$ = this.store.pipe(select(settingsSelectors.getReloadEnabled));
   private readonly reloadPeriodInMs$ = this.store.pipe(
-    select(getReloadPeriodInMs)
+    select(settingsSelectors.getReloadPeriodInMs)
   );
   private reloadTimerId: ReturnType<typeof setTimeout> | null = null;
   private missedAutoReload: boolean = false;

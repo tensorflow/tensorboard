@@ -19,7 +19,8 @@ import {Store, select} from '@ngrx/store';
 import {Subject} from 'rxjs';
 import {takeUntil, distinctUntilChanged} from 'rxjs/operators';
 
-import {State, getPageSize} from '../../core/store';
+import {getPageSize} from '../_redux/settings_selectors';
+import {State} from '../_redux/settings_types';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 

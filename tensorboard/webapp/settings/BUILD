@@ -5,12 +5,14 @@ package(default_visibility = ["//tensorboard:internal"])
 tf_ng_module(
     name = "settings",
     srcs = [
+        "index.ts",
         "settings_module.ts",
     ],
     deps = [
-        "//tensorboard/webapp/core",
+        "//tensorboard/webapp/settings/_redux",
         "//tensorboard/webapp/settings/_views",
         "@npm//@angular/core",
+        "@npm//@ngrx/store",
     ],
 )
 

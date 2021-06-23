@@ -83,7 +83,7 @@ tf_ng_module(
         "//tensorboard/webapp/angular:expect_angular_material_button",
         "//tensorboard/webapp/angular:expect_angular_material_icon",
         "//tensorboard/webapp/angular:expect_angular_material_input",
-        "//tensorboard/webapp/core/store",
+        "//tensorboard/webapp/settings",
         "//tensorboard/webapp/metrics/actions",
         "//tensorboard/webapp/metrics/data_source",
         "//tensorboard/webapp/metrics/store",
