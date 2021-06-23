@@ -95,13 +95,12 @@ export function getExperimentIdsFromRouteParams(
  */
 export function getRouteId(routeKind: RouteKind, params: RouteParams): string {
   switch (routeKind) {
-    case RouteKind.COMPARE_EXPERIMENT: {
-      const typedParams = params as CompareRouteParams;
-      return `${routeKind}/${typedParams.experimentIds}`;
-    }
+    case RouteKind.COMPARE_EXPERIMENT:
     case RouteKind.EXPERIMENT: {
-      const typedParams = params as ExperimentRouteParams;
-      return `${routeKind}/${typedParams.experimentId}`;
+      const experimentIds =
+        getExperimentIdsFromRouteParams(routeKind, params) ?? [];
+      experimentIds.sort();
+      return `${routeKind}/${experimentIds.join(',')}`;
     }
     case RouteKind.EXPERIMENTS:
       return String(routeKind);
