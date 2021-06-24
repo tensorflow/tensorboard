@@ -29,9 +29,7 @@ import {
   getReloadPeriodInMs,
   getPageSize,
 } from '../_redux/settings_selectors';
-import {
-  State,
-} from '../_redux/settings_types';
+import {State} from '../_redux/settings_types';
 import {
   toggleReloadEnabled,
   changeReloadPeriod,

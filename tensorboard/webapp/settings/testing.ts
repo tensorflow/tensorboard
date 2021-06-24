@@ -12,14 +12,20 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {SettingsState, State, SETTINGS_FEATURE_KEY} from './_redux/settings_types';
+import {
+  SettingsState,
+  State,
+  SETTINGS_FEATURE_KEY,
+} from './_redux/settings_types';
 
-export function createSettingsState(override?: Partial<SettingsState>): SettingsState {
+export function createSettingsState(
+  override?: Partial<SettingsState>
+): SettingsState {
   return {
     reloadPeriodInMs: 30000,
     reloadEnabled: true,
     pageSize: 10,
-    ...override
+    ...override,
   };
 }
 

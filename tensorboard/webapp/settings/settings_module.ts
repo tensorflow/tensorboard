@@ -21,8 +21,6 @@ import {SETTINGS_FEATURE_KEY} from './_redux/settings_types';
 
 @NgModule({
   exports: [ViewModule],
-  imports: [
-    StoreModule.forFeature(SETTINGS_FEATURE_KEY, reducers),
-  ],
+  imports: [StoreModule.forFeature(SETTINGS_FEATURE_KEY, reducers)],
 })
 export class SettingsModule {}

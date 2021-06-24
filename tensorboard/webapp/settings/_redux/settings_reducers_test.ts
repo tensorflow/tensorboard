@@ -14,10 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import * as actions from './settings_actions';
 import {reducers} from './settings_reducers';
-import {
-  createSettingsState,
-} from '../testing';
-
+import {createSettingsState} from '../testing';
 
 describe('settings reducer', () => {
   describe('#toggleReloadEnabled', () => {

@@ -44,7 +44,7 @@ const reducer = createReducer(
       ...state,
       pageSize: nextPageSize,
     };
-  }),
+  })
 );
 
 export function reducers(state: SettingsState | undefined, action: Action) {

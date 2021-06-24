@@ -21,7 +21,9 @@ import {createAction, props} from '@ngrx/store';
 /**
  * Action for when user wants to enable/disable reload.
  */
-export const toggleReloadEnabled = createAction('[Settings] Reload Enable Toggled');
+export const toggleReloadEnabled = createAction(
+  '[Settings] Reload Enable Toggled'
+);
 
 /**
  * Action for when user wants to change the reload period.

@@ -30,7 +30,9 @@ import {reload} from '../core/actions';
 })
 export class ReloaderComponent {
   private readonly onVisibilityChange = this.onVisibilityChangeImpl.bind(this);
-  private readonly reloadEnabled$ = this.store.pipe(select(settingsSelectors.getReloadEnabled));
+  private readonly reloadEnabled$ = this.store.pipe(
+    select(settingsSelectors.getReloadEnabled)
+  );
   private readonly reloadPeriodInMs$ = this.store.pipe(
     select(settingsSelectors.getReloadPeriodInMs)
   );

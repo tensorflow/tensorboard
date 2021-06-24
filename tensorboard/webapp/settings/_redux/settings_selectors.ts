@@ -13,11 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {createFeatureSelector, createSelector} from '@ngrx/store';
-import {
-  SettingsState,
-  SETTINGS_FEATURE_KEY,
-  State,
-} from './settings_types';
+import {SettingsState, SETTINGS_FEATURE_KEY, State} from './settings_types';
 
 // HACK: These imports are for type inference.
 // https://github.com/bazelbuild/rules_nodejs/issues/1013
