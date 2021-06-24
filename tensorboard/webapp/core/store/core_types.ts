@@ -20,7 +20,6 @@ limitations under the License.
 // remove this import, and write the divergent state types explicitly here.
 import {Environment, PluginId, PluginsListing} from '../../types/api';
 import {DataLoadState, LoadState} from '../../types/data';
-import {State as SettingsState} from '../../settings';
 
 import {PluginsListFailureCode, Run, RunId} from '../types';
 
@@ -74,7 +73,7 @@ interface FailedPluginsListLoadState extends LoadState {
 
 // TODO(bdubois): Remove composition with SettingsState when appropriate callers
 // are migrated to use SettingsState directly.
-export interface State extends SettingsState {
+export interface State {
   [CORE_FEATURE_KEY]?: CoreState;
 }
 
