@@ -25,7 +25,6 @@ tf_ts_library(
     srcs = [
         "polymer-interop.ts",
     ],
-    visibility = ["//visibility:public"],
     deps = [
         ":plugin_lib",
     ],
