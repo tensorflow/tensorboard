@@ -14,6 +14,7 @@ tf_ts_library(
         "plugin-guest.ts",
         "runs.ts",
     ],
+    visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/components/experimental/plugin_util:message",
     ],
