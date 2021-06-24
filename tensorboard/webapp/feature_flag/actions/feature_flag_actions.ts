@@ -33,3 +33,10 @@ export const partialFeatureFlagsLoaded = createAction(
     features: Partial<FeatureFlags>;
   }>()
 );
+
+export const overrideEnableDarkModeChanged = createAction(
+  '[FEATURE FLAG] Enable Dark Mode Override Changed',
+  props<{
+    enableDarkMode: boolean | null;
+  }>()
+);

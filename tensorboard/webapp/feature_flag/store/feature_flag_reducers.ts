@@ -35,6 +35,15 @@ const reducer = createReducer<FeatureFlagState>(
         ...features,
       },
     };
+  }),
+  on(actions.overrideEnableDarkModeChanged, (state, {enableDarkMode}) => {
+    return {
+      ...state,
+      flagOverrides: {
+        ...state.flagOverrides,
+        enableDarkModeOverride: enableDarkMode,
+      },
+    };
   })
 );
 

@@ -20,7 +20,8 @@ export function buildFeatureFlag(
 ): FeatureFlags {
   return {
     isAutoDarkModeAllowed: false,
-    enableDarkMode: false,
+    defaultEnableDarkMode: false,
+    enableDarkModeOverride: null,
     enabledColorGroup: false,
     enabledExperimentalPlugins: [],
     inColab: false,

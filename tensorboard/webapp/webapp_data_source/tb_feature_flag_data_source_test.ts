@@ -124,7 +124,7 @@ describe('tb_feature_flag_data_source', () => {
         it('takes value from media query when `enableMediaQuery` is true', () => {
           fakeMediaQuery(true);
           expect(dataSource.getFeatures(true)).toEqual({
-            enableDarkMode: true,
+            defaultEnableDarkMode: true,
           });
         });
 
