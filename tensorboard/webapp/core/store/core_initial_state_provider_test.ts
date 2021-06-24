@@ -56,11 +56,8 @@ describe('core_initial_state_provider', () => {
       const state = config.initialState as CoreState;
 
       expect(state.activePlugin).toBeDefined();
-      expect(state.pageSize).toBeDefined();
       expect(state.plugins).toBeDefined();
       expect(state.pluginsListLoaded).toBeDefined();
-      expect(state.reloadEnabled).toBeDefined();
-      expect(state.reloadPeriodInMs).toBeDefined();
     });
 
     it('sets activePlugin from the deeplinker', () => {
