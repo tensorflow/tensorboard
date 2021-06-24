@@ -77,6 +77,16 @@ describe('app_routing_selectors', () => {
 
       expect(selectors.getRouteKind(state)).toBe(RouteKind.EXPERIMENT);
     });
+
+    it('returns `null` is it does not have an active route', () => {
+      const state = buildStateFromAppRoutingState(
+        buildAppRoutingState({
+          activeRoute: null,
+        })
+      );
+
+      expect(selectors.getRouteKind(state)).toBeNull();
+    });
   });
 
   describe('getRouteParams', () => {
@@ -145,6 +155,37 @@ describe('app_routing_selectors', () => {
       );
 
       expect(selectors.getExperimentIdToAliasMap(state)).toEqual({});
+    });
+  });
+
+  describe('getRouteId', () => {
+    beforeEach(() => {
+      selectors.getRouteId.release();
+    });
+
+    it('returns routeId from an activeRoute', () => {
+      const state = buildStateFromAppRoutingState(
+        buildAppRoutingState({
+          activeRoute: buildRoute({
+            routeKind: RouteKind.EXPERIMENT,
+            pathname: '/experiment/234',
+            params: {
+              experimentId: '234',
+            },
+            queryParams: [],
+          }),
+        })
+      );
+
+      expect(selectors.getRouteId(state)).toBe('2/234');
+    });
+
+    it('returns a predefined value when it does not have an active one', () => {
+      const state = buildStateFromAppRoutingState(
+        buildAppRoutingState({activeRoute: null})
+      );
+
+      expect(selectors.getRouteId(state)).toBe('__no_route');
     });
   });
 });

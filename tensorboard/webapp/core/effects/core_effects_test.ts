@@ -12,7 +12,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {fakeAsync, TestBed, tick} from '@angular/core/testing';
+import {
+  discardPeriodicTasks,
+  fakeAsync,
+  flush,
+  TestBed,
+  tick,
+} from '@angular/core/testing';
 import {provideMockActions} from '@ngrx/effects/testing';
 import {Action, Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
@@ -36,7 +42,7 @@ import {
 } from '../../webapp_data_source/tb_http_client_testing';
 import {TBServerDataSource} from '../../webapp_data_source/tb_server_data_source';
 import * as coreActions from '../actions';
-import {polymerRunsFetchRequested} from '../actions';
+import {coreLoaded, polymerRunsFetchRequested} from '../actions';
 import {
   getActivePlugin,
   getPluginsListLoaded,
@@ -721,5 +727,49 @@ describe('core_effects', () => {
         ]);
       }
     );
+  });
+
+  describe('legacy mode (no routes, coreLoaded)', () => {
+    beforeEach(() => {
+      coreEffects.fetchWebAppData$.subscribe(() => {});
+    });
+
+    it('fetches runs and plugins listing', fakeAsync(() => {
+      store.overrideSelector(getRouteKind, null);
+      store.overrideSelector(getRouteId, 'foo');
+      store.overrideSelector(getPluginsListLoaded, {
+        state: DataLoadState.NOT_LOADED,
+        lastLoadedTimeInMs: null,
+        failureCode: null,
+      });
+      store.overrideSelector(getPolymerRunsLoadState, {
+        state: DataLoadState.NOT_LOADED,
+        lastLoadedTimeInMs: null,
+      });
+      store.refreshState();
+
+      action.next(coreLoaded());
+
+      const pluginsListing: PluginsListing = {
+        core: createPluginMetadata('Core'),
+      };
+      httpMock.expectOne('data/plugins_listing').flush(pluginsListing);
+      fetchPolymerRunsSubjects[0].next([{id: '1', name: 'Run 1'}]);
+      fetchPolymerRunsSubjects[0].complete();
+
+      expect(recordedActions).toEqual([
+        coreActions.pluginsListingRequested(),
+        coreActions.environmentLoaded({
+          environment: createEnvironment(),
+        }),
+        coreActions.polymerRunsFetchRequested(),
+        coreActions.pluginsListingLoaded({
+          plugins: pluginsListing,
+        }),
+        coreActions.polymerRunsFetchSucceeded(),
+      ]);
+
+      discardPeriodicTasks();
+    }));
   });
 });

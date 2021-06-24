@@ -47,8 +47,12 @@ export const getNextRouteForRouterOutletOnly = createSelector(
   }
 );
 
+/**
+ * Returns current RouteKind or returns `null` if route is not set at all
+ * (e.g., an application does not define any routes).
+ */
 export const getRouteKind = createSelector(getActiveRoute, (activeRoute) => {
-  return activeRoute ? activeRoute.routeKind : RouteKind.UNKNOWN;
+  return activeRoute ? activeRoute.routeKind : null;
 });
 
 export const getRouteParams = createSelector(getActiveRoute, (activeRoute) => {
@@ -63,6 +67,7 @@ export const getExperimentIdsFromRoute = createSelector(
   getRouteKind,
   getRouteParams,
   (routeKind, routeParams): string[] | null => {
+    if (routeKind === null) return null;
     return getExperimentIdsFromRouteParams(routeKind, routeParams);
   }
 );
@@ -71,6 +76,7 @@ export const getRouteId = createSelector(
   getRouteKind,
   getRouteParams,
   (routeKind, routeParams): string => {
+    if (routeKind === null) return '__no_route';
     return getRouteIdFromKindAndParams(routeKind, routeParams);
   }
 );

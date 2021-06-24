@@ -81,6 +81,10 @@ const ALIAS_CHANGE_RUNS_RELOAD_THROTTLE_IN_MS = 500;
 const DASHBOARD_ROUTE_KIND = new Set([
   RouteKind.COMPARE_EXPERIMENT,
   RouteKind.EXPERIMENT,
+  // Temporary. Not all TensorBoard uses router and, without using router, we
+  // still need to fetch plugins listing and runs when we first load. `null`
+  // signifies 'route not set'.
+  null,
 ]);
 
 @Injectable()
