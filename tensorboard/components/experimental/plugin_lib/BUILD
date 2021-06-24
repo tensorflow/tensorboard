@@ -14,6 +14,7 @@ tf_ts_library(
         "plugin-guest.ts",
         "runs.ts",
     ],
+    visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/components/experimental/plugin_util:message",
     ],
@@ -24,6 +25,7 @@ tf_ts_library(
     srcs = [
         "polymer-interop.ts",
     ],
+    visibility = ["//visibility:public"],
     deps = [
         ":plugin_lib",
     ],
