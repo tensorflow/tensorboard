@@ -25,6 +25,7 @@ have the same value, then there is one bucket whose left and right
 endpoints are the same (the shape is `[1, 3]`).
 """
 
+import contextlib
 
 import numpy as np
 
@@ -113,23 +114,42 @@ def histogram(name, data, step=None, buckets=None, description=None):
         or tf.summary.summary_scope
     )
 
-    def histogram_summary(data, buckets, histogram_metadata, step):
-        with summary_scope(
-            name, "histogram_summary", values=[data, buckets, step]
-        ) as (tag, _):
-            # Defer histogram bucketing logic by passing it as a callable to write(),
-            # wrapped in a LazyTensorCreator for backwards compatibility, so that we
-            # only do this work when summaries are actually written.
-            @lazy_tensor_creator.LazyTensorCreator
-            def lazy_tensor():
-                return _buckets(data, buckets)
+    # Try to capture current name scope so we can re-enter it below within our
+    # histogram_summary helper. We do this to avoid having the `tf.cond` below
+    # insert an extra `cond` into the tag name.
+    # TODO(https://github.com/tensorflow/tensorboard/issues/2885): Remove this
+    # special handling once the format no longer requires dynamic output shapes.
+    if hasattr(tf, "get_current_name_scope"):
+        # Enter empty context first to "escape" to root of name scope hierarchy
+        # and avoid nesting when we re-enter the desired name scope.
+        name_scope_cms = [
+            tf.name_scope(""),
+            tf.name_scope(tf.get_current_name_scope()),
+        ]
+    else:
+        name_scope_cms = []
 
-            return tf.summary.write(
-                tag=tag,
-                tensor=lazy_tensor,
-                step=step,
-                metadata=summary_metadata,
-            )
+    def histogram_summary(data, buckets, histogram_metadata, step):
+        with contextlib.ExitStack() as stack:
+            for cm in name_scope_cms:
+                stack.enter_context(cm)
+            with summary_scope(
+                name, "histogram_summary", values=[data, buckets, step]
+            ) as (tag, _):
+                # Defer histogram bucketing logic by passing it as a callable to
+                # write(), wrapped in a LazyTensorCreator for backwards
+                # compatibility, so that we only do this work when summaries are
+                # actually written.
+                @lazy_tensor_creator.LazyTensorCreator
+                def lazy_tensor():
+                    return _buckets(data, buckets)
+
+                return tf.summary.write(
+                    tag=tag,
+                    tensor=lazy_tensor,
+                    step=step,
+                    metadata=summary_metadata,
+                )
 
     # `_buckets()` has dynamic output shapes which is not supported on TPU's.
     # To address this, explicitly mark this logic for outside compilation so it
