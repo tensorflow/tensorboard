@@ -21,20 +21,20 @@ import {createAction, props} from '@ngrx/store';
 /**
  * Action for when user wants to enable/disable reload.
  */
- export const toggleReloadEnabled = createAction('[Settings] Reload Enable Toggled');
+export const toggleReloadEnabled = createAction('[Settings] Reload Enable Toggled');
 
- /**
-  * Action for when user wants to change the reload period.
-  */
- export const changeReloadPeriod = createAction(
-   '[Settings] Reload Period Change',
-   props<{periodInMs: number}>()
- );
+/**
+ * Action for when user wants to change the reload period.
+ */
+export const changeReloadPeriod = createAction(
+  '[Settings] Reload Period Change',
+  props<{periodInMs: number}>()
+);
 
- /**
-  * Action for when user wants to an item count in a page of a paginated view.
-  */
- export const changePageSize = createAction(
-   '[Settings] Page Size Change',
-   props<{size: number}>()
- );
+/**
+ * Action for when user wants to an item count in a page of a paginated view.
+ */
+export const changePageSize = createAction(
+  '[Settings] Page Size Change',
+  props<{size: number}>()
+);
