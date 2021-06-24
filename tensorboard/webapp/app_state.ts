@@ -20,6 +20,7 @@ import {State as FeatureFlagState} from './feature_flag/store/feature_flag_types
 import {State as MetricsState} from './metrics/store/metrics_types';
 import {State as NpmiState} from './plugins/npmi/store/npmi_types';
 import {State as RunsState} from './runs/store/runs_types';
+import {State as SettingsState} from './settings';
 import {State as TextState} from './plugins/text_v2/store/text_types';
 import {State as NotificationState} from './notification_center/_redux/notification_center_types';
 import {State as HparamsState} from './hparams/types';
@@ -32,5 +33,6 @@ export type State = AppRoutingState &
   MetricsState &
   NpmiState &
   RunsState &
+  SettingsState &
   TextState &
   NotificationState;

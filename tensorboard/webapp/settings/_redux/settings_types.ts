@@ -12,15 +12,23 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {NgModule} from '@angular/core';
-import {StoreModule} from '@ngrx/store';
 
-import {SettingsModule as ViewModule} from './_views/settings_module';
-import {reducers} from './_redux/settings_reducers';
-import {SETTINGS_FEATURE_KEY} from './_redux/settings_types';
+export const SETTINGS_FEATURE_KEY = 'settings';
 
-@NgModule({
-  exports: [ViewModule],
-  imports: [StoreModule.forFeature(SETTINGS_FEATURE_KEY, reducers)],
-})
-export class SettingsModule {}
+export interface SettingsState {
+  reloadPeriodInMs: number;
+  reloadEnabled: boolean;
+  // Size of a page in a general paginated view that is configurable by user via
+  // settings.
+  pageSize: number;
+}
+
+export interface State {
+  [SETTINGS_FEATURE_KEY]?: SettingsState;
+}
+
+export const initialState: SettingsState = {
+  reloadPeriodInMs: 30000,
+  reloadEnabled: false,
+  pageSize: 12,
+};

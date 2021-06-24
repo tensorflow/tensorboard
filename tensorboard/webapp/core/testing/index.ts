@@ -64,9 +64,6 @@ export function createCoreState(override?: Partial<CoreState>): CoreState {
       lastLoadedTimeInMs: null,
       failureCode: null,
     },
-    reloadPeriodInMs: 30000,
-    reloadEnabled: true,
-    pageSize: 10,
     environment: createEnvironment(),
     polymerRunsLoadState: {
       state: DataLoadState.NOT_LOADED,

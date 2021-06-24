@@ -152,33 +152,6 @@ const reducer = createReducer(
       return {...state, environment: environment};
     }
   ),
-  on(
-    actions.toggleReloadEnabled,
-    (state: CoreState): CoreState => {
-      return {
-        ...state,
-        reloadEnabled: !state.reloadEnabled,
-      };
-    }
-  ),
-  on(
-    actions.changeReloadPeriod,
-    (state: CoreState, {periodInMs}): CoreState => {
-      const nextReloadPeriod =
-        periodInMs > 0 ? periodInMs : state.reloadPeriodInMs;
-      return {
-        ...state,
-        reloadPeriodInMs: nextReloadPeriod,
-      };
-    }
-  ),
-  on(actions.changePageSize, (state: CoreState, {size}) => {
-    const nextPageSize = size > 0 ? size : state.pageSize;
-    return {
-      ...state,
-      pageSize: nextPageSize,
-    };
-  }),
   on(actions.fetchRunSucceeded, (state, {runs}) => {
     // Do not modify the runSelection since the Polymer component is the
     // source of truth for the Polymer Interop.

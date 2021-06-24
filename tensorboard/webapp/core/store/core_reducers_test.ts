@@ -367,49 +367,6 @@ describe('core reducer', () => {
     });
   });
 
-  describe('#toggleReloadEnabled', () => {
-    it('toggles reloadEnabled', () => {
-      const state1 = createCoreState({reloadEnabled: false});
-
-      const state2 = reducers(state1, actions.toggleReloadEnabled());
-
-      expect(state2.reloadEnabled).toBe(true);
-
-      const state3 = reducers(state2, actions.toggleReloadEnabled());
-
-      expect(state3.reloadEnabled).toBe(false);
-    });
-  });
-
-  describe('#changeReloadPeriod', () => {
-    it('sets the reloadPeriodInMs', () => {
-      const state = createCoreState({reloadPeriodInMs: 1});
-
-      const nextState = reducers(
-        state,
-        actions.changeReloadPeriod({periodInMs: 1000})
-      );
-
-      expect(nextState.reloadPeriodInMs).toBe(1000);
-    });
-
-    it('ignores the action when periodInMs is non-positive', () => {
-      const baseState = createCoreState({reloadPeriodInMs: 1});
-
-      const state1 = reducers(
-        baseState,
-        actions.changeReloadPeriod({periodInMs: 0})
-      );
-      expect(state1.reloadPeriodInMs).toBe(1);
-
-      const state2 = reducers(
-        baseState,
-        actions.changeReloadPeriod({periodInMs: -1000})
-      );
-      expect(state2.reloadPeriodInMs).toBe(1);
-    });
-  });
-
   describe('#fetchRunSucceeded', () => {
     it('sets polymerInteropRuns', () => {
       const state = createCoreState({polymerInteropRuns: []});

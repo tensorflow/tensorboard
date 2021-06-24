@@ -12,15 +12,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {NgModule} from '@angular/core';
-import {StoreModule} from '@ngrx/store';
-
-import {SettingsModule as ViewModule} from './_views/settings_module';
-import {reducers} from './_redux/settings_reducers';
-import {SETTINGS_FEATURE_KEY} from './_redux/settings_types';
-
-@NgModule({
-  exports: [ViewModule],
-  imports: [StoreModule.forFeature(SETTINGS_FEATURE_KEY, reducers)],
-})
-export class SettingsModule {}
+export * as actions from './_redux/settings_actions';
+export * as selectors from './_redux/settings_selectors';
+export {State} from './_redux/settings_types';

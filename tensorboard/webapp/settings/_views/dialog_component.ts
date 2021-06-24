@@ -27,14 +27,14 @@ import {takeUntil, debounceTime, filter} from 'rxjs/operators';
 import {
   getReloadEnabled,
   getReloadPeriodInMs,
-  State,
   getPageSize,
-} from '../../core/store';
+} from '../_redux/settings_selectors';
+import {State} from '../_redux/settings_types';
 import {
   toggleReloadEnabled,
   changeReloadPeriod,
   changePageSize,
-} from '../../core/actions';
+} from '../_redux/settings_actions';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 

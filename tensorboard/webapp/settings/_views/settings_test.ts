@@ -29,14 +29,16 @@ import {SettingsDialogComponent} from './dialog_component';
 import {SettingsButtonComponent} from './settings_button_component';
 
 import {MatIconTestingModule} from '../../testing/mat_icon_module';
-import {toggleReloadEnabled, changeReloadPeriod} from '../../core/actions';
-import {createCoreState, createState} from '../../core/testing';
-import {State} from '../../core/store';
+import {
+  toggleReloadEnabled,
+  changeReloadPeriod,
+} from '../_redux/settings_actions';
+import {createSettingsState, createState} from '../testing';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
 describe('settings test', () => {
-  let store: MockStore<State>;
+  let store: MockStore;
   let dispatchSpy: jasmine.Spy;
   let overlayContainer: OverlayContainer;
 
@@ -55,7 +57,7 @@ describe('settings test', () => {
       providers: [
         provideMockStore({
           initialState: createState(
-            createCoreState({
+            createSettingsState({
               reloadPeriodInMs: 30000,
               reloadEnabled: true,
             })
@@ -70,7 +72,7 @@ describe('settings test', () => {
         },
       })
       .compileComponents();
-    store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
+    store = TestBed.inject<Store>(Store) as MockStore;
     dispatchSpy = spyOn(store, 'dispatch');
     overlayContainer = TestBed.inject(OverlayContainer);
   });
@@ -116,7 +118,7 @@ describe('settings test', () => {
 
     store.setState(
       createState(
-        createCoreState({
+        createSettingsState({
           reloadPeriodInMs: 60000,
           reloadEnabled: false,
         })
@@ -177,7 +179,7 @@ describe('settings test', () => {
     it('does not set state when reload is disabled', fakeAsync(() => {
       store.setState(
         createState(
-          createCoreState({
+          createSettingsState({
             reloadPeriodInMs: 30000,
             reloadEnabled: false,
           })

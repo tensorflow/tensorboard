@@ -20,12 +20,12 @@ import {provideMockStore, MockStore} from '@ngrx/store/testing';
 
 import {SettingsPolymerInteropContainer} from './polymer_interop_container';
 
-import {getPageSize, State} from '../../core/store';
+import {getPageSize} from '../_redux/settings_selectors';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
 describe('settings polymer_interop', () => {
-  let store: MockStore<State>;
+  let store: MockStore;
   let setLimitCalls: number[];
 
   beforeEach(async () => {
@@ -34,7 +34,7 @@ describe('settings polymer_interop', () => {
       declarations: [SettingsPolymerInteropContainer],
     }).compileComponents();
 
-    store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
+    store = TestBed.inject<Store>(Store) as MockStore;
     store.overrideSelector(getPageSize, 5);
 
     setLimitCalls = [];

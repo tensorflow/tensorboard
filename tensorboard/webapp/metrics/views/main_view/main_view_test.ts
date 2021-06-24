@@ -25,7 +25,7 @@ import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {Action, Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {State} from '../../../app_state';
-import {getPageSize} from '../../../core/store/core_selectors';
+import {selectors as settingsSelectors} from '../../../settings';
 import {of, ReplaySubject} from 'rxjs';
 
 import * as selectors from '../../../selectors';
@@ -167,7 +167,7 @@ describe('metrics main view', () => {
     spyOn(store, 'dispatch').and.callFake((action: Action) => {
       dispatchedActions.push(action);
     });
-    store.overrideSelector(getPageSize, 10);
+    store.overrideSelector(settingsSelectors.getPageSize, 10);
     store.overrideSelector(selectors.getMetricsTagFilter, '');
     store.overrideSelector(getMetricsTagGroupExpansionState, false);
     store.overrideSelector(
@@ -494,7 +494,7 @@ describe('metrics main view', () => {
           selectors.getCurrentRouteRunSelection,
           new Map([['run1', true]])
         );
-        store.overrideSelector(getPageSize, 2);
+        store.overrideSelector(settingsSelectors.getPageSize, 2);
         store.overrideSelector(selectors.getNonEmptyCardIdsWithMetadata, [
           {
             cardId: 'card1',
@@ -530,7 +530,7 @@ describe('metrics main view', () => {
           'images: card2',
         ]);
 
-        store.overrideSelector(getPageSize, 10);
+        store.overrideSelector(settingsSelectors.getPageSize, 10);
         store.refreshState();
         fixture.detectChanges();
         expect(getCardsInGroup(fixture, 0).length).toBe(3);
@@ -542,21 +542,21 @@ describe('metrics main view', () => {
           selectors.getNonEmptyCardIdsWithMetadata,
           createNScalarCards(20)
         );
-        store.overrideSelector(getPageSize, 50);
+        store.overrideSelector(settingsSelectors.getPageSize, 50);
         const fixture = TestBed.createComponent(MainViewContainer);
         fixture.detectChanges();
 
         expect(getCards(fixture.debugElement).length).toBe(20);
         expect(fixture.debugElement.query(PAGINATION_INPUT)).toBeNull();
 
-        store.overrideSelector(getPageSize, 10);
+        store.overrideSelector(settingsSelectors.getPageSize, 10);
         store.refreshState();
         fixture.detectChanges();
 
         expect(getCards(fixture.debugElement).length).toBe(10);
         assertPagination(fixture, 1, 2);
 
-        store.overrideSelector(getPageSize, 3);
+        store.overrideSelector(settingsSelectors.getPageSize, 3);
         store.refreshState();
         fixture.detectChanges();
 
@@ -691,7 +691,7 @@ describe('metrics main view', () => {
           'getMetricsTagGroupExpansionState called with unknown groupName'
         );
 
-      store.overrideSelector(getPageSize, 2);
+      store.overrideSelector(settingsSelectors.getPageSize, 2);
       store.overrideSelector(
         selectors.getNonEmptyCardIdsWithMetadata,
         createNScalarCards(5)
@@ -702,7 +702,7 @@ describe('metrics main view', () => {
       selectSpy
         .withArgs(getMetricsTagGroupExpansionState, 'tagA')
         .and.returnValue(of(false));
-      store.overrideSelector(getPageSize, 5);
+      store.overrideSelector(settingsSelectors.getPageSize, 5);
       store.overrideSelector(
         selectors.getNonEmptyCardIdsWithMetadata,
         createNScalarCards(10)
@@ -722,7 +722,7 @@ describe('metrics main view', () => {
       selectSpy
         .withArgs(getMetricsTagGroupExpansionState, 'tagA')
         .and.returnValue(of(false));
-      store.overrideSelector(getPageSize, 10);
+      store.overrideSelector(settingsSelectors.getPageSize, 10);
       store.overrideSelector(
         selectors.getNonEmptyCardIdsWithMetadata,
         createNScalarCards(4)
@@ -742,7 +742,7 @@ describe('metrics main view', () => {
       selectSpy
         .withArgs(getMetricsTagGroupExpansionState, 'tagA')
         .and.returnValue(of(true));
-      store.overrideSelector(getPageSize, 5);
+      store.overrideSelector(settingsSelectors.getPageSize, 5);
       store.overrideSelector(
         selectors.getNonEmptyCardIdsWithMetadata,
         createNScalarCards(10)
@@ -758,7 +758,7 @@ describe('metrics main view', () => {
       selectSpy
         .withArgs(getMetricsTagGroupExpansionState, 'tagA')
         .and.returnValue(of(false));
-      store.overrideSelector(getPageSize, 2);
+      store.overrideSelector(settingsSelectors.getPageSize, 2);
       store.overrideSelector(
         selectors.getNonEmptyCardIdsWithMetadata,
         createNScalarCards(5)
@@ -773,7 +773,7 @@ describe('metrics main view', () => {
       selectSpy
         .withArgs(getMetricsTagGroupExpansionState, 'tagA')
         .and.returnValue(of(false));
-      store.overrideSelector(getPageSize, 5);
+      store.overrideSelector(settingsSelectors.getPageSize, 5);
       store.overrideSelector(
         selectors.getNonEmptyCardIdsWithMetadata,
         createNScalarCards(2)
@@ -788,7 +788,7 @@ describe('metrics main view', () => {
       selectSpy
         .withArgs(getMetricsTagGroupExpansionState, 'tagA')
         .and.returnValue(of(false));
-      store.overrideSelector(getPageSize, 2);
+      store.overrideSelector(settingsSelectors.getPageSize, 2);
       store.overrideSelector(
         selectors.getNonEmptyCardIdsWithMetadata,
         createNScalarCards(5)
@@ -803,7 +803,7 @@ describe('metrics main view', () => {
       selectSpy
         .withArgs(getMetricsTagGroupExpansionState, 'tagA')
         .and.returnValue(of(false));
-      store.overrideSelector(getPageSize, 5);
+      store.overrideSelector(settingsSelectors.getPageSize, 5);
       store.overrideSelector(
         selectors.getNonEmptyCardIdsWithMetadata,
         createNScalarCards(15)
@@ -819,7 +819,7 @@ describe('metrics main view', () => {
       selectSpy
         .withArgs(getMetricsTagGroupExpansionState, 'tagA')
         .and.returnValue(of(false));
-      store.overrideSelector(getPageSize, 2);
+      store.overrideSelector(settingsSelectors.getPageSize, 2);
       store.overrideSelector(
         selectors.getNonEmptyCardIdsWithMetadata,
         createNScalarCards(5)
@@ -837,7 +837,7 @@ describe('metrics main view', () => {
       selectSpy
         .withArgs(getMetricsTagGroupExpansionState, 'tagA')
         .and.returnValue(getExpansionStateSubject);
-      store.overrideSelector(getPageSize, 5);
+      store.overrideSelector(settingsSelectors.getPageSize, 5);
       store.overrideSelector(
         selectors.getNonEmptyCardIdsWithMetadata,
         createNScalarCards(10)
@@ -865,7 +865,7 @@ describe('metrics main view', () => {
         selectSpy
           .withArgs(getMetricsTagGroupExpansionState, 'tagA')
           .and.returnValue(of(true));
-        store.overrideSelector(getPageSize, 5);
+        store.overrideSelector(settingsSelectors.getPageSize, 5);
         store.overrideSelector(
           selectors.getNonEmptyCardIdsWithMetadata,
           createNScalarCards(10)
@@ -967,7 +967,7 @@ describe('metrics main view', () => {
 
     it('does not show the collapse/expand control', () => {
       store.overrideSelector(selectors.getMetricsTagFilter, 'tagA');
-      store.overrideSelector(getPageSize, 5);
+      store.overrideSelector(settingsSelectors.getPageSize, 5);
       store.overrideSelector(
         selectors.getNonEmptyCardIdsWithMetadata,
         createNScalarCards(10)
@@ -981,7 +981,7 @@ describe('metrics main view', () => {
 
     it('does not limit number of items to 3', () => {
       store.overrideSelector(selectors.getMetricsTagFilter, 'tagA');
-      store.overrideSelector(getPageSize, 5);
+      store.overrideSelector(settingsSelectors.getPageSize, 5);
       store.overrideSelector(
         selectors.getNonEmptyCardIdsWithMetadata,
         createNScalarCards(10)
@@ -1001,7 +1001,7 @@ describe('metrics main view', () => {
 
     it('shows an empty list when started with malformed regex filter', () => {
       store.overrideSelector(selectors.getMetricsTagFilter, '*');
-      store.overrideSelector(getPageSize, 5);
+      store.overrideSelector(settingsSelectors.getPageSize, 5);
       store.overrideSelector(
         selectors.getNonEmptyCardIdsWithMetadata,
         createNScalarCards(10)
@@ -1018,7 +1018,7 @@ describe('metrics main view', () => {
         'the correct list when regex is fixed',
       () => {
         store.overrideSelector(selectors.getMetricsTagFilter, 'tagA');
-        store.overrideSelector(getPageSize, 5);
+        store.overrideSelector(settingsSelectors.getPageSize, 5);
         store.overrideSelector(
           selectors.getNonEmptyCardIdsWithMetadata,
           createNScalarCards(10)

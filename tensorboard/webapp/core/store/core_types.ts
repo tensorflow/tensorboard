@@ -20,6 +20,7 @@ limitations under the License.
 // remove this import, and write the divergent state types explicitly here.
 import {Environment, PluginId, PluginsListing} from '../../types/api';
 import {DataLoadState, LoadState} from '../../types/data';
+import {State as SettingsState} from '../../settings';
 
 import {PluginsListFailureCode, Run, RunId} from '../types';
 
@@ -32,11 +33,6 @@ export interface CoreState {
   coreDataLoadState: LoadState;
   pluginsListLoaded: PluginsListLoadState;
   polymerRunsLoadState: LoadState;
-  reloadPeriodInMs: number;
-  reloadEnabled: boolean;
-  // Size of a page in a general paginated view that is configurable by user via
-  // settings.
-  pageSize: number;
   environment: Environment;
   // TODO(stephanwlee): move these state to the `runs` features.
   // For now, we want them here for Polymer interop states reasons, too.
@@ -76,7 +72,9 @@ interface FailedPluginsListLoadState extends LoadState {
   failureCode: PluginsListFailureCode;
 }
 
-export interface State {
+// TODO(bdubois): Remove composition with SettingsState when appropriate callers
+// are migrated to use SettingsState directly.
+export interface State extends SettingsState {
   [CORE_FEATURE_KEY]?: CoreState;
 }
 
@@ -92,9 +90,6 @@ export const initialState: CoreState = {
     lastLoadedTimeInMs: null,
     failureCode: null,
   },
-  reloadPeriodInMs: 30000,
-  reloadEnabled: false,
-  pageSize: 12,
   environment: {
     data_location: '',
     window_title: '',

@@ -147,6 +147,7 @@ tf_ng_module(
         "//tensorboard/webapp/plugins/npmi/store:types",
         "//tensorboard/webapp/plugins/text_v2/store:types",
         "//tensorboard/webapp/runs/store:types",
+        "//tensorboard/webapp/settings",
     ],
 )
 
