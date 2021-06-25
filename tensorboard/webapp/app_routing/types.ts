@@ -26,10 +26,15 @@ export interface RouteParams {
 }
 
 export enum RouteKind {
+  // Route is defined and is not known to the application.
   UNKNOWN,
   EXPERIMENTS,
   EXPERIMENT,
   COMPARE_EXPERIMENT,
+  // Router has not yet bootstrapped and RouteKind is not set yet.
+  // Temporary enum values until we can remove special cases in core_effects to
+  // handle TensorBoard applications with no routes defined.
+  NOT_SET,
 }
 
 export const DEFAULT_EXPERIMENT_ID = 'defaultExperimentId';

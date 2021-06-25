@@ -104,6 +104,8 @@ export function getRouteId(routeKind: RouteKind, params: RouteParams): string {
     }
     case RouteKind.EXPERIMENTS:
       return String(routeKind);
+    case RouteKind.NOT_SET:
+      return '__not_set';
     default:
       return '';
   }

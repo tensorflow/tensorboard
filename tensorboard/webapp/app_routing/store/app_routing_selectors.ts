@@ -47,8 +47,12 @@ export const getNextRouteForRouterOutletOnly = createSelector(
   }
 );
 
+/**
+ * Returns current RouteKind or returns `null` if route is not set at all
+ * (e.g., an application does not define any routes).
+ */
 export const getRouteKind = createSelector(getActiveRoute, (activeRoute) => {
-  return activeRoute ? activeRoute.routeKind : RouteKind.UNKNOWN;
+  return activeRoute ? activeRoute.routeKind : RouteKind.NOT_SET;
 });
 
 export const getRouteParams = createSelector(getActiveRoute, (activeRoute) => {
