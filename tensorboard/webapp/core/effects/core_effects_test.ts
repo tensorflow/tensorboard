@@ -735,7 +735,7 @@ describe('core_effects', () => {
     });
 
     it('fetches runs and plugins listing', fakeAsync(() => {
-      store.overrideSelector(getRouteKind, null);
+      store.overrideSelector(getRouteKind, RouteKind.NOT_SET);
       store.overrideSelector(getRouteId, 'foo');
       store.overrideSelector(getPluginsListLoaded, {
         state: DataLoadState.NOT_LOADED,

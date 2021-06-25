@@ -84,7 +84,7 @@ const DASHBOARD_ROUTE_KIND = new Set([
   // Temporary. Not all TensorBoard uses router and, without using router, we
   // still need to fetch plugins listing and runs when we first load. `null`
   // signifies 'route not set'.
-  null,
+  RouteKind.NOT_SET,
 ]);
 
 @Injectable()

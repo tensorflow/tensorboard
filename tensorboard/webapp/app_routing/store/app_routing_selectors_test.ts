@@ -78,14 +78,14 @@ describe('app_routing_selectors', () => {
       expect(selectors.getRouteKind(state)).toBe(RouteKind.EXPERIMENT);
     });
 
-    it('returns `null` is it does not have an active route', () => {
+    it('returns `NOT_SET` is it does not have an active route', () => {
       const state = buildStateFromAppRoutingState(
         buildAppRoutingState({
           activeRoute: null,
         })
       );
 
-      expect(selectors.getRouteKind(state)).toBeNull();
+      expect(selectors.getRouteKind(state)).toBe(RouteKind.NOT_SET);
     });
   });
 
@@ -180,12 +180,12 @@ describe('app_routing_selectors', () => {
       expect(selectors.getRouteId(state)).toBe('2/234');
     });
 
-    it('returns a predefined value when it does not have an active one', () => {
+    it('returns "__not_set" when it does not have an active one', () => {
       const state = buildStateFromAppRoutingState(
         buildAppRoutingState({activeRoute: null})
       );
 
-      expect(selectors.getRouteId(state)).toBe('__no_route');
+      expect(selectors.getRouteId(state)).toBe('__not_set');
     });
   });
 });
