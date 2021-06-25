@@ -32,6 +32,8 @@ export enum RouteKind {
   EXPERIMENT,
   COMPARE_EXPERIMENT,
   // Router has not yet bootstrapped and RouteKind is not set yet.
+  // Temporary enum values until we can remove special cases in core_effects to
+  // handle TensorBoard applications with no routes defined.
   NOT_SET,
 }
 
