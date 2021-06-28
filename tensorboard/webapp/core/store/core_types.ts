@@ -71,8 +71,6 @@ interface FailedPluginsListLoadState extends LoadState {
   failureCode: PluginsListFailureCode;
 }
 
-// TODO(bdubois): Remove composition with SettingsState when appropriate callers
-// are migrated to use SettingsState directly.
 export interface State {
   [CORE_FEATURE_KEY]?: CoreState;
 }
