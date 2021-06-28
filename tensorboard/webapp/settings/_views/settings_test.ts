@@ -65,7 +65,11 @@ describe('settings test', () => {
           ),
         }),
       ],
-      declarations: [SettingsDialogContainer, SettingsDialogComponent, SettingsButtonComponent],
+      declarations: [
+        SettingsDialogContainer,
+        SettingsDialogComponent,
+        SettingsButtonComponent,
+      ],
     })
       .overrideModule(BrowserDynamicTestingModule, {
         set: {
