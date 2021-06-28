@@ -28,7 +28,7 @@ export enum DarkModeOverride {
       [matMenuTriggerFor]="menu"
       aria-label="Menu for changing light or dark theme"
       [ngSwitch]="darkModeOverride"
-      title="Switch between browser default, light, or dark theme"
+      [title]="getButtonTitle()"
     >
       <mat-icon
         *ngSwitchCase="DarkModeOverride.DEFAULT"
@@ -76,4 +76,21 @@ export class DarkModeToggleComponent {
 
   @Output()
   onOverrideChanged = new EventEmitter<DarkModeOverride>();
+
+  getButtonTitle(): string {
+    let mode: string;
+
+    switch (this.darkModeOverride) {
+      case DarkModeOverride.DEFAULT:
+        mode = 'Browser default';
+        break;
+      case DarkModeOverride.DARK_MODE_ON:
+        mode = 'Dark mode';
+        break;
+      case DarkModeOverride.DARK_MODE_OFF:
+        mode = 'Light mode';
+        break;
+    }
+    return `Current mode: [${mode}]. Switch between browser default, light, or dark theme.`;
+  }
 }
