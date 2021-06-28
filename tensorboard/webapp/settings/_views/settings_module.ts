@@ -34,7 +34,7 @@ import {SettingsPolymerInteropContainer} from './polymer_interop_container';
     SettingsPolymerInteropContainer,
   ],
   exports: [SettingsButtonComponent, SettingsDialogContainer, SettingsPolymerInteropContainer],
-  entryComponents: [SettingsButtonComponent, SettingsDialogContainer],
+  entryComponents: [SettingsDialogContainer],
   imports: [
     CommonModule,
     FormsModule,

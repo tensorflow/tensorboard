@@ -6,6 +6,7 @@ tf_ng_module(
     name = "_views",
     srcs = [
         "dialog_component.ts",
+        "dialog_container.ts",
         "polymer_interop_container.ts",
         "settings_button_component.ts",
         "settings_module.ts",

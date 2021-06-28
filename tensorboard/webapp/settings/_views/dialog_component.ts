@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component, OnInit, OnDestroy, SimpleChanges, OnChanges} from '@angular/core';
+import {Component, OnInit, OnDestroy, SimpleChanges, OnChanges, EventEmitter, Output} from '@angular/core';
 import {
   FormControl,
   Validators,
@@ -104,6 +104,9 @@ export class SettingsDialogComponent implements OnInit, OnDestroy, OnChanges {
   @Input() reloadEnabled!: boolean;
   @Input() reloadPeriodInMs!: number;
   @Input() pageSize!: number;
+  @Output() reloadToggled = new EventEmitter();
+  @Output() reloadPeriodInMsChanged = new EventEmitter<number>();
+  @Output() pageSizeChanged = new EventEmitter<number>();
 
   readonly reloadPeriodControl = new FormControl(15, [
     Validators.required,
@@ -120,6 +123,7 @@ export class SettingsDialogComponent implements OnInit, OnDestroy, OnChanges {
   constructor(private store: Store<State>) {}
 
   ngOnInit() {
+    debugger;
     this.reloadPeriodControl.valueChanges
       .pipe(
         takeUntil(this.ngUnsubscribe),
@@ -131,7 +135,7 @@ export class SettingsDialogComponent implements OnInit, OnDestroy, OnChanges {
           return;
         }
         const periodInMs = this.reloadPeriodControl.value * 1000;
-        this.store.dispatch(changeReloadPeriod({periodInMs}));
+        this.reloadPeriodInMsChanged.emit(periodInMs);
       });
 
     this.paginationControl.valueChanges
@@ -141,9 +145,7 @@ export class SettingsDialogComponent implements OnInit, OnDestroy, OnChanges {
         filter(() => this.paginationControl.valid)
       )
       .subscribe(() => {
-        this.store.dispatch(
-          changePageSize({size: this.paginationControl.value})
-        );
+        this.pageSizeChanged.emit(this.paginationControl.value);
       });
   }
 
@@ -153,10 +155,12 @@ export class SettingsDialogComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges) {
+    debugger;
+
     if (changes['reloadPeriodInMs']) {
       const change = changes['reloadPeriodInMs'];
       if (change.previousValue !== change.currentValue) {
-        this.reloadPeriodControl.setValue(change.currentValue);
+        this.reloadPeriodControl.setValue(change.currentValue / 1000);
       }
     }
 
@@ -169,12 +173,12 @@ export class SettingsDialogComponent implements OnInit, OnDestroy, OnChanges {
     if (changes['pageSize']) {
       const change = changes['pageSize'];
       if (change.previousValue !== change.currentValue) {
-        this.paginationControl.setValue(value);
+        this.paginationControl.setValue(change.currentValue);
       }
     }
   }
 
   onReloadToggle(): void {
-    this.store.dispatch(toggleReloadEnabled());
+    this.reloadToggled.emit();
   }
 }

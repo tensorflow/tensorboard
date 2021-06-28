@@ -23,8 +23,8 @@ import {
 import {State} from '../_redux/settings_types';
 import {
   toggleReloadEnabled,
-  // changeReloadPeriod,
-  // changePageSize,
+  changeReloadPeriod,
+  changePageSize,
 } from '../_redux/settings_actions';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
@@ -37,14 +37,14 @@ import {
       [reloadPeriodInMs]="reloadPeriodInMs$ | async"
       [pageSize]="pageSize$ | async"
       (reloadToggled)="onReloadToggled()"
-      (reloadPeriodInMsChanged)="onReloadPeriodInMsChanged()"
-      (pageSizeChanged)="onPageSizeChanged()"
+      (reloadPeriodInMsChanged)="onReloadPeriodInMsChanged($event)"
+      (pageSizeChanged)="onPageSizeChanged($event)"
     ></settings-dialog-component>
   `,
 })
 export class SettingsDialogContainer {
   readonly reloadEnabled$ = this.store.pipe(select(getReloadEnabled));
-  readonly getReloadPeriodInMs$ = this.store.pipe(select(getReloadPeriodInMs));
+  readonly reloadPeriodInMs$ = this.store.pipe(select(getReloadPeriodInMs));
   readonly pageSize$ = this.store.pipe(select(getPageSize));
 
   constructor(private store: Store<State>) {}
@@ -53,13 +53,11 @@ export class SettingsDialogContainer {
     this.store.dispatch(toggleReloadEnabled());
   }
 
-  onReloadPeriodInMsChanged(event: unknown): void {
-    debugger;
-    // this.store.dispatch(changeReloadPeriod());
+  onReloadPeriodInMsChanged(periodInMs: number): void {
+    this.store.dispatch(changeReloadPeriod({periodInMs}));
   }
 
-  onPageSizeChanged(event: unknown): void {
-    debugger;
-    // this.store.dispatch(changePageSize());
+  onPageSizeChanged(size: number): void {
+    this.store.dispatch(changePageSize({size}));
   }
 }
