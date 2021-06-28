@@ -31,7 +31,7 @@ import {
  *
  * 1. Define a customizable Component, for example a button:
  *
- *    const CustomizableButton = new InjectionToken<Type<unknown>>('Customizable Button');
+ *    const CustomizableButton = new InjectionToken<Type<Component>>('Customizable Button');
  *
  * 2. Where the customization point is desired, use this Component to wrap some
  *    default behavior. Bind to some possibly-empty variable with the
