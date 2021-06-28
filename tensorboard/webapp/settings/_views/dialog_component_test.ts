@@ -211,7 +211,7 @@ describe('settings test', () => {
 
       expect(dispatchSpy).not.toHaveBeenCalled();
 
-      // We debounce it so it does not spam other components on very keystroke.
+      // We debounce it so it does not spam other components on every keystroke.
       flush();
 
       expect(dispatchSpy).toHaveBeenCalledWith(changePageSize({size: 20}));

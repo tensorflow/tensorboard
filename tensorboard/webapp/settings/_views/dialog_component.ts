@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component, OnInit, OnDestroy} from '@angular/core';
+import {Component, OnInit, OnDestroy, SimpleChanges, OnChanges} from '@angular/core';
 import {
   FormControl,
   Validators,
@@ -37,6 +37,7 @@ import {
 } from '../_redux/settings_actions';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
+import {Input} from '@angular/core';
 
 const getReloadPeriodInSec = createSelector(getReloadPeriodInMs, (periodInMs) =>
   Math.round(periodInMs / 1000)
@@ -51,13 +52,13 @@ export function createIntegerValidator(): ValidatorFn {
 }
 
 @Component({
-  selector: 'settings-dialog',
+  selector: 'settings-dialog-component',
   template: `
     <h3>Settings</h3>
     <div>
       <div class="reload-toggle">
         <mat-checkbox
-          [checked]="reloadEnabled$ | async"
+          [checked]="reloadEnabled"
           (change)="onReloadToggle()"
           >Reload data</mat-checkbox
         >
@@ -99,12 +100,11 @@ export function createIntegerValidator(): ValidatorFn {
   `,
   styleUrls: ['./dialog_component.css'],
 })
-export class SettingsDialogComponent implements OnInit, OnDestroy {
-  readonly reloadEnabled$ = this.store.pipe(select(getReloadEnabled));
-  readonly pageSize$ = this.store.pipe(select(getPageSize));
-  private readonly reloadPeriodInSec$ = this.store.pipe(
-    select(getReloadPeriodInSec)
-  );
+export class SettingsDialogComponent implements OnInit, OnDestroy, OnChanges {
+  @Input() reloadEnabled!: boolean;
+  @Input() reloadPeriodInMs!: number;
+  @Input() pageSize!: number;
+
   readonly reloadPeriodControl = new FormControl(15, [
     Validators.required,
     Validators.min(15),
@@ -120,22 +120,6 @@ export class SettingsDialogComponent implements OnInit, OnDestroy {
   constructor(private store: Store<State>) {}
 
   ngOnInit() {
-    this.reloadPeriodInSec$
-      .pipe(
-        takeUntil(this.ngUnsubscribe),
-        filter((value) => value !== this.reloadPeriodControl.value)
-      )
-      .subscribe((value) => {
-        this.reloadPeriodControl.setValue(value);
-      });
-
-    this.reloadEnabled$
-      .pipe(takeUntil(this.ngUnsubscribe))
-      .subscribe((value) => {
-        if (value) this.reloadPeriodControl.enable();
-        else this.reloadPeriodControl.disable();
-      });
-
     this.reloadPeriodControl.valueChanges
       .pipe(
         takeUntil(this.ngUnsubscribe),
@@ -148,15 +132,6 @@ export class SettingsDialogComponent implements OnInit, OnDestroy {
         }
         const periodInMs = this.reloadPeriodControl.value * 1000;
         this.store.dispatch(changeReloadPeriod({periodInMs}));
-      });
-
-    this.pageSize$
-      .pipe(
-        takeUntil(this.ngUnsubscribe),
-        filter((value) => value !== this.paginationControl.value)
-      )
-      .subscribe((value) => {
-        this.paginationControl.setValue(value);
       });
 
     this.paginationControl.valueChanges
@@ -175,6 +150,28 @@ export class SettingsDialogComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.ngUnsubscribe.next();
     this.ngUnsubscribe.complete();
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['reloadPeriodInMs']) {
+      const change = changes['reloadPeriodInMs'];
+      if (change.previousValue !== change.currentValue) {
+        this.reloadPeriodControl.setValue(change.currentValue);
+      }
+    }
+
+    if (changes['reloadEnabled']) {
+      const change = changes['reloadEnabled'];
+      if (change.currentValue) this.reloadPeriodControl.enable();
+      else this.reloadPeriodControl.disable();
+    }
+
+    if (changes['pageSize']) {
+      const change = changes['pageSize'];
+      if (change.previousValue !== change.currentValue) {
+        this.paginationControl.setValue(value);
+      }
+    }
   }
 
   onReloadToggle(): void {
