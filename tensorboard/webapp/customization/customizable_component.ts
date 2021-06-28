@@ -46,7 +46,7 @@ import {
  *
  *    constructor(
  *      @Optional() @Inject(CustomizableButton)
- *      readonly customButtonIfProvided: Type<unknown>)
+ *      readonly customButtonIfProvided: Type<Component>)
  *
  * If you do not wish to customize the behavior for a certain TensorBoard
  * service (in this case, a button), you're done. The TensorBoard service
