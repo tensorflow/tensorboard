@@ -33,7 +33,11 @@ import {SettingsPolymerInteropContainer} from './polymer_interop_container';
     SettingsDialogContainer,
     SettingsPolymerInteropContainer,
   ],
-  exports: [SettingsButtonComponent, SettingsDialogContainer, SettingsPolymerInteropContainer],
+  exports: [
+    SettingsButtonComponent,
+    SettingsDialogContainer,
+    SettingsPolymerInteropContainer,
+  ],
   entryComponents: [SettingsDialogContainer],
   imports: [
     CommonModule,

@@ -12,7 +12,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component, OnInit, OnDestroy, SimpleChanges, OnChanges, EventEmitter, Output} from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  SimpleChanges,
+  OnChanges,
+  EventEmitter,
+  Input,
+  Output,
+} from '@angular/core';
 import {
   FormControl,
   Validators,
@@ -37,7 +46,6 @@ import {
 } from '../_redux/settings_actions';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
-import {Input} from '@angular/core';
 
 const getReloadPeriodInSec = createSelector(getReloadPeriodInMs, (periodInMs) =>
   Math.round(periodInMs / 1000)
@@ -57,9 +65,7 @@ export function createIntegerValidator(): ValidatorFn {
     <h3>Settings</h3>
     <div>
       <div class="reload-toggle">
-        <mat-checkbox
-          [checked]="reloadEnabled"
-          (change)="onReloadToggle()"
+        <mat-checkbox [checked]="reloadEnabled" (change)="onReloadToggle()"
           >Reload data</mat-checkbox
         >
       </div>
@@ -123,7 +129,6 @@ export class SettingsDialogComponent implements OnInit, OnDestroy, OnChanges {
   constructor(private store: Store<State>) {}
 
   ngOnInit() {
-    debugger;
     this.reloadPeriodControl.valueChanges
       .pipe(
         takeUntil(this.ngUnsubscribe),
@@ -155,8 +160,6 @@ export class SettingsDialogComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    debugger;
-
     if (changes['reloadPeriodInMs']) {
       const change = changes['reloadPeriodInMs'];
       if (change.previousValue !== change.currentValue) {
