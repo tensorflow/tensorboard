@@ -46,18 +46,21 @@ export enum DarkModeOverride {
     <mat-menu #menu="matMenu">
       <button
         mat-menu-item
+        title="Set the theme to match the default mode in the browser."
         (click)="onOverrideChanged.emit(DarkModeOverride.DEFAULT)"
       >
         <label>Browser default</label>
       </button>
       <button
         mat-menu-item
+        title="Force light TensorBoard theme."
         (click)="onOverrideChanged.emit(DarkModeOverride.DARK_MODE_OFF)"
       >
         <label>Light</label>
       </button>
       <button
         mat-menu-item
+        title="Force dark TensorBoard theme."
         (click)="onOverrideChanged.emit(DarkModeOverride.DARK_MODE_ON)"
       >
         <label>Dark</label>
