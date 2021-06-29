@@ -229,13 +229,13 @@ export function DataLoaderBehavior<Item, Data>(
                   this.onLoadFinish();
                 }
                 this._loadDataAsync = null;
+                this.dataLoadedAtLeastOnce = true;
               }
               const isDataFetchPending = Array.from(
                 this._dataLoadState.values()
               ).includes(LoadState.LOADING);
               if (!isDataFetchPending) {
                 this.dataLoading = false;
-                this.dataLoadedAtLeastOnce = true;
               }
             }
           );
