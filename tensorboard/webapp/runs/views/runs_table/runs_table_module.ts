@@ -20,7 +20,10 @@ import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
 import {MatButtonModule} from '@angular/material/button';
 import {MatCheckboxModule} from '@angular/material/checkbox';
+import {MatDialogModule} from '@angular/material/dialog';
+import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatIconModule} from '@angular/material/icon';
+import {MatInputModule} from '@angular/material/input';
 import {MatMenuModule} from '@angular/material/menu';
 import {MatPaginatorModule} from '@angular/material/paginator';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
@@ -31,6 +34,8 @@ import {ColorPickerModule} from 'ngx-color-picker';
 import {AlertModule} from '../../../alert/alert_module';
 import {FilterInputModule} from '../../../widgets/filter_input/filter_input_module';
 import {RangeInputModule} from '../../../widgets/range_input/range_input_module';
+import {RegexEditDialogComponent} from './regex_edit_dialog_component';
+import {RegexEditDialogContainer} from './regex_edit_dialog_container';
 import {RunsGroupMenuButtonComponent} from './runs_group_menu_button_component';
 import {RunsGroupMenuButtonContainer} from './runs_group_menu_button_container';
 import {RunsTableComponent} from './runs_table_component';
@@ -41,8 +46,11 @@ import {RunsTableContainer} from './runs_table_container';
     ColorPickerModule,
     CommonModule,
     FilterInputModule,
+    MatFormFieldModule,
     MatButtonModule,
     MatCheckboxModule,
+    MatDialogModule,
+    MatInputModule,
     MatIconModule,
     MatMenuModule,
     MatPaginatorModule,
@@ -53,7 +61,10 @@ import {RunsTableContainer} from './runs_table_container';
     AlertModule,
   ],
   exports: [RunsTableContainer],
+  entryComponents: [RegexEditDialogContainer],
   declarations: [
+    RegexEditDialogComponent,
+    RegexEditDialogContainer,
     RunsGroupMenuButtonComponent,
     RunsGroupMenuButtonContainer,
     RunsTableComponent,

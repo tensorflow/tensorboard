@@ -16,7 +16,7 @@ import {createFeatureSelector, createSelector} from '@ngrx/store';
 
 import {DataLoadState, LoadState} from '../../types/data';
 import {SortDirection} from '../../types/ui';
-import {GroupBy, GroupByKey, SortKey} from '../types';
+import {GroupBy, SortKey} from '../types';
 import {
   Run,
   RunsDataState,
@@ -198,5 +198,15 @@ export const getRunColorMap = createSelector(
       colorObject[key] = value;
     });
     return colorObject;
+  }
+);
+
+/**
+ * Returns Observable that emits color grouping regex string.
+ */
+export const getColorGroupRegexString = createSelector(
+  getDataState,
+  (state: RunsDataState): string => {
+    return state.colorGroupRegexString;
   }
 );
