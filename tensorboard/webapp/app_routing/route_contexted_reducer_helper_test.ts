@@ -312,7 +312,7 @@ describe('route_contexted_reducer_helper', () => {
       const {initialState, reducers: routeReducers} = createRouteContextedState<
         RoutefulState,
         NonRoutefulState
-      >({routeful: 0}, {notRouteful: 1}, (state) => {
+      >({routeful: 0}, {notRouteful: 1}, (state, route) => {
         return {...state, routeful: 999};
       });
 
@@ -331,6 +331,51 @@ describe('route_contexted_reducer_helper', () => {
       const state2 = reducers(state1, buildNavigatedToNewRouteIdAction());
 
       expect(state2.routeful).toBe(123);
+    });
+
+    it('allows transformation with route information', () => {
+      const {initialState, reducers: routeReducers} = createRouteContextedState<
+        RoutefulState,
+        NonRoutefulState
+      >({routeful: 0}, {notRouteful: 1}, (state, route) => {
+        return {
+          ...state,
+          routeful: route.routeKind === RouteKind.EXPERIMENTS ? 7 : 999,
+        };
+      });
+
+      const noopReducer = createReducer<ContextedState>(initialState);
+
+      const reducers = composeReducers(routeReducers, noopReducer);
+
+      const state1 = {
+        routeful: 0,
+        notRouteful: 1,
+      };
+      const state2 = reducers(
+        state1,
+        navigated({
+          before: null,
+          after: buildRoute({
+            routeKind: RouteKind.EXPERIMENTS,
+          }),
+        })
+      );
+      expect(state2.routeful).toBe(7);
+
+      const state3 = reducers(
+        state1,
+        navigated({
+          before: buildRoute({
+            routeKind: RouteKind.EXPERIMENTS,
+          }),
+          after: buildRoute({
+            routeKind: RouteKind.COMPARE_EXPERIMENT,
+            params: {experimentIds: 'e1:1,e2:2'},
+          }),
+        })
+      );
+      expect(state3.routeful).toBe(999);
     });
   });
 });
