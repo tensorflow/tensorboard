@@ -83,6 +83,8 @@ tf_ts_library(
         "//tensorboard/webapp/angular:expect_angular_cdk_overlay",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/angular:expect_angular_material_checkbox",
+        "//tensorboard/webapp/angular:expect_angular_material_dialog",
+        "//tensorboard/webapp/angular:expect_angular_material_input",
         "//tensorboard/webapp/angular:expect_angular_material_menu",
         "//tensorboard/webapp/angular:expect_angular_material_paginator",
         "//tensorboard/webapp/angular:expect_angular_material_progress_spinner",
