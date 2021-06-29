@@ -91,6 +91,7 @@ export function DataLoaderBehavior<Item, Data>(
     requestData: RequestDataCallback<Item, Data>;
 
     dataLoading = false;
+    dataLoadedAtLeastOnce = false;
 
     // The standard Node.isConnected doesn't seem to be set reliably, so we
     // wire up our own property manually.
@@ -228,6 +229,7 @@ export function DataLoaderBehavior<Item, Data>(
                   this.onLoadFinish();
                 }
                 this._loadDataAsync = null;
+                this.dataLoadedAtLeastOnce = true;
               }
               const isDataFetchPending = Array.from(
                 this._dataLoadState.values()

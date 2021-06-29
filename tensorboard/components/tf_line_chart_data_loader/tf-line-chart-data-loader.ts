@@ -71,6 +71,7 @@ class _TfLineChartDataLoader<ScalarMetadata>
       <vz-line-chart2
         id="chart"
         data-loading$="[[dataLoading]]"
+        data-loaded-once$="[[dataLoadedAtLeastOnce]]"
         color-scale="[[colorScale]]"
         default-x-range="[[defaultXRange]]"
         default-y-range="[[defaultYRange]]"
