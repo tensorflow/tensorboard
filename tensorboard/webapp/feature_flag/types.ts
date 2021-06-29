@@ -14,9 +14,12 @@ limitations under the License.
 ==============================================================================*/
 
 export interface FeatureFlags {
-  // Whether user wants to use dark mode. It can be set via browser setting
-  // (media query).
-  enableDarkMode: boolean;
+  // Whether user wants to use dark mode by default. It can be set via browser setting
+  // (media query) or media query.
+  defaultEnableDarkMode: boolean;
+  // Specific user override to the default dark mode behavior. If `null`, we
+  // will use the `defaultEnableDarkMode`.
+  enableDarkModeOverride: boolean | null;
   // Whether the dark mode feature is enabled or disabled at the application
   // level. Temporary flag to gate the feature until it is more feature
   // complete (it is badly broken on Firefox). The feature is still available

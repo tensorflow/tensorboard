@@ -63,7 +63,16 @@ export const getIsAutoDarkModeAllowed = createSelector(
 export const getDarkModeEnabled = createSelector(
   getFeatureFlags,
   (flags): boolean => {
-    return flags.enableDarkMode;
+    return flags.enableDarkModeOverride !== null
+      ? flags.enableDarkModeOverride
+      : flags.defaultEnableDarkMode;
+  }
+);
+
+export const getEnableDarkModeOverride = createSelector(
+  getFeatureFlags,
+  (flags): boolean | null => {
+    return flags.enableDarkModeOverride;
   }
 );
 

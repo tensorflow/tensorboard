@@ -20,12 +20,15 @@ import {MatButtonModule} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
 import {MatSelectModule} from '@angular/material/select';
 import {MatTabsModule} from '@angular/material/tabs';
+import {MatMenuModule} from '@angular/material/menu';
 import {MatToolbarModule} from '@angular/material/toolbar';
 
 import {CoreModule} from '../core/core_module';
 import {SettingsModule} from '../settings/settings_module';
 import {TbdevUploadModule} from '../tbdev_upload/tbdev_upload_module';
 
+import {DarkModeToggleComponent} from './dark_mode_toggle_component';
+import {DarkModeToggleContainer} from './dark_mode_toggle_container';
 import {HeaderComponent} from './header_component';
 import {PluginSelectorComponent} from './plugin_selector_component';
 import {PluginSelectorContainer} from './plugin_selector_container';
@@ -33,12 +36,19 @@ import {ReloadContainer} from './reload_container';
 
 @NgModule({
   declarations: [
+    DarkModeToggleComponent,
+    DarkModeToggleContainer,
     HeaderComponent,
     PluginSelectorComponent,
     PluginSelectorContainer,
     ReloadContainer,
   ],
-  exports: [HeaderComponent, PluginSelectorContainer, ReloadContainer],
+  exports: [
+    DarkModeToggleContainer,
+    HeaderComponent,
+    PluginSelectorContainer,
+    ReloadContainer,
+  ],
   providers: [],
   imports: [
     MatButtonModule,
@@ -46,6 +56,7 @@ import {ReloadContainer} from './reload_container';
     MatTabsModule,
     MatToolbarModule,
     MatSelectModule,
+    MatMenuModule,
     CommonModule,
     CoreModule,
     SettingsModule,
