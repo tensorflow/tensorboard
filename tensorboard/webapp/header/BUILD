@@ -68,6 +68,7 @@ tf_ts_library(
         "//tensorboard/webapp/angular:expect_angular_cdk_overlay",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/angular:expect_angular_material_button",
+        "//tensorboard/webapp/angular:expect_angular_material_menu",
         "//tensorboard/webapp/angular:expect_angular_material_select",
         "//tensorboard/webapp/angular:expect_angular_material_tabs",
         "//tensorboard/webapp/angular:expect_angular_material_toolbar",
