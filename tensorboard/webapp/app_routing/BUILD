@@ -183,10 +183,13 @@ tf_ng_module(
         ":testing",
         ":types",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
+        "//tensorboard/webapp/angular:expect_ngrx_store_testing",
         "//tensorboard/webapp/app_routing/actions",
         "//tensorboard/webapp/util:ngrx",
         "@npm//@angular/core",
+        "@npm//@ngrx/effects",
         "@npm//@ngrx/store",
         "@npm//@types/jasmine",
+        "@npm//rxjs",
     ],
 )
