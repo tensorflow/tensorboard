@@ -340,7 +340,7 @@ describe('route_contexted_reducer_helper', () => {
       >({routeful: 0}, {notRouteful: 1}, (state, route) => {
         return {
           ...state,
-          routeful: route.routeKind === RouteKind.EXPERIMENTS ? 0 : 999,
+          routeful: route.routeKind === RouteKind.EXPERIMENTS ? 7 : 999,
         };
       });
 
@@ -361,7 +361,7 @@ describe('route_contexted_reducer_helper', () => {
           }),
         })
       );
-      expect(state2.routeful).toBe(0);
+      expect(state2.routeful).toBe(7);
 
       const state3 = reducers(
         state1,
