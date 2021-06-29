@@ -109,7 +109,7 @@ export function createRouteContextedState<
   } as FullState;
 
   const reducers = createReducer<FullState>(
-    {} as FullState,
+    initialState,
     on(navigated, (state, {before, after}) => {
       const afterRouteId = getRouteId(after.routeKind, after.params);
       const beforeRouteId = before
