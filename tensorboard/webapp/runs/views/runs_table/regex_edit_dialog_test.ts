@@ -67,8 +67,6 @@ describe('regex_edit_dialog', () => {
       actualActions.push(action);
     });
 
-    // Let consumer tweak the component further before the `fixture.detectChanges()` or just
-    // invoke it here for convenience.
     return TestBed.createComponent(RegexEditDialogContainer);
   }
 
@@ -170,7 +168,7 @@ describe('regex_edit_dialog', () => {
     expect(matDialogRefSpy.close).toHaveBeenCalled();
   });
 
-  it('not emits groupby action when clicking on cancel button', () => {
+  it('does not emits groupby action when clicking on cancel button', () => {
     const fixture = createComponent(['rose']);
     fixture.detectChanges();
 
@@ -201,7 +199,7 @@ describe('regex_edit_dialog', () => {
     expect(matDialogRefSpy.close).toHaveBeenCalled();
   });
 
-  it('omits groupby action with regex string when pressing enter key ', () => {
+  it('emits groupby action with regex string when pressing enter key ', () => {
     const fixture = createComponent(['rose']);
     fixture.detectChanges();
 
