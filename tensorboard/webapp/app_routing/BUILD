@@ -130,6 +130,7 @@ tf_ts_library(
     ],
     deps = [
         ":internal_utils",
+        ":types",
         "//tensorboard/webapp/app_routing/actions",
         "@npm//@ngrx/store",
     ],
