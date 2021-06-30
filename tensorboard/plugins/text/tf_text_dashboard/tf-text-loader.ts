@@ -72,7 +72,7 @@ class TfTextLoader extends LegacyElementMixin(PolymerElement) {
         border-color: var(--tb-text-loader-outline);
       }
       .text {
-        background-color: white;
+        background-color: inherit;
         border-radius: 0 3px 3px 3px;
         padding: 5px;
         word-break: break-word;
@@ -81,7 +81,7 @@ class TfTextLoader extends LegacyElementMixin(PolymerElement) {
         background-color: var(--tb-ui-light-accent);
         border-bottom: none;
         border-radius: 3px 3px 0 0;
-        border: 1px solid #ccc;
+        border: 1px solid var(--tb-ui-border);
         display: inline-block;
         font-size: 12px;
         font-style: italic;

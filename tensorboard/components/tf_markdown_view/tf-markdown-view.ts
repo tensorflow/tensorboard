@@ -57,11 +57,11 @@ class TfMarkdownView extends LegacyElementMixin(PolymerElement) {
       #markdown table th,
       #markdown table td {
         padding: 6px 13px;
-        border: 1px solid #dfe2e5;
+        border: 1px solid var(--tb-ui-border, #dfe2e5);
       }
       #markdown table tr {
-        background-color: #fff;
-        border-top: 1px solid #c6cbd1;
+        background-color: inherit;
+        border-top: 1px solid var(--tb-ui-border, #c6cbd1);
       }
     </style>
   `;
