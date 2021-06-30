@@ -12,7 +12,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {stateRehydratedFromUrl} from '../../app_routing/actions';
+import {navigated, stateRehydratedFromUrl} from '../../app_routing/actions';
+import {buildCompareRoute, buildRoute} from '../../app_routing/testing';
 import {RouteKind} from '../../app_routing/types';
 import {deepFreeze} from '../../testing/lang';
 import {DataLoadState} from '../../types/data';
@@ -964,6 +965,68 @@ describe('runs_reducers', () => {
           ['run4', '#ddd'],
         ])
       );
+    });
+
+    it('sets initial groupby to EXPERIMENT on experiment comparion', () => {
+      const state = buildRunsState({
+        initialGroupBy: {key: GroupByKey.RUN},
+      });
+
+      const nextState = runsReducers.reducers(
+        state,
+        navigated({
+          before: buildRoute({
+            routeKind: RouteKind.EXPERIMENT,
+          }),
+          after: buildCompareRoute(['eid1:run1', 'eid1:run2']),
+        })
+      );
+
+      expect(nextState.data.initialGroupBy.key).toEqual(GroupByKey.EXPERIMENT);
+    });
+
+    it('preserves userSetGroupByKey on comparision view navigation', () => {
+      const state = buildRunsState({
+        initialGroupBy: {key: GroupByKey.EXPERIMENT},
+        userSetGroupByKey: GroupByKey.RUN,
+      });
+
+      const state2 = runsReducers.reducers(
+        state,
+        navigated({
+          before: buildCompareRoute(['eid1:run1', 'eid2:run2']),
+          after: buildCompareRoute(['eid3:run3', 'eid4:run4']),
+        })
+      );
+
+      const state3 = runsReducers.reducers(
+        state2,
+        navigated({
+          before: buildCompareRoute(['eid3:run3', 'eid4:run4']),
+          after: buildCompareRoute(['eid1:run1', 'eid2:run2']),
+        })
+      );
+
+      expect(state3.data.initialGroupBy.key).toEqual(GroupByKey.EXPERIMENT);
+      expect(state3.data.userSetGroupByKey).toEqual(GroupByKey.RUN);
+    });
+
+    it('sets groupby to RUN on single experiment', () => {
+      const state = buildRunsState({
+        initialGroupBy: {key: GroupByKey.REGEX, regexString: 'test'},
+      });
+
+      const nextState = runsReducers.reducers(
+        state,
+        navigated({
+          before: buildCompareRoute(['eid1:run1', 'eid2:run2']),
+          after: buildRoute({
+            routeKind: RouteKind.EXPERIMENT,
+          }),
+        })
+      );
+
+      expect(nextState.data.initialGroupBy.key).toEqual(GroupByKey.RUN);
     });
   });
 });

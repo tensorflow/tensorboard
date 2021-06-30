@@ -36,6 +36,22 @@ export function buildRoute(routeOverride: Partial<Route> = {}): Route {
   };
 }
 
+export function buildCompareRoute(
+  experimentIds: string[],
+  routeOverride: Partial<Route> = {}
+): Route {
+  return {
+    routeKind: RouteKind.COMPARE_EXPERIMENT,
+    pathname: '/campare',
+    params: {experimentIds: experimentIds.join(',')},
+    queryParams: [],
+    navigationOptions: {
+      replaceState: false,
+    },
+    ...routeOverride,
+  };
+}
+
 export function buildNavigatedAction(routeOverride: Partial<Route> = {}) {
   return navigated({
     before: null,

@@ -19,6 +19,7 @@ import {
   createReducer,
   on,
 } from '@ngrx/store';
+
 import {stateRehydratedFromUrl} from '../../app_routing/actions';
 import {createRouteContextedState} from '../../app_routing/route_contexted_reducer_helper';
 import {RouteKind} from '../../app_routing/types';
@@ -60,7 +61,6 @@ const {
     selectionState: new Map<string, Map<string, boolean>>(),
   },
   (state, route) => {
-    console.log('route:', route);
     return {
       ...state,
       initialGroupBy: {
