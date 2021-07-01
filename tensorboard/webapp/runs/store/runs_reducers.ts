@@ -235,15 +235,15 @@ const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
     const groupKeyToColorString = new Map(state.groupKeyToColorString);
     const defaultRunColorForGroupBy = new Map(state.defaultRunColorForGroupBy);
 
-    let groupby = state.initialGroupBy;
+    let groupBy = state.initialGroupBy;
     if (state.userSetGroupByKey !== null) {
-      groupby = createGroupBy(
+      groupBy = createGroupBy(
         state.userSetGroupByKey,
         state.colorGroupRegexString
       );
     }
     const groups = groupRuns(
-      groupby,
+      groupBy,
       runsForAllExperiments,
       state.runIdToExpId
     );

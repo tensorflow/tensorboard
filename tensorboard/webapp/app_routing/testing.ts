@@ -37,13 +37,13 @@ export function buildRoute(routeOverride: Partial<Route> = {}): Route {
 }
 
 export function buildCompareRoute(
-  experimentIds: string[],
+  aliasAndExperimentIds: string[],
   routeOverride: Partial<Route> = {}
 ): Route {
   return {
     routeKind: RouteKind.COMPARE_EXPERIMENT,
     pathname: '/campare',
-    params: {experimentIds: experimentIds.join(',')},
+    params: {experimentIds: aliasAndExperimentIds.join(',')},
     queryParams: [],
     navigationOptions: {
       replaceState: false,

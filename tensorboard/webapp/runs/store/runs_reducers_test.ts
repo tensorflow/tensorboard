@@ -966,7 +966,9 @@ describe('runs_reducers', () => {
         ])
       );
     });
+  });
 
+  describe('when freshly navigating', () => {
     it('sets initial groupby to EXPERIMENT on experiment comparion', () => {
       const state = buildRunsState({
         initialGroupBy: {key: GroupByKey.RUN},
@@ -982,10 +984,10 @@ describe('runs_reducers', () => {
         })
       );
 
-      expect(nextState.data.initialGroupBy.key).toEqual(GroupByKey.EXPERIMENT);
+      expect(nextState.data.initialGroupBy.key).toBe(GroupByKey.EXPERIMENT);
     });
 
-    it('preserves userSetGroupByKey on comparision view navigation', () => {
+    it('preserves userSetGroupByKey set on prior navigation to the same route', () => {
       const state = buildRunsState({
         initialGroupBy: {key: GroupByKey.EXPERIMENT},
         userSetGroupByKey: GroupByKey.RUN,
@@ -1007,8 +1009,8 @@ describe('runs_reducers', () => {
         })
       );
 
-      expect(state3.data.initialGroupBy.key).toEqual(GroupByKey.EXPERIMENT);
-      expect(state3.data.userSetGroupByKey).toEqual(GroupByKey.RUN);
+      expect(state3.data.initialGroupBy.key).toBe(GroupByKey.EXPERIMENT);
+      expect(state3.data.userSetGroupByKey).toBe(GroupByKey.RUN);
     });
 
     it('sets groupby to RUN on single experiment', () => {
@@ -1026,7 +1028,7 @@ describe('runs_reducers', () => {
         })
       );
 
-      expect(nextState.data.initialGroupBy.key).toEqual(GroupByKey.RUN);
+      expect(nextState.data.initialGroupBy.key).toBe(GroupByKey.RUN);
     });
   });
 });
