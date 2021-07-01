@@ -19,8 +19,8 @@ import {
   createReducer,
   on,
 } from '@ngrx/store';
-import {stateRehydratedFromUrl} from '../../app_routing/actions';
 
+import {stateRehydratedFromUrl} from '../../app_routing/actions';
 import {createRouteContextedState} from '../../app_routing/route_contexted_reducer_helper';
 import {RouteKind} from '../../app_routing/types';
 import {DataLoadState} from '../../types/data';
@@ -59,6 +59,17 @@ const {
     runMetadata: {},
     runsLoadState: {},
     selectionState: new Map<string, Map<string, boolean>>(),
+  },
+  (state, route) => {
+    return {
+      ...state,
+      initialGroupBy: {
+        key:
+          route.routeKind === RouteKind.COMPARE_EXPERIMENT
+            ? GroupByKey.EXPERIMENT
+            : GroupByKey.RUN,
+      },
+    };
   }
 );
 
@@ -224,13 +235,19 @@ const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
     const groupKeyToColorString = new Map(state.groupKeyToColorString);
     const defaultRunColorForGroupBy = new Map(state.defaultRunColorForGroupBy);
 
+    let groupBy = state.initialGroupBy;
+    if (state.userSetGroupByKey !== null) {
+      groupBy = createGroupBy(
+        state.userSetGroupByKey,
+        state.colorGroupRegexString
+      );
+    }
     const groups = groupRuns(
-      state.userSetGroupByKey
-        ? createGroupBy(state.userSetGroupByKey, state.colorGroupRegexString)
-        : state.initialGroupBy,
+      groupBy,
       runsForAllExperiments,
       state.runIdToExpId
     );
+
     Object.entries(groups.matches).forEach(([groupId, runs]) => {
       const color =
         groupKeyToColorString.get(groupId) ??
