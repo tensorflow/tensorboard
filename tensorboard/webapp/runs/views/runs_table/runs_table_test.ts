@@ -1278,6 +1278,75 @@ describe('runs_table', () => {
       });
     });
 
+    it('filters by original experiment name and legacy run name', () => {
+      selectSpy
+        .withArgs(getExperiment, {experimentId: 'rowling'})
+        .and.returnValue(
+          of(
+            buildExperiment({
+              name: 'Harry Potter',
+            })
+          )
+        );
+
+      selectSpy
+        .withArgs(TEST_ONLY.getRunsLoading, jasmine.any)
+        .and.returnValue(of(false));
+      selectSpy
+        .withArgs(getRuns, {experimentId: 'rowling'})
+        .and.returnValue(
+          of([
+            buildRun({id: 'book1', name: "The Philosopher's Stone"}),
+            buildRun({id: 'book2', name: 'The Chamber Of Secrets'}),
+          ])
+        );
+
+      selectSpy
+        .withArgs(getExperiment, {experimentId: 'tolkien'})
+        .and.returnValue(
+          of(
+            buildExperiment({
+              name: 'The Lord of the Rings',
+            })
+          )
+        );
+      selectSpy
+        .withArgs(getRuns, {experimentId: 'tolkien'})
+        .and.returnValue(
+          of([
+            buildRun({id: 'book3', name: 'The Fellowship of the Ring'}),
+            buildRun({id: 'book4', name: 'The Silmarillion'}),
+          ])
+        );
+
+      store.overrideSelector(getExperimentIdToAliasMap, {
+        rowling: 'HPz',
+        tolkien: 'LotR',
+      });
+      store.overrideSelector(getRunSelectorRegexFilter, 'ings');
+
+      const fixture = createComponent(
+        ['rowling', 'tolkien'],
+        [RunsTableColumn.EXPERIMENT_NAME, RunsTableColumn.RUN_NAME]
+      );
+
+      fixture.detectChanges();
+      expect(getTableRowTextContent(fixture)).toEqual([
+        ['LotR', 'The Fellowship of the Ring'],
+        ['LotR', 'The Silmarillion'],
+      ]);
+
+      // Alias for Harry Potter contains "z". If we were matching against
+      // alias + run name, Harry Potter should not match below.
+      store.overrideSelector(getRunSelectorRegexFilter, 'o[^z]+/.+S[ei]');
+      store.refreshState();
+      fixture.detectChanges();
+      expect(getTableRowTextContent(fixture)).toEqual([
+        ['HPz', 'The Chamber Of Secrets'],
+        ['LotR', 'The Silmarillion'],
+      ]);
+    });
+
     it('filters only by run name when experiment column is omitted', () => {
       selectSpy
         .withArgs(TEST_ONLY.getRunsLoading, jasmine.any)
