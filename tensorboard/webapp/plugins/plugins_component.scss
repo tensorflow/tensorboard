@@ -45,6 +45,7 @@ limitations under the License.
 }
 
 .warning-message {
+  @include tb-theme-foreground-prop(color, text);
   margin: 80px auto 0;
   max-width: 540px;
 }
