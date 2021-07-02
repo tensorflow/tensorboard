@@ -1338,6 +1338,11 @@ describe('runs_table', () => {
 
       // Alias for Harry Potter contains "z". If we were matching against
       // alias + run name, Harry Potter should not match below.
+      // This regex matches:
+      // - (Harry P)*o*tter/The Chamber of S(ecrets)
+      // - (The L)ord of the rings/The S(ilmarillion)
+      // and does not match
+      // - HPz/The Chamber of S(ecrets) because of "[^z]+".
       store.overrideSelector(getRunSelectorRegexFilter, 'o[^z]+/.+S[ei]');
       store.refreshState();
       fixture.detectChanges();
