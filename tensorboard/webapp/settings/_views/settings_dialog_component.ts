@@ -28,28 +28,11 @@ import {
   AbstractControl,
   ValidatorFn,
 } from '@angular/forms';
-import {Store, select, createSelector} from '@ngrx/store';
 
 import {Subject} from 'rxjs';
 import {takeUntil, debounceTime, filter} from 'rxjs/operators';
 
-import {
-  getReloadEnabled,
-  getReloadPeriodInMs,
-  getPageSize,
-} from '../_redux/settings_selectors';
-import {State} from '../_redux/settings_types';
-import {
-  toggleReloadEnabled,
-  changeReloadPeriod,
-  changePageSize,
-} from '../_redux/settings_actions';
-
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
-
-const getReloadPeriodInSec = createSelector(getReloadPeriodInMs, (periodInMs) =>
-  Math.round(periodInMs / 1000)
-);
 
 export function createIntegerValidator(): ValidatorFn {
   return (control: AbstractControl): {[key: string]: any} | null => {
@@ -125,8 +108,6 @@ export class SettingsDialogComponent implements OnInit, OnDestroy, OnChanges {
   ]);
 
   private ngUnsubscribe = new Subject();
-
-  constructor(private store: Store<State>) {}
 
   ngOnInit() {
     this.reloadPeriodControl.valueChanges
