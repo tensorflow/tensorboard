@@ -104,7 +104,7 @@ export function createIntegerValidator(): ValidatorFn {
       </mat-error>
     </div>
   `,
-  styleUrls: ['./dialog_component.css'],
+  styleUrls: ['./settings_dialog_component.css'],
 })
 export class SettingsDialogComponent implements OnInit, OnDestroy, OnChanges {
   @Input() reloadEnabled!: boolean;

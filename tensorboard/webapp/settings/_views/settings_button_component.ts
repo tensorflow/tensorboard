@@ -15,7 +15,7 @@ limitations under the License.
 import {Component} from '@angular/core';
 import {MatDialog} from '@angular/material/dialog';
 
-import {SettingsDialogContainer} from './dialog_container';
+import {SettingsDialogContainer} from './settings_dialog_container';
 
 @Component({
   selector: 'settings-button',

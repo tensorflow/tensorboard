@@ -5,14 +5,14 @@ package(default_visibility = ["//tensorboard:internal"])
 tf_ng_module(
     name = "_views",
     srcs = [
-        "dialog_component.ts",
-        "dialog_container.ts",
         "polymer_interop_container.ts",
         "settings_button_component.ts",
+        "settings_dialog_component.ts",
+        "settings_dialog_container.ts",
         "settings_module.ts",
     ],
     assets = [
-        "dialog_component.css",
+        "settings_dialog_component.css",
     ],
     deps = [
         "//tensorboard/webapp:tb_polymer_interop_types",

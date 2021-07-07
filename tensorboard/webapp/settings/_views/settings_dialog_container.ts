@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Component} from '@angular/core';
-import {Store, select} from '@ngrx/store';
+import {Store} from '@ngrx/store';
 
 import {
   getReloadEnabled,
@@ -43,9 +43,9 @@ import {
   `,
 })
 export class SettingsDialogContainer {
-  readonly reloadEnabled$ = this.store.pipe(select(getReloadEnabled));
-  readonly reloadPeriodInMs$ = this.store.pipe(select(getReloadPeriodInMs));
-  readonly pageSize$ = this.store.pipe(select(getPageSize));
+  readonly reloadEnabled$ = this.store.select(getReloadEnabled);
+  readonly reloadPeriodInMs$ = this.store.select(getReloadPeriodInMs);
+  readonly pageSize$ = this.store.select(getPageSize);
 
   constructor(private store: Store<State>) {}
 

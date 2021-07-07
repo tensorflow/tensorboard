@@ -26,8 +26,8 @@ import {Store} from '@ngrx/store';
 import {provideMockStore, MockStore} from '@ngrx/store/testing';
 
 import {SettingsButtonComponent} from './settings_button_component';
-import {SettingsDialogComponent} from './dialog_component';
-import {SettingsDialogContainer} from './dialog_container';
+import {SettingsDialogComponent} from './settings_dialog_component';
+import {SettingsDialogContainer} from './settings_dialog_container';
 
 import {MatIconTestingModule} from '../../testing/mat_icon_module';
 import {

@@ -22,8 +22,8 @@ import {MatIconModule} from '@angular/material/icon';
 import {MatInputModule} from '@angular/material/input';
 
 import {SettingsButtonComponent} from './settings_button_component';
-import {SettingsDialogComponent} from './dialog_component';
-import {SettingsDialogContainer} from './dialog_container';
+import {SettingsDialogComponent} from './settings_dialog_component';
+import {SettingsDialogContainer} from './settings_dialog_container';
 import {SettingsPolymerInteropContainer} from './polymer_interop_container';
 
 @NgModule({
