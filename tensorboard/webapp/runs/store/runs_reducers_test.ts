@@ -328,7 +328,7 @@ describe('runs_reducers', () => {
             buildRun({id: 'eid2/beta', name: 'foo2bar2'}),
             buildRun({id: 'eid2/gamma', name: 'foo2bar2bar'}),
             buildRun({id: 'eid2/alpha', name: 'alpha'}),
-            buildRun({id: 'eid2/beta', name: 'beta'}),
+            buildRun({id: 'eid2/delta', name: 'delta'}),
           ],
           newRunsAndMetadata: {},
         });
@@ -343,8 +343,6 @@ describe('runs_reducers', () => {
             ['eid1/beta', colorUtils.CHART_COLOR_PALLETE[1]],
             ['eid2/beta', colorUtils.CHART_COLOR_PALLETE[1]],
             ['eid2/gamma', colorUtils.CHART_COLOR_PALLETE[1]],
-            ['eid2/alpha', ''],
-            ['eid2/beta', ''],
           ])
         );
       });
@@ -922,9 +920,6 @@ describe('runs_reducers', () => {
           ['run2', colorUtils.CHART_COLOR_PALLETE[1]],
           ['run3', colorUtils.CHART_COLOR_PALLETE[1]],
           ['run4', colorUtils.CHART_COLOR_PALLETE[1]],
-          // remove color assignments for non-matched runs
-          ['run5', ''],
-          ['run6', ''],
         ])
       );
       expect(nextState.data.runColorOverrideForGroupBy).toEqual(new Map());

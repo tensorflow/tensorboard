@@ -261,8 +261,9 @@ const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
       }
     });
 
+    // unassign color for nonmatched runs to apply default unassigned style
     for (const run of groups.nonMatches) {
-      defaultRunColorForGroupBy.set(run.id, '');
+      defaultRunColorForGroupBy.delete(run.id);
     }
 
     return {
@@ -299,8 +300,9 @@ const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
         }
       });
 
+      // unassign color for nonmatched runs to apply default unassigned style
       for (const run of groups.nonMatches) {
-        defaultRunColorForGroupBy.set(run.id, '');
+        defaultRunColorForGroupBy.delete(run.id);
       }
 
       return {
