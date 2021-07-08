@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Action, createReducer, on} from '@ngrx/store';
+import {DataLoadState} from '../../types/data';
 import * as actions from './settings_actions';
 import {SettingsState, initialState} from './settings_types';
 
@@ -21,6 +22,13 @@ const reducer = createReducer(
   on(
     actions.toggleReloadEnabled,
     (state: SettingsState): SettingsState => {
+      if (state.state !== DataLoadState.LOADED) {
+        // For simplicity, reject modifications to settings state until
+        // original settings are loaded. In practice we do not give the user the
+        // opportunity to modify settings until they have been loaded.
+        return state;
+      }
+
       return {
         ...state,
         reloadEnabled: !state.reloadEnabled,
@@ -30,6 +38,13 @@ const reducer = createReducer(
   on(
     actions.changeReloadPeriod,
     (state: SettingsState, {periodInMs}): SettingsState => {
+      if (state.state !== DataLoadState.LOADED) {
+        // For simplicity, reject modifications to settings state until
+        // original settings are loaded. In practice we do not give the user the
+        // opportunity to modify settings until they have been loaded.
+        return state;
+      }
+
       const nextReloadPeriod =
         periodInMs > 0 ? periodInMs : state.reloadPeriodInMs;
       return {
@@ -39,6 +54,14 @@ const reducer = createReducer(
     }
   ),
   on(actions.changePageSize, (state: SettingsState, {size}) => {
+    if (state.state !== DataLoadState.LOADED) {
+      // For simplicity, reject modifications to settings state until
+      // original settings are loaded. In practice we do not give the user the
+      // opportunity to modify settings until they have been loaded.
+
+      return state;
+    }
+
     const nextPageSize = size > 0 ? size : state.pageSize;
     return {
       ...state,

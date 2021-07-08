@@ -13,9 +13,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+import {DataLoadState, LoadState} from "../../types/data";
+
 export const SETTINGS_FEATURE_KEY = 'settings';
 
-export interface SettingsState {
+export interface SettingsState extends LoadState {
   reloadPeriodInMs: number;
   reloadEnabled: boolean;
   // Size of a page in a general paginated view that is configurable by user via
@@ -28,7 +30,11 @@ export interface State {
 }
 
 export const initialState: SettingsState = {
+  state: DataLoadState.LOADED,
+  lastLoadedTimeInMs: Date.now(),
+  // Reasonable defaults if data is not successfully loaded.
   reloadPeriodInMs: 30000,
   reloadEnabled: false,
+  // Reasonably small and has lots of factors.
   pageSize: 12,
 };

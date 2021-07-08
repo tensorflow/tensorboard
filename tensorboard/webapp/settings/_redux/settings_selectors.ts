@@ -14,6 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import {createFeatureSelector, createSelector} from '@ngrx/store';
 import {SettingsState, SETTINGS_FEATURE_KEY, State} from './settings_types';
+import {DataLoadState} from '../../types/data';
 
 // HACK: These imports are for type inference.
 // https://github.com/bazelbuild/rules_nodejs/issues/1013
@@ -22,6 +23,13 @@ import {SettingsState, SETTINGS_FEATURE_KEY, State} from './settings_types';
 const selectSettingsState = createFeatureSelector<State, SettingsState>(
   SETTINGS_FEATURE_KEY
 );
+
+export const getSettingsLoadState = createSelector(
+  selectSettingsState,
+  (state: SettingsState): DataLoadState => {
+    return state.state;
+  }
+)
 
 export const getReloadEnabled = createSelector(
   selectSettingsState,

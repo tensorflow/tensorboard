@@ -14,6 +14,7 @@ tf_ng_module(
     ],
     visibility = ["//tensorboard:internal"],
     deps = [
+        "//tensorboard/webapp/types",
         "@npm//@ngrx/store",
     ],
 )

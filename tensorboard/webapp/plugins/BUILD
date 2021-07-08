@@ -29,6 +29,7 @@ tf_ng_module(
         "//tensorboard/webapp/core/store",
         "//tensorboard/webapp/feature_flag:types",
         "//tensorboard/webapp/feature_flag/store",
+        "//tensorboard/webapp/settings",
         "//tensorboard/webapp/types",
         "@npm//@angular/common",
         "@npm//@angular/core",

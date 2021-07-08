@@ -31,12 +31,13 @@ import {
 } from '../core/store';
 import {PluginsListFailureCode} from '../core/types';
 import {PluginMetadata} from '../types/api';
-import {LoadState, DataLoadState} from '../types/data';
+import {DataLoadState} from '../types/data';
 import {State} from '../app_state';
 import {
   getFeatureFlags,
   getIsFeatureFlagsLoaded,
 } from '../feature_flag/store/feature_flag_selectors';
+import {selectors as settingsSelectors} from '../settings';
 
 import {PluginLoadState} from './plugins_component';
 
@@ -65,6 +66,7 @@ const activePlugin = createSelector(
       [lastUpdated]="lastLoadedTimeInMs$ | async"
       [pluginLoadState]="pluginLoadState$ | async"
       [isFeatureFlagsLoaded]="isFeatureFlagsLoaded$ | async"
+      [settingsLoadState]="settingsLoadState$ | async"
       [featureFlags]="featureFlags$ | async"
       [environmentFailureNotFoundTemplate]="environmentFailureNotFoundTemplate"
       [environmentFailureUnknownTemplate]="environmentFailureUnknownTemplate"
@@ -127,6 +129,7 @@ export class PluginsContainer {
   );
   readonly isFeatureFlagsLoaded$ = this.store.select(getIsFeatureFlagsLoaded);
   readonly featureFlags$ = this.store.select(getFeatureFlags);
+  readonly settingsLoadState$ = this.store.select(settingsSelectors.getSettingsLoadState);
 
   constructor(private readonly store: Store<State>) {}
 }
