@@ -85,7 +85,7 @@ describe('feature_flag_selectors', () => {
       let state = buildState(
         buildFeatureFlagState({
           defaultFlags: buildFeatureFlag({
-            enableDarkMode: true,
+            defaultEnableDarkMode: true,
           }),
         })
       );
@@ -94,10 +94,10 @@ describe('feature_flag_selectors', () => {
       state = buildState(
         buildFeatureFlagState({
           defaultFlags: buildFeatureFlag({
-            enableDarkMode: false,
+            defaultEnableDarkMode: false,
           }),
           flagOverrides: {
-            enableDarkMode: true,
+            defaultEnableDarkMode: true,
           },
         })
       );
@@ -106,10 +106,10 @@ describe('feature_flag_selectors', () => {
       state = buildState(
         buildFeatureFlagState({
           defaultFlags: buildFeatureFlag({
-            enableDarkMode: false,
+            defaultEnableDarkMode: false,
           }),
           flagOverrides: {
-            enableDarkMode: false,
+            defaultEnableDarkMode: false,
           },
         })
       );

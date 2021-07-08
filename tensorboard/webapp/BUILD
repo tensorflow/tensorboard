@@ -354,6 +354,7 @@ tf_svg_bundle(
     srcs = [
         "@com_google_material_design_icon//:arrow_downward_24px.svg",
         "@com_google_material_design_icon//:arrow_upward_24px.svg",
+        "@com_google_material_design_icon//:brightness_6_24px.svg",
         "@com_google_material_design_icon//:bug_report_24px.svg",
         "@com_google_material_design_icon//:cancel_24px.svg",
         "@com_google_material_design_icon//:chevron_left_24px.svg",
@@ -361,6 +362,7 @@ tf_svg_bundle(
         "@com_google_material_design_icon//:clear_24px.svg",
         "@com_google_material_design_icon//:close_24px.svg",
         "@com_google_material_design_icon//:content_copy_24px.svg",
+        "@com_google_material_design_icon//:dark_mode_24px.svg",
         "@com_google_material_design_icon//:done_24px.svg",
         "@com_google_material_design_icon//:edit_24px.svg",
         "@com_google_material_design_icon//:error_24px.svg",
@@ -377,6 +379,7 @@ tf_svg_bundle(
         "@com_google_material_design_icon//:info_outline_24px.svg",
         "@com_google_material_design_icon//:keep_24px.svg",
         "@com_google_material_design_icon//:keep_outline_24px.svg",
+        "@com_google_material_design_icon//:light_mode_24px.svg",
         "@com_google_material_design_icon//:line_weight_24px.svg",
         "@com_google_material_design_icon//:more_vert_24px.svg",
         "@com_google_material_design_icon//:notifications_none_24px.svg",

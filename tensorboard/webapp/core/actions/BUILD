@@ -10,7 +10,6 @@ tf_ts_library(
     ],
     deps = [
         "//tensorboard/webapp/core:types",
-        "//tensorboard/webapp/settings",
         "//tensorboard/webapp/types",
         "@npm//@ngrx/store",
     ],

@@ -12,11 +12,19 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-
-import {createAction, createReducer, on} from '@ngrx/store';
+import {TestBed} from '@angular/core/testing';
+import {
+  createAction,
+  createFeatureSelector,
+  createReducer,
+  createSelector,
+  on,
+  Store,
+  StoreModule,
+} from '@ngrx/store';
+import {firstValueFrom} from 'rxjs';
 
 import {composeReducers} from '../util/ngrx';
-
 import {navigated} from './actions';
 import {
   createRouteContextedState,
@@ -304,7 +312,7 @@ describe('route_contexted_reducer_helper', () => {
       const {initialState, reducers: routeReducers} = createRouteContextedState<
         RoutefulState,
         NonRoutefulState
-      >({routeful: 0}, {notRouteful: 1}, (state) => {
+      >({routeful: 0}, {notRouteful: 1}, (state, route) => {
         return {...state, routeful: 999};
       });
 
@@ -323,6 +331,79 @@ describe('route_contexted_reducer_helper', () => {
       const state2 = reducers(state1, buildNavigatedToNewRouteIdAction());
 
       expect(state2.routeful).toBe(123);
+    });
+
+    it('allows transformation with route information', () => {
+      const {initialState, reducers: routeReducers} = createRouteContextedState<
+        RoutefulState,
+        NonRoutefulState
+      >({routeful: 0}, {notRouteful: 1}, (state, route) => {
+        return {
+          ...state,
+          routeful: route.routeKind === RouteKind.EXPERIMENTS ? 7 : 999,
+        };
+      });
+
+      const noopReducer = createReducer<ContextedState>(initialState);
+
+      const reducers = composeReducers(routeReducers, noopReducer);
+
+      const state1 = {
+        routeful: 0,
+        notRouteful: 1,
+      };
+      const state2 = reducers(
+        state1,
+        navigated({
+          before: null,
+          after: buildRoute({
+            routeKind: RouteKind.EXPERIMENTS,
+          }),
+        })
+      );
+      expect(state2.routeful).toBe(7);
+
+      const state3 = reducers(
+        state1,
+        navigated({
+          before: buildRoute({
+            routeKind: RouteKind.EXPERIMENTS,
+          }),
+          after: buildRoute({
+            routeKind: RouteKind.COMPARE_EXPERIMENT,
+            params: {experimentIds: 'e1:1,e2:2'},
+          }),
+        })
+      );
+      expect(state3.routeful).toBe(999);
+    });
+  });
+});
+
+describe('route_contexted_reducer_helper ngrx integration test', () => {
+  let store: Store;
+
+  const TEST_KEY = 'my_test';
+
+  const selectFeature = createFeatureSelector(TEST_KEY);
+  const selectAll = createSelector(selectFeature, (s) => s);
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [
+        StoreModule.forRoot([]),
+        StoreModule.forFeature(TEST_KEY, reducers),
+      ],
+    }).compileComponents();
+    store = TestBed.inject(Store);
+  });
+
+  it('contains correct initial value', async () => {
+    const initialState = await firstValueFrom(store.select(selectAll));
+    expect(initialState).toEqual({
+      routeful: 0,
+      notRouteful: 1,
+      privateRouteContextedState: {},
     });
   });
 });

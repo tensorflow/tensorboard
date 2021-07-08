@@ -130,6 +130,15 @@ tf_ts_library(
     ],
 )
 
+# This is a dummy rule used as a @angular/material/expansion dependency.
+tf_ts_library(
+    name = "expect_angular_material_form_field",
+    srcs = [],
+    deps = [
+        "@npm//@angular/material",
+    ],
+)
+
 # This is a dummy rule used as a @angular/material/icon dependency.
 tf_ts_library(
     name = "expect_angular_material_icon",

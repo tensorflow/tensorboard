@@ -44,6 +44,10 @@ style.textContent = `
     --primary-background-color: #303030;  /* material grey A400. */
     --secondary-background-color: #3a3a3a;
     --tb-layout-background-color: #3a3a3a;
+    /* Overrides paper-material */
+    --shadow-elevation-2dp_-_box-shadow: 0 2px 2px 0 rgba(255, 255, 255, 0.14),
+      0 1px 5px 0 rgba(255, 255, 255, 0.12),
+      0 3px 1px -2px rgba(255, 255, 255, 0.2);
   }
 `;
 document.head.appendChild(style);

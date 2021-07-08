@@ -15,7 +15,6 @@ tf_ng_module(
         "//tensorboard/webapp/core:types",
         "//tensorboard/webapp/core/actions",
         "//tensorboard/webapp/deeplink",
-        "//tensorboard/webapp/settings",
         "//tensorboard/webapp/types",
         "@npm//@angular/core",
         "@npm//@ngrx/store",

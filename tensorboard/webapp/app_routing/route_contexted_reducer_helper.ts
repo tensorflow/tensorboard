@@ -40,6 +40,7 @@ import {ActionReducer, createReducer, on} from '@ngrx/store';
 
 import {navigated} from './actions';
 import {getRouteId} from './internal_utils';
+import {Route} from './types';
 
 // `privateRouteContextedState` loosely typed only for ease of writing tests.
 // Otherwise, all the reducers that has routeful state has to change the test
@@ -93,7 +94,8 @@ export function createRouteContextedState<
   routefulInitialState: RoutefulState,
   nonRoutefulInitialState: NonRoutefulState,
   onRouteIdChanged?: (
-    state: RouteContextedState<RoutefulState, NonRoutefulState>
+    state: RouteContextedState<RoutefulState, NonRoutefulState>,
+    newRoute: Route
   ) => RouteContextedState<RoutefulState, NonRoutefulState>
 ): {
   initialState: RouteContextedState<RoutefulState, NonRoutefulState>;
@@ -109,7 +111,7 @@ export function createRouteContextedState<
   } as FullState;
 
   const reducers = createReducer<FullState>(
-    {} as FullState,
+    initialState,
     on(navigated, (state, {before, after}) => {
       const afterRouteId = getRouteId(after.routeKind, after.params);
       const beforeRouteId = before
@@ -155,7 +157,7 @@ export function createRouteContextedState<
       };
 
       if (onRouteIdChanged) {
-        return onRouteIdChanged(nextFullState);
+        return onRouteIdChanged(nextFullState, after);
       }
       return nextFullState;
     })

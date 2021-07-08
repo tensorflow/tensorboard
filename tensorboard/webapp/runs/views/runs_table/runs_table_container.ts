@@ -457,11 +457,20 @@ export class RunsTableContainer implements OnInit, OnDestroy {
           RunsTableColumn.EXPERIMENT_NAME
         );
         return items.filter((item) => {
+          // For some reason, TypeScript is faulty and cannot coerce the type to
+          // non-null inspite the `if (!regex)` above.
+          regex = regex!;
+
           if (!shouldIncludeExperimentName) {
-            return regex!.test(item.run.name);
+            return regex.test(item.run.name);
           }
+
+          const legacyRunName = `${item.experimentName}/${item.run.name}`;
           return (
-            regex!.test(item.run.name) || regex!.test(item.experimentAlias)
+            regex.test(item.run.name) ||
+            regex.test(item.experimentAlias) ||
+            regex.test(item.experimentName) ||
+            regex.test(legacyRunName)
           );
         });
       }),

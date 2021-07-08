@@ -14,7 +14,6 @@ limitations under the License.
 ==============================================================================*/
 import {createFeatureSelector, createSelector} from '@ngrx/store';
 
-import {selectors as settingsSelectors} from '../../settings';
 import {Environment, PluginId, PluginsListing} from '../../types/api';
 import {DataLoadState, LoadState} from '../../types/data';
 import {
@@ -27,13 +26,6 @@ import {
 // HACK: These imports are for type inference.
 // https://github.com/bazelbuild/rules_nodejs/issues/1013
 /** @typehack */ import * as _typeHackSelector from '@ngrx/store/src/selector';
-
-/**
- * @deprecated Use settingsSelectors.getReloadEnabled instead.
- *
- * TODO(bdubois): Delete after all callers are migrated to use settingsSelectors directly.
- */
-export const getReloadEnabled = settingsSelectors.getReloadEnabled;
 
 const selectCoreState = createFeatureSelector<State, CoreState>(
   CORE_FEATURE_KEY

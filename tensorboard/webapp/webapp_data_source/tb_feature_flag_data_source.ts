@@ -69,7 +69,7 @@ export class QueryParamsFeatureFlagDataSource extends TBFeatureFlagDataSource {
     }
 
     if (params.has(ENABLE_DARK_MODE_QUERY_PARAM_KEY)) {
-      featureFlags.enableDarkMode =
+      featureFlags.defaultEnableDarkMode =
         params.get(ENABLE_DARK_MODE_QUERY_PARAM_KEY) !== 'false';
     }
 
@@ -80,14 +80,17 @@ export class QueryParamsFeatureFlagDataSource extends TBFeatureFlagDataSource {
     return util.getParams();
   }
 
-  protected getPartialFeaturesFromMediaQuery(): {enableDarkMode?: boolean} {
-    const featureFlags: {enableDarkMode?: boolean} = {};
-    const enableDarkMode = window.matchMedia(DARK_MODE_MEDIA_QUERY).matches;
+  protected getPartialFeaturesFromMediaQuery(): {
+    defaultEnableDarkMode?: boolean;
+  } {
+    const featureFlags: {defaultEnableDarkMode?: boolean} = {};
+    const defaultEnableDarkMode = window.matchMedia(DARK_MODE_MEDIA_QUERY)
+      .matches;
 
     // When media query matches positively, it certainly means user wants it but
     // it is not definitive otherwise (i.e., query params can override it).
-    if (enableDarkMode) {
-      featureFlags.enableDarkMode = true;
+    if (defaultEnableDarkMode) {
+      featureFlags.defaultEnableDarkMode = true;
     }
 
     return featureFlags;
