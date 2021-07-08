@@ -25,8 +25,9 @@ import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {Store} from '@ngrx/store';
 import {provideMockStore, MockStore} from '@ngrx/store/testing';
 
-import {SettingsDialogComponent} from './dialog_component';
 import {SettingsButtonComponent} from './settings_button_component';
+import {SettingsDialogComponent} from './settings_dialog_component';
+import {SettingsDialogContainer} from './settings_dialog_container';
 
 import {MatIconTestingModule} from '../../testing/mat_icon_module';
 import {
@@ -64,11 +65,15 @@ describe('settings test', () => {
           ),
         }),
       ],
-      declarations: [SettingsDialogComponent, SettingsButtonComponent],
+      declarations: [
+        SettingsDialogContainer,
+        SettingsDialogComponent,
+        SettingsButtonComponent,
+      ],
     })
       .overrideModule(BrowserDynamicTestingModule, {
         set: {
-          entryComponents: [SettingsDialogComponent],
+          entryComponents: [SettingsDialogContainer],
         },
       })
       .compileComponents();
@@ -98,7 +103,7 @@ describe('settings test', () => {
   });
 
   it('renders settings', () => {
-    const fixture = TestBed.createComponent(SettingsDialogComponent);
+    const fixture = TestBed.createComponent(SettingsDialogContainer);
     fixture.detectChanges();
 
     const checkbox = fixture.debugElement.query(By.css('mat-checkbox input'));
@@ -109,7 +114,7 @@ describe('settings test', () => {
   });
 
   it('updates the UI according to store changes.', () => {
-    const fixture = TestBed.createComponent(SettingsDialogComponent);
+    const fixture = TestBed.createComponent(SettingsDialogContainer);
     fixture.detectChanges();
 
     // sanity to make sure it really did change.
@@ -134,7 +139,7 @@ describe('settings test', () => {
 
   describe('toggleReloadEnabled', () => {
     it('dispatches when clicking on checkbox', fakeAsync(() => {
-      const fixture = TestBed.createComponent(SettingsDialogComponent);
+      const fixture = TestBed.createComponent(SettingsDialogContainer);
       fixture.detectChanges();
 
       const checkbox = fixture.debugElement.query(By.css('mat-checkbox input'));
@@ -146,7 +151,7 @@ describe('settings test', () => {
 
   describe('changeReloadPeriod', () => {
     it('dispatches changing the value', fakeAsync(async () => {
-      const fixture = TestBed.createComponent(SettingsDialogComponent);
+      const fixture = TestBed.createComponent(SettingsDialogContainer);
       fixture.detectChanges();
 
       const reloadPeriod = fixture.debugElement.query(By.css('.reload-period'));
@@ -164,7 +169,7 @@ describe('settings test', () => {
     }));
 
     it('does not dispatch when input is invalid', fakeAsync(async () => {
-      const fixture = TestBed.createComponent(SettingsDialogComponent);
+      const fixture = TestBed.createComponent(SettingsDialogContainer);
       fixture.detectChanges();
 
       const reloadPeriod = fixture.debugElement.query(By.css('.reload-period'));
@@ -185,7 +190,7 @@ describe('settings test', () => {
           })
         )
       );
-      const fixture = TestBed.createComponent(SettingsDialogComponent);
+      const fixture = TestBed.createComponent(SettingsDialogContainer);
       fixture.detectChanges();
 
       const reloadPeriod = fixture.debugElement.query(By.css('.reload-period'));

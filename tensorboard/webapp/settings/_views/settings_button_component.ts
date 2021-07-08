@@ -15,7 +15,7 @@ limitations under the License.
 import {Component} from '@angular/core';
 import {MatDialog} from '@angular/material/dialog';
 
-import {SettingsDialogComponent} from './dialog_component';
+import {SettingsDialogContainer} from './settings_dialog_container';
 
 @Component({
   selector: 'settings-button',
@@ -29,7 +29,7 @@ export class SettingsButtonComponent {
   constructor(private dialog: MatDialog) {}
 
   openDialog(): void {
-    this.dialog.open(SettingsDialogComponent, {
+    this.dialog.open(SettingsDialogContainer, {
       width: '400px',
     });
   }
