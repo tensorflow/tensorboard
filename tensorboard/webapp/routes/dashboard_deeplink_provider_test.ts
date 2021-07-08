@@ -347,6 +347,33 @@ describe('core deeplink provider', () => {
         []
       );
     });
+
+    it('serializes enableColorGroupByRegex state', () => {
+      store.overrideSelector(selectors.getOverriddenFeatureFlags, {
+        enabledColorGroupByRegex: true,
+      });
+      store.refreshState();
+
+      expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual([
+        {key: 'enableColorGroupByRegex', value: 'true'},
+      ]);
+
+      store.overrideSelector(selectors.getOverriddenFeatureFlags, {
+        enabledColorGroupByRegex: false,
+      });
+      store.refreshState();
+
+      expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual([
+        {key: 'enableColorGroupByRegex', value: 'false'},
+      ]);
+
+      store.overrideSelector(selectors.getOverriddenFeatureFlags, {});
+      store.refreshState();
+
+      expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual(
+        []
+      );
+    });
   });
 
   describe('runs', () => {

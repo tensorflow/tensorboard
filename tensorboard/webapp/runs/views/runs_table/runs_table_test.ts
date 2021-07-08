@@ -54,6 +54,7 @@ import {DiscreteFilter, IntervalFilter} from '../../../hparams/types';
 import {
   getCurrentRouteRunSelection,
   getEnabledColorGroup,
+  getEnabledColorGroupByRegex,
   getExperiment,
   getExperimentIdToAliasMap,
   getRouteId,
@@ -249,6 +250,7 @@ describe('runs_table', () => {
     );
     store.overrideSelector(getRouteId, '123');
     store.overrideSelector(getEnabledColorGroup, false);
+    store.overrideSelector(getEnabledColorGroupByRegex, false);
     store.overrideSelector(getRunGroupBy, {key: GroupByKey.RUN});
     dispatchSpy = spyOn(store, 'dispatch').and.callFake((action: Action) => {
       actualActions.push(action);
@@ -559,9 +561,9 @@ describe('runs_table', () => {
         expect(menuButton).toBeTruthy();
       });
 
-      /* TODO(japie1235813): Brings back group by regex. */
-      it('renders "Experiment" and "Run"', () => {
+      it('renders "Experiment", "Run", and "Regex"', () => {
         store.overrideSelector(getEnabledColorGroup, true);
+        store.overrideSelector(getEnabledColorGroupByRegex, true);
         const fixture = createComponent(
           ['book'],
           [RunsTableColumn.RUN_NAME, RunsTableColumn.RUN_COLOR]
@@ -577,7 +579,7 @@ describe('runs_table', () => {
 
         expect(
           items.map((element) => element.querySelector('label')!.textContent)
-        ).toEqual(['Experiment', 'Run']);
+        ).toEqual(['Experiment', 'Run', 'Regex']);
       });
 
       it(
@@ -585,6 +587,7 @@ describe('runs_table', () => {
           'item',
         () => {
           store.overrideSelector(getEnabledColorGroup, true);
+          store.overrideSelector(getEnabledColorGroupByRegex, true);
           store.overrideSelector(getRunGroupBy, {key: GroupByKey.EXPERIMENT});
           const fixture = createComponent(
             ['book'],
@@ -599,15 +602,13 @@ describe('runs_table', () => {
 
           const items = getOverlayMenuItems();
 
-          /* TODO(japie1235813): Brings back group by regex. */
           expect(
             items.map((element) => element.getAttribute('aria-checked'))
-          ).toEqual(['true', 'false']);
+          ).toEqual(['true', 'false', 'false']);
           expect(
             items.map((element) => Boolean(element.querySelector('mat-icon')))
-          ).toEqual([true, false]);
+          ).toEqual([true, false, false]);
 
-          /* TODO(japie1235813): Brings back group by regex.
           store.overrideSelector(getRunGroupBy, {
             key: GroupByKey.REGEX,
             regexString: 'hello',
@@ -621,12 +622,12 @@ describe('runs_table', () => {
           expect(
             items.map((element) => Boolean(element.querySelector('mat-icon')))
           ).toEqual([false, false, true]);
-          */
         }
       );
 
       it('dispatches `runGroupByChanged` when a menu item is clicked', () => {
         store.overrideSelector(getEnabledColorGroup, true);
+        store.overrideSelector(getEnabledColorGroupByRegex, true);
         store.overrideSelector(getRunGroupBy, {key: GroupByKey.EXPERIMENT});
         const fixture = createComponent(
           ['book'],
@@ -641,7 +642,7 @@ describe('runs_table', () => {
 
         const items = getOverlayMenuItems();
 
-        const [experiments, runs] = items as HTMLElement[];
+        const [experiments, runs, regex] = items as HTMLElement[];
         experiments.click();
 
         expect(dispatchSpy).toHaveBeenCalledWith(
@@ -659,17 +660,15 @@ describe('runs_table', () => {
           })
         );
 
-        /* TODO(japie1235813): Brings back group by regex.
         regex.click();
         expect(dispatchSpy).toHaveBeenCalledWith(
           runGroupByChanged({
             experimentIds: ['book'],
-            // regexString is hardcoded to '' for now; should be fixed when
-            // regex support is properly implemented.
+            // TODO(japie1235813): regexString is hardcoded to '' for now;
+            // should be fixed when regex support is properly implemented.
             groupBy: {key: GroupByKey.REGEX, regexString: ''},
           })
         );
-        */
       });
 
       it(

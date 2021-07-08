@@ -37,4 +37,7 @@ export const SCALARS_BATCH_SIZE_PARAM_KEY = 'scalarsBatchSize';
 
 export const ENABLE_COLOR_GROUP_QUERY_PARAM_KEY = 'enableColorGroup';
 
+export const ENABLE_COLOR_GROUP_BY_REGEX_QUERY_PARAM_KEY =
+  'enableColorGroupByRegex';
+
 export const ENABLE_DARK_MODE_QUERY_PARAM_KEY = 'darkMode';
