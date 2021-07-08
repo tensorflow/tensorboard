@@ -12,6 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {DataLoadState} from '../types/data';
 import {
   SettingsState,
   State,
@@ -22,6 +23,8 @@ export function createSettingsState(
   override?: Partial<SettingsState>
 ): SettingsState {
   return {
+    state: DataLoadState.LOADED,
+    lastLoadedTimeInMs: 0,
     reloadPeriodInMs: 30000,
     reloadEnabled: true,
     pageSize: 10,

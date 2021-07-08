@@ -29,6 +29,7 @@ tf_ts_library(
     deps = [
         ":_redux",
         "//tensorboard/webapp/settings:testing",
+        "//tensorboard/webapp/types",
         "@npm//@types/jasmine",
     ],
 )

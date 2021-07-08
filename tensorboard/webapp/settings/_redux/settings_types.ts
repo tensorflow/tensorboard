@@ -32,7 +32,7 @@ export interface State {
 export const initialState: SettingsState = {
   state: DataLoadState.LOADED,
   lastLoadedTimeInMs: Date.now(),
-  // Reasonable defaults if data is not successfully loaded.
+
   reloadPeriodInMs: 30000,
   reloadEnabled: false,
   // Reasonably small and has lots of factors.

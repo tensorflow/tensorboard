@@ -17,15 +17,21 @@ import {DataLoadState} from '../../types/data';
 import * as actions from './settings_actions';
 import {SettingsState, initialState} from './settings_types';
 
+/**
+ * Check if settings are ready to modify. We want to reject modifications to
+ * settings state until original settings have had the opportunity to load
+ * successfully or unsuccessfully.
+ */
+function settingsReady(state: SettingsState) : boolean {
+  return state.state !== DataLoadState.NOT_LOADED && state.state !== DataLoadState.LOADING;
+}
+
 const reducer = createReducer(
   initialState,
   on(
     actions.toggleReloadEnabled,
     (state: SettingsState): SettingsState => {
-      if (state.state !== DataLoadState.LOADED) {
-        // For simplicity, reject modifications to settings state until
-        // original settings are loaded. In practice we do not give the user the
-        // opportunity to modify settings until they have been loaded.
+      if (!settingsReady(state)) {
         return state;
       }
 
@@ -38,10 +44,7 @@ const reducer = createReducer(
   on(
     actions.changeReloadPeriod,
     (state: SettingsState, {periodInMs}): SettingsState => {
-      if (state.state !== DataLoadState.LOADED) {
-        // For simplicity, reject modifications to settings state until
-        // original settings are loaded. In practice we do not give the user the
-        // opportunity to modify settings until they have been loaded.
+      if (!settingsReady(state)) {
         return state;
       }
 
@@ -54,11 +57,7 @@ const reducer = createReducer(
     }
   ),
   on(actions.changePageSize, (state: SettingsState, {size}) => {
-    if (state.state !== DataLoadState.LOADED) {
-      // For simplicity, reject modifications to settings state until
-      // original settings are loaded. In practice we do not give the user the
-      // opportunity to modify settings until they have been loaded.
-
+    if (!settingsReady(state)) {
       return state;
     }
 

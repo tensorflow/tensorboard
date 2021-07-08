@@ -26,6 +26,7 @@ import {Store} from '@ngrx/store';
 import {provideMockStore, MockStore} from '@ngrx/store/testing';
 
 import {SettingsButtonComponent} from './settings_button_component';
+import {SettingsButtonContainer} from './settings_button_container';
 import {SettingsDialogComponent} from './settings_dialog_component';
 import {SettingsDialogContainer} from './settings_dialog_container';
 
@@ -37,6 +38,8 @@ import {
 import {createSettingsState, createState} from '../testing';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
+import {getSettingsLoadState} from '../_redux/settings_selectors';
+import {DataLoadState} from '../../types/data';
 
 describe('settings test', () => {
   let store: MockStore;
@@ -69,6 +72,7 @@ describe('settings test', () => {
         SettingsDialogContainer,
         SettingsDialogComponent,
         SettingsButtonComponent,
+        SettingsButtonContainer,
       ],
     })
       .overrideModule(BrowserDynamicTestingModule, {
@@ -83,7 +87,7 @@ describe('settings test', () => {
   });
 
   it('opens a dialog when clicking on the button', async () => {
-    const fixture = TestBed.createComponent(SettingsButtonComponent);
+    const fixture = TestBed.createComponent(SettingsButtonContainer);
     fixture.detectChanges();
 
     const settingDialogsBefore = overlayContainer
@@ -100,6 +104,40 @@ describe('settings test', () => {
       .querySelectorAll('settings-dialog');
 
     expect(settingDialogsAfter.length).toBe(1);
+  });
+
+  it('disables button until loaded', async () => {
+    store.overrideSelector(getSettingsLoadState, DataLoadState.NOT_LOADED);
+    const fixture = TestBed.createComponent(SettingsButtonContainer);
+    fixture.detectChanges();
+    const button = fixture.debugElement.query(By.css('button'));
+    expect(button.attributes['disabled']).toBe('true');
+
+    store.overrideSelector(getSettingsLoadState, DataLoadState.LOADING);
+    store.refreshState();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(button.attributes['disabled']).toBe('true');
+
+    store.overrideSelector(getSettingsLoadState, DataLoadState.LOADED);
+    store.refreshState();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(button.attributes['disabled']).not.toBeDefined();
+  });
+
+  it('disables button until failed', async () => {
+    store.overrideSelector(getSettingsLoadState, DataLoadState.NOT_LOADED);
+    const fixture = TestBed.createComponent(SettingsButtonContainer);
+    fixture.detectChanges();
+    const button = fixture.debugElement.query(By.css('button'));
+    expect(button.attributes['disabled']).toBe('true');
+
+    store.overrideSelector(getSettingsLoadState, DataLoadState.FAILED);
+    store.refreshState();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(button.attributes['disabled']).not.toBeDefined();
   });
 
   it('renders settings', () => {

@@ -70,6 +70,7 @@ tf_ts_library(
         "//tensorboard/webapp/feature_flag:testing",
         "//tensorboard/webapp/feature_flag/store",
         "//tensorboard/webapp/plugins/testing",
+        "//tensorboard/webapp/settings",
         "//tensorboard/webapp/types",
         "@npm//@angular/common",
         "@npm//@angular/compiler",
