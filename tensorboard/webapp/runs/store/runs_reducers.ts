@@ -261,6 +261,10 @@ const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
       }
     });
 
+    for (const run of groups.nonMatches) {
+      defaultRunColorForGroupBy.set(run.id, '');
+    }
+
     return {
       ...state,
       defaultRunColorForGroupBy,
@@ -294,6 +298,10 @@ const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
           defaultRunColorForGroupBy.set(run.id, color);
         }
       });
+
+      for (const run of groups.nonMatches) {
+        defaultRunColorForGroupBy.set(run.id, '');
+      }
 
       return {
         ...state,
