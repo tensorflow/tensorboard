@@ -311,6 +311,41 @@ describe('runs_reducers', () => {
           ])
         );
       });
+
+      it('removes color assignment for regex non-matched runs', () => {
+        const state = buildRunsState({
+          initialGroupBy: {key: GroupByKey.REGEX, regexString: 'foo(\\d+)'},
+          defaultRunColorForGroupBy: new Map([
+            ['foo', '#aaa'],
+            ['bar', '#aaa'],
+          ]),
+        });
+        const action = actions.fetchRunsSucceeded({
+          experimentIds: ['eid1', 'eid2'],
+          runsForAllExperiments: [
+            buildRun({id: 'eid1/alpha', name: 'foo1bar1'}),
+            buildRun({id: 'eid1/beta', name: 'foo2bar1'}),
+            buildRun({id: 'eid2/beta', name: 'foo2bar2'}),
+            buildRun({id: 'eid2/gamma', name: 'foo2bar2bar'}),
+            buildRun({id: 'eid2/alpha', name: 'alpha'}),
+            buildRun({id: 'eid2/delta', name: 'delta'}),
+          ],
+          newRunsAndMetadata: {},
+        });
+
+        const nextState = runsReducers.reducers(state, action);
+
+        expect(nextState.data.defaultRunColorForGroupBy).toEqual(
+          new Map([
+            ['foo', '#aaa'],
+            ['bar', '#aaa'],
+            ['eid1/alpha', colorUtils.CHART_COLOR_PALLETE[0]],
+            ['eid1/beta', colorUtils.CHART_COLOR_PALLETE[1]],
+            ['eid2/beta', colorUtils.CHART_COLOR_PALLETE[1]],
+            ['eid2/gamma', colorUtils.CHART_COLOR_PALLETE[1]],
+          ])
+        );
+      });
     });
 
     it('auto-selects new runs if total num <= N', () => {
@@ -826,6 +861,65 @@ describe('runs_reducers', () => {
           ['run2', colorUtils.CHART_COLOR_PALLETE[1]],
           ['run3', colorUtils.CHART_COLOR_PALLETE[2]],
           ['run4', colorUtils.CHART_COLOR_PALLETE[3]],
+        ])
+      );
+      expect(nextState.data.runColorOverrideForGroupBy).toEqual(new Map());
+    });
+
+    it('reassigns color to REGEX from RUN', () => {
+      const state = buildRunsState({
+        initialGroupBy: {key: GroupByKey.RUN},
+        runIds: {
+          eid1: ['run1', 'run2'],
+          eid2: ['run3', 'run4', 'run5', 'run6'],
+        },
+        runIdToExpId: {
+          run1: 'eid1',
+          run2: 'eid1',
+          run3: 'eid2',
+          run4: 'eid2',
+          run5: 'eid2',
+          run6: 'eid2',
+        },
+        runMetadata: {
+          run1: buildRun({id: 'run1', name: 'foo1bar1'}),
+          run2: buildRun({id: 'run2', name: 'foo2bar1'}),
+          run3: buildRun({id: 'run3', name: 'foo2bar2'}),
+          run4: buildRun({id: 'run4', name: 'foo2bar2bar'}),
+          run5: buildRun({id: 'run5', name: 'beta'}),
+          run6: buildRun({id: 'run6', name: 'gamma'}),
+        },
+        defaultRunColorForGroupBy: new Map([
+          ['run1', '#aaa'],
+          ['run2', '#bbb'],
+          ['run3', '#ccc'],
+          ['run4', '#ddd'],
+          ['run5', '#eee'],
+          ['run6', '#fff'],
+        ]),
+      });
+
+      const nextState = runsReducers.reducers(
+        state,
+        actions.runGroupByChanged({
+          experimentIds: ['eid1', 'eid2'],
+          groupBy: {key: GroupByKey.REGEX, regexString: 'foo(\\d+)'},
+        })
+      );
+
+      expect(nextState.data.userSetGroupByKey).toEqual(GroupByKey.REGEX);
+      expect(nextState.data.groupKeyToColorString).toEqual(
+        new Map([
+          ['["1"]', colorUtils.CHART_COLOR_PALLETE[0]],
+          ['["2"]', colorUtils.CHART_COLOR_PALLETE[1]],
+        ])
+      );
+      expect(nextState.data.defaultRunColorForGroupBy).toEqual(
+        new Map([
+          ['run1', colorUtils.CHART_COLOR_PALLETE[0]],
+          ['run2', colorUtils.CHART_COLOR_PALLETE[1]],
+          ['run3', colorUtils.CHART_COLOR_PALLETE[1]],
+          ['run4', colorUtils.CHART_COLOR_PALLETE[1]],
         ])
       );
       expect(nextState.data.runColorOverrideForGroupBy).toEqual(new Map());
