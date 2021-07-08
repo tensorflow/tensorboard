@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {DataLoadState, LoadState} from "../../types/data";
+import {DataLoadState, LoadState} from '../../types/data';
 
 export const SETTINGS_FEATURE_KEY = 'settings';
 

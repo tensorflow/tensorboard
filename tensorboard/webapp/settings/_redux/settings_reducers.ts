@@ -22,8 +22,11 @@ import {SettingsState, initialState} from './settings_types';
  * settings state until original settings have had the opportunity to load
  * successfully or unsuccessfully.
  */
-function settingsReady(state: SettingsState) : boolean {
-  return state.state !== DataLoadState.NOT_LOADED && state.state !== DataLoadState.LOADING;
+function settingsReady(state: SettingsState): boolean {
+  return (
+    state.state !== DataLoadState.NOT_LOADED &&
+    state.state !== DataLoadState.LOADING
+  );
 }
 
 const reducer = createReducer(

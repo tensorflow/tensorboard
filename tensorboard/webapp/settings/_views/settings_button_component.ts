@@ -21,7 +21,11 @@ import {SettingsDialogContainer} from './settings_dialog_container';
 @Component({
   selector: 'settings-button-component',
   template: `
-    <button mat-icon-button [disabled]="isButtonDisabled()" (click)="openDialog()">
+    <button
+      mat-icon-button
+      [disabled]="isButtonDisabled()"
+      (click)="openDialog()"
+    >
       <mat-icon svgIcon="settings_24px"></mat-icon>
     </button>
   `,
@@ -36,7 +40,10 @@ export class SettingsButtonComponent {
     // loading the settings or if we are still loading settings.
     // It means button is enabled when we have either successfully or
     // unsucessfully completed the attempt to load settings.
-    return this.settingsLoadState === DataLoadState.NOT_LOADED || this.settingsLoadState === DataLoadState.LOADING;
+    return (
+      this.settingsLoadState === DataLoadState.NOT_LOADED ||
+      this.settingsLoadState === DataLoadState.LOADING
+    );
   }
 
   openDialog(): void {

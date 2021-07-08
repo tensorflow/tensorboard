@@ -29,7 +29,7 @@ export const getSettingsLoadState = createSelector(
   (state: SettingsState): DataLoadState => {
     return state.state;
   }
-)
+);
 
 export const getReloadEnabled = createSelector(
   selectSettingsState,

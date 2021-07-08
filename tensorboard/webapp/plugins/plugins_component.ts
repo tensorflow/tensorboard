@@ -120,7 +120,12 @@ export class PluginsComponent implements OnChanges {
     //       It might happen when users are navigating between experiments and
     //       the new experiment does not have data for the active dashboard?
 
-    if (!this.isFeatureFlagsLoaded || !this.activeKnownPlugin || this.settingsLoadState === DataLoadState.NOT_LOADED || this.settingsLoadState === DataLoadState.LOADING) {
+    if (
+      !this.isFeatureFlagsLoaded ||
+      !this.activeKnownPlugin ||
+      this.settingsLoadState === DataLoadState.NOT_LOADED ||
+      this.settingsLoadState === DataLoadState.LOADING
+    ) {
       return;
     }
 
@@ -129,7 +134,11 @@ export class PluginsComponent implements OnChanges {
         !this.pluginInstances.has(this.activeKnownPlugin.id)
     );
 
-    if (change['activeKnownPlugin'] || change['isFeatureFlagsLoaded'] || change['settingsLoadState']) {
+    if (
+      change['activeKnownPlugin'] ||
+      change['isFeatureFlagsLoaded'] ||
+      change['settingsLoadState']
+    ) {
       const prevActiveKnownPlugin = change['activeKnownPlugin']?.previousValue;
       if (
         prevActiveKnownPlugin &&

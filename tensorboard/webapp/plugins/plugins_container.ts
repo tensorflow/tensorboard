@@ -129,7 +129,9 @@ export class PluginsContainer {
   );
   readonly isFeatureFlagsLoaded$ = this.store.select(getIsFeatureFlagsLoaded);
   readonly featureFlags$ = this.store.select(getFeatureFlags);
-  readonly settingsLoadState$ = this.store.select(settingsSelectors.getSettingsLoadState);
+  readonly settingsLoadState$ = this.store.select(
+    settingsSelectors.getSettingsLoadState
+  );
 
   constructor(private readonly store: Store<State>) {}
 }

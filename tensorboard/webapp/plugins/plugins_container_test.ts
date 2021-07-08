@@ -177,7 +177,10 @@ describe('plugins_component', () => {
     store.overrideSelector(getIsFeatureFlagsLoaded, true);
     store.overrideSelector(getFeatureFlags, buildFeatureFlag());
     store.overrideSelector(getAppLastLoadedTimeInMs, null);
-    store.overrideSelector(settingsSelectors.getSettingsLoadState, DataLoadState.LOADED);
+    store.overrideSelector(
+      settingsSelectors.getSettingsLoadState,
+      DataLoadState.LOADED
+    );
 
     createElementSpy = spyOn(document, 'createElement').and.callThrough();
     createElementSpy
@@ -227,7 +230,10 @@ describe('plugins_component', () => {
     });
 
     it('waits for settings to be loaded before creating plugin', async () => {
-      store.overrideSelector(settingsSelectors.getSettingsLoadState, DataLoadState.NOT_LOADED);
+      store.overrideSelector(
+        settingsSelectors.getSettingsLoadState,
+        DataLoadState.NOT_LOADED
+      );
       store.overrideSelector(getActivePlugin, 'foo');
 
       const fixture = TestBed.createComponent(PluginsContainer);
@@ -236,14 +242,20 @@ describe('plugins_component', () => {
       const plugins1 = fixture.debugElement.query(By.css('.plugins'));
       expect(plugins1.nativeElement.childElementCount).toBe(0);
 
-      store.overrideSelector(settingsSelectors.getSettingsLoadState, DataLoadState.LOADING);
+      store.overrideSelector(
+        settingsSelectors.getSettingsLoadState,
+        DataLoadState.LOADING
+      );
       store.refreshState();
       fixture.detectChanges();
       await fixture.whenStable();
       const plugins2 = fixture.debugElement.query(By.css('.plugins'));
       expect(plugins2.nativeElement.childElementCount).toBe(0);
 
-      store.overrideSelector(settingsSelectors.getSettingsLoadState, DataLoadState.LOADED);
+      store.overrideSelector(
+        settingsSelectors.getSettingsLoadState,
+        DataLoadState.LOADED
+      );
       store.refreshState();
       fixture.detectChanges();
       await fixture.whenStable();
@@ -252,7 +264,10 @@ describe('plugins_component', () => {
     });
 
     it('creates plugin when settings fails to load', async () => {
-      store.overrideSelector(settingsSelectors.getSettingsLoadState, DataLoadState.NOT_LOADED);
+      store.overrideSelector(
+        settingsSelectors.getSettingsLoadState,
+        DataLoadState.NOT_LOADED
+      );
       store.overrideSelector(getActivePlugin, 'foo');
 
       const fixture = TestBed.createComponent(PluginsContainer);
@@ -261,7 +276,10 @@ describe('plugins_component', () => {
       const plugins1 = fixture.debugElement.query(By.css('.plugins'));
       expect(plugins1.nativeElement.childElementCount).toBe(0);
 
-      store.overrideSelector(settingsSelectors.getSettingsLoadState, DataLoadState.FAILED);
+      store.overrideSelector(
+        settingsSelectors.getSettingsLoadState,
+        DataLoadState.FAILED
+      );
       store.refreshState();
       fixture.detectChanges();
       await fixture.whenStable();
