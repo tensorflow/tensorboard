@@ -19,8 +19,10 @@ import {
   Input,
   Output,
 } from '@angular/core';
+import {MatDialog} from '@angular/material/dialog';
 
 import {GroupBy, GroupByKey} from '../../types';
+import {RegexEditDialogContainer} from './regex_edit_dialog_container';
 
 @Component({
   selector: 'runs-group-menu-button-component',
@@ -31,9 +33,21 @@ import {GroupBy, GroupByKey} from '../../types';
 export class RunsGroupMenuButtonComponent {
   readonly GroupByKey = GroupByKey;
 
+  @Input() experimentIds!: string[];
+  @Input() regexString!: string;
   @Input() selectedGroupBy!: GroupBy;
   @Input() showGroupByRegex!: boolean;
 
   @Output()
   onGroupByChange = new EventEmitter<GroupBy>();
+
+  constructor(public dialog: MatDialog) {}
+
+  onRegexStringEdit() {
+    // data pass in the experiment id
+    const dialogRef = this.dialog.open(RegexEditDialogContainer, {
+      width: '1050px',
+      data: {experimentIds: [this.experimentIds]},
+    });
+  }
 }

@@ -66,4 +66,16 @@ limitations under the License.
     </span>
     <label>Regex</label>
   </button>
+  <button
+    mat-menu-item
+    role="menuitemradio"
+    (click)="onRegexStringEdit()"
+    class="displayRegexString"
+  >
+    <span>
+      <mat-icon svgIcon="edit_24px"></mat-icon>
+    </span>
+    <label *ngIf="regexString" >{{regexString}}</label>
+    <label *ngIf="!regexString" class="none-set-string">(none set)</label>
+  </button>
 </mat-menu>

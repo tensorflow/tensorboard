@@ -36,4 +36,11 @@ limitations under the License.
     height: $_icon-size;
     width: $_icon-size;
   }
+
+  .displayRegexString {
+    padding-left: 40px;
+    .none-set-string {
+      color: gray
+    }
+  }
 }

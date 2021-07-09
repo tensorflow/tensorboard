@@ -19,7 +19,7 @@ import {Observable} from 'rxjs';
 import {State} from '../../../app_state';
 import {getEnabledColorGroupByRegex} from '../../../selectors';
 import {runGroupByChanged} from '../../actions';
-import {getRunGroupBy} from '../../store/runs_selectors';
+import {getColorGroupRegexString, getRunGroupBy} from '../../store/runs_selectors';
 import {GroupBy} from '../../types';
 
 /**
@@ -29,6 +29,7 @@ import {GroupBy} from '../../types';
   selector: 'runs-group-menu-button',
   template: `
     <runs-group-menu-button-component
+      [regexString]="groupByRegexString$ | async"
       [selectedGroupBy]="selectedGroupBy$ | async"
       [showGroupByRegex]="showGroupByRegex$ | async"
       (onGroupByChange)="onGroupByChange($event)"
@@ -48,6 +49,9 @@ export class RunsGroupMenuButtonContainer {
   readonly selectedGroupBy$: Observable<GroupBy> = this.store.select(
     getRunGroupBy
   );
+
+  readonly groupByRegexString$: Observable<string> =
+    this.store.select(getColorGroupRegexString);
 
   onGroupByChange(groupBy: GroupBy) {
     this.store.dispatch(
