@@ -35,6 +35,5 @@ export const initialState: SettingsState = {
 
   reloadPeriodInMs: 30000,
   reloadEnabled: false,
-  // Reasonably small and has lots of factors.
   pageSize: 12,
 };
