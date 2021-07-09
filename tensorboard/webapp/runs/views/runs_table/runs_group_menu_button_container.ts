@@ -37,7 +37,7 @@ import {GroupBy} from '../../types';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RunsGroupMenuButtonContainer {
-  showGroupByRegex$?: Observable<boolean> = this.store.select(
+  showGroupByRegex$: Observable<boolean> = this.store.select(
     getEnabledColorGroupByRegex
   );
 
