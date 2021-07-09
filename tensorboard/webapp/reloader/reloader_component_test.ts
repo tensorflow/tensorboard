@@ -20,7 +20,11 @@ import {provideMockStore, MockStore} from '@ngrx/store/testing';
 import {ReloaderComponent} from './reloader_component';
 
 import {reload} from '../core/actions';
-import {createState, createSettingsState, createSettings} from '../settings/testing';
+import {
+  createState,
+  createSettingsState,
+  createSettings,
+} from '../settings/testing';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
@@ -57,10 +61,12 @@ describe('reloader_component', () => {
         },
         provideMockStore({
           initialState: createState(
-            createSettingsState({settings: createSettings({
-              reloadPeriodInMs: 5,
-              reloadEnabled: true,
-            })})
+            createSettingsState({
+              settings: createSettings({
+                reloadPeriodInMs: 5,
+                reloadEnabled: true,
+              }),
+            })
           ),
         }),
         ReloaderComponent,
@@ -75,10 +81,12 @@ describe('reloader_component', () => {
   it('dispatches reload action every reload period', fakeAsync(() => {
     store.setState(
       createState(
-        createSettingsState({settings: createSettings({
-          reloadPeriodInMs: 5,
-          reloadEnabled: true,
-        })})
+        createSettingsState({
+          settings: createSettings({
+            reloadPeriodInMs: 5,
+            reloadEnabled: true,
+          }),
+        })
       )
     );
     const fixture = TestBed.createComponent(ReloaderComponent);
@@ -102,10 +110,12 @@ describe('reloader_component', () => {
   it('disables reload when it is not enabled', fakeAsync(() => {
     store.setState(
       createState(
-        createSettingsState({settings: createSettings({
-          reloadPeriodInMs: 5,
-          reloadEnabled: false,
-        })})
+        createSettingsState({
+          settings: createSettings({
+            reloadPeriodInMs: 5,
+            reloadEnabled: false,
+          }),
+        })
       )
     );
     const fixture = TestBed.createComponent(ReloaderComponent);
@@ -121,10 +131,12 @@ describe('reloader_component', () => {
   it('respects reload period', fakeAsync(() => {
     store.setState(
       createState(
-        createSettingsState({settings: createSettings({
-          reloadPeriodInMs: 50,
-          reloadEnabled: true,
-        })})
+        createSettingsState({
+          settings: createSettings({
+            reloadPeriodInMs: 50,
+            reloadEnabled: true,
+          }),
+        })
       )
     );
     const fixture = TestBed.createComponent(ReloaderComponent);
@@ -145,10 +157,12 @@ describe('reloader_component', () => {
   it('only resets timer when store values changes', fakeAsync(() => {
     store.setState(
       createState(
-        createSettingsState({settings: createSettings({
-          reloadPeriodInMs: 5,
-          reloadEnabled: true,
-        })})
+        createSettingsState({
+          settings: createSettings({
+            reloadPeriodInMs: 5,
+            reloadEnabled: true,
+          }),
+        })
       )
     );
     const fixture = TestBed.createComponent(ReloaderComponent);
@@ -157,10 +171,12 @@ describe('reloader_component', () => {
     tick(4);
     store.setState(
       createState(
-        createSettingsState({settings: createSettings({
-          reloadPeriodInMs: 5,
-          reloadEnabled: true,
-        })})
+        createSettingsState({
+          settings: createSettings({
+            reloadPeriodInMs: 5,
+            reloadEnabled: true,
+          }),
+        })
       )
     );
     fixture.detectChanges();
@@ -172,10 +188,12 @@ describe('reloader_component', () => {
     tick(4);
     store.setState(
       createState(
-        createSettingsState({settings: createSettings({
-          reloadPeriodInMs: 3,
-          reloadEnabled: true,
-        })})
+        createSettingsState({
+          settings: createSettings({
+            reloadPeriodInMs: 3,
+            reloadEnabled: true,
+          }),
+        })
       )
     );
 
@@ -191,10 +209,12 @@ describe('reloader_component', () => {
   it('does not reload if document is not visible', fakeAsync(() => {
     store.setState(
       createState(
-        createSettingsState({settings: createSettings({
-          reloadPeriodInMs: 5,
-          reloadEnabled: true,
-        })})
+        createSettingsState({
+          settings: createSettings({
+            reloadPeriodInMs: 5,
+            reloadEnabled: true,
+          }),
+        })
       )
     );
     const fixture = TestBed.createComponent(ReloaderComponent);
@@ -213,10 +233,12 @@ describe('reloader_component', () => {
   it('reloads when document becomes visible if missed reload', fakeAsync(() => {
     store.setState(
       createState(
-        createSettingsState({settings: createSettings({
-          reloadPeriodInMs: 5,
-          reloadEnabled: true,
-        })})
+        createSettingsState({
+          settings: createSettings({
+            reloadPeriodInMs: 5,
+            reloadEnabled: true,
+          }),
+        })
       )
     );
     const fixture = TestBed.createComponent(ReloaderComponent);
@@ -237,10 +259,12 @@ describe('reloader_component', () => {
   it('reloads when document becomes visible if missed reload, regardless of how long not visible', fakeAsync(() => {
     store.setState(
       createState(
-        createSettingsState({settings: createSettings({
-          reloadPeriodInMs: 5,
-          reloadEnabled: true,
-        })})
+        createSettingsState({
+          settings: createSettings({
+            reloadPeriodInMs: 5,
+            reloadEnabled: true,
+          }),
+        })
       )
     );
     const fixture = TestBed.createComponent(ReloaderComponent);
@@ -267,10 +291,12 @@ describe('reloader_component', () => {
   it('does not reload when document becomes visible if there was not a missed reload', fakeAsync(() => {
     store.setState(
       createState(
-        createSettingsState({settings: createSettings({
-          reloadPeriodInMs: 5,
-          reloadEnabled: true,
-        })})
+        createSettingsState({
+          settings: createSettings({
+            reloadPeriodInMs: 5,
+            reloadEnabled: true,
+          }),
+        })
       )
     );
     const fixture = TestBed.createComponent(ReloaderComponent);
@@ -292,10 +318,12 @@ describe('reloader_component', () => {
   it('does not reload when document becomes visible if missed reload was already handled', fakeAsync(() => {
     store.setState(
       createState(
-        createSettingsState({settings: createSettings({
-          reloadPeriodInMs: 5,
-          reloadEnabled: true,
-        })})
+        createSettingsState({
+          settings: createSettings({
+            reloadPeriodInMs: 5,
+            reloadEnabled: true,
+          }),
+        })
       )
     );
     const fixture = TestBed.createComponent(ReloaderComponent);
@@ -324,10 +352,12 @@ describe('reloader_component', () => {
   it('does not reload when document becomes visible if auto reload is off', fakeAsync(() => {
     store.setState(
       createState(
-        createSettingsState({settings: createSettings({
-          reloadPeriodInMs: 5,
-          reloadEnabled: false,
-        })})
+        createSettingsState({
+          settings: createSettings({
+            reloadPeriodInMs: 5,
+            reloadEnabled: false,
+          }),
+        })
       )
     );
     const fixture = TestBed.createComponent(ReloaderComponent);
