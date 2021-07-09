@@ -40,7 +40,10 @@ const reducer = createReducer(
 
       return {
         ...state,
-        reloadEnabled: !state.reloadEnabled,
+        settings: {
+          ...state.settings,
+          reloadEnabled: !state.settings.reloadEnabled,
+        },
       };
     }
   ),
@@ -52,10 +55,13 @@ const reducer = createReducer(
       }
 
       const nextReloadPeriod =
-        periodInMs > 0 ? periodInMs : state.reloadPeriodInMs;
+        periodInMs > 0 ? periodInMs : state.settings.reloadPeriodInMs;
       return {
         ...state,
-        reloadPeriodInMs: nextReloadPeriod,
+        settings: {
+          ...state.settings,
+          reloadPeriodInMs: nextReloadPeriod,
+        },
       };
     }
   ),
@@ -64,10 +70,13 @@ const reducer = createReducer(
       return state;
     }
 
-    const nextPageSize = size > 0 ? size : state.pageSize;
+    const nextPageSize = size > 0 ? size : state.settings.pageSize;
     return {
       ...state,
-      pageSize: nextPageSize,
+      settings: {
+        ...state.settings,
+        pageSize: nextPageSize,
+      },
     };
   })
 );

@@ -34,20 +34,20 @@ export const getSettingsLoadState = createSelector(
 export const getReloadEnabled = createSelector(
   selectSettingsState,
   (state: SettingsState): boolean => {
-    return state.reloadEnabled;
+    return state.settings.reloadEnabled;
   }
 );
 
 export const getReloadPeriodInMs = createSelector(
   selectSettingsState,
   (state: SettingsState): number => {
-    return state.reloadPeriodInMs;
+    return state.settings.reloadPeriodInMs;
   }
 );
 
 export const getPageSize = createSelector(
   selectSettingsState,
   (state: SettingsState): number => {
-    return state.pageSize;
+    return state.settings.pageSize;
   }
 );

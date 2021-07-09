@@ -20,7 +20,11 @@ import {provideMockStore, MockStore} from '@ngrx/store/testing';
 import {ReloaderComponent} from './reloader_component';
 
 import {reload} from '../core/actions';
-import {createState, createSettingsState} from '../settings/testing';
+import {
+  createState,
+  createSettingsState,
+  createSettings,
+} from '../settings/testing';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
@@ -58,8 +62,10 @@ describe('reloader_component', () => {
         provideMockStore({
           initialState: createState(
             createSettingsState({
-              reloadPeriodInMs: 5,
-              reloadEnabled: true,
+              settings: createSettings({
+                reloadPeriodInMs: 5,
+                reloadEnabled: true,
+              }),
             })
           ),
         }),
@@ -76,8 +82,10 @@ describe('reloader_component', () => {
     store.setState(
       createState(
         createSettingsState({
-          reloadPeriodInMs: 5,
-          reloadEnabled: true,
+          settings: createSettings({
+            reloadPeriodInMs: 5,
+            reloadEnabled: true,
+          }),
         })
       )
     );
@@ -103,8 +111,10 @@ describe('reloader_component', () => {
     store.setState(
       createState(
         createSettingsState({
-          reloadPeriodInMs: 5,
-          reloadEnabled: false,
+          settings: createSettings({
+            reloadPeriodInMs: 5,
+            reloadEnabled: false,
+          }),
         })
       )
     );
@@ -122,8 +132,10 @@ describe('reloader_component', () => {
     store.setState(
       createState(
         createSettingsState({
-          reloadPeriodInMs: 50,
-          reloadEnabled: true,
+          settings: createSettings({
+            reloadPeriodInMs: 50,
+            reloadEnabled: true,
+          }),
         })
       )
     );
@@ -146,8 +158,10 @@ describe('reloader_component', () => {
     store.setState(
       createState(
         createSettingsState({
-          reloadPeriodInMs: 5,
-          reloadEnabled: true,
+          settings: createSettings({
+            reloadPeriodInMs: 5,
+            reloadEnabled: true,
+          }),
         })
       )
     );
@@ -158,8 +172,10 @@ describe('reloader_component', () => {
     store.setState(
       createState(
         createSettingsState({
-          reloadPeriodInMs: 5,
-          reloadEnabled: true,
+          settings: createSettings({
+            reloadPeriodInMs: 5,
+            reloadEnabled: true,
+          }),
         })
       )
     );
@@ -173,8 +189,10 @@ describe('reloader_component', () => {
     store.setState(
       createState(
         createSettingsState({
-          reloadPeriodInMs: 3,
-          reloadEnabled: true,
+          settings: createSettings({
+            reloadPeriodInMs: 3,
+            reloadEnabled: true,
+          }),
         })
       )
     );
@@ -192,8 +210,10 @@ describe('reloader_component', () => {
     store.setState(
       createState(
         createSettingsState({
-          reloadPeriodInMs: 5,
-          reloadEnabled: true,
+          settings: createSettings({
+            reloadPeriodInMs: 5,
+            reloadEnabled: true,
+          }),
         })
       )
     );
@@ -214,8 +234,10 @@ describe('reloader_component', () => {
     store.setState(
       createState(
         createSettingsState({
-          reloadPeriodInMs: 5,
-          reloadEnabled: true,
+          settings: createSettings({
+            reloadPeriodInMs: 5,
+            reloadEnabled: true,
+          }),
         })
       )
     );
@@ -238,8 +260,10 @@ describe('reloader_component', () => {
     store.setState(
       createState(
         createSettingsState({
-          reloadPeriodInMs: 5,
-          reloadEnabled: true,
+          settings: createSettings({
+            reloadPeriodInMs: 5,
+            reloadEnabled: true,
+          }),
         })
       )
     );
@@ -268,8 +292,10 @@ describe('reloader_component', () => {
     store.setState(
       createState(
         createSettingsState({
-          reloadPeriodInMs: 5,
-          reloadEnabled: true,
+          settings: createSettings({
+            reloadPeriodInMs: 5,
+            reloadEnabled: true,
+          }),
         })
       )
     );
@@ -293,8 +319,10 @@ describe('reloader_component', () => {
     store.setState(
       createState(
         createSettingsState({
-          reloadPeriodInMs: 5,
-          reloadEnabled: true,
+          settings: createSettings({
+            reloadPeriodInMs: 5,
+            reloadEnabled: true,
+          }),
         })
       )
     );
@@ -325,8 +353,10 @@ describe('reloader_component', () => {
     store.setState(
       createState(
         createSettingsState({
-          reloadPeriodInMs: 5,
-          reloadEnabled: false,
+          settings: createSettings({
+            reloadPeriodInMs: 5,
+            reloadEnabled: false,
+          }),
         })
       )
     );

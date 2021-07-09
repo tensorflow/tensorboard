@@ -35,7 +35,7 @@ import {
   toggleReloadEnabled,
   changeReloadPeriod,
 } from '../_redux/settings_actions';
-import {createSettingsState, createState} from '../testing';
+import {createSettings, createSettingsState, createState} from '../testing';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
 import {getSettingsLoadState} from '../_redux/settings_selectors';
@@ -62,8 +62,10 @@ describe('settings test', () => {
         provideMockStore({
           initialState: createState(
             createSettingsState({
-              reloadPeriodInMs: 30000,
-              reloadEnabled: true,
+              settings: createSettings({
+                reloadPeriodInMs: 30000,
+                reloadEnabled: true,
+              }),
             })
           ),
         }),
@@ -162,8 +164,10 @@ describe('settings test', () => {
     store.setState(
       createState(
         createSettingsState({
-          reloadPeriodInMs: 60000,
-          reloadEnabled: false,
+          settings: createSettings({
+            reloadPeriodInMs: 60000,
+            reloadEnabled: false,
+          }),
         })
       )
     );
@@ -223,8 +227,10 @@ describe('settings test', () => {
       store.setState(
         createState(
           createSettingsState({
-            reloadPeriodInMs: 30000,
-            reloadEnabled: false,
+            settings: createSettings({
+              reloadPeriodInMs: 30000,
+              reloadEnabled: false,
+            }),
           })
         )
       );
