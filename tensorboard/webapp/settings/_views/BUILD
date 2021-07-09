@@ -7,6 +7,7 @@ tf_ng_module(
     srcs = [
         "polymer_interop_container.ts",
         "settings_button_component.ts",
+        "settings_button_container.ts",
         "settings_dialog_component.ts",
         "settings_dialog_container.ts",
         "settings_module.ts",
@@ -22,6 +23,7 @@ tf_ng_module(
         "//tensorboard/webapp/angular:expect_angular_material_icon",
         "//tensorboard/webapp/angular:expect_angular_material_input",
         "//tensorboard/webapp/settings/_redux",
+        "//tensorboard/webapp/types",
         "@npm//@angular/common",
         "@npm//@angular/core",
         "@npm//@angular/forms",
@@ -52,6 +54,7 @@ tf_ts_library(
         "//tensorboard/webapp/settings:testing",
         "//tensorboard/webapp/settings/_redux",
         "//tensorboard/webapp/testing:mat_icon",
+        "//tensorboard/webapp/types",
         "@npm//@angular/common",
         "@npm//@angular/compiler",
         "@npm//@angular/core",

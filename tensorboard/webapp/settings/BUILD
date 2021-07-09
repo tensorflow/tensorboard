@@ -30,5 +30,6 @@ tf_ts_library(
     srcs = ["testing.ts"],
     deps = [
         "//tensorboard/webapp/settings/_redux",
+        "//tensorboard/webapp/types",
     ],
 )

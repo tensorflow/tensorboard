@@ -41,6 +41,7 @@ import {
 } from '../types/api';
 import {PluginRegistryModule} from './plugin_registry_module';
 import {PluginApiHostModule} from '../../components/experimental/plugin_util/plugin_api_host_module';
+import {DataLoadState} from '../types/data';
 
 interface PolymerDashboard extends HTMLElement {
   reload?: () => void;
@@ -89,6 +90,9 @@ export class PluginsComponent implements OnChanges {
   @Input()
   isFeatureFlagsLoaded!: boolean;
 
+  @Input()
+  settingsLoadState!: DataLoadState;
+
   /**
    * Feature flags to pass to underlying plugins. Currently only passed to
    * plugins of type CUSTOM_ELEMENT. The feature flags are set directly on
@@ -116,7 +120,12 @@ export class PluginsComponent implements OnChanges {
     //       It might happen when users are navigating between experiments and
     //       the new experiment does not have data for the active dashboard?
 
-    if (!this.isFeatureFlagsLoaded || !this.activeKnownPlugin) {
+    if (
+      !this.isFeatureFlagsLoaded ||
+      !this.activeKnownPlugin ||
+      this.settingsLoadState === DataLoadState.NOT_LOADED ||
+      this.settingsLoadState === DataLoadState.LOADING
+    ) {
       return;
     }
 
@@ -125,7 +134,11 @@ export class PluginsComponent implements OnChanges {
         !this.pluginInstances.has(this.activeKnownPlugin.id)
     );
 
-    if (change['activeKnownPlugin'] || change['isFeatureFlagsLoaded']) {
+    if (
+      change['activeKnownPlugin'] ||
+      change['isFeatureFlagsLoaded'] ||
+      change['settingsLoadState']
+    ) {
       const prevActiveKnownPlugin = change['activeKnownPlugin']?.previousValue;
       if (
         prevActiveKnownPlugin &&

@@ -12,28 +12,24 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {Component} from '@angular/core';
+import {Store} from '@ngrx/store';
 
-import {DataLoadState, LoadState} from '../../types/data';
+import {getSettingsLoadState} from '../_redux/settings_selectors';
+import {State} from '../_redux/settings_types';
 
-export const SETTINGS_FEATURE_KEY = 'settings';
+/** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
-export interface SettingsState extends LoadState {
-  reloadPeriodInMs: number;
-  reloadEnabled: boolean;
-  // Size of a page in a general paginated view that is configurable by user via
-  // settings.
-  pageSize: number;
+@Component({
+  selector: 'settings-button',
+  template: `
+    <settings-button-component
+      [settingsLoadState]="settingsLoadState$ | async"
+    ></settings-button-component>
+  `,
+})
+export class SettingsButtonContainer {
+  readonly settingsLoadState$ = this.store.select(getSettingsLoadState);
+
+  constructor(private store: Store<State>) {}
 }
-
-export interface State {
-  [SETTINGS_FEATURE_KEY]?: SettingsState;
-}
-
-export const initialState: SettingsState = {
-  state: DataLoadState.LOADED,
-  lastLoadedTimeInMs: Date.now(),
-
-  reloadPeriodInMs: 30000,
-  reloadEnabled: false,
-  pageSize: 12,
-};

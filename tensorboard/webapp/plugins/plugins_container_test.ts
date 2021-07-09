@@ -37,6 +37,7 @@ import {
   getIsFeatureFlagsLoaded,
 } from '../feature_flag/store/feature_flag_selectors';
 import {buildFeatureFlag} from '../feature_flag/testing';
+import {selectors as settingsSelectors} from '../settings';
 import {
   CustomElementLoadingMechanism,
   IframeLoadingMechanism,
@@ -176,6 +177,10 @@ describe('plugins_component', () => {
     store.overrideSelector(getIsFeatureFlagsLoaded, true);
     store.overrideSelector(getFeatureFlags, buildFeatureFlag());
     store.overrideSelector(getAppLastLoadedTimeInMs, null);
+    store.overrideSelector(
+      settingsSelectors.getSettingsLoadState,
+      DataLoadState.LOADED
+    );
 
     createElementSpy = spyOn(document, 'createElement').and.callThrough();
     createElementSpy
@@ -206,7 +211,7 @@ describe('plugins_component', () => {
       expect(el.nativeElement.childElementCount).toBe(0);
     });
 
-    it('creates no plugin when feature flags are not loaded', async () => {
+    it('waits for feature flags to be loaded before creating plugin', async () => {
       store.overrideSelector(getIsFeatureFlagsLoaded, false);
       store.overrideSelector(getActivePlugin, 'foo');
 
@@ -222,6 +227,64 @@ describe('plugins_component', () => {
       await fixture.whenStable();
       const plugins2 = fixture.debugElement.query(By.css('.plugins'));
       expect(plugins2.nativeElement.childElementCount).toBe(1);
+    });
+
+    it('waits for settings to be loaded before creating plugin', async () => {
+      store.overrideSelector(
+        settingsSelectors.getSettingsLoadState,
+        DataLoadState.NOT_LOADED
+      );
+      store.overrideSelector(getActivePlugin, 'foo');
+
+      const fixture = TestBed.createComponent(PluginsContainer);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      const plugins1 = fixture.debugElement.query(By.css('.plugins'));
+      expect(plugins1.nativeElement.childElementCount).toBe(0);
+
+      store.overrideSelector(
+        settingsSelectors.getSettingsLoadState,
+        DataLoadState.LOADING
+      );
+      store.refreshState();
+      fixture.detectChanges();
+      await fixture.whenStable();
+      const plugins2 = fixture.debugElement.query(By.css('.plugins'));
+      expect(plugins2.nativeElement.childElementCount).toBe(0);
+
+      store.overrideSelector(
+        settingsSelectors.getSettingsLoadState,
+        DataLoadState.LOADED
+      );
+      store.refreshState();
+      fixture.detectChanges();
+      await fixture.whenStable();
+      const plugins3 = fixture.debugElement.query(By.css('.plugins'));
+      expect(plugins3.nativeElement.childElementCount).toBe(1);
+    });
+
+    it('creates plugin when settings fails to load', async () => {
+      store.overrideSelector(
+        settingsSelectors.getSettingsLoadState,
+        DataLoadState.NOT_LOADED
+      );
+      store.overrideSelector(getActivePlugin, 'foo');
+
+      const fixture = TestBed.createComponent(PluginsContainer);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      const plugins1 = fixture.debugElement.query(By.css('.plugins'));
+      expect(plugins1.nativeElement.childElementCount).toBe(0);
+
+      store.overrideSelector(
+        settingsSelectors.getSettingsLoadState,
+        DataLoadState.FAILED
+      );
+      store.refreshState();
+      fixture.detectChanges();
+      await fixture.whenStable();
+      const plugins3 = fixture.debugElement.query(By.css('.plugins'));
+      expect(plugins3.nativeElement.childElementCount).toBe(1);
     });
 
     it('creates an element for CUSTOM_ELEMENT type of plugin', async () => {
