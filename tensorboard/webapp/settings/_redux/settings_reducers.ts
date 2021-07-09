@@ -31,6 +31,32 @@ function settingsReady(state: SettingsState): boolean {
 
 const reducer = createReducer(
   initialState,
+  on(actions.fetchSavedSettingsRequested, (state: SettingsState) => {
+    return {
+      ...state,
+      state: DataLoadState.LOADING,
+    };
+  }),
+  on(
+    actions.fetchSavedSettingsSucceeded,
+    (state: SettingsState, {savedSettings}) => {
+      return {
+        ...state,
+        state: DataLoadState.LOADED,
+        lastLoadedTimeInMs: Date.now(),
+        settings: {
+          ...state.settings,
+          ...savedSettings,
+        },
+      };
+    }
+  ),
+  on(actions.fetchSavedSettingsFailed, (state: SettingsState) => {
+    return {
+      ...state,
+      state: DataLoadState.FAILED,
+    };
+  }),
   on(
     actions.toggleReloadEnabled,
     (state: SettingsState): SettingsState => {

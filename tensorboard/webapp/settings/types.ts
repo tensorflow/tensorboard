@@ -12,34 +12,4 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-
-import {DataLoadState, LoadState} from '../../types/data';
-
-export const SETTINGS_FEATURE_KEY = 'settings';
-
-export interface Settings {
-  reloadPeriodInMs: number;
-  reloadEnabled: boolean;
-  // Size of a page in a general paginated view that is configurable by user via
-  // settings.
-  pageSize: number;
-}
-
-export interface SettingsState extends LoadState {
-  settings: Settings;
-}
-
-export interface State {
-  [SETTINGS_FEATURE_KEY]?: SettingsState;
-}
-
-export const initialState: SettingsState = {
-  state: DataLoadState.NOT_LOADED,
-  lastLoadedTimeInMs: null,
-
-  settings: {
-    reloadPeriodInMs: 30000,
-    reloadEnabled: false,
-    pageSize: 12,
-  },
-};
+export {State} from './_redux/settings_types';

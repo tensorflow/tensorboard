@@ -23,6 +23,7 @@ tf_ng_module(
         "//tensorboard/webapp/angular:expect_angular_material_icon",
         "//tensorboard/webapp/angular:expect_angular_material_input",
         "//tensorboard/webapp/settings/_redux",
+        "//tensorboard/webapp/settings/_redux:types",
         "//tensorboard/webapp/types",
         "@npm//@angular/common",
         "@npm//@angular/core",

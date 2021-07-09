@@ -13,21 +13,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {NgModule} from '@angular/core';
-import {StoreModule} from '@ngrx/store';
 
-import {SettingsModule as ViewModule} from './_views/settings_module';
-import {reducers} from './_redux/settings_reducers';
-import {SETTINGS_FEATURE_KEY} from './_redux/settings_types';
-import {EffectsModule} from '@ngrx/effects';
-import {SettingsEffects} from './_redux/settings_effects';
-import {SettingsDataSourceModule} from './_data_source/settings_data_source_module';
+import {SettingsDataSource} from './settings_data_source';
 
 @NgModule({
-  exports: [ViewModule],
-  imports: [
-    SettingsDataSourceModule,
-    StoreModule.forFeature(SETTINGS_FEATURE_KEY, reducers),
-    EffectsModule.forFeature([SettingsEffects]),
-  ],
+  providers: [SettingsDataSource],
 })
-export class SettingsModule {}
+export class SettingsDataSourceModule {}

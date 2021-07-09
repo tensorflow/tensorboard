@@ -17,6 +17,7 @@ import {createAction, props} from '@ngrx/store';
 // HACK: Below import is for type inference.
 // https://github.com/bazelbuild/rules_nodejs/issues/1013
 /** @typehack */ import * as _typeHackModels from '@ngrx/store/src/models';
+import {Settings} from './settings_types';
 
 /**
  * Action for when user wants to enable/disable reload.
@@ -39,4 +40,15 @@ export const changeReloadPeriod = createAction(
 export const changePageSize = createAction(
   '[Settings] Page Size Change',
   props<{size: number}>()
+);
+
+export const fetchSavedSettingsRequested = createAction(
+  '[Settings] Fetch Saved Settings Requested'
+);
+export const fetchSavedSettingsSucceeded = createAction(
+  '[Settings] Fetch Saved Settings Succeeded',
+  props<{savedSettings: Partial<Settings>}>()
+);
+export const fetchSavedSettingsFailed = createAction(
+  '[Settings] Fetch Saved Settings Failed'
 );

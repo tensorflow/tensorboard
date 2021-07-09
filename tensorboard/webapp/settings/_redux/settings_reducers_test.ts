@@ -18,6 +18,81 @@ import {createSettings, createSettingsState} from '../testing';
 import {DataLoadState} from '../../types/data';
 
 describe('settings reducer', () => {
+  describe('#fetchSavedSettingsRequested', () => {
+    it('preserves existing settings and signals settings are LOADING', () => {
+      const state1 = createSettingsState({
+        state: DataLoadState.NOT_LOADED,
+        lastLoadedTimeInMs: null,
+        settings: createSettings(),
+      });
+      const state2 = reducers(state1, actions.fetchSavedSettingsRequested());
+      expect(state2).toEqual(
+        createSettingsState({
+          state: DataLoadState.LOADING,
+          lastLoadedTimeInMs: null,
+          settings: createSettings(),
+        })
+      );
+    });
+  });
+
+  describe('#fetchSavedSettingsSucceeded', () => {
+    it('overwrites saved settings and signals settings are LOADED', () => {
+      // Mock call to Date.now();
+      jasmine.clock().mockDate(new Date(1111));
+
+      const state1 = createSettingsState({
+        state: DataLoadState.LOADING,
+        lastLoadedTimeInMs: null,
+        settings: createSettings({
+          reloadEnabled: false,
+          reloadPeriodInMs: 2222,
+          pageSize: 3333,
+        }),
+      });
+      const state2 = reducers(
+        state1,
+        actions.fetchSavedSettingsSucceeded({
+          savedSettings: {
+            reloadEnabled: true,
+            pageSize: 3,
+          },
+        })
+      );
+      expect(state2).toEqual(
+        createSettingsState({
+          state: DataLoadState.LOADED,
+          lastLoadedTimeInMs: 1111,
+          settings: createSettings({
+            reloadEnabled: true,
+            // Note that reloadPeriodMs is not overriden since it was not
+            // specified.
+            reloadPeriodInMs: 2222,
+            pageSize: 3,
+          }),
+        })
+      );
+    });
+  });
+
+  describe('#fetchSavedSettingsFailed', () => {
+    it('preserves existing settings and signals settings are FAILED', () => {
+      const state1 = createSettingsState({
+        state: DataLoadState.LOADING,
+        lastLoadedTimeInMs: null,
+        settings: createSettings(),
+      });
+      const state2 = reducers(state1, actions.fetchSavedSettingsFailed());
+      expect(state2).toEqual(
+        createSettingsState({
+          state: DataLoadState.FAILED,
+          lastLoadedTimeInMs: null,
+          settings: createSettings(),
+        })
+      );
+    });
+  });
+
   describe('#toggleReloadEnabled', () => {
     it('toggles reloadEnabled', () => {
       const state1 = createSettingsState({

@@ -9,10 +9,21 @@ tf_ng_module(
         "settings_module.ts",
     ],
     deps = [
+        "//tensorboard/webapp/settings/_data_source",
         "//tensorboard/webapp/settings/_redux",
+        "//tensorboard/webapp/settings/_redux:types",
         "//tensorboard/webapp/settings/_views",
         "@npm//@angular/core",
+        "@npm//@ngrx/effects",
         "@npm//@ngrx/store",
+    ],
+)
+
+tf_ts_library(
+    name = "types",
+    srcs = ["types.ts"],
+    deps = [
+        "//tensorboard/webapp/settings/_redux:types",
     ],
 )
 
@@ -30,6 +41,7 @@ tf_ts_library(
     srcs = ["testing.ts"],
     deps = [
         "//tensorboard/webapp/settings/_redux",
+        "//tensorboard/webapp/settings/_redux:types",
         "//tensorboard/webapp/types",
     ],
 )
