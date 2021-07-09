@@ -17,6 +17,7 @@ import {Store} from '@ngrx/store';
 import {Observable} from 'rxjs';
 
 import {State} from '../../../app_state';
+import {getEnabledColorGroupByRegex} from '../../../selectors';
 import {runGroupByChanged} from '../../actions';
 import {getRunGroupBy} from '../../store/runs_selectors';
 import {GroupBy} from '../../types';
@@ -29,12 +30,17 @@ import {GroupBy} from '../../types';
   template: `
     <runs-group-menu-button-component
       [selectedGroupBy]="selectedGroupBy$ | async"
+      [showGroupByRegex]="showGroupByRegex$ | async"
       (onGroupByChange)="onGroupByChange($event)"
     ></runs-group-menu-button-component>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RunsGroupMenuButtonContainer {
+  showGroupByRegex$: Observable<boolean> = this.store.select(
+    getEnabledColorGroupByRegex
+  );
+
   @Input() experimentIds!: string[];
 
   constructor(private readonly store: Store<State>) {}

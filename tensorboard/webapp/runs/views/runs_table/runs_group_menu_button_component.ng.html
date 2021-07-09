@@ -51,10 +51,10 @@ limitations under the License.
     </span>
     <label>Run</label>
   </button>
-  <!--
   <button
     mat-menu-item
     role="menuitemradio"
+    *ngIf="showGroupByRegex"
     [attr.aria-checked]="selectedGroupBy.key === GroupByKey.REGEX"
     (click)="onGroupByChange.emit({key: GroupByKey.REGEX, regexString: ''})"
   >
@@ -66,5 +66,4 @@ limitations under the License.
     </span>
     <label>Regex</label>
   </button>
-  -->
 </mat-menu>

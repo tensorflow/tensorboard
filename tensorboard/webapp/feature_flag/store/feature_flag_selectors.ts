@@ -91,6 +91,13 @@ export const getEnabledColorGroup = createSelector(getFeatureFlags, (flags) => {
   return flags.enabledColorGroup;
 });
 
+export const getEnabledColorGroupByRegex = createSelector(
+  getFeatureFlags,
+  (flags) => {
+    return flags.enabledColorGroupByRegex;
+  }
+);
+
 export const getIsMetricsImageSupportEnabled = createSelector(
   getFeatureFlags,
   (flags) => {

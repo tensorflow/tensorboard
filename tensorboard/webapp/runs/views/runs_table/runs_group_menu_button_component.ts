@@ -31,8 +31,8 @@ import {GroupBy, GroupByKey} from '../../types';
 export class RunsGroupMenuButtonComponent {
   readonly GroupByKey = GroupByKey;
 
-  @Input()
-  selectedGroupBy!: GroupBy;
+  @Input() selectedGroupBy!: GroupBy;
+  @Input() showGroupByRegex!: boolean;
 
   @Output()
   onGroupByChange = new EventEmitter<GroupBy>();

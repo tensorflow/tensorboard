@@ -24,6 +24,7 @@ export const initialState: FeatureFlagState = {
     defaultEnableDarkMode: false,
     enableDarkModeOverride: null,
     enabledColorGroup: false,
+    enabledColorGroupByRegex: false,
     enabledExperimentalPlugins: [],
     inColab: false,
     scalarsBatchSize: undefined,

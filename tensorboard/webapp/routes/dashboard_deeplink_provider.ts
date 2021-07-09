@@ -30,6 +30,7 @@ import {GroupBy, GroupByKey} from '../runs/types';
 import * as selectors from '../selectors';
 import {
   ENABLE_COLOR_GROUP_QUERY_PARAM_KEY,
+  ENABLE_COLOR_GROUP_BY_REGEX_QUERY_PARAM_KEY,
   EXPERIMENTAL_PLUGIN_QUERY_PARAM_KEY,
 } from '../webapp_data_source/tb_feature_flag_data_source_types';
 import {
@@ -96,6 +97,14 @@ export class DashboardDeepLinkProvider extends DeepLinkProvider {
           queryParams.push({
             key: ENABLE_COLOR_GROUP_QUERY_PARAM_KEY,
             value: String(overriddenFeatureFlags.enabledColorGroup),
+          });
+        }
+        if (
+          typeof overriddenFeatureFlags.enabledColorGroupByRegex === 'boolean'
+        ) {
+          queryParams.push({
+            key: ENABLE_COLOR_GROUP_BY_REGEX_QUERY_PARAM_KEY,
+            value: String(overriddenFeatureFlags.enabledColorGroupByRegex),
           });
         }
         return queryParams;
