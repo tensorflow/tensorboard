@@ -17,12 +17,16 @@ import {DataLoadState, LoadState} from '../../types/data';
 
 export const SETTINGS_FEATURE_KEY = 'settings';
 
-export interface SettingsState extends LoadState {
+export interface Settings {
   reloadPeriodInMs: number;
   reloadEnabled: boolean;
   // Size of a page in a general paginated view that is configurable by user via
   // settings.
   pageSize: number;
+}
+
+export interface SettingsState extends LoadState {
+  settings: Settings;
 }
 
 export interface State {
@@ -33,7 +37,9 @@ export const initialState: SettingsState = {
   state: DataLoadState.LOADED,
   lastLoadedTimeInMs: Date.now(),
 
-  reloadPeriodInMs: 30000,
-  reloadEnabled: false,
-  pageSize: 12,
+  settings: {
+    reloadPeriodInMs: 30000,
+    reloadEnabled: false,
+    pageSize: 12,
+  },
 };

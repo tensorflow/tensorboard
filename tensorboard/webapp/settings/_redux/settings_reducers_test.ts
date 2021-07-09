@@ -14,83 +14,89 @@ limitations under the License.
 ==============================================================================*/
 import * as actions from './settings_actions';
 import {reducers} from './settings_reducers';
-import {createSettingsState} from '../testing';
+import {createSettings, createSettingsState} from '../testing';
 import {DataLoadState} from '../../types/data';
 
 describe('settings reducer', () => {
   describe('#toggleReloadEnabled', () => {
     it('toggles reloadEnabled', () => {
-      const state1 = createSettingsState({reloadEnabled: false});
+      const state1 = createSettingsState({
+        settings: createSettings({reloadEnabled: false}),
+      });
 
       const state2 = reducers(state1, actions.toggleReloadEnabled());
 
-      expect(state2.reloadEnabled).toBe(true);
+      expect(state2.settings.reloadEnabled).toBe(true);
 
       const state3 = reducers(state2, actions.toggleReloadEnabled());
 
-      expect(state3.reloadEnabled).toBe(false);
+      expect(state3.settings.reloadEnabled).toBe(false);
     });
 
     it('does not toggle reloadEnabled if settings not loaded', () => {
       const state1 = createSettingsState({
         state: DataLoadState.NOT_LOADED,
-        reloadEnabled: false,
+        settings: createSettings({reloadEnabled: false}),
       });
       const state2 = reducers(state1, actions.toggleReloadEnabled());
-      expect(state2.reloadEnabled).toBe(false);
+      expect(state2.settings.reloadEnabled).toBe(false);
     });
 
     it('does not toggle reloadEnabled if settings loading', () => {
       const state1 = createSettingsState({
         state: DataLoadState.LOADING,
-        reloadEnabled: false,
+        settings: createSettings({reloadEnabled: false}),
       });
       const state2 = reducers(state1, actions.toggleReloadEnabled());
-      expect(state2.reloadEnabled).toBe(false);
+      expect(state2.settings.reloadEnabled).toBe(false);
     });
 
     it('toggles reloadEnabled if settings failed to load', () => {
       const state1 = createSettingsState({
         state: DataLoadState.FAILED,
-        reloadEnabled: false,
+        settings: createSettings({reloadEnabled: false}),
       });
       const state2 = reducers(state1, actions.toggleReloadEnabled());
-      expect(state2.reloadEnabled).toBe(true);
+      expect(state2.settings.reloadEnabled).toBe(true);
     });
   });
 
   describe('#changeReloadPeriod', () => {
     it('sets the reloadPeriodInMs', () => {
-      const state = createSettingsState({reloadPeriodInMs: 1});
+      const state = createSettingsState({
+        settings: createSettings({reloadPeriodInMs: 1}),
+      });
 
       const nextState = reducers(
         state,
         actions.changeReloadPeriod({periodInMs: 1000})
       );
 
-      expect(nextState.reloadPeriodInMs).toBe(1000);
+      expect(nextState.settings.reloadPeriodInMs).toBe(1000);
     });
 
     it('ignores the action when periodInMs is non-positive', () => {
-      const baseState = createSettingsState({reloadPeriodInMs: 1});
+      const baseState = createSettingsState({
+        settings: createSettings({reloadPeriodInMs: 1}),
+      });
 
       const state1 = reducers(
         baseState,
         actions.changeReloadPeriod({periodInMs: 0})
       );
-      expect(state1.reloadPeriodInMs).toBe(1);
+      expect(state1.settings.reloadPeriodInMs).toBe(1);
 
       const state2 = reducers(
         baseState,
         actions.changeReloadPeriod({periodInMs: -1000})
       );
-      expect(state2.reloadPeriodInMs).toBe(1);
+      expect(state2.settings.reloadPeriodInMs).toBe(1);
     });
 
     it('does not set the reloadPeriodInMs when settings not loaded', () => {
       const state = createSettingsState({
         state: DataLoadState.LOADING,
-        reloadPeriodInMs: 1,
+        settings: createSettings({reloadPeriodInMs: 1}),
       });
 
       const nextState = reducers(
@@ -98,28 +104,30 @@ describe('settings reducer', () => {
         actions.changeReloadPeriod({periodInMs: 1000})
       );
 
-      expect(nextState.reloadPeriodInMs).toBe(1);
+      expect(nextState.settings.reloadPeriodInMs).toBe(1);
     });
   });
 
   describe('#changePageSize', () => {
     it('sets pageSize', () => {
-      const state = createSettingsState({pageSize: 1});
+      const state = createSettingsState({
+        settings: createSettings({pageSize: 1}),
+      });
 
       const nextState = reducers(state, actions.changePageSize({size: 400}));
 
-      expect(nextState.pageSize).toBe(400);
+      expect(nextState.settings.pageSize).toBe(400);
     });
 
     it('does not set the reloadPeriodInMs when settings not loaded', () => {
       const state = createSettingsState({
         state: DataLoadState.LOADING,
-        pageSize: 1,
+        settings: createSettings({pageSize: 1}),
       });
 
       const nextState = reducers(state, actions.changePageSize({size: 400}));
 
-      expect(nextState.pageSize).toBe(1);
+      expect(nextState.settings.pageSize).toBe(1);
     });
   });
 });

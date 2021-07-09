@@ -14,10 +14,20 @@ limitations under the License.
 ==============================================================================*/
 import {DataLoadState} from '../types/data';
 import {
+  Settings,
   SettingsState,
   State,
   SETTINGS_FEATURE_KEY,
 } from './_redux/settings_types';
+
+export function createSettings(override?: Partial<Settings>) {
+  return {
+    reloadPeriodInMs: 30000,
+    reloadEnabled: true,
+    pageSize: 10,
+    ...override,
+  };
+}
 
 export function createSettingsState(
   override?: Partial<SettingsState>
@@ -25,9 +35,7 @@ export function createSettingsState(
   return {
     state: DataLoadState.LOADED,
     lastLoadedTimeInMs: 0,
-    reloadPeriodInMs: 30000,
-    reloadEnabled: true,
-    pageSize: 10,
+    settings: createSettings(),
     ...override,
   };
 }
