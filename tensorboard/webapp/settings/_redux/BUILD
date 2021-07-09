@@ -44,8 +44,8 @@ tf_ts_library(
     ],
     visibility = ["//tensorboard:internal"],
     deps = [
-      ":types",
         ":_redux",
+        ":types",
         "//tensorboard/webapp/settings:testing",
         "//tensorboard/webapp/settings/_data_source",
         "//tensorboard/webapp/types",

@@ -19,9 +19,20 @@ import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {of, Subject, throwError} from 'rxjs';
 import {SettingsDataSource} from '../_data_source/settings_data_source';
 import {SettingsDataSourceModule} from '../_data_source/settings_data_source_module';
-import {changePageSize, changeReloadPeriod, fetchSavedSettingsFailed, fetchSavedSettingsRequested, fetchSavedSettingsSucceeded, toggleReloadEnabled} from './settings_actions';
+import {
+  changePageSize,
+  changeReloadPeriod,
+  fetchSavedSettingsFailed,
+  fetchSavedSettingsRequested,
+  fetchSavedSettingsSucceeded,
+  toggleReloadEnabled,
+} from './settings_actions';
 import {SettingsEffects, TEST_ONLY} from './settings_effects';
-import {getPageSize, getReloadEnabled, getReloadPeriodInMs} from './settings_selectors';
+import {
+  getPageSize,
+  getReloadEnabled,
+  getReloadPeriodInMs,
+} from './settings_selectors';
 import {Settings} from './settings_types';
 
 describe('SettingsEffects', () => {
@@ -66,9 +77,7 @@ describe('SettingsEffects', () => {
     actions.next(TEST_ONLY.initAction());
     // While waiting for the fetchSavedSettings function to return, a single
     // action has been emitted.
-    expect(dispatchedActions).toEqual([
-      fetchSavedSettingsRequested(),
-    ]);
+    expect(dispatchedActions).toEqual([fetchSavedSettingsRequested()]);
     // Simulate fetchSavedSettings returning.
     subject.next({reloadEnabled: true});
     // An additional action has been emitted.
@@ -80,9 +89,7 @@ describe('SettingsEffects', () => {
 
   it('dispatches failure when fetch fails', () => {
     const fetchSavedSettings = spyOn(dataSource, 'fetchSavedSettings');
-    fetchSavedSettings.and.returnValue(
-      throwError(new Error('Request failed'))
-    );
+    fetchSavedSettings.and.returnValue(throwError(new Error('Request failed')));
 
     actions.next(TEST_ONLY.initAction());
     expect(dispatchedActions).toEqual([

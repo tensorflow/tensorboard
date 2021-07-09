@@ -42,13 +42,24 @@ export const changePageSize = createAction(
   props<{size: number}>()
 );
 
+/**
+ * Action dispatched by app when it requests saved settings.
+ */
 export const fetchSavedSettingsRequested = createAction(
   '[Settings] Fetch Saved Settings Requested'
 );
+
+/**
+ * Action dispatched by app when request for saved settings succeeds.
+ */
 export const fetchSavedSettingsSucceeded = createAction(
   '[Settings] Fetch Saved Settings Succeeded',
   props<{savedSettings: Partial<Settings>}>()
 );
+
+/**
+ * Action dispatched by app when request for saved settings fails.
+ */
 export const fetchSavedSettingsFailed = createAction(
   '[Settings] Fetch Saved Settings Failed'
 );
