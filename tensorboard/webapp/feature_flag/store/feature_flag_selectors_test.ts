@@ -216,6 +216,31 @@ describe('feature_flag_selectors', () => {
     });
   });
 
+  describe('#getEnabledColorGroupByRegex', () => {
+    it('returns the proper value', () => {
+      let state = buildState(
+        buildFeatureFlagState({
+          defaultFlags: buildFeatureFlag({
+            enabledColorGroupByRegex: false,
+          }),
+        })
+      );
+      expect(selectors.getEnabledColorGroupByRegex(state)).toEqual(false);
+
+      state = buildState(
+        buildFeatureFlagState({
+          defaultFlags: buildFeatureFlag({
+            enabledColorGroupByRegex: false,
+          }),
+          flagOverrides: {
+            enabledColorGroupByRegex: true,
+          },
+        })
+      );
+      expect(selectors.getEnabledColorGroupByRegex(state)).toEqual(true);
+    });
+  });
+
   describe('#getIsMetricsImageSupportEnabled', () => {
     it('returns the proper value', () => {
       let state = buildState(

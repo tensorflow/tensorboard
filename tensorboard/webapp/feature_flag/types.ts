@@ -27,6 +27,8 @@ export interface FeatureFlags {
   isAutoDarkModeAllowed: boolean;
   // Whether to enable experimental semantic color grouping feature.
   enabledColorGroup: boolean;
+  // Whether to enable color grouping by regex.
+  enabledColorGroupByRegex: boolean;
   // experimental plugins to manually enable.
   enabledExperimentalPlugins: string[];
   // Whether the TensorBoard is being run inside Colab output cell.
