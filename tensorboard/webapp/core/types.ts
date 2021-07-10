@@ -12,6 +12,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {InjectionToken} from '@angular/core';
+
 export type RunId = string;
 
 export interface Run {
@@ -23,3 +25,7 @@ export enum PluginsListFailureCode {
   UNKNOWN = 'UNKNOWN',
   NOT_FOUND = 'NOT_FOUND',
 }
+
+export const TB_SERVICE_NAME = new InjectionToken<string>(
+  'TensorBoard service name'
+);
