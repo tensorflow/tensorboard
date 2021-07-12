@@ -26,10 +26,10 @@ import {
   getExperimentIdsFromRoute,
   getExperiment,
 } from '../../selectors';
-import {TB_SERVICE_NAME} from '../types';
+import {TB_BRAND_NAME} from '../types';
 
 import {PageTitleModule} from './page_title_module';
-import {PageTitleComponent} from './page_title_component';
+import {PageTitleComponent, TEST_ONLY} from './page_title_component';
 import {PageTitleContainer} from './page_title_container';
 
 describe('page title test', () => {
@@ -43,8 +43,8 @@ describe('page title test', () => {
     }).compileComponents();
 
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
-    store.overrideSelector(getRouteKind, RouteKind.EXPERIMENT);
-    store.overrideSelector(getExperimentIdsFromRoute, ['123']);
+    store.overrideSelector(getRouteKind, RouteKind.EXPERIMENTS);
+    store.overrideSelector(getExperimentIdsFromRoute, []);
     store.overrideSelector(getExperiment, null);
     store.overrideSelector(getEnvironment, {
       data_location: 'my-location',
@@ -53,6 +53,9 @@ describe('page title test', () => {
   });
 
   it('uses window_title as page title if given', () => {
+    const spy = spyOn(TEST_ONLY.utils, 'setDocumentTitle');
+    store.overrideSelector(getRouteKind, RouteKind.EXPERIMENT);
+    store.overrideSelector(getExperimentIdsFromRoute, ['123']);
     store.overrideSelector(
       getExperiment,
       buildExperiment({
@@ -66,10 +69,13 @@ describe('page title test', () => {
     const fixture = TestBed.createComponent(PageTitleContainer);
     fixture.detectChanges();
 
-    expect(document.title).toBe('I am the real title');
+    expect(spy).toHaveBeenCalledWith('I am the real title');
   });
 
-  it('uses experiment name as tab title for experiment routes', () => {
+  it('includes experiment name in tab title for experiment routes', () => {
+    const spy = spyOn(TEST_ONLY.utils, 'setDocumentTitle');
+    store.overrideSelector(getRouteKind, RouteKind.EXPERIMENT);
+    store.overrideSelector(getExperimentIdsFromRoute, ['123']);
     store.overrideSelector(
       getExperiment,
       buildExperiment({
@@ -79,14 +85,17 @@ describe('page title test', () => {
     const fixture = TestBed.createComponent(PageTitleContainer);
     fixture.detectChanges();
 
-    expect(document.title).toBe('All you need is TensorBoard');
+    expect(spy).toHaveBeenCalledWith(
+      'All you need is TensorBoard - TensorBoard'
+    );
   });
 
   it('uses `Tensorboard` as default tab title', () => {
+    const spy = spyOn(TEST_ONLY.utils, 'setDocumentTitle');
     const fixture = TestBed.createComponent(PageTitleContainer);
     fixture.detectChanges();
 
-    expect(document.title).toBe('TensorBoard');
+    expect(spy).toHaveBeenCalledWith('TensorBoard');
   });
 });
 
@@ -96,7 +105,7 @@ describe('page title test', () => {
 })
 class TestingComponent {}
 
-describe('page title test for custom services', () => {
+describe('page title test with custom brand names', () => {
   let store: MockStore<State>;
 
   beforeEach(async () => {
@@ -106,16 +115,16 @@ describe('page title test for custom services', () => {
       providers: [
         provideMockStore(),
         {
-          provide: TB_SERVICE_NAME,
-          useValue: 'corp',
+          provide: TB_BRAND_NAME,
+          useValue: 'TensorBoard.corp',
         },
       ],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
 
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
-    store.overrideSelector(getRouteKind, RouteKind.EXPERIMENT);
-    store.overrideSelector(getExperimentIdsFromRoute, ['123']);
+    store.overrideSelector(getRouteKind, RouteKind.EXPERIMENTS);
+    store.overrideSelector(getExperimentIdsFromRoute, []);
     store.overrideSelector(getExperiment, null);
     store.overrideSelector(getEnvironment, {
       data_location: 'my-location',
@@ -123,10 +132,27 @@ describe('page title test for custom services', () => {
     });
   });
 
-  it('specifies TensorBoard service name in tab title if given', () => {
+  it('uses TensorBoard brand name as tab title as default', () => {
+    const spy = spyOn(TEST_ONLY.utils, 'setDocumentTitle');
     const fixture = TestBed.createComponent(TestingComponent);
     fixture.detectChanges();
 
-    expect(document.title).toBe('TensorBoard.corp');
+    expect(spy).toHaveBeenCalledWith('TensorBoard.corp');
+  });
+
+  it('specifies TensorBoard brand name in tab title after experiment name', () => {
+    const spy = spyOn(TEST_ONLY.utils, 'setDocumentTitle');
+    store.overrideSelector(getRouteKind, RouteKind.EXPERIMENT);
+    store.overrideSelector(getExperimentIdsFromRoute, ['123']);
+    store.overrideSelector(
+      getExperiment,
+      buildExperiment({
+        name: 'Testing Brand Name',
+      })
+    );
+    const fixture = TestBed.createComponent(TestingComponent);
+    fixture.detectChanges();
+
+    expect(spy).toHaveBeenCalledWith('Testing Brand Name - TensorBoard.corp');
   });
 });
