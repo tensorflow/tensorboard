@@ -469,9 +469,7 @@ describe('runs_selectors', () => {
     });
 
     it('returns default empty string if user never has set one', () => {
-      const state = buildStateFromRunsState(
-        buildRunsState({})
-      );
+      const state = buildStateFromRunsState(buildRunsState({}));
 
       expect(selectors.getColorGroupRegexString(state)).toEqual('');
     });

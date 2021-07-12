@@ -89,7 +89,6 @@ import {DomainType} from '../../data_source/runs_data_source_types';
 import {MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT, Run} from '../../store/runs_types';
 import {buildRun} from '../../store/testing';
 import {GroupByKey, SortType} from '../../types';
-import {RegexEditDialogContainer} from './regex_edit_dialog_container';
 import {RunsGroupMenuButtonComponent} from './runs_group_menu_button_component';
 import {RunsGroupMenuButtonContainer} from './runs_group_menu_button_container';
 import {RunsTableComponent} from './runs_table_component';
@@ -677,9 +676,12 @@ describe('runs_table', () => {
         );
 
         regexEdit.click();
-        const dialogContainer = overlayContainer.getContainerElement().querySelector('mat-dialog-container');
+        const dialogContainer = overlayContainer
+          .getContainerElement()
+          .querySelector('mat-dialog-container');
         expect(dialogContainer).toBeTruthy();
-        expect(dialogContainer!.textContent).toContain('Save')
+        expect(dialogContainer!.textContent).toContain('Save');
+        expect(dialogContainer!.textContent).toContain('Cancel');
       });
 
       it(

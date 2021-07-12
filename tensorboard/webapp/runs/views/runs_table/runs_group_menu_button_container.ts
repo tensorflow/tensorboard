@@ -19,7 +19,10 @@ import {Observable} from 'rxjs';
 import {State} from '../../../app_state';
 import {getEnabledColorGroupByRegex} from '../../../selectors';
 import {runGroupByChanged} from '../../actions';
-import {getColorGroupRegexString, getRunGroupBy} from '../../store/runs_selectors';
+import {
+  getColorGroupRegexString,
+  getRunGroupBy,
+} from '../../store/runs_selectors';
 import {GroupBy} from '../../types';
 
 /**
@@ -50,8 +53,9 @@ export class RunsGroupMenuButtonContainer {
     getRunGroupBy
   );
 
-  readonly groupByRegexString$: Observable<string> =
-    this.store.select(getColorGroupRegexString);
+  readonly groupByRegexString$: Observable<string> = this.store.select(
+    getColorGroupRegexString
+  );
 
   onGroupByChange(groupBy: GroupBy) {
     this.store.dispatch(
