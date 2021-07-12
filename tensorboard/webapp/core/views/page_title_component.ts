@@ -20,6 +20,14 @@ import {
   SimpleChanges,
 } from '@angular/core';
 
+function setDocumentTitle(title: string) {
+  document.title = title;
+}
+
+const utils = {
+  setDocumentTitle,
+};
+
 @Component({
   selector: 'page-title-component',
   template: '',
@@ -31,7 +39,11 @@ export class PageTitleComponent implements OnChanges {
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['title']) {
-      document.title = changes['title'].currentValue;
+      utils.setDocumentTitle(changes['title'].currentValue);
     }
   }
 }
+
+export const TEST_ONLY = {
+  utils,
+};

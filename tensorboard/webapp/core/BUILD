@@ -24,6 +24,9 @@ tf_ts_library(
     srcs = [
         "types.ts",
     ],
+    deps = [
+        "@npm//@angular/core",
+    ],
 )
 
 tf_ts_library(
