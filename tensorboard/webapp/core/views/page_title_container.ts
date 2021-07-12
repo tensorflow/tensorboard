@@ -25,6 +25,7 @@ import {
   map,
   filter,
   mergeMap,
+  startWith,
   withLatestFrom,
 } from 'rxjs/operators';
 import {
@@ -36,7 +37,7 @@ import {RouteKind} from '../../app_routing/types';
 
 import {getEnvironment} from '../store';
 import {State} from '../state';
-import {TB_SERVICE_NAME} from '../types';
+import {TB_BRAND_NAME} from '../types';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
@@ -66,36 +67,35 @@ export class PageTitleContainer {
     )
   );
 
-  private readonly experiment$ = this.getExperimentId$.pipe(
+  private readonly experimentName$ = this.getExperimentId$.pipe(
     filter(Boolean),
     mergeMap((experimentId) => {
       return this.store.select(getExperiment, {experimentId});
-    })
-  );
-
-  private readonly experimentName$ = this.experiment$.pipe(
+    }),
     map((experiment) => (experiment ? experiment.name : null))
   );
 
   readonly title$ = this.store.select(getEnvironment).pipe(
     combineLatestWith(this.experimentName$),
     map(([env, experimentName]) => {
-      if (env.window_title && env.window_title.length > 0) {
+      const tbBrandName = this.customBrandName
+        ? this.customBrandName
+        : 'TensorBoard';
+      if (env.window_title) {
         // (it's an empty string when the `--window_title` flag is not set)
         return env.window_title;
-      } else if (experimentName && experimentName.length > 0) {
-        return experimentName;
+      } else if (experimentName) {
+        return `${experimentName} - ${tbBrandName}`;
       } else {
-        return this.tbServiceName
-          ? `TensorBoard.${this.tbServiceName}`
-          : 'TensorBoard';
+        return tbBrandName;
       }
     }),
+    startWith(this.customBrandName ? this.customBrandName : 'TensorBoard'),
     distinctUntilChanged()
   );
 
   constructor(
     private readonly store: Store<State>,
-    @Optional() @Inject(TB_SERVICE_NAME) readonly tbServiceName: string
+    @Optional() @Inject(TB_BRAND_NAME) readonly customBrandName: string
   ) {}
 }
