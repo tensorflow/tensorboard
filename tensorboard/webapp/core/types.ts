@@ -26,6 +26,6 @@ export enum PluginsListFailureCode {
   NOT_FOUND = 'NOT_FOUND',
 }
 
-export const TB_SERVICE_NAME = new InjectionToken<string>(
-  'TensorBoard service name'
+export const TB_BRAND_NAME = new InjectionToken<string>(
+  'TensorBoard brand name'
 );
