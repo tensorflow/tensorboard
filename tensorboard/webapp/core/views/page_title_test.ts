@@ -72,7 +72,7 @@ describe('page title test', () => {
     expect(spy).toHaveBeenCalledWith('I am the real title');
   });
 
-  it('includes experiment name in tab title for experiment routes', () => {
+  it('includes experiment name in page title for experiment routes', () => {
     const spy = spyOn(TEST_ONLY.utils, 'setDocumentTitle');
     store.overrideSelector(getRouteKind, RouteKind.EXPERIMENT);
     store.overrideSelector(getExperimentIdsFromRoute, ['123']);
@@ -90,8 +90,17 @@ describe('page title test', () => {
     );
   });
 
-  it('uses `Tensorboard` as default tab title', () => {
+  it('uses `Tensorboard` as default page title', () => {
     const spy = spyOn(TEST_ONLY.utils, 'setDocumentTitle');
+    const fixture = TestBed.createComponent(PageTitleContainer);
+    fixture.detectChanges();
+
+    expect(spy).toHaveBeenCalledWith('TensorBoard');
+  });
+
+  it('uses default page title for comparison routes', () => {
+    const spy = spyOn(TEST_ONLY.utils, 'setDocumentTitle');
+    store.overrideSelector(getRouteKind, RouteKind.COMPARE_EXPERIMENT);
     const fixture = TestBed.createComponent(PageTitleContainer);
     fixture.detectChanges();
 
@@ -132,7 +141,7 @@ describe('page title test with custom brand names', () => {
     });
   });
 
-  it('uses TensorBoard brand name as tab title as default', () => {
+  it('uses TensorBoard brand name as page title as default', () => {
     const spy = spyOn(TEST_ONLY.utils, 'setDocumentTitle');
     const fixture = TestBed.createComponent(TestingComponent);
     fixture.detectChanges();
@@ -140,7 +149,7 @@ describe('page title test with custom brand names', () => {
     expect(spy).toHaveBeenCalledWith('TensorBoard.corp');
   });
 
-  it('specifies TensorBoard brand name in tab title after experiment name', () => {
+  it('specifies TensorBoard brand name in page title after experiment name', () => {
     const spy = spyOn(TEST_ONLY.utils, 'setDocumentTitle');
     store.overrideSelector(getRouteKind, RouteKind.EXPERIMENT);
     store.overrideSelector(getExperimentIdsFromRoute, ['123']);
