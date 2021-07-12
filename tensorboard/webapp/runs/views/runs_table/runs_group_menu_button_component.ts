@@ -47,7 +47,7 @@ export class RunsGroupMenuButtonComponent {
     // data pass in the experiment id
     const dialogRef = this.dialog.open(RegexEditDialogContainer, {
       width: '1050px',
-      data: {experimentIds: [this.experimentIds]},
+      data: {experimentIds: this.experimentIds},
     });
   }
 }
