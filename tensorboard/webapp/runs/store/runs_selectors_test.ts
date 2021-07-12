@@ -449,4 +449,43 @@ describe('runs_selectors', () => {
       });
     });
   });
+
+  describe('#getColorGroupRegexString', () => {
+    beforeEach(() => {
+      // Clear the memoization.
+      selectors.getColorGroupRegexString.release();
+    });
+
+    it('returns regex string when it is group by regex', () => {
+      const state = buildStateFromRunsState(
+        buildRunsState({
+          colorGroupRegexString: 'foo(\\d+)',
+          initialGroupBy: {key: GroupByKey.RUN},
+          userSetGroupByKey: GroupByKey.REGEX,
+        })
+      );
+
+      expect(selectors.getColorGroupRegexString(state)).toEqual('foo(\\d+)');
+    });
+
+    it('returns default empty string if user never has set one', () => {
+      const state = buildStateFromRunsState(
+        buildRunsState({})
+      );
+
+      expect(selectors.getColorGroupRegexString(state)).toEqual('');
+    });
+
+    it('returns regex string even if it is not user set groupby', () => {
+      const state = buildStateFromRunsState(
+        buildRunsState({
+          initialGroupBy: {key: GroupByKey.RUN},
+          userSetGroupByKey: GroupByKey.RUN,
+          colorGroupRegexString: 'foo(\\d+)',
+        })
+      );
+
+      expect(selectors.getColorGroupRegexString(state)).toEqual('foo(\\d+)');
+    });
+  });
 });
