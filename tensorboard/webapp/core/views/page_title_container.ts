@@ -41,6 +41,8 @@ import {TB_BRAND_NAME} from '../types';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
+const DEFAULT_BRAND_NAME = 'TensorBoard';
+
 /**
  * Renders page title.
  */
@@ -78,9 +80,7 @@ export class PageTitleContainer {
   readonly title$ = this.store.select(getEnvironment).pipe(
     combineLatestWith(this.experimentName$),
     map(([env, experimentName]) => {
-      const tbBrandName = this.customBrandName
-        ? this.customBrandName
-        : 'TensorBoard';
+      const tbBrandName = this.customBrandName || DEFAULT_BRAND_NAME;
       if (env.window_title) {
         // (it's an empty string when the `--window_title` flag is not set)
         return env.window_title;
@@ -90,12 +90,12 @@ export class PageTitleContainer {
         return tbBrandName;
       }
     }),
-    startWith(this.customBrandName ? this.customBrandName : 'TensorBoard'),
+    startWith(this.customBrandName || DEFAULT_BRAND_NAME),
     distinctUntilChanged()
   );
 
   constructor(
     private readonly store: Store<State>,
-    @Optional() @Inject(TB_BRAND_NAME) readonly customBrandName: string
+    @Optional() @Inject(TB_BRAND_NAME) private readonly customBrandName: string
   ) {}
 }
