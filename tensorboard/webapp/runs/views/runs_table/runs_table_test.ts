@@ -95,6 +95,9 @@ import {RunsGroupMenuButtonContainer} from './runs_group_menu_button_container';
 import {RunsTableComponent} from './runs_table_component';
 import {RunsTableContainer, TEST_ONLY} from './runs_table_container';
 import {HparamSpec, MetricSpec, RunsTableColumn} from './types';
+enum REGEXEDIT {
+  REGEXEDIT = 4,
+}
 
 @Injectable()
 class ColorPickerTestHelper {
@@ -181,6 +184,23 @@ describe('runs_table', () => {
     return Array.from(
       overlayContainer.getContainerElement().querySelectorAll('[mat-menu-item]')
     );
+  }
+
+  function getColorGroupByHTMLElement(KEY: GroupByKey | REGEXEDIT) {
+    const items = getOverlayMenuItems();
+    const [experiment, run, regex, regexEdit] = items as HTMLElement[];
+    switch (KEY) {
+      case GroupByKey.RUN:
+        return run;
+      case GroupByKey.EXPERIMENT:
+        return experiment;
+      case GroupByKey.REGEX:
+        return regex;
+      case REGEXEDIT.REGEXEDIT:
+        return regexEdit;
+      default:
+        return null;
+    }
   }
 
   beforeEach(async () => {
@@ -650,11 +670,7 @@ describe('runs_table', () => {
           .query(By.css('button'));
         menuButton.nativeElement.click();
 
-        const items = getOverlayMenuItems();
-
-        const [experiments, runs, regex, regexEdit] = items as HTMLElement[];
-        experiments.click();
-
+        getColorGroupByHTMLElement(GroupByKey.EXPERIMENT)!.click();
         expect(dispatchSpy).toHaveBeenCalledWith(
           runGroupByChanged({
             experimentIds: ['book'],
@@ -662,7 +678,7 @@ describe('runs_table', () => {
           })
         );
 
-        runs.click();
+        getColorGroupByHTMLElement(GroupByKey.RUN)!.click();
         expect(dispatchSpy).toHaveBeenCalledWith(
           runGroupByChanged({
             experimentIds: ['book'],
@@ -670,7 +686,7 @@ describe('runs_table', () => {
           })
         );
 
-        regex.click();
+        getColorGroupByHTMLElement(GroupByKey.REGEX)!.click();
         expect(dispatchSpy).toHaveBeenCalledWith(
           runGroupByChanged({
             experimentIds: ['book'],
@@ -680,7 +696,7 @@ describe('runs_table', () => {
           })
         );
 
-        regexEdit.click();
+        getColorGroupByHTMLElement(REGEXEDIT.REGEXEDIT)!.click();
         const dialogContainer = overlayContainer
           .getContainerElement()
           .querySelector('mat-dialog-container');
@@ -706,10 +722,7 @@ describe('runs_table', () => {
           .query(By.css('button'));
         menuButton.nativeElement.click();
 
-        const items = getOverlayMenuItems();
-        const [experiments, runs, regex, regexEdit] = items as HTMLElement[];
-
-        regexEdit.click();
+        getColorGroupByHTMLElement(REGEXEDIT.REGEXEDIT)!.click();
         const dialogContainer = overlayContainer
           .getContainerElement()
           .querySelector('mat-dialog-container');
@@ -726,7 +739,9 @@ describe('runs_table', () => {
         );
 
         const dialogInputDebugElement: DebugElement = new DebugElement(
-          overlayContainer.getContainerElement().querySelector('mat-dialog-container input')
+          overlayContainer
+            .getContainerElement()
+            .querySelector('mat-dialog-container input')
         );
         sendKeys(fixture, dialogInputDebugElement, 'foo(\\d+)');
 
@@ -753,10 +768,7 @@ describe('runs_table', () => {
           .query(By.css('button'));
         menuButton.nativeElement.click();
 
-        const items = getOverlayMenuItems();
-        const [experiments, runs, regex, regexEdit] = items as HTMLElement[];
-
-        regexEdit.click();
+        getColorGroupByHTMLElement(REGEXEDIT.REGEXEDIT)!.click();
         const dialogContainer = overlayContainer
           .getContainerElement()
           .querySelector('mat-dialog-container');
@@ -765,7 +777,9 @@ describe('runs_table', () => {
         );
 
         const dialogInputDebugElement: DebugElement = new DebugElement(
-          overlayContainer.getContainerElement().querySelector('mat-dialog-container input')
+          overlayContainer
+            .getContainerElement()
+            .querySelector('mat-dialog-container input')
         );
         sendKeys(fixture, dialogInputDebugElement, 'foo(\\d+)');
 
