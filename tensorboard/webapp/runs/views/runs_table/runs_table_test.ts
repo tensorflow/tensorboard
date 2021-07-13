@@ -95,9 +95,6 @@ import {RunsGroupMenuButtonContainer} from './runs_group_menu_button_container';
 import {RunsTableComponent} from './runs_table_component';
 import {RunsTableContainer, TEST_ONLY} from './runs_table_container';
 import {HparamSpec, MetricSpec, RunsTableColumn} from './types';
-enum REGEXEDIT {
-  REGEXEDIT = 4,
-}
 
 @Injectable()
 class ColorPickerTestHelper {
@@ -186,17 +183,17 @@ describe('runs_table', () => {
     );
   }
 
-  function getColorGroupByHTMLElement(KEY: GroupByKey | REGEXEDIT) {
+  function getColorGroupByHTMLElement(key: GroupByKey | 'regexEdit'): HTMLElement | null {
     const items = getOverlayMenuItems();
     const [experiment, run, regex, regexEdit] = items as HTMLElement[];
-    switch (KEY) {
+    switch (key) {
       case GroupByKey.RUN:
         return run;
       case GroupByKey.EXPERIMENT:
         return experiment;
       case GroupByKey.REGEX:
         return regex;
-      case REGEXEDIT.REGEXEDIT:
+      case 'regexEdit':
         return regexEdit;
       default:
         return null;
@@ -696,7 +693,7 @@ describe('runs_table', () => {
           })
         );
 
-        getColorGroupByHTMLElement(REGEXEDIT.REGEXEDIT)!.click();
+        getColorGroupByHTMLElement('regexEdit')!.click();
         const dialogContainer = overlayContainer
           .getContainerElement()
           .querySelector('mat-dialog-container');
@@ -722,7 +719,7 @@ describe('runs_table', () => {
           .query(By.css('button'));
         menuButton.nativeElement.click();
 
-        getColorGroupByHTMLElement(REGEXEDIT.REGEXEDIT)!.click();
+        getColorGroupByHTMLElement('regexEdit')!.click();
         const dialogContainer = overlayContainer
           .getContainerElement()
           .querySelector('mat-dialog-container');
@@ -768,7 +765,7 @@ describe('runs_table', () => {
           .query(By.css('button'));
         menuButton.nativeElement.click();
 
-        getColorGroupByHTMLElement(REGEXEDIT.REGEXEDIT)!.click();
+        getColorGroupByHTMLElement('regexEdit')!.click();
         const dialogContainer = overlayContainer
           .getContainerElement()
           .querySelector('mat-dialog-container');
