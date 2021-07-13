@@ -14,6 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import {OverlayContainer} from '@angular/cdk/overlay';
 import {
+  DebugElement,
   Directive,
   EventEmitter,
   Injectable,
@@ -724,11 +725,11 @@ describe('runs_table', () => {
           })
         );
 
-        (overlayContainer
-          .getContainerElement()
-          .querySelector(
-            'mat-dialog-container input'
-          ) as HTMLInputElement).value = 'foo(\\d+)';
+        const dialogInputDebugElement: DebugElement = new DebugElement(
+          overlayContainer.getContainerElement().querySelector('mat-dialog-container input')
+        );
+        sendKeys(fixture, dialogInputDebugElement, 'foo(\\d+)');
+
         saveButton.click();
         expect(dispatchSpy).toHaveBeenCalledWith(
           runGroupByChanged({
@@ -763,13 +764,12 @@ describe('runs_table', () => {
           'button'
         );
 
-        (overlayContainer
-          .getContainerElement()
-          .querySelector(
-            'mat-dialog-container input'
-          ) as HTMLInputElement).value = 'foo(\\d+)';
-        cancelButton.click();
+        const dialogInputDebugElement: DebugElement = new DebugElement(
+          overlayContainer.getContainerElement().querySelector('mat-dialog-container input')
+        );
+        sendKeys(fixture, dialogInputDebugElement, 'foo(\\d+)');
 
+        cancelButton.click();
         expect(dispatchSpy).not.toHaveBeenCalledWith(
           runGroupByChanged({
             experimentIds: ['book'],
