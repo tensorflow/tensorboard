@@ -72,6 +72,9 @@ export class PageTitleContainer {
   private readonly experimentName$ = this.getExperimentId$.pipe(
     filter(Boolean),
     mergeMap((experimentId) => {
+      // Selectors with props are deprecated (getExperiment):
+      // https://github.com/ngrx/platform/issues/2980
+      // tslint:disable-next-line:deprecation
       return this.store.select(getExperiment, {experimentId});
     }),
     map((experiment) => (experiment ? experiment.name : null))
@@ -96,6 +99,8 @@ export class PageTitleContainer {
 
   constructor(
     private readonly store: Store<State>,
-    @Optional() @Inject(TB_BRAND_NAME) private readonly customBrandName: string
+    @Optional()
+    @Inject(TB_BRAND_NAME)
+    private readonly customBrandName: string | null
   ) {}
 }
