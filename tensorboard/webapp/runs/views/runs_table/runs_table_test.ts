@@ -605,14 +605,14 @@ describe('runs_table', () => {
             .query(By.css('button'));
           menuButton.nativeElement.click();
 
-          const items = getOverlayMenuItems();
+          const items = Array.from(overlayContainer.getContainerElement().querySelectorAll('[role="menuitemradio"]'));
 
           expect(
             items.map((element) => element.getAttribute('aria-checked'))
-          ).toEqual(['true', 'false', 'false', null]);
+          ).toEqual(['true', 'false', 'false']);
           expect(
             items.map((element) => Boolean(element.querySelector('mat-icon')))
-          ).toEqual([true, false, false, true]);
+          ).toEqual([true, false, false]);
 
           store.overrideSelector(getRunGroupBy, {
             key: GroupByKey.REGEX,
@@ -623,10 +623,10 @@ describe('runs_table', () => {
 
           expect(
             items.map((element) => element.getAttribute('aria-checked'))
-          ).toEqual(['false', 'false', 'true', null]);
+          ).toEqual(['false', 'false', 'true']);
           expect(
             items.map((element) => Boolean(element.querySelector('mat-icon')))
-          ).toEqual([false, false, true, true]);
+          ).toEqual([false, false, true]);
         }
       );
 
