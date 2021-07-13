@@ -101,6 +101,6 @@ export class PageTitleContainer {
     private readonly store: Store<State>,
     @Optional()
     @Inject(TB_BRAND_NAME)
-    private readonly customBrandName: string | undefined
+    private readonly customBrandName: string | null
   ) {}
 }
