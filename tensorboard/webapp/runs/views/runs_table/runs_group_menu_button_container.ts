@@ -35,6 +35,7 @@ import {GroupBy} from '../../types';
       [regexString]="groupByRegexString$ | async"
       [selectedGroupBy]="selectedGroupBy$ | async"
       [showGroupByRegex]="showGroupByRegex$ | async"
+      [experimentIds]="experimentIds"
       (onGroupByChange)="onGroupByChange($event)"
     ></runs-group-menu-button-component>
   `,

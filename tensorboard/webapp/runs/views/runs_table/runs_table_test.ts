@@ -691,6 +691,93 @@ describe('runs_table', () => {
         expect(saveButton!.textContent).toContain('Save');
       });
 
+      it('dispatches `runGroupByChanged` when regex editing is saved', () => {
+        store.overrideSelector(getEnabledColorGroup, true);
+        store.overrideSelector(getEnabledColorGroupByRegex, true);
+        store.overrideSelector(getRunGroupBy, {key: GroupByKey.EXPERIMENT});
+        const fixture = createComponent(
+          ['book'],
+          [RunsTableColumn.RUN_NAME, RunsTableColumn.RUN_COLOR]
+        );
+
+        const menuButton = fixture.debugElement
+          .query(By.directive(RunsGroupMenuButtonContainer))
+          .query(By.css('button'));
+        menuButton.nativeElement.click();
+
+        const items = getOverlayMenuItems();
+        const [experiments, runs, regex, regexEdit] = items as HTMLElement[];
+
+        regexEdit.click();
+        const dialogContainer = overlayContainer
+          .getContainerElement()
+          .querySelector('mat-dialog-container');
+        const [cancelButton, saveButton] = dialogContainer!.querySelectorAll(
+          'button'
+        );
+
+        saveButton.click();
+        expect(dispatchSpy).toHaveBeenCalledWith(
+          runGroupByChanged({
+            experimentIds: ['book'],
+            groupBy: {key: GroupByKey.REGEX, regexString: ''},
+          })
+        );
+
+        (overlayContainer
+          .getContainerElement()
+          .querySelector(
+            'mat-dialog-container input'
+          ) as HTMLInputElement).value = 'foo(\\d+)';
+        saveButton.click();
+        expect(dispatchSpy).toHaveBeenCalledWith(
+          runGroupByChanged({
+            experimentIds: ['book'],
+            groupBy: {key: GroupByKey.REGEX, regexString: 'foo(\\d+)'},
+          })
+        );
+      });
+
+      it('does not dispatch `runGroupByChanged` with GroupByKey.REGEX when regex editing is cancelled', () => {
+        store.overrideSelector(getEnabledColorGroup, true);
+        store.overrideSelector(getEnabledColorGroupByRegex, true);
+        store.overrideSelector(getRunGroupBy, {key: GroupByKey.EXPERIMENT});
+        const fixture = createComponent(
+          ['book'],
+          [RunsTableColumn.RUN_NAME, RunsTableColumn.RUN_COLOR]
+        );
+
+        const menuButton = fixture.debugElement
+          .query(By.directive(RunsGroupMenuButtonContainer))
+          .query(By.css('button'));
+        menuButton.nativeElement.click();
+
+        const items = getOverlayMenuItems();
+        const [experiments, runs, regex, regexEdit] = items as HTMLElement[];
+
+        regexEdit.click();
+        const dialogContainer = overlayContainer
+          .getContainerElement()
+          .querySelector('mat-dialog-container');
+        const [cancelButton, saveButton] = dialogContainer!.querySelectorAll(
+          'button'
+        );
+
+        (overlayContainer
+          .getContainerElement()
+          .querySelector(
+            'mat-dialog-container input'
+          ) as HTMLInputElement).value = 'foo(\\d+)';
+        cancelButton.click();
+
+        expect(dispatchSpy).not.toHaveBeenCalledWith(
+          runGroupByChanged({
+            experimentIds: ['book'],
+            groupBy: {key: GroupByKey.REGEX, regexString: ''},
+          })
+        );
+      });
+
       it(
         'does not render the menu when color column is not specified even ' +
           'when the feature is enabled',
