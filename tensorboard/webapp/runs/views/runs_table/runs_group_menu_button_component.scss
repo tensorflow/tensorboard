@@ -36,4 +36,11 @@ limitations under the License.
     height: $_icon-size;
     width: $_icon-size;
   }
+
+  .display-regex-string {
+    padding-left: 40px;
+    .none-set-string {
+      @include tb-theme-foreground-prop(color, secondary-text);
+    }
+  }
 }

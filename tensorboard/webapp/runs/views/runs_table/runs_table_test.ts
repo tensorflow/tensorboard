@@ -27,6 +27,7 @@ import {
   TestBed,
 } from '@angular/core/testing';
 import {MatCheckboxModule} from '@angular/material/checkbox';
+import {MatDialogModule} from '@angular/material/dialog';
 import {MatMenuModule} from '@angular/material/menu';
 import {MatPaginatorModule} from '@angular/material/paginator';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
@@ -52,6 +53,7 @@ import {
 } from '../../../hparams/testing';
 import {DiscreteFilter, IntervalFilter} from '../../../hparams/types';
 import {
+  getColorGroupRegexString,
   getCurrentRouteRunSelection,
   getEnabledColorGroup,
   getEnabledColorGroupByRegex,
@@ -184,6 +186,7 @@ describe('runs_table', () => {
     await TestBed.configureTestingModule({
       imports: [
         MatCheckboxModule,
+        MatDialogModule,
         MatIconTestingModule,
         MatMenuModule,
         MatPaginatorModule,
@@ -209,6 +212,7 @@ describe('runs_table', () => {
     actualActions = [];
 
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
+    overlayContainer = TestBed.inject(OverlayContainer);
     store.overrideSelector(getRuns, []);
     store.overrideSelector(getRunsLoadState, {
       state: DataLoadState.NOT_LOADED,
@@ -252,6 +256,7 @@ describe('runs_table', () => {
     store.overrideSelector(getEnabledColorGroup, false);
     store.overrideSelector(getEnabledColorGroupByRegex, false);
     store.overrideSelector(getRunGroupBy, {key: GroupByKey.RUN});
+    store.overrideSelector(getColorGroupRegexString, '');
     dispatchSpy = spyOn(store, 'dispatch').and.callFake((action: Action) => {
       actualActions.push(action);
     });
@@ -561,7 +566,7 @@ describe('runs_table', () => {
         expect(menuButton).toBeTruthy();
       });
 
-      it('renders "Experiment", "Run", and "Regex"', () => {
+      it('renders "Experiment", "Run", "Regex", and "(none set)"', () => {
         store.overrideSelector(getEnabledColorGroup, true);
         store.overrideSelector(getEnabledColorGroupByRegex, true);
         const fixture = createComponent(
@@ -579,7 +584,7 @@ describe('runs_table', () => {
 
         expect(
           items.map((element) => element.querySelector('label')!.textContent)
-        ).toEqual(['Experiment', 'Run', 'Regex']);
+        ).toEqual(['Experiment', 'Run', 'Regex', '(none set)']);
       });
 
       it(
@@ -600,7 +605,11 @@ describe('runs_table', () => {
             .query(By.css('button'));
           menuButton.nativeElement.click();
 
-          const items = getOverlayMenuItems();
+          const items = Array.from(
+            overlayContainer
+              .getContainerElement()
+              .querySelectorAll('[role="menuitemradio"]')
+          );
 
           expect(
             items.map((element) => element.getAttribute('aria-checked'))
@@ -642,7 +651,7 @@ describe('runs_table', () => {
 
         const items = getOverlayMenuItems();
 
-        const [experiments, runs, regex] = items as HTMLElement[];
+        const [experiments, runs, regex, regexEdit] = items as HTMLElement[];
         experiments.click();
 
         expect(dispatchSpy).toHaveBeenCalledWith(
@@ -669,6 +678,17 @@ describe('runs_table', () => {
             groupBy: {key: GroupByKey.REGEX, regexString: ''},
           })
         );
+
+        regexEdit.click();
+        const dialogContainer = overlayContainer
+          .getContainerElement()
+          .querySelector('mat-dialog-container');
+        expect(dialogContainer).toBeTruthy();
+        const [cancelButton, saveButton] = dialogContainer!.querySelectorAll(
+          'button'
+        );
+        expect(cancelButton!.textContent).toContain('Cancel');
+        expect(saveButton!.textContent).toContain('Save');
       });
 
       it(
