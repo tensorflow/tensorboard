@@ -433,6 +433,15 @@ class TensorBoard(object):
                 sys.exit(1)
 
         if flags.load_fast == "auto" and _should_use_data_server(flags.logdir):
+            if flags.logdir_spec and not flags.logdir:
+                logger.info(
+                    "Warning: --logdir_spec is not supported with --load_fast "
+                    + "behavior; falling back to multiplexer. To use the data "
+                    + "server, replace --logdir_spec with --logdir."
+                )
+                ingester = local_ingester.LocalDataIngester(flags)
+                ingester.start()
+                return ingester
             try:
                 ingester = self._start_subprocess_data_ingester()
                 sys.stderr.write(_DATA_SERVER_ADVISORY_MESSAGE)
