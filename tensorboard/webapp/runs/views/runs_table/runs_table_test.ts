@@ -605,7 +605,11 @@ describe('runs_table', () => {
             .query(By.css('button'));
           menuButton.nativeElement.click();
 
-          const items = Array.from(overlayContainer.getContainerElement().querySelectorAll('[role="menuitemradio"]'));
+          const items = Array.from(
+            overlayContainer
+              .getContainerElement()
+              .querySelectorAll('[role="menuitemradio"]')
+          );
 
           expect(
             items.map((element) => element.getAttribute('aria-checked'))
