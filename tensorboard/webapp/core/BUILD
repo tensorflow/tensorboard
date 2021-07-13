@@ -19,7 +19,7 @@ tf_ng_module(
     ],
 )
 
-tf_ts_library(
+tf_ng_module(
     name = "types",
     srcs = [
         "types.ts",
