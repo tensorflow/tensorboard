@@ -609,7 +609,7 @@ describe('runs_table', () => {
 
           expect(
             items.map((element) => element.getAttribute('aria-checked'))
-          ).toEqual(['true', 'false', 'false', 'false']);
+          ).toEqual(['true', 'false', 'false', null]);
           expect(
             items.map((element) => Boolean(element.querySelector('mat-icon')))
           ).toEqual([true, false, false, true]);
@@ -623,7 +623,7 @@ describe('runs_table', () => {
 
           expect(
             items.map((element) => element.getAttribute('aria-checked'))
-          ).toEqual(['false', 'false', 'true', 'true']);
+          ).toEqual(['false', 'false', 'true', null]);
           expect(
             items.map((element) => Boolean(element.querySelector('mat-icon')))
           ).toEqual([false, false, true, true]);

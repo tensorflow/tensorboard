@@ -40,7 +40,7 @@ limitations under the License.
   .display-regex-string {
     padding-left: 40px;
     .none-set-string {
-      color: map-get($tb-foreground, secondary-text);
+      @include tb-theme-foreground-prop(color, secondary-text);
     }
   }
 }

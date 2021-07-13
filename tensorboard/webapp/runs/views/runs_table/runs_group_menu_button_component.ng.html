@@ -70,7 +70,6 @@ limitations under the License.
     mat-menu-item
     role="menuitem"
     *ngIf="showGroupByRegex"
-    [attr.aria-checked]="selectedGroupBy.key === GroupByKey.REGEX"
     (click)="onRegexStringEdit()"
     class="display-regex-string"
   >
