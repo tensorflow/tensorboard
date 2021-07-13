@@ -183,7 +183,9 @@ describe('runs_table', () => {
     );
   }
 
-  function getColorGroupByHTMLElement(key: GroupByKey | 'regexEdit'): HTMLElement | null {
+  function getColorGroupByHTMLElement(
+    key: GroupByKey | 'regexEdit'
+  ): HTMLElement | null {
     const items = getOverlayMenuItems();
     const [experiment, run, regex, regexEdit] = items as HTMLElement[];
     switch (key) {
