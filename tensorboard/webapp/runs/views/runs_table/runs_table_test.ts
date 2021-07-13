@@ -683,8 +683,8 @@ describe('runs_table', () => {
         const [cancelButton, saveButton] = dialogContainer!.querySelectorAll(
           'button'
         );
-        expect(cancelButton!.textContent).toBe('Cancel');
-        expect(saveButton!.textContent).toBe('Save');
+        expect(cancelButton!.textContent).toContain('Cancel');
+        expect(saveButton!.textContent).toContain('Save');
       });
 
       it(
