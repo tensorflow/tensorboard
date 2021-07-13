@@ -102,6 +102,5 @@ export class PageTitleContainer {
     @Optional()
     @Inject(TB_BRAND_NAME)
     private readonly customBrandName: string | null
-  ) {
-  }
+  ) {}
 }
