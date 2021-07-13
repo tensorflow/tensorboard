@@ -41,12 +41,15 @@ export class RunsGroupMenuButtonComponent {
   @Output()
   onGroupByChange = new EventEmitter<GroupBy>();
 
-  constructor(public dialog: MatDialog) {}
+  constructor(private readonly dialog: MatDialog) {}
 
   onRegexStringEdit() {
     // data pass in the experiment id
     const dialogRef = this.dialog.open(RegexEditDialogContainer, {
-      width: '1050px',
+      maxHeight: '95vh',
+      minHeight: '500px',
+      maxWidth: '80vw',
+      minWidth: '600px',
       data: {experimentIds: this.experimentIds},
     });
   }

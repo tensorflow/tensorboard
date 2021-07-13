@@ -68,9 +68,11 @@ limitations under the License.
   </button>
   <button
     mat-menu-item
-    role="menuitemradio"
+    role="menuitem"
+    *ngIf="showGroupByRegex"
+    [attr.aria-checked]="selectedGroupBy.key === GroupByKey.REGEX"
     (click)="onRegexStringEdit()"
-    class="displayRegexString"
+    class="display-regex-string"
   >
     <span>
       <mat-icon svgIcon="edit_24px"></mat-icon>

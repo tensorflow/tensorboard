@@ -186,6 +186,7 @@ describe('runs_table', () => {
     await TestBed.configureTestingModule({
       imports: [
         MatCheckboxModule,
+        MatDialogModule,
         MatIconTestingModule,
         MatMenuModule,
         MatPaginatorModule,
@@ -195,7 +196,6 @@ describe('runs_table', () => {
         NoopAnimationsModule,
         FilterInputModule,
         RangeInputModule,
-        MatDialogModule,
       ],
       declarations: [
         RunsGroupMenuButtonComponent,
@@ -609,7 +609,7 @@ describe('runs_table', () => {
 
           expect(
             items.map((element) => element.getAttribute('aria-checked'))
-          ).toEqual(['true', 'false', 'false', null]);
+          ).toEqual(['true', 'false', 'false', 'false']);
           expect(
             items.map((element) => Boolean(element.querySelector('mat-icon')))
           ).toEqual([true, false, false, true]);
@@ -623,7 +623,7 @@ describe('runs_table', () => {
 
           expect(
             items.map((element) => element.getAttribute('aria-checked'))
-          ).toEqual(['false', 'false', 'true', null]);
+          ).toEqual(['false', 'false', 'true', 'true']);
           expect(
             items.map((element) => Boolean(element.querySelector('mat-icon')))
           ).toEqual([false, false, true, true]);
@@ -680,8 +680,11 @@ describe('runs_table', () => {
           .getContainerElement()
           .querySelector('mat-dialog-container');
         expect(dialogContainer).toBeTruthy();
-        expect(dialogContainer!.textContent).toContain('Save');
-        expect(dialogContainer!.textContent).toContain('Cancel');
+        const [cancelButton, saveButton] = dialogContainer!.querySelectorAll(
+          'button'
+        );
+        expect(cancelButton!.textContent).toBe('Cancel');
+        expect(saveButton!.textContent).toBe('Save');
       });
 
       it(

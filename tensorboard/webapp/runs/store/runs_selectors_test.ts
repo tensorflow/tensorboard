@@ -460,8 +460,6 @@ describe('runs_selectors', () => {
       const state = buildStateFromRunsState(
         buildRunsState({
           colorGroupRegexString: 'foo(\\d+)',
-          initialGroupBy: {key: GroupByKey.RUN},
-          userSetGroupByKey: GroupByKey.REGEX,
         })
       );
 
@@ -477,8 +475,6 @@ describe('runs_selectors', () => {
     it('returns regex string even if it is not user set groupby', () => {
       const state = buildStateFromRunsState(
         buildRunsState({
-          initialGroupBy: {key: GroupByKey.RUN},
-          userSetGroupByKey: GroupByKey.RUN,
           colorGroupRegexString: 'foo(\\d+)',
         })
       );
