@@ -48,11 +48,3 @@ settings-button {
   height: 100%;
   overflow: hidden;
 }
-
-:host a {
-  color: inherit;
-
-  @include tb-dark-theme {
-    color: inherit;
-  }
-}

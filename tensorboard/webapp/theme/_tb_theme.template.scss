@@ -223,7 +223,7 @@ $tb-dark-theme: map_merge(
   // Include all theme-styles for the components based on the current theme.
   @include angular-material-theme($tb-theme);
 
-  a {
+  a:not(.mat-button, .mat-icon-button) {
     color: map-get($tb-foreground, link);
 
     &:visited {
@@ -236,7 +236,7 @@ $tb-dark-theme: map_merge(
   body.dark-mode {
     background-color: map-get($tb-dark-background, background);
 
-    a {
+    a:not(.mat-button, .mat-icon-button) {
       color: map-get($tb-dark-foreground, link);
 
       &:visited {
