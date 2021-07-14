@@ -119,6 +119,7 @@ tf_ng_module(
         "//tensorboard/webapp/feature_flag",
         "//tensorboard/webapp/header",
         "//tensorboard/webapp/hparams",
+        "//tensorboard/webapp/persistent_settings",
         "//tensorboard/webapp/plugins",
         "//tensorboard/webapp/reloader",
         "//tensorboard/webapp/routes",

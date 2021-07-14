@@ -12,7 +12,19 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {createAction, props} from '@ngrx/store';
 
-export {PersistableSettings} from './_data_source/types';
-export {globalSettingsLoaded} from './_redux/persistent_settings_actions';
-export {PersistentSettingsModule} from './persistent_settings_module';
+import {PersistableSettings} from '../_data_source/types';
+
+/** @typehack */ import * as _typeHackModels from '@ngrx/store/src/models';
+
+/**
+ * Describes settings loaded from a global settings storage. Dispatched once
+ * when the application bootstraps.
+ */
+export const globalSettingsLoaded = createAction(
+  '[Persistent Settings] Global Settings Loaded',
+  props<{
+    partialSettings: Partial<PersistableSettings>;
+  }>()
+);
