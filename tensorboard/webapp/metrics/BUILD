@@ -19,6 +19,7 @@ tf_ng_module(
         "//tensorboard/webapp/metrics/store",
         "//tensorboard/webapp/metrics/store:metrics_initial_state_provider",
         "//tensorboard/webapp/metrics/views",
+        "//tensorboard/webapp/persistent_settings:config_module",
         "//tensorboard/webapp/plugins:plugin_registry",
         "@npm//@angular/common",
         "@npm//@angular/core",
