@@ -164,4 +164,26 @@ describe('page title test with custom brand names', () => {
 
     expect(spy).toHaveBeenCalledWith('Testing Brand Name - TensorBoard.corp');
   });
+
+  it('changes page title accordingly when navigating away from single experiment dashboard', () => {
+    const spy = spyOn(TEST_ONLY.utils, 'setDocumentTitle');
+    store.overrideSelector(getRouteKind, RouteKind.EXPERIMENT);
+    store.overrideSelector(getExperimentIdsFromRoute, ['123']);
+    store.overrideSelector(
+      getExperiment,
+      buildExperiment({
+        name: 'Yet another net',
+      })
+    );
+    const fixture1 = TestBed.createComponent(TestingComponent);
+    fixture1.detectChanges();
+
+    expect(spy).toHaveBeenCalledWith('Yet another net - TensorBoard.corp');
+
+    store.overrideSelector(getRouteKind, RouteKind.EXPERIMENTS);
+    const fixture2 = TestBed.createComponent(TestingComponent);
+    fixture2.detectChanges();
+
+    expect(spy).toHaveBeenCalledWith('TensorBoard.corp');
+  });
 });
