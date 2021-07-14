@@ -61,13 +61,13 @@ const DEFAULT_BRAND_NAME = 'TensorBoard';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PageTitleContainer {
-  private readonly getExperimentId$ = this.store.select(getRouteKind).pipe(
-    filter((routeKind) => routeKind === RouteKind.EXPERIMENT),
-    withLatestFrom(this.store.select(getExperimentIdsFromRoute)),
-    map(([, experimentIds]) =>
-      experimentIds && experimentIds.length === 1 ? experimentIds[0] : null
-    )
-  );
+  private readonly getExperimentId$ = this.store
+    .select(getExperimentIdsFromRoute)
+    .pipe(
+      map((experimentIds) => {
+        return experimentIds?.[0];
+      })
+    );
 
   private readonly experimentName$ = this.getExperimentId$.pipe(
     filter(Boolean),
@@ -81,17 +81,17 @@ export class PageTitleContainer {
   );
 
   readonly title$ = this.store.select(getEnvironment).pipe(
-    combineLatestWith(this.experimentName$),
-    map(([env, experimentName]) => {
+    combineLatestWith(this.store.select(getRouteKind), this.experimentName$),
+    map(([env, routeKind, experimentName]) => {
       const tbBrandName = this.customBrandName || DEFAULT_BRAND_NAME;
       if (env.window_title) {
         // (it's an empty string when the `--window_title` flag is not set)
         return env.window_title;
-      } else if (experimentName) {
-        return `${experimentName} - ${tbBrandName}`;
-      } else {
-        return tbBrandName;
       }
+      if (routeKind === RouteKind.EXPERIMENT && experimentName) {
+        return `${experimentName} - ${tbBrandName}`;
+      }
+      return tbBrandName;
     }),
     startWith(this.customBrandName || DEFAULT_BRAND_NAME),
     distinctUntilChanged()
