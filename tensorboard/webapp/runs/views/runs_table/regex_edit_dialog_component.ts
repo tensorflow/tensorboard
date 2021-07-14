@@ -43,4 +43,8 @@ export class RegexEditDialogComponent {
   onSaveClick(regexString: string) {
     this.onSave.emit(regexString);
   }
+
+  fillExample(): void {
+    this.regexString = '(train|eval)';
+  }
 }

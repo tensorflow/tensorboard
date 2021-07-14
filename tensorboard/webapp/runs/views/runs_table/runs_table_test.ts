@@ -700,9 +700,11 @@ describe('runs_table', () => {
           .getContainerElement()
           .querySelector('mat-dialog-container');
         expect(dialogContainer).toBeTruthy();
-        const [cancelButton, saveButton] = dialogContainer!.querySelectorAll(
-          'button'
-        );
+        const [
+          fillExampleButton,
+          cancelButton,
+          saveButton,
+        ] = dialogContainer!.querySelectorAll('button');
         expect(cancelButton!.textContent).toContain('Cancel');
         expect(saveButton!.textContent).toContain('Save');
       });
@@ -725,9 +727,11 @@ describe('runs_table', () => {
         const dialogContainer = overlayContainer
           .getContainerElement()
           .querySelector('mat-dialog-container');
-        const [cancelButton, saveButton] = dialogContainer!.querySelectorAll(
-          'button'
-        );
+        const [
+          fillExampleButton,
+          cancelButton,
+          saveButton,
+        ] = dialogContainer!.querySelectorAll('button');
 
         saveButton.click();
         expect(dispatchSpy).toHaveBeenCalledWith(
