@@ -12,23 +12,24 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Injectable, NgModule} from '@angular/core';
 
-import {LocalStorage} from './local_storage';
-
-@Injectable()
-export class TestingLocalStorage {
-  setItem(key: string, value: string): void {}
-  getItem(key: string): string | null {
-    return null;
-  }
-  removeItem(key: string): void {}
+/**
+ * Global settings that the backend remembers. `declare`d so it does not get
+ * mangled or mangled differently when compiler changes.
+ */
+export declare interface BackendSettings {
+  scalarSmoothing?: number;
+  tooltipSort?: string;
+  ignoreOutliers?: boolean;
 }
 
-@NgModule({
-  providers: [
-    TestingLocalStorage,
-    {provide: LocalStorage, useExisting: TestingLocalStorage},
-  ],
-})
-export class LocalStorageTestingModule {}
+/**
+ * Internal representation of persistable settings. Unlike BackendSettings, this
+ * interface is not `declare`d, meaning the property names can be mangled and
+ * user should not use string literals to access its property value.
+ */
+export interface PersistableSettings {
+  scalarSmoothing?: number;
+  tooltipSortString?: string;
+  ignoreOutliers?: boolean;
+}

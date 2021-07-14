@@ -165,12 +165,6 @@ export interface ImageStepDatum {
   imageId: ImageId;
 }
 
-export interface PersistableSettings {
-  scalarSmoothing: number;
-  tooltipSort: TooltipSort;
-  ignoreOutliers: boolean;
-}
-
 export abstract class MetricsDataSource {
   abstract fetchTagMetadata(experimentIds: string[]): Observable<TagMetadata>;
   abstract fetchTimeSeries(
@@ -183,18 +177,6 @@ export abstract class MetricsDataSource {
     runId: string,
     downloadType: 'json' | 'csv'
   ): string;
-  abstract getSettings(): Observable<Partial<PersistableSettings>>;
-  /**
-   * Design choice: instead of having the API broken down to a setting (e.g.,
-   * one for setting the smoothing vs. tooltip sorting) or take arbitrary
-   * key-value, we decided to take the delta of the settings that needs to
-   * change. This is in anticipation of different storage mechanisms for hosted
-   * TensorBoard services where we would have a RPC that would only take a
-   * delta.
-   */
-  abstract setSettings(
-    partialSettings: Partial<PersistableSettings>
-  ): Observable<void>;
 }
 
 export function isFailedTimeSeriesResponse(
