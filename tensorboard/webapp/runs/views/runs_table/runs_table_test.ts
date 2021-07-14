@@ -14,6 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import {OverlayContainer} from '@angular/cdk/overlay';
 import {
+  DebugElement,
   Directive,
   EventEmitter,
   Injectable,
@@ -180,6 +181,25 @@ describe('runs_table', () => {
     return Array.from(
       overlayContainer.getContainerElement().querySelectorAll('[mat-menu-item]')
     );
+  }
+
+  function getColorGroupByHTMLElement(
+    key: GroupByKey | 'regexEdit'
+  ): HTMLElement | null {
+    const items = getOverlayMenuItems();
+    const [experiment, run, regex, regexEdit] = items as HTMLElement[];
+    switch (key) {
+      case GroupByKey.RUN:
+        return run;
+      case GroupByKey.EXPERIMENT:
+        return experiment;
+      case GroupByKey.REGEX:
+        return regex;
+      case 'regexEdit':
+        return regexEdit;
+      default:
+        return null;
+    }
   }
 
   beforeEach(async () => {
@@ -649,11 +669,7 @@ describe('runs_table', () => {
           .query(By.css('button'));
         menuButton.nativeElement.click();
 
-        const items = getOverlayMenuItems();
-
-        const [experiments, runs, regex, regexEdit] = items as HTMLElement[];
-        experiments.click();
-
+        getColorGroupByHTMLElement(GroupByKey.EXPERIMENT)!.click();
         expect(dispatchSpy).toHaveBeenCalledWith(
           runGroupByChanged({
             experimentIds: ['book'],
@@ -661,7 +677,7 @@ describe('runs_table', () => {
           })
         );
 
-        runs.click();
+        getColorGroupByHTMLElement(GroupByKey.RUN)!.click();
         expect(dispatchSpy).toHaveBeenCalledWith(
           runGroupByChanged({
             experimentIds: ['book'],
@@ -669,7 +685,7 @@ describe('runs_table', () => {
           })
         );
 
-        regex.click();
+        getColorGroupByHTMLElement(GroupByKey.REGEX)!.click();
         expect(dispatchSpy).toHaveBeenCalledWith(
           runGroupByChanged({
             experimentIds: ['book'],
@@ -679,7 +695,7 @@ describe('runs_table', () => {
           })
         );
 
-        regexEdit.click();
+        getColorGroupByHTMLElement('regexEdit')!.click();
         const dialogContainer = overlayContainer
           .getContainerElement()
           .querySelector('mat-dialog-container');
@@ -689,6 +705,90 @@ describe('runs_table', () => {
         );
         expect(cancelButton!.textContent).toContain('Cancel');
         expect(saveButton!.textContent).toContain('Save');
+      });
+
+      it('dispatches `runGroupByChanged` when regex editing is saved', () => {
+        store.overrideSelector(getEnabledColorGroup, true);
+        store.overrideSelector(getEnabledColorGroupByRegex, true);
+        store.overrideSelector(getRunGroupBy, {key: GroupByKey.EXPERIMENT});
+        const fixture = createComponent(
+          ['book'],
+          [RunsTableColumn.RUN_NAME, RunsTableColumn.RUN_COLOR]
+        );
+
+        const menuButton = fixture.debugElement
+          .query(By.directive(RunsGroupMenuButtonContainer))
+          .query(By.css('button'));
+        menuButton.nativeElement.click();
+
+        getColorGroupByHTMLElement('regexEdit')!.click();
+        const dialogContainer = overlayContainer
+          .getContainerElement()
+          .querySelector('mat-dialog-container');
+        const [cancelButton, saveButton] = dialogContainer!.querySelectorAll(
+          'button'
+        );
+
+        saveButton.click();
+        expect(dispatchSpy).toHaveBeenCalledWith(
+          runGroupByChanged({
+            experimentIds: ['book'],
+            groupBy: {key: GroupByKey.REGEX, regexString: ''},
+          })
+        );
+
+        const dialogInputDebugElement: DebugElement = new DebugElement(
+          overlayContainer
+            .getContainerElement()
+            .querySelector('mat-dialog-container input')
+        );
+        sendKeys(fixture, dialogInputDebugElement, 'foo(\\d+)');
+
+        saveButton.click();
+        expect(dispatchSpy).toHaveBeenCalledWith(
+          runGroupByChanged({
+            experimentIds: ['book'],
+            groupBy: {key: GroupByKey.REGEX, regexString: 'foo(\\d+)'},
+          })
+        );
+      });
+
+      it('does not dispatch `runGroupByChanged` with GroupByKey.REGEX when regex editing is cancelled', () => {
+        store.overrideSelector(getEnabledColorGroup, true);
+        store.overrideSelector(getEnabledColorGroupByRegex, true);
+        store.overrideSelector(getRunGroupBy, {key: GroupByKey.EXPERIMENT});
+        const fixture = createComponent(
+          ['book'],
+          [RunsTableColumn.RUN_NAME, RunsTableColumn.RUN_COLOR]
+        );
+
+        const menuButton = fixture.debugElement
+          .query(By.directive(RunsGroupMenuButtonContainer))
+          .query(By.css('button'));
+        menuButton.nativeElement.click();
+
+        getColorGroupByHTMLElement('regexEdit')!.click();
+        const dialogContainer = overlayContainer
+          .getContainerElement()
+          .querySelector('mat-dialog-container');
+        const [cancelButton, saveButton] = dialogContainer!.querySelectorAll(
+          'button'
+        );
+
+        const dialogInputDebugElement: DebugElement = new DebugElement(
+          overlayContainer
+            .getContainerElement()
+            .querySelector('mat-dialog-container input')
+        );
+        sendKeys(fixture, dialogInputDebugElement, 'foo(\\d+)');
+
+        cancelButton.click();
+        expect(dispatchSpy).not.toHaveBeenCalledWith(
+          runGroupByChanged({
+            experimentIds: ['book'],
+            groupBy: {key: GroupByKey.REGEX, regexString: ''},
+          })
+        );
       });
 
       it(
