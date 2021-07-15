@@ -20,26 +20,30 @@ import {
   Optional,
 } from '@angular/core';
 import {Selector} from '@ngrx/store';
-import {PersistableSettings} from './_data_source/types';
 
 const GLOBAL_PERSISTENT_SETTINGS_TOKEN = new InjectionToken(
   '[Persistent Settings] Global Settings'
 );
 
-export type SettingSelector = Selector<any, Partial<PersistableSettings>>;
+export type SettingSelector<State, Settings> = Selector<
+  State,
+  Partial<Settings>
+>;
 
 @NgModule()
-export class PersistentSettingsConfigModule {
+export class PersistentSettingsConfigModule<State, Settings> {
   constructor(
     @Optional()
     @Inject(GLOBAL_PERSISTENT_SETTINGS_TOKEN)
-    private readonly globalSettingSelectors: SettingSelector[] | null
+    private readonly globalSettingSelectors:
+      | SettingSelector<State, Settings>[]
+      | null
   ) {}
 
   /**
    * Returns Ngrx selectors for getting global setting values.
    */
-  getGlobalSettingSelectors(): SettingSelector[] {
+  getGlobalSettingSelectors(): SettingSelector<State, Settings>[] {
     return this.globalSettingSelectors ?? [];
   }
 
@@ -61,9 +65,9 @@ export class PersistentSettingsConfigModule {
    * })
    * export class MyModule {}
    */
-  static defineGlobalSetting(
-    selector: SettingSelector
-  ): ModuleWithProviders<PersistentSettingsConfigModule> {
+  static defineGlobalSetting<State, Settings>(
+    selector: SettingSelector<State, Settings>
+  ): ModuleWithProviders<PersistentSettingsConfigModule<any, {}>> {
     return {
       ngModule: PersistentSettingsConfigModule,
       providers: [

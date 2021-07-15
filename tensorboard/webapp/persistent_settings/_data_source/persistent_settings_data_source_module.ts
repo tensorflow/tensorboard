@@ -12,40 +12,24 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Injectable, NgModule} from '@angular/core';
-import {EMPTY, Observable, of} from 'rxjs';
+import {NgModule} from '@angular/core';
 
+import {LocalStorageModule} from '../../util/local_storage';
 import {
   PersistentSettingsDataSource,
   PersistentSettingsDataSourceImpl,
+  SettingsCoverter,
+  OSSSettingsConverter,
 } from './persistent_settings_data_source';
-import {PersistableSettings} from './types';
-
-/**
- * An implementation of PersistentSettingsDataSource that has no dependencies.
- */
-@Injectable()
-export class PersistentSettingsTestingDataSource extends PersistentSettingsDataSource<{}> {
-  setSettings(partialSetting: Partial<PersistableSettings>): Observable<void> {
-    return EMPTY;
-  }
-
-  getSettings(): Observable<Partial<PersistableSettings>> {
-    return of({});
-  }
-}
 
 @NgModule({
+  imports: [LocalStorageModule],
   providers: [
-    PersistentSettingsTestingDataSource,
     {
       provide: PersistentSettingsDataSource,
-      useExisting: PersistentSettingsTestingDataSource,
+      useClass: PersistentSettingsDataSourceImpl,
     },
-    {
-      provide: PersistentSettingsDataSourceImpl,
-      useExisting: PersistentSettingsTestingDataSource,
-    },
+    {provide: SettingsCoverter, useClass: OSSSettingsConverter},
   ],
 })
-export class PersistentSettingsTestingDataSourceModule {}
+export class PersistentSettingsDataSourceModule {}

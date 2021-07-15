@@ -31,9 +31,9 @@ import {State} from '../../app_state';
 import {PersistentSettingsConfigModule} from '../persistent_settings_config_module';
 import {PersistentSettingsDataSource} from '../_data_source/persistent_settings_data_source';
 import {globalSettingsLoaded} from './persistent_settings_actions';
+import {PersistableSettings} from '../_data_source/types';
 
 /** @typehack */ import * as _typeHackModels from '@ngrx/store/src/models';
-import {PersistableSettings} from '../_data_source/types';
 
 const initAction = createAction('[Persistent Settings] Effects Init');
 const DEBOUNCE_PERIOD_IN_MS = 500;
@@ -106,8 +106,13 @@ export class PersistentSettingsEffects implements OnInitEffects {
   constructor(
     private readonly actions$: Actions,
     private readonly store: Store<State>,
-    private readonly configModule: PersistentSettingsConfigModule,
-    private readonly dataSource: PersistentSettingsDataSource
+    private readonly configModule: PersistentSettingsConfigModule<
+      State,
+      PersistableSettings
+    >,
+    private readonly dataSource: PersistentSettingsDataSource<
+      PersistableSettings
+    >
   ) {}
 
   /** @export */

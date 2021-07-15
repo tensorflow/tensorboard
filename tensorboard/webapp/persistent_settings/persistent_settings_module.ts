@@ -15,25 +15,15 @@ limitations under the License.
 import {NgModule} from '@angular/core';
 import {EffectsModule} from '@ngrx/effects';
 
-import {LocalStorageModule} from '../util/local_storage';
 import {PersistentSettingsConfigModule} from './persistent_settings_config_module';
-import {
-  PersistentSettingsDataSource,
-  PersistentSettingsDataSourceImpl,
-} from './_data_source/persistent_settings_data_source';
+import {PersistentSettingsDataSourceModule} from './_data_source/persistent_settings_data_source_module';
 import {PersistentSettingsEffects} from './_redux/persistent_settings_effects';
 
 @NgModule({
   imports: [
     EffectsModule.forFeature([PersistentSettingsEffects]),
-    LocalStorageModule,
+    PersistentSettingsDataSourceModule,
   ],
-  providers: [
-    PersistentSettingsConfigModule,
-    {
-      provide: PersistentSettingsDataSource,
-      useClass: PersistentSettingsDataSourceImpl,
-    },
-  ],
+  providers: [PersistentSettingsConfigModule],
 })
 export class PersistentSettingsModule {}

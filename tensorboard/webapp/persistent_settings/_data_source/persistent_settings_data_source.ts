@@ -15,6 +15,7 @@ limitations under the License.
 import {Injectable} from '@angular/core';
 import {EMPTY, Observable, of} from 'rxjs';
 import {map, tap} from 'rxjs/operators';
+
 import {LocalStorage} from '../../util/local_storage';
 import {BackendSettings, PersistableSettings} from './types';
 
@@ -22,23 +23,27 @@ const LEGACY_METRICS_LOCAL_STORAGE_KEY = '_tb_global_settings.timeseries';
 const GLOBAL_LOCAL_STORAGE_KEY = '_tb_global_settings';
 
 @Injectable()
-export abstract class PersistentSettingsDataSource {
-  abstract setSettings(
-    partialSetting: Partial<PersistableSettings>
-  ): Observable<void>;
-  abstract getSettings(): Observable<Partial<PersistableSettings>>;
+export abstract class PersistentSettingsDataSource<UiSettings> {
+  abstract setSettings(partialSetting: Partial<UiSettings>): Observable<void>;
+  abstract getSettings(): Observable<Partial<UiSettings>>;
 }
 
-/**
- * An implementation of PersistentSettingsDataSource that stores global settings
- * in browser local storage.
- */
 @Injectable()
-export class PersistentSettingsDataSourceImpl
-  implements PersistentSettingsDataSource {
-  constructor(private readonly localStorage: LocalStorage) {}
+export abstract class SettingsCoverter<UiSettings, StorageSettings> {
+  abstract uiToBackend(
+    uiSettings: Partial<UiSettings>
+  ): Partial<StorageSettings>;
+  abstract backendToUi(
+    backendSettings: Partial<StorageSettings>
+  ): Partial<UiSettings>;
+}
 
-  private serializeSettings(settings: Partial<PersistableSettings>): string {
+@Injectable()
+export class OSSSettingsConverter extends SettingsCoverter<
+  PersistableSettings,
+  BackendSettings
+> {
+  uiToBackend(settings: PersistableSettings): BackendSettings {
     const serializableSettings: BackendSettings = {
       ignoreOutliers: settings.ignoreOutliers,
       scalarSmoothing: settings.scalarSmoothing,
@@ -46,45 +51,48 @@ export class PersistentSettingsDataSourceImpl
       // serialize it differently to account for their unintended changes.
       tooltipSort: settings.tooltipSortString,
     };
-    return JSON.stringify(serializableSettings);
+    return serializableSettings;
   }
-
-  private deserializeSettings(
-    serialized: string
-  ): Partial<PersistableSettings> {
+  backendToUi(backendSettings: Partial<BackendSettings>): PersistableSettings {
     const settings: Partial<PersistableSettings> = {};
-    let unsanitizedObject: Partial<BackendSettings>;
-    try {
-      unsanitizedObject = JSON.parse(serialized) as Partial<BackendSettings>;
-    } catch (e) {
-      return settings;
+    if (
+      backendSettings.hasOwnProperty('scalarSmoothing') &&
+      typeof backendSettings.scalarSmoothing === 'number'
+    ) {
+      settings.scalarSmoothing = backendSettings.scalarSmoothing;
     }
 
     if (
-      unsanitizedObject.hasOwnProperty('scalarSmoothing') &&
-      typeof unsanitizedObject.scalarSmoothing === 'number'
+      backendSettings.hasOwnProperty('ignoreOutliers') &&
+      typeof backendSettings.ignoreOutliers === 'boolean'
     ) {
-      settings.scalarSmoothing = unsanitizedObject.scalarSmoothing;
+      settings.ignoreOutliers = backendSettings.ignoreOutliers;
     }
 
     if (
-      unsanitizedObject.hasOwnProperty('ignoreOutliers') &&
-      typeof unsanitizedObject.ignoreOutliers === 'boolean'
+      backendSettings.hasOwnProperty('tooltipSort') &&
+      typeof backendSettings.tooltipSort === 'string'
     ) {
-      settings.ignoreOutliers = unsanitizedObject.ignoreOutliers;
-    }
-
-    if (
-      unsanitizedObject.hasOwnProperty('tooltipSort') &&
-      typeof unsanitizedObject.tooltipSort === 'string'
-    ) {
-      settings.tooltipSortString = unsanitizedObject.tooltipSort;
+      settings.tooltipSortString = backendSettings.tooltipSort;
     }
 
     return settings;
   }
+}
 
-  setSettings(partialSetting: Partial<PersistableSettings>): Observable<void> {
+/**
+ * An implementation of PersistentSettingsDataSource that stores global settings
+ * in browser local storage.
+ */
+@Injectable()
+export class PersistentSettingsDataSourceImpl<UiSettings, StorageSettings>
+  implements PersistentSettingsDataSource<UiSettings> {
+  constructor(
+    private readonly localStorage: LocalStorage,
+    private readonly converter: SettingsCoverter<UiSettings, StorageSettings>
+  ) {}
+
+  setSettings(partialSetting: Partial<UiSettings>): Observable<void> {
     if (!Object.keys(partialSetting)) {
       return EMPTY;
     }
@@ -93,7 +101,12 @@ export class PersistentSettingsDataSourceImpl
       tap((currentPartialSettings) => {
         this.localStorage.setItem(
           GLOBAL_LOCAL_STORAGE_KEY,
-          this.serializeSettings({...currentPartialSettings, ...partialSetting})
+          JSON.stringify(
+            this.converter.uiToBackend({
+              ...currentPartialSettings,
+              ...partialSetting,
+            })
+          )
         );
         this.localStorage.removeItem(LEGACY_METRICS_LOCAL_STORAGE_KEY);
       }),
@@ -101,12 +114,24 @@ export class PersistentSettingsDataSourceImpl
     );
   }
 
-  getSettings(): Observable<Partial<PersistableSettings>> {
-    const legacySettings = this.deserializeSettings(
-      this.localStorage.getItem(LEGACY_METRICS_LOCAL_STORAGE_KEY) ?? '{}'
+  private deserialize(serialized: string): Partial<StorageSettings> {
+    try {
+      return JSON.parse(serialized) as StorageSettings;
+    } catch {
+      return {};
+    }
+  }
+
+  getSettings(): Observable<Partial<UiSettings>> {
+    const legacySettings = this.converter.backendToUi(
+      this.deserialize(
+        this.localStorage.getItem(LEGACY_METRICS_LOCAL_STORAGE_KEY) ?? '{}'
+      )
     );
-    const settings = this.deserializeSettings(
-      this.localStorage.getItem(GLOBAL_LOCAL_STORAGE_KEY) ?? '{}'
+    const settings = this.converter.backendToUi(
+      this.deserialize(
+        this.localStorage.getItem(GLOBAL_LOCAL_STORAGE_KEY) ?? '{}'
+      )
     );
     return of({
       ...legacySettings,

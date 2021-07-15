@@ -12,15 +12,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {createSelector, Selector} from '@ngrx/store';
-import {PersistableSettings} from './_data_source/types';
 import {TestBed} from '@angular/core/testing';
+import {createSelector, Selector} from '@ngrx/store';
+
 import {PersistentSettingsConfigModule} from './persistent_settings_config_module';
+import {PersistableSettings} from './_data_source/types';
 
 describe('persisted_settings config_module test', () => {
   async function createConfigModule(
     settingSelectors: Selector<any, Partial<PersistableSettings>>[]
-  ): Promise<PersistentSettingsConfigModule> {
+  ): Promise<PersistentSettingsConfigModule<any, PersistableSettings>> {
     const imports = settingSelectors.map(
       PersistentSettingsConfigModule.defineGlobalSetting
     );

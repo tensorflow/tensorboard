@@ -6,6 +6,7 @@ tf_ng_module(
     name = "_data_source",
     srcs = [
         "persistent_settings_data_source.ts",
+        "persistent_settings_data_source_module.ts",
     ],
     deps = [
         ":types",
@@ -46,8 +47,10 @@ tf_ng_module(
     ],
     deps = [
         ":_data_source",
+        ":types",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/util:local_storage_testing",
+        "@npm//@angular/core",
         "@npm//@types/jasmine",
         "@npm//rxjs",
     ],
