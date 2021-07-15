@@ -16,6 +16,7 @@ export declare interface Experiment {
   id: string;
   name: string;
   start_time: number;
+  repository_id?: string;
   owner?: string;
   description?: string;
   hparams?: string;
