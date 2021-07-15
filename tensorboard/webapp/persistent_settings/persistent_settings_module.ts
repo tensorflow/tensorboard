@@ -17,6 +17,12 @@ import {NgModule} from '@angular/core';
 import {PersistentSettingsConfigModule} from './persistent_settings_config_module';
 import {PersistentSettingsDataSourceModule} from './_data_source/persistent_settings_data_source_module';
 
+/**
+ * Persistent Settings module is responsible for persisting and loading settings
+ * from other features.
+ *
+ * For settings of the app, please refer to "settings" feature instead.
+ */
 @NgModule({
   imports: [PersistentSettingsDataSourceModule],
   providers: [PersistentSettingsConfigModule],
