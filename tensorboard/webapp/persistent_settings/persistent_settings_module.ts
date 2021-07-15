@@ -21,7 +21,10 @@ import {PersistentSettingsDataSourceModule} from './_data_source/persistent_sett
  * Persistent Settings module is responsible for persisting and loading settings
  * from other features.
  *
- * For settings of the app, please refer to "settings" feature instead.
+ * For settings of the app, like "is auto reload enabled?", please refer to
+ * "settings" feature instead. `persistent_settings` does not have Redux state
+ * to remember the setting but only helps with persisting settings from other
+ * features.
  */
 @NgModule({
   imports: [PersistentSettingsDataSourceModule],

@@ -14,8 +14,11 @@ limitations under the License.
 ==============================================================================*/
 
 /**
- * Global settings that the backend remembers. `declare`d so it does not get
- * mangled or mangled differently when compiler changes.
+ * Global settings that the backend remembers. `declare`d so properties do not
+ * get mangled or mangled differently when a version compiler changes.
+ *
+ * For example, ClosureCompiler can mangle property names to make the payload
+ * smaller and so can `terser` (with config).
  */
 export declare interface BackendSettings {
   scalarSmoothing?: number;
