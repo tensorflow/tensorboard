@@ -15,6 +15,7 @@ limitations under the License.
 import {createAction, props} from '@ngrx/store';
 
 import {
+  PersistableSettings,
   TagMetadata,
   TimeSeriesRequest,
   TimeSeriesResponse,
@@ -133,4 +134,9 @@ export const metricsTagGroupExpansionChanged = createAction(
 export const cardPinStateToggled = createAction(
   '[Metrics] Card Pin State Toggled',
   props<{cardId: CardId; canCreateNewPins: boolean; wasPinned: boolean}>()
+);
+
+export const fetchPersistedSettingsSucceeded = createAction(
+  '[Metrics] Fetch Persisted Settings Succeeded',
+  props<{partialSettings: Partial<PersistableSettings>}>()
 );

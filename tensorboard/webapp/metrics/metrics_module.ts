@@ -15,24 +15,15 @@ limitations under the License.
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
 import {EffectsModule} from '@ngrx/effects';
-import {Action, createSelector, StoreModule} from '@ngrx/store';
+import {Action, StoreModule} from '@ngrx/store';
 
-import {AlertActionModule} from '../alert/alert_action_module';
 import {AppRoutingModule} from '../app_routing/app_routing_module';
 import {CoreModule} from '../core/core_module';
-import {PersistentSettingsConfigModule} from '../persistent_settings/persistent_settings_config_module';
 import {PluginRegistryModule} from '../plugins/plugin_registry_module';
-import * as actions from './actions';
-import {MetricsDataSourceModule, METRICS_PLUGIN_ID} from './data_source';
+
+import {METRICS_PLUGIN_ID, MetricsDataSourceModule} from './data_source';
 import {MetricsEffects} from './effects';
-import {
-  getMetricsIgnoreOutliers,
-  getMetricsScalarSmoothing,
-  getMetricsTooltipSort,
-  METRICS_FEATURE_KEY,
-  METRICS_SETTINGS_DEFAULT,
-  reducers,
-} from './store';
+import {METRICS_FEATURE_KEY, METRICS_SETTINGS_DEFAULT, reducers} from './store';
 import {
   getConfig,
   METRICS_INITIAL_SETTINGS,
@@ -40,6 +31,8 @@ import {
 } from './store/metrics_initial_state_provider';
 import {MetricsDashboardContainer} from './views/metrics_container';
 import {MetricsViewsModule} from './views/metrics_views_module';
+import {AlertActionModule} from '../alert/alert_action_module';
+import * as actions from './actions';
 
 /** @typehack */ import * as _typeHackModels from '@ngrx/store/src/models';
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
@@ -86,21 +79,6 @@ export function alertActionProvider() {
     ),
     EffectsModule.forFeature([MetricsEffects]),
     AlertActionModule.registerAlertActions(alertActionProvider),
-    PersistentSettingsConfigModule.defineGlobalSetting(
-      createSelector(getMetricsScalarSmoothing, (smoothing) => {
-        return {scalarSmoothing: smoothing};
-      })
-    ),
-    PersistentSettingsConfigModule.defineGlobalSetting(
-      createSelector(getMetricsIgnoreOutliers, (ignoreOutliers) => {
-        return {ignoreOutliers};
-      })
-    ),
-    PersistentSettingsConfigModule.defineGlobalSetting(
-      createSelector(getMetricsTooltipSort, (tooltipSort) => {
-        return {tooltipSortString: String(tooltipSort)};
-      })
-    ),
   ],
   providers: [
     {

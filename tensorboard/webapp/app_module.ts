@@ -33,7 +33,6 @@ import {HeaderModule} from './header/header_module';
 import {HparamsModule} from './hparams/hparams_module';
 import {MatIconModule} from './mat_icon_module';
 import {OssPluginsModule} from './oss_plugins_module';
-import {PersistentSettingsModule} from './persistent_settings';
 import {PluginsModule} from './plugins/plugins_module';
 import {routesFactory} from './routes';
 import {RunsModule} from './runs/runs_module';
@@ -62,7 +61,6 @@ import {TensorBoardWrapperModule} from './tb_wrapper/tb_wrapper_module';
     HparamsModule,
     MatIconModule,
     PageTitleModule,
-    PersistentSettingsModule,
     PluginApiHostModule,
     PluginsModule,
     RunsModule,

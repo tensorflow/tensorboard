@@ -21,7 +21,7 @@ import {getActivePlugin} from '../../core/store';
 import * as coreTesting from '../../core/testing';
 import {DataLoadState} from '../../types/data';
 import {TBHttpClientTestingModule} from '../../webapp_data_source/tb_http_client_testing';
-import {of, Subject} from 'rxjs';
+import {EMPTY, of, Subject} from 'rxjs';
 
 import {buildNavigatedAction} from '../../app_routing/testing';
 import {State} from '../../app_state';
@@ -44,8 +44,10 @@ import {
   createScalarStepData,
   provideTestingMetricsDataSource,
 } from '../testing';
-import {CardId, TooltipSort} from '../types';
+import {CardId, TooltipSort, URLDeserializedState} from '../types';
 import {CardFetchInfo, MetricsEffects, TEST_ONLY} from './index';
+import {stateRehydratedFromUrl} from '../../app_routing/actions';
+import {RouteKind} from '../../app_routing/types';
 
 describe('metrics effects', () => {
   let dataSource: MetricsDataSource;
@@ -682,6 +684,116 @@ describe('metrics effects', () => {
           expect(actualActions).toEqual([]);
         });
       }
+    });
+  });
+
+  describe('#readSettingsFromStorage', () => {
+    let getSettingsSpy: jasmine.Spy;
+    beforeEach(() => {
+      effects.readSettingsFromStorage$.subscribe((action) => {
+        actualActions.push(action);
+      });
+      getSettingsSpy = spyOn(dataSource, 'getSettings');
+    });
+
+    it('dispatches `fetchPersistedSettingsSucceeded` on init', () => {
+      getSettingsSpy.and.returnValue(
+        of({
+          ignoreOutliers: false,
+        })
+      );
+      actions$.next(TEST_ONLY.initAction());
+
+      expect(actualActions).toEqual([
+        actions.fetchPersistedSettingsSucceeded({
+          partialSettings: {
+            ignoreOutliers: false,
+          },
+        }),
+      ]);
+    });
+  });
+
+  describe('#setSettingsToStorage', () => {
+    let setSettingsSpy: jasmine.Spy;
+
+    beforeEach(() => {
+      effects.setSettingsToStorage$.subscribe();
+      setSettingsSpy = spyOn(dataSource, 'setSettings').and.returnValue(EMPTY);
+    });
+
+    describe('on metricsChangeScalarSmoothing', () => {
+      it('sets smoothing to the storage', () => {
+        store.overrideSelector(selectors.getMetricsScalarSmoothing, 0.1);
+        store.refreshState();
+        actions$.next(
+          actions.metricsChangeScalarSmoothing({
+            smoothing: 0.1,
+          })
+        );
+
+        expect(setSettingsSpy).toHaveBeenCalledOnceWith({
+          scalarSmoothing: 0.1,
+        });
+      });
+    });
+
+    describe('on stateRehydratedFromUrl', () => {
+      it('sets smoothing from URL to localStorage to avoid user confusion', () => {
+        store.overrideSelector(selectors.getMetricsScalarSmoothing, 1);
+        store.refreshState();
+
+        const routePartialState: URLDeserializedState = {
+          metrics: {
+            pinnedCards: [],
+            smoothing: 1337,
+          },
+        };
+        actions$.next(
+          stateRehydratedFromUrl({
+            routeKind: RouteKind.EXPERIMENT,
+            partialState: routePartialState,
+          })
+        );
+
+        // Even though user has passed 1337, reducer clips the value to 1 and
+        // this is validating that we are indeed setting the clipped version of
+        // the smoothing value instead of a weird number.
+        expect(setSettingsSpy).toHaveBeenCalledOnceWith({
+          scalarSmoothing: 1,
+        });
+      });
+    });
+
+    describe('on metricsChangeTooltipSort', () => {
+      it('sets tooltipSort to the storage', () => {
+        store.overrideSelector(
+          selectors.getMetricsTooltipSort,
+          TooltipSort.NEAREST
+        );
+        store.refreshState();
+        actions$.next(
+          actions.metricsChangeTooltipSort({
+            sort: TooltipSort.NEAREST,
+          })
+        );
+
+        expect(setSettingsSpy).toHaveBeenCalledOnceWith({
+          tooltipSort: TooltipSort.NEAREST,
+        });
+      });
+    });
+
+    describe('on metricsToggleIgnoreOutliers', () => {
+      it('sets ignoreOutliers to the storage', () => {
+        store.overrideSelector(selectors.getMetricsIgnoreOutliers, true);
+        store.refreshState();
+        actions$.next(actions.metricsToggleIgnoreOutliers());
+
+        expect(setSettingsSpy).toHaveBeenCalledOnceWith({
+          ignoreOutliers: true,
+        });
+      });
     });
   });
 });

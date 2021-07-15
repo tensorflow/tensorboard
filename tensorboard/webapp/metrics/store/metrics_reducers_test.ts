@@ -16,7 +16,6 @@ import * as routingActions from '../../app_routing/actions';
 import {buildRoute} from '../../app_routing/testing';
 import {RouteKind} from '../../app_routing/types';
 import * as coreActions from '../../core/actions';
-import {globalSettingsLoaded} from '../../persistent_settings';
 import {DataLoadState} from '../../types/data';
 import * as actions from '../actions';
 import {
@@ -1733,8 +1732,8 @@ describe('metrics reducers', () => {
     });
   });
 
-  describe('#globalSettingsLoaded', () => {
-    it('adds partial state from loading the settings to the (default) settings', () => {
+  describe('#fetchPersistedSettingsSucceeded', () => {
+    it('adds partial state from the action to the (default) settings', () => {
       const beforeState = buildMetricsState({
         settings: buildMetricsSettingsState({
           scalarSmoothing: 0.3,
@@ -1743,48 +1742,23 @@ describe('metrics reducers', () => {
         }),
         settingOverrides: {
           scalarSmoothing: 0.5,
-          tooltipSort: TooltipSort.DEFAULT,
         },
       });
 
       const nextState = reducers(
         beforeState,
-        globalSettingsLoaded({
+        actions.fetchPersistedSettingsSucceeded({
           partialSettings: {
+            scalarSmoothing: 0,
             ignoreOutliers: true,
-            tooltipSortString: 'descending',
           },
         })
       );
 
-      expect(nextState.settings.scalarSmoothing).toBe(0.3);
+      expect(nextState.settings.scalarSmoothing).toBe(0);
       expect(nextState.settings.ignoreOutliers).toBe(true);
-      expect(nextState.settings.tooltipSort).toBe(TooltipSort.DESCENDING);
+      expect(nextState.settings.tooltipSort).toBe(TooltipSort.ASCENDING);
       expect(nextState.settingOverrides.scalarSmoothing).toBe(0.5);
-      expect(nextState.settingOverrides.tooltipSort).toBe(TooltipSort.DEFAULT);
     });
-
-    it(
-      'converts stringified tooltip sort into enum and discard the value when it ' +
-        'is not known',
-      () => {
-        const beforeState = buildMetricsState({
-          settings: buildMetricsSettingsState({
-            tooltipSort: TooltipSort.ASCENDING,
-          }),
-        });
-
-        const nextState = reducers(
-          beforeState,
-          globalSettingsLoaded({
-            partialSettings: {
-              tooltipSortString: 'yo',
-            },
-          })
-        );
-
-        expect(nextState.settings.tooltipSort).toBe(TooltipSort.ASCENDING);
-      }
-    );
   });
 });

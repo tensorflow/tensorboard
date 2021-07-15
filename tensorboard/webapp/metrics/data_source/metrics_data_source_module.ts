@@ -15,12 +15,13 @@ limitations under the License.
 import {NgModule} from '@angular/core';
 
 import {FeatureFlagModule} from '../../feature_flag/feature_flag_module';
+import {LocalStorageModule} from '../../util/local_storage';
 import {TBHttpClientModule} from '../../webapp_data_source/tb_http_client_module';
 import {TBMetricsDataSource} from './metrics_data_source';
 import {MetricsDataSource} from './types';
 
 @NgModule({
-  imports: [FeatureFlagModule, TBHttpClientModule],
+  imports: [FeatureFlagModule, LocalStorageModule, TBHttpClientModule],
   providers: [{provide: MetricsDataSource, useClass: TBMetricsDataSource}],
 })
 export class MetricsDataSourceModule {}
