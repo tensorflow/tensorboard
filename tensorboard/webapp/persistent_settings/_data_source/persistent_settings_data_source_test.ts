@@ -23,7 +23,7 @@ import {
 import {
   OSSSettingsConverter,
   PersistentSettingsDataSourceImpl,
-  SettingsCoverter,
+  SettingsConverter,
   TEST_ONLY,
 } from './persistent_settings_data_source';
 import {BackendSettings, PersistableSettings} from './types';
@@ -33,13 +33,13 @@ describe('persistent_settings data_source test', () => {
   let getItemSpy: jasmine.Spy;
 
   async function configure<UiSettings, StorageSettings>(
-    Converter: new () => SettingsCoverter<UiSettings, StorageSettings>
+    Converter: new () => SettingsConverter<UiSettings, StorageSettings>
   ) {
     await TestBed.configureTestingModule({
       imports: [LocalStorageTestingModule],
       providers: [
         PersistentSettingsDataSourceImpl,
-        {provide: SettingsCoverter, useClass: Converter},
+        {provide: SettingsConverter, useClass: Converter},
       ],
     });
 
@@ -156,7 +156,7 @@ describe('persistent_settings data_source test', () => {
     }
 
     @Injectable()
-    class CustomConverter extends SettingsCoverter<
+    class CustomConverter extends SettingsConverter<
       UiSettings,
       BackendSettings
     > {

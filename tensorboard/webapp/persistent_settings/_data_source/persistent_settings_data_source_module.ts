@@ -18,7 +18,7 @@ import {LocalStorageModule} from '../../util/local_storage';
 import {
   PersistentSettingsDataSource,
   PersistentSettingsDataSourceImpl,
-  SettingsCoverter,
+  SettingsConverter,
   OSSSettingsConverter,
 } from './persistent_settings_data_source';
 
@@ -29,7 +29,7 @@ import {
       provide: PersistentSettingsDataSource,
       useClass: PersistentSettingsDataSourceImpl,
     },
-    {provide: SettingsCoverter, useClass: OSSSettingsConverter},
+    {provide: SettingsConverter, useClass: OSSSettingsConverter},
   ],
 })
 export class PersistentSettingsDataSourceModule {}

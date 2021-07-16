@@ -29,7 +29,7 @@ export abstract class PersistentSettingsDataSource<UiSettings> {
 }
 
 @Injectable()
-export abstract class SettingsCoverter<UiSettings, StorageSettings> {
+export abstract class SettingsConverter<UiSettings, StorageSettings> {
   abstract uiToBackend(
     uiSettings: Partial<UiSettings>
   ): Partial<StorageSettings>;
@@ -39,7 +39,7 @@ export abstract class SettingsCoverter<UiSettings, StorageSettings> {
 }
 
 @Injectable()
-export class OSSSettingsConverter extends SettingsCoverter<
+export class OSSSettingsConverter extends SettingsConverter<
   PersistableSettings,
   BackendSettings
 > {
@@ -89,7 +89,7 @@ export class PersistentSettingsDataSourceImpl<UiSettings, StorageSettings>
   implements PersistentSettingsDataSource<UiSettings> {
   constructor(
     private readonly localStorage: LocalStorage,
-    private readonly converter: SettingsCoverter<UiSettings, StorageSettings>
+    private readonly converter: SettingsConverter<UiSettings, StorageSettings>
   ) {}
 
   setSettings(partialSetting: Partial<UiSettings>): Observable<void> {

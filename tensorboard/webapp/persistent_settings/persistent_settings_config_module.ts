@@ -21,14 +21,16 @@ import {
 } from '@angular/core';
 import {Selector} from '@ngrx/store';
 
+import {PersistableSettings} from './_data_source/types';
+
 const GLOBAL_PERSISTENT_SETTINGS_TOKEN = new InjectionToken(
   '[Persistent Settings] Global Settings'
 );
 
-export type SettingSelector<State, Settings> = Selector<
+export type SettingSelector<
   State,
-  Partial<Settings>
->;
+  Settings extends PersistableSettings
+> = Selector<State, Partial<Settings>>;
 
 @NgModule()
 export class PersistentSettingsConfigModule<State, Settings> {
@@ -51,6 +53,11 @@ export class PersistentSettingsConfigModule<State, Settings> {
    * Registers a global setting that is to be persisted when a store emits a
    * change. For per-experiment settings, please contact TensorBoard team
    * member.
+   *
+   * Do note that if you specify the Settings type to be something other than
+   * PeristableSettings, you will need to supply a custom Converter for the
+   * DataSource. Please refer to `SettingsConverter` in
+   * PersistentSettingsDataSource.
    *
    * Example usage:
    *
