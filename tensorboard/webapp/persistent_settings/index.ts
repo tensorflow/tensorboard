@@ -12,23 +12,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Injectable, NgModule} from '@angular/core';
 
-import {LocalStorage} from './local_storage';
-
-@Injectable()
-export class TestingLocalStorage {
-  setItem(key: string, value: string): void {}
-  getItem(key: string): string | null {
-    return null;
-  }
-  removeItem(key: string): void {}
-}
-
-@NgModule({
-  providers: [
-    TestingLocalStorage,
-    {provide: LocalStorage, useExisting: TestingLocalStorage},
-  ],
-})
-export class LocalStorageTestingModule {}
+export {PersistableSettings} from './_data_source/types';
+export {PersistentSettingsModule} from './persistent_settings_module';

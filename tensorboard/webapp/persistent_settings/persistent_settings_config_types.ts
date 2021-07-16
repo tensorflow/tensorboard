@@ -12,23 +12,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Injectable, NgModule} from '@angular/core';
+import {InjectionToken} from '@angular/core';
+import {Selector} from '@ngrx/store';
 
-import {LocalStorage} from './local_storage';
+import {PersistableSettings} from './_data_source/types';
 
-@Injectable()
-export class TestingLocalStorage {
-  setItem(key: string, value: string): void {}
-  getItem(key: string): string | null {
-    return null;
-  }
-  removeItem(key: string): void {}
-}
+export type SettingSelector<
+  State,
+  Settings extends PersistableSettings
+> = Selector<State, Partial<Settings>>;
 
-@NgModule({
-  providers: [
-    TestingLocalStorage,
-    {provide: LocalStorage, useExisting: TestingLocalStorage},
-  ],
-})
-export class LocalStorageTestingModule {}
+export const GLOBAL_PERSISTENT_SETTINGS_TOKEN = new InjectionToken(
+  '[Persistent Settings] Global Settings'
+);
