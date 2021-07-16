@@ -12,25 +12,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {Inject, ModuleWithProviders, NgModule, Optional} from '@angular/core';
+
 import {
-  Inject,
-  InjectionToken,
-  ModuleWithProviders,
-  NgModule,
-  Optional,
-} from '@angular/core';
-import {Selector} from '@ngrx/store';
-
-import {PersistableSettings} from './_data_source/types';
-
-const GLOBAL_PERSISTENT_SETTINGS_TOKEN = new InjectionToken(
-  '[Persistent Settings] Global Settings'
-);
-
-export type SettingSelector<
-  State,
-  Settings extends PersistableSettings
-> = Selector<State, Partial<Settings>>;
+  GLOBAL_PERSISTENT_SETTINGS_TOKEN,
+  SettingSelector,
+} from './persistent_settings_config_types';
 
 @NgModule()
 export class PersistentSettingsConfigModule<State, Settings> {

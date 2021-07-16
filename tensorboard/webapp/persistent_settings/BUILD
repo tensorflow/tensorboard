@@ -20,14 +20,25 @@ tf_ng_module(
 )
 
 tf_ng_module(
-    name = "config_module",
+    name = "config_types",
     srcs = [
-        "persistent_settings_config_module.ts",
+        "persistent_settings_config_types.ts",
     ],
     deps = [
         "//tensorboard/webapp/persistent_settings/_data_source:types",
         "@npm//@angular/core",
         "@npm//@ngrx/store",
+    ],
+)
+
+tf_ng_module(
+    name = "config_module",
+    srcs = [
+        "persistent_settings_config_module.ts",
+    ],
+    deps = [
+        ":config_types",
+        "@npm//@angular/core",
     ],
 )
 
