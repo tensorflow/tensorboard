@@ -14,6 +14,11 @@ tf_sass_binary(
     src = "runs_group_menu_button_component.scss",
 )
 
+tf_sass_binary(
+    name = "regex_edit_dialog_styles",
+    src = "regex_edit_dialog_component.scss",
+)
+
 tf_ng_module(
     name = "runs_table",
     srcs = [
@@ -27,6 +32,7 @@ tf_ng_module(
         "types.ts",
     ],
     assets = [
+        ":regex_edit_dialog_styles",
         ":runs_group_menu_button_styles",
         ":runs_table_styles",
         "regex_edit_dialog.ng.html",
