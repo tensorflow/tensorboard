@@ -139,7 +139,6 @@ describe('persistent_settings effects test', () => {
         getSettingsSpy.and.returnValue(of({}));
         action.next(TEST_ONLY.initAction());
 
-        tick();
         tick(TEST_ONLY.DEBOUNCE_PERIOD_IN_MS * 2);
         expect(setSettingsSpy).not.toHaveBeenCalled();
       }));
