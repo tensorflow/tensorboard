@@ -33,7 +33,6 @@ function buildConcreteRouteDef(override: Partial<ConcreteRouteDef>) {
 
 function buildRedirectionRouteDef(override: Partial<RedirectionRouteDef>) {
   return {
-    routeKind: null,
     path: 'unknown',
     redirectionPath: 'unknown',
     ...override,
@@ -501,6 +500,105 @@ describe('route config', () => {
           pathname: '/c',
         })
       );
+    });
+  });
+
+  describe('programmatical redirection', () => {
+    it('redirects based on returned value on redirector', () => {
+      const config = new RouteConfigs([
+        {
+          path: '/tensor/:eid',
+          redirector: (paths) => {
+            const eidPart = paths[1];
+            return eidPart === '123' ? ['board'] : ['rocks'];
+          },
+        },
+        buildConcreteRouteDef({
+          routeKind: RouteKind.EXPERIMENT,
+          path: '/rocks',
+        }),
+        buildConcreteRouteDef({
+          routeKind: RouteKind.COMPARE_EXPERIMENT,
+          path: '/board',
+        }),
+      ]);
+
+      expect(config.match(buildNavigation({pathname: '/tensor/123'}))).toEqual(
+        buildRouteMatch({
+          routeKind: RouteKind.COMPARE_EXPERIMENT,
+          pathname: '/board',
+          params: {},
+        })
+      );
+      expect(config.match(buildNavigation({pathname: '/tensor/6006'}))).toEqual(
+        buildRouteMatch({
+          routeKind: RouteKind.EXPERIMENT,
+          pathname: '/rocks',
+          params: {},
+        })
+      );
+    });
+
+    it('redirects multiple times', () => {
+      const config = new RouteConfigs([
+        {
+          path: '/tb/:eid',
+          redirector: (paths) => {
+            return [paths[1]];
+          },
+        },
+        buildRedirectionRouteDef({
+          path: '/redirect',
+          redirectionPath: '/tensorboard',
+        }),
+        buildConcreteRouteDef({path: '/tensorboard'}),
+      ]);
+
+      expect(config.match(buildNavigation({pathname: '/tb/redirect'}))).toEqual(
+        buildRouteMatch({
+          pathname: '/tensorboard',
+          params: {},
+        })
+      );
+    });
+
+    it('handles parameter is opaque string in path parts', () => {
+      const config = new RouteConfigs([
+        {
+          path: '/tb/:first/hey/:second/',
+          redirector: (paths) => {
+            return ['hello'];
+          },
+        },
+        buildConcreteRouteDef({path: '/hello'}),
+      ]);
+
+      expect(config.match(buildNavigation({pathname: '/tb/foo'}))).toBe(null);
+      expect(config.match(buildNavigation({pathname: '/tb/foo/hey'}))).toBe(
+        null
+      );
+      expect(config.match(buildNavigation({pathname: '/tb/foo/hey/bar'}))).toBe(
+        null
+      );
+      expect(
+        config.match(buildNavigation({pathname: '/tb/foo/hey/bar/'}))
+      ).toEqual(config.match(buildNavigation({pathname: '/hello'})));
+    });
+
+    it('matches nothing if redirector matches unknown route path parts', () => {
+      const config = new RouteConfigs([
+        {
+          path: '/tb/:eid',
+          redirector: (paths) => {
+            return [paths[1]];
+          },
+        },
+        buildConcreteRouteDef({path: '/tensorboard'}),
+      ]);
+
+      expect(
+        config.match(buildNavigation({pathname: '/tb/redirect'}))
+      ).toBeNull();
     });
   });
 });

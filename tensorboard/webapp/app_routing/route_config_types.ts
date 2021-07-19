@@ -47,9 +47,39 @@ export interface ConcreteRouteDef {
 }
 
 export interface RedirectionRouteDef {
-  routeKind: null;
+  routeKind?: null;
   path: string;
   redirectionPath: string;
 }
 
-export type RouteDef = ConcreteRouteDef | RedirectionRouteDef;
+export interface ProgrammticRedirectionRouteDef {
+  /**
+   * A path that should activate the route definition. A Parameter, see
+   * definition in `ConcreteRouteDef`, is only used as a wild card and its value
+   * is not used meaningfully as all raw `pathParts` are passed to the
+   * `redirector`.
+   */
+  path: string;
+  /**
+   * A function that returns, from a pathParts, a new pathParts it should
+   * redirect to.
+   */
+  redirector: (pathParts: string[]) => string[];
+}
+
+export type RouteDef =
+  | ConcreteRouteDef
+  | RedirectionRouteDef
+  | ProgrammticRedirectionRouteDef;
+
+export function isConcreteRouteDef(
+  definition: RouteDef
+): definition is ConcreteRouteDef {
+  return (definition as ConcreteRouteDef).routeKind != undefined;
+}
+
+export function isStaticRedirectionRouteDef(
+  definition: RouteDef
+): definition is RedirectionRouteDef {
+  return (definition as RedirectionRouteDef).redirectionPath !== undefined;
+}

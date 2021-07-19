@@ -12,7 +12,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {ConcreteRouteDef, RouteDef} from './route_config_types';
+import {
+  ConcreteRouteDef,
+  isConcreteRouteDef,
+  isStaticRedirectionRouteDef,
+  ProgrammticRedirectionRouteDef,
+  RedirectionRouteDef,
+  RouteDef,
+} from './route_config_types';
 import {Route, RouteKind, RouteParams} from './types';
 
 interface NegativeMatch {
@@ -70,19 +77,66 @@ function getPathFragments(path: string): PathFragment[] {
   });
 }
 
+enum RouteType {
+  CONCRETE,
+  STATIC_REDIRECTION,
+  PROGRAMMATIC_REDIRECTION,
+}
+
+interface ConcreteRouteConfigMatcher {
+  routeType: RouteType.CONCRETE;
+  definition: ConcreteRouteDef;
+}
+
+interface StaticRedirectionRouteConfigMatcher {
+  routeType: RouteType.STATIC_REDIRECTION;
+  definition: RedirectionRouteDef;
+}
+
+interface ProgrammaticalRouteConfigMatcher {
+  routeType: RouteType.PROGRAMMATIC_REDIRECTION;
+  definition: ProgrammticRedirectionRouteDef;
+}
+
+type MatcherConfiguration =
+  | ConcreteRouteConfigMatcher
+  | StaticRedirectionRouteConfigMatcher
+  | ProgrammaticalRouteConfigMatcher;
+
 class RouteConfigMatcher {
   private readonly pathFragments: PathFragment[];
   private readonly pathMatchers: PathMatcher[];
   private readonly redirectionFragments: PathFragment[] | null;
+  readonly config: MatcherConfiguration;
 
-  constructor(readonly config: RouteDef) {
-    this.validateConfig(config);
-    this.pathFragments = getPathFragments(config.path);
+  constructor(routeDef: RouteDef) {
+    this.validateConfig(routeDef);
+    this.config = this.getConfig(routeDef);
+    this.pathFragments = getPathFragments(routeDef.path);
     this.pathMatchers = this.getPathMatchers(this.pathFragments);
     this.redirectionFragments =
-      config.routeKind === null
-        ? getPathFragments(config.redirectionPath)
+      this.config.routeType === RouteType.STATIC_REDIRECTION
+        ? getPathFragments(this.config.definition.redirectionPath)
         : null;
+  }
+
+  private getConfig(routeDef: RouteDef): MatcherConfiguration {
+    if (isConcreteRouteDef(routeDef)) {
+      return {
+        routeType: RouteType.CONCRETE,
+        definition: routeDef,
+      };
+    }
+    if (isStaticRedirectionRouteDef(routeDef)) {
+      return {
+        routeType: RouteType.STATIC_REDIRECTION,
+        definition: routeDef,
+      };
+    }
+    return {
+      routeType: RouteType.PROGRAMMATIC_REDIRECTION,
+      definition: routeDef,
+    };
   }
 
   private validateConfig({path}: RouteDef) {
@@ -158,6 +212,16 @@ class RouteConfigMatcher {
         this.redirectionFragments,
         combinedParams
       );
+      return {
+        result: true,
+        params: combinedParams,
+        pathParts: newPathParts,
+        isRedirection: true,
+      };
+    }
+
+    if (this.config.routeType === RouteType.PROGRAMMATIC_REDIRECTION) {
+      const newPathParts = this.config.definition.redirector(pathParts);
       return {
         result: true,
         params: combinedParams,
@@ -249,10 +313,13 @@ export class RouteConfigs {
 
       this.configMatchers.push(matcher);
 
-      if (matcher.config.routeKind !== null) {
-        this.routeKindToConfigMatchers.set(matcher.config.routeKind, matcher);
+      if (matcher.config.routeType === RouteType.CONCRETE) {
+        this.routeKindToConfigMatchers.set(
+          matcher.config.definition.routeKind,
+          matcher
+        );
 
-        if (matcher.config.defaultRoute) {
+        if (matcher.config.definition.defaultRoute) {
           this.defaultRouteConfig = matcher;
         }
       }
@@ -260,9 +327,10 @@ export class RouteConfigs {
   }
 
   private validateRouteConfigs(configs: RouteDef[]) {
-    const defaultRoutes = configs.filter((routeDef) => {
-      return Boolean(routeDef.routeKind !== null && routeDef.defaultRoute);
-    });
+    const concreteDefinitions = configs.filter((routeDef) => {
+      return Boolean(isConcreteRouteDef(routeDef));
+    }) as ConcreteRouteDef[];
+    const defaultRoutes = concreteDefinitions.filter((def) => def.defaultRoute);
 
     if (defaultRoutes.length > 1) {
       const paths = defaultRoutes.map(({path}) => path).join(', ');
@@ -279,11 +347,7 @@ export class RouteConfigs {
     }
 
     const routeKindConfig = new Set<RouteKind>();
-    for (const {routeKind} of configs) {
-      if (routeKind === null) {
-        continue;
-      }
-
+    for (const {routeKind} of concreteDefinitions) {
       if (routeKindConfig.has(routeKind)) {
         throw new RangeError(
           `Multiple route configuration for kind: ${routeKind}. ` +
@@ -317,12 +381,19 @@ export class RouteConfigs {
             break;
           }
 
-          const config = matcher.config as ConcreteRouteDef;
+          if (matcher.config.routeType !== RouteType.CONCRETE) {
+            throw new RangeError(
+              'None concrete route definition cannot match for concrete ' +
+                'route change'
+            );
+          }
+
+          const definition = matcher.config.definition;
           return {
-            routeKind: config.routeKind,
+            routeKind: definition.routeKind,
             params,
             pathname: getPathFromParts(newPathParts),
-            deepLinkProvider: config.deepLinkProvider || null,
+            deepLinkProvider: definition.deepLinkProvider || null,
           };
         }
       }
@@ -343,13 +414,16 @@ export class RouteConfigs {
       );
     }
 
-    if (this.defaultRouteConfig) {
-      const config = this.defaultRouteConfig.config as ConcreteRouteDef;
+    if (
+      this.defaultRouteConfig &&
+      this.defaultRouteConfig.config.routeType === RouteType.CONCRETE
+    ) {
+      const definition = this.defaultRouteConfig.config.definition;
       return {
-        routeKind: config.routeKind,
+        routeKind: definition.routeKind,
         params: {},
-        pathname: config.path,
-        deepLinkProvider: config.deepLinkProvider || null,
+        pathname: definition.path,
+        deepLinkProvider: definition.deepLinkProvider || null,
       };
     }
 
@@ -362,14 +436,14 @@ export class RouteConfigs {
   ): RouteMatch | null {
     const matcher = this.routeKindToConfigMatchers.get(routeKind);
 
-    if (!matcher || !matcher.config.routeKind) {
+    if (!matcher || matcher.config.routeType !== RouteType.CONCRETE) {
       throw new RangeError(
         `Requires configuration for routeKind: ${routeKind}`
       );
     }
 
     const match = matcher.matchByParams(params);
-    const config = matcher.config;
+    const config = matcher.config.definition;
     return {
       routeKind,
       params,
