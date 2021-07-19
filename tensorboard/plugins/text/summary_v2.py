@@ -114,7 +114,7 @@ def text_pb(tag, data, description=None):
       A `tf.Summary` protobuf object.
     """
     try:
-        tensor = tensor_util.make_tensor_proto(data, dtype=np.object)
+        tensor = tensor_util.make_tensor_proto(data, dtype=np.object_)
     except TypeError as e:
         raise TypeError("tensor must be of type string", e)
     summary_metadata = metadata.create_summary_metadata(
