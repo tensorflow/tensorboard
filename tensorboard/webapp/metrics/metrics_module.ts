@@ -68,6 +68,24 @@ export function alertActionProvider() {
   ];
 }
 
+export function getSmoothingSettingFactory() {
+  return createSelector(getMetricsScalarSmoothing, (smoothing) => {
+    return {scalarSmoothing: smoothing};
+  });
+}
+
+export function getMetricsIgnoreOutliersSettingFactory() {
+  return createSelector(getMetricsIgnoreOutliers, (ignoreOutliers) => {
+    return {ignoreOutliers};
+  });
+}
+
+export function getMetricsTooltipSortSettingFactory() {
+  return createSelector(getMetricsTooltipSort, (tooltipSort) => {
+    return {tooltipSortString: String(tooltipSort)};
+  });
+}
+
 @NgModule({
   imports: [
     CommonModule,
@@ -87,19 +105,13 @@ export function alertActionProvider() {
     EffectsModule.forFeature([MetricsEffects]),
     AlertActionModule.registerAlertActions(alertActionProvider),
     PersistentSettingsConfigModule.defineGlobalSetting(
-      createSelector(getMetricsScalarSmoothing, (smoothing) => {
-        return {scalarSmoothing: smoothing};
-      })
+      getSmoothingSettingFactory
     ),
     PersistentSettingsConfigModule.defineGlobalSetting(
-      createSelector(getMetricsIgnoreOutliers, (ignoreOutliers) => {
-        return {ignoreOutliers};
-      })
+      getMetricsIgnoreOutliersSettingFactory
     ),
     PersistentSettingsConfigModule.defineGlobalSetting(
-      createSelector(getMetricsTooltipSort, (tooltipSort) => {
-        return {tooltipSortString: String(tooltipSort)};
-      })
+      getMetricsTooltipSortSettingFactory
     ),
   ],
   providers: [
