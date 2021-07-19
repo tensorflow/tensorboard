@@ -12,6 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {globalSettingsLoaded, ThemeValue} from '../../persistent_settings';
 import * as actions from '../actions/feature_flag_actions';
 import {buildFeatureFlag} from '../testing';
 import {reducers} from './feature_flag_reducers';
@@ -104,6 +105,49 @@ describe('feature_flag_reducers', () => {
           inColab: false,
         })
       );
+    });
+  });
+
+  describe('#globalSettingsLoaded', () => {
+    it('sets dark mode overrides when global settings include it', () => {
+      const prevState = buildFeatureFlagState({
+        isFeatureFlagsLoaded: true,
+        flagOverrides: buildFeatureFlag({
+          enableDarkModeOverride: false,
+        }),
+      });
+
+      const state1 = reducers(
+        prevState,
+        globalSettingsLoaded({
+          partialSettings: {},
+        })
+      );
+      expect(state1.flagOverrides!.enableDarkModeOverride).toBe(false);
+
+      const state2 = reducers(
+        prevState,
+        globalSettingsLoaded({
+          partialSettings: {themeOverride: ThemeValue.LIGHT},
+        })
+      );
+      expect(state2.flagOverrides!.enableDarkModeOverride).toBe(false);
+
+      const state3 = reducers(
+        prevState,
+        globalSettingsLoaded({
+          partialSettings: {themeOverride: ThemeValue.DARK},
+        })
+      );
+      expect(state3.flagOverrides!.enableDarkModeOverride).toBe(true);
+
+      const state4 = reducers(
+        prevState,
+        globalSettingsLoaded({
+          partialSettings: {themeOverride: ThemeValue.BROWSER_DEFAULT},
+        })
+      );
+      expect(state4.flagOverrides!.enableDarkModeOverride).toBe(undefined);
     });
   });
 });
