@@ -18,6 +18,7 @@ import {stateRehydratedFromUrl} from '../../app_routing/actions';
 import {createRouteContextedState} from '../../app_routing/route_contexted_reducer_helper';
 import {RouteKind} from '../../app_routing/types';
 import * as coreActions from '../../core/actions';
+import {globalSettingsLoaded} from '../../persistent_settings';
 import {DataLoadState} from '../../types/data';
 import {mapObjectValues} from '../../util/lang';
 import {composeReducers} from '../../util/ngrx';
@@ -39,6 +40,7 @@ import {
   CardUniqueInfo,
   SCALARS_SMOOTHING_MAX,
   SCALARS_SMOOTHING_MIN,
+  TooltipSort,
   URLDeserializedState,
 } from '../internal_types';
 import {
@@ -62,6 +64,7 @@ import {
   TimeSeriesData,
   TimeSeriesLoadable,
   METRICS_SETTINGS_DEFAULT,
+  MetricsSettings,
 } from './metrics_types';
 
 function buildCardMetadataList(tagMetadata: TagMetadata): CardMetadata[] {
@@ -339,12 +342,37 @@ const reducer = createReducer(
       settingOverrides: newSettings,
     };
   }),
-  on(actions.fetchPersistedSettingsSucceeded, (state, {partialSettings}) => {
+  on(globalSettingsLoaded, (state, {partialSettings}) => {
+    const metricsSettings: Partial<MetricsSettings> = {};
+    if (partialSettings.tooltipSortString) {
+      switch (partialSettings.tooltipSortString) {
+        case TooltipSort.ASCENDING:
+          metricsSettings.tooltipSort = TooltipSort.ASCENDING;
+          break;
+        case TooltipSort.DESCENDING:
+          metricsSettings.tooltipSort = TooltipSort.DESCENDING;
+          break;
+        case TooltipSort.DEFAULT:
+          metricsSettings.tooltipSort = TooltipSort.DEFAULT;
+          break;
+        case TooltipSort.NEAREST:
+          metricsSettings.tooltipSort = TooltipSort.NEAREST;
+          break;
+        default:
+      }
+    }
+    if (typeof partialSettings.ignoreOutliers === 'boolean') {
+      metricsSettings.ignoreOutliers = partialSettings.ignoreOutliers;
+    }
+    if (typeof partialSettings.scalarSmoothing === 'number') {
+      metricsSettings.scalarSmoothing = partialSettings.scalarSmoothing;
+    }
+
     return {
       ...state,
       settings: {
         ...state.settings,
-        ...partialSettings,
+        ...metricsSettings,
       },
     };
   }),

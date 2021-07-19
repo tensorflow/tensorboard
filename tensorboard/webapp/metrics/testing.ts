@@ -13,34 +13,31 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Injectable} from '@angular/core';
-import {DataLoadState} from '../types/data';
-import {of, Observable} from 'rxjs';
+import {Observable, of} from 'rxjs';
 
 import {State} from '../app_state';
+import {DataLoadState} from '../types/data';
 import {HistogramMode} from '../widgets/histogram/histogram_types';
-
 import {
   HistogramStepDatum,
   ImageId,
   ImageStepDatum,
   MetricsDataSource,
-  PersistableSettings,
   PluginType,
   ScalarStepDatum,
   TagMetadata as DataSourceTagMetadata,
   TimeSeriesRequest,
+  TimeSeriesResponse,
 } from './data_source';
 import {
-  METRICS_FEATURE_KEY,
   MetricsState,
+  METRICS_FEATURE_KEY,
   TagMetadata,
   TimeSeriesData,
 } from './store';
 import * as selectors from './store/metrics_selectors';
 import {MetricsSettings, RunToSeries, StepDatum} from './store/metrics_types';
 import {CardId, CardMetadata, TooltipSort, XAxisType} from './types';
-
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
 export function buildMetricsSettingsState(
   overrides?: Partial<MetricsSettings>
@@ -286,11 +283,13 @@ export function provideMockCardRunToSeriesData(
 
 @Injectable()
 export class TestingMetricsDataSource implements MetricsDataSource {
-  fetchTagMetadata(experimentIds: string[]) {
+  fetchTagMetadata(experimentIds: string[]): Observable<DataSourceTagMetadata> {
     return of(buildDataSourceTagMetadata());
   }
 
-  fetchTimeSeries(requests: TimeSeriesRequest[]) {
+  fetchTimeSeries(
+    requests: TimeSeriesRequest[]
+  ): Observable<TimeSeriesResponse[]> {
     return of([]);
   }
 
@@ -305,14 +304,6 @@ export class TestingMetricsDataSource implements MetricsDataSource {
     downloadType: 'json' | 'csv'
   ) {
     return '';
-  }
-
-  setSettings(partialSetting: Partial<PersistableSettings>): Observable<void> {
-    return of();
-  }
-
-  getSettings(): Observable<Partial<PersistableSettings>> {
-    return of({});
   }
 }
 
