@@ -240,4 +240,18 @@ describe('regex_edit_dialog', () => {
       })
     );
   });
+
+  it('fills example', () => {
+    const fixture = createComponent(['rose']);
+    fixture.detectChanges();
+
+    const button = fixture.debugElement.query(
+      By.css('.example-details button')
+    );
+    button.nativeElement.click();
+    fixture.detectChanges();
+
+    const input = fixture.debugElement.query(By.css('input'));
+    expect(input.nativeElement.value).toBe('(train|eval)');
+  });
 });

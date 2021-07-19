@@ -24,6 +24,7 @@ import {MatDialogRef} from '@angular/material/dialog';
 @Component({
   selector: 'regex-edit-dialog-component',
   templateUrl: 'regex_edit_dialog.ng.html',
+  styleUrls: ['regex_edit_dialog_component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RegexEditDialogComponent {
@@ -42,5 +43,9 @@ export class RegexEditDialogComponent {
 
   onSaveClick(regexString: string) {
     this.onSave.emit(regexString);
+  }
+
+  fillExample(regexExample: string): void {
+    this.regexString = regexExample;
   }
 }

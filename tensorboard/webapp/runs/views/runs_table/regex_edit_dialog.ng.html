@@ -14,12 +14,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
+<h1 mat-dialog-title>Color runs by regex</h1>
+
 <mat-dialog-content>
+  <p>Enter a regex with capturing groups to match against run names:</p>
   <mat-form-field>
     <input
       matInput
       #regexStringInput
-      placeholder="(\w+/).+"
       value="{{ regexString }}"
       (keydown.enter)="onEnter($event.target.value)"
       cdkFocusInitial
@@ -27,10 +29,23 @@ limitations under the License.
   </mat-form-field>
 </mat-dialog-content>
 
-<div mat-dialog-actions>
+<div class="example-details">
+  <p>
+    Each matching run will be assigned a color based on the "key" formed by its
+    matches to the capturing groups. <br />
+    <button (click)="fillExample('(train|eval)')">
+      Try <code>(train|eval)</code>
+    </button>
+    to assign all runs containing <code>train</code> to one color and all runs
+    containing <code>eval</code> to another color.
+  </p>
+</div>
+
+<div mat-dialog-actions align="end">
   <button mat-button mat-dialog-close>Cancel</button>
   <button
-    mat-button
+    mat-raised-button
+    color="primary"
     mat-dialog-close
     (click)="onSaveClick(regexStringInput.value)"
   >
