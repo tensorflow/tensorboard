@@ -20,8 +20,19 @@ import {catchError, switchMap, tap, withLatestFrom} from 'rxjs/operators';
 
 import {State} from '../../app_state';
 import {SettingsDataSource} from '../_data_source/settings_data_source';
-import * as actions from './settings_actions';
-import * as selectors from './settings_selectors';
+import {
+  changePageSize,
+  changeReloadPeriod,
+  fetchSavedSettingsFailed,
+  fetchSavedSettingsRequested,
+  fetchSavedSettingsSucceeded,
+  toggleReloadEnabled,
+} from './settings_actions';
+import {
+  getPageSize,
+  getReloadEnabled,
+  getReloadPeriodInMs,
+} from './settings_selectors';
 
 /** @typehack */ import * as _typeHackNgrxEffects from '@ngrx/effects';
 /** @typehack */ import * as _typeHackModels from '@ngrx/store/src/models';
@@ -48,16 +59,14 @@ export class SettingsEffects implements OnInitEffects {
       return this.actions$.pipe(
         ofType(initAction),
         switchMap(() => {
-          this.store.dispatch(actions.fetchSavedSettingsRequested());
+          this.store.dispatch(fetchSavedSettingsRequested());
           return this.dataSource.fetchSavedSettings();
         }),
         tap((savedSettings) => {
-          this.store.dispatch(
-            actions.fetchSavedSettingsSucceeded({savedSettings})
-          );
+          this.store.dispatch(fetchSavedSettingsSucceeded({savedSettings}));
         }),
         catchError(() => {
-          this.store.dispatch(actions.fetchSavedSettingsFailed());
+          this.store.dispatch(fetchSavedSettingsFailed());
           return EMPTY;
         })
       );
@@ -69,8 +78,8 @@ export class SettingsEffects implements OnInitEffects {
   saveReloadEnabled$ = createEffect(
     () => {
       return this.actions$.pipe(
-        ofType(actions.toggleReloadEnabled),
-        withLatestFrom(this.store.select(selectors.getReloadEnabled)),
+        ofType(toggleReloadEnabled),
+        withLatestFrom(this.store.select(getReloadEnabled)),
         tap(([, reloadEnabled]) => {
           this.dataSource.saveReloadEnabled(reloadEnabled);
         })
@@ -83,8 +92,8 @@ export class SettingsEffects implements OnInitEffects {
   saveReloadPeriodInMs$ = createEffect(
     () => {
       return this.actions$.pipe(
-        ofType(actions.changeReloadPeriod),
-        withLatestFrom(this.store.select(selectors.getReloadPeriodInMs)),
+        ofType(changeReloadPeriod),
+        withLatestFrom(this.store.select(getReloadPeriodInMs)),
         tap(([, reloadPeriodInMs]) => {
           this.dataSource.saveReloadPeriodInMs(reloadPeriodInMs);
         })
@@ -97,8 +106,8 @@ export class SettingsEffects implements OnInitEffects {
   savePageSize$ = createEffect(
     () => {
       return this.actions$.pipe(
-        ofType(actions.changePageSize),
-        withLatestFrom(this.store.select(selectors.getPageSize)),
+        ofType(changePageSize),
+        withLatestFrom(this.store.select(getPageSize)),
         tap(([, pageSize]) => {
           this.dataSource.savePageSize(pageSize);
         })

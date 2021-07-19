@@ -35,11 +35,11 @@ export class SettingsDataSource {
       SETTINGS_RELOAD_PERIOD_IN_MS_KEY
     );
     if (reloadPeriodInMs) {
-      savedSettings.reloadPeriodInMs = parseInt(reloadPeriodInMs);
+      savedSettings.reloadPeriodInMs = parseInt(reloadPeriodInMs, 10);
     }
     const pageSize = window.localStorage.getItem(SETTINGS_PAGE_SIZE_KEY);
     if (pageSize) {
-      savedSettings.pageSize = parseInt(pageSize);
+      savedSettings.pageSize = parseInt(pageSize, 10);
     }
 
     return of(savedSettings);

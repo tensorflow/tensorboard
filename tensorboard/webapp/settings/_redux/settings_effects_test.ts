@@ -118,15 +118,21 @@ describe('SettingsEffects', () => {
     store.overrideSelector(getReloadPeriodInMs, 1111);
     store.refreshState();
     actions.next(changeReloadPeriod({periodInMs: 2222}));
+    // Note that the value from the selector is used instead of the value from
+    // the action. (That is, we expect the reducers to have determined the
+    // correct value to save.)
     expect(saveReloadPeriodInMs).toHaveBeenCalledWith(1111);
   });
 
-  it('saves reloadPeriodInMs', () => {
+  it('saves pageSize', () => {
     const savePageSize = spyOn(dataSource, 'savePageSize');
 
     store.overrideSelector(getPageSize, 1111);
     store.refreshState();
     actions.next(changePageSize({size: 2222}));
+    // Note that the value from the selector is used instead of the value from
+    // the action. (That is, we expect the reducers to have determined the
+    // correct value to save.)
     expect(savePageSize).toHaveBeenCalledWith(1111);
   });
 });
