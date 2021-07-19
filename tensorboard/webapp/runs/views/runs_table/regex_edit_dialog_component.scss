@@ -21,9 +21,9 @@ limitations under the License.
     border: none;
     cursor: pointer;
     text-decoration: underline;
-    color: map-get($tb-foreground, link);
+    @include tb-theme-foreground-prop(color, link);
     &:visited {
-      color: map-get($tb-foreground, link-visited);
+      @include tb-theme-foreground-prop(color, link-visited);
     }
   }
 }
