@@ -89,6 +89,23 @@ describe('app_routing_effects', () => {
             deserializeQueryParams: deserializeQueryParamsSpy,
           },
         },
+        {
+          path: '/redirect_no_query/:wildcard',
+          redirector: (pathParts: string[]) => {
+            return {
+              pathParts: pathParts.slice(1),
+            };
+          },
+        },
+        {
+          path: '/redirect_query/:wildcard',
+          redirector: (pathParts: string[]) => {
+            return {
+              pathParts: pathParts.slice(1),
+              queryParams: [{key: 'hard', value: 'coded'}],
+            };
+          },
+        },
       ];
     }
 
@@ -517,6 +534,103 @@ describe('app_routing_effects', () => {
           }),
         ]);
       }));
+
+      describe('programmatical navigation integration', () => {
+        it('redirects without query parameter', fakeAsync(() => {
+          getPathSpy.and.returnValue('/redirect_no_query/compare');
+          getSearchSpy.and.returnValue([]);
+          deserializeQueryParamsSpy.and.returnValue({});
+
+          action.next(effects.ngrxOnInitEffects());
+
+          tick();
+
+          expect(actualActions).toEqual([
+            actions.stateRehydratedFromUrl({
+              routeKind: RouteKind.COMPARE_EXPERIMENT,
+              partialState: {},
+            }),
+            actions.navigating({
+              after: buildRoute({
+                routeKind: RouteKind.COMPARE_EXPERIMENT,
+                params: {},
+                pathname: '/compare',
+                queryParams: [],
+                navigationOptions: {
+                  replaceState: true,
+                },
+              }),
+            }),
+            jasmine.any(Object),
+          ]);
+        }));
+
+        it('redirects with query parameter', fakeAsync(() => {
+          getPathSpy.and.returnValue('/redirect_query/compare');
+          getSearchSpy.and.returnValue([{key: 'not', value: 'used'}]);
+          // Query paramter formed by the redirector is passed to the
+          // deserializer instead of one from Location.getSearch(). This
+          // behavior emulates redirected URL to be on the URL bar. That is,
+          // when passing through the redirection flow, the actual URL on the
+          // location bar is pre-redirection, "/redirect_query/compare". If
+          // redirector wants to "set" href to "/compare?foo=bar", the query
+          // parameter has to come from the redirector, not from the URL bar.
+          deserializeQueryParamsSpy
+            .withArgs([{key: 'hard', value: 'coded'}])
+            .and.returnValue({good: 'value'})
+            .and.throwError('Invalid');
+          serializeStateToQueryParamsSpy.and.returnValue(of([]));
+
+          action.next(effects.ngrxOnInitEffects());
+
+          tick();
+
+          expect(actualActions).toEqual([
+            actions.stateRehydratedFromUrl({
+              routeKind: RouteKind.COMPARE_EXPERIMENT,
+              partialState: {good: 'value'},
+            }),
+            actions.navigating({
+              after: buildRoute({
+                routeKind: RouteKind.COMPARE_EXPERIMENT,
+                params: {},
+                pathname: '/compare',
+                queryParams: [],
+                navigationOptions: {
+                  replaceState: true,
+                },
+              }),
+            }),
+            jasmine.any(Object),
+          ]);
+        }));
+
+        it('redirects with query parameter to no deepLinkProvider', fakeAsync(() => {
+          getPathSpy.and.returnValue('/redirect_query/experiments');
+          getSearchSpy.and.returnValue([{key: 'not', value: 'used'}]);
+          deserializeQueryParamsSpy.and.throwError('Invalid');
+          serializeStateToQueryParamsSpy.and.throwError('Invalid');
+
+          action.next(effects.ngrxOnInitEffects());
+
+          tick();
+
+          expect(actualActions).toEqual([
+            actions.navigating({
+              after: buildRoute({
+                routeKind: RouteKind.EXPERIMENTS,
+                params: {},
+                pathname: '/experiments',
+                queryParams: [],
+                navigationOptions: {
+                  replaceState: true,
+                },
+              }),
+            }),
+            jasmine.any(Object),
+          ]);
+        }));
+      });
     });
 
     it('resolves pathname from navigationRequest', () => {

@@ -201,8 +201,19 @@ export class AppRoutingEffects {
     const dispatchNavigating$ = this.validatedRoute$.pipe(
       tap(({routeMatch, options}) => {
         if (options.browserInitiated && routeMatch.deepLinkProvider) {
+          // Query paramter formed by the redirector is passed to the
+          // deserializer instead of one from Location.getSearch(). This
+          // behavior emulates redirected URL to be on the URL bar such as
+          // "/compare?foo=bar" based on information provided by redirector (do
+          // note that location.getSearch() will return current query parameter
+          // which is pre-redirection URL).
+          const queryParams =
+            routeMatch.originateFromRedirection &&
+            routeMatch.redirectionOnlyQueryParams
+              ? routeMatch.redirectionOnlyQueryParams
+              : this.location.getSearch();
           const rehydratingState = routeMatch.deepLinkProvider.deserializeQueryParams(
-            this.location.getSearch()
+            queryParams
           );
           this.store.dispatch(
             stateRehydratedFromUrl({
