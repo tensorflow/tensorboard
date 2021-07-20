@@ -27,7 +27,6 @@ import {
   tap,
 } from 'rxjs/operators';
 
-import {State} from '../../app_state';
 import {PersistentSettingsConfigModule} from '../persistent_settings_config_module';
 import {PersistentSettingsDataSource} from '../_data_source/persistent_settings_data_source';
 import {globalSettingsLoaded} from './persistent_settings_actions';
@@ -105,9 +104,9 @@ export class PersistentSettingsEffects implements OnInitEffects {
 
   constructor(
     private readonly actions$: Actions,
-    private readonly store: Store<State>,
+    private readonly store: Store<{}>,
     private readonly configModule: PersistentSettingsConfigModule<
-      State,
+      {},
       PersistableSettings
     >,
     private readonly dataSource: PersistentSettingsDataSource<

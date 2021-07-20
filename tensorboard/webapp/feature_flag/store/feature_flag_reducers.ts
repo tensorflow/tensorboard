@@ -14,6 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import {Action, createReducer, on} from '@ngrx/store';
 
+import {globalSettingsLoaded, ThemeValue} from '../../persistent_settings';
 import * as actions from '../actions/feature_flag_actions';
 import {initialState} from './feature_flag_store_config_provider';
 import {FeatureFlagState} from './feature_flag_types';
@@ -42,6 +43,33 @@ const reducer = createReducer<FeatureFlagState>(
       flagOverrides: {
         ...state.flagOverrides,
         enableDarkModeOverride: enableDarkMode,
+      },
+    };
+  }),
+  on(globalSettingsLoaded, (state, {partialSettings}) => {
+    if (!partialSettings.themeOverride) {
+      return state;
+    }
+
+    let overrideValue: undefined | boolean;
+    switch (partialSettings.themeOverride) {
+      case ThemeValue.BROWSER_DEFAULT:
+        overrideValue = undefined;
+        break;
+      case ThemeValue.DARK:
+        overrideValue = true;
+        break;
+
+      case ThemeValue.LIGHT:
+        overrideValue = false;
+        break;
+    }
+
+    return {
+      ...state,
+      flagOverrides: {
+        ...state.flagOverrides,
+        enableDarkModeOverride: overrideValue,
       },
     };
   })
