@@ -16,3 +16,4 @@ limitations under the License.
 export {PersistableSettings} from './_data_source/types';
 export {globalSettingsLoaded} from './_redux/persistent_settings_actions';
 export {PersistentSettingsModule} from './persistent_settings_module';
+export {PersistentSettingsConfigModule} from './persistent_settings_config_module';

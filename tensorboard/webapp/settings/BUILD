@@ -9,6 +9,7 @@ tf_ng_module(
         "settings_module.ts",
     ],
     deps = [
+        "//tensorboard/webapp/persistent_settings",
         "//tensorboard/webapp/settings/_redux",
         "//tensorboard/webapp/settings/_views",
         "@npm//@angular/core",

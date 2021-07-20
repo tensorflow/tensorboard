@@ -50,9 +50,13 @@ export class OSSSettingsConverter extends SettingsConverter<
       // TooltipSort is a string enum and has string values; no need to
       // serialize it differently to account for their unintended changes.
       tooltipSort: settings.tooltipSortString,
+      autoReload: settings.autoReload,
+      autoReloadPeriodInMs: settings.autoReloadPeriodInMs,
+      paginationSize: settings.pageSize,
     };
     return serializableSettings;
   }
+
   backendToUi(backendSettings: Partial<BackendSettings>): PersistableSettings {
     const settings: Partial<PersistableSettings> = {};
     if (
@@ -74,6 +78,27 @@ export class OSSSettingsConverter extends SettingsConverter<
       typeof backendSettings.tooltipSort === 'string'
     ) {
       settings.tooltipSortString = backendSettings.tooltipSort;
+    }
+
+    if (
+      backendSettings.hasOwnProperty('autoReload') &&
+      typeof backendSettings.autoReload === 'boolean'
+    ) {
+      settings.autoReload = backendSettings.autoReload;
+    }
+
+    if (
+      backendSettings.hasOwnProperty('autoReloadPeriodInMs') &&
+      typeof backendSettings.autoReloadPeriodInMs === 'number'
+    ) {
+      settings.autoReloadPeriodInMs = backendSettings.autoReloadPeriodInMs;
+    }
+
+    if (
+      backendSettings.hasOwnProperty('paginationSize') &&
+      typeof backendSettings.paginationSize === 'number'
+    ) {
+      settings.pageSize = backendSettings.paginationSize;
     }
 
     return settings;

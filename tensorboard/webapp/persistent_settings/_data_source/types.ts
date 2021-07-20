@@ -24,6 +24,9 @@ export declare interface BackendSettings {
   scalarSmoothing?: number;
   tooltipSort?: string;
   ignoreOutliers?: boolean;
+  autoReload?: boolean;
+  autoReloadPeriodInMs?: number;
+  paginationSize?: number;
 }
 
 /**
@@ -35,4 +38,7 @@ export interface PersistableSettings {
   scalarSmoothing?: number;
   tooltipSortString?: string;
   ignoreOutliers?: boolean;
+  autoReload?: boolean;
+  autoReloadPeriodInMs?: number;
+  pageSize?: number;
 }
