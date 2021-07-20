@@ -77,66 +77,25 @@ function getPathFragments(path: string): PathFragment[] {
   });
 }
 
-enum RouteType {
-  CONCRETE,
-  STATIC_REDIRECTION,
-  PROGRAMMATIC_REDIRECTION,
-}
+abstract class RouteConfigMatcher {
+  protected readonly pathFragments: PathFragment[];
+  protected readonly pathMatchers: PathMatcher[];
+  abstract readonly definition: RouteDef;
 
-interface ConcreteRouteConfigMatcher {
-  routeType: RouteType.CONCRETE;
-  definition: ConcreteRouteDef;
-}
-
-interface StaticRedirectionRouteConfigMatcher {
-  routeType: RouteType.STATIC_REDIRECTION;
-  definition: RedirectionRouteDef;
-}
-
-interface ProgrammaticalRouteConfigMatcher {
-  routeType: RouteType.PROGRAMMATIC_REDIRECTION;
-  definition: ProgrammticRedirectionRouteDef;
-}
-
-type MatcherConfiguration =
-  | ConcreteRouteConfigMatcher
-  | StaticRedirectionRouteConfigMatcher
-  | ProgrammaticalRouteConfigMatcher;
-
-class RouteConfigMatcher {
-  private readonly pathFragments: PathFragment[];
-  private readonly pathMatchers: PathMatcher[];
-  private readonly redirectionFragments: PathFragment[] | null;
-  readonly config: MatcherConfiguration;
-
-  constructor(routeDef: RouteDef) {
-    this.validateConfig(routeDef);
-    this.config = this.getConfig(routeDef);
-    this.pathFragments = getPathFragments(routeDef.path);
-    this.pathMatchers = this.getPathMatchers(this.pathFragments);
-    this.redirectionFragments =
-      this.config.routeType === RouteType.STATIC_REDIRECTION
-        ? getPathFragments(this.config.definition.redirectionPath)
-        : null;
-  }
-
-  private getConfig(routeDef: RouteDef): MatcherConfiguration {
+  static getMatcher(routeDef: RouteDef): RouteConfigMatcher {
     if (isConcreteRouteDef(routeDef)) {
-      return {
-        routeType: RouteType.CONCRETE,
-        definition: routeDef,
-      };
+      return new ConcreteRouteConfigMatcher(routeDef);
     }
     if (isStaticRedirectionRouteDef(routeDef)) {
-      return {
-        routeType: RouteType.STATIC_REDIRECTION,
-        definition: routeDef,
-      };
+      return new StaticRedirectionRouteConfigMatcher(routeDef);
     }
-    return {
-      routeType: RouteType.PROGRAMMATIC_REDIRECTION,
-      definition: routeDef,
-    };
+    return new ProgrammaticalRedirectionRouteConfigMatcher(routeDef);
+  }
+
+  protected constructor(routeDef: RouteDef) {
+    this.validateConfig(routeDef);
+    this.pathFragments = getPathFragments(routeDef.path);
+    this.pathMatchers = this.getPathMatchers(this.pathFragments);
   }
 
   private validateConfig({path}: RouteDef) {
@@ -207,29 +166,6 @@ class RouteConfigMatcher {
       }
     }
 
-    if (this.redirectionFragments) {
-      const newPathParts = this.reprojectPathByParams(
-        this.redirectionFragments,
-        combinedParams
-      );
-      return {
-        result: true,
-        params: combinedParams,
-        pathParts: newPathParts,
-        isRedirection: true,
-      };
-    }
-
-    if (this.config.routeType === RouteType.PROGRAMMATIC_REDIRECTION) {
-      const newPathParts = this.config.definition.redirector(pathParts);
-      return {
-        result: true,
-        params: combinedParams,
-        pathParts: newPathParts,
-        isRedirection: true,
-      };
-    }
-
     return {
       result: true,
       params: combinedParams,
@@ -239,9 +175,23 @@ class RouteConfigMatcher {
   }
 
   /**
+   * In case of parameter projection failure (cannot create pathname), it throws
+   * a RangeError.
+   */
+  matchByParams(params: RouteParams): PositiveMatch {
+    const pathParts = this.reprojectPathByParams(this.pathFragments, params);
+    return {
+      result: true,
+      params,
+      pathParts,
+      isRedirection: false,
+    };
+  }
+
+  /**
    * Reprojects route parameter values to path fragments for path parts.
    */
-  private reprojectPathByParams(
+  protected reprojectPathByParams(
     pathFragments: PathFragment[],
     params: RouteParams
   ): string[] {
@@ -262,19 +212,56 @@ class RouteConfigMatcher {
     }
     return pathParts;
   }
+}
 
-  /**
-   * In case of parameter projection failure (cannot create pathname), it throws
-   * a RangeError.
-   */
-  matchByParams(params: RouteParams): PositiveMatch {
-    const pathParts = this.reprojectPathByParams(this.pathFragments, params);
+class ConcreteRouteConfigMatcher extends RouteConfigMatcher {
+  constructor(readonly definition: ConcreteRouteDef) {
+    super(definition);
+  }
+}
 
+class StaticRedirectionRouteConfigMatcher extends RouteConfigMatcher {
+  private readonly redirectionFragments: PathFragment[];
+
+  constructor(readonly definition: RedirectionRouteDef) {
+    super(definition);
+    this.redirectionFragments = getPathFragments(definition.redirectionPath);
+  }
+
+  match(pathParts: string[]): Match {
+    const match = super.match(pathParts);
+
+    if (!match.result) return match;
+
+    const newPathParts = this.reprojectPathByParams(
+      this.redirectionFragments,
+      match.params
+    );
     return {
       result: true,
-      params,
-      pathParts,
-      isRedirection: false,
+      params: match.params,
+      pathParts: newPathParts,
+      isRedirection: true,
+    };
+  }
+}
+
+class ProgrammaticalRedirectionRouteConfigMatcher extends RouteConfigMatcher {
+  constructor(readonly definition: ProgrammticRedirectionRouteDef) {
+    super(definition);
+  }
+
+  match(pathParts: string[]): Match {
+    const match = super.match(pathParts);
+
+    if (!match.result) return match;
+
+    const newPathParts = this.definition.redirector(pathParts);
+    return {
+      result: true,
+      params: match.params,
+      pathParts: newPathParts,
+      isRedirection: true,
     };
   }
 }
@@ -287,12 +274,12 @@ export interface RouteMatch {
 }
 
 export class RouteConfigs {
-  private readonly routeKindToConfigMatchers: Map<
+  private readonly routeKindToConcreteConfigMatchers: Map<
     RouteKind,
-    RouteConfigMatcher
+    ConcreteRouteConfigMatcher
   >;
   private readonly configMatchers: RouteConfigMatcher[];
-  private readonly defaultRouteConfig: RouteConfigMatcher | null;
+  private readonly defaultRouteConfig: ConcreteRouteConfigMatcher | null;
 
   constructor(
     configs: RouteDef[],
@@ -305,21 +292,21 @@ export class RouteConfigs {
     this.validateRouteConfigs(configs);
 
     this.defaultRouteConfig = null;
-    this.routeKindToConfigMatchers = new Map();
+    this.routeKindToConcreteConfigMatchers = new Map();
     this.configMatchers = [];
 
     for (const config of configs) {
-      const matcher = new RouteConfigMatcher(config);
+      const matcher = RouteConfigMatcher.getMatcher(config);
 
       this.configMatchers.push(matcher);
 
-      if (matcher.config.routeType === RouteType.CONCRETE) {
-        this.routeKindToConfigMatchers.set(
-          matcher.config.definition.routeKind,
+      if (matcher instanceof ConcreteRouteConfigMatcher) {
+        this.routeKindToConcreteConfigMatchers.set(
+          matcher.definition.routeKind,
           matcher
         );
 
-        if (matcher.config.definition.defaultRoute) {
+        if (matcher.definition.defaultRoute) {
           this.defaultRouteConfig = matcher;
         }
       }
@@ -327,9 +314,9 @@ export class RouteConfigs {
   }
 
   private validateRouteConfigs(configs: RouteDef[]) {
-    const concreteDefinitions = configs.filter((routeDef) => {
-      return Boolean(isConcreteRouteDef(routeDef));
-    }) as ConcreteRouteDef[];
+    const concreteDefinitions = configs.filter(
+      isConcreteRouteDef
+    ) as ConcreteRouteDef[];
     const defaultRoutes = concreteDefinitions.filter((def) => def.defaultRoute);
 
     if (defaultRoutes.length > 1) {
@@ -381,14 +368,13 @@ export class RouteConfigs {
             break;
           }
 
-          if (matcher.config.routeType !== RouteType.CONCRETE) {
+          if (!(matcher instanceof ConcreteRouteConfigMatcher)) {
             throw new RangeError(
-              'None concrete route definition cannot match for concrete ' +
-                'route change'
+              'No concrete route definition `match` return redirection'
             );
           }
 
-          const definition = matcher.config.definition;
+          const {definition} = matcher;
           return {
             routeKind: definition.routeKind,
             params,
@@ -414,11 +400,8 @@ export class RouteConfigs {
       );
     }
 
-    if (
-      this.defaultRouteConfig &&
-      this.defaultRouteConfig.config.routeType === RouteType.CONCRETE
-    ) {
-      const definition = this.defaultRouteConfig.config.definition;
+    if (this.defaultRouteConfig) {
+      const {definition} = this.defaultRouteConfig;
       return {
         routeKind: definition.routeKind,
         params: {},
@@ -434,21 +417,20 @@ export class RouteConfigs {
     routeKind: RouteKind,
     params: RouteParams
   ): RouteMatch | null {
-    const matcher = this.routeKindToConfigMatchers.get(routeKind);
+    const matcher = this.routeKindToConcreteConfigMatchers.get(routeKind);
 
-    if (!matcher || matcher.config.routeType !== RouteType.CONCRETE) {
+    if (!matcher) {
       throw new RangeError(
         `Requires configuration for routeKind: ${routeKind}`
       );
     }
 
     const match = matcher.matchByParams(params);
-    const config = matcher.config.definition;
     return {
       routeKind,
       params,
       pathname: getPathFromParts(match.pathParts),
-      deepLinkProvider: config.deepLinkProvider || null,
+      deepLinkProvider: matcher.definition.deepLinkProvider || null,
     };
   }
 }

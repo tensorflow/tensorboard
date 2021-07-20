@@ -562,7 +562,7 @@ describe('route config', () => {
       );
     });
 
-    it('handles parameter is opaque string in path parts', () => {
+    it('handles an opaque parameter in path parts', () => {
       const config = new RouteConfigs([
         {
           path: '/tb/:first/hey/:second/',
