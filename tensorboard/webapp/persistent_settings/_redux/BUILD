@@ -20,6 +20,7 @@ tf_ng_module(
     ],
     deps = [
         ":persistent_settings_actions",
+        "//tensorboard/webapp:app_state",
         "//tensorboard/webapp/persistent_settings:config_module",
         "//tensorboard/webapp/persistent_settings/_data_source",
         "//tensorboard/webapp/persistent_settings/_data_source:types",

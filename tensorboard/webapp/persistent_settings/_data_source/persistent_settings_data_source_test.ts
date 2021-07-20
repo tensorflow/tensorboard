@@ -26,7 +26,7 @@ import {
   SettingsConverter,
   TEST_ONLY,
 } from './persistent_settings_data_source';
-import {BackendSettings, PersistableSettings, ThemeValue} from './types';
+import {BackendSettings, PersistableSettings} from './types';
 
 describe('persistent_settings data_source test', () => {
   let localStorage: TestingLocalStorage;
@@ -98,20 +98,6 @@ describe('persistent_settings data_source test', () => {
         const actual = await firstValueFrom(dataSource.getSettings());
 
         expect(actual).toEqual({});
-      });
-
-      it('grabs theme value if it matches known enum', async () => {
-        getItemSpy
-          .withArgs(TEST_ONLY.GLOBAL_LOCAL_STORAGE_KEY)
-          .and.returnValues('{"theme": "yolo"}', '{"theme": "dark"}');
-
-        const actual1 = await firstValueFrom(dataSource.getSettings());
-        expect(actual1).toEqual({});
-
-        const actual2 = await firstValueFrom(dataSource.getSettings());
-        expect(actual2).toEqual({
-          themeOverride: ThemeValue.DARK,
-        });
       });
     });
 

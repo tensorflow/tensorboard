@@ -13,12 +13,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-export enum ThemeValue {
-  BROWSER_DEFAULT = 'browser_default',
-  LIGHT = 'light',
-  DARK = 'dark',
-}
-
 /**
  * Global settings that the backend remembers. `declare`d so properties do not
  * get mangled or mangled differently when a version compiler changes.
@@ -30,7 +24,6 @@ export declare interface BackendSettings {
   scalarSmoothing?: number;
   tooltipSort?: string;
   ignoreOutliers?: boolean;
-  theme?: ThemeValue;
 }
 
 /**
@@ -42,5 +35,4 @@ export interface PersistableSettings {
   scalarSmoothing?: number;
   tooltipSortString?: string;
   ignoreOutliers?: boolean;
-  themeOverride?: ThemeValue;
 }
