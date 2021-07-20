@@ -22,8 +22,8 @@ describe('persisted_settings config_module test', () => {
   async function createConfigModule(
     settingSelectors: Selector<any, Partial<PersistableSettings>>[]
   ): Promise<PersistentSettingsConfigModule<any, PersistableSettings>> {
-    const imports = settingSelectors.map(
-      PersistentSettingsConfigModule.defineGlobalSetting
+    const imports = settingSelectors.map((selector) =>
+      PersistentSettingsConfigModule.defineGlobalSetting(() => selector)
     );
     await TestBed.configureTestingModule({
       imports,

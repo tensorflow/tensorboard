@@ -60,9 +60,11 @@ describe('persistent_settings effects test', () => {
       imports: [
         PersistentSettingsTestingDataSourceModule,
         PersistentSettingsConfigModule.defineGlobalSetting(
-          setSmoothingSelector
+          () => setSmoothingSelector
         ),
-        PersistentSettingsConfigModule.defineGlobalSetting(setIgnoreOutliers),
+        PersistentSettingsConfigModule.defineGlobalSetting(
+          () => setIgnoreOutliers
+        ),
       ],
       providers: [
         provideMockActions(action),

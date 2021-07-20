@@ -21,13 +21,25 @@ import {
 
 @NgModule()
 export class PersistentSettingsConfigModule<State, Settings> {
+  private readonly globalSettingSelectors: SettingSelector<
+    State,
+    Settings
+  >[] = [];
+
   constructor(
     @Optional()
     @Inject(GLOBAL_PERSISTENT_SETTINGS_TOKEN)
-    private readonly globalSettingSelectors:
-      | SettingSelector<State, Settings>[]
-      | null
-  ) {}
+    globalSettingSelectorFactories: Array<
+      () => SettingSelector<State, Settings>
+    > | null
+  ) {
+    if (!globalSettingSelectorFactories) {
+      return;
+    }
+    this.globalSettingSelectors = globalSettingSelectorFactories.map(
+      (factory) => factory()
+    );
+  }
 
   /**
    * Returns Ngrx selectors for getting global setting values.
@@ -60,7 +72,7 @@ export class PersistentSettingsConfigModule<State, Settings> {
    * export class MyModule {}
    */
   static defineGlobalSetting<State, Settings>(
-    selector: SettingSelector<State, Settings>
+    selectorFactory: () => SettingSelector<State, Settings>
   ): ModuleWithProviders<PersistentSettingsConfigModule<any, {}>> {
     return {
       ngModule: PersistentSettingsConfigModule,
@@ -68,7 +80,7 @@ export class PersistentSettingsConfigModule<State, Settings> {
         {
           provide: GLOBAL_PERSISTENT_SETTINGS_TOKEN,
           multi: true,
-          useValue: selector,
+          useValue: selectorFactory,
         },
       ],
     };
