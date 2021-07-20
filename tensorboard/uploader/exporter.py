@@ -320,7 +320,7 @@ class TensorBoardExporter(object):
           The original ndarray if not np.object, dtype converted to String
           if np.object.
         """
-        if ndarray.dtype != np.object:
+        if ndarray.dtype != np.object_:
             return ndarray
         else:
             return ndarray.astype("|S")
