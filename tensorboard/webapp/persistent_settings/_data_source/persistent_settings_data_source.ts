@@ -17,7 +17,7 @@ import {EMPTY, Observable, of} from 'rxjs';
 import {map, tap} from 'rxjs/operators';
 
 import {LocalStorage} from '../../util/local_storage';
-import {BackendSettings, PersistableSettings} from './types';
+import {BackendSettings, PersistableSettings, ThemeValue} from './types';
 
 const LEGACY_METRICS_LOCAL_STORAGE_KEY = '_tb_global_settings.timeseries';
 const GLOBAL_LOCAL_STORAGE_KEY = '_tb_global_settings';
@@ -53,6 +53,7 @@ export class OSSSettingsConverter extends SettingsConverter<
       autoReload: settings.autoReload,
       autoReloadPeriodInMs: settings.autoReloadPeriodInMs,
       paginationSize: settings.pageSize,
+      theme: settings.themeOverride,
     };
     return serializableSettings;
   }
@@ -99,6 +100,14 @@ export class OSSSettingsConverter extends SettingsConverter<
       typeof backendSettings.paginationSize === 'number'
     ) {
       settings.pageSize = backendSettings.paginationSize;
+    }
+
+    if (
+      backendSettings.hasOwnProperty('theme') &&
+      typeof backendSettings.theme === 'string' &&
+      new Set(Object.values(ThemeValue)).has(backendSettings.theme)
+    ) {
+      settings.themeOverride = backendSettings.theme;
     }
 
     return settings;

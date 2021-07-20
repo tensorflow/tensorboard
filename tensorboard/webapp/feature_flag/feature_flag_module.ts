@@ -14,18 +14,36 @@ limitations under the License.
 ==============================================================================*/
 
 import {NgModule} from '@angular/core';
-import {StoreModule} from '@ngrx/store';
 import {EffectsModule} from '@ngrx/effects';
+import {createSelector, StoreModule} from '@ngrx/store';
 
+import {
+  PersistableSettings,
+  PersistentSettingsConfigModule,
+  ThemeValue,
+} from '../persistent_settings';
 import {TBFeatureFlagModule} from '../webapp_data_source/tb_feature_flag_module';
-
-import {FEATURE_FLAG_FEATURE_KEY} from './store/feature_flag_types';
+import {FeatureFlagEffects} from './effects/feature_flag_effects';
+import {reducers} from './store/feature_flag_reducers';
+import {getEnableDarkModeOverride} from './store/feature_flag_selectors';
 import {
   FEATURE_FLAG_STORE_CONFIG_TOKEN,
   getConfig,
 } from './store/feature_flag_store_config_provider';
-import {reducers} from './store/feature_flag_reducers';
-import {FeatureFlagEffects} from './effects/feature_flag_effects';
+import {FEATURE_FLAG_FEATURE_KEY, State} from './store/feature_flag_types';
+
+/** @typehack */ import * as _typeHackStore from '@ngrx/store';
+
+export function getThemeSettingSelector() {
+  return createSelector(getEnableDarkModeOverride, (darkModeOverride) => {
+    if (darkModeOverride === null) {
+      return {themeOverride: ThemeValue.BROWSER_DEFAULT};
+    }
+    return {
+      themeOverride: darkModeOverride ? ThemeValue.DARK : ThemeValue.LIGHT,
+    };
+  });
+}
 
 @NgModule({
   imports: [
@@ -36,6 +54,10 @@ import {FeatureFlagEffects} from './effects/feature_flag_effects';
       FEATURE_FLAG_STORE_CONFIG_TOKEN
     ),
     EffectsModule.forFeature([FeatureFlagEffects]),
+    PersistentSettingsConfigModule.defineGlobalSetting<
+      State,
+      PersistableSettings
+    >(getThemeSettingSelector),
   ],
   providers: [
     {
