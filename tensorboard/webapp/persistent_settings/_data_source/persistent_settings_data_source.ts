@@ -21,6 +21,7 @@ import {BackendSettings, PersistableSettings, ThemeValue} from './types';
 
 const LEGACY_METRICS_LOCAL_STORAGE_KEY = '_tb_global_settings.timeseries';
 const GLOBAL_LOCAL_STORAGE_KEY = '_tb_global_settings';
+const NOTIFICATION_LAST_READ_TIME_KEY = 'notificationLastReadTimestamp';
 
 @Injectable()
 export abstract class PersistentSettingsDataSource<UiSettings> {
@@ -54,6 +55,7 @@ export class OSSSettingsConverter extends SettingsConverter<
       autoReloadPeriodInMs: settings.autoReloadPeriodInMs,
       paginationSize: settings.pageSize,
       theme: settings.themeOverride,
+      notificationLastReadTimeInMs: settings.notificationLastReadTimeInMs,
     };
     return serializableSettings;
   }
@@ -110,6 +112,14 @@ export class OSSSettingsConverter extends SettingsConverter<
       settings.themeOverride = backendSettings.theme;
     }
 
+    if (
+      backendSettings.hasOwnProperty('notificationLastReadTimeInMs') &&
+      typeof backendSettings.notificationLastReadTimeInMs === 'number'
+    ) {
+      settings.notificationLastReadTimeInMs =
+        backendSettings.notificationLastReadTimeInMs;
+    }
+
     return settings;
   }
 }
@@ -143,6 +153,7 @@ export class PersistentSettingsDataSourceImpl<UiSettings, StorageSettings>
           )
         );
         this.localStorage.removeItem(LEGACY_METRICS_LOCAL_STORAGE_KEY);
+        this.localStorage.removeItem(NOTIFICATION_LAST_READ_TIME_KEY);
       }),
       map(() => void null)
     );
@@ -157,6 +168,18 @@ export class PersistentSettingsDataSourceImpl<UiSettings, StorageSettings>
   }
 
   getSettings(): Observable<Partial<UiSettings>> {
+    const lastReadTime = this.localStorage.getItem(
+      NOTIFICATION_LAST_READ_TIME_KEY
+    );
+    const notificationSettings = this.converter.backendToUi(
+      this.deserialize(
+        lastReadTime
+          ? JSON.stringify({
+              notificationLastReadTimeInMs: Number(lastReadTime),
+            })
+          : '{}'
+      )
+    );
     const legacySettings = this.converter.backendToUi(
       this.deserialize(
         this.localStorage.getItem(LEGACY_METRICS_LOCAL_STORAGE_KEY) ?? '{}'
@@ -168,6 +191,7 @@ export class PersistentSettingsDataSourceImpl<UiSettings, StorageSettings>
       )
     );
     return of({
+      ...notificationSettings,
       ...legacySettings,
       ...settings,
     });
@@ -177,4 +201,5 @@ export class PersistentSettingsDataSourceImpl<UiSettings, StorageSettings>
 export const TEST_ONLY = {
   LEGACY_METRICS_LOCAL_STORAGE_KEY,
   GLOBAL_LOCAL_STORAGE_KEY,
+  NOTIFICATION_LAST_READ_TIME_KEY,
 };

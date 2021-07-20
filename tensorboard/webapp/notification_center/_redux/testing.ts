@@ -13,10 +13,25 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {
+  Notification,
   NotificationState,
   NOTIFICATION_FEATURE_KEY,
   State,
+  CategoryEnum,
 } from './notification_center_types';
+
+export function buildNotification(
+  override: Partial<Notification>
+): Notification {
+  return {
+    category: CategoryEnum.WHATS_NEW,
+    dateInMs: 0,
+    title: 'hello',
+    content: 'world',
+    fullNoteLink: 'https://tensorflow.org',
+    ...override,
+  };
+}
 
 export function buildNotificationState(
   override: Partial<NotificationState>

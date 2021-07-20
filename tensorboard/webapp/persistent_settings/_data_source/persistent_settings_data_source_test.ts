@@ -31,6 +31,7 @@ import {BackendSettings, PersistableSettings, ThemeValue} from './types';
 describe('persistent_settings data_source test', () => {
   let localStorage: TestingLocalStorage;
   let getItemSpy: jasmine.Spy;
+  let setItemSpy: jasmine.Spy;
 
   async function configure<UiSettings, StorageSettings>(
     Converter: new () => SettingsConverter<UiSettings, StorageSettings>
@@ -45,6 +46,7 @@ describe('persistent_settings data_source test', () => {
 
     localStorage = TestBed.inject(TestingLocalStorage);
     getItemSpy = spyOn(localStorage, 'getItem').and.callThrough();
+    setItemSpy = spyOn(localStorage, 'setItem').and.callThrough();
     return TestBed.inject(PersistentSettingsDataSourceImpl);
   }
 
@@ -60,31 +62,18 @@ describe('persistent_settings data_source test', () => {
 
     describe('#getSettings', () => {
       it('gets setting from the local storage', async () => {
-        getItemSpy
-          .withArgs(TEST_ONLY.GLOBAL_LOCAL_STORAGE_KEY)
-          .and.returnValue('{"scalarSmoothing": 0.3}');
+        getItemSpy.withArgs(TEST_ONLY.GLOBAL_LOCAL_STORAGE_KEY).and.returnValue(
+          JSON.stringify({
+            scalarSmoothing: 0.3,
+            notificationLastReadTimeInMs: 5,
+          })
+        );
 
         const actual = await firstValueFrom(dataSource.getSettings());
 
         expect(actual).toEqual({
           scalarSmoothing: 0.3,
-        });
-      });
-
-      it('grabs value from old timeseries local storage and combine it from new one', async () => {
-        getItemSpy
-          .withArgs(TEST_ONLY.LEGACY_METRICS_LOCAL_STORAGE_KEY)
-          .and.returnValue(
-            '{"scalarSmoothing": 0.5, "tooltipSort": "ascending"}'
-          )
-          .withArgs(TEST_ONLY.GLOBAL_LOCAL_STORAGE_KEY)
-          .and.returnValue('{"scalarSmoothing": 0.3}');
-
-        const actual = await firstValueFrom(dataSource.getSettings());
-
-        expect(actual).toEqual({
-          scalarSmoothing: 0.3,
-          tooltipSortString: 'ascending',
+          notificationLastReadTimeInMs: 5,
         });
       });
 
@@ -98,6 +87,18 @@ describe('persistent_settings data_source test', () => {
         const actual = await firstValueFrom(dataSource.getSettings());
 
         expect(actual).toEqual({});
+      });
+
+      it('disregards unrelated info if setting prop key is not known', async () => {
+        getItemSpy
+          .withArgs(TEST_ONLY.GLOBAL_LOCAL_STORAGE_KEY)
+          .and.returnValue('{"foo": "bar", "scalarSmoothing": 0.3}');
+
+        const actual = await firstValueFrom(dataSource.getSettings());
+
+        expect(actual).toEqual({
+          scalarSmoothing: 0.3,
+        });
       });
 
       it('gets settings related props from local storage', async () => {
@@ -148,14 +149,6 @@ describe('persistent_settings data_source test', () => {
     });
 
     describe('#setSettings', () => {
-      let setItemSpy: jasmine.Spy;
-      let removeItemSpy: jasmine.Spy;
-
-      beforeEach(() => {
-        setItemSpy = spyOn(localStorage, 'setItem').and.callThrough();
-        removeItemSpy = spyOn(localStorage, 'removeItem').and.callThrough();
-      });
-
       it('sets settings', async () => {
         getItemSpy
           .withArgs(TEST_ONLY.GLOBAL_LOCAL_STORAGE_KEY)
@@ -172,17 +165,76 @@ describe('persistent_settings data_source test', () => {
           JSON.stringify({ignoreOutliers: false, scalarSmoothing: 0.5})
         );
       });
+    });
 
-      it('purges old timeseries value after migrated', async () => {
-        await firstValueFrom(
-          dataSource.setSettings({
+    describe('settings migration', () => {
+      let removeItemSpy: jasmine.Spy;
+
+      beforeEach(() => {
+        removeItemSpy = spyOn(localStorage, 'removeItem').and.callThrough();
+      });
+
+      describe('#getSettings', () => {
+        it('grabs values from old local storage keys and combine it from new one', async () => {
+          getItemSpy
+            .withArgs(TEST_ONLY.LEGACY_METRICS_LOCAL_STORAGE_KEY)
+            .and.returnValue(
+              '{"scalarSmoothing": 0.5, "tooltipSort": "ascending"}'
+            )
+            .withArgs(TEST_ONLY.NOTIFICATION_LAST_READ_TIME_KEY)
+            .and.returnValue('3')
+            .withArgs(TEST_ONLY.GLOBAL_LOCAL_STORAGE_KEY)
+            .and.returnValue('{"scalarSmoothing": 0.3}');
+
+          const actual = await firstValueFrom(dataSource.getSettings());
+
+          expect(actual).toEqual({
+            scalarSmoothing: 0.3,
+            tooltipSortString: 'ascending',
+            notificationLastReadTimeInMs: 3,
+          });
+        });
+
+        it('respects new key over the older unmigrated one if both exists', async () => {
+          getItemSpy
+            .withArgs(TEST_ONLY.LEGACY_METRICS_LOCAL_STORAGE_KEY)
+            .and.returnValue(
+              '{"scalarSmoothing": 0.5, "tooltipSort": "ascending"}'
+            )
+            .withArgs(TEST_ONLY.NOTIFICATION_LAST_READ_TIME_KEY)
+            .and.returnValue('3')
+            .withArgs(TEST_ONLY.GLOBAL_LOCAL_STORAGE_KEY)
+            .and.returnValue(
+              '{"tooltipSort": "default", "notificationLastReadTimeInMs": 100}'
+            );
+
+          const actual = await firstValueFrom(dataSource.getSettings());
+
+          expect(actual).toEqual({
             scalarSmoothing: 0.5,
-          })
-        );
+            tooltipSortString: 'default',
+            notificationLastReadTimeInMs: 100,
+          });
+        });
+      });
 
-        expect(removeItemSpy).toHaveBeenCalledOnceWith(
-          TEST_ONLY.LEGACY_METRICS_LOCAL_STORAGE_KEY
-        );
+      describe('#setSettings', () => {
+        it('purges settings value after migrated', async () => {
+          await firstValueFrom(
+            dataSource.setSettings({
+              scalarSmoothing: 0.5,
+            })
+          );
+
+          // Order of deletion does not matter.
+          expect(removeItemSpy).toHaveBeenCalledTimes(2);
+          expect(removeItemSpy).toHaveBeenCalledWith(
+            TEST_ONLY.LEGACY_METRICS_LOCAL_STORAGE_KEY
+          );
+          expect(removeItemSpy).toHaveBeenCalledWith(
+            TEST_ONLY.NOTIFICATION_LAST_READ_TIME_KEY
+          );
+        });
       });
     });
   });
@@ -252,12 +304,6 @@ describe('persistent_settings data_source test', () => {
     });
 
     describe('#setSettings', () => {
-      let setItemSpy: jasmine.Spy;
-
-      beforeEach(() => {
-        setItemSpy = spyOn(localStorage, 'setItem').and.callThrough();
-      });
-
       it('sets settings', async () => {
         getItemSpy
           .withArgs(TEST_ONLY.GLOBAL_LOCAL_STORAGE_KEY)

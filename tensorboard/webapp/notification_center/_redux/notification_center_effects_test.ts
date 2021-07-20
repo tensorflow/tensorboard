@@ -43,9 +43,6 @@ describe('notification center effects', () => {
   let fetchNotificationsSpy: jasmine.Spy;
   let fetchNotificationSubject: Subject<NotificationCenterResponse>;
   let updateLastReadTimeStampToNowSpy: jasmine.Spy;
-  let updateAndGetLastReadTimestampInMsSubject: Subject<NotificationCenterResponse>;
-  let getLastReadTimeStampInMsSpy: jasmine.Spy;
-  let getLastReadTimeStampInMsSubject: Subject<NotificationCenterResponse>;
 
   beforeEach(async () => {
     actions$ = new Subject<Action>();
@@ -68,23 +65,12 @@ describe('notification center effects', () => {
     effects = TestBed.inject(NotificationCenterEffects);
     dataSource = TestBed.inject(NotificationCenterDataSource);
     effects.initialNotificationFetch$.subscribe();
-    effects.updateLastReadTimestampInMs$.subscribe();
 
     fetchNotificationSubject = new Subject();
     fetchNotificationsSpy = spyOn(
       dataSource,
       'fetchNotifications'
     ).and.returnValue(fetchNotificationSubject);
-
-    updateAndGetLastReadTimestampInMsSubject = new Subject();
-    updateLastReadTimeStampToNowSpy = spyOn(
-      dataSource,
-      'updateLastReadTimeStampToNow'
-    ).and.returnValue(of(1235813));
-    getLastReadTimeStampInMsSpy = spyOn(
-      dataSource,
-      'getLastReadTimeStampInMs'
-    ).and.returnValue(of(1235813));
   });
 
   it('fetches notifications on initial load', () => {
@@ -94,7 +80,6 @@ describe('notification center effects', () => {
 
     expect(fetchNotificationsSpy).toHaveBeenCalled();
     expect(actualActions).toEqual([
-      actions.lastReadTimestampInitialized({time: 1235813}),
       actions.fetchNotificationsLoaded({
         notifications: [
           {
@@ -115,15 +100,6 @@ describe('notification center effects', () => {
     actions$.next(TEST_ONLY.initAction());
 
     expect(fetchNotificationsSpy).toHaveBeenCalled();
-    expect(actualActions).toEqual([
-      actions.fetchNotificationsFailed(),
-      actions.lastReadTimestampInitialized({time: 1235813}),
-    ]);
-  });
-
-  it('updates last ream timestamp', () => {
-    actions$.next(actions.notificationBellClicked());
-
-    expect(updateLastReadTimeStampToNowSpy).toHaveBeenCalled();
+    expect(actualActions).toEqual([actions.fetchNotificationsFailed()]);
   });
 });

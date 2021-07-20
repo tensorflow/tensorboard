@@ -14,6 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import {Action, createReducer, on} from '@ngrx/store';
 
+import {globalSettingsLoaded} from '../../persistent_settings';
 import * as actions from './notification_center_actions';
 import {Notification, NotificationState} from './notification_center_types';
 
@@ -34,20 +35,26 @@ const reducer = createReducer(
     }
   ),
   on(
-    actions.notifcationLastReadTimeUpdated,
-    (state: NotificationState, {time}: {time: number}): NotificationState => {
+    actions.notificationBellClicked,
+    (state: NotificationState): NotificationState => {
       return {
         ...state,
-        lastReadTimestampInMs: time,
+        lastReadTimestampInMs: Date.now(),
       };
     }
   ),
   on(
-    actions.lastReadTimestampInitialized,
-    (state: NotificationState, {time}: {time: number}): NotificationState => {
+    globalSettingsLoaded,
+    (state: NotificationState, {partialSettings}): NotificationState => {
+      if (
+        typeof partialSettings.notificationLastReadTimeInMs === 'undefined' ||
+        !Number.isFinite(partialSettings.notificationLastReadTimeInMs)
+      ) {
+        return state;
+      }
       return {
         ...state,
-        lastReadTimestampInMs: time,
+        lastReadTimestampInMs: partialSettings.notificationLastReadTimeInMs,
       };
     }
   )
