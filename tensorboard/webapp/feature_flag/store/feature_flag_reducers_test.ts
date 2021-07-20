@@ -147,7 +147,7 @@ describe('feature_flag_reducers', () => {
           partialSettings: {themeOverride: ThemeValue.BROWSER_DEFAULT},
         })
       );
-      expect(state4.flagOverrides!.enableDarkModeOverride).toBe(undefined);
+      expect(state4.flagOverrides!.enableDarkModeOverride).toBeNull();
     });
   });
 });
