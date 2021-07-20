@@ -23,23 +23,19 @@ declare global {
   }
 }
 
-export interface TfGlobals {
-  /** @export */
+export declare interface TfGlobals {
   setUseHash(use: boolean): void;
 }
 
-export interface TfGlobalsElement extends HTMLElement {
-  /** @export */
+export declare interface TfGlobalsElement extends HTMLElement {
   tf_globals: TfGlobals;
 }
 
-export interface SetStringOption {
-  /** @export */
+export declare interface SetStringOption {
   defaultValue?: string;
   /**
    * When true, setting the string does not push a new state onto the history.
    * i.e., it uses `history.replaceState` instead of `history.pushState`.
-   * @export
    */
   useLocationReplace?: boolean;
 }
@@ -55,39 +51,30 @@ export declare interface TfStorageElement extends HTMLElement {
   tf_storage: TfStorage;
 }
 
-export interface Store {
-  /** @export */
+export declare interface Store {
   refresh(): Promise<void>;
 }
 
-export interface TfBackend {
-  /** @export */
+export declare interface TfBackend {
   environmentStore: Store;
-  /** @export */
   runsStore: Store;
 }
 
-export interface TfBackendElement extends HTMLElement {
-  /** @export */
+export declare interface TfBackendElement extends HTMLElement {
   tf_backend: TfBackend;
 }
 
-export interface TfPaginatedView {
-  /** @export */
+export declare interface TfPaginatedView {
   setLimit(limit: number): void;
 }
 
-export interface TfPaginatedViewStoreElement extends HTMLElement {
-  /** @export */
+export declare interface TfPaginatedViewStoreElement extends HTMLElement {
   tf_paginated_view: TfPaginatedView;
 }
 
-export interface VzHistogramDatum {
-  /** @export */
+export declare interface VzHistogramDatum {
   wall_time: number;
-  /** @export */
   step: number;
-  /** @export */
   bins: Array<{x: number; dx: number; y: number}>;
 }
 
@@ -102,17 +89,12 @@ export enum HistogramMode {
   OVERLAY = 'overlay',
 }
 
-export interface VzHistogramTimeSeriesElement extends HTMLElement {
-  /** @export */
+export declare interface VzHistogramTimeSeriesElement extends HTMLElement {
   mode: HistogramMode;
-  /** @export */
   timeProperty: TimeProperty;
-  /** @export */
   colorScale: {
     (runName: string): string;
   };
-  /** @export */
   setSeriesData: (name: string, data: VzHistogramDatum[]) => void;
-  /** @export */
   redraw(): void;
 }
