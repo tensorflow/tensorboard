@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 
 import {NgModule} from '@angular/core';
-import {createSelector, StoreModule} from '@ngrx/store';
+import {StoreModule} from '@ngrx/store';
 import {EffectsModule} from '@ngrx/effects';
 
 import {TBFeatureFlagModule} from '../webapp_data_source/tb_feature_flag_module';
@@ -26,23 +26,6 @@ import {
 } from './store/feature_flag_store_config_provider';
 import {reducers} from './store/feature_flag_reducers';
 import {FeatureFlagEffects} from './effects/feature_flag_effects';
-import {getEnableDarkModeOverride} from './store/feature_flag_selectors';
-import {
-  PersistentSettingsConfigModule,
-  ThemeValue,
-} from '../persistent_settings';
-
-const getThemeValue = createSelector(
-  getEnableDarkModeOverride,
-  (darkModeOverride) => {
-    if (darkModeOverride === undefined) {
-      return {themeOverride: ThemeValue.BROWSER_DEFAULT};
-    }
-    return {
-      themeOverride: darkModeOverride ? ThemeValue.DARK : ThemeValue.LIGHT,
-    };
-  }
-);
 
 @NgModule({
   imports: [
@@ -53,7 +36,6 @@ const getThemeValue = createSelector(
       FEATURE_FLAG_STORE_CONFIG_TOKEN
     ),
     EffectsModule.forFeature([FeatureFlagEffects]),
-    PersistentSettingsConfigModule.defineGlobalSetting(getThemeValue),
   ],
   providers: [
     {
