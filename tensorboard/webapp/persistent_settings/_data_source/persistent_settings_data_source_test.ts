@@ -99,6 +99,38 @@ describe('persistent_settings data_source test', () => {
 
         expect(actual).toEqual({});
       });
+
+      it('gets settings related props from local storage', async () => {
+        getItemSpy.withArgs(TEST_ONLY.GLOBAL_LOCAL_STORAGE_KEY).and.returnValue(
+          JSON.stringify({
+            autoReload: false,
+            autoReloadPeriodInMs: -1,
+            paginationSize: 1000,
+          })
+        );
+
+        const actual = await firstValueFrom(dataSource.getSettings());
+
+        expect(actual).toEqual({
+          autoReload: false,
+          autoReloadPeriodInMs: -1,
+          pageSize: 1000,
+        });
+      });
+
+      it('discards value if it does not match the type information in settings', async () => {
+        getItemSpy.withArgs(TEST_ONLY.GLOBAL_LOCAL_STORAGE_KEY).and.returnValue(
+          JSON.stringify({
+            autoReload: 'false',
+            autoReloadPeriodInMs: '10',
+            paginationSize: true,
+          })
+        );
+
+        const actual = await firstValueFrom(dataSource.getSettings());
+
+        expect(actual).toEqual({});
+      });
     });
 
     describe('#setSettings', () => {

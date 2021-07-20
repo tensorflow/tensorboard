@@ -14,6 +14,7 @@ tf_ng_module(
     ],
     visibility = ["//tensorboard:internal"],
     deps = [
+        "//tensorboard/webapp/persistent_settings",
         "//tensorboard/webapp/types",
         "@npm//@ngrx/store",
     ],
@@ -28,6 +29,7 @@ tf_ts_library(
     visibility = ["//tensorboard:internal"],
     deps = [
         ":_redux",
+        "//tensorboard/webapp/persistent_settings",
         "//tensorboard/webapp/settings:testing",
         "//tensorboard/webapp/types",
         "@npm//@types/jasmine",

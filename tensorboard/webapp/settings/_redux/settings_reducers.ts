@@ -13,9 +13,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Action, createReducer, on} from '@ngrx/store';
+import {globalSettingsLoaded} from '../../persistent_settings';
 import {DataLoadState} from '../../types/data';
 import * as actions from './settings_actions';
-import {SettingsState, initialState} from './settings_types';
+import {SettingsState, initialState, Settings} from './settings_types';
 
 /**
  * Check if settings are ready to modify. We want to reject modifications to
@@ -28,6 +29,9 @@ function settingsReady(state: SettingsState): boolean {
     state.state !== DataLoadState.LOADING
   );
 }
+
+// Auto reload period cannot be lower than 30s to prevent server load.
+const MIN_RELOAD_PERIOD_IN_MS = 30000;
 
 const reducer = createReducer(
   initialState,
@@ -55,7 +59,9 @@ const reducer = createReducer(
       }
 
       const nextReloadPeriod =
-        periodInMs > 0 ? periodInMs : state.settings.reloadPeriodInMs;
+        periodInMs > MIN_RELOAD_PERIOD_IN_MS
+          ? periodInMs
+          : state.settings.reloadPeriodInMs;
       return {
         ...state,
         settings: {
@@ -76,6 +82,35 @@ const reducer = createReducer(
       settings: {
         ...state.settings,
         pageSize: nextPageSize,
+      },
+    };
+  }),
+  on(globalSettingsLoaded, (state, {partialSettings}) => {
+    const nextSettings: Partial<Settings> = {};
+
+    if (
+      Number.isFinite(partialSettings.pageSize) &&
+      partialSettings.pageSize! > 0
+    ) {
+      nextSettings.pageSize = partialSettings.pageSize;
+    }
+
+    if (typeof partialSettings.autoReload === 'boolean') {
+      nextSettings.reloadEnabled = partialSettings.autoReload;
+    }
+
+    if (
+      Number.isFinite(partialSettings.autoReloadPeriodInMs) &&
+      partialSettings.autoReloadPeriodInMs! > MIN_RELOAD_PERIOD_IN_MS
+    ) {
+      nextSettings.reloadPeriodInMs = partialSettings.autoReloadPeriodInMs;
+    }
+
+    return {
+      ...state,
+      settings: {
+        ...state.settings,
+        ...nextSettings,
       },
     };
   })

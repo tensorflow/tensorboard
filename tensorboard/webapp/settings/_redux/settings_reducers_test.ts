@@ -16,6 +16,7 @@ import * as actions from './settings_actions';
 import {reducers} from './settings_reducers';
 import {createSettings, createSettingsState} from '../testing';
 import {DataLoadState} from '../../types/data';
+import {globalSettingsLoaded} from '../../persistent_settings';
 
 describe('settings reducer', () => {
   describe('#toggleReloadEnabled', () => {
@@ -69,10 +70,10 @@ describe('settings reducer', () => {
 
       const nextState = reducers(
         state,
-        actions.changeReloadPeriod({periodInMs: 1000})
+        actions.changeReloadPeriod({periodInMs: 50000})
       );
 
-      expect(nextState.settings.reloadPeriodInMs).toBe(1000);
+      expect(nextState.settings.reloadPeriodInMs).toBe(50000);
     });
 
     it('ignores the action when periodInMs is non-positive', () => {
@@ -128,6 +129,56 @@ describe('settings reducer', () => {
       const nextState = reducers(state, actions.changePageSize({size: 400}));
 
       expect(nextState.settings.pageSize).toBe(1);
+    });
+  });
+
+  describe('#globalSettingsLoaded', () => {
+    it('loads settings from the persistent settings storage', () => {
+      const state = createSettingsState({
+        state: DataLoadState.LOADING,
+        settings: createSettings({
+          pageSize: 1,
+          reloadEnabled: false,
+          reloadPeriodInMs: 100,
+        }),
+      });
+
+      const nextState = reducers(
+        state,
+        globalSettingsLoaded({
+          partialSettings: {
+            autoReloadPeriodInMs: 50000,
+            pageSize: 10,
+          },
+        })
+      );
+
+      expect(nextState.settings.pageSize).toBe(10);
+      expect(nextState.settings.reloadEnabled).toBe(false);
+      expect(nextState.settings.reloadPeriodInMs).toBe(50000);
+    });
+
+    it('sanitizes the settings value', () => {
+      const state = createSettingsState({
+        state: DataLoadState.LOADING,
+        settings: createSettings({
+          pageSize: 1,
+          reloadPeriodInMs: 60000,
+        }),
+      });
+
+      const nextState = reducers(
+        state,
+        globalSettingsLoaded({
+          partialSettings: {
+            autoReloadPeriodInMs: 10,
+            pageSize: NaN,
+          },
+        })
+      );
+
+      expect(nextState.settings.pageSize).toBe(1);
+      expect(nextState.settings.reloadPeriodInMs).toBe(60000);
     });
   });
 });

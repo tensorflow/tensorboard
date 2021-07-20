@@ -13,14 +13,57 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {NgModule} from '@angular/core';
-import {StoreModule} from '@ngrx/store';
+import {createSelector, StoreModule} from '@ngrx/store';
 
 import {SettingsModule as ViewModule} from './_views/settings_module';
 import {reducers} from './_redux/settings_reducers';
-import {SETTINGS_FEATURE_KEY} from './_redux/settings_types';
+import {SETTINGS_FEATURE_KEY, State} from './_redux/settings_types';
+import {
+  PersistableSettings,
+  PersistentSettingsConfigModule,
+} from '../persistent_settings';
+import {
+  getPageSize,
+  getReloadEnabled,
+  getReloadPeriodInMs,
+} from './_redux/settings_selectors';
+
+/** @typehack */ import * as _typeHackNgrxStore from '@ngrx/store';
+
+export function createAutoReloadSettingSelector() {
+  return createSelector(getReloadEnabled, (autoReload) => {
+    return {autoReload};
+  });
+}
+
+export function createAutoReloadPeriodInMsSelector() {
+  return createSelector(getReloadPeriodInMs, (autoReloadPeriodInMs) => {
+    return {autoReloadPeriodInMs};
+  });
+}
+
+export function createPageSizeSelector() {
+  return createSelector(getPageSize, (pageSize) => {
+    return {pageSize};
+  });
+}
 
 @NgModule({
   exports: [ViewModule],
-  imports: [StoreModule.forFeature(SETTINGS_FEATURE_KEY, reducers)],
+  imports: [
+    StoreModule.forFeature(SETTINGS_FEATURE_KEY, reducers),
+    PersistentSettingsConfigModule.defineGlobalSetting<
+      State,
+      PersistableSettings
+    >(createAutoReloadSettingSelector),
+    PersistentSettingsConfigModule.defineGlobalSetting<
+      State,
+      PersistableSettings
+    >(createAutoReloadPeriodInMsSelector),
+    PersistentSettingsConfigModule.defineGlobalSetting<
+      State,
+      PersistableSettings
+    >(createPageSizeSelector),
+  ],
 })
 export class SettingsModule {}
