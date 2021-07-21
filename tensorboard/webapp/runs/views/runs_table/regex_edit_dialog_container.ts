@@ -20,7 +20,11 @@ import {map, tap} from 'rxjs/operators';
 
 import {State} from '../../../app_state';
 import {runGroupByChanged} from '../../actions';
-import {getColorGroupRegexString, getRunIds, getRuns} from '../../store/runs_selectors';
+import {
+  getColorGroupRegexString,
+  getRunIds,
+  getRuns,
+} from '../../store/runs_selectors';
 import {GroupByKey} from '../../types';
 import {Run} from '../../store/runs_types';
 import {groupRuns} from '../../store/utils';
@@ -54,39 +58,45 @@ export class RegexEditDialogContainer {
 
   ngOnInit() {
     this.experimentIds.forEach((experimentId) => {
-      this.store.select(getRunIds, {experimentId}).pipe(
-        tap((runIds) => {
-          runIds.forEach((runId) => {
-            this.runIdToEid[runId] = experimentId;
+      this.store
+        .select(getRunIds, {experimentId})
+        .pipe(
+          tap((runIds) => {
+            runIds.forEach((runId) => {
+              this.runIdToEid[runId] = experimentId;
+            });
           })
-        })
-      ).subscribe(() => {});
+        )
+        .subscribe(() => {});
 
-      this.store.select(getRuns, {experimentId}).pipe(
-        tap((runs) => {
-          this.allRuns = this.allRuns.concat(runs);
-        })
-      ).subscribe(() => {});
-    })
+      this.store
+        .select(getRuns, {experimentId})
+        .pipe(
+          tap((runs) => {
+            this.allRuns = this.allRuns.concat(runs);
+          })
+        )
+        .subscribe(() => {});
+    });
   }
 
   generateColorRunMap(regexString: string) {
-      const groupBy = {
-        key: GroupByKey.REGEX,
-        regexString
-      }
-      const groups = groupRuns(groupBy, this.allRuns, this.runIdToEid);
-      const groupKeyToColorString = new Map<string, string>();
-      this.colorRunsMap = [];
-      Object.entries(groups.matches).forEach(([groupId, runs]) => {
-        const color =
-          groupKeyToColorString.get(groupId) ??
-          CHART_COLOR_PALLETE[
-            groupKeyToColorString.size % CHART_COLOR_PALLETE.length
-          ];
-        groupKeyToColorString.set(groupId, color);
-        this.colorRunsMap.push([color, runs as Run[]]);
-      });
+    const groupBy = {
+      key: GroupByKey.REGEX,
+      regexString,
+    };
+    const groups = groupRuns(groupBy, this.allRuns, this.runIdToEid);
+    const groupKeyToColorString = new Map<string, string>();
+    this.colorRunsMap = [];
+    Object.entries(groups.matches).forEach(([groupId, runs]) => {
+      const color =
+        groupKeyToColorString.get(groupId) ??
+        CHART_COLOR_PALLETE[
+          groupKeyToColorString.size % CHART_COLOR_PALLETE.length
+        ];
+      groupKeyToColorString.set(groupId, color);
+      this.colorRunsMap.push([color, runs as Run[]]);
+    });
   }
 
   onSave(regexString: string): void {

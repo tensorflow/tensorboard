@@ -74,10 +74,9 @@ export const getRuns = createSelector(
 /**
  * Returns Observable that emits runs list for an experiment.
  */
- export const getRunIds = createSelector(
+export const getRunIds = createSelector(
   getDataState,
   (state: RunsDataState, props: {experimentId: string}): string[] => {
-
     return state.runIds[props.experimentId] || [];
   }
 );

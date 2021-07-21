@@ -24,11 +24,13 @@ import {Run} from '../../store/runs_types';
 
 const INPUT_CHANGE_DEBOUNCE_INTERVAL_MS = 500;
 
-function debounce(func: Function, timeout = INPUT_CHANGE_DEBOUNCE_INTERVAL_MS){
+function debounce(func: Function, timeout = INPUT_CHANGE_DEBOUNCE_INTERVAL_MS) {
   let timer: number;
   return () => {
     clearTimeout(timer);
-    timer = setTimeout(() => { func(); }, timeout);
+    timer = setTimeout(() => {
+      func();
+    }, timeout);
   };
 }
 
