@@ -15,6 +15,7 @@ limitations under the License.
 @import 'tensorboard/webapp/theme/tb_theme';
 
 .example-details {
+  max-height: 50vh;
   button {
     background-color: transparent;
     padding: 0;
@@ -26,4 +27,16 @@ limitations under the License.
       @include tb-theme-foreground-prop(color, link-visited);
     }
   }
+}
+
+.group-container {
+  align-items: flex-start;
+  display: flex;
+  flex-wrap: wrap;
+  max-height: 50vh;
+  overflow-y: auto;
+}
+.group {
+  margin: 5px;
+  padding: 10px;
 }

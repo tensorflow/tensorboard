@@ -72,6 +72,17 @@ export const getRuns = createSelector(
 );
 
 /**
+ * Returns Observable that emits runs list for an experiment.
+ */
+ export const getRunIds = createSelector(
+  getDataState,
+  (state: RunsDataState, props: {experimentId: string}): string[] => {
+
+    return state.runIds[props.experimentId] || [];
+  }
+);
+
+/**
  * Returns an Observable that emits a map from RunIds to Runs. Note: the keys
  * do NOT necessarily correspond to the current route's runs.
  */

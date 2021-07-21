@@ -29,9 +29,6 @@ tf_ts_library(
 tf_ts_library(
     name = "utils",
     srcs = ["utils.ts"],
-    visibility = [
-        "//visibility:private",
-    ],
     deps = [
         ":types",
         "//tensorboard/webapp/runs:types",

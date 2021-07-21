@@ -20,6 +20,17 @@ import {
   Output,
 } from '@angular/core';
 import {MatDialogRef} from '@angular/material/dialog';
+import {Run} from '../../store/runs_types';
+
+const INPUT_CHANGE_DEBOUNCE_INTERVAL_MS = 500;
+
+function debounce(func: Function, timeout = INPUT_CHANGE_DEBOUNCE_INTERVAL_MS){
+  let timer: number;
+  return () => {
+    clearTimeout(timer);
+    timer = setTimeout(() => { func(); }, timeout);
+  };
+}
 
 @Component({
   selector: 'regex-edit-dialog-component',
@@ -29,8 +40,10 @@ import {MatDialogRef} from '@angular/material/dialog';
 })
 export class RegexEditDialogComponent {
   @Input() regexString!: string;
+  @Input() colorRunsMap!: [string, Run[]][];
 
   @Output() onSave = new EventEmitter<string>();
+  @Output() regexInputOnChange = new EventEmitter<string>();
 
   constructor(
     public readonly dialogRef: MatDialogRef<RegexEditDialogComponent>
@@ -47,5 +60,9 @@ export class RegexEditDialogComponent {
 
   fillExample(regexExample: string): void {
     this.regexString = regexExample;
+  }
+
+  regexInputChange(regexString: string) {
+    debounce(() => this.regexInputOnChange.emit(regexString))();
   }
 }
