@@ -30,6 +30,8 @@ import {
 } from './_redux/notification_center_types';
 import {NotificationCenterViewModule} from './_views/views_module';
 
+/** @typehack */ import * as _typeHackStore from '@ngrx/store';
+
 export function getNotificationLastReadTimeSettingSelector() {
   return createSelector(getLastReadTime, (lastReadTime) => {
     return {notificationLastReadTimeInMs: lastReadTime};
