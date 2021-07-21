@@ -34,6 +34,7 @@ export declare interface BackendSettings {
   autoReloadPeriodInMs?: number;
   paginationSize?: number;
   theme?: ThemeValue;
+  notificationLastReadTimeInMs?: number;
 }
 
 /**
@@ -49,4 +50,5 @@ export interface PersistableSettings {
   autoReloadPeriodInMs?: number;
   pageSize?: number;
   themeOverride?: ThemeValue;
+  notificationLastReadTimeInMs?: number;
 }

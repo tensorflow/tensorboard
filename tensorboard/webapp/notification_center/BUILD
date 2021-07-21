@@ -16,6 +16,7 @@ tf_ng_module(
         "//tensorboard/webapp/notification_center/_redux:actions",
         "//tensorboard/webapp/notification_center/_redux:types",
         "//tensorboard/webapp/notification_center/_views",
+        "//tensorboard/webapp/persistent_settings",
         "@npm//@angular/core",
         "@npm//@ngrx/effects",
         "@npm//@ngrx/store",

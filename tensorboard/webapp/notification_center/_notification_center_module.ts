@@ -14,13 +14,29 @@ limitations under the License.
 ==============================================================================*/
 import {NgModule} from '@angular/core';
 import {EffectsModule} from '@ngrx/effects';
-import {StoreModule} from '@ngrx/store';
+import {createSelector, StoreModule} from '@ngrx/store';
 
+import {
+  PersistableSettings,
+  PersistentSettingsConfigModule,
+} from '../persistent_settings';
 import {NotificationCenterDataSourceModule} from './_data_source';
 import {NotificationCenterEffects} from './_redux/notification_center_effects';
 import {reducers} from './_redux/notification_center_reducers';
-import {NOTIFICATION_FEATURE_KEY} from './_redux/notification_center_types';
+import {getLastReadTime} from './_redux/notification_center_selectors';
+import {
+  NOTIFICATION_FEATURE_KEY,
+  State,
+} from './_redux/notification_center_types';
 import {NotificationCenterViewModule} from './_views/views_module';
+
+/** @typehack */ import * as _typeHackStore from '@ngrx/store';
+
+export function getNotificationLastReadTimeSettingSelector() {
+  return createSelector(getLastReadTime, (lastReadTime) => {
+    return {notificationLastReadTimeInMs: lastReadTime};
+  });
+}
 
 @NgModule({
   imports: [
@@ -28,6 +44,10 @@ import {NotificationCenterViewModule} from './_views/views_module';
     EffectsModule.forFeature([NotificationCenterEffects]),
     NotificationCenterDataSourceModule,
     NotificationCenterViewModule,
+    PersistentSettingsConfigModule.defineGlobalSetting<
+      State,
+      PersistableSettings
+    >(getNotificationLastReadTimeSettingSelector),
   ],
   exports: [NotificationCenterViewModule],
 })
