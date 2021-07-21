@@ -22,7 +22,7 @@ import {
 } from '@angular/core';
 
 import {RouteConfigs} from './route_config';
-import {RouteDef} from './route_config_types';
+import {isConcreteRouteDef, RouteDef} from './route_config_types';
 import {ROUTE_CONFIGS_TOKEN} from './route_registry_types';
 import {RouteKind} from './types';
 
@@ -48,7 +48,7 @@ export class RouteRegistryModule {
     }
     this.routeConfigs = new RouteConfigs(configs);
     configs.forEach((config) => {
-      if (config.routeKind !== null) {
+      if (isConcreteRouteDef(config)) {
         this.routeKindToNgComponent.set(config.routeKind, config.ngComponent);
       }
     });

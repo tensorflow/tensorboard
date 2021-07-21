@@ -47,9 +47,50 @@ export interface ConcreteRouteDef {
 }
 
 export interface RedirectionRouteDef {
-  routeKind: null;
+  // TODO(tensorboard-team): drop this property as it is not used for any other
+  // purposes when all instances of RedirectionRouteDef does not specify the
+  // value `null`. In the intrim, having both `undefined` or `null` is okay.
+  routeKind?: null;
   path: string;
   redirectionPath: string;
 }
 
-export type RouteDef = ConcreteRouteDef | RedirectionRouteDef;
+export interface ProgrammticRedirectionRouteDef {
+  /**
+   * A path that should activate the route definition. A Parameter, see
+   * definition in `ConcreteRouteDef`, is only used as a wild card and its value
+   * is not used meaningfully as all raw `pathParts` are passed to the
+   * `redirector`.
+   */
+  path: string;
+  /**
+   * A function that returns, from a pathParts, a new pathParts it should
+   * redirect to.
+   *
+   * A PathPart is a list of pathname parts already delimited by "/". If you
+   * want a trailing slash, you will need to have an empty item at the end of
+   * the list. e.g., `/foo/bar/` => `['foo', 'bar', '']`.
+   */
+  redirector: (pathParts: string[]) => string[];
+}
+
+export type RouteDef =
+  | ConcreteRouteDef
+  | RedirectionRouteDef
+  | ProgrammticRedirectionRouteDef;
+
+export function isConcreteRouteDef(
+  definition: RouteDef
+): definition is ConcreteRouteDef {
+  const maybeConcreteDef = definition as ConcreteRouteDef;
+  return (
+    maybeConcreteDef.routeKind !== undefined &&
+    maybeConcreteDef.routeKind !== null
+  );
+}
+
+export function isStaticRedirectionRouteDef(
+  definition: RouteDef
+): definition is RedirectionRouteDef {
+  return (definition as RedirectionRouteDef).redirectionPath !== undefined;
+}
