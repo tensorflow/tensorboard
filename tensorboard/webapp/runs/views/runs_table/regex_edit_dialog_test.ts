@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {NO_ERRORS_SCHEMA} from '@angular/core';
-import {TestBed} from '@angular/core/testing';
+import {TestBed, fakeAsync, tick} from '@angular/core/testing';
 import {
   MatDialogModule,
   MatDialogRef,
@@ -27,12 +27,16 @@ import {Action, Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
 
 import {State} from '../../../app_state';
-import {getColorGroupRegexString} from '../../../selectors';
+import {getRuns, getRunIds, getColorGroupRegexString} from '../../../selectors';
 import {KeyType, sendKey, SendKeyArgs} from '../../../testing/dom';
 import {runGroupByChanged} from '../../actions';
 import {GroupByKey} from '../../types';
-import {RegexEditDialogComponent} from './regex_edit_dialog_component';
+import {
+  RegexEditDialogComponent,
+  TEST_ONLY,
+} from './regex_edit_dialog_component';
 import {RegexEditDialogContainer} from './regex_edit_dialog_container';
+import {buildRun} from '../../store/testing';
 
 describe('regex_edit_dialog', () => {
   let actualActions: Action[];
@@ -62,6 +66,8 @@ describe('regex_edit_dialog', () => {
 
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
     store.overrideSelector(getColorGroupRegexString, 'test regex string');
+    store.overrideSelector(getRuns, []);
+    store.overrideSelector(getRunIds, []);
     actualActions = [];
     dispatchSpy = spyOn(store, 'dispatch').and.callFake((action: Action) => {
       actualActions.push(action);
@@ -253,5 +259,73 @@ describe('regex_edit_dialog', () => {
 
     const input = fixture.debugElement.query(By.css('input'));
     expect(input.nativeElement.value).toBe('(train|eval)');
+  });
+
+  describe('live grouping result preview', () => {
+    it('does not renders grouping result initially', () => {
+      const fixture = createComponent(['rose']);
+      fixture.detectChanges();
+
+      const groupingResult = fixture.debugElement.query(
+        By.css('.group-container')
+      );
+      expect(groupingResult).toBeNull();
+    });
+
+    it('renders grouping result', fakeAsync(() => {
+      const fixture = createComponent(['rose']);
+      store.overrideSelector(getRuns, [
+        buildRun({id: 'run1', name: 'run 1'}),
+        buildRun({id: 'run2', name: 'run 2'}),
+      ]);
+      store.overrideSelector(getRunIds, ['run1', 'run2']);
+
+      const input = fixture.debugElement.query(By.css('input'));
+      const keyArgs: SendKeyArgs = {
+        key: '',
+        prevString: 'run',
+        type: KeyType.CHARACTER,
+        startingCursorIndex: 0,
+      };
+      sendKey(fixture, input, keyArgs);
+      tick(TEST_ONLY.INPUT_CHANGE_DEBOUNCE_INTERVAL_MS);
+      fixture.detectChanges();
+
+      const groupingResult = fixture.debugElement.query(
+        By.css('.group-container')
+      );
+      expect(groupingResult).not.toBeNull();
+      const text = fixture.debugElement.query(By.css('.group-container div'));
+      expect(text.nativeElement.textContent).toBe('Grouping result preview:');
+      const groups = fixture.debugElement.queryAll(By.css('.group'));
+      expect(groups.length).toBe(1);
+    }));
+
+    it('renders grouping result with multiple groups', fakeAsync(() => {
+      const fixture = createComponent(['rose']);
+      store.overrideSelector(getRuns, [
+        buildRun({id: 'run1', name: 'run1 name'}),
+        buildRun({id: 'run2', name: 'run2 name'}),
+      ]);
+      store.overrideSelector(getRunIds, ['run1', 'run2']);
+
+      const input = fixture.debugElement.query(By.css('input'));
+      const keyArgs: SendKeyArgs = {
+        key: '',
+        prevString: 'run(\\d+)',
+        type: KeyType.CHARACTER,
+        startingCursorIndex: 0,
+      };
+      sendKey(fixture, input, keyArgs);
+      tick(TEST_ONLY.INPUT_CHANGE_DEBOUNCE_INTERVAL_MS);
+      fixture.detectChanges();
+
+      const groups = fixture.debugElement.queryAll(By.css('.group'));
+      expect(groups.length).toBe(2);
+      expect(groups[0].nativeElement.style.background).toBe('rgb(66, 80, 102)'); // Slate 1
+      expect(groups[1].nativeElement.style.background).toBe(
+        'rgb(18, 181, 203)'
+      ); // Cyan 600
+    }));
   });
 });

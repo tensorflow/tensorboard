@@ -42,14 +42,16 @@ limitations under the License.
   </p>
 </div>
 
-<div *ngIf="colorRunsMap.length">Grouping result preview:</div>
-<div class="group-container">
-  <div
-    class="group"
-    *ngFor="let colorRunsPair of colorRunsMap"
-    style="background: {{colorRunsPair[0]}}"
-  >
-    <span *ngFor="let run of colorRunsPair[1]"> {{ run.name }}<br /> </span>
+<div *ngIf="colorRunsMap.length" class="group-container">
+  <div>Grouping result preview:</div>
+  <div class="grouping-preview">
+    <div
+      class="group"
+      *ngFor="let colorRunsPair of colorRunsMap"
+      style="background: {{colorRunsPair[0]}}"
+    >
+      <span *ngFor="let run of colorRunsPair[1]"> {{ run.name }}<br /> </span>
+    </div>
   </div>
 </div>
 

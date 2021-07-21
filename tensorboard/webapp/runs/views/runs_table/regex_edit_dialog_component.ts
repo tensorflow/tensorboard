@@ -68,3 +68,7 @@ export class RegexEditDialogComponent {
     debounce(() => this.regexInputOnChange.emit(regexString))();
   }
 }
+
+export const TEST_ONLY = {
+  INPUT_CHANGE_DEBOUNCE_INTERVAL_MS,
+};
