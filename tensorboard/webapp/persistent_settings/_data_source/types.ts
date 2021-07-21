@@ -13,6 +13,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+export enum ThemeValue {
+  BROWSER_DEFAULT = 'browser_default',
+  LIGHT = 'light',
+  DARK = 'dark',
+}
+
 /**
  * Global settings that the backend remembers. `declare`d so properties do not
  * get mangled or mangled differently when a version compiler changes.
@@ -27,6 +33,7 @@ export declare interface BackendSettings {
   autoReload?: boolean;
   autoReloadPeriodInMs?: number;
   paginationSize?: number;
+  theme?: ThemeValue;
 }
 
 /**
@@ -41,4 +48,5 @@ export interface PersistableSettings {
   autoReload?: boolean;
   autoReloadPeriodInMs?: number;
   pageSize?: number;
+  themeOverride?: ThemeValue;
 }
