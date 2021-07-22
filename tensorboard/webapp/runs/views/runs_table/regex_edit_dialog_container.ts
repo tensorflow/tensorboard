@@ -49,16 +49,19 @@ const INPUT_CHANGE_DEBOUNCE_INTERVAL_MS = 500;
   ></regex-edit-dialog-component>`,
 })
 export class RegexEditDialogContainer {
-  experimentIds: string[];
-  runIdToEid$: Observable<Record<string, string>>;
-  allRuns$: Observable<Run[]>;
+  private readonly experimentIds: string[];
+  private readonly runIdToEid$: Observable<Record<string, string>>;
+  private readonly allRuns$: Observable<Run[]>;
+  private readonly tentativeRegexString$: Subject<string> = new Subject<
+    string
+  >();
+
   readonly groupByRegexString$: Observable<string> = defer(() => {
     return merge(
       this.store.select(getColorGroupRegexString).pipe(take(1)),
       this.tentativeRegexString$
     );
   }).pipe(startWith(''));
-  private readonly tentativeRegexString$: Subject<string> = new Subject<string>();
 
   readonly colorRunPairList$: Observable<Array<[string, Run[]]>> = defer(() => {
     return this.groupByRegexString$.pipe(
