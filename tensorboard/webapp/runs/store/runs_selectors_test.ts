@@ -167,10 +167,9 @@ describe('runs_selectors', () => {
           },
         })
       );
-      expect(selectors.getRunIdsForExperiment(state, {experimentId: 'eid'})).toEqual([
-        'run1',
-        'run2',
-      ]);
+      expect(
+        selectors.getRunIdsForExperiment(state, {experimentId: 'eid'})
+      ).toEqual(['run1', 'run2']);
     });
 
     it('returns empty list if experiment id does not exist', () => {

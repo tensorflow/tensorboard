@@ -54,13 +54,11 @@ export class RegexEditDialogContainer {
   allRuns$: Observable<Run[]>;
   readonly groupByRegexString$: Observable<string> = defer(() => {
     return merge(
-      this.tentativeRegexString$,
       this.store.select(getColorGroupRegexString).pipe(take(1)),
+      this.tentativeRegexString$
     );
   }).pipe(startWith(''));
-  private readonly tentativeRegexString$: Subject<string> = new Subject<
-    string
-  >();
+  private readonly tentativeRegexString$: Subject<string> = new Subject<string>();
 
   readonly colorRunPairList$: Observable<Array<[string, Run[]]>> = defer(() => {
     return this.groupByRegexString$.pipe(
@@ -88,7 +86,6 @@ export class RegexEditDialogContainer {
       })
     );
   }).pipe(startWith([]));
-
 
   constructor(
     private readonly store: Store<State>,

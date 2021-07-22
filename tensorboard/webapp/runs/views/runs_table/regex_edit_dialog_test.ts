@@ -27,12 +27,19 @@ import {Action, Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
 
 import {State} from '../../../app_state';
-import {getRuns, getRunIdsForExperiment, getColorGroupRegexString} from '../../../selectors';
+import {
+  getRuns,
+  getRunIdsForExperiment,
+  getColorGroupRegexString,
+} from '../../../selectors';
 import {KeyType, sendKey, SendKeyArgs} from '../../../testing/dom';
 import {runGroupByChanged} from '../../actions';
 import {GroupByKey} from '../../types';
 import {RegexEditDialogComponent} from './regex_edit_dialog_component';
-import {RegexEditDialogContainer, TEST_ONLY} from './regex_edit_dialog_container';
+import {
+  RegexEditDialogContainer,
+  TEST_ONLY,
+} from './regex_edit_dialog_container';
 import {buildRun} from '../../store/testing';
 
 describe('regex_edit_dialog', () => {

@@ -20,8 +20,8 @@ import {
   Output,
 } from '@angular/core';
 import {MatDialogRef} from '@angular/material/dialog';
-import {Run} from '../../store/runs_types';
 
+import {Run} from '../../store/runs_types';
 
 @Component({
   selector: 'regex-edit-dialog-component',
