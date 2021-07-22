@@ -269,13 +269,14 @@ describe('regex_edit_dialog', () => {
       expect(groupingResult).toBeNull();
     });
 
-    fit('renders grouping preview with regex query input', fakeAsync(() => {
+    it('renders grouping preview on regex query input', fakeAsync(() => {
       const fixture = createComponent(['rose']);
       store.overrideSelector(getRuns, [
         buildRun({id: 'run1', name: 'run 1'}),
         buildRun({id: 'run2', name: 'run 2'}),
       ]);
       store.overrideSelector(getRunIdsForExperiment, ['run1', 'run2']);
+      fixture.detectChanges();
 
       const input = fixture.debugElement.query(By.css('input'));
       const keyArgs: SendKeyArgs = {
@@ -285,26 +286,27 @@ describe('regex_edit_dialog', () => {
         startingCursorIndex: 0,
       };
       sendKey(fixture, input, keyArgs);
-      fixture.detectChanges();
       tick(TEST_ONLY.INPUT_CHANGE_DEBOUNCE_INTERVAL_MS);
+      fixture.detectChanges();
 
       const groupingResult = fixture.debugElement.query(
         By.css('.group-container')
       );
       expect(groupingResult).not.toBeNull();
-      const text = fixture.debugElement.query(By.css('.group-container div'));
-      expect(text.nativeElement.textContent).toBe('Grouping result preview:');
+      const text = fixture.debugElement.query(By.css('.group-container h4'));
+      expect(text.nativeElement.textContent).toBe('Color group preview');
       const groups = fixture.debugElement.queryAll(By.css('.group'));
       expect(groups.length).toBe(1);
     }));
 
-    it('renders grouping result with multiple groups', fakeAsync(() => {
+    it('renders multiple groups preview on regex query input', fakeAsync(() => {
       const fixture = createComponent(['rose']);
       store.overrideSelector(getRuns, [
         buildRun({id: 'run1', name: 'run1 name'}),
         buildRun({id: 'run2', name: 'run2 name'}),
       ]);
       store.overrideSelector(getRunIdsForExperiment, ['run1', 'run2']);
+      fixture.detectChanges();
 
       const input = fixture.debugElement.query(By.css('input'));
       const keyArgs: SendKeyArgs = {
