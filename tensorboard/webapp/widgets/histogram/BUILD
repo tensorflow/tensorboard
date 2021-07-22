@@ -1,18 +1,29 @@
-load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_ts_library")
+load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_sass_binary", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])
+
+tf_sass_binary(
+    name = "histogram_styles",
+    src = "histogram_v2_component.scss",
+)
 
 tf_ng_module(
     name = "histogram",
     srcs = [
         "histogram_component.ts",
         "histogram_module.ts",
+        "histogram_v2_component.ts",
+    ],
+    assets = [
+        "histogram_v2_component.ng.html",
+        ":histogram_styles",
     ],
     deps = [
         ":types",
         "//tensorboard/webapp:tb_polymer_interop_types",
+        "//tensorboard/webapp/third_party:d3",
         "@npm//@angular/core",
     ],
 )
@@ -23,6 +34,7 @@ tf_ts_library(
     srcs = [
         "histogram_test.ts",
         "histogram_util_test.ts",
+        "histogram_v2_test.ts",
     ],
     deps = [
         ":histogram",
@@ -31,6 +43,7 @@ tf_ts_library(
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/angular:expect_angular_platform_browser_animations",
         "@npm//@angular/core",
+        "@npm//@angular/platform-browser",
         "@npm//@types/jasmine",
     ],
 )
