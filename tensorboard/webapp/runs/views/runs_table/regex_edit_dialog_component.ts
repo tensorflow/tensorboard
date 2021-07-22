@@ -20,8 +20,13 @@ import {
   Output,
 } from '@angular/core';
 import {MatDialogRef} from '@angular/material/dialog';
+import {Run} from '../../types';
 
-import {Run} from '../../store/runs_types';
+export interface ColorGroup {
+  groupId: string;
+  color: string;
+  runs: Run[];
+}
 
 @Component({
   selector: 'regex-edit-dialog-component',
@@ -31,7 +36,7 @@ import {Run} from '../../store/runs_types';
 })
 export class RegexEditDialogComponent {
   @Input() regexString!: string;
-  @Input() colorRunPairList!: [string, Run[]][];
+  @Input() colorRunPairList!: ColorGroup[];
 
   @Output() onSave = new EventEmitter<string>();
   @Output() regexInputOnChange = new EventEmitter<string>();

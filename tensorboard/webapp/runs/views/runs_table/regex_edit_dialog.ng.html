@@ -48,11 +48,29 @@ limitations under the License.
     <ul
       class="group"
       *ngFor="let colorRunsPair of colorRunPairList"
-      style="background: {{colorRunsPair[0]}}"
+      [ngStyle]="{borderColor: colorRunsPair.color}"
     >
-      <li *ngFor="let run of colorRunsPair[1] | slice:0:10;">{{ run.name }}</li>
-      <li *ngIf="colorRunsPair[1].length > 10">
-        and {{ colorRunsPair[1].length - 10 }} more runs matches
+      <li>
+        <label
+          ><span
+            class="color-swatch"
+            [ngStyle]="{backgroundColor: colorRunsPair.color}"
+          ></span
+          ><code name="group-id" [title]="colorRunsPair.groupId"
+            >{{colorRunsPair.groupId}}</code
+          ></label
+        >
+        <ul>
+          <ng-container *ngFor="let run of colorRunsPair.runs | slice:0:10;">
+            <li [title]="run.name">{{ run.name }}</li>
+          </ng-container>
+          <li class="more" *ngIf="colorRunsPair.runs.length > 5">
+            <em>and {{colorRunsPair.runs.length - 10 | number}} more</em>
+          </li>
+          <li class="no-match" *ngIf="colorRunsPair.runs.length === 0">
+            <em>No runs are in the group</em>
+          </li>
+        </ul>
       </li>
     </ul>
   </div>
