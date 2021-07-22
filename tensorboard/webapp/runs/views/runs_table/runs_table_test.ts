@@ -64,7 +64,7 @@ import {
   getRunColorMap,
   getRunGroupBy,
   getRuns,
-  getRunIds,
+  getRunIdsForExperiment,
   getRunSelectorPaginationOption,
   getRunSelectorRegexFilter,
   getRunSelectorSort,
@@ -235,7 +235,7 @@ describe('runs_table', () => {
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
     overlayContainer = TestBed.inject(OverlayContainer);
     store.overrideSelector(getRuns, []);
-    store.overrideSelector(getRunIds, []);
+    store.overrideSelector(getRunIdsForExperiment, []);
     store.overrideSelector(getRunsLoadState, {
       state: DataLoadState.NOT_LOADED,
       lastLoadedTimeInMs: null,

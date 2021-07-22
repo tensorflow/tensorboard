@@ -153,10 +153,10 @@ describe('runs_selectors', () => {
     });
   });
 
-  describe('#getRunIds', () => {
+  describe('#getRunIdsForExperiment', () => {
     beforeEach(() => {
       // Clear the memoization.
-      selectors.getRunIds.release();
+      selectors.getRunIdsForExperiment.release();
     });
 
     it('returns runIds', () => {
@@ -167,7 +167,7 @@ describe('runs_selectors', () => {
           },
         })
       );
-      expect(selectors.getRunIds(state, {experimentId: 'eid'})).toEqual([
+      expect(selectors.getRunIdsForExperiment(state, {experimentId: 'eid'})).toEqual([
         'run1',
         'run2',
       ]);
@@ -176,12 +176,13 @@ describe('runs_selectors', () => {
     it('returns empty list if experiment id does not exist', () => {
       const state = buildStateFromRunsState(buildRunsState());
       expect(
-        selectors.getRunIds(state, {
+        selectors.getRunIdsForExperiment(state, {
           experimentId: 'i_do_not_exist',
         })
       ).toEqual([]);
     });
   });
+
   describe('#getRunMap', () => {
     beforeEach(() => {
       // Clear the memoization.

@@ -27,15 +27,12 @@ import {Action, Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
 
 import {State} from '../../../app_state';
-import {getRuns, getRunIds, getColorGroupRegexString} from '../../../selectors';
+import {getRuns, getRunIdsForExperiment, getColorGroupRegexString} from '../../../selectors';
 import {KeyType, sendKey, SendKeyArgs} from '../../../testing/dom';
 import {runGroupByChanged} from '../../actions';
 import {GroupByKey} from '../../types';
-import {
-  RegexEditDialogComponent,
-  TEST_ONLY,
-} from './regex_edit_dialog_component';
-import {RegexEditDialogContainer} from './regex_edit_dialog_container';
+import {RegexEditDialogComponent} from './regex_edit_dialog_component';
+import {RegexEditDialogContainer, TEST_ONLY} from './regex_edit_dialog_container';
 import {buildRun} from '../../store/testing';
 
 describe('regex_edit_dialog', () => {
@@ -67,7 +64,7 @@ describe('regex_edit_dialog', () => {
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
     store.overrideSelector(getColorGroupRegexString, 'test regex string');
     store.overrideSelector(getRuns, []);
-    store.overrideSelector(getRunIds, []);
+    store.overrideSelector(getRunIdsForExperiment, []);
     actualActions = [];
     dispatchSpy = spyOn(store, 'dispatch').and.callFake((action: Action) => {
       actualActions.push(action);
@@ -262,7 +259,7 @@ describe('regex_edit_dialog', () => {
   });
 
   describe('live grouping result preview', () => {
-    it('does not renders grouping result initially', () => {
+    it('does not render grouping result initially', () => {
       const fixture = createComponent(['rose']);
       fixture.detectChanges();
 
@@ -272,13 +269,13 @@ describe('regex_edit_dialog', () => {
       expect(groupingResult).toBeNull();
     });
 
-    it('renders grouping result', fakeAsync(() => {
+    fit('renders grouping preview with regex query input', fakeAsync(() => {
       const fixture = createComponent(['rose']);
       store.overrideSelector(getRuns, [
         buildRun({id: 'run1', name: 'run 1'}),
         buildRun({id: 'run2', name: 'run 2'}),
       ]);
-      store.overrideSelector(getRunIds, ['run1', 'run2']);
+      store.overrideSelector(getRunIdsForExperiment, ['run1', 'run2']);
 
       const input = fixture.debugElement.query(By.css('input'));
       const keyArgs: SendKeyArgs = {
@@ -288,8 +285,8 @@ describe('regex_edit_dialog', () => {
         startingCursorIndex: 0,
       };
       sendKey(fixture, input, keyArgs);
-      tick(TEST_ONLY.INPUT_CHANGE_DEBOUNCE_INTERVAL_MS);
       fixture.detectChanges();
+      tick(TEST_ONLY.INPUT_CHANGE_DEBOUNCE_INTERVAL_MS);
 
       const groupingResult = fixture.debugElement.query(
         By.css('.group-container')
@@ -307,7 +304,7 @@ describe('regex_edit_dialog', () => {
         buildRun({id: 'run1', name: 'run1 name'}),
         buildRun({id: 'run2', name: 'run2 name'}),
       ]);
-      store.overrideSelector(getRunIds, ['run1', 'run2']);
+      store.overrideSelector(getRunIdsForExperiment, ['run1', 'run2']);
 
       const input = fixture.debugElement.query(By.css('input'));
       const keyArgs: SendKeyArgs = {

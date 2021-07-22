@@ -34,8 +34,12 @@ limitations under the License.
   flex-wrap: wrap;
   max-height: 50vh;
   overflow-y: auto;
-}
-.group {
-  margin: 5px;
-  padding: 10px;
+  .group {
+    margin: 5px;
+    padding: 10px;
+  }
+  ul,
+  li {
+    list-style: none;
+  }
 }
