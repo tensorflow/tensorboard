@@ -122,6 +122,9 @@ function createFragmentShader() {
       // Coordinates of the vertex within the entire sprite image.
       vec2 coords =
         (gl_PointCoord + xyIndex) / vec2(spritesPerRow, spritesPerColumn);
+      if (texture2D(spriteTexture, coords).a==0.0) {
+        discard;
+      }
       gl_FragColor = vec4(vColor, 1.0) * texture2D(spriteTexture, coords);
     } else {
       bool inside = point_in_unit_circle(gl_PointCoord);
