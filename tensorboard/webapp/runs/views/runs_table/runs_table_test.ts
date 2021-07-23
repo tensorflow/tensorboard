@@ -656,7 +656,7 @@ describe('runs_table', () => {
         }
       );
 
-      it('dispatches `runGroupByChanged` when a menu item is clicked', () => {
+      it('dispatches `runGroupByChanged` when the menu item `Run`, `Experiment`, and Edit button is clicked', () => {
         store.overrideSelector(getEnabledColorGroup, true);
         store.overrideSelector(getEnabledColorGroupByRegex, true);
         store.overrideSelector(getRunGroupBy, {key: GroupByKey.EXPERIMENT});
@@ -687,16 +687,6 @@ describe('runs_table', () => {
           })
         );
 
-        getColorGroupByHTMLElement(GroupByKey.REGEX)!.click();
-        expect(dispatchSpy).toHaveBeenCalledWith(
-          runGroupByChanged({
-            experimentIds: ['book'],
-            // TODO(japie1235813): regexString is hardcoded to '' for now;
-            // should be fixed when regex support is properly implemented.
-            groupBy: {key: GroupByKey.REGEX, regexString: ''},
-          })
-        );
-
         getColorGroupByHTMLElement('regexEdit')!.click();
         const dialogContainer = overlayContainer
           .getContainerElement()
@@ -709,6 +699,55 @@ describe('runs_table', () => {
         ] = dialogContainer!.querySelectorAll('button');
         expect(cancelButton!.textContent).toContain('Cancel');
         expect(saveButton!.textContent).toContain('Save');
+      });
+
+      it('dispatches `runGroupByChanged` on clicking `Regex` when there is a regex string', () => {
+        store.overrideSelector(getEnabledColorGroup, true);
+        store.overrideSelector(getEnabledColorGroupByRegex, true);
+        store.overrideSelector(getRunGroupBy, {key: GroupByKey.EXPERIMENT});
+        store.overrideSelector(getColorGroupRegexString, 'run');
+        const fixture = createComponent(
+          ['book'],
+          [RunsTableColumn.RUN_NAME, RunsTableColumn.RUN_COLOR]
+        );
+        fixture.detectChanges();
+
+        const menuButton = fixture.debugElement
+          .query(By.directive(RunsGroupMenuButtonContainer))
+          .query(By.css('button'));
+        menuButton.nativeElement.click();
+
+        getColorGroupByHTMLElement(GroupByKey.REGEX)!.click();
+        expect(dispatchSpy).toHaveBeenCalledWith(
+          runGroupByChanged({
+            experimentIds: ['book'],
+            // TODO(japie1235813): regexString is hardcoded to '' for now;
+            // should be fixed when regex support is properly implemented.
+            groupBy: {key: GroupByKey.REGEX, regexString: 'run'},
+          })
+        );
+      });
+
+      it('opens edit dialog on clicking `Regex` when the regex string is not set', () => {
+        store.overrideSelector(getEnabledColorGroup, true);
+        store.overrideSelector(getEnabledColorGroupByRegex, true);
+        store.overrideSelector(getRunGroupBy, {key: GroupByKey.EXPERIMENT});
+        const fixture = createComponent(
+          ['book'],
+          [RunsTableColumn.RUN_NAME, RunsTableColumn.RUN_COLOR]
+        );
+        fixture.detectChanges();
+
+        const menuButton = fixture.debugElement
+          .query(By.directive(RunsGroupMenuButtonContainer))
+          .query(By.css('button'));
+        menuButton.nativeElement.click();
+
+        getColorGroupByHTMLElement(GroupByKey.REGEX)!.click();
+        const dialogContainer = overlayContainer
+          .getContainerElement()
+          .querySelector('mat-dialog-container');
+        expect(dialogContainer).toBeTruthy();
       });
 
       it('dispatches `runGroupByChanged` when regex editing is saved', () => {
