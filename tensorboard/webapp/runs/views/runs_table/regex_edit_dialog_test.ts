@@ -90,6 +90,15 @@ describe('regex_edit_dialog', () => {
     expect(dialog).toBeTruthy();
   });
 
+  it('renders regexString populated from store', () => {
+    const fixture = createComponent(['rose']);
+    fixture.detectChanges();
+
+    const input = fixture.debugElement.query(By.css('input'));
+
+    expect(input.nativeElement.value).toBe('test regex string');
+  });
+
   it('emits groupby action with regexString when clicking on save button', () => {
     const fixture = createComponent(['rose']);
     fixture.detectChanges();
@@ -328,6 +337,58 @@ describe('regex_edit_dialog', () => {
 
       const groups = fixture.debugElement.queryAll(By.css('.group'));
       expect(groups.length).toBe(2);
+    }));
+
+    it('does not render grouping preview on empty regex query input', fakeAsync(() => {
+      const fixture = createComponent(['rose']);
+      store.overrideSelector(getRuns, [
+        buildRun({id: 'run1', name: 'run 1'}),
+        buildRun({id: 'run2', name: 'run 2'}),
+      ]);
+      store.overrideSelector(getRunIdsForExperiment, ['run1', 'run2']);
+      fixture.detectChanges();
+
+      const input = fixture.debugElement.query(By.css('input'));
+      const keyArgs: SendKeyArgs = {
+        key: '',
+        prevString: '',
+        type: KeyType.CHARACTER,
+        startingCursorIndex: 0,
+      };
+      sendKey(fixture, input, keyArgs);
+      tick(TEST_ONLY.INPUT_CHANGE_DEBOUNCE_INTERVAL_MS);
+      fixture.detectChanges();
+
+      const groupingResult = fixture.debugElement.query(
+        By.css('.group-container')
+      );
+      expect(groupingResult).toBeNull();
+    }));
+
+    it('does not render grouping preview when no matched runs', fakeAsync(() => {
+      const fixture = createComponent(['rose']);
+      store.overrideSelector(getRuns, [
+        buildRun({id: 'run1', name: 'run 1'}),
+        buildRun({id: 'run2', name: 'run 2'}),
+      ]);
+      store.overrideSelector(getRunIdsForExperiment, ['run1', 'run2']);
+      fixture.detectChanges();
+
+      const input = fixture.debugElement.query(By.css('input'));
+      const keyArgs: SendKeyArgs = {
+        key: '',
+        prevString: 'test',
+        type: KeyType.CHARACTER,
+        startingCursorIndex: 0,
+      };
+      sendKey(fixture, input, keyArgs);
+      tick(TEST_ONLY.INPUT_CHANGE_DEBOUNCE_INTERVAL_MS);
+      fixture.detectChanges();
+
+      const groupingResult = fixture.debugElement.query(
+        By.css('.group-container')
+      );
+      expect(groupingResult).toBeNull();
     }));
   });
 });
