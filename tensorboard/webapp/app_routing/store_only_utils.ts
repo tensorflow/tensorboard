@@ -21,7 +21,8 @@ import {CompareRouteParams} from './types';
 /**
  * Returns experimentId to alias information encoded in CompareRouteParams.
  *
- * Do not use this outside of _redux store.
+ * This utility is used by only limited packages. Please refer to visiblity in
+ * BUILD.
  */
 export function getCompareExperimentIdAliasSpec(
   routeParams: CompareRouteParams

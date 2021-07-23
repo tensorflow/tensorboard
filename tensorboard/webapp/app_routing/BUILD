@@ -23,10 +23,18 @@ tf_ng_module(
     ],
 )
 
+package_group(
+    name = "store_only_utils_allowlisted",
+    packages = ["//tensorboard/webapp/app_routing/..."],
+)
+
 tf_ng_module(
     name = "store_only_utils",
     srcs = [
         "store_only_utils.ts",
+    ],
+    visibility = [
+        ":store_only_utils_allowlisted",
     ],
     deps = [
         ":internal_utils",
