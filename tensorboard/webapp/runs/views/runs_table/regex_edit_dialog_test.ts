@@ -328,10 +328,6 @@ describe('regex_edit_dialog', () => {
 
       const groups = fixture.debugElement.queryAll(By.css('.group'));
       expect(groups.length).toBe(2);
-      expect(groups[0].nativeElement.style.background).toBe('rgb(66, 80, 102)'); // Slate 1
-      expect(groups[1].nativeElement.style.background).toBe(
-        'rgb(18, 181, 203)'
-      ); // Cyan 600
     }));
   });
 });
