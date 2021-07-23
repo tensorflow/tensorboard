@@ -721,8 +721,6 @@ describe('runs_table', () => {
         expect(dispatchSpy).toHaveBeenCalledWith(
           runGroupByChanged({
             experimentIds: ['book'],
-            // TODO(japie1235813): regexString is hardcoded to '' for now;
-            // should be fixed when regex support is properly implemented.
             groupBy: {key: GroupByKey.REGEX, regexString: 'run'},
           })
         );
