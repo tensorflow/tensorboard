@@ -21,21 +21,20 @@ import {
   debounceTime,
   startWith,
   take,
-  tap,
   map,
 } from 'rxjs/operators';
 
 import {State} from '../../../app_state';
+import {CHART_COLOR_PALLETE} from '../../../util/colors';
 import {runGroupByChanged} from '../../actions';
 import {
   getColorGroupRegexString,
   getRunIdsForExperiment,
   getRuns,
 } from '../../store/runs_selectors';
-import {GroupByKey} from '../../types';
-import {Run} from '../../store/runs_types';
 import {groupRuns} from '../../store/utils';
-import {CHART_COLOR_PALLETE} from '../../../util/colors';
+import {Run, GroupByKey} from '../../types';
+import {ColorGroup} from './regex_edit_dialog_component';
 
 const INPUT_CHANGE_DEBOUNCE_INTERVAL_MS = 500;
 
@@ -63,7 +62,7 @@ export class RegexEditDialogContainer {
     );
   }).pipe(startWith(''));
 
-  readonly colorRunPairList$: Observable<Array<[string, Run[]]>> = defer(() => {
+  readonly colorRunPairList$: Observable<ColorGroup[]> = defer(() => {
     return this.groupByRegexString$.pipe(
       debounceTime(INPUT_CHANGE_DEBOUNCE_INTERVAL_MS),
       combineLatestWith(this.allRuns$, this.runIdToEid$),
@@ -74,7 +73,7 @@ export class RegexEditDialogContainer {
         };
         const groups = groupRuns(groupBy, allRuns, runIdToEid);
         const groupKeyToColorString = new Map<string, string>();
-        const colorRunPairList: Array<[string, Run[]]> = [];
+        const colorRunPairList: ColorGroup[] = [];
 
         Object.entries(groups.matches).forEach(([groupId, runs]) => {
           const color =
@@ -83,7 +82,7 @@ export class RegexEditDialogContainer {
               groupKeyToColorString.size % CHART_COLOR_PALLETE.length
             ];
           groupKeyToColorString.set(groupId, color);
-          colorRunPairList.push([color, runs as Run[]]);
+          colorRunPairList.push({groupId, color, runs});
         });
         return colorRunPairList;
       })
