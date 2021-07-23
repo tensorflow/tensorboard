@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {NO_ERRORS_SCHEMA} from '@angular/core';
-import {TestBed, fakeAsync, tick} from '@angular/core/testing';
+import {TestBed, fakeAsync, tick, discardPeriodicTasks} from '@angular/core/testing';
 import {
   MatDialogModule,
   MatDialogRef,
@@ -275,15 +275,24 @@ describe('regex_edit_dialog', () => {
   });
 
   describe('live grouping result preview', () => {
-    it('does not render grouping result initially', () => {
+    it('renders grouping result based on regex in store', fakeAsync(() => {
       const fixture = createComponent(['rose']);
+      store.overrideSelector(getRuns, [
+        buildRun({id: 'run1', name: 'run 1'}),
+        buildRun({id: 'run2', name: 'run 2'}),
+      ]);
+      store.overrideSelector(getColorGroupRegexString, 'run');
+      fixture.detectChanges();
+      tick(TEST_ONLY.INPUT_CHANGE_DEBOUNCE_INTERVAL_MS);
       fixture.detectChanges();
 
       const groupingResult = fixture.debugElement.query(
         By.css('.group-container')
       );
-      expect(groupingResult).toBeNull();
-    });
+      expect(groupingResult).not.toBeNull();
+      const groups = fixture.debugElement.queryAll(By.css('.group'));
+      expect(groups.length).toBe(1);
+    }));
 
     it('renders grouping preview on regex query input', fakeAsync(() => {
       const fixture = createComponent(['rose']);
@@ -339,6 +348,33 @@ describe('regex_edit_dialog', () => {
       expect(groups.length).toBe(2);
     }));
 
+    it('renders groupByRegexString on tentativeString after initialization', fakeAsync(() => {
+      const fixture = createComponent(['rose']);
+      store.overrideSelector(getRuns, [
+        buildRun({id: 'run1', name: 'run 1'}),
+        buildRun({id: 'run2', name: 'run 2'}),
+      ]);
+      store.overrideSelector(getRunIdsForExperiment, ['run1', 'run2']);
+      fixture.detectChanges();
+
+      const input = fixture.debugElement.query(By.css('input'));
+      const keyArgs: SendKeyArgs = {
+        key: '',
+        prevString: 'run',
+        type: KeyType.CHARACTER,
+        startingCursorIndex: 0,
+      };
+      sendKey(fixture, input, keyArgs);
+      fixture.detectChanges();
+
+      store.overrideSelector(getColorGroupRegexString, 'string from store');
+      store.refreshState();
+      fixture.detectChanges();
+
+      expect(input.nativeElement.value).not.toBe('string from store');
+      discardPeriodicTasks();
+    }));
+
     it('does not render grouping preview on empty regex query input', fakeAsync(() => {
       const fixture = createComponent(['rose']);
       store.overrideSelector(getRuns, [
@@ -389,6 +425,46 @@ describe('regex_edit_dialog', () => {
         By.css('.group-container')
       );
       expect(groupingResult).toBeNull();
+    }));
+
+    it('does not update grouping preview on invalid regex input', fakeAsync(() => {
+      const fixture = createComponent(['rose']);
+      store.overrideSelector(getRuns, [
+        buildRun({id: 'run1', name: 'run 1'}),
+        buildRun({id: 'run2', name: 'run 2'}),
+      ]);
+      store.overrideSelector(getRunIdsForExperiment, ['run1', 'run2']);
+      fixture.detectChanges();
+
+      const input = fixture.debugElement.query(By.css('input'));
+
+      const keyArgs: SendKeyArgs = {
+        key: '.',
+        prevString: 'run',
+        type: KeyType.CHARACTER,
+        startingCursorIndex: 3,
+      };
+      sendKey(fixture, input, keyArgs);
+      tick(TEST_ONLY.INPUT_CHANGE_DEBOUNCE_INTERVAL_MS);
+      fixture.detectChanges();
+      debugger;
+
+      const groupingResult = fixture.debugElement.query(
+        By.css('.group-container')
+      )!;
+      const beforeGroupContent = groupingResult.nativeElement.textContent;
+
+      sendKey(fixture, input, {
+        key: '.',
+        prevString: 'train_(\\d',
+        type: KeyType.CHARACTER,
+        startingCursorIndex: 0,
+      });
+      tick(TEST_ONLY.INPUT_CHANGE_DEBOUNCE_INTERVAL_MS);
+      fixture.detectChanges();
+
+      const afterGroupContent = groupingResult.nativeElement.textContent;
+      expect(beforeGroupContent).toBe(afterGroupContent);
     }));
   });
 });
