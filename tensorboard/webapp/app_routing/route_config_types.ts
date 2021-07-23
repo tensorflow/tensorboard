@@ -15,7 +15,7 @@ limitations under the License.
 import {Component, Type} from '@angular/core';
 
 import {DeepLinkProvider} from './deep_link_provider';
-import {RouteKind} from './types';
+import {RouteKind, SerializableQueryParams} from './types';
 
 export interface ConcreteRouteDef {
   routeKind: RouteKind;
@@ -71,7 +71,9 @@ export interface ProgrammticRedirectionRouteDef {
    * want a trailing slash, you will need to have an empty item at the end of
    * the list. e.g., `/foo/bar/` => `['foo', 'bar', '']`.
    */
-  redirector: (pathParts: string[]) => string[];
+  redirector: (
+    pathParts: string[]
+  ) => {pathParts: string[]; queryParams?: SerializableQueryParams};
 }
 
 export type RouteDef =

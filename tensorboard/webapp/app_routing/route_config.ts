@@ -20,7 +20,7 @@ import {
   RedirectionRouteDef,
   RouteDef,
 } from './route_config_types';
-import {Route, RouteKind, RouteParams} from './types';
+import {Route, RouteKind, RouteParams, SerializableQueryParams} from './types';
 
 interface NegativeMatch {
   result: false;
@@ -31,6 +31,7 @@ interface PositiveMatch {
   params: RouteParams;
   pathParts: string[];
   isRedirection: boolean;
+  redirectionQueryParams?: SerializableQueryParams;
 }
 
 type Match = NegativeMatch | PositiveMatch;
@@ -256,22 +257,39 @@ class ProgrammaticalRedirectionRouteConfigMatcher extends RouteConfigMatcher {
 
     if (!match.result) return match;
 
-    const newPathParts = this.definition.redirector(pathParts);
+    const {pathParts: newPathParts, queryParams} = this.definition.redirector(
+      pathParts
+    );
     return {
       result: true,
       params: match.params,
       pathParts: newPathParts,
       isRedirection: true,
+      redirectionQueryParams: queryParams,
     };
   }
 }
 
-export interface RouteMatch {
+interface BaseRedirectionRouteMatch {
   routeKind: Route['routeKind'];
   pathname: Route['pathname'];
+  // Route parameters. An object. Its keys are defined to be parameter defined
+  // in the path spec while their respective values are string.
   params: Route['params'];
   deepLinkProvider: ConcreteRouteDef['deepLinkProvider'] | null;
+  originateFromRedirection: boolean;
 }
+
+export interface NonRedirectionRouteMatch extends BaseRedirectionRouteMatch {
+  originateFromRedirection: false;
+}
+
+export interface RedirectionRouteMatch extends BaseRedirectionRouteMatch {
+  originateFromRedirection: true;
+  redirectionOnlyQueryParams?: Route['queryParams'];
+}
+
+export type RouteMatch = NonRedirectionRouteMatch | RedirectionRouteMatch;
 
 export class RouteConfigs {
   private readonly routeKindToConcreteConfigMatchers: Map<
@@ -354,17 +372,22 @@ export class RouteConfigs {
 
     let pathParts = getPathParts(navigation.pathname);
     let redirectionCount = 0;
+    let wasRedirected = false;
+    let redirectionOnlyQueryParams:
+      | undefined
+      | SerializableQueryParams = undefined;
 
     while (true) {
-      let wasRedirected = false;
-
+      let hasMatch = false;
       for (const matcher of this.configMatchers) {
         const match = matcher.match(pathParts);
         if (match.result) {
+          hasMatch = true;
           const {params, pathParts: newPathParts, isRedirection} = match;
           if (isRedirection) {
             pathParts = newPathParts;
             wasRedirected = true;
+            redirectionOnlyQueryParams = match.redirectionQueryParams;
             break;
           }
 
@@ -375,18 +398,31 @@ export class RouteConfigs {
           }
 
           const {definition} = matcher;
-          return {
+          const base = {
             routeKind: definition.routeKind,
             params,
             pathname: getPathFromParts(newPathParts),
             deepLinkProvider: definition.deepLinkProvider || null,
           };
+          if (!wasRedirected) {
+            return {
+              ...base,
+              originateFromRedirection: false,
+            };
+          }
+          return {
+            ...base,
+            originateFromRedirection: true,
+            redirectionOnlyQueryParams,
+          };
         }
       }
+
       if (wasRedirected) {
         redirectionCount++;
       }
-      if (redirectionCount > this.maxRedirection || !wasRedirected) {
+
+      if (!hasMatch || redirectionCount > this.maxRedirection) {
         // If not redirected, no need to rematch the routes. Abort.
         break;
       }
@@ -404,9 +440,10 @@ export class RouteConfigs {
       const {definition} = this.defaultRouteConfig;
       return {
         routeKind: definition.routeKind,
-        params: {},
+        deepLinkProvider: definition.deepLinkProvider ?? null,
         pathname: definition.path,
-        deepLinkProvider: definition.deepLinkProvider || null,
+        params: {},
+        originateFromRedirection: wasRedirected,
       };
     }
 
@@ -431,6 +468,7 @@ export class RouteConfigs {
       params,
       pathname: getPathFromParts(match.pathParts),
       deepLinkProvider: matcher.definition.deepLinkProvider || null,
+      originateFromRedirection: false,
     };
   }
 }
