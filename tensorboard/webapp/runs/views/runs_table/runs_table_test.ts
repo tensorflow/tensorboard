@@ -730,6 +730,7 @@ describe('runs_table', () => {
         store.overrideSelector(getEnabledColorGroup, true);
         store.overrideSelector(getEnabledColorGroupByRegex, true);
         store.overrideSelector(getRunGroupBy, {key: GroupByKey.EXPERIMENT});
+        store.overrideSelector(getColorGroupRegexString, '');
         const fixture = createComponent(
           ['book'],
           [RunsTableColumn.RUN_NAME, RunsTableColumn.RUN_COLOR]
