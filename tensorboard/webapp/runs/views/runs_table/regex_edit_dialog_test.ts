@@ -13,7 +13,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {NO_ERRORS_SCHEMA} from '@angular/core';
-import {TestBed, fakeAsync, tick, discardPeriodicTasks} from '@angular/core/testing';
+import {
+  TestBed,
+  fakeAsync,
+  tick,
+  discardPeriodicTasks,
+} from '@angular/core/testing';
 import {
   MatDialogModule,
   MatDialogRef,
