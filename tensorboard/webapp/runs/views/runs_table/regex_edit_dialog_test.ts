@@ -13,7 +13,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {NO_ERRORS_SCHEMA} from '@angular/core';
-import {TestBed} from '@angular/core/testing';
+import {
+  TestBed,
+  fakeAsync,
+  tick,
+  discardPeriodicTasks,
+} from '@angular/core/testing';
 import {
   MatDialogModule,
   MatDialogRef,
@@ -27,12 +32,20 @@ import {Action, Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
 
 import {State} from '../../../app_state';
-import {getColorGroupRegexString} from '../../../selectors';
+import {
+  getRuns,
+  getRunIdsForExperiment,
+  getColorGroupRegexString,
+} from '../../../selectors';
 import {KeyType, sendKey, SendKeyArgs} from '../../../testing/dom';
 import {runGroupByChanged} from '../../actions';
 import {GroupByKey} from '../../types';
 import {RegexEditDialogComponent} from './regex_edit_dialog_component';
-import {RegexEditDialogContainer} from './regex_edit_dialog_container';
+import {
+  RegexEditDialogContainer,
+  TEST_ONLY,
+} from './regex_edit_dialog_container';
+import {buildRun} from '../../store/testing';
 
 describe('regex_edit_dialog', () => {
   let actualActions: Action[];
@@ -62,6 +75,8 @@ describe('regex_edit_dialog', () => {
 
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
     store.overrideSelector(getColorGroupRegexString, 'test regex string');
+    store.overrideSelector(getRuns, []);
+    store.overrideSelector(getRunIdsForExperiment, []);
     actualActions = [];
     dispatchSpy = spyOn(store, 'dispatch').and.callFake((action: Action) => {
       actualActions.push(action);
@@ -78,6 +93,15 @@ describe('regex_edit_dialog', () => {
       By.directive(RegexEditDialogComponent)
     );
     expect(dialog).toBeTruthy();
+  });
+
+  it('renders regexString populated from store', () => {
+    const fixture = createComponent(['rose']);
+    fixture.detectChanges();
+
+    const input = fixture.debugElement.query(By.css('input'));
+
+    expect(input.nativeElement.value).toBe('test regex string');
   });
 
   it('emits groupby action with regexString when clicking on save button', () => {
@@ -253,5 +277,199 @@ describe('regex_edit_dialog', () => {
 
     const input = fixture.debugElement.query(By.css('input'));
     expect(input.nativeElement.value).toBe('(train|eval)');
+  });
+
+  describe('live grouping result preview', () => {
+    it('renders grouping result based on regex in store', fakeAsync(() => {
+      const fixture = createComponent(['rose']);
+      store.overrideSelector(getRuns, [
+        buildRun({id: 'run1', name: 'run 1'}),
+        buildRun({id: 'run2', name: 'run 2'}),
+      ]);
+      store.overrideSelector(getColorGroupRegexString, 'run');
+      fixture.detectChanges();
+      tick(TEST_ONLY.INPUT_CHANGE_DEBOUNCE_INTERVAL_MS);
+      fixture.detectChanges();
+
+      const groupingResult = fixture.debugElement.query(
+        By.css('.group-container')
+      );
+      expect(groupingResult).not.toBeNull();
+      const groups = fixture.debugElement.queryAll(By.css('.group'));
+      expect(groups.length).toBe(1);
+    }));
+
+    it('renders grouping preview on regex query input', fakeAsync(() => {
+      const fixture = createComponent(['rose']);
+      store.overrideSelector(getRuns, [
+        buildRun({id: 'run1', name: 'run 1'}),
+        buildRun({id: 'run2', name: 'run 2'}),
+      ]);
+      store.overrideSelector(getRunIdsForExperiment, ['run1', 'run2']);
+      fixture.detectChanges();
+
+      const input = fixture.debugElement.query(By.css('input'));
+      const keyArgs: SendKeyArgs = {
+        key: '',
+        prevString: 'run',
+        type: KeyType.CHARACTER,
+        startingCursorIndex: 0,
+      };
+      sendKey(fixture, input, keyArgs);
+      tick(TEST_ONLY.INPUT_CHANGE_DEBOUNCE_INTERVAL_MS);
+      fixture.detectChanges();
+
+      const groupingResult = fixture.debugElement.query(
+        By.css('.group-container')
+      );
+      expect(groupingResult).not.toBeNull();
+      const text = fixture.debugElement.query(By.css('.group-container h4'));
+      expect(text.nativeElement.textContent).toBe('Color group preview');
+      const groups = fixture.debugElement.queryAll(By.css('.group'));
+      expect(groups.length).toBe(1);
+    }));
+
+    it('renders multiple groups preview on regex query input', fakeAsync(() => {
+      const fixture = createComponent(['rose']);
+      store.overrideSelector(getRuns, [
+        buildRun({id: 'run1', name: 'run1 name'}),
+        buildRun({id: 'run2', name: 'run2 name'}),
+      ]);
+      store.overrideSelector(getRunIdsForExperiment, ['run1', 'run2']);
+      fixture.detectChanges();
+
+      const input = fixture.debugElement.query(By.css('input'));
+      const keyArgs: SendKeyArgs = {
+        key: '',
+        prevString: 'run(\\d+)',
+        type: KeyType.CHARACTER,
+        startingCursorIndex: 0,
+      };
+      sendKey(fixture, input, keyArgs);
+      tick(TEST_ONLY.INPUT_CHANGE_DEBOUNCE_INTERVAL_MS);
+      fixture.detectChanges();
+
+      const groups = fixture.debugElement.queryAll(By.css('.group'));
+      expect(groups.length).toBe(2);
+    }));
+
+    it('renders groupByRegexString on tentativeString after initialization', fakeAsync(() => {
+      const fixture = createComponent(['rose']);
+      store.overrideSelector(getRuns, [
+        buildRun({id: 'run1', name: 'run 1'}),
+        buildRun({id: 'run2', name: 'run 2'}),
+      ]);
+      store.overrideSelector(getRunIdsForExperiment, ['run1', 'run2']);
+      fixture.detectChanges();
+
+      const input = fixture.debugElement.query(By.css('input'));
+      const keyArgs: SendKeyArgs = {
+        key: '',
+        prevString: 'run',
+        type: KeyType.CHARACTER,
+        startingCursorIndex: 0,
+      };
+      sendKey(fixture, input, keyArgs);
+      fixture.detectChanges();
+
+      store.overrideSelector(getColorGroupRegexString, 'string from store');
+      store.refreshState();
+      fixture.detectChanges();
+
+      expect(input.nativeElement.value).not.toBe('string from store');
+      discardPeriodicTasks();
+    }));
+
+    it('does not render grouping preview on empty regex query input', fakeAsync(() => {
+      const fixture = createComponent(['rose']);
+      store.overrideSelector(getRuns, [
+        buildRun({id: 'run1', name: 'run 1'}),
+        buildRun({id: 'run2', name: 'run 2'}),
+      ]);
+      store.overrideSelector(getRunIdsForExperiment, ['run1', 'run2']);
+      fixture.detectChanges();
+
+      const input = fixture.debugElement.query(By.css('input'));
+      const keyArgs: SendKeyArgs = {
+        key: '',
+        prevString: '',
+        type: KeyType.CHARACTER,
+        startingCursorIndex: 0,
+      };
+      sendKey(fixture, input, keyArgs);
+      tick(TEST_ONLY.INPUT_CHANGE_DEBOUNCE_INTERVAL_MS);
+      fixture.detectChanges();
+
+      const groupingResult = fixture.debugElement.query(
+        By.css('.group-container')
+      );
+      expect(groupingResult).toBeNull();
+    }));
+
+    it('does not render grouping preview when no matched runs', fakeAsync(() => {
+      const fixture = createComponent(['rose']);
+      store.overrideSelector(getRuns, [
+        buildRun({id: 'run1', name: 'run 1'}),
+        buildRun({id: 'run2', name: 'run 2'}),
+      ]);
+      store.overrideSelector(getRunIdsForExperiment, ['run1', 'run2']);
+      fixture.detectChanges();
+
+      const input = fixture.debugElement.query(By.css('input'));
+      const keyArgs: SendKeyArgs = {
+        key: '',
+        prevString: 'test',
+        type: KeyType.CHARACTER,
+        startingCursorIndex: 0,
+      };
+      sendKey(fixture, input, keyArgs);
+      tick(TEST_ONLY.INPUT_CHANGE_DEBOUNCE_INTERVAL_MS);
+      fixture.detectChanges();
+
+      const groupingResult = fixture.debugElement.query(
+        By.css('.group-container')
+      );
+      expect(groupingResult).toBeNull();
+    }));
+
+    it('does not update grouping preview on invalid regex input', fakeAsync(() => {
+      const fixture = createComponent(['rose']);
+      store.overrideSelector(getRuns, [
+        buildRun({id: 'run1', name: 'run 1'}),
+        buildRun({id: 'run2', name: 'run 2'}),
+      ]);
+      store.overrideSelector(getRunIdsForExperiment, ['run1', 'run2']);
+      fixture.detectChanges();
+
+      const input = fixture.debugElement.query(By.css('input'));
+
+      const keyArgs: SendKeyArgs = {
+        key: '.',
+        prevString: 'run',
+        type: KeyType.CHARACTER,
+        startingCursorIndex: 3,
+      };
+      sendKey(fixture, input, keyArgs);
+      tick(TEST_ONLY.INPUT_CHANGE_DEBOUNCE_INTERVAL_MS);
+      fixture.detectChanges();
+      debugger;
+
+      const groupingResult = fixture.debugElement.query(
+        By.css('.group-container')
+      )!;
+      const beforeGroupContent = groupingResult.nativeElement.textContent;
+
+      sendKey(fixture, input, {
+        key: '.',
+        prevString: 'train_(\\d',
+        type: KeyType.CHARACTER,
+        startingCursorIndex: 0,
+      });
+      tick(TEST_ONLY.INPUT_CHANGE_DEBOUNCE_INTERVAL_MS);
+      fixture.detectChanges();
+
+      const afterGroupContent = groupingResult.nativeElement.textContent;
+      expect(beforeGroupContent).toBe(afterGroupContent);
+    }));
   });
 });

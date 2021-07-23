@@ -30,7 +30,7 @@ tf_ts_library(
     name = "utils",
     srcs = ["utils.ts"],
     visibility = [
-        "//visibility:private",
+        "//tensorboard/webapp/runs:__subpackages__",
     ],
     deps = [
         ":types",

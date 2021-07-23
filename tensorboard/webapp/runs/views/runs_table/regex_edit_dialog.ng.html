@@ -24,6 +24,7 @@ limitations under the License.
       #regexStringInput
       value="{{ regexString }}"
       (keydown.enter)="onEnter($event.target.value)"
+      (input)="regexInputChange($event.target.value)"
       cdkFocusInitial
     />
   </mat-form-field>
@@ -39,6 +40,40 @@ limitations under the License.
     to assign all runs containing <code>train</code> to one color and all runs
     containing <code>eval</code> to another color.
   </p>
+</div>
+
+<div *ngIf="colorRunPairList.length" class="group-container">
+  <h4>Color group preview</h4>
+  <div class="grouping-preview">
+    <ul
+      class="group"
+      *ngFor="let colorRunsPair of colorRunPairList"
+      [ngStyle]="{borderColor: colorRunsPair.color}"
+    >
+      <li>
+        <label
+          ><span
+            class="color-swatch"
+            [ngStyle]="{backgroundColor: colorRunsPair.color}"
+          ></span
+          ><code name="group-id" [title]="colorRunsPair.groupId"
+            >{{colorRunsPair.groupId}}</code
+          ></label
+        >
+        <ul>
+          <ng-container *ngFor="let run of colorRunsPair.runs | slice:0:10;">
+            <li [title]="run.name">{{ run.name }}</li>
+          </ng-container>
+          <li class="more" *ngIf="colorRunsPair.runs.length > 5">
+            <em>and {{colorRunsPair.runs.length - 10 | number}} more</em>
+          </li>
+          <li class="no-match" *ngIf="colorRunsPair.runs.length === 0">
+            <em>No runs are in the group</em>
+          </li>
+        </ul>
+      </li>
+    </ul>
+  </div>
 </div>
 
 <div mat-dialog-actions align="end">

@@ -153,6 +153,35 @@ describe('runs_selectors', () => {
     });
   });
 
+  describe('#getRunIdsForExperiment', () => {
+    beforeEach(() => {
+      // Clear the memoization.
+      selectors.getRunIdsForExperiment.release();
+    });
+
+    it('returns runIds', () => {
+      const state = buildStateFromRunsState(
+        buildRunsState({
+          runIds: {
+            eid: ['run1', 'run2'],
+          },
+        })
+      );
+      expect(
+        selectors.getRunIdsForExperiment(state, {experimentId: 'eid'})
+      ).toEqual(['run1', 'run2']);
+    });
+
+    it('returns empty list if experiment id does not exist', () => {
+      const state = buildStateFromRunsState(buildRunsState());
+      expect(
+        selectors.getRunIdsForExperiment(state, {
+          experimentId: 'i_do_not_exist',
+        })
+      ).toEqual([]);
+    });
+  });
+
   describe('#getRunMap', () => {
     beforeEach(() => {
       // Clear the memoization.
