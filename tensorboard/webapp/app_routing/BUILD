@@ -23,6 +23,25 @@ tf_ng_module(
     ],
 )
 
+package_group(
+    name = "store_only_utils_allowlisted",
+    packages = ["//tensorboard/webapp/app_routing/..."],
+)
+
+tf_ng_module(
+    name = "store_only_utils",
+    srcs = [
+        "store_only_utils.ts",
+    ],
+    visibility = [
+        ":store_only_utils_allowlisted",
+    ],
+    deps = [
+        ":internal_utils",
+        ":types",
+    ],
+)
+
 tf_ng_module(
     name = "location",
     srcs = [
@@ -173,6 +192,7 @@ tf_ng_module(
         "programmatical_navigation_module_test.ts",
         "route_contexted_reducer_helper_test.ts",
         "route_registry_module_test.ts",
+        "store_only_utils_test.ts",
     ],
     deps = [
         ":app_root",
@@ -181,6 +201,7 @@ tf_ng_module(
         ":programmatical_navigation_module",
         ":route_contexted_reducer_helper",
         ":route_registry",
+        ":store_only_utils",
         ":testing",
         ":types",
         "//tensorboard/webapp/angular:expect_angular_core_testing",

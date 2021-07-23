@@ -17,7 +17,6 @@ import {createFeatureSelector, createSelector} from '@ngrx/store';
 import {
   getExperimentIdsFromRouteParams,
   getRouteId as getRouteIdFromKindAndParams,
-  parseCompareExperimentStr,
 } from '../internal_utils';
 import {CompareRouteParams, Route, RouteKind} from '../types';
 
@@ -26,6 +25,7 @@ import {
   AppRoutingState,
   State,
 } from './app_routing_types';
+import {getCompareExperimentIdAliasSpec} from '../store_only_utils';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
@@ -82,18 +82,13 @@ export const getRouteId = createSelector(
 export const getExperimentIdToAliasMap = createSelector(
   getRouteKind,
   getRouteParams,
-  (routeKind, routeParams) => {
-    const idToDisplayName: {[id: string]: string} = {};
-
+  (routeKind, routeParams): {[id: string]: string} => {
     if (routeKind !== RouteKind.COMPARE_EXPERIMENT) {
-      return idToDisplayName;
+      return {};
     }
 
     const compareParams = routeParams as CompareRouteParams;
-    const nameAndIds = parseCompareExperimentStr(compareParams.experimentIds);
-    for (const {id, name} of nameAndIds) {
-      idToDisplayName[id] = name;
-    }
-    return idToDisplayName;
+    const map = getCompareExperimentIdAliasSpec(compareParams);
+    return Object.fromEntries(map.entries());
   }
 );
