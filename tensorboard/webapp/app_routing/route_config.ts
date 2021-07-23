@@ -418,17 +418,12 @@ export class RouteConfigs {
         }
       }
 
-      if (!hasMatch) {
-        redirectionOnlyQueryParams = undefined;
-        break;
-      }
-
       if (wasRedirected) {
         redirectionCount++;
       }
-      if (redirectionCount > this.maxRedirection) {
+
+      if (!hasMatch || redirectionCount > this.maxRedirection) {
         // If not redirected, no need to rematch the routes. Abort.
-        redirectionOnlyQueryParams = undefined;
         break;
       }
     }
@@ -443,24 +438,13 @@ export class RouteConfigs {
 
     if (this.defaultRouteConfig) {
       const {definition} = this.defaultRouteConfig;
-      const base = {
+      return {
         routeKind: definition.routeKind,
         deepLinkProvider: definition.deepLinkProvider ?? null,
         pathname: definition.path,
         params: {},
+        originateFromRedirection: wasRedirected,
       };
-      return wasRedirected
-        ? {
-            ...base,
-            pathname: definition.path,
-            params: {},
-            originateFromRedirection: true,
-            redirectionOnlyQueryParams: undefined,
-          }
-        : {
-            ...base,
-            originateFromRedirection: false,
-          };
     }
 
     return null;

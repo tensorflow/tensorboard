@@ -90,6 +90,11 @@ describe('app_routing_effects', () => {
           },
         },
         {
+          routeKind: RouteKind.UNKNOWN,
+          path: '/no_deeplink_unknown_route',
+          ngComponent: TestableComponent,
+        },
+        {
           path: '/redirect_no_query/:wildcard',
           redirector: (pathParts: string[]) => {
             return {
@@ -595,6 +600,10 @@ describe('app_routing_effects', () => {
                 routeKind: RouteKind.COMPARE_EXPERIMENT,
                 params: {},
                 pathname: '/compare',
+                // Query parameter comes from DeepLinkProvider
+                // (serializeStateToQueryParamsSpy) in this case, not
+                // redirector. Query parameter of redirector is fed into
+                // deserializer instead.
                 queryParams: [],
                 navigationOptions: {
                   replaceState: true,
@@ -606,7 +615,9 @@ describe('app_routing_effects', () => {
         }));
 
         it('redirects with query parameter to no deepLinkProvider', fakeAsync(() => {
-          getPathSpy.and.returnValue('/redirect_query/experiments');
+          getPathSpy.and.returnValue(
+            '/redirect_query/no_deeplink_unknown_route'
+          );
           getSearchSpy.and.returnValue([{key: 'not', value: 'used'}]);
           deserializeQueryParamsSpy.and.throwError('Invalid');
           serializeStateToQueryParamsSpy.and.throwError('Invalid');
@@ -618,9 +629,9 @@ describe('app_routing_effects', () => {
           expect(actualActions).toEqual([
             actions.navigating({
               after: buildRoute({
-                routeKind: RouteKind.EXPERIMENTS,
+                routeKind: RouteKind.UNKNOWN,
                 params: {},
-                pathname: '/experiments',
+                pathname: '/no_deeplink_unknown_route',
                 queryParams: [],
                 navigationOptions: {
                   replaceState: true,

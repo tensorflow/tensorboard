@@ -509,7 +509,6 @@ describe('route config', () => {
         buildRouteMatch({
           pathname: '/c',
           originateFromRedirection: true,
-          redirectionOnlyQueryParams: undefined,
         })
       );
     });
@@ -683,6 +682,34 @@ describe('route config', () => {
           params: {},
           originateFromRedirection: true,
           redirectionOnlyQueryParams: [{key: 'hello', value: 'world'}],
+        })
+      );
+    });
+
+    it('drops programmatical query parameter if redirected to static one', () => {
+      const config = new RouteConfigs([
+        {
+          path: '/tb/:eid',
+          redirector: (paths) => {
+            return {
+              pathParts: [paths[1]],
+              queryParams: [{key: 'goodbye', value: 'world'}],
+            };
+          },
+        },
+        buildRedirectionRouteDef({
+          path: '/hello',
+          redirectionPath: '/tensorboard',
+        }),
+        buildConcreteRouteDef({path: '/tensorboard'}),
+      ]);
+
+      expect(config.match(buildNavigation({pathname: '/tb/hello'}))).toEqual(
+        buildRouteMatch({
+          pathname: '/tensorboard',
+          params: {},
+          originateFromRedirection: true,
+          redirectionOnlyQueryParams: undefined,
         })
       );
     });
