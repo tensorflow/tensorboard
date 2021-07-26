@@ -25,6 +25,8 @@ limitations under the License.
       value="{{ regexString }}"
       (keydown.enter)="onEnter($event.target.value)"
       (input)="regexInputChange($event.target.value)"
+      i18n-aria-label="Color Runs by Regex Query"
+      aria-label="Color Runs by Regex Query"
       cdkFocusInitial
     />
   </mat-form-field>
