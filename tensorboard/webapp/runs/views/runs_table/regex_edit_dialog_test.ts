@@ -456,7 +456,7 @@ describe('regex_edit_dialog', () => {
 
       const groupingResult = fixture.debugElement.query(
         By.css('.group-container')
-      )!;
+      );
       const beforeGroupContent = groupingResult.nativeElement.textContent;
 
       sendKey(fixture, input, {

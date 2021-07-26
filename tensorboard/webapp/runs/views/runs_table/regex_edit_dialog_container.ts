@@ -75,7 +75,7 @@ export class RegexEditDialogContainer {
         const groupKeyToColorString = new Map<string, string>();
         const colorRunPairList: ColorGroup[] = [];
 
-        Object.entries(groups.matches).forEach(([groupId, runs]) => {
+        for (const [groupId, runs] of Object.entries(groups.matches)) {
           const color =
             groupKeyToColorString.get(groupId) ??
             CHART_COLOR_PALLETE[
@@ -83,7 +83,7 @@ export class RegexEditDialogContainer {
             ];
           groupKeyToColorString.set(groupId, color);
           colorRunPairList.push({groupId, color, runs});
-        });
+        }
         return colorRunPairList;
       })
     );
