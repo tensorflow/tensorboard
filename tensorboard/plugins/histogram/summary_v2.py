@@ -119,15 +119,18 @@ def histogram(name, data, step=None, buckets=None, description=None):
     # insert an extra `cond` into the tag name.
     # TODO(https://github.com/tensorflow/tensorboard/issues/2885): Remove this
     # special handling once the format no longer requires dynamic output shapes.
+    name_scope_cms = []
     if hasattr(tf, "get_current_name_scope"):
-        # Enter empty context first to "escape" to root of name scope hierarchy
-        # and avoid nesting when we re-enter the desired name scope.
-        name_scope_cms = [
-            tf.name_scope(""),
-            tf.name_scope(tf.get_current_name_scope()),
-        ]
-    else:
-        name_scope_cms = []
+        # Coerce None to ""; this API should only return a string but as of TF
+        # 2.5 it returns None in contexts that re-enter the empty scope.
+        current_scope = tf.get_current_name_scope() or ""
+        # Append a "/" to the scope name, which causes that scope to be treated
+        # as absolute instead of relative to the current scope, so that we can
+        # re-enter it. It also prevents auto-incrementing of the scope name.
+        # This is legacy graph mode behavior, undocumented except in comments:
+        # https://github.com/tensorflow/tensorflow/blob/v2.5.0/tensorflow/python/framework/ops.py#L6664-L6666
+        scope_to_reenter = current_scope + "/" if current_scope else ""
+        name_scope_cms.append(tf.name_scope(scope_to_reenter))
 
     def histogram_summary(data, buckets, histogram_metadata, step):
         with contextlib.ExitStack() as stack:
