@@ -53,4 +53,15 @@ export class RunsGroupMenuButtonComponent {
       data: {experimentIds: this.experimentIds},
     });
   }
+
+  onGroupByRegexClick() {
+    if (!this.regexString) {
+      this.onRegexStringEdit();
+    } else {
+      this.onGroupByChange.emit({
+        key: GroupByKey.REGEX,
+        regexString: this.regexString,
+      });
+    }
+  }
 }
