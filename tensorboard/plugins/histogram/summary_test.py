@@ -198,6 +198,10 @@ class SummaryV2OpTest(SummaryBaseTest, tf.test.TestCase):
         with tf.name_scope("scope"):
             self.assertEqual("scope/a", self.histogram("a", []).value[0].tag)
 
+    def test_scoped_tag_empty_scope(self):
+        with tf.name_scope(""):
+            self.assertEqual("a", self.histogram("a", []).value[0].tag)
+
     def test_step(self):
         event = self.histogram_event("a", [], step=333)
         self.assertEqual(333, event.step)
