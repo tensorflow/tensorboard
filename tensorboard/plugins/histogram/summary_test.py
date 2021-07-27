@@ -176,11 +176,7 @@ class SummaryV2OpTest(SummaryBaseTest, tf.test.TestCase):
         return self.histogram_event(*args, **kwargs).summary
 
     def histogram_event(self, *args, **kwargs):
-        kwargs.setdefault("step", 1)
-        writer = tf2.summary.create_file_writer(self.get_temp_dir())
-        with writer.as_default():
-            summary.histogram(*args, **kwargs)
-        writer.close()
+        self.write_histogram_event(*args, **kwargs)
         event_files = sorted(glob.glob(os.path.join(self.get_temp_dir(), "*")))
         self.assertEqual(len(event_files), 1)
         events = list(tf.compat.v1.train.summary_iterator(event_files[0]))
@@ -201,6 +197,10 @@ class SummaryV2OpTest(SummaryBaseTest, tf.test.TestCase):
     def test_scoped_tag(self):
         with tf.name_scope("scope"):
             self.assertEqual("scope/a", self.histogram("a", []).value[0].tag)
+
+    def test_scoped_tag_empty_scope(self):
+        with tf.name_scope(""):
+            self.assertEqual("a", self.histogram("a", []).value[0].tag)
 
     def test_step(self):
         event = self.histogram_event("a", [], step=333)

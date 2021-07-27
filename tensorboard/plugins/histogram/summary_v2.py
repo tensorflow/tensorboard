@@ -25,6 +25,7 @@ have the same value, then there is one bucket whose left and right
 endpoints are the same (the shape is `[1, 3]`).
 """
 
+import contextlib
 
 import numpy as np
 
@@ -113,34 +114,62 @@ def histogram(name, data, step=None, buckets=None, description=None):
         or tf.summary.summary_scope
     )
 
+    # Try to capture current name scope so we can re-enter it below within our
+    # histogram_summary helper. We do this to avoid having the `tf.cond` below
+    # insert an extra `cond` into the tag name.
+    # TODO(https://github.com/tensorflow/tensorboard/issues/2885): Remove this
+    # special handling once the format no longer requires dynamic output shapes.
+    name_scope_cms = []
+    if hasattr(tf, "get_current_name_scope"):
+        # Coerce None to ""; this API should only return a string but as of TF
+        # 2.5 it returns None in contexts that re-enter the empty scope.
+        current_scope = tf.get_current_name_scope() or ""
+        # Append a "/" to the scope name, which causes that scope to be treated
+        # as absolute instead of relative to the current scope, so that we can
+        # re-enter it. It also prevents auto-incrementing of the scope name.
+        # This is legacy graph mode behavior, undocumented except in comments:
+        # https://github.com/tensorflow/tensorflow/blob/v2.5.0/tensorflow/python/framework/ops.py#L6664-L6666
+        scope_to_reenter = current_scope + "/" if current_scope else ""
+        name_scope_cms.append(tf.name_scope(scope_to_reenter))
+
     def histogram_summary(data, buckets, histogram_metadata, step):
-        with summary_scope(
-            name, "histogram_summary", values=[data, buckets, step]
-        ) as (tag, _):
-            # Defer histogram bucketing logic by passing it as a callable to write(),
-            # wrapped in a LazyTensorCreator for backwards compatibility, so that we
-            # only do this work when summaries are actually written.
-            @lazy_tensor_creator.LazyTensorCreator
-            def lazy_tensor():
-                return _buckets(data, buckets)
+        with contextlib.ExitStack() as stack:
+            for cm in name_scope_cms:
+                stack.enter_context(cm)
+            with summary_scope(
+                name, "histogram_summary", values=[data, buckets, step]
+            ) as (tag, _):
+                # Defer histogram bucketing logic by passing it as a callable to
+                # write(), wrapped in a LazyTensorCreator for backwards
+                # compatibility, so that we only do this work when summaries are
+                # actually written.
+                @lazy_tensor_creator.LazyTensorCreator
+                def lazy_tensor():
+                    return _buckets(data, buckets)
 
-            return tf.summary.write(
-                tag=tag,
-                tensor=lazy_tensor,
-                step=step,
-                metadata=summary_metadata,
-            )
+                return tf.summary.write(
+                    tag=tag,
+                    tensor=lazy_tensor,
+                    step=step,
+                    metadata=summary_metadata,
+                )
 
-    # `_buckets()` has dynamic output shapes which is not supported on TPU's. As so, place
-    # the bucketing ops on outside compilation cluster so that the function in executed on CPU.
-    # TODO(https://github.com/tensorflow/tensorboard/issues/2885): Remove this special
-    # handling once dynamic shapes are supported on TPU's.
+    # `_buckets()` has dynamic output shapes which is not supported on TPU's.
+    # To address this, explicitly mark this logic for outside compilation so it
+    # will be executed on the CPU, and skip it entirely if we aren't actually
+    # recording summaries to avoid overhead of transferring data.
+    # TODO(https://github.com/tensorflow/tensorboard/issues/2885): Remove this
+    # special handling once the format no longer requires dynamic output shapes.
     if isinstance(
         tf.distribute.get_strategy(),
         (tf.distribute.experimental.TPUStrategy, tf.distribute.TPUStrategy),
     ):
-        return tf.compat.v1.tpu.outside_compilation(
-            histogram_summary, data, buckets, summary_metadata, step
+        return tf.cond(
+            tf.summary.should_record_summaries(),
+            lambda: tf.compat.v1.tpu.outside_compilation(
+                histogram_summary, data, buckets, summary_metadata, step
+            ),
+            lambda: False,
         )
     return histogram_summary(data, buckets, summary_metadata, step)
 
