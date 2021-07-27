@@ -484,7 +484,15 @@ describe('regex_edit_dialog', () => {
       buildRun({id: 'run6', name: 'run6 name'}),
       buildRun({id: 'run6', name: 'run7 name'}),
     ]);
-    store.overrideSelector(getRunIdsForExperiment, ['run1', 'run2', 'run3', 'run4', 'run5', 'run6', 'run7']);
+    store.overrideSelector(getRunIdsForExperiment, [
+      'run1',
+      'run2',
+      'run3',
+      'run4',
+      'run5',
+      'run6',
+      'run7',
+    ]);
     fixture.detectChanges();
 
     const input = fixture.debugElement.query(By.css('input'));
@@ -501,6 +509,6 @@ describe('regex_edit_dialog', () => {
     const more = fixture.debugElement.query(By.css('.more'));
     const list = fixture.debugElement.queryAll(By.css('.group ul li'));
     expect(list.length).toBe(6);
-    expect(more.nativeElement.textContent).toBe("and 2 more");
+    expect(more.nativeElement.textContent).toBe('and 2 more');
   }));
 });
