@@ -14,7 +14,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<div [class]="'main ' + mode + ' ' + timeProperty">
+<div
+  [class]="'main ' + mode + ' ' + timeProperty"
+  detectResize
+  (onResize)="onResize()"
+>
   <svg #xAxis class="axis x-axis"></svg>
   <svg #yAxis class="axis y-axis"></svg>
   <svg #content class="content">
