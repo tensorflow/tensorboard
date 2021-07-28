@@ -923,7 +923,7 @@ describe('runs_reducers', () => {
         ])
       );
       expect(nextState.data.runColorOverrideForGroupBy).toEqual(new Map());
-      expect(nextState.data.colorGroupRegexString).toEqual('foo(\\d+)');
+      expect(nextState.data.colorGroupRegexString).toBe('foo(\\d+)');
     });
 
     it('preserves regexString when reassigning color to RUN from REGEX', () => {
@@ -974,7 +974,7 @@ describe('runs_reducers', () => {
         })
       );
 
-      expect(state3.data.colorGroupRegexString).toEqual('initial regex string');
+      expect(state3.data.colorGroupRegexString).toBe('initial regex string');
 
       // Updates colorGroupRegexString with new regexString when type GroupBy is RegexGroupBy
       const state4 = runsReducers.reducers(
@@ -984,7 +984,7 @@ describe('runs_reducers', () => {
           groupBy: {key: GroupByKey.REGEX, regexString: 'updated regexString'},
         })
       );
-      expect(state4.data.colorGroupRegexString).toEqual('updated regexString');
+      expect(state4.data.colorGroupRegexString).toBe('updated regexString');
     });
   });
 
