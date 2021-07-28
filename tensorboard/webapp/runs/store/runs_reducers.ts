@@ -305,8 +305,14 @@ const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
         defaultRunColorForGroupBy.delete(run.id);
       }
 
+      const updatedRegexString =
+        groupBy.key === GroupByKey.REGEX
+          ? groupBy.regexString
+          : state.colorGroupRegexString;
+
       return {
         ...state,
+        colorGroupRegexString: updatedRegexString,
         userSetGroupByKey: groupBy.key,
         defaultRunColorForGroupBy,
         groupKeyToColorString,

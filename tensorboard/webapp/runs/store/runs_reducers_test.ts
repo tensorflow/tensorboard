@@ -923,6 +923,68 @@ describe('runs_reducers', () => {
         ])
       );
       expect(nextState.data.runColorOverrideForGroupBy).toEqual(new Map());
+      expect(nextState.data.colorGroupRegexString).toBe('foo(\\d+)');
+    });
+
+    it('preserves regexString when reassigning color to RUN from REGEX', () => {
+      const state = buildRunsState({
+        initialGroupBy: {key: GroupByKey.RUN},
+        runIds: {
+          eid1: ['run1', 'run2'],
+          eid2: ['run3', 'run4', 'run5', 'run6'],
+        },
+        runIdToExpId: {
+          run1: 'eid1',
+          run2: 'eid1',
+          run3: 'eid2',
+          run4: 'eid2',
+          run5: 'eid2',
+          run6: 'eid2',
+        },
+        runMetadata: {
+          run1: buildRun({id: 'run1', name: 'foo1bar1'}),
+          run2: buildRun({id: 'run2', name: 'foo2bar1'}),
+          run3: buildRun({id: 'run3', name: 'foo2bar2'}),
+          run4: buildRun({id: 'run4', name: 'foo2bar2bar'}),
+          run5: buildRun({id: 'run5', name: 'beta'}),
+          run6: buildRun({id: 'run6', name: 'gamma'}),
+        },
+        defaultRunColorForGroupBy: new Map([
+          ['run1', '#aaa'],
+          ['run2', '#bbb'],
+          ['run3', '#ccc'],
+          ['run4', '#ddd'],
+          ['run5', '#eee'],
+          ['run6', '#fff'],
+        ]),
+      });
+
+      const state2 = runsReducers.reducers(
+        state,
+        actions.runGroupByChanged({
+          experimentIds: ['eid1', 'eid2'],
+          groupBy: {key: GroupByKey.REGEX, regexString: 'initial regex string'},
+        })
+      );
+      const state3 = runsReducers.reducers(
+        state2,
+        actions.runGroupByChanged({
+          experimentIds: ['eid1', 'eid2'],
+          groupBy: {key: GroupByKey.RUN},
+        })
+      );
+
+      expect(state3.data.colorGroupRegexString).toBe('initial regex string');
+
+      // Updates colorGroupRegexString with new regexString when type GroupBy is RegexGroupBy
+      const state4 = runsReducers.reducers(
+        state3,
+        actions.runGroupByChanged({
+          experimentIds: ['eid1', 'eid2'],
+          groupBy: {key: GroupByKey.REGEX, regexString: 'updated regexString'},
+        })
+      );
+      expect(state4.data.colorGroupRegexString).toBe('updated regexString');
     });
   });
 
