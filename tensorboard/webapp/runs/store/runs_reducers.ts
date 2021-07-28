@@ -19,7 +19,6 @@ import {
   createReducer,
   on,
 } from '@ngrx/store';
-
 import {stateRehydratedFromUrl} from '../../app_routing/actions';
 import {createRouteContextedState} from '../../app_routing/route_contexted_reducer_helper';
 import {RouteKind} from '../../app_routing/types';
@@ -105,8 +104,14 @@ const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
       return state;
     }
 
+    const regexString =
+      groupBy.key === GroupByKey.REGEX
+        ? groupBy.regexString
+        : state.colorGroupRegexString;
+
     return {
       ...state,
+      colorGroupRegexString: regexString,
       userSetGroupByKey: groupBy.key ?? null,
     };
   }),

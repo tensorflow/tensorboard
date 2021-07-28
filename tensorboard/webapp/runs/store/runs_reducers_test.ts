@@ -1060,6 +1060,57 @@ describe('runs_reducers', () => {
         ])
       );
     });
+
+    it('sets regexString on groupBy REGEX', () => {
+      const state = buildRunsState({
+        initialGroupBy: {key: GroupByKey.EXPERIMENT},
+        userSetGroupByKey: GroupByKey.RUN,
+        runIds: {
+          eid1: ['run1', 'run2'],
+          eid2: ['run3', 'run4'],
+        },
+        runIdToExpId: {
+          run1: 'eid1',
+          run2: 'eid1',
+          run3: 'eid2',
+          run4: 'eid2',
+        },
+        runMetadata: {
+          run1: buildRun({id: 'run1'}),
+          run2: buildRun({id: 'run2'}),
+          run3: buildRun({id: 'run3'}),
+          run4: buildRun({id: 'run4'}),
+        },
+        groupKeyToColorString: new Map([
+          ['run1', '#aaa'],
+          ['run2', '#bbb'],
+          ['run3', '#ccc'],
+          ['run4', '#ddd'],
+        ]),
+        defaultRunColorForGroupBy: new Map([
+          ['run1', '#aaa'],
+          ['run2', '#bbb'],
+          ['run3', '#ccc'],
+          ['run4', '#ddd'],
+        ]),
+        runColorOverrideForGroupBy: new Map([['run1', '#ccc']]),
+      });
+
+      const partialState: URLDeserializedState = {
+        runs: {
+          groupBy: {key: GroupByKey.REGEX, regexString: 'regex string'},
+        },
+      };
+      const nextState = runsReducers.reducers(
+        state,
+        stateRehydratedFromUrl({
+          routeKind: RouteKind.COMPARE_EXPERIMENT,
+          partialState,
+        })
+      );
+
+      expect(nextState.data.colorGroupRegexString).toBe('regex string');
+    });
   });
 
   describe('when freshly navigating', () => {
