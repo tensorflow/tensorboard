@@ -44,6 +44,11 @@ export class HistogramV2Component implements OnChanges {
 
   @Input() timeProperty: TimeProperty = TimeProperty.STEP;
 
+  /**
+   * TODO(tensorboard-team): VzHistogram only needs 'name', 'colorScale'
+   * properties to determine the histogram color. We could replace these with a
+   * single 'color' property to make the interface simpler.
+   */
   @Input() colorScale?: ColorScale;
 
   @Input() name!: string;
@@ -110,7 +115,7 @@ export class HistogramV2Component implements OnChanges {
           case TimeProperty.STEP:
             return datum.step;
           case TimeProperty.RELATIVE:
-            return datum.wallTime - data[0]?.wallTime ?? 0;
+            return datum.wallTime - data[0].wallTime;
         }
       });
       const {min: yMin, max: yMax} = getMinMax(yValues, (val) => val);
@@ -144,8 +149,8 @@ export class HistogramV2Component implements OnChanges {
           break;
         }
         case TimeProperty.RELATIVE: {
-          anyYAxis.tickFormat((d: number): string => {
-            return d3.format('.1r')(d / 3.6e6) + 'h'; // Convert to hours.
+          anyYAxis.tickFormat((timeDiffInMs: number): string => {
+            return d3.format('.1r')(timeDiffInMs / 3.6e6) + 'h'; // Convert to hours.
           });
           break;
         }

@@ -42,7 +42,7 @@ function buildHistogramDatum(
   return {
     wallTime: 1000,
     step: 0,
-    bins: new Array(10).fill(buildBin()),
+    bins: [...new Array(10)].map(() => buildBin()),
     ...override,
   };
 }
