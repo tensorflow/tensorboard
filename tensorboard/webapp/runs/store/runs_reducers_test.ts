@@ -1122,6 +1122,27 @@ describe('runs_reducers', () => {
         ])
       );
     });
+
+    it('sets regexString on groupBy REGEX', () => {
+      const state = buildRunsState({
+        initialGroupBy: {key: GroupByKey.EXPERIMENT},
+      });
+
+      const partialState: URLDeserializedState = {
+        runs: {
+          groupBy: {key: GroupByKey.REGEX, regexString: 'regex string'},
+        },
+      };
+      const nextState = runsReducers.reducers(
+        state,
+        stateRehydratedFromUrl({
+          routeKind: RouteKind.COMPARE_EXPERIMENT,
+          partialState,
+        })
+      );
+
+      expect(nextState.data.colorGroupRegexString).toBe('regex string');
+    });
   });
 
   describe('when freshly navigating', () => {
