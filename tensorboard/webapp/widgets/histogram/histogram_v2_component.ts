@@ -14,6 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import {
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   ElementRef,
   Input,
@@ -22,12 +23,33 @@ import {
 } from '@angular/core';
 
 import * as d3 from '../../third_party/d3';
+import {HCLColor} from '../../third_party/d3';
 import {
   ColorScale,
   HistogramData,
+  HistogramDatum,
   HistogramMode,
   TimeProperty,
 } from './histogram_types';
+
+type BinScale = d3.ScaleLinear<number, number>;
+type CountScale = d3.ScaleLinear<number, number>;
+type TemporalScale =
+  | d3.ScaleLinear<number, number>
+  | d3.ScaleTime<number, number>;
+type D3ColorScale = d3.ScaleLinear<HCLColor, string>;
+
+interface Layout {
+  histogramHeight: number;
+  contentClientRect: {width: number; height: number};
+}
+
+interface Scales {
+  binScale: BinScale;
+  countScale: CountScale;
+  temporalScale: TemporalScale;
+  d3ColorScale: D3ColorScale;
+}
 
 @Component({
   selector: 'tb-histogram-v2',
@@ -55,83 +77,178 @@ export class HistogramV2Component implements OnChanges {
 
   @Input() data!: HistogramData;
 
-  private yScale?:
-    | d3.ScaleTime<number, number>
-    | d3.ScaleLinear<number, number>;
+  readonly HistogramMode = HistogramMode;
 
-  constructor(private readonly host: ElementRef) {}
+  private layout: Layout = {
+    histogramHeight: 1,
+    contentClientRect: {height: 1, width: 1},
+  };
+  private scales: Scales;
+  private domInitialized = false;
+
+  constructor(private readonly changeDetector: ChangeDetectorRef) {
+    // `data` may not be available at the constructor time. Since we recalculate
+    // the scales on the `ngAfterViewInit`, let's just initialize `scales` with
+    // their default values.
+    this.scales = this.updateScales(this.layout, []);
+  }
 
   ngOnChanges() {
     if (this.content) {
-      this.ngAfterViewInit();
+      this.updateChart();
     }
   }
 
   ngAfterViewInit() {
+    this.domInitialized = true;
+    this.updateClientRects();
     this.updateChart();
+    this.changeDetector.detectChanges();
+  }
+
+  getHistogramPath(datum: HistogramDatum): string {
+    if (!this.domInitialized || !datum.bins.length) return '';
+    const xScale = this.scales.binScale;
+    const yScale = this.scales.countScale;
+
+    const firstBin = datum.bins[0];
+    const lastBin = datum.bins.slice(-1)[0];
+    const pathBuilder = [
+      `M${xScale(firstBin.x + firstBin.dx * 0.5)},${yScale(0)}`,
+    ];
+
+    for (const bin of datum.bins) {
+      pathBuilder.push(`L${xScale(bin.x + bin.dx * 0.5)},${yScale(bin.y)}`);
+    }
+
+    pathBuilder.push(`L${xScale(lastBin.x + lastBin.dx * 0.5)},${yScale(0)}`);
+    pathBuilder.push('Z');
+    return pathBuilder.join('');
+  }
+
+  trackByWallTime(datum: HistogramDatum): number {
+    return datum.wallTime;
+  }
+
+  // translates container for histogram so we can have more sensible coordinate
+  // system for reasoning with the coordinate system of a histogram.
+  getGroupTransform(datum: HistogramDatum): string {
+    if (!this.domInitialized || this.mode === HistogramMode.OVERLAY) return '';
+    return `translate(0, ${this.scales.temporalScale(
+      this.getTimeValue(datum)
+    )})`;
+  }
+
+  getHistogramFill(datum: HistogramDatum): string {
+    return this.scales.d3ColorScale(this.getTimeValue(datum));
+  }
+
+  getGridTickYLocs(): number[] {
+    if (this.mode === HistogramMode.OFFSET) return [];
+    const yScale = this.scales.countScale;
+    return yScale.ticks().map((tick) => yScale(tick));
+  }
+
+  private getTimeValue(datum: HistogramDatum): number {
+    switch (this.timeProperty) {
+      case TimeProperty.WALL_TIME:
+        return datum.wallTime;
+      case TimeProperty.STEP:
+        return datum.step;
+      case TimeProperty.RELATIVE:
+        return datum.wallTime - this.data[0].wallTime;
+    }
+  }
+
+  private updateClientRects() {
+    if (this.content) {
+      this.layout.contentClientRect = this.content.nativeElement.getBoundingClientRect();
+      this.layout.histogramHeight = this.layout.contentClientRect.height / 2.5;
+    }
   }
 
   private updateChart() {
-    this.renderXAxis(this.data);
-    this.updateYScaleAndDomain(this.data);
-    this.renderYAxis();
+    this.scales = this.updateScales(this.layout, this.data);
+    this.renderXAxis(this.layout, this.scales);
+    this.renderYAxis(this.layout, this.scales);
   }
 
-  private renderXAxis(data: HistogramData) {
-    const {width} = this.host.nativeElement.getBoundingClientRect();
-    const {min: xMin, max: xMax} = getMinMax(
+  private updateScales(layout: Layout, data: HistogramData): Scales {
+    const {width, height} = this.layout.contentClientRect;
+    // === Get counts from data for calculating domain below. ===
+    const {min: binMin, max: binMax} = getMinMax(
       data,
       (datum) => getMin(datum.bins, (binVal) => binVal.x),
       (datum) => getMax(datum.bins, ({x, dx}) => x + dx)
     );
-    const xScale = d3
-      .scaleLinear()
-      .domain([xMin, xMax])
-      .nice()
-      .range([0, width]);
-    const xAxis = d3.axisBottom(xScale).ticks(Math.max(2, width / 20));
+    const countMax = getMax(data, (datum) => {
+      return getMax(datum.bins, ({y}) => y);
+    });
 
-    xAxis(d3.select(this.xAxis.nativeElement));
-  }
-
-  private updateYScaleAndDomain(data: HistogramData) {
-    this.yScale =
+    // === Create scale and set the domain. ===
+    const binScale = d3.scaleLinear().domain([binMin, binMax]).nice();
+    const temporalScale =
       this.mode !== HistogramMode.OVERLAY &&
       this.timeProperty == TimeProperty.WALL_TIME
         ? d3.scaleTime()
         : d3.scaleLinear();
 
-    let domain: [number, number] = [0, 1];
+    const timeValues = data.map((datum) => this.getTimeValue(datum));
+    const {min: timeMin, max: timeMax} = getMinMax(timeValues, (val) => val);
+    const temporalDomain = [timeMin, timeMax];
+
+    temporalScale.domain(temporalDomain);
+    const countScale = d3.scaleLinear();
+    countScale.domain([0, countMax]);
+    const d3Color = d3.hcl(
+      this.colorScale ? this.colorScale(this.name) : '#000'
+    );
+    const d3ColorScale = d3.scaleLinear<HCLColor, string>();
+    d3ColorScale.domain(temporalDomain);
+
+    // === Set range on scales. ===
+    // x-axis or bin scale does not change depending on a mode.
+    binScale.range([0, width]);
+    d3ColorScale.range([d3Color.brighter(), d3Color.darker()]);
+    d3ColorScale.interpolate(d3.interpolateHcl);
+
+    // Explanation of the coordinate systems:
+    // When in the offset mode, we render in 2.5D. Y-axis both have temporal
+    // element while some space is allocated to show magnitude of counts. To
+    // make the coordinate system easier for the offset, we use `<g transform>`
+    // to locate the histogram at the correct temporal axis and let `countScale`
+    // only deal with the height of the histogram.
+    // When in overlay mode, we have very simple 2D where temporal axis is not
+    // used meaningfully and `countScale` act as the y-axis and thus spans
+    // `[height, 0]`.
     if (this.mode === HistogramMode.OVERLAY) {
-      const countMax = getMax(data, (datum) => {
-        return getMax(datum.bins, ({y}) => y);
-      });
-      domain = [0, countMax];
+      temporalScale.range([height, height]);
+      countScale.range([height, 0]);
     } else {
-      const yValues = data.map((datum) => {
-        switch (this.timeProperty) {
-          case TimeProperty.WALL_TIME:
-            return datum.wallTime;
-          case TimeProperty.STEP:
-            return datum.step;
-          case TimeProperty.RELATIVE:
-            return datum.wallTime - data[0].wallTime;
-        }
-      });
-      const {min: yMin, max: yMax} = getMinMax(yValues, (val) => val);
-      domain = [yMin, yMax];
+      const offsetAxisHeight =
+        this.mode === HistogramMode.OFFSET
+          ? height - layout.histogramHeight
+          : 0;
+      temporalScale.range([height - offsetAxisHeight, height]);
+      countScale.range([0, -layout.histogramHeight]);
     }
-    this.yScale.domain(domain);
+
+    return {binScale, d3ColorScale, countScale, temporalScale};
   }
 
-  private renderYAxis() {
-    const yScale = this.yScale!;
-    const {height} = this.host.nativeElement.getBoundingClientRect();
-    const overlayAxisHeight = height / 2.5;
-    const offsetAxisHeight =
-      this.mode === HistogramMode.OFFSET ? height - overlayAxisHeight : 0;
-    yScale.range([height - offsetAxisHeight, height]);
+  private renderXAxis(layout: Layout, scales: Scales) {
+    const {width} = layout.contentClientRect;
+    const xAxis = d3.axisBottom(scales.binScale).ticks(Math.max(2, width / 20));
 
+    xAxis(d3.select(this.xAxis.nativeElement));
+  }
+
+  private renderYAxis(layout: Layout, scales: Scales) {
+    const yScale =
+      this.mode === HistogramMode.OVERLAY
+        ? scales.countScale
+        : scales.temporalScale;
+    const {height} = layout.contentClientRect;
     const yAxis = d3.axisRight(yScale).ticks(Math.max(2, height / 15));
     // d3 on DefinitelyTyped is typed incorrectly and it does not allow function
     // that takes (d: Data) => string to be specified in the parameter unlike
