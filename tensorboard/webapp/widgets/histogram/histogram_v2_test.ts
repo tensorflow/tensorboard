@@ -135,7 +135,7 @@ describe('histogram v2 test', () => {
 
       expect(
         getAxisLabelText(fixture.debugElement.query(byCss.X_AXIS))
-      ).toEqual(['-100', '-50', '0', '50', '100']);
+      ).toEqual(['-100', '0', '100']);
     });
   });
 
@@ -184,15 +184,9 @@ describe('histogram v2 test', () => {
         expect(
           getAxisLabelText(fixture.debugElement.query(byCss.Y_AXIS))
         ).toEqual([
-          '01/02 12:00:00 AM',
-          '01/09 12:00:00 AM',
-          '01/16 12:00:00 AM',
-          '01/23 12:00:00 AM',
-          '01/30 12:00:00 AM',
-          '02/06 12:00:00 AM',
-          '02/13 12:00:00 AM',
-          '02/20 12:00:00 AM',
-          '02/27 12:00:00 AM',
+          '01/01 12:00:00 AM',
+          '02/01 12:00:00 AM',
+          '03/01 12:00:00 AM',
         ]);
       });
 
@@ -217,7 +211,7 @@ describe('histogram v2 test', () => {
 
         expect(
           getAxisLabelText(fixture.debugElement.query(byCss.Y_AXIS))
-        ).toEqual(['0h', '300h', '600h', '800h', '1000h', '1000h']);
+        ).toEqual(['0h', '600h', '1000h']);
       });
     });
 
@@ -243,7 +237,7 @@ describe('histogram v2 test', () => {
 
         expect(
           getAxisLabelText(fixture.debugElement.query(byCss.Y_AXIS))
-        ).toEqual(['0.00', '200', '400', '600', '800', '1.00e+3', '1.20e+3']);
+        ).toEqual(['0.00', '500', '1.00e+3']);
       });
     });
   });
@@ -311,11 +305,7 @@ describe('histogram v2 test', () => {
         // max (-300, 300) which has the same spacing as the WALL_TIME.
         expect(
           getGroupTransforms(fixture.debugElement.query(byCss.HISTOGRAMS))
-        ).toEqual([
-          'translate(0, 20)',
-          'translate(0, 27.5)',
-          'translate(0, 50)',
-        ]);
+        ).toEqual(['translate(0, 35)', 'translate(0, 20)', 'translate(0, 50)']);
       });
 
       it('renders histogram in the "count" coordinate system', () => {
