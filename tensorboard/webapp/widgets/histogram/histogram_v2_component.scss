@@ -41,6 +41,25 @@ $_tick-color: #ddd;
   }
 }
 
+.tooltip {
+  color: #000;
+
+  text {
+    font-weight: bold;
+    font-size: 10px;
+  }
+
+  text,
+  circle {
+    fill: currentColor;
+  }
+
+  .value-label {
+    dominant-baseline: ideographic;
+    text-anchor: start;
+  }
+}
+
 .axis ::ng-deep {
   @include tb-theme-foreground-prop(color, secondary-text);
 
@@ -57,14 +76,31 @@ $_tick-color: #ddd;
 svg {
   height: 100%;
   width: 100%;
+  pointer-events: visiblePainted;
+
+  line,
+  circle,
+  .tooltip {
+    pointer-events: none;
+  }
 }
 
 .x-axis {
   grid-area: x-axis;
+
+  .tooltip {
+    dominant-baseline: hanging;
+    text-anchor: middle;
+  }
 }
 
 .y-axis {
   grid-area: y-axis;
+
+  .tooltip {
+    dominant-baseline: middle;
+    text-anchor: start;
+  }
 }
 
 .content .tick,
@@ -80,8 +116,10 @@ svg {
     stroke-dasharray: 2;
   }
 
+  circle,
   path {
     stroke-opacity: 0.5;
+    stroke-width: 1px;
   }
 
   .baseline {
@@ -90,12 +128,21 @@ svg {
     stroke-opacity: 0.1;
     width: 100%;
   }
+
+  .tooltip path {
+    stroke-opacity: 1;
+    stroke: currentColor;
+    fill: transparent;
+  }
 }
 
 // Offset mode customizations.
-.offset .content path {
-  fill: currentColor;
-  stroke: #fff;
+.content .histograms {
+  circle,
+  path {
+    fill: currentColor;
+    stroke: #fff;
+  }
 }
 
 // Overlay mode customizations.
@@ -104,8 +151,24 @@ svg {
     display: none;
   }
 
-  .content path {
-    fill-opacity: 0;
-    stroke: currentColor;
+  .content {
+    .circle,
+    path {
+      fill-opacity: 0;
+      stroke: currentColor;
+    }
+  }
+}
+
+// Tooltip hover interactions.
+.tooltip,
+.content circle {
+  display: none;
+}
+
+.main:hover {
+  .content circle,
+  .tooltip {
+    display: block;
   }
 }
