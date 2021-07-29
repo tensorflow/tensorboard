@@ -80,8 +80,8 @@ export class HistogramV2Component implements OnChanges {
   readonly HistogramMode = HistogramMode;
 
   private layout: Layout = {
-    histogramHeight: 1,
-    contentClientRect: {height: 1, width: 1},
+    histogramHeight: 0,
+    contentClientRect: {height: 0, width: 0},
   };
   private scales: Scales;
   private domInitialized = false;
@@ -90,11 +90,11 @@ export class HistogramV2Component implements OnChanges {
     // `data` may not be available at the constructor time. Since we recalculate
     // the scales on the `ngAfterViewInit`, let's just initialize `scales` with
     // their default values.
-    this.scales = this.updateScales(this.layout, []);
+    this.scales = this.computeScales([]);
   }
 
   ngOnChanges() {
-    if (this.content) {
+    if (this.domInitialized) {
       this.updateChart();
     }
   }
@@ -107,6 +107,9 @@ export class HistogramV2Component implements OnChanges {
   }
 
   getHistogramPath(datum: HistogramDatum): string {
+    // Unlike other methods used in Angular template, if we return non-empty
+    // value before the DOM and everything is initialized, this method can emit
+    // junk (path with NaN) values causing browser to noisily print warnings.
     if (!this.domInitialized || !datum.bins.length) return '';
     const xScale = this.scales.binScale;
     const yScale = this.scales.countScale;
@@ -133,6 +136,10 @@ export class HistogramV2Component implements OnChanges {
   // translates container for histogram so we can have more sensible coordinate
   // system for reasoning with the coordinate system of a histogram.
   getGroupTransform(datum: HistogramDatum): string {
+    // Unlike other methods used in Angular template, if we return non-empty
+    // value before the DOM and everything is initialized, this method can emit
+    // junk (translate with NaN) values causing browser to noisily print
+    // warnings.
     if (!this.domInitialized || this.mode === HistogramMode.OVERLAY) return '';
     return `translate(0, ${this.scales.temporalScale(
       this.getTimeValue(datum)
@@ -161,19 +168,19 @@ export class HistogramV2Component implements OnChanges {
   }
 
   private updateClientRects() {
-    if (this.content) {
+    if (this.domInitialized && this.content) {
       this.layout.contentClientRect = this.content.nativeElement.getBoundingClientRect();
       this.layout.histogramHeight = this.layout.contentClientRect.height / 2.5;
     }
   }
 
   private updateChart() {
-    this.scales = this.updateScales(this.layout, this.data);
-    this.renderXAxis(this.layout, this.scales);
-    this.renderYAxis(this.layout, this.scales);
+    this.scales = this.computeScales(this.data);
+    this.renderXAxis();
+    this.renderYAxis();
   }
 
-  private updateScales(layout: Layout, data: HistogramData): Scales {
+  private computeScales(data: HistogramData): Scales {
     const {width, height} = this.layout.contentClientRect;
     // === Get counts from data for calculating domain below. ===
     const {min: binMin, max: binMax} = getMinMax(
@@ -227,28 +234,30 @@ export class HistogramV2Component implements OnChanges {
     } else {
       const offsetAxisHeight =
         this.mode === HistogramMode.OFFSET
-          ? height - layout.histogramHeight
+          ? height - this.layout.histogramHeight
           : 0;
       temporalScale.range([height - offsetAxisHeight, height]);
-      countScale.range([0, -layout.histogramHeight]);
+      countScale.range([0, -this.layout.histogramHeight]);
     }
 
     return {binScale, d3ColorScale, countScale, temporalScale};
   }
 
-  private renderXAxis(layout: Layout, scales: Scales) {
-    const {width} = layout.contentClientRect;
-    const xAxis = d3.axisBottom(scales.binScale).ticks(Math.max(2, width / 20));
+  private renderXAxis() {
+    const {width} = this.layout.contentClientRect;
+    const xAxis = d3
+      .axisBottom(this.scales.binScale)
+      .ticks(Math.max(2, width / 20));
 
     xAxis(d3.select(this.xAxis.nativeElement));
   }
 
-  private renderYAxis(layout: Layout, scales: Scales) {
+  private renderYAxis() {
     const yScale =
       this.mode === HistogramMode.OVERLAY
-        ? scales.countScale
-        : scales.temporalScale;
-    const {height} = layout.contentClientRect;
+        ? this.scales.countScale
+        : this.scales.temporalScale;
+    const {height} = this.layout.contentClientRect;
     const yAxis = d3.axisRight(yScale).ticks(Math.max(2, height / 15));
     // d3 on DefinitelyTyped is typed incorrectly and it does not allow function
     // that takes (d: Data) => string to be specified in the parameter unlike
