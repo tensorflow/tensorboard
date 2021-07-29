@@ -24,6 +24,7 @@ tf_ng_module(
         ":types",
         "//tensorboard/webapp:tb_polymer_interop_types",
         "//tensorboard/webapp/third_party:d3",
+        "//tensorboard/webapp/widgets:resize_detector",
         "@npm//@angular/common",
         "@npm//@angular/core",
     ],

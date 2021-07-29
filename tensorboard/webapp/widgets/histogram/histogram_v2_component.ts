@@ -156,6 +156,12 @@ export class HistogramV2Component implements OnChanges {
     return yScale.ticks().map((tick) => yScale(tick));
   }
 
+  onResize() {
+    this.updateClientRects();
+    this.updateChart();
+    this.changeDetector.detectChanges();
+  }
+
   private getTimeValue(datum: HistogramDatum): number {
     switch (this.timeProperty) {
       case TimeProperty.WALL_TIME:
