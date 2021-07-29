@@ -12,6 +12,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+@import 'tensorboard/webapp/theme/tb_theme';
+
+$_tick-color: #ddd;
 
 :host,
 .main {
@@ -22,7 +25,7 @@ limitations under the License.
 
 :host {
   box-sizing: border-box;
-  padding: 5px;
+  padding: 10px;
 }
 
 .main {
@@ -32,11 +35,17 @@ limitations under the License.
     'x-axis .';
   grid-template-columns: 1fr 50px;
   grid-template-rows: 1fr 30px;
+
+  &.wall_time {
+    grid-template-columns: 1fr 75px;
+  }
 }
 
 .axis ::ng-deep {
+  @include tb-theme-foreground-prop(color, secondary-text);
+
   .domain,
-  .axis ::ng-deep .tick text {
+  .tick text {
     display: none;
   }
 
@@ -58,6 +67,45 @@ svg {
   grid-area: y-axis;
 }
 
+.content .tick,
+.axis ::ng-deep .tick line {
+  stroke: $_tick-color;
+}
+
 .content {
   grid-area: content;
+
+  .tick {
+    stroke-width: 1px;
+    stroke-dasharray: 2;
+  }
+
+  path {
+    stroke-opacity: 0.5;
+  }
+
+  .baseline {
+    stroke: #000;
+    stroke-width: 1px;
+    stroke-opacity: 0.1;
+    width: 100%;
+  }
+}
+
+// Offset mode customizations.
+.offset .content path {
+  fill: currentColor;
+  stroke: #fff;
+}
+
+// Overlay mode customizations.
+.overlay {
+  .x-axis ::ng-deep .tick line {
+    display: none;
+  }
+
+  .content path {
+    fill-opacity: 0;
+    stroke: currentColor;
+  }
 }

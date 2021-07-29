@@ -12,6 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
 
 import {HistogramComponent} from './histogram_component';
@@ -20,5 +21,6 @@ import {HistogramV2Component} from './histogram_v2_component';
 @NgModule({
   declarations: [HistogramComponent, HistogramV2Component],
   exports: [HistogramComponent, HistogramV2Component],
+  imports: [CommonModule],
 })
 export class HistogramModule {}

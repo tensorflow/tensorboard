@@ -14,8 +14,35 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<div class="main">
+<div [class]="'main ' + mode + ' ' + timeProperty">
   <svg #xAxis class="axis x-axis"></svg>
   <svg #yAxis class="axis y-axis"></svg>
-  <svg #content class="content"></svg>
+  <svg #content class="content">
+    <g class="grid">
+      <g
+        *ngFor="let tick of getGridTickYLocs()"
+        [attr.transform]="'translate(0, ' + tick + ')'"
+      >
+        <line class="tick" x2="100%"></line>
+      </g>
+    </g>
+
+    <g class="histograms">
+      <g
+        *ngFor="let datum of data; trackBy: trackByWallTime;"
+        [attr.transform]="getGroupTransform(datum)"
+        class="histogram"
+      >
+        <line
+          *ngIf="mode === HistogramMode.OFFSET"
+          class="baseline"
+          x2="100%"
+        ></line>
+        <path
+          [attr.d]="getHistogramPath(datum)"
+          [style.color]="getHistogramFill(datum)"
+        ></path>
+      </g>
+    </g>
+  </svg>
 </div>
