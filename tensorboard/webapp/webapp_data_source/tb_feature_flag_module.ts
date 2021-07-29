@@ -20,6 +20,10 @@ import {QueryParamsFeatureFlagDataSource} from './tb_feature_flag_data_source';
 
 @NgModule({
   providers: [
+    // Provide as injectable for other app-level implementations of
+    // TBFeatureFlagDataSource.
+    QueryParamsFeatureFlagDataSource,
+    // Provide as the TBFeatureFlagDataSource implementation for the OSS app.
     {
       provide: TBFeatureFlagDataSource,
       useClass: QueryParamsFeatureFlagDataSource,
