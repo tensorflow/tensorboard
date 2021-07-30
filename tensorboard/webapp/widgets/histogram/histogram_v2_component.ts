@@ -79,7 +79,7 @@ export class HistogramV2Component implements OnChanges {
 
   readonly HistogramMode = HistogramMode;
 
-  private layout: Layout = {
+  private readonly layout: Layout = {
     histogramHeight: 0,
     contentClientRect: {height: 0, width: 0},
   };
