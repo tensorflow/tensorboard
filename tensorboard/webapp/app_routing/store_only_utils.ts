@@ -18,8 +18,7 @@ import {
   parseCompareExperimentStr,
   serializeCompareExperimentParams,
 } from './internal_utils';
-import {CompareRouteParams, RouteKind, RouteParams} from './types';
-import {ProgrammaticalNavigation} from './programmatical_navigation_types';
+import {CompareRouteParams, Route} from './types';
 
 // Ideally, we would not be exposing this utility method this, but there is no
 // way to share the structured information to other stores without changing
@@ -41,18 +40,6 @@ export function getCompareExperimentIdAliasSpec(
   return idToDisplayName;
 }
 
-function getRouteParamsFromNavigation(
-  navigation: ProgrammaticalNavigation
-): RouteParams {
-  return navigation.routeKind === RouteKind.COMPARE_EXPERIMENT
-    ? {
-        experimentIds: serializeCompareExperimentParams(
-          navigation.routeParams.aliasAndExperimentIds
-        ),
-      }
-    : navigation.routeParams;
-}
-
 /**
  * Returns experimentIds from navigation.
  *
@@ -60,11 +47,11 @@ function getRouteParamsFromNavigation(
  * BUILD.
  */
 export function getExperimentIdsFromNavigation(
-  navigation: ProgrammaticalNavigation
+  navigation: Route
 ): string[] | null {
   return getExperimentIdsFromRouteParams(
     navigation.routeKind,
-    getRouteParamsFromNavigation(navigation)
+    navigation.params
   );
 }
 
@@ -74,11 +61,6 @@ export function getExperimentIdsFromNavigation(
  * This utility is used by only limited packages. Please refer to visiblity in
  * BUILD.
  */
-export function getRouteIdFromNavigation(
-  navigation: ProgrammaticalNavigation
-): string {
-  return getRouteId(
-    navigation.routeKind,
-    getRouteParamsFromNavigation(navigation)
-  );
+export function getRouteIdFromNavigation(navigation: Route): string {
+  return getRouteId(navigation.routeKind, navigation.params);
 }
