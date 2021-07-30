@@ -41,3 +41,6 @@ export const ENABLE_COLOR_GROUP_BY_REGEX_QUERY_PARAM_KEY =
   'enableColorGroupByRegex';
 
 export const ENABLE_DARK_MODE_QUERY_PARAM_KEY = 'darkMode';
+
+export const ENABLE_LINK_TIME_PARAM_KEY = 'enableLinkTime';
+

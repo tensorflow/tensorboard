@@ -28,6 +28,7 @@ export function buildFeatureFlag(
     inColab: false,
     scalarsBatchSize: undefined,
     metricsImageSupportEnabled: true,
+    enabledLinkedTime: false,
     ...override,
   };
 }

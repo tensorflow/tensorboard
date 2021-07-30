@@ -265,4 +265,29 @@ describe('feature_flag_selectors', () => {
       expect(selectors.getIsMetricsImageSupportEnabled(state)).toEqual(true);
     });
   });
+
+  describe('#getIsLinkedTimeEnabled', () => {
+    it('returns the proper value', () => {
+      let state = buildState(
+        buildFeatureFlagState({
+          defaultFlags: buildFeatureFlag({
+            enabledLinkedTime: false,
+          }),
+        })
+      );
+      expect(selectors.getIsLinkedTimeEnabled(state)).toEqual(false);
+
+      state = buildState(
+        buildFeatureFlagState({
+          defaultFlags: buildFeatureFlag({
+            enabledLinkedTime: false,
+          }),
+          flagOverrides: {
+            enabledLinkedTime: true,
+          },
+        })
+      );
+      expect(selectors.getIsLinkedTimeEnabled(state)).toEqual(true);
+    });
+  });
 });

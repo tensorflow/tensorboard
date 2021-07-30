@@ -21,6 +21,7 @@ import {
   EXPERIMENTAL_PLUGIN_QUERY_PARAM_KEY,
   SCALARS_BATCH_SIZE_PARAM_KEY,
   TBFeatureFlagDataSource,
+  ENABLE_LINK_TIME_PARAM_KEY,
 } from './tb_feature_flag_data_source_types';
 import {FeatureFlags} from '../feature_flag/types';
 
@@ -77,6 +78,11 @@ export class QueryParamsFeatureFlagDataSource extends TBFeatureFlagDataSource {
     if (params.has(ENABLE_DARK_MODE_QUERY_PARAM_KEY)) {
       featureFlags.defaultEnableDarkMode =
         params.get(ENABLE_DARK_MODE_QUERY_PARAM_KEY) !== 'false';
+    }
+
+    if (params.has(ENABLE_LINK_TIME_PARAM_KEY)) {
+      featureFlags.enabledLinkedTime =
+        params.get(ENABLE_LINK_TIME_PARAM_KEY) !== 'false';
     }
 
     return featureFlags;
