@@ -123,6 +123,9 @@ export class HistogramV2Component
     ) => string,
     step: d3.format('.0f'),
     relative: (timeDiffInMs: number): string => {
+      // TODO(tensorboarad-team): this `.1r` drops important information and
+      // needs to be fixed. For example, `24h` would be shown as `20h`. This
+      // behavior is a carry over from  vz-histogram-timeseries for now.
       return d3.format('.1r')(timeDiffInMs / 3.6e6) + 'h'; // Convert to hours.
     },
   };
@@ -147,11 +150,9 @@ export class HistogramV2Component
   }
 
   ngAfterViewInit() {
-    fromEvent(this.main.nativeElement, 'mousemove', {passive: true})
+    fromEvent<MouseEvent>(this.main.nativeElement, 'mousemove', {passive: true})
       .pipe(takeUntil(this.ngUnsubscribe))
-      .subscribe((event: unknown) => {
-        this.onMouseMoveForTestOnly(event as MouseEvent);
-      });
+      .subscribe((event) => this.onMouseMove(event));
 
     this.domInitialized = true;
     this.updateClientRects();
@@ -354,6 +355,9 @@ export class HistogramV2Component
       case TimeProperty.RELATIVE: {
         return this.formatters.relative;
       }
+      default:
+        const _ = this.timeProperty as never;
+        throw RangeError(`Y axis formatter for ${_} must be implemented`);
     }
   }
 
@@ -373,16 +377,15 @@ export class HistogramV2Component
     const anyYAxis = yAxis as any;
     anyYAxis.tickFormat(this.getYAxisFormatter());
     yAxis(d3.select(this.yAxis.nativeElement));
-    return yScale;
   }
 
   private findClosestDatumIndex(mouseEvent: MouseEvent): number {
-    let cursor: SVGElement = mouseEvent.target as SVGElement;
-    let child: SVGElement = cursor;
+    let cursor: Element | null = mouseEvent.target as Element;
+    let child: Element = cursor;
 
     while (cursor && cursor !== this.histograms.nativeElement) {
       child = cursor;
-      cursor = (cursor.parentElement as unknown) as SVGElement;
+      cursor = cursor.parentElement;
     }
     return !cursor ? -1 : Array.from(cursor.children).indexOf(child);
   }
@@ -391,6 +394,10 @@ export class HistogramV2Component
   // DOM, we are exposing this method so it can be tested with a manual
   // invocation.
   onMouseMoveForTestOnly(mouseEvent: MouseEvent) {
+    return this.onMouseMove(mouseEvent);
+  }
+
+  private onMouseMove(mouseEvent: MouseEvent) {
     const relativeX = mouseEvent.offsetX;
     const relativeY = mouseEvent.offsetY;
 
