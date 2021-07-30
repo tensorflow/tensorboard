@@ -27,6 +27,7 @@ tf_ng_module(
         "//tensorboard/webapp/widgets:resize_detector",
         "@npm//@angular/common",
         "@npm//@angular/core",
+        "@npm//rxjs",
     ],
 )
 
