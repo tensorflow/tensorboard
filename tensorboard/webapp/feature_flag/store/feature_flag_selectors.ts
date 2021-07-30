@@ -105,12 +105,9 @@ export const getIsMetricsImageSupportEnabled = createSelector(
   }
 );
 
-
 export const getIsLinkedTimeEnabled = createSelector(
   getFeatureFlags,
   (flags: FeatureFlags): boolean => {
     return flags.enabledLinkedTime;
   }
 );
-
-
