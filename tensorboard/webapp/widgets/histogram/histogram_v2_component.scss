@@ -14,8 +14,6 @@ limitations under the License.
 ==============================================================================*/
 @import 'tensorboard/webapp/theme/tb_theme';
 
-$_tick-color: #ddd;
-
 :host,
 .main {
   display: inline-block;
@@ -41,9 +39,16 @@ $_tick-color: #ddd;
   }
 }
 
-.tooltip {
+.tooltip,
+.baseline {
   color: #000;
 
+  @include tb-dark-theme {
+    color: #fff;
+  }
+}
+
+.tooltip {
   text {
     font-weight: bold;
     font-size: 10px;
@@ -105,7 +110,11 @@ svg {
 
 .content .tick,
 .axis ::ng-deep .tick line {
-  stroke: $_tick-color;
+  stroke: #ddd;
+
+  @include tb-dark-theme {
+    stroke: map-get($tb-dark-foreground, border);
+  }
 }
 
 .content {
@@ -118,14 +127,19 @@ svg {
 
   circle,
   path {
+    fill: currentColor;
     stroke-opacity: 0.5;
     stroke-width: 1px;
   }
 
+  circle {
+    stroke: #fff;
+  }
+
   .baseline {
-    stroke: #000;
-    stroke-width: 1px;
     stroke-opacity: 0.1;
+    stroke-width: 1px;
+    stroke: currentColor;
     width: 100%;
   }
 
@@ -137,11 +151,11 @@ svg {
 }
 
 // Offset mode customizations.
-.content .histograms {
-  circle,
-  path {
-    fill: currentColor;
-    stroke: #fff;
+.offset .content .histograms path {
+  stroke: #fff;
+
+  @include tb-dark-theme {
+    stroke: map-get($tb-dark-foreground, border);
   }
 }
 
@@ -152,7 +166,6 @@ svg {
   }
 
   .content {
-    .circle,
     path {
       fill-opacity: 0;
       stroke: currentColor;
