@@ -38,6 +38,7 @@ tf_ng_module(
     ],
     deps = [
         ":internal_utils",
+        ":programmatical_navigation_module",
         ":types",
     ],
 )
