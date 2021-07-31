@@ -108,7 +108,7 @@ export class HistogramV2Component
   tooltipData: null | TooltipData = null;
 
   private ngUnsubscribe = new Subject<void>();
-  private layout: Layout = {
+  private readonly layout: Layout = {
     histogramHeight: 0,
     contentClientRect: {height: 0, width: 0},
   };
