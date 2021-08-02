@@ -29,6 +29,7 @@ export const initialState: FeatureFlagState = {
     inColab: false,
     scalarsBatchSize: undefined,
     metricsImageSupportEnabled: true,
+    enabledLinkedTime: false,
   },
   flagOverrides: {},
 };

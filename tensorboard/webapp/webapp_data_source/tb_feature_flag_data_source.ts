@@ -14,15 +14,16 @@ limitations under the License.
 ==============================================================================*/
 import {Injectable} from '@angular/core';
 
+import {FeatureFlags} from '../feature_flag/types';
 import {
-  ENABLE_COLOR_GROUP_QUERY_PARAM_KEY,
   ENABLE_COLOR_GROUP_BY_REGEX_QUERY_PARAM_KEY,
+  ENABLE_COLOR_GROUP_QUERY_PARAM_KEY,
   ENABLE_DARK_MODE_QUERY_PARAM_KEY,
+  ENABLE_LINK_TIME_PARAM_KEY,
   EXPERIMENTAL_PLUGIN_QUERY_PARAM_KEY,
   SCALARS_BATCH_SIZE_PARAM_KEY,
   TBFeatureFlagDataSource,
 } from './tb_feature_flag_data_source_types';
-import {FeatureFlags} from '../feature_flag/types';
 
 /**
  * Save the initial URL query params, before the AppRoutingEffects initialize.
@@ -77,6 +78,11 @@ export class QueryParamsFeatureFlagDataSource extends TBFeatureFlagDataSource {
     if (params.has(ENABLE_DARK_MODE_QUERY_PARAM_KEY)) {
       featureFlags.defaultEnableDarkMode =
         params.get(ENABLE_DARK_MODE_QUERY_PARAM_KEY) !== 'false';
+    }
+
+    if (params.has(ENABLE_LINK_TIME_PARAM_KEY)) {
+      featureFlags.enabledLinkedTime =
+        params.get(ENABLE_LINK_TIME_PARAM_KEY) !== 'false';
     }
 
     return featureFlags;
