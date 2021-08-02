@@ -239,10 +239,15 @@ describe('histogram v2 test', () => {
       fixture.componentInstance.mode = HistogramMode.OFFSET;
       fixture.componentInstance.timeProperty = TimeProperty.STEP;
       fixture.detectChanges();
-      intersectionObserver.simulateVisibilityChange(fixture, false);
 
       expect(
         getAxisLabelText(fixture.debugElement.query(byCss.Y_AXIS))
+      ).toEqual([]);
+
+      intersectionObserver.simulateVisibilityChange(fixture, false);
+      fixture.detectChanges();
+      expect(
+        getAxisLabelText(fixture.debugElement.query(byCss.X_AXIS))
       ).toEqual([]);
     });
 
