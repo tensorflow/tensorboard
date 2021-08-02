@@ -16,7 +16,6 @@ import {
   getExperimentIdsFromRouteParams,
   getRouteId,
   parseCompareExperimentStr,
-  serializeCompareExperimentParams,
 } from './internal_utils';
 import {CompareRouteParams, Route} from './types';
 
