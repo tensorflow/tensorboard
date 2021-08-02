@@ -12,8 +12,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {parseCompareExperimentStr} from './internal_utils';
-import {CompareRouteParams} from './types';
+import {
+  getExperimentIdsFromRouteParams,
+  getRouteId,
+  parseCompareExperimentStr,
+  serializeCompareExperimentParams,
+} from './internal_utils';
+import {CompareRouteParams, Route} from './types';
 
 // Ideally, we would not be exposing this utility method this, but there is no
 // way to share the structured information to other stores without changing
@@ -33,4 +38,29 @@ export function getCompareExperimentIdAliasSpec(
     idToDisplayName.set(id, name);
   }
   return idToDisplayName;
+}
+
+/**
+ * Returns experimentIds from navigation.
+ *
+ * This utility is used by only limited packages. Please refer to visiblity in
+ * BUILD.
+ */
+export function getExperimentIdsFromNavigation(
+  navigation: Route
+): string[] | null {
+  return getExperimentIdsFromRouteParams(
+    navigation.routeKind,
+    navigation.params
+  );
+}
+
+/**
+ * Returns routeId from navigation.
+ *
+ * This utility is used by only limited packages. Please refer to visiblity in
+ * BUILD.
+ */
+export function getRouteIdFromNavigation(navigation: Route): string {
+  return getRouteId(navigation.routeKind, navigation.params);
 }
