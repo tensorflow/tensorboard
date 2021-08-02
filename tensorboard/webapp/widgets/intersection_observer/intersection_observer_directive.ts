@@ -53,7 +53,9 @@ export class IntersectionObserverDirective implements OnDestroy {
 
   waitForEventForTestOnly(): Promise<void> {
     return new Promise((resolve) => {
-      return this.onEvent$.pipe(take(1)).subscribe(() => resolve());
+      return this.onEvent$.pipe(take(1)).subscribe(() => {
+        resolve();
+      });
     });
   }
 }
