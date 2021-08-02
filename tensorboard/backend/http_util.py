@@ -35,15 +35,15 @@ _DISALLOWED_CHAR_IN_DOMAIN = re.compile(r"\s")
 
 # @vaadin/vaadin-lumo-styles/font-icons(via vaadin-grid) uses data URI for
 # loading font icons.
-_CSP_FONT_DOMAINS_WHITELIST = ["data:"]
-_CSP_FRAME_DOMAINS_WHITELIST = []
-_CSP_IMG_DOMAINS_WHITELIST = []
-_CSP_SCRIPT_DOMAINS_WHITELIST = []
-_CSP_CONNECT_DOMAINS_WHITELIST = []
+_CSP_FONT_DOMAINS_ALLOWLIST = ["data:"]
+_CSP_FRAME_DOMAINS_ALLOWLIST = []
+_CSP_IMG_DOMAINS_ALLOWLIST = []
+_CSP_SCRIPT_DOMAINS_ALLOWLIST = []
+_CSP_CONNECT_DOMAINS_ALLOWLIST = []
 _CSP_SCRIPT_SELF = True
 # numericjs (via projector) uses unsafe-eval :(.
 _CSP_SCRIPT_UNSAFE_EVAL = True
-_CSP_STYLE_DOMAINS_WHITELIST = []
+_CSP_STYLE_DOMAINS_ALLOWLIST = []
 
 _EXTRACT_MIMETYPE_PATTERN = re.compile(r"^[^;\s]*")
 _EXTRACT_CHARSET_PATTERN = re.compile(r"charset=([-_0-9A-Za-z]+)")
@@ -94,8 +94,8 @@ def Respond(
     """Construct a werkzeug Response.
 
     Responses are transmitted to the browser with compression if: a) the browser
-    supports it; b) it's sane to compress the content_type in question; and c)
-    the content isn't already compressed, as indicated by the content_encoding
+    supports it; b) it's sensible to compress the content_type in question; and
+    c) the content isn't already compressed, as indicated by the content_encoding
     parameter.
 
     Browser and proxy caching is completely disabled by default. If the expires
@@ -126,10 +126,10 @@ def Respond(
       expires: Second duration for browser caching.
       content_encoding: Encoding if content is already encoded, e.g. 'gzip'.
       encoding: Input charset if content parameter has byte strings.
-      csp_scripts_sha256s: List of base64 serialized sha256 of whitelisted script
-        elements for script-src of the Content-Security-Policy. If it is None, the
-        HTML will disallow any script to execute. It is only be used when the
-        content_type is text/html.
+      csp_scripts_sha256s: List of base64 serialized sha256 hashes of allowlisted
+        script elements for script-src of the Content-Security-Policy. If it is
+        None, the HTML will disallow any script to execute. It is only be used
+        when the content_type is text/html.
       headers: Any additional headers to include on the response, as a
         list of key-value tuples: e.g., `[("Allow", "GET")]`. In case of
         conflict, these may be overridden with headers added by this function.
@@ -197,15 +197,15 @@ def Respond(
         headers.append(("Expires", "0"))
         headers.append(("Cache-Control", "no-cache, must-revalidate"))
     if mimetype == _HTML_MIMETYPE:
-        _CSP_IMG_DOMAINS_WHITELIST
-        _CSP_STYLE_DOMAINS_WHITELIST
-        _CSP_FONT_DOMAINS_WHITELIST
-        _CSP_FRAME_DOMAINS_WHITELIST
-        _CSP_SCRIPT_DOMAINS_WHITELIST
-        _CSP_CONNECT_DOMAINS_WHITELIST
+        _CSP_IMG_DOMAINS_ALLOWLIST
+        _CSP_STYLE_DOMAINS_ALLOWLIST
+        _CSP_FONT_DOMAINS_ALLOWLIST
+        _CSP_FRAME_DOMAINS_ALLOWLIST
+        _CSP_SCRIPT_DOMAINS_ALLOWLIST
+        _CSP_CONNECT_DOMAINS_ALLOWLIST
 
         frags = (
-            _CSP_SCRIPT_DOMAINS_WHITELIST
+            _CSP_SCRIPT_DOMAINS_ALLOWLIST
             + [
                 "'self'" if _CSP_SCRIPT_SELF else "",
                 "'unsafe-eval'" if _CSP_SCRIPT_UNSAFE_EVAL else "",
@@ -221,10 +221,10 @@ def Respond(
             [
                 "default-src 'self'",
                 "font-src %s"
-                % _create_csp_string("'self'", *_CSP_FONT_DOMAINS_WHITELIST),
+                % _create_csp_string("'self'", *_CSP_FONT_DOMAINS_ALLOWLIST),
                 # Dynamic plugins are rendered inside an iframe.
                 "frame-src %s"
-                % _create_csp_string("'self'", *_CSP_FRAME_DOMAINS_WHITELIST),
+                % _create_csp_string("'self'", *_CSP_FRAME_DOMAINS_ALLOWLIST),
                 "img-src %s"
                 % _create_csp_string(
                     "'self'",
@@ -232,7 +232,7 @@ def Respond(
                     "data:",
                     # used by What-If tool for image sprites.
                     "blob:",
-                    *_CSP_IMG_DOMAINS_WHITELIST,
+                    *_CSP_IMG_DOMAINS_ALLOWLIST,
                 ),
                 "object-src 'none'",
                 "style-src %s"
@@ -243,10 +243,10 @@ def Respond(
                     "data:",
                     # inline styles: Polymer templates + d3 uses inline styles.
                     "'unsafe-inline'",
-                    *_CSP_STYLE_DOMAINS_WHITELIST,
+                    *_CSP_STYLE_DOMAINS_ALLOWLIST,
                 ),
                 "connect-src %s"
-                % _create_csp_string("'self'", *_CSP_CONNECT_DOMAINS_WHITELIST),
+                % _create_csp_string("'self'", *_CSP_CONNECT_DOMAINS_ALLOWLIST),
                 "script-src %s" % script_srcs,
             ]
         )

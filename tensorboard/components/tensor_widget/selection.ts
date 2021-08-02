@@ -89,7 +89,7 @@ export class TensorElementSelection {
 
     this.rank = this.shape.length;
 
-    // Sanity check the size of the the slicing dimensions.
+    // Assert the size of the the slicing dimensions.
     if (this.rank > 0 && this.sliceDims.length >= this.rank) {
       throw new Error(
         `Expected sliceDims to have a length less than rank ${this.rank}, ` +

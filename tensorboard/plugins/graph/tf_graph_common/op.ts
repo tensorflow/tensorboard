@@ -26,7 +26,7 @@ export class TpuCompatibilityProvider implements CompatibilityProvider {
    * Allowed list of current Tensorflow ops valid on the TPU.
    * Note that some data types may be unsupported.
    */
-  static readonly WHITELIST = [
+  static readonly ALLOWLIST = [
     'Abs',
     'Acos',
     'Acosh',
@@ -485,7 +485,7 @@ export class TpuCompatibilityProvider implements CompatibilityProvider {
     'ZerosLike',
     'Zeta',
 
-    // Ops below are manually whitelisted and should not be evaluated for
+    // Ops below are manually allowlisted and should not be evaluated for
     // compatibility for various reasons.
 
     // Control flow ops.
@@ -569,7 +569,7 @@ export class TpuCompatibilityProvider implements CompatibilityProvider {
     if (opNode.device && opNode.device.search('TPU_SYSTEM') != -1) {
       return true;
     }
-    return _.includes(TpuCompatibilityProvider.WHITELIST, opNode.op);
+    return _.includes(TpuCompatibilityProvider.ALLOWLIST, opNode.op);
   }
 }
 export function checkOpsForCompatibility(

@@ -295,20 +295,20 @@ class RespondTest(tb_test.TestCase):
         self.assertEqual(r.headers.get("Content-Security-Policy"), expected_csp)
 
     @mock.patch.object(
-        http_util, "_CSP_IMG_DOMAINS_WHITELIST", ["https://example.com"]
+        http_util, "_CSP_IMG_DOMAINS_ALLOWLIST", ["https://example.com"]
     )
     @mock.patch.object(
         http_util,
-        "_CSP_SCRIPT_DOMAINS_WHITELIST",
+        "_CSP_SCRIPT_DOMAINS_ALLOWLIST",
         ["https://tensorflow.org/tensorboard"],
     )
     @mock.patch.object(
-        http_util, "_CSP_STYLE_DOMAINS_WHITELIST", ["https://googol.com"]
+        http_util, "_CSP_STYLE_DOMAINS_ALLOWLIST", ["https://googol.com"]
     )
     @mock.patch.object(
-        http_util, "_CSP_FRAME_DOMAINS_WHITELIST", ["https://myframe.com"]
+        http_util, "_CSP_FRAME_DOMAINS_ALLOWLIST", ["https://myframe.com"]
     )
-    def testCsp_globalDomainWhiteList(self):
+    def testCsp_globalDomainAllowList(self):
         q = wrappers.Request(wtest.EnvironBuilder().get_environ())
         r = http_util.Respond(
             q, "<b>hello</b>", "text/html", csp_scripts_sha256s=["abcd"]

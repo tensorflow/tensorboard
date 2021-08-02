@@ -489,7 +489,7 @@ mod tests {
         );
         assert_eq!(head.as_slice().last(), Some(&(Step(70), ())));
 
-        // One more sanity check: add another record. The "70" preemption may or may not be
+        // One more assertion: add another record. The "70" preemption may or may not be
         // evicted, but this new record should be the last.
         rsv.offer(Step(71), ());
         rsv.commit(&mut head);
