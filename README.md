@@ -254,8 +254,9 @@ tensorboard in inspect mode to inspect the contents of your event files.
 
 `tensorboard --inspect --logdir DIRECTORY_PATH`
 
-An empty event file (from a Keras job that starts output at batch 2) might look like this:
-
+The output for an event file corresponding to a blank TensorBoard may still sometimes 
+show a few steps, representing a few initial events that aren't shown by TensorBoard 
+(for example, when using the Keras TensorBoard callback):
 ```
 tensor
    first_step           0
@@ -266,7 +267,7 @@ tensor
    outoforder_steps     [(2, 0), (2, 0), (2, 0)]
 ```
 
-while an event file with more data might look like this:
+In contrast, the output for an event file with more data might look like this:
 
 ```
 tensor
