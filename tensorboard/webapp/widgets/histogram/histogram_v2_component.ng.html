@@ -19,6 +19,8 @@ limitations under the License.
   [class]="'main ' + mode + ' ' + timeProperty"
   detectResize
   (onResize)="onResize()"
+  observeIntersection
+  (onVisibilityChange)="onVisibilityChange($event)"
 >
   <svg class="axis x-axis">
     <g #xAxis></g>

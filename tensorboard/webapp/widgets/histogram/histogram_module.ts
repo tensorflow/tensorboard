@@ -15,6 +15,7 @@ limitations under the License.
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
 
+import {IntersectionObserverModule} from '../intersection_observer/intersection_observer_module';
 import {ResizeDetectorModule} from '../resize_detector_module';
 import {HistogramComponent} from './histogram_component';
 import {HistogramV2Component} from './histogram_v2_component';
@@ -22,6 +23,6 @@ import {HistogramV2Component} from './histogram_v2_component';
 @NgModule({
   declarations: [HistogramComponent, HistogramV2Component],
   exports: [HistogramComponent, HistogramV2Component],
-  imports: [CommonModule, ResizeDetectorModule],
+  imports: [CommonModule, ResizeDetectorModule, IntersectionObserverModule],
 })
 export class HistogramModule {}
