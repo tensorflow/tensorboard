@@ -23,6 +23,7 @@ import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 
+import {IntersectionObserverTestingModule} from '../intersection_observer/intersection_observer_testing_module';
 import {
   Bin,
   ColorScale,
@@ -107,10 +108,11 @@ describe('histogram v2 test', () => {
     HISTOGRAMS: By.css('.histograms'),
     HISTOGRAM: By.css('.histogram'),
   };
+  let intersectionObserver: IntersectionObserverTestingModule;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [NoopAnimationsModule],
+      imports: [NoopAnimationsModule, IntersectionObserverTestingModule],
       declarations: [HistogramV2Component, TestableComponent],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
@@ -126,6 +128,7 @@ describe('histogram v2 test', () => {
     fixture.componentInstance.mode = HistogramMode.OFFSET;
     fixture.componentInstance.timeProperty = TimeProperty.STEP;
     fixture.componentInstance.colorScale = (name) => '#fff';
+    intersectionObserver = TestBed.inject(IntersectionObserverTestingModule);
     return fixture;
   }
 
@@ -137,6 +140,23 @@ describe('histogram v2 test', () => {
   }
 
   describe('x axis render', () => {
+    it('does not render until component becomes visible', () => {
+      const fixture = createComponent('foo', [buildHistogramDatum({})]);
+      fixture.componentInstance.mode = HistogramMode.OFFSET;
+      fixture.componentInstance.timeProperty = TimeProperty.STEP;
+      fixture.detectChanges();
+
+      expect(
+        getAxisLabelText(fixture.debugElement.query(byCss.X_AXIS))
+      ).toEqual([]);
+
+      intersectionObserver.simulateVisibilityChange(fixture, false);
+      fixture.detectChanges();
+      expect(
+        getAxisLabelText(fixture.debugElement.query(byCss.X_AXIS))
+      ).toEqual([]);
+    });
+
     it('renders min and max of bins in scalar', () => {
       const fixture = createComponent('foo', [
         buildHistogramDatum({
@@ -155,14 +175,82 @@ describe('histogram v2 test', () => {
       fixture.componentInstance.mode = HistogramMode.OFFSET;
       fixture.componentInstance.timeProperty = TimeProperty.STEP;
       fixture.detectChanges();
+      intersectionObserver.simulateVisibilityChange(fixture, true);
 
       expect(
         getAxisLabelText(fixture.debugElement.query(byCss.X_AXIS))
       ).toEqual(['-100', '0', '100']);
     });
+
+    it('updates axis only when chart is visible', () => {
+      const fixture = createComponent('foo', [
+        buildHistogramDatum({
+          step: 0,
+          bins: [buildBin({x: 1, dx: 5})],
+        }),
+        buildHistogramDatum({
+          step: 1,
+          bins: [buildBin({x: 0, dx: 100})],
+        }),
+        buildHistogramDatum({
+          step: 100,
+          bins: [buildBin({x: -100, dx: 5})],
+        }),
+      ]);
+      fixture.componentInstance.mode = HistogramMode.OFFSET;
+      fixture.componentInstance.timeProperty = TimeProperty.STEP;
+      fixture.detectChanges();
+      intersectionObserver.simulateVisibilityChange(fixture, true);
+      const beforeAxisLabels = getAxisLabelText(
+        fixture.debugElement.query(byCss.X_AXIS)
+      );
+      fixture.detectChanges();
+
+      intersectionObserver.simulateVisibilityChange(fixture, false);
+      fixture.detectChanges();
+
+      fixture.componentInstance.data = [
+        buildHistogramDatum({
+          step: 0,
+          bins: [buildBin({x: 1, dx: 5})],
+        }),
+        buildHistogramDatum({
+          step: 1,
+          bins: [buildBin({x: 0, dx: 100})],
+        }),
+      ];
+      fixture.detectChanges();
+      expect(
+        getAxisLabelText(fixture.debugElement.query(byCss.X_AXIS))
+      ).toEqual(beforeAxisLabels);
+
+      intersectionObserver.simulateVisibilityChange(fixture, true);
+      fixture.detectChanges();
+
+      expect(
+        getAxisLabelText(fixture.debugElement.query(byCss.X_AXIS))
+      ).toEqual(['0', '50', '100']);
+    });
   });
 
   describe('y axis render', () => {
+    it('does not render until component becomes visible', () => {
+      const fixture = createComponent('foo', [buildHistogramDatum({})]);
+      fixture.componentInstance.mode = HistogramMode.OFFSET;
+      fixture.componentInstance.timeProperty = TimeProperty.STEP;
+      fixture.detectChanges();
+
+      expect(
+        getAxisLabelText(fixture.debugElement.query(byCss.Y_AXIS))
+      ).toEqual([]);
+
+      intersectionObserver.simulateVisibilityChange(fixture, false);
+      fixture.detectChanges();
+      expect(
+        getAxisLabelText(fixture.debugElement.query(byCss.X_AXIS))
+      ).toEqual([]);
+    });
+
     describe('offset mode', () => {
       it('renders min and max of step in STEP mode', () => {
         const fixture = createComponent('foo', [
@@ -179,6 +267,7 @@ describe('histogram v2 test', () => {
         fixture.componentInstance.mode = HistogramMode.OFFSET;
         fixture.componentInstance.timeProperty = TimeProperty.STEP;
         fixture.detectChanges();
+        intersectionObserver.simulateVisibilityChange(fixture, true);
 
         expect(
           getAxisLabelText(fixture.debugElement.query(byCss.Y_AXIS))
@@ -203,6 +292,7 @@ describe('histogram v2 test', () => {
         fixture.componentInstance.mode = HistogramMode.OFFSET;
         fixture.componentInstance.timeProperty = TimeProperty.WALL_TIME;
         fixture.detectChanges();
+        intersectionObserver.simulateVisibilityChange(fixture, true);
 
         expect(
           getAxisLabelText(fixture.debugElement.query(byCss.Y_AXIS))
@@ -231,6 +321,7 @@ describe('histogram v2 test', () => {
         fixture.componentInstance.mode = HistogramMode.OFFSET;
         fixture.componentInstance.timeProperty = TimeProperty.RELATIVE;
         fixture.detectChanges();
+        intersectionObserver.simulateVisibilityChange(fixture, true);
 
         expect(
           getAxisLabelText(fixture.debugElement.query(byCss.Y_AXIS))
@@ -257,6 +348,7 @@ describe('histogram v2 test', () => {
         fixture.componentInstance.mode = HistogramMode.OVERLAY;
         fixture.componentInstance.timeProperty = TimeProperty.WALL_TIME;
         fixture.detectChanges();
+        intersectionObserver.simulateVisibilityChange(fixture, true);
 
         expect(
           getAxisLabelText(fixture.debugElement.query(byCss.Y_AXIS))
@@ -292,6 +384,7 @@ describe('histogram v2 test', () => {
         fixture.componentInstance.mode = HistogramMode.OFFSET;
         fixture.componentInstance.timeProperty = TimeProperty.STEP;
         fixture.detectChanges();
+        intersectionObserver.simulateVisibilityChange(fixture, true);
 
         expect(
           getGroupTransforms(fixture.debugElement.query(byCss.HISTOGRAMS))
@@ -315,6 +408,7 @@ describe('histogram v2 test', () => {
         fixture.componentInstance.mode = HistogramMode.OFFSET;
         fixture.componentInstance.timeProperty = TimeProperty.STEP;
         fixture.detectChanges();
+        intersectionObserver.simulateVisibilityChange(fixture, true);
 
         fixture.componentInstance.timeProperty = TimeProperty.WALL_TIME;
         fixture.detectChanges();
@@ -345,6 +439,7 @@ describe('histogram v2 test', () => {
         fixture.componentInstance.mode = HistogramMode.OFFSET;
         fixture.componentInstance.timeProperty = TimeProperty.STEP;
         fixture.detectChanges();
+        intersectionObserver.simulateVisibilityChange(fixture, true);
 
         expect(
           getHistogramPaths(fixture.debugElement.query(byCss.HISTOGRAMS))
@@ -378,6 +473,7 @@ describe('histogram v2 test', () => {
         fixture.componentInstance.mode = HistogramMode.OVERLAY;
         fixture.componentInstance.timeProperty = TimeProperty.STEP;
         fixture.detectChanges();
+        intersectionObserver.simulateVisibilityChange(fixture, true);
 
         // Again, rendered in 30x50 box and histogram now spans 50px high!
         // Do note that, unlike offset, <0, 0> starts from top-left corner so
@@ -443,6 +539,7 @@ describe('histogram v2 test', () => {
         const fixture = createComponent('foo', data);
         fixture.componentInstance.mode = HistogramMode.OFFSET;
         fixture.detectChanges();
+        intersectionObserver.simulateVisibilityChange(fixture, true);
 
         const tooltipData = simulateMouseMove(fixture, 1, 5, 10);
 
@@ -477,6 +574,7 @@ describe('histogram v2 test', () => {
         const fixture = createComponent('foo', data);
         fixture.componentInstance.mode = HistogramMode.OFFSET;
         fixture.detectChanges();
+        intersectionObserver.simulateVisibilityChange(fixture, true);
 
         const tooltipData = simulateMouseMove(fixture, 1, 20, 10);
 
@@ -513,6 +611,7 @@ describe('histogram v2 test', () => {
         fixture.componentInstance.mode = HistogramMode.OFFSET;
         fixture.componentInstance.timeProperty = TimeProperty.STEP;
         fixture.detectChanges();
+        intersectionObserver.simulateVisibilityChange(fixture, true);
 
         const tooltipData = simulateMouseMove(fixture, 1, 20, 10);
 
@@ -543,6 +642,7 @@ describe('histogram v2 test', () => {
         fixture.componentInstance.mode = HistogramMode.OFFSET;
         fixture.componentInstance.timeProperty = TimeProperty.WALL_TIME;
         fixture.detectChanges();
+        intersectionObserver.simulateVisibilityChange(fixture, true);
 
         const tooltipData = simulateMouseMove(fixture, 0, 5, 10);
 
@@ -574,6 +674,7 @@ describe('histogram v2 test', () => {
         fixture.componentInstance.mode = HistogramMode.OFFSET;
         fixture.componentInstance.timeProperty = TimeProperty.RELATIVE;
         fixture.detectChanges();
+        intersectionObserver.simulateVisibilityChange(fixture, true);
 
         const tooltipData = simulateMouseMove(fixture, 1, 5, 10);
 
@@ -611,6 +712,7 @@ describe('histogram v2 test', () => {
         const fixture = createComponent('foo', data);
         fixture.componentInstance.mode = HistogramMode.OFFSET;
         fixture.detectChanges();
+        intersectionObserver.simulateVisibilityChange(fixture, true);
 
         const tooltipData = simulateMouseMove(fixture, 0, 20, 10);
 
@@ -642,6 +744,7 @@ describe('histogram v2 test', () => {
         fixture.componentInstance.mode = HistogramMode.OVERLAY;
         fixture.componentInstance.timeProperty = TimeProperty.STEP;
         fixture.detectChanges();
+        intersectionObserver.simulateVisibilityChange(fixture, true);
 
         const tooltipData = simulateMouseMove(fixture, 0, 20, 10);
 
@@ -678,6 +781,7 @@ describe('histogram v2 test', () => {
         fixture.componentInstance.mode = HistogramMode.OVERLAY;
         fixture.componentInstance.timeProperty = TimeProperty.STEP;
         fixture.detectChanges();
+        intersectionObserver.simulateVisibilityChange(fixture, true);
 
         const tooltipData = simulateMouseMove(fixture, 1, 5, 10);
 
@@ -713,6 +817,7 @@ describe('histogram v2 test', () => {
         const fixture = createComponent('foo', data);
         fixture.componentInstance.mode = HistogramMode.OVERLAY;
         fixture.detectChanges();
+        intersectionObserver.simulateVisibilityChange(fixture, true);
 
         const tooltipData = simulateMouseMove(fixture, 0, 20, 10);
 

@@ -112,7 +112,7 @@ export class HistogramV2Component
     histogramHeight: 0,
     contentClientRect: {height: 0, width: 0},
   };
-  private scales: Scales;
+  private scales: Scales | null = null;
   private formatters = {
     binNumber: d3.format('.3~s'),
     count: d3.format('.3n'),
@@ -129,19 +129,17 @@ export class HistogramV2Component
       return d3.format('.1r')(timeDiffInMs / 3.6e6) + 'h'; // Convert to hours.
     },
   };
-  private domInitialized = false;
+  private domVisible = false;
 
   constructor(private readonly changeDetector: ChangeDetectorRef) {
-    // `data` may not be available at the constructor time. Since we recalculate
-    // the scales on the `ngAfterViewInit`, let's just initialize `scales` with
-    // their default values.
-    this.scales = this.computeScales([]);
+    // `data` and layout are not be available at the constructor time. Since we
+    // recalculate the scales after the view becomes first visible, let's just
+    // initialize `scales` with their default values.
+    // this.scales = this.computeScales([]);
   }
 
   ngOnChanges() {
-    if (this.domInitialized) {
-      this.updateChart();
-    }
+    this.updateChartIfVisible();
   }
 
   ngOnDestroy() {
@@ -150,14 +148,11 @@ export class HistogramV2Component
   }
 
   ngAfterViewInit() {
-    fromEvent<MouseEvent>(this.main.nativeElement, 'mousemove', {passive: true})
+    fromEvent<MouseEvent>(this.main.nativeElement, 'mousemove', {
+      passive: true,
+    })
       .pipe(takeUntil(this.ngUnsubscribe))
       .subscribe((event) => this.onMouseMove(event));
-
-    this.domInitialized = true;
-    this.updateClientRects();
-    this.updateChart();
-    this.changeDetector.detectChanges();
   }
 
   getCssTranslate(x: number, y: number): string {
@@ -184,6 +179,7 @@ export class HistogramV2Component
   }
 
   getUiCoordFromBinForContent(bin: Bin): {x: number; y: number} {
+    if (!this.scales) return {x: 0, y: 0};
     return {
       x: this.scales.binScale(getXCentroid(bin)),
       y: this.scales.countScale(bin.y),
@@ -194,7 +190,7 @@ export class HistogramV2Component
     // Unlike other methods used in Angular template, if we return non-empty
     // value before the DOM and everything is initialized, this method can emit
     // junk (path with NaN) values causing browser to noisily print warnings.
-    if (!this.domInitialized || !datum.bins.length) return '';
+    if (!this.scales || !datum.bins.length) return '';
     const xScale = this.scales.binScale;
     const yScale = this.scales.countScale;
 
@@ -221,26 +217,36 @@ export class HistogramV2Component
     // value before the DOM and everything is initialized, this method can emit
     // junk (translate with NaN) values causing browser to noisily print
     // warnings.
-    if (!this.domInitialized || this.mode === HistogramMode.OVERLAY) return '';
+    if (!this.scales || this.mode === HistogramMode.OVERLAY) {
+      return '';
+    }
     return `translate(0, ${this.scales.temporalScale(
       this.getTimeValue(datum)
     )})`;
   }
 
   getHistogramFill(datum: HistogramDatum): string {
-    return this.scales.d3ColorScale(this.getTimeValue(datum));
+    return this.scales
+      ? this.scales.d3ColorScale(this.getTimeValue(datum))
+      : '';
   }
 
   getGridTickYLocs(): number[] {
-    if (this.mode === HistogramMode.OFFSET) return [];
+    if (!this.scales || this.mode === HistogramMode.OFFSET) return [];
     const yScale = this.scales.countScale;
     return yScale.ticks().map((tick) => yScale(tick));
   }
 
   onResize() {
     this.updateClientRects();
-    this.updateChart();
-    this.changeDetector.detectChanges();
+    this.updateChartIfVisible();
+  }
+
+  onVisibilityChange({visible}: {visible: boolean}) {
+    this.domVisible = visible;
+    if (!visible) return;
+    this.updateClientRects();
+    this.updateChartIfVisible();
   }
 
   private getTimeValue(datum: HistogramDatum): number {
@@ -255,16 +261,20 @@ export class HistogramV2Component
   }
 
   private updateClientRects() {
-    if (this.domInitialized && this.content) {
+    if (this.content) {
       this.layout.contentClientRect = this.content.nativeElement.getBoundingClientRect();
       this.layout.histogramHeight = this.layout.contentClientRect.height / 2.5;
     }
   }
 
-  private updateChart() {
+  private updateChartIfVisible() {
+    if (!this.domVisible) return;
     this.scales = this.computeScales(this.data);
+    // Update axes DOM directly using d3 API.
     this.renderXAxis();
     this.renderYAxis();
+    // Update Angular rendered part of the histogram.
+    this.changeDetector.detectChanges();
   }
 
   private computeScales(data: HistogramData): Scales {
@@ -327,10 +337,16 @@ export class HistogramV2Component
       countScale.range([0, -this.layout.histogramHeight]);
     }
 
-    return {binScale, d3ColorScale, countScale, temporalScale};
+    return {
+      binScale,
+      d3ColorScale,
+      countScale,
+      temporalScale,
+    };
   }
 
   private renderXAxis() {
+    if (!this.scales) return;
     const {width} = this.layout.contentClientRect;
     const xAxis = d3
       .axisBottom(this.scales.binScale)
@@ -361,14 +377,12 @@ export class HistogramV2Component
     }
   }
 
-  private getYScale() {
-    return this.mode === HistogramMode.OVERLAY
-      ? this.scales.countScale
-      : this.scales.temporalScale;
-  }
-
   private renderYAxis() {
-    const yScale = this.getYScale();
+    if (!this.scales) return;
+    const yScale =
+      this.mode === HistogramMode.OVERLAY
+        ? this.scales.countScale
+        : this.scales.temporalScale;
     const {height} = this.layout.contentClientRect;
     const yAxis = d3.axisRight(yScale).ticks(Math.max(2, height / 15));
     // d3 on DefinitelyTyped is typed incorrectly and it does not allow function
@@ -398,6 +412,7 @@ export class HistogramV2Component
   }
 
   private onMouseMove(mouseEvent: MouseEvent) {
+    if (!this.scales) return;
     const relativeX = mouseEvent.offsetX;
     const relativeY = mouseEvent.offsetY;
 
