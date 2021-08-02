@@ -210,7 +210,10 @@ function serializeCardUniqueInfo(
   return JSON.stringify([plugin, tag, runId || '', sample]);
 }
 
-const {initialState, reducers: routeContextReducer} = createRouteContextedState(
+const {initialState, reducers: routeContextReducer} = createRouteContextedState<
+  MetricsRoutefulState,
+  MetricsRoutelessState
+>(
   {
     // Backend data.
     tagMetadataLoaded: DataLoadState.NOT_LOADED,
@@ -239,8 +242,8 @@ const {initialState, reducers: routeContextReducer} = createRouteContextedState(
 
     tagFilter: '',
     tagGroupExpanded: new Map<string, boolean>(),
-  } as MetricsRoutefulState,
-
+    selectedTime: null,
+  },
   {
     timeSeriesData: {
       scalars: {},
@@ -250,7 +253,7 @@ const {initialState, reducers: routeContextReducer} = createRouteContextedState(
     settings: METRICS_SETTINGS_DEFAULT,
     settingOverrides: {},
     visibleCards: new Set<CardId>(),
-  } as MetricsRoutelessState,
+  },
 
   /** onRouteIdChanged */
   (state) => {
@@ -804,6 +807,27 @@ const reducer = createReducer(
       cardStepIndex: nextCardStepIndexMap,
       cardToPinnedCopy: nextCardToPinnedCopy,
       pinnedCardToOriginal: nextPinnedCardToOriginal,
+    };
+  }),
+  on(actions.timeSelectionChanged, (state, change) => {
+    return {
+      ...state,
+      selectedTime: {
+        start: {step: change.startStep, wallTime: change.startWallTime},
+        end:
+          change.endStep === undefined || change.endWallTime === undefined
+            ? null
+            : {
+                step: change.endStep,
+                wallTime: change.endWallTime,
+              },
+      },
+    };
+  }),
+  on(actions.timeSelectionCleared, (state) => {
+    return {
+      ...state,
+      selectedTime: null,
     };
   })
 );

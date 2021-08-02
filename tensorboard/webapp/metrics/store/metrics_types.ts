@@ -126,6 +126,11 @@ export type CardStepIndexMap = Record<
   number | null
 >;
 
+export interface LinkedTime {
+  start: {step: number; wallTime: number};
+  end: {step: number; wallTime: number} | null;
+}
+
 export type CardToPinnedCard = Map<NonPinnedCardId, PinnedCardId>;
 
 export type PinnedCardToCard = Map<PinnedCardId, NonPinnedCardId>;
@@ -151,6 +156,7 @@ export interface MetricsRoutefulState {
   cardStepIndex: CardStepIndexMap;
   tagFilter: string;
   tagGroupExpanded: Map<string, boolean>;
+  selectedTime: LinkedTime | null;
 }
 
 export interface MetricsSettings {
