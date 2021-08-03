@@ -47,9 +47,7 @@ export class RunsGroupMenuButtonComponent {
     // data pass in the experiment id
     const dialogRef = this.dialog.open(RegexEditDialogContainer, {
       maxHeight: '95vh',
-      minHeight: '500px',
       maxWidth: '80vw',
-      minWidth: '600px',
       data: {experimentIds: this.experimentIds},
     });
   }

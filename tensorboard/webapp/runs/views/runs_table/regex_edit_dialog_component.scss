@@ -62,6 +62,10 @@ ul {
   padding: 0;
 }
 
+mat-form-field {
+  width: 100%;
+}
+
 .group {
   @include tb-theme-foreground-prop(border, border, 1px solid);
   border-radius: 3px;
