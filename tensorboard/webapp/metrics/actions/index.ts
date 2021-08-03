@@ -134,3 +134,17 @@ export const cardPinStateToggled = createAction(
   '[Metrics] Card Pin State Toggled',
   props<{cardId: CardId; canCreateNewPins: boolean; wasPinned: boolean}>()
 );
+
+export const timeSelectionChanged = createAction(
+  '[Metrics] Linked Time Selection Changed',
+  props<{
+    startStep: number;
+    startWallTime: number;
+    endStep?: number;
+    endWallTime?: number;
+  }>()
+);
+
+export const timeSelectionCleared = createAction(
+  '[Metrics] Linked Time Selection Cleared'
+);

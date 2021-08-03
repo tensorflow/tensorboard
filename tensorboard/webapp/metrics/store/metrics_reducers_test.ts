@@ -1787,4 +1787,77 @@ describe('metrics reducers', () => {
       }
     );
   });
+
+  describe('linked time features', () => {
+    describe('#timeSelectionChanged', () => {
+      it('sets the selected times value', () => {
+        const beforeState = buildMetricsState({
+          selectedTime: null,
+        });
+
+        const nextState = reducers(
+          beforeState,
+          actions.timeSelectionChanged({
+            startStep: 2,
+            startWallTime: -1,
+          })
+        );
+
+        expect(nextState.selectedTime).toEqual({
+          start: {
+            step: 2,
+            wallTime: -1,
+          },
+          end: null,
+        });
+      });
+
+      it('sets `end` when both `endStep` and `endWallTime` are present', () => {
+        const state1 = buildMetricsState({
+          selectedTime: null,
+        });
+
+        const state2 = reducers(
+          state1,
+          actions.timeSelectionChanged({
+            startStep: 2,
+            startWallTime: -1,
+            endWallTime: -1,
+          })
+        );
+
+        expect(state2.selectedTime).toEqual({
+          start: {step: 2, wallTime: -1},
+          end: null,
+        });
+
+        const state3 = reducers(
+          state2,
+          actions.timeSelectionChanged({
+            startStep: 2,
+            startWallTime: -1,
+            endWallTime: -1,
+            endStep: 4,
+          })
+        );
+
+        expect(state3.selectedTime).toEqual({
+          start: {step: 2, wallTime: -1},
+          end: {step: 4, wallTime: -1},
+        });
+      });
+    });
+
+    describe('#timeSelectionCleared', () => {
+      it('clears selected time', () => {
+        const beforeState = buildMetricsState({
+          selectedTime: {start: {step: 4, wallTime: -1}, end: null},
+        });
+
+        const nextState = reducers(beforeState, actions.timeSelectionCleared());
+
+        expect(nextState.selectedTime).toBeNull();
+      });
+    });
+  });
 });

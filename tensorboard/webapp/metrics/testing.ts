@@ -89,6 +89,7 @@ function buildBlankState(): MetricsState {
     visibleCards: new Set(),
     tagFilter: '',
     tagGroupExpanded: new Map(),
+    selectedTime: null,
   };
 }
 

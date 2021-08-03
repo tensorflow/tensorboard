@@ -31,6 +31,7 @@ import {
 import * as storeUtils from './metrics_store_internal_utils';
 import {
   CardMetadataMap,
+  LinkedTime,
   MetricsSettings,
   MetricsState,
   METRICS_FEATURE_KEY,
@@ -331,5 +332,12 @@ export const getMetricsTagGroupExpansionState = createSelector(
   selectMetricsState,
   (state: MetricsState, tagGroup: string): boolean => {
     return Boolean(state.tagGroupExpanded.get(tagGroup));
+  }
+);
+
+export const getMetricsSelectedTime = createSelector(
+  selectMetricsState,
+  (state: MetricsState): LinkedTime | null => {
+    return state.selectedTime;
   }
 );

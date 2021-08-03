@@ -705,4 +705,34 @@ describe('metrics selectors', () => {
       );
     });
   });
+
+  describe('getMetricsSelectedTime', () => {
+    beforeEach(() => {
+      selectors.getMetricsSelectedTime.release();
+    });
+
+    it('returns `null` when selected time is null', () => {
+      const state = appStateFromMetricsState(
+        buildMetricsState({
+          selectedTime: null,
+        })
+      );
+      expect(selectors.getMetricsSelectedTime(state)).toBeNull();
+    });
+
+    it('returns value when selected time is present', () => {
+      const state = appStateFromMetricsState(
+        buildMetricsState({
+          selectedTime: {
+            start: {step: 0, wallTime: 2000},
+            end: null,
+          },
+        })
+      );
+      expect(selectors.getMetricsSelectedTime(state)).toEqual({
+        start: {step: 0, wallTime: 2000},
+        end: null,
+      });
+    });
+  });
 });
