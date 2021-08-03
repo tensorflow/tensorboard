@@ -197,13 +197,6 @@ def Respond(
         headers.append(("Expires", "0"))
         headers.append(("Cache-Control", "no-cache, must-revalidate"))
     if mimetype == _HTML_MIMETYPE:
-        _CSP_IMG_DOMAINS_WHITELIST
-        _CSP_STYLE_DOMAINS_WHITELIST
-        _CSP_FONT_DOMAINS_WHITELIST
-        _CSP_FRAME_DOMAINS_WHITELIST
-        _CSP_SCRIPT_DOMAINS_WHITELIST
-        _CSP_CONNECT_DOMAINS_WHITELIST
-
         frags = (
             _CSP_SCRIPT_DOMAINS_WHITELIST
             + [
