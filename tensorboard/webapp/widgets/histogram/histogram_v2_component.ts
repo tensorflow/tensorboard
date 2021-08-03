@@ -13,18 +13,23 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {
+  AfterViewInit,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
   ElementRef,
   Input,
   OnChanges,
+  OnDestroy,
   ViewChild,
 } from '@angular/core';
+import {fromEvent, Subject} from 'rxjs';
+import {takeUntil} from 'rxjs/operators';
 
 import * as d3 from '../../third_party/d3';
 import {HCLColor} from '../../third_party/d3';
 import {
+  Bin,
   ColorScale,
   HistogramData,
   HistogramDatum,
@@ -51,16 +56,38 @@ interface Scales {
   d3ColorScale: D3ColorScale;
 }
 
+export interface TooltipData {
+  xPositionInBinCoord: number;
+  closestDatum: HistogramDatum;
+  // Bin closest to the cursor in the `closestDatum`.
+  closestBin: Bin;
+  xAxis: {
+    position: number;
+    label: string;
+  };
+  yAxis: {
+    position: number;
+    label: string;
+  };
+  value: {
+    position: {x: number; y: number};
+    label: string;
+  };
+}
+
 @Component({
   selector: 'tb-histogram-v2',
   templateUrl: 'histogram_v2_component.ng.html',
   styleUrls: ['histogram_v2_component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class HistogramV2Component implements OnChanges {
+export class HistogramV2Component
+  implements AfterViewInit, OnChanges, OnDestroy {
+  @ViewChild('main') private readonly main!: ElementRef;
   @ViewChild('xAxis') private readonly xAxis!: ElementRef;
   @ViewChild('yAxis') private readonly yAxis!: ElementRef;
   @ViewChild('content') private readonly content!: ElementRef;
+  @ViewChild('histograms') private readonly histograms!: ElementRef;
 
   @Input() mode: HistogramMode = HistogramMode.OFFSET;
 
@@ -78,54 +105,104 @@ export class HistogramV2Component implements OnChanges {
   @Input() data!: HistogramData;
 
   readonly HistogramMode = HistogramMode;
+  tooltipData: null | TooltipData = null;
 
-  private layout: Layout = {
+  private ngUnsubscribe = new Subject<void>();
+  private readonly layout: Layout = {
     histogramHeight: 0,
     contentClientRect: {height: 0, width: 0},
   };
-  private scales: Scales;
-  private domInitialized = false;
+  private scales: Scales | null = null;
+  private formatters = {
+    binNumber: d3.format('.3~s'),
+    count: d3.format('.3n'),
+    // DefinitelyTyped is incorrect that the `timeFormat` only takes `Date` as
+    // an input. Better type it for downstream types.
+    wallTime: (d3.timeFormat('%m/%d %X') as unknown) as (
+      dateSinceEpoch: number
+    ) => string,
+    step: d3.format('.0f'),
+    relative: (timeDiffInMs: number): string => {
+      // TODO(tensorboarad-team): this `.1r` drops important information and
+      // needs to be fixed. For example, `24h` would be shown as `20h`. This
+      // behavior is a carry over from  vz-histogram-timeseries for now.
+      return d3.format('.1r')(timeDiffInMs / 3.6e6) + 'h'; // Convert to hours.
+    },
+  };
+  private domVisible = false;
 
   constructor(private readonly changeDetector: ChangeDetectorRef) {
-    // `data` may not be available at the constructor time. Since we recalculate
-    // the scales on the `ngAfterViewInit`, let's just initialize `scales` with
-    // their default values.
-    this.scales = this.computeScales([]);
+    // `data` and layout are not be available at the constructor time. Since we
+    // recalculate the scales after the view becomes first visible, let's just
+    // initialize `scales` with their default values.
+    // this.scales = this.computeScales([]);
   }
 
   ngOnChanges() {
-    if (this.domInitialized) {
-      this.updateChart();
-    }
+    this.updateChartIfVisible();
+  }
+
+  ngOnDestroy() {
+    this.ngUnsubscribe.next();
+    this.ngUnsubscribe.complete();
   }
 
   ngAfterViewInit() {
-    this.domInitialized = true;
-    this.updateClientRects();
-    this.updateChart();
-    this.changeDetector.detectChanges();
+    fromEvent<MouseEvent>(this.main.nativeElement, 'mousemove', {
+      passive: true,
+    })
+      .pipe(takeUntil(this.ngUnsubscribe))
+      .subscribe((event) => this.onMouseMove(event));
+  }
+
+  getCssTranslate(x: number, y: number): string {
+    return `translate(${x}, ${y})`;
+  }
+
+  getClosestBinFromBinCoordinate(
+    datum: HistogramDatum,
+    xInBinCoord: number
+  ): Bin {
+    if (!datum.bins.length) {
+      return {x: 0, dx: 0, y: 0};
+    }
+
+    const firstBin = datum.bins[0];
+    const lastBin = datum.bins.slice(-1)[0];
+    if (xInBinCoord < firstBin.x) return firstBin;
+    if (xInBinCoord >= lastBin.x + lastBin.dx) return lastBin;
+
+    const closestBin = datum.bins.find((bin) => {
+      return bin.x <= xInBinCoord && xInBinCoord < bin.x + bin.dx;
+    })!;
+    return closestBin;
+  }
+
+  getUiCoordFromBinForContent(bin: Bin): {x: number; y: number} {
+    if (!this.scales) return {x: 0, y: 0};
+    return {
+      x: this.scales.binScale(getXCentroid(bin)),
+      y: this.scales.countScale(bin.y),
+    };
   }
 
   getHistogramPath(datum: HistogramDatum): string {
     // Unlike other methods used in Angular template, if we return non-empty
     // value before the DOM and everything is initialized, this method can emit
     // junk (path with NaN) values causing browser to noisily print warnings.
-    if (!this.domInitialized || !datum.bins.length) return '';
+    if (!this.scales || !datum.bins.length) return '';
     const xScale = this.scales.binScale;
     const yScale = this.scales.countScale;
 
     const firstBin = datum.bins[0];
     const lastBin = datum.bins.slice(-1)[0];
-    const pathBuilder = [
-      `M${xScale(firstBin.x + firstBin.dx * 0.5)},${yScale(0)}`,
-    ];
+    const pathBuilder = [`M${xScale(getXCentroid(firstBin))},${yScale(0)}`];
 
     for (const bin of datum.bins) {
-      pathBuilder.push(`L${xScale(bin.x + bin.dx * 0.5)},${yScale(bin.y)}`);
+      pathBuilder.push(`L${xScale(getXCentroid(bin))},${yScale(bin.y)}`);
     }
 
-    pathBuilder.push(`L${xScale(lastBin.x + lastBin.dx * 0.5)},${yScale(0)}`);
-    pathBuilder.push('Z');
+    pathBuilder.push(`L${xScale(getXCentroid(lastBin))},${yScale(0)}`);
     return pathBuilder.join('');
   }
 
@@ -140,26 +217,36 @@ export class HistogramV2Component implements OnChanges {
     // value before the DOM and everything is initialized, this method can emit
     // junk (translate with NaN) values causing browser to noisily print
     // warnings.
-    if (!this.domInitialized || this.mode === HistogramMode.OVERLAY) return '';
+    if (!this.scales || this.mode === HistogramMode.OVERLAY) {
+      return '';
+    }
     return `translate(0, ${this.scales.temporalScale(
       this.getTimeValue(datum)
     )})`;
   }
 
   getHistogramFill(datum: HistogramDatum): string {
-    return this.scales.d3ColorScale(this.getTimeValue(datum));
+    return this.scales
+      ? this.scales.d3ColorScale(this.getTimeValue(datum))
+      : '';
   }
 
   getGridTickYLocs(): number[] {
-    if (this.mode === HistogramMode.OFFSET) return [];
+    if (!this.scales || this.mode === HistogramMode.OFFSET) return [];
     const yScale = this.scales.countScale;
     return yScale.ticks().map((tick) => yScale(tick));
   }
 
   onResize() {
     this.updateClientRects();
-    this.updateChart();
-    this.changeDetector.detectChanges();
+    this.updateChartIfVisible();
+  }
+
+  onVisibilityChange({visible}: {visible: boolean}) {
+    this.domVisible = visible;
+    if (!visible) return;
+    this.updateClientRects();
+    this.updateChartIfVisible();
   }
 
   private getTimeValue(datum: HistogramDatum): number {
@@ -174,16 +261,20 @@ export class HistogramV2Component implements OnChanges {
   }
 
   private updateClientRects() {
-    if (this.domInitialized && this.content) {
+    if (this.content) {
       this.layout.contentClientRect = this.content.nativeElement.getBoundingClientRect();
       this.layout.histogramHeight = this.layout.contentClientRect.height / 2.5;
     }
   }
 
-  private updateChart() {
+  private updateChartIfVisible() {
+    if (!this.domVisible) return;
     this.scales = this.computeScales(this.data);
+    // Update axes DOM directly using d3 API.
     this.renderXAxis();
     this.renderYAxis();
+    // Update Angular rendered part of the histogram.
+    this.changeDetector.detectChanges();
   }
 
   private computeScales(data: HistogramData): Scales {
@@ -246,19 +337,48 @@ export class HistogramV2Component implements OnChanges {
       countScale.range([0, -this.layout.histogramHeight]);
     }
 
-    return {binScale, d3ColorScale, countScale, temporalScale};
+    return {
+      binScale,
+      d3ColorScale,
+      countScale,
+      temporalScale,
+    };
   }
 
   private renderXAxis() {
+    if (!this.scales) return;
     const {width} = this.layout.contentClientRect;
     const xAxis = d3
       .axisBottom(this.scales.binScale)
       .ticks(Math.max(2, width / 20));
-
+    xAxis.tickFormat(this.formatters.binNumber);
     xAxis(d3.select(this.xAxis.nativeElement));
   }
 
+  private getYAxisFormatter() {
+    // d3 on DefinitelyTyped is typed incorrectly and it does not allow function
+    // that takes (d: Data) => string to be specified in the parameter unlike
+    // the real d3.
+    if (this.mode === HistogramMode.OVERLAY) {
+      return this.formatters.count;
+    }
+    switch (this.timeProperty) {
+      case TimeProperty.WALL_TIME:
+        return this.formatters.wallTime;
+      case TimeProperty.STEP: {
+        return this.formatters.step;
+      }
+      case TimeProperty.RELATIVE: {
+        return this.formatters.relative;
+      }
+      default:
+        const _ = this.timeProperty as never;
+        throw RangeError(`Y axis formatter for ${_} must be implemented`);
+    }
+  }
+
   private renderYAxis() {
+    if (!this.scales) return;
     const yScale =
       this.mode === HistogramMode.OVERLAY
         ? this.scales.countScale
@@ -269,28 +389,69 @@ export class HistogramV2Component implements OnChanges {
     // that takes (d: Data) => string to be specified in the parameter unlike
     // the real d3.
     const anyYAxis = yAxis as any;
-    if (this.mode === HistogramMode.OVERLAY) {
-      anyYAxis.tickFormat(d3.format('.3n'));
-    } else {
-      switch (this.timeProperty) {
-        case TimeProperty.WALL_TIME:
-          anyYAxis.tickFormat(d3.timeFormat('%m/%d %X'));
-          break;
-        case TimeProperty.STEP: {
-          anyYAxis.tickFormat(d3.format('.0f'));
-          break;
-        }
-        case TimeProperty.RELATIVE: {
-          anyYAxis.tickFormat((timeDiffInMs: number): string => {
-            return d3.format('.1r')(timeDiffInMs / 3.6e6) + 'h'; // Convert to hours.
-          });
-          break;
-        }
-      }
-    }
-
+    anyYAxis.tickFormat(this.getYAxisFormatter());
     yAxis(d3.select(this.yAxis.nativeElement));
-    return yScale;
+  }
+
+  private findClosestDatumIndex(mouseEvent: MouseEvent): number {
+    let cursor: Element | null = mouseEvent.target as Element;
+    let child: Element = cursor;
+
+    while (cursor && cursor !== this.histograms.nativeElement) {
+      child = cursor;
+      cursor = cursor.parentElement;
+    }
+    return !cursor ? -1 : Array.from(cursor.children).indexOf(child);
+  }
+
+  // This method is hard to precisely test with DOM. Instead of asserting on
+  // DOM, we are exposing this method so it can be tested with a manual
+  // invocation.
+  onMouseMoveForTestOnly(mouseEvent: MouseEvent) {
+    return this.onMouseMove(mouseEvent);
+  }
+
+  private onMouseMove(mouseEvent: MouseEvent) {
+    if (!this.scales) return;
+    const relativeX = mouseEvent.offsetX;
+    const relativeY = mouseEvent.offsetY;
+
+    const closestIndex = this.findClosestDatumIndex(mouseEvent);
+    if (closestIndex < 0) return;
+
+    const binCoord = this.scales.binScale.invert(relativeX);
+    const closestDatum = this.data[closestIndex];
+    const closestBin = this.getClosestBinFromBinCoordinate(
+      closestDatum,
+      binCoord
+    );
+    this.tooltipData = {
+      value: {
+        position: {x: relativeX, y: relativeY},
+        label:
+          this.mode === HistogramMode.OFFSET
+            ? this.formatters.count(closestBin.y)
+            : `Step: ${this.formatters.step(closestDatum.step)}`,
+      },
+      xAxis: {
+        position: this.getUiCoordFromBinForContent(closestBin).x,
+        label: this.formatters.binNumber(getXCentroid(closestBin)),
+      },
+      yAxis: {
+        position: this.scales.countScale(
+          this.mode === HistogramMode.OFFSET ? 0 : closestBin.y
+        ),
+        label:
+          this.mode === HistogramMode.OFFSET
+            ? this.getYAxisFormatter()(this.getTimeValue(closestDatum))
+            : this.formatters.binNumber(closestBin.y),
+      },
+      xPositionInBinCoord: binCoord,
+      closestDatum,
+      closestBin,
+    };
+
+    this.changeDetector.detectChanges();
   }
 }
 
@@ -327,4 +488,8 @@ function getMinMax<T>(
   }
 
   return {min, max};
+}
+
+function getXCentroid(bin: Bin): number {
+  return bin.x + bin.dx * 0.5;
 }

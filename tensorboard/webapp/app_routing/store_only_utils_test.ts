@@ -13,7 +13,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {getCompareExperimentIdAliasSpec} from './store_only_utils';
+import {
+  getCompareExperimentIdAliasSpec,
+  getExperimentIdsFromNavigation,
+  getRouteIdFromNavigation,
+} from './store_only_utils';
+import {buildRoute} from './testing';
+import {RouteKind} from './types';
 
 describe('app_routing store_only_utils test', () => {
   describe('#getCompareExperimentIdAliasSpec', () => {
@@ -42,6 +48,82 @@ describe('app_routing store_only_utils test', () => {
           experimentIds: '',
         })
       ).toThrow();
+    });
+  });
+
+  describe('#getExperimentIdsFromNavigation', () => {
+    it('returns experiment ids from COMPARE_EXPERIMENT route', () => {
+      const actual = getExperimentIdsFromNavigation(
+        buildRoute({
+          routeKind: RouteKind.COMPARE_EXPERIMENT,
+          params: {experimentIds: 'e1:1,e2:2'},
+          pathname: '/compare',
+          queryParams: [],
+        })
+      );
+      expect(actual).toEqual(['1', '2']);
+    });
+
+    it('returns experiment id from EXPERIMENT route', () => {
+      const actual = getExperimentIdsFromNavigation(
+        buildRoute({
+          routeKind: RouteKind.EXPERIMENT,
+          params: {experimentId: '1234'},
+          pathname: '/experiment',
+          queryParams: [],
+        })
+      );
+      expect(actual).toEqual(['1234']);
+    });
+
+    it('returns null from EXPERIMENTS route', () => {
+      const actual = getExperimentIdsFromNavigation(
+        buildRoute({
+          routeKind: RouteKind.EXPERIMENTS,
+          params: {},
+          pathname: '/experiments',
+          queryParams: [],
+        })
+      );
+      expect(actual).toBeNull();
+    });
+  });
+
+  describe('#getRouteIdFromNavigation', () => {
+    it('returns route ids from COMPARE_EXPERIMENT route', () => {
+      const actual = getRouteIdFromNavigation(
+        buildRoute({
+          routeKind: RouteKind.COMPARE_EXPERIMENT,
+          params: {experimentIds: 'e1:1,e2:2'},
+          pathname: '/compare',
+          queryParams: [],
+        })
+      );
+      expect(actual).toEqual(`${RouteKind.COMPARE_EXPERIMENT}/1,2`);
+    });
+
+    it('returns route id from EXPERIMENT route', () => {
+      const actual = getRouteIdFromNavigation(
+        buildRoute({
+          routeKind: RouteKind.EXPERIMENT,
+          params: {experimentId: '1234'},
+          pathname: '/experiment',
+          queryParams: [],
+        })
+      );
+      expect(actual).toEqual(`${RouteKind.EXPERIMENT}/1234`);
+    });
+
+    it('returns route id from EXPERIMENTS route', () => {
+      const actual = getRouteIdFromNavigation(
+        buildRoute({
+          routeKind: RouteKind.EXPERIMENTS,
+          params: {},
+          pathname: '/experiments',
+          queryParams: [],
+        })
+      );
+      expect(actual).toEqual(`${RouteKind.EXPERIMENTS}`);
     });
   });
 });

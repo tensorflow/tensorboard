@@ -15,37 +15,102 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <div
+  #main
   [class]="'main ' + mode + ' ' + timeProperty"
   detectResize
   (onResize)="onResize()"
+  observeIntersection
+  (onVisibilityChange)="onVisibilityChange($event)"
 >
-  <svg #xAxis class="axis x-axis"></svg>
-  <svg #yAxis class="axis y-axis"></svg>
+  <svg class="axis x-axis">
+    <g #xAxis></g>
+    <g class="tooltip">
+      <!-- d3 places axis label at 9px below from the top edge. -->
+      <g
+        *ngIf="tooltipData"
+        [attr.transform]="getCssTranslate(tooltipData.xAxis.position, 9)"
+      >
+        <text>{{tooltipData.xAxis.label}}</text>
+      </g>
+    </g>
+  </svg>
+  <svg class="axis y-axis">
+    <g #yAxis></g>
+    <!-- d3 places axis label at 9px right from the left edge. -->
+    <g class="tooltip" [attr.transform]="getCssTranslate(9, 0)">
+      <g
+        *ngIf="tooltipData"
+        [attr.transform]="getGroupTransform(tooltipData.closestDatum)"
+      >
+        <text [attr.y]="tooltipData.yAxis.position">
+          {{tooltipData.yAxis.label}}
+        </text>
+      </g>
+    </g>
+  </svg>
   <svg #content class="content">
     <g class="grid">
       <g
         *ngFor="let tick of getGridTickYLocs()"
-        [attr.transform]="'translate(0, ' + tick + ')'"
+        [attr.transform]="getCssTranslate(0, tick)"
       >
         <line class="tick" x2="100%"></line>
       </g>
     </g>
 
-    <g class="histograms">
+    <g #histograms class="histograms">
       <g
         *ngFor="let datum of data; trackBy: trackByWallTime;"
         [attr.transform]="getGroupTransform(datum)"
         class="histogram"
+        [style.color]="getHistogramFill(datum)"
       >
         <line
           *ngIf="mode === HistogramMode.OFFSET"
           class="baseline"
           x2="100%"
         ></line>
-        <path
-          [attr.d]="getHistogramPath(datum)"
-          [style.color]="getHistogramFill(datum)"
-        ></path>
+        <path [attr.d]="getHistogramPath(datum)"></path>
+        <circle
+          *ngIf="tooltipData"
+          r="2"
+          [attr.cx]="getUiCoordFromBinForContent(
+            getClosestBinFromBinCoordinate(
+              datum,
+              tooltipData.xPositionInBinCoord
+            )
+          ).x"
+          [attr.cy]="getUiCoordFromBinForContent(
+            getClosestBinFromBinCoordinate(
+              datum,
+              tooltipData.xPositionInBinCoord
+            )
+          ).y"
+        ></circle>
+      </g>
+    </g>
+
+    <g class="tooltip" *ngIf="tooltipData">
+      <g [attr.transform]="getGroupTransform(tooltipData.closestDatum)">
+        <path [attr.d]="getHistogramPath(tooltipData.closestDatum)"></path>
+        <circle
+          *ngIf="tooltipData.closestBin"
+          r="2"
+          [attr.cx]="getUiCoordFromBinForContent(tooltipData.closestBin).x"
+          [attr.cy]="getUiCoordFromBinForContent(tooltipData.closestBin).y"
+        ></circle>
+      </g>
+      <g
+        class="value-label"
+        [attr.transform]="
+          getCssTranslate(
+            tooltipData.value.position.x,
+            tooltipData.value.position.y
+          )
+        "
+      >
+        <!-- 3px margin is to make the label show nicely beside a cursor. -->
+        <text x="3" y="-3">{{tooltipData.value.label}}</text>
       </g>
     </g>
   </svg>

@@ -41,4 +41,6 @@ export interface FeatureFlags {
   scalarsBatchSize: number | undefined;
   // Whether the Time Series dashboards supports showing Image summary data.
   metricsImageSupportEnabled: boolean;
+  // Whether TimeSeries linked time feature is enabled or not.
+  enabledLinkedTime: boolean;
 }

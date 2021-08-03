@@ -472,4 +472,43 @@ describe('regex_edit_dialog', () => {
       expect(beforeGroupContent).toBe(afterGroupContent);
     }));
   });
+
+  it('renders `and X more` when the grouping result is more than 5', fakeAsync(() => {
+    const fixture = createComponent(['rose']);
+    store.overrideSelector(getRuns, [
+      buildRun({id: 'run1', name: 'run1 name'}),
+      buildRun({id: 'run2', name: 'run2 name'}),
+      buildRun({id: 'run3', name: 'run3 name'}),
+      buildRun({id: 'run4', name: 'run4 name'}),
+      buildRun({id: 'run5', name: 'run5 name'}),
+      buildRun({id: 'run6', name: 'run6 name'}),
+      buildRun({id: 'run6', name: 'run7 name'}),
+    ]);
+    store.overrideSelector(getRunIdsForExperiment, [
+      'run1',
+      'run2',
+      'run3',
+      'run4',
+      'run5',
+      'run6',
+      'run7',
+    ]);
+    fixture.detectChanges();
+
+    const input = fixture.debugElement.query(By.css('input'));
+    const keyArgs: SendKeyArgs = {
+      key: '',
+      prevString: 'run',
+      type: KeyType.CHARACTER,
+      startingCursorIndex: 0,
+    };
+    sendKey(fixture, input, keyArgs);
+    tick(TEST_ONLY.INPUT_CHANGE_DEBOUNCE_INTERVAL_MS);
+    fixture.detectChanges();
+
+    const more = fixture.debugElement.query(By.css('.more'));
+    const list = fixture.debugElement.queryAll(By.css('.group ul li'));
+    expect(list.length).toBe(6);
+    expect(more.nativeElement.textContent).toBe('and 2 more');
+  }));
 });
