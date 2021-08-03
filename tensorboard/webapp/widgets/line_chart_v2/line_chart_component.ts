@@ -23,6 +23,7 @@ import {
   OnDestroy,
   OnInit,
   SimpleChanges,
+  TemplateRef,
   ViewChild,
 } from '@angular/core';
 import {Observable, ReplaySubject} from 'rxjs';
@@ -59,6 +60,13 @@ interface DomDimensions {
   xAxis: {width: number; height: number};
 }
 
+export interface TemplateContext {
+  yScale: Scale;
+  xScale: Scale;
+  viewExtent: Extent;
+  domDimension: {width: number; height: number};
+}
+
 @Component({
   selector: 'line-chart',
   templateUrl: 'line_chart_component.ng.html',
@@ -80,6 +88,14 @@ export class LineChartComponent
 
   @ViewChild('chartEl', {static: false, read: ElementRef})
   private chartEl?: ElementRef<HTMLCanvasElement | SVGElement>;
+
+  /**
+   * Optional ngTemplate that renders on top of line chart (not axis). This
+   * template is rendered on top of interactive layer and can mask other
+   * contents. Do note that this component may not intercept pointer-events.
+   */
+  @Input()
+  customVisTemplate?: TemplateRef<TemplateContext>;
 
   @Input()
   useDarkMode: boolean = false;
