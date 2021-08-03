@@ -72,7 +72,9 @@ export class CardViewContainer {
       map((colorMap) => {
         return (runId: string) => {
           if (!colorMap.hasOwnProperty(runId)) {
-            throw new Error(`[Color scale] unknown runId: ${runId}.`);
+            // Assign white when no colors are assigned to a run by user or
+            // by color grouping scheme.
+            return '#fff';
           }
           return colorMap[runId];
         };
