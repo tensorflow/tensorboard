@@ -25,4 +25,3 @@ export class QueryParams {
     return initialURLSearchParams;
   }
 }
-

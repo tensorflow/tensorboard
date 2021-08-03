@@ -26,18 +26,18 @@ import {
 } from './tb_feature_flag_data_source_types';
 import {QueryParams} from './query_params';
 
-
 const DARK_MODE_MEDIA_QUERY = '(prefers-color-scheme: dark)';
 
 // TODO(tensorboard-team): QueryParamsFeatureFlagDataSource now is a misnomer as
 // it also sources the data from media query as well as the query parameter.
 // Decide how to move forward with more sources of the data + composability.
 @Injectable()
-export class QueryParamsFeatureFlagDataSource implements TBFeatureFlagDataSource {
-  constructor(readonly queryParamsDataSource: QueryParams) {}
+export class QueryParamsFeatureFlagDataSource
+  implements TBFeatureFlagDataSource {
+  constructor(readonly queryParams: QueryParams) {}
 
   getFeatures(enableMediaQuery: boolean = false) {
-    const params = this.queryParamsDataSource.getParams();
+    const params = this.queryParams.getParams();
     // Set feature flag value for query parameters that are explicitly
     // specified. Feature flags for unspecified query parameters remain unset so
     // their values in the underlying state are not inadvertently changed.

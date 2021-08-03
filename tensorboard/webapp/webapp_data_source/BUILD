@@ -91,9 +91,9 @@ tf_ng_module(
 tf_ng_module(
     name = "feature_flag",
     srcs = [
+        "query_params.ts",
         "tb_feature_flag_data_source.ts",
         "tb_feature_flag_module.ts",
-        "query_params.ts",
     ],
     deps = [
         ":feature_flag_types",

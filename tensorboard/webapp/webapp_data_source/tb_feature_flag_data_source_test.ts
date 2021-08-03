@@ -36,14 +36,15 @@ describe('tb_feature_flag_data_source', () => {
         matches: false,
       } as MediaQueryList);
 
-      getParamsSpy = spyOn(TestBed.inject(QueryParams), 'getParams').and.returnValue(new URLSearchParams(''));
+      getParamsSpy = spyOn(
+        TestBed.inject(QueryParams),
+        'getParams'
+      ).and.returnValue(new URLSearchParams(''));
     });
 
     describe('getFeatures', () => {
       it('returns empty values when params are empty', () => {
-        getParamsSpy.and.returnValue(
-          new URLSearchParams('')
-        );
+        getParamsSpy.and.returnValue(new URLSearchParams(''));
         expect(dataSource.getFeatures()).toEqual({});
       });
 
@@ -57,9 +58,7 @@ describe('tb_feature_flag_data_source', () => {
       });
 
       it('returns inColab=false when `tensorboardColab` is empty', () => {
-        getParamsSpy.and.returnValue(
-          new URLSearchParams('tensorboardColab')
-        );
+        getParamsSpy.and.returnValue(new URLSearchParams('tensorboardColab'));
         expect(dataSource.getFeatures()).toEqual({inColab: false});
       });
 
