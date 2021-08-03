@@ -64,3 +64,25 @@ export const navigated = createAction(
   '[App Routing] In App Navigated',
   props<NavigatedPayload>()
 );
+
+/**
+ * Defines possible update to an experiment in the dashboard view.
+ */
+export interface ExperimentUpdate {
+  experimentId: string;
+  name: string | undefined;
+  description: string | undefined;
+  tags: string[] | undefined;
+}
+
+export interface ExperimentsUpdatedPayLoad {
+  experimentUpdates: ExperimentUpdate[];
+}
+
+/**
+ * Created when there are unsaved experiment updates.
+ */
+export const experimentsUpdated = createAction(
+  '[App Routing] In App Experiments Updated',
+  props<ExperimentsUpdatedPayLoad>()
+);
