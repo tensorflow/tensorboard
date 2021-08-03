@@ -24,7 +24,6 @@ import {
   SCALARS_BATCH_SIZE_PARAM_KEY,
   TBFeatureFlagDataSource,
 } from './tb_feature_flag_data_source_types';
-import {FeatureFlags} from '../feature_flag/types';
 import {QueryParams} from './query_params';
 
 
