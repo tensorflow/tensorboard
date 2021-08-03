@@ -17,12 +17,14 @@ import {NgModule} from '@angular/core';
 
 import {TBFeatureFlagDataSource} from './tb_feature_flag_data_source_types';
 import {QueryParamsFeatureFlagDataSource} from './tb_feature_flag_data_source';
+import {QueryParams} from './query_params';
 
 @NgModule({
   providers: [
     // Provide as injectable for other app-level implementations of
     // TBFeatureFlagDataSource.
     QueryParamsFeatureFlagDataSource,
+    QueryParams,
     // Provide as the TBFeatureFlagDataSource implementation for the OSS app.
     {
       provide: TBFeatureFlagDataSource,

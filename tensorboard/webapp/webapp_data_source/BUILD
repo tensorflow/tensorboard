@@ -93,6 +93,7 @@ tf_ng_module(
     srcs = [
         "tb_feature_flag_data_source.ts",
         "tb_feature_flag_module.ts",
+        "query_params.ts",
     ],
     deps = [
         ":feature_flag_types",

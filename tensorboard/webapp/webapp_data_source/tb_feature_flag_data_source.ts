@@ -23,17 +23,7 @@ import {
   TBFeatureFlagDataSource,
 } from './tb_feature_flag_data_source_types';
 import {FeatureFlags} from '../feature_flag/types';
-
-/**
- * Save the initial URL query params, before the AppRoutingEffects initialize.
- */
-const initialURLSearchParams = new URLSearchParams(window.location.search);
-
-const util = {
-  getParams() {
-    return initialURLSearchParams;
-  },
-};
+import {QueryParams} from './query_params';
 
 const DARK_MODE_MEDIA_QUERY = '(prefers-color-scheme: dark)';
 
@@ -41,9 +31,11 @@ const DARK_MODE_MEDIA_QUERY = '(prefers-color-scheme: dark)';
 // it also sources the data from media query as well as the query parameter.
 // Decide how to move forward with more sources of the data + composability.
 @Injectable()
-export class QueryParamsFeatureFlagDataSource extends TBFeatureFlagDataSource {
+export class QueryParamsFeatureFlagDataSource implements TBFeatureFlagDataSource {
+  constructor(readonly queryParamsDataSource: QueryParams) {}
+
   getFeatures(enableMediaQuery: boolean = false) {
-    const params = this.getParams();
+    const params = this.queryParamsDataSource.getParams();
     // Set feature flag value for query parameters that are explicitly
     // specified. Feature flags for unspecified query parameters remain unset so
     // their values in the underlying state are not inadvertently changed.
@@ -82,10 +74,6 @@ export class QueryParamsFeatureFlagDataSource extends TBFeatureFlagDataSource {
     return featureFlags;
   }
 
-  protected getParams() {
-    return util.getParams();
-  }
-
   protected getPartialFeaturesFromMediaQuery(): {
     defaultEnableDarkMode?: boolean;
   } {
@@ -103,4 +91,4 @@ export class QueryParamsFeatureFlagDataSource extends TBFeatureFlagDataSource {
   }
 }
 
-export const TEST_ONLY = {util, DARK_MODE_MEDIA_QUERY};
+export const TEST_ONLY = {DARK_MODE_MEDIA_QUERY};

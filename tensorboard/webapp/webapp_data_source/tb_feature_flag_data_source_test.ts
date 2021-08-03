@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {TestBed} from '@angular/core/testing';
+import {QueryParams} from './query_params';
 
 import {
   QueryParamsFeatureFlagDataSource,
@@ -23,28 +24,31 @@ describe('tb_feature_flag_data_source', () => {
   describe('QueryParamsFeatureFlagDataSource', () => {
     let dataSource: QueryParamsFeatureFlagDataSource;
     let matchMediaSpy: jasmine.Spy;
+    let getParamsSpy: jasmine.Spy;
 
     beforeEach(async () => {
       await TestBed.configureTestingModule({
-        providers: [QueryParamsFeatureFlagDataSource],
+        providers: [QueryParamsFeatureFlagDataSource, QueryParams],
       }).compileComponents();
 
       dataSource = TestBed.inject(QueryParamsFeatureFlagDataSource);
       matchMediaSpy = spyOn(window, 'matchMedia').and.returnValue({
         matches: false,
       } as MediaQueryList);
+
+      getParamsSpy = spyOn(TestBed.inject(QueryParams), 'getParams').and.returnValue(new URLSearchParams(''));
     });
 
     describe('getFeatures', () => {
       it('returns empty values when params are empty', () => {
-        spyOn(TEST_ONLY.util, 'getParams').and.returnValue(
+        getParamsSpy.and.returnValue(
           new URLSearchParams('')
         );
         expect(dataSource.getFeatures()).toEqual({});
       });
 
       it('returns enabledExperimentalPlugins from the query params', () => {
-        spyOn(TEST_ONLY.util, 'getParams').and.returnValue(
+        getParamsSpy.and.returnValue(
           new URLSearchParams('experimentalPlugin=a&experimentalPlugin=b')
         );
         expect(dataSource.getFeatures()).toEqual({
@@ -53,28 +57,28 @@ describe('tb_feature_flag_data_source', () => {
       });
 
       it('returns inColab=false when `tensorboardColab` is empty', () => {
-        spyOn(TEST_ONLY.util, 'getParams').and.returnValue(
+        getParamsSpy.and.returnValue(
           new URLSearchParams('tensorboardColab')
         );
         expect(dataSource.getFeatures()).toEqual({inColab: false});
       });
 
       it('returns inColab=true when `tensorboardColab` is`true`', () => {
-        spyOn(TEST_ONLY.util, 'getParams').and.returnValue(
+        getParamsSpy.and.returnValue(
           new URLSearchParams('tensorboardColab=true')
         );
         expect(dataSource.getFeatures()).toEqual({inColab: true});
       });
 
       it('returns inColab=false when `tensorboardColab` is `false`', () => {
-        spyOn(TEST_ONLY.util, 'getParams').and.returnValue(
+        getParamsSpy.and.returnValue(
           new URLSearchParams('tensorboardColab=false')
         );
         expect(dataSource.getFeatures()).toEqual({inColab: false});
       });
 
       it('returns scalarsBatchSize from the query params', () => {
-        spyOn(TEST_ONLY.util, 'getParams').and.returnValue(
+        getParamsSpy.and.returnValue(
           new URLSearchParams('scalarsBatchSize=12')
         );
         expect(dataSource.getFeatures()).toEqual({
@@ -83,7 +87,7 @@ describe('tb_feature_flag_data_source', () => {
       });
 
       it('returns enableColorGroup from the query params', () => {
-        spyOn(TEST_ONLY.util, 'getParams').and.returnValues(
+        getParamsSpy.and.returnValues(
           new URLSearchParams('enableColorGroup=false'),
           new URLSearchParams('enableColorGroup='),
           new URLSearchParams('enableColorGroup=true'),
@@ -96,7 +100,7 @@ describe('tb_feature_flag_data_source', () => {
       });
 
       it('returns enableColorGroupByRegex from the query params', () => {
-        spyOn(TEST_ONLY.util, 'getParams').and.returnValues(
+        getParamsSpy.and.returnValues(
           new URLSearchParams('enableColorGroupByRegex=false'),
           new URLSearchParams('enableColorGroupByRegex='),
           new URLSearchParams('enableColorGroupByRegex=true'),
@@ -117,7 +121,7 @@ describe('tb_feature_flag_data_source', () => {
       });
 
       it('returns all flag values when they are all set', () => {
-        spyOn(TEST_ONLY.util, 'getParams').and.returnValue(
+        getParamsSpy.and.returnValue(
           new URLSearchParams(
             'experimentalPlugin=a' +
               '&tensorboardColab' +
