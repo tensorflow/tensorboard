@@ -35,7 +35,6 @@ import {
   TimeProperty,
 } from '../../../widgets/histogram/histogram_types';
 import {buildNormalizedHistograms} from '../../../widgets/histogram/histogram_util';
-import {ResizeDetectorTestingModule} from '../../../widgets/resize_detector_testing_module';
 import {TruncatedPathModule} from '../../../widgets/text/truncated_path_module';
 import {PluginType} from '../../data_source';
 import * as selectors from '../../store/metrics_selectors';
@@ -81,7 +80,6 @@ function createHistogramCardContainer(): ComponentFixture<
 describe('histogram card', () => {
   let store: MockStore<State>;
   let selectSpy: jasmine.Spy;
-  let resizeTester: ResizeDetectorTestingModule;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -89,7 +87,6 @@ describe('histogram card', () => {
         NoopAnimationsModule,
         MatIconTestingModule,
         MatProgressSpinnerModule,
-        ResizeDetectorTestingModule,
         RunNameModule,
         TruncatedPathModule,
       ],
@@ -107,7 +104,6 @@ describe('histogram card', () => {
 
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
     selectSpy = spyOn(store, 'select').and.callThrough();
-    resizeTester = TestBed.inject(ResizeDetectorTestingModule);
     store.overrideSelector(getExperimentIdForRunId, null);
     store.overrideSelector(getExperimentIdToAliasMap, {});
     store.overrideSelector(getRun, null);
@@ -271,53 +267,6 @@ describe('histogram card', () => {
       button.nativeElement.click();
       expect(onFullWidthChanged.calls.allArgs()).toEqual([[true], [false]]);
       expect(onFullHeightChanged.calls.allArgs()).toEqual([[true], [false]]);
-    });
-  });
-
-  describe('resize', () => {
-    let redrawSpy: jasmine.Spy;
-
-    function createCard(): ComponentFixture<HistogramCardContainer> {
-      const fixture = createHistogramCardContainer();
-      fixture.detectChanges();
-
-      const component = fixture.debugElement.query(
-        By.directive(HistogramCardComponent)
-      );
-      const widget = fixture.debugElement.query(
-        By.directive(TestableHistogramWidget)
-      );
-      // HACK: we are using viewChild in HistogramCardComponent and there is
-      // no good way to provide a stub implementation. Manually set what
-      // would be populated by ViewChild decorator.
-      component.componentInstance.histogramComponent = widget.componentInstance;
-
-      redrawSpy = spyOn(widget.componentInstance, 'redraw');
-      return fixture;
-    }
-
-    beforeEach(() => {
-      provideMockCardSeriesData(selectSpy, PluginType.HISTOGRAMS, 'card1');
-    });
-
-    it('calls redraw on resize', () => {
-      const fixture = createCard();
-
-      resizeTester.simulateResize(fixture);
-
-      expect(redrawSpy).toHaveBeenCalledTimes(1);
-    });
-
-    it('does not call the redraw when the card is invisible', () => {
-      const fixture = createCard();
-
-      fixture.nativeElement.style.display = 'none';
-      resizeTester.simulateResize(fixture);
-      expect(redrawSpy).not.toHaveBeenCalled();
-
-      fixture.nativeElement.style.display = 'block';
-      resizeTester.simulateResize(fixture);
-      expect(redrawSpy).toHaveBeenCalledTimes(1);
     });
   });
 });

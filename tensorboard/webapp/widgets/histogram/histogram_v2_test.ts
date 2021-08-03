@@ -59,7 +59,7 @@ function buildHistogramDatum(
 @Component({
   selector: 'testable-tb-histogram',
   template: `
-    <tb-histogram-v2
+    <tb-histogram
       #instance
       [mode]="mode"
       [timeProperty]="timeProperty"
@@ -67,11 +67,11 @@ function buildHistogramDatum(
       [name]="name"
       [data]="data"
     >
-    </tb-histogram-v2>
+    </tb-histogram>
   `,
   styles: [
     `
-      tb-histogram-v2 {
+      tb-histogram {
         height: 100px;
         position: fixed;
         width: 100px;
@@ -101,7 +101,7 @@ class TestableComponent {
   }
 }
 
-describe('histogram v2 test', () => {
+describe('histogram test', () => {
   const byCss = {
     X_AXIS: By.css('.x-axis'),
     Y_AXIS: By.css('.y-axis'),

@@ -63,9 +63,6 @@ limitations under the License.
   [mode]="mode"
   [timeProperty]="timeProperty(xAxisType)"
   [colorScale]="runColorScale"
-  detectResize
-  [resizeEventDebouncePeriodInMs]="RESIZE_REDRAW_DEBOUNCE_TIME_IN_MS"
-  (onResize)="redraw()"
 ></tb-histogram>
 <ng-template #noData>
   <div *ngIf="loadState === DataLoadState.FAILED" class="empty-message">
