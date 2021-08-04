@@ -88,6 +88,10 @@ export class PageTitleContainer {
         // (it's an empty string when the `--window_title` flag is not set)
         return env.window_title;
       }
+      if (this.customBrandName === DEFAULT_BRAND_NAME) {
+        // OSS TensorBoard page titles are set to `TensorBoard`.
+        return DEFAULT_BRAND_NAME;
+      }
       if (routeKind === RouteKind.EXPERIMENT && experimentName) {
         return `${experimentName} - ${tbBrandName}`;
       }

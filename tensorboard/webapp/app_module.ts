@@ -24,6 +24,7 @@ import {AppRoutingModule} from './app_routing/app_routing_module';
 import {RouteRegistryModule} from './app_routing/route_registry_module';
 import {AppRoutingViewModule} from './app_routing/views/app_routing_view_module';
 import {CoreModule} from './core/core_module';
+import {TB_BRAND_NAME} from './core/types';
 import {DarkModeSupportModule} from './core/views/dark_mode_supporter_module';
 import {HashStorageModule} from './core/views/hash_storage_module';
 import {PageTitleModule} from './core/views/page_title_module';
@@ -69,6 +70,12 @@ import {TensorBoardWrapperModule} from './tb_wrapper/tb_wrapper_module';
     SettingsModule,
     StoreModule,
     OssPluginsModule,
+  ],
+  providers: [
+    {
+      provide: TB_BRAND_NAME,
+      useValue: 'TensorBoard',
+    },
   ],
   bootstrap: [AppContainer],
 })
