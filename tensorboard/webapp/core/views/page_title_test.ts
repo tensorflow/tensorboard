@@ -218,11 +218,11 @@ describe('page title test for OSS TensorBoard', () => {
   it('uses `TensorBoard` for experiment page title', () => {
     const spy = spyOn(TEST_ONLY.utils, 'setDocumentTitle');
     store.overrideSelector(getRouteKind, RouteKind.EXPERIMENT);
-    store.overrideSelector(getExperimentIdsFromRoute, ['123']);
+    store.overrideSelector(getExperimentIdsFromRoute, ['defaultExperimentId']);
     store.overrideSelector(
       getExperiment,
       buildExperiment({
-        name: 'My name will not be shown in the title',
+        name: '', // OSS default experiment name is ''
       })
     );
     const fixture = TestBed.createComponent(TestingComponent);

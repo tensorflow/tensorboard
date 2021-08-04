@@ -112,7 +112,6 @@ tf_ng_module(
         "//tensorboard/webapp/app_routing:route_registry",
         "//tensorboard/webapp/app_routing/views",
         "//tensorboard/webapp/core",
-        "//tensorboard/webapp/core:types",
         "//tensorboard/webapp/core/views:dark_mode_supporter",
         "//tensorboard/webapp/core/views:hash_storage",
         "//tensorboard/webapp/core/views:page_title",
