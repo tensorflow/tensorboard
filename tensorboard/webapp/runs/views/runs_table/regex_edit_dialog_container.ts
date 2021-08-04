@@ -46,6 +46,16 @@ const INPUT_CHANGE_DEBOUNCE_INTERVAL_MS = 500;
     (onSave)="onSave($event)"
     (regexInputOnChange)="onRegexInputOnChange($event)"
   ></regex-edit-dialog-component>`,
+  styles: [
+    `
+      :host,
+      regex-edit-dialog-component {
+        display: block;
+        height: 100%;
+        width: 100%;
+      }
+    `,
+  ],
 })
 export class RegexEditDialogContainer {
   private readonly experimentIds: string[];
