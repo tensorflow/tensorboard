@@ -254,6 +254,32 @@ tensorboard in inspect mode to inspect the contents of your event files.
 
 `tensorboard --inspect --logdir DIRECTORY_PATH`
 
+The output for an event file corresponding to a blank TensorBoard may
+still sometimes show a few steps, representing a few initial events that
+aren't shown by TensorBoard (for example, when using the Keras TensorBoard callback):
+
+```
+tensor
+   first_step           0
+   last_step            2
+   max_step             2
+   min_step             0
+   num_steps            2
+   outoforder_steps     [(2, 0), (2, 0), (2, 0)]
+```
+
+In contrast, the output for an event file with more data might look like this:
+
+```
+tensor
+   first_step           0
+   last_step            55
+   max_step             250
+   min_step             0
+   num_steps            60
+   outoforder_steps     [(2, 0), (2, 0), (2, 0), (2, 0), (50, 9), (100, 19), (150, 29), (200, 39), (250, 49)]
+```
+
 ### TensorBoard is showing only some of my data, or isn't properly updating!
 
 > **Update:** After [2.3.0 release][2-3-0], TensorBoard no longer auto reloads
