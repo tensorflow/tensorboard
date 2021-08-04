@@ -18,7 +18,7 @@ import {
   getExperimentIdsFromRouteParams,
   getRouteId as getRouteIdFromKindAndParams,
 } from '../internal_utils';
-import {CompareRouteParams, Route, RouteKind} from '../types';
+import {CompareRouteParams, DirtyUpdates, Route, RouteKind} from '../types';
 
 import {
   APP_ROUTING_FEATURE_KEY,
