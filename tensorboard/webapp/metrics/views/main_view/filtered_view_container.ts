@@ -74,7 +74,7 @@ export class FilteredViewContainer {
     }),
     map(([cardList, tagFilter]) => {
       try {
-        return {cardList, regex: new RegExp(tagFilter)};
+        return {cardList, regex: new RegExp(tagFilter, 'i')};
       } catch (e) {
         return {cardList, regex: null};
       }

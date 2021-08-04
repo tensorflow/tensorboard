@@ -69,7 +69,7 @@ export class MetricsFilterInputContainer {
       map<[string[], string], [string[], RegExp | null]>(
         ([tags, tagFilter]) => {
           try {
-            const regex = new RegExp(tagFilter);
+            const regex = new RegExp(tagFilter, 'i');
             return [tags, regex];
           } catch (e) {
             return [tags, null];

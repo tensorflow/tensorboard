@@ -938,6 +938,18 @@ describe('metrics main view', () => {
       ]);
     });
 
+    fit('ignores case when matching the regex', () => {
+      store.overrideSelector(selectors.getMetricsTagFilter, 'taga');
+      const fixture = TestBed.createComponent(MainViewContainer);
+      fixture.detectChanges();
+
+      expect(getCardGroupNames(getFilterViewContainer(fixture))).toEqual([]);
+      expect(getFilterviewCardContents(fixture)).toEqual([
+        'scalars: card1',
+        'images: card2',
+      ]);
+    });
+
     it('hides the main, pinned views while the filter view is active', () => {
       store.overrideSelector(selectors.getMetricsTagFilter, 'tagA');
       const fixture = TestBed.createComponent(MainViewContainer);

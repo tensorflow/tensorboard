@@ -155,6 +155,21 @@ describe('metrics filter input', () => {
       ).toEqual(['tagA/Images', 'tagB/meow/cat']);
     });
 
+    it('filters by regex ignoring casing', () => {
+      store.overrideSelector(selectors.getMetricsTagFilter, '[ib]');
+      const fixture = TestBed.createComponent(MetricsFilterInputContainer);
+      fixture.detectChanges();
+
+      const input = fixture.debugElement.query(By.css('input'));
+      input.nativeElement.focus();
+      fixture.detectChanges();
+
+      const options = getAutocompleteOptions(overlayContainer);
+      expect(
+        options.map((option) => option.nativeElement.textContent)
+      ).toEqual(['tagA/Images', 'tagB/meow/cat']);
+    });
+
     it('responds to input changes', () => {
       store.overrideSelector(selectors.getMetricsTagFilter, '');
       const fixture = TestBed.createComponent(MetricsFilterInputContainer);
