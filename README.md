@@ -254,8 +254,8 @@ tensorboard in inspect mode to inspect the contents of your event files.
 
 `tensorboard --inspect --logdir DIRECTORY_PATH`
 
-The output for an event file corresponding to a blank TensorBoard may 
-still sometimes show a few steps, representing a few initial events that 
+The output for an event file corresponding to a blank TensorBoard may
+still sometimes show a few steps, representing a few initial events that
 aren't shown by TensorBoard (for example, when using the Keras TensorBoard callback):
 
 ```
