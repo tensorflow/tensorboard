@@ -267,7 +267,7 @@ def run_all(logdir, steps, thresholds, verbose=False):
 
 def main(unused_argv):
     print("Saving output to %s." % FLAGS.logdir)
-    run_all(FLAGS.logdir, FLAGS.steps, 50, verbose=True)
+    run_all(FLAGS.logdir, FLAGS.steps, 51, verbose=True)
     print("Done. Output saved to %s." % FLAGS.logdir)
 
 

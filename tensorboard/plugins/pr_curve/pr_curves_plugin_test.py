@@ -214,7 +214,7 @@ class PrCurvesPluginTest(tf.test.TestCase):
             expected_false_positives=[300, 201, 38, 2],
             expected_true_negatives=[0, 99, 262, 298],
             expected_false_negatives=[0, 24, 105, 144],
-            expected_thresholds=[0.2, 0.4, 0.6, 0.8],
+            expected_thresholds=[0.0, 0.25, 0.5, 0.75],
             pr_curve_entry=entries[0],
         )
         self.validatePrCurveEntry(
@@ -225,7 +225,7 @@ class PrCurvesPluginTest(tf.test.TestCase):
             expected_false_positives=[300, 204, 39, 6],
             expected_true_negatives=[0, 96, 261, 294],
             expected_false_negatives=[0, 22, 105, 146],
-            expected_thresholds=[0.2, 0.4, 0.6, 0.8],
+            expected_thresholds=[0.0, 0.25, 0.5, 0.75],
             pr_curve_entry=entries[1],
         )
         self.validatePrCurveEntry(
@@ -236,7 +236,7 @@ class PrCurvesPluginTest(tf.test.TestCase):
             expected_false_positives=[300, 185, 38, 2],
             expected_true_negatives=[0, 115, 262, 298],
             expected_false_negatives=[0, 30, 111, 146],
-            expected_thresholds=[0.2, 0.4, 0.6, 0.8],
+            expected_thresholds=[0.0, 0.25, 0.5, 0.75],
             pr_curve_entry=entries[2],
         )
 
@@ -252,7 +252,7 @@ class PrCurvesPluginTest(tf.test.TestCase):
             expected_false_positives=[150, 105, 18, 0],
             expected_true_negatives=[0, 45, 132, 150],
             expected_false_negatives=[0, 11, 54, 70],
-            expected_thresholds=[0.2, 0.4, 0.6, 0.8],
+            expected_thresholds=[0.0, 0.25, 0.5, 0.75],
             pr_curve_entry=entries[0],
         )
         self.validatePrCurveEntry(
@@ -263,7 +263,7 @@ class PrCurvesPluginTest(tf.test.TestCase):
             expected_false_positives=[150, 99, 21, 3],
             expected_true_negatives=[0, 51, 129, 147],
             expected_false_negatives=[0, 13, 54, 74],
-            expected_thresholds=[0.2, 0.4, 0.6, 0.8],
+            expected_thresholds=[0.0, 0.25, 0.5, 0.75],
             pr_curve_entry=entries[1],
         )
         self.validatePrCurveEntry(
@@ -274,7 +274,7 @@ class PrCurvesPluginTest(tf.test.TestCase):
             expected_false_positives=[150, 92, 20, 1],
             expected_true_negatives=[0, 58, 130, 149],
             expected_false_negatives=[0, 14, 59, 73],
-            expected_thresholds=[0.2, 0.4, 0.6, 0.8],
+            expected_thresholds=[0.0, 0.25, 0.5, 0.75],
             pr_curve_entry=entries[2],
         )
 

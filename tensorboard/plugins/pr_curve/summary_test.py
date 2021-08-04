@@ -285,6 +285,69 @@ class PrCurveTest(tf.test.TestCase):
         values = tensor_util.make_ndarray(pb.value[0].tensor)
         self.verify_float_arrays_are_equal(expected, values)
 
+    def test_predictions_at_thresholds(self):
+        num_thresholds = 5
+        # For 5 thresholds, we expect the thresholds used to be:
+        # [0.0, 0.25, 0.5, 0.75, 1.0]
+        pb = self.compute_and_check_summary_pb(
+            name="foo",
+            labels=np.array([True] * num_thresholds),
+            predictions=np.float32([0.0, 0.25, 0.5, 0.75, 1.0]),
+            num_thresholds=num_thresholds,
+        )
+        expected = [
+            [5.0, 4.0, 3.0, 2.0, 1.0],  # TP
+            [0.0, 0.0, 0.0, 0.0, 0.0],  # FP
+            [0.0, 0.0, 0.0, 0.0, 0.0],  # TN
+            [0.0, 1.0, 2.0, 3.0, 4.0],  # FN
+            [1.0, 1.0, 1.0, 1.0, 1.0],  # Precision
+            [1.0, 0.8, 0.6, 0.4, 0.2],  # Recall
+        ]
+        values = tensor_util.make_ndarray(pb.value[0].tensor)
+        self.verify_float_arrays_are_equal(expected, values)
+
+    def test_predictions_above_thresholds(self):
+        num_thresholds = 5
+        # For 5 thresholds, we expect the thresholds used to be:
+        # [0.0, 0.25, 0.5, 0.75, 1.0]
+        pb = self.compute_and_check_summary_pb(
+            name="foo",
+            labels=np.array([True] * num_thresholds),
+            predictions=np.float32([0.01, 0.26, 0.51, 0.76, 1.0]),
+            num_thresholds=num_thresholds,
+        )
+        expected = [
+            [5.0, 4.0, 3.0, 2.0, 1.0],  # TP
+            [0.0, 0.0, 0.0, 0.0, 0.0],  # FP
+            [0.0, 0.0, 0.0, 0.0, 0.0],  # TN
+            [0.0, 1.0, 2.0, 3.0, 4.0],  # FN
+            [1.0, 1.0, 1.0, 1.0, 1.0],  # Precision
+            [1.0, 0.8, 0.6, 0.4, 0.2],  # Recall
+        ]
+        values = tensor_util.make_ndarray(pb.value[0].tensor)
+        self.verify_float_arrays_are_equal(expected, values)
+
+    def test_predictions_below_thresholds(self):
+        num_thresholds = 5
+        # For 5 thresholds, we expect the thresholds used to be:
+        # [0.0, 0.25, 0.5, 0.75, 1.0]
+        pb = self.compute_and_check_summary_pb(
+            name="foo",
+            labels=np.array([True] * num_thresholds),
+            predictions=np.float32([0.0, 0.24, 0.49, 0.74, 0.99]),
+            num_thresholds=num_thresholds,
+        )
+        expected = [
+            [5.0, 3.0, 2.0, 1.0, 0.0],  # TP
+            [0.0, 0.0, 0.0, 0.0, 0.0],  # FP
+            [0.0, 0.0, 0.0, 0.0, 0.0],  # TN
+            [0.0, 2.0, 3.0, 4.0, 5.0],  # FN
+            [1.0, 1.0, 1.0, 1.0, 0.0],  # Precision
+            [1.0, 0.6, 0.4, 0.2, 0.0],  # Recall
+        ]
+        values = tensor_util.make_ndarray(pb.value[0].tensor)
+        self.verify_float_arrays_are_equal(expected, values)
+
     def test_raw_data(self):
         # We pass these raw counts and precision/recall values.
         name = "foo"
