@@ -172,7 +172,7 @@ expressions in the box in the top-left of the dashboard.
 
 ### Histogram Dashboard
 
-The HistogramDashboard displays how the statistical distribution of a Tensor
+The Histogram Dashboard displays how the statistical distribution of a Tensor
 has varied over time. It visualizes data recorded via `tf.summary.histogram`.
 Each chart shows temporal "slices" of data, where each slice is a histogram of
 the tensor at a given step. It's organized with the oldest timestep in the back,
@@ -234,6 +234,23 @@ projector tutorial](https://www.tensorflow.org/tutorials/text/word_embeddings).
 
 The Text Dashboard displays text snippets saved via `tf.summary.text`. Markdown
 features including hyperlinks, lists, and tables are all supported.
+
+### Time Series Dashboard (new)
+
+The Time Series Dashboard shows a unified interface containing all your Scalars,
+Histograms, and Images saved via `tf.summary.scalar`, `tf.summary.image`, or
+`tf.summary.histogram`. It enables viewing your 'accuracy' line chart side by
+side with activation histograms and training example images, for example.
+
+Features include:
+
+* Custom run colors: click on the colored circles in the run selector to change
+a run's color.
+
+* Pinned cards: click the 'pin' icon on any card to add it to the pinned section
+at the top for quick comparison.
+
+For more details, see [Time Series docs](./docs/timeseries_dashboard.md).
 
 # Frequently Asked Questions
 
