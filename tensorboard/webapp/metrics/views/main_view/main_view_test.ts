@@ -938,7 +938,7 @@ describe('metrics main view', () => {
       ]);
     });
 
-    fit('ignores case when matching the regex', () => {
+    it('ignores case when matching the regex', () => {
       store.overrideSelector(selectors.getMetricsTagFilter, 'taga');
       const fixture = TestBed.createComponent(MainViewContainer);
       fixture.detectChanges();
