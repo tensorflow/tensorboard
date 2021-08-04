@@ -187,3 +187,47 @@ describe('page title test with custom brand names', () => {
     expect(spy).toHaveBeenCalledWith('TensorBoard.corp');
   });
 });
+
+describe('page title test for OSS TensorBoard', () => {
+  let store: MockStore<State>;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [PageTitleModule],
+      declarations: [TestingComponent],
+      providers: [
+        provideMockStore(),
+        {
+          provide: TB_BRAND_NAME,
+          useValue: 'TensorBoard',
+        },
+      ],
+      schemas: [NO_ERRORS_SCHEMA],
+    }).compileComponents();
+
+    store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
+    store.overrideSelector(getRouteKind, RouteKind.EXPERIMENTS);
+    store.overrideSelector(getExperimentIdsFromRoute, []);
+    store.overrideSelector(getExperiment, null);
+    store.overrideSelector(getEnvironment, {
+      data_location: 'my-location',
+      window_title: '',
+    });
+  });
+
+  it('uses `TensorBoard` for experiment page title', () => {
+    const spy = spyOn(TEST_ONLY.utils, 'setDocumentTitle');
+    store.overrideSelector(getRouteKind, RouteKind.EXPERIMENT);
+    store.overrideSelector(getExperimentIdsFromRoute, ['defaultExperimentId']);
+    store.overrideSelector(
+      getExperiment,
+      buildExperiment({
+        name: '', // OSS default experiment name is ''
+      })
+    );
+    const fixture = TestBed.createComponent(TestingComponent);
+    fixture.detectChanges();
+
+    expect(spy).toHaveBeenCalledWith('TensorBoard');
+  });
+});
