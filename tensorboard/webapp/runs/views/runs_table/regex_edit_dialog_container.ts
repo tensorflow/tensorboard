@@ -51,8 +51,8 @@ const INPUT_CHANGE_DEBOUNCE_INTERVAL_MS = 500;
       :host,
       regex-edit-dialog-component {
         display: block;
-        width: 100;
         height: 100%;
+        width: 100%;
       }
     `,
   ],
