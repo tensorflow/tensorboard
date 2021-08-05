@@ -76,6 +76,19 @@ describe('settings reducer', () => {
       expect(nextState.settings.reloadPeriodInMs).toBe(50000);
     });
 
+    it('takes the minimum value, 30 seconds', () => {
+      const state = createSettingsState({
+        settings: createSettings({reloadPeriodInMs: 1}),
+      });
+
+      const nextState = reducers(
+        state,
+        actions.changeReloadPeriod({periodInMs: 30000})
+      );
+
+      expect(nextState.settings.reloadPeriodInMs).toBe(30000);
+    });
+
     it('ignores the action when periodInMs is non-positive', () => {
       const baseState = createSettingsState({
         settings: createSettings({reloadPeriodInMs: 1}),
@@ -92,6 +105,19 @@ describe('settings reducer', () => {
         actions.changeReloadPeriod({periodInMs: -1000})
       );
       expect(state2.settings.reloadPeriodInMs).toBe(1);
+    });
+
+    it('ignroes the action when new time is smaller than minimum value', () => {
+      const state = createSettingsState({
+        settings: createSettings({reloadPeriodInMs: 50000}),
+      });
+
+      const nextState = reducers(
+        state,
+        actions.changeReloadPeriod({periodInMs: 5000})
+      );
+
+      expect(nextState.settings.reloadPeriodInMs).toBe(50000);
     });
 
     it('does not set the reloadPeriodInMs when settings not loaded', () => {

@@ -28,9 +28,10 @@ import {
   AbstractControl,
   ValidatorFn,
 } from '@angular/forms';
-
 import {Subject} from 'rxjs';
 import {takeUntil, debounceTime, filter} from 'rxjs/operators';
+
+import {MIN_RELOAD_PERIOD_IN_MS} from '../_redux/settings_reducers';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
@@ -68,7 +69,8 @@ export function createIntegerValidator(): ValidatorFn {
             reloadPeriodControl.hasError('required')
           "
         >
-          Reload period has to be minimum of 15 seconds.
+          Reload period has to be minimum of
+          {{ MIN_RELOAD_PERIOD_IN_S }} seconds.
         </mat-error>
       </div>
     </div>
@@ -97,9 +99,10 @@ export class SettingsDialogComponent implements OnInit, OnDestroy, OnChanges {
   @Output() reloadPeriodInMsChanged = new EventEmitter<number>();
   @Output() pageSizeChanged = new EventEmitter<number>();
 
+  readonly MIN_RELOAD_PERIOD_IN_S = MIN_RELOAD_PERIOD_IN_MS / 1000;
   readonly reloadPeriodControl = new FormControl(15, [
     Validators.required,
-    Validators.min(15),
+    Validators.min(this.MIN_RELOAD_PERIOD_IN_S),
   ]);
   readonly paginationControl = new FormControl(1, [
     Validators.required,
