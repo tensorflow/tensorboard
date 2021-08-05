@@ -20,30 +20,20 @@ import {
 } from './dirty_updates_registry_types';
 
 @NgModule()
-export class DirtyUpdatesRegistryModule<State, Updates> {
-  private readonly dirtyUpdatesSelectors: DirtyUpdatesSelector<
-    State,
-    Updates
-  >[] = [];
-
+export class DirtyUpdatesRegistryModule<State> {
   constructor(
     @Optional()
     @Inject(DIRTY_UPDATES_TOKEN)
-    dirtyUpdatesSelectorFactories: Array<
-      DirtyUpdatesSelector<State, Updates>
+    private readonly dirtyUpdatesSelectorFactories: Array<
+      DirtyUpdatesSelector<State>
     > | null
-  ) {
-    if (!dirtyUpdatesSelectorFactories) {
-      return;
-    }
-    this.dirtyUpdatesSelectors = dirtyUpdatesSelectorFactories;
-  }
+  ) {}
 
   /**
    * Returns Ngrx selectors for getting dirty updates.
    */
-  getDirtyUpdatesSelectors(): DirtyUpdatesSelector<State, Updates>[] {
-    return this.dirtyUpdatesSelectors ?? [];
+  getDirtyUpdatesSelectors(): DirtyUpdatesSelector<State>[] {
+    return this.dirtyUpdatesSelectorFactories ?? [];
   }
 
   /**
@@ -51,20 +41,25 @@ export class DirtyUpdatesRegistryModule<State, Updates> {
    *
    * Example usage:
    *
+   * function getDirtyUpdatesSelector() {
+   *   return createSelector(getDirtyExperimentIds, (experimentIds) => {
+   *     return {experimentIds: experimentIds}
+   *   });
+   * }
+   *
    * @NgModule({
    *   imports: [
-   *     DirtyUpdatesRegistryModule.registerDirtyUpdates(
-   *       createSelector(baseSelector, (values) => {
-   *         return {experimentIds: values};
-   *       }),
+   *     DirtyUpdatesRegistryModule.registerDirtyUpdates<
+   *       State
+   *     >(getDirtyUpdatesSelector),
    *     ),
    *   ],
    * })
    * export class MyModule {}
    */
-  static registerDirtyUpdates<State, Updates>(
-    dirtyUpdateSelectorFactory: DirtyUpdatesSelector<State, Updates>
-  ): ModuleWithProviders<DirtyUpdatesRegistryModule<any, {}>> {
+  static registerDirtyUpdates<State>(
+    dirtyUpdateSelectorFactory: () => DirtyUpdatesSelector<State>
+  ): ModuleWithProviders<DirtyUpdatesRegistryModule<any>> {
     return {
       ngModule: DirtyUpdatesRegistryModule,
       providers: [

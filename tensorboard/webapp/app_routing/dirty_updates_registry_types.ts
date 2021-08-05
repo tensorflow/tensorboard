@@ -17,10 +17,7 @@ import {Selector} from '@ngrx/store';
 
 import {DirtyUpdates} from './types';
 
-export type DirtyUpdatesSelector<
-  State,
-  Updates extends DirtyUpdates
-> = Selector<State, Updates>;
+export type DirtyUpdatesSelector<State> = Selector<State, DirtyUpdates>;
 
 export const DIRTY_UPDATES_TOKEN = new InjectionToken(
   '[App Routing] Dirty Updates'

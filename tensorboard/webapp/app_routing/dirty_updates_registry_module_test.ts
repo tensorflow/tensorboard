@@ -20,8 +20,8 @@ import {DirtyUpdates} from './types';
 
 describe('dirty_updates_registry_module test', () => {
   async function createRegistryModule(
-    dirtyUpdatesSelectors: Selector<any, Partial<DirtyUpdates>>[]
-  ): Promise<DirtyUpdatesRegistryModule<any, DirtyUpdates>> {
+    dirtyUpdatesSelectors: Selector<any, DirtyUpdates>[]
+  ): Promise<DirtyUpdatesRegistryModule<any>> {
     const imports = dirtyUpdatesSelectors.map((selector) =>
       DirtyUpdatesRegistryModule.registerDirtyUpdates(() => selector)
     );
