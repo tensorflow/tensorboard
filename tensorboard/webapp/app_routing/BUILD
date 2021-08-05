@@ -69,6 +69,19 @@ tf_ng_module(
 )
 
 tf_ng_module(
+    name = "dirty_updates_registry",
+    srcs = [
+        "dirty_updates_registry_module.ts",
+        "dirty_updates_registry_types.ts",
+    ],
+    deps = [
+        ":types",
+        "@npm//@angular/core",
+        "@npm//@ngrx/store",
+    ],
+)
+
+tf_ng_module(
     name = "route_registry",
     srcs = [
         "route_registry_module.ts",
@@ -187,6 +200,7 @@ tf_ng_module(
     testonly = True,
     srcs = [
         "app_root_test.ts",
+        "dirty_updates_registry_module_test.ts",
         "internal_utils_test.ts",
         "location_test.ts",
         "programmatical_navigation_module_test.ts",
@@ -196,6 +210,7 @@ tf_ng_module(
     ],
     deps = [
         ":app_root",
+        ":dirty_updates_registry",
         ":internal_utils",
         ":location",
         ":programmatical_navigation_module",

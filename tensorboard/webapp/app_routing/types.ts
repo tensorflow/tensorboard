@@ -72,3 +72,10 @@ export interface Route {
     replaceState: boolean;
   };
 }
+
+/**
+ * Information about unsaved metadata updates to experiments.
+ */
+export interface DirtyUpdates {
+  experimentIds?: string[];
+}
