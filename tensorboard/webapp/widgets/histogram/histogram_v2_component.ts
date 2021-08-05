@@ -76,7 +76,7 @@ export interface TooltipData {
 }
 
 @Component({
-  selector: 'tb-histogram-v2',
+  selector: 'tb-histogram',
   templateUrl: 'histogram_v2_component.ng.html',
   styleUrls: ['histogram_v2_component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,

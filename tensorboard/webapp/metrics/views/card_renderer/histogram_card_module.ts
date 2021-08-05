@@ -19,7 +19,6 @@ import {MatButtonModule} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import {HistogramModule} from '../../../widgets/histogram/histogram_module';
-import {ResizeDetectorModule} from '../../../widgets/resize_detector_module';
 import {TruncatedPathModule} from '../../../widgets/text/truncated_path_module';
 
 import {HistogramCardComponent} from './histogram_card_component';
@@ -35,7 +34,6 @@ import {RunNameModule} from './run_name_module';
     MatButtonModule,
     MatIconModule,
     MatProgressSpinnerModule,
-    ResizeDetectorModule,
     RunNameModule,
     TruncatedPathModule,
   ],

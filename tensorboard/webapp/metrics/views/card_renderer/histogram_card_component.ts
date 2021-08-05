@@ -15,24 +15,19 @@ limitations under the License.
 import {
   ChangeDetectionStrategy,
   Component,
-  ElementRef,
   EventEmitter,
   Input,
   Output,
-  ViewChild,
 } from '@angular/core';
 import {DataLoadState} from '../../../types/data';
 
 import {RunColorScale} from '../../../types/ui';
-import {HistogramComponent} from '../../../widgets/histogram/histogram_component';
 import {
   HistogramDatum,
   HistogramMode,
   TimeProperty,
 } from '../../../widgets/histogram/histogram_types';
 import {XAxisType} from '../../types';
-
-const RESIZE_REDRAW_DEBOUNCE_TIME_IN_MS = 50;
 
 @Component({
   selector: 'histogram-card-component',
@@ -41,7 +36,6 @@ const RESIZE_REDRAW_DEBOUNCE_TIME_IN_MS = 50;
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HistogramCardComponent {
-  readonly RESIZE_REDRAW_DEBOUNCE_TIME_IN_MS = RESIZE_REDRAW_DEBOUNCE_TIME_IN_MS;
   readonly DataLoadState = DataLoadState;
 
   @Input() loadState!: DataLoadState;
@@ -58,11 +52,6 @@ export class HistogramCardComponent {
   @Output() onFullSizeToggle = new EventEmitter<void>();
   @Output() onPinClicked = new EventEmitter<boolean>();
 
-  /* the component is rendered inside *ngIf */
-  @ViewChild(HistogramComponent) histogramComponent?: HistogramComponent;
-
-  constructor(private readonly ref: ElementRef) {}
-
   timeProperty(xAxisType: XAxisType) {
     switch (xAxisType) {
       case XAxisType.STEP:
@@ -73,15 +62,6 @@ export class HistogramCardComponent {
         return TimeProperty.RELATIVE;
       default:
         throw new Error('Invalid xAxisType for histogram time property.');
-    }
-  }
-
-  redraw() {
-    if (this.histogramComponent) {
-      // Only redraw when it is visible (and thus have width and height).
-      if (this.ref.nativeElement.clientHeight) {
-        this.histogramComponent.redraw();
-      }
     }
   }
 }
