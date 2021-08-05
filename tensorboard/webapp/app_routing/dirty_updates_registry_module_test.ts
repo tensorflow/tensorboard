@@ -44,11 +44,7 @@ describe('dirty_updates_registry_module test', () => {
       );
       const registryModule = await createRegistryModule([getUpdatesInExpList]);
       const selectors = registryModule.getDirtyUpdatesSelectors();
-      expect(selectors).toEqual([
-        {
-          experimentIds: ['otter', 'penguine'],
-        },
-      ]);
+      expect(selectors).toEqual([getUpdatesInExpList]);
     });
   });
 });

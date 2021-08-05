@@ -30,15 +30,13 @@ export class DirtyUpdatesRegistryModule<State, Updates> {
     @Optional()
     @Inject(DIRTY_UPDATES_TOKEN)
     dirtyUpdatesSelectorFactories: Array<
-      () => DirtyUpdatesSelector<State, Updates>
+      DirtyUpdatesSelector<State, Updates>
     > | null
   ) {
     if (!dirtyUpdatesSelectorFactories) {
       return;
     }
-    this.dirtyUpdatesSelectors = dirtyUpdatesSelectorFactories.map((factory) =>
-      factory()
-    );
+    this.dirtyUpdatesSelectors = dirtyUpdatesSelectorFactories;
   }
 
   /**
@@ -65,7 +63,7 @@ export class DirtyUpdatesRegistryModule<State, Updates> {
    * export class MyModule {}
    */
   static registerDirtyUpdates<State, Updates>(
-    dirtyUpdateSelectorFactory: () => DirtyUpdatesSelector<State, Updates>
+    dirtyUpdateSelectorFactory: DirtyUpdatesSelector<State, Updates>
   ): ModuleWithProviders<DirtyUpdatesRegistryModule<any, {}>> {
     return {
       ngModule: DirtyUpdatesRegistryModule,
