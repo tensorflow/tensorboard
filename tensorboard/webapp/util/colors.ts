@@ -21,3 +21,5 @@ export const CHART_COLOR_PALLETE = [
   '#7cb342', // Lt green 600
   '#e8710a', // Orange 600
 ];
+
+export const NONMATCHED_COLOR = '#ececec';

@@ -25,7 +25,7 @@ import {createRouteContextedState} from '../../app_routing/route_contexted_reduc
 import {RouteKind} from '../../app_routing/types';
 import {DataLoadState} from '../../types/data';
 import {SortDirection} from '../../types/ui';
-import {CHART_COLOR_PALLETE} from '../../util/colors';
+import {CHART_COLOR_PALLETE, NONMATCHED_COLOR} from '../../util/colors';
 import {composeReducers} from '../../util/ngrx';
 import * as runsActions from '../actions';
 import {GroupByKey, URLDeserializedState} from '../types';
@@ -269,7 +269,7 @@ const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
 
     // unassign color for nonmatched runs to apply default unassigned style
     for (const run of groups.nonMatches) {
-      defaultRunColorForGroupBy.delete(run.id);
+      defaultRunColorForGroupBy.set(run.id, NONMATCHED_COLOR);
     }
 
     return {
@@ -308,7 +308,7 @@ const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
 
       // unassign color for nonmatched runs to apply default unassigned style
       for (const run of groups.nonMatches) {
-        defaultRunColorForGroupBy.delete(run.id);
+        defaultRunColorForGroupBy.set(run.id, NONMATCHED_COLOR);
       }
 
       const updatedRegexString =

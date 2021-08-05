@@ -312,7 +312,7 @@ describe('runs_reducers', () => {
         );
       });
 
-      it('removes color assignment for regex non-matched runs', () => {
+      it('assigns non-matched colors to regex non-matched runs', () => {
         const state = buildRunsState({
           initialGroupBy: {key: GroupByKey.REGEX, regexString: 'foo(\\d+)'},
           defaultRunColorForGroupBy: new Map([
@@ -343,6 +343,8 @@ describe('runs_reducers', () => {
             ['eid1/beta', colorUtils.CHART_COLOR_PALLETE[1]],
             ['eid2/beta', colorUtils.CHART_COLOR_PALLETE[1]],
             ['eid2/gamma', colorUtils.CHART_COLOR_PALLETE[1]],
+            ['eid2/alpha', colorUtils.NONMATCHED_COLOR],
+            ['eid2/delta', colorUtils.NONMATCHED_COLOR],
           ])
         );
       });
