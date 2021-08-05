@@ -235,7 +235,7 @@ projector tutorial](https://www.tensorflow.org/tutorials/text/word_embeddings).
 The Text Dashboard displays text snippets saved via `tf.summary.text`. Markdown
 features including hyperlinks, lists, and tables are all supported.
 
-### Time Series Dashboard (new)
+### Time Series Dashboard
 
 The Time Series Dashboard shows a unified interface containing all your Scalars,
 Histograms, and Images saved via `tf.summary.scalar`, `tf.summary.image`, or
@@ -250,7 +250,11 @@ a run's color.
 * Pinned cards: click the 'pin' icon on any card to add it to the pinned section
 at the top for quick comparison.
 
-For more details, see [Time Series docs](./docs/timeseries_dashboard.md).
+* Settings: the right pane offers settings for charts and other visualizations.
+Important settings will persist across TensorBoard sessions, when hosted at the
+same URL origin.
+
+* Autocomplete in tag filter: search for specific charts more easily.
 
 # Frequently Asked Questions
 
