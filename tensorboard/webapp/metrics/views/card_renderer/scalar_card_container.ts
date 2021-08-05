@@ -42,6 +42,7 @@ import {
   getDarkModeEnabled,
   getExperimentIdForRunId,
   getExperimentIdToAliasMap,
+  getMetricsSelectedTime,
   getRun,
   getRunColorMap,
   getVisibleCardIdSet,
@@ -61,7 +62,7 @@ import {
   getMetricsXAxisType,
   RunToSeries,
 } from '../../store';
-import {CardId, CardMetadata, XAxisType} from '../../types';
+import {CardId, CardMetadata, LinkedTime, XAxisType} from '../../types';
 import {CardRenderer} from '../metrics_view_types';
 import {getTagDisplayName} from '../utils';
 import {DataDownloadDialogContainer} from './data_download_dialog_container';
@@ -122,6 +123,7 @@ function areSeriesEqual(
       [xAxisType]="xAxisType$ | async"
       [xScaleType]="xScaleType$ | async"
       [useDarkMode]="useDarkMode$ | async"
+      [selectedTime]="selectedTime$ | async"
       (onFullSizeToggle)="onFullSizeToggle()"
       (onPinClicked)="pinStateChanged.emit($event)"
     ></scalar-card-component>
@@ -157,6 +159,16 @@ export class ScalarCardContainer implements CardRenderer, OnInit {
   isPinned$?: Observable<boolean>;
   dataSeries$?: Observable<ScalarCardDataSeries[]>;
   chartMetadataMap$?: Observable<ScalarCardSeriesMetadataMap>;
+
+  readonly selectedTime$: Observable<LinkedTime | null> = combineLatest([
+    this.store.select(getMetricsSelectedTime),
+    this.store.select(getMetricsXAxisType),
+  ]).pipe(
+    map(([selectedTime, xAxisType]) => {
+      if (xAxisType !== XAxisType.STEP) return null;
+      return selectedTime;
+    })
+  );
 
   readonly isCardVisible$ = this.store.select(getVisibleCardIdSet).pipe(
     map((visibleSet) => {

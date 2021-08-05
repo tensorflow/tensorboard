@@ -109,6 +109,7 @@ limitations under the License.
       [tooltipTemplate]="tooltip"
       [useDarkMode]="useDarkMode"
       (onViewBoxOverridden)="isViewBoxOverridden = $event"
+      [customVisTemplate]="lineChartCustomVis"
     ></line-chart>
   </ng-container>
 
@@ -157,3 +158,25 @@ limitations under the License.
     </table>
   </ng-template>
 </div>
+
+<ng-template
+  #lineChartCustomVis
+  let-viewExtent="viewExtent"
+  let-domDim="domDimension"
+  let-xScale="xScale"
+>
+  <ng-container *ngIf="selectedTime">
+    <div *ngIf="!selectedTime.end" class="selected-time-single">
+      <div
+        class="selected-time-line"
+        [style.left]="
+          xScale.forward(
+            viewExtent.x,
+            [0, domDim.width],
+            selectedTime.start.step
+          ) + 'px'
+        "
+      ></div>
+    </div>
+  </ng-container>
+</ng-template>

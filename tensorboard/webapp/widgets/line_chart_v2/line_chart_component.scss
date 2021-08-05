@@ -44,6 +44,7 @@ limitations under the License.
   position: relative;
   overflow: hidden;
 
+  .custom-vis,
   canvas,
   svg,
   line-chart-grid-view,
@@ -53,6 +54,13 @@ limitations under the License.
     position: absolute;
     top: 0;
     width: 100%;
+  }
+
+  .custom-vis {
+    // custom-vis shows on top of interactive-view but we still need to give
+    // mouse interactions to the interactive-view. Currently, the contract is
+    // that you can only supply purely visual UI on top of the line chart.
+    pointer-events: none;
   }
 }
 

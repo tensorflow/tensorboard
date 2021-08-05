@@ -23,6 +23,7 @@ import {
   CardMetadata,
   CardUniqueInfo,
   HistogramMode,
+  LinkedTime,
   NonPinnedCardId,
   PinnedCardId,
   TooltipSort,
@@ -31,7 +32,6 @@ import {
 import * as storeUtils from './metrics_store_internal_utils';
 import {
   CardMetadataMap,
-  LinkedTime,
   MetricsSettings,
   MetricsState,
   METRICS_FEATURE_KEY,

@@ -34,6 +34,7 @@ import {
   PinnedCardId,
   TooltipSort,
   XAxisType,
+  LinkedTime,
 } from '../internal_types';
 
 export const METRICS_FEATURE_KEY = 'metrics';
@@ -125,11 +126,6 @@ export type CardStepIndexMap = Record<
   NonPinnedCardId | PinnedCardId,
   number | null
 >;
-
-export interface LinkedTime {
-  start: {step: number; wallTime: number};
-  end: {step: number; wallTime: number} | null;
-}
 
 export type CardToPinnedCard = Map<NonPinnedCardId, PinnedCardId>;
 

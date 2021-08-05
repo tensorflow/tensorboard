@@ -113,3 +113,20 @@ $_title-to-heading-gap: 12px;
     box-shadow: inset 0 0 0 1px #fff;
   }
 }
+
+.selected-time-single {
+  height: 100%;
+  position: relative;
+  width: 100%;
+
+  .selected-time-line {
+    $_border-width: 2px;
+    border-left: $_border-width dashed currentColor;
+    height: 100%;
+    // border is 2px.
+    // Center the line by offseting 1px to the left since the width of the
+    margin-left: -$_border-width / 2;
+    position: absolute;
+    width: 0;
+  }
+}

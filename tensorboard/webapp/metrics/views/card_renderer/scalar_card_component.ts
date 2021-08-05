@@ -37,7 +37,7 @@ import {
   ScaleType,
   TooltipDatum,
 } from '../../../widgets/line_chart_v2/types';
-import {TooltipSort, XAxisType} from '../../types';
+import {LinkedTime, TooltipSort, XAxisType} from '../../types';
 import {
   ScalarCardDataSeries,
   ScalarCardSeriesMetadata,
@@ -80,6 +80,7 @@ export class ScalarCardComponent<Downloader> {
   @Input() xAxisType!: XAxisType;
   @Input() xScaleType!: ScaleType;
   @Input() useDarkMode!: boolean;
+  @Input() selectedTime!: LinkedTime | null;
 
   @Output() onFullSizeToggle = new EventEmitter<void>();
   @Output() onPinClicked = new EventEmitter<boolean>();
