@@ -26,6 +26,7 @@ limitations under the License.
   <button
     mat-menu-item
     role="menuitemradio"
+    data-value="Experiment"
     [attr.aria-checked]="selectedGroupBy.key === GroupByKey.EXPERIMENT"
     (click)="onGroupByChange.emit({key: GroupByKey.EXPERIMENT})"
   >
@@ -40,6 +41,7 @@ limitations under the License.
   <button
     mat-menu-item
     role="menuitemradio"
+    data-value="Run"
     [attr.aria-checked]="selectedGroupBy.key === GroupByKey.RUN"
     (click)="onGroupByChange.emit({key: GroupByKey.RUN})"
   >
@@ -54,6 +56,7 @@ limitations under the License.
   <button
     mat-menu-item
     role="menuitemradio"
+    data-value="Regex"
     *ngIf="showGroupByRegex"
     [attr.aria-checked]="selectedGroupBy.key === GroupByKey.REGEX"
     (click)="onGroupByRegexClick()"
@@ -69,6 +72,7 @@ limitations under the License.
   <button
     mat-menu-item
     role="menuitem"
+    data-value="Regex-Edit"
     *ngIf="showGroupByRegex"
     (click)="onRegexStringEdit()"
     class="display-regex-string"
