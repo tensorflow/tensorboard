@@ -100,7 +100,7 @@ export class SettingsDialogComponent implements OnInit, OnDestroy, OnChanges {
   @Output() pageSizeChanged = new EventEmitter<number>();
 
   readonly MIN_RELOAD_PERIOD_IN_S = MIN_RELOAD_PERIOD_IN_MS / 1000;
-  readonly reloadPeriodControl = new FormControl(15, [
+  readonly reloadPeriodControl = new FormControl(this.MIN_RELOAD_PERIOD_IN_S, [
     Validators.required,
     Validators.min(this.MIN_RELOAD_PERIOD_IN_S),
   ]);
