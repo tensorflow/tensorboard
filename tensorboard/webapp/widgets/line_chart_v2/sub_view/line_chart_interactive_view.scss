@@ -100,7 +100,9 @@ th {
   right: 0;
   top: 10px;
   transition: opacity 0.5s;
+  z-index: 1;
 }
+
 .instruction-content {
   background: rgba(0, 0, 0, 0.6);
   border-radius: 5px;
