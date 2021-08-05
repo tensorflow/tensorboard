@@ -20,7 +20,7 @@ import {DirtyUpdates} from './types';
 export type DirtyUpdatesSelector<
   State,
   Updates extends DirtyUpdates
-> = Selector<State, Partial<Updates>>;
+> = Selector<State, Updates>;
 
 export const DIRTY_UPDATES_TOKEN = new InjectionToken(
   '[App Routing] Dirty Updates'
