@@ -1,3 +1,55 @@
+# Release 2.6.0
+
+The 2.6 minor series tracks TensorFlow 2.6.
+
+## Features
+
+- Added dark mode
+- Some user settings are now kept in local storage and are persisted after page reload, including:
+  - Time Series `scalars smoothing`, `tooltip sorting method`, `ignore outliers in chart scaling`
+  - Settings dialog `reload data`, `reload period`, `pagination limit`
+  - Dark mode
+- Time Series
+  - Improved positioning of the `fit` button in scalar chart (#4856)
+  - Improved selection of runs when new runs arrive (#4888)
+
+## Bug fixes
+
+- Fixed bug where some plugins were not appearing in plugins list (#4849)
+- Fixed subtle bugs in navigation (#4974)
+- Stopped storing default values for settings on the URL (#5030)
+- Graphs
+  - Fixed parsing of `_output_shapes` attr (#4867)
+- HParams
+  - Fixed parallel coordinate layout (#4988)
+- Projector
+  - Fix KNN algorithm and, by extension, T-SNE and UMAP embeddings (#5063)
+  - Make opaque sprites opaque (#4921) - thanks [@tyhenry](https://github.com/tyhenry)
+  - Make transparent sprites transparent (#5149) - thanks [@canbakiskan](https://github.com/canbakiskan)
+- Scalars
+  - Improved rendering of small major axis numbers (#5010)
+  - Fixed axis label in Firefox (#5078)
+- Time Series
+  - Fixed rendering of filter text areas (#4938)
+  - Improved rendering of small major axis numbers (#5010)
+  - Improved tooltip rendering (#5003)
+  - Fixed scrolling of runs selector (#5020)
+  - Make runs selector header sticky on scroll (#5024)
+  - Improved rendering of step axis to use SI units (#5015)
+- Documentation
+  - Fixed and cleaned documentation and demos during TensorBoard team fixit.
+  - Fixed debugger v2 documentation (#4843) - thanks [@kevint324](https://github.com/kevint324)
+
+## TensorBoard.dev updates
+
+- Improve upload throughput for scalar summaries (#4825)
+- Fixed bug where experiment name and description were not displayed in `tensorboard dev list` (#4912)
+- Fixed bug where reading from remote directories did not work in `--one_shot` mode (#4909)
+
+## Breaking changes
+
+- TimeSeries plugin no longer supports `?fastChart=false` fallback to old chart renderer.
+
 # Release 2.5.0
 
 ## Features
