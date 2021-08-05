@@ -122,20 +122,6 @@ pub enum DataType {
     DtUint32Ref = 122,
     DtUint64Ref = 123,
 }
-/// For identifying the underlying type of a variant. For variants, the types
-/// listed here are a subset of the types in the variant type registry,
-/// corresponding to commonly used variants which must occasionally be
-/// special-cased.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
-#[repr(i32)]
-pub enum SpecializedType {
-    /// Invalid/unknown specialized type.
-    StInvalid = 0,
-    /// "tensorflow::TensorList" in the variant type registry.
-    StTensorList = 1,
-    /// "tensorflow::data::Optional" in the variant type registry.
-    StOptional = 2,
-}
 /// Protocol buffer representing a handle to a tensorflow resource. Handles are
 /// not valid across executions, but can be serialized back and forth from within
 /// a single run.
@@ -214,7 +200,7 @@ pub struct TensorProto {
     /// DT_DOUBLE.
     #[prost(double, repeated, tag="6")]
     pub double_val: ::prost::alloc::vec::Vec<f64>,
-    /// DT_INT32, DT_INT16, DT_INT8, DT_UINT8.
+    /// DT_INT32, DT_INT16, DT_UINT16, DT_INT8, DT_UINT8.
     #[prost(int32, repeated, tag="7")]
     pub int_val: ::prost::alloc::vec::Vec<i32>,
     /// DT_STRING
