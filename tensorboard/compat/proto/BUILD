@@ -84,6 +84,7 @@ tb_proto_library(
     name = "cpp_shape_inference",
     srcs = ["cpp_shape_inference.proto"],
     deps = [
+        ":full_type",
         ":tensor_shape",
         ":types",
     ],
@@ -100,6 +101,11 @@ tb_proto_library(
     deps = [
         ":summary",
     ],
+)
+
+tb_proto_library(
+    name = "full_type",
+    srcs = ["full_type.proto"],
 )
 
 tb_proto_library(
@@ -149,6 +155,7 @@ tb_proto_library(
     srcs = ["op_def.proto"],
     deps = [
         ":attr_value",
+        ":full_type",
         ":resource_handle",
         ":types",
     ],
@@ -292,6 +299,7 @@ tb_proto_library(
         ":cpp_shape_inference",
         ":debug",
         ":event",
+        ":full_type",
         ":function",
         ":graph",
         ":meta_graph",
