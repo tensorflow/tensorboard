@@ -27,3 +27,17 @@ mat-select:focus {
   outline-color: -webkit-focus-ring-color;
   outline-style: auto;
 }
+
+::ng-deep .mat-select-panel {
+  max-width: 70vw;
+}
+
+.tb-mat-option {
+  // Overrides Angular Material's fixed height.
+  height: auto;
+}
+
+::ng-deep .mat-option-text {
+  white-space: normal;
+  word-break: break-all;
+}
