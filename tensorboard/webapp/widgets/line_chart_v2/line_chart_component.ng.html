@@ -69,16 +69,29 @@ limitations under the License.
     [scale]="yScale"
     (onViewExtentChange)="onViewBoxChangedFromAxis($event, 'y')"
   ></line-chart-axis>
-  <line-chart-axis
-    #xAxis
-    class="x-axis"
-    axis="x"
-    [axisExtent]="viewBox.x"
-    [customFormatter]="customXFormatter"
-    [domDim]="domDimensions.xAxis"
-    [gridCount]="X_GRID_COUNT"
-    [scale]="xScale"
-    (onViewExtentChange)="onViewBoxChangedFromAxis($event, 'x')"
-  ></line-chart-axis>
+  <div class="x-axis">
+    <line-chart-axis
+      #xAxis
+      axis="x"
+      [axisExtent]="viewBox.x"
+      [customFormatter]="customXFormatter"
+      [domDim]="domDimensions.xAxis"
+      [gridCount]="X_GRID_COUNT"
+      [scale]="xScale"
+      (onViewExtentChange)="onViewBoxChangedFromAxis($event, 'x')"
+    ></line-chart-axis>
+    <div *ngIf="customXAxisTemplate" class="custom-vis">
+      <ng-container
+        [ngTemplateOutlet]="customXAxisTemplate"
+        [ngTemplateOutletContext]="{
+          xScale: xScale,
+          yScale: yScale,
+          domDimension: domDimensions.xAxis,
+          viewExtent: viewBox,
+          formatter: customXFormatter || xScale.defaultFormatter
+        }"
+      ></ng-container>
+    </div>
+  </div>
   <div class="dot"><span class="rect"></span></div>
 </div>

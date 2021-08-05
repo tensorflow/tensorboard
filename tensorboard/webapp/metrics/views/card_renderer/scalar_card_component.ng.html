@@ -110,6 +110,7 @@ limitations under the License.
       [useDarkMode]="useDarkMode"
       (onViewBoxOverridden)="isViewBoxOverridden = $event"
       [customVisTemplate]="lineChartCustomVis"
+      [customXAxisTemplate]="lineChartCustomXAxisVis"
     ></line-chart>
   </ng-container>
 
@@ -177,6 +178,42 @@ limitations under the License.
           ) + 'px'
         "
       ></div>
+    </div>
+  </ng-container>
+</ng-template>
+
+<ng-template
+  #lineChartCustomXAxisVis
+  let-viewExtent="viewExtent"
+  let-domDim="domDimension"
+  let-xScale="xScale"
+  let-formatter="formatter"
+>
+  <ng-container *ngIf="selectedTime">
+    <div
+      class="selected-time-fob"
+      [style.left]="
+        xScale.forward(
+          viewExtent.x,
+          [0, domDim.width],
+          selectedTime.start.step
+        ) + 'px'
+      "
+    >
+      {{formatter.formatTick(selectedTime.start.step)}}
+    </div>
+    <div
+      *ngIf="selectedTime.end"
+      class="selected-time-fob"
+      [style.left]="
+        xScale.forward(
+          viewExtent.x,
+          [0, domDim.width],
+          selectedTime.end.step
+        ) + 'px'
+      "
+    >
+      {{formatter.formatTick(selectedTime.end.step)}}
     </div>
   </ng-container>
 </ng-template>

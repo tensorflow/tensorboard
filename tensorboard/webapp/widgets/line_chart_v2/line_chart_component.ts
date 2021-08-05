@@ -98,6 +98,9 @@ export class LineChartComponent
   customVisTemplate?: TemplateRef<TemplateContext>;
 
   @Input()
+  customXAxisTemplate?: TemplateRef<TemplateContext & {formatter: Formatter}>;
+
+  @Input()
   useDarkMode: boolean = false;
 
   @Input()
