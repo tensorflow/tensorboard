@@ -14,63 +14,66 @@ limitations under the License.
 ==============================================================================*/
 import {Inject, ModuleWithProviders, NgModule, Optional} from '@angular/core';
 
-import {EXPS_WITH_DIRTY_UPDATES_TOKEN} from './dirty_updates_registry_types';
-import {DirtyUpdates} from './types';
+import {
+  DIRTY_UPDATES_TOKEN,
+  DirtyUpdatesSelector,
+} from './dirty_updates_registry_types';
 
 @NgModule()
-export class DirtyUpdatesRegistryModule {
-  private readonly dirtyUpdates: DirtyUpdates | null = null;
+export class DirtyUpdatesRegistryModule<State, Updates> {
+  private readonly dirtyUpdatesSelectors: DirtyUpdatesSelector<
+    State,
+    Updates
+  >[] = [];
 
   constructor(
-    @Optional() @Inject(EXPS_WITH_DIRTY_UPDATES_TOKEN) eidsList: string[][]
+    @Optional()
+    @Inject(DIRTY_UPDATES_TOKEN)
+    dirtyUpdatesSelectorFactories: Array<
+      () => DirtyUpdatesSelector<State, Updates>
+    > | null
   ) {
-    if (!eidsList) {
+    if (!dirtyUpdatesSelectorFactories) {
       return;
     }
-    const experimentIds: string[] = [];
-    for (const eids of eidsList) {
-      for (const eid of eids) {
-        experimentIds.push(eid);
-      }
-    }
-    this.dirtyUpdates = {experimentIds: experimentIds};
+    this.dirtyUpdatesSelectors = dirtyUpdatesSelectorFactories.map((factory) =>
+      factory()
+    );
   }
 
   /**
-   * Returns dirty updates if any.
+   * Returns Ngrx selectors for getting dirty updates.
    */
-  getDirtyUpdates(): DirtyUpdates | null {
-    return this.dirtyUpdates;
+  getDirtyUpdatesSelectors(): DirtyUpdatesSelector<State, Updates>[] {
+    return this.dirtyUpdatesSelectors ?? [];
   }
 
   /**
-   * An NgModule that registers dirty (unsaved) updates to experiments.
+   * Registers a selector for dirty (unsaved) updates to experiments.
    *
-   * Example:
-   *
-   * function getDirtyExperiments() : string[] {
-   *   const experimentIds : string[] = [];
-   *   ...
-   *   return experimentIds;
-   * }
+   * Example usage:
    *
    * @NgModule({
    *   imports: [
-   *     DirtyUpdatesRegistryModule.registerDirtyUpdates(getDirtyExperiments),
+   *     DirtyUpdatesRegistryModule.registerDirtyUpdates(
+   *       createSelector(baseSelector, (values) => {
+   *         return {experimentIds: values};
+   *       }),
+   *     ),
    *   ],
-   *   declarations: [ExperimentsView]
    * })
+   * export class MyModule {}
    */
-  static registerDirtyUpdates(
-    dirtyUpdatesConfigProvider: () => string[]
-  ): ModuleWithProviders<DirtyUpdatesRegistryModule> {
+  static registerDirtyUpdates<State, Updates>(
+    dirtyUpdateSelectorFactory: () => DirtyUpdatesSelector<State, Updates>
+  ): ModuleWithProviders<DirtyUpdatesRegistryModule<any, {}>> {
     return {
       ngModule: DirtyUpdatesRegistryModule,
       providers: [
         {
-          provide: EXPS_WITH_DIRTY_UPDATES_TOKEN,
+          provide: DIRTY_UPDATES_TOKEN,
           multi: true,
-          useFactory: dirtyUpdatesConfigProvider,
+          useFactory: dirtyUpdateSelectorFactory,
         },
       ],
     };

@@ -13,7 +13,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {InjectionToken} from '@angular/core';
+import {Selector} from '@ngrx/store';
 
-export const EXPS_WITH_DIRTY_UPDATES_TOKEN = new InjectionToken<string[]>(
-  '[App Routing] Experiments with Dirty Updates'
+import {DirtyUpdates} from './types';
+
+export type DirtyUpdatesSelector<
+  State,
+  Updates extends DirtyUpdates
+> = Selector<State, Partial<Updates>>;
+
+export const DIRTY_UPDATES_TOKEN = new InjectionToken(
+  '[App Routing] Dirty Updates'
 );

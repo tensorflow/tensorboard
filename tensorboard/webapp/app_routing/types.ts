@@ -74,8 +74,8 @@ export interface Route {
 }
 
 /**
- * Information about unsaved metadata updates to experiments on current route.
+ * Information about unsaved metadata updates to experiments.
  */
 export interface DirtyUpdates {
-  experimentIds: string[];
+  experimentIds?: string[];
 }

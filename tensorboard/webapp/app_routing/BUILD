@@ -77,6 +77,7 @@ tf_ng_module(
     deps = [
         ":types",
         "@npm//@angular/core",
+        "@npm//@ngrx/store",
     ],
 )
 
