@@ -174,7 +174,27 @@ The proper fix is:
 
     ./tensorboard/compat/proto/update.sh PATH_TO_TENSORFLOW_REPO
 
-3. Review and commit any changes.
+3. Verify the updates build. In your tensorboard repo, run:
+
+    bazel build tensorboard/compat/proto/...
+
+  If they fail with an error message like the following:
+
+    '//tensorboard/compat/proto:full_type_genproto' does not exist
+
+  Then create the file in the tensorboard repo:
+
+    touch tensorboard/compat/proto/full_type.proto
+
+  And return to step 2. `update.sh` will only copy files that already exist in
+  the tensorboard repo.
+
+4. Update the rust data server proto binaries. In your tensorboard repo, run:
+
+    bazel run //tensorboard/data/server:update_protos
+
+5. Review and commit any changes.
+
 """
 
 
