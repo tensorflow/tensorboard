@@ -149,30 +149,6 @@ export class RegexEditDialogContainer {
       })
     );
   }
-  ngOnInit() {
-    // window.addEventListener('Click', this.onClick);
-    document.addEventListener('focusin', this.onFocusChange, true);
-  }
-
-  onFocusChange() {
-    console.log('onFocusChange');
-    // check activeelement
-    // if outside dialog --> moveback
-    let activeElement = document.activeElement;
-    if (!activeElement) {
-      return;
-    }
-    if (!isWithinDialog(activeElement)) {
-      console.log("focus change");
-      const input = document.querySelector('mat-form-field input');
-      if (input) {
-        (input as HTMLElement).focus();
-        console.log("new focus? ", document.activeElement);
-      };
-    } else {
-      console.log("do nothing?");
-    }
-  }
 
   onRegexInputOnChange(regexString: string) {
     this.tentativeRegexString$.next(regexString);
