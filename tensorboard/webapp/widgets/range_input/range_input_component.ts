@@ -210,9 +210,14 @@ export class RangeInputComponent implements OnInit, OnDestroy {
       xPositionInPercent = compensatedRelativeXInPx / (right - left);
     }
 
-    return this.getClippedValue(
+    const newValue = this.getClippedValue(
       this.min + (this.max - this.min) * xPositionInPercent
     );
+
+    // Make sure floating point arithmatic does not pollute the number with
+    // noise (e.g., 0.2 + 0.1 = 0.30000000000000004; we don't want 4e-17). Clip
+    // to 10th decimal.
+    return Number(newValue.toFixed(10));
   }
 
   /**
