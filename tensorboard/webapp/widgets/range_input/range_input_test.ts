@@ -194,7 +194,7 @@ describe('range input test', () => {
       // range-input starts from 100px and ends at 300px so 102px is about 2%
       // from left edge.
       moveThumb(leftThumb, 102);
-      // Without our logic to round, lowerValue woudl be 0.10200000000000001.
+      // Without our logic to round, lowerValue would be 0.10200000000000001.
       expect(onValue).toHaveBeenCalledWith({
         lowerValue: 0.102,
         upperValue: 0.3,
