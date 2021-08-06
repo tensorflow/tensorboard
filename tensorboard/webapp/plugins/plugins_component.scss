@@ -37,6 +37,7 @@ limitations under the License.
 }
 
 .warning {
+  @include tb-theme-background-prop(background, background);
   bottom: 0;
   left: 0;
   position: absolute;
