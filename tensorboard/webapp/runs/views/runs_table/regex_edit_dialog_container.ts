@@ -19,6 +19,7 @@ import {combineLatest, defer, merge, Observable, Subject} from 'rxjs';
 import {
   combineLatestWith,
   debounceTime,
+  filter,
   startWith,
   take,
   map,
@@ -75,6 +76,14 @@ export class RegexEditDialogContainer {
   readonly colorRunPairList$: Observable<ColorGroup[]> = defer(() => {
     return this.groupByRegexString$.pipe(
       debounceTime(INPUT_CHANGE_DEBOUNCE_INTERVAL_MS),
+      filter((regexString) => {
+        try {
+          const regex = new RegExp(regexString);
+          return Boolean(regex);
+        } catch (e) {
+          return false;
+        }
+      }),
       combineLatestWith(this.allRuns$, this.runIdToEid$),
       map(([regexString, allRuns, runIdToEid]) => {
         const groupBy = {
