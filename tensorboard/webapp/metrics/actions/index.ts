@@ -148,3 +148,11 @@ export const timeSelectionChanged = createAction(
 export const timeSelectionCleared = createAction(
   '[Metrics] Linked Time Selection Cleared'
 );
+
+export const selectTimeEnableToggled = createAction(
+  '[Metrics] Select Time Enable Toggle'
+);
+
+export const useRangeSelectTimeToggled = createAction(
+  '[Metrics] Use Range Select Time Toggle'
+);

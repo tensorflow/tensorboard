@@ -243,6 +243,8 @@ const {initialState, reducers: routeContextReducer} = createRouteContextedState<
     tagFilter: '',
     tagGroupExpanded: new Map<string, boolean>(),
     selectedTime: null,
+    selectTimeEnabled: false,
+    useRangeSelectTime: false,
   },
   {
     timeSeriesData: {
@@ -809,9 +811,16 @@ const reducer = createReducer(
       pinnedCardToOriginal: nextPinnedCardToOriginal,
     };
   }),
+  on(actions.selectTimeEnableToggled, (state) => {
+    return {
+      ...state,
+      selectTimeEnabled: !state.selectTimeEnabled,
+    };
+  }),
   on(actions.timeSelectionChanged, (state, change) => {
     return {
       ...state,
+      selectTimeEnabled: true,
       selectedTime: {
         start: {step: change.startStep, wallTime: change.startWallTime},
         end:
@@ -822,6 +831,12 @@ const reducer = createReducer(
                 wallTime: change.endWallTime,
               },
       },
+    };
+  }),
+  on(actions.useRangeSelectTimeToggled, (state) => {
+    return {
+      ...state,
+      useRangeSelectTime: !state.useRangeSelectTime,
     };
   }),
   on(actions.timeSelectionCleared, (state) => {

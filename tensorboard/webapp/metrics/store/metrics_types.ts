@@ -153,6 +153,8 @@ export interface MetricsRoutefulState {
   tagFilter: string;
   tagGroupExpanded: Map<string, boolean>;
   selectedTime: LinkedTime | null;
+  selectTimeEnabled: boolean;
+  useRangeSelectTime: boolean;
 }
 
 export interface MetricsSettings {

@@ -1846,6 +1846,22 @@ describe('metrics reducers', () => {
           end: {step: 4, wallTime: -1},
         });
       });
+
+      it('enables selectTimeEnabled if previously disabled', () => {
+        const beforeState = buildMetricsState({
+          selectTimeEnabled: false,
+        });
+
+        const nextState = reducers(
+          beforeState,
+          actions.timeSelectionChanged({
+            startStep: 2,
+            startWallTime: -1,
+          })
+        );
+
+        expect(nextState.selectTimeEnabled).toBe(true);
+      });
     });
 
     describe('#timeSelectionCleared', () => {
@@ -1857,6 +1873,34 @@ describe('metrics reducers', () => {
         const nextState = reducers(beforeState, actions.timeSelectionCleared());
 
         expect(nextState.selectedTime).toBeNull();
+      });
+    });
+
+    describe('#selectTimeEnableToggled', () => {
+      it('toggles whether selectTime is enabled or not', () => {
+        const state1 = buildMetricsState({
+          selectTimeEnabled: false,
+        });
+
+        const state2 = reducers(state1, actions.selectTimeEnableToggled());
+        expect(state2.selectTimeEnabled).toBe(true);
+
+        const state3 = reducers(state2, actions.selectTimeEnableToggled());
+        expect(state3.selectTimeEnabled).toBe(false);
+      });
+    });
+
+    describe('#useRangeSelectTimeToggled', () => {
+      it('toggles whether to use the range mode or not', () => {
+        const state1 = buildMetricsState({
+          useRangeSelectTime: false,
+        });
+
+        const state2 = reducers(state1, actions.useRangeSelectTimeToggled());
+        expect(state2.useRangeSelectTime).toBe(true);
+
+        const state3 = reducers(state2, actions.useRangeSelectTimeToggled());
+        expect(state3.useRangeSelectTime).toBe(false);
       });
     });
   });

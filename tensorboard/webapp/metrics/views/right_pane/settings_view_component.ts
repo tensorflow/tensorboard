@@ -29,6 +29,7 @@ import {
   HistogramMode,
   SCALARS_SMOOTHING_MAX,
   TooltipSort,
+  LinkedTime,
   XAxisType,
 } from '../../types';
 
@@ -59,6 +60,15 @@ const MAX_SMOOTHING_SLIDER_VALUE = 0.99;
 export class SettingsViewComponent {
   constructor(@Inject(LOCALE_ID) private readonly locale: string) {}
 
+  @Input() isLinkedTimeFeatureEnabled!: boolean;
+  @Input() selectTimeEnabled!: boolean;
+  @Input() useRangeSelectTime!: boolean;
+  @Input() selectedTime!: LinkedTime | null;
+
+  @Output() selectTimeEnableToggled = new EventEmitter<void>();
+  @Output() useRangeSelectTimeToggled = new EventEmitter<void>();
+  @Output() selectTimeChanged = new EventEmitter<LinkedTime>();
+
   @Input() isImageSupportEnabled!: boolean;
 
   readonly TooltipSortDropdownOptions: DropdownOption[] = [
@@ -73,6 +83,7 @@ export class SettingsViewComponent {
   @Input() ignoreOutliers!: boolean;
   @Output() ignoreOutliersChanged = new EventEmitter<void>();
 
+  readonly XAxisType = XAxisType;
   readonly XAxisTypeDropdownOptions: DropdownOption[] = [
     {value: XAxisType.STEP, displayText: 'Step'},
     {value: XAxisType.RELATIVE, displayText: 'Relative'},
@@ -145,6 +156,36 @@ export class SettingsViewComponent {
       // The slider cannot fit 3 decimals.
       '1.0-2'
     );
+  }
+
+  onStepStartChanged(stepValue: number) {
+    this.selectTimeChanged.emit({
+      end: null,
+      ...this.selectedTime,
+      start: {
+        step: stepValue,
+        wallTime: 0,
+      },
+    });
+  }
+
+  onStepRangeChanged({
+    lowerValue,
+    upperValue,
+  }: {
+    lowerValue: number;
+    upperValue: number;
+  }) {
+    this.selectTimeChanged.emit({
+      start: {
+        step: lowerValue,
+        wallTime: 0,
+      },
+      end: {
+        step: upperValue,
+        wallTime: 0,
+      },
+    });
   }
 }
 

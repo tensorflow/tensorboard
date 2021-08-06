@@ -98,3 +98,18 @@ mat-slider {
 tb-dropdown {
   display: block;
 }
+
+.linked-time {
+  .step-selector {
+    padding: 0 10px;
+  }
+
+  mat-slider,
+  tb-range-input {
+    width: 100%;
+  }
+
+  .controls {
+    padding: 5px;
+  }
+}

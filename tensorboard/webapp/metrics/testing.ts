@@ -90,6 +90,8 @@ function buildBlankState(): MetricsState {
     tagFilter: '',
     tagGroupExpanded: new Map(),
     selectedTime: null,
+    selectTimeEnabled: false,
+    useRangeSelectTime: false,
   };
 }
 
