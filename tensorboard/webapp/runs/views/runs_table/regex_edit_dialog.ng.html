@@ -44,37 +44,46 @@ limitations under the License.
   </p>
 </div>
 
-<div *ngIf="colorRunPairList.length" class="group-container">
+<div class="group-container" *ngIf="regexString">
   <h4>Color group preview</h4>
   <div class="grouping-preview">
-    <ul
-      class="group"
-      *ngFor="let colorRunsPair of colorRunPairList"
-      [ngStyle]="{borderColor: colorRunsPair.color}"
-    >
-      <li>
-        <label
-          ><span
-            class="color-swatch"
-            [ngStyle]="{backgroundColor: colorRunsPair.color}"
-          ></span
-          ><code class="group-id" [title]="colorRunsPair.groupId"
-            >{{colorRunsPair.groupId}}</code
-          ></label
-        >
-        <ul>
-          <ng-container *ngFor="let run of colorRunsPair.runs | slice:0:5;">
-            <li [title]="run.name">{{ run.name }}</li>
-          </ng-container>
-          <li class="more" *ngIf="colorRunsPair.runs.length > 5">
-            <em>and {{colorRunsPair.runs.length - 5 | number}} more</em>
-          </li>
-          <li class="no-match" *ngIf="colorRunsPair.runs.length === 0">
-            <em>No runs are in the group</em>
-          </li>
-        </ul>
-      </li>
-    </ul>
+    <div *ngIf="colorRunPairList.length; else empty" class="match-container">
+      <ul
+        class="group"
+        *ngFor="let colorRunsPair of colorRunPairList"
+        [ngStyle]="{borderColor: colorRunsPair.color}"
+      >
+        <li>
+          <label
+            ><span
+              class="color-swatch"
+              [ngStyle]="{backgroundColor: colorRunsPair.color}"
+            ></span
+            ><code class="group-id" [title]="colorRunsPair.groupId"
+              >{{colorRunsPair.groupId}}</code
+            ></label
+          >
+          <ul>
+            <ng-container *ngFor="let run of colorRunsPair.runs | slice:0:5;">
+              <li [title]="run.name">{{ run.name }}</li>
+            </ng-container>
+            <li class="more" *ngIf="colorRunsPair.runs.length > 5">
+              <em>and {{colorRunsPair.runs.length - 5 | number}} more</em>
+            </li>
+            <li class="no-match" *ngIf="colorRunsPair.runs.length === 0">
+              <em>No runs are in the group</em>
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+
+    <ng-template #empty>
+      <div class="warning">
+        There are no runs matching the regex, <code>/{{regexString}}/</code>.
+        Please check if your regex string is correct.
+      </div>
+    </ng-template>
   </div>
 </div>
 
