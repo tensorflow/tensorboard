@@ -31,7 +31,7 @@ function settingsReady(state: SettingsState): boolean {
 }
 
 // Auto reload period cannot be lower than 30s to prevent server load.
-const MIN_RELOAD_PERIOD_IN_MS = 30000;
+export const MIN_RELOAD_PERIOD_IN_MS = 30000;
 
 const reducer = createReducer(
   initialState,
@@ -59,7 +59,7 @@ const reducer = createReducer(
       }
 
       const nextReloadPeriod =
-        periodInMs > MIN_RELOAD_PERIOD_IN_MS
+        periodInMs >= MIN_RELOAD_PERIOD_IN_MS
           ? periodInMs
           : state.settings.reloadPeriodInMs;
       return {

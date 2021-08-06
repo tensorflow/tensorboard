@@ -197,7 +197,7 @@ describe('settings test', () => {
       fixture.detectChanges();
 
       const reloadPeriod = fixture.debugElement.query(By.css('.reload-period'));
-      reloadPeriod.nativeElement.value = 20;
+      reloadPeriod.nativeElement.value = 35;
       reloadPeriod.nativeElement.dispatchEvent(new Event('input'));
 
       expect(dispatchSpy).not.toHaveBeenCalled();
@@ -206,7 +206,7 @@ describe('settings test', () => {
       tick(500);
 
       expect(dispatchSpy).toHaveBeenCalledWith(
-        changeReloadPeriod({periodInMs: 20000})
+        changeReloadPeriod({periodInMs: 35000})
       );
     }));
 
