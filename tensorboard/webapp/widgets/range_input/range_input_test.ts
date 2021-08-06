@@ -181,6 +181,26 @@ describe('range input test', () => {
       expect(onValue).toHaveBeenCalledWith({lowerValue: -4, upperValue: 1});
     });
 
+    it('rounds number to filter out floating point math noise', () => {
+      const {fixture, onValue} = createComponent({
+        min: 0.1,
+        max: 0.3,
+        lowerValue: 0.1,
+        upperValue: 0.3,
+        tickCount: null,
+      });
+      const [leftThumb] = getThumbs(fixture);
+      startMovingThumb(leftThumb);
+      // range-input starts from 100px and ends at 300px so 102px is about 2%
+      // from left edge.
+      moveThumb(leftThumb, 102);
+      // Without our logic to round, lowerValue would be 0.10200000000000001.
+      expect(onValue).toHaveBeenCalledWith({
+        lowerValue: 0.102,
+        upperValue: 0.3,
+      });
+    });
+
     it('compensates position of mousedown relative to thumb center', () => {
       const {fixture, onValue} = createComponent({
         lowerValue: -1,
