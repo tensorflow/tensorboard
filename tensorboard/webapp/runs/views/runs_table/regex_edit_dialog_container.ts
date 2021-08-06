@@ -20,11 +20,10 @@ import {
   combineLatestWith,
   debounceTime,
   filter,
+  map,
   startWith,
   take,
-  map,
 } from 'rxjs/operators';
-
 import {State} from '../../../app_state';
 import {CHART_COLOR_PALLETE} from '../../../util/colors';
 import {runGroupByChanged} from '../../actions';
@@ -34,10 +33,17 @@ import {
   getRuns,
 } from '../../store/runs_selectors';
 import {groupRuns} from '../../store/utils';
-import {Run, GroupByKey} from '../../types';
+import {GroupByKey, Run} from '../../types';
 import {ColorGroup} from './regex_edit_dialog_component';
 
 const INPUT_CHANGE_DEBOUNCE_INTERVAL_MS = 500;
+
+function isWithinDialog(activeElement: Element) {
+  console.log("----isWithinDialog-----");
+  console.log(activeElement);
+  console.log(activeElement.closest('.regex-edit-dialog'));
+  return activeElement.closest('.regex-edit-dialog') ? true : false;
+}
 
 @Component({
   selector: 'regex-edit-dialog',
@@ -142,6 +148,30 @@ export class RegexEditDialogContainer {
         return runsList.flat();
       })
     );
+  }
+  ngOnInit() {
+    // window.addEventListener('Click', this.onClick);
+    document.addEventListener('focusin', this.onFocusChange, true);
+  }
+
+  onFocusChange() {
+    console.log('onFocusChange');
+    // check activeelement
+    // if outside dialog --> moveback
+    let activeElement = document.activeElement;
+    if (!activeElement) {
+      return;
+    }
+    if (!isWithinDialog(activeElement)) {
+      console.log("focus change");
+      const input = document.querySelector('mat-form-field input');
+      if (input) {
+        (input as HTMLElement).focus();
+        console.log("new focus? ", document.activeElement);
+      };
+    } else {
+      console.log("do nothing?");
+    }
   }
 
   onRegexInputOnChange(regexString: string) {
