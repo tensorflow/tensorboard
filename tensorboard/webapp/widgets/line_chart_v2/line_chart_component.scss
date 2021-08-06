@@ -64,8 +64,24 @@ limitations under the License.
   }
 }
 
+.x-axis,
+.y-axis {
+  .custom-vis {
+    height: 100%;
+    left: 0;
+    position: absolute;
+    top: 0;
+    width: 100%;
+  }
+}
+
 .x-axis {
   grid-area: xaxis;
+  position: relative;
+
+  line-chart-axis {
+    height: 100%;
+  }
 }
 
 .y-axis {

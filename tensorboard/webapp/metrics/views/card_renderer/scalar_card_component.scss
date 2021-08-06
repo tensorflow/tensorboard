@@ -130,3 +130,30 @@ $_title-to-heading-gap: 12px;
     width: 0;
   }
 }
+
+.selected-time-fob {
+  background-color: mat-color($mat-gray, 300);
+  border-radius: 25px;
+  border: 1px solid mat-color($tf-slate, 300);
+  color: inherit;
+  font-size: 11px;
+  padding: 2px 5px;
+  position: absolute;
+  top: 1px;
+  transform: translateX(-50%); // Center the fob by its width.
+
+  &:hover,
+  &:active {
+    border-color: mat-color($mat-gray, 700);
+  }
+
+  @include tb-dark-theme {
+    background-color: mat-color($mat-gray, 700);
+    border-color: mat-color($tf-slate, 500);
+
+    &:hover,
+    &:active {
+      border-color: mat-color($mat-gray, 200);
+    }
+  }
+}
