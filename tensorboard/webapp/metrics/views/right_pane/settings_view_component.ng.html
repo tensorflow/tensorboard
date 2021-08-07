@@ -51,8 +51,8 @@ limitations under the License.
           *ngIf="!useRangeSelectTime; else range"
           [disabled]="!selectTimeEnabled"
           color="primary"
-          [min]="0"
-          [max]="1000"
+          [min]="stepMinMax.min"
+          [max]="stepMinMax.max"
           [step]="1"
           [value]="selectedTime?.start.step"
           [thumbLabel]="true"
@@ -61,10 +61,10 @@ limitations under the License.
         <ng-template #range>
           <tb-range-input
             [attr.disabled]="!selectTimeEnabled"
-            min="0"
-            max="1000"
-            [lowerValue]="selectedTime?.start.step || 0"
-            [upperValue]="selectedTime?.end?.step"
+            [min]="stepMinMax.min"
+            [max]="stepMinMax.max"
+            [lowerValue]="selectedTime?.start.step"
+            [upperValue]="selectedTime?.end?.step "
             (value)="onStepRangeChanged($event)"
           ></tb-range-input>
         </ng-template>

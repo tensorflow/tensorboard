@@ -66,6 +66,7 @@ import {HistogramMode, LinkedTime, TooltipSort, XAxisType} from '../../types';
       [selectTimeEnabled]="selectTimeEnabled$ | async"
       [selectedTime]="selectedTime$ | async"
       [useRangeSelectTime]="useRangeSelectTime$ | async"
+      [stepMinMax]="stepMinMax$ | async"
       (selectTimeEnableToggled)="onSelectTimeEnableToggled()"
       (useRangeSelectTimeToggled)="onUseRangeSelectTimeToggled()"
       (selectTimeChanged)="onSelectTimeChanged($event)"
@@ -87,8 +88,9 @@ export class SettingsViewContainer {
     selectors.getMetricsUseRangeSelectTime
   );
   readonly selectedTime$ = this.store.select(
-    selectors.getMetricsSelectedTimeRaw
+    selectors.getMetricsSelectedTimeSetting
   );
+  readonly stepMinMax$ = this.store.select(selectors.getMetricsStepMinMax);
 
   readonly isImageSupportEnabled$ = this.store
     .select(selectors.getIsFeatureFlagsLoaded)
@@ -183,9 +185,7 @@ export class SettingsViewContainer {
     this.store.dispatch(
       timeSelectionChanged({
         startStep: newValue.start.step,
-        startWallTime: newValue.start.wallTime,
         endStep: newValue.end?.step,
-        endWallTime: newValue.end?.wallTime,
       })
     );
   }

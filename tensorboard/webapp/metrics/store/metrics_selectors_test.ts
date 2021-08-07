@@ -706,32 +706,69 @@ describe('metrics selectors', () => {
     });
   });
 
-  describe('getMetricsSelectedTimeRaw', () => {
+  describe('getMetricsStepMinMax', () => {
     beforeEach(() => {
-      selectors.getMetricsSelectedTimeRaw.release();
+      selectors.getMetricsStepMinMax.release();
     });
 
-    it('returns `null` when selected time is null', () => {
+    it('returns min and max of the dataset', () => {
+      const state = appStateFromMetricsState(
+        buildMetricsState({
+          stepMinMax: {min: 10, max: 100},
+        })
+      );
+      expect(selectors.getMetricsStepMinMax(state)).toEqual({
+        min: 10,
+        max: 100,
+      });
+    });
+
+    it('returns 0 and 1000 if extremum are Infinities', () => {
+      const state = appStateFromMetricsState(
+        buildMetricsState({
+          stepMinMax: {min: Infinity, max: -Infinity},
+        })
+      );
+      expect(selectors.getMetricsStepMinMax(state)).toEqual({
+        min: 0,
+        max: 1000,
+      });
+    });
+  });
+
+  describe('getMetricsSelectedTimeSetting', () => {
+    beforeEach(() => {
+      selectors.getMetricsSelectedTimeSetting.release();
+    });
+
+    it('returns value from the dataset when selected time is null', () => {
       const state = appStateFromMetricsState(
         buildMetricsState({
           selectedTime: null,
+          stepMinMax: {
+            min: 0,
+            max: 1000,
+          },
         })
       );
-      expect(selectors.getMetricsSelectedTimeRaw(state)).toBeNull();
+      expect(selectors.getMetricsSelectedTimeSetting(state)).toEqual({
+        start: {step: 0},
+        end: {step: 1000},
+      });
     });
 
     it('returns value when selected time is present', () => {
       const state = appStateFromMetricsState(
         buildMetricsState({
           selectedTime: {
-            start: {step: 0, wallTime: 2000},
-            end: null,
+            start: {step: 0},
+            end: {step: 1},
           },
         })
       );
-      expect(selectors.getMetricsSelectedTimeRaw(state)).toEqual({
-        start: {step: 0, wallTime: 2000},
-        end: null,
+      expect(selectors.getMetricsSelectedTimeSetting(state)).toEqual({
+        start: {step: 0},
+        end: {step: 1},
       });
     });
   });
@@ -744,18 +781,8 @@ describe('metrics selectors', () => {
     it('returns `null` when selectTime is disabled even when value exists', () => {
       const state = appStateFromMetricsState(
         buildMetricsState({
-          selectedTime: {start: {step: 1, wallTime: 0}, end: null},
+          selectedTime: {start: {step: 1}, end: {step: 1}},
           selectTimeEnabled: false,
-        })
-      );
-      expect(selectors.getMetricsSelectedTime(state)).toBeNull();
-    });
-
-    it('returns `null` when selected time is null', () => {
-      const state = appStateFromMetricsState(
-        buildMetricsState({
-          selectedTime: null,
-          selectTimeEnabled: true,
         })
       );
       expect(selectors.getMetricsSelectedTime(state)).toBeNull();
@@ -765,16 +792,16 @@ describe('metrics selectors', () => {
       const state = appStateFromMetricsState(
         buildMetricsState({
           selectedTime: {
-            start: {step: 0, wallTime: 2000},
-            end: {step: 100, wallTime: 2000},
+            start: {step: 0},
+            end: {step: 100},
           },
           selectTimeEnabled: true,
           useRangeSelectTime: true,
         })
       );
       expect(selectors.getMetricsSelectedTime(state)).toEqual({
-        start: {step: 0, wallTime: 2000},
-        end: {step: 100, wallTime: 2000},
+        start: {step: 0},
+        end: {step: 100},
       });
     });
 
@@ -782,15 +809,15 @@ describe('metrics selectors', () => {
       const state = appStateFromMetricsState(
         buildMetricsState({
           selectedTime: {
-            start: {step: 0, wallTime: 2000},
-            end: {step: 100, wallTime: 2000},
+            start: {step: 0},
+            end: {step: 100},
           },
           selectTimeEnabled: true,
           useRangeSelectTime: false,
         })
       );
       expect(selectors.getMetricsSelectedTime(state)).toEqual({
-        start: {step: 0, wallTime: 2000},
+        start: {step: 0},
         end: null,
       });
     });

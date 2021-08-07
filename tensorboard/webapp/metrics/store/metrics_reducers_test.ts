@@ -1799,53 +1799,75 @@ describe('metrics reducers', () => {
           beforeState,
           actions.timeSelectionChanged({
             startStep: 2,
-            startWallTime: -1,
+            endStep: 5,
           })
         );
 
         expect(nextState.selectedTime).toEqual({
-          start: {
-            step: 2,
-            wallTime: -1,
-          },
-          end: null,
+          start: {step: 2},
+          end: {step: 5},
         });
       });
 
-      it('sets `end` when both `endStep` and `endWallTime` are present', () => {
-        const state1 = buildMetricsState({
+      it('sets `end` to max step from data when `endStep` is not present', () => {
+        const before = buildMetricsState({
           selectedTime: null,
+          stepMinMax: {min: 0, max: 100},
         });
 
-        const state2 = reducers(
-          state1,
-          actions.timeSelectionChanged({
-            startStep: 2,
-            startWallTime: -1,
-            endWallTime: -1,
-          })
+        const after = reducers(
+          before,
+          actions.timeSelectionChanged({startStep: 2})
         );
 
-        expect(state2.selectedTime).toEqual({
-          start: {step: 2, wallTime: -1},
-          end: null,
-        });
-
-        const state3 = reducers(
-          state2,
-          actions.timeSelectionChanged({
-            startStep: 2,
-            startWallTime: -1,
-            endWallTime: -1,
-            endStep: 4,
-          })
-        );
-
-        expect(state3.selectedTime).toEqual({
-          start: {step: 2, wallTime: -1},
-          end: {step: 4, wallTime: -1},
+        expect(after.selectedTime).toEqual({
+          start: {step: 2},
+          end: {step: 100},
         });
       });
+
+      it('sets `end` when `endStep` is present', () => {
+        const before = buildMetricsState({
+          selectedTime: null,
+          stepMinMax: {min: 0, max: 100},
+        });
+
+        const after = reducers(
+          before,
+          actions.timeSelectionChanged({
+            startStep: 2,
+            endStep: 50,
+          })
+        );
+
+        expect(after.selectedTime).toEqual({
+          start: {step: 2},
+          end: {step: 50},
+        });
+      });
+
+      it(
+        'sets `end` to previous end if selectedTime was present and `endStep` ' +
+          'does not exist',
+        () => {
+          const before = buildMetricsState({
+            selectedTime: {start: {step: 0}, end: {step: 100}},
+            stepMinMax: {min: 0, max: 100},
+          });
+
+          const after = reducers(
+            before,
+            actions.timeSelectionChanged({
+              startStep: 2,
+            })
+          );
+
+          expect(after.selectedTime).toEqual({
+            start: {step: 2},
+            end: {step: 100},
+          });
+        }
+      );
 
       it('enables selectTimeEnabled if previously disabled', () => {
         const beforeState = buildMetricsState({
@@ -1856,18 +1878,60 @@ describe('metrics reducers', () => {
           beforeState,
           actions.timeSelectionChanged({
             startStep: 2,
-            startWallTime: -1,
           })
         );
 
         expect(nextState.selectTimeEnabled).toBe(true);
       });
+
+      it('flips `end` to `start` if new start is greater than new end', () => {
+        const beforeState = buildMetricsState({
+          selectedTime: null,
+          stepMinMax: {min: 0, max: 100},
+        });
+
+        const nextState = reducers(
+          beforeState,
+          actions.timeSelectionChanged({
+            startStep: 150,
+            endStep: 0,
+          })
+        );
+
+        expect(nextState.selectedTime).toEqual({
+          start: {step: 150},
+          end: {step: 150},
+        });
+      });
+
+      it(
+        'sets `end` to `start` if new start is greater than current end and ' +
+          'there is no `endStep',
+        () => {
+          const beforeState = buildMetricsState({
+            selectedTime: null,
+            stepMinMax: {min: 0, max: 100},
+          });
+
+          const nextState = reducers(
+            beforeState,
+            actions.timeSelectionChanged({
+              startStep: 150,
+            })
+          );
+
+          expect(nextState.selectedTime).toEqual({
+            start: {step: 150},
+            end: {step: 150},
+          });
+        }
+      );
     });
 
     describe('#timeSelectionCleared', () => {
       it('clears selected time', () => {
         const beforeState = buildMetricsState({
-          selectedTime: {start: {step: 4, wallTime: -1}, end: null},
+          selectedTime: {start: {step: 4}, end: {step: 4}},
         });
 
         const nextState = reducers(beforeState, actions.timeSelectionCleared());

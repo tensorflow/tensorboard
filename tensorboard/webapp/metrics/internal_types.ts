@@ -96,6 +96,6 @@ export const SCALARS_SMOOTHING_MIN = 0;
 export const SCALARS_SMOOTHING_MAX = 0.999;
 
 export interface LinkedTime {
-  start: {step: number; wallTime: number};
-  end: {step: number; wallTime: number} | null;
+  start: {step: number};
+  end: {step: number} | null;
 }
