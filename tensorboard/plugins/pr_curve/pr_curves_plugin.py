@@ -230,7 +230,9 @@ class PrCurvesPlugin(base_plugin.TBPlugin):
         return {
             "wall_time": wall_time,
             "step": step,
-            "precision": data_array[metadata.PRECISION_INDEX, :end_index].tolist(),
+            "precision": data_array[
+                metadata.PRECISION_INDEX, :end_index
+            ].tolist(),
             "recall": data_array[metadata.RECALL_INDEX, :end_index].tolist(),
             "true_positives": true_positives[:end_index],
             "false_positives": false_positives[:end_index],
