@@ -37,10 +37,21 @@ describe('app_routing/utils', () => {
       ).toEqual([{name: 'exp1', id: 'foo:my-universe:123'}]);
     });
 
+    it('parses experiments with no name', () => {
+      expect(
+        utils.parseCompareExperimentStr(
+          'exp1:foo,:universe:bar,:baz:my-universe:123'
+        )
+      ).toEqual([
+        {name: 'exp1', id: 'foo'},
+        {name: '', id: 'universe:bar'},
+        {name: '', id: 'baz:my-universe:123'},
+      ]);
+    });
+
     it('throws error when the map is malformed', () => {
       expect(() => utils.parseCompareExperimentStr('exp1')).toThrow();
       expect(() => utils.parseCompareExperimentStr('exp1:')).toThrow();
-      expect(() => utils.parseCompareExperimentStr('foo,bar,baz')).toThrow();
     });
   });
 
