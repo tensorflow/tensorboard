@@ -56,6 +56,7 @@ export class RegexEditDialogComponent {
 
   fillExample(regexExample: string): void {
     this.regexString = regexExample;
+    this.regexInputChange(regexExample);
   }
 
   regexInputChange(regexString: string) {
