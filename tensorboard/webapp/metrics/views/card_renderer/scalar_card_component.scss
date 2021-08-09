@@ -114,20 +114,35 @@ $_title-to-heading-gap: 12px;
   }
 }
 
-.selected-time-single {
+.out-of-selected-time {
+  border: 0 dashed currentColor;
   height: 100%;
-  position: relative;
-  width: 100%;
+  position: absolute;
 
-  .selected-time-line {
-    $_border-width: 2px;
-    border-left: $_border-width dashed currentColor;
-    height: 100%;
-    // border is 2px.
-    // Center the line by offseting 1px to the left since the width of the
+  $_border-width: 2px;
+
+  &.start {
+    border-right-width: $_border-width;
     margin-left: -$_border-width / 2;
-    position: absolute;
-    width: 0;
+
+    &.range {
+      left: 0;
+    }
+  }
+
+  &.end {
+    border-left-width: $_border-width;
+    margin-right: -$_border-width / 2;
+    right: 0;
+  }
+
+  &.range {
+    // Replace this with backdrop-filter if opacity works.
+    background-color: rgba(255, 255, 255, 0.5);
+
+    @include tb-dark-theme {
+      background-color: rgba(0, 0, 0, 0.4);
+    }
   }
 }
 

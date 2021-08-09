@@ -167,18 +167,35 @@ limitations under the License.
   let-xScale="xScale"
 >
   <ng-container *ngIf="selectedTime">
-    <div *ngIf="!selectedTime.end" class="selected-time-single">
-      <div
-        class="selected-time-line"
-        [style.left]="
-          xScale.forward(
-            viewExtent.x,
-            [0, domDim.width],
-            selectedTime.start.step
-          ) + 'px'
-        "
-      ></div>
-    </div>
+    <div
+      [ngClass]="{
+        'out-of-selected-time': true,
+        start: true,
+        range: !!selectedTime.end
+      }"
+      [style.width]="
+        xScale.forward(
+          viewExtent.x,
+          [0, domDim.width],
+          selectedTime.start.step
+        ) + 'px'
+      "
+    ></div>
+    <div
+      *ngIf="selectedTime.end"
+      [ngClass]="{
+        'out-of-selected-time': true,
+        end: true,
+        range: true
+      }"
+      [style.left]="
+        xScale.forward(
+          viewExtent.x,
+          [0, domDim.width],
+          selectedTime.end.step
+        ) + 'px'
+      "
+    ></div>
   </ng-container>
 </ng-template>
 
