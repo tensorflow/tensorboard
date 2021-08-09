@@ -45,7 +45,7 @@ export class RegexEditDialogComponent {
   @Output() regexInputOnChange = new EventEmitter<string>();
 
   timeOutId = 0;
-  @ViewChild("regexStringInput", { static: false }) regexStringInput!: ElementRef;
+  @ViewChild('regexStringInput', {static: false}) regexStringInput!: ElementRef;
 
   constructor(
     public readonly dialogRef: MatDialogRef<RegexEditDialogComponent>

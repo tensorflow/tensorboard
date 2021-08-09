@@ -511,4 +511,19 @@ describe('regex_edit_dialog', () => {
     expect(list.length).toBe(6);
     expect(more.nativeElement.textContent).toBe('and 2 more');
   }));
+
+  it('makes focus stay in the regex dialog', fakeAsync(() => {
+    const fixture = createComponent(['rose']);
+    fixture.detectChanges();
+    const input = fixture.debugElement.query(By.css('input'));
+    // Works around for input element focus initial (cdkFocusInitial)
+    input.nativeElement.focus();
+
+    const div = document.createElement('div');
+    div.focus();
+    fixture.detectChanges();
+
+    expect(document.activeElement).toBe(input.nativeElement);
+    tick(500);
+  }));
 });

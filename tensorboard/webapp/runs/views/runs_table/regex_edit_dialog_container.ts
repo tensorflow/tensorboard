@@ -38,13 +38,6 @@ import {ColorGroup} from './regex_edit_dialog_component';
 
 const INPUT_CHANGE_DEBOUNCE_INTERVAL_MS = 500;
 
-function isWithinDialog(activeElement: Element) {
-  console.log("----isWithinDialog-----");
-  console.log(activeElement);
-  console.log(activeElement.closest('.regex-edit-dialog'));
-  return activeElement.closest('.regex-edit-dialog') ? true : false;
-}
-
 @Component({
   selector: 'regex-edit-dialog',
   template: `<regex-edit-dialog-component
