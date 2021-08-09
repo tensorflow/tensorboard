@@ -922,6 +922,8 @@ describe('runs_reducers', () => {
           ['run2', colorUtils.CHART_COLOR_PALLETE[1]],
           ['run3', colorUtils.CHART_COLOR_PALLETE[1]],
           ['run4', colorUtils.CHART_COLOR_PALLETE[1]],
+          ['run5', colorUtils.NONMATCHED_COLOR],
+          ['run6', colorUtils.NONMATCHED_COLOR],
         ])
       );
       expect(nextState.data.runColorOverrideForGroupBy).toEqual(new Map());
