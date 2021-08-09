@@ -181,6 +181,28 @@ tf_ng_module(
     ],
 )
 
+tf_sass_binary(
+    name = "vis_selected_time_clipped_styles",
+    src = "vis_selected_time_clipped_component.scss",
+)
+
+tf_ng_module(
+    name = "vis_selected_time_clipped",
+    srcs = [
+        "vis_selected_time_clipped_component.ts",
+        "vis_selected_time_clipped_module.ts",
+    ],
+    assets = [
+        ":vis_selected_time_clipped_styles",
+    ],
+    deps = [
+        "//tensorboard/webapp/angular:expect_angular_material_icon",
+        "//tensorboard/webapp/metrics:types",
+        "@npm//@angular/common",
+        "@npm//@angular/core",
+    ],
+)
+
 tf_ts_library(
     name = "scalar_card_types",
     srcs = [
@@ -225,6 +247,7 @@ tf_ng_module(
         ":data_download_dialog",
         ":scalar_card_types",
         ":utils",
+        ":vis_selected_time_clipped",
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp:selectors",
         "//tensorboard/webapp/angular:expect_angular_cdk_overlay",

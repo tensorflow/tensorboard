@@ -143,11 +143,17 @@ export function buildDataSourceTagMetadata(): DataSourceTagMetadata {
   };
 }
 
+export function buildScalarStepData(
+  override: Partial<ScalarStepDatum> = {}
+): ScalarStepDatum {
+  return {step: 0, wallTime: 123, value: 42, ...override};
+}
+
 export function createScalarStepData(): ScalarStepDatum[] {
   return [
-    {step: 0, wallTime: 123, value: 42},
-    {step: 1, wallTime: 124, value: -42},
-    {step: 99, wallTime: 125, value: 0},
+    buildScalarStepData({step: 0, wallTime: 123, value: 42}),
+    buildScalarStepData({step: 1, wallTime: 124, value: -42}),
+    buildScalarStepData({step: 99, wallTime: 125, value: 0}),
   ];
 }
 

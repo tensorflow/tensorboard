@@ -59,6 +59,7 @@ import {
   getMetricsScalarPartitionNonMonotonicX,
   getMetricsScalarSmoothing,
   getMetricsTooltipSort,
+  getMetricsUseRangeSelectTime,
   getMetricsXAxisType,
   RunToSeries,
 } from '../../store';
@@ -66,6 +67,7 @@ import {CardId, CardMetadata, LinkedTime, XAxisType} from '../../types';
 import {CardRenderer} from '../metrics_view_types';
 import {getTagDisplayName} from '../utils';
 import {DataDownloadDialogContainer} from './data_download_dialog_container';
+import {LinkedTimeWithClipped} from './scalar_card_component';
 import {
   PartialSeries,
   PartitionedSeries,
@@ -159,16 +161,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit {
   isPinned$?: Observable<boolean>;
   dataSeries$?: Observable<ScalarCardDataSeries[]>;
   chartMetadataMap$?: Observable<ScalarCardSeriesMetadataMap>;
-
-  readonly selectedTime$: Observable<LinkedTime | null> = combineLatest([
-    this.store.select(getMetricsSelectedTime),
-    this.store.select(getMetricsXAxisType),
-  ]).pipe(
-    map(([selectedTime, xAxisType]) => {
-      if (xAxisType !== XAxisType.STEP) return null;
-      return selectedTime;
-    })
-  );
+  selectedTime$?: Observable<LinkedTimeWithClipped | null>;
 
   readonly isCardVisible$ = this.store.select(getVisibleCardIdSet).pipe(
     map((visibleSet) => {
@@ -341,6 +334,54 @@ export class ScalarCardContainer implements CardRenderer, OnInit {
         );
       }),
       startWith([] as ScalarCardDataSeries[])
+    );
+
+    this.selectedTime$ = combineLatest([
+      partitionedSeries$,
+      this.store.select(getMetricsSelectedTime),
+      this.store.select(getMetricsXAxisType),
+    ]).pipe(
+      map(([series, selectedTime, xAxisType]) => {
+        if (xAxisType !== XAxisType.STEP || !selectedTime) return null;
+
+        let minStep = Infinity;
+        let maxStep = -Infinity;
+        for (const {points} of series) {
+          for (const point of points) {
+            minStep = minStep > point.x ? point.x : minStep;
+            maxStep = maxStep < point.x ? point.x : maxStep;
+          }
+        }
+
+        if (
+          // Case when selectedTime contains extents.
+          (selectedTime.start.step <= minStep &&
+            selectedTime.end &&
+            maxStep <= selectedTime.end.step) ||
+          // Case when start of selectedTime is within extent.
+          (minStep <= selectedTime.start.step &&
+            selectedTime.start.step <= maxStep) ||
+          // Case when end of selectedTime is within extent.
+          (selectedTime.end &&
+            minStep <= selectedTime.end?.step &&
+            selectedTime.end?.step <= maxStep)
+        ) {
+          return {...selectedTime, clipped: false};
+        }
+
+        if (maxStep <= selectedTime.start.step) {
+          return {
+            start: {step: maxStep},
+            end: null,
+            clipped: true,
+          };
+        }
+        return {
+          start: {step: minStep},
+          end: null,
+          clipped: true,
+        };
+      })
     );
 
     this.chartMetadataMap$ = partitionedSeries$.pipe(

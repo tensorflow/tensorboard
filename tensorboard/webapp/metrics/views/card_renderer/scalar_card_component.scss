@@ -34,10 +34,22 @@ $_title-to-heading-gap: 12px;
 
   align-items: center;
   display: flex;
-  justify-content: space-between;
   font-size: 14px;
+  justify-content: space-between;
   margin-bottom: $heading-content-gap;
   position: relative;
+
+  .name {
+    align-items: center;
+    display: grid;
+    gap: 5px;
+    grid-template-columns: auto auto;
+  }
+
+  vis-selected-time-clipped {
+    font-size: 1.2em;
+    line-height: 0;
+  }
 }
 
 .tag {

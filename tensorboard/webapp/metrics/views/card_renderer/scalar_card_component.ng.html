@@ -15,11 +15,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <div class="heading">
-  <tb-truncated-path
-    class="tag"
-    title="{{ tag }}"
-    value="{{ title }}"
-  ></tb-truncated-path>
+  <span class="name">
+    <tb-truncated-path
+      class="tag"
+      title="{{ tag }}"
+      value="{{ title }}"
+    ></tb-truncated-path>
+    <vis-selected-time-clipped
+      *ngIf="selectedTime && selectedTime.clipped"
+    ></vis-selected-time-clipped>
+  </span>
   <span class="controls">
     <button
       mat-icon-button
@@ -173,10 +178,10 @@ limitations under the License.
         start: true,
         range: !!selectedTime.end
       }"
-      [style.width]="
+      [style.right]="
         xScale.forward(
           viewExtent.x,
-          [0, domDim.width],
+          [domDim.width, 0],
           selectedTime.start.step
         ) + 'px'
       "
