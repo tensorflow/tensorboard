@@ -41,11 +41,6 @@ export function parseCompareExperimentStr(
     }
     const name = nameToIdStr.slice(0, colonIndex);
     const id = nameToIdStr.slice(colonIndex + 1);
-
-    if (!name) {
-      throw new Error(`Expect name to be non-falsy: ${nameToIdStr}`);
-    }
-
     if (!id) {
       throw new Error(`Expect id to be non-falsy: ${nameToIdStr}`);
     }

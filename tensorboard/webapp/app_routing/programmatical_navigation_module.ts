@@ -83,7 +83,7 @@ export class ProgrammaticalNavigationModule {
   >(
     providerFactory: () => {
       actionCreator: AC;
-      lambda: (action: U) => ProgrammaticalNavigation;
+      lambda: (action: U) => ProgrammaticalNavigation | null;
     }
   ): ModuleWithProviders<ProgrammaticalNavigationModule> {
     return {

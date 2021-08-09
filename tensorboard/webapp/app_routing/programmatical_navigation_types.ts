@@ -45,5 +45,10 @@ export type ProgrammaticalNavigation =
 
 export interface NavigationLambda {
   actionCreator: ActionCreator<string, Creator>;
-  lambda(action: Action): ProgrammaticalNavigation;
+  /**
+   * The function that determines the navigation to be performed when the action
+   * is triggered. May return `null` to indicate that no navigation should
+   * occur.
+   */
+  lambda(action: Action): ProgrammaticalNavigation | null;
 }

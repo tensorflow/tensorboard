@@ -85,6 +85,26 @@ describe('programmatical navigation module test', () => {
     expect(module.getNavigation(otherTestAction())).toBe(null);
   });
 
+  it('returns null when lambda does not provide a navigation', async () => {
+    function provider() {
+      return {
+        actionCreator: testAction,
+        lambda: (action: typeof testAction) => null,
+      };
+    }
+
+    await TestBed.configureTestingModule({
+      imports: [
+        ProgrammaticalNavigationModule.registerProgrammaticalNavigation(
+          provider
+        ),
+      ],
+    }).compileComponents();
+
+    const module = TestBed.inject(ProgrammaticalNavigationModule);
+    expect(module.getNavigation(testAction())).toBe(null);
+  });
+
   it('throws invariant error if same action is registered twice', async () => {
     function provider1() {
       return {
