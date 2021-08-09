@@ -406,7 +406,7 @@ describe('regex_edit_dialog', () => {
       expect(groupingResult).toBeNull();
     }));
 
-    it('does not render grouping preview when no matched runs', fakeAsync(() => {
+    it('renders warning when no runs match', fakeAsync(() => {
       const fixture = createComponent(['rose']);
       store.overrideSelector(getRuns, [
         buildRun({id: 'run1', name: 'run 1'}),
@@ -426,10 +426,10 @@ describe('regex_edit_dialog', () => {
       tick(TEST_ONLY.INPUT_CHANGE_DEBOUNCE_INTERVAL_MS);
       fixture.detectChanges();
 
-      const groupingResult = fixture.debugElement.query(
-        By.css('.group-container')
+      const warning = fixture.debugElement.query(
+        By.css('.group-container .warning')
       );
-      expect(groupingResult).toBeNull();
+      expect(warning).not.toBeNull();
     }));
 
     it('does not update grouping preview on invalid regex input', fakeAsync(() => {

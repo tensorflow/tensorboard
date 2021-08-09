@@ -34,18 +34,26 @@ limitations under the License.
   h4 {
     margin-bottom: 10px;
   }
+
+  .warning {
+    @include tb-theme-foreground-prop(color, secondary-text);
+    font-size: 0.9em;
+  }
 }
 
 .grouping-preview {
   @include tb-theme-foreground-prop(border, border, 1px solid);
+  max-height: 50vh;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+.match-container {
   align-items: flex-start;
   display: grid;
   flex-wrap: wrap;
   gap: 10px;
   grid-template-columns: repeat(2, minmax(50%, 1fr));
-  max-height: 50vh;
-  overflow-y: auto;
-  padding: 20px;
 }
 
 .color-swatch {
