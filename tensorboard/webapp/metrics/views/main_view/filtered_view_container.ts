@@ -16,6 +16,7 @@ import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {createSelector, Store} from '@ngrx/store';
 import {combineLatest, Observable, of} from 'rxjs';
 import {
+  combineLatestWith,
   distinctUntilChanged,
   filter,
   map,
@@ -26,7 +27,11 @@ import {
 import {State} from '../../../app_state';
 import {getCurrentRouteRunSelection} from '../../../selectors';
 import {isSingleRunPlugin} from '../../data_source';
-import {getMetricsTagFilter, getNonEmptyCardIdsWithMetadata} from '../../store';
+import {
+  getMetricsFilteredPluginTypes,
+  getMetricsTagFilter,
+  getNonEmptyCardIdsWithMetadata,
+} from '../../store';
 import {CardObserver} from '../card_renderer/card_lazy_loader';
 
 import {CardIdWithMetadata} from '../metrics_view_types';
@@ -82,6 +87,11 @@ export class FilteredViewContainer {
     filter(({regex}) => regex !== null),
     map(({cardList, regex}) => {
       return cardList.filter(({tag}) => regex!.test(tag));
+    }),
+    combineLatestWith(this.store.select(getMetricsFilteredPluginTypes)),
+    map(([cardList, filteredPluginTypes]) => {
+      if (!filteredPluginTypes.size) return cardList;
+      return cardList.filter((card) => filteredPluginTypes.has(card.plugin));
     }),
     map((cardList) => {
       return cardList.sort((cardA, cardB) => {

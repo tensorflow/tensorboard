@@ -89,6 +89,10 @@ describe('metrics filter input', () => {
         sample: 0,
       },
     ]);
+    store.overrideSelector(
+      selectors.getMetricsFilteredPluginTypes,
+      new Set<PluginType>()
+    );
   });
 
   describe('input interaction', () => {
@@ -138,6 +142,60 @@ describe('metrics filter input', () => {
       expect(options.map((option) => option.nativeElement.textContent)).toEqual(
         []
       );
+    });
+
+    it('filters by plugin type when filteredPluginTypes is non-empty', () => {
+      store.overrideSelector(
+        selectors.getMetricsFilteredPluginTypes,
+        new Set<PluginType>([])
+      );
+      store.overrideSelector(selectors.getNonEmptyCardIdsWithMetadata, [
+        {
+          cardId: 'card1',
+          plugin: PluginType.SCALARS,
+          tag: 'tagA',
+          runId: null,
+        },
+        {
+          cardId: 'card1',
+          plugin: PluginType.IMAGES,
+          tag: 'tagB/Images',
+          runId: 'run1',
+          sample: 0,
+        },
+        {
+          cardId: 'card2',
+          plugin: PluginType.HISTOGRAMS,
+          tag: 'tagC/woof',
+          runId: 'run1',
+          sample: 0,
+        },
+      ]);
+      store.overrideSelector(selectors.getMetricsTagFilter, '');
+      const fixture = TestBed.createComponent(MetricsFilterInputContainer);
+      fixture.detectChanges();
+
+      const input = fixture.debugElement.query(By.css('input'));
+      input.nativeElement.focus();
+      fixture.detectChanges();
+
+      const optionBefore = getAutocompleteOptions(overlayContainer);
+      expect(
+        optionBefore.map((option) => option.nativeElement.textContent)
+      ).toEqual(['tagA', 'tagB/Images', 'tagC/woof']);
+
+      store.overrideSelector(
+        selectors.getMetricsFilteredPluginTypes,
+        new Set<PluginType>([PluginType.SCALARS, PluginType.HISTOGRAMS])
+      );
+
+      store.refreshState();
+      fixture.detectChanges();
+
+      const optionAfter = getAutocompleteOptions(overlayContainer);
+      expect(
+        optionAfter.map((option) => option.nativeElement.textContent)
+      ).toEqual(['tagA', 'tagC/woof']);
     });
 
     it('filters by regex', () => {

@@ -21,6 +21,7 @@ import {
   Output,
 } from '@angular/core';
 
+import {PluginType} from '../../types';
 import {CardObserver} from '../card_renderer/card_lazy_loader';
 
 @Component({
@@ -34,11 +35,19 @@ export class MainViewComponent {
 
   @Input() isSidepaneOpen!: boolean;
 
+  @Input() filteredPluginTypes!: Set<PluginType>;
+
   @Output() onSettingsButtonClicked = new EventEmitter<void>();
 
   @Output() onCloseSidepaneButtonClicked = new EventEmitter<void>();
 
+  @Output() onPluginTypeToggled = new EventEmitter<PluginType>();
+
+  @Output() onPluginTypeAllToggled = new EventEmitter<void>();
+
   constructor(private readonly host: ElementRef) {}
+
+  readonly PluginType = PluginType;
 
   /**
    * Load cards that are not yet visible, if they are roughly 1 card row away in

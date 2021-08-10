@@ -19,6 +19,7 @@ import {MatAutocompleteModule} from '@angular/material/autocomplete';
 import {MatButtonModule} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
 import {MatInputModule} from '@angular/material/input';
+import {MatButtonToggleModule} from '@angular/material/button-toggle';
 
 import {FilterInputModule} from '../../../widgets/filter_input/filter_input_module';
 import {CardRendererModule} from '../card_renderer/card_renderer_module';
@@ -59,6 +60,7 @@ import {PinnedViewContainer} from './pinned_view_container';
     FilterInputModule,
     MatAutocompleteModule,
     MatButtonModule,
+    MatButtonToggleModule,
     MatIconModule,
     MatInputModule,
     RightPaneModule,

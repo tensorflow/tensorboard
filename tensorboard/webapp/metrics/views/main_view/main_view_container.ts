@@ -14,12 +14,13 @@ limitations under the License.
 ==============================================================================*/
 import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {Store} from '@ngrx/store';
+import {Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
 
 import {State} from '../../../app_state';
-import {getMetricsTagFilter} from '../../store';
-
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
+import {metricsShowAllPlugins, metricsToggleVisiblePlugin} from '../../actions';
+import {getMetricsFilteredPluginTypes, getMetricsTagFilter} from '../../store';
+import {PluginType} from '../../types';
 
 @Component({
   selector: 'metrics-main-view',
@@ -27,8 +28,11 @@ import {getMetricsTagFilter} from '../../store';
     <metrics-main-view-component
       [showFilteredView]="showFilteredView$ | async"
       [isSidepaneOpen]="isSidepaneOpen"
+      [filteredPluginTypes]="filteredPluginTypes$ | async"
       (onSettingsButtonClicked)="onSettingsButtonClicked()"
       (onCloseSidepaneButtonClicked)="onCloseSidepaneButtonClicked()"
+      (onPluginTypeToggled)="onPluginVisibilityToggled($event)"
+      (onPluginTypeAllToggled)="onShowAllPlugins()"
     ></metrics-main-view-component>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -38,10 +42,16 @@ export class MainViewContainer {
 
   isSidepaneOpen = true;
 
-  readonly showFilteredView$ = this.store.select(getMetricsTagFilter).pipe(
-    map((filter) => {
-      return filter.length > 0;
-    })
+  readonly showFilteredView$: Observable<boolean> = this.store
+    .select(getMetricsTagFilter)
+    .pipe(
+      map((filter) => {
+        return filter.length > 0;
+      })
+    );
+
+  readonly filteredPluginTypes$ = this.store.select(
+    getMetricsFilteredPluginTypes
   );
 
   onSettingsButtonClicked() {
@@ -50,5 +60,13 @@ export class MainViewContainer {
 
   onCloseSidepaneButtonClicked() {
     this.isSidepaneOpen = false;
+  }
+
+  onPluginVisibilityToggled(plugin: PluginType) {
+    this.store.dispatch(metricsToggleVisiblePlugin({plugin}));
+  }
+
+  onShowAllPlugins() {
+    this.store.dispatch(metricsShowAllPlugins());
   }
 }

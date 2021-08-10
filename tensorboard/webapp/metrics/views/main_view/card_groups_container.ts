@@ -15,12 +15,15 @@ limitations under the License.
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {createSelector, Store} from '@ngrx/store';
 import {Observable} from 'rxjs';
-import {map} from 'rxjs/operators';
+import {combineLatestWith, map} from 'rxjs/operators';
 
 import {State} from '../../../app_state';
 import {getCurrentRouteRunSelection} from '../../../selectors';
 import {isSingleRunPlugin} from '../../data_source';
-import {getNonEmptyCardIdsWithMetadata} from '../../store';
+import {
+  getMetricsFilteredPluginTypes,
+  getNonEmptyCardIdsWithMetadata,
+} from '../../store';
 import {CardObserver} from '../card_renderer/card_lazy_loader';
 import {CardGroup} from '../metrics_view_types';
 import {groupCardIdWithMetdata} from '../utils';
@@ -55,5 +58,14 @@ export class CardGroupsContainer {
 
   readonly cardGroups$: Observable<CardGroup[]> = this.store
     .select(getRenderableCardIdsWithMetadata)
-    .pipe(map((cardList) => groupCardIdWithMetdata(cardList)));
+    .pipe(
+      combineLatestWith(this.store.select(getMetricsFilteredPluginTypes)),
+      map(([cardList, filteredPlugins]) => {
+        if (!filteredPlugins.size) return cardList;
+        return cardList.filter((card) => {
+          return filteredPlugins.has(card.plugin);
+        });
+      }),
+      map((cardList) => groupCardIdWithMetdata(cardList))
+    );
 }
