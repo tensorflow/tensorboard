@@ -87,7 +87,6 @@ export class LayoutContainer implements OnDestroy {
         // Prevents mousemove from selecting text underneath.
         event.preventDefault();
         const {width} = hostElRef.nativeElement.getBoundingClientRect();
-        // Keep 75 update to date with the min-width in SCSS.
         // Collapse the sidebar when it is too small.
         const widthInPercent =
           event.clientX <= this.MINIMUM_SIDEBAR_WIDTH_IN_PX
