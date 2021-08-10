@@ -16,7 +16,7 @@ limitations under the License.
 import {Component} from '@angular/core';
 import {fakeAsync, flush, TestBed, tick} from '@angular/core/testing';
 import {provideMockActions} from '@ngrx/effects/testing';
-import {Action, createAction, props, Store} from '@ngrx/store';
+import {Action, createAction, createSelector, props, Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {of, ReplaySubject} from 'rxjs';
 
@@ -25,6 +25,7 @@ import * as actions from '../actions';
 import {navigationRequested} from '../actions';
 import {AppRootProvider, TestableAppRootProvider} from '../app_root';
 import {Location} from '../location';
+import {DirtyUpdatesRegistryModule} from '../dirty_updates_registry_module';
 import {
   NavigateToCompare,
   NavigateToExperiments,
@@ -33,7 +34,13 @@ import {
 import {RouteRegistryModule} from '../route_registry_module';
 import {getActiveRoute} from '../store/app_routing_selectors';
 import {buildRoute, provideLocationTesting, TestableLocation} from '../testing';
-import {Navigation, Route, RouteKind, SerializableQueryParams} from '../types';
+import {
+  DirtyUpdates,
+  Navigation,
+  Route,
+  RouteKind,
+  SerializableQueryParams,
+} from '../types';
 
 import {AppRoutingEffects, TEST_ONLY} from './app_routing_effects';
 
@@ -44,6 +51,14 @@ const testAction = createAction('[TEST] test actions');
 const testNavToCompareAction = createAction(
   '[TEST] test nav to compare',
   props<NavigateToCompare['routeParams']>()
+);
+const testDirtyExperimentsSelector = createSelector(
+  (s) => s,
+  (state: any) => {
+    return {
+      experimentIds: [],
+    } as DirtyUpdates;
+  }
 );
 
 describe('app_routing_effects', () => {
@@ -138,6 +153,10 @@ describe('app_routing_effects', () => {
       };
     }
 
+    function dirtyUpdatesFactory() {
+      return testDirtyExperimentsSelector;
+    }
+
     await TestBed.configureTestingModule({
       imports: [
         RouteRegistryModule.registerRoutes(routeFactory),
@@ -146,6 +165,9 @@ describe('app_routing_effects', () => {
         ),
         ProgrammaticalNavigationModule.registerProgrammaticalNavigation(
           programmaticalCompareNavigationFactory
+        ),
+        DirtyUpdatesRegistryModule.registerDirtyUpdates<State>(
+          dirtyUpdatesFactory
         ),
       ],
       providers: [
@@ -157,6 +179,7 @@ describe('app_routing_effects', () => {
           provide: AppRootProvider,
           useClass: TestableAppRootProvider,
         },
+        DirtyUpdatesRegistryModule,
       ],
     }).compileComponents();
 
@@ -253,6 +276,92 @@ describe('app_routing_effects', () => {
           }),
         }),
       ]);
+    });
+
+    describe('dispatchNavigating$ with dirty updates', () => {
+      beforeEach(() => {
+        const activeRoute = buildRoute({
+          routeKind: RouteKind.EXPERIMENTS,
+          pathname: '/experiments',
+          queryParams: [],
+          navigationOptions: {
+            replaceState: false,
+          },
+        });
+        const dirtyExperimentsFactory = () => {
+          return {experimentIds: ['otter']};
+        };
+
+        store.overrideSelector(getActiveRoute, activeRoute);
+        store.overrideSelector(
+          testDirtyExperimentsSelector,
+          dirtyExperimentsFactory()
+        );
+        store.refreshState();
+      });
+
+      it('warns user when navigating away', () => {
+        spyOn(window, 'confirm');
+        action.next(
+          actions.navigationRequested({
+            pathname: '/experiment/meow',
+          })
+        );
+
+        expect(window.confirm).toHaveBeenCalledWith(
+          'You have unsaved edits, are you sure you want to discard them?'
+        );
+      });
+
+      it('noops if user cancels navigation', () => {
+        spyOn(window, 'confirm').and.returnValue(false);
+        action.next(
+          actions.navigationRequested({
+            pathname: '/experiment/meow',
+          })
+        );
+
+        expect(window.confirm).toHaveBeenCalledTimes(1);
+        expect(actualActions).toEqual([]);
+      });
+
+      it('fires navigating and navigated if user discards dirty updates', () => {
+        fakeAsync(() => {
+          spyOn(window, 'confirm').and.returnValue(true);
+          action.next(
+            actions.navigationRequested({
+              pathname: '/experiment/meow',
+            })
+          );
+
+          expect(window.confirm).toHaveBeenCalledTimes(1);
+
+          expect(actualActions).toEqual([
+            actions.navigating({
+              after: buildRoute({
+                routeKind: RouteKind.EXPERIMENT,
+                params: {experimentId: 'meow'},
+                pathname: '/experiment/meow',
+                queryParams: [],
+              }),
+            }),
+          ]);
+
+          tick();
+          expect(actualActions).toEqual([
+            jasmine.any(Object),
+            actions.navigated({
+              before: null,
+              after: buildRoute({
+                routeKind: RouteKind.EXPERIMENT,
+                params: {experimentId: 'meow'},
+                pathname: '//experiment/meow',
+                queryParams: [],
+              }),
+            }),
+          ]);
+        });
+      });
     });
 
     describe('order of events', () => {
