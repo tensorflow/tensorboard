@@ -44,10 +44,13 @@ export class RegexEditDialogComponent {
   @Output() regexInputOnChange = new EventEmitter<string>();
 
   timeOutId = 0;
-  @ViewChild('regexStringInput', {static: false}) regexStringInput!: ElementRef;
+  @ViewChild('regexStringInput', {static: true}) regexStringInput!: ElementRef<
+    HTMLInputElement
+  >;
 
   constructor(
-    public readonly dialogRef: MatDialogRef<RegexEditDialogComponent>
+    public readonly dialogRef: MatDialogRef<RegexEditDialogComponent>,
+    private readonly hostElRef: ElementRef
   ) {}
 
   onEnter(regexString: string) {
@@ -68,16 +71,9 @@ export class RegexEditDialogComponent {
   }
 
   resetFocus() {
-    let activeElement = document.activeElement;
-    if (!activeElement) {
-      return;
-    }
-
-    const input = this.regexStringInput.nativeElement;
-    if (input) {
-      if (!activeElement.contains(input)) {
-        (input as HTMLElement).focus();
-      }
+    if (!this.hostElRef.nativeElement.contains(document.activeElement)) {
+      const input = this.regexStringInput.nativeElement;
+      input.focus();
     }
   }
 
