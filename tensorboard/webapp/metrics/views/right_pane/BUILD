@@ -32,6 +32,7 @@ tf_ng_module(
         "//tensorboard/webapp/metrics:types",
         "//tensorboard/webapp/metrics/actions",
         "//tensorboard/webapp/widgets/dropdown",
+        "//tensorboard/webapp/widgets/range_input",
         "@npm//@angular/common",
         "@npm//@angular/core",
         "@npm//@ngrx/store",

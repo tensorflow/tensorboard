@@ -89,6 +89,10 @@ describe('metrics right_pane', () => {
       );
       store.overrideSelector(selectors.getIsFeatureFlagsLoaded, true);
       store.overrideSelector(selectors.getIsMetricsImageSupportEnabled, true);
+      store.overrideSelector(selectors.getIsLinkedTimeEnabled, false);
+      store.overrideSelector(selectors.getMetricsSelectTimeEnabled, false);
+      store.overrideSelector(selectors.getMetricsUseRangeSelectTime, false);
+      store.overrideSelector(selectors.getMetricsSelectedTimeRaw, null);
     });
 
     function getMatSliderValue(el: DebugElement): string {
@@ -290,5 +294,178 @@ describe('metrics right_pane', () => {
 
     // mat-select does not render `input` or a DOM that can be manipulated.
     // skip the test for now.
+
+    describe('linked time feature enabled', () => {
+      beforeEach(() => {
+        store.overrideSelector(selectors.getIsLinkedTimeEnabled, true);
+        store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.STEP);
+      });
+
+      it('enables the feature only when xAxisType=STEP', () => {
+        store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.STEP);
+        const fixture = TestBed.createComponent(SettingsViewContainer);
+        fixture.detectChanges();
+
+        expect(fixture.debugElement.query(By.css('.linked-time'))).toBeTruthy();
+
+        store.overrideSelector(
+          selectors.getMetricsXAxisType,
+          XAxisType.WALL_TIME
+        );
+        store.refreshState();
+        fixture.detectChanges();
+
+        expect(fixture.debugElement.query(By.css('.linked-time'))).toBeFalsy();
+      });
+
+      describe('toggles', () => {
+        it('renders and dispatches action when toggling the feature', () => {
+          store.overrideSelector(selectors.getMetricsSelectTimeEnabled, false);
+          const fixture = TestBed.createComponent(SettingsViewContainer);
+          fixture.detectChanges();
+
+          const el = fixture.debugElement.query(By.css('.linked-time'));
+          const [enabled] = el.queryAll(By.css('mat-checkbox input'));
+          expect(enabled.nativeElement.ariaChecked).toBe('false');
+
+          enabled.nativeElement.click();
+
+          expect(dispatchSpy).toHaveBeenCalledOnceWith(
+            actions.selectTimeEnableToggled()
+          );
+
+          store.overrideSelector(selectors.getMetricsSelectTimeEnabled, true);
+          store.refreshState();
+          fixture.detectChanges();
+          expect(enabled.nativeElement.ariaChecked).toBe('true');
+        });
+
+        it('renders and dispatches action when toggling range mode', () => {
+          store.overrideSelector(selectors.getMetricsUseRangeSelectTime, false);
+          const fixture = TestBed.createComponent(SettingsViewContainer);
+          fixture.detectChanges();
+
+          const el = fixture.debugElement.query(By.css('.linked-time'));
+          const [, range] = el.queryAll(By.css('mat-checkbox input'));
+          expect(range.nativeElement.ariaChecked).toBe('false');
+
+          range.nativeElement.click();
+
+          expect(dispatchSpy).toHaveBeenCalledOnceWith(
+            actions.useRangeSelectTimeToggled()
+          );
+
+          store.overrideSelector(selectors.getMetricsUseRangeSelectTime, true);
+          store.refreshState();
+          fixture.detectChanges();
+          expect(range.nativeElement.ariaChecked).toBe('true');
+        });
+      });
+
+      describe('step selector', () => {
+        it('displays mat-slider on single step selection mode', () => {
+          store.overrideSelector(selectors.getMetricsUseRangeSelectTime, false);
+          const fixture = TestBed.createComponent(SettingsViewContainer);
+          fixture.detectChanges();
+
+          const el = fixture.debugElement.query(By.css('.linked-time'));
+          expect(el.query(By.css('mat-slider'))).toBeTruthy();
+
+          store.overrideSelector(selectors.getMetricsUseRangeSelectTime, true);
+          store.refreshState();
+          fixture.detectChanges();
+          expect(el.query(By.css('mat-slider'))).toBeFalsy();
+        });
+
+        it('dispatches actions when step changes when making single step change', () => {
+          store.overrideSelector(selectors.getMetricsUseRangeSelectTime, false);
+          store.overrideSelector(selectors.getMetricsSelectedTimeRaw, null);
+          const fixture = TestBed.createComponent(SettingsViewContainer);
+          fixture.detectChanges();
+
+          const el = fixture.debugElement.query(By.css('.linked-time'));
+          const slider = el.query(By.css('mat-slider'));
+
+          slider.triggerEventHandler('input', {
+            value: 5,
+          });
+
+          expect(dispatchSpy).toHaveBeenCalledOnceWith(
+            actions.timeSelectionChanged({
+              startStep: 5,
+              startWallTime: 0,
+              endStep: undefined,
+              endWallTime: undefined,
+            })
+          );
+        });
+
+        it('keeps existing endStep when single step range changes', () => {
+          store.overrideSelector(selectors.getMetricsUseRangeSelectTime, false);
+          store.overrideSelector(selectors.getMetricsSelectedTimeRaw, {
+            start: {step: 0, wallTime: -1},
+            end: {step: 100, wallTime: 100},
+          });
+          const fixture = TestBed.createComponent(SettingsViewContainer);
+          fixture.detectChanges();
+
+          const el = fixture.debugElement.query(By.css('.linked-time'));
+          const slider = el.query(By.css('mat-slider'));
+
+          slider.triggerEventHandler('input', {
+            value: 5,
+          });
+
+          expect(dispatchSpy).toHaveBeenCalledOnceWith(
+            actions.timeSelectionChanged({
+              startStep: 5,
+              startWallTime: 0,
+              endStep: 100,
+              endWallTime: 100,
+            })
+          );
+        });
+
+        it('displays tb-range-input on range step selection mode', () => {
+          store.overrideSelector(selectors.getIsLinkedTimeEnabled, true);
+          store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.STEP);
+          store.overrideSelector(selectors.getMetricsUseRangeSelectTime, false);
+          const fixture = TestBed.createComponent(SettingsViewContainer);
+          fixture.detectChanges();
+
+          const el = fixture.debugElement.query(By.css('.linked-time'));
+          expect(el.query(By.css('tb-range-input'))).toBeFalsy();
+
+          store.overrideSelector(selectors.getMetricsUseRangeSelectTime, true);
+          store.refreshState();
+          fixture.detectChanges();
+          expect(el.query(By.css('tb-range-input'))).toBeTruthy();
+        });
+
+        it('dispatches actions when step changes when making range step change', () => {
+          store.overrideSelector(selectors.getMetricsUseRangeSelectTime, true);
+          store.overrideSelector(selectors.getMetricsSelectedTimeRaw, null);
+          const fixture = TestBed.createComponent(SettingsViewContainer);
+          fixture.detectChanges();
+
+          const el = fixture.debugElement.query(By.css('.linked-time'));
+          const rangeInput = el.query(By.css('tb-range-input'));
+
+          rangeInput.triggerEventHandler('value', {
+            lowerValue: 10,
+            upperValue: 200,
+          });
+
+          expect(dispatchSpy).toHaveBeenCalledOnceWith(
+            actions.timeSelectionChanged({
+              startStep: 10,
+              startWallTime: 0,
+              endStep: 200,
+              endWallTime: 0,
+            })
+          );
+        });
+      });
+    });
   });
 });

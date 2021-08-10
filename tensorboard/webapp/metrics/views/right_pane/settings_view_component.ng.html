@@ -26,6 +26,51 @@ limitations under the License.
     >
     </tb-dropdown>
   </div>
+  <div
+    class="control-row linked-time"
+    *ngIf="isLinkedTimeFeatureEnabled && xAxisType == XAxisType.STEP"
+  >
+    <label>Link visualization by step</label>
+    <div class="controls">
+      <div>
+        <mat-checkbox
+          [checked]="selectTimeEnabled"
+          (change)="selectTimeEnableToggled.emit()"
+          >Enabled</mat-checkbox
+        >
+      </div>
+      <div>
+        <mat-checkbox
+          [checked]="useRangeSelectTime"
+          (change)="useRangeSelectTimeToggled.emit()"
+          >Use range</mat-checkbox
+        >
+      </div>
+      <div class="step-selector">
+        <mat-slider
+          *ngIf="!useRangeSelectTime; else range"
+          [disabled]="!selectTimeEnabled"
+          color="primary"
+          [min]="0"
+          [max]="1000"
+          [step]="1"
+          [value]="selectedTime?.start.step"
+          [thumbLabel]="true"
+          (input)="onStepStartChanged($event.value)"
+        ></mat-slider>
+        <ng-template #range>
+          <tb-range-input
+            [disabled]="!selectTimeEnabled"
+            min="0"
+            max="1000"
+            [lowerValue]="selectedTime?.start.step || 0"
+            [upperValue]="selectedTime?.end?.step"
+            (value)="onStepRangeChanged($event)"
+          ></tb-range-input>
+        </ng-template>
+      </div>
+    </div>
+  </div>
 </section>
 
 <section class="scalars">

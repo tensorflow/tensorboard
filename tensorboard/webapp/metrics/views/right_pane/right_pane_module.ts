@@ -23,6 +23,7 @@ import {MatSliderModule} from '@angular/material/slider';
 
 import {FeatureFlagModule} from '../../../feature_flag/feature_flag_module';
 import {DropdownModule} from '../../../widgets/dropdown/dropdown_module';
+import {RangeInputModule} from '../../../widgets/range_input/range_input_module';
 import {RightPaneComponent} from './right_pane_component';
 import {SettingsViewComponent} from './settings_view_component';
 import {SettingsViewContainer} from './settings_view_container';
@@ -44,6 +45,7 @@ import {SettingsViewContainer} from './settings_view_container';
     MatSelectModule,
     MatSliderModule,
     FeatureFlagModule,
+    RangeInputModule,
   ],
 })
 export class RightPaneModule {}

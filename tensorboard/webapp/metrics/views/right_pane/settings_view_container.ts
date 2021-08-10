@@ -14,9 +14,11 @@ limitations under the License.
 ==============================================================================*/
 import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {Store} from '@ngrx/store';
+import {Observable} from 'rxjs';
 import {filter, map, take, withLatestFrom} from 'rxjs/operators';
 
 import {State} from '../../../app_state';
+import * as selectors from '../../../selectors';
 import {
   metricsChangeHistogramMode,
   metricsChangeImageBrightness,
@@ -29,11 +31,11 @@ import {
   metricsScalarPartitionNonMonotonicXToggled,
   metricsToggleIgnoreOutliers,
   metricsToggleImageShowActualSize,
+  selectTimeEnableToggled,
+  timeSelectionChanged,
+  useRangeSelectTimeToggled,
 } from '../../actions';
-import * as selectors from '../../../selectors';
-import {HistogramMode, TooltipSort, XAxisType} from '../../types';
-
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
+import {HistogramMode, LinkedTime, TooltipSort, XAxisType} from '../../types';
 
 @Component({
   selector: 'metrics-dashboard-settings',
@@ -60,6 +62,13 @@ import {HistogramMode, TooltipSort, XAxisType} from '../../types';
       (imageContrastReset)="onImageContrastReset()"
       [imageShowActualSize]="imageShowActualSize$ | async"
       (imageShowActualSizeChanged)="onImageShowActualSizeChanged()"
+      [isLinkedTimeFeatureEnabled]="isLinkedTimeFeatureEnabled$ | async"
+      [selectTimeEnabled]="selectTimeEnabled$ | async"
+      [selectedTime]="selectedTime$ | async"
+      [useRangeSelectTime]="useRangeSelectTime$ | async"
+      (selectTimeEnableToggled)="onSelectTimeEnableToggled()"
+      (useRangeSelectTimeToggled)="onUseRangeSelectTimeToggled()"
+      (selectTimeChanged)="onSelectTimeChanged($event)"
     >
     </metrics-dashboard-settings-component>
   `,
@@ -67,6 +76,19 @@ import {HistogramMode, TooltipSort, XAxisType} from '../../types';
 })
 export class SettingsViewContainer {
   constructor(private readonly store: Store<State>) {}
+
+  readonly isLinkedTimeFeatureEnabled$: Observable<boolean> = this.store.select(
+    selectors.getIsLinkedTimeEnabled
+  );
+  readonly selectTimeEnabled$: Observable<boolean> = this.store.select(
+    selectors.getMetricsSelectTimeEnabled
+  );
+  readonly useRangeSelectTime$: Observable<boolean> = this.store.select(
+    selectors.getMetricsUseRangeSelectTime
+  );
+  readonly selectedTime$ = this.store.select(
+    selectors.getMetricsSelectedTimeRaw
+  );
 
   readonly isImageSupportEnabled$ = this.store
     .select(selectors.getIsFeatureFlagsLoaded)
@@ -147,5 +169,24 @@ export class SettingsViewContainer {
 
   onImageShowActualSizeChanged() {
     this.store.dispatch(metricsToggleImageShowActualSize());
+  }
+
+  onSelectTimeEnableToggled() {
+    this.store.dispatch(selectTimeEnableToggled());
+  }
+
+  onUseRangeSelectTimeToggled() {
+    this.store.dispatch(useRangeSelectTimeToggled());
+  }
+
+  onSelectTimeChanged(newValue: LinkedTime) {
+    this.store.dispatch(
+      timeSelectionChanged({
+        startStep: newValue.start.step,
+        startWallTime: newValue.start.wallTime,
+        endStep: newValue.end?.step,
+        endWallTime: newValue.end?.wallTime,
+      })
+    );
   }
 }

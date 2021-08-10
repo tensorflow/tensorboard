@@ -335,9 +335,52 @@ export const getMetricsTagGroupExpansionState = createSelector(
   }
 );
 
-export const getMetricsSelectedTime = createSelector(
+export const getMetricsSelectTimeEnabled = createSelector(
+  selectMetricsState,
+  (state: MetricsState): boolean => {
+    return state.selectTimeEnabled;
+  }
+);
+
+export const getMetricsUseRangeSelectTime = createSelector(
+  selectMetricsState,
+  (state: MetricsState): boolean => {
+    return state.useRangeSelectTime;
+  }
+);
+
+/**
+ * Returns raw value of the selected time set by user. This selector is intended
+ * to used by settings panel only.
+ *
+ * @see getMetricsSelectedTime instead.
+ */
+export const getMetricsSelectedTimeRaw = createSelector(
   selectMetricsState,
   (state: MetricsState): LinkedTime | null => {
     return state.selectedTime;
+  }
+);
+
+/**
+ * Returns selected time set by user. If selectTime is disabled, it returns
+ * `null`. Also, when range selection mode is disabled, it returns `end=null`
+ * even if it has value set.
+ *
+ * Virtually all views should use this selector.
+ */
+export const getMetricsSelectedTime = createSelector(
+  selectMetricsState,
+  getMetricsSelectedTimeRaw,
+  (state: MetricsState, selectedTime: LinkedTime | null): LinkedTime | null => {
+    if (!state.selectTimeEnabled || !selectedTime) {
+      return null;
+    }
+
+    if (state.useRangeSelectTime) {
+      return selectedTime;
+    }
+
+    return {...selectedTime, end: null};
   }
 );
