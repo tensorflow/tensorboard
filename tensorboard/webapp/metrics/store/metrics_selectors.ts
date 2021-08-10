@@ -26,6 +26,7 @@ import {
   LinkedTime,
   NonPinnedCardId,
   PinnedCardId,
+  PluginType,
   TooltipSort,
   XAxisType,
 } from '../internal_types';
@@ -382,5 +383,12 @@ export const getMetricsSelectedTime = createSelector(
     }
 
     return {...selectedTime, end: null};
+  }
+);
+
+export const getMetricsFilteredPluginTypes = createSelector(
+  selectMetricsState,
+  (state: MetricsState): Set<PluginType> => {
+    return state.filteredPluginTypes;
   }
 );

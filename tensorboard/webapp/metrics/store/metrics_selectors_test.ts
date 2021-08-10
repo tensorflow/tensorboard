@@ -795,4 +795,21 @@ describe('metrics selectors', () => {
       });
     });
   });
+
+  describe('getMetricsFilteredPluginTypes', () => {
+    beforeEach(() => {
+      selectors.getMetricsFilteredPluginTypes.release();
+    });
+
+    it('returns current visualization filters', () => {
+      const state = appStateFromMetricsState(
+        buildMetricsState({
+          filteredPluginTypes: new Set([PluginType.SCALARS]),
+        })
+      );
+      expect(selectors.getMetricsFilteredPluginTypes(state)).toEqual(
+        new Set([PluginType.SCALARS])
+      );
+    });
+  });
 });
