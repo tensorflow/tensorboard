@@ -26,6 +26,7 @@ import {of, Subject} from 'rxjs';
 import {buildNavigatedAction} from '../../app_routing/testing';
 import {State} from '../../app_state';
 import * as selectors from '../../selectors';
+import {nextElementId} from '../../util/dom';
 import * as actions from '../actions';
 import {
   METRICS_PLUGIN_ID,
@@ -450,10 +451,7 @@ describe('metrics effects', () => {
         store.refreshState();
 
         actions$.next(
-          actions.cardVisibilityChanged({
-            enteredCards: new Set(),
-            exitedCards: new Set(),
-          })
+          actions.cardVisibilityChanged({enteredCards: [], exitedCards: []})
         );
 
         expect(fetchTimeSeriesSpy).not.toHaveBeenCalled();
@@ -474,6 +472,7 @@ describe('metrics effects', () => {
           loadState: DataLoadState.NOT_LOADED,
         });
 
+        const card1ElementId = nextElementId();
         store.overrideSelector(
           selectors.getVisibleCardIdSet,
           new Set<string>([])
@@ -481,8 +480,8 @@ describe('metrics effects', () => {
         store.refreshState();
         actions$.next(
           actions.cardVisibilityChanged({
-            enteredCards: new Set(),
-            exitedCards: new Set(['card1']),
+            enteredCards: [],
+            exitedCards: [{elementId: card1ElementId, cardId: 'card1'}],
           })
         );
 
@@ -496,8 +495,8 @@ describe('metrics effects', () => {
         store.refreshState();
         actions$.next(
           actions.cardVisibilityChanged({
-            enteredCards: new Set(['card1']),
-            exitedCards: new Set(),
+            enteredCards: [{elementId: card1ElementId, cardId: 'card1'}],
+            exitedCards: [],
           })
         );
 
@@ -530,6 +529,7 @@ describe('metrics effects', () => {
         });
 
         // Initial load.
+        const card1ElementId = nextElementId();
         store.overrideSelector(
           selectors.getVisibleCardIdSet,
           new Set(['card1'])
@@ -537,8 +537,8 @@ describe('metrics effects', () => {
         store.refreshState();
         actions$.next(
           actions.cardVisibilityChanged({
-            enteredCards: new Set(['card1']),
-            exitedCards: new Set(),
+            enteredCards: [{elementId: card1ElementId, cardId: 'card1'}],
+            exitedCards: [],
           })
         );
 
@@ -550,8 +550,8 @@ describe('metrics effects', () => {
         store.refreshState();
         actions$.next(
           actions.cardVisibilityChanged({
-            enteredCards: new Set(),
-            exitedCards: new Set(['card1']),
+            enteredCards: [],
+            exitedCards: [{elementId: card1ElementId, cardId: 'card1'}],
           })
         );
 
@@ -566,8 +566,8 @@ describe('metrics effects', () => {
         store.refreshState();
         actions$.next(
           actions.cardVisibilityChanged({
-            enteredCards: new Set(['card1']),
-            exitedCards: new Set(),
+            enteredCards: [{elementId: card1ElementId, cardId: 'card1'}],
+            exitedCards: [],
           })
         );
 
@@ -628,8 +628,11 @@ describe('metrics effects', () => {
         store.refreshState();
         actions$.next(
           actions.cardVisibilityChanged({
-            enteredCards: new Set(['card1', 'card2']),
-            exitedCards: new Set(),
+            enteredCards: [
+              {elementId: nextElementId(), cardId: 'card1'},
+              {elementId: nextElementId(), cardId: 'card2'},
+            ],
+            exitedCards: [],
           })
         );
 
@@ -673,8 +676,8 @@ describe('metrics effects', () => {
           store.refreshState();
           actions$.next(
             actions.cardVisibilityChanged({
-              enteredCards: new Set(['card1']),
-              exitedCards: new Set(),
+              enteredCards: [{elementId: nextElementId(), cardId: 'card1'}],
+              exitedCards: [],
             })
           );
 

@@ -484,8 +484,13 @@ describe('metrics main view', () => {
 
         expect(dispatchedActions).toEqual([
           actions.cardVisibilityChanged({
-            enteredCards: new Set([directives[0].cardId]),
-            exitedCards: new Set(),
+            enteredCards: [
+              {
+                elementId: jasmine.any(Number) as any,
+                cardId: directives[0].cardId,
+              },
+            ],
+            exitedCards: [],
           }),
         ]);
 
@@ -509,12 +514,31 @@ describe('metrics main view', () => {
 
         expect(dispatchedActions).toEqual([
           actions.cardVisibilityChanged({
-            enteredCards: new Set([directives[0].cardId]),
-            exitedCards: new Set(),
+            enteredCards: [
+              {
+                elementId: jasmine.any(Number) as any,
+                cardId: directives[0].cardId,
+              },
+            ],
+            exitedCards: [],
           }),
           actions.cardVisibilityChanged({
-            enteredCards: new Set([directives[1].cardId, directives[2].cardId]),
-            exitedCards: new Set([directives[0].cardId]),
+            enteredCards: [
+              {
+                elementId: jasmine.any(Number) as any,
+                cardId: directives[1].cardId,
+              },
+              {
+                elementId: jasmine.any(Number) as any,
+                cardId: directives[2].cardId,
+              },
+            ],
+            exitedCards: [
+              {
+                elementId: jasmine.any(Number) as any,
+                cardId: directives[0].cardId,
+              },
+            ],
           }),
         ]);
       });
@@ -545,8 +569,13 @@ describe('metrics main view', () => {
         // The more recent entry does not intersect.
         expect(dispatchedActions).toEqual([
           actions.cardVisibilityChanged({
-            enteredCards: new Set(),
-            exitedCards: new Set([directives[0].cardId]),
+            enteredCards: [],
+            exitedCards: [
+              {
+                elementId: jasmine.any(Number) as any,
+                cardId: directives[0].cardId,
+              },
+            ],
           }),
         ]);
 
@@ -565,12 +594,22 @@ describe('metrics main view', () => {
 
         expect(dispatchedActions).toEqual([
           actions.cardVisibilityChanged({
-            enteredCards: new Set(),
-            exitedCards: new Set([directives[0].cardId]),
+            enteredCards: [],
+            exitedCards: [
+              {
+                elementId: jasmine.any(Number) as any,
+                cardId: directives[0].cardId,
+              },
+            ],
           }),
           actions.cardVisibilityChanged({
-            enteredCards: new Set([directives[0].cardId]),
-            exitedCards: new Set(),
+            enteredCards: [
+              {
+                elementId: jasmine.any(Number) as any,
+                cardId: directives[0].cardId,
+              },
+            ],
+            exitedCards: [],
           }),
         ]);
       });

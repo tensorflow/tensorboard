@@ -16,6 +16,7 @@ import {createFeatureSelector, createSelector} from '@ngrx/store';
 
 import {State} from '../../app_state';
 import {DataLoadState} from '../../types/data';
+import {ElementId} from '../../util/dom';
 import {DeepReadonly} from '../../util/types';
 import {
   CardId,
@@ -143,17 +144,17 @@ export const getCardMetadata = createSelector(
 );
 
 // A cheap identity selector to skip recomputing selectors when `state` changes.
-const selectVisibleCardIdSet = createSelector(
+const selectVisibleCardMap = createSelector(
   selectMetricsState,
-  (state): Set<CardId> => {
-    return state.visibleCards;
+  (state): Map<ElementId, CardId> => {
+    return state.visibleCardMap;
   }
 );
 
 export const getVisibleCardIdSet = createSelector(
-  selectVisibleCardIdSet,
-  (cardIdSet): Set<CardId> => {
-    return cardIdSet;
+  selectVisibleCardMap,
+  (visibleCardMap): Set<CardId> => {
+    return new Set<CardId>(visibleCardMap.values());
   }
 );
 

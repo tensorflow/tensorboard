@@ -22,6 +22,7 @@ tf_ts_library(
         "//tensorboard/webapp/metrics/data_source",
         "//tensorboard/webapp/persistent_settings",
         "//tensorboard/webapp/types",
+        "//tensorboard/webapp/util:dom",
         "//tensorboard/webapp/util:lang",
         "//tensorboard/webapp/util:ngrx",
         "//tensorboard/webapp/util:types",
@@ -66,6 +67,7 @@ tf_ts_library(
         "//tensorboard/webapp/metrics:internal_types",
         "//tensorboard/webapp/metrics/data_source",
         "//tensorboard/webapp/types",
+        "//tensorboard/webapp/util:dom",
     ],
 )
 
@@ -91,6 +93,7 @@ tf_ts_library(
         "//tensorboard/webapp/metrics/data_source",
         "//tensorboard/webapp/persistent_settings",
         "//tensorboard/webapp/types",
+        "//tensorboard/webapp/util:dom",
         "@npm//@types/jasmine",
     ],
 )

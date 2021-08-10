@@ -20,6 +20,7 @@ import {RouteKind} from '../../app_routing/types';
 import * as coreActions from '../../core/actions';
 import {globalSettingsLoaded} from '../../persistent_settings';
 import {DataLoadState} from '../../types/data';
+import {ElementId} from '../../util/dom';
 import {mapObjectValues} from '../../util/lang';
 import {composeReducers} from '../../util/ngrx';
 import * as actions from '../actions';
@@ -255,7 +256,7 @@ const {initialState, reducers: routeContextReducer} = createRouteContextedState<
     },
     settings: METRICS_SETTINGS_DEFAULT,
     settingOverrides: {},
-    visibleCards: new Set<CardId>(),
+    visibleCardMap: new Map<ElementId, CardId>(),
   },
 
   /** onRouteIdChanged */
@@ -265,7 +266,7 @@ const {initialState, reducers: routeContextReducer} = createRouteContextedState<
       // Reset visible cards in case we resume a route that was left dirty.
       // Since visibility tracking is async, the state may not have received
       // 'exited card' updates when it was cached by the router.
-      visibleCards: new Set<CardId>(),
+      visibleCardMap: new Map<ElementId, CardId>(),
     };
   }
 );
@@ -742,25 +743,24 @@ const reducer = createReducer(
     return {...state, tagGroupExpanded};
   }),
   on(actions.cardVisibilityChanged, (state, {enteredCards, exitedCards}) => {
-    if (enteredCards.size === 0 && exitedCards.size === 0) {
+    if (!enteredCards.length && !exitedCards.length) {
       return state;
     }
 
-    const visibleCards = new Set(state.visibleCards);
-    enteredCards.forEach((cardId) => {
-      visibleCards.add(cardId);
-    });
-    exitedCards.forEach((cardId) => {
-      visibleCards.delete(cardId);
-
-      if (enteredCards.has(cardId)) {
+    const visibleCardMap = new Map(state.visibleCardMap);
+    enteredCards.forEach(({elementId, cardId}) => {
+      const existingCardId = visibleCardMap.get(elementId) ?? null;
+      if (existingCardId !== null && existingCardId !== cardId) {
         throw new Error(
-          `A 'cardVisibilityChanged' with an invalid ` +
-            `payload contains overlapping sets`
+          `A DOM element cannot be reused for more than 1 unique card metadata`
         );
       }
+      visibleCardMap.set(elementId, cardId);
     });
-    return {...state, visibleCards};
+    exitedCards.forEach(({elementId}) => {
+      visibleCardMap.delete(elementId);
+    });
+    return {...state, visibleCardMap};
   }),
   on(actions.cardPinStateToggled, (state, {cardId}) => {
     const isPinnedCopy = state.pinnedCardToOriginal.has(cardId);

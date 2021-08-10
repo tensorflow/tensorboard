@@ -19,6 +19,7 @@ import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {Action, Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {State} from '../../../app_state';
+import {nextElementId} from '../../../util/dom';
 
 import * as actions from '../../actions';
 import {appStateFromMetricsState, buildMetricsState} from '../../testing';
@@ -146,8 +147,10 @@ describe('card view test', () => {
     expect(unobserveSpy).not.toHaveBeenCalled();
     expect(dispatchedActions).toEqual([
       actions.cardVisibilityChanged({
-        enteredCards: new Set(['card1']),
-        exitedCards: new Set(),
+        enteredCards: [
+          {elementId: jasmine.any(Number) as any, cardId: 'card1'},
+        ],
+        exitedCards: [],
       }),
     ]);
 
@@ -163,12 +166,14 @@ describe('card view test', () => {
     expect(unobserveSpy).toHaveBeenCalled();
     expect(dispatchedActions).toEqual([
       actions.cardVisibilityChanged({
-        enteredCards: new Set(['card1']),
-        exitedCards: new Set(),
+        enteredCards: [
+          {elementId: jasmine.any(Number) as any, cardId: 'card1'},
+        ],
+        exitedCards: [],
       }),
       actions.cardVisibilityChanged({
-        enteredCards: new Set(),
-        exitedCards: new Set(['card1']),
+        enteredCards: [],
+        exitedCards: [{elementId: jasmine.any(Number) as any, cardId: 'card1'}],
       }),
     ]);
   });

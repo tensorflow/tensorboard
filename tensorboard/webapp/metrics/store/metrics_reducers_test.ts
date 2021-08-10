@@ -18,6 +18,7 @@ import {RouteKind} from '../../app_routing/types';
 import * as coreActions from '../../core/actions';
 import {globalSettingsLoaded} from '../../persistent_settings';
 import {DataLoadState} from '../../types/data';
+import {nextElementId} from '../../util/dom';
 import * as actions from '../actions';
 import {
   PluginType,
@@ -501,7 +502,10 @@ describe('metrics reducers', () => {
   describe('route id changes', () => {
     it('resets data when mounting a new route', () => {
       const prevState = buildMetricsState({
-        visibleCards: new Set(['card1', 'card2']),
+        visibleCardMap: new Map([
+          [nextElementId(), 'card1'],
+          [nextElementId(), 'card2'],
+        ]),
       });
 
       const navigateFrom1to2 = routingActions.navigated({
@@ -529,9 +533,9 @@ describe('metrics reducers', () => {
       nextState = reducers(nextState, navigateFrom2to1);
 
       const expectedState = buildMetricsState({
-        visibleCards: new Set(),
+        visibleCardMap: new Map(),
       });
-      expect(nextState.visibleCards).toEqual(expectedState.visibleCards);
+      expect(nextState.visibleCardMap).toEqual(expectedState.visibleCardMap);
     });
   });
 
@@ -1224,26 +1228,29 @@ describe('metrics reducers', () => {
   describe('card visibility', () => {
     it('no-ops when nothing is changed', () => {
       const beforeState = buildMetricsState({
-        visibleCards: new Set(['card1']),
+        visibleCardMap: new Map([[nextElementId(), 'card1']]),
       });
 
       const action = actions.cardVisibilityChanged({
-        enteredCards: new Set(),
-        exitedCards: new Set(),
+        enteredCards: [],
+        exitedCards: [],
       });
       const nextState = reducers(beforeState, action);
-      expect(nextState.visibleCards).toEqual(new Set(['card1']));
+      expect(nextState.visibleCardMap).toEqual(
+        new Map([[jasmine.any(Number), 'card1']])
+      );
       expect(nextState).toBe(beforeState);
     });
 
     it('handles bad payloads', () => {
+      const existingElementId = nextElementId();
       const beforeState = buildMetricsState({
-        visibleCards: new Set(['card1']),
+        visibleCardMap: new Map([[existingElementId, 'card1']]),
       });
 
       const action = actions.cardVisibilityChanged({
-        enteredCards: new Set(['duplicateCard']),
-        exitedCards: new Set(['duplicateCard']),
+        enteredCards: [{elementId: existingElementId, cardId: 'card2'}],
+        exitedCards: [],
       });
       let nextState = beforeState;
       expect(() => {
@@ -1253,19 +1260,57 @@ describe('metrics reducers', () => {
     });
 
     it('handles adding and removing cards', () => {
+      const existingElementIds = [nextElementId(), nextElementId()];
       const beforeState = buildMetricsState({
-        visibleCards: new Set(['existingCard1', 'existingCard2']),
+        visibleCardMap: new Map([
+          [existingElementIds[0], 'existingCard1'],
+          [existingElementIds[1], 'existingCard2'],
+        ]),
       });
 
+      const newCard1ElementId = nextElementId();
       const action = actions.cardVisibilityChanged({
-        enteredCards: new Set(['existingCard1', 'newCard1']),
-        exitedCards: new Set(['existingCard2', 'newCard2']),
+        enteredCards: [
+          {elementId: existingElementIds[0], cardId: 'existingCard1'},
+          {elementId: newCard1ElementId, cardId: 'newCard1'},
+        ],
+        exitedCards: [
+          {elementId: existingElementIds[1], cardId: 'existingCard2'},
+          {elementId: nextElementId(), cardId: 'newCard2'},
+        ],
       });
       const nextState = reducers(beforeState, action);
-      expect(nextState.visibleCards).toEqual(
-        new Set(['existingCard1', 'newCard1'])
+      expect(nextState.visibleCardMap).toEqual(
+        new Map([
+          [existingElementIds[0], 'existingCard1'],
+          [newCard1ElementId, 'newCard1'],
+        ])
       );
     });
+
+    it(
+      'marks a card as visible when it enters and exits on different ' +
+        'elements',
+      () => {
+        const existingElementIds = [nextElementId(), nextElementId()];
+        const beforeState = buildMetricsState({
+          visibleCardMap: new Map(),
+        });
+
+        const action = actions.cardVisibilityChanged({
+          enteredCards: [
+            {elementId: existingElementIds[0], cardId: 'duplicateCard'},
+          ],
+          exitedCards: [
+            {elementId: existingElementIds[1], cardId: 'duplicateCard'},
+          ],
+        });
+        const nextState = reducers(beforeState, action);
+        expect(nextState.visibleCardMap).toEqual(
+          new Map([[existingElementIds[0], 'duplicateCard']])
+        );
+      }
+    );
   });
 
   describe('cardPinStateToggled', () => {

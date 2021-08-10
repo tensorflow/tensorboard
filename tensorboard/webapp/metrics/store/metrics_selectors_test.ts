@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {DataLoadState} from '../../types/data';
+import {nextElementId} from '../../util/dom';
 import {PluginType} from '../data_source';
 import {HistogramMode, TooltipSort, XAxisType} from '../internal_types';
 import {
@@ -296,7 +297,7 @@ describe('metrics selectors', () => {
     it('returns an emtpy array', () => {
       const state = appStateFromMetricsState(
         buildMetricsState({
-          visibleCards: new Set(),
+          visibleCardMap: new Map(),
         })
       );
       expect(selectors.getVisibleCardIdSet(state)).toEqual(new Set<string>([]));
@@ -305,7 +306,10 @@ describe('metrics selectors', () => {
     it('returns a non-empty array', () => {
       const state = appStateFromMetricsState(
         buildMetricsState({
-          visibleCards: new Set(['card1', 'card2']),
+          visibleCardMap: new Map([
+            [nextElementId(), 'card1'],
+            [nextElementId(), 'card2'],
+          ]),
         })
       );
       expect(selectors.getVisibleCardIdSet(state)).toEqual(

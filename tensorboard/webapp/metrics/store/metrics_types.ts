@@ -15,6 +15,7 @@ limitations under the License.
 import {DataLoadState} from '../../types/data';
 
 import {RouteContextedState} from '../../app_routing/route_contexted_reducer_helper';
+import {ElementId} from '../../util/dom';
 import {
   HistogramStepDatum,
   ImageStepDatum,
@@ -193,7 +194,10 @@ export interface MetricsRoutelessState {
   // prop. It either is set by application or a user via settings storage.
   settings: MetricsSettings;
   settingOverrides: Partial<MetricsSettings>;
-  visibleCards: Set<CardId>;
+  /**
+   * Map from ElementId to CardId. Only contains all visible cards.
+   */
+  visibleCardMap: Map<ElementId, CardId>;
 }
 
 export type MetricsState = RouteContextedState<

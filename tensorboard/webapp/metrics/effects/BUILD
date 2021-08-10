@@ -46,6 +46,7 @@ tf_ts_library(
         "//tensorboard/webapp/metrics/data_source",
         "//tensorboard/webapp/metrics/store",
         "//tensorboard/webapp/types",
+        "//tensorboard/webapp/util:dom",
         "//tensorboard/webapp/webapp_data_source:http_client_testing",
         "@npm//@ngrx/effects",
         "@npm//@ngrx/store",

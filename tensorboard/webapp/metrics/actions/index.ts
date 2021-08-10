@@ -14,6 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import {createAction, props} from '@ngrx/store';
 
+import {ElementId} from '../../util/dom';
 import {
   TagMetadata,
   TimeSeriesRequest,
@@ -113,12 +114,15 @@ export const fetchTimeSeriesLoaded = createAction(
 );
 
 /**
- * An event when some cards enter or exit the viewport. The card sets must be
- * mutually exclusive.
+ * An event when some cards enter or exit the viewport. An element within
+ * `enteredCards` must not be found within `exitedCards`, and vice versa.
  */
 export const cardVisibilityChanged = createAction(
   '[Metrics] Card Visibility Changed',
-  props<{enteredCards: Set<CardId>; exitedCards: Set<CardId>}>()
+  props<{
+    enteredCards: Array<{elementId: ElementId; cardId: CardId}>;
+    exitedCards: Array<{elementId: ElementId; cardId: CardId}>;
+  }>()
 );
 
 export const cardStepSliderChanged = createAction(
