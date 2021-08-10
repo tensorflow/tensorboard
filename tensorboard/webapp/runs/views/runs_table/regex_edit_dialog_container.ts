@@ -24,6 +24,7 @@ import {
   startWith,
   take,
 } from 'rxjs/operators';
+
 import {State} from '../../../app_state';
 import {CHART_COLOR_PALLETE} from '../../../util/colors';
 import {runGroupByChanged} from '../../actions';

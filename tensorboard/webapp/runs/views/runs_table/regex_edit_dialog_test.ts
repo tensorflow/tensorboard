@@ -524,6 +524,6 @@ describe('regex_edit_dialog', () => {
     fixture.detectChanges();
 
     expect(document.activeElement).toBe(input.nativeElement);
-    tick(500);
+    discardPeriodicTasks();
   }));
 });
