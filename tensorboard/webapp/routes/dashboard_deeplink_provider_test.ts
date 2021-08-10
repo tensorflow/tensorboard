@@ -24,6 +24,7 @@ import {appStateFromMetricsState, buildMetricsState} from '../metrics/testing';
 import * as selectors from '../selectors';
 import {DashboardDeepLinkProvider} from './dashboard_deeplink_provider';
 import {GroupBy, GroupByKey} from '../runs/types';
+import {buildDeserializedState} from './testing';
 
 describe('core deeplink provider', () => {
   let store: MockStore<State>;
@@ -206,17 +207,21 @@ describe('core deeplink provider', () => {
           },
         ]);
 
-        expect(state.metrics).toEqual({
-          pinnedCards: [
-            {plugin: PluginType.SCALARS, tag: 'accuracy'},
-            {
-              plugin: PluginType.IMAGES,
-              tag: 'loss',
-              runId: 'exp1/123',
-              sample: 5,
-            },
-          ],
-          smoothing: null,
+        const defaultState = buildDeserializedState();
+        expect(state).toEqual({
+          ...defaultState,
+          metrics: {
+            ...defaultState.metrics,
+            pinnedCards: [
+              {plugin: PluginType.SCALARS, tag: 'accuracy'},
+              {
+                plugin: PluginType.IMAGES,
+                tag: 'loss',
+                runId: 'exp1/123',
+                sample: 5,
+              },
+            ],
+          },
         });
       });
 
@@ -301,6 +306,43 @@ describe('core deeplink provider', () => {
 
           expect(state.metrics.pinnedCards).toEqual(expectedPinnedCards);
         }
+      });
+    });
+
+    describe('tag filter', () => {
+      it('serializes the filter text to the URL', () => {
+        store.overrideSelector(selectors.getMetricsTagFilter, 'accuracy');
+        store.refreshState();
+
+        expect(queryParamsSerialized.slice(-1)[0]).toEqual([
+          {key: 'tagFilter', value: 'accuracy'},
+        ]);
+      });
+
+      it('does not serialize an empty string', () => {
+        store.overrideSelector(selectors.getMetricsTagFilter, '');
+        store.refreshState();
+
+        expect(queryParamsSerialized).toEqual([]);
+      });
+
+      it('deserializes the string from the URL', () => {
+        const state1 = provider.deserializeQueryParams([
+          {key: 'tagFilter', value: 'accuracy'},
+        ]);
+        expect(state1.metrics.tagFilter).toBe('accuracy');
+      });
+
+      it('deserializes the empty string from the URL', () => {
+        const state1 = provider.deserializeQueryParams([
+          {key: 'tagFilter', value: ''},
+        ]);
+        expect(state1.metrics.tagFilter).toBe('');
+      });
+
+      it('deserializes to null when no value is provided', () => {
+        const state = provider.deserializeQueryParams([]);
+        expect(state.metrics.tagFilter).toBe(null);
       });
     });
   });

@@ -53,6 +53,17 @@ tf_ts_library(
 )
 
 tf_ts_library(
+    name = "testing",
+    testonly = True,
+    srcs = [
+        "testing.ts",
+    ],
+    deps = [
+        ":dashboard_deeplink_provider_types",
+    ],
+)
+
+tf_ts_library(
     name = "routes_test_lib",
     testonly = True,
     srcs = [
@@ -60,6 +71,7 @@ tf_ts_library(
     ],
     deps = [
         ":dashboard_deeplink_provider",
+        ":testing",
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp:selectors",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
