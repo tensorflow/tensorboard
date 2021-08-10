@@ -1,6 +1,6 @@
 <!--
 @license
-Copyright 2021 The TensorFlow Authors. All Rights Reserved.
+Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -45,57 +45,58 @@ limitations under the License.
     </p>
   </div>
 
-<div class="group-container" *ngIf="regexString">
-  <h4>Color group preview</h4>
-  <div class="grouping-preview">
-    <div *ngIf="colorRunPairList.length; else empty" class="match-container">
-      <ul
-        class="group"
-        *ngFor="let colorRunsPair of colorRunPairList"
-        [ngStyle]="{borderColor: colorRunsPair.color}"
-      >
-        <li>
-          <label
-            ><span
-              class="color-swatch"
-              [ngStyle]="{backgroundColor: colorRunsPair.color}"
-            ></span
-            ><code class="group-id" [title]="colorRunsPair.groupId"
-              >{{colorRunsPair.groupId}}</code
-            ></label
-          >
-          <ul>
-            <ng-container *ngFor="let run of colorRunsPair.runs | slice:0:5;">
-              <li [title]="run.name">{{ run.name }}</li>
-            </ng-container>
-            <li class="more" *ngIf="colorRunsPair.runs.length > 5">
-              <em>and {{colorRunsPair.runs.length - 5 | number}} more</em>
-            </li>
-            <li class="no-match" *ngIf="colorRunsPair.runs.length === 0">
-              <em>No runs are in the group</em>
-            </li>
-          </ul>
-        </li>
-      </ul>
+  <div class="group-container" *ngIf="regexString">
+    <h4>Color group preview</h4>
+    <div class="grouping-preview">
+      <div *ngIf="colorRunPairList.length; else empty" class="match-container">
+        <ul
+          class="group"
+          *ngFor="let colorRunsPair of colorRunPairList"
+          [ngStyle]="{borderColor: colorRunsPair.color}"
+        >
+          <li>
+            <label
+              ><span
+                class="color-swatch"
+                [ngStyle]="{backgroundColor: colorRunsPair.color}"
+              ></span
+              ><code class="group-id" [title]="colorRunsPair.groupId"
+                >{{colorRunsPair.groupId}}</code
+              ></label
+            >
+            <ul>
+              <ng-container *ngFor="let run of colorRunsPair.runs | slice:0:5;">
+                <li [title]="run.name">{{ run.name }}</li>
+              </ng-container>
+              <li class="more" *ngIf="colorRunsPair.runs.length > 5">
+                <em>and {{colorRunsPair.runs.length - 5 | number}} more</em>
+              </li>
+              <li class="no-match" *ngIf="colorRunsPair.runs.length === 0">
+                <em>No runs are in the group</em>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+
+      <ng-template #empty>
+        <div class="warning">
+          There are no runs matching the regex, <code>/{{regexString}}/</code>.
+          Please check if your regex string is correct.
+        </div>
+      </ng-template>
     </div>
 
-    <ng-template #empty>
-      <div class="warning">
-        There are no runs matching the regex, <code>/{{regexString}}/</code>.
-        Please check if your regex string is correct.
-      </div>
-    </ng-template>
-  </div>
-
-  <div mat-dialog-actions align="end">
-    <button mat-button mat-dialog-close>Cancel</button>
-    <button
-      mat-raised-button
-      color="primary"
-      mat-dialog-close
-      (click)="onSaveClick(regexStringInput.value)"
-    >
-      Save
-    </button>
+    <div mat-dialog-actions align="end">
+      <button mat-button mat-dialog-close>Cancel</button>
+      <button
+        mat-raised-button
+        color="primary"
+        mat-dialog-close
+        (click)="onSaveClick(regexStringInput.value)"
+      >
+        Save
+      </button>
+    </div>
   </div>
 </div>
