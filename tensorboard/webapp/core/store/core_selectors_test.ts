@@ -54,4 +54,19 @@ describe('core selectors', () => {
       expect(selectors.getAppLastLoadedTimeInMs(state)).toBe(1);
     });
   });
+
+  describe('#getSideBarWidthInPercent', () => {
+    beforeEach(() => {
+      selectors.getSideBarWidthInPercent.release();
+    });
+
+    it('returns sidebar width information', () => {
+      const state = createState(
+        createCoreState({
+          sideBarWidthInPercent: 15,
+        })
+      );
+      expect(selectors.getSideBarWidthInPercent(state)).toBe(15);
+    });
+  });
 });

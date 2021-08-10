@@ -12,24 +12,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {CommonModule} from '@angular/common';
-import {NgModule} from '@angular/core';
 
-import {LayoutModule} from '../../core';
-import {RunsSelectorModule} from '../../runs/views/runs_selector/runs_selector_module';
-import {MainViewModule} from './main_view/main_view_module';
-import {MetricsDashboardContainer} from './metrics_container';
-import {RightPaneModule} from './right_pane/right_pane_module';
-
-@NgModule({
-  declarations: [MetricsDashboardContainer],
-  exports: [MetricsDashboardContainer],
-  imports: [
-    CommonModule,
-    LayoutModule,
-    MainViewModule,
-    RightPaneModule,
-    RunsSelectorModule,
-  ],
-})
-export class MetricsViewsModule {}
+// From: https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/buttons
+export enum MouseEventButtons {
+  LEFT = 0b1,
+  RIGHT = 0b10,
+  MIDDLE = 0b100,
+  FOURTH = 0b1000, // often 'back' button, but can differ by mouse controller.
+  FIFTH = 0b100000, // often 'forward' button, but can differ by mouse controller.
+}

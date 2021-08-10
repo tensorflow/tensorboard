@@ -22,6 +22,7 @@ import {
 } from '../testing';
 import {DataLoadState} from '../../types/data';
 import {PluginsListFailureCode} from '../types';
+import {globalSettingsLoaded} from '../../persistent_settings';
 
 function createPluginsListing() {
   return {
@@ -556,6 +557,86 @@ describe('core reducer', () => {
         lastLoadedTimeInMs: 3,
         state: DataLoadState.FAILED,
       });
+    });
+  });
+
+  describe('#sideBarWidthChanged', () => {
+    it('sets sideBarWidthInPercent', () => {
+      const state = createCoreState({
+        sideBarWidthInPercent: 0,
+      });
+      const nextState = reducers(
+        state,
+        actions.sideBarWidthChanged({widthInPercent: 30})
+      );
+
+      expect(nextState.sideBarWidthInPercent).toBe(30);
+    });
+
+    it('clips the value so it is between 0 and 100, inclusive', () => {
+      const state1 = createCoreState({
+        sideBarWidthInPercent: 5,
+      });
+      const state2 = reducers(
+        state1,
+        actions.sideBarWidthChanged({widthInPercent: -10})
+      );
+      expect(state2.sideBarWidthInPercent).toBe(0);
+
+      const state3 = reducers(
+        state2,
+        actions.sideBarWidthChanged({widthInPercent: 100})
+      );
+      expect(state3.sideBarWidthInPercent).toBe(100);
+    });
+  });
+
+  describe('#globalSettingsLoaded', () => {
+    it('loads sideBarWidthInPercent from settings when present', () => {
+      const state = createCoreState({
+        sideBarWidthInPercent: 0,
+      });
+      const nextState = reducers(
+        state,
+        globalSettingsLoaded({partialSettings: {sideBarWidthInPercent: 40}})
+      );
+
+      expect(nextState.sideBarWidthInPercent).toBe(40);
+    });
+
+    it('ignores partial settings without the sidebar width', () => {
+      const state = createCoreState({
+        sideBarWidthInPercent: 0,
+      });
+      const nextState = reducers(
+        state,
+        globalSettingsLoaded({partialSettings: {}})
+      );
+
+      expect(nextState.sideBarWidthInPercent).toBe(0);
+    });
+
+    it('loads when value is in between 0-100, inclusive', () => {
+      const state1 = createCoreState({
+        sideBarWidthInPercent: 0,
+      });
+      const state2 = reducers(
+        state1,
+        globalSettingsLoaded({partialSettings: {sideBarWidthInPercent: 101}})
+      );
+      expect(state2.sideBarWidthInPercent).toBe(0);
+
+      const state3 = reducers(
+        state2,
+        globalSettingsLoaded({partialSettings: {sideBarWidthInPercent: -1}})
+      );
+      expect(state3.sideBarWidthInPercent).toBe(0);
+
+      const state4 = reducers(
+        state3,
+        globalSettingsLoaded({partialSettings: {sideBarWidthInPercent: NaN}})
+      );
+      expect(state4.sideBarWidthInPercent).toBe(0);
     });
   });
 });

@@ -36,6 +36,7 @@ import {
 import {fromEvent, of, Subject, timer} from 'rxjs';
 import {filter, map, switchMap, takeUntil, tap} from 'rxjs/operators';
 
+import {MouseEventButtons} from '../../../util/dom';
 import {
   DataSeries,
   DataSeriesMetadata,
@@ -47,7 +48,6 @@ import {
   Scale,
 } from '../lib/public_types';
 import {getScaleRangeFromDomDim} from './chart_view_utils';
-import {MouseEventButtons} from './internal_types';
 import {
   findClosestIndex,
   getProposedViewExtentOnZoom,

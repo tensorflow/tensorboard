@@ -37,6 +37,8 @@ export interface CoreState {
   // For now, we want them here for Polymer interop states reasons, too.
   polymerInteropRuns: Run[];
   polymerInteropRunSelection: Set<RunId>;
+  // Number between 0 and 100.
+  sideBarWidthInPercent: number;
 }
 
 /*
@@ -97,4 +99,5 @@ export const initialState: CoreState = {
   },
   polymerInteropRuns: [],
   polymerInteropRunSelection: new Set(),
+  sideBarWidthInPercent: 30,
 };

@@ -13,25 +13,44 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {NgModule} from '@angular/core';
-import {StoreModule} from '@ngrx/store';
 import {EffectsModule} from '@ngrx/effects';
+import {createSelector, StoreModule} from '@ngrx/store';
 
+import {DeepLinkerInterface} from '../deeplink';
+import {
+  PersistableSettings,
+  PersistentSettingsConfigModule,
+} from '../persistent_settings';
 import {TBServerDataSourceModule} from '../webapp_data_source/tb_server_data_source_module';
-
-import {reducers} from './store';
 import {CoreEffects} from './effects';
-import {CORE_FEATURE_KEY} from './store/core_types';
+import {State} from './state';
+import {getSideBarWidthInPercent, reducers} from './store';
 import {
   CORE_STORE_CONFIG_TOKEN,
   getConfig,
 } from './store/core_initial_state_provider';
-import {DeepLinkerInterface} from '../deeplink';
+import {CORE_FEATURE_KEY} from './store/core_types';
+
+/** @typehack */ import * as _typeHackNgrxStore from '@ngrx/store';
+
+export function getSideBarWidthSetting() {
+  return createSelector<State, number, PersistableSettings>(
+    getSideBarWidthInPercent,
+    (sideBarWidthInPercent) => {
+      return {sideBarWidthInPercent};
+    }
+  );
+}
 
 @NgModule({
   imports: [
     EffectsModule.forFeature([CoreEffects]),
     StoreModule.forFeature(CORE_FEATURE_KEY, reducers, CORE_STORE_CONFIG_TOKEN),
     TBServerDataSourceModule,
+    PersistentSettingsConfigModule.defineGlobalSetting<
+      State,
+      PersistableSettings
+    >(getSideBarWidthSetting),
   ],
   providers: [
     {

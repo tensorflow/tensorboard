@@ -79,3 +79,10 @@ export const getEnvironment = createSelector(
     return state.environment;
   }
 );
+
+export const getSideBarWidthInPercent = createSelector(
+  selectCoreState,
+  (state: CoreState): number => {
+    return state.sideBarWidthInPercent;
+  }
+);

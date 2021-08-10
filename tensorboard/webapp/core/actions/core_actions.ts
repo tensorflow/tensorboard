@@ -93,3 +93,8 @@ export const fetchRunSucceeded = createAction(
   '[Core] Run Fetch Successful',
   props<{runs: Run[]}>()
 );
+
+export const sideBarWidthChanged = createAction(
+  '[Core] Side Bar Width Changed',
+  props<{widthInPercent: number}>()
+);
