@@ -265,7 +265,7 @@ describe('regex_edit_dialog', () => {
     );
   });
 
-  it('fills example', () => {
+  it('fills example and generates warning', () => {
     const fixture = createComponent(['rose']);
     fixture.detectChanges();
 
@@ -277,7 +277,35 @@ describe('regex_edit_dialog', () => {
 
     const input = fixture.debugElement.query(By.css('input'));
     expect(input.nativeElement.value).toBe('(train|eval)');
+    const warning = fixture.debugElement.queryAll(By.css('.warning'));
+    expect(warning).toBeTruthy();
   });
+
+  it('fills example and generates group preview', fakeAsync(() => {
+    const fixture = createComponent(['rose']);
+    store.overrideSelector(getRuns, [
+      buildRun({id: 'run1', name: 'run 1'}),
+      buildRun({id: 'run2', name: 'run 2'}),
+    ]);
+    store.overrideSelector(getColorGroupRegexString, 'run');
+    fixture.detectChanges();
+    tick(TEST_ONLY.INPUT_CHANGE_DEBOUNCE_INTERVAL_MS);
+    fixture.detectChanges();
+
+    const button = fixture.debugElement.query(
+      By.css('.example-details button')
+    );
+    button.nativeElement.click();
+    fixture.detectChanges();
+
+    const groupingResult = fixture.debugElement.query(
+      By.css('.group-container')
+    );
+    expect(groupingResult).not.toBeNull();
+    const groups = fixture.debugElement.queryAll(By.css('.group'));
+    expect(groups.length).toBe(1);
+    discardPeriodicTasks();
+  }));
 
   describe('live grouping result preview', () => {
     it('renders grouping result based on regex in store', fakeAsync(() => {
