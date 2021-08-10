@@ -22,4 +22,4 @@ export const CHART_COLOR_PALLETE = [
   '#e8710a', // Orange 600
 ];
 
-export const NONMATCHED_COLOR = '#ececec';
+export const NON_MATCHED_COLOR = '#ececec';

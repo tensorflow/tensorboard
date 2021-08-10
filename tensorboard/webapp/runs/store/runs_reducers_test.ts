@@ -343,8 +343,8 @@ describe('runs_reducers', () => {
             ['eid1/beta', colorUtils.CHART_COLOR_PALLETE[1]],
             ['eid2/beta', colorUtils.CHART_COLOR_PALLETE[1]],
             ['eid2/gamma', colorUtils.CHART_COLOR_PALLETE[1]],
-            ['eid2/alpha', colorUtils.NONMATCHED_COLOR],
-            ['eid2/delta', colorUtils.NONMATCHED_COLOR],
+            ['eid2/alpha', colorUtils.NON_MATCHED_COLOR],
+            ['eid2/delta', colorUtils.NON_MATCHED_COLOR],
           ])
         );
       });
@@ -922,8 +922,8 @@ describe('runs_reducers', () => {
           ['run2', colorUtils.CHART_COLOR_PALLETE[1]],
           ['run3', colorUtils.CHART_COLOR_PALLETE[1]],
           ['run4', colorUtils.CHART_COLOR_PALLETE[1]],
-          ['run5', colorUtils.NONMATCHED_COLOR],
-          ['run6', colorUtils.NONMATCHED_COLOR],
+          ['run5', colorUtils.NON_MATCHED_COLOR],
+          ['run6', colorUtils.NON_MATCHED_COLOR],
         ])
       );
       expect(nextState.data.runColorOverrideForGroupBy).toEqual(new Map());
