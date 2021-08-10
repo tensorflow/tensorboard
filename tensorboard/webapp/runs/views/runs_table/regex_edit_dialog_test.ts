@@ -304,7 +304,7 @@ describe('regex_edit_dialog', () => {
     expect(groupingResult).not.toBeNull();
     const groups = fixture.debugElement.queryAll(By.css('.group'));
     expect(groups.length).toBe(1);
-    tick(500);
+    discardPeriodicTasks();
   }));
 
   describe('live grouping result preview', () => {
