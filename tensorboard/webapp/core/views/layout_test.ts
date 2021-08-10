@@ -97,14 +97,12 @@ describe('layout test', () => {
     );
   });
 
-  it('adds "collapsed" class to the sidebar when the width is 0', () => {
+  it('does not render sidebar when the width is 0', () => {
     store.overrideSelector(getSideBarWidthInPercent, 0);
     const fixture = TestBed.createComponent(TestableComponent);
     fixture.detectChanges();
 
-    expect(
-      fixture.debugElement.query(byCss.SIDEBAR_CONTAINER).classes['collapsed']
-    ).toBe(true);
+    expect(fixture.debugElement.query(byCss.SIDEBAR_CONTAINER)).toBeNull();
   });
 
   it('renders expander when sidebar is collapsed', () => {

@@ -24,12 +24,6 @@ limitations under the License.
 
 .sidebar {
   max-width: 80vw;
-  min-width: 75px;
-
-  &.collapsed {
-    min-width: 0;
-    width: 0;
-  }
 }
 
 .resizer,

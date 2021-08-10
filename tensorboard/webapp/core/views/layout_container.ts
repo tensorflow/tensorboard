@@ -38,9 +38,10 @@ import {MouseEventButtons} from '../../util/dom';
       <mat-icon svgIcon="expand_more_24px"></mat-icon>
     </button>
     <nav
-      [class.sidebar]="true"
-      [class.collapsed]="(width$ | async) === 0"
+      *ngIf="(width$ | async) > 0"
+      class="sidebar"
       [style.width.%]="width$ | async"
+      [style.minWidth.px]="MINIMUM_SIDEBAR_WIDTH_IN_PX"
     >
       <ng-content select="[sidebar]"></ng-content>
     </nav>
@@ -62,6 +63,8 @@ export class LayoutContainer implements OnDestroy {
   );
   private readonly ngUnsubscribe = new Subject<void>();
   private resizing: boolean = false;
+
+  readonly MINIMUM_SIDEBAR_WIDTH_IN_PX = 75;
 
   constructor(private readonly store: Store<State>, hostElRef: ElementRef) {
     fromEvent<MouseEvent>(hostElRef.nativeElement, 'mousemove')
@@ -87,7 +90,9 @@ export class LayoutContainer implements OnDestroy {
         // Keep 75 update to date with the min-width in SCSS.
         // Collapse the sidebar when it is too small.
         const widthInPercent =
-          event.clientX <= 75 ? 0 : (event.clientX / width) * 100;
+          event.clientX <= this.MINIMUM_SIDEBAR_WIDTH_IN_PX
+            ? 0
+            : (event.clientX / width) * 100;
         this.store.dispatch(sideBarWidthChanged({widthInPercent}));
       });
 
