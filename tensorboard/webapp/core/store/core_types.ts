@@ -99,5 +99,5 @@ export const initialState: CoreState = {
   },
   polymerInteropRuns: [],
   polymerInteropRunSelection: new Set(),
-  sideBarWidthInPercent: 30,
+  sideBarWidthInPercent: 20,
 };
