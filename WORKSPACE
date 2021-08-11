@@ -76,6 +76,13 @@ npm_bazel_protractor_dependencies()
 
 http_archive(
     name = "org_tensorflow",
+    patches = [
+        # Patch TF's python_configure.bzl to ensure it reconfigures its python
+        # toolchain when environment variables like `PATH` and `PYTHONPATH`
+        # change, to avoid the stale genrule py_binary issue described in:
+        # https://github.com/tensorflow/tensorboard/issues/4862
+        "//third_party:tensorflow.patch",
+    ],
     # NOTE: when updating this, MAKE SURE to also update the protobuf_js runtime version
     # in third_party/workspace.bzl to >= the protobuf/protoc version provided by TF.
     sha256 = "2595a5c401521f20a2734c4e5d54120996f8391f00bb62a57267d930bce95350",
@@ -83,13 +90,6 @@ http_archive(
     urls = [
         "http://mirror.tensorflow.org/github.com/tensorflow/tensorflow/archive/v2.3.0.tar.gz",  # 2020-07-23
         "https://github.com/tensorflow/tensorflow/archive/v2.3.0.tar.gz",
-    ],
-    patches = [
-        # Patch TF's python_configure.bzl to ensure it reconfigures its python
-        # toolchain when environment variables like `PATH` and `PYTHONPATH`
-        # change, to avoid the stale genrule py_binary issue described in:
-        # https://github.com/tensorflow/tensorboard/issues/4862
-        "//third_party:tensorflow.patch",
     ],
 )
 
