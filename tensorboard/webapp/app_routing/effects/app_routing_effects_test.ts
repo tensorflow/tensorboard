@@ -299,6 +299,28 @@ describe('app_routing_effects', () => {
         store.refreshState();
       });
 
+      it('does not break when there are no dirty experiments selectors', () => {
+        const registryModule = TestBed.inject(DirtyUpdatesRegistryModule);
+        spyOn(registryModule, 'getDirtyUpdatesSelectors').and.returnValue([]);
+
+        action.next(
+          actions.navigationRequested({
+            pathname: '/experiment/meow',
+          })
+        );
+
+        expect(actualActions).toEqual([
+          actions.navigating({
+            after: buildRoute({
+              routeKind: RouteKind.EXPERIMENT,
+              params: {experimentId: 'meow'},
+              pathname: '/experiment/meow',
+              queryParams: [],
+            }),
+          }),
+        ]);
+      });
+
       it('warns user when navigating away', () => {
         spyOn(window, 'confirm');
         action.next(
