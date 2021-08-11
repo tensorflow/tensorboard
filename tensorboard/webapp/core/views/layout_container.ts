@@ -28,7 +28,7 @@ import {getSideBarWidthInPercent} from '../store/core_selectors';
 import {MouseEventButtons} from '../../util/dom';
 
 @Component({
-  selector: 'tb-layout',
+  selector: 'tb-dashboard-layout',
   template: `
     <button
       *ngIf="(width$ | async) === 0"

@@ -17,10 +17,10 @@ import {ChangeDetectionStrategy, Component} from '@angular/core';
 @Component({
   selector: 'metrics-dashboard',
   template: `
-    <tb-layout>
+    <tb-dashboard-layout>
       <runs-selector sidebar></runs-selector>
       <metrics-main-view main></metrics-main-view>
-    </tb-layout>
+    </tb-dashboard-layout>
   `,
   styleUrls: ['metrics_container.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,

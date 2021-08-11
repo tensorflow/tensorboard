@@ -41,15 +41,15 @@ class Main {}
 @Component({
   selector: 'testable-component',
   template: `
-    <tb-layout>
+    <tb-dashboard-layout>
       <sidebar sidebar></sidebar>
       <main main></main>
-    </tb-layout>
+    </tb-dashboard-layout>
   `,
   styles: [
     `
       :host,
-      tb-layout {
+      tb-dashboard-layout {
         height: 1000px;
         position: fixed;
         width: 1000px;
