@@ -16,7 +16,7 @@ limitations under the License.
 -->
 <div class="toolbar">
   <metrics-tag-filter></metrics-tag-filter>
-  <mat-button-toggle-group class="filter-view" multiple>
+  <mat-button-toggle-group class="filter-view" multiple appearance="standard">
     <mat-button-toggle
       [checked]="filteredPluginTypes.size === 0"
       (click)="onPluginTypeAllToggled.emit()"
