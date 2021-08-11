@@ -15,7 +15,7 @@ limitations under the License.
 import {Injectable} from '@angular/core';
 import {Actions, createEffect, ofType} from '@ngrx/effects';
 import {Action, createAction, Store} from '@ngrx/store';
-import {merge, Observable, of} from 'rxjs';
+import {combineLatest, merge, Observable, of} from 'rxjs';
 import {
   debounceTime,
   delay,
@@ -28,6 +28,7 @@ import {
 
 import {State} from '../../app_state';
 import {
+  discardDirtyUpdates,
   navigated,
   navigating,
   navigationRequested,
@@ -40,6 +41,7 @@ import {
   serializeCompareExperimentParams,
 } from '../internal_utils';
 import {Location} from '../location';
+import {DirtyUpdatesRegistryModule} from '../dirty_updates_registry_module';
 import {ProgrammaticalNavigationModule} from '../programmatical_navigation_module';
 import {RouteConfigs} from '../route_config';
 import {RouteRegistryModule} from '../route_registry_module';
@@ -64,6 +66,7 @@ export class AppRoutingEffects {
     private readonly actions$: Actions,
     private readonly store: Store<State>,
     private readonly location: Location,
+    private readonly dirtyUpdatesRegistry: DirtyUpdatesRegistryModule<State>,
     registry: RouteRegistryModule,
     private readonly programmaticalNavModule: ProgrammaticalNavigationModule,
     private readonly appRootProvider: AppRootProvider
@@ -198,8 +201,32 @@ export class AppRoutingEffects {
    * @export
    */
   navigate$ = createEffect(() => {
+    const hasDirtyUpdates$ = combineLatest(
+      this.dirtyUpdatesRegistry
+        .getDirtyUpdatesSelectors()
+        .map((selector) => this.store.select(selector))
+    ).pipe(
+      map(
+        (updates) =>
+          updates[0].experimentIds !== undefined &&
+          updates[0].experimentIds.length > 0
+      )
+    );
     const dispatchNavigating$ = this.validatedRoute$.pipe(
-      tap(({routeMatch, options}) => {
+      withLatestFrom(hasDirtyUpdates$),
+      filter(([, hasDirtyUpdates]) => {
+        if (hasDirtyUpdates) {
+          const discardChanges = window.confirm(
+            `You have unsaved edits, are you sure you want to discard them?`
+          );
+          if (discardChanges) {
+            this.store.dispatch(discardDirtyUpdates());
+          }
+          return discardChanges;
+        }
+        return true;
+      }),
+      tap(([{routeMatch, options}]) => {
         if (options.browserInitiated && routeMatch.deepLinkProvider) {
           // Query paramter formed by the redirector is passed to the
           // deserializer instead of one from Location.getSearch(). This
@@ -223,7 +250,7 @@ export class AppRoutingEffects {
           );
         }
       }),
-      switchMap(({routeMatch, options}) => {
+      switchMap(([{routeMatch, options}]) => {
         const navigationOptions = {
           replaceState: options.replaceState ?? false,
         };

@@ -11,6 +11,7 @@ tf_ng_module(
     ],
     deps = [
         ":app_root",
+        ":dirty_updates_registry",
         ":location",
         ":programmatical_navigation_module",
         ":route_registry",
