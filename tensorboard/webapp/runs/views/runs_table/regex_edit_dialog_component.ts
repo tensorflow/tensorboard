@@ -53,6 +53,13 @@ export class RegexEditDialogComponent {
     private readonly hostElRef: ElementRef
   ) {}
 
+  private resetFocus() {
+    if (!this.hostElRef.nativeElement.contains(document.activeElement)) {
+      const input = this.regexStringInput.nativeElement;
+      input.focus();
+    }
+  }
+
   onEnter(regexString: string) {
     this.onSaveClick(regexString);
     this.dialogRef.close();
@@ -68,13 +75,6 @@ export class RegexEditDialogComponent {
 
   regexInputChange(regexString: string) {
     this.regexInputOnChange.emit(regexString);
-  }
-
-  resetFocus() {
-    if (!this.hostElRef.nativeElement.contains(document.activeElement)) {
-      const input = this.regexStringInput.nativeElement;
-      input.focus();
-    }
   }
 
   handleFocusOut() {

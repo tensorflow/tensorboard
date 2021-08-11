@@ -14,10 +14,10 @@ limitations under the License.
 ==============================================================================*/
 import {NO_ERRORS_SCHEMA} from '@angular/core';
 import {
-  TestBed,
-  fakeAsync,
-  tick,
   discardPeriodicTasks,
+  fakeAsync,
+  TestBed,
+  tick,
 } from '@angular/core/testing';
 import {
   MatDialogModule,
@@ -30,22 +30,21 @@ import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {Action, Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
-
 import {State} from '../../../app_state';
 import {
-  getRuns,
-  getRunIdsForExperiment,
   getColorGroupRegexString,
+  getRunIdsForExperiment,
+  getRuns,
 } from '../../../selectors';
 import {KeyType, sendKey, SendKeyArgs} from '../../../testing/dom';
 import {runGroupByChanged} from '../../actions';
+import {buildRun} from '../../store/testing';
 import {GroupByKey} from '../../types';
 import {RegexEditDialogComponent} from './regex_edit_dialog_component';
 import {
   RegexEditDialogContainer,
   TEST_ONLY,
 } from './regex_edit_dialog_container';
-import {buildRun} from '../../store/testing';
 
 describe('regex_edit_dialog', () => {
   let actualActions: Action[];
@@ -518,10 +517,12 @@ describe('regex_edit_dialog', () => {
     const input = fixture.debugElement.query(By.css('input'));
     // Works around for input element focus initial (cdkFocusInitial)
     input.nativeElement.focus();
+    tick();
 
-    const div = document.createElement('div');
-    div.focus();
-    fixture.detectChanges();
+    const inputDummy = document.createElement('input');
+    document.body.append(inputDummy);
+    inputDummy.focus();
+    tick();
 
     expect(document.activeElement).toBe(input.nativeElement);
     discardPeriodicTasks();
