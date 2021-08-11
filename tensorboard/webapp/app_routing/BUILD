@@ -8,13 +8,16 @@ tf_ng_module(
     name = "app_routing",
     srcs = [
         "app_routing_module.ts",
+        "index.ts",
     ],
     deps = [
         ":app_root",
         ":dirty_updates_registry",
+        ":internal_utils",
         ":location",
         ":programmatical_navigation_module",
         ":route_registry",
+        ":types",
         "//tensorboard/webapp/app_routing/effects",
         "//tensorboard/webapp/app_routing/store",
         "//tensorboard/webapp/app_routing/store:types",
