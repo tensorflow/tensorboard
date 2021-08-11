@@ -15,9 +15,11 @@ limitations under the License.
 import {
   ChangeDetectionStrategy,
   Component,
+  ElementRef,
   EventEmitter,
   Input,
   Output,
+  ViewChild,
 } from '@angular/core';
 import {MatDialogRef} from '@angular/material/dialog';
 import {Run} from '../../types';
@@ -41,9 +43,22 @@ export class RegexEditDialogComponent {
   @Output() onSave = new EventEmitter<string>();
   @Output() regexInputOnChange = new EventEmitter<string>();
 
+  timeOutId = 0;
+  @ViewChild('regexStringInput', {static: true}) regexStringInput!: ElementRef<
+    HTMLInputElement
+  >;
+
   constructor(
-    public readonly dialogRef: MatDialogRef<RegexEditDialogComponent>
+    public readonly dialogRef: MatDialogRef<RegexEditDialogComponent>,
+    private readonly hostElRef: ElementRef
   ) {}
+
+  private resetFocus() {
+    if (!this.hostElRef.nativeElement.contains(document.activeElement)) {
+      const input = this.regexStringInput.nativeElement;
+      input.focus();
+    }
+  }
 
   onEnter(regexString: string) {
     this.onSaveClick(regexString);
@@ -61,5 +76,10 @@ export class RegexEditDialogComponent {
 
   regexInputChange(regexString: string) {
     this.regexInputOnChange.emit(regexString);
+  }
+
+  handleFocusOut() {
+    clearTimeout(this.timeOutId);
+    this.timeOutId = setTimeout(this.resetFocus.bind(this), 0);
   }
 }

@@ -20,9 +20,9 @@ import {
   combineLatestWith,
   debounceTime,
   filter,
+  map,
   startWith,
   take,
-  map,
 } from 'rxjs/operators';
 
 import {State} from '../../../app_state';
@@ -34,7 +34,7 @@ import {
   getRuns,
 } from '../../store/runs_selectors';
 import {groupRuns} from '../../store/utils';
-import {Run, GroupByKey} from '../../types';
+import {GroupByKey, Run} from '../../types';
 import {ColorGroup} from './regex_edit_dialog_component';
 
 const INPUT_CHANGE_DEBOUNCE_INTERVAL_MS = 500;
