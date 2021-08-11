@@ -60,7 +60,7 @@ limitations under the License.
         ></mat-slider>
         <ng-template #range>
           <tb-range-input
-            [disabled]="!selectTimeEnabled"
+            [attr.disabled]="!selectTimeEnabled"
             min="0"
             max="1000"
             [lowerValue]="selectedTime?.start.step || 0"
