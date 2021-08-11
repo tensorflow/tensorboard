@@ -20,6 +20,13 @@ import {Navigation, Route, RouteKind} from '../types';
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
 /**
+ * Created when user wants to discard unsaved edits and navigate away.
+ */
+export const discardDirtyUpdates = createAction(
+  '[App Routing] Discarding Unsaved Updates'
+);
+
+/**
  * Created when router rehydrates state from the URL after a browser initiated
  * event. Please do note that the action is fired before `navigated` so make
  * sure the view can handle inconsistent state right before a navigation.

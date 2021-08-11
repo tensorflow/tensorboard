@@ -22,7 +22,6 @@ import {of, ReplaySubject} from 'rxjs';
 
 import {State} from '../../app_state';
 import * as actions from '../actions';
-import {navigationRequested} from '../actions';
 import {AppRootProvider, TestableAppRootProvider} from '../app_root';
 import {Location} from '../location';
 import {DirtyUpdatesRegistryModule} from '../dirty_updates_registry_module';
@@ -325,7 +324,7 @@ describe('app_routing_effects', () => {
         expect(actualActions).toEqual([]);
       });
 
-      it('fires navigating and navigated if user discards dirty updates', () => {
+      it('fires discardDirtyUpdates, navigating and navigated if user discards dirty updates', () => {
         fakeAsync(() => {
           spyOn(window, 'confirm').and.returnValue(true);
           action.next(
@@ -335,7 +334,9 @@ describe('app_routing_effects', () => {
           );
 
           expect(window.confirm).toHaveBeenCalledTimes(1);
+          expect(actualActions).toEqual([actions.discardDirtyUpdates()]);
 
+          tick();
           expect(actualActions).toEqual([
             actions.navigating({
               after: buildRoute({
@@ -1128,7 +1129,7 @@ describe('app_routing_effects', () => {
       setAppRootAndSubscribe('/foo/bar/');
 
       // Do note that this path name does not contain the appRoot.
-      action.next(navigationRequested({pathname: '/experiment/123'}));
+      action.next(actions.navigationRequested({pathname: '/experiment/123'}));
 
       expect(actualActions).toEqual([
         actions.navigating({
@@ -1155,7 +1156,7 @@ describe('app_routing_effects', () => {
         .and.returnValue('/foo/bar/experiment/123');
 
       // Do note that this path name does not contain the appRoot.
-      action.next(navigationRequested({pathname: '../experiment/123'}));
+      action.next(actions.navigationRequested({pathname: '../experiment/123'}));
 
       expect(actualActions).toEqual([
         actions.navigating({

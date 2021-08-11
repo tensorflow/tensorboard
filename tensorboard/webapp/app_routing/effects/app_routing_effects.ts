@@ -28,6 +28,7 @@ import {
 
 import {State} from '../../app_state';
 import {
+  discardDirtyUpdates,
   navigated,
   navigating,
   navigationRequested,
@@ -215,9 +216,13 @@ export class AppRoutingEffects {
       withLatestFrom(hasDirtyUpdates$),
       filter(([, hasDirtyUpdates]) => {
         if (hasDirtyUpdates) {
-          return window.confirm(
-            'You have unsaved edits, are you sure you want to discard them?'
+          const discardChanges = window.confirm(
+            `You have unsaved edits, are you sure you want to discard them?`
           );
+          if (discardChanges) {
+            this.store.dispatch(discardDirtyUpdates());
+          }
+          return discardChanges;
         }
         return true;
       }),
