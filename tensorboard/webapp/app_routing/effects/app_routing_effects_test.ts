@@ -324,7 +324,9 @@ describe('app_routing_effects', () => {
         expect(actualActions).toEqual([]);
       });
 
-      it('fires discardDirtyUpdates, navigating and navigated if user discards dirty updates', () => {
+      it(
+        'fires discardDirtyUpdates, navigating and navigated if user ' +
+          'discards dirty updates',
         fakeAsync(() => {
           spyOn(window, 'confirm').and.returnValue(true);
           action.next(
@@ -334,10 +336,9 @@ describe('app_routing_effects', () => {
           );
 
           expect(window.confirm).toHaveBeenCalledTimes(1);
-          expect(actualActions).toEqual([actions.discardDirtyUpdates()]);
 
-          tick();
           expect(actualActions).toEqual([
+            actions.discardDirtyUpdates(),
             actions.navigating({
               after: buildRoute({
                 routeKind: RouteKind.EXPERIMENT,
@@ -350,19 +351,32 @@ describe('app_routing_effects', () => {
 
           tick();
           expect(actualActions).toEqual([
-            jasmine.any(Object),
-            actions.navigated({
-              before: null,
+            actions.discardDirtyUpdates(),
+            actions.navigating({
               after: buildRoute({
                 routeKind: RouteKind.EXPERIMENT,
                 params: {experimentId: 'meow'},
-                pathname: '//experiment/meow',
+                pathname: '/experiment/meow',
+                queryParams: [],
+              }),
+            }),
+            actions.navigated({
+              before: buildRoute({
+                routeKind: RouteKind.EXPERIMENTS,
+                params: {},
+                pathname: '/experiments',
+                queryParams: [],
+              }),
+              after: buildRoute({
+                routeKind: RouteKind.EXPERIMENT,
+                params: {experimentId: 'meow'},
+                pathname: '/experiment/meow',
                 queryParams: [],
               }),
             }),
           ]);
-        });
-      });
+        })
+      );
     });
 
     describe('order of events', () => {
