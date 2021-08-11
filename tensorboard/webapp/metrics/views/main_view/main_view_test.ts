@@ -175,6 +175,62 @@ describe('metrics main view', () => {
       new Map<string, boolean>()
     );
     store.overrideSelector(selectors.getRunColorMap, {});
+    store.overrideSelector(
+      selectors.getMetricsFilteredPluginTypes,
+      new Set<PluginType>()
+    );
+  });
+
+  describe('toolbar', () => {
+    it('displays visible plugin type in the button toggle', () => {
+      store.overrideSelector(
+        selectors.getMetricsFilteredPluginTypes,
+        new Set<PluginType>()
+      );
+      const fixture = TestBed.createComponent(MainViewContainer);
+      fixture.detectChanges();
+
+      const buttons = fixture.debugElement.queryAll(
+        By.css('mat-button-toggle')
+      );
+      expect(buttons.map((button) => button.properties['checked'])).toEqual([
+        true,
+        false,
+        false,
+        false,
+      ]);
+
+      store.overrideSelector(
+        selectors.getMetricsFilteredPluginTypes,
+        new Set<PluginType>([PluginType.IMAGES])
+      );
+      store.refreshState();
+      fixture.detectChanges();
+      expect(buttons.map((button) => button.properties['checked'])).toEqual([
+        false,
+        false,
+        true,
+        false,
+      ]);
+    });
+
+    it('dispatches action when clicked on a plugin type', () => {
+      const fixture = TestBed.createComponent(MainViewContainer);
+      fixture.detectChanges();
+
+      const [, scalars, images] = fixture.debugElement.queryAll(
+        By.css('mat-button-toggle')
+      );
+
+      scalars.nativeElement.click();
+      scalars.nativeElement.click();
+      images.nativeElement.click();
+      expect(dispatchedActions).toEqual([
+        actions.metricsToggleVisiblePlugin({plugin: PluginType.SCALARS}),
+        actions.metricsToggleVisiblePlugin({plugin: PluginType.SCALARS}),
+        actions.metricsToggleVisiblePlugin({plugin: PluginType.IMAGES}),
+      ]);
+    });
   });
 
   describe('card grid', () => {
@@ -242,6 +298,38 @@ describe('metrics main view', () => {
 
       expect(getCardContents(getCards(fixture.debugElement))).toEqual([
         'scalars: card1',
+        'images: card2',
+      ]);
+    });
+
+    it('filters out plugin type based on filtered plugin type', () => {
+      store.overrideSelector(
+        selectors.getMetricsFilteredPluginTypes,
+        new Set<PluginType>([PluginType.IMAGES, PluginType.HISTOGRAMS])
+      );
+      store.overrideSelector(
+        selectors.getCurrentRouteRunSelection,
+        new Map([['run1', true]])
+      );
+      store.overrideSelector(selectors.getNonEmptyCardIdsWithMetadata, [
+        {
+          cardId: 'card1',
+          plugin: PluginType.SCALARS,
+          tag: 'tagA',
+          runId: null,
+        },
+        {
+          cardId: 'card2',
+          plugin: PluginType.IMAGES,
+          tag: 'tagB',
+          runId: 'run1',
+          sample: 0,
+        },
+      ]);
+      const fixture = TestBed.createComponent(MainViewContainer);
+      fixture.detectChanges();
+
+      expect(getCardContents(getCards(fixture.debugElement))).toEqual([
         'images: card2',
       ]);
     });
@@ -950,6 +1038,19 @@ describe('metrics main view', () => {
       ]);
     });
 
+    it('filters out card based on plugin type and filteredPluginTypes', () => {
+      store.overrideSelector(
+        selectors.getMetricsFilteredPluginTypes,
+        new Set<PluginType>([PluginType.IMAGES, PluginType.HISTOGRAMS])
+      );
+      store.overrideSelector(selectors.getMetricsTagFilter, 'tagA');
+      const fixture = TestBed.createComponent(MainViewContainer);
+      fixture.detectChanges();
+
+      expect(getCardGroupNames(getFilterViewContainer(fixture))).toEqual([]);
+      expect(getFilterviewCardContents(fixture)).toEqual(['images: card2']);
+    });
+
     it('hides the main, pinned views while the filter view is active', () => {
       store.overrideSelector(selectors.getMetricsTagFilter, 'tagA');
       const fixture = TestBed.createComponent(MainViewContainer);
@@ -1290,6 +1391,27 @@ describe('metrics main view', () => {
       const pinnedViewDebugEl = queryDirective(fixture, PinnedViewContainer);
       const cardContents = getCardContents(getCards(pinnedViewDebugEl));
       expect(cardContents).toEqual(['images: pinnedCopy1']);
+    });
+
+    it('ignores filteredPluginTypes', () => {
+      store.overrideSelector(
+        selectors.getMetricsFilteredPluginTypes,
+        new Set([PluginType.IMAGES])
+      );
+      store.overrideSelector(
+        selectors.getCurrentRouteRunSelection,
+        new Map([['run1', true]])
+      );
+      store.overrideSelector(selectors.getPinnedCardsWithMetadata, [
+        {cardId: 'card1', ...createCardMetadata(PluginType.SCALARS)},
+        {cardId: 'card2', ...createCardMetadata(PluginType.IMAGES)},
+      ]);
+      const fixture = TestBed.createComponent(MainViewContainer);
+      fixture.detectChanges();
+
+      const pinnedViewDebugEl = queryDirective(fixture, PinnedViewContainer);
+      const cardContents = getCardContents(getCards(pinnedViewDebugEl));
+      expect(cardContents).toEqual(['scalars: card1', 'images: card2']);
     });
   });
 

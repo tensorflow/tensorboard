@@ -15,7 +15,7 @@ limitations under the License.
 import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {Store} from '@ngrx/store';
 import {combineLatest, of} from 'rxjs';
-import {filter, map, switchMap} from 'rxjs/operators';
+import {combineLatestWith, filter, map, switchMap} from 'rxjs/operators';
 
 import {State} from '../../../app_state';
 import {
@@ -26,6 +26,7 @@ import {metricsTagFilterChanged} from '../../actions';
 import {compareTagNames} from '../utils';
 
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
+import {getMetricsFilteredPluginTypes} from '../../store';
 
 @Component({
   selector: 'metrics-tag-filter',
@@ -59,7 +60,14 @@ export class MetricsFilterInputContainer {
   readonly completions$ = this.store
     .select(getNonEmptyCardIdsWithMetadata)
     .pipe(
-      map((cardList) => cardList.map(({tag}) => tag)),
+      combineLatestWith(this.store.select(getMetricsFilteredPluginTypes)),
+      map(([cardList, filteredPluginTypes]) => {
+        return cardList
+          .filter(({plugin}) => {
+            return !filteredPluginTypes.size || filteredPluginTypes.has(plugin);
+          })
+          .map(({tag}) => tag);
+      }),
       switchMap((cardList) => {
         return combineLatest([
           of(cardList),

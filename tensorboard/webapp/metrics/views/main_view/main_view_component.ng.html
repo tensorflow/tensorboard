@@ -16,6 +16,32 @@ limitations under the License.
 -->
 <div class="toolbar">
   <metrics-tag-filter></metrics-tag-filter>
+  <mat-button-toggle-group class="filter-view" multiple>
+    <mat-button-toggle
+      [checked]="filteredPluginTypes.size === 0"
+      (click)="onPluginTypeAllToggled.emit()"
+    >
+      All
+    </mat-button-toggle>
+    <mat-button-toggle
+      [checked]="filteredPluginTypes.has(PluginType.SCALARS)"
+      (click)="onPluginTypeToggled.emit(PluginType.SCALARS)"
+    >
+      Scalars
+    </mat-button-toggle>
+    <mat-button-toggle
+      [checked]="filteredPluginTypes.has(PluginType.IMAGES)"
+      (click)="onPluginTypeToggled.emit(PluginType.IMAGES)"
+    >
+      Image
+    </mat-button-toggle>
+    <mat-button-toggle
+      [checked]="filteredPluginTypes.has(PluginType.HISTOGRAMS)"
+      (click)="onPluginTypeToggled.emit(PluginType.HISTOGRAMS)"
+    >
+      Histogram
+    </mat-button-toggle>
+  </mat-button-toggle-group>
   <div class="right-items">
     <button
       mat-stroked-button

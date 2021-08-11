@@ -41,6 +41,21 @@ limitations under the License.
   }
 }
 
+.filter-view {
+  flex: none;
+  margin-right: 5px;
+
+  mat-button-toggle {
+    $_height: 25px;
+    height: $_height;
+    font-size: 12px;
+
+    ::ng-deep .mat-button-toggle-label-content {
+      line-height: $_height;
+    }
+  }
+}
+
 .split-content {
   display: flex;
   overflow-y: auto;
