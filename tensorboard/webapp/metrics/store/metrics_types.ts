@@ -155,6 +155,7 @@ export interface MetricsRoutefulState {
   selectedTime: LinkedTime | null;
   selectTimeEnabled: boolean;
   useRangeSelectTime: boolean;
+  filteredPluginTypes: Set<PluginType>;
 }
 
 export interface MetricsSettings {

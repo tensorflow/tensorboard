@@ -92,6 +92,7 @@ function buildBlankState(): MetricsState {
     selectedTime: null,
     selectTimeEnabled: false,
     useRangeSelectTime: false,
+    filteredPluginTypes: new Set(),
   };
 }
 

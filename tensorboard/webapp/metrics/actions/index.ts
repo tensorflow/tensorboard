@@ -19,7 +19,13 @@ import {
   TimeSeriesRequest,
   TimeSeriesResponse,
 } from '../data_source';
-import {CardId, HistogramMode, TooltipSort, XAxisType} from '../internal_types';
+import {
+  CardId,
+  HistogramMode,
+  PluginType,
+  TooltipSort,
+  XAxisType,
+} from '../internal_types';
 
 /** @typehack */ import * as _typeHackModels from '@ngrx/store/src/models';
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
@@ -133,6 +139,17 @@ export const metricsTagGroupExpansionChanged = createAction(
 export const cardPinStateToggled = createAction(
   '[Metrics] Card Pin State Toggled',
   props<{cardId: CardId; canCreateNewPins: boolean; wasPinned: boolean}>()
+);
+
+export const metricsToggleVisiblePlugin = createAction(
+  '[Metrics] Toggle Visible Plugin',
+  props<{
+    plugin: PluginType;
+  }>()
+);
+
+export const metricsShowAllPlugins = createAction(
+  '[Metrics] Toggle Show All Plugins'
 );
 
 export const timeSelectionChanged = createAction(

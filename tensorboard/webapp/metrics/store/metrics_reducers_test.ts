@@ -1904,4 +1904,45 @@ describe('metrics reducers', () => {
       });
     });
   });
+
+  describe('plugin filtering feature', () => {
+    describe('#metricsToggleVisiblePlugin', () => {
+      it('toggles plugin types', () => {
+        const state1 = buildMetricsState({
+          filteredPluginTypes: new Set([PluginType.IMAGES]),
+        });
+
+        const state2 = reducers(
+          state1,
+          actions.metricsToggleVisiblePlugin({
+            plugin: PluginType.SCALARS,
+          })
+        );
+        expect(state2.filteredPluginTypes).toEqual(
+          new Set([PluginType.SCALARS, PluginType.IMAGES])
+        );
+
+        const state3 = reducers(
+          state2,
+          actions.metricsToggleVisiblePlugin({
+            plugin: PluginType.IMAGES,
+          })
+        );
+        expect(state3.filteredPluginTypes).toEqual(
+          new Set([PluginType.SCALARS])
+        );
+      });
+    });
+
+    describe('#metricsShowAllPlugins', () => {
+      it('clears all filtered plugin types', () => {
+        const before = buildMetricsState({
+          filteredPluginTypes: new Set([PluginType.IMAGES]),
+        });
+
+        const after = reducers(before, actions.metricsShowAllPlugins());
+        expect(after.filteredPluginTypes).toEqual(new Set());
+      });
+    });
+  });
 });

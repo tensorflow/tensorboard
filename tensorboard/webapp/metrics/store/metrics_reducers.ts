@@ -245,6 +245,7 @@ const {initialState, reducers: routeContextReducer} = createRouteContextedState<
     selectedTime: null,
     selectTimeEnabled: false,
     useRangeSelectTime: false,
+    filteredPluginTypes: new Set(),
   },
   {
     timeSeriesData: {
@@ -844,7 +845,22 @@ const reducer = createReducer(
       ...state,
       selectedTime: null,
     };
-  })
+  }),
+  on(actions.metricsToggleVisiblePlugin, (state, {plugin}) => {
+    const nextFilteredPluginTypes = new Set(state.filteredPluginTypes);
+    if (nextFilteredPluginTypes.has(plugin)) {
+      nextFilteredPluginTypes.delete(plugin);
+    } else {
+      nextFilteredPluginTypes.add(plugin);
+    }
+    return {...state, filteredPluginTypes: nextFilteredPluginTypes};
+  }),
+  on(
+    actions.metricsShowAllPlugins,
+    (state): MetricsState => {
+      return {...state, filteredPluginTypes: new Set()};
+    }
+  )
 );
 
 export function reducers(state: MetricsState | undefined, action: Action) {
