@@ -15,6 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <div class="toolbar">
+  <metrics-tag-filter></metrics-tag-filter>
   <mat-button-toggle-group class="filter-view" multiple>
     <mat-button-toggle
       [checked]="filteredPluginTypes.size === 0"
@@ -41,7 +42,6 @@ limitations under the License.
       Histogram
     </mat-button-toggle>
   </mat-button-toggle-group>
-  <metrics-tag-filter></metrics-tag-filter>
   <div class="right-items">
     <button
       mat-stroked-button
