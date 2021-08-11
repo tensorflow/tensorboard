@@ -46,7 +46,11 @@ http_archive(
     ],
 )
 
-load("@build_bazel_rules_nodejs//:index.bzl", "yarn_install")
+load("@build_bazel_rules_nodejs//:index.bzl", "node_repositories", "yarn_install")
+
+node_repositories(
+    node_version = "12.21.0",
+)
 
 yarn_install(
     name = "npm",
