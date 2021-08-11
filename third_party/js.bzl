@@ -194,6 +194,10 @@ def tensorboard_js_workspace():
                 "http://mirror.tensorflow.org/raw.githubusercontent.com/google/material-design-icons/d3d4aca5a7cf50bc68bbd401cefa708e364194e8/src/image/brightness_6/materialicons/24px.svg",
                 "https://raw.githubusercontent.com/google/material-design-icons/d3d4aca5a7cf50bc68bbd401cefa708e364194e8/src/image/brightness_6/materialicons/24px.svg",
             ],
+            "5737806d54eae03d5cc02f2dbf7753ecb800fb8fba6ce93e5b1d1c3a9ed5b87b": [
+                "http://mirror.tensorflow.org/raw.githubusercontent.com/google/material-design-icons/d3d4aca5a7cf50bc68bbd401cefa708e364194e8/src/action/drag_indicator/materialicons/24px.svg",
+                "https://raw.githubusercontent.com/google/material-design-icons/d3d4aca5a7cf50bc68bbd401cefa708e364194e8/src/action/drag_indicator/materialicons/24px.svg",
+            ],
         },
         rename = {
             "ic_arrow_downward_24px.svg": "arrow_downward_24px.svg",
@@ -255,5 +259,7 @@ def tensorboard_js_workspace():
             "https://raw.githubusercontent.com/google/material-design-icons/ab12f16d050ecb1886b606f08825d24b30acafea/src/device/dark_mode/materialicons/24px.svg": "dark_mode_24px.svg",
             "http://mirror.tensorflow.org/raw.githubusercontent.com/google/material-design-icons/d3d4aca5a7cf50bc68bbd401cefa708e364194e8/src/image/brightness_6/materialicons/24px.svg": "brightness_6_24px.svg",
             "https://raw.githubusercontent.com/google/material-design-icons/d3d4aca5a7cf50bc68bbd401cefa708e364194e8/src/image/brightness_6/materialicons/24px.svg": "brightness_6_24px.svg",
+            "http://mirror.tensorflow.org/raw.githubusercontent.com/google/material-design-icons/d3d4aca5a7cf50bc68bbd401cefa708e364194e8/src/action/drag_indicator/materialicons/24px.svg": "drag_indicator_24px.svg",
+            "https://raw.githubusercontent.com/google/material-design-icons/d3d4aca5a7cf50bc68bbd401cefa708e364194e8/src/action/drag_indicator/materialicons/24px.svg": "drag_indicator_24px.svg",
         },
     )

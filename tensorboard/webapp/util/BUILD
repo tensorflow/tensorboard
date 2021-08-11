@@ -48,6 +48,13 @@ tf_ts_library(
 )
 
 tf_ts_library(
+    name = "dom",
+    srcs = [
+        "dom.ts",
+    ],
+)
+
+tf_ts_library(
     name = "ui_selectors",
     srcs = [
         "ui_selectors.ts",

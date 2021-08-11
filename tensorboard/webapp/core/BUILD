@@ -6,12 +6,16 @@ tf_ng_module(
     name = "core",
     srcs = [
         "core_module.ts",
+        "index.ts",
     ],
     deps = [
+        ":state",
         "//tensorboard/webapp/core/actions",
         "//tensorboard/webapp/core/effects",
         "//tensorboard/webapp/core/store",
+        "//tensorboard/webapp/core/views:layout",
         "//tensorboard/webapp/deeplink",
+        "//tensorboard/webapp/persistent_settings",
         "//tensorboard/webapp/webapp_data_source",
         "@npm//@angular/core",
         "@npm//@ngrx/effects",

@@ -15,8 +15,8 @@ limitations under the License.
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
 
+import {LayoutModule} from '../../core';
 import {RunsSelectorModule} from '../../runs/views/runs_selector/runs_selector_module';
-
 import {MainViewModule} from './main_view/main_view_module';
 import {MetricsDashboardContainer} from './metrics_container';
 import {RightPaneModule} from './right_pane/right_pane_module';
@@ -24,6 +24,12 @@ import {RightPaneModule} from './right_pane/right_pane_module';
 @NgModule({
   declarations: [MetricsDashboardContainer],
   exports: [MetricsDashboardContainer],
-  imports: [CommonModule, RightPaneModule, RunsSelectorModule, MainViewModule],
+  imports: [
+    CommonModule,
+    LayoutModule,
+    MainViewModule,
+    RightPaneModule,
+    RunsSelectorModule,
+  ],
 })
 export class MetricsViewsModule {}

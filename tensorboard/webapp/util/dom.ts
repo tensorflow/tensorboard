@@ -12,17 +12,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {ChangeDetectionStrategy, Component} from '@angular/core';
 
-@Component({
-  selector: 'metrics-dashboard',
-  template: `
-    <tb-dashboard-layout>
-      <runs-selector sidebar></runs-selector>
-      <metrics-main-view main></metrics-main-view>
-    </tb-dashboard-layout>
-  `,
-  styleUrls: ['metrics_container.css'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
-})
-export class MetricsDashboardContainer {}
+// From: https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/buttons
+export enum MouseEventButtons {
+  LEFT = 0b1,
+  RIGHT = 0b10,
+  MIDDLE = 0b100,
+  FOURTH = 0b1000, // often 'back' button, but can differ by mouse controller.
+  FIFTH = 0b100000, // often 'forward' button, but can differ by mouse controller.
+}

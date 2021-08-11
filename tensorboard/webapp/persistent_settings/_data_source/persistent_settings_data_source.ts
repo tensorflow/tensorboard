@@ -56,6 +56,7 @@ export class OSSSettingsConverter extends SettingsConverter<
       paginationSize: settings.pageSize,
       theme: settings.themeOverride,
       notificationLastReadTimeInMs: settings.notificationLastReadTimeInMs,
+      sideBarWidthInPercent: settings.sideBarWidthInPercent,
     };
     return serializableSettings;
   }
@@ -118,6 +119,13 @@ export class OSSSettingsConverter extends SettingsConverter<
     ) {
       settings.notificationLastReadTimeInMs =
         backendSettings.notificationLastReadTimeInMs;
+    }
+
+    if (
+      backendSettings.hasOwnProperty('sideBarWidthInPercent') &&
+      typeof backendSettings.sideBarWidthInPercent === 'number'
+    ) {
+      settings.sideBarWidthInPercent = backendSettings.sideBarWidthInPercent;
     }
 
     return settings;

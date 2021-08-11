@@ -30,6 +30,7 @@ const KNOWN_SVG_ICON = new Set([
   'content_copy_24px',
   'dark_mode_24px',
   'done_24px',
+  'drag_indicator_24px',
   'edit_24px',
   'error_24px',
   'expand_less_24px',

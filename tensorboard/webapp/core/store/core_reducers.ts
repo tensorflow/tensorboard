@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Action, createReducer, on} from '@ngrx/store';
+
+import {globalSettingsLoaded} from '../../persistent_settings';
 import {DataLoadState} from '../../types/data';
 import * as actions from '../actions';
 import {CoreState, initialState} from './core_types';
@@ -159,6 +161,26 @@ const reducer = createReducer(
   }),
   on(actions.polymerInteropRunSelectionChanged, (state, {nextSelection}) => {
     return {...state, polymerInteropRunSelection: new Set(nextSelection)};
+  }),
+  on(actions.sideBarWidthChanged, (state, {widthInPercent}) => {
+    return {
+      ...state,
+      sideBarWidthInPercent: Math.min(Math.max(0, widthInPercent), 100),
+    };
+  }),
+  on(globalSettingsLoaded, (state, {partialSettings}) => {
+    const nextState = {...state};
+
+    const sideBarWidthInPercent = partialSettings.sideBarWidthInPercent;
+    if (
+      typeof sideBarWidthInPercent === 'number' &&
+      sideBarWidthInPercent >= 0 &&
+      sideBarWidthInPercent <= 100
+    ) {
+      nextState.sideBarWidthInPercent = sideBarWidthInPercent;
+    }
+
+    return nextState;
   })
 );
 

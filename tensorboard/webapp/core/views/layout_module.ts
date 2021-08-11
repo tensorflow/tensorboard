@@ -1,4 +1,4 @@
-/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2021 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -12,17 +12,19 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {ChangeDetectionStrategy, Component} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {NgModule} from '@angular/core';
+import {MatButtonModule} from '@angular/material/button';
+import {MatIconModule} from '@angular/material/icon';
 
-@Component({
-  selector: 'metrics-dashboard',
-  template: `
-    <tb-dashboard-layout>
-      <runs-selector sidebar></runs-selector>
-      <metrics-main-view main></metrics-main-view>
-    </tb-dashboard-layout>
-  `,
-  styleUrls: ['metrics_container.css'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+import {LayoutContainer} from './layout_container';
+
+/**
+ * Provides component that is responsible for layout of Angular dashboards.
+ */
+@NgModule({
+  declarations: [LayoutContainer],
+  exports: [LayoutContainer],
+  imports: [CommonModule, MatIconModule, MatButtonModule],
 })
-export class MetricsDashboardContainer {}
+export class LayoutModule {}

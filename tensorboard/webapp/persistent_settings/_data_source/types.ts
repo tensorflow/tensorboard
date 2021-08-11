@@ -35,6 +35,7 @@ export declare interface BackendSettings {
   paginationSize?: number;
   theme?: ThemeValue;
   notificationLastReadTimeInMs?: number;
+  sideBarWidthInPercent?: number;
 }
 
 /**
@@ -51,4 +52,5 @@ export interface PersistableSettings {
   pageSize?: number;
   themeOverride?: ThemeValue;
   notificationLastReadTimeInMs?: number;
+  sideBarWidthInPercent?: number;
 }
