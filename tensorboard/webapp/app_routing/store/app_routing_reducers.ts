@@ -23,9 +23,6 @@ const initialState: AppRoutingState = {
 
 const reducer = createReducer(
   initialState,
-  on(actions.discardDirtyUpdates, (state) => {
-    return {...state};
-  }),
   on(actions.navigating, (state, {after}) => {
     return {...state, nextRoute: after};
   }),
