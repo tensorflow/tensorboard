@@ -45,6 +45,7 @@ import {buildRun} from '../../../runs/store/testing';
 import * as selectors from '../../../selectors';
 import {MatIconTestingModule} from '../../../testing/mat_icon_module';
 import {DataLoadState} from '../../../types/data';
+import {IntersectionObserverTestingModule} from '../../../widgets/intersection_observer/intersection_observer_testing_module';
 import {
   Formatter,
   relativeTimeFormatter,
@@ -160,6 +161,7 @@ describe('scalar card', () => {
   let selectSpy: jasmine.Spy;
   let overlayContainer: OverlayContainer;
   let resizeTester: ResizeDetectorTestingModule;
+  let intersectionObserver: IntersectionObserverTestingModule;
 
   const Selector = {
     FIT_TO_DOMAIN: By.css('[aria-label="Fit line chart domains to data"]'),
@@ -187,11 +189,15 @@ describe('scalar card', () => {
   }
 
   function createComponent(
-    cardId: string
+    cardId: string,
+    initiallyHidden?: boolean
   ): ComponentFixture<ScalarCardContainer> {
     const fixture = TestBed.createComponent(ScalarCardContainer);
     fixture.componentInstance.cardId = cardId;
     fixture.componentInstance.DataDownloadComponent = TestableDataDownload;
+    if (!initiallyHidden) {
+      intersectionObserver.simulateVisibilityChange(fixture, true);
+    }
     // Let the observables to be subscribed.
     fixture.detectChanges();
     // Flush the debounce on the `seriesData$`.
@@ -204,8 +210,7 @@ describe('scalar card', () => {
     );
     const lineChartComponent = fixture.debugElement.query(Selector.LINE_CHART);
 
-    // LineChart is rendered inside *ngIf. Set it only when it is rendered.
-    if (lineChartComponent) {
+    if (!initiallyHidden) {
       // HACK: we are using viewChild in ScalarCardComponent and there is
       // no good way to provide a stub implementation. Manually set what
       // would be populated by ViewChild decorator.
@@ -233,6 +238,7 @@ describe('scalar card', () => {
         MatMenuModule,
         MatProgressSpinnerModule,
         NoopAnimationsModule,
+        IntersectionObserverTestingModule,
         ResizeDetectorTestingModule,
         TruncatedPathModule,
       ],
@@ -250,6 +256,7 @@ describe('scalar card', () => {
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
 
+    intersectionObserver = TestBed.inject(IntersectionObserverTestingModule);
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
     selectSpy = spyOn(store, 'select').and.callThrough();
     overlayContainer = TestBed.inject(OverlayContainer);
@@ -296,24 +303,28 @@ describe('scalar card', () => {
         new Set(['unknown'])
       );
 
-      const fixture = createComponent('card1');
+      const fixture = createComponent('card1', true /* initiallyHidden */);
 
       const lineChart1 = fixture.debugElement.query(Selector.LINE_CHART);
       expect(lineChart1).toBeNull();
 
+      intersectionObserver.simulateVisibilityChange(fixture, true);
       store.overrideSelector(selectors.getVisibleCardIdSet, new Set(['card1']));
       store.refreshState();
       fixture.detectChanges();
 
       const lineChart2 = fixture.debugElement.query(Selector.LINE_CHART);
       expect(lineChart2).not.toBeNull();
+      expect(lineChart2.componentInstance.disableUpdate).toBe(false);
 
+      intersectionObserver.simulateVisibilityChange(fixture, false);
       store.overrideSelector(selectors.getVisibleCardIdSet, new Set(['gone']));
       store.refreshState();
       fixture.detectChanges();
 
       const lineChart3 = fixture.debugElement.query(Selector.LINE_CHART);
       expect(lineChart3).not.toBeNull();
+      expect(lineChart2.componentInstance.disableUpdate).toBe(true);
     }));
 
     it('renders empty chart when there is no data', fakeAsync(() => {

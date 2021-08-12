@@ -19,6 +19,7 @@ import {MatIconModule} from '@angular/material/icon';
 import {MatMenuModule} from '@angular/material/menu';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 
+import {IntersectionObserverModule} from '../../../widgets/intersection_observer/intersection_observer_module';
 import {LineChartModule as LineChartV2Module} from '../../../widgets/line_chart_v2/line_chart_module';
 import {ResizeDetectorModule} from '../../../widgets/resize_detector_module';
 import {TruncatedPathModule} from '../../../widgets/text/truncated_path_module';
@@ -38,6 +39,7 @@ import {VisSelectedTimeClippedModule} from './vis_selected_time_clipped_module';
     MatIconModule,
     MatMenuModule,
     MatProgressSpinnerModule,
+    IntersectionObserverModule,
     ResizeDetectorModule,
     TruncatedPathModule,
     VisSelectedTimeClippedModule,
