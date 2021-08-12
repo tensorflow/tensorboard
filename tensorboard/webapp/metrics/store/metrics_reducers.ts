@@ -246,6 +246,10 @@ const {initialState, reducers: routeContextReducer} = createRouteContextedState<
     selectTimeEnabled: false,
     useRangeSelectTime: false,
     filteredPluginTypes: new Set(),
+    stepMinMax: {
+      min: Infinity,
+      max: -Infinity,
+    },
   },
   {
     timeSeriesData: {
@@ -668,6 +672,7 @@ const reducer = createReducer(
       state: MetricsState,
       {response}: {response: TimeSeriesResponse}
     ): MetricsState => {
+      const nextStepMinMax = {...state.stepMinMax};
       // Update time series.
       const nextTimeSeriesData = {...state.timeSeriesData};
       const {plugin, tag, runId, sample} = response;
@@ -701,6 +706,11 @@ const reducer = createReducer(
           if (runToSeries.hasOwnProperty(runId)) {
             loadable.runToSeries[runId] = runToSeries[runId];
             loadable.runToLoadState[runId] = DataLoadState.LOADED;
+
+            for (const step of runToSeries[runId]) {
+              nextStepMinMax.min = Math.min(nextStepMinMax.min, step.step);
+              nextStepMinMax.max = Math.max(nextStepMinMax.max, step.step);
+            }
           }
         }
       }
@@ -714,6 +724,7 @@ const reducer = createReducer(
           nextTimeSeriesData,
           state.timeSeriesData
         ),
+        stepMinMax: nextStepMinMax,
       };
       return nextState;
     }
@@ -819,18 +830,24 @@ const reducer = createReducer(
     };
   }),
   on(actions.timeSelectionChanged, (state, change) => {
+    const nextStartStep = change.startStep;
+    let nextEndStep =
+      change.endStep ?? state.selectedTime?.end?.step ?? state.stepMinMax.max;
+
+    if (nextStartStep > nextEndStep) {
+      nextEndStep = nextStartStep;
+    }
+
     return {
       ...state,
       selectTimeEnabled: true,
       selectedTime: {
-        start: {step: change.startStep, wallTime: change.startWallTime},
-        end:
-          change.endStep === undefined || change.endWallTime === undefined
-            ? null
-            : {
-                step: change.endStep,
-                wallTime: change.endWallTime,
-              },
+        start: {
+          step: nextStartStep,
+        },
+        end: {
+          step: nextEndStep,
+        },
       },
     };
   }),

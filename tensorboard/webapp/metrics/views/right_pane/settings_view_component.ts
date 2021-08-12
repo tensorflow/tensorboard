@@ -64,6 +64,7 @@ export class SettingsViewComponent {
   @Input() selectTimeEnabled!: boolean;
   @Input() useRangeSelectTime!: boolean;
   @Input() selectedTime!: LinkedTime | null;
+  @Input() stepMinMax!: {min: number; max: number};
 
   @Output() selectTimeEnableToggled = new EventEmitter<void>();
   @Output() useRangeSelectTimeToggled = new EventEmitter<void>();
@@ -160,12 +161,8 @@ export class SettingsViewComponent {
 
   onStepStartChanged(stepValue: number) {
     this.selectTimeChanged.emit({
+      start: {step: stepValue},
       end: null,
-      ...this.selectedTime,
-      start: {
-        step: stepValue,
-        wallTime: 0,
-      },
     });
   }
 
@@ -177,14 +174,8 @@ export class SettingsViewComponent {
     upperValue: number;
   }) {
     this.selectTimeChanged.emit({
-      start: {
-        step: lowerValue,
-        wallTime: 0,
-      },
-      end: {
-        step: upperValue,
-        wallTime: 0,
-      },
+      start: {step: lowerValue},
+      end: {step: upperValue},
     });
   }
 }

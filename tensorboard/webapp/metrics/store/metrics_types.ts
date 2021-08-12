@@ -131,6 +131,11 @@ export type CardToPinnedCard = Map<NonPinnedCardId, PinnedCardId>;
 
 export type PinnedCardToCard = Map<PinnedCardId, NonPinnedCardId>;
 
+export interface StoreInternalLinkedTime {
+  start: {step: number};
+  end: {step: number};
+}
+
 export interface MetricsRoutefulState {
   tagMetadataLoaded: DataLoadState;
   tagMetadata: TagMetadata;
@@ -152,10 +157,15 @@ export interface MetricsRoutefulState {
   cardStepIndex: CardStepIndexMap;
   tagFilter: string;
   tagGroupExpanded: Map<string, boolean>;
-  selectedTime: LinkedTime | null;
+  selectedTime: StoreInternalLinkedTime | null;
   selectTimeEnabled: boolean;
   useRangeSelectTime: boolean;
   filteredPluginTypes: Set<PluginType>;
+  // Minimum and maximum step number across all TimeSeries data.
+  stepMinMax: {
+    min: number;
+    max: number;
+  };
 }
 
 export interface MetricsSettings {

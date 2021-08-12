@@ -37,6 +37,7 @@ import {
   MetricsState,
   METRICS_FEATURE_KEY,
   RunToSeries,
+  StoreInternalLinkedTime,
   TagMetadata,
 } from './metrics_types';
 
@@ -350,16 +351,49 @@ export const getMetricsUseRangeSelectTime = createSelector(
   }
 );
 
-/**
- * Returns raw value of the selected time set by user. This selector is intended
- * to used by settings panel only.
- *
- * @see getMetricsSelectedTime instead.
- */
-export const getMetricsSelectedTimeRaw = createSelector(
+export const getMetricsStepMinMax = createSelector(
   selectMetricsState,
-  (state: MetricsState): LinkedTime | null => {
-    return state.selectedTime;
+  (state: MetricsState): {min: number; max: number} => {
+    const {min, max} = state.stepMinMax;
+    return {
+      min: min === Infinity ? 0 : min,
+      max: max === -Infinity ? 1000 : max,
+    };
+  }
+);
+
+/**
+ * Returns value of the selected time set by user. When selected time is never
+ * set, it returns the default value which is derived from the timeseries data
+ * loaded thus far.
+ *
+ * This selector is intended to used by settings panel only. Other views should
+ * use `getMetricsSelectedTime` that returns `LinkedTime` value according to
+ * the setting.
+ *
+ * @see getMetricsSelectedTime For most views.
+ */
+export const getMetricsSelectedTimeSetting = createSelector(
+  selectMetricsState,
+  getMetricsStepMinMax,
+  (state, stepMinMax): LinkedTime => {
+    if (!state.selectedTime) {
+      return {
+        start: {
+          step: stepMinMax.min,
+        },
+        end: {
+          step: stepMinMax.max,
+        },
+      };
+    }
+
+    return {
+      ...state.selectedTime,
+      end: state.selectedTime.end ?? {
+        step: stepMinMax.max,
+      },
+    };
   }
 );
 
@@ -372,16 +406,12 @@ export const getMetricsSelectedTimeRaw = createSelector(
  */
 export const getMetricsSelectedTime = createSelector(
   selectMetricsState,
-  getMetricsSelectedTimeRaw,
-  (state: MetricsState, selectedTime: LinkedTime | null): LinkedTime | null => {
-    if (!state.selectTimeEnabled || !selectedTime) {
-      return null;
-    }
-
+  getMetricsSelectedTimeSetting,
+  (state: MetricsState, selectedTime: LinkedTime): LinkedTime | null => {
+    if (!state.selectTimeEnabled) return null;
     if (state.useRangeSelectTime) {
       return selectedTime;
     }
-
     return {...selectedTime, end: null};
   }
 );

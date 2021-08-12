@@ -92,7 +92,14 @@ describe('metrics right_pane', () => {
       store.overrideSelector(selectors.getIsLinkedTimeEnabled, false);
       store.overrideSelector(selectors.getMetricsSelectTimeEnabled, false);
       store.overrideSelector(selectors.getMetricsUseRangeSelectTime, false);
-      store.overrideSelector(selectors.getMetricsSelectedTimeRaw, null);
+      store.overrideSelector(selectors.getMetricsSelectedTimeSetting, {
+        start: {step: 0},
+        end: {step: 1000},
+      });
+      store.overrideSelector(selectors.getMetricsStepMinMax, {
+        min: 0,
+        max: 5000,
+      });
     });
 
     function getMatSliderValue(el: DebugElement): string {
@@ -379,7 +386,10 @@ describe('metrics right_pane', () => {
 
         it('dispatches actions when step changes when making single step change', () => {
           store.overrideSelector(selectors.getMetricsUseRangeSelectTime, false);
-          store.overrideSelector(selectors.getMetricsSelectedTimeRaw, null);
+          store.overrideSelector(selectors.getMetricsSelectedTimeSetting, {
+            start: {step: 0},
+            end: {step: 1000},
+          });
           const fixture = TestBed.createComponent(SettingsViewContainer);
           fixture.detectChanges();
 
@@ -393,16 +403,14 @@ describe('metrics right_pane', () => {
           expect(dispatchSpy).toHaveBeenCalledOnceWith(
             actions.timeSelectionChanged({
               startStep: 5,
-              startWallTime: 0,
               endStep: undefined,
-              endWallTime: undefined,
             })
           );
         });
 
-        it('keeps existing endStep when single step range changes', () => {
+        it('sets endStep to undefined when single step range changes', () => {
           store.overrideSelector(selectors.getMetricsUseRangeSelectTime, false);
-          store.overrideSelector(selectors.getMetricsSelectedTimeRaw, {
+          store.overrideSelector(selectors.getMetricsSelectedTimeSetting, {
             start: {step: 0, wallTime: -1},
             end: {step: 100, wallTime: 100},
           });
@@ -419,9 +427,7 @@ describe('metrics right_pane', () => {
           expect(dispatchSpy).toHaveBeenCalledOnceWith(
             actions.timeSelectionChanged({
               startStep: 5,
-              startWallTime: 0,
-              endStep: 100,
-              endWallTime: 100,
+              endStep: undefined,
             })
           );
         });
@@ -444,7 +450,10 @@ describe('metrics right_pane', () => {
 
         it('dispatches actions when step changes when making range step change', () => {
           store.overrideSelector(selectors.getMetricsUseRangeSelectTime, true);
-          store.overrideSelector(selectors.getMetricsSelectedTimeRaw, null);
+          store.overrideSelector(selectors.getMetricsSelectedTimeSetting, {
+            start: {step: 0},
+            end: {step: 0},
+          });
           const fixture = TestBed.createComponent(SettingsViewContainer);
           fixture.detectChanges();
 
@@ -459,9 +468,7 @@ describe('metrics right_pane', () => {
           expect(dispatchSpy).toHaveBeenCalledOnceWith(
             actions.timeSelectionChanged({
               startStep: 10,
-              startWallTime: 0,
               endStep: 200,
-              endWallTime: 0,
             })
           );
         });
