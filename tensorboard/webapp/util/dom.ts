@@ -27,7 +27,7 @@ let currElementId = 0;
 /**
  * An opaque id intended to refer to exactly one specific DOM Element.
  */
-export type ElementId = number;
+export type ElementId = Symbol;
 
 /**
  * Generates a new opaque id for the consumer to associate with a unique DOM
@@ -35,6 +35,8 @@ export type ElementId = number;
  * and ids.
  */
 export function nextElementId(): ElementId {
+  // An incrementing number is actually unnecessary, but makes it easier to
+  // identify whether 2 elements are the same in the console when debugging.
   currElementId++;
-  return currElementId;
+  return Symbol(currElementId);
 }

@@ -486,7 +486,7 @@ describe('metrics main view', () => {
           actions.cardVisibilityChanged({
             enteredCards: [
               {
-                elementId: jasmine.any(Number) as any,
+                elementId: jasmine.any(Symbol) as any,
                 cardId: directives[0].cardId,
               },
             ],
@@ -516,7 +516,7 @@ describe('metrics main view', () => {
           actions.cardVisibilityChanged({
             enteredCards: [
               {
-                elementId: jasmine.any(Number) as any,
+                elementId: jasmine.any(Symbol) as any,
                 cardId: directives[0].cardId,
               },
             ],
@@ -525,17 +525,17 @@ describe('metrics main view', () => {
           actions.cardVisibilityChanged({
             enteredCards: [
               {
-                elementId: jasmine.any(Number) as any,
+                elementId: jasmine.any(Symbol) as any,
                 cardId: directives[1].cardId,
               },
               {
-                elementId: jasmine.any(Number) as any,
+                elementId: jasmine.any(Symbol) as any,
                 cardId: directives[2].cardId,
               },
             ],
             exitedCards: [
               {
-                elementId: jasmine.any(Number) as any,
+                elementId: jasmine.any(Symbol) as any,
                 cardId: directives[0].cardId,
               },
             ],
@@ -572,7 +572,7 @@ describe('metrics main view', () => {
             enteredCards: [],
             exitedCards: [
               {
-                elementId: jasmine.any(Number) as any,
+                elementId: jasmine.any(Symbol) as any,
                 cardId: directives[0].cardId,
               },
             ],
@@ -597,7 +597,7 @@ describe('metrics main view', () => {
             enteredCards: [],
             exitedCards: [
               {
-                elementId: jasmine.any(Number) as any,
+                elementId: jasmine.any(Symbol) as any,
                 cardId: directives[0].cardId,
               },
             ],
@@ -605,7 +605,7 @@ describe('metrics main view', () => {
           actions.cardVisibilityChanged({
             enteredCards: [
               {
-                elementId: jasmine.any(Number) as any,
+                elementId: jasmine.any(Symbol) as any,
                 cardId: directives[0].cardId,
               },
             ],

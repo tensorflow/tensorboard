@@ -1237,7 +1237,7 @@ describe('metrics reducers', () => {
       });
       const nextState = reducers(beforeState, action);
       expect(nextState.visibleCardMap).toEqual(
-        new Map([[jasmine.any(Number), 'card1']])
+        new Map([[jasmine.any(Symbol), 'card1']])
       );
       expect(nextState).toBe(beforeState);
     });

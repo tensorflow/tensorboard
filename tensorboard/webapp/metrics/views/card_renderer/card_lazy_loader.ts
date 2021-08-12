@@ -20,8 +20,10 @@ import {ElementId, nextElementId} from '../../../util/dom';
 import * as actions from '../../actions';
 import {CardId} from '../../types';
 
-const elementToCardIdMap = new WeakMap<Element, CardId>();
-const elementIdMap = new WeakMap<Element, ElementId>();
+const elementToIds = new WeakMap<
+  Element,
+  {elementId: ElementId; cardId: CardId}
+>();
 
 type CardObserverCallback = (
   enteredCards: Set<Element>,
@@ -159,24 +161,22 @@ export class CardLazyLoader implements OnInit, OnDestroy {
     exitedElements: Set<Element>
   ) {
     const enteredCards = [...enteredElements].map((element) => {
-      const elementId = elementIdMap.get(element) ?? null;
-      const cardId = elementToCardIdMap.get(element) ?? null;
-      if (elementId === null || cardId === null) {
+      const ids = elementToIds.get(element);
+      if (!ids) {
         throw new Error(
           'A CardObserver element must have an associated element id and card id.'
         );
       }
-      return {elementId, cardId};
+      return {elementId: ids.elementId, cardId: ids.cardId};
     });
     const exitedCards = [...exitedElements].map((element) => {
-      const elementId = elementIdMap.get(element) ?? null;
-      const cardId = elementToCardIdMap.get(element) ?? null;
-      if (elementId === null || cardId === null) {
+      const ids = elementToIds.get(element);
+      if (!ids) {
         throw new Error(
           'A CardObserver element must have an associated element id and card id.'
         );
       }
-      return {elementId, cardId};
+      return {elementId: ids.elementId, cardId: ids.cardId};
     });
     this.store.dispatch(
       actions.cardVisibilityChanged({enteredCards, exitedCards})
@@ -185,8 +185,10 @@ export class CardLazyLoader implements OnInit, OnDestroy {
 
   ngOnInit() {
     const element = this.host.nativeElement;
-    elementToCardIdMap.set(element, this.cardId);
-    elementIdMap.set(element, nextElementId());
+    elementToIds.set(element, {
+      elementId: nextElementId(),
+      cardId: this.cardId,
+    });
 
     if (!this.cardObserver) {
       this.cardObserver = new CardObserver();
