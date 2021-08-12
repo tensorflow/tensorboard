@@ -369,6 +369,12 @@ export class ScalarCardContainer implements CardRenderer, OnInit {
           return {...selectedTime, clipped: false};
         }
 
+        // When selectedTime and data extent (in step axis) do not overlap,
+        // default single select min or max data extent depending on which side
+        // the selectedTime is at.
+
+        // Case when selectedTime is on the right of the maximum of the
+        // time series.
         if (maxStep <= selectedTime.start.step) {
           return {
             start: {step: maxStep},
@@ -376,6 +382,8 @@ export class ScalarCardContainer implements CardRenderer, OnInit {
             clipped: true,
           };
         }
+        // Case when selectedtime is on the left of the minimum of the time
+        // series.
         return {
           start: {step: minStep},
           end: null,
