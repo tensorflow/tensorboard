@@ -32,7 +32,6 @@ import {
   shareReplay,
   startWith,
   switchMap,
-  takeWhile,
 } from 'rxjs/operators';
 
 import {State} from '../../../app_state';
@@ -45,7 +44,6 @@ import {
   getMetricsSelectedTime,
   getRun,
   getRunColorMap,
-  getVisibleCardIdSet,
 } from '../../../selectors';
 import {DataLoadState} from '../../../types/data';
 import {classicSmoothing} from '../../../widgets/line_chart_v2/data_transformer';
@@ -111,8 +109,8 @@ function areSeriesEqual(
       [DataDownloadComponent]="DataDownloadComponent"
       [dataSeries]="dataSeries$ | async"
       [ignoreOutliers]="ignoreOutliers$ | async"
-      [isCardVisible]="isCardVisible$ | async"
-      [isEverVisible]="isEverVisible$ | async"
+      [isCardVisible]="isVisible"
+      [isEverVisible]="isEverVisible"
       [isPinned]="isPinned$ | async"
       [loadState]="loadState$ | async"
       [showFullSize]="showFullSize"
@@ -126,6 +124,8 @@ function areSeriesEqual(
       [selectedTime]="selectedTime$ | async"
       (onFullSizeToggle)="onFullSizeToggle()"
       (onPinClicked)="pinStateChanged.emit($event)"
+      observeIntersection
+      (onVisibilityChange)="onVisibilityChange($event)"
     ></scalar-card-component>
   `,
   styles: [
@@ -153,6 +153,8 @@ export class ScalarCardContainer implements CardRenderer, OnInit {
   @Output() fullHeightChanged = new EventEmitter<boolean>();
   @Output() pinStateChanged = new EventEmitter<boolean>();
 
+  isVisible: boolean = false;
+  isEverVisible: boolean = false;
   loadState$?: Observable<DataLoadState>;
   title$?: Observable<string>;
   tag$?: Observable<string>;
@@ -170,15 +172,10 @@ export class ScalarCardContainer implements CardRenderer, OnInit {
     })
   );
 
-  readonly isCardVisible$ = this.store.select(getVisibleCardIdSet).pipe(
-    map((visibleSet) => {
-      return visibleSet.has(this.cardId);
-    }),
-    distinctUntilChanged()
-  );
-  readonly isEverVisible$ = this.isCardVisible$.pipe(
-    takeWhile((visible) => !visible, true)
-  );
+  onVisibilityChange({visible}: {visible: boolean}) {
+    this.isVisible = visible;
+    this.isEverVisible = this.isEverVisible || visible;
+  }
 
   readonly useDarkMode$ = this.store.select(getDarkModeEnabled);
   readonly ignoreOutliers$ = this.store.select(getMetricsIgnoreOutliers);
