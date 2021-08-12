@@ -51,6 +51,8 @@ type ScalarTooltipDatum = TooltipDatum<
   }
 >;
 
+export type LinkedTimeWithClipped = LinkedTime & {clipped: boolean};
+
 @Component({
   selector: 'scalar-card-component',
   templateUrl: 'scalar_card_component.ng.html',
@@ -80,7 +82,7 @@ export class ScalarCardComponent<Downloader> {
   @Input() xAxisType!: XAxisType;
   @Input() xScaleType!: ScaleType;
   @Input() useDarkMode!: boolean;
-  @Input() selectedTime!: LinkedTime | null;
+  @Input() selectedTime!: LinkedTimeWithClipped | null;
 
   @Output() onFullSizeToggle = new EventEmitter<void>();
   @Output() onPinClicked = new EventEmitter<boolean>();

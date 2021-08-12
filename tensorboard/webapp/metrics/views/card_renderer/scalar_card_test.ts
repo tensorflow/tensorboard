@@ -19,6 +19,7 @@ import {
   EventEmitter,
   Inject,
   Input,
+  NO_ERRORS_SCHEMA,
   Output,
   TemplateRef,
 } from '@angular/core';
@@ -59,10 +60,11 @@ import {
 import {ResizeDetectorTestingModule} from '../../../widgets/resize_detector_testing_module';
 import {TruncatedPathModule} from '../../../widgets/text/truncated_path_module';
 import {PluginType} from '../../data_source';
-import {getMetricsScalarSmoothing, getMetricsXAxisType} from '../../store';
+import {getMetricsScalarSmoothing, getMetricsSelectedTime} from '../../store';
 import {
   appStateFromMetricsState,
   buildMetricsState,
+  buildScalarStepData,
   provideMockCardRunToSeriesData,
 } from '../../testing';
 import {TooltipSort, XAxisType} from '../../types';
@@ -86,6 +88,12 @@ import {
         cursorLocationInDataCoord: cursorLocForTesting
       }"
     ></ng-container>
+    <ng-container
+      *ngIf="customXAxisTemplate"
+      [ngTemplateOutlet]="customXAxisTemplate"
+      [ngTemplateOutletContext]="axisTemplateContext"
+    >
+    </ng-container>
   `,
 })
 class TestableLineChart {
@@ -100,6 +108,20 @@ class TestableLineChart {
   @Input() useDarkMode?: boolean;
   @Input()
   tooltipTemplate!: TemplateRef<{data: TooltipDatum[]}>;
+
+  @Input()
+  customXAxisTemplate!: TemplateRef<{}>;
+
+  axisTemplateContext = {
+    viewExtent: {x: [0, 100], y: [0, 1000]},
+    domDimension: {width: 200, height: 200},
+    xScale: {
+      forward: () => 0,
+    },
+    formatter: {
+      formatTick: (num: number) => String(num),
+    },
+  };
 
   @Output()
   onViewBoxOverridden = new EventEmitter<boolean>();
@@ -144,6 +166,8 @@ describe('scalar card', () => {
     LINE_CHART: By.directive(TestableLineChart),
     TOOLTIP_HEADER_COLUMN: By.css('table.tooltip th'),
     TOOLTIP_ROW: By.css('table.tooltip .tooltip-row'),
+    HEADER_WARNING: By.css('vis-selected-time-clipped'),
+    LINKED_TIME_AXIS_FOB: By.css('.selected-time-fob'),
   };
 
   function openOverflowMenu(fixture: ComponentFixture<ScalarCardContainer>) {
@@ -223,6 +247,7 @@ describe('scalar card', () => {
           initialState: appStateFromMetricsState(buildMetricsState()),
         }),
       ],
+      schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
 
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
@@ -1727,5 +1752,128 @@ describe('scalar card', () => {
 
       expect(viewBoxResetSpy).toHaveBeenCalledTimes(1);
     }));
+  });
+
+  describe('linked time feature integration', () => {
+    describe('selectedTime and dataset', () => {
+      it('shows warning when selectedTime is outside the extent of dataset', fakeAsync(() => {
+        const runToSeries = {
+          run1: [buildScalarStepData({step: 10})],
+          run2: [buildScalarStepData({step: 20})],
+          run3: [buildScalarStepData({step: 30})],
+        };
+        provideMockCardRunToSeriesData(
+          selectSpy,
+          PluginType.SCALARS,
+          'card1',
+          null /* metadataOverride */,
+          runToSeries
+        );
+        store.overrideSelector(getMetricsSelectedTime, {
+          start: {step: 0},
+          end: {step: 5},
+        });
+        const fixture = createComponent('card1');
+        fixture.detectChanges();
+
+        expect(
+          fixture.debugElement.query(Selector.HEADER_WARNING)
+        ).toBeTruthy();
+      }));
+
+      it('does not show warning if there is an overlap', fakeAsync(() => {
+        const runToSeries = {
+          run1: [buildScalarStepData({step: 10})],
+          run2: [buildScalarStepData({step: 20})],
+          run3: [buildScalarStepData({step: 30})],
+        };
+        provideMockCardRunToSeriesData(
+          selectSpy,
+          PluginType.SCALARS,
+          'card1',
+          null /* metadataOverride */,
+          runToSeries
+        );
+        store.overrideSelector(getMetricsSelectedTime, {
+          start: {step: 25},
+          end: {step: 50},
+        });
+        const fixture = createComponent('card1');
+        fixture.detectChanges();
+        expect(fixture.debugElement.query(Selector.HEADER_WARNING)).toBeNull();
+
+        store.overrideSelector(getMetricsSelectedTime, {
+          start: {step: -10},
+          end: {step: 15},
+        });
+        store.refreshState();
+        fixture.detectChanges();
+        expect(fixture.debugElement.query(Selector.HEADER_WARNING)).toBeNull();
+
+        store.overrideSelector(getMetricsSelectedTime, {
+          start: {step: -1000},
+          end: {step: 1000},
+        });
+        store.refreshState();
+        fixture.detectChanges();
+        expect(fixture.debugElement.query(Selector.HEADER_WARNING)).toBeNull();
+      }));
+
+      it('selects selectedTime to min extent when global setting is too small', fakeAsync(() => {
+        const runToSeries = {
+          run1: [buildScalarStepData({step: 10})],
+          run2: [buildScalarStepData({step: 20})],
+          run3: [buildScalarStepData({step: 30})],
+        };
+        provideMockCardRunToSeriesData(
+          selectSpy,
+          PluginType.SCALARS,
+          'card1',
+          null /* metadataOverride */,
+          runToSeries
+        );
+        store.overrideSelector(getMetricsSelectedTime, {
+          start: {step: -100},
+          end: {step: 0},
+        });
+        const fixture = createComponent('card1');
+        fixture.detectChanges();
+
+        const fobs = fixture.debugElement.queryAll(
+          Selector.LINKED_TIME_AXIS_FOB
+        );
+        expect(
+          fobs.map((debugEl) => debugEl.nativeElement.textContent.trim())
+        ).toEqual(['10']);
+      }));
+
+      it('selects selectedTime to max extent when global setting is too large', fakeAsync(() => {
+        const runToSeries = {
+          run1: [buildScalarStepData({step: 10})],
+          run2: [buildScalarStepData({step: 20})],
+          run3: [buildScalarStepData({step: 30})],
+        };
+        provideMockCardRunToSeriesData(
+          selectSpy,
+          PluginType.SCALARS,
+          'card1',
+          null /* metadataOverride */,
+          runToSeries
+        );
+        store.overrideSelector(getMetricsSelectedTime, {
+          start: {step: 50},
+          end: {step: 100},
+        });
+        const fixture = createComponent('card1');
+        fixture.detectChanges();
+
+        const fobs = fixture.debugElement.queryAll(
+          Selector.LINKED_TIME_AXIS_FOB
+        );
+        expect(
+          fobs.map((debugEl) => debugEl.nativeElement.textContent.trim())
+        ).toEqual(['30']);
+      }));
+    });
   });
 });
