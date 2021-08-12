@@ -21,3 +21,22 @@ export enum MouseEventButtons {
   FOURTH = 0b1000, // often 'back' button, but can differ by mouse controller.
   FIFTH = 0b100000, // often 'forward' button, but can differ by mouse controller.
 }
+
+let currElementId = 0;
+
+/**
+ * An opaque id intended to refer to exactly one specific DOM Element.
+ */
+export type ElementId = Symbol;
+
+/**
+ * Generates a new opaque id for the consumer to associate with a unique DOM
+ * Element. Consumers are responsible for the 1:1 association between Elements
+ * and ids.
+ */
+export function nextElementId(): ElementId {
+  // An incrementing number is actually unnecessary, but makes it easier to
+  // identify whether 2 elements are the same in the console when debugging.
+  currElementId++;
+  return Symbol(currElementId);
+}

@@ -16,14 +16,18 @@ import {Directive, ElementRef, Input, OnDestroy, OnInit} from '@angular/core';
 import {Store} from '@ngrx/store';
 
 import {State} from '../../../app_state';
+import {ElementId, nextElementId} from '../../../util/dom';
 import * as actions from '../../actions';
 import {CardId} from '../../types';
 
-const elementToCardIdMap = new WeakMap<Element, CardId>();
+const elementToIds = new WeakMap<
+  Element,
+  {elementId: ElementId; cardId: CardId}
+>();
 
 type CardObserverCallback = (
-  enteredCards: Set<CardId>,
-  exitedCards: Set<CardId>
+  enteredCards: Set<Element>,
+  exitedCards: Set<Element>
 ) => void;
 
 export class CardObserver {
@@ -92,23 +96,15 @@ export class CardObserver {
      */
     entries.sort((a, b) => a.time - b.time);
 
-    const enteredCards = new Set<CardId>();
-    const exitedCards = new Set<CardId>();
-    for (const entry of entries) {
-      const target = entry.target;
-      const cardId = elementToCardIdMap.get(target);
-      if (!cardId) {
-        throw new Error(
-          'A CardObserver element must be associated with a CardId'
-        );
-      }
-
-      if (entry.isIntersecting) {
-        enteredCards.add(cardId);
-        exitedCards.delete(cardId);
+    const enteredElements = new Set<Element>();
+    const exitedElements = new Set<Element>();
+    for (const {isIntersecting, target} of entries) {
+      if (isIntersecting) {
+        enteredElements.add(target);
+        exitedElements.delete(target);
       } else {
-        enteredCards.delete(cardId);
-        exitedCards.add(cardId);
+        enteredElements.delete(target);
+        exitedElements.add(target);
       }
 
       /**
@@ -118,12 +114,12 @@ export class CardObserver {
        * - Callback fires for just A, unobserving B
        * - B's callback never fires
        */
-      if (this.destroyedTargets.has(target) && !entry.isIntersecting) {
+      if (this.destroyedTargets.has(target) && !isIntersecting) {
         this.destroyedTargets.delete(target);
         this.intersectionObserver!.unobserve(target);
       }
     }
-    this.intersectionCallback!(enteredCards, exitedCards);
+    this.intersectionCallback!(enteredElements, exitedElements);
   }
 
   onCardIntersectionForTest(entries: IntersectionObserverEntry[]) {
@@ -160,20 +156,45 @@ export class CardLazyLoader implements OnInit, OnDestroy {
     private readonly store: Store<State>
   ) {}
 
-  onCardIntersection(enteredCards: Set<CardId>, exitedCards: Set<CardId>) {
+  onCardIntersection(
+    enteredElements: Set<Element>,
+    exitedElements: Set<Element>
+  ) {
+    const enteredCards = [...enteredElements].map((element) => {
+      const ids = elementToIds.get(element);
+      if (!ids) {
+        throw new Error(
+          'A CardObserver element must have an associated element id and card id.'
+        );
+      }
+      return {elementId: ids.elementId, cardId: ids.cardId};
+    });
+    const exitedCards = [...exitedElements].map((element) => {
+      const ids = elementToIds.get(element);
+      if (!ids) {
+        throw new Error(
+          'A CardObserver element must have an associated element id and card id.'
+        );
+      }
+      return {elementId: ids.elementId, cardId: ids.cardId};
+    });
     this.store.dispatch(
       actions.cardVisibilityChanged({enteredCards, exitedCards})
     );
   }
 
   ngOnInit() {
-    elementToCardIdMap.set(this.host.nativeElement, this.cardId);
+    const element = this.host.nativeElement;
+    elementToIds.set(element, {
+      elementId: nextElementId(),
+      cardId: this.cardId,
+    });
 
     if (!this.cardObserver) {
       this.cardObserver = new CardObserver();
     }
     this.cardObserver.initialize(this.onCardIntersection.bind(this));
-    this.cardObserver.add(this.host.nativeElement);
+    this.cardObserver.add(element);
   }
 
   ngOnDestroy() {

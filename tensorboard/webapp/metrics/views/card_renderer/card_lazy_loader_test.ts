@@ -146,8 +146,10 @@ describe('card view test', () => {
     expect(unobserveSpy).not.toHaveBeenCalled();
     expect(dispatchedActions).toEqual([
       actions.cardVisibilityChanged({
-        enteredCards: new Set(['card1']),
-        exitedCards: new Set(),
+        enteredCards: [
+          {elementId: jasmine.any(Symbol) as any, cardId: 'card1'},
+        ],
+        exitedCards: [],
       }),
     ]);
 
@@ -163,12 +165,14 @@ describe('card view test', () => {
     expect(unobserveSpy).toHaveBeenCalled();
     expect(dispatchedActions).toEqual([
       actions.cardVisibilityChanged({
-        enteredCards: new Set(['card1']),
-        exitedCards: new Set(),
+        enteredCards: [
+          {elementId: jasmine.any(Symbol) as any, cardId: 'card1'},
+        ],
+        exitedCards: [],
       }),
       actions.cardVisibilityChanged({
-        enteredCards: new Set(),
-        exitedCards: new Set(['card1']),
+        enteredCards: [],
+        exitedCards: [{elementId: jasmine.any(Symbol) as any, cardId: 'card1'}],
       }),
     ]);
   });
