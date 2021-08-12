@@ -287,6 +287,9 @@ jobs:
     steps:
       - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e
       - uses: actions/setup-node@56899e050abffc08c2b3b61f3ec6a79a9dc3223d
+        with:
+          # default on setup-node@1 is v10.24.1.
+          version: '12.21.0'
       - run: yarn install --ignore-engines
         # You can run `yarn fix-lint` to fix all Prettier complaints.
       - run: yarn lint
