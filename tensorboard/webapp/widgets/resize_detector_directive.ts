@@ -34,7 +34,7 @@ export class ResizeDetectorDirective implements OnDestroy, OnInit {
   @Input() resizeEventDebouncePeriodInMs: number = 100;
   @Output() onResize = new EventEmitter<void>();
 
-  private readonly ngUnsubscribe$ = new Subject();
+  private readonly ngUnsubscribe$ = new Subject<void>();
   private readonly onResize$ = new Subject<void>();
 
   constructor(ref: ElementRef) {

@@ -16,7 +16,7 @@ tf_web_library(
 tf_web_library(
     name = "monaco_editor",
     srcs = [
-        "@npm//:node_modules/monaco-editor-core/dev/vs/base/browser/ui/codiconLabel/codicon/codicon.ttf",
+        "@npm//:node_modules/monaco-editor-core/dev/vs/base/browser/ui/codicons/codicon/codicon.ttf",
         "@npm//:node_modules/monaco-editor-core/dev/vs/base/worker/workerMain.js",
         "@npm//:node_modules/monaco-editor-core/dev/vs/editor/editor.main.css",
         "@npm//:node_modules/monaco-editor-core/dev/vs/editor/editor.main.js",
@@ -29,8 +29,7 @@ tf_web_library(
 tf_web_library(
     name = "monaco_languages",
     srcs = [
-        "@npm//:node_modules/monaco-languages/release/dev/_.contribution.js",
-        "@npm//:node_modules/monaco-languages/release/dev/python/python.contribution.js",
+        "@npm//:node_modules/monaco-languages/release/dev/monaco.contribution.js",
         "@npm//:node_modules/monaco-languages/release/dev/python/python.js",
     ],
     path = "/tf-imports/vs",

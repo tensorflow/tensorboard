@@ -37,7 +37,7 @@ import {AlertInfo} from '../types';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AlertSnackbarContainer implements OnInit, OnDestroy {
-  private readonly ngUnsubscribe = new Subject();
+  private readonly ngUnsubscribe = new Subject<void>();
 
   constructor(
     private readonly store: Store<State>,

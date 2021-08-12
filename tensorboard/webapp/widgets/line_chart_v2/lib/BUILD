@@ -68,6 +68,7 @@ tf_ts_library(
         ":internal_types",
         ":scale",
         ":utils",
+        "@npm//@types/three",
         "@npm//three",
     ],
 )

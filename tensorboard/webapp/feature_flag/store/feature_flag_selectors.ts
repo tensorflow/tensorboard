@@ -22,8 +22,6 @@ import {
   State,
 } from './feature_flag_types';
 
-/** @typehack */ import * as _typeHackNgrxStore from '@ngrx/store';
-
 const selectFeatureFlagState = createFeatureSelector<State, FeatureFlagState>(
   FEATURE_FLAG_FEATURE_KEY
 );

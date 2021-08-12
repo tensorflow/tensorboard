@@ -206,7 +206,7 @@ export class LineChartInteractiveViewComponent
 
   private dragStartCoord: {x: number; y: number} | null = null;
   private isCursorInside = false;
-  private readonly ngUnsubscribe = new Subject();
+  private readonly ngUnsubscribe = new Subject<void>();
 
   constructor(
     private readonly changeDetector: ChangeDetectorRef,

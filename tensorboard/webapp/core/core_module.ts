@@ -31,8 +31,6 @@ import {
 } from './store/core_initial_state_provider';
 import {CORE_FEATURE_KEY} from './store/core_types';
 
-/** @typehack */ import * as _typeHackNgrxStore from '@ngrx/store';
-
 export function getSideBarWidthSetting() {
   return createSelector<State, number, PersistableSettings>(
     getSideBarWidthInPercent,

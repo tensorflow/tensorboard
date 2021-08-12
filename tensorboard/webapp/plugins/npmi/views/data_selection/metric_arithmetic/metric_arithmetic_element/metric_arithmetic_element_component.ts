@@ -44,7 +44,7 @@ export class MetricArithmeticElementComponent
   @Output() onFilterChange = new EventEmitter<{min: number; max: number}>();
   focusMin = false;
   focusMax = false;
-  private ngUnsubscribe = new Subject();
+  private ngUnsubscribe = new Subject<void>();
   minFormControl!: FormControl;
   maxFormControl!: FormControl;
 

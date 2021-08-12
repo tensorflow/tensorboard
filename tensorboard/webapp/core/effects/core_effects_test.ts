@@ -15,7 +15,6 @@ limitations under the License.
 import {
   discardPeriodicTasks,
   fakeAsync,
-  flush,
   TestBed,
   tick,
 } from '@angular/core/testing';
@@ -462,6 +461,8 @@ describe('core_effects', () => {
         polymerRunsFetchRequested(),
         polymerRunsFetchRequested(),
       ]);
+
+      discardPeriodicTasks();
     }));
 
     it(
