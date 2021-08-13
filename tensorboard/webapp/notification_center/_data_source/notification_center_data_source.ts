@@ -41,6 +41,7 @@ export class TBNotificationCenterDataSource
           return {
             ...response,
             notifications: response.notifications.map((notification) => {
+              if (!notification.hasOwnProperty('dateInMs')) return notification;
               return {
                 ...notification,
                 // `dateInMs` can never exceed local machine's today at 12:00 AM.
