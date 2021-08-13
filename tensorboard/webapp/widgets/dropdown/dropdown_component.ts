@@ -35,7 +35,6 @@ export interface DropdownOption {
     >
       <mat-option
         *ngFor="let option of options"
-        class="tb-mat-option"
         [value]="option.value"
         [disabled]="option.disabled"
       >

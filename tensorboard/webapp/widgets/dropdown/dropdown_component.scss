@@ -32,8 +32,9 @@ mat-select:focus {
   max-width: 70vw;
 }
 
-.tb-mat-option {
-  // Overrides Angular Material's fixed height.
+// This selector needs relatively more specificity than Angular Material's
+// to override the fixed height.
+::ng-deep mat-option.mat-option {
   height: auto;
 }
 
