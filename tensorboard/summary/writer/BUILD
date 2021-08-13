@@ -57,6 +57,20 @@ py_test(
 )
 
 py_test(
+    name = "event_file_writer_fsspec_test",
+    size = "small",
+    srcs = ["event_file_writer_fsspec_test.py"],
+    main = "event_file_writer_fsspec_test.py",
+    srcs_version = "PY3",
+    tags = ["support_notf"],
+    deps = [
+        ":writer",
+        "//tensorboard:expect_fsspec_installed",
+        "//tensorboard:test",
+    ],
+)
+
+py_test(
     name = "record_writer_test",
     size = "small",
     srcs = ["record_writer_test.py"],
