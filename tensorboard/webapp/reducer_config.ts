@@ -22,26 +22,27 @@ import {
 
 export interface State {}
 
+const anyWindow = window as any;
+anyWindow.__tensorboard_show_ngrx_log = isDevMode();
+
 // console.log all actions
 function logger(reducer: ActionReducer<any>): ActionReducer<any> {
   return (state, action) => {
     const result = reducer(state, action);
-    console.groupCollapsed(action.type);
-    console.log('prev state', state);
-    console.log('action', action);
-    console.log('next state', result);
-    console.groupEnd();
+    if (anyWindow.__tensorboard_show_ngrx_log) {
+      console.groupCollapsed(action.type);
+      console.log('prev state', state);
+      console.log('action', action);
+      console.log('next state', result);
+      console.groupEnd();
+    }
 
     return result;
   };
 }
 
 export function loggerMetaReducerFactory(): MetaReducer {
-  return !isDevMode()
-    ? (reducer) => (state, action) => {
-        return reducer(state, action);
-      }
-    : logger;
+  return logger;
 }
 
 export const ROOT_REDUCERS = new InjectionToken<
