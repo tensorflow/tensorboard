@@ -54,6 +54,7 @@ class FakeGridComponent {
       [yScaleType]="yScaleType"
       [fixedViewBox]="fixedViewBox"
       [useDarkMode]="useDarkMode"
+      (onRendererFatalError)="onRendererFatalError()"
     ></line-chart>
   `,
   styles: [
@@ -94,6 +95,8 @@ class TestableComponent {
   triggerViewBoxChange(viewBox: Extent) {
     this.chart.onViewBoxChanged({dataExtent: viewBox});
   }
+
+  onRendererFatalError() {}
 }
 
 describe('line_chart_v2/line_chart test', () => {
@@ -646,6 +649,109 @@ describe('line_chart_v2/line_chart test', () => {
       fixture.detectChanges();
 
       expect(fixture.debugElement.query(By.css('.dark-mode'))).toBeTruthy();
+    });
+  });
+
+  describe('onContextLost renderer callback', () => {
+    it('does not emit onRendererFatalError by default', () => {
+      const fixture = createComponent({
+        seriesData: [buildSeries({id: 'foo'})],
+        seriesMetadataMap: {foo: buildMetadata({id: 'foo', visible: true})},
+        yScaleType: ScaleType.LINEAR,
+      });
+      const rendererFatalErrorSpy = spyOn(
+        fixture.componentInstance,
+        'onRendererFatalError'
+      );
+      fixture.detectChanges();
+
+      fixture.componentInstance.chart.triggerContextLostForTest();
+
+      expect(rendererFatalErrorSpy).not.toHaveBeenCalled();
+    });
+
+    it('emits onRendererFatalError when enabling updates', () => {
+      const fixture = createComponent({
+        seriesData: [buildSeries({id: 'foo'})],
+        seriesMetadataMap: {foo: buildMetadata({id: 'foo', visible: true})},
+        yScaleType: ScaleType.LINEAR,
+      });
+      const rendererFatalErrorSpy = spyOn(
+        fixture.componentInstance,
+        'onRendererFatalError'
+      );
+      fixture.detectChanges();
+
+      fixture.componentInstance.chart.triggerContextLostForTest();
+
+      expect(rendererFatalErrorSpy).not.toHaveBeenCalled();
+
+      fixture.componentInstance.disableUpdate = true;
+      fixture.detectChanges();
+
+      expect(rendererFatalErrorSpy).not.toHaveBeenCalled();
+
+      // Updates now enabled.
+      fixture.componentInstance.disableUpdate = false;
+      fixture.detectChanges();
+
+      expect(rendererFatalErrorSpy).toHaveBeenCalledTimes(1);
+    });
+
+    it('emits onRendererFatalError when updating the chart', () => {
+      const fixture = createComponent({
+        seriesData: [buildSeries({id: 'foo'})],
+        seriesMetadataMap: {foo: buildMetadata({id: 'foo', visible: true})},
+        yScaleType: ScaleType.LINEAR,
+      });
+      const rendererFatalErrorSpy = spyOn(
+        fixture.componentInstance,
+        'onRendererFatalError'
+      );
+      fixture.detectChanges();
+
+      fixture.componentInstance.chart.triggerContextLostForTest();
+
+      expect(rendererFatalErrorSpy).not.toHaveBeenCalled();
+
+      fixture.componentInstance.yScaleType = ScaleType.LOG10;
+      fixture.detectChanges();
+
+      expect(rendererFatalErrorSpy).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not emit onRendererFatalError more than once', () => {
+      const fixture = createComponent({
+        seriesData: [buildSeries({id: 'foo'})],
+        seriesMetadataMap: {foo: buildMetadata({id: 'foo', visible: true})},
+        yScaleType: ScaleType.LINEAR,
+      });
+      const rendererFatalErrorSpy = spyOn(
+        fixture.componentInstance,
+        'onRendererFatalError'
+      );
+      fixture.componentInstance.disableUpdate = true;
+      fixture.detectChanges();
+
+      fixture.componentInstance.chart.triggerContextLostForTest();
+
+      // Updates enabled the first time.
+      fixture.componentInstance.disableUpdate = false;
+      fixture.detectChanges();
+
+      expect(rendererFatalErrorSpy).toHaveBeenCalledTimes(1);
+
+      // Updates re-enabled more times.
+      fixture.componentInstance.disableUpdate = true;
+      fixture.detectChanges();
+      fixture.componentInstance.disableUpdate = false;
+      fixture.detectChanges();
+      fixture.componentInstance.disableUpdate = true;
+      fixture.detectChanges();
+      fixture.componentInstance.disableUpdate = false;
+      fixture.detectChanges();
+
+      expect(rendererFatalErrorSpy).toHaveBeenCalledTimes(1);
     });
   });
 });

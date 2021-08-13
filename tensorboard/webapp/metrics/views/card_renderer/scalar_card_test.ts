@@ -127,12 +127,19 @@ class TestableLineChart {
   @Output()
   onViewBoxOverridden = new EventEmitter<boolean>();
 
+  @Output()
+  onRendererFatalError = new EventEmitter<void>();
+
   // This input does not exist on real line-chart and is devised to make tooltipTemplate
   // testable without using the real implementation.
   @Input() tooltipDataForTesting: TooltipDatum[] = [];
   @Input() cursorLocForTesting: {x: number; y: number} = {x: 0, y: 0};
 
   private isViewBoxOverridden = new ReplaySubject<boolean>(1);
+
+  emitRendererFatalErrorForTesting() {
+    this.onRendererFatalError.emit();
+  }
 
   getIsViewBoxOverridden(): Observable<boolean> {
     return this.isViewBoxOverridden;
@@ -531,6 +538,34 @@ describe('scalar card', () => {
       fixture.detectChanges();
 
       expect(lineChartEl.componentInstance.useDarkMode).toBe(true);
+    }));
+  });
+
+  describe('chart rendering', () => {
+    it('resets the line chart after loss of rendering context', fakeAsync(() => {
+      provideMockCardRunToSeriesData(
+        selectSpy,
+        PluginType.SCALARS,
+        'card1',
+        {plugin: PluginType.SCALARS, tag: 'tagA', runId: null},
+        null /* runToSeries */
+      );
+      store.overrideSelector(selectors.getVisibleCardIdSet, new Set(['card1']));
+
+      const fixture = createComponent('card1');
+
+      const lineChart1 = fixture.debugElement.query(Selector.LINE_CHART);
+      const lineChartElement1 = lineChart1.nativeElement;
+
+      // Simulate onRendererFatalError.
+      lineChart1.componentInstance.emitRendererFatalErrorForTesting();
+
+      const lineChart2 = fixture.debugElement.query(Selector.LINE_CHART);
+      const lineChartElement2 = lineChart2.nativeElement;
+
+      expect(lineChartElement1).toBeTruthy();
+      expect(lineChartElement2).toBeTruthy();
+      expect(lineChartElement1).not.toBe(lineChartElement2);
     }));
   });
 

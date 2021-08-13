@@ -113,6 +113,7 @@ limitations under the License.
       [ignoreYOutliers]="ignoreOutliers"
       [tooltipTemplate]="tooltip"
       [useDarkMode]="useDarkMode"
+      (onRendererFatalError)="onRendererFatalError()"
       (onViewBoxOverridden)="isViewBoxOverridden = $event"
       [customVisTemplate]="lineChartCustomVis"
       [customXAxisTemplate]="lineChartCustomXAxisVis"

@@ -18,10 +18,12 @@ import {
   ChangeDetectorRef,
   Component,
   ElementRef,
+  EventEmitter,
   Input,
   OnChanges,
   OnDestroy,
   OnInit,
+  Output,
   SimpleChanges,
   TemplateRef,
   ViewChild,
@@ -150,6 +152,9 @@ export class LineChartComponent
   @Input()
   ignoreYOutliers: boolean = false;
 
+  @Output()
+  onRendererFatalError = new EventEmitter<void>();
+
   readonly Y_GRID_COUNT = 6;
   readonly X_GRID_COUNT = 10;
 
@@ -173,6 +178,8 @@ export class LineChartComponent
   // onChanges.
   private isViewBoxChanged = true;
   private scaleUpdated = true;
+  private isRenderingContextLost = false;
+  private didEmitRendererFatalError = false;
 
   constructor(private readonly changeDetector: ChangeDetectorRef) {}
 
@@ -182,6 +189,10 @@ export class LineChartComponent
   }
 
   ngOnChanges(changes: SimpleChanges) {
+    if (changes['disableUpdate'] && !this.disableUpdate) {
+      this.checkRendererFatalError();
+    }
+
     // OnChanges only decides whether props need to be updated and do not directly update
     // the line chart.
 
@@ -230,6 +241,14 @@ export class LineChartComponent
     // After view is initialized, if we ever change the Angular prop that should propagate
     // to children, we need to retrigger the Angular change.
     this.changeDetector.detectChanges();
+  }
+
+  checkRendererFatalError() {
+    if (this.didEmitRendererFatalError || !this.isRenderingContextLost) {
+      return;
+    }
+    this.didEmitRendererFatalError = true;
+    this.onRendererFatalError.emit();
   }
 
   onViewResize() {
@@ -289,16 +308,27 @@ export class LineChartComponent
     return false;
   }
 
+  private onContextLost() {
+    // After context is lost, we intentionally wait until updates are enabled or
+    // requested before notifying clients that a fatal error occurred. Errors
+    // occurring when the component is hidden are not fatal enough to notify.
+    this.isRenderingContextLost = true;
+  }
+
+  triggerContextLostForTest() {
+    this.onContextLost();
+  }
+
   private initializeChart() {
     if (this.lineChart) {
       throw new Error('LineChart should not be initialized multiple times.');
     }
 
     const rendererType = this.getRendererType();
-    // Do not yet need to subscribe to the `onDrawEnd`.
     const callbacks: ChartCallbacks = {
+      // Do not yet need to subscribe to the `onDrawEnd`.
       onDrawEnd: () => {},
-      onContextLost: () => {},
+      onContextLost: this.onContextLost.bind(this),
     };
     let params: ChartOptions | null = null;
 
@@ -368,6 +398,7 @@ export class LineChartComponent
    */
   private updateLineChart() {
     if (!this.lineChart || this.disableUpdate) return;
+    this.checkRendererFatalError();
 
     if (this.scaleUpdated) {
       this.scaleUpdated = false;
