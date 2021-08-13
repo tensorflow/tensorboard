@@ -110,7 +110,7 @@ export class SettingsDialogComponent implements OnInit, OnDestroy, OnChanges {
     createIntegerValidator(),
   ]);
 
-  private ngUnsubscribe = new Subject();
+  private ngUnsubscribe = new Subject<void>();
 
   ngOnInit() {
     this.reloadPeriodControl.valueChanges

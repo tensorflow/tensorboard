@@ -28,8 +28,6 @@ import {
   getReloadPeriodInMs,
 } from './_redux/settings_selectors';
 
-/** @typehack */ import * as _typeHackNgrxStore from '@ngrx/store';
-
 export function createAutoReloadSettingSelector() {
   return createSelector(getReloadEnabled, (autoReload) => {
     return {autoReload};

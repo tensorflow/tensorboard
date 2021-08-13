@@ -67,7 +67,7 @@ export class DataDownloadDialogContainer {
       store.select(getCardMetadata, data.cardId),
       this.selectedRunId$,
     ]).pipe(
-      map(([metadata, selectedRunId]) => {
+      map(([metadata, selectedRunId]): string | null => {
         if (!metadata || !selectedRunId) return null;
         return dataSource.downloadUrl(
           metadata.plugin,
@@ -76,13 +76,13 @@ export class DataDownloadDialogContainer {
           'csv'
         );
       }),
-      startWith(null)
+      startWith<string | null>(null)
     );
     this.downloadUrlJson$ = combineLatest([
       store.select(getCardMetadata, data.cardId),
       this.selectedRunId$,
     ]).pipe(
-      map(([metadata, selectedRunId]) => {
+      map(([metadata, selectedRunId]): string | null => {
         if (!metadata || !selectedRunId) return null;
         return dataSource.downloadUrl(
           metadata.plugin,
@@ -91,7 +91,7 @@ export class DataDownloadDialogContainer {
           'json'
         );
       }),
-      startWith(null)
+      startWith<string | null>(null)
     );
 
     this.runs$ = combineLatest([

@@ -23,8 +23,6 @@ import {
   getIdFromExperimentIds,
 } from './utils';
 
-/** @typehack */ import * as _typeHackNgrxStoreStore from '@ngrx/store/store';
-
 const getHparamsState = createFeatureSelector<State, HparamsState>(
   HPARAMS_FEATURE_KEY
 );

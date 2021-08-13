@@ -29,7 +29,7 @@ import {take, takeUntil} from 'rxjs/operators';
 export class IntersectionObserverDirective implements OnDestroy {
   @Output() onVisibilityChange = new EventEmitter<{visible: boolean}>();
 
-  private readonly ngUnsubscribe$ = new Subject();
+  private readonly ngUnsubscribe$ = new Subject<void>();
   private readonly onEvent$ = new Subject<IntersectionObserverEntry[]>();
 
   constructor(ref: ElementRef) {

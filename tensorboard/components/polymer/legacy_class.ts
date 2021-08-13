@@ -13,4 +13,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-export * from '@polymer/polymer/lib/legacy/class';
+import {mixinBehaviors as mixinBehaviorsLib} from '@polymer/polymer/lib/legacy/class';
+
+// Improve typing of the mixinBehavior which otherwise throws type error
+// violently.
+// The main difference is the return type:
+//   `any` -> `new () => T`.
+export function mixinBehaviors<T>(
+  behaviors: object | object[],
+  klass: {new (): T}
+): new () => T {
+  return mixinBehaviorsLib(behaviors, klass);
+}

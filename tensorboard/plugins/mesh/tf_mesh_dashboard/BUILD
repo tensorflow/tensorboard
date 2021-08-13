@@ -27,6 +27,7 @@ tf_ts_library(
         "@npm//@polymer/polymer",
         "@npm//@types/d3",
         "@npm//@types/lodash",
+        "@npm//@types/three",
         "@npm//d3",
         "@npm//lodash",
         "@npm//three",

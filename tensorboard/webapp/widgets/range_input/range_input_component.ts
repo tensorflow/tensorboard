@@ -127,7 +127,7 @@ export class RangeInputComponent implements OnInit, OnDestroy {
    */
   private offsetXFromOriginOfActiveThumb: number = 0;
 
-  private readonly ngUnsubscribe = new Subject();
+  private readonly ngUnsubscribe = new Subject<void>();
 
   constructor(private readonly changeDetector: ChangeDetectorRef) {}
 

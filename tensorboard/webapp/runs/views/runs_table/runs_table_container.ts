@@ -273,7 +273,7 @@ export class RunsTableContainer implements OnInit, OnDestroy {
   sortOption$ = this.store.select(getRunSelectorSort);
   paginationOption$ = this.store.select(getRunSelectorPaginationOption);
   regexFilter$ = this.store.select(getRunSelectorRegexFilter);
-  private readonly ngUnsubscribe = new Subject();
+  private readonly ngUnsubscribe = new Subject<void>();
 
   constructor(private readonly store: Store<State>) {}
 

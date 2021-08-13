@@ -126,7 +126,7 @@ export class ImageCardContainer implements CardRenderer, OnInit, OnDestroy {
   private readonly actualSizeUiToggleSubject = new BehaviorSubject(
     this.actualSizeUiToggled
   );
-  private readonly ngUnsubscribe = new Subject();
+  private readonly ngUnsubscribe = new Subject<void>();
 
   private isImageCardMetadata(
     cardMetadata: CardMetadata

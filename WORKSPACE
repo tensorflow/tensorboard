@@ -73,11 +73,6 @@ http_archive(
     ],
 )
 
-# Load @bazel/protractor dependencies
-load("@npm//@bazel/protractor:package.bzl", "npm_bazel_protractor_dependencies")
-
-npm_bazel_protractor_dependencies()
-
 http_archive(
     name = "org_tensorflow",
     patches = [
