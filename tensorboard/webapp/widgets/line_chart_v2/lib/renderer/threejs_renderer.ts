@@ -268,12 +268,19 @@ export class ThreeRenderer implements ObjectRenderer<CacheValue> {
   constructor(
     canvas: HTMLCanvasElement | OffscreenCanvas,
     private readonly coordinator: ThreeCoordinator,
-    devicePixelRatio: number
+    devicePixelRatio: number,
+    onContextLost?: EventListener
   ) {
     if (isOffscreenCanvasSupported() && canvas instanceof OffscreenCanvas) {
       // THREE.js require the style object which Offscreen canvas lacks.
       (canvas as any).style = (canvas as any).style || {};
     }
+    // WebGL contexts may be abandoned by the browser if too many contexts are
+    // created on the same page.
+    if (onContextLost) {
+      canvas.addEventListener('webglcontextlost', onContextLost);
+    }
+
     this.renderer = new THREE.WebGLRenderer({
       canvas: canvas as HTMLCanvasElement,
       context: canvas.getContext('webgl2', {

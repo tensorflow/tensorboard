@@ -23,6 +23,7 @@ describe('line_chart_v2/lib/worker_chart test', () => {
   let workerPostMessageSpy: jasmine.Spy;
   let channelTxSpy: jasmine.Spy;
   let onDrawEndSpy: jasmine.Spy;
+  let onContextLostSpy: jasmine.Spy;
   let chart: WorkerChart;
 
   beforeEach(() => {
@@ -41,10 +42,11 @@ describe('line_chart_v2/lib/worker_chart test', () => {
     });
 
     onDrawEndSpy = jasmine.createSpy();
+    onContextLostSpy = jasmine.createSpy();
     chart = new WorkerChart({
       type: RendererType.WEBGL,
       devicePixelRatio: 1,
-      callbacks: {onDrawEnd: onDrawEndSpy},
+      callbacks: {onDrawEnd: onDrawEndSpy, onContextLost: onContextLostSpy},
       container: document.createElement('canvas'),
       domDimension: {width: 100, height: 200},
       useDarkMode: false,

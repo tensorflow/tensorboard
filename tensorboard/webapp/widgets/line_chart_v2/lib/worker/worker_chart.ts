@@ -146,6 +146,10 @@ export class WorkerChart implements Chart {
         this.callbacks.onDrawEnd();
         break;
       }
+      case GuestToMainType.ON_CONTEXT_LOST: {
+        this.callbacks.onContextLost();
+        break;
+      }
     }
   }
 }

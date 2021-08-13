@@ -43,6 +43,11 @@ function createPortHandler(port: MessagePort, initMessage: InitMessage) {
         type: GuestToMainType.ON_REDRAW_END,
       });
     },
+    onContextLost: () => {
+      port.postMessage({
+        type: GuestToMainType.ON_CONTEXT_LOST,
+      });
+    },
   };
 
   let chartOptions: ChartOptions;

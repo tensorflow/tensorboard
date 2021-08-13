@@ -42,6 +42,7 @@ export interface Chart {
 
 export interface ChartCallbacks {
   onDrawEnd(): void;
+  onContextLost(): void;
 }
 
 export interface BaseChartOptions {

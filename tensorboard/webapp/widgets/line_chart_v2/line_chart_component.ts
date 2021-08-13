@@ -296,7 +296,10 @@ export class LineChartComponent
 
     const rendererType = this.getRendererType();
     // Do not yet need to subscribe to the `onDrawEnd`.
-    const callbacks: ChartCallbacks = {onDrawEnd: () => {}};
+    const callbacks: ChartCallbacks = {
+      onDrawEnd: () => {},
+      onContextLost: () => {},
+    };
     let params: ChartOptions | null = null;
 
     this.readAndUpdateDomDimensions();
