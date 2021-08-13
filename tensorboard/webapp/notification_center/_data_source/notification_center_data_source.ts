@@ -14,6 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import {Injectable} from '@angular/core';
 import {Observable} from 'rxjs';
+import {map} from 'rxjs/operators';
 
 import {TBHttpClient} from '../../webapp_data_source/tb_http_client';
 import {
@@ -30,6 +31,24 @@ export class TBNotificationCenterDataSource
   constructor(private readonly http: TBHttpClient) {}
 
   fetchNotifications(): Observable<NotificationCenterResponse> {
-    return this.http.get<NotificationCenterResponse>(`/data/notifications`);
+    return this.http
+      .get<NotificationCenterResponse>(`/data/notifications`)
+      .pipe(
+        map((response) => {
+          const todayInMs: number = new Date(
+            new Date().toDateString()
+          ).getTime();
+          return {
+            ...response,
+            notifications: response.notifications.map((notification) => {
+              return {
+                ...notification,
+                // `dateInMs` can never exceed local machine's today at 12:00 AM.
+                dateInMs: Math.min(notification.dateInMs, todayInMs),
+              };
+            }),
+          };
+        })
+      );
   }
 }

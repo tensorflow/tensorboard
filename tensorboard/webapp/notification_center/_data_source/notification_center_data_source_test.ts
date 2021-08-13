@@ -21,7 +21,7 @@ import {
 } from '../../webapp_data_source/tb_http_client_testing';
 import {NotificationCenterDataSource} from './backend_types';
 import {TBNotificationCenterDataSource} from './notification_center_data_source';
-import {buildNotificationResponse} from './testing';
+import {buildNotification, buildNotificationResponse} from './testing';
 
 describe('TBNotificationCenterDataSource test', () => {
   let httpMock: HttpTestingController;
@@ -84,4 +84,30 @@ describe('TBNotificationCenterDataSource test', () => {
     expect(resultSpy).not.toHaveBeenCalled();
     expect(errorSpy).toHaveBeenCalledWith(httpErrorResponse);
   });
+
+  fit(
+    'clips dateInMs to max today to prevent issue where notification never ' +
+      'gets dismissed',
+    () => {
+      jasmine.clock().mockDate(new Date('2000-01-31 07:00'));
+      const resultSpy = jasmine.createSpy();
+      dataSource.fetchNotifications().subscribe(resultSpy);
+      const req = httpMock.expectOne('/data/notifications');
+      req.flush(
+        buildNotificationResponse([
+          buildNotification({
+            dateInMs: new Date('2000-01-31 23:59').getTime(),
+          }),
+        ])
+      );
+
+      expect(resultSpy).toHaveBeenCalledOnceWith(
+        buildNotificationResponse([
+          buildNotification({
+            dateInMs: new Date('2000-01-31 12:00 AM').getTime(),
+          }),
+        ])
+      );
+    }
+  );
 });
