@@ -479,7 +479,6 @@ describe('regex_edit_dialog', () => {
       sendKey(fixture, input, keyArgs);
       tick(TEST_ONLY.INPUT_CHANGE_DEBOUNCE_INTERVAL_MS);
       fixture.detectChanges();
-      debugger;
 
       const groupingResult = fixture.debugElement.query(
         By.css('.group-container')
