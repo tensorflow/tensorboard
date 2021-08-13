@@ -85,7 +85,7 @@ describe('TBNotificationCenterDataSource test', () => {
     expect(errorSpy).toHaveBeenCalledWith(httpErrorResponse);
   });
 
-  fit(
+  it(
     'clips dateInMs to max today to prevent issue where notification never ' +
       'gets dismissed',
     () => {
