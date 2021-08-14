@@ -69,9 +69,24 @@ limitations under the License.
   .custom-vis {
     height: 100%;
     left: 0;
+    overflow: hidden;
     position: absolute;
     top: 0;
     width: 100%;
+    -webkit-mask-image: linear-gradient(
+      to right,
+      #0000 0%,
+      #000 10%,
+      #000 90%,
+      #0000 100%
+    );
+    mask-image: linear-gradient(
+      to right,
+      #0000 0%,
+      #000 10%,
+      #000 90%,
+      #0000 100%
+    );
   }
 }
 
