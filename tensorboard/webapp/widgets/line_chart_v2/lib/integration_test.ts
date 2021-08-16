@@ -42,6 +42,7 @@ describe('line_chart_v2/lib/integration test', () => {
     dom = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     callbacks = {
       onDrawEnd: jasmine.createSpy(),
+      onContextLost: jasmine.createSpy(),
     };
     chart = new ChartImpl({
       type: RendererType.SVG,
@@ -458,6 +459,46 @@ describe('line_chart_v2/lib/integration test', () => {
       expect(circle.nodeName).toBe('circle');
       expect(circle.getAttribute('cx')).toBe('2');
       expect(circle.getAttribute('cy')).toBe('5');
+    });
+  });
+
+  describe('webgl', () => {
+    it('invokes onContextLost after losing webgl context', async () => {
+      const canvas = document.createElement('canvas');
+      chart = new ChartImpl({
+        type: RendererType.WEBGL,
+        container: canvas,
+        callbacks,
+        domDimension: {width: 200, height: 100},
+        useDarkMode: false,
+        devicePixelRatio: 1,
+      });
+      chart.setXScaleType(ScaleType.LINEAR);
+      chart.setYScaleType(ScaleType.LINEAR);
+
+      expect(callbacks.onContextLost).not.toHaveBeenCalled();
+
+      // For more info about forcing context loss, see
+      // https://developer.mozilla.org/en-US/docs/Web/API/WEBGL_lose_context/loseContext
+      const glExtension = canvas
+        .getContext('webgl2')
+        ?.getExtension('WEBGL_lose_context');
+      if (!glExtension) {
+        console.log(
+          'The browser used for testing does not ' +
+            'support WebGL or extensions needed for testing.'
+        );
+        return;
+      }
+
+      // The `loseContext` triggers the event asynchronously, which.
+      const contextLostPromise = new Promise((resolve) => {
+        canvas.addEventListener('webglcontextlost', resolve);
+      });
+      glExtension.loseContext();
+
+      await contextLostPromise;
+      expect(callbacks.onContextLost).toHaveBeenCalledTimes(1);
     });
   });
 });

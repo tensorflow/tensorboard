@@ -83,10 +83,15 @@ export type HostToGuestMessage =
 
 export enum GuestToMainType {
   ON_REDRAW_END,
+  ON_CONTEXT_LOST,
 }
 
 export interface RedrawEndMessage {
   type: GuestToMainType.ON_REDRAW_END;
 }
 
-export type GuestToMainMessage = RedrawEndMessage;
+export interface ContextLostMessage {
+  type: GuestToMainType.ON_CONTEXT_LOST;
+}
+
+export type GuestToMainMessage = RedrawEndMessage | ContextLostMessage;

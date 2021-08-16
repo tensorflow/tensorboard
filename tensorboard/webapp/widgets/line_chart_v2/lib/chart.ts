@@ -66,7 +66,8 @@ export class ChartImpl implements Chart {
         this.renderer = new ThreeRenderer(
           option.container,
           coordinator,
-          option.devicePixelRatio
+          option.devicePixelRatio,
+          option.callbacks.onContextLost
         );
         break;
       }
