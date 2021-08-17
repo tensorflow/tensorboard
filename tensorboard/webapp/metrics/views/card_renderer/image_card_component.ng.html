@@ -15,49 +15,61 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <div class="heading">
-  <tb-truncated-path
-    class="tag"
-    title="{{ tag }}"
-    value="{{ title }}"
-  ></tb-truncated-path>
-  <div class="run">
-    <span
-      class="dot"
-      [ngStyle]="{backgroundColor: runColorScale(runId)}"
-    ></span>
-    <card-run-name class="run-text" [runId]="runId"></card-run-name>
+  <div class="line">
+    <tb-truncated-path
+      class="tag"
+      title="{{ tag }}"
+      value="{{ title }}"
+    ></tb-truncated-path>
+    <span class="controls">
+      <button
+        mat-icon-button
+        class="pin-button"
+        i18n-aria-label="A button to pin a card."
+        aria-label="Pin card"
+        [attr.title]="isPinned ? 'Unpin card' : 'Pin card'"
+        (click)="onPinClicked.emit(!isPinned)"
+      >
+        <mat-icon
+          [svgIcon]="isPinned ? 'keep_24px' : 'keep_outline_24px'"
+        ></mat-icon>
+      </button>
+      <button
+        mat-icon-button
+        i18n-aria-label="A button on an image card that toggles actual image size."
+        aria-label="Toggle actual image size"
+        [disabled]="!allowToggleActualSize"
+        title="Toggle actual image size"
+        (click)="onActualSizeToggle.emit()"
+      >
+        <mat-icon svgIcon="image_search_24px"></mat-icon>
+      </button>
+    </span>
   </div>
-  <div class="step" *ngIf="stepIndex !== null && stepIndex < stepValues.length">
-    Step {{ stepValues[stepIndex] }}
-    <mat-spinner
-      diameter="18"
-      *ngIf="loadState === DataLoadState.LOADING"
-    ></mat-spinner>
+  <div class="line">
+    <span class="run">
+      <span
+        class="dot"
+        [ngStyle]="{backgroundColor: runColorScale(runId)}"
+      ></span>
+      <card-run-name class="run-text" [runId]="runId"></card-run-name>
+    </span>
+    <div class="metadata">
+      <span
+        class="step"
+        *ngIf="stepIndex !== null && stepIndex < stepValues.length"
+        >Step {{ stepValues[stepIndex] | number }}</span
+      >
+      <span class="sample" *ngIf="numSample > 1"
+        >Sample {{ sample + 1 | number }}/{{ numSample | number}}</span
+      >
+      <mat-spinner
+        class="loading"
+        diameter="18"
+        *ngIf="loadState === DataLoadState.LOADING"
+      ></mat-spinner>
+    </div>
   </div>
-  <span class="controls">
-    <button
-      mat-icon-button
-      class="pin-button"
-      i18n-aria-label="A button to pin a card."
-      aria-label="Pin card"
-      [attr.title]="isPinned ? 'Unpin card' : 'Pin card'"
-      (click)="onPinClicked.emit(!isPinned)"
-    >
-      <mat-icon
-        [svgIcon]="isPinned ? 'keep_24px' : 'keep_outline_24px'"
-      ></mat-icon>
-    </button>
-    <button
-      mat-icon-button
-      i18n-aria-label="A button on an image card that toggles actual image size."
-      aria-label="Toggle actual image size"
-      [disabled]="!allowToggleActualSize"
-      title="Toggle actual image size"
-      (click)="onActualSizeToggle.emit()"
-    >
-      <mat-icon svgIcon="image_search_24px"></mat-icon>
-    </button>
-  </span>
 </div>
 <ng-container
   *ngIf="stepIndex !== null && stepIndex < stepValues.length; else noImageData"

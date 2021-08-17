@@ -82,7 +82,13 @@ function buildCardMetadataList(tagMetadata: TagMetadata): CardMetadata[] {
           for (const runId of Object.keys(tagRunSampleInfo[tag])) {
             const {maxSamplesPerStep} = tagRunSampleInfo[tag][runId];
             for (let i = 0; i < maxSamplesPerStep; i++) {
-              results.push({plugin, tag, runId, sample: i});
+              results.push({
+                plugin,
+                tag,
+                runId,
+                sample: i,
+                numSample: maxSamplesPerStep,
+              });
             }
           }
         }

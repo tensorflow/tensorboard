@@ -16,7 +16,6 @@ limitations under the License.
 @import '../common';
 
 $_title-to-heading-gap: 12px;
-$_second-row-height: 15px;
 
 :host {
   display: flex;
@@ -36,18 +35,27 @@ $_second-row-height: 15px;
   $heading-content-gap: 4px;
 
   align-items: center;
-  display: grid;
-  grid-template-areas:
-    'tag controls'
-    'run step';
-  grid-template-columns: 1fr auto;
   font-size: 14px;
   margin-bottom: $heading-content-gap;
   position: relative;
 }
 
+.line {
+  align-items: center;
+  display: grid;
+  grid-template-columns: 1fr max-content;
+}
+
+.metadata {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  justify-content: flex-end;
+  max-width: 175px; // When step or sample is too long, it makes content wrap.
+  text-align: end;
+}
+
 .tag {
-  grid-area: tag;
   overflow: hidden;
 }
 
@@ -56,8 +64,9 @@ $_second-row-height: 15px;
 }
 
 .run {
-  grid-area: run;
+  align-self: baseline;
   display: flex;
+  overflow: hidden;
   white-space: nowrap;
 
   .dot {
@@ -76,29 +85,17 @@ $_second-row-height: 15px;
   }
 }
 
-.step {
-  grid-area: step;
-  display: flex;
-
-  mat-spinner {
-    $mat-icon-button-diameter: 40px;
-    $spinner-diameter: 18px;
-
-    margin-left: 4px;
-    margin-right: 0;
-  }
-}
-
 .run,
+.sample,
 .step {
   @include tb-theme-foreground-prop(color, secondary-text);
   font-size: 13px;
-  height: $_second-row-height;
+  // height: $_second-row-height;
 }
 
 .controls {
   @include metrics-card-controls;
-  grid-area: controls;
+
   justify-self: flex-end;
   flex-shrink: 0;
   // TODO(psybuzz) do not use negative margin.

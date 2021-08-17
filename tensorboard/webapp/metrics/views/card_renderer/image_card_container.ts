@@ -58,6 +58,7 @@ import {getTagDisplayName} from '../utils';
 type ImageCardMetadata = CardMetadata & {
   plugin: PluginType.IMAGES;
   sample: number;
+  numSample: number;
   runId: string;
 };
 
@@ -70,6 +71,7 @@ type ImageCardMetadata = CardMetadata & {
       [tag]="tag$ | async"
       [runId]="runId$ | async"
       [sample]="sample$ | async"
+      [numSample]="numSample$ | async"
       [imageUrl]="imageUrl$ | async"
       [stepIndex]="stepIndex$ | async"
       [stepValues]="stepValues$ | async"
@@ -112,6 +114,7 @@ export class ImageCardContainer implements CardRenderer, OnInit, OnDestroy {
   tag$?: Observable<string>;
   runId$?: Observable<string>;
   sample$?: Observable<number>;
+  numSample$?: Observable<number>;
   imageUrl$?: Observable<string | null>;
   stepIndex$?: Observable<number | null>;
   stepValues$?: Observable<number[]>;
@@ -228,6 +231,10 @@ export class ImageCardContainer implements CardRenderer, OnInit, OnDestroy {
       map((cardMetadata) => {
         return cardMetadata.sample;
       })
+    );
+
+    this.numSample$ = cardMetadata$.pipe(
+      map((cardMetadata) => cardMetadata.numSample)
     );
 
     this.imageUrl$ = stepDatum$.pipe(

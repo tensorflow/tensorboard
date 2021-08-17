@@ -39,7 +39,8 @@ export class ImageCardComponent {
   @Input() title!: string;
   @Input() tag!: string;
   @Input() runId!: string;
-  @Input() sample!: string;
+  @Input() sample!: number;
+  @Input() numSample!: number;
   @Input() imageUrl!: string | null;
   @Input() stepIndex!: number | null;
   @Input() stepValues!: number[];
