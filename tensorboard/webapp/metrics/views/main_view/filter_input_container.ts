@@ -14,8 +14,8 @@ limitations under the License.
 ==============================================================================*/
 import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {Store} from '@ngrx/store';
-import {combineLatest, of} from 'rxjs';
-import {combineLatestWith, filter, map, switchMap} from 'rxjs/operators';
+import {Observable} from 'rxjs';
+import {combineLatestWith, filter, map} from 'rxjs/operators';
 
 import {State} from '../../../app_state';
 import {
@@ -23,10 +23,8 @@ import {
   getNonEmptyCardIdsWithMetadata,
 } from '../../../selectors';
 import {metricsTagFilterChanged} from '../../actions';
-import {compareTagNames} from '../utils';
-
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
 import {getMetricsFilteredPluginTypes} from '../../store';
+import {compareTagNames} from '../utils';
 
 @Component({
   selector: 'metrics-tag-filter',
@@ -43,9 +41,11 @@ import {getMetricsFilteredPluginTypes} from '../../store';
 export class MetricsFilterInputContainer {
   constructor(private readonly store: Store<State>) {}
 
-  readonly tagFilter$ = this.store.select(getMetricsTagFilter);
+  readonly tagFilter$: Observable<string> = this.store.select(
+    getMetricsTagFilter
+  );
 
-  readonly isTagFilterRegexValid$ = this.tagFilter$.pipe(
+  readonly isTagFilterRegexValid$: Observable<boolean> = this.tagFilter$.pipe(
     map((tagFilterString) => {
       try {
         // tslint:disable-next-line:no-unused-expression Check for validity of filter.
@@ -57,7 +57,7 @@ export class MetricsFilterInputContainer {
     })
   );
 
-  readonly completions$ = this.store
+  readonly completions$: Observable<string[]> = this.store
     .select(getNonEmptyCardIdsWithMetadata)
     .pipe(
       combineLatestWith(this.store.select(getMetricsFilteredPluginTypes)),
@@ -68,12 +68,10 @@ export class MetricsFilterInputContainer {
           })
           .map(({tag}) => tag);
       }),
-      switchMap((cardList) => {
-        return combineLatest([
-          of(cardList),
-          this.store.select(getMetricsTagFilter),
-        ]);
-      }),
+      // De-duplicate using Set since Image cards has a notion of Sample and
+      // the same `run` and `tag` can appear more than once.
+      map((tags) => [...new Set(tags)]),
+      combineLatestWith(this.store.select(getMetricsTagFilter)),
       map<[string[], string], [string[], RegExp | null]>(
         ([tags, tagFilter]) => {
           try {

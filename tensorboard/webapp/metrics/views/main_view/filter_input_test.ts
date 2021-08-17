@@ -198,6 +198,54 @@ describe('metrics filter input', () => {
       ).toEqual(['tagA', 'tagC/woof']);
     });
 
+    it('filters de-duplicating tags', () => {
+      store.overrideSelector(
+        selectors.getMetricsFilteredPluginTypes,
+        new Set<PluginType>([])
+      );
+      store.overrideSelector(selectors.getNonEmptyCardIdsWithMetadata, [
+        {
+          cardId: 'card1',
+          plugin: PluginType.SCALARS,
+          tag: 'tagA',
+          runId: null,
+        },
+        {
+          cardId: 'card1',
+          plugin: PluginType.IMAGES,
+          tag: 'tagB/Images',
+          runId: 'run1',
+          sample: 0,
+        },
+        {
+          cardId: 'card1',
+          plugin: PluginType.IMAGES,
+          tag: 'tagB/Images',
+          runId: 'run1',
+          sample: 1,
+        },
+        {
+          cardId: 'card1',
+          plugin: PluginType.IMAGES,
+          tag: 'tagB/Images',
+          runId: 'run1',
+          sample: 2,
+        },
+      ]);
+      store.overrideSelector(selectors.getMetricsTagFilter, '');
+      const fixture = TestBed.createComponent(MetricsFilterInputContainer);
+      fixture.detectChanges();
+
+      const input = fixture.debugElement.query(By.css('input'));
+      input.nativeElement.focus();
+      fixture.detectChanges();
+
+      const optionBefore = getAutocompleteOptions(overlayContainer);
+      expect(
+        optionBefore.map((option) => option.nativeElement.textContent)
+      ).toEqual(['tagA', 'tagB/Images']);
+    });
+
     it('filters by regex', () => {
       store.overrideSelector(selectors.getMetricsTagFilter, '[/I]m');
       const fixture = TestBed.createComponent(MetricsFilterInputContainer);
