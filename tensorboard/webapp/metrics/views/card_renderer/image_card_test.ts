@@ -272,7 +272,7 @@ describe('image card', () => {
     expect(slider).not.toBeTruthy();
   });
 
-  fit('renders sample when numSample is larger than 1', () => {
+  it('renders sample when numSample is larger than 1', () => {
     const timeSeries = [{wallTime: 100, imageId: 'ImageId1', step: 10}];
     provideMockCardSeriesData(
       selectSpy,
