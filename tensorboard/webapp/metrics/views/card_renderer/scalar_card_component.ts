@@ -15,7 +15,6 @@ limitations under the License.
 import {ComponentType} from '@angular/cdk/overlay';
 import {
   ChangeDetectionStrategy,
-  ChangeDetectorRef,
   Component,
   ElementRef,
   EventEmitter,
@@ -92,11 +91,7 @@ export class ScalarCardComponent<Downloader> {
   @ViewChild(LineChartComponent)
   lineChart?: LineChartComponent;
 
-  constructor(
-    private readonly ref: ElementRef,
-    private dialog: MatDialog,
-    private readonly changeDetector: ChangeDetectorRef
-  ) {}
+  constructor(private readonly ref: ElementRef, private dialog: MatDialog) {}
 
   yScaleType = ScaleType.LINEAR;
 
@@ -109,14 +104,6 @@ export class ScalarCardComponent<Downloader> {
     if (this.lineChart) {
       this.lineChart.viewBoxReset();
     }
-  }
-
-  onRendererFatalError() {
-    // Completely reset the line chart component using ngIf.
-    this.isEverVisible = false;
-    this.changeDetector.detectChanges();
-    this.isEverVisible = true;
-    this.changeDetector.detectChanges();
   }
 
   trackByTooltipDatum(index: number, datum: ScalarTooltipDatum) {
