@@ -51,16 +51,21 @@ export function provideTestingNotificationCenterDataSource() {
   ];
 }
 
+export function buildNotification(
+  override: Partial<BackendNotification> = {}
+): BackendNotification {
+  return {
+    dateInMs: 123,
+    title: 'test title',
+    content: 'random content',
+    ...override,
+  };
+}
+
 export function buildNotificationResponse(
   notifications?: BackendNotification[]
 ): NotificationCenterResponse {
   return {
-    notifications: notifications ?? [
-      {
-        dateInMs: 123,
-        title: 'test title',
-        content: 'random content',
-      },
-    ],
+    notifications: notifications ?? [buildNotification()],
   };
 }
