@@ -202,9 +202,27 @@ describe('metrics reducers', () => {
       const expectedCardMetadataList = [
         {plugin: PluginType.SCALARS, tag: 'tagA', runId: null},
         {plugin: PluginType.HISTOGRAMS, tag: 'tagB', runId: 'run2'},
-        {plugin: PluginType.IMAGES, tag: 'tagC', runId: 'run3', sample: 0},
-        {plugin: PluginType.IMAGES, tag: 'tagC', runId: 'run3', sample: 1},
-        {plugin: PluginType.IMAGES, tag: 'tagC', runId: 'run3', sample: 2},
+        {
+          plugin: PluginType.IMAGES,
+          tag: 'tagC',
+          runId: 'run3',
+          sample: 0,
+          numSample: 3,
+        },
+        {
+          plugin: PluginType.IMAGES,
+          tag: 'tagC',
+          runId: 'run3',
+          sample: 1,
+          numSample: 3,
+        },
+        {
+          plugin: PluginType.IMAGES,
+          tag: 'tagC',
+          runId: 'run3',
+          sample: 2,
+          numSample: 3,
+        },
       ];
       const expectedCardMetadataMap: CardMetadataMap = {};
       for (const cardMetadata of expectedCardMetadataList) {

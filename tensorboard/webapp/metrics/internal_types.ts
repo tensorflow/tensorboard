@@ -43,6 +43,7 @@ export interface CardMetadata {
   plugin: PluginType;
   tag: string;
   sample?: number;
+  numSample?: number;
 
   /**
    * A `null` runId indicates all runs.

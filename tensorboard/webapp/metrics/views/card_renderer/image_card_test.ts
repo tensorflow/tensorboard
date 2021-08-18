@@ -272,6 +272,26 @@ describe('image card', () => {
     expect(slider).not.toBeTruthy();
   });
 
+  it('renders sample when numSample is larger than 1', () => {
+    const timeSeries = [{wallTime: 100, imageId: 'ImageId1', step: 10}];
+    provideMockCardSeriesData(
+      selectSpy,
+      PluginType.IMAGES,
+      'card1',
+      {sample: 5, numSample: 1.2e4},
+      timeSeries,
+      0 /* stepIndex */
+    );
+
+    const fixture = createImageCardContainer('card1');
+    fixture.detectChanges();
+
+    const metadata = fixture.debugElement.query(By.css('.metadata'));
+    expect(metadata.nativeElement.textContent.trim()).toBe(
+      'Step 10Sample 6/12,000'
+    );
+  });
+
   it('dispatches event when step slider changes', () => {
     const timeSeries = [
       {wallTime: 100, imageId: 'ImageId1', step: 10},
