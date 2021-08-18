@@ -347,11 +347,16 @@ const reducer = createReducer(
       };
     }
 
-    return {
+    const newState = {
       ...state,
       ...resolvedResult,
       settingOverrides: newSettings,
     };
+
+    if (hydratedState.metrics.tagFilter !== null) {
+      newState.tagFilter = hydratedState.metrics.tagFilter;
+    }
+    return newState;
   }),
   on(globalSettingsLoaded, (state, {partialSettings}) => {
     const metricsSettings: Partial<MetricsSettings> = {};

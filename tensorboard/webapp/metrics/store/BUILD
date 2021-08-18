@@ -92,6 +92,7 @@ tf_ts_library(
         "//tensorboard/webapp/metrics/actions",
         "//tensorboard/webapp/metrics/data_source",
         "//tensorboard/webapp/persistent_settings",
+        "//tensorboard/webapp/routes:testing",
         "//tensorboard/webapp/types",
         "//tensorboard/webapp/util:dom",
         "@npm//@types/jasmine",

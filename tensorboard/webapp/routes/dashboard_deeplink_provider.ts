@@ -38,6 +38,7 @@ import {
   DeserializedState,
   PINNED_CARDS_KEY,
   SMOOTHING_KEY,
+  TAG_FILTER_KEY,
 } from './dashboard_deeplink_provider_types';
 
 const COLOR_GROUP_REGEX_VALUE_PREFIX = 'regex:';
@@ -117,6 +118,14 @@ export class DashboardDeepLinkProvider extends DeepLinkProvider {
   ): Observable<SerializableQueryParams> {
     return combineLatest([
       this.getMetricsPinnedCards(store),
+      store.select(selectors.getMetricsTagFilter).pipe(
+        map((filterText) => {
+          if (!filterText) {
+            return [];
+          }
+          return [{key: TAG_FILTER_KEY, value: filterText}];
+        })
+      ),
       this.getFeatureFlagStates(store),
       store.select(selectors.getMetricsSettingOverrides).pipe(
         map((settingOverrides) => {
@@ -165,6 +174,7 @@ export class DashboardDeepLinkProvider extends DeepLinkProvider {
   ): DeserializedState {
     let pinnedCards = null;
     let smoothing = null;
+    let tagFilter = null;
     let groupBy: GroupBy | null = null;
 
     for (const {key, value} of queryParams) {
@@ -193,6 +203,9 @@ export class DashboardDeepLinkProvider extends DeepLinkProvider {
           }
           break;
         }
+        case TAG_FILTER_KEY:
+          tagFilter = value;
+          break;
       }
     }
 
@@ -200,6 +213,7 @@ export class DashboardDeepLinkProvider extends DeepLinkProvider {
       metrics: {
         pinnedCards: pinnedCards || [],
         smoothing,
+        tagFilter,
       },
       runs: {
         groupBy,

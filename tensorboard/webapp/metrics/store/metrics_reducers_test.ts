@@ -17,6 +17,7 @@ import {buildRoute} from '../../app_routing/testing';
 import {RouteKind} from '../../app_routing/types';
 import * as coreActions from '../../core/actions';
 import {globalSettingsLoaded} from '../../persistent_settings';
+import {buildDeserializedState} from '../../routes/testing';
 import {DataLoadState} from '../../types/data';
 import {nextElementId} from '../../util/dom';
 import * as actions from '../actions';
@@ -1775,6 +1776,47 @@ describe('metrics reducers', () => {
       const nextState = reducers(beforeState, action);
 
       expect(nextState.settingOverrides.scalarSmoothing).toBe(0.232);
+    });
+  });
+
+  describe('tag filter hydration', () => {
+    it('rehydrates the value', () => {
+      const beforeState = buildMetricsState({tagFilter: 'foo'});
+      const action = routingActions.stateRehydratedFromUrl({
+        routeKind: RouteKind.EXPERIMENT,
+        partialState: {
+          metrics: {...buildDeserializedState().metrics, tagFilter: 'bar'},
+        },
+      });
+      const nextState = reducers(beforeState, action);
+
+      expect(nextState.tagFilter).toBe('bar');
+    });
+
+    it('rehydrates an empty string value', () => {
+      const beforeState = buildMetricsState({tagFilter: 'foo'});
+      const action = routingActions.stateRehydratedFromUrl({
+        routeKind: RouteKind.EXPERIMENT,
+        partialState: {
+          metrics: {...buildDeserializedState().metrics, tagFilter: ''},
+        },
+      });
+      const nextState = reducers(beforeState, action);
+
+      expect(nextState.tagFilter).toBe('');
+    });
+
+    it('does not hydrate when the value is null', () => {
+      const beforeState = buildMetricsState({tagFilter: 'foo'});
+      const action = routingActions.stateRehydratedFromUrl({
+        routeKind: RouteKind.EXPERIMENT,
+        partialState: {
+          metrics: {...buildDeserializedState().metrics, tagFilter: null},
+        },
+      });
+      const nextState = reducers(beforeState, action);
+
+      expect(nextState.tagFilter).toBe('foo');
     });
   });
 
