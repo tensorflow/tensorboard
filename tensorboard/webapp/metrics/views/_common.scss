@@ -21,12 +21,21 @@ $metrics-button-background-color-on-gray: #fff;
 $metrics-min-card-width: 335px;
 $metrics-min-card-height: 320px;
 
-@mixin metrics-card-group-toolbar {
-  @include tb-theme-background-prop(background-color, background);
-  @include tb-theme-foreground-prop(border-bottom, border, 1px solid);
-  background-color: #fff;
-  height: 42px;
-  padding: 0 16px;
+@mixin metrics-sub-view {
+  .group-toolbar {
+    @include tb-theme-background-prop(background-color, background);
+    @include tb-theme-foreground-prop(border-bottom, border, 1px solid);
+
+    align-items: center;
+    background-color: #fff;
+    display: flex;
+    flex: none;
+    height: 42px;
+    padding: 0 16px;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
 }
 
 @mixin metrics-card-group-title {

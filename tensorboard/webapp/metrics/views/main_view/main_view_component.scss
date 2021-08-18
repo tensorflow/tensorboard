@@ -85,6 +85,21 @@ limitations under the License.
   metrics-pinned-view {
     @include tb-theme-foreground-prop(border-bottom, border, 1px solid);
   }
+
+  &.filter-view {
+    overflow: hidden;
+
+    metrics-filtered-view {
+      flex: 0 1 auto;
+      overflow: auto;
+    }
+
+    metrics-pinned-view {
+      flex: 1 1;
+      min-height: 300px;
+      overflow: auto;
+    }
+  }
 }
 
 .sidebar {

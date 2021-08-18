@@ -15,10 +15,8 @@ limitations under the License.
 @import 'tensorboard/webapp/theme/tb_theme';
 @import '../common';
 
-.group-toolbar {
-  @include metrics-card-group-toolbar;
-  display: flex;
-  align-items: center;
+:host {
+  @include metrics-sub-view;
 }
 
 mat-icon {
