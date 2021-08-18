@@ -18,10 +18,12 @@ import {
   ChangeDetectorRef,
   Component,
   ElementRef,
+  EventEmitter,
   Input,
   OnChanges,
   OnDestroy,
   OnInit,
+  Output,
   SimpleChanges,
   TemplateRef,
   ViewChild,
@@ -162,8 +164,9 @@ export class LineChartComponent
     xAxis: {width: 0, height: 0},
     yAxis: {width: 0, height: 0},
   };
+  showChartRendererElement: boolean = true;
 
-  private lineChart?: Chart;
+  private lineChart: Chart | null = null;
   private isDataUpdated = false;
   private isMetadataUpdated = false;
   private isFixedViewBoxUpdated = false;
@@ -173,6 +176,7 @@ export class LineChartComponent
   // onChanges.
   private isViewBoxChanged = true;
   private scaleUpdated = true;
+  private isRenderingContextLost = false;
 
   constructor(private readonly changeDetector: ChangeDetectorRef) {}
 
@@ -232,6 +236,35 @@ export class LineChartComponent
     this.changeDetector.detectChanges();
   }
 
+  /**
+   * Ensures the renderer is ready, or recovers it if it encountered a loss of
+   * context. This relies on `onContextLost` to set the appropriate flags for
+   * requesting updates.
+   */
+  private recoverRendererIfNeeded() {
+    if (!this.isRenderingContextLost || this.disableUpdate) {
+      return;
+    }
+    // The component's template has an 'ngIf="showChartRendererElement"' we use
+    // to fully replace the DOM element.
+    this.showChartRendererElement = false;
+    this.changeDetector.detectChanges();
+    this.showChartRendererElement = true;
+    this.changeDetector.detectChanges();
+    this.initializeChart();
+
+    // After recreating the renderer element, the next update should re-apply
+    // any existing changes. Keep this in sync with `updateLineChart`.
+    this.scaleUpdated = true;
+    this.isMetadataUpdated = true;
+    this.isDataUpdated = true;
+    this.useDarkModeUpdated = true;
+    this.isFixedViewBoxUpdated = true;
+    this.isViewBoxChanged = true;
+
+    this.isRenderingContextLost = false;
+  }
+
   onViewResize() {
     if (!this.lineChart) return;
 
@@ -289,16 +322,35 @@ export class LineChartComponent
     return false;
   }
 
+  private onContextLost() {
+    // Since context may be lost when the component is hidden or does not need
+    // updates, the re-creation of a new chart renderer happens lazily.
+    this.isRenderingContextLost = true;
+
+    if (this.lineChart) {
+      this.lineChart.dispose();
+      this.lineChart = null;
+    }
+  }
+
+  triggerContextLostForTest() {
+    this.onContextLost();
+  }
+
+  getLineChartForTest(): Chart | null {
+    return this.lineChart;
+  }
+
   private initializeChart() {
     if (this.lineChart) {
-      throw new Error('LineChart should not be initialized multiple times.');
+      this.lineChart.dispose();
     }
 
     const rendererType = this.getRendererType();
-    // Do not yet need to subscribe to the `onDrawEnd`.
     const callbacks: ChartCallbacks = {
+      // Do not yet need to subscribe to the `onDrawEnd`.
       onDrawEnd: () => {},
-      onContextLost: () => {},
+      onContextLost: this.onContextLost.bind(this),
     };
     let params: ChartOptions | null = null;
 
@@ -364,9 +416,12 @@ export class LineChartComponent
   }
 
   /**
-   * Minimally and imperatively updates the chart library depending on prop changed.
+   * Minimally and imperatively updates the chart library depending on prop
+   * changed. When adding new `this.lineChart.set*()` calls, keep this in sync
+   * with `recoverRendererIfNeeded`.
    */
   private updateLineChart() {
+    this.recoverRendererIfNeeded();
     if (!this.lineChart || this.disableUpdate) return;
 
     if (this.scaleUpdated) {

@@ -32,8 +32,13 @@ limitations under the License.
       [yGridCount]="Y_GRID_COUNT"
       [domDim]="domDimensions.main"
     ></line-chart-grid-view>
-    <svg #chartEl *ngIf="getRendererType() === RendererType.SVG"></svg>
-    <canvas #chartEl *ngIf="getRendererType() === RendererType.WEBGL"></canvas>
+    <ng-container *ngIf="showChartRendererElement">
+      <svg #chartEl *ngIf="getRendererType() === RendererType.SVG"></svg>
+      <canvas
+        #chartEl
+        *ngIf="getRendererType() === RendererType.WEBGL"
+      ></canvas>
+    </ng-container>
     <line-chart-interactive-view
       [seriesData]="seriesData"
       [seriesMetadataMap]="seriesMetadataMap"

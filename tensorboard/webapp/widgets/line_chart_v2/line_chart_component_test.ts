@@ -21,6 +21,7 @@ import {By} from '@angular/platform-browser';
 
 import {ChartImpl} from './lib/chart';
 import {
+  Chart,
   DataSeries,
   DataSeriesMetadataMap,
   Extent,
@@ -646,6 +647,159 @@ describe('line_chart_v2/line_chart test', () => {
       fixture.detectChanges();
 
       expect(fixture.debugElement.query(By.css('.dark-mode'))).toBeTruthy();
+    });
+  });
+
+  describe('onContextLost renderer callback', () => {
+    function expectChartUpdateSpiesToHaveBeenCalledTimes(times: number) {
+      expect(setXScaleTypeSpy).toHaveBeenCalledTimes(times);
+      expect(setYScaleTypeSpy).toHaveBeenCalledTimes(times);
+      expect(updateMetadataSpy).toHaveBeenCalledTimes(times);
+      expect(updateDataSpy).toHaveBeenCalledTimes(times);
+      expect(updateViewBoxSpy).toHaveBeenCalledTimes(times);
+    }
+
+    function didChartRendererRecover(
+      fixture: ComponentFixture<TestableComponent>,
+      chartBefore: Chart | null
+    ): boolean {
+      const chartAfter = fixture.componentInstance.chart.getLineChartForTest();
+      return chartBefore !== chartAfter && !!chartAfter;
+    }
+
+    it('does not recover the renderer by default', () => {
+      const fixture = createComponent({
+        seriesData: [buildSeries({id: 'foo'})],
+        seriesMetadataMap: {foo: buildMetadata({id: 'foo', visible: true})},
+        yScaleType: ScaleType.LINEAR,
+      });
+      fixture.detectChanges();
+      const chartBefore = fixture.componentInstance.chart.getLineChartForTest();
+
+      expectChartUpdateSpiesToHaveBeenCalledTimes(1); // Initial render.
+
+      fixture.componentInstance.chart.triggerContextLostForTest();
+      fixture.detectChanges();
+
+      expect(didChartRendererRecover(fixture, chartBefore)).toBe(false);
+      expect(disposeSpy).toHaveBeenCalledTimes(1);
+      expectChartUpdateSpiesToHaveBeenCalledTimes(1);
+    });
+
+    it('does not recover the renderer when disabling updates', () => {
+      const fixture = createComponent({
+        seriesData: [buildSeries({id: 'foo'})],
+        seriesMetadataMap: {foo: buildMetadata({id: 'foo', visible: true})},
+        yScaleType: ScaleType.LINEAR,
+      });
+      fixture.componentInstance.disableUpdate = false;
+      fixture.detectChanges();
+      const chartBefore = fixture.componentInstance.chart.getLineChartForTest();
+
+      expectChartUpdateSpiesToHaveBeenCalledTimes(1); // Initial render.
+
+      fixture.componentInstance.chart.triggerContextLostForTest();
+      fixture.detectChanges();
+
+      fixture.componentInstance.disableUpdate = true;
+      fixture.detectChanges();
+
+      expect(didChartRendererRecover(fixture, chartBefore)).toBe(false);
+      expect(disposeSpy).toHaveBeenCalledTimes(1);
+      expectChartUpdateSpiesToHaveBeenCalledTimes(1);
+    });
+
+    it('recovers the renderer when enabling updates', () => {
+      const fixture = createComponent({
+        seriesData: [buildSeries({id: 'foo'})],
+        seriesMetadataMap: {foo: buildMetadata({id: 'foo', visible: true})},
+        yScaleType: ScaleType.LINEAR,
+      });
+      fixture.componentInstance.disableUpdate = true;
+      fixture.detectChanges();
+      const chartBefore = fixture.componentInstance.chart.getLineChartForTest();
+
+      expectChartUpdateSpiesToHaveBeenCalledTimes(0); // No initial render.
+
+      fixture.componentInstance.chart.triggerContextLostForTest();
+      fixture.detectChanges();
+
+      expect(disposeSpy).toHaveBeenCalledTimes(1);
+      expectChartUpdateSpiesToHaveBeenCalledTimes(0);
+
+      // Updates now enabled.
+      fixture.componentInstance.disableUpdate = false;
+      fixture.detectChanges();
+
+      expect(didChartRendererRecover(fixture, chartBefore)).toBe(true);
+      expect(disposeSpy).toHaveBeenCalledTimes(1);
+      expectChartUpdateSpiesToHaveBeenCalledTimes(1);
+    });
+
+    it('recovers the renderer when updating the chart', () => {
+      const fixture = createComponent({
+        seriesData: [buildSeries({id: 'foo'})],
+        seriesMetadataMap: {foo: buildMetadata({id: 'foo', visible: true})},
+        yScaleType: ScaleType.LINEAR,
+      });
+      fixture.detectChanges();
+      const chartBefore = fixture.componentInstance.chart.getLineChartForTest();
+
+      expectChartUpdateSpiesToHaveBeenCalledTimes(1); // Initial render.
+
+      fixture.componentInstance.chart.triggerContextLostForTest();
+      fixture.detectChanges();
+
+      expect(didChartRendererRecover(fixture, chartBefore)).toBe(false);
+      expect(disposeSpy).toHaveBeenCalledTimes(1);
+      expectChartUpdateSpiesToHaveBeenCalledTimes(1);
+
+      fixture.componentInstance.yScaleType = ScaleType.LOG10;
+      fixture.detectChanges();
+
+      expect(didChartRendererRecover(fixture, chartBefore)).toBe(true);
+      expect(disposeSpy).toHaveBeenCalledTimes(1);
+      expectChartUpdateSpiesToHaveBeenCalledTimes(2);
+    });
+
+    it('does not recover more than once if not necessary', () => {
+      const fixture = createComponent({
+        seriesData: [buildSeries({id: 'foo'})],
+        seriesMetadataMap: {foo: buildMetadata({id: 'foo', visible: true})},
+        yScaleType: ScaleType.LINEAR,
+      });
+      fixture.componentInstance.disableUpdate = true;
+      fixture.detectChanges();
+      const chartBefore = fixture.componentInstance.chart.getLineChartForTest();
+
+      expectChartUpdateSpiesToHaveBeenCalledTimes(0); // No initial render.
+
+      fixture.componentInstance.chart.triggerContextLostForTest();
+      fixture.componentInstance.chart.triggerContextLostForTest();
+      fixture.componentInstance.chart.triggerContextLostForTest();
+      fixture.detectChanges();
+
+      // Updates enabled the first time.
+      fixture.componentInstance.disableUpdate = false;
+      fixture.detectChanges();
+
+      expect(didChartRendererRecover(fixture, chartBefore)).toBe(true);
+      expect(disposeSpy).toHaveBeenCalledTimes(1);
+      expectChartUpdateSpiesToHaveBeenCalledTimes(1);
+
+      // Updates re-enabled more times.
+      fixture.componentInstance.disableUpdate = true;
+      fixture.detectChanges();
+      fixture.componentInstance.disableUpdate = false;
+      fixture.detectChanges();
+      fixture.componentInstance.disableUpdate = true;
+      fixture.detectChanges();
+      fixture.componentInstance.disableUpdate = false;
+      fixture.detectChanges();
+
+      expect(didChartRendererRecover(fixture, chartBefore)).toBe(true);
+      expect(disposeSpy).toHaveBeenCalledTimes(1);
+      expectChartUpdateSpiesToHaveBeenCalledTimes(1);
     });
   });
 });
