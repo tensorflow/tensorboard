@@ -21,6 +21,7 @@ import {By} from '@angular/platform-browser';
 
 import {ChartImpl} from './lib/chart';
 import {
+  Chart,
   DataSeries,
   DataSeriesMetadataMap,
   Extent,
@@ -658,6 +659,14 @@ describe('line_chart_v2/line_chart test', () => {
       expect(updateViewBoxSpy).toHaveBeenCalledTimes(times);
     }
 
+    function didChartRendererRecover(
+      fixture: ComponentFixture<TestableComponent>,
+      chartBefore: Chart | null
+    ): boolean {
+      const chartAfter = fixture.componentInstance.chart.getLineChartForTest();
+      return chartBefore !== chartAfter && !!chartAfter;
+    }
+
     it('does not recover the renderer by default', () => {
       const fixture = createComponent({
         seriesData: [buildSeries({id: 'foo'})],
@@ -672,10 +681,8 @@ describe('line_chart_v2/line_chart test', () => {
       fixture.componentInstance.chart.triggerContextLostForTest();
       fixture.detectChanges();
 
-      expect(fixture.componentInstance.chart.getLineChartForTest()).toBe(
-        chartBefore
-      );
-      expect(disposeSpy).toHaveBeenCalledTimes(0);
+      expect(didChartRendererRecover(fixture, chartBefore)).toBe(false);
+      expect(disposeSpy).toHaveBeenCalledTimes(1);
       expectChartUpdateSpiesToHaveBeenCalledTimes(1);
     });
 
@@ -697,10 +704,8 @@ describe('line_chart_v2/line_chart test', () => {
       fixture.componentInstance.disableUpdate = true;
       fixture.detectChanges();
 
-      expect(fixture.componentInstance.chart.getLineChartForTest()).toBe(
-        chartBefore
-      );
-      expect(disposeSpy).toHaveBeenCalledTimes(0);
+      expect(didChartRendererRecover(fixture, chartBefore)).toBe(false);
+      expect(disposeSpy).toHaveBeenCalledTimes(1);
       expectChartUpdateSpiesToHaveBeenCalledTimes(1);
     });
 
@@ -719,16 +724,14 @@ describe('line_chart_v2/line_chart test', () => {
       fixture.componentInstance.chart.triggerContextLostForTest();
       fixture.detectChanges();
 
-      expect(disposeSpy).toHaveBeenCalledTimes(0);
+      expect(disposeSpy).toHaveBeenCalledTimes(1);
       expectChartUpdateSpiesToHaveBeenCalledTimes(0);
 
       // Updates now enabled.
       fixture.componentInstance.disableUpdate = false;
       fixture.detectChanges();
 
-      expect(fixture.componentInstance.chart.getLineChartForTest()).not.toBe(
-        chartBefore
-      );
+      expect(didChartRendererRecover(fixture, chartBefore)).toBe(true);
       expect(disposeSpy).toHaveBeenCalledTimes(1);
       expectChartUpdateSpiesToHaveBeenCalledTimes(1);
     });
@@ -747,18 +750,14 @@ describe('line_chart_v2/line_chart test', () => {
       fixture.componentInstance.chart.triggerContextLostForTest();
       fixture.detectChanges();
 
-      expect(fixture.componentInstance.chart.getLineChartForTest()).toBe(
-        chartBefore
-      );
-      expect(disposeSpy).toHaveBeenCalledTimes(0);
+      expect(didChartRendererRecover(fixture, chartBefore)).toBe(false);
+      expect(disposeSpy).toHaveBeenCalledTimes(1);
       expectChartUpdateSpiesToHaveBeenCalledTimes(1);
 
       fixture.componentInstance.yScaleType = ScaleType.LOG10;
       fixture.detectChanges();
 
-      expect(fixture.componentInstance.chart.getLineChartForTest()).not.toBe(
-        chartBefore
-      );
+      expect(didChartRendererRecover(fixture, chartBefore)).toBe(true);
       expect(disposeSpy).toHaveBeenCalledTimes(1);
       expectChartUpdateSpiesToHaveBeenCalledTimes(2);
     });
@@ -784,8 +783,7 @@ describe('line_chart_v2/line_chart test', () => {
       fixture.componentInstance.disableUpdate = false;
       fixture.detectChanges();
 
-      const chartAfter = fixture.componentInstance.chart.getLineChartForTest();
-      expect(chartAfter).not.toBe(chartBefore);
+      expect(didChartRendererRecover(fixture, chartBefore)).toBe(true);
       expect(disposeSpy).toHaveBeenCalledTimes(1);
       expectChartUpdateSpiesToHaveBeenCalledTimes(1);
 
@@ -799,9 +797,7 @@ describe('line_chart_v2/line_chart test', () => {
       fixture.componentInstance.disableUpdate = false;
       fixture.detectChanges();
 
-      expect(fixture.componentInstance.chart.getLineChartForTest()).toBe(
-        chartAfter
-      );
+      expect(didChartRendererRecover(fixture, chartBefore)).toBe(true);
       expect(disposeSpy).toHaveBeenCalledTimes(1);
       expectChartUpdateSpiesToHaveBeenCalledTimes(1);
     });

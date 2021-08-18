@@ -242,7 +242,7 @@ export class LineChartComponent
    * requesting updates.
    */
   private recoverRendererIfNeeded() {
-    if (!this.isRenderingContextLost || !this.lineChart || this.disableUpdate) {
+    if (!this.isRenderingContextLost || this.disableUpdate) {
       return;
     }
     // The component's template has an 'ngIf="showChartRendererElement"' we use
@@ -324,8 +324,13 @@ export class LineChartComponent
 
   private onContextLost() {
     // Since context may be lost when the component is hidden or does not need
-    // updates, the teardown and recreation happens lazily.
+    // updates, the re-creation of a new chart renderer happens lazily.
     this.isRenderingContextLost = true;
+
+    if (this.lineChart) {
+      this.lineChart.dispose();
+      this.lineChart = null;
+    }
   }
 
   triggerContextLostForTest() {
@@ -412,12 +417,12 @@ export class LineChartComponent
 
   /**
    * Minimally and imperatively updates the chart library depending on prop
-   * changed. When adding new `lineChart.*()` calls, keep this in sync with
-   * `recoverRendererIfNeeded`.
+   * changed. When adding new `this.lineChart.set*()` calls, keep this in sync
+   * with `recoverRendererIfNeeded`.
    */
   private updateLineChart() {
-    if (!this.lineChart || this.disableUpdate) return;
     this.recoverRendererIfNeeded();
+    if (!this.lineChart || this.disableUpdate) return;
 
     if (this.scaleUpdated) {
       this.scaleUpdated = false;
