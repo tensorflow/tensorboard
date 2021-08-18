@@ -62,11 +62,6 @@ export const runPageSelectionToggled = createAction(
   props<{experimentIds: string[]; runIds: string[]}>()
 );
 
-export const runsSelectAll = createAction(
-  '[Runs] Runs Select All',
-  props<{experimentIds: string[]}>()
-);
-
 export const runSelectorPaginationOptionChanged = createAction(
   '[Runs] Run Selector Pagination Option Changed',
   props<{pageSize: number; pageIndex: number}>()

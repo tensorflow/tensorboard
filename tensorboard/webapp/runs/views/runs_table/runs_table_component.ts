@@ -109,7 +109,6 @@ export class RunsTableComponent implements OnChanges {
   @Output() onRegexFilterChange = new EventEmitter<string>();
   @Output() onSelectionToggle = new EventEmitter<RunTableItem>();
   @Output() onPageSelectionToggle = new EventEmitter<{items: RunTableItem[]}>();
-  @Output() onSelectAllPages = new EventEmitter<void>();
   @Output()
   onPaginationChange = new EventEmitter<{
     pageIndex: number;

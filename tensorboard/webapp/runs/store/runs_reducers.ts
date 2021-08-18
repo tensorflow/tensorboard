@@ -218,24 +218,6 @@ const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
       selectionState: nextSelectionState,
     };
   }),
-  on(runsActions.runsSelectAll, (state, {experimentIds}) => {
-    const stateKey = serializeExperimentIds(experimentIds);
-    const nextSelectionState = new Map(state.selectionState);
-    const subSelectionState = new Map(nextSelectionState.get(stateKey) ?? []);
-
-    for (const experimentId of experimentIds) {
-      for (const runId of state.runIds[experimentId]) {
-        subSelectionState.set(runId, true);
-      }
-    }
-
-    nextSelectionState.set(stateKey, subSelectionState);
-
-    return {
-      ...state,
-      selectionState: nextSelectionState,
-    };
-  }),
   on(runsActions.fetchRunsSucceeded, (state, {runsForAllExperiments}) => {
     const groupKeyToColorString = new Map(state.groupKeyToColorString);
     const defaultRunColorForGroupBy = new Map(state.defaultRunColorForGroupBy);

@@ -24,7 +24,6 @@ limitations under the License.
 <div class="table-container">
   <div role="table">
     <ng-container *ngTemplateOutlet="header"></ng-container>
-    <ng-container *ngTemplateOutlet="selectAll"></ng-container>
     <div role="rowgroup" class="rows">
       <ng-container *ngFor="let item of pageItems; trackBy: tableTrackBy">
         <ng-container
@@ -57,21 +56,6 @@ limitations under the License.
   showFirstLastButtons
   (page)="onPaginationChange.emit($event)"
 ></mat-paginator>
-
-<ng-template #selectAll>
-  <div
-    *ngIf="allPageItemsSelected() && numSelectedItems !== allItemsLength"
-    class="select-all"
-    role="row"
-  >
-    <span role="columnheader"
-      >All runs in this page are selected but not all runs ({{ numSelectedItems
-      }} of {{ allItemsLength }}) are selected.</span
-    ><button mat-button (click)="onSelectAllPages.emit()">
-      Select all runs
-    </button>
-  </div>
-</ng-template>
 
 <ng-template #header>
   <div class="header" role="rowgroup">
