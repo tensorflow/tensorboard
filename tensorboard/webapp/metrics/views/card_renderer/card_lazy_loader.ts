@@ -33,7 +33,7 @@ type CardObserverCallback = (
 export class CardObserver {
   private intersectionObserver?: IntersectionObserver;
   private intersectionCallback?: CardObserverCallback;
-  private readonly destroyedTargets = new Set<Element>();
+  private readonly destroyedTargets = new WeakSet<Element>();
 
   /**
    * Buffer determines how far a card can be, beyond the root's bounding rect,

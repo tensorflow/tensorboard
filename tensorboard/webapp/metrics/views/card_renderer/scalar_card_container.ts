@@ -19,10 +19,11 @@ import {
   EventEmitter,
   Input,
   OnInit,
+  OnDestroy,
   Output,
 } from '@angular/core';
 import {Store} from '@ngrx/store';
-import {combineLatest, from, Observable, of} from 'rxjs';
+import {combineLatest, from, Observable, of, Subject} from 'rxjs';
 import {
   combineLatestWith,
   debounceTime,
@@ -32,6 +33,7 @@ import {
   shareReplay,
   startWith,
   switchMap,
+  takeUntil,
 } from 'rxjs/operators';
 
 import {State} from '../../../app_state';
@@ -140,7 +142,7 @@ function areSeriesEqual(
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ScalarCardContainer implements CardRenderer, OnInit {
+export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
   constructor(private readonly store: Store<State>) {}
 
   // Angular Component constructor for DataDownload dialog. It is customizable for
@@ -196,6 +198,8 @@ export class ScalarCardContainer implements CardRenderer, OnInit {
 
   showFullSize = false;
 
+  private readonly ngUnsubscribe = new Subject<void>();
+
   private isScalarCardMetadata(
     cardMetadata: CardMetadata
   ): cardMetadata is ScalarCardMetadata {
@@ -226,6 +230,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit {
     const nonNullRunsToScalarSeries$ = this.store
       .select(getCardTimeSeries, this.cardId)
       .pipe(
+        takeUntil(this.ngUnsubscribe),
         filter((runToSeries) => Boolean(runToSeries)),
         map((runToSeries) => runToSeries as RunToSeries<PluginType.SCALARS>),
         shareReplay(1)
@@ -282,6 +287,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit {
       combineLatestWith(
         this.store.select(getMetricsScalarPartitionNonMonotonicX)
       ),
+      takeUntil(this.ngUnsubscribe),
       map<[PartialSeries[], boolean], PartitionedSeries[]>(
         ([normalizedSeries, enablePartition]) => {
           if (enablePartition) return partitionSeries(normalizedSeries);
@@ -479,6 +485,11 @@ export class ScalarCardContainer implements CardRenderer, OnInit {
     );
 
     this.isPinned$ = this.store.select(getCardPinnedState, this.cardId);
+  }
+
+  ngOnDestroy() {
+    this.ngUnsubscribe.next();
+    this.ngUnsubscribe.complete();
   }
 
   private getRunDisplayName(runId: string): Observable<string> {

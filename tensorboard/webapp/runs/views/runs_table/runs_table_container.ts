@@ -297,6 +297,7 @@ export class RunsTableContainer implements OnInit, OnDestroy {
       })
     );
     this.allUnsortedRunTableItems$ = rawAllUnsortedRunTableItems$.pipe(
+      takeUntil(this.ngUnsubscribe),
       shareReplay(1)
     );
     this.allItemsLength$ = this.allUnsortedRunTableItems$.pipe(
@@ -305,7 +306,7 @@ export class RunsTableContainer implements OnInit, OnDestroy {
 
     const getFilteredItems$ = this.getFilteredItems$(
       this.allUnsortedRunTableItems$
-    ).pipe(shareReplay(1));
+    ).pipe(takeUntil(this.ngUnsubscribe), shareReplay(1));
 
     this.filteredItemsLength$ = getFilteredItems$.pipe(
       map((items) => items.length)
