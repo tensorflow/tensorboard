@@ -29,7 +29,10 @@ import {createSelector} from '@ngrx/store';
 
 import {getExperimentIdsFromRoute} from '../app_routing/store/app_routing_selectors';
 import {State} from '../app_state';
-import {getRunSelectionMap} from '../runs/store/runs_selectors';
+import {
+  getRunSelectionMap,
+  getRunSelectorRegexFilter,
+} from '../runs/store/runs_selectors';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
@@ -46,5 +49,22 @@ export const getCurrentRouteRunSelection = createSelector(
     }
     return getRunSelectionMap(state, {experimentIds});
   },
-  (runSelection) => runSelection
+  getRunSelectorRegexFilter,
+  (runSelection, regexFilter) => {
+    if (!runSelection) return null;
+
+    let regexExp: RegExp;
+
+    try {
+      regexExp = new RegExp(regexFilter, 'i');
+    } catch {
+      regexExp = new RegExp('');
+    }
+
+    const filteredSelection = new Map<string, boolean>();
+    for (const [key, value] of runSelection.entries()) {
+      filteredSelection.set(key, regexExp.test(key) && value);
+    }
+    return filteredSelection;
+  }
 );

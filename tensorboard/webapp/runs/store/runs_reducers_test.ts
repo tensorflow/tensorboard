@@ -587,38 +587,6 @@ describe('runs_reducers', () => {
     });
   });
 
-  describe('runsSelectAll', () => {
-    it('selects all runs', () => {
-      const state = buildRunsState({
-        runIds: {
-          e1: ['r1', 'r2'],
-          e2: ['r3'],
-        },
-        selectionState: new Map([['["e1","e2"]', new Map([['r1', false]])]]),
-      });
-
-      const nextState = runsReducers.reducers(
-        state,
-        actions.runsSelectAll({
-          experimentIds: ['e1', 'e2'],
-        })
-      );
-
-      expect(nextState.data.selectionState).toEqual(
-        new Map([
-          [
-            '["e1","e2"]',
-            new Map([
-              ['r1', true],
-              ['r2', true],
-              ['r3', true],
-            ]),
-          ],
-        ])
-      );
-    });
-  });
-
   describe('runSelectorPaginationOptionChanged', () => {
     it('updates the pagination option', () => {
       const state = buildRunsState(undefined, {

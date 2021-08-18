@@ -99,5 +99,42 @@ describe('ui_selectors test', () => {
 
       expect(getCurrentRouteRunSelection(state)).toBeNull();
     });
+
+    it('filters runs based on regex', () => {
+      const state = {
+        ...buildStateFromAppRoutingState(
+          buildAppRoutingState({
+            activeRoute: buildRoute({
+              routeKind: RouteKind.EXPERIMENT,
+              pathname: '/experiment/234/',
+              params: {experimentId: '234'},
+            }),
+          })
+        ),
+        ...buildStateFromRunsState(
+          buildRunsState({
+            selectionState: new Map([
+              [
+                '["234"]',
+                new Map([
+                  ['run1', true],
+                  ['run2', true],
+                  ['run3', false],
+                ]),
+              ],
+            ]),
+            regexFilter: 'n1',
+          })
+        ),
+      };
+
+      expect(getCurrentRouteRunSelection(state)).toEqual(
+        new Map([
+          ['run1', true],
+          ['run2', false],
+          ['run3', false],
+        ])
+      );
+    });
   });
 });

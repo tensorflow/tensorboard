@@ -67,7 +67,6 @@ import {
   runSelectorPaginationOptionChanged,
   runSelectorRegexFilterChanged,
   runSelectorSortChanged,
-  runsSelectAll,
   runTableShown,
 } from '../../actions';
 import {SortKey, SortType} from '../../types';
@@ -208,7 +207,6 @@ function matchFilter(
       [usePagination]="usePagination"
       (onSelectionToggle)="onRunSelectionToggle($event)"
       (onPageSelectionToggle)="onPageSelectionToggle($event)"
-      (onSelectAllPages)="onSelectAllPages()"
       (onPaginationChange)="onPaginationChange($event)"
       (onRegexFilterChange)="onRegexFilterChange($event)"
       (onSortChange)="onSortChange($event)"
@@ -590,16 +588,6 @@ export class RunsTableContainer implements OnInit, OnDestroy {
         runIds,
       })
     );
-  }
-
-  onSelectAllPages() {
-    if (!this.usePagination) {
-      throw new Error(
-        'Select all events cannot be dispatched when pagination is disabled'
-      );
-    }
-
-    this.store.dispatch(runsSelectAll({experimentIds: this.experimentIds}));
   }
 
   onPaginationChange(event: {pageIndex: number; pageSize: number}) {
