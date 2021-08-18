@@ -99,6 +99,15 @@ $_font-size: 13px;
   }
 }
 
+.select-all {
+  @include tb-theme-foreground-prop(border-bottom, border, 1px solid);
+  padding: 10px;
+
+  button {
+    width: 100%;
+  }
+}
+
 .loading,
 .no-runs {
   align-items: center;
@@ -111,11 +120,6 @@ $_font-size: 13px;
 
 .loading {
   justify-content: center;
-}
-
-.select-all th {
-  padding-bottom: 12px;
-  padding-top: 12px;
 }
 
 .select-all-content,

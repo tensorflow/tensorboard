@@ -22,9 +22,9 @@ limitations under the License.
   ></tb-filter-input>
 </div>
 <div class="table-container">
+  <ng-container *ngTemplateOutlet="selectAll"></ng-container>
   <div role="table">
     <ng-container *ngTemplateOutlet="header"></ng-container>
-    <ng-container *ngTemplateOutlet="selectAll"></ng-container>
     <div role="rowgroup" class="rows">
       <ng-container *ngFor="let item of pageItems; trackBy: tableTrackBy">
         <ng-container
@@ -62,14 +62,16 @@ limitations under the License.
   <div
     *ngIf="allPageItemsSelected() && numSelectedItems !== allItemsLength"
     class="select-all"
-    role="row"
   >
-    <span role="columnheader"
-      >All runs in this page are selected but not all runs ({{ numSelectedItems
-      }} of {{ allItemsLength }}) are selected.</span
-    ><button mat-button (click)="onSelectAllPages.emit()">
-      Select all runs
-    </button>
+    <div>
+      All runs in this page are selected but not all runs ({{ numSelectedItems
+      }} of {{ allItemsLength }}) are selected.
+    </div>
+    <div>
+      <button mat-button (click)="onSelectAllPages.emit()">
+        Select all runs
+      </button>
+    </div>
   </div>
 </ng-template>
 
