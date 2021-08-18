@@ -90,7 +90,6 @@ $_title-to-heading-gap: 12px;
 .step {
   @include tb-theme-foreground-prop(color, secondary-text);
   font-size: 13px;
-  // height: $_second-row-height;
 }
 
 .controls {
