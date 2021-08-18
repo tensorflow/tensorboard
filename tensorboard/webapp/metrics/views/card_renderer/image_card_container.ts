@@ -160,6 +160,7 @@ export class ImageCardContainer implements CardRenderer, OnInit, OnDestroy {
 
     const selectCardMetadata$ = this.store.select(getCardMetadata, this.cardId);
     const cardMetadata$ = selectCardMetadata$.pipe(
+      takeUntil(this.ngUnsubscribe),
       filter((cardMetadata) => {
         return !!cardMetadata && this.isImageCardMetadata(cardMetadata);
       }),
@@ -174,6 +175,7 @@ export class ImageCardContainer implements CardRenderer, OnInit, OnDestroy {
       this.store.select(getCardTimeSeries, this.cardId),
     ]);
     const timeSeries$ = metadataAndSeries$.pipe(
+      takeUntil(this.ngUnsubscribe),
       map(([cardMetadata, runToSeries]) => {
         const runId = cardMetadata.runId;
         if (!runToSeries || !runToSeries.hasOwnProperty(runId)) {

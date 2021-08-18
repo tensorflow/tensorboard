@@ -17,12 +17,13 @@ import {
   Component,
   Input,
   OnChanges,
+  OnDestroy,
   SimpleChanges,
 } from '@angular/core';
 import {Store} from '@ngrx/store';
 import {selectors as settingsSelectors} from '../../../settings';
-import {BehaviorSubject, combineLatest, Observable, of} from 'rxjs';
-import {map, shareReplay, switchMap, tap} from 'rxjs/operators';
+import {BehaviorSubject, combineLatest, Observable, of, Subject} from 'rxjs';
+import {map, shareReplay, switchMap, takeUntil, tap} from 'rxjs/operators';
 
 import {State} from '../../../app_state';
 import {getMetricsTagGroupExpansionState} from '../../../selectors';
@@ -52,7 +53,7 @@ const ITEMS_COLLAPSED_CLIP_SIZE = 3;
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CardGridContainer implements OnChanges {
+export class CardGridContainer implements OnChanges, OnDestroy {
   // groupName must be non-null if the group should be collapse/expand-able.
   @Input() groupName: string | null = null;
   @Input() cardIdsWithMetadata!: CardIdWithMetadata[];
@@ -61,6 +62,7 @@ export class CardGridContainer implements OnChanges {
   private readonly groupName$ = new BehaviorSubject<string | null>(null);
   readonly pageIndex$ = new BehaviorSubject<number>(0);
   private readonly items$ = new BehaviorSubject<CardIdWithMetadata[]>([]);
+  private readonly ngUnsubscribe = new Subject<void>();
 
   readonly numPages$ = combineLatest([
     this.items$,
@@ -112,6 +114,7 @@ export class CardGridContainer implements OnChanges {
     this.pageIndex$,
     this.numPages$,
   ]).pipe(
+    takeUntil(this.ngUnsubscribe),
     tap(([pageIndex, numPages]) => {
       // Cycle in the Observable but only loops when pageIndex is not
       // valid and does not repeat more than once.
@@ -156,6 +159,11 @@ export class CardGridContainer implements OnChanges {
     if (changes['groupName']) {
       this.groupName$.next(this.groupName);
     }
+  }
+
+  ngOnDestroy() {
+    this.ngUnsubscribe.next();
+    this.ngUnsubscribe.complete();
   }
 
   onPageIndexChanged(newIndex: number) {
