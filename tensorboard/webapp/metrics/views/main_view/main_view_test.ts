@@ -1090,19 +1090,24 @@ describe('metrics main view', () => {
       expect(getFilterviewCardContents(fixture)).toEqual(['images: card2']);
     });
 
-    it('hides the main, pinned views while the filter view is active', () => {
+    it('hides the main but shows pinned views while the filter view is active', () => {
       store.overrideSelector(selectors.getMetricsTagFilter, 'tagA');
+      store.overrideSelector(selectors.getPinnedCardsWithMetadata, [
+        {cardId: 'card1', ...createCardMetadata(PluginType.SCALARS)},
+        {cardId: 'card2', ...createCardMetadata(PluginType.IMAGES)},
+      ]);
       const fixture = TestBed.createComponent(MainViewContainer);
       fixture.detectChanges();
 
       const mainView = fixture.debugElement.query(
         By.css('.main metrics-card-groups')
       );
-      const pinnedView = fixture.debugElement.query(
+      expect(mainView.styles['display']).toBe('none');
+      const pinnedViewDebugEl = fixture.debugElement.query(
         By.css('.main metrics-pinned-view')
       );
-      expect(mainView.styles['display']).toBe('none');
-      expect(pinnedView).not.toBeTruthy();
+      const cardContents = getCardContents(getCards(pinnedViewDebugEl));
+      expect(cardContents).toEqual(['scalars: card1', 'images: card2']);
     });
 
     it('updates the list on tagFilter change', () => {
@@ -1347,21 +1352,6 @@ describe('metrics main view', () => {
     ): DebugElement {
       return fixture.debugElement.query(By.directive(directive));
     }
-
-    it('appears only when not filtering', () => {
-      const fixture = TestBed.createComponent(MainViewContainer);
-      fixture.detectChanges();
-
-      expect(queryDirective(fixture, PinnedViewContainer)).toBeTruthy();
-      expect(queryDirective(fixture, FilteredViewContainer)).not.toBeTruthy();
-
-      store.overrideSelector(selectors.getMetricsTagFilter, 'tagA');
-      store.refreshState();
-      fixture.detectChanges();
-
-      expect(queryDirective(fixture, PinnedViewContainer)).not.toBeTruthy();
-      expect(queryDirective(fixture, FilteredViewContainer)).toBeTruthy();
-    });
 
     it('shows an empty message only when there are no pinned cards', () => {
       store.overrideSelector(selectors.getPinnedCardsWithMetadata, []);

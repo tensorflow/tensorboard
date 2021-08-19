@@ -64,10 +64,10 @@ limitations under the License.
 
 .main,
 .sidebar {
+  contain: strict;
   overflow-x: hidden;
   overflow-y: auto;
-  will-change: transform;
-  contain: strict;
+  will-change: transform, scroll-position;
 }
 
 .main {
@@ -84,6 +84,26 @@ limitations under the License.
   metrics-filtered-view,
   metrics-pinned-view {
     @include tb-theme-foreground-prop(border-bottom, border, 1px solid);
+  }
+
+  &.filter-view {
+    overflow: hidden;
+
+    metrics-filtered-view,
+    metrics-pinned-view {
+      contain: content size;
+      overflow: auto;
+      will-change: transform, scroll-position;
+    }
+
+    metrics-filtered-view {
+      flex: 0 1 auto;
+    }
+
+    metrics-pinned-view {
+      flex: 1 1;
+      min-height: 300px;
+    }
   }
 }
 

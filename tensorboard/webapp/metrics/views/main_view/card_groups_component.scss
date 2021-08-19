@@ -15,11 +15,15 @@ limitations under the License.
 @import 'tensorboard/webapp/theme/tb_theme';
 @import '../common';
 
-.group-toolbar {
-  @include metrics-card-group-toolbar;
-  @include tb-theme-foreground-prop(border-top, border, 1px solid);
-  display: flex;
-  align-items: center;
+:host {
+  @include metrics-sub-view;
+
+  .group-toolbar {
+    @include tb-theme-foreground-prop(border-top, border, 1px solid);
+    // border-top on group-toolbar needs to be offset on sticky header for the
+    // flawless UI.
+    top: -1px;
+  }
 }
 
 .card-group:first-of-type .group-toolbar {

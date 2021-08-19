@@ -60,7 +60,7 @@ limitations under the License.
   </div>
 </div>
 <div class="split-content">
-  <div cdkScrollable class="main">
+  <div cdkScrollable [class.main]="true" [class.filter-view]="showFilteredView">
     <metrics-filtered-view
       *ngIf="showFilteredView"
       [cardObserver]="cardObserver"
@@ -69,10 +69,7 @@ limitations under the License.
     Otherwise, adding a pinned card when the section is hidden reliably creates
     a 'squished chart'. We can switch to 'display: none' when this issue is
     fixed: https://github.com/tensorflow/tensorboard/issues/2595. -->
-    <metrics-pinned-view
-      *ngIf="!showFilteredView"
-      [cardObserver]="cardObserver"
-    ></metrics-pinned-view>
+    <metrics-pinned-view [cardObserver]="cardObserver"></metrics-pinned-view>
     <!-- Always show the metrics-card-groups as a performance optimization--it makes view transition
     from filtered view to card view quicker. -->
     <metrics-card-groups
