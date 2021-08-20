@@ -29,7 +29,6 @@ import {
 } from '../../../selectors';
 import {MatIconTestingModule} from '../../../testing/mat_icon_module';
 import {
-  ColorScale,
   HistogramData,
   HistogramMode,
   TimeProperty,
@@ -56,7 +55,7 @@ import {RunNameModule} from './run_name_module';
 class TestableHistogramWidget {
   @Input() mode!: HistogramMode;
   @Input() timeProperty!: TimeProperty;
-  @Input() colorScale!: ColorScale;
+  @Input() color!: string;
   @Input() name!: string;
   @Input() data!: HistogramData;
 
@@ -201,7 +200,6 @@ describe('histogram card', () => {
     expect(headingEl.nativeElement.textContent).toContain('tagA');
     expect(emptyEl).not.toBeTruthy();
     expect(histogramEl).toBeTruthy();
-    expect(histogramEl.componentInstance.name).toBe('run1');
     expect(histogramEl.componentInstance.data).toEqual(
       buildNormalizedHistograms([
         {wallTime: 100, step: 333, bins: [{x: 0, dx: 100, y: 42}]},

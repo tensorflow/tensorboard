@@ -58,11 +58,10 @@ limitations under the License.
 </div>
 <tb-histogram
   *ngIf="data && data.length; else noData"
-  [name]="runId"
   [data]="data"
   [mode]="mode"
   [timeProperty]="timeProperty(xAxisType)"
-  [colorScale]="runColorScale"
+  [color]="runColorScale(runId)"
 ></tb-histogram>
 <ng-template #noData>
   <div *ngIf="loadState === DataLoadState.FAILED" class="empty-message">

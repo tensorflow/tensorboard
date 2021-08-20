@@ -26,7 +26,6 @@ import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {IntersectionObserverTestingModule} from '../intersection_observer/intersection_observer_testing_module';
 import {
   Bin,
-  ColorScale,
   HistogramData,
   HistogramDatum,
   HistogramMode,
@@ -63,7 +62,7 @@ function buildHistogramDatum(
       #instance
       [mode]="mode"
       [timeProperty]="timeProperty"
-      [colorScale]="colorScale"
+      [color]="color"
       [name]="name"
       [data]="data"
     >
@@ -84,7 +83,7 @@ class TestableComponent {
 
   @Input() mode!: HistogramMode;
   @Input() timeProperty!: TimeProperty;
-  @Input() colorScale!: ColorScale;
+  @Input() color!: string;
   @Input() name!: string;
   @Input() data!: HistogramData;
 
@@ -127,7 +126,7 @@ describe('histogram test', () => {
     fixture.componentInstance.data = data;
     fixture.componentInstance.mode = HistogramMode.OFFSET;
     fixture.componentInstance.timeProperty = TimeProperty.STEP;
-    fixture.componentInstance.colorScale = (name) => '#fff';
+    fixture.componentInstance.color = '#fff';
     intersectionObserver = TestBed.inject(IntersectionObserverTestingModule);
     return fixture;
   }
