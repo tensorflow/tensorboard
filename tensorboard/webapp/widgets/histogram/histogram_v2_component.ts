@@ -30,7 +30,6 @@ import * as d3 from '../../third_party/d3';
 import {HCLColor} from '../../third_party/d3';
 import {
   Bin,
-  ColorScale,
   HistogramData,
   HistogramDatum,
   HistogramMode,
@@ -93,14 +92,7 @@ export class HistogramV2Component
 
   @Input() timeProperty: TimeProperty = TimeProperty.STEP;
 
-  /**
-   * TODO(tensorboard-team): VzHistogram only needs 'name', 'colorScale'
-   * properties to determine the histogram color. We could replace these with a
-   * single 'color' property to make the interface simpler.
-   */
-  @Input() colorScale?: ColorScale;
-
-  @Input() name!: string;
+  @Input() color?: string;
 
   @Input() data!: HistogramData;
 
@@ -304,9 +296,7 @@ export class HistogramV2Component
     temporalScale.domain(temporalDomain);
     const countScale = d3.scaleLinear();
     countScale.domain([0, countMax]);
-    const d3Color = d3.hcl(
-      this.colorScale ? this.colorScale(this.name) : '#000'
-    );
+    const d3Color = d3.hcl(this.color || '#000');
     const d3ColorScale = d3.scaleLinear<HCLColor, string>();
     d3ColorScale.domain(temporalDomain);
 
