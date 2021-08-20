@@ -88,6 +88,10 @@ svg {
   .tooltip {
     pointer-events: none;
   }
+
+  g {
+    will-change: transform;
+  }
 }
 
 .x-axis {
@@ -125,15 +129,19 @@ svg {
     stroke-dasharray: 2;
   }
 
+  $_path-circle-opacity: 0.6;
+
   circle,
   path {
     fill: currentColor;
-    stroke-opacity: 0.5;
+    stroke-opacity: $_path-circle-opacity;
     stroke-width: 1px;
   }
 
   circle {
+    filter: drop-shadow(0 0 1px rgba(#000, $_path-circle-opacity));
     stroke: #fff;
+    will-change: transform;
   }
 
   .baseline {

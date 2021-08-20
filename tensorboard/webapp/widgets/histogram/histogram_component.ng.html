@@ -28,7 +28,7 @@ limitations under the License.
       <!-- d3 places axis label at 9px below from the top edge. -->
       <g
         *ngIf="tooltipData"
-        [attr.transform]="getCssTranslate(tooltipData.xAxis.position, 9)"
+        [style.transform]="getCssTranslatePx(tooltipData.xAxis.position, 9)"
       >
         <text>{{tooltipData.xAxis.label}}</text>
       </g>
@@ -37,10 +37,10 @@ limitations under the License.
   <svg class="axis y-axis">
     <g #yAxis></g>
     <!-- d3 places axis label at 9px right from the left edge. -->
-    <g class="tooltip" [attr.transform]="getCssTranslate(9, 0)">
+    <g class="tooltip" [style.transform]="getCssTranslatePx(9, 0)">
       <g
         *ngIf="tooltipData"
-        [attr.transform]="getGroupTransform(tooltipData.closestDatum)"
+        [style.transform]="getGroupTransform(tooltipData.closestDatum)"
       >
         <text [attr.y]="tooltipData.yAxis.position">
           {{tooltipData.yAxis.label}}
@@ -52,7 +52,7 @@ limitations under the License.
     <g class="grid">
       <g
         *ngFor="let tick of getGridTickYLocs()"
-        [attr.transform]="getCssTranslate(0, tick)"
+        [style.transform]="getCssTranslatePx(0, tick)"
       >
         <line class="tick" x2="100%"></line>
       </g>
@@ -61,7 +61,7 @@ limitations under the License.
     <g #histograms class="histograms">
       <g
         *ngFor="let datum of data; trackBy: trackByWallTime;"
-        [attr.transform]="getGroupTransform(datum)"
+        [style.transform]="getGroupTransform(datum)"
         class="histogram"
         [style.color]="getHistogramFill(datum)"
       >
@@ -74,24 +74,26 @@ limitations under the License.
         <circle
           *ngIf="tooltipData"
           r="2"
-          [attr.cx]="getUiCoordFromBinForContent(
-            getClosestBinFromBinCoordinate(
-              datum,
-              tooltipData.xPositionInBinCoord
-            )
-          ).x"
-          [attr.cy]="getUiCoordFromBinForContent(
-            getClosestBinFromBinCoordinate(
-              datum,
-              tooltipData.xPositionInBinCoord
-            )
-          ).y"
+          [style.transform]="getCssTranslatePx(
+            getUiCoordFromBinForContent(
+              getClosestBinFromBinCoordinate(
+                datum,
+                tooltipData.xPositionInBinCoord
+              )
+            ).x,
+            getUiCoordFromBinForContent(
+              getClosestBinFromBinCoordinate(
+                datum,
+                tooltipData.xPositionInBinCoord
+              )
+            ).y
+          )"
         ></circle>
       </g>
     </g>
 
     <g class="tooltip" *ngIf="tooltipData">
-      <g [attr.transform]="getGroupTransform(tooltipData.closestDatum)">
+      <g [style.transform]="getGroupTransform(tooltipData.closestDatum)">
         <path [attr.d]="getHistogramPath(tooltipData.closestDatum)"></path>
         <circle
           *ngIf="tooltipData.closestBin"
@@ -102,8 +104,8 @@ limitations under the License.
       </g>
       <g
         class="value-label"
-        [attr.transform]="
-          getCssTranslate(
+        [style.transform]="
+          getCssTranslatePx(
             tooltipData.value.position.x,
             tooltipData.value.position.y
           )
