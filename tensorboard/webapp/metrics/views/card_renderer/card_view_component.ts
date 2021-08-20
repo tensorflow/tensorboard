@@ -32,6 +32,7 @@ import {CardId} from '../../types';
 export class CardViewComponent {
   readonly PluginType = PluginType;
 
+  @Input() isEverVisible!: boolean;
   @Input() cardId!: CardId;
   @Input() groupName!: string | null;
   @Input() pluginType!: PluginType;

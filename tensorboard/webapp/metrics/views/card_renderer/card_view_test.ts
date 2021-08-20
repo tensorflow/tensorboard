@@ -19,21 +19,21 @@ import {
   NO_ERRORS_SCHEMA,
   Output,
 } from '@angular/core';
-import {fakeAsync, flush, TestBed, tick} from '@angular/core/testing';
+import {TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
-import {Action, Store, StoreModule} from '@ngrx/store';
+import {Action, Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
-import {State} from '../../../app_state';
 
+import {State} from '../../../app_state';
 import * as selectors from '../../../selectors';
 import {RunColorScale} from '../../../types/ui';
+import {IntersectionObserverTestingModule} from '../../../widgets/intersection_observer/intersection_observer_testing_module';
 import * as actions from '../../actions';
 import {PluginType} from '../../data_source';
 import {appStateFromMetricsState, buildMetricsState} from '../../testing';
-
 import {CardViewComponent} from './card_view_component';
-import {CardViewContainer, TEST_ONLY} from './card_view_container';
+import {CardViewContainer} from './card_view_container';
 
 @Component({
   selector: 'scalar-card',
@@ -49,10 +49,11 @@ class TestableScalarCard {
 describe('card view test', () => {
   let store: MockStore<State>;
   let dispatchedActions: Action[] = [];
+  let intersectionObserver: IntersectionObserverTestingModule;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [NoopAnimationsModule],
+      imports: [NoopAnimationsModule, IntersectionObserverTestingModule],
       declarations: [CardViewComponent, CardViewContainer, TestableScalarCard],
       providers: [
         provideMockStore({
@@ -68,6 +69,21 @@ describe('card view test', () => {
       dispatchedActions.push(action);
     });
     store.overrideSelector(selectors.getRunColorMap, {});
+    intersectionObserver = TestBed.inject(IntersectionObserverTestingModule);
+  });
+
+  it('stamps DOM only when it is first visible', () => {
+    const fixture = TestBed.createComponent(CardViewContainer);
+    fixture.componentInstance.cardId = 'cardId';
+    fixture.componentInstance.pluginType = PluginType.SCALARS;
+    fixture.detectChanges();
+
+    expect(fixture.debugElement.query(By.css('scalar-card'))).toBeNull();
+    fixture.detectChanges();
+
+    intersectionObserver.simulateVisibilityChange(fixture, true);
+    fixture.detectChanges();
+    expect(fixture.debugElement.query(By.css('scalar-card'))).not.toBeNull();
   });
 
   [
@@ -79,6 +95,7 @@ describe('card view test', () => {
       const fixture = TestBed.createComponent(CardViewContainer);
       fixture.componentInstance.cardId = 'cardId';
       fixture.componentInstance.pluginType = pluginType;
+      intersectionObserver.simulateVisibilityChange(fixture, true);
       fixture.detectChanges();
 
       expect(fixture.debugElement.query(By.css(tagName))).not.toBeNull();
@@ -89,6 +106,7 @@ describe('card view test', () => {
     const fixture = TestBed.createComponent(CardViewContainer);
     fixture.componentInstance.cardId = 'cardId';
     fixture.componentInstance.pluginType = PluginType.SCALARS;
+    intersectionObserver.simulateVisibilityChange(fixture, true);
     fixture.detectChanges();
 
     expect(fixture.debugElement.classes['full-width']).not.toBeTruthy();
@@ -109,6 +127,7 @@ describe('card view test', () => {
     const fixture = TestBed.createComponent(CardViewContainer);
     fixture.componentInstance.cardId = 'cardId';
     fixture.componentInstance.pluginType = PluginType.SCALARS;
+    intersectionObserver.simulateVisibilityChange(fixture, true);
     fixture.detectChanges();
 
     expect(fixture.debugElement.classes['full-height']).not.toBeTruthy();
@@ -129,6 +148,7 @@ describe('card view test', () => {
     const fixture = TestBed.createComponent(CardViewContainer);
     fixture.componentInstance.cardId = 'cardId';
     fixture.componentInstance.pluginType = PluginType.SCALARS;
+    intersectionObserver.simulateVisibilityChange(fixture, true);
     fixture.detectChanges();
 
     const scalarCard = fixture.debugElement.query(By.css('scalar-card'));

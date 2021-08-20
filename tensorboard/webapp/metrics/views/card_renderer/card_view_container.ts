@@ -39,6 +39,7 @@ const RUN_COLOR_UPDATE_THROTTLE_TIME_IN_MS = 350;
   selector: 'card-view',
   template: `
     <card-view-component
+      [isEverVisible]="isEverVisible"
       [cardId]="cardId"
       [groupName]="groupName"
       [pluginType]="pluginType"
@@ -46,6 +47,8 @@ const RUN_COLOR_UPDATE_THROTTLE_TIME_IN_MS = 350;
       (fullWidthChanged)="onFullWidthChanged($event)"
       (fullHeightChanged)="onFullHeightChanged($event)"
       (pinStateChanged)="onPinStateChanged()"
+      observeIntersection
+      (onVisibilityChange)="onVisibilityChange($event)"
     >
     </card-view-component>
   `,
@@ -55,12 +58,18 @@ const RUN_COLOR_UPDATE_THROTTLE_TIME_IN_MS = 350;
 export class CardViewContainer {
   constructor(private readonly store: Store<State>) {}
 
+  isEverVisible = false;
+
   @Input() cardId!: CardId;
   @Input() groupName!: string | null;
   @Input() pluginType!: PluginType;
 
   @HostBinding('class.full-width') showFullWidth: boolean = false;
   @HostBinding('class.full-height') showFullHeight: boolean = false;
+
+  onVisibilityChange({visible}: {visible: boolean}) {
+    this.isEverVisible = this.isEverVisible || visible;
+  }
 
   readonly runColorScale$: Observable<RunColorScale> = this.store
     .select(selectors.getRunColorMap)

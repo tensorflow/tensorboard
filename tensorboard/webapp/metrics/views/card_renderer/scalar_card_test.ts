@@ -285,48 +285,6 @@ describe('scalar card', () => {
   });
 
   describe('basic renders', () => {
-    it('stamps line chart impl only when card is first visible', fakeAsync(() => {
-      const cardMetadata = {
-        plugin: PluginType.SCALARS,
-        tag: 'tagA',
-        run: null,
-      };
-      provideMockCardRunToSeriesData(
-        selectSpy,
-        PluginType.SCALARS,
-        'card1',
-        cardMetadata,
-        null /* runToSeries */
-      );
-      store.overrideSelector(
-        selectors.getVisibleCardIdSet,
-        new Set(['unknown'])
-      );
-
-      const fixture = createComponent('card1', true /* initiallyHidden */);
-
-      const lineChart1 = fixture.debugElement.query(Selector.LINE_CHART);
-      expect(lineChart1).toBeNull();
-
-      intersectionObserver.simulateVisibilityChange(fixture, true);
-      store.overrideSelector(selectors.getVisibleCardIdSet, new Set(['card1']));
-      store.refreshState();
-      fixture.detectChanges();
-
-      const lineChart2 = fixture.debugElement.query(Selector.LINE_CHART);
-      expect(lineChart2).not.toBeNull();
-      expect(lineChart2.componentInstance.disableUpdate).toBe(false);
-
-      intersectionObserver.simulateVisibilityChange(fixture, false);
-      store.overrideSelector(selectors.getVisibleCardIdSet, new Set(['gone']));
-      store.refreshState();
-      fixture.detectChanges();
-
-      const lineChart3 = fixture.debugElement.query(Selector.LINE_CHART);
-      expect(lineChart3).not.toBeNull();
-      expect(lineChart2.componentInstance.disableUpdate).toBe(true);
-    }));
-
     it('renders empty chart when there is no data', fakeAsync(() => {
       const cardMetadata = {
         plugin: PluginType.SCALARS,
