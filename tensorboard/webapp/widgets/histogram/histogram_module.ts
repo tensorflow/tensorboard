@@ -17,11 +17,11 @@ import {NgModule} from '@angular/core';
 
 import {IntersectionObserverModule} from '../intersection_observer/intersection_observer_module';
 import {ResizeDetectorModule} from '../resize_detector_module';
-import {HistogramV2Component} from './histogram_v2_component';
+import {HistogramComponent} from './histogram_component';
 
 @NgModule({
-  declarations: [HistogramV2Component],
-  exports: [HistogramV2Component],
+  declarations: [HistogramComponent],
+  exports: [HistogramComponent],
   imports: [CommonModule, ResizeDetectorModule, IntersectionObserverModule],
 })
 export class HistogramModule {}

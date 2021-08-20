@@ -31,7 +31,7 @@ import {
   HistogramMode,
   TimeProperty,
 } from './histogram_types';
-import {HistogramV2Component, TooltipData} from './histogram_v2_component';
+import {HistogramComponent, TooltipData} from './histogram_component';
 
 function buildBin(override: Partial<Bin> = {}): Bin {
   return {
@@ -79,7 +79,7 @@ function buildHistogramDatum(
   ],
 })
 class TestableComponent {
-  @ViewChild('instance') readonly instance!: HistogramV2Component;
+  @ViewChild('instance') readonly instance!: HistogramComponent;
 
   @Input() mode!: HistogramMode;
   @Input() timeProperty!: TimeProperty;
@@ -112,7 +112,7 @@ describe('histogram test', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [NoopAnimationsModule, IntersectionObserverTestingModule],
-      declarations: [HistogramV2Component, TestableComponent],
+      declarations: [HistogramComponent, TestableComponent],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
   });

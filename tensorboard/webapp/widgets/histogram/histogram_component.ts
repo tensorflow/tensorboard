@@ -76,12 +76,11 @@ export interface TooltipData {
 
 @Component({
   selector: 'tb-histogram',
-  templateUrl: 'histogram_v2_component.ng.html',
-  styleUrls: ['histogram_v2_component.css'],
+  templateUrl: 'histogram_component.ng.html',
+  styleUrls: ['histogram_component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class HistogramV2Component
-  implements AfterViewInit, OnChanges, OnDestroy {
+export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
   @ViewChild('main') private readonly main!: ElementRef;
   @ViewChild('xAxis') private readonly xAxis!: ElementRef;
   @ViewChild('yAxis') private readonly yAxis!: ElementRef;
