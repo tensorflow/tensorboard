@@ -91,7 +91,7 @@ limitations under the License.
 
     metrics-filtered-view,
     metrics-pinned-view {
-      contain: content size;
+      contain: content;
       overflow: auto;
       will-change: transform, scroll-position;
     }

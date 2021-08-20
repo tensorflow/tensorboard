@@ -31,10 +31,19 @@ $metrics-min-card-height: 320px;
     display: flex;
     flex: none;
     height: 42px;
+    // toolbar has bottom border and it should not be accounted for when
+    // positioning sticky headers. Without this, you will see two borders when
+    // a toolbar is put against another toolbar.
+    margin-bottom: -1px;
     padding: 0 16px;
     position: sticky;
     top: 0;
     z-index: 1;
+
+    box-shadow: 0px 2px 4px 0px rgba(#000, 15%);
+    @include tb-dark-theme {
+      box-shadow: 0px 2px 4px 0px rgba(#fff, 15%);
+    }
   }
 }
 

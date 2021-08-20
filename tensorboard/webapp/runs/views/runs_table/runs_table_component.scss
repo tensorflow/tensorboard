@@ -35,7 +35,7 @@ $_font-size: 13px;
   max-width: 100%;
   overflow-x: auto;
   overflow-y: auto;
-  will-change: scroll-position;
+  will-change: transform, scroll-position;
 }
 
 :host.flex-layout {
