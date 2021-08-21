@@ -360,7 +360,7 @@ describe('histogram test', () => {
     function getGroupTransforms(element: DebugElement): string[] {
       const transforms: string[] = [];
       for (const debugEl of element.queryAll(By.css('.histogram'))) {
-        transforms.push(debugEl.attributes['transform']!);
+        transforms.push(debugEl.styles['transform']!);
       }
       return transforms;
     }
@@ -392,9 +392,9 @@ describe('histogram test', () => {
           // on 2D screen, we give height / 2.5 space for histogram slices to
           // render. 50 / 2.5 = 20 so effectively, step=0 is rendered at 20px
           // from the top.
-          'translate(0, 20)',
-          'translate(0, 35)',
-          'translate(0, 50)',
+          'translate(0px, 20px)',
+          'translate(0px, 35px)',
+          'translate(0px, 50px)',
         ]);
       });
 
@@ -413,7 +413,11 @@ describe('histogram test', () => {
         fixture.detectChanges();
         expect(
           getGroupTransforms(fixture.debugElement.query(byCss.HISTOGRAMS))
-        ).toEqual(['translate(0, 35)', 'translate(0, 20)', 'translate(0, 50)']);
+        ).toEqual([
+          'translate(0px, 35px)',
+          'translate(0px, 20px)',
+          'translate(0px, 50px)',
+        ]);
 
         fixture.componentInstance.timeProperty = TimeProperty.RELATIVE;
         fixture.detectChanges();
@@ -421,7 +425,11 @@ describe('histogram test', () => {
         // max (-300, 300) which has the same spacing as the WALL_TIME.
         expect(
           getGroupTransforms(fixture.debugElement.query(byCss.HISTOGRAMS))
-        ).toEqual(['translate(0, 35)', 'translate(0, 20)', 'translate(0, 50)']);
+        ).toEqual([
+          'translate(0px, 35px)',
+          'translate(0px, 20px)',
+          'translate(0px, 50px)',
+        ]);
       });
 
       it('renders histogram in the "count" coordinate system', () => {
