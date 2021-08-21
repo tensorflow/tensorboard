@@ -31,8 +31,16 @@ limitations under the License.
 <mat-autocomplete
   #filterMatches="matAutocomplete"
   (optionSelected)="onCompletionAccepted($event.option.value)"
+  class="tag-options"
 >
-  <mat-option *ngFor="let completion of completions" [value]="completion"
+  <mat-option
+    *ngFor="let completion of completions?.slice(0, 25)"
+    [value]="completion"
+    class="option"
+    [attr.title]="completion"
     >{{ completion }}</mat-option
   >
+  <div *ngIf="completions?.length > 25" class="and-more">
+    <em>and {{completions.length - 25}} more</em>
+  </div>
 </mat-autocomplete>

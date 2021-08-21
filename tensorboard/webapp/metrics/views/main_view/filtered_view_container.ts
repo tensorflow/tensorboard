@@ -14,14 +14,13 @@ limitations under the License.
 ==============================================================================*/
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {createSelector, Store} from '@ngrx/store';
-import {combineLatest, Observable, of} from 'rxjs';
+import {Observable} from 'rxjs';
 import {
   combineLatestWith,
   distinctUntilChanged,
   filter,
   map,
   startWith,
-  switchMap,
 } from 'rxjs/operators';
 
 import {State} from '../../../app_state';
@@ -71,12 +70,16 @@ export class FilteredViewContainer {
   readonly cardIdsWithMetadata$: Observable<
     CardIdWithMetadata[]
   > = this.store.select(getRenderableCardIdsWithMetadata).pipe(
-    switchMap((cardList) => {
-      return combineLatest([
-        of(cardList),
-        this.store.select(getMetricsTagFilter),
-      ]);
+    // Pre-sort the tags since the list of tags do not change w.r.t the
+    // tagFilter regex. Since regexFilter can change often, this would allow
+    // us to save time from sorting thousands of tags at every keystroke which
+    // actually makes notably UI slower.
+    map((cardList) => {
+      return cardList.sort((cardA, cardB) => {
+        return compareTagNames(cardA.tag, cardB.tag);
+      });
     }),
+    combineLatestWith(this.store.select(getMetricsTagFilter)),
     map(([cardList, tagFilter]) => {
       try {
         return {cardList, regex: new RegExp(tagFilter, 'i')};
@@ -92,11 +95,6 @@ export class FilteredViewContainer {
     map(([cardList, filteredPluginTypes]) => {
       if (!filteredPluginTypes.size) return cardList;
       return cardList.filter((card) => filteredPluginTypes.has(card.plugin));
-    }),
-    map((cardList) => {
-      return cardList.sort((cardA, cardB) => {
-        return compareTagNames(cardA.tag, cardB.tag);
-      });
     }),
     distinctUntilChanged((prev, updated) => {
       if (prev.length !== updated.length) {

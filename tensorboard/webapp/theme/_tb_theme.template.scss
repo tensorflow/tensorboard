@@ -223,9 +223,10 @@ $tb-dark-theme: map_merge(
   // Include all theme-styles for the components based on the current theme.
   @include angular-material-theme($tb-theme);
 
-  body {
-    // Prevent color-picker from briefly showing scrollbar when calculating its
-    // position.
+  // Prevent color-picker from briefly showing scrollbar when calculating its
+  // position.
+  body,
+  .cdk-overlay-container {
     contain: strict;
   }
 

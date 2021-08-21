@@ -71,6 +71,7 @@ export class MetricsFilterInputContainer {
       // De-duplicate using Set since Image cards has a notion of Sample and
       // the same `run` and `tag` can appear more than once.
       map((tags) => [...new Set(tags)]),
+      map((tags) => tags.sort(compareTagNames)),
       combineLatestWith(this.store.select(getMetricsTagFilter)),
       map<[string[], string], [string[], RegExp | null]>(
         ([tags, tagFilter]) => {
@@ -84,9 +85,7 @@ export class MetricsFilterInputContainer {
       ),
       filter(([, tagFilterRegex]) => tagFilterRegex !== null),
       map(([tags, tagFilterRegex]) => {
-        return tags
-          .filter((tag: string) => tagFilterRegex!.test(tag))
-          .sort(compareTagNames);
+        return tags.filter((tag: string) => tagFilterRegex!.test(tag));
       })
     );
 
