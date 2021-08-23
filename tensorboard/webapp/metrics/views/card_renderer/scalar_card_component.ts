@@ -71,7 +71,6 @@ export class ScalarCardComponent<Downloader> {
   @Input() dataSeries!: ScalarCardDataSeries[];
   @Input() ignoreOutliers!: boolean;
   @Input() isCardVisible!: boolean;
-  @Input() isEverVisible!: boolean;
   @Input() isPinned!: boolean;
   @Input() loadState!: DataLoadState;
   @Input() showFullSize!: boolean;
@@ -94,6 +93,7 @@ export class ScalarCardComponent<Downloader> {
   constructor(private readonly ref: ElementRef, private dialog: MatDialog) {}
 
   yScaleType = ScaleType.LINEAR;
+  isViewBoxOverridden: boolean = false;
 
   toggleYScaleType() {
     this.yScaleType =

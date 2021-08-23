@@ -114,7 +114,6 @@ function areSeriesEqual(
       [dataSeries]="dataSeries$ | async"
       [ignoreOutliers]="ignoreOutliers$ | async"
       [isCardVisible]="isVisible"
-      [isEverVisible]="isEverVisible"
       [isPinned]="isPinned$ | async"
       [loadState]="loadState$ | async"
       [showFullSize]="showFullSize"
@@ -158,7 +157,6 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
   @Output() pinStateChanged = new EventEmitter<boolean>();
 
   isVisible: boolean = false;
-  isEverVisible: boolean = false;
   loadState$?: Observable<DataLoadState>;
   title$?: Observable<string>;
   tag$?: Observable<string>;
@@ -169,7 +167,6 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
 
   onVisibilityChange({visible}: {visible: boolean}) {
     this.isVisible = visible;
-    this.isEverVisible = this.isEverVisible || visible;
   }
 
   readonly useDarkMode$ = this.store.select(getDarkModeEnabled);

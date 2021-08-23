@@ -30,6 +30,7 @@ tf_ng_module(
         "//tensorboard/webapp/metrics/data_source",
         "//tensorboard/webapp/types:ui",
         "//tensorboard/webapp/util:dom",
+        "//tensorboard/webapp/widgets/intersection_observer",
         "@npm//@angular/common",
         "@npm//@angular/core",
         "@npm//@ngrx/store",

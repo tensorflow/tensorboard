@@ -100,25 +100,21 @@ limitations under the License.
     diameter="18"
     *ngIf="loadState === DataLoadState.LOADING"
   ></mat-spinner>
-
-  <ng-container *ngIf="isEverVisible">
-    <line-chart
-      [disableUpdate]="!isCardVisible"
-      [preferredRendererType]="RendererType.WEBGL"
-      [seriesData]="dataSeries"
-      [seriesMetadataMap]="chartMetadataMap"
-      [xScaleType]="xScaleType"
-      [yScaleType]="yScaleType"
-      [customXFormatter]="getCustomXFormatter()"
-      [ignoreYOutliers]="ignoreOutliers"
-      [tooltipTemplate]="tooltip"
-      [useDarkMode]="useDarkMode"
-      (onViewBoxOverridden)="isViewBoxOverridden = $event"
-      [customVisTemplate]="lineChartCustomVis"
-      [customXAxisTemplate]="lineChartCustomXAxisVis"
-    ></line-chart>
-  </ng-container>
-
+  <line-chart
+    [disableUpdate]="!isCardVisible"
+    [preferredRendererType]="RendererType.WEBGL"
+    [seriesData]="dataSeries"
+    [seriesMetadataMap]="chartMetadataMap"
+    [xScaleType]="xScaleType"
+    [yScaleType]="yScaleType"
+    [customXFormatter]="getCustomXFormatter()"
+    [ignoreYOutliers]="ignoreOutliers"
+    [tooltipTemplate]="tooltip"
+    [useDarkMode]="useDarkMode"
+    (onViewBoxOverridden)="isViewBoxOverridden = $event"
+    [customVisTemplate]="lineChartCustomVis"
+    [customXAxisTemplate]="lineChartCustomXAxisVis"
+  ></line-chart>
   <ng-template
     #tooltip
     let-tooltipData="data"

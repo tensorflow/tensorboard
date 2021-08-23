@@ -17,6 +17,10 @@ limitations under the License.
 
 $_background: map-get($tb-theme, background);
 
+:host {
+  contain: content;
+}
+
 .card-grid {
   display: grid;
   grid-template-columns: repeat(
