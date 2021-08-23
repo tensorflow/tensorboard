@@ -19,7 +19,12 @@ import {
   NO_ERRORS_SCHEMA,
   Type,
 } from '@angular/core';
-import {ComponentFixture, TestBed} from '@angular/core/testing';
+import {
+  ComponentFixture,
+  fakeAsync,
+  TestBed,
+  tick,
+} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {Action, Store} from '@ngrx/store';
@@ -47,7 +52,10 @@ import {CardGridContainer} from './card_grid_container';
 import {CardGroupsComponent} from './card_groups_component';
 import {CardGroupsContainer} from './card_groups_container';
 import {FilteredViewComponent} from './filtered_view_component';
-import {FilteredViewContainer} from './filtered_view_container';
+import {
+  FilteredViewContainer,
+  FILTER_VIEW_DEBOUNCE_IN_MS,
+} from './filtered_view_container';
 import {MainViewComponent} from './main_view_component';
 import {MainViewContainer} from './main_view_container';
 import {PinnedViewComponent} from './pinned_view_component';
@@ -1053,51 +1061,58 @@ describe('metrics main view', () => {
       return getCardContents(getCards(getFilterViewContainer(fixture)));
     }
 
-    it('shows flat list of matching cards', () => {
-      store.overrideSelector(selectors.getMetricsTagFilter, 'tagA');
+    function createComponent(
+      initialTagFilter: string
+    ): ComponentFixture<MainViewContainer> {
+      store.overrideSelector(selectors.getMetricsTagFilter, initialTagFilter);
       const fixture = TestBed.createComponent(MainViewContainer);
       fixture.detectChanges();
+      updateComponent(fixture);
+      return fixture;
+    }
+
+    function updateComponent(fixture: ComponentFixture<MainViewContainer>) {
+      tick(FILTER_VIEW_DEBOUNCE_IN_MS);
+      fixture.detectChanges();
+    }
+
+    it('shows flat list of matching cards', fakeAsync(() => {
+      const fixture = createComponent('tagA');
 
       expect(getCardGroupNames(getFilterViewContainer(fixture))).toEqual([]);
       expect(getFilterviewCardContents(fixture)).toEqual([
         'scalars: card1',
         'images: card2',
       ]);
-    });
+    }));
 
-    it('ignores case when matching the regex', () => {
-      store.overrideSelector(selectors.getMetricsTagFilter, 'taga');
-      const fixture = TestBed.createComponent(MainViewContainer);
-      fixture.detectChanges();
+    it('ignores case when matching the regex', fakeAsync(() => {
+      const fixture = createComponent('taga');
 
       expect(getCardGroupNames(getFilterViewContainer(fixture))).toEqual([]);
       expect(getFilterviewCardContents(fixture)).toEqual([
         'scalars: card1',
         'images: card2',
       ]);
-    });
+    }));
 
-    it('filters out card based on plugin type and filteredPluginTypes', () => {
+    it('filters out card based on plugin type and filteredPluginTypes', fakeAsync(() => {
       store.overrideSelector(
         selectors.getMetricsFilteredPluginTypes,
         new Set<PluginType>([PluginType.IMAGES, PluginType.HISTOGRAMS])
       );
-      store.overrideSelector(selectors.getMetricsTagFilter, 'tagA');
-      const fixture = TestBed.createComponent(MainViewContainer);
-      fixture.detectChanges();
+      const fixture = createComponent('tagA');
 
       expect(getCardGroupNames(getFilterViewContainer(fixture))).toEqual([]);
       expect(getFilterviewCardContents(fixture)).toEqual(['images: card2']);
-    });
+    }));
 
-    it('hides the main but shows pinned views while the filter view is active', () => {
-      store.overrideSelector(selectors.getMetricsTagFilter, 'tagA');
+    it('hides the main but shows pinned views while the filter view is active', fakeAsync(() => {
       store.overrideSelector(selectors.getPinnedCardsWithMetadata, [
         {cardId: 'card1', ...createCardMetadata(PluginType.SCALARS)},
         {cardId: 'card2', ...createCardMetadata(PluginType.IMAGES)},
       ]);
-      const fixture = TestBed.createComponent(MainViewContainer);
-      fixture.detectChanges();
+      const fixture = createComponent('tagA');
 
       const mainView = fixture.debugElement.query(
         By.css('.main metrics-card-groups')
@@ -1108,44 +1123,36 @@ describe('metrics main view', () => {
       );
       const cardContents = getCardContents(getCards(pinnedViewDebugEl));
       expect(cardContents).toEqual(['scalars: card1', 'images: card2']);
-    });
+    }));
 
-    it('updates the list on tagFilter change', () => {
-      store.overrideSelector(selectors.getMetricsTagFilter, 'tagA');
-      const fixture = TestBed.createComponent(MainViewContainer);
-      fixture.detectChanges();
+    it('updates the list on tagFilter change', fakeAsync(() => {
+      const fixture = createComponent('tagA');
 
       store.overrideSelector(selectors.getMetricsTagFilter, 'tagA/');
       store.refreshState();
-      fixture.detectChanges();
+      updateComponent(fixture);
 
       expect(getFilterviewCardContents(fixture)).toEqual(['images: card2']);
-    });
+    }));
 
-    it('does not show the collapse/expand control', () => {
-      store.overrideSelector(selectors.getMetricsTagFilter, 'tagA');
+    it('does not show the collapse/expand control', fakeAsync(() => {
       store.overrideSelector(settingsSelectors.getPageSize, 5);
       store.overrideSelector(
         selectors.getNonEmptyCardIdsWithMetadata,
         createNScalarCards(10)
       );
-
-      const fixture = TestBed.createComponent(MainViewContainer);
-      fixture.detectChanges();
+      const fixture = createComponent('tagA');
 
       expect(getFilterViewContainer(fixture).query(EXPAND_BUTTON)).toBeNull();
-    });
+    }));
 
-    it('does not limit number of items to 3', () => {
-      store.overrideSelector(selectors.getMetricsTagFilter, 'tagA');
+    it('does not limit number of items to 3', fakeAsync(() => {
       store.overrideSelector(settingsSelectors.getPageSize, 5);
       store.overrideSelector(
         selectors.getNonEmptyCardIdsWithMetadata,
         createNScalarCards(10)
       );
-
-      const fixture = TestBed.createComponent(MainViewContainer);
-      fixture.detectChanges();
+      const fixture = createComponent('tagA');
 
       expect(getFilterviewCardContents(fixture)).toEqual([
         'scalars: card0',
@@ -1154,39 +1161,33 @@ describe('metrics main view', () => {
         'scalars: card3',
         'scalars: card4',
       ]);
-    });
+    }));
 
-    it('shows an empty list when started with malformed regex filter', () => {
-      store.overrideSelector(selectors.getMetricsTagFilter, '*');
+    it('shows an empty list when started with malformed regex filter', fakeAsync(() => {
       store.overrideSelector(settingsSelectors.getPageSize, 5);
       store.overrideSelector(
         selectors.getNonEmptyCardIdsWithMetadata,
         createNScalarCards(10)
       );
-
-      const fixture = TestBed.createComponent(MainViewContainer);
-      fixture.detectChanges();
+      const fixture = createComponent('*');
 
       expect(getFilterviewCardContents(fixture)).toEqual([]);
-    });
+    }));
 
     it(
       'shows previous list when changed to malformed regex and it shows ' +
         'the correct list when regex is fixed',
-      () => {
-        store.overrideSelector(selectors.getMetricsTagFilter, 'tagA');
+      fakeAsync(() => {
         store.overrideSelector(settingsSelectors.getPageSize, 5);
         store.overrideSelector(
           selectors.getNonEmptyCardIdsWithMetadata,
           createNScalarCards(10)
         );
-
-        const fixture = TestBed.createComponent(MainViewContainer);
-        fixture.detectChanges();
+        const fixture = createComponent('tagA');
 
         store.overrideSelector(selectors.getMetricsTagFilter, 'tagA/Scalars_[');
         store.refreshState();
-        fixture.detectChanges();
+        updateComponent(fixture);
 
         expect(getFilterviewCardContents(fixture)).toEqual([
           'scalars: card0',
@@ -1201,18 +1202,17 @@ describe('metrics main view', () => {
           'tagA/Scalars_[0-2]'
         );
         store.refreshState();
-        fixture.detectChanges();
+        updateComponent(fixture);
 
         expect(getFilterviewCardContents(fixture)).toEqual([
           'scalars: card0',
           'scalars: card1',
           'scalars: card2',
         ]);
-      }
+      })
     );
 
-    it('hides single-run cards based on the run selection', () => {
-      store.overrideSelector(selectors.getMetricsTagFilter, 'tag');
+    it('hides single-run cards based on the run selection', fakeAsync(() => {
       store.overrideSelector(
         selectors.getCurrentRouteRunSelection,
         new Map([
@@ -1220,8 +1220,7 @@ describe('metrics main view', () => {
           ['run2', true],
         ])
       );
-      const fixture = TestBed.createComponent(MainViewContainer);
-      fixture.detectChanges();
+      const fixture = createComponent('tag');
 
       expect(getFilterviewCardContents(fixture)).toEqual([
         'scalars: card1',
@@ -1236,13 +1235,13 @@ describe('metrics main view', () => {
         ])
       );
       store.refreshState();
-      fixture.detectChanges();
+      updateComponent(fixture);
 
       expect(getFilterviewCardContents(fixture)).toEqual([
         'scalars: card1',
         'images: card2',
       ]);
-    });
+    }));
 
     describe('perf', () => {
       beforeEach(() => {
@@ -1277,8 +1276,7 @@ describe('metrics main view', () => {
         ]);
       });
 
-      it('does not update the card when irrelevant runSelection changes', () => {
-        store.overrideSelector(selectors.getMetricsTagFilter, 'tagA');
+      it('does not update the card when irrelevant runSelection changes', fakeAsync(() => {
         store.overrideSelector(
           selectors.getCurrentRouteRunSelection,
           new Map([
@@ -1286,8 +1284,7 @@ describe('metrics main view', () => {
             ['run2', true],
           ])
         );
-        const fixture = TestBed.createComponent(MainViewContainer);
-        fixture.detectChanges();
+        const fixture = createComponent('tagA');
         const gridContainer = fixture.debugElement.query(
           By.directive(CardGridContainer)
         );
@@ -1303,14 +1300,13 @@ describe('metrics main view', () => {
           ])
         );
         store.refreshState();
-        fixture.detectChanges();
+        updateComponent(fixture);
 
         const after = gridContainer.componentInstance.cardIdsWithMetadata;
         expect(before).toBe(after);
-      });
+      }));
 
-      it('updates the card when relevant runSelection changes', () => {
-        store.overrideSelector(selectors.getMetricsTagFilter, 'tagA');
+      it('updates the card when relevant runSelection changes', fakeAsync(() => {
         // All scalar and image cards are rendered.
         store.overrideSelector(
           selectors.getCurrentRouteRunSelection,
@@ -1319,8 +1315,7 @@ describe('metrics main view', () => {
             ['run2', true],
           ])
         );
-        const fixture = TestBed.createComponent(MainViewContainer);
-        fixture.detectChanges();
+        const fixture = createComponent('tagA');
         const gridContainer = fixture.debugElement.query(
           By.directive(CardGridContainer)
         );
@@ -1337,11 +1332,11 @@ describe('metrics main view', () => {
           ])
         );
         store.refreshState();
-        fixture.detectChanges();
+        updateComponent(fixture);
 
         const after = gridContainer.componentInstance.cardIdsWithMetadata;
-        expect(before).not.toBe(after);
-      });
+        expect(before).not.toEqual(after);
+      }));
     });
   });
 
