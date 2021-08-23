@@ -6,17 +6,17 @@ licenses(["notice"])
 
 tf_sass_binary(
     name = "histogram_styles",
-    src = "histogram_v2_component.scss",
+    src = "histogram_component.scss",
 )
 
 tf_ng_module(
     name = "histogram",
     srcs = [
+        "histogram_component.ts",
         "histogram_module.ts",
-        "histogram_v2_component.ts",
     ],
     assets = [
-        "histogram_v2_component.ng.html",
+        "histogram_component.ng.html",
         ":histogram_styles",
     ],
     deps = [
@@ -34,8 +34,8 @@ tf_ts_library(
     name = "histogram_test",
     testonly = True,
     srcs = [
+        "histogram_test.ts",
         "histogram_util_test.ts",
-        "histogram_v2_test.ts",
     ],
     deps = [
         ":histogram",
