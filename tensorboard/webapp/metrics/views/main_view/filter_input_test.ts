@@ -126,6 +126,48 @@ describe('metrics filter input', () => {
       ).toEqual(['tagA', 'tagA/Images', 'tagB/meow/cat']);
     });
 
+    it('truncates to 25 tags when there are more', () => {
+      const cards = [...new Array(30)].map((_, index) => {
+        return {
+          cardId: `card${index}`,
+          plugin: PluginType.SCALARS,
+          tag: `tag${index}`,
+          runId: null,
+        };
+      });
+      const tags = cards.map(({tag}) => tag);
+      store.overrideSelector(selectors.getNonEmptyCardIdsWithMetadata, cards);
+      store.overrideSelector(selectors.getMetricsTagFilter, '');
+      const fixture = TestBed.createComponent(MetricsFilterInputContainer);
+      fixture.detectChanges();
+
+      const input = fixture.debugElement.query(By.css('input'));
+      input.nativeElement.focus();
+      fixture.detectChanges();
+
+      const options = getAutocompleteOptions(overlayContainer);
+      expect(options.map((option) => option.nativeElement.textContent)).toEqual(
+        tags.slice(0, 25)
+      );
+      expect(
+        overlayContainer.getContainerElement().querySelector('.and-more')!
+          .textContent
+      ).toEqual('and 5 more tags matched');
+
+      store.overrideSelector(
+        selectors.getNonEmptyCardIdsWithMetadata,
+        cards.slice(0, 25)
+      );
+      store.refreshState();
+      fixture.detectChanges();
+      expect(options.map((option) => option.nativeElement.textContent)).toEqual(
+        tags.slice(0, 25)
+      );
+      expect(
+        overlayContainer.getContainerElement().querySelector('.and-more')
+      ).toBeNull();
+    });
+
     it('renders empty when no tags match', () => {
       store.overrideSelector(
         selectors.getMetricsTagFilter,

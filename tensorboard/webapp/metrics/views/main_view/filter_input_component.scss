@@ -40,3 +40,19 @@ tb-filter-input {
     }
   }
 }
+
+::ng-deep .tag-options {
+  .option,
+  .and-more {
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    display: -webkit-box;
+    font-size: 14px;
+    line-height: 1.4;
+    padding: 8px 16px;
+  }
+
+  .and-more {
+    @include tb-theme-foreground-prop(color, secondary-text);
+  }
+}
