@@ -41,6 +41,6 @@ limitations under the License.
     >{{ completion }}</mat-option
   >
   <div *ngIf="completions?.length > 25" class="and-more">
-    <em>and {{completions.length - 25}} more</em>
+    <em>and {{completions.length - 25 | number}} more tags matched</em>
   </div>
 </mat-autocomplete>

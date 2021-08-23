@@ -26,7 +26,7 @@ import {CardIdWithMetadata} from '../metrics_view_types';
           >Tags matching filter</span
         >
         <span *ngIf="cardIdsWithMetadata.length > 1" class="group-card-count"
-          >{{ cardIdsWithMetadata.length }} cards</span
+          >{{ cardIdsWithMetadata.length | number }} cards</span
         >
       </span>
     </div>

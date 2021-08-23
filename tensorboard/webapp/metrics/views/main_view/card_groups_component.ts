@@ -36,7 +36,7 @@ import {CardGroup} from '../metrics_view_types';
             >{{ group.groupName }}</span
           >
           <span *ngIf="group.items.length > 1" class="group-card-count"
-            >{{ group.items.length }} cards</span
+            >{{ group.items.length | number }} cards</span
           >
         </span>
       </div>
