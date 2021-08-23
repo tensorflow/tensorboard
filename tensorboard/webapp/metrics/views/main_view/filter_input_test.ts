@@ -152,7 +152,7 @@ describe('metrics filter input', () => {
       expect(
         overlayContainer.getContainerElement().querySelector('.and-more')!
           .textContent
-      ).toEqual('and 5 more');
+      ).toEqual('and 5 more tags matched');
 
       store.overrideSelector(
         selectors.getNonEmptyCardIdsWithMetadata,
