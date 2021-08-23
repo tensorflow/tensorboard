@@ -146,8 +146,8 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
       .subscribe((event) => this.onMouseMove(event));
   }
 
-  getCssTranslate(x: number, y: number): string {
-    return `translate(${x}, ${y})`;
+  getCssTranslatePx(x: number, y: number): string {
+    return `translate(${x}px, ${y}px)`;
   }
 
   getClosestBinFromBinCoordinate(
@@ -211,9 +211,10 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
     if (!this.scales || this.mode === HistogramMode.OVERLAY) {
       return '';
     }
-    return `translate(0, ${this.scales.temporalScale(
-      this.getTimeValue(datum)
-    )})`;
+    return this.getCssTranslatePx(
+      0,
+      this.scales.temporalScale(this.getTimeValue(datum))
+    );
   }
 
   getHistogramFill(datum: HistogramDatum): string {
