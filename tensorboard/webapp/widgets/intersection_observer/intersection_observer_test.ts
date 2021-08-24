@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+import {ScrollingModule} from '@angular/cdk/scrolling';
 import {Component, ElementRef, Input, ViewChild} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
 
@@ -21,12 +22,13 @@ import {IntersectionObserverDirective} from './intersection_observer_directive';
 @Component({
   selector: 'testing-component',
   template: `
-    <div class="container">
+    <div class="container" cdkScrollable>
       <div
         #subjectUnderTest
         class="subject"
         observeIntersection
         (onVisibilityChange)="onVisibilityChange($event)"
+        [intersectionObserverMargin]="intersectionObserverMargin"
       ></div>
     </div>
   `,
@@ -54,6 +56,7 @@ class TestableComponent {
   @ViewChild(IntersectionObserverDirective)
   private readonly directive!: IntersectionObserverDirective;
 
+  @Input() intersectionObserverMargin?: string;
   @Input() onVisibilityChange!: (event: {visible: boolean}) => void;
 
   moveElement(position: {left: number; top: number}): void {
@@ -74,6 +77,7 @@ describe('widgets/intersection_observer test', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [TestableComponent, IntersectionObserverDirective],
+      imports: [ScrollingModule],
     }).compileComponents();
   });
 
@@ -132,6 +136,26 @@ describe('widgets/intersection_observer test', () => {
     await fixture.componentInstance.waitForEvent();
 
     fixture.componentInstance.toggleElementVisibility(true);
+    await fixture.componentInstance.waitForEvent();
+
+    expect(onVisibilityChange.calls.allArgs()).toEqual([
+      [{visible: false}],
+      [{visible: true}],
+    ]);
+  });
+
+  it('allows specifying rootMargin string', async () => {
+    const fixture = TestBed.createComponent(TestableComponent);
+    fixture.componentInstance.intersectionObserverMargin =
+      '10px 10px 10px 10px';
+    const onVisibilityChange = jasmine.createSpy();
+    fixture.componentInstance.onVisibilityChange = onVisibilityChange;
+    fixture.detectChanges();
+
+    fixture.componentInstance.moveElement({left: 0, top: 200});
+    await fixture.componentInstance.waitForEvent();
+
+    fixture.componentInstance.moveElement({left: 0, top: 109});
     await fixture.componentInstance.waitForEvent();
 
     expect(onVisibilityChange.calls.allArgs()).toEqual([
