@@ -225,7 +225,6 @@ $tb-dark-theme: map_merge(
 
   // Prevent color-picker from briefly showing scrollbar when calculating its
   // position.
-  body,
   .cdk-overlay-container {
     contain: strict;
   }
