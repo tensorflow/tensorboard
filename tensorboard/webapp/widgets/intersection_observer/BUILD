@@ -11,6 +11,7 @@ tf_ng_module(
         "intersection_observer_module.ts",
     ],
     deps = [
+        "//tensorboard/webapp/angular:expect_angular_cdk_scrolling",
         "@npm//@angular/core",
         "@npm//rxjs",
     ],
@@ -24,6 +25,7 @@ tf_ts_library(
     ],
     deps = [
         ":intersection_observer",
+        "//tensorboard/webapp/angular:expect_angular_cdk_scrolling",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "@npm//@angular/core",
         "@npm//@types/jasmine",

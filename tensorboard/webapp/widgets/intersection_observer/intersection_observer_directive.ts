@@ -12,11 +12,15 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {CdkScrollable} from '@angular/cdk/scrolling';
 import {
   Directive,
   ElementRef,
   EventEmitter,
+  Input,
   OnDestroy,
+  OnInit,
+  Optional,
   Output,
 } from '@angular/core';
 import {Subject} from 'rxjs';
@@ -26,19 +30,33 @@ import {take, takeUntil} from 'rxjs/operators';
  * A directive that calls `onVisibilityChange` when element visiblity changes.
  */
 @Directive({selector: '[observeIntersection]'})
-export class IntersectionObserverDirective implements OnDestroy {
+export class IntersectionObserverDirective implements OnInit, OnDestroy {
+  @Input() intersectionObserverMargin?: string;
   @Output() onVisibilityChange = new EventEmitter<{visible: boolean}>();
 
   private readonly ngUnsubscribe$ = new Subject<void>();
   private readonly onEvent$ = new Subject<IntersectionObserverEntry[]>();
 
-  constructor(ref: ElementRef) {
-    const intersectionObserver = new IntersectionObserver((entries) => {
-      this.onEvent$.next(entries);
-    });
-    intersectionObserver.observe(ref.nativeElement);
+  constructor(
+    private readonly ref: ElementRef,
+    @Optional() private readonly cdkScrollable: CdkScrollable | null
+  ) {}
+
+  ngOnInit() {
+    const intersectionObserver = new IntersectionObserver(
+      (entries) => {
+        this.onEvent$.next(entries);
+      },
+      {
+        root: this.cdkScrollable
+          ? this.cdkScrollable.getElementRef().nativeElement
+          : null,
+        rootMargin: this.intersectionObserverMargin,
+      }
+    );
+    intersectionObserver.observe(this.ref.nativeElement);
     this.ngUnsubscribe$.subscribe(() => {
-      intersectionObserver.unobserve(ref.nativeElement);
+      intersectionObserver.unobserve(this.ref.nativeElement);
     });
     this.onEvent$.pipe(takeUntil(this.ngUnsubscribe$)).subscribe((entries) => {
       const lastEntry = entries.slice(-1)[0];

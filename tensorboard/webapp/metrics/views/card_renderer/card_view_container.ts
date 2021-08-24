@@ -48,6 +48,7 @@ const RUN_COLOR_UPDATE_THROTTLE_TIME_IN_MS = 350;
       (fullHeightChanged)="onFullHeightChanged($event)"
       (pinStateChanged)="onPinStateChanged()"
       observeIntersection
+      intersectionObserverMargin="200px 200px 200px 200px"
       (onVisibilityChange)="onVisibilityChange($event)"
     >
     </card-view-component>
