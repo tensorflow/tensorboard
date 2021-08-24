@@ -17,6 +17,7 @@ import {createSelector, Store} from '@ngrx/store';
 import {Observable} from 'rxjs';
 import {
   combineLatestWith,
+  debounceTime,
   distinctUntilChanged,
   filter,
   map,
@@ -25,6 +26,7 @@ import {
 
 import {State} from '../../../app_state';
 import {getCurrentRouteRunSelection} from '../../../selectors';
+import {DeepReadonly} from '../../../util/types';
 import {isSingleRunPlugin} from '../../data_source';
 import {
   getMetricsFilteredPluginTypes,
@@ -35,6 +37,8 @@ import {CardObserver} from '../card_renderer/card_lazy_loader';
 
 import {CardIdWithMetadata} from '../metrics_view_types';
 import {compareTagNames} from '../utils';
+
+export const FILTER_VIEW_DEBOUNCE_IN_MS = 200;
 
 const getRenderableCardIdsWithMetadata = createSelector(
   getNonEmptyCardIdsWithMetadata,
@@ -68,7 +72,7 @@ export class FilteredViewContainer {
   constructor(private readonly store: Store<State>) {}
 
   readonly cardIdsWithMetadata$: Observable<
-    CardIdWithMetadata[]
+    DeepReadonly<CardIdWithMetadata>[]
   > = this.store.select(getRenderableCardIdsWithMetadata).pipe(
     // Pre-sort the tags since the list of tags do not change w.r.t the
     // tagFilter regex. Since regexFilter can change often, this would allow
@@ -79,7 +83,13 @@ export class FilteredViewContainer {
         return compareTagNames(cardA.tag, cardB.tag);
       });
     }),
+    combineLatestWith(this.store.select(getMetricsFilteredPluginTypes)),
+    map(([cardList, filteredPluginTypes]) => {
+      if (!filteredPluginTypes.size) return cardList;
+      return cardList.filter((card) => filteredPluginTypes.has(card.plugin));
+    }),
     combineLatestWith(this.store.select(getMetricsTagFilter)),
+    debounceTime(FILTER_VIEW_DEBOUNCE_IN_MS),
     map(([cardList, tagFilter]) => {
       try {
         return {cardList, regex: new RegExp(tagFilter, 'i')};
@@ -91,19 +101,16 @@ export class FilteredViewContainer {
     map(({cardList, regex}) => {
       return cardList.filter(({tag}) => regex!.test(tag));
     }),
-    combineLatestWith(this.store.select(getMetricsFilteredPluginTypes)),
-    map(([cardList, filteredPluginTypes]) => {
-      if (!filteredPluginTypes.size) return cardList;
-      return cardList.filter((card) => filteredPluginTypes.has(card.plugin));
-    }),
-    distinctUntilChanged((prev, updated) => {
-      if (prev.length !== updated.length) {
-        return false;
+    distinctUntilChanged<DeepReadonly<CardIdWithMetadata>[]>(
+      (prev, updated) => {
+        if (prev.length !== updated.length) {
+          return false;
+        }
+        return prev.every((prevVal, index) => {
+          return prevVal.cardId === updated[index].cardId;
+        });
       }
-      return prev.every((prevVal, index) => {
-        return prevVal.cardId === updated[index].cardId;
-      });
-    }),
+    ),
     startWith([])
-  );
+  ) as Observable<DeepReadonly<CardIdWithMetadata>[]>;
 }
