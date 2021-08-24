@@ -25,6 +25,7 @@ limitations under the License.
 >
   <div class="series-view" #seriesView>
     <line-chart-grid-view
+      *ngIf="!lineChartOnly"
       [viewExtent]="viewBox"
       [xScale]="xScale"
       [yScale]="yScale"
@@ -40,6 +41,7 @@ limitations under the License.
       ></canvas>
     </ng-container>
     <line-chart-interactive-view
+      *ngIf="!lineChartOnly"
       [seriesData]="seriesData"
       [seriesMetadataMap]="seriesMetadataMap"
       [viewExtent]="viewBox"
@@ -98,5 +100,5 @@ limitations under the License.
       ></ng-container>
     </div>
   </div>
-  <div class="dot"><span class="rect"></span></div>
+  <div class="dot" *ngIf="!lineChartOnly"><span class="rect"></span></div>
 </div>
