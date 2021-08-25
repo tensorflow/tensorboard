@@ -41,7 +41,7 @@ limitations under the License.
   // we also removes the spaces the axis take.
   &.line-only-mode {
     grid-template-columns: 0px 1fr;
-    grid-auto-rows: 1fr 0;
+    grid-auto-rows: 1fr 0px;
   }
 }
 
