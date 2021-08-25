@@ -808,37 +808,6 @@ describe('line_chart_v2/line_chart test', () => {
   });
 
   describe('lineOnly', () => {
-    it('sets lineOnly default to false and shows complete lineChartComponent', () => {
-      const fixture = createComponent({
-        seriesData: [
-          buildSeries({
-            id: 'foo',
-            points: [
-              {x: 0, y: 0},
-              {x: 1, y: -1},
-              {x: 2, y: 1},
-            ],
-          }),
-        ],
-        seriesMetadataMap: {foo: buildMetadata({id: 'foo', visible: true})},
-        yScaleType: ScaleType.LINEAR,
-      });
-      fixture.detectChanges();
-
-      expect(
-        fixture.debugElement.query(By.css('line-chart-grid-view'))
-      ).toBeTruthy();
-      expect(
-        fixture.debugElement.query(By.css('line-chart-interactive-view'))
-      ).toBeTruthy();
-      expect(
-        fixture.debugElement.query(By.css('.y-axis line-chart-axis'))
-      ).toBeTruthy();
-      expect(
-        fixture.debugElement.query(By.css('.x-axis line-chart-axis'))
-      ).toBeTruthy();
-    });
-
     it('shows complete lineChartComponent when lineOnly=false', () => {
       const fixture = createComponent({
         seriesData: [
