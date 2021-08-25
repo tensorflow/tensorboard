@@ -29,6 +29,7 @@ import {
   ViewChild,
 } from '@angular/core';
 import {Observable, ReplaySubject} from 'rxjs';
+
 import {ChartImpl} from './lib/chart';
 import {Chart} from './lib/chart_types';
 import {
@@ -134,7 +135,7 @@ export class LineChartComponent
   tooltipTemplate?: TooltipTemplate;
 
   @Input()
-  lineChartOnly?: boolean = false;
+  lineOnly?: boolean = true;
 
   private onViewBoxOverridden = new ReplaySubject<boolean>(1);
 
@@ -401,24 +402,20 @@ export class LineChartComponent
   }
 
   private readAndUpdateDomDimensions(): void {
-    Object.assign(this.domDimensions, {
+    this.domDimensions = {
       main: {
         width: this.seriesView.nativeElement.clientWidth,
         height: this.seriesView.nativeElement.clientHeight,
       },
-    });
-    if (!this.lineChartOnly) {
-      Object.assign(this.domDimensions, {
-        xAxis: {
-          width: this.xAxis.nativeElement.clientWidth,
-          height: this.xAxis.nativeElement.clientHeight,
-        },
-        yAxis: {
-          width: this.yAxis.nativeElement.clientWidth,
-          height: this.yAxis.nativeElement.clientHeight,
-        },
-      });
-    }
+      xAxis: {
+        width: this.xAxis.nativeElement.clientWidth,
+        height: this.xAxis.nativeElement.clientHeight,
+      },
+      yAxis: {
+        width: this.yAxis.nativeElement.clientWidth,
+        height: this.yAxis.nativeElement.clientHeight,
+      },
+    };
   }
 
   /**

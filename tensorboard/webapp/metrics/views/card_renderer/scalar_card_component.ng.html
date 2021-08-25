@@ -100,9 +100,10 @@ limitations under the License.
     diameter="18"
     *ngIf="loadState === DataLoadState.LOADING"
   ></mat-spinner>
+
   <line-chart
     [disableUpdate]="!isCardVisible"
-    [preferredRendererType]="RendererType.WEBGL"
+    [preferredRendererType]="RendererType.SVG"
     [seriesData]="dataSeries"
     [seriesMetadataMap]="chartMetadataMap"
     [xScaleType]="xScaleType"
@@ -115,6 +116,7 @@ limitations under the License.
     [customVisTemplate]="lineChartCustomVis"
     [customXAxisTemplate]="lineChartCustomXAxisVis"
   ></line-chart>
+
   <ng-template
     #tooltip
     let-tooltipData="data"
