@@ -808,7 +808,7 @@ describe('line_chart_v2/line_chart test', () => {
   });
 
   describe('lineOnly', () => {
-    it('shows default setting', () => {
+    it('sets lineOnly default to false and shows complete lineChartComponent', () => {
       const fixture = createComponent({
         seriesData: [
           buildSeries({
@@ -839,7 +839,7 @@ describe('line_chart_v2/line_chart test', () => {
       ).toBeTruthy();
     });
 
-    it('shows default setting when lineOnly=false', () => {
+    it('shows complete lineChartComponent when lineOnly=false', () => {
       const fixture = createComponent({
         seriesData: [
           buildSeries({
@@ -871,7 +871,7 @@ describe('line_chart_v2/line_chart test', () => {
       ).toBeTruthy();
     });
 
-    it('only shows line chart when lineOnly=true', () => {
+    it('shows only line chart when lineOnly=true', () => {
       const fixture = createComponent({
         seriesData: [
           buildSeries({
