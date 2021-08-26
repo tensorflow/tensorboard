@@ -134,6 +134,9 @@ export class LineChartComponent
   @Input()
   tooltipTemplate?: TooltipTemplate;
 
+  @Input()
+  lineOnly?: boolean = false;
+
   private onViewBoxOverridden = new ReplaySubject<boolean>(1);
 
   /**

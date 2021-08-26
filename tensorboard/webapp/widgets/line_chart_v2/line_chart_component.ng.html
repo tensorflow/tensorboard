@@ -16,7 +16,7 @@ limitations under the License.
 -->
 
 <div
-  [ngClass]="{'container': true, 'dark-mode': useDarkMode}"
+  [ngClass]="{'container': true, 'dark-mode': useDarkMode, 'line-only-mode': lineOnly}"
   detectResize
   (onResize)="onViewResize()"
   [resizeEventDebouncePeriodInMs]="0"
@@ -25,6 +25,7 @@ limitations under the License.
 >
   <div class="series-view" #seriesView>
     <line-chart-grid-view
+      *ngIf="!lineOnly"
       [viewExtent]="viewBox"
       [xScale]="xScale"
       [yScale]="yScale"
@@ -40,6 +41,7 @@ limitations under the License.
       ></canvas>
     </ng-container>
     <line-chart-interactive-view
+      *ngIf="!lineOnly"
       [seriesData]="seriesData"
       [seriesMetadataMap]="seriesMetadataMap"
       [viewExtent]="viewBox"
@@ -63,20 +65,21 @@ limitations under the License.
       ></ng-container>
     </div>
   </div>
-  <line-chart-axis
-    #yAxis
-    class="y-axis"
-    axis="y"
-    [axisExtent]="viewBox.y"
-    [customFormatter]="customYFormatter"
-    [domDim]="domDimensions.yAxis"
-    [gridCount]="Y_GRID_COUNT"
-    [scale]="yScale"
-    (onViewExtentChange)="onViewBoxChangedFromAxis($event, 'y')"
-  ></line-chart-axis>
-  <div class="x-axis">
+  <div class="y-axis" #yAxis>
     <line-chart-axis
-      #xAxis
+      *ngIf="!lineOnly"
+      axis="y"
+      [axisExtent]="viewBox.y"
+      [customFormatter]="customYFormatter"
+      [domDim]="domDimensions.yAxis"
+      [gridCount]="Y_GRID_COUNT"
+      [scale]="yScale"
+      (onViewExtentChange)="onViewBoxChangedFromAxis($event, 'y')"
+    ></line-chart-axis>
+  </div>
+  <div class="x-axis" #xAxis>
+    <line-chart-axis
+      *ngIf="!lineOnly"
       axis="x"
       [axisExtent]="viewBox.x"
       [customFormatter]="customXFormatter"
@@ -98,5 +101,5 @@ limitations under the License.
       ></ng-container>
     </div>
   </div>
-  <div class="dot"><span class="rect"></span></div>
+  <div class="dot" *ngIf="!lineOnly"><span class="rect"></span></div>
 </div>
