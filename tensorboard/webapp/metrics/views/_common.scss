@@ -62,3 +62,11 @@ $metrics-min-card-height: 320px;
   @include tb-theme-foreground-prop(color, secondary-text);
   white-space: nowrap;
 }
+
+@mixin metrics-empty-message {
+  @include tb-theme-foreground-prop(color, secondary-text);
+  font-size: 13px;
+  font-style: italic;
+  padding: 16px;
+  text-align: center;
+}

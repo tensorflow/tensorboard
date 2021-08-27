@@ -29,6 +29,8 @@ import {CardGridComponent} from './card_grid_component';
 import {CardGridContainer} from './card_grid_container';
 import {CardGroupsComponent} from './card_groups_component';
 import {CardGroupsContainer} from './card_groups_container';
+import {EmptyTagMatchMessageComponent} from './empty_tag_match_message_component';
+import {EmptyTagMatchMessageContainer} from './empty_tag_match_message_container';
 import {FilteredViewComponent} from './filtered_view_component';
 import {FilteredViewContainer} from './filtered_view_container';
 import {MetricsFilterInputComponent} from './filter_input_component';
@@ -44,6 +46,8 @@ import {PinnedViewContainer} from './pinned_view_container';
     CardGridContainer,
     CardGroupsComponent,
     CardGroupsContainer,
+    EmptyTagMatchMessageComponent,
+    EmptyTagMatchMessageContainer,
     FilteredViewComponent,
     FilteredViewContainer,
     MainViewComponent,

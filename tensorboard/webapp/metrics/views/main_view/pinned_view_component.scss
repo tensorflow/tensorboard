@@ -40,9 +40,5 @@ mat-icon {
 }
 
 .empty-message {
-  @include tb-theme-foreground-prop(color, secondary-text);
-  text-align: center;
-  padding: 16px;
-  font-size: 13px;
-  font-style: italic;
+  @include metrics-empty-message;
 }

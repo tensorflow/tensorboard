@@ -51,6 +51,8 @@ import {CardGridComponent} from './card_grid_component';
 import {CardGridContainer} from './card_grid_container';
 import {CardGroupsComponent} from './card_groups_component';
 import {CardGroupsContainer} from './card_groups_container';
+import {EmptyTagMatchMessageComponent} from './empty_tag_match_message_component';
+import {EmptyTagMatchMessageContainer} from './empty_tag_match_message_container';
 import {FilteredViewComponent} from './filtered_view_component';
 import {
   FilteredViewContainer,
@@ -153,6 +155,8 @@ describe('metrics main view', () => {
         CardGridContainer,
         CardGroupsComponent,
         CardGroupsContainer,
+        EmptyTagMatchMessageComponent,
+        EmptyTagMatchMessageContainer,
         FilteredViewComponent,
         FilteredViewContainer,
         MainViewComponent,
@@ -1234,6 +1238,44 @@ describe('metrics main view', () => {
       const fixture = createComponent('*');
 
       expect(getFilterviewCardContents(fixture)).toEqual([]);
+    }));
+
+    it('shows a warning when no cards match current query', fakeAsync(() => {
+      store.overrideSelector(
+        selectors.getNonEmptyCardIdsWithMetadata,
+        createNScalarCards(100)
+      );
+      const fixture = createComponent('^no_match_please$');
+
+      expect(
+        fixture.debugElement
+          .query(By.css('metrics-filtered-view'))
+          .nativeElement.textContent.trim()
+      ).toContain(
+        'No cards matches tag filter /^no_match_please$/ among 100 tags.'
+      );
+    }));
+
+    it('shows a warning about unmatched plugin type', fakeAsync(() => {
+      store.overrideSelector(
+        selectors.getMetricsFilteredPluginTypes,
+        new Set([PluginType.IMAGES, PluginType.HISTOGRAMS])
+      );
+      store.overrideSelector(
+        selectors.getNonEmptyCardIdsWithMetadata,
+        createNScalarCards(100)
+      );
+
+      const fixture = createComponent('.');
+
+      expect(
+        fixture.debugElement
+          .query(By.css('metrics-filtered-view'))
+          .nativeElement.textContent.trim()
+      ).toContain(
+        'No cards matches tag filter /./ among 100 tags and image ' +
+          'or histogram visualization filter.'
+      );
     }));
 
     it(

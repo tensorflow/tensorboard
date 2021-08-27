@@ -30,6 +30,10 @@ import {CardIdWithMetadata} from '../metrics_view_types';
         >
       </span>
     </div>
+    <metrics-empty-tag-match
+      *ngIf="isEmptyMatch"
+      class="warn"
+    ></metrics-empty-tag-match>
     <metrics-card-grid
       [cardIdsWithMetadata]="cardIdsWithMetadata"
       [cardObserver]="cardObserver"
@@ -39,6 +43,7 @@ import {CardIdWithMetadata} from '../metrics_view_types';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FilteredViewComponent {
+  @Input() isEmptyMatch!: boolean;
   @Input() cardObserver!: CardObserver;
   @Input() cardIdsWithMetadata!: CardIdWithMetadata[];
 }

@@ -47,6 +47,21 @@ tf_sass_binary(
     ],
 )
 
+tf_ts_library(
+    name = "common_selectors",
+    srcs = ["common_selectors.ts"],
+    deps = [
+        "//tensorboard/webapp:app_state",
+        "//tensorboard/webapp:selectors",
+        "//tensorboard/webapp/metrics/data_source",
+        "//tensorboard/webapp/metrics/store",
+        "//tensorboard/webapp/metrics/views:types",
+        "//tensorboard/webapp/metrics/views:utils",
+        "//tensorboard/webapp/util:types",
+        "@npm//@ngrx/store",
+    ],
+)
+
 tf_ng_module(
     name = "main_view",
     srcs = [
@@ -54,6 +69,8 @@ tf_ng_module(
         "card_grid_container.ts",
         "card_groups_component.ts",
         "card_groups_container.ts",
+        "empty_tag_match_message_component.ts",
+        "empty_tag_match_message_container.ts",
         "filter_input_component.ts",
         "filter_input_container.ts",
         "filtered_view_component.ts",
@@ -76,6 +93,7 @@ tf_ng_module(
         ":pinned_view_component_styles",
     ],
     deps = [
+        ":common_selectors",
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp:selectors",
         "//tensorboard/webapp/angular:expect_angular_cdk_scrolling",
