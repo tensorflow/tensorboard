@@ -2138,6 +2138,23 @@ describe('metrics reducers', () => {
           new Set([PluginType.SCALARS])
         );
       });
+
+      it('empties the plugin filter set when filteredPluginTypes contains all plugins', () => {
+        const before = buildMetricsState({
+          filteredPluginTypes: new Set([
+            PluginType.IMAGES,
+            PluginType.HISTOGRAMS,
+          ]),
+        });
+
+        const after = reducers(
+          before,
+          actions.metricsToggleVisiblePlugin({
+            plugin: PluginType.SCALARS,
+          })
+        );
+        expect(after.filteredPluginTypes).toEqual(new Set([]));
+      });
     });
 
     describe('#metricsShowAllPlugins', () => {

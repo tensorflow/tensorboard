@@ -161,6 +161,8 @@ export interface MetricsRoutefulState {
   selectedTime: StoreInternalLinkedTime | null;
   selectTimeEnabled: boolean;
   useRangeSelectTime: boolean;
+  // Empty Set would signify "show all". `filteredPluginTypes` will never have
+  // all pluginTypes in the Set.
   filteredPluginTypes: Set<PluginType>;
   // Minimum and maximum step number across all TimeSeries data.
   stepMinMax: {
