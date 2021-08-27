@@ -94,23 +94,19 @@ limitations under the License.
       #0000 100%
     );
   }
+
+  line-chart-axis {
+    height: 100%;
+  }
 }
 
 .x-axis {
   grid-area: xaxis;
   position: relative;
-
-  line-chart-axis {
-    height: 100%;
-  }
 }
 
 .y-axis {
   grid-area: yaxis;
-
-  line-chart-axis {
-    height: 100%;
-  }
 }
 
 .dot {
