@@ -131,10 +131,16 @@ describe('metrics reducers', () => {
         action: actions.metricsTagMetadataRequested(),
         actionName: 'metricsTagMetadataRequested',
         beforeState: buildMetricsState({
-          tagMetadataLoaded: DataLoadState.NOT_LOADED,
+          tagMetadataLoadState: {
+            state: DataLoadState.NOT_LOADED,
+            lastLoadedTimeInMs: null,
+          },
         }),
         expectedState: buildMetricsState({
-          tagMetadataLoaded: DataLoadState.LOADING,
+          tagMetadataLoadState: {
+            state: DataLoadState.LOADING,
+            lastLoadedTimeInMs: null,
+          },
           tagMetadata: buildTagMetadata(),
         }),
       },
@@ -142,11 +148,17 @@ describe('metrics reducers', () => {
         action: actions.metricsTagMetadataFailed(),
         actionName: 'metricsTagMetadataFailed',
         beforeState: buildMetricsState({
-          tagMetadataLoaded: DataLoadState.LOADING,
+          tagMetadataLoadState: {
+            state: DataLoadState.LOADING,
+            lastLoadedTimeInMs: null,
+          },
           tagMetadata: tagMetadataSample.storeForm,
         }),
         expectedState: buildMetricsState({
-          tagMetadataLoaded: DataLoadState.FAILED,
+          tagMetadataLoadState: {
+            state: DataLoadState.FAILED,
+            lastLoadedTimeInMs: null,
+          },
           tagMetadata: tagMetadataSample.storeForm,
         }),
       },
@@ -156,19 +168,29 @@ describe('metrics reducers', () => {
         }),
         actionName: 'metricsTagMetadataLoaded',
         beforeState: buildMetricsState({
-          tagMetadataLoaded: DataLoadState.LOADING,
+          tagMetadataLoadState: {
+            state: DataLoadState.LOADING,
+            lastLoadedTimeInMs: null,
+          },
         }),
         expectedState: buildMetricsState({
-          tagMetadataLoaded: DataLoadState.LOADED,
+          tagMetadataLoadState: {
+            state: DataLoadState.LOADED,
+            lastLoadedTimeInMs: 3,
+          },
           tagMetadata: tagMetadataSample.storeForm,
         }),
       },
     ].forEach((metaSpec) => {
       describe(metaSpec.actionName, () => {
+        beforeEach(() => {
+          spyOn(Date, 'now').and.returnValue(3);
+        });
+
         it(`sets the loadState on ${metaSpec.actionName}`, () => {
           const nextState = reducers(metaSpec.beforeState, metaSpec.action);
-          expect(nextState.tagMetadataLoaded).toEqual(
-            metaSpec.expectedState.tagMetadataLoaded
+          expect(nextState.tagMetadataLoadState).toEqual(
+            metaSpec.expectedState.tagMetadataLoadState
           );
           expect(nextState.tagMetadata).toEqual(
             metaSpec.expectedState.tagMetadata
@@ -465,22 +487,34 @@ describe('metrics reducers', () => {
 
         it(`marks loaded tag metadata as stale`, () => {
           const prevState = buildMetricsState({
-            tagMetadataLoaded: DataLoadState.LOADED,
+            tagMetadataLoadState: {
+              state: DataLoadState.LOADED,
+              lastLoadedTimeInMs: 3,
+            },
             tagMetadata: buildTagMetadata(),
           });
 
           const nextState = reducers(prevState, reloadAction);
-          expect(nextState.tagMetadataLoaded).toBe(DataLoadState.NOT_LOADED);
+          expect(nextState.tagMetadataLoadState).toEqual({
+            state: DataLoadState.NOT_LOADED,
+            lastLoadedTimeInMs: 3,
+          });
         });
 
         it(`does not change tag load state if already loading`, () => {
           const prevState = buildMetricsState({
-            tagMetadataLoaded: DataLoadState.LOADING,
+            tagMetadataLoadState: {
+              state: DataLoadState.LOADING,
+              lastLoadedTimeInMs: 3,
+            },
             tagMetadata: buildTagMetadata(),
           });
 
           const nextState = reducers(prevState, reloadAction);
-          expect(nextState.tagMetadataLoaded).toBe(DataLoadState.LOADING);
+          expect(nextState.tagMetadataLoadState).toEqual({
+            state: DataLoadState.LOADING,
+            lastLoadedTimeInMs: 3,
+          });
         });
 
         it(
@@ -1587,7 +1621,10 @@ describe('metrics reducers', () => {
         cardMetadataMap: {
           card1: fakeMetadata,
         },
-        tagMetadataLoaded: DataLoadState.LOADED,
+        tagMetadataLoadState: {
+          state: DataLoadState.LOADED,
+          lastLoadedTimeInMs: 1,
+        },
         tagMetadata: {
           ...buildTagMetadata(),
           [PluginType.SCALARS]: {

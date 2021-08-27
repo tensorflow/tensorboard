@@ -46,7 +46,7 @@ import {
 import {
   getCardLoadState,
   getCardMetadata,
-  getMetricsTagMetadataLoaded,
+  getMetricsTagMetadataLoadState,
 } from '../store';
 import {CardId, CardMetadata} from '../types';
 
@@ -98,12 +98,12 @@ export class MetricsEffects implements OnInitEffects {
     ofType(initAction, coreActions.changePlugin, routingActions.navigated),
     withLatestFrom(
       this.store.select(getActivePlugin),
-      this.store.select(getMetricsTagMetadataLoaded)
+      this.store.select(getMetricsTagMetadataLoadState)
     ),
     filter(([, activePlugin, tagLoadState]) => {
       return (
         activePlugin === METRICS_PLUGIN_ID &&
-        tagLoadState === DataLoadState.NOT_LOADED
+        tagLoadState.state === DataLoadState.NOT_LOADED
       );
     })
   );
@@ -121,7 +121,7 @@ export class MetricsEffects implements OnInitEffects {
     this.reloadRequestedWhileShown$
   ).pipe(
     withLatestFrom(
-      this.store.select(getMetricsTagMetadataLoaded),
+      this.store.select(getMetricsTagMetadataLoadState),
       this.store.select(selectors.getExperimentIdsFromRoute)
     ),
     filter(([, tagLoadState, experimentIds]) => {
@@ -129,7 +129,9 @@ export class MetricsEffects implements OnInitEffects {
        * When `experimentIds` is null, the actual ids have not
        * appeared in the store yet.
        */
-      return tagLoadState !== DataLoadState.LOADING && experimentIds !== null;
+      return (
+        tagLoadState.state !== DataLoadState.LOADING && experimentIds !== null
+      );
     }),
     tap(() => {
       this.store.dispatch(actions.metricsTagMetadataRequested());

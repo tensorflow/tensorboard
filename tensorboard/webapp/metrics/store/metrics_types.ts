@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {DataLoadState} from '../../types/data';
+import {DataLoadState, LoadState} from '../../types/data';
 
 import {RouteContextedState} from '../../app_routing/route_contexted_reducer_helper';
 import {ElementId} from '../../util/dom';
@@ -138,7 +138,7 @@ export interface StoreInternalLinkedTime {
 }
 
 export interface MetricsRoutefulState {
-  tagMetadataLoaded: DataLoadState;
+  tagMetadataLoadState: LoadState;
   tagMetadata: TagMetadata;
   // A list of card ids in the main content area, excluding pinned copies.
   cardList: NonPinnedCardId[];

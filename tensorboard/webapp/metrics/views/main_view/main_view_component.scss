@@ -107,6 +107,13 @@ limitations under the License.
   }
 }
 
+.loading-container {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  margin: 20px 0;
+}
+
 .sidebar {
   @include tb-theme-foreground-prop(border-left, border, 1px solid);
   flex: 0 0 250px;

@@ -30,18 +30,22 @@ import * as selectors from './metrics_selectors';
 describe('metrics selectors', () => {
   beforeEach(() => {
     // Clear the memoization.
-    selectors.getMetricsTagMetadataLoaded.release();
+    selectors.getMetricsTagMetadataLoadState.release();
   });
 
   it('returns loaded state', () => {
     const state = appStateFromMetricsState(
       buildMetricsState({
-        tagMetadataLoaded: DataLoadState.LOADED,
+        tagMetadataLoadState: {
+          state: DataLoadState.LOADED,
+          lastLoadedTimeInMs: 1,
+        },
       })
     );
-    expect(selectors.getMetricsTagMetadataLoaded(state)).toBe(
-      DataLoadState.LOADED
-    );
+    expect(selectors.getMetricsTagMetadataLoadState(state)).toEqual({
+      state: DataLoadState.LOADED,
+      lastLoadedTimeInMs: 1,
+    });
   });
 
   describe('getCardLoadState', () => {

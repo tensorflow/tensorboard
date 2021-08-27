@@ -26,11 +26,13 @@ import {
 
 import {State} from '../../../app_state';
 import {getCurrentRouteRunSelection} from '../../../selectors';
+import {DataLoadState} from '../../../types/data';
 import {DeepReadonly} from '../../../util/types';
 import {isSingleRunPlugin} from '../../data_source';
 import {
   getMetricsFilteredPluginTypes,
   getMetricsTagFilter,
+  getMetricsTagMetadataLoadState,
   getNonEmptyCardIdsWithMetadata,
 } from '../../store';
 import {CardObserver} from '../card_renderer/card_lazy_loader';

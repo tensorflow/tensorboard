@@ -72,6 +72,9 @@ limitations under the License.
     <metrics-pinned-view [cardObserver]="cardObserver"></metrics-pinned-view>
     <!-- Always show the metrics-card-groups as a performance optimization--it makes view transition
     from filtered view to card view quicker. -->
+    <div *ngIf="initialTagsLoading" class="loading-container">
+      <mat-spinner diameter="36"></mat-spinner>
+    </div>
     <metrics-card-groups
       [style.display]="showFilteredView ? 'none' : ''"
       [cardObserver]="cardObserver"

@@ -223,7 +223,10 @@ const {initialState, reducers: routeContextReducer} = createRouteContextedState<
 >(
   {
     // Backend data.
-    tagMetadataLoaded: DataLoadState.NOT_LOADED,
+    tagMetadataLoadState: {
+      state: DataLoadState.NOT_LOADED,
+      lastLoadedTimeInMs: null,
+    },
     tagMetadata: {
       scalars: {
         tagDescriptions: {},
@@ -400,7 +403,7 @@ const reducer = createReducer(
   }),
   on(coreActions.reload, coreActions.manualReload, (state) => {
     const nextTagMetadataLoaded =
-      state.tagMetadataLoaded === DataLoadState.LOADING
+      state.tagMetadataLoadState.state === DataLoadState.LOADING
         ? DataLoadState.LOADING
         : DataLoadState.NOT_LOADED;
 
@@ -420,7 +423,10 @@ const reducer = createReducer(
 
     return {
       ...state,
-      tagMetadataLoaded: nextTagMetadataLoaded,
+      tagMetadataLoadState: {
+        ...state.tagMetadataLoadState,
+        state: nextTagMetadataLoaded,
+      },
       timeSeriesData: nextTimeSeriesData,
     };
   }),
@@ -429,7 +435,10 @@ const reducer = createReducer(
     (state: MetricsState): MetricsState => {
       return {
         ...state,
-        tagMetadataLoaded: DataLoadState.LOADING,
+        tagMetadataLoadState: {
+          ...state.tagMetadataLoadState,
+          state: DataLoadState.LOADING,
+        },
       };
     }
   ),
@@ -438,7 +447,10 @@ const reducer = createReducer(
     (state: MetricsState): MetricsState => {
       return {
         ...state,
-        tagMetadataLoaded: DataLoadState.FAILED,
+        tagMetadataLoadState: {
+          ...state.tagMetadataLoadState,
+          state: DataLoadState.FAILED,
+        },
       };
     }
   ),
@@ -483,7 +495,10 @@ const reducer = createReducer(
       return {
         ...state,
         ...resolvedResult,
-        tagMetadataLoaded: DataLoadState.LOADED,
+        tagMetadataLoadState: {
+          state: DataLoadState.LOADED,
+          lastLoadedTimeInMs: Date.now(),
+        },
         tagMetadata: nextTagMetadata,
         cardList: nextCardList,
       };
