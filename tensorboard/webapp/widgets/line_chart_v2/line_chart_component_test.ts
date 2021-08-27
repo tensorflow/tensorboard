@@ -49,7 +49,6 @@ class FakeGridComponent {
     <line-chart
       #chart
       [disableUpdate]="disableUpdate"
-      [lineOnly]="lineOnly"
       [preferredRendererType]="preferredRendererType"
       [seriesData]="seriesData"
       [seriesMetadataMap]="seriesMetadataMap"
@@ -89,9 +88,6 @@ class TestableComponent {
 
   @Input()
   useDarkMode: boolean = false;
-
-  @Input()
-  lineOnly: boolean = false;
 
   // WebGL one is harder to test.
   preferredRendererType = RendererType.SVG;
@@ -804,72 +800,6 @@ describe('line_chart_v2/line_chart test', () => {
       expect(didChartRendererRecover(fixture, chartBefore)).toBe(true);
       expect(disposeSpy).toHaveBeenCalledTimes(1);
       expectChartUpdateSpiesToHaveBeenCalledTimes(1);
-    });
-  });
-
-  describe('lineOnly', () => {
-    it('shows complete lineChartComponent when lineOnly=false', () => {
-      const fixture = createComponent({
-        seriesData: [
-          buildSeries({
-            id: 'foo',
-            points: [
-              {x: 0, y: 0},
-              {x: 1, y: -1},
-              {x: 2, y: 1},
-            ],
-          }),
-        ],
-        seriesMetadataMap: {foo: buildMetadata({id: 'foo', visible: true})},
-        yScaleType: ScaleType.LINEAR,
-      });
-      fixture.componentInstance.lineOnly = false;
-      fixture.detectChanges();
-
-      expect(
-        fixture.debugElement.query(By.css('line-chart-grid-view'))
-      ).toBeTruthy();
-      expect(
-        fixture.debugElement.query(By.css('line-chart-interactive-view'))
-      ).toBeTruthy();
-      expect(
-        fixture.debugElement.query(By.css('.y-axis line-chart-axis'))
-      ).toBeTruthy();
-      expect(
-        fixture.debugElement.query(By.css('.x-axis line-chart-axis'))
-      ).toBeTruthy();
-    });
-
-    it('shows only line chart when lineOnly=true', () => {
-      const fixture = createComponent({
-        seriesData: [
-          buildSeries({
-            id: 'foo',
-            points: [
-              {x: 0, y: 0},
-              {x: 1, y: -1},
-              {x: 2, y: 1},
-            ],
-          }),
-        ],
-        seriesMetadataMap: {foo: buildMetadata({id: 'foo', visible: true})},
-        yScaleType: ScaleType.LINEAR,
-      });
-      fixture.componentInstance.lineOnly = true;
-      fixture.detectChanges();
-
-      expect(
-        fixture.debugElement.query(By.css('line-chart-grid-view'))
-      ).toBeNull();
-      expect(
-        fixture.debugElement.query(By.css('line-chart-interactive-view'))
-      ).toBeNull();
-      expect(
-        fixture.debugElement.query(By.css('.y-axis line-chart-axis'))
-      ).toBeNull();
-      expect(
-        fixture.debugElement.query(By.css('.x-axis line-chart-axis'))
-      ).toBeNull();
     });
   });
 });
