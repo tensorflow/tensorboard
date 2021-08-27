@@ -205,9 +205,14 @@ export class AppRoutingEffects {
   navigate$ = createEffect(() => {
     const dispatchNavigating$ = this.validatedRoute$.pipe(
       mergeMap((routes) => {
-        const dirtySelectors = this.dirtyUpdatesRegistry.getDirtyUpdatesSelectors();
+        const samePathname =
+          routes.routeMatch.pathname === this.location.getPath();
+        const dirtySelectors =
+          this.dirtyUpdatesRegistry.getDirtyUpdatesSelectors();
 
-        if (!dirtySelectors.length) return of(routes);
+        // Do not warn about dirty updates on the same page (e.g. when changing
+        // tabs in the same experiment page or query params in experiment list).
+        if (samePathname || !dirtySelectors.length) return of(routes);
         return forkJoin(
           this.dirtyUpdatesRegistry
             .getDirtyUpdatesSelectors()
@@ -248,9 +253,8 @@ export class AppRoutingEffects {
             routeMatch.redirectionOnlyQueryParams
               ? routeMatch.redirectionOnlyQueryParams
               : this.location.getSearch();
-          const rehydratingState = routeMatch.deepLinkProvider.deserializeQueryParams(
-            queryParams
-          );
+          const rehydratingState =
+            routeMatch.deepLinkProvider.deserializeQueryParams(queryParams);
           this.store.dispatch(
             stateRehydratedFromUrl({
               routeKind: routeMatch.routeKind,
