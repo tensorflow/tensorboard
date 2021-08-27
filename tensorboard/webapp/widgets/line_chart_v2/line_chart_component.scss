@@ -107,6 +107,10 @@ limitations under the License.
 
 .y-axis {
   grid-area: yaxis;
+
+  line-chart-axis {
+    height: 100%;
+  }
 }
 
 .dot {
