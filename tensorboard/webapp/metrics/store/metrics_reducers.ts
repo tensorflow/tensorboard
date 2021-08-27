@@ -890,12 +890,20 @@ const reducer = createReducer(
     };
   }),
   on(actions.metricsToggleVisiblePlugin, (state, {plugin}) => {
-    const nextFilteredPluginTypes = new Set(state.filteredPluginTypes);
+    let nextFilteredPluginTypes = new Set(state.filteredPluginTypes);
     if (nextFilteredPluginTypes.has(plugin)) {
       nextFilteredPluginTypes.delete(plugin);
     } else {
       nextFilteredPluginTypes.add(plugin);
     }
+    if (
+      Object.values(PluginType).every((pluginType) =>
+        nextFilteredPluginTypes.has(pluginType)
+      )
+    ) {
+      nextFilteredPluginTypes = new Set();
+    }
+
     return {...state, filteredPluginTypes: nextFilteredPluginTypes};
   }),
   on(
