@@ -13,33 +13,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
-import {createSelector, Store} from '@ngrx/store';
+import {Store} from '@ngrx/store';
 import {Observable} from 'rxjs';
 import {combineLatestWith, map} from 'rxjs/operators';
 
 import {State} from '../../../app_state';
-import {getCurrentRouteRunSelection} from '../../../selectors';
-import {isSingleRunPlugin} from '../../data_source';
-import {
-  getMetricsFilteredPluginTypes,
-  getNonEmptyCardIdsWithMetadata,
-} from '../../store';
+import {getMetricsFilteredPluginTypes} from '../../store';
 import {CardObserver} from '../card_renderer/card_lazy_loader';
 import {CardGroup} from '../metrics_view_types';
 import {groupCardIdWithMetdata} from '../utils';
-
-const getRenderableCardIdsWithMetadata = createSelector(
-  getNonEmptyCardIdsWithMetadata,
-  getCurrentRouteRunSelection,
-  (cardList, runSelectionMap) => {
-    return cardList.filter((card) => {
-      if (!isSingleRunPlugin(card.plugin)) {
-        return true;
-      }
-      return Boolean(runSelectionMap && runSelectionMap.get(card.runId!));
-    });
-  }
-);
+import {getSortedRenderableCardIdsWithMetadata} from './common_selectors';
 
 @Component({
   selector: 'metrics-card-groups',
@@ -57,7 +40,7 @@ export class CardGroupsContainer {
   constructor(private readonly store: Store<State>) {}
 
   readonly cardGroups$: Observable<CardGroup[]> = this.store
-    .select(getRenderableCardIdsWithMetadata)
+    .select(getSortedRenderableCardIdsWithMetadata)
     .pipe(
       combineLatestWith(this.store.select(getMetricsFilteredPluginTypes)),
       map(([cardList, filteredPlugins]) => {

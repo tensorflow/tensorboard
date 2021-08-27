@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
-import {createSelector, Store} from '@ngrx/store';
+import {Store} from '@ngrx/store';
 import {Observable} from 'rxjs';
 import {
   combineLatestWith,
@@ -21,39 +21,18 @@ import {
   distinctUntilChanged,
   filter,
   map,
+  share,
   startWith,
 } from 'rxjs/operators';
 
 import {State} from '../../../app_state';
-import {getCurrentRouteRunSelection} from '../../../selectors';
-import {DataLoadState} from '../../../types/data';
 import {DeepReadonly} from '../../../util/types';
-import {isSingleRunPlugin} from '../../data_source';
-import {
-  getMetricsFilteredPluginTypes,
-  getMetricsTagFilter,
-  getMetricsTagMetadataLoadState,
-  getNonEmptyCardIdsWithMetadata,
-} from '../../store';
+import {getMetricsFilteredPluginTypes, getMetricsTagFilter} from '../../store';
 import {CardObserver} from '../card_renderer/card_lazy_loader';
-
 import {CardIdWithMetadata} from '../metrics_view_types';
-import {compareTagNames} from '../utils';
+import {getSortedRenderableCardIdsWithMetadata} from './common_selectors';
 
 export const FILTER_VIEW_DEBOUNCE_IN_MS = 200;
-
-const getRenderableCardIdsWithMetadata = createSelector(
-  getNonEmptyCardIdsWithMetadata,
-  getCurrentRouteRunSelection,
-  (cardList, runSelectionMap) => {
-    return cardList.filter((card) => {
-      if (!isSingleRunPlugin(card.plugin)) {
-        return true;
-      }
-      return Boolean(runSelectionMap && runSelectionMap.get(card.runId!));
-    });
-  }
-);
 
 /**
  * An area showing cards that match the tag filter.
@@ -62,6 +41,7 @@ const getRenderableCardIdsWithMetadata = createSelector(
   selector: 'metrics-filtered-view',
   template: `
     <metrics-filtered-view-component
+      [isEmptyMatch]="isEmptyMatch$ | async"
       [cardIdsWithMetadata]="cardIdsWithMetadata$ | async"
       [cardObserver]="cardObserver"
     ></metrics-filtered-view-component>
@@ -75,16 +55,7 @@ export class FilteredViewContainer {
 
   readonly cardIdsWithMetadata$: Observable<
     DeepReadonly<CardIdWithMetadata>[]
-  > = this.store.select(getRenderableCardIdsWithMetadata).pipe(
-    // Pre-sort the tags since the list of tags do not change w.r.t the
-    // tagFilter regex. Since regexFilter can change often, this would allow
-    // us to save time from sorting thousands of tags at every keystroke which
-    // actually makes notably UI slower.
-    map((cardList) => {
-      return cardList.sort((cardA, cardB) => {
-        return compareTagNames(cardA.tag, cardB.tag);
-      });
-    }),
+  > = this.store.select(getSortedRenderableCardIdsWithMetadata).pipe(
     combineLatestWith(this.store.select(getMetricsFilteredPluginTypes)),
     map(([cardList, filteredPluginTypes]) => {
       if (!filteredPluginTypes.size) return cardList;
@@ -113,6 +84,16 @@ export class FilteredViewContainer {
         });
       }
     ),
+    share(),
     startWith([])
   ) as Observable<DeepReadonly<CardIdWithMetadata>[]>;
+
+  readonly isEmptyMatch$: Observable<boolean> = this.cardIdsWithMetadata$.pipe(
+    combineLatestWith(
+      this.store.select(getSortedRenderableCardIdsWithMetadata)
+    ),
+    map(([filteredCardList, fullCardList]) => {
+      return Boolean(fullCardList.length) && filteredCardList.length === 0;
+    })
+  );
 }

@@ -32,3 +32,8 @@ limitations under the License.
   @include metrics-card-group-count-text;
   margin-left: 6px;
 }
+
+metrics-empty-tag-match {
+  @include metrics-empty-message;
+  display: block;
+}
