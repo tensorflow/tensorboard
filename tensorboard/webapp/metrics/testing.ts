@@ -58,7 +58,10 @@ export function buildMetricsSettingsState(
 
 function buildBlankState(): MetricsState {
   return {
-    tagMetadataLoaded: DataLoadState.NOT_LOADED,
+    tagMetadataLoadState: {
+      state: DataLoadState.NOT_LOADED,
+      lastLoadedTimeInMs: null,
+    },
     tagMetadata: {
       scalars: {
         tagDescriptions: {},

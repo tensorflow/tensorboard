@@ -37,7 +37,7 @@ import {
   TagMetadata,
   TimeSeriesResponse,
 } from '../data_source';
-import {getMetricsTagMetadataLoaded} from '../store';
+import {getMetricsTagMetadataLoadState} from '../store';
 import {
   appStateFromMetricsState,
   buildDataSourceTagMetadata,
@@ -109,10 +109,10 @@ describe('metrics effects', () => {
 
       it('loads TagMetadata on dashboard open if data is not loaded', () => {
         store.overrideSelector(selectors.getExperimentIdsFromRoute, null);
-        store.overrideSelector(
-          getMetricsTagMetadataLoaded,
-          DataLoadState.NOT_LOADED
-        );
+        store.overrideSelector(getMetricsTagMetadataLoadState, {
+          state: DataLoadState.NOT_LOADED,
+          lastLoadedTimeInMs: null,
+        });
         store.overrideSelector(getActivePlugin, null);
         store.refreshState();
 
@@ -145,10 +145,10 @@ describe('metrics effects', () => {
 
       it('loads TagMetadata when switching to dashboard with experiment', () => {
         store.overrideSelector(selectors.getExperimentIdsFromRoute, ['exp1']);
-        store.overrideSelector(
-          getMetricsTagMetadataLoaded,
-          DataLoadState.NOT_LOADED
-        );
+        store.overrideSelector(getMetricsTagMetadataLoadState, {
+          state: DataLoadState.NOT_LOADED,
+          lastLoadedTimeInMs: null,
+        });
         store.overrideSelector(getActivePlugin, null);
         store.refreshState();
 
@@ -172,10 +172,10 @@ describe('metrics effects', () => {
       });
 
       it('does not fetch TagMetadata if data was loaded when opening', () => {
-        store.overrideSelector(
-          getMetricsTagMetadataLoaded,
-          DataLoadState.LOADED
-        );
+        store.overrideSelector(getMetricsTagMetadataLoadState, {
+          state: DataLoadState.LOADED,
+          lastLoadedTimeInMs: 1,
+        });
         store.overrideSelector(getActivePlugin, METRICS_PLUGIN_ID);
         store.refreshState();
         actions$.next(TEST_ONLY.initAction());
@@ -187,10 +187,10 @@ describe('metrics effects', () => {
       });
 
       it('does not fetch TagMetadata if data was loading when opening', () => {
-        store.overrideSelector(
-          getMetricsTagMetadataLoaded,
-          DataLoadState.LOADING
-        );
+        store.overrideSelector(getMetricsTagMetadataLoadState, {
+          state: DataLoadState.LOADING,
+          lastLoadedTimeInMs: null,
+        });
         store.overrideSelector(getActivePlugin, METRICS_PLUGIN_ID);
         store.refreshState();
         actions$.next(TEST_ONLY.initAction());
@@ -252,10 +252,10 @@ describe('metrics effects', () => {
       for (const {reloadAction, reloadName} of reloadSpecs) {
         it(`re-fetches data on ${reloadName}, while dashboard is open`, () => {
           store.overrideSelector(selectors.getExperimentIdsFromRoute, ['exp1']);
-          store.overrideSelector(
-            getMetricsTagMetadataLoaded,
-            DataLoadState.LOADED
-          );
+          store.overrideSelector(getMetricsTagMetadataLoadState, {
+            state: DataLoadState.LOADED,
+            lastLoadedTimeInMs: 1,
+          });
           store.overrideSelector(getActivePlugin, METRICS_PLUGIN_ID);
           store.overrideSelector(
             selectors.getVisibleCardIdSet,
@@ -304,10 +304,10 @@ describe('metrics effects', () => {
 
         it(`re-fetches data on ${reloadName}, only for non-loading cards`, () => {
           store.overrideSelector(selectors.getExperimentIdsFromRoute, ['exp1']);
-          store.overrideSelector(
-            getMetricsTagMetadataLoaded,
-            DataLoadState.LOADING
-          );
+          store.overrideSelector(getMetricsTagMetadataLoadState, {
+            state: DataLoadState.LOADING,
+            lastLoadedTimeInMs: null,
+          });
           store.overrideSelector(getActivePlugin, METRICS_PLUGIN_ID);
           store.overrideSelector(
             selectors.getVisibleCardIdSet,
@@ -343,10 +343,10 @@ describe('metrics effects', () => {
       }
 
       it('does not re-fetch data on reload, if open and already loading', () => {
-        store.overrideSelector(
-          getMetricsTagMetadataLoaded,
-          DataLoadState.LOADING
-        );
+        store.overrideSelector(getMetricsTagMetadataLoadState, {
+          state: DataLoadState.LOADING,
+          lastLoadedTimeInMs: null,
+        });
         store.overrideSelector(getActivePlugin, METRICS_PLUGIN_ID);
         store.overrideSelector(
           selectors.getVisibleCardIdSet,

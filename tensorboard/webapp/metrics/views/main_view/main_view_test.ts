@@ -60,6 +60,7 @@ import {MainViewComponent} from './main_view_component';
 import {MainViewContainer} from './main_view_container';
 import {PinnedViewComponent} from './pinned_view_component';
 import {PinnedViewContainer} from './pinned_view_container';
+import {DataLoadState} from '../../../types/data';
 
 @Component({
   selector: 'card-view',
@@ -187,6 +188,10 @@ describe('metrics main view', () => {
       selectors.getMetricsFilteredPluginTypes,
       new Set<PluginType>()
     );
+    store.overrideSelector(selectors.getMetricsTagMetadataLoadState, {
+      state: DataLoadState.NOT_LOADED,
+      lastLoadedTimeInMs: null,
+    });
   });
 
   describe('toolbar', () => {
@@ -238,6 +243,63 @@ describe('metrics main view', () => {
         actions.metricsToggleVisiblePlugin({plugin: PluginType.SCALARS}),
         actions.metricsToggleVisiblePlugin({plugin: PluginType.IMAGES}),
       ]);
+    });
+  });
+
+  describe('when tags are loading for the first time', () => {
+    function isSpinnerVisible(
+      fixture: ComponentFixture<MainViewContainer>
+    ): boolean {
+      return Boolean(fixture.debugElement.query(By.css('mat-spinner')));
+    }
+
+    it('shows spinner', () => {
+      store.overrideSelector(selectors.getMetricsTagMetadataLoadState, {
+        state: DataLoadState.NOT_LOADED,
+        lastLoadedTimeInMs: null,
+      });
+      const fixture = TestBed.createComponent(MainViewContainer);
+      fixture.detectChanges();
+
+      expect(isSpinnerVisible(fixture)).toBe(false);
+
+      store.overrideSelector(selectors.getMetricsTagMetadataLoadState, {
+        state: DataLoadState.LOADING,
+        lastLoadedTimeInMs: null,
+      });
+      store.refreshState();
+      fixture.detectChanges();
+
+      expect(isSpinnerVisible(fixture)).toBe(true);
+    });
+
+    it('hides spinner when data is loaded', () => {
+      store.overrideSelector(selectors.getMetricsTagMetadataLoadState, {
+        state: DataLoadState.LOADING,
+        lastLoadedTimeInMs: null,
+      });
+      const fixture = TestBed.createComponent(MainViewContainer);
+      fixture.detectChanges();
+
+      store.overrideSelector(selectors.getMetricsTagMetadataLoadState, {
+        state: DataLoadState.LOADED,
+        lastLoadedTimeInMs: 1,
+      });
+      store.refreshState();
+      fixture.detectChanges();
+
+      expect(isSpinnerVisible(fixture)).toBe(false);
+    });
+
+    it('does not show spinner when data is reloading', () => {
+      store.overrideSelector(selectors.getMetricsTagMetadataLoadState, {
+        state: DataLoadState.LOADING,
+        lastLoadedTimeInMs: 5,
+      });
+      const fixture = TestBed.createComponent(MainViewContainer);
+      fixture.detectChanges();
+
+      expect(isSpinnerVisible(fixture)).toBe(false);
     });
   });
 

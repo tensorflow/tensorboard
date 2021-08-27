@@ -37,6 +37,8 @@ export class MainViewComponent {
 
   @Input() filteredPluginTypes!: Set<PluginType>;
 
+  @Input() initialTagsLoading!: boolean;
+
   @Output() onSettingsButtonClicked = new EventEmitter<void>();
 
   @Output() onCloseSidepaneButtonClicked = new EventEmitter<void>();

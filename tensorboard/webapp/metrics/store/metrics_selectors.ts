@@ -15,7 +15,7 @@ limitations under the License.
 import {createFeatureSelector, createSelector} from '@ngrx/store';
 
 import {State} from '../../app_state';
-import {DataLoadState} from '../../types/data';
+import {DataLoadState, LoadState} from '../../types/data';
 import {ElementId} from '../../util/dom';
 import {DeepReadonly} from '../../util/types';
 import {
@@ -38,7 +38,6 @@ import {
   MetricsState,
   METRICS_FEATURE_KEY,
   RunToSeries,
-  StoreInternalLinkedTime,
   TagMetadata,
 } from './metrics_types';
 
@@ -48,9 +47,9 @@ const selectMetricsState = createFeatureSelector<State, MetricsState>(
   METRICS_FEATURE_KEY
 );
 
-export const getMetricsTagMetadataLoaded = createSelector(
+export const getMetricsTagMetadataLoadState = createSelector(
   selectMetricsState,
-  (state: MetricsState): DataLoadState => state.tagMetadataLoaded
+  (state: MetricsState): LoadState => state.tagMetadataLoadState
 );
 
 export const getMetricsTagMetadata = createSelector(

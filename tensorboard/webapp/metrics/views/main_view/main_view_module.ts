@@ -12,27 +12,27 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {ScrollingModule} from '@angular/cdk/scrolling';
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
-import {ScrollingModule} from '@angular/cdk/scrolling';
 import {MatAutocompleteModule} from '@angular/material/autocomplete';
 import {MatButtonModule} from '@angular/material/button';
+import {MatButtonToggleModule} from '@angular/material/button-toggle';
 import {MatIconModule} from '@angular/material/icon';
 import {MatInputModule} from '@angular/material/input';
-import {MatButtonToggleModule} from '@angular/material/button-toggle';
+import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 
 import {FilterInputModule} from '../../../widgets/filter_input/filter_input_module';
 import {CardRendererModule} from '../card_renderer/card_renderer_module';
 import {RightPaneModule} from '../right_pane/right_pane_module';
-
 import {CardGridComponent} from './card_grid_component';
 import {CardGridContainer} from './card_grid_container';
 import {CardGroupsComponent} from './card_groups_component';
 import {CardGroupsContainer} from './card_groups_container';
-import {MetricsFilterInputComponent} from './filter_input_component';
-import {MetricsFilterInputContainer} from './filter_input_container';
 import {FilteredViewComponent} from './filtered_view_component';
 import {FilteredViewContainer} from './filtered_view_container';
+import {MetricsFilterInputComponent} from './filter_input_component';
+import {MetricsFilterInputContainer} from './filter_input_container';
 import {MainViewComponent} from './main_view_component';
 import {MainViewContainer} from './main_view_container';
 import {PinnedViewComponent} from './pinned_view_component';
@@ -63,6 +63,7 @@ import {PinnedViewContainer} from './pinned_view_container';
     MatButtonToggleModule,
     MatIconModule,
     MatInputModule,
+    MatProgressSpinnerModule,
     RightPaneModule,
     ScrollingModule,
   ],

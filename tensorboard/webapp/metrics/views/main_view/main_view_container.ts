@@ -15,11 +15,16 @@ limitations under the License.
 import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {Store} from '@ngrx/store';
 import {Observable} from 'rxjs';
-import {map} from 'rxjs/operators';
+import {map, takeWhile} from 'rxjs/operators';
 
 import {State} from '../../../app_state';
+import {DataLoadState} from '../../../types/data';
 import {metricsShowAllPlugins, metricsToggleVisiblePlugin} from '../../actions';
-import {getMetricsFilteredPluginTypes, getMetricsTagFilter} from '../../store';
+import {
+  getMetricsFilteredPluginTypes,
+  getMetricsTagFilter,
+  getMetricsTagMetadataLoadState,
+} from '../../store';
 import {PluginType} from '../../types';
 
 @Component({
@@ -28,6 +33,7 @@ import {PluginType} from '../../types';
     <metrics-main-view-component
       [showFilteredView]="showFilteredView$ | async"
       [isSidepaneOpen]="isSidepaneOpen"
+      [initialTagsLoading]="initialTagsLoading$ | async"
       [filteredPluginTypes]="filteredPluginTypes$ | async"
       (onSettingsButtonClicked)="onSettingsButtonClicked()"
       (onCloseSidepaneButtonClicked)="onCloseSidepaneButtonClicked()"
@@ -41,6 +47,21 @@ export class MainViewContainer {
   constructor(private readonly store: Store<State>) {}
 
   isSidepaneOpen = true;
+
+  readonly initialTagsLoading$: Observable<boolean> = this.store
+    .select(getMetricsTagMetadataLoadState)
+    .pipe(
+      // disconnect and don't listen to store if tags are loaded at least once.
+      takeWhile((loadState) => {
+        return loadState.lastLoadedTimeInMs === null;
+      }, true /** inclusive */),
+      map((loadState) => {
+        return (
+          loadState.state === DataLoadState.LOADING &&
+          loadState.lastLoadedTimeInMs === null
+        );
+      })
+    );
 
   readonly showFilteredView$: Observable<boolean> = this.store
     .select(getMetricsTagFilter)
