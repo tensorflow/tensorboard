@@ -207,8 +207,7 @@ export class AppRoutingEffects {
       mergeMap((routes) => {
         const samePathname =
           routes.routeMatch.pathname === this.location.getPath();
-        const dirtySelectors =
-          this.dirtyUpdatesRegistry.getDirtyUpdatesSelectors();
+        const dirtySelectors = this.dirtyUpdatesRegistry.getDirtyUpdatesSelectors();
 
         // Do not warn about dirty updates on the same page (e.g. when changing
         // tabs in the same experiment page or query params in experiment list).
@@ -253,8 +252,9 @@ export class AppRoutingEffects {
             routeMatch.redirectionOnlyQueryParams
               ? routeMatch.redirectionOnlyQueryParams
               : this.location.getSearch();
-          const rehydratingState =
-            routeMatch.deepLinkProvider.deserializeQueryParams(queryParams);
+          const rehydratingState = routeMatch.deepLinkProvider.deserializeQueryParams(
+            queryParams
+          );
           this.store.dispatch(
             stateRehydratedFromUrl({
               routeKind: routeMatch.routeKind,
