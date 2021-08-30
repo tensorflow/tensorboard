@@ -353,7 +353,7 @@ describe('app_routing_effects', () => {
         expect(window.confirm).not.toHaveBeenCalled();
         expect(actualActions).toEqual([
           actions.navigating({
-            after: activeRoute
+            after: activeRoute,
           }),
           actions.navigated({
             before: activeRoute,
