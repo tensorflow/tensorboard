@@ -12,6 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+
 import * as THREE from 'three';
 
 import {hsl, interpolateHsl} from '../../../../third_party/d3';
@@ -287,7 +288,7 @@ export class ThreeRenderer implements ObjectRenderer<CacheValue> {
         antialias: true,
         precision: 'highp',
         alpha: true,
-      }) as WebGLRenderingContext,
+      } as WebGLContextAttributes) as WebGLRenderingContext,
     });
     this.renderer.setPixelRatio(devicePixelRatio);
   }

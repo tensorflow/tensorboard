@@ -81,7 +81,7 @@ export class Minimap {
     this.zoomG = zoomG;
     this.mainZoom = mainZoom;
     this.maxWandH = maxWandH;
-    let $shadowRoot = d3.select(minimap.shadowRoot);
+    let $shadowRoot = d3.select((minimap.shadowRoot as unknown) as Element);
     // The minimap will have 2 main components: the canvas showing the content
     // and an svg showing a rectangle of the currently zoomed/panned viewpoint.
     let $minimapSvg = $shadowRoot.select('svg');

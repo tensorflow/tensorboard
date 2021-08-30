@@ -17,6 +17,7 @@ tf_ts_library(
         "//tensorboard/webapp/widgets/line_chart_v2/lib:coordinator",
         "//tensorboard/webapp/widgets/line_chart_v2/lib:internal_types",
         "//tensorboard/webapp/widgets/line_chart_v2/lib:utils",
+        "@npm//@types/offscreencanvas",
         "@npm//@types/three",
         "@npm//three",
     ],

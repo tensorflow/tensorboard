@@ -118,11 +118,17 @@ const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
   on(runsActions.fetchRunsRequested, (state, action) => {
     const nextRunsLoadState = {...state.runsLoadState};
     for (const eid of action.requestedExperimentIds) {
-      nextRunsLoadState[eid] = {
-        lastLoadedTimeInMs: null,
-        ...nextRunsLoadState[eid],
-        state: DataLoadState.LOADING,
-      };
+      if (!nextRunsLoadState[eid]) {
+        nextRunsLoadState[eid] = {
+          lastLoadedTimeInMs: null,
+          state: DataLoadState.LOADING,
+        };
+      } else {
+        nextRunsLoadState[eid] = {
+          ...nextRunsLoadState[eid],
+          state: DataLoadState.LOADING,
+        };
+      }
     }
 
     return {...state, runsLoadState: nextRunsLoadState};
@@ -178,11 +184,17 @@ const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
   on(runsActions.fetchRunsFailed, (state, action) => {
     const nextRunsLoadState = {...state.runsLoadState};
     for (const eid of action.requestedExperimentIds) {
-      nextRunsLoadState[eid] = {
-        lastLoadedTimeInMs: null,
-        ...nextRunsLoadState[eid],
-        state: DataLoadState.FAILED,
-      };
+      if (!nextRunsLoadState[eid]) {
+        nextRunsLoadState[eid] = {
+          lastLoadedTimeInMs: null,
+          state: DataLoadState.FAILED,
+        };
+      } else {
+        nextRunsLoadState[eid] = {
+          ...nextRunsLoadState[eid],
+          state: DataLoadState.FAILED,
+        };
+      }
     }
     return {...state, runsLoadState: nextRunsLoadState};
   }),
