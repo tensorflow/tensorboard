@@ -65,11 +65,11 @@ yarn_install(
 
 http_archive(
     name = "io_bazel_rules_sass",
-    sha256 = "9ad74e6e75a86939f4349b31d43bb1db4279e4f2a139c5ebaf56cf99feea1faa",
-    strip_prefix = "rules_sass-1.32.8",
+    sha256 = "60fa023fe694848acf769d816ad9fee970a27a37489aaf5443a7ccffaac805e9",
+    strip_prefix = "rules_sass-1.38.2",
     urls = [
-        "http://mirror.tensorflow.org/github.com/bazelbuild/rules_sass/archive/1.32.8.zip",
-        "https://github.com/bazelbuild/rules_sass/archive/1.32.8.zip",
+        "http://mirror.tensorflow.org/github.com/bazelbuild/rules_sass/archive/1.38.2.zip",
+        "https://github.com/bazelbuild/rules_sass/archive/1.38.2.zip",
     ],
 )
 
