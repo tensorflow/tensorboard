@@ -204,10 +204,18 @@ export class AppRoutingEffects {
    */
   navigate$ = createEffect(() => {
     const dispatchNavigating$ = this.validatedRoute$.pipe(
-      mergeMap((routes) => {
+      withLatestFrom(this.store.select(getActiveRoute)),
+      mergeMap(([routes, oldRoute]) => {
+        const sameRouteId =
+          oldRoute !== null &&
+          getRouteId(routes.routeMatch.routeKind, routes.routeMatch.params) ===
+            getRouteId(oldRoute.routeKind, oldRoute.params);
         const dirtySelectors = this.dirtyUpdatesRegistry.getDirtyUpdatesSelectors();
 
-        if (!dirtySelectors.length) return of(routes);
+        // Do not warn about dirty updates when route ID is the same (e.g. when
+        // changing tabs in the same experiment page or query params in experiment
+        // list).
+        if (sameRouteId || !dirtySelectors.length) return of(routes);
         return forkJoin(
           this.dirtyUpdatesRegistry
             .getDirtyUpdatesSelectors()

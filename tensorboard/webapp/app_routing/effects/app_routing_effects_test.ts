@@ -334,6 +334,34 @@ describe('app_routing_effects', () => {
         );
       });
 
+      it('does not warn user when changing tab (same routeId)', fakeAsync(() => {
+        spyOn(window, 'confirm');
+        const activeRoute = buildRoute({
+          routeKind: RouteKind.EXPERIMENT,
+          params: {experimentId: 'meow'},
+          pathname: '/experiment/meow',
+          queryParams: [],
+        });
+        store.overrideSelector(getActiveRoute, activeRoute);
+        store.refreshState();
+        getPathSpy.and.returnValue('/experiment/meow');
+        // Changing tab.
+        getHashSpy.and.returnValue('#foo');
+        action.next(actions.navigationRequested(activeRoute));
+        tick();
+
+        expect(window.confirm).not.toHaveBeenCalled();
+        expect(actualActions).toEqual([
+          actions.navigating({
+            after: activeRoute,
+          }),
+          actions.navigated({
+            before: activeRoute,
+            after: activeRoute,
+          }),
+        ]);
+      }));
+
       it('noops if user cancels navigation', () => {
         spyOn(window, 'confirm').and.returnValue(false);
         action.next(
