@@ -334,7 +334,7 @@ describe('app_routing_effects', () => {
         );
       });
 
-      it('does not warn user if the pathnames are the same', fakeAsync(() => {
+      it('does not warn user when changing tab (same routeId)', fakeAsync(() => {
         spyOn(window, 'confirm');
         getPathSpy.and.returnValue('/experiments');
         // Changing tab.
