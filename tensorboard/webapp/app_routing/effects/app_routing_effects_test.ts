@@ -195,18 +195,43 @@ describe('app_routing_effects', () => {
     getSearchSpy = spyOn(location, 'getSearch').and.returnValue([]);
 
     store.overrideSelector(getActiveRoute, null);
+    actualActions = [];
+
+    spyOn(store, 'dispatch').and.callFake((action: Action) => {
+      actualActions.push(action);
+    });
+  });
+
+  describe('bootstrapReducers$', () => {
+    beforeEach(() => {
+      effects = TestBed.inject(AppRoutingEffects);
+      effects.bootstrapReducers$.subscribe((action) => {
+        actualActions.push(action);
+      });
+    });
+
+    it(
+      'grabs registered route kinds from the registry and dispatches ' +
+        'routeConfigLoaded',
+      () => {
+        const registry = TestBed.inject(RouteRegistryModule);
+        spyOn(registry, 'getRegisteredRouteKinds').and.returnValue(
+          new Set([RouteKind.EXPERIMENT, RouteKind.EXPERIMENTS])
+        );
+        action.next(effects.ngrxOnInitEffects());
+
+        expect(actualActions).toEqual([
+          actions.routeConfigLoaded({
+            routeKinds: new Set([RouteKind.EXPERIMENT, RouteKind.EXPERIMENTS]),
+          }),
+        ]);
+      }
+    );
   });
 
   describe('navigate$', () => {
-    let actualActions: Action[];
-
     beforeEach(() => {
       effects = TestBed.inject(AppRoutingEffects);
-      actualActions = [];
-
-      spyOn(store, 'dispatch').and.callFake((action: Action) => {
-        actualActions.push(action);
-      });
       effects.navigate$.subscribe((action) => {
         actualActions.push(action);
       });

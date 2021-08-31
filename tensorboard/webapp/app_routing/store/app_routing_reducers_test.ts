@@ -100,4 +100,43 @@ describe('app_routing_reducers', () => {
       );
     });
   });
+
+  describe('routeConfigLoaded', () => {
+    it('sets registered route kinds in the state', () => {
+      const state = buildAppRoutingState({
+        registeredRouteKeys: new Set(),
+      });
+
+      const nextState = appRoutingReducers.reducers(
+        state,
+        actions.routeConfigLoaded({
+          routeKinds: new Set([
+            RouteKind.COMPARE_EXPERIMENT,
+            RouteKind.UNKNOWN,
+          ]),
+        })
+      );
+
+      expect(nextState.registeredRouteKeys).toEqual(
+        new Set([RouteKind.COMPARE_EXPERIMENT, RouteKind.UNKNOWN])
+      );
+    });
+
+    it('replaces existing registered route kinds', () => {
+      const state = buildAppRoutingState({
+        registeredRouteKeys: new Set([RouteKind.EXPERIMENTS]),
+      });
+
+      const nextState = appRoutingReducers.reducers(
+        state,
+        actions.routeConfigLoaded({
+          routeKinds: new Set([RouteKind.UNKNOWN]),
+        })
+      );
+
+      expect(nextState.registeredRouteKeys).toEqual(
+        new Set([RouteKind.UNKNOWN])
+      );
+    });
+  });
 });

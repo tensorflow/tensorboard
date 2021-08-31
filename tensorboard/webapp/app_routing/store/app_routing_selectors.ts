@@ -47,6 +47,14 @@ export const getNextRouteForRouterOutletOnly = createSelector(
   }
 );
 
+export const getRegisteredRouteKinds = createSelector<
+  State,
+  AppRoutingState,
+  Set<RouteKind>
+>(getAppRoutingState, (state) => {
+  return state.registeredRouteKeys;
+});
+
 /**
  * Returns current RouteKind or returns `null` if route is not set at all
  * (e.g., an application does not define any routes).

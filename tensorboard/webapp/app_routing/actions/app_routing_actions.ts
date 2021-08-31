@@ -40,6 +40,14 @@ export const stateRehydratedFromUrl = createAction(
 );
 
 /**
+ * Created when the route configurations are loaded on the initial load.
+ */
+export const routeConfigLoaded = createAction(
+  '[App Routing] Route Config Loaded',
+  props<{routeKinds: Set<RouteKind>}>()
+);
+
+/**
  * Created when user intends to navigate in the application
  */
 export const navigationRequested = createAction(
