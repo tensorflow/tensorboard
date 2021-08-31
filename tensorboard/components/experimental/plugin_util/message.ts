@@ -87,14 +87,14 @@ export class IPC {
     }
 
     let replyPayload = null;
-    let replyError = null;
+    let replyError: string | null = null;
     if (this.listeners.has(type)) {
       const callback = this.listeners.get(type) as MessageCallback;
       try {
         const result = await callback(payload);
         replyPayload = result;
       } catch (e) {
-        replyError = e;
+        replyError = e as string;
       }
     }
 

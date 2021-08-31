@@ -71,7 +71,10 @@ export class WorkerChart implements Chart {
       useDarkMode: options.useDarkMode,
     };
 
-    this.workerInstance.postMessage(initMessage, [canvas, channel.port2]);
+    this.workerInstance.postMessage(initMessage, [
+      canvas,
+      channel.port2,
+    ] as Transferable[]);
   }
 
   dispose() {
