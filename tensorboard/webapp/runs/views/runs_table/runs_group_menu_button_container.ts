@@ -14,10 +14,14 @@ limitations under the License.
 ==============================================================================*/
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {Store} from '@ngrx/store';
-import {Observable} from 'rxjs';
+import {Observable, map} from 'rxjs';
+import {RouteKind} from '../../../app_routing/types';
 
 import {State} from '../../../app_state';
-import {getEnabledColorGroupByRegex} from '../../../selectors';
+import {
+  getRegisteredRouteKinds,
+  getEnabledColorGroupByRegex,
+} from '../../../selectors';
 import {runGroupByChanged} from '../../actions';
 import {
   getColorGroupRegexString,
@@ -35,6 +39,7 @@ import {GroupBy} from '../../types';
       [regexString]="groupByRegexString$ | async"
       [selectedGroupBy]="selectedGroupBy$ | async"
       [showGroupByRegex]="showGroupByRegex$ | async"
+      [showExperimentsGroupBy]="showExperimentsGroupBy$ | async"
       [experimentIds]="experimentIds"
       (onGroupByChange)="onGroupByChange($event)"
     ></runs-group-menu-button-component>
@@ -49,6 +54,14 @@ export class RunsGroupMenuButtonContainer {
   @Input() experimentIds!: string[];
 
   constructor(private readonly store: Store<State>) {}
+
+  readonly showExperimentsGroupBy$: Observable<boolean> = this.store
+    .select(getRegisteredRouteKinds)
+    .pipe(
+      map((registeredRouteKinds) => {
+        return registeredRouteKinds.has(RouteKind.COMPARE_EXPERIMENT);
+      })
+    );
 
   readonly selectedGroupBy$: Observable<GroupBy> = this.store.select(
     getRunGroupBy

@@ -33,6 +33,7 @@ import {RegexEditDialogContainer} from './regex_edit_dialog_container';
 export class RunsGroupMenuButtonComponent {
   readonly GroupByKey = GroupByKey;
 
+  @Input() showExperimentsGroupBy!: boolean;
   @Input() experimentIds!: string[];
   @Input() regexString!: string;
   @Input() selectedGroupBy!: GroupBy;
