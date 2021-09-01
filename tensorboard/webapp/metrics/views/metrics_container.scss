@@ -17,6 +17,17 @@ limitations under the License.
 :host {
   display: flex;
   height: 100%;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.notice {
+  flex: 0 0;
+}
+
+tb-dashboard-layout {
+  flex: 1 1;
+  overflow: hidden;
 }
 
 nav {
