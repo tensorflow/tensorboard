@@ -30,6 +30,7 @@ export const initialState: FeatureFlagState = {
     scalarsBatchSize: undefined,
     metricsImageSupportEnabled: true,
     enabledLinkedTime: false,
+    enableTimeSeriesPromotion: false,
   },
   flagOverrides: {},
 };

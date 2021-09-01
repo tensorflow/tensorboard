@@ -109,3 +109,10 @@ export const getIsLinkedTimeEnabled = createSelector(
     return flags.enabledLinkedTime;
   }
 );
+
+export const getIsTimeSeriesPromotionEnabled = createSelector(
+  getFeatureFlags,
+  (flags: FeatureFlags): boolean => {
+    return flags.enableTimeSeriesPromotion;
+  }
+);

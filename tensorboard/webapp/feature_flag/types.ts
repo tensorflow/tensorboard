@@ -43,4 +43,6 @@ export interface FeatureFlags {
   metricsImageSupportEnabled: boolean;
   // Whether TimeSeries linked time feature is enabled or not.
   enabledLinkedTime: boolean;
+  // Whether to enable TimeSeries promotion butter bar.
+  enableTimeSeriesPromotion: boolean;
 }
