@@ -1145,13 +1145,7 @@ describe('app_routing_effects', () => {
       provider.setAppRoot(appRoot);
 
       effects = TestBed.inject(AppRoutingEffects);
-      const dispatchSpy = spyOn(store, 'dispatch');
       effects.navigate$.subscribe((action) => {
-        actualActions.push(action);
-      });
-
-      actualActions = [];
-      dispatchSpy.and.callFake((action: Action) => {
         actualActions.push(action);
       });
     }
