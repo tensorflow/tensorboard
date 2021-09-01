@@ -188,4 +188,22 @@ describe('app_routing_selectors', () => {
       expect(selectors.getRouteId(state)).toBe('__not_set');
     });
   });
+
+  describe('getRegisteredRouteKinds', () => {
+    beforeEach(() => {
+      selectors.getRegisteredRouteKinds.release();
+    });
+
+    it('returns registered routes', () => {
+      const state = buildStateFromAppRoutingState(
+        buildAppRoutingState({
+          registeredRouteKeys: new Set([RouteKind.UNKNOWN]),
+        })
+      );
+
+      expect(selectors.getRegisteredRouteKinds(state)).toEqual(
+        new Set([RouteKind.UNKNOWN])
+      );
+    });
+  });
 });

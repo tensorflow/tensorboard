@@ -34,6 +34,7 @@ import {
   navigated,
   navigating,
   navigationRequested,
+  routeConfigLoaded,
   stateRehydratedFromUrl,
 } from '../actions';
 import {AppRootProvider} from '../app_root';
@@ -69,7 +70,7 @@ export class AppRoutingEffects {
     private readonly store: Store<State>,
     private readonly location: Location,
     private readonly dirtyUpdatesRegistry: DirtyUpdatesRegistryModule<State>,
-    registry: RouteRegistryModule,
+    private readonly registry: RouteRegistryModule,
     private readonly programmaticalNavModule: ProgrammaticalNavigationModule,
     private readonly appRootProvider: AppRootProvider
   ) {
@@ -85,6 +86,20 @@ export class AppRoutingEffects {
       return {...navigation, pathname: resolvedPathname};
     })
   );
+
+  /**
+   * @exports
+   */
+  readonly bootstrapReducers$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(initAction),
+      map(() => {
+        return routeConfigLoaded({
+          routeKinds: new Set(this.registry.getRegisteredRouteKinds()),
+        });
+      })
+    );
+  });
 
   private readonly onInit$: Observable<Navigation> = this.actions$
     .pipe(ofType(initAction))

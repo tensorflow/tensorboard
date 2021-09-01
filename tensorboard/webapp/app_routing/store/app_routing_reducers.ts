@@ -19,6 +19,7 @@ import {AppRoutingState} from './app_routing_types';
 const initialState: AppRoutingState = {
   activeRoute: null,
   nextRoute: null,
+  registeredRouteKeys: new Set(),
 };
 
 const reducer = createReducer(
@@ -28,6 +29,12 @@ const reducer = createReducer(
   }),
   on(actions.navigated, (state, {after}) => {
     return {...state, activeRoute: after, nextRoute: null};
+  }),
+  on(actions.routeConfigLoaded, (state, {routeKinds}) => {
+    return {
+      ...state,
+      registeredRouteKeys: routeKinds,
+    };
   })
 );
 

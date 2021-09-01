@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Route} from '../types';
+import {Route, RouteKind} from '../types';
 
 export const APP_ROUTING_FEATURE_KEY = 'app_routing';
 
@@ -22,6 +22,7 @@ export interface AppRoutingState {
   // make changes before a route change. `ntextRoute` is non-null only while
   // we are navigating.
   nextRoute: Route | null;
+  registeredRouteKeys: Set<RouteKind>;
 }
 
 export interface State {

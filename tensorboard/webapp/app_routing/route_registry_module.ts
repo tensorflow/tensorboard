@@ -54,6 +54,10 @@ export class RouteRegistryModule {
     });
   }
 
+  getRegisteredRouteKinds(): Iterable<RouteKind> {
+    return this.routeKindToNgComponent.keys();
+  }
+
   /**
    * Returns RouteConfigs of current route configuration. Returnsn null if no
    * routes are registered.
