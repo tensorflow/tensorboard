@@ -24,6 +24,7 @@ limitations under the License.
 <mat-menu #groupByMenu="matMenu" class="run-table-color-group-by">
   <div class="label">Color runs by</div>
   <button
+    *ngIf="showExperimentsGroupBy"
     mat-menu-item
     role="menuitemradio"
     data-value="experiment"

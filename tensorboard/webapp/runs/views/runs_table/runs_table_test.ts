@@ -39,7 +39,9 @@ import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {Action, Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {of, ReplaySubject} from 'rxjs';
+
 import * as alertActions from '../../../alert/actions';
+import {RouteKind} from '../../../app_routing/types';
 import {State} from '../../../app_state';
 import {buildExperiment} from '../../../experiments/store/testing';
 import {
@@ -60,11 +62,12 @@ import {
   getEnabledColorGroupByRegex,
   getExperiment,
   getExperimentIdToAliasMap,
+  getRegisteredRouteKinds,
   getRouteId,
   getRunColorMap,
   getRunGroupBy,
-  getRuns,
   getRunIdsForExperiment,
+  getRuns,
   getRunSelectorPaginationOption,
   getRunSelectorRegexFilter,
   getRunSelectorSort,
@@ -184,22 +187,31 @@ describe('runs_table', () => {
   }
 
   function getColorGroupByHTMLElement(
-    key: GroupByKey | 'regexEdit'
+    key: GroupByKey | 'regex-edit'
   ): HTMLElement | null {
-    const items = getOverlayMenuItems();
-    const [experiment, run, regex, regexEdit] = items as HTMLElement[];
+    const items = getOverlayMenuItems() as HTMLElement[];
+    let stringKey: string;
     switch (key) {
-      case GroupByKey.RUN:
-        return run;
       case GroupByKey.EXPERIMENT:
-        return experiment;
+        stringKey = 'experiment';
+        break;
+      case GroupByKey.RUN:
+        stringKey = 'run';
+        break;
       case GroupByKey.REGEX:
-        return regex;
-      case 'regexEdit':
-        return regexEdit;
+        stringKey = 'regex';
+        break;
+      case 'regex-edit':
+        stringKey = 'regex-edit';
+        break;
       default:
-        return null;
+        throw new Error(`Unknown GroupByKey: ${key}`);
     }
+    return (
+      items.find((item) => {
+        return item.dataset['value'] === stringKey;
+      }) ?? null
+    );
   }
 
   beforeEach(async () => {
@@ -278,6 +290,7 @@ describe('runs_table', () => {
     store.overrideSelector(getEnabledColorGroupByRegex, false);
     store.overrideSelector(getRunGroupBy, {key: GroupByKey.RUN});
     store.overrideSelector(getColorGroupRegexString, '');
+    store.overrideSelector(getRegisteredRouteKinds, new Set<RouteKind>());
     dispatchSpy = spyOn(store, 'dispatch').and.callFake((action: Action) => {
       actualActions.push(action);
     });
@@ -573,6 +586,15 @@ describe('runs_table', () => {
     });
 
     describe('color grouping render', () => {
+      function openColorGroupDialog(
+        fixture: ComponentFixture<RunsTableContainer>
+      ) {
+        const menuButton = fixture.debugElement
+          .query(By.directive(RunsGroupMenuButtonContainer))
+          .query(By.css('button'));
+        menuButton.nativeElement.click();
+      }
+
       it('renders the menu for color grouping when the feature is enabled', () => {
         store.overrideSelector(getEnabledColorGroup, true);
         const fixture = createComponent(
@@ -587,7 +609,11 @@ describe('runs_table', () => {
         expect(menuButton).toBeTruthy();
       });
 
-      it('renders "Experiment", "Run", "Regex", and "(none set)"', () => {
+      it('renders Experiment only when COMPARE_EXPERIMENT route is registered', () => {
+        store.overrideSelector(
+          getRegisteredRouteKinds,
+          new Set([RouteKind.COMPARE_EXPERIMENT])
+        );
         store.overrideSelector(getEnabledColorGroup, true);
         store.overrideSelector(getEnabledColorGroupByRegex, true);
         const fixture = createComponent(
@@ -596,11 +622,7 @@ describe('runs_table', () => {
         );
         fixture.detectChanges();
 
-        const menuButton = fixture.debugElement
-          .query(By.directive(RunsGroupMenuButtonContainer))
-          .query(By.css('button'));
-        menuButton.nativeElement.click();
-
+        openColorGroupDialog(fixture);
         const items = getOverlayMenuItems();
 
         expect(
@@ -608,10 +630,35 @@ describe('runs_table', () => {
         ).toEqual(['Experiment', 'Run', 'Regex', '(none set)']);
       });
 
+      it('renders "Run", "Regex", and "(none set)"', () => {
+        store.overrideSelector(
+          getRegisteredRouteKinds,
+          new Set([RouteKind.EXPERIMENT])
+        );
+        store.overrideSelector(getEnabledColorGroup, true);
+        store.overrideSelector(getEnabledColorGroupByRegex, true);
+        const fixture = createComponent(
+          ['book'],
+          [RunsTableColumn.RUN_NAME, RunsTableColumn.RUN_COLOR]
+        );
+        fixture.detectChanges();
+
+        openColorGroupDialog(fixture);
+        const items = getOverlayMenuItems();
+
+        expect(
+          items.map((element) => element.querySelector('label')!.textContent)
+        ).toEqual(['Run', 'Regex', '(none set)']);
+      });
+
       it(
         'renders a check icon and aria-checked for the current groupBy menu ' +
           'item',
         () => {
+          store.overrideSelector(
+            getRegisteredRouteKinds,
+            new Set([RouteKind.COMPARE_EXPERIMENT])
+          );
           store.overrideSelector(getEnabledColorGroup, true);
           store.overrideSelector(getEnabledColorGroupByRegex, true);
           store.overrideSelector(getRunGroupBy, {key: GroupByKey.EXPERIMENT});
@@ -655,50 +702,58 @@ describe('runs_table', () => {
         }
       );
 
-      it('dispatches `runGroupByChanged` when the menu item `Run`, `Experiment`, and Edit button is clicked', () => {
-        store.overrideSelector(getEnabledColorGroup, true);
-        store.overrideSelector(getEnabledColorGroupByRegex, true);
-        store.overrideSelector(getRunGroupBy, {key: GroupByKey.EXPERIMENT});
-        const fixture = createComponent(
-          ['book'],
-          [RunsTableColumn.RUN_NAME, RunsTableColumn.RUN_COLOR]
-        );
-        fixture.detectChanges();
+      it(
+        'dispatches `runGroupByChanged` when the menu item `Run`, `Experiment`, ' +
+          'and Edit button is clicked',
+        () => {
+          store.overrideSelector(
+            getRegisteredRouteKinds,
+            new Set([RouteKind.COMPARE_EXPERIMENT])
+          );
+          store.overrideSelector(getEnabledColorGroup, true);
+          store.overrideSelector(getEnabledColorGroupByRegex, true);
+          store.overrideSelector(getRunGroupBy, {key: GroupByKey.EXPERIMENT});
+          const fixture = createComponent(
+            ['book'],
+            [RunsTableColumn.RUN_NAME, RunsTableColumn.RUN_COLOR]
+          );
+          fixture.detectChanges();
 
-        const menuButton = fixture.debugElement
-          .query(By.directive(RunsGroupMenuButtonContainer))
-          .query(By.css('button'));
-        menuButton.nativeElement.click();
+          const menuButton = fixture.debugElement
+            .query(By.directive(RunsGroupMenuButtonContainer))
+            .query(By.css('button'));
+          menuButton.nativeElement.click();
 
-        getColorGroupByHTMLElement(GroupByKey.EXPERIMENT)!.click();
-        expect(dispatchSpy).toHaveBeenCalledWith(
-          runGroupByChanged({
-            experimentIds: ['book'],
-            groupBy: {key: GroupByKey.EXPERIMENT},
-          })
-        );
+          getColorGroupByHTMLElement(GroupByKey.EXPERIMENT)!.click();
+          expect(dispatchSpy).toHaveBeenCalledWith(
+            runGroupByChanged({
+              experimentIds: ['book'],
+              groupBy: {key: GroupByKey.EXPERIMENT},
+            })
+          );
 
-        getColorGroupByHTMLElement(GroupByKey.RUN)!.click();
-        expect(dispatchSpy).toHaveBeenCalledWith(
-          runGroupByChanged({
-            experimentIds: ['book'],
-            groupBy: {key: GroupByKey.RUN},
-          })
-        );
+          getColorGroupByHTMLElement(GroupByKey.RUN)!.click();
+          expect(dispatchSpy).toHaveBeenCalledWith(
+            runGroupByChanged({
+              experimentIds: ['book'],
+              groupBy: {key: GroupByKey.RUN},
+            })
+          );
 
-        getColorGroupByHTMLElement('regexEdit')!.click();
-        const dialogContainer = overlayContainer
-          .getContainerElement()
-          .querySelector('mat-dialog-container');
-        expect(dialogContainer).toBeTruthy();
-        const [
-          fillExampleButton,
-          cancelButton,
-          saveButton,
-        ] = dialogContainer!.querySelectorAll('button');
-        expect(cancelButton!.textContent).toContain('Cancel');
-        expect(saveButton!.textContent).toContain('Save');
-      });
+          getColorGroupByHTMLElement('regex-edit')!.click();
+          const dialogContainer = overlayContainer
+            .getContainerElement()
+            .querySelector('mat-dialog-container');
+          expect(dialogContainer).toBeTruthy();
+          const [
+            fillExampleButton,
+            cancelButton,
+            saveButton,
+          ] = dialogContainer!.querySelectorAll('button');
+          expect(cancelButton!.textContent).toContain('Cancel');
+          expect(saveButton!.textContent).toContain('Save');
+        }
+      );
 
       it('dispatches `runGroupByChanged` on clicking `Regex` when there is a regex string', () => {
         store.overrideSelector(getEnabledColorGroup, true);
@@ -711,11 +766,7 @@ describe('runs_table', () => {
         );
         fixture.detectChanges();
 
-        const menuButton = fixture.debugElement
-          .query(By.directive(RunsGroupMenuButtonContainer))
-          .query(By.css('button'));
-        menuButton.nativeElement.click();
-
+        openColorGroupDialog(fixture);
         getColorGroupByHTMLElement(GroupByKey.REGEX)!.click();
         expect(dispatchSpy).toHaveBeenCalledWith(
           runGroupByChanged({
@@ -736,11 +787,7 @@ describe('runs_table', () => {
         );
         fixture.detectChanges();
 
-        const menuButton = fixture.debugElement
-          .query(By.directive(RunsGroupMenuButtonContainer))
-          .query(By.css('button'));
-        menuButton.nativeElement.click();
-
+        openColorGroupDialog(fixture);
         getColorGroupByHTMLElement(GroupByKey.REGEX)!.click();
         const dialogContainer = overlayContainer
           .getContainerElement()
@@ -757,12 +804,8 @@ describe('runs_table', () => {
           [RunsTableColumn.RUN_NAME, RunsTableColumn.RUN_COLOR]
         );
 
-        const menuButton = fixture.debugElement
-          .query(By.directive(RunsGroupMenuButtonContainer))
-          .query(By.css('button'));
-        menuButton.nativeElement.click();
-
-        getColorGroupByHTMLElement('regexEdit')!.click();
+        openColorGroupDialog(fixture);
+        getColorGroupByHTMLElement('regex-edit')!.click();
         const dialogContainer = overlayContainer
           .getContainerElement()
           .querySelector('mat-dialog-container');
@@ -805,12 +848,8 @@ describe('runs_table', () => {
           [RunsTableColumn.RUN_NAME, RunsTableColumn.RUN_COLOR]
         );
 
-        const menuButton = fixture.debugElement
-          .query(By.directive(RunsGroupMenuButtonContainer))
-          .query(By.css('button'));
-        menuButton.nativeElement.click();
-
-        getColorGroupByHTMLElement('regexEdit')!.click();
+        openColorGroupDialog(fixture);
+        getColorGroupByHTMLElement('regex-edit')!.click();
         const dialogContainer = overlayContainer
           .getContainerElement()
           .querySelector('mat-dialog-container');
