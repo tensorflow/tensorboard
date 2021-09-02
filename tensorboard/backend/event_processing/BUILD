@@ -25,6 +25,8 @@ py_test(
     deps = [
         ":io_wrapper",
         "//tensorboard:expect_tensorflow_installed",
+        "//tensorboard:test",
+        "//tensorboard/util:io_util",
     ],
 )
 
@@ -126,6 +128,7 @@ py_library(
     deps = [
         ":io_wrapper",
         "//tensorboard/compat:tensorflow",
+        "//tensorboard/util:io_util",
         "//tensorboard/util:tb_logging",
     ],
 )

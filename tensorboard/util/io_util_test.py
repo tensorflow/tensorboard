@@ -14,7 +14,7 @@
 
 
 from tensorboard import test as tb_test
-from google3.third_party.tensorboard.util import io_util
+from tensorboard.util import io_util
 
 
 class IoUtilTest(tb_test.TestCase):

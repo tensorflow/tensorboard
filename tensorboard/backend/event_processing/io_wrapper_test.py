@@ -16,10 +16,12 @@
 
 import os
 import tempfile
+from unittest import mock
 
 import tensorflow as tf
 
 from tensorboard.backend.event_processing import io_wrapper
+from tensorboard.util import io_util
 
 
 class IoWrapperTest(tf.test.TestCase):
@@ -29,15 +31,33 @@ class IoWrapperTest(tf.test.TestCase):
     def tearDown(self):
         self.stubs.CleanUp()
 
-    def testPathSeparator(self):
+    def testPathSeparatorForNonCloudPaths(self):
+        self.stubs.Set(os, "sep", "#")
+
+        with mock.patch.object(
+            io_util,
+            "IsCloudPath",
+            return_value=False,
+            autospec=True,
+            spec_set=True,
+        ):
+            self.assertEqual(io_wrapper.PathSeparator("/tmp/foo"), "#")
+            self.assertEqual(io_wrapper.PathSeparator("tmp/foo"), "#")
+
+    def testPathSeparatorForCloudPaths(self):
         # In nix systems, path separator would be the same as that of CNS/GCS
         # making it hard to tell if something went wrong.
         self.stubs.Set(os, "sep", "#")
 
-        self.assertEqual(io_wrapper.PathSeparator("/tmp/foo"), "#")
-        self.assertEqual(io_wrapper.PathSeparator("tmp/foo"), "#")
-        self.assertEqual(io_wrapper.PathSeparator("/cns/tmp/foo"), "/")
-        self.assertEqual(io_wrapper.PathSeparator("gs://foo"), "/")
+        with mock.patch.object(
+            io_util,
+            "IsCloudPath",
+            return_value=True,
+            autospec=True,
+            spec_set=True,
+        ):
+            self.assertEqual(io_wrapper.PathSeparator("/cns/tmp/foo"), "/")
+            self.assertEqual(io_wrapper.PathSeparator("gs://foo"), "/")
 
     def testIsTensorFlowEventsFileTrue(self):
         self.assertTrue(
