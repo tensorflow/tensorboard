@@ -13,10 +13,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {ChangeDetectionStrategy, Component} from '@angular/core';
+import {Store} from '@ngrx/store';
+import {Observable} from 'rxjs';
+
+import {State} from '../../app_state';
+import {getIsTimeSeriesPromotionEnabled} from '../../selectors';
 
 @Component({
   selector: 'metrics-dashboard',
   template: `
+    <div *ngIf="isButterBarEnabled$ | async" class="notice">
+      Temporary butter bar content.
+    </div>
     <tb-dashboard-layout>
       <runs-selector sidebar></runs-selector>
       <metrics-main-view main></metrics-main-view>
@@ -25,4 +33,10 @@ import {ChangeDetectionStrategy, Component} from '@angular/core';
   styleUrls: ['metrics_container.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class MetricsDashboardContainer {}
+export class MetricsDashboardContainer {
+  constructor(private readonly store: Store<State>) {}
+
+  readonly isButterBarEnabled$: Observable<boolean> = this.store.select(
+    getIsTimeSeriesPromotionEnabled
+  );
+}

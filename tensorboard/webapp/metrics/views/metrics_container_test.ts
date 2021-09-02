@@ -18,9 +18,11 @@ import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
-import {State} from '../../app_state';
 
+import {State} from '../../app_state';
+import {getIsTimeSeriesPromotionEnabled} from '../../selectors';
 import {MetricsDashboardContainer} from './metrics_container';
+import {MetricsPromoNoticeContainer} from './metrics_promo_notice_container';
 
 describe('metrics view', () => {
   let store: MockStore<State>;
@@ -28,7 +30,7 @@ describe('metrics view', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [NoopAnimationsModule],
-      declarations: [MetricsDashboardContainer],
+      declarations: [MetricsDashboardContainer, MetricsPromoNoticeContainer],
       providers: [provideMockStore()],
       // Ignore errors from components that are out-of-scope for this test:
       // 'runs-selector'.
@@ -36,6 +38,7 @@ describe('metrics view', () => {
     }).compileComponents();
 
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
+    store.overrideSelector(getIsTimeSeriesPromotionEnabled, false);
   });
 
   it('renders', () => {
@@ -43,5 +46,13 @@ describe('metrics view', () => {
     fixture.detectChanges();
 
     expect(fixture.debugElement.query(By.css('runs-selector'))).not.toBeNull();
+  });
+
+  it('renders notice when promotion is enabled', () => {
+    store.overrideSelector(getIsTimeSeriesPromotionEnabled, true);
+    const fixture = TestBed.createComponent(MetricsDashboardContainer);
+    fixture.detectChanges();
+
+    expect(fixture.debugElement.query(By.css('.notice'))).not.toBeNull();
   });
 });

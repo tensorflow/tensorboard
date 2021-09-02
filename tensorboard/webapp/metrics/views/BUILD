@@ -18,18 +18,25 @@ tf_ng_module(
     name = "views",
     srcs = [
         "metrics_container.ts",
+        "metrics_promo_notice_component.ts",
+        "metrics_promo_notice_container.ts",
         "metrics_views_module.ts",
     ],
     assets = [
         ":metrics_container_styles",
+        "metrics_promo_notice_component.ng.html",
     ],
     deps = [
+        "//tensorboard/webapp:app_state",
+        "//tensorboard/webapp:selectors",
         "//tensorboard/webapp/core",
         "//tensorboard/webapp/metrics/views/main_view",
         "//tensorboard/webapp/metrics/views/right_pane",
         "//tensorboard/webapp/runs/views/runs_selector",
         "@npm//@angular/common",
         "@npm//@angular/core",
+        "@npm//@ngrx/store",
+        "@npm//rxjs",
     ],
 )
 
@@ -64,6 +71,7 @@ tf_ts_library(
         ":utils",
         ":views",
         "//tensorboard/webapp:app_state",
+        "//tensorboard/webapp:selectors",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/angular:expect_angular_platform_browser_animations",
         "//tensorboard/webapp/angular:expect_ngrx_store_testing",
