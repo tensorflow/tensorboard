@@ -18,9 +18,8 @@ from google3.third_party.tensorboard.util import io_util
 
 
 class IoUtilTest(tb_test.TestCase):
-
     def testIsCloudPath(self):
-        self.assertEqual(io_util.IsCloudPath('foo/bar'), False)
+        self.assertEqual(io_util.IsCloudPath("foo/bar"), False)
 
 
 if __name__ == "__main__":
