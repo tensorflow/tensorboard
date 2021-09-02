@@ -20,6 +20,7 @@ import re
 
 
 from tensorboard.compat import tf
+from tensorboard.util import io_util
 from tensorboard.util import tb_logging
 
 
@@ -28,16 +29,8 @@ logger = tb_logging.get_logger()
 _ESCAPE_GLOB_CHARACTERS_REGEX = re.compile("([*?[])")
 
 
-def IsCloudPath(path):
-    return (
-        path.startswith("gs://")
-        or path.startswith("s3://")
-        or path.startswith("/cns/")
-    )
-
-
 def PathSeparator(path):
-    return "/" if IsCloudPath(path) else os.sep
+    return "/" if io_util.IsCloudPath(path) else os.sep
 
 
 def IsTensorFlowEventsFile(path):
@@ -209,7 +202,7 @@ def GetLogdirSubdirectories(path):
             "directory, %s" % path
         )
 
-    if IsCloudPath(path):
+    if io_util.IsCloudPath(path):
         # Glob-ing for files can be significantly faster than recursively
         # walking through directories for some file systems.
         logger.info(
