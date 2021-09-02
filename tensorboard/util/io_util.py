@@ -15,6 +15,6 @@
 """TensorBoard IO helpers."""
 
 
-def IsCloudPath(unused_path):
-    """Not implemented; simply returns False."""
-    return False
+def IsCloudPath(path):
+    """Checks whether a given path is Cloud filesystem path."""
+    return path.startswith("gs://") or path.startswith("s3://")

@@ -18,8 +18,14 @@ from tensorboard.util import io_util
 
 
 class IoUtilTest(tb_test.TestCase):
-    def testIsCloudPath(self):
-        self.assertEqual(io_util.IsCloudPath("foo/bar"), False)
+    def testIsCloudPathGcsIsTrue(self):
+        self.assertTrue(io_util.IsCloudPath("gs://bucket/foo"))
+
+    def testIsCloudPathS3IsTrue(self):
+        self.assertTrue(io_util.IsCloudPath("s3://bucket/foo"))
+
+    def testIsCloudPathFileIsFalse(self):
+        self.assertFalse(io_util.IsCloudPath("file:///tmp/foo"))
 
 
 if __name__ == "__main__":

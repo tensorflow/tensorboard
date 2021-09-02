@@ -25,8 +25,6 @@ py_test(
     deps = [
         ":io_wrapper",
         "//tensorboard:expect_tensorflow_installed",
-        "//tensorboard:test",
-        "//tensorboard/util:io_util",
     ],
 )
 
