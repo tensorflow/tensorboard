@@ -14,22 +14,32 @@ tf_sass_binary(
     src = "metrics_container.scss",
 )
 
+tf_sass_binary(
+    name = "metrics_promo_styles",
+    src = "metrics_promo_notice_component.scss",
+)
+
 tf_ng_module(
     name = "views",
     srcs = [
         "metrics_container.ts",
         "metrics_promo_notice_component.ts",
         "metrics_promo_notice_container.ts",
+        "metrics_promo_notice_types.ts",
         "metrics_views_module.ts",
     ],
     assets = [
         ":metrics_container_styles",
+        ":metrics_promo_styles",
         "metrics_promo_notice_component.ng.html",
     ],
     deps = [
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp:selectors",
+        "//tensorboard/webapp/angular:expect_angular_material_icon",
         "//tensorboard/webapp/core",
+        "//tensorboard/webapp/customization",
+        "//tensorboard/webapp/metrics/actions",
         "//tensorboard/webapp/metrics/views/main_view",
         "//tensorboard/webapp/metrics/views/right_pane",
         "//tensorboard/webapp/runs/views/runs_selector",
@@ -75,6 +85,7 @@ tf_ts_library(
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/angular:expect_angular_platform_browser_animations",
         "//tensorboard/webapp/angular:expect_ngrx_store_testing",
+        "//tensorboard/webapp/metrics/actions",
         "//tensorboard/webapp/metrics/data_source",
         "@npm//@angular/core",
         "@npm//@angular/platform-browser",

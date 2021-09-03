@@ -14,4 +14,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-Temporary butter bar content.
+<tb-customization [customizableComponent]="customPromoMessage" class="message">
+  Welcome to new default experience of TensorBoard. Time Series lets you view
+  all visualizations at once, put them side-by-side with pins, and customize
+  colors. Scalars and other plugins are still available.
+  <button class="go-to-scalars" (click)="onGoToScalars.emit()">
+    Go to Scalars plugin</button
+  >.
+</tb-customization>
+<button class="dismiss" (click)="onDismiss.emit()">
+  <mat-icon inline svgIcon="close_24px"></mat-icon>
+</button>

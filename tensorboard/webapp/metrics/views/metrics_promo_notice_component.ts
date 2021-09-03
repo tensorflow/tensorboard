@@ -12,11 +12,33 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {ChangeDetectionStrategy, Component} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  Inject,
+  Optional,
+  Output,
+  Type,
+} from '@angular/core';
+import {METRICS_PROMO_MESSAGE_COMPONENT} from './metrics_promo_notice_types';
 
 @Component({
   selector: 'metrics-promo-notice-component',
   templateUrl: 'metrics_promo_notice_component.ng.html',
+  styleUrls: ['metrics_promo_notice_component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class MetricsPromoNoticeComponent {}
+export class MetricsPromoNoticeComponent {
+  @Output()
+  readonly onDismiss = new EventEmitter();
+
+  @Output()
+  readonly onGoToScalars = new EventEmitter();
+
+  constructor(
+    @Optional()
+    @Inject(METRICS_PROMO_MESSAGE_COMPONENT)
+    readonly customPromoMessage: Type<Component>
+  ) {}
+}

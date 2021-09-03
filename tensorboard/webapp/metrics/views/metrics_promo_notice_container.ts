@@ -13,10 +13,27 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {ChangeDetectionStrategy, Component} from '@angular/core';
+import {Store} from '@ngrx/store';
+
+import {State} from '../../app_state';
+import {metricsPromoDismissed, metricsPromoGoToScalars} from '../actions';
 
 @Component({
   selector: 'metrics-promo-notice',
-  template: `<metrics-promo-notice-component></metrics-promo-notice-component>`,
+  template: `<metrics-promo-notice-component
+    (onDismiss)="onDismiss()"
+    (onGoToScalars)="onGoToScalars()"
+  ></metrics-promo-notice-component>`,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class MetricsPromoNoticeContainer {}
+export class MetricsPromoNoticeContainer {
+  constructor(private readonly store: Store<State>) {}
+
+  onDismiss() {
+    this.store.dispatch(metricsPromoDismissed());
+  }
+
+  onGoToScalars() {
+    this.store.dispatch(metricsPromoGoToScalars());
+  }
+}

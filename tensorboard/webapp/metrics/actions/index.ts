@@ -175,3 +175,11 @@ export const selectTimeEnableToggled = createAction(
 export const useRangeSelectTimeToggled = createAction(
   '[Metrics] Use Range Select Time Toggle'
 );
+
+export const metricsPromoDismissed = createAction(
+  '[Metrics] Metrics Promo Dismissed'
+);
+
+export const metricsPromoGoToScalars = createAction(
+  '[Metrics] Metrics Promo Go To Scalars'
+);

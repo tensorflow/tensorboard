@@ -22,9 +22,10 @@ import {getIsTimeSeriesPromotionEnabled} from '../../selectors';
 @Component({
   selector: 'metrics-dashboard',
   template: `
-    <div *ngIf="isButterBarEnabled$ | async" class="notice">
-      Temporary butter bar content.
-    </div>
+    <metrics-promo-notice
+      *ngIf="isButterBarEnabled$ | async"
+      class="notice"
+    ></metrics-promo-notice>
     <tb-dashboard-layout>
       <runs-selector sidebar></runs-selector>
       <metrics-main-view main></metrics-main-view>

@@ -14,8 +14,10 @@ limitations under the License.
 ==============================================================================*/
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
+import {MatIconModule} from '@angular/material/icon';
 
 import {LayoutModule} from '../../core';
+import {CustomizationModule} from '../../customization/customization_module';
 import {RunsSelectorModule} from '../../runs/views/runs_selector/runs_selector_module';
 import {MainViewModule} from './main_view/main_view_module';
 import {MetricsDashboardContainer} from './metrics_container';
@@ -32,8 +34,10 @@ import {RightPaneModule} from './right_pane/right_pane_module';
   exports: [MetricsDashboardContainer],
   imports: [
     CommonModule,
+    CustomizationModule,
     LayoutModule,
     MainViewModule,
+    MatIconModule,
     RightPaneModule,
     RunsSelectorModule,
   ],
