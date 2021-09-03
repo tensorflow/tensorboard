@@ -847,4 +847,17 @@ describe('metrics selectors', () => {
       );
     });
   });
+
+  describe('#getPromoteTimeSeries', () => {
+    beforeEach(() => {
+      selectors.getPromoteTimeSeries.release();
+    });
+
+    it('returns current visualization filters', () => {
+      const state = appStateFromMetricsState(
+        buildMetricsState({promoteTimeSeries: false})
+      );
+      expect(selectors.getPromoteTimeSeries(state)).toEqual(false);
+    });
+  });
 });

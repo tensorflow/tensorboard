@@ -262,6 +262,7 @@ const {initialState, reducers: routeContextReducer} = createRouteContextedState<
     },
   },
   {
+    promoteTimeSeries: true,
     timeSeriesData: {
       scalars: {},
       histograms: {},
@@ -393,8 +394,14 @@ const reducer = createReducer(
       metricsSettings.scalarSmoothing = partialSettings.scalarSmoothing;
     }
 
+    const promoteTimeSeries =
+      typeof partialSettings.timeSeriesPromotionDismissed === 'boolean'
+        ? !partialSettings.timeSeriesPromotionDismissed
+        : state.promoteTimeSeries;
+
     return {
       ...state,
+      promoteTimeSeries,
       settings: {
         ...state.settings,
         ...metricsSettings,
@@ -911,7 +918,10 @@ const reducer = createReducer(
     (state): MetricsState => {
       return {...state, filteredPluginTypes: new Set()};
     }
-  )
+  ),
+  on(actions.metricsPromoDismissed, (state) => {
+    return {...state, promoteTimeSeries: false};
+  })
 );
 
 export function reducers(state: MetricsState | undefined, action: Action) {
