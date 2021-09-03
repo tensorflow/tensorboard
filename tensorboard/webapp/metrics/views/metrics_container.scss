@@ -16,12 +16,17 @@ limitations under the License.
 
 :host {
   display: flex;
-  height: 100%;
   flex-direction: column;
+  height: 100%;
+  justify-content: stretch;
   overflow: hidden;
 }
 
 .notice {
+  background-color: rgba(mat-color($mat-yellow, 200), 0.85);
+  border-bottom: 1px solid mat-color($mat-yellow, 500);
+  color: #000;
+  display: block;
   flex: 0 0;
 }
 
