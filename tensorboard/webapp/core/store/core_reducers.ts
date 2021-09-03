@@ -14,6 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import {Action, createReducer, on} from '@ngrx/store';
 
+import {metricsPromoGoToScalars} from '../../metrics/actions';
 import {globalSettingsLoaded} from '../../persistent_settings';
 import {DataLoadState} from '../../types/data';
 import * as actions from '../actions';
@@ -181,6 +182,9 @@ const reducer = createReducer(
     }
 
     return nextState;
+  }),
+  on(metricsPromoGoToScalars, (state) => {
+    return {...state, activePlugin: 'scalars'};
   })
 );
 
