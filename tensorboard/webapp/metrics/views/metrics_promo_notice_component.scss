@@ -36,6 +36,10 @@ button {
   }
 }
 
+tb-customization button {
+  color: map-get($tb-foreground, link);
+}
+
 .dismiss {
   align-self: baseline;
   flex: none;

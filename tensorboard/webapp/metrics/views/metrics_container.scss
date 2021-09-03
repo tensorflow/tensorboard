@@ -25,7 +25,7 @@ limitations under the License.
 .notice {
   background-color: rgba(mat-color($mat-yellow, 200), 0.85);
   border-bottom: 1px solid mat-color($mat-yellow, 500);
-  color: #000;
+  color: map-get($tb-foreground, text);
   display: block;
   flex: 0 0;
 }
