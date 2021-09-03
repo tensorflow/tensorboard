@@ -12,6 +12,7 @@ py_library(
     visibility = ["//visibility:public"],
     deps = [
         "//tensorboard/compat:tensorflow",
+        "//tensorboard/util:io_util",
         "//tensorboard/util:tb_logging",
     ],
 )
@@ -125,6 +126,7 @@ py_library(
     deps = [
         ":io_wrapper",
         "//tensorboard/compat:tensorflow",
+        "//tensorboard/util:io_util",
         "//tensorboard/util:tb_logging",
     ],
 )

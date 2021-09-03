@@ -29,21 +29,6 @@ class IoWrapperTest(tf.test.TestCase):
     def tearDown(self):
         self.stubs.CleanUp()
 
-    def testIsCloudPathGcsIsTrue(self):
-        self.assertTrue(io_wrapper.IsCloudPath("gs://bucket/foo"))
-
-    def testIsCloudPathS3IsTrue(self):
-        self.assertTrue(io_wrapper.IsCloudPath("s3://bucket/foo"))
-
-    def testIsCloudPathCnsIsTrue(self):
-        self.assertTrue(io_wrapper.IsCloudPath("/cns/foo/bar"))
-
-    def testIsCloudPathFileIsFalse(self):
-        self.assertFalse(io_wrapper.IsCloudPath("file:///tmp/foo"))
-
-    def testIsCloudPathLocalIsFalse(self):
-        self.assertFalse(io_wrapper.IsCloudPath("/tmp/foo"))
-
     def testPathSeparator(self):
         # In nix systems, path separator would be the same as that of CNS/GCS
         # making it hard to tell if something went wrong.
@@ -51,8 +36,8 @@ class IoWrapperTest(tf.test.TestCase):
 
         self.assertEqual(io_wrapper.PathSeparator("/tmp/foo"), "#")
         self.assertEqual(io_wrapper.PathSeparator("tmp/foo"), "#")
-        self.assertEqual(io_wrapper.PathSeparator("/cns/tmp/foo"), "/")
         self.assertEqual(io_wrapper.PathSeparator("gs://foo"), "/")
+        self.assertEqual(io_wrapper.PathSeparator("s3://foo"), "/")
 
     def testIsTensorFlowEventsFileTrue(self):
         self.assertTrue(

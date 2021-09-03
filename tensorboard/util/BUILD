@@ -103,6 +103,24 @@ py_test(
 )
 
 py_library(
+    name = "io_util",
+    srcs = ["io_util.py"],
+    srcs_version = "PY3",
+)
+
+py_test(
+    name = "io_util_test",
+    size = "small",
+    srcs = ["io_util_test.py"],
+    srcs_version = "PY3",
+    tags = ["support_notf"],
+    deps = [
+        ":io_util",
+        "//tensorboard:test",
+    ],
+)
+
+py_library(
     name = "platform_util",
     srcs = ["platform_util.py"],
     srcs_version = "PY3",
