@@ -83,6 +83,9 @@ class TfRunsSelector extends LegacyElementMixin(PolymerElement) {
         padding-right: 16px;
         box-sizing: border-box;
       }
+      tf-wbr-string {
+        overflow-wrap: break-word;
+      }
       tf-multi-checkbox {
         display: flex;
         flex-grow: 1;
