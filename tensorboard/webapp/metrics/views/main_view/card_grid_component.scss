@@ -52,7 +52,7 @@ card-view {
 }
 
 .group-controls {
-  color: mat-color($tb-foreground, secondary-text);
+  @include tb-theme-foreground-prop(color, secondary-text);
   display: grid;
   align-items: center;
   grid-template-columns: 1fr 1fr 1fr;
@@ -82,10 +82,21 @@ card-view {
 
 .pagination-input {
   margin-right: $metrics-preferred-gap;
+
+  input {
+    background: transparent;
+    border: 1px solid currentColor;
+    color: inherit;
+    font: inherit;
+  }
 }
 
 .expand-group-button,
 .pagination-button {
+  @include tb-theme-foreground-prop(color, secondary-text);
   background-color: $metrics-button-background-color-on-gray;
-  color: mat-color($tb-foreground, secondary-text);
+
+  &:disabled {
+    @include tb-theme-foreground-prop(color, disabled-text);
+  }
 }
