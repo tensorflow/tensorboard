@@ -15,9 +15,13 @@ limitations under the License.
 import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {Store} from '@ngrx/store';
 import {Observable} from 'rxjs';
+import {combineLatestWith, map} from 'rxjs/operators';
 
 import {State} from '../../app_state';
-import {getIsTimeSeriesPromotionEnabled} from '../../selectors';
+import {
+  getIsTimeSeriesPromotionEnabled,
+  getPromoteTimeSeries,
+} from '../../selectors';
 
 @Component({
   selector: 'metrics-dashboard',
@@ -37,7 +41,12 @@ import {getIsTimeSeriesPromotionEnabled} from '../../selectors';
 export class MetricsDashboardContainer {
   constructor(private readonly store: Store<State>) {}
 
-  readonly isButterBarEnabled$: Observable<boolean> = this.store.select(
-    getIsTimeSeriesPromotionEnabled
-  );
+  readonly isButterBarEnabled$: Observable<boolean> = this.store
+    .select(getIsTimeSeriesPromotionEnabled)
+    .pipe(
+      combineLatestWith(this.store.select(getPromoteTimeSeries)),
+      map(([promotionFeatureEnabled, promoteTimeSeries]) => {
+        return promotionFeatureEnabled && promoteTimeSeries;
+      })
+    );
 }

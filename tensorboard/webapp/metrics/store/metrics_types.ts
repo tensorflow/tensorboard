@@ -201,6 +201,7 @@ export interface MetricsSettings {
 }
 
 export interface MetricsRoutelessState {
+  promoteTimeSeries: boolean;
   timeSeriesData: TimeSeriesData;
   // Default settings. For the legacy reasons, we cannot change the name of the
   // prop. It either is set by application or a user via settings storage.

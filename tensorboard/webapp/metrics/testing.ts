@@ -97,6 +97,7 @@ function buildBlankState(): MetricsState {
     useRangeSelectTime: false,
     filteredPluginTypes: new Set(),
     stepMinMax: {min: Infinity, max: -Infinity},
+    promoteTimeSeries: false,
   };
 }
 

@@ -29,6 +29,7 @@ import {
   getMetricsIgnoreOutliers,
   getMetricsScalarSmoothing,
   getMetricsTooltipSort,
+  getPromoteTimeSeries,
   METRICS_FEATURE_KEY,
   METRICS_SETTINGS_DEFAULT,
   reducers,
@@ -86,6 +87,12 @@ export function getMetricsTooltipSortSettingFactory() {
   });
 }
 
+export function getMetricsTimeSeriesPromotionDismissed() {
+  return createSelector(getPromoteTimeSeries, (promoteTimeSeries) => {
+    return {timeSeriesPromotionDismissed: !promoteTimeSeries};
+  });
+}
+
 @NgModule({
   imports: [
     CommonModule,
@@ -112,6 +119,9 @@ export function getMetricsTooltipSortSettingFactory() {
     ),
     PersistentSettingsConfigModule.defineGlobalSetting(
       getMetricsTooltipSortSettingFactory
+    ),
+    PersistentSettingsConfigModule.defineGlobalSetting(
+      getMetricsTimeSeriesPromotionDismissed
     ),
   ],
   providers: [

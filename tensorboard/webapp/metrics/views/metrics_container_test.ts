@@ -20,7 +20,10 @@ import {Action, Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
 
 import {State} from '../../app_state';
-import {getIsTimeSeriesPromotionEnabled} from '../../selectors';
+import {
+  getIsTimeSeriesPromotionEnabled,
+  getPromoteTimeSeries,
+} from '../../selectors';
 import {metricsPromoDismissed, metricsPromoGoToScalars} from '../actions';
 import {MetricsDashboardContainer} from './metrics_container';
 import {MetricsPromoNoticeComponent} from './metrics_promo_notice_component';
@@ -45,6 +48,7 @@ describe('metrics view', () => {
 
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
     store.overrideSelector(getIsTimeSeriesPromotionEnabled, false);
+    store.overrideSelector(getPromoteTimeSeries, false);
   });
 
   it('renders', () => {
@@ -54,8 +58,9 @@ describe('metrics view', () => {
     expect(fixture.debugElement.query(By.css('runs-selector'))).not.toBeNull();
   });
 
-  it('renders notice when promotion is enabled', () => {
+  it('renders notice when promotion is enabled and feature is not disabled by user', () => {
     store.overrideSelector(getIsTimeSeriesPromotionEnabled, true);
+    store.overrideSelector(getPromoteTimeSeries, true);
     const fixture = TestBed.createComponent(MetricsDashboardContainer);
     fixture.detectChanges();
 
@@ -70,6 +75,7 @@ describe('metrics view', () => {
       spyOn(store, 'dispatch').and.callFake((action) => actions.push(action));
 
       store.overrideSelector(getIsTimeSeriesPromotionEnabled, true);
+      store.overrideSelector(getPromoteTimeSeries, true);
       const fixture = TestBed.createComponent(MetricsDashboardContainer);
       fixture.detectChanges();
 

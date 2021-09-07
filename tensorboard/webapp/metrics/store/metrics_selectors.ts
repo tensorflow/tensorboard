@@ -422,3 +422,10 @@ export const getMetricsFilteredPluginTypes = createSelector(
     return state.filteredPluginTypes;
   }
 );
+
+export const getPromoteTimeSeries = createSelector(
+  selectMetricsState,
+  (state: MetricsState): boolean => {
+    return state.promoteTimeSeries;
+  }
+);
