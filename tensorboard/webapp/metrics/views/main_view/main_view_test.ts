@@ -1252,7 +1252,7 @@ describe('metrics main view', () => {
           .query(By.css('metrics-filtered-view'))
           .nativeElement.textContent.trim()
       ).toContain(
-        'No cards matches tag filter /^no_match_please$/ among 100 tags.'
+        'No matches for tag filter /^no_match_please$/ out of 100 tags.'
       );
     }));
 
@@ -1273,8 +1273,8 @@ describe('metrics main view', () => {
           .query(By.css('metrics-filtered-view'))
           .nativeElement.textContent.trim()
       ).toContain(
-        'No cards matches tag filter /./ among 100 tags and image ' +
-          'or histogram visualization filter.'
+        'No matches for tag filter /./ and image or histogram ' +
+          'visualization filter out of 100 tags.'
       );
     }));
 

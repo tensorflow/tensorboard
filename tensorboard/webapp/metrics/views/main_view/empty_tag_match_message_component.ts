@@ -32,13 +32,12 @@ declare namespace Intl {
 
 @Component({
   selector: 'metrics-empty-tag-match-component',
-  template: `No cards matches tag filter
-    <code>/{{ tagFilterRegex }}/</code> among {{ tagCounts | number }} tags<span
-      *ngIf="pluginTypes.size"
-    >
+  template: `No matches for tag filter <code>/{{ tagFilterRegex }}/</code
+    ><span *ngIf="pluginTypes.size">
       and {{ getPluginTypeFilterString(pluginTypes) }} visualization
       filter</span
-    >.`,
+    >
+    out of {{ tagCounts | number }} tags.`,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EmptyTagMatchMessageComponent {
