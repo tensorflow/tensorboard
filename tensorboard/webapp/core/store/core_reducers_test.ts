@@ -12,17 +12,18 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {metricsPromoGoToScalars} from '../../metrics/actions';
+import {globalSettingsLoaded} from '../../persistent_settings';
+import {DataLoadState} from '../../types/data';
 import * as actions from '../actions';
-import {reducers} from './core_reducers';
 import {
   buildPluginMetadata,
+  createCoreState,
   createEnvironment,
   createPluginMetadata,
-  createCoreState,
 } from '../testing';
-import {DataLoadState} from '../../types/data';
 import {PluginsListFailureCode} from '../types';
-import {globalSettingsLoaded} from '../../persistent_settings';
+import {reducers} from './core_reducers';
 
 function createPluginsListing() {
   return {
@@ -637,6 +638,17 @@ describe('core reducer', () => {
         globalSettingsLoaded({partialSettings: {sideBarWidthInPercent: NaN}})
       );
       expect(state4.sideBarWidthInPercent).toBe(0);
+    });
+  });
+
+  describe('#metricsPromoGoToScalars', () => {
+    it('changes active plugin to scalars', () => {
+      const state = createCoreState({
+        activePlugin: 'timeseries',
+      });
+      const nextState = reducers(state, metricsPromoGoToScalars());
+
+      expect(nextState.activePlugin).toBe('scalars');
     });
   });
 });
