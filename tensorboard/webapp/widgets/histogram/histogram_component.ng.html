@@ -55,8 +55,20 @@ limitations under the License.
         class="linked-time"
         [style.transform]="getCssTranslatePx(0, scales.temporalScale(linkedTime.startStep))"
       >
-        <linked-time-fob class="linked-time-fob" [step]="linkedTime.startStep">
-        </linked-time-fob>
+        <linked-time-fob
+          class="linked-time-fob"
+          [step]="linkedTime.startStep"
+        ></linked-time-fob>
+      </div>
+      <div
+        *ngIf="linkedTime.endStep"
+        class="linked-time"
+        [style.transform]="getCssTranslatePx(0, scales.temporalScale(linkedTime.endStep))"
+      >
+        <linked-time-fob
+          class="linked-time-fob"
+          [step]="linkedTime.endStep"
+        ></linked-time-fob>
       </div>
     </ng-container>
   </div>

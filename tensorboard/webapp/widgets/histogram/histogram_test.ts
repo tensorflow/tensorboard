@@ -949,6 +949,25 @@ describe('histogram test', () => {
     });
 
     describe('multi step', () => {
+      it('shows a fob when a range time selection is present', () => {
+        const fixture = createComponent('foo', [
+          buildHistogramDatum({step: 0, wallTime: 100}),
+          buildHistogramDatum({step: 5, wallTime: -200}),
+          buildHistogramDatum({step: 10, wallTime: 400}),
+        ]);
+        fixture.componentInstance.mode = HistogramMode.OFFSET;
+        fixture.componentInstance.timeProperty = TimeProperty.STEP;
+        fixture.componentInstance.linkedTime = {startStep: 5, endStep: 10};
+        fixture.detectChanges();
+        intersectionObserver.simulateVisibilityChange(fixture, true);
+
+        const controls = fixture.debugElement.queryAll(byCss.LINKED_TIME_FOB);
+        expect(controls.map((el) => el.nativeElement.textContent)).toEqual([
+          '5',
+          '10',
+        ]);
+      });
+
       it('puts color on histogram that is in the range (inclusive)', () => {
         const fixture = createComponent('foo', [
           buildHistogramDatum({step: 0, wallTime: 100}),
