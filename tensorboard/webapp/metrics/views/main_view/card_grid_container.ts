@@ -153,7 +153,8 @@ export class CardGridContainer implements OnChanges, OnDestroy {
 
   constructor(
     private readonly store: Store<State>,
-    @Optional() private readonly cdkScrollable: CdkScrollable | null) {}
+    @Optional() private readonly cdkScrollable: CdkScrollable | null
+  ) {}
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['cardIdsWithMetadata']) {
@@ -174,17 +175,22 @@ export class CardGridContainer implements OnChanges, OnDestroy {
     this.pageIndex$.next(newIndex);
 
     let ScrollingElement = this.cdkScrollable?.getElementRef().nativeElement;
-    if(ScrollingElement) {
-      let relativePosition = ScrollingElement.scrollHeight - ScrollingElement.scrollTop;
-      // Clear call stack to allow dom update before updating scroll to keep relative position.
+    if (ScrollingElement) {
+      let relativePosition =
+        ScrollingElement.scrollHeight - ScrollingElement.scrollTop;
+      // Clear call stack to allow dom update before updating scroll to keep
+      // relative position.
       setTimeout(this.scrollToRelativePosition.bind(this, relativePosition), 0);
     }
   }
 
   scrollToRelativePosition(relativePosition: number) {
     let ScrollingElement = this.cdkScrollable?.getElementRef().nativeElement;
-    if(ScrollingElement) {
-      ScrollingElement.scrollTo(0, ScrollingElement.scrollHeight - relativePosition);
+    if (ScrollingElement) {
+      ScrollingElement.scrollTo(
+        0,
+        ScrollingElement.scrollHeight - relativePosition
+      );
     }
   }
 
