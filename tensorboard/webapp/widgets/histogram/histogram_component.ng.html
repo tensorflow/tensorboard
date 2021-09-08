@@ -34,20 +34,39 @@ limitations under the License.
       </g>
     </g>
   </svg>
-  <svg class="axis y-axis">
-    <g #yAxis></g>
-    <!-- d3 places axis label at 9px right from the left edge. -->
-    <g class="tooltip" [style.transform]="getCssTranslatePx(9, 0)">
-      <g
-        *ngIf="tooltipData"
-        [style.transform]="getGroupTransform(tooltipData.closestDatum)"
-      >
-        <text [attr.y]="tooltipData.yAxis.position">
-          {{tooltipData.yAxis.label}}
-        </text>
+  <div class="axis y-axis">
+    <svg>
+      <g #yAxis></g>
+      <!-- d3 places axis label at 9px right from the left edge. -->
+      <g class="tooltip" [style.transform]="getCssTranslatePx(9, 0)">
+        <g
+          *ngIf="tooltipData"
+          [style.transform]="getGroupTransform(tooltipData.closestDatum)"
+        >
+          <text [attr.y]="tooltipData.yAxis.position">
+            {{tooltipData.yAxis.label}}
+          </text>
+        </g>
       </g>
-    </g>
-  </svg>
+    </svg>
+    <!-- Disable the feature when in non-offset and non-step mode. -->
+    <ng-container
+      *ngIf="
+        mode === HistogramMode.OFFSET &&
+        timeProperty === TimeProperty.STEP &&
+        linkedTime &&
+        scales
+      "
+    >
+      <div
+        class="linked-time"
+        [style.transform]="getCssTranslatePx(0, scales.temporalScale(linkedTime.startStep))"
+      >
+        <linked-time-fob class="linked-time-fob" [step]="linkedTime.startStep">
+        </linked-time-fob>
+      </div>
+    </ng-container>
+  </div>
   <svg #content class="content">
     <g class="grid">
       <g

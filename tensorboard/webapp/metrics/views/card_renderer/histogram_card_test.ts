@@ -58,6 +58,7 @@ class TestableHistogramWidget {
   @Input() color!: string;
   @Input() name!: string;
   @Input() data!: HistogramData;
+  @Input() linkedTime!: {startStep: number; endStep: number | null} | null;
 
   element = {
     setSeriesData: () => {},
@@ -106,6 +107,7 @@ describe('histogram card', () => {
     store.overrideSelector(getExperimentIdForRunId, null);
     store.overrideSelector(getExperimentIdToAliasMap, {});
     store.overrideSelector(getRun, null);
+    store.overrideSelector(selectors.getMetricsSelectedTime, null);
   });
 
   it('renders empty message when there is no data', () => {
@@ -265,6 +267,56 @@ describe('histogram card', () => {
       button.nativeElement.click();
       expect(onFullWidthChanged.calls.allArgs()).toEqual([[true], [false]]);
       expect(onFullHeightChanged.calls.allArgs()).toEqual([[true], [false]]);
+    });
+  });
+
+  describe('linked time', () => {
+    it('passes null when no time is selected', () => {
+      provideMockCardSeriesData(selectSpy, PluginType.HISTOGRAMS, 'card1');
+      store.overrideSelector(selectors.getMetricsSelectedTime, null);
+      const fixture = createHistogramCardContainer();
+      fixture.detectChanges();
+
+      const viz = fixture.debugElement.query(
+        By.directive(TestableHistogramWidget)
+      );
+      expect(viz.componentInstance.linkedTime).toBeNull();
+    });
+
+    it('passes single step linked time parameter to histogram viz', () => {
+      provideMockCardSeriesData(selectSpy, PluginType.HISTOGRAMS, 'card1');
+      store.overrideSelector(selectors.getMetricsSelectedTime, {
+        start: {step: 5},
+        end: null,
+      });
+      const fixture = createHistogramCardContainer();
+      fixture.detectChanges();
+
+      const viz = fixture.debugElement.query(
+        By.directive(TestableHistogramWidget)
+      );
+      expect(viz.componentInstance.linkedTime).toEqual({
+        startStep: 5,
+        endStep: null,
+      });
+    });
+
+    it('passes range step linked time parameter', () => {
+      provideMockCardSeriesData(selectSpy, PluginType.HISTOGRAMS, 'card1');
+      store.overrideSelector(selectors.getMetricsSelectedTime, {
+        start: {step: 5},
+        end: {step: 10},
+      });
+      const fixture = createHistogramCardContainer();
+      fixture.detectChanges();
+
+      const viz = fixture.debugElement.query(
+        By.directive(TestableHistogramWidget)
+      );
+      expect(viz.componentInstance.linkedTime).toEqual({
+        startStep: 5,
+        endStep: 10,
+      });
     });
   });
 });

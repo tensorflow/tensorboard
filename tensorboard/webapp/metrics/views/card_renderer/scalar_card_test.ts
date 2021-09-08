@@ -58,6 +58,7 @@ import {
   ScaleType,
   TooltipDatum,
 } from '../../../widgets/line_chart_v2/types';
+import {LinkedTimeFobModule} from '../../../widgets/linked_time_fob/linked_time_fob_module';
 import {ResizeDetectorTestingModule} from '../../../widgets/resize_detector_testing_module';
 import {TruncatedPathModule} from '../../../widgets/text/truncated_path_module';
 import {PluginType} from '../../data_source';
@@ -233,12 +234,13 @@ describe('scalar card', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [
+        IntersectionObserverTestingModule,
+        LinkedTimeFobModule,
         MatDialogModule,
         MatIconTestingModule,
         MatMenuModule,
         MatProgressSpinnerModule,
         NoopAnimationsModule,
-        IntersectionObserverTestingModule,
         ResizeDetectorTestingModule,
         TruncatedPathModule,
       ],

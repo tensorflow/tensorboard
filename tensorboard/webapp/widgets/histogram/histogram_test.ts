@@ -24,6 +24,8 @@ import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 
 import {IntersectionObserverTestingModule} from '../intersection_observer/intersection_observer_testing_module';
+import {LinkedTimeFobModule} from '../linked_time_fob/linked_time_fob_module';
+import {HistogramComponent, TooltipData} from './histogram_component';
 import {
   Bin,
   HistogramData,
@@ -31,7 +33,6 @@ import {
   HistogramMode,
   TimeProperty,
 } from './histogram_types';
-import {HistogramComponent, TooltipData} from './histogram_component';
 
 function buildBin(override: Partial<Bin> = {}): Bin {
   return {
@@ -65,6 +66,7 @@ function buildHistogramDatum(
       [color]="color"
       [name]="name"
       [data]="data"
+      [linkedTime]="linkedTime"
     >
     </tb-histogram>
   `,
@@ -86,6 +88,7 @@ class TestableComponent {
   @Input() color!: string;
   @Input() name!: string;
   @Input() data!: HistogramData;
+  @Input() linkedTime!: {startStep: number; endStep: number | null} | null;
 
   simulateMouseMove(event: {
     target: SVGElement;
@@ -106,12 +109,17 @@ describe('histogram test', () => {
     Y_AXIS: By.css('.y-axis'),
     HISTOGRAMS: By.css('.histograms'),
     HISTOGRAM: By.css('.histogram'),
+    LINKED_TIME_FOB: By.css('.linked-time'),
   };
   let intersectionObserver: IntersectionObserverTestingModule;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [NoopAnimationsModule, IntersectionObserverTestingModule],
+      imports: [
+        NoopAnimationsModule,
+        IntersectionObserverTestingModule,
+        LinkedTimeFobModule,
+      ],
       declarations: [HistogramComponent, TestableComponent],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
@@ -837,6 +845,77 @@ describe('histogram test', () => {
           })
         );
       });
+    });
+  });
+
+  describe('linked time feature integration', () => {
+    describe('feature disable', () => {
+      it('does not show fob when in overlay modes', () => {
+        const fixture = createComponent('foo', [
+          buildHistogramDatum({step: 0, wallTime: 100}),
+          buildHistogramDatum({step: 5, wallTime: -200}),
+          buildHistogramDatum({step: 10, wallTime: 400}),
+        ]);
+        fixture.componentInstance.mode = HistogramMode.OVERLAY;
+        fixture.componentInstance.timeProperty = TimeProperty.STEP;
+        fixture.componentInstance.linkedTime = {startStep: 5, endStep: null};
+        fixture.detectChanges();
+        intersectionObserver.simulateVisibilityChange(fixture, true);
+
+        const controls = fixture.debugElement.queryAll(byCss.LINKED_TIME_FOB);
+        expect(controls.length).toBe(0);
+      });
+
+      it('does not show fob when in wall time timeProperty mode', () => {
+        const fixture = createComponent('foo', [
+          buildHistogramDatum({step: 0, wallTime: 100}),
+          buildHistogramDatum({step: 5, wallTime: -200}),
+          buildHistogramDatum({step: 10, wallTime: 400}),
+        ]);
+        fixture.componentInstance.mode = HistogramMode.OFFSET;
+        fixture.componentInstance.timeProperty = TimeProperty.WALL_TIME;
+        fixture.componentInstance.linkedTime = {startStep: 5, endStep: null};
+        fixture.detectChanges();
+        intersectionObserver.simulateVisibilityChange(fixture, true);
+
+        const controls = fixture.debugElement.queryAll(byCss.LINKED_TIME_FOB);
+        expect(controls.length).toBe(0);
+      });
+    });
+
+    it('shows a fob when a single time selection is present', () => {
+      const fixture = createComponent('foo', [
+        buildHistogramDatum({step: 0, wallTime: 100}),
+        buildHistogramDatum({step: 5, wallTime: -200}),
+        buildHistogramDatum({step: 10, wallTime: 400}),
+      ]);
+      fixture.componentInstance.mode = HistogramMode.OFFSET;
+      fixture.componentInstance.timeProperty = TimeProperty.STEP;
+      fixture.componentInstance.linkedTime = {startStep: 5, endStep: null};
+      fixture.detectChanges();
+      intersectionObserver.simulateVisibilityChange(fixture, true);
+
+      const controls = fixture.debugElement.queryAll(byCss.LINKED_TIME_FOB);
+      expect(controls.map((el) => el.nativeElement.textContent)).toEqual(['5']);
+    });
+
+    it('positions fob according to the scale', () => {
+      const fixture = createComponent('foo', [
+        buildHistogramDatum({step: 0, wallTime: 100}),
+        buildHistogramDatum({step: 10, wallTime: 400}),
+      ]);
+      fixture.componentInstance.mode = HistogramMode.OFFSET;
+      fixture.componentInstance.timeProperty = TimeProperty.STEP;
+      fixture.componentInstance.linkedTime = {startStep: 5, endStep: null};
+      fixture.detectChanges();
+      intersectionObserver.simulateVisibilityChange(fixture, true);
+
+      const controls = fixture.debugElement.queryAll(byCss.LINKED_TIME_FOB);
+      expect(controls.map((el) => el.nativeElement.style.transform)).toEqual([
+        // In 100px by 100px view, in the offset view, the main content spans 0
+        // to 70px and startStep=5 is right in the middle, thus, 35px.
+        'translate(0px, 35px)',
+      ]);
     });
   });
 });

@@ -95,7 +95,11 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
 
   @Input() data!: HistogramData;
 
+  @Input() linkedTime?: {startStep: number; endStep: number | null} | null;
+
   readonly HistogramMode = HistogramMode;
+  readonly TimeProperty = TimeProperty;
+
   tooltipData: null | TooltipData = null;
 
   private ngUnsubscribe = new Subject<void>();
@@ -103,7 +107,7 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
     histogramHeight: 0,
     contentClientRect: {height: 0, width: 0},
   };
-  private scales: Scales | null = null;
+  scales: Scales | null = null;
   private formatters = {
     binNumber: d3.format('.3~s'),
     count: d3.format('.3n'),

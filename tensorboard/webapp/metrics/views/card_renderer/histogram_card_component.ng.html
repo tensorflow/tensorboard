@@ -62,6 +62,10 @@ limitations under the License.
   [mode]="mode"
   [timeProperty]="timeProperty(xAxisType)"
   [color]="runColorScale(runId)"
+  [linkedTime]="selectedTime ? {
+    startStep: selectedTime.start.step ?? null,
+    endStep: selectedTime.end?.step ?? null
+  } : null"
 ></tb-histogram>
 <ng-template #noData>
   <div *ngIf="loadState === DataLoadState.FAILED" class="empty-message">

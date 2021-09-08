@@ -209,29 +209,33 @@ limitations under the License.
 >
   <ng-container *ngIf="selectedTime">
     <div
-      class="selected-time-fob"
-      [style.left]="
+      [style.transform]="'translate(' +
         xScale.forward(
           viewExtent.x,
           [0, domDim.width],
           selectedTime.start.step
-        ) + 'px'
+        ) + 'px, 0)'
       "
     >
-      {{formatter.formatTick(selectedTime.start.step)}}
+      <linked-time-fob
+        class="selected-time-fob"
+        [step]="selectedTime.start.step"
+      ></linked-time-fob>
     </div>
     <div
       *ngIf="selectedTime.end"
-      class="selected-time-fob"
-      [style.left]="
+      [style.transform]="'translate(' +
         xScale.forward(
           viewExtent.x,
           [0, domDim.width],
           selectedTime.end.step
-        ) + 'px'
+        ) + 'px, 0)'
       "
     >
-      {{formatter.formatTick(selectedTime.end.step)}}
+      <linked-time-fob
+        class="selected-time-fob"
+        [step]="selectedTime.end.step"
+      ></linked-time-fob>
     </div>
   </ng-container>
 </ng-template>
