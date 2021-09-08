@@ -186,14 +186,39 @@ svg {
     stroke: currentColor;
     fill: transparent;
   }
+
+  .no-color {
+    // Must override the color on style attribute.
+    color: rgba(#ddd, 0.4) !important;
+
+    path {
+      stroke-opacity: 0.2;
+    }
+
+    @include tb-dark-theme {
+      color: rgba(#333, 0.4) !important;
+    }
+  }
 }
 
 // Offset mode customizations.
-.offset .content .histograms path {
-  stroke: #fff;
+.offset .content .histograms {
+  path {
+    stroke: #fff;
 
-  @include tb-dark-theme {
-    stroke: map-get($tb-dark-foreground, border);
+    @include tb-dark-theme {
+      stroke: map-get($tb-dark-foreground, border);
+    }
+  }
+
+  &.linked-time-single-step :not(.no-color) {
+    path {
+      stroke: #000;
+
+      @include tb-dark-theme {
+        stroke: #fff;
+      }
+    }
   }
 }
 
