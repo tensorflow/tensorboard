@@ -21,6 +21,7 @@ import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 
 import {IntersectionObserverModule} from '../../../widgets/intersection_observer/intersection_observer_module';
 import {LineChartModule as LineChartV2Module} from '../../../widgets/line_chart_v2/line_chart_module';
+import {LinkedTimeFobModule} from '../../../widgets/linked_time_fob/linked_time_fob_module';
 import {ResizeDetectorModule} from '../../../widgets/resize_detector_module';
 import {TruncatedPathModule} from '../../../widgets/text/truncated_path_module';
 import {DataDownloadModule} from './data_download_module';
@@ -34,12 +35,13 @@ import {VisSelectedTimeClippedModule} from './vis_selected_time_clipped_module';
   imports: [
     CommonModule,
     DataDownloadModule,
+    IntersectionObserverModule,
     LineChartV2Module,
+    LinkedTimeFobModule,
     MatButtonModule,
     MatIconModule,
     MatMenuModule,
     MatProgressSpinnerModule,
-    IntersectionObserverModule,
     ResizeDetectorModule,
     TruncatedPathModule,
     VisSelectedTimeClippedModule,

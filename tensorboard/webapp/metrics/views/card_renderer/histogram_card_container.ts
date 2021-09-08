@@ -36,9 +36,10 @@ import {
   getCardPinnedState,
   getCardTimeSeries,
   getMetricsHistogramMode,
+  getMetricsSelectedTime,
   getMetricsXAxisType,
 } from '../../store';
-import {CardId, CardMetadata} from '../../types';
+import {CardId, CardMetadata, LinkedTime} from '../../types';
 import {CardRenderer} from '../metrics_view_types';
 import {getTagDisplayName} from '../utils';
 
@@ -61,6 +62,7 @@ type HistogramCardMetadata = CardMetadata & {
       [runColorScale]="runColorScale"
       [showFullSize]="showFullSize"
       [isPinned]="isPinned$ | async"
+      [selectedTime]="selectedTime$ | async"
       (onFullSizeToggle)="onFullSizeToggle()"
       (onPinClicked)="pinStateChanged.emit($event)"
     ></histogram-card-component>
@@ -94,6 +96,9 @@ export class HistogramCardContainer implements CardRenderer, OnInit {
   xAxisType$ = this.store.select(getMetricsXAxisType);
   showFullSize = false;
   isPinned$?: Observable<boolean>;
+  readonly selectedTime$: Observable<LinkedTime | null> = this.store.select(
+    getMetricsSelectedTime
+  );
 
   private isHistogramCardMetadata(
     cardMetadata: CardMetadata
