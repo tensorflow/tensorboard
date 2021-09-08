@@ -21,7 +21,6 @@ import {
   Input,
   OnChanges,
   OnDestroy,
-  TemplateRef,
   ViewChild,
 } from '@angular/core';
 import {fromEvent, Subject} from 'rxjs';
