@@ -12,12 +12,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {CdkScrollable} from '@angular/cdk/scrolling';
 import {
   ChangeDetectionStrategy,
   Component,
   Input,
   OnChanges,
   OnDestroy,
+  Optional,
   SimpleChanges,
 } from '@angular/core';
 import {Store} from '@ngrx/store';
@@ -149,7 +151,9 @@ export class CardGridContainer implements OnChanges, OnDestroy {
     })
   );
 
-  constructor(private readonly store: Store<State>) {}
+  constructor(
+    private readonly store: Store<State>,
+    @Optional() private readonly cdkScrollable: CdkScrollable | null) {}
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['cardIdsWithMetadata']) {
@@ -168,6 +172,20 @@ export class CardGridContainer implements OnChanges, OnDestroy {
 
   onPageIndexChanged(newIndex: number) {
     this.pageIndex$.next(newIndex);
+
+    let ScrollingElement = this.cdkScrollable?.getElementRef().nativeElement;
+    if(ScrollingElement) {
+      let relativePosition = ScrollingElement.scrollHeight - ScrollingElement.scrollTop;
+      // Clear call stack to allow dom update before updating scroll to keep relative position.
+      setTimeout(this.scrollToRelativePosition.bind(this, relativePosition), 0);
+    }
+  }
+
+  scrollToRelativePosition(relativePosition: number) {
+    let ScrollingElement = this.cdkScrollable?.getElementRef().nativeElement;
+    if(ScrollingElement) {
+      ScrollingElement.scrollTo(0, ScrollingElement.scrollHeight - relativePosition);
+    }
   }
 
   onGroupExpansionToggled() {
