@@ -109,7 +109,7 @@ describe('histogram test', () => {
     Y_AXIS: By.css('.y-axis'),
     HISTOGRAMS: By.css('.histograms'),
     HISTOGRAM: By.css('.histogram'),
-    LINKED_TIME_FOB: By.css('.linked-time'),
+    LINKED_TIME_FOB: By.css('.axis .linked-time'),
   };
   let intersectionObserver: IntersectionObserverTestingModule;
 
@@ -849,6 +849,13 @@ describe('histogram test', () => {
   });
 
   describe('linked time feature integration', () => {
+    function doHistogramsHaveColor(
+      fixture: ComponentFixture<TestableComponent>
+    ): boolean[] {
+      const histograms = fixture.debugElement.queryAll(byCss.HISTOGRAM);
+      return histograms.map((el) => !el.classes['no-color']);
+    }
+
     describe('feature disable', () => {
       it('does not show fob when in overlay modes', () => {
         const fixture = createComponent('foo', [
@@ -883,39 +890,87 @@ describe('histogram test', () => {
       });
     });
 
-    it('shows a fob when a single time selection is present', () => {
-      const fixture = createComponent('foo', [
-        buildHistogramDatum({step: 0, wallTime: 100}),
-        buildHistogramDatum({step: 5, wallTime: -200}),
-        buildHistogramDatum({step: 10, wallTime: 400}),
-      ]);
-      fixture.componentInstance.mode = HistogramMode.OFFSET;
-      fixture.componentInstance.timeProperty = TimeProperty.STEP;
-      fixture.componentInstance.linkedTime = {startStep: 5, endStep: null};
-      fixture.detectChanges();
-      intersectionObserver.simulateVisibilityChange(fixture, true);
+    describe('single step', () => {
+      it('shows a fob when a single time selection is present', () => {
+        const fixture = createComponent('foo', [
+          buildHistogramDatum({step: 0, wallTime: 100}),
+          buildHistogramDatum({step: 5, wallTime: -200}),
+          buildHistogramDatum({step: 10, wallTime: 400}),
+        ]);
+        fixture.componentInstance.mode = HistogramMode.OFFSET;
+        fixture.componentInstance.timeProperty = TimeProperty.STEP;
+        fixture.componentInstance.linkedTime = {startStep: 5, endStep: null};
+        fixture.detectChanges();
+        intersectionObserver.simulateVisibilityChange(fixture, true);
 
-      const controls = fixture.debugElement.queryAll(byCss.LINKED_TIME_FOB);
-      expect(controls.map((el) => el.nativeElement.textContent)).toEqual(['5']);
+        const controls = fixture.debugElement.queryAll(byCss.LINKED_TIME_FOB);
+        expect(controls.map((el) => el.nativeElement.textContent)).toEqual([
+          '5',
+        ]);
+      });
+
+      it('positions fob according to the scale', () => {
+        const fixture = createComponent('foo', [
+          buildHistogramDatum({step: 0, wallTime: 100}),
+          buildHistogramDatum({step: 10, wallTime: 400}),
+        ]);
+        fixture.componentInstance.mode = HistogramMode.OFFSET;
+        fixture.componentInstance.timeProperty = TimeProperty.STEP;
+        fixture.componentInstance.linkedTime = {startStep: 5, endStep: null};
+        fixture.detectChanges();
+        intersectionObserver.simulateVisibilityChange(fixture, true);
+
+        const controls = fixture.debugElement.queryAll(byCss.LINKED_TIME_FOB);
+        expect(controls.map((el) => el.nativeElement.style.transform)).toEqual([
+          // In 100px by 100px view, in the offset view, the main content spans 0
+          // to 70px and startStep=5 is right in the middle, thus, 35px.
+          'translate(0px, 35px)',
+        ]);
+      });
+
+      it('puts color on histogram that has the matching step', () => {
+        const fixture = createComponent('foo', [
+          buildHistogramDatum({step: 0, wallTime: 100}),
+          buildHistogramDatum({step: 5, wallTime: 400}),
+          buildHistogramDatum({step: 10, wallTime: 400}),
+        ]);
+        fixture.componentInstance.mode = HistogramMode.OFFSET;
+        fixture.componentInstance.timeProperty = TimeProperty.STEP;
+        fixture.componentInstance.linkedTime = {startStep: 5, endStep: null};
+        fixture.detectChanges();
+        intersectionObserver.simulateVisibilityChange(fixture, true);
+
+        expect(doHistogramsHaveColor(fixture)).toEqual([false, true, false]);
+
+        fixture.componentInstance.linkedTime = {startStep: 7, endStep: null};
+        fixture.detectChanges();
+        expect(doHistogramsHaveColor(fixture)).toEqual([false, false, false]);
+      });
     });
 
-    it('positions fob according to the scale', () => {
-      const fixture = createComponent('foo', [
-        buildHistogramDatum({step: 0, wallTime: 100}),
-        buildHistogramDatum({step: 10, wallTime: 400}),
-      ]);
-      fixture.componentInstance.mode = HistogramMode.OFFSET;
-      fixture.componentInstance.timeProperty = TimeProperty.STEP;
-      fixture.componentInstance.linkedTime = {startStep: 5, endStep: null};
-      fixture.detectChanges();
-      intersectionObserver.simulateVisibilityChange(fixture, true);
+    describe('multi step', () => {
+      it('puts color on histogram that is in the range (inclusive)', () => {
+        const fixture = createComponent('foo', [
+          buildHistogramDatum({step: 0, wallTime: 100}),
+          buildHistogramDatum({step: 5, wallTime: 400}),
+          buildHistogramDatum({step: 10, wallTime: 400}),
+        ]);
+        fixture.componentInstance.mode = HistogramMode.OFFSET;
+        fixture.componentInstance.timeProperty = TimeProperty.STEP;
+        fixture.componentInstance.linkedTime = {startStep: 5, endStep: 10};
+        fixture.detectChanges();
+        intersectionObserver.simulateVisibilityChange(fixture, true);
 
-      const controls = fixture.debugElement.queryAll(byCss.LINKED_TIME_FOB);
-      expect(controls.map((el) => el.nativeElement.style.transform)).toEqual([
-        // In 100px by 100px view, in the offset view, the main content spans 0
-        // to 70px and startStep=5 is right in the middle, thus, 35px.
-        'translate(0px, 35px)',
-      ]);
+        expect(doHistogramsHaveColor(fixture)).toEqual([false, true, true]);
+
+        fixture.componentInstance.linkedTime = {startStep: 0, endStep: 7};
+        fixture.detectChanges();
+        expect(doHistogramsHaveColor(fixture)).toEqual([true, true, false]);
+
+        fixture.componentInstance.linkedTime = {startStep: 6, endStep: 7};
+        fixture.detectChanges();
+        expect(doHistogramsHaveColor(fixture)).toEqual([false, false, false]);
+      });
     });
   });
 });

@@ -74,6 +74,11 @@ export interface TooltipData {
   };
 }
 
+export interface LinkedTime {
+  startStep: number;
+  endStep: number | null;
+}
+
 @Component({
   selector: 'tb-histogram',
   templateUrl: 'histogram_component.ng.html',
@@ -95,7 +100,7 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
 
   @Input() data!: HistogramData;
 
-  @Input() linkedTime?: {startStep: number; endStep: number | null} | null;
+  @Input() linkedTime: LinkedTime | null = null;
 
   readonly HistogramMode = HistogramMode;
   readonly TimeProperty = TimeProperty;
@@ -218,6 +223,28 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
     return this.getCssTranslatePx(
       0,
       this.scales.temporalScale(this.getTimeValue(datum))
+    );
+  }
+
+  isLinkedTimeEnabled(linkedTime: LinkedTime | null): linkedTime is LinkedTime {
+    return Boolean(
+      this.mode === HistogramMode.OFFSET &&
+        this.timeProperty === TimeProperty.STEP &&
+        this.scales &&
+        linkedTime
+    );
+  }
+
+  isDatumInLinkedTimeRange(datum: HistogramDatum): boolean {
+    if (!this.isLinkedTimeEnabled(this.linkedTime)) {
+      return true;
+    }
+    if (this.linkedTime.endStep === null) {
+      return this.linkedTime.startStep === datum.step;
+    }
+    return (
+      this.linkedTime.startStep <= datum.step &&
+      this.linkedTime.endStep >= datum.step
     );
   }
 

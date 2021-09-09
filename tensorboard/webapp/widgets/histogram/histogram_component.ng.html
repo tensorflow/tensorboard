@@ -50,14 +50,7 @@ limitations under the License.
       </g>
     </svg>
     <!-- Disable the feature when in non-offset and non-step mode. -->
-    <ng-container
-      *ngIf="
-        mode === HistogramMode.OFFSET &&
-        timeProperty === TimeProperty.STEP &&
-        linkedTime &&
-        scales
-      "
-    >
+    <ng-container *ngIf="isLinkedTimeEnabled(linkedTime)">
       <div
         class="linked-time"
         [style.transform]="getCssTranslatePx(0, scales.temporalScale(linkedTime.startStep))"
@@ -77,11 +70,17 @@ limitations under the License.
       </g>
     </g>
 
-    <g #histograms class="histograms">
+    <g
+      #histograms
+      [class.histograms]="true"
+      [class.linked-time-enabled]="linkedTime"
+      [class.linked-time-single-step]="linkedTime && !linkedTime.endStep"
+    >
       <g
         *ngFor="let datum of data; trackBy: trackByWallTime;"
         [style.transform]="getGroupTransform(datum)"
-        class="histogram"
+        [class.histogram]="true"
+        [class.no-color]="!isDatumInLinkedTimeRange(datum)"
         [style.color]="getHistogramFill(datum)"
       >
         <line
@@ -94,19 +93,19 @@ limitations under the License.
           *ngIf="tooltipData"
           r="2"
           [style.transform]="getCssTranslatePx(
-            getUiCoordFromBinForContent(
-              getClosestBinFromBinCoordinate(
-                datum,
-                tooltipData.xPositionInBinCoord
-              )
-            ).x,
-            getUiCoordFromBinForContent(
-              getClosestBinFromBinCoordinate(
-                datum,
-                tooltipData.xPositionInBinCoord
-              )
-            ).y
-          )"
+          getUiCoordFromBinForContent(
+            getClosestBinFromBinCoordinate(
+              datum,
+              tooltipData.xPositionInBinCoord
+            )
+          ).x,
+          getUiCoordFromBinForContent(
+            getClosestBinFromBinCoordinate(
+              datum,
+              tooltipData.xPositionInBinCoord
+            )
+          ).y
+        )"
         ></circle>
       </g>
     </g>
