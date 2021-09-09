@@ -135,7 +135,7 @@ $_title-to-heading-gap: 12px;
 
   &.start {
     border-right-width: $_border-width;
-    margin-left: -$_border-width / 2;
+    margin-left: -0.5 * $_border-width;
 
     &.range {
       left: 0;
@@ -144,7 +144,7 @@ $_title-to-heading-gap: 12px;
 
   &.end {
     border-left-width: $_border-width;
-    margin-right: -$_border-width / 2;
+    margin-right: -0.5 * $_border-width;
     right: 0;
   }
 
