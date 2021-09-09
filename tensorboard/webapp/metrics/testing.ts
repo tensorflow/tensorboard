@@ -161,11 +161,34 @@ export function createScalarStepData(): ScalarStepDatum[] {
   ];
 }
 
+export function buildHistogramStepData(
+  override: Partial<HistogramStepDatum> = {}
+): HistogramStepDatum {
+  return {
+    step: 0,
+    wallTime: 123,
+    bins: [{min: 0, max: 100, count: 42}],
+    ...override,
+  };
+}
+
 export function createHistogramStepData(): HistogramStepDatum[] {
   return [
-    {step: 0, wallTime: 123, bins: [{min: 0, max: 100, count: 42}]},
-    {step: 1, wallTime: 124, bins: [{min: 0, max: 100, count: 42}]},
-    {step: 99, wallTime: 125, bins: [{min: 0, max: 100, count: 42}]},
+    buildHistogramStepData({
+      step: 0,
+      wallTime: 123,
+      bins: [{min: 0, max: 100, count: 42}],
+    }),
+    buildHistogramStepData({
+      step: 1,
+      wallTime: 124,
+      bins: [{min: 0, max: 100, count: 42}],
+    }),
+    buildHistogramStepData({
+      step: 99,
+      wallTime: 125,
+      bins: [{min: 0, max: 100, count: 42}],
+    }),
   ];
 }
 

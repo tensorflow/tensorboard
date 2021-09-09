@@ -18,8 +18,8 @@ import {
   Component,
   EventEmitter,
   Input,
-  OnInit,
   OnDestroy,
+  OnInit,
   Output,
 } from '@angular/core';
 import {Store} from '@ngrx/store';
@@ -59,15 +59,13 @@ import {
   getMetricsScalarPartitionNonMonotonicX,
   getMetricsScalarSmoothing,
   getMetricsTooltipSort,
-  getMetricsUseRangeSelectTime,
   getMetricsXAxisType,
   RunToSeries,
 } from '../../store';
-import {CardId, CardMetadata, LinkedTime, XAxisType} from '../../types';
+import {CardId, CardMetadata, XAxisType} from '../../types';
 import {CardRenderer} from '../metrics_view_types';
 import {getTagDisplayName} from '../utils';
 import {DataDownloadDialogContainer} from './data_download_dialog_container';
-import {LinkedTimeWithClipped} from './scalar_card_component';
 import {
   PartialSeries,
   PartitionedSeries,
@@ -76,7 +74,12 @@ import {
   ScalarCardSeriesMetadataMap,
   SeriesType,
 } from './scalar_card_types';
-import {getDisplayNameForRun, partitionSeries} from './utils';
+import {
+  getDisplayNameForRun,
+  maybeClipSelectedTime,
+  partitionSeries,
+  ViewSelectedTime,
+} from './utils';
 
 type ScalarCardMetadata = CardMetadata & {
   plugin: PluginType.SCALARS;
@@ -163,7 +166,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
   isPinned$?: Observable<boolean>;
   dataSeries$?: Observable<ScalarCardDataSeries[]>;
   chartMetadataMap$?: Observable<ScalarCardSeriesMetadataMap>;
-  selectedTime$?: Observable<LinkedTimeWithClipped | null>;
+  selectedTime$?: Observable<ViewSelectedTime | null>;
 
   onVisibilityChange({visible}: {visible: boolean}) {
     this.isVisible = visible;
@@ -353,42 +356,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
           }
         }
 
-        if (
-          // Case when selectedTime contains extents.
-          (selectedTime.start.step <= minStep &&
-            selectedTime.end &&
-            maxStep <= selectedTime.end.step) ||
-          // Case when start of selectedTime is within extent.
-          (minStep <= selectedTime.start.step &&
-            selectedTime.start.step <= maxStep) ||
-          // Case when end of selectedTime is within extent.
-          (selectedTime.end &&
-            minStep <= selectedTime.end?.step &&
-            selectedTime.end?.step <= maxStep)
-        ) {
-          return {...selectedTime, clipped: false};
-        }
-
-        // When selectedTime and data extent (in step axis) do not overlap,
-        // default single select min or max data extent depending on which side
-        // the selectedTime is at.
-
-        // Case when selectedTime is on the right of the maximum of the
-        // time series.
-        if (maxStep <= selectedTime.start.step) {
-          return {
-            start: {step: maxStep},
-            end: null,
-            clipped: true,
-          };
-        }
-        // Case when selectedtime is on the left of the minimum of the time
-        // series.
-        return {
-          start: {step: minStep},
-          end: null,
-          clipped: true,
-        };
+        return maybeClipSelectedTime(selectedTime, minStep, maxStep);
       })
     );
 

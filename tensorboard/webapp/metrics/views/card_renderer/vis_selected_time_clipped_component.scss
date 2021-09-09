@@ -16,14 +16,16 @@ limitations under the License.
 
 :host {
   color: mat-color(map-get($tb-theme, warn), 700);
+  height: 1em;
+  line-height: 0;
+  width: 1em;
 
   @include tb-dark-theme {
     color: mat-color(map-get($tb-dark-theme, warn), 700);
   }
 
   mat-icon {
-    height: 1em;
-    line-height: 0;
-    width: 1em;
+    height: 100%;
+    width: 100%;
   }
 }
