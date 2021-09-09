@@ -92,10 +92,17 @@ export class MetricsEffects implements OnInitEffects {
    *
    * [Metrics Effects] Init  - the initial `activePlugin` is set.
    * [Core] Plugin Changed   - subsequent `activePlugin` updates.
+   * [Core] PluginListing Fetch Successful - list of plugins fetched and the
+   *   first `activePlugin` set.
    * [App Routing] Navigated - experiment id updates.
    */
   private readonly dashboardShownWithoutData$ = this.actions$.pipe(
-    ofType(initAction, coreActions.changePlugin, routingActions.navigated),
+    ofType(
+      initAction,
+      coreActions.changePlugin,
+      coreActions.pluginsListingLoaded,
+      routingActions.navigated
+    ),
     withLatestFrom(
       this.store.select(getActivePlugin),
       this.store.select(getMetricsTagMetadataLoadState)

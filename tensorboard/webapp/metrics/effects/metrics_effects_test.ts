@@ -47,6 +47,8 @@ import {
 } from '../testing';
 import {CardId, TooltipSort} from '../types';
 import {CardFetchInfo, MetricsEffects, TEST_ONLY} from './index';
+import {RouteKind} from '../../app_routing/types';
+import {LoadingMechanismType} from '../../types/api';
 
 describe('metrics effects', () => {
   let dataSource: MetricsDataSource;
@@ -169,6 +171,91 @@ describe('metrics effects', () => {
             tagMetadata: buildDataSourceTagMetadata(),
           }),
         ]);
+      });
+
+      it('loads TagMetadata when navigating to a new route', () => {
+        store.overrideSelector(selectors.getExperimentIdsFromRoute, ['']);
+        store.overrideSelector(getMetricsTagMetadataLoadState, {
+          state: DataLoadState.NOT_LOADED,
+          lastLoadedTimeInMs: null,
+        });
+        store.overrideSelector(getActivePlugin, null);
+        store.refreshState();
+
+        actions$.next(buildNavigatedAction({routeKind: RouteKind.EXPERIMENT}));
+        expect(fetchTagMetadataSpy).not.toHaveBeenCalled();
+
+        actions$.next(coreActions.pluginsListingRequested());
+        store.overrideSelector(getActivePlugin, METRICS_PLUGIN_ID);
+        store.refreshState();
+        actions$.next(
+          coreActions.pluginsListingLoaded({
+            plugins: {
+              [METRICS_PLUGIN_ID]: {
+                enabled: true,
+                loading_mechanism: {
+                  type: LoadingMechanismType.NG_COMPONENT,
+                },
+                disable_reload: true,
+                tab_name: 'hello',
+                remove_dom: true,
+              },
+            },
+          })
+        );
+
+        expect(fetchTagMetadataSpy).toHaveBeenCalledTimes(1);
+        fetchTagMetadataSubject.next(buildDataSourceTagMetadata());
+        expect(actualActions).toEqual([
+          actions.metricsTagMetadataRequested(),
+          actions.metricsTagMetadataLoaded({
+            tagMetadata: buildDataSourceTagMetadata(),
+          }),
+        ]);
+      });
+
+      it('does not fetch TagMetadata if default plugin is not timeseries', () => {
+        store.overrideSelector(selectors.getExperimentIdsFromRoute, ['']);
+        store.overrideSelector(getMetricsTagMetadataLoadState, {
+          state: DataLoadState.NOT_LOADED,
+          lastLoadedTimeInMs: null,
+        });
+        store.overrideSelector(getActivePlugin, null);
+        store.refreshState();
+
+        actions$.next(buildNavigatedAction({routeKind: RouteKind.EXPERIMENT}));
+        expect(fetchTagMetadataSpy).not.toHaveBeenCalled();
+
+        actions$.next(coreActions.pluginsListingRequested());
+        store.overrideSelector(getActivePlugin, 'foo');
+        store.refreshState();
+        actions$.next(
+          coreActions.pluginsListingLoaded({
+            plugins: {
+              foo: {
+                enabled: true,
+                loading_mechanism: {
+                  type: LoadingMechanismType.NG_COMPONENT,
+                },
+                disable_reload: true,
+                tab_name: 'hello',
+                remove_dom: true,
+              },
+              [METRICS_PLUGIN_ID]: {
+                enabled: true,
+                loading_mechanism: {
+                  type: LoadingMechanismType.NG_COMPONENT,
+                },
+                disable_reload: true,
+                tab_name: 'hello',
+                remove_dom: true,
+              },
+            },
+          })
+        );
+
+        expect(fetchTagMetadataSpy).not.toHaveBeenCalled();
+        expect(actualActions).toEqual([]);
       });
 
       it('does not fetch TagMetadata if data was loaded when opening', () => {
