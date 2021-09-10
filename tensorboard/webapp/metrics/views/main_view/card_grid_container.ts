@@ -18,7 +18,6 @@ import {
   Input,
   OnChanges,
   OnDestroy,
-  Optional,
   SimpleChanges,
 } from '@angular/core';
 import {Store} from '@ngrx/store';
