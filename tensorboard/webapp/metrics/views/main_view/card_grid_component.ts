@@ -12,12 +12,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {CdkScrollable} from '@angular/cdk/scrolling';
 import {
   ChangeDetectionStrategy,
   Component,
+  ElementRef,
   EventEmitter,
   Input,
+  Optional,
   Output,
+  ViewChild,
 } from '@angular/core';
 
 import {PluginType} from '../../data_source';
@@ -46,12 +50,47 @@ export class CardGridComponent {
   @Output() pageIndexChanged = new EventEmitter<number>();
   @Output() groupExpansionToggled = new EventEmitter<void>();
 
-  showExpand(isBottomControl: boolean) {
+  @ViewChild('cardGrid', {static: true}) cardGridElement!: ElementRef<
+    HTMLDivElement
+  >;
+
+  constructor(
+    @Optional() private readonly cdkScrollable: CdkScrollable | null
+  ) {}
+
+  showExpand(isBottomControl: boolean): boolean {
     return isBottomControl ? this.isGroupExpandable : false;
   }
 
   showPaginationInput(isBottomControl: boolean) {
     return isBottomControl;
+  }
+
+  testCallback(pageIndex: number, target: HTMLElement) {
+    const ScrollingElement = this.cdkScrollable?.getElementRef().nativeElement;
+    if (ScrollingElement) {
+      const distanceToTop =
+        target.getBoundingClientRect().top - ScrollingElement.scrollTop;
+
+      // Clear call stack to allow dom update before updating scroll to keep
+      // relative position.
+      setTimeout(
+        this.scrollToKeepTargetPosition.bind(this, target, distanceToTop),
+        0
+      );
+    }
+
+    this.pageIndexChanged.emit(pageIndex);
+  }
+
+  scrollToKeepTargetPosition(target: HTMLElement, previousTop: number) {
+    const ScrollingElement = this.cdkScrollable?.getElementRef().nativeElement;
+    if (ScrollingElement) {
+      ScrollingElement.scrollTo(
+        0,
+        target.getBoundingClientRect().top - previousTop
+      );
+    }
   }
 
   trackByCards(index: number, cardIdWithMetadata: CardIdWithMetadata) {
