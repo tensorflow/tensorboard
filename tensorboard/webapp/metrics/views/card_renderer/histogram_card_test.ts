@@ -39,6 +39,7 @@ import {PluginType} from '../../data_source';
 import * as selectors from '../../store/metrics_selectors';
 import {
   appStateFromMetricsState,
+  buildHistogramStepData,
   buildMetricsState,
   provideMockCardSeriesData,
 } from '../../testing';
@@ -47,6 +48,7 @@ import {XAxisType} from '../../types';
 import {HistogramCardComponent} from './histogram_card_component';
 import {HistogramCardContainer} from './histogram_card_container';
 import {RunNameModule} from './run_name_module';
+import {VisSelectedTimeClippedModule} from './vis_selected_time_clipped_module';
 
 @Component({
   selector: 'tb-histogram',
@@ -89,6 +91,7 @@ describe('histogram card', () => {
         MatProgressSpinnerModule,
         RunNameModule,
         TruncatedPathModule,
+        VisSelectedTimeClippedModule,
       ],
       declarations: [
         HistogramCardComponent,
@@ -316,6 +319,100 @@ describe('histogram card', () => {
       expect(viz.componentInstance.linkedTime).toEqual({
         startStep: 5,
         endStep: 10,
+      });
+    });
+
+    describe('selectedTime beyond range of data', () => {
+      it('clips the selectedTime to max step', () => {
+        provideMockCardSeriesData(
+          selectSpy,
+          PluginType.HISTOGRAMS,
+          'card1',
+          undefined,
+          [
+            buildHistogramStepData({step: 0}),
+            buildHistogramStepData({step: 5}),
+            buildHistogramStepData({step: 15}),
+          ]
+        );
+        store.overrideSelector(selectors.getMetricsSelectedTime, {
+          start: {step: 18},
+          end: {step: 20},
+        });
+        const fixture = createHistogramCardContainer();
+        fixture.detectChanges();
+
+        const viz = fixture.debugElement.query(
+          By.directive(TestableHistogramWidget)
+        );
+        expect(viz.componentInstance.linkedTime).toEqual({
+          startStep: 15,
+          endStep: null,
+        });
+      });
+
+      it('clips the selectedTime to min step when it is too small', () => {
+        provideMockCardSeriesData(
+          selectSpy,
+          PluginType.HISTOGRAMS,
+          'card1',
+          undefined,
+          [
+            buildHistogramStepData({step: 100}),
+            buildHistogramStepData({step: 50}),
+            buildHistogramStepData({step: 200}),
+          ]
+        );
+        store.overrideSelector(selectors.getMetricsSelectedTime, {
+          start: {step: 18},
+          end: {step: 20},
+        });
+        const fixture = createHistogramCardContainer();
+        fixture.detectChanges();
+
+        const viz = fixture.debugElement.query(
+          By.directive(TestableHistogramWidget)
+        );
+        expect(viz.componentInstance.linkedTime).toEqual({
+          startStep: 50,
+          endStep: null,
+        });
+      });
+
+      it('renders warning when the selectedTime is clipped', () => {
+        provideMockCardSeriesData(
+          selectSpy,
+          PluginType.HISTOGRAMS,
+          'card1',
+          undefined,
+          [
+            buildHistogramStepData({step: 100}),
+            buildHistogramStepData({step: 50}),
+            buildHistogramStepData({step: 200}),
+          ]
+        );
+        store.overrideSelector(selectors.getMetricsSelectedTime, {
+          start: {step: 18},
+          end: {step: 20},
+        });
+        const fixture = createHistogramCardContainer();
+        fixture.detectChanges();
+
+        const indicatorBefore = fixture.debugElement.query(
+          By.css('vis-selected-time-clipped')
+        );
+        expect(indicatorBefore).toBeTruthy();
+
+        store.overrideSelector(selectors.getMetricsSelectedTime, {
+          start: {step: 0},
+          end: {step: 100},
+        });
+        store.refreshState();
+        fixture.detectChanges();
+        const indicatorAfter = fixture.debugElement.query(
+          By.css('vis-selected-time-clipped')
+        );
+        expect(indicatorAfter).toBeNull();
       });
     });
   });

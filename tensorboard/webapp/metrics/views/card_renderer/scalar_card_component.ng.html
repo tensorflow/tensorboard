@@ -172,18 +172,18 @@ limitations under the License.
       [ngClass]="{
         'out-of-selected-time': true,
         start: true,
-        range: !!selectedTime.end
+        range: !!selectedTime.endStep
       }"
       [style.right]="
         xScale.forward(
           viewExtent.x,
           [domDim.width, 0],
-          selectedTime.start.step
+          selectedTime.startStep
         ) + 'px'
       "
     ></div>
     <div
-      *ngIf="selectedTime.end"
+      *ngIf="selectedTime.endStep"
       [ngClass]="{
         'out-of-selected-time': true,
         end: true,
@@ -193,7 +193,7 @@ limitations under the License.
         xScale.forward(
           viewExtent.x,
           [0, domDim.width],
-          selectedTime.end.step
+          selectedTime.endStep
         ) + 'px'
       "
     ></div>
@@ -213,28 +213,28 @@ limitations under the License.
         xScale.forward(
           viewExtent.x,
           [0, domDim.width],
-          selectedTime.start.step
+          selectedTime.startStep
         ) + 'px, 0)'
       "
     >
       <linked-time-fob
         class="selected-time-fob"
-        [step]="selectedTime.start.step"
+        [step]="selectedTime.startStep"
       ></linked-time-fob>
     </div>
     <div
-      *ngIf="selectedTime.end"
+      *ngIf="selectedTime.endStep"
       [style.transform]="'translate(' +
         xScale.forward(
           viewExtent.x,
           [0, domDim.width],
-          selectedTime.end.step
+          selectedTime.endStep
         ) + 'px, 0)'
       "
     >
       <linked-time-fob
         class="selected-time-fob"
-        [step]="selectedTime.end.step"
+        [step]="selectedTime.endStep"
       ></linked-time-fob>
     </div>
   </ng-container>

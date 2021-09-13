@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Run} from '../../../runs/store/runs_types';
+import {LinkedTime} from '../../types';
 import {PartialSeries, PartitionedSeries} from './scalar_card_types';
 
 export function getDisplayNameForRun(
@@ -80,4 +81,57 @@ export function partitionSeries(series: PartialSeries[]): PartitionedSeries[] {
     }
   }
   return partitionedSeries;
+}
+
+export interface ViewSelectedTime {
+  startStep: number;
+  endStep: number | null;
+  clipped: boolean;
+}
+
+export function maybeClipSelectedTime(
+  selectedTime: LinkedTime,
+  minStep: number,
+  maxStep: number
+): ViewSelectedTime {
+  if (
+    // Case when selectedTime contains extents.
+    (selectedTime.start.step <= minStep &&
+      selectedTime.end &&
+      maxStep <= selectedTime.end.step) ||
+    // Case when start of selectedTime is within extent.
+    (minStep <= selectedTime.start.step &&
+      selectedTime.start.step <= maxStep) ||
+    // Case when end of selectedTime is within extent.
+    (selectedTime.end &&
+      minStep <= selectedTime.end?.step &&
+      selectedTime.end?.step <= maxStep)
+  ) {
+    return {
+      startStep: selectedTime.start.step,
+      endStep: selectedTime.end?.step ?? null,
+      clipped: false,
+    };
+  }
+
+  // When selectedTime and data extent (in step axis) do not overlap,
+  // default single select min or max data extent depending on which side
+  // the selectedTime is at.
+
+  // Case when selectedTime is on the right of the maximum of the
+  // time series.
+  if (maxStep <= selectedTime.start.step) {
+    return {
+      startStep: maxStep,
+      endStep: null,
+      clipped: true,
+    };
+  }
+  // Case when selectedtime is on the left of the minimum of the time
+  // series.
+  return {
+    startStep: minStep,
+    endStep: null,
+    clipped: true,
+  };
 }

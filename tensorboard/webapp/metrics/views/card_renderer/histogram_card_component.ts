@@ -19,7 +19,6 @@ import {
   Input,
   Output,
 } from '@angular/core';
-
 import {DataLoadState} from '../../../types/data';
 import {RunColorScale} from '../../../types/ui';
 import {
@@ -27,7 +26,8 @@ import {
   HistogramMode,
   TimeProperty,
 } from '../../../widgets/histogram/histogram_types';
-import {LinkedTime, XAxisType} from '../../types';
+import {XAxisType} from '../../types';
+import {ViewSelectedTime} from './utils';
 
 @Component({
   selector: 'histogram-card-component',
@@ -48,7 +48,7 @@ export class HistogramCardComponent {
   @Input() runColorScale!: RunColorScale;
   @Input() showFullSize!: boolean;
   @Input() isPinned!: boolean;
-  @Input() selectedTime!: LinkedTime | null;
+  @Input() selectedTime!: ViewSelectedTime | null;
 
   @Output() onFullSizeToggle = new EventEmitter<void>();
   @Output() onPinClicked = new EventEmitter<boolean>();

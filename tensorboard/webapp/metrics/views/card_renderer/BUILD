@@ -94,6 +94,8 @@ tf_ng_module(
     ],
     deps = [
         ":run_name",
+        ":utils",
+        ":vis_selected_time_clipped",
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp/angular:expect_angular_material_button",
         "//tensorboard/webapp/angular:expect_angular_material_icon",
@@ -222,6 +224,7 @@ tf_ts_library(
     ],
     deps = [
         ":scalar_card_types",
+        "//tensorboard/webapp/metrics:types",
         "//tensorboard/webapp/runs/store:types",
     ],
 )
@@ -304,6 +307,7 @@ tf_ts_library(
         ":scalar_card",
         ":scalar_card_types",
         ":utils",
+        ":vis_selected_time_clipped",
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp:selectors",
         "//tensorboard/webapp/angular:expect_angular_cdk_overlay",

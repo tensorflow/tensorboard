@@ -15,11 +15,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <div class="heading">
-  <tb-truncated-path
-    class="tag"
-    title="{{ tag }}"
-    value="{{ title }}"
-  ></tb-truncated-path>
+  <div class="tag">
+    <tb-truncated-path [title]="tag" [value]="title"></tb-truncated-path>
+    <vis-selected-time-clipped
+      *ngIf="selectedTime && selectedTime.clipped"
+    ></vis-selected-time-clipped>
+  </div>
   <div class="run">
     <span
       class="dot"
@@ -63,8 +64,8 @@ limitations under the License.
   [timeProperty]="timeProperty(xAxisType)"
   [color]="runColorScale(runId)"
   [linkedTime]="selectedTime ? {
-    startStep: selectedTime.start.step ?? null,
-    endStep: selectedTime.end?.step ?? null
+    startStep: selectedTime.startStep,
+    endStep: selectedTime.endStep
   } : null"
 ></tb-histogram>
 <ng-template #noData>

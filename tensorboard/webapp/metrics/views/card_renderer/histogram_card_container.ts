@@ -23,7 +23,7 @@ import {
 import {Store} from '@ngrx/store';
 import {DataLoadState} from '../../../types/data';
 import {combineLatest, Observable} from 'rxjs';
-import {filter, map} from 'rxjs/operators';
+import {combineLatestWith, filter, map} from 'rxjs/operators';
 
 import {State} from '../../../app_state';
 import {RunColorScale} from '../../../types/ui';
@@ -42,6 +42,7 @@ import {
 import {CardId, CardMetadata, LinkedTime} from '../../types';
 import {CardRenderer} from '../metrics_view_types';
 import {getTagDisplayName} from '../utils';
+import {maybeClipSelectedTime, ViewSelectedTime} from './utils';
 
 type HistogramCardMetadata = CardMetadata & {
   plugin: PluginType.HISTOGRAMS;
@@ -96,9 +97,8 @@ export class HistogramCardContainer implements CardRenderer, OnInit {
   xAxisType$ = this.store.select(getMetricsXAxisType);
   showFullSize = false;
   isPinned$?: Observable<boolean>;
-  readonly selectedTime$: Observable<LinkedTime | null> = this.store.select(
-    getMetricsSelectedTime
-  );
+  selectedTime$?: Observable<ViewSelectedTime | null>;
+  isSelectedTimeClipped$?: Observable<boolean>;
 
   private isHistogramCardMetadata(
     cardMetadata: CardMetadata
@@ -146,6 +146,21 @@ export class HistogramCardContainer implements CardRenderer, OnInit {
           return {wallTime, step, bins};
         });
         return buildNormalizedHistograms(result);
+      })
+    );
+
+    this.selectedTime$ = this.store.select(getMetricsSelectedTime).pipe(
+      combineLatestWith(this.data$),
+      map(([selectedTime, data]) => {
+        if (!selectedTime) return null;
+
+        let minStep = Infinity;
+        let maxStep = -Infinity;
+        for (const datum of data) {
+          minStep = Math.min(datum.step, minStep);
+          maxStep = Math.max(datum.step, maxStep);
+        }
+        return maybeClipSelectedTime(selectedTime, minStep, maxStep);
       })
     );
 

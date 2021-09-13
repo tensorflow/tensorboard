@@ -41,8 +41,15 @@ $_title-to-heading-gap: 12px;
 }
 
 .tag {
+  align-items: center;
+  display: flex;
+  gap: 5px;
   grid-area: tag;
   overflow: hidden;
+
+  vis-selected-time-clipped {
+    line-height: 0;
+  }
 }
 
 .pin-button mat-icon {
