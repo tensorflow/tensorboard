@@ -16,12 +16,10 @@ import {CdkScrollable} from '@angular/cdk/scrolling';
 import {
   ChangeDetectionStrategy,
   Component,
-  ElementRef,
   EventEmitter,
   Input,
   Optional,
   Output,
-  ViewChild,
 } from '@angular/core';
 
 import {PluginType} from '../../data_source';
@@ -50,10 +48,6 @@ export class CardGridComponent {
   @Output() pageIndexChanged = new EventEmitter<number>();
   @Output() groupExpansionToggled = new EventEmitter<void>();
 
-  @ViewChild('cardGrid', {static: true}) cardGridElement!: ElementRef<
-    HTMLDivElement
-  >;
-
   constructor(
     @Optional() private readonly cdkScrollable: CdkScrollable | null
   ) {}
@@ -66,19 +60,17 @@ export class CardGridComponent {
     return isBottomControl;
   }
 
-  testCallback(pageIndex: number, target: HTMLElement) {
-    const ScrollingElement = this.cdkScrollable?.getElementRef().nativeElement;
-    if (ScrollingElement) {
-      const distanceToTop =
-        target.getBoundingClientRect().top - ScrollingElement.scrollTop;
-
-      // Clear call stack to allow dom update before updating scroll to keep
-      // relative position.
-      setTimeout(
-        this.scrollToKeepTargetPosition.bind(this, target, distanceToTop),
-        0
-      );
-    }
+  PaginationCallback(pageIndex: number, target: HTMLElement) {
+    // Clear call stack to allow dom update before updating scroll to keep
+    // relative position.
+    setTimeout(
+      this.scrollToKeepTargetPosition.bind(
+        this,
+        target,
+        target.getBoundingClientRect().top
+      ),
+      0
+    );
 
     this.pageIndexChanged.emit(pageIndex);
   }
@@ -88,7 +80,9 @@ export class CardGridComponent {
     if (ScrollingElement) {
       ScrollingElement.scrollTo(
         0,
-        target.getBoundingClientRect().top - previousTop
+        target.getBoundingClientRect().top -
+          previousTop +
+          ScrollingElement.scrollTop
       );
     }
   }
@@ -117,6 +111,6 @@ export class CardGridComponent {
       input.value = String(nextValue + 1);
     }
 
-    this.pageIndexChanged.emit(nextValue);
+    this.PaginationCallback(nextValue, input);
   }
 }
