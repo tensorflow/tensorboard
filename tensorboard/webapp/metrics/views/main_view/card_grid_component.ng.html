@@ -18,7 +18,7 @@ limitations under the License.
   *ngTemplateOutlet="groupControls; context: {isBottomControl: false}"
 ></ng-container>
 
-<div class="card-grid" #testName>
+<div class="card-grid">
   <card-view
     *ngFor="let item of cardIdsWithMetadata; trackBy: trackByCards"
     [cardId]="item.cardId"
