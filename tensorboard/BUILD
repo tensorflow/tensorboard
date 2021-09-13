@@ -488,6 +488,13 @@ py_library(name = "expect_requests_installed")
 # optional dependency.
 py_library(name = "expect_pandas_installed")
 
+# This is a dummy rule used as a fsspec dependency in open-source.
+# We expect fsspec to already be installed on the system, e.g. via
+# `pip install fsspec`.
+# NOTE: Unlike other parallel dependencies in this file, fsspec is an
+# optional dependency.
+py_library(name = "expect_fsspec_installed")
+
 py_library(
     name = "data_compat",
     srcs = ["data_compat.py"],

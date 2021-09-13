@@ -110,7 +110,9 @@ jobs:
       - name: 'Bazel: run manual tests'
         run: |
           bazel test //tensorboard/compat/tensorflow_stub:gfile_s3_test &&
-          bazel test //tensorboard/summary/writer:event_file_writer_s3_test
+          bazel test //tensorboard/summary/writer:event_file_writer_s3_test &&
+          bazel test //tensorboard/compat/tensorflow_stub:gfile_fsspec_test &&
+          bazel test //tensorboard/summary/writer:event_file_writer_fsspec_test
 
   build-data-server-pip:
     runs-on: ${{ matrix.platform }}

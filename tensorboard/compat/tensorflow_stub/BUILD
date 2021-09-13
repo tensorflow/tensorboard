@@ -16,6 +16,7 @@ py_library(
     srcs_version = "PY3",
     deps = [
         "//tensorboard:expect_absl_flags_installed",
+        "//tensorboard:expect_fsspec_installed",
         "//tensorboard:expect_numpy_installed",
         "//tensorboard/compat/proto:protos_all_py_pb2",
     ],
@@ -56,6 +57,19 @@ py_test(
     ],
     deps = [
         ":tensorflow_stub",
+        "//tensorboard:test",
+    ],
+)
+
+py_test(
+    name = "gfile_fsspec_test",
+    size = "small",
+    srcs = ["io/gfile_fsspec_test.py"],
+    srcs_version = "PY3",
+    tags = ["support_notf"],
+    deps = [
+        ":tensorflow_stub",
+        "//tensorboard:expect_fsspec_installed",
         "//tensorboard:test",
     ],
 )
