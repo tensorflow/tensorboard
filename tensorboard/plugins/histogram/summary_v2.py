@@ -105,6 +105,10 @@ def histogram(name, data, step=None, buckets=None, description=None):
       ValueError: if a default writer exists, but no step was provided and
         `tf.summary.experimental.get_step()` is None.
     """
+    # Avoid building unused gradient graphs for conds below. This works around
+    # an error building second-order gradient graphs when XlaDynamicUpdateSlice
+    # is used, and will generally speed up graph building slightly.
+    data = tf.stop_gradient(data)
     summary_metadata = metadata.create_summary_metadata(
         display_name=None, description=description
     )
