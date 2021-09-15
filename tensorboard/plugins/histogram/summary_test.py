@@ -235,6 +235,24 @@ class SummaryV2OpGraphTest(SummaryV2OpTest, tf.test.TestCase):
             graph_fn()
         writer.close()
 
+    def test_no_gradient_error_xla(self):
+        @tf2.function(jit_compile=True)
+        def graph_fn():
+            x = tf.constant(1.0)
+            with tf2.GradientTape() as tape1:
+                with tf2.GradientTape() as tape2:
+                    tape1.watch(x)
+                    tape2.watch(x)
+                    summary.histogram(name="loss", step=0, data=x, buckets=10)
+
+        # Note that XLA CPU/GPU has no outside compilation support, so summaries
+        # won't actually run in a jit_compiled function. TPUs do, and follow
+        # some similar codepaths, so this test stops at graph building to
+        # exercise those paths without a TPU available.
+        writer = tf2.summary.create_file_writer(self.get_temp_dir())
+        with writer.as_default():
+            graph_fn.get_concrete_function()
+
 
 if __name__ == "__main__":
     tf.test.main()
