@@ -27,8 +27,6 @@ import {HashStorageContainer} from './hash_storage_container';
 import {HashStorageComponent} from './hash_storage_component';
 import {DeepLinkerInterface} from '../../deeplink';
 
-/** @typehack */ import * as _typeHackStore from '@ngrx/store';
-
 class TestableDeeplinker implements DeepLinkerInterface {
   getString(key: string) {
     return key;
@@ -154,13 +152,13 @@ describe('hash storage test', () => {
     expect(setPluginIdSpy).toHaveBeenCalledWith('bar', jasmine.any(Object));
   });
 
-  it('dispatches plugin changed event when hash changes', () => {
+  it('dispatches plugin changed event when popstate (hash) changes', () => {
     store.overrideSelector(getActivePlugin, 'foo');
     const fixture = TestBed.createComponent(HashStorageContainer);
     fixture.detectChanges();
     getPluginIdSpy.and.returnValue('bar');
 
-    window.dispatchEvent(new Event('hashchange'));
+    window.dispatchEvent(new Event('popstate'));
     expect(dispatchSpy).toHaveBeenCalledWith(
       pluginUrlHashChanged({plugin: 'bar'})
     );
