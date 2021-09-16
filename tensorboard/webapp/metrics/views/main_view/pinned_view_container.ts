@@ -15,7 +15,7 @@ limitations under the License.
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {Store} from '@ngrx/store';
 import {Observable} from 'rxjs';
-import {startWith} from 'rxjs/operators';
+import {filter, map, pairwise, skip, startWith} from 'rxjs/operators';
 
 import {State} from '../../../app_state';
 import {DeepReadonly} from '../../../util/types';
@@ -28,6 +28,7 @@ import {CardIdWithMetadata} from '../metrics_view_types';
   template: `
     <metrics-pinned-view-component
       [cardIdsWithMetadata]="cardIdsWithMetadata$ | async"
+      [newCardPinnedIds]="newCardPinnedIds$ | async"
       [cardObserver]="cardObserver"
     ></metrics-pinned-view-component>
   `,
@@ -41,4 +42,33 @@ export class PinnedViewContainer {
   readonly cardIdsWithMetadata$: Observable<
     DeepReadonly<CardIdWithMetadata[]>
   > = this.store.select(getPinnedCardsWithMetadata).pipe(startWith([]));
+
+  readonly newCardPinnedIds$: Observable<number[]> = this.store
+    .select(getPinnedCardsWithMetadata)
+    .pipe(
+      // Ignore the first pinned card values which is empty, `[]`, in the store.
+      skip(1),
+      map((cards) => cards.map((card) => card.cardId)),
+      pairwise(),
+      map(([before, after]) => {
+        const beforeSet = new Set(before);
+        const afterSet = new Set(after);
+        for (const cardId of afterSet) {
+          if (!beforeSet.has(cardId)) return Date.now();
+        }
+        return null;
+      }),
+      // Pairwise accumulates value until there is a value for both `before` and `after`.
+      // Two `pairwise` can cause values to be ignored too one too many times and
+      // `startWith` helps with setting the first value.
+      startWith(null),
+      pairwise(),
+      map(([before, after]) => {
+        if (before === null && after === null) return null;
+        if (after === null) return [before];
+        return [after];
+      }),
+      filter((value) => value !== null),
+      map((val) => val as number[])
+    );
 }
