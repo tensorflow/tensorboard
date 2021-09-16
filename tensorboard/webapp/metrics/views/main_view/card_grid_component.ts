@@ -60,29 +60,25 @@ export class CardGridComponent {
     return isBottomControl;
   }
 
-  PaginationCallback(pageIndex: number, target: HTMLElement) {
+  handlePageChange(pageIndex: number, target: HTMLElement) {
     // Clear call stack to allow dom update before updating scroll to keep
     // relative position.
-    setTimeout(
-      this.scrollToKeepTargetPosition.bind(
-        this,
-        target,
-        target.getBoundingClientRect().top
-      ),
-      0
-    );
+    const topBeforeChange = target.getBoundingClientRect().top;
+    setTimeout(() => {
+      this.scrollToKeepTargetPosition(target, topBeforeChange);
+    }, 0);
 
     this.pageIndexChanged.emit(pageIndex);
   }
 
   scrollToKeepTargetPosition(target: HTMLElement, previousTop: number) {
-    const ScrollingElement = this.cdkScrollable?.getElementRef().nativeElement;
-    if (ScrollingElement) {
-      ScrollingElement.scrollTo(
+    const scrollingElement = this.cdkScrollable?.getElementRef().nativeElement;
+    if (scrollingElement) {
+      scrollingElement.scrollTo(
         0,
         target.getBoundingClientRect().top -
           previousTop +
-          ScrollingElement.scrollTop
+          scrollingElement.scrollTop
       );
     }
   }
@@ -111,6 +107,6 @@ export class CardGridComponent {
       input.value = String(nextValue + 1);
     }
 
-    this.PaginationCallback(nextValue, input);
+    this.handlePageChange(nextValue, input);
   }
 }
