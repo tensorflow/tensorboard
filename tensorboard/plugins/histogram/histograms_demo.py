@@ -94,6 +94,23 @@ def run(k, step):
         step=step,
     )
 
+    # Empty data
+    empty = tf.constant([])
+    tf.summary.histogram(
+        "empty",
+        empty,
+        description="An empty distribution.",
+        step=step,
+    )
+
+    # Single value
+    singular = tf.constant([1.0] * 10)
+    tf.summary.histogram(
+        "singular",
+        singular,
+        description="A distribution containing a singular value.",
+        step=step,
+    )
     # Finally, combine everything together!
     all_distributions = [
         mean_moving_normal,
@@ -101,6 +118,8 @@ def run(k, step):
         gamma,
         poisson,
         uniform,
+        empty,
+        singular,
     ]
     all_combined = tf.concat(all_distributions, 0)
     tf.summary.histogram(
@@ -109,7 +128,8 @@ def run(k, step):
         description="An amalgamation of five distributions: a "
         "uniform distribution, a gamma "
         "distribution, a Poisson distribution, and "
-        "two normal distributions.",
+        "two normal distributions, an empty distribution and "
+        "a distribution containing a singular value",
         step=step,
     )
 
