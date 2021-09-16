@@ -196,53 +196,46 @@ def _buckets(data, bucket_count=None):
         tf.debugging.assert_type(bucket_count, tf.int32)
         data = tf.reshape(data, shape=[-1])  # flatten
         data = tf.cast(data, tf.float64)
-        is_empty = tf.equal(tf.size(input=data), 0)
-
-        def when_empty():
+        data_size = tf.size(input=data)
+        if tf.equal(data_size, 0):
             return tf.constant([], shape=(0, 3), dtype=tf.float64)
 
-        def when_nonempty():
-            min_ = tf.reduce_min(input_tensor=data)
-            max_ = tf.reduce_max(input_tensor=data)
-            range_ = max_ - min_
-            is_singular = tf.equal(range_, 0)
+        min_ = tf.reduce_min(input_tensor=data)
+        max_ = tf.reduce_max(input_tensor=data)
+        range_ = max_ - min_
+        is_singular = tf.equal(range_, 0)
 
-            def when_nonsingular():
-                bucket_width = range_ / tf.cast(bucket_count, tf.float64)
-                offsets = data - min_
-                bucket_indices = tf.cast(
-                    tf.floor(offsets / bucket_width), dtype=tf.int32
-                )
-                clamped_indices = tf.minimum(bucket_indices, bucket_count - 1)
-                one_hots = tf.one_hot(clamped_indices, depth=bucket_count)
-                bucket_counts = tf.cast(
-                    tf.reduce_sum(input_tensor=one_hots, axis=0),
-                    dtype=tf.float64,
-                )
-                edges = tf.linspace(min_, max_, bucket_count + 1)
-                # Ensure edges[-1] == max_, which TF's linspace implementation does not
-                # do, leaving it subject to the whim of floating point rounding error.
-                edges = tf.concat([edges[:-1], [max_]], 0)
-                left_edges = edges[:-1]
-                right_edges = edges[1:]
-                return tf.transpose(
-                    a=tf.stack([left_edges, right_edges, bucket_counts])
-                )
+        bucket_width = range_ / tf.cast(bucket_count, tf.float64)
+        offsets = data - min_
+        # For singular data, indices should simply be
+        # [bucket_count - 1] * data_size, since only the last bucket (closed
+        # with a format of [v, v]) will have nonzero count.
+        singular_bucket_indices = tf.fill([data_size], bucket_count - 1)
+        non_singular_bucket_indices = tf.cast(
+            tf.floor(offsets / bucket_width), dtype=tf.int32
+        )
+        bucket_indices = (
+            singular_bucket_indices
+            if is_singular
+            else non_singular_bucket_indices
+        )
+        clamped_indices = tf.minimum(bucket_indices, bucket_count - 1)
+        one_hots = tf.one_hot(clamped_indices, depth=bucket_count)
+        bucket_counts = tf.cast(
+            tf.reduce_sum(input_tensor=one_hots, axis=0),
+            dtype=tf.float64,
+        )
 
-            def when_singular():
-                center = min_
-                bucket_starts = tf.stack([center - 0.5])
-                bucket_ends = tf.stack([center + 0.5])
-                bucket_counts = tf.stack(
-                    [tf.cast(tf.size(input=data), tf.float64)]
-                )
-                return tf.transpose(
-                    a=tf.stack([bucket_starts, bucket_ends, bucket_counts])
-                )
+        edges = tf.linspace(min_, max_, bucket_count + 1)
+        # Ensure edges[-1] == max_, which TF's linspace implementation does not
+        # do, leaving it subject to the whim of floating point rounding error.
+        edges = tf.concat([edges[:-1], [max_]], 0)
+        left_edges = edges[:-1]
+        right_edges = edges[1:]
 
-            return tf.cond(is_singular, when_singular, when_nonsingular)
-
-        return tf.cond(is_empty, when_empty, when_nonempty)
+        return tf.transpose(
+            a=tf.stack([left_edges, right_edges, bucket_counts])
+        )
 
 
 def histogram_pb(tag, data, buckets=None, description=None):
@@ -255,8 +248,8 @@ def histogram_pb(tag, data, buckets=None, description=None):
       buckets: Optional positive `int`. The output will have this
         many buckets, except in two edge cases. If there is no data, then
         there are no buckets. If there is data but all points have the
-        same value, then there is one bucket whose left and right
-        endpoints are the same.
+        same value, all buckets have the same left and right endpoints and
+        only the last bucket has nonzero count.
       description: Optional long-form description for this summary, as a
         `str`. Markdown is supported. Defaults to empty.
 
@@ -271,28 +264,34 @@ def histogram_pb(tag, data, buckets=None, description=None):
         min_ = np.min(data)
         max_ = np.max(data)
         range_ = max_ - min_
-        if range_ == 0:
-            center = min_
-            buckets = np.array([[center - 0.5, center + 0.5, float(data.size)]])
-        else:
-            bucket_width = range_ / bucket_count
-            offsets = data - min_
-            bucket_indices = np.floor(offsets / bucket_width).astype(int)
-            clamped_indices = np.minimum(bucket_indices, bucket_count - 1)
-            one_hots = np.array([clamped_indices]).transpose() == np.arange(
-                0, bucket_count
-            )  # broadcast
-            assert one_hots.shape == (data.size, bucket_count), (
-                one_hots.shape,
-                (data.size, bucket_count),
-            )
-            bucket_counts = np.sum(one_hots, axis=0)
-            edges = np.linspace(min_, max_, bucket_count + 1)
-            left_edges = edges[:-1]
-            right_edges = edges[1:]
-            buckets = np.array(
-                [left_edges, right_edges, bucket_counts]
-            ).transpose()
+
+        bucket_width = range_ / bucket_count
+        offsets = data - min_
+        # For singular data, indices should simply be
+        # [bucket_count - 1] * data.size, since only the last bucket (closed
+        # with a format of [v, v]) will have nonzero count.
+        singular_bucket_indices = np.array([bucket_count - 1] * data.size)
+        non_singular_bucket_indices = np.floor(offsets / bucket_width).astype(
+            int
+        )
+        bucket_indices = (
+            singular_bucket_indices
+            if range_ == 0
+            else non_singular_bucket_indices
+        )
+        clamped_indices = np.minimum(bucket_indices, bucket_count - 1)
+        one_hots = np.array([clamped_indices]).transpose() == np.arange(
+            0, bucket_count
+        )  # broadcast
+        assert one_hots.shape == (data.size, bucket_count), (
+            one_hots.shape,
+            (data.size, bucket_count),
+        )
+        bucket_counts = np.sum(one_hots, axis=0)
+        edges = np.linspace(min_, max_, bucket_count + 1)
+        left_edges = edges[:-1]
+        right_edges = edges[1:]
+        buckets = np.array([left_edges, right_edges, bucket_counts]).transpose()
     tensor = tensor_util.make_tensor_proto(buckets, dtype=np.float64)
 
     summary_metadata = metadata.create_summary_metadata(

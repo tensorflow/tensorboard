@@ -70,16 +70,6 @@ class SummaryBaseTest(object):
         buckets = tensor_util.make_ndarray(pb.value[0].tensor)
         np.testing.assert_allclose(buckets, np.array([]).reshape((0, 3)))
 
-    def test_singleton_input(self):
-        pb = self.histogram("twelve", [12])
-        buckets = tensor_util.make_ndarray(pb.value[0].tensor)
-        np.testing.assert_allclose(buckets, np.array([[11.5, 12.5, 1]]))
-
-    def test_input_with_all_same_values(self):
-        pb = self.histogram("twelven", [12, 12, 12])
-        buckets = tensor_util.make_ndarray(pb.value[0].tensor)
-        np.testing.assert_allclose(buckets, np.array([[11.5, 12.5, 3]]))
-
     def test_fixed_input(self):
         pass  # TODO: test a small fixed input
 
@@ -135,6 +125,16 @@ class SummaryV1PbTest(SummaryBaseTest, tf.test.TestCase):
             "a/b/histogram_summary", self.histogram("a/b", []).value[0].tag
         )
 
+    def test_singleton_input(self):
+        pb = self.histogram("twelve", [12])
+        buckets = tensor_util.make_ndarray(pb.value[0].tensor)
+        np.testing.assert_allclose(buckets, np.array([[11.5, 12.5, 1]]))
+
+    def test_input_with_all_same_values(self):
+        pb = self.histogram("twelven", [12, 12, 12])
+        buckets = tensor_util.make_ndarray(pb.value[0].tensor)
+        np.testing.assert_allclose(buckets, np.array([[11.5, 12.5, 3]]))
+
 
 class SummaryV1OpTest(SummaryBaseTest, tf.test.TestCase):
     def histogram(self, *args, **kwargs):
@@ -164,6 +164,21 @@ class SummaryV1OpTest(SummaryBaseTest, tf.test.TestCase):
 class SummaryV2PbTest(SummaryBaseTest, tf.test.TestCase):
     def histogram(self, *args, **kwargs):
         return summary.histogram_pb(*args, **kwargs)
+
+    def test_singleton_input(self):
+        pb = self.histogram("twelve", [12])
+        buckets = tensor_util.make_ndarray(pb.value[0].tensor)
+        # By default there will be 30 buckets.
+        expected_buckets = np.array(
+            [[12, 12, 0] for _ in range(29)] + [[12, 12, 1]]
+        )
+        np.testing.assert_allclose(buckets, expected_buckets)
+
+    def test_input_with_all_same_values(self):
+        pb = self.histogram("twelven", [12, 12, 12], buckets=2)
+        buckets = tensor_util.make_ndarray(pb.value[0].tensor)
+        expected_buckets = np.array([[12, 12, 0], [12, 12, 3]])
+        np.testing.assert_allclose(buckets, expected_buckets)
 
 
 class SummaryV2OpTest(SummaryBaseTest, tf.test.TestCase):
