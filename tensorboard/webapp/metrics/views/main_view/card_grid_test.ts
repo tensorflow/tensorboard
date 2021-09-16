@@ -1,6 +1,6 @@
 import {ScrollingModule} from '@angular/cdk/scrolling';
 import {Component, Input} from '@angular/core';
-import {TestBed} from '@angular/core/testing';
+import {fakeAsync, TestBed} from '@angular/core/testing';
 import {PluginType} from '../../data_source';
 import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
@@ -19,11 +19,6 @@ import {selectors as settingsSelectors} from '../../../settings';
 import * as selectors from '../../../selectors';
 
 const scrollElementHeight = 100;
-
-// Utility funciton to allow use of await.
-function timeout(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
 
 @Component({
   selector: 'testing-component',
@@ -83,8 +78,8 @@ class TestableComponent {
 
 describe('card grid', () => {
   let store: MockStore<State>;
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
+  beforeEach(fakeAsync(() => {
+    TestBed.configureTestingModule({
       imports: [NoopAnimationsModule, ScrollingModule],
       declarations: [
         CardGridComponent,
@@ -103,9 +98,9 @@ describe('card grid', () => {
 
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
     store.overrideSelector(selectors.getRunColorMap, {});
-  });
+  }));
 
-  fit('keeps pagination button position when page size changes', async () => {
+  fit('keeps pagination button position when page size changes', fakeAsync(() => {
     store.overrideSelector(settingsSelectors.getPageSize, 2);
     let scrollOffset = Math.floor(Math.random() * scrollElementHeight);
     const fixture = TestBed.createComponent(TestableComponent);
@@ -131,7 +126,6 @@ describe('card grid', () => {
     nextButtons[1].click();
     fixture.detectChanges();
     // Clear call stack to invoke the scroll adjustement logic.
-    await timeout(0);
     expect(nextButtons[1].offsetTop - scrollingElement.scrollTop).toEqual(
       scrollOffset
     );
@@ -143,7 +137,6 @@ describe('card grid', () => {
     previousButtons[0].click();
     fixture.detectChanges();
     // Clear call stack to invoke the scroll adjustement logic.
-    await timeout(0);
     expect(previousButtons[0].offsetTop - scrollingElement.scrollTop).toEqual(
       scrollOffset
     );
@@ -155,7 +148,6 @@ describe('card grid', () => {
     nextButtons[0].click();
     fixture.detectChanges();
     // Clear call stack to invoke the scroll adjustement logic.
-    await timeout(0);
     expect(nextButtons[0].offsetTop - scrollingElement.scrollTop).toEqual(
       scrollOffset
     );
@@ -167,7 +159,6 @@ describe('card grid', () => {
     previousButtons[1].click();
     fixture.detectChanges();
     // Clear call stack to invoke the scroll adjustement logic.
-    await timeout(0);
     expect(previousButtons[1].offsetTop - scrollingElement.scrollTop).toEqual(
       scrollOffset
     );
@@ -180,9 +171,8 @@ describe('card grid', () => {
     PaginationInput.dispatchEvent(new Event('input'));
     fixture.detectChanges();
     // Clear call stack to invoke the scroll adjustement logic.
-    await timeout(0);
     expect(PaginationInput.offsetTop - scrollingElement.scrollTop).toEqual(
       scrollOffset
     );
-  });
+  }));
 });
