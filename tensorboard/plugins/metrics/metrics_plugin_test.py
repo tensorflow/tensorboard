@@ -93,13 +93,14 @@ class MetricsPluginTest(tf.test.TestCase):
             writer.flush()
         self._multiplexer.AddRunsFromDirectory(self._logdir)
 
-    def _write_histogram_data(self, run, tag, data=[]):
+    def _write_histogram_data(self, run, tag, data=[], buckets=None):
         """Writes histogram data, starting at step 0.
 
         Args:
           run: string run name.
           tag: string tag name.
           data: list of histogram values to write at each step.
+          buckets: number of buckets.
         """
         subdir = os.path.join(self._logdir, run)
         writer = tf.summary.create_file_writer(subdir)
@@ -107,7 +108,7 @@ class MetricsPluginTest(tf.test.TestCase):
         with writer.as_default():
             step = 0
             for datum in data:
-                tf.summary.histogram(tag, datum, step=step)
+                tf.summary.histogram(tag, datum, step=step, buckets=buckets)
                 step += 1
             writer.flush()
         self._multiplexer.AddRunsFromDirectory(self._logdir)
@@ -409,7 +410,7 @@ class MetricsPluginTest(tf.test.TestCase):
         )
 
     def test_time_series_histogram(self):
-        self._write_histogram_data("run1", "histograms/tagA", [0, 10])
+        self._write_histogram_data("run1", "histograms/tagA", [0, 10], 1)
         self._multiplexer.Reload()
 
         requests = [
@@ -432,14 +433,14 @@ class MetricsPluginTest(tf.test.TestCase):
                                 "wallTime": "<wall_time>",
                                 "step": 0,
                                 "bins": [
-                                    {"min": -0.5, "max": 0.5, "count": 1.0}
+                                    {"min": 0.0, "max": 0.0, "count": 1.0}
                                 ],
                             },
                             {
                                 "wallTime": "<wall_time>",
                                 "step": 1,
                                 "bins": [
-                                    {"min": 9.5, "max": 10.5, "count": 1.0}
+                                    {"min": 10.0, "max": 10.0, "count": 1.0}
                                 ],
                             },
                         ]
