@@ -168,3 +168,48 @@ export function getTicksForLinearScale(
 
   return {major: Array.from(majorTickValMap.values()), minor};
 }
+
+const canvasForMeasure = document.createElement('canvas').getContext('2d');
+
+export function filterTicksByVisibility(
+  minorTicks: MinorTick[],
+  getDomPos: (tick: MinorTick) => number,
+  axis: 'x' | 'y',
+  axisFont: string,
+  marginBetweenAxis = 5
+): MinorTick[] {
+  if (!minorTicks.length || !canvasForMeasure) return minorTicks;
+  // While tick is in data coordinate system, DOM is on the opposite system;
+  // while pixels go from top=0 to down, data goes from bottom=0 to up.
+  const coordinateUnit = axis === 'x' ? 1 : -1;
+
+  let currentMax: number | null = null;
+  return minorTicks.filter((tick) => {
+    const position = getDomPos(tick);
+    canvasForMeasure.font = axisFont;
+    const textMetrics = canvasForMeasure.measureText(tick.tickFormattedString);
+    const textDim =
+      axis === 'x'
+        ? textMetrics.width
+        : textMetrics.actualBoundingBoxAscent -
+          textMetrics.actualBoundingBoxDescent;
+
+    if (currentMax === null) {
+      if (position + coordinateUnit * textDim < 0) {
+        return false;
+      }
+      currentMax = position + coordinateUnit * textDim;
+      return true;
+    }
+
+    if (
+      coordinateUnit *
+        (currentMax + coordinateUnit * marginBetweenAxis - position) >
+      0
+    ) {
+      return false;
+    }
+    currentMax = position + coordinateUnit * textDim;
+    return true;
+  });
+}

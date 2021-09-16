@@ -28,6 +28,7 @@ import {MatIconTestingModule} from '../../../testing/mat_icon_module';
 import {Extent, Scale, ScaleType} from '../lib/public_types';
 import {createScale} from '../lib/scale';
 import {LineChartAxisComponent} from './line_chart_axis_view';
+import * as utils from './line_chart_axis_utils';
 
 @Component({
   selector: 'testable-comp',
@@ -97,6 +98,8 @@ describe('line_chart_v2/sub_view/axis test', () => {
     }).compileComponents();
 
     overlayContainer = TestBed.inject(OverlayContainer);
+    // `filterTicksByVisibility` is tested separately.
+    spyOn(utils, 'filterTicksByVisibility').and.callFake((ticks) => ticks);
   });
 
   function assertLabels(debugElements: DebugElement[], axisLabels: string[]) {

@@ -26,12 +26,15 @@ import {
   getScaleRangeFromDomDim,
 } from './chart_view_utils';
 import {
+  filterTicksByVisibility,
   getStandardTicks,
   getTicksForLinearScale,
   getTicksForTemporalScale,
   MajorTick,
   MinorTick,
 } from './line_chart_axis_utils';
+
+const AXIS_FONT = '11px Roboto, sans-serif';
 
 @Component({
   selector: 'line-chart-axis',
@@ -40,6 +43,8 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LineChartAxisComponent {
+  readonly axisFont = AXIS_FONT;
+
   @Input()
   axisExtent!: [number, number];
 
@@ -95,7 +100,12 @@ export class LineChartAxisComponent {
     }
 
     this.majorTicks = ticks.major;
-    this.minorTicks = ticks.minor;
+    this.minorTicks = filterTicksByVisibility(
+      ticks.minor,
+      (tick) => this.getDomPos(tick.value),
+      this.axis,
+      AXIS_FONT
+    );
   }
 
   getFormatter(): Formatter {
