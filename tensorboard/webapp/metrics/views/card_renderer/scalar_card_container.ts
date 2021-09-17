@@ -255,35 +255,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
       return JSON.stringify(['smoothed', seriesId]);
     }
 
-    const normalizedPartialSeries$ = partialSeries$.pipe(
-      combineLatestWith(this.store.select(getMetricsXAxisType)),
-      // Normalize time and, optionally, compute relative time.
-      map(([partialSeries, xAxisType]) => {
-        return partialSeries.map((partial) => {
-          // Normalize data and convert wallTime in seconds to milliseconds.
-          // TODO(stephanwlee): when the legacy line chart is removed, do the conversion
-          // at the effects.
-          let normalizedPoints = partial.points.map((point) => {
-            const wallTime = point.wallTime * 1000;
-            const x = xAxisType === XAxisType.STEP ? point.x : wallTime;
-
-            return {...point, x, wallTime};
-          });
-
-          if (xAxisType === XAxisType.RELATIVE && normalizedPoints.length) {
-            const firstPoint = normalizedPoints[0];
-            normalizedPoints = normalizedPoints.map((point) => ({
-              ...point,
-              x: point.x - firstPoint.x,
-            }));
-          }
-
-          return {runId: partial.runId, points: normalizedPoints};
-        });
-      })
-    );
-
-    const partitionedSeries$ = normalizedPartialSeries$.pipe(
+    const partitionedSeries$ = partialSeries$.pipe(
       combineLatestWith(
         this.store.select(getMetricsScalarPartitionNonMonotonicX)
       ),
@@ -302,6 +274,43 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
           });
         }
       ),
+      map((partitionedSeriesList) => {
+        return partitionedSeriesList.map((partitionedSeries) => {
+          const firstWallTime = partitionedSeries.points[0]?.wallTime;
+          return {
+            ...partitionedSeries,
+            points: partitionedSeries.points.map((point) => {
+              return {
+                ...point,
+                relativeTimeInMs: point.wallTime - firstWallTime,
+              };
+            }),
+          };
+        });
+      }),
+      combineLatestWith(this.store.select(getMetricsXAxisType)),
+      map(([partitionedSeriesList, xAxisType]) => {
+        return partitionedSeriesList.map((series) => {
+          return {
+            ...series,
+            points: series.points.map((point) => {
+              let x: number;
+              switch (xAxisType) {
+                case XAxisType.RELATIVE:
+                  x = point.relativeTimeInMs;
+                  break;
+                case XAxisType.WALL_TIME:
+                  x = point.wallTime;
+                  break;
+                case XAxisType.STEP:
+                default:
+                  x = point.step;
+              }
+              return {...point, x};
+            }),
+          };
+        });
+      }),
       shareReplay(1)
     );
 
@@ -479,10 +488,19 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
   ): ScalarCardPoint[] {
     const isStepBased = xAxisType === XAxisType.STEP;
     return stepSeries.map((stepDatum) => {
+      // Normalize data and convert wallTime in seconds to milliseconds.
+      // TODO(stephanwlee): when the legacy line chart is removed, do the conversion
+      // at the effects.
+      const wallTime = stepDatum.wallTime * 1000;
       return {
         ...stepDatum,
-        x: isStepBased ? stepDatum.step : stepDatum.wallTime,
+        x: isStepBased ? stepDatum.step : wallTime,
         y: stepDatum.value,
+        wallTime,
+        // Put a fake relative time so we can work around with types too much.
+        // The real value would be set after we partition the timeseries so
+        // we can have a relative time per partition.
+        relativeTimeInMs: 0,
       };
     });
   }

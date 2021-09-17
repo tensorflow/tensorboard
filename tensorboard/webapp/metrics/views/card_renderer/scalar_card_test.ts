@@ -157,6 +157,8 @@ class TestableDataDownload {
   }
 }
 
+const anyString = jasmine.any(String);
+
 describe('scalar card', () => {
   let store: MockStore<State>;
   let selectSpy: jasmine.Spy;
@@ -896,22 +898,43 @@ describe('scalar card', () => {
         points: [
           // Keeps the data structure as is but do notice adjusted wallTime and
           // line_chart_v2 required "x" and "y" props.
-          {wallTime: 2000, value: 1, step: 1, x: 1, y: 1},
-          {wallTime: 4000, value: 10, step: 2, x: 2, y: 10},
+          {wallTime: 2000, relativeTimeInMs: 0, value: 1, step: 1, x: 1, y: 1},
+          {
+            wallTime: 4000,
+            relativeTimeInMs: 2000,
+            value: 10,
+            step: 2,
+            x: 2,
+            y: 10,
+          },
         ],
       },
-      {id: 'run2', points: [{wallTime: 2000, value: 1, step: 1, x: 1, y: 1}]},
+      {
+        id: 'run2',
+        points: [
+          {wallTime: 2000, relativeTimeInMs: 0, value: 1, step: 1, x: 1, y: 1},
+        ],
+      },
       {
         id: '["smoothed","run1"]',
         points: [
-          {wallTime: 2000, value: 1, step: 1, x: 1, y: 1},
+          {wallTime: 2000, relativeTimeInMs: 0, value: 1, step: 1, x: 1, y: 1},
           // Exact smoothed value is not too important.
-          {wallTime: 4000, value: 10, step: 2, x: 2, y: jasmine.any(Number)},
+          {
+            wallTime: 4000,
+            relativeTimeInMs: 2000,
+            value: 10,
+            step: 2,
+            x: 2,
+            y: jasmine.any(Number),
+          },
         ],
       },
       {
         id: '["smoothed","run2"]',
-        points: [{wallTime: 2000, value: 1, step: 1, x: 1, y: 1}],
+        points: [
+          {wallTime: 2000, relativeTimeInMs: 0, value: 1, step: 1, x: 1, y: 1},
+        ],
       },
     ]);
     expect(lineChart.componentInstance.seriesMetadataMap).toEqual({
@@ -986,11 +1009,23 @@ describe('scalar card', () => {
         id: 'run1',
         points: [
           // Keeps the data structure as is but requires "x" and "y" props.
-          {wallTime: 2000, value: 1, step: 1, x: 1, y: 1},
-          {wallTime: 4000, value: 10, step: 2, x: 2, y: 10},
+          {wallTime: 2000, value: 1, step: 1, x: 1, y: 1, relativeTimeInMs: 0},
+          {
+            wallTime: 4000,
+            value: 10,
+            step: 2,
+            x: 2,
+            y: 10,
+            relativeTimeInMs: 2000,
+          },
         ],
       },
-      {id: 'run2', points: [{wallTime: 2000, value: 1, step: 1, x: 1, y: 1}]},
+      {
+        id: 'run2',
+        points: [
+          {wallTime: 2000, value: 1, step: 1, x: 1, y: 1, relativeTimeInMs: 0},
+        ],
+      },
     ]);
     expect(lineChart.componentInstance.seriesMetadataMap).toEqual({
       run1: {
@@ -1030,7 +1065,15 @@ describe('scalar card', () => {
           ...metadata,
         },
         closestPointIndex: 0,
-        point: {x: 0, y: 0, value: 0, step: 0, wallTime: 0, ...point},
+        point: {
+          x: 0,
+          y: 0,
+          value: 0,
+          step: 0,
+          wallTime: 0,
+          relativeTimeInMs: 0,
+          ...point,
+        },
       };
     }
 
@@ -1088,6 +1131,7 @@ describe('scalar card', () => {
             y: 1000,
             value: 1000,
             wallTime: new Date('2020-01-01').getTime(),
+            relativeTimeInMs: 1000 * 60 * 60 * 24 * 365 * 3,
           }
         ),
         buildTooltipDatum(
@@ -1104,6 +1148,7 @@ describe('scalar card', () => {
             y: -1000,
             value: -1000,
             wallTime: new Date('2020-12-31').getTime(),
+            relativeTimeInMs: 0,
           }
         ),
       ]);
@@ -1113,11 +1158,18 @@ describe('scalar card', () => {
         Selector.TOOLTIP_HEADER_COLUMN
       );
       const headerText = headerCols.map((col) => col.nativeElement.textContent);
-      expect(headerText).toEqual(['', 'Run', 'Value', 'Step', 'Time']);
+      expect(headerText).toEqual([
+        '',
+        'Run',
+        'Value',
+        'Step',
+        'Time',
+        'Relative',
+      ]);
 
       assertTooltipRows(fixture, [
-        ['', 'Row 1', '1000', '10', '1/1/20, 12:00 AM'],
-        ['', 'Row 2', '-1000', '1,000', '12/31/20, 12:00 AM'],
+        ['', 'Row 1', '1000', '10', '1/1/20, 12:00 AM', '3 yr'],
+        ['', 'Row 2', '-1000', '1,000', '12/31/20, 12:00 AM', '0'],
       ]);
     }));
 
@@ -1141,6 +1193,7 @@ describe('scalar card', () => {
             y: 10002000,
             value: 10001337,
             wallTime: new Date('2020-01-01').getTime(),
+            relativeTimeInMs: 10,
           }
         ),
         buildTooltipDatum(
@@ -1159,6 +1212,7 @@ describe('scalar card', () => {
             y: -0.0005,
             value: -0.9312345,
             wallTime: new Date('2020-12-31').getTime(),
+            relativeTimeInMs: 5000,
           }
         ),
       ]);
@@ -1175,13 +1229,22 @@ describe('scalar card', () => {
         'Value',
         'Step',
         'Time',
+        'Relative',
       ]);
 
       assertTooltipRows(fixture, [
-        ['', 'Row 1', '1e+7', '1e+7', '10', '1/1/20, 12:00 AM'],
+        ['', 'Row 1', '1e+7', '1e+7', '10', '1/1/20, 12:00 AM', '10 ms'],
         // Print the step with comma for readability. The value is yet optimize for
         // readability (we may use the scientific formatting).
-        ['', 'Row 2', '-5e-4', '-0.9312', '1,000', '12/31/20, 12:00 AM'],
+        [
+          '',
+          'Row 2',
+          '-5e-4',
+          '-0.9312',
+          '1,000',
+          '12/31/20, 12:00 AM',
+          '5 sec',
+        ],
       ]);
     }));
 
@@ -1206,6 +1269,7 @@ describe('scalar card', () => {
             y: 1000,
             value: 1000,
             wallTime: new Date('2020-01-01').getTime(),
+            relativeTimeInMs: 10,
           }
         ),
         buildTooltipDatum(
@@ -1224,6 +1288,7 @@ describe('scalar card', () => {
             y: -1000,
             value: -1000,
             wallTime: new Date('2020-01-05').getTime(),
+            relativeTimeInMs: 432000000,
           }
         ),
       ]);
@@ -1318,9 +1383,9 @@ describe('scalar card', () => {
       fixture.detectChanges();
 
       assertTooltipRows(fixture, [
-        ['', 'Row 2', '-500', '1,000', jasmine.any(String)],
-        ['', 'Row 3', '3', '10k', jasmine.any(String)],
-        ['', 'Row 1', '1000', '10', jasmine.any(String)],
+        ['', 'Row 2', '-500', '1,000', anyString, anyString],
+        ['', 'Row 3', '3', '10k', anyString, anyString],
+        ['', 'Row 1', '1000', '10', anyString, anyString],
       ]);
     }));
 
@@ -1387,9 +1452,9 @@ describe('scalar card', () => {
       fixture.detectChanges();
 
       assertTooltipRows(fixture, [
-        ['', 'Row 1', '1000', '10', jasmine.any(String)],
-        ['', 'Row 3', '3', '10k', jasmine.any(String)],
-        ['', 'Row 2', '-500', '1,000', jasmine.any(String)],
+        ['', 'Row 1', '1000', '10', anyString, anyString],
+        ['', 'Row 3', '3', '10k', anyString, anyString],
+        ['', 'Row 2', '-500', '1,000', anyString, anyString],
       ]);
     }));
 
@@ -1456,34 +1521,34 @@ describe('scalar card', () => {
       setCursorLocation(fixture, {x: 500, y: -100});
       fixture.detectChanges();
       assertTooltipRows(fixture, [
-        ['', 'Row 2', '-500', '1,000', jasmine.any(String)],
-        ['', 'Row 1', '1000', '0', jasmine.any(String)],
-        ['', 'Row 3', '3', '10k', jasmine.any(String)],
+        ['', 'Row 2', '-500', '1,000', anyString, anyString],
+        ['', 'Row 1', '1000', '0', anyString, anyString],
+        ['', 'Row 3', '3', '10k', anyString, anyString],
       ]);
 
       setCursorLocation(fixture, {x: 500, y: 600});
       fixture.detectChanges();
       assertTooltipRows(fixture, [
-        ['', 'Row 1', '1000', '0', jasmine.any(String)],
-        ['', 'Row 2', '-500', '1,000', jasmine.any(String)],
-        ['', 'Row 3', '3', '10k', jasmine.any(String)],
+        ['', 'Row 1', '1000', '0', anyString, anyString],
+        ['', 'Row 2', '-500', '1,000', anyString, anyString],
+        ['', 'Row 3', '3', '10k', anyString, anyString],
       ]);
 
       setCursorLocation(fixture, {x: 10000, y: -100});
       fixture.detectChanges();
       assertTooltipRows(fixture, [
-        ['', 'Row 3', '3', '10k', jasmine.any(String)],
-        ['', 'Row 2', '-500', '1,000', jasmine.any(String)],
-        ['', 'Row 1', '1000', '0', jasmine.any(String)],
+        ['', 'Row 3', '3', '10k', anyString, anyString],
+        ['', 'Row 2', '-500', '1,000', anyString, anyString],
+        ['', 'Row 1', '1000', '0', anyString, anyString],
       ]);
 
       // Right between row 1 and row 2. When tied, original order is used.
       setCursorLocation(fixture, {x: 500, y: 250});
       fixture.detectChanges();
       assertTooltipRows(fixture, [
-        ['', 'Row 1', '1000', '0', jasmine.any(String)],
-        ['', 'Row 2', '-500', '1,000', jasmine.any(String)],
-        ['', 'Row 3', '3', '10k', jasmine.any(String)],
+        ['', 'Row 1', '1000', '0', anyString, anyString],
+        ['', 'Row 2', '-500', '1,000', anyString, anyString],
+        ['', 'Row 3', '3', '10k', anyString, anyString],
       ]);
     }));
   });
@@ -1526,21 +1591,65 @@ describe('scalar card', () => {
         {
           id: '["run1",0]',
           points: [
-            {wallTime: 2000, value: 1, step: 1, x: 1, y: 1},
-            {wallTime: 4000, value: 10, step: 2, x: 2, y: 10},
-            {wallTime: 6000, value: 30, step: 2, x: 2, y: 30},
+            {
+              wallTime: 2000,
+              value: 1,
+              step: 1,
+              x: 1,
+              y: 1,
+              relativeTimeInMs: 0,
+            },
+            {
+              wallTime: 4000,
+              value: 10,
+              step: 2,
+              x: 2,
+              y: 10,
+              relativeTimeInMs: 2000,
+            },
+            {
+              wallTime: 6000,
+              value: 30,
+              step: 2,
+              x: 2,
+              y: 30,
+              relativeTimeInMs: 4000,
+            },
           ],
         },
         {
           id: '["run1",1]',
           points: [
-            {wallTime: 6000, value: 10, step: 1, x: 1, y: 10},
-            {wallTime: 3000, value: 20, step: 4, x: 4, y: 20},
+            {
+              wallTime: 6000,
+              value: 10,
+              step: 1,
+              x: 1,
+              y: 10,
+              relativeTimeInMs: 0,
+            },
+            {
+              wallTime: 3000,
+              value: 20,
+              step: 4,
+              x: 4,
+              y: 20,
+              relativeTimeInMs: -3000,
+            },
           ],
         },
         {
           id: '["run2",0]',
-          points: [{wallTime: 2000, value: 1, step: 1, x: 1, y: 1}],
+          points: [
+            {
+              wallTime: 2000,
+              value: 1,
+              step: 1,
+              x: 1,
+              y: 1,
+              relativeTimeInMs: 0,
+            },
+          ],
         },
       ]);
       expect(lineChart.componentInstance.seriesMetadataMap).toEqual({
@@ -1613,15 +1722,52 @@ describe('scalar card', () => {
         {
           id: '["run1",0]',
           points: [
-            {wallTime: 2000, value: 1, step: 1, x: 2000, y: 1},
-            {wallTime: 4000, value: 10, step: 2, x: 4000, y: 10},
-            {wallTime: 6000, value: 30, step: 2, x: 6000, y: 30},
-            {wallTime: 6000, value: 10, step: 1, x: 6000, y: 10},
+            {
+              wallTime: 2000,
+              relativeTimeInMs: 0,
+              value: 1,
+              step: 1,
+              x: 2000,
+              y: 1,
+            },
+            {
+              wallTime: 4000,
+              relativeTimeInMs: 2000,
+              value: 10,
+              step: 2,
+              x: 4000,
+              y: 10,
+            },
+            {
+              wallTime: 6000,
+              relativeTimeInMs: 4000,
+              value: 30,
+              step: 2,
+              x: 6000,
+              y: 30,
+            },
+            {
+              wallTime: 6000,
+              relativeTimeInMs: 4000,
+              value: 10,
+              step: 1,
+              x: 6000,
+              y: 10,
+            },
           ],
         },
         {
           id: '["run1",1]',
-          points: [{wallTime: 3000, value: 20, step: 4, x: 3000, y: 20}],
+          points: [
+            {
+              wallTime: 3000,
+              relativeTimeInMs: 0,
+              value: 20,
+              step: 4,
+              x: 3000,
+              y: 20,
+            },
+          ],
         },
       ]);
       expect(lineChart.componentInstance.seriesMetadataMap).toEqual({

@@ -42,7 +42,14 @@ describe('metrics card_renderer utils test', () => {
 
   function buildPoints(xs: number[]): PartialSeries['points'] {
     return xs.map((x) => {
-      return {x, y: x * 10, value: x * 10, wallTime: 0, step: x};
+      return {
+        x,
+        y: x * 10,
+        value: x * 10,
+        wallTime: 0,
+        relativeTimeInMs: 0,
+        step: x,
+      };
     });
   }
 
