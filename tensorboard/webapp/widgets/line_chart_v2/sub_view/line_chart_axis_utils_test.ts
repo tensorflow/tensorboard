@@ -15,6 +15,7 @@ limitations under the License.
 
 import {createScale, LinearScale, ScaleType, TemporalScale} from '../lib/scale';
 import {
+  filterTicksByVisibility,
   getStandardTicks,
   getTicksForLinearScale,
   getTicksForTemporalScale,
@@ -365,6 +366,113 @@ describe('line_chart_v2/sub_view/axis_utils test', () => {
         expect(minor).toEqual([
           {value: -0.000005, tickFormattedString: '…5'},
           {value: -0.00001, tickFormattedString: '…0'},
+        ]);
+      });
+    });
+  });
+
+  describe('#filterTicksByVisibility', () => {
+    // 10px monospace has about below dimensions.
+    const CHAR_HEIGHT = 9;
+    const CHAR_WIDTH = 6.021;
+
+    describe('x axis', () => {
+      it('filters ticks if it overlaps', () => {
+        const ticks = filterTicksByVisibility(
+          [
+            {value: 0, tickFormattedString: 'ABC'},
+            {value: 0, tickFormattedString: 'XYZ'},
+            {value: 18, tickFormattedString: 'A'},
+            {value: CHAR_WIDTH * 3, tickFormattedString: 'B'},
+            {value: CHAR_WIDTH * 5, tickFormattedString: 'C'},
+          ],
+          (tick) => tick.value,
+          'x',
+          '10px monospace',
+          0
+        );
+
+        expect(ticks).toEqual([
+          {value: 0, tickFormattedString: 'ABC'},
+          {value: CHAR_WIDTH * 3, tickFormattedString: 'B'},
+          {value: CHAR_WIDTH * 5, tickFormattedString: 'C'},
+        ]);
+      });
+
+      it('filters everything out of nothing is visible', () => {
+        const ticks = filterTicksByVisibility(
+          [
+            {value: -100, tickFormattedString: 'A'},
+            {value: -50, tickFormattedString: 'B'},
+          ],
+          (tick) => tick.value,
+          'x',
+          '10px monospace',
+          0
+        );
+
+        expect(ticks).toEqual([]);
+      });
+
+      it('honors the padding', () => {
+        const ticks = filterTicksByVisibility(
+          [
+            {value: 0, tickFormattedString: 'ABC'},
+            {value: CHAR_WIDTH * 3, tickFormattedString: 'B'},
+            {value: CHAR_WIDTH * 3 + 10, tickFormattedString: 'C'},
+          ],
+          (tick) => tick.value,
+          'x',
+          '10px monospace',
+          10
+        );
+
+        expect(ticks).toEqual([
+          {value: 0, tickFormattedString: 'ABC'},
+          {value: CHAR_WIDTH * 3 + 10, tickFormattedString: 'C'},
+        ]);
+      });
+    });
+
+    describe('y axis', () => {
+      it('filters ticks if it overlaps', () => {
+        const ticks = filterTicksByVisibility(
+          [
+            {value: 200, tickFormattedString: 'A'},
+            {value: 200, tickFormattedString: 'B'},
+            {value: 195, tickFormattedString: 'C'},
+            {value: 200 - CHAR_HEIGHT, tickFormattedString: 'D'},
+            {value: 200 - CHAR_HEIGHT * 5, tickFormattedString: 'E'},
+          ],
+          (tick) => tick.value,
+          'y',
+          '10px monospace',
+          0
+        );
+
+        expect(ticks).toEqual([
+          {value: 200, tickFormattedString: 'A'},
+          {value: 200 - CHAR_HEIGHT, tickFormattedString: 'D'},
+          {value: 200 - CHAR_HEIGHT * 5, tickFormattedString: 'E'},
+        ]);
+      });
+
+      it('honors the padding', () => {
+        const ticks = filterTicksByVisibility(
+          [
+            {value: 200, tickFormattedString: 'A'},
+            {value: 200 - CHAR_HEIGHT, tickFormattedString: 'B'},
+            {value: 200 - CHAR_HEIGHT - 10, tickFormattedString: 'C'},
+          ],
+          (tick) => tick.value,
+          'y',
+          '10px monospace',
+          10
+        );
+
+        expect(ticks).toEqual([
+          {value: 200, tickFormattedString: 'A'},
+          {value: 200 - CHAR_HEIGHT - 10, tickFormattedString: 'C'},
         ]);
       });
     });

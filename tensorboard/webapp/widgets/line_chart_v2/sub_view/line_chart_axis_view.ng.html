@@ -23,6 +23,7 @@ limitations under the License.
         *ngFor="let tick of minorTicks; trackBy: trackByMinorTick"
       >
         <text
+          [style.font]="axisFont"
           [attr.x]="textXPosition(tick.value)"
           [attr.y]="textYPosition(tick.value)"
         >
@@ -52,10 +53,11 @@ limitations under the License.
       *ngFor="let tick of majorTicks; index as i; last as isLast; trackBy: trackByMajorTick"
       [class.major-label]="true"
       [class.last]="isLast"
-      [style.left]="getMajorXPosition(tick) + 'px'"
+      [style.left.px]="getMajorXPosition(tick)"
       [style.width]="getMajorWidthString(tick, isLast, majorTicks[i + 1])"
-      [style.bottom]="getMajorYPosition(tick) + 'px'"
+      [style.bottom.px]="getMajorYPosition(tick)"
       [style.height]="getMajorHeightString(tick, isLast, majorTicks[i + 1])"
+      [style.font]="axisFont"
       [title]="getFormatter().formatLong(tick.start)"
       ><span>{{ tick.tickFormattedString }}</span></span
     >
