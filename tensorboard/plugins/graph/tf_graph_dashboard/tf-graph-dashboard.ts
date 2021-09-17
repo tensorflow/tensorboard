@@ -202,6 +202,14 @@ class TfGraphDashboard extends LegacyElementMixin(PolymerElement) {
       .center:not(.no-graph) .no-data-message {
         display: none;
       }
+
+      a {
+        color: var(--tb-link);
+      }
+
+      a:visited {
+        color: var(--tb-link-visited);
+      }
     </style>
   `;
   /**

@@ -31,6 +31,8 @@ style.textContent = `
     --primary-background-color: #fff;
     --secondary-background-color: #e9e9e9;
     --tb-layout-background-color: #f5f5f5;
+    --tb-link: #1976d2; /* material blue 700. */
+    --tb-link-visited: #7b1fa2; /* material purple 700. */
   }
 
   :root .dark-mode {
@@ -44,6 +46,8 @@ style.textContent = `
     --primary-background-color: #303030;  /* material grey A400. */
     --secondary-background-color: #3a3a3a;
     --tb-layout-background-color: #3a3a3a;
+    --tb-link: #42a5f5; /* material blue 400. */
+    --tb-link-visited: #ba68c8; /* material purple 300. */
     /* Overrides paper-material */
     --shadow-elevation-2dp_-_box-shadow: 0 2px 2px 0 rgba(255, 255, 255, 0.14),
       0 1px 5px 0 rgba(255, 255, 255, 0.12),
