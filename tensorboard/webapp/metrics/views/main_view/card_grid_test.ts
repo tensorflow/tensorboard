@@ -20,6 +20,7 @@ import {appStateFromMetricsState} from '../../testing';
 import {State} from '../../../app_state';
 import {selectors as settingsSelectors} from '../../../settings';
 import * as selectors from '../../../selectors';
+import {getMetricsTagGroupExpansionState} from '../../../selectors';
 
 const scrollElementHeight = 100;
 
@@ -62,19 +63,16 @@ describe('card grid', () => {
     await TestBed.configureTestingModule({
       imports: [NoopAnimationsModule, ScrollingModule],
       declarations: [CardGridComponent, CardGridContainer, TestableComponent],
-      providers: [
-        provideMockStore({
-          initialState: appStateFromMetricsState(),
-        }),
-      ],
+      providers: [provideMockStore()],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
 
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
     store.overrideSelector(selectors.getRunColorMap, {});
+    store.overrideSelector(getMetricsTagGroupExpansionState, true);
   });
 
-  fit('keeps pagination button position when page size changes', fakeAsync(() => {
+  it('keeps pagination button position when page size changes', fakeAsync(() => {
     store.overrideSelector(settingsSelectors.getPageSize, 2);
     let scrollOffset = Math.floor(Math.random() * scrollElementHeight);
     const fixture = TestBed.createComponent(TestableComponent);
