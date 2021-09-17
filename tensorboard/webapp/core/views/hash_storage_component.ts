@@ -15,16 +15,19 @@ limitations under the License.
 import {
   ChangeDetectionStrategy,
   Component,
+  EventEmitter,
   Input,
   OnChanges,
-  SimpleChanges,
-  OnInit,
   OnDestroy,
+  OnInit,
   Output,
-  EventEmitter,
+  SimpleChanges,
 } from '@angular/core';
+import {fromEvent, Observable, Subject} from 'rxjs';
+import {takeUntil} from 'rxjs/operators';
 
 import {DeepLinkerInterface, SetStringOption} from '../../deeplink/types';
+
 export enum ChangedProp {
   ACTIVE_PLUGIN,
 }
@@ -35,8 +38,6 @@ export enum ChangedProp {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HashStorageComponent implements OnInit, OnChanges, OnDestroy {
-  private readonly onHashChange = this.onHashChangedImpl.bind(this);
-
   constructor(private readonly deepLinker: DeepLinkerInterface) {}
 
   @Input()
@@ -45,29 +46,38 @@ export class HashStorageComponent implements OnInit, OnChanges, OnDestroy {
   @Output()
   onValueChange = new EventEmitter<{prop: ChangedProp; value: string}>();
 
-  private onHashChangedImpl() {
-    const activePluginId = this.deepLinker.getPluginId();
-
-    if (activePluginId !== this.activePluginId) {
-      this.onValueChange.emit({
-        prop: ChangedProp.ACTIVE_PLUGIN,
-        value: activePluginId,
-      });
-    }
-  }
+  private readonly ngUnsubscribe = new Subject<void>();
+  private readonly onHashChange: Observable<Event> = fromEvent(
+    window,
+    'popstate',
+    {passive: true}
+  ).pipe(takeUntil(this.ngUnsubscribe));
 
   ngOnInit() {
-    // Cannot use the tf_storage hash listener because it binds to event before the
-    // zone.js patch. According to [1], zone.js patches various asynchronos calls and
-    // event listeners to detect "changes" and mark components as dirty for re-render.
-    // When using tf_storage hash listener, it causes bad renders in Angular due to
-    // missing dirtiness detection.
+    // Note: A couple alternative implementations to using 'popstate' event that
+    // turn out to be buggy:
+    // 1. tf_storage hash listener: It binds to events before zone.js patches
+    //    event listeners for change detection ([1]).
+    // 2. 'hashchange' event: We observed that window.history.back() and
+    //    window.history.forward() do not trigger 'hashchange' events after some
+    //    calls to replaceState which AppRouting uses.
+    //
     // [1]: https://blog.angular-university.io/how-does-angular-2-change-detection-really-work/
-    window.addEventListener('hashchange', this.onHashChange);
+    this.onHashChange.subscribe(() => {
+      const activePluginId = this.deepLinker.getPluginId();
+
+      if (activePluginId !== this.activePluginId) {
+        this.onValueChange.emit({
+          prop: ChangedProp.ACTIVE_PLUGIN,
+          value: activePluginId,
+        });
+      }
+    });
   }
 
   ngOnDestroy() {
-    window.removeEventListener('hashchange', this.onHashChange);
+    this.ngUnsubscribe.next();
+    this.ngUnsubscribe.complete();
   }
 
   ngOnChanges(changes: SimpleChanges) {
