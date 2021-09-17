@@ -171,6 +171,10 @@ export function getTicksForLinearScale(
 
 const canvasForMeasure = document.createElement('canvas').getContext('2d');
 
+/**
+ * Filters minor ticks by their position and dimensions so each label does not
+ * get overlapped with another.
+ */
 export function filterTicksByVisibility(
   minorTicks: MinorTick[],
   getDomPos: (tick: MinorTick) => number,

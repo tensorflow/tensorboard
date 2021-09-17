@@ -43,8 +43,6 @@ const AXIS_FONT = '11px Roboto, sans-serif';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LineChartAxisComponent {
-  readonly axisFont = AXIS_FONT;
-
   @Input()
   axisExtent!: [number, number];
 
