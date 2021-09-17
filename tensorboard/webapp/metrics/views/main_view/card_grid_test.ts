@@ -1,15 +1,18 @@
 import {ScrollingModule} from '@angular/cdk/scrolling';
-import {Component, Input} from '@angular/core';
-import {fakeAsync, TestBed} from '@angular/core/testing';
+import {Component, Input, NO_ERRORS_SCHEMA} from '@angular/core';
+import {
+  discardPeriodicTasks,
+  fakeAsync,
+  TestBed,
+  tick,
+} from '@angular/core/testing';
 import {PluginType} from '../../data_source';
 import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
-import {CardLazyLoader, CardObserver} from '../card_renderer/card_lazy_loader';
+import {CardObserver} from '../card_renderer/card_lazy_loader';
 
 import {CardGridComponent} from './card_grid_component';
 import {CardGridContainer} from './card_grid_container';
-import {CardViewComponent} from '../card_renderer/card_view_component';
-import {CardViewContainer} from '../card_renderer/card_view_container';
 import {CardIdWithMetadata} from '../metrics_view_types';
 import {Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
@@ -37,80 +40,76 @@ const scrollElementHeight = 100;
     `
       div {
         position: fixed;
-        display: block;
         height: ${scrollElementHeight}px;
         overflow-y: scroll;
       }
       .placeholder {
         position: relative;
         height: 700px;
-        display: block;
       }
     `,
   ],
 })
 class TestableComponent {
   @Input() groupName: string = 'test group name';
-  @Input() cardIdsWithMetadata: CardIdWithMetadata[] = [
-    {
-      cardId: 'card1',
-      plugin: PluginType.SCALARS,
-      tag: 'tagA',
-      runId: null,
-    },
-    {
-      cardId: 'card2',
-      plugin: PluginType.SCALARS,
-      tag: 'tagA/Images',
-      runId: 'run1',
-      sample: 0,
-    },
-    {
-      cardId: 'card3',
-      plugin: PluginType.SCALARS,
-      tag: 'tagB/meow/cat',
-      runId: 'run1',
-      sample: 0,
-    },
-  ];
+  @Input() cardIdsWithMetadata: CardIdWithMetadata[] = [];
   @Input() cardObserver: CardObserver = new CardObserver();
 }
 
 describe('card grid', () => {
   let store: MockStore<State>;
-  beforeEach(fakeAsync(() => {
-    TestBed.configureTestingModule({
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
       imports: [NoopAnimationsModule, ScrollingModule],
-      declarations: [
-        CardGridComponent,
-        CardGridContainer,
-        TestableComponent,
-        CardViewComponent,
-        CardViewContainer,
-        CardLazyLoader,
-      ],
+      declarations: [CardGridComponent, CardGridContainer, TestableComponent],
       providers: [
         provideMockStore({
           initialState: appStateFromMetricsState(),
         }),
       ],
+      schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
 
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
     store.overrideSelector(selectors.getRunColorMap, {});
-  }));
+  });
 
   fit('keeps pagination button position when page size changes', fakeAsync(() => {
     store.overrideSelector(settingsSelectors.getPageSize, 2);
     let scrollOffset = Math.floor(Math.random() * scrollElementHeight);
     const fixture = TestBed.createComponent(TestableComponent);
+    fixture.componentInstance.cardIdsWithMetadata = [
+      {
+        cardId: 'card1',
+        plugin: PluginType.SCALARS,
+        tag: 'tagA',
+        runId: null,
+      },
+      {
+        cardId: 'card2',
+        plugin: PluginType.SCALARS,
+        tag: 'tagA/Images',
+        runId: 'run1',
+        sample: 0,
+      },
+      {
+        cardId: 'card3',
+        plugin: PluginType.SCALARS,
+        tag: 'tagB/meow/cat',
+        runId: 'run1',
+        sample: 0,
+      },
+    ];
     fixture.detectChanges();
-    const nextButtons = fixture.debugElement
+    const [topNextButtons, bottomNextButtons] = fixture.debugElement
       .queryAll(By.css('.next'))
       .map((nextDebugElements) => {
         return nextDebugElements.nativeElement!;
       });
-    const previousButtons = fixture.debugElement
+    const [
+      topPreviousButtons,
+      bottomPreviousButtons,
+    ] = fixture.debugElement
       .queryAll(By.css('.prev'))
       .map((nextDebugElements) => {
         return nextDebugElements.nativeElement!;
@@ -120,48 +119,65 @@ describe('card grid', () => {
     ).nativeElement;
     const scrollingElement = fixture.nativeElement.children[0];
 
-    // Test scrolling adjustements on bottom next button.
-    scrollingElement.scrollTo(0, nextButtons[1].offsetTop - scrollOffset);
+    // Test scrolling adjustments on bottom next button.
+    scrollingElement.scrollTo(0, bottomNextButtons.offsetTop - scrollOffset);
     fixture.detectChanges();
-    nextButtons[1].click();
+    bottomNextButtons.click();
     fixture.detectChanges();
+    // To ensure the click did change the size of the CardGrid ensure make sure
+    // the button has moved.
+    expect(
+      bottomNextButtons.offsetTop - scrollingElement.scrollTop
+    ).not.toEqual(scrollOffset);
     // Clear call stack to invoke the scroll adjustement logic.
-    expect(nextButtons[1].offsetTop - scrollingElement.scrollTop).toEqual(
+    tick(0);
+    expect(bottomNextButtons.offsetTop - scrollingElement.scrollTop).toEqual(
       scrollOffset
     );
 
-    // Test scrolling adjustements on top previous button.
+    // Test scrolling adjustments on top previous button.
     scrollOffset = Math.floor(Math.random() * scrollElementHeight);
-    scrollingElement.scrollTo(0, previousButtons[0].offsetTop - scrollOffset);
+    scrollingElement.scrollTo(0, topPreviousButtons.offsetTop - scrollOffset);
     fixture.detectChanges();
-    previousButtons[0].click();
+    topPreviousButtons.click();
     fixture.detectChanges();
     // Clear call stack to invoke the scroll adjustement logic.
-    expect(previousButtons[0].offsetTop - scrollingElement.scrollTop).toEqual(
+    tick(0);
+    expect(topPreviousButtons.offsetTop - scrollingElement.scrollTop).toEqual(
       scrollOffset
     );
 
-    // Test scrolling adjustements on top next button.
+    // Test scrolling adjustments on top next button.
     scrollOffset = Math.floor(Math.random() * scrollElementHeight);
-    scrollingElement.scrollTo(0, nextButtons[0].offsetTop - scrollOffset);
+    scrollingElement.scrollTo(0, topNextButtons.offsetTop - scrollOffset);
     fixture.detectChanges();
-    nextButtons[0].click();
+    topNextButtons.click();
     fixture.detectChanges();
     // Clear call stack to invoke the scroll adjustement logic.
-    expect(nextButtons[0].offsetTop - scrollingElement.scrollTop).toEqual(
+    tick(0);
+    expect(topNextButtons.offsetTop - scrollingElement.scrollTop).toEqual(
       scrollOffset
     );
 
-    // Test scrolling adjustements on bottom previous button.
+    // Test scrolling adjustments on bottom previous button.
     scrollOffset = Math.floor(Math.random() * scrollElementHeight);
-    scrollingElement.scrollTo(0, previousButtons[1].offsetTop - scrollOffset);
-    fixture.detectChanges();
-    previousButtons[1].click();
-    fixture.detectChanges();
-    // Clear call stack to invoke the scroll adjustement logic.
-    expect(previousButtons[1].offsetTop - scrollingElement.scrollTop).toEqual(
-      scrollOffset
+    scrollingElement.scrollTo(
+      0,
+      bottomPreviousButtons.offsetTop - scrollOffset
     );
+    fixture.detectChanges();
+    bottomPreviousButtons.click();
+    fixture.detectChanges();
+    // To ensure the click did change the size of the CardGrid ensure make sure
+    // the button has moved.
+    expect(
+      bottomPreviousButtons.offsetTop - scrollingElement.scrollTop
+    ).not.toEqual(scrollOffset);
+    // Clear call stack to invoke the scroll adjustement logic.
+    tick(0);
+    expect(
+      bottomPreviousButtons.offsetTop - scrollingElement.scrollTop
+    ).toEqual(scrollOffset);
 
     // Test changes to input.
     scrollOffset = Math.floor(Math.random() * scrollElementHeight);
@@ -170,9 +186,16 @@ describe('card grid', () => {
     PaginationInput.value = '2';
     PaginationInput.dispatchEvent(new Event('input'));
     fixture.detectChanges();
+    // To ensure the click did change the size of the CardGrid ensure make sure
+    // the next button has moved.
+    expect(PaginationInput.offsetTop - scrollingElement.scrollTop).not.toEqual(
+      scrollOffset
+    );
     // Clear call stack to invoke the scroll adjustement logic.
+    tick(0);
     expect(PaginationInput.offsetTop - scrollingElement.scrollTop).toEqual(
       scrollOffset
     );
+    discardPeriodicTasks();
   }));
 });
