@@ -174,6 +174,12 @@ const canvasForMeasure = document.createElement('canvas').getContext('2d');
 /**
  * Filters minor ticks by their position and dimensions so each label does not
  * get overlapped with another.
+ * @param minorTicks Minor ticks to be filtered.
+ * @param getDomPos A function that returns position of a tick in a DOM.
+ * @param axis Whether tick is for 'x' or 'y' axis.
+ * @param axisFont Font used for the axis label.
+ * @param marginBetweenAxis Optional required spacing between labels.
+ * @returns Filtered minor ticks based on their visibilities.
  */
 export function filterTicksByVisibility(
   minorTicks: MinorTick[],
