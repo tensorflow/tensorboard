@@ -131,7 +131,7 @@ tf_ts_library(
     srcs = [
         "filter_input_test.ts",
         "main_view_test.ts",
-        "card_grid_test.ts"
+        "card_grid_test.ts",
     ],
     deps = [
         ":main_view",
