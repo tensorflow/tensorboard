@@ -16,7 +16,6 @@ import {CardGridContainer} from './card_grid_container';
 import {CardIdWithMetadata} from '../metrics_view_types';
 import {Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
-import {appStateFromMetricsState} from '../../testing';
 import {State} from '../../../app_state';
 import {selectors as settingsSelectors} from '../../../settings';
 import * as selectors from '../../../selectors';
@@ -25,14 +24,14 @@ import {getMetricsTagGroupExpansionState} from '../../../selectors';
 const scrollElementHeight = 100;
 
 @Component({
-  selector: 'testing-component',
+  selector: 'testable-scrolling-container',
   template: `
     <div cdkScrollable>
       <div class="placeholder">placeholder</div>
       <metrics-card-grid
         [cardIdsWithMetadata]="cardIdsWithMetadata"
         [cardObserver]="cardObserver"
-        [groupName]="cardObserver"
+        [groupName]="groupName"
       ></metrics-card-grid>
       <div class="placeholder">placeholder</div>
     </div>
@@ -51,10 +50,8 @@ const scrollElementHeight = 100;
     `,
   ],
 })
-class TestableComponent {
-  @Input() groupName: string = 'test group name';
+class TestableScrollingContainer {
   @Input() cardIdsWithMetadata: CardIdWithMetadata[] = [];
-  @Input() cardObserver: CardObserver = new CardObserver();
 }
 
 describe('card grid', () => {
@@ -62,7 +59,11 @@ describe('card grid', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [NoopAnimationsModule, ScrollingModule],
-      declarations: [CardGridComponent, CardGridContainer, TestableComponent],
+      declarations: [
+        CardGridComponent,
+        CardGridContainer,
+        TestableScrollingContainer,
+      ],
       providers: [provideMockStore()],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
@@ -74,8 +75,11 @@ describe('card grid', () => {
 
   it('keeps pagination button position when page size changes', fakeAsync(() => {
     store.overrideSelector(settingsSelectors.getPageSize, 2);
-    let scrollOffset = Math.floor(Math.random() * scrollElementHeight);
-    const fixture = TestBed.createComponent(TestableComponent);
+    let scrollOffset = 30;
+    const fixture = TestBed.createComponent(TestableScrollingContainer);
+    // With 3 cards and a page size of 2 the number of cards on a page changes
+    // from 2 to 1 when going from the first to second page. This is crucial for
+    // this test.
     fixture.componentInstance.cardIdsWithMetadata = [
       {
         cardId: 'card1',
@@ -119,7 +123,6 @@ describe('card grid', () => {
 
     // Test scrolling adjustments on bottom next button.
     scrollingElement.scrollTo(0, bottomNextButtons.offsetTop - scrollOffset);
-    fixture.detectChanges();
     bottomNextButtons.click();
     fixture.detectChanges();
     // To ensure the click did change the size of the CardGrid ensure make sure
@@ -134,9 +137,7 @@ describe('card grid', () => {
     );
 
     // Test scrolling adjustments on top previous button.
-    scrollOffset = Math.floor(Math.random() * scrollElementHeight);
     scrollingElement.scrollTo(0, topPreviousButtons.offsetTop - scrollOffset);
-    fixture.detectChanges();
     topPreviousButtons.click();
     fixture.detectChanges();
     // Clear call stack to invoke the scroll adjustement logic.
@@ -146,9 +147,7 @@ describe('card grid', () => {
     );
 
     // Test scrolling adjustments on top next button.
-    scrollOffset = Math.floor(Math.random() * scrollElementHeight);
     scrollingElement.scrollTo(0, topNextButtons.offsetTop - scrollOffset);
-    fixture.detectChanges();
     topNextButtons.click();
     fixture.detectChanges();
     // Clear call stack to invoke the scroll adjustement logic.
@@ -158,12 +157,10 @@ describe('card grid', () => {
     );
 
     // Test scrolling adjustments on bottom previous button.
-    scrollOffset = Math.floor(Math.random() * scrollElementHeight);
     scrollingElement.scrollTo(
       0,
       bottomPreviousButtons.offsetTop - scrollOffset
     );
-    fixture.detectChanges();
     bottomPreviousButtons.click();
     fixture.detectChanges();
     // To ensure the click did change the size of the CardGrid ensure make sure
@@ -178,9 +175,7 @@ describe('card grid', () => {
     ).toEqual(scrollOffset);
 
     // Test changes to input.
-    scrollOffset = Math.floor(Math.random() * scrollElementHeight);
     scrollingElement.scrollTo(0, PaginationInput.offsetTop - scrollOffset);
-    fixture.detectChanges();
     PaginationInput.value = '2';
     PaginationInput.dispatchEvent(new Event('input'));
     fixture.detectChanges();
