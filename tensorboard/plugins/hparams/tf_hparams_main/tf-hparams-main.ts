@@ -138,6 +138,14 @@ class TfHparamsMain extends LegacyElementMixin(PolymerElement) {
         max-width: 540px;
         margin: 80px auto 0 auto;
       }
+
+      a {
+        color: var(--tb-link);
+      }
+
+      a:visited {
+        color: var(--tb-link-visited);
+      }
     </style>
   `;
   // An object for making HParams API requests to the backend.

@@ -113,5 +113,13 @@ registerStyleDomModule({
         font-size: 15px;
         margin-top: 5px;
       }
+
+      a {
+        color: var(--tb-link);
+      }
+
+      a:visited {
+        color: var(--tb-link-visited);
+      }
   `,
 });
