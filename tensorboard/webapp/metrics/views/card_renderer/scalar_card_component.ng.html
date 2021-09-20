@@ -129,7 +129,7 @@ limitations under the License.
           <th>Value</th>
           <th>Step</th>
           <th>Time</th>
-          <th *ngIf="xAxisType === XAxisType.RELATIVE">Relative</th>
+          <th>Relative</th>
         </tr>
       </thead>
       <tbody>
@@ -151,8 +151,9 @@ limitations under the License.
             <!-- Print the step with comma for readability. -->
             <td>{{ stepFormatter.formatShort(datum.point.step) }}</td>
             <td>{{ datum.point.wallTime | date: 'short' }}</td>
-            <td *ngIf="xAxisType === XAxisType.RELATIVE">
-              {{ relativeXFormatter.formatReadable(datum.point.x) }}
+            <td>
+              {{ relativeXFormatter.formatReadable(datum.point.relativeTimeInMs)
+              }}
             </td>
           </tr>
         </ng-container>
