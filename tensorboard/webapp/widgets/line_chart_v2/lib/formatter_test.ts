@@ -175,7 +175,7 @@ describe('line_chart_v2/lib/formatter test', () => {
       {name: 'formatLong', fn: siNumberFormatter.formatLong},
     ]) {
       describe(`#${name}`, () => {
-        it('formats without si-suffix for number less than 10k', () => {
+        it('formats without si-suffix for number less than 10k in absolute value', () => {
           expect(fn(1)).toBe('1');
           expect(fn(5)).toBe('5');
           expect(fn(-100.4)).toBe('-100.4');
@@ -183,12 +183,16 @@ describe('line_chart_v2/lib/formatter test', () => {
           expect(fn(9999)).toBe('9,999');
           expect(fn(9999.9123)).toBe('9,999.912');
           expect(fn(0.09)).toBe('0.09');
+        });
+
+        it('formats with si-suffix for number more than 10k in absolute value', () => {
           expect(fn(10000)).toBe('10k');
           expect(fn(10001)).toBe('10k');
           expect(fn(-10000)).toBe('-10k');
           expect(fn(-10001)).toBe('-10k');
           expect(fn(-10101)).toBe('-10.1k');
-          expect(fn(-1.004e6)).toBe('-1M');
+          expect(fn(-1.004e6)).toBe('-1.004M');
+          expect(fn(1004500)).toBe('1.005M');
           expect(fn(0.00005)).toBe('50µ');
         });
       });

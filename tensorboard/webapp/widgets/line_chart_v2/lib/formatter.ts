@@ -92,7 +92,7 @@ export const numberFormatter: Formatter = {
  * ===================
  */
 
-const d3SiFormatter = format('0.3~s');
+const d3SiFormatter = format('0.4~s');
 const d3SiSmallNumberFormatter = format(',.3~f');
 
 function formatSiNumber(x: number): string {
