@@ -210,6 +210,7 @@ limitations under the License.
 >
   <ng-container *ngIf="selectedTime">
     <div
+      class="linked-time-fob-container"
       [style.transform]="'translate(' +
         xScale.forward(
           viewExtent.x,
@@ -225,6 +226,7 @@ limitations under the License.
     </div>
     <div
       *ngIf="selectedTime.endStep"
+      class="linked-time-fob-container"
       [style.transform]="'translate(' +
         xScale.forward(
           viewExtent.x,
