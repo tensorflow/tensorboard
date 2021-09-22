@@ -15,6 +15,7 @@ limitations under the License.
 import {
   numberFormatter,
   relativeTimeFormatter,
+  intlNumberFormatter,
   siNumberFormatter,
   TEST_ONLY,
   wallTimeFormatter,
@@ -167,12 +168,12 @@ describe('line_chart_v2/lib/formatter test', () => {
     });
   });
 
-  describe('#siNumberFormatter', () => {
+  describe('#intlNumberFormatter', () => {
     for (const {name, fn} of [
-      {name: 'formatTick', fn: siNumberFormatter.formatTick},
-      {name: 'formatShort', fn: siNumberFormatter.formatShort},
-      {name: 'formatReadable', fn: siNumberFormatter.formatReadable},
-      {name: 'formatLong', fn: siNumberFormatter.formatLong},
+      {name: 'formatTick', fn: intlNumberFormatter.formatTick},
+      {name: 'formatShort', fn: intlNumberFormatter.formatShort},
+      {name: 'formatReadable', fn: intlNumberFormatter.formatReadable},
+      {name: 'formatLong', fn: intlNumberFormatter.formatLong},
     ]) {
       describe(`#${name}`, () => {
         it('formats numbers and keeps three decimal places', () => {
@@ -185,12 +186,40 @@ describe('line_chart_v2/lib/formatter test', () => {
           expect(fn(0.09)).toBe('0.09');
           expect(fn(0.0005)).toBe('0.001');
           expect(fn(0.00005)).toBe('0');
-          expect(fn(10000)).toBe('10,000');
           expect(fn(10001)).toBe('10,001');
           expect(fn(-10000)).toBe('-10,000');
-          expect(fn(-10001)).toBe('-10,001');
-          expect(fn(-10101)).toBe('-10,101');
           expect(fn(-1.004e6)).toBe('-1,004,000');
+        });
+      });
+    }
+  });
+
+  describe('#siNumberFormatter', () => {
+    for (const {name, fn} of [
+      {name: 'formatTick', fn: siNumberFormatter.formatTick},
+      {name: 'formatShort', fn: siNumberFormatter.formatShort},
+      {name: 'formatReadable', fn: siNumberFormatter.formatReadable},
+      {name: 'formatLong', fn: siNumberFormatter.formatLong},
+    ]) {
+      describe(`#${name}`, () => {
+        it('formats without si-suffix', () => {
+          expect(fn(1)).toBe('1');
+          expect(fn(5)).toBe('5');
+          expect(fn(-100.4)).toBe('-100.4');
+          expect(fn(3.01)).toBe('3.01');
+          expect(fn(9999)).toBe('9,999');
+          expect(fn(9999.9123)).toBe('9,999.912');
+          expect(fn(0.09)).toBe('0.09');
+        });
+
+        it('formats with si-suffix', () => {
+          expect(fn(10000)).toBe('10k');
+          expect(fn(10001)).toBe('10k');
+          expect(fn(-10000)).toBe('-10k');
+          expect(fn(-10001)).toBe('-10k');
+          expect(fn(-10101)).toBe('-10.1k');
+          expect(fn(-1.004e6)).toBe('-1M');
+          expect(fn(0.00005)).toBe('50µ');
         });
       });
     }

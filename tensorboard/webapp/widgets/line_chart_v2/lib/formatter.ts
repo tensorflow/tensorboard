@@ -88,16 +88,40 @@ export const numberFormatter: Formatter = {
 
 /**
  * ===================
+ * INTL NUMBER FORMATTER
+ * ===================
+ */
+
+const IntlNumberFormatter = new Intl.NumberFormat(undefined, {
+  maximumFractionDigits: 3,
+});
+
+function formatIntlNumber(x: number): string {
+  return IntlNumberFormatter.format(x);
+}
+
+export const intlNumberFormatter: Formatter = {
+  formatTick: formatIntlNumber,
+  formatShort: formatIntlNumber,
+  formatReadable: formatIntlNumber,
+  formatLong: formatIntlNumber,
+};
+
+/**
+ * ===================
  * SI NUMBER FORMATTER
  * ===================
  */
 
-const SiFormatter = new Intl.NumberFormat(undefined, {
-  maximumFractionDigits: 3,
-});
+const d3SiFormatter = format('0.3~s');
+const d3SiSmallNumberFormatter = format(',.3~f');
 
 function formatSiNumber(x: number): string {
-  return SiFormatter.format(x);
+  const absNum = Math.abs(x);
+  if (absNum >= LARGE_NUMBER || absNum < SMALL_NUMBER) {
+    return d3SiFormatter(x);
+  }
+  return d3SiSmallNumberFormatter(x);
 }
 
 export const siNumberFormatter: Formatter = {
