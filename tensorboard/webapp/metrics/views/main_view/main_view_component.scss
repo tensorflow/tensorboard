@@ -89,20 +89,10 @@ limitations under the License.
   &.filter-view {
     overflow: hidden;
 
-    metrics-filtered-view,
-    metrics-pinned-view {
+    metrics-filtered-view {
       contain: content;
       overflow: auto;
       will-change: transform, scroll-position;
-    }
-
-    metrics-filtered-view {
-      flex: 0 1 auto;
-    }
-
-    metrics-pinned-view {
-      flex: 1 1;
-      min-height: 300px;
     }
   }
 }

@@ -1173,7 +1173,7 @@ describe('metrics main view', () => {
       expect(getFilterviewCardContents(fixture)).toEqual(['images: card2']);
     }));
 
-    it('hides the main but shows pinned views while the filter view is active', fakeAsync(() => {
+    it('hides the main and pinned views while the filter view is active', fakeAsync(() => {
       store.overrideSelector(selectors.getPinnedCardsWithMetadata, [
         {cardId: 'card1', ...createCardMetadata(PluginType.SCALARS)},
         {cardId: 'card2', ...createCardMetadata(PluginType.IMAGES)},
@@ -1187,6 +1187,7 @@ describe('metrics main view', () => {
       const pinnedViewDebugEl = fixture.debugElement.query(
         By.css('.main metrics-pinned-view')
       );
+      expect(pinnedViewDebugEl.styles['display']).toBe('none');
       const cardContents = getCardContents(getCards(pinnedViewDebugEl));
       expect(cardContents).toEqual(['scalars: card1', 'images: card2']);
     }));
