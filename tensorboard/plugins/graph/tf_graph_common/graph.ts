@@ -1143,9 +1143,8 @@ export function build(
           // If the function has outputs, make nodes out of them.
           if (func.signature.output_arg) {
             const processOutput = (arg) => {
-              outputArgNames[
-                functionNodeName + NAMESPACE_DELIM + arg.name
-              ] = currentOutputIndex;
+              outputArgNames[functionNodeName + NAMESPACE_DELIM + arg.name] =
+                currentOutputIndex;
               currentOutputIndex++;
             };
             if (func.signature.output_arg['name']) {

@@ -35,22 +35,19 @@ export const MIN_RELOAD_PERIOD_IN_MS = 30000;
 
 const reducer = createReducer(
   initialState,
-  on(
-    actions.toggleReloadEnabled,
-    (state: SettingsState): SettingsState => {
-      if (!settingsReady(state)) {
-        return state;
-      }
-
-      return {
-        ...state,
-        settings: {
-          ...state.settings,
-          reloadEnabled: !state.settings.reloadEnabled,
-        },
-      };
+  on(actions.toggleReloadEnabled, (state: SettingsState): SettingsState => {
+    if (!settingsReady(state)) {
+      return state;
     }
-  ),
+
+    return {
+      ...state,
+      settings: {
+        ...state.settings,
+        reloadEnabled: !state.settings.reloadEnabled,
+      },
+    };
+  }),
   on(
     actions.changeReloadPeriod,
     (state: SettingsState, {periodInMs}): SettingsState => {

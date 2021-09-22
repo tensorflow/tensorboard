@@ -46,7 +46,8 @@ class _TfDistributionLoader
   extends DataLoaderBehavior<{run: string; tag: string}, unknown>(
     LegacyElementMixin(PolymerElement)
   )
-  implements TfDistributionLoader {
+  implements TfDistributionLoader
+{
   static readonly template = html`
     <tf-card-heading
       tag="[[tag]]"

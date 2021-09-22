@@ -801,9 +801,9 @@ describe('Debugger graphs reducers', () => {
       numExecutions
     );
     // The first page is loaded in full.
-    expect(
-      nextState.executions.executionDigestsLoaded.pageLoadedSizes
-    ).toEqual({0: 100});
+    expect(nextState.executions.executionDigestsLoaded.pageLoadedSizes).toEqual(
+      {0: 100}
+    );
     // The detailed digest data should be recorded.
     expect(Object.keys(nextState.executions.executionDigests).length).toBe(100);
     for (let i = 0; i < 100; ++i) {
@@ -853,9 +853,9 @@ describe('Debugger graphs reducers', () => {
       numExecutions
     );
     // The first page is expanded.
-    expect(
-      nextState.executions.executionDigestsLoaded.pageLoadedSizes
-    ).toEqual({0: 4});
+    expect(nextState.executions.executionDigestsLoaded.pageLoadedSizes).toEqual(
+      {0: 4}
+    );
     // The detailed digest data should be recorded.
     expect(Object.keys(nextState.executions.executionDigests).length).toBe(4);
     expect(nextState.executions.executionDigests[0]).toEqual({
@@ -915,9 +915,9 @@ describe('Debugger graphs reducers', () => {
       numExecutions
     );
     // The first page is expanded.
-    expect(
-      nextState.executions.executionDigestsLoaded.pageLoadedSizes
-    ).toEqual({0: 2, 1: 2});
+    expect(nextState.executions.executionDigestsLoaded.pageLoadedSizes).toEqual(
+      {0: 2, 1: 2}
+    );
     // The detailed digest data should be recorded.
     expect(Object.keys(nextState.executions.executionDigests).length).toEqual(
       4
@@ -978,9 +978,9 @@ describe('Debugger graphs reducers', () => {
       numExecutions + 1
     );
     // The first page is expanded.
-    expect(
-      nextState.executions.executionDigestsLoaded.pageLoadedSizes
-    ).toEqual({0: 2, 1: 2});
+    expect(nextState.executions.executionDigestsLoaded.pageLoadedSizes).toEqual(
+      {0: 2, 1: 2}
+    );
     // The detailed digest data should be recorded.
     expect(Object.keys(nextState.executions.executionDigests).length).toBe(4);
     expect(nextState.executions.executionDigests[0]).toEqual({
@@ -1003,28 +1003,27 @@ describe('Debugger graphs reducers', () => {
 
   it('executionScrollLeft takes no effect due to left bound', () => {
     const scrollBeginIndex = 0;
-    const state = createDebuggerStateWithLoadedExecutionDigests(
-      scrollBeginIndex
-    );
+    const state =
+      createDebuggerStateWithLoadedExecutionDigests(scrollBeginIndex);
     const nextState = reducers(state, actions.executionScrollLeft());
     expect(nextState.executions.scrollBeginIndex).toBe(0);
   });
 
   for (const scrollBeginIndex of [1, 50, 100, 999, 1000, 1001, 1234, 1450]) {
     it(`executionScrollLeft takes effect: ${scrollBeginIndex}`, () => {
-      const state = createDebuggerStateWithLoadedExecutionDigests(
-        scrollBeginIndex
-      );
+      const state =
+        createDebuggerStateWithLoadedExecutionDigests(scrollBeginIndex);
       const nextState = reducers(state, actions.executionScrollLeft());
       expect(nextState.executions.scrollBeginIndex).toBe(scrollBeginIndex - 1);
     });
   }
 
-  for (const scrollBeginIndex of [0, 1, 50, 100, 999, 1000, 1001, 1234, 1449]) {
+  for (const scrollBeginIndex of [
+    0, 1, 50, 100, 999, 1000, 1001, 1234, 1449,
+  ]) {
     it(`executionScrollRight takes effect: ${scrollBeginIndex}`, () => {
-      const state = createDebuggerStateWithLoadedExecutionDigests(
-        scrollBeginIndex
-      );
+      const state =
+        createDebuggerStateWithLoadedExecutionDigests(scrollBeginIndex);
       const nextState = reducers(state, actions.executionScrollRight());
       expect(nextState.executions.scrollBeginIndex).toBe(scrollBeginIndex + 1);
     });
@@ -1032,9 +1031,8 @@ describe('Debugger graphs reducers', () => {
 
   it('executionScrollRight takes no effect due to left bound', () => {
     const scrollBeginIndex = 1450;
-    const state = createDebuggerStateWithLoadedExecutionDigests(
-      scrollBeginIndex
-    );
+    const state =
+      createDebuggerStateWithLoadedExecutionDigests(scrollBeginIndex);
     const nextState = reducers(state, actions.executionScrollRight());
     expect(nextState.executions.scrollBeginIndex).toBe(1450);
   });
@@ -1756,9 +1754,7 @@ describe('Debugger graphs reducers', () => {
         actions.graphExecutionDataRequested({pageIndex: 4321})
       );
       expect(nextState.graphExecutions.graphExecutionDataLoadingPages).toEqual([
-        2222,
-        7777,
-        4321,
+        2222, 7777, 4321,
       ]);
     });
   });

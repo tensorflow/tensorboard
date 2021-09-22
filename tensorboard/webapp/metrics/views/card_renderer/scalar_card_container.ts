@@ -150,9 +150,8 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
   // Angular Component constructor for DataDownload dialog. It is customizable for
   // testability, without mocking out data for the component's internals, but defaults to
   // the DataDownloadDialogContainer.
-  @Input() DataDownloadComponent: ComponentType<
-    any
-  > = DataDownloadDialogContainer;
+  @Input() DataDownloadComponent: ComponentType<any> =
+    DataDownloadDialogContainer;
   @Input() cardId!: CardId;
   @Input() groupName!: string | null;
   @Output() fullWidthChanged = new EventEmitter<boolean>();
@@ -399,13 +398,8 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
         const shouldSmooth = smoothing > 0;
 
         for (const partitioned of namedPartitionedSeries) {
-          const {
-            seriesId,
-            runId,
-            displayName,
-            partitionIndex,
-            partitionSize,
-          } = partitioned;
+          const {seriesId, runId, displayName, partitionIndex, partitionSize} =
+            partitioned;
 
           metadataMap[seriesId] = {
             type: SeriesType.ORIGINAL,

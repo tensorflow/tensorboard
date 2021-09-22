@@ -65,7 +65,8 @@ class _TfLineChartDataLoader<ScalarMetadata>
   extends DataLoaderBehavior<string, ScalarDatum[]>(
     LegacyElementMixin(PolymerElement)
   )
-  implements TfLineChartDataLoader {
+  implements TfLineChartDataLoader
+{
   static readonly template = html`
     <div id="chart-and-spinner-container">
       <vz-line-chart2
@@ -232,7 +233,7 @@ class _TfLineChartDataLoader<ScalarMetadata>
   }
 
   private getChart(): any {
-    return (this.$.chart as unknown) as any;
+    return this.$.chart as unknown as any;
   }
 
   resetDomain() {

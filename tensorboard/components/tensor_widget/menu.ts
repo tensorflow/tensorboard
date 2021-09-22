@@ -216,9 +216,9 @@ export class Menu {
     this.currentChoiceSelections = {};
     this.config.items.forEach((item, i) => {
       if ((item as ChoiceMenuItemConfig).options != null) {
-        this.currentChoiceSelections[
-          i
-        ] = (item as ChoiceMenuItemConfig).defaultSelection;
+        this.currentChoiceSelections[i] = (
+          item as ChoiceMenuItemConfig
+        ).defaultSelection;
       }
     });
   }

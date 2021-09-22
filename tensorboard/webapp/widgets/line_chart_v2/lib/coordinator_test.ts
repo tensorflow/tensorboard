@@ -122,18 +122,15 @@ describe('line_chart_v2/lib/coordinator test', () => {
         };
 
         expect(coordinator.transformDataToUiCoord(layout, [50, 50])).toEqual([
-          500,
-          750,
+          500, 750,
         ]);
         expect(coordinator.transformDataToUiCoord(layout, [150, 150])).toEqual([
-          1000,
-          250,
+          1000, 250,
         ]);
 
         // Outside of the viewBox.
         expect(coordinator.transformDataToUiCoord(layout, [0, 0])).toEqual([
-          250,
-          1000,
+          250, 1000,
         ]);
       });
     });
@@ -180,18 +177,15 @@ describe('line_chart_v2/lib/coordinator test', () => {
         };
 
         expect(coordinator.transformDataToUiCoord(layout, [50, 50])).toEqual([
-          2,
-          2.5,
+          2, 2.5,
         ]);
         expect(coordinator.transformDataToUiCoord(layout, [150, 100])).toEqual([
-          5,
-          5,
+          5, 5,
         ]);
 
         // Outside of the viewBox.
         expect(coordinator.transformDataToUiCoord(layout, [0, -100])).toEqual([
-          0.5,
-          -5,
+          0.5, -5,
         ]);
       });
     });

@@ -150,18 +150,15 @@ const initialState: DebuggerState = {
 
 const reducer = createReducer(
   initialState,
-  on(
-    actions.debuggerRunsRequested,
-    (state: DebuggerState): DebuggerState => {
-      return {
-        ...state,
-        runsLoaded: {
-          ...state.runsLoaded,
-          state: DataLoadState.LOADING,
-        },
-      };
-    }
-  ),
+  on(actions.debuggerRunsRequested, (state: DebuggerState): DebuggerState => {
+    return {
+      ...state,
+      runsLoaded: {
+        ...state.runsLoaded,
+        state: DataLoadState.LOADING,
+      },
+    };
+  }),
   on(
     actions.debuggerRunsRequestFailed,
     (state: DebuggerState): DebuggerState => {
@@ -196,15 +193,12 @@ const reducer = createReducer(
       };
     }
   ),
-  on(
-    actions.debuggerDataPollOnset,
-    (state: DebuggerState): DebuggerState => {
-      return {
-        ...state,
-        lastDataPollOnsetTimeMs: Date.now(),
-      };
-    }
-  ),
+  on(actions.debuggerDataPollOnset, (state: DebuggerState): DebuggerState => {
+    return {
+      ...state,
+      lastDataPollOnsetTimeMs: Date.now(),
+    };
+  }),
   on(
     actions.numAlertsAndBreakdownRequested,
     (state: DebuggerState): DebuggerState => {
@@ -375,25 +369,22 @@ const reducer = createReducer(
   //////////////////////////////////////////////
   // Reducers related to top-level execution. //
   //////////////////////////////////////////////
-  on(
-    actions.numExecutionsRequested,
-    (state: DebuggerState): DebuggerState => {
-      const runId = state.activeRunId;
-      if (runId === null) {
-        return state;
-      }
-      return {
-        ...state,
-        executions: {
-          ...state.executions,
-          numExecutionsLoaded: {
-            ...state.executions.numExecutionsLoaded,
-            state: DataLoadState.LOADING,
-          },
-        },
-      };
+  on(actions.numExecutionsRequested, (state: DebuggerState): DebuggerState => {
+    const runId = state.activeRunId;
+    if (runId === null) {
+      return state;
     }
-  ),
+    return {
+      ...state,
+      executions: {
+        ...state.executions,
+        numExecutionsLoaded: {
+          ...state.executions.numExecutionsLoaded,
+          state: DataLoadState.LOADING,
+        },
+      },
+    };
+  }),
   on(
     actions.numExecutionsLoaded,
     (state: DebuggerState, {numExecutions}): DebuggerState => {
@@ -509,53 +500,47 @@ const reducer = createReducer(
       return newState;
     }
   ),
-  on(
-    actions.executionScrollLeft,
-    (state: DebuggerState): DebuggerState => {
-      // TODO(cais): Left-right navigation should have more context-depedent
-      // behavior, e.g., when alerts are present.
-      const runId = state.activeRunId;
-      if (runId === null) {
-        return state;
-      }
-      let scrollBeginIndex = state.executions.scrollBeginIndex;
-      if (scrollBeginIndex > 0) {
-        scrollBeginIndex--;
-      }
-      return {
-        ...state,
-        executions: {
-          ...state.executions,
-          scrollBeginIndex,
-        },
-      };
+  on(actions.executionScrollLeft, (state: DebuggerState): DebuggerState => {
+    // TODO(cais): Left-right navigation should have more context-depedent
+    // behavior, e.g., when alerts are present.
+    const runId = state.activeRunId;
+    if (runId === null) {
+      return state;
     }
-  ),
-  on(
-    actions.executionScrollRight,
-    (state: DebuggerState): DebuggerState => {
-      // TODO(cais): Left-right navigation should have more context-depedent
-      // behavior, e.g., when alerts are present.
-      const runId = state.activeRunId;
-      if (runId === null) {
-        return state;
-      }
-      let scrollBeginIndex = state.executions.scrollBeginIndex;
-      if (
-        scrollBeginIndex + state.executions.displayCount + 1 <=
-        state.executions.executionDigestsLoaded.numExecutions
-      ) {
-        scrollBeginIndex++;
-      }
-      return {
-        ...state,
-        executions: {
-          ...state.executions,
-          scrollBeginIndex,
-        },
-      };
+    let scrollBeginIndex = state.executions.scrollBeginIndex;
+    if (scrollBeginIndex > 0) {
+      scrollBeginIndex--;
     }
-  ),
+    return {
+      ...state,
+      executions: {
+        ...state.executions,
+        scrollBeginIndex,
+      },
+    };
+  }),
+  on(actions.executionScrollRight, (state: DebuggerState): DebuggerState => {
+    // TODO(cais): Left-right navigation should have more context-depedent
+    // behavior, e.g., when alerts are present.
+    const runId = state.activeRunId;
+    if (runId === null) {
+      return state;
+    }
+    let scrollBeginIndex = state.executions.scrollBeginIndex;
+    if (
+      scrollBeginIndex + state.executions.displayCount + 1 <=
+      state.executions.executionDigestsLoaded.numExecutions
+    ) {
+      scrollBeginIndex++;
+    }
+    return {
+      ...state,
+      executions: {
+        ...state.executions,
+        scrollBeginIndex,
+      },
+    };
+  }),
   on(
     actions.executionScrollToIndex,
     (state: DebuggerState, action: {index: number}): DebuggerState => {
@@ -683,7 +668,8 @@ const reducer = createReducer(
       if (state.activeRunId === null) {
         return state;
       }
-      const graphExecutionDataLoadingPages = state.graphExecutions.graphExecutionDataLoadingPages.slice();
+      const graphExecutionDataLoadingPages =
+        state.graphExecutions.graphExecutionDataLoadingPages.slice();
       if (graphExecutionDataLoadingPages.indexOf(pageIndex) === -1) {
         graphExecutionDataLoadingPages.push(pageIndex);
       }
@@ -703,7 +689,8 @@ const reducer = createReducer(
         return state;
       }
       const {pageSize} = state.graphExecutions;
-      const graphExecutionDataLoadingPages = state.graphExecutions.graphExecutionDataLoadingPages.slice();
+      const graphExecutionDataLoadingPages =
+        state.graphExecutions.graphExecutionDataLoadingPages.slice();
       const graphExecutionDataPageLoadedSizes = {
         ...state.graphExecutions.graphExecutionDataPageLoadedSizes,
       };
@@ -807,87 +794,81 @@ const reducer = createReducer(
       return newState;
     }
   ),
-  on(
-    actions.graphOpInfoLoaded,
-    (state: DebuggerState, data): DebuggerState => {
-      const {graphOpInfoResponse} = data;
-      const {graph_ids} = graphOpInfoResponse;
-      const graphId = graph_ids[graph_ids.length - 1];
-      const newState: DebuggerState = {
-        ...state,
-        graphs: {
-          ...state.graphs,
-          ops: {
-            ...state.graphs.ops,
-            [graphId]: new Map(state.graphs.ops[graphId]),
-          },
-          loadingOps: {
-            ...state.graphs.loadingOps,
-            [graphId]: new Map(state.graphs.loadingOps[graphId]),
-          },
+  on(actions.graphOpInfoLoaded, (state: DebuggerState, data): DebuggerState => {
+    const {graphOpInfoResponse} = data;
+    const {graph_ids} = graphOpInfoResponse;
+    const graphId = graph_ids[graph_ids.length - 1];
+    const newState: DebuggerState = {
+      ...state,
+      graphs: {
+        ...state.graphs,
+        ops: {
+          ...state.graphs.ops,
+          [graphId]: new Map(state.graphs.ops[graphId]),
         },
-      };
-      for (const input of graphOpInfoResponse.inputs) {
-        if (!input.data) {
-          // `input.data` can be undefined when the backend fails to look up
-          // detailed information regarding the input op (e.g., for certain
-          // TF-internal ops such as StatefulPartitionedCall).
-          // Same for `consumer.data` below.
+        loadingOps: {
+          ...state.graphs.loadingOps,
+          [graphId]: new Map(state.graphs.loadingOps[graphId]),
+        },
+      },
+    };
+    for (const input of graphOpInfoResponse.inputs) {
+      if (!input.data) {
+        // `input.data` can be undefined when the backend fails to look up
+        // detailed information regarding the input op (e.g., for certain
+        // TF-internal ops such as StatefulPartitionedCall).
+        // Same for `consumer.data` below.
+        continue;
+      }
+      newState.graphs.ops[graphId].set(input.op_name, input.data);
+    }
+    for (let i = 0; i < graphOpInfoResponse.consumers.length; ++i) {
+      for (const consumer of graphOpInfoResponse.consumers[i]) {
+        if (!consumer.data) {
           continue;
         }
-        newState.graphs.ops[graphId].set(input.op_name, input.data);
+        newState.graphs.ops[graphId].set(consumer.op_name, consumer.data);
       }
-      for (let i = 0; i < graphOpInfoResponse.consumers.length; ++i) {
-        for (const consumer of graphOpInfoResponse.consumers[i]) {
-          if (!consumer.data) {
-            continue;
-          }
-          newState.graphs.ops[graphId].set(consumer.op_name, consumer.data);
-        }
-      }
-      newState.graphs.ops[graphId].set(graphOpInfoResponse.op_name, {
-        ...graphOpInfoResponse,
-        // Remove `input.data` to avoid duplicated data in `opInfo`,
-        // which is put into `newState.graphs.ops[graphId][opInfo.op_name]`
-        // later.d
-        // Same for `consumer.data` below.
-        inputs: graphOpInfoResponse.inputs.map((input) => ({
-          op_name: input.op_name,
-          output_slot: input.output_slot,
-        })),
-        consumers: graphOpInfoResponse.consumers.map((slotConsumers) => {
-          return slotConsumers.map((consumer) => ({
-            op_name: consumer.op_name,
-            input_slot: consumer.input_slot,
-          }));
-        }),
-      });
-      // Remove the loading marker for the op.
-      newState.graphs.loadingOps[graphId].set(
-        graphOpInfoResponse.op_name,
-        DataLoadState.LOADED
-      );
-      return newState;
     }
-  ),
+    newState.graphs.ops[graphId].set(graphOpInfoResponse.op_name, {
+      ...graphOpInfoResponse,
+      // Remove `input.data` to avoid duplicated data in `opInfo`,
+      // which is put into `newState.graphs.ops[graphId][opInfo.op_name]`
+      // later.d
+      // Same for `consumer.data` below.
+      inputs: graphOpInfoResponse.inputs.map((input) => ({
+        op_name: input.op_name,
+        output_slot: input.output_slot,
+      })),
+      consumers: graphOpInfoResponse.consumers.map((slotConsumers) => {
+        return slotConsumers.map((consumer) => ({
+          op_name: consumer.op_name,
+          input_slot: consumer.input_slot,
+        }));
+      }),
+    });
+    // Remove the loading marker for the op.
+    newState.graphs.loadingOps[graphId].set(
+      graphOpInfoResponse.op_name,
+      DataLoadState.LOADED
+    );
+    return newState;
+  }),
   ////////////////////////////////////////////////////////
   // Reducers related to source files and stack traces. //
   ////////////////////////////////////////////////////////
-  on(
-    actions.sourceFileListRequested,
-    (state: DebuggerState): DebuggerState => {
-      return {
-        ...state,
-        sourceCode: {
-          ...state.sourceCode,
-          sourceFileListLoaded: {
-            ...state.sourceCode.sourceFileListLoaded,
-            state: DataLoadState.LOADING,
-          },
+  on(actions.sourceFileListRequested, (state: DebuggerState): DebuggerState => {
+    return {
+      ...state,
+      sourceCode: {
+        ...state.sourceCode,
+        sourceFileListLoaded: {
+          ...state.sourceCode.sourceFileListLoaded,
+          state: DataLoadState.LOADING,
         },
-      };
-    }
-  ),
+      },
+    };
+  }),
   on(
     actions.sourceFileListLoaded,
     (state: DebuggerState, sourceFileList): DebuggerState => {
@@ -927,10 +908,8 @@ const reducer = createReducer(
         },
       };
       if (focusedStackTrace !== null) {
-        newState.stickToBottommostFrameInFocusedFile = isFrameBottommostInStackTrace(
-          focusedStackTrace,
-          focus.stackFrame
-        );
+        newState.stickToBottommostFrameInFocusedFile =
+          isFrameBottommostInStackTrace(focusedStackTrace, focus.stackFrame);
       }
       return newState;
     }

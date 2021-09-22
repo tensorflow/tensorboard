@@ -50,14 +50,15 @@ export class GraphExecutionsContainer {
 
   readonly graphExecutionIndices$ = this.store.pipe(
     select(
-      createSelector(getNumGraphExecutions, (numGraphExecution: number):
-        | number[]
-        | null => {
-        if (numGraphExecution === 0) {
-          return null;
+      createSelector(
+        getNumGraphExecutions,
+        (numGraphExecution: number): number[] | null => {
+          if (numGraphExecution === 0) {
+            return null;
+          }
+          return Array.from({length: numGraphExecution}).map((_, i) => i);
         }
-        return Array.from({length: numGraphExecution}).map((_, i) => i);
-      })
+      )
     )
   );
 

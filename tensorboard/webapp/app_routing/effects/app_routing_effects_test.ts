@@ -533,24 +533,24 @@ describe('app_routing_effects', () => {
               partialState: {a: 'A', b: 'B'},
             }),
             actions.navigating({
-              after: buildRoute(({
+              after: buildRoute({
                 routeKind: RouteKind.COMPARE_EXPERIMENT,
                 params: {},
                 pathname: '/compare',
                 queryParams: [],
                 // Do not care about the replaceState for this spec.
                 navigationOptions: jasmine.any(Object),
-              } as unknown) as Route),
+              } as unknown as Route),
             }),
             actions.navigated({
               before: null,
-              after: buildRoute(({
+              after: buildRoute({
                 routeKind: RouteKind.COMPARE_EXPERIMENT,
                 params: {},
                 pathname: '/compare',
                 queryParams: [],
                 navigationOptions: jasmine.any(Object),
-              } as unknown) as Route),
+              } as unknown as Route),
             }),
           ]);
         }));

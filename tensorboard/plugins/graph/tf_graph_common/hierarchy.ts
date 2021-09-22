@@ -346,9 +346,7 @@ export class Hierarchy extends tf_graph_util.Dispatcher<HierarchyEvent> {
    * If there is no node with the specified name, an error is thrown. If the
    * node with the specified name is not a group node, null is returned.
    */
-  getTopologicalOrdering(
-    nodeName: string
-  ): {
+  getTopologicalOrdering(nodeName: string): {
     [childName: string]: number;
   } {
     let node = this.index[nodeName];
@@ -871,7 +869,7 @@ function groupSeries(
     let child = metagraph.node(n);
     if (child.type === tf_graph.NodeType.META) {
       groupSeries(
-        (child as unknown) as Metanode,
+        child as unknown as Metanode,
         hierarchy,
         seriesNames,
         threshold,
@@ -972,9 +970,7 @@ function groupSeries(
  * the metagraph, does not recursively check descendants.
  * @return A map from op to a list of node names.
  */
-function clusterNodes(
-  metagraph: graphlib.Graph
-): {
+function clusterNodes(metagraph: graphlib.Graph): {
   [clusterId: string]: string[];
 } {
   let result: {
@@ -1071,27 +1067,35 @@ function detectSeriesUsingNumericSuffixes(
     });
     // In each group of nodes, group nodes in bunches that have monotonically
     // increasing numbers in their names.  Each of these bunches is a series.
-    _.each(candidatesDict, function (
-      seriesInfoArray: SeriesNode[],
-      seriesName
-    ) {
-      if (seriesInfoArray.length < 2) {
-        return;
-      }
-      seriesInfoArray.sort(function (a, b) {
-        return +a.clusterId - +b.clusterId;
-      });
-      // Loop through the nodes sorted by its detected series number, grouping
-      // all nodes with monotonically-increasing series numbers.
-      let seriesNodes = [seriesInfoArray[0]];
-      for (let index = 1; index < seriesInfoArray.length; index++) {
-        let nextNode = seriesInfoArray[index];
-        if (
-          nextNode.clusterId ===
-          seriesNodes[seriesNodes.length - 1].clusterId + 1
-        ) {
-          seriesNodes.push(nextNode);
-          continue;
+    _.each(
+      candidatesDict,
+      function (seriesInfoArray: SeriesNode[], seriesName) {
+        if (seriesInfoArray.length < 2) {
+          return;
+        }
+        seriesInfoArray.sort(function (a, b) {
+          return +a.clusterId - +b.clusterId;
+        });
+        // Loop through the nodes sorted by its detected series number, grouping
+        // all nodes with monotonically-increasing series numbers.
+        let seriesNodes = [seriesInfoArray[0]];
+        for (let index = 1; index < seriesInfoArray.length; index++) {
+          let nextNode = seriesInfoArray[index];
+          if (
+            nextNode.clusterId ===
+            seriesNodes[seriesNodes.length - 1].clusterId + 1
+          ) {
+            seriesNodes.push(nextNode);
+            continue;
+          }
+          addSeriesToDict(
+            seriesNodes,
+            seriesDict,
+            +clusterId,
+            metagraph,
+            graphOptions
+          );
+          seriesNodes = [nextNode];
         }
         addSeriesToDict(
           seriesNodes,
@@ -1100,16 +1104,8 @@ function detectSeriesUsingNumericSuffixes(
           metagraph,
           graphOptions
         );
-        seriesNodes = [nextNode];
       }
-      addSeriesToDict(
-        seriesNodes,
-        seriesDict,
-        +clusterId,
-        metagraph,
-        graphOptions
-      );
-    });
+    );
   });
   return seriesDict;
 }
@@ -1243,27 +1239,35 @@ function detectSeriesAnywhereInNodeName(
     });
     // In each group of nodes, group nodes in bunches that have monotonically
     // increasing numbers in their names.  Each of these bunches is a series.
-    _.each(candidatesDict, function (
-      seriesInfoArray: SeriesNode[],
-      seriesName
-    ) {
-      if (seriesInfoArray.length < 2) {
-        return;
-      }
-      seriesInfoArray.sort(function (a, b) {
-        return +a.clusterId - +b.clusterId;
-      });
-      // Loop through the nodes sorted by its detected series number, grouping
-      // all nodes with monotonically-increasing series numbers.
-      let seriesNodes = [seriesInfoArray[0]];
-      for (let index = 1; index < seriesInfoArray.length; index++) {
-        let nextNode = seriesInfoArray[index];
-        if (
-          nextNode.clusterId ===
-          seriesNodes[seriesNodes.length - 1].clusterId + 1
-        ) {
-          seriesNodes.push(nextNode);
-          continue;
+    _.each(
+      candidatesDict,
+      function (seriesInfoArray: SeriesNode[], seriesName) {
+        if (seriesInfoArray.length < 2) {
+          return;
+        }
+        seriesInfoArray.sort(function (a, b) {
+          return +a.clusterId - +b.clusterId;
+        });
+        // Loop through the nodes sorted by its detected series number, grouping
+        // all nodes with monotonically-increasing series numbers.
+        let seriesNodes = [seriesInfoArray[0]];
+        for (let index = 1; index < seriesInfoArray.length; index++) {
+          let nextNode = seriesInfoArray[index];
+          if (
+            nextNode.clusterId ===
+            seriesNodes[seriesNodes.length - 1].clusterId + 1
+          ) {
+            seriesNodes.push(nextNode);
+            continue;
+          }
+          addSeriesToDict(
+            seriesNodes,
+            seriesDict,
+            +clusterId,
+            metagraph,
+            graphOptions
+          );
+          seriesNodes = [nextNode];
         }
         addSeriesToDict(
           seriesNodes,
@@ -1272,16 +1276,8 @@ function detectSeriesAnywhereInNodeName(
           metagraph,
           graphOptions
         );
-        seriesNodes = [nextNode];
       }
-      addSeriesToDict(
-        seriesNodes,
-        seriesDict,
-        +clusterId,
-        metagraph,
-        graphOptions
-      );
-    });
+    );
   });
   return seriesDict;
 }

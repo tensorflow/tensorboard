@@ -42,9 +42,8 @@ export class EmptyTagMatchMessageContainer {
   readonly pluginTypes$: Observable<Set<PluginType>> = this.store.select(
     getMetricsFilteredPluginTypes
   );
-  readonly tagFilterRegex$: Observable<string> = this.store.select(
-    getMetricsTagFilter
-  );
+  readonly tagFilterRegex$: Observable<string> =
+    this.store.select(getMetricsTagFilter);
   readonly tagCounts$: Observable<number> = this.store
     .select(getSortedRenderableCardIdsWithMetadata)
     .pipe(

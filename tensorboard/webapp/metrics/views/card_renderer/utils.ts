@@ -39,10 +39,9 @@ export function getDisplayNameForRun(
 export function partitionSeries(series: PartialSeries[]): PartitionedSeries[] {
   const partitionedSeries: PartitionedSeries[] = [];
   for (const datum of series) {
-    const currentPartition: Array<Omit<
-      PartitionedSeries,
-      'partitionSize' | 'partitionIndex'
-    >> = [];
+    const currentPartition: Array<
+      Omit<PartitionedSeries, 'partitionSize' | 'partitionIndex'>
+    > = [];
     let lastXValue = Number.isFinite(datum.points[0]?.x)
       ? datum.points[0]!.x
       : -Infinity;

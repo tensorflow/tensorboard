@@ -46,7 +46,8 @@ export interface ITfScale extends Plottable.QuantitativeScale<number> {
 }
 export abstract class TfScale
   extends Plottable.QuantitativeScale<number>
-  implements ITfScale {
+  implements ITfScale
+{
   protected _ignoreOutlier: boolean = false;
   protected _valueProviderForDomain: ValueProviderForDomain;
   public setValueProviderForDomain(provider: ValueProviderForDomain): this {

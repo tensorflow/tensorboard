@@ -59,9 +59,9 @@ export class DataDownloadDialogContainer {
   ) {
     this.cardMetadata$ = store
       .select(getCardMetadata, data.cardId)
-      .pipe(filter((metadata) => Boolean(metadata))) as Observable<
-      CardMetadata
-    >;
+      .pipe(
+        filter((metadata) => Boolean(metadata))
+      ) as Observable<CardMetadata>;
 
     this.downloadUrlCsv$ = combineLatest([
       store.select(getCardMetadata, data.cardId),

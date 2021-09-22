@@ -257,9 +257,8 @@ class ProgrammaticalRedirectionRouteConfigMatcher extends RouteConfigMatcher {
 
     if (!match.result) return match;
 
-    const {pathParts: newPathParts, queryParams} = this.definition.redirector(
-      pathParts
-    );
+    const {pathParts: newPathParts, queryParams} =
+      this.definition.redirector(pathParts);
     return {
       result: true,
       params: match.params,
@@ -373,9 +372,8 @@ export class RouteConfigs {
     let pathParts = getPathParts(navigation.pathname);
     let redirectionCount = 0;
     let wasRedirected = false;
-    let redirectionOnlyQueryParams:
-      | undefined
-      | SerializableQueryParams = undefined;
+    let redirectionOnlyQueryParams: undefined | SerializableQueryParams =
+      undefined;
 
     while (true) {
       let hasMatch = false;

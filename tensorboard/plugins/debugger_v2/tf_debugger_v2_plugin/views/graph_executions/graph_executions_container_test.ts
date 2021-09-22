@@ -257,7 +257,8 @@ describe('Graph Executions Container', () => {
           const component = fixture.debugElement.query(
             By.css('graph-executions-component')
           ).componentInstance;
-          const viewPort = component.TEST_ONLY.getViewPort() as CdkVirtualScrollViewport;
+          const viewPort =
+            component.TEST_ONLY.getViewPort() as CdkVirtualScrollViewport;
           const {start, end} = viewPort.getRenderedRange();
           expect(end).toBeGreaterThan(start);
           const scrollIndices: number[] = [];
@@ -295,7 +296,8 @@ describe('Graph Executions Container', () => {
     const component = fixture.debugElement.query(
       By.css('graph-executions-component')
     ).componentInstance;
-    const viewPort = component.TEST_ONLY.getViewPort() as CdkVirtualScrollViewport;
+    const viewPort =
+      component.TEST_ONLY.getViewPort() as CdkVirtualScrollViewport;
     const {start, end} = viewPort.getRenderedRange();
     expect(end).toBeGreaterThan(start);
     const scrollIndices: number[] = [];

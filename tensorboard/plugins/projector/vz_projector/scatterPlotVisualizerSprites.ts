@@ -395,9 +395,8 @@ export class ScatterPlotVisualizerSprites implements ScatterPlotVisualizer {
     this.pickingMaterial.uniforms.spritesPerRow.value = this.spritesPerRow;
     this.pickingMaterial.uniforms.spritesPerRow.value = this.spritesPerColumn;
     this.pickingMaterial.uniforms.sizeAttenuation.value = sceneIs3D;
-    this.pickingMaterial.uniforms.pointSize.value = this.calculatePointSize(
-      sceneIs3D
-    );
+    this.pickingMaterial.uniforms.pointSize.value =
+      this.calculatePointSize(sceneIs3D);
     this.points.material = this.pickingMaterial;
     const colors = new THREE.BufferAttribute(this.pickingColors, 3);
     this.points.geometry.setAttribute('color', colors);
@@ -428,9 +427,8 @@ export class ScatterPlotVisualizerSprites implements ScatterPlotVisualizer {
     this.renderMaterial.uniforms.spriteTexture.value =
       this.texture != null ? this.texture : this.standinTextureForPoints;
     this.renderMaterial.uniforms.sizeAttenuation.value = sceneIs3D;
-    this.renderMaterial.uniforms.pointSize.value = this.calculatePointSize(
-      sceneIs3D
-    );
+    this.renderMaterial.uniforms.pointSize.value =
+      this.calculatePointSize(sceneIs3D);
     this.points.material = this.renderMaterial;
     this.renderColors = rc.pointColors;
     const colors = new THREE.BufferAttribute(this.renderColors, 3);

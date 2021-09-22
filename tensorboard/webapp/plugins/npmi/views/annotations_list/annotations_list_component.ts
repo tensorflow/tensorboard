@@ -55,9 +55,8 @@ export class AnnotationsListComponent {
           this.sortedAnnotations.slice(0, annotationIndex + 1)
         );
       } else {
-        let lastAnnotation = this.selectedAnnotations[
-          this.selectedAnnotations.length - 1
-        ];
+        let lastAnnotation =
+          this.selectedAnnotations[this.selectedAnnotations.length - 1];
         const lastIndex = this.sortedAnnotations.indexOf(lastAnnotation);
         if (lastIndex < annotationIndex) {
           this.onRowClick.emit(

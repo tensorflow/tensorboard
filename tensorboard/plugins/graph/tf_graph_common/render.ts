@@ -287,7 +287,7 @@ export class RenderGraphInfo {
     });
     this.memoryUsageScale = d3
       .scaleLinear<string, string>()
-      .domain([0, (maxMemory as unknown) as number])
+      .domain([0, maxMemory as unknown as number])
       .range(PARAMS.minMaxColors);
     // Find the maximum compute time. Use 0 as the minimum.
     let maxComputeTime = d3.max(topLevelGraph.nodes(), (nodeName, index) => {
@@ -299,7 +299,7 @@ export class RenderGraphInfo {
     });
     this.computeTimeScale = d3
       .scaleLinear<string, string>()
-      .domain([0, (maxComputeTime as unknown) as number])
+      .domain([0, maxComputeTime as unknown as number])
       .range(PARAMS.minMaxColors);
     this.edgeWidthSizedBasedScale = this.hierarchy.hasShapeInfo
       ? tf_graph_common.EDGE_WIDTH_SIZE_BASED_SCALE
@@ -678,9 +678,8 @@ export class RenderGraphInfo {
             this.patchEdgesIntoFunctionInputs(opNodeToReplace, newOpNode);
           }
           if (_.isNumber(newOpNode.functionOutputIndex)) {
-            functionOutputIndexToNode[
-              newOpNode.functionOutputIndex
-            ] = newOpNode;
+            functionOutputIndexToNode[newOpNode.functionOutputIndex] =
+              newOpNode;
           }
           break;
         default:
@@ -869,9 +868,8 @@ export class RenderGraphInfo {
       _.each(metagraph.nodes(), (childName) => {
         // Why is this so often undefined?
         const originalNode = metagraph.node(childName) as any;
-        const libraryFunctionData = this.hierarchy.libraryFunctions[
-          originalNode.op
-        ];
+        const libraryFunctionData =
+          this.hierarchy.libraryFunctions[originalNode.op];
         if (!libraryFunctionData) {
           // This node is not a function call.
           return;
@@ -2281,9 +2279,8 @@ export function expandUntilNodeIsShown(
 ) {
   const splitTensorName = tensorName.split('/');
   // Graph names do not take into account the output slot. Strip it.
-  const lastNodeNameMatch = splitTensorName[splitTensorName.length - 1].match(
-    /(.*):\w+/
-  );
+  const lastNodeNameMatch =
+    splitTensorName[splitTensorName.length - 1].match(/(.*):\w+/);
   if (lastNodeNameMatch.length === 2) {
     splitTensorName[splitTensorName.length - 1] = lastNodeNameMatch[1];
   }

@@ -39,13 +39,13 @@ describe('settings polymer_interop', () => {
 
     setLimitCalls = [];
     const createElementSpy = spyOn(document, 'createElement').and.callThrough();
-    createElementSpy.withArgs('tf-paginated-view-store').and.returnValue(({
+    createElementSpy.withArgs('tf-paginated-view-store').and.returnValue({
       tf_paginated_view: {
         setLimit: (limit: number) => {
           setLimitCalls.push(limit);
         },
       },
-    } as unknown) as HTMLElement);
+    } as unknown as HTMLElement);
   });
 
   it('sets pagination limit when pageSize changes', () => {

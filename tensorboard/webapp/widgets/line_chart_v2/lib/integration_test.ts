@@ -29,7 +29,7 @@ describe('line_chart_v2/lib/integration test', () => {
   let rafSpy: jasmine.Spy;
 
   function getDomChildren(): ReadonlyArray<SVGElement> {
-    return (dom.children as unknown) as ReadonlyArray<SVGElement>;
+    return dom.children as unknown as ReadonlyArray<SVGElement>;
   }
 
   beforeEach(() => {

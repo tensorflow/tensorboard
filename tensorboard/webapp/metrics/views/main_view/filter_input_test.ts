@@ -121,9 +121,9 @@ describe('metrics filter input', () => {
       fixture.detectChanges();
 
       const options = getAutocompleteOptions(overlayContainer);
-      expect(
-        options.map((option) => option.nativeElement.textContent)
-      ).toEqual(['tagA', 'tagA/Images', 'tagB/meow/cat']);
+      expect(options.map((option) => option.nativeElement.textContent)).toEqual(
+        ['tagA', 'tagA/Images', 'tagB/meow/cat']
+      );
     });
 
     it('truncates to 25 tags when there are more', () => {
@@ -298,9 +298,9 @@ describe('metrics filter input', () => {
       fixture.detectChanges();
 
       const options = getAutocompleteOptions(overlayContainer);
-      expect(
-        options.map((option) => option.nativeElement.textContent)
-      ).toEqual(['tagA/Images', 'tagB/meow/cat']);
+      expect(options.map((option) => option.nativeElement.textContent)).toEqual(
+        ['tagA/Images', 'tagB/meow/cat']
+      );
     });
 
     it('filters by regex ignoring casing', () => {
@@ -313,9 +313,9 @@ describe('metrics filter input', () => {
       fixture.detectChanges();
 
       const options = getAutocompleteOptions(overlayContainer);
-      expect(
-        options.map((option) => option.nativeElement.textContent)
-      ).toEqual(['tagA/Images', 'tagB/meow/cat']);
+      expect(options.map((option) => option.nativeElement.textContent)).toEqual(
+        ['tagA/Images', 'tagB/meow/cat']
+      );
     });
 
     it('responds to input changes', () => {
@@ -332,9 +332,9 @@ describe('metrics filter input', () => {
       fixture.detectChanges();
 
       const options = getAutocompleteOptions(overlayContainer);
-      expect(
-        options.map((option) => option.nativeElement.textContent)
-      ).toEqual(['tagA']);
+      expect(options.map((option) => option.nativeElement.textContent)).toEqual(
+        ['tagA']
+      );
     });
 
     it('dispatches action when clicking on option', () => {
@@ -371,9 +371,9 @@ describe('metrics filter input', () => {
       fixture.detectChanges();
 
       const options = getAutocompleteOptions(overlayContainer);
-      expect(
-        options.map((option) => option.nativeElement.textContent)
-      ).toEqual(['tagA.(foo)']);
+      expect(options.map((option) => option.nativeElement.textContent)).toEqual(
+        ['tagA.(foo)']
+      );
 
       options[0].nativeElement.click();
 

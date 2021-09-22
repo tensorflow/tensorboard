@@ -56,7 +56,8 @@ export function DataLoaderBehavior<Item, Data>(
 ): new () => DataLoaderBehaviorInterface<Item, Data> {
   return class DataLoaderBehaviorImpl<Item, Data>
     extends superClass
-    implements DataLoaderBehaviorInterface<Item, Data> {
+    implements DataLoaderBehaviorInterface<Item, Data>
+  {
     active!: boolean;
 
     /**

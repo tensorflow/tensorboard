@@ -193,7 +193,7 @@ export class RunsTableComponent implements OnChanges {
     }
     // HACK: Technically, sort.key is a string but in reality, MatSort supports an object
     // as the sort.id and, thus, sort.active can be an object.
-    const key = (sort.active as unknown) as SortKey;
+    const key = sort.active as unknown as SortKey;
     this.onSortChange.emit({key, direction});
   }
 

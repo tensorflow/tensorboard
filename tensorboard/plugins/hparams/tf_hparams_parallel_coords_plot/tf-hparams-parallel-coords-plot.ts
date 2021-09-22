@@ -223,20 +223,22 @@ class TfHparamsParallelCoordsPlot extends LegacyElementMixin(
       d3.select(this.$.svg as SVGElement)
         .selectAll('*')
         .remove();
-      const svgProps = new tf_hparams_parallel_coords_plot_interaction_manager.SVGProperties(
-        this.$.svg as HTMLElement,
-        nextConfig.columnsVisibility.filter(Boolean).length
-      );
+      const svgProps =
+        new tf_hparams_parallel_coords_plot_interaction_manager.SVGProperties(
+          this.$.svg as HTMLElement,
+          nextConfig.columnsVisibility.filter(Boolean).length
+        );
       // Listen to DOM changes underneath this.$.svg, and apply local CSS
       // scoping rules so that our rules in the <style> section above
       // would apply.
       this.scopeSubtree(this.$.svg as SVGElement, true);
-      this._interactionManager = new tf_hparams_parallel_coords_plot_interaction_manager.InteractionManager(
-        svgProps,
-        nextConfig.schema,
-        (sessionGroup) => this.closestSessionGroupChanged(sessionGroup),
-        (sessionGroup) => this.selectedSessionGroupChanged(sessionGroup)
-      );
+      this._interactionManager =
+        new tf_hparams_parallel_coords_plot_interaction_manager.InteractionManager(
+          svgProps,
+          nextConfig.schema,
+          (sessionGroup) => this.closestSessionGroupChanged(sessionGroup),
+          (sessionGroup) => this.selectedSessionGroupChanged(sessionGroup)
+        );
     }
     this._computeValidSessionGroups();
     this._interactionManager.onOptionsOrSessionGroupsChanged(

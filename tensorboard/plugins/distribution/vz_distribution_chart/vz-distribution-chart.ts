@@ -158,7 +158,8 @@ export interface VzDistributionChart extends HTMLElement {
 @customElement('vz-distribution-chart')
 class _VzDistributionChart
   extends LegacyElementMixin(PolymerElement)
-  implements VzDistributionChart {
+  implements VzDistributionChart
+{
   static readonly template = html`
     <style include="plottable-style"></style>
     <div id="chartdiv"></div>

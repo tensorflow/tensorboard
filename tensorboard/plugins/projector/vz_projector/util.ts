@@ -205,9 +205,7 @@ export function runAsyncTask<T>(
  * @param url The URL to parse.
  * @return A map of queryParam key to its value.
  */
-export function getURLParams(
-  url: string
-): {
+export function getURLParams(url: string): {
   [key: string]: string;
 } {
   if (!url) {

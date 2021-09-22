@@ -118,7 +118,7 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
     count: d3.format('.3n'),
     // DefinitelyTyped is incorrect that the `timeFormat` only takes `Date` as
     // an input. Better type it for downstream types.
-    wallTime: (d3.timeFormat('%m/%d %X') as unknown) as (
+    wallTime: d3.timeFormat('%m/%d %X') as unknown as (
       dateSinceEpoch: number
     ) => string,
     step: d3.format('.0f'),
@@ -285,7 +285,8 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
 
   private updateClientRects() {
     if (this.content) {
-      this.layout.contentClientRect = this.content.nativeElement.getBoundingClientRect();
+      this.layout.contentClientRect =
+        this.content.nativeElement.getBoundingClientRect();
       this.layout.histogramHeight = this.layout.contentClientRect.height / 2.5;
     }
   }

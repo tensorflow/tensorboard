@@ -147,7 +147,8 @@ export class OSSSettingsConverter extends SettingsConverter<
  */
 @Injectable()
 export class PersistentSettingsDataSourceImpl<UiSettings, StorageSettings>
-  implements PersistentSettingsDataSource<UiSettings> {
+  implements PersistentSettingsDataSource<UiSettings>
+{
   constructor(
     private readonly localStorage: LocalStorage,
     private readonly converter: SettingsConverter<UiSettings, StorageSettings>

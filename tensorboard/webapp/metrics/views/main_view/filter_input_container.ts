@@ -41,9 +41,8 @@ import {compareTagNames} from '../utils';
 export class MetricsFilterInputContainer {
   constructor(private readonly store: Store<State>) {}
 
-  readonly tagFilter$: Observable<string> = this.store.select(
-    getMetricsTagFilter
-  );
+  readonly tagFilter$: Observable<string> =
+    this.store.select(getMetricsTagFilter);
 
   readonly isTagFilterRegexValid$: Observable<boolean> = this.tagFilter$.pipe(
     map((tagFilterString) => {

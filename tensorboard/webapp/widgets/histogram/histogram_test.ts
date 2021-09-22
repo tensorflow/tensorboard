@@ -97,7 +97,7 @@ class TestableComponent {
   }): TooltipData | null {
     // Not easy to create a MouseEvent with correct `target` property. Fake it
     // with a type coercion.
-    const mouseEvent = (event as unknown) as MouseEvent;
+    const mouseEvent = event as unknown as MouseEvent;
     this.instance.onMouseMoveForTestOnly(mouseEvent);
     return this.instance.tooltipData;
   }

@@ -47,8 +47,9 @@ describe('runs selector test', () => {
       const fixture = TestBed.createComponent(RunsSelectorContainer);
       fixture.detectChanges();
 
-      const runsTable = fixture.debugElement.query(By.css('runs-table'))
-        .componentInstance;
+      const runsTable = fixture.debugElement.query(
+        By.css('runs-table')
+      ).componentInstance;
       expect(runsTable.columns).toEqual([
         RunsTableColumn.CHECKBOX,
         RunsTableColumn.RUN_NAME,
@@ -61,8 +62,9 @@ describe('runs selector test', () => {
       const fixture = TestBed.createComponent(RunsSelectorContainer);
       fixture.detectChanges();
 
-      const runsTable = fixture.debugElement.query(By.css('runs-table'))
-        .componentInstance;
+      const runsTable = fixture.debugElement.query(
+        By.css('runs-table')
+      ).componentInstance;
       expect(runsTable.columns).toEqual([
         RunsTableColumn.CHECKBOX,
         RunsTableColumn.RUN_NAME,
@@ -76,8 +78,9 @@ describe('runs selector test', () => {
       const fixture = TestBed.createComponent(RunsSelectorContainer);
       fixture.detectChanges();
 
-      const runsTable = fixture.debugElement.query(By.css('runs-table'))
-        .componentInstance;
+      const runsTable = fixture.debugElement.query(
+        By.css('runs-table')
+      ).componentInstance;
       expect(runsTable.columns).toEqual([
         RunsTableColumn.CHECKBOX,
         RunsTableColumn.RUN_NAME,

@@ -183,8 +183,10 @@ export class InteractionManager {
     newSessionGroups: any[]
   ) {
     this._axesCollection.updateAxes(newOptions, newSessionGroups);
-    const oldPeakedSessionGroupHandle = this._linesCollection.peakedSessionGroupHandle();
-    const oldSelectedSessionGroupHandle = this._linesCollection.selectedSessionGroupHandle();
+    const oldPeakedSessionGroupHandle =
+      this._linesCollection.peakedSessionGroupHandle();
+    const oldSelectedSessionGroupHandle =
+      this._linesCollection.selectedSessionGroupHandle();
     this._linesCollection.redraw(
       newSessionGroups,
       newOptions.colorByColumnIndex !== undefined

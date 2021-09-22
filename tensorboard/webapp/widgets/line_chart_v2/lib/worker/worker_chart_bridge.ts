@@ -29,13 +29,8 @@ self.addEventListener('message', (event: MessageEvent) => {
 });
 
 function createPortHandler(port: MessagePort, initMessage: InitMessage) {
-  const {
-    canvas,
-    devicePixelRatio,
-    dim,
-    rendererType,
-    useDarkMode,
-  } = initMessage;
+  const {canvas, devicePixelRatio, dim, rendererType, useDarkMode} =
+    initMessage;
 
   const lineChartCallbacks = {
     onDrawEnd: () => {

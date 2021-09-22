@@ -181,8 +181,8 @@ function groupTemplateAndAssignId(nnGroups, verifyTemplate) {
 }
 function sortNodes(names: string[], graph: graphlib.Graph, prefix: string) {
   return _.sortBy(names, [
-    (name) => ((graph.node(name) as unknown) as OpNode).op,
-    (name) => ((graph.node(name) as unknown) as Metanode).templateId,
+    (name) => (graph.node(name) as unknown as OpNode).op,
+    (name) => (graph.node(name) as unknown as Metanode).templateId,
     (name) => graph.neighbors(name).length,
     (name) => graph.predecessors(name).length,
     (name) => graph.successors(name).length,

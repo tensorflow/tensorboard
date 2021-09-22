@@ -53,7 +53,8 @@ type CustomScalarsDatum = {
 @customElement('tf-custom-scalar-multi-line-chart-card')
 class _TfCustomScalarMultiLineChartCard
   extends LegacyElementMixin(PolymerElement)
-  implements TfCustomScalarMultiLineChartCard {
+  implements TfCustomScalarMultiLineChartCard
+{
   static readonly template = html`
     <tf-card-heading display-name="[[_titleDisplayString]]"></tf-card-heading>
     <div id="tf-line-chart-data-loader-container">

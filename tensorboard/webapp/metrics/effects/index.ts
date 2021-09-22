@@ -59,16 +59,16 @@ export type CardFetchInfo = CardMetadata & {
   loadState: DataLoadState;
 };
 
-const getCardFetchInfo = createSelector(getCardLoadState, getCardMetadata, (
-  loadState,
-  maybeMetadata,
-  cardId /* props */
-): CardFetchInfo | null => {
-  if (!maybeMetadata) {
-    return null;
+const getCardFetchInfo = createSelector(
+  getCardLoadState,
+  getCardMetadata,
+  (loadState, maybeMetadata, cardId /* props */): CardFetchInfo | null => {
+    if (!maybeMetadata) {
+      return null;
+    }
+    return {...maybeMetadata, loadState, id: cardId};
   }
-  return {...maybeMetadata, loadState, id: cardId};
-});
+);
 
 const initAction = createAction('[Metrics Effects] Init');
 

@@ -33,7 +33,8 @@ const DARK_MODE_MEDIA_QUERY = '(prefers-color-scheme: dark)';
 // Decide how to move forward with more sources of the data + composability.
 @Injectable()
 export class QueryParamsFeatureFlagDataSource
-  implements TBFeatureFlagDataSource {
+  implements TBFeatureFlagDataSource
+{
   constructor(readonly queryParams: QueryParams) {}
 
   getFeatures(enableMediaQuery: boolean = false) {
@@ -85,8 +86,9 @@ export class QueryParamsFeatureFlagDataSource
     defaultEnableDarkMode?: boolean;
   } {
     const featureFlags: {defaultEnableDarkMode?: boolean} = {};
-    const defaultEnableDarkMode = window.matchMedia(DARK_MODE_MEDIA_QUERY)
-      .matches;
+    const defaultEnableDarkMode = window.matchMedia(
+      DARK_MODE_MEDIA_QUERY
+    ).matches;
 
     // When media query matches positively, it certainly means user wants it but
     // it is not definitive otherwise (i.e., query params can override it).

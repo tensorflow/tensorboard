@@ -196,20 +196,23 @@ describe('line_chart_v2/sub_view/interactive_view test', () => {
       emitEvent(fixture, 'mouseenter', {clientX: 250, clientY: 10});
       fixture.detectChanges();
 
-      const [
-        foo,
-        bar,
-      ] = overlayContainer.getContainerElement().querySelectorAll('tbody tr');
+      const [foo, bar] = overlayContainer
+        .getContainerElement()
+        .querySelectorAll('tbody tr');
 
       expect(
-        (foo.querySelector(
-          `${Selector.TOOLTIP_ROW_CIRCLE} span`
-        ) as HTMLSpanElement).style.backgroundColor
+        (
+          foo.querySelector(
+            `${Selector.TOOLTIP_ROW_CIRCLE} span`
+          ) as HTMLSpanElement
+        ).style.backgroundColor
       ).toBe('rgb(255, 0, 0)');
       expect(
-        (bar.querySelector(
-          `${Selector.TOOLTIP_ROW_CIRCLE} span`
-        ) as HTMLSpanElement).style.backgroundColor
+        (
+          bar.querySelector(
+            `${Selector.TOOLTIP_ROW_CIRCLE} span`
+          ) as HTMLSpanElement
+        ).style.backgroundColor
       ).toBe('rgb(0, 0, 255)');
 
       // In the <500, 200> sized DOM, the cursor is right in the middle (in x dim) at

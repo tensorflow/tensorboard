@@ -33,10 +33,9 @@ const getHparamsDefaultFiltersForExperiments = createSelector(
     state: HparamsState,
     experimentIds: string[]
   ): Map<string, DiscreteFilter | IntervalFilter> => {
-    const defaultFilterMaps: Array<Map<
-      string,
-      DiscreteFilter | IntervalFilter
-    >> = [];
+    const defaultFilterMaps: Array<
+      Map<string, DiscreteFilter | IntervalFilter>
+    > = [];
 
     for (const experimentId of experimentIds) {
       if (!state.specs[experimentId]) {

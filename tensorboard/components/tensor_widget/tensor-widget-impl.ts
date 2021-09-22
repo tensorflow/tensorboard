@@ -778,9 +778,8 @@ export class TensorWidgetImpl implements TensorWidget {
    */
   private renderTopRuler() {
     if (this.rank >= 2) {
-      const numCols = this.tensorView.spec.shape[
-        this.slicingSpec.viewingDims[1]
-      ];
+      const numCols =
+        this.tensorView.spec.shape[this.slicingSpec.viewingDims[1]];
 
       for (let i = 0; i < this.topRulerTicks.length; ++i) {
         if (this.slicingSpec.horizontalRange === null) {
@@ -805,9 +804,8 @@ export class TensorWidgetImpl implements TensorWidget {
    */
   private renderLeftRuler() {
     if (this.rank >= 1) {
-      const numRows = this.tensorView.spec.shape[
-        this.slicingSpec.viewingDims[0]
-      ];
+      const numRows =
+        this.tensorView.spec.shape[this.slicingSpec.viewingDims[0]];
       for (let i = 0; i < this.leftRulerTicks.length; ++i) {
         if (this.slicingSpec.verticalRange === null) {
           throw new Error(`Missing vertcial range for ${this.rank}D tensor.`);
@@ -1111,9 +1109,8 @@ export class TensorWidgetImpl implements TensorWidget {
     if (this.rank >= 2) {
       const tickBox = this.topRulerTicks[0].getBoundingClientRect();
       const tickWidth = tickBox.right - tickBox.left;
-      const dimSize = this.tensorView.spec.shape[
-        this.slicingSpec.viewingDims[0]
-      ];
+      const dimSize =
+        this.tensorView.spec.shape[this.slicingSpec.viewingDims[0]];
       this.showIndicesOnTicks =
         tickWidth > 9 * Math.ceil(Math.log(dimSize) / Math.LN10);
     } else if (this.rank === 1) {
@@ -1143,9 +1140,8 @@ export class TensorWidgetImpl implements TensorWidget {
     if (this.slicingSpec.horizontalRange === null) {
       throw new Error(`Missing horizontal range for ${this.rank}D tensor.`);
     }
-    const indexUpperBound = this.tensorView.spec.shape[
-      this.slicingSpec.viewingDims[1]
-    ];
+    const indexUpperBound =
+      this.tensorView.spec.shape[this.slicingSpec.viewingDims[1]];
     if (index < 0 || index >= indexUpperBound) {
       throw new Error(
         `Index out of bound: ${index} is outside [0, ${indexUpperBound}])`
@@ -1183,9 +1179,8 @@ export class TensorWidgetImpl implements TensorWidget {
       throw new Error('Vertical scrolling failed due to missing value rows.');
     }
 
-    const indexUpperBound = this.tensorView.spec.shape[
-      this.slicingSpec.viewingDims[0]
-    ];
+    const indexUpperBound =
+      this.tensorView.spec.shape[this.slicingSpec.viewingDims[0]];
     if (index < 0 || index >= indexUpperBound) {
       throw new Error(
         `Index out of bound: ${index} is outside [0, ${indexUpperBound}])`

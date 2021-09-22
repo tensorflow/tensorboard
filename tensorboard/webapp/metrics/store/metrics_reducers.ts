@@ -449,18 +449,15 @@ const reducer = createReducer(
       };
     }
   ),
-  on(
-    actions.metricsTagMetadataFailed,
-    (state: MetricsState): MetricsState => {
-      return {
-        ...state,
-        tagMetadataLoadState: {
-          ...state.tagMetadataLoadState,
-          state: DataLoadState.FAILED,
-        },
-      };
-    }
-  ),
+  on(actions.metricsTagMetadataFailed, (state: MetricsState): MetricsState => {
+    return {
+      ...state,
+      tagMetadataLoadState: {
+        ...state.tagMetadataLoadState,
+        state: DataLoadState.FAILED,
+      },
+    };
+  }),
   on(
     actions.metricsTagMetadataLoaded,
     (
@@ -913,12 +910,9 @@ const reducer = createReducer(
 
     return {...state, filteredPluginTypes: nextFilteredPluginTypes};
   }),
-  on(
-    actions.metricsShowAllPlugins,
-    (state): MetricsState => {
-      return {...state, filteredPluginTypes: new Set()};
-    }
-  ),
+  on(actions.metricsShowAllPlugins, (state): MetricsState => {
+    return {...state, filteredPluginTypes: new Set()};
+  }),
   on(actions.metricsPromoDismissed, (state) => {
     return {...state, promoteTimeSeries: false};
   })

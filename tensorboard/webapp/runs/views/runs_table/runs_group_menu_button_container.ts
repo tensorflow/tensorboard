@@ -65,9 +65,8 @@ export class RunsGroupMenuButtonContainer {
       })
     );
 
-  readonly selectedGroupBy$: Observable<GroupBy> = this.store.select(
-    getRunGroupBy
-  );
+  readonly selectedGroupBy$: Observable<GroupBy> =
+    this.store.select(getRunGroupBy);
 
   readonly groupByRegexString$: Observable<string> = this.store.select(
     getColorGroupRegexString

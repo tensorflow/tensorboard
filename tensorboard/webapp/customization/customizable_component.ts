@@ -92,9 +92,10 @@ export class CustomizableComponent implements OnInit {
 
   ngOnInit() {
     if (this.customizableComponent) {
-      const componentFactory = this.componentFactoryResolver.resolveComponentFactory(
-        this.customizableComponent.constructor
-      );
+      const componentFactory =
+        this.componentFactoryResolver.resolveComponentFactory(
+          this.customizableComponent.constructor
+        );
       this.viewContainerRef.createComponent(componentFactory);
     }
   }
