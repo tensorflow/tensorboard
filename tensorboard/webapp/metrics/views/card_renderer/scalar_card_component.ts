@@ -29,6 +29,7 @@ import {
   Formatter,
   numberFormatter,
   relativeTimeFormatter,
+  intlNumberFormatter,
   siNumberFormatter,
 } from '../../../widgets/line_chart_v2/lib/formatter';
 import {LineChartComponent} from '../../../widgets/line_chart_v2/line_chart_component';
@@ -110,7 +111,7 @@ export class ScalarCardComponent<Downloader> {
 
   readonly relativeXFormatter = relativeTimeFormatter;
   readonly valueFormatter = numberFormatter;
-  readonly stepFormatter = siNumberFormatter;
+  readonly stepFormatter = intlNumberFormatter;
 
   getCustomXFormatter(): Formatter | undefined {
     switch (this.xAxisType) {

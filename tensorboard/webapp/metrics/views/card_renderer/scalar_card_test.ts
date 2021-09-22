@@ -1384,7 +1384,7 @@ describe('scalar card', () => {
 
       assertTooltipRows(fixture, [
         ['', 'Row 2', '-500', '1,000', anyString, anyString],
-        ['', 'Row 3', '3', '10k', anyString, anyString],
+        ['', 'Row 3', '3', '10,000', anyString, anyString],
         ['', 'Row 1', '1000', '10', anyString, anyString],
       ]);
     }));
@@ -1453,7 +1453,7 @@ describe('scalar card', () => {
 
       assertTooltipRows(fixture, [
         ['', 'Row 1', '1000', '10', anyString, anyString],
-        ['', 'Row 3', '3', '10k', anyString, anyString],
+        ['', 'Row 3', '3', '10,000', anyString, anyString],
         ['', 'Row 2', '-500', '1,000', anyString, anyString],
       ]);
     }));
@@ -1523,7 +1523,7 @@ describe('scalar card', () => {
       assertTooltipRows(fixture, [
         ['', 'Row 2', '-500', '1,000', anyString, anyString],
         ['', 'Row 1', '1000', '0', anyString, anyString],
-        ['', 'Row 3', '3', '10k', anyString, anyString],
+        ['', 'Row 3', '3', '10,000', anyString, anyString],
       ]);
 
       setCursorLocation(fixture, {x: 500, y: 600});
@@ -1531,13 +1531,13 @@ describe('scalar card', () => {
       assertTooltipRows(fixture, [
         ['', 'Row 1', '1000', '0', anyString, anyString],
         ['', 'Row 2', '-500', '1,000', anyString, anyString],
-        ['', 'Row 3', '3', '10k', anyString, anyString],
+        ['', 'Row 3', '3', '10,000', anyString, anyString],
       ]);
 
       setCursorLocation(fixture, {x: 10000, y: -100});
       fixture.detectChanges();
       assertTooltipRows(fixture, [
-        ['', 'Row 3', '3', '10k', anyString, anyString],
+        ['', 'Row 3', '3', '10,000', anyString, anyString],
         ['', 'Row 2', '-500', '1,000', anyString, anyString],
         ['', 'Row 1', '1000', '0', anyString, anyString],
       ]);
@@ -1548,7 +1548,7 @@ describe('scalar card', () => {
       assertTooltipRows(fixture, [
         ['', 'Row 1', '1000', '0', anyString, anyString],
         ['', 'Row 2', '-500', '1,000', anyString, anyString],
-        ['', 'Row 3', '3', '10k', anyString, anyString],
+        ['', 'Row 3', '3', '10,000', anyString, anyString],
       ]);
     }));
   });

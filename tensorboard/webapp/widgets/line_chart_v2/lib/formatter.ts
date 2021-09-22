@@ -88,6 +88,27 @@ export const numberFormatter: Formatter = {
 
 /**
  * ===================
+ * INTL NUMBER FORMATTER
+ * ===================
+ */
+
+const IntlNumberFormatter = new Intl.NumberFormat(undefined, {
+  maximumFractionDigits: 3,
+});
+
+function formatIntlNumber(x: number): string {
+  return IntlNumberFormatter.format(x);
+}
+
+export const intlNumberFormatter: Formatter = {
+  formatTick: formatIntlNumber,
+  formatShort: formatIntlNumber,
+  formatReadable: formatIntlNumber,
+  formatLong: formatIntlNumber,
+};
+
+/**
+ * ===================
  * SI NUMBER FORMATTER
  * ===================
  */
