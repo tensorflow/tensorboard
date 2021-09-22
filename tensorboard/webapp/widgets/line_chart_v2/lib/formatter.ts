@@ -92,15 +92,12 @@ export const numberFormatter: Formatter = {
  * ===================
  */
 
-const d3SiFormatter = format('0.4~s');
-const d3SiSmallNumberFormatter = format(',.3~f');
+const SiFormatter = new Intl.NumberFormat(undefined, {
+  maximumFractionDigits: 3,
+});
 
 function formatSiNumber(x: number): string {
-  const absNum = Math.abs(x);
-  if (absNum >= LARGE_NUMBER || absNum < SMALL_NUMBER) {
-    return d3SiFormatter(x);
-  }
-  return d3SiSmallNumberFormatter(x);
+  return SiFormatter.format(x);
 }
 
 export const siNumberFormatter: Formatter = {
