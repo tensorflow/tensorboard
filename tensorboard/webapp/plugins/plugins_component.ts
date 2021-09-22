@@ -197,7 +197,8 @@ export class PluginsComponent implements OnChanges {
     let pluginElement = null;
     switch (plugin.loading_mechanism.type) {
       case LoadingMechanismType.CUSTOM_ELEMENT: {
-        const customElementPlugin = plugin.loading_mechanism as CustomElementLoadingMechanism;
+        const customElementPlugin =
+          plugin.loading_mechanism as CustomElementLoadingMechanism;
         pluginElement = document.createElement(
           customElementPlugin.element_name
         );
@@ -226,12 +227,12 @@ export class PluginsComponent implements OnChanges {
       case LoadingMechanismType.NG_COMPONENT:
         const ngComponentClass = this.pluginRegistry.getComponent(plugin.id);
         if (ngComponentClass) {
-          const componentFactory = this.componentFactoryResolver.resolveComponentFactory(
-            ngComponentClass
-          );
-          const pluginComponent = this.ngPluginContainer.createComponent(
-            componentFactory
-          );
+          const componentFactory =
+            this.componentFactoryResolver.resolveComponentFactory(
+              ngComponentClass
+            );
+          const pluginComponent =
+            this.ngPluginContainer.createComponent(componentFactory);
           pluginElement = pluginComponent.location.nativeElement;
         } else {
           console.error(

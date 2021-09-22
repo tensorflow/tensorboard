@@ -78,7 +78,8 @@ const initialURLQueryString = window.location.search;
 @customElement('vz-projector')
 class Projector
   extends LegacyElementMixin(PolymerElement)
-  implements ProjectorEventContext {
+  implements ProjectorEventContext
+{
   static readonly template = template;
 
   @property({type: String})
@@ -319,9 +320,8 @@ class Projector
       // selection required
       if (this.selectedPointIndices.length === 1) {
         // main point with neighbors
-        let main_point_vector = this.dataSet.points[
-          this.selectedPointIndices[0]
-        ].vector;
+        let main_point_vector =
+          this.dataSet.points[this.selectedPointIndices[0]].vector;
         neighbors = this.neighborsOfFirstPoint.filter(
           (
             n // deselect

@@ -318,14 +318,12 @@ export class Axis {
       case ScaleType.LINEAR:
       case ScaleType.LOG: {
         /* Fall Through */
-        const [
-          lower,
-          upper,
-        ] = tf_hparams_parallel_coords_plot_utils.continuousScaleInverseImage(
-          yScale,
-          brushSelection[0],
-          brushSelection[1]
-        );
+        const [lower, upper] =
+          tf_hparams_parallel_coords_plot_utils.continuousScaleInverseImage(
+            yScale,
+            brushSelection[0],
+            brushSelection[1]
+          );
         return new IntervalBrushFilter(
           lower,
           upper,
@@ -334,14 +332,12 @@ export class Axis {
         );
       }
       case ScaleType.QUANTILE: {
-        const [
-          lower,
-          upper,
-        ] = tf_hparams_parallel_coords_plot_utils.quantileScaleInverseImage(
-          yScale,
-          brushSelection[0],
-          brushSelection[1]
-        );
+        const [lower, upper] =
+          tf_hparams_parallel_coords_plot_utils.quantileScaleInverseImage(
+            yScale,
+            brushSelection[0],
+            brushSelection[1]
+          );
         return new IntervalBrushFilter(
           lower as number,
           upper as number,

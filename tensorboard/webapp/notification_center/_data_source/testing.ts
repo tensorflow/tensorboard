@@ -25,7 +25,8 @@ import {
 
 @Injectable()
 export class TestingNotificationCenterDataSource
-  implements NotificationCenterDataSource {
+  implements NotificationCenterDataSource
+{
   fetchNotifications() {
     return of({
       notifications: [],

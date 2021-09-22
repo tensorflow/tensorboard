@@ -138,9 +138,8 @@ class DataPanel extends LegacyElementMixin(PolymerElement) {
   }
   setForceCategoricalColoring(forceCategoricalColoring: boolean) {
     this.forceCategoricalColoring = forceCategoricalColoring;
-    (this.$$(
-      '#force-categorical-checkbox'
-    ) as HTMLInputElement).checked = this.forceCategoricalColoring;
+    (this.$$('#force-categorical-checkbox') as HTMLInputElement).checked =
+      this.forceCategoricalColoring;
     this.updateMetadataUI(this.spriteAndMetadata.stats, this.metadataFile);
     // The selected color option name doesn't change when we switch to using
     // categorical coloring for stats with too many unique values, so we
@@ -448,8 +447,9 @@ class DataPanel extends LegacyElementMixin(PolymerElement) {
       this.selectedRun,
       this.selectedTensor,
       (ds) => {
-        let metadataFile = this.getEmbeddingInfoByName(this.selectedTensor)
-          .metadataPath;
+        let metadataFile = this.getEmbeddingInfoByName(
+          this.selectedTensor
+        ).metadataPath;
         this.dataProvider.retrieveSpriteAndMetadata(
           this.selectedRun,
           this.selectedTensor,
@@ -700,7 +700,8 @@ class DataPanel extends LegacyElementMixin(PolymerElement) {
         location.pathname +
         '?config=' +
         (projectorConfigUrlInput as HTMLInputElement).value;
-      (projectorConfigDemoUrlInput as HTMLInputElement).value = projectorDemoUrl;
+      (projectorConfigDemoUrlInput as HTMLInputElement).value =
+        projectorDemoUrl;
       // TODO(b/162788443): Undo conformance workaround.
       Object.assign(projectorConfigDemoUrlLink as HTMLLinkElement, {
         href: projectorDemoUrl,

@@ -103,9 +103,11 @@ function buildFrontendTagMetadata(
       const frontendTagRunSampledInfo = {} as TagToRunSampledInfo;
       for (const tag in tagRunSampledInfo) {
         if (tagRunSampledInfo.hasOwnProperty(tag)) {
-          frontendTagRunSampledInfo[tag] = buildRunIdKeyedObject<
-            RunSampledInfo
-          >(tagRunSampledInfo[tag], experimentId);
+          frontendTagRunSampledInfo[tag] =
+            buildRunIdKeyedObject<RunSampledInfo>(
+              tagRunSampledInfo[tag],
+              experimentId
+            );
         }
       }
       tagMetadata[plugin] = {
@@ -133,9 +135,8 @@ function buildCombinedTagMetadata(results: TagMetadata[]): TagMetadata {
           tagDescriptions: {},
           tagRunSampledInfo: {},
         };
-        const {tagDescriptions, tagRunSampledInfo} = experimentTagMetadata[
-          plugin
-        ];
+        const {tagDescriptions, tagRunSampledInfo} =
+          experimentTagMetadata[plugin];
         tagMetadata[plugin].tagDescriptions = {
           ...tagMetadata[plugin].tagDescriptions,
           ...tagDescriptions,
@@ -234,20 +235,15 @@ export class TBMetricsDataSource implements MetricsDataSource {
 
       // One multi-run request generates many responses with different
       // 'runToSeries', 'error' fields. Combine them into one.
-      const {
-        experimentIds,
-        ...requestRest
-      } = request as MultiRunTimeSeriesRequest;
+      const {experimentIds, ...requestRest} =
+        request as MultiRunTimeSeriesRequest;
       const perExperimentRequests = experimentIds.map((experimentId) => {
         return this.fetchTimeSeriesBackendRequest(requestRest, experimentId);
       });
       return forkJoin(perExperimentRequests).pipe(
         map((perExperimentResults) => {
-          const {
-            runToSeries,
-            error,
-            ...responseRest
-          } = perExperimentResults[0].response;
+          const {runToSeries, error, ...responseRest} =
+            perExperimentResults[0].response;
           const combinedResponse = responseRest as TimeSeriesResponse;
           for (const {response, experimentId} of perExperimentResults) {
             const frontendResponse = buildFrontendTimeSeriesResponse(

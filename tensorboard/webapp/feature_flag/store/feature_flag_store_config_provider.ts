@@ -38,9 +38,9 @@ export const initialState: FeatureFlagState = {
 /**
  * Injection token for providing feature flag StoreConfig.
  */
-export const FEATURE_FLAG_STORE_CONFIG_TOKEN: InjectionToken<StoreConfig<
-  FeatureFlagState
->> = new InjectionToken<StoreConfig<FeatureFlagState>>(
+export const FEATURE_FLAG_STORE_CONFIG_TOKEN: InjectionToken<
+  StoreConfig<FeatureFlagState>
+> = new InjectionToken<StoreConfig<FeatureFlagState>>(
   '[Feature Flag] Store Config'
 );
 

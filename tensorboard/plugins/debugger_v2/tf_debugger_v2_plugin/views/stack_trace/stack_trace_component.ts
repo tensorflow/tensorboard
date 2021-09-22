@@ -81,9 +81,8 @@ export class StackTraceComponent implements AfterViewChecked {
       return;
     }
     const stackElement = this.stackFrameArray.nativeElement;
-    const focusedFrameElement: HTMLElement | null = stackElement.querySelector(
-      `.focused-stack-frame`
-    );
+    const focusedFrameElement: HTMLElement | null =
+      stackElement.querySelector(`.focused-stack-frame`);
     if (focusedFrameElement !== null) {
       // Scroll the focused frame into view when there is a focused frame.
       this.scrollToElement(stackElement, focusedFrameElement);

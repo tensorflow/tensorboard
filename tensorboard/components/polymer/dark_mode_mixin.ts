@@ -31,7 +31,7 @@ import {PolymerElement} from '@polymer/polymer';
 export function DarkModeMixin<T extends PolymerElement>(
   Base: new () => PolymerElement
 ): new () => T {
-  return (class Foo extends Base {
+  return class Foo extends Base {
     private observer?: MutationObserver;
 
     connectedCallback() {
@@ -58,5 +58,5 @@ export function DarkModeMixin<T extends PolymerElement>(
         document.body.classList.contains('dark-mode')
       );
     }
-  } as unknown) as new () => T;
+  } as unknown as new () => T;
 }

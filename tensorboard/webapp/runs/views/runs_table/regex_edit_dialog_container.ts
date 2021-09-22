@@ -62,9 +62,8 @@ export class RegexEditDialogContainer {
   private readonly experimentIds: string[];
   private readonly runIdToEid$: Observable<Record<string, string>>;
   private readonly allRuns$: Observable<Run[]>;
-  private readonly tentativeRegexString$: Subject<string> = new Subject<
-    string
-  >();
+  private readonly tentativeRegexString$: Subject<string> =
+    new Subject<string>();
 
   readonly groupByRegexString$: Observable<string> = defer(() => {
     return merge(

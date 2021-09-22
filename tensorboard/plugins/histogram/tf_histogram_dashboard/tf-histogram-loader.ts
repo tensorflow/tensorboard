@@ -50,7 +50,8 @@ class _TfHistogramLoader
   extends DataLoaderBehavior<RunTagItem, VzHistogram[]>(
     LegacyElementMixin(PolymerElement)
   )
-  implements TfHistogramLoader {
+  implements TfHistogramLoader
+{
   static readonly template = html`
     <tf-card-heading
       tag="[[tag]]"

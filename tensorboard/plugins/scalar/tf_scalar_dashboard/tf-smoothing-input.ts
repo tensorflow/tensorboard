@@ -120,7 +120,8 @@ class TfSmoothingInput extends PolymerElement {
   }, 250);
 
   _immediateWeightNumberForPaperSliderChanged() {
-    this._inputWeightStringForPaperInput = this._immediateWeightNumberForPaperSlider.toString();
+    this._inputWeightStringForPaperInput =
+      this._immediateWeightNumberForPaperSlider.toString();
     this._updateWeight.call(this, this._immediateWeightNumberForPaperSlider);
   }
 

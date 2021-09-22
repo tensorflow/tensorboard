@@ -37,14 +37,12 @@ export class DarkModeToggleContainer {
   readonly darkModeOverride$: Observable<DarkModeOverride> = this.store
     .select(getEnableDarkModeOverride)
     .pipe(
-      map(
-        (override: boolean | null): DarkModeOverride => {
-          if (override === null) return DarkModeOverride.DEFAULT;
-          return override
-            ? DarkModeOverride.DARK_MODE_ON
-            : DarkModeOverride.DARK_MODE_OFF;
-        }
-      )
+      map((override: boolean | null): DarkModeOverride => {
+        if (override === null) return DarkModeOverride.DEFAULT;
+        return override
+          ? DarkModeOverride.DARK_MODE_ON
+          : DarkModeOverride.DARK_MODE_OFF;
+      })
     );
 
   constructor(private readonly store: Store<CoreState & FeatureFlagState>) {}

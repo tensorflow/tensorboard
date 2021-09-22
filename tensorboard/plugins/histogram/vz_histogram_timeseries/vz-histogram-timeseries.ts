@@ -47,7 +47,8 @@ export interface VzHistogramTimeseries extends HTMLElement {
 @customElement('vz-histogram-timeseries')
 class _VzHistogramTimeseries
   extends LegacyElementMixin(DarkModeMixin(PolymerElement))
-  implements VzHistogramTimeseries {
+  implements VzHistogramTimeseries
+{
   static readonly template = html`
     <div id="tooltip"><span></span></div>
     <svg id="svg">

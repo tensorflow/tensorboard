@@ -58,7 +58,9 @@ export class WorkerChart implements Chart {
 
     this.txMessagePort = channel.port1;
 
-    const canvas = (options.container as HTMLCanvasElement).transferControlToOffscreen();
+    const canvas = (
+      options.container as HTMLCanvasElement
+    ).transferControlToOffscreen();
 
     this.workerInstance = WorkerChart.workerPool.getNext();
 

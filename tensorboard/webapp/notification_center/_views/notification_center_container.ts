@@ -38,23 +38,22 @@ const iconMap = new Map([[CategoryEnum.WHATS_NEW, 'info_outline_24px']]);
   `,
 })
 export class NotificationCenterContainer {
-  readonly notificationNotes$: Observable<
-    ViewNotificationExt[]
-  > = combineLatest([
-    this.store.select(getNotifications),
-    this.store.select(getLastReadTime),
-  ]).pipe(
-    map(([notifications, lastReadTimestampInMs]) => {
-      return notifications.map((notification) => {
-        return {
-          ...notification,
-          hasRead: notification.dateInMs < lastReadTimestampInMs,
-          icon: iconMap.get(notification.category) ?? null,
-        };
-      });
-    }),
-    shareReplay()
-  );
+  readonly notificationNotes$: Observable<ViewNotificationExt[]> =
+    combineLatest([
+      this.store.select(getNotifications),
+      this.store.select(getLastReadTime),
+    ]).pipe(
+      map(([notifications, lastReadTimestampInMs]) => {
+        return notifications.map((notification) => {
+          return {
+            ...notification,
+            hasRead: notification.dateInMs < lastReadTimestampInMs,
+            icon: iconMap.get(notification.category) ?? null,
+          };
+        });
+      }),
+      shareReplay()
+    );
 
   readonly hasUnreadMessages$ = this.notificationNotes$.pipe(
     map((notifications) => {

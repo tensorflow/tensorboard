@@ -314,14 +314,17 @@ class ProjectionsPanel extends LegacyElementMixin(PolymerElement) {
     // UMAP
     bookmark.umapIs3d = this.umapIs3d;
     // custom
-    bookmark.customSelectedSearchByMetadataOption = this.customSelectedSearchByMetadataOption;
+    bookmark.customSelectedSearchByMetadataOption =
+      this.customSelectedSearchByMetadataOption;
     if (this.customProjectionXLeftInput != null) {
       bookmark.customXLeftText = this.customProjectionXLeftInput.getValue();
-      bookmark.customXLeftRegex = this.customProjectionXLeftInput.getInRegexMode();
+      bookmark.customXLeftRegex =
+        this.customProjectionXLeftInput.getInRegexMode();
     }
     if (this.customProjectionXRightInput != null) {
       bookmark.customXRightText = this.customProjectionXRightInput.getValue();
-      bookmark.customXRightRegex = this.customProjectionXRightInput.getInRegexMode();
+      bookmark.customXRightRegex =
+        this.customProjectionXRightInput.getInRegexMode();
     }
     if (this.customProjectionYUpInput != null) {
       bookmark.customYUpText = this.customProjectionYUpInput.getValue();
@@ -329,7 +332,8 @@ class ProjectionsPanel extends LegacyElementMixin(PolymerElement) {
     }
     if (this.customProjectionYDownInput != null) {
       bookmark.customYDownText = this.customProjectionYDownInput.getValue();
-      bookmark.customYDownRegex = this.customProjectionYDownInput.getInRegexMode();
+      bookmark.customYDownRegex =
+        this.customProjectionYDownInput.getInRegexMode();
     }
     this.enablePolymerChangesTriggerReprojection();
   }
@@ -389,9 +393,8 @@ class ProjectionsPanel extends LegacyElementMixin(PolymerElement) {
       }
       return stats.name;
     });
-    this.customSelectedSearchByMetadataOption = this.searchByMetadataOptions[
-      Math.max(0, searchByMetadataIndex)
-    ];
+    this.customSelectedSearchByMetadataOption =
+      this.searchByMetadataOptions[Math.max(0, searchByMetadataIndex)];
   }
   public showTab(id: ProjectionType) {
     this.currentProjection = id;
@@ -622,16 +625,13 @@ class ProjectionsPanel extends LegacyElementMixin(PolymerElement) {
     }
   }
   private setupCustomProjectionInputFields() {
-    this.customProjectionXLeftInput = this.setupCustomProjectionInputField(
-      'xLeft'
-    );
-    this.customProjectionXRightInput = this.setupCustomProjectionInputField(
-      'xRight'
-    );
+    this.customProjectionXLeftInput =
+      this.setupCustomProjectionInputField('xLeft');
+    this.customProjectionXRightInput =
+      this.setupCustomProjectionInputField('xRight');
     this.customProjectionYUpInput = this.setupCustomProjectionInputField('yUp');
-    this.customProjectionYDownInput = this.setupCustomProjectionInputField(
-      'yDown'
-    );
+    this.customProjectionYDownInput =
+      this.setupCustomProjectionInputField('yDown');
   }
   private computeAllCentroids() {
     this.computeCentroid('xLeft');

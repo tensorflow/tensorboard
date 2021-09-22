@@ -21,10 +21,8 @@ import {
 
 @NgModule()
 export class PersistentSettingsConfigModule<State, Settings> {
-  private readonly globalSettingSelectors: SettingSelector<
-    State,
-    Settings
-  >[] = [];
+  private readonly globalSettingSelectors: SettingSelector<State, Settings>[] =
+    [];
 
   constructor(
     @Optional()

@@ -39,38 +39,36 @@ import {
 } from './runs_types';
 import {createGroupBy, groupRuns, serializeExperimentIds} from './utils';
 
-const {
-  initialState: dataInitialState,
-  reducers: dataRouteContextReducers,
-} = createRouteContextedState<RunsDataRoutefulState, RunsDataRoutelessState>(
-  {
-    runColorOverrideForGroupBy: new Map(),
-    defaultRunColorForGroupBy: new Map(),
-    groupKeyToColorString: new Map(),
-    initialGroupBy: {key: GroupByKey.RUN},
-    userSetGroupByKey: null,
-    colorGroupRegexString: '',
-    regexFilter: '',
-  },
-  {
-    runIds: {},
-    runIdToExpId: {},
-    runMetadata: {},
-    runsLoadState: {},
-    selectionState: new Map<string, Map<string, boolean>>(),
-  },
-  (state, route) => {
-    return {
-      ...state,
-      initialGroupBy: {
-        key:
-          route.routeKind === RouteKind.COMPARE_EXPERIMENT
-            ? GroupByKey.EXPERIMENT
-            : GroupByKey.RUN,
-      },
-    };
-  }
-);
+const {initialState: dataInitialState, reducers: dataRouteContextReducers} =
+  createRouteContextedState<RunsDataRoutefulState, RunsDataRoutelessState>(
+    {
+      runColorOverrideForGroupBy: new Map(),
+      defaultRunColorForGroupBy: new Map(),
+      groupKeyToColorString: new Map(),
+      initialGroupBy: {key: GroupByKey.RUN},
+      userSetGroupByKey: null,
+      colorGroupRegexString: '',
+      regexFilter: '',
+    },
+    {
+      runIds: {},
+      runIdToExpId: {},
+      runMetadata: {},
+      runsLoadState: {},
+      selectionState: new Map<string, Map<string, boolean>>(),
+    },
+    (state, route) => {
+      return {
+        ...state,
+        initialGroupBy: {
+          key:
+            route.routeKind === RouteKind.COMPARE_EXPERIMENT
+              ? GroupByKey.EXPERIMENT
+              : GroupByKey.RUN,
+        },
+      };
+    }
+  );
 
 const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
   dataInitialState,
@@ -343,19 +341,17 @@ const initialSort: RunsUiRoutefulState['sort'] = {
   key: null,
   direction: SortDirection.UNSET,
 };
-const {
-  initialState: uiInitialState,
-  reducers: uiRouteContextReducers,
-} = createRouteContextedState(
-  {
-    paginationOption: {
-      pageIndex: 0,
-      pageSize: 10,
+const {initialState: uiInitialState, reducers: uiRouteContextReducers} =
+  createRouteContextedState(
+    {
+      paginationOption: {
+        pageIndex: 0,
+        pageSize: 10,
+      },
+      sort: initialSort,
     },
-    sort: initialSort,
-  },
-  {}
-);
+    {}
+  );
 
 const uiReducer: ActionReducer<RunsUiState, Action> = createReducer(
   uiInitialState,

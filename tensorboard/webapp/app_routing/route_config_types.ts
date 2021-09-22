@@ -71,9 +71,10 @@ export interface ProgrammticRedirectionRouteDef {
    * want a trailing slash, you will need to have an empty item at the end of
    * the list. e.g., `/foo/bar/` => `['foo', 'bar', '']`.
    */
-  redirector: (
-    pathParts: string[]
-  ) => {pathParts: string[]; queryParams?: SerializableQueryParams};
+  redirector: (pathParts: string[]) => {
+    pathParts: string[];
+    queryParams?: SerializableQueryParams;
+  };
 }
 
 export type RouteDef =

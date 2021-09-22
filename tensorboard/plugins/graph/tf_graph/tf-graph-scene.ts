@@ -39,7 +39,8 @@ import {ColorBy} from '../tf_graph_common/view_types';
 @customElement('tf-graph-scene')
 class TfGraphScene2
   extends LegacyElementMixin(DarkModeMixin(PolymerElement))
-  implements TfGraphScene {
+  implements TfGraphScene
+{
   static readonly template = template;
 
   @property({type: Object})
@@ -391,9 +392,9 @@ class TfGraphScene2
     var titleStyle = mainGraphTitleElement.style;
     var auxTitleElement = this.$$('.auxTitle') as HTMLElement;
     var auxTitleStyle = auxTitleElement.style;
-    var functionLibraryTitleStyle = (this.$$(
-      '.functionLibraryTitle'
-    ) as HTMLElement).style;
+    var functionLibraryTitleStyle = (
+      this.$$('.functionLibraryTitle') as HTMLElement
+    ).style;
     const root = d3.select(this.$.svg);
     var core = root
       .select(

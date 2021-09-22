@@ -109,9 +109,7 @@ export class PersistentSettingsEffects implements OnInitEffects {
       {},
       PersistableSettings
     >,
-    private readonly dataSource: PersistentSettingsDataSource<
-      PersistableSettings
-    >
+    private readonly dataSource: PersistentSettingsDataSource<PersistableSettings>
   ) {}
 
   /** @export */

@@ -532,7 +532,8 @@ export class ScatterPlot {
       this.stopOrbitAnimation();
     }
     this.orbitCameraControls.autoRotate = true;
-    this.orbitCameraControls.rotateSpeed = ORBIT_ANIMATION_ROTATION_CYCLE_IN_SECONDS;
+    this.orbitCameraControls.rotateSpeed =
+      ORBIT_ANIMATION_ROTATION_CYCLE_IN_SECONDS;
     this.updateOrbitAnimation();
   }
   private updateOrbitAnimation() {

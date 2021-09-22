@@ -298,22 +298,24 @@ class TfGraph extends LegacyElementMixin(PolymerElement) {
         anyThis._setColorByParams({
           compute_time: getColorParamsFromScale(renderGraph.computeTimeScale),
           memory: getColorParamsFromScale(renderGraph.memoryUsageScale),
-          device: _.map(renderGraph.deviceColorMap.domain(), function (
-            deviceName
-          ) {
-            return {
-              device: deviceName,
-              color: renderGraph.deviceColorMap(deviceName),
-            };
-          }),
-          xla_cluster: _.map(renderGraph.xlaClusterColorMap.domain(), function (
-            xlaClusterName
-          ) {
-            return {
-              xla_cluster: xlaClusterName,
-              color: renderGraph.xlaClusterColorMap(xlaClusterName),
-            };
-          }),
+          device: _.map(
+            renderGraph.deviceColorMap.domain(),
+            function (deviceName) {
+              return {
+                device: deviceName,
+                color: renderGraph.deviceColorMap(deviceName),
+              };
+            }
+          ),
+          xla_cluster: _.map(
+            renderGraph.xlaClusterColorMap.domain(),
+            function (xlaClusterName) {
+              return {
+                xla_cluster: xlaClusterName,
+                color: renderGraph.xlaClusterColorMap(xlaClusterName),
+              };
+            }
+          ),
         });
 
         return renderGraph;

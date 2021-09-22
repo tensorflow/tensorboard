@@ -27,7 +27,8 @@ import {
  */
 @Injectable()
 export class TBNotificationCenterDataSource
-  implements NotificationCenterDataSource {
+  implements NotificationCenterDataSource
+{
   constructor(private readonly http: TBHttpClient) {}
 
   fetchNotifications(): Observable<NotificationCenterResponse> {

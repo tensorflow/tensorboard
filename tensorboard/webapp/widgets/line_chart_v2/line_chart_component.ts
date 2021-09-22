@@ -76,7 +76,8 @@ export interface TemplateContext {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LineChartComponent
-  implements AfterViewInit, OnInit, OnChanges, OnDestroy {
+  implements AfterViewInit, OnInit, OnChanges, OnDestroy
+{
   readonly RendererType = RendererType;
 
   @ViewChild('seriesView', {static: true, read: ElementRef})

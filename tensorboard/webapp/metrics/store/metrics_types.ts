@@ -56,10 +56,9 @@ export interface SampledPluginTagMetadata {
 
 export type TagMetadata = {
   [NSPT in NonSampledPluginType]: NonSampledPluginTagMetadata;
-} &
-  {
-    [SPT in SampledPluginType]: SampledPluginTagMetadata;
-  };
+} & {
+  [SPT in SampledPluginType]: SampledPluginTagMetadata;
+};
 
 export interface StepDatum {
   [PluginType.SCALARS]: ScalarStepDatum;
@@ -80,12 +79,10 @@ interface BaseTimeSeriesLoadable<T extends PluginType> {
   runToLoadState: RunToLoadState;
 }
 
-export type ScalarTimeSeriesLoadable = BaseTimeSeriesLoadable<
-  PluginType.SCALARS
->;
-export type HistogramTimeSeriesLoadable = BaseTimeSeriesLoadable<
-  PluginType.HISTOGRAMS
->;
+export type ScalarTimeSeriesLoadable =
+  BaseTimeSeriesLoadable<PluginType.SCALARS>;
+export type HistogramTimeSeriesLoadable =
+  BaseTimeSeriesLoadable<PluginType.HISTOGRAMS>;
 export type ImageTimeSeriesLoadable = BaseTimeSeriesLoadable<PluginType.IMAGES>;
 
 export type TimeSeriesLoadables = {

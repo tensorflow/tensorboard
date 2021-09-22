@@ -122,9 +122,8 @@ class Legend extends LegacyElementMixin(PolymerElement) {
   }
   private getOffset(value: number): string {
     const min = this.renderInfo.thresholds[0].value;
-    const max = this.renderInfo.thresholds[
-      this.renderInfo.thresholds.length - 1
-    ].value;
+    const max =
+      this.renderInfo.thresholds[this.renderInfo.thresholds.length - 1].value;
     return ((100 * (value - min)) / (max - min)).toFixed(2) + '%';
   }
   private setupLinearGradient() {

@@ -43,7 +43,6 @@ export class SourceFilesContainer {
 
   readonly focusedSourceLineSpec$ = this.store.select(getFocusedSourceLineSpec);
 
-  readonly useDarkMode$: Observable<boolean> = this.store.select(
-    getDarkModeEnabled
-  );
+  readonly useDarkMode$: Observable<boolean> =
+    this.store.select(getDarkModeEnabled);
 }

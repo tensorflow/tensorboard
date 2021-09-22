@@ -482,10 +482,8 @@ describe('Graph Container', () => {
         By.css('.slot-consumers-container')
       );
       expect(slotConsumersContainers.length).toBe(2);
-      const [
-        slotConsumersContainer0,
-        slotConsumersContainer1,
-      ] = slotConsumersContainers;
+      const [slotConsumersContainer0, slotConsumersContainer1] =
+        slotConsumersContainers;
       // 1st output slot.
       let slotConsumersHeader = slotConsumersContainer0.queryAll(
         By.css('.slot-consumers-header')

@@ -99,7 +99,8 @@ export type TooltipTemplate = TemplateRef<TooltipTemplateContext>;
   ],
 })
 export class LineChartInteractiveViewComponent
-  implements OnChanges, OnDestroy, AfterViewInit {
+  implements OnChanges, OnDestroy, AfterViewInit
+{
   @ViewChild('dots', {static: true, read: ElementRef})
   dotsContainer!: ElementRef<SVGElement>;
 

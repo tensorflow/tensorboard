@@ -34,7 +34,8 @@ import {Subject} from 'rxjs';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MetricArithmeticElementComponent
-  implements OnInit, OnDestroy, OnChanges {
+  implements OnInit, OnDestroy, OnChanges
+{
   @Input() metric!: string;
   @Input() filterValues!: {min: number; max: number};
   @Input() hasEmbeddingsData!: boolean;

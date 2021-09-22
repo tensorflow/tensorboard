@@ -33,9 +33,8 @@ const initialDataState: ExperimentsDataState = {
   experimentMap: {[defaultExperiment.id]: defaultExperiment},
 };
 
-const dataReducer: ActionReducer<ExperimentsDataState, Action> = createReducer(
-  initialDataState
-);
+const dataReducer: ActionReducer<ExperimentsDataState, Action> =
+  createReducer(initialDataState);
 
 export function reducers(state: ExperimentsState, action: Action) {
   return combineReducers({data: dataReducer})(state, action);

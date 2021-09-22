@@ -90,29 +90,14 @@ describe('line_chart_v2/lib/scale test', () => {
       it('returns ticks in between min and max', () => {
         expect(scale.ticks([0, 100], 5)).toEqual([0, 20, 40, 60, 80, 100]);
         expect(scale.ticks([300, 1000], 5)).toEqual([
-          300,
-          400,
-          500,
-          600,
-          700,
-          800,
-          900,
-          1000,
+          300, 400, 500, 600, 700, 800, 900, 1000,
         ]);
         expect(scale.ticks([0.01, 0.05], 5)).toEqual([
-          0.01,
-          0.02,
-          0.03,
-          0.04,
-          0.05,
+          0.01, 0.02, 0.03, 0.04, 0.05,
         ]);
         // Another example of sizeGuidance not being exact.
         expect(scale.ticks([0.01, 0.05], 3)).toEqual([
-          0.01,
-          0.02,
-          0.03,
-          0.04,
-          0.05,
+          0.01, 0.02, 0.03, 0.04, 0.05,
         ]);
       });
     });
@@ -253,50 +238,17 @@ describe('line_chart_v2/lib/scale test', () => {
     describe('#tick', () => {
       it('returns ticks in between min and max', () => {
         expect(scale.ticks([1, 100], 5)).toEqual([
-          1,
-          2,
-          3,
-          4,
-          5,
-          6,
-          7,
-          8,
-          9,
-          10,
-          20,
-          30,
-          40,
-          50,
-          60,
-          70,
-          80,
-          90,
-          100,
+          1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100,
         ]);
         expect(scale.ticks([300, 1000], 5)).toEqual([
-          300,
-          400,
-          500,
-          600,
-          700,
-          800,
-          900,
-          1000,
+          300, 400, 500, 600, 700, 800, 900, 1000,
         ]);
         expect(scale.ticks([0.01, 0.05], 5)).toEqual([
-          0.01,
-          0.02,
-          0.03,
-          0.04,
-          0.05,
+          0.01, 0.02, 0.03, 0.04, 0.05,
         ]);
         // Another example of sizeGuidance not being exact.
         expect(scale.ticks([0.01, 0.05], 3)).toEqual([
-          0.01,
-          0.02,
-          0.03,
-          0.04,
-          0.05,
+          0.01, 0.02, 0.03, 0.04, 0.05,
         ]);
       });
 

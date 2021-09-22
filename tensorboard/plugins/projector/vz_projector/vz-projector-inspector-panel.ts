@@ -127,10 +127,8 @@ class InspectorPanel extends LegacyElementMixin(PolymerElement) {
       spriteAndMetadata.spriteMetadata &&
       spriteAndMetadata.spriteMetadata.imagePath
     ) {
-      const [
-        spriteWidth,
-        spriteHeight,
-      ] = spriteAndMetadata.spriteMetadata.singleImageDim;
+      const [spriteWidth, spriteHeight] =
+        spriteAndMetadata.spriteMetadata.singleImageDim;
       this.spriteMeta = {
         imagePath: spriteAndMetadata.spriteImage.src,
         aspectRatio: spriteWidth / spriteHeight,
@@ -274,9 +272,10 @@ class InspectorPanel extends LegacyElementMixin(PolymerElement) {
     }
   }
   private getLabelFromIndex(pointIndex: number): string {
-    const metadata = this.projector.dataSet.points[pointIndex].metadata[
-      this.selectedMetadataField
-    ];
+    const metadata =
+      this.projector.dataSet.points[pointIndex].metadata[
+        this.selectedMetadataField
+      ];
     return metadata !== undefined ? String(metadata) : `Unknown #${pointIndex}`;
   }
   private spriteImageRenderer() {

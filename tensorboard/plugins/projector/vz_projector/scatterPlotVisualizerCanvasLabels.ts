@@ -28,7 +28,8 @@ const LABEL_FILL_WIDTH = 6;
  * active, are rendered to the 2d canvas as part of the visible render pass.
  */
 export class ScatterPlotVisualizerCanvasLabels
-  implements ScatterPlotVisualizer {
+  implements ScatterPlotVisualizer
+{
   private worldSpacePointPositions: Float32Array;
   private gc: CanvasRenderingContext2D;
   private canvas: HTMLCanvasElement;

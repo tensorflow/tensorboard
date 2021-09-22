@@ -240,9 +240,7 @@ export class RunsEffects {
     );
   }
 
-  private maybeWaitForRunsAndGetRuns(
-    experimentId: string
-  ): Observable<{
+  private maybeWaitForRunsAndGetRuns(experimentId: string): Observable<{
     fromRemote: false;
     experimentId: string;
     runs: Run[];
@@ -261,9 +259,7 @@ export class RunsEffects {
     );
   }
 
-  private fetchRunsForExperiment(
-    experimentId: string
-  ): Observable<{
+  private fetchRunsForExperiment(experimentId: string): Observable<{
     fromRemote: true;
     experimentId: string;
     runs: Run[];

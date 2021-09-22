@@ -225,7 +225,8 @@ export class AppRoutingEffects {
           oldRoute !== null &&
           getRouteId(routes.routeMatch.routeKind, routes.routeMatch.params) ===
             getRouteId(oldRoute.routeKind, oldRoute.params);
-        const dirtySelectors = this.dirtyUpdatesRegistry.getDirtyUpdatesSelectors();
+        const dirtySelectors =
+          this.dirtyUpdatesRegistry.getDirtyUpdatesSelectors();
 
         // Do not warn about dirty updates when route ID is the same (e.g. when
         // changing tabs in the same experiment page or query params in experiment
@@ -271,9 +272,8 @@ export class AppRoutingEffects {
             routeMatch.redirectionOnlyQueryParams
               ? routeMatch.redirectionOnlyQueryParams
               : this.location.getSearch();
-          const rehydratingState = routeMatch.deepLinkProvider.deserializeQueryParams(
-            queryParams
-          );
+          const rehydratingState =
+            routeMatch.deepLinkProvider.deserializeQueryParams(queryParams);
           this.store.dispatch(
             stateRehydratedFromUrl({
               routeKind: routeMatch.routeKind,

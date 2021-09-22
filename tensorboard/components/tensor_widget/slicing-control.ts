@@ -44,10 +44,8 @@ export class SlicingControl {
   // dimension.
   private dropdowns: HTMLDivElement[] = [];
   // Static divs that display brackets ("[" and "]") on the two sides.
-  private readonly bracketDivs: [
-    HTMLDivElement | null,
-    HTMLDivElement | null
-  ] = [null, null];
+  private readonly bracketDivs: [HTMLDivElement | null, HTMLDivElement | null] =
+    [null, null];
 
   private dimControlsListenerAttached: boolean[] = [];
 

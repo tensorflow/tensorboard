@@ -64,7 +64,8 @@ backend.
 @customElement('tf-audio-loader')
 class _TfAudioLoader
   extends LegacyElementMixin(PolymerElement)
-  implements TfAudioLoader {
+  implements TfAudioLoader
+{
   static readonly template = html`
     <tf-card-heading
       tag="[[tag]]"

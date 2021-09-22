@@ -276,10 +276,7 @@ export const MAX_EDGE_WIDTH = 12;
 const EDGE_WIDTH_SCALE_EXPONENT = 0.3;
 /** The domain (min and max value) for the edge width. */
 const DOMAIN_EDGE_WIDTH_SCALE = [1, 5000000];
-export const EDGE_WIDTH_SIZE_BASED_SCALE: d3.ScalePower<
-  number,
-  number
-> = d3
+export const EDGE_WIDTH_SIZE_BASED_SCALE: d3.ScalePower<number, number> = d3
   .scalePow()
   .exponent(EDGE_WIDTH_SCALE_EXPONENT)
   .domain(DOMAIN_EDGE_WIDTH_SCALE)

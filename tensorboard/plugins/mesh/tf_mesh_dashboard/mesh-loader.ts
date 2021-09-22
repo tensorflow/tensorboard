@@ -46,7 +46,8 @@ export interface TfMeshLoader extends HTMLElement {
 @customElement('tf-mesh-loader')
 class TfMeshLoaderImpl
   extends LegacyElementMixin(PolymerElement)
-  implements TfMeshLoader {
+  implements TfMeshLoader
+{
   static readonly template = html`
     <tf-card-heading color="[[_runColor]]" class="tf-mesh-loader-header">
       <template is="dom-if" if="[[_hasMultipleSamples(ofSamples)]]">

@@ -680,17 +680,13 @@ describe('Debugger effects', () => {
             0,
             numAlertsResponseForTest
           );
-          const fetchNumGraphExecutionDigests = createFetchGraphExecutionDigestsSpy(
-            runId,
-            0,
-            0,
-            {
+          const fetchNumGraphExecutionDigests =
+            createFetchGraphExecutionDigestsSpy(runId, 0, 0, {
               begin: 0,
               end: 0,
               num_digests: 0,
               graph_execution_digests: [],
-            }
-          );
+            });
           store.overrideSelector(getActivePlugin, PLUGIN_ID);
           store.overrideSelector(getDebuggerRunListing, runListingForTest);
           store.overrideSelector(getNumExecutionsLoaded, {
@@ -910,9 +906,8 @@ describe('Debugger effects', () => {
             stack_frame_ids: ['aa', 'bb'],
           });
           if (dataAlreadyExists) {
-            executionData[
-              scrollBeginIndex + displayIndexOfFocus
-            ] = executionDataOnFocus;
+            executionData[scrollBeginIndex + displayIndexOfFocus] =
+              executionDataOnFocus;
           }
           store.overrideSelector(getLoadedExecutionData, executionData);
           store.overrideSelector(

@@ -133,9 +133,9 @@ describe('Npmi Metric Search Container', () => {
           getDebugNode(optionEl) as DebugElement
       );
 
-      expect(
-        options.map((option) => option.nativeElement.textContent)
-      ).toEqual(['metric_1', 'metric_2']);
+      expect(options.map((option) => option.nativeElement.textContent)).toEqual(
+        ['metric_1', 'metric_2']
+      );
     });
 
     it('shows remaining metrics if some are already filtered for', () => {
@@ -157,9 +157,9 @@ describe('Npmi Metric Search Container', () => {
           getDebugNode(optionEl) as DebugElement
       );
 
-      expect(
-        options.map((option) => option.nativeElement.textContent)
-      ).toEqual(['metric_2']);
+      expect(options.map((option) => option.nativeElement.textContent)).toEqual(
+        ['metric_2']
+      );
     });
 
     it('renders empty when no metrics match', () => {
@@ -201,9 +201,9 @@ describe('Npmi Metric Search Container', () => {
           getDebugNode(optionEl) as DebugElement
       );
 
-      expect(
-        options.map((option) => option.nativeElement.textContent)
-      ).toEqual(['metric_1']);
+      expect(options.map((option) => option.nativeElement.textContent)).toEqual(
+        ['metric_1']
+      );
     });
 
     it('responds to input changes', () => {
@@ -226,9 +226,9 @@ describe('Npmi Metric Search Container', () => {
           getDebugNode(optionEl) as DebugElement
       );
 
-      expect(
-        options.map((option) => option.nativeElement.textContent)
-      ).toEqual(['metric_2']);
+      expect(options.map((option) => option.nativeElement.textContent)).toEqual(
+        ['metric_2']
+      );
     });
 
     it('dispatches action when selecting an option', () => {

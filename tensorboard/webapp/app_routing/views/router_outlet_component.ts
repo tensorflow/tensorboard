@@ -43,9 +43,10 @@ export class RouterOutletComponent implements OnChanges {
     if (activeComponentChange) {
       this.routeContainer.clear();
       if (activeComponentChange.currentValue) {
-        const componentFactory = this.componentFactoryResolver.resolveComponentFactory(
-          activeComponentChange.currentValue
-        );
+        const componentFactory =
+          this.componentFactoryResolver.resolveComponentFactory(
+            activeComponentChange.currentValue
+          );
         this.routeContainer.createComponent(componentFactory);
       }
     }

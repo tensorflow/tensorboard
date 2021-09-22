@@ -89,9 +89,8 @@ describe('notification center', () => {
     expect(
       notificationMenu.nativeNode.querySelector('.category-icon').textContent
     ).toBe('info_outline_24px');
-    const markdownContentComponent = notificationMenu.nativeNode.querySelector(
-      '.content'
-    );
+    const markdownContentComponent =
+      notificationMenu.nativeNode.querySelector('.content');
     expect(markdownContentComponent.markdown).toBe('test content');
   });
 

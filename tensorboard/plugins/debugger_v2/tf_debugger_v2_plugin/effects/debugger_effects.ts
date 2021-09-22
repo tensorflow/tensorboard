@@ -1122,17 +1122,14 @@ export class DebuggerEffects {
 
         const loadSourceFileList$ = this.loadSourceFileList(loadRunData$);
 
-        const onNumExecutionLoaded$ = this.createNumExecutionLoader(
-          loadRunData$
-        );
-        const onNumAlertsLoaded$ = this.createNumAlertsAndBreakdownLoader(
-          loadRunData$
-        );
+        const onNumExecutionLoaded$ =
+          this.createNumExecutionLoader(loadRunData$);
+        const onNumAlertsLoaded$ =
+          this.createNumAlertsAndBreakdownLoader(loadRunData$);
 
         const onAlertTypeFocused$ = this.onAlertTypeFocused();
-        const fetchExecutionDigestsForAlertTypeFocus$ = this.fetchExecutionDigestsForAlertTypeFocus(
-          onAlertTypeFocused$
-        );
+        const fetchExecutionDigestsForAlertTypeFocus$ =
+          this.fetchExecutionDigestsForAlertTypeFocus(onAlertTypeFocused$);
 
         // This event can trigger the loading of
         //   - execution-digest
@@ -1148,28 +1145,28 @@ export class DebuggerEffects {
             fetchExecutionDigestsForAlertTypeFocus$
           )
         );
-        const onExecutionDataLoaded$ = this.createExecutionDataAndStackFramesLoader(
-          merge(
-            this.onExecutionDigestFocused(),
-            onInitialExecution$.pipe(
-              withLatestFrom(
-                this.store.select(getActiveRunId),
-                this.store.select(getLoadedExecutionData)
-              ),
-              map(([, activeRunId, loadedExecutionData]) => {
-                return {
-                  activeRunId: activeRunId!,
-                  loadedExecutionData,
-                  focusIndex: 0,
-                };
-              })
+        const onExecutionDataLoaded$ =
+          this.createExecutionDataAndStackFramesLoader(
+            merge(
+              this.onExecutionDigestFocused(),
+              onInitialExecution$.pipe(
+                withLatestFrom(
+                  this.store.select(getActiveRunId),
+                  this.store.select(getLoadedExecutionData)
+                ),
+                map(([, activeRunId, loadedExecutionData]) => {
+                  return {
+                    activeRunId: activeRunId!,
+                    loadedExecutionData,
+                    focusIndex: 0,
+                  };
+                })
+              )
             )
-          )
-        );
+          );
 
-        const onNumGraphExecutionLoaded$ = this.createNumGraphExecutionLoader(
-          loadRunData$
-        );
+        const onNumGraphExecutionLoaded$ =
+          this.createNumGraphExecutionLoader(loadRunData$);
 
         const onSourceFileFocused$ = this.onSourceFileFocused();
 

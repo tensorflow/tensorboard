@@ -64,30 +64,24 @@ const initialState: NpmiState = {
 
 const reducer = createReducer(
   initialState,
-  on(
-    actions.npmiPluginDataRequested,
-    (state: NpmiState): NpmiState => {
-      return {
-        ...state,
-        pluginDataLoaded: {
-          ...state.pluginDataLoaded,
-          state: DataLoadState.LOADING,
-        },
-      };
-    }
-  ),
-  on(
-    actions.npmiPluginDataRequestFailed,
-    (state: NpmiState): NpmiState => {
-      return {
-        ...state,
-        pluginDataLoaded: {
-          ...state.pluginDataLoaded,
-          state: DataLoadState.FAILED,
-        },
-      };
-    }
-  ),
+  on(actions.npmiPluginDataRequested, (state: NpmiState): NpmiState => {
+    return {
+      ...state,
+      pluginDataLoaded: {
+        ...state.pluginDataLoaded,
+        state: DataLoadState.LOADING,
+      },
+    };
+  }),
+  on(actions.npmiPluginDataRequestFailed, (state: NpmiState): NpmiState => {
+    return {
+      ...state,
+      pluginDataLoaded: {
+        ...state.pluginDataLoaded,
+        state: DataLoadState.FAILED,
+      },
+    };
+  }),
   on(
     actions.npmiPluginDataLoaded,
     (
@@ -146,15 +140,12 @@ const reducer = createReducer(
       };
     }
   ),
-  on(
-    actions.npmiClearSelectedAnnotations,
-    (state: NpmiState): NpmiState => {
-      return {
-        ...state,
-        selectedAnnotations: [],
-      };
-    }
-  ),
+  on(actions.npmiClearSelectedAnnotations, (state: NpmiState): NpmiState => {
+    return {
+      ...state,
+      selectedAnnotations: [],
+    };
+  }),
   on(
     actions.npmiToggleAnnotationFlags,
     (state: NpmiState, {annotations}): NpmiState => {
@@ -213,40 +204,37 @@ const reducer = createReducer(
       };
     }
   ),
-  on(
-    actions.npmiAddMetricFilter,
-    (state: NpmiState, {metric}): NpmiState => {
-      // Only add if not already in active filters
-      if (state.metricFilters[metric]) {
-        return state;
-      }
-      // Add so that arithmetic is still correct
-      const newContent: ArithmeticElement[] = [];
-      if (state.metricArithmetic.length !== 0) {
-        newContent.push({
-          kind: ArithmeticKind.OPERATOR,
-          operator: Operator.AND,
-        });
-      }
-      newContent.push({kind: ArithmeticKind.METRIC, metric: metric});
-      return {
-        ...state,
-        metricArithmetic: [...state.metricArithmetic, ...newContent],
-        metricFilters: {
-          ...state.metricFilters,
-          [metric]: {
-            max: 1.0,
-            min: -1.0,
-            includeNaN: false,
-          },
-        },
-        sort: {
-          metric,
-          order: SortOrder.DESCENDING,
-        },
-      };
+  on(actions.npmiAddMetricFilter, (state: NpmiState, {metric}): NpmiState => {
+    // Only add if not already in active filters
+    if (state.metricFilters[metric]) {
+      return state;
     }
-  ),
+    // Add so that arithmetic is still correct
+    const newContent: ArithmeticElement[] = [];
+    if (state.metricArithmetic.length !== 0) {
+      newContent.push({
+        kind: ArithmeticKind.OPERATOR,
+        operator: Operator.AND,
+      });
+    }
+    newContent.push({kind: ArithmeticKind.METRIC, metric: metric});
+    return {
+      ...state,
+      metricArithmetic: [...state.metricArithmetic, ...newContent],
+      metricFilters: {
+        ...state.metricFilters,
+        [metric]: {
+          max: 1.0,
+          min: -1.0,
+          includeNaN: false,
+        },
+      },
+      sort: {
+        metric,
+        order: SortOrder.DESCENDING,
+      },
+    };
+  }),
   on(
     actions.npmiRemoveMetricFilter,
     (state: NpmiState, {metric}): NpmiState => {
@@ -346,33 +334,24 @@ const reducer = createReducer(
       };
     }
   ),
-  on(
-    actions.npmiToggleAnnotationsExpanded,
-    (state: NpmiState): NpmiState => {
-      return {
-        ...state,
-        annotationsExpanded: !state.annotationsExpanded,
-      };
-    }
-  ),
-  on(
-    actions.npmiToggleSidebarExpanded,
-    (state: NpmiState): NpmiState => {
-      return {
-        ...state,
-        sidebarExpanded: !state.sidebarExpanded,
-      };
-    }
-  ),
-  on(
-    actions.npmiShowCountsToggled,
-    (state: NpmiState): NpmiState => {
-      return {
-        ...state,
-        showCounts: !state.showCounts,
-      };
-    }
-  ),
+  on(actions.npmiToggleAnnotationsExpanded, (state: NpmiState): NpmiState => {
+    return {
+      ...state,
+      annotationsExpanded: !state.annotationsExpanded,
+    };
+  }),
+  on(actions.npmiToggleSidebarExpanded, (state: NpmiState): NpmiState => {
+    return {
+      ...state,
+      sidebarExpanded: !state.sidebarExpanded,
+    };
+  }),
+  on(actions.npmiShowCountsToggled, (state: NpmiState): NpmiState => {
+    return {
+      ...state,
+      showCounts: !state.showCounts,
+    };
+  }),
   on(
     actions.npmiShowHiddenAnnotationsToggled,
     (state: NpmiState): NpmiState => {
