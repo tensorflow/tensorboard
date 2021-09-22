@@ -15,7 +15,7 @@
 """Classes and functions for handling the GetExperiment API call."""
 
 
-from tensorboard.plugins.hparams import error
+import logging
 
 
 class Handler(object):
@@ -48,7 +48,7 @@ class Handler(object):
             ),
         )
         if experiment is None:
-            raise error.HParamsError(
+            logging.info(
                 "Can't find an HParams-plugin experiment data in"
                 " the log directory. Note that it takes some time to"
                 " scan the log directory; if you just started"
