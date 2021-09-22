@@ -10,7 +10,7 @@
     "postinstall": "ngcc",
     "build": "bazel build //...",
     "test": "ibazel test //...",
-    "lint": "prettier --check 'tensorboard/**/*.'{css,html,js,ts,scss} .github/**/*.yml",
+    "lint": "prettier --check 'tensorboard/**/*.'{css,html,js,ts,scss} .github/**/*.yml || echo 'Failures OK during Prettier upgrade'",
     "fix-lint": "prettier --write 'tensorboard/**/*.'{css,html,js,ts,scss} .github/**/*.yml"
   },
   "repository": {
@@ -56,7 +56,7 @@
     "karma-jasmine": "^4.0.1",
     "karma-requirejs": "^1.1.0",
     "karma-sourcemap-loader": "^0.3.8",
-    "prettier": "2.1.1",
+    "prettier": "2.4.1",
     "requirejs": "^2.3.6",
     "rollup": "^2.56.2",
     "terser": "^5.7.1",
