@@ -121,10 +121,7 @@ describe('card grid', () => {
       .map((nextDebugElements) => {
         return nextDebugElements.nativeElement!;
       });
-    const [
-      topPreviousButtons,
-      bottomPreviousButtons,
-    ] = fixture.debugElement
+    const [topPreviousButtons, bottomPreviousButtons] = fixture.debugElement
       .queryAll(By.css('.prev'))
       .map((nextDebugElements) => {
         return nextDebugElements.nativeElement!;
