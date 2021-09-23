@@ -23,7 +23,6 @@ import {
 import {PluginType} from '../../data_source';
 import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
-import {CardObserver} from '../card_renderer/card_lazy_loader';
 
 import {CardGridComponent} from './card_grid_component';
 import {CardGridContainer} from './card_grid_container';
