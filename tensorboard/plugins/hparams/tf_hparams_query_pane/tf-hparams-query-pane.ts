@@ -534,13 +534,8 @@ class TfHparamsQueryPane extends LegacyElementMixin(PolymerElement) {
           return;
         }
         this.set('_experiment', experiment);
-        if (!this._experiment) {
-          this.set('_hparams', []);
-          this.set('_metrics', []);
-        } else {
-          this._computeHParams();
-          this._computeMetrics();
-        }
+        this._computeHParams();
+        this._computeMetrics();
         this._queryServer();
         this._resolveGetExperiment();
       })

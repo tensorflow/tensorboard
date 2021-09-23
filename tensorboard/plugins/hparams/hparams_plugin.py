@@ -95,10 +95,6 @@ class HParamsPlugin(base_plugin.TBPlugin):
             experiment = get_experiment.Handler(
                 ctx, self._context, experiment_id
             ).run()
-            if not experiment:
-                return http_util.Respond(
-                    request, "Experiment not found", "text/plain", 204
-                )
             body, mime_type = download_data.Handler(
                 self._context,
                 experiment,
