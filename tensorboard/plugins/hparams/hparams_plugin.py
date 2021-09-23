@@ -96,8 +96,8 @@ class HParamsPlugin(base_plugin.TBPlugin):
                 ctx, self._context, experiment_id
             ).run()
             if not experiment:
-                return http_util.Respond(
-                    request, "Experiment not found", "text/plain", 204
+                raise werkzeug.exceptions.BadRequest(
+                    description="Experiment not found."
                 )
             body, mime_type = download_data.Handler(
                 self._context,
@@ -121,12 +121,17 @@ class HParamsPlugin(base_plugin.TBPlugin):
             # we must advance the input stream to skip them -- otherwise the next HTTP
             # request will be parsed incorrectly.
             _ = _parse_request_argument(request, api_pb2.GetExperimentRequest)
+            experiment = get_experiment.Handler(
+                ctx, self._context, experiment_id
+            ).run()
+            if not experiment:
+                raise werkzeug.exceptions.BadRequest(
+                    description="Experiment not found."
+                )
             return http_util.Respond(
                 request,
                 json_format.MessageToJson(
-                    get_experiment.Handler(
-                        ctx, self._context, experiment_id
-                    ).run(),
+                    experiment,
                     including_default_value_fields=True,
                 ),
                 "application/json",

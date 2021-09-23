@@ -37,7 +37,7 @@ class Handler(object):
         """Handles the request specified on construction.
 
         Returns:
-          An Experiment object.
+          An Experiment object, or None if no experiment is found.
         """
         experiment_id = self._experiment_id
         experiment = self._backend_context.experiment_from_metadata(
