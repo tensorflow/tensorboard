@@ -12,11 +12,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {CdkScrollable} from '@angular/cdk/scrolling';
 import {
   ChangeDetectionStrategy,
   Component,
   EventEmitter,
   Input,
+  Optional,
   Output,
 } from '@angular/core';
 
@@ -46,12 +48,39 @@ export class CardGridComponent {
   @Output() pageIndexChanged = new EventEmitter<number>();
   @Output() groupExpansionToggled = new EventEmitter<void>();
 
-  showExpand(isBottomControl: boolean) {
+  constructor(
+    @Optional() private readonly cdkScrollable: CdkScrollable | null
+  ) {}
+
+  showExpand(isBottomControl: boolean): boolean {
     return isBottomControl ? this.isGroupExpandable : false;
   }
 
   showPaginationInput(isBottomControl: boolean) {
     return isBottomControl;
+  }
+
+  handlePageChange(pageIndex: number, target: HTMLElement) {
+    // Clear call stack to allow dom update before updating scroll to keep
+    // relative position.
+    const topBeforeChange = target.getBoundingClientRect().top;
+    setTimeout(() => {
+      this.scrollToKeepTargetPosition(target, topBeforeChange);
+    }, 0);
+
+    this.pageIndexChanged.emit(pageIndex);
+  }
+
+  scrollToKeepTargetPosition(target: HTMLElement, previousTop: number) {
+    const scrollingElement = this.cdkScrollable?.getElementRef().nativeElement;
+    if (scrollingElement) {
+      scrollingElement.scrollTo(
+        0,
+        target.getBoundingClientRect().top -
+          previousTop +
+          scrollingElement.scrollTop
+      );
+    }
   }
 
   trackByCards(index: number, cardIdWithMetadata: CardIdWithMetadata) {
@@ -78,6 +107,6 @@ export class CardGridComponent {
       input.value = String(nextValue + 1);
     }
 
-    this.pageIndexChanged.emit(nextValue);
+    this.handlePageChange(nextValue, input);
   }
 }
