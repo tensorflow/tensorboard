@@ -129,9 +129,9 @@ tf_ts_library(
     name = "main_view_tests",
     testonly = True,
     srcs = [
+        "card_grid_test.ts",
         "filter_input_test.ts",
         "main_view_test.ts",
-        "card_grid_test.ts",
     ],
     deps = [
         ":main_view",
@@ -148,8 +148,8 @@ tf_ts_library(
         "//tensorboard/webapp/metrics/actions",
         "//tensorboard/webapp/metrics/data_source",
         "//tensorboard/webapp/metrics/store",
-        "//tensorboard/webapp/metrics/views/card_renderer",
         "//tensorboard/webapp/metrics/views:types",
+        "//tensorboard/webapp/metrics/views/card_renderer",
         "//tensorboard/webapp/settings",
         "//tensorboard/webapp/testing:dom",
         "//tensorboard/webapp/testing:mat_icon",
