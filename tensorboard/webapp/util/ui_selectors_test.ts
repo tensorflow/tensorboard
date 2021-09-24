@@ -219,7 +219,7 @@ describe('ui_selectors test', () => {
                 '234/run2': buildRun({id: '234/run2', name: 'run2'}),
                 '234/run3': buildRun({id: '234/run3', name: 'run3'}),
               },
-              regexFilter: '^(apple/..3|r.n[1])',
+              regexFilter: '^(apple/r..3|r.n[1])',
             })
           ),
           ...buildStateFromExperimentsState(
@@ -234,10 +234,17 @@ describe('ui_selectors test', () => {
 
         expect(getCurrentRouteRunSelection(state)).toEqual(
           new Map([
+            // Inherits false from `selectionState`.
             ['123/run1', false],
+            // legacy name = "apple/run2" and does not match `r.n[1]` and
+            // `apple/r..3`.
             ['123/run2', false],
+            // legacy name = "banana/run1". Inherits true + matches `r.n[1]`.
             ['234/run1', true],
+            // legacy name = "banana/run2". Does not match `r.n[1]` and
+            // `apple/r..3`.
             ['234/run2', false],
+            // Inherits false from `selectionState`.
             ['234/run3', false],
           ])
         );

@@ -16,15 +16,26 @@ limitations under the License.
  * @fileoverview Helps matching runs.
  */
 
-import {Run} from '../runs/types';
-
-export interface RunWithExperimentName extends Run {
+export interface RunMatchable {
+  runName: string;
   experimentName: string;
   experimentAlias: string;
 }
 
+/**
+ * Matches an entry based on regex and business logic.
+ *
+ * - An empty regex string always returns true.
+ * - Invalid regex always return false.
+ * - Regex matches are case insensitive.
+ * - Regex matches are not anchored.
+ * - Matches name of a run.
+ * - When `shouldMatchExperiment` is specified, it matches against experiment
+ *   name, experiment alias, and legacy run name which is generated with
+ *   "<exp alias>/<run name>".
+ */
 export function matchRunToRegex(
-  runWithName: RunWithExperimentName,
+  runMatchable: RunMatchable,
   regexString: string,
   shouldMatchExperiment: boolean
 ): boolean {
@@ -37,12 +48,12 @@ export function matchRunToRegex(
     return false;
   }
 
-  const matchables = [runWithName.name];
+  const matchables = [runMatchable.runName];
   if (shouldMatchExperiment) {
     matchables.push(
-      runWithName.experimentName,
-      runWithName.experimentAlias,
-      `${runWithName.experimentAlias}/${runWithName.name}`
+      runMatchable.experimentName,
+      runMatchable.experimentAlias,
+      `${runMatchable.experimentAlias}/${runMatchable.runName}`
     );
   }
   return matchables.some((matchable) => regex!.test(matchable));

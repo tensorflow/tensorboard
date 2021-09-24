@@ -13,14 +13,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {buildRun} from '../runs/store/testing';
-import {matchRunToRegex, RunWithExperimentName} from './matcher';
+import {matchRunToRegex, RunMatchable} from './matcher';
 
-function buildRunWithName(
-  override: Partial<RunWithExperimentName> = {}
-): RunWithExperimentName {
+function buildRunWithName(override: Partial<RunMatchable> = {}): RunMatchable {
   return {
-    ...buildRun(),
+    runName: 'run name',
     experimentAlias: 'alias',
     experimentName: 'Experiment name',
     ...override,
@@ -31,7 +28,7 @@ describe('matcher test', () => {
   describe('#matchRunToRegex', () => {
     it('matches against name of a run against regex', () => {
       const actual = matchRunToRegex(
-        buildRunWithName({name: 'faaaaro'}),
+        buildRunWithName({runName: 'faaaaro'}),
         '^f[a]+r',
         false
       );
@@ -40,7 +37,7 @@ describe('matcher test', () => {
 
     it('matches name with any casing', () => {
       const actual = matchRunToRegex(
-        buildRunWithName({name: 'faaaar'}),
+        buildRunWithName({runName: 'faaaar'}),
         'faAA+r',
         false
       );
@@ -51,15 +48,15 @@ describe('matcher test', () => {
       it('matches against experimentName when flag is on', () => {
         expect(
           matchRunToRegex(
-            buildRunWithName({name: 'faaaaro', experimentName: 'hello^^'}),
-            '\\^\\^$',
+            buildRunWithName({runName: 'faaaaro', experimentName: 'hello'}),
+            'lo$',
             true
           )
         ).toBe(true);
         expect(
           matchRunToRegex(
-            buildRunWithName({name: 'faaaaro', experimentName: 'hello^^'}),
-            '\\^\\^$',
+            buildRunWithName({runName: 'faaaaro', experimentName: 'hello'}),
+            'lo$',
             false
           )
         ).toBe(false);
@@ -68,14 +65,20 @@ describe('matcher test', () => {
       it('matches against experimentAlias when flag is on', () => {
         expect(
           matchRunToRegex(
-            buildRunWithName({name: 'faaaaro', experimentAlias: 'aliasName'}),
+            buildRunWithName({
+              runName: 'faaaaro',
+              experimentAlias: 'aliasName',
+            }),
             '^aliasName$',
             true
           )
         ).toBe(true);
         expect(
           matchRunToRegex(
-            buildRunWithName({name: 'faaaaro', experimentAlias: 'aliasName'}),
+            buildRunWithName({
+              runName: 'faaaaro',
+              experimentAlias: 'aliasName',
+            }),
             '^aliasName$',
             false
           )
@@ -86,7 +89,7 @@ describe('matcher test', () => {
         expect(
           matchRunToRegex(
             buildRunWithName({
-              name: 'world',
+              runName: 'world',
               experimentAlias: 'hello',
               experimentName: 'goodbye',
             }),
@@ -97,7 +100,7 @@ describe('matcher test', () => {
         expect(
           matchRunToRegex(
             buildRunWithName({
-              name: 'world',
+              runName: 'world',
               experimentAlias: 'hello',
               experimentName: 'goodbye',
             }),
@@ -112,10 +115,10 @@ describe('matcher test', () => {
       expect(matchRunToRegex(buildRunWithName(), '', false)).toBe(true);
     });
 
-    it('returns false when a regex string is invaid regex', () => {
-      expect(matchRunToRegex(buildRunWithName({name: '*'}), '*', false)).toBe(
-        false
-      );
+    it('returns false when a regex string is invalid regex', () => {
+      expect(
+        matchRunToRegex(buildRunWithName({runName: '*'}), '*', false)
+      ).toBe(false);
     });
   });
 });

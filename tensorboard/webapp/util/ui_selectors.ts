@@ -44,7 +44,7 @@ import {
 } from '../runs/store/runs_selectors';
 import {Run} from '../runs/types';
 import {CHART_COLOR_PALLETE, NON_MATCHED_COLOR} from './colors';
-import {matchRunToRegex} from './matcher';
+import {matchRunToRegex, RunMatchable} from './matcher';
 
 interface RunAndNames extends Run {
   experimentAlias: string;
@@ -62,36 +62,37 @@ export const getCurrentRouteRunSelection = createSelector(
     return experimentIds ? getRunSelectionMap(state, {experimentIds}) : null;
   },
   getRunSelectorRegexFilter,
-  (state: State): Map<string, RunAndNames> => {
+  (state: State): Map<string, RunMatchable> => {
     const experimentIds = getExperimentIdsFromRoute(state) ?? [];
     const aliasMap = getExperimentIdToAliasMap(state);
 
-    const runAndNameMap = new Map<string, RunAndNames>();
+    const runMatchableMap = new Map<string, RunMatchable>();
     for (const experimentId of experimentIds) {
       const experiment = getExperiment(state, {experimentId});
       if (!experiment) continue;
       const runs = getRuns(state, {experimentId});
       for (const run of runs) {
-        runAndNameMap.set(run.id, {
-          ...run,
+        runMatchableMap.set(run.id, {
+          runName: run.name,
           experimentName: experiment.name,
           experimentAlias: aliasMap[experimentId],
         });
       }
     }
-    return runAndNameMap;
+    return runMatchableMap;
   },
   getRouteKind,
-  (runSelection, regexFilter, runAndNameMap, routeKind) => {
+  (runSelection, regexFilter, runMatchableMap, routeKind) => {
     if (!runSelection) return null;
     const includeExperimentInfo = routeKind === RouteKind.COMPARE_EXPERIMENT;
     const filteredSelection = new Map<string, boolean>();
 
     for (const [runId, value] of runSelection.entries()) {
-      const runAndName = runAndNameMap.get(runId)!;
+      const runMatchable = runMatchableMap.get(runId)!;
       filteredSelection.set(
         runId,
-        matchRunToRegex(runAndName, regexFilter, includeExperimentInfo) && value
+        matchRunToRegex(runMatchable, regexFilter, includeExperimentInfo) &&
+          value
       );
     }
     return filteredSelection;

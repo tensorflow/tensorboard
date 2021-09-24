@@ -445,7 +445,11 @@ export class RunsTableContainer implements OnInit, OnDestroy {
         );
         return items.filter((item) => {
           return matchRunToRegex(
-            {...item.run, ...item},
+            {
+              runName: item.run.name,
+              experimentAlias: item.experimentAlias,
+              experimentName: item.experimentName,
+            },
             regexString,
             shouldIncludeExperimentName
           );
