@@ -43,7 +43,8 @@ export class PinnedViewContainer {
     DeepReadonly<CardIdWithMetadata[]>
   > = this.store.select(getPinnedCardsWithMetadata).pipe(startWith([]));
 
-  readonly newCardPinnedIds$: Observable<number[]> = this.store
+  // An opaque id that changes in value when new cards are pinned.
+  readonly newCardPinnedIds$: Observable<[number]> = this.store
     .select(getPinnedCardsWithMetadata)
     .pipe(
       // Ignore the first pinned card values which is empty, `[]`, in the store.
@@ -69,6 +70,6 @@ export class PinnedViewContainer {
         return [after];
       }),
       filter((value) => value !== null),
-      map((val) => val as number[])
+      map((val) => [val![0]] as [number])
     );
 }
