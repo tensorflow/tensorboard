@@ -138,6 +138,7 @@ tf_ts_library(
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp:selectors",
         "//tensorboard/webapp/angular:expect_angular_cdk_overlay",
+        "//tensorboard/webapp/angular:expect_angular_cdk_scrolling",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/angular:expect_angular_material_autocomplete",
         "//tensorboard/webapp/angular:expect_angular_material_button",
