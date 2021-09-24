@@ -193,21 +193,17 @@ export const getRunSelectorSort = createSelector(
   }
 );
 
-/**
- * Returns Observable that emits map of run id to run color (hex).
- */
-export const getRunColorMap = createSelector(
+export const getRunColorOverride = createSelector(
   getDataState,
-  (state: RunsDataState): Record<string, string> => {
-    const map = new Map([
-      ...state.defaultRunColorForGroupBy,
-      ...state.runColorOverrideForGroupBy,
-    ]);
-    const colorObject: Record<string, string> = {};
-    map.forEach((value, key) => {
-      colorObject[key] = value;
-    });
-    return colorObject;
+  (state: RunsDataState): Map<string, string> => {
+    return state.runColorOverrideForGroupBy;
+  }
+);
+
+export const getDefaultRunColorIdMap = createSelector(
+  getDataState,
+  (state: RunsDataState): Map<string, number> => {
+    return state.defaultRunColorIdForGroupBy;
   }
 );
 

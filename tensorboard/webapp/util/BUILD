@@ -60,6 +60,7 @@ tf_ts_library(
         "ui_selectors.ts",
     ],
     deps = [
+        ":colors",
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp/app_routing/store",
         "//tensorboard/webapp/runs/store:selectors",

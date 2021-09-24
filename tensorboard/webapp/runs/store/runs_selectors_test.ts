@@ -349,13 +349,13 @@ describe('runs_selectors', () => {
     });
   });
 
-  describe('#getRunColorMap', () => {
+  describe('#getRunColorOverride', () => {
     beforeEach(() => {
       // Clear the memoization.
-      selectors.getRunColorMap.release();
+      selectors.getRunColorOverride.release();
     });
 
-    it('returns color map by runs', () => {
+    it('returns override map', () => {
       const state = buildStateFromRunsState(
         buildRunsState({
           runColorOverrideForGroupBy: new Map([
@@ -365,34 +365,38 @@ describe('runs_selectors', () => {
         })
       );
 
-      expect(selectors.getRunColorMap(state)).toEqual({
-        foo: '#aaa',
-        bar: '#bbb',
-      });
+      expect(selectors.getRunColorOverride(state)).toEqual(
+        new Map([
+          ['foo', '#aaa'],
+          ['bar', '#bbb'],
+        ])
+      );
+    });
+  });
+
+  describe('#getDefaultRunColorIdMap', () => {
+    beforeEach(() => {
+      // Clear the memoization.
+      selectors.getDefaultRunColorIdMap.release();
     });
 
-    it(
-      'combines override with the default colors where override takes ' +
-        'precedence',
-      () => {
-        const state = buildStateFromRunsState(
-          buildRunsState({
-            runColorOverrideForGroupBy: new Map([['foo', '#aaa']]),
-            defaultRunColorForGroupBy: new Map([
-              ['foo', '#000'],
-              ['bar', '#bbb'],
-            ]),
-          })
-        );
+    it('returns override map', () => {
+      const state = buildStateFromRunsState(
+        buildRunsState({
+          defaultRunColorIdForGroupBy: new Map([
+            ['foo', 1],
+            ['bar', 2],
+          ]),
+        })
+      );
 
-        expect(selectors.getRunColorMap(state)).toEqual({
-          // "#aaa" comes from the override for `foo`.
-          foo: '#aaa',
-          // "#bbb" is un-overridden default color of `bar`.
-          bar: '#bbb',
-        });
-      }
-    );
+      expect(selectors.getDefaultRunColorIdMap(state)).toEqual(
+        new Map([
+          ['foo', 1],
+          ['bar', 2],
+        ])
+      );
+    });
   });
 
   describe('#getRunUserSetGroupBy', () => {

@@ -29,7 +29,10 @@ import {createSelector} from '@ngrx/store';
 
 import {getExperimentIdsFromRoute} from '../app_routing/store/app_routing_selectors';
 import {State} from '../app_state';
+import {CHART_COLOR_PALLETE, NON_MATCHED_COLOR} from './colors';
 import {
+  getDefaultRunColorIdMap,
+  getRunColorOverride,
   getRunSelectionMap,
   getRunSelectorRegexFilter,
 } from '../runs/store/runs_selectors';
@@ -66,5 +69,28 @@ export const getCurrentRouteRunSelection = createSelector(
       filteredSelection.set(key, regexExp.test(key) && value);
     }
     return filteredSelection;
+  }
+);
+
+/**
+ * Returns Observable that emits map of run id to run color (hex) from
+ * current color palettes.
+ */
+export const getRunColorMap = createSelector(
+  getDefaultRunColorIdMap,
+  getRunColorOverride,
+  (defaultRunColorId, colorOverride): Record<string, string> => {
+    const colorObject: Record<string, string> = {};
+    defaultRunColorId.forEach((colorId, runId) => {
+      let colorHexValue = NON_MATCHED_COLOR;
+      if (colorOverride.has(runId)) {
+        colorHexValue = colorOverride.get(runId)!;
+      } else if (colorId >= 0) {
+        colorHexValue =
+          CHART_COLOR_PALLETE[colorId % CHART_COLOR_PALLETE.length];
+      }
+      colorObject[runId] = colorHexValue;
+    });
+    return colorObject;
   }
 );

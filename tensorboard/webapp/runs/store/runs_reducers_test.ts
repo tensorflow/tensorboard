@@ -18,7 +18,6 @@ import {RouteKind} from '../../app_routing/types';
 import {deepFreeze} from '../../testing/lang';
 import {DataLoadState} from '../../types/data';
 import {SortDirection} from '../../types/ui';
-import * as colorUtils from '../../util/colors';
 import * as actions from '../actions';
 import {buildHparamsAndMetadata} from '../data_source/testing';
 import {GroupByKey, SortType, URLDeserializedState} from '../types';
@@ -192,19 +191,19 @@ describe('runs_reducers', () => {
       });
     });
 
-    it('assigns default color to new runs', () => {
+    it('assigns default color id to new runs by incrementing', () => {
       const state = buildRunsState({
         initialGroupBy: {key: GroupByKey.RUN},
-        defaultRunColorForGroupBy: new Map([
-          ['foo', '#aaa'],
-          ['bar', '#bbb'],
+        defaultRunColorIdForGroupBy: new Map([
+          ['foo', 0],
+          ['bar', 1],
         ]),
-        groupKeyToColorString: new Map([
-          ['foo', '#aaa'],
-          ['bar', '#bbb'],
-          ['1', '#ccc'],
-          ['2', '#ddd'],
-          ['3', '#eee'],
+        groupKeyToColorId: new Map([
+          ['foo', 0],
+          ['bar', 1],
+          ['1', 2],
+          ['2', 3],
+          ['3', 4],
         ]),
       });
       const action = actions.fetchRunsSucceeded({
@@ -236,16 +235,32 @@ describe('runs_reducers', () => {
 
       const nextState = runsReducers.reducers(state, action);
 
-      expect(nextState.data.defaultRunColorForGroupBy).toEqual(
+      expect(nextState.data.defaultRunColorIdForGroupBy).toEqual(
         new Map([
-          ['foo', '#aaa'],
-          ['bar', '#bbb'],
-          ['baz', colorUtils.CHART_COLOR_PALLETE[5]],
-          ['qaz', colorUtils.CHART_COLOR_PALLETE[6]],
-          ['alpha', colorUtils.CHART_COLOR_PALLETE[0]],
-          ['beta', colorUtils.CHART_COLOR_PALLETE[1]],
-          ['gamma', colorUtils.CHART_COLOR_PALLETE[2]],
-          ['lambda', colorUtils.CHART_COLOR_PALLETE[3]],
+          ['foo', 0],
+          ['bar', 1],
+          ['baz', 5],
+          ['qaz', 6],
+          ['alpha', 7],
+          ['beta', 8],
+          ['gamma', 9],
+          ['lambda', 10],
+        ])
+      );
+
+      expect(nextState.data.groupKeyToColorId).toEqual(
+        new Map([
+          ['foo', 0],
+          ['bar', 1],
+          ['1', 2],
+          ['2', 3],
+          ['3', 4],
+          ['baz', 5],
+          ['qaz', 6],
+          ['alpha', 7],
+          ['beta', 8],
+          ['gamma', 9],
+          ['lambda', 10],
         ])
       );
     });
@@ -255,13 +270,13 @@ describe('runs_reducers', () => {
         const state = buildRunsState({
           initialGroupBy: {key: GroupByKey.RUN},
           userSetGroupByKey: GroupByKey.EXPERIMENT,
-          defaultRunColorForGroupBy: new Map([
-            ['foo', '#aaa'],
+          defaultRunColorIdForGroupBy: new Map([
+            ['foo', 0],
             // `bar` is not present in neither experiment for `runsForAllExperiments` below;
             // pretend like there is a data inconsistency.
-            ['bar', '#aaa'],
+            ['bar', 0],
           ]),
-          groupKeyToColorString: new Map([['eid1', '#aaa']]),
+          groupKeyToColorId: new Map([['eid1', 0]]),
         });
         const action = actions.fetchRunsSucceeded({
           experimentIds: ['eid1', 'eid2'],
@@ -298,16 +313,16 @@ describe('runs_reducers', () => {
 
         const nextState = runsReducers.reducers(state, action);
 
-        expect(nextState.data.defaultRunColorForGroupBy).toEqual(
+        expect(nextState.data.defaultRunColorIdForGroupBy).toEqual(
           new Map([
-            ['foo', '#aaa'],
-            ['bar', '#aaa'],
-            ['baz', '#aaa'],
-            ['qaz', '#aaa'],
-            ['alpha', colorUtils.CHART_COLOR_PALLETE[1]],
-            ['beta', colorUtils.CHART_COLOR_PALLETE[1]],
-            ['gamma', colorUtils.CHART_COLOR_PALLETE[1]],
-            ['lambda', colorUtils.CHART_COLOR_PALLETE[1]],
+            ['foo', 0],
+            ['bar', 0],
+            ['baz', 0],
+            ['qaz', 0],
+            ['alpha', 1],
+            ['beta', 1],
+            ['gamma', 1],
+            ['lambda', 1],
           ])
         );
       });
@@ -315,9 +330,9 @@ describe('runs_reducers', () => {
       it('assigns non-matched colors to regex non-matched runs', () => {
         const state = buildRunsState({
           initialGroupBy: {key: GroupByKey.REGEX, regexString: 'foo(\\d+)'},
-          defaultRunColorForGroupBy: new Map([
-            ['foo', '#aaa'],
-            ['bar', '#aaa'],
+          defaultRunColorIdForGroupBy: new Map([
+            ['foo', 0],
+            ['bar', 0],
           ]),
         });
         const action = actions.fetchRunsSucceeded({
@@ -335,16 +350,16 @@ describe('runs_reducers', () => {
 
         const nextState = runsReducers.reducers(state, action);
 
-        expect(nextState.data.defaultRunColorForGroupBy).toEqual(
+        expect(nextState.data.defaultRunColorIdForGroupBy).toEqual(
           new Map([
-            ['foo', '#aaa'],
-            ['bar', '#aaa'],
-            ['eid1/alpha', colorUtils.CHART_COLOR_PALLETE[0]],
-            ['eid1/beta', colorUtils.CHART_COLOR_PALLETE[1]],
-            ['eid2/beta', colorUtils.CHART_COLOR_PALLETE[1]],
-            ['eid2/gamma', colorUtils.CHART_COLOR_PALLETE[1]],
-            ['eid2/alpha', colorUtils.NON_MATCHED_COLOR],
-            ['eid2/delta', colorUtils.NON_MATCHED_COLOR],
+            ['foo', 0],
+            ['bar', 0],
+            ['eid1/alpha', 0],
+            ['eid1/beta', 1],
+            ['eid2/beta', 1],
+            ['eid2/gamma', 1],
+            ['eid2/alpha', -1],
+            ['eid2/delta', -1],
           ])
         );
       });
@@ -733,17 +748,17 @@ describe('runs_reducers', () => {
           run3: buildRun({id: 'run3'}),
           run4: buildRun({id: 'run4'}),
         },
-        groupKeyToColorString: new Map([
-          ['run1', '#aaa'],
-          ['run2', '#bbb'],
-          ['run3', '#ccc'],
-          ['run4', '#ddd'],
+        groupKeyToColorId: new Map([
+          ['run1', 0],
+          ['run2', 1],
+          ['run3', 2],
+          ['run4', 3],
         ]),
-        defaultRunColorForGroupBy: new Map([
-          ['run1', '#aaa'],
-          ['run2', '#bbb'],
-          ['run3', '#ccc'],
-          ['run4', '#ddd'],
+        defaultRunColorIdForGroupBy: new Map([
+          ['run1', 0],
+          ['run2', 1],
+          ['run3', 2],
+          ['run4', 3],
         ]),
         runColorOverrideForGroupBy: new Map([['run1', '#aaa']]),
       });
@@ -758,18 +773,18 @@ describe('runs_reducers', () => {
 
       expect(nextState.data.initialGroupBy).toEqual({key: GroupByKey.RUN});
       expect(nextState.data.userSetGroupByKey).toEqual(GroupByKey.EXPERIMENT);
-      expect(nextState.data.groupKeyToColorString).toEqual(
+      expect(nextState.data.groupKeyToColorId).toEqual(
         new Map([
-          ['eid1', colorUtils.CHART_COLOR_PALLETE[0]],
-          ['eid2', colorUtils.CHART_COLOR_PALLETE[1]],
+          ['eid1', 0],
+          ['eid2', 1],
         ])
       );
-      expect(nextState.data.defaultRunColorForGroupBy).toEqual(
+      expect(nextState.data.defaultRunColorIdForGroupBy).toEqual(
         new Map([
-          ['run1', colorUtils.CHART_COLOR_PALLETE[0]],
-          ['run2', colorUtils.CHART_COLOR_PALLETE[0]],
-          ['run3', colorUtils.CHART_COLOR_PALLETE[1]],
-          ['run4', colorUtils.CHART_COLOR_PALLETE[1]],
+          ['run1', 0],
+          ['run2', 0],
+          ['run3', 1],
+          ['run4', 1],
         ])
       );
       expect(nextState.data.runColorOverrideForGroupBy).toEqual(new Map());
@@ -795,15 +810,15 @@ describe('runs_reducers', () => {
           run3: buildRun({id: 'run3'}),
           run4: buildRun({id: 'run4'}),
         },
-        groupKeyToColorString: new Map([
-          ['eid1', '#aaa'],
-          ['eid2', '#bbb'],
+        groupKeyToColorId: new Map([
+          ['eid1', 0],
+          ['eid2', 1],
         ]),
-        defaultRunColorForGroupBy: new Map([
-          ['run1', '#aaa'],
-          ['run2', '#aaa'],
-          ['run3', '#bbb'],
-          ['run4', '#bbb'],
+        defaultRunColorIdForGroupBy: new Map([
+          ['run1', 0],
+          ['run2', 0],
+          ['run3', 1],
+          ['run4', 1],
         ]),
         runColorOverrideForGroupBy: new Map([['run1', '#ccc']]),
       });
@@ -817,20 +832,20 @@ describe('runs_reducers', () => {
       );
 
       expect(nextState.data.userSetGroupByKey).toEqual(GroupByKey.RUN);
-      expect(nextState.data.groupKeyToColorString).toEqual(
+      expect(nextState.data.groupKeyToColorId).toEqual(
         new Map([
-          ['run1', colorUtils.CHART_COLOR_PALLETE[0]],
-          ['run2', colorUtils.CHART_COLOR_PALLETE[1]],
-          ['run3', colorUtils.CHART_COLOR_PALLETE[2]],
-          ['run4', colorUtils.CHART_COLOR_PALLETE[3]],
+          ['run1', 0],
+          ['run2', 1],
+          ['run3', 2],
+          ['run4', 3],
         ])
       );
-      expect(nextState.data.defaultRunColorForGroupBy).toEqual(
+      expect(nextState.data.defaultRunColorIdForGroupBy).toEqual(
         new Map([
-          ['run1', colorUtils.CHART_COLOR_PALLETE[0]],
-          ['run2', colorUtils.CHART_COLOR_PALLETE[1]],
-          ['run3', colorUtils.CHART_COLOR_PALLETE[2]],
-          ['run4', colorUtils.CHART_COLOR_PALLETE[3]],
+          ['run1', 0],
+          ['run2', 1],
+          ['run3', 2],
+          ['run4', 3],
         ])
       );
       expect(nextState.data.runColorOverrideForGroupBy).toEqual(new Map());
@@ -859,13 +874,13 @@ describe('runs_reducers', () => {
           run5: buildRun({id: 'run5', name: 'beta'}),
           run6: buildRun({id: 'run6', name: 'gamma'}),
         },
-        defaultRunColorForGroupBy: new Map([
-          ['run1', '#aaa'],
-          ['run2', '#bbb'],
-          ['run3', '#ccc'],
-          ['run4', '#ddd'],
-          ['run5', '#eee'],
-          ['run6', '#fff'],
+        defaultRunColorIdForGroupBy: new Map([
+          ['run1', 0],
+          ['run2', 1],
+          ['run3', 2],
+          ['run4', 3],
+          ['run5', 4],
+          ['run6', 5],
         ]),
       });
 
@@ -878,20 +893,20 @@ describe('runs_reducers', () => {
       );
 
       expect(nextState.data.userSetGroupByKey).toEqual(GroupByKey.REGEX);
-      expect(nextState.data.groupKeyToColorString).toEqual(
+      expect(nextState.data.groupKeyToColorId).toEqual(
         new Map([
-          ['["1"]', colorUtils.CHART_COLOR_PALLETE[0]],
-          ['["2"]', colorUtils.CHART_COLOR_PALLETE[1]],
+          ['["1"]', 0],
+          ['["2"]', 1],
         ])
       );
-      expect(nextState.data.defaultRunColorForGroupBy).toEqual(
+      expect(nextState.data.defaultRunColorIdForGroupBy).toEqual(
         new Map([
-          ['run1', colorUtils.CHART_COLOR_PALLETE[0]],
-          ['run2', colorUtils.CHART_COLOR_PALLETE[1]],
-          ['run3', colorUtils.CHART_COLOR_PALLETE[1]],
-          ['run4', colorUtils.CHART_COLOR_PALLETE[1]],
-          ['run5', colorUtils.NON_MATCHED_COLOR],
-          ['run6', colorUtils.NON_MATCHED_COLOR],
+          ['run1', 0],
+          ['run2', 1],
+          ['run3', 1],
+          ['run4', 1],
+          ['run5', -1],
+          ['run6', -1],
         ])
       );
       expect(nextState.data.runColorOverrideForGroupBy).toEqual(new Map());
@@ -921,13 +936,13 @@ describe('runs_reducers', () => {
           run5: buildRun({id: 'run5', name: 'beta'}),
           run6: buildRun({id: 'run6', name: 'gamma'}),
         },
-        defaultRunColorForGroupBy: new Map([
-          ['run1', '#aaa'],
-          ['run2', '#bbb'],
-          ['run3', '#ccc'],
-          ['run4', '#ddd'],
-          ['run5', '#eee'],
-          ['run6', '#fff'],
+        defaultRunColorIdForGroupBy: new Map([
+          ['run1', 0],
+          ['run2', 1],
+          ['run3', 2],
+          ['run4', 3],
+          ['run5', 4],
+          ['run6', 5],
         ]),
       });
 
@@ -1049,17 +1064,17 @@ describe('runs_reducers', () => {
           run3: buildRun({id: 'run3'}),
           run4: buildRun({id: 'run4'}),
         },
-        groupKeyToColorString: new Map([
-          ['run1', '#aaa'],
-          ['run2', '#bbb'],
-          ['run3', '#ccc'],
-          ['run4', '#ddd'],
+        groupKeyToColorId: new Map([
+          ['run1', 0],
+          ['run2', 1],
+          ['run3', 2],
+          ['run4', 3],
         ]),
-        defaultRunColorForGroupBy: new Map([
-          ['run1', '#aaa'],
-          ['run2', '#bbb'],
-          ['run3', '#ccc'],
-          ['run4', '#ddd'],
+        defaultRunColorIdForGroupBy: new Map([
+          ['run1', 0],
+          ['run2', 1],
+          ['run3', 2],
+          ['run4', 3],
         ]),
         runColorOverrideForGroupBy: new Map([['run1', '#ccc']]),
       });
@@ -1077,20 +1092,20 @@ describe('runs_reducers', () => {
         })
       );
 
-      expect(nextState.data.defaultRunColorForGroupBy).toEqual(
+      expect(nextState.data.defaultRunColorIdForGroupBy).toEqual(
         new Map([
-          ['run1', '#aaa'],
-          ['run2', '#bbb'],
-          ['run3', '#ccc'],
-          ['run4', '#ddd'],
+          ['run1', 0],
+          ['run2', 1],
+          ['run3', 2],
+          ['run4', 3],
         ])
       );
-      expect(nextState.data.groupKeyToColorString).toEqual(
+      expect(nextState.data.groupKeyToColorId).toEqual(
         new Map([
-          ['run1', '#aaa'],
-          ['run2', '#bbb'],
-          ['run3', '#ccc'],
-          ['run4', '#ddd'],
+          ['run1', 0],
+          ['run2', 1],
+          ['run3', 2],
+          ['run4', 3],
         ])
       );
     });

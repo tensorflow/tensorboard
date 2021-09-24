@@ -47,9 +47,13 @@ export type RunId = string;
 export type RouteKey = string;
 
 export interface RunsDataRoutefulState {
-  defaultRunColorForGroupBy: Map<RunId, string>;
+  defaultRunColorIdForGroupBy: Map<RunId, number>;
+  // Monotonically increasing opaque id that uniquely identifies color that can
+  // be used as an index, starting from 0. -1 is a reversed to denote no matches
+  // or colorless entries.
+  groupKeyToColorId: Map<string, number>;
+  // Hex color string user has picked for a run.
   runColorOverrideForGroupBy: Map<RunId, string>;
-  groupKeyToColorString: Map<string, string>;
   initialGroupBy: GroupBy;
   userSetGroupByKey: GroupByKey | null;
   colorGroupRegexString: string;
