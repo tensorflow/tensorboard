@@ -16,8 +16,8 @@ import {
   ChangeDetectionStrategy,
   Component,
   Input,
-  OnInit,
   OnDestroy,
+  OnInit,
 } from '@angular/core';
 import {createSelector, Store} from '@ngrx/store';
 import {combineLatest, Observable, of, Subject} from 'rxjs';
@@ -32,9 +32,19 @@ import {
   takeUntil,
 } from 'rxjs/operators';
 
-import {DataLoadState, LoadState} from '../../../types/data';
 import * as alertActions from '../../../alert/actions';
 import {State} from '../../../app_state';
+import {
+  actions as hparamsActions,
+  selectors as hparamsSelectors,
+} from '../../../hparams';
+import {
+  DiscreteFilter,
+  DiscreteHparamValue,
+  DiscreteHparamValues,
+  DomainType,
+  IntervalFilter,
+} from '../../../hparams/types';
 import {
   getCurrentRouteRunSelection,
   getEnabledColorGroup,
@@ -48,18 +58,9 @@ import {
   getRunSelectorSort,
   getRunsLoadState,
 } from '../../../selectors';
-import {
-  actions as hparamsActions,
-  selectors as hparamsSelectors,
-} from '../../../hparams';
-import {
-  DiscreteFilter,
-  IntervalFilter,
-  DiscreteHparamValue,
-  DiscreteHparamValues,
-  DomainType,
-} from '../../../hparams/types';
+import {DataLoadState, LoadState} from '../../../types/data';
 import {SortDirection} from '../../../types/ui';
+import {matchRunToRegex} from '../../../util/matcher';
 import {
   runColorChanged,
   runPageSelectionToggled,
@@ -69,9 +70,8 @@ import {
   runSelectorSortChanged,
   runTableShown,
 } from '../../actions';
-import {SortKey, SortType} from '../../types';
 import {MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT} from '../../store/runs_types';
-
+import {SortKey, SortType} from '../../types';
 import {
   HparamColumn,
   IntervalFilterChange,
@@ -440,36 +440,14 @@ export class RunsTableContainer implements OnInit, OnDestroy {
           return items;
         }
 
-        let regex: RegExp | null = null;
-
-        // Do not break all the future updates because of malformed
-        // regexString. User can be still modifying it.
-        try {
-          regex = regexString ? new RegExp(regexString) : null;
-        } catch (e) {}
-
-        if (!regex) {
-          return [];
-        }
-
         const shouldIncludeExperimentName = this.columns.includes(
           RunsTableColumn.EXPERIMENT_NAME
         );
         return items.filter((item) => {
-          // For some reason, TypeScript is faulty and cannot coerce the type to
-          // non-null inspite the `if (!regex)` above.
-          regex = regex!;
-
-          if (!shouldIncludeExperimentName) {
-            return regex.test(item.run.name);
-          }
-
-          const legacyRunName = `${item.experimentName}/${item.run.name}`;
-          return (
-            regex.test(item.run.name) ||
-            regex.test(item.experimentAlias) ||
-            regex.test(item.experimentName) ||
-            regex.test(legacyRunName)
+          return matchRunToRegex(
+            {...item.run, ...item},
+            regexString,
+            shouldIncludeExperimentName
           );
         });
       }),

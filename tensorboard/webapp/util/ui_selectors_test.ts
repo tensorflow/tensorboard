@@ -18,10 +18,22 @@ import {
 } from '../app_routing/store/testing';
 import {buildRoute} from '../app_routing/testing';
 import {RouteKind} from '../app_routing/types';
-import {buildRunsState, buildStateFromRunsState} from '../runs/store/testing';
 import {
+  buildExperiment,
+  buildExperimentState,
+  buildStateFromExperimentsState,
+} from '../experiments/store/testing';
+import {
+  buildRun,
+  buildRunsState,
+  buildStateFromRunsState,
+} from '../runs/store/testing';
+import {
+  getExperiment,
   getExperimentIdsFromRoute,
+  getExperimentIdToAliasMap,
   getRouteId,
+  getRouteKind,
   getRunSelectionMap,
 } from '../selectors';
 import {CHART_COLOR_PALLETE, NON_MATCHED_COLOR} from './colors';
@@ -34,6 +46,9 @@ describe('ui_selectors test', () => {
     getRouteId.release();
     getRunSelectionMap.release();
     getCurrentRouteRunSelection.release();
+    getExperiment.release();
+    getExperimentIdToAliasMap.release();
+    getRouteKind.release();
   });
 
   describe('#getCurrentRouteRunSelection', () => {
@@ -59,6 +74,14 @@ describe('ui_selectors test', () => {
                 ]),
               ],
             ]),
+          })
+        ),
+        ...buildStateFromExperimentsState(
+          buildExperimentState({
+            experimentMap: {
+              '123': buildExperiment({id: '123', name: 'Experiment 123'}),
+              '234': buildExperiment({id: '234', name: 'Experiment 234'}),
+            },
           })
         ),
       };
@@ -95,46 +118,130 @@ describe('ui_selectors test', () => {
             ]),
           })
         ),
+        ...buildStateFromExperimentsState(
+          buildExperimentState({
+            experimentMap: {
+              '234': buildExperiment({id: '234', name: 'Experiment 234'}),
+            },
+          })
+        ),
       };
 
       expect(getCurrentRouteRunSelection(state)).toBeNull();
     });
 
-    it('filters runs based on regex', () => {
-      const state = {
-        ...buildStateFromAppRoutingState(
-          buildAppRoutingState({
-            activeRoute: buildRoute({
-              routeKind: RouteKind.EXPERIMENT,
-              pathname: '/experiment/234/',
-              params: {experimentId: '234'},
-            }),
-          })
-        ),
-        ...buildStateFromRunsState(
-          buildRunsState({
-            selectionState: new Map([
-              [
-                '["234"]',
-                new Map([
-                  ['run1', true],
-                  ['run2', true],
-                  ['run3', false],
-                ]),
-              ],
-            ]),
-            regexFilter: 'n1',
-          })
-        ),
-      };
+    describe('regex filter', () => {
+      it('filters runs based on regex and run name', () => {
+        const state = {
+          ...buildStateFromAppRoutingState(
+            buildAppRoutingState({
+              activeRoute: buildRoute({
+                routeKind: RouteKind.EXPERIMENT,
+                pathname: '/experiment/234/',
+                params: {experimentId: '234'},
+              }),
+            })
+          ),
+          ...buildStateFromRunsState(
+            buildRunsState({
+              selectionState: new Map([
+                [
+                  '["234"]',
+                  new Map([
+                    ['234/run1', true],
+                    ['234/run2', true],
+                    ['234/run3', false],
+                  ]),
+                ],
+              ]),
+              runIds: {
+                '234': ['234/run1', '234/run2', '234/run3'],
+              },
+              runMetadata: {
+                '234/run1': buildRun({id: '234/run1', name: 'run1'}),
+                '234/run2': buildRun({id: '234/run2', name: 'run2'}),
+                '234/run3': buildRun({id: '234/run3', name: 'run3'}),
+              },
+              regexFilter: '^r.n[1]',
+            })
+          ),
+          ...buildStateFromExperimentsState(
+            buildExperimentState({
+              experimentMap: {
+                '234': buildExperiment({id: '234', name: 'Experiment 234'}),
+              },
+            })
+          ),
+        };
 
-      expect(getCurrentRouteRunSelection(state)).toEqual(
-        new Map([
-          ['run1', true],
-          ['run2', false],
-          ['run3', false],
-        ])
-      );
+        expect(getCurrentRouteRunSelection(state)).toEqual(
+          new Map([
+            ['234/run1', true],
+            ['234/run2', false],
+            ['234/run3', false],
+          ])
+        );
+      });
+
+      it('filters run name, experiment name, and alias in compare mode', () => {
+        const state = {
+          ...buildStateFromAppRoutingState(
+            buildAppRoutingState({
+              activeRoute: buildRoute({
+                routeKind: RouteKind.COMPARE_EXPERIMENT,
+                pathname: '/compare/apple:123,banana:234/',
+                params: {experimentIds: 'apple:123,banana:234'},
+              }),
+            })
+          ),
+          ...buildStateFromRunsState(
+            buildRunsState({
+              selectionState: new Map([
+                [
+                  '["123","234"]',
+                  new Map([
+                    ['123/run1', false],
+                    ['123/run2', true],
+                    ['234/run1', true],
+                    ['234/run2', true],
+                    ['234/run3', false],
+                  ]),
+                ],
+              ]),
+              runIds: {
+                '123': ['123/run1', '123/run2'],
+                '234': ['234/run1', '234/run2', '234/run3'],
+              },
+              runMetadata: {
+                '123/run1': buildRun({id: '123/run1', name: 'run1'}),
+                '123/run2': buildRun({id: '123/run2', name: 'run2'}),
+                '234/run1': buildRun({id: '234/run1', name: 'run1'}),
+                '234/run2': buildRun({id: '234/run2', name: 'run2'}),
+                '234/run3': buildRun({id: '234/run3', name: 'run3'}),
+              },
+              regexFilter: '^(apple/..3|r.n[1])',
+            })
+          ),
+          ...buildStateFromExperimentsState(
+            buildExperimentState({
+              experimentMap: {
+                '123': buildExperiment({id: '123', name: 'Experiment 123'}),
+                '234': buildExperiment({id: '234', name: 'Experiment 234'}),
+              },
+            })
+          ),
+        };
+
+        expect(getCurrentRouteRunSelection(state)).toEqual(
+          new Map([
+            ['123/run1', false],
+            ['123/run2', false],
+            ['234/run1', true],
+            ['234/run2', false],
+            ['234/run3', false],
+          ])
+        );
+      });
     });
   });
 

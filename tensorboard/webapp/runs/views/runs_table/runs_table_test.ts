@@ -1530,18 +1530,16 @@ describe('runs_table', () => {
         ['LotR', 'The Silmarillion'],
       ]);
 
-      // Alias for Harry Potter contains "z". If we were matching against
-      // alias + run name, Harry Potter should not match below.
+      // Alias for Harry Potter contains "z". Since tf-run-selector matches
+      // regex against '<alias>/<run name>' instead of '<experiment>/<run name>'
+      // Harry Potter should match below.
       // This regex matches:
-      // - (Harry P)*o*tter/The Chamber of S(ecrets)
-      // - (The L)ord of the rings/The S(ilmarillion)
-      // and does not match
-      // - HPz/The Chamber of S(ecrets) because of "[^z]+".
+      // - HPz/The Chamber of S(ecrets)
+      // - LotR/The S(ilmarillion)
       store.overrideSelector(getRunSelectorRegexFilter, 'o[^z]+/.+S[ei]');
       store.refreshState();
       fixture.detectChanges();
       expect(getTableRowTextContent(fixture)).toEqual([
-        ['HPz', 'The Chamber Of Secrets'],
         ['LotR', 'The Silmarillion'],
       ]);
     });

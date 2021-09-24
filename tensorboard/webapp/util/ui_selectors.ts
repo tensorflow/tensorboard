@@ -27,17 +27,29 @@ limitations under the License.
 
 import {createSelector} from '@ngrx/store';
 
-import {getExperimentIdsFromRoute} from '../app_routing/store/app_routing_selectors';
-import {State} from '../app_state';
-import {CHART_COLOR_PALLETE, NON_MATCHED_COLOR} from './colors';
 import {
   getDefaultRunColorIdMap,
+  getExperimentIdsFromRoute,
+  getExperimentIdToAliasMap,
+  getRouteKind,
   getRunColorOverride,
+} from '../app_routing/store/app_routing_selectors';
+import {RouteKind} from '../app_routing/types';
+import {State} from '../app_state';
+import {getExperiment} from '../experiments/store/experiments_selectors';
+import {
+  getRuns,
   getRunSelectionMap,
   getRunSelectorRegexFilter,
 } from '../runs/store/runs_selectors';
+import {Run} from '../runs/types';
+import {CHART_COLOR_PALLETE, NON_MATCHED_COLOR} from './colors';
+import {matchRunToRegex} from './matcher';
 
-/** @typehack */ import * as _typeHackStore from '@ngrx/store';
+interface RunAndNames extends Run {
+  experimentAlias: string;
+  experimentName: string;
+}
 
 /**
  * Selects the run selection (runId to boolean) of current routeId.
@@ -47,26 +59,40 @@ import {
 export const getCurrentRouteRunSelection = createSelector(
   (state: State): Map<string, boolean> | null => {
     const experimentIds = getExperimentIdsFromRoute(state);
-    if (experimentIds === null) {
-      return null;
-    }
-    return getRunSelectionMap(state, {experimentIds});
+    return experimentIds ? getRunSelectionMap(state, {experimentIds}) : null;
   },
   getRunSelectorRegexFilter,
-  (runSelection, regexFilter) => {
-    if (!runSelection) return null;
+  (state: State): Map<string, RunAndNames> => {
+    const experimentIds = getExperimentIdsFromRoute(state) ?? [];
+    const aliasMap = getExperimentIdToAliasMap(state);
 
-    let regexExp: RegExp;
-
-    try {
-      regexExp = new RegExp(regexFilter, 'i');
-    } catch {
-      regexExp = new RegExp('');
+    const runAndNameMap = new Map<string, RunAndNames>();
+    for (const experimentId of experimentIds) {
+      const experiment = getExperiment(state, {experimentId});
+      if (!experiment) continue;
+      const runs = getRuns(state, {experimentId});
+      for (const run of runs) {
+        runAndNameMap.set(run.id, {
+          ...run,
+          experimentName: experiment.name,
+          experimentAlias: aliasMap[experimentId],
+        });
+      }
     }
-
+    return runAndNameMap;
+  },
+  getRouteKind,
+  (runSelection, regexFilter, runAndNameMap, routeKind) => {
+    if (!runSelection) return null;
+    const includeExperimentInfo = routeKind === RouteKind.COMPARE_EXPERIMENT;
     const filteredSelection = new Map<string, boolean>();
-    for (const [key, value] of runSelection.entries()) {
-      filteredSelection.set(key, regexExp.test(key) && value);
+
+    for (const [runId, value] of runSelection.entries()) {
+      const runAndName = runAndNameMap.get(runId)!;
+      filteredSelection.set(
+        runId,
+        matchRunToRegex(runAndName, regexFilter, includeExperimentInfo) && value
+      );
     }
     return filteredSelection;
   }

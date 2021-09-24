@@ -55,14 +55,28 @@ tf_ts_library(
 )
 
 tf_ts_library(
+    name = "matcher",
+    srcs = [
+        "matcher.ts",
+    ],
+    deps = [
+        "//tensorboard/webapp/runs:types",
+    ],
+)
+
+tf_ts_library(
     name = "ui_selectors",
     srcs = [
         "ui_selectors.ts",
     ],
     deps = [
         ":colors",
+        ":matcher",
         "//tensorboard/webapp:app_state",
+        "//tensorboard/webapp/app_routing:types",
         "//tensorboard/webapp/app_routing/store",
+        "//tensorboard/webapp/experiments/store:selectors",
+        "//tensorboard/webapp/runs:types",
         "//tensorboard/webapp/runs/store:selectors",
         "@npm//@ngrx/store",
     ],
@@ -91,6 +105,7 @@ tf_ts_library(
     testonly = True,
     srcs = [
         "lang_test.ts",
+        "matcher_test.ts",
         "ngrx_test.ts",
         "string_test.ts",
         "ui_selectors_test.ts",
@@ -99,6 +114,7 @@ tf_ts_library(
     deps = [
         ":colors",
         ":lang",
+        ":matcher",
         ":ngrx",
         ":string",
         ":ui_selectors",
@@ -107,6 +123,7 @@ tf_ts_library(
         "//tensorboard/webapp/app_routing:testing",
         "//tensorboard/webapp/app_routing:types",
         "//tensorboard/webapp/app_routing/store:testing",
+        "//tensorboard/webapp/experiments/store:testing",
         "//tensorboard/webapp/runs/store:testing",
         "@npm//@ngrx/store",
         "@npm//@types/jasmine",
