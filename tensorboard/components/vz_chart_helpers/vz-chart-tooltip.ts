@@ -58,7 +58,7 @@ class VzChartTooltip extends LegacyElementMixin(PolymerElement) {
   })
   minDistFromEdge: number = 15;
 
-  _template: null;
+  override _template: null;
   _styleCache: null | {} = null;
   _raf: null | number = null;
   _tunnel: any = null;
@@ -70,7 +70,7 @@ class VzChartTooltip extends LegacyElementMixin(PolymerElement) {
     this._tunnel = null;
   }
 
-  attached() {
+  override attached() {
     this._tunnel = this._createTunnel();
     this._hideOnBlur = () => {
       if (document.hidden) this.hide();
@@ -78,7 +78,7 @@ class VzChartTooltip extends LegacyElementMixin(PolymerElement) {
     window.addEventListener('visibilitychange', this._hideOnBlur);
   }
 
-  detached() {
+  override detached() {
     this.hide();
     this._removeTunnel(this._tunnel);
     this._tunnel = null;

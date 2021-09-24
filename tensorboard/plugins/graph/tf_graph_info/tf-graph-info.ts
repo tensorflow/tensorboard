@@ -89,7 +89,7 @@ class TfGraphInfo extends LegacyElementMixin(PolymerElement) {
     </template>
   `;
   @property({type: String})
-  title: string;
+  override title: string;
   @property({type: Object})
   graphHierarchy: Hierarchy;
   @property({type: Object})

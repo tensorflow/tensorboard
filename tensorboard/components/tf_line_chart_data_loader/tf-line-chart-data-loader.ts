@@ -143,7 +143,7 @@ class _TfLineChartDataLoader<ScalarMetadata>
     type: Boolean,
     observer: '_fixBadStateWhenActive',
   })
-  active: boolean = false;
+  override active: boolean = false;
 
   @property({type: Array})
   dataSeries!: string[];
@@ -222,7 +222,7 @@ class _TfLineChartDataLoader<ScalarMetadata>
     this.redraw();
   }
 
-  disconnectedCallback() {
+  override disconnectedCallback() {
     super.disconnectedCallback();
     if (this._redrawRaf !== null) cancelAnimationFrame(this._redrawRaf);
   }

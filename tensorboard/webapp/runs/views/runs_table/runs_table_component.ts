@@ -45,7 +45,7 @@ import {HparamSpec, MetricSpec, RunsTableColumn, RunTableItem} from './types';
  */
 @Injectable()
 export class RunsPaginatorIntl extends MatPaginatorIntl {
-  itemsPerPageLabel = 'Show runs:';
+  override itemsPerPageLabel = 'Show runs:';
 }
 
 export interface HparamColumn {

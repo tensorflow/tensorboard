@@ -35,7 +35,7 @@ export class LinearScale extends Plottable.Scales.Linear implements ITfScale {
   /**
    * @override
    */
-  protected _niceDomain(domain: number[], count?: number): number[] {
+  protected override _niceDomain(domain: number[], count?: number): number[] {
     const [a, b] = domain;
 
     return createScale(ScaleType.LINEAR).niceDomain([a, b]);
@@ -43,7 +43,7 @@ export class LinearScale extends Plottable.Scales.Linear implements ITfScale {
   /**
    * @override to remove default padding logic.
    */
-  protected _getUnboundedExtent(ignoreAttachState): number[] {
+  protected override _getUnboundedExtent(ignoreAttachState): number[] {
     const includedValues = this._getAllIncludedValues(ignoreAttachState);
     let extent = this._defaultExtent();
     if (includedValues.length !== 0) {
@@ -58,7 +58,9 @@ export class LinearScale extends Plottable.Scales.Linear implements ITfScale {
   /**
    * @override
    */
-  protected _getAllIncludedValues(ignoreAttachState = false): number[] {
+  protected override _getAllIncludedValues(
+    ignoreAttachState = false
+  ): number[] {
     const values = this._valueProviderForDomain
       ? this._valueProviderForDomain()
       : [];
@@ -67,7 +69,7 @@ export class LinearScale extends Plottable.Scales.Linear implements ITfScale {
   /**
    * @override to apply the outlier logic.
    */
-  public extentOfValues(values: number[]): number[] {
+  public override extentOfValues(values: number[]): number[] {
     const legalValues = values.filter((x) =>
       Plottable.Utils.Math.isValidNumber(x)
     );

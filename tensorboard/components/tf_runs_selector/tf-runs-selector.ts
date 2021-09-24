@@ -172,7 +172,7 @@ class TfRunsSelector extends LegacyElementMixin(PolymerElement) {
 
   _envStoreListener: baseStore.ListenKey;
 
-  attached() {
+  override attached() {
     this._runStoreListener = runsStore.addListener(() => {
       this.set('runs', runsStore.getRuns());
     });
@@ -183,7 +183,7 @@ class TfRunsSelector extends LegacyElementMixin(PolymerElement) {
     this.set('dataLocation', environmentStore.getDataLocation());
   }
 
-  detached() {
+  override detached() {
     runsStore.removeListenerByKey(this._runStoreListener);
     environmentStore.removeListenerByKey(this._envStoreListener);
   }

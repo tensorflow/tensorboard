@@ -22,6 +22,6 @@ import {runsColorScale} from './colorScale';
 
 @customElement('tf-color-scale')
 class TfColorScale extends PolymerElement {
-  _template = null;
+  override _template = null;
   runsColorScale = runsColorScale;
 }

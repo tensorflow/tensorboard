@@ -229,7 +229,7 @@ class StaticRedirectionRouteConfigMatcher extends RouteConfigMatcher {
     this.redirectionFragments = getPathFragments(definition.redirectionPath);
   }
 
-  match(pathParts: string[]): Match {
+  override match(pathParts: string[]): Match {
     const match = super.match(pathParts);
 
     if (!match.result) return match;
@@ -252,7 +252,7 @@ class ProgrammaticalRedirectionRouteConfigMatcher extends RouteConfigMatcher {
     super(definition);
   }
 
-  match(pathParts: string[]): Match {
+  override match(pathParts: string[]): Match {
     const match = super.match(pathParts);
 
     if (!match.result) return match;

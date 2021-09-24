@@ -19,6 +19,6 @@ import * as tf_storage from './index';
 
 @customElement('tf-storage')
 class TfStorage extends PolymerElement {
-  _template = null;
+  override _template = null;
   tf_storage = tf_storage;
 }

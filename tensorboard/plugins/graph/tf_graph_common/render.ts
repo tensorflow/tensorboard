@@ -1823,7 +1823,7 @@ function setGraphDepth(graph: graphlib.Graph, depth: number) {
   });
 }
 export class RenderGroupNodeInfo extends RenderNodeInfo {
-  node: GroupNode;
+  override node: GroupNode;
   /**
    * The core graph is derived from the underlying node's metagraph, minus
    * the extracted source-like and sink-like nodes.

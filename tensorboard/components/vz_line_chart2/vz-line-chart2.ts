@@ -331,7 +331,7 @@ class VzLineChart2<SeriesMetadata = {}> extends LegacyElementMixin(
 
   private _listeners?: Set<any>;
 
-  attached() {
+  override attached() {
     // `capture` ensures that no handler can stop propagation and break the
     // handler. `passive` ensures that browser does not wait renderer thread
     // on JS handler (which can prevent default and impact rendering).
@@ -341,7 +341,7 @@ class VzLineChart2<SeriesMetadata = {}> extends LegacyElementMixin(
     this._listen(window, 'keydown', this._onKeyDown.bind(this), option);
     this._listen(window, 'keyup', this._onKeyUp.bind(this), option);
   }
-  detached() {
+  override detached() {
     this.cancelAsync(this._makeChartAsyncCallbackId);
     if (this._chart) {
       this._chart.destroy();

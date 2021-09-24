@@ -235,7 +235,7 @@ class TfFilterableCheckboxList extends LegacyElementMixin(PolymerElement) {
   })
   allToggleDisabled: boolean = false;
 
-  detached() {
+  override detached() {
     this.cancelDebouncer('_setRegex');
   }
 

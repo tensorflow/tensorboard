@@ -69,7 +69,9 @@ export abstract class TfScale
    * series to return `extent`s.
    * @override
    */
-  protected _getAllIncludedValues(ignoreAttachState = false): number[] {
+  protected override _getAllIncludedValues(
+    ignoreAttachState = false
+  ): number[] {
     const values = this._valueProviderForDomain
       ? this._valueProviderForDomain()
       : [];

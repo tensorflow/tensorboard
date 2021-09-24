@@ -20,6 +20,6 @@ import * as tf_paginated_view from './index';
 
 @customElement('tf-paginated-view-store')
 export class TfPaginatedViewStore extends PolymerElement {
-  _template = null;
+  override _template = null;
   tf_paginated_view = tf_paginated_view;
 }

@@ -258,11 +258,11 @@ class _VzDistributionChart
     }
   }
 
-  attached() {
+  override attached() {
     this._attached = true;
   }
 
-  detached() {
+  override detached() {
     this._attached = false;
   }
 }

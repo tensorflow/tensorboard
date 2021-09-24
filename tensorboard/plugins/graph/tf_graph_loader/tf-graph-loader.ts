@@ -79,7 +79,7 @@ class TfGraphLoader extends LegacyElementMixin(PolymerElement) {
     notify: true,
   })
   outHierarchyParams: object;
-  _template = null;
+  override _template = null;
   @observe(
     'datasets',
     'selectedData',

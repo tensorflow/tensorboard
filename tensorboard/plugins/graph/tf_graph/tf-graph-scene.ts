@@ -360,10 +360,10 @@ class TfGraphScene2
       tf_graph_layout.PARAMS.subscene.meta.labelHeight
     );
   }
-  attached() {
+  override attached() {
     this.set('_isAttached', true);
   }
-  detached() {
+  override detached() {
     this.set('_isAttached', false);
   }
   @observe('renderHierarchy')

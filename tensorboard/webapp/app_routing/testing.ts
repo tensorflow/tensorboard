@@ -78,23 +78,23 @@ export function buildNavigatedToNewRouteIdAction() {
 
 @Injectable()
 export class TestableLocation extends Location {
-  getSearch() {
+  override getSearch() {
     return [];
   }
 
-  getHash() {
+  override getHash() {
     return '';
   }
 
-  getPath() {
+  override getPath() {
     return '/is/cool/';
   }
 
-  replaceState(path: string) {}
+  override replaceState(path: string) {}
 
-  pushState(path: string) {}
+  override pushState(path: string) {}
 
-  onPopState() {
+  override onPopState() {
     return of({
       pathname: '/is/cool/',
       queryParams: [],
