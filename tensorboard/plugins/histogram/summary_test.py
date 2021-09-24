@@ -120,10 +120,9 @@ class SummaryBaseTest(object):
         self.assertEqual(buckets.shape, (bucket_count, 3))
 
     def test_with_large_counts(self):
-        # Check for overflow with large count (2^24) of data in float16.
+        # Check for overflow with large count (2^24) of data.
         large_count = 2 ** 24
         data = [0] + [1] * large_count
-
         pb = self.histogram("large_count", data=data, buckets=2)
         buckets = tensor_util.make_ndarray(pb.value[0].tensor)
         np.testing.assert_allclose(
