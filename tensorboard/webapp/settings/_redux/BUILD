@@ -16,6 +16,7 @@ tf_ng_module(
     deps = [
         "//tensorboard/webapp/persistent_settings",
         "//tensorboard/webapp/types",
+        "//tensorboard/webapp/util:colors",
         "@npm//@ngrx/store",
     ],
 )

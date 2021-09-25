@@ -26,7 +26,6 @@ limitations under the License.
  */
 
 import {createSelector} from '@ngrx/store';
-
 import {
   getExperimentIdsFromRoute,
   getExperimentIdToAliasMap,
@@ -35,6 +34,7 @@ import {
 import {RouteKind} from '../app_routing/types';
 import {State} from '../app_state';
 import {getExperiment} from '../experiments/store/experiments_selectors';
+import {getDarkModeEnabled} from '../feature_flag/store/feature_flag_selectors';
 import {
   getDefaultRunColorIdMap,
   getRunColorOverride,
@@ -43,14 +43,14 @@ import {
   getRunSelectorRegexFilter,
 } from '../runs/store/runs_selectors';
 import {Run} from '../runs/types';
-import {CHART_COLOR_PALLETE, NON_MATCHED_COLOR} from './colors';
+import {selectors} from '../settings';
+import {ColorPalette} from './colors';
 import {matchRunToRegex, RunMatchable} from './matcher';
 
 interface RunAndNames extends Run {
   experimentAlias: string;
   experimentName: string;
 }
-
 /**
  * Selects the run selection (runId to boolean) of current routeId.
  *
@@ -103,18 +103,34 @@ export const getCurrentRouteRunSelection = createSelector(
  * Returns Observable that emits map of run id to run color (hex) from
  * current color palettes.
  */
-export const getRunColorMap = createSelector(
+export const getRunColorMap = createSelector<
+  State,
+  ColorPalette,
+  Map<string, number>,
+  Map<string, string>,
+  boolean,
+  {[runId: string]: string}
+>(
+  selectors.getColorPalette,
   getDefaultRunColorIdMap,
   getRunColorOverride,
-  (defaultRunColorId, colorOverride): Record<string, string> => {
+  getDarkModeEnabled,
+  (
+    colorPalette,
+    defaultRunColorId,
+    colorOverride,
+    useDarkMode
+  ): Record<string, string> => {
     const colorObject: Record<string, string> = {};
     defaultRunColorId.forEach((colorId, runId) => {
-      let colorHexValue = NON_MATCHED_COLOR;
+      let colorHexValue = useDarkMode
+        ? colorPalette.inactive.darkHex
+        : colorPalette.inactive.lightHex;
       if (colorOverride.has(runId)) {
         colorHexValue = colorOverride.get(runId)!;
       } else if (colorId >= 0) {
-        colorHexValue =
-          CHART_COLOR_PALLETE[colorId % CHART_COLOR_PALLETE.length];
+        const color = colorPalette.colors[colorId % colorPalette.colors.length];
+        colorHexValue = useDarkMode ? color.darkHex : color.lightHex;
       }
       colorObject[runId] = colorHexValue;
     });

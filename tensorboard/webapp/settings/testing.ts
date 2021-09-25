@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {DataLoadState} from '../types/data';
+import {ColorPalette, DEFAULT_PALETTE} from '../util/colors';
 import {
   Settings,
   SettingsState,
@@ -25,6 +26,7 @@ export function createSettings(override?: Partial<Settings>) {
     reloadPeriodInMs: 30000,
     reloadEnabled: true,
     pageSize: 10,
+    colorPalette: DEFAULT_PALETTE,
     ...override,
   };
 }
@@ -42,4 +44,20 @@ export function createSettingsState(
 
 export function createState(settingsState: SettingsState): State {
   return {[SETTINGS_FEATURE_KEY]: settingsState};
+}
+
+export function buildColorPalette(
+  override: Partial<ColorPalette> = {}
+): ColorPalette {
+  return {
+    id: 'testing',
+    name: 'Testing color',
+    colors: [
+      {name: 'color1', lightHex: '#000', darkHex: '#aaa'},
+      {name: 'color2', lightHex: '#111', darkHex: '#bbb'},
+      {name: 'color3', lightHex: '#222', darkHex: '#ccc'},
+    ],
+    inactive: {name: 'color4', lightHex: '#333', darkHex: '#ddd'},
+    ...override,
+  };
 }

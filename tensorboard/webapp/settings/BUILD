@@ -32,5 +32,6 @@ tf_ts_library(
     deps = [
         "//tensorboard/webapp/settings/_redux",
         "//tensorboard/webapp/types",
+        "//tensorboard/webapp/util:colors",
     ],
 )

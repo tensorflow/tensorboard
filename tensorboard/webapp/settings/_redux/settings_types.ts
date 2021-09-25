@@ -14,6 +14,7 @@ limitations under the License.
 ==============================================================================*/
 
 import {DataLoadState, LoadState} from '../../types/data';
+import {ColorPalette, DEFAULT_PALETTE} from '../../util/colors';
 
 export const SETTINGS_FEATURE_KEY = 'settings';
 
@@ -23,6 +24,7 @@ export interface Settings {
   // Size of a page in a general paginated view that is configurable by user via
   // settings.
   pageSize: number;
+  colorPalette: ColorPalette;
 }
 
 export interface SettingsState extends LoadState {
@@ -41,5 +43,6 @@ export const initialState: SettingsState = {
     reloadPeriodInMs: 30000,
     reloadEnabled: false,
     pageSize: 12,
+    colorPalette: DEFAULT_PALETTE,
   },
 };
