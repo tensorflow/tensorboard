@@ -24,6 +24,7 @@ export enum SortDirection {
 }
 
 export enum SearchTokenKey {
+  EXPERIMENT_ID = 'id',
   USER = 'user',
   BEFORE = 'before',
   AFTER = 'after',
@@ -47,12 +48,20 @@ export interface RegexSearchToken extends Token {
   key: SearchTokenKey.REGEX;
 }
 
+export interface ExperimentIdSearchToken extends Token {
+  key: SearchTokenKey.EXPERIMENT_ID;
+}
+
 /**
  * key-value token for queries in the search input box. For instance, Gmail has
  * from:foo@gmail.com where "from" would be the key and "foo@gmail.com" would be
  * the value.
  */
-export type SearchToken = UserSearchToken | DateSearchToken | RegexSearchToken;
+export type SearchToken =
+  | ExperimentIdSearchToken
+  | UserSearchToken
+  | DateSearchToken
+  | RegexSearchToken;
 
 /**
  * Returns run color for a given runId in hex.
