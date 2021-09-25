@@ -24,7 +24,6 @@ import {createRouteContextedState} from '../../app_routing/route_contexted_reduc
 import {RouteKind} from '../../app_routing/types';
 import {DataLoadState} from '../../types/data';
 import {SortDirection} from '../../types/ui';
-import {CHART_COLOR_PALLETE, NON_MATCHED_COLOR} from '../../util/colors';
 import {composeReducers} from '../../util/ngrx';
 import * as runsActions from '../actions';
 import {GroupByKey, URLDeserializedState} from '../types';
@@ -43,8 +42,8 @@ const {initialState: dataInitialState, reducers: dataRouteContextReducers} =
   createRouteContextedState<RunsDataRoutefulState, RunsDataRoutelessState>(
     {
       runColorOverrideForGroupBy: new Map(),
-      defaultRunColorForGroupBy: new Map(),
-      groupKeyToColorString: new Map(),
+      defaultRunColorIdForGroupBy: new Map(),
+      groupKeyToColorId: new Map(),
       initialGroupBy: {key: GroupByKey.RUN},
       userSetGroupByKey: null,
       colorGroupRegexString: '',
@@ -229,8 +228,10 @@ const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
     };
   }),
   on(runsActions.fetchRunsSucceeded, (state, {runsForAllExperiments}) => {
-    const groupKeyToColorString = new Map(state.groupKeyToColorString);
-    const defaultRunColorForGroupBy = new Map(state.defaultRunColorForGroupBy);
+    const groupKeyToColorId = new Map(state.groupKeyToColorId);
+    const defaultRunColorIdForGroupBy = new Map(
+      state.defaultRunColorIdForGroupBy
+    );
 
     let groupBy = state.initialGroupBy;
     if (state.userSetGroupByKey !== null) {
@@ -246,36 +247,32 @@ const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
     );
 
     Object.entries(groups.matches).forEach(([groupId, runs]) => {
-      const color =
-        groupKeyToColorString.get(groupId) ??
-        CHART_COLOR_PALLETE[
-          groupKeyToColorString.size % CHART_COLOR_PALLETE.length
-        ];
-      groupKeyToColorString.set(groupId, color);
+      const colorId = groupKeyToColorId.get(groupId) ?? groupKeyToColorId.size;
+      groupKeyToColorId.set(groupId, colorId);
 
       for (const run of runs) {
-        defaultRunColorForGroupBy.set(run.id, color);
+        defaultRunColorIdForGroupBy.set(run.id, colorId);
       }
     });
 
     // unassign color for nonmatched runs to apply default unassigned style
     for (const run of groups.nonMatches) {
-      defaultRunColorForGroupBy.set(run.id, NON_MATCHED_COLOR);
+      defaultRunColorIdForGroupBy.set(run.id, -1);
     }
 
     return {
       ...state,
-      defaultRunColorForGroupBy,
-      groupKeyToColorString,
+      defaultRunColorIdForGroupBy,
+      groupKeyToColorId,
     };
   }),
   on(
     runsActions.runGroupByChanged,
     (state: RunsDataState, {experimentIds, groupBy}): RunsDataState => {
-      // Reset the groupKeyToColorString
-      const groupKeyToColorString = new Map<string, string>();
-      const defaultRunColorForGroupBy = new Map(
-        state.defaultRunColorForGroupBy
+      // Reset the groupKeyToColorId
+      const groupKeyToColorId = new Map<string, number>();
+      const defaultRunColorIdForGroupBy = new Map(
+        state.defaultRunColorIdForGroupBy
       );
 
       const allRuns = experimentIds
@@ -285,21 +282,18 @@ const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
       const groups = groupRuns(groupBy, allRuns, state.runIdToExpId);
 
       Object.entries(groups.matches).forEach(([groupId, runs]) => {
-        const color =
-          groupKeyToColorString.get(groupId) ??
-          CHART_COLOR_PALLETE[
-            groupKeyToColorString.size % CHART_COLOR_PALLETE.length
-          ];
-        groupKeyToColorString.set(groupId, color);
+        const colorId =
+          groupKeyToColorId.get(groupId) ?? groupKeyToColorId.size;
+        groupKeyToColorId.set(groupId, colorId);
 
         for (const run of runs) {
-          defaultRunColorForGroupBy.set(run.id, color);
+          defaultRunColorIdForGroupBy.set(run.id, colorId);
         }
       });
 
       // unassign color for nonmatched runs to apply default unassigned style
       for (const run of groups.nonMatches) {
-        defaultRunColorForGroupBy.set(run.id, NON_MATCHED_COLOR);
+        defaultRunColorIdForGroupBy.set(run.id, -1);
       }
 
       const updatedRegexString =
@@ -311,8 +305,8 @@ const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
         ...state,
         colorGroupRegexString: updatedRegexString,
         userSetGroupByKey: groupBy.key,
-        defaultRunColorForGroupBy,
-        groupKeyToColorString,
+        defaultRunColorIdForGroupBy,
+        groupKeyToColorId,
         // Resets the color override when the groupBy changes.
         runColorOverrideForGroupBy: new Map(),
       };

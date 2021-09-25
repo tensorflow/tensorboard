@@ -20,7 +20,6 @@ tf_ts_library(
         "//tensorboard/webapp/runs/actions",
         "//tensorboard/webapp/types",
         "//tensorboard/webapp/types:ui",
-        "//tensorboard/webapp/util:colors",
         "//tensorboard/webapp/util:ngrx",
         "@npm//@ngrx/store",
     ],
@@ -101,7 +100,6 @@ tf_ts_library(
         "//tensorboard/webapp/testing:lang",
         "//tensorboard/webapp/types",
         "//tensorboard/webapp/types:ui",
-        "//tensorboard/webapp/util:colors",
         "@npm//@types/jasmine",
     ],
 )

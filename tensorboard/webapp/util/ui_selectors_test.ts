@@ -24,8 +24,8 @@ import {
   getRouteId,
   getRunSelectionMap,
 } from '../selectors';
-
-import {getCurrentRouteRunSelection} from './ui_selectors';
+import {CHART_COLOR_PALLETE, NON_MATCHED_COLOR} from './colors';
+import {getCurrentRouteRunSelection, getRunColorMap} from './ui_selectors';
 
 describe('ui_selectors test', () => {
   beforeEach(() => {
@@ -135,6 +135,89 @@ describe('ui_selectors test', () => {
           ['run3', false],
         ])
       );
+    });
+  });
+
+  describe('#getRunColorMap', () => {
+    it('returns color from color id from the default PALETTE', () => {
+      const state = {
+        ...buildStateFromRunsState(
+          buildRunsState({
+            defaultRunColorIdForGroupBy: new Map([
+              ['234/run1', 0],
+              ['234/run2', 0],
+              ['234/run3', 1],
+            ]),
+            runColorOverrideForGroupBy: new Map(),
+          })
+        ),
+      };
+
+      expect(getRunColorMap(state)).toEqual({
+        '234/run1': CHART_COLOR_PALLETE[0],
+        '234/run2': CHART_COLOR_PALLETE[0],
+        '234/run3': CHART_COLOR_PALLETE[1],
+      });
+    });
+
+    it('sets NON_MATCHED_COLOR when id is -1', () => {
+      const state = {
+        ...buildStateFromRunsState(
+          buildRunsState({
+            defaultRunColorIdForGroupBy: new Map([
+              ['234/run1', -1],
+              ['234/run2', 0],
+            ]),
+            runColorOverrideForGroupBy: new Map(),
+          })
+        ),
+      };
+
+      expect(getRunColorMap(state)).toEqual({
+        '234/run1': NON_MATCHED_COLOR,
+        '234/run2': CHART_COLOR_PALLETE[0],
+      });
+    });
+
+    it('returns runColorOverride one if it is present', () => {
+      const state = {
+        ...buildStateFromRunsState(
+          buildRunsState({
+            defaultRunColorIdForGroupBy: new Map([
+              ['234/run1', -1],
+              ['234/run2', 0],
+            ]),
+            runColorOverrideForGroupBy: new Map([['234/run1', '#aaa']]),
+          })
+        ),
+      };
+
+      expect(getRunColorMap(state)).toEqual({
+        '234/run1': '#aaa',
+        '234/run2': CHART_COLOR_PALLETE[0],
+      });
+    });
+
+    it('cycles color palette even if ids are high', () => {
+      const length = [...CHART_COLOR_PALLETE.keys()].length;
+      const state = {
+        ...buildStateFromRunsState(
+          buildRunsState({
+            defaultRunColorIdForGroupBy: new Map([
+              ['234/run1', length * 2 + 1],
+              ['234/run2', length * 2 + 5],
+              ['234/run3', length * 10 + 1],
+            ]),
+            runColorOverrideForGroupBy: new Map(),
+          })
+        ),
+      };
+
+      expect(getRunColorMap(state)).toEqual({
+        '234/run1': CHART_COLOR_PALLETE[1],
+        '234/run2': CHART_COLOR_PALLETE[5],
+        '234/run3': CHART_COLOR_PALLETE[1],
+      });
     });
   });
 });
