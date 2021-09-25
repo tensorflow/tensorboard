@@ -81,7 +81,12 @@ def _buckets(data, bucket_count=None):
                     tf.floor(offsets / bucket_width), dtype=tf.int32
                 )
                 clamped_indices = tf.minimum(bucket_indices, bucket_count - 1)
-                one_hots = tf.one_hot(clamped_indices, depth=bucket_count)
+                # Use float64 instead of float32 to avoid accumulating floating point error
+                # later in tf.reduce_sum when summing more than 2^24 individual `1.0` values.
+                # See https://github.com/tensorflow/tensorflow/issues/51419 for details.
+                one_hots = tf.one_hot(
+                    clamped_indices, depth=bucket_count, dtype=tf.float64
+                )
                 bucket_counts = tf.cast(
                     tf.reduce_sum(input_tensor=one_hots, axis=0),
                     dtype=tf.float64,
