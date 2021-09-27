@@ -30,7 +30,7 @@ import {CardIdWithMetadata} from '../metrics_view_types';
         >
         <span
           *ngFor="let id of newCardPinnedIds"
-          [data-id]="id"
+          [attr.data-id]="id"
           class="new-card-pinned"
           >New card pinned</span
         >
