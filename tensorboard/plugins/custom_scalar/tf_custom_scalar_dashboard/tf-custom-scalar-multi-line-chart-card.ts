@@ -200,7 +200,7 @@ class _TfCustomScalarMultiLineChartCard
   active: boolean = true;
 
   @property({type: String})
-  title: string;
+  override title: string;
 
   @property({type: Array})
   tagRegexes: string[];

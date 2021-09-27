@@ -283,10 +283,10 @@ class _VzHistogramTimeseries
     this.scopeSubtree(this.$.svg, true);
   }
 
-  attached() {
+  override attached() {
     this._attached = true;
   }
-  detached() {
+  override detached() {
     this._attached = false;
   }
 

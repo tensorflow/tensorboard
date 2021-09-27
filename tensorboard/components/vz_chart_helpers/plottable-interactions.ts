@@ -145,7 +145,7 @@ class TouchDispatcher extends Plottable.Dispatchers.Touch {
       component.root().rootElement().node()
     );
   }
-  static getDispatcher(component) {
+  static override getDispatcher(component) {
     const element = component.root().rootElement();
     let dispatcher = element[(TouchDispatcher as any)._DISPATCHER_KEY];
     if (!dispatcher) {
@@ -195,7 +195,7 @@ class TouchDispatcher extends Plottable.Dispatchers.Touch {
 };
 
 export class PointerInteraction extends Plottable.Interactions.Pointer {
-  _anchor(component) {
+  override _anchor(component) {
     const anyThis = this as any;
     anyThis._isAnchored = true;
     anyThis._mouseDispatcher = MouseDispatcher.getDispatcher(

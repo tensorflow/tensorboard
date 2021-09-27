@@ -319,10 +319,10 @@ class TfGraphDashboard extends LegacyElementMixin(PolymerElement) {
   _autoExtractNodes: boolean;
   @property({type: Object})
   _selectedFile: any;
-  attached() {
+  override attached() {
     this.set('_isAttached', true);
   }
-  detached() {
+  override detached() {
     this.set('_isAttached', false);
   }
   ready() {

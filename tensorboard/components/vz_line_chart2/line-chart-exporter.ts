@@ -118,7 +118,7 @@ export class PlottableExporter {
 }
 
 export class LineChartExporter extends PlottableExporter {
-  shouldOmitNode(node: Node): boolean {
+  override shouldOmitNode(node: Node): boolean {
     // Scatter plot is useful for tooltip. Tooltip is meaningless in the
     // exported svg.
     if (node.nodeType == Node.ELEMENT_NODE) {

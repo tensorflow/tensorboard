@@ -102,7 +102,7 @@ class TfGraph extends LegacyElementMixin(PolymerElement) {
   })
   progress: object;
   @property({type: String})
-  title: string;
+  override title: string;
   @property({
     type: String,
     notify: true,

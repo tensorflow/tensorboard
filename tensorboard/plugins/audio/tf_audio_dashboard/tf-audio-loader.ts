@@ -217,7 +217,7 @@ class _TfAudioLoader
     return totalSamples > 1;
   }
 
-  attached() {
+  override attached() {
     this._attached = true;
     this.reload();
   }

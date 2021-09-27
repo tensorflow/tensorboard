@@ -66,7 +66,7 @@ class TfOptionSelector extends LegacyElementMixin(PolymerElement) {
   })
   selectedId: string;
 
-  attached() {
+  override attached() {
     this.async(function () {
       this.getEffectiveChildren().forEach(
         function (node) {

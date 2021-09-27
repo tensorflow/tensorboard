@@ -29,7 +29,7 @@ import {convertRectToExtent} from './utils';
  * In this coordinator, the output coordinate system is static from [0, 1000].
  */
 export class ThreeCoordinator extends Coordinator {
-  isYAxisPointedDown() {
+  override isYAxisPointedDown() {
     return false;
   }
 
@@ -42,7 +42,7 @@ export class ThreeCoordinator extends Coordinator {
     100
   );
 
-  setDomContainerRect(rect: Rect) {
+  override setDomContainerRect(rect: Rect) {
     // We set the camera extent based on the dom container size so the dimensions in
     // camera coordinate corresponds to dimensions in pixels. This way, in order to draw,
     // for example a circle, we don't have to map a pixel size to camera dimensions

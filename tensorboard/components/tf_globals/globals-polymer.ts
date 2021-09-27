@@ -19,6 +19,6 @@ import * as tf_globals from './globals';
 
 @customElement('tf-globals')
 class TfGlobals extends PolymerElement {
-  _template = null;
+  override _template = null;
   tf_globals = tf_globals;
 }

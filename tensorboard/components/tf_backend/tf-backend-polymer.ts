@@ -22,6 +22,6 @@ import * as tf_backend from './tf-backend';
 
 @customElement('tf-backend')
 class TfBackend extends PolymerElement {
-  _template = null;
+  override _template = null;
   tf_backend = tf_backend;
 }

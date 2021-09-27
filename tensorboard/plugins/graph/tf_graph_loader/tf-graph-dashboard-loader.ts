@@ -94,7 +94,7 @@ class TfGraphDashboardLoader extends LegacyElementMixin(PolymerElement) {
   outStats: object;
   @property({type: Object})
   _graphRunTag: GraphRunTag;
-  _template = null;
+  override _template = null;
   @observe('selection', 'compatibilityProvider')
   _selectionChanged(): void {
     if (!this.selection) {

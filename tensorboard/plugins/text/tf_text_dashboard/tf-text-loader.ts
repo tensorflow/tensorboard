@@ -128,7 +128,7 @@ class TfTextLoader extends LegacyElementMixin(PolymerElement) {
     });
   }
 
-  attached() {
+  override attached() {
     this.reload();
   }
 

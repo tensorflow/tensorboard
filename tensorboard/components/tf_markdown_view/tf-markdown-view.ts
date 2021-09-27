@@ -75,7 +75,7 @@ class TfMarkdownView extends LegacyElementMixin(PolymerElement) {
     return sanitize(this.html);
   }
 
-  attached() {
+  override attached() {
     window.requestAnimationFrame(() => {
       this.scopeSubtree(this.$.markdown, /*shouldObserve=*/ true);
     });

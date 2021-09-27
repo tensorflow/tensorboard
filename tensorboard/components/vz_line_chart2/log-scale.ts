@@ -43,33 +43,33 @@ export class LogScale extends TfScale {
     super();
     this.padProportion(0.2);
   }
-  public scale(x: number): number {
+  public override scale(x: number): number {
     // Returning NaN makes sure line plot does not plot illegal values.
     if (x <= 0) return NaN;
     return this._d3LogScale(x);
   }
-  public invert(x: number): number {
+  public override invert(x: number): number {
     return this._d3LogScale.invert(x);
   }
-  public scaleTransformation(value: number) {
+  public override scaleTransformation(value: number) {
     return this.scale(value);
   }
-  public invertedTransformation(value: number) {
+  public override invertedTransformation(value: number) {
     return this.invert(value);
   }
-  public getTransformationDomain(): [number, number] {
+  public override getTransformationDomain(): [number, number] {
     return this.domain() as [number, number];
   }
-  public setTransformationDomain(domain: [number, number]) {
+  public override setTransformationDomain(domain: [number, number]) {
     this.domain(domain);
   }
-  public getTransformationExtent(): [number, number] {
+  public override getTransformationExtent(): [number, number] {
     return this._getUnboundedExtent(true) as [number, number];
   }
-  protected _getDomain() {
+  protected override _getDomain() {
     return this._untransformedDomain;
   }
-  protected _setDomain(values: number[]) {
+  protected override _setDomain(values: number[]) {
     this._untransformedDomain = values;
     const [min, max] = values;
     super._setDomain([Math.max(MIN_POSITIVE_VALUE, min), max]);
@@ -77,7 +77,7 @@ export class LogScale extends TfScale {
   /**
    * Given a domain, pad it and clip the lower bound to MIN_POSITIVE_VALUE.
    */
-  protected _niceDomain(domain: number[], count?: number): number[] {
+  protected override _niceDomain(domain: number[], count?: number): number[] {
     const [low, high] = domain;
     const adjustedLogLow = Math.max(log(MIN_POSITIVE_VALUE), log(low));
     const logHigh = log(high);
@@ -94,7 +94,7 @@ export class LogScale extends TfScale {
    * lower and upper bound, respectively.
    * @override to remove default padding logic.
    */
-  protected _getUnboundedExtent(ignoreAttachState): number[] {
+  protected override _getUnboundedExtent(ignoreAttachState): number[] {
     const includedValues = this._getAllIncludedValues(ignoreAttachState);
     let extent = this._defaultExtent();
     if (includedValues.length !== 0) {
@@ -106,18 +106,20 @@ export class LogScale extends TfScale {
     }
     return extent;
   }
-  protected _getAllIncludedValues(ignoreAttachState = false): number[] {
+  protected override _getAllIncludedValues(
+    ignoreAttachState = false
+  ): number[] {
     const values = super._getAllIncludedValues();
     // For log scale, the value cannot be smaller or equal to 0. They are
     // negative infinity.
     return values.map((x) => (x > 0 ? x : MIN_POSITIVE_VALUE));
   }
-  protected _defaultExtent(): number[] {
+  protected override _defaultExtent(): number[] {
     return [1, 10];
   }
-  protected _backingScaleDomain(): number[];
-  protected _backingScaleDomain(values: number[]): this;
-  protected _backingScaleDomain(values?: number[]): any {
+  protected override _backingScaleDomain(): number[];
+  protected override _backingScaleDomain(values: number[]): this;
+  protected override _backingScaleDomain(values?: number[]): any {
     if (values == null) {
       return this._d3LogScale.domain();
     } else {
@@ -125,16 +127,16 @@ export class LogScale extends TfScale {
       return this;
     }
   }
-  protected _getRange() {
+  protected override _getRange() {
     return this._d3LogScale.range();
   }
-  protected _setRange(values: number[]) {
+  protected override _setRange(values: number[]) {
     this._d3LogScale.range(values);
   }
-  public defaultTicks(): number[] {
+  public override defaultTicks(): number[] {
     return this._d3LogScale.ticks(1);
   }
-  public ticks(): number[] {
+  public override ticks(): number[] {
     return this._d3LogScale.ticks();
   }
   /**
@@ -142,7 +144,7 @@ export class LogScale extends TfScale {
    * non-positive values when computing a `domain`.
    * @override
    */
-  public extentOfValues(values: number[]): number[] {
+  public override extentOfValues(values: number[]): number[] {
     // Log can only take positive values.
     const legalValues = values.filter(
       (x) => Plottable.Utils.Math.isValidNumber(x) && x > 0

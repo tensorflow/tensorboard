@@ -9,6 +9,7 @@
     "moduleResolution": "node",
     "noFallthroughCasesInSwitch": true,
     "noImplicitReturns": true,
+    "noImplicitOverride": true,
     "skipLibCheck": true,
     "strict": true,
     // Don't scan the node_modules/@types folder for ambient types.

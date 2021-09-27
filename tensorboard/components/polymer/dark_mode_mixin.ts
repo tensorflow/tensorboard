@@ -34,7 +34,7 @@ export function DarkModeMixin<T extends PolymerElement>(
   return class Foo extends Base {
     private observer?: MutationObserver;
 
-    connectedCallback() {
+    override connectedCallback() {
       super.connectedCallback();
       this._maybeSetDarkMode();
 
@@ -47,7 +47,7 @@ export function DarkModeMixin<T extends PolymerElement>(
       this.observer.observe(document.body, {attributes: true});
     }
 
-    disconnectedCallback() {
+    override disconnectedCallback() {
       super.disconnectedCallback();
       this.observer?.disconnect();
     }

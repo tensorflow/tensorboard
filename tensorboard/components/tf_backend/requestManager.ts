@@ -27,11 +27,11 @@ interface ResolveReject {
  * parsed JSON result from the request.
  */
 export class RequestCancellationError extends Error {
-  public name = 'RequestCancellationError';
+  public override name = 'RequestCancellationError';
 }
 
 export class InvalidRequestOptionsError extends Error {
-  public name = 'InvalidRequestOptionsError';
+  public override name = 'InvalidRequestOptionsError';
   constructor(msg: string) {
     super(msg);
     // The following is needed due to a limitation of TypeScript when
@@ -41,7 +41,7 @@ export class InvalidRequestOptionsError extends Error {
 }
 
 export class RequestNetworkError extends Error {
-  public name: string;
+  public override name: string;
   public req: XMLHttpRequest;
   public url: string;
   constructor(req: XMLHttpRequest, url) {

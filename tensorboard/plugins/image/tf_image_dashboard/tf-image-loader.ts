@@ -285,7 +285,7 @@ class TfImageLoader extends LegacyElementMixin(PolymerElement) {
   _getAriaExpanded() {
     return this.actualSize ? 'true' : 'false';
   }
-  attached() {
+  override attached() {
     this.reload();
   }
   @observe('run', 'tag')

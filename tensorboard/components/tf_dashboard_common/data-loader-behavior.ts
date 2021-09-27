@@ -103,7 +103,7 @@ export function DataLoaderBehavior<Item, Data>(
       this._isConnected = true;
     }
 
-    disconnectedCallback() {
+    override disconnectedCallback() {
       super.disconnectedCallback();
       this._isConnected = false;
     }
