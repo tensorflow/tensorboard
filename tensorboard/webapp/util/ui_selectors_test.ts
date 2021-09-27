@@ -202,6 +202,7 @@ describe('ui_selectors test', () => {
                   new Map([
                     ['123/run1', false],
                     ['123/run2', true],
+                    ['123/run3', true],
                     ['234/run1', true],
                     ['234/run2', true],
                     ['234/run3', false],
@@ -209,12 +210,13 @@ describe('ui_selectors test', () => {
                 ],
               ]),
               runIds: {
-                '123': ['123/run1', '123/run2'],
+                '123': ['123/run1', '123/run2', '123/run3'],
                 '234': ['234/run1', '234/run2', '234/run3'],
               },
               runMetadata: {
                 '123/run1': buildRun({id: '123/run1', name: 'run1'}),
                 '123/run2': buildRun({id: '123/run2', name: 'run2'}),
+                '123/run3': buildRun({id: '123/run3', name: 'run3'}),
                 '234/run1': buildRun({id: '234/run1', name: 'run1'}),
                 '234/run2': buildRun({id: '234/run2', name: 'run2'}),
                 '234/run3': buildRun({id: '234/run3', name: 'run3'}),
@@ -239,6 +241,8 @@ describe('ui_selectors test', () => {
             // legacy name = "apple/run2" and does not match `r.n[1]` and
             // `apple/r..3`.
             ['123/run2', false],
+            // legacy name = "appple/run3" matches "apple/r..3".
+            ['123/run3', true],
             // legacy name = "banana/run1". Inherits true + matches `r.n[1]`.
             ['234/run1', true],
             // legacy name = "banana/run2". Does not match `r.n[1]` and

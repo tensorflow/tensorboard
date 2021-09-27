@@ -25,14 +25,14 @@ export interface RunMatchable {
 /**
  * Matches an entry based on regex and business logic.
  *
+ * - Regex matches name of a run.
+ * - When `shouldMatchExperiment` is specified, it matches regex against one of
+ *   experiment name, experiment alias, and legacy run name which is generated
+ *   with "<exp alias>/<run name>".
  * - An empty regex string always returns true.
  * - Invalid regex always return false.
  * - Regex matches are case insensitive.
  * - Regex matches are not anchored.
- * - Matches name of a run.
- * - When `shouldMatchExperiment` is specified, it matches against experiment
- *   name, experiment alias, and legacy run name which is generated with
- *   "<exp alias>/<run name>".
  */
 export function matchRunToRegex(
   runMatchable: RunMatchable,

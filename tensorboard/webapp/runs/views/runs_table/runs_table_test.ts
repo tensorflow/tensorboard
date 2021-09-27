@@ -1530,11 +1530,10 @@ describe('runs_table', () => {
         ['LotR', 'The Silmarillion'],
       ]);
 
-      // Alias for Harry Potter contains "z". Since legacy Polymer based
-      // tf-run-selector matches, and the new Angular run selector, regex
+      // Alias for Harry Potter contains "z". Since legacy Polymer-based
+      // tf-run-selector and the new Angular run selector match regex
       // against '<alias>/<run name>' instead of '<experiment>/<run name>',
       // below regex matches:
-      // - HPz/The Chamber of S(ecrets)
       // - LotR/The S(ilmarillion)
       store.overrideSelector(getRunSelectorRegexFilter, 'o[^z]+/.+S[ei]');
       store.refreshState();

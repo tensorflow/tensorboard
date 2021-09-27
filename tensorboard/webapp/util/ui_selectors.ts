@@ -28,16 +28,16 @@ limitations under the License.
 import {createSelector} from '@ngrx/store';
 
 import {
-  getDefaultRunColorIdMap,
   getExperimentIdsFromRoute,
   getExperimentIdToAliasMap,
   getRouteKind,
-  getRunColorOverride,
 } from '../app_routing/store/app_routing_selectors';
 import {RouteKind} from '../app_routing/types';
 import {State} from '../app_state';
 import {getExperiment} from '../experiments/store/experiments_selectors';
 import {
+  getDefaultRunColorIdMap,
+  getRunColorOverride,
   getRuns,
   getRunSelectionMap,
   getRunSelectorRegexFilter,
