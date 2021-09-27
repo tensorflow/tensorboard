@@ -58,6 +58,7 @@ import {DiscreteFilter, IntervalFilter} from '../../../hparams/types';
 import {
   getColorGroupRegexString,
   getCurrentRouteRunSelection,
+  getDarkModeEnabled,
   getEnabledColorGroup,
   getEnabledColorGroupByRegex,
   getExperiment,
@@ -73,6 +74,8 @@ import {
   getRunSelectorSort,
   getRunsLoadState,
 } from '../../../selectors';
+import {selectors as settingsSelectors} from '../../../settings';
+import {buildColorPalette} from '../../../settings/testing';
 import {sendKeys} from '../../../testing/dom';
 import {MatIconTestingModule} from '../../../testing/mat_icon_module';
 import {DataLoadState} from '../../../types/data';
@@ -291,6 +294,11 @@ describe('runs_table', () => {
     store.overrideSelector(getRunGroupBy, {key: GroupByKey.RUN});
     store.overrideSelector(getColorGroupRegexString, '');
     store.overrideSelector(getRegisteredRouteKinds, new Set<RouteKind>());
+    store.overrideSelector(getDarkModeEnabled, false);
+    store.overrideSelector(
+      settingsSelectors.getColorPalette,
+      buildColorPalette()
+    );
     dispatchSpy = spyOn(store, 'dispatch').and.callFake((action: Action) => {
       actualActions.push(action);
     });
