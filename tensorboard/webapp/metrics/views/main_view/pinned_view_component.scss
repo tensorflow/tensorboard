@@ -28,6 +28,7 @@ mat-icon {
 .group-text {
   display: flex;
   align-items: baseline;
+  gap: 6px;
 }
 
 .group-title {
@@ -36,9 +37,33 @@ mat-icon {
 
 .group-card-count {
   @include metrics-card-group-count-text;
-  margin-left: 6px;
 }
 
 .empty-message {
   @include metrics-empty-message;
+}
+
+.new-card-pinned {
+  animation: pinned-view-fade-out 3s linear;
+  background: mat-color($mat-red, 500);
+  border-radius: 5px;
+  color: #fff;
+  display: inline-block;
+  font-size: 13px;
+  opacity: 0;
+  padding: 3px 5px;
+}
+
+@keyframes pinned-view-fade-out {
+  from {
+    opacity: 1;
+  }
+
+  66% {
+    opacity: 0.99;
+  }
+
+  to {
+    opacity: 0;
+  }
 }
