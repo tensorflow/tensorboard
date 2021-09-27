@@ -92,9 +92,17 @@ export function combineDefaultHparamFilters(
     {minValue, maxValue, filterLowerValue, filterUpperValue},
   ] of intervalHparamsBounds) {
     if (combinedHparams.has(name)) {
-      throw new RangeError(
-        `Cannot combine hparam, ${name}, as it is of mixed types.`
-      );
+      const existingHparam = combinedHparams.get(name)!;
+      // Reconcile incompatible filters if discrete one is empty or has
+      // empty values.
+      if (
+        existingHparam.type === DomainType.DISCRETE &&
+        existingHparam.possibleValues.some((value) => value)
+      ) {
+        throw new RangeError(
+          `Cannot combine hparam, ${name}, as it is of mixed types.`
+        );
+      }
     }
 
     combinedHparams.set(name, {

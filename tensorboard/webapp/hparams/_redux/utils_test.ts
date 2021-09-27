@@ -231,6 +231,55 @@ describe('hparams/_redux/utils test', () => {
         ])
       ).toThrow();
     });
+
+    it('does not throw there exists a conflicting hparam that only has empty values', () => {
+      expect(() =>
+        combineDefaultHparamFilters([
+          new Map([
+            ['foo', buildDiscreteFilter({possibleValues: ['', 'bar']})],
+          ]),
+          new Map([
+            [
+              'foo',
+              buildIntervalFilter({
+                filterLowerValue: -100,
+                filterUpperValue: 100,
+              }),
+            ],
+          ]),
+        ])
+      ).toThrow();
+
+      expect(() =>
+        combineDefaultHparamFilters([
+          new Map([['foo', buildDiscreteFilter({possibleValues: ['']})]]),
+          new Map([
+            [
+              'foo',
+              buildIntervalFilter({
+                filterLowerValue: -100,
+                filterUpperValue: 100,
+              }),
+            ],
+          ]),
+        ])
+      ).not.toThrow();
+
+      expect(() =>
+        combineDefaultHparamFilters([
+          new Map([['foo', buildDiscreteFilter({possibleValues: []})]]),
+          new Map([
+            [
+              'foo',
+              buildIntervalFilter({
+                filterLowerValue: -100,
+                filterUpperValue: 100,
+              }),
+            ],
+          ]),
+        ])
+      ).not.toThrow();
+    });
   });
 
   describe('combineDefaultMetricFilters', () => {
