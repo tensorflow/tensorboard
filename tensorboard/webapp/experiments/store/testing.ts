@@ -17,6 +17,7 @@ import {
   EXPERIMENTS_FEATURE_KEY,
   ExperimentsState,
   State,
+  ExperimentsDataState,
 } from './experiments_types';
 
 /**
@@ -31,6 +32,17 @@ export function buildExperiment(override?: Partial<Experiment>) {
     start_time: 1,
     tags: undefined,
     ...override,
+  };
+}
+
+export function buildExperimentState(
+  override?: Partial<ExperimentsDataState>
+): ExperimentsState {
+  return {
+    data: {
+      experimentMap: {},
+      ...override,
+    },
   };
 }
 

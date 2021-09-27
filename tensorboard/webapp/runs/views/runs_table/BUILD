@@ -67,6 +67,7 @@ tf_ng_module(
         "//tensorboard/webapp/types",
         "//tensorboard/webapp/types:ui",
         "//tensorboard/webapp/util:colors",
+        "//tensorboard/webapp/util:matcher",
         "//tensorboard/webapp/widgets/filter_input",
         "//tensorboard/webapp/widgets/range_input",
         "@npm//@angular/common",

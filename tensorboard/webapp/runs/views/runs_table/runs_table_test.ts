@@ -1472,7 +1472,7 @@ describe('runs_table', () => {
       });
     });
 
-    it('filters by original experiment name and legacy run name', () => {
+    it('filters by legacy experiment alias and run name put together', () => {
       selectSpy
         .withArgs(getExperiment, {experimentId: 'rowling'})
         .and.returnValue(
@@ -1530,18 +1530,15 @@ describe('runs_table', () => {
         ['LotR', 'The Silmarillion'],
       ]);
 
-      // Alias for Harry Potter contains "z". If we were matching against
-      // alias + run name, Harry Potter should not match below.
-      // This regex matches:
-      // - (Harry P)*o*tter/The Chamber of S(ecrets)
-      // - (The L)ord of the rings/The S(ilmarillion)
-      // and does not match
-      // - HPz/The Chamber of S(ecrets) because of "[^z]+".
+      // Alias for Harry Potter contains "z". Since legacy Polymer-based
+      // tf-run-selector and the new Angular run selector match regex
+      // against '<alias>/<run name>' instead of '<experiment>/<run name>',
+      // below regex matches:
+      // - LotR/The S(ilmarillion)
       store.overrideSelector(getRunSelectorRegexFilter, 'o[^z]+/.+S[ei]');
       store.refreshState();
       fixture.detectChanges();
       expect(getTableRowTextContent(fixture)).toEqual([
-        ['HPz', 'The Chamber Of Secrets'],
         ['LotR', 'The Silmarillion'],
       ]);
     });
