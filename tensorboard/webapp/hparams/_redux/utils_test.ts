@@ -232,7 +232,7 @@ describe('hparams/_redux/utils test', () => {
       ).toThrow();
     });
 
-    it('does not throw there exists a conflicting hparam that only has empty values', () => {
+    it('does not throw if there exists a conflicting hparam that only has empty values', () => {
       expect(() =>
         combineDefaultHparamFilters([
           new Map([
