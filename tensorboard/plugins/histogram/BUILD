@@ -112,7 +112,7 @@ py_library(
 
 py_test(
     name = "summary_test",
-    size = "small",
+    size = "medium",
     srcs = ["summary_test.py"],
     main = "summary_test.py",
     srcs_version = "PY3",
