@@ -38,6 +38,7 @@ py_library(
         ":error",
         ":metadata",
         ":protos_all_py_pb2",
+        "//tensorboard:errors",
         "//tensorboard:plugin_util",
         "//tensorboard/backend:http_util",
         "//tensorboard/data:provider",

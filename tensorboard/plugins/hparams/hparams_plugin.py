@@ -25,6 +25,7 @@ import json
 import werkzeug
 from werkzeug import wrappers
 
+from tensorboard import errors
 from tensorboard import plugin_util
 from tensorboard.plugins.hparams import api_pb2
 from tensorboard.plugins.hparams import backend_context
@@ -106,6 +107,10 @@ class HParamsPlugin(base_plugin.TBPlugin):
         except error.HParamsError as e:
             logger.error("HParams error: %s" % e)
             raise werkzeug.exceptions.BadRequest(description=str(e))
+        except errors.NotFoundError as e:
+            logger.info("HParams not found: %s" % e)
+            # TODO(#5347): Return 200 instead of 400 when there's no hparams data.
+            raise werkzeug.exceptions.BadRequest(description=str(e))
 
     # ---- /experiment -----------------------------------------------------------
     @wrappers.Request.application
@@ -129,6 +134,10 @@ class HParamsPlugin(base_plugin.TBPlugin):
             )
         except error.HParamsError as e:
             logger.error("HParams error: %s" % e)
+            raise werkzeug.exceptions.BadRequest(description=str(e))
+        except errors.NotFoundError as e:
+            logger.info("HParams not found: %s" % e)
+            # TODO(#5347): Return 200 instead of 400 when there's no hparams data.
             raise werkzeug.exceptions.BadRequest(description=str(e))
 
     # ---- /session_groups -------------------------------------------------------
