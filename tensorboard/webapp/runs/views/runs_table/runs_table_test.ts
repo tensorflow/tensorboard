@@ -2138,6 +2138,65 @@ describe('runs_table', () => {
       ]);
     });
 
+    it('does not load the hparams filter when it is off', () => {
+      const selectSpy = spyOn(store, 'select').and.callThrough();
+      const hparamSpecs = [
+        buildHparamSpec({
+          name: 'batch_size',
+          displayName: 'Batch size',
+          domain: {type: DomainType.INTERVAL, minValue: 16, maxValue: 128},
+        }),
+        buildHparamSpec({
+          name: 'dropout',
+          displayName: '',
+          domain: {type: DomainType.INTERVAL, minValue: 0.3, maxValue: 0.8},
+        }),
+      ];
+      const metricSpecs = [
+        buildMetricSpec({tag: 'acc', displayName: 'Accuracy'}),
+        buildMetricSpec({tag: 'loss', displayName: ''}),
+      ];
+
+      selectSpy
+        .withArgs(hparamsSelectors.getHparamFilterMap, jasmine.any(String))
+        .and.throwError('Should not be read');
+      selectSpy
+        .withArgs(hparamsSelectors.getMetricFilterMap, jasmine.any(String))
+        .and.throwError('Should not be read');
+
+      store.overrideSelector(getRuns, [
+        buildRun({
+          id: 'book1',
+          name: 'Book 1',
+          hparams: [{name: 'batch_size', value: 32}],
+        }),
+        buildRun({
+          id: 'book2',
+          name: 'Book 2',
+          hparams: [
+            {name: 'batch_size', value: 128},
+            {name: 'dropout', value: 0.3},
+          ],
+          metrics: [{tag: 'acc', value: 0.91}],
+        }),
+        buildRun({
+          id: 'book3',
+          name: 'Book 3',
+          metrics: [
+            {tag: 'acc', value: 0.7},
+            {tag: 'loss', value: 0},
+          ],
+        }),
+      ]);
+
+      const fixture = createComponent(hparamSpecs, metricSpecs, false);
+      expect(getTableRowTextContent(fixture)).toEqual([
+        ['Book 1'],
+        ['Book 2'],
+        ['Book 3'],
+      ]);
+    });
+
     describe('filtering', () => {
       let TEST_HPARAM_SPECS: HparamSpec[];
       let TEST_METRIC_SPECS: MetricSpec[];

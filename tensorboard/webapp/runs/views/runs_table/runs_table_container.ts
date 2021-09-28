@@ -22,7 +22,6 @@ import {
 import {createSelector, Store} from '@ngrx/store';
 import {combineLatest, Observable, of, Subject} from 'rxjs';
 import {
-  combineLatestWith,
   filter,
   map,
   shareReplay,
@@ -455,36 +454,40 @@ export class RunsTableContainer implements OnInit, OnDestroy {
           );
         });
       }),
-      combineLatestWith(
-        this.store.select(
-          hparamsSelectors.getHparamFilterMap,
-          this.experimentIds
-        ),
-        this.store.select(
-          hparamsSelectors.getMetricFilterMap,
-          this.experimentIds
-        )
-      ),
-      map(([items, hparamFilters, metricFilters]) => {
+      switchMap((items) => {
         if (!this.showHparamsAndMetrics) {
-          return items;
+          return of(items);
         }
-        return items.filter(({hparams, metrics}) => {
-          const hparamMatches = [...hparamFilters.entries()].every(
-            ([hparamName, filter]) => {
-              const value = hparams.get(hparamName);
-              return matchFilter(filter, value);
-            }
-          );
 
-          return (
-            hparamMatches &&
-            [...metricFilters.entries()].every(([metricTag, filter]) => {
-              const value = metrics.get(metricTag);
-              return matchFilter(filter, value);
-            })
-          );
-        });
+        return combineLatest(
+          this.store.select(
+            hparamsSelectors.getHparamFilterMap,
+            this.experimentIds
+          ),
+          this.store.select(
+            hparamsSelectors.getMetricFilterMap,
+            this.experimentIds
+          )
+        ).pipe(
+          map(([hparamFilters, metricFilters]) => {
+            return items.filter(({hparams, metrics}) => {
+              const hparamMatches = [...hparamFilters.entries()].every(
+                ([hparamName, filter]) => {
+                  const value = hparams.get(hparamName);
+                  return matchFilter(filter, value);
+                }
+              );
+
+              return (
+                hparamMatches &&
+                [...metricFilters.entries()].every(([metricTag, filter]) => {
+                  const value = metrics.get(metricTag);
+                  return matchFilter(filter, value);
+                })
+              );
+            });
+          })
+        );
       })
     );
   }
