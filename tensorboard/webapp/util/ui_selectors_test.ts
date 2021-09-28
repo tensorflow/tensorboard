@@ -18,11 +18,17 @@ import {
 } from '../app_routing/store/testing';
 import {buildRoute} from '../app_routing/testing';
 import {RouteKind} from '../app_routing/types';
+import {State} from '../app_state';
 import {
   buildExperiment,
   buildExperimentState,
   buildStateFromExperimentsState,
 } from '../experiments/store/testing';
+import {
+  buildFeatureFlag,
+  buildFeatureFlagState as buildFeatureFlagState,
+  buildState as buildStateFromFeatureFlagState,
+} from '../feature_flag/store/testing';
 import {
   buildRun,
   buildRunsState,
@@ -36,7 +42,13 @@ import {
   getRouteKind,
   getRunSelectionMap,
 } from '../selectors';
-import {CHART_COLOR_PALLETE, NON_MATCHED_COLOR} from './colors';
+import {
+  buildColorPalette,
+  createSettings as buildSettings,
+  createSettingsState as buildSettingsState,
+  createState as buildStateFromSettingsState,
+} from '../settings/testing';
+import {ColorPalette} from './colors';
 import {getCurrentRouteRunSelection, getRunColorMap} from './ui_selectors';
 
 describe('ui_selectors test', () => {
@@ -257,84 +269,154 @@ describe('ui_selectors test', () => {
   });
 
   describe('#getRunColorMap', () => {
-    it('returns color from color id from the default PALETTE', () => {
-      const state = {
+    function buildState(
+      defaultRunColorIdForGroupBy: Map<string, number> = new Map(),
+      runColorOverrideForGroupBy: Map<string, string> = new Map(),
+      colorPalette: ColorPalette = buildColorPalette(),
+      useDarkMode: boolean = false
+    ): State {
+      return {
         ...buildStateFromRunsState(
           buildRunsState({
-            defaultRunColorIdForGroupBy: new Map([
-              ['234/run1', 0],
-              ['234/run2', 0],
-              ['234/run3', 1],
-            ]),
-            runColorOverrideForGroupBy: new Map(),
+            defaultRunColorIdForGroupBy,
+            runColorOverrideForGroupBy,
+          })
+        ),
+        ...buildStateFromSettingsState(
+          buildSettingsState({
+            settings: buildSettings({colorPalette}),
+          })
+        ),
+        ...buildStateFromFeatureFlagState(
+          buildFeatureFlagState({
+            defaultFlags: buildFeatureFlag({
+              defaultEnableDarkMode: useDarkMode,
+            }),
           })
         ),
       };
+    }
+
+    it('returns color from color id from the default PALETTE', () => {
+      const state = buildState(
+        new Map([
+          ['234/run1', 0],
+          ['234/run2', 0],
+          ['234/run3', 1],
+        ]),
+        new Map(),
+        buildColorPalette({
+          colors: [
+            {name: 'color1', lightHex: '#000', darkHex: '#aaa'},
+            {name: 'color2', lightHex: '#111', darkHex: '#bbb'},
+            {name: 'color3', lightHex: '#222', darkHex: '#ccc'},
+          ],
+        }),
+        false
+      );
 
       expect(getRunColorMap(state)).toEqual({
-        '234/run1': CHART_COLOR_PALLETE[0],
-        '234/run2': CHART_COLOR_PALLETE[0],
-        '234/run3': CHART_COLOR_PALLETE[1],
+        '234/run1': '#000',
+        '234/run2': '#000',
+        '234/run3': '#111',
       });
     });
 
-    it('sets NON_MATCHED_COLOR when id is -1', () => {
-      const state = {
-        ...buildStateFromRunsState(
-          buildRunsState({
-            defaultRunColorIdForGroupBy: new Map([
-              ['234/run1', -1],
-              ['234/run2', 0],
-            ]),
-            runColorOverrideForGroupBy: new Map(),
-          })
-        ),
-      };
+    it('sets color to inactive one when id is -1', () => {
+      const state = buildState(
+        new Map([
+          ['234/run1', -1],
+          ['234/run2', 0],
+        ]),
+        new Map(),
+        buildColorPalette({
+          colors: [
+            {name: 'color1', lightHex: '#000', darkHex: '#aaa'},
+            {name: 'color2', lightHex: '#111', darkHex: '#bbb'},
+          ],
+          inactive: {name: 'color3', lightHex: '#222', darkHex: '#ccc'},
+        }),
+        false
+      );
 
       expect(getRunColorMap(state)).toEqual({
-        '234/run1': NON_MATCHED_COLOR,
-        '234/run2': CHART_COLOR_PALLETE[0],
+        '234/run1': '#222',
+        '234/run2': '#000',
       });
     });
 
     it('returns runColorOverride one if it is present', () => {
-      const state = {
-        ...buildStateFromRunsState(
-          buildRunsState({
-            defaultRunColorIdForGroupBy: new Map([
-              ['234/run1', -1],
-              ['234/run2', 0],
-            ]),
-            runColorOverrideForGroupBy: new Map([['234/run1', '#aaa']]),
-          })
-        ),
-      };
+      const state = buildState(
+        new Map([
+          ['234/run1', -1],
+          ['234/run2', 0],
+        ]),
+        new Map([['234/run1', '#aaa']]),
+        buildColorPalette({
+          colors: [
+            {name: 'color1', lightHex: '#000', darkHex: '#aaa'},
+            {name: 'color2', lightHex: '#111', darkHex: '#bbb'},
+          ],
+        }),
+        false
+      );
 
       expect(getRunColorMap(state)).toEqual({
         '234/run1': '#aaa',
-        '234/run2': CHART_COLOR_PALLETE[0],
+        '234/run2': '#000',
       });
     });
 
     it('cycles color palette even if ids are high', () => {
-      const length = [...CHART_COLOR_PALLETE.keys()].length;
-      const state = {
-        ...buildStateFromRunsState(
-          buildRunsState({
-            defaultRunColorIdForGroupBy: new Map([
-              ['234/run1', length * 2 + 1],
-              ['234/run2', length * 2 + 5],
-              ['234/run3', length * 10 + 1],
-            ]),
-            runColorOverrideForGroupBy: new Map(),
-          })
-        ),
-      };
+      const state = buildState(
+        new Map([
+          ['234/run1', 5],
+          ['234/run2', 10],
+          ['234/run3', 11],
+        ]),
+        new Map(),
+        buildColorPalette({
+          colors: [
+            {name: 'color1', lightHex: '#000', darkHex: '#aaa'},
+            {name: 'color2', lightHex: '#111', darkHex: '#bbb'},
+            {name: 'color3', lightHex: '#222', darkHex: '#ccc'},
+            {name: 'color4', lightHex: '#333', darkHex: '#ddd'},
+            {name: 'color5', lightHex: '#444', darkHex: '#eee'},
+            {name: 'color6', lightHex: '#555', darkHex: '#fff'},
+          ],
+        }),
+        false
+      );
 
       expect(getRunColorMap(state)).toEqual({
-        '234/run1': CHART_COLOR_PALLETE[1],
-        '234/run2': CHART_COLOR_PALLETE[5],
-        '234/run3': CHART_COLOR_PALLETE[1],
+        '234/run1': '#555',
+        '234/run2': '#444',
+        '234/run3': '#555',
+      });
+    });
+
+    it('returns darkHex when dark mode is enabled', () => {
+      const state = buildState(
+        new Map([
+          ['234/run1', 0],
+          ['234/run2', 0],
+          ['234/run3', 1],
+        ]),
+        new Map(),
+        buildColorPalette({
+          colors: [
+            {name: 'color1', lightHex: '#000', darkHex: '#aaa'},
+            {name: 'color2', lightHex: '#111', darkHex: '#bbb'},
+            {name: 'color3', lightHex: '#222', darkHex: '#ccc'},
+          ],
+        }),
+        true
+      );
+
+      expect(getRunColorMap(state)).toEqual({
+        '234/run1': '#aaa',
+        '234/run2': '#aaa',
+        '234/run3': '#bbb',
       });
     });
   });

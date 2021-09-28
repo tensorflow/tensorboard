@@ -26,7 +26,8 @@ import {
 } from 'rxjs/operators';
 
 import {State} from '../../../app_state';
-import {CHART_COLOR_PALLETE} from '../../../util/colors';
+import {getDarkModeEnabled} from '../../../selectors';
+import {selectors as settingsSelectors} from '../../../settings/';
 import {runGroupByChanged} from '../../actions';
 import {
   getColorGroupRegexString,
@@ -83,27 +84,38 @@ export class RegexEditDialogContainer {
           return false;
         }
       }),
-      combineLatestWith(this.allRuns$, this.runIdToEid$),
-      map(([regexString, allRuns, runIdToEid]) => {
-        const groupBy = {
-          key: GroupByKey.REGEX,
-          regexString,
-        };
-        const groups = groupRuns(groupBy, allRuns, runIdToEid);
-        const groupKeyToColorString = new Map<string, string>();
-        const colorRunPairList: ColorGroup[] = [];
+      combineLatestWith(
+        this.allRuns$,
+        this.runIdToEid$,
+        this.store.select(settingsSelectors.getColorPalette),
+        this.store.select(getDarkModeEnabled)
+      ),
+      map(
+        ([regexString, allRuns, runIdToEid, colorPalette, darkModeEanbled]) => {
+          const groupBy = {
+            key: GroupByKey.REGEX,
+            regexString,
+          };
+          const groups = groupRuns(groupBy, allRuns, runIdToEid);
+          const groupKeyToColorString = new Map<string, string>();
+          const colorRunPairList: ColorGroup[] = [];
 
-        for (const [groupId, runs] of Object.entries(groups.matches)) {
-          const color =
-            groupKeyToColorString.get(groupId) ??
-            CHART_COLOR_PALLETE[
-              groupKeyToColorString.size % CHART_COLOR_PALLETE.length
-            ];
-          groupKeyToColorString.set(groupId, color);
-          colorRunPairList.push({groupId, color, runs});
+          for (const [groupId, runs] of Object.entries(groups.matches)) {
+            let colorHex: string | undefined =
+              groupKeyToColorString.get(groupId);
+            if (!colorHex) {
+              const color =
+                colorPalette.colors[
+                  groupKeyToColorString.size % colorPalette.colors.length
+                ];
+              colorHex = darkModeEanbled ? color.darkHex : color.lightHex;
+              groupKeyToColorString.set(groupId, colorHex);
+            }
+            colorRunPairList.push({groupId, color: colorHex, runs});
+          }
+          return colorRunPairList;
         }
-        return colorRunPairList;
-      })
+      )
     );
   }).pipe(startWith([]));
 

@@ -30,12 +30,16 @@ import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {Action, Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
+
 import {State} from '../../../app_state';
 import {
   getColorGroupRegexString,
+  getDarkModeEnabled,
   getRunIdsForExperiment,
   getRuns,
 } from '../../../selectors';
+import {selectors as settingsSelectors} from '../../../settings';
+import {buildColorPalette} from '../../../settings/testing';
 import {KeyType, sendKey, SendKeyArgs} from '../../../testing/dom';
 import {runGroupByChanged} from '../../actions';
 import {buildRun} from '../../store/testing';
@@ -76,6 +80,11 @@ describe('regex_edit_dialog', () => {
     store.overrideSelector(getColorGroupRegexString, 'test regex string');
     store.overrideSelector(getRuns, []);
     store.overrideSelector(getRunIdsForExperiment, []);
+    store.overrideSelector(getDarkModeEnabled, false);
+    store.overrideSelector(
+      settingsSelectors.getColorPalette,
+      buildColorPalette()
+    );
     actualActions = [];
     dispatchSpy = spyOn(store, 'dispatch').and.callFake((action: Action) => {
       actualActions.push(action);
