@@ -1614,8 +1614,8 @@ describe('metrics main view', () => {
         expect(card2IndicatorBefore.nativeElement).not.toBe(
           card2IndicatorAfter.nativeElement
         );
-        expect(card2IndicatorBefore.properties['data-id']).not.toBe(
-          card2IndicatorAfter.properties['data-id']
+        expect(card2IndicatorBefore.attributes['data-id']).not.toBe(
+          card2IndicatorAfter.attributes['data-id']
         );
       });
 
