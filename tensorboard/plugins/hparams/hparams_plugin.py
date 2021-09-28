@@ -109,6 +109,7 @@ class HParamsPlugin(base_plugin.TBPlugin):
             raise werkzeug.exceptions.BadRequest(description=str(e))
         except errors.NotFoundError as e:
             logger.info("HParams not found: %s" % e)
+            # TODO(#5347): Return 200 instead of 400 when there's no hparams data.
             raise werkzeug.exceptions.BadRequest(description=str(e))
 
     # ---- /experiment -----------------------------------------------------------
@@ -136,6 +137,7 @@ class HParamsPlugin(base_plugin.TBPlugin):
             raise werkzeug.exceptions.BadRequest(description=str(e))
         except errors.NotFoundError as e:
             logger.info("HParams not found: %s" % e)
+            # TODO(#5347): Return 200 instead of 400 when there's no hparams data.
             raise werkzeug.exceptions.BadRequest(description=str(e))
 
     # ---- /session_groups -------------------------------------------------------
