@@ -389,7 +389,9 @@ def histogram_v3(name, data, step=None, buckets=None, description=None):
 
     # TODO(ytjing): add special case handling.
     with summary_scope(
-        name, 'histogram_summary', values=[data, buckets, step]) as (tag, _):
+        name, "histogram_summary", values=[data, buckets, step]
+    ) as (tag, _):
         tensor = _buckets(data, bucket_count=buckets)
         return tf.summary.write(
-            tag=tag, tensor=tensor, step=step, metadata=summary_metadata)
+            tag=tag, tensor=tensor, step=step, metadata=summary_metadata
+        )
