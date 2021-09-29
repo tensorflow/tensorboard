@@ -112,7 +112,8 @@ py_library(
 
 py_test(
     name = "summary_test",
-    size = "small",
+    # Ensure enough RAM for test_with_large_counts.
+    size = "medium",
     srcs = ["summary_test.py"],
     main = "summary_test.py",
     srcs_version = "PY3",
