@@ -33,9 +33,9 @@ message Experiment {
   // experiment, across all time series, including estimated overhead.
   // Output-only.
   int64 total_blob_bytes = 10;
-  // The owner of this experiment.  This field is ignored on upload, with owner
-  // information coming from the authentication information passed alongside
-  // the proto.
+  // The owner of this experiment, as an opaque user_id string.  This field is
+  // ignored on upload, with owner information coming from the authentication
+  // information passed alongside the proto.
   string owner = 11;
 }
 
