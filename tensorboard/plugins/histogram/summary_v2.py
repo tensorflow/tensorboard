@@ -397,7 +397,7 @@ def histogram_v3(name, data, step=None, buckets=None, description=None):
         # actually written.
         @lazy_tensor_creator.LazyTensorCreator
         def lazy_tensor():
-            return _buckets(data, buckets)
+            return _buckets_v3(data, buckets)
 
         return tf.summary.write(
             tag=tag,
@@ -405,3 +405,77 @@ def histogram_v3(name, data, step=None, buckets=None, description=None):
             step=step,
             metadata=summary_metadata,
         )
+
+
+def _buckets_v3(data, bucket_count=None):
+    """Create a TensorFlow op to group data into histogram buckets.
+
+    Arguments:
+      data: A `Tensor` of any shape. Must be castable to `float64`.
+      bucket_count: Optional positive `int` or scalar `int32` `Tensor`.
+    Returns:
+      A `Tensor` of shape `[k, 3]` and type `float64`. The `i`th row is
+      a triple `[left_edge, right_edge, count]` for a single bucket.
+      The value of `k` is either `bucket_count` or `0` (when input data
+      is empty).
+    """
+    if bucket_count is None:
+        bucket_count = DEFAULT_BUCKET_COUNT
+    with tf.name_scope("buckets"):
+        tf.debugging.assert_scalar(bucket_count)
+        tf.debugging.assert_type(bucket_count, tf.int32)
+        data = tf.reshape(data, shape=[-1])  # flatten
+        data = tf.cast(data, tf.float64)
+        is_empty = tf.equal(tf.size(input=data), 0)
+
+        def when_empty():
+            return tf.constant([], shape=(0, 3), dtype=tf.float64)
+
+        # TODO(ytjing): Make the nonempty case handling TPU compatible.
+        def when_nonempty():
+            min_ = tf.reduce_min(input_tensor=data)
+            max_ = tf.reduce_max(input_tensor=data)
+            range_ = max_ - min_
+            is_singular = tf.equal(range_, 0)
+
+            def when_nonsingular():
+                bucket_width = range_ / tf.cast(bucket_count, tf.float64)
+                offsets = data - min_
+                bucket_indices = tf.cast(
+                    tf.floor(offsets / bucket_width), dtype=tf.int32
+                )
+                clamped_indices = tf.minimum(bucket_indices, bucket_count - 1)
+                # Use float64 instead of float32 to avoid accumulating floating point error
+                # later in tf.reduce_sum when summing more than 2^24 individual `1.0` values.
+                # See https://github.com/tensorflow/tensorflow/issues/51419 for details.
+                one_hots = tf.one_hot(
+                    clamped_indices, depth=bucket_count, dtype=tf.float64
+                )
+                bucket_counts = tf.cast(
+                    tf.reduce_sum(input_tensor=one_hots, axis=0),
+                    dtype=tf.float64,
+                )
+                edges = tf.linspace(min_, max_, bucket_count + 1)
+                # Ensure edges[-1] == max_, which TF's linspace implementation does not
+                # do, leaving it subject to the whim of floating point rounding error.
+                edges = tf.concat([edges[:-1], [max_]], 0)
+                left_edges = edges[:-1]
+                right_edges = edges[1:]
+                return tf.transpose(
+                    a=tf.stack([left_edges, right_edges, bucket_counts])
+                )
+
+            def when_singular():
+                center = min_
+                bucket_starts = tf.stack([center - 0.5])
+                bucket_ends = tf.stack([center + 0.5])
+                bucket_counts = tf.stack(
+                    [tf.cast(tf.size(input=data), tf.float64)]
+                )
+                return tf.transpose(
+                    a=tf.stack([bucket_starts, bucket_ends, bucket_counts])
+                )
+
+            return tf.cond(is_singular, when_singular, when_nonsingular)
+
+        return tf.cond(is_empty, when_empty, when_nonempty)
