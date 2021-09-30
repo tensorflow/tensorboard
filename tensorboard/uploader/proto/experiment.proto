@@ -33,6 +33,10 @@ message Experiment {
   // experiment, across all time series, including estimated overhead.
   // Output-only.
   int64 total_blob_bytes = 10;
+  // The owner of this experiment.  This field is ignored on upload, with owner
+  // information coming from the authentication information passed alongside
+  // the proto.
+  string owner = 11;
 }
 
 // Field mask for `Experiment` used in get and update RPCs. The `experiment_id`
@@ -49,4 +53,5 @@ message ExperimentMask {
   bool description = 8;
   bool total_tensor_bytes = 9;
   bool total_blob_bytes = 10;
+  bool owner = 11;
 }
