@@ -391,7 +391,17 @@ def histogram_v3(name, data, step=None, buckets=None, description=None):
     with summary_scope(
         name, "histogram_summary", values=[data, buckets, step]
     ) as (tag, _):
-        tensor = _buckets(data, bucket_count=buckets)
+        # Defer histogram bucketing logic by passing it as a callable to
+        # write(), wrapped in a LazyTensorCreator for backwards
+        # compatibility, so that we only do this work when summaries are
+        # actually written.
+        @lazy_tensor_creator.LazyTensorCreator
+        def lazy_tensor():
+            return _buckets(data, buckets)
+
         return tf.summary.write(
-            tag=tag, tensor=tensor, step=step, metadata=summary_metadata
+            tag=tag,
+            tensor=lazy_tensor,
+            step=step,
+            metadata=summary_metadata,
         )
