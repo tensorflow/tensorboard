@@ -304,5 +304,88 @@ class SummaryV2OpGraphTest(SummaryV2OpTest, tf.test.TestCase):
         np.testing.assert_allclose(buckets, np.array([[11.5, 12.5, 3]]))
 
 
+class SummaryV3OpTest(SummaryBaseTest, tf.test.TestCase):
+    def setUp(self):
+        super(SummaryV3OpTest, self).setUp()
+        if tf2 is None:
+            self.skipTest("v2 summary API not available")
+
+    def histogram(self, *args, **kwargs):
+        return self.histogram_event(*args, **kwargs).summary
+
+    def histogram_event(self, *args, **kwargs):
+        self.write_histogram_event(*args, **kwargs)
+        event_files = sorted(glob.glob(os.path.join(self.get_temp_dir(), "*")))
+        self.assertEqual(len(event_files), 1)
+        events = list(tf.compat.v1.train.summary_iterator(event_files[0]))
+        # Expect a boilerplate event for the file_version, then the summary one.
+        self.assertEqual(len(events), 2)
+        # Delete the event file to reset to an empty directory for later calls.
+        # TODO(nickfelt): use a unique subdirectory per writer instead.
+        os.remove(event_files[0])
+        return events[1]
+
+    def write_histogram_event(self, *args, **kwargs):
+        kwargs.setdefault("step", 1)
+        writer = tf2.summary.create_file_writer(self.get_temp_dir())
+        with writer.as_default():
+            summary.histogram(*args, **kwargs)
+        writer.close()
+
+
+class SummaryV3OpGraphTest(SummaryV3OpTest, tf.test.TestCase):
+    def write_histogram_event(self, *args, **kwargs):
+        kwargs.setdefault("step", 1)
+        # Hack to extract current scope since there's no direct API for it.
+        with tf.name_scope("_") as temp_scope:
+            scope = temp_scope.rstrip("/_")
+
+        @tf2.function
+        def graph_fn():
+            # Recreate the active scope inside the defun since it won't propagate.
+            with tf.name_scope(scope):
+                summary.histogram_v3(*args, **kwargs)
+
+        writer = tf2.summary.create_file_writer(self.get_temp_dir())
+        with writer.as_default():
+            graph_fn()
+        writer.close()
+
+    def test_no_gradient_error_xla(self):
+        @tf2.function(jit_compile=True)
+        def graph_fn():
+            x = tf.constant(1.0)
+            with tf2.GradientTape() as tape1:
+                with tf2.GradientTape() as tape2:
+                    tape1.watch(x)
+                    tape2.watch(x)
+                    summary.histogram_v3(
+                        name="loss", step=0, data=x, buckets=10
+                    )
+
+        # Note that XLA CPU/GPU has no outside compilation support, so summaries
+        # won't actually run in a jit_compiled function. TPUs do, and follow
+        # some similar codepaths, so this test stops at graph building to
+        # exercise those paths without a TPU available.
+        writer = tf2.summary.create_file_writer(self.get_temp_dir())
+        with writer.as_default():
+            graph_fn.get_concrete_function()
+
+    def test_singleton_input(self):
+        pb = self.histogram("twelve", [12])
+        buckets = tensor_util.make_ndarray(pb.value[0].tensor)
+        # By default there will be 30 buckets.
+        expected_buckets = np.array(
+            [[12, 12, 0] for _ in range(29)] + [[12, 12, 1]]
+        )
+        np.testing.assert_allclose(buckets, expected_buckets)
+
+    def test_input_with_all_same_values(self):
+        pb = self.histogram("twelven", [12, 12, 12], buckets=2)
+        buckets = tensor_util.make_ndarray(pb.value[0].tensor)
+        expected_buckets = np.array([[12, 12, 0], [12, 12, 3]])
+        np.testing.assert_allclose(buckets, expected_buckets)
+
+
 if __name__ == "__main__":
     tf.test.main()
