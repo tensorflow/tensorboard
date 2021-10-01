@@ -426,7 +426,8 @@ def _buckets_v3(data, bucket_count=None):
         tf.debugging.assert_type(bucket_count, tf.int32)
         data = tf.reshape(data, shape=[-1])  # flatten
         data = tf.cast(data, tf.float64)
-        is_empty = tf.equal(tf.size(input=data), 0)
+        data_size = tf.size(input=data)
+        is_empty = tf.equal(data_size, 0)
 
         def when_empty():
             return tf.constant([], shape=(0, 3), dtype=tf.float64)
@@ -467,15 +468,19 @@ def _buckets_v3(data, bucket_count=None):
 
             def when_single_value():
                 """When input data contains a single unique value."""
-                center = min_
-                bucket_starts = tf.stack([center - 0.5])
-                bucket_ends = tf.stack([center + 0.5])
-                bucket_counts = tf.stack(
-                    [tf.cast(tf.size(input=data), tf.float64)]
+                # Left and right edges are the same for single value input.
+                edges = tf.fill([bucket_count], max_)
+                # Counts for the first {bucket_count - 1} buckets [v, v) are 0.
+                zero_bucket_counts = tf.constant(
+                    [0] * (bucket_count - 1), dtype=tf.int32
                 )
-                return tf.transpose(
-                    a=tf.stack([bucket_starts, bucket_ends, bucket_counts])
+                # Count for last bucket [v, v] is {data_size}.
+                last_bucket_count = tf.expand_dims(data_size, 0)
+                bucket_counts = tf.cast(
+                    tf.concat([zero_bucket_counts, last_bucket_count], 0),
+                    dtype=tf.float64,
                 )
+                return tf.transpose(a=tf.stack([edges, edges, bucket_counts]))
 
             return tf.cond(
                 has_single_value, when_single_value, when_multiple_values

@@ -39,6 +39,9 @@ from tensorboard.plugins.histogram import summary_v2
 histogram = summary_v2.histogram
 histogram_pb = summary_v2.histogram_pb
 
+# Export V3 versions.
+histogram_v3 = summary_v2.histogram_v3
+
 
 def _buckets(data, bucket_count=None):
     """Create a TensorFlow op to group data into histogram buckets.
