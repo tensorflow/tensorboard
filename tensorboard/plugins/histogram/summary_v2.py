@@ -431,14 +431,14 @@ def _buckets_v3(data, bucket_count=None):
         def when_empty():
             return tf.constant([], shape=(0, 3), dtype=tf.float64)
 
-        # TODO(ytjing): Make the nonempty case handling TPU compatible.
         def when_nonempty():
             min_ = tf.reduce_min(input_tensor=data)
             max_ = tf.reduce_max(input_tensor=data)
             range_ = max_ - min_
-            is_singular = tf.equal(range_, 0)
+            has_single_value = tf.equal(range_, 0)
 
-            def when_nonsingular():
+            def when_multiple_values():
+                """When input data contains multiple values."""
                 bucket_width = range_ / tf.cast(bucket_count, tf.float64)
                 offsets = data - min_
                 bucket_indices = tf.cast(
@@ -465,7 +465,8 @@ def _buckets_v3(data, bucket_count=None):
                     a=tf.stack([left_edges, right_edges, bucket_counts])
                 )
 
-            def when_singular():
+            def when_single_value():
+                """When input data contains a single unique value."""
                 center = min_
                 bucket_starts = tf.stack([center - 0.5])
                 bucket_ends = tf.stack([center + 0.5])
@@ -476,6 +477,8 @@ def _buckets_v3(data, bucket_count=None):
                     a=tf.stack([bucket_starts, bucket_ends, bucket_counts])
                 )
 
-            return tf.cond(is_singular, when_singular, when_nonsingular)
+            return tf.cond(
+                has_single_value, when_single_value, when_multiple_values
+            )
 
         return tf.cond(is_empty, when_empty, when_nonempty)
