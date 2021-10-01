@@ -13,7 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Sample data exhibiting histogram summaries."""
+"""Sample data exhibiting histogram summaries.
+
+Run with:
+    bazel run //tensorboard/plugins/histogram:histograms_demo
+"""
 
 
 from absl import app
@@ -94,6 +98,24 @@ def run(k, step):
         step=step,
     )
 
+    # And an empty distribution
+    empty = tf.constant([])
+    tf.summary.histogram(
+        "empty",
+        empty,
+        description="An empty distribution.",
+        step=step,
+    )
+
+    # And a distribution consisting of a single unique value
+    single_value = tf.constant([1.0] * 10)
+    tf.summary.histogram(
+        "single_value",
+        single_value,
+        description="A distribution containing a single unique value.",
+        step=step,
+    )
+
     # Finally, combine everything together!
     all_distributions = [
         mean_moving_normal,
@@ -101,15 +123,18 @@ def run(k, step):
         gamma,
         poisson,
         uniform,
+        empty,
+        single_value,
     ]
     all_combined = tf.concat(all_distributions, 0)
     tf.summary.histogram(
         "all_combined",
         all_combined,
-        description="An amalgamation of five distributions: a "
-        "uniform distribution, a gamma "
-        "distribution, a Poisson distribution, and "
-        "two normal distributions.",
+        description="An amalgamation of several distributions: a "
+        "uniform distribution, a gamma distribution, a Poisson "
+        "distribution, two normal distributions, an empty "
+        "distribution, and a distribution containing a single "
+        "unique value.",
         step=step,
     )
 
