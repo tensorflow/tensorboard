@@ -201,8 +201,11 @@ class SummaryV2OpTest(SummaryBaseTest, tf.test.TestCase):
         kwargs.setdefault("step", 1)
         writer = tf2.summary.create_file_writer(self.get_temp_dir())
         with writer.as_default():
-            summary.histogram(*args, **kwargs)
+            self.call_histogram_op(*args, **kwargs)
         writer.close()
+
+    def call_histogram_op(self, *args, **kwargs):
+        summary.histogram(*args, **kwargs)
 
     def test_scoped_tag(self):
         with tf.name_scope("scope"):
@@ -264,36 +267,10 @@ class SummaryV2OpGraphTest(SummaryV2OpTest, tf.test.TestCase):
             graph_fn.get_concrete_function()
 
 
-class SummaryV3OpTest(SummaryBaseTest, tf.test.TestCase):
-    def setUp(self):
-        super(SummaryV3OpTest, self).setUp()
-        if tf2 is None:
-            self.skipTest("v2 summary API not available")
+class SummaryV3OpGraphTest(SummaryV2OpTest, tf.test.TestCase):
+    def call_histogram_op(self, *args, **kwargs):
+        summary.histogram_v3(*args, **kwargs)
 
-    def histogram(self, *args, **kwargs):
-        return self.histogram_event(*args, **kwargs).summary
-
-    def histogram_event(self, *args, **kwargs):
-        self.write_histogram_event(*args, **kwargs)
-        event_files = sorted(glob.glob(os.path.join(self.get_temp_dir(), "*")))
-        self.assertEqual(len(event_files), 1)
-        events = list(tf.compat.v1.train.summary_iterator(event_files[0]))
-        # Expect a boilerplate event for the file_version, then the summary one.
-        self.assertEqual(len(events), 2)
-        # Delete the event file to reset to an empty directory for later calls.
-        # TODO(nickfelt): use a unique subdirectory per writer instead.
-        os.remove(event_files[0])
-        return events[1]
-
-    def write_histogram_event(self, *args, **kwargs):
-        kwargs.setdefault("step", 1)
-        writer = tf2.summary.create_file_writer(self.get_temp_dir())
-        with writer.as_default():
-            summary.histogram(*args, **kwargs)
-        writer.close()
-
-
-class SummaryV3OpGraphTest(SummaryV3OpTest, tf.test.TestCase):
     def write_histogram_event(self, *args, **kwargs):
         kwargs.setdefault("step", 1)
         # Hack to extract current scope since there's no direct API for it.
@@ -341,10 +318,18 @@ class SummaryV3OpGraphTest(SummaryV3OpTest, tf.test.TestCase):
         np.testing.assert_allclose(buckets, expected_buckets)
 
     def test_input_with_all_same_values(self):
-        pb = self.histogram("twelven", [12, 12, 12], buckets=2)
+        pb = self.histogram("twelven", [12, 12, 12])
         buckets = tensor_util.make_ndarray(pb.value[0].tensor)
-        expected_buckets = np.array([[12, 12, 0], [12, 12, 3]])
+        # By default there will be 30 buckets.
+        expected_buckets = np.array(
+            [[12, 12, 0] for _ in range(29)] + [[12, 12, 3]]
+        )
         np.testing.assert_allclose(buckets, expected_buckets)
+
+    def test_zero_bucket_count(self):
+        pb = self.histogram("zero_bucket_count", [1, 1, 1], buckets=0)
+        buckets = tensor_util.make_ndarray(pb.value[0].tensor)
+        np.testing.assert_allclose(buckets, np.array([]).reshape((0, 3)))
 
 
 if __name__ == "__main__":
