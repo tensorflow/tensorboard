@@ -427,7 +427,11 @@ def _buckets_v3(data, bucket_count=None):
         data = tf.reshape(data, shape=[-1])  # flatten
         data = tf.cast(data, tf.float64)
         data_size = tf.size(input=data)
-        is_empty = tf.equal(data_size, 0)
+        # If bucket_count is specified as zero, an empty tensor of shape
+        # (0, 3) will be returned.
+        is_empty = tf.math.logical_or(
+            tf.equal(data_size, 0), tf.constant([bucket_count <= 0])
+        )
 
         def when_empty():
             return tf.constant([], shape=(0, 3), dtype=tf.float64)
@@ -471,13 +475,10 @@ def _buckets_v3(data, bucket_count=None):
                 # Left and right edges are the same for single value input.
                 edges = tf.fill([bucket_count], max_)
                 # Counts for the first {bucket_count - 1} buckets [v, v) are 0.
-                zero_bucket_counts = tf.constant(
-                    [0] * (bucket_count - 1), dtype=tf.int32
-                )
+                zero_bucket_counts = tf.repeat([0], bucket_count - 1)
                 # Count for last bucket [v, v] is {data_size}.
-                last_bucket_count = tf.expand_dims(data_size, 0)
                 bucket_counts = tf.cast(
-                    tf.concat([zero_bucket_counts, last_bucket_count], 0),
+                    tf.concat([zero_bucket_counts, [data_size]], 0),
                     dtype=tf.float64,
                 )
                 return tf.transpose(a=tf.stack([edges, edges, bucket_counts]))
