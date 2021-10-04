@@ -860,4 +860,17 @@ describe('metrics selectors', () => {
       expect(selectors.getPromoteTimeSeries(state)).toEqual(false);
     });
   });
+
+  describe('#isMetricsSettingsPaneOpen', () => {
+    beforeEach(() => {
+      selectors.getPromoteTimeSeries.release();
+    });
+
+    it('returns current visualization filters', () => {
+      const state = appStateFromMetricsState(
+        buildMetricsState({promoteTimeSeries: false})
+      );
+      expect(selectors.getPromoteTimeSeries(state)).toEqual(false);
+    });
+  });
 });

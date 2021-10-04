@@ -37,6 +37,7 @@ export declare interface BackendSettings {
   notificationLastReadTimeInMs?: number;
   sideBarWidthInPercent?: number;
   timeSeriesPromotionDismissed?: boolean;
+  timeSeriesSettingsPaneOpened?: boolean;
 }
 
 /**
@@ -55,4 +56,5 @@ export interface PersistableSettings {
   notificationLastReadTimeInMs?: number;
   sideBarWidthInPercent?: number;
   timeSeriesPromotionDismissed?: boolean;
+  timeSeriesSettingsPaneOpened?: boolean;
 }

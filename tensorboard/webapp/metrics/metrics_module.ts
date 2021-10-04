@@ -30,6 +30,7 @@ import {
   getMetricsScalarSmoothing,
   getMetricsTooltipSort,
   getPromoteTimeSeries,
+  isMetricsSettingsPaneOpen,
   METRICS_FEATURE_KEY,
   METRICS_SETTINGS_DEFAULT,
   reducers,
@@ -93,6 +94,12 @@ export function getMetricsTimeSeriesPromotionDismissed() {
   });
 }
 
+export function getMetricsTimeSeriesSettingsPaneOpen() {
+  return createSelector(isMetricsSettingsPaneOpen, (isOpened) => {
+    return {timeSeriesSettingsPaneOpened: isOpened};
+  });
+}
+
 @NgModule({
   imports: [
     CommonModule,
@@ -122,6 +129,9 @@ export function getMetricsTimeSeriesPromotionDismissed() {
     ),
     PersistentSettingsConfigModule.defineGlobalSetting(
       getMetricsTimeSeriesPromotionDismissed
+    ),
+    PersistentSettingsConfigModule.defineGlobalSetting(
+      getMetricsTimeSeriesSettingsPaneOpen
     ),
   ],
   providers: [
