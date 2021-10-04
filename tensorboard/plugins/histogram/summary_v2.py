@@ -475,7 +475,7 @@ def _buckets_v3(data, bucket_count=None):
                 # Left and right edges are the same for single value input.
                 edges = tf.fill([bucket_count], max_)
                 # Counts for the first {bucket_count - 1} buckets [v, v) are 0.
-                zero_bucket_counts = tf.repeat([0], bucket_count - 1)
+                zero_bucket_counts = tf.fill([bucket_count - 1], 0)
                 # Count for last bucket [v, v] is {data_size}.
                 bucket_counts = tf.cast(
                     tf.concat([zero_bucket_counts, [data_size]], 0),
