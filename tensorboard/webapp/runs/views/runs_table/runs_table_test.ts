@@ -1525,7 +1525,7 @@ describe('runs_table', () => {
         rowling: 'HPz',
         tolkien: 'LotR',
       });
-      store.overrideSelector(getRunSelectorRegexFilter, 'ings');
+      store.overrideSelector(getRunSelectorRegexFilter, 'ing');
 
       const fixture = createComponent(
         ['rowling', 'tolkien'],
@@ -1535,7 +1535,6 @@ describe('runs_table', () => {
       fixture.detectChanges();
       expect(getTableRowTextContent(fixture)).toEqual([
         ['LotR', 'The Fellowship of the Ring'],
-        ['LotR', 'The Silmarillion'],
       ]);
 
       // Alias for Harry Potter contains "z". Since legacy Polymer-based
