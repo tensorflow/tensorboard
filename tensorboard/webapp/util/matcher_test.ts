@@ -45,23 +45,6 @@ describe('matcher test', () => {
     });
 
     describe('shouldMatchExperiment flag', () => {
-      it('matches against experimentName when flag is on', () => {
-        expect(
-          matchRunToRegex(
-            buildRunWithName({runName: 'faaaaro', experimentName: 'hello'}),
-            'lo$',
-            true
-          )
-        ).toBe(true);
-        expect(
-          matchRunToRegex(
-            buildRunWithName({runName: 'faaaaro', experimentName: 'hello'}),
-            'lo$',
-            false
-          )
-        ).toBe(false);
-      });
-
       it('matches against experimentAlias when flag is on', () => {
         expect(
           matchRunToRegex(

@@ -27,7 +27,7 @@ export interface RunMatchable {
  *
  * - Regex matches name of a run.
  * - When `shouldMatchExperiment` is specified, it matches regex against one of
- *   experiment name, experiment alias, and legacy run name which is generated
+ *   experiment alias, and legacy run name which is generated
  *   with "<exp alias>/<run name>".
  * - An empty regex string always returns true.
  * - Invalid regex always return false.
@@ -51,7 +51,6 @@ export function matchRunToRegex(
   const matchables = [runMatchable.runName];
   if (shouldMatchExperiment) {
     matchables.push(
-      runMatchable.experimentName,
       runMatchable.experimentAlias,
       `${runMatchable.experimentAlias}/${runMatchable.runName}`
     );
