@@ -15,9 +15,6 @@
 """Classes and functions for handling the GetExperiment API call."""
 
 
-from tensorboard import errors
-
-
 class Handler(object):
     """Handles a GetExperiment request."""
 
@@ -40,20 +37,10 @@ class Handler(object):
           An Experiment object.
         """
         experiment_id = self._experiment_id
-        experiment = self._backend_context.experiment_from_metadata(
+        return self._backend_context.experiment_from_metadata(
             self._request_context,
             experiment_id,
             self._backend_context.hparams_metadata(
                 self._request_context, experiment_id
             ),
         )
-        if experiment is None:
-            raise errors.NotFoundError(
-                "Can't find an HParams-plugin experiment data in"
-                " the log directory. Note that it takes some time to"
-                " scan the log directory; if you just started"
-                " Tensorboard it could be that we haven't finished"
-                " scanning it yet. Consider trying again in a"
-                " few seconds."
-            )
-        return experiment

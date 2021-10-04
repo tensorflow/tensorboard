@@ -70,7 +70,7 @@ class Context(object):
         Returns:
           The experiment protobuffer. If no tags are found from which an experiment
           protobuffer can be built (possibly, because the event data has not been
-          completely loaded yet), returns None.
+          completely loaded yet), returns an entirely empty experiment.
         """
         experiment = self._find_experiment_tag(hparams_run_to_tag_to_content)
         if experiment:
@@ -177,14 +177,17 @@ class Context(object):
     def _compute_experiment_from_runs(
         self, ctx, experiment_id, hparams_run_to_tag_to_content
     ):
-        """Computes a minimal Experiment protocol buffer by scanning the
-        runs."""
+        """Computes a minimal Experiment protocol buffer by scanning the runs.
+
+        Returns an empty Experiment if there are no hparam infos logged.
+        """
         hparam_infos = self._compute_hparam_infos(hparams_run_to_tag_to_content)
-        if not hparam_infos:
-            return None
-        metric_infos = self._compute_metric_infos(
-            ctx, experiment_id, hparams_run_to_tag_to_content
-        )
+        if hparam_infos:
+            metric_infos = self._compute_metric_infos(
+                ctx, experiment_id, hparams_run_to_tag_to_content
+            )
+        else:
+            metric_infos = []
         return api_pb2.Experiment(
             hparam_infos=hparam_infos, metric_infos=metric_infos
         )

@@ -360,6 +360,19 @@ class BackendContextTest(tf.test.TestCase):
         _canonicalize_experiment(actual_exp)
         self.assertProtoEquals(expected_exp, actual_exp)
 
+    def test_experiment_without_any_hparams_summaries(self):
+        ctxt = backend_context.Context(
+            self._mock_tb_context, max_domain_discrete_len=1
+        )
+        request_ctx = context.RequestContext()
+        actual_exp = ctxt.experiment_from_metadata(
+            request_ctx,
+            "123",
+            ctxt.hparams_metadata(request_ctx, "123"),
+        )
+        self.assertIsInstance(actual_exp, api_pb2.Experiment)
+        self.assertProtoEquals("", actual_exp)
+
     def _serialized_plugin_data(self, data_oneof_field, text_protobuffer):
         oneof_type_dict = {
             DATA_TYPE_EXPERIMENT: api_pb2.Experiment,
