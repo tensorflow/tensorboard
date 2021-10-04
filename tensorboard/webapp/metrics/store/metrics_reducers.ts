@@ -262,6 +262,7 @@ const {initialState, reducers: routeContextReducer} = createRouteContextedState<
     },
   },
   {
+    isSettingsPaneOpen: true,
     promoteTimeSeries: true,
     timeSeriesData: {
       scalars: {},
@@ -915,6 +916,12 @@ const reducer = createReducer(
   }),
   on(actions.metricsPromoDismissed, (state) => {
     return {...state, promoteTimeSeries: false};
+  }),
+  on(actions.metricsSettingsPaneToggled, (state) => {
+    return {...state, isSettingsPaneOpen: !state.isSettingsPaneOpen};
+  }),
+  on(actions.metricsSettingsPaneClosed, (state) => {
+    return {...state, isSettingsPaneOpen: false};
   })
 );
 

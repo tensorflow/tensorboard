@@ -19,11 +19,17 @@ import {map, takeWhile} from 'rxjs/operators';
 
 import {State} from '../../../app_state';
 import {DataLoadState} from '../../../types/data';
-import {metricsShowAllPlugins, metricsToggleVisiblePlugin} from '../../actions';
+import {
+  metricsSettingsPaneToggled,
+  metricsSettingsPaneClosed,
+  metricsShowAllPlugins,
+  metricsToggleVisiblePlugin,
+} from '../../actions';
 import {
   getMetricsFilteredPluginTypes,
   getMetricsTagFilter,
   getMetricsTagMetadataLoadState,
+  isMetricsSettingsPaneOpen,
 } from '../../store';
 import {PluginType} from '../../types';
 
@@ -32,7 +38,7 @@ import {PluginType} from '../../types';
   template: `
     <metrics-main-view-component
       [showFilteredView]="showFilteredView$ | async"
-      [isSidepaneOpen]="isSidepaneOpen"
+      [isSidepaneOpen]="isSidepaneOpen$ | async"
       [initialTagsLoading]="initialTagsLoading$ | async"
       [filteredPluginTypes]="filteredPluginTypes$ | async"
       (onSettingsButtonClicked)="onSettingsButtonClicked()"
@@ -46,7 +52,9 @@ import {PluginType} from '../../types';
 export class MainViewContainer {
   constructor(private readonly store: Store<State>) {}
 
-  isSidepaneOpen = true;
+  readonly isSidepaneOpen$: Observable<boolean> = this.store.select(
+    isMetricsSettingsPaneOpen
+  );
 
   readonly initialTagsLoading$: Observable<boolean> = this.store
     .select(getMetricsTagMetadataLoadState)
@@ -76,11 +84,11 @@ export class MainViewContainer {
   );
 
   onSettingsButtonClicked() {
-    this.isSidepaneOpen = !this.isSidepaneOpen;
+    this.store.dispatch(metricsSettingsPaneToggled());
   }
 
   onCloseSidepaneButtonClicked() {
-    this.isSidepaneOpen = false;
+    this.store.dispatch(metricsSettingsPaneClosed());
   }
 
   onPluginVisibilityToggled(plugin: PluginType) {

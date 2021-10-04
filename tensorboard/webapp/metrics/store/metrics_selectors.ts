@@ -429,3 +429,8 @@ export const getPromoteTimeSeries = createSelector(
     return state.promoteTimeSeries;
   }
 );
+
+export const isMetricsSettingsPaneOpen = createSelector(
+  selectMetricsState,
+  (state): boolean => state.isSettingsPaneOpen
+);
