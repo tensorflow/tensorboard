@@ -412,7 +412,8 @@ def _buckets_v3(data, bucket_count=None):
 
     Arguments:
       data: A `Tensor` of any shape. Must be castable to `float64`.
-      bucket_count: Optional positive `int` or scalar `int32` `Tensor`.
+      bucket_count: Optional non-negative `int` or scalar `int32` `Tensor`,
+        defaults to 30.
     Returns:
       A `Tensor` of shape `[k, 3]` and type `float64`. The `i`th row is
       a triple `[left_edge, right_edge, count]` for a single bucket.
@@ -427,14 +428,19 @@ def _buckets_v3(data, bucket_count=None):
         data = tf.reshape(data, shape=[-1])  # flatten
         data = tf.cast(data, tf.float64)
         data_size = tf.size(input=data)
-        # If bucket_count is specified as zero, an empty tensor of shape
-        # (0, 3) will be returned.
-        is_empty = tf.math.logical_or(
-            tf.equal(data_size, 0), tf.constant([bucket_count <= 0])
+        is_empty = tf.logical_or(
+            tf.equal(data_size, 0), tf.less_equal(bucket_count, 0)
         )
 
         def when_empty():
-            return tf.constant([], shape=(0, 3), dtype=tf.float64)
+            """When input data is empty or bucket_count is zero.
+
+            1. If bucket_count is specified as zero, an empty tensor of shape
+              (0, 3) will be returned.
+            2. If the input data is empty, a tensor of shape (bucket_count, 3)
+              of all zero values will be returned.
+            """
+            return tf.zeros((max(0, bucket_count), 3), dtype=tf.float64)
 
         def when_nonempty():
             min_ = tf.reduce_min(input_tensor=data)
