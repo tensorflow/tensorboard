@@ -400,9 +400,13 @@ const reducer = createReducer(
         ? !partialSettings.timeSeriesPromotionDismissed
         : state.promoteTimeSeries;
 
+    const isSettingsPaneOpen =
+      partialSettings.timeSeriesSettingsPaneOpened ?? state.isSettingsPaneOpen;
+
     return {
       ...state,
       promoteTimeSeries,
+      isSettingsPaneOpen,
       settings: {
         ...state.settings,
         ...metricsSettings,

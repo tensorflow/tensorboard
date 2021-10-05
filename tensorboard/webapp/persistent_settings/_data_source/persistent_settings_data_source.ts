@@ -58,6 +58,7 @@ export class OSSSettingsConverter extends SettingsConverter<
       notificationLastReadTimeInMs: settings.notificationLastReadTimeInMs,
       sideBarWidthInPercent: settings.sideBarWidthInPercent,
       timeSeriesPromotionDismissed: settings.timeSeriesPromotionDismissed,
+      timeSeriesSettingsPaneOpened: settings.timeSeriesSettingsPaneOpened,
     };
     return serializableSettings;
   }
@@ -135,6 +136,14 @@ export class OSSSettingsConverter extends SettingsConverter<
     ) {
       settings.timeSeriesPromotionDismissed =
         backendSettings.timeSeriesPromotionDismissed;
+    }
+
+    if (
+      backendSettings.hasOwnProperty('timeSeriesSettingsPaneOpened') &&
+      typeof backendSettings.timeSeriesSettingsPaneOpened === 'boolean'
+    ) {
+      settings.timeSeriesSettingsPaneOpened =
+        backendSettings.timeSeriesSettingsPaneOpened;
     }
 
     return settings;

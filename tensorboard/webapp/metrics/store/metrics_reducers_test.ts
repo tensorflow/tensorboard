@@ -1928,6 +1928,23 @@ describe('metrics reducers', () => {
         expect(nextState.settings.tooltipSort).toBe(TooltipSort.ASCENDING);
       }
     );
+
+    it('loads settings pane state from the storage', () => {
+      const beforeState = buildMetricsState({
+        isSettingsPaneOpen: true,
+      });
+
+      const nextState = reducers(
+        beforeState,
+        globalSettingsLoaded({
+          partialSettings: {
+            timeSeriesSettingsPaneOpened: false,
+          },
+        })
+      );
+
+      expect(nextState.isSettingsPaneOpen).toBe(false);
+    });
   });
 
   describe('linked time features', () => {
