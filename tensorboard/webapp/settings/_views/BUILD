@@ -1,6 +1,11 @@
-load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_ts_library")
+load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_sass_binary", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
+
+tf_sass_binary(
+    name = "settings_dialog_component_styles",
+    src = "settings_dialog_component.scss",
+)
 
 tf_ng_module(
     name = "_views",
@@ -13,7 +18,7 @@ tf_ng_module(
         "settings_module.ts",
     ],
     assets = [
-        "settings_dialog_component.css",
+        ":settings_dialog_component_styles",
         "settings_dialog_component.ng.html",
     ],
     deps = [
@@ -25,6 +30,7 @@ tf_ng_module(
         "//tensorboard/webapp/angular:expect_angular_material_input",
         "//tensorboard/webapp/settings/_redux",
         "//tensorboard/webapp/types",
+        "//tensorboard/webapp/util:colors",
         "@npm//@angular/common",
         "@npm//@angular/core",
         "@npm//@angular/forms",
@@ -56,6 +62,7 @@ tf_ts_library(
         "//tensorboard/webapp/settings/_redux",
         "//tensorboard/webapp/testing:mat_icon",
         "//tensorboard/webapp/types",
+        "//tensorboard/webapp/util:colors",
         "@npm//@angular/common",
         "@npm//@angular/compiler",
         "@npm//@angular/core",

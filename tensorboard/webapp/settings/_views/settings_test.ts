@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {OverlayContainer} from '@angular/cdk/overlay';
-import {TestBed, tick, fakeAsync} from '@angular/core/testing';
+import {fakeAsync, TestBed, tick} from '@angular/core/testing';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {MatButtonModule} from '@angular/material/button';
 import {MatCheckboxModule} from '@angular/material/checkbox';
@@ -23,23 +23,25 @@ import {By} from '@angular/platform-browser';
 import {BrowserDynamicTestingModule} from '@angular/platform-browser-dynamic/testing';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {Store} from '@ngrx/store';
-import {provideMockStore, MockStore} from '@ngrx/store/testing';
+import {MockStore, provideMockStore} from '@ngrx/store/testing';
 
+import {MatIconTestingModule} from '../../testing/mat_icon_module';
+import {DataLoadState} from '../../types/data';
+import {DEFAULT_PALETTE, palettes} from '../../util/colors';
+import {createSettings, createSettingsState, createState} from '../testing';
+import {
+  changeReloadPeriod,
+  colorPaletteChanged,
+  toggleReloadEnabled,
+} from '../_redux/settings_actions';
+import {
+  getColorPalette,
+  getSettingsLoadState,
+} from '../_redux/settings_selectors';
 import {SettingsButtonComponent} from './settings_button_component';
 import {SettingsButtonContainer} from './settings_button_container';
 import {SettingsDialogComponent} from './settings_dialog_component';
 import {SettingsDialogContainer} from './settings_dialog_container';
-
-import {MatIconTestingModule} from '../../testing/mat_icon_module';
-import {
-  toggleReloadEnabled,
-  changeReloadPeriod,
-} from '../_redux/settings_actions';
-import {createSettings, createSettingsState, createState} from '../testing';
-
-/** @typehack */ import * as _typeHackStore from '@ngrx/store';
-import {getSettingsLoadState} from '../_redux/settings_selectors';
-import {DataLoadState} from '../../types/data';
 
 describe('settings test', () => {
   let store: MockStore;
@@ -84,6 +86,7 @@ describe('settings test', () => {
       })
       .compileComponents();
     store = TestBed.inject<Store>(Store) as MockStore;
+    store.overrideSelector(getColorPalette, DEFAULT_PALETTE);
     dispatchSpy = spyOn(store, 'dispatch');
     overlayContainer = TestBed.inject(OverlayContainer);
   });
@@ -245,5 +248,36 @@ describe('settings test', () => {
 
       expect(dispatchSpy).not.toHaveBeenCalled();
     }));
+  });
+
+  describe('color palette picker', () => {
+    it('renders table of color palettes', () => {
+      const fixture = TestBed.createComponent(SettingsDialogContainer);
+      fixture.detectChanges();
+
+      const rows = fixture.debugElement.queryAll(By.css('tbody tr'));
+      const paletteNames = rows.map((row) => {
+        return row.query(By.css('td')).nativeElement.textContent;
+      });
+      expect(paletteNames).toEqual([
+        'Default',
+        'Classic',
+        'Google Standard',
+        'Color Blind Assist',
+      ]);
+    });
+
+    it('dispatches action when chosen another color sets', () => {
+      store.overrideSelector(getColorPalette, DEFAULT_PALETTE);
+      const fixture = TestBed.createComponent(SettingsDialogContainer);
+      fixture.detectChanges();
+
+      const rows = fixture.debugElement.queryAll(By.css('tbody tr'));
+      rows[1].query(By.css('input')).nativeElement.click();
+
+      expect(dispatchSpy).toHaveBeenCalledOnceWith(
+        colorPaletteChanged({palette: palettes.get('classic')!})
+      );
+    });
   });
 });

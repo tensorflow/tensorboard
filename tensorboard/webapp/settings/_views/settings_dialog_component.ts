@@ -14,26 +14,25 @@ limitations under the License.
 ==============================================================================*/
 import {
   Component,
-  OnInit,
-  OnDestroy,
-  SimpleChanges,
-  OnChanges,
   EventEmitter,
   Input,
+  OnChanges,
+  OnDestroy,
+  OnInit,
   Output,
+  SimpleChanges,
 } from '@angular/core';
 import {
-  FormControl,
-  Validators,
   AbstractControl,
+  FormControl,
   ValidatorFn,
+  Validators,
 } from '@angular/forms';
 import {Subject} from 'rxjs';
-import {takeUntil, debounceTime, filter} from 'rxjs/operators';
+import {debounceTime, filter, takeUntil} from 'rxjs/operators';
 
+import {ColorPalette, palettes} from '../../util/colors';
 import {MIN_RELOAD_PERIOD_IN_MS} from '../_redux/settings_reducers';
-
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
 export function createIntegerValidator(): ValidatorFn {
   return (control: AbstractControl): {[key: string]: any} | null => {
@@ -52,9 +51,11 @@ export class SettingsDialogComponent implements OnInit, OnDestroy, OnChanges {
   @Input() reloadEnabled!: boolean;
   @Input() reloadPeriodInMs!: number;
   @Input() pageSize!: number;
+  @Input() currentPalette!: ColorPalette;
   @Output() reloadToggled = new EventEmitter();
   @Output() reloadPeriodInMsChanged = new EventEmitter<number>();
   @Output() pageSizeChanged = new EventEmitter<number>();
+  @Output() paletteChanged = new EventEmitter<ColorPalette>();
 
   readonly MIN_RELOAD_PERIOD_IN_S = MIN_RELOAD_PERIOD_IN_MS / 1000;
   readonly reloadPeriodControl = new FormControl(this.MIN_RELOAD_PERIOD_IN_S, [
@@ -66,6 +67,8 @@ export class SettingsDialogComponent implements OnInit, OnDestroy, OnChanges {
     Validators.min(1),
     createIntegerValidator(),
   ]);
+
+  readonly KnownPalettes: ColorPalette[] = [...palettes.values()];
 
   private ngUnsubscribe = new Subject<void>();
 

@@ -15,19 +15,20 @@ limitations under the License.
 import {Component} from '@angular/core';
 import {Store} from '@ngrx/store';
 
+import {ColorPalette} from '../../util/colors';
 import {
+  changePageSize,
+  changeReloadPeriod,
+  colorPaletteChanged,
+  toggleReloadEnabled,
+} from '../_redux/settings_actions';
+import {
+  getColorPalette,
+  getPageSize,
   getReloadEnabled,
   getReloadPeriodInMs,
-  getPageSize,
 } from '../_redux/settings_selectors';
 import {State} from '../_redux/settings_types';
-import {
-  toggleReloadEnabled,
-  changeReloadPeriod,
-  changePageSize,
-} from '../_redux/settings_actions';
-
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
 @Component({
   selector: 'settings-dialog',
@@ -36,9 +37,11 @@ import {
       [reloadEnabled]="reloadEnabled$ | async"
       [reloadPeriodInMs]="reloadPeriodInMs$ | async"
       [pageSize]="pageSize$ | async"
+      [currentPalette]="currentPalette$ | async"
       (reloadToggled)="onReloadToggled()"
       (reloadPeriodInMsChanged)="onReloadPeriodInMsChanged($event)"
       (pageSizeChanged)="onPageSizeChanged($event)"
+      (paletteChanged)="onPaletteChanged($event)"
     ></settings-dialog-component>
   `,
 })
@@ -46,6 +49,7 @@ export class SettingsDialogContainer {
   readonly reloadEnabled$ = this.store.select(getReloadEnabled);
   readonly reloadPeriodInMs$ = this.store.select(getReloadPeriodInMs);
   readonly pageSize$ = this.store.select(getPageSize);
+  readonly currentPalette$ = this.store.select(getColorPalette);
 
   constructor(private store: Store<State>) {}
 
@@ -59,5 +63,9 @@ export class SettingsDialogContainer {
 
   onPageSizeChanged(size: number): void {
     this.store.dispatch(changePageSize({size}));
+  }
+
+  onPaletteChanged(palette: ColorPalette): void {
+    this.store.dispatch(colorPaletteChanged({palette}));
   }
 }

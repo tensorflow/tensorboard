@@ -48,7 +48,8 @@ export class SettingsButtonComponent {
 
   openDialog(): void {
     this.dialog.open(SettingsDialogContainer, {
-      width: '400px',
+      width: '80vw',
+      maxWidth: '1000px',
     });
   }
 }

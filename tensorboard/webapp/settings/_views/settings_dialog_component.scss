@@ -1,0 +1,104 @@
+/* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+==============================================================================*/
+@import 'tensorboard/webapp/theme/tb_theme';
+
+:host {
+  font-size: 15px;
+}
+
+:host > div {
+  margin: 10px 0;
+}
+
+:host > :first-child {
+  margin-top: 0;
+}
+
+:host > :last-child {
+  margin-bottom: 0;
+}
+
+h3 {
+  font-size: 20px;
+}
+
+.reload-toggle {
+  margin-bottom: 10px;
+}
+
+.fob {
+  $_size: 14px;
+
+  border-radius: $_size;
+  border: 1px solid;
+  display: inline-block;
+  height: $_size;
+  margin: 2px;
+  width: $_size;
+}
+
+table {
+  border-collapse: collapse;
+  border-spacing: 1px;
+  border-width: 0;
+  margin: 15px 0;
+
+  .sub {
+    font-size: 0.9em;
+    text-align: center;
+  }
+
+  thead tr:first-child td {
+    padding-top: 10px;
+  }
+
+  tfoot {
+    padding-bottom: 5px;
+  }
+
+  thead,
+  tfoot {
+    td {
+      box-sizing: border-box;
+    }
+  }
+
+  td {
+    padding: 6px 15px;
+    vertical-align: top;
+
+    &:first-of-type {
+      padding-left: 0;
+    }
+  }
+}
+
+.lights {
+  background-color: map-get($tb-background, background);
+  color: map-get($tb-foreground, text);
+
+  .fob {
+    border-color: rgba(map-get($tb-foreground, text), 0.5);
+  }
+}
+
+.darks {
+  background-color: map-get($tb-dark-background, background);
+  color: map-get($tb-dark-foreground, text);
+
+  .fob {
+    border-color: rgba(map-get($tb-dark-foreground, text), 0.5);
+  }
+}

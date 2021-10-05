@@ -55,3 +55,97 @@ limitations under the License.
     Page size has to be a positive integer.
   </mat-error>
 </div>
+
+<div>
+  <h4>Visualization colors</h4>
+  <div>
+    Customize colors that visualzation such as line chart will use. When there
+    are more runs than the number of colors, it will rotate and repeat.
+    Currently only works for Time Series plugin.
+  </div>
+  <table class="color-selector">
+    <colgroup>
+      <col />
+      <col class="lights" />
+      <col class="lights" />
+      <col class="darks" />
+      <col class="darks" />
+    </colgroup>
+    <thead>
+      <tr>
+        <td></td>
+        <td class="lights">Light theme</td>
+        <td class="lights"></td>
+        <td class="darks">Dark theme</td>
+        <td class="darks"></td>
+      </tr>
+      <tr class="sub">
+        <td></td>
+        <td class="lights">Viz colors</td>
+        <td class="lights">Inactive</td>
+        <td class="darks">Viz colors</td>
+        <td class="darks">Inactive</td>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let palette of KnownPalettes">
+        <td>
+          <input
+            type="radio"
+            name="palette"
+            [id]="palette.id"
+            [value]="palette.id"
+            [checked]="currentPalette.id === palette.id"
+            (change)="paletteChanged.emit(palette)"
+          />
+          <label [for]="palette.id">{{palette.name}}</label>
+        </td>
+        <td>
+          <label [for]="palette.id" class="lights">
+            <span
+              *ngFor="let color of palette.colors"
+              class="fob"
+              [title]="color.name"
+              [style.background]="color.lightHex"
+            ></span>
+          </label>
+        </td>
+        <td>
+          <label [for]="palette.id" class="lights">
+            <span
+              class="fob"
+              [title]="palette.inactive.name"
+              [style.background]="palette.inactive.lightHex"
+            ></span>
+          </label>
+        </td>
+        <td>
+          <label [for]="palette.id" class="darks">
+            <span
+              *ngFor="let color of palette.colors"
+              class="fob"
+              [title]="color.name"
+              [style.background]="color.darkHex"
+            ></span>
+          </label>
+        </td>
+        <td>
+          <label [for]="palette.id" class="darks">
+            <span
+              class="fob"
+              [title]="palette.inactive.name"
+              [style.background]="palette.inactive.darkHex"
+            ></span>
+          </label>
+        </td>
+      </tr>
+    </tbody>
+    <tfoot>
+      <td></td>
+      <td class="lights"></td>
+      <td class="lights"></td>
+      <td class="darks"></td>
+      <td class="darks"></td>
+    </tfoot>
+  </table>
+</div>

@@ -110,6 +110,15 @@ const reducer = createReducer(
         ...nextSettings,
       },
     };
+  }),
+  on(actions.colorPaletteChanged, (state, {palette}) => {
+    return {
+      ...state,
+      settings: {
+        ...state.settings,
+        colorPalette: palette,
+      },
+    };
   })
 );
 

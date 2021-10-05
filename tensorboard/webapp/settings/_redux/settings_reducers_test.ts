@@ -158,6 +158,35 @@ describe('settings reducer', () => {
     });
   });
 
+  describe('#colorPaletteChanged', () => {
+    it('sets color palette', () => {
+      const basePalette = {
+        id: 'base',
+        name: 'base',
+        colors: [],
+        inactive: {name: 'random', lightHex: '#000', darkHex: '#000'},
+      };
+      const state = createSettingsState({
+        settings: createSettings({colorPalette: basePalette}),
+      });
+
+      const customPalettte = {
+        id: 'custom',
+        name: 'Custom',
+        colors: [],
+        inactive: {name: 'random', lightHex: '#000', darkHex: '#000'},
+      };
+      const nextState = reducers(
+        state,
+        actions.colorPaletteChanged({
+          palette: customPalettte,
+        })
+      );
+
+      expect(nextState.settings.colorPalette).toEqual(customPalettte);
+    });
+  });
+
   describe('#globalSettingsLoaded', () => {
     it('loads settings from the persistent settings storage', () => {
       const state = createSettingsState({
