@@ -197,6 +197,7 @@ describe('metrics main view', () => {
       state: DataLoadState.NOT_LOADED,
       lastLoadedTimeInMs: null,
     });
+    store.overrideSelector(selectors.isMetricsSettingsPaneOpen, false);
   });
 
   describe('toolbar', () => {
@@ -1655,27 +1656,33 @@ describe('metrics main view', () => {
   });
 
   describe('sidepane', () => {
-    it('settings button should toggle side pane', () => {
+    it('renders settings pane opened when store says it is opened', () => {
+      store.overrideSelector(selectors.isMetricsSettingsPaneOpen, true);
       const fixture = TestBed.createComponent(MainViewContainer);
       fixture.detectChanges();
 
       expect(fixture.debugElement.query(By.css('.sidebar'))).toBeTruthy();
 
+      store.overrideSelector(selectors.isMetricsSettingsPaneOpen, false);
+      store.refreshState();
+      fixture.detectChanges();
+
+      expect(fixture.debugElement.query(By.css('.sidebar'))).toBeFalsy();
+    });
+
+    it('fires action when toggling a gear button', () => {
+      const fixture = TestBed.createComponent(MainViewContainer);
+      fixture.detectChanges();
+
       const settingsButton = fixture.debugElement.query(
         By.css('[aria-label="Toggle settings side pane"]')
       );
       settingsButton.nativeElement.click();
-      fixture.detectChanges();
-
-      expect(fixture.debugElement.query(By.css('.sidebar'))).not.toBeTruthy();
-
-      settingsButton.nativeElement.click();
-      fixture.detectChanges();
-
-      expect(fixture.debugElement.query(By.css('.sidebar'))).toBeTruthy();
+      expect(dispatchedActions).toEqual([actions.metricsSettingsPaneToggled()]);
     });
 
-    it('closes upon clicking the sidepane close button', () => {
+    it('dispatches closed action when clicked on sidepane close button', () => {
+      store.overrideSelector(selectors.isMetricsSettingsPaneOpen, true);
       const fixture = TestBed.createComponent(MainViewContainer);
       fixture.detectChanges();
 
@@ -1685,9 +1692,8 @@ describe('metrics main view', () => {
         By.css('[aria-label="Close side pane"]')
       );
       closeButton.nativeElement.click();
-      fixture.detectChanges();
 
-      expect(fixture.debugElement.query(By.css('.sidebar'))).not.toBeTruthy();
+      expect(dispatchedActions).toEqual([actions.metricsSettingsPaneClosed()]);
     });
   });
 });

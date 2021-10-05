@@ -2179,4 +2179,32 @@ describe('metrics reducers', () => {
       expect(after.promoteTimeSeries).toBe(false);
     });
   });
+
+  describe('#metricsSettingsPaneToggled', () => {
+    it('toggles the settings pane opened state', () => {
+      const state1 = buildMetricsState({
+        isSettingsPaneOpen: false,
+      });
+
+      const state2 = reducers(state1, actions.metricsSettingsPaneToggled());
+      expect(state2.isSettingsPaneOpen).toBe(true);
+
+      const state3 = reducers(state2, actions.metricsSettingsPaneToggled());
+      expect(state3.isSettingsPaneOpen).toBe(false);
+    });
+  });
+
+  describe('#metricsSettingsPaneClosed', () => {
+    it('sets false to the settings pane opened state', () => {
+      const state1 = buildMetricsState({
+        isSettingsPaneOpen: true,
+      });
+
+      const state2 = reducers(state1, actions.metricsSettingsPaneClosed());
+      expect(state2.isSettingsPaneOpen).toBe(false);
+
+      const state3 = reducers(state2, actions.metricsSettingsPaneClosed());
+      expect(state3.isSettingsPaneOpen).toBe(false);
+    });
+  });
 });
