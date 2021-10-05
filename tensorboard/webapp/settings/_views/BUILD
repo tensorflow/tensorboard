@@ -14,6 +14,7 @@ tf_ng_module(
     ],
     assets = [
         "settings_dialog_component.css",
+        "settings_dialog_component.ng.html",
     ],
     deps = [
         "//tensorboard/webapp:tb_polymer_interop_types",

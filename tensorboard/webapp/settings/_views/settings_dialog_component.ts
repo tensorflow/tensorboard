@@ -45,50 +45,7 @@ export function createIntegerValidator(): ValidatorFn {
 
 @Component({
   selector: 'settings-dialog-component',
-  template: `
-    <h3>Settings</h3>
-    <div>
-      <div class="reload-toggle">
-        <mat-checkbox [checked]="reloadEnabled" (change)="onReloadToggle()"
-          >Reload data</mat-checkbox
-        >
-      </div>
-      <div>
-        <mat-form-field>
-          <input
-            class="reload-period"
-            matInput
-            type="number"
-            placeholder="Reload Period"
-            [formControl]="reloadPeriodControl"
-          />
-        </mat-form-field>
-        <mat-error
-          *ngIf="
-            reloadPeriodControl.hasError('min') ||
-            reloadPeriodControl.hasError('required')
-          "
-        >
-          Reload period has to be minimum of
-          {{ MIN_RELOAD_PERIOD_IN_S }} seconds.
-        </mat-error>
-      </div>
-    </div>
-    <div>
-      <mat-form-field>
-        <input
-          class="page-size"
-          matInput
-          type="number"
-          placeholder="Pagination Limit"
-          [formControl]="paginationControl"
-        />
-      </mat-form-field>
-      <mat-error *ngIf="paginationControl.invalid">
-        Page size has to be a positive integer.
-      </mat-error>
-    </div>
-  `,
+  templateUrl: 'settings_dialog_component.ng.html',
   styleUrls: ['./settings_dialog_component.css'],
 })
 export class SettingsDialogComponent implements OnInit, OnDestroy, OnChanges {
