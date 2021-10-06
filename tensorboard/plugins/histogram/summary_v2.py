@@ -425,6 +425,8 @@ def _buckets_v3(data, bucket_count=None):
     with tf.name_scope("buckets"):
         tf.debugging.assert_scalar(bucket_count)
         tf.debugging.assert_type(bucket_count, tf.int32)
+        # Treat a negative bucket count as zero.
+        bucket_count = tf.math.maximum(0, bucket_count)
         data = tf.reshape(data, shape=[-1])  # flatten
         data = tf.cast(data, tf.float64)
         data_size = tf.size(input=data)
@@ -440,7 +442,7 @@ def _buckets_v3(data, bucket_count=None):
             2. If the input data is empty, a tensor of shape (bucket_count, 3)
               of all zero values will be returned.
             """
-            return tf.zeros((max(0, bucket_count), 3), dtype=tf.float64)
+            return tf.zeros((bucket_count, 3), dtype=tf.float64)
 
         def when_nonempty():
             min_ = tf.reduce_min(input_tensor=data)
@@ -480,11 +482,12 @@ def _buckets_v3(data, bucket_count=None):
                 """When input data contains a single unique value."""
                 # Left and right edges are the same for single value input.
                 edges = tf.fill([bucket_count], max_)
-                # Counts for the first {bucket_count - 1} buckets [v, v) are 0.
-                zero_bucket_counts = tf.fill([bucket_count - 1], 0)
-                # Count for last bucket [v, v] is {data_size}.
+                # Bucket counts are 0 except the last bucket (if bucket_count > 0),
+                # which is `data_size`. Ensure that the resulting counts vector has
+                # length `bucket_count` always, including the bucket_count==0 case.
+                zeroes = tf.fill([bucket_count], 0)
                 bucket_counts = tf.cast(
-                    tf.concat([zero_bucket_counts, [data_size]], 0),
+                    tf.concat([zeroes[:-1], [data_size]], 0)[:bucket_count],
                     dtype=tf.float64,
                 )
                 return tf.transpose(a=tf.stack([edges, edges, bucket_counts]))

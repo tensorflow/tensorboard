@@ -316,7 +316,7 @@ class SummaryV3OpGraphTest(SummaryV3OpTest, tf.test.TestCase):
         with tf.name_scope("_") as temp_scope:
             scope = temp_scope.rstrip("/_")
 
-        @tf2.function
+        @tf2.function(autograph=True)
         def graph_fn():
             # Recreate the active scope inside the defun since it won't propagate.
             with tf.name_scope(scope):
@@ -324,6 +324,7 @@ class SummaryV3OpGraphTest(SummaryV3OpTest, tf.test.TestCase):
 
         writer = tf2.summary.create_file_writer(self.get_temp_dir())
         with writer.as_default():
+            # print(tf2.autograph.to_code(graph_fn.python_function))
             graph_fn()
         writer.close()
 
@@ -346,14 +347,6 @@ class SummaryV3OpGraphTest(SummaryV3OpTest, tf.test.TestCase):
         writer = tf2.summary.create_file_writer(self.get_temp_dir())
         with writer.as_default():
             graph_fn.get_concrete_function()
-
-    def test_zero_bucket_count(self):
-        self.skipTest(
-            "TODO: figure out why this doesn't work in graph test case"
-        )
-        pb = self.histogram("zero_bucket_count", [1, 1, 1], buckets=0)
-        buckets = tensor_util.make_ndarray(pb.value[0].tensor)
-        np.testing.assert_array_equal(buckets, np.array([]).reshape((0, 3)))
 
 
 if __name__ == "__main__":
