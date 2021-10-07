@@ -412,7 +412,8 @@ def _buckets_v3(data, bucket_count=None):
 
     Arguments:
       data: A `Tensor` of any shape. Must be castable to `float64`.
-      bucket_count: Optional positive `int` or scalar `int32` `Tensor`.
+      bucket_count: Optional non-negative `int` or scalar `int32` `Tensor`,
+        defaults to 30.
     Returns:
       A `Tensor` of shape `[k, 3]` and type `float64`. The `i`th row is
       a triple `[left_edge, right_edge, count]` for a single bucket.
@@ -424,21 +425,33 @@ def _buckets_v3(data, bucket_count=None):
     with tf.name_scope("buckets"):
         tf.debugging.assert_scalar(bucket_count)
         tf.debugging.assert_type(bucket_count, tf.int32)
+        # Treat a negative bucket count as zero.
+        bucket_count = tf.math.maximum(0, bucket_count)
         data = tf.reshape(data, shape=[-1])  # flatten
         data = tf.cast(data, tf.float64)
-        is_empty = tf.equal(tf.size(input=data), 0)
+        data_size = tf.size(input=data)
+        is_empty = tf.logical_or(
+            tf.equal(data_size, 0), tf.less_equal(bucket_count, 0)
+        )
 
         def when_empty():
-            return tf.constant([], shape=(0, 3), dtype=tf.float64)
+            """When input data is empty or bucket_count is zero.
 
-        # TODO(ytjing): Make the nonempty case handling TPU compatible.
+            1. If bucket_count is specified as zero, an empty tensor of shape
+              (0, 3) will be returned.
+            2. If the input data is empty, a tensor of shape (bucket_count, 3)
+              of all zero values will be returned.
+            """
+            return tf.zeros((bucket_count, 3), dtype=tf.float64)
+
         def when_nonempty():
             min_ = tf.reduce_min(input_tensor=data)
             max_ = tf.reduce_max(input_tensor=data)
             range_ = max_ - min_
-            is_singular = tf.equal(range_, 0)
+            has_single_value = tf.equal(range_, 0)
 
-            def when_nonsingular():
+            def when_multiple_values():
+                """When input data contains multiple values."""
                 bucket_width = range_ / tf.cast(bucket_count, tf.float64)
                 offsets = data - min_
                 bucket_indices = tf.cast(
@@ -465,17 +478,22 @@ def _buckets_v3(data, bucket_count=None):
                     a=tf.stack([left_edges, right_edges, bucket_counts])
                 )
 
-            def when_singular():
-                center = min_
-                bucket_starts = tf.stack([center - 0.5])
-                bucket_ends = tf.stack([center + 0.5])
-                bucket_counts = tf.stack(
-                    [tf.cast(tf.size(input=data), tf.float64)]
+            def when_single_value():
+                """When input data contains a single unique value."""
+                # Left and right edges are the same for single value input.
+                edges = tf.fill([bucket_count], max_)
+                # Bucket counts are 0 except the last bucket (if bucket_count > 0),
+                # which is `data_size`. Ensure that the resulting counts vector has
+                # length `bucket_count` always, including the bucket_count==0 case.
+                zeroes = tf.fill([bucket_count], 0)
+                bucket_counts = tf.cast(
+                    tf.concat([zeroes[:-1], [data_size]], 0)[:bucket_count],
+                    dtype=tf.float64,
                 )
-                return tf.transpose(
-                    a=tf.stack([bucket_starts, bucket_ends, bucket_counts])
-                )
+                return tf.transpose(a=tf.stack([edges, edges, bucket_counts]))
 
-            return tf.cond(is_singular, when_singular, when_nonsingular)
+            return tf.cond(
+                has_single_value, when_single_value, when_multiple_values
+            )
 
         return tf.cond(is_empty, when_empty, when_nonempty)
