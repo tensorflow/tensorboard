@@ -20,6 +20,7 @@ import os
 
 from tensorboard.plugins import base_plugin
 from tensorboard.util import tensor_util
+from tensorboard import plugin_util
 import werkzeug
 from werkzeug import wrappers
 
@@ -35,7 +36,7 @@ class ExamplePlugin(base_plugin.TBPlugin):
         Args:
         context: A base_plugin.TBContext instance.
         """
-        self._multiplexer = context.multiplexer
+        self.data_provider = context.data_provider
 
     def is_active(self):
         """Returns whether there is relevant data for the plugin to process.
@@ -43,9 +44,9 @@ class ExamplePlugin(base_plugin.TBPlugin):
         When there are no runs with greeting data, TensorBoard will hide the
         plugin from the main navigation bar.
         """
-        return bool(
-            self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME)
-        )
+        # not sure abouot this
+        return False  # `list_plugins` as called by TB core suffices
+
 
     def get_plugin_apps(self):
         return {
@@ -69,17 +70,30 @@ class ExamplePlugin(base_plugin.TBPlugin):
 
     @wrappers.Request.application
     def _serve_tags(self, request):
-        del request  # unused
-        mapping = self._multiplexer.PluginRunToTagToContent(
-            metadata.PLUGIN_NAME
+        # del request  # unused
+
+        ctx = plugin_util.context(request.environ)
+        experiment = plugin_util.experiment_id(request.environ)
+
+        # mapping = self.multiplexer.PluginRunToTagToContent(
+        #     metadata.PLUGIN_NAME
+        # )
+        # empty mapping
+        mapping = self.data_provider.list_tensors(
+            ctx, experiment_id=experiment, plugin_name=metadata.PLUGIN_NAME
         )
-        result = {run: {} for run in self._multiplexer.Runs()}
+
+        print('mapping', mapping)
+        #result = {run: {} for run in self.multiplexer.Runs()}
+        result = {run: {} for run in mapping}
         for (run, tag_to_content) in mapping.items():
             for tag in tag_to_content:
-                summary_metadata = self._multiplexer.SummaryMetadata(run, tag)
-                result[run][tag] = {
-                    "description": summary_metadata.summary_description,
-                }
+                print('tag', tag)
+                # not sure the replacement of SummaryMetadata yet
+                # summary_metadata = self.multiplexer.SummaryMetadata(run, tag)
+                # result[run][tag] = {
+                #     "description": summary_metadata.summary_description,
+                # }
         contents = json.dumps(result, sort_keys=True)
         return werkzeug.Response(contents, content_type="application/json")
 
@@ -92,6 +106,8 @@ class ExamplePlugin(base_plugin.TBPlugin):
         """
         run = request.args.get("run")
         tag = request.args.get("tag")
+        run_tag_filter = {'run': run, 'tag': tag}
+        print('run_tag_filter', run_tag_filter)
         if run is None or tag is None:
             raise werkzeug.exceptions.BadRequest("Must specify run and tag")
         try:
@@ -99,7 +115,8 @@ class ExamplePlugin(base_plugin.TBPlugin):
                 tensor_util.make_ndarray(event.tensor_proto)
                 .item()
                 .decode("utf-8")
-                for event in self._multiplexer.Tensors(run, tag)
+                for event in self.data_provider.list_tensors(run_tag_filter=run_tag_filter)
+                # for event in self.data_provider.Tensors(run, tag)
             ]
         except KeyError:
             raise werkzeug.exceptions.BadRequest("Invalid run or tag")
