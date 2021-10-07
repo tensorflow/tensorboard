@@ -47,7 +47,6 @@ class ExamplePlugin(base_plugin.TBPlugin):
         """
         return False  # `list_plugins` as called by TB core suffices
 
-
     def get_plugin_apps(self):
         return {
             "/index.js": self._serve_js,
@@ -106,15 +105,11 @@ class ExamplePlugin(base_plugin.TBPlugin):
                 downsample=1,
                 plugin_name=metadata.PLUGIN_NAME,
                 experiment_id=experiment,
-                run_tag_filter=provider.RunTagFilter(runs=[run], tags=[tag])
+                run_tag_filter=provider.RunTagFilter(runs=[run], tags=[tag]),
             )
 
             data = read_result.get(run, {}).get(tag, {})
-            event_data = [
-                data[0].numpy
-                .item()
-                .decode("utf-8")
-            ]
+            event_data = [data[0].numpy.item().decode("utf-8")]
         except KeyError:
             raise werkzeug.exceptions.BadRequest("Invalid run or tag")
         contents = json.dumps(event_data, sort_keys=True)
