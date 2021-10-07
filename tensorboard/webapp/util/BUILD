@@ -61,6 +61,7 @@ tf_ts_library(
     ],
     deps = [
         "//tensorboard/webapp/runs:types",
+        "//tensorboard/webapp/experiments:types",
     ],
 )
 

@@ -12,6 +12,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {ExperimentAlias} from '../experiments/types';
+
 /**
  * @fileoverview Helps matching runs.
  */
@@ -19,7 +21,7 @@ limitations under the License.
 export interface RunMatchable {
   runName: string;
   experimentName: string;
-  experimentAlias: string;
+  experimentAlias: ExperimentAlias;
 }
 
 /**
@@ -51,8 +53,9 @@ export function matchRunToRegex(
   const matchables = [runMatchable.runName];
   if (shouldMatchExperiment) {
     matchables.push(
-      runMatchable.experimentAlias,
-      `${runMatchable.experimentAlias}/${runMatchable.runName}`
+      runMatchable.experimentName,
+      runMatchable.experimentAlias.aliasText,
+      `${runMatchable.experimentAlias.aliasText}/${runMatchable.runName}`
     );
   }
   return matchables.some((matchable) => regex!.test(matchable));

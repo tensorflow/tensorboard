@@ -69,6 +69,7 @@ import {
   runSelectorSortChanged,
   runTableShown,
 } from '../../actions';
+import {ExperimentAlias} from '../../../experiments/types';
 import {MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT} from '../../store/runs_types';
 import {SortKey, SortType} from '../../types';
 import {
@@ -90,7 +91,7 @@ const getRunsLoading = createSelector<
 function getPropsForSort(
   item: RunTableItem,
   key: SortKey
-): Array<string | number | boolean | undefined> {
+): Array<ExperimentAlias | string | number | boolean | undefined> {
   switch (key.type) {
     case SortType.EXPERIMENT_NAME:
       return [item.experimentAlias, item.run.name, item.run.id];

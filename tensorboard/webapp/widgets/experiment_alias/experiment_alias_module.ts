@@ -15,13 +15,11 @@ limitations under the License.
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
 
-import {RunNameComponent} from './run_name_component';
-import {RunNameContainer} from './run_name_container';
-import {ExperimentAliasModule} from '../../../widgets/experiment_alias/experiment_alias_module';
+import {ExperimentAliasComponent} from './experiment_alias_component';
 
 @NgModule({
-  declarations: [RunNameContainer, RunNameComponent],
-  exports: [RunNameContainer],
-  imports: [CommonModule, ExperimentAliasModule],
+  imports: [CommonModule],
+  exports: [ExperimentAliasComponent],
+  declarations: [ExperimentAliasComponent],
 })
-export class RunNameModule {}
+export class ExperimentAliasModule {}

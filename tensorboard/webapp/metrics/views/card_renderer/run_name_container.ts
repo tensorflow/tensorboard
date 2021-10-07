@@ -18,6 +18,7 @@ import {combineLatest, Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
 
 import {State} from '../../../app_state';
+import {ExperimentAlias} from '../../../experiments/types';
 import {
   getExperimentIdForRunId,
   getExperimentIdToAliasMap,
@@ -32,6 +33,7 @@ import {getDisplayNameForRun} from './utils';
     <card-run-name-component
       [name]="name$ | async"
       [attr.title]="name$ | async"
+      [experimentAlias]="experimentAlias$ | async"
     ></card-run-name-component>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -40,6 +42,7 @@ export class RunNameContainer implements OnInit {
   @Input() runId!: string;
 
   name$?: Observable<string>;
+  experimentAlias$?: Observable<ExperimentAlias | null>;
 
   constructor(private readonly store: Store<State>) {}
 
@@ -49,15 +52,17 @@ export class RunNameContainer implements OnInit {
   ngOnInit() {
     this.name$ = combineLatest([
       this.store.select(getRun, {runId: this.runId}),
+    ]).pipe(
+      map(([run]) => {
+        return getDisplayNameForRun(this.runId, run, /*experimentAlias=*/ null);
+      })
+    );
+    this.experimentAlias$ = combineLatest([
       this.store.select(getExperimentIdForRunId, {runId: this.runId}),
       this.store.select(getExperimentIdToAliasMap),
     ]).pipe(
-      map(([run, experimentId, idToAlias]) => {
-        return getDisplayNameForRun(
-          this.runId,
-          run,
-          experimentId ? idToAlias[experimentId] : null
-        );
+      map(([experimentId, idToAlias]) => {
+        return experimentId ? idToAlias[experimentId]! : null;
       })
     );
   }

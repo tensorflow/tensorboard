@@ -178,6 +178,8 @@ tf_ng_module(
         ":utils",
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp:selectors",
+        "//tensorboard/webapp/experiments:types",
+        "//tensorboard/webapp/widgets/experiment_alias",
         "@npm//@angular/common",
         "@npm//@angular/core",
         "@npm//@ngrx/store",
@@ -224,6 +226,7 @@ tf_ts_library(
     ],
     deps = [
         ":scalar_card_types",
+        "//tensorboard/webapp/experiments:types",
         "//tensorboard/webapp/metrics:types",
         "//tensorboard/webapp/runs/store:types",
     ],

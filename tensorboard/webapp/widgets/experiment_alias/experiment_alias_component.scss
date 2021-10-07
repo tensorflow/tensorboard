@@ -1,4 +1,4 @@
-/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2021 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -12,16 +12,26 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {CommonModule} from '@angular/common';
-import {NgModule} from '@angular/core';
+@import 'tensorboard/webapp/theme/tb_theme';
 
-import {RunNameComponent} from './run_name_component';
-import {RunNameContainer} from './run_name_container';
-import {ExperimentAliasModule} from '../../../widgets/experiment_alias/experiment_alias_module';
+:host {
+  display: inline-flex;
+  align-items: baseline;
+}
 
-@NgModule({
-  declarations: [RunNameContainer, RunNameComponent],
-  exports: [RunNameContainer],
-  imports: [CommonModule, ExperimentAliasModule],
-})
-export class RunNameModule {}
+span {
+  background-color: inherit;
+  caret-color: currentColor;
+  color: currentColor;
+  font: inherit;
+  border: none;
+  outline: none;
+  padding: 0;
+  flex-grow: 1;
+}
+
+.alias-number {
+  @include tb-theme-foreground-prop(border, border, 1px solid);
+  border-radius: 2px;
+  margin-right: 2px;
+}

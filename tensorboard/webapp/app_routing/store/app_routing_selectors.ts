@@ -20,6 +20,7 @@ import {
 } from '../internal_utils';
 import {CompareRouteParams, Route, RouteKind} from '../types';
 
+import {ExperimentAlias} from '../../experiments/types';
 import {
   APP_ROUTING_FEATURE_KEY,
   AppRoutingState,
@@ -94,14 +95,18 @@ export const getRouteId = createSelector(
 export const getExperimentIdToAliasMap = createSelector(
   getRouteKind,
   getRouteParams,
-  (routeKind, routeParams): {[id: string]: string} => {
+  (routeKind, routeParams): {[id: string]: ExperimentAlias} => {
     if (routeKind !== RouteKind.COMPARE_EXPERIMENT) {
       return {};
     }
 
     const compareParams = routeParams as CompareRouteParams;
-    const map = getCompareExperimentIdAliasSpec(compareParams);
-    return Object.fromEntries(map.entries());
+    const userDefinedAliasMap = getCompareExperimentIdAliasSpec(compareParams);
+    let aliasMap = new Map<string, ExperimentAlias>();
+    for (let [experimentId, userDefinedAlias] of userDefinedAliasMap) {
+      aliasMap.set(experimentId, userDefinedAlias);
+    }
+    return Object.fromEntries(aliasMap.entries());
   }
 );
 

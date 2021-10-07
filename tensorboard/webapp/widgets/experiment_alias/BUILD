@@ -1,0 +1,26 @@
+load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_sass_binary")
+
+package(default_visibility = ["//tensorboard:internal"])
+
+licenses(["notice"])
+
+tf_sass_binary(
+    name = "experiment_alias_component_styles",
+    src = "experiment_alias_component.scss",
+)
+
+tf_ng_module(
+    name = "experiment_alias",
+    srcs = [
+        "experiment_alias_component.ts",
+        "experiment_alias_module.ts",
+    ],
+    assets = [
+        ":experiment_alias_component_styles",
+    ],
+    deps = [
+        "@npm//@angular/core",
+        "@npm//@angular/common",
+        "//tensorboard/webapp/experiments:types",
+    ],
+)

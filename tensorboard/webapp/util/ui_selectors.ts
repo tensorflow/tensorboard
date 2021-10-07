@@ -42,15 +42,10 @@ import {
   getRunSelectionMap,
   getRunSelectorRegexFilter,
 } from '../runs/store/runs_selectors';
-import {Run} from '../runs/types';
 import {selectors} from '../settings';
 import {ColorPalette} from './colors';
 import {matchRunToRegex, RunMatchable} from './matcher';
 
-interface RunAndNames extends Run {
-  experimentAlias: string;
-  experimentName: string;
-}
 /**
  * Selects the run selection (runId to boolean) of current routeId.
  *

@@ -27,6 +27,7 @@ export {
   HparamSpec,
   MetricSpec,
 } from '../../data_source/runs_data_source_types';
+import {ExperimentAlias} from '../../../experiments/types';
 
 export enum RunsTableColumn {
   CHECKBOX = 'checkbox',
@@ -37,7 +38,7 @@ export enum RunsTableColumn {
 
 export interface RunTableItem {
   run: Run;
-  experimentAlias: string;
+  experimentAlias: ExperimentAlias;
   experimentName: string;
   selected: boolean;
   hparams: Map<string, HparamValue['value']>;
