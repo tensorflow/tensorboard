@@ -316,7 +316,7 @@ class SummaryV3OpGraphTest(SummaryV3OpTest, tf.test.TestCase):
         with tf.name_scope("_") as temp_scope:
             scope = temp_scope.rstrip("/_")
 
-        @tf2.function(autograph=True)
+        @tf2.function
         def graph_fn():
             # Recreate the active scope inside the defun since it won't propagate.
             with tf.name_scope(scope):
@@ -324,7 +324,6 @@ class SummaryV3OpGraphTest(SummaryV3OpTest, tf.test.TestCase):
 
         writer = tf2.summary.create_file_writer(self.get_temp_dir())
         with writer.as_default():
-            # print(tf2.autograph.to_code(graph_fn.python_function))
             graph_fn()
         writer.close()
 
