@@ -18,6 +18,7 @@
 import json
 import os
 
+from tensorboard.data import provider
 from tensorboard.plugins import base_plugin
 from tensorboard.util import tensor_util
 from tensorboard import plugin_util
@@ -44,7 +45,6 @@ class ExamplePlugin(base_plugin.TBPlugin):
         When there are no runs with greeting data, TensorBoard will hide the
         plugin from the main navigation bar.
         """
-        # not sure abouot this
         return False  # `list_plugins` as called by TB core suffices
 
 
@@ -70,30 +70,19 @@ class ExamplePlugin(base_plugin.TBPlugin):
 
     @wrappers.Request.application
     def _serve_tags(self, request):
-        # del request  # unused
-
         ctx = plugin_util.context(request.environ)
         experiment = plugin_util.experiment_id(request.environ)
 
-        # mapping = self.multiplexer.PluginRunToTagToContent(
-        #     metadata.PLUGIN_NAME
-        # )
-        # empty mapping
         mapping = self.data_provider.list_tensors(
             ctx, experiment_id=experiment, plugin_name=metadata.PLUGIN_NAME
         )
 
-        print('mapping', mapping)
-        #result = {run: {} for run in self.multiplexer.Runs()}
         result = {run: {} for run in mapping}
-        for (run, tag_to_content) in mapping.items():
-            for tag in tag_to_content:
-                print('tag', tag)
-                # not sure the replacement of SummaryMetadata yet
-                # summary_metadata = self.multiplexer.SummaryMetadata(run, tag)
-                # result[run][tag] = {
-                #     "description": summary_metadata.summary_description,
-                # }
+        for (run, tag_to_timeseries) in mapping.items():
+            for (tag, timeseries) in tag_to_timeseries.items():
+                result[run][tag] = {
+                    "description": timeseries.description,
+                }
         contents = json.dumps(result, sort_keys=True)
         return werkzeug.Response(contents, content_type="application/json")
 
@@ -106,19 +95,27 @@ class ExamplePlugin(base_plugin.TBPlugin):
         """
         run = request.args.get("run")
         tag = request.args.get("tag")
-        run_tag_filter = {'run': run, 'tag': tag}
-        print('run_tag_filter', run_tag_filter)
+        ctx = plugin_util.context(request.environ)
+        experiment = plugin_util.experiment_id(request.environ)
+
         if run is None or tag is None:
             raise werkzeug.exceptions.BadRequest("Must specify run and tag")
         try:
-            data = [
-                tensor_util.make_ndarray(event.tensor_proto)
+            read_result = self.data_provider.read_tensors(
+                ctx,
+                downsample=1,
+                plugin_name=metadata.PLUGIN_NAME,
+                experiment_id=experiment,
+                run_tag_filter=provider.RunTagFilter(runs=[run], tags=[tag])
+            )
+
+            data = read_result.get(run, {}).get(tag, {})
+            event_data = [
+                data[0].numpy
                 .item()
                 .decode("utf-8")
-                for event in self.data_provider.list_tensors(run_tag_filter=run_tag_filter)
-                # for event in self.data_provider.Tensors(run, tag)
             ]
         except KeyError:
             raise werkzeug.exceptions.BadRequest("Invalid run or tag")
-        contents = json.dumps(data, sort_keys=True)
+        contents = json.dumps(event_data, sort_keys=True)
         return werkzeug.Response(contents, content_type="application/json")

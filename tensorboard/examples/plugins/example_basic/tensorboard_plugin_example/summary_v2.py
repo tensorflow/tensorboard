@@ -62,4 +62,5 @@ def _create_summary_metadata(description):
             plugin_name=metadata.PLUGIN_NAME,
             content=b"",  # no need for summary-specific metadata
         ),
+        data_class=summary_pb2.DATA_CLASS_TENSOR,
     )
