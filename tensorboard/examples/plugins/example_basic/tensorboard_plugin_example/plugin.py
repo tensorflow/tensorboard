@@ -20,7 +20,6 @@ import os
 
 from tensorboard.data import provider
 from tensorboard.plugins import base_plugin
-from tensorboard.util import tensor_util
 from tensorboard import plugin_util
 import werkzeug
 from werkzeug import wrappers
