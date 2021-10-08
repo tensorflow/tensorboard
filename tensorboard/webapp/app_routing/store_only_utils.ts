@@ -55,11 +55,13 @@ export function getCompareExperimentIdAliasSpec(
 ): Map<string, ExperimentAlias> {
   const idToDisplayName = new Map<string, ExperimentAlias>();
   const nameAndIds = parseCompareExperimentStr(routeParams.experimentIds);
-  let aliasNumber = 1;
+  let aliasNumber = 0;
   for (const {id, name} of nameAndIds) {
-    if (name) {
-      idToDisplayName.set(id, {aliasText: name, aliasNumber: aliasNumber});
+    aliasNumber++;
+    if (idToDisplayName.has(id) || !name) {
+      continue;
     }
+    idToDisplayName.set(id, {aliasText: name, aliasNumber: aliasNumber});
   }
   return idToDisplayName;
 }

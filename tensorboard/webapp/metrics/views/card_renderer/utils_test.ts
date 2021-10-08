@@ -30,12 +30,17 @@ describe('metrics card_renderer utils test', () => {
     });
 
     it('returns "..." for run name, when only run is not present', () => {
-      expect(getDisplayNameForRun('rid', null, 'eid')).toBe('eid/...');
+      expect(
+        getDisplayNameForRun('rid', null, {aliasText: 'eid', aliasNumber: 1})
+      ).toBe('eid/...');
     });
 
     it('returns exp and run name delimited by "/" when both are present', () => {
       expect(
-        getDisplayNameForRun('rid', buildRun({name: 'foo/bar'}), 'eid')
+        getDisplayNameForRun('rid', buildRun({name: 'foo/bar'}), {
+          aliasText: 'eid',
+          aliasNumber: 1,
+        })
       ).toBe('eid/foo/bar');
     });
   });

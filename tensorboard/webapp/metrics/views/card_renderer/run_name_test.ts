@@ -46,7 +46,9 @@ describe('card run name', () => {
 
   it('renders exp display name and run name', () => {
     store.overrideSelector(getExperimentIdForRunId, 'eid');
-    store.overrideSelector(getExperimentIdToAliasMap, {eid: 'Cat'});
+    store.overrideSelector(getExperimentIdToAliasMap, {
+      eid: {aliasText: 'Cat', aliasNumber: 1},
+    });
     store.overrideSelector(getRun, buildRun({id: 'rid', name: 'Meow'}));
 
     const fixture = TestBed.createComponent(RunNameContainer);
@@ -58,7 +60,9 @@ describe('card run name', () => {
 
   it('renders only run name when there is no exp display name', () => {
     store.overrideSelector(getExperimentIdForRunId, 'eid');
-    store.overrideSelector(getExperimentIdToAliasMap, {cat: 'Cat'});
+    store.overrideSelector(getExperimentIdToAliasMap, {
+      cat: {aliasText: 'Cat', aliasNumber: 1},
+    });
     store.overrideSelector(getRun, buildRun({id: 'rid', name: 'Bark/woof'}));
 
     const fixture = TestBed.createComponent(RunNameContainer);
@@ -70,7 +74,9 @@ describe('card run name', () => {
 
   it('renders "Unknown run" if the `runId` does not exist in store', () => {
     store.overrideSelector(getExperimentIdForRunId, null);
-    store.overrideSelector(getExperimentIdToAliasMap, {cat: 'Cat'});
+    store.overrideSelector(getExperimentIdToAliasMap, {
+      cat: {aliasText: 'Cat', aliasNumber: 1},
+    });
     store.overrideSelector(getRun, null);
 
     const fixture = TestBed.createComponent(RunNameContainer);

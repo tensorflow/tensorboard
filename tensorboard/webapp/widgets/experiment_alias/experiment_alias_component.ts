@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component, Input} from '@angular/core';
+import {Component, Input, OnInit} from '@angular/core';
 
 import {ExperimentAlias} from '../../experiments/types';
 
@@ -23,12 +23,12 @@ import {ExperimentAlias} from '../../experiments/types';
 @Component({
   selector: 'tb-experiment-alias',
   template: `
-    <span class="alias-number">{{ alias.aliasNumber }}</span>
-    <span>{{ alias.aliasText }}</span>
+    <span *ngIf="alias" class="alias-number">{{ alias.aliasNumber }}</span>
+    <span *ngIf="alias">{{ alias.aliasText }}</span>
   `,
   styleUrls: [`experiment_alias_component.css`],
 })
 export class ExperimentAliasComponent {
   @Input()
-  alias: ExperimentAlias = {aliasText: '', aliasNumber: -1};
+  alias?: ExperimentAlias;
 }

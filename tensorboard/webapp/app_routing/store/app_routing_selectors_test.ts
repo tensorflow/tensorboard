@@ -136,9 +136,9 @@ describe('app_routing_selectors', () => {
       );
 
       expect(selectors.getExperimentIdToAliasMap(state)).toEqual({
-        123: 'exp1',
-        234: 'exp2',
-        345: 'exp2',
+        123: {aliasText: 'exp1', aliasNumber: 1},
+        234: {aliasText: 'exp2', aliasNumber: 2},
+        345: {aliasText: 'exp2', aliasNumber: 3},
       });
     });
 

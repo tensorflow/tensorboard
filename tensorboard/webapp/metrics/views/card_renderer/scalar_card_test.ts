@@ -392,8 +392,10 @@ describe('scalar card', () => {
         {x: 333, y: 1},
         {x: 555, y: 2},
       ]);
-      const {visible, displayName} =
-        lineChartEl.componentInstance.seriesMetadataMap[id];
+      const {
+        visible,
+        displayName,
+      } = lineChartEl.componentInstance.seriesMetadataMap[id];
       expect(displayName).toBe('Run1 name');
       expect(visible).toBe(true);
     }));
@@ -520,16 +522,17 @@ describe('scalar card', () => {
         .withArgs(selectors.getRun, {runId: 'run1'})
         .and.returnValue(of(buildRun({name: 'Run1 name'})));
       store.overrideSelector(selectors.getExperimentIdToAliasMap, {
-        eid1: 'existing_exp',
-        eid2: 'ERROR!',
+        eid1: {aliasText: 'existing_exp', aliasNumber: 1},
+        eid2: {aliasText: 'ERROR!', aliasNumber: 2},
       });
 
       const fixture = createComponent('card1');
 
       const lineChartEl = fixture.debugElement.query(Selector.LINE_CHART);
-      const {displayName} =
-        lineChartEl.componentInstance.seriesMetadataMap['run1'];
-      expect(displayName).toBe('existing_exp/Run1 name');
+      const {displayName} = lineChartEl.componentInstance.seriesMetadataMap[
+        'run1'
+      ];
+      expect(displayName).toBe('[1] existing_exp/Run1 name');
     }));
 
     it('sets run id if a run and experiment are not found', fakeAsync(() => {
@@ -544,8 +547,9 @@ describe('scalar card', () => {
       const fixture = createComponent('card1');
 
       const lineChartEl = fixture.debugElement.query(Selector.LINE_CHART);
-      const {displayName} =
-        lineChartEl.componentInstance.seriesMetadataMap['run1'];
+      const {displayName} = lineChartEl.componentInstance.seriesMetadataMap[
+        'run1'
+      ];
       expect(displayName).toBe('run1');
     }));
 
@@ -557,7 +561,7 @@ describe('scalar card', () => {
         .withArgs(selectors.getRun, {runId: 'run1'})
         .and.returnValue(of(null));
       store.overrideSelector(selectors.getExperimentIdToAliasMap, {
-        eid1: 'existing_exp',
+        eid1: {aliasText: 'existing_exp', aliasNumber: 1},
       });
 
       const fixture = createComponent('card1');
@@ -565,9 +569,10 @@ describe('scalar card', () => {
       const lineChartEl = fixture.debugElement.query(Selector.LINE_CHART);
       expect(lineChartEl.componentInstance.seriesData.length).toBe(1);
 
-      const {displayName} =
-        lineChartEl.componentInstance.seriesMetadataMap['run1'];
-      expect(displayName).toBe('existing_exp/...');
+      const {displayName} = lineChartEl.componentInstance.seriesMetadataMap[
+        'run1'
+      ];
+      expect(displayName).toBe('[1] existing_exp/...');
     }));
 
     it('updates displayName with run when run populates', fakeAsync(() => {
@@ -580,7 +585,7 @@ describe('scalar card', () => {
         .withArgs(selectors.getRun, {runId: 'run1'})
         .and.returnValue(getRun);
       store.overrideSelector(selectors.getExperimentIdToAliasMap, {
-        eid1: 'existing_exp',
+        eid1: {aliasText: 'existing_exp', aliasNumber: 1},
       });
 
       const fixture = createComponent('card1');
@@ -590,9 +595,10 @@ describe('scalar card', () => {
       fixture.detectChanges();
 
       const lineChartEl = fixture.debugElement.query(Selector.LINE_CHART);
-      const {displayName} =
-        lineChartEl.componentInstance.seriesMetadataMap['run1'];
-      expect(displayName).toBe('existing_exp/Foobar');
+      const {displayName} = lineChartEl.componentInstance.seriesMetadataMap[
+        'run1'
+      ];
+      expect(displayName).toBe('[1] existing_exp/Foobar');
     }));
   });
 
@@ -661,8 +667,10 @@ describe('scalar card', () => {
         const lineChartEl = fixture.debugElement.query(Selector.LINE_CHART);
         expect(lineChartEl.componentInstance.seriesData.length).toBe(1);
         const {id, points} = lineChartEl.componentInstance.seriesData[0];
-        const {visible, displayName} =
-          lineChartEl.componentInstance.seriesMetadataMap['run1'];
+        const {
+          visible,
+          displayName,
+        } = lineChartEl.componentInstance.seriesMetadataMap['run1'];
         expect(id).toBe('run1');
         expect(displayName).toBe('Run1 name');
         expect(visible).toBe(true);

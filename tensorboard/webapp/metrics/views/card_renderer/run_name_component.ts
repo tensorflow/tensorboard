@@ -29,5 +29,5 @@ import {ExperimentAlias} from '../../../experiments/types';
 })
 export class RunNameComponent {
   @Input() name!: string;
-  @Input() experimentAlias?: ExperimentAlias | null;
+  @Input() experimentAlias: ExperimentAlias | null | undefined;
 }

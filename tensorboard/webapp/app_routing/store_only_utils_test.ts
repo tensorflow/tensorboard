@@ -29,8 +29,8 @@ describe('app_routing store_only_utils test', () => {
       });
       expect(map).toEqual(
         new Map([
-          ['123', 'a'],
-          ['345', 'b'],
+          ['123', {aliasText: 'a', aliasNumber: 1}],
+          ['345', {aliasText: 'b', aliasNumber: 2}],
         ])
       );
     });
@@ -39,14 +39,37 @@ describe('app_routing store_only_utils test', () => {
       const map = getCompareExperimentIdAliasSpec({
         experimentIds: 'a:123,b:123',
       });
-      expect(map).toEqual(new Map([['123', 'b']]));
+      expect(map).toEqual(new Map([['123', {aliasText: 'a', aliasNumber: 1}]]));
+    });
+
+    it('ensure duplicates increase alias number', () => {
+      const map = getCompareExperimentIdAliasSpec({
+        experimentIds: 'a:123,b:123,c:345',
+      });
+      expect(map).toEqual(
+        new Map([
+          ['123', {aliasText: 'a', aliasNumber: 1}],
+          ['345', {aliasText: 'c', aliasNumber: 3}],
+        ])
+      );
     });
 
     it('does not include empty aliases', () => {
       const map = getCompareExperimentIdAliasSpec({
         experimentIds: 'a:123,:345',
       });
-      expect(map).toEqual(new Map([['123', 'a']]));
+      expect(map).toEqual(new Map([['123', {aliasText: 'a', aliasNumber: 1}]]));
+    });
+    it('does not include empty aliases', () => {
+      const map = getCompareExperimentIdAliasSpec({
+        experimentIds: 'a:123,:345,c:567',
+      });
+      expect(map).toEqual(
+        new Map([
+          ['123', {aliasText: 'a', aliasNumber: 1}],
+          ['567', {aliasText: 'c', aliasNumber: 3}],
+        ])
+      );
     });
 
     it('throws when it is empty', () => {

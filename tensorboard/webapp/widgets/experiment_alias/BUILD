@@ -1,4 +1,4 @@
-load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_sass_binary")
+load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_sass_binary", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
@@ -21,6 +21,21 @@ tf_ng_module(
     deps = [
         "@npm//@angular/core",
         "@npm//@angular/common",
+        "//tensorboard/webapp/experiments:types",
+    ],
+)
+
+tf_ts_library(
+    name = "experiment_alias_test",
+    testonly = True,
+    srcs = [
+        "experiment_alias_test.ts",
+    ],
+    deps = [
+        ":experiment_alias",
+        "@npm//@angular/core",
+        "@npm//@angular/platform-browser",
+        "@npm//@types/jasmine",
         "//tensorboard/webapp/experiments:types",
     ],
 )

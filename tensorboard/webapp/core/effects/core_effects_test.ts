@@ -90,7 +90,7 @@ describe('core_effects', () => {
 
     fetchPolymerRunsSubjects = [];
     createElementSpy = spyOn(document, 'createElement');
-    createElementSpy.withArgs('tf-backend').and.returnValue({
+    createElementSpy.withArgs('tf-backend').and.returnValue(({
       tf_backend: {
         runsStore: {
           refresh() {
@@ -100,7 +100,7 @@ describe('core_effects', () => {
           },
         },
       },
-    } as unknown as HTMLElement);
+    } as unknown) as HTMLElement);
     createElementSpy.and.callThrough();
 
     coreEffects = TestBed.inject(CoreEffects);
@@ -370,8 +370,8 @@ describe('core_effects', () => {
       store.overrideSelector(getRouteKind, RouteKind.COMPARE_EXPERIMENT);
       store.overrideSelector(getRouteId, 'foo');
       store.overrideSelector(getExperimentIdToAliasMap, {
-        eid1: 'alias 1',
-        eid2: 'alias 2',
+        eid1: {aliasText: 'alias 1', aliasNumber: 1},
+        eid2: {aliasText: 'alias 2', aliasNumber: 2},
       });
       store.overrideSelector(getPluginsListLoaded, {
         state: DataLoadState.LOADED,
@@ -420,8 +420,8 @@ describe('core_effects', () => {
       tick(TEST_ONLY.DATA_LOAD_CONDITIONAL_THROTTLE_IN_MS);
 
       store.overrideSelector(getExperimentIdToAliasMap, {
-        eid1: 'alias 1',
-        eid2: 'alias 2.1',
+        eid1: {aliasText: 'alias 1', aliasNumber: 1},
+        eid2: {aliasText: 'alias 2.1', aliasNumber: 2},
       });
       store.refreshState();
       tick(TEST_ONLY.ALIAS_CHANGE_RUNS_RELOAD_THROTTLE_IN_MS * 2);
@@ -429,8 +429,8 @@ describe('core_effects', () => {
 
       // Alias map content is the same so nothing.
       store.overrideSelector(getExperimentIdToAliasMap, {
-        eid1: 'alias 1',
-        eid2: 'alias 2.1',
+        eid1: {aliasText: 'alias 1', aliasNumber: 1},
+        eid2: {aliasText: 'alias 2.1', aliasNumber: 2},
       });
       store.refreshState();
       tick(TEST_ONLY.ALIAS_CHANGE_RUNS_RELOAD_THROTTLE_IN_MS * 2);
@@ -439,14 +439,14 @@ describe('core_effects', () => {
       // Alias map changes rapidly so we get request immediately once then once
       // again after the throttle time is over.
       store.overrideSelector(getExperimentIdToAliasMap, {
-        eid1: 'alias 1',
-        eid2: 'alias 2.2',
+        eid1: {aliasText: 'alias 1', aliasNumber: 1},
+        eid2: {aliasText: 'alias 2.2', aliasNumber: 2},
       });
       store.refreshState();
 
       store.overrideSelector(getExperimentIdToAliasMap, {
-        eid1: 'alias 1',
-        eid2: 'alias 2.3',
+        eid1: {aliasText: 'alias 1', aliasNumber: 1},
+        eid2: {aliasText: 'alias 2.1', aliasNumber: 2},
       });
       store.refreshState();
       tick();
@@ -472,8 +472,8 @@ describe('core_effects', () => {
         store.overrideSelector(getRouteKind, RouteKind.COMPARE_EXPERIMENT);
         store.overrideSelector(getRouteId, 'foo');
         store.overrideSelector(getExperimentIdToAliasMap, {
-          eid1: 'alias 1',
-          eid2: 'alias 2',
+          eid1: {aliasText: 'alias 1', aliasNumber: 1},
+          eid2: {aliasText: 'alias 2', aliasNumber: 2},
         });
         store.overrideSelector(getPluginsListLoaded, {
           state: DataLoadState.LOADED,
@@ -535,8 +535,8 @@ describe('core_effects', () => {
         tick(TEST_ONLY.DATA_LOAD_CONDITIONAL_THROTTLE_IN_MS);
 
         store.overrideSelector(getExperimentIdToAliasMap, {
-          eid1: 'alias 1',
-          eid2: 'alias 2.1',
+          eid1: {aliasText: 'alias 1', aliasNumber: 1},
+          eid2: {aliasText: 'alias 2.1', aliasNumber: 2},
         });
         store.refreshState();
 
@@ -562,8 +562,8 @@ describe('core_effects', () => {
         store.overrideSelector(getRouteKind, RouteKind.COMPARE_EXPERIMENT);
         store.overrideSelector(getRouteId, 'foo');
         store.overrideSelector(getExperimentIdToAliasMap, {
-          eid1: 'alias 1',
-          eid2: 'alias 2',
+          eid1: {aliasText: 'alias 1', aliasNumber: 1},
+          eid2: {aliasText: 'alias 2', aliasNumber: 2},
         });
         store.overrideSelector(getPluginsListLoaded, {
           state: DataLoadState.LOADED,

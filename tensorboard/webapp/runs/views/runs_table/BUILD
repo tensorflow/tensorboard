@@ -122,6 +122,7 @@ tf_ts_library(
         "//tensorboard/webapp/testing:mat_icon",
         "//tensorboard/webapp/types",
         "//tensorboard/webapp/types:ui",
+        "//tensorboard/webapp/widgets/experiment_alias",
         "//tensorboard/webapp/widgets/filter_input",
         "//tensorboard/webapp/widgets/range_input",
         "@npm//@angular/core",

@@ -102,11 +102,7 @@ export const getExperimentIdToAliasMap = createSelector(
 
     const compareParams = routeParams as CompareRouteParams;
     const userDefinedAliasMap = getCompareExperimentIdAliasSpec(compareParams);
-    let aliasMap = new Map<string, ExperimentAlias>();
-    for (let [experimentId, userDefinedAlias] of userDefinedAliasMap) {
-      aliasMap.set(experimentId, userDefinedAlias);
-    }
-    return Object.fromEntries(aliasMap.entries());
+    return Object.fromEntries(userDefinedAliasMap.entries());
   }
 );
 

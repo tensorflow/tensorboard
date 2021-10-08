@@ -53,7 +53,6 @@ export function matchRunToRegex(
   const matchables = [runMatchable.runName];
   if (shouldMatchExperiment) {
     matchables.push(
-      runMatchable.experimentName,
       runMatchable.experimentAlias.aliasText,
       `${runMatchable.experimentAlias.aliasText}/${runMatchable.runName}`
     );
