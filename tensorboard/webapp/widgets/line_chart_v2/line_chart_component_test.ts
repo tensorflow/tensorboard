@@ -228,6 +228,78 @@ describe('line_chart_v2/line_chart test', () => {
     });
   });
 
+  it('keeps the fixedViewBox even when data changes', () => {
+    const fixture = createComponent({
+      seriesData: [
+        buildSeries({
+          id: 'foo',
+          points: [
+            {x: 0, y: 0},
+            {x: 1, y: -1},
+            {x: 2, y: 1},
+          ],
+        }),
+      ],
+      seriesMetadataMap: {foo: buildMetadata({id: 'foo', visible: true})},
+      yScaleType: ScaleType.LINEAR,
+      fixedViewBox: {
+        x: [-100, 100],
+        y: [0, 1],
+      },
+    });
+    fixture.detectChanges();
+
+    fixture.componentInstance.seriesData = [
+      buildSeries({
+        id: 'foo',
+        points: [
+          {x: 0, y: 0},
+          {x: 2, y: 1},
+          {x: 3, y: 100},
+        ],
+      }),
+    ];
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.chart.viewBox).toEqual({
+      x: [-100, 100],
+      y: [0, 1],
+    });
+  });
+
+  it('allows viewBox to be overridden with fixedViewBox set', () => {
+    const fixture = createComponent({
+      seriesData: [
+        buildSeries({
+          id: 'foo',
+          points: [
+            {x: 0, y: 0},
+            {x: 1, y: -1},
+            {x: 2, y: 1},
+          ],
+        }),
+      ],
+      seriesMetadataMap: {foo: buildMetadata({id: 'foo', visible: true})},
+      yScaleType: ScaleType.LINEAR,
+      fixedViewBox: {
+        x: [-100, 100],
+        y: [0, 1],
+      },
+    });
+    fixture.detectChanges();
+
+    fixture.componentInstance.triggerViewBoxChange({
+      x: [-5, 5],
+      y: [0, 10],
+    });
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.chart.viewBox).toEqual({
+      x: [-5, 5],
+      y: [0, 10],
+    });
+  });
+
   it('updates only scaleType when updating scaleType', () => {
     const fixture = createComponent({
       seriesData: [
