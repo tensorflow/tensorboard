@@ -18,9 +18,9 @@
 import json
 import os
 
+from tensorboard import plugin_util
 from tensorboard.data import provider
 from tensorboard.plugins import base_plugin
-from tensorboard import plugin_util
 import werkzeug
 from werkzeug import wrappers
 
