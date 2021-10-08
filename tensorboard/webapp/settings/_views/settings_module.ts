@@ -12,20 +12,22 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
+import {NgModule} from '@angular/core';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {MatButtonModule} from '@angular/material/button';
 import {MatCheckboxModule} from '@angular/material/checkbox';
 import {MatDialogModule} from '@angular/material/dialog';
 import {MatIconModule} from '@angular/material/icon';
 import {MatInputModule} from '@angular/material/input';
+import {MatSelectModule} from '@angular/material/select';
 
+import {LineChartModule} from '../../widgets/line_chart_v2/line_chart_module';
+import {SettingsPolymerInteropContainer} from './polymer_interop_container';
 import {SettingsButtonComponent} from './settings_button_component';
 import {SettingsButtonContainer} from './settings_button_container';
 import {SettingsDialogComponent} from './settings_dialog_component';
 import {SettingsDialogContainer} from './settings_dialog_container';
-import {SettingsPolymerInteropContainer} from './polymer_interop_container';
 
 @NgModule({
   declarations: [
@@ -45,12 +47,14 @@ import {SettingsPolymerInteropContainer} from './polymer_interop_container';
   imports: [
     CommonModule,
     FormsModule,
+    LineChartModule,
     ReactiveFormsModule,
     MatButtonModule,
     MatCheckboxModule,
     MatDialogModule,
     MatIconModule,
     MatInputModule,
+    MatSelectModule,
   ],
 })
 export class SettingsModule {}

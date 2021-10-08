@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {
+  ChangeDetectionStrategy,
   Component,
   EventEmitter,
   Input,
@@ -31,7 +32,13 @@ import {
 import {Subject} from 'rxjs';
 import {debounceTime, filter, takeUntil} from 'rxjs/operators';
 
-import {ColorPalette, palettes} from '../../util/colors';
+import {ColorPalette} from '../../util/colors';
+import {
+  DataSeries,
+  DataSeriesMetadata,
+  DataSeriesMetadataMap,
+  RendererType,
+} from '../../widgets/line_chart_v2/types';
 import {MIN_RELOAD_PERIOD_IN_MS} from '../_redux/settings_reducers';
 
 export function createIntegerValidator(): ValidatorFn {
@@ -46,17 +53,21 @@ export function createIntegerValidator(): ValidatorFn {
   selector: 'settings-dialog-component',
   templateUrl: 'settings_dialog_component.ng.html',
   styleUrls: ['./settings_dialog_component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SettingsDialogComponent implements OnInit, OnDestroy, OnChanges {
   @Input() reloadEnabled!: boolean;
   @Input() reloadPeriodInMs!: number;
   @Input() pageSize!: number;
+  @Input() useDarkMode!: boolean;
+  @Input() knownPalettes!: ColorPalette[];
   @Input() currentPalette!: ColorPalette;
   @Output() reloadToggled = new EventEmitter();
   @Output() reloadPeriodInMsChanged = new EventEmitter<number>();
   @Output() pageSizeChanged = new EventEmitter<number>();
-  @Output() paletteChanged = new EventEmitter<ColorPalette>();
+  @Output() paletteChanged = new EventEmitter<string>();
 
+  readonly RendererType = RendererType;
   readonly MIN_RELOAD_PERIOD_IN_S = MIN_RELOAD_PERIOD_IN_MS / 1000;
   readonly reloadPeriodControl = new FormControl(this.MIN_RELOAD_PERIOD_IN_S, [
     Validators.required,
@@ -67,8 +78,6 @@ export class SettingsDialogComponent implements OnInit, OnDestroy, OnChanges {
     Validators.min(1),
     createIntegerValidator(),
   ]);
-
-  readonly KnownPalettes: ColorPalette[] = [...palettes.values()];
 
   private ngUnsubscribe = new Subject<void>();
 
@@ -127,5 +136,28 @@ export class SettingsDialogComponent implements OnInit, OnDestroy, OnChanges {
 
   onReloadToggle(): void {
     this.reloadToggled.emit();
+  }
+
+  getLineChartData(): Array<DataSeries & DataSeriesMetadata> {
+    return Array.from(new Array(20)).map((_, index) => {
+      const colorIndex = index % this.currentPalette.colors.length;
+      const color = this.currentPalette.colors[colorIndex];
+      return {
+        id: String(index),
+        points: [
+          {x: 0, y: index},
+          {x: 1, y: index},
+        ],
+        displayName: `Preview: ${color.name} (${colorIndex}th color)`,
+        visible: true,
+        color: this.useDarkMode ? color.darkHex : color.lightHex,
+      };
+    });
+  }
+
+  getLineChartSeriesMap(): DataSeriesMetadataMap {
+    return Object.fromEntries(
+      this.getLineChartData().map((entry) => [entry.id, entry])
+    );
   }
 }

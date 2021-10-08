@@ -117,9 +117,9 @@ export const googleStandard: ColorPalette = {
   },
 };
 
-export const colorBlindAssist3: ColorPalette = {
-  id: 'color_blind_assist_3',
-  name: 'Color Blind Assist',
+export const classicExtended: ColorPalette = {
+  id: 'classic_extended',
+  name: 'Classic Extended',
   colors: [
     {name: '#332288', lightHex: '#332288', darkHex: '#332288'},
     {name: '#6699cc', lightHex: '#6699cc', darkHex: '#6699cc'},
@@ -144,6 +144,6 @@ export const colorBlindAssist3: ColorPalette = {
 export const palettes = new Map<string, ColorPalette>([
   [DEFAULT_PALETTE.id, DEFAULT_PALETTE],
   [classic.id, classic],
+  [classicExtended.id, classicExtended],
   [googleStandard.id, googleStandard],
-  [colorBlindAssist3.id, colorBlindAssist3],
 ]);

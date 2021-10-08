@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {OverlayContainer} from '@angular/cdk/overlay';
+import {NO_ERRORS_SCHEMA} from '@angular/core';
 import {fakeAsync, TestBed, tick} from '@angular/core/testing';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {MatButtonModule} from '@angular/material/button';
@@ -25,6 +26,7 @@ import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
 
+import {getDarkModeEnabled} from '../../feature_flag/store/feature_flag_selectors';
 import {MatIconTestingModule} from '../../testing/mat_icon_module';
 import {DataLoadState} from '../../types/data';
 import {DEFAULT_PALETTE, palettes} from '../../util/colors';
@@ -78,6 +80,7 @@ describe('settings test', () => {
         SettingsButtonComponent,
         SettingsButtonContainer,
       ],
+      schemas: [NO_ERRORS_SCHEMA],
     })
       .overrideModule(BrowserDynamicTestingModule, {
         set: {
@@ -87,6 +90,7 @@ describe('settings test', () => {
       .compileComponents();
     store = TestBed.inject<Store>(Store) as MockStore;
     store.overrideSelector(getColorPalette, DEFAULT_PALETTE);
+    store.overrideSelector(getDarkModeEnabled, false);
     dispatchSpy = spyOn(store, 'dispatch');
     overlayContainer = TestBed.inject(OverlayContainer);
   });
@@ -251,19 +255,19 @@ describe('settings test', () => {
   });
 
   describe('color palette picker', () => {
-    it('renders table of color palettes', () => {
+    it('renders color palettes as `select` and with number of colors', () => {
       const fixture = TestBed.createComponent(SettingsDialogContainer);
       fixture.detectChanges();
 
-      const rows = fixture.debugElement.queryAll(By.css('tbody tr'));
-      const paletteNames = rows.map((row) => {
-        return row.query(By.css('td')).nativeElement.textContent;
+      const options = fixture.debugElement.queryAll(By.css('option'));
+      const paletteNames = options.map((option) => {
+        return option.nativeElement.textContent.trim();
       });
       expect(paletteNames).toEqual([
-        'Default',
-        'Classic',
-        'Google Standard',
-        'Color Blind Assist',
+        'Default (7)',
+        'Classic (7)',
+        'Classic Extended (12)',
+        'Google Standard (9)',
       ]);
     });
 
@@ -272,8 +276,10 @@ describe('settings test', () => {
       const fixture = TestBed.createComponent(SettingsDialogContainer);
       fixture.detectChanges();
 
-      const rows = fixture.debugElement.queryAll(By.css('tbody tr'));
-      rows[1].query(By.css('input')).nativeElement.click();
+      const el = fixture.debugElement.query(By.css('select'));
+      const select: HTMLSelectElement = el.nativeElement;
+      select.value = 'classic';
+      select.dispatchEvent(new Event('change'));
 
       expect(dispatchSpy).toHaveBeenCalledOnceWith(
         colorPaletteChanged({palette: palettes.get('classic')!})

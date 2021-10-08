@@ -16,6 +16,8 @@ limitations under the License.
 
 :host {
   font-size: 15px;
+  max-height: 80vh;
+  overflow: auto;
 }
 
 :host > div {
@@ -31,7 +33,15 @@ limitations under the License.
 }
 
 h3 {
+  background-color: #fff;
   font-size: 20px;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+
+  @include tb-dark-theme {
+    background-color: mat-color($mat-gray, 800);
+  }
 }
 
 .reload-toggle {
@@ -39,7 +49,7 @@ h3 {
 }
 
 .fob {
-  $_size: 14px;
+  $_size: 12px;
 
   border-radius: $_size;
   border: 1px solid;
@@ -49,56 +59,28 @@ h3 {
   width: $_size;
 }
 
-table {
-  border-collapse: collapse;
-  border-spacing: 1px;
-  border-width: 0;
-  margin: 15px 0;
+.subtitle {
+  @include tb-theme-foreground-prop(color, secondary-text);
+  font-size: 0.95em;
+  margin: 1em 0;
+}
 
-  .sub {
-    font-size: 0.9em;
-    text-align: center;
-  }
+.preview {
+  @include tb-theme-foreground-prop(border, border, 1px solid);
+  @include tb-theme-background-prop(background-color, background);
 
-  thead tr:first-child td {
-    padding-top: 10px;
-  }
+  border-radius: 5px;
+  padding: 5px;
 
-  tfoot {
-    padding-bottom: 5px;
-  }
-
-  thead,
-  tfoot {
-    td {
-      box-sizing: border-box;
-    }
-  }
-
-  td {
-    padding: 6px 15px;
-    vertical-align: top;
-
-    &:first-of-type {
-      padding-left: 0;
-    }
+  .label {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    margin: 15px;
   }
 }
 
-.lights {
-  background-color: map-get($tb-background, background);
-  color: map-get($tb-foreground, text);
-
-  .fob {
-    border-color: rgba(map-get($tb-foreground, text), 0.5);
-  }
-}
-
-.darks {
-  background-color: map-get($tb-dark-background, background);
-  color: map-get($tb-dark-foreground, text);
-
-  .fob {
-    border-color: rgba(map-get($tb-dark-foreground, text), 0.5);
-  }
+line-chart {
+  height: 20vh;
+  width: 100%;
 }

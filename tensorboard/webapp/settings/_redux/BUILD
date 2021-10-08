@@ -12,7 +12,10 @@ tf_ng_module(
         "settings_selectors.ts",
         "settings_types.ts",
     ],
-    visibility = ["//tensorboard:internal"],
+    visibility = [
+        "//tensorboard/webapp:__pkg__",
+        "//tensorboard/webapp/settings:__subpackages__",
+    ],
     deps = [
         "//tensorboard/webapp/persistent_settings",
         "//tensorboard/webapp/types",

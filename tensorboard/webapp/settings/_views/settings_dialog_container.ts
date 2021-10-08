@@ -15,7 +15,9 @@ limitations under the License.
 import {Component} from '@angular/core';
 import {Store} from '@ngrx/store';
 
-import {ColorPalette} from '../../util/colors';
+import {State} from '../../app_state';
+import {getDarkModeEnabled} from '../../feature_flag/store/feature_flag_selectors';
+import {ColorPalette, palettes} from '../../util/colors';
 import {
   changePageSize,
   changeReloadPeriod,
@@ -28,7 +30,6 @@ import {
   getReloadEnabled,
   getReloadPeriodInMs,
 } from '../_redux/settings_selectors';
-import {State} from '../_redux/settings_types';
 
 @Component({
   selector: 'settings-dialog',
@@ -37,19 +38,33 @@ import {State} from '../_redux/settings_types';
       [reloadEnabled]="reloadEnabled$ | async"
       [reloadPeriodInMs]="reloadPeriodInMs$ | async"
       [pageSize]="pageSize$ | async"
+      [knownPalettes]="KnownPalettes"
       [currentPalette]="currentPalette$ | async"
+      [useDarkMode]="useDarkMode$ | async"
       (reloadToggled)="onReloadToggled()"
       (reloadPeriodInMsChanged)="onReloadPeriodInMsChanged($event)"
       (pageSizeChanged)="onPageSizeChanged($event)"
       (paletteChanged)="onPaletteChanged($event)"
     ></settings-dialog-component>
   `,
+  styles: [
+    `
+      :host,
+      settings-dialog-component {
+        height: 100%;
+        display: block;
+      }
+    `,
+  ],
 })
 export class SettingsDialogContainer {
   readonly reloadEnabled$ = this.store.select(getReloadEnabled);
   readonly reloadPeriodInMs$ = this.store.select(getReloadPeriodInMs);
   readonly pageSize$ = this.store.select(getPageSize);
   readonly currentPalette$ = this.store.select(getColorPalette);
+  readonly useDarkMode$ = this.store.select(getDarkModeEnabled);
+
+  readonly KnownPalettes: ColorPalette[] = [...palettes.values()];
 
   constructor(private store: Store<State>) {}
 
@@ -65,7 +80,9 @@ export class SettingsDialogContainer {
     this.store.dispatch(changePageSize({size}));
   }
 
-  onPaletteChanged(palette: ColorPalette): void {
+  onPaletteChanged(palettId: string): void {
+    const palette = palettes.get(palettId);
+    if (!palette) return;
     this.store.dispatch(colorPaletteChanged({palette}));
   }
 }
