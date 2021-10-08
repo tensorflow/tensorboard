@@ -449,7 +449,7 @@ export class LineChartComponent
       this.lineChart.setUseDarkMode(this.useDarkMode);
     }
 
-    if (this.isFixedViewBoxUpdated && this.fixedViewBox) {
+    if (!this.isViewBoxOverridden && this.fixedViewBox) {
       this.viewBox = this.fixedViewBox;
     } else if (!this.isViewBoxOverridden && this.isViewBoxChanged) {
       const dataExtent = computeDataSeriesExtent(
