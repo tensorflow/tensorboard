@@ -17,7 +17,7 @@ import {By} from '@angular/platform-browser';
 
 import {ExperimentAliasComponent} from './experiment_alias_component';
 
-fdescribe('experiment alias widget', () => {
+describe('experiment alias widget', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [],
