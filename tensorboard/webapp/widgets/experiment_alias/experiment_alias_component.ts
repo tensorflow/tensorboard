@@ -23,12 +23,12 @@ import {ExperimentAlias} from '../../experiments/types';
 @Component({
   selector: 'tb-experiment-alias',
   template: `
-    <span *ngIf="alias" class="alias-number">{{ alias.aliasNumber }}</span>
-    <span *ngIf="alias">{{ alias.aliasText }}</span>
+    <span class="alias-number">{{ alias.aliasNumber }}</span>
+    <span>{{ alias.aliasText }}</span>
   `,
   styleUrls: [`experiment_alias_component.css`],
 })
 export class ExperimentAliasComponent {
   @Input()
-  alias?: ExperimentAlias;
+  alias!: ExperimentAlias;
 }

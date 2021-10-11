@@ -26,7 +26,7 @@ export function getDisplayNameForRun(
     return runId;
   }
 
-  let displayName = [run ? run.name : '...'].filter(Boolean).join('/');
+  let displayName = run?.name ?? '...';
 
   if (experimentAlias) {
     displayName = `[${experimentAlias.aliasNumber}] ${experimentAlias.aliasText}/${displayName}`;

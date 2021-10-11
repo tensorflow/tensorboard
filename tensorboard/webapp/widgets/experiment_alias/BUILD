@@ -19,9 +19,9 @@ tf_ng_module(
         ":experiment_alias_component_styles",
     ],
     deps = [
+        "//tensorboard/webapp/experiments:types",
         "@npm//@angular/core",
         "@npm//@angular/common",
-        "//tensorboard/webapp/experiments:types",
     ],
 )
 
@@ -33,9 +33,9 @@ tf_ts_library(
     ],
     deps = [
         ":experiment_alias",
+        "//tensorboard/webapp/experiments:types",
         "@npm//@angular/core",
         "@npm//@angular/platform-browser",
         "@npm//@types/jasmine",
-        "//tensorboard/webapp/experiments:types",
     ],
 )

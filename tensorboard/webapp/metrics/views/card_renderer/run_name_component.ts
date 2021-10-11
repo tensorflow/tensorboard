@@ -20,7 +20,7 @@ import {ExperimentAlias} from '../../../experiments/types';
   selector: 'card-run-name-component',
   template: `<tb-experiment-alias
       *ngIf="experimentAlias != null"
-      [alias]="experimentAlias!"
+      [alias]="experimentAlias"
     ></tb-experiment-alias>
     <span *ngIf="experimentAlias != null">/</span>
     <span>{{ name }}</span>`,
@@ -29,5 +29,5 @@ import {ExperimentAlias} from '../../../experiments/types';
 })
 export class RunNameComponent {
   @Input() name!: string;
-  @Input() experimentAlias: ExperimentAlias | null | undefined;
+  @Input() experimentAlias!: ExperimentAlias | null;
 }

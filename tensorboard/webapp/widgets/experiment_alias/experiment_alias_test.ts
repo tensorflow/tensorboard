@@ -36,12 +36,4 @@ describe('experiment alias widget', () => {
     const numberSpan = fixture.debugElement.queryAll(By.css('.alias-number'));
     expect(numberSpan[0].nativeElement.textContent).toBe('1');
   });
-
-  it('renders nothing no value', () => {
-    const fixture = TestBed.createComponent(ExperimentAliasComponent);
-    fixture.detectChanges();
-
-    const input = fixture.debugElement.queryAll(By.css('span'));
-    expect(input.length).toBe(0);
-  });
 });

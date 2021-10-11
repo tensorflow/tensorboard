@@ -152,7 +152,7 @@ const Selector = {
   SELECT_ALL_ROW: '.select-all',
 };
 
-describe('runs_table', () => {
+fdescribe('runs_table', () => {
   let store: MockStore<State>;
   let dispatchSpy: jasmine.Spy;
   let overlayContainer: OverlayContainer;
@@ -1293,9 +1293,9 @@ describe('runs_table', () => {
       fixture.detectChanges();
 
       expect(getTableRowTextContent(fixture)).toEqual([
-        ['Harry Potter', "The Philosopher's Stone"],
-        ['Harry Potter', 'The Chamber Of Secrets'],
-        ['The Lord of the Rings', 'The Fellowship of the Ring'],
+        ['1Harry Potter', "The Philosopher's Stone"],
+        ['1Harry Potter', 'The Chamber Of Secrets'],
+        ['2The Lord of the Rings', 'The Fellowship of the Ring'],
       ]);
 
       store.overrideSelector(getRunSelectorSort, {
@@ -1306,9 +1306,9 @@ describe('runs_table', () => {
       fixture.detectChanges();
 
       expect(getTableRowTextContent(fixture)).toEqual([
-        ['Harry Potter', 'The Chamber Of Secrets'],
-        ['Harry Potter', "The Philosopher's Stone"],
-        ['The Lord of the Rings', 'The Fellowship of the Ring'],
+        ['1Harry Potter', 'The Chamber Of Secrets'],
+        ['1Harry Potter', "The Philosopher's Stone"],
+        ['2The Lord of the Rings', 'The Fellowship of the Ring'],
       ]);
 
       store.overrideSelector(getRunSelectorSort, {
@@ -1319,9 +1319,9 @@ describe('runs_table', () => {
       fixture.detectChanges();
 
       expect(getTableRowTextContent(fixture)).toEqual([
-        ['The Lord of the Rings', 'The Fellowship of the Ring'],
-        ['Harry Potter', "The Philosopher's Stone"],
-        ['Harry Potter', 'The Chamber Of Secrets'],
+        ['2The Lord of the Rings', 'The Fellowship of the Ring'],
+        ['1Harry Potter', "The Philosopher's Stone"],
+        ['1Harry Potter', 'The Chamber Of Secrets'],
       ]);
     });
 
@@ -1359,10 +1359,10 @@ describe('runs_table', () => {
       fixture.detectChanges();
 
       expect(getTableRowTextContent(fixture)).toEqual([
-        ['Harry Potter', "The Philosopher's Stone"],
-        ['Harry Potter', 'The Chamber Of Secrets'],
-        ['Harry Potter', "The Philosopher's Stone"],
-        ['The Lord of the Rings', 'The Fellowship of the Ring'],
+        ['1Harry Potter', "The Philosopher's Stone"],
+        ['1Harry Potter', 'The Chamber Of Secrets'],
+        ['1Harry Potter', "The Philosopher's Stone"],
+        ['2The Lord of the Rings', 'The Fellowship of the Ring'],
       ]);
 
       store.overrideSelector(getRunSelectorSort, {
@@ -1373,10 +1373,10 @@ describe('runs_table', () => {
       fixture.detectChanges();
 
       expect(getTableRowTextContent(fixture)).toEqual([
-        ['Harry Potter', 'The Chamber Of Secrets'],
-        ['The Lord of the Rings', 'The Fellowship of the Ring'],
-        ['Harry Potter', "The Philosopher's Stone"],
-        ['Harry Potter', "The Philosopher's Stone"],
+        ['1Harry Potter', 'The Chamber Of Secrets'],
+        ['2The Lord of the Rings', 'The Fellowship of the Ring'],
+        ['1Harry Potter', "The Philosopher's Stone"],
+        ['1Harry Potter', "The Philosopher's Stone"],
       ]);
 
       store.overrideSelector(getRunSelectorSort, {
@@ -1387,10 +1387,10 @@ describe('runs_table', () => {
       fixture.detectChanges();
 
       expect(getTableRowTextContent(fixture)).toEqual([
-        ['Harry Potter', "The Philosopher's Stone"],
-        ['Harry Potter', "The Philosopher's Stone"],
-        ['The Lord of the Rings', 'The Fellowship of the Ring'],
-        ['Harry Potter', 'The Chamber Of Secrets'],
+        ['1Harry Potter', "The Philosopher's Stone"],
+        ['1Harry Potter', "The Philosopher's Stone"],
+        ['2The Lord of the Rings', 'The Fellowship of the Ring'],
+        ['1Harry Potter', 'The Chamber Of Secrets'],
       ]);
     });
   });
@@ -1407,38 +1407,38 @@ describe('runs_table', () => {
       {
         regexString: '',
         expectedTableContent: [
-          ['Harry Potter', "The Philosopher's Stone"],
-          ['Harry Potter', 'The Chamber Of Secrets'],
-          ['The Lord of the Rings', 'The Fellowship of the Ring'],
-          ['The Lord of the Rings', 'The Silmarillion'],
+          ['1Harry Potter', "The Philosopher's Stone"],
+          ['1Harry Potter', 'The Chamber Of Secrets'],
+          ['2The Lord of the Rings', 'The Fellowship of the Ring'],
+          ['2The Lord of the Rings', 'The Silmarillion'],
         ],
       },
       {
         regexString: '.*',
         expectedTableContent: [
-          ['Harry Potter', "The Philosopher's Stone"],
-          ['Harry Potter', 'The Chamber Of Secrets'],
-          ['The Lord of the Rings', 'The Fellowship of the Ring'],
-          ['The Lord of the Rings', 'The Silmarillion'],
+          ['1Harry Potter', "The Philosopher's Stone"],
+          ['1Harry Potter', 'The Chamber Of Secrets'],
+          ['2The Lord of the Rings', 'The Fellowship of the Ring'],
+          ['2The Lord of the Rings', 'The Silmarillion'],
         ],
       },
       {
         regexString: '.+arr',
         expectedTableContent: [
-          ['Harry Potter', "The Philosopher's Stone"],
-          ['Harry Potter', 'The Chamber Of Secrets'],
+          ['1Harry Potter', "The Philosopher's Stone"],
+          ['1Harry Potter', 'The Chamber Of Secrets'],
         ],
       },
       {
         regexString: 'mar',
-        expectedTableContent: [['The Lord of the Rings', 'The Silmarillion']],
+        expectedTableContent: [['2The Lord of the Rings', 'The Silmarillion']],
       },
       {
         regexString: '[m,H]ar',
         expectedTableContent: [
-          ['Harry Potter', "The Philosopher's Stone"],
-          ['Harry Potter', 'The Chamber Of Secrets'],
-          ['The Lord of the Rings', 'The Silmarillion'],
+          ['1Harry Potter', "The Philosopher's Stone"],
+          ['1Harry Potter', 'The Chamber Of Secrets'],
+          ['2The Lord of the Rings', 'The Silmarillion'],
         ],
       },
     ].forEach(({regexString, expectedTableContent}) => {
@@ -1538,7 +1538,7 @@ describe('runs_table', () => {
 
       fixture.detectChanges();
       expect(getTableRowTextContent(fixture)).toEqual([
-        ['LotR', 'The Fellowship of the Ring'],
+        ['2LotR', 'The Fellowship of the Ring'],
       ]);
 
       // Alias for Harry Potter contains "z". Since legacy Polymer-based
@@ -1550,7 +1550,7 @@ describe('runs_table', () => {
       store.refreshState();
       fixture.detectChanges();
       expect(getTableRowTextContent(fixture)).toEqual([
-        ['LotR', 'The Silmarillion'],
+        ['2LotR', 'The Silmarillion'],
       ]);
     });
 
@@ -1628,7 +1628,7 @@ describe('runs_table', () => {
       fixture.detectChanges();
 
       expect(getTableRowTextContent(fixture)).toEqual([
-        ['The Lord of the Rings', 'The Fellowship of the Ring'],
+        ['2The Lord of the Rings', 'The Fellowship of the Ring'],
       ]);
     });
 
