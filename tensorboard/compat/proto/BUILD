@@ -147,6 +147,7 @@ tb_proto_library(
     srcs = ["node_def.proto"],
     deps = [
         ":attr_value",
+        ":full_type",
     ],
 )
 
