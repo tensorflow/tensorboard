@@ -20,8 +20,8 @@ tf_ng_module(
     ],
     deps = [
         "//tensorboard/webapp/experiments:types",
-        "@npm//@angular/core",
         "@npm//@angular/common",
+        "@npm//@angular/core",
     ],
 )
 
@@ -35,7 +35,7 @@ tf_ts_library(
         ":experiment_alias",
         "//tensorboard/webapp/experiments:types",
         "@npm//@angular/core",
-        "@npm//@types/jasmine",
         "@npm//@angular/platform-browser",
+        "@npm//@types/jasmine",
     ],
 )
