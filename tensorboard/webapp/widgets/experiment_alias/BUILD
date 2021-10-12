@@ -35,7 +35,7 @@ tf_ts_library(
         ":experiment_alias",
         "//tensorboard/webapp/experiments:types",
         "@npm//@angular/core",
-        "@npm//@angular/platform-browser",
         "@npm//@types/jasmine",
+        "@npm//@angular/platform-browser",
     ],
 )
