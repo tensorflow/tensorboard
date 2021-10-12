@@ -336,6 +336,7 @@ tf_ts_library(
         "//tensorboard/webapp/types:ui",
         "//tensorboard/webapp/util:dom",
         "//tensorboard/webapp/widgets:resize_detector_testing",
+        "//tensorboard/webapp/widgets/experiment_alias",
         "//tensorboard/webapp/widgets/histogram:types",
         "//tensorboard/webapp/widgets/intersection_observer:intersection_observer_testing",
         "//tensorboard/webapp/widgets/line_chart_v2",

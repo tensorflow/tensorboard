@@ -19,6 +19,7 @@ import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {State} from '../../../app_state';
 
 import {buildRun} from '../../../runs/store/testing';
+import {ExperimentAliasModule} from '../../../widgets/experiment_alias/experiment_alias_module';
 import {
   getExperimentIdForRunId,
   getExperimentIdToAliasMap,
@@ -33,7 +34,7 @@ describe('card run name', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [NoopAnimationsModule],
+      imports: [NoopAnimationsModule, ExperimentAliasModule],
       declarations: [RunNameContainer, RunNameComponent],
       providers: [provideMockStore()],
     }).compileComponents();
@@ -55,7 +56,7 @@ describe('card run name', () => {
     fixture.componentInstance.runId = 'rid';
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.textContent).toBe('Cat/Meow');
+    expect(fixture.nativeElement.textContent).toBe('1Cat/Meow');
   });
 
   it('renders only run name when there is no exp display name', () => {

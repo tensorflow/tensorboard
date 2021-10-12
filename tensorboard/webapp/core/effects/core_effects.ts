@@ -193,7 +193,15 @@ export class CoreEffects {
                 return false;
               }
               for (const [experimentId, alias] of entries) {
-                if (afterAliasMap.get(experimentId) !== alias) {
+                if (!afterAliasMap.get(experimentId)) {
+                  return false;
+                }
+                if (
+                  afterAliasMap.get(experimentId)!.aliasText !==
+                    alias.aliasText ||
+                  afterAliasMap.get(experimentId)!.aliasNumber !==
+                    alias.aliasNumber
+                ) {
                   return false;
                 }
               }

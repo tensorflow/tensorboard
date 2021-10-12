@@ -462,6 +462,20 @@ describe('core_effects', () => {
         polymerRunsFetchRequested(),
       ]);
 
+      // Ensure Alias Number changes invoke another request.
+      store.overrideSelector(getExperimentIdToAliasMap, {
+        eid1: {aliasText: 'alias 1', aliasNumber: 2},
+        eid2: {aliasText: 'alias 2.1', aliasNumber: 1},
+      });
+      store.refreshState();
+      tick(TEST_ONLY.ALIAS_CHANGE_RUNS_RELOAD_THROTTLE_IN_MS * 2);
+      expect(recordedActions).toEqual([
+        polymerRunsFetchRequested(),
+        polymerRunsFetchRequested(),
+        polymerRunsFetchRequested(),
+        polymerRunsFetchRequested(),
+      ]);
+
       discardPeriodicTasks();
     }));
 
