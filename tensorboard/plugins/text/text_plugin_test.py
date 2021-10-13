@@ -76,7 +76,8 @@ class TextPluginTest(tf.test.TestCase):
                     writer.add_summary(summ, global_step=step)
                     step += 1
 
-                vector_message = ["one", "two", "three", "four"]
+                # Test unicode superscript 4.
+                vector_message = ["one", "two", "three", "\u2074"]
                 summ = sess.run(
                     vector_summary, feed_dict={placeholder: vector_message}
                 )
@@ -147,7 +148,7 @@ class TextPluginTest(tf.test.TestCase):
                 <td><p>three</p></td>
                 </tr>
                 <tr>
-                <td><p>four</p></td>
+                <td><p>\u2074</p></td>
                 </tr>
                 </tbody>
                 </table>
@@ -177,7 +178,7 @@ class TextPluginTest(tf.test.TestCase):
                 <td>three</td>
                 </tr>
                 <tr>
-                <td>four</td>
+                <td>\u2074</td>
                 </tr>
                 </tbody>
                 </table>

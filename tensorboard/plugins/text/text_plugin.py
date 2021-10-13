@@ -187,7 +187,13 @@ def text_array_to_html(text_arr, enable_markdown):
             lambda xs: make_table(np.array(xs).reshape(text_arr.shape)),
         )
     else:
-        table = plugin_util.safe_html(make_table(text_arr.astype(str)))
+        # Convert utf-8 bytes to str. The built-in np.char.decode doesn't work on
+        # object arrays, and converting to an numpy chararray is lossy.
+        decode = lambda bs: bs.decode("utf-8") if isinstance(bs, bytes) else bs
+        text_arr_str = np.array(
+            [decode(bs) for bs in text_arr.reshape(-1)]
+        ).reshape(text_arr.shape)
+        table = plugin_util.safe_html(make_table(text_arr_str))
     return warning + table
 
 
