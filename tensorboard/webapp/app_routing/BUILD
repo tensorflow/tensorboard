@@ -43,6 +43,7 @@ tf_ng_module(
     deps = [
         ":internal_utils",
         ":types",
+        "//tensorboard/webapp/experiments:types",
     ],
 )
 

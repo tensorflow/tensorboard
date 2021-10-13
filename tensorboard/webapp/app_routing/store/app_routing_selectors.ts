@@ -25,7 +25,11 @@ import {
   AppRoutingState,
   State,
 } from './app_routing_types';
-import {getCompareExperimentIdAliasSpec} from '../store_only_utils';
+import {
+  getCompareExperimentIdAliasSpec,
+  getCompareExperimentIdAliasWithNumberSpec,
+} from '../store_only_utils';
+import {ExperimentAlias} from '../../experiments/types';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
@@ -97,6 +101,20 @@ export const getExperimentIdToAliasMap = createSelector(
 
     const compareParams = routeParams as CompareRouteParams;
     const map = getCompareExperimentIdAliasSpec(compareParams);
+    return Object.fromEntries(map.entries());
+  }
+);
+
+export const getExperimentIdToExperimentAliasMap = createSelector(
+  getRouteKind,
+  getRouteParams,
+  (routeKind, routeParams): {[id: string]: ExperimentAlias} => {
+    if (routeKind !== RouteKind.COMPARE_EXPERIMENT) {
+      return {};
+    }
+
+    const compareParams = routeParams as CompareRouteParams;
+    const map = getCompareExperimentIdAliasWithNumberSpec(compareParams);
     return Object.fromEntries(map.entries());
   }
 );

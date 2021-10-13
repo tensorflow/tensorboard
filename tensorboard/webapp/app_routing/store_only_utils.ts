@@ -12,6 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {ExperimentAlias} from '../experiments/types';
 import {
   getExperimentIdsFromRouteParams,
   getRouteId,
@@ -23,10 +24,31 @@ import {CompareRouteParams, Route} from './types';
 // way to share the structured information to other stores without changing
 // contract at the RouteConfig level.
 /**
- * Returns experimentId to alias information encoded in CompareRouteParams.
+ * Returns experimentId to alias text and number information encoded in
+ * CompareRouteParams. Alias numbers are generated using 1-based indexing of the
+ * encoded aliases.
  *
  * This utility is used by only limited packages. Please refer to visiblity in
  * BUILD.
+ */
+export function getCompareExperimentIdAliasWithNumberSpec(
+  routeParams: CompareRouteParams
+): Map<string, ExperimentAlias> {
+  const idToDisplayName = new Map<string, ExperimentAlias>();
+  const nameAndIds = parseCompareExperimentStr(routeParams.experimentIds);
+  let aliasNumber = 0;
+  for (const {id, name} of nameAndIds) {
+    aliasNumber++;
+    if (idToDisplayName.has(id) || !name) {
+      continue;
+    }
+    idToDisplayName.set(id, {aliasText: name, aliasNumber: aliasNumber});
+  }
+  return idToDisplayName;
+}
+
+/**
+ * @deprecated
  */
 export function getCompareExperimentIdAliasSpec(
   routeParams: CompareRouteParams
