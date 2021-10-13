@@ -100,6 +100,20 @@ export const getExperimentIdToAliasMap = createSelector(
     }
 
     const compareParams = routeParams as CompareRouteParams;
+    const map = getDEPRECATEDCompareExperimentIdAliasSpec(compareParams);
+    return Object.fromEntries(map.entries());
+  }
+);
+
+export const getExperimentIdToExperimentAliasMap = createSelector(
+  getRouteKind,
+  getRouteParams,
+  (routeKind, routeParams): {[id: string]: ExperimentAlias} => {
+    if (routeKind !== RouteKind.COMPARE_EXPERIMENT) {
+      return {};
+    }
+
+    const compareParams = routeParams as CompareRouteParams;
     const map = getCompareExperimentIdAliasSpec(compareParams);
     return Object.fromEntries(map.entries());
   }
