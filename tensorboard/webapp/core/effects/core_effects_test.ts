@@ -462,19 +462,42 @@ describe('core_effects', () => {
         polymerRunsFetchRequested(),
       ]);
 
-      // Ensure Alias Number changes invoke another request.
+      discardPeriodicTasks();
+    }));
+
+    fit('fetches polymer runs when alias numbers change when in comparison', fakeAsync(() => {
+      store.overrideSelector(getRouteKind, RouteKind.COMPARE_EXPERIMENT);
+      store.overrideSelector(getExperimentIdToExperimentAliasMap, {
+        eid1: {aliasText: 'alias 1', aliasNumber: 1},
+        eid2: {aliasText: 'alias 2', aliasNumber: 2},
+      });
+      store.refreshState();
+      const pluginsListing: PluginsListing = {
+        core: createPluginMetadata('Core'),
+      };
+
+      action.next(
+        navigated({
+          before: null,
+          after: buildRoute({
+            routeKind: RouteKind.COMPARE_EXPERIMENT,
+          }),
+        })
+      );
+      tick();
+
+      httpMock.expectOne('data/plugins_listing').flush(pluginsListing);
+
+      // Do not really care about actions up to here; it is covered elsewhere.
+      recordedActions = [];
+
       store.overrideSelector(getExperimentIdToExperimentAliasMap, {
         eid1: {aliasText: 'alias 1', aliasNumber: 2},
-        eid2: {aliasText: 'alias 2.1', aliasNumber: 1},
+        eid2: {aliasText: 'alias 2', aliasNumber: 1},
       });
       store.refreshState();
       tick(TEST_ONLY.ALIAS_CHANGE_RUNS_RELOAD_THROTTLE_IN_MS * 2);
-      expect(recordedActions).toEqual([
-        polymerRunsFetchRequested(),
-        polymerRunsFetchRequested(),
-        polymerRunsFetchRequested(),
-        polymerRunsFetchRequested(),
-      ]);
+      expect(recordedActions).toEqual([polymerRunsFetchRequested()]);
 
       discardPeriodicTasks();
     }));
