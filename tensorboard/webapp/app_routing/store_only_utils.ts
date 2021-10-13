@@ -31,7 +31,7 @@ import {CompareRouteParams, Route} from './types';
  * This utility is used by only limited packages. Please refer to visiblity in
  * BUILD.
  */
-export function getCompareExperimentIdAliasSpec(
+export function getCompareExperimentIdAliasWithNumberSpec(
   routeParams: CompareRouteParams
 ): Map<string, ExperimentAlias> {
   const idToDisplayName = new Map<string, ExperimentAlias>();
@@ -47,7 +47,10 @@ export function getCompareExperimentIdAliasSpec(
   return idToDisplayName;
 }
 
-export function getDEPRECATEDCompareExperimentIdAliasSpec(
+/**
+ * @deprecated
+ */
+export function getCompareExperimentIdAliasSpec(
   routeParams: CompareRouteParams
 ): Map<string, string> {
   const idToDisplayName = new Map<string, string>();
