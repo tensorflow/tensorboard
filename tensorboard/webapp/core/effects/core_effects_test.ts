@@ -25,7 +25,7 @@ import {of, ReplaySubject, Subject} from 'rxjs';
 
 import {navigated} from '../../app_routing/actions';
 import {
-  getExperimentIdToAliasMap,
+  getExperimentIdToExperimentAliasMap,
   getRouteId,
   getRouteKind,
 } from '../../app_routing/store/app_routing_selectors';
@@ -120,7 +120,7 @@ describe('core_effects', () => {
     store.overrideSelector(getEnabledExperimentalPlugins, []);
     store.overrideSelector(getRouteId, 'foo');
     store.overrideSelector(getActivePlugin, null);
-    store.overrideSelector(getExperimentIdToAliasMap, {});
+    store.overrideSelector(getExperimentIdToExperimentAliasMap, {});
     store.overrideSelector(getRouteKind, RouteKind.EXPERIMENT);
     store.overrideSelector(getPolymerRunsLoadState, {
       state: DataLoadState.NOT_LOADED,
@@ -369,7 +369,7 @@ describe('core_effects', () => {
     it('fetches polymer runs when alias map changes when in comparison', fakeAsync(() => {
       store.overrideSelector(getRouteKind, RouteKind.COMPARE_EXPERIMENT);
       store.overrideSelector(getRouteId, 'foo');
-      store.overrideSelector(getExperimentIdToAliasMap, {
+      store.overrideSelector(getExperimentIdToExperimentAliasMap, {
         eid1: {aliasText: 'alias 1', aliasNumber: 1},
         eid2: {aliasText: 'alias 2', aliasNumber: 2},
       });
@@ -419,7 +419,7 @@ describe('core_effects', () => {
       expect(recordedActions).toEqual([]);
       tick(TEST_ONLY.DATA_LOAD_CONDITIONAL_THROTTLE_IN_MS);
 
-      store.overrideSelector(getExperimentIdToAliasMap, {
+      store.overrideSelector(getExperimentIdToExperimentAliasMap, {
         eid1: {aliasText: 'alias 1', aliasNumber: 1},
         eid2: {aliasText: 'alias 2.1', aliasNumber: 2},
       });
@@ -428,7 +428,7 @@ describe('core_effects', () => {
       expect(recordedActions).toEqual([polymerRunsFetchRequested()]);
 
       // Alias map content is the same so nothing.
-      store.overrideSelector(getExperimentIdToAliasMap, {
+      store.overrideSelector(getExperimentIdToExperimentAliasMap, {
         eid1: {aliasText: 'alias 1', aliasNumber: 1},
         eid2: {aliasText: 'alias 2.1', aliasNumber: 2},
       });
@@ -438,13 +438,13 @@ describe('core_effects', () => {
 
       // Alias map changes rapidly so we get request immediately once then once
       // again after the throttle time is over.
-      store.overrideSelector(getExperimentIdToAliasMap, {
+      store.overrideSelector(getExperimentIdToExperimentAliasMap, {
         eid1: {aliasText: 'alias 1', aliasNumber: 1},
         eid2: {aliasText: 'alias 2.2', aliasNumber: 2},
       });
       store.refreshState();
 
-      store.overrideSelector(getExperimentIdToAliasMap, {
+      store.overrideSelector(getExperimentIdToExperimentAliasMap, {
         eid1: {aliasText: 'alias 1', aliasNumber: 1},
         eid2: {aliasText: 'alias 2.1', aliasNumber: 2},
       });
@@ -463,7 +463,7 @@ describe('core_effects', () => {
       ]);
 
       // Ensure Alias Number changes invoke another request.
-      store.overrideSelector(getExperimentIdToAliasMap, {
+      store.overrideSelector(getExperimentIdToExperimentAliasMap, {
         eid1: {aliasText: 'alias 1', aliasNumber: 2},
         eid2: {aliasText: 'alias 2.1', aliasNumber: 1},
       });
@@ -485,7 +485,7 @@ describe('core_effects', () => {
       fakeAsync(() => {
         store.overrideSelector(getRouteKind, RouteKind.COMPARE_EXPERIMENT);
         store.overrideSelector(getRouteId, 'foo');
-        store.overrideSelector(getExperimentIdToAliasMap, {
+        store.overrideSelector(getExperimentIdToExperimentAliasMap, {
           eid1: {aliasText: 'alias 1', aliasNumber: 1},
           eid2: {aliasText: 'alias 2', aliasNumber: 2},
         });
@@ -548,7 +548,7 @@ describe('core_effects', () => {
         ]);
         tick(TEST_ONLY.DATA_LOAD_CONDITIONAL_THROTTLE_IN_MS);
 
-        store.overrideSelector(getExperimentIdToAliasMap, {
+        store.overrideSelector(getExperimentIdToExperimentAliasMap, {
           eid1: {aliasText: 'alias 1', aliasNumber: 1},
           eid2: {aliasText: 'alias 2.1', aliasNumber: 2},
         });
@@ -575,7 +575,7 @@ describe('core_effects', () => {
       fakeAsync(() => {
         store.overrideSelector(getRouteKind, RouteKind.COMPARE_EXPERIMENT);
         store.overrideSelector(getRouteId, 'foo');
-        store.overrideSelector(getExperimentIdToAliasMap, {
+        store.overrideSelector(getExperimentIdToExperimentAliasMap, {
           eid1: {aliasText: 'alias 1', aliasNumber: 1},
           eid2: {aliasText: 'alias 2', aliasNumber: 2},
         });
@@ -614,7 +614,7 @@ describe('core_effects', () => {
         store.overrideSelector(getRouteKind, RouteKind.EXPERIMENTS);
         store.overrideSelector(getRouteId, 'bar');
         // Alias map resets to an empty object when changing the routeKind.
-        store.overrideSelector(getExperimentIdToAliasMap, {});
+        store.overrideSelector(getExperimentIdToExperimentAliasMap, {});
         store.refreshState();
 
         action.next(

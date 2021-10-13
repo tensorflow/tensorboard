@@ -42,7 +42,7 @@ import {
   getCurrentRouteRunSelection,
   getDarkModeEnabled,
   getExperimentIdForRunId,
-  getExperimentIdToAliasMap,
+  getExperimentIdToExperimentAliasMap,
   getMetricsSelectedTime,
   getRun,
   getRunColorMap,
@@ -463,7 +463,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
   private getRunDisplayName(runId: string): Observable<string> {
     return combineLatest([
       this.store.select(getExperimentIdForRunId, {runId}),
-      this.store.select(getExperimentIdToAliasMap),
+      this.store.select(getExperimentIdToExperimentAliasMap),
       this.store.select(getRun, {runId}),
     ]).pipe(
       map(([experimentId, idToAlias, run]) => {

@@ -22,7 +22,7 @@ import {buildRun} from '../../../runs/store/testing';
 import {ExperimentAliasModule} from '../../../widgets/experiment_alias/experiment_alias_module';
 import {
   getExperimentIdForRunId,
-  getExperimentIdToAliasMap,
+  getExperimentIdToExperimentAliasMap,
   getRun,
 } from '../../../selectors';
 
@@ -41,13 +41,13 @@ describe('card run name', () => {
 
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
     store.overrideSelector(getExperimentIdForRunId, 'eid');
-    store.overrideSelector(getExperimentIdToAliasMap, {});
+    store.overrideSelector(getExperimentIdToExperimentAliasMap, {});
     store.overrideSelector(getRun, null);
   });
 
   it('renders exp display name and run name', () => {
     store.overrideSelector(getExperimentIdForRunId, 'eid');
-    store.overrideSelector(getExperimentIdToAliasMap, {
+    store.overrideSelector(getExperimentIdToExperimentAliasMap, {
       eid: {aliasText: 'Cat', aliasNumber: 1},
     });
     store.overrideSelector(getRun, buildRun({id: 'rid', name: 'Meow'}));
@@ -61,7 +61,7 @@ describe('card run name', () => {
 
   it('renders only run name when there is no exp display name', () => {
     store.overrideSelector(getExperimentIdForRunId, 'eid');
-    store.overrideSelector(getExperimentIdToAliasMap, {
+    store.overrideSelector(getExperimentIdToExperimentAliasMap, {
       cat: {aliasText: 'Cat', aliasNumber: 1},
     });
     store.overrideSelector(getRun, buildRun({id: 'rid', name: 'Bark/woof'}));
@@ -75,7 +75,7 @@ describe('card run name', () => {
 
   it('renders "Unknown run" if the `runId` does not exist in store', () => {
     store.overrideSelector(getExperimentIdForRunId, null);
-    store.overrideSelector(getExperimentIdToAliasMap, {
+    store.overrideSelector(getExperimentIdToExperimentAliasMap, {
       cat: {aliasText: 'Cat', aliasNumber: 1},
     });
     store.overrideSelector(getRun, null);

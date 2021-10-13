@@ -19,7 +19,7 @@ import {RouteKind} from '../types';
 import * as selectors from './app_routing_selectors';
 import {buildAppRoutingState, buildStateFromAppRoutingState} from './testing';
 
-describe('app_routing_selectors', () => {
+fdescribe('app_routing_selectors', () => {
   describe('getActiveRoute', () => {
     beforeEach(() => {
       selectors.getActiveRoute.release();
@@ -114,9 +114,9 @@ describe('app_routing_selectors', () => {
     });
   });
 
-  describe('getExperimentIdToAliasMap', () => {
+  describe('getExperimentIdToExperimentAliasMap', () => {
     beforeEach(() => {
-      selectors.getExperimentIdToAliasMap.release();
+      selectors.getExperimentIdToExperimentAliasMap.release();
     });
 
     it('returns a map of id to alias for COMPARE route', () => {
@@ -135,7 +135,7 @@ describe('app_routing_selectors', () => {
         })
       );
 
-      expect(selectors.getExperimentIdToAliasMap(state)).toEqual({
+      expect(selectors.getExperimentIdToExperimentAliasMap(state)).toEqual({
         123: {aliasText: 'exp1', aliasNumber: 1},
         234: {aliasText: 'exp2', aliasNumber: 2},
         345: {aliasText: 'exp2', aliasNumber: 3},
@@ -154,7 +154,7 @@ describe('app_routing_selectors', () => {
         })
       );
 
-      expect(selectors.getExperimentIdToAliasMap(state)).toEqual({});
+      expect(selectors.getExperimentIdToExperimentAliasMap(state)).toEqual({});
     });
   });
 

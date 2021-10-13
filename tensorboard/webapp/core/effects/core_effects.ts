@@ -34,7 +34,7 @@ import {
 
 import {navigated} from '../../app_routing/actions';
 import {
-  getExperimentIdToAliasMap,
+  getExperimentIdToExperimentAliasMap,
   getRouteId,
   getRouteKind,
 } from '../../app_routing/store/app_routing_selectors';
@@ -185,7 +185,7 @@ export class CoreEffects {
           // If alias map changes, we need to refetch the list of runs as
           // Polymer's run selector and tags rely on run names including the
           // alias.
-          return this.store.select(getExperimentIdToAliasMap).pipe(
+          return this.store.select(getExperimentIdToExperimentAliasMap).pipe(
             distinctUntilChanged((beforeAliasDict, afterAliasDict) => {
               const entries = Object.entries(beforeAliasDict);
               const afterAliasMap = new Map(Object.entries(afterAliasDict));

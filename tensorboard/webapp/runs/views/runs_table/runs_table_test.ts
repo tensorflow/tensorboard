@@ -62,7 +62,7 @@ import {
   getEnabledColorGroup,
   getEnabledColorGroupByRegex,
   getExperiment,
-  getExperimentIdToAliasMap,
+  getExperimentIdToExperimentAliasMap,
   getRegisteredRouteKinds,
   getRouteId,
   getRunColorMap,
@@ -271,7 +271,7 @@ describe('runs_table', () => {
       direction: SortDirection.UNSET,
     });
     store.overrideSelector(getRunColorMap, {});
-    store.overrideSelector(getExperimentIdToAliasMap, {
+    store.overrideSelector(getExperimentIdToExperimentAliasMap, {
       rowling: {aliasText: 'Harry Potter', aliasNumber: 1},
       tolkien: {aliasText: 'The Lord of the Rings', aliasNumber: 2},
     });
@@ -334,7 +334,7 @@ describe('runs_table', () => {
           })
         )
       );
-      store.overrideSelector(getExperimentIdToAliasMap, {
+      store.overrideSelector(getExperimentIdToExperimentAliasMap, {
         book: {aliasText: 'Harry Potter', aliasNumber: 1},
       });
 
@@ -415,7 +415,7 @@ describe('runs_table', () => {
             })
           )
         );
-      store.overrideSelector(getExperimentIdToAliasMap, {
+      store.overrideSelector(getExperimentIdToExperimentAliasMap, {
         rowling: {aliasText: 'HP', aliasNumber: 1},
         tolkien: {aliasText: 'LoTR', aliasNumber: 2},
       });
@@ -458,7 +458,7 @@ describe('runs_table', () => {
         .and.returnValue(
           of([buildRun({id: 'book1', name: 'The Fellowship of the Ring'})])
         );
-      store.overrideSelector(getExperimentIdToAliasMap, {
+      store.overrideSelector(getExperimentIdToExperimentAliasMap, {
         book: {aliasText: 'The Lord of the Rings', aliasNumber: 1},
       });
       const fixture = createComponent(
@@ -557,7 +557,7 @@ describe('runs_table', () => {
             buildRun({id: 'book2', name: 'The Chamber Of Secrets'}),
           ])
         );
-      store.overrideSelector(getExperimentIdToAliasMap, {
+      store.overrideSelector(getExperimentIdToExperimentAliasMap, {
         book: {aliasText: "The Philosopher's Stone", aliasNumber: 1},
       });
       store.overrideSelector(
@@ -1276,7 +1276,7 @@ describe('runs_table', () => {
             buildRun({id: 'book2', name: 'The Chamber Of Secrets'}),
           ])
         );
-      store.overrideSelector(getExperimentIdToAliasMap, {
+      store.overrideSelector(getExperimentIdToExperimentAliasMap, {
         rowling: {aliasText: 'Harry Potter', aliasNumber: 1},
         tolkien: {aliasText: 'The Lord of the Rings', aliasNumber: 2},
       });
@@ -1342,7 +1342,7 @@ describe('runs_table', () => {
             buildRun({id: 'book3', name: "The Philosopher's Stone"}),
           ])
         );
-      store.overrideSelector(getExperimentIdToAliasMap, {
+      store.overrideSelector(getExperimentIdToExperimentAliasMap, {
         rowling: {aliasText: 'Harry Potter', aliasNumber: 1},
         tolkien: {aliasText: 'The Lord of the Rings', aliasNumber: 2},
       });
@@ -1459,7 +1459,7 @@ describe('runs_table', () => {
               buildRun({id: 'book2', name: 'The Chamber Of Secrets'}),
             ])
           );
-        store.overrideSelector(getExperimentIdToAliasMap, {
+        store.overrideSelector(getExperimentIdToExperimentAliasMap, {
           rowling: {aliasText: 'Harry Potter', aliasNumber: 1},
           tolkien: {aliasText: 'The Lord of the Rings', aliasNumber: 2},
         });
@@ -1525,7 +1525,7 @@ describe('runs_table', () => {
           ])
         );
 
-      store.overrideSelector(getExperimentIdToAliasMap, {
+      store.overrideSelector(getExperimentIdToExperimentAliasMap, {
         rowling: {aliasText: 'HPz', aliasNumber: 1},
         tolkien: {aliasText: 'LotR', aliasNumber: 2},
       });
@@ -1605,7 +1605,7 @@ describe('runs_table', () => {
             buildRun({id: 'book4', name: 'The Silmarillion'}),
           ])
         );
-      store.overrideSelector(getExperimentIdToAliasMap, {
+      store.overrideSelector(getExperimentIdToExperimentAliasMap, {
         rowling: {aliasText: 'Harry Potter', aliasNumber: 1},
         tolkien: {aliasText: 'The Lord of the Rings', aliasNumber: 2},
       });
@@ -1641,7 +1641,7 @@ describe('runs_table', () => {
             buildRun({id: 'book2', name: 'The Chamber Of Secrets'}),
           ])
         );
-      store.overrideSelector(getExperimentIdToAliasMap, {
+      store.overrideSelector(getExperimentIdToExperimentAliasMap, {
         rowling: {aliasText: 'Harry Potter', aliasNumber: 1},
       });
 
@@ -1698,7 +1698,7 @@ describe('runs_table', () => {
             buildRun({id: 'book2', name: 'The Chamber Of Secrets'}),
           ])
         );
-      store.overrideSelector(getExperimentIdToAliasMap, {
+      store.overrideSelector(getExperimentIdToExperimentAliasMap, {
         rowling: {aliasText: 'Harry Potter', aliasNumber: 1},
       });
 
@@ -1736,7 +1736,7 @@ describe('runs_table', () => {
         buildRun({id: 'book2', name: 'The Chamber Of Secrets'}),
         buildRun({id: 'book3', name: 'The Prisoner of Azkaban'}),
       ]);
-      store.overrideSelector(getExperimentIdToAliasMap, {
+      store.overrideSelector(getExperimentIdToExperimentAliasMap, {
         rowling: {aliasText: 'Harry Potter', aliasNumber: 1},
       });
 
@@ -2039,7 +2039,7 @@ describe('runs_table', () => {
           metrics: metricSpecs,
         }
       );
-      store.overrideSelector(getExperimentIdToAliasMap, {
+      store.overrideSelector(getExperimentIdToExperimentAliasMap, {
         library: {aliasText: 'Library', aliasNumber: 1},
       });
       const fixture = TestBed.createComponent(RunsTableContainer);

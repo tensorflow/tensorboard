@@ -48,7 +48,7 @@ import {
   getCurrentRouteRunSelection,
   getEnabledColorGroup,
   getExperiment,
-  getExperimentIdToAliasMap,
+  getExperimentIdToExperimentAliasMap,
   getRouteId,
   getRunColorMap,
   getRuns,
@@ -528,7 +528,7 @@ export class RunsTableContainer implements OnInit, OnDestroy {
       this.store.select(getExperiment, {experimentId}),
       this.store.select(getCurrentRouteRunSelection),
       this.store.select(getRunColorMap),
-      this.store.select(getExperimentIdToAliasMap),
+      this.store.select(getExperimentIdToExperimentAliasMap),
     ]).pipe(
       map(([runs, experiment, selectionMap, colorMap, experimentIdToAlias]) => {
         return runs.map((run) => {

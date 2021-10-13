@@ -270,7 +270,7 @@ describe('scalar card', () => {
       new Map<string, boolean>()
     );
     store.overrideSelector(selectors.getExperimentIdForRunId, null);
-    store.overrideSelector(selectors.getExperimentIdToAliasMap, {});
+    store.overrideSelector(selectors.getExperimentIdToExperimentAliasMap, {});
     store.overrideSelector(selectors.getRun, null);
     store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.STEP);
     store.overrideSelector(selectors.getVisibleCardIdSet, new Set(['card1']));
@@ -519,7 +519,7 @@ describe('scalar card', () => {
       selectSpy
         .withArgs(selectors.getRun, {runId: 'run1'})
         .and.returnValue(of(buildRun({name: 'Run1 name'})));
-      store.overrideSelector(selectors.getExperimentIdToAliasMap, {
+      store.overrideSelector(selectors.getExperimentIdToExperimentAliasMap, {
         eid1: {aliasText: 'existing_exp', aliasNumber: 1},
         eid2: {aliasText: 'ERROR!', aliasNumber: 2},
       });
@@ -539,7 +539,7 @@ describe('scalar card', () => {
       selectSpy
         .withArgs(selectors.getRun, {runId: 'run1'})
         .and.returnValue(of(null));
-      store.overrideSelector(selectors.getExperimentIdToAliasMap, {});
+      store.overrideSelector(selectors.getExperimentIdToExperimentAliasMap, {});
 
       const fixture = createComponent('card1');
 
@@ -556,7 +556,7 @@ describe('scalar card', () => {
       selectSpy
         .withArgs(selectors.getRun, {runId: 'run1'})
         .and.returnValue(of(null));
-      store.overrideSelector(selectors.getExperimentIdToAliasMap, {
+      store.overrideSelector(selectors.getExperimentIdToExperimentAliasMap, {
         eid1: {aliasText: 'existing_exp', aliasNumber: 1},
       });
 
@@ -579,7 +579,7 @@ describe('scalar card', () => {
       selectSpy
         .withArgs(selectors.getRun, {runId: 'run1'})
         .and.returnValue(getRun);
-      store.overrideSelector(selectors.getExperimentIdToAliasMap, {
+      store.overrideSelector(selectors.getExperimentIdToExperimentAliasMap, {
         eid1: {aliasText: 'existing_exp', aliasNumber: 1},
       });
 

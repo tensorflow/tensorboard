@@ -21,7 +21,7 @@ import {State} from '../../../app_state';
 import {ExperimentAlias} from '../../../experiments/types';
 import {
   getExperimentIdForRunId,
-  getExperimentIdToAliasMap,
+  getExperimentIdToExperimentAliasMap,
   getRun,
 } from '../../../selectors';
 
@@ -59,7 +59,7 @@ export class RunNameContainer implements OnInit {
     );
     this.experimentAlias$ = combineLatest([
       this.store.select(getExperimentIdForRunId, {runId: this.runId}),
-      this.store.select(getExperimentIdToAliasMap),
+      this.store.select(getExperimentIdToExperimentAliasMap),
     ]).pipe(
       map(([experimentId, idToAlias]) => {
         return experimentId ? idToAlias[experimentId]! : null;
