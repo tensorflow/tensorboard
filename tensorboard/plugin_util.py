@@ -91,7 +91,18 @@ _CLEANER_STORE = _CleanerStore()
 
 
 def safe_html(unsafe_string):
-    """Return the input, sanitized for insertion into the DOM."""
+    """Return the input as a str, sanitized for insertion into the DOM.
+
+    Arguments:
+      unsafe_string: A Unicode string or UTF-8--encoded bytestring
+        possibly containing unsafe HTML markup.
+
+    Returns:
+      A string containing safe HTML.
+    """
+    total_null_bytes = 0
+    if isinstance(unsafe_string, bytes):
+        unsafe_string = unsafe_string.decode("utf-8")
     return _CLEANER_STORE.cleaner.clean(unsafe_string)
 
 
