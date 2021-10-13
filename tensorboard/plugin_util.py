@@ -90,6 +90,11 @@ class _CleanerStore(threading.local):
 _CLEANER_STORE = _CleanerStore()
 
 
+def safe_html(unsafe_string):
+    """Return the input, sanitized for insertion into the DOM."""
+    return _CLEANER_STORE.cleaner.clean(unsafe_string)
+
+
 def markdown_to_safe_html(markdown_string):
     """Convert Markdown to HTML that's safe to splice into the DOM.
 
