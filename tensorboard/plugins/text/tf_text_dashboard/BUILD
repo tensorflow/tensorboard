@@ -22,6 +22,7 @@ tf_ts_library(
         "//tensorboard/components/tf_markdown_view",
         "//tensorboard/components/tf_paginated_view",
         "//tensorboard/components/tf_runs_selector",
+        "//tensorboard/components/tf_storage",
         "@npm//@polymer/decorators",
         "@npm//@polymer/polymer",
         "@npm//@types/d3",

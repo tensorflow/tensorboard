@@ -104,6 +104,9 @@ class TfTextLoader extends LegacyElementMixin(PolymerElement) {
   @property({type: String})
   tag: string;
 
+  @property({type: Boolean})
+  markdownEnabled: boolean;
+
   // Ordered from newest to oldest.
   @property({type: Array})
   _texts: Array<{wall_time: Date; step: number; text: string}> = [];
@@ -141,6 +144,7 @@ class TfTextLoader extends LegacyElementMixin(PolymerElement) {
     const url = addParams(router.pluginRoute('text', '/text'), {
       tag: this.tag,
       run: this.run,
+      markdown: this.markdownEnabled ? 'true' : 'false',
     });
     const updateTexts = this._canceller.cancellable((result) => {
       if (result.cancelled) {
