@@ -16,6 +16,7 @@ tf_ts_library(
         "//tensorboard/webapp/app_routing:store_only_utils",
         "//tensorboard/webapp/app_routing:types",
         "//tensorboard/webapp/app_routing/actions",
+        "//tensorboard/webapp/experiments:types",
         "@npm//@ngrx/store",
     ],
 )

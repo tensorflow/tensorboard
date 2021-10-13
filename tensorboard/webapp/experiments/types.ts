@@ -23,3 +23,8 @@ export declare interface Experiment {
   tags?: string[];
   related_links?: Array<{name: string; url: string}>;
 }
+
+export interface ExperimentAlias {
+  aliasText: string;
+  aliasNumber: number;
+}
