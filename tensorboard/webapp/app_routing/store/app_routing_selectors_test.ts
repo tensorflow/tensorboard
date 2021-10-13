@@ -19,7 +19,7 @@ import {RouteKind} from '../types';
 import * as selectors from './app_routing_selectors';
 import {buildAppRoutingState, buildStateFromAppRoutingState} from './testing';
 
-fdescribe('app_routing_selectors', () => {
+describe('app_routing_selectors', () => {
   describe('getActiveRoute', () => {
     beforeEach(() => {
       selectors.getActiveRoute.release();

@@ -103,7 +103,11 @@ export const getExperimentIdToAliasMap = createSelector(
     }
 
     const compareParams = routeParams as CompareRouteParams;
+    // We still need to use this internally until while switching to the new
+    // method.
+    // tslint:disable:deprecation
     const userDefinedAliasMap = getCompareExperimentIdAliasSpec(compareParams);
+    // tslint:enable:deprecation
     return Object.fromEntries(userDefinedAliasMap.entries());
   }
 );

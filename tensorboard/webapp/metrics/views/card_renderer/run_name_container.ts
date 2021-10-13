@@ -62,7 +62,7 @@ export class RunNameContainer implements OnInit {
       this.store.select(getExperimentIdToExperimentAliasMap),
     ]).pipe(
       map(([experimentId, idToAlias]) => {
-        return experimentId ? idToAlias[experimentId]! : null;
+        return experimentId ? idToAlias[experimentId] : null;
       })
     );
   }
