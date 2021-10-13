@@ -1,3 +1,43 @@
+# Release 2.7.0
+
+The 2.7 minor series tracks TensorFlow 2.7.
+
+## Features
+
+- Time Series plugin
+  - Run selection now is based on regex filter (#5252)
+  - Run match logic matches run name and alias  (#5334, #5351)
+  - Prepare Time Series for promotion to the first tab (#5291)
+  - Improve/persist tag filter in the URL (#5249, #5236, #5263, #5265, #5271, #5300)
+  - Show sample count on image cards (#5250)
+  - Keep all digits for step values (#5325)
+  - Remove pinned view while filtering (#5324)
+  - Show relative time in tooltip (#5319)
+  - UI: style improvements, adjust scroll position
+- Core
+  - Resizable run table sidebar (#5219)
+  - Support for fsspec filesystems (#5248)
+- Hparams
+  - Treat no data as an empty experiment rather than an error (#5273)
+  - Add tf.stop_gradient in tf.summary.histogram (#5311) - thanks [@allenlavoie](https://github.com/allenlavoie)
+
+## Bug fixes
+
+- Darkmode improvements and fixes (#5318)
+- Time Series
+  - Improve visibility logics (#5234, #5235)
+  - Reset PluginType filter when selected all (#5272)
+- PR curve plugin: display correct thresholds (#5191)
+- Line chart
+  - Recreate charts upon fatal renderer errors (#5237)
+  - Fix zoom interaction (#5215)
+  - Skip axis label render based on visibility (#5317)
+- Dropdown ui fixes (#5194, #5199, #5242)
+- Navigation handling (#5223, #5216)
+- Documentation
+  - document the Time Series dashboard (#5193)
+-  Update README.md to include no-data example (#5163)
+
 # Release 2.6.0
 
 The 2.6 minor series tracks TensorFlow 2.6.
