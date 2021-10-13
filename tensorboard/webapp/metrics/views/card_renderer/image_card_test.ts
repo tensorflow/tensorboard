@@ -31,7 +31,7 @@ import {ImageId, MetricsDataSource, PluginType} from '../../data_source';
 import * as selectors from '../../store/metrics_selectors';
 import {
   getExperimentIdForRunId,
-  getExperimentIdToAliasMap,
+  getExperimentIdToExperimentAliasMap,
   getRun,
 } from '../../../selectors';
 import {
@@ -111,7 +111,7 @@ describe('image card', () => {
     });
 
     store.overrideSelector(getExperimentIdForRunId, null);
-    store.overrideSelector(getExperimentIdToAliasMap, {});
+    store.overrideSelector(getExperimentIdToExperimentAliasMap, {});
     store.overrideSelector(getRun, null);
   });
 

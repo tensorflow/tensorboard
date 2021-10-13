@@ -24,7 +24,7 @@ import {DataLoadState} from '../../../types/data';
 
 import {
   getExperimentIdForRunId,
-  getExperimentIdToAliasMap,
+  getExperimentIdToExperimentAliasMap,
   getRun,
 } from '../../../selectors';
 import {MatIconTestingModule} from '../../../testing/mat_icon_module';
@@ -106,7 +106,7 @@ describe('histogram card', () => {
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
     selectSpy = spyOn(store, 'select').and.callThrough();
     store.overrideSelector(getExperimentIdForRunId, null);
-    store.overrideSelector(getExperimentIdToAliasMap, {});
+    store.overrideSelector(getExperimentIdToExperimentAliasMap, {});
     store.overrideSelector(getRun, null);
     store.overrideSelector(selectors.getMetricsSelectedTime, null);
   });
