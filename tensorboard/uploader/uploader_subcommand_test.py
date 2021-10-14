@@ -227,7 +227,7 @@ class UploadIntentTest(tf.test.TestCase):
             actual_mask = exporter_lib.list_experiments.call_args[1][
                 "fieldmask"
             ]
-            self.assertEquals(actual_mask, expected_mask)
+            self.assertEqual(actual_mask, expected_mask)
 
 
 if __name__ == "__main__":

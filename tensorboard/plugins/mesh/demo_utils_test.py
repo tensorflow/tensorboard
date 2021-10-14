@@ -35,7 +35,7 @@ class TestPLYReader(tf.test.TestCase):
 
     def test_prase_vertex_expects_colors(self):
         """Tests that method will throw error if color is not poresent."""
-        with self.assertRaisesRegexp(
+        with self.assertRaisesRegex(
             ValueError, "PLY file must contain vertices with colors"
         ):
             demo_utils._parse_vertex("1 2 3")

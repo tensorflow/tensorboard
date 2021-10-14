@@ -583,7 +583,7 @@ class ListSessionGroupsTest(tf.test.TestCase):
             aggregation_type: AGGREGATION_AVG
         """
         response = self._run_handler(request)
-        self.assertEquals(len(response.session_groups), 0)
+        self.assertEqual(len(response.session_groups), 0)
 
     def test_some_allowed_statuses(self):
         request = """
@@ -593,7 +593,7 @@ class ListSessionGroupsTest(tf.test.TestCase):
             aggregation_type: AGGREGATION_AVG
         """
         response = self._run_handler(request)
-        self.assertEquals(
+        self.assertEqual(
             _reduce_to_names(response.session_groups),
             [
                 ("group_1", ["session_1"]),
@@ -610,7 +610,7 @@ class ListSessionGroupsTest(tf.test.TestCase):
             aggregation_type: AGGREGATION_AVG
         """
         response = self._run_handler(request)
-        self.assertEquals(
+        self.assertEqual(
             _reduce_to_names(response.session_groups),
             [("group_2", ["session_3"])],
         )
@@ -629,7 +629,7 @@ class ListSessionGroupsTest(tf.test.TestCase):
             aggregation_metric: { tag: "current_temp" }
         """
         response = self._run_handler(request)
-        self.assertEquals(len(response.session_groups[1].metric_values), 2)
+        self.assertEqual(len(response.session_groups[1].metric_values), 2)
         self.assertProtoEquals(
             """
             name { tag: "current_temp" }
@@ -663,7 +663,7 @@ class ListSessionGroupsTest(tf.test.TestCase):
             aggregation_metric: { tag: "delta_temp" }
         """
         response = self._run_handler(request)
-        self.assertEquals(len(response.session_groups[1].metric_values), 2)
+        self.assertEqual(len(response.session_groups[1].metric_values), 2)
         self.assertProtoEquals(
             """
             name { tag: "current_temp" }
@@ -697,7 +697,7 @@ class ListSessionGroupsTest(tf.test.TestCase):
             aggregation_metric: { tag: "current_temp" }
         """
         response = self._run_handler(request)
-        self.assertEquals(len(response.session_groups[1].metric_values), 2)
+        self.assertEqual(len(response.session_groups[1].metric_values), 2)
         self.assertProtoEquals(
             """
             name { tag: "current_temp" }
@@ -731,7 +731,7 @@ class ListSessionGroupsTest(tf.test.TestCase):
             aggregation_metric: { tag: "delta_temp" }
             """
         response = self._run_handler(request)
-        self.assertEquals(len(response.session_groups[1].metric_values), 2)
+        self.assertEqual(len(response.session_groups[1].metric_values), 2)
         self.assertProtoEquals(
             """
             name { tag: "current_temp" }
@@ -765,7 +765,7 @@ class ListSessionGroupsTest(tf.test.TestCase):
             aggregation_metric: { tag: "current_temp" }
             """
         response = self._run_handler(request)
-        self.assertEquals(len(response.session_groups[1].metric_values), 2)
+        self.assertEqual(len(response.session_groups[1].metric_values), 2)
         self.assertProtoEquals(
             """
             name { tag: "current_temp" }
@@ -799,7 +799,7 @@ class ListSessionGroupsTest(tf.test.TestCase):
             aggregation_metric: { tag: "delta_temp" }
         """
         response = self._run_handler(request)
-        self.assertEquals(len(response.session_groups[1].metric_values), 2)
+        self.assertEqual(len(response.session_groups[1].metric_values), 2)
         self.assertProtoEquals(
             """
             name { tag: "current_temp" }

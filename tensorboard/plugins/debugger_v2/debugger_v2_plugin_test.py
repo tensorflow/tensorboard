@@ -1646,7 +1646,7 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         self.assertEqual(
             "application/json", response.headers.get("content-type")
         )
-        self.assertRegexpMatches(
+        self.assertRegex(
             json.loads(response.get_data())["error"],
             "Not found: Cannot find stack frame with ID"
             ".*nonsense-stack-frame-id.*",

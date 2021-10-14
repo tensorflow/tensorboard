@@ -199,7 +199,7 @@ class ExperimentFromDevTest(tb_test.TestCase):
             lambda api_endpoint: mock_api_client,
         ):
             experiment = experiment_from_dev.ExperimentFromDev("789")
-            with self.assertRaisesRegexp(
+            with self.assertRaisesRegex(
                 ValueError,
                 r"contains missing value\(s\).*different sets of "
                 r"steps.*pivot=False",

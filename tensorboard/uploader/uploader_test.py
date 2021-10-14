@@ -1472,7 +1472,7 @@ class TensorBatchedRequestSenderTest(tf.test.TestCase):
 
         mock_client = _create_mock_client()
         sender = _create_tensor_request_sender("123", mock_client)
-        with self.assertRaisesRegexp(
+        with self.assertRaisesRegex(
             ValueError,
             re.compile(
                 r"failed to upload a tensor.*malformation.*tag.*\'one\'.*step.*42",
@@ -1493,7 +1493,7 @@ class TensorBatchedRequestSenderTest(tf.test.TestCase):
 
         mock_client = _create_mock_client()
         sender = _create_tensor_request_sender("123", mock_client)
-        with self.assertRaisesRegexp(
+        with self.assertRaisesRegex(
             ValueError,
             re.compile(
                 r"failed to upload a tensor.*malformation.*tag.*\'two\'.*step.*1337."
