@@ -33,6 +33,7 @@ tf_ts_library(
     ],
     deps = [
         ":experiment_alias",
+        "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/experiments:types",
         "@npm//@angular/core",
         "@npm//@angular/platform-browser",
