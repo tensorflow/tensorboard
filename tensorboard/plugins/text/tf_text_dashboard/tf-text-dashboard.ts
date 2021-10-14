@@ -40,9 +40,9 @@ class TfTextDashboard extends LegacyElementMixin(PolymerElement) {
       <div class="sidebar" slot="sidebar">
         <div class="sidebar-section">
           <div class="line-item">
-            <paper-checkbox
-              checked="{{_markdownEnabled}}"
-            >Enable Markdown</paper-checkbox>
+            <paper-checkbox checked="{{_markdownEnabled}}"
+              >Enable Markdown</paper-checkbox
+            >
           </div>
         </div>
         <div class="sidebar-section runs-selector">
@@ -199,10 +199,13 @@ class TfTextDashboard extends LegacyElementMixin(PolymerElement) {
     return categorizeRunTagCombinations(runToTag, selectedRuns, tagFilter);
   }
 
-  _markdownEnabledStorageObserver = tf_storage.getBooleanObserver('_markdownEnabled', {
-    defaultValue: true,
-    useLocalStorage: true,
-  });
+  _markdownEnabledStorageObserver = tf_storage.getBooleanObserver(
+    '_markdownEnabled',
+    {
+      defaultValue: true,
+      useLocalStorage: true,
+    }
+  );
 
   _markdownEnabledObserver() {
     this._reloadTexts();
