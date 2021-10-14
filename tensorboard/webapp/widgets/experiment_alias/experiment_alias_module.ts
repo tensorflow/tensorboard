@@ -1,4 +1,4 @@
-/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2021 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,13 +15,11 @@ limitations under the License.
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
 
-import {RunNameComponent} from './run_name_component';
-import {RunNameContainer} from './run_name_container';
-import {ExperimentAliasModule} from '../../../widgets/experiment_alias/experiment_alias_module';
+import {ExperimentAliasComponent} from './experiment_alias_component';
 
 @NgModule({
-  declarations: [RunNameContainer, RunNameComponent],
-  exports: [RunNameContainer],
-  imports: [CommonModule, ExperimentAliasModule],
+  imports: [CommonModule],
+  exports: [ExperimentAliasComponent],
+  declarations: [ExperimentAliasComponent],
 })
-export class RunNameModule {}
+export class ExperimentAliasModule {}

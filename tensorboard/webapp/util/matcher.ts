@@ -15,11 +15,12 @@ limitations under the License.
 /**
  * @fileoverview Helps matching runs.
  */
+import {ExperimentAlias} from '../experiments/types';
 
 export interface RunMatchable {
   runName: string;
   experimentName: string;
-  experimentAlias: string;
+  experimentAlias: ExperimentAlias;
 }
 
 /**
@@ -51,8 +52,8 @@ export function matchRunToRegex(
   const matchables = [runMatchable.runName];
   if (shouldMatchExperiment) {
     matchables.push(
-      runMatchable.experimentAlias,
-      `${runMatchable.experimentAlias}/${runMatchable.runName}`
+      runMatchable.experimentAlias.aliasText,
+      `${runMatchable.experimentAlias.aliasText}/${runMatchable.runName}`
     );
   }
   return matchables.some((matchable) => regex!.test(matchable));

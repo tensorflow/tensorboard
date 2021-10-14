@@ -91,6 +91,9 @@ export const getRouteId = createSelector(
   }
 );
 
+/**
+ * @deprecated
+ */
 export const getExperimentIdToAliasMap = createSelector(
   getRouteKind,
   getRouteParams,
@@ -100,8 +103,8 @@ export const getExperimentIdToAliasMap = createSelector(
     }
 
     const compareParams = routeParams as CompareRouteParams;
-    const map = getCompareExperimentIdAliasSpec(compareParams);
-    return Object.fromEntries(map.entries());
+    const userDefinedAliasMap = getCompareExperimentIdAliasSpec(compareParams);
+    return Object.fromEntries(userDefinedAliasMap.entries());
   }
 );
 

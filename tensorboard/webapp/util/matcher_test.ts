@@ -18,7 +18,7 @@ import {matchRunToRegex, RunMatchable} from './matcher';
 function buildRunWithName(override: Partial<RunMatchable> = {}): RunMatchable {
   return {
     runName: 'run name',
-    experimentAlias: 'alias',
+    experimentAlias: {aliasText: 'alias', aliasNumber: 1},
     experimentName: 'Experiment name',
     ...override,
   };
@@ -50,7 +50,7 @@ describe('matcher test', () => {
           matchRunToRegex(
             buildRunWithName({
               runName: 'faaaaro',
-              experimentAlias: 'aliasName',
+              experimentAlias: {aliasText: 'aliasName', aliasNumber: 1},
             }),
             '^aliasName$',
             true
@@ -60,7 +60,7 @@ describe('matcher test', () => {
           matchRunToRegex(
             buildRunWithName({
               runName: 'faaaaro',
-              experimentAlias: 'aliasName',
+              experimentAlias: {aliasText: 'aliasName', aliasNumber: 1},
             }),
             '^aliasName$',
             false
@@ -73,7 +73,7 @@ describe('matcher test', () => {
           matchRunToRegex(
             buildRunWithName({
               runName: 'world',
-              experimentAlias: 'hello',
+              experimentAlias: {aliasText: 'hello', aliasNumber: 1},
               experimentName: 'goodbye',
             }),
             '^hello/world$',
@@ -84,7 +84,7 @@ describe('matcher test', () => {
           matchRunToRegex(
             buildRunWithName({
               runName: 'world',
-              experimentAlias: 'hello',
+              experimentAlias: {aliasText: 'hello', aliasNumber: 1},
               experimentName: 'goodbye',
             }),
             'hello',

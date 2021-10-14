@@ -14,12 +14,20 @@ limitations under the License.
 ==============================================================================*/
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 
+import {ExperimentAlias} from '../../../experiments/types';
+
 @Component({
   selector: 'card-run-name-component',
-  template: '{{ name }}',
+  template: `<tb-experiment-alias
+      *ngIf="experimentAlias != null"
+      [alias]="experimentAlias"
+    ></tb-experiment-alias>
+    <span *ngIf="experimentAlias != null">/</span>
+    <span>{{ name }}</span>`,
   styleUrls: ['run_name_component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RunNameComponent {
   @Input() name!: string;
+  @Input() experimentAlias!: ExperimentAlias | null;
 }

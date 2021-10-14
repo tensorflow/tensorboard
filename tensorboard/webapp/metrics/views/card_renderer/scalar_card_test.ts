@@ -270,7 +270,7 @@ describe('scalar card', () => {
       new Map<string, boolean>()
     );
     store.overrideSelector(selectors.getExperimentIdForRunId, null);
-    store.overrideSelector(selectors.getExperimentIdToAliasMap, {});
+    store.overrideSelector(selectors.getExperimentIdToExperimentAliasMap, {});
     store.overrideSelector(selectors.getRun, null);
     store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.STEP);
     store.overrideSelector(selectors.getVisibleCardIdSet, new Set(['card1']));
@@ -519,9 +519,9 @@ describe('scalar card', () => {
       selectSpy
         .withArgs(selectors.getRun, {runId: 'run1'})
         .and.returnValue(of(buildRun({name: 'Run1 name'})));
-      store.overrideSelector(selectors.getExperimentIdToAliasMap, {
-        eid1: 'existing_exp',
-        eid2: 'ERROR!',
+      store.overrideSelector(selectors.getExperimentIdToExperimentAliasMap, {
+        eid1: {aliasText: 'existing_exp', aliasNumber: 1},
+        eid2: {aliasText: 'ERROR!', aliasNumber: 2},
       });
 
       const fixture = createComponent('card1');
@@ -529,7 +529,7 @@ describe('scalar card', () => {
       const lineChartEl = fixture.debugElement.query(Selector.LINE_CHART);
       const {displayName} =
         lineChartEl.componentInstance.seriesMetadataMap['run1'];
-      expect(displayName).toBe('existing_exp/Run1 name');
+      expect(displayName).toBe('[1] existing_exp/Run1 name');
     }));
 
     it('sets run id if a run and experiment are not found', fakeAsync(() => {
@@ -539,7 +539,7 @@ describe('scalar card', () => {
       selectSpy
         .withArgs(selectors.getRun, {runId: 'run1'})
         .and.returnValue(of(null));
-      store.overrideSelector(selectors.getExperimentIdToAliasMap, {});
+      store.overrideSelector(selectors.getExperimentIdToExperimentAliasMap, {});
 
       const fixture = createComponent('card1');
 
@@ -556,8 +556,8 @@ describe('scalar card', () => {
       selectSpy
         .withArgs(selectors.getRun, {runId: 'run1'})
         .and.returnValue(of(null));
-      store.overrideSelector(selectors.getExperimentIdToAliasMap, {
-        eid1: 'existing_exp',
+      store.overrideSelector(selectors.getExperimentIdToExperimentAliasMap, {
+        eid1: {aliasText: 'existing_exp', aliasNumber: 1},
       });
 
       const fixture = createComponent('card1');
@@ -567,7 +567,7 @@ describe('scalar card', () => {
 
       const {displayName} =
         lineChartEl.componentInstance.seriesMetadataMap['run1'];
-      expect(displayName).toBe('existing_exp/...');
+      expect(displayName).toBe('[1] existing_exp/...');
     }));
 
     it('updates displayName with run when run populates', fakeAsync(() => {
@@ -579,8 +579,8 @@ describe('scalar card', () => {
       selectSpy
         .withArgs(selectors.getRun, {runId: 'run1'})
         .and.returnValue(getRun);
-      store.overrideSelector(selectors.getExperimentIdToAliasMap, {
-        eid1: 'existing_exp',
+      store.overrideSelector(selectors.getExperimentIdToExperimentAliasMap, {
+        eid1: {aliasText: 'existing_exp', aliasNumber: 1},
       });
 
       const fixture = createComponent('card1');
@@ -592,7 +592,7 @@ describe('scalar card', () => {
       const lineChartEl = fixture.debugElement.query(Selector.LINE_CHART);
       const {displayName} =
         lineChartEl.componentInstance.seriesMetadataMap['run1'];
-      expect(displayName).toBe('existing_exp/Foobar');
+      expect(displayName).toBe('[1] existing_exp/Foobar');
     }));
   });
 

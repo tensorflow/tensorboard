@@ -28,7 +28,7 @@ limitations under the License.
 import {createSelector} from '@ngrx/store';
 import {
   getExperimentIdsFromRoute,
-  getExperimentIdToAliasMap,
+  getExperimentIdToExperimentAliasMap,
   getRouteKind,
 } from '../app_routing/store/app_routing_selectors';
 import {RouteKind} from '../app_routing/types';
@@ -42,15 +42,10 @@ import {
   getRunSelectionMap,
   getRunSelectorRegexFilter,
 } from '../runs/store/runs_selectors';
-import {Run} from '../runs/types';
 import {selectors} from '../settings';
 import {ColorPalette} from './colors';
 import {matchRunToRegex, RunMatchable} from './matcher';
 
-interface RunAndNames extends Run {
-  experimentAlias: string;
-  experimentName: string;
-}
 /**
  * Selects the run selection (runId to boolean) of current routeId.
  *
@@ -64,7 +59,7 @@ export const getCurrentRouteRunSelection = createSelector(
   getRunSelectorRegexFilter,
   (state: State): Map<string, RunMatchable> => {
     const experimentIds = getExperimentIdsFromRoute(state) ?? [];
-    const aliasMap = getExperimentIdToAliasMap(state);
+    const aliasMap = getExperimentIdToExperimentAliasMap(state);
 
     const runMatchableMap = new Map<string, RunMatchable>();
     for (const experimentId of experimentIds) {

@@ -60,6 +60,7 @@ tf_ts_library(
         "matcher.ts",
     ],
     deps = [
+        "//tensorboard/webapp/experiments:types",
         "//tensorboard/webapp/runs:types",
     ],
 )

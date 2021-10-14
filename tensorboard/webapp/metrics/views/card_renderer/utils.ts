@@ -12,6 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {ExperimentAlias} from '../../../experiments/types';
 import {Run} from '../../../runs/store/runs_types';
 import {LinkedTime} from '../../types';
 import {PartialSeries, PartitionedSeries} from './scalar_card_types';
@@ -19,15 +20,17 @@ import {PartialSeries, PartitionedSeries} from './scalar_card_types';
 export function getDisplayNameForRun(
   runId: string,
   run: Run | null,
-  experimentName: string | null | undefined
+  experimentAlias: ExperimentAlias | null | undefined
 ): string {
-  if (!run && !experimentName) {
+  if (!run && !experimentAlias) {
     return runId;
   }
 
-  const displayName = [experimentName, run ? run.name : '...']
-    .filter(Boolean)
-    .join('/');
+  let displayName = run?.name ?? '...';
+
+  if (experimentAlias) {
+    displayName = `[${experimentAlias.aliasNumber}] ${experimentAlias.aliasText}/${displayName}`;
+  }
 
   return displayName;
 }

@@ -62,7 +62,7 @@ import {
   getEnabledColorGroup,
   getEnabledColorGroupByRegex,
   getExperiment,
-  getExperimentIdToAliasMap,
+  getExperimentIdToExperimentAliasMap,
   getRegisteredRouteKinds,
   getRouteId,
   getRunColorMap,
@@ -101,6 +101,7 @@ import {RunsGroupMenuButtonContainer} from './runs_group_menu_button_container';
 import {RunsTableComponent} from './runs_table_component';
 import {RunsTableContainer, TEST_ONLY} from './runs_table_container';
 import {HparamSpec, MetricSpec, RunsTableColumn} from './types';
+import {ExperimentAliasModule} from '../../../widgets/experiment_alias/experiment_alias_module';
 
 @Injectable()
 class ColorPickerTestHelper {
@@ -231,6 +232,7 @@ describe('runs_table', () => {
         NoopAnimationsModule,
         FilterInputModule,
         RangeInputModule,
+        ExperimentAliasModule,
       ],
       declarations: [
         RunsGroupMenuButtonComponent,
@@ -269,9 +271,9 @@ describe('runs_table', () => {
       direction: SortDirection.UNSET,
     });
     store.overrideSelector(getRunColorMap, {});
-    store.overrideSelector(getExperimentIdToAliasMap, {
-      rowling: 'Harry Potter',
-      tolkien: 'The Lord of the Rings',
+    store.overrideSelector(getExperimentIdToExperimentAliasMap, {
+      rowling: {aliasText: 'Harry Potter', aliasNumber: 1},
+      tolkien: {aliasText: 'The Lord of the Rings', aliasNumber: 2},
     });
     store.overrideSelector(
       hparamsSelectors.getExperimentsHparamsAndMetricsSpecs,
@@ -332,7 +334,9 @@ describe('runs_table', () => {
           })
         )
       );
-      store.overrideSelector(getExperimentIdToAliasMap, {book: 'Harry Potter'});
+      store.overrideSelector(getExperimentIdToExperimentAliasMap, {
+        book: {aliasText: 'Harry Potter', aliasNumber: 1},
+      });
 
       const fixture = createComponent(
         ['book'],
@@ -350,13 +354,13 @@ describe('runs_table', () => {
         [...book1.querySelectorAll(Selector.COLUMN)].map(
           (node) => node.textContent
         )
-      ).toEqual(['Harry Potter', "The Philosopher's Stone"]);
+      ).toEqual(['1Harry Potter', "The Philosopher's Stone"]);
 
       expect(
         [...book2.querySelectorAll(Selector.COLUMN)].map(
           (node) => node.textContent
         )
-      ).toEqual(['Harry Potter', 'The Chamber Of Secrets']);
+      ).toEqual(['1Harry Potter', 'The Chamber Of Secrets']);
     });
 
     it('dispatches `runTableShown` when shown', () => {
@@ -411,9 +415,9 @@ describe('runs_table', () => {
             })
           )
         );
-      store.overrideSelector(getExperimentIdToAliasMap, {
-        rowling: 'HP',
-        tolkien: 'LoTR',
+      store.overrideSelector(getExperimentIdToExperimentAliasMap, {
+        rowling: {aliasText: 'HP', aliasNumber: 1},
+        tolkien: {aliasText: 'LoTR', aliasNumber: 2},
       });
 
       const fixture = createComponent(
@@ -432,17 +436,17 @@ describe('runs_table', () => {
         [...book1.querySelectorAll(Selector.COLUMN)].map(
           (node) => node.textContent
         )
-      ).toEqual(['LoTR', 'The Fellowship of the Ring']);
+      ).toEqual(['2LoTR', 'The Fellowship of the Ring']);
       expect(
         [...book2.querySelectorAll(Selector.COLUMN)].map(
           (node) => node.textContent
         )
-      ).toEqual(['HP', "The Philosopher's Stone"]);
+      ).toEqual(['1HP', "The Philosopher's Stone"]);
       expect(
         [...book3.querySelectorAll(Selector.COLUMN)].map(
           (node) => node.textContent
         )
-      ).toEqual(['HP', 'The Chamber Of Secrets']);
+      ).toEqual(['1HP', 'The Chamber Of Secrets']);
     });
 
     it('honors the order of `columns` when rendering', async () => {
@@ -454,8 +458,8 @@ describe('runs_table', () => {
         .and.returnValue(
           of([buildRun({id: 'book1', name: 'The Fellowship of the Ring'})])
         );
-      store.overrideSelector(getExperimentIdToAliasMap, {
-        book: 'The Lord of the Rings',
+      store.overrideSelector(getExperimentIdToExperimentAliasMap, {
+        book: {aliasText: 'The Lord of the Rings', aliasNumber: 1},
       });
       const fixture = createComponent(
         ['book'],
@@ -470,7 +474,7 @@ describe('runs_table', () => {
         [...book1.querySelectorAll(Selector.COLUMN)].map(
           (node) => node.textContent
         )
-      ).toEqual(['The Fellowship of the Ring', 'The Lord of the Rings']);
+      ).toEqual(['The Fellowship of the Ring', '1The Lord of the Rings']);
     });
 
     it('updates the list of runs', async () => {
@@ -553,8 +557,8 @@ describe('runs_table', () => {
             buildRun({id: 'book2', name: 'The Chamber Of Secrets'}),
           ])
         );
-      store.overrideSelector(getExperimentIdToAliasMap, {
-        book: "The Philosopher's Stone",
+      store.overrideSelector(getExperimentIdToExperimentAliasMap, {
+        book: {aliasText: "The Philosopher's Stone", aliasNumber: 1},
       });
       store.overrideSelector(
         getCurrentRouteRunSelection,
@@ -1272,9 +1276,9 @@ describe('runs_table', () => {
             buildRun({id: 'book2', name: 'The Chamber Of Secrets'}),
           ])
         );
-      store.overrideSelector(getExperimentIdToAliasMap, {
-        rowling: 'Harry Potter',
-        tolkien: 'The Lord of the Rings',
+      store.overrideSelector(getExperimentIdToExperimentAliasMap, {
+        rowling: {aliasText: 'Harry Potter', aliasNumber: 1},
+        tolkien: {aliasText: 'The Lord of the Rings', aliasNumber: 2},
       });
       selectSpy
         .withArgs(getRuns, {experimentId: 'tolkien'})
@@ -1289,9 +1293,9 @@ describe('runs_table', () => {
       fixture.detectChanges();
 
       expect(getTableRowTextContent(fixture)).toEqual([
-        ['Harry Potter', "The Philosopher's Stone"],
-        ['Harry Potter', 'The Chamber Of Secrets'],
-        ['The Lord of the Rings', 'The Fellowship of the Ring'],
+        ['1Harry Potter', "The Philosopher's Stone"],
+        ['1Harry Potter', 'The Chamber Of Secrets'],
+        ['2The Lord of the Rings', 'The Fellowship of the Ring'],
       ]);
 
       store.overrideSelector(getRunSelectorSort, {
@@ -1302,9 +1306,9 @@ describe('runs_table', () => {
       fixture.detectChanges();
 
       expect(getTableRowTextContent(fixture)).toEqual([
-        ['Harry Potter', 'The Chamber Of Secrets'],
-        ['Harry Potter', "The Philosopher's Stone"],
-        ['The Lord of the Rings', 'The Fellowship of the Ring'],
+        ['1Harry Potter', 'The Chamber Of Secrets'],
+        ['1Harry Potter', "The Philosopher's Stone"],
+        ['2The Lord of the Rings', 'The Fellowship of the Ring'],
       ]);
 
       store.overrideSelector(getRunSelectorSort, {
@@ -1315,9 +1319,9 @@ describe('runs_table', () => {
       fixture.detectChanges();
 
       expect(getTableRowTextContent(fixture)).toEqual([
-        ['The Lord of the Rings', 'The Fellowship of the Ring'],
-        ['Harry Potter', "The Philosopher's Stone"],
-        ['Harry Potter', 'The Chamber Of Secrets'],
+        ['2The Lord of the Rings', 'The Fellowship of the Ring'],
+        ['1Harry Potter', "The Philosopher's Stone"],
+        ['1Harry Potter', 'The Chamber Of Secrets'],
       ]);
     });
 
@@ -1338,9 +1342,9 @@ describe('runs_table', () => {
             buildRun({id: 'book3', name: "The Philosopher's Stone"}),
           ])
         );
-      store.overrideSelector(getExperimentIdToAliasMap, {
-        rowling: 'Harry Potter',
-        tolkien: 'The Lord of the Rings',
+      store.overrideSelector(getExperimentIdToExperimentAliasMap, {
+        rowling: {aliasText: 'Harry Potter', aliasNumber: 1},
+        tolkien: {aliasText: 'The Lord of the Rings', aliasNumber: 2},
       });
       selectSpy
         .withArgs(getRuns, {experimentId: 'tolkien'})
@@ -1355,10 +1359,10 @@ describe('runs_table', () => {
       fixture.detectChanges();
 
       expect(getTableRowTextContent(fixture)).toEqual([
-        ['Harry Potter', "The Philosopher's Stone"],
-        ['Harry Potter', 'The Chamber Of Secrets'],
-        ['Harry Potter', "The Philosopher's Stone"],
-        ['The Lord of the Rings', 'The Fellowship of the Ring'],
+        ['1Harry Potter', "The Philosopher's Stone"],
+        ['1Harry Potter', 'The Chamber Of Secrets'],
+        ['1Harry Potter', "The Philosopher's Stone"],
+        ['2The Lord of the Rings', 'The Fellowship of the Ring'],
       ]);
 
       store.overrideSelector(getRunSelectorSort, {
@@ -1369,10 +1373,10 @@ describe('runs_table', () => {
       fixture.detectChanges();
 
       expect(getTableRowTextContent(fixture)).toEqual([
-        ['Harry Potter', 'The Chamber Of Secrets'],
-        ['The Lord of the Rings', 'The Fellowship of the Ring'],
-        ['Harry Potter', "The Philosopher's Stone"],
-        ['Harry Potter', "The Philosopher's Stone"],
+        ['1Harry Potter', 'The Chamber Of Secrets'],
+        ['2The Lord of the Rings', 'The Fellowship of the Ring'],
+        ['1Harry Potter', "The Philosopher's Stone"],
+        ['1Harry Potter', "The Philosopher's Stone"],
       ]);
 
       store.overrideSelector(getRunSelectorSort, {
@@ -1383,10 +1387,10 @@ describe('runs_table', () => {
       fixture.detectChanges();
 
       expect(getTableRowTextContent(fixture)).toEqual([
-        ['Harry Potter', "The Philosopher's Stone"],
-        ['Harry Potter', "The Philosopher's Stone"],
-        ['The Lord of the Rings', 'The Fellowship of the Ring'],
-        ['Harry Potter', 'The Chamber Of Secrets'],
+        ['1Harry Potter', "The Philosopher's Stone"],
+        ['1Harry Potter', "The Philosopher's Stone"],
+        ['2The Lord of the Rings', 'The Fellowship of the Ring'],
+        ['1Harry Potter', 'The Chamber Of Secrets'],
       ]);
     });
   });
@@ -1403,38 +1407,38 @@ describe('runs_table', () => {
       {
         regexString: '',
         expectedTableContent: [
-          ['Harry Potter', "The Philosopher's Stone"],
-          ['Harry Potter', 'The Chamber Of Secrets'],
-          ['The Lord of the Rings', 'The Fellowship of the Ring'],
-          ['The Lord of the Rings', 'The Silmarillion'],
+          ['1Harry Potter', "The Philosopher's Stone"],
+          ['1Harry Potter', 'The Chamber Of Secrets'],
+          ['2The Lord of the Rings', 'The Fellowship of the Ring'],
+          ['2The Lord of the Rings', 'The Silmarillion'],
         ],
       },
       {
         regexString: '.*',
         expectedTableContent: [
-          ['Harry Potter', "The Philosopher's Stone"],
-          ['Harry Potter', 'The Chamber Of Secrets'],
-          ['The Lord of the Rings', 'The Fellowship of the Ring'],
-          ['The Lord of the Rings', 'The Silmarillion'],
+          ['1Harry Potter', "The Philosopher's Stone"],
+          ['1Harry Potter', 'The Chamber Of Secrets'],
+          ['2The Lord of the Rings', 'The Fellowship of the Ring'],
+          ['2The Lord of the Rings', 'The Silmarillion'],
         ],
       },
       {
         regexString: '.+arr',
         expectedTableContent: [
-          ['Harry Potter', "The Philosopher's Stone"],
-          ['Harry Potter', 'The Chamber Of Secrets'],
+          ['1Harry Potter', "The Philosopher's Stone"],
+          ['1Harry Potter', 'The Chamber Of Secrets'],
         ],
       },
       {
         regexString: 'mar',
-        expectedTableContent: [['The Lord of the Rings', 'The Silmarillion']],
+        expectedTableContent: [['2The Lord of the Rings', 'The Silmarillion']],
       },
       {
         regexString: '[m,H]ar',
         expectedTableContent: [
-          ['Harry Potter', "The Philosopher's Stone"],
-          ['Harry Potter', 'The Chamber Of Secrets'],
-          ['The Lord of the Rings', 'The Silmarillion'],
+          ['1Harry Potter', "The Philosopher's Stone"],
+          ['1Harry Potter', 'The Chamber Of Secrets'],
+          ['2The Lord of the Rings', 'The Silmarillion'],
         ],
       },
     ].forEach(({regexString, expectedTableContent}) => {
@@ -1455,9 +1459,9 @@ describe('runs_table', () => {
               buildRun({id: 'book2', name: 'The Chamber Of Secrets'}),
             ])
           );
-        store.overrideSelector(getExperimentIdToAliasMap, {
-          rowling: 'Harry Potter',
-          tolkien: 'The Lord of the Rings',
+        store.overrideSelector(getExperimentIdToExperimentAliasMap, {
+          rowling: {aliasText: 'Harry Potter', aliasNumber: 1},
+          tolkien: {aliasText: 'The Lord of the Rings', aliasNumber: 2},
         });
         selectSpy
           .withArgs(getRuns, {experimentId: 'tolkien'})
@@ -1521,9 +1525,9 @@ describe('runs_table', () => {
           ])
         );
 
-      store.overrideSelector(getExperimentIdToAliasMap, {
-        rowling: 'HPz',
-        tolkien: 'LotR',
+      store.overrideSelector(getExperimentIdToExperimentAliasMap, {
+        rowling: {aliasText: 'HPz', aliasNumber: 1},
+        tolkien: {aliasText: 'LotR', aliasNumber: 2},
       });
       store.overrideSelector(getRunSelectorRegexFilter, 'ing');
 
@@ -1534,7 +1538,7 @@ describe('runs_table', () => {
 
       fixture.detectChanges();
       expect(getTableRowTextContent(fixture)).toEqual([
-        ['LotR', 'The Fellowship of the Ring'],
+        ['2LotR', 'The Fellowship of the Ring'],
       ]);
 
       // Alias for Harry Potter contains "z". Since legacy Polymer-based
@@ -1546,7 +1550,7 @@ describe('runs_table', () => {
       store.refreshState();
       fixture.detectChanges();
       expect(getTableRowTextContent(fixture)).toEqual([
-        ['LotR', 'The Silmarillion'],
+        ['2LotR', 'The Silmarillion'],
       ]);
     });
 
@@ -1601,9 +1605,9 @@ describe('runs_table', () => {
             buildRun({id: 'book4', name: 'The Silmarillion'}),
           ])
         );
-      store.overrideSelector(getExperimentIdToAliasMap, {
-        rowling: 'Harry Potter',
-        tolkien: 'The Lord of the Rings',
+      store.overrideSelector(getExperimentIdToExperimentAliasMap, {
+        rowling: {aliasText: 'Harry Potter', aliasNumber: 1},
+        tolkien: {aliasText: 'The Lord of the Rings', aliasNumber: 2},
       });
 
       // Square bracket needs to be closed.
@@ -1624,7 +1628,7 @@ describe('runs_table', () => {
       fixture.detectChanges();
 
       expect(getTableRowTextContent(fixture)).toEqual([
-        ['The Lord of the Rings', 'The Fellowship of the Ring'],
+        ['2The Lord of the Rings', 'The Fellowship of the Ring'],
       ]);
     });
 
@@ -1637,8 +1641,8 @@ describe('runs_table', () => {
             buildRun({id: 'book2', name: 'The Chamber Of Secrets'}),
           ])
         );
-      store.overrideSelector(getExperimentIdToAliasMap, {
-        rowling: 'Harry Potter',
+      store.overrideSelector(getExperimentIdToExperimentAliasMap, {
+        rowling: {aliasText: 'Harry Potter', aliasNumber: 1},
       });
 
       store.overrideSelector(getRunSelectorRegexFilter, 'YOUWILLNOTMATCHME');
@@ -1694,8 +1698,8 @@ describe('runs_table', () => {
             buildRun({id: 'book2', name: 'The Chamber Of Secrets'}),
           ])
         );
-      store.overrideSelector(getExperimentIdToAliasMap, {
-        rowling: 'Harry Potter',
+      store.overrideSelector(getExperimentIdToExperimentAliasMap, {
+        rowling: {aliasText: 'Harry Potter', aliasNumber: 1},
       });
 
       store.overrideSelector(getRunSelectorRegexFilter, 'DO_NOT_MATCH');
@@ -1732,8 +1736,8 @@ describe('runs_table', () => {
         buildRun({id: 'book2', name: 'The Chamber Of Secrets'}),
         buildRun({id: 'book3', name: 'The Prisoner of Azkaban'}),
       ]);
-      store.overrideSelector(getExperimentIdToAliasMap, {
-        rowling: 'Harry Potter',
+      store.overrideSelector(getExperimentIdToExperimentAliasMap, {
+        rowling: {aliasText: 'Harry Potter', aliasNumber: 1},
       });
 
       const fixture = createComponent(
@@ -2035,7 +2039,9 @@ describe('runs_table', () => {
           metrics: metricSpecs,
         }
       );
-      store.overrideSelector(getExperimentIdToAliasMap, {library: 'Library'});
+      store.overrideSelector(getExperimentIdToExperimentAliasMap, {
+        library: {aliasText: 'Library', aliasNumber: 1},
+      });
       const fixture = TestBed.createComponent(RunsTableContainer);
       fixture.componentInstance.experimentIds = ['library'];
       fixture.componentInstance.showHparamsAndMetrics = showHparamsAndMetrics;
