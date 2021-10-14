@@ -102,6 +102,7 @@ py_library(
     deps = [
         ":logdir_loader",
         ":upload_tracker",
+        ":uploader_errors",
         ":util",
         "//tensorboard:expect_grpc_installed",
         "//tensorboard/backend:process_graph",
@@ -110,6 +111,11 @@ py_library(
         "//tensorboard/backend/event_processing:io_wrapper",
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/plugins/graph:metadata",
+        "//tensorboard/uploader/orchestration:batched_request_sender",
+        "//tensorboard/uploader/orchestration:blob_request_sender",
+        "//tensorboard/uploader/orchestration:byte_budget_manager",
+        "//tensorboard/uploader/orchestration:scalar_batched_request_sender",
+        "//tensorboard/uploader/orchestration:tensor_batched_request_sender",
         "//tensorboard/uploader/proto:protos_all_py_pb2",
         "//tensorboard/util:grpc_util",
         "//tensorboard/util:tb_logging",
@@ -308,4 +314,12 @@ py_test(
         "//tensorboard:test",
         "//tensorboard/util:grpc_util",
     ],
+)
+
+py_library(
+    name = "uploader_errors",
+    srcs = ["uploader_errors.py"],
+    srcs_version = "PY3",
+    visibility = ["//tensorboard:internal"],
+    deps = [],
 )

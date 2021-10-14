@@ -35,6 +35,7 @@ from tensorboard.uploader import flags_parser
 from tensorboard.uploader import formatters
 from tensorboard.uploader import server_info as server_info_lib
 from tensorboard.uploader import uploader as uploader_lib
+from tensorboard.uploader import uploader_errors
 from tensorboard.uploader.proto import server_info_pb2
 from tensorboard import program
 from tensorboard.plugins import base_plugin
@@ -206,12 +207,12 @@ class _DeleteExperimentIntent(_Intent):
             )
         try:
             uploader_lib.delete_experiment(api_client, experiment_id)
-        except uploader_lib.ExperimentNotFoundError:
+        except uploader_errors.ExperimentNotFoundError:
             _die(
                 "No such experiment %s. Either it never existed or it has "
                 "already been deleted." % experiment_id
             )
-        except uploader_lib.PermissionDeniedError:
+        except uploader_errors.PermissionDeniedError:
             _die(
                 "Cannot delete experiment %s because it is owned by a "
                 "different user." % experiment_id
@@ -263,17 +264,17 @@ class _UpdateMetadataIntent(_Intent):
                 name=self.name,
                 description=self.description,
             )
-        except uploader_lib.ExperimentNotFoundError:
+        except uploader_errors.ExperimentNotFoundError:
             _die(
                 "No such experiment %s. Either it never existed or it has "
                 "already been deleted." % experiment_id
             )
-        except uploader_lib.PermissionDeniedError:
+        except uploader_errors.PermissionDeniedError:
             _die(
                 "Cannot modify experiment %s because it is owned by a "
                 "different user." % experiment_id
             )
-        except uploader_lib.InvalidArgumentError as e:
+        except uploader_errors.InvalidArgumentError as e:
             _die("Server cannot modify experiment as requested: %s" % e)
         except grpc.RpcError as e:
             _die("Internal error modifying experiment: %s" % e)
@@ -445,7 +446,7 @@ class UploadIntent(_Intent):
         interrupted = False
         try:
             uploader.start_uploading()
-        except uploader_lib.ExperimentNotFoundError:
+        except uploader_errors.ExperimentNotFoundError:
             print("Experiment was deleted; uploading has been cancelled")
             return
         except KeyboardInterrupt:
@@ -612,6 +613,9 @@ def _get_server_info(flags):
     # line, but only if the server accepted our initial handshake.
     if flags.api_endpoint and server_info.api_server.endpoint:
         server_info.api_server.endpoint = flags.api_endpoint
+    print("SERVER_INFO SERVER_INFO SERVER_INFO")
+    print(server_info)
+    print("SERVER_INFO SERVER_INFO SERVER_INFO")
     return server_info
 
 
