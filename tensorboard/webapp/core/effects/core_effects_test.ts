@@ -465,7 +465,7 @@ describe('core_effects', () => {
       discardPeriodicTasks();
     }));
 
-    fit('fetches polymer runs when alias numbers change when in comparison', fakeAsync(() => {
+    it('fetches polymer runs when alias numbers change when in comparison', fakeAsync(() => {
       store.overrideSelector(getRouteKind, RouteKind.COMPARE_EXPERIMENT);
       store.overrideSelector(getExperimentIdToExperimentAliasMap, {
         eid1: {aliasText: 'alias 1', aliasNumber: 1},
