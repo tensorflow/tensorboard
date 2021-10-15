@@ -22,6 +22,58 @@ from tensorboard import test as tb_test
 from tensorboard.backend import experiment_id
 
 
+class SafeHTMLTest(tb_test.TestCase):
+    def test_empty_input(self):
+        self.assertEqual(plugin_util.safe_html(""), "")
+
+    def test_whitelisted_tags_and_attributes_allowed(self):
+        s = (
+            'Check out <a href="http://example.com" title="do it">'
+            "my website</a>!"
+        )
+        self.assertEqual(plugin_util.safe_html(s), "%s" % s)
+
+    def test_arbitrary_tags_and_attributes_removed(self):
+        self.assertEqual(
+            plugin_util.safe_html(
+                "We should bring back the <blink>blink tag</blink>; "
+                '<a name="bookmark" href="http://please-dont.com">'
+                "sign the petition!</a>"
+            ),
+            "We should bring back the "
+            "&lt;blink&gt;blink tag&lt;/blink&gt;; "
+            '<a href="http://please-dont.com">sign the petition!</a>',
+        )
+
+    def test_javascript_hrefs_sanitized(self):
+        self.assertEqual(
+            plugin_util.safe_html(
+                'A <a href="javascript:void0">sketchy link</a> for you'
+            ),
+            "A <a>sketchy link</a> for you",
+        )
+
+    def test_byte_strings_interpreted_as_utf8(self):
+        s = "Look\u2014some UTF-8!".encode("utf-8")
+        assert isinstance(s, bytes), (type(s), bytes)
+        self.assertEqual(plugin_util.safe_html(s), "Look\u2014some UTF-8!")
+
+    def test_unicode_strings_passed_through(self):
+        s = "Look\u2014some UTF-8!"
+        assert not isinstance(s, bytes), (type(s), bytes)
+        self.assertEqual(plugin_util.safe_html(s), "Look\u2014some UTF-8!")
+
+    def test_null_bytes_stripped(self):
+        # If this function is mistakenly called with UTF-16 or UTF-32 encoded text,
+        # there will probably be a bunch of null bytes. Ensure these are stripped.
+        s = "un_der_score".encode("utf-32-le")
+        # UTF-32 encoding of ASCII will have 3 null bytes per char. 36 = 3 * 12.
+        self.assertEqual(
+            plugin_util.safe_html(s),
+            "un_der_score",
+        )
+
+
 class MarkdownToSafeHTMLTest(tb_test.TestCase):
     def _test(self, markdown_string, expected):
         actual = plugin_util.markdown_to_safe_html(markdown_string)

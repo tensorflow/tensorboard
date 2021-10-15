@@ -76,7 +76,8 @@ class TextPluginTest(tf.test.TestCase):
                     writer.add_summary(summ, global_step=step)
                     step += 1
 
-                vector_message = ["one", "two", "three", "four"]
+                # Test unicode superscript 4.
+                vector_message = ["one", "two", "three", "\u2074"]
                 summ = sess.run(
                     vector_summary, feed_dict={placeholder: vector_message}
                 )
@@ -101,22 +102,38 @@ class TextPluginTest(tf.test.TestCase):
     def testText(self):
         plugin = self.load_plugin()
         fry = plugin.text_impl(
-            context.RequestContext(), "fry", "message", experiment="123"
+            context.RequestContext(),
+            "fry",
+            "message",
+            experiment="123",
+            enable_markdown=True,
         )
         leela = plugin.text_impl(
-            context.RequestContext(), "leela", "message", experiment="123"
+            context.RequestContext(),
+            "leela",
+            "message",
+            experiment="123",
+            enable_markdown=False,
         )
         self.assertEqual(len(fry), 4)
         self.assertEqual(len(leela), 4)
         for i in range(4):
             self.assertEqual(fry[i]["step"], i)
             self.assertEqual(leela[i]["step"], i)
+            self.assertEqual(
+                fry[i]["text"], "<p>fry <em>loves</em> %s</p>" % GEMS[i]
+            )
+            self.assertEqual(leela[i]["text"], "leela *loves* %s" % GEMS[i])
 
-        table = plugin.text_impl(
-            context.RequestContext(), "fry", "vector", experiment="123"
+        md_table = plugin.text_impl(
+            context.RequestContext(),
+            "fry",
+            "vector",
+            experiment="123",
+            enable_markdown=True,
         )[0]["text"]
         self.assertEqual(
-            table,
+            md_table,
             textwrap.dedent(
                 """\
                 <table>
@@ -131,7 +148,37 @@ class TextPluginTest(tf.test.TestCase):
                 <td><p>three</p></td>
                 </tr>
                 <tr>
-                <td><p>four</p></td>
+                <td><p>\u2074</p></td>
+                </tr>
+                </tbody>
+                </table>
+                """.rstrip()
+            ),
+        )
+        plain_table = plugin.text_impl(
+            context.RequestContext(),
+            "fry",
+            "vector",
+            experiment="123",
+            enable_markdown=False,
+        )[0]["text"]
+        self.assertEqual(
+            plain_table,
+            textwrap.dedent(
+                """\
+                <table>
+                <tbody>
+                <tr>
+                <td>one</td>
+                </tr>
+                <tr>
+                <td>two</td>
+                </tr>
+                <tr>
+                <td>three</td>
+                </tr>
+                <tr>
+                <td>\u2074</td>
                 </tr>
                 </tbody>
                 </table>
@@ -297,7 +344,9 @@ class TextPluginTest(tf.test.TestCase):
             np.testing.assert_array_equal(actual, expected)
 
     def test_text_array_to_html(self):
-        convert = text_plugin.text_array_to_html
+        convert = lambda x: text_plugin.text_array_to_html(
+            x, enable_markdown=True
+        )
         scalar = np.array("foo")
         scalar_expected = "<p>foo</p>"
         self.assertEqual(convert(scalar), scalar_expected)

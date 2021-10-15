@@ -152,7 +152,7 @@ def reduce_to_2d(arr):
     return arr[slices]
 
 
-def text_array_to_html(text_arr):
+def text_array_to_html(text_arr, enable_markdown):
     """Take a numpy.ndarray containing strings, and convert it into html.
 
     If the ndarray contains a single scalar string, that string is converted to
@@ -164,29 +164,42 @@ def text_array_to_html(text_arr):
 
     Args:
       text_arr: A numpy.ndarray containing strings.
+      enable_markdown: boolean, whether to enable Markdown
 
     Returns:
       The array converted to html.
     """
     if not text_arr.shape:
-        # It is a scalar. No need to put it in a table, just apply markdown
-        return plugin_util.markdown_to_safe_html(text_arr.item())
+        # It is a scalar. No need to put it in a table.
+        if enable_markdown:
+            return plugin_util.markdown_to_safe_html(text_arr.item())
+        else:
+            return plugin_util.safe_html(text_arr.item())
     warning = ""
     if len(text_arr.shape) > 2:
         warning = plugin_util.markdown_to_safe_html(
             WARNING_TEMPLATE % len(text_arr.shape)
         )
         text_arr = reduce_to_2d(text_arr)
-    table = plugin_util.markdowns_to_safe_html(
-        text_arr.reshape(-1),
-        lambda xs: make_table(np.array(xs).reshape(text_arr.shape)),
-    )
+    if enable_markdown:
+        table = plugin_util.markdowns_to_safe_html(
+            text_arr.reshape(-1),
+            lambda xs: make_table(np.array(xs).reshape(text_arr.shape)),
+        )
+    else:
+        # Convert utf-8 bytes to str. The built-in np.char.decode doesn't work on
+        # object arrays, and converting to an numpy chararray is lossy.
+        decode = lambda bs: bs.decode("utf-8") if isinstance(bs, bytes) else bs
+        text_arr_str = np.array(
+            [decode(bs) for bs in text_arr.reshape(-1)]
+        ).reshape(text_arr.shape)
+        table = plugin_util.safe_html(make_table(text_arr_str))
     return warning + table
 
 
-def process_event(wall_time, step, string_ndarray):
+def process_event(wall_time, step, string_ndarray, enable_markdown):
     """Convert a text event into a JSON-compatible response."""
-    html = text_array_to_html(string_ndarray)
+    html = text_array_to_html(string_ndarray, enable_markdown)
     return {
         "wall_time": wall_time,
         "step": step,
@@ -242,7 +255,7 @@ class TextPlugin(base_plugin.TBPlugin):
         index = self.index_impl(ctx, experiment)
         return http_util.Respond(request, index, "application/json")
 
-    def text_impl(self, ctx, run, tag, experiment):
+    def text_impl(self, ctx, run, tag, experiment, enable_markdown):
         all_text = self._data_provider.read_tensors(
             ctx,
             experiment_id=experiment,
@@ -253,7 +266,10 @@ class TextPlugin(base_plugin.TBPlugin):
         text = all_text.get(run, {}).get(tag, None)
         if text is None:
             return []
-        return [process_event(d.wall_time, d.step, d.numpy) for d in text]
+        return [
+            process_event(d.wall_time, d.step, d.numpy, enable_markdown)
+            for d in text
+        ]
 
     @wrappers.Request.application
     def text_route(self, request):
@@ -261,7 +277,9 @@ class TextPlugin(base_plugin.TBPlugin):
         experiment = plugin_util.experiment_id(request.environ)
         run = request.args.get("run")
         tag = request.args.get("tag")
-        response = self.text_impl(ctx, run, tag, experiment)
+        markdown_arg = request.args.get("markdown")
+        enable_markdown = markdown_arg != "false"  # Default to enabled.
+        response = self.text_impl(ctx, run, tag, experiment, enable_markdown)
         return http_util.Respond(request, response, "application/json")
 
     def get_plugin_apps(self):

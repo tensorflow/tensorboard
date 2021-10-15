@@ -30,7 +30,7 @@ import '../../../components/tf_dashboard_common/dashboard-style';
 import '../../../components/tf_dashboard_common/tf-dashboard-layout';
 import '../../../components/tf_paginated_view/tf-category-paginated-view';
 import '../../../components/tf_runs_selector/tf-runs-selector';
-
+import * as tf_storage from '../../../components/tf_storage/storage';
 import './tf-text-loader';
 
 @customElement('tf-text-dashboard')
@@ -38,6 +38,13 @@ class TfTextDashboard extends LegacyElementMixin(PolymerElement) {
   static readonly template = html`
     <tf-dashboard-layout>
       <div class="sidebar" slot="sidebar">
+        <div class="sidebar-section">
+          <div class="line-item">
+            <paper-checkbox checked="{{_markdownEnabled}}"
+              >Enable Markdown</paper-checkbox
+            >
+          </div>
+        </div>
         <div class="sidebar-section runs-selector">
           <tf-runs-selector selected-runs="{{_selectedRuns}}">
           </tf-runs-selector>
@@ -90,6 +97,7 @@ class TfTextDashboard extends LegacyElementMixin(PolymerElement) {
                   tag="[[item.tag]]"
                   run="[[item.run]]"
                   request-manager="[[_requestManager]]"
+                  markdown-enabled="[[_markdownEnabled]]"
                 ></tf-text-loader>
               </template>
             </tf-category-paginated-view>
@@ -108,6 +116,18 @@ class TfTextDashboard extends LegacyElementMixin(PolymerElement) {
 
   @property({type: Boolean})
   reloadOnReady: boolean = true;
+
+  @property({
+    type: Boolean,
+    notify: true,
+    observer: '_markdownEnabledStorageObserver',
+  })
+  _markdownEnabled: boolean = tf_storage
+    .getBooleanInitializer('_markdownEnabled', {
+      defaultValue: true,
+      useLocalStorage: true,
+    })
+    .call(this);
 
   @property({type: Array})
   _selectedRuns: string[];
@@ -129,6 +149,10 @@ class TfTextDashboard extends LegacyElementMixin(PolymerElement) {
 
   @property({type: Object})
   _requestManager = new RequestManager();
+
+  static get observers() {
+    return ['_markdownEnabledObserver(_markdownEnabled)'];
+  }
 
   ready() {
     super.ready();
@@ -173,5 +197,17 @@ class TfTextDashboard extends LegacyElementMixin(PolymerElement) {
     var selectedRuns = this._selectedRuns;
     var tagFilter = this._tagFilter;
     return categorizeRunTagCombinations(runToTag, selectedRuns, tagFilter);
+  }
+
+  _markdownEnabledStorageObserver = tf_storage.getBooleanObserver(
+    '_markdownEnabled',
+    {
+      defaultValue: true,
+      useLocalStorage: true,
+    }
+  );
+
+  _markdownEnabledObserver() {
+    this._reloadTexts();
   }
 }
