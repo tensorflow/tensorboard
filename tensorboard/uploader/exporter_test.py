@@ -729,7 +729,7 @@ class TensorBoardExporterTest(tb_test.TestCase):
         #   experiment_id.
         with self.assertRaises(exporter_lib.GrpcTimeoutException) as cm:
             next(generator)
-        self.assertEquals(cm.exception.experiment_id, experiment_id)
+        self.assertEqual(cm.exception.experiment_id, experiment_id)
 
     def test_stream_experiment_data_passes_through_unexpected_exception(self):
         # Setup: Client where:
@@ -758,7 +758,7 @@ class TensorBoardExporterTest(tb_test.TestCase):
         # Expect: The internal error is passed through.
         with self.assertRaises(grpc.RpcError) as cm:
             next(generator)
-        self.assertEquals(cm.exception.details(), "details string")
+        self.assertEqual(cm.exception.details(), "details string")
 
     def test_handles_outdir_with_no_slash(self):
         oldcwd = os.getcwd()

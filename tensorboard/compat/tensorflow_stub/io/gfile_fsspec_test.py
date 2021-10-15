@@ -464,7 +464,7 @@ class GFileFSSpecTest(tb_test.TestCase):
 
     def testComplexChaining(self):
         path = "simplecache::zip://*::file://banana/bar"
-        with self.assertRaisesRegexp(
+        with self.assertRaisesRegex(
             errors.InvalidArgumentError,
             "fsspec URL must only have paths in the last chained filesystem",
         ):

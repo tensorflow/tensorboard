@@ -64,7 +64,7 @@ class LazyTest(unittest.TestCase):
         def foo():
             self.fail("Should not need to resolve this module.")
 
-        self.assertEquals(
+        self.assertEqual(
             repr(foo), "<module 'foo' via LazyModule (not yet loaded)>"
         )
 
@@ -76,7 +76,7 @@ class LazyTest(unittest.TestCase):
             return collections
 
         foo.namedtuple
-        self.assertEquals(
+        self.assertEqual(
             repr(foo), "<%r via LazyModule (loaded)>" % collections
         )
 
