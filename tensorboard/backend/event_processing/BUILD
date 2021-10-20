@@ -206,6 +206,7 @@ py_library(
     name = "tag_types",
     srcs = ["tag_types.py"],
     srcs_version = "PY3",
+    visibility = ["//visibility:public"],
 )
 
 py_library(
