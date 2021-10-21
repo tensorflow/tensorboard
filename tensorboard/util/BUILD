@@ -48,7 +48,6 @@ py_test(
         ":grpc_util_test_proto_py_pb2",
         ":grpc_util_test_proto_py_pb2_grpc",
         ":test_util",
-        "//tensorboard:expect_futures_installed",
         "//tensorboard:expect_grpc_installed",
         "//tensorboard:test",
         "//tensorboard:version",

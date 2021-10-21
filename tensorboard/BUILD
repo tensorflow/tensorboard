@@ -398,11 +398,6 @@ tensorboard_zip_file(
 # `pip install numpy`
 py_library(name = "expect_numpy_installed")
 
-# This is a dummy rule used as a futures dependency in open-source.
-# We expect futures to already be installed on the system, e.g. via
-# `pip install futures`
-py_library(name = "expect_futures_installed")
-
 # This is a dummy rule used as a grpc dependency in open-source.
 # We expect grpc to already be installed on the system, e.g. via
 # `pip install grpcio`

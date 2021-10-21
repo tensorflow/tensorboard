@@ -280,7 +280,6 @@ py_test(
     srcs = ["server_info_test.py"],
     deps = [
         ":server_info",
-        "//tensorboard:expect_futures_installed",
         "//tensorboard:test",
         "//tensorboard:version",
         "//tensorboard/plugins/scalar:metadata",
