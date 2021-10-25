@@ -97,19 +97,24 @@ const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
 
     const dehydratedState = partialState as URLDeserializedState;
     const groupBy = dehydratedState.runs.groupBy;
-    if (!groupBy) {
+    const regexFilter = dehydratedState.runs.regexFilter ?? '';
+
+    if (!groupBy && !regexFilter) {
       return state;
     }
 
-    const regexString =
+    if (groupBy) {
+      const regexString =
       groupBy.key === GroupByKey.REGEX
         ? groupBy.regexString
         : state.colorGroupRegexString;
+      state.colorGroupRegexString = regexString;
+      state.userSetGroupByKey = groupBy.key ?? null;
+    }
 
     return {
       ...state,
-      colorGroupRegexString: regexString,
-      userSetGroupByKey: groupBy.key ?? null,
+      regexFilter,
     };
   }),
   on(runsActions.fetchRunsRequested, (state, action) => {

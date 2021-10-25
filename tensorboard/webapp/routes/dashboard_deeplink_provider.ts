@@ -37,6 +37,7 @@ import {
   RUN_COLOR_GROUP_KEY,
   DeserializedState,
   PINNED_CARDS_KEY,
+  RUN_REGEX_FILTER_KEY,
   SMOOTHING_KEY,
   TAG_FILTER_KEY,
 } from './dashboard_deeplink_provider_types';
@@ -162,6 +163,12 @@ export class DashboardDeepLinkProvider extends DeepLinkProvider {
           return [{key: RUN_COLOR_GROUP_KEY, value}];
         })
       ),
+      store.select(selectors.getRunSelectorRegexFilter).pipe(
+        map((value) => {
+          if(!value) return [];
+          return [{key: RUN_REGEX_FILTER_KEY, value}]
+        })
+      ),
     ]).pipe(
       map((queryParamList) => {
         return queryParamList.flat();
@@ -176,6 +183,7 @@ export class DashboardDeepLinkProvider extends DeepLinkProvider {
     let smoothing = null;
     let tagFilter = null;
     let groupBy: GroupBy | null = null;
+    let runRegexFilter = null;
 
     for (const {key, value} of queryParams) {
       switch (key) {
@@ -206,6 +214,9 @@ export class DashboardDeepLinkProvider extends DeepLinkProvider {
         case TAG_FILTER_KEY:
           tagFilter = value;
           break;
+          case RUN_REGEX_FILTER_KEY:
+            runRegexFilter = value;
+            break;
       }
     }
 
@@ -217,6 +228,7 @@ export class DashboardDeepLinkProvider extends DeepLinkProvider {
       },
       runs: {
         groupBy,
+        regexFilter: runRegexFilter,
       },
     };
   }
