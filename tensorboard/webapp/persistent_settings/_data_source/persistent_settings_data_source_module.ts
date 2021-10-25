@@ -29,7 +29,8 @@ import {
       provide: PersistentSettingsDataSource,
       useClass: PersistentSettingsDataSourceImpl,
     },
-    {provide: SettingsConverter, useClass: OSSSettingsConverter},
+    OSSSettingsConverter,
+    {provide: SettingsConverter, useExisting: OSSSettingsConverter},
   ],
 })
 export class PersistentSettingsDataSourceModule {}
