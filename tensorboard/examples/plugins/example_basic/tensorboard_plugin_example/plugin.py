@@ -98,18 +98,18 @@ class ExamplePlugin(base_plugin.TBPlugin):
 
         if run is None or tag is None:
             raise werkzeug.exceptions.BadRequest("Must specify run and tag")
-        try:
-            read_result = self.data_provider.read_tensors(
-                ctx,
-                downsample=1,
-                plugin_name=metadata.PLUGIN_NAME,
-                experiment_id=experiment,
-                run_tag_filter=provider.RunTagFilter(runs=[run], tags=[tag]),
-            )
+        read_result = self.data_provider.read_tensors(
+            ctx,
+            downsample=1000,
+            plugin_name=metadata.PLUGIN_NAME,
+            experiment_id=experiment,
+            run_tag_filter=provider.RunTagFilter(runs=[run], tags=[tag]),
+        )
 
-            data = read_result.get(run, {}).get(tag, {})
-            event_data = [data[0].numpy.item().decode("utf-8")]
-        except KeyError:
+        data = read_result.get(run, {}).get(tag, [])
+        if not data:
             raise werkzeug.exceptions.BadRequest("Invalid run or tag")
+        event_data = [datum.numpy.item().decode("utf-8") for datum in data]
+
         contents = json.dumps(event_data, sort_keys=True)
         return werkzeug.Response(contents, content_type="application/json")

@@ -36,6 +36,7 @@ def main(unused_argv):
         summary_v2.greeting("guestbook", "Cheryl", step=2)
         summary_v2.greeting("more_names", "David", step=4)
 
+    writer.close()
 
 if __name__ == "__main__":
     app.run(main)
