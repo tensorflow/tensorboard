@@ -1,4 +1,4 @@
-load("//tensorboard/defs:defs.bzl", "tf_ts_library")
+load("//tensorboard/defs:defs.bzl", "tf_ts_library", "tf_ng_web_test_suite")
 
 package(default_visibility = ["//tensorboard:internal"])
 
@@ -29,5 +29,30 @@ tf_ts_library(
         "@npm//@types/lodash",
         "@npm//d3",
         "@npm//lodash",
+    ],
+)
+
+tf_ts_library(
+    name = "histogram_core_test_lib",
+    testonly = True,
+    srcs = [
+        "histogram_core_test.ts",
+    ],
+    deps = [
+        ":tf_histogram_dashboard",
+        "//tensorboard/webapp/angular:expect_angular_core_testing",
+        "//tensorboard/webapp/angular:expect_angular_platform_browser_animations",
+        "//tensorboard/webapp/widgets/intersection_observer:intersection_observer_testing",
+        "//tensorboard/webapp/widgets/linked_time_fob",
+        "@npm//@angular/core",
+        "@npm//@angular/platform-browser",
+        "@npm//@types/jasmine",
+    ],
+)
+
+tf_ng_web_test_suite(
+    name = "karma_test",
+    deps= [
+        ":histogram_core_test_lib",
     ],
 )

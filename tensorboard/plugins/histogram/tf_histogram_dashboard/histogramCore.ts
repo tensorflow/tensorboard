@@ -28,8 +28,8 @@ export type BackendHistogram = [
 export type IntermediateHistogram = {
   wall_time: number; // in seconds
   step: number;
-  min: number;
-  max: number;
+  min: number | undefined;
+  max: number | undefined;
   buckets: {
     left: number;
     right: number;
@@ -86,10 +86,22 @@ export function intermediateToD3(
   max: number,
   numBins = 30
 ): D3HistogramBin[] {
+  // Empty case.
+  if (!histogram.buckets || histogram.buckets.length === 0) {
+    return [];
+  }
+  // Single value case.
   if (max === min) {
-    // Create bins even if all the data has a single value.
-    max = min * 1.1 + 1;
-    min = min / 1.1 - 1;
+    let count = 0;
+    for (let bucket of histogram.buckets) {
+      count += bucket.count;
+    }
+    let bins: D3HistogramBin[] = [];
+    for (let i = 0; i < numBins - 1; i++) {
+      bins.push({x: min, dx: 0, y: 0});
+    }
+    bins.push({x: min, dx: 0, y: count});
+    return bins;
   }
   // Terminology note: _buckets_ are the input to this function,
   // while _bins_ are our output.
