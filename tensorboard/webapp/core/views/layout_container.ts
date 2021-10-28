@@ -49,9 +49,7 @@ import {MouseEventButtons} from '../../util/dom';
       *ngIf="(width$ | async) > 0"
       class="resizer"
       (mousedown)="resizeGrabbed()"
-    >
-      <mat-icon svgIcon="drag_indicator_24px"></mat-icon>
-    </div>
+    ></div>
     <ng-content select="[main]"></ng-content>
   `,
   styleUrls: ['layout_container.css'],
