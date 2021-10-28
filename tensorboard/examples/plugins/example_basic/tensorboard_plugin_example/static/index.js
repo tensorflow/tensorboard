@@ -27,6 +27,7 @@ export async function render() {
             run,
             tag,
             greetings,
+            description: tagToDescription[tag].description,
           }))
       )
     )
@@ -61,16 +62,18 @@ export async function render() {
         createElement('th', 'Run'),
         createElement('th', 'Tag'),
         createElement('th', 'Greetings'),
+        createElement('th', 'Description'),
       ])
     ),
     createElement(
       'tbody',
-      data.flatMap(({run, tag, greetings}) =>
+      data.flatMap(({run, tag, greetings, description}) =>
         greetings.map((guest, i) =>
           createElement('tr', [
             createElement('td', i === 0 ? run : null),
             createElement('td', i === 0 ? tag : null),
             createElement('td', guest),
+            createElement('td', description),
           ])
         )
       )

@@ -18,8 +18,9 @@
 import json
 import os
 
+from tensorboard import plugin_util
+from tensorboard.data import provider
 from tensorboard.plugins import base_plugin
-from tensorboard.util import tensor_util
 import werkzeug
 from werkzeug import wrappers
 
@@ -35,7 +36,7 @@ class ExamplePlugin(base_plugin.TBPlugin):
         Args:
         context: A base_plugin.TBContext instance.
         """
-        self._multiplexer = context.multiplexer
+        self.data_provider = context.data_provider
 
     def is_active(self):
         """Returns whether there is relevant data for the plugin to process.
@@ -43,9 +44,7 @@ class ExamplePlugin(base_plugin.TBPlugin):
         When there are no runs with greeting data, TensorBoard will hide the
         plugin from the main navigation bar.
         """
-        return bool(
-            self._multiplexer.PluginRunToTagToContent(metadata.PLUGIN_NAME)
-        )
+        return False  # `list_plugins` as called by TB core suffices
 
     def get_plugin_apps(self):
         return {
@@ -69,16 +68,18 @@ class ExamplePlugin(base_plugin.TBPlugin):
 
     @wrappers.Request.application
     def _serve_tags(self, request):
-        del request  # unused
-        mapping = self._multiplexer.PluginRunToTagToContent(
-            metadata.PLUGIN_NAME
+        ctx = plugin_util.context(request.environ)
+        experiment = plugin_util.experiment_id(request.environ)
+
+        mapping = self.data_provider.list_tensors(
+            ctx, experiment_id=experiment, plugin_name=metadata.PLUGIN_NAME
         )
-        result = {run: {} for run in self._multiplexer.Runs()}
-        for (run, tag_to_content) in mapping.items():
-            for tag in tag_to_content:
-                summary_metadata = self._multiplexer.SummaryMetadata(run, tag)
+
+        result = {run: {} for run in mapping}
+        for (run, tag_to_timeseries) in mapping.items():
+            for (tag, timeseries) in tag_to_timeseries.items():
                 result[run][tag] = {
-                    "description": summary_metadata.summary_description,
+                    "description": timeseries.description,
                 }
         contents = json.dumps(result, sort_keys=True)
         return werkzeug.Response(contents, content_type="application/json")
@@ -92,16 +93,23 @@ class ExamplePlugin(base_plugin.TBPlugin):
         """
         run = request.args.get("run")
         tag = request.args.get("tag")
+        ctx = plugin_util.context(request.environ)
+        experiment = plugin_util.experiment_id(request.environ)
+
         if run is None or tag is None:
             raise werkzeug.exceptions.BadRequest("Must specify run and tag")
-        try:
-            data = [
-                tensor_util.make_ndarray(event.tensor_proto)
-                .item()
-                .decode("utf-8")
-                for event in self._multiplexer.Tensors(run, tag)
-            ]
-        except KeyError:
+        read_result = self.data_provider.read_tensors(
+            ctx,
+            downsample=1000,
+            plugin_name=metadata.PLUGIN_NAME,
+            experiment_id=experiment,
+            run_tag_filter=provider.RunTagFilter(runs=[run], tags=[tag]),
+        )
+
+        data = read_result.get(run, {}).get(tag, [])
+        if not data:
             raise werkzeug.exceptions.BadRequest("Invalid run or tag")
-        contents = json.dumps(data, sort_keys=True)
+        event_data = [datum.numpy.item().decode("utf-8") for datum in data]
+
+        contents = json.dumps(event_data, sort_keys=True)
         return werkzeug.Response(contents, content_type="application/json")
