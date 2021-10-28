@@ -145,6 +145,7 @@ export class ChartImpl implements Chart {
 
   setUseDarkMode(useDarkMode: boolean) {
     this.renderer.setUseDarkMode(useDarkMode);
+    this.seriesLineView.markAsPaintDirty();
     this.scheduleRepaint();
   }
 
