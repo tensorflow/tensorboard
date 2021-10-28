@@ -10,9 +10,10 @@ load("@bazel_skylib//lib:selects.bzl", "selects")
 
 # buildifier: disable=load
 load(
-    "@rules_rust//rust:rust.bzl",
+    "@rules_rust//rust:defs.bzl",
     "rust_binary",
     "rust_library",
+    "rust_proc_macro",
     "rust_test",
 )
 
@@ -79,15 +80,6 @@ cargo_build_script(
         ],
         "//conditions:default": [],
     }) + selects.with_or({
-        # cfg(any(unix, windows))
-        (
-            "@rules_rust//rust/platform:x86_64-apple-darwin",
-            "@rules_rust//rust/platform:x86_64-pc-windows-msvc",
-            "@rules_rust//rust/platform:x86_64-unknown-linux-gnu",
-        ): [
-        ],
-        "//conditions:default": [],
-    }) + selects.with_or({
         # cfg(target_os = "windows")
         (
             "@rules_rust//rust/platform:x86_64-pc-windows-msvc",
@@ -109,7 +101,6 @@ rust_library(
         "once_cell",
     ],
     crate_root = "src/lib.rs",
-    crate_type = "lib",
     data = [] + glob(["src/**/*.der"]),
     edition = "2018",
     rustc_flags = [
@@ -141,15 +132,6 @@ rust_library(
         ): [
             "@raze__libc__0_2_80//:libc",
             "@raze__once_cell__1_5_2//:once_cell",
-        ],
-        "//conditions:default": [],
-    }) + selects.with_or({
-        # cfg(any(unix, windows))
-        (
-            "@rules_rust//rust/platform:x86_64-apple-darwin",
-            "@rules_rust//rust/platform:x86_64-pc-windows-msvc",
-            "@rules_rust//rust/platform:x86_64-unknown-linux-gnu",
-        ): [
         ],
         "//conditions:default": [],
     }) + selects.with_or({

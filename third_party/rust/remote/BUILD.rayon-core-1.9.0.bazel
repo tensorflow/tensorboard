@@ -10,9 +10,10 @@ load("@bazel_skylib//lib:selects.bzl", "selects")
 
 # buildifier: disable=load
 load(
-    "@rules_rust//rust:rust.bzl",
+    "@rules_rust//rust:defs.bzl",
     "rust_binary",
     "rust_library",
+    "rust_proc_macro",
     "rust_test",
 )
 
@@ -35,12 +36,9 @@ licenses([
 rust_library(
     name = "rayon_core",
     srcs = glob(["**/*.rs"]),
-    aliases = {
-    },
     crate_features = [
     ],
     crate_root = "src/lib.rs",
-    crate_type = "lib",
     data = [],
     edition = "2018",
     rustc_flags = [
@@ -58,15 +56,7 @@ rust_library(
         "@raze__crossbeam_utils__0_8_1//:crossbeam_utils",
         "@raze__lazy_static__1_4_0//:lazy_static",
         "@raze__num_cpus__1_13_0//:num_cpus",
-    ] + selects.with_or({
-        # cfg(unix)
-        (
-            "@rules_rust//rust/platform:x86_64-apple-darwin",
-            "@rules_rust//rust/platform:x86_64-unknown-linux-gnu",
-        ): [
-        ],
-        "//conditions:default": [],
-    }),
+    ],
 )
 
 # Unsupported target "double_init_fail" with type "test" omitted

@@ -245,7 +245,7 @@ jobs:
     strategy:
       matrix:
         rust_version: ['1.52.0']
-        cargo_raze_version: ['0.12.0']
+        cargo_raze_version: ['0.13.0']
     steps:
       - uses: actions/checkout@50fbc622fc4ef5163becd7fab6573eac35f8462e
       - name: 'Cache Cargo artifacts'
