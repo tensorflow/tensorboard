@@ -30,21 +30,35 @@ limitations under the License.
 .expand {
   @include tb-theme-foreground-prop(border-color, border);
   box-sizing: border-box;
-  flex: 0 0 20px;
+  flex: 0 0;
   justify-self: stretch;
+}
+
+.expand {
   width: 20px;
 }
 
 .resizer {
   align-items: center;
   border-style: solid;
-  border-width: 0 1px;
+  border-width: 0 2px;
   cursor: ew-resize;
   display: flex;
   justify-self: stretch;
 
   .mat-icon {
     width: 100%;
+  }
+
+  &:hover {
+    border-color: #ccc;
+    outline: 3px solid #ccc;
+    z-index: 1;
+
+    @include tb-dark-theme {
+      outline-color: #777;
+      border-color: #777;
+    }
   }
 }
 
