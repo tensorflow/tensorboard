@@ -149,8 +149,14 @@ function rebuildBins(bins: Bin[], range: Range, binCount: number): Bin[] {
 
 /**
  * Computes how much of the input bin's 'y' counts should be allocated to a new
- * range. For 0 width input bins, the allocation may be split in half across 2
- * bins.
+ * range. For 0 width input bins, the allocation will be distributed to the last
+ * close-close bin ([resultLeft, resultRight]).
+ *
+ * For example, assuming the middle bin has width 0 and count 20:
+ * bins:       [ 0 ][20][   0   ]
+ * range:      [                ]
+ * binsCount:  2
+ * results:    [   0   ][   20  ]
  */
 function getBinContribution(
   bin: Bin,
@@ -165,8 +171,8 @@ function getBinContribution(
   }
 
   if (bin.dx === 0) {
-    if (resultHasRightNeighbor && binRight === resultRight) {
-      return {curr: 0.5 * bin.y, next: 0.5 * bin.y};
+    if (resultHasRightNeighbor && binRight >= resultRight) {
+      return {curr: 0, next: bin.y};
     }
     return {curr: bin.y, next: 0};
   }

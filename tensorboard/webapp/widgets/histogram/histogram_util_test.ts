@@ -276,8 +276,8 @@ describe('histogram util', () => {
           )
         ).toEqual([
           [
-            {x: 0, dx: 5, y: 100},
-            {x: 5, dx: 5, y: 100},
+            {x: 0, dx: 5, y: 0},
+            {x: 5, dx: 5, y: 200},
           ],
         ]);
       });
@@ -347,7 +347,7 @@ describe('histogram util', () => {
       });
 
       it(
-        'produces result bins with full and partial contributions from ' +
+        'produces result bins with full contributions from ' +
           'multiple 0 width bins',
         () => {
           expect(
@@ -365,8 +365,8 @@ describe('histogram util', () => {
             )
           ).toEqual([
             [
-              {x: 0, dx: 5, y: 100},
-              {x: 5, dx: 5, y: 200},
+              {x: 0, dx: 5, y: 0},
+              {x: 5, dx: 5, y: 300},
             ],
           ]);
         }
