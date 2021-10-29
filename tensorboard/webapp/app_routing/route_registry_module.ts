@@ -28,7 +28,7 @@ import {RouteKind} from './types';
 
 @NgModule({})
 export class RouteRegistryModule {
-  private readonly routeConfigs: RouteConfigs | null = null;
+  private readonly routeConfigs: RouteConfigs;
   private readonly routeKindToNgComponent = new Map<
     RouteKind,
     Type<Component>
@@ -38,8 +38,10 @@ export class RouteRegistryModule {
     @Optional() @Inject(ROUTE_CONFIGS_TOKEN) configsList: RouteDef[][]
   ) {
     if (!configsList) {
+      this.routeConfigs = new RouteConfigs([]);
       return;
     }
+
     const configs: RouteDef[] = [];
     for (const routeDefList of configsList) {
       for (const routeDef of routeDefList) {
@@ -62,7 +64,7 @@ export class RouteRegistryModule {
    * Returns RouteConfigs of current route configuration. Returnsn null if no
    * routes are registered.
    */
-  getRouteConfigs(): RouteConfigs | null {
+  getRouteConfigs(): RouteConfigs {
     return this.routeConfigs;
   }
 

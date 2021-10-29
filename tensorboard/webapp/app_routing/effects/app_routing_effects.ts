@@ -63,7 +63,7 @@ interface InternalNavigation extends Navigation {
 
 @Injectable()
 export class AppRoutingEffects {
-  private readonly routeConfigs: RouteConfigs | null;
+  private readonly routeConfigs: RouteConfigs;
 
   constructor(
     private readonly actions$: Actions,
@@ -147,9 +147,7 @@ export class AppRoutingEffects {
       };
     }),
     map((navigationWithAbsolutePath) => {
-      const routeMatch = this.routeConfigs
-        ? this.routeConfigs.match(navigationWithAbsolutePath)
-        : null;
+      const routeMatch = this.routeConfigs.match(navigationWithAbsolutePath);
       return {
         routeMatch,
         options: {
