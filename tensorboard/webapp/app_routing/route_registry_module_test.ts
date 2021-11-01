@@ -98,10 +98,6 @@ describe('route_registry_module', () => {
 
     it('getRouteConfigs is not null', () => {
       expect(registry.getRouteConfigs()).not.toBeNull();
-<<<<<<< HEAD
     });
-=======
-    })
->>>>>>> origin/route-configs-nonnull
   });
 });
