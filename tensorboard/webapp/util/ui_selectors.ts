@@ -26,6 +26,7 @@ limitations under the License.
  */
 
 import {createSelector} from '@ngrx/store';
+
 import {
   getExperimentIdsFromRoute,
   getExperimentIdToExperimentAliasMap,
@@ -33,7 +34,6 @@ import {
 } from '../app_routing/store/app_routing_selectors';
 import {RouteKind} from '../app_routing/types';
 import {State} from '../app_state';
-import {getExperiment} from '../experiments/store/experiments_selectors';
 import {getDarkModeEnabled} from '../feature_flag/store/feature_flag_selectors';
 import {
   getDefaultRunColorIdMap,
@@ -63,13 +63,10 @@ export const getCurrentRouteRunSelection = createSelector(
 
     const runMatchableMap = new Map<string, RunMatchable>();
     for (const experimentId of experimentIds) {
-      const experiment = getExperiment(state, {experimentId});
-      if (!experiment) continue;
       const runs = getRuns(state, {experimentId});
       for (const run of runs) {
         runMatchableMap.set(run.id, {
           runName: run.name,
-          experimentName: experiment.name,
           experimentAlias: aliasMap[experimentId],
         });
       }

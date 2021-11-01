@@ -19,7 +19,6 @@ import {ExperimentAlias} from '../experiments/types';
 
 export interface RunMatchable {
   runName: string;
-  experimentName: string;
   experimentAlias: ExperimentAlias;
 }
 
