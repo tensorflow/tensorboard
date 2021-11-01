@@ -347,17 +347,16 @@ describe('histogram util', () => {
       });
 
       it(
-        'produces result bins with full contributions from ' +
-          'multiple 0 width bins',
+        'produces result bins from multiple 0 width bins in different ' +
+          'steps',
         () => {
           expect(
             histogramsToBins(
               buildNormalizedHistograms(
                 [
                   binsToHistogram([
-                    {x: 0, dx: 1, y: 0},
-                    {x: 5, dx: 0, y: 200},
-                    {x: 10, dx: 0, y: 100},
+                    {x: 0, dx: 0, y: 200},
+                    {x: 1.0, dx: 0, y: 100},
                   ]),
                 ],
                 2
@@ -365,8 +364,8 @@ describe('histogram util', () => {
             )
           ).toEqual([
             [
-              {x: 0, dx: 5, y: 0},
-              {x: 5, dx: 5, y: 300},
+              {x: 0, dx: 0.5, y: 200},
+              {x: 0.5, dx: 0.5, y: 100},
             ],
           ]);
         }
