@@ -82,32 +82,21 @@ export function backendToIntermediate(
  */
 export function intermediateToD3(
   histogram: IntermediateHistogram,
-  min: number,
-  max: number,
+  min: number | undefined,
+  max: number | undefined,
   numBins = 30
 ): D3HistogramBin[] {
-  // Empty case.
-  if (!histogram.buckets || histogram.buckets.length === 0) {
-    return [];
-  }
-  // Single value case.
-  if (max === min) {
-    let count = 0;
-    for (let bucket of histogram.buckets) {
-      count += bucket.count;
-    }
-    let bins: D3HistogramBin[] = [];
-    for (let i = 0; i < numBins - 1; i++) {
-      bins.push({x: min, dx: 0, y: 0});
-    }
-    bins.push({x: min, dx: 0, y: count});
-    return bins;
+  if (min === undefined || max == undefined) {
+    min = 0;
+    max = 0;
   }
   // Terminology note: _buckets_ are the input to this function,
   // while _bins_ are our output.
   const binWidth = (max - min) / numBins;
   let bucketIndex = 0;
-  return d3.range(min, max, binWidth).map((binLeft) => {
+  let d3HistogramBins: D3HistogramBin[] = [];
+  for (let i = 0; i < numBins; i++) {
+    const binLeft = min + i * binWidth;
     const binRight = binLeft + binWidth;
     // Take the count of each existing bucket, multiply it by the
     // proportion of overlap with the new bin, then sum and store as the
@@ -119,12 +108,21 @@ export function intermediateToD3(
       // infinite-sized.
       const bucketRight = Math.min(max, histogram.buckets[bucketIndex].right);
       const bucketLeft = Math.max(min, histogram.buckets[bucketIndex].left);
-      const intersect =
-        Math.min(bucketRight, binRight) - Math.max(bucketLeft, binLeft);
-      const count =
-        (intersect / (bucketRight - bucketLeft)) *
-        histogram.buckets[bucketIndex].count;
-      binY += intersect > 0 ? count : 0;
+      const bucketWidth = bucketRight - bucketLeft;
+      if (bucketWidth > 0) {
+        const intersect =
+          Math.min(bucketRight, binRight) - Math.max(bucketLeft, binLeft);
+        const count =
+          (intersect / (bucketRight - bucketLeft)) *
+          histogram.buckets[bucketIndex].count;
+        binY += intersect > 0 ? count : 0;
+      } else {
+        const isFinalBin = binRight >= max;
+        const singleValueOverlap =
+          binLeft <= bucketLeft &&
+          (isFinalBin ? bucketRight <= binRight : bucketRight < binRight);
+        binY += singleValueOverlap ? histogram.buckets[bucketIndex].count : 0;
+      }
       // If `bucketRight` is bigger than `binRight`, then this bin is
       // finished and there is data for the next bin, so don't increment
       // `bucketIndex`.
@@ -133,14 +131,21 @@ export function intermediateToD3(
       }
       bucketIndex++;
     }
-    return {x: binLeft, dx: binWidth, y: binY};
-  });
+    d3HistogramBins.push({x: binLeft, dx: binWidth, y: binY});
+  }
+  return d3HistogramBins;
 }
 
 export function backendToVz(histograms: BackendHistogram[]): VzHistogram[] {
   const intermediateHistograms = histograms.map(backendToIntermediate);
-  const minmin = d3.min(intermediateHistograms, (h) => h.min);
-  const maxmax = d3.max(intermediateHistograms, (h) => h.max);
+  let minmin = d3.min(intermediateHistograms, (h) => h.min);
+  let maxmax = d3.max(intermediateHistograms, (h) => h.max);
+  // If the output range is 0 width, use a default non 0 range for
+  // visualization purpose.
+  if (minmin !== undefined && maxmax !== undefined && minmin === maxmax) {
+    maxmax = maxmax * 1.1 + 1;
+    minmin = minmin / 1.1 - 1;
+  }
   return intermediateHistograms.map((h) => ({
     wall_time: h.wall_time,
     step: h.step,

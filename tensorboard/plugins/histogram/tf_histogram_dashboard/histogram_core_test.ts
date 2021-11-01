@@ -34,8 +34,8 @@ describe('histogram core', () => {
 
     it('converts backend histogram to intermediate', () => {
       const bins: BackendHistogramBin[] = [
-        [2, 3, 1],
         [1, 2, 2],
+        [2, 3, 1],
         [3, 4, 1],
       ];
       expect(backendToIntermediate([1000, 2, bins])).toEqual({
@@ -44,8 +44,8 @@ describe('histogram core', () => {
         min: 1,
         max: 4,
         buckets: [
-          {left: 2, right: 3, count: 1},
           {left: 1, right: 2, count: 2},
+          {left: 2, right: 3, count: 1},
           {left: 3, right: 4, count: 1},
         ],
       });
@@ -53,10 +53,17 @@ describe('histogram core', () => {
   });
 
   describe('intermediateToD3', () => {
-    it('handles empty case', () => {
-      expect(
-        intermediateToD3(backendToIntermediate([0, 0, []]), 0, 10)
-      ).toEqual([]);
+    it('generates empty bins when input is empty', () => {
+      const results = intermediateToD3(
+        backendToIntermediate([0, 0, []]),
+        0,
+        10,
+        20
+      );
+      let total_count: number = 0;
+      results.forEach((bin) => (total_count += bin.y));
+      expect(results.length).toEqual(20);
+      expect(total_count).toEqual(0);
     });
 
     it('handles data consisting of one single value', () => {
@@ -68,8 +75,8 @@ describe('histogram core', () => {
       expect(
         intermediateToD3(backendToIntermediate([0, 0, bins]), 1, 1, 2)
       ).toEqual([
-        {x: 1, dx: 0, y: 0},
         {x: 1, dx: 0, y: 10},
+        {x: 1, dx: 0, y: 0},
       ]);
     });
 
@@ -90,6 +97,20 @@ describe('histogram core', () => {
   describe('backendToVz', () => {
     it('handles empty case', () => {
       expect(backendToVz([])).toEqual([]);
+    });
+
+    it('handles data consisting of one single value', () => {
+      const bins: BackendHistogramBin[] = [[11, 11, 100]];
+      const results = backendToVz([[0, 0, bins]]);
+      let total_count: number = 0;
+      for (let result of results) {
+        result.bins.forEach((bin) => (total_count += bin.y));
+      }
+      expect(results.length).toEqual(1);
+      expect(results[0].bins.length).toEqual(30);
+      expect(total_count).toEqual(100);
+      // Middle bin gets the count.
+      expect(results[0].bins[14].y).toEqual(100);
     });
 
     it('converts backend histogram data to VzHistogram', () => {
