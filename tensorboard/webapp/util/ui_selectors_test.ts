@@ -266,7 +266,7 @@ describe('ui_selectors test', () => {
         );
       });
 
-      it('does not violently throw when an experiment metadata DNE', () => {
+      it('does not violently throw when an experiment metadata is null', () => {
         const state = {
           ...buildStateFromAppRoutingState(
             buildAppRoutingState({
