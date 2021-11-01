@@ -19,7 +19,6 @@ function buildRunWithName(override: Partial<RunMatchable> = {}): RunMatchable {
   return {
     runName: 'run name',
     experimentAlias: {aliasText: 'alias', aliasNumber: 1},
-    experimentName: 'Experiment name',
     ...override,
   };
 }
@@ -74,7 +73,6 @@ describe('matcher test', () => {
             buildRunWithName({
               runName: 'world',
               experimentAlias: {aliasText: 'hello', aliasNumber: 1},
-              experimentName: 'goodbye',
             }),
             '^hello/world$',
             true
@@ -85,7 +83,6 @@ describe('matcher test', () => {
             buildRunWithName({
               runName: 'world',
               experimentAlias: {aliasText: 'hello', aliasNumber: 1},
-              experimentName: 'goodbye',
             }),
             'hello',
             true

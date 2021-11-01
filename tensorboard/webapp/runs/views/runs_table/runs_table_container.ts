@@ -448,7 +448,6 @@ export class RunsTableContainer implements OnInit, OnDestroy {
             {
               runName: item.run.name,
               experimentAlias: item.experimentAlias,
-              experimentName: item.experimentName,
             },
             regexString,
             shouldIncludeExperimentName
