@@ -282,27 +282,6 @@ describe('histogram util', () => {
         ]);
       });
 
-      it('redistributes 0 width bins at the edges', () => {
-        expect(
-          histogramsToBins(
-            buildNormalizedHistograms(
-              [
-                binsToHistogram([
-                  {x: 0, dx: 0, y: 100},
-                  {x: 10, dx: 0, y: 200},
-                ]),
-              ],
-              2
-            )
-          )
-        ).toEqual([
-          [
-            {x: 0, dx: 5, y: 100},
-            {x: 5, dx: 5, y: 200},
-          ],
-        ]);
-      });
-
       it(
         'preserves 0 width bin counts in a result bin that has no other ' +
           'contributions',
