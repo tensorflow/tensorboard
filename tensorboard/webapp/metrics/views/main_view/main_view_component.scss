@@ -42,16 +42,27 @@ limitations under the License.
 }
 
 .filter-view {
+  border-radius: 4px;
   flex: none;
   margin-right: 5px;
 
-  mat-button-toggle {
+  button {
     $_height: 25px;
-    height: $_height;
-    font-size: 12px;
 
-    ::ng-deep .mat-button-toggle-label-content {
-      line-height: $_height;
+    border-radius: 0;
+    font-size: 12px;
+    font-weight: normal;
+    height: $_height;
+    line-height: $_height;
+    min-width: unset;
+    padding: 0 12px;
+
+    & + button {
+      @include tb-theme-foreground-prop(border-left, border, 1px solid);
+    }
+
+    &[aria-checked='true'] {
+      @include tb-theme-background-prop(background-color, selected-button);
     }
   }
 }
