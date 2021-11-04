@@ -260,15 +260,15 @@ describe('histogram util', () => {
         ]);
       });
 
-      it('redistributes 0 width bin evenly over edges of result bins', () => {
+      it('redistributes bin counts where the last bin has zero width', () => {
         expect(
           histogramsToBins(
             buildNormalizedHistograms(
               [
                 binsToHistogram([
-                  {x: 0, dx: 1, y: 0},
-                  {x: 5, dx: 0, y: 200},
-                  {x: 9, dx: 1, y: 0},
+                  {x: 0, dx: 1, y: 10},
+                  {x: 1, dx: 1, y: 10},
+                  {x: 2, dx: 0, y: 10},
                 ]),
               ],
               2
@@ -276,8 +276,8 @@ describe('histogram util', () => {
           )
         ).toEqual([
           [
-            {x: 0, dx: 5, y: 0},
-            {x: 5, dx: 5, y: 200},
+            {x: 0, dx: 1, y: 10},
+            {x: 1, dx: 1, y: 20},
           ],
         ]);
       });
@@ -324,31 +324,6 @@ describe('histogram util', () => {
           )
         ).toEqual([[{x: 0, dx: 10, y: 300}]]);
       });
-
-      it(
-        'produces result bins from multiple 0 width bins in different ' +
-          'steps',
-        () => {
-          expect(
-            histogramsToBins(
-              buildNormalizedHistograms(
-                [
-                  binsToHistogram([
-                    {x: 0, dx: 0, y: 200},
-                    {x: 1.0, dx: 0, y: 100},
-                  ]),
-                ],
-                2
-              )
-            )
-          ).toEqual([
-            [
-              {x: 0, dx: 0.5, y: 200},
-              {x: 0.5, dx: 0.5, y: 100},
-            ],
-          ]);
-        }
-      );
     });
 
     describe('multiple histograms', () => {
@@ -404,6 +379,33 @@ describe('histogram util', () => {
           ],
         ]);
       });
+
+      it(
+        'produces result bins from multiple 0 width bins in different ' +
+          'steps',
+        () => {
+          expect(
+            histogramsToBins(
+              buildNormalizedHistograms(
+                [
+                  binsToHistogram([{x: 0, dx: 0, y: 200}]),
+                  binsToHistogram([{x: 1.0, dx: 0, y: 100}]),
+                ],
+                2
+              )
+            )
+          ).toEqual([
+            [
+              {x: 0, dx: 0.5, y: 200},
+              {x: 0.5, dx: 0.5, y: 0},
+            ],
+            [
+              {x: 0, dx: 0.5, y: 0},
+              {x: 0.5, dx: 0.5, y: 100},
+            ],
+          ]);
+        }
+      );
     });
   });
 });
