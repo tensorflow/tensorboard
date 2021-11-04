@@ -19,9 +19,9 @@ import sys
 import time
 
 import grpc
-import numpy as np
 
 from tensorboard.data.experimental import base_experiment
+from tensorboard.data.experimental import utils as experimental_utils
 from tensorboard.uploader import auth
 from tensorboard.uploader import util
 from tensorboard.uploader import server_info as server_info_lib
@@ -120,38 +120,7 @@ class ExperimentFromDev(base_experiment.BaseExperiment):
             data["wall_time"] = wall_times
         dataframe = pandas.DataFrame(data)
         if pivot:
-            dataframe = self._pivot_dataframe(dataframe)
-        return dataframe
-
-    def _pivot_dataframe(self, dataframe):
-        num_missing_0 = np.count_nonzero(dataframe.isnull().values)
-        dataframe = dataframe.pivot_table(
-            values=(
-                ["value", "wall_time"]
-                if "wall_time" in dataframe.columns
-                else "value"
-            ),
-            index=["run", "step"],
-            columns="tag",
-            dropna=False,
-        )
-        num_missing_1 = np.count_nonzero(dataframe.isnull().values)
-        if num_missing_1 > num_missing_0:
-            raise ValueError(
-                "pivoted DataFrame contains missing value(s). "
-                "This is likely due to two timeseries having different "
-                "sets of steps in your experiment. "
-                "You can avoid this error by calling `get_scalars()` with "
-                "`pivot=False` to disable the DataFrame pivoting."
-            )
-        # `reset_index()` removes the MultiIndex structure of the pivoted
-        # DataFrame. Before the call, the DataFrame consits of two levels
-        # of index: "run" and "step". After the call, the index become a
-        # single range index (e.g,. `dataframe[:2]` works).
-        dataframe = dataframe.reset_index()
-        # Remove the columns name "tag".
-        dataframe.columns.name = None
-        dataframe.columns.names = [None for name in dataframe.columns.names]
+            dataframe = experimental_utils.pivot_dataframe(dataframe)
         return dataframe
 
 

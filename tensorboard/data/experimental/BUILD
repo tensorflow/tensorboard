@@ -19,8 +19,8 @@ py_library(
     srcs_version = "PY3",
     deps = [
         ":base_experiment",
+        ":utils",
         "//tensorboard:expect_grpc_installed",
-        "//tensorboard:expect_numpy_installed",
         "//tensorboard:expect_pandas_installed",
         "//tensorboard/uploader:auth",
         "//tensorboard/uploader:server_info",
@@ -62,4 +62,14 @@ py_binary(
     srcs = ["test_binary.py"],
     srcs_version = "PY3",
     deps = ["//tensorboard/data/experimental:experiment_from_dev"],
+)
+
+py_library(
+    name = "utils",
+    srcs = ["utils.py"],
+    srcs_version = "PY3",
+    visibility = ["//tensorboard:internal"],
+    deps = [
+        "//tensorboard:expect_numpy_installed",
+    ],
 )
