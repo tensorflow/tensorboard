@@ -26,22 +26,9 @@ import {CardGroup} from '../metrics_view_types';
       *ngFor="let group of cardGroups; trackBy: trackByGroup"
       class="card-group"
     >
-      <div class="group-toolbar">
-        <span>
-          <span
-            class="group-title"
-            aria-role="heading"
-            aria-level="3"
-            title="{{ group.groupName }}"
-            >{{ group.groupName }}</span
-          >
-          <span *ngIf="group.items.length > 1" class="group-card-count"
-            >{{ group.items.length | number }} cards</span
-          >
-        </span>
-      </div>
       <metrics-card-grid
         [cardIdsWithMetadata]="group.items"
+        [numberOfCards]="group.items.length"
         [cardObserver]="cardObserver"
         [groupName]="group.groupName"
       ></metrics-card-grid>

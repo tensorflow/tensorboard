@@ -19,6 +19,27 @@ $_background: map-get($tb-theme, background);
 
 :host {
   contain: content;
+  @include metrics-sub-view;
+
+  .group-toolbar {
+    @include tb-theme-foreground-prop(border-top, border, 1px solid);
+    // border-top on group-toolbar needs to be offset on sticky header for the
+    // flawless UI.
+    top: -1px;
+  }
+}
+
+.card-group:first-of-type .group-toolbar {
+  border-top: none;
+}
+
+.group-title {
+  @include metrics-card-group-title;
+}
+
+.group-card-count {
+  @include metrics-card-group-count-text;
+  margin-left: 6px;
 }
 
 .card-grid {

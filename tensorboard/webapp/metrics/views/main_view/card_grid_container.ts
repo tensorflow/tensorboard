@@ -32,7 +32,7 @@ import {CardObserver} from '../card_renderer/card_lazy_loader';
 import {CardIdWithMetadata} from '../metrics_view_types';
 
 // Tag group can be collapsed. Even when it is collapsed, we show three cards.
-const ITEMS_COLLAPSED_CLIP_SIZE = 3;
+const ITEMS_COLLAPSED_CLIP_SIZE = 0;
 
 @Component({
   selector: 'metrics-card-grid',
@@ -43,6 +43,7 @@ const ITEMS_COLLAPSED_CLIP_SIZE = 3;
       [groupName]="groupName"
       [pageIndex]="normalizedPageIndex$ | async"
       [numPages]="numPages$ | async"
+      [numberOfCards]="numberOfCards"
       [showPaginationControls]="showPaginationControls$ | async"
       [cardIdsWithMetadata]="pagedItems$ | async"
       [cardObserver]="cardObserver"
@@ -58,6 +59,7 @@ export class CardGridContainer implements OnChanges, OnDestroy {
   @Input() groupName: string | null = null;
   @Input() cardIdsWithMetadata!: CardIdWithMetadata[];
   @Input() cardObserver!: CardObserver;
+  @Input() numberOfCards!: number;
 
   private readonly groupName$ = new BehaviorSubject<string | null>(null);
   readonly pageIndex$ = new BehaviorSubject<number>(0);

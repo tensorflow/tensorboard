@@ -44,6 +44,7 @@ export class CardGridComponent {
   @Input() cardIdsWithMetadata!: CardIdWithMetadata[];
   @Input() cardObserver!: CardObserver;
   @Input() showPaginationControls!: boolean;
+  @Input() numberOfCards!: number;
 
   @Output() pageIndexChanged = new EventEmitter<number>();
   @Output() groupExpansionToggled = new EventEmitter<void>();
