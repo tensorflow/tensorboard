@@ -1612,10 +1612,10 @@ describe('metrics main view', () => {
         ]);
         const card2IndicatorAfter = fixture.debugElement.query(byCss.INDICATOR);
 
-        expect(card2IndicatorBefore.nativeElement).not.toBe(
+        expect(card2IndicatorBefore.nativeElement).not.toEqual(
           card2IndicatorAfter.nativeElement
         );
-        expect(card2IndicatorBefore.attributes['data-id']).not.toBe(
+        expect(card2IndicatorBefore.attributes['data-id']).not.toEqual(
           card2IndicatorAfter.attributes['data-id']
         );
       });
