@@ -19,6 +19,7 @@ limitations under the License.
   <mat-button-toggle-group class="filter-view" multiple appearance="standard">
     <button
       mat-button
+      class="filter-view-button"
       role="checkbox"
       [attr.aria-checked]="filteredPluginTypes.size === 0"
       (click)="onPluginTypeAllToggled.emit()"
@@ -27,6 +28,7 @@ limitations under the License.
     </button>
     <button
       mat-button
+      class="filter-view-button"
       role="checkbox"
       [attr.aria-checked]="filteredPluginTypes.has(PluginType.SCALARS)"
       (click)="onPluginTypeToggled.emit(PluginType.SCALARS)"
@@ -35,6 +37,7 @@ limitations under the License.
     </button>
     <button
       mat-button
+      class="filter-view-button"
       role="checkbox"
       [attr.aria-checked]="filteredPluginTypes.has(PluginType.IMAGES)"
       (click)="onPluginTypeToggled.emit(PluginType.IMAGES)"
@@ -43,6 +46,7 @@ limitations under the License.
     </button>
     <button
       mat-button
+      class="filter-view-button"
       role="checkbox"
       [attr.aria-checked]="filteredPluginTypes.has(PluginType.HISTOGRAMS)"
       (click)="onPluginTypeToggled.emit(PluginType.HISTOGRAMS)"
