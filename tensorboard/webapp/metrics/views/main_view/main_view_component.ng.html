@@ -17,30 +17,42 @@ limitations under the License.
 <div class="toolbar">
   <metrics-tag-filter></metrics-tag-filter>
   <mat-button-toggle-group class="filter-view" multiple appearance="standard">
-    <mat-button-toggle
-      [checked]="filteredPluginTypes.size === 0"
+    <button
+      mat-button
+      class="filter-view-button"
+      role="checkbox"
+      [attr.aria-checked]="filteredPluginTypes.size === 0"
       (click)="onPluginTypeAllToggled.emit()"
     >
       All
-    </mat-button-toggle>
-    <mat-button-toggle
-      [checked]="filteredPluginTypes.has(PluginType.SCALARS)"
+    </button>
+    <button
+      mat-button
+      class="filter-view-button"
+      role="checkbox"
+      [attr.aria-checked]="filteredPluginTypes.has(PluginType.SCALARS)"
       (click)="onPluginTypeToggled.emit(PluginType.SCALARS)"
     >
       Scalars
-    </mat-button-toggle>
-    <mat-button-toggle
-      [checked]="filteredPluginTypes.has(PluginType.IMAGES)"
+    </button>
+    <button
+      mat-button
+      class="filter-view-button"
+      role="checkbox"
+      [attr.aria-checked]="filteredPluginTypes.has(PluginType.IMAGES)"
       (click)="onPluginTypeToggled.emit(PluginType.IMAGES)"
     >
       Image
-    </mat-button-toggle>
-    <mat-button-toggle
-      [checked]="filteredPluginTypes.has(PluginType.HISTOGRAMS)"
+    </button>
+    <button
+      mat-button
+      class="filter-view-button"
+      role="checkbox"
+      [attr.aria-checked]="filteredPluginTypes.has(PluginType.HISTOGRAMS)"
       (click)="onPluginTypeToggled.emit(PluginType.HISTOGRAMS)"
     >
       Histogram
-    </mat-button-toggle>
+    </button>
   </mat-button-toggle-group>
   <div class="right-items">
     <button

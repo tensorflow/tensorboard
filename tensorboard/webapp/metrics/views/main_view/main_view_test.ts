@@ -210,14 +210,11 @@ describe('metrics main view', () => {
       fixture.detectChanges();
 
       const buttons = fixture.debugElement.queryAll(
-        By.css('mat-button-toggle')
+        By.css('.filter-view-button')
       );
-      expect(buttons.map((button) => button.properties['checked'])).toEqual([
-        true,
-        false,
-        false,
-        false,
-      ]);
+      expect(
+        buttons.map((button) => button.attributes['aria-checked'])
+      ).toEqual(['true', 'false', 'false', 'false']);
 
       store.overrideSelector(
         selectors.getMetricsFilteredPluginTypes,
@@ -225,12 +222,9 @@ describe('metrics main view', () => {
       );
       store.refreshState();
       fixture.detectChanges();
-      expect(buttons.map((button) => button.properties['checked'])).toEqual([
-        false,
-        false,
-        true,
-        false,
-      ]);
+      expect(
+        buttons.map((button) => button.attributes['aria-checked'])
+      ).toEqual(['false', 'false', 'true', 'false']);
     });
 
     it('dispatches action when clicked on a plugin type', () => {
@@ -238,7 +232,7 @@ describe('metrics main view', () => {
       fixture.detectChanges();
 
       const [, scalars, images] = fixture.debugElement.queryAll(
-        By.css('mat-button-toggle')
+        By.css('.filter-view-button')
       );
 
       scalars.nativeElement.click();
