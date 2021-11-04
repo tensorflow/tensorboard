@@ -150,7 +150,7 @@ function rebuildBins(bins: Bin[], range: Range, binCount: number): Bin[] {
 /**
  * Computes how much of the input bin's 'y' counts should be allocated to this output bin.
  *
- * Where both bins have non-zero width, this computed by multiplying the input y value by
+ * Where both bins have non-zero width, this is computed by multiplying the input y value by
  * the ratio of the width-wise overlap in the bins to the total width of the output bin.
  * (This can be thought of redistributing the overlapping "area" of the bar in the input
  * histogram across the full width of the output bin.)
@@ -163,12 +163,6 @@ function rebuildBins(bins: Bin[], range: Range, binCount: number): Bin[] {
  * if the output bin's interval contains x. This interval is the closed-open interval
  * [resultLeft, resultRight), except if resultHasRightNeighbor is false, in which case it's
  * the closed interval [resultLeft, resultRight].
- *
- * For example, assuming the middle bin has width 0 and count 20:
- * bins:       [ 0 ][20][   0   ]
- * range:      [                ]
- * binsCount:  2
- * results:    [   0   ][   20  ]
  */
 function getBinContribution(
   bin: Bin,
