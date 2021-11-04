@@ -144,8 +144,8 @@ export function intermediateToD3(
 
 export function backendToVz(histograms: BackendHistogram[]): VzHistogram[] {
   const intermediateHistograms = histograms.map(backendToIntermediate);
-  let minmin = d3.min(intermediateHistograms, (h) => h.min);
-  let maxmax = d3.max(intermediateHistograms, (h) => h.max);
+  const minmin = d3.min(intermediateHistograms, (h) => h.min);
+  const maxmax = d3.max(intermediateHistograms, (h) => h.max);
   return intermediateHistograms.map((h) => ({
     wall_time: h.wall_time,
     step: h.step,
