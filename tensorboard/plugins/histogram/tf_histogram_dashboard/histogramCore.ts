@@ -100,7 +100,7 @@ export function intermediateToD3(
   // while _bins_ are our output.
   const binWidth = (max - min) / numBins;
   let bucketIndex = 0;
-  let d3HistogramBins: D3HistogramBin[] = [];
+  const d3HistogramBins: D3HistogramBin[] = [];
   for (let i = 0; i < numBins; i++) {
     const binLeft = min + i * binWidth;
     const binRight = binLeft + binWidth;
