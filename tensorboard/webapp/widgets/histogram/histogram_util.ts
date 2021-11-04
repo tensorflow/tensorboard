@@ -148,9 +148,21 @@ function rebuildBins(bins: Bin[], range: Range, binCount: number): Bin[] {
 }
 
 /**
- * Computes how much of the input bin's 'y' counts should be allocated to a new
- * range. For 0 width input bins, the allocation may be split in half across 2
- * bins.
+ * Computes how much of the input bin's 'y' counts should be allocated to this output bin.
+ *
+ * Where both bins have non-zero width, this is computed by multiplying the input y value by
+ * the ratio of the width-wise overlap in the bins to the total width of the output bin.
+ * (This can be thought of redistributing the overlapping "area" of the bar in the input
+ * histogram across the full width of the output bin.)
+ *
+ * When the input bin has zero width (the output bin cannot have zero width by construction),
+ * we instead have to consider several cases depending on the open/closed-ness of the
+ * underlying intervals. If the zero width input bin has y value 0, the contribution is
+ * always 0. Otherwise, if zero width input bin has y value greater than 0, it must represent
+ * the closed interval [x, x]. In this case, it contributes the full value of y if and only
+ * if the output bin's interval contains x. This interval is the closed-open interval
+ * [resultLeft, resultRight), except if resultHasRightNeighbor is false, in which case it's
+ * the closed interval [resultLeft, resultRight].
  */
 function getBinContribution(
   bin: Bin,
@@ -165,8 +177,8 @@ function getBinContribution(
   }
 
   if (bin.dx === 0) {
-    if (resultHasRightNeighbor && binRight === resultRight) {
-      return {curr: 0.5 * bin.y, next: 0.5 * bin.y};
+    if (resultHasRightNeighbor && binRight >= resultRight) {
+      return {curr: 0, next: bin.y};
     }
     return {curr: bin.y, next: 0};
   }
