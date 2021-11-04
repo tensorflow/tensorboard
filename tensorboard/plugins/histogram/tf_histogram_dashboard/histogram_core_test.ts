@@ -61,7 +61,9 @@ describe('histogram core', () => {
         20
       );
       let total_count: number = 0;
-      results.forEach((bin) => (total_count += bin.y));
+      for (let bin of results) {
+        total_count += bin.y;
+      }
       expect(results.length).toEqual(20);
       expect(total_count).toEqual(0);
     });
@@ -114,7 +116,9 @@ describe('histogram core', () => {
       const results = backendToVz([[0, 0, bins]]);
       let total_count: number = 0;
       for (let result of results) {
-        result.bins.forEach((bin) => (total_count += bin.y));
+        for (let bin of result.bins) {
+          total_count += bin.y;
+        }
       }
       expect(results.length).toEqual(1);
       expect(results[0].bins.length).toEqual(30);
