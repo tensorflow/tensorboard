@@ -75,12 +75,19 @@ describe('histogram core', () => {
       const newMin = 1 / 1.1 - 1;
       const newMax = 1 * 1.1 + 1;
       const binWidth = (newMax - newMin) / 2;
-      expect(
-        intermediateToD3(backendToIntermediate([0, 0, bins]), 1, 1, 2)
-      ).toEqual([
-        {x: newMin, dx: binWidth, y: 10},
-        {x: newMin + binWidth, dx: binWidth, y: 0},
-      ]);
+      const results = intermediateToD3(
+        backendToIntermediate([0, 0, bins]),
+        1,
+        1,
+        2
+      );
+      expect(results.length).toEqual(2);
+      expect(results[0].x).toBeCloseTo(newMin);
+      expect(results[0].dx).toBeCloseTo(binWidth);
+      expect(results[0].y).toEqual(10);
+      expect(results[1].x).toBeCloseTo(newMin + binWidth);
+      expect(results[1].dx).toBeCloseTo(binWidth);
+      expect(results[1].y).toEqual(0);
     });
 
     it('converts intermediate histogram data to D3 format', () => {
