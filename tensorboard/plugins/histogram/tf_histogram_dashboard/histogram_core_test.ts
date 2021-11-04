@@ -72,11 +72,14 @@ describe('histogram core', () => {
         [1, 1, 0],
         [1, 1, 10],
       ];
+      const newMin = 1 / 1.1 - 1;
+      const newMax = 1 * 1.1 + 1;
+      const binWidth = (newMax - newMin) / 2;
       expect(
         intermediateToD3(backendToIntermediate([0, 0, bins]), 1, 1, 2)
       ).toEqual([
-        {x: 1, dx: 0, y: 10},
-        {x: 1, dx: 0, y: 0},
+        {x: newMin, dx: binWidth, y: 10},
+        {x: newMin + binWidth, dx: binWidth, y: 0},
       ]);
     });
 

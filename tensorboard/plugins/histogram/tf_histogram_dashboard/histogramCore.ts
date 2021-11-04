@@ -90,6 +90,12 @@ export function intermediateToD3(
     min = 0;
     max = 0;
   }
+  if (max === min) {
+    // If the output range is 0 width, use a default non 0 range for
+    // visualization purpose.
+    max = min * 1.1 + 1;
+    min = min / 1.1 - 1;
+  }
   // Terminology note: _buckets_ are the input to this function,
   // while _bins_ are our output.
   const binWidth = (max - min) / numBins;
@@ -140,12 +146,6 @@ export function backendToVz(histograms: BackendHistogram[]): VzHistogram[] {
   const intermediateHistograms = histograms.map(backendToIntermediate);
   let minmin = d3.min(intermediateHistograms, (h) => h.min);
   let maxmax = d3.max(intermediateHistograms, (h) => h.max);
-  // If the output range is 0 width, use a default non 0 range for
-  // visualization purpose.
-  if (minmin !== undefined && maxmax !== undefined && minmin === maxmax) {
-    maxmax = maxmax * 1.1 + 1;
-    minmin = minmin / 1.1 - 1;
-  }
   return intermediateHistograms.map((h) => ({
     wall_time: h.wall_time,
     step: h.step,
