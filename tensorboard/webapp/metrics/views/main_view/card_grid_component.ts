@@ -36,26 +36,17 @@ import {CardIdWithMetadata} from '../metrics_view_types';
 export class CardGridComponent {
   readonly PluginType = PluginType;
 
-  @Input() isGroupExpandable!: boolean;
-  @Input() isGroupExpanded!: boolean;
-  @Input() groupName!: string | null;
   @Input() pageIndex!: number;
   @Input() numPages!: number;
   @Input() cardIdsWithMetadata!: CardIdWithMetadata[];
   @Input() cardObserver!: CardObserver;
   @Input() showPaginationControls!: boolean;
-  @Input() numberOfCards!: number;
 
   @Output() pageIndexChanged = new EventEmitter<number>();
-  @Output() groupExpansionToggled = new EventEmitter<void>();
 
   constructor(
     @Optional() private readonly cdkScrollable: CdkScrollable | null
   ) {}
-
-  showExpand(isBottomControl: boolean): boolean {
-    return isBottomControl ? this.isGroupExpandable : false;
-  }
 
   showPaginationInput(isBottomControl: boolean) {
     return isBottomControl;

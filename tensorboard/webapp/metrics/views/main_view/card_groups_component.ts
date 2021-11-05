@@ -26,9 +26,12 @@ import {CardGroup} from '../metrics_view_types';
       *ngFor="let group of cardGroups; trackBy: trackByGroup"
       class="card-group"
     >
+      <metrics-card-group-toolbar
+        [numberOfCards]="group.items.length"
+        [groupName]="group.groupName"
+      ></metrics-card-group-toolbar>
       <metrics-card-grid
         [cardIdsWithMetadata]="group.items"
-        [numberOfCards]="group.items.length"
         [cardObserver]="cardObserver"
         [groupName]="group.groupName"
       ></metrics-card-grid>

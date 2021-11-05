@@ -14,65 +14,33 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<div class="group-toolbar">
-  <span>
-    <span
-      class="group-title"
-      aria-role="heading"
-      aria-level="3"
-      title="{{ groupName }}"
-      >{{ groupName }}</span
-    >
-    <span *ngIf="numberOfCards > 1" class="group-card-count"
-      >{{ numberOfCards }} cards</span
-    >
-  </span>
-  <button
-    *ngIf="showExpand(true)"
-    class="expand-group-button"
-    mat-icon-button
-    i18n-aria-label="A button that allows user to expand a tag group."
-    aria-label="Expand group"
-    (click)="groupExpansionToggled.emit()"
-  >
-    <mat-icon
-      *ngIf="isGroupExpanded; else expandMore"
-      svgIcon="expand_less_24px"
-    ></mat-icon>
-    <ng-template #expandMore>
-      <mat-icon svgIcon="expand_more_24px"></mat-icon>
-    </ng-template>
-  </button>
-</div>
 
 <div *ngIf="cardIdsWithMetadata.length >= 1">
+  <ng-container
+    *ngTemplateOutlet="groupControls; context: {isBottomControl: false}"
+  ></ng-container>
 
-<ng-container
-  *ngTemplateOutlet="groupControls; context: {isBottomControl: false}"
-></ng-container>
+  <div class="card-grid">
+    <card-view
+      *ngFor="let item of cardIdsWithMetadata; trackBy: trackByCards"
+      [cardId]="item.cardId"
+      [groupName]="groupName"
+      [pluginType]="item.plugin"
+      [cardObserver]="cardObserver"
+      [cardLazyLoader]="item.cardId"
+    >
+    </card-view>
+  </div>
 
-<div class="card-grid">
-  <card-view
-    *ngFor="let item of cardIdsWithMetadata; trackBy: trackByCards"
-    [cardId]="item.cardId"
-    [groupName]="groupName"
-    [pluginType]="item.plugin"
-    [cardObserver]="cardObserver"
-    [cardLazyLoader]="item.cardId"
-  >
-  </card-view>
-</div>
-
-<ng-container
-  *ngTemplateOutlet="groupControls; context: {isBottomControl: true}"
-></ng-container>
-
+  <ng-container
+    *ngTemplateOutlet="groupControls; context: {isBottomControl: true}"
+  ></ng-container>
 </div>
 
 <ng-template #groupControls let-isBottomControl="isBottomControl">
   <div
     class="group-controls"
-    *ngIf="showPaginationControls || showExpand(isBottomControl)"
+    *ngIf="showPaginationControls"
   >
     <span class="prev-container">
       <button
