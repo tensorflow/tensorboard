@@ -40,37 +40,37 @@ class NotFound {}
 describe('route_registry_module', () => {
   let registry: RouteRegistryModule;
 
-  beforeEach(async () => {
-    function routeFactory() {
-      return [
-        {
-          routeKind: RouteKind.EXPERIMENT,
-          path: '/experiment/:experimentId',
-          ngComponent: Experiment,
-        },
-        {
-          routeKind: RouteKind.EXPERIMENTS,
-          path: '/experiments',
-          ngComponent: Experiments,
-        },
-        {
-          routeKind: RouteKind.UNKNOWN,
-          path: '/crabs',
-          ngComponent: NotFound,
-        },
-      ];
-    }
+  describe('with configs', () => {
+    beforeEach(async () => {
+      function routeFactory() {
+        return [
+          {
+            routeKind: RouteKind.EXPERIMENT,
+            path: '/experiment/:experimentId',
+            ngComponent: Experiment,
+          },
+          {
+            routeKind: RouteKind.EXPERIMENTS,
+            path: '/experiments',
+            ngComponent: Experiments,
+          },
+          {
+            routeKind: RouteKind.UNKNOWN,
+            path: '/crabs',
+            ngComponent: NotFound,
+          },
+        ];
+      }
 
-    await TestBed.configureTestingModule({
-      imports: [RouteRegistryModule.registerRoutes(routeFactory)],
-      declarations: [Experiments, Experiment, NotFound],
-    }).compileComponents();
+      await TestBed.configureTestingModule({
+        imports: [RouteRegistryModule.registerRoutes(routeFactory)],
+        declarations: [Experiments, Experiment, NotFound],
+      }).compileComponents();
 
-    registry = TestBed.inject<RouteRegistryModule>(RouteRegistryModule);
-  });
+      registry = TestBed.inject<RouteRegistryModule>(RouteRegistryModule);
+    });
 
-  describe('getNgComponentByRouteKind', () => {
-    it('finds a component for routeKind', () => {
+    it('getNgComponentByRouteKind finds a component for routeKind', () => {
       expect(registry.getNgComponentByRouteKind(RouteKind.EXPERIMENT)).toBe(
         Experiment
       );
@@ -80,6 +80,24 @@ describe('route_registry_module', () => {
       expect(registry.getNgComponentByRouteKind(RouteKind.UNKNOWN)).toBe(
         NotFound
       );
+    });
+  });
+
+  describe('without configs', () => {
+    beforeEach(async () => {
+      await TestBed.configureTestingModule({
+        imports: [
+          // Creates RouteRegistryModule without any registered routes.
+          RouteRegistryModule,
+        ],
+        declarations: [Experiments, Experiment, NotFound],
+      }).compileComponents();
+
+      registry = TestBed.inject<RouteRegistryModule>(RouteRegistryModule);
+    });
+
+    it('getRouteConfigs is not null', () => {
+      expect(registry.getRouteConfigs()).not.toBeNull();
     });
   });
 });
