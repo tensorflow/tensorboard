@@ -81,7 +81,7 @@ def make_summary(tag, metadata, data):
 
 
 def _migrate_histogram_value(value):
-    """Convert `old-stype` histogram to `new-style`.
+    """Convert `old-style` histogram value to `new-style`.
 
     Since by default min value is DBL_MAX and max value is -DBL_MAX, empty
     buckets on the left and right ends are removed to prevent the case of
