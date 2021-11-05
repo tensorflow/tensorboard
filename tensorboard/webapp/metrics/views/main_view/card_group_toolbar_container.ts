@@ -14,18 +14,12 @@ limitations under the License.
 ==============================================================================*/
 import {ChangeDetectionStrategy, Component, Input, SimpleChanges,OnChanges,OnDestroy} from '@angular/core';
 import {Store} from '@ngrx/store';
-import {BehaviorSubject, combineLatest, Observable, of, Subject} from 'rxjs';
-import {combineLatestWith, map, switchMap} from 'rxjs/operators';
+import {BehaviorSubject, Observable, of, Subject} from 'rxjs';
+import {switchMap} from 'rxjs/operators';
 
 import {State} from '../../../app_state';
-import {selectors as settingsSelectors} from '../../../settings';
 import {metricsTagGroupExpansionChanged} from '../../actions';
-import {getMetricsFilteredPluginTypes} from '../../store';
-import {CardObserver} from '../card_renderer/card_lazy_loader';
-import {CardGroup, CardIdWithMetadata} from '../metrics_view_types';
 import {getMetricsTagGroupExpansionState} from '../../../selectors';
-import {groupCardIdWithMetdata} from '../utils';
-import {getSortedRenderableCardIdsWithMetadata} from './common_selectors';
 
 @Component({
   selector: 'metrics-card-group-toolbar',

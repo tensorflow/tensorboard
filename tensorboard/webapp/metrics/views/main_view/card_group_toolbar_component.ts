@@ -14,11 +14,6 @@ limitations under the License.
 ==============================================================================*/
 import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from '@angular/core';
 
-import {PluginType} from '../../data_source';
-import {CardObserver} from '../card_renderer/card_lazy_loader';
-
-import {CardGroup} from '../metrics_view_types';
-
 @Component({
   selector: 'metrics-card-group-toolbar-component',
   template: `
