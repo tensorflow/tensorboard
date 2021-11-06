@@ -76,7 +76,7 @@ export class CardGridContainer implements OnChanges, OnDestroy {
 
   readonly showPaginationControls$: Observable<boolean> = this.numPages$.pipe(
     map((numPages) => numPages > 1)
-  )
+  );
 
   readonly normalizedPageIndex$ = combineLatest([
     this.pageIndex$,
@@ -109,7 +109,7 @@ export class CardGridContainer implements OnChanges, OnDestroy {
   ]).pipe(
     map(([items, pageSize, pageIndex, expanded]) => {
       const startIndex = pageSize * pageIndex;
-      const endIndex = pageSize * pageIndex + (expanded ? pageSize : 0)
+      const endIndex = pageSize * pageIndex + (expanded ? pageSize : 0);
       return items.slice(startIndex, endIndex);
     })
   );

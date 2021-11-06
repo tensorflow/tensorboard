@@ -933,8 +933,7 @@ describe('metrics main view', () => {
       fixture.detectChanges();
 
       expect(fixture.debugElement.query(EXPAND_BUTTON)).not.toBeNull();
-      expect(getCardContents(getCards(fixture.debugElement))).toEqual([
-      ]);
+      expect(getCardContents(getCards(fixture.debugElement))).toEqual([]);
     });
 
     it('renders N = items.length cards when N < pageSize and expanded', () => {

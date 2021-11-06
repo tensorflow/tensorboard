@@ -12,7 +12,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {ChangeDetectionStrategy, Component, Input, SimpleChanges,OnChanges,OnDestroy} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  SimpleChanges,
+  OnChanges,
+  OnDestroy,
+} from '@angular/core';
 import {Store} from '@ngrx/store';
 import {BehaviorSubject, Observable, of, Subject} from 'rxjs';
 import {switchMap} from 'rxjs/operators';

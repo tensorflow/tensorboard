@@ -12,13 +12,18 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  Input,
+  Output,
+} from '@angular/core';
 
 @Component({
   selector: 'metrics-card-group-toolbar-component',
   template: `
-    <div class="group-toolbar"
-         (click)="groupExpansionToggled.emit()">
+    <div class="group-toolbar" (click)="groupExpansionToggled.emit()">
       <span>
         <span
           class="group-title"
