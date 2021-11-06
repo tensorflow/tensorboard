@@ -51,6 +51,8 @@ import {CardGridComponent} from './card_grid_component';
 import {CardGridContainer} from './card_grid_container';
 import {CardGroupsComponent} from './card_groups_component';
 import {CardGroupsContainer} from './card_groups_container';
+import {CardGroupToolBarComponent} from './card_group_toolbar_component';
+import {CardGroupToolBarContainer} from './card_group_toolbar_container';
 import {EmptyTagMatchMessageComponent} from './empty_tag_match_message_component';
 import {EmptyTagMatchMessageContainer} from './empty_tag_match_message_container';
 import {FilteredViewComponent} from './filtered_view_component';
@@ -156,6 +158,8 @@ describe('metrics main view', () => {
         CardGridContainer,
         CardGroupsComponent,
         CardGroupsContainer,
+        CardGroupToolBarComponent,
+        CardGroupToolBarContainer,
         EmptyTagMatchMessageComponent,
         EmptyTagMatchMessageContainer,
         FilteredViewComponent,
@@ -310,6 +314,21 @@ describe('metrics main view', () => {
   });
 
   describe('card grid', () => {
+    let selectSpy: jasmine.Spy;
+
+    beforeEach(() => {
+      selectSpy = spyOn(store, 'select').and.callThrough();
+      selectSpy
+        .withArgs(getMetricsTagGroupExpansionState, jasmine.any(String))
+        .and.throwError(
+          'getMetricsTagGroupExpansionState called with unknown groupName'
+        );
+
+      selectSpy
+        .withArgs(getMetricsTagGroupExpansionState, 'tagA')
+        .and.returnValue(of(true));
+    });
+
     it('renders group by tag name', () => {
       store.overrideSelector(
         selectors.getCurrentRouteRunSelection,
@@ -901,7 +920,7 @@ describe('metrics main view', () => {
       );
     });
 
-    it('renders 3 cards in a collapsed group', () => {
+    it('renders 0 cards in a collapsed group', () => {
       selectSpy
         .withArgs(getMetricsTagGroupExpansionState, 'tagA')
         .and.returnValue(of(false));
@@ -915,16 +934,13 @@ describe('metrics main view', () => {
 
       expect(fixture.debugElement.query(EXPAND_BUTTON)).not.toBeNull();
       expect(getCardContents(getCards(fixture.debugElement))).toEqual([
-        'scalars: card0',
-        'scalars: card1',
-        'scalars: card2',
       ]);
     });
 
-    it('renders 3 cards even when items.length < pageSize', () => {
+    it('renders N = items.length cards when N < pageSize and expanded', () => {
       selectSpy
         .withArgs(getMetricsTagGroupExpansionState, 'tagA')
-        .and.returnValue(of(false));
+        .and.returnValue(of(true));
       store.overrideSelector(settingsSelectors.getPageSize, 10);
       store.overrideSelector(
         selectors.getNonEmptyCardIdsWithMetadata,
@@ -938,10 +954,11 @@ describe('metrics main view', () => {
         'scalars: card0',
         'scalars: card1',
         'scalars: card2',
+        'scalars: card3',
       ]);
     });
 
-    it('renders N = pageSize cards when expanded', () => {
+    it('renders N = pageSize cards when items.length < N and expanded', () => {
       selectSpy
         .withArgs(getMetricsTagGroupExpansionState, 'tagA')
         .and.returnValue(of(true));
@@ -955,51 +972,6 @@ describe('metrics main view', () => {
 
       expect(fixture.debugElement.query(EXPAND_BUTTON)).not.toBeNull();
       expect(getCards(fixture.debugElement).length).toBe(5);
-    });
-
-    it('renders N = pageSize < 3 even when cards are not expanded', () => {
-      selectSpy
-        .withArgs(getMetricsTagGroupExpansionState, 'tagA')
-        .and.returnValue(of(false));
-      store.overrideSelector(settingsSelectors.getPageSize, 2);
-      store.overrideSelector(
-        selectors.getNonEmptyCardIdsWithMetadata,
-        createNScalarCards(5)
-      );
-      const fixture = TestBed.createComponent(MainViewContainer);
-      fixture.detectChanges();
-
-      expect(getCards(fixture.debugElement).length).toBe(2);
-    });
-
-    it('does not render expansion toggle when # items is < 3', () => {
-      selectSpy
-        .withArgs(getMetricsTagGroupExpansionState, 'tagA')
-        .and.returnValue(of(false));
-      store.overrideSelector(settingsSelectors.getPageSize, 5);
-      store.overrideSelector(
-        selectors.getNonEmptyCardIdsWithMetadata,
-        createNScalarCards(2)
-      );
-      const fixture = TestBed.createComponent(MainViewContainer);
-      fixture.detectChanges();
-
-      expect(fixture.debugElement.query(EXPAND_BUTTON)).toBeNull();
-    });
-
-    it('does not render expansion toggle when pageSize items is < 3', () => {
-      selectSpy
-        .withArgs(getMetricsTagGroupExpansionState, 'tagA')
-        .and.returnValue(of(false));
-      store.overrideSelector(settingsSelectors.getPageSize, 2);
-      store.overrideSelector(
-        selectors.getNonEmptyCardIdsWithMetadata,
-        createNScalarCards(5)
-      );
-      const fixture = TestBed.createComponent(MainViewContainer);
-      fixture.detectChanges();
-
-      expect(fixture.debugElement.query(EXPAND_BUTTON)).toBeNull();
     });
 
     it('does not render next or prev when collapsed', () => {
@@ -1018,20 +990,20 @@ describe('metrics main view', () => {
       expect(fixture.debugElement.query(By.css('.next'))).toBeNull();
     });
 
-    it('renders next or prev even when collapsed if pageSize < 3', () => {
+    it('does not render next or prev when items.length <= pageSize and expanded', () => {
       selectSpy
         .withArgs(getMetricsTagGroupExpansionState, 'tagA')
-        .and.returnValue(of(false));
-      store.overrideSelector(settingsSelectors.getPageSize, 2);
+        .and.returnValue(of(true));
+      store.overrideSelector(settingsSelectors.getPageSize, 5);
       store.overrideSelector(
         selectors.getNonEmptyCardIdsWithMetadata,
-        createNScalarCards(5)
+        createNScalarCards(3)
       );
       const fixture = TestBed.createComponent(MainViewContainer);
       fixture.detectChanges();
 
-      expect(fixture.debugElement.query(By.css('.prev'))).not.toBeNull();
-      expect(fixture.debugElement.query(By.css('.next'))).not.toBeNull();
+      expect(fixture.debugElement.query(By.css('.prev'))).toBeNull();
+      expect(fixture.debugElement.query(By.css('.next'))).toBeNull();
     });
 
     it('responds to expansion change', () => {
@@ -1048,7 +1020,7 @@ describe('metrics main view', () => {
       const fixture = TestBed.createComponent(MainViewContainer);
       fixture.detectChanges();
 
-      expect(getCards(fixture.debugElement).length).toBe(3);
+      expect(getCards(fixture.debugElement).length).toBe(0);
 
       getExpansionStateSubject.next(true);
       fixture.detectChanges();
@@ -1058,7 +1030,7 @@ describe('metrics main view', () => {
       getExpansionStateSubject.next(false);
       fixture.detectChanges();
 
-      expect(getCards(fixture.debugElement).length).toBe(3);
+      expect(getCards(fixture.debugElement).length).toBe(0);
     });
 
     it(
