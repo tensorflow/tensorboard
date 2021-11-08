@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component, Input, OnInit} from '@angular/core';
+import {Component, EventEmitter, Input, Output} from '@angular/core';
 
 import {ExperimentAlias} from '../../experiments/types';
 
@@ -24,11 +24,29 @@ import {ExperimentAlias} from '../../experiments/types';
   selector: 'tb-experiment-alias',
   template: `
     <span class="alias-number">{{ alias.aliasNumber }}</span>
-    <span>{{ alias.aliasText }}</span>
+    <content-wrapping-input
+      *ngIf="aliasEditable; else noEditAliasName"
+      placeholder="Alias for experiment"
+      [style]="isAliasNameLegal ? 'high-contrast' : 'error'"
+      [value]="alias.aliasText"
+      (onValueChange)="aliasChanged.emit($event)"
+    ></content-wrapping-input>
+    <ng-template #noEditAliasName>
+      <span [class.illegal]="!isAliasNameLegal">{{ alias.aliasText }}</span>
+    </ng-template>
   `,
   styleUrls: [`experiment_alias_component.css`],
 })
 export class ExperimentAliasComponent {
   @Input()
   alias!: ExperimentAlias;
+
+  @Input()
+  aliasEditable!: boolean;
+
+  @Input()
+  isAliasNameLegal: boolean = true;
+
+  @Output()
+  aliasChanged = new EventEmitter<{value: string}>();
 }

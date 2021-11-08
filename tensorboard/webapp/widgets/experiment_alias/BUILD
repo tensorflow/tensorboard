@@ -20,6 +20,7 @@ tf_ng_module(
     ],
     deps = [
         "//tensorboard/webapp/experiments:types",
+        "//tensorboard/webapp/widgets/content_wrapping_input",
         "@npm//@angular/common",
         "@npm//@angular/core",
     ],
@@ -35,6 +36,8 @@ tf_ts_library(
         ":experiment_alias",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/experiments:types",
+        "//tensorboard/webapp/testing:dom",
+        "//tensorboard/webapp/widgets/content_wrapping_input",
         "@npm//@angular/core",
         "@npm//@angular/platform-browser",
         "@npm//@types/jasmine",

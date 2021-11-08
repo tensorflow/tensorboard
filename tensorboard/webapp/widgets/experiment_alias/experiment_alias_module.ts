@@ -15,10 +15,11 @@ limitations under the License.
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
 
+import {ContentWrappingInputModule} from '../content_wrapping_input/content_wrapping_input_module';
 import {ExperimentAliasComponent} from './experiment_alias_component';
 
 @NgModule({
-  imports: [CommonModule],
+  imports: [CommonModule, ContentWrappingInputModule],
   exports: [ExperimentAliasComponent],
   declarations: [ExperimentAliasComponent],
 })
