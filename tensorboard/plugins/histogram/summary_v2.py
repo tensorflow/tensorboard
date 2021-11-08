@@ -21,7 +21,7 @@ encoded as a tensor of dimension `[k, 3]`.
 In general, the value of `k` (the number of buckets) will be a constant,
 like 30. There are two edge cases: if there is no data, then there are
 no buckets (the shape is `[0, 3]`); and if there is data but all points
-have the same value, then then all buckets' left and right endpoints are 
+have the same value, then then all buckets' left and right endpoints are
 the same but only the last bucket has nonzero count (the shape is `[k, 3]`).
 """
 
