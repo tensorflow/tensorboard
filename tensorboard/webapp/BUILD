@@ -332,6 +332,7 @@ tf_ng_web_test_suite(
         "//tensorboard/webapp/webapp_data_source:webapp_data_source_test_lib",
         "//tensorboard/webapp/widgets:resize_detector_test",
         "//tensorboard/webapp/widgets:resize_detector_testing",
+        "//tensorboard/webapp/widgets/content_wrapping_input:content_wrapping_input_tests",
         "//tensorboard/webapp/widgets/experiment_alias:experiment_alias_test",
         "//tensorboard/webapp/widgets/filter_input:filter_input_test",
         "//tensorboard/webapp/widgets/histogram:histogram_test",

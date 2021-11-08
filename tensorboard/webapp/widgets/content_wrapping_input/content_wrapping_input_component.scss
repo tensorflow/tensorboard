@@ -1,0 +1,90 @@
+/* Copyright 2021 The TensorFlow Authors. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+==============================================================================*/
+
+@import 'tensorboard/webapp/theme/tb_theme';
+
+:host {
+  display: inline-flex;
+  width: max-content;
+
+  &:focus-within .container {
+    border-color: mat-color($tb-primary, 700);
+  }
+
+  &.default {
+    &:hover .container {
+      border-color: map-get($tb-foreground, border);
+    }
+  }
+
+  &.error .container,
+  .container:not(.is-valid) {
+    $_error-color: mat-color($tb-warn, 200);
+    border-color: $_error-color;
+
+    &:hover,
+    &:focus-within {
+      border-color: $_error-color;
+    }
+  }
+
+  &.high-contrast .container {
+    border-color: mat-color($mat-gray, 400);
+
+    &:hover {
+      border-color: mat-color($mat-gray, 600);
+    }
+  }
+}
+
+.container {
+  border-radius: 4px;
+  border: 2px solid transparent;
+  padding: 1px 2px;
+  position: relative;
+}
+
+.measurer {
+  pointer-events: none;
+  position: absolute;
+  visibility: hidden;
+}
+
+.measurer,
+input {
+  font-family: inherit;
+  font-size: inherit;
+  line-height: 1.4;
+  padding: 0;
+  white-space: pre;
+
+  &:empty {
+    width: 2ch;
+  }
+}
+
+input {
+  appearance: none;
+  background-color: inherit;
+  border: 0;
+  color: inherit;
+  display: inline-block;
+  font-family: inherit;
+  outline: 0;
+
+  &:focus {
+    padding-right: 1ch;
+  }
+}
