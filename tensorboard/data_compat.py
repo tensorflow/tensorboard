@@ -89,8 +89,7 @@ def _migrate_histogram_value(value):
     """
     histogram_value = value.histo
     bucket_counts = histogram_value.bucket
-    # Find the indices of the first leftmost and rightmost buckets with
-    # nonzero counts.
+    # Find the indices of the leftmost and rightmost non-empty buckets.
     n = len(bucket_counts)
     start = next((i for i in range(n) if bucket_counts[i] > 0), n)
     end = next((i for i in range(n - 1, -1, -1) if bucket_counts[i] > 0), -1)
