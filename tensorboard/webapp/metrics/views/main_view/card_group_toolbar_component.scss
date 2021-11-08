@@ -25,14 +25,13 @@ limitations under the License.
     top: -1px;
     display: flex;
 
+    .card-group:first-of-type & {
+      border-top: 0;
+    }
     &:hover {
       cursor: pointer;
     }
   }
-}
-
-.card-group:first-of-type .group-toolbar {
-  border-top: none;
 }
 
 .group-title-wrapper {

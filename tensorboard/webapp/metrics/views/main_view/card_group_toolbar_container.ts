@@ -40,19 +40,13 @@ import {getMetricsTagGroupExpansionState} from '../../../selectors';
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CardGroupToolBarContainer implements OnChanges, OnDestroy {
+export class CardGroupToolBarContainer implements OnChanges {
   @Input() groupName: string | null = null;
   @Input() numberOfCards!: number;
 
   private readonly groupName$ = new BehaviorSubject<string | null>(null);
-  private readonly ngUnsubscribe = new Subject<void>();
 
   constructor(private readonly store: Store<State>) {}
-
-  ngOnDestroy() {
-    this.ngUnsubscribe.next();
-    this.ngUnsubscribe.complete();
-  }
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['groupName']) {
