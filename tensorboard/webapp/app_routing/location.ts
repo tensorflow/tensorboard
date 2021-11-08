@@ -93,7 +93,6 @@ export class Location implements LocationInterface {
       map(() => {
         return {
           pathname: this.getPath(),
-          queryParams: this.getSearch(),
         };
       })
     );

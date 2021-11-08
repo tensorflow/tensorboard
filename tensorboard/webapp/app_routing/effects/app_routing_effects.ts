@@ -108,7 +108,6 @@ export class AppRoutingEffects {
       map(() => {
         return {
           pathname: this.location.getPath(),
-          queryParams: this.location.getSearch(),
           replaceState: true,
           browserInitiated: true,
         };

@@ -97,7 +97,6 @@ export class TestableLocation extends Location {
   override onPopState() {
     return of({
       pathname: '/is/cool/',
-      queryParams: [],
     });
   }
 }
