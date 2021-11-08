@@ -15,9 +15,13 @@ limitations under the License.
 @import 'tensorboard/webapp/theme/tb_theme';
 
 .alias-number {
+  @include tb-theme-background-prop(background-color, unselected-chip);
   @include tb-theme-foreground-prop(border, border, 1px solid);
+  @include tb-theme-foreground-prop(color, text);
+
   border-radius: 2px;
   margin-right: 2px;
+  padding: 0 2px;
 }
 
 :host {
