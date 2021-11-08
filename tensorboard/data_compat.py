@@ -88,21 +88,23 @@ def _migrate_histogram_value(value):
     `backwards` (left edge > right edge) buckets.
     """
     histogram_value = value.histo
-    bucket_lefts = [histogram_value.min] + histogram_value.bucket_limit[:-1]
-    bucket_rights = histogram_value.bucket_limit[:-1] + [histogram_value.max]
     bucket_counts = histogram_value.bucket
     # Find the indices of the first leftmost and rightmost buckets with
     # nonzero counts.
     n = len(bucket_counts)
     start = next((i for i in range(n) if bucket_counts[i] > 0), n)
     end = next((i for i in range(n - 1, -1, -1) if bucket_counts[i] > 0), -1)
+    # Discard empty buckets on both ends.
+    bucket_lefts = histogram_value.bucket_limit[start:end]
+    bucket_rights = histogram_value.bucket_limit[start:end]
+    bucket_counts = bucket_counts[start : end + 1]
+    if start <= end:
+        # Use min as the left-hand limit for the first non-empty bucket.
+        bucket_lefts = [histogram_value.min] + bucket_lefts
+        # Use max as the right-hand limit for the last non-empty bucket.
+        bucket_rights = bucket_rights + [histogram_value.max]
     buckets = np.array(
-        [
-            bucket_lefts[start : end + 1],
-            bucket_rights[start : end + 1],
-            bucket_counts[start : end + 1],
-        ],
-        dtype=np.float32,
+        [bucket_lefts, bucket_rights, bucket_counts], dtype=np.float32
     ).transpose()
 
     summary_metadata = histogram_metadata.create_summary_metadata(

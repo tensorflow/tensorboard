@@ -203,7 +203,9 @@ class MigrateValueTest(tf.test.TestCase):
         buckets = tensor_util.make_ndarray(new_value.tensor)
         for bucket in buckets:
             # No `backwards` buckets.
-            self.assertLess(bucket[0], bucket[1])
+            self.assertLessEqual(bucket[0], bucket[1])
+        self.assertEqual(old_value.histo.min, buckets[0][0])
+        self.assertEqual(old_value.histo.max, buckets[-1][1])
         self.assertEqual(23 * 45, buckets[:, 2].astype(int).sum())
 
     def test_empty_histogram(self):
@@ -242,10 +244,8 @@ class MigrateValueTest(tf.test.TestCase):
         buckets = tensor_util.make_ndarray(new_value.tensor)
         # Only one bucket is kept.
         self.assertEqual((1, 3), buckets.shape)
-        # Default bucket boundaries exponentially distribute around, starting
-        # at 1e-12 and increasing by a factor of 1.1 up to 1e20.
-        self.assertAlmostEqual(0.9172464, buckets[0][0])
-        self.assertAlmostEqual(1.008971, buckets[0][1])
+        self.assertEqual(1, buckets[0][0])
+        self.assertEqual(1, buckets[-1][1])
         self.assertEqual(1024, buckets[0][2])
 
     def test_histogram_with_empty_buckets_on_both_ends(self):
@@ -266,7 +266,9 @@ class MigrateValueTest(tf.test.TestCase):
         buckets = tensor_util.make_ndarray(new_value.tensor)
         for bucket in buckets:
             # No `backwards` buckets.
-            self.assertLess(bucket[0], bucket[1])
+            self.assertLessEqual(bucket[0], bucket[1])
+        self.assertEqual(1, buckets[0][0])
+        self.assertEqual(3, buckets[-1][1])
         self.assertEqual(9, buckets[:, 2].astype(int).sum())
 
     def test_new_style_histogram(self):
