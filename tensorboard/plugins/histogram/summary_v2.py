@@ -21,8 +21,8 @@ encoded as a tensor of dimension `[k, 3]`.
 In general, the value of `k` (the number of buckets) will be a constant,
 like 30. There are two edge cases: if there is no data, then there are
 no buckets (the shape is `[0, 3]`); and if there is data but all points
-have the same value, then there is one bucket whose left and right
-endpoints are the same (the shape is `[1, 3]`).
+have the same value, then then all buckets' left and right endpoints are 
+the same but only the last bucket has nonzero count (the shape is `[k, 3]`).
 """
 
 import contextlib
@@ -260,8 +260,8 @@ def histogram_pb(tag, data, buckets=None, description=None):
       buckets: Optional positive `int`. The output will have this
         many buckets, except in two edge cases. If there is no data, then
         there are no buckets. If there is data but all points have the
-        same value, then there is one bucket whose left and right
-        endpoints are the same.
+        same value, then all buckets' left and right endpoints are the
+        same and only the last bucket has nonzero count.
       description: Optional long-form description for this summary, as a
         `str`. Markdown is supported. Defaults to empty.
 
@@ -271,14 +271,17 @@ def histogram_pb(tag, data, buckets=None, description=None):
     bucket_count = DEFAULT_BUCKET_COUNT if buckets is None else buckets
     data = np.array(data).flatten().astype(float)
     if data.size == 0:
-        buckets = np.array([]).reshape((0, 3))
+        histogram_buckets = np.array([]).reshape((0, 3))
     else:
         min_ = np.min(data)
         max_ = np.max(data)
         range_ = max_ - min_
         if range_ == 0:
-            center = min_
-            buckets = np.array([[center - 0.5, center + 0.5, float(data.size)]])
+            left_edges = right_edges = np.array([min_] * bucket_count)
+            bucket_counts = np.array([0] * (bucket_count - 1) + [data.size])
+            histogram_buckets = np.array(
+                [left_edges, right_edges, bucket_counts]
+            ).transpose()
         else:
             bucket_width = range_ / bucket_count
             offsets = data - min_
@@ -295,10 +298,10 @@ def histogram_pb(tag, data, buckets=None, description=None):
             edges = np.linspace(min_, max_, bucket_count + 1)
             left_edges = edges[:-1]
             right_edges = edges[1:]
-            buckets = np.array(
+            histogram_buckets = np.array(
                 [left_edges, right_edges, bucket_counts]
             ).transpose()
-    tensor = tensor_util.make_tensor_proto(buckets, dtype=np.float64)
+    tensor = tensor_util.make_tensor_proto(histogram_buckets, dtype=np.float64)
 
     summary_metadata = metadata.create_summary_metadata(
         display_name=None, description=description

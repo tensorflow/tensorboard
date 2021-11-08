@@ -175,6 +175,24 @@ class SummaryV2PbTest(SummaryBaseTest, tf.test.TestCase):
     def histogram(self, *args, **kwargs):
         return summary.histogram_pb(*args, **kwargs)
 
+    def test_singleton_input(self):
+        pb = self.histogram("twelve", [12])
+        buckets = tensor_util.make_ndarray(pb.value[0].tensor)
+        # By default there will be 30 buckets.
+        expected_buckets = np.array(
+            [[12, 12, 0] for _ in range(29)] + [[12, 12, 1]]
+        )
+        np.testing.assert_allclose(buckets, expected_buckets)
+
+    def test_input_with_all_same_values(self):
+        pb = self.histogram("twelven", [12, 12, 12])
+        buckets = tensor_util.make_ndarray(pb.value[0].tensor)
+        # By default there will be 30 buckets.
+        expected_buckets = np.array(
+            [[12, 12, 0] for _ in range(29)] + [[12, 12, 3]]
+        )
+        np.testing.assert_allclose(buckets, expected_buckets)
+
 
 class SummaryV2OpTest(SummaryBaseTest, tf.test.TestCase):
     def setUp(self):
