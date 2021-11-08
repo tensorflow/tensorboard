@@ -23,11 +23,20 @@ limitations under the License.
     // border-top on group-toolbar needs to be offset on sticky header for the
     // flawless UI.
     top: -1px;
+    display: flex;
+
+    &:hover {
+      cursor: pointer;
+    }
   }
 }
 
 .card-group:first-of-type .group-toolbar {
   border-top: none;
+}
+
+.group-title-wrapper {
+  flex: 1;
 }
 
 .group-title {

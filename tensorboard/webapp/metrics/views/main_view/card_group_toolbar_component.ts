@@ -24,7 +24,7 @@ import {
   selector: 'metrics-card-group-toolbar-component',
   template: `
     <div class="group-toolbar" (click)="groupExpansionToggled.emit()">
-      <span>
+      <span class="group-title-wrapper">
         <span
           class="group-title"
           aria-role="heading"
@@ -52,7 +52,7 @@ import {
       </button>
     </div>
   `,
-  styleUrls: [`card_groups_component.css`],
+  styleUrls: [`card_group_toolbar_component.css`],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CardGroupToolBarComponent {
