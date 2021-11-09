@@ -193,6 +193,23 @@ class SummaryV2PbTest(SummaryBaseTest, tf.test.TestCase):
         )
         np.testing.assert_allclose(buckets, expected_buckets)
 
+    def test_empty_input(self):
+        pb = self.histogram("empty", [])
+        buckets = tensor_util.make_ndarray(pb.value[0].tensor)
+        # By default there will be 30 buckets.
+        np.testing.assert_allclose(buckets, np.zeros((30, 3)))
+
+    def test_empty_input_of_high_rank(self):
+        pb = self.histogram("empty_but_fancy", [[[], []], [[], []]])
+        buckets = tensor_util.make_ndarray(pb.value[0].tensor)
+        # By default there will be 30 buckets.
+        np.testing.assert_allclose(buckets, np.zeros((30, 3)))
+
+    def test_zero_bucket_count(self):
+        pb = self.histogram("zero_bucket_count", [1, 1, 1], buckets=0)
+        buckets = tensor_util.make_ndarray(pb.value[0].tensor)
+        np.testing.assert_array_equal(buckets, np.array([]).reshape((0, 3)))
+
 
 class SummaryV2OpTest(SummaryBaseTest, tf.test.TestCase):
     def setUp(self):

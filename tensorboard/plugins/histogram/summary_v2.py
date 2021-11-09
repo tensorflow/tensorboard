@@ -14,15 +14,22 @@
 # ==============================================================================
 """Histogram summaries and TensorFlow operations to create them, V2 versions.
 
-A histogram summary stores a list of buckets. Each bucket is encoded as
-a triple `[left_edge, right_edge, count]`. Thus, a full histogram is
-encoded as a tensor of dimension `[k, 3]`.
+A histogram summary stores a list of buckets. Each bucket is encoded as a triple
+`[left_edge, right_edge, count]`. Thus, a full histogram is encoded as a tensor
+of dimension `[k, 3]`, where the first `k - 1` buckets are closed-open and the
+last bucket is closed-closed.
 
-In general, the value of `k` (the number of buckets) will be a constant,
-like 30. There are two edge cases: if there is no data, then there are
-no buckets (the shape is `[0, 3]`); and if there is data but all points
-have the same value, then then all buckets' left and right endpoints are
-the same but only the last bucket has nonzero count (the shape is `[k, 3]`).
+In general, the value of `k` (the number of buckets) will be a constant, like 30.
+For V2 format, there are two edge cases: if there is no data, then there are no
+buckets (the shape is `[0, 3]`); and if there is data but all points have the
+same value, then there is one bucket whose left and right endpoints are the same
+(the shape is `[1, 3]`).
+
+For V3 format, the shape of the output histogram is always constant (`[k, 3]`).
+In the case of empty data, the output will be an all-zero histogram of shape
+`[k, 3]`, where all edges and counts are zeros. If there is data but all points
+have the same value, then all buckets' left and right edges are the same and only
+the last bucket has nonzero count.
 """
 
 import contextlib
@@ -257,10 +264,10 @@ def histogram_pb(tag, data, buckets=None, description=None):
       tag: String tag for the summary.
       data: A `np.array` or array-like form of any shape. Must have type
         castable to `float`.
-      buckets: Optional positive `int`. The output will have this
-        many buckets, except in two edge cases. If there is no data, then
-        there are no buckets. If there is data but all points have the
-        same value, then all buckets' left and right endpoints are the
+      buckets: Optional positive `int`. The output shape will always be
+        [buckets, 3]. If there is no data, then an all-zero array of shape
+        [buckets, 3] will be returned. If there is data but all points have
+        the same value, then all buckets' left and right endpoints are the
         same and only the last bucket has nonzero count.
       description: Optional long-form description for this summary, as a
         `str`. Markdown is supported. Defaults to empty.
@@ -270,8 +277,10 @@ def histogram_pb(tag, data, buckets=None, description=None):
     """
     bucket_count = DEFAULT_BUCKET_COUNT if buckets is None else buckets
     data = np.array(data).flatten().astype(float)
-    if data.size == 0:
+    if bucket_count == 0:
         histogram_buckets = np.array([]).reshape((0, 3))
+    elif data.size == 0:
+        histogram_buckets = np.zeros((bucket_count, 3))
     else:
         min_ = np.min(data)
         max_ = np.max(data)
