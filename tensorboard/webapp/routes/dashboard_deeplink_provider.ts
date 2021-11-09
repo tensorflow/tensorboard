@@ -165,8 +165,8 @@ export class DashboardDeepLinkProvider extends DeepLinkProvider {
       ),
       store.select(selectors.getRunSelectorRegexFilter).pipe(
         map((value) => {
-          if(!value) return [];
-          return [{key: RUN_REGEX_FILTER_KEY, value}]
+          if (!value) return [];
+          return [{key: RUN_REGEX_FILTER_KEY, value}];
         })
       ),
     ]).pipe(

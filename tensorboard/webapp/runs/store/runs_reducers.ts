@@ -105,9 +105,9 @@ const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
 
     if (groupBy) {
       const regexString =
-      groupBy.key === GroupByKey.REGEX
-        ? groupBy.regexString
-        : state.colorGroupRegexString;
+        groupBy.key === GroupByKey.REGEX
+          ? groupBy.regexString
+          : state.colorGroupRegexString;
       state.colorGroupRegexString = regexString;
       state.userSetGroupByKey = groupBy.key ?? null;
     }
