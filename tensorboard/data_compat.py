@@ -83,33 +83,42 @@ def make_summary(tag, metadata, data):
 def _migrate_histogram_value(value):
     """Convert `old-style` histogram value to `new-style`.
 
-    Since by default min value is DBL_MAX and max value is -DBL_MAX, empty
-    buckets on the left and right ends are removed to prevent the case of
-    `backwards` (left edge > right edge) buckets.
+    The "old-style" format can have outermost bucket limits of -DBL_MAX and
+    DBL_MAX, which are problematic for visualization. We replace those here
+    with the actual min and max values seen in the input data, but then in
+    order to avoid introducing "backwards" buckets (where left edge > right
+    edge), we first must drop all empty buckets on the left and right ends.
     """
+    summary_metadata = histogram_metadata.create_summary_metadata(
+        display_name=value.metadata.display_name or value.tag,
+        description=value.metadata.summary_description,
+    )
+
     histogram_value = value.histo
     bucket_counts = histogram_value.bucket
     # Find the indices of the leftmost and rightmost non-empty buckets.
     n = len(bucket_counts)
     start = next((i for i in range(n) if bucket_counts[i] > 0), n)
-    end = next((i for i in range(n - 1, -1, -1) if bucket_counts[i] > 0), -1)
-    # Discard empty buckets on both ends.
-    bucket_lefts = histogram_value.bucket_limit[start:end]
-    bucket_rights = histogram_value.bucket_limit[start:end]
+    end = next((i for i in reversed(range(n)) if bucket_counts[i] > 0), -1)
+    if start > end:
+        # If all input buckets were empty, treat it as a zero-bucket
+        # new-style histogram.
+        return make_summary(
+            value.tag, summary_metadata, np.zeros([0, 3], dtype=np.float32)
+        )
+    # Discard empty buckets on both ends, and keep only the "inner" edges
+    # from the remaining buckets. Note that bucket indices range from `start`
+    # to `end` inclusive, but bucket_limit indices are exclusive of `end` -
+    # this is because bucket_limit[i] is the right-hand edge for bucket[i].
     bucket_counts = bucket_counts[start : end + 1]
-    if start <= end:
-        # Use min as the left-hand limit for the first non-empty bucket.
-        bucket_lefts = [histogram_value.min] + bucket_lefts
-        # Use max as the right-hand limit for the last non-empty bucket.
-        bucket_rights = bucket_rights + [histogram_value.max]
+    inner_edges = histogram_value.bucket_limit[start:end]
+    # Use min as the left-hand limit for the first non-empty bucket.
+    bucket_lefts = [histogram_value.min] + inner_edges
+    # Use max as the right-hand limit for the last non-empty bucket.
+    bucket_rights = inner_edges + [histogram_value.max]
     buckets = np.array(
         [bucket_lefts, bucket_rights, bucket_counts], dtype=np.float32
     ).transpose()
-
-    summary_metadata = histogram_metadata.create_summary_metadata(
-        display_name=value.metadata.display_name or value.tag,
-        description=value.metadata.summary_description,
-    )
 
     return make_summary(value.tag, summary_metadata, buckets)
 
