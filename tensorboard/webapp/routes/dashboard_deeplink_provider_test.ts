@@ -442,26 +442,26 @@ describe('core deeplink provider', () => {
           key: GroupByKey.EXPERIMENT,
         });
         store.refreshState();
-        expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual([
-          {key: 'runColorGroup', value: 'experiment'},
-        ]);
+        expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual(
+          [{key: 'runColorGroup', value: 'experiment'}]
+        );
 
         store.overrideSelector(selectors.getRunUserSetGroupBy, {
           key: GroupByKey.RUN,
         });
         store.refreshState();
-        expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual([
-          {key: 'runColorGroup', value: 'run'},
-        ]);
+        expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual(
+          [{key: 'runColorGroup', value: 'run'}]
+        );
 
         store.overrideSelector(selectors.getRunUserSetGroupBy, {
           key: GroupByKey.REGEX,
           regexString: 'hello:world',
         });
         store.refreshState();
-        expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual([
-          {key: 'runColorGroup', value: 'regex:hello:world'},
-        ]);
+        expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual(
+          [{key: 'runColorGroup', value: 'regex:hello:world'}]
+        );
       });
 
       it('serializes interesting regex strings', () => {
@@ -470,21 +470,20 @@ describe('core deeplink provider', () => {
           regexString: '',
         });
         store.refreshState();
-        expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual([
-          {key: 'runColorGroup', value: 'regex:'},
-        ]);
+        expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual(
+          [{key: 'runColorGroup', value: 'regex:'}]
+        );
 
         store.overrideSelector(selectors.getRunUserSetGroupBy, {
           key: GroupByKey.REGEX,
           regexString: 'hello/(world):goodbye',
         });
         store.refreshState();
-        expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual([
-          {key: 'runColorGroup', value: 'regex:hello/(world):goodbye'},
-        ]);
+        expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual(
+          [{key: 'runColorGroup', value: 'regex:hello/(world):goodbye'}]
+        );
       });
     });
-
 
     describe('regex filter', () => {
       it('does not serialize an empty string', () => {
@@ -498,23 +497,23 @@ describe('core deeplink provider', () => {
         store.overrideSelector(selectors.getRunSelectorRegexFilter, 'hello');
         store.refreshState();
 
-        expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual([
-          {key: 'runRegexFilter', value: 'hello'},
-        ]);
+        expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual(
+          [{key: 'runRegexFilter', value: 'hello'}]
+        );
 
         store.overrideSelector(selectors.getRunSelectorRegexFilter, 'hello:');
         store.refreshState();
 
-        expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual([
-          {key: 'runRegexFilter', value: 'hello:'},
-        ]);
+        expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual(
+          [{key: 'runRegexFilter', value: 'hello:'}]
+        );
 
         store.overrideSelector(selectors.getRunSelectorRegexFilter, 'hello:.*');
         store.refreshState();
 
-        expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual([
-          {key: 'runRegexFilter', value: 'hello:.*'},
-        ]);
+        expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual(
+          [{key: 'runRegexFilter', value: 'hello:.*'}]
+        );
       });
     });
   });
