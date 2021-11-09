@@ -20,6 +20,7 @@ export function buildDeserializedState(
   return {
     runs: {
       groupBy: null,
+      regexFilter: null,
     },
     metrics: {
       pinnedCards: [],

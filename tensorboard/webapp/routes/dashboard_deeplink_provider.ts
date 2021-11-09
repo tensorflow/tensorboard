@@ -214,9 +214,9 @@ export class DashboardDeepLinkProvider extends DeepLinkProvider {
         case TAG_FILTER_KEY:
           tagFilter = value;
           break;
-          case RUN_REGEX_FILTER_KEY:
-            runRegexFilter = value;
-            break;
+        case RUN_REGEX_FILTER_KEY:
+          runRegexFilter = value;
+          break;
       }
     }
 
