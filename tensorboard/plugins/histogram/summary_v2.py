@@ -277,9 +277,7 @@ def histogram_pb(tag, data, buckets=None, description=None):
     """
     bucket_count = DEFAULT_BUCKET_COUNT if buckets is None else buckets
     data = np.array(data).flatten().astype(float)
-    if bucket_count == 0:
-        histogram_buckets = np.array([]).reshape((0, 3))
-    elif data.size == 0:
+    if bucket_count == 0 or data.size == 0:
         histogram_buckets = np.zeros((bucket_count, 3))
     else:
         min_ = np.min(data)
