@@ -201,9 +201,99 @@ class MigrateValueTest(tf.test.TestCase):
         self.assertEqual(expected_metadata, new_value.metadata)
         self.assertTrue(new_value.HasField("tensor"))
         buckets = tensor_util.make_ndarray(new_value.tensor)
+        for bucket in buckets:
+            # No `backwards` buckets.
+            self.assertLessEqual(bucket[0], bucket[1])
         self.assertEqual(old_value.histo.min, buckets[0][0])
         self.assertEqual(old_value.histo.max, buckets[-1][1])
         self.assertEqual(23 * 45, buckets[:, 2].astype(int).sum())
+
+    def test_empty_histogram(self):
+        with tf.compat.v1.Graph().as_default():
+            old_op = tf.compat.v1.summary.histogram(
+                "empty_yet_important", tf.constant([])
+            )
+            old_value = self._value_from_op(old_op)
+        assert old_value.HasField("histo"), old_value
+        new_value = data_compat.migrate_value(old_value)
+
+        self.assertEqual("empty_yet_important", new_value.tag)
+        expected_metadata = histogram_metadata.create_summary_metadata(
+            display_name="empty_yet_important", description=""
+        )
+        self.assertEqual(expected_metadata, new_value.metadata)
+        self.assertTrue(new_value.HasField("tensor"))
+        buckets = tensor_util.make_ndarray(new_value.tensor)
+        self.assertEmpty(buckets)
+
+    def test_single_value_histogram(self):
+        with tf.compat.v1.Graph().as_default():
+            old_op = tf.compat.v1.summary.histogram(
+                "single_value_data", tf.constant([1] * 1024)
+            )
+            old_value = self._value_from_op(old_op)
+        assert old_value.HasField("histo"), old_value
+        new_value = data_compat.migrate_value(old_value)
+
+        self.assertEqual("single_value_data", new_value.tag)
+        expected_metadata = histogram_metadata.create_summary_metadata(
+            display_name="single_value_data", description=""
+        )
+        self.assertEqual(expected_metadata, new_value.metadata)
+        self.assertTrue(new_value.HasField("tensor"))
+        buckets = tensor_util.make_ndarray(new_value.tensor)
+        # Only one bucket is kept.
+        self.assertEqual((1, 3), buckets.shape)
+        self.assertEqual(1, buckets[0][0])
+        self.assertEqual(1, buckets[-1][1])
+        self.assertEqual(1024, buckets[0][2])
+
+    def test_histogram_with_empty_buckets_on_both_ends(self):
+        with tf.compat.v1.Graph().as_default():
+            old_op = tf.compat.v1.summary.histogram(
+                "data_with_empty_buckets_on_both_ends",
+                tf.constant([1, 1, 1, 2, 2, 3, 3, 3, 3]),
+            )
+            old_value = self._value_from_op(old_op)
+        assert old_value.HasField("histo"), old_value
+        new_value = data_compat.migrate_value(old_value)
+
+        self.assertEqual("data_with_empty_buckets_on_both_ends", new_value.tag)
+        expected_metadata = histogram_metadata.create_summary_metadata(
+            display_name="data_with_empty_buckets_on_both_ends", description=""
+        )
+        self.assertEqual(expected_metadata, new_value.metadata)
+        self.assertTrue(new_value.HasField("tensor"))
+        buckets = tensor_util.make_ndarray(new_value.tensor)
+        for bucket in buckets:
+            # No `backwards` buckets.
+            self.assertLessEqual(bucket[0], bucket[1])
+        self.assertEqual(1, buckets[0][0])
+        self.assertEqual(3, buckets[-1][1])
+        self.assertEqual(9, buckets[:, 2].astype(int).sum())
+
+    def test_histogram_with_extremal_values(self):
+        with tf.compat.v1.Graph().as_default():
+            old_op = tf.compat.v1.summary.histogram(
+                "extremal_values", tf.constant([-1e20, 1e20])
+            )
+            old_value = self._value_from_op(old_op)
+        assert old_value.HasField("histo"), old_value
+        new_value = data_compat.migrate_value(old_value)
+
+        self.assertEqual("extremal_values", new_value.tag)
+        expected_metadata = histogram_metadata.create_summary_metadata(
+            display_name="extremal_values", description=""
+        )
+        self.assertEqual(expected_metadata, new_value.metadata)
+        self.assertTrue(new_value.HasField("tensor"))
+        buckets = tensor_util.make_ndarray(new_value.tensor)
+        for bucket in buckets:
+            # No `backwards` buckets.
+            self.assertLessEqual(bucket[0], bucket[1])
+        self.assertEqual(old_value.histo.min, buckets[0][0])
+        self.assertEqual(old_value.histo.max, buckets[-1][1])
+        self.assertEqual(2, buckets[:, 2].astype(int).sum())
 
     def test_new_style_histogram(self):
         with tf.compat.v1.Graph().as_default():
