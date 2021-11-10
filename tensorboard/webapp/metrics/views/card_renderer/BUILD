@@ -215,6 +215,7 @@ tf_ts_library(
         "scalar_card_types.ts",
     ],
     deps = [
+        "//tensorboard/webapp/experiments:types",
         "//tensorboard/webapp/widgets/line_chart_v2",
     ],
 )
@@ -264,6 +265,7 @@ tf_ng_module(
         "//tensorboard/webapp/angular:expect_angular_material_icon",
         "//tensorboard/webapp/angular:expect_angular_material_menu",
         "//tensorboard/webapp/angular:expect_angular_material_progress_spinner",
+        "//tensorboard/webapp/experiments:types",
         "//tensorboard/webapp/metrics:types",
         "//tensorboard/webapp/metrics/data_source",
         "//tensorboard/webapp/metrics/store",
@@ -274,6 +276,7 @@ tf_ng_module(
         "//tensorboard/webapp/types:ui",
         "//tensorboard/webapp/util:value_formatter",
         "//tensorboard/webapp/widgets:resize_detector",
+        "//tensorboard/webapp/widgets/experiment_alias",
         "//tensorboard/webapp/widgets/intersection_observer",
         "//tensorboard/webapp/widgets/line_chart_v2",
         "//tensorboard/webapp/widgets/line_chart_v2:line_chart_utils",
@@ -324,6 +327,7 @@ tf_ts_library(
         "//tensorboard/webapp/angular:expect_angular_material_slider",
         "//tensorboard/webapp/angular:expect_angular_platform_browser_animations",
         "//tensorboard/webapp/angular:expect_ngrx_store_testing",
+        "//tensorboard/webapp/experiments:types",
         "//tensorboard/webapp/metrics:test_lib",
         "//tensorboard/webapp/metrics:types",
         "//tensorboard/webapp/metrics/actions",

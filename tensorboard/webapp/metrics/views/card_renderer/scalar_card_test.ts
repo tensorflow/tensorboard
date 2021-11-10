@@ -40,11 +40,13 @@ import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {Observable, of, ReplaySubject} from 'rxjs';
 
 import {State} from '../../../app_state';
+import {ExperimentAlias} from '../../../experiments/types';
 import {Run} from '../../../runs/store/runs_types';
 import {buildRun} from '../../../runs/store/testing';
 import * as selectors from '../../../selectors';
 import {MatIconTestingModule} from '../../../testing/mat_icon_module';
 import {DataLoadState} from '../../../types/data';
+import {ExperimentAliasModule} from '../../../widgets/experiment_alias/experiment_alias_module';
 import {IntersectionObserverTestingModule} from '../../../widgets/intersection_observer/intersection_observer_testing_module';
 import {
   Formatter,
@@ -159,11 +161,18 @@ class TestableDataDownload {
 
 const anyString = jasmine.any(String);
 
+function buildAlias(override: Partial<ExperimentAlias> = {}): ExperimentAlias {
+  return {
+    aliasNumber: 1,
+    aliasText: 'hello',
+    ...override,
+  };
+}
+
 describe('scalar card', () => {
   let store: MockStore<State>;
   let selectSpy: jasmine.Spy;
   let overlayContainer: OverlayContainer;
-  let resizeTester: ResizeDetectorTestingModule;
   let intersectionObserver: IntersectionObserverTestingModule;
 
   const Selector = {
@@ -236,6 +245,7 @@ describe('scalar card', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [
+        ExperimentAliasModule,
         IntersectionObserverTestingModule,
         LinkedTimeFobModule,
         MatDialogModule,
@@ -264,7 +274,6 @@ describe('scalar card', () => {
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
     selectSpy = spyOn(store, 'select').and.callThrough();
     overlayContainer = TestBed.inject(OverlayContainer);
-    resizeTester = TestBed.inject(ResizeDetectorTestingModule);
     store.overrideSelector(
       selectors.getCurrentRouteRunSelection,
       new Map<string, boolean>()
@@ -512,7 +521,7 @@ describe('scalar card', () => {
       );
     });
 
-    it('sets correct displayName when there is a experiment map', fakeAsync(() => {
+    it('sets displayName always as run name', fakeAsync(() => {
       selectSpy
         .withArgs(selectors.getExperimentIdForRunId, {runId: 'run1'})
         .and.returnValue(of('eid1'));
@@ -527,9 +536,13 @@ describe('scalar card', () => {
       const fixture = createComponent('card1');
 
       const lineChartEl = fixture.debugElement.query(Selector.LINE_CHART);
-      const {displayName} =
+      const {displayName, alias} =
         lineChartEl.componentInstance.seriesMetadataMap['run1'];
-      expect(displayName).toBe('[1] existing_exp/Run1 name');
+      expect(displayName).toBe('Run1 name');
+      expect(alias).toEqual({
+        aliasNumber: 1,
+        aliasText: 'existing_exp',
+      });
     }));
 
     it('sets run id if a run and experiment are not found', fakeAsync(() => {
@@ -544,9 +557,10 @@ describe('scalar card', () => {
       const fixture = createComponent('card1');
 
       const lineChartEl = fixture.debugElement.query(Selector.LINE_CHART);
-      const {displayName} =
+      const {alias, displayName} =
         lineChartEl.componentInstance.seriesMetadataMap['run1'];
       expect(displayName).toBe('run1');
+      expect(alias).toBeNull();
     }));
 
     it('shows experiment id and "..." if only run is not found (maybe loading)', fakeAsync(() => {
@@ -567,7 +581,7 @@ describe('scalar card', () => {
 
       const {displayName} =
         lineChartEl.componentInstance.seriesMetadataMap['run1'];
-      expect(displayName).toBe('[1] existing_exp/...');
+      expect(displayName).toBe('...');
     }));
 
     it('updates displayName with run when run populates', fakeAsync(() => {
@@ -590,9 +604,13 @@ describe('scalar card', () => {
       fixture.detectChanges();
 
       const lineChartEl = fixture.debugElement.query(Selector.LINE_CHART);
-      const {displayName} =
+      const {alias, displayName} =
         lineChartEl.componentInstance.seriesMetadataMap['run1'];
-      expect(displayName).toBe('[1] existing_exp/Foobar');
+      expect(displayName).toBe('Foobar');
+      expect(alias).toEqual({
+        aliasNumber: 1,
+        aliasText: 'existing_exp',
+      });
     }));
   });
 
@@ -938,6 +956,7 @@ describe('scalar card', () => {
         color: '#f00',
         opacity: 0.25,
         aux: true,
+        alias: null,
       },
       run2: {
         id: 'run2',
@@ -947,6 +966,7 @@ describe('scalar card', () => {
         color: '#0f0',
         opacity: 0.25,
         aux: true,
+        alias: null,
       },
       '["smoothed","run1"]': {
         id: '["smoothed","run1"]',
@@ -957,6 +977,7 @@ describe('scalar card', () => {
         color: '#f00',
         opacity: 1,
         aux: false,
+        alias: null,
       },
       '["smoothed","run2"]': {
         id: '["smoothed","run2"]',
@@ -967,6 +988,7 @@ describe('scalar card', () => {
         color: '#0f0',
         opacity: 1,
         aux: false,
+        alias: null,
       },
     });
   }));
@@ -1028,6 +1050,7 @@ describe('scalar card', () => {
         color: '#f00',
         opacity: 1,
         aux: false,
+        alias: null,
       },
       run2: {
         id: 'run2',
@@ -1037,6 +1060,7 @@ describe('scalar card', () => {
         color: '#0f0',
         opacity: 1,
         aux: false,
+        alias: null,
       },
     });
   }));
@@ -1054,6 +1078,7 @@ describe('scalar card', () => {
           displayName: 'A name',
           visible: true,
           color: '#f00',
+          alias: null,
           ...metadata,
         },
         closestPointIndex: 0,
@@ -1114,6 +1139,7 @@ describe('scalar card', () => {
             id: 'row1',
             type: SeriesType.ORIGINAL,
             displayName: 'Row 1',
+            alias: null,
             visible: true,
             color: '#00f',
           },
@@ -1131,6 +1157,7 @@ describe('scalar card', () => {
             id: 'row2',
             type: SeriesType.ORIGINAL,
             displayName: 'Row 2',
+            alias: null,
             visible: true,
             color: '#0f0',
           },
@@ -1174,6 +1201,7 @@ describe('scalar card', () => {
             id: 'smoothed_row1',
             type: SeriesType.DERIVED,
             displayName: 'Row 1',
+            alias: null,
             visible: true,
             color: '#00f',
             aux: false,
@@ -1193,6 +1221,7 @@ describe('scalar card', () => {
             id: 'smoothed_row2',
             type: SeriesType.DERIVED,
             displayName: 'Row 2',
+            alias: null,
             visible: true,
             color: '#0f0',
             aux: false,
@@ -1250,6 +1279,7 @@ describe('scalar card', () => {
             id: 'smoothed_row1',
             type: SeriesType.DERIVED,
             displayName: 'Row 1',
+            alias: null,
             visible: true,
             color: '#00f',
             aux: false,
@@ -1269,6 +1299,7 @@ describe('scalar card', () => {
             id: 'smoothed_row2',
             type: SeriesType.DERIVED,
             displayName: 'Row 2',
+            alias: null,
             visible: true,
             color: '#0f0',
             aux: false,
@@ -1312,6 +1343,37 @@ describe('scalar card', () => {
       ]);
     }));
 
+    it('renders alias when alias is non-null', fakeAsync(() => {
+      const fixture = createComponent('card1');
+      setTooltipData(fixture, [
+        buildTooltipDatum({
+          id: 'row1',
+          type: SeriesType.ORIGINAL,
+          displayName: 'Row 1',
+          alias: null,
+          visible: true,
+          color: '#00f',
+        }),
+        buildTooltipDatum({
+          id: 'row2',
+          type: SeriesType.ORIGINAL,
+          displayName: 'Row 2',
+          alias: buildAlias({
+            aliasNumber: 50,
+            aliasText: 'myAlias',
+          }),
+          visible: true,
+          color: '#0f0',
+        }),
+      ]);
+      fixture.detectChanges();
+
+      assertTooltipRows(fixture, [
+        ['', 'Row 1', anyString, anyString, anyString, anyString],
+        ['', '50myAlias/Row 2', anyString, anyString, anyString, anyString],
+      ]);
+    }));
+
     it('sorts by ascending', fakeAsync(() => {
       store.overrideSelector(
         selectors.getMetricsTooltipSort,
@@ -1325,6 +1387,7 @@ describe('scalar card', () => {
             id: 'row1',
             type: SeriesType.ORIGINAL,
             displayName: 'Row 1',
+            alias: null,
             visible: true,
             color: '#f00',
             aux: false,
@@ -1342,6 +1405,7 @@ describe('scalar card', () => {
             id: 'row2',
             type: SeriesType.ORIGINAL,
             displayName: 'Row 2',
+            alias: null,
             visible: true,
             color: '#0f0',
             aux: false,
@@ -1359,6 +1423,7 @@ describe('scalar card', () => {
             id: 'row3',
             type: SeriesType.ORIGINAL,
             displayName: 'Row 3',
+            alias: null,
             visible: true,
             color: '#00f',
             aux: false,
@@ -1394,6 +1459,7 @@ describe('scalar card', () => {
             id: 'row1',
             type: SeriesType.ORIGINAL,
             displayName: 'Row 1',
+            alias: null,
             visible: true,
             color: '#f00',
             aux: false,
@@ -1411,6 +1477,7 @@ describe('scalar card', () => {
             id: 'row2',
             type: SeriesType.ORIGINAL,
             displayName: 'Row 2',
+            alias: null,
             visible: true,
             color: '#0f0',
             aux: false,
@@ -1428,6 +1495,7 @@ describe('scalar card', () => {
             id: 'row3',
             type: SeriesType.ORIGINAL,
             displayName: 'Row 3',
+            alias: null,
             visible: true,
             color: '#00f',
             aux: false,
@@ -1463,6 +1531,7 @@ describe('scalar card', () => {
             id: 'row1',
             type: SeriesType.ORIGINAL,
             displayName: 'Row 1',
+            alias: null,
             visible: true,
             color: '#f00',
             aux: false,
@@ -1480,6 +1549,7 @@ describe('scalar card', () => {
             id: 'row2',
             type: SeriesType.ORIGINAL,
             displayName: 'Row 2',
+            alias: null,
             visible: true,
             color: '#0f0',
             aux: false,
@@ -1497,6 +1567,7 @@ describe('scalar card', () => {
             id: 'row3',
             type: SeriesType.ORIGINAL,
             displayName: 'Row 3',
+            alias: null,
             visible: true,
             color: '#00f',
             aux: false,
@@ -1653,6 +1724,7 @@ describe('scalar card', () => {
           color: '#f00',
           opacity: 1,
           aux: false,
+          alias: null,
         },
         '["run1",1]': {
           id: '["run1",1]',
@@ -1662,6 +1734,7 @@ describe('scalar card', () => {
           color: '#f00',
           opacity: 1,
           aux: false,
+          alias: null,
         },
         '["run2",0]': {
           id: '["run2",0]',
@@ -1671,6 +1744,7 @@ describe('scalar card', () => {
           color: '#0f0',
           opacity: 1,
           aux: false,
+          alias: null,
         },
       });
     }));
@@ -1771,6 +1845,7 @@ describe('scalar card', () => {
           color: '#f00',
           opacity: 1,
           aux: false,
+          alias: null,
         },
         '["run1",1]': {
           id: '["run1",1]',
@@ -1780,6 +1855,7 @@ describe('scalar card', () => {
           color: '#f00',
           opacity: 1,
           aux: false,
+          alias: null,
         },
       });
     }));

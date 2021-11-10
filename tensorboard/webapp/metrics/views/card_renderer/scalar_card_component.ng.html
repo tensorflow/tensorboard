@@ -143,7 +143,14 @@ limitations under the License.
             <td class="tooltip-row-circle">
               <span [style.backgroundColor]="datum.metadata.color"></span>
             </td>
-            <td class="name">{{ datum.metadata.displayName }}</td>
+            <td class="name">
+              <ng-container *ngIf="datum.metadata.alias"
+                ><tb-experiment-alias
+                  [alias]="datum.metadata.alias"
+                ></tb-experiment-alias
+                >/</ng-container
+              >{{ datum.metadata.displayName }}
+            </td>
             <td *ngIf="smoothingEnabled">
               {{ valueFormatter.formatShort(datum.point.y) }}
             </td>

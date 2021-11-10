@@ -19,6 +19,7 @@ import {MatIconModule} from '@angular/material/icon';
 import {MatMenuModule} from '@angular/material/menu';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 
+import {ExperimentAliasModule} from '../../../widgets/experiment_alias/experiment_alias_module';
 import {IntersectionObserverModule} from '../../../widgets/intersection_observer/intersection_observer_module';
 import {LineChartModule as LineChartV2Module} from '../../../widgets/line_chart_v2/line_chart_module';
 import {LinkedTimeFobModule} from '../../../widgets/linked_time_fob/linked_time_fob_module';
@@ -35,6 +36,7 @@ import {VisSelectedTimeClippedModule} from './vis_selected_time_clipped_module';
   imports: [
     CommonModule,
     DataDownloadModule,
+    ExperimentAliasModule,
     IntersectionObserverModule,
     LineChartV2Module,
     LinkedTimeFobModule,

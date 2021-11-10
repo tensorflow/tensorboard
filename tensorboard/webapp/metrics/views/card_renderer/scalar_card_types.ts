@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+import {ExperimentAlias} from '../../../experiments/types';
 import {
   DataSeries,
   DataSeriesMetadata,
@@ -31,10 +32,12 @@ export interface SmoothedSeriesMetadata extends DataSeriesMetadata {
   type: SeriesType.DERIVED;
   aux: false;
   originalSeriesId: string;
+  alias: ExperimentAlias | null;
 }
 
 export interface OriginalSeriesMetadata extends DataSeriesMetadata {
   type: SeriesType.ORIGINAL;
+  alias: ExperimentAlias | null;
 }
 
 export type ScalarCardSeriesMetadata =
