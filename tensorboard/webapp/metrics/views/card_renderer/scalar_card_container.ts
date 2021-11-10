@@ -37,6 +37,7 @@ import {
 } from 'rxjs/operators';
 
 import {State} from '../../../app_state';
+import {ExperimentAlias} from '../../../experiments/types';
 import {
   getCardPinnedState,
   getCurrentRouteRunSelection,
@@ -75,7 +76,6 @@ import {
   SeriesType,
 } from './scalar_card_types';
 import {
-  getDisplayNameForRun,
   maybeClipSelectedTime,
   partitionSeries,
   ViewSelectedTime,
@@ -371,13 +371,20 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
     this.chartMetadataMap$ = partitionedSeries$.pipe(
       switchMap<
         PartitionedSeries[],
-        Observable<Array<PartitionedSeries & {displayName: string}>>
+        Observable<
+          Array<
+            PartitionedSeries & {
+              displayName: string;
+              alias: ExperimentAlias | null;
+            }
+          >
+        >
       >((partitioned) => {
         return combineLatest(
           partitioned.map((series) => {
-            return this.getRunDisplayName(series.runId).pipe(
-              map((displayName) => {
-                return {...series, displayName};
+            return this.getRunDisplayNameAndAlias(series.runId).pipe(
+              map((displayNameAndAlias) => {
+                return {...series, ...displayNameAndAlias};
               })
             );
           })
@@ -398,12 +405,19 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
         const shouldSmooth = smoothing > 0;
 
         for (const partitioned of namedPartitionedSeries) {
-          const {seriesId, runId, displayName, partitionIndex, partitionSize} =
-            partitioned;
+          const {
+            seriesId,
+            runId,
+            displayName,
+            alias,
+            partitionIndex,
+            partitionSize,
+          } = partitioned;
 
           metadataMap[seriesId] = {
             type: SeriesType.ORIGINAL,
             id: seriesId,
+            alias,
             displayName:
               partitionSize > 1
                 ? `${displayName}: ${partitionIndex}`
@@ -460,18 +474,21 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
     this.ngUnsubscribe.complete();
   }
 
-  private getRunDisplayName(runId: string): Observable<string> {
+  private getRunDisplayNameAndAlias(
+    runId: string
+  ): Observable<{displayName: string; alias: ExperimentAlias | null}> {
     return combineLatest([
       this.store.select(getExperimentIdForRunId, {runId}),
       this.store.select(getExperimentIdToExperimentAliasMap),
       this.store.select(getRun, {runId}),
     ]).pipe(
       map(([experimentId, idToAlias, run]) => {
-        return getDisplayNameForRun(
-          runId,
-          run,
-          experimentId ? idToAlias[experimentId] : null
-        );
+        const alias =
+          experimentId !== null ? idToAlias[experimentId] ?? null : null;
+        return {
+          displayName: !run && !alias ? runId : run?.name ?? '...',
+          alias: alias,
+        };
       })
     );
   }
