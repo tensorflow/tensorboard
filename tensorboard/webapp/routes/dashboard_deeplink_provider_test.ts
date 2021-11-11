@@ -485,7 +485,7 @@ describe('core deeplink provider', () => {
       });
     });
 
-    describe('regex filter', () => {
+    describe('filter', () => {
       it('does not serialize an empty string', () => {
         store.overrideSelector(selectors.getRunSelectorRegexFilter, '');
         store.refreshState();
@@ -493,26 +493,26 @@ describe('core deeplink provider', () => {
         expect(queryParamsSerialized).toEqual([]);
       });
 
-      it('serializes runRegexFilter state', () => {
+      it('serializes runFilter state', () => {
         store.overrideSelector(selectors.getRunSelectorRegexFilter, 'hello');
         store.refreshState();
 
         expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual(
-          [{key: 'runRegexFilter', value: 'hello'}]
+          [{key: 'runFilter', value: 'hello'}]
         );
 
         store.overrideSelector(selectors.getRunSelectorRegexFilter, 'hello:');
         store.refreshState();
 
         expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual(
-          [{key: 'runRegexFilter', value: 'hello:'}]
+          [{key: 'runFilter', value: 'hello:'}]
         );
 
         store.overrideSelector(selectors.getRunSelectorRegexFilter, 'hello:.*');
         store.refreshState();
 
         expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual(
-          [{key: 'runRegexFilter', value: 'hello:.*'}]
+          [{key: 'runFilter', value: 'hello:.*'}]
         );
       });
     });

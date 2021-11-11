@@ -28,4 +28,4 @@ export const RUN_COLOR_GROUP_KEY = 'runColorGroup';
 
 export const TAG_FILTER_KEY = 'tagFilter';
 
-export const RUN_REGEX_FILTER_KEY = 'runRegexFilter';
+export const RUN_FILTER_KEY = 'runFilter';

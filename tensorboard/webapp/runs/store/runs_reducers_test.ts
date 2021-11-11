@@ -1154,7 +1154,7 @@ describe('runs_reducers', () => {
         })
       );
 
-      expect(nextState.data.regexFilter).toEqual('hello');
+      expect(nextState.data.regexFilter).toBe('hello');
     });
 
     it('sets regexFilter to the valid value provided', () => {
@@ -1176,7 +1176,7 @@ describe('runs_reducers', () => {
         })
       );
 
-      expect(nextState.data.regexFilter).toEqual('world');
+      expect(nextState.data.regexFilter).toBe('world');
     });
 
     it('set regexFilter and userSetGroupBy to the value provided', () => {
@@ -1202,8 +1202,8 @@ describe('runs_reducers', () => {
         })
       );
 
-      expect(nextState.data.regexFilter).toEqual('world');
-      expect(nextState.data.userSetGroupByKey).toEqual(GroupByKey.EXPERIMENT);
+      expect(nextState.data.regexFilter).toBe('world');
+      expect(nextState.data.userSetGroupByKey).toBe(GroupByKey.EXPERIMENT);
     });
   });
 
