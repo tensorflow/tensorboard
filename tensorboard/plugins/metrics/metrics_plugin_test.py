@@ -420,6 +420,14 @@ class MetricsPluginTest(tf.test.TestCase):
         )
         clean_response = self._clean_time_series_responses(response)
 
+        # By default 30 bins will be generated.
+        bins_zero = [{"min": 0, "max": 0, "count": 0}] * 29 + [
+            {"min": 0, "max": 0, "count": 1.0}
+        ]
+        bins_ten = [{"min": 10, "max": 10, "count": 0}] * 29 + [
+            {"min": 10, "max": 10, "count": 1.0}
+        ]
+
         self.assertEqual(
             [
                 {
@@ -431,16 +439,12 @@ class MetricsPluginTest(tf.test.TestCase):
                             {
                                 "wallTime": "<wall_time>",
                                 "step": 0,
-                                "bins": [
-                                    {"min": -0.5, "max": 0.5, "count": 1.0}
-                                ],
+                                "bins": bins_zero,
                             },
                             {
                                 "wallTime": "<wall_time>",
                                 "step": 1,
-                                "bins": [
-                                    {"min": 9.5, "max": 10.5, "count": 1.0}
-                                ],
+                                "bins": bins_ten,
                             },
                         ]
                     },
