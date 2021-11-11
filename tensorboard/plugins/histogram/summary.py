@@ -16,20 +16,13 @@
 
 A histogram summary stores a list of buckets. Each bucket is encoded as
 a triple `[left_edge, right_edge, count]`. Thus, a full histogram is
-encoded as a tensor of dimension `[k, 3]`, where the first `k - 1` buckets
-are closed-open and the last bucket is closed-closed.
+encoded as a tensor of dimension `[k, 3]`.
 
 In general, the value of `k` (the number of buckets) will be a constant,
-like 30. For V2 format (deprecated), there are two edge cases: if there
-is no data, then there are no buckets (the shape is `[0, 3]`); and if
-there is data but all points have the same value, then there is one
-bucket whose left and right endpoints are the same (the shape is `[1, 3]`).
-
-For V3 format, the shape of the output histogram is always constant (`[k, 3]`).
-In the case of empty data, the output will be an all-zero histogram of shape
-`[k, 3]`, where all edges and counts are zeros. If there is data but all points
-have the same value, then all buckets' left and right edges are the same and
-only the last bucket has nonzero count.
+like 30. There are two edge cases: if there is no data, then there are
+no buckets (the shape is `[0, 3]`); and if there is data but all points
+have the same value, then there is one bucket whose left and right
+endpoints are the same (the shape is `[1, 3]`).
 
 NOTE: This module is in beta, and its API is subject to change, but the
 data that it stores to disk will be supported forever.
@@ -42,7 +35,10 @@ from tensorboard.plugins.histogram import metadata
 from tensorboard.plugins.histogram import summary_v2
 
 
-# Export the latest versions.
+# Export V2 versions.
+histogram_v2 = summary_v2.histogram_v2
+
+# Export the default versions.
 histogram = summary_v2.histogram
 histogram_pb = summary_v2.histogram_pb
 

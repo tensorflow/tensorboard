@@ -240,7 +240,7 @@ class SummaryV2OpTest(SummaryBaseTest, tf.test.TestCase):
         writer.close()
 
     def call_histogram_op(self, *args, **kwargs):
-        summary.histogram(*args, **kwargs)
+        summary.histogram_v2(*args, **kwargs)
 
     def test_scoped_tag(self):
         with tf.name_scope("scope"):
@@ -263,6 +263,50 @@ class SummaryV2OpTest(SummaryBaseTest, tf.test.TestCase):
         finally:
             # Reset to default state for other tests.
             tf2.summary.experimental.set_step(None)
+
+
+class SummaryV2OpGraphTest(SummaryV2OpTest, tf.test.TestCase):
+    def write_histogram_event(self, *args, **kwargs):
+        kwargs.setdefault("step", 1)
+        # Hack to extract current scope since there's no direct API for it.
+        with tf.name_scope("_") as temp_scope:
+            scope = temp_scope.rstrip("/_")
+
+        @tf2.function
+        def graph_fn():
+            # Recreate the active scope inside the defun since it won't propagate.
+            with tf.name_scope(scope):
+                self.call_histogram_op(*args, **kwargs)
+
+        writer = tf2.summary.create_file_writer(self.get_temp_dir())
+        with writer.as_default():
+            graph_fn()
+        writer.close()
+
+    def test_no_gradient_error_xla(self):
+        @tf2.function(jit_compile=True)
+        def graph_fn():
+            x = tf.constant(1.0)
+            with tf2.GradientTape() as tape1:
+                with tf2.GradientTape() as tape2:
+                    tape1.watch(x)
+                    tape2.watch(x)
+                    self.call_histogram_op(
+                        name="loss", step=0, data=x, buckets=10
+                    )
+
+        # Note that XLA CPU/GPU has no outside compilation support, so summaries
+        # won't actually run in a jit_compiled function. TPUs do, and follow
+        # some similar codepaths, so this test stops at graph building to
+        # exercise those paths without a TPU available.
+        writer = tf2.summary.create_file_writer(self.get_temp_dir())
+        with writer.as_default():
+            graph_fn.get_concrete_function()
+
+
+class SummaryV3OpTest(SummaryV2OpTest, tf.test.TestCase):
+    def call_histogram_op(self, *args, **kwargs):
+        summary.histogram(*args, **kwargs)
 
     def test_singleton_input(self):
         pb = self.histogram("twelve", [12])
@@ -300,7 +344,7 @@ class SummaryV2OpTest(SummaryBaseTest, tf.test.TestCase):
         np.testing.assert_array_equal(buckets, np.array([]).reshape((0, 3)))
 
 
-class SummaryV2OpGraphTest(SummaryV2OpTest, tf.test.TestCase):
+class SummaryV3OpGraphTest(SummaryV3OpTest, tf.test.TestCase):
     def write_histogram_event(self, *args, **kwargs):
         kwargs.setdefault("step", 1)
         # Hack to extract current scope since there's no direct API for it.
