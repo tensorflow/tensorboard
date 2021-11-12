@@ -116,8 +116,8 @@ const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
     return {
       ...state,
       colorGroupRegexString,
-      userSetGroupByKey,
       regexFilter,
+      userSetGroupByKey,
     };
   }),
   on(runsActions.fetchRunsRequested, (state, action) => {
