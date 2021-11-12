@@ -24,6 +24,8 @@ limitations under the License.
     // flawless UI.
     top: -1px;
     display: flex;
+    border: 0;
+    width: 100%;
 
     .card-group:first-of-type & {
       border-top: 0;
@@ -34,8 +36,18 @@ limitations under the License.
   }
 }
 
+.expand-group-icon {
+  @include tb-theme-foreground-prop(color, secondary-text);
+  background-color: $metrics-button-background-color-on-gray;
+
+  &:disabled {
+    @include tb-theme-foreground-prop(color, disabled-text);
+  }
+}
+
 .group-title-wrapper {
-  flex: 1;
+  flex-grow: 1;
+  text-align: left;
 }
 
 .group-title {

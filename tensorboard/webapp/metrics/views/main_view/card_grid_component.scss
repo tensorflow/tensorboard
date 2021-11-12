@@ -87,7 +87,6 @@ card-view {
   }
 }
 
-.expand-group-button,
 .pagination-button {
   @include tb-theme-foreground-prop(color, secondary-text);
   background-color: $metrics-button-background-color-on-gray;
