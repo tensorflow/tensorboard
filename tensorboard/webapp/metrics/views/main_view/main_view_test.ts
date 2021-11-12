@@ -934,10 +934,10 @@ describe('metrics main view', () => {
         .withArgs(getMetricsTagGroupExpansionState, jasmine.any(String))
         .and.returnValue(of(jasmine.any(Boolean)));
 
-      store.overrideSelector(
-        selectors.getNonEmptyCardIdsWithMetadata,
-        [...createNScalarCards(5, 'tagB'), ...createNScalarCards(5, 'tagA')]
-      );
+      store.overrideSelector(selectors.getNonEmptyCardIdsWithMetadata, [
+        ...createNScalarCards(5, 'tagB'),
+        ...createNScalarCards(5, 'tagA'),
+      ]);
 
       const fixture = TestBed.createComponent(MainViewContainer);
       fixture.detectChanges();
