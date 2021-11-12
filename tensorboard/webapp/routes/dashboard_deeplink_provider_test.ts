@@ -49,6 +49,7 @@ describe('core deeplink provider', () => {
     store.overrideSelector(selectors.getOverriddenFeatureFlags, {});
     store.overrideSelector(selectors.getMetricsSettingOverrides, {});
     store.overrideSelector(selectors.getRunUserSetGroupBy, null);
+    store.overrideSelector(selectors.getRunSelectorRegexFilter, '');
 
     queryParamsSerialized = [];
 
@@ -419,67 +420,101 @@ describe('core deeplink provider', () => {
   });
 
   describe('runs', () => {
-    it('does not put state in the URL when user set color group is null', () => {
-      // Setting from `null` to `null` does not actually trigger the provider so
-      // we have to set it: `null` -> something else -> `null` to test this
-      // case.
-      store.overrideSelector(selectors.getRunUserSetGroupBy, {
-        key: GroupByKey.EXPERIMENT,
-      });
-      store.refreshState();
+    describe('color group', () => {
+      it('does not put state in the URL when user set color group is null', () => {
+        // Setting from `null` to `null` does not actually trigger the provider so
+        // we have to set it: `null` -> something else -> `null` to test this
+        // case.
+        store.overrideSelector(selectors.getRunUserSetGroupBy, {
+          key: GroupByKey.EXPERIMENT,
+        });
+        store.refreshState();
 
-      store.overrideSelector(selectors.getRunUserSetGroupBy, null);
-      store.refreshState();
-      expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual(
-        []
-      );
+        store.overrideSelector(selectors.getRunUserSetGroupBy, null);
+        store.refreshState();
+        expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual(
+          []
+        );
+      });
+
+      it('serializes user set color group settings', () => {
+        store.overrideSelector(selectors.getRunUserSetGroupBy, {
+          key: GroupByKey.EXPERIMENT,
+        });
+        store.refreshState();
+        expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual(
+          [{key: 'runColorGroup', value: 'experiment'}]
+        );
+
+        store.overrideSelector(selectors.getRunUserSetGroupBy, {
+          key: GroupByKey.RUN,
+        });
+        store.refreshState();
+        expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual(
+          [{key: 'runColorGroup', value: 'run'}]
+        );
+
+        store.overrideSelector(selectors.getRunUserSetGroupBy, {
+          key: GroupByKey.REGEX,
+          regexString: 'hello:world',
+        });
+        store.refreshState();
+        expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual(
+          [{key: 'runColorGroup', value: 'regex:hello:world'}]
+        );
+      });
+
+      it('serializes interesting regex strings', () => {
+        store.overrideSelector(selectors.getRunUserSetGroupBy, {
+          key: GroupByKey.REGEX,
+          regexString: '',
+        });
+        store.refreshState();
+        expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual(
+          [{key: 'runColorGroup', value: 'regex:'}]
+        );
+
+        store.overrideSelector(selectors.getRunUserSetGroupBy, {
+          key: GroupByKey.REGEX,
+          regexString: 'hello/(world):goodbye',
+        });
+        store.refreshState();
+        expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual(
+          [{key: 'runColorGroup', value: 'regex:hello/(world):goodbye'}]
+        );
+      });
     });
 
-    it('serializes user set color group settings', () => {
-      store.overrideSelector(selectors.getRunUserSetGroupBy, {
-        key: GroupByKey.EXPERIMENT,
-      });
-      store.refreshState();
-      expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual([
-        {key: 'runColorGroup', value: 'experiment'},
-      ]);
+    describe('filter', () => {
+      it('does not serialize an empty string', () => {
+        store.overrideSelector(selectors.getRunSelectorRegexFilter, '');
+        store.refreshState();
 
-      store.overrideSelector(selectors.getRunUserSetGroupBy, {
-        key: GroupByKey.RUN,
+        expect(queryParamsSerialized).toEqual([]);
       });
-      store.refreshState();
-      expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual([
-        {key: 'runColorGroup', value: 'run'},
-      ]);
 
-      store.overrideSelector(selectors.getRunUserSetGroupBy, {
-        key: GroupByKey.REGEX,
-        regexString: 'hello:world',
-      });
-      store.refreshState();
-      expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual([
-        {key: 'runColorGroup', value: 'regex:hello:world'},
-      ]);
-    });
+      it('serializes runFilter state', () => {
+        store.overrideSelector(selectors.getRunSelectorRegexFilter, 'hello');
+        store.refreshState();
 
-    it('serializes interesting regex strings', () => {
-      store.overrideSelector(selectors.getRunUserSetGroupBy, {
-        key: GroupByKey.REGEX,
-        regexString: '',
-      });
-      store.refreshState();
-      expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual([
-        {key: 'runColorGroup', value: 'regex:'},
-      ]);
+        expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual(
+          [{key: 'runFilter', value: 'hello'}]
+        );
 
-      store.overrideSelector(selectors.getRunUserSetGroupBy, {
-        key: GroupByKey.REGEX,
-        regexString: 'hello/(world):goodbye',
+        store.overrideSelector(selectors.getRunSelectorRegexFilter, 'hello:');
+        store.refreshState();
+
+        expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual(
+          [{key: 'runFilter', value: 'hello:'}]
+        );
+
+        store.overrideSelector(selectors.getRunSelectorRegexFilter, 'hello:.*');
+        store.refreshState();
+
+        expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual(
+          [{key: 'runFilter', value: 'hello:.*'}]
+        );
       });
-      store.refreshState();
-      expect(queryParamsSerialized[queryParamsSerialized.length - 1]).toEqual([
-        {key: 'runColorGroup', value: 'regex:hello/(world):goodbye'},
-      ]);
     });
   });
 });

@@ -1009,6 +1009,7 @@ describe('runs_reducers', () => {
       const partialState: URLDeserializedState = {
         runs: {
           groupBy: {key: GroupByKey.EXPERIMENT},
+          regexFilter: null,
         },
       };
       const nextState = runsReducers.reducers(
@@ -1031,6 +1032,7 @@ describe('runs_reducers', () => {
       const partialState: URLDeserializedState = {
         runs: {
           groupBy: null,
+          regexFilter: null,
         },
       };
       const nextState = runsReducers.reducers(
@@ -1082,6 +1084,7 @@ describe('runs_reducers', () => {
       const partialState: URLDeserializedState = {
         runs: {
           groupBy: {key: GroupByKey.EXPERIMENT},
+          regexFilter: null,
         },
       };
       const nextState = runsReducers.reducers(
@@ -1118,6 +1121,7 @@ describe('runs_reducers', () => {
       const partialState: URLDeserializedState = {
         runs: {
           groupBy: {key: GroupByKey.REGEX, regexString: 'regex string'},
+          regexFilter: null,
         },
       };
       const nextState = runsReducers.reducers(
@@ -1129,6 +1133,77 @@ describe('runs_reducers', () => {
       );
 
       expect(nextState.data.colorGroupRegexString).toBe('regex string');
+    });
+
+    it('does not set regexFilter when null value provided', () => {
+      const state = buildRunsState({
+        regexFilter: 'hello',
+      });
+
+      const partialState: URLDeserializedState = {
+        runs: {
+          groupBy: null,
+          regexFilter: null,
+        },
+      };
+      const nextState = runsReducers.reducers(
+        state,
+        stateRehydratedFromUrl({
+          routeKind: RouteKind.EXPERIMENT,
+          partialState,
+        })
+      );
+
+      expect(nextState.data.regexFilter).toBe('hello');
+    });
+
+    it('sets regexFilter to the valid value provided', () => {
+      const state = buildRunsState({
+        regexFilter: 'hello',
+      });
+
+      const partialState: URLDeserializedState = {
+        runs: {
+          groupBy: null,
+          regexFilter: 'world',
+        },
+      };
+      const nextState = runsReducers.reducers(
+        state,
+        stateRehydratedFromUrl({
+          routeKind: RouteKind.EXPERIMENT,
+          partialState,
+        })
+      );
+
+      expect(nextState.data.regexFilter).toBe('world');
+    });
+
+    it('set regexFilter and userSetGroupBy to the value provided', () => {
+      const state = buildRunsState({
+        colorGroupRegexString: '',
+        initialGroupBy: {key: GroupByKey.REGEX, regexString: ''},
+        userSetGroupByKey: GroupByKey.RUN,
+        regexFilter: 'hello',
+      });
+
+      const partialState: URLDeserializedState = {
+        runs: {
+          groupBy: {key: GroupByKey.EXPERIMENT},
+          regexFilter: 'world',
+        },
+      };
+
+      const nextState = runsReducers.reducers(
+        state,
+        stateRehydratedFromUrl({
+          routeKind: RouteKind.EXPERIMENT,
+          partialState,
+        })
+      );
+
+      expect(nextState.data.regexFilter).toBe('world');
+      expect(nextState.data.userSetGroupByKey).toBe(GroupByKey.EXPERIMENT);
     });
   });
 

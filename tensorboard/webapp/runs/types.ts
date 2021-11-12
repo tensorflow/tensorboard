@@ -78,5 +78,6 @@ export type GroupBy = BaseGroupBy | RegexGroupBy;
 export interface URLDeserializedState {
   runs: {
     groupBy: GroupBy | null;
+    regexFilter: string | null;
   };
 }
