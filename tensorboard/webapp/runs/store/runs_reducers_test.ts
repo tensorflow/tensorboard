@@ -1205,6 +1205,34 @@ describe('runs_reducers', () => {
       expect(nextState.data.regexFilter).toBe('world');
       expect(nextState.data.userSetGroupByKey).toBe(GroupByKey.EXPERIMENT);
     });
+
+    it('set regexFilter and userSetGroupBy to be group by regex', () => {
+      const state = buildRunsState({
+        colorGroupRegexString: '',
+        initialGroupBy: {key: GroupByKey.RUN},
+        userSetGroupByKey: GroupByKey.EXPERIMENT,
+        regexFilter: 'hello',
+      });
+
+      const partialState: URLDeserializedState = {
+        runs: {
+          groupBy: {key: GroupByKey.REGEX, regexString: 'train'},
+          regexFilter: 'world',
+        },
+      };
+
+      const nextState = runsReducers.reducers(
+        state,
+        stateRehydratedFromUrl({
+          routeKind: RouteKind.EXPERIMENT,
+          partialState,
+        })
+      );
+
+      expect(nextState.data.regexFilter).toBe('world');
+      expect(nextState.data.userSetGroupByKey).toBe(GroupByKey.REGEX);
+      expect(nextState.data.colorGroupRegexString).toBe('train');
+    });
   });
 
   describe('when freshly navigating', () => {
