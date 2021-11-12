@@ -102,8 +102,8 @@ const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
     if (!groupBy && !regexFilter) {
       return state;
     }
-    let {colorGroupRegexString, userSetGroupByKey} = state;
 
+    let {colorGroupRegexString, userSetGroupByKey} = state;
     if (groupBy) {
       const regexString =
         groupBy.key === GroupByKey.REGEX
