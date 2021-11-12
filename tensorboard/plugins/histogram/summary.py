@@ -36,11 +36,14 @@ from tensorboard.plugins.histogram import summary_v2
 
 
 # Export V2 versions.
-histogram = summary_v2.histogram
-histogram_pb = summary_v2.histogram_pb
+histogram_v2 = summary_v2.histogram_v2
 
 # Export V3 versions.
 histogram_v3 = summary_v2.histogram_v3
+
+# Export the default versions.
+histogram = summary_v2.histogram
+histogram_pb = summary_v2.histogram_pb
 
 
 def _buckets(data, bucket_count=None):

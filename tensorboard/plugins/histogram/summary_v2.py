@@ -46,7 +46,7 @@ from tensorboard.util import tensor_util
 DEFAULT_BUCKET_COUNT = 30
 
 
-def histogram(name, data, step=None, buckets=None, description=None):
+def histogram_v2(name, data, step=None, buckets=None, description=None):
     """Write a histogram summary.
 
     See also `tf.summary.scalar`, `tf.summary.SummaryWriter`.
@@ -507,3 +507,7 @@ def _buckets_v3(data, bucket_count=None):
             )
 
         return tf.cond(is_empty, when_empty, when_nonempty)
+
+
+# Set V3 as default.
+histogram = histogram_v3

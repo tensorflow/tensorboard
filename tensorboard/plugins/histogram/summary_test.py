@@ -240,7 +240,7 @@ class SummaryV2OpTest(SummaryBaseTest, tf.test.TestCase):
         writer.close()
 
     def call_histogram_op(self, *args, **kwargs):
-        summary.histogram(*args, **kwargs)
+        summary.histogram_v2(*args, **kwargs)
 
     def test_scoped_tag(self):
         with tf.name_scope("scope"):
@@ -306,7 +306,7 @@ class SummaryV2OpGraphTest(SummaryV2OpTest, tf.test.TestCase):
 
 class SummaryV3OpTest(SummaryV2OpTest, tf.test.TestCase):
     def call_histogram_op(self, *args, **kwargs):
-        summary.histogram_v3(*args, **kwargs)
+        summary.histogram(*args, **kwargs)
 
     def test_singleton_input(self):
         pb = self.histogram("twelve", [12])
