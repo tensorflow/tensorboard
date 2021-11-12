@@ -43,10 +43,19 @@ import {getMetricsTagGroupExpansionState} from '../../../selectors';
 export class CardGroupToolBarContainer implements OnChanges {
   @Input() groupName: string | null = null;
   @Input() numberOfCards!: number;
+  @Input() isFirstGroup!: boolean;
 
   private readonly groupName$ = new BehaviorSubject<string | null>(null);
 
   constructor(private readonly store: Store<State>) {}
+
+  ngOnInit() {
+    if (this.isFirstGroup && this.groupName) {
+      this.store.dispatch(
+        metricsTagGroupExpansionChanged({tagGroup: this.groupName})
+      );
+    }
+  }
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['groupName']) {

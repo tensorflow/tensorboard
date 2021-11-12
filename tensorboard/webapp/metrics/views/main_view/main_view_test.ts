@@ -77,12 +77,12 @@ class TestableCard {
   @Input() runColorScale!: RunColorScale;
 }
 
-function createNScalarCards(size: number) {
+function createNScalarCards(size: number, tag: string = 'tagA') {
   return [...new Array(size)].map((unused, index) => {
     return {
       cardId: `card${index}`,
       plugin: PluginType.SCALARS,
-      tag: `tagA/Scalars_${index}`,
+      tag: `${tag}/Scalars_${index}`,
       runId: null,
     };
   });
@@ -327,6 +327,9 @@ describe('metrics main view', () => {
       selectSpy
         .withArgs(getMetricsTagGroupExpansionState, 'tagA')
         .and.returnValue(of(true));
+
+      // Remove the first group expandsion action
+      dispatchedActions.pop();
     });
 
     it('renders group by tag name', () => {
@@ -567,6 +570,9 @@ describe('metrics main view', () => {
         const fixture = TestBed.createComponent(MainViewContainer);
         fixture.detectChanges();
 
+        // Remove the first group expandsion action
+        dispatchedActions.pop();
+
         const directives = getCardLazyLoaders(getCards(fixture.debugElement));
         const cardObserver = directives[0].cardObserver!;
         simulateIntersection(cardObserver, [
@@ -645,6 +651,9 @@ describe('metrics main view', () => {
         );
         const fixture = TestBed.createComponent(MainViewContainer);
         fixture.detectChanges();
+
+        // Remove the first group expandsion action
+        dispatchedActions.pop();
 
         const directives = getCardLazyLoaders(getCards(fixture.debugElement));
         const cardObserver = directives[0].cardObserver!;
@@ -920,6 +929,24 @@ describe('metrics main view', () => {
       );
     });
 
+    it('fires expansion action of the first group', () => {
+      selectSpy
+        .withArgs(getMetricsTagGroupExpansionState, jasmine.any(String))
+        .and.returnValue(of(jasmine.any(Boolean)));
+
+      store.overrideSelector(
+        selectors.getNonEmptyCardIdsWithMetadata,
+        [...createNScalarCards(5, 'tagB'), ...createNScalarCards(5, 'tagA')]
+      );
+
+      const fixture = TestBed.createComponent(MainViewContainer);
+      fixture.detectChanges();
+
+      expect(dispatchedActions).toEqual([
+        actions.metricsTagGroupExpansionChanged({tagGroup: 'tagA'}),
+      ]);
+    });
+
     it('renders 0 cards in a collapsed group', () => {
       selectSpy
         .withArgs(getMetricsTagGroupExpansionState, 'tagA')
@@ -1046,6 +1073,9 @@ describe('metrics main view', () => {
         );
         const fixture = TestBed.createComponent(MainViewContainer);
         fixture.detectChanges();
+
+        // Remove the first group expandsion action
+        dispatchedActions.pop();
 
         fixture.debugElement.query(EXPAND_BUTTON).nativeElement.click();
         expect(dispatchedActions).toEqual([
