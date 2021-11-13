@@ -328,7 +328,7 @@ describe('metrics main view', () => {
         .withArgs(getMetricsTagGroupExpansionState, 'tagA')
         .and.returnValue(of(true));
 
-      // Remove the first group expandsion action
+      // Remove the first group expansion action
       dispatchedActions.pop();
     });
 
@@ -570,7 +570,7 @@ describe('metrics main view', () => {
         const fixture = TestBed.createComponent(MainViewContainer);
         fixture.detectChanges();
 
-        // Remove the first group expandsion action
+        // Remove the first group expansion action
         dispatchedActions.pop();
 
         const directives = getCardLazyLoaders(getCards(fixture.debugElement));
@@ -652,7 +652,7 @@ describe('metrics main view', () => {
         const fixture = TestBed.createComponent(MainViewContainer);
         fixture.detectChanges();
 
-        // Remove the first group expandsion action
+        // Remove the first group expansion action
         dispatchedActions.pop();
 
         const directives = getCardLazyLoaders(getCards(fixture.debugElement));
@@ -1074,7 +1074,7 @@ describe('metrics main view', () => {
         const fixture = TestBed.createComponent(MainViewContainer);
         fixture.detectChanges();
 
-        // Remove the first group expandsion action
+        // Remove the first group expansion action
         dispatchedActions.pop();
 
         fixture.debugElement.query(EXPAND_BUTTON).nativeElement.click();

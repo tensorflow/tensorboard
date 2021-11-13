@@ -23,7 +23,12 @@ import {
 @Component({
   selector: 'metrics-card-group-toolbar-component',
   template: `
-    <button class="group-toolbar" (click)="groupExpansionToggled.emit()">
+    <button
+      class="group-toolbar"
+      i18n-aria-label="A button that allows user to expand a tag group."
+      aria-label="Expand group"
+      (click)="groupExpansionToggled.emit()"
+    >
       <span class="group-title-wrapper">
         <span
           class="group-title"
@@ -36,12 +41,7 @@ import {
           >{{ numberOfCards | number }} cards</span
         >
       </span>
-      <div
-        class="expand-group-icon"
-        mat-icon-button
-        i18n-aria-label="A button that allows user to expand a tag group."
-        aria-label="Expand group"
-      >
+      <span class="expand-group-icon">
         <mat-icon
           *ngIf="isGroupExpanded; else expandMore"
           svgIcon="expand_less_24px"
@@ -49,7 +49,7 @@ import {
         <ng-template #expandMore>
           <mat-icon svgIcon="expand_more_24px"></mat-icon>
         </ng-template>
-      </div>
+      </span>
     </button>
   `,
   styleUrls: [`card_group_toolbar_component.css`],
