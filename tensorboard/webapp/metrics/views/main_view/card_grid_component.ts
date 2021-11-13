@@ -36,6 +36,7 @@ import {CardIdWithMetadata} from '../metrics_view_types';
 export class CardGridComponent {
   readonly PluginType = PluginType;
 
+  @Input() isGroupExpanded!: boolean;
   @Input() pageIndex!: number;
   @Input() numPages!: number;
   @Input() cardIdsWithMetadata!: CardIdWithMetadata[];

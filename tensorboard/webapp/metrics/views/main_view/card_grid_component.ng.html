@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<div *ngIf="cardIdsWithMetadata.length >= 1">
+<div *ngIf="isGroupExpanded">
   <ng-container
     *ngTemplateOutlet="groupControls; context: {isBottomControl: false}"
   ></ng-container>

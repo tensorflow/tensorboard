@@ -35,6 +35,7 @@ import {CardIdWithMetadata} from '../metrics_view_types';
   selector: 'metrics-card-grid',
   template: `
     <metrics-card-grid-component
+      [isGroupExpanded]="isGroupExpanded$ | async"
       [pageIndex]="normalizedPageIndex$ | async"
       [numPages]="numPages$ | async"
       [showPaginationControls]="showPaginationControls$ | async"
