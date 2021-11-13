@@ -55,7 +55,10 @@ export class CardGroupToolBarContainer {
       );
     }
 
-    this.isGroupExpanded$ = this.groupName !== null ? this.store.select(getMetricsTagGroupExpansionState, this.groupName) : of(false);
+    this.isGroupExpanded$ =
+      this.groupName !== null
+        ? this.store.select(getMetricsTagGroupExpansionState, this.groupName)
+        : of(false);
   }
 
   onGroupExpansionToggled() {
