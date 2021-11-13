@@ -40,12 +40,11 @@ import {getMetricsTagGroupExpansionState} from '../../../selectors';
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CardGroupToolBarContainer implements OnChanges {
+export class CardGroupToolBarContainer {
   @Input() groupName: string | null = null;
   @Input() numberOfCards!: number;
   @Input() isFirstGroup!: boolean;
-
-  private readonly groupName$ = new BehaviorSubject<string | null>(null);
+  isGroupExpanded$: Observable<boolean> = of(false);
 
   constructor(private readonly store: Store<State>) {}
 
@@ -55,21 +54,9 @@ export class CardGroupToolBarContainer implements OnChanges {
         metricsTagGroupExpansionChanged({tagGroup: this.groupName})
       );
     }
-  }
 
-  ngOnChanges(changes: SimpleChanges) {
-    if (changes['groupName']) {
-      this.groupName$.next(this.groupName);
-    }
+    this.isGroupExpanded$ = this.groupName !== null ? this.store.select(getMetricsTagGroupExpansionState, this.groupName) : of(false);
   }
-
-  readonly isGroupExpanded$: Observable<boolean> = this.groupName$.pipe(
-    switchMap((groupName) => {
-      return groupName !== null
-        ? this.store.select(getMetricsTagGroupExpansionState, groupName)
-        : of(true);
-    })
-  );
 
   onGroupExpansionToggled() {
     if (this.groupName === null) {
