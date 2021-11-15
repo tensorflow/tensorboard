@@ -43,18 +43,11 @@ import {getMetricsTagGroupExpansionState} from '../../../selectors';
 export class CardGroupToolBarContainer {
   @Input() groupName: string | null = null;
   @Input() numberOfCards!: number;
-  @Input() isFirstGroup!: boolean;
   isGroupExpanded$: Observable<boolean> = of(false);
 
   constructor(private readonly store: Store<State>) {}
 
   ngOnInit() {
-    if (this.isFirstGroup && this.groupName) {
-      this.store.dispatch(
-        metricsTagGroupExpansionChanged({tagGroup: this.groupName})
-      );
-    }
-
     this.isGroupExpanded$ =
       this.groupName !== null
         ? this.store.select(getMetricsTagGroupExpansionState, this.groupName)

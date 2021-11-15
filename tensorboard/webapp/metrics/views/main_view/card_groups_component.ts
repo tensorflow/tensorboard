@@ -23,13 +23,12 @@ import {CardGroup} from '../metrics_view_types';
   selector: 'metrics-card-groups-component',
   template: `
     <div
-      *ngFor="let group of cardGroups; let i = index; trackBy: trackByGroup"
+      *ngFor="let group of cardGroups; trackBy: trackByGroup"
       class="card-group"
     >
       <metrics-card-group-toolbar
         [numberOfCards]="group.items.length"
         [groupName]="group.groupName"
-        [isFirstGroup]="i === 0"
       ></metrics-card-group-toolbar>
       <metrics-card-grid
         [cardIdsWithMetadata]="group.items"

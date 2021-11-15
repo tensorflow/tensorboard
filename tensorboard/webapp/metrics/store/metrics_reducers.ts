@@ -68,6 +68,35 @@ import {
   MetricsSettings,
 } from './metrics_types';
 
+function getTagGroupName(tag: string): string {
+  return tag.split('/', 1)[0];
+}
+
+function getFirstGroupName(tagMetadata: TagMetadata): string {
+  const groupNames: string[] = [];
+
+  for (let pluginKey of Object.keys(tagMetadata)) {
+    const plugin = pluginKey as PluginType;
+    const tags: string[] = [];
+
+    if (isSampledPlugin(plugin)) {
+      if (isSingleRunPlugin(plugin)) {
+        const tagRunSampleInfo = tagMetadata[plugin].tagRunSampledInfo;
+        tags.push(...Object.keys(tagRunSampleInfo));
+      }
+    } else {
+      const tagToRuns = tagMetadata[plugin].tagToRuns;
+      tags.push(...Object.keys(tagToRuns));
+    }
+
+    for (let tag of tags) {
+      groupNames.push(getTagGroupName(tag));
+    }
+  }
+
+  return (groupNames.sort())[0];
+}
+
 function buildCardMetadataList(tagMetadata: TagMetadata): CardMetadata[] {
   const results: CardMetadata[] = [];
   for (let pluginKey of Object.keys(tagMetadata)) {
@@ -481,6 +510,10 @@ const reducer = createReducer(
       const nextCardMetadataList = buildCardMetadataList(nextTagMetadata);
       const newCardIds = [];
 
+      const firstGroupName = getFirstGroupName(nextTagMetadata);
+      const tagGroupExpanded = new Map(state.tagGroupExpanded);
+      tagGroupExpanded.set(firstGroupName, true);
+
       // Create new cards for unseen metadata.
       for (const cardMetadata of nextCardMetadataList) {
         const cardId = getCardId(cardMetadata);
@@ -504,6 +537,7 @@ const reducer = createReducer(
       return {
         ...state,
         ...resolvedResult,
+        tagGroupExpanded,
         tagMetadataLoadState: {
           state: DataLoadState.LOADED,
           lastLoadedTimeInMs: Date.now(),
