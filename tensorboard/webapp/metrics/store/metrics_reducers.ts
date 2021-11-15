@@ -67,6 +67,7 @@ import {
   METRICS_SETTINGS_DEFAULT,
   MetricsSettings,
 } from './metrics_types';
+import {compareTagNames} from '../views/utils';
 
 function getTagGroupName(tag: string): string {
   return tag.split('/', 1)[0];
@@ -94,7 +95,7 @@ function getFirstGroupName(tagMetadata: TagMetadata): string {
     }
   }
 
-  return groupNames.sort()[0];
+  return groupNames.sort(compareTagNames)[0];
 }
 
 function buildCardMetadataList(tagMetadata: TagMetadata): CardMetadata[] {

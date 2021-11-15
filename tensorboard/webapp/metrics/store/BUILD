@@ -19,6 +19,7 @@ tf_ts_library(
         "//tensorboard/webapp/core/actions",
         "//tensorboard/webapp/metrics:internal_types",
         "//tensorboard/webapp/metrics/actions",
+        "//tensorboard/webapp/metrics/views:utils",
         "//tensorboard/webapp/metrics/data_source",
         "//tensorboard/webapp/persistent_settings",
         "//tensorboard/webapp/types",
