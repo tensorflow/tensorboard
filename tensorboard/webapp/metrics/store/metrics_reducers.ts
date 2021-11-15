@@ -94,7 +94,7 @@ function getFirstGroupName(tagMetadata: TagMetadata): string {
     }
   }
 
-  return (groupNames.sort())[0];
+  return groupNames.sort()[0];
 }
 
 function buildCardMetadataList(tagMetadata: TagMetadata): CardMetadata[] {
