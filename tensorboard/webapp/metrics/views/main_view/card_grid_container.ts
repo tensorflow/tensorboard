@@ -31,23 +31,17 @@ import {metricsTagGroupExpansionChanged} from '../../actions';
 import {CardObserver} from '../card_renderer/card_lazy_loader';
 import {CardIdWithMetadata} from '../metrics_view_types';
 
-// Tag group can be collapsed. Even when it is collapsed, we show three cards.
-const ITEMS_COLLAPSED_CLIP_SIZE = 3;
-
 @Component({
   selector: 'metrics-card-grid',
   template: `
     <metrics-card-grid-component
-      [isGroupExpandable]="isGroupExpandable$ | async"
       [isGroupExpanded]="isGroupExpanded$ | async"
-      [groupName]="groupName"
       [pageIndex]="normalizedPageIndex$ | async"
       [numPages]="numPages$ | async"
       [showPaginationControls]="showPaginationControls$ | async"
       [cardIdsWithMetadata]="pagedItems$ | async"
       [cardObserver]="cardObserver"
       (pageIndexChanged)="onPageIndexChanged($event)"
-      (groupExpansionToggled)="onGroupExpansionToggled()"
     >
     </metrics-card-grid-component>
   `,
@@ -81,33 +75,8 @@ export class CardGridContainer implements OnChanges, OnDestroy {
     })
   );
 
-  readonly showPaginationControls$ = combineLatest([
-    this.numPages$,
-    this.store.select(settingsSelectors.getPageSize),
-    this.isGroupExpanded$,
-  ]).pipe(
-    map(([numPages, pageSize, isGroupExpanded]) => {
-      if (numPages <= 1) {
-        return false;
-      }
-      return pageSize <= ITEMS_COLLAPSED_CLIP_SIZE || isGroupExpanded;
-    })
-  );
-
-  readonly isGroupExpandable$ = combineLatest([
-    this.items$,
-    this.store.select(settingsSelectors.getPageSize),
-  ]).pipe(
-    map(([items, pageSize]) => {
-      if (
-        this.groupName === null ||
-        pageSize <= ITEMS_COLLAPSED_CLIP_SIZE ||
-        items.length <= ITEMS_COLLAPSED_CLIP_SIZE
-      ) {
-        return false;
-      }
-      return true;
-    })
+  readonly showPaginationControls$: Observable<boolean> = this.numPages$.pipe(
+    map((numPages) => numPages > 1)
   );
 
   readonly normalizedPageIndex$ = combineLatest([
@@ -141,10 +110,7 @@ export class CardGridContainer implements OnChanges, OnDestroy {
   ]).pipe(
     map(([items, pageSize, pageIndex, expanded]) => {
       const startIndex = pageSize * pageIndex;
-      // We only render 3 cards when collapsed.
-      const endIndex =
-        pageSize * pageIndex +
-        Math.min(expanded ? pageSize : ITEMS_COLLAPSED_CLIP_SIZE, pageSize);
+      const endIndex = pageSize * pageIndex + (expanded ? pageSize : 0);
       return items.slice(startIndex, endIndex);
     })
   );
@@ -168,16 +134,5 @@ export class CardGridContainer implements OnChanges, OnDestroy {
 
   onPageIndexChanged(newIndex: number) {
     this.pageIndex$.next(newIndex);
-  }
-
-  onGroupExpansionToggled() {
-    if (this.groupName === null) {
-      throw new RangeError(
-        'Invariant error: expansion cannot be toggled when groupName is null'
-      );
-    }
-    this.store.dispatch(
-      metricsTagGroupExpansionChanged({tagGroup: this.groupName})
-    );
   }
 }

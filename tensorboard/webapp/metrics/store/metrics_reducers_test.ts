@@ -199,7 +199,7 @@ describe('metrics reducers', () => {
       });
     });
 
-    it('sets cardMetadataMap and cardList on tag metadata loaded', () => {
+    it('sets cardMetadataMap, cardList, and tagGroupExpanded on tag metadata loaded', () => {
       const beforeState = buildMetricsState();
       const tagMetadata: DataSourceTagMetadata = {
         scalars: {
@@ -252,6 +252,12 @@ describe('metrics reducers', () => {
       }
       expect(nextState.cardMetadataMap).toEqual(expectedCardMetadataMap);
       expect(nextState.cardList).toEqual(Object.keys(expectedCardMetadataMap));
+      expect(nextState.tagGroupExpanded).toEqual(
+        new Map([
+          ['tagA', true],
+          ['tagB', true],
+        ])
+      );
     });
 
     it('does not add pinned copies to cardList on tag metadata loaded', () => {
