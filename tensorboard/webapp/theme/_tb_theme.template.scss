@@ -13,7 +13,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-@use '@angular/material' as mat;
 @import 'tensorboard/webapp/angular_material_theming';
 
 /***********************************************************
@@ -36,7 +35,10 @@ $tb-dark-accent: $tb-accent !default;
 $tb-dark-warn: $tb-warn !default;
 // Value for `app-bar` property in $tb-dark-background. Can specify an override
 // in _variable.scss to specifically customize this value.
-$tb-dark-app-bar-color: mat.get-color-from-palette($tb-dark-primary, default) !default;
+$tb-dark-app-bar-color: mat.get-color-from-palette(
+  $tb-dark-primary,
+  default
+) !default;
 
 $tb-theme: mat.define-light-theme($tb-primary, $tb-accent, $tb-warn);
 
