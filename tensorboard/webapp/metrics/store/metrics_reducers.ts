@@ -67,36 +67,7 @@ import {
   METRICS_SETTINGS_DEFAULT,
   MetricsSettings,
 } from './metrics_types';
-import {compareTagNames} from '../views/utils';
-
-function getTagGroupName(tag: string): string {
-  return tag.split('/', 1)[0];
-}
-
-function getFirstGroupName(tagMetadata: TagMetadata): string {
-  const groupNames: string[] = [];
-
-  for (let pluginKey of Object.keys(tagMetadata)) {
-    const plugin = pluginKey as PluginType;
-    const tags: string[] = [];
-
-    if (isSampledPlugin(plugin)) {
-      if (isSingleRunPlugin(plugin)) {
-        const tagRunSampleInfo = tagMetadata[plugin].tagRunSampledInfo;
-        tags.push(...Object.keys(tagRunSampleInfo));
-      }
-    } else {
-      const tagToRuns = tagMetadata[plugin].tagToRuns;
-      tags.push(...Object.keys(tagToRuns));
-    }
-
-    for (let tag of tags) {
-      groupNames.push(getTagGroupName(tag));
-    }
-  }
-
-  return groupNames.sort(compareTagNames)[0];
-}
+import {groupCardIdWithMetdata} from '../views/utils';
 
 function buildCardMetadataList(tagMetadata: TagMetadata): CardMetadata[] {
   const results: CardMetadata[] = [];
@@ -511,10 +482,6 @@ const reducer = createReducer(
       const nextCardMetadataList = buildCardMetadataList(nextTagMetadata);
       const newCardIds = [];
 
-      const firstGroupName = getFirstGroupName(nextTagMetadata);
-      const tagGroupExpanded = new Map(state.tagGroupExpanded);
-      tagGroupExpanded.set(firstGroupName, true);
-
       // Create new cards for unseen metadata.
       for (const cardMetadata of nextCardMetadataList) {
         const cardId = getCardId(cardMetadata);
@@ -525,6 +492,21 @@ const reducer = createReducer(
       }
 
       const nextCardList = [...state.cardList, ...newCardIds];
+
+      let tagGroupExpanded = state.tagGroupExpanded;
+      if (state.tagGroupExpanded.size === 0) {
+        const cardListWithMetadata = nextCardList
+          .map((cardId) => {
+            return {...nextCardMetadataMap[cardId], cardId} ?? null;
+          })
+          .filter(Boolean);
+        const cardGroups = groupCardIdWithMetdata(cardListWithMetadata);
+
+        tagGroupExpanded = new Map(state.tagGroupExpanded);
+        for (const group of cardGroups.slice(0, 2)) {
+          tagGroupExpanded.set(group.groupName, true);
+        }
+      }
 
       const resolvedResult = buildOrReturnStateWithUnresolvedImportedPins(
         state.unresolvedImportedPinnedCards,
