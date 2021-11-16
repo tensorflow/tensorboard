@@ -12,6 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+@use '@angular/material' as mat;
 @import 'tensorboard/webapp/theme/tb_theme';
 @import '../common';
 
@@ -82,7 +83,7 @@ limitations under the License.
 }
 
 .main {
-  background-color: mat-color($tf-slate, 200);
+  background-color: mat.get-color-from-palette($tf-slate, 200);
   flex: 1 1;
   display: flex;
   flex-direction: column;
@@ -138,16 +139,16 @@ limitations under the License.
 
 /** TODO(psybuzz): consider making a tb-button instead. */
 :host .settings-button {
-  color: mat-color($tb-foreground, secondary-text);
+  color: mat.get-color-from-palette($tb-foreground, secondary-text);
   display: inline-flex;
 
   @include tb-dark-theme {
-    color: mat-color($tb-dark-foreground, secondary-text);
+    color: mat.get-color-from-palette($tb-dark-foreground, secondary-text);
   }
 
   &.checked {
     @include tb-theme-background-prop(background-color, selected-button);
-    border-color: mat-color($mat-gray, 300);
+    border-color: mat.get-color-from-palette(mat.$gray-palette, 300);
   }
 
   ::ng-deep .mat-button-wrapper {

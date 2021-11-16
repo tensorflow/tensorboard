@@ -7,6 +7,7 @@ licenses(["notice"])
 tf_sass_binary(
     name = "metric_search_component_styles",
     src = "metric_search_component.scss",
+    deps = ["//tensorboard/webapp:angular_material_theming"],
 )
 
 tf_ng_module(

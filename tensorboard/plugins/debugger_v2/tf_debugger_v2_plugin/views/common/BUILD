@@ -6,5 +6,8 @@ licenses(["notice"])
 
 tf_sass_library(
     name = "style_lib",
-    srcs = ["_lib.scss"],
+    srcs = [
+        "_lib.scss",
+        "//tensorboard/webapp:angular_material_theming",
+    ],
 )

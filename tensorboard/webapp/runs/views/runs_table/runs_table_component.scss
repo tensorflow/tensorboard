@@ -12,6 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+@use '@angular/material' as mat;
 @import 'tensorboard/webapp/theme/tb_theme';
 
 // 42px + 1px for border.
@@ -157,13 +158,13 @@ $_font-size: 13px;
   $_swatch-size: 20px;
 
   border-radius: 100%;
-  border: 1px solid mat-color($tb-foreground, border);
+  border: 1px solid mat.get-color-from-palette($tb-foreground, border);
   height: $_swatch-size;
   width: $_swatch-size;
   outline: none;
 
   &.no-color {
-    border-color: mat-color($tf-slate, 300);
+    border-color: mat.get-color-from-palette($tf-slate, 300);
     border-width: 2px;
   }
 }

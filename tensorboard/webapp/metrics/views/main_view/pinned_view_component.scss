@@ -12,6 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+@use '@angular/material' as mat;
 @import 'tensorboard/webapp/theme/tb_theme';
 @import '../common';
 
@@ -45,7 +46,7 @@ mat-icon {
 
 .new-card-pinned {
   animation: pinned-view-fade-out 3s linear;
-  background: mat-color($mat-red, 500);
+  background: mat.get-color-from-palette(mat.$red-palette, 500);
   border-radius: 5px;
   color: #fff;
   display: inline-block;

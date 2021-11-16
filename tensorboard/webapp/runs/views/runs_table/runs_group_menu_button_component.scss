@@ -12,6 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+@use '@angular/material' as mat;
 @import 'tensorboard/webapp/theme/tb_theme';
 
 ::ng-deep .run-table-color-group-by {
@@ -19,7 +20,7 @@ limitations under the License.
   font-size: 16px;
 
   .label {
-    color: mat-color($tb-foreground, secondary-text);
+    color: mat.get-color-from-palette($tb-foreground, secondary-text);
     font-size: 0.9em;
     margin: 10px 0;
     padding: 0 16px;

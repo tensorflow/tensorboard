@@ -12,9 +12,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+@use '@angular/material' as mat;
 
 @mixin debugger-op-type {
-  background-color: mat-color($mat-blue-grey, 50);
+  background-color: mat.get-color-from-palette(mat.$blue-palette-grey, 50);
   @include tb-theme-foreground-prop(border, border, 1px solid);
   border-radius: 4px;
   font-family: 'Roboto Mono', monospace;
@@ -25,13 +26,13 @@ limitations under the License.
   width: max-content;
 
   @include tb-dark-theme {
-    background-color: mat-color($mat-blue-grey, 700);
+    background-color: mat.get-color-from-palette(mat.$blue-palette-grey, 700);
   }
 }
 
 @mixin debugger-highlight-background {
   background-color: #fff099;
   @include tb-dark-theme {
-    background-color: mat-color($mat-orange, 900);
+    background-color: mat.get-color-from-palette(mat.$orange-palette, 900);
   }
 }
