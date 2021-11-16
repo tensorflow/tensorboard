@@ -315,4 +315,29 @@ describe('feature_flag_selectors', () => {
       expect(selectors.getIsTimeSeriesPromotionEnabled(state)).toEqual(true);
     });
   });
+
+  describe('#getEnabledCardWidthSetting', () => {
+    it('returns the proper value', () => {
+      let state = buildState(
+        buildFeatureFlagState({
+          defaultFlags: buildFeatureFlag({
+            enabledCardWidthSetting: false,
+          }),
+        })
+      );
+      expect(selectors.getEnabledCardWidthSetting(state)).toEqual(false);
+
+      state = buildState(
+        buildFeatureFlagState({
+          defaultFlags: buildFeatureFlag({
+            enabledCardWidthSetting: false,
+          }),
+          flagOverrides: {
+            enabledCardWidthSetting: true,
+          },
+        })
+      );
+      expect(selectors.getEnabledCardWidthSetting(state)).toEqual(true);
+    });
+  });
 });
