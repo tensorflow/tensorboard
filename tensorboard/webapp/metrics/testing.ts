@@ -43,7 +43,7 @@ export function buildMetricsSettingsState(
   overrides?: Partial<MetricsSettings>
 ): MetricsSettings {
   return {
-    cardMaxWidthMultiplier: 1,
+    cardMaxWidthInVW: 30,
     tooltipSort: TooltipSort.NEAREST,
     ignoreOutliers: false,
     xAxisType: XAxisType.WALL_TIME,
