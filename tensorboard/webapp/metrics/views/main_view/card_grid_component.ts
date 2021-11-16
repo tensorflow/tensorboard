@@ -27,6 +27,9 @@ import {CardObserver} from '../card_renderer/card_lazy_loader';
 
 import {CardIdWithMetadata} from '../metrics_view_types';
 
+const MIN_CARD_WIDTH = 335;
+const MAX_CARD_WIDTH = 600;
+
 @Component({
   selector: 'metrics-card-grid-component',
   templateUrl: './card_grid_component.ng.html',
@@ -35,11 +38,13 @@ import {CardIdWithMetadata} from '../metrics_view_types';
 })
 export class CardGridComponent {
   readonly PluginType = PluginType;
+  gridTemplateColumn = "";
 
   @Input() isGroupExpanded!: boolean;
   @Input() pageIndex!: number;
   @Input() numPages!: number;
   @Input() cardIdsWithMetadata!: CardIdWithMetadata[];
+  @Input() cardMaxWidthMultiplier!: number;
   @Input() cardObserver!: CardObserver;
   @Input() showPaginationControls!: boolean;
 
@@ -48,6 +53,13 @@ export class CardGridComponent {
   constructor(
     @Optional() private readonly cdkScrollable: CdkScrollable | null
   ) {}
+
+  ngOnInit() {
+    const maxCardWidth = this.cardMaxWidthMultiplier * MAX_CARD_WIDTH;
+
+    // TODO check if maxCardWidth is less than auto
+    this.gridTemplateColumn = `repeat(auto-fill, minmax(${MIN_CARD_WIDTH}px, ${maxCardWidth}px))`
+  }
 
   showPaginationInput(isBottomControl: boolean) {
     return isBottomControl;

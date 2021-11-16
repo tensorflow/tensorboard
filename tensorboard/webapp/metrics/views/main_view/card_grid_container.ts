@@ -26,7 +26,7 @@ import {BehaviorSubject, combineLatest, Observable, of, Subject} from 'rxjs';
 import {map, shareReplay, switchMap, takeUntil, tap} from 'rxjs/operators';
 
 import {State} from '../../../app_state';
-import {getMetricsTagGroupExpansionState} from '../../../selectors';
+import {getMetricCardMaxWidthMultiplier, getMetricsTagGroupExpansionState} from '../../../selectors';
 import {metricsTagGroupExpansionChanged} from '../../actions';
 import {CardObserver} from '../card_renderer/card_lazy_loader';
 import {CardIdWithMetadata} from '../metrics_view_types';
@@ -40,6 +40,7 @@ import {CardIdWithMetadata} from '../metrics_view_types';
       [numPages]="numPages$ | async"
       [showPaginationControls]="showPaginationControls$ | async"
       [cardIdsWithMetadata]="pagedItems$ | async"
+      [cardMaxWidthMultiplier]="cardMaxWidthMultiplier$ | async"
       [cardObserver]="cardObserver"
       (pageIndexChanged)="onPageIndexChanged($event)"
     >
@@ -114,6 +115,8 @@ export class CardGridContainer implements OnChanges, OnDestroy {
       return items.slice(startIndex, endIndex);
     })
   );
+
+  readonly cardMaxWidthMultiplier$ = this.store.select(getMetricCardMaxWidthMultiplier);
 
   constructor(private readonly store: Store<State>) {}
 
