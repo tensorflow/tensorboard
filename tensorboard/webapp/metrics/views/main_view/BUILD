@@ -61,6 +61,7 @@ tf_ts_library(
     deps = [
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp:selectors",
+        "//tensorboard/webapp/metrics:utils",
         "//tensorboard/webapp/metrics/data_source",
         "//tensorboard/webapp/metrics/store",
         "//tensorboard/webapp/metrics/views:types",
@@ -115,6 +116,7 @@ tf_ng_module(
         "//tensorboard/webapp/angular:expect_angular_material_input",
         "//tensorboard/webapp/angular:expect_angular_material_progress_spinner",
         "//tensorboard/webapp/metrics:types",
+        "//tensorboard/webapp/metrics:utils",
         "//tensorboard/webapp/metrics/actions",
         "//tensorboard/webapp/metrics/data_source",
         "//tensorboard/webapp/metrics/store",

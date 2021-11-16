@@ -67,7 +67,7 @@ import {
   METRICS_SETTINGS_DEFAULT,
   MetricsSettings,
 } from './metrics_types';
-import {groupCardIdWithMetdata} from '../views/utils';
+import {groupCardIdWithMetdata} from '../utils';
 
 function buildCardMetadataList(tagMetadata: TagMetadata): CardMetadata[] {
   const results: CardMetadata[] = [];

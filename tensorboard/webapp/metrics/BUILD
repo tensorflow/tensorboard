@@ -51,6 +51,31 @@ tf_ts_library(
 )
 
 tf_ts_library(
+    name = "utils",
+    srcs = [
+        "utils.ts",
+    ],
+    deps = [
+        ":types",
+        "//tensorboard/webapp/util:types",
+    ],
+)
+
+tf_ts_library(
+    name = "utils_test",
+    testonly = True,
+    srcs = [
+        "utils_test.ts",
+    ],
+    deps = [
+        ":utils",
+        "//tensorboard/webapp/metrics/data_source",
+        "//tensorboard/webapp/metrics/views:types",
+        "@npm//@types/jasmine",
+    ],
+)
+
+tf_ts_library(
     name = "test_lib",
     testonly = True,
     srcs = [

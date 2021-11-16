@@ -252,7 +252,12 @@ describe('metrics reducers', () => {
       }
       expect(nextState.cardMetadataMap).toEqual(expectedCardMetadataMap);
       expect(nextState.cardList).toEqual(Object.keys(expectedCardMetadataMap));
-      expect(nextState.tagGroupExpanded).toEqual(new Map([['tagA', true], ['tagB', true]]));
+      expect(nextState.tagGroupExpanded).toEqual(
+        new Map([
+          ['tagA', true],
+          ['tagB', true],
+        ])
+      );
     });
 
     it('does not add pinned copies to cardList on tag metadata loaded', () => {
