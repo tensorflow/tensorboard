@@ -19,12 +19,12 @@ limitations under the License.
   @include metrics-sub-view;
 
   .group-toolbar {
+    border: 0;
     @include tb-theme-foreground-prop(border-top, border, 1px solid);
     // border-top on group-toolbar needs to be offset on sticky header for the
     // flawless UI.
     top: -1px;
     display: flex;
-    border: 0;
     width: 100%;
 
     .card-group:first-of-type & {
