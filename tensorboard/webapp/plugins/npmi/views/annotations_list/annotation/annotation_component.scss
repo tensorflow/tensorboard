@@ -12,6 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+@use '@angular/material' as mat;
 @import 'tensorboard/webapp/theme/tb_theme';
 
 :host {
@@ -28,16 +29,16 @@ limitations under the License.
 }
 
 .selected-row {
-  background-color: mat-color($tb-background, selected-button);
+  background-color: mat.get-color-from-palette($tb-background, selected-button);
   display: block;
 }
 
 .flagged-annotation {
-  color: mat-color($tb-primary);
+  color: mat.get-color-from-palette($tb-primary);
 }
 
 .hidden-annotation {
-  color: mat-color($tb-foreground, disabled-text);
+  color: mat.get-color-from-palette($tb-foreground, disabled-text);
 }
 
 .annotation-checkbox {
@@ -57,7 +58,7 @@ limitations under the License.
 }
 
 .chart-div {
-  border-bottom: 1px solid mat-color($tb-foreground, border);
+  border-bottom: 1px solid mat.get-color-from-palette($tb-foreground, border);
 }
 
 .chart-svg {
@@ -66,15 +67,15 @@ limitations under the License.
 }
 
 .default-text {
-  fill: mat-color($tb-foreground, base);
+  fill: mat.get-color-from-palette($tb-foreground, base);
 }
 
 .flag-text {
-  fill: mat-color($tb-primary);
+  fill: mat.get-color-from-palette($tb-primary);
 }
 
 .hidden-text {
-  fill: mat-color($tb-foreground, disabled-text);
+  fill: mat.get-color-from-palette($tb-foreground, disabled-text);
 }
 
 .clickable-annotation {

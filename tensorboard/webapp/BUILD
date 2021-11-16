@@ -175,11 +175,11 @@ tf_js_binary(
     entry_point = "main_prod.ts",
     deps = [
         ":ng_main",
+        "//tensorboard/webapp:angular_material_theming",
         "//tensorboard/webapp/angular:expect_angular_material_tabs",
         "//tensorboard/webapp/angular:expect_angular_material_toolbar",
         "@npm//@angular/common",
         "@npm//@angular/core",
-        "@npm//@angular/material",
         "@npm//@angular/platform-browser",
         "@npm//@ngrx/store",
         "@npm//rxjs",

@@ -12,12 +12,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+@use '@angular/material' as mat;
 @import 'tensorboard/webapp/angular_material_theming';
 @import 'tensorboard/webapp/theme/tb_palette';
 
-$tb-primary: mat-palette($tf-orange, 700, 400, 800);
-$tb-accent: mat-palette($tf-orange);
-$tb-warn: mat-palette($mat-red);
+$tb-primary: mat.define-palette($tf-orange, 700, 400, 800);
+$tb-accent: mat.define-palette($tf-orange);
+$tb-warn: mat.define-palette(mat.$red-palette);
 
-$tb-dark-primary: mat-palette($tf-orange, 800, 600, 900);
+$tb-dark-primary: mat.define-palette($tf-orange, 800, 600, 900);
 $tb-dark-accent: $tb-dark-primary;

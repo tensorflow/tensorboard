@@ -12,6 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+@use '@angular/material' as mat;
 @import 'tensorboard/webapp/theme/tb_theme';
 
 :host {
@@ -23,8 +24,11 @@ limitations under the License.
 }
 
 .notice {
-  background-color: rgba(mat-color($mat-yellow, 200), 0.85);
-  border-bottom: 1px solid mat-color($mat-yellow, 500);
+  background-color: rgba(
+    mat.get-color-from-palette(mat.$yellow-palette, 200),
+    0.85
+  );
+  border-bottom: 1px solid mat.get-color-from-palette(mat.$yellow-palette, 500);
   color: map-get($tb-foreground, text);
   display: block;
   flex: 0 0;
@@ -36,14 +40,14 @@ tb-dashboard-layout {
 }
 
 nav {
-  background-color: mat-color($tb-background, background);
-  border-right: 1px solid mat-color($tb-foreground, border);
+  background-color: mat.get-color-from-palette($tb-background, background);
+  border-right: 1px solid mat.get-color-from-palette($tb-foreground, border);
   flex: none;
   width: 340px;
 
   @include tb-dark-theme {
     background-color: map-get($tb-dark-background, background);
-    border-right-color: mat-color($tb-dark-foreground, border);
+    border-right-color: mat.get-color-from-palette($tb-dark-foreground, border);
   }
 }
 

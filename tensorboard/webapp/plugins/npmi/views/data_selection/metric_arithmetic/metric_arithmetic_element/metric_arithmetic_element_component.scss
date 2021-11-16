@@ -12,6 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+@use '@angular/material' as mat;
 @import 'tensorboard/webapp/theme/tb_theme';
 
 .filter-chip {
@@ -22,7 +23,7 @@ limitations under the License.
 
 .metric-arithmetic-element-range {
   align-items: center;
-  background-color: mat-color($tb-background, card);
+  background-color: mat.get-color-from-palette($tb-background, card);
   font-size: 0.8em;
   height: 30px;
   justify-content: center;
@@ -39,18 +40,21 @@ limitations under the License.
   transition: width 1s;
 
   &:focus {
-    background-color: mat-color($tb-background, focused-button);
+    background-color: mat.get-color-from-palette(
+      $tb-background,
+      focused-button
+    );
     border: none;
     outline: none;
   }
 }
 
 .value-invalid {
-  color: mat-color($tb-warn);
+  color: mat.get-color-from-palette($tb-warn);
 }
 
 .embedding-selected {
-  color: mat-color($tb-primary);
+  color: mat.get-color-from-palette($tb-primary);
   opacity: 1;
 }
 

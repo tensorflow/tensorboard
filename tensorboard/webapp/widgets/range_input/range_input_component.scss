@@ -12,6 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+@use '@angular/material' as mat;
 @import 'tensorboard/webapp/theme/tb_theme';
 
 // Keep this in sync with range_input_component.ts's `THUMB_SIZE_PX`.
@@ -89,9 +90,9 @@ input {
 
 .slider-track-fill,
 .thumb {
-  background: mat-color($tb-primary);
+  background: mat.get-color-from-palette($tb-primary);
 
   @include tb-dark-theme {
-    background: mat-color($tb-dark-primary);
+    background: mat.get-color-from-palette($tb-dark-primary);
   }
 }

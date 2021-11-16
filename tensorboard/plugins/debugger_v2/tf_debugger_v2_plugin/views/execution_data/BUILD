@@ -7,6 +7,7 @@ licenses(["notice"])
 tf_sass_binary(
     name = "execution_data_styles",
     src = "execution_data_component.scss",
+    deps = ["//tensorboard/webapp:angular_material_theming"],
 )
 
 tf_ng_module(

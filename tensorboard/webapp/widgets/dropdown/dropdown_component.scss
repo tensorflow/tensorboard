@@ -12,10 +12,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+@use '@angular/material' as mat;
 @import 'tensorboard/webapp/theme/tb_theme';
 
 mat-select {
-  border: 1px solid mat-color($tf-slate, 500);
+  border: 1px solid mat.get-color-from-palette($tf-slate, 500);
   border-radius: 3px;
   box-sizing: border-box;
   padding: 6px;

@@ -33,11 +33,13 @@ tf_ng_module(
 tf_sass_binary(
     name = "tbdev_upload_button_component_css",
     src = "tbdev_upload_button_component.scss",
+    deps = ["//tensorboard/webapp:angular_material_theming"],
 )
 
 tf_sass_binary(
     name = "tbdev_upload_dialog_component_css",
     src = "tbdev_upload_dialog_component.scss",
+    deps = ["//tensorboard/webapp:angular_material_theming"],
 )
 
 tf_ts_library(

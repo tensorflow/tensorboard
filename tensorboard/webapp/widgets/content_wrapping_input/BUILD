@@ -5,6 +5,7 @@ package(default_visibility = ["//tensorboard:internal"])
 tf_sass_binary(
     name = "content_wrapping_input_component_styles",
     src = "content_wrapping_input_component.scss",
+    deps = ["//tensorboard/webapp:angular_material_theming"],
 )
 
 tf_ng_module(

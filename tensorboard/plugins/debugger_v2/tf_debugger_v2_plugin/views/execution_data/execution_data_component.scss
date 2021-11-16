@@ -12,6 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+@use '@angular/material' as mat;
 @import 'tensorboard/webapp/theme/tb_theme';
 
 .debug-tensor-values-table {
@@ -44,7 +45,7 @@ limitations under the License.
 }
 
 .focus-execution-container {
-  background-color: mat-color($mat-orange, 200);
+  background-color: mat.get-color-from-palette(mat.$orange-palette, 200);
   border-radius: 4px;
   font-size: 12px;
   height: 120px;
@@ -52,7 +53,7 @@ limitations under the License.
   width: 360px;
 
   @include tb-dark-theme {
-    background-color: mat-color($mat-orange, 900);
+    background-color: mat.get-color-from-palette(mat.$orange-palette, 900);
   }
 }
 
