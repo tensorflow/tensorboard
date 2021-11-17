@@ -27,6 +27,7 @@ limitations under the License.
     top: -1px;
     display: flex;
     width: 100%;
+    font: inherit;
 
     .card-group:first-of-type & {
       border-top: 0;
