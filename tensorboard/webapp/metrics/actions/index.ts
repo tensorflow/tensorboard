@@ -70,6 +70,15 @@ export const metricsChangeXAxisType = createAction(
   props<{xAxisType: XAxisType}>()
 );
 
+export const metricsChangeCardWidth = createAction(
+  '[Metrics] Metrics Setting Change Card Width',
+  props<{cardMaxWidthInVW: number}>()
+);
+
+export const metricsResetCardWidth = createAction(
+  '[Metrics] Card Width Setting Reset'
+);
+
 export const metricsChangeScalarSmoothing = createAction(
   '[Metrics] Metrics Setting Change Scalar Smoothing',
   props<{smoothing: number}>()
