@@ -124,8 +124,8 @@ export class CardGridContainer implements OnChanges, OnDestroy {
     this.store.select(getMetricCardMaxWidth),
     this.store.select(getEnabledCardWidthSetting),
   ]).pipe(
-    map(([cardMaxWidth, isCardWithSettingEnabled]) =>
-      isCardWithSettingEnabled ? cardMaxWidth : null
+    map(([cardMaxWidth, isCardWidthSettingEnabled]) =>
+      isCardWidthSettingEnabled ? cardMaxWidth : null
     )
   );
 
