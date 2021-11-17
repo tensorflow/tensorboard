@@ -921,7 +921,7 @@ describe('metrics main view', () => {
 
       it('sets the max width to be cardMaxWidth', () => {
         store.overrideSelector(selectors.getEnabledCardWidthSetting, true);
-        store.overrideSelector(selectors.getMetricCardMaxWidth, 50);
+        store.overrideSelector(selectors.getMetricsCardMaxWidth, 50);
         const fixture = TestBed.createComponent(MainViewContainer);
         fixture.detectChanges();
 
@@ -934,7 +934,7 @@ describe('metrics main view', () => {
 
       it('does not set the max width with invalid width value', () => {
         store.overrideSelector(selectors.getEnabledCardWidthSetting, true);
-        store.overrideSelector(selectors.getMetricCardMaxWidth, -50);
+        store.overrideSelector(selectors.getMetricsCardMaxWidth, -50);
         let fixture = TestBed.createComponent(MainViewContainer);
         fixture.detectChanges();
         expect(
@@ -943,7 +943,7 @@ describe('metrics main view', () => {
           ]
         ).toBe('');
 
-        store.overrideSelector(selectors.getMetricCardMaxWidth, 20);
+        store.overrideSelector(selectors.getMetricsCardMaxWidth, 20);
         fixture = TestBed.createComponent(MainViewContainer);
         fixture.detectChanges();
 
@@ -953,7 +953,7 @@ describe('metrics main view', () => {
           ]
         ).toBe('');
 
-        store.overrideSelector(selectors.getMetricCardMaxWidth, 110);
+        store.overrideSelector(selectors.getMetricsCardMaxWidth, 110);
         fixture = TestBed.createComponent(MainViewContainer);
         fixture.detectChanges();
 

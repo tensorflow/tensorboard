@@ -27,7 +27,7 @@ import {map, shareReplay, switchMap, takeUntil, tap} from 'rxjs/operators';
 
 import {State} from '../../../app_state';
 import {
-  getMetricCardMaxWidth,
+  getMetricsCardMaxWidth,
   getMetricsTagGroupExpansionState,
   getEnabledCardWidthSetting,
 } from '../../../selectors';
@@ -121,7 +121,7 @@ export class CardGridContainer implements OnChanges, OnDestroy {
   );
 
   readonly cardMaxWidthInVW$ = combineLatest([
-    this.store.select(getMetricCardMaxWidth),
+    this.store.select(getMetricsCardMaxWidth),
     this.store.select(getEnabledCardWidthSetting),
   ]).pipe(
     map(([cardMaxWidth, isCardWidthSettingEnabled]) =>
