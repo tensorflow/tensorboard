@@ -26,7 +26,11 @@ import {BehaviorSubject, combineLatest, Observable, of, Subject} from 'rxjs';
 import {map, shareReplay, switchMap, takeUntil, tap} from 'rxjs/operators';
 
 import {State} from '../../../app_state';
-import {getMetricCardMaxWidth, getMetricsTagGroupExpansionState} from '../../../selectors';
+import {
+  getMetricCardMaxWidth,
+  getMetricsTagGroupExpansionState,
+  getEnabledCardWidthSetting,
+} from '../../../selectors';
 import {metricsTagGroupExpansionChanged} from '../../actions';
 import {CardObserver} from '../card_renderer/card_lazy_loader';
 import {CardIdWithMetadata} from '../metrics_view_types';
@@ -116,7 +120,14 @@ export class CardGridContainer implements OnChanges, OnDestroy {
     })
   );
 
-  readonly cardMaxWidthInVW$ = this.store.select(getMetricCardMaxWidth);
+  readonly cardMaxWidthInVW$ = combineLatest([
+    this.store.select(getMetricCardMaxWidth),
+    this.store.select(getEnabledCardWidthSetting),
+  ]).pipe(
+    map(([cardMaxWidth, isCardWithSettingEnabled]) =>
+      isCardWithSettingEnabled ? cardMaxWidth : null
+    )
+  );
 
   constructor(private readonly store: Store<State>) {}
 

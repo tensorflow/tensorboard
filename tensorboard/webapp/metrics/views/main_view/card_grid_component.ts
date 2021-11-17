@@ -28,6 +28,8 @@ import {CardObserver} from '../card_renderer/card_lazy_loader';
 import {CardIdWithMetadata} from '../metrics_view_types';
 
 const MIN_CARD_WIDTH = 335;
+const MIN_CARD_MAX_WIDTH_IN_VW = 30;
+const MAX_CARD_MAX_WIDTH_IN_VW = 100;
 
 @Component({
   selector: 'metrics-card-grid-component',
@@ -37,7 +39,7 @@ const MIN_CARD_WIDTH = 335;
 })
 export class CardGridComponent {
   readonly PluginType = PluginType;
-  gridTemplateColumn = "";
+  gridTemplateColumn = '';
 
   @Input() isGroupExpanded!: boolean;
   @Input() pageIndex!: number;
@@ -54,8 +56,12 @@ export class CardGridComponent {
   ) {}
 
   ngOnInit() {
-    if (this.cardMaxWidthInVW && this.cardMaxWidthInVW >= 30 && this.cardMaxWidthInVW <= 100) {
-      this.gridTemplateColumn = `repeat(auto-fill, minmax(${MIN_CARD_WIDTH}px, ${this.cardMaxWidthInVW}vw))`
+    if (
+      this.cardMaxWidthInVW &&
+      this.cardMaxWidthInVW >= MIN_CARD_MAX_WIDTH_IN_VW &&
+      this.cardMaxWidthInVW <= MAX_CARD_MAX_WIDTH_IN_VW
+    ) {
+      this.gridTemplateColumn = `repeat(auto-fill, minmax(${MIN_CARD_WIDTH}px, ${this.cardMaxWidthInVW}vw))`;
     }
   }
 
