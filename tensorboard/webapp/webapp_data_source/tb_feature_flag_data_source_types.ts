@@ -35,6 +35,8 @@ export const EXPERIMENTAL_PLUGIN_QUERY_PARAM_KEY = 'experimentalPlugin';
 
 export const SCALARS_BATCH_SIZE_PARAM_KEY = 'scalarsBatchSize';
 
+export const ENABLE_CARD_WIDTH_SETTING_PARAM_KEY = 'enableCardWidthSetting';
+
 export const ENABLE_COLOR_GROUP_QUERY_PARAM_KEY = 'enableColorGroup';
 
 export const ENABLE_COLOR_GROUP_BY_REGEX_QUERY_PARAM_KEY =

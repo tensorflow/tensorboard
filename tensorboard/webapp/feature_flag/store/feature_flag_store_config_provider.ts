@@ -31,6 +31,7 @@ export const initialState: FeatureFlagState = {
     metricsImageSupportEnabled: true,
     enabledLinkedTime: false,
     enableTimeSeriesPromotion: false,
+    enabledCardWidthSetting: false,
   },
   flagOverrides: {},
 };

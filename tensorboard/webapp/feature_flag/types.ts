@@ -45,4 +45,6 @@ export interface FeatureFlags {
   enabledLinkedTime: boolean;
   // Whether to enable TimeSeries promotion butter bar.
   enableTimeSeriesPromotion: boolean;
+  // Whether to enable card width adjustment on the right panle.
+  enabledCardWidthSetting: boolean;
 }
