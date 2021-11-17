@@ -36,7 +36,7 @@ limitations under the License.
         [min]="MIN_CARD_WIDTH_SLIDER_VALUE"
         [step]="1"
         [value]="cardMaxWidthInVW"
-        [thumbLabel]="true"
+        [thumbLabel]="false"
         (input)="cardWidthSliderChanged$.emit($event.value)"
       ></mat-slider>
       <button
