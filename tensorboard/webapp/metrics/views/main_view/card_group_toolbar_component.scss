@@ -34,11 +34,16 @@ limitations under the License.
       cursor: pointer;
     }
   }
+
+  @include tb-dark-theme {
+    .group-toolbar {
+      color: map-get($tb-dark-foreground, text);
+    }
+  }
 }
 
 .expand-group-icon {
   @include tb-theme-foreground-prop(color, secondary-text);
-  background-color: $metrics-button-background-color-on-gray;
 
   &:disabled {
     @include tb-theme-foreground-prop(color, disabled-text);
