@@ -44,18 +44,13 @@ function createOrUpdateObject<T extends SVGPathElement | SVGCircleElement>(
   const {color, visible, opacity} = paintOpt;
   let dom: T | undefined = prevDom;
 
-  if (!dom) {
-    // Skip if prevDom does not exist and Object is invisible
-    if (!visible) return null;
-
-    dom = creator();
-  } else if (!visible) {
-    dom.style.display = 'none';
-    return dom;
+  if (!dom && !visible) {
+    return null;
   }
 
+  dom = dom ?? creator();
   dom = updater(dom);
-  dom.style.display = '';
+  dom.style.display = visible ? '' : 'none';
   dom.style.stroke = color;
   dom.style.opacity = String(opacity ?? 1);
   return dom;

@@ -97,26 +97,30 @@ describe('line_chart_v2/lib/renderer test', () => {
       expect(path.style.display).toBe('');
     });
 
-    it('skips updating path and color if visibility goes from true to false', () => {
-      const cacheObject = renderer.createOrUpdateLineObject(
-        null,
-        new Float32Array([0, 10, 10, 100]),
-        {visible: true, color: '#f00', width: 6}
-      );
+    it(
+      'updates path and color if visibility goes from true to false so value is ' +
+        'correct when it goes back to true',
+      () => {
+        const cacheObject = renderer.createOrUpdateLineObject(
+          null,
+          new Float32Array([0, 10, 10, 100]),
+          {visible: true, color: '#f00', width: 6}
+        );
 
-      renderer.createOrUpdateLineObject(
-        cacheObject,
-        new Float32Array([0, 5, 5, 50]),
-        {visible: false, color: '#0f0', width: 3}
-      );
+        renderer.createOrUpdateLineObject(
+          cacheObject,
+          new Float32Array([0, 5, 5, 50]),
+          {visible: false, color: '#0f0', width: 3}
+        );
 
-      expect(el.children.length).toBe(1);
-      const path = el.children[0] as SVGPathElement;
-      expect(path.tagName).toBe('path');
-      expect(path.style.display).toBe('none');
-      expect(path.getAttribute('d')).toBe('M0,10L10,100');
-      expect(path.style.stroke).toBe('rgb(255, 0, 0)');
-    });
+        expect(el.children.length).toBe(1);
+        const path = el.children[0] as SVGPathElement;
+        expect(path.tagName).toBe('path');
+        expect(path.style.display).toBe('none');
+        expect(path.getAttribute('d')).toBe('M0,5L5,50');
+        expect(path.style.stroke).toBe('rgb(0, 255, 0)');
+      }
+    );
 
     it('skips rendering DOM when a new cacheId starts with visible=false', () => {
       renderer.createOrUpdateLineObject(
