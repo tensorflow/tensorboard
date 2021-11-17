@@ -76,7 +76,7 @@ export const metricsChangeCardWidth = createAction(
 );
 
 export const metricsResetCardWidth = createAction(
-  '[Metrics] Card Width Setting Reset'
+  '[Metrics] Metrics Setting Reset Card Width'
 );
 
 export const metricsChangeScalarSmoothing = createAction(

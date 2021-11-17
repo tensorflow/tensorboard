@@ -89,8 +89,8 @@ describe('metrics right_pane', () => {
       );
       store.overrideSelector(selectors.getIsFeatureFlagsLoaded, true);
       store.overrideSelector(selectors.getIsMetricsImageSupportEnabled, true);
-      store.overrideSelector(selectors.getEnabledCardWidthSetting, false);
       store.overrideSelector(selectors.getIsLinkedTimeEnabled, false);
+      store.overrideSelector(selectors.getEnabledCardWidthSetting, false);
       store.overrideSelector(selectors.getMetricsSelectTimeEnabled, false);
       store.overrideSelector(selectors.getMetricsUseRangeSelectTime, false);
       store.overrideSelector(selectors.getMetricsSelectedTimeSetting, {
@@ -331,12 +331,12 @@ describe('metrics right_pane', () => {
         );
       });
 
-      it('dispatches action when adjusting the slider', fakeAsync(() => {
+      it('dispatches metricsChangeCardWidth action when adjusting the slider', fakeAsync(() => {
         const fixture = TestBed.createComponent(SettingsViewContainer);
         fixture.detectChanges();
         const slider = select(fixture, CARD_WIDTH_SLIDER);
 
-        // Adjust slider.
+        // Adjusts slider.
         slider.triggerEventHandler('input', {value: 90});
         tick(TEST_ONLY.SLIDER_AUDIT_TIME_MS);
 
@@ -345,7 +345,7 @@ describe('metrics right_pane', () => {
         );
       }));
 
-      it('dispatches action when clicking reset', () => {
+      it('dispatches metricsResetCardWidth action when clicking reset', () => {
         const fixture = TestBed.createComponent(SettingsViewContainer);
         fixture.detectChanges();
 
