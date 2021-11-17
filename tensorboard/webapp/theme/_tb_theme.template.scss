@@ -24,7 +24,7 @@ limitations under the License.
 // Angular Material theme definition.
 
 // Include non-theme styles for core.
-@include mat-core();
+@include mat.core();
 
 // Value for `app-bar` property in $tb-background. Can specify an override in
 // _variable.scss to specifically customize this value.

@@ -53,7 +53,7 @@ p {
   padding: 2px 12px;
 
   @include tb-dark-theme {
-    background-color: mat.get-color-from-palette($mat-grey, 700);
+    background-color: mat.get-color-from-palette(mat.$grey-palette, 700);
   }
 }
 
