@@ -665,7 +665,7 @@ describe('metrics selectors', () => {
     });
 
     it('returns cardMaxWidthInVW when called getMetricCardMaxWidth', () => {
-      selectors.getMetricCardMaxWidth.release();
+      selectors.getMetricsCardMaxWidth.release();
       const state = appStateFromMetricsState(
         buildMetricsState({
           settings: buildMetricsSettingsState({
@@ -673,7 +673,7 @@ describe('metrics selectors', () => {
           }),
         })
       );
-      expect(selectors.getMetricCardMaxWidth(state)).toBe(40);
+      expect(selectors.getMetricsCardMaxWidth(state)).toBe(40);
     });
   });
 
