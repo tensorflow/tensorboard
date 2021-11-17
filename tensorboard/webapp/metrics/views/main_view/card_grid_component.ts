@@ -43,7 +43,7 @@ export class CardGridComponent {
   @Input() pageIndex!: number;
   @Input() numPages!: number;
   @Input() cardIdsWithMetadata!: CardIdWithMetadata[];
-  @Input() cardMaxWidthInVW!: number;
+  @Input() cardMaxWidthInVW!: number | null;
   @Input() cardObserver!: CardObserver;
   @Input() showPaginationControls!: boolean;
 
@@ -54,7 +54,7 @@ export class CardGridComponent {
   ) {}
 
   ngOnInit() {
-    if (this.cardMaxWidthInVW >= 30 && this.cardMaxWidthInVW <= 100) {
+    if (this.cardMaxWidthInVW && this.cardMaxWidthInVW >= 30 && this.cardMaxWidthInVW <= 100) {
       this.gridTemplateColumn = `repeat(auto-fill, minmax(${MIN_CARD_WIDTH}px, ${this.cardMaxWidthInVW}vw))`
     }
   }
