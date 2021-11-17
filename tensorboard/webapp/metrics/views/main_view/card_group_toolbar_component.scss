@@ -21,6 +21,7 @@ limitations under the License.
   .group-toolbar {
     border: 0;
     @include tb-theme-foreground-prop(border-top, border, 1px solid);
+    @include tb-theme-foreground-prop(color, text);
     // border-top on group-toolbar needs to be offset on sticky header for the
     // flawless UI.
     top: -1px;
@@ -38,7 +39,6 @@ limitations under the License.
 
 .expand-group-icon {
   @include tb-theme-foreground-prop(color, secondary-text);
-  background-color: $metrics-button-background-color-on-gray;
 
   &:disabled {
     @include tb-theme-foreground-prop(color, disabled-text);
