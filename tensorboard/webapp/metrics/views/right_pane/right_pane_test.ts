@@ -331,20 +331,18 @@ describe('metrics right_pane', () => {
         );
       });
 
-      it('dispatches action when changing the width', fakeAsync(() => {
+      it('dispatches action when adjusting the slider', fakeAsync(() => {
         const fixture = TestBed.createComponent(SettingsViewContainer);
         fixture.detectChanges();
         const slider = select(fixture, CARD_WIDTH_SLIDER);
 
         // Adjust slider.
-        slider.nativeElement.value = '90';
-        slider.nativeElement.dispatchEvent(new Event('input'));
+        slider.triggerEventHandler('input', {value: 90});
         tick(TEST_ONLY.SLIDER_AUDIT_TIME_MS);
 
-        // TODO(ytjing): fix test.
-        // expect(dispatchSpy).toHaveBeenCalledOnceWith(
-        //   actions.metricsChangeCardWidth({cardMaxWidthInVW: 90})
-        // );
+        expect(dispatchSpy).toHaveBeenCalledOnceWith(
+          actions.metricsChangeCardWidth({cardMaxWidthInVW: 90})
+        );
       }));
 
       it('dispatches action when clicking reset', () => {
