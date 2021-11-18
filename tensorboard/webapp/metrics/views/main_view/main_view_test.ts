@@ -934,8 +934,19 @@ describe('metrics main view', () => {
 
       it('does not set the max width with invalid width value', () => {
         store.overrideSelector(selectors.getEnabledCardWidthSetting, true);
-        store.overrideSelector(selectors.getMetricsCardMaxWidth, -50);
+
+        store.overrideSelector(selectors.getMetricsCardMaxWidth, null);
         let fixture = TestBed.createComponent(MainViewContainer);
+        fixture.detectChanges();
+
+        expect(
+          fixture.debugElement.query(By.css('.card-grid')).styles[
+            'grid-template-columns'
+          ]
+        ).toBe('');
+
+        store.overrideSelector(selectors.getMetricsCardMaxWidth, -50);
+        fixture = TestBed.createComponent(MainViewContainer);
         fixture.detectChanges();
         expect(
           fixture.debugElement.query(By.css('.card-grid')).styles[
