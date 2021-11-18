@@ -6,7 +6,7 @@ tf_sass_binary(
     name = "main_view_styles",
     src = "main_view_component.scss",
     deps = [
-        "//tensorboard/webapp:angular_material_theming",
+        "//tensorboard/webapp:angular_material_sass_deps",
         "//tensorboard/webapp/metrics/views:metrics_common_styles",
     ],
 )
@@ -14,14 +14,14 @@ tf_sass_binary(
 tf_sass_binary(
     name = "filter_input_component_styles",
     src = "filter_input_component.scss",
-    deps = ["//tensorboard/webapp:angular_material_theming"],
+    deps = ["//tensorboard/webapp:angular_material_sass_deps"],
 )
 
 tf_sass_binary(
     name = "filtered_view_component_styles",
     src = "filtered_view_component.scss",
     deps = [
-        "//tensorboard/webapp:angular_material_theming",
+        "//tensorboard/webapp:angular_material_sass_deps",
         "//tensorboard/webapp/metrics/views:metrics_common_styles",
     ],
 )
@@ -30,7 +30,7 @@ tf_sass_binary(
     name = "pinned_view_component_styles",
     src = "pinned_view_component.scss",
     deps = [
-        "//tensorboard/webapp:angular_material_theming",
+        "//tensorboard/webapp:angular_material_sass_deps",
         "//tensorboard/webapp/metrics/views:metrics_common_styles",
     ],
 )
