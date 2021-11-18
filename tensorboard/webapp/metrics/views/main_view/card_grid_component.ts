@@ -75,9 +75,11 @@ export class CardGridComponent {
   }
 
   isCardWidthValid(cardMaxWidthInVW: number | null) {
-    return cardMaxWidthInVW &&
-    cardMaxWidthInVW >= MIN_CARD_MAX_WIDTH_IN_VW &&
-    cardMaxWidthInVW <= MAX_CARD_MAX_WIDTH_IN_VW;
+    return (
+      cardMaxWidthInVW &&
+      cardMaxWidthInVW >= MIN_CARD_MAX_WIDTH_IN_VW &&
+      cardMaxWidthInVW <= MAX_CARD_MAX_WIDTH_IN_VW
+    );
   }
 
   showPaginationInput(isBottomControl: boolean) {

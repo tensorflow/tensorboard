@@ -797,10 +797,7 @@ describe('metrics reducers', () => {
           cardMaxWidthInVW: 50,
         },
       });
-      const nextState = reducers(
-        prevState,
-        actions.metricsResetCardWidth()
-      );
+      const nextState = reducers(prevState, actions.metricsResetCardWidth());
       expect(nextState.settings.cardMaxWidthInVW).toBe(40);
       expect(nextState.settingOverrides.cardMaxWidthInVW).toBe(null);
     });
