@@ -119,8 +119,9 @@ export class SettingsViewContainer {
     selectors.getMetricsIgnoreOutliers
   );
   readonly xAxisType$ = this.store.select(selectors.getMetricsXAxisType);
-  // TODO(ytjing) Read cardMaxWidthInVW using the corresponding metrics selector.
-  readonly cardMaxWidthInVW$ = of(30);
+  readonly cardMaxWidthInVW$ = this.store.select(
+    selectors.getMetricsCardMaxWidth
+  );
   readonly histogramMode$ = this.store.select(
     selectors.getMetricsHistogramMode
   );

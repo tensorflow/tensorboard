@@ -646,6 +646,24 @@ const reducer = createReducer(
       },
     };
   }),
+  on(actions.metricsChangeCardWidth, (state, {cardMaxWidthInVW}) => {
+    return {
+      ...state,
+      settingOverrides: {
+        ...state.settingOverrides,
+        cardMaxWidthInVW,
+      },
+    };
+  }),
+  on(actions.metricsResetCardWidth, (state) => {
+    return {
+      ...state,
+      settingOverrides: {
+        ...state.settingOverrides,
+        cardMaxWidthInVW: null,
+      },
+    };
+  }),
   on(
     actions.multipleTimeSeriesRequested,
     (
