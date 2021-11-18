@@ -7,7 +7,7 @@ licenses(["notice"])
 tf_sass_binary(
     name = "notification_center_styles",
     src = "notification_center_component.scss",
-    deps = ["//tensorboard/webapp:angular_material_theming"],
+    deps = ["//tensorboard/webapp:angular_material_sass_deps"],
 )
 
 tf_ng_module(

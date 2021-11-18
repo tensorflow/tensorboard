@@ -7,7 +7,7 @@ licenses(["notice"])
 tf_sass_binary(
     name = "metric_arithmetic_element_component_styles",
     src = "metric_arithmetic_element_component.scss",
-    deps = ["//tensorboard/webapp:angular_material_theming"],
+    deps = ["//tensorboard/webapp:angular_material_sass_deps"],
 )
 
 tf_ng_module(

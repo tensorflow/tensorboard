@@ -121,7 +121,7 @@ tf_sass_binary(
     name = "image_card_styles",
     src = "image_card_component.scss",
     deps = [
-        "//tensorboard/webapp:angular_material_theming",
+        "//tensorboard/webapp:angular_material_sass_deps",
         "//tensorboard/webapp/metrics/views:metrics_common_styles",
     ],
 )
@@ -191,7 +191,7 @@ tf_ng_module(
 tf_sass_binary(
     name = "vis_selected_time_clipped_styles",
     src = "vis_selected_time_clipped_component.scss",
-    deps = ["//tensorboard/webapp:angular_material_theming"],
+    deps = ["//tensorboard/webapp:angular_material_sass_deps"],
 )
 
 tf_ng_module(
