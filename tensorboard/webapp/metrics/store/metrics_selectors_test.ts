@@ -663,6 +663,18 @@ describe('metrics selectors', () => {
         HistogramMode.OVERLAY
       );
     });
+
+    it('returns cardMaxWidthInVW when called getMetricCardMaxWidth', () => {
+      selectors.getMetricsCardMaxWidth.release();
+      const state = appStateFromMetricsState(
+        buildMetricsState({
+          settings: buildMetricsSettingsState({
+            cardMaxWidthInVW: 40,
+          }),
+        })
+      );
+      expect(selectors.getMetricsCardMaxWidth(state)).toBe(40);
+    });
   });
 
   describe('getMetricsTagFilter', () => {

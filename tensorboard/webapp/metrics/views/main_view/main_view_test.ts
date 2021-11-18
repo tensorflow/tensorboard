@@ -202,6 +202,7 @@ describe('metrics main view', () => {
       lastLoadedTimeInMs: null,
     });
     store.overrideSelector(selectors.isMetricsSettingsPaneOpen, false);
+    store.overrideSelector(selectors.getEnabledCardWidthSetting, false);
   });
 
   describe('toolbar', () => {
@@ -892,6 +893,86 @@ describe('metrics main view', () => {
         expect(
           fixture.debugElement.queryAll(By.css('.card-group')).length
         ).toBe(0);
+      });
+    });
+
+    describe('card width setting', () => {
+      beforeEach(() => {
+        store.overrideSelector(selectors.getNonEmptyCardIdsWithMetadata, [
+          {
+            cardId: 'card1',
+            plugin: PluginType.SCALARS,
+            tag: 'tagA',
+            runId: null,
+          },
+        ]);
+      });
+
+      it('does not set the max width without feature flag enabled', () => {
+        const fixture = TestBed.createComponent(MainViewContainer);
+        fixture.detectChanges();
+
+        expect(
+          fixture.debugElement.query(By.css('.card-grid')).styles[
+            'grid-template-columns'
+          ]
+        ).toBe('');
+      });
+
+      it('sets the max width to be cardMaxWidth', () => {
+        store.overrideSelector(selectors.getEnabledCardWidthSetting, true);
+        store.overrideSelector(selectors.getMetricsCardMaxWidth, 50);
+        const fixture = TestBed.createComponent(MainViewContainer);
+        fixture.detectChanges();
+
+        expect(
+          fixture.debugElement.query(By.css('.card-grid')).styles[
+            'grid-template-columns'
+          ]
+        ).toBe('repeat(auto-fill, minmax(335px, 50vw))');
+      });
+
+      it('does not set the max width with invalid width value', () => {
+        store.overrideSelector(selectors.getEnabledCardWidthSetting, true);
+
+        store.overrideSelector(selectors.getMetricsCardMaxWidth, null);
+        let fixture = TestBed.createComponent(MainViewContainer);
+        fixture.detectChanges();
+
+        expect(
+          fixture.debugElement.query(By.css('.card-grid')).styles[
+            'grid-template-columns'
+          ]
+        ).toBe('');
+
+        store.overrideSelector(selectors.getMetricsCardMaxWidth, -50);
+        fixture = TestBed.createComponent(MainViewContainer);
+        fixture.detectChanges();
+        expect(
+          fixture.debugElement.query(By.css('.card-grid')).styles[
+            'grid-template-columns'
+          ]
+        ).toBe('');
+
+        store.overrideSelector(selectors.getMetricsCardMaxWidth, 20);
+        fixture = TestBed.createComponent(MainViewContainer);
+        fixture.detectChanges();
+
+        expect(
+          fixture.debugElement.query(By.css('.card-grid')).styles[
+            'grid-template-columns'
+          ]
+        ).toBe('');
+
+        store.overrideSelector(selectors.getMetricsCardMaxWidth, 110);
+        fixture = TestBed.createComponent(MainViewContainer);
+        fixture.detectChanges();
+
+        expect(
+          fixture.debugElement.query(By.css('.card-grid')).styles[
+            'grid-template-columns'
+          ]
+        ).toBe('');
       });
     });
   });
