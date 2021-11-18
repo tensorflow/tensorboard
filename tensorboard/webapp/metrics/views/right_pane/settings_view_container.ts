@@ -14,12 +14,14 @@ limitations under the License.
 ==============================================================================*/
 import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {Store} from '@ngrx/store';
-import {Observable} from 'rxjs';
+import {Observable, of} from 'rxjs';
 import {filter, map, take, withLatestFrom} from 'rxjs/operators';
 
 import {State} from '../../../app_state';
 import * as selectors from '../../../selectors';
 import {
+  metricsChangeCardWidth,
+  metricsResetCardWidth,
   metricsChangeHistogramMode,
   metricsChangeImageBrightness,
   metricsChangeImageContrast,
@@ -48,6 +50,10 @@ import {HistogramMode, LinkedTime, TooltipSort, XAxisType} from '../../types';
       (ignoreOutliersChanged)="onIgnoreOutliersChanged()"
       [xAxisType]="xAxisType$ | async"
       (xAxisTypeChanged)="onXAxisTypeChanged($event)"
+      [isCardWidthSettingEnabled]="isCardWidthSettingEnabled$ | async"
+      [cardMaxWidthInVW]="cardMaxWidthInVW$ | async"
+      (cardWidthChanged)="onCardWidthChanged($event)"
+      (cardWidthReset)="onCardWidthReset()"
       [histogramMode]="histogramMode$ | async"
       (histogramModeChanged)="onHistogramModeChanged($event)"
       [scalarSmoothing]="scalarSmoothing$ | async"
@@ -78,6 +84,9 @@ import {HistogramMode, LinkedTime, TooltipSort, XAxisType} from '../../types';
 export class SettingsViewContainer {
   constructor(private readonly store: Store<State>) {}
 
+  readonly isCardWidthSettingEnabled$: Observable<boolean> = this.store.select(
+    selectors.getEnabledCardWidthSetting
+  );
   readonly isLinkedTimeFeatureEnabled$: Observable<boolean> = this.store.select(
     selectors.getIsLinkedTimeEnabled
   );
@@ -110,6 +119,8 @@ export class SettingsViewContainer {
     selectors.getMetricsIgnoreOutliers
   );
   readonly xAxisType$ = this.store.select(selectors.getMetricsXAxisType);
+  // TODO(ytjing) Read cardMaxWidthInVW using the corresponding metrics selector.
+  readonly cardMaxWidthInVW$ = of(30);
   readonly histogramMode$ = this.store.select(
     selectors.getMetricsHistogramMode
   );
@@ -139,6 +150,14 @@ export class SettingsViewContainer {
 
   onXAxisTypeChanged(xAxisType: XAxisType) {
     this.store.dispatch(metricsChangeXAxisType({xAxisType}));
+  }
+
+  onCardWidthChanged(cardMaxWidthInVW: number) {
+    this.store.dispatch(metricsChangeCardWidth({cardMaxWidthInVW}));
+  }
+
+  onCardWidthReset() {
+    this.store.dispatch(metricsResetCardWidth());
   }
 
   onHistogramModeChanged(histogramMode: HistogramMode) {

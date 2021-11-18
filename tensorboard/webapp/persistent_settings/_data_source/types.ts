@@ -38,6 +38,7 @@ export declare interface BackendSettings {
   sideBarWidthInPercent?: number;
   timeSeriesPromotionDismissed?: boolean;
   timeSeriesSettingsPaneOpened?: boolean;
+  timeSeriesCardMaxWidthInVW?: number;
 }
 
 /**
@@ -57,4 +58,5 @@ export interface PersistableSettings {
   sideBarWidthInPercent?: number;
   timeSeriesPromotionDismissed?: boolean;
   timeSeriesSettingsPaneOpened?: boolean;
+  timeSeriesCardMaxWidthInVW?: number;
 }
