@@ -282,7 +282,7 @@ export const getMetricsSettingOverrides = createSelector(
 
 export const getMetricsCardMaxWidth = createSelector(
   selectSettings,
-  (settings): number => settings.cardMaxWidthInVW
+  (settings): number | null => settings.cardMaxWidthInVW
 );
 
 export const getMetricsTooltipSort = createSelector(

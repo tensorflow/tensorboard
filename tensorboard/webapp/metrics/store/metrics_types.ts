@@ -169,7 +169,7 @@ export interface MetricsRoutefulState {
 }
 
 export interface MetricsSettings {
-  cardMaxWidthInVW: number;
+  cardMaxWidthInVW: number | null;
   tooltipSort: TooltipSort;
   ignoreOutliers: boolean;
   xAxisType: XAxisType;
@@ -222,7 +222,7 @@ export interface State {
 }
 
 export const METRICS_SETTINGS_DEFAULT: MetricsSettings = {
-  cardMaxWidthInVW: 30,
+  cardMaxWidthInVW: null,
   tooltipSort: TooltipSort.DEFAULT,
   ignoreOutliers: true,
   xAxisType: XAxisType.STEP,
