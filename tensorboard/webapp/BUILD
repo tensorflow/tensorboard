@@ -406,7 +406,11 @@ tf_external_sass_libray(
     deps = ["@npm//@angular/material"],
 )
 
-# TODO(stephanwlee): remove the alias when all usages, internal, too,
+alias(
+    name = "angular_material_theming",
+    actual = ":angular_material_sass_deps",
+)
+
 # //tensorboard/webapp:theme are removed.
 alias(
     name = "theme",
