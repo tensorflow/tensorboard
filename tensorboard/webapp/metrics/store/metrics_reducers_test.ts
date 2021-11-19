@@ -774,7 +774,7 @@ describe('metrics reducers', () => {
       );
     });
 
-    it('changes metricsChangeCardWidth on metricsChangeCardWidth', () => {
+    it('changes cardMaxWidthInVW on metricsChangeCardWidth', () => {
       const prevState = buildMetricsState({
         settings: buildMetricsSettingsState({
           cardMaxWidthInVW: 40,
