@@ -191,6 +191,7 @@ tf_ng_module(
         "testing.ts",
     ],
     deps = [
+        ":internal_utils",
         ":location",
         ":types",
         "//tensorboard/webapp/app_routing/actions",

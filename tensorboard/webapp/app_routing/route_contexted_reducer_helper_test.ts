@@ -65,12 +65,12 @@ const reducers = composeReducers(routeReducers, reducer);
 
 describe('route_contexted_reducer_helper', () => {
   describe('helper reducers', () => {
-    it('stows routeful state to the context', () => {
+    it('swaps routeful state in and out of cache', () => {
       const state1 = {
         routeful: 1,
         notRouteful: 2,
         privateRouteContextedState: {
-          '2/abc': {
+          namespace2: {
             routeful: 10,
           },
         },
@@ -89,6 +89,8 @@ describe('route_contexted_reducer_helper', () => {
             params: {experimentId: 'abc'},
             queryParams: [],
           }),
+          beforeNamespaceId: 'namespace1',
+          afterNamespaceId: 'namespace2',
         })
       );
 
@@ -107,13 +109,15 @@ describe('route_contexted_reducer_helper', () => {
             params: {experimentId: 'xyz'},
             queryParams: [],
           }),
+          beforeNamespaceId: 'namespace2',
+          afterNamespaceId: 'namespace1',
         })
       );
 
       expect(state3.routeful).toBe(1);
     });
 
-    it('sets initialValue when navigating to cache miss route', () => {
+    it('sets routeful state to initialValue on cache miss', () => {
       const state = {
         routeful: 2000,
         notRouteful: 2,
@@ -133,6 +137,8 @@ describe('route_contexted_reducer_helper', () => {
             params: {experimentId: 'xyz'},
             queryParams: [],
           }),
+          beforeNamespaceId: 'namespace1',
+          afterNamespaceId: 'namespace2',
         })
       );
 
@@ -140,8 +146,8 @@ describe('route_contexted_reducer_helper', () => {
     });
 
     it(
-      'does not modify state when `before` is empty since it can have value ' +
-        'from deeplinks',
+      'does not modify routeful state on cache miss when `before` is empty ' +
+        'since it can have value from deeplinks',
       () => {
         const state = {
           routeful: 1337,
@@ -158,6 +164,8 @@ describe('route_contexted_reducer_helper', () => {
               params: {experimentId: 'xyz'},
               queryParams: [],
             }),
+            beforeNamespaceId: null,
+            afterNamespaceId: 'namespace1',
           })
         );
 
@@ -165,43 +173,12 @@ describe('route_contexted_reducer_helper', () => {
       }
     );
 
-    it('does not overwrite existing state when navigating to same routeId', () => {
-      const state = {
-        routeful: 2000,
-        notRouteful: 2,
-        privateRouteContextedState: {
-          '2/xyz': {
-            routeful: 3,
-          },
-        },
-      };
-
-      const nextState = routeReducers(
-        state,
-        navigated({
-          before: buildRoute({
-            routeKind: RouteKind.EXPERIMENT,
-            params: {experimentId: 'xyz'},
-            queryParams: [],
-          }),
-          after: buildRoute({
-            routeKind: RouteKind.EXPERIMENT,
-            params: {experimentId: 'xyz'},
-            queryParams: [],
-          }),
-        })
-      );
-
-      expect(nextState.routeful).toBe(2000);
-      expect(nextState.notRouteful).toBe(2);
-    });
-
-    it('ignores routeful state when `before` is null', () => {
+    it('modifies routeful state on cache hit even when `before` is null', () => {
       const state1 = {
         routeful: 2000,
         notRouteful: 2,
         privateRouteContextedState: {
-          '2/abc': {
+          namespace1: {
             routeful: 10,
           },
         },
@@ -216,13 +193,27 @@ describe('route_contexted_reducer_helper', () => {
             params: {experimentId: 'abc'},
             queryParams: [],
           }),
+          beforeNamespaceId: null,
+          afterNamespaceId: 'namespace1',
         })
       );
 
       expect(state2.routeful).toBe(10);
+    });
 
-      const state3 = routeReducers(
-        state2,
+    it('does not modify routeful state when navigating to same namespace', () => {
+      const state = {
+        routeful: 2000,
+        notRouteful: 2,
+        privateRouteContextedState: {
+          namespace2: {
+            routeful: 3,
+          },
+        },
+      };
+
+      const nextState = routeReducers(
+        state,
         navigated({
           before: buildRoute({
             routeKind: RouteKind.EXPERIMENT,
@@ -234,10 +225,13 @@ describe('route_contexted_reducer_helper', () => {
             params: {experimentId: 'xyz'},
             queryParams: [],
           }),
+          beforeNamespaceId: 'namespace1',
+          afterNamespaceId: 'namespace1',
         })
       );
 
-      expect(state3.routeful).toBe(initialState.routeful);
+      expect(nextState.routeful).toBe(2000);
+      expect(nextState.notRouteful).toBe(2);
     });
   });
 
@@ -260,7 +254,7 @@ describe('route_contexted_reducer_helper', () => {
         routeful: 1,
         notRouteful: 2,
         privateRouteContextedState: {
-          '2/abc': {
+          namespace2: {
             routeful: 10,
           },
         },
@@ -279,12 +273,30 @@ describe('route_contexted_reducer_helper', () => {
             params: {experimentId: 'abc'},
             queryParams: [],
           }),
+          beforeNamespaceId: 'namespace1',
+          afterNamespaceId: 'namespace2',
         })
       );
 
       expect(state2.routeful).toBe(10);
 
-      const state3 = reducers(state2, buildNavigatedToNewRouteIdAction());
+      const state3 = reducers(
+        state2,
+        navigated({
+          before: buildRoute({
+            routeKind: RouteKind.EXPERIMENT,
+            params: {experimentId: 'abc'},
+            queryParams: [],
+          }),
+          after: buildRoute({
+            routeKind: RouteKind.EXPERIMENT,
+            params: {experimentId: 'xyz'},
+            queryParams: [],
+          }),
+          beforeNamespaceId: 'namespace2',
+          afterNamespaceId: 'namespace1',
+        })
+      );
 
       expect(state3.routeful).toBe(1);
     });
@@ -359,6 +371,8 @@ describe('route_contexted_reducer_helper', () => {
           after: buildRoute({
             routeKind: RouteKind.EXPERIMENTS,
           }),
+          beforeNamespaceId: null,
+          afterNamespaceId: 'namespace1',
         })
       );
       expect(state2.routeful).toBe(7);
@@ -373,6 +387,8 @@ describe('route_contexted_reducer_helper', () => {
             routeKind: RouteKind.COMPARE_EXPERIMENT,
             params: {experimentIds: 'e1:1,e2:2'},
           }),
+          beforeNamespaceId: 'namespace1',
+          afterNamespaceId: 'namespace2',
         })
       );
       expect(state3.routeful).toBe(999);

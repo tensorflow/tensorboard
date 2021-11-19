@@ -70,6 +70,8 @@ export const navigating = createAction(
 export interface NavigatedPayload {
   before: Route | null;
   after: Route;
+  beforeNamespaceId: string | null;
+  afterNamespaceId: string;
 }
 
 /**

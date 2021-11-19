@@ -56,6 +56,22 @@ describe('app_routing_selectors', () => {
     });
   });
 
+  describe('getActiveNamespaceId', () => {
+    beforeEach(() => {
+      selectors.getActiveNamespaceId.release();
+    });
+
+    it('returns activeNamespaceId', () => {
+      const state = buildStateFromAppRoutingState(
+        buildAppRoutingState({
+          activeNamespaceId: 'namespace1',
+        })
+      );
+
+      expect(selectors.getActiveNamespaceId(state)).toEqual('namespace1');
+    });
+  });
+
   describe('getRouteKind', () => {
     beforeEach(() => {
       selectors.getRouteKind.release();

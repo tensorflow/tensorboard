@@ -22,6 +22,7 @@ export interface AppRoutingState {
   // make changes before a route change. `ntextRoute` is non-null only while
   // we are navigating.
   nextRoute: Route | null;
+  activeNamespaceId: string | null;
   registeredRouteKeys: Set<RouteKind>;
 }
 

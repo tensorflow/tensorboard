@@ -110,62 +110,89 @@ export function createRouteContextedState<
     privateRouteContextedState: {},
   };
 
+  /**
+   * Updates routeful state to match key `afterNamespaceId`. Takes existing routeful
+   * state and caches it using key `beforeNamespaceId`.
+   */
+  function updateRoutefulState(
+    state: FullState,
+    beforeRouteId: string | null,
+    beforeNamespaceId: string | null,
+    afterNamespaceId: string
+  ) {
+    let nextContextedStateCache: {
+      [routeId: string]: RoutefulState;
+    } = {...state.privateRouteContextedState};
+
+    if (beforeNamespaceId) {
+      // Swap out routeful state to cache, keyed by beforeNamespaceId.
+      const routefulStateToCache = {} as RoutefulState;
+      for (const key of keys) {
+        routefulStateToCache[key] = (state as RoutefulState)[key];
+      }
+      nextContextedStateCache = {
+        ...nextContextedStateCache,
+        [beforeNamespaceId]: routefulStateToCache,
+      };
+    }
+
+    // Update routeful state to reflect afterNamespaceId.
+    let nextRoutefulState = {};
+    // Note: state.privateRouteContextedState always exists in practice except
+    // for in tests.
+    if (state.privateRouteContextedState?.[afterNamespaceId]) {
+      // Swap in existing state since it already exists in the cache.
+      nextRoutefulState = state.privateRouteContextedState[afterNamespaceId];
+    } else if (beforeRouteId) {
+      // Reset to initial state since we had a cache miss and this is not
+      // initial load.
+      //
+      // Note: We don't reset to initial state on initial load because we
+      // assume the state already has values from bootstrapping deeplinks and
+      // we should not overwrite the values.
+      nextRoutefulState = routefulInitialState;
+    }
+
+    return {
+      ...state,
+      ...nextRoutefulState,
+      privateRouteContextedState: nextContextedStateCache,
+    };
+  }
+
   // Although we are supposed to type S as `FullState`, it throws type error
   // when specifying a reducer that takes ActionReducer<FullState, Action>.
   // We workaround it with `any`.
   const reducers = createReducer<any>(
     initialState as any,
-    on(navigated, (state: FullState, {before, after}): FullState => {
-      const afterRouteId = getRouteId(after.routeKind, after.params);
-      const beforeRouteId = before
-        ? getRouteId(before.routeKind, before.params)
-        : null;
-
-      // When the routeIds are the same, do not modify the state.
-      if (beforeRouteId === afterRouteId) {
-        return state;
-      }
-
-      let nextContextedStateCache: {
-        [routeId: string]: RoutefulState;
-      } = {...state.privateRouteContextedState};
-
-      if (beforeRouteId) {
-        const currRoutefulState = {} as RoutefulState;
-        for (const key of keys) {
-          currRoutefulState[key] = (state as RoutefulState)[key];
-        }
-        nextContextedStateCache = {
-          ...nextContextedStateCache,
-          [beforeRouteId]: currRoutefulState,
-        };
-      }
-
-      let nextRoutefulState =
-        state.privateRouteContextedState &&
-        state.privateRouteContextedState[afterRouteId]
-          ? state.privateRouteContextedState[afterRouteId]
+    on(
+      navigated,
+      (
+        state: FullState,
+        {before, after, beforeNamespaceId, afterNamespaceId}
+      ): FullState => {
+        const afterRouteId = getRouteId(after.routeKind, after.params);
+        const beforeRouteId = before
+          ? getRouteId(before.routeKind, before.params)
           : null;
 
-      // Set `nextRoutefulState` to the initialState when `before`
-      // is non-empty. On the initial load when `before` is null, the
-      // `state` can already have values from bootstraping deeplinks and it
-      // should not overwrite the values.
-      if (beforeRouteId && nextRoutefulState === null) {
-        nextRoutefulState = routefulInitialState;
+        let nextFullState: FullState = state;
+        if (beforeNamespaceId !== afterNamespaceId) {
+          // Namespaces have changed. Update routeful state.
+          nextFullState = updateRoutefulState(
+            state,
+            beforeRouteId,
+            beforeNamespaceId,
+            afterNamespaceId
+          );
+        }
+        if (beforeRouteId !== afterRouteId && onRouteIdChanged) {
+          // Route ids have changed. Delegate additional changes to the caller.
+          nextFullState = onRouteIdChanged(nextFullState, after);
+        }
+        return nextFullState;
       }
-
-      const nextFullState: FullState = {
-        ...state,
-        ...nextRoutefulState,
-        privateRouteContextedState: nextContextedStateCache,
-      };
-
-      if (onRouteIdChanged) {
-        return onRouteIdChanged(nextFullState, after);
-      }
-      return nextFullState;
-    })
+    )
   );
 
   return {
