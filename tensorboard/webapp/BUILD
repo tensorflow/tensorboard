@@ -406,12 +406,6 @@ tf_external_sass_libray(
     deps = ["@npm//@angular/material"],
 )
 
-# //tensorboard/webapp:theme are removed.
-alias(
-    name = "theme",
-    actual = "//tensorboard/webapp/theme",
-)
-
 tf_sass_binary(
     name = "styles",
     src = "styles.scss",
