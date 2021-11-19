@@ -34,7 +34,10 @@ import {selectors as settingsSelectors} from '../../../settings';
 import {of, ReplaySubject} from 'rxjs';
 
 import * as selectors from '../../../selectors';
-import {getMetricsTagGroupExpansionState} from '../../../selectors';
+import {
+  getMetricsCardMaxWidth,
+  getMetricsTagGroupExpansionState,
+} from '../../../selectors';
 import {KeyType, sendKey, sendKeys} from '../../../testing/dom';
 import {RunColorScale} from '../../../types/ui';
 import * as actions from '../../actions';
@@ -966,6 +969,34 @@ describe('metrics main view', () => {
 
         store.overrideSelector(selectors.getMetricsCardMaxWidth, 110);
         fixture = TestBed.createComponent(MainViewContainer);
+        fixture.detectChanges();
+
+        expect(
+          fixture.debugElement.query(By.css('.card-grid')).styles[
+            'grid-template-columns'
+          ]
+        ).toBe('');
+      });
+
+      it('resets the card max width', () => {
+        store.overrideSelector(selectors.getEnabledCardWidthSetting, true);
+        const getMetricsCardMaxWidthSubject = new ReplaySubject<number | null>(
+          1
+        );
+        getMetricsCardMaxWidthSubject.next(50);
+        selectSpy
+          .withArgs(getMetricsCardMaxWidth)
+          .and.returnValue(getMetricsCardMaxWidthSubject);
+        let fixture = TestBed.createComponent(MainViewContainer);
+        fixture.detectChanges();
+
+        expect(
+          fixture.debugElement.query(By.css('.card-grid')).styles[
+            'grid-template-columns'
+          ]
+        ).toBe('repeat(auto-fill, minmax(335px, 50vw))');
+
+        getMetricsCardMaxWidthSubject.next(null);
         fixture.detectChanges();
 
         expect(

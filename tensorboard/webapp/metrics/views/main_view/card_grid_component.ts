@@ -20,6 +20,7 @@ import {
   Input,
   Optional,
   Output,
+  SimpleChanges,
 } from '@angular/core';
 
 import {PluginType} from '../../data_source';
@@ -56,13 +57,29 @@ export class CardGridComponent {
   ) {}
 
   ngOnInit() {
-    if (
-      this.cardMaxWidthInVW &&
-      this.cardMaxWidthInVW >= MIN_CARD_MAX_WIDTH_IN_VW &&
-      this.cardMaxWidthInVW <= MAX_CARD_MAX_WIDTH_IN_VW
-    ) {
+    if (this.isCardWidthValid(this.cardMaxWidthInVW)) {
       this.gridTemplateColumn = `repeat(auto-fill, minmax(${MIN_CARD_WIDTH}px, ${this.cardMaxWidthInVW}vw))`;
     }
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['cardMaxWidthInVW']) {
+      const newCardWidth = changes['cardMaxWidthInVW'].currentValue;
+      if (this.isCardWidthValid(newCardWidth)) {
+        this.cardMaxWidthInVW = newCardWidth;
+        this.gridTemplateColumn = `repeat(auto-fill, minmax(${MIN_CARD_WIDTH}px, ${this.cardMaxWidthInVW}vw))`;
+      } else {
+        this.gridTemplateColumn = '';
+      }
+    }
+  }
+
+  isCardWidthValid(cardMaxWidthInVW: number | null) {
+    return (
+      cardMaxWidthInVW &&
+      cardMaxWidthInVW >= MIN_CARD_MAX_WIDTH_IN_VW &&
+      cardMaxWidthInVW <= MAX_CARD_MAX_WIDTH_IN_VW
+    );
   }
 
   showPaginationInput(isBottomControl: boolean) {

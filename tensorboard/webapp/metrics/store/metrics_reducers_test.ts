@@ -773,6 +773,34 @@ describe('metrics reducers', () => {
         HistogramMode.OVERLAY
       );
     });
+
+    it('changes cardMaxWidthInVW on metricsChangeCardWidth', () => {
+      const prevState = buildMetricsState({
+        settings: buildMetricsSettingsState({
+          cardMaxWidthInVW: 40,
+        }),
+        settingOverrides: {},
+      });
+      const nextState = reducers(
+        prevState,
+        actions.metricsChangeCardWidth({cardMaxWidthInVW: 50})
+      );
+      expect(nextState.settingOverrides.cardMaxWidthInVW).toBe(50);
+    });
+
+    it('resets cardMaxWidthInVW', () => {
+      const prevState = buildMetricsState({
+        settings: buildMetricsSettingsState({
+          cardMaxWidthInVW: 40,
+        }),
+        settingOverrides: {
+          cardMaxWidthInVW: 50,
+        },
+      });
+      const nextState = reducers(prevState, actions.metricsResetCardWidth());
+      expect(nextState.settings.cardMaxWidthInVW).toBe(40);
+      expect(nextState.settingOverrides.cardMaxWidthInVW).toBe(null);
+    });
   });
 
   describe('loading time series data', () => {
