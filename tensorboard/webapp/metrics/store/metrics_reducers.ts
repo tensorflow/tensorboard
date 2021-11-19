@@ -389,6 +389,10 @@ const reducer = createReducer(
         default:
       }
     }
+    if (typeof partialSettings.timeSeriesCardMaxWidthInVW === 'number') {
+      metricsSettings.cardMaxWidthInVW =
+        partialSettings.timeSeriesCardMaxWidthInVW;
+    }
     if (typeof partialSettings.ignoreOutliers === 'boolean') {
       metricsSettings.ignoreOutliers = partialSettings.ignoreOutliers;
     }
