@@ -31,7 +31,7 @@ limitations under the License.
  * route.
  *
  * Clients should never peek into or modify the property,
- * `privateRouteContextedState`.
+ * `privateNamespacedState`.
  *
  * For discussion, please refer to docs/design/route-contexted-state.md.
  */
@@ -42,12 +42,12 @@ import {navigated} from './actions';
 import {getRouteId} from './internal_utils';
 import {Route} from './types';
 
-// `privateRouteContextedState` loosely typed only for ease of writing tests.
+// `privateNamespacedState` loosely typed only for ease of writing tests.
 // Otherwise, all the reducers that has routeful state has to change the test
 // to create an object that satisfy the typing.
 // During the runtime, it always has value because of `initialState`.
 interface PrivateState<RoutefulState> {
-  privateRouteContextedState?: {
+  privateNamespacedState?: {
     [routeId: string]: RoutefulState;
   };
 }
@@ -107,7 +107,7 @@ export function createRouteContextedState<
   const initialState: FullState = {
     ...routefulInitialState,
     ...nonRoutefulInitialState,
-    privateRouteContextedState: {},
+    privateNamespacedState: {},
   };
 
   /**
@@ -116,7 +116,6 @@ export function createRouteContextedState<
    */
   function updateRoutefulState(
     state: FullState,
-    beforeRouteId: string | null,
     beforeNamespaceId: string | null,
     // TODO(bdubois): afterNamespaceId should not allow null when it is no
     // longer optional.
@@ -124,7 +123,7 @@ export function createRouteContextedState<
   ) {
     let nextContextedStateCache: {
       [routeId: string]: RoutefulState;
-    } = {...state.privateRouteContextedState};
+    } = {...state.privateNamespacedState};
 
     if (beforeNamespaceId) {
       // Swap out routeful state to cache, keyed by beforeNamespaceId.
@@ -140,15 +139,12 @@ export function createRouteContextedState<
 
     // Update routeful state to reflect afterNamespaceId.
     let nextRoutefulState = {};
-    // Note: state.privateRouteContextedState always exists in practice except
+    // Note: state.privateNamespacedState always exists in practice except
     // for in tests.
-    if (
-      afterNamespaceId &&
-      state.privateRouteContextedState?.[afterNamespaceId]
-    ) {
+    if (afterNamespaceId && state.privateNamespacedState?.[afterNamespaceId]) {
       // Swap in existing state since it already exists in the cache.
-      nextRoutefulState = state.privateRouteContextedState[afterNamespaceId];
-    } else if (beforeRouteId) {
+      nextRoutefulState = state.privateNamespacedState[afterNamespaceId];
+    } else if (beforeNamespaceId) {
       // Reset to initial state since we had a cache miss and this is not
       // initial load.
       //
@@ -161,7 +157,7 @@ export function createRouteContextedState<
     return {
       ...state,
       ...nextRoutefulState,
-      privateRouteContextedState: nextContextedStateCache,
+      privateNamespacedState: nextContextedStateCache,
     };
   }
 
@@ -176,27 +172,27 @@ export function createRouteContextedState<
         state: FullState,
         {before, after, beforeNamespaceId, afterNamespaceId}
       ): FullState => {
-        const afterRouteId = getRouteId(after.routeKind, after.params);
-        const beforeRouteId = before
-          ? getRouteId(before.routeKind, before.params)
-          : null;
-
         let nextFullState: FullState = state;
         if (beforeNamespaceId !== afterNamespaceId) {
           // Namespaces have changed. Update routeful state.
           nextFullState = updateRoutefulState(
             state,
-            beforeRouteId,
             // TODO(bdubois): Remove null fallbacks when beforeNamespaceId and
             // afterNamespaceId are no longer optional.
-            beforeNamespaceId || null,
-            afterNamespaceId || null
+            beforeNamespaceId ?? null,
+            afterNamespaceId ?? null
           );
         }
+
+        const afterRouteId = getRouteId(after.routeKind, after.params);
+        const beforeRouteId = before
+          ? getRouteId(before.routeKind, before.params)
+          : null;
         if (beforeRouteId !== afterRouteId && onRouteIdChanged) {
           // Route ids have changed. Delegate additional changes to the caller.
           nextFullState = onRouteIdChanged(nextFullState, after);
         }
+
         return nextFullState;
       }
     )

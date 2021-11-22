@@ -53,11 +53,13 @@ export function buildCompareRoute(
   };
 }
 
-export function buildNavigatedActionFull(overrides: Partial<NavigatedPayload>) {
+export function buildNavigatedActionFull(
+  overrides?: Partial<NavigatedPayload>
+) {
   return navigated({
     before: null,
     after: buildRoute(),
-    beforeNamespaceId: overrides.before ? 'namespace' : null,
+    beforeNamespaceId: overrides?.before ? 'namespace' : null,
     afterNamespaceId: 'namespace',
     ...overrides,
   });

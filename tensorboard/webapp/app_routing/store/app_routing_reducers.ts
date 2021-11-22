@@ -35,7 +35,7 @@ const reducer = createReducer(
       nextRoute: null,
       // TODO(bdubois): Remove the null fallback when afterNamespaceId is no
       // longer optional.
-      activeNamespaceId: afterNamespaceId || null,
+      activeNamespaceId: afterNamespaceId ?? null,
     };
   }),
   on(actions.routeConfigLoaded, (state, {routeKinds}) => {

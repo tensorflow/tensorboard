@@ -69,7 +69,7 @@ describe('route_contexted_reducer_helper', () => {
       const state1 = {
         routeful: 1,
         notRouteful: 2,
-        privateRouteContextedState: {
+        privateNamespacedState: {
           namespace2: {
             routeful: 10,
           },
@@ -121,7 +121,7 @@ describe('route_contexted_reducer_helper', () => {
       const state = {
         routeful: 2000,
         notRouteful: 2,
-        privateRouteContextedState: {},
+        privateNamespacedState: {},
       };
 
       const nextState = routeReducers(
@@ -152,7 +152,7 @@ describe('route_contexted_reducer_helper', () => {
         const state = {
           routeful: 1337,
           notRouteful: 2,
-          privateRouteContextedState: {},
+          privateNamespacedState: {},
         };
 
         const nextState = routeReducers(
@@ -177,7 +177,7 @@ describe('route_contexted_reducer_helper', () => {
       const state1 = {
         routeful: 2000,
         notRouteful: 2,
-        privateRouteContextedState: {
+        privateNamespacedState: {
           namespace1: {
             routeful: 10,
           },
@@ -205,7 +205,7 @@ describe('route_contexted_reducer_helper', () => {
       const state = {
         routeful: 2000,
         notRouteful: 2,
-        privateRouteContextedState: {
+        privateNamespacedState: {
           namespace2: {
             routeful: 3,
           },
@@ -240,7 +240,7 @@ describe('route_contexted_reducer_helper', () => {
       const state = {
         routeful: 1,
         notRouteful: 10,
-        privateRouteContextedState: {},
+        privateNamespacedState: {},
       };
       const routefulNextState = reducers(state, incrementRouteful());
       expect(routefulNextState.routeful).toBe(2);
@@ -253,7 +253,7 @@ describe('route_contexted_reducer_helper', () => {
       const state1 = {
         routeful: 1,
         notRouteful: 2,
-        privateRouteContextedState: {
+        privateNamespacedState: {
           namespace2: {
             routeful: 10,
           },
@@ -419,7 +419,7 @@ describe('route_contexted_reducer_helper ngrx integration test', () => {
     expect(initialState).toEqual({
       routeful: 0,
       notRouteful: 1,
-      privateRouteContextedState: {},
+      privateNamespacedState: {},
     });
   });
 });
