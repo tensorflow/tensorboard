@@ -63,6 +63,8 @@ export function buildNavigatedActionFull(overrides: Partial<NavigatedPayload>) {
   });
 }
 
+// TODO(bdubois): Remove once all internal callers have been migrated to
+// buildNavigatedActionFull.
 /**
  * @deprecated Use buildNavigateActionFull instead.
  */
