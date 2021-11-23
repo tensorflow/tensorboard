@@ -70,10 +70,8 @@ export const navigating = createAction(
 export interface NavigatedPayload {
   before: Route | null;
   after: Route;
-  // TODO(bdubois): Remove optionality of these properties when all internal
-  // code is migrated to specify them.
-  beforeNamespaceId?: string | null;
-  afterNamespaceId?: string;
+  beforeNamespaceId: string | null;
+  afterNamespaceId: string;
 }
 
 /**

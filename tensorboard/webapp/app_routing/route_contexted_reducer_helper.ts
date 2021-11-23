@@ -117,9 +117,7 @@ export function createRouteContextedState<
   function updateRoutefulState(
     state: FullState,
     beforeNamespaceId: string | null,
-    // TODO(bdubois): afterNamespaceId should not allow null when it is no
-    // longer optional.
-    afterNamespaceId: string | null
+    afterNamespaceId: string
   ) {
     let nextContextedStateCache: {
       [routeId: string]: RoutefulState;
@@ -141,7 +139,7 @@ export function createRouteContextedState<
     let nextRoutefulState = {};
     // Note: state.privateNamespacedState always exists in practice except
     // for in tests.
-    if (afterNamespaceId && state.privateNamespacedState?.[afterNamespaceId]) {
+    if (state.privateNamespacedState?.[afterNamespaceId]) {
       // Swap in existing state since it already exists in the cache.
       nextRoutefulState = state.privateNamespacedState[afterNamespaceId];
     } else if (beforeNamespaceId) {
@@ -177,10 +175,8 @@ export function createRouteContextedState<
           // Namespaces have changed. Update routeful state.
           nextFullState = updateRoutefulState(
             state,
-            // TODO(bdubois): Remove null fallbacks when beforeNamespaceId and
-            // afterNamespaceId are no longer optional.
-            beforeNamespaceId ?? null,
-            afterNamespaceId ?? null
+            beforeNamespaceId,
+            afterNamespaceId
           );
         }
 
