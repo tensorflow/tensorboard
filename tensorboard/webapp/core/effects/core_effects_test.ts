@@ -28,7 +28,7 @@ import {
   getRouteId,
   getRouteKind,
 } from '../../app_routing/store/app_routing_selectors';
-import {buildNavigatedActionFull, buildRoute} from '../../app_routing/testing';
+import {buildNavigatedAction, buildRoute} from '../../app_routing/testing';
 import {RouteKind} from '../../app_routing/types';
 import {State} from '../../app_state';
 import {getEnabledExperimentalPlugins} from '../../feature_flag/store/feature_flag_selectors';
@@ -134,7 +134,7 @@ describe('core_effects', () => {
   [
     {
       specSetName: '#navigated',
-      onAction: buildNavigatedActionFull({
+      onAction: buildNavigatedAction({
         after: buildRoute({routeKind: RouteKind.EXPERIMENT}),
       }),
     },
@@ -324,7 +324,7 @@ describe('core_effects', () => {
       store.refreshState();
 
       action.next(
-        buildNavigatedActionFull({
+        buildNavigatedAction({
           after: buildRoute({routeKind: RouteKind.EXPERIMENT}),
         })
       );
@@ -335,7 +335,7 @@ describe('core_effects', () => {
       tick(TEST_ONLY.DATA_LOAD_CONDITIONAL_THROTTLE_IN_MS);
 
       action.next(
-        buildNavigatedActionFull({
+        buildNavigatedAction({
           after: buildRoute({routeKind: RouteKind.EXPERIMENT}),
         })
       );
@@ -345,7 +345,7 @@ describe('core_effects', () => {
       store.overrideSelector(getRouteId, 'bar');
       store.refreshState();
       action.next(
-        buildNavigatedActionFull({
+        buildNavigatedAction({
           after: buildRoute({routeKind: RouteKind.EXPERIMENT}),
         })
       );
@@ -375,7 +375,7 @@ describe('core_effects', () => {
       };
 
       action.next(
-        buildNavigatedActionFull({
+        buildNavigatedAction({
           after: buildRoute({routeKind: RouteKind.COMPARE_EXPERIMENT}),
         })
       );
@@ -392,7 +392,7 @@ describe('core_effects', () => {
       store.refreshState();
       tick(TEST_ONLY.DATA_LOAD_CONDITIONAL_THROTTLE_IN_MS);
       action.next(
-        buildNavigatedActionFull({
+        buildNavigatedAction({
           after: buildRoute({routeKind: RouteKind.COMPARE_EXPERIMENT}),
         })
       );
@@ -458,7 +458,7 @@ describe('core_effects', () => {
       };
 
       action.next(
-        buildNavigatedActionFull({
+        buildNavigatedAction({
           after: buildRoute({routeKind: RouteKind.COMPARE_EXPERIMENT}),
         })
       );
@@ -505,7 +505,7 @@ describe('core_effects', () => {
         };
 
         action.next(
-          buildNavigatedActionFull({
+          buildNavigatedAction({
             after: buildRoute({routeKind: RouteKind.COMPARE_EXPERIMENT}),
           })
         );
@@ -524,7 +524,7 @@ describe('core_effects', () => {
 
         tick(TEST_ONLY.DATA_LOAD_CONDITIONAL_THROTTLE_IN_MS);
         action.next(
-          buildNavigatedActionFull({
+          buildNavigatedAction({
             after: buildRoute({routeKind: RouteKind.EXPERIMENT}),
           })
         );
@@ -589,7 +589,7 @@ describe('core_effects', () => {
         };
 
         action.next(
-          buildNavigatedActionFull({
+          buildNavigatedAction({
             after: buildRoute({routeKind: RouteKind.COMPARE_EXPERIMENT}),
           })
         );
@@ -610,7 +610,7 @@ describe('core_effects', () => {
         store.refreshState();
 
         action.next(
-          buildNavigatedActionFull({
+          buildNavigatedAction({
             after: buildRoute({routeKind: RouteKind.EXPERIMENTS}),
           })
         );

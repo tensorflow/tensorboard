@@ -53,7 +53,7 @@ export function buildCompareRoute(
   };
 }
 
-export function buildNavigatedActionFull(
+export function buildNavigatedAction(
   overrides?: Partial<NavigatedPayload>
 ) {
   return navigated({
@@ -66,18 +66,11 @@ export function buildNavigatedActionFull(
 }
 
 // TODO(bdubois): Remove once all internal callers have been migrated to
-// buildNavigatedActionFull.
+// buildNavigatedAction.
 /**
- * @deprecated Use buildNavigateActionFull instead.
+ * @deprecated Use buildNavigateAction instead.
  */
-export function buildNavigatedAction(routeOverride: Partial<Route> = {}) {
-  return navigated({
-    before: null,
-    after: buildRoute(routeOverride),
-    beforeNamespaceId: null,
-    afterNamespaceId: 'namespace',
-  });
-}
+export function buildNavigatedActionFull = buildNavigatedAction;
 
 /**
  * A navigation that corresponds to a change in route id (new route context)

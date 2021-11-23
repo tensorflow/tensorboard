@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import * as routingActions from '../../app_routing/actions';
-import {buildNavigatedActionFull, buildRoute} from '../../app_routing/testing';
+import {buildNavigatedAction, buildRoute} from '../../app_routing/testing';
 import {RouteKind} from '../../app_routing/types';
 import * as coreActions from '../../core/actions';
 import {globalSettingsLoaded} from '../../persistent_settings';
@@ -561,7 +561,7 @@ describe('metrics reducers', () => {
         ]),
       });
 
-      const navigateFrom1to2 = buildNavigatedActionFull({
+      const navigateFrom1to2 = buildNavigatedAction({
         before: buildRoute({
           routeKind: RouteKind.EXPERIMENT,
           params: {experimentId: 'exp1'},
@@ -571,7 +571,7 @@ describe('metrics reducers', () => {
           params: {experimentId: 'exp2'},
         }),
       });
-      const navigateFrom2to1 = buildNavigatedActionFull({
+      const navigateFrom2to1 = buildNavigatedAction({
         before: buildRoute({
           routeKind: RouteKind.EXPERIMENT,
           params: {experimentId: 'exp2'},

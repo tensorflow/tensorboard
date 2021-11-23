@@ -15,7 +15,7 @@ limitations under the License.
 import {stateRehydratedFromUrl} from '../../app_routing/actions';
 import {
   buildCompareRoute,
-  buildNavigatedActionFull,
+  buildNavigatedAction,
   buildRoute,
 } from '../../app_routing/testing';
 import {RouteKind} from '../../app_routing/types';
@@ -1247,7 +1247,7 @@ describe('runs_reducers', () => {
 
       const nextState = runsReducers.reducers(
         state,
-        buildNavigatedActionFull({
+        buildNavigatedAction({
           before: buildRoute({
             routeKind: RouteKind.EXPERIMENT,
           }),
@@ -1265,7 +1265,7 @@ describe('runs_reducers', () => {
 
       const nextState = runsReducers.reducers(
         state,
-        buildNavigatedActionFull({
+        buildNavigatedAction({
           before: buildCompareRoute(['eid1:run1', 'eid2:run2']),
           after: buildRoute({
             routeKind: RouteKind.EXPERIMENT,
