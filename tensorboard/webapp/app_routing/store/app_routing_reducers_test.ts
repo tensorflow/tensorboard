@@ -22,7 +22,7 @@ import {buildAppRoutingState} from './testing';
 
 describe('app_routing_reducers', () => {
   describe('navigating', () => {
-    it('sets the new route onto activeRoute', () => {
+    it('sets nextRoute', () => {
       const state = buildAppRoutingState({
         activeRoute: null,
         nextRoute: null,
@@ -62,9 +62,10 @@ describe('app_routing_reducers', () => {
   });
 
   describe('navigated', () => {
-    it('sets the new route onto activeRoute', () => {
+    it('sets activeRoute and activeNamespaceId', () => {
       const state = buildAppRoutingState({
         activeRoute: null,
+        activeNamespaceId: null,
       });
 
       const nextState = appRoutingReducers.reducers(
@@ -82,6 +83,8 @@ describe('app_routing_reducers', () => {
               replaceState: true,
             },
           }),
+          beforeNamespaceId: null,
+          afterNamespaceId: 'namespace1',
         })
       );
 
@@ -98,11 +101,12 @@ describe('app_routing_reducers', () => {
           },
         })
       );
+      expect(nextState.activeNamespaceId).toEqual('namespace1');
     });
   });
 
   describe('routeConfigLoaded', () => {
-    it('sets registered route kinds in the state', () => {
+    it('sets registeredRouteKeys', () => {
       const state = buildAppRoutingState({
         registeredRouteKeys: new Set(),
       });
@@ -122,7 +126,7 @@ describe('app_routing_reducers', () => {
       );
     });
 
-    it('replaces existing registered route kinds', () => {
+    it('replaces existing registeredRouteKeys', () => {
       const state = buildAppRoutingState({
         registeredRouteKeys: new Set([RouteKind.EXPERIMENTS]),
       });

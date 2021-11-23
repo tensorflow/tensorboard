@@ -51,6 +51,13 @@ export const getNextRouteForRouterOutletOnly = createSelector(
   }
 );
 
+export const getActiveNamespaceId = createSelector(
+  getAppRoutingState,
+  (state): string | null => {
+    return state.activeNamespaceId;
+  }
+);
+
 export const getRegisteredRouteKinds = createSelector<
   State,
   AppRoutingState,

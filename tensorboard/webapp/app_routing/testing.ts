@@ -16,12 +16,13 @@ import {Injectable, Provider} from '@angular/core';
 
 import {of} from 'rxjs';
 
-import {navigated} from './actions';
+import {navigated, NavigatedPayload} from './actions';
 import {Location} from './location';
 import {Route, RouteKind} from './types';
 
 /** @typehack */ import * as _typeHackModels from '@ngrx/store/src/models';
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
+import {getRouteId} from './internal_utils';
 
 export function buildRoute(routeOverride: Partial<Route> = {}): Route {
   return {
@@ -52,10 +53,29 @@ export function buildCompareRoute(
   };
 }
 
+export function buildNavigatedActionFull(
+  overrides?: Partial<NavigatedPayload>
+) {
+  return navigated({
+    before: null,
+    after: buildRoute(),
+    beforeNamespaceId: overrides?.before ? 'namespace' : null,
+    afterNamespaceId: 'namespace',
+    ...overrides,
+  });
+}
+
+// TODO(bdubois): Remove once all internal callers have been migrated to
+// buildNavigatedActionFull.
+/**
+ * @deprecated Use buildNavigateActionFull instead.
+ */
 export function buildNavigatedAction(routeOverride: Partial<Route> = {}) {
   return navigated({
     before: null,
     after: buildRoute(routeOverride),
+    beforeNamespaceId: null,
+    afterNamespaceId: 'namespace',
   });
 }
 
@@ -64,15 +84,19 @@ export function buildNavigatedAction(routeOverride: Partial<Route> = {}) {
  * will be created.
  */
 export function buildNavigatedToNewRouteIdAction() {
+  const beforeRoute = buildRoute({
+    routeKind: RouteKind.EXPERIMENT,
+    params: {experimentId: 'abc'},
+  });
+  const afterRoute = buildRoute({
+    routeKind: RouteKind.EXPERIMENT,
+    params: {experimentId: 'xyz'},
+  });
   return navigated({
-    before: buildRoute({
-      routeKind: RouteKind.EXPERIMENT,
-      params: {experimentId: 'abc'},
-    }),
-    after: buildRoute({
-      routeKind: RouteKind.EXPERIMENT,
-      params: {experimentId: 'xyz'},
-    }),
+    before: beforeRoute,
+    after: afterRoute,
+    beforeNamespaceId: getRouteId(beforeRoute.routeKind, beforeRoute.params),
+    afterNamespaceId: getRouteId(afterRoute.routeKind, afterRoute.params),
   });
 }
 

@@ -48,7 +48,10 @@ import {Location} from '../location';
 import {ProgrammaticalNavigationModule} from '../programmatical_navigation_module';
 import {RouteConfigs} from '../route_config';
 import {RouteRegistryModule} from '../route_registry_module';
-import {getActiveRoute} from '../store/app_routing_selectors';
+import {
+  getActiveRoute,
+  getActiveNamespaceId,
+} from '../store/app_routing_selectors';
 import {Navigation, Route, RouteKind, RouteParams} from '../types';
 
 /** @typehack */ import * as _typeHackNgrxEffects from '@ngrx/effects';
@@ -384,9 +387,17 @@ export class AppRoutingEffects {
     );
 
     return changeUrl$.pipe(
-      withLatestFrom(this.store.select(getActiveRoute)),
-      map(([{route}, oldRoute]) => {
-        return navigated({before: oldRoute, after: route});
+      withLatestFrom(
+        this.store.select(getActiveRoute),
+        this.store.select(getActiveNamespaceId)
+      ),
+      map(([{route}, oldRoute, oldNamespaceId]) => {
+        return navigated({
+          before: oldRoute,
+          after: route,
+          beforeNamespaceId: oldNamespaceId,
+          afterNamespaceId: getRouteId(route.routeKind, route.params),
+        });
       })
     );
   });

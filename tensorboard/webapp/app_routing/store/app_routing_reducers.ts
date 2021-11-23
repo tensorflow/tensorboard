@@ -19,6 +19,7 @@ import {AppRoutingState} from './app_routing_types';
 const initialState: AppRoutingState = {
   activeRoute: null,
   nextRoute: null,
+  activeNamespaceId: null,
   registeredRouteKeys: new Set(),
 };
 
@@ -27,8 +28,15 @@ const reducer = createReducer(
   on(actions.navigating, (state, {after}) => {
     return {...state, nextRoute: after};
   }),
-  on(actions.navigated, (state, {after}) => {
-    return {...state, activeRoute: after, nextRoute: null};
+  on(actions.navigated, (state, {after, afterNamespaceId}) => {
+    return {
+      ...state,
+      activeRoute: after,
+      nextRoute: null,
+      // TODO(bdubois): Remove the null fallback when afterNamespaceId is no
+      // longer optional.
+      activeNamespaceId: afterNamespaceId ?? null,
+    };
   }),
   on(actions.routeConfigLoaded, (state, {routeKinds}) => {
     return {

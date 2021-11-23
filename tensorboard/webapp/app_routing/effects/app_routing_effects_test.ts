@@ -31,7 +31,10 @@ import {
   ProgrammaticalNavigationModule,
 } from '../programmatical_navigation_module';
 import {RouteRegistryModule} from '../route_registry_module';
-import {getActiveRoute} from '../store/app_routing_selectors';
+import {
+  getActiveNamespaceId,
+  getActiveRoute,
+} from '../store/app_routing_selectors';
 import {buildRoute, provideLocationTesting, TestableLocation} from '../testing';
 import {
   DirtyUpdates,
@@ -42,6 +45,7 @@ import {
 } from '../types';
 
 import {AppRoutingEffects, TEST_ONLY} from './app_routing_effects';
+import {getRouteId} from '../internal_utils';
 
 @Component({selector: 'test', template: ''})
 class TestableComponent {}
@@ -96,7 +100,7 @@ describe('app_routing_effects', () => {
         },
         {
           routeKind: RouteKind.COMPARE_EXPERIMENT,
-          path: '/compare',
+          path: '/compare/:experimentIds',
           ngComponent: TestableComponent,
           deepLinkProvider: {
             serializeStateToQueryParams: serializeStateToQueryParamsSpy,
@@ -105,11 +109,11 @@ describe('app_routing_effects', () => {
         },
         {
           routeKind: RouteKind.UNKNOWN,
-          path: '/no_deeplink_unknown_route',
+          path: '/no_deeplink_unknown/route',
           ngComponent: TestableComponent,
         },
         {
-          path: '/redirect_no_query/:wildcard',
+          path: '/redirect_no_query/:route/:param',
           redirector: (pathParts: string[]) => {
             return {
               pathParts: pathParts.slice(1),
@@ -117,7 +121,7 @@ describe('app_routing_effects', () => {
           },
         },
         {
-          path: '/redirect_query/:wildcard',
+          path: '/redirect_query/:route/:param',
           redirector: (pathParts: string[]) => {
             return {
               pathParts: pathParts.slice(1),
@@ -195,6 +199,7 @@ describe('app_routing_effects', () => {
     getSearchSpy = spyOn(location, 'getSearch').and.returnValue([]);
 
     store.overrideSelector(getActiveRoute, null);
+    store.overrideSelector(getActiveNamespaceId, null);
     actualActions = [];
 
     spyOn(store, 'dispatch').and.callFake((action: Action) => {
@@ -247,6 +252,7 @@ describe('app_routing_effects', () => {
         'new route',
       fakeAsync(() => {
         store.overrideSelector(getActiveRoute, null);
+        store.overrideSelector(getActiveNamespaceId, null);
         store.refreshState();
 
         action.next(
@@ -277,6 +283,8 @@ describe('app_routing_effects', () => {
               pathname: '/experiments',
               queryParams: [],
             }),
+            beforeNamespaceId: null,
+            afterNamespaceId: getRouteId(RouteKind.EXPERIMENTS, {}),
           }),
         ]);
       })
@@ -312,11 +320,13 @@ describe('app_routing_effects', () => {
             replaceState: false,
           },
         });
+        const activeRouteId = getRouteId(RouteKind.EXPERIMENTS, {});
         const dirtyExperimentsFactory = () => {
           return {experimentIds: ['otter']};
         };
 
         store.overrideSelector(getActiveRoute, activeRoute);
+        store.overrideSelector(getActiveNamespaceId, activeRouteId);
         store.overrideSelector(
           testDirtyExperimentsSelector,
           dirtyExperimentsFactory()
@@ -367,7 +377,11 @@ describe('app_routing_effects', () => {
           pathname: '/experiment/meow',
           queryParams: [],
         });
+        const activeRouteId = getRouteId(RouteKind.EXPERIMENT, {
+          experimentId: 'meow',
+        });
         store.overrideSelector(getActiveRoute, activeRoute);
+        store.overrideSelector(getActiveNamespaceId, activeRouteId);
         store.refreshState();
         getPathSpy.and.returnValue('/experiment/meow');
         // Changing tab.
@@ -383,6 +397,8 @@ describe('app_routing_effects', () => {
           actions.navigated({
             before: activeRoute,
             after: activeRoute,
+            beforeNamespaceId: activeRouteId,
+            afterNamespaceId: activeRouteId,
           }),
         ]);
       }));
@@ -448,6 +464,10 @@ describe('app_routing_effects', () => {
                 pathname: '/experiment/meow',
                 queryParams: [],
               }),
+              beforeNamespaceId: getRouteId(RouteKind.EXPERIMENTS, {}),
+              afterNamespaceId: getRouteId(RouteKind.EXPERIMENT, {
+                experimentId: 'meow',
+              }),
             }),
           ]);
         })
@@ -460,6 +480,7 @@ describe('app_routing_effects', () => {
           'changes url, then dispatches navigated',
         fakeAsync(() => {
           store.overrideSelector(getActiveRoute, null);
+          store.overrideSelector(getActiveNamespaceId, null);
           store.refreshState();
 
           action.next(
@@ -494,6 +515,8 @@ describe('app_routing_effects', () => {
                 pathname: '/experiments',
                 queryParams: [],
               }),
+              beforeNamespaceId: null,
+              afterNamespaceId: getRouteId(RouteKind.EXPERIMENTS, {}),
             }),
           ]);
         })
@@ -503,6 +526,7 @@ describe('app_routing_effects', () => {
     describe('deeplink reads', () => {
       beforeEach(() => {
         store.overrideSelector(getActiveRoute, null);
+        store.overrideSelector(getActiveNamespaceId, null);
         store.refreshState();
       });
 
@@ -516,13 +540,13 @@ describe('app_routing_effects', () => {
         {
           name: 'popstate',
           actionCreator: () => {
-            onPopStateSubject.next({pathname: '/compare'});
+            onPopStateSubject.next({pathname: '/compare/a:b'});
           },
         },
       ].forEach(({actionCreator, name}) => {
         it(`dispatches stateRehydratedFromUrl on browser initiated ${name}`, fakeAsync(() => {
           deserializeQueryParamsSpy.and.returnValue({a: 'A', b: 'B'});
-          getPathSpy.and.returnValue('/compare');
+          getPathSpy.and.returnValue('/compare/a:b');
 
           actionCreator();
           tick();
@@ -535,8 +559,8 @@ describe('app_routing_effects', () => {
             actions.navigating({
               after: buildRoute({
                 routeKind: RouteKind.COMPARE_EXPERIMENT,
-                params: {},
-                pathname: '/compare',
+                params: {experimentIds: 'a:b'},
+                pathname: '/compare/a:b',
                 queryParams: [],
                 // Do not care about the replaceState for this spec.
                 navigationOptions: jasmine.any(Object),
@@ -546,11 +570,15 @@ describe('app_routing_effects', () => {
               before: null,
               after: buildRoute({
                 routeKind: RouteKind.COMPARE_EXPERIMENT,
-                params: {},
-                pathname: '/compare',
+                params: {experimentIds: 'a:b'},
+                pathname: '/compare/a:b',
                 queryParams: [],
                 navigationOptions: jasmine.any(Object),
               } as unknown as Route),
+              beforeNamespaceId: null,
+              afterNamespaceId: getRouteId(RouteKind.COMPARE_EXPERIMENT, {
+                experimentIds: 'a:b',
+              }),
             }),
           ]);
         }));
@@ -566,6 +594,7 @@ describe('app_routing_effects', () => {
           serializeStateToQueryParamsSubject
         );
         store.overrideSelector(getActiveRoute, null);
+        store.overrideSelector(getActiveNamespaceId, null);
         store.refreshState();
       });
 
@@ -573,7 +602,7 @@ describe('app_routing_effects', () => {
         'waits for deeplink state to provide values before dispatching' +
           ' navigating',
         fakeAsync(() => {
-          action.next(actions.navigationRequested({pathname: '/compare'}));
+          action.next(actions.navigationRequested({pathname: '/compare/a:b'}));
 
           expect(actualActions).toEqual([]);
 
@@ -584,8 +613,8 @@ describe('app_routing_effects', () => {
             actions.navigating({
               after: buildRoute({
                 routeKind: RouteKind.COMPARE_EXPERIMENT,
-                params: {},
-                pathname: '/compare',
+                params: {experimentIds: 'a:b'},
+                pathname: '/compare/a:b',
                 queryParams: [],
                 navigationOptions: {replaceState: false},
               }),
@@ -594,10 +623,14 @@ describe('app_routing_effects', () => {
               before: null,
               after: buildRoute({
                 routeKind: RouteKind.COMPARE_EXPERIMENT,
-                params: {},
-                pathname: '/compare',
+                params: {experimentIds: 'a:b'},
+                pathname: '/compare/a:b',
                 queryParams: [],
                 navigationOptions: {replaceState: false},
+              }),
+              beforeNamespaceId: null,
+              afterNamespaceId: getRouteId(RouteKind.COMPARE_EXPERIMENT, {
+                experimentIds: 'a:b',
               }),
             }),
           ]);
@@ -605,7 +638,7 @@ describe('app_routing_effects', () => {
       );
 
       it('fires actions when store emits changes', fakeAsync(() => {
-        action.next(actions.navigationRequested({pathname: '/compare'}));
+        action.next(actions.navigationRequested({pathname: '/compare/a:b'}));
 
         serializeStateToQueryParamsSubject.next([]);
         tick();
@@ -620,8 +653,8 @@ describe('app_routing_effects', () => {
           actions.navigating({
             after: buildRoute({
               routeKind: RouteKind.COMPARE_EXPERIMENT,
-              params: {},
-              pathname: '/compare',
+              params: {experimentIds: 'a:b'},
+              pathname: '/compare/a:b',
               queryParams: [{key: 'a', value: 'a_value'}],
               navigationOptions: {replaceState: true},
             }),
@@ -630,10 +663,14 @@ describe('app_routing_effects', () => {
             before: null,
             after: buildRoute({
               routeKind: RouteKind.COMPARE_EXPERIMENT,
-              params: {},
-              pathname: '/compare',
+              params: {experimentIds: 'a:b'},
+              pathname: '/compare/a:b',
               queryParams: [{key: 'a', value: 'a_value'}],
               navigationOptions: {replaceState: true},
+            }),
+            beforeNamespaceId: null,
+            afterNamespaceId: getRouteId(RouteKind.COMPARE_EXPERIMENT, {
+              experimentIds: 'a:b',
             }),
           }),
         ]);
@@ -643,7 +680,7 @@ describe('app_routing_effects', () => {
         'fires actions with replaceState = true to prevent pushing new ' +
           'history entry on state changes',
         fakeAsync(() => {
-          action.next(actions.navigationRequested({pathname: '/compare'}));
+          action.next(actions.navigationRequested({pathname: '/compare/a:b'}));
 
           serializeStateToQueryParamsSubject.next([]);
           tick();
@@ -659,8 +696,8 @@ describe('app_routing_effects', () => {
             actions.navigating({
               after: buildRoute({
                 routeKind: RouteKind.COMPARE_EXPERIMENT,
-                params: {},
-                pathname: '/compare',
+                params: {experimentIds: 'a:b'},
+                pathname: '/compare/a:b',
                 queryParams: [{key: 'a', value: 'a_value'}],
                 navigationOptions: {replaceState: true},
               }),
@@ -669,10 +706,14 @@ describe('app_routing_effects', () => {
               before: null,
               after: buildRoute({
                 routeKind: RouteKind.COMPARE_EXPERIMENT,
-                params: {},
-                pathname: '/compare',
+                params: {experimentIds: 'a:b'},
+                pathname: '/compare/a:b',
                 queryParams: [{key: 'a', value: 'a_value'}],
                 navigationOptions: {replaceState: true},
+              }),
+              beforeNamespaceId: null,
+              afterNamespaceId: getRouteId(RouteKind.COMPARE_EXPERIMENT, {
+                experimentIds: 'a:b',
               }),
             }),
           ]);
@@ -735,13 +776,15 @@ describe('app_routing_effects', () => {
                 replaceState: true,
               },
             }),
+            beforeNamespaceId: null,
+            afterNamespaceId: getRouteId(RouteKind.EXPERIMENTS, {}),
           }),
         ]);
       }));
 
       describe('programmatical navigation integration', () => {
         it('redirects without query parameter', fakeAsync(() => {
-          getPathSpy.and.returnValue('/redirect_no_query/compare');
+          getPathSpy.and.returnValue('/redirect_no_query/compare/a:b');
           getSearchSpy.and.returnValue([]);
           deserializeQueryParamsSpy.and.returnValue({});
 
@@ -757,27 +800,28 @@ describe('app_routing_effects', () => {
             actions.navigating({
               after: buildRoute({
                 routeKind: RouteKind.COMPARE_EXPERIMENT,
-                params: {},
-                pathname: '/compare',
+                params: {experimentIds: 'a:b'},
+                pathname: '/compare/a:b',
                 queryParams: [],
                 navigationOptions: {
                   replaceState: true,
                 },
               }),
             }),
+            // Third action is of type actions.navigated but we ignore it.
             jasmine.any(Object),
           ]);
         }));
 
         it('redirects with query parameter', fakeAsync(() => {
-          getPathSpy.and.returnValue('/redirect_query/compare');
+          getPathSpy.and.returnValue('/redirect_query/compare/a:b');
           getSearchSpy.and.returnValue([{key: 'not', value: 'used'}]);
           // Query paramter formed by the redirector is passed to the
           // deserializer instead of one from Location.getSearch(). This
           // behavior emulates redirected URL to be on the URL bar. That is,
           // when passing through the redirection flow, the actual URL on the
-          // location bar is pre-redirection, "/redirect_query/compare". If
-          // redirector wants to "set" href to "/compare?foo=bar", the query
+          // location bar is pre-redirection, "/redirect_query/experiments". If
+          // redirector wants to "set" href to "/experiments?foo=bar", the query
           // parameter has to come from the redirector, not from the URL bar.
           deserializeQueryParamsSpy
             .withArgs([{key: 'hard', value: 'coded'}])
@@ -797,8 +841,8 @@ describe('app_routing_effects', () => {
             actions.navigating({
               after: buildRoute({
                 routeKind: RouteKind.COMPARE_EXPERIMENT,
-                params: {},
-                pathname: '/compare',
+                params: {experimentIds: 'a:b'},
+                pathname: '/compare/a:b',
                 // Query parameter comes from DeepLinkProvider
                 // (serializeStateToQueryParamsSpy) in this case, not
                 // redirector. Query parameter of redirector is fed into
@@ -809,13 +853,14 @@ describe('app_routing_effects', () => {
                 },
               }),
             }),
+            // Third action is of type actions.navigated but we ignore it.
             jasmine.any(Object),
           ]);
         }));
 
         it('redirects with query parameter to no deepLinkProvider', fakeAsync(() => {
           getPathSpy.and.returnValue(
-            '/redirect_query/no_deeplink_unknown_route'
+            '/redirect_query/no_deeplink_unknown/route'
           );
           getSearchSpy.and.returnValue([{key: 'not', value: 'used'}]);
           deserializeQueryParamsSpy.and.throwError('Invalid');
@@ -830,13 +875,14 @@ describe('app_routing_effects', () => {
               after: buildRoute({
                 routeKind: RouteKind.UNKNOWN,
                 params: {},
-                pathname: '/no_deeplink_unknown_route',
+                pathname: '/no_deeplink_unknown/route',
                 queryParams: [],
                 navigationOptions: {
                   replaceState: true,
                 },
               }),
             }),
+            // Second action is of type actions.navigated but we ignore it.
             jasmine.any(Object),
           ]);
         }));
@@ -849,6 +895,7 @@ describe('app_routing_effects', () => {
         'getResolvedPath'
       ).and.returnValue('/experiments');
       store.overrideSelector(getActiveRoute, null);
+      store.overrideSelector(getActiveNamespaceId, null);
       store.refreshState();
 
       action.next(
@@ -879,6 +926,10 @@ describe('app_routing_effects', () => {
           queryParams: [],
         })
       );
+      store.overrideSelector(
+        getActiveNamespaceId,
+        getRouteId(RouteKind.EXPERIMENTS, {})
+      );
       store.refreshState();
 
       action.next(
@@ -907,6 +958,8 @@ describe('app_routing_effects', () => {
             pathname: '/experiments',
             queryParams: [],
           }),
+          beforeNamespaceId: getRouteId(RouteKind.EXPERIMENTS, {}),
+          afterNamespaceId: getRouteId(RouteKind.EXPERIMENTS, {}),
         }),
       ]);
     }));
@@ -914,6 +967,7 @@ describe('app_routing_effects', () => {
     describe('programmatical navigation', () => {
       it('navigates on the action', () => {
         store.overrideSelector(getActiveRoute, null);
+        store.overrideSelector(getActiveNamespaceId, null);
         store.refreshState();
 
         action.next(testAction());
@@ -932,6 +986,7 @@ describe('app_routing_effects', () => {
 
       it('translates programmatical compare nav correctly', () => {
         store.overrideSelector(getActiveRoute, null);
+        store.overrideSelector(getActiveNamespaceId, null);
         store.refreshState();
 
         action.next(
@@ -950,7 +1005,7 @@ describe('app_routing_effects', () => {
               params: {
                 experimentIds: 'bar:foo,omega:alpha',
               },
-              pathname: '/compare',
+              pathname: '/compare/bar:foo,omega:alpha',
               queryParams: [],
             }),
           }),
@@ -998,7 +1053,9 @@ describe('app_routing_effects', () => {
             replaceState: false,
           },
         });
+        const activeRouteId = getRouteId(RouteKind.EXPERIMENTS, {});
         store.overrideSelector(getActiveRoute, activeRoute);
+        store.overrideSelector(getActiveNamespaceId, activeRouteId);
         store.refreshState();
         getHashSpy.and.returnValue('');
         getPathSpy.and.returnValue('/experiments');
@@ -1019,7 +1076,9 @@ describe('app_routing_effects', () => {
             replaceState: false,
           },
         });
+        const activeRouteId = getRouteId(RouteKind.EXPERIMENTS, {});
         store.overrideSelector(getActiveRoute, activeRoute);
+        store.overrideSelector(getActiveNamespaceId, activeRouteId);
         store.refreshState();
         getHashSpy.and.returnValue('');
         getPathSpy.and.returnValue('meow');
@@ -1043,7 +1102,9 @@ describe('app_routing_effects', () => {
             replaceState: true,
           },
         });
+        const activeRouteId = getRouteId(RouteKind.EXPERIMENTS, {});
         store.overrideSelector(getActiveRoute, activeRoute);
+        store.overrideSelector(getActiveNamespaceId, activeRouteId);
         store.refreshState();
         getHashSpy.and.returnValue('');
         getPathSpy.and.returnValue('meow');
@@ -1060,6 +1121,7 @@ describe('app_routing_effects', () => {
 
       it('preserves hash upon replace for initial navigation', () => {
         store.overrideSelector(getActiveRoute, null);
+        store.overrideSelector(getActiveNamespaceId, null);
         store.refreshState();
         getHashSpy.and.returnValue('#foo');
         getPathSpy.and.returnValue('meow');
@@ -1087,15 +1149,9 @@ describe('app_routing_effects', () => {
             replaceState: true,
           },
         });
-        const nextActiveRoute = buildRoute({
-          routeKind: RouteKind.EXPERIMENT,
-          pathname: '/experiment',
-          queryParams: [{key: 'q', value: 'new_value'}],
-          navigationOptions: {
-            replaceState: true,
-          },
-        });
+        const activeRouteId = getRouteId(RouteKind.EXPERIMENT, {});
         store.overrideSelector(getActiveRoute, activeRoute);
+        store.overrideSelector(getActiveNamespaceId, activeRouteId);
         store.refreshState();
         getHashSpy.and.returnValue('#foo');
         getPathSpy.and.returnValue('meow');
@@ -1119,8 +1175,10 @@ describe('app_routing_effects', () => {
             replaceState: true,
           },
         });
+        const activeRouteId = getRouteId(RouteKind.EXPERIMENT, {});
 
         store.overrideSelector(getActiveRoute, activeRoute);
+        store.overrideSelector(getActiveNamespaceId, activeRouteId);
         store.refreshState();
         getHashSpy.and.returnValue('#foo');
         getPathSpy.and.returnValue('meow');
@@ -1263,6 +1321,7 @@ describe('app_routing_effects', () => {
         setAppRootAndSubscribe('/foo/bar/baz/');
 
         store.overrideSelector(getActiveRoute, null);
+        store.overrideSelector(getActiveNamespaceId, null);
         store.refreshState();
         getHashSpy.and.returnValue('');
         getPathSpy.and.returnValue('');
