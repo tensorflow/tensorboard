@@ -92,12 +92,15 @@ describe('persistent_settings data_source test', () => {
       it('disregards unrelated info if setting prop key is not known', async () => {
         getItemSpy
           .withArgs(TEST_ONLY.GLOBAL_LOCAL_STORAGE_KEY)
-          .and.returnValue('{"foo": "bar", "scalarSmoothing": 0.3}');
+          .and.returnValue(
+            '{"foo": "bar", "scalarSmoothing": 0.3, "timeSeriesCardMaxWidthInVW": 50}'
+          );
 
         const actual = await firstValueFrom(dataSource.getSettings());
 
         expect(actual).toEqual({
           scalarSmoothing: 0.3,
+          timeSeriesCardMaxWidthInVW: 50,
         });
       });
 
@@ -152,17 +155,24 @@ describe('persistent_settings data_source test', () => {
       it('sets settings', async () => {
         getItemSpy
           .withArgs(TEST_ONLY.GLOBAL_LOCAL_STORAGE_KEY)
-          .and.returnValue('{"scalarSmoothing": 0.3, "ignoreOutliers": false}');
+          .and.returnValue(
+            '{"scalarSmoothing": 0.3, "ignoreOutliers": false, "timeSeriesCardMaxWidthInVW": 60}'
+          );
 
         await firstValueFrom(
           dataSource.setSettings({
             scalarSmoothing: 0.5,
+            timeSeriesCardMaxWidthInVW: 60,
           })
         );
 
         expect(setItemSpy).toHaveBeenCalledOnceWith(
           TEST_ONLY.GLOBAL_LOCAL_STORAGE_KEY,
-          JSON.stringify({ignoreOutliers: false, scalarSmoothing: 0.5})
+          JSON.stringify({
+            ignoreOutliers: false,
+            scalarSmoothing: 0.5,
+            timeSeriesCardMaxWidthInVW: 60,
+          })
         );
       });
     });

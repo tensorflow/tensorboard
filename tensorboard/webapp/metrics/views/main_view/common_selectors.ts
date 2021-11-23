@@ -20,7 +20,7 @@ import {DeepReadonly} from '../../../util/types';
 import {isSingleRunPlugin} from '../../data_source';
 import {getNonEmptyCardIdsWithMetadata} from '../../store';
 import {CardIdWithMetadata} from '../metrics_view_types';
-import {compareTagNames} from '../utils';
+import {compareTagNames} from '../../utils';
 
 const getRenderableCardIdsWithMetadata = createSelector<
   State,

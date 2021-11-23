@@ -12,10 +12,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+@use '@angular/material' as mat;
 @import 'tensorboard/webapp/theme/tb_theme';
 
 .active-button {
-  background-color: mat-color($tb-primary, 500);
+  background-color: mat.get-color-from-palette($tb-primary, 500);
   border: 1px solid map-get($tb-foreground, border);
   color: map-get($tb-background, raised-button);
 }

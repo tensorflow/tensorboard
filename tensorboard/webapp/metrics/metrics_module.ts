@@ -26,6 +26,7 @@ import * as actions from './actions';
 import {MetricsDataSourceModule, METRICS_PLUGIN_ID} from './data_source';
 import {MetricsEffects} from './effects';
 import {
+  getMetricsCardMaxWidth,
   getMetricsIgnoreOutliers,
   getMetricsScalarSmoothing,
   getMetricsTooltipSort,
@@ -100,6 +101,12 @@ export function getMetricsTimeSeriesSettingsPaneOpen() {
   });
 }
 
+export function getMetricsTimeSeriesCardMaxWidthInVW() {
+  return createSelector(getMetricsCardMaxWidth, (cardMaxWidthInVW) => {
+    return {timeSeriesCardMaxWidthInVW: cardMaxWidthInVW};
+  });
+}
+
 @NgModule({
   imports: [
     CommonModule,
@@ -132,6 +139,9 @@ export function getMetricsTimeSeriesSettingsPaneOpen() {
     ),
     PersistentSettingsConfigModule.defineGlobalSetting(
       getMetricsTimeSeriesSettingsPaneOpen
+    ),
+    PersistentSettingsConfigModule.defineGlobalSetting(
+      getMetricsTimeSeriesCardMaxWidthInVW
     ),
   ],
   providers: [

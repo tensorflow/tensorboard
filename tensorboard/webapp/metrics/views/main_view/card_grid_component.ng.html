@@ -14,31 +14,31 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<ng-container
-  *ngTemplateOutlet="groupControls; context: {isBottomControl: false}"
-></ng-container>
 
-<div class="card-grid">
-  <card-view
-    *ngFor="let item of cardIdsWithMetadata; trackBy: trackByCards"
-    [cardId]="item.cardId"
-    [groupName]="groupName"
-    [pluginType]="item.plugin"
-    [cardObserver]="cardObserver"
-    [cardLazyLoader]="item.cardId"
-  >
-  </card-view>
+<div *ngIf="isGroupExpanded">
+  <ng-container
+    *ngTemplateOutlet="groupControls; context: {isBottomControl: false}"
+  ></ng-container>
+
+  <div class="card-grid" [style.grid-template-columns]="gridTemplateColumn">
+    <card-view
+      *ngFor="let item of cardIdsWithMetadata; trackBy: trackByCards"
+      [cardId]="item.cardId"
+      [groupName]="groupName"
+      [pluginType]="item.plugin"
+      [cardObserver]="cardObserver"
+      [cardLazyLoader]="item.cardId"
+    >
+    </card-view>
+  </div>
+
+  <ng-container
+    *ngTemplateOutlet="groupControls; context: {isBottomControl: true}"
+  ></ng-container>
 </div>
 
-<ng-container
-  *ngTemplateOutlet="groupControls; context: {isBottomControl: true}"
-></ng-container>
-
 <ng-template #groupControls let-isBottomControl="isBottomControl">
-  <div
-    class="group-controls"
-    *ngIf="showPaginationControls || showExpand(isBottomControl)"
-  >
+  <div class="group-controls" *ngIf="showPaginationControls">
     <span class="prev-container">
       <button
         *ngIf="showPaginationControls"
@@ -50,24 +50,6 @@ limitations under the License.
         (click)="handlePageChange(pageIndex - 1, $event.target)"
       >
         Previous
-      </button>
-    </span>
-    <span class="expand-container">
-      <button
-        *ngIf="showExpand(isBottomControl)"
-        class="expand-group-button"
-        mat-icon-button
-        i18n-aria-label="A button that allows user to expand a tag group."
-        aria-label="Expand group"
-        (click)="groupExpansionToggled.emit()"
-      >
-        <mat-icon
-          *ngIf="isGroupExpanded; else expandMore"
-          svgIcon="expand_less_24px"
-        ></mat-icon>
-        <ng-template #expandMore>
-          <mat-icon svgIcon="expand_more_24px"></mat-icon>
-        </ng-template>
       </button>
     </span>
 

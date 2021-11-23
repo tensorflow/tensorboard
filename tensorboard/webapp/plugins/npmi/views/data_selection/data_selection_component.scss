@@ -12,13 +12,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+@use '@angular/material' as mat;
 @import 'tensorboard/webapp/theme/tb_theme';
 
 :host {
   display: flex;
   flex-direction: column;
   background-color: #fff;
-  border: 1px solid mat-color($tb-foreground, border);
+  border: 1px solid mat.get-color-from-palette($tb-foreground, border);
   padding: 10px 20px;
 }
 

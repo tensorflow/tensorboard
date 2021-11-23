@@ -67,6 +67,7 @@ import {
   METRICS_SETTINGS_DEFAULT,
   MetricsSettings,
 } from './metrics_types';
+import {groupCardIdWithMetdata} from '../utils';
 
 function buildCardMetadataList(tagMetadata: TagMetadata): CardMetadata[] {
   const results: CardMetadata[] = [];
@@ -388,6 +389,10 @@ const reducer = createReducer(
         default:
       }
     }
+    if (typeof partialSettings.timeSeriesCardMaxWidthInVW === 'number') {
+      metricsSettings.cardMaxWidthInVW =
+        partialSettings.timeSeriesCardMaxWidthInVW;
+    }
     if (typeof partialSettings.ignoreOutliers === 'boolean') {
       metricsSettings.ignoreOutliers = partialSettings.ignoreOutliers;
     }
@@ -492,6 +497,21 @@ const reducer = createReducer(
 
       const nextCardList = [...state.cardList, ...newCardIds];
 
+      let tagGroupExpanded = state.tagGroupExpanded;
+      if (state.tagGroupExpanded.size === 0) {
+        const cardListWithMetadata = nextCardList
+          .map((cardId) => {
+            return {...nextCardMetadataMap[cardId], cardId} ?? null;
+          })
+          .filter(Boolean);
+        const cardGroups = groupCardIdWithMetdata(cardListWithMetadata);
+
+        tagGroupExpanded = new Map(state.tagGroupExpanded);
+        for (const group of cardGroups.slice(0, 2)) {
+          tagGroupExpanded.set(group.groupName, true);
+        }
+      }
+
       const resolvedResult = buildOrReturnStateWithUnresolvedImportedPins(
         state.unresolvedImportedPinnedCards,
         newCardIds,
@@ -504,6 +524,7 @@ const reducer = createReducer(
       return {
         ...state,
         ...resolvedResult,
+        tagGroupExpanded,
         tagMetadataLoadState: {
           state: DataLoadState.LOADED,
           lastLoadedTimeInMs: Date.now(),
@@ -626,6 +647,24 @@ const reducer = createReducer(
       settingOverrides: {
         ...state.settingOverrides,
         histogramMode,
+      },
+    };
+  }),
+  on(actions.metricsChangeCardWidth, (state, {cardMaxWidthInVW}) => {
+    return {
+      ...state,
+      settingOverrides: {
+        ...state.settingOverrides,
+        cardMaxWidthInVW,
+      },
+    };
+  }),
+  on(actions.metricsResetCardWidth, (state) => {
+    return {
+      ...state,
+      settingOverrides: {
+        ...state.settingOverrides,
+        cardMaxWidthInVW: null,
       },
     };
   }),

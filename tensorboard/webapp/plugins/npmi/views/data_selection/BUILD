@@ -7,6 +7,7 @@ licenses(["notice"])
 tf_sass_binary(
     name = "data_selection_component_styles",
     src = "data_selection_component.scss",
+    deps = ["//tensorboard/webapp:angular_material_sass_deps"],
 )
 
 tf_ng_module(

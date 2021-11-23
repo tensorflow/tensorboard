@@ -5,6 +5,7 @@ package(default_visibility = ["//tensorboard:internal"])
 tf_sass_binary(
     name = "linked_time_fob_styles",
     src = "linked_time_fob_component.scss",
+    deps = ["//tensorboard/webapp:angular_material_sass_deps"],
 )
 
 tf_ng_module(

@@ -7,6 +7,7 @@ licenses(["notice"])
 tf_sass_binary(
     name = "embeddings_component_styles",
     src = "embeddings_component.scss",
+    deps = ["//tensorboard/webapp:angular_material_sass_deps"],
 )
 
 tf_ng_module(

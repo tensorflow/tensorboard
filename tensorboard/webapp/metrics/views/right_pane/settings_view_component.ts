@@ -38,6 +38,12 @@ import {
 const SLIDER_AUDIT_TIME_MS = 250;
 
 /**
+ * Maximum card width ranges from 30 to 100 VW.
+ */
+const MAX_CARD_WIDTH_SLIDER_VALUE = 100;
+const MIN_CARD_WIDTH_SLIDER_VALUE = 30;
+
+/**
  * When smoothing === 1, all lines become flat on the x-axis, which is not
  * useful at all. Use a maximum smoothing value < 1.
  */
@@ -60,6 +66,7 @@ const MAX_SMOOTHING_SLIDER_VALUE = 0.99;
 export class SettingsViewComponent {
   constructor(@Inject(LOCALE_ID) private readonly locale: string) {}
 
+  @Input() isCardWidthSettingEnabled!: boolean;
   @Input() isLinkedTimeFeatureEnabled!: boolean;
   @Input() selectTimeEnabled!: boolean;
   @Input() useRangeSelectTime!: boolean;
@@ -92,6 +99,16 @@ export class SettingsViewComponent {
   ];
   @Input() xAxisType!: XAxisType;
   @Output() xAxisTypeChanged = new EventEmitter<XAxisType>();
+
+  readonly MAX_CARD_WIDTH_SLIDER_VALUE = MAX_CARD_WIDTH_SLIDER_VALUE;
+  readonly MIN_CARD_WIDTH_SLIDER_VALUE = MIN_CARD_WIDTH_SLIDER_VALUE;
+  readonly cardWidthSliderChanged$ = new EventEmitter<number>();
+  @Input() cardMaxWidthInVW!: number;
+  @Output()
+  cardWidthChanged = this.cardWidthSliderChanged$.pipe(
+    auditTime(SLIDER_AUDIT_TIME_MS)
+  );
+  @Output() cardWidthReset = new EventEmitter<void>();
 
   readonly HistogramModeDropdownOptions: DropdownOption[] = [
     {value: HistogramMode.OFFSET, displayText: 'Offset'},
@@ -182,5 +199,6 @@ export class SettingsViewComponent {
 
 export const TEST_ONLY = {
   SLIDER_AUDIT_TIME_MS,
+  MIN_CARD_WIDTH_SLIDER_VALUE,
   MAX_SMOOTHING_VALUE,
 };

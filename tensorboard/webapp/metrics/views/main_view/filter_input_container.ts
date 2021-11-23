@@ -24,7 +24,7 @@ import {
 } from '../../../selectors';
 import {metricsTagFilterChanged} from '../../actions';
 import {getMetricsFilteredPluginTypes} from '../../store';
-import {compareTagNames} from '../utils';
+import {compareTagNames} from '../../utils';
 
 @Component({
   selector: 'metrics-tag-filter',

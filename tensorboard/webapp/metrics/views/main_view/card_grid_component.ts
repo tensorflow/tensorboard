@@ -20,12 +20,17 @@ import {
   Input,
   Optional,
   Output,
+  SimpleChanges,
 } from '@angular/core';
 
 import {PluginType} from '../../data_source';
 import {CardObserver} from '../card_renderer/card_lazy_loader';
 
 import {CardIdWithMetadata} from '../metrics_view_types';
+
+const MIN_CARD_WIDTH = 335;
+const MIN_CARD_MAX_WIDTH_IN_VW = 30;
+const MAX_CARD_MAX_WIDTH_IN_VW = 100;
 
 @Component({
   selector: 'metrics-card-grid-component',
@@ -35,25 +40,46 @@ import {CardIdWithMetadata} from '../metrics_view_types';
 })
 export class CardGridComponent {
   readonly PluginType = PluginType;
+  gridTemplateColumn = '';
 
-  @Input() isGroupExpandable!: boolean;
   @Input() isGroupExpanded!: boolean;
-  @Input() groupName!: string | null;
   @Input() pageIndex!: number;
   @Input() numPages!: number;
   @Input() cardIdsWithMetadata!: CardIdWithMetadata[];
+  @Input() cardMaxWidthInVW!: number | null;
   @Input() cardObserver!: CardObserver;
   @Input() showPaginationControls!: boolean;
 
   @Output() pageIndexChanged = new EventEmitter<number>();
-  @Output() groupExpansionToggled = new EventEmitter<void>();
 
   constructor(
     @Optional() private readonly cdkScrollable: CdkScrollable | null
   ) {}
 
-  showExpand(isBottomControl: boolean): boolean {
-    return isBottomControl ? this.isGroupExpandable : false;
+  ngOnInit() {
+    if (this.isCardWidthValid(this.cardMaxWidthInVW)) {
+      this.gridTemplateColumn = `repeat(auto-fill, minmax(${MIN_CARD_WIDTH}px, ${this.cardMaxWidthInVW}vw))`;
+    }
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['cardMaxWidthInVW']) {
+      const newCardWidth = changes['cardMaxWidthInVW'].currentValue;
+      if (this.isCardWidthValid(newCardWidth)) {
+        this.cardMaxWidthInVW = newCardWidth;
+        this.gridTemplateColumn = `repeat(auto-fill, minmax(${MIN_CARD_WIDTH}px, ${this.cardMaxWidthInVW}vw))`;
+      } else {
+        this.gridTemplateColumn = '';
+      }
+    }
+  }
+
+  isCardWidthValid(cardMaxWidthInVW: number | null) {
+    return (
+      cardMaxWidthInVW &&
+      cardMaxWidthInVW >= MIN_CARD_MAX_WIDTH_IN_VW &&
+      cardMaxWidthInVW <= MAX_CARD_MAX_WIDTH_IN_VW
+    );
   }
 
   showPaginationInput(isBottomControl: boolean) {

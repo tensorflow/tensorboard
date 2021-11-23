@@ -12,16 +12,17 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+@use '@angular/material' as mat;
 @import 'tensorboard/webapp/theme/tb_theme';
 
 :host {
-  color: mat-color(map-get($tb-theme, warn), 700);
+  color: mat.get-color-from-palette(map-get($tb-theme, warn), 700);
   height: 1em;
   line-height: 0;
   width: 1em;
 
   @include tb-dark-theme {
-    color: mat-color(map-get($tb-dark-theme, warn), 700);
+    color: mat.get-color-from-palette(map-get($tb-dark-theme, warn), 700);
   }
 
   mat-icon {

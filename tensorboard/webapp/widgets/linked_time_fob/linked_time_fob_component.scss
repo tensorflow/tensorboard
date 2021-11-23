@@ -12,6 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+@use '@angular/material' as mat;
 @import 'tensorboard/webapp/theme/tb_theme';
 
 :host {
@@ -19,7 +20,7 @@ limitations under the License.
 }
 
 span {
-  background-color: mat-color($mat-gray, 300);
+  background-color: mat.get-color-from-palette(mat.$gray-palette, 300);
   border-radius: 25px;
   color: inherit;
   display: inline-block;
@@ -28,16 +29,16 @@ span {
 
   &:hover,
   &:active {
-    border-color: mat-color($mat-gray, 700);
+    border-color: mat.get-color-from-palette(mat.$gray-palette, 700);
   }
 
   @include tb-dark-theme {
-    background-color: mat-color($mat-gray, 700);
-    border-color: mat-color($tf-slate, 500);
+    background-color: mat.get-color-from-palette(mat.$gray-palette, 700);
+    border-color: mat.get-color-from-palette($tf-slate, 500);
 
     &:hover,
     &:active {
-      border-color: mat-color($mat-gray, 200);
+      border-color: mat.get-color-from-palette(mat.$gray-palette, 200);
     }
   }
 }

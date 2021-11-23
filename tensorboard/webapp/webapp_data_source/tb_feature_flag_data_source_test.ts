@@ -140,6 +140,28 @@ describe('tb_feature_flag_data_source', () => {
         });
       });
 
+      it('returns enableCardWidthSetting from the query params', () => {
+        getParamsSpy.and.returnValues(
+          new URLSearchParams('enableCardWidthSetting=false'),
+          new URLSearchParams('enableCardWidthSetting='),
+          new URLSearchParams('enableCardWidthSetting=true'),
+          new URLSearchParams('enableCardWidthSetting=foo')
+        );
+
+        expect(dataSource.getFeatures()).toEqual({
+          enabledCardWidthSetting: false,
+        });
+        expect(dataSource.getFeatures()).toEqual({
+          enabledCardWidthSetting: true,
+        });
+        expect(dataSource.getFeatures()).toEqual({
+          enabledCardWidthSetting: true,
+        });
+        expect(dataSource.getFeatures()).toEqual({
+          enabledCardWidthSetting: true,
+        });
+      });
+
       it('returns all flag values when they are all set', () => {
         getParamsSpy.and.returnValue(
           new URLSearchParams(

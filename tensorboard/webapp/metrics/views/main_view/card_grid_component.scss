@@ -55,7 +55,7 @@ card-view {
   @include tb-theme-foreground-prop(color, secondary-text);
   display: grid;
   align-items: center;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr;
   gap: $metrics-preferred-gap;
   padding: 0 $metrics-preferred-gap;
 }
@@ -70,10 +70,6 @@ card-view {
 
 .prev-container {
   justify-self: flex-start;
-}
-
-.expand-container {
-  justify-self: center;
 }
 
 .input-and-next-container {
@@ -91,7 +87,6 @@ card-view {
   }
 }
 
-.expand-group-button,
 .pagination-button {
   @include tb-theme-foreground-prop(color, secondary-text);
   background-color: $metrics-button-background-color-on-gray;
