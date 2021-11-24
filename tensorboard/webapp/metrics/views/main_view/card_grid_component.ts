@@ -29,7 +29,7 @@ import {CardObserver} from '../card_renderer/card_lazy_loader';
 import {CardIdWithMetadata} from '../metrics_view_types';
 
 const MIN_CARD_WIDTH_IN_PX = 335;
-const MAX_CARD_WIDTH_IN_PX = 805;
+const MAX_CARD_WIDTH_IN_PX = 1005;
 
 @Component({
   selector: 'metrics-card-grid-component',
@@ -66,7 +66,7 @@ export class CardGridComponent {
       const newCardWidth = changes['cardMinWidth'].currentValue;
       if (this.isCardWidthValid(newCardWidth)) {
         this.cardMinWidth = newCardWidth;
-        this.gridTemplateColumn = `repeat(auto-fill, minmax(min(${this.cardMinWidth}px, auto), auto))`;
+        this.gridTemplateColumn = `repeat(auto-fill, minmax(${this.cardMinWidth}px, auto))`;
       } else {
         this.gridTemplateColumn = '';
       }
