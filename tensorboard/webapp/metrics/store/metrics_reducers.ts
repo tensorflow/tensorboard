@@ -389,9 +389,8 @@ const reducer = createReducer(
         default:
       }
     }
-    if (typeof partialSettings.timeSeriesCardMaxWidthInVW === 'number') {
-      metricsSettings.cardMaxWidthInVW =
-        partialSettings.timeSeriesCardMaxWidthInVW;
+    if (typeof partialSettings.timeSeriesCardMinWidth === 'number') {
+      metricsSettings.cardMinWidth = partialSettings.timeSeriesCardMinWidth;
     }
     if (typeof partialSettings.ignoreOutliers === 'boolean') {
       metricsSettings.ignoreOutliers = partialSettings.ignoreOutliers;
@@ -650,12 +649,12 @@ const reducer = createReducer(
       },
     };
   }),
-  on(actions.metricsChangeCardWidth, (state, {cardMaxWidthInVW}) => {
+  on(actions.metricsChangeCardWidth, (state, {cardMinWidth}) => {
     return {
       ...state,
       settingOverrides: {
         ...state.settingOverrides,
-        cardMaxWidthInVW,
+        cardMinWidth,
       },
     };
   }),
@@ -664,7 +663,7 @@ const reducer = createReducer(
       ...state,
       settingOverrides: {
         ...state.settingOverrides,
-        cardMaxWidthInVW: null,
+        cardMinWidth: null,
       },
     };
   }),

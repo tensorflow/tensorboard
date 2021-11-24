@@ -28,9 +28,8 @@ import {CardObserver} from '../card_renderer/card_lazy_loader';
 
 import {CardIdWithMetadata} from '../metrics_view_types';
 
-const MIN_CARD_WIDTH = 335;
-const MIN_CARD_MAX_WIDTH_IN_VW = 30;
-const MAX_CARD_MAX_WIDTH_IN_VW = 100;
+const MIN_CARD_WIDTH_IN_PX = 335;
+const MAX_CARD_WIDTH_IN_PX = 805;
 
 @Component({
   selector: 'metrics-card-grid-component',
@@ -46,7 +45,7 @@ export class CardGridComponent {
   @Input() pageIndex!: number;
   @Input() numPages!: number;
   @Input() cardIdsWithMetadata!: CardIdWithMetadata[];
-  @Input() cardMaxWidthInVW!: number | null;
+  @Input() cardMinWidth!: number | null;
   @Input() cardObserver!: CardObserver;
   @Input() showPaginationControls!: boolean;
 
@@ -57,28 +56,28 @@ export class CardGridComponent {
   ) {}
 
   ngOnInit() {
-    if (this.isCardWidthValid(this.cardMaxWidthInVW)) {
-      this.gridTemplateColumn = `repeat(auto-fill, minmax(${MIN_CARD_WIDTH}px, ${this.cardMaxWidthInVW}vw))`;
+    if (this.isCardWidthValid(this.cardMinWidth)) {
+      this.gridTemplateColumn = `repeat(auto-fill, minmax(${this.cardMinWidth}px, auto))`;
     }
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    if (changes['cardMaxWidthInVW']) {
-      const newCardWidth = changes['cardMaxWidthInVW'].currentValue;
+    if (changes['cardMinWidth']) {
+      const newCardWidth = changes['cardMinWidth'].currentValue;
       if (this.isCardWidthValid(newCardWidth)) {
-        this.cardMaxWidthInVW = newCardWidth;
-        this.gridTemplateColumn = `repeat(auto-fill, minmax(${MIN_CARD_WIDTH}px, ${this.cardMaxWidthInVW}vw))`;
+        this.cardMinWidth = newCardWidth;
+        this.gridTemplateColumn = `repeat(auto-fill, minmax(min(${this.cardMinWidth}px, auto), auto))`;
       } else {
         this.gridTemplateColumn = '';
       }
     }
   }
 
-  isCardWidthValid(cardMaxWidthInVW: number | null) {
+  isCardWidthValid(cardMinWidth: number | null) {
     return (
-      cardMaxWidthInVW &&
-      cardMaxWidthInVW >= MIN_CARD_MAX_WIDTH_IN_VW &&
-      cardMaxWidthInVW <= MAX_CARD_MAX_WIDTH_IN_VW
+      cardMinWidth &&
+      cardMinWidth >= MIN_CARD_WIDTH_IN_PX &&
+      cardMinWidth <= MAX_CARD_WIDTH_IN_PX
     );
   }
 

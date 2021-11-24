@@ -27,11 +27,10 @@ import {map, shareReplay, switchMap, takeUntil, tap} from 'rxjs/operators';
 
 import {State} from '../../../app_state';
 import {
-  getMetricsCardMaxWidth,
+  getMetricsCardMinWidth,
   getMetricsTagGroupExpansionState,
   getEnabledCardWidthSetting,
 } from '../../../selectors';
-import {metricsTagGroupExpansionChanged} from '../../actions';
 import {CardObserver} from '../card_renderer/card_lazy_loader';
 import {CardIdWithMetadata} from '../metrics_view_types';
 
@@ -44,7 +43,7 @@ import {CardIdWithMetadata} from '../metrics_view_types';
       [numPages]="numPages$ | async"
       [showPaginationControls]="showPaginationControls$ | async"
       [cardIdsWithMetadata]="pagedItems$ | async"
-      [cardMaxWidthInVW]="cardMaxWidthInVW$ | async"
+      [cardMinWidth]="cardMinWidth$ | async"
       [cardObserver]="cardObserver"
       (pageIndexChanged)="onPageIndexChanged($event)"
     >
@@ -120,12 +119,12 @@ export class CardGridContainer implements OnChanges, OnDestroy {
     })
   );
 
-  readonly cardMaxWidthInVW$ = combineLatest([
-    this.store.select(getMetricsCardMaxWidth),
+  readonly cardMinWidth$ = combineLatest([
+    this.store.select(getMetricsCardMinWidth),
     this.store.select(getEnabledCardWidthSetting),
   ]).pipe(
-    map(([cardMaxWidth, isCardWidthSettingEnabled]) =>
-      isCardWidthSettingEnabled ? cardMaxWidth : null
+    map(([cardMinWidth, isCardWidthSettingEnabled]) =>
+      isCardWidthSettingEnabled ? cardMinWidth : null
     )
   );
 

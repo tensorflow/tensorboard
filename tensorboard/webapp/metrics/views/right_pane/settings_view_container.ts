@@ -51,7 +51,7 @@ import {HistogramMode, LinkedTime, TooltipSort, XAxisType} from '../../types';
       [xAxisType]="xAxisType$ | async"
       (xAxisTypeChanged)="onXAxisTypeChanged($event)"
       [isCardWidthSettingEnabled]="isCardWidthSettingEnabled$ | async"
-      [cardMaxWidthInVW]="cardMaxWidthInVW$ | async"
+      [cardMinWidth]="cardMinWidth$ | async"
       (cardWidthChanged)="onCardWidthChanged($event)"
       (cardWidthReset)="onCardWidthReset()"
       [histogramMode]="histogramMode$ | async"
@@ -119,9 +119,7 @@ export class SettingsViewContainer {
     selectors.getMetricsIgnoreOutliers
   );
   readonly xAxisType$ = this.store.select(selectors.getMetricsXAxisType);
-  readonly cardMaxWidthInVW$ = this.store.select(
-    selectors.getMetricsCardMaxWidth
-  );
+  readonly cardMinWidth$ = this.store.select(selectors.getMetricsCardMinWidth);
   readonly histogramMode$ = this.store.select(
     selectors.getMetricsHistogramMode
   );
@@ -153,8 +151,8 @@ export class SettingsViewContainer {
     this.store.dispatch(metricsChangeXAxisType({xAxisType}));
   }
 
-  onCardWidthChanged(cardMaxWidthInVW: number) {
-    this.store.dispatch(metricsChangeCardWidth({cardMaxWidthInVW}));
+  onCardWidthChanged(cardMinWidth: number) {
+    this.store.dispatch(metricsChangeCardWidth({cardMinWidth}));
   }
 
   onCardWidthReset() {

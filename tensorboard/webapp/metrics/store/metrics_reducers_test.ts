@@ -774,32 +774,32 @@ describe('metrics reducers', () => {
       );
     });
 
-    it('changes cardMaxWidthInVW on metricsChangeCardWidth', () => {
+    it('changes cardMinWidth on metricsChangeCardWidth', () => {
       const prevState = buildMetricsState({
         settings: buildMetricsSettingsState({
-          cardMaxWidthInVW: 40,
+          cardMinWidth: 400,
         }),
         settingOverrides: {},
       });
       const nextState = reducers(
         prevState,
-        actions.metricsChangeCardWidth({cardMaxWidthInVW: 50})
+        actions.metricsChangeCardWidth({cardMinWidth: 500})
       );
-      expect(nextState.settingOverrides.cardMaxWidthInVW).toBe(50);
+      expect(nextState.settingOverrides.cardMinWidth).toBe(500);
     });
 
-    it('resets cardMaxWidthInVW', () => {
+    it('resets cardMinWidth', () => {
       const prevState = buildMetricsState({
         settings: buildMetricsSettingsState({
-          cardMaxWidthInVW: 40,
+          cardMinWidth: 400,
         }),
         settingOverrides: {
-          cardMaxWidthInVW: 50,
+          cardMinWidth: 500,
         },
       });
       const nextState = reducers(prevState, actions.metricsResetCardWidth());
-      expect(nextState.settings.cardMaxWidthInVW).toBe(40);
-      expect(nextState.settingOverrides.cardMaxWidthInVW).toBe(null);
+      expect(nextState.settings.cardMinWidth).toBe(400);
+      expect(nextState.settingOverrides.cardMinWidth).toBe(null);
     });
   });
 

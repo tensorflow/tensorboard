@@ -34,7 +34,7 @@ import {selectors as settingsSelectors} from '../../../settings';
 import * as selectors from '../../../selectors';
 import {
   getEnabledCardWidthSetting,
-  getMetricsCardMaxWidth,
+  getMetricsCardMinWidth,
   getMetricsTagGroupExpansionState,
 } from '../../../selectors';
 
@@ -89,7 +89,7 @@ describe('card grid', () => {
     store.overrideSelector(selectors.getRunColorMap, {});
     store.overrideSelector(getMetricsTagGroupExpansionState, true);
     store.overrideSelector(getEnabledCardWidthSetting, false);
-    store.overrideSelector(getMetricsCardMaxWidth, 30);
+    store.overrideSelector(getMetricsCardMinWidth, 30);
   });
 
   it('keeps pagination button position when page size changes', fakeAsync(() => {

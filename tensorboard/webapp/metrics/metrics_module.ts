@@ -26,7 +26,7 @@ import * as actions from './actions';
 import {MetricsDataSourceModule, METRICS_PLUGIN_ID} from './data_source';
 import {MetricsEffects} from './effects';
 import {
-  getMetricsCardMaxWidth,
+  getMetricsCardMinWidth,
   getMetricsIgnoreOutliers,
   getMetricsScalarSmoothing,
   getMetricsTooltipSort,
@@ -101,9 +101,9 @@ export function getMetricsTimeSeriesSettingsPaneOpen() {
   });
 }
 
-export function getMetricsTimeSeriesCardMaxWidthInVW() {
-  return createSelector(getMetricsCardMaxWidth, (cardMaxWidthInVW) => {
-    return {timeSeriesCardMaxWidthInVW: cardMaxWidthInVW};
+export function getMetricsTimeSeriesCardMinWidth() {
+  return createSelector(getMetricsCardMinWidth, (cardMinWidth) => {
+    return {timeSeriesCardMinWidth: cardMinWidth};
   });
 }
 
@@ -141,7 +141,7 @@ export function getMetricsTimeSeriesCardMaxWidthInVW() {
       getMetricsTimeSeriesSettingsPaneOpen
     ),
     PersistentSettingsConfigModule.defineGlobalSetting(
-      getMetricsTimeSeriesCardMaxWidthInVW
+      getMetricsTimeSeriesCardMinWidth
     ),
   ],
   providers: [

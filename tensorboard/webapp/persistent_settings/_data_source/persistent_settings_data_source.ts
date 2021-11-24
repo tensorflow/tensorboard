@@ -59,7 +59,7 @@ export class OSSSettingsConverter extends SettingsConverter<
       sideBarWidthInPercent: settings.sideBarWidthInPercent,
       timeSeriesPromotionDismissed: settings.timeSeriesPromotionDismissed,
       timeSeriesSettingsPaneOpened: settings.timeSeriesSettingsPaneOpened,
-      timeSeriesCardMaxWidthInVW: settings.timeSeriesCardMaxWidthInVW,
+      timeSeriesCardMinWidth: settings.timeSeriesCardMinWidth,
     };
     return serializableSettings;
   }
@@ -148,11 +148,10 @@ export class OSSSettingsConverter extends SettingsConverter<
     }
 
     if (
-      backendSettings.hasOwnProperty('timeSeriesCardMaxWidthInVW') &&
-      typeof backendSettings.timeSeriesCardMaxWidthInVW === 'number'
+      backendSettings.hasOwnProperty('timeSeriesCardMinWidth') &&
+      typeof backendSettings.timeSeriesCardMinWidth === 'number'
     ) {
-      settings.timeSeriesCardMaxWidthInVW =
-        backendSettings.timeSeriesCardMaxWidthInVW;
+      settings.timeSeriesCardMinWidth = backendSettings.timeSeriesCardMinWidth;
     }
 
     return settings;
