@@ -28,8 +28,8 @@ import {CardObserver} from '../card_renderer/card_lazy_loader';
 
 import {CardIdWithMetadata} from '../metrics_view_types';
 
-const MIN_CARD_WIDTH_IN_PX = 335;
-const MAX_CARD_WIDTH_IN_PX = 700;
+const MIN_CARD_MIN_WIDTH_IN_PX = 335;
+const MAX_CARD_MIN_WIDTH_IN_PX = 735;
 
 @Component({
   selector: 'metrics-card-grid-component',
@@ -76,8 +76,8 @@ export class CardGridComponent {
   isCardWidthValid(cardMinWidth: number | null) {
     return (
       cardMinWidth &&
-      cardMinWidth >= MIN_CARD_WIDTH_IN_PX &&
-      cardMinWidth <= MAX_CARD_WIDTH_IN_PX
+      cardMinWidth >= MIN_CARD_MIN_WIDTH_IN_PX &&
+      cardMinWidth <= MAX_CARD_MIN_WIDTH_IN_PX
     );
   }
 
