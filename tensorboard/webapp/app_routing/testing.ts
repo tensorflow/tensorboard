@@ -53,9 +53,7 @@ export function buildCompareRoute(
   };
 }
 
-export function buildNavigatedActionFull(
-  overrides?: Partial<NavigatedPayload>
-) {
+export function buildNavigatedAction(overrides?: Partial<NavigatedPayload>) {
   return navigated({
     before: null,
     after: buildRoute(),
@@ -66,17 +64,14 @@ export function buildNavigatedActionFull(
 }
 
 // TODO(bdubois): Remove once all internal callers have been migrated to
-// buildNavigatedActionFull.
+// buildNavigatedAction.
 /**
- * @deprecated Use buildNavigateActionFull instead.
+ * @deprecated Use buildNavigateAction instead.
  */
-export function buildNavigatedAction(routeOverride: Partial<Route> = {}) {
-  return navigated({
-    before: null,
-    after: buildRoute(routeOverride),
-    beforeNamespaceId: null,
-    afterNamespaceId: 'namespace',
-  });
+export function buildNavigatedActionFull(
+  overrides?: Partial<NavigatedPayload>
+) {
+  return buildNavigatedAction(overrides);
 }
 
 /**

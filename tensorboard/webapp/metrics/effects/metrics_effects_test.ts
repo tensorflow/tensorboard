@@ -23,7 +23,7 @@ import {DataLoadState} from '../../types/data';
 import {TBHttpClientTestingModule} from '../../webapp_data_source/tb_http_client_testing';
 import {of, Subject} from 'rxjs';
 
-import {buildNavigatedAction} from '../../app_routing/testing';
+import {buildNavigatedAction, buildRoute} from '../../app_routing/testing';
 import {State} from '../../app_state';
 import * as selectors from '../../selectors';
 import {nextElementId} from '../../util/dom';
@@ -182,7 +182,11 @@ describe('metrics effects', () => {
         store.overrideSelector(getActivePlugin, null);
         store.refreshState();
 
-        actions$.next(buildNavigatedAction({routeKind: RouteKind.EXPERIMENT}));
+        actions$.next(
+          buildNavigatedAction({
+            after: buildRoute({routeKind: RouteKind.EXPERIMENT}),
+          })
+        );
         expect(fetchTagMetadataSpy).not.toHaveBeenCalled();
 
         actions$.next(coreActions.pluginsListingRequested());
@@ -223,7 +227,11 @@ describe('metrics effects', () => {
         store.overrideSelector(getActivePlugin, null);
         store.refreshState();
 
-        actions$.next(buildNavigatedAction({routeKind: RouteKind.EXPERIMENT}));
+        actions$.next(
+          buildNavigatedAction({
+            after: buildRoute({routeKind: RouteKind.EXPERIMENT}),
+          })
+        );
         expect(fetchTagMetadataSpy).not.toHaveBeenCalled();
 
         actions$.next(coreActions.pluginsListingRequested());
