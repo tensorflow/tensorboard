@@ -53,9 +53,7 @@ export function buildCompareRoute(
   };
 }
 
-export function buildNavigatedAction(
-  overrides?: Partial<NavigatedPayload>
-) {
+export function buildNavigatedAction(overrides?: Partial<NavigatedPayload>) {
   return navigated({
     before: null,
     after: buildRoute(),
@@ -70,7 +68,11 @@ export function buildNavigatedAction(
 /**
  * @deprecated Use buildNavigateAction instead.
  */
-export function buildNavigatedActionFull = buildNavigatedAction;
+export function buildNavigatedActionFull(
+  overrides?: Partial<NavigatedPayload>
+) {
+  return buildNavigatedAction(overrides);
+}
 
 /**
  * A navigation that corresponds to a change in route id (new route context)
