@@ -29,7 +29,7 @@ import {CardObserver} from '../card_renderer/card_lazy_loader';
 import {CardIdWithMetadata} from '../metrics_view_types';
 
 const MIN_CARD_WIDTH_IN_PX = 335;
-const MAX_CARD_WIDTH_IN_PX = 1005;
+const MAX_CARD_WIDTH_IN_PX = 700;
 
 @Component({
   selector: 'metrics-card-grid-component',

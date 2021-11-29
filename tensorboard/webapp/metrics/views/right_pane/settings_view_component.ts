@@ -38,9 +38,9 @@ import {
 const SLIDER_AUDIT_TIME_MS = 250;
 
 /**
- * Minimum card width ranges from 335 to 1005 px.
+ * Minimum card width ranges from 335 to 700 px.
  */
-const MAX_CARD_WIDTH_SLIDER_VALUE = 1005;
+const MAX_CARD_WIDTH_SLIDER_VALUE = 700;
 const MIN_CARD_WIDTH_SLIDER_VALUE = 335;
 
 /**
