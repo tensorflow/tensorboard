@@ -12,6 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+@use '@angular/material' as mat;
 @import 'tensorboard/webapp/theme/tb_theme';
 
 :host {
@@ -62,7 +63,7 @@ limitations under the License.
   position: absolute;
   left: 10px;
   bottom: 10px;
-  border: 1px solid mat-color($tb-foreground, border);
+  border: 1px solid mat.get-color-from-palette($tb-foreground, border);
   border-radius: 3px;
   display: flex;
   align-items: center;
@@ -75,7 +76,7 @@ limitations under the License.
   height: 100%;
   width: 3px;
   overflow: hidden;
-  background-color: mat-color($tb-foreground, divider);
+  background-color: mat.get-color-from-palette($tb-foreground, divider);
 }
 
 .annotations-list {

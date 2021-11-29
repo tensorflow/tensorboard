@@ -12,6 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+@use '@angular/material' as mat;
 @import 'tensorboard/webapp/theme/tb_theme';
 
 .tag-filter {
@@ -27,7 +28,7 @@ tb-filter-input {
   @include tb-theme-foreground-prop(color, text);
 
   &:not(.valid) {
-    $_error-color: mat-color($tb-warn, 800);
+    $_error-color: mat.get-color-from-palette($tb-warn, 800);
 
     color: $_error-color;
 

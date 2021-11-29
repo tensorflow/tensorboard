@@ -6,6 +6,7 @@ tf_sass_binary(
     name = "main_view_styles",
     src = "main_view_component.scss",
     deps = [
+        "//tensorboard/webapp:angular_material_sass_deps",
         "//tensorboard/webapp/metrics/views:metrics_common_styles",
     ],
 )
@@ -13,12 +14,14 @@ tf_sass_binary(
 tf_sass_binary(
     name = "filter_input_component_styles",
     src = "filter_input_component.scss",
+    deps = ["//tensorboard/webapp:angular_material_sass_deps"],
 )
 
 tf_sass_binary(
     name = "filtered_view_component_styles",
     src = "filtered_view_component.scss",
     deps = [
+        "//tensorboard/webapp:angular_material_sass_deps",
         "//tensorboard/webapp/metrics/views:metrics_common_styles",
     ],
 )
@@ -27,6 +30,7 @@ tf_sass_binary(
     name = "pinned_view_component_styles",
     src = "pinned_view_component.scss",
     deps = [
+        "//tensorboard/webapp:angular_material_sass_deps",
         "//tensorboard/webapp/metrics/views:metrics_common_styles",
     ],
 )
@@ -47,12 +51,21 @@ tf_sass_binary(
     ],
 )
 
+tf_sass_binary(
+    name = "card_group_toolbar_component_styles",
+    src = "card_group_toolbar_component.scss",
+    deps = [
+        "//tensorboard/webapp/metrics/views:metrics_common_styles",
+    ],
+)
+
 tf_ts_library(
     name = "common_selectors",
     srcs = ["common_selectors.ts"],
     deps = [
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp:selectors",
+        "//tensorboard/webapp/metrics:utils",
         "//tensorboard/webapp/metrics/data_source",
         "//tensorboard/webapp/metrics/store",
         "//tensorboard/webapp/metrics/views:types",
@@ -67,6 +80,8 @@ tf_ng_module(
     srcs = [
         "card_grid_component.ts",
         "card_grid_container.ts",
+        "card_group_toolbar_component.ts",
+        "card_group_toolbar_container.ts",
         "card_groups_component.ts",
         "card_groups_container.ts",
         "empty_tag_match_message_component.ts",
@@ -86,6 +101,7 @@ tf_ng_module(
         "filter_input_component.ng.html",
         "main_view_component.ng.html",
         ":card_grid_component_styles",
+        ":card_group_toolbar_component_styles",
         ":card_groups_component_styles",
         ":filter_input_component_styles",
         ":filtered_view_component_styles",
@@ -104,6 +120,7 @@ tf_ng_module(
         "//tensorboard/webapp/angular:expect_angular_material_input",
         "//tensorboard/webapp/angular:expect_angular_material_progress_spinner",
         "//tensorboard/webapp/metrics:types",
+        "//tensorboard/webapp/metrics:utils",
         "//tensorboard/webapp/metrics/actions",
         "//tensorboard/webapp/metrics/data_source",
         "//tensorboard/webapp/metrics/store",

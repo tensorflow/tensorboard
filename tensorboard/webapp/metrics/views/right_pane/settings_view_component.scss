@@ -12,6 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+@use '@angular/material' as mat;
 @import 'tensorboard/webapp/theme/tb_theme';
 
 :host {
@@ -54,7 +55,7 @@ section .control-row:not(:last-child) {
 
   .slider-input {
     background-color: inherit;
-    border: 1px solid mat-color($tf-slate, 500);
+    border: 1px solid mat.get-color-from-palette($tf-slate, 500);
     border-radius: 2px;
     box-sizing: border-box;
     color: inherit;
@@ -63,7 +64,7 @@ section .control-row:not(:last-child) {
     padding: 0 4px;
 
     @include tb-dark-theme {
-      border-color: mat-color($tf-slate, 700);
+      border-color: mat.get-color-from-palette($tf-slate, 700);
     }
   }
 }

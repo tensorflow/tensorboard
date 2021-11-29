@@ -16,6 +16,7 @@ import {Injectable} from '@angular/core';
 
 import {FeatureFlags} from '../feature_flag/types';
 import {
+  ENABLE_CARD_WIDTH_SETTING_PARAM_KEY,
   ENABLE_COLOR_GROUP_BY_REGEX_QUERY_PARAM_KEY,
   ENABLE_COLOR_GROUP_QUERY_PARAM_KEY,
   ENABLE_DARK_MODE_QUERY_PARAM_KEY,
@@ -77,6 +78,11 @@ export class QueryParamsFeatureFlagDataSource
     if (params.has(ENABLE_LINK_TIME_PARAM_KEY)) {
       featureFlags.enabledLinkedTime =
         params.get(ENABLE_LINK_TIME_PARAM_KEY) !== 'false';
+    }
+
+    if (params.has(ENABLE_CARD_WIDTH_SETTING_PARAM_KEY)) {
+      featureFlags.enabledCardWidthSetting =
+        params.get(ENABLE_CARD_WIDTH_SETTING_PARAM_KEY) !== 'false';
     }
 
     return featureFlags;

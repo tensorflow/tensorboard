@@ -1,4 +1,4 @@
-load("//tensorboard/defs:defs.bzl", "tf_external_sass_libray", "tf_js_binary", "tf_ng_module", "tf_ng_web_test_suite", "tf_sass_binary", "tf_sass_library", "tf_svg_bundle", "tf_ts_library")
+load("//tensorboard/defs:defs.bzl", "tf_external_sass_libray", "tf_js_binary", "tf_ng_module", "tf_ng_web_test_suite", "tf_sass_binary", "tf_svg_bundle", "tf_ts_library")
 load("//tensorboard/defs:js.bzl", "tf_resource_digest_suffixer")
 load("//tensorboard/defs:web.bzl", "tb_combine_html", "tf_web_library")
 
@@ -179,7 +179,6 @@ tf_js_binary(
         "//tensorboard/webapp/angular:expect_angular_material_toolbar",
         "@npm//@angular/common",
         "@npm//@angular/core",
-        "@npm//@angular/material",
         "@npm//@angular/platform-browser",
         "@npm//@ngrx/store",
         "@npm//rxjs",
@@ -276,6 +275,7 @@ tf_ng_web_test_suite(
         "//tensorboard/webapp/header:test_lib",
         "//tensorboard/webapp/metrics:integration_test",
         "//tensorboard/webapp/metrics:test_lib",
+        "//tensorboard/webapp/metrics:utils_test",
         "//tensorboard/webapp/metrics/data_source:metrics_data_source_test",
         "//tensorboard/webapp/metrics/effects:effects_test",
         "//tensorboard/webapp/metrics/store:store_test",
@@ -404,23 +404,6 @@ tf_svg_bundle(
 tf_external_sass_libray(
     name = "angular_material_sass_deps",
     deps = ["@npm//@angular/material"],
-)
-
-tf_sass_library(
-    name = "angular_material_theming",
-    srcs = [
-        "_angular_material_theming.scss",
-    ],
-    deps = [
-        ":angular_material_sass_deps",
-    ],
-)
-
-# TODO(stephanwlee): remove the alias when all usages, internal, too,
-# //tensorboard/webapp:theme are removed.
-alias(
-    name = "theme",
-    actual = "//tensorboard/webapp/theme",
 )
 
 tf_sass_binary(

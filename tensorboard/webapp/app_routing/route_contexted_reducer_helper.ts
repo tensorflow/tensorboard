@@ -176,7 +176,7 @@ export function createRouteContextedState<
           nextFullState = updateRoutefulState(
             state,
             beforeNamespaceId,
-            afterNamespaceId,
+            afterNamespaceId
           );
         }
 

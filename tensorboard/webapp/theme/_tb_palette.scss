@@ -12,8 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-
-@import 'tensorboard/webapp/angular_material_theming';
+@use '@angular/material' as mat;
 
 $tf-slate: (
   100: #f5f6f7,
@@ -26,15 +25,15 @@ $tf-slate: (
   800: #425066,
   900: #293241,
   contrast: (
-    100: $dark-primary-text,
-    200: $dark-primary-text,
-    300: $dark-primary-text,
-    400: $dark-primary-text,
-    500: $light-primary-text,
-    600: $light-primary-text,
-    700: $light-primary-text,
-    800: $light-primary-text,
-    900: $light-primary-text,
+    100: rgba(black, 0.87),
+    200: rgba(black, 0.87),
+    300: rgba(black, 0.87),
+    400: rgba(black, 0.87),
+    500: white,
+    600: white,
+    700: white,
+    800: white,
+    900: white,
   ),
 );
 
@@ -44,24 +43,24 @@ $tf-slate: (
    several orange values, but only one of them (--tb-orange-strong) is used
    widely. */
 $tf-orange: (
-  100: mat-color($mat-orange, 100),
-  200: mat-color($mat-orange, 200),
-  300: mat-color($mat-orange, 300),
-  400: mat-color($mat-orange, 400),
-  500: mat-color($mat-orange, 500),
-  600: mat-color($mat-orange, 600),
-  700: mat-color($mat-orange, 700),
-  800: mat-color($mat-orange, 800),
-  900: mat-color($mat-orange, 900),
+  100: mat.get-color-from-palette(mat.$orange-palette, 100),
+  200: mat.get-color-from-palette(mat.$orange-palette, 200),
+  300: mat.get-color-from-palette(mat.$orange-palette, 300),
+  400: mat.get-color-from-palette(mat.$orange-palette, 400),
+  500: mat.get-color-from-palette(mat.$orange-palette, 500),
+  600: mat.get-color-from-palette(mat.$orange-palette, 600),
+  700: mat.get-color-from-palette(mat.$orange-palette, 700),
+  800: mat.get-color-from-palette(mat.$orange-palette, 800),
+  900: mat.get-color-from-palette(mat.$orange-palette, 900),
   contrast: (
-    100: $dark-primary-text,
-    200: $dark-primary-text,
-    300: $dark-primary-text,
-    400: $dark-primary-text,
-    500: $light-primary-text,
-    600: $light-primary-text,
-    700: $light-primary-text,
-    800: $light-primary-text,
-    900: $light-primary-text,
+    100: rgba(black, 0.87),
+    200: rgba(black, 0.87),
+    300: rgba(black, 0.87),
+    400: rgba(black, 0.87),
+    500: white,
+    600: white,
+    700: white,
+    800: white,
+    900: white,
   ),
 );

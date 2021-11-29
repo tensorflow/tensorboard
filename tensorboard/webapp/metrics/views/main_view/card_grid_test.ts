@@ -32,7 +32,11 @@ import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {State} from '../../../app_state';
 import {selectors as settingsSelectors} from '../../../settings';
 import * as selectors from '../../../selectors';
-import {getMetricsTagGroupExpansionState} from '../../../selectors';
+import {
+  getEnabledCardWidthSetting,
+  getMetricsCardMaxWidth,
+  getMetricsTagGroupExpansionState,
+} from '../../../selectors';
 
 const scrollElementHeight = 100;
 
@@ -84,6 +88,8 @@ describe('card grid', () => {
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
     store.overrideSelector(selectors.getRunColorMap, {});
     store.overrideSelector(getMetricsTagGroupExpansionState, true);
+    store.overrideSelector(getEnabledCardWidthSetting, false);
+    store.overrideSelector(getMetricsCardMaxWidth, 30);
   });
 
   it('keeps pagination button position when page size changes', fakeAsync(() => {

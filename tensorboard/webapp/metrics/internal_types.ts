@@ -71,6 +71,11 @@ export type CardIdWithMetadata = CardMetadata & {
   cardId: CardId;
 };
 
+export interface CardGroup {
+  groupName: string;
+  items: CardIdWithMetadata[];
+}
+
 /**
  * The most minimal representation of a card that uniquely identifies it across
  * a browser session. This information may be persisted in storage, retrieved,

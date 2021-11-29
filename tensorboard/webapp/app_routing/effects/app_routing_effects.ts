@@ -64,6 +64,17 @@ interface InternalNavigation extends Navigation {
   browserInitiated?: boolean;
 }
 
+// BDTODO: Consider removing navigationOptions from Route. It's really a convenience thing.
+// BDTODO: Consider making navigationOptions type Navigation?
+// BDTOOD: Or maybe it is a composed object that we pass around here? {Route, Navigation}
+// BDTODO: Should browserInitiated, replaceState, resetNamespacedState, and preserveHash all be grouped together?
+interface InternalRoute extends Route {
+  navigationOptions: {
+    replaceState: boolean;
+    resetNamespacedState: boolean;
+  };
+}
+
 @Injectable()
 export class AppRoutingEffects {
   private readonly routeConfigs: RouteConfigs;
@@ -80,15 +91,16 @@ export class AppRoutingEffects {
     this.routeConfigs = registry.getRouteConfigs();
   }
 
-  private readonly onNavigationRequested$ = this.actions$.pipe(
-    ofType(navigationRequested),
-    map((navigation) => {
-      const resolvedPathname = navigation.pathname.startsWith('/')
-        ? this.appRootProvider.getAbsPathnameWithAppRoot(navigation.pathname)
-        : this.location.getResolvedPath(navigation.pathname);
-      return {...navigation, pathname: resolvedPathname};
-    })
-  );
+  private readonly onNavigationRequested$: Observable<Navigation> =
+    this.actions$.pipe(
+      ofType(navigationRequested),
+      map((navigation) => {
+        const resolvedPathname = navigation.pathname.startsWith('/')
+          ? this.appRootProvider.getAbsPathnameWithAppRoot(navigation.pathname)
+          : this.location.getResolvedPath(navigation.pathname);
+        return {...navigation, pathname: resolvedPathname};
+      })
+    );
 
   /**
    * @exports
@@ -127,8 +139,7 @@ export class AppRoutingEffects {
     this.location.onPopState().pipe(
       map((navigation) => {
         return {
-          pathname: navigation.pathname,
-          replaceState: navigation.replaceState,
+          ...navigation,
           browserInitiated: true,
         };
       })
@@ -155,6 +166,7 @@ export class AppRoutingEffects {
         options: {
           replaceState: navigationWithAbsolutePath.replaceState,
           browserInitiated: navigationWithAbsolutePath.browserInitiated,
+          resetNamespacedState: navigationWithAbsolutePath.resetNamespacedState,
         },
       };
     })
@@ -196,6 +208,7 @@ export class AppRoutingEffects {
         options: {
           replaceState: false,
           browserInitiated: false,
+          resetNamespacedState: false,
         },
       };
     })
@@ -282,23 +295,26 @@ export class AppRoutingEffects {
           );
         }
       }),
-      switchMap(({routeMatch, options}) => {
+      switchMap(({routeMatch, options}): Observable<InternalRoute> => {
         const navigationOptions = {
           replaceState: options.replaceState ?? false,
+          resetNamespacedState: options.resetNamespacedState ?? false,
         };
 
-        const routeObservableWithoutQuery: Observable<Route> = of({
-          routeKind: routeMatch.routeKind,
-          params: routeMatch.params,
-          pathname: routeMatch.pathname,
-          queryParams: [],
-          navigationOptions,
-        });
-
         if (routeMatch.deepLinkProvider === null) {
-          return routeObservableWithoutQuery;
+          // Without a DeepLinkProvider emit a single Route without query
+          // params.
+          return of({
+            routeKind: routeMatch.routeKind,
+            params: routeMatch.params,
+            pathname: routeMatch.pathname,
+            queryParams: [],
+            navigationOptions,
+          });
         }
 
+        // With a DeepLinkProvider emit a new Route each time the query params
+        // change.
         return routeMatch
           .deepLinkProvider!.serializeStateToQueryParams(this.store)
           .pipe(
@@ -308,12 +324,14 @@ export class AppRoutingEffects {
                 params: routeMatch.params,
                 pathname: routeMatch.pathname,
                 queryParams,
+                // BDTODO: This is clearly a smell, right?. This is a one time thing that we don't actually care about being associated with the route.
                 navigationOptions:
                   index === 0
                     ? navigationOptions
                     : {
                         ...navigationOptions,
                         replaceState: true,
+                        resetNamespacedState: false,
                       },
               };
             })
@@ -391,12 +409,13 @@ export class AppRoutingEffects {
         this.store.select(getActiveRoute),
         this.store.select(getActiveNamespaceId)
       ),
-      map(([{route}, oldRoute, oldNamespaceId]) => {
+      map(([{route}, oldRoute, beforeNamespaceId]) => {
         return navigated({
           before: oldRoute,
           after: route,
-          beforeNamespaceId: oldNamespaceId,
-          afterNamespaceId: getRouteId(route.routeKind, route.params),
+          beforeNamespaceId,
+          afterNamespaceId: getAfterNamespaceId(route, beforeNamespaceId),
+          // BDTODO: afterNamespaceId: getRouteId(route.routeKind, route.params),
         });
       })
     );
@@ -405,6 +424,20 @@ export class AppRoutingEffects {
   /** @export */
   ngrxOnInitEffects(): Action {
     return initAction();
+  }
+}
+
+function getAfterNamespaceId(
+  route: InternalRoute,
+  beforeNamespaceId: string | null
+): string {
+  if (
+    beforeNamespaceId == null ||
+    route.navigationOptions.resetNamespacedState
+  ) {
+    return Date.now().toString();
+  } else {
+    return beforeNamespaceId;
   }
 }
 

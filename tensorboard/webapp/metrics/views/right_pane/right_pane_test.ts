@@ -90,6 +90,8 @@ describe('metrics right_pane', () => {
       store.overrideSelector(selectors.getIsFeatureFlagsLoaded, true);
       store.overrideSelector(selectors.getIsMetricsImageSupportEnabled, true);
       store.overrideSelector(selectors.getIsLinkedTimeEnabled, false);
+      store.overrideSelector(selectors.getEnabledCardWidthSetting, false);
+      store.overrideSelector(selectors.getMetricsCardMaxWidth, null);
       store.overrideSelector(selectors.getMetricsSelectTimeEnabled, false);
       store.overrideSelector(selectors.getMetricsUseRangeSelectTime, false);
       store.overrideSelector(selectors.getMetricsSelectedTimeSetting, {
@@ -183,6 +185,14 @@ describe('metrics right_pane', () => {
           'aria-checked'
         ]
       ).toBe('true');
+    });
+
+    it('hides card width setting if disabled', () => {
+      store.overrideSelector(selectors.getEnabledCardWidthSetting, false);
+      const fixture = TestBed.createComponent(SettingsViewContainer);
+      fixture.detectChanges();
+
+      expect(fixture.debugElement.query(By.css('.card-width'))).toBeFalsy();
     });
 
     it('hides settings if images are not supported', () => {
@@ -301,6 +311,73 @@ describe('metrics right_pane', () => {
 
     // mat-select does not render `input` or a DOM that can be manipulated.
     // skip the test for now.
+
+    describe('card width setting enabled', () => {
+      const CARD_WIDTH_SLIDER = '.card-width mat-slider';
+
+      beforeEach(() => {
+        store.overrideSelector(selectors.getEnabledCardWidthSetting, true);
+      });
+
+      it('renders slider and reset button', () => {
+        const fixture = TestBed.createComponent(SettingsViewContainer);
+        fixture.detectChanges();
+
+        const el = fixture.debugElement.query(By.css('.card-width'));
+        expect(el.query(By.css('mat-slider'))).toBeTruthy();
+        expect(el.query(By.css('button'))).toBeTruthy();
+
+        expect(getMatSliderValue(select(fixture, CARD_WIDTH_SLIDER))).toBe(
+          TEST_ONLY.MIN_CARD_WIDTH_SLIDER_VALUE.toString()
+        );
+      });
+
+      it('dispatches metricsChangeCardWidth action when adjusting the slider', fakeAsync(() => {
+        const fixture = TestBed.createComponent(SettingsViewContainer);
+        fixture.detectChanges();
+        const slider = select(fixture, CARD_WIDTH_SLIDER);
+
+        slider.triggerEventHandler('input', {value: 90});
+        tick(TEST_ONLY.SLIDER_AUDIT_TIME_MS);
+
+        expect(dispatchSpy).toHaveBeenCalledOnceWith(
+          actions.metricsChangeCardWidth({cardMaxWidthInVW: 90})
+        );
+      }));
+
+      it('dispatches metricsResetCardWidth action when clicking reset', () => {
+        const fixture = TestBed.createComponent(SettingsViewContainer);
+        fixture.detectChanges();
+
+        const reset_button = select(fixture, '[aria-label="Reset card width"]');
+        reset_button.nativeElement.click();
+
+        expect(dispatchSpy).toHaveBeenCalledOnceWith(
+          actions.metricsResetCardWidth()
+        );
+      });
+
+      it('sets the card width to the value provided', () => {
+        store.overrideSelector(selectors.getMetricsCardMaxWidth, 40);
+        const fixture = TestBed.createComponent(SettingsViewContainer);
+        fixture.detectChanges();
+        const slider = select(fixture, CARD_WIDTH_SLIDER);
+
+        expect(getMatSliderValue(select(fixture, CARD_WIDTH_SLIDER))).toBe(
+          '40'
+        );
+      });
+
+      it('do not set invalid value', () => {
+        store.overrideSelector(selectors.getMetricsCardMaxWidth, null);
+        let fixture = TestBed.createComponent(SettingsViewContainer);
+        fixture.detectChanges();
+        let slider = select(fixture, CARD_WIDTH_SLIDER);
+        expect(getMatSliderValue(select(fixture, CARD_WIDTH_SLIDER))).toBe(
+          TEST_ONLY.MIN_CARD_WIDTH_SLIDER_VALUE.toString()
+        );
+      });
+    });
 
     describe('linked time feature enabled', () => {
       beforeEach(() => {

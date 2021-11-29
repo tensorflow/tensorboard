@@ -182,7 +182,11 @@ describe('metrics effects', () => {
         store.overrideSelector(getActivePlugin, null);
         store.refreshState();
 
-        actions$.next(buildNavigatedAction({after: buildRoute({routeKind: RouteKind.EXPERIMENT})}));
+        actions$.next(
+          buildNavigatedAction({
+            after: buildRoute({routeKind: RouteKind.EXPERIMENT}),
+          })
+        );
         expect(fetchTagMetadataSpy).not.toHaveBeenCalled();
 
         actions$.next(coreActions.pluginsListingRequested());
@@ -223,7 +227,11 @@ describe('metrics effects', () => {
         store.overrideSelector(getActivePlugin, null);
         store.refreshState();
 
-        actions$.next(buildNavigatedAction({after: buildRoute({routeKind: RouteKind.EXPERIMENT})}));
+        actions$.next(
+          buildNavigatedAction({
+            after: buildRoute({routeKind: RouteKind.EXPERIMENT}),
+          })
+        );
         expect(fetchTagMetadataSpy).not.toHaveBeenCalled();
 
         actions$.next(coreActions.pluginsListingRequested());
