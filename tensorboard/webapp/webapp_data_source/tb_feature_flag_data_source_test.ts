@@ -162,6 +162,28 @@ describe('tb_feature_flag_data_source', () => {
         });
       });
 
+      it('returns enabledTimeNamespacedState from the query params', () => {
+        getParamsSpy.and.returnValues(
+          new URLSearchParams('enableTimespace=false'),
+          new URLSearchParams('enableTimespace='),
+          new URLSearchParams('enableTimespace=true'),
+          new URLSearchParams('enableTimespace=foo')
+        );
+
+        expect(dataSource.getFeatures()).toEqual({
+          enabledTimeNamespacedState: false,
+        });
+        expect(dataSource.getFeatures()).toEqual({
+          enabledTimeNamespacedState: true,
+        });
+        expect(dataSource.getFeatures()).toEqual({
+          enabledTimeNamespacedState: true,
+        });
+        expect(dataSource.getFeatures()).toEqual({
+          enabledTimeNamespacedState: true,
+        });
+      });
+
       it('returns all flag values when they are all set', () => {
         getParamsSpy.and.returnValue(
           new URLSearchParams(

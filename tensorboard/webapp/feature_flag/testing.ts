@@ -31,6 +31,7 @@ export function buildFeatureFlag(
     enabledLinkedTime: false,
     enableTimeSeriesPromotion: false,
     enabledCardWidthSetting: false,
+    enabledTimeNamespacedState: false,
     ...override,
   };
 }
