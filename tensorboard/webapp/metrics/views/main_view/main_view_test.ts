@@ -35,7 +35,7 @@ import {of, ReplaySubject} from 'rxjs';
 
 import * as selectors from '../../../selectors';
 import {
-  getMetricsCardMaxWidth,
+  getMetricsCardMinWidth,
   getMetricsTagGroupExpansionState,
 } from '../../../selectors';
 import {KeyType, sendKey, sendKeys} from '../../../testing/dom';
@@ -911,7 +911,7 @@ describe('metrics main view', () => {
         ]);
       });
 
-      it('does not set the max width without feature flag enabled', () => {
+      it('does not set the min width without feature flag enabled', () => {
         const fixture = TestBed.createComponent(MainViewContainer);
         fixture.detectChanges();
 
@@ -922,9 +922,9 @@ describe('metrics main view', () => {
         ).toBe('');
       });
 
-      it('sets the max width to be cardMaxWidth', () => {
+      it('sets the min width to be cardMinWidth', () => {
         store.overrideSelector(selectors.getEnabledCardWidthSetting, true);
-        store.overrideSelector(selectors.getMetricsCardMaxWidth, 50);
+        store.overrideSelector(selectors.getMetricsCardMinWidth, 500);
         const fixture = TestBed.createComponent(MainViewContainer);
         fixture.detectChanges();
 
@@ -932,13 +932,13 @@ describe('metrics main view', () => {
           fixture.debugElement.query(By.css('.card-grid')).styles[
             'grid-template-columns'
           ]
-        ).toBe('repeat(auto-fill, minmax(335px, 50vw))');
+        ).toBe('repeat(auto-fill, minmax(500px, auto))');
       });
 
       it('does not set the max width with invalid width value', () => {
         store.overrideSelector(selectors.getEnabledCardWidthSetting, true);
 
-        store.overrideSelector(selectors.getMetricsCardMaxWidth, null);
+        store.overrideSelector(selectors.getMetricsCardMinWidth, null);
         let fixture = TestBed.createComponent(MainViewContainer);
         fixture.detectChanges();
 
@@ -948,7 +948,7 @@ describe('metrics main view', () => {
           ]
         ).toBe('');
 
-        store.overrideSelector(selectors.getMetricsCardMaxWidth, -50);
+        store.overrideSelector(selectors.getMetricsCardMinWidth, -50);
         fixture = TestBed.createComponent(MainViewContainer);
         fixture.detectChanges();
         expect(
@@ -957,7 +957,7 @@ describe('metrics main view', () => {
           ]
         ).toBe('');
 
-        store.overrideSelector(selectors.getMetricsCardMaxWidth, 20);
+        store.overrideSelector(selectors.getMetricsCardMinWidth, 20);
         fixture = TestBed.createComponent(MainViewContainer);
         fixture.detectChanges();
 
@@ -967,7 +967,7 @@ describe('metrics main view', () => {
           ]
         ).toBe('');
 
-        store.overrideSelector(selectors.getMetricsCardMaxWidth, 110);
+        store.overrideSelector(selectors.getMetricsCardMinWidth, 10000);
         fixture = TestBed.createComponent(MainViewContainer);
         fixture.detectChanges();
 
@@ -978,15 +978,15 @@ describe('metrics main view', () => {
         ).toBe('');
       });
 
-      it('resets the card max width', () => {
+      it('resets the card min width', () => {
         store.overrideSelector(selectors.getEnabledCardWidthSetting, true);
-        const getMetricsCardMaxWidthSubject = new ReplaySubject<number | null>(
+        const getMetricsCardMinWidthSubject = new ReplaySubject<number | null>(
           1
         );
-        getMetricsCardMaxWidthSubject.next(50);
+        getMetricsCardMinWidthSubject.next(500);
         selectSpy
-          .withArgs(getMetricsCardMaxWidth)
-          .and.returnValue(getMetricsCardMaxWidthSubject);
+          .withArgs(getMetricsCardMinWidth)
+          .and.returnValue(getMetricsCardMinWidthSubject);
         let fixture = TestBed.createComponent(MainViewContainer);
         fixture.detectChanges();
 
@@ -994,9 +994,9 @@ describe('metrics main view', () => {
           fixture.debugElement.query(By.css('.card-grid')).styles[
             'grid-template-columns'
           ]
-        ).toBe('repeat(auto-fill, minmax(335px, 50vw))');
+        ).toBe('repeat(auto-fill, minmax(500px, auto))');
 
-        getMetricsCardMaxWidthSubject.next(null);
+        getMetricsCardMinWidthSubject.next(null);
         fixture.detectChanges();
 
         expect(

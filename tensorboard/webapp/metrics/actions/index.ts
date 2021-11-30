@@ -72,7 +72,7 @@ export const metricsChangeXAxisType = createAction(
 
 export const metricsChangeCardWidth = createAction(
   '[Metrics] Metrics Setting Change Card Width',
-  props<{cardMaxWidthInVW: number}>()
+  props<{cardMinWidth: number}>()
 );
 
 export const metricsResetCardWidth = createAction(

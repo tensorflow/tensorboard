@@ -664,16 +664,16 @@ describe('metrics selectors', () => {
       );
     });
 
-    it('returns cardMaxWidthInVW when called getMetricCardMaxWidth', () => {
-      selectors.getMetricsCardMaxWidth.release();
+    it('returns cardMinWidth when called getMetricCardMinWidth', () => {
+      selectors.getMetricsCardMinWidth.release();
       const state = appStateFromMetricsState(
         buildMetricsState({
           settings: buildMetricsSettingsState({
-            cardMaxWidthInVW: 40,
+            cardMinWidth: 400,
           }),
         })
       );
-      expect(selectors.getMetricsCardMaxWidth(state)).toBe(40);
+      expect(selectors.getMetricsCardMinWidth(state)).toBe(400);
     });
   });
 

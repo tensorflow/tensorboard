@@ -91,7 +91,7 @@ describe('metrics right_pane', () => {
       store.overrideSelector(selectors.getIsMetricsImageSupportEnabled, true);
       store.overrideSelector(selectors.getIsLinkedTimeEnabled, false);
       store.overrideSelector(selectors.getEnabledCardWidthSetting, false);
-      store.overrideSelector(selectors.getMetricsCardMaxWidth, null);
+      store.overrideSelector(selectors.getMetricsCardMinWidth, null);
       store.overrideSelector(selectors.getMetricsSelectTimeEnabled, false);
       store.overrideSelector(selectors.getMetricsUseRangeSelectTime, false);
       store.overrideSelector(selectors.getMetricsSelectedTimeSetting, {
@@ -337,11 +337,11 @@ describe('metrics right_pane', () => {
         fixture.detectChanges();
         const slider = select(fixture, CARD_WIDTH_SLIDER);
 
-        slider.triggerEventHandler('input', {value: 90});
+        slider.triggerEventHandler('input', {value: 350});
         tick(TEST_ONLY.SLIDER_AUDIT_TIME_MS);
 
         expect(dispatchSpy).toHaveBeenCalledOnceWith(
-          actions.metricsChangeCardWidth({cardMaxWidthInVW: 90})
+          actions.metricsChangeCardWidth({cardMinWidth: 350})
         );
       }));
 
@@ -358,21 +358,20 @@ describe('metrics right_pane', () => {
       });
 
       it('sets the card width to the value provided', () => {
-        store.overrideSelector(selectors.getMetricsCardMaxWidth, 40);
+        store.overrideSelector(selectors.getMetricsCardMinWidth, 400);
         const fixture = TestBed.createComponent(SettingsViewContainer);
         fixture.detectChanges();
-        const slider = select(fixture, CARD_WIDTH_SLIDER);
 
         expect(getMatSliderValue(select(fixture, CARD_WIDTH_SLIDER))).toBe(
-          '40'
+          '400'
         );
       });
 
       it('do not set invalid value', () => {
-        store.overrideSelector(selectors.getMetricsCardMaxWidth, null);
+        store.overrideSelector(selectors.getMetricsCardMinWidth, null);
         let fixture = TestBed.createComponent(SettingsViewContainer);
         fixture.detectChanges();
-        let slider = select(fixture, CARD_WIDTH_SLIDER);
+
         expect(getMatSliderValue(select(fixture, CARD_WIDTH_SLIDER))).toBe(
           TEST_ONLY.MIN_CARD_WIDTH_SLIDER_VALUE.toString()
         );

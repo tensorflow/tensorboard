@@ -93,14 +93,14 @@ describe('persistent_settings data_source test', () => {
         getItemSpy
           .withArgs(TEST_ONLY.GLOBAL_LOCAL_STORAGE_KEY)
           .and.returnValue(
-            '{"foo": "bar", "scalarSmoothing": 0.3, "timeSeriesCardMaxWidthInVW": 50}'
+            '{"foo": "bar", "scalarSmoothing": 0.3, "timeSeriesCardMinWidth": 500}'
           );
 
         const actual = await firstValueFrom(dataSource.getSettings());
 
         expect(actual).toEqual({
           scalarSmoothing: 0.3,
-          timeSeriesCardMaxWidthInVW: 50,
+          timeSeriesCardMinWidth: 500,
         });
       });
 
@@ -156,13 +156,13 @@ describe('persistent_settings data_source test', () => {
         getItemSpy
           .withArgs(TEST_ONLY.GLOBAL_LOCAL_STORAGE_KEY)
           .and.returnValue(
-            '{"scalarSmoothing": 0.3, "ignoreOutliers": false, "timeSeriesCardMaxWidthInVW": 60}'
+            '{"scalarSmoothing": 0.3, "ignoreOutliers": false, "timeSeriesCardMinWidth": 360}'
           );
 
         await firstValueFrom(
           dataSource.setSettings({
             scalarSmoothing: 0.5,
-            timeSeriesCardMaxWidthInVW: 60,
+            timeSeriesCardMinWidth: 360,
           })
         );
 
@@ -171,7 +171,7 @@ describe('persistent_settings data_source test', () => {
           JSON.stringify({
             ignoreOutliers: false,
             scalarSmoothing: 0.5,
-            timeSeriesCardMaxWidthInVW: 60,
+            timeSeriesCardMinWidth: 360,
           })
         );
       });

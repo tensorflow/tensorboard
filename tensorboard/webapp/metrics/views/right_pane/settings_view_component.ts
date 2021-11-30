@@ -38,10 +38,10 @@ import {
 const SLIDER_AUDIT_TIME_MS = 250;
 
 /**
- * Maximum card width ranges from 30 to 100 VW.
+ * Minimum card width ranges from 335 to 735 px.
  */
-const MAX_CARD_WIDTH_SLIDER_VALUE = 100;
-const MIN_CARD_WIDTH_SLIDER_VALUE = 30;
+const MAX_CARD_WIDTH_SLIDER_VALUE = 735;
+const MIN_CARD_WIDTH_SLIDER_VALUE = 335;
 
 /**
  * When smoothing === 1, all lines become flat on the x-axis, which is not
@@ -103,7 +103,7 @@ export class SettingsViewComponent {
   readonly MAX_CARD_WIDTH_SLIDER_VALUE = MAX_CARD_WIDTH_SLIDER_VALUE;
   readonly MIN_CARD_WIDTH_SLIDER_VALUE = MIN_CARD_WIDTH_SLIDER_VALUE;
   readonly cardWidthSliderChanged$ = new EventEmitter<number>();
-  @Input() cardMaxWidthInVW!: number;
+  @Input() cardMinWidth!: number;
   @Output()
   cardWidthChanged = this.cardWidthSliderChanged$.pipe(
     auditTime(SLIDER_AUDIT_TIME_MS)
