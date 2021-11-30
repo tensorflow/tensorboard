@@ -374,14 +374,14 @@ const reducer = createReducer(
     const metricsSettings: Partial<MetricsSettings> = {};
     if (partialSettings.tooltipSortString) {
       switch (partialSettings.tooltipSortString) {
+        case TooltipSort.ALPHABETICAL:
+          metricsSettings.tooltipSort = TooltipSort.ALPHABETICAL;
+          break;
         case TooltipSort.ASCENDING:
           metricsSettings.tooltipSort = TooltipSort.ASCENDING;
           break;
         case TooltipSort.DESCENDING:
           metricsSettings.tooltipSort = TooltipSort.DESCENDING;
-          break;
-        case TooltipSort.DEFAULT:
-          metricsSettings.tooltipSort = TooltipSort.DEFAULT;
           break;
         case TooltipSort.NEAREST:
           metricsSettings.tooltipSort = TooltipSort.NEAREST;

@@ -223,7 +223,7 @@ export interface State {
 
 export const METRICS_SETTINGS_DEFAULT: MetricsSettings = {
   cardMinWidth: null,
-  tooltipSort: TooltipSort.DEFAULT,
+  tooltipSort: TooltipSort.ALPHABETICAL,
   ignoreOutliers: true,
   xAxisType: XAxisType.STEP,
   scalarSmoothing: 0.6,

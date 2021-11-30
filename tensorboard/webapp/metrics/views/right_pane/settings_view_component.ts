@@ -80,11 +80,10 @@ export class SettingsViewComponent {
   @Input() isImageSupportEnabled!: boolean;
 
   readonly TooltipSortDropdownOptions: DropdownOption[] = [
-    {value: TooltipSort.DEFAULT, displayText: 'Default'},
+    {value: TooltipSort.ALPHABETICAL, displayText: 'Alphabetical'},
     {value: TooltipSort.ASCENDING, displayText: 'Ascending'},
     {value: TooltipSort.DESCENDING, displayText: 'Descending'},
     {value: TooltipSort.NEAREST, displayText: 'Nearest'},
-    {value: TooltipSort.ALPHABETICAL, displayText: 'Alphabetical'},
   ];
   @Input() tooltipSort!: TooltipSort;
   @Output() tooltipSortChanged = new EventEmitter<TooltipSort>();

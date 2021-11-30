@@ -27,7 +27,6 @@ export enum PluginType {
 // When editing a value of the enum, please write a backward compatible
 // deserializer in data_source/metrics_data_source.ts.
 export enum TooltipSort {
-  DEFAULT = 'default',
   ASCENDING = 'ascending',
   DESCENDING = 'descending',
   NEAREST = 'nearest',

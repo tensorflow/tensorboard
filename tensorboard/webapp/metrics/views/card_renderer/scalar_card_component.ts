@@ -157,8 +157,6 @@ export class ScalarCardComponent<Downloader> {
     }
 
     switch (this.tooltipSort) {
-      case TooltipSort.DEFAULT:
-        return scalarTooltipData;
       case TooltipSort.ASCENDING:
         return scalarTooltipData.sort((a, b) => a.point.y - b.point.y);
       case TooltipSort.DESCENDING:

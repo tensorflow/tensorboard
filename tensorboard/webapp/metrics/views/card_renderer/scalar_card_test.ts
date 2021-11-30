@@ -291,7 +291,7 @@ describe('scalar card', () => {
     store.overrideSelector(selectors.getMetricsIgnoreOutliers, false);
     store.overrideSelector(
       selectors.getMetricsTooltipSort,
-      TooltipSort.DEFAULT
+      TooltipSort.ALPHABETICAL
     );
     store.overrideSelector(selectors.getRunColorMap, {});
     store.overrideSelector(selectors.getDarkModeEnabled, false);

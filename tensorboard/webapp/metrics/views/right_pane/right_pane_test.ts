@@ -71,7 +71,7 @@ describe('metrics right_pane', () => {
     beforeEach(() => {
       store.overrideSelector(
         selectors.getMetricsTooltipSort,
-        TooltipSort.DEFAULT
+        TooltipSort.ALPHABETICAL
       );
       store.overrideSelector(selectors.getMetricsIgnoreOutliers, false);
       store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.STEP);
@@ -119,7 +119,7 @@ describe('metrics right_pane', () => {
     it('renders', () => {
       store.overrideSelector(
         selectors.getMetricsTooltipSort,
-        TooltipSort.DEFAULT
+        TooltipSort.ALPHABETICAL
       );
       store.overrideSelector(selectors.getMetricsIgnoreOutliers, false);
       store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.STEP);
@@ -139,7 +139,7 @@ describe('metrics right_pane', () => {
       // In the test setting, material component's DOM does not reflect the
       // value.
       expect(tooltipSortSelect.componentInstance.value).toBe(
-        TooltipSort.DEFAULT
+        TooltipSort.ALPHABETICAL
       );
 
       expect(
