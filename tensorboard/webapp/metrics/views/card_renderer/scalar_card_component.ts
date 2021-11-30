@@ -167,6 +167,16 @@ export class ScalarCardComponent<Downloader> {
         return scalarTooltipData.sort((a, b) => {
           return a.metadata.distSqToCursor - b.metadata.distSqToCursor;
         });
+      case TooltipSort.ALPHABETICAL:
+        return scalarTooltipData.sort((a, b) => {
+          if (a.metadata.displayName < b.metadata.displayName) {
+            return -1;
+          }
+          if (a.metadata.displayName > b.metadata.displayName) {
+            return 1;
+          }
+          return 0;
+        });
     }
   }
 

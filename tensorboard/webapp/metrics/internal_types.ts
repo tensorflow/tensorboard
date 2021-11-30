@@ -31,6 +31,7 @@ export enum TooltipSort {
   ASCENDING = 'ascending',
   DESCENDING = 'descending',
   NEAREST = 'nearest',
+  ALPHABETICAL = 'Alphabetical',
 }
 
 export enum XAxisType {
