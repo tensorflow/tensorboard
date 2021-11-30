@@ -72,6 +72,7 @@ describe('app_routing_effects', () => {
   let actualActions: Action[];
   let onPopStateSubject: ReplaySubject<Navigation>;
   let pushStateSpy: jasmine.Spy;
+  let replaceStateSpy: jasmine.Spy;
   let getHashSpy: jasmine.Spy;
   let getPathSpy: jasmine.Spy;
   let getSearchSpy: jasmine.Spy;
@@ -194,6 +195,7 @@ describe('app_routing_effects', () => {
     onPopStateSubject = new ReplaySubject<Navigation>(1);
     spyOn(location, 'onPopState').and.returnValue(onPopStateSubject);
     pushStateSpy = spyOn(location, 'pushState');
+    replaceStateSpy = spyOn(location, 'replaceState');
     getHashSpy = spyOn(location, 'getHash').and.returnValue('');
     getPathSpy = spyOn(location, 'getPath').and.returnValue('');
     getSearchSpy = spyOn(location, 'getSearch').and.returnValue([]);
@@ -302,9 +304,6 @@ describe('app_routing_effects', () => {
             params: {},
             pathname: '/experiments',
             queryParams: [],
-            navigationOptions: {
-              replaceState: false,
-            },
           }),
         }),
       ]);
@@ -316,9 +315,6 @@ describe('app_routing_effects', () => {
           routeKind: RouteKind.EXPERIMENTS,
           pathname: '/experiments',
           queryParams: [],
-          navigationOptions: {
-            replaceState: false,
-          },
         });
         const activeRouteId = getRouteId(RouteKind.EXPERIMENTS, {});
         const dirtyExperimentsFactory = () => {
@@ -562,8 +558,6 @@ describe('app_routing_effects', () => {
                 params: {experimentIds: 'a:b'},
                 pathname: '/compare/a:b',
                 queryParams: [],
-                // Do not care about the replaceState for this spec.
-                navigationOptions: jasmine.any(Object),
               } as unknown as Route),
             }),
             actions.navigated({
@@ -573,7 +567,6 @@ describe('app_routing_effects', () => {
                 params: {experimentIds: 'a:b'},
                 pathname: '/compare/a:b',
                 queryParams: [],
-                navigationOptions: jasmine.any(Object),
               } as unknown as Route),
               beforeNamespaceId: null,
               afterNamespaceId: getRouteId(RouteKind.COMPARE_EXPERIMENT, {
@@ -616,7 +609,6 @@ describe('app_routing_effects', () => {
                 params: {experimentIds: 'a:b'},
                 pathname: '/compare/a:b',
                 queryParams: [],
-                navigationOptions: {replaceState: false},
               }),
             }),
             actions.navigated({
@@ -626,7 +618,6 @@ describe('app_routing_effects', () => {
                 params: {experimentIds: 'a:b'},
                 pathname: '/compare/a:b',
                 queryParams: [],
-                navigationOptions: {replaceState: false},
               }),
               beforeNamespaceId: null,
               afterNamespaceId: getRouteId(RouteKind.COMPARE_EXPERIMENT, {
@@ -656,7 +647,6 @@ describe('app_routing_effects', () => {
               params: {experimentIds: 'a:b'},
               pathname: '/compare/a:b',
               queryParams: [{key: 'a', value: 'a_value'}],
-              navigationOptions: {replaceState: true},
             }),
           }),
           actions.navigated({
@@ -666,7 +656,6 @@ describe('app_routing_effects', () => {
               params: {experimentIds: 'a:b'},
               pathname: '/compare/a:b',
               queryParams: [{key: 'a', value: 'a_value'}],
-              navigationOptions: {replaceState: true},
             }),
             beforeNamespaceId: null,
             afterNamespaceId: getRouteId(RouteKind.COMPARE_EXPERIMENT, {
@@ -677,46 +666,36 @@ describe('app_routing_effects', () => {
       }));
 
       it(
-        'fires actions with replaceState = true to prevent pushing new ' +
-          'history entry on state changes',
+        'replaces state on subsequent query param changes to prevent pushing ' +
+          ' new history entry',
         fakeAsync(() => {
-          action.next(actions.navigationRequested({pathname: '/compare/a:b'}));
-
+          // Mimic initial navigation.
+          action.next(
+            actions.navigationRequested({
+              pathname: '/compare/a:b',
+              replaceState: false,
+            })
+          );
           serializeStateToQueryParamsSubject.next([]);
           tick();
 
+          // Based on information in the action (replaceState = false), the initial history state is
+          // pushed rather than reset.
+          expect(pushStateSpy).toHaveBeenCalled();
+          expect(replaceStateSpy).not.toHaveBeenCalled();
+
+          pushStateSpy.calls.reset();
+          replaceStateSpy.calls.reset();
+
+          // Mimic subsequent change in query parameter.
           serializeStateToQueryParamsSubject.next([
             {key: 'a', value: 'a_value'},
           ]);
           tick();
 
-          expect(actualActions).toEqual([
-            jasmine.any(Object),
-            jasmine.any(Object),
-            actions.navigating({
-              after: buildRoute({
-                routeKind: RouteKind.COMPARE_EXPERIMENT,
-                params: {experimentIds: 'a:b'},
-                pathname: '/compare/a:b',
-                queryParams: [{key: 'a', value: 'a_value'}],
-                navigationOptions: {replaceState: true},
-              }),
-            }),
-            actions.navigated({
-              before: null,
-              after: buildRoute({
-                routeKind: RouteKind.COMPARE_EXPERIMENT,
-                params: {experimentIds: 'a:b'},
-                pathname: '/compare/a:b',
-                queryParams: [{key: 'a', value: 'a_value'}],
-                navigationOptions: {replaceState: true},
-              }),
-              beforeNamespaceId: null,
-              afterNamespaceId: getRouteId(RouteKind.COMPARE_EXPERIMENT, {
-                experimentIds: 'a:b',
-              }),
-            }),
-          ]);
+          // History state is replaced rather than pushed.
+          expect(pushStateSpy).not.toHaveBeenCalled();
+          expect(replaceStateSpy).toHaveBeenCalled();
         })
       );
     });
@@ -745,7 +724,7 @@ describe('app_routing_effects', () => {
         ]);
       }));
 
-      it('fires navigated with replaceState = true', fakeAsync(() => {
+      it('makes no modifications to history state', fakeAsync(() => {
         getPathSpy.and.returnValue('/experiments');
         getSearchSpy.and.returnValue([]);
 
@@ -753,33 +732,8 @@ describe('app_routing_effects', () => {
 
         tick();
 
-        expect(actualActions).toEqual([
-          actions.navigating({
-            after: buildRoute({
-              routeKind: RouteKind.EXPERIMENTS,
-              params: {},
-              pathname: '/experiments',
-              queryParams: [],
-              navigationOptions: {
-                replaceState: true,
-              },
-            }),
-          }),
-          actions.navigated({
-            before: null,
-            after: buildRoute({
-              routeKind: RouteKind.EXPERIMENTS,
-              params: {},
-              pathname: '/experiments',
-              queryParams: [],
-              navigationOptions: {
-                replaceState: true,
-              },
-            }),
-            beforeNamespaceId: null,
-            afterNamespaceId: getRouteId(RouteKind.EXPERIMENTS, {}),
-          }),
-        ]);
+        expect(pushStateSpy).not.toHaveBeenCalled();
+        expect(replaceStateSpy).not.toHaveBeenCalled();
       }));
 
       describe('programmatical navigation integration', () => {
@@ -803,9 +757,6 @@ describe('app_routing_effects', () => {
                 params: {experimentIds: 'a:b'},
                 pathname: '/compare/a:b',
                 queryParams: [],
-                navigationOptions: {
-                  replaceState: true,
-                },
               }),
             }),
             // Third action is of type actions.navigated but we ignore it.
@@ -848,9 +799,6 @@ describe('app_routing_effects', () => {
                 // redirector. Query parameter of redirector is fed into
                 // deserializer instead.
                 queryParams: [],
-                navigationOptions: {
-                  replaceState: true,
-                },
               }),
             }),
             // Third action is of type actions.navigated but we ignore it.
@@ -877,9 +825,6 @@ describe('app_routing_effects', () => {
                 params: {},
                 pathname: '/no_deeplink_unknown/route',
                 queryParams: [],
-                navigationOptions: {
-                  replaceState: true,
-                },
               }),
             }),
             // Second action is of type actions.navigated but we ignore it.
@@ -1014,12 +959,6 @@ describe('app_routing_effects', () => {
     });
 
     describe('url changes', () => {
-      let replaceStateSpy: jasmine.Spy;
-
-      beforeEach(() => {
-        replaceStateSpy = spyOn(location, 'replaceState');
-      });
-
       function navigateAndExpect(
         navigation: Navigation | Route,
         expected: {pushStateUrl: null | string; replaceStateUrl: null | string}
@@ -1049,9 +988,6 @@ describe('app_routing_effects', () => {
           routeKind: RouteKind.EXPERIMENTS,
           pathname: '/experiments',
           queryParams: [],
-          navigationOptions: {
-            replaceState: false,
-          },
         });
         const activeRouteId = getRouteId(RouteKind.EXPERIMENTS, {});
         store.overrideSelector(getActiveRoute, activeRoute);
@@ -1072,9 +1008,6 @@ describe('app_routing_effects', () => {
           routeKind: RouteKind.EXPERIMENTS,
           pathname: '/experiments',
           queryParams: [],
-          navigationOptions: {
-            replaceState: false,
-          },
         });
         const activeRouteId = getRouteId(RouteKind.EXPERIMENTS, {});
         store.overrideSelector(getActiveRoute, activeRoute);
@@ -1093,14 +1026,11 @@ describe('app_routing_effects', () => {
         );
       });
 
-      it('replaces state if route navigationOption says so', () => {
+      it('replaces state if navigationRequested says so', () => {
         const activeRoute = buildRoute({
           routeKind: RouteKind.EXPERIMENTS,
           pathname: '/experiments',
           queryParams: [],
-          navigationOptions: {
-            replaceState: true,
-          },
         });
         const activeRouteId = getRouteId(RouteKind.EXPERIMENTS, {});
         store.overrideSelector(getActiveRoute, activeRoute);
@@ -1145,9 +1075,6 @@ describe('app_routing_effects', () => {
           pathname: '/experiment',
           params: {experimentId: '123'},
           queryParams: [],
-          navigationOptions: {
-            replaceState: true,
-          },
         });
         const activeRouteId = getRouteId(RouteKind.EXPERIMENT, {});
         store.overrideSelector(getActiveRoute, activeRoute);
@@ -1171,9 +1098,6 @@ describe('app_routing_effects', () => {
           routeKind: RouteKind.EXPERIMENTS,
           pathname: '/experiments',
           queryParams: [],
-          navigationOptions: {
-            replaceState: true,
-          },
         });
         const activeRouteId = getRouteId(RouteKind.EXPERIMENT, {});
 
@@ -1232,9 +1156,6 @@ describe('app_routing_effects', () => {
             params: {},
             pathname: '/experiments',
             queryParams: [],
-            navigationOptions: {
-              replaceState: false,
-            },
           }),
         }),
       ]);
@@ -1256,9 +1177,6 @@ describe('app_routing_effects', () => {
             params: {experimentId: '123'},
             pathname: '/experiment/123',
             queryParams: [],
-            navigationOptions: {
-              replaceState: false,
-            },
           }),
         }),
       ]);
@@ -1279,9 +1197,6 @@ describe('app_routing_effects', () => {
             params: {experimentId: '123'},
             pathname: '/experiment/123',
             queryParams: [],
-            navigationOptions: {
-              replaceState: false,
-            },
           }),
         }),
       ]);
@@ -1306,9 +1221,6 @@ describe('app_routing_effects', () => {
             params: {experimentId: '123'},
             pathname: '/experiment/123',
             queryParams: [],
-            navigationOptions: {
-              replaceState: false,
-            },
           }),
         }),
       ]);

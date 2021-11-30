@@ -38,9 +38,6 @@ describe('app_routing_reducers', () => {
               experimentId: '234',
             },
             queryParams: [],
-            navigationOptions: {
-              replaceState: true,
-            },
           }),
         })
       );
@@ -53,9 +50,6 @@ describe('app_routing_reducers', () => {
             experimentId: '234',
           },
           queryParams: [],
-          navigationOptions: {
-            replaceState: true,
-          },
         })
       );
     });
@@ -79,9 +73,6 @@ describe('app_routing_reducers', () => {
               experimentId: '234',
             },
             queryParams: [],
-            navigationOptions: {
-              replaceState: true,
-            },
           }),
           beforeNamespaceId: null,
           afterNamespaceId: 'namespace1',
@@ -96,9 +87,6 @@ describe('app_routing_reducers', () => {
             experimentId: '234',
           },
           queryParams: [],
-          navigationOptions: {
-            replaceState: true,
-          },
         })
       );
       expect(nextState.activeNamespaceId).toEqual('namespace1');

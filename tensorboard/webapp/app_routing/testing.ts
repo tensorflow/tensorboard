@@ -30,9 +30,6 @@ export function buildRoute(routeOverride: Partial<Route> = {}): Route {
     pathname: '/experiments',
     params: {},
     queryParams: [],
-    navigationOptions: {
-      replaceState: false,
-    },
     ...routeOverride,
   };
 }
@@ -46,9 +43,6 @@ export function buildCompareRoute(
     pathname: '/campare',
     params: {experimentIds: aliasAndExperimentIds.join(',')},
     queryParams: [],
-    navigationOptions: {
-      replaceState: false,
-    },
     ...routeOverride,
   };
 }
