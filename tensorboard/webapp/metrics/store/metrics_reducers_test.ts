@@ -1937,7 +1937,9 @@ describe('metrics reducers', () => {
       expect(nextState.settings.ignoreOutliers).toBe(true);
       expect(nextState.settings.tooltipSort).toBe(TooltipSort.DESCENDING);
       expect(nextState.settingOverrides.scalarSmoothing).toBe(0.5);
-      expect(nextState.settingOverrides.tooltipSort).toBe(TooltipSort.ALPHABETICAL);
+      expect(nextState.settingOverrides.tooltipSort).toBe(
+        TooltipSort.ALPHABETICAL
+      );
     });
 
     it(
