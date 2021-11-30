@@ -32,8 +32,6 @@ have the same value, then all buckets' left and right edges are the same and onl
 the last bucket has nonzero count.
 """
 
-import contextlib
-
 import numpy as np
 
 from tensorboard.compat import tf2 as tf
