@@ -35,8 +35,8 @@ from tensorboard.plugins.histogram import metadata
 from tensorboard.plugins.histogram import summary_v2
 
 
-# Export the latest versions.
-histogram = summary_v2.histogram_v3
+# Export the default versions.
+histogram = summary_v2.histogram
 histogram_pb = summary_v2.histogram_pb
 
 

@@ -19,13 +19,7 @@ A histogram summary stores a list of buckets. Each bucket is encoded as a triple
 of dimension `[k, 3]`, where the first `k - 1` buckets are closed-open and the
 last bucket is closed-closed.
 
-In general, the value of `k` (the number of buckets) will be a constant, like 30.
-For V2 format, there are two edge cases: if there is no data, then there are no
-buckets (the shape is `[0, 3]`); and if there is data but all points have the
-same value, then there is one bucket whose left and right endpoints are the same
-(the shape is `[1, 3]`).
-
-For V3 format, the shape of the output histogram is always constant (`[k, 3]`).
+In general, the shape of the output histogram is always constant (`[k, 3]`).
 In the case of empty data, the output will be an all-zero histogram of shape
 `[k, 3]`, where all edges and counts are zeros. If there is data but all points
 have the same value, then all buckets' left and right edges are the same and only
@@ -294,3 +288,7 @@ def _buckets(data, bucket_count=None):
             )
 
         return tf.cond(is_empty, when_empty, when_nonempty)
+
+
+# Set V3 as default.
+histogram = histogram_v3
