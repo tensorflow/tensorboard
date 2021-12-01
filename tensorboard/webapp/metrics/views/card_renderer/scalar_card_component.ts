@@ -165,6 +165,7 @@ export class ScalarCardComponent<Downloader> {
         return scalarTooltipData.sort((a, b) => {
           return a.metadata.distSqToCursor - b.metadata.distSqToCursor;
         });
+      case TooltipSort.DEFAULT:
       case TooltipSort.ALPHABETICAL:
         return scalarTooltipData.sort((a, b) => {
           if (a.metadata.displayName < b.metadata.displayName) {
