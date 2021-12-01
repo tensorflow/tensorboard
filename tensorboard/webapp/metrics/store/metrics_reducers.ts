@@ -375,8 +375,6 @@ const reducer = createReducer(
     if (partialSettings.tooltipSortString) {
       switch (partialSettings.tooltipSortString) {
         case TooltipSort.DEFAULT:
-          metricsSettings.tooltipSort = TooltipSort.ALPHABETICAL;
-          break;
         case TooltipSort.ALPHABETICAL:
           metricsSettings.tooltipSort = TooltipSort.ALPHABETICAL;
           break;
