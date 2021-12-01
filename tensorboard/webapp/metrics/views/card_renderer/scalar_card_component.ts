@@ -157,8 +157,6 @@ export class ScalarCardComponent<Downloader> {
     }
 
     switch (this.tooltipSort) {
-      case TooltipSort.DEFAULT:
-        return scalarTooltipData;
       case TooltipSort.ASCENDING:
         return scalarTooltipData.sort((a, b) => a.point.y - b.point.y);
       case TooltipSort.DESCENDING:
@@ -166,6 +164,17 @@ export class ScalarCardComponent<Downloader> {
       case TooltipSort.NEAREST:
         return scalarTooltipData.sort((a, b) => {
           return a.metadata.distSqToCursor - b.metadata.distSqToCursor;
+        });
+      case TooltipSort.DEFAULT:
+      case TooltipSort.ALPHABETICAL:
+        return scalarTooltipData.sort((a, b) => {
+          if (a.metadata.displayName < b.metadata.displayName) {
+            return -1;
+          }
+          if (a.metadata.displayName > b.metadata.displayName) {
+            return 1;
+          }
+          return 0;
         });
     }
   }

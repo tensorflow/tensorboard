@@ -291,7 +291,7 @@ describe('scalar card', () => {
     store.overrideSelector(selectors.getMetricsIgnoreOutliers, false);
     store.overrideSelector(
       selectors.getMetricsTooltipSort,
-      TooltipSort.DEFAULT
+      TooltipSort.ALPHABETICAL
     );
     store.overrideSelector(selectors.getRunColorMap, {});
     store.overrideSelector(selectors.getDarkModeEnabled, false);
@@ -1612,6 +1612,77 @@ describe('scalar card', () => {
         ['', 'Row 1', '1000', '0', anyString, anyString],
         ['', 'Row 2', '-500', '1,000', anyString, anyString],
         ['', 'Row 3', '3', '10,000', anyString, anyString],
+      ]);
+    }));
+
+    it('sorts by displayname alphabetical order', fakeAsync(() => {
+      store.overrideSelector(
+        selectors.getMetricsTooltipSort,
+        TooltipSort.ALPHABETICAL
+      );
+      store.overrideSelector(selectors.getMetricsScalarSmoothing, 0);
+      const fixture = createComponent('card1');
+      setTooltipData(fixture, [
+        buildTooltipDatum(
+          {
+            id: 'row1',
+            type: SeriesType.ORIGINAL,
+            displayName: 'hello',
+            alias: null,
+            visible: true,
+            color: '#f00',
+            aux: false,
+          },
+          {
+            x: 0,
+            step: 0,
+            y: 1000,
+            value: 1000,
+            wallTime: new Date('2020-01-01').getTime(),
+          }
+        ),
+        buildTooltipDatum(
+          {
+            id: 'row2',
+            type: SeriesType.ORIGINAL,
+            displayName: 'world',
+            alias: null,
+            visible: true,
+            color: '#0f0',
+            aux: false,
+          },
+          {
+            x: 1000,
+            step: 1000,
+            y: -500,
+            value: -500,
+            wallTime: new Date('2020-12-31').getTime(),
+          }
+        ),
+        buildTooltipDatum(
+          {
+            id: 'row3',
+            type: SeriesType.ORIGINAL,
+            displayName: 'cat',
+            alias: null,
+            visible: true,
+            color: '#00f',
+            aux: false,
+          },
+          {
+            x: 10000,
+            step: 10000,
+            y: 3,
+            value: 3,
+            wallTime: new Date('2021-01-01').getTime(),
+          }
+        ),
+      ]);
+      fixture.detectChanges();
+      assertTooltipRows(fixture, [
+        ['', 'cat', '3', '10,000', anyString, anyString],
+        ['', 'hello', '1000', '0', anyString, anyString],
+        ['', 'world', '-500', '1,000', anyString, anyString],
       ]);
     }));
   });

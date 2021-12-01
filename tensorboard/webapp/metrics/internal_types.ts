@@ -28,6 +28,7 @@ export enum PluginType {
 // deserializer in data_source/metrics_data_source.ts.
 export enum TooltipSort {
   DEFAULT = 'default',
+  ALPHABETICAL = 'alphabetical',
   ASCENDING = 'ascending',
   DESCENDING = 'descending',
   NEAREST = 'nearest',
