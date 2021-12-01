@@ -57,17 +57,6 @@ export function buildNavigatedAction(overrides?: Partial<NavigatedPayload>) {
   });
 }
 
-// TODO(bdubois): Remove once all internal callers have been migrated to
-// buildNavigatedAction.
-/**
- * @deprecated Use buildNavigateAction instead.
- */
-export function buildNavigatedActionFull(
-  overrides?: Partial<NavigatedPayload>
-) {
-  return buildNavigatedAction(overrides);
-}
-
 /**
  * A navigation that corresponds to a change in route id (new route context)
  * will be created.
