@@ -99,7 +99,7 @@ def histogram_pb(tag, data, buckets=None, description=None):
     return summary
 
 
-# This is the TPU compatible v3 histogram implementation as of 2021-12-01.
+# This is the TPU compatible V3 histogram implementation as of 2021-12-01.
 def histogram(name, data, step=None, buckets=None, description=None):
     """Write a histogram summary.
 
