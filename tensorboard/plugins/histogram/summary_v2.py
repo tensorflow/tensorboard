@@ -99,7 +99,8 @@ def histogram_pb(tag, data, buckets=None, description=None):
     return summary
 
 
-def histogram_v3(name, data, step=None, buckets=None, description=None):
+# This is the TPU compatible v3 histogram implementation as of 2021-12-01.
+def histogram(name, data, step=None, buckets=None, description=None):
     """Write a histogram summary.
 
     See also `tf.summary.scalar`, `tf.summary.SummaryWriter`.
@@ -288,7 +289,3 @@ def _buckets(data, bucket_count=None):
             )
 
         return tf.cond(is_empty, when_empty, when_nonempty)
-
-
-# Set V3 as default.
-histogram = histogram_v3
