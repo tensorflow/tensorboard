@@ -65,19 +65,23 @@ describe('location', () => {
   describe('#getFullPathFromRouteOrNav', () => {
     it('forms the full path', () => {
       expect(
-        location.getFullPathFromRoute(buildRoute({
-          pathname: '/foo/bar/baz',
-          queryParams: [{key: 'a', value: '1'}],
-        }))
+        location.getFullPathFromRoute(
+          buildRoute({
+            pathname: '/foo/bar/baz',
+            queryParams: [{key: 'a', value: '1'}],
+          })
+        )
       ).toBe('/foo/bar/baz?a=1');
     });
 
     it('does not add "?" when queryParams is empty', () => {
       expect(
-        location.getFullPathFromRoute(buildRoute({
-          pathname: '/foo',
-          queryParams: [],
-        }))
+        location.getFullPathFromRoute(
+          buildRoute({
+            pathname: '/foo',
+            queryParams: [],
+          })
+        )
       ).toBe('/foo');
     });
   });

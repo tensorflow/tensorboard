@@ -97,10 +97,7 @@ export class Location implements LocationInterface {
     return url.pathname;
   }
 
-  getFullPathFromRoute(
-    route: Route,
-    shouldPreserveHash?: boolean
-  ): string {
+  getFullPathFromRoute(route: Route, shouldPreserveHash?: boolean): string {
     // TODO(stephanwlee): support hashes in the route.
     const pathname = this.getResolvedPath(route.pathname);
     let search = '';
