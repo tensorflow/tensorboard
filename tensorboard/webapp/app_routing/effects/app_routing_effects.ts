@@ -373,13 +373,13 @@ export class AppRoutingEffects {
         if (route.navigationOptions.replaceState) {
           this.location.replaceState(
             this.appRootProvider.getAbsPathnameWithAppRoot(
-              this.location.getFullPathFromRouteOrNav(route, preserveHash)
+              this.location.getFullPathFromRoute(route, preserveHash)
             )
           );
         } else {
           this.location.pushState(
             this.appRootProvider.getAbsPathnameWithAppRoot(
-              this.location.getFullPathFromRouteOrNav(route, preserveHash)
+              this.location.getFullPathFromRoute(route, preserveHash)
             )
           );
         }
