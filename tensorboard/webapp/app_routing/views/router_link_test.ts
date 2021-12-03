@@ -33,6 +33,17 @@ import {RouterLinkDirectiveContainer} from './router_link_directive_container';
 })
 class TestableComponent {
   @Input() link!: string | string[];
+  @Input() resetNamespacedState?: boolean;
+}
+
+@Component({
+  selector: 'test-with-reset',
+  template:
+    '<a [routerLink]="link" [resetNamespacedState]="resetNamespacedState">testable link</a>',
+})
+class TestableComponentWithResetNamespacedState {
+  @Input() link!: string | string[];
+  @Input() resetNamespacedState!: boolean;
 }
 
 describe('router_link', () => {
@@ -48,7 +59,11 @@ describe('router_link', () => {
         provideMockStore(),
         {provide: AppRootProvider, useClass: TestableAppRootProvider},
       ],
-      declarations: [RouterLinkDirectiveContainer, TestableComponent],
+      declarations: [
+        RouterLinkDirectiveContainer,
+        TestableComponent,
+        TestableComponentWithResetNamespacedState,
+      ],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
 
@@ -62,111 +77,149 @@ describe('router_link', () => {
     });
   });
 
-  function createComponentAndGetAnchorDebugElement(
-    link: string | string[]
-  ): DebugElement {
+  function createComponent(link: string | string[]): DebugElement {
     const fixture = TestBed.createComponent(TestableComponent);
     fixture.componentInstance.link = link;
     fixture.detectChanges();
     return fixture.debugElement.query(By.css('a'));
   }
 
+  function createComponentWithResetNamespacedState(
+    link: string | string[],
+    resetNamespacedState: boolean
+  ): DebugElement {
+    const fixture = TestBed.createComponent(
+      TestableComponentWithResetNamespacedState
+    );
+    fixture.componentInstance.link = link;
+    fixture.componentInstance.resetNamespacedState = resetNamespacedState;
+    fixture.detectChanges();
+    return fixture.debugElement.query(By.css('a'));
+  }
+
   it('renders the path as href', () => {
-    const anchorStr = createComponentAndGetAnchorDebugElement('/foobar');
+    const anchorStr = createComponent('/foobar');
     expect(anchorStr.attributes['href']).toBe('/foobar/');
 
-    const anchorArr = createComponentAndGetAnchorDebugElement([
-      '/foobar',
-      'baz',
-    ]);
+    const anchorArr = createComponent(['/foobar', 'baz']);
     expect(anchorArr.attributes['href']).toBe('/foobar/baz/');
   });
 
   it('renders the path as href with appRoot to support path_prefix', () => {
     appRootProvider.setAppRoot('/qaz/quz/');
-    const anchorStr = createComponentAndGetAnchorDebugElement('/foobar');
+    const anchorStr = createComponent('/foobar');
     expect(anchorStr.attributes['href']).toBe('/qaz/quz/foobar/');
 
-    const anchorArr = createComponentAndGetAnchorDebugElement([
-      '/foobar',
-      'baz',
-    ]);
+    const anchorArr = createComponent(['/foobar', 'baz']);
     expect(anchorArr.attributes['href']).toBe('/qaz/quz/foobar/baz/');
   });
 
   it('dispatches navigate when clicked on the anchor', () => {
-    const link = createComponentAndGetAnchorDebugElement('/foobar');
+    const link = createComponent('/foobar');
     const event = new MouseEvent('click');
     link.triggerEventHandler('click', event);
 
     expect(actualDispatches).toEqual([
       navigationRequested({
         pathname: '/foobar/',
+        resetNamespacedState: false,
       }),
     ]);
   });
 
   it('dispatches programmatical navigation without appRoot', () => {
     appRootProvider.setAppRoot('/qaz/quz/');
-    const link = createComponentAndGetAnchorDebugElement('../foobar');
+    const link = createComponent('../foobar');
     const event = new MouseEvent('click');
     link.triggerEventHandler('click', event);
 
     expect(actualDispatches).toEqual([
       navigationRequested({
         pathname: '../foobar/',
+        resetNamespacedState: false,
       }),
     ]);
   });
 
   it('supports relative path (..)', () => {
-    const link = createComponentAndGetAnchorDebugElement('../foobar');
+    const link = createComponent('../foobar');
     const event = new MouseEvent('click');
     link.triggerEventHandler('click', event);
 
     expect(actualDispatches).toEqual([
       navigationRequested({
         pathname: '../foobar/',
+        resetNamespacedState: false,
       }),
     ]);
   });
 
   it('supports relative path (no slash)', () => {
-    const link = createComponentAndGetAnchorDebugElement('foobar');
+    const link = createComponent('foobar');
     const event = new MouseEvent('click');
     link.triggerEventHandler('click', event);
 
     expect(actualDispatches).toEqual([
       navigationRequested({
         pathname: 'foobar/',
+        resetNamespacedState: false,
       }),
     ]);
   });
 
   it('makes sure the path ends with "/"', () => {
     const event = new MouseEvent('click');
-    const link1 = createComponentAndGetAnchorDebugElement('./foobar');
+    const link1 = createComponent('./foobar');
     link1.triggerEventHandler('click', event);
-    const link2 = createComponentAndGetAnchorDebugElement('./foobar/');
+    const link2 = createComponent('./foobar/');
     link2.triggerEventHandler('click', event);
-    const link3 = createComponentAndGetAnchorDebugElement('/');
+    const link3 = createComponent('/');
     link3.triggerEventHandler('click', event);
 
     expect(actualDispatches).toEqual([
       navigationRequested({
         pathname: './foobar/',
+        resetNamespacedState: false,
       }),
       navigationRequested({
         pathname: './foobar/',
+        resetNamespacedState: false,
       }),
       navigationRequested({
         pathname: '/',
+        resetNamespacedState: false,
+      }),
+    ]);
+  });
+
+  it('passes resetNamespacedState=false in action', () => {
+    const event = new MouseEvent('click');
+    const link = createComponentWithResetNamespacedState('./foobar', false);
+    link.triggerEventHandler('click', event);
+
+    expect(actualDispatches).toEqual([
+      navigationRequested({
+        pathname: './foobar/',
+        resetNamespacedState: false,
+      }),
+    ]);
+  });
+
+  it('passes resetNamespacedState=true in action', () => {
+    const event = new MouseEvent('click');
+    const link = createComponentWithResetNamespacedState('./foobar', true);
+    link.triggerEventHandler('click', event);
+
+    expect(actualDispatches).toEqual([
+      navigationRequested({
+        pathname: './foobar/',
+        resetNamespacedState: true,
       }),
     ]);
   });
 
   it('prevents default behavior when clicked', () => {
-    const link = createComponentAndGetAnchorDebugElement('/foobar');
+    const link = createComponent('/foobar');
     const event = new MouseEvent('click');
     const preventDefault = spyOn(event, 'preventDefault');
     link.triggerEventHandler('click', event);
@@ -176,7 +229,7 @@ describe('router_link', () => {
   });
 
   it('ignores the click when pressed ctrl', () => {
-    const link = createComponentAndGetAnchorDebugElement('/foobar');
+    const link = createComponent('/foobar');
     const event = new MouseEvent('click', {ctrlKey: true});
     link.triggerEventHandler('click', event);
 
@@ -184,7 +237,7 @@ describe('router_link', () => {
   });
 
   it('ignores the click when pressed meta key', () => {
-    const link = createComponentAndGetAnchorDebugElement('/foobar');
+    const link = createComponent('/foobar');
     const event = new MouseEvent('click', {metaKey: true});
     link.triggerEventHandler('click', event);
 
@@ -192,7 +245,7 @@ describe('router_link', () => {
   });
 
   it('requires path to be non-emtpy', () => {
-    expect(() => createComponentAndGetAnchorDebugElement([])).toThrowError(
+    expect(() => createComponent([])).toThrowError(
       RangeError,
       /should have proper path/
     );

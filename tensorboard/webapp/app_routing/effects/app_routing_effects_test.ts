@@ -21,6 +21,7 @@ import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {of, ReplaySubject} from 'rxjs';
 
 import {State} from '../../app_state';
+import {getEnabledTimeNamespacedState} from '../../feature_flag/store/feature_flag_selectors';
 import * as actions from '../actions';
 import {AppRootProvider, TestableAppRootProvider} from '../app_root';
 import {Location} from '../location';
@@ -202,6 +203,7 @@ describe('app_routing_effects', () => {
 
     store.overrideSelector(getActiveRoute, null);
     store.overrideSelector(getActiveNamespaceId, null);
+    store.overrideSelector(getEnabledTimeNamespacedState, false);
     actualActions = [];
 
     spyOn(store, 'dispatch').and.callFake((action: Action) => {
@@ -519,6 +521,144 @@ describe('app_routing_effects', () => {
       );
     });
 
+    describe('time-namespaced ids', () => {
+      it('are generated on bootstrap (when none exists)', fakeAsync(() => {
+        store.overrideSelector(getActiveRoute, null);
+        store.overrideSelector(getActiveNamespaceId, null);
+        store.overrideSelector(getEnabledTimeNamespacedState, true);
+        store.refreshState();
+
+        getPathSpy.and.returnValue('/experiments');
+        getSearchSpy.and.returnValue([]);
+
+        action.next(effects.ngrxOnInitEffects());
+
+        tick();
+
+        expect(actualActions).toEqual([
+          jasmine.any(Object),
+          actions.navigated({
+            before: null,
+            after: buildRoute({
+              routeKind: RouteKind.EXPERIMENTS,
+              pathname: '/experiments',
+            }),
+            // From getActiveNamespaceId().
+            beforeNamespaceId: null,
+            // Value of before + the 5 milliseconds from tick(5000).
+            afterNamespaceId: Date.now().toString(),
+          }),
+        ]);
+      }));
+
+      it('are generated when resetNamespacedState is true', fakeAsync(() => {
+        // Record initial time for use later.
+        const before = Date.now();
+        // Move the clock forward a bit to generate somewhat less arbitrary ids.
+        tick(5000);
+
+        store.overrideSelector(getActiveRoute, buildRoute());
+        store.overrideSelector(getActiveNamespaceId, before.toString());
+        store.overrideSelector(getEnabledTimeNamespacedState, true);
+        store.refreshState();
+
+        // Request navigation with resetNamespacedState set to true.
+        action.next(
+          actions.navigationRequested({
+            pathname: '/experiments',
+            resetNamespacedState: true,
+          })
+        );
+
+        tick();
+        expect(actualActions).toEqual([
+          jasmine.any(Object),
+          actions.navigated({
+            before: buildRoute(),
+            after: buildRoute({
+              routeKind: RouteKind.EXPERIMENTS,
+              pathname: '/experiments',
+            }),
+            // From getActiveNamespaceId().
+            beforeNamespaceId: before.toString(),
+            // Value of before + the 5 milliseconds from tick(5000).
+            afterNamespaceId: (before + 5000).toString(),
+          }),
+        ]);
+      }));
+
+      it('are reused when resetNamespacedState is false', fakeAsync(() => {
+        // Record initial time for use later.
+        const before = Date.now();
+        // Move the clock forward a bit to generate somewhat less arbitrary ids.
+        tick(5000);
+
+        store.overrideSelector(getActiveRoute, buildRoute());
+        store.overrideSelector(getActiveNamespaceId, before.toString());
+        store.overrideSelector(getEnabledTimeNamespacedState, true);
+        store.refreshState();
+
+        // Request navigation with resetNamespacedState set to false.
+        action.next(
+          actions.navigationRequested({
+            pathname: '/experiments',
+            resetNamespacedState: false,
+          })
+        );
+
+        tick();
+        expect(actualActions).toEqual([
+          jasmine.any(Object),
+          actions.navigated({
+            before: buildRoute(),
+            after: buildRoute({
+              routeKind: RouteKind.EXPERIMENTS,
+              pathname: '/experiments',
+            }),
+            // From getActiveNamespaceId().
+            beforeNamespaceId: before.toString(),
+            // Same as beforeNamespaceId (that is, the value from getActiveNamespaceId()).
+            afterNamespaceId: before.toString(),
+          }),
+        ]);
+      }));
+
+      it('are reused when resetNamespacedState is unspecified', fakeAsync(() => {
+        // Record initial time for use later.
+        const before = Date.now();
+        // Move the clock forward a bit to generate somewhat less arbitrary ids.
+        tick(5000);
+
+        store.overrideSelector(getActiveRoute, buildRoute());
+        store.overrideSelector(getActiveNamespaceId, before.toString());
+        store.overrideSelector(getEnabledTimeNamespacedState, true);
+        store.refreshState();
+
+        // Request navigation with resetNamespacedState unspecified.
+        action.next(
+          actions.navigationRequested({
+            pathname: '/experiments',
+          })
+        );
+
+        tick();
+        expect(actualActions).toEqual([
+          jasmine.any(Object),
+          actions.navigated({
+            before: buildRoute(),
+            after: buildRoute({
+              routeKind: RouteKind.EXPERIMENTS,
+              pathname: '/experiments',
+            }),
+            // From getActiveNamespaceId().
+            beforeNamespaceId: before.toString(),
+            // Same as beforeNamespaceId (that is, the value from getActiveNamespaceId()).
+            afterNamespaceId: before.toString(),
+          }),
+        ]);
+      }));
+    });
+
     describe('deeplink reads', () => {
       beforeEach(() => {
         store.overrideSelector(getActiveRoute, null);
@@ -698,6 +838,77 @@ describe('app_routing_effects', () => {
           expect(replaceStateSpy).toHaveBeenCalled();
         })
       );
+
+      it('does not reset namespace state on subsequent query param changes', fakeAsync(() => {
+        store.overrideSelector(getEnabledTimeNamespacedState, true);
+        store.refreshState();
+
+        // Record the current time from the mocked clock.
+        const firstActionTime = Date.now();
+        // Mimic initial navigation.
+        action.next(
+          actions.navigationRequested({
+            pathname: '/compare/a:b',
+          })
+        );
+        serializeStateToQueryParamsSubject.next([]);
+
+        tick(5);
+        expect(actualActions).toEqual([
+          jasmine.any(Object),
+          actions.navigated({
+            before: null,
+            after: buildRoute({
+              routeKind: RouteKind.COMPARE_EXPERIMENT,
+              pathname: '/compare/a:b',
+              params: {experimentIds: 'a:b'},
+            }),
+            beforeNamespaceId: null,
+            // Date.now() is basically locked in time.
+            afterNamespaceId: firstActionTime.toString(),
+          }),
+        ]);
+
+        // Mimic the update to route and namespace id in the underlying state.
+        store.overrideSelector(
+          getActiveRoute,
+          buildRoute({
+            routeKind: RouteKind.COMPARE_EXPERIMENT,
+            pathname: '/compare/a:b',
+            params: {experimentIds: 'a:b'},
+          })
+        );
+        store.overrideSelector(
+          getActiveNamespaceId,
+          firstActionTime.toString()
+        );
+        store.refreshState();
+        // Mimic subsequent change in query parameter.
+        serializeStateToQueryParamsSubject.next([]);
+
+        tick();
+        expect(actualActions).toEqual([
+          jasmine.any(Object),
+          jasmine.any(Object),
+          jasmine.any(Object),
+          actions.navigated({
+            before: buildRoute({
+              routeKind: RouteKind.COMPARE_EXPERIMENT,
+              pathname: '/compare/a:b',
+              params: {experimentIds: 'a:b'},
+            }),
+            after: buildRoute({
+              routeKind: RouteKind.COMPARE_EXPERIMENT,
+              pathname: '/compare/a:b',
+              params: {experimentIds: 'a:b'},
+            }),
+            // From updated getActiveNamespaceId().
+            beforeNamespaceId: firstActionTime.toString(),
+            // Same as beforeNamespaceId. (no reset took place)
+            afterNamespaceId: firstActionTime.toString(),
+          }),
+        ]);
+      }));
     });
 
     describe('bootstrap', () => {
