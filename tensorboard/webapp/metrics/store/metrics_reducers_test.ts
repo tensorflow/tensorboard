@@ -602,7 +602,7 @@ describe('metrics reducers', () => {
     it('changes tooltipSort on metricsChangeTooltipSort', () => {
       const prevState = buildMetricsState({
         settings: buildMetricsSettingsState({
-          tooltipSort: TooltipSort.DEFAULT,
+          tooltipSort: TooltipSort.ALPHABETICAL,
         }),
         settingOverrides: buildMetricsSettingsState({
           tooltipSort: TooltipSort.ASCENDING,
@@ -612,7 +612,7 @@ describe('metrics reducers', () => {
         prevState,
         actions.metricsChangeTooltipSort({sort: TooltipSort.NEAREST})
       );
-      expect(nextState.settings.tooltipSort).toBe(TooltipSort.DEFAULT);
+      expect(nextState.settings.tooltipSort).toBe(TooltipSort.ALPHABETICAL);
       expect(nextState.settingOverrides.tooltipSort).toBe(TooltipSort.NEAREST);
     });
 
@@ -1910,7 +1910,7 @@ describe('metrics reducers', () => {
   });
 
   describe('#globalSettingsLoaded', () => {
-    it('adds partial state from loading the settings to the (default) settings', () => {
+    it('adds partial state from loading the settings to the (alphabetical) settings', () => {
       const beforeState = buildMetricsState({
         settings: buildMetricsSettingsState({
           scalarSmoothing: 0.3,
@@ -1919,7 +1919,7 @@ describe('metrics reducers', () => {
         }),
         settingOverrides: {
           scalarSmoothing: 0.5,
-          tooltipSort: TooltipSort.DEFAULT,
+          tooltipSort: TooltipSort.ALPHABETICAL,
         },
       });
 
@@ -1937,7 +1937,9 @@ describe('metrics reducers', () => {
       expect(nextState.settings.ignoreOutliers).toBe(true);
       expect(nextState.settings.tooltipSort).toBe(TooltipSort.DESCENDING);
       expect(nextState.settingOverrides.scalarSmoothing).toBe(0.5);
-      expect(nextState.settingOverrides.tooltipSort).toBe(TooltipSort.DEFAULT);
+      expect(nextState.settingOverrides.tooltipSort).toBe(
+        TooltipSort.ALPHABETICAL
+      );
     });
 
     it(

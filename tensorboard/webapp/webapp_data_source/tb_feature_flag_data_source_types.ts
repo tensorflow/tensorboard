@@ -46,4 +46,4 @@ export const ENABLE_DARK_MODE_QUERY_PARAM_KEY = 'darkMode';
 
 export const ENABLE_LINK_TIME_PARAM_KEY = 'enableLinkTime';
 
-export const ENABLE_TIME_NAMESPACED_STATE = 'enableTimespace';
+export const ENABLE_TIME_NAMESPACED_STATE = 'enableTimeNamespacedState';

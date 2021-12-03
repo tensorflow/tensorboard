@@ -164,10 +164,10 @@ describe('tb_feature_flag_data_source', () => {
 
       it('returns enabledTimeNamespacedState from the query params', () => {
         getParamsSpy.and.returnValues(
-          new URLSearchParams('enableTimespace=false'),
-          new URLSearchParams('enableTimespace='),
-          new URLSearchParams('enableTimespace=true'),
-          new URLSearchParams('enableTimespace=foo')
+          new URLSearchParams('enableTimeNamespacedState=false'),
+          new URLSearchParams('enableTimeNamespacedState='),
+          new URLSearchParams('enableTimeNamespacedState=true'),
+          new URLSearchParams('enableTimeNamespacedState=foo')
         );
 
         expect(dataSource.getFeatures()).toEqual({

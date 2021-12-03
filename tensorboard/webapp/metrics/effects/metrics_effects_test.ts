@@ -88,7 +88,7 @@ describe('metrics effects', () => {
     store.overrideSelector(selectors.getMetricsScalarSmoothing, 0.3);
     store.overrideSelector(
       selectors.getMetricsTooltipSort,
-      TooltipSort.DEFAULT
+      TooltipSort.ALPHABETICAL
     );
   });
 
