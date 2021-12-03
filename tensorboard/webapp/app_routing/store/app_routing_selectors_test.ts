@@ -35,9 +35,6 @@ describe('app_routing_selectors', () => {
               experimentId: '234',
             },
             queryParams: [],
-            navigationOptions: {
-              replaceState: false,
-            },
           }),
         })
       );
@@ -49,9 +46,6 @@ describe('app_routing_selectors', () => {
           experimentId: '234',
         },
         queryParams: [],
-        navigationOptions: {
-          replaceState: false,
-        },
       });
     });
   });

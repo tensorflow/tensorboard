@@ -68,9 +68,6 @@ export interface Route {
   params: RouteParams;
   pathname: string;
   queryParams: SerializableQueryParams;
-  navigationOptions: {
-    replaceState: boolean;
-  };
 }
 
 /**

@@ -64,6 +64,10 @@ interface InternalNavigation extends Navigation {
   browserInitiated?: boolean;
 }
 
+interface NavigationOptions {
+  replaceState: boolean;
+}
+
 @Injectable()
 export class AppRoutingEffects {
   private readonly routeConfigs: RouteConfigs;
@@ -282,44 +286,59 @@ export class AppRoutingEffects {
           );
         }
       }),
-      switchMap(({routeMatch, options}) => {
-        const navigationOptions = {
-          replaceState: options.replaceState ?? false,
-        };
+      switchMap(
+        ({
+          routeMatch,
+          options,
+        }): Observable<{
+          route: Route;
+          navigationOptions: NavigationOptions;
+        }> => {
+          const navigationOptions = {
+            replaceState: options.replaceState ?? false,
+          };
 
-        const routeObservableWithoutQuery: Observable<Route> = of({
-          routeKind: routeMatch.routeKind,
-          params: routeMatch.params,
-          pathname: routeMatch.pathname,
-          queryParams: [],
-          navigationOptions,
-        });
-
-        if (routeMatch.deepLinkProvider === null) {
-          return routeObservableWithoutQuery;
-        }
-
-        return routeMatch
-          .deepLinkProvider!.serializeStateToQueryParams(this.store)
-          .pipe(
-            map((queryParams, index) => {
-              return {
+          if (routeMatch.deepLinkProvider === null) {
+            // Without a DeepLinkProvider emit a single result without query
+            // params.
+            return of({
+              route: {
                 routeKind: routeMatch.routeKind,
                 params: routeMatch.params,
                 pathname: routeMatch.pathname,
-                queryParams,
-                navigationOptions:
-                  index === 0
-                    ? navigationOptions
-                    : {
-                        ...navigationOptions,
-                        replaceState: true,
-                      },
-              };
-            })
-          );
-      }),
-      tap((route) => {
+                queryParams: [],
+              },
+              navigationOptions,
+            });
+          }
+
+          // With a DeepLinkProvider emit a new result each time the query
+          // params change.
+          return routeMatch
+            .deepLinkProvider!.serializeStateToQueryParams(this.store)
+            .pipe(
+              map((queryParams, index) => {
+                return {
+                  route: {
+                    routeKind: routeMatch.routeKind,
+                    params: routeMatch.params,
+                    pathname: routeMatch.pathname,
+                    queryParams,
+                  },
+                  // Only honor replaceState value on first emit. On subsequent
+                  // emits we always want to replaceState rather than pushState.
+                  navigationOptions:
+                    index === 0
+                      ? navigationOptions
+                      : {
+                          replaceState: true,
+                        },
+                };
+              })
+            );
+        }
+      ),
+      tap(({route}) => {
         // b/160185039: Allows the route store + router outlet to change
         // before the route change so all components do not have to
         // safeguard against the case when `routeId` (routeKind and
@@ -337,7 +356,7 @@ export class AppRoutingEffects {
 
     const changeUrl$ = dispatchNavigating$.pipe(
       withLatestFrom(this.store.select(getActiveRoute)),
-      map(([nextRoute, oldRoute]) => {
+      map(([{route, navigationOptions}, oldRoute]) => {
         // The URL hash can be set via HashStorageComponent (which uses
         // Polymer's tf-storage). DeepLinkProviders also modify the URL when
         // a provider's serializeStateToQueryParams() emits. These result in
@@ -353,15 +372,16 @@ export class AppRoutingEffects {
         // See https://github.com/tensorflow/tensorboard/issues/4207.
         const preserveHash =
           oldRoute === null ||
-          nextRoute === null ||
+          route === null ||
           getRouteId(oldRoute.routeKind, oldRoute.params) ===
-            getRouteId(nextRoute.routeKind, nextRoute.params);
+            getRouteId(route.routeKind, route.params);
         return {
           preserveHash,
-          route: nextRoute,
+          route,
+          navigationOptions,
         };
       }),
-      tap(({preserveHash, route}) => {
+      tap(({preserveHash, route, navigationOptions}) => {
         const shouldUpdateHistory = !areRoutesEqual(route, {
           pathname: this.appRootProvider.getAppRootlessPathname(
             this.location.getPath()
@@ -370,7 +390,7 @@ export class AppRoutingEffects {
         });
         if (!shouldUpdateHistory) return;
 
-        if (route.navigationOptions.replaceState) {
+        if (navigationOptions.replaceState) {
           this.location.replaceState(
             this.appRootProvider.getAbsPathnameWithAppRoot(
               this.location.getFullPathFromRouteOrNav(route, preserveHash)
