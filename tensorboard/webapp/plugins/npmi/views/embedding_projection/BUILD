@@ -1,41 +1,37 @@
-load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_sass_binary", "tf_ts_library")
+load(
+    "//tensorboard/defs:defs.bzl",
+    "tf_ng_module",
+    "tf_sass_binary",
+    "tf_ts_library",
+)
 
 package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])
 
 tf_sass_binary(
-    name = "embeddings_component_styles",
-    src = "embeddings_component.scss",
-    deps = ["//tensorboard/webapp:angular_material_sass_deps"],
+    name = "embedding_projection_component_styles",
+    src = "embedding_projection_component.scss",
 )
 
 tf_ng_module(
-    name = "embeddings",
+    name = "embedding_projection",
     srcs = [
-        "embeddings_component.ts",
-        "embeddings_container.ts",
-        "embeddings_module.ts",
+        "embedding_projection_component.ts",
+        "embedding_projection_container.ts",
+        "embedding_projection_module.ts",
     ],
     assets = [
-        ":embeddings_component_styles",
-        "embeddings_component.ng.html",
+        ":embedding_projection_component_styles",
+        "embedding_projection_component.ng.html",
     ],
     deps = [
         "//tensorboard/webapp:app_state",
-        "//tensorboard/webapp:selectors",
         "//tensorboard/webapp/angular:expect_angular_material_button",
-        "//tensorboard/webapp/angular:expect_angular_material_checkbox",
         "//tensorboard/webapp/angular:expect_angular_material_icon",
-        "//tensorboard/webapp/core:types",
-        "//tensorboard/webapp/core/store",
         "//tensorboard/webapp/plugins/npmi/actions",
         "//tensorboard/webapp/plugins/npmi/store",
-        "//tensorboard/webapp/plugins/npmi/views/annotations_list",
-        "//tensorboard/webapp/plugins/npmi/views/data_selection",
-        "//tensorboard/webapp/plugins/npmi/views/embedding_projection",
-        "//tensorboard/webapp/plugins/npmi/views/selected_annotations",
-        "//tensorboard/webapp/runs/views/runs_selector",
+        "//tensorboard/webapp/plugins/npmi/store:types",
         "@npm//@angular/common",
         "@npm//@angular/core",
         "@npm//@angular/forms",
@@ -45,24 +41,24 @@ tf_ng_module(
 )
 
 tf_ts_library(
-    name = "embeddings_test_lib",
+    name = "embedding_projection_test_lib",
     testonly = True,
     srcs = [
-        "embeddings_test.ts",
+        "embedding_projection_test.ts",
     ],
     deps = [
-        ":embeddings",
+        ":embedding_projection",
         "//tensorboard/webapp:app_state",
-        "//tensorboard/webapp:selectors",
         "//tensorboard/webapp/angular:expect_angular_core_testing",
         "//tensorboard/webapp/angular:expect_ngrx_store_testing",
         "//tensorboard/webapp/core/store",
         "//tensorboard/webapp/core/testing",
         "//tensorboard/webapp/plugins/npmi/actions",
         "//tensorboard/webapp/plugins/npmi/store",
+        "//tensorboard/webapp/plugins/npmi/store:types",
         "//tensorboard/webapp/plugins/npmi/testing",
-        "//tensorboard/webapp/runs/views/runs_selector",
-        "@npm//@angular/common",
+        "//tensorboard/webapp/runs_legacy",
+        "//tensorboard/webapp/testing:mat_icon",
         "@npm//@angular/core",
         "@npm//@angular/platform-browser",
         "@npm//@ngrx/store",

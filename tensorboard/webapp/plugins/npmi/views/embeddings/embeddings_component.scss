@@ -52,6 +52,11 @@ limitations under the License.
   width: 100%;
 }
 
+.embedding-projection {
+  min-height: 0px;
+  width: 100%;
+}
+
 .side-toggle {
   width: 30px;
   height: 30px;
@@ -63,6 +68,14 @@ limitations under the License.
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.run-divider {
+  content: '';
+  width: 100%;
+  height: 3px;
+  overflow: hidden;
+  background-color: mat.get-color-from-palette($tb-foreground, divider);
 }
 
 .grabber {

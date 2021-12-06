@@ -24,6 +24,7 @@ import {DataSelectionModule} from './../data_selection/data_selection_module';
 import {SelectedAnnotationsModule} from './../selected_annotations/selected_annotations_module';
 import {EmbeddingsComponent} from './embeddings_component';
 import {EmbeddingsContainer} from './embeddings_container';
+import {EmbeddingProjectionModule} from '../embedding_projection/embedding_projection_module';
 
 @NgModule({
   declarations: [EmbeddingsComponent, EmbeddingsContainer],
@@ -37,6 +38,7 @@ import {EmbeddingsContainer} from './embeddings_container';
     MatButtonModule,
     AnnotationsListModule,
     SelectedAnnotationsModule,
+    EmbeddingProjectionModule,
   ],
   exports: [EmbeddingsContainer],
 })
