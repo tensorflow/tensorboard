@@ -545,7 +545,7 @@ describe('app_routing_effects', () => {
             }),
             // From getActiveNamespaceId().
             beforeNamespaceId: null,
-            // Value of before + the 5 milliseconds from tick(5000).
+            // Newly-generated Id based on mock clock time.
             afterNamespaceId: Date.now().toString(),
           }),
         ]);
@@ -581,7 +581,7 @@ describe('app_routing_effects', () => {
             }),
             // From getActiveNamespaceId().
             beforeNamespaceId: before.toString(),
-            // Value of before + the 5 milliseconds from tick(5000).
+            // Value of before + the 5000 milliseconds from tick(5000).
             afterNamespaceId: (before + 5000).toString(),
           }),
         ]);
@@ -617,7 +617,7 @@ describe('app_routing_effects', () => {
             }),
             // From getActiveNamespaceId().
             beforeNamespaceId: before.toString(),
-            // Same as beforeNamespaceId (that is, the value from getActiveNamespaceId()).
+            // Same as beforeNamespaceId.
             afterNamespaceId: before.toString(),
           }),
         ]);
@@ -652,7 +652,7 @@ describe('app_routing_effects', () => {
             }),
             // From getActiveNamespaceId().
             beforeNamespaceId: before.toString(),
-            // Same as beforeNamespaceId (that is, the value from getActiveNamespaceId()).
+            // Same as beforeNamespaceId.
             afterNamespaceId: before.toString(),
           }),
         ]);
@@ -864,7 +864,7 @@ describe('app_routing_effects', () => {
               params: {experimentIds: 'a:b'},
             }),
             beforeNamespaceId: null,
-            // Date.now() is basically locked in time.
+            // Newly generated id based on mock clock time.
             afterNamespaceId: firstActionTime.toString(),
           }),
         ]);
