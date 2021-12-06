@@ -29,6 +29,7 @@ import {
 } from 'rxjs/operators';
 
 import {State} from '../../app_state';
+import {getEnabledTimeNamespacedState} from '../../feature_flag/store/feature_flag_selectors';
 import {
   discardDirtyUpdates,
   navigated,
@@ -66,6 +67,7 @@ interface InternalNavigation extends Navigation {
 
 interface NavigationOptions {
   replaceState: boolean;
+  resetNamespacedState: boolean;
 }
 
 @Injectable()
@@ -131,8 +133,7 @@ export class AppRoutingEffects {
     this.location.onPopState().pipe(
       map((navigation) => {
         return {
-          pathname: navigation.pathname,
-          replaceState: navigation.replaceState,
+          ...navigation,
           browserInitiated: true,
         };
       })
@@ -159,6 +160,7 @@ export class AppRoutingEffects {
         options: {
           replaceState: navigationWithAbsolutePath.replaceState,
           browserInitiated: navigationWithAbsolutePath.browserInitiated,
+          resetNamespacedState: navigationWithAbsolutePath.resetNamespacedState,
         },
       };
     })
@@ -200,6 +202,7 @@ export class AppRoutingEffects {
         options: {
           replaceState: false,
           browserInitiated: false,
+          resetNamespacedState: false,
         },
       };
     })
@@ -296,6 +299,7 @@ export class AppRoutingEffects {
         }> => {
           const navigationOptions = {
             replaceState: options.replaceState ?? false,
+            resetNamespacedState: options.resetNamespacedState ?? false,
           };
 
           if (routeMatch.deepLinkProvider === null) {
@@ -332,6 +336,7 @@ export class AppRoutingEffects {
                       ? navigationOptions
                       : {
                           replaceState: true,
+                          resetNamespacedState: false,
                         },
                 };
               })
@@ -409,22 +414,53 @@ export class AppRoutingEffects {
     return changeUrl$.pipe(
       withLatestFrom(
         this.store.select(getActiveRoute),
-        this.store.select(getActiveNamespaceId)
+        this.store.select(getActiveNamespaceId),
+        this.store.select(getEnabledTimeNamespacedState)
       ),
-      map(([{route}, oldRoute, oldNamespaceId]) => {
-        return navigated({
-          before: oldRoute,
-          after: route,
-          beforeNamespaceId: oldNamespaceId,
-          afterNamespaceId: getRouteId(route.routeKind, route.params),
-        });
-      })
+      map(
+        ([
+          {route, navigationOptions},
+          oldRoute,
+          beforeNamespaceId,
+          enabledTimeNamespacedState,
+        ]) => {
+          return navigated({
+            before: oldRoute,
+            after: route,
+            beforeNamespaceId,
+            afterNamespaceId: getAfterNamespaceId(
+              enabledTimeNamespacedState,
+              route,
+              navigationOptions,
+              beforeNamespaceId
+            ),
+          });
+        }
+      )
     );
   });
 
   /** @export */
   ngrxOnInitEffects(): Action {
     return initAction();
+  }
+}
+
+function getAfterNamespaceId(
+  enabledTimeNamespacedState: boolean,
+  route: Route,
+  navigationOptions: NavigationOptions,
+  beforeNamespaceId: string | null
+): string {
+  if (!enabledTimeNamespacedState) {
+    return getRouteId(route.routeKind, route.params);
+  } else {
+    // Time-namespaced state is enabled.
+    if (beforeNamespaceId == null || navigationOptions.resetNamespacedState) {
+      return Date.now().toString();
+    } else {
+      return beforeNamespaceId;
+    }
   }
 }
 

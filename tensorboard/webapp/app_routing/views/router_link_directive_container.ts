@@ -47,6 +47,7 @@ export class RouterLinkDirectiveContainer {
     this.store.dispatch(
       navigationRequested({
         pathname: this.pathname,
+        resetNamespacedState: this.resetNamespacedState,
       })
     );
   }
@@ -82,4 +83,6 @@ export class RouterLinkDirectiveContainer {
     const pathname = [...pathParts].join('/');
     this.pathname = pathname.endsWith('/') ? pathname : pathname + '/';
   }
+
+  @Input() resetNamespacedState = false;
 }

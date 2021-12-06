@@ -60,6 +60,7 @@ export declare interface ExperimentRouteParams {
 export interface Navigation {
   pathname: string;
   replaceState?: boolean;
+  resetNamespacedState?: boolean;
   // Cannot change hash yet.
 }
 
