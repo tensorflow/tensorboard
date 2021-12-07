@@ -50,8 +50,8 @@ export class MeshViewer extends THREE.EventDispatcher {
   private _animationFrameIndex?: number;
 
   private _camera?: THREE.PerspectiveCamera;
-  private _init_camera_position?: THREE.Vector3;
-  private _init_camera_look_at?: THREE.Vector3;
+  private initCameraPosition?: THREE.Vector3;
+  private initCameraLookAt?: THREE.Vector3;
   private _cameraControls?: OrbitControls;
   private _renderer: THREE.WebGLRenderer;
 
@@ -159,17 +159,17 @@ export class MeshViewer extends THREE.EventDispatcher {
     );
     this._camera = camera;
 
-    this._init_camera_position = null;
+    this.initCameraPosition = null;
     if (config.camera.position) {
-      this._init_camera_position = new THREE.Vector3().fromArray(
+      this.initCameraPosition = new THREE.Vector3().fromArray(
         config.camera.position
       );
     }
 
-    this._init_camera_look_at = null;
-    if (config.camera.look_at) {
-      this._init_camera_look_at = new THREE.Vector3().fromArray(
-        config.camera.look_at
+    this.initCameraLookAt = null;
+    if (config.camera.lookAt) {
+      this.initCameraLookAt = new THREE.Vector3().fromArray(
+        config.camera.lookAt
       );
     }
 
@@ -428,15 +428,11 @@ export class MeshViewer extends THREE.EventDispatcher {
     // Make sure that even after arbitrary rotation mesh won't be clipped.
     const camera_to_far_edge = min_z < 0 ? -min_z + camera_z : camera_z - min_z;
     // Set camera position and orientation.
-    let camera_position = new THREE.Vector3(center.x, center.y, camera_z);
-    if (this._init_camera_position) {
-      camera_position = this._init_camera_position;
-    }
-    let look_at = center;
-    if (this._init_camera_look_at) {
-      look_at = this._init_camera_look_at;
-    }
-    this.setCameraViewpoint(camera_position, camera_to_far_edge * 3, look_at);
+    const cameraPosition = this.initCameraPosition ?? new THREE.Vector3(
+      center.x, center.y, camera_z
+    );
+    const lookAt = this.initCameraLookAt ?? center;
+    this.setCameraViewpoint(cameraPosition, camera_to_far_edge * 3, lookAt);
   }
   /**
    * Creates mesh geometry for current step data.
