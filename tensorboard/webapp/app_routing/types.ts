@@ -57,11 +57,24 @@ export declare interface ExperimentRouteParams {
   experimentId: string;
 }
 
+/**
+ * A navigation caused by user action in the app.
+ */
 export interface Navigation {
   pathname: string;
   replaceState?: boolean;
   resetNamespacedState?: boolean;
   // Cannot change hash yet.
+}
+
+/**
+ * A navigation from browser history. For example, from the user clicking on
+ * the 'back' or 'forward' buttons.
+ */
+export interface NavigationFromHistory {
+  pathname: string;
+  // The history state. The `state` property from PopStateEvent.
+  state: any;
 }
 
 export interface Route {

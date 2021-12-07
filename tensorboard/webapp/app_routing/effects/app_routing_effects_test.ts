@@ -40,6 +40,7 @@ import {buildRoute, provideLocationTesting, TestableLocation} from '../testing';
 import {
   DirtyUpdates,
   Navigation,
+  NavigationFromHistory,
   Route,
   RouteKind,
   SerializableQueryParams,
@@ -71,9 +72,10 @@ describe('app_routing_effects', () => {
   let action: ReplaySubject<Action>;
   let location: Location;
   let actualActions: Action[];
-  let onPopStateSubject: ReplaySubject<Navigation>;
+  let onPopStateSubject: ReplaySubject<NavigationFromHistory>;
   let pushStateSpy: jasmine.Spy;
   let replaceStateSpy: jasmine.Spy;
+  let getHistoryStateSpy: jasmine.Spy;
   let getHashSpy: jasmine.Spy;
   let getPathSpy: jasmine.Spy;
   let getSearchSpy: jasmine.Spy;
@@ -193,10 +195,11 @@ describe('app_routing_effects', () => {
     actualActions = [];
 
     location = TestBed.inject(TestableLocation) as Location;
-    onPopStateSubject = new ReplaySubject<Navigation>(1);
+    onPopStateSubject = new ReplaySubject<NavigationFromHistory>(1);
     spyOn(location, 'onPopState').and.returnValue(onPopStateSubject);
     pushStateSpy = spyOn(location, 'pushState');
     replaceStateSpy = spyOn(location, 'replaceState');
+    getHistoryStateSpy = spyOn(location, 'getHistoryState').and.returnValue({});
     getHashSpy = spyOn(location, 'getHash').and.returnValue('');
     getPathSpy = spyOn(location, 'getPath').and.returnValue('');
     getSearchSpy = spyOn(location, 'getSearch').and.returnValue([]);
@@ -297,6 +300,7 @@ describe('app_routing_effects', () => {
     it('reacts to browser popstate', () => {
       onPopStateSubject.next({
         pathname: '/experiments',
+        state: null,
       });
 
       expect(actualActions).toEqual([
@@ -551,6 +555,27 @@ describe('app_routing_effects', () => {
         ]);
       }));
 
+      it('are set in browser history state', fakeAsync(() => {
+        store.overrideSelector(getActiveRoute, null);
+        store.overrideSelector(getActiveNamespaceId, null);
+        store.overrideSelector(getEnabledTimeNamespacedState, true);
+        store.refreshState();
+
+        // Fake data in history state to show we don't override existing data.
+        getHistoryStateSpy.and.returnValue({other: 'data'});
+
+        getPathSpy.and.returnValue('/experiments');
+        getSearchSpy.and.returnValue([]);
+
+        action.next(effects.ngrxOnInitEffects());
+        tick();
+
+        expect(replaceStateSpy).toHaveBeenCalledWith(
+          {namespaceId: Date.now().toString(), other: 'data'},
+          null
+        );
+      }));
+
       it('are generated when resetNamespacedState is true', fakeAsync(() => {
         // Record initial time for use later.
         const before = Date.now();
@@ -657,6 +682,35 @@ describe('app_routing_effects', () => {
           }),
         ]);
       }));
+
+      it('are reused from history on popstate', fakeAsync(() => {
+        store.overrideSelector(getActiveRoute, buildRoute());
+        store.overrideSelector(getActiveNamespaceId, 'before');
+        store.overrideSelector(getEnabledTimeNamespacedState, true);
+        store.refreshState();
+
+        // History change signalled by popstate event.
+        onPopStateSubject.next({
+          pathname: '/experiments',
+          state: {namespaceId: 'some_id_from_history'},
+        });
+
+        tick();
+        expect(actualActions).toEqual([
+          jasmine.any(Object),
+          actions.navigated({
+            before: buildRoute(),
+            after: buildRoute({
+              routeKind: RouteKind.EXPERIMENTS,
+              pathname: '/experiments',
+            }),
+            // From getActiveNamespaceId().
+            beforeNamespaceId: 'before',
+            // From popstate event.
+            afterNamespaceId: 'some_id_from_history',
+          }),
+        ]);
+      }));
     });
 
     describe('deeplink reads', () => {
@@ -676,7 +730,10 @@ describe('app_routing_effects', () => {
         {
           name: 'popstate',
           actionCreator: () => {
-            onPopStateSubject.next({pathname: '/compare/a:b'});
+            onPopStateSubject.next({
+              pathname: '/compare/a:b',
+              state: null,
+            });
           },
         },
       ].forEach(({actionCreator, name}) => {
@@ -1188,6 +1245,7 @@ describe('app_routing_effects', () => {
             expect(replaceStateSpy).not.toHaveBeenCalled();
           } else {
             expect(replaceStateSpy).toHaveBeenCalledWith(
+              {},
               expected.replaceStateUrl
             );
           }
@@ -1358,6 +1416,7 @@ describe('app_routing_effects', () => {
 
       onPopStateSubject.next({
         pathname: '/meow',
+        state: null,
       });
 
       expect(actualActions).toEqual([
@@ -1379,6 +1438,7 @@ describe('app_routing_effects', () => {
 
       onPopStateSubject.next({
         pathname: '/foo/bar/experiment/123',
+        state: null,
       });
 
       expect(actualActions).toEqual([
