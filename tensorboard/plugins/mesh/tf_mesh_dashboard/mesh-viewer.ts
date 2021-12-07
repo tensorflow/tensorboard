@@ -50,6 +50,8 @@ export class MeshViewer extends THREE.EventDispatcher {
   private _animationFrameIndex?: number;
 
   private _camera?: THREE.PerspectiveCamera;
+  private initCameraPosition?: THREE.Vector3;
+  private initCameraLookAt?: THREE.Vector3;
   private _cameraControls?: OrbitControls;
   private _renderer: THREE.WebGLRenderer;
 
@@ -156,6 +158,21 @@ export class MeshViewer extends THREE.EventDispatcher {
       config.camera.far
     );
     this._camera = camera;
+
+    this.initCameraPosition = null;
+    if (config.camera.position) {
+      this.initCameraPosition = new THREE.Vector3().fromArray(
+        config.camera.position
+      );
+    }
+
+    this.initCameraLookAt = null;
+    if (config.camera.lookAt) {
+      this.initCameraLookAt = new THREE.Vector3().fromArray(
+        config.camera.lookAt
+      );
+    }
+
     var camControls = new OrbitControls(camera, domElement);
     const anyCamControls = camControls as any;
     // TODO(tensorboard-team): check whether these are depreacted; they no longer exist
@@ -411,11 +428,11 @@ export class MeshViewer extends THREE.EventDispatcher {
     // Make sure that even after arbitrary rotation mesh won't be clipped.
     const camera_to_far_edge = min_z < 0 ? -min_z + camera_z : camera_z - min_z;
     // Set camera position and orientation.
-    this.setCameraViewpoint(
-      {x: center.x, y: center.y, z: camera_z},
-      camera_to_far_edge * 3,
-      center
-    );
+    const cameraPosition =
+      this.initCameraPosition ??
+      new THREE.Vector3(center.x, center.y, camera_z);
+    const lookAt = this.initCameraLookAt ?? center;
+    this.setCameraViewpoint(cameraPosition, camera_to_far_edge * 3, lookAt);
   }
   /**
    * Creates mesh geometry for current step data.
