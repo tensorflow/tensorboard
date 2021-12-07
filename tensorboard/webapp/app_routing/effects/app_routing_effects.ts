@@ -253,7 +253,7 @@ export class AppRoutingEffects {
         options: {
           replaceState: false,
           browserInitiated: false,
-          namespaceOption: NamespaceOption.RESET,
+          namespaceOption: NamespaceOption.UNCHANGED,
         } as NavigationOptions,
       };
     })
