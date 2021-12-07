@@ -428,9 +428,9 @@ export class MeshViewer extends THREE.EventDispatcher {
     // Make sure that even after arbitrary rotation mesh won't be clipped.
     const camera_to_far_edge = min_z < 0 ? -min_z + camera_z : camera_z - min_z;
     // Set camera position and orientation.
-    const cameraPosition = this.initCameraPosition ?? new THREE.Vector3(
-      center.x, center.y, camera_z
-    );
+    const cameraPosition =
+      this.initCameraPosition ??
+      new THREE.Vector3(center.x, center.y, camera_z);
     const lookAt = this.initCameraLookAt ?? center;
     this.setCameraViewpoint(cameraPosition, camera_to_far_edge * 3, lookAt);
   }
