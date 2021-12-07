@@ -162,13 +162,15 @@ export class MeshViewer extends THREE.EventDispatcher {
     this._init_camera_position = null;
     if (config.camera.position) {
       this._init_camera_position = new THREE.Vector3().fromArray(
-        config.camera.position);
+        config.camera.position
+      );
     }
 
     this._init_camera_look_at = null;
     if (config.camera.look_at) {
       this._init_camera_look_at = new THREE.Vector3().fromArray(
-        config.camera.look_at);
+        config.camera.look_at
+      );
     }
 
     var camControls = new OrbitControls(camera, domElement);
