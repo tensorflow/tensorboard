@@ -14,7 +14,12 @@ limitations under the License.
 ==============================================================================*/
 
 import {createAction, props} from '@ngrx/store';
-
+import {
+  ExecutionDataResponse,
+  ExecutionDigestsResponse,
+  GraphExecutionDataResponse,
+  SourceFileResponse,
+} from '../data_source/tfdbg2_data_source';
 import {
   Alert,
   AlertsBreakdown,
@@ -25,12 +30,6 @@ import {
   StackFrame,
   StackFramesById,
 } from '../store/debugger_types';
-import {
-  ExecutionDigestsResponse,
-  ExecutionDataResponse,
-  GraphExecutionDataResponse,
-  SourceFileResponse,
-} from '../data_source/tfdbg2_data_source';
 
 /**
  * Actions for Debugger V2.

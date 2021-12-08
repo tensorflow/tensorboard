@@ -13,7 +13,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Action, ActionReducer, createReducer, on} from '@ngrx/store';
-
 import {fetchRunsSucceeded} from '../../runs/actions';
 import {
   DiscreteFilter,

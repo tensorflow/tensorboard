@@ -14,9 +14,9 @@ limitations under the License.
 ==============================================================================*/
 
 import {
+  areSlicingSpecsCompatible,
   formatShapeForDisplay,
   getDefaultSlicingSpec,
-  areSlicingSpecsCompatible,
   numElements,
 } from './shape-utils';
 import {TensorViewSlicingSpec} from './types';

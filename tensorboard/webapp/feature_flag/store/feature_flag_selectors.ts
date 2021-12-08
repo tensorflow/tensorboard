@@ -13,8 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {createSelector, createFeatureSelector} from '@ngrx/store';
-
+import {createFeatureSelector, createSelector} from '@ngrx/store';
 import {FeatureFlags} from '../types';
 import {
   FeatureFlagState,

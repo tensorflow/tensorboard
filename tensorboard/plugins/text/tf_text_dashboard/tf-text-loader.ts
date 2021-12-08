@@ -13,21 +13,19 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {PolymerElement, html} from '@polymer/polymer';
-import {customElement, property, observe, computed} from '@polymer/decorators';
+import {computed, customElement, observe, property} from '@polymer/decorators';
+import {html, PolymerElement} from '@polymer/polymer';
 import * as d3 from 'd3';
-
-import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
 import '../../../components/polymer/irons_and_papers';
+import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
 import {Canceller} from '../../../components/tf_backend/canceller';
-import {addParams} from '../../../components/tf_backend/urlPathHelpers';
-import {getRouter} from '../../../components/tf_backend/router';
 import {RequestManager} from '../../../components/tf_backend/requestManager';
-import {runsColorScale} from '../../../components/tf_color_scale/colorScale';
-
-import '../../../components/tf_markdown_view/tf-markdown-view';
+import {getRouter} from '../../../components/tf_backend/router';
+import {addParams} from '../../../components/tf_backend/urlPathHelpers';
 import '../../../components/tf_card_heading/tf-card-heading';
+import {runsColorScale} from '../../../components/tf_color_scale/colorScale';
 import '../../../components/tf_dashboard_common/scrollbar-style';
+import '../../../components/tf_markdown_view/tf-markdown-view';
 
 // tf-text-loader displays markdown text data from the Text plugin.
 @customElement('tf-text-loader')

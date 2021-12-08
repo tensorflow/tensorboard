@@ -22,7 +22,6 @@ import {
   Output,
 } from '@angular/core';
 import {Store} from '@ngrx/store';
-import {DataLoadState} from '../../../types/data';
 import {BehaviorSubject, combineLatest, Observable, Subject} from 'rxjs';
 import {
   distinctUntilChanged,
@@ -32,8 +31,8 @@ import {
   takeUntil,
   tap,
 } from 'rxjs/operators';
-
 import {State} from '../../../app_state';
+import {DataLoadState} from '../../../types/data';
 import {RunColorScale} from '../../../types/ui';
 import * as actions from '../../actions';
 import {

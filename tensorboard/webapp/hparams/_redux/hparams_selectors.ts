@@ -13,7 +13,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {createFeatureSelector, createSelector} from '@ngrx/store';
-
 import {DiscreteFilter, HparamAndMetricSpec, IntervalFilter} from '../types';
 import {combineHparamAndMetricSpecs} from './hparams_selectors_utils';
 import {HparamsState, HPARAMS_FEATURE_KEY, State} from './types';

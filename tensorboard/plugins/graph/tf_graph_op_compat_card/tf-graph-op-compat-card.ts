@@ -13,18 +13,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {PolymerElement, html} from '@polymer/polymer';
 import {computed, customElement, observe, property} from '@polymer/decorators';
+import {html, PolymerElement} from '@polymer/polymer';
 import * as d3 from 'd3';
-
+import {DarkModeMixin} from '../../../components/polymer/dark_mode_mixin';
 import '../../../components/polymer/irons_and_papers';
-import './tf-graph-op-compat-list-item';
+import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
 import * as tf_graph from '../tf_graph_common/graph';
 import * as tf_graph_hierarchy from '../tf_graph_common/hierarchy';
 import * as tf_graph_render from '../tf_graph_common/render';
-
-import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
-import {DarkModeMixin} from '../../../components/polymer/dark_mode_mixin';
+import './tf-graph-op-compat-list-item';
 
 @customElement('tf-graph-op-compat-card')
 class TfGraphOpCompatCard extends LegacyElementMixin(

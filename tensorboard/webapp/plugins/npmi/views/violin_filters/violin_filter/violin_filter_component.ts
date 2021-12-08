@@ -13,23 +13,21 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {
+  AfterViewInit,
   ChangeDetectionStrategy,
   Component,
-  Input,
-  Output,
-  AfterViewInit,
-  OnChanges,
-  SimpleChanges,
-  EventEmitter,
-  ViewChild,
   ElementRef,
+  EventEmitter,
+  Input,
+  OnChanges,
+  Output,
+  SimpleChanges,
+  ViewChild,
 } from '@angular/core';
-
 import * as d3 from '../../../../../third_party/d3';
-
-import {MetricFilter} from './../../../store/npmi_types';
-import {ViolinChartData, ViolinBin} from './../../../util/violin_data';
 import {RunColorScale} from '../../../../../types/ui';
+import {MetricFilter} from './../../../store/npmi_types';
+import {ViolinBin, ViolinChartData} from './../../../util/violin_data';
 
 @Component({
   selector: 'violin-filter-component',

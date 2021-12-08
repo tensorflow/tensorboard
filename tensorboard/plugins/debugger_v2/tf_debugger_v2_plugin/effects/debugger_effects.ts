@@ -29,7 +29,6 @@ import {
   tap,
   withLatestFrom,
 } from 'rxjs/operators';
-
 import {State as AppState} from '../../../../webapp/app_state';
 import {
   changePlugin,

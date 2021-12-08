@@ -14,25 +14,23 @@ limitations under the License.
 ==============================================================================*/
 import {TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
-
 import {Store} from '@ngrx/store';
-import {provideMockStore, MockStore} from '@ngrx/store/testing';
-
+import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {State} from '../../../../../app_state';
-import {appStateFromNpmiState, createNpmiState} from '../../../testing';
-import {createState, createCoreState} from '../../../../../core/testing';
-import {ParallelCoordinatesComponent} from './parallel_coordinates_component';
-import {ParallelCoordinatesContainer} from './parallel_coordinates_container';
-import {
-  getSelectedAnnotations,
-  getRunToMetrics,
-  getMetricFilters,
-  getAnnotationData,
-} from '../../../store';
+import {createCoreState, createState} from '../../../../../core/testing';
 import {
   getCurrentRouteRunSelection,
   getRunColorMap,
 } from '../../../../../selectors';
+import {
+  getAnnotationData,
+  getMetricFilters,
+  getRunToMetrics,
+  getSelectedAnnotations,
+} from '../../../store';
+import {appStateFromNpmiState, createNpmiState} from '../../../testing';
+import {ParallelCoordinatesComponent} from './parallel_coordinates_component';
+import {ParallelCoordinatesContainer} from './parallel_coordinates_container';
 
 describe('Npmi Parallel Coordinates Container', () => {
   let store: MockStore<State>;

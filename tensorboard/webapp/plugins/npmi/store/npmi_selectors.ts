@@ -12,19 +12,19 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {createSelector, createFeatureSelector} from '@ngrx/store';
+import {createFeatureSelector, createSelector} from '@ngrx/store';
 import {
-  NPMI_FEATURE_KEY,
-  NpmiState,
-  DataLoadState,
   AnnotationDataListing,
-  MetricListing,
-  State,
-  ArithmeticElement,
-  MetricFilterListing,
   AnnotationSort,
-  ViewActive,
+  ArithmeticElement,
+  DataLoadState,
   EmbeddingDataSet,
+  MetricFilterListing,
+  MetricListing,
+  NpmiState,
+  NPMI_FEATURE_KEY,
+  State,
+  ViewActive,
 } from './npmi_types';
 
 const selectNpmiState = createFeatureSelector<State, NpmiState>(

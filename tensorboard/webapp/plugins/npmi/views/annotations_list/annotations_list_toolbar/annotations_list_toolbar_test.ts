@@ -15,16 +15,14 @@ limitations under the License.
 import {NO_ERRORS_SCHEMA} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
-
-import {Store, Action} from '@ngrx/store';
-import {provideMockStore, MockStore} from '@ngrx/store/testing';
-
+import {Action, Store} from '@ngrx/store';
+import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {State} from '../../../../../app_state';
-import {AnnotationsListToolbarComponent} from './annotations_list_toolbar_component';
-import {AnnotationsListToolbarContainer} from './annotations_list_toolbar_container';
-import {appStateFromNpmiState, createNpmiState} from '../../../testing';
 import * as npmiActions from '../../../actions';
 import {getSelectedAnnotations} from '../../../store';
+import {appStateFromNpmiState, createNpmiState} from '../../../testing';
+import {AnnotationsListToolbarComponent} from './annotations_list_toolbar_component';
+import {AnnotationsListToolbarContainer} from './annotations_list_toolbar_container';
 
 describe('Npmi Annotations List Toolbar Container', () => {
   let store: MockStore<State>;

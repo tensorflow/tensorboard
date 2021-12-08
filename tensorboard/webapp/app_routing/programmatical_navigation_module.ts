@@ -14,10 +14,9 @@ limitations under the License.
 ==============================================================================*/
 import {Inject, ModuleWithProviders, NgModule, Optional} from '@angular/core';
 import {Action, ActionCreator, Creator} from '@ngrx/store';
-
 import {
-  NAVIGATION_PROVIDER,
   NavigationLambda,
+  NAVIGATION_PROVIDER,
   ProgrammaticalNavigation,
 } from './programmatical_navigation_types';
 

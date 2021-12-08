@@ -13,19 +13,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {PolymerElement, html} from '@polymer/polymer';
 import {computed, customElement, property} from '@polymer/decorators';
+import {html, PolymerElement} from '@polymer/polymer';
 import * as _ from 'lodash';
-
 import '../../../components/polymer/irons_and_papers';
 import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
 import {getTags} from '../../../components/tf_backend/backend';
 import {RequestManager} from '../../../components/tf_backend/requestManager';
 import {getRouter} from '../../../components/tf_backend/router';
 import {
+  categorizeRunTagCombinations,
   RunTagCategory,
   RunToTag,
-  categorizeRunTagCombinations,
 } from '../../../components/tf_categorization_utils/categorizationUtils';
 import '../../../components/tf_categorization_utils/tf-tag-filterer';
 import '../../../components/tf_dashboard_common/dashboard-style';
@@ -33,8 +32,8 @@ import '../../../components/tf_dashboard_common/tf-dashboard-layout';
 import '../../../components/tf_dashboard_common/tf-option-selector';
 import '../../../components/tf_paginated_view/tf-category-paginated-view';
 import '../../../components/tf_runs_selector/tf-runs-selector';
-import {TfDistributionLoader} from './tf-distribution-loader';
 import './tf-distribution-loader';
+import {TfDistributionLoader} from './tf-distribution-loader';
 
 /**
   A frontend that displays a set of tf-distribution-loaders, each of

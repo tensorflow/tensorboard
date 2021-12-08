@@ -16,12 +16,11 @@ limitations under the License.
 import {CommonModule} from '@angular/common';
 import {Component, Input, NO_ERRORS_SCHEMA, ViewChild} from '@angular/core';
 import {
+  ComponentFixture,
   fakeAsync,
   flush,
-  ComponentFixture,
   TestBed,
 } from '@angular/core/testing';
-
 import {MarkdownRendererComponent} from './markdown_renderer_component';
 
 @Component({

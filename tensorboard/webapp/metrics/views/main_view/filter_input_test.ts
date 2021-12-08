@@ -21,17 +21,15 @@ import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {Action, Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
-
 import {State} from '../../../app_state';
 import {sendKeys} from '../../../testing/dom';
-import {MatIconTestingModule} from '../../../testing/mat_icon_module';
 import {getAutocompleteOptions} from '../../../testing/material';
+import {MatIconTestingModule} from '../../../testing/mat_icon_module';
 import {FilterInputModule} from '../../../widgets/filter_input/filter_input_module';
 import {metricsTagFilterChanged} from '../../actions';
 import {PluginType} from '../../data_source';
 import * as selectors from '../../store/metrics_selectors';
 import {appStateFromMetricsState, buildMetricsState} from '../../testing';
-
 import {MetricsFilterInputComponent} from './filter_input_component';
 import {MetricsFilterInputContainer} from './filter_input_container';
 

@@ -15,17 +15,17 @@ limitations under the License.
 import {
   ChangeDetectionStrategy,
   Component,
-  Input,
-  Output,
   EventEmitter,
+  Input,
+  OnChanges,
   OnDestroy,
   OnInit,
-  OnChanges,
+  Output,
   SimpleChanges,
 } from '@angular/core';
-import {Validators, FormControl, ValidationErrors} from '@angular/forms';
-import {takeUntil} from 'rxjs/operators';
+import {FormControl, ValidationErrors, Validators} from '@angular/forms';
 import {Subject} from 'rxjs';
+import {takeUntil} from 'rxjs/operators';
 
 @Component({
   selector: 'metric-arithmetic-element-component',

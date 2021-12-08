@@ -15,7 +15,6 @@ limitations under the License.
 
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
-
 import {GraphComponent} from './graph_component';
 import {GraphContainer} from './graph_container';
 import {GraphOpComponent} from './graph_op_component';

@@ -14,7 +14,6 @@ limitations under the License.
 ==============================================================================*/
 import {Component, HostBinding, Inject} from '@angular/core';
 import {MatDialog} from '@angular/material/dialog';
-
 import {TbdevUploadDialogContainer} from './tbdev_upload_dialog_container';
 
 // A list of hostname values that will trigger the button to appear.

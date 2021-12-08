@@ -17,8 +17,8 @@ import {
   Component,
   ElementRef,
   EventEmitter,
-  ViewChild,
   Output,
+  ViewChild,
 } from '@angular/core';
 
 interface PolymerChangeEvent extends CustomEvent {

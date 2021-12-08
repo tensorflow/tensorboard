@@ -12,9 +12,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {PolymerElement} from '@polymer/polymer';
 import {customElement} from '@polymer/decorators';
-
+import {PolymerElement} from '@polymer/polymer';
 import {runsColorScale} from './colorScale';
 
 // HACK: this Polymer component allows stores to be accessible from

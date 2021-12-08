@@ -20,7 +20,6 @@ import {BrowserDynamicTestingModule} from '@angular/platform-browser-dynamic/tes
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
-
 import {State} from '../../app_state';
 import {RouteRegistryModule} from '../route_registry_module';
 import {
@@ -29,7 +28,6 @@ import {
 } from '../store/app_routing_selectors';
 import {buildRoute} from '../testing';
 import {RouteKind} from '../types';
-
 import {RouterOutletComponent} from './router_outlet_component';
 import {RouterOutletContainer} from './router_outlet_container';
 

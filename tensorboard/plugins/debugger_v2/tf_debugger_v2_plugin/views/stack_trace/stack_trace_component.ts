@@ -21,7 +21,6 @@ import {
   Output,
   ViewChild,
 } from '@angular/core';
-
 import {CodeLocationType} from '../../store/debugger_types';
 
 export interface StackFrameForDisplay {

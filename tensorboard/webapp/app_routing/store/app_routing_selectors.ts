@@ -13,23 +13,21 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {createFeatureSelector, createSelector} from '@ngrx/store';
-
+import {ExperimentAlias} from '../../experiments/types';
 import {
   getExperimentIdsFromRouteParams,
   getRouteId as getRouteIdFromKindAndParams,
 } from '../internal_utils';
-import {CompareRouteParams, Route, RouteKind} from '../types';
-
-import {
-  APP_ROUTING_FEATURE_KEY,
-  AppRoutingState,
-  State,
-} from './app_routing_types';
 import {
   getCompareExperimentIdAliasSpec,
   getCompareExperimentIdAliasWithNumberSpec,
 } from '../store_only_utils';
-import {ExperimentAlias} from '../../experiments/types';
+import {CompareRouteParams, Route, RouteKind} from '../types';
+import {
+  AppRoutingState,
+  APP_ROUTING_FEATURE_KEY,
+  State,
+} from './app_routing_types';
 
 const getAppRoutingState = createFeatureSelector<State, AppRoutingState>(
   APP_ROUTING_FEATURE_KEY

@@ -13,17 +13,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {PolymerElement, html} from '@polymer/polymer';
 import {computed, customElement, observe, property} from '@polymer/decorators';
-
-import '../../../components/polymer/irons_and_papers';
+import {html, PolymerElement} from '@polymer/polymer';
 import * as PolymerDom from '../../../components/polymer/dom';
-
+import '../../../components/polymer/irons_and_papers';
+import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
+import * as tf_graph_render from '../tf_graph_common/render';
 import * as tf_graph_scene from '../tf_graph_common/scene';
 import * as tf_graph_util from '../tf_graph_common/util';
-import * as tf_graph_render from '../tf_graph_common/render';
-
-import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
 
 @customElement('tf-graph-debugger-data-card')
 class TfGraphDebuggerDataCard extends LegacyElementMixin(PolymerElement) {

@@ -13,14 +13,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Injectable, Provider} from '@angular/core';
-
 import {of} from 'rxjs';
-
 import {navigated, NavigatedPayload} from './actions';
+import {getRouteId} from './internal_utils';
 import {Location} from './location';
 import {Route, RouteKind} from './types';
-
-import {getRouteId} from './internal_utils';
 
 export function buildRoute(routeOverride: Partial<Route> = {}): Route {
   return {

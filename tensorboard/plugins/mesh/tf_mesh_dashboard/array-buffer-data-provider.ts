@@ -19,8 +19,8 @@ limitations under the License.
 // TODO(b/135959734): this class must be refactored into base DataProvider and
 // subclass ArrayBufferDataProvider later.
 
-import {RequestManager} from '../../../components/tf_backend/requestManager';
 import {Canceller} from '../../../components/tf_backend/canceller';
+import {RequestManager} from '../../../components/tf_backend/requestManager';
 import {getRouter} from '../../../components/tf_backend/router';
 
 /**

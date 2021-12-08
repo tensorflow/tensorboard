@@ -13,20 +13,20 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {
+  AfterViewInit,
   ChangeDetectionStrategy,
   Component,
-  AfterViewInit,
-  OnChanges,
-  SimpleChanges,
-  Input,
-  ViewChild,
   ElementRef,
   HostListener,
+  Input,
+  OnChanges,
+  SimpleChanges,
+  ViewChild,
 } from '@angular/core';
 import * as d3 from '../../../../../third_party/d3';
+import {RunColorScale} from '../../../../../types/ui';
 import {Coordinate} from '../../../util/coordinate_data';
 import {ValueData} from './../../../store/npmi_types';
-import {RunColorScale} from '../../../../../types/ui';
 
 @Component({
   selector: 'parallel-coordinates-component',

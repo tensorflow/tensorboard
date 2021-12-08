@@ -13,9 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import * as _ from 'lodash';
-
-import {getRouter} from './router';
 import {BaseStore} from './baseStore';
+import {getRouter} from './router';
 
 export class RunsStore extends BaseStore {
   private _runs: string[] = [];

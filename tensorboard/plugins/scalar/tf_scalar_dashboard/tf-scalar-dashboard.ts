@@ -13,8 +13,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {html} from '@polymer/polymer';
 import {computed, customElement, observe, property} from '@polymer/decorators';
+import {html} from '@polymer/polymer';
+import * as _ from 'lodash';
 import '../../../components/polymer/irons_and_papers';
 import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
 import {getTags} from '../../../components/tf_backend/backend';
@@ -35,7 +36,6 @@ import {FeatureFlags} from '../../../webapp/feature_flag/types';
 import './tf-scalar-card';
 import {TfScalarCard} from './tf-scalar-card';
 import './tf-smoothing-input';
-import * as _ from 'lodash';
 
 /**
  * A frontend that displays a set of tf-scalar-charts, each of which

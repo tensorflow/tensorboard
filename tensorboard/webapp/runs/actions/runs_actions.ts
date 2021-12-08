@@ -17,7 +17,6 @@ limitations under the License.
  */
 
 import {createAction, props} from '@ngrx/store';
-
 import {SortDirection} from '../../types/ui';
 import {Run} from '../data_source/runs_data_source_types';
 import {ExperimentIdToRunsAndMetadata, GroupBy, SortKey} from '../types';

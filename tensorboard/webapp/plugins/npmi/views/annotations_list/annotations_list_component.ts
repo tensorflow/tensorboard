@@ -15,11 +15,10 @@ limitations under the License.
 import {
   ChangeDetectionStrategy,
   Component,
+  EventEmitter,
   Input,
   Output,
-  EventEmitter,
 } from '@angular/core';
-
 import {
   AnnotationDataListing,
   AnnotationSort,

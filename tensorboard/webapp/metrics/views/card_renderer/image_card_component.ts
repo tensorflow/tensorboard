@@ -20,7 +20,6 @@ import {
   Output,
 } from '@angular/core';
 import {DataLoadState} from '../../../types/data';
-
 import {RunColorScale} from '../../../types/ui';
 
 @Component({

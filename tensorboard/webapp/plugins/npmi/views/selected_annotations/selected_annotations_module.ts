@@ -14,13 +14,11 @@ limitations under the License.
 ==============================================================================*/
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
-
 import {MatButtonModule} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
-
+import {ParallelCoordinatesModule} from './parallel_coordinates/parallel_coordinates_module';
 import {SelectedAnnotationsComponent} from './selected_annotations_component';
 import {SelectedAnnotationsContainer} from './selected_annotations_container';
-import {ParallelCoordinatesModule} from './parallel_coordinates/parallel_coordinates_module';
 
 @NgModule({
   declarations: [SelectedAnnotationsComponent, SelectedAnnotationsContainer],

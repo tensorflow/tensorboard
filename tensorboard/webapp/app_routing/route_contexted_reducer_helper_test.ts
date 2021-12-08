@@ -23,7 +23,6 @@ import {
   StoreModule,
 } from '@ngrx/store';
 import {firstValueFrom} from 'rxjs';
-
 import {composeReducers} from '../util/ngrx';
 import {navigated} from './actions';
 import {

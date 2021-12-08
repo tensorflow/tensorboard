@@ -13,8 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Component} from '@angular/core';
-import {Store, select, createSelector} from '@ngrx/store';
-
+import {createSelector, select, Store} from '@ngrx/store';
 import {getEnvironment, State} from '../core/store';
 
 const getLogdir = createSelector(

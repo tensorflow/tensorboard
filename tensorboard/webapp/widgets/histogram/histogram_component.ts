@@ -25,7 +25,6 @@ import {
 } from '@angular/core';
 import {fromEvent, Subject} from 'rxjs';
 import {takeUntil} from 'rxjs/operators';
-
 import * as d3 from '../../third_party/d3';
 import {HCLColor} from '../../third_party/d3';
 import {

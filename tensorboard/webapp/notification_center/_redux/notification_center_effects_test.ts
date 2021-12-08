@@ -16,7 +16,7 @@ import {TestBed} from '@angular/core/testing';
 import {provideMockActions} from '@ngrx/effects/testing';
 import {Action, Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
-import {of, Subject, throwError} from 'rxjs';
+import {Subject, throwError} from 'rxjs';
 import {State} from '../../app_state';
 import {TBHttpClientTestingModule} from '../../webapp_data_source/tb_http_client_testing';
 import {

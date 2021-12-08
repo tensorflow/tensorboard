@@ -12,11 +12,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {createSelector, createFeatureSelector} from '@ngrx/store';
-import {TextState, State, TEXT_FEATURE_KEY} from './text_types';
-
+import {createFeatureSelector, createSelector} from '@ngrx/store';
 import {StepDatum} from '../data_source';
 import {RunTag} from '../types';
+import {State, TextState, TEXT_FEATURE_KEY} from './text_types';
 
 const selectTextState = createFeatureSelector<State, TextState>(
   TEXT_FEATURE_KEY

@@ -12,16 +12,15 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {ScrollingModule} from '@angular/cdk/scrolling';
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
-import {ScrollingModule} from '@angular/cdk/scrolling';
-
+import {AnnotationModule} from './annotation/annotation_module';
 import {AnnotationsListComponent} from './annotations_list_component';
 import {AnnotationsListContainer} from './annotations_list_container';
 import {AnnotationsListToolbarModule} from './annotations_list_toolbar/annotations_list_toolbar_module';
 import {HeaderModule} from './header/header_module';
 import {LegendModule} from './legend/legend_module';
-import {AnnotationModule} from './annotation/annotation_module';
 
 @NgModule({
   declarations: [AnnotationsListComponent, AnnotationsListContainer],

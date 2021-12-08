@@ -18,27 +18,25 @@ limitations under the License.
 import {CommonModule} from '@angular/common';
 import {TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
-
 import {Store} from '@ngrx/store';
-import {provideMockStore, MockStore} from '@ngrx/store/testing';
-
+import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {alertTypeFocusToggled} from '../../actions';
 import {DebuggerComponent} from '../../debugger_component';
 import {DebuggerContainer} from '../../debugger_container';
-import {State, AlertType} from '../../store/debugger_types';
+import {AlertType, State} from '../../store/debugger_types';
 import {
   createAlertsState,
   createDebuggerState,
   createState,
 } from '../../testing';
-import {AlertsContainer} from './alerts_container';
-import {AlertsModule} from './alerts_module';
 import {ExecutionDataModule} from '../execution_data/execution_data_module';
 import {GraphExecutionsModule} from '../graph_executions/graph_executions_module';
 import {InactiveModule} from '../inactive/inactive_module';
 import {SourceFilesModule} from '../source_files/source_files_module';
 import {StackTraceModule} from '../stack_trace/stack_trace_module';
 import {TimelineModule} from '../timeline/timeline_module';
+import {AlertsContainer} from './alerts_container';
+import {AlertsModule} from './alerts_module';
 
 describe('Alerts Container', () => {
   let store: MockStore<State>;

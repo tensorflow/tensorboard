@@ -14,7 +14,6 @@ limitations under the License.
 ==============================================================================*/
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
-
 import {ParallelCoordinatesComponent} from './parallel_coordinates_component';
 import {ParallelCoordinatesContainer} from './parallel_coordinates_container';
 

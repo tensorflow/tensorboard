@@ -20,7 +20,6 @@ import {
   Optional,
   Type,
 } from '@angular/core';
-
 import {RouteConfigs} from './route_config';
 import {isConcreteRouteDef, RouteDef} from './route_config_types';
 import {ROUTE_CONFIGS_TOKEN} from './route_registry_types';

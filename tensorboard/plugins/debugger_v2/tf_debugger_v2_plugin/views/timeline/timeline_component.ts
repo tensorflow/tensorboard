@@ -19,7 +19,7 @@ import {
   Input,
   Output,
 } from '@angular/core';
-import {Execution, AlertType} from '../../store/debugger_types';
+import {AlertType, Execution} from '../../store/debugger_types';
 
 export interface ExecutionDigestForDisplay {
   // Op type for long-form display.

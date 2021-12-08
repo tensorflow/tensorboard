@@ -13,8 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {patchAsync, flushAsync, setTimeoutP} from './async.js';
-import {Benchmark, Size, Result} from './types.js';
+import {flushAsync, patchAsync, setTimeoutP} from './async.js';
+import {Benchmark, Result, Size} from './types.js';
 
 export async function runner(benchmarks: Benchmark[]): Promise<Result[]> {
   const results: Result[] = [];

@@ -13,7 +13,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {createFeatureSelector, createSelector} from '@ngrx/store';
-
 import {State} from '../../app_state';
 import {DataLoadState, LoadState} from '../../types/data';
 import {ElementId} from '../../util/dom';

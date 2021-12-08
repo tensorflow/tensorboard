@@ -18,17 +18,15 @@ limitations under the License.
 import {NO_ERRORS_SCHEMA} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
-
 import {Action, Store} from '@ngrx/store';
+import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {State} from '../../../../app_state';
-import {provideMockStore, MockStore} from '@ngrx/store/testing';
-
+import {createCoreState, createState} from '../../../../core/testing';
+import * as npmiActions from '../../actions';
+import {getMetricFilters, getSidebarExpanded} from '../../store';
+import {appStateFromNpmiState, createNpmiState} from '../../testing';
 import {ViolinFiltersComponent} from './violin_filters_component';
 import {ViolinFiltersContainer} from './violin_filters_container';
-import {appStateFromNpmiState, createNpmiState} from '../../testing';
-import {createState, createCoreState} from '../../../../core/testing';
-import * as npmiActions from '../../actions';
-import {getSidebarExpanded, getMetricFilters} from '../../store';
 
 describe('Npmi Violin Filters Container', () => {
   let store: MockStore<State>;

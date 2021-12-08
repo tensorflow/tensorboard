@@ -15,9 +15,8 @@ limitations under the License.
 import {ChangeDetectionStrategy, Component, Inject} from '@angular/core';
 import {MAT_DIALOG_DATA} from '@angular/material/dialog';
 import {Store} from '@ngrx/store';
-import {Observable, BehaviorSubject, combineLatest} from 'rxjs';
-import {filter, startWith, map} from 'rxjs/operators';
-
+import {BehaviorSubject, combineLatest, Observable} from 'rxjs';
+import {filter, map, startWith} from 'rxjs/operators';
 import {State} from '../../../app_state';
 import {Run} from '../../../runs/types';
 import {

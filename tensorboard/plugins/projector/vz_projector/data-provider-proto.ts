@@ -13,12 +13,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {
-  DataSet,
-  DataProto,
-  State,
   DataPoint,
-  SpriteAndMetadataInfo,
+  DataProto,
+  DataSet,
   PointMetadata,
+  SpriteAndMetadataInfo,
+  State,
 } from './data';
 import {analyzeMetadata, DataProvider, ProjectorConfig} from './data-provider';
 

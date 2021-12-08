@@ -15,11 +15,9 @@ limitations under the License.
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
 import {FormsModule} from '@angular/forms';
-
 import {MatButtonModule} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
 import {MatSlideToggleModule} from '@angular/material/slide-toggle';
-
 import {AnnotationsListToolbarComponent} from './annotations_list_toolbar_component';
 import {AnnotationsListToolbarContainer} from './annotations_list_toolbar_container';
 import {AnnotationsSearchModule} from './annotations_search/annotations_search_module';

@@ -12,9 +12,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import * as Plottable from 'plottable';
 import * as d3 from 'd3';
-
+import * as Plottable from 'plottable';
 import {TfScale} from './tf-scale';
 
 // Smallest positive non-zero value represented by IEEE 754 binary (64 bit)	import * as d3 from 'd3';

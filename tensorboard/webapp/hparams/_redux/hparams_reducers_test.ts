@@ -21,12 +21,12 @@ import * as actions from './hparams_actions';
 import {reducers} from './hparams_reducers';
 import {
   buildDiscreteFilter,
+  buildFilterState,
   buildHparamSpec,
   buildHparamsState,
   buildIntervalFilter,
   buildMetricSpec,
   buildSpecs,
-  buildFilterState,
 } from './testing';
 
 describe('hparams/_redux/hparams_reducers_test', () => {

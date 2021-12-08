@@ -17,7 +17,6 @@ import {Actions, createEffect, ofType, OnInitEffects} from '@ngrx/effects';
 import {Action, createAction, Store} from '@ngrx/store';
 import {EMPTY, Observable} from 'rxjs';
 import {catchError, map, mergeMap} from 'rxjs/operators';
-
 import {State} from '../../app_state';
 import {NotificationCenterDataSource} from '../_data_source/index';
 import * as actions from './notification_center_actions';

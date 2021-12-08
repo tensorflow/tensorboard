@@ -12,24 +12,23 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component, ChangeDetectionStrategy, Input} from '@angular/core';
+import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {Store} from '@ngrx/store';
-import {State} from '../../../../../app_state';
 import {Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
-
+import {State} from '../../../../../app_state';
+import * as selectors from '../../../../../selectors';
+import {RunColorScale} from '../../../../../types/ui';
+import * as npmiActions from '../../../actions';
 import {
-  getSelectedAnnotations,
+  getAnnotationSort,
   getFlaggedAnnotations,
   getHiddenAnnotations,
+  getSelectedAnnotations,
   getShowCounts,
   getSidebarWidth,
-  getAnnotationSort,
 } from '../../../store';
-import * as selectors from '../../../../../selectors';
 import {ValueData} from '../../../store/npmi_types';
-import * as npmiActions from '../../../actions';
-import {RunColorScale} from '../../../../../types/ui';
 
 @Component({
   selector: 'npmi-annotation',

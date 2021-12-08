@@ -20,7 +20,6 @@ import {
   Output,
 } from '@angular/core';
 import {MatDialog} from '@angular/material/dialog';
-
 import {GroupBy, GroupByKey} from '../../types';
 import {RegexEditDialogContainer} from './regex_edit_dialog_container';
 

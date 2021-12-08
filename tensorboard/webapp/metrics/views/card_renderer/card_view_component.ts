@@ -19,7 +19,6 @@ import {
   Input,
   Output,
 } from '@angular/core';
-
 import {RunColorScale} from '../../../types/ui';
 import {PluginType} from '../../data_source';
 import {CardId} from '../../types';

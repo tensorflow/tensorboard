@@ -23,13 +23,12 @@ import {
   ViewChild,
 } from '@angular/core';
 import {MatDialog} from '@angular/material/dialog';
-
 import {DataLoadState} from '../../../types/data';
 import {
   Formatter,
+  intlNumberFormatter,
   numberFormatter,
   relativeTimeFormatter,
-  intlNumberFormatter,
   siNumberFormatter,
 } from '../../../widgets/line_chart_v2/lib/formatter';
 import {LineChartComponent} from '../../../widgets/line_chart_v2/line_chart_component';

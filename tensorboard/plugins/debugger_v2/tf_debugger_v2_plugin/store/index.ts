@@ -15,4 +15,4 @@ limitations under the License.
 
 export * from './debugger_reducers';
 export * from './debugger_selectors';
-export {DEBUGGER_FEATURE_KEY, DebuggerState, State} from './debugger_types';
+export {DebuggerState, DEBUGGER_FEATURE_KEY, State} from './debugger_types';

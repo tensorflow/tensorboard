@@ -15,7 +15,6 @@ limitations under the License.
 
 import {InjectionToken} from '@angular/core';
 import {StoreConfig} from '@ngrx/store';
-
 import {INITIAL_STATE} from './metrics_reducers';
 import {MetricsSettings, MetricsState} from './metrics_types';
 

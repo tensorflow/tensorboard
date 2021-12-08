@@ -14,14 +14,13 @@ limitations under the License.
 ==============================================================================*/
 import numeric from 'numeric';
 import {UMAP} from 'umap-js';
-
 import {TSNE} from './bh_tsne';
 import {SpriteMetadata} from './data-provider';
-import {CameraDef} from './scatterPlot';
 import * as knn from './knn';
-import * as vector from './vector';
 import * as logging from './logging';
+import {CameraDef} from './scatterPlot';
 import * as util from './util';
+import * as vector from './vector';
 
 export type DistanceFunction = (a: vector.Vector, b: vector.Vector) => number;
 export type ProjectionComponents3D = [string, string, string];

@@ -14,11 +14,9 @@ limitations under the License.
 ==============================================================================*/
 
 import {computed, customElement, observe, property} from '@polymer/decorators';
-import {PolymerElement, html} from '@polymer/polymer';
-
-import {LegacyElementMixin} from '../polymer/legacy_element_mixin';
+import {html, PolymerElement} from '@polymer/polymer';
 import '../polymer/irons_and_papers';
-
+import {LegacyElementMixin} from '../polymer/legacy_element_mixin';
 import './run-color-style';
 import './scrollbar-style';
 

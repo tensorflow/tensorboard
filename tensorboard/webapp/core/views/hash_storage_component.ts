@@ -25,7 +25,6 @@ import {
 } from '@angular/core';
 import {fromEvent, Observable, Subject} from 'rxjs';
 import {takeUntil} from 'rxjs/operators';
-
 import {DeepLinkerInterface, SetStringOption} from '../../deeplink/types';
 
 export enum ChangedProp {

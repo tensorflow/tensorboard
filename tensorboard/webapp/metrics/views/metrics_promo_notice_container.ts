@@ -14,7 +14,6 @@ limitations under the License.
 ==============================================================================*/
 import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {Store} from '@ngrx/store';
-
 import {State} from '../../app_state';
 import {metricsPromoDismissed, metricsPromoGoToScalars} from '../actions';
 

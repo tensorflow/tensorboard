@@ -14,18 +14,17 @@ limitations under the License.
 ==============================================================================*/
 import {Component} from '@angular/core';
 import {Store} from '@ngrx/store';
-
 import {
+  changePageSize,
+  changeReloadPeriod,
+  toggleReloadEnabled,
+} from '../_redux/settings_actions';
+import {
+  getPageSize,
   getReloadEnabled,
   getReloadPeriodInMs,
-  getPageSize,
 } from '../_redux/settings_selectors';
 import {State} from '../_redux/settings_types';
-import {
-  toggleReloadEnabled,
-  changeReloadPeriod,
-  changePageSize,
-} from '../_redux/settings_actions';
 
 @Component({
   selector: 'settings-dialog',

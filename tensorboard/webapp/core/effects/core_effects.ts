@@ -12,8 +12,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import '../../tb_polymer_interop_types';
-
 import {Injectable} from '@angular/core';
 import {Actions, createEffect, ofType} from '@ngrx/effects';
 import {Store} from '@ngrx/store';
@@ -31,7 +29,6 @@ import {
   throttleTime,
   withLatestFrom,
 } from 'rxjs/operators';
-
 import {navigated} from '../../app_routing/actions';
 import {
   getExperimentIdToExperimentAliasMap,
@@ -40,6 +37,7 @@ import {
 } from '../../app_routing/store/app_routing_selectors';
 import {RouteKind} from '../../app_routing/types';
 import {getEnabledExperimentalPlugins} from '../../feature_flag/store/feature_flag_selectors';
+import '../../tb_polymer_interop_types';
 import {DataLoadState} from '../../types/data';
 import {
   TBServerDataSource,

@@ -13,7 +13,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {NgModule} from '@angular/core';
-
 import {ResizeDetectorDirective} from './resize_detector_directive';
 
 @NgModule({

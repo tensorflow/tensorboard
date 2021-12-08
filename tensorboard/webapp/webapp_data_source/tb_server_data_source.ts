@@ -12,15 +12,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import '../tb_polymer_interop_types';
-
 import {Injectable} from '@angular/core';
-import {from, forkJoin, throwError, Observable} from 'rxjs';
+import {forkJoin, from, Observable, throwError} from 'rxjs';
 import {catchError, map} from 'rxjs/operators';
-
-import {Environment, PluginsListing} from '../types/api';
 import {PluginsListFailureCode} from '../core/types';
-
+import '../tb_polymer_interop_types';
+import {Environment, PluginsListing} from '../types/api';
 import {HttpErrorResponse, TBHttpClient} from './tb_http_client';
 
 function getPluginsListingQueryParams(enabledExperimentPluginIds: string[]) {

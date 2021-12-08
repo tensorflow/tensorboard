@@ -13,20 +13,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Action, createReducer, on} from '@ngrx/store';
-
 import * as actions from '../actions';
+import * as metricType from '../util/metric_type';
 import {
-  NpmiState,
+  ArithmeticElement,
+  ArithmeticKind,
   DataLoadState,
   MetricListing,
-  SortOrder,
-  ArithmeticElement,
+  NpmiState,
   Operator,
-  ArithmeticKind,
+  SortOrder,
   ViewActive,
 } from './npmi_types';
-import * as metricType from '../util/metric_type';
-import {buildEmbeddingDataSet} from '../util/umap';
 
 const initialState: NpmiState = {
   pluginDataLoaded: {

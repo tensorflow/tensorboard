@@ -15,7 +15,6 @@ limitations under the License.
 
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
-
 import {ResizeDetectorModule} from '../resize_detector_module';
 import {SourceCodeComponent} from './source_code_component';
 import {SourceCodeContainer} from './source_code_container';

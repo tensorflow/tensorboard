@@ -16,7 +16,6 @@ limitations under the License.
 import {ScrollingModule} from '@angular/cdk/scrolling';
 import {Component, ElementRef, Input, ViewChild} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
-
 import {IntersectionObserverDirective} from './intersection_observer_directive';
 
 @Component({

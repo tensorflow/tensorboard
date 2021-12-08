@@ -15,8 +15,8 @@ limitations under the License.
 
 /** Unit tests for selection. */
 
-import {MoveDirection, Shape, TensorViewSlicingSpec, TensorView} from './types';
 import {TensorElementSelection} from './selection';
+import {MoveDirection, Shape, TensorViewSlicingSpec} from './types';
 
 describe('TensorElementSelection', () => {
   it('Scalar shape', () => {

@@ -19,12 +19,10 @@ import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {Action, Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
-
 import {State} from '../../app_state';
 import {navigationRequested} from '../actions';
 import {AppRootProvider, TestableAppRootProvider} from '../app_root';
 import {LocationModule} from '../location_module';
-
 import {RouterLinkDirectiveContainer} from './router_link_directive_container';
 
 @Component({

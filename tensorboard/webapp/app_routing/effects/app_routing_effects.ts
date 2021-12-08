@@ -27,7 +27,6 @@ import {
   tap,
   withLatestFrom,
 } from 'rxjs/operators';
-
 import {State} from '../../app_state';
 import {getEnabledTimeNamespacedState} from '../../feature_flag/store/feature_flag_selectors';
 import {
@@ -50,8 +49,8 @@ import {ProgrammaticalNavigationModule} from '../programmatical_navigation_modul
 import {RouteConfigs} from '../route_config';
 import {RouteRegistryModule} from '../route_registry_module';
 import {
-  getActiveRoute,
   getActiveNamespaceId,
+  getActiveRoute,
 } from '../store/app_routing_selectors';
 import {Navigation, Route, RouteKind, RouteParams} from '../types';
 

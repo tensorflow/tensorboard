@@ -15,7 +15,6 @@ limitations under the License.
 import {Injectable} from '@angular/core';
 import {fromEvent, Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
-
 import {createURLSearchParamsFromSerializableQueryParams} from './internal_utils';
 import {Navigation, Route, SerializableQueryParams} from './types';
 

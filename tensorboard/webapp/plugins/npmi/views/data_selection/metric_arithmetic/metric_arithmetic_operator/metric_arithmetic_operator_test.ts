@@ -17,9 +17,8 @@ limitations under the License.
  */
 import {NO_ERRORS_SCHEMA} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
-
-import {MetricArithmeticOperatorComponent} from './metric_arithmetic_operator_component';
 import {Operator} from '../../../../store/npmi_types';
+import {MetricArithmeticOperatorComponent} from './metric_arithmetic_operator_component';
 
 describe('Npmi Metric Arithmetic Operator Component', () => {
   beforeEach(async () => {

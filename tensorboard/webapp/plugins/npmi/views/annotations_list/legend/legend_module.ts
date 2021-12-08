@@ -13,7 +13,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {NgModule} from '@angular/core';
-
 import {LegendComponent} from './legend_component';
 import {LegendElementModule} from './legend_element/legend_element_module';
 

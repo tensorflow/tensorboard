@@ -13,13 +13,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {PolymerElement, html} from '@polymer/polymer';
-import {computed, observe, customElement, property} from '@polymer/decorators';
-import {LegacyElementMixin} from '../polymer/legacy_element_mixin';
-import '../polymer/irons_and_papers';
-
+import {computed, customElement, observe, property} from '@polymer/decorators';
+import {html, PolymerElement} from '@polymer/polymer';
 import * as _ from 'lodash';
-
+import '../polymer/irons_and_papers';
+import {LegacyElementMixin} from '../polymer/legacy_element_mixin';
 import './run-color-style';
 import './scrollbar-style';
 

@@ -18,19 +18,17 @@ limitations under the License.
 import {NO_ERRORS_SCHEMA} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
-
 import {Store} from '@ngrx/store';
+import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {State} from '../../../../../app_state';
-import {provideMockStore, MockStore} from '@ngrx/store/testing';
-
-import {MetricArithmeticContainer} from './metric_arithmetic_container';
-import {MetricArithmeticComponent} from './metric_arithmetic_component';
+import {ArithmeticKind, Operator} from '../../../store/npmi_types';
 import {appStateFromNpmiState, createNpmiState} from '../../../testing';
 import {
   getMetricArithmetic,
   getMetricFilters,
 } from './../../../store/npmi_selectors';
-import {ArithmeticKind, Operator} from '../../../store/npmi_types';
+import {MetricArithmeticComponent} from './metric_arithmetic_component';
+import {MetricArithmeticContainer} from './metric_arithmetic_container';
 
 describe('Npmi Metric Arithmetic Container', () => {
   let store: MockStore<State>;

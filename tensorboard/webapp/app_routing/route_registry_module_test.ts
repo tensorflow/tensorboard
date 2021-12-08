@@ -15,7 +15,6 @@ limitations under the License.
 
 import {Component} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
-
 import {RouteRegistryModule} from './route_registry_module';
 import {RouteKind} from './types';
 

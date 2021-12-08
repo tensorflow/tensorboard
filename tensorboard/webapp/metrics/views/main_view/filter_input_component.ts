@@ -20,7 +20,6 @@ import {
   Input,
   Output,
 } from '@angular/core';
-
 import {escapeForRegex} from '../../../util/string';
 
 @Component({

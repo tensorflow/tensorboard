@@ -13,13 +13,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {DOCUMENT} from '@angular/common';
-import {Component, ChangeDetectionStrategy, Inject} from '@angular/core';
-import {Store, select} from '@ngrx/store';
+import {ChangeDetectionStrategy, Component, Inject} from '@angular/core';
+import {select, Store} from '@ngrx/store';
 import {combineLatest} from 'rxjs';
 import {distinctUntilChanged} from 'rxjs/operators';
-
-import {selectors as settingsSelectors, State} from '../settings';
 import {reload} from '../core/actions';
+import {selectors as settingsSelectors, State} from '../settings';
 
 @Component({
   selector: 'reloader',

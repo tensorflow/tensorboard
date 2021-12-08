@@ -13,12 +13,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {
+  AfterViewInit,
   ChangeDetectionStrategy,
   Component,
-  Input,
-  AfterViewInit,
-  ViewChild,
   ElementRef,
+  Input,
+  ViewChild,
 } from '@angular/core';
 import * as d3 from '../../../../../../third_party/d3';
 

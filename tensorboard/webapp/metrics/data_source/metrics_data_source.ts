@@ -16,7 +16,6 @@ import {Injectable} from '@angular/core';
 import {Store} from '@ngrx/store';
 import {forkJoin, Observable} from 'rxjs';
 import {filter, map, take, withLatestFrom} from 'rxjs/operators';
-
 import {
   getIsFeatureFlagsLoaded,
   getIsMetricsImageSupportEnabled,

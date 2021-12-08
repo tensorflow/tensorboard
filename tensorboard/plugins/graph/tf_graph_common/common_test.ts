@@ -13,8 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import * as tb_debug from '../../../components/tb_debug';
-import * as tf_graph from './graph';
 import * as tf_graph_common from './common';
+import * as tf_graph from './graph';
 import * as tf_graph_hierarchy from './hierarchy';
 import * as tf_graph_loader from './loader';
 import * as tf_graph_parser from './parser';

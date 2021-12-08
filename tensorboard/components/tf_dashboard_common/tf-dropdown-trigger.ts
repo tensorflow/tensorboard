@@ -13,12 +13,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {PolymerElement, html} from '@polymer/polymer';
-import {LegacyElementMixin} from '../polymer/legacy_element_mixin';
-import {customElement, property, observe} from '@polymer/decorators';
-
-import {PaperInkyFocusBehavior} from '../polymer/paper_inky_focus_behavior';
+import {customElement, observe, property} from '@polymer/decorators';
+import {html, PolymerElement} from '@polymer/polymer';
 import '../polymer/irons_and_papers';
+import {LegacyElementMixin} from '../polymer/legacy_element_mixin';
+import {PaperInkyFocusBehavior} from '../polymer/paper_inky_focus_behavior';
 
 /**
  * tf-dropdown-trigger is a paper-menu-button trigger that has similar asthetics

@@ -13,14 +13,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {PolymerElement} from '@polymer/polymer';
 import {customElement, observe, property} from '@polymer/decorators';
-
+import {PolymerElement} from '@polymer/polymer';
+import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
 import * as tf_graph_hierarchy from '../tf_graph_common/hierarchy';
 import * as tf_graph_loader from '../tf_graph_common/loader';
 import * as tf_graph_op from '../tf_graph_common/op';
 import * as tf_graph_util from '../tf_graph_common/util';
-import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
 
 @customElement('tf-graph-loader')
 class TfGraphLoader extends LegacyElementMixin(PolymerElement) {

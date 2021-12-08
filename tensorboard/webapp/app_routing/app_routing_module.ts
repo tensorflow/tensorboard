@@ -15,10 +15,9 @@ limitations under the License.
 import {NgModule} from '@angular/core';
 import {EffectsModule} from '@ngrx/effects';
 import {StoreModule} from '@ngrx/store';
-
 import {AppRootModule} from './app_root_module';
-import {AppRoutingEffects} from './effects';
 import {DirtyUpdatesRegistryModule} from './dirty_updates_registry_module';
+import {AppRoutingEffects} from './effects';
 import {LocationModule} from './location_module';
 import {ProgrammaticalNavigationModule} from './programmatical_navigation_module';
 import {RouteRegistryModule} from './route_registry_module';

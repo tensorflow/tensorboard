@@ -15,15 +15,13 @@ limitations under the License.
 import {NO_ERRORS_SCHEMA} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
-
 import {Store} from '@ngrx/store';
-import {provideMockStore, MockStore} from '@ngrx/store/testing';
-
+import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {State} from '../../../../app_state';
+import {createCoreState, createState} from '../../../../core/testing';
 import * as selectors from '../../../../selectors';
 import {getAnnotationsExpanded} from '../../store';
 import {appStateFromNpmiState, createNpmiState} from '../../testing';
-import {createState, createCoreState} from '../../../../core/testing';
 import {AnnotationsListComponent} from './annotations_list_component';
 import {AnnotationsListContainer} from './annotations_list_container';
 

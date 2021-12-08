@@ -23,13 +23,12 @@ import {
   Output,
 } from '@angular/core';
 import {auditTime} from 'rxjs/operators';
-
 import {DropdownOption} from '../../../widgets/dropdown/dropdown_component';
 import {
   HistogramMode,
+  LinkedTime,
   SCALARS_SMOOTHING_MAX,
   TooltipSort,
-  LinkedTime,
   XAxisType,
 } from '../../types';
 

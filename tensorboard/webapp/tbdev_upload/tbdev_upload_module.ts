@@ -13,12 +13,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {ClipboardModule} from '@angular/cdk/clipboard';
-import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
+import {NgModule} from '@angular/core';
 import {MatButtonModule} from '@angular/material/button';
 import {MatDialogModule} from '@angular/material/dialog';
 import {MatIconModule} from '@angular/material/icon';
-
 import {TbdevUploadButtonComponent} from './tbdev_upload_button_component';
 import {TbdevUploadDialogComponent} from './tbdev_upload_dialog_component';
 import {TbdevUploadDialogContainer} from './tbdev_upload_dialog_container';

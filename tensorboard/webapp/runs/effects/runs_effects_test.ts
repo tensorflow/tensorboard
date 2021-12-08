@@ -16,27 +16,24 @@ import {TestBed} from '@angular/core/testing';
 import {provideMockActions} from '@ngrx/effects/testing';
 import {Action, Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
-import * as coreActions from '../../core/actions';
-import {DataLoadState} from '../../types/data';
 import {of, ReplaySubject} from 'rxjs';
-
 import {buildNavigatedAction} from '../../app_routing/testing';
 import {State} from '../../app_state';
+import * as coreActions from '../../core/actions';
 import {
   getExperimentIdsFromRoute,
   getRouteId,
   getRuns,
   getRunsLoadState,
 } from '../../selectors';
-import {Run} from '../data_source/runs_data_source_types';
+import {DataLoadState} from '../../types/data';
 import * as actions from '../actions';
-import {HparamsAndMetadata} from '../data_source/runs_data_source_types';
+import {HparamsAndMetadata, Run} from '../data_source/runs_data_source_types';
 import {
   buildHparamsAndMetadata,
   provideTestingRunsDataSource,
   TestingRunsDataSource,
 } from '../data_source/testing';
-
 import {RunsEffects} from './index';
 
 function createRun(override: Partial<Run> = {}) {

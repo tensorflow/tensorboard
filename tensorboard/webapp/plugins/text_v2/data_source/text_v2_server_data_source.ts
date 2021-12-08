@@ -14,9 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import {Injectable} from '@angular/core';
 import {map} from 'rxjs/operators';
-
 import {TBHttpClient} from '../../../webapp_data_source/tb_http_client';
-
 import {TextV2DataSource} from './text_v2_data_source';
 
 interface BackendRunToTagsMap {

@@ -17,10 +17,9 @@ limitations under the License.
  *
  * This module does not facilitate any screenshot testing.
  */
-import {Component, Injectable, NgModule} from '@angular/core';
+import {Component, NgModule} from '@angular/core';
 import {EffectsModule as NgrxEffectsModule} from '@ngrx/effects';
 import {StoreModule as NgrxStoreModule} from '@ngrx/store';
-
 import {AppRoutingModule} from '../app_routing/app_routing_module';
 import {RouteDef} from '../app_routing/route_config_types';
 import {RouteRegistryModule} from '../app_routing/route_registry_module';

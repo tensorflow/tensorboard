@@ -35,7 +35,6 @@ import {
 } from '@angular/core';
 import {fromEvent, of, Subject, timer} from 'rxjs';
 import {filter, map, switchMap, takeUntil, tap} from 'rxjs/operators';
-
 import {MouseEventButtons} from '../../../util/dom';
 import {
   DataSeries,

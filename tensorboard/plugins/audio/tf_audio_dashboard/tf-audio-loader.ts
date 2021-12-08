@@ -14,11 +14,9 @@ limitations under the License.
 ==============================================================================*/
 
 import {computed, customElement, observe, property} from '@polymer/decorators';
-import {PolymerElement, html} from '@polymer/polymer';
-import * as _ from 'lodash';
-
-import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
+import {html, PolymerElement} from '@polymer/polymer';
 import '../../../components/polymer/irons_and_papers';
+import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
 import {Canceller} from '../../../components/tf_backend/canceller';
 import {RequestManager} from '../../../components/tf_backend/requestManager';
 import {getRouter} from '../../../components/tf_backend/router';

@@ -13,9 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {NgModule} from '@angular/core';
-
-import {DeepLinkerInterface} from './types';
 import {HashDeepLinker} from './hash';
+import {DeepLinkerInterface} from './types';
 
 @NgModule({
   providers: [{provide: DeepLinkerInterface, useClass: HashDeepLinker}],

@@ -13,16 +13,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import * as actions from '../actions';
-import {reducers} from './debugger_reducers';
-import {CodeLocationType, DataLoadState} from './debugger_types';
 import {
+  createDebuggerGraphExecutionsState,
   createDebuggerGraphsState,
   createDebuggerSourceCodeState,
   createDebuggerState,
   createTestGraphOpInfo,
   createTestStackFrame,
-  createDebuggerGraphExecutionsState,
 } from '../testing';
+import {reducers} from './debugger_reducers';
+import {CodeLocationType, DataLoadState} from './debugger_types';
 
 describe('Debugger reducers', () => {
   describe('graphOpFocused', () => {

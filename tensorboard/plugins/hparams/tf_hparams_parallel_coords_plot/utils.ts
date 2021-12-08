@@ -14,9 +14,8 @@ limitations under the License.
 ==============================================================================*/
 /* Utility functions used by tf-hparams-parallel-coords-plot element. */
 
-import * as _ from 'lodash';
 import * as d3 from 'd3';
-
+import * as _ from 'lodash';
 import * as tf_hparams_utils from '../tf_hparams_utils/tf-hparams-utils';
 
 // Finds the "closest" path to a given 'target' point from a given array

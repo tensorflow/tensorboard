@@ -13,18 +13,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {PolymerElement, html} from '@polymer/polymer';
 import {computed, customElement, property} from '@polymer/decorators';
-
-import {LegacyElementMixin} from '../polymer/legacy_element_mixin';
+import {html, PolymerElement} from '@polymer/polymer';
 import '../polymer/irons_and_papers';
+import {LegacyElementMixin} from '../polymer/legacy_element_mixin';
 import * as baseStore from '../tf_backend/baseStore';
 import {environmentStore} from '../tf_backend/environmentStore';
 import {runsStore} from '../tf_backend/runsStore';
 import {runsColorScale} from '../tf_color_scale/colorScale';
-import * as storage from '../tf_storage/storage';
-
 import '../tf_dashboard_common/tf-multi-checkbox';
+import * as storage from '../tf_storage/storage';
 import '../tf_wbr_string/tf-wbr-string';
 
 @customElement('tf-runs-selector')

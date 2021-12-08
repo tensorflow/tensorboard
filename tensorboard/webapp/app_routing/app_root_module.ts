@@ -13,7 +13,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {NgModule} from '@angular/core';
-
 import {AppRootProvider} from './app_root';
 import {LocationModule} from './location_module';
 

@@ -14,10 +14,9 @@ limitations under the License.
 ==============================================================================*/
 import * as THREE from 'three';
 import * as tf from '../../../webapp/third_party/tfjs';
-
 import {DataPoint} from './data';
-import * as vector from './vector';
 import * as logging from './logging';
+import * as vector from './vector';
 
 const TASK_DELAY_MS = 200;
 /** Shuffles the array in-place in O(n) time using Fisher-Yates algorithm. */

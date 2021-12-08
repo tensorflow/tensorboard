@@ -15,22 +15,19 @@ limitations under the License.
 /**
  * Unit tests for the Main Container.
  */
+import {NO_ERRORS_SCHEMA} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
-
-import {Store, Action} from '@ngrx/store';
-import {provideMockStore, MockStore} from '@ngrx/store/testing';
-
+import {Action, Store} from '@ngrx/store';
+import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {State} from '../../../../app_state';
+import {createCoreState, createState} from '../../../../core/testing';
+import * as npmiActions from '../../actions';
+import {appStateFromNpmiState, createNpmiState} from '../../testing';
 import {getCurrentRouteRunSelection} from './../../../../selectors';
 import {getEmbeddingsSidebarExpanded} from './../../store';
-import {appStateFromNpmiState, createNpmiState} from '../../testing';
-import {createState, createCoreState} from '../../../../core/testing';
 import {EmbeddingsComponent} from './embeddings_component';
 import {EmbeddingsContainer} from './embeddings_container';
-import * as npmiActions from '../../actions';
-
-import {NO_ERRORS_SCHEMA} from '@angular/core';
 
 describe('Npmi Embeddings Container', () => {
   let store: MockStore<State>;

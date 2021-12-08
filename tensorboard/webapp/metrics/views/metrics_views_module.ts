@@ -15,7 +15,6 @@ limitations under the License.
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
 import {MatIconModule} from '@angular/material/icon';
-
 import {LayoutModule} from '../../core';
 import {CustomizationModule} from '../../customization/customization_module';
 import {RunsSelectorModule} from '../../runs/views/runs_selector/runs_selector_module';

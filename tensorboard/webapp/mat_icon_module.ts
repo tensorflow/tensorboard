@@ -9,12 +9,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {DomSanitizer} from '@angular/platform-browser';
 import {NgModule} from '@angular/core';
 import {
   MatIconModule as NgMatIconModule,
   MatIconRegistry,
 } from '@angular/material/icon';
+import {DomSanitizer} from '@angular/platform-browser';
 
 const SVG_PATH = './icon_bundle.svg';
 

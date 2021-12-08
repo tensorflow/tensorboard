@@ -15,7 +15,6 @@ limitations under the License.
 import {Injectable} from '@angular/core';
 import {Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
-
 import {TBHttpClient} from '../../webapp_data_source/tb_http_client';
 import {
   NotificationCenterDataSource,

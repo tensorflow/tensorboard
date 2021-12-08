@@ -13,41 +13,41 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {
-  getPluginDataLoaded,
+  createNpmiState,
+  createSampleEmbeddingData,
+  createState,
+} from '../testing';
+import {
   getAnnotationData,
-  getRunToMetrics,
+  getAnnotationsExpanded,
+  getAnnotationSort,
+  getAnnotationsRegex,
   getEmbeddingDataSet,
-  getSelectedAnnotations,
+  getEmbeddingsMetric,
+  getEmbeddingsSidebarExpanded,
+  getEmbeddingsSidebarWidth,
   getFlaggedAnnotations,
   getHiddenAnnotations,
-  getAnnotationsRegex,
-  getMetricsRegex,
   getMetricArithmetic,
   getMetricFilters,
-  getAnnotationSort,
+  getMetricsRegex,
   getPCExpanded,
-  getAnnotationsExpanded,
+  getPluginDataLoaded,
+  getRunToMetrics,
+  getSelectedAnnotations,
   getShowCounts,
   getShowHiddenAnnotations,
-  getSidebarWidth,
   getSidebarExpanded,
+  getSidebarWidth,
   getViewActive,
-  getEmbeddingsMetric,
-  getEmbeddingsSidebarWidth,
-  getEmbeddingsSidebarExpanded,
 } from './npmi_selectors';
 import {
+  ArithmeticKind,
   DataLoadState,
   Operator,
   SortOrder,
-  ArithmeticKind,
   ViewActive,
 } from './npmi_types';
-import {
-  createSampleEmbeddingData,
-  createNpmiState,
-  createState,
-} from '../testing';
 
 describe('npmi selectors', () => {
   describe('getPluginDataLoadState', () => {

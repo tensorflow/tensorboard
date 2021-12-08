@@ -12,13 +12,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
+import {NgModule} from '@angular/core';
 import {MatButtonModule} from '@angular/material/button';
 import {MatSnackBarModule} from '@angular/material/snack-bar';
-
-import {AlertSnackbarContainer} from './alert_snackbar_container';
 import {AlertDisplaySnackbarContainer} from './alert_display_snackbar_container';
+import {AlertSnackbarContainer} from './alert_snackbar_container';
 
 /**
  * Provides the 'alert snackbar' view.

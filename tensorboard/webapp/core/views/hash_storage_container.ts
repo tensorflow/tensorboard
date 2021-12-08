@@ -13,12 +13,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {ChangeDetectionStrategy, Component} from '@angular/core';
-import {Store, select} from '@ngrx/store';
-
-import {getActivePlugin} from '../store';
-import {State} from '../state';
+import {select, Store} from '@ngrx/store';
 import {pluginUrlHashChanged} from '../actions';
-
+import {State} from '../state';
+import {getActivePlugin} from '../store';
 import {ChangedProp} from './hash_storage_component';
 
 @Component({

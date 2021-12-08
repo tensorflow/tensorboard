@@ -17,7 +17,6 @@ limitations under the License.
  */
 
 import {createAction, props} from '@ngrx/store';
-
 import {DiscreteHparamValues} from '../types';
 
 export const hparamsDiscreteHparamFilterChanged = createAction(

@@ -12,8 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {NgModule, CUSTOM_ELEMENTS_SCHEMA} from '@angular/core';
-
+import {CUSTOM_ELEMENTS_SCHEMA, NgModule} from '@angular/core';
 import {LegacyRunsSelectorComponent} from './legacy_runs_selector_component';
 import {LegacyRunsSelectorContainer} from './legacy_runs_selector_container';
 

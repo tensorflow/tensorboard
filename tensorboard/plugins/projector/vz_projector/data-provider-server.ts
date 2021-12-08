@@ -12,13 +12,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {DataSet, State, SpriteAndMetadataInfo} from './data';
+import {DataSet, SpriteAndMetadataInfo, State} from './data';
 import {
+  DataProvider,
+  EmbeddingInfo,
+  ProjectorConfig,
   retrieveSpriteAndMetadataInfo,
   retrieveTensorAsBytes,
-  EmbeddingInfo,
-  DataProvider,
-  ProjectorConfig,
 } from './data-provider';
 import * as logging from './logging';
 

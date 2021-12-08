@@ -12,8 +12,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {getConfig} from './core_initial_state_provider';
 import {DeepLinkerInterface, SetStringOption} from '../../deeplink/types';
+import {getConfig} from './core_initial_state_provider';
 import {CoreState} from './core_types';
 
 class TestableDeepLinker implements DeepLinkerInterface {

@@ -17,8 +17,8 @@ import {ColorPalette, DEFAULT_PALETTE} from '../util/colors';
 import {
   Settings,
   SettingsState,
-  State,
   SETTINGS_FEATURE_KEY,
+  State,
 } from './_redux/settings_types';
 
 export function createSettings(override?: Partial<Settings>) {

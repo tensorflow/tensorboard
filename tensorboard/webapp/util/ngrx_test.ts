@@ -13,7 +13,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {createAction, createReducer, on} from '@ngrx/store';
-
 import {composeReducers} from './ngrx';
 
 const incrementFoo = createAction('[UTIL TEST] Increment Foo');

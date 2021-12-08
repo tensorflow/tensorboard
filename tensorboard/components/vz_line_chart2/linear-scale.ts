@@ -14,7 +14,6 @@ limitations under the License.
 ==============================================================================*/
 import * as d3 from 'd3';
 import * as Plottable from 'plottable';
-
 import {
   createScale,
   ScaleType,

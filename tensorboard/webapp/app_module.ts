@@ -15,7 +15,6 @@ limitations under the License.
 import {NgModule} from '@angular/core';
 import {BrowserModule} from '@angular/platform-browser';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
-
 import {PluginApiHostModule} from '../components/experimental/plugin_util/plugin_api_host_module';
 import {AlertModule} from './alert/alert_module';
 import {AlertSnackbarModule} from './alert/views/alert_snackbar_module';

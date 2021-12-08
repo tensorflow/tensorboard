@@ -13,22 +13,20 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {PolymerElement, html} from '@polymer/polymer';
 import {computed, customElement, observe, property} from '@polymer/decorators';
+import {html, PolymerElement} from '@polymer/polymer';
 import * as _ from 'lodash';
-
 import '../../../components/polymer/irons_and_papers';
-import '../tf_graph_common/tf-node-icon';
-import './tf-node-list-item';
+import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
+import '../../../components/tf_wbr_string/tf-wbr-string';
+import * as tf_graph_scene_edge from '../tf_graph_common/edge';
 import * as tf_graph from '../tf_graph_common/graph';
 import * as tf_graph_hierarchy from '../tf_graph_common/hierarchy';
-import * as tf_graph_util from '../tf_graph_common/util';
-import * as tf_graph_scene_edge from '../tf_graph_common/edge';
 import * as tf_graph_scene_node from '../tf_graph_common/node';
-
-import '../../../components/tf_wbr_string/tf-wbr-string';
-import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
+import '../tf_graph_common/tf-node-icon';
+import * as tf_graph_util from '../tf_graph_common/util';
 import {ColorBy} from '../tf_graph_common/view_types';
+import './tf-node-list-item';
 
 @customElement('tf-node-info')
 class TfNodeInfo extends LegacyElementMixin(PolymerElement) {

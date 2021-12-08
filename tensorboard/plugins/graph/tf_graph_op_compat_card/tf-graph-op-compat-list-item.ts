@@ -13,12 +13,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {PolymerElement, html} from '@polymer/polymer';
 import {customElement, property} from '@polymer/decorators';
+import {html, PolymerElement} from '@polymer/polymer';
+import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
 import '../../../components/tf_dashboard_common/tensorboard-color';
 import '../tf_graph_common/tf-node-icon';
-
-import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
 import {ColorBy} from '../tf_graph_common/view_types';
 
 @customElement('tf-graph-op-compat-list-item')

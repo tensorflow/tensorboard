@@ -13,10 +13,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {PolymerElement, html} from '@polymer/polymer';
 import {customElement, property} from '@polymer/decorators';
-import '../../../components/polymer/irons_and_papers';
+import {html, PolymerElement} from '@polymer/polymer';
 import * as _ from 'lodash';
+import '../../../components/polymer/irons_and_papers';
 
 /**
  * tf-smoothing-input creates an input component for exponential smoothing.

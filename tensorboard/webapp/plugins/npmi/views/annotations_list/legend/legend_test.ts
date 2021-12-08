@@ -15,7 +15,6 @@ limitations under the License.
 import {NO_ERRORS_SCHEMA} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
-
 import {LegendComponent} from './legend_component';
 
 describe('Npmi Annotations Legend Container', () => {

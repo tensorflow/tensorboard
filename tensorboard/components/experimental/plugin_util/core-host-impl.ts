@@ -18,7 +18,6 @@ limitations under the License.
 import {Injectable} from '@angular/core';
 import {Store} from '@ngrx/store';
 import {distinctUntilChanged, filter} from 'rxjs/operators';
-
 import {State} from '../../../webapp/app_state';
 import {getAppLastLoadedTimeInMs} from '../../../webapp/selectors';
 import {TfStorageElement} from '../../../webapp/tb_polymer_interop_types';

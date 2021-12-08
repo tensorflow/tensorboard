@@ -26,7 +26,6 @@ import {
   tap,
   withLatestFrom,
 } from 'rxjs/operators';
-
 import * as routingActions from '../../app_routing/actions';
 import {State} from '../../app_state';
 import * as coreActions from '../../core/actions';

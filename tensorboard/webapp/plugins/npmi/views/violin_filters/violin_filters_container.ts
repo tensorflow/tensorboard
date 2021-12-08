@@ -12,14 +12,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component, ChangeDetectionStrategy, Input} from '@angular/core';
+import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {Store} from '@ngrx/store';
-import {State} from '../../../../app_state';
-
 import {map} from 'rxjs/operators';
-
-import {getSidebarExpanded, getMetricFilters} from '../../store';
+import {State} from '../../../../app_state';
 import * as npmiActions from '../../actions';
+import {getMetricFilters, getSidebarExpanded} from '../../store';
 
 @Component({
   selector: 'npmi-violin-filters',

@@ -13,7 +13,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {createFeatureSelector, createSelector} from '@ngrx/store';
-
 import {DataLoadState} from '../../types/data';
 import {ColorPalette} from '../../util/colors';
 import {SettingsState, SETTINGS_FEATURE_KEY, State} from './settings_types';

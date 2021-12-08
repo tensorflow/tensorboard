@@ -24,9 +24,8 @@ import {
   SimpleChanges,
   ViewChild,
 } from '@angular/core';
-
-import {parseDebugTensorValue} from '../../store/debug_tensor_value';
 import {GraphExecution} from '../../store/debugger_types';
+import {parseDebugTensorValue} from '../../store/debug_tensor_value';
 
 @Component({
   selector: 'graph-executions-component',

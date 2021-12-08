@@ -14,7 +14,6 @@ limitations under the License.
 ==============================================================================*/
 import {graphlib} from 'dagre';
 import * as _ from 'lodash';
-
 import {
   GroupNode,
   hasSimilarDegreeSequence,

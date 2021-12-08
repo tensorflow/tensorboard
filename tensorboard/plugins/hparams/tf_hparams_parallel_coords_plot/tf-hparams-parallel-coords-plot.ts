@@ -64,7 +64,6 @@ import {customElement, observe, property} from '@polymer/decorators';
 import {html, PolymerElement} from '@polymer/polymer';
 import * as d3 from 'd3';
 import * as _ from 'lodash';
-
 import {DarkModeMixin} from '../../../components/polymer/dark_mode_mixin';
 import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
 import '../tf_hparams_session_group_values/tf-hparams-session-group-values';

@@ -14,14 +14,12 @@ limitations under the License.
 ==============================================================================*/
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
-
+import {AppRootModule} from '../app_root_module';
+import {LocationModule} from '../location_module';
 import {RouteRegistryModule} from '../route_registry_module';
-
 import {RouterLinkDirectiveContainer} from './router_link_directive_container';
 import {RouterOutletComponent} from './router_outlet_component';
 import {RouterOutletContainer} from './router_outlet_container';
-import {LocationModule} from '../location_module';
-import {AppRootModule} from '../app_root_module';
 
 @NgModule({
   imports: [CommonModule, AppRootModule, LocationModule, RouteRegistryModule],

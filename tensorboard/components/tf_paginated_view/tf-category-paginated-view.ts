@@ -13,9 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+import {computed, customElement, observe, property} from '@polymer/decorators';
 import {html} from '@polymer/polymer';
-import {customElement, property, observe, computed} from '@polymer/decorators';
-
 import '../polymer/irons_and_papers';
 import {
   Category,
@@ -23,8 +22,8 @@ import {
 } from '../tf_categorization_utils/categorizationUtils';
 import {
   addLimitListener,
-  removeLimitListener,
   getLimit,
+  removeLimitListener,
 } from './paginatedViewStore';
 import {TfDomRepeat} from './tf-dom-repeat';
 

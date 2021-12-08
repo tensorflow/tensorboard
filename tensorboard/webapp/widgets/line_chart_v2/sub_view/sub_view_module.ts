@@ -19,7 +19,6 @@ import {MatButtonModule} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
 import {MatInputModule} from '@angular/material/input';
 import {MatMenuModule} from '@angular/material/menu';
-
 import {LineChartAxisComponent} from './line_chart_axis_view';
 import {LineChartGridView} from './line_chart_grid_view';
 import {LineChartInteractiveViewComponent} from './line_chart_interactive_view';

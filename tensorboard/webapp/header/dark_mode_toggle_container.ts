@@ -16,11 +16,10 @@ import {Component} from '@angular/core';
 import {Store} from '@ngrx/store';
 import {Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
-
 import {State as CoreState} from '../core/store/core_types';
-import {State as FeatureFlagState} from '../feature_flag/store/feature_flag_types';
 import {overrideEnableDarkModeChanged} from '../feature_flag/actions/feature_flag_actions';
 import {getEnableDarkModeOverride} from '../feature_flag/store/feature_flag_selectors';
+import {State as FeatureFlagState} from '../feature_flag/store/feature_flag_types';
 import {DarkModeOverride} from './dark_mode_toggle_component';
 
 @Component({

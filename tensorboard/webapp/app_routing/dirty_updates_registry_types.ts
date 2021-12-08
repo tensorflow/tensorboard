@@ -14,7 +14,6 @@ limitations under the License.
 ==============================================================================*/
 import {InjectionToken} from '@angular/core';
 import {Selector} from '@ngrx/store';
-
 import {DirtyUpdates} from './types';
 
 export type DirtyUpdatesSelector<State> = Selector<State, DirtyUpdates>;

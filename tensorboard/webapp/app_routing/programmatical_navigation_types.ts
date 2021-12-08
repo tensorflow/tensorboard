@@ -14,7 +14,6 @@ limitations under the License.
 ==============================================================================*/
 import {InjectionToken} from '@angular/core';
 import {Action, ActionCreator, Creator} from '@ngrx/store';
-
 import {ExperimentRouteParams, RouteKind} from './types';
 
 export const NAVIGATION_PROVIDER = new InjectionToken<NavigationLambda[]>(

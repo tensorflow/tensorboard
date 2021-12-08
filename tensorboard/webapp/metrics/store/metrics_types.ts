@@ -12,9 +12,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {DataLoadState, LoadState} from '../../types/data';
-
 import {RouteContextedState} from '../../app_routing/route_contexted_reducer_helper';
+import {DataLoadState, LoadState} from '../../types/data';
 import {ElementId} from '../../util/dom';
 import {
   HistogramStepDatum,
@@ -28,14 +27,13 @@ import {
 } from '../data_source';
 import {
   CardId,
-  CardUniqueInfo,
   CardMetadata,
+  CardUniqueInfo,
   HistogramMode,
   NonPinnedCardId,
   PinnedCardId,
   TooltipSort,
   XAxisType,
-  LinkedTime,
 } from '../internal_types';
 
 export const METRICS_FEATURE_KEY = 'metrics';

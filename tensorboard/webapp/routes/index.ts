@@ -13,10 +13,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Component, Type} from '@angular/core';
-
-import {TensorBoardWrapperComponent} from '../tb_wrapper/tb_wrapper_component';
 import {RouteDef} from '../app_routing/route_config_types';
 import {RouteKind} from '../app_routing/types';
+import {TensorBoardWrapperComponent} from '../tb_wrapper/tb_wrapper_component';
 import {DashboardDeepLinkProvider} from './dashboard_deeplink_provider';
 
 export function routesFactory(): RouteDef[] {

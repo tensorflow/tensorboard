@@ -13,11 +13,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {ChangeDetectionStrategy, Component, Inject} from '@angular/core';
-import {MAT_SNACK_BAR_DATA, MatSnackBarRef} from '@angular/material/snack-bar';
-import {State} from '../../app_state';
-import {AlertInfo} from '../types';
+import {MatSnackBarRef, MAT_SNACK_BAR_DATA} from '@angular/material/snack-bar';
 import {Store} from '@ngrx/store';
+import {State} from '../../app_state';
 import {splitByURL} from '../../util/string';
+import {AlertInfo} from '../types';
 
 @Component({
   selector: 'alert-display-snackbar',

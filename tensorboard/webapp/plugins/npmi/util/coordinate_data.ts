@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {ValueData, AnnotationDataListing} from '../store/npmi_types';
+import {AnnotationDataListing, ValueData} from '../store/npmi_types';
 
 export type Coordinate = {
   runId: string;

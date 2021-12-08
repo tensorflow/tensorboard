@@ -13,30 +13,28 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Injectable} from '@angular/core';
-import {Store} from '@ngrx/store';
 import {Actions, createEffect, ofType} from '@ngrx/effects';
-
-import {merge, Observable, EMPTY} from 'rxjs';
+import {Store} from '@ngrx/store';
+import {EMPTY, merge, Observable} from 'rxjs';
 import {
+  catchError,
   filter,
   map,
   mergeMap,
   tap,
   withLatestFrom,
-  catchError,
 } from 'rxjs/operators';
-
-import {NpmiHttpServerDataSource} from '../data_source/npmi_data_source';
-import {DataLoadState} from './../store/npmi_types';
 import {State} from '../../../app_state';
-import {getPluginDataLoaded} from './../store/npmi_selectors';
+import * as selectors from '../../../selectors';
+import {NpmiHttpServerDataSource} from '../data_source/npmi_data_source';
 import {
   npmiLoaded,
-  npmiPluginDataRequested,
   npmiPluginDataLoaded,
+  npmiPluginDataRequested,
   npmiPluginDataRequestFailed,
 } from './../actions';
-import * as selectors from '../../../selectors';
+import {getPluginDataLoaded} from './../store/npmi_selectors';
+import {DataLoadState} from './../store/npmi_types';
 
 @Injectable()
 export class NpmiEffects {

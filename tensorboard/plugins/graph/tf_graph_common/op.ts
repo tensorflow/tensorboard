@@ -13,10 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import * as _ from 'lodash';
-
-import {FUNCTION_LIBRARY_NODE_PREFIX} from './graph';
-import {SlimGraph} from './graph';
-import {OpNode} from './graph';
+import {FUNCTION_LIBRARY_NODE_PREFIX, OpNode, SlimGraph} from './graph';
 
 export interface CompatibilityProvider {
   opValid: (opNode: OpNode) => boolean;

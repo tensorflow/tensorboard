@@ -13,7 +13,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Inject, ModuleWithProviders, NgModule, Optional} from '@angular/core';
-
 import {
   GLOBAL_PERSISTENT_SETTINGS_TOKEN,
   SettingSelector,

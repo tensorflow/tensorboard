@@ -22,25 +22,23 @@ import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {Action, Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {State} from '../../../app_state';
-import {DataLoadState} from '../../../types/data';
-
-import {MatIconTestingModule} from '../../../testing/mat_icon_module';
-import {TruncatedPathModule} from '../../../widgets/text/truncated_path_module';
-import * as actions from '../../actions';
-import {ImageId, MetricsDataSource, PluginType} from '../../data_source';
-import * as selectors from '../../store/metrics_selectors';
 import {
   getExperimentIdForRunId,
   getExperimentIdToExperimentAliasMap,
   getRun,
 } from '../../../selectors';
+import {MatIconTestingModule} from '../../../testing/mat_icon_module';
+import {DataLoadState} from '../../../types/data';
+import {TruncatedPathModule} from '../../../widgets/text/truncated_path_module';
+import * as actions from '../../actions';
+import {ImageId, MetricsDataSource, PluginType} from '../../data_source';
+import * as selectors from '../../store/metrics_selectors';
 import {
   appStateFromMetricsState,
   buildMetricsState,
   provideMockCardSeriesData,
 } from '../../testing';
 import {CardId} from '../../types';
-
 import {ImageCardComponent} from './image_card_component';
 import {ImageCardContainer} from './image_card_container';
 import {RunNameModule} from './run_name_module';

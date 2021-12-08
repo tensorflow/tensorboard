@@ -14,7 +14,6 @@ limitations under the License.
 ==============================================================================*/
 
 import {Injectable} from '@angular/core';
-
 import {TfStorageElement} from '../tb_polymer_interop_types';
 import {DeepLinkerInterface, SetStringOption} from './types';
 

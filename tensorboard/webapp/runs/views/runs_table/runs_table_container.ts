@@ -30,9 +30,9 @@ import {
   take,
   takeUntil,
 } from 'rxjs/operators';
-
 import * as alertActions from '../../../alert/actions';
 import {State} from '../../../app_state';
+import {ExperimentAlias} from '../../../experiments/types';
 import {
   actions as hparamsActions,
   selectors as hparamsSelectors,
@@ -69,7 +69,6 @@ import {
   runSelectorSortChanged,
   runTableShown,
 } from '../../actions';
-import {ExperimentAlias} from '../../../experiments/types';
 import {MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT} from '../../store/runs_types';
 import {SortKey, SortType} from '../../types';
 import {

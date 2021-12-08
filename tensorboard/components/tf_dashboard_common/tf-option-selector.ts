@@ -13,9 +13,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {PolymerElement, html} from '@polymer/polymer';
-import {LegacyElementMixin} from '../polymer/legacy_element_mixin';
 import {customElement, property} from '@polymer/decorators';
+import {html, PolymerElement} from '@polymer/polymer';
+import {LegacyElementMixin} from '../polymer/legacy_element_mixin';
 import './tensorboard-color';
 
 @customElement('tf-option-selector')

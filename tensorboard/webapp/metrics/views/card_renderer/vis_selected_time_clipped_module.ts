@@ -15,7 +15,6 @@ limitations under the License.
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
 import {MatIconModule} from '@angular/material/icon';
-
 import {VisSelectedTimeClippedComponent} from './vis_selected_time_clipped_component';
 
 @NgModule({
