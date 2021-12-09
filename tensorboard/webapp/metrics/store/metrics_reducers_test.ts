@@ -558,7 +558,7 @@ describe('metrics reducers', () => {
     }
   });
 
-  describe('route id changes', () => {
+  describe('experiment set changes', () => {
     it('resets data when mounting a new route', () => {
       const prevState = buildMetricsState({
         visibleCardMap: new Map([

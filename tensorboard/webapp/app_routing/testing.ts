@@ -22,7 +22,6 @@ import {Route, RouteKind} from './types';
 
 /** @typehack */ import * as _typeHackModels from '@ngrx/store/src/models';
 /** @typehack */ import * as _typeHackRxjs from 'rxjs';
-import {getRouteId} from './internal_utils';
 
 export function buildRoute(routeOverride: Partial<Route> = {}): Route {
   return {
@@ -40,8 +39,21 @@ export function buildCompareRoute(
 ): Route {
   return {
     routeKind: RouteKind.COMPARE_EXPERIMENT,
-    pathname: '/campare',
+    pathname: '/compare',
     params: {experimentIds: aliasAndExperimentIds.join(',')},
+    queryParams: [],
+    ...routeOverride,
+  };
+}
+
+export function buildExperimentRoute(
+  experimentId: string,
+  routeOverride: Partial<Route> = {}
+): Route {
+  return {
+    routeKind: RouteKind.EXPERIMENT,
+    pathname: '/experiment',
+    params: {experimentId},
     queryParams: [],
     ...routeOverride,
   };
@@ -58,7 +70,7 @@ export function buildNavigatedAction(overrides?: Partial<NavigatedPayload>) {
 }
 
 /**
- * A navigation that corresponds to a change in route id (new route context)
+ * A navigation that corresponds to a change in routeId (new route context)
  * will be created.
  */
 export function buildNavigatedToNewRouteIdAction() {
@@ -73,8 +85,8 @@ export function buildNavigatedToNewRouteIdAction() {
   return navigated({
     before: beforeRoute,
     after: afterRoute,
-    beforeNamespaceId: getRouteId(beforeRoute.routeKind, beforeRoute.params),
-    afterNamespaceId: getRouteId(afterRoute.routeKind, afterRoute.params),
+    beforeNamespaceId: 'beforeNamespace',
+    afterNamespaceId: 'afterNamespace',
   });
 }
 

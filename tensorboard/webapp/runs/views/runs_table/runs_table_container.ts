@@ -22,6 +22,7 @@ import {
 import {createSelector, Store} from '@ngrx/store';
 import {combineLatest, Observable, of, Subject} from 'rxjs';
 import {
+  distinctUntilChanged,
   filter,
   map,
   shareReplay,
@@ -32,6 +33,7 @@ import {
 } from 'rxjs/operators';
 
 import * as alertActions from '../../../alert/actions';
+import {areSameRouteAndExperiments} from '../../../app_routing';
 import {State} from '../../../app_state';
 import {
   actions as hparamsActions,
@@ -45,11 +47,11 @@ import {
   IntervalFilter,
 } from '../../../hparams/types';
 import {
+  getActiveRoute,
   getCurrentRouteRunSelection,
   getEnabledColorGroup,
   getExperiment,
   getExperimentIdToExperimentAliasMap,
-  getRouteId,
   getRunColorMap,
   getRuns,
   getRunSelectorPaginationOption,
@@ -392,8 +394,12 @@ export class RunsTableContainer implements OnInit, OnDestroy {
      * the store aware of the visibility of any run tables.
      */
     if (this.columns.includes(RunsTableColumn.CHECKBOX)) {
-      const runsExceedLimitForRoute$ = this.store.select(getRouteId).pipe(
+      const runsExceedLimitForRoute$ = this.store.select(getActiveRoute).pipe(
         takeUntil(this.ngUnsubscribe),
+        // BDTODO: This needs to be tested manually.
+        distinctUntilChanged((prevRoute, currRoute) => {
+          return areSameRouteAndExperiments(prevRoute, currRoute);
+        }),
         switchMap(() => {
           return rawAllUnsortedRunTableItems$.pipe(
             filter((runTableItems: RunTableItem[]) => {

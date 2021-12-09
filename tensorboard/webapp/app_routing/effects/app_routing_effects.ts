@@ -42,6 +42,7 @@ import {AppRootProvider} from '../app_root';
 import {DirtyUpdatesRegistryModule} from '../dirty_updates_registry_module';
 import {
   areRoutesEqual,
+  areSameRouteAndExperiments,
   getRouteId,
   serializeCompareExperimentParams,
 } from '../internal_utils';
@@ -228,17 +229,16 @@ export class AppRoutingEffects {
     const dispatchNavigating$ = this.validatedRoute$.pipe(
       withLatestFrom(this.store.select(getActiveRoute)),
       mergeMap(([routes, oldRoute]) => {
-        const sameRouteId =
+        const sameRouteAndExperiments =
           oldRoute !== null &&
-          getRouteId(routes.routeMatch.routeKind, routes.routeMatch.params) ===
-            getRouteId(oldRoute.routeKind, oldRoute.params);
+          areSameRouteAndExperiments(oldRoute, routes.routeMatch);
         const dirtySelectors =
           this.dirtyUpdatesRegistry.getDirtyUpdatesSelectors();
+        // Do not warn about dirty updates when not making any major changes
+        // to route.
+        if (sameRouteAndExperiments || !dirtySelectors.length)
+          return of(routes);
 
-        // Do not warn about dirty updates when route ID is the same (e.g. when
-        // changing tabs in the same experiment page or query params in experiment
-        // list).
-        if (sameRouteId || !dirtySelectors.length) return of(routes);
         return forkJoin(
           this.dirtyUpdatesRegistry
             .getDirtyUpdatesSelectors()
@@ -345,11 +345,8 @@ export class AppRoutingEffects {
       ),
       tap(({route}) => {
         // b/160185039: Allows the route store + router outlet to change
-        // before the route change so all components do not have to
-        // safeguard against the case when `routeId` (routeKind and
-        // routeParams) do not have unexpected values. Because we
-        // debounceTime, technically, it does not fire two actions
-        // sequentially.
+        // before the route change. Because we debounceTime, technically, it does
+        // not fire two actions sequentially.
         this.store.dispatch(navigating({after: route}));
       }),
       // Inject some async-ness so:
@@ -378,8 +375,7 @@ export class AppRoutingEffects {
         const preserveHash =
           oldRoute === null ||
           route === null ||
-          getRouteId(oldRoute.routeKind, oldRoute.params) ===
-            getRouteId(route.routeKind, route.params);
+          areSameRouteAndExperiments(oldRoute, route);
         return {
           preserveHash,
           route,

@@ -1280,7 +1280,7 @@ describe('app_routing_effects', () => {
       // This hash preservation spec may become obsolete. If we enable app_routing
       // to properly set the URL hash, and all TB embedders use app_routing, then
       // this spec can be removed.
-      it('preserves hash upon navigations to the same route id', () => {
+      it('preserves hash upon navigations to the same routeId', () => {
         const activeRoute = buildRoute({
           routeKind: RouteKind.EXPERIMENT,
           pathname: '/experiment',
@@ -1304,7 +1304,7 @@ describe('app_routing_effects', () => {
         );
       });
 
-      it('discards hash upon navigations to a new route id', () => {
+      it('discards hash upon navigations to a new routeId', () => {
         const activeRoute = buildRoute({
           routeKind: RouteKind.EXPERIMENTS,
           pathname: '/experiments',

@@ -56,6 +56,7 @@ import {
 } from '../../../hparams/testing';
 import {DiscreteFilter, IntervalFilter} from '../../../hparams/types';
 import {
+  getActiveRoute,
   getColorGroupRegexString,
   getCurrentRouteRunSelection,
   getDarkModeEnabled,
@@ -64,7 +65,6 @@ import {
   getExperiment,
   getExperimentIdToExperimentAliasMap,
   getRegisteredRouteKinds,
-  getRouteId,
   getRunColorMap,
   getRunGroupBy,
   getRunIdsForExperiment,
@@ -102,6 +102,7 @@ import {RunsTableComponent} from './runs_table_component';
 import {RunsTableContainer, TEST_ONLY} from './runs_table_container';
 import {HparamSpec, MetricSpec, RunsTableColumn} from './types';
 import {ExperimentAliasModule} from '../../../widgets/experiment_alias/experiment_alias_module';
+import {buildExperimentRoute} from '../../../app_routing/testing';
 
 @Injectable()
 class ColorPickerTestHelper {
@@ -290,7 +291,7 @@ describe('runs_table', () => {
       hparamsSelectors.getMetricFilterMap,
       new Map() as ReturnType<typeof hparamsSelectors.getMetricFilterMap>
     );
-    store.overrideSelector(getRouteId, '123');
+    store.overrideSelector(getActiveRoute, buildExperimentRoute('123'));
     store.overrideSelector(getEnabledColorGroup, false);
     store.overrideSelector(getEnabledColorGroupByRegex, false);
     store.overrideSelector(getRunGroupBy, {key: GroupByKey.RUN});
@@ -1881,7 +1882,7 @@ describe('runs_table', () => {
     const tooManyRunsAlertMessage = jasmine.stringMatching('exceeds');
 
     it('triggers when number of runs exceeds limit', () => {
-      store.overrideSelector(getRouteId, '123');
+      store.overrideSelector(getActiveRoute, buildExperimentRoute('123'));
       store.overrideSelector(
         getRuns,
         createRuns(MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT)
@@ -1910,7 +1911,7 @@ describe('runs_table', () => {
     });
 
     it('does not show when the table has no checkbox column', () => {
-      store.overrideSelector(getRouteId, '123');
+      store.overrideSelector(getActiveRoute, buildExperimentRoute('123'));
       store.overrideSelector(
         getRuns,
         createRuns(MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT + 1)
@@ -1922,7 +1923,7 @@ describe('runs_table', () => {
     });
 
     it('does not show when already shown', () => {
-      store.overrideSelector(getRouteId, '123');
+      store.overrideSelector(getActiveRoute, buildExperimentRoute('123'));
       store.overrideSelector(
         getRuns,
         createRuns(MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT + 1)
@@ -1955,7 +1956,7 @@ describe('runs_table', () => {
     });
 
     it('re-shows after a new route with too many runs', () => {
-      store.overrideSelector(getRouteId, '123');
+      store.overrideSelector(getActiveRoute, buildExperimentRoute('123'));
       store.overrideSelector(
         getRuns,
         createRuns(MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT + 1)
@@ -1973,7 +1974,7 @@ describe('runs_table', () => {
         runTableShown({experimentIds: ['exp1']}),
       ]);
 
-      store.overrideSelector(getRouteId, '456');
+      store.overrideSelector(getActiveRoute, buildExperimentRoute('456'));
       store.overrideSelector(
         getRuns,
         createRuns(MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT + 1)
@@ -1992,7 +1993,7 @@ describe('runs_table', () => {
     });
 
     it('does not re-show after a new route with too few runs', () => {
-      store.overrideSelector(getRouteId, '123');
+      store.overrideSelector(getActiveRoute, buildExperimentRoute('123'));
       store.overrideSelector(
         getRuns,
         createRuns(MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT + 1)
@@ -2010,7 +2011,7 @@ describe('runs_table', () => {
         runTableShown({experimentIds: ['exp1']}),
       ]);
 
-      store.overrideSelector(getRouteId, '456');
+      store.overrideSelector(getActiveRoute, buildExperimentRoute('456'));
       store.overrideSelector(
         getRuns,
         createRuns(MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT)

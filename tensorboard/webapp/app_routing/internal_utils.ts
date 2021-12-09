@@ -85,8 +85,7 @@ export function getExperimentIdsFromRouteParams(
 }
 
 /**
- * Returns an identifier that identifies known top-level routes. It is similar
- * to `url` but ignores hash and returns "unknown" for unknown routes.
+ * @deprecated Use areSameRouteAndExperiments.
  */
 export function getRouteId(routeKind: RouteKind, params: RouteParams): string {
   switch (routeKind) {
@@ -104,6 +103,54 @@ export function getRouteId(routeKind: RouteKind, params: RouteParams): string {
     default:
       return '';
   }
+}
+
+/**
+ * Returns whether two routes are of the same kind and point to the same set of
+ * experiments.
+ *
+ * Describing it more generically: Returns whether two routes are of the same
+ * kind and point to the same set of resources. It just happens that in
+ * TensorBoard, currently, the only resources are experiments.
+ */
+export function areSameRouteAndExperiments(
+  route1: Pick<Route, 'routeKind' | 'params'> | null,
+  route2: Pick<Route, 'routeKind' | 'params'> | null
+) {
+  if (!route1 || !route2) {
+    // At least one of the Routes are null. If they are both null then we
+    // consider them to be the same.
+    return route1 === route2;
+  }
+
+  if (route1.routeKind !== route2.routeKind) {
+    // Not same kind of route. Escape early.
+    return false;
+  }
+
+  // Check if same set of experiments.
+  const route1Experiments = getExperimentIdsFromRouteParams(
+    route1.routeKind,
+    route1.params
+  );
+  const route2Experiments = getExperimentIdsFromRouteParams(
+    route2.routeKind,
+    route2.params
+  );
+  if (route1Experiments === null || route2Experiments === null) {
+    // At least one of the routes does not contain experiments. Check whether
+    // they both do not contain experiments.
+    return route1Experiments === route2Experiments;
+  }
+  // Both routes contain experiments. Check if they have the exact same set of
+  // experiments.
+  if (route1Experiments.length !== route2Experiments.length) {
+    return false;
+  }
+  const sortedRoute2Experiments = route2Experiments.sort();
+  return route1Experiments
+    .sort()
+    .every((value, index) => sortedRoute2Experiments[index] === value);
 }
 
 export function createURLSearchParamsFromSerializableQueryParams(

@@ -83,7 +83,6 @@ describe('metrics effects', () => {
     effects = TestBed.inject(MetricsEffects);
     dataSource = TestBed.inject(MetricsDataSource);
     store.overrideSelector(selectors.getExperimentIdsFromRoute, null);
-    store.overrideSelector(selectors.getRouteId, 'route1');
     store.overrideSelector(selectors.getMetricsIgnoreOutliers, false);
     store.overrideSelector(selectors.getMetricsScalarSmoothing, 0.3);
     store.overrideSelector(
@@ -488,7 +487,6 @@ describe('metrics effects', () => {
       it('does not re-fetch time series, until a valid experiment id', () => {
         // Reset any `getExperimentIdsFromRoute` overrides above.
         store.resetSelectors();
-        store.overrideSelector(selectors.getRouteId, 'route1');
         store.overrideSelector(getActivePlugin, METRICS_PLUGIN_ID);
         store.overrideSelector(
           selectors.getVisibleCardIdSet,

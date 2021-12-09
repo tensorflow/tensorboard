@@ -90,6 +90,9 @@ export const getExperimentIdsFromRoute = createSelector(
   }
 );
 
+/**
+ * @deprecated Use getActiveRoute and, possibly, areSameRouteAndExperiments.
+ */
 export const getRouteId = createSelector(
   getRouteKind,
   getRouteParams,
