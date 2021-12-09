@@ -295,6 +295,43 @@ export function buildOrReturnStateWithPinnedCopy(
   };
 }
 
+export function updateCardMap(
+  cardToPinnedCopy: CardToPinnedCard,
+  pinnedCardToOriginal: PinnedCardToCard,
+  nextCardMetadataMap: CardMetadataMap,
+  nextCardList: CardId[]) {
+
+  const nextCardToPinnedCopy = new Map(cardToPinnedCopy);
+  nextCardToPinnedCopy.clear();
+  for (const cardId of nextCardList) {
+    if (cardToPinnedCopy.has(cardId)){
+      nextCardToPinnedCopy.set(cardId, cardToPinnedCopy.get(cardId)!);
+    }
+  }
+
+  const nextPinnedCardToOriginal = new Map(pinnedCardToOriginal);
+  // Removes previous pinned cards which are not in nextCardList; updated when
+  // experiments are removed
+  for (const [pinnedCardId, originalCardId] of pinnedCardToOriginal.entries()) {
+    if (!nextCardList.includes(originalCardId)) {
+      nextPinnedCardToOriginal.delete(pinnedCardId);
+    }
+  }
+
+  // Updates cardMetadataMap to preserve the mapping of pinned cards.
+  for (const [pinnedCardId, originalCardId] of nextPinnedCardToOriginal.entries()) {
+    if(nextCardToPinnedCopy.has(originalCardId)) {
+      nextCardMetadataMap[pinnedCardId] = nextCardMetadataMap[originalCardId];
+    }
+  }
+
+  return {
+    nextCardToPinnedCopy,
+    nextPinnedCardToOriginal,
+    nextCardMetadataMap,
+  };
+}
+
 /**
  * The maximum number of pins we allow the user to create. This is intentionally
  * finite at the moment to mitigate super long URL lengths, until there is more

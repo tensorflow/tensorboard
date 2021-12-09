@@ -53,6 +53,7 @@ import {
   getCardId,
   getRunIds,
   getTimeSeriesLoadable,
+  updateCardMap,
 } from './metrics_store_internal_utils';
 import {
   CardMetadataMap,
@@ -278,6 +279,12 @@ const {initialState, reducers: routeContextReducer} = createRouteContextedState<
   (state) => {
     return {
       ...state,
+      // Forces tag metadata to reload every time route id changed. This is
+      // needed wthin the same namespace.
+      tagMetadataLoadState: {
+        state: DataLoadState.NOT_LOADED,
+        lastLoadedTimeInMs: null,
+      },
       // Reset visible cards in case we resume a route that was left dirty.
       // Since visibility tracking is async, the state may not have received
       // 'exited card' updates when it was cached by the router.
@@ -479,28 +486,24 @@ const reducer = createReducer(
         images: tagMetadata[PluginType.IMAGES],
       };
 
-      // Carry over pre-existing card metadata, even if the new tag
-      // metadata does not include it.
-      const nextCardMetadataMap = {...state.cardMetadataMap};
+      // Reset cardMetadataMap because metadata loaded action fired after
+      // complete tag metadata is received.
+      const newCardMetadataMap = {} as CardMetadataMap;
       const nextCardMetadataList = buildCardMetadataList(nextTagMetadata);
-      const newCardIds = [];
+      const nextCardList = [];
 
       // Create new cards for unseen metadata.
       for (const cardMetadata of nextCardMetadataList) {
         const cardId = getCardId(cardMetadata);
-        if (!state.cardMetadataMap.hasOwnProperty(cardId)) {
-          nextCardMetadataMap[cardId] = cardMetadata;
-          newCardIds.push(cardId);
-        }
+        newCardMetadataMap[cardId] = cardMetadata;
+        nextCardList.push(cardId);
       }
-
-      const nextCardList = [...state.cardList, ...newCardIds];
 
       let tagGroupExpanded = state.tagGroupExpanded;
       if (state.tagGroupExpanded.size === 0) {
         const cardListWithMetadata = nextCardList
           .map((cardId) => {
-            return {...nextCardMetadataMap[cardId], cardId} ?? null;
+            return {...newCardMetadataMap[cardId], cardId} ?? null;
           })
           .filter(Boolean);
         const cardGroups = groupCardIdWithMetdata(cardListWithMetadata);
@@ -511,12 +514,20 @@ const reducer = createReducer(
         }
       }
 
+      const {nextCardToPinnedCopy,
+             nextPinnedCardToOriginal,
+             nextCardMetadataMap}
+          = updateCardMap(state.cardToPinnedCopy,
+                          state.pinnedCardToOriginal,
+                          newCardMetadataMap,
+                          nextCardList);
+
       const resolvedResult = buildOrReturnStateWithUnresolvedImportedPins(
         state.unresolvedImportedPinnedCards,
-        newCardIds,
+        nextCardList,
         nextCardMetadataMap,
-        state.cardToPinnedCopy,
-        state.pinnedCardToOriginal,
+        nextCardToPinnedCopy,
+        nextPinnedCardToOriginal,
         state.cardStepIndex
       );
 
