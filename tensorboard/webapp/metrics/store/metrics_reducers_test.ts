@@ -275,6 +275,7 @@ describe('metrics reducers', () => {
         },
         cardList: [cardId],
         cardToPinnedCopy: new Map([[cardId, pinnedCopyId]]),
+        pinnedCardToOriginal: new Map([[pinnedCopyId, cardId]]),
       });
       const action = actions.metricsTagMetadataLoaded({
         tagMetadata: {
@@ -409,7 +410,7 @@ describe('metrics reducers', () => {
       ]);
     });
 
-    it('does not drop existing data', () => {
+    it('resets existing data and replaces with new card set', () => {
       const beforeState = {
         ...buildMetricsState(),
         cardMetadataMap: {'<cardId>': createScalarCardMetadata()},
@@ -423,13 +424,23 @@ describe('metrics reducers', () => {
         },
       };
 
+      const cardMetadata = {
+        plugin: PluginType.SCALARS,
+        tag: 'tagA',
+        runId: null,
+      };
+      const cardId = getCardId(cardMetadata);
+
       const action = actions.metricsTagMetadataLoaded({tagMetadata});
       const nextState = reducers(beforeState, action);
 
-      expect(nextState.cardMetadataMap['<cardId>']).toEqual(
-        createScalarCardMetadata()
+      const expectedCardMetadataMap: CardMetadataMap = {};
+      expectedCardMetadataMap[cardId] = cardMetadata;
+
+      expect(nextState.cardMetadataMap['<cardId>']).not.toBe(origCardMetadata);
+      expect(nextState.cardMetadataMap[cardId]).toEqual(
+        expectedCardMetadataMap[cardId]
       );
-      expect(nextState.cardMetadataMap['<cardId>']).toBe(origCardMetadata);
     });
   });
 

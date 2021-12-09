@@ -53,7 +53,7 @@ import {
   getCardId,
   getRunIds,
   getTimeSeriesLoadable,
-  updateCardMap,
+  updateCardMaps,
 } from './metrics_store_internal_utils';
 import {
   CardMetadataMap,
@@ -486,8 +486,6 @@ const reducer = createReducer(
         images: tagMetadata[PluginType.IMAGES],
       };
 
-      // Reset cardMetadataMap because metadata loaded action fired after
-      // complete tag metadata is received.
       const newCardMetadataMap = {} as CardMetadataMap;
       const nextCardMetadataList = buildCardMetadataList(nextTagMetadata);
       const nextCardList = [];
@@ -514,13 +512,16 @@ const reducer = createReducer(
         }
       }
 
-      const {nextCardToPinnedCopy,
-             nextPinnedCardToOriginal,
-             nextCardMetadataMap}
-          = updateCardMap(state.cardToPinnedCopy,
-                          state.pinnedCardToOriginal,
-                          newCardMetadataMap,
-                          nextCardList);
+      const {
+        nextCardToPinnedCopy,
+        nextPinnedCardToOriginal,
+        nextCardMetadataMap,
+      } = updateCardMaps(
+        state.cardToPinnedCopy,
+        state.pinnedCardToOriginal,
+        newCardMetadataMap,
+        nextCardList
+      );
 
       const resolvedResult = buildOrReturnStateWithUnresolvedImportedPins(
         state.unresolvedImportedPinnedCards,

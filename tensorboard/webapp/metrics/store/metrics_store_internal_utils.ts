@@ -295,16 +295,16 @@ export function buildOrReturnStateWithPinnedCopy(
   };
 }
 
-export function updateCardMap(
+export function updateCardMaps(
   cardToPinnedCopy: CardToPinnedCard,
   pinnedCardToOriginal: PinnedCardToCard,
   nextCardMetadataMap: CardMetadataMap,
-  nextCardList: CardId[]) {
-
+  nextCardList: CardId[]
+) {
   const nextCardToPinnedCopy = new Map(cardToPinnedCopy);
   nextCardToPinnedCopy.clear();
   for (const cardId of nextCardList) {
-    if (cardToPinnedCopy.has(cardId)){
+    if (cardToPinnedCopy.has(cardId)) {
       nextCardToPinnedCopy.set(cardId, cardToPinnedCopy.get(cardId)!);
     }
   }
@@ -319,8 +319,11 @@ export function updateCardMap(
   }
 
   // Updates cardMetadataMap to preserve the mapping of pinned cards.
-  for (const [pinnedCardId, originalCardId] of nextPinnedCardToOriginal.entries()) {
-    if(nextCardToPinnedCopy.has(originalCardId)) {
+  for (const [
+    pinnedCardId,
+    originalCardId,
+  ] of nextPinnedCardToOriginal.entries()) {
+    if (nextCardToPinnedCopy.has(originalCardId)) {
       nextCardMetadataMap[pinnedCardId] = nextCardMetadataMap[originalCardId];
     }
   }
