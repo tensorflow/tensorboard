@@ -61,9 +61,6 @@ import {Route, RouteKind, RouteParams} from '../types';
 
 const initAction = createAction('[App Routing] Effects Init');
 
-// Note: The progression of transformation of navigation data is:
-// InternalNavigation -> InternalRouteMatch -> InternalRoute
-
 interface InternalNavigation {
   pathname: string;
   options: NavigationOptions;
@@ -79,12 +76,15 @@ interface InternalRoute {
   options: NavigationOptions;
 }
 
-enum NamespaceOption {
-  // No change in namespace has been requested.
+/**
+ * Describes how to update namespace and namespace id during navigation.
+ */
+enum NamespaceUpdateOption {
+  // Navigation should happen within the same namespace. The namespace id stays
+  // the same.
   UNCHANGED,
-  // An entirely new namespace has been requested by the "resetNamespacedState"
-  // option.
-  RESET,
+  // A new namespace should be generated for this navigation.
+  NEW,
   // A specific namespace has been specified by history. It is possibly the same
   // as the active namespace but it is also possibly a different one.
   FROM_HISTORY,
@@ -94,15 +94,35 @@ type NavigationOptions =
   | {
       browserInitiated: boolean;
       replaceState: boolean;
-      namespaceOption: NamespaceOption.RESET | NamespaceOption.UNCHANGED;
+      namespaceUpdateOption: NamespaceUpdateOption.NEW | NamespaceUpdateOption.UNCHANGED;
     }
   | {
       browserInitiated: boolean;
       replaceState: boolean;
-      namespaceOption: NamespaceOption.FROM_HISTORY;
+      // When namespace is FROM_HISTORY, a namespaceId must also be provided.
+      namespaceUpdateOption: NamespaceUpdateOption.FROM_HISTORY;
       namespaceId: string;
     };
 
+
+/**
+ * Effects to translate attempted app navigations into Route navigation actions.
+ *
+ * There are four events that trigger the effects in this class:
+ *
+ *   * Application load
+ *   * navigationRequest action
+ *   * Browser history popstate event
+ *   * Programmatical navigations (see: ProgrammaticalNavigationModule)
+ *
+ * The progression of how internal data is transformed is:
+ *   * On event, immediately generate an InternalNavigation.
+ *   * Based on app's Route configuration, transform to an InternalRouteMatch.
+ *   * If the navigation is valid, transform into an InternalRoute.
+ *
+ * When an InternalRoute has been successfully created, browser history is
+ * updated and a navigation() action is fired.
+ */
 @Injectable()
 export class AppRoutingEffects {
   private readonly routeConfigs: RouteConfigs;
@@ -119,6 +139,9 @@ export class AppRoutingEffects {
     this.routeConfigs = registry.getRouteConfigs();
   }
 
+  /**
+   * Generates InternalNavigation from navigationRequested action.
+   */
   private readonly onNavigationRequested$: Observable<InternalNavigation> =
     this.actions$.pipe(
       ofType(navigationRequested),
@@ -131,9 +154,9 @@ export class AppRoutingEffects {
           options: {
             browserInitiated: false,
             replaceState: navigation.replaceState ?? false,
-            namespaceOption: navigation.resetNamespacedState
-              ? NamespaceOption.RESET
-              : NamespaceOption.UNCHANGED,
+            namespaceUpdateOption: navigation.resetNamespacedState
+              ? NamespaceUpdateOption.NEW
+              : NamespaceUpdateOption.UNCHANGED,
           },
         };
       })
@@ -153,6 +176,9 @@ export class AppRoutingEffects {
     );
   });
 
+  /**
+   * Generates InternalNavigation from application load.
+   */
   private readonly onInit$: Observable<InternalNavigation> = this.actions$
     .pipe(ofType(initAction))
     .pipe(
@@ -163,12 +189,15 @@ export class AppRoutingEffects {
           options: {
             browserInitiated: true,
             replaceState: true,
-            namespaceOption: NamespaceOption.UNCHANGED,
+            namespaceUpdateOption: NamespaceUpdateOption.UNCHANGED,
           },
         };
       })
     );
 
+  /**
+   * Generates InternalNavigation from browser history popstate event.
+   */
   private readonly onPopState$: Observable<InternalNavigation> = this.location
     .onPopState()
     .pipe(
@@ -178,7 +207,7 @@ export class AppRoutingEffects {
           options: {
             browserInitiated: true,
             replaceState: true,
-            namespaceOption: NamespaceOption.FROM_HISTORY,
+            namespaceUpdateOption: NamespaceUpdateOption.FROM_HISTORY,
             namespaceId: navigation.state?.namespaceId,
           },
         };
@@ -186,8 +215,14 @@ export class AppRoutingEffects {
     );
 
   /**
-   * Input observable must have absolute pathname with, when appRoot is present,
-   * appRoot prefixed (e.g., window.location.pathname).
+   * Generates an InternalRouteMatch from the following events:
+   *
+   *   * Application load.
+   *   * navigationRequested action.
+   *   * Browser history popstate event.
+   *
+   * The input InternalNavigation values must have absolute pathname with
+   * appRoot prefixed (e.g., window.location.pathname) when appRoot is defined.
    */
   private readonly userInitNavRoute$ = merge(
     this.onNavigationRequested$,
@@ -217,6 +252,12 @@ export class AppRoutingEffects {
     })
   );
 
+  /**
+   * Generates an InternalNavigation then InternalRouteMatch for programmatical
+   * navigations.
+   *
+   * See: ProgrammaticalNavigationModule.
+   */
   private readonly programmaticalNavRoute$ = this.actions$.pipe(
     map((action) => {
       return this.programmaticalNavModule.getNavigation(action);
@@ -253,12 +294,16 @@ export class AppRoutingEffects {
         options: {
           replaceState: false,
           browserInitiated: false,
-          namespaceOption: NamespaceOption.UNCHANGED,
+          namespaceUpdateOption: NamespaceUpdateOption.UNCHANGED,
         } as NavigationOptions,
       };
     })
   );
 
+  /**
+   * Merges all the event paths, ensuring they have generated a valid
+   * InternalRouteMatch.
+   */
   private readonly validatedRouteMatch$: Observable<InternalRouteMatch> = merge(
     this.userInitNavRoute$,
     this.programmaticalNavRoute$
@@ -279,6 +324,8 @@ export class AppRoutingEffects {
     const dispatchNavigating$ = this.validatedRouteMatch$.pipe(
       withLatestFrom(this.store.select(getActiveRoute)),
       mergeMap(([internalRouteMatch, oldRoute]) => {
+        // Check for unsaved updates and only proceed if the user confirms they
+        // want to continue without saving.
         const sameRouteId =
           oldRoute !== null &&
           getRouteId(
@@ -288,7 +335,7 @@ export class AppRoutingEffects {
         const dirtySelectors =
           this.dirtyUpdatesRegistry.getDirtyUpdatesSelectors();
 
-        // Do not warn about dirty updates when route ID is the same (e.g. when
+        // Do not warn about unsaved updates when route ID is the same (e.g. when
         // changing tabs in the same experiment page or query params in experiment
         // list).
         if (sameRouteId || !dirtySelectors.length)
@@ -511,11 +558,11 @@ function getAfterNamespaceId(
     return getRouteId(route.routeKind, route.params);
   } else {
     // Time-namespaced state is enabled.
-    if (options.namespaceOption === NamespaceOption.FROM_HISTORY) {
+    if (options.namespaceUpdateOption === NamespaceUpdateOption.FROM_HISTORY) {
       return options.namespaceId;
     } else if (
       beforeNamespaceId == null ||
-      options.namespaceOption === NamespaceOption.RESET
+      options.namespaceUpdateOption === NamespaceUpdateOption.NEW
     ) {
       return Date.now().toString();
     } else {
