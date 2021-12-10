@@ -39,9 +39,7 @@ import {
 } from '../store/text_v2_selectors';
 import {manualReload, reload} from '../../../core/actions';
 
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
-/** @typehack */ import * as _typeHackNgrxEffects from '@ngrx/effects';
 
 @Injectable()
 export class TextEffects {

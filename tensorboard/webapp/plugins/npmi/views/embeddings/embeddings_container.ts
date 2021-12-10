@@ -25,7 +25,6 @@ import {
 } from './../../store/npmi_selectors';
 import * as npmiActions from '../../actions';
 
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
 @Component({
   selector: 'npmi-embeddings',

@@ -30,7 +30,6 @@ import {EmbeddingsComponent} from './embeddings_component';
 import {EmbeddingsContainer} from './embeddings_container';
 import * as npmiActions from '../../actions';
 
-/** @typehack */ import * as _typeHackStore from '@ngrx/store';
 import {NO_ERRORS_SCHEMA} from '@angular/core';
 
 describe('Npmi Embeddings Container', () => {

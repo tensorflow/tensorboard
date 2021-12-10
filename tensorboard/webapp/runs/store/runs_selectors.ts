@@ -27,7 +27,6 @@ import {
 } from './runs_types';
 import {createGroupBy, serializeExperimentIds} from './utils';
 
-/** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
 const getRunsState = createFeatureSelector<State, RunsState>(RUNS_FEATURE_KEY);
 

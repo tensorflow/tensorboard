@@ -39,7 +39,6 @@ import {getEnvironment} from '../store';
 import {State} from '../state';
 import {TB_BRAND_NAME} from '../types';
 
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
 const DEFAULT_BRAND_NAME = 'TensorBoard';
 

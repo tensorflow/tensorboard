@@ -20,9 +20,6 @@ import {State} from '../../app_state';
 import {alertReported} from '../actions';
 import {AlertActionModule} from '../alert_action_module';
 
-/** @typehack */ import * as _typeHackNgrxEffects from '@ngrx/effects';
-/** @typehack */ import * as _typeHackStore from '@ngrx/store';
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
 @Injectable()
 export class AlertEffects {

@@ -39,7 +39,6 @@ import {
 import {GraphContainer} from './graph_container';
 import {GraphModule} from './graph_module';
 
-/** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
 describe('Graph Container', () => {
   let store: MockStore<State>;

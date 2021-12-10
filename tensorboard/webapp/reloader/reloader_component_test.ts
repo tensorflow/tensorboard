@@ -26,7 +26,6 @@ import {
   createSettings,
 } from '../settings/testing';
 
-/** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
 describe('reloader_component', () => {
   let store: MockStore;

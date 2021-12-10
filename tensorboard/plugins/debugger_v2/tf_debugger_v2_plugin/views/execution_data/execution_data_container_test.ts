@@ -37,7 +37,6 @@ import {
 import {ExecutionDataContainer} from './execution_data_container';
 import {ExecutionDataModule} from './execution_data_module';
 
-/** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
 describe('Execution Data Container', () => {
   let store: MockStore<State>;

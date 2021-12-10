@@ -22,7 +22,6 @@ import {takeUntil, distinctUntilChanged} from 'rxjs/operators';
 import {getPageSize} from '../_redux/settings_selectors';
 import {State} from '../_redux/settings_types';
 
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
 /**
  * SettingsPolymerInterop is a temporary interop module that writes settings in

@@ -34,7 +34,6 @@ import {
   getRunColorMap,
 } from '../../../../../selectors';
 
-/** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
 describe('Npmi Parallel Coordinates Container', () => {
   let store: MockStore<State>;

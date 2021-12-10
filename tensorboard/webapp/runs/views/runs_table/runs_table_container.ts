@@ -79,7 +79,6 @@ import {
 } from './runs_table_component';
 import {RunsTableColumn, RunTableItem} from './types';
 
-/** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
 const getRunsLoading = createSelector<
   State,

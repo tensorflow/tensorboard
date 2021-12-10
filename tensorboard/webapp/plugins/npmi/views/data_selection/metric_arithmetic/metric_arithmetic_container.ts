@@ -17,7 +17,6 @@ import {select, Store} from '@ngrx/store';
 import {State} from '../../../store/npmi_types';
 import {getMetricArithmetic} from '../../../store';
 
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
 @Component({
   selector: 'npmi-metric-arithmetic',

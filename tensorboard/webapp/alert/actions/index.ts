@@ -16,8 +16,6 @@ import {createAction, props} from '@ngrx/store';
 
 import {AlertReport} from '../types';
 
-/** @typehack */ import * as _typeHackModels from '@ngrx/store/src/models';
-/** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
 /**
  * Fires when an alert is to be reported.

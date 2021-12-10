@@ -31,7 +31,6 @@ import {NpmiComponent} from './npmi_component';
 import {NpmiContainer} from './npmi_container';
 import {ViewActive} from './store/npmi_types';
 
-/** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
 describe('Npmi Container', () => {
   let store: MockStore<State>;

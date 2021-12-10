@@ -21,7 +21,6 @@ import {pluginUrlHashChanged} from '../actions';
 
 import {ChangedProp} from './hash_storage_component';
 
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
 @Component({
   selector: 'hash-storage',

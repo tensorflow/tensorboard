@@ -66,8 +66,6 @@ import {
 } from '../store';
 import {PluginsListFailureCode} from '../types';
 
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
-/** @typehack */ import * as _typeHackNgrxEffects from '@ngrx/effects';
 
 // throttle + 1ms are somewhat random but it does following:
 // - when an app uses both router and manually fires coreLoaded, we prevent

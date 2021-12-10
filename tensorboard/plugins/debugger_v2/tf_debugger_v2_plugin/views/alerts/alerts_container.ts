@@ -25,7 +25,6 @@ import {
 import {AlertType} from '../../store/debugger_types';
 import {AlertTypeDisplay} from './alerts_component';
 
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
 const ALERT_TYPE_TO_DISPLAY_NAME_AND_SYMBOL: {
   [alertType: string]: {

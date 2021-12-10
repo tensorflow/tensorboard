@@ -18,7 +18,6 @@ import {Store} from '@ngrx/store';
 import {getSettingsLoadState} from '../_redux/settings_selectors';
 import {State} from '../_redux/settings_types';
 
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
 @Component({
   selector: 'settings-button',

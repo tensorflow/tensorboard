@@ -32,7 +32,6 @@ import {PersistentSettingsDataSource} from '../_data_source/persistent_settings_
 import {globalSettingsLoaded} from './persistent_settings_actions';
 import {PersistableSettings} from '../_data_source/types';
 
-/** @typehack */ import * as _typeHackModels from '@ngrx/store/src/models';
 
 const initAction = createAction('[Persistent Settings] Effects Init');
 const DEBOUNCE_PERIOD_IN_MS = 500;

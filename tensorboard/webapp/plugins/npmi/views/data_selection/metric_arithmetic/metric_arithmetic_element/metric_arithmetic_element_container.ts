@@ -25,7 +25,6 @@ import {
 } from '../../../../store';
 import * as npmiActions from '../../../../actions';
 
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
 @Component({
   selector: 'npmi-metric-arithmetic-element',

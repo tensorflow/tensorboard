@@ -37,7 +37,6 @@ import {
 } from '../_redux/settings_actions';
 import {createSettings, createSettingsState, createState} from '../testing';
 
-/** @typehack */ import * as _typeHackStore from '@ngrx/store';
 import {getSettingsLoadState} from '../_redux/settings_selectors';
 import {DataLoadState} from '../../types/data';
 

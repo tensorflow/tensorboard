@@ -33,7 +33,6 @@ import {AnnotationsSearchContainer} from './annotations_search_container';
 import {AnnotationsSearchComponent} from './annotations_search_component';
 import {getAnnotationsRegex} from '../../../../store';
 
-/** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
 describe('Npmi Annotations Search Container', () => {
   let store: MockStore<State>;

@@ -20,7 +20,6 @@ import {State} from '../../app_state';
 import {getViewActive} from './store/npmi_selectors';
 import {getCurrentRouteRunSelection} from '../../selectors';
 
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
 @Component({
   selector: 'npmi',

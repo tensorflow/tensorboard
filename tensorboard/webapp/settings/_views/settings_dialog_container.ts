@@ -27,7 +27,6 @@ import {
   changePageSize,
 } from '../_redux/settings_actions';
 
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
 @Component({
   selector: 'settings-dialog',

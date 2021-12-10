@@ -40,7 +40,6 @@ import {SourceFilesModule} from '../source_files/source_files_module';
 import {StackTraceModule} from '../stack_trace/stack_trace_module';
 import {TimelineModule} from '../timeline/timeline_module';
 
-/** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
 describe('Alerts Container', () => {
   let store: MockStore<State>;

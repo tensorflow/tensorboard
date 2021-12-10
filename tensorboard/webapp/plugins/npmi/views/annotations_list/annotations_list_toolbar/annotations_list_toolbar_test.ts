@@ -26,7 +26,6 @@ import {appStateFromNpmiState, createNpmiState} from '../../../testing';
 import * as npmiActions from '../../../actions';
 import {getSelectedAnnotations} from '../../../store';
 
-/** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
 describe('Npmi Annotations List Toolbar Container', () => {
   let store: MockStore<State>;

@@ -22,7 +22,6 @@ import {SettingsPolymerInteropContainer} from './polymer_interop_container';
 
 import {getPageSize} from '../_redux/settings_selectors';
 
-/** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
 describe('settings polymer_interop', () => {
   let store: MockStore;

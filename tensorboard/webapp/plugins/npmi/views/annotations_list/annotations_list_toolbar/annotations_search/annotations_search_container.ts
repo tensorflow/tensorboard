@@ -20,7 +20,6 @@ import * as npmiActions from '../../../../actions';
 
 import {getAnnotationsRegex} from '../../../../store';
 
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
 @Component({
   selector: 'npmi-annotations-search',

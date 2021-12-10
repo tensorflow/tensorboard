@@ -33,7 +33,6 @@ import {
   XAxisType,
 } from '../../types';
 
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
 const SLIDER_AUDIT_TIME_MS = 250;
 
