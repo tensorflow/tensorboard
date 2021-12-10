@@ -94,7 +94,9 @@ type NavigationOptions =
   | {
       browserInitiated: boolean;
       replaceState: boolean;
-      namespaceUpdateOption: NamespaceUpdateOption.NEW | NamespaceUpdateOption.UNCHANGED;
+      namespaceUpdateOption:
+        | NamespaceUpdateOption.NEW
+        | NamespaceUpdateOption.UNCHANGED;
     }
   | {
       browserInitiated: boolean;
@@ -103,7 +105,6 @@ type NavigationOptions =
       namespaceUpdateOption: NamespaceUpdateOption.FROM_HISTORY;
       namespaceId: string;
     };
-
 
 /**
  * Effects to translate attempted app navigations into Route navigation actions.
