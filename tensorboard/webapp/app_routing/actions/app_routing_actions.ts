@@ -16,9 +16,6 @@ import {createAction, props} from '@ngrx/store';
 
 import {Navigation, Route, RouteKind} from '../types';
 
-/** @typehack */ import * as _typeHackModels from '@ngrx/store/src/models';
-/** @typehack */ import * as _typeHackStore from '@ngrx/store';
-
 /**
  * Created when user wants to discard unsaved edits and navigate away.
  */

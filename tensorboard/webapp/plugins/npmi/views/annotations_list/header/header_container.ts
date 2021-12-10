@@ -20,8 +20,6 @@ import {getSelectedAnnotations, getAnnotationSort} from '../../../store';
 import {AnnotationDataListing} from './../../../store/npmi_types';
 import * as npmiActions from '../../../actions';
 
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
-
 @Component({
   selector: 'npmi-annotations-list-header',
   template: `

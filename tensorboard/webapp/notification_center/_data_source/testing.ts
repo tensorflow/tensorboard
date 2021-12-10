@@ -21,8 +21,6 @@ import {
   BackendNotification,
 } from './backend_types';
 
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
-
 @Injectable()
 export class TestingNotificationCenterDataSource
   implements NotificationCenterDataSource

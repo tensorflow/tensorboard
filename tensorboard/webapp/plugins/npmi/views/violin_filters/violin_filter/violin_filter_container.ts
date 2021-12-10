@@ -33,8 +33,6 @@ import {violinData, ViolinChartData} from '../../../util/violin_data';
 import * as selectors from '../../../../../selectors';
 import {RunColorScale} from '../../../../../types/ui';
 
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
-
 @Component({
   selector: 'npmi-violin-filter',
   template: `

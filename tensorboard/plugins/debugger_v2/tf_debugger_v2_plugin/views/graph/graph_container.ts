@@ -23,8 +23,6 @@ import {
 } from '../../store';
 import {State} from '../../store/debugger_types';
 
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
-
 @Component({
   selector: 'tf-debugger-v2-graph',
   template: `

@@ -31,8 +31,6 @@ import {ResultsDownloadComponent} from './results_download_component';
 
 import {getFlaggedAnnotations} from '../../../store';
 
-/** @typehack */ import * as _typeHackStore from '@ngrx/store';
-
 describe('Npmi Results Download', () => {
   let store: MockStore<State>;
   const css = {

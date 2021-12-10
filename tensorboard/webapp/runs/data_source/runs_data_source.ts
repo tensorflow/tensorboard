@@ -24,8 +24,6 @@ import {
   RunsDataSource,
 } from './runs_data_source_types';
 
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
-
 type BackendGetRunsResponse = string[];
 
 function runToRunId(run: string, experimentId: string) {

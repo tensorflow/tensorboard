@@ -28,8 +28,6 @@ import {
 import {getCurrentRouteRunSelection} from '../../../../../selectors';
 import {metricIsNpmiAndNotDiff} from '../../../util/metric_type';
 
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
-
 @Component({
   selector: 'npmi-results-download',
   template: `

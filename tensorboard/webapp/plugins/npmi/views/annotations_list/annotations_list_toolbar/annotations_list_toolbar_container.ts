@@ -26,8 +26,6 @@ import {
   getShowHiddenAnnotations,
 } from '../../../store';
 
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
-
 @Component({
   selector: 'npmi-annotations-list-toolbar',
   template: `

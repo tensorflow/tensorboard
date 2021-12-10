@@ -38,10 +38,6 @@ import {
 } from './../actions';
 import * as selectors from '../../../selectors';
 
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
-
-/** @typehack */ import * as _typeHackNgrxEffects from '@ngrx/effects';
-
 @Injectable()
 export class NpmiEffects {
   /**

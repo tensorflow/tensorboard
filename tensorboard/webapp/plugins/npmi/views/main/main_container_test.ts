@@ -30,7 +30,6 @@ import {MainComponent} from './main_component';
 import {MainContainer} from './main_container';
 import * as npmiActions from '../../actions';
 
-/** @typehack */ import * as _typeHackStore from '@ngrx/store';
 import {NO_ERRORS_SCHEMA} from '@angular/core';
 
 describe('Npmi Main Container', () => {

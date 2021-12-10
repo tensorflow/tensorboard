@@ -40,8 +40,6 @@ import {
 import {MetricArithmeticElementContainer} from './metric_arithmetic_element_container';
 import {MetricArithmeticElementComponent} from './metric_arithmetic_element_component';
 
-/** @typehack */ import * as _typeHackStore from '@ngrx/store';
-
 describe('Npmi Metric Arithmetic Element Container', () => {
   let store: MockStore<State>;
   let dispatchedActions: Action[];

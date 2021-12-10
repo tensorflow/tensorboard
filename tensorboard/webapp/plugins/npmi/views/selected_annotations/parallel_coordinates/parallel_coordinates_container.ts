@@ -33,8 +33,6 @@ import {stripMetricString} from '../../../util/metric_type';
 import * as selectors from '../../../../../selectors';
 import {RunColorScale} from '../../../../../types/ui';
 
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
-
 @Component({
   selector: 'npmi-parallel-coordinates',
   template: `

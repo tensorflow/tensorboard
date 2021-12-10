@@ -30,8 +30,6 @@ import {
 } from './../store/npmi_types';
 import {EmbeddingDataSet, buildEmbeddingDataSet} from '../util/umap';
 
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
-
 export abstract class NpmiDataSource {
   abstract fetchData(experimentIds: string[]): Observable<{
     annotationData: AnnotationDataListing;

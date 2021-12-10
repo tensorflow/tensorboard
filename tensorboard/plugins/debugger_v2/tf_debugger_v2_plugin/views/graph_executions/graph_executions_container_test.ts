@@ -51,8 +51,6 @@ import {TimelineModule} from '../timeline/timeline_module';
 import {GraphExecutionsContainer} from './graph_executions_container';
 import {GraphExecutionsModule} from './graph_executions_module';
 
-/** @typehack */ import * as _typeHackStore from '@ngrx/store';
-
 describe('Graph Executions Container', () => {
   let store: MockStore<State>;
 

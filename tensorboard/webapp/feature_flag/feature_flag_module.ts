@@ -32,8 +32,6 @@ import {
 } from './store/feature_flag_store_config_provider';
 import {FEATURE_FLAG_FEATURE_KEY, State} from './store/feature_flag_types';
 
-/** @typehack */ import * as _typeHackStore from '@ngrx/store';
-
 export function getThemeSettingSelector() {
   return createSelector(getEnableDarkModeOverride, (darkModeOverride) => {
     if (darkModeOverride === null) {

@@ -21,8 +21,6 @@ import {map} from 'rxjs/operators';
 import {getSidebarExpanded, getMetricFilters} from '../../store';
 import * as npmiActions from '../../actions';
 
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
-
 @Component({
   selector: 'npmi-violin-filters',
   template: `

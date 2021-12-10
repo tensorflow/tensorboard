@@ -25,8 +25,6 @@ import {
 } from '../../store';
 import {StackFrameForDisplay} from './stack_trace_component';
 
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
-
 @Component({
   selector: 'tf-debugger-v2-stack-trace',
   template: `

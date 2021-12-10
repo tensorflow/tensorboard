@@ -23,8 +23,6 @@ import {
   State,
 } from './experiments_types';
 
-/** @typehack */ import * as _typeHackStore from '@ngrx/store';
-
 const getExperimentsState = createFeatureSelector<State, ExperimentsState>(
   EXPERIMENTS_FEATURE_KEY
 );

@@ -17,10 +17,6 @@ import {Environment, PluginId, PluginsListing} from '../../types/api';
 
 import {PluginsListFailureCode, Run, RunId} from '../types';
 
-// HACK: Below import is for type inference.
-// https://github.com/bazelbuild/rules_nodejs/issues/1013
-/** @typehack */ import * as _typeHackModels from '@ngrx/store/src/models';
-
 /**
  * User has clicked on a button in the header to change the plugin.
  */

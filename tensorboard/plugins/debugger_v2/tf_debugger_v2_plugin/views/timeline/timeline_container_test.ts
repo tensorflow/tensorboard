@@ -40,8 +40,6 @@ import {
 import {TEST_ONLY, TimelineContainer} from './timeline_container';
 import {TimelineModule} from './timeline_module';
 
-/** @typehack */ import * as _typeHackStore from '@ngrx/store';
-
 describe('getExecutionDigestForDisplay', () => {
   for (const [opType, strLen, expectedShortOpType, isGraph] of [
     ['MatMul', 1, 'M', false],

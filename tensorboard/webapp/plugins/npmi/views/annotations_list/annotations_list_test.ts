@@ -27,8 +27,6 @@ import {createState, createCoreState} from '../../../../core/testing';
 import {AnnotationsListComponent} from './annotations_list_component';
 import {AnnotationsListContainer} from './annotations_list_container';
 
-/** @typehack */ import * as _typeHackStore from '@ngrx/store';
-
 describe('Npmi Annotations List Container', () => {
   let store: MockStore<State>;
   const css = {

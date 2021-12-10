@@ -18,10 +18,6 @@ import {DataLoadState} from '../../types/data';
 import {ColorPalette} from '../../util/colors';
 import {SettingsState, SETTINGS_FEATURE_KEY, State} from './settings_types';
 
-// HACK: These imports are for type inference.
-// https://github.com/bazelbuild/rules_nodejs/issues/1013
-/** @typehack */ import * as _typeHackSelector from '@ngrx/store/src/selector';
-
 const selectSettingsState = createFeatureSelector<State, SettingsState>(
   SETTINGS_FEATURE_KEY
 );

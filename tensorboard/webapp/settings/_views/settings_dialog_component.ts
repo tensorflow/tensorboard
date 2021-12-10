@@ -33,8 +33,6 @@ import {takeUntil, debounceTime, filter} from 'rxjs/operators';
 
 import {MIN_RELOAD_PERIOD_IN_MS} from '../_redux/settings_reducers';
 
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
-
 export function createIntegerValidator(): ValidatorFn {
   return (control: AbstractControl): {[key: string]: any} | null => {
     const numValue = Number(control.value);

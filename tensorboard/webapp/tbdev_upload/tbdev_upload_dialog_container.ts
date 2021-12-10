@@ -17,8 +17,6 @@ import {Store, select, createSelector} from '@ngrx/store';
 
 import {getEnvironment, State} from '../core/store';
 
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
-
 const getLogdir = createSelector(
   getEnvironment,
   (environment): string => environment.data_location

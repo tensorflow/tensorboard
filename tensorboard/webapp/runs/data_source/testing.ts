@@ -23,8 +23,6 @@ import {
   RunsDataSource,
 } from './runs_data_source_types';
 
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
-
 export function buildHparamsAndMetadata(
   override: Partial<HparamsAndMetadata>
 ): HparamsAndMetadata {

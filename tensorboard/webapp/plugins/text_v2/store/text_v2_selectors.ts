@@ -18,11 +18,6 @@ import {TextState, State, TEXT_FEATURE_KEY} from './text_types';
 import {StepDatum} from '../data_source';
 import {RunTag} from '../types';
 
-// HACK: These imports are for type inference.
-// https://github.com/bazelbuild/rules_nodejs/issues/1013
-
-/** @typehack */ import * as _typeHackStore from '@ngrx/store';
-
 const selectTextState = createFeatureSelector<State, TextState>(
   TEXT_FEATURE_KEY
 );

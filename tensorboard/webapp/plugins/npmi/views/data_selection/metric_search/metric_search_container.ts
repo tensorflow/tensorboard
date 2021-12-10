@@ -27,8 +27,6 @@ import {
 import {getCurrentRouteRunSelection} from '../../../../../selectors';
 import * as npmiActions from '../../../actions';
 
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
-
 @Component({
   selector: 'npmi-metric-search',
   template: `

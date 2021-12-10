@@ -55,10 +55,6 @@ import {
 } from '../store/app_routing_selectors';
 import {Navigation, Route, RouteKind, RouteParams} from '../types';
 
-/** @typehack */ import * as _typeHackNgrxEffects from '@ngrx/effects';
-/** @typehack */ import * as _typeHackModels from '@ngrx/store/src/models';
-/** @typehack */ import * as _typeHackStore from '@ngrx/store';
-
 const initAction = createAction('[App Routing] Effects Init');
 
 interface InternalNavigation extends Navigation {

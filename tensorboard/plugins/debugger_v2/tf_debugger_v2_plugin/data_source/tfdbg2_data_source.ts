@@ -29,8 +29,6 @@ import {
 } from '../store/debugger_types';
 import {TBHttpClient} from '../../../../webapp/webapp_data_source/tb_http_client';
 
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
-
 // The backend route for source-file list responds with an array
 // of 2-tuples: <host_name, file_path>.
 export type SourceFileListResponse = Array<[string, string]>;

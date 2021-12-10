@@ -19,8 +19,6 @@ import {StoreConfig} from '@ngrx/store';
 import {INITIAL_STATE} from './metrics_reducers';
 import {MetricsSettings, MetricsState} from './metrics_types';
 
-/** @typehack */ import * as _typeHackStore from '@ngrx/store';
-
 export const METRICS_STORE_CONFIG_TOKEN = new InjectionToken<
   StoreConfig<MetricsState>
 >('Metrics Store Config');

@@ -41,8 +41,6 @@ import {selectors as settingsSelectors} from '../settings';
 
 import {PluginLoadState} from './plugins_component';
 
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
-
 export interface UiPluginMetadata extends PluginMetadata {
   id: string;
 }

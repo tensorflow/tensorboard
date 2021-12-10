@@ -48,8 +48,6 @@ import {TimelineModule} from '../timeline/timeline_module';
 import {SourceFilesContainer} from './source_files_container';
 import {SourceFilesModule} from './source_files_module';
 
-/** @typehack */ import * as _typeHackStore from '@ngrx/store';
-
 type AppState = DebuggerState & OtherAppState;
 
 describe('Source Files Container', () => {

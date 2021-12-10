@@ -23,8 +23,6 @@ import {PluginsListFailureCode} from '../core/types';
 
 import {HttpErrorResponse, TBHttpClient} from './tb_http_client';
 
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
-
 function getPluginsListingQueryParams(enabledExperimentPluginIds: string[]) {
   if (!enabledExperimentPluginIds.length) {
     return null;
