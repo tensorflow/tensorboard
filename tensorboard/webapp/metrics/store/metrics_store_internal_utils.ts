@@ -301,8 +301,7 @@ export function updateCardMaps(
   nextCardMetadataMap: CardMetadataMap,
   nextCardList: CardId[]
 ) {
-  const nextCardToPinnedCopy = new Map(cardToPinnedCopy);
-  nextCardToPinnedCopy.clear();
+  const nextCardToPinnedCopy = new Map() as CardToPinnedCard;
   for (const cardId of nextCardList) {
     if (cardToPinnedCopy.has(cardId)) {
       nextCardToPinnedCopy.set(cardId, cardToPinnedCopy.get(cardId)!);
