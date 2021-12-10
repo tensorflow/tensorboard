@@ -118,7 +118,6 @@ import {
 } from '../store/debugger_types';
 import {PLUGIN_ID} from '../types';
 
-
 type State = AppState & DebuggerState;
 
 // Minimum polling interval in milliseconds.

@@ -31,7 +31,6 @@ import {
 } from '../store_only_utils';
 import {ExperimentAlias} from '../../experiments/types';
 
-
 const getAppRoutingState = createFeatureSelector<State, AppRoutingState>(
   APP_ROUTING_FEATURE_KEY
 );

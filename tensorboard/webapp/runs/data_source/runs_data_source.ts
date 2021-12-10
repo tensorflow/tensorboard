@@ -24,7 +24,6 @@ import {
   RunsDataSource,
 } from './runs_data_source_types';
 
-
 type BackendGetRunsResponse = string[];
 
 function runToRunId(run: string, experimentId: string) {

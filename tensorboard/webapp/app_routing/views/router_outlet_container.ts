@@ -25,7 +25,6 @@ import {
   getNextRouteForRouterOutletOnly,
 } from '../store/app_routing_selectors';
 
-
 @Component({
   selector: 'router-outlet',
   template: `

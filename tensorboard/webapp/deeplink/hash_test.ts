@@ -16,7 +16,6 @@ import {TestBed} from '@angular/core/testing';
 
 import {HashStorageComponent} from './hash';
 
-
 describe('hash storage test', () => {
   let store: MockStore<State>;
   let dispatchSpy: jasmine.Spy;

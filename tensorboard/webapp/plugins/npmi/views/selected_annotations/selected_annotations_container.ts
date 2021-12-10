@@ -19,7 +19,6 @@ import {State} from '../../../../app_state';
 import {getPCExpanded, getSelectedAnnotations} from '../../store';
 import * as npmiActions from '../../actions';
 
-
 @Component({
   selector: 'npmi-selected-annotations',
   template: `

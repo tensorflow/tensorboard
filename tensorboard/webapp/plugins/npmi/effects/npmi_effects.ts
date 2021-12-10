@@ -38,8 +38,6 @@ import {
 } from './../actions';
 import * as selectors from '../../../selectors';
 
-
-
 @Injectable()
 export class NpmiEffects {
   /**

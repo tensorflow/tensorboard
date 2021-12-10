@@ -20,7 +20,6 @@ import * as npmiActions from '../../../../actions';
 
 import {getAnnotationsRegex} from '../../../../store';
 
-
 @Component({
   selector: 'npmi-annotations-search',
   template: `

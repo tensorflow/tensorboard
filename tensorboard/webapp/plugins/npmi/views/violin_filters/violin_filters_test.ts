@@ -30,7 +30,6 @@ import {createState, createCoreState} from '../../../../core/testing';
 import * as npmiActions from '../../actions';
 import {getSidebarExpanded, getMetricFilters} from '../../store';
 
-
 describe('Npmi Violin Filters Container', () => {
   let store: MockStore<State>;
   let dispatchedActions: Action[];

@@ -23,7 +23,6 @@ import {PluginsListFailureCode} from '../core/types';
 
 import {HttpErrorResponse, TBHttpClient} from './tb_http_client';
 
-
 function getPluginsListingQueryParams(enabledExperimentPluginIds: string[]) {
   if (!enabledExperimentPluginIds.length) {
     return null;

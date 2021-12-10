@@ -44,7 +44,6 @@ import {
 import {MetricsDashboardContainer} from './views/metrics_container';
 import {MetricsViewsModule} from './views/metrics_views_module';
 
-
 const CREATE_PIN_MAX_EXCEEDED_TEXT =
   `Max pin limit exceeded. Remove existing` +
   ` pins before adding more. See ` +

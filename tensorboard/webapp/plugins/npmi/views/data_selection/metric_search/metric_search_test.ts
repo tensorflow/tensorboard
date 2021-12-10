@@ -40,7 +40,6 @@ import {appStateFromNpmiState, createNpmiState} from '../../../testing';
 import {MetricSearchComponent} from './metric_search_component';
 import {MetricSearchContainer} from './metric_search_container';
 
-
 describe('Npmi Metric Search Container', () => {
   let store: MockStore<State>;
   let dispatchedActions: Action[];

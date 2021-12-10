@@ -26,7 +26,6 @@ import {polymerInteropRunSelectionChanged} from '../../../core/actions';
 import {LegacyRunsSelectorContainer} from './legacy_runs_selector_container';
 import {LegacyRunsSelectorComponent} from './legacy_runs_selector_component';
 
-
 describe('legacy_runs_selector test', () => {
   let store: MockStore<State>;
   let recordedActions: Action[];

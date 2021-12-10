@@ -20,7 +20,6 @@ import {State} from '../../../app_state';
 import {getExperimentIdsFromRoute} from '../../../selectors';
 import {RunsTableColumn} from '../runs_table/types';
 
-
 @Component({
   selector: 'runs-selector',
   template: `

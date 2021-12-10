@@ -25,7 +25,6 @@ import {
 } from './../../store/npmi_selectors';
 import * as npmiActions from '../../actions';
 
-
 @Component({
   selector: 'npmi-embeddings',
   template: `

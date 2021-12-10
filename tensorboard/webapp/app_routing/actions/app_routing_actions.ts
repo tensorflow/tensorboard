@@ -16,7 +16,6 @@ import {createAction, props} from '@ngrx/store';
 
 import {Navigation, Route, RouteKind} from '../types';
 
-
 /**
  * Created when user wants to discard unsaved edits and navigate away.
  */

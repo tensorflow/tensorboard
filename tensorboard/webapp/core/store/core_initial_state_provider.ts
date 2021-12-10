@@ -19,7 +19,6 @@ import {CoreState} from './core_types';
 import {DeepLinkerInterface} from '../../deeplink';
 import {initialState} from './core_types';
 
-
 export const CORE_STORE_CONFIG_TOKEN = new InjectionToken<
   StoreConfig<CoreState>
 >('Core Feature Config');

@@ -66,7 +66,6 @@ import {
 } from '../store';
 import {PluginsListFailureCode} from '../types';
 
-
 // throttle + 1ms are somewhat random but it does following:
 // - when an app uses both router and manually fires coreLoaded, we prevent
 //   double requests.

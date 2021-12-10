@@ -16,7 +16,6 @@ import {createAction, props} from '@ngrx/store';
 
 import {AlertReport} from '../types';
 
-
 /**
  * Fires when an alert is to be reported.
  */

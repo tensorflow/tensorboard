@@ -41,7 +41,6 @@ import {selectors as settingsSelectors} from '../settings';
 
 import {PluginLoadState} from './plugins_component';
 
-
 export interface UiPluginMetadata extends PluginMetadata {
   id: string;
 }

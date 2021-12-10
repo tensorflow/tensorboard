@@ -20,7 +20,6 @@ import {State} from '../../app_state';
 import {alertReported} from '../actions';
 import {AlertActionModule} from '../alert_action_module';
 
-
 @Injectable()
 export class AlertEffects {
   constructor(

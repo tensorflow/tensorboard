@@ -29,7 +29,6 @@ import {SelectedAnnotationsComponent} from './selected_annotations_component';
 import * as npmiActions from '../../actions';
 import {getPCExpanded, getSelectedAnnotations} from '../../store';
 
-
 describe('Npmi Selected Annotations', () => {
   let store: MockStore<State>;
   let dispatchedActions: Action[];

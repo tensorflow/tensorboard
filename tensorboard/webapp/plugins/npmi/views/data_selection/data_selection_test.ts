@@ -27,7 +27,6 @@ import {DataSelectionComponent} from './data_selection_component';
 import {appStateFromNpmiState, createNpmiState} from '../../testing';
 import {createState, createCoreState} from '../../../../core/testing';
 
-
 describe('Npmi Data Selection Container', () => {
   let store: MockStore<State>;
 

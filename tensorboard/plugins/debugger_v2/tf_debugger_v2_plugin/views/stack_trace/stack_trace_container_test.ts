@@ -41,7 +41,6 @@ import {StackTraceComponent} from './stack_trace_component';
 import {StackTraceContainer} from './stack_trace_container';
 import {StackTraceModule} from './stack_trace_module';
 
-
 describe('Stack Trace container', () => {
   let store: MockStore<State>;
   let dispatchSpy: jasmine.Spy;

@@ -50,7 +50,6 @@ import {
 } from '../store';
 import {CardId, CardMetadata} from '../types';
 
-
 export type CardFetchInfo = CardMetadata & {
   id: CardId;
   loadState: DataLoadState;

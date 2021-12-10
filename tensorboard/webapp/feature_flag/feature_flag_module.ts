@@ -32,7 +32,6 @@ import {
 } from './store/feature_flag_store_config_provider';
 import {FEATURE_FLAG_FEATURE_KEY, State} from './store/feature_flag_types';
 
-
 export function getThemeSettingSelector() {
   return createSelector(getEnableDarkModeOverride, (darkModeOverride) => {
     if (darkModeOverride === null) {

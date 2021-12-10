@@ -32,7 +32,6 @@ import {
 } from './../../../store/npmi_selectors';
 import {ArithmeticKind, Operator} from '../../../store/npmi_types';
 
-
 describe('Npmi Metric Arithmetic Container', () => {
   let store: MockStore<State>;
 

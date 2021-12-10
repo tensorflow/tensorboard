@@ -19,7 +19,6 @@ import {State} from './store/debugger_types';
 import {debuggerLoaded, debuggerUnloaded} from './actions';
 import {getActiveRunId, getDebuggerRunListing} from './store';
 
-
 @Component({
   selector: 'tf-debugger-v2',
   template: `

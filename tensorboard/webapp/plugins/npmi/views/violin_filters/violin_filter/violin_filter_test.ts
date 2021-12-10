@@ -32,7 +32,6 @@ import {getAnnotationData} from '../../../store';
 import {getCurrentRouteRunSelection} from '../../../../../selectors';
 import * as selectors from '../../../../../selectors';
 
-
 describe('Npmi Violin Filter Container', () => {
   let store: MockStore<State>;
   let dispatchedActions: Action[];

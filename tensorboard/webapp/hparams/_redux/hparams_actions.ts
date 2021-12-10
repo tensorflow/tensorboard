@@ -20,7 +20,6 @@ import {createAction, props} from '@ngrx/store';
 
 import {DiscreteHparamValues} from '../types';
 
-
 export const hparamsDiscreteHparamFilterChanged = createAction(
   '[Hparams] Hparams Discrete Hparam Filter Changed',
   props<{

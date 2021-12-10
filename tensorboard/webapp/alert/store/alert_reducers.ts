@@ -16,7 +16,6 @@ import {Action, createReducer, on} from '@ngrx/store';
 import * as actions from '../actions';
 import {AlertState} from './alert_types';
 
-
 const initialState: AlertState = {
   latestAlert: null,
 };

@@ -55,7 +55,6 @@ import {
 } from '../store/app_routing_selectors';
 import {Navigation, Route, RouteKind, RouteParams} from '../types';
 
-
 const initAction = createAction('[App Routing] Effects Init');
 
 interface InternalNavigation extends Navigation {

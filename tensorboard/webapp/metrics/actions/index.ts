@@ -28,7 +28,6 @@ import {
   XAxisType,
 } from '../internal_types';
 
-
 export const metricsSettingsPaneClosed = createAction(
   '[Metrics] Metrics Settings Pane Closed'
 );

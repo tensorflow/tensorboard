@@ -26,7 +26,6 @@ import {
   createSettings,
 } from '../settings/testing';
 
-
 describe('reloader_component', () => {
   let store: MockStore;
   let dispatchSpy: jasmine.Spy;

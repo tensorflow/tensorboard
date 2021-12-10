@@ -16,7 +16,6 @@ import {createAction, props} from '@ngrx/store';
 
 import {Notification} from './notification_center_types';
 
-
 /**
  * Fires when the bell icon is clicked.
  */

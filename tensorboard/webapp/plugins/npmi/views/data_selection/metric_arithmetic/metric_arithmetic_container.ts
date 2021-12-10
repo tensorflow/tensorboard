@@ -17,7 +17,6 @@ import {select, Store} from '@ngrx/store';
 import {State} from '../../../store/npmi_types';
 import {getMetricArithmetic} from '../../../store';
 
-
 @Component({
   selector: 'npmi-metric-arithmetic',
   template: `

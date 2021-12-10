@@ -20,7 +20,6 @@ import {Execution, State, TensorDebugMode} from '../../store/debugger_types';
 import {getFocusedExecutionData} from '../../store';
 import {DTYPE_ENUM_TO_NAME} from '../../tf_dtypes';
 
-
 const UNKNOWN_DTYPE_NAME = 'Unknown dtype';
 
 @Component({

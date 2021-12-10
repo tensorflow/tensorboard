@@ -48,7 +48,6 @@ import {TimelineModule} from '../timeline/timeline_module';
 import {SourceFilesContainer} from './source_files_container';
 import {SourceFilesModule} from './source_files_module';
 
-
 type AppState = DebuggerState & OtherAppState;
 
 describe('Source Files Container', () => {

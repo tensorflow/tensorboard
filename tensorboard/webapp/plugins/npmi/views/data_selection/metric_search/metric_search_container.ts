@@ -27,7 +27,6 @@ import {
 import {getCurrentRouteRunSelection} from '../../../../../selectors';
 import * as npmiActions from '../../../actions';
 
-
 @Component({
   selector: 'npmi-metric-search',
   template: `

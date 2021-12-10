@@ -37,7 +37,6 @@ import {
 import {DataLoadState, ExecutionDigest} from '../../store/debugger_types';
 import {ExecutionDigestForDisplay} from './timeline_component';
 
-
 const FUNCTION_OP_TYPE_PREFIXES: string[] = [
   '__forward_',
   '__backward_',

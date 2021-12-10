@@ -27,7 +27,6 @@ import {SortOrder} from '../../../store/npmi_types';
 import {appStateFromNpmiState, createNpmiState} from '../../../testing';
 import {getAnnotationSort} from '../../../store';
 
-
 describe('Npmi Annotations List Header Container', () => {
   let store: MockStore<State>;
   let dispatchedActions: Action[];

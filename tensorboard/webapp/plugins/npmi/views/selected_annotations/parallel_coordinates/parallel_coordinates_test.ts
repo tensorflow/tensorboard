@@ -34,7 +34,6 @@ import {
   getRunColorMap,
 } from '../../../../../selectors';
 
-
 describe('Npmi Parallel Coordinates Container', () => {
   let store: MockStore<State>;
   const css = {

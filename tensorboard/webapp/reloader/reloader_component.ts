@@ -21,7 +21,6 @@ import {distinctUntilChanged} from 'rxjs/operators';
 import {selectors as settingsSelectors, State} from '../settings';
 import {reload} from '../core/actions';
 
-
 @Component({
   selector: 'reloader',
   template: '',

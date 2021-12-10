@@ -37,7 +37,6 @@ import {
 import {ExecutionDataContainer} from './execution_data_container';
 import {ExecutionDataModule} from './execution_data_module';
 
-
 describe('Execution Data Container', () => {
   let store: MockStore<State>;
   let dispatchSpy: jasmine.Spy;

@@ -39,7 +39,6 @@ import {getEnvironment} from '../store';
 import {State} from '../state';
 import {TB_BRAND_NAME} from '../types';
 
-
 const DEFAULT_BRAND_NAME = 'TensorBoard';
 
 /**

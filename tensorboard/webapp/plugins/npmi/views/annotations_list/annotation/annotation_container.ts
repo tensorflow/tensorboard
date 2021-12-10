@@ -31,7 +31,6 @@ import {ValueData} from '../../../store/npmi_types';
 import * as npmiActions from '../../../actions';
 import {RunColorScale} from '../../../../../types/ui';
 
-
 @Component({
   selector: 'npmi-annotation',
   template: `

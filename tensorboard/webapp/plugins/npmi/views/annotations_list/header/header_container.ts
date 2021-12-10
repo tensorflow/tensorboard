@@ -20,7 +20,6 @@ import {getSelectedAnnotations, getAnnotationSort} from '../../../store';
 import {AnnotationDataListing} from './../../../store/npmi_types';
 import * as npmiActions from '../../../actions';
 
-
 @Component({
   selector: 'npmi-annotations-list-header',
   template: `

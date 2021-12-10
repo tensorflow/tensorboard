@@ -27,7 +27,6 @@ import {
 } from './runs_types';
 import {createGroupBy, serializeExperimentIds} from './utils';
 
-
 const getRunsState = createFeatureSelector<State, RunsState>(RUNS_FEATURE_KEY);
 
 const getDataState = createSelector(

@@ -17,7 +17,6 @@ import {createAction, props} from '@ngrx/store';
 
 import {FeatureFlags} from '../types';
 
-
 /**
  * Signals that a data source has loaded feature flag values.
  *

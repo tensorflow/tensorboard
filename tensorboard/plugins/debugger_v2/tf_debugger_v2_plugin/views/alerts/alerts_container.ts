@@ -25,7 +25,6 @@ import {
 import {AlertType} from '../../store/debugger_types';
 import {AlertTypeDisplay} from './alerts_component';
 
-
 const ALERT_TYPE_TO_DISPLAY_NAME_AND_SYMBOL: {
   [alertType: string]: {
     displayName: string;

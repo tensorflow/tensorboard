@@ -39,8 +39,6 @@ import {
 } from '../store/text_v2_selectors';
 import {manualReload, reload} from '../../../core/actions';
 
-
-
 @Injectable()
 export class TextEffects {
   /** @export */

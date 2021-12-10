@@ -16,7 +16,6 @@ import {createAction, props} from '@ngrx/store';
 
 import {PersistableSettings} from '../_data_source/types';
 
-
 /**
  * Describes settings loaded from a global settings storage. Dispatched once
  * when the application bootstraps.

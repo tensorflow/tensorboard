@@ -27,7 +27,6 @@ import {
   changePageSize,
 } from '../_redux/settings_actions';
 
-
 @Component({
   selector: 'settings-dialog',
   template: `

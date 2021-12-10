@@ -19,7 +19,6 @@ import * as actions from '../actions/feature_flag_actions';
 import {initialState} from './feature_flag_store_config_provider';
 import {FeatureFlagState} from './feature_flag_types';
 
-
 const reducer = createReducer<FeatureFlagState>(
   initialState,
   on(actions.partialFeatureFlagsLoaded, (state, {features}) => {

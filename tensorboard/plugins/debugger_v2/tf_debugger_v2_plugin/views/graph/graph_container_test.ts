@@ -39,7 +39,6 @@ import {
 import {GraphContainer} from './graph_container';
 import {GraphModule} from './graph_module';
 
-
 describe('Graph Container', () => {
   let store: MockStore<State>;
   let dispatchSpy: jasmine.Spy;

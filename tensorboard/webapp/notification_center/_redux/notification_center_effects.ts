@@ -23,7 +23,6 @@ import {NotificationCenterDataSource} from '../_data_source/index';
 import * as actions from './notification_center_actions';
 import {CategoryEnum} from './notification_center_types';
 
-
 export const initAction = createAction('[NotificationCenter Effects] Init');
 
 @Injectable()

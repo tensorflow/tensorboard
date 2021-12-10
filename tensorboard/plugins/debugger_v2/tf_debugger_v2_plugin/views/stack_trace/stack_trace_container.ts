@@ -25,7 +25,6 @@ import {
 } from '../../store';
 import {StackFrameForDisplay} from './stack_trace_component';
 
-
 @Component({
   selector: 'tf-debugger-v2-stack-trace',
   template: `

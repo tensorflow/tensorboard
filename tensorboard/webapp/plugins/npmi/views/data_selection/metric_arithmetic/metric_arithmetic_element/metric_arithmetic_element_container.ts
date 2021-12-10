@@ -25,7 +25,6 @@ import {
 } from '../../../../store';
 import * as npmiActions from '../../../../actions';
 
-
 @Component({
   selector: 'npmi-metric-arithmetic-element',
   template: `

@@ -22,7 +22,6 @@ import {SettingsPolymerInteropContainer} from './polymer_interop_container';
 
 import {getPageSize} from '../_redux/settings_selectors';
 
-
 describe('settings polymer_interop', () => {
   let store: MockStore;
   let setLimitCalls: number[];

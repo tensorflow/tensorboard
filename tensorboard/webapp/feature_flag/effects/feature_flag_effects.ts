@@ -23,7 +23,6 @@ import {partialFeatureFlagsLoaded} from '../actions/feature_flag_actions';
 import {getIsAutoDarkModeAllowed} from '../store/feature_flag_selectors';
 import {State} from '../store/feature_flag_types';
 
-
 const effectsInitialized = createAction('[FEATURE FLAG] Effects Init');
 
 @Injectable()

@@ -40,7 +40,6 @@ import {SourceFilesModule} from '../source_files/source_files_module';
 import {StackTraceModule} from '../stack_trace/stack_trace_module';
 import {TimelineModule} from '../timeline/timeline_module';
 
-
 describe('Alerts Container', () => {
   let store: MockStore<State>;
   let dispatchSpy: jasmine.Spy;

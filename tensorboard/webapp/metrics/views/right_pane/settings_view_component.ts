@@ -33,7 +33,6 @@ import {
   XAxisType,
 } from '../../types';
 
-
 const SLIDER_AUDIT_TIME_MS = 250;
 
 /**

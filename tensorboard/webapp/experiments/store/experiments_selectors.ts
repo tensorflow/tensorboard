@@ -23,7 +23,6 @@ import {
   State,
 } from './experiments_types';
 
-
 const getExperimentsState = createFeatureSelector<State, ExperimentsState>(
   EXPERIMENTS_FEATURE_KEY
 );

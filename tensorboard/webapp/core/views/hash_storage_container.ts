@@ -21,7 +21,6 @@ import {pluginUrlHashChanged} from '../actions';
 
 import {ChangedProp} from './hash_storage_component';
 
-
 @Component({
   selector: 'hash-storage',
   template: `

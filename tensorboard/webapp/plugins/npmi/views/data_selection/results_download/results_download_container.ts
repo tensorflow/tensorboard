@@ -28,7 +28,6 @@ import {
 import {getCurrentRouteRunSelection} from '../../../../../selectors';
 import {metricIsNpmiAndNotDiff} from '../../../util/metric_type';
 
-
 @Component({
   selector: 'npmi-results-download',
   template: `

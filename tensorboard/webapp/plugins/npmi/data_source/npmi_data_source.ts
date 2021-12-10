@@ -30,7 +30,6 @@ import {
 } from './../store/npmi_types';
 import {EmbeddingDataSet, buildEmbeddingDataSet} from '../util/umap';
 
-
 export abstract class NpmiDataSource {
   abstract fetchData(experimentIds: string[]): Observable<{
     annotationData: AnnotationDataListing;

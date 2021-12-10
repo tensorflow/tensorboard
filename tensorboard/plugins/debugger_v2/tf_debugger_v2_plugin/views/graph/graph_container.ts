@@ -23,7 +23,6 @@ import {
 } from '../../store';
 import {State} from '../../store/debugger_types';
 
-
 @Component({
   selector: 'tf-debugger-v2-graph',
   template: `

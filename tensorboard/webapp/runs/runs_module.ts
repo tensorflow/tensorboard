@@ -27,7 +27,6 @@ import {RunsEffects} from './effects';
 import {reducers} from './store';
 import {RUNS_FEATURE_KEY} from './store/runs_types';
 
-
 export function alertActionProvider() {
   return [
     {

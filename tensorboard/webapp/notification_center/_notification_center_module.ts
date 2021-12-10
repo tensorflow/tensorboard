@@ -30,7 +30,6 @@ import {
 } from './_redux/notification_center_types';
 import {NotificationCenterViewModule} from './_views/views_module';
 
-
 export function getNotificationLastReadTimeSettingSelector() {
   return createSelector(getLastReadTime, (lastReadTime) => {
     return {notificationLastReadTimeInMs: lastReadTime};

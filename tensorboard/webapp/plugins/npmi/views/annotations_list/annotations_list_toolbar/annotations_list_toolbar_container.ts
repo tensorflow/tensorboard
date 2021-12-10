@@ -26,7 +26,6 @@ import {
   getShowHiddenAnnotations,
 } from '../../../store';
 
-
 @Component({
   selector: 'npmi-annotations-list-toolbar',
   template: `

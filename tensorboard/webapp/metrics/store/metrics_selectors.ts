@@ -41,7 +41,6 @@ import {
   TagMetadata,
 } from './metrics_types';
 
-
 const selectMetricsState = createFeatureSelector<State, MetricsState>(
   METRICS_FEATURE_KEY
 );

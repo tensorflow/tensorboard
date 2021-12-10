@@ -21,7 +21,6 @@ import {
   BackendNotification,
 } from './backend_types';
 
-
 @Injectable()
 export class TestingNotificationCenterDataSource
   implements NotificationCenterDataSource

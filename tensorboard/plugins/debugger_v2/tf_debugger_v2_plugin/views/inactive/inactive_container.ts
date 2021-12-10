@@ -15,7 +15,6 @@ limitations under the License.
 import {Component} from '@angular/core';
 import {Store} from '@ngrx/store';
 
-
 // TODO(cais): Move to a separate file.
 export interface InactiveState {}
 

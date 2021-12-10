@@ -31,7 +31,6 @@ import {ResultsDownloadComponent} from './results_download_component';
 
 import {getFlaggedAnnotations} from '../../../store';
 
-
 describe('Npmi Results Download', () => {
   let store: MockStore<State>;
   const css = {

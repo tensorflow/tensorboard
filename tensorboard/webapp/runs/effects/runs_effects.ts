@@ -43,7 +43,6 @@ import {RunsDataSource} from '../data_source/runs_data_source_types';
 import {HparamsAndMetadata} from '../data_source/runs_data_source_types';
 import {ExperimentIdToRunsAndMetadata} from '../types';
 
-
 /**
  * Runs effect for fetching data from the backend.
  */

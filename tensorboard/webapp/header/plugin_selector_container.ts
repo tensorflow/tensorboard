@@ -21,7 +21,6 @@ import {changePlugin} from '../core/actions';
 import {PluginId} from '../types/api';
 import {UiPluginMetadata} from './types';
 
-
 const getUiPlugins = createSelector(getPlugins, (listing): UiPluginMetadata[] =>
   Object.keys(listing).map((key) => Object.assign({}, {id: key}, listing[key]))
 );

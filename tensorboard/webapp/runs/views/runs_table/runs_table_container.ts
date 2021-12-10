@@ -79,7 +79,6 @@ import {
 } from './runs_table_component';
 import {RunsTableColumn, RunTableItem} from './types';
 
-
 const getRunsLoading = createSelector<
   State,
   {experimentId: string},
