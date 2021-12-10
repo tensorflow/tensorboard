@@ -15,7 +15,6 @@ limitations under the License.
 import {TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
-
 import {IntegrationTestSetupModule} from '../testing/integration_test_module';
 import {MetricsModule} from './metrics_module';
 import {METRICS_INITIAL_SETTINGS} from './store/metrics_initial_state_provider';

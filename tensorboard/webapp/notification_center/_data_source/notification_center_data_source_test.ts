@@ -13,7 +13,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {TestBed} from '@angular/core/testing';
-
 import {HttpErrorResponse} from '../../webapp_data_source/tb_http_client';
 import {
   HttpTestingController,

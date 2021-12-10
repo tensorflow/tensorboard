@@ -14,7 +14,6 @@ limitations under the License.
 ==============================================================================*/
 import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {createSelector, select, Store} from '@ngrx/store';
-
 import {alertTypeFocusToggled} from '../../actions';
 import {
   getAlertsBreakdown,

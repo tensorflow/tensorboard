@@ -13,12 +13,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {PolymerElement, html} from '@polymer/polymer';
 import {customElement} from '@polymer/decorators';
-
-import './tensorboard-color';
-import './scrollbar-style';
+import {html, PolymerElement} from '@polymer/polymer';
 import {DarkModeMixin} from '../polymer/dark_mode_mixin';
+import './scrollbar-style';
+import './tensorboard-color';
 
 @customElement('tf-dashboard-layout')
 class TfDashboardLayout extends DarkModeMixin(PolymerElement) {

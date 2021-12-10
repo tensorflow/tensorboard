@@ -13,25 +13,25 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {
+  AfterViewInit,
   ChangeDetectionStrategy,
   Component,
-  Input,
-  Output,
-  EventEmitter,
-  AfterViewInit,
-  OnChanges,
-  SimpleChanges,
-  ViewChild,
   ElementRef,
-  ViewEncapsulation,
+  EventEmitter,
   HostBinding,
   HostListener,
+  Input,
+  OnChanges,
+  Output,
+  SimpleChanges,
+  ViewChild,
+  ViewEncapsulation,
 } from '@angular/core';
-import {ValueData, SortOrder, AnnotationSort} from '../../../store/npmi_types';
-import * as d3 from '../../../../../third_party/d3';
-import {stripMetricString} from '../../../util/metric_type';
-import {RunColorScale} from '../../../../../types/ui';
 import {Run} from '../../../../../runs/store/runs_types';
+import * as d3 from '../../../../../third_party/d3';
+import {RunColorScale} from '../../../../../types/ui';
+import {AnnotationSort, SortOrder, ValueData} from '../../../store/npmi_types';
+import {stripMetricString} from '../../../util/metric_type';
 
 @Component({
   selector: 'annotation-component',

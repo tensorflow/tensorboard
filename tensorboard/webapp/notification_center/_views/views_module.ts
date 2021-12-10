@@ -17,7 +17,6 @@ import {NgModule} from '@angular/core';
 import {MatButtonModule} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
 import {MatMenuModule} from '@angular/material/menu';
-
 import {MarkdownRendererModule} from '../../widgets/markdown_renderer/markdown_renderer_module';
 import {NotificationCenterComponent} from './notification_center_component';
 import {NotificationCenterContainer} from './notification_center_container';

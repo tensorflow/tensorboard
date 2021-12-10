@@ -13,24 +13,22 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {DataLoadState} from '../../types/data';
-
 import {PluginType} from '../data_source';
 import {
+  buildMetricsState,
   buildTagMetadata,
   createCardMetadata,
-  buildMetricsState,
 } from '../testing';
-
 import {
   buildOrReturnStateWithPinnedCopy,
   buildOrReturnStateWithUnresolvedImportedPins,
+  canCreateNewPins,
   createPluginDataWithLoadable,
   createRunToLoadState,
   getCardId,
   getPinnedCardId,
   getRunIds,
   getTimeSeriesLoadable,
-  canCreateNewPins,
   TEST_ONLY,
 } from './metrics_store_internal_utils';
 import {ImageTimeSeriesData} from './metrics_types';

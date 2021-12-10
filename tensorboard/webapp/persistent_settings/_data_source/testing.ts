@@ -14,7 +14,6 @@ limitations under the License.
 ==============================================================================*/
 import {Injectable, NgModule} from '@angular/core';
 import {EMPTY, Observable, of} from 'rxjs';
-
 import {
   PersistentSettingsDataSource,
   PersistentSettingsDataSourceImpl,

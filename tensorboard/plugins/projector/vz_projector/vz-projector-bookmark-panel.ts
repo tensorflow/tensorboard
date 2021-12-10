@@ -12,17 +12,15 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {PolymerElement} from '@polymer/polymer';
 import {customElement, property} from '@polymer/decorators';
-
+import {PolymerElement} from '@polymer/polymer';
 import '../../../components/polymer/irons_and_papers';
 import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
-
-import {template} from './vz-projector-bookmark-panel.html';
 import {State} from './data';
-import {ProjectorEventContext} from './projectorEventContext';
 import {DataProvider, EmbeddingInfo} from './data-provider';
 import * as logging from './logging';
+import {ProjectorEventContext} from './projectorEventContext';
+import {template} from './vz-projector-bookmark-panel.html';
 
 @customElement('vz-projector-bookmark-panel')
 class BookmarkPanel extends LegacyElementMixin(PolymerElement) {

@@ -19,13 +19,13 @@ import {provideMockActions} from '@ngrx/effects/testing';
 import {Action, createAction, createSelector, props, Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {of, ReplaySubject} from 'rxjs';
-
 import {State} from '../../app_state';
 import {getEnabledTimeNamespacedState} from '../../feature_flag/store/feature_flag_selectors';
 import * as actions from '../actions';
 import {AppRootProvider, TestableAppRootProvider} from '../app_root';
-import {Location} from '../location';
 import {DirtyUpdatesRegistryModule} from '../dirty_updates_registry_module';
+import {getRouteId} from '../internal_utils';
+import {Location} from '../location';
 import {
   NavigateToCompare,
   NavigateToExperiments,
@@ -44,9 +44,7 @@ import {
   RouteKind,
   SerializableQueryParams,
 } from '../types';
-
 import {AppRoutingEffects, TEST_ONLY} from './app_routing_effects';
-import {getRouteId} from '../internal_utils';
 
 @Component({selector: 'test', template: ''})
 class TestableComponent {}

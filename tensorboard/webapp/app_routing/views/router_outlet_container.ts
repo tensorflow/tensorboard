@@ -16,7 +16,6 @@ import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {Store} from '@ngrx/store';
 import {combineLatest} from 'rxjs';
 import {map} from 'rxjs/operators';
-
 import {State} from '../../app_state';
 import {getRouteId} from '../internal_utils';
 import {RouteRegistryModule} from '../route_registry_module';

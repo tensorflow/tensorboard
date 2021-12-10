@@ -19,24 +19,22 @@ import {CdkVirtualScrollViewport} from '@angular/cdk/scrolling';
 import {CommonModule} from '@angular/common';
 import {fakeAsync, TestBed, tick} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
-
 import {Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
-
 import {graphExecutionFocused} from '../../actions';
 import {DebuggerComponent} from '../../debugger_component';
 import {DebuggerContainer} from '../../debugger_container';
 import {
-  State,
-  GraphExecution,
-  TensorDebugMode,
-} from '../../store/debugger_types';
-import {
+  getFocusedGraphExecutionInputIndices,
   getGraphExecutionData,
   getGraphExecutionFocusIndex,
   getNumGraphExecutions,
-  getFocusedGraphExecutionInputIndices,
 } from '../../store';
+import {
+  GraphExecution,
+  State,
+  TensorDebugMode,
+} from '../../store/debugger_types';
 import {
   createDebuggerState,
   createState,

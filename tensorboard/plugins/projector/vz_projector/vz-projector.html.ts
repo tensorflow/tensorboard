@@ -14,7 +14,6 @@ limitations under the License.
 ==============================================================================*/
 
 import {html} from '@polymer/polymer';
-
 import './styles';
 
 export const template = html`

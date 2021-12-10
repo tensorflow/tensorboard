@@ -13,8 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {AnnotationDataListing} from '../store/npmi_types';
-import {violinData} from './violin_data';
 import {buildSampleAnnotationData} from '../testing';
+import {violinData} from './violin_data';
 
 class TestableBin extends Array<number | any> {
   x0: number;

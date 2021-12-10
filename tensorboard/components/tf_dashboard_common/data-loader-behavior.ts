@@ -14,9 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import {PolymerElement} from '@polymer/polymer';
 import * as _ from 'lodash';
-
-import {CancelResult, Canceller} from '../tf_backend/canceller';
-import {RequestManager} from '../tf_backend/requestManager';
+import {Canceller, CancelResult} from '../tf_backend/canceller';
 
 type CacheKey = string;
 

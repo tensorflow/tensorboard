@@ -14,13 +14,14 @@ limitations under the License.
 ==============================================================================*/
 import * as d3 from 'd3';
 import * as _ from 'lodash';
-
-import {Class, FontSizeInPx, selectChild, selectOrCreateChild} from './common';
 import * as tf_graph_common from './common';
+import {Class, FontSizeInPx, selectChild, selectOrCreateChild} from './common';
 import * as contextmenu from './contextmenu';
 import * as edge from './edge';
+import * as tf_graph from './graph';
 import {
   BridgeNode,
+  getIncludeNodeButtonString,
   Metanode,
   MetanodeImpl,
   Node,
@@ -28,17 +29,14 @@ import {
   OpNode,
   OpNodeImpl,
   SeriesNode,
-  getIncludeNodeButtonString,
 } from './graph';
-import * as tf_graph from './graph';
 import * as layout from './layout';
-import {RenderNodeInfo} from './render';
 import * as render from './render';
-import {positionEllipse, positionRect} from './scene';
+import {RenderNodeInfo} from './render';
 import * as tf_graph_scene from './scene';
-import * as tf_graph_util from './util';
-
+import {positionEllipse, positionRect} from './scene';
 import {TfGraphScene} from './tf-graph-scene';
+import * as tf_graph_util from './util';
 import {ColorBy} from './view_types';
 
 /**

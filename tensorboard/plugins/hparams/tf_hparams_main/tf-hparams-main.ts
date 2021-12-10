@@ -13,14 +13,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {PolymerElement, html} from '@polymer/polymer';
 import {customElement, property} from '@polymer/decorators';
-import * as _ from 'lodash';
-
+import {html, PolymerElement} from '@polymer/polymer';
+import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
+import {Backend} from '../tf_hparams_backend/tf-hparams-backend';
 import '../tf_hparams_query_pane/tf-hparams-query-pane';
 import '../tf_hparams_sessions_pane/tf-hparams-sessions-pane';
-import {Backend} from '../tf_hparams_backend/tf-hparams-backend';
-import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
 import '../tf_hparams_utils/hparams-split-layout';
 
 /**

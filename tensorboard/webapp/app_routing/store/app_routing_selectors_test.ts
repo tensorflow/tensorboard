@@ -15,7 +15,6 @@ limitations under the License.
 
 import {buildRoute} from '../testing';
 import {RouteKind} from '../types';
-
 import * as selectors from './app_routing_selectors';
 import {buildAppRoutingState, buildStateFromAppRoutingState} from './testing';
 

@@ -12,20 +12,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {PolymerElement, html} from '@polymer/polymer';
-import {LegacyElementMixin} from '../polymer/legacy_element_mixin';
 import {customElement, observe, property} from '@polymer/decorators';
-import * as _ from 'lodash';
+import {html, PolymerElement} from '@polymer/polymer';
 import * as d3 from 'd3';
+import * as _ from 'lodash';
 import * as Plottable from 'plottable';
+import {LegacyElementMixin} from '../polymer/legacy_element_mixin';
 import '../polymer/plottable-style';
-
-import {LineChart, LineChartStatus} from './line-chart';
-import {LineChartExporter} from './line-chart-exporter';
-import {PanZoomDragLayer} from './panZoomDragLayer';
-// imports the style definition.
-import './panZoomDragLayer.html';
-
 import {
   getXComponents,
   multiscaleFormatter,
@@ -42,7 +35,11 @@ import {
   Y_TOOLTIP_FORMATTER_PRECISION,
 } from '../vz_chart_helpers/vz-chart-helpers';
 import {TooltipPosition} from '../vz_chart_helpers/vz-chart-tooltip';
-import {YScaleType, FillArea} from './line-chart';
+import {FillArea, LineChart, LineChartStatus, YScaleType} from './line-chart';
+import {LineChartExporter} from './line-chart-exporter';
+import {PanZoomDragLayer} from './panZoomDragLayer';
+// imports the style definition.
+import './panZoomDragLayer.html';
 
 const valueFormatter = multiscaleFormatter(Y_TOOLTIP_FORMATTER_PRECISION);
 

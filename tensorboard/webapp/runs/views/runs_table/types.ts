@@ -12,22 +12,22 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {ExperimentAlias} from '../../../experiments/types';
 import {
   HparamValue,
   MetricValue,
 } from '../../data_source/runs_data_source_types';
 import {Run} from '../../store/runs_types';
 
-export {HparamValue} from '../../data_source/runs_data_source_types';
 export {
   DiscreteHparamValue,
   DiscreteHparamValues,
   Domain,
   DomainType,
   HparamSpec,
+  HparamValue,
   MetricSpec,
 } from '../../data_source/runs_data_source_types';
-import {ExperimentAlias} from '../../../experiments/types';
 
 export enum RunsTableColumn {
   CHECKBOX = 'checkbox',

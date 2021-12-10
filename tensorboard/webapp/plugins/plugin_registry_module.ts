@@ -13,12 +13,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {
-  NgModule,
   Component,
-  Type,
-  ModuleWithProviders,
   Inject,
+  ModuleWithProviders,
+  NgModule,
   Optional,
+  Type,
 } from '@angular/core';
 import {PluginConfig, PLUGIN_CONFIG_TOKEN} from './plugin_registry_types';
 

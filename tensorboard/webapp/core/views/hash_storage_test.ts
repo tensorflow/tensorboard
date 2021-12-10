@@ -12,20 +12,18 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {CommonModule} from '@angular/common';
 import {TestBed} from '@angular/core/testing';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {Store} from '@ngrx/store';
-import {provideMockStore, MockStore} from '@ngrx/store/testing';
-import {CommonModule} from '@angular/common';
-
-import {getActivePlugin} from '../store';
-import {State} from '../state';
-import {pluginUrlHashChanged} from '../actions';
-import {SetStringOption} from '../../deeplink/types';
-
-import {HashStorageContainer} from './hash_storage_container';
-import {HashStorageComponent} from './hash_storage_component';
+import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {DeepLinkerInterface} from '../../deeplink';
+import {SetStringOption} from '../../deeplink/types';
+import {pluginUrlHashChanged} from '../actions';
+import {State} from '../state';
+import {getActivePlugin} from '../store';
+import {HashStorageComponent} from './hash_storage_component';
+import {HashStorageContainer} from './hash_storage_container';
 
 class TestableDeeplinker implements DeepLinkerInterface {
   getString(key: string) {

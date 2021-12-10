@@ -14,7 +14,6 @@ limitations under the License.
 ==============================================================================*/
 
 import {createAction, props} from '@ngrx/store';
-
 import {FeatureFlags} from '../types';
 
 /**

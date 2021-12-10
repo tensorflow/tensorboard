@@ -14,16 +14,15 @@ limitations under the License.
 ==============================================================================*/
 import * as THREE from 'three';
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls';
-
-import * as vector from './vector';
-import * as util from './util';
 import {ProjectorEventContext} from './projectorEventContext';
-import {CameraType, RenderContext, LabelRenderParams} from './renderContext';
-import {ScatterPlotVisualizer} from './scatterPlotVisualizer';
+import {CameraType, LabelRenderParams, RenderContext} from './renderContext';
 import {
   ScatterBoundingBox,
   ScatterPlotRectangleSelector,
 } from './scatterPlotRectangleSelector';
+import {ScatterPlotVisualizer} from './scatterPlotVisualizer';
+import * as util from './util';
+import * as vector from './vector';
 
 const BACKGROUND_COLOR = 0xffffff;
 

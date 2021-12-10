@@ -14,7 +14,6 @@ limitations under the License.
 ==============================================================================*/
 import {InjectionToken} from '@angular/core';
 import {StoreConfig} from '@ngrx/store';
-
 import {FeatureFlagState} from './feature_flag_types';
 
 export const initialState: FeatureFlagState = {

@@ -14,7 +14,6 @@ limitations under the License.
 ==============================================================================*/
 import {createAction, props} from '@ngrx/store';
 import {Environment, PluginId, PluginsListing} from '../../types/api';
-
 import {PluginsListFailureCode, Run, RunId} from '../types';
 
 /**

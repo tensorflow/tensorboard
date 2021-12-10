@@ -13,12 +13,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import * as d3 from 'd3';
-
-import {standard} from './palettes';
-
 import {BaseStore} from '../tf_backend/baseStore';
-import {runsStore} from '../tf_backend/runsStore';
 import {experimentsStore} from '../tf_backend/experimentsStore';
+import {runsStore} from '../tf_backend/runsStore';
+import {standard} from './palettes';
 
 // Example usage:
 // runs = ["train", "test", "test1", "test2"]

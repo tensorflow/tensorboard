@@ -13,9 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {PolymerElement} from '@polymer/polymer';
 import {customElement} from '@polymer/decorators';
-
+import {PolymerElement} from '@polymer/polymer';
 import * as tf_paginated_view from './index';
 
 @customElement('tf-paginated-view-store')

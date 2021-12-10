@@ -24,7 +24,6 @@ import {
   share,
   startWith,
 } from 'rxjs/operators';
-
 import {State} from '../../../app_state';
 import {DeepReadonly} from '../../../util/types';
 import {getMetricsFilteredPluginTypes, getMetricsTagFilter} from '../../store';

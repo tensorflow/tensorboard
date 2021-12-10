@@ -14,12 +14,12 @@ limitations under the License.
 ==============================================================================*/
 import {
   AnnotationDataListing,
-  SortOrder,
   AnnotationSort,
+  SortOrder,
 } from '../store/npmi_types';
-import {buildEmbeddingDataSet} from './umap';
-import {sortAnnotations} from './sort_annotations';
 import {buildSampleAnnotationData, createSampleEmbeddingData} from '../testing';
+import {sortAnnotations} from './sort_annotations';
+import {buildEmbeddingDataSet} from './umap';
 
 describe('sort annotations utils', () => {
   it('sorts annotations upwards', () => {

@@ -39,7 +39,6 @@ import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {Action, Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {of, ReplaySubject} from 'rxjs';
-
 import * as alertActions from '../../../alert/actions';
 import {RouteKind} from '../../../app_routing/types';
 import {State} from '../../../app_state';
@@ -80,6 +79,7 @@ import {sendKeys} from '../../../testing/dom';
 import {MatIconTestingModule} from '../../../testing/mat_icon_module';
 import {DataLoadState} from '../../../types/data';
 import {SortDirection} from '../../../types/ui';
+import {ExperimentAliasModule} from '../../../widgets/experiment_alias/experiment_alias_module';
 import {FilterInputModule} from '../../../widgets/filter_input/filter_input_module';
 import {RangeInputModule} from '../../../widgets/range_input/range_input_module';
 import {
@@ -101,7 +101,6 @@ import {RunsGroupMenuButtonContainer} from './runs_group_menu_button_container';
 import {RunsTableComponent} from './runs_table_component';
 import {RunsTableContainer, TEST_ONLY} from './runs_table_container';
 import {HparamSpec, MetricSpec, RunsTableColumn} from './types';
-import {ExperimentAliasModule} from '../../../widgets/experiment_alias/experiment_alias_module';
 
 @Injectable()
 class ColorPickerTestHelper {

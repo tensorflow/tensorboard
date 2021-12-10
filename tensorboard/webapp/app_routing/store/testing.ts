@@ -13,8 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {
-  APP_ROUTING_FEATURE_KEY,
   AppRoutingState,
+  APP_ROUTING_FEATURE_KEY,
   State,
 } from './app_routing_types';
 

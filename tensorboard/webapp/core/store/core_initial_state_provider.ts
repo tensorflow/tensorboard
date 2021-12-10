@@ -14,10 +14,8 @@ limitations under the License.
 ==============================================================================*/
 import {InjectionToken} from '@angular/core';
 import {StoreConfig} from '@ngrx/store';
-
-import {CoreState} from './core_types';
 import {DeepLinkerInterface} from '../../deeplink';
-import {initialState} from './core_types';
+import {CoreState, initialState} from './core_types';
 
 export const CORE_STORE_CONFIG_TOKEN = new InjectionToken<
   StoreConfig<CoreState>

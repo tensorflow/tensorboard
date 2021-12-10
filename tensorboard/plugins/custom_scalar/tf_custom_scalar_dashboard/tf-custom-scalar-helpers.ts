@@ -14,7 +14,6 @@ limitations under the License.
 ==============================================================================*/
 
 import * as Plottable from 'plottable';
-
 import {
   LineChartSymbol,
   ScalarDatum,

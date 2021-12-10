@@ -20,15 +20,13 @@ import {MatDialogModule, MatDialogRef} from '@angular/material/dialog';
 import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {Store} from '@ngrx/store';
-import {provideMockStore, MockStore} from '@ngrx/store/testing';
-
+import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {State} from '../core/store';
+import {createCoreState, createEnvironment, createState} from '../core/testing';
+import {MatIconTestingModule} from '../testing/mat_icon_module';
 import {TbdevUploadButtonComponent} from './tbdev_upload_button_component';
 import {TbdevUploadDialogComponent} from './tbdev_upload_dialog_component';
 import {TbdevUploadDialogContainer} from './tbdev_upload_dialog_container';
-
-import {createCoreState, createEnvironment, createState} from '../core/testing';
-import {MatIconTestingModule} from '../testing/mat_icon_module';
 
 describe('tbdev upload test', () => {
   let store: MockStore<State>;

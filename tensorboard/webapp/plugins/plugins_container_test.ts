@@ -17,7 +17,6 @@ import {TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
 import {Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
-
 import {
   getTestingProvider,
   PluginApiHostModule,

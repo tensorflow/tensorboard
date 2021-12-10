@@ -15,17 +15,15 @@ limitations under the License.
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
 import {FormsModule} from '@angular/forms';
-
-import {MatCheckboxModule} from '@angular/material/checkbox';
 import {MatButtonModule} from '@angular/material/button';
+import {MatCheckboxModule} from '@angular/material/checkbox';
 import {MatIconModule} from '@angular/material/icon';
-
+import {RunsSelectorModule} from '../../../../runs/views/runs_selector/runs_selector_module';
+import {AnnotationsListModule} from '../annotations_list/annotations_list_module';
+import {DataSelectionModule} from './../data_selection/data_selection_module';
+import {SelectedAnnotationsModule} from './../selected_annotations/selected_annotations_module';
 import {EmbeddingsComponent} from './embeddings_component';
 import {EmbeddingsContainer} from './embeddings_container';
-import {RunsSelectorModule} from '../../../../runs/views/runs_selector/runs_selector_module';
-import {DataSelectionModule} from './../data_selection/data_selection_module';
-import {AnnotationsListModule} from '../annotations_list/annotations_list_module';
-import {SelectedAnnotationsModule} from './../selected_annotations/selected_annotations_module';
 
 @NgModule({
   declarations: [EmbeddingsComponent, EmbeddingsContainer],

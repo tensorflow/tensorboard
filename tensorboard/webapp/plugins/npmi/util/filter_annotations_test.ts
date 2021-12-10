@@ -16,11 +16,11 @@ import {
   AnnotationDataListing,
   ArithmeticElement,
   ArithmeticKind,
-  Operator,
   MetricFilterListing,
+  Operator,
 } from '../store/npmi_types';
-import {filterAnnotations, removeHiddenAnnotations} from './filter_annotations';
 import {buildSampleAnnotationData} from '../testing';
+import {filterAnnotations, removeHiddenAnnotations} from './filter_annotations';
 
 describe('filter annotations utils', () => {
   const annotationData: AnnotationDataListing = buildSampleAnnotationData();

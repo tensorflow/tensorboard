@@ -21,9 +21,7 @@ limitations under the License.
 
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
-
 import {RunsTableModule} from '../runs_table/runs_table_module';
-
 import {RunsSelectorComponent} from './runs_selector_component';
 import {RunsSelectorContainer} from './runs_selector_container';
 

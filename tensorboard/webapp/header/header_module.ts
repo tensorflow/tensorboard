@@ -12,21 +12,18 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {NgModule} from '@angular/core';
 // Uses `async` pipe.
 import {CommonModule} from '@angular/common';
-
+import {NgModule} from '@angular/core';
 import {MatButtonModule} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
+import {MatMenuModule} from '@angular/material/menu';
 import {MatSelectModule} from '@angular/material/select';
 import {MatTabsModule} from '@angular/material/tabs';
-import {MatMenuModule} from '@angular/material/menu';
 import {MatToolbarModule} from '@angular/material/toolbar';
-
 import {CoreModule} from '../core/core_module';
 import {SettingsModule} from '../settings/settings_module';
 import {TbdevUploadModule} from '../tbdev_upload/tbdev_upload_module';
-
 import {DarkModeToggleComponent} from './dark_mode_toggle_component';
 import {DarkModeToggleContainer} from './dark_mode_toggle_container';
 import {HeaderComponent} from './header_component';

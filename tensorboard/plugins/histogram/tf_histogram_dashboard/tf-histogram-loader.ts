@@ -14,11 +14,9 @@ limitations under the License.
 ==============================================================================*/
 
 import {computed, customElement, observe, property} from '@polymer/decorators';
-import {PolymerElement, html} from '@polymer/polymer';
-import * as _ from 'lodash';
-
-import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
+import {html, PolymerElement} from '@polymer/polymer';
 import '../../../components/polymer/irons_and_papers';
+import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
 import {RequestManager} from '../../../components/tf_backend/requestManager';
 import {getRouter} from '../../../components/tf_backend/router';
 import {addParams} from '../../../components/tf_backend/urlPathHelpers';
@@ -31,7 +29,7 @@ import {
 import '../vz_histogram_timeseries/vz-histogram-timeseries';
 import {VzHistogramTimeseries} from '../vz_histogram_timeseries/vz-histogram-timeseries';
 import './histogramCore';
-import {VzHistogram, backendToVz} from './histogramCore';
+import {backendToVz, VzHistogram} from './histogramCore';
 
 // Response from /data/plugin/histograms/tags.
 export interface HistogramTagInfo {

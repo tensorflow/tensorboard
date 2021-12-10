@@ -14,7 +14,6 @@ limitations under the License.
 ==============================================================================*/
 import {NgModule} from '@angular/core';
 import {EffectsModule} from '@ngrx/effects';
-
 import {PersistentSettingsConfigModule} from './persistent_settings_config_module';
 import {PersistentSettingsDataSourceModule} from './_data_source/persistent_settings_data_source_module';
 import {PersistentSettingsEffects} from './_redux/persistent_settings_effects';

@@ -14,15 +14,14 @@ limitations under the License.
 ==============================================================================*/
 import '../../../components/analytics';
 import '../../../components/security';
-
 import './styles';
+import './vz-projector';
 import './vz-projector-app';
 import './vz-projector-bookmark-panel';
 import './vz-projector-dashboard';
 import './vz-projector-data-panel';
-import './vz-projector-inspector-panel';
 import './vz-projector-input';
+import './vz-projector-inspector-panel';
 import './vz-projector-legend';
-import './vz-projector-projections-panel';
 import './vz-projector-metadata-card';
-import './vz-projector';
+import './vz-projector-projections-panel';

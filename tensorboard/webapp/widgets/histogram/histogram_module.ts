@@ -14,7 +14,6 @@ limitations under the License.
 ==============================================================================*/
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
-
 import {IntersectionObserverModule} from '../intersection_observer/intersection_observer_module';
 import {LinkedTimeFobModule} from '../linked_time_fob/linked_time_fob_module';
 import {ResizeDetectorModule} from '../resize_detector_module';

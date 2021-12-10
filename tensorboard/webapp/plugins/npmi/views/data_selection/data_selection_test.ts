@@ -18,14 +18,12 @@ limitations under the License.
 import {NO_ERRORS_SCHEMA} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
-
 import {Store} from '@ngrx/store';
+import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {State} from '../../../../app_state';
-import {provideMockStore, MockStore} from '@ngrx/store/testing';
-
-import {DataSelectionComponent} from './data_selection_component';
+import {createCoreState, createState} from '../../../../core/testing';
 import {appStateFromNpmiState, createNpmiState} from '../../testing';
-import {createState, createCoreState} from '../../../../core/testing';
+import {DataSelectionComponent} from './data_selection_component';
 
 describe('Npmi Data Selection Container', () => {
   let store: MockStore<State>;

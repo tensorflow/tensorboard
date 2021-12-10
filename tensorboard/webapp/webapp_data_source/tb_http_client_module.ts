@@ -12,8 +12,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {NgModule} from '@angular/core';
 import {HttpClientModule} from '@angular/common/http';
+import {NgModule} from '@angular/core';
 import {AppRootModule} from '../app_routing/app_root_module';
 import {TBHttpClient} from './tb_http_client';
 

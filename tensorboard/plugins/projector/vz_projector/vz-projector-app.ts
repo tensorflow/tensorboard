@@ -13,11 +13,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {PolymerElement, html} from '@polymer/polymer';
 import {customElement, property} from '@polymer/decorators';
-
+import {html, PolymerElement} from '@polymer/polymer';
 import '../../../components/polymer/irons_and_papers';
-
 import './styles';
 import './vz-projector';
 

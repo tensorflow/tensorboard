@@ -22,21 +22,19 @@ import {Store} from '@ngrx/store';
 import {
   combineLatestWith,
   distinctUntilChanged,
-  map,
   filter,
+  map,
   mergeMap,
   startWith,
-  withLatestFrom,
 } from 'rxjs/operators';
-import {
-  getRouteKind,
-  getExperimentIdsFromRoute,
-  getExperiment,
-} from '../../selectors';
 import {RouteKind} from '../../app_routing/types';
-
-import {getEnvironment} from '../store';
+import {
+  getExperiment,
+  getExperimentIdsFromRoute,
+  getRouteKind,
+} from '../../selectors';
 import {State} from '../state';
+import {getEnvironment} from '../store';
 import {TB_BRAND_NAME} from '../types';
 
 const DEFAULT_BRAND_NAME = 'TensorBoard';

@@ -12,22 +12,19 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {PolymerElement} from '@polymer/polymer';
 import {customElement, observe, property} from '@polymer/decorators';
+import {PolymerElement} from '@polymer/polymer';
 import * as THREE from 'three';
-
-import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
 import '../../../components/polymer/irons_and_papers';
-
+import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
 import {AnalyticsLogger} from './analyticsLogger';
-import {template} from './vz-projector.html';
 import {
   ColorOption,
   ColumnStats,
-  DistanceFunction,
   DataPoint,
   DataProto,
   DataSet,
+  DistanceFunction,
   getProjectionComponents,
   PointMetadata,
   Projection,
@@ -35,21 +32,17 @@ import {
   State,
   stateGetAccessorDimensions,
 } from './data';
-import './vz-projector-metadata-card';
 import {
-  ServingMode,
-  DataProvider,
   analyzeMetadata,
+  DataProvider,
   EmbeddingInfo,
+  ServingMode,
 } from './data-provider';
 import {DemoDataProvider} from './data-provider-demo';
 import {ProtoDataProvider} from './data-provider-proto';
 import {ServerDataProvider} from './data-provider-server';
-import './vz-projector-projections-panel';
-import './vz-projector-bookmark-panel';
-import './vz-projector-data-panel';
-import './vz-projector-inspector-panel';
-import {ProjectorScatterPlotAdapter} from './projectorScatterPlotAdapter';
+import * as knn from './knn';
+import * as logging from './logging';
 import {
   DistanceMetricChangedListener,
   HoverListener,
@@ -57,10 +50,15 @@ import {
   ProjectorEventContext,
   SelectionChangedListener,
 } from './projectorEventContext';
-import * as knn from './knn';
-import * as logging from './logging';
-import * as util from './util';
+import {ProjectorScatterPlotAdapter} from './projectorScatterPlotAdapter';
 import {MouseMode} from './scatterPlot';
+import * as util from './util';
+import './vz-projector-bookmark-panel';
+import './vz-projector-data-panel';
+import './vz-projector-inspector-panel';
+import './vz-projector-metadata-card';
+import './vz-projector-projections-panel';
+import {template} from './vz-projector.html';
 
 /**
  * The minimum number of dimensions the data should have to automatically

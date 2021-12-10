@@ -13,9 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {PolymerElement, html} from '@polymer/polymer';
 import {customElement} from '@polymer/decorators';
-
+import {html, PolymerElement} from '@polymer/polymer';
 import * as tf_scene_minimap from '../tf_graph_common/minimap';
 
 @customElement('tf-graph-minimap')

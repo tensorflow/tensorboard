@@ -18,27 +18,25 @@ import {
   Input,
   TemplateRef,
 } from '@angular/core';
-import {Store, createSelector} from '@ngrx/store';
+import {createSelector, Store} from '@ngrx/store';
 import {combineLatest} from 'rxjs';
 import {map} from 'rxjs/operators';
-
+import {State} from '../app_state';
 import {
-  getPlugins,
   getActivePlugin,
-  getPluginsListLoaded,
-  getEnvironment,
   getAppLastLoadedTimeInMs,
+  getEnvironment,
+  getPlugins,
+  getPluginsListLoaded,
 } from '../core/store';
 import {PluginsListFailureCode} from '../core/types';
-import {PluginMetadata} from '../types/api';
-import {DataLoadState} from '../types/data';
-import {State} from '../app_state';
 import {
   getFeatureFlags,
   getIsFeatureFlagsLoaded,
 } from '../feature_flag/store/feature_flag_selectors';
 import {selectors as settingsSelectors} from '../settings';
-
+import {PluginMetadata} from '../types/api';
+import {DataLoadState} from '../types/data';
 import {PluginLoadState} from './plugins_component';
 
 export interface UiPluginMetadata extends PluginMetadata {

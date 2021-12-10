@@ -15,7 +15,6 @@ limitations under the License.
 import {ChangeDetectionStrategy, Component, Input, OnInit} from '@angular/core';
 import {from, Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
-
 import {loadMonaco} from './load_monaco_shim';
 
 /**

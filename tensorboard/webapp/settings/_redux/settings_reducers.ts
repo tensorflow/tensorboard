@@ -16,7 +16,7 @@ import {Action, createReducer, on} from '@ngrx/store';
 import {globalSettingsLoaded} from '../../persistent_settings';
 import {DataLoadState} from '../../types/data';
 import * as actions from './settings_actions';
-import {SettingsState, initialState, Settings} from './settings_types';
+import {initialState, Settings, SettingsState} from './settings_types';
 
 /**
  * Check if settings are ready to modify. We want to reject modifications to

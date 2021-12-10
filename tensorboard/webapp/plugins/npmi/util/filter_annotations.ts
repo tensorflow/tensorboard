@@ -15,8 +15,8 @@ limitations under the License.
 import {
   AnnotationDataListing,
   ArithmeticElement,
-  MetricFilterListing,
   ArithmeticKind,
+  MetricFilterListing,
   ValueData,
 } from './../store/npmi_types';
 import {stripMetricString} from './metric_type';

@@ -18,16 +18,14 @@ limitations under the License.
 import {NO_ERRORS_SCHEMA} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
-
-import {Store, Action} from '@ngrx/store';
-import {provideMockStore, MockStore} from '@ngrx/store/testing';
-
+import {Action, Store} from '@ngrx/store';
+import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {State} from '../../../../app_state';
-import {appStateFromNpmiState, createNpmiState} from '../../testing';
-import {SelectedAnnotationsContainer} from './selected_annotations_container';
-import {SelectedAnnotationsComponent} from './selected_annotations_component';
 import * as npmiActions from '../../actions';
 import {getPCExpanded, getSelectedAnnotations} from '../../store';
+import {appStateFromNpmiState, createNpmiState} from '../../testing';
+import {SelectedAnnotationsComponent} from './selected_annotations_component';
+import {SelectedAnnotationsContainer} from './selected_annotations_container';
 
 describe('Npmi Selected Annotations', () => {
   let store: MockStore<State>;

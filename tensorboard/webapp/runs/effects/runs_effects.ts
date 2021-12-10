@@ -15,8 +15,6 @@ limitations under the License.
 import {Injectable} from '@angular/core';
 import {Actions, createEffect, ofType} from '@ngrx/effects';
 import {Store} from '@ngrx/store';
-import * as coreActions from '../../core/actions';
-import {DataLoadState, LoadState} from '../../types/data';
 import {forkJoin, merge, Observable, of, throwError} from 'rxjs';
 import {
   catchError,
@@ -28,19 +26,22 @@ import {
   tap,
   withLatestFrom,
 } from 'rxjs/operators';
-
 import {navigated} from '../../app_routing/actions';
 import {State} from '../../app_state';
+import * as coreActions from '../../core/actions';
 import {
   getExperimentIdsFromRoute,
   getRouteId,
   getRuns,
   getRunsLoadState,
 } from '../../selectors';
+import {DataLoadState, LoadState} from '../../types/data';
 import * as actions from '../actions';
-import {Run} from '../data_source/runs_data_source_types';
-import {RunsDataSource} from '../data_source/runs_data_source_types';
-import {HparamsAndMetadata} from '../data_source/runs_data_source_types';
+import {
+  HparamsAndMetadata,
+  Run,
+  RunsDataSource,
+} from '../data_source/runs_data_source_types';
 import {ExperimentIdToRunsAndMetadata} from '../types';
 
 /**

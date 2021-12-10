@@ -13,21 +13,20 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {PolymerElement, html} from '@polymer/polymer';
 import {customElement, observe, property} from '@polymer/decorators';
+import {html, PolymerElement} from '@polymer/polymer';
 import * as d3 from 'd3';
 import * as _ from 'lodash';
-
 import '../../../components/polymer/irons_and_papers';
+import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
 import * as tb_debug from '../../../components/tb_debug';
-import './tf-graph-scene';
 import * as tf_graph from '../tf_graph_common/graph';
-import * as tf_graph_scene from '../tf_graph_common/scene';
-import * as tf_graph_util from '../tf_graph_common/util';
 import * as tf_graph_hierarchy from '../tf_graph_common/hierarchy';
 import * as tf_graph_render from '../tf_graph_common/render';
-import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
+import * as tf_graph_scene from '../tf_graph_common/scene';
+import * as tf_graph_util from '../tf_graph_common/util';
 import {ColorBy} from '../tf_graph_common/view_types';
+import './tf-graph-scene';
 
 @customElement('tf-graph')
 class TfGraph extends LegacyElementMixin(PolymerElement) {

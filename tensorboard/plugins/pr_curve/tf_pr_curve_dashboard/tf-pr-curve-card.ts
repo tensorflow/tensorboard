@@ -13,22 +13,20 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {PolymerElement, html} from '@polymer/polymer';
 import {computed, customElement, observe, property} from '@polymer/decorators';
+import {html, PolymerElement} from '@polymer/polymer';
+import * as _ from 'lodash';
+import * as Plottable from 'plottable';
 import '../../../components/polymer/irons_and_papers';
-
 import {Canceller} from '../../../components/tf_backend/canceller';
 import {RequestManager} from '../../../components/tf_backend/requestManager';
 import {getRouter} from '../../../components/tf_backend/router';
 import {addParams} from '../../../components/tf_backend/urlPathHelpers';
 import '../../../components/tf_card_heading/tf-card-heading';
-import {RequestDataCallback} from '../../../components/tf_dashboard_common/data-loader-behavior';
 import {runsColorScale} from '../../../components/tf_color_scale/colorScale';
+import {RequestDataCallback} from '../../../components/tf_dashboard_common/data-loader-behavior';
 import '../../../components/tf_line_chart_data_loader/tf-line-chart-data-loader';
 import * as vz_chart_helpers from '../../../components/vz_chart_helpers/vz-chart-helpers';
-
-import * as _ from 'lodash';
-import * as Plottable from 'plottable';
 
 type RunItem = string;
 

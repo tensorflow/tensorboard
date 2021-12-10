@@ -12,13 +12,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import '../../tb_polymer_interop_types';
-
-import {Component, ChangeDetectionStrategy} from '@angular/core';
-import {Store, select} from '@ngrx/store';
+import {ChangeDetectionStrategy, Component} from '@angular/core';
+import {select, Store} from '@ngrx/store';
 import {Subject} from 'rxjs';
-import {takeUntil, distinctUntilChanged} from 'rxjs/operators';
-
+import {distinctUntilChanged, takeUntil} from 'rxjs/operators';
+import '../../tb_polymer_interop_types';
 import {getPageSize} from '../_redux/settings_selectors';
 import {State} from '../_redux/settings_types';
 

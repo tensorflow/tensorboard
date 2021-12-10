@@ -13,7 +13,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {createAction} from '@ngrx/store';
-
 import * as alertActions from '../actions';
 import * as alertReducers from './alert_reducers';
 import {buildAlertState} from './testing';

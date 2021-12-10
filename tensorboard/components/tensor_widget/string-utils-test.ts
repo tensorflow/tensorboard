@@ -18,8 +18,8 @@ import {
   ELLIPSES,
   formatTensorName,
   numericValueToString,
-  TENSOR_NAME_LENGTH_CUTOFF,
   stringValueToDisplayString,
+  TENSOR_NAME_LENGTH_CUTOFF,
 } from './string-utils';
 
 function stringRepeat(str: string, times: number) {

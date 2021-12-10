@@ -14,7 +14,6 @@ limitations under the License.
 ==============================================================================*/
 import {TestBed} from '@angular/core/testing';
 import {createSelector, Selector} from '@ngrx/store';
-
 import {DirtyUpdatesRegistryModule} from './dirty_updates_registry_module';
 import {DirtyUpdates} from './types';
 

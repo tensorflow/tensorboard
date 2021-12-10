@@ -13,11 +13,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {
+  CategoryEnum,
   Notification,
   NotificationState,
   NOTIFICATION_FEATURE_KEY,
   State,
-  CategoryEnum,
 } from './notification_center_types';
 
 export function buildNotification(

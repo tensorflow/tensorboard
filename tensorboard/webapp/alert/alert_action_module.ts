@@ -14,10 +14,10 @@ limitations under the License.
 ==============================================================================*/
 import {
   Inject,
+  InjectionToken,
   ModuleWithProviders,
   NgModule,
   Optional,
-  InjectionToken,
 } from '@angular/core';
 import {Action, ActionCreator, Creator} from '@ngrx/store';
 import {AlertReport} from './types';

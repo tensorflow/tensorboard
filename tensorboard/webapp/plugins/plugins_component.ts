@@ -21,27 +21,25 @@ limitations under the License.
 import {
   ChangeDetectionStrategy,
   Component,
+  ComponentFactoryResolver,
   ElementRef,
   Input,
   OnChanges,
   Optional,
   SimpleChanges,
-  ViewChild,
-  ComponentFactoryResolver,
-  ViewContainerRef,
   TemplateRef,
+  ViewChild,
+  ViewContainerRef,
 } from '@angular/core';
-
-import {FeatureFlags} from '../feature_flag/types';
-
-import {UiPluginMetadata} from './plugins_container';
-import {
-  LoadingMechanismType,
-  CustomElementLoadingMechanism,
-} from '../types/api';
-import {PluginRegistryModule} from './plugin_registry_module';
 import {PluginApiHostModule} from '../../components/experimental/plugin_util/plugin_api_host_module';
+import {FeatureFlags} from '../feature_flag/types';
+import {
+  CustomElementLoadingMechanism,
+  LoadingMechanismType,
+} from '../types/api';
 import {DataLoadState} from '../types/data';
+import {UiPluginMetadata} from './plugins_container';
+import {PluginRegistryModule} from './plugin_registry_module';
 
 interface PolymerDashboard extends HTMLElement {
   reload?: () => void;

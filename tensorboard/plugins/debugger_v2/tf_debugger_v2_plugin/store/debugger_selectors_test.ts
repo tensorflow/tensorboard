@@ -14,19 +14,36 @@ limitations under the License.
 ==============================================================================*/
 
 import {
+  createAlertsState,
+  createDebuggerExecutionsState,
+  createDebuggerGraphExecutionsState,
+  createDebuggerGraphsState,
+  createDebuggerSourceCodeState,
+  createDebuggerState,
+  createState,
+  createTestExecutionData,
+  createTestExecutionDigest,
+  createTestGraphExecution,
+  createTestGraphOpInfo,
+  createTestInfNanAlert,
+  createTestStackFrame,
+} from '../testing';
+import {
   getAlertsBreakdown,
   getAlertsFocusType,
   getAlertsLoaded,
   getCodeLocationOrigin,
+  getFocusAlertTypesOfVisibleExecutionDigests,
   getFocusedExecutionData,
   getFocusedExecutionIndex,
-  getFocusedStackFrames,
+  getFocusedGraphExecutionInputIndices,
   getFocusedGraphOpConsumers,
   getFocusedGraphOpInfo,
   getFocusedGraphOpInputs,
   getFocusedSourceFileContent,
   getFocusedSourceFileIndex,
   getFocusedSourceLineSpec,
+  getFocusedStackFrames,
   getGraphExecutionData,
   getGraphExecutionDataLoadingPages,
   getGraphExecutionDataPageLoadedSizes,
@@ -40,11 +57,9 @@ import {
   getNumAlertsOfFocusedType,
   getNumGraphExecutions,
   getNumGraphExecutionsLoaded,
-  getFocusAlertTypesOfVisibleExecutionDigests,
   getPollSilenceTimeMs,
   getSourceFileList,
   getSourceFileListLoaded,
-  getFocusedGraphExecutionInputIndices,
 } from './debugger_selectors';
 import {
   AlertType,
@@ -53,21 +68,6 @@ import {
   DEBUGGER_FEATURE_KEY,
   StackFrame,
 } from './debugger_types';
-import {
-  createAlertsState,
-  createDebuggerExecutionsState,
-  createDebuggerGraphExecutionsState,
-  createDebuggerGraphsState,
-  createDebuggerSourceCodeState,
-  createDebuggerState,
-  createState,
-  createTestExecutionData,
-  createTestExecutionDigest,
-  createTestGraphExecution,
-  createTestInfNanAlert,
-  createTestGraphOpInfo,
-  createTestStackFrame,
-} from '../testing';
 
 describe('debugger selectors', () => {
   describe('getPollSilenceTimeMs', () => {

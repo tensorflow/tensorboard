@@ -13,14 +13,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {DebugElement} from '@angular/core';
-import {TestBed, fakeAsync, tick} from '@angular/core/testing';
+import {TestBed} from '@angular/core/testing';
 import {Store} from '@ngrx/store';
-import {provideMockStore, MockStore} from '@ngrx/store/testing';
-
-import {SettingsPolymerInteropContainer} from './polymer_interop_container';
-
+import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {getPageSize} from '../_redux/settings_selectors';
+import {SettingsPolymerInteropContainer} from './polymer_interop_container';
 
 describe('settings polymer_interop', () => {
   let store: MockStore;

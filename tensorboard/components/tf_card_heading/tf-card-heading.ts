@@ -13,14 +13,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {PolymerElement, html} from '@polymer/polymer';
 import {computed, customElement, property} from '@polymer/decorators';
-
-import '../tf_markdown_view/tf-markdown-view';
+import {html, PolymerElement} from '@polymer/polymer';
 import '../polymer/irons_and_papers';
-
-import {pickTextColor} from './util';
+import '../tf_markdown_view/tf-markdown-view';
 import './tf-card-heading-style';
+import {pickTextColor} from './util';
 
 /**
  * A compact heading to appear above a single visualization, summarizing

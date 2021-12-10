@@ -13,6 +13,5 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-export * from './_types';
-
 export {State} from './_redux/types';
+export * from './_types';

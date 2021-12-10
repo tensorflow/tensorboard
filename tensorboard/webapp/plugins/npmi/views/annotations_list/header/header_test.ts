@@ -13,19 +13,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {NO_ERRORS_SCHEMA} from '@angular/core';
-import {TestBed, ComponentFixture} from '@angular/core/testing';
+import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
-
-import {Store, Action} from '@ngrx/store';
-import {provideMockStore, MockStore} from '@ngrx/store/testing';
-
+import {Action, Store} from '@ngrx/store';
+import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {State} from '../../../../../app_state';
-import {HeaderComponent} from './header_component';
-import {HeaderContainer} from './header_container';
 import * as npmiActions from '../../../actions';
+import {getAnnotationSort} from '../../../store';
 import {SortOrder} from '../../../store/npmi_types';
 import {appStateFromNpmiState, createNpmiState} from '../../../testing';
-import {getAnnotationSort} from '../../../store';
+import {HeaderComponent} from './header_component';
+import {HeaderContainer} from './header_container';
 
 describe('Npmi Annotations List Header Container', () => {
   let store: MockStore<State>;

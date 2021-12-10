@@ -13,11 +13,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import * as tf from '../../../webapp/third_party/tfjs';
-
 import {KMin} from './heap';
-import * as vector from './vector';
 import * as logging from './logging';
 import * as util from './util';
+import * as vector from './vector';
 
 export type NearestEntry = {
   index: number;

@@ -12,11 +12,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {PolymerElement} from '@polymer/polymer';
-import {LegacyElementMixin} from '../polymer/legacy_element_mixin';
 import {customElement, property} from '@polymer/decorators';
+import {PolymerElement} from '@polymer/polymer';
 import * as _ from 'lodash';
-
+import {LegacyElementMixin} from '../polymer/legacy_element_mixin';
 import {TOOLTIP_Y_PIXEL_OFFSET} from './vz-chart-helpers';
 
 export enum TooltipPosition {

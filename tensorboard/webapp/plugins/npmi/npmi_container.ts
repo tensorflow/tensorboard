@@ -14,11 +14,10 @@ limitations under the License.
 ==============================================================================*/
 import {Component, OnInit} from '@angular/core';
 import {select, Store} from '@ngrx/store';
-
-import {npmiLoaded} from './actions';
 import {State} from '../../app_state';
-import {getViewActive} from './store/npmi_selectors';
 import {getCurrentRouteRunSelection} from '../../selectors';
+import {npmiLoaded} from './actions';
+import {getViewActive} from './store/npmi_selectors';
 
 @Component({
   selector: 'npmi',

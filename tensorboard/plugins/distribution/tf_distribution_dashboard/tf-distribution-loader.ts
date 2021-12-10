@@ -13,9 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {PolymerElement, html} from '@polymer/polymer';
 import {computed, customElement, observe, property} from '@polymer/decorators';
-
+import {html, PolymerElement} from '@polymer/polymer';
 import '../../../components/polymer/irons_and_papers';
 import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
 import {Canceller} from '../../../components/tf_backend/canceller';
@@ -28,8 +27,8 @@ import {
   DataLoaderBehavior,
   RequestDataCallback,
 } from '../../../components/tf_dashboard_common/data-loader-behavior';
-import {VzDistributionChart} from '../vz_distribution_chart/vz-distribution-chart';
 import '../vz_distribution_chart/vz-distribution-chart';
+import {VzDistributionChart} from '../vz_distribution_chart/vz-distribution-chart';
 
 export interface TfDistributionLoader extends HTMLElement {
   reload(): void;

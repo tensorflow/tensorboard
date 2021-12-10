@@ -17,7 +17,6 @@ import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
 import {MatButtonModule} from '@angular/material/button';
 import {MatSliderModule} from '@angular/material/slider';
-
 import {ExecutionDataModule} from '../execution_data/execution_data_module';
 import {TimelineComponent} from './timeline_component';
 import {TimelineContainer} from './timeline_container';

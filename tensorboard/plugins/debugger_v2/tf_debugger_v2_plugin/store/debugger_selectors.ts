@@ -13,21 +13,21 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {createSelector, createFeatureSelector} from '@ngrx/store';
+import {createFeatureSelector, createSelector} from '@ngrx/store';
 import {getFocusedStackFramesHelper} from './debugger_store_helpers';
 import {findFileIndex} from './debugger_store_utils';
 import {
+  Alerts,
   AlertsBreakdown,
   AlertsByIndex,
-  Alerts,
   AlertType,
   CodeLocationExecutionOrigin,
   CodeLocationGraphOpCreationOrigin,
   CodeLocationType,
   DataLoadState,
-  DEBUGGER_FEATURE_KEY,
   DebuggerRunListing,
   DebuggerState,
+  DEBUGGER_FEATURE_KEY,
   Execution,
   ExecutionDigest,
   ExecutionDigestLoadState,

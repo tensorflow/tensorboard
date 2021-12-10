@@ -13,28 +13,25 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {PolymerElement} from '@polymer/polymer';
 import {customElement, observe, property} from '@polymer/decorators';
-import * as _ from 'lodash';
+import {PolymerElement} from '@polymer/polymer';
 import * as d3 from 'd3';
-
-import './tf-graph-minimap';
-import '../../../components/tf_dashboard_common/tensorboard-color';
-import * as tb_debug from '../../../components/tb_debug';
-
-import * as tf_graph from '../tf_graph_common/graph';
-import * as tf_graph_scene from '../tf_graph_common/scene';
-import * as tf_graph_scene_node from '../tf_graph_common/node';
-import * as tf_graph_util from '../tf_graph_common/util';
-import * as tf_graph_layout from '../tf_graph_common/layout';
-import * as tf_graph_minimap from '../tf_graph_common/minimap';
-import * as tf_graph_render from '../tf_graph_common/render';
-import {template} from './tf-graph-scene.html';
-
+import * as _ from 'lodash';
 import {DarkModeMixin} from '../../../components/polymer/dark_mode_mixin';
 import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
+import * as tb_debug from '../../../components/tb_debug';
+import '../../../components/tf_dashboard_common/tensorboard-color';
+import * as tf_graph from '../tf_graph_common/graph';
+import * as tf_graph_layout from '../tf_graph_common/layout';
+import * as tf_graph_minimap from '../tf_graph_common/minimap';
+import * as tf_graph_scene_node from '../tf_graph_common/node';
+import * as tf_graph_render from '../tf_graph_common/render';
+import * as tf_graph_scene from '../tf_graph_common/scene';
 import {TfGraphScene} from '../tf_graph_common/tf-graph-scene';
+import * as tf_graph_util from '../tf_graph_common/util';
 import {ColorBy} from '../tf_graph_common/view_types';
+import './tf-graph-minimap';
+import {template} from './tf-graph-scene.html';
 
 @customElement('tf-graph-scene')
 class TfGraphScene2

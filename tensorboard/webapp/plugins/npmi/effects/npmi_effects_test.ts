@@ -16,22 +16,21 @@ import {TestBed} from '@angular/core/testing';
 import {provideMockActions} from '@ngrx/effects/testing';
 import {Action, Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
-import {TBHttpClientTestingModule} from '../../../webapp_data_source/tb_http_client_testing';
 import {Subject} from 'rxjs';
-
-import {NpmiHttpServerDataSource} from '../data_source/npmi_data_source';
 import {NpmiEffects} from '.';
-import {createSampleEmbeddingData, createNpmiState} from '../testing';
 import {State} from '../../../app_state';
-import {
-  DataLoadState,
-  AnnotationDataListing,
-  MetricListing,
-  EmbeddingDataSet,
-} from '../store/npmi_types';
-import {getPluginDataLoaded} from '../store/npmi_selectors';
-import * as actions from '../actions';
 import * as selectors from '../../../selectors';
+import {TBHttpClientTestingModule} from '../../../webapp_data_source/tb_http_client_testing';
+import * as actions from '../actions';
+import {NpmiHttpServerDataSource} from '../data_source/npmi_data_source';
+import {getPluginDataLoaded} from '../store/npmi_selectors';
+import {
+  AnnotationDataListing,
+  DataLoadState,
+  EmbeddingDataSet,
+  MetricListing,
+} from '../store/npmi_types';
+import {createNpmiState, createSampleEmbeddingData} from '../testing';
 
 describe('npmi effects', () => {
   let dataSource: NpmiHttpServerDataSource;

@@ -30,7 +30,6 @@ import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import {MatSortModule} from '@angular/material/sort';
 import {MatTableModule} from '@angular/material/table';
 import {ColorPickerModule} from 'ngx-color-picker';
-
 import {AlertModule} from '../../../alert/alert_module';
 import {ExperimentAliasModule} from '../../../widgets/experiment_alias/experiment_alias_module';
 import {FilterInputModule} from '../../../widgets/filter_input/filter_input_module';

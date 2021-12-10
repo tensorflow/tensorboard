@@ -16,7 +16,6 @@ import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
 import {EffectsModule} from '@ngrx/effects';
 import {Action, createSelector, StoreModule} from '@ngrx/store';
-
 import {AlertActionModule} from '../alert/alert_action_module';
 import {AppRoutingModule} from '../app_routing/app_routing_module';
 import {CoreModule} from '../core/core_module';

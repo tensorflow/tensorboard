@@ -12,12 +12,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
-
-import {HashStorageContainer} from './hash_storage_container';
-import {HashStorageComponent} from './hash_storage_component';
+import {NgModule} from '@angular/core';
 import {DeepLinkModule} from '../../deeplink/deeplink_module';
+import {HashStorageComponent} from './hash_storage_component';
+import {HashStorageContainer} from './hash_storage_container';
 
 @NgModule({
   declarations: [HashStorageContainer, HashStorageComponent],

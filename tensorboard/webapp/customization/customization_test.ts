@@ -14,7 +14,6 @@ limitations under the License.
 ==============================================================================*/
 import {Component, NgModule, Optional} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
-
 import {CustomizationModule} from './customization_module';
 
 /**

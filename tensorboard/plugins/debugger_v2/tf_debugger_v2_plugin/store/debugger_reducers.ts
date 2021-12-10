@@ -13,7 +13,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Action, createReducer, on} from '@ngrx/store';
-
 import * as actions from '../actions';
 import {
   ExecutionDataResponse,
@@ -24,8 +23,8 @@ import {
 import {getFocusedStackFramesHelper} from './debugger_store_helpers';
 import {
   computeBottommostLineSpec,
-  findFileIndex,
   findBeginEndRangeIndex,
+  findFileIndex,
   isFrameBottommostInStackTrace,
 } from './debugger_store_utils';
 import {
@@ -35,12 +34,12 @@ import {
   DataLoadState,
   DebuggerState,
   Executions,
-  Graphs,
   GraphExecutions,
+  Graphs,
   InfNanAlert,
-  StackFramesById,
   SourceFileSpec,
   StackFrame,
+  StackFramesById,
 } from './debugger_types';
 
 const DEFAULT_EXECUTION_PAGE_SIZE = 100;

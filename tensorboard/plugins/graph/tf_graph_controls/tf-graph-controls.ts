@@ -13,23 +13,21 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {PolymerElement, html} from '@polymer/polymer';
 import {computed, customElement, property} from '@polymer/decorators';
+import {html, PolymerElement} from '@polymer/polymer';
 import * as _ from 'lodash';
-
-import '../../../components/polymer/irons_and_papers';
-import * as tb_debug from '../../../components/tb_debug';
-import * as tf_graph_common from '../tf_graph_common/common';
-import * as tf_graph_render from '../tf_graph_common/render';
-import * as tf_graph_proto from '../tf_graph_common/proto';
-import * as tf_graph_util from '../tf_graph_common/util';
-
-import '../../../components/tf_dashboard_common/tensorboard-color';
-import '../tf_graph_common/tf-graph-icon';
-import '../tf_graph_node_search/tf-graph-node-search';
 import {DarkModeMixin} from '../../../components/polymer/dark_mode_mixin';
+import '../../../components/polymer/irons_and_papers';
 import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
+import * as tb_debug from '../../../components/tb_debug';
+import '../../../components/tf_dashboard_common/tensorboard-color';
+import * as tf_graph_common from '../tf_graph_common/common';
+import * as tf_graph_proto from '../tf_graph_common/proto';
+import * as tf_graph_render from '../tf_graph_common/render';
+import '../tf_graph_common/tf-graph-icon';
+import * as tf_graph_util from '../tf_graph_common/util';
 import {ColorBy} from '../tf_graph_common/view_types';
+import '../tf_graph_node_search/tf-graph-node-search';
 
 interface DeviceNameExclude {
   regex: RegExp;

@@ -12,14 +12,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {PolymerElement, html} from '@polymer/polymer';
 import {customElement, property} from '@polymer/decorators';
-
+import {html, PolymerElement} from '@polymer/polymer';
+import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
 import '../tf_graph_board/tf-graph-board';
+import * as tf_graph_render from '../tf_graph_common/render';
 import '../tf_graph_controls/tf-graph-controls';
 import '../tf_graph_loader/tf-graph-loader';
-import * as tf_graph_render from '../tf_graph_common/render';
-import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
 
 /**
  * Stand alone element of tf-graph for embedding.

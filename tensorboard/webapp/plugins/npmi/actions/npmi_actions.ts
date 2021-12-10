@@ -15,8 +15,8 @@ limitations under the License.
 import {createAction, props} from '@ngrx/store';
 import {
   AnnotationDataListing,
-  MetricListing,
   EmbeddingDataSet,
+  MetricListing,
 } from '../store/npmi_types';
 
 /**

@@ -14,7 +14,6 @@ limitations under the License.
 ==============================================================================*/
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
-
 import {CustomizableComponent} from './customizable_component';
 
 @NgModule({

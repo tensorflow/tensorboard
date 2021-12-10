@@ -15,8 +15,7 @@ limitations under the License.
 import {Injectable} from '@angular/core';
 import {Store} from '@ngrx/store';
 import {combineLatest, Observable} from 'rxjs';
-import {filter, map} from 'rxjs/operators';
-
+import {map} from 'rxjs/operators';
 import {DeepLinkProvider} from '../app_routing/deep_link_provider';
 import {SerializableQueryParams} from '../app_routing/types';
 import {State} from '../app_state';
@@ -29,14 +28,14 @@ import {CardUniqueInfo} from '../metrics/types';
 import {GroupBy, GroupByKey} from '../runs/types';
 import * as selectors from '../selectors';
 import {
-  ENABLE_COLOR_GROUP_QUERY_PARAM_KEY,
   ENABLE_COLOR_GROUP_BY_REGEX_QUERY_PARAM_KEY,
+  ENABLE_COLOR_GROUP_QUERY_PARAM_KEY,
   EXPERIMENTAL_PLUGIN_QUERY_PARAM_KEY,
 } from '../webapp_data_source/tb_feature_flag_data_source_types';
 import {
-  RUN_COLOR_GROUP_KEY,
   DeserializedState,
   PINNED_CARDS_KEY,
+  RUN_COLOR_GROUP_KEY,
   RUN_FILTER_KEY,
   SMOOTHING_KEY,
   TAG_FILTER_KEY,

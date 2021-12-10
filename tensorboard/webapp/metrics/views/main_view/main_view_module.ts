@@ -21,7 +21,6 @@ import {MatButtonToggleModule} from '@angular/material/button-toggle';
 import {MatIconModule} from '@angular/material/icon';
 import {MatInputModule} from '@angular/material/input';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
-
 import {FilterInputModule} from '../../../widgets/filter_input/filter_input_module';
 import {CardRendererModule} from '../card_renderer/card_renderer_module';
 import {RightPaneModule} from '../right_pane/right_pane_module';

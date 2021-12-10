@@ -19,7 +19,6 @@ import {MatButtonModule} from '@angular/material/button';
 import {MatDialogModule} from '@angular/material/dialog';
 import {MatInputModule} from '@angular/material/input';
 import {MatSelectModule} from '@angular/material/select';
-
 import {MetricsDataSourceModule} from '../../data_source';
 import {DataDownloadDialogComponent} from './data_download_dialog_component';
 import {DataDownloadDialogContainer} from './data_download_dialog_container';

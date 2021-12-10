@@ -16,15 +16,12 @@ limitations under the License.
    coordinates plot.
  */
 import * as d3 from 'd3';
-
+import * as tf_hparams_query_pane from '../tf_hparams_types/types';
 import * as tf_hparams_utils from '../tf_hparams_utils/tf-hparams-utils';
-import * as tf_hparams_parallel_coords_plot_utils from './utils';
+import * as tf_hparams_api from '../types';
 import {AxesCollection} from './axes';
 import * as tf_hparams_parallel_coords_plot_interaction_manager from './interaction_manager';
-
-import * as tf_hparams_query_pane from '../tf_hparams_types/types';
-
-import * as tf_hparams_api from '../types';
+import * as tf_hparams_parallel_coords_plot_utils from './utils';
 
 export enum LineType {
   FOREGROUND,

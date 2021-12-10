@@ -20,14 +20,13 @@ import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {State} from '../../../app_state';
-import {DataLoadState} from '../../../types/data';
-
 import {
   getExperimentIdForRunId,
   getExperimentIdToExperimentAliasMap,
   getRun,
 } from '../../../selectors';
 import {MatIconTestingModule} from '../../../testing/mat_icon_module';
+import {DataLoadState} from '../../../types/data';
 import {
   HistogramData,
   HistogramMode,
@@ -44,7 +43,6 @@ import {
   provideMockCardSeriesData,
 } from '../../testing';
 import {XAxisType} from '../../types';
-
 import {HistogramCardComponent} from './histogram_card_component';
 import {HistogramCardContainer} from './histogram_card_container';
 import {RunNameModule} from './run_name_module';

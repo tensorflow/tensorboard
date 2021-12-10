@@ -14,7 +14,6 @@ limitations under the License.
 ==============================================================================*/
 import {Injectable} from '@angular/core';
 import {Observable, of} from 'rxjs';
-
 import {State} from '../app_state';
 import {DataLoadState} from '../types/data';
 import {HistogramMode} from '../widgets/histogram/histogram_types';

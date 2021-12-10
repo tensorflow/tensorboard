@@ -16,7 +16,6 @@ import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {Store} from '@ngrx/store';
 import {Observable} from 'rxjs';
 import {filter, map, pairwise, skip, startWith} from 'rxjs/operators';
-
 import {State} from '../../../app_state';
 import {DeepReadonly} from '../../../util/types';
 import {getPinnedCardsWithMetadata} from '../../store';

@@ -12,34 +12,32 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {customElement, observe, property} from '@polymer/decorators';
 import {PolymerElement} from '@polymer/polymer';
-import {customElement, property, observe} from '@polymer/decorators';
-
-import * as d3 from '../../../webapp/third_party/d3';
-import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
 import '../../../components/polymer/irons_and_papers';
-
-import {template} from './vz-projector-data-panel.html';
+import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
+import * as d3 from '../../../webapp/third_party/d3';
 import {
-  ColorLegendThreshold,
-  ColorLegendRenderInfo,
-} from './vz-projector-legend';
-import './vz-projector-legend';
-import {
-  ColumnStats,
   ColorOption,
-  SpriteAndMetadataInfo,
+  ColumnStats,
   Projection,
+  SpriteAndMetadataInfo,
 } from './data';
 import {
   DataProvider,
   EmbeddingInfo,
-  ProjectorConfig,
   parseRawMetadata,
   parseRawTensors,
+  ProjectorConfig,
 } from './data-provider';
 import * as knn from './knn';
 import * as util from './util';
+import {template} from './vz-projector-data-panel.html';
+import './vz-projector-legend';
+import {
+  ColorLegendRenderInfo,
+  ColorLegendThreshold,
+} from './vz-projector-legend';
 
 @customElement('vz-projector-data-panel')
 class DataPanel extends LegacyElementMixin(PolymerElement) {

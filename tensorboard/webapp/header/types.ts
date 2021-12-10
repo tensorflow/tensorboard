@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {PluginMetadata, PluginId} from '../types/api';
+import {PluginId, PluginMetadata} from '../types/api';
 
 export interface UiPluginMetadata extends PluginMetadata {
   id: PluginId;

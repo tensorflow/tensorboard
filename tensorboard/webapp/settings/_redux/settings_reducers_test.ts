@@ -12,11 +12,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {globalSettingsLoaded} from '../../persistent_settings';
+import {DataLoadState} from '../../types/data';
+import {createSettings, createSettingsState} from '../testing';
 import * as actions from './settings_actions';
 import {reducers} from './settings_reducers';
-import {createSettings, createSettingsState} from '../testing';
-import {DataLoadState} from '../../types/data';
-import {globalSettingsLoaded} from '../../persistent_settings';
 
 describe('settings reducer', () => {
   describe('#toggleReloadEnabled', () => {

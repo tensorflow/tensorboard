@@ -14,7 +14,6 @@ limitations under the License.
 ==============================================================================*/
 
 import {Component} from '@angular/core';
-
 import {RouteConfigs, RouteMatch} from './route_config';
 import {ConcreteRouteDef, RedirectionRouteDef} from './route_config_types';
 import {Navigation, RouteKind} from './types';

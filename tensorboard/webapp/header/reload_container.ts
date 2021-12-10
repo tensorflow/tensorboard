@@ -16,7 +16,6 @@ import {Component} from '@angular/core';
 import {createSelector, Store} from '@ngrx/store';
 import {Observable} from 'rxjs';
 import {combineLatestWith, map} from 'rxjs/operators';
-
 import {manualReload} from '../core/actions';
 import {
   getActivePlugin,

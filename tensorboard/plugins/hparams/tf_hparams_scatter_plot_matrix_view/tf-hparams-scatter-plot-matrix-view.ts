@@ -13,8 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {PolymerElement, html} from '@polymer/polymer';
 import {customElement, property} from '@polymer/decorators';
+import {html, PolymerElement} from '@polymer/polymer';
 import '../tf_hparams_scale_and_color_controls/tf-hparams-scale-and-color-controls';
 import '../tf_hparams_scatter_plot_matrix_plot/tf-hparams-scatter-plot-matrix-plot';
 import '../tf_hparams_session_group_details/tf-hparams-session-group-details';

@@ -13,7 +13,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Injectable} from '@angular/core';
-
 import {MessageType, PayloadType} from './message';
 import {Ipc, PluginHostCallback} from './plugin-host-ipc';
 import {PluginApiHostModule} from './plugin_api_host_module';

@@ -20,7 +20,6 @@ import {MatCheckboxModule} from '@angular/material/checkbox';
 import {MatIconModule} from '@angular/material/icon';
 import {MatSelectModule} from '@angular/material/select';
 import {MatSliderModule} from '@angular/material/slider';
-
 import {FeatureFlagModule} from '../../../feature_flag/feature_flag_module';
 import {DropdownModule} from '../../../widgets/dropdown/dropdown_module';
 import {RangeInputModule} from '../../../widgets/range_input/range_input_module';

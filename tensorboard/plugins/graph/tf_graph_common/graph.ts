@@ -14,9 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import {graphlib} from 'dagre';
 import * as _ from 'lodash';
-
 import * as tb_debug from '../../../components/tb_debug';
-
 import {NodeStats, ProgressTracker} from './common';
 import {Hierarchy} from './hierarchy';
 import * as tf_graph_proto from './proto';

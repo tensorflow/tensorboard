@@ -16,14 +16,13 @@ import {TestBed} from '@angular/core/testing';
 import {Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {skip} from 'rxjs/operators';
-
 import {SerializableQueryParams} from '../app_routing/types';
 import {State} from '../app_state';
 import {PluginType} from '../metrics/data_source/types';
 import {appStateFromMetricsState, buildMetricsState} from '../metrics/testing';
+import {GroupBy, GroupByKey} from '../runs/types';
 import * as selectors from '../selectors';
 import {DashboardDeepLinkProvider} from './dashboard_deeplink_provider';
-import {GroupBy, GroupByKey} from '../runs/types';
 import {buildDeserializedState} from './testing';
 
 describe('core deeplink provider', () => {

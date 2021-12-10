@@ -15,7 +15,6 @@ limitations under the License.
 import {Component} from '@angular/core';
 import {Store} from '@ngrx/store';
 import {Observable} from 'rxjs';
-
 import {State as OtherAppState} from '../../../../../webapp/app_state';
 import {getDarkModeEnabled} from '../../../../../webapp/selectors';
 import {

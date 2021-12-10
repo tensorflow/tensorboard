@@ -15,22 +15,20 @@ limitations under the License.
 import {Component, NO_ERRORS_SCHEMA} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
 import {Store} from '@ngrx/store';
-import {provideMockStore, MockStore} from '@ngrx/store/testing';
-
-import {State} from '../state';
-import {getEnvironment} from '../store';
+import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {RouteKind} from '../../app_routing/types';
 import {buildExperiment} from '../../experiments/store/testing';
 import {
-  getRouteKind,
-  getExperimentIdsFromRoute,
   getExperiment,
+  getExperimentIdsFromRoute,
+  getRouteKind,
 } from '../../selectors';
+import {State} from '../state';
+import {getEnvironment} from '../store';
 import {TB_BRAND_NAME} from '../types';
-
-import {PageTitleModule} from './page_title_module';
 import {PageTitleComponent, TEST_ONLY} from './page_title_component';
 import {PageTitleContainer} from './page_title_container';
+import {PageTitleModule} from './page_title_module';
 
 describe('page title test', () => {
   let store: MockStore<State>;

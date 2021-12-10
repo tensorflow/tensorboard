@@ -16,22 +16,21 @@ import {HttpHeaders} from '@angular/common/http';
 import {TestBed} from '@angular/core/testing';
 import {Store} from '@ngrx/store';
 import {MockStore} from '@ngrx/store/testing';
-
 import {
   AppRootProvider,
   TestableAppRootProvider,
 } from '../app_routing/app_root';
-import {State} from '../feature_flag/store/feature_flag_types';
 import {
   getIsFeatureFlagsLoaded,
   getIsInColab,
 } from '../feature_flag/store/feature_flag_selectors';
+import {State} from '../feature_flag/store/feature_flag_types';
 import {TBFeatureFlagTestingModule} from './tb_feature_flag_testing';
+import {TBHttpClient, XSRF_REQUIRED_HEADER} from './tb_http_client';
 import {
   HttpTestingController,
   TBHttpClientTestingModule,
 } from './tb_http_client_testing';
-import {TBHttpClient, XSRF_REQUIRED_HEADER} from './tb_http_client';
 
 describe('TBHttpClient', () => {
   let tbHttpClient: TBHttpClient;

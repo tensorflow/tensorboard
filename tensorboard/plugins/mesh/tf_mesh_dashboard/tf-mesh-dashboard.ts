@@ -13,26 +13,23 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {PolymerElement, html} from '@polymer/polymer';
-import {customElement, property, computed} from '@polymer/decorators';
+import {computed, customElement, property} from '@polymer/decorators';
+import {html, PolymerElement} from '@polymer/polymer';
 import * as _ from 'lodash';
-
 import '../../../components/polymer/irons_and_papers';
 import {getTags} from '../../../components/tf_backend/backend';
-import {getRouter} from '../../../components/tf_backend/router';
 import {RequestManager} from '../../../components/tf_backend/requestManager';
-
+import {getRouter} from '../../../components/tf_backend/router';
 import {
-  RunToTag,
   categorizeRunTagCombinations,
+  RunToTag,
 } from '../../../components/tf_categorization_utils/categorizationUtils';
-import '../../../components/tf_paginated_view/tf-category-paginated-view';
 import '../../../components/tf_dashboard_common/dashboard-style';
 import '../../../components/tf_dashboard_common/tf-dashboard-layout';
+import '../../../components/tf_paginated_view/tf-category-paginated-view';
 import '../../../components/tf_runs_selector/tf-runs-selector';
-
-import {TfMeshLoader} from './mesh-loader';
 import './mesh-loader';
+import {TfMeshLoader} from './mesh-loader';
 
 @customElement('mesh-dashboard')
 class MeshDashboard extends PolymerElement {

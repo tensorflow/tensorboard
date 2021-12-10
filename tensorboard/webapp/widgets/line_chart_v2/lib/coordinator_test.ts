@@ -13,9 +13,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {ScaleType} from './scale_types';
-import {createScale} from './scale';
 import {Coordinator} from './coordinator';
+import {createScale} from './scale';
+import {ScaleType} from './scale_types';
 import {ThreeCoordinator} from './threejs_coordinator';
 
 describe('line_chart_v2/lib/coordinator test', () => {

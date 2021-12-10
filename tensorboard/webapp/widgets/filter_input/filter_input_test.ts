@@ -18,11 +18,9 @@ import {TestBed} from '@angular/core/testing';
 import {MatAutocompleteModule} from '@angular/material/autocomplete';
 import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
-
 import {KeyType, sendKey} from '../../testing/dom';
-import {MatIconTestingModule} from '../../testing/mat_icon_module';
 import {getAutocompleteOptions} from '../../testing/material';
-
+import {MatIconTestingModule} from '../../testing/mat_icon_module';
 import {FilterInputModule} from './filter_input_module';
 
 @Component({

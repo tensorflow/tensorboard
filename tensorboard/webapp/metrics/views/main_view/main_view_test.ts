@@ -29,16 +29,16 @@ import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {Action, Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
-import {State} from '../../../app_state';
-import {selectors as settingsSelectors} from '../../../settings';
 import {of, ReplaySubject} from 'rxjs';
-
+import {State} from '../../../app_state';
 import * as selectors from '../../../selectors';
 import {
   getMetricsCardMinWidth,
   getMetricsTagGroupExpansionState,
 } from '../../../selectors';
+import {selectors as settingsSelectors} from '../../../settings';
 import {KeyType, sendKey, sendKeys} from '../../../testing/dom';
+import {DataLoadState} from '../../../types/data';
 import {RunColorScale} from '../../../types/ui';
 import * as actions from '../../actions';
 import {PluginType} from '../../data_source';
@@ -49,7 +49,7 @@ import {
 } from '../../testing';
 import {CardId} from '../../types';
 import {CardLazyLoader, CardObserver} from '../card_renderer/card_lazy_loader';
-
+import {CardIdWithMetadata} from '../metrics_view_types';
 import {CardGridComponent} from './card_grid_component';
 import {CardGridContainer} from './card_grid_container';
 import {CardGroupsComponent} from './card_groups_component';
@@ -67,8 +67,6 @@ import {MainViewComponent} from './main_view_component';
 import {MainViewContainer} from './main_view_container';
 import {PinnedViewComponent} from './pinned_view_component';
 import {PinnedViewContainer} from './pinned_view_container';
-import {DataLoadState} from '../../../types/data';
-import {CardIdWithMetadata} from '../metrics_view_types';
 
 @Component({
   selector: 'card-view',

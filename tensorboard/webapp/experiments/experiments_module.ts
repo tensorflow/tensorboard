@@ -14,7 +14,6 @@ limitations under the License.
 ==============================================================================*/
 import {NgModule} from '@angular/core';
 import {StoreModule} from '@ngrx/store';
-
 import {reducers} from './store';
 import {EXPERIMENTS_FEATURE_KEY} from './store/experiments_types';
 

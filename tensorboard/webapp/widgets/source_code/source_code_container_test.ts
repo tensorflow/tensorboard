@@ -17,7 +17,6 @@ limitations under the License.
  */
 import {Component, Input, NO_ERRORS_SCHEMA} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
-
 import * as loadMonacoShim from './load_monaco_shim';
 import {SourceCodeComponent} from './source_code_component';
 import {SourceCodeContainer} from './source_code_container';

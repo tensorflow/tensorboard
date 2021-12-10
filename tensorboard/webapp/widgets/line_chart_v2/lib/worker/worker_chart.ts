@@ -26,8 +26,8 @@ import {
   GuestToMainMessage,
   GuestToMainType,
   HostToGuestEvent,
-  InitMessage,
   HostToGuestMessage,
+  InitMessage,
   RendererType,
 } from './message_types';
 import {WorkerPool, WorkerProxy} from './worker_pool';

@@ -14,7 +14,6 @@ limitations under the License.
 ==============================================================================*/
 
 import {createAction, props} from '@ngrx/store';
-
 import {StepDatum} from '../data_source';
 import {TagGroup} from '../types';
 

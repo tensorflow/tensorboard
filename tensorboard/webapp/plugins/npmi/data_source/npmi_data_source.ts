@@ -13,22 +13,20 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Injectable} from '@angular/core';
-
-import {Observable, of, forkJoin, throwError} from 'rxjs';
-import {map, catchError} from 'rxjs/operators';
-
+import {forkJoin, Observable, of, throwError} from 'rxjs';
+import {catchError, map} from 'rxjs/operators';
 import {
-  TBHttpClient,
   HttpErrorResponse,
+  TBHttpClient,
 } from '../../../webapp_data_source/tb_http_client';
 import * as metric_type from '../util/metric_type';
+import {buildEmbeddingDataSet, EmbeddingDataSet} from '../util/umap';
 import {
-  MetricListing,
   AnnotationDataListing,
-  ValueData,
   EmbeddingListing,
+  MetricListing,
+  ValueData,
 } from './../store/npmi_types';
-import {EmbeddingDataSet, buildEmbeddingDataSet} from '../util/umap';
 
 export abstract class NpmiDataSource {
   abstract fetchData(experimentIds: string[]): Observable<{

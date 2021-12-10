@@ -14,11 +14,21 @@ limitations under the License.
 ==============================================================================*/
 
 import {
+  ColorMap,
+  ColorMapConfig,
+  GrayscaleColorMap,
+  JetColorMap,
+} from './colormap';
+import {
   isBooleanDType,
   isFloatDType,
   isIntegerDType,
   isStringDType,
 } from './dtype-utils';
+import {
+  BaseTensorNumericSummary,
+  BooleanOrNumericTensorNumericSummary,
+} from './health-pill-types';
 import {
   ChoiceMenuItemConfig,
   Menu,
@@ -27,9 +37,9 @@ import {
 } from './menu';
 import {TensorElementSelection} from './selection';
 import {
+  areSlicingSpecsCompatible,
   formatShapeForDisplay,
   getDefaultSlicingSpec,
-  areSlicingSpecsCompatible,
 } from './shape-utils';
 import {SlicingControl} from './slicing-control';
 import {
@@ -41,20 +51,10 @@ import {
 import {
   MoveDirection,
   TensorView,
+  TensorViewSlicingSpec,
   TensorWidget,
   TensorWidgetOptions,
-  TensorViewSlicingSpec,
 } from './types';
-import {
-  BaseTensorNumericSummary,
-  BooleanOrNumericTensorNumericSummary,
-} from './health-pill-types';
-import {
-  ColorMap,
-  ColorMapConfig,
-  GrayscaleColorMap,
-  JetColorMap,
-} from './colormap';
 
 const DETAILED_VALUE_ATTR_KEY = 'detailed-value';
 

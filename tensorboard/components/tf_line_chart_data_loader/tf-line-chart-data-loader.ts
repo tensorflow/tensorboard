@@ -12,24 +12,23 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {PolymerElement, html} from '@polymer/polymer';
-import * as Plottable from 'plottable';
-import {customElement, property, observe} from '@polymer/decorators';
+import {customElement, observe, property} from '@polymer/decorators';
+import {html, PolymerElement} from '@polymer/polymer';
 import * as _ from 'lodash';
-
+import * as Plottable from 'plottable';
 import '../polymer/irons_and_papers';
 import {LegacyElementMixin} from '../polymer/legacy_element_mixin';
-import {runsColorScale} from '../tf_color_scale/colorScale';
 import {RequestManager} from '../tf_backend/requestManager';
-import {
-  XType,
-  TooltipColumn,
-  SymbolFn,
-  ScalarDatum,
-} from '../vz_chart_helpers/vz-chart-helpers';
+import {runsColorScale} from '../tf_color_scale/colorScale';
 import {DataLoaderBehavior} from '../tf_dashboard_common/data-loader-behavior';
+import {
+  ScalarDatum,
+  SymbolFn,
+  TooltipColumn,
+  XType,
+} from '../vz_chart_helpers/vz-chart-helpers';
+import {FillArea, YScaleType} from '../vz_line_chart2/line-chart';
 import '../vz_line_chart2/vz-line-chart2';
-import {YScaleType, FillArea} from '../vz_line_chart2/line-chart';
 
 export interface TfLineChartDataLoader extends HTMLElement {
   commitChanges(): void;

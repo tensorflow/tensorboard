@@ -14,10 +14,8 @@ limitations under the License.
 ==============================================================================*/
 
 import * as THREE from 'three';
-
 import {Coordinator} from './coordinator';
 import {Rect} from './internal_types';
-import {convertRectToExtent} from './utils';
 
 /**
  * Unlike Coordinator, ThreeCoordinator uses internal coordinate system.

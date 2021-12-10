@@ -12,10 +12,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component, ChangeDetectionStrategy} from '@angular/core';
+import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {select, Store} from '@ngrx/store';
-import {State} from '../../../store/npmi_types';
 import {getMetricArithmetic} from '../../../store';
+import {State} from '../../../store/npmi_types';
 
 @Component({
   selector: 'npmi-metric-arithmetic',

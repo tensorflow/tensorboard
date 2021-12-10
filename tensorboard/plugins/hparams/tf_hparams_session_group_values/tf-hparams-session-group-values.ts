@@ -13,8 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {PolymerElement, html} from '@polymer/polymer';
 import {customElement, property} from '@polymer/decorators';
+import {html, PolymerElement} from '@polymer/polymer';
 import '../tf_hparams_table_view/tf-hparams-table-view';
 
 @customElement('tf-hparams-session-group-values')

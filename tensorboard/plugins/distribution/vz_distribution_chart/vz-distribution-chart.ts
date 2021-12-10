@@ -14,17 +14,16 @@ limitations under the License.
 ==============================================================================*/
 
 import {customElement, observe, property} from '@polymer/decorators';
-import {PolymerElement, html} from '@polymer/polymer';
-import * as Plottable from 'plottable';
+import {html, PolymerElement} from '@polymer/polymer';
 import * as d3 from 'd3';
 import * as _ from 'lodash';
-
+import * as Plottable from 'plottable';
 import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
 import '../../../components/polymer/plottable-style';
 import {
-  Y_AXIS_FORMATTER_PRECISION,
   getXComponents,
   multiscaleFormatter,
+  Y_AXIS_FORMATTER_PRECISION,
 } from '../../../components/vz_chart_helpers/vz-chart-helpers';
 
 export class DistributionChart {

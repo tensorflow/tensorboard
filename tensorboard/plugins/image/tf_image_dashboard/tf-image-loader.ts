@@ -14,8 +14,7 @@ limitations under the License.
 ==============================================================================*/
 
 import {computed, customElement, observe, property} from '@polymer/decorators';
-import {PolymerElement, html} from '@polymer/polymer';
-
+import {html, PolymerElement} from '@polymer/polymer';
 import * as PolymerDom from '../../../components/polymer/dom';
 import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
 import {Canceller} from '../../../components/tf_backend/canceller';

@@ -15,7 +15,6 @@ limitations under the License.
 import {Injectable} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
 import {firstValueFrom} from 'rxjs';
-
 import {
   LocalStorageTestingModule,
   TestingLocalStorage,

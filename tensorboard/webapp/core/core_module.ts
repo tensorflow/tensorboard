@@ -15,7 +15,6 @@ limitations under the License.
 import {NgModule} from '@angular/core';
 import {EffectsModule} from '@ngrx/effects';
 import {createSelector, StoreModule} from '@ngrx/store';
-
 import {DeepLinkerInterface} from '../deeplink';
 import {
   PersistableSettings,

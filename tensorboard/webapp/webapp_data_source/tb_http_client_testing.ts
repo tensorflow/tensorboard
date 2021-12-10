@@ -14,15 +14,13 @@ limitations under the License.
 ==============================================================================*/
 export {HttpTestingController} from '@angular/common/http/testing';
 
-import {NgModule} from '@angular/core';
 import {HttpClientTestingModule} from '@angular/common/http/testing';
+import {NgModule} from '@angular/core';
 import {provideMockStore} from '@ngrx/store/testing';
-
 import {
-  buildState as buildFeatureFlagAppState,
   buildFeatureFlagState,
+  buildState as buildFeatureFlagAppState,
 } from '../feature_flag/store/testing';
-
 import {TBHttpClientModule} from './tb_http_client_module';
 
 @NgModule({

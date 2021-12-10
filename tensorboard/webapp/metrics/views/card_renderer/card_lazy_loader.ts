@@ -14,7 +14,6 @@ limitations under the License.
 ==============================================================================*/
 import {Directive, ElementRef, Input, OnDestroy, OnInit} from '@angular/core';
 import {Store} from '@ngrx/store';
-
 import {State} from '../../../app_state';
 import {ElementId, nextElementId} from '../../../util/dom';
 import * as actions from '../../actions';

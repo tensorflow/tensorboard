@@ -19,8 +19,8 @@ limitations under the License.
  * `tf-category-paginated-view`.
  */
 import * as _ from 'lodash';
-import {Experiment, Run} from '../tf_backend/type';
 import {getTags} from '../tf_backend/backend';
+import {Experiment, Run} from '../tf_backend/type';
 import {compareTagNames} from '../vz_sorting/sorting';
 
 export type RunToTag = {

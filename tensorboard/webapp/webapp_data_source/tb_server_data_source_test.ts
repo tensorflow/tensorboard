@@ -13,13 +13,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {fakeAsync, flush, TestBed} from '@angular/core/testing';
-
-import {TBServerDataSource, TBServerError} from './tb_server_data_source';
-import {
-  TBHttpClientTestingModule,
-  HttpTestingController,
-} from './tb_http_client_testing';
 import {PluginsListFailureCode} from '../core/types';
+import {
+  HttpTestingController,
+  TBHttpClientTestingModule,
+} from './tb_http_client_testing';
+import {TBServerDataSource, TBServerError} from './tb_server_data_source';
 
 describe('tb_server_data_source', () => {
   describe('TBServerDataSource', () => {

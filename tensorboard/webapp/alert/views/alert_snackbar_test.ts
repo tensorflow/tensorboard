@@ -14,16 +14,16 @@ limitations under the License.
 ==============================================================================*/
 import {OverlayContainer} from '@angular/cdk/overlay';
 import {TestBed} from '@angular/core/testing';
+import {MatButtonModule} from '@angular/material/button';
 import {MatSnackBar, MatSnackBarModule} from '@angular/material/snack-bar';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {Action, createAction, props, Store} from '@ngrx/store';
-import {provideMockStore, MockStore} from '@ngrx/store/testing';
-import {AlertSnackbarContainer} from './alert_snackbar_container';
-import {State} from '../store';
+import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import * as selectors from '../../selectors';
-import {buildStateFromAlertState, buildAlertState} from '../store/testing';
+import {State} from '../store';
+import {buildAlertState, buildStateFromAlertState} from '../store/testing';
 import {AlertDisplaySnackbarContainer} from './alert_display_snackbar_container';
-import {MatButtonModule} from '@angular/material/button';
+import {AlertSnackbarContainer} from './alert_snackbar_container';
 
 const testAction = createAction('[Test] Action Occurred');
 const testActionWithProps = createAction(

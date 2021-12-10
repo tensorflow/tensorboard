@@ -15,7 +15,6 @@ limitations under the License.
 
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
-
 import {LinkedTimeFobComponent} from './linked_time_fob_component';
 
 @NgModule({

@@ -12,33 +12,31 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component, ChangeDetectionStrategy} from '@angular/core';
-
+import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {select, Store} from '@ngrx/store';
-import {map, share} from 'rxjs/operators';
 import {combineLatest} from 'rxjs';
-
+import {map, share} from 'rxjs/operators';
 import {State} from '../../../../app_state';
+import {getCurrentRouteRunSelection} from '../../../../selectors';
+import * as npmiActions from '../../actions';
 import {
   getAnnotationData,
-  getMetricArithmetic,
-  getMetricFilters,
-  getRunToMetrics,
-  getShowHiddenAnnotations,
-  getHiddenAnnotations,
   getAnnotationsExpanded,
-  getSelectedAnnotations,
   getAnnotationSort,
   getAnnotationsRegex,
   getEmbeddingDataSet,
+  getHiddenAnnotations,
+  getMetricArithmetic,
+  getMetricFilters,
+  getRunToMetrics,
+  getSelectedAnnotations,
+  getShowHiddenAnnotations,
 } from '../../store';
-import {getCurrentRouteRunSelection} from '../../../../selectors';
 import {
   filterAnnotations,
   removeHiddenAnnotations,
 } from '../../util/filter_annotations';
 import {metricIsNpmiAndNotDiff} from '../../util/metric_type';
-import * as npmiActions from '../../actions';
 import {sortAnnotations} from '../../util/sort_annotations';
 
 @Component({

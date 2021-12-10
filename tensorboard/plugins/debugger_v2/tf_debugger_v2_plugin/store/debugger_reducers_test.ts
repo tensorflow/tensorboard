@@ -15,15 +15,6 @@ limitations under the License.
 import {deepFreeze} from '../../../../webapp/testing/lang';
 import * as actions from '../actions';
 import {ExecutionDigestsResponse} from '../data_source/tfdbg2_data_source';
-import {reducers} from './debugger_reducers';
-import {
-  Alert,
-  AlertType,
-  CodeLocationType,
-  DataLoadState,
-  Execution,
-  StackFramesById,
-} from './debugger_types';
 import {
   createAlertsState,
   createDebuggerExecutionsState,
@@ -34,9 +25,18 @@ import {
   createDigestsStateWhileLoadingExecutionDigests,
   createTestExecutionData,
   createTestGraphExecution,
-  createTestStackFrame,
   createTestInfNanAlert,
+  createTestStackFrame,
 } from '../testing';
+import {reducers} from './debugger_reducers';
+import {
+  Alert,
+  AlertType,
+  CodeLocationType,
+  DataLoadState,
+  Execution,
+  StackFramesById,
+} from './debugger_types';
 
 describe('Debugger graphs reducers', () => {
   describe('alertTypeFocusToggled', () => {

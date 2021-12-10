@@ -13,14 +13,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {createSelector} from '@ngrx/store';
-
 import {State} from '../../../app_state';
 import {getCurrentRouteRunSelection} from '../../../selectors';
 import {DeepReadonly} from '../../../util/types';
 import {isSingleRunPlugin} from '../../data_source';
 import {getNonEmptyCardIdsWithMetadata} from '../../store';
-import {CardIdWithMetadata} from '../metrics_view_types';
 import {compareTagNames} from '../../utils';
+import {CardIdWithMetadata} from '../metrics_view_types';
 
 const getRenderableCardIdsWithMetadata = createSelector<
   State,
