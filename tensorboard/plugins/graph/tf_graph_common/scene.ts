@@ -13,9 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import * as d3 from 'd3';
-import * as _ from 'lodash';
 import * as PolymerDom from '../../../components/polymer/dom';
-
 import {
   Class as _Class,
   selectChild as _selectChild,

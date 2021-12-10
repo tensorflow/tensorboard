@@ -13,8 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {AnnotationDataListing} from '../store/npmi_types';
-import {convertToCoordinateData} from './coordinate_data';
 import {buildSampleAnnotationData} from '../testing';
+import {convertToCoordinateData} from './coordinate_data';
 
 describe('coordinate data utils', () => {
   it('creates coordinate data', () => {

@@ -14,18 +14,13 @@ limitations under the License.
 ==============================================================================*/
 
 import {Injectable} from '@angular/core';
-import {createAction, Action, Store} from '@ngrx/store';
-import {Actions, ofType, createEffect} from '@ngrx/effects';
-import {map, combineLatestWith} from 'rxjs/operators';
-
+import {Actions, createEffect, ofType} from '@ngrx/effects';
+import {Action, createAction, Store} from '@ngrx/store';
+import {combineLatestWith, map} from 'rxjs/operators';
 import {TBFeatureFlagDataSource} from '../../webapp_data_source/tb_feature_flag_data_source_types';
 import {partialFeatureFlagsLoaded} from '../actions/feature_flag_actions';
 import {getIsAutoDarkModeAllowed} from '../store/feature_flag_selectors';
 import {State} from '../store/feature_flag_types';
-
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
-/** @typehack */ import * as _typeHackNgrx from '@ngrx/store/src/models';
-/** @typehack */ import * as _typeHackNgrxEffects from '@ngrx/effects';
 
 const effectsInitialized = createAction('[FEATURE FLAG] Effects Init');
 

@@ -16,7 +16,6 @@ limitations under the License.
 import * as actions from '../actions';
 import {buildRoute} from '../testing';
 import {RouteKind} from '../types';
-
 import * as appRoutingReducers from './app_routing_reducers';
 import {buildAppRoutingState} from './testing';
 

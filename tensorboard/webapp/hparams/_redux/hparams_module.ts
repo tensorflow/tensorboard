@@ -14,9 +14,8 @@ limitations under the License.
 ==============================================================================*/
 import {NgModule} from '@angular/core';
 import {StoreModule} from '@ngrx/store';
-
-import {HPARAMS_FEATURE_KEY} from './types';
 import {reducers} from './hparams_reducers';
+import {HPARAMS_FEATURE_KEY} from './types';
 
 @NgModule({
   imports: [StoreModule.forFeature(HPARAMS_FEATURE_KEY, reducers)],

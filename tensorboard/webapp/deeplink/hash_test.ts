@@ -13,10 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {TestBed} from '@angular/core/testing';
-
 import {HashStorageComponent} from './hash';
-
-/** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
 describe('hash storage test', () => {
   let store: MockStore<State>;

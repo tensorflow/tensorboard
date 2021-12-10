@@ -17,10 +17,7 @@ limitations under the License.
  */
 
 import {createAction, props} from '@ngrx/store';
-
 import {DiscreteHparamValues} from '../types';
-
-/** @typehack */ import * as _typeHackModels from '@ngrx/store/src/models';
 
 export const hparamsDiscreteHparamFilterChanged = createAction(
   '[Hparams] Hparams Discrete Hparam Filter Changed',

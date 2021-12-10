@@ -18,37 +18,33 @@ limitations under the License.
 import {CommonModule} from '@angular/common';
 import {TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
-
 import {Store} from '@ngrx/store';
-import {provideMockStore, MockStore} from '@ngrx/store/testing';
-
+import {MockStore, provideMockStore} from '@ngrx/store/testing';
+import {State as OtherAppState} from '../../../../../webapp/app_state';
+import {getDarkModeEnabled} from '../../../../../webapp/selectors';
 import {
   setUpMonacoFakes,
   tearDownMonacoFakes,
 } from '../../../../../webapp/widgets/source_code/testing';
 import {DebuggerComponent} from '../../debugger_component';
 import {DebuggerContainer} from '../../debugger_container';
-import {getDarkModeEnabled} from '../../../../../webapp/selectors';
+import {
+  getFocusedSourceFileContent,
+  getFocusedSourceLineSpec,
+} from '../../store';
 import {
   DataLoadState,
   State as DebuggerState,
 } from '../../store/debugger_types';
-import {State as OtherAppState} from '../../../../../webapp/app_state';
 import {createDebuggerState, createState} from '../../testing';
 import {AlertsModule} from '../alerts/alerts_module';
 import {ExecutionDataModule} from '../execution_data/execution_data_module';
 import {GraphExecutionsModule} from '../graph_executions/graph_executions_module';
 import {InactiveModule} from '../inactive/inactive_module';
 import {StackTraceModule} from '../stack_trace/stack_trace_module';
-import {
-  getFocusedSourceFileContent,
-  getFocusedSourceLineSpec,
-} from '../../store';
 import {TimelineModule} from '../timeline/timeline_module';
 import {SourceFilesContainer} from './source_files_container';
 import {SourceFilesModule} from './source_files_module';
-
-/** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
 type AppState = DebuggerState & OtherAppState;
 

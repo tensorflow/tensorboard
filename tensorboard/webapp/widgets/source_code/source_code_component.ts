@@ -21,7 +21,6 @@ import {
   SimpleChanges,
   ViewChild,
 } from '@angular/core';
-
 import {
   DEFAULT_CODE_FONT_SIZE,
   DEFAULT_CODE_LANGUAGE,

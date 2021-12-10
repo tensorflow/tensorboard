@@ -14,7 +14,6 @@ limitations under the License.
 ==============================================================================*/
 import {TestBed} from '@angular/core/testing';
 import {createSelector, Selector} from '@ngrx/store';
-
 import {PersistentSettingsConfigModule} from './persistent_settings_config_module';
 import {PersistableSettings} from './_data_source/types';
 

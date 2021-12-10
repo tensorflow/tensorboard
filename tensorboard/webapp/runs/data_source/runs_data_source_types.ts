@@ -14,7 +14,6 @@ limitations under the License.
 ==============================================================================*/
 import {Injectable} from '@angular/core';
 import {Observable} from 'rxjs';
-
 import * as backendTypes from './runs_backend_types';
 
 export {

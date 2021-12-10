@@ -22,7 +22,6 @@ import {
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
-
 import {IntersectionObserverTestingModule} from '../intersection_observer/intersection_observer_testing_module';
 import {LinkedTimeFobModule} from '../linked_time_fob/linked_time_fob_module';
 import {HistogramComponent, TooltipData} from './histogram_component';

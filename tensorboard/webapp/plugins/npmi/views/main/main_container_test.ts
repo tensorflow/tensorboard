@@ -15,23 +15,19 @@ limitations under the License.
 /**
  * Unit tests for the Main Container.
  */
+import {NO_ERRORS_SCHEMA} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
-
-import {Store, Action} from '@ngrx/store';
-import {provideMockStore, MockStore} from '@ngrx/store/testing';
-
+import {Action, Store} from '@ngrx/store';
+import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {State} from '../../../../app_state';
-import {getCurrentRouteRunSelection} from './../../../../selectors';
+import {createCoreState, createState} from '../../../../core/testing';
+import * as npmiActions from '../../actions';
 import {getSidebarExpanded} from '../../store';
 import {appStateFromNpmiState, createNpmiState} from '../../testing';
-import {createState, createCoreState} from '../../../../core/testing';
+import {getCurrentRouteRunSelection} from './../../../../selectors';
 import {MainComponent} from './main_component';
 import {MainContainer} from './main_container';
-import * as npmiActions from '../../actions';
-
-/** @typehack */ import * as _typeHackStore from '@ngrx/store';
-import {NO_ERRORS_SCHEMA} from '@angular/core';
 
 describe('Npmi Main Container', () => {
   let store: MockStore<State>;

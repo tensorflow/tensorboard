@@ -13,15 +13,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {PolymerElement, html} from '@polymer/polymer';
 import {customElement, observe, property} from '@polymer/decorators';
+import {html, PolymerElement} from '@polymer/polymer';
 import * as _ from 'lodash';
-
 import '../../../components/polymer/irons_and_papers';
-import {Canceller} from '../../../components/tf_backend/canceller';
-import * as tf_hparams_utils from '../tf_hparams_utils/tf-hparams-utils';
 import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
+import {Canceller} from '../../../components/tf_backend/canceller';
 import '../tf_hparams_utils/hparams-split-layout';
+import * as tf_hparams_utils from '../tf_hparams_utils/tf-hparams-utils';
 
 /**
  * The tf-hparams-query-pane element implements controls for querying the

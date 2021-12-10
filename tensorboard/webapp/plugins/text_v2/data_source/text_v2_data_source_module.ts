@@ -13,9 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {NgModule} from '@angular/core';
-
 import {TBHttpClientModule} from '../../../webapp_data_source/tb_http_client_module';
-
 import {TextV2DataSource} from './text_v2_data_source';
 import {TextV2ServerDataSource} from './text_v2_server_data_source';
 

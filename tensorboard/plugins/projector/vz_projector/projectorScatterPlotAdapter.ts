@@ -13,23 +13,22 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import * as THREE from 'three';
-
 import * as d3 from '../../../webapp/third_party/d3';
 import {
   DataSet,
   DistanceFunction,
   Projection,
-  State,
   ProjectionComponents3D,
+  State,
 } from './data';
+import * as knn from './knn';
 import {ProjectorEventContext} from './projectorEventContext';
 import {LabelRenderParams} from './renderContext';
 import {ScatterPlot} from './scatterPlot';
-import {ScatterPlotVisualizerSprites} from './scatterPlotVisualizerSprites';
 import {ScatterPlotVisualizer3DLabels} from './scatterPlotVisualizer3DLabels';
 import {ScatterPlotVisualizerCanvasLabels} from './scatterPlotVisualizerCanvasLabels';
 import {ScatterPlotVisualizerPolylines} from './scatterPlotVisualizerPolylines';
-import * as knn from './knn';
+import {ScatterPlotVisualizerSprites} from './scatterPlotVisualizerSprites';
 import * as vector from './vector';
 
 const LABEL_FONT_SIZE = 10;

@@ -13,9 +13,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {
+  intlNumberFormatter,
   numberFormatter,
   relativeTimeFormatter,
-  intlNumberFormatter,
   siNumberFormatter,
   TEST_ONLY,
   wallTimeFormatter,

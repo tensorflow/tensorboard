@@ -16,23 +16,19 @@ limitations under the License.
  * Unit tests for a violin filter.
  */
 import {NO_ERRORS_SCHEMA} from '@angular/core';
-import {TestBed, ComponentFixture} from '@angular/core/testing';
+import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
-
 import {Action, Store} from '@ngrx/store';
+import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {State} from '../../../../../app_state';
-import {provideMockStore, MockStore} from '@ngrx/store/testing';
-
-import {ViolinFilterComponent} from './violin_filter_component';
-import {ViolinFilterContainer} from './violin_filter_container';
-import {appStateFromNpmiState, createNpmiState} from '../../../testing';
-import {createState, createCoreState} from '../../../../../core/testing';
+import {createCoreState, createState} from '../../../../../core/testing';
+import * as selectors from '../../../../../selectors';
+import {getCurrentRouteRunSelection} from '../../../../../selectors';
 import * as npmiActions from '../../../actions';
 import {getAnnotationData} from '../../../store';
-import {getCurrentRouteRunSelection} from '../../../../../selectors';
-import * as selectors from '../../../../../selectors';
-
-/** @typehack */ import * as _typeHackStore from '@ngrx/store';
+import {appStateFromNpmiState, createNpmiState} from '../../../testing';
+import {ViolinFilterComponent} from './violin_filter_component';
+import {ViolinFilterContainer} from './violin_filter_container';
 
 describe('Npmi Violin Filter Container', () => {
   let store: MockStore<State>;

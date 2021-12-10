@@ -18,20 +18,15 @@ limitations under the License.
 import {NO_ERRORS_SCHEMA} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
-
 import {Store} from '@ngrx/store';
-import {provideMockStore, MockStore} from '@ngrx/store/testing';
-
+import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {State} from '../../../../../app_state';
+import {createCoreState, createState} from '../../../../../core/testing';
 import * as selectors from '../../../../../selectors';
-import {appStateFromNpmiState, createNpmiState} from '../../../testing';
-import {createState, createCoreState} from '../../../../../core/testing';
-import {ResultsDownloadContainer} from './results_download_container';
-import {ResultsDownloadComponent} from './results_download_component';
-
 import {getFlaggedAnnotations} from '../../../store';
-
-/** @typehack */ import * as _typeHackStore from '@ngrx/store';
+import {appStateFromNpmiState, createNpmiState} from '../../../testing';
+import {ResultsDownloadComponent} from './results_download_component';
+import {ResultsDownloadContainer} from './results_download_container';
 
 describe('Npmi Results Download', () => {
   let store: MockStore<State>;

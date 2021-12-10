@@ -13,14 +13,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Component, Input} from '@angular/core';
-import {select, Store, createSelector} from '@ngrx/store';
-
-import {Execution, State, TensorDebugMode} from '../../store/debugger_types';
-
+import {createSelector, select, Store} from '@ngrx/store';
 import {getFocusedExecutionData} from '../../store';
+import {Execution, State, TensorDebugMode} from '../../store/debugger_types';
 import {DTYPE_ENUM_TO_NAME} from '../../tf_dtypes';
-
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
 const UNKNOWN_DTYPE_NAME = 'Unknown dtype';
 

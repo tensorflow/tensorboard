@@ -13,9 +13,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {PolymerElement} from '@polymer/polymer';
 import {customElement, observe, property} from '@polymer/decorators';
-
+import {PolymerElement} from '@polymer/polymer';
+import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
+import {getRouter} from '../../../components/tf_backend/router';
 import * as tf_graph_common from '../tf_graph_common/common';
 import * as tf_graph from '../tf_graph_common/graph';
 import * as tf_graph_hierarchy from '../tf_graph_common/hierarchy';
@@ -24,9 +25,6 @@ import * as tf_graph_op from '../tf_graph_common/op';
 import * as tf_graph_parser from '../tf_graph_common/parser';
 import * as tf_graph_util from '../tf_graph_common/util';
 import * as tf_graph_controls from '../tf_graph_controls/tf-graph-controls';
-
-import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
-import {getRouter} from '../../../components/tf_backend/router';
 
 interface GraphRunTag {
   run: string;

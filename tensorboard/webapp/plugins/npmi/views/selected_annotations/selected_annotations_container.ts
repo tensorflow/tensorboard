@@ -12,14 +12,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component, ChangeDetectionStrategy} from '@angular/core';
+import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {select, Store} from '@ngrx/store';
 import {State} from '../../../../app_state';
-
-import {getPCExpanded, getSelectedAnnotations} from '../../store';
 import * as npmiActions from '../../actions';
-
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
+import {getPCExpanded, getSelectedAnnotations} from '../../store';
 
 @Component({
   selector: 'npmi-selected-annotations',

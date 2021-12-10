@@ -13,24 +13,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Action, createReducer, on} from '@ngrx/store';
-
 import * as actions from '../actions';
+import * as metricType from '../util/metric_type';
 import {
-  NpmiState,
+  ArithmeticElement,
+  ArithmeticKind,
   DataLoadState,
   MetricListing,
-  SortOrder,
-  ArithmeticElement,
+  NpmiState,
   Operator,
-  ArithmeticKind,
+  SortOrder,
   ViewActive,
 } from './npmi_types';
-import * as metricType from '../util/metric_type';
-import {buildEmbeddingDataSet} from '../util/umap';
-
-// HACK: These imports are for type inference.
-// https://github.com/bazelbuild/rules_nodejs/issues/1013
-/** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
 const initialState: NpmiState = {
   pluginDataLoaded: {

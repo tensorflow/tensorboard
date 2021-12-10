@@ -14,7 +14,6 @@ limitations under the License.
 ==============================================================================*/
 
 import {NgModule} from '@angular/core';
-
 import {ContentWrappingInputComponent} from './content_wrapping_input_component';
 
 /**

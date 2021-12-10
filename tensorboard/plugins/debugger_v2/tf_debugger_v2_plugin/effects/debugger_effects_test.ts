@@ -23,6 +23,8 @@ import {
   manualReload,
   reload,
 } from '../../../../webapp/core/actions';
+import {getActivePlugin} from '../../../../webapp/core/store';
+import {TBHttpClientTestingModule} from '../../../../webapp/webapp_data_source/tb_http_client_testing';
 import {
   alertsOfTypeLoaded,
   alertTypeFocusToggled,
@@ -38,25 +40,25 @@ import {
   executionScrollLeft,
   executionScrollRight,
   executionScrollToIndex,
-  graphExecutionDataRequested,
   graphExecutionDataLoaded,
+  graphExecutionDataRequested,
   graphExecutionFocused,
   graphExecutionScrollToIndex,
   graphOpFocused,
   graphOpInfoLoaded,
   graphOpInfoRequested,
-  numAlertsAndBreakdownRequested,
   numAlertsAndBreakdownLoaded,
+  numAlertsAndBreakdownRequested,
   numExecutionsLoaded,
   numExecutionsRequested,
   numGraphExecutionsLoaded,
   numGraphExecutionsRequested,
   sourceFileListLoaded,
   sourceFileListRequested,
-  stackFramesLoaded,
-  sourceLineFocused,
   sourceFileLoaded,
   sourceFileRequested,
+  sourceLineFocused,
+  stackFramesLoaded,
 } from '../actions';
 import {
   AlertsResponse,
@@ -72,29 +74,29 @@ import {
 import {
   getActiveRunId,
   getAlertsFocusType,
+  getAlertsLoaded,
   getDebuggerRunListing,
-  getFocusedSourceFileContent,
-  getFocusedSourceFileIndex,
-  getNumAlertsOfFocusedType,
-  getNumExecutionsLoaded,
-  getNumExecutions,
-  getNumGraphExecutions,
+  getDebuggerRunsLoaded,
   getDisplayCount,
   getExecutionDigestsLoaded,
   getExecutionPageSize,
   getExecutionScrollBeginIndex,
-  getGraphExecutionDisplayCount,
+  getFocusedSourceFileContent,
+  getFocusedSourceFileIndex,
   getGraphExecutionDataLoadingPages,
   getGraphExecutionDataPageLoadedSizes,
+  getGraphExecutionDisplayCount,
   getGraphExecutionPageSize,
   getGraphExecutionScrollBeginIndex,
   getLoadedAlertsOfFocusedType,
-  getLoadingGraphOps,
   getLoadedExecutionData,
   getLoadedStackFrames,
-  getAlertsLoaded,
+  getLoadingGraphOps,
+  getNumAlertsOfFocusedType,
+  getNumExecutions,
+  getNumExecutionsLoaded,
+  getNumGraphExecutions,
   getSourceFileList,
-  getDebuggerRunsLoaded,
 } from '../store';
 import {
   AlertType,
@@ -104,9 +106,9 @@ import {
   ExecutionDigest,
   GraphExecution,
   GraphOpInfo,
-  State,
-  SourceFileSpec,
   SourceFileContent,
+  SourceFileSpec,
+  State,
 } from '../store/debugger_types';
 import {
   createDebuggerState,
@@ -118,7 +120,7 @@ import {
   createTestInfNanAlert,
   createTestStackFrame,
 } from '../testing';
-import {TBHttpClientTestingModule} from '../../../../webapp/webapp_data_source/tb_http_client_testing';
+import {PLUGIN_ID} from '../types';
 import {
   DebuggerEffects,
   getCurrentPollingInterval,
@@ -127,8 +129,6 @@ import {
   POLLING_BACKOFF_FACTOR,
   TEST_ONLY,
 } from './debugger_effects';
-import {getActivePlugin} from '../../../../webapp/core/store';
-import {PLUGIN_ID} from '../types';
 
 describe('getCurrentPollingInterval', () => {
   it('constants are valid', () => {

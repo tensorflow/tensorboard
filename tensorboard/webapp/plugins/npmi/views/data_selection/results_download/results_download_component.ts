@@ -13,9 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
-import {ValueData} from './../../../store/npmi_types';
-
 import {convertToCSVResult} from '../../../util/csv_result';
+import {ValueData} from './../../../store/npmi_types';
 
 @Component({
   selector: 'results-download-component',

@@ -19,7 +19,6 @@ import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {Action, Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {State} from '../../../app_state';
-
 import * as actions from '../../actions';
 import {appStateFromMetricsState, buildMetricsState} from '../../testing';
 import {CardId} from '../../types';

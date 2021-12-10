@@ -13,7 +13,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {createFeatureSelector, createSelector} from '@ngrx/store';
-
 import {DataLoadState, LoadState} from '../../types/data';
 import {SortDirection} from '../../types/ui';
 import {GroupBy, SortKey} from '../types';
@@ -26,8 +25,6 @@ import {
   State,
 } from './runs_types';
 import {createGroupBy, serializeExperimentIds} from './utils';
-
-/** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
 const getRunsState = createFeatureSelector<State, RunsState>(RUNS_FEATURE_KEY);
 

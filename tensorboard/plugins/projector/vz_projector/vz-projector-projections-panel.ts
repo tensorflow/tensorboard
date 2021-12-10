@@ -13,14 +13,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {PolymerElement} from '@polymer/polymer';
 import {customElement, observe, property} from '@polymer/decorators';
-
-import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
+import {PolymerElement} from '@polymer/polymer';
 import '../../../components/polymer/irons_and_papers';
-
-import {template} from './vz-projector-projections-panel.html';
-import './vz-projector-input';
+import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
 import {
   DataSet,
   getProjectionComponents,
@@ -33,8 +29,10 @@ import {
   TSNE_SAMPLE_SIZE,
   UMAP_SAMPLE_SIZE,
 } from './data';
-import * as vector from './vector';
 import * as util from './util';
+import * as vector from './vector';
+import './vz-projector-input';
+import {template} from './vz-projector-projections-panel.html';
 
 const NUM_PCA_COMPONENTS = 10;
 

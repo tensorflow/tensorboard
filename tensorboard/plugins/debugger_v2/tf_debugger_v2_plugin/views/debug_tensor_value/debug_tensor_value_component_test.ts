@@ -18,9 +18,8 @@ limitations under the License.
 
 import {TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
-
-import {parseDebugTensorValue} from '../../store/debug_tensor_value';
 import {TensorDebugMode} from '../../store/debugger_types';
+import {parseDebugTensorValue} from '../../store/debug_tensor_value';
 import {
   DebugTensorDTypeComponent,
   DebugTensorHasInfOrNaNComponent,

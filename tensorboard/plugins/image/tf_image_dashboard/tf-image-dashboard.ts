@@ -13,10 +13,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+import {computed, customElement, property} from '@polymer/decorators';
+import {html, PolymerElement} from '@polymer/polymer';
 import * as _ from 'lodash';
-import {PolymerElement, html} from '@polymer/polymer';
-import {computed, customElement, observe, property} from '@polymer/decorators';
-
 import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
 import {getTags} from '../../../components/tf_backend/backend';
 import {RequestManager} from '../../../components/tf_backend/requestManager';

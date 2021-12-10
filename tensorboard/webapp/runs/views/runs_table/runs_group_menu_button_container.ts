@@ -16,13 +16,11 @@ import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {Store} from '@ngrx/store';
 import {Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
-
 import {RouteKind} from '../../../app_routing/types';
-
 import {State} from '../../../app_state';
 import {
-  getRegisteredRouteKinds,
   getEnabledColorGroupByRegex,
+  getRegisteredRouteKinds,
 } from '../../../selectors';
 import {runGroupByChanged} from '../../actions';
 import {

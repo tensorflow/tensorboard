@@ -18,7 +18,7 @@ import {
   PluginMetadata,
 } from '../../types/api';
 import {DataLoadState} from '../../types/data';
-import {CoreState, State, CORE_FEATURE_KEY} from '../store/core_types';
+import {CoreState, CORE_FEATURE_KEY, State} from '../store/core_types';
 
 export function buildPluginMetadata(
   override: Partial<PluginMetadata>

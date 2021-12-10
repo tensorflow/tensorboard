@@ -14,7 +14,6 @@ limitations under the License.
 ==============================================================================*/
 
 import {Component, EventEmitter, Input, Output} from '@angular/core';
-
 import {GraphOpInfo} from '../../store/debugger_types';
 
 @Component({

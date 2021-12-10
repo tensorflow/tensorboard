@@ -13,10 +13,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import * as THREE from 'three';
-
 import * as d3 from '../../../webapp/third_party/d3';
-import {CameraType, RenderContext} from './renderContext';
 import {BoundingBox, CollisionGrid} from './label';
+import {CameraType, RenderContext} from './renderContext';
 import {ScatterPlotVisualizer} from './scatterPlotVisualizer';
 import * as util from './util';
 

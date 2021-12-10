@@ -13,8 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {benchmark, Size} from './spec.js';
 import {polymerFlush} from './polymer_util.js';
+import {benchmark, Size} from './spec.js';
 
 function createScalarPoint(index: number, scalarValue: number) {
   return {

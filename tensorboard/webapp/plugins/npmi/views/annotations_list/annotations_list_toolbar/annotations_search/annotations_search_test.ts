@@ -15,25 +15,20 @@ limitations under the License.
 /**
  * Unit tests for the Annotations Search.
  */
+import {CommonModule} from '@angular/common';
 import {NO_ERRORS_SCHEMA} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
-import {By} from '@angular/platform-browser';
 import {FormsModule} from '@angular/forms';
-import {CommonModule} from '@angular/common';
-
 import {MatInputModule} from '@angular/material/input';
-
+import {By} from '@angular/platform-browser';
 import {Action, Store} from '@ngrx/store';
-import {provideMockStore, MockStore} from '@ngrx/store/testing';
-
+import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {State} from '../../../../../../app_state';
 import * as npmiActions from '../../../../actions';
-import {appStateFromNpmiState, createNpmiState} from '../../../../testing';
-import {AnnotationsSearchContainer} from './annotations_search_container';
-import {AnnotationsSearchComponent} from './annotations_search_component';
 import {getAnnotationsRegex} from '../../../../store';
-
-/** @typehack */ import * as _typeHackStore from '@ngrx/store';
+import {appStateFromNpmiState, createNpmiState} from '../../../../testing';
+import {AnnotationsSearchComponent} from './annotations_search_component';
+import {AnnotationsSearchContainer} from './annotations_search_container';
 
 describe('Npmi Annotations Search Container', () => {
   let store: MockStore<State>;

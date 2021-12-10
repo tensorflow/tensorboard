@@ -22,10 +22,8 @@ import {
   Output,
   SimpleChanges,
 } from '@angular/core';
-
 import {PluginType} from '../../data_source';
 import {CardObserver} from '../card_renderer/card_lazy_loader';
-
 import {CardIdWithMetadata} from '../metrics_view_types';
 
 const MIN_CARD_MIN_WIDTH_IN_PX = 335;

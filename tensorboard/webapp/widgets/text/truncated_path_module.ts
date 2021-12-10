@@ -14,7 +14,6 @@ limitations under the License.
 ==============================================================================*/
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
-
 import {TruncatedPathComponent} from './truncated_path_component';
 
 /**

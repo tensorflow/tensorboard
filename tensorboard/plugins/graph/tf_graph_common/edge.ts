@@ -15,10 +15,8 @@ limitations under the License.
 import * as d3 from 'd3';
 import {graphlib} from 'dagre';
 import * as _ from 'lodash';
-
-import {MIN_EDGE_WIDTH, MAX_EDGE_WIDTH} from './common';
 import * as tf_graph_common from './common';
-import {Class} from './common';
+import {Class, MAX_EDGE_WIDTH, MIN_EDGE_WIDTH} from './common';
 import {BaseEdge, EDGE_KEY_DELIM, Metaedge, OpNode} from './graph';
 import * as render from './render';
 import {EdgeData} from './render';

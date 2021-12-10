@@ -13,10 +13,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Inject, ModuleWithProviders, NgModule, Optional} from '@angular/core';
-
 import {
-  DIRTY_UPDATES_TOKEN,
   DirtyUpdatesSelector,
+  DIRTY_UPDATES_TOKEN,
 } from './dirty_updates_registry_types';
 
 @NgModule()

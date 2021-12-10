@@ -27,13 +27,11 @@ import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
-
 import {State} from '../../../app_state';
+import * as selectors from '../../../selectors';
 import {DropdownModule} from '../../../widgets/dropdown/dropdown_module';
 import * as actions from '../../actions';
-import * as selectors from '../../../selectors';
 import {HistogramMode, TooltipSort, XAxisType} from '../../types';
-
 import {RightPaneComponent} from './right_pane_component';
 import {SettingsViewComponent, TEST_ONLY} from './settings_view_component';
 import {SettingsViewContainer} from './settings_view_container';

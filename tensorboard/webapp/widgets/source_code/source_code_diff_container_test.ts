@@ -19,7 +19,6 @@ import {
   NO_ERRORS_SCHEMA,
 } from '@angular/core';
 import {TestBed} from '@angular/core/testing';
-
 import * as loadMonacoShim from './load_monaco_shim';
 import {SourceCodeDiffComponent} from './source_code_diff_component';
 import {SourceCodeDiffContainer} from './source_code_diff_container';

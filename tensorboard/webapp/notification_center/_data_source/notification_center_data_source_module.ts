@@ -13,10 +13,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {NgModule} from '@angular/core';
-
 import {TBHttpClientModule} from '../../webapp_data_source/tb_http_client_module';
-import {TBNotificationCenterDataSource} from './notification_center_data_source';
 import {NotificationCenterDataSource} from './backend_types';
+import {TBNotificationCenterDataSource} from './notification_center_data_source';
 
 @NgModule({
   imports: [TBHttpClientModule],

@@ -23,21 +23,18 @@ import {
   Output,
   ViewChild,
 } from '@angular/core';
-import {MatPaginator} from '@angular/material/paginator';
-import {MatPaginatorIntl} from '@angular/material/paginator';
+import {MatPaginator, MatPaginatorIntl} from '@angular/material/paginator';
 import {MatSort, Sort} from '@angular/material/sort';
 import {MatTableDataSource} from '@angular/material/table';
-
-import {SortDirection} from '../../../types/ui';
 import {
-  DiscreteHparamValues,
-  DiscreteHparamValue,
-  DomainType,
   DiscreteFilter,
+  DiscreteHparamValue,
+  DiscreteHparamValues,
+  DomainType,
   IntervalFilter,
 } from '../../../hparams/types';
+import {SortDirection} from '../../../types/ui';
 import {SortKey, SortType} from '../../types';
-
 import {HparamSpec, MetricSpec, RunsTableColumn, RunTableItem} from './types';
 
 /**

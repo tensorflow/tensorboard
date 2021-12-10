@@ -15,31 +15,29 @@ limitations under the License.
 
 import {Component, NgModule} from '@angular/core';
 import {Store} from '@ngrx/store';
-
-import {
-  Alerts,
-  AlertType,
-  DataLoadState,
-  DEBUGGER_FEATURE_KEY,
-  DebuggerState,
-  Execution,
-  Executions,
-  GraphExecution,
-  GraphOpInfo,
-  Graphs,
-  ExecutionDigest,
-  GraphExecutions,
-  InfNanAlert,
-  SourceCodeState,
-  State,
-  StackFrame,
-  StackFrameAsArray,
-} from '../store/debugger_types';
 import {
   createInitialExecutionsState,
   createInitialGraphExecutionsState,
   createInitialGraphsState,
 } from '../store/debugger_reducers';
+import {
+  Alerts,
+  AlertType,
+  DataLoadState,
+  DebuggerState,
+  DEBUGGER_FEATURE_KEY,
+  Execution,
+  ExecutionDigest,
+  Executions,
+  GraphExecution,
+  GraphExecutions,
+  GraphOpInfo,
+  Graphs,
+  InfNanAlert,
+  SourceCodeState,
+  StackFrame,
+  State,
+} from '../store/debugger_types';
 
 export function createTestInfNanAlert(
   override?: Partial<InfNanAlert>

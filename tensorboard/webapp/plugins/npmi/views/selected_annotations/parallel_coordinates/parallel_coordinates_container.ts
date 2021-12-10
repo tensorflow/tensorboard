@@ -12,28 +12,26 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component, ChangeDetectionStrategy} from '@angular/core';
+import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {select, Store} from '@ngrx/store';
-import {State} from '../../../../../app_state';
-
-import {Observable, combineLatest} from 'rxjs';
+import {combineLatest, Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
-
+import {State} from '../../../../../app_state';
+import * as selectors from '../../../../../selectors';
+import {getCurrentRouteRunSelection} from '../../../../../selectors';
+import {RunColorScale} from '../../../../../types/ui';
 import {
-  getSelectedAnnotations,
-  getRunToMetrics,
-  getMetricFilters,
   getAnnotationData,
+  getMetricFilters,
+  getRunToMetrics,
+  getSelectedAnnotations,
   getSidebarWidth,
 } from '../../../store';
-import {getCurrentRouteRunSelection} from '../../../../../selectors';
-import {metricIsNpmiAndNotDiff} from '../../../util/metric_type';
 import {convertToCoordinateData} from '../../../util/coordinate_data';
-import {stripMetricString} from '../../../util/metric_type';
-import * as selectors from '../../../../../selectors';
-import {RunColorScale} from '../../../../../types/ui';
-
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
+import {
+  metricIsNpmiAndNotDiff,
+  stripMetricString,
+} from '../../../util/metric_type';
 
 @Component({
   selector: 'npmi-parallel-coordinates',

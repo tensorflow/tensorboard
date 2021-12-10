@@ -18,7 +18,6 @@ import {MatButtonModule} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import {MatSliderModule} from '@angular/material/slider';
-
 import {TruncatedPathModule} from '../../../widgets/text/truncated_path_module';
 import {ImageCardComponent} from './image_card_component';
 import {ImageCardContainer} from './image_card_container';

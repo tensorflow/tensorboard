@@ -16,7 +16,6 @@ import {TestBed} from '@angular/core/testing';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
-
 import {State} from '../../app_state';
 import {getDarkModeEnabled} from '../../selectors';
 import {DarkModeSupportContainer} from './dark_mode_supporter_container';

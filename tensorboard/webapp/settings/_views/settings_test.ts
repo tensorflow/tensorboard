@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {OverlayContainer} from '@angular/cdk/overlay';
-import {TestBed, tick, fakeAsync} from '@angular/core/testing';
+import {fakeAsync, TestBed, tick} from '@angular/core/testing';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {MatButtonModule} from '@angular/material/button';
 import {MatCheckboxModule} from '@angular/material/checkbox';
@@ -23,23 +23,19 @@ import {By} from '@angular/platform-browser';
 import {BrowserDynamicTestingModule} from '@angular/platform-browser-dynamic/testing';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {Store} from '@ngrx/store';
-import {provideMockStore, MockStore} from '@ngrx/store/testing';
-
+import {MockStore, provideMockStore} from '@ngrx/store/testing';
+import {MatIconTestingModule} from '../../testing/mat_icon_module';
+import {DataLoadState} from '../../types/data';
+import {createSettings, createSettingsState, createState} from '../testing';
+import {
+  changeReloadPeriod,
+  toggleReloadEnabled,
+} from '../_redux/settings_actions';
+import {getSettingsLoadState} from '../_redux/settings_selectors';
 import {SettingsButtonComponent} from './settings_button_component';
 import {SettingsButtonContainer} from './settings_button_container';
 import {SettingsDialogComponent} from './settings_dialog_component';
 import {SettingsDialogContainer} from './settings_dialog_container';
-
-import {MatIconTestingModule} from '../../testing/mat_icon_module';
-import {
-  toggleReloadEnabled,
-  changeReloadPeriod,
-} from '../_redux/settings_actions';
-import {createSettings, createSettingsState, createState} from '../testing';
-
-/** @typehack */ import * as _typeHackStore from '@ngrx/store';
-import {getSettingsLoadState} from '../_redux/settings_selectors';
-import {DataLoadState} from '../../types/data';
 
 describe('settings test', () => {
   let store: MockStore;

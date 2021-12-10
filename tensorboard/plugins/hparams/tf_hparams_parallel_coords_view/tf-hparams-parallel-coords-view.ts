@@ -13,10 +13,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {PolymerElement, html} from '@polymer/polymer';
 import {customElement, property} from '@polymer/decorators';
-import '../tf_hparams_scale_and_color_controls/tf-hparams-scale-and-color-controls';
+import {html, PolymerElement} from '@polymer/polymer';
 import '../tf_hparams_parallel_coords_plot/tf-hparams-parallel-coords-plot';
+import '../tf_hparams_scale_and_color_controls/tf-hparams-scale-and-color-controls';
 import '../tf_hparams_session_group_details/tf-hparams-session-group-details';
 import '../tf_hparams_session_group_values/tf-hparams-session-group-values';
 import '../tf_hparams_utils/hparams-split-layout';

@@ -12,12 +12,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {observe, property} from '@polymer/decorators';
 import {
-  templatize,
   TemplateInstanceBase,
+  templatize,
 } from '@polymer/polymer/lib/utils/templatize';
-import {property, observe} from '@polymer/decorators';
-
 import {ArrayUpdateHelper} from '../tf_dashboard_common/array-update-helper';
 
 /**

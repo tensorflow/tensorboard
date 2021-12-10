@@ -16,7 +16,6 @@ limitations under the License.
 import {NgModule} from '@angular/core';
 import {EffectsModule} from '@ngrx/effects';
 import {createSelector, StoreModule} from '@ngrx/store';
-
 import {
   PersistableSettings,
   PersistentSettingsConfigModule,
@@ -31,8 +30,6 @@ import {
   getConfig,
 } from './store/feature_flag_store_config_provider';
 import {FEATURE_FLAG_FEATURE_KEY, State} from './store/feature_flag_types';
-
-/** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
 export function getThemeSettingSelector() {
   return createSelector(getEnableDarkModeOverride, (darkModeOverride) => {

@@ -26,13 +26,10 @@ import {
   skip,
   tap,
 } from 'rxjs/operators';
-
 import {PersistentSettingsConfigModule} from '../persistent_settings_config_module';
 import {PersistentSettingsDataSource} from '../_data_source/persistent_settings_data_source';
-import {globalSettingsLoaded} from './persistent_settings_actions';
 import {PersistableSettings} from '../_data_source/types';
-
-/** @typehack */ import * as _typeHackModels from '@ngrx/store/src/models';
+import {globalSettingsLoaded} from './persistent_settings_actions';
 
 const initAction = createAction('[Persistent Settings] Effects Init');
 const DEBOUNCE_PERIOD_IN_MS = 500;

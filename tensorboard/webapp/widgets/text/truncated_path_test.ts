@@ -15,7 +15,6 @@ limitations under the License.
 
 import {TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
-
 import {TruncatedPathComponent} from './truncated_path_component';
 
 describe('truncated path', () => {

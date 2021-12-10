@@ -12,28 +12,24 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component, ChangeDetectionStrategy, Input, OnInit} from '@angular/core';
-import {Store, select} from '@ngrx/store';
-
-import {Observable, combineLatest} from 'rxjs';
+import {ChangeDetectionStrategy, Component, Input, OnInit} from '@angular/core';
+import {select, Store} from '@ngrx/store';
+import {combineLatest, Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
-
 import {State} from '../../../../../app_state';
+import * as selectors from '../../../../../selectors';
 import {getCurrentRouteRunSelection} from '../../../../../selectors';
+import {RunColorScale} from '../../../../../types/ui';
+import * as npmiActions from '../../../actions';
+import {MetricFilter} from '../../../store/npmi_types';
+import {removeHiddenAnnotations} from '../../../util/filter_annotations';
+import {ViolinChartData, violinData} from '../../../util/violin_data';
 import {
   getAnnotationData,
   getHiddenAnnotations,
   getShowHiddenAnnotations,
   getSidebarWidth,
 } from './../../../store/npmi_selectors';
-import {MetricFilter} from '../../../store/npmi_types';
-import * as npmiActions from '../../../actions';
-import {removeHiddenAnnotations} from '../../../util/filter_annotations';
-import {violinData, ViolinChartData} from '../../../util/violin_data';
-import * as selectors from '../../../../../selectors';
-import {RunColorScale} from '../../../../../types/ui';
-
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
 @Component({
   selector: 'npmi-violin-filter',

@@ -17,30 +17,25 @@ limitations under the License.
  */
 import {NO_ERRORS_SCHEMA} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
-import {By} from '@angular/platform-browser';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
-
-import {MatInputModule} from '@angular/material/input';
 import {MatChipsModule} from '@angular/material/chips';
-
+import {MatInputModule} from '@angular/material/input';
+import {By} from '@angular/platform-browser';
 import {Action, Store} from '@ngrx/store';
-import {provideMockStore, MockStore} from '@ngrx/store/testing';
-
+import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {State} from '../../../../../../app_state';
-import {
-  getMetricFilters,
-  getEmbeddingDataSet,
-} from '../../../../store/npmi_selectors';
 import * as npmiActions from '../../../../actions';
 import {
+  getEmbeddingDataSet,
+  getMetricFilters,
+} from '../../../../store/npmi_selectors';
+import {
   appStateFromNpmiState,
-  createSampleEmbeddingData,
   createNpmiState,
+  createSampleEmbeddingData,
 } from '../../../../testing';
-import {MetricArithmeticElementContainer} from './metric_arithmetic_element_container';
 import {MetricArithmeticElementComponent} from './metric_arithmetic_element_component';
-
-/** @typehack */ import * as _typeHackStore from '@ngrx/store';
+import {MetricArithmeticElementContainer} from './metric_arithmetic_element_container';
 
 describe('Npmi Metric Arithmetic Element Container', () => {
   let store: MockStore<State>;

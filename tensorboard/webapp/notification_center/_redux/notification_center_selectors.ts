@@ -20,8 +20,6 @@ import {
   State,
 } from './notification_center_types';
 
-/** @typehack */ import * as _typeHackStore from '@ngrx/store';
-
 const selectNotifications = createFeatureSelector<State, NotificationState>(
   NOTIFICATION_FEATURE_KEY
 );

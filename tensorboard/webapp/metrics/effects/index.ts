@@ -26,7 +26,6 @@ import {
   tap,
   withLatestFrom,
 } from 'rxjs/operators';
-
 import * as routingActions from '../../app_routing/actions';
 import {State} from '../../app_state';
 import * as coreActions from '../../core/actions';
@@ -49,10 +48,6 @@ import {
   getMetricsTagMetadataLoadState,
 } from '../store';
 import {CardId, CardMetadata} from '../types';
-
-/** @typehack */ import * as _typeHackNgrxEffects from '@ngrx/effects';
-/** @typehack */ import * as _typeHackModels from '@ngrx/store/src/models';
-/** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
 export type CardFetchInfo = CardMetadata & {
   id: CardId;

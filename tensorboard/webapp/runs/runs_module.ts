@@ -27,9 +27,6 @@ import {RunsEffects} from './effects';
 import {reducers} from './store';
 import {RUNS_FEATURE_KEY} from './store/runs_types';
 
-/** @typehack */ import * as _typeHackModels from '@ngrx/store/src/models';
-/** @typehack */ import * as _typeHackStore from '@ngrx/store';
-
 export function alertActionProvider() {
   return [
     {

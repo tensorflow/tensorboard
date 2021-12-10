@@ -13,10 +13,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {PolymerElement, html} from '@polymer/polymer';
 import {customElement, observe, property} from '@polymer/decorators';
+import {html, PolymerElement} from '@polymer/polymer';
 import * as d3Typed from 'd3';
-
 import {DarkModeMixin} from '../../../components/polymer/dark_mode_mixin';
 import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
 

@@ -16,7 +16,6 @@ import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
 import {EffectsModule} from '@ngrx/effects';
 import {Action, createSelector, StoreModule} from '@ngrx/store';
-
 import {AlertActionModule} from '../alert/alert_action_module';
 import {AppRoutingModule} from '../app_routing/app_routing_module';
 import {CoreModule} from '../core/core_module';
@@ -43,9 +42,6 @@ import {
 } from './store/metrics_initial_state_provider';
 import {MetricsDashboardContainer} from './views/metrics_container';
 import {MetricsViewsModule} from './views/metrics_views_module';
-
-/** @typehack */ import * as _typeHackModels from '@ngrx/store/src/models';
-/** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
 const CREATE_PIN_MAX_EXCEEDED_TEXT =
   `Max pin limit exceeded. Remove existing` +

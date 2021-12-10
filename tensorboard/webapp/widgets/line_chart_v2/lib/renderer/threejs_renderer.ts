@@ -14,7 +14,6 @@ limitations under the License.
 ==============================================================================*/
 
 import * as THREE from 'three';
-
 import {hsl, interpolateHsl} from '../../../../third_party/d3';
 import {Point, Polyline, Rect} from '../internal_types';
 import {ThreeCoordinator} from '../threejs_coordinator';

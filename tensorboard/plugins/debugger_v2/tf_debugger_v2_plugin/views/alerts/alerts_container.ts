@@ -14,7 +14,6 @@ limitations under the License.
 ==============================================================================*/
 import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {createSelector, select, Store} from '@ngrx/store';
-
 import {alertTypeFocusToggled} from '../../actions';
 import {
   getAlertsBreakdown,
@@ -24,8 +23,6 @@ import {
 } from '../../store';
 import {AlertType} from '../../store/debugger_types';
 import {AlertTypeDisplay} from './alerts_component';
-
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
 const ALERT_TYPE_TO_DISPLAY_NAME_AND_SYMBOL: {
   [alertType: string]: {

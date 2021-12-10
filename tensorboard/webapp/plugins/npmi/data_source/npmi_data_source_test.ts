@@ -17,9 +17,8 @@ import {
   HttpTestingController,
   TBHttpClientTestingModule,
 } from '../../../webapp_data_source/tb_http_client_testing';
-
-import {NpmiHttpServerDataSource} from './npmi_data_source';
 import {createSampleEmbeddingData} from '../testing';
+import {NpmiHttpServerDataSource} from './npmi_data_source';
 
 describe('runs_data_source', () => {
   let httpMock: HttpTestingController;

@@ -13,9 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {PluginType} from './data_source';
-
-import {CardIdWithMetadata} from './views/metrics_view_types';
 import {compareTagNames, groupCardIdWithMetdata} from './utils';
+import {CardIdWithMetadata} from './views/metrics_view_types';
 
 function buildCardIdWithMetadata(
   override: Partial<CardIdWithMetadata>

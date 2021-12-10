@@ -12,21 +12,17 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {By} from '@angular/platform-browser';
 import {NO_ERRORS_SCHEMA} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
+import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
-import {Store, Action} from '@ngrx/store';
-import {provideMockStore, MockStore} from '@ngrx/store/testing';
-
+import {Action, Store} from '@ngrx/store';
+import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {State} from '../../../app_state';
-import {createState, createCoreState} from '../../../core/testing';
 import {polymerInteropRunSelectionChanged} from '../../../core/actions';
-
-import {LegacyRunsSelectorContainer} from './legacy_runs_selector_container';
+import {createCoreState, createState} from '../../../core/testing';
 import {LegacyRunsSelectorComponent} from './legacy_runs_selector_component';
-
-/** @typehack */ import * as _typeHackStore from '@ngrx/store';
+import {LegacyRunsSelectorContainer} from './legacy_runs_selector_container';
 
 describe('legacy_runs_selector test', () => {
   let store: MockStore<State>;

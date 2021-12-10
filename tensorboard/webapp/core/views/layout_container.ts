@@ -21,11 +21,10 @@ import {
 import {Store} from '@ngrx/store';
 import {fromEvent, Observable, Subject} from 'rxjs';
 import {filter, takeUntil} from 'rxjs/operators';
-
+import {MouseEventButtons} from '../../util/dom';
 import {sideBarWidthChanged} from '../actions';
 import {State} from '../state';
 import {getSideBarWidthInPercent} from '../store/core_selectors';
-import {MouseEventButtons} from '../../util/dom';
 
 @Component({
   selector: 'tb-dashboard-layout',

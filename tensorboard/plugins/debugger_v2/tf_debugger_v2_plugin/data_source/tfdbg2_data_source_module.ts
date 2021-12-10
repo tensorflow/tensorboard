@@ -13,8 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {NgModule} from '@angular/core';
-import {Tfdbg2HttpServerDataSource} from './tfdbg2_data_source';
 import {TBHttpClientModule} from '../../../../webapp/webapp_data_source/tb_http_client_module';
+import {Tfdbg2HttpServerDataSource} from './tfdbg2_data_source';
 @NgModule({
   imports: [TBHttpClientModule],
   providers: [Tfdbg2HttpServerDataSource],

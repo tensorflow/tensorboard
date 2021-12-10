@@ -17,15 +17,13 @@ import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {State} from '../../../app_state';
-
 import {buildRun} from '../../../runs/store/testing';
-import {ExperimentAliasModule} from '../../../widgets/experiment_alias/experiment_alias_module';
 import {
   getExperimentIdForRunId,
   getExperimentIdToExperimentAliasMap,
   getRun,
 } from '../../../selectors';
-
+import {ExperimentAliasModule} from '../../../widgets/experiment_alias/experiment_alias_module';
 import {RunNameComponent} from './run_name_component';
 import {RunNameContainer} from './run_name_container';
 

@@ -15,32 +15,27 @@ limitations under the License.
 /**
  * Unit tests for the Metric Search.
  */
-import {TestBed} from '@angular/core/testing';
-import {By} from '@angular/platform-browser';
-import {FormsModule} from '@angular/forms';
-import {CommonModule} from '@angular/common';
 import {OverlayContainer} from '@angular/cdk/overlay';
+import {CommonModule} from '@angular/common';
 import {DebugElement, getDebugNode, NO_ERRORS_SCHEMA} from '@angular/core';
-
+import {TestBed} from '@angular/core/testing';
+import {FormsModule} from '@angular/forms';
 import {MatAutocompleteModule} from '@angular/material/autocomplete';
 import {MatInputModule} from '@angular/material/input';
-
+import {By} from '@angular/platform-browser';
 import {Action, Store} from '@ngrx/store';
-import {provideMockStore, MockStore} from '@ngrx/store/testing';
-
+import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {State} from '../../../../../app_state';
 import {getCurrentRouteRunSelection} from '../../../../../selectors';
+import * as npmiActions from '../../../actions';
+import {appStateFromNpmiState, createNpmiState} from '../../../testing';
 import {
   getMetricFilters,
   getMetricsRegex,
   getRunToMetrics,
 } from './../../../store/npmi_selectors';
-import * as npmiActions from '../../../actions';
-import {appStateFromNpmiState, createNpmiState} from '../../../testing';
 import {MetricSearchComponent} from './metric_search_component';
 import {MetricSearchContainer} from './metric_search_container';
-
-/** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
 describe('Npmi Metric Search Container', () => {
   let store: MockStore<State>;

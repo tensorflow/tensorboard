@@ -13,18 +13,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {PolymerElement, html} from '@polymer/polymer';
 import {customElement, property} from '@polymer/decorators';
-
+import {html, PolymerElement} from '@polymer/polymer';
 import '../../../components/polymer/irons_and_papers';
+import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
 import * as tf_graph from '../tf_graph_common/graph';
+import {Hierarchy} from '../tf_graph_common/hierarchy';
 import * as tf_graph_render from '../tf_graph_common/render';
+import {ColorBy} from '../tf_graph_common/view_types';
 import '../tf_graph_debugger_data_card/tf-graph-debugger-data-card';
 import '../tf_graph_op_compat_card/tf-graph-op-compat-card';
 import './tf-node-info';
-import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
-import {ColorBy} from '../tf_graph_common/view_types';
-import {Hierarchy} from '../tf_graph_common/hierarchy';
 
 @customElement('tf-graph-info')
 class TfGraphInfo extends LegacyElementMixin(PolymerElement) {

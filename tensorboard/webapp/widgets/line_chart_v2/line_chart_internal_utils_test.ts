@@ -13,14 +13,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+import {RendererType, ScaleType} from './lib/public_types';
+import {createScale} from './lib/scale';
+import {buildMetadata, buildSeries} from './lib/testing';
+import * as libUtils from './lib/utils';
 import {
   computeDataSeriesExtent,
   getRendererType,
 } from './line_chart_internal_utils';
-import * as libUtils from './lib/utils';
-import {RendererType, ScaleType} from './lib/public_types';
-import {buildSeries, buildMetadata} from './lib/testing';
-import {createScale} from './lib/scale';
 
 function isFinite(x: number): boolean {
   return Number.isFinite(x);

@@ -14,10 +14,9 @@ limitations under the License.
 ==============================================================================*/
 
 import {NgModule} from '@angular/core';
-
-import {TBFeatureFlagDataSource} from './tb_feature_flag_data_source_types';
-import {QueryParamsFeatureFlagDataSource} from './tb_feature_flag_data_source';
 import {QueryParams} from './query_params';
+import {QueryParamsFeatureFlagDataSource} from './tb_feature_flag_data_source';
+import {TBFeatureFlagDataSource} from './tb_feature_flag_data_source_types';
 
 @NgModule({
   providers: [

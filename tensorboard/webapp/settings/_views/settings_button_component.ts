@@ -15,7 +15,6 @@ limitations under the License.
 import {Component, Input} from '@angular/core';
 import {MatDialog} from '@angular/material/dialog';
 import {DataLoadState} from '../../types/data';
-
 import {SettingsDialogContainer} from './settings_dialog_container';
 
 @Component({

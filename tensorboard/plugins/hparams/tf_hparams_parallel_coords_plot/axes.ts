@@ -14,12 +14,11 @@ limitations under the License.
 ==============================================================================*/
 /* Defines classes that manage the axes in the parallel coordinates plot. */
 import * as d3 from 'd3';
-
-import * as tf_hparams_parallel_coords_plot_interaction_manager from './interaction_manager';
-import * as tf_hparams_utils from '../tf_hparams_utils/tf-hparams-utils';
-import * as tf_hparams_parallel_coords_plot_utils from './utils';
 import {Schema} from '../tf_hparams_types/types';
+import * as tf_hparams_utils from '../tf_hparams_utils/tf-hparams-utils';
 import * as tf_hparams_api from '../types';
+import * as tf_hparams_parallel_coords_plot_interaction_manager from './interaction_manager';
+import * as tf_hparams_parallel_coords_plot_utils from './utils';
 
 export enum ScaleType {
   LINEAR = 'LINEAR',

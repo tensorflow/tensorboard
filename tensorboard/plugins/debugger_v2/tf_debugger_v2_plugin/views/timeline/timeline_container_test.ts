@@ -18,10 +18,8 @@ limitations under the License.
 import {CommonModule} from '@angular/common';
 import {TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
-
 import {Store} from '@ngrx/store';
-import {provideMockStore, MockStore} from '@ngrx/store/testing';
-
+import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {
   executionScrollLeft,
   executionScrollRight,
@@ -30,7 +28,7 @@ import {
 import {DebuggerComponent} from '../../debugger_component';
 import {DebuggerContainer} from '../../debugger_container';
 import {getNumExecutions} from '../../store';
-import {State, AlertType} from '../../store/debugger_types';
+import {AlertType, State} from '../../store/debugger_types';
 import {
   createAlertsState,
   createDebuggerState,
@@ -39,8 +37,6 @@ import {
 } from '../../testing';
 import {TEST_ONLY, TimelineContainer} from './timeline_container';
 import {TimelineModule} from './timeline_module';
-
-/** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
 describe('getExecutionDigestForDisplay', () => {
   for (const [opType, strLen, expectedShortOpType, isGraph] of [

@@ -13,13 +13,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {NgModule} from '@angular/core';
-
 import {LocalStorageModule} from '../../util/local_storage';
 import {
+  OSSSettingsConverter,
   PersistentSettingsDataSource,
   PersistentSettingsDataSourceImpl,
   SettingsConverter,
-  OSSSettingsConverter,
 } from './persistent_settings_data_source';
 
 @NgModule({

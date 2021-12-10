@@ -21,11 +21,10 @@ import {
   Output,
 } from '@angular/core';
 import {Store} from '@ngrx/store';
-import {DataLoadState} from '../../../types/data';
 import {combineLatest, Observable} from 'rxjs';
 import {combineLatestWith, filter, map} from 'rxjs/operators';
-
 import {State} from '../../../app_state';
+import {DataLoadState} from '../../../types/data';
 import {RunColorScale} from '../../../types/ui';
 import {HistogramDatum} from '../../../widgets/histogram/histogram_types';
 import {buildNormalizedHistograms} from '../../../widgets/histogram/histogram_util';
@@ -39,7 +38,7 @@ import {
   getMetricsSelectedTime,
   getMetricsXAxisType,
 } from '../../store';
-import {CardId, CardMetadata, LinkedTime} from '../../types';
+import {CardId, CardMetadata} from '../../types';
 import {CardRenderer} from '../metrics_view_types';
 import {getTagDisplayName} from '../utils';
 import {maybeClipSelectedTime, ViewSelectedTime} from './utils';

@@ -15,7 +15,6 @@ limitations under the License.
 import {NgModule} from '@angular/core';
 import {EffectsModule as NgrxEffectsModule} from '@ngrx/effects';
 import {META_REDUCERS, StoreModule as NgrxStoreModule} from '@ngrx/store';
-
 import {loggerMetaReducerFactory, ROOT_REDUCERS} from './reducer_config';
 
 @NgModule({

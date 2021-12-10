@@ -21,16 +21,15 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import {Store} from '@ngrx/store';
-import {selectors as settingsSelectors} from '../../../settings';
 import {BehaviorSubject, combineLatest, Observable, of, Subject} from 'rxjs';
 import {map, shareReplay, switchMap, takeUntil, tap} from 'rxjs/operators';
-
 import {State} from '../../../app_state';
 import {
+  getEnabledCardWidthSetting,
   getMetricsCardMinWidth,
   getMetricsTagGroupExpansionState,
-  getEnabledCardWidthSetting,
 } from '../../../selectors';
+import {selectors as settingsSelectors} from '../../../settings';
 import {CardObserver} from '../card_renderer/card_lazy_loader';
 import {CardIdWithMetadata} from '../metrics_view_types';
 

@@ -12,21 +12,18 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component, ChangeDetectionStrategy, Input} from '@angular/core';
+import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {Store} from '@ngrx/store';
-import {State} from '../../../../../app_state';
 import {map} from 'rxjs/operators';
+import {State} from '../../../../../app_state';
 import * as npmiActions from '../../../actions';
-
 import {
-  getSelectedAnnotations,
   getAnnotationsExpanded,
-  getShowCounts,
   getAnnotationsRegex,
+  getSelectedAnnotations,
+  getShowCounts,
   getShowHiddenAnnotations,
 } from '../../../store';
-
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
 @Component({
   selector: 'npmi-annotations-list-toolbar',

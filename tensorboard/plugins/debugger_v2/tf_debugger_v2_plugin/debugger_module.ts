@@ -17,7 +17,6 @@ import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
 import {EffectsModule} from '@ngrx/effects';
 import {StoreModule} from '@ngrx/store';
-
 import {CoreModule} from '../../../webapp/core/core_module';
 import {PluginRegistryModule} from '../../../webapp/plugins/plugin_registry_module';
 import {Tfdbg2ServerDataSourceModule} from './data_source/tfdbg2_data_source_module';

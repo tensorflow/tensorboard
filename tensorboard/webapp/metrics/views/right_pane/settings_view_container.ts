@@ -14,20 +14,19 @@ limitations under the License.
 ==============================================================================*/
 import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {Store} from '@ngrx/store';
-import {Observable, of} from 'rxjs';
+import {Observable} from 'rxjs';
 import {filter, map, take, withLatestFrom} from 'rxjs/operators';
-
 import {State} from '../../../app_state';
 import * as selectors from '../../../selectors';
 import {
   metricsChangeCardWidth,
-  metricsResetCardWidth,
   metricsChangeHistogramMode,
   metricsChangeImageBrightness,
   metricsChangeImageContrast,
   metricsChangeScalarSmoothing,
   metricsChangeTooltipSort,
   metricsChangeXAxisType,
+  metricsResetCardWidth,
   metricsResetImageBrightness,
   metricsResetImageContrast,
   metricsScalarPartitionNonMonotonicXToggled,

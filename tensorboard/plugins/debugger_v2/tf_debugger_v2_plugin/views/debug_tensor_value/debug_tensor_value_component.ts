@@ -13,7 +13,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Component, Input} from '@angular/core';
-
 import {DebugTensorValue} from '../../store/debugger_types';
 
 const basicDebugInfoStyle = `

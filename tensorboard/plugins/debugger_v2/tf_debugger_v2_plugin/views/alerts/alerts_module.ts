@@ -15,7 +15,6 @@ limitations under the License.
 
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
-
 import {AlertsComponent} from './alerts_component';
 import {AlertsContainer} from './alerts_container';
 

@@ -15,12 +15,9 @@ limitations under the License.
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {Store} from '@ngrx/store';
 import {map} from 'rxjs/operators';
-
 import {State} from '../../../app_state';
 import {getExperimentIdsFromRoute} from '../../../selectors';
 import {RunsTableColumn} from '../runs_table/types';
-
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
 @Component({
   selector: 'runs-selector',

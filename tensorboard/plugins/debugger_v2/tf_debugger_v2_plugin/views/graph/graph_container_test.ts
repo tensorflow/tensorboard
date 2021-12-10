@@ -18,19 +18,17 @@ limitations under the License.
 import {CommonModule} from '@angular/common';
 import {TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
-
 import {Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
-
 import {graphOpFocused} from '../../actions';
 import {DebuggerComponent} from '../../debugger_component';
 import {DebuggerContainer} from '../../debugger_container';
-import {State} from '../../store/debugger_types';
 import {
   getFocusedGraphOpConsumers,
   getFocusedGraphOpInfo,
   getFocusedGraphOpInputs,
 } from '../../store';
+import {State} from '../../store/debugger_types';
 import {
   createDebuggerState,
   createState,
@@ -38,8 +36,6 @@ import {
 } from '../../testing';
 import {GraphContainer} from './graph_container';
 import {GraphModule} from './graph_module';
-
-/** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
 describe('Graph Container', () => {
   let store: MockStore<State>;

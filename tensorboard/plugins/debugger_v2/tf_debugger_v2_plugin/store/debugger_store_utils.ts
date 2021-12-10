@@ -17,13 +17,7 @@ limitations under the License.
  */
 
 import {getFocusedStackFramesHelper} from './debugger_store_helpers';
-
-import {
-  DebuggerState,
-  SourceFileSpec,
-  StackFrame,
-  StackFrameAsArray,
-} from './debugger_types';
+import {DebuggerState, SourceFileSpec, StackFrame} from './debugger_types';
 
 /**
  * Find the index of a file spec among an array of file specs.

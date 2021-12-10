@@ -13,9 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {PolymerElement, html} from '@polymer/polymer';
-import {computed, customElement, observe, property} from '@polymer/decorators';
-
+import {computed, customElement, property} from '@polymer/decorators';
+import {html, PolymerElement} from '@polymer/polymer';
 import {Canceller} from '../../../components/tf_backend/canceller';
 import {RequestManager} from '../../../components/tf_backend/requestManager';
 import {getRouter} from '../../../components/tf_backend/router';
@@ -36,7 +35,6 @@ import {
 } from '../../../components/tf_storage/storage';
 import '../../../components/tf_utils/utils';
 import '../../scalar/tf_scalar_dashboard/tf-smoothing-input';
-
 import {Layout} from './tf-custom-scalar-helpers';
 import './tf-custom-scalar-margin-chart-card';
 import {TfCustomScalarMarginChartCard} from './tf-custom-scalar-margin-chart-card';

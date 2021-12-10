@@ -14,10 +14,8 @@ limitations under the License.
 ==============================================================================*/
 import * as d3 from 'd3';
 import * as dagre from 'dagre';
-
 import {graphlib} from 'dagre';
 import * as _ from 'lodash';
-
 import {NodeType} from './graph';
 import * as render from './render';
 

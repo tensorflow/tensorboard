@@ -14,20 +14,17 @@ limitations under the License.
 ==============================================================================*/
 import {Component} from '@angular/core';
 import {createSelector, select, Store} from '@ngrx/store';
-
 import {
   graphExecutionFocused,
   graphExecutionScrollToIndex,
 } from '../../actions';
 import {
+  getFocusedGraphExecutionInputIndices,
   getGraphExecutionData,
   getGraphExecutionFocusIndex,
   getNumGraphExecutions,
-  getFocusedGraphExecutionInputIndices,
 } from '../../store';
 import {State} from '../../store/debugger_types';
-
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
 @Component({
   selector: 'tf-debugger-v2-graph-executions',

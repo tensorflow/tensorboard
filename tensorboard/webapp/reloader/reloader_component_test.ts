@@ -13,20 +13,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {DOCUMENT} from '@angular/common';
-import {TestBed, fakeAsync, tick} from '@angular/core/testing';
+import {fakeAsync, TestBed, tick} from '@angular/core/testing';
 import {Store} from '@ngrx/store';
-import {provideMockStore, MockStore} from '@ngrx/store/testing';
-
-import {ReloaderComponent} from './reloader_component';
-
+import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {reload} from '../core/actions';
 import {
-  createState,
-  createSettingsState,
   createSettings,
+  createSettingsState,
+  createState,
 } from '../settings/testing';
-
-/** @typehack */ import * as _typeHackStore from '@ngrx/store';
+import {ReloaderComponent} from './reloader_component';
 
 describe('reloader_component', () => {
   let store: MockStore;

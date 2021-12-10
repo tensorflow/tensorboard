@@ -16,12 +16,11 @@ import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {Store} from '@ngrx/store';
 import {Observable} from 'rxjs';
 import {combineLatestWith, map} from 'rxjs/operators';
-
 import {State} from '../../../app_state';
 import {getMetricsFilteredPluginTypes} from '../../store';
+import {groupCardIdWithMetdata} from '../../utils';
 import {CardObserver} from '../card_renderer/card_lazy_loader';
 import {CardGroup} from '../metrics_view_types';
-import {groupCardIdWithMetdata} from '../../utils';
 import {getSortedRenderableCardIdsWithMetadata} from './common_selectors';
 
 @Component({

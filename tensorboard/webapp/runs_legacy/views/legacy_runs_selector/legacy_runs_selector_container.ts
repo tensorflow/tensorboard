@@ -14,7 +14,6 @@ limitations under the License.
 ==============================================================================*/
 import {Component} from '@angular/core';
 import {Store} from '@ngrx/store';
-
 import {State} from '../../../app_state';
 import {polymerInteropRunSelectionChanged} from '../../../core/actions';
 

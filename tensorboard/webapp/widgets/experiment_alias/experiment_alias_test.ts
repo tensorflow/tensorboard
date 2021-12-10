@@ -15,7 +15,6 @@ limitations under the License.
 import {Component, Input} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
-
 import {ExperimentAlias} from '../../experiments/types';
 import {sendKeys} from '../../testing/dom';
 import {ContentWrappingInputModule} from '../content_wrapping_input/content_wrapping_input_module';

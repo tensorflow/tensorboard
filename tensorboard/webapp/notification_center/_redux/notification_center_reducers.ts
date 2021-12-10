@@ -13,7 +13,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Action, createReducer, on} from '@ngrx/store';
-
 import {globalSettingsLoaded} from '../../persistent_settings';
 import * as actions from './notification_center_actions';
 import {Notification, NotificationState} from './notification_center_types';

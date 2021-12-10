@@ -13,9 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {buildStepDatum} from '../testing';
-
-import * as selectors from './text_v2_selectors';
 import {buildState, buildTextState} from './testing';
+import * as selectors from './text_v2_selectors';
 
 describe('core selectors', () => {
   describe('#getTextRunToTags', () => {

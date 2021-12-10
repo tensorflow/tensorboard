@@ -16,17 +16,15 @@ limitations under the License.
  * @fileoverview MeshLoader provides UI functionality and placeholder to render
  * 3D data.
  */
-import {PolymerElement, html} from '@polymer/polymer';
-import {customElement, computed, observe, property} from '@polymer/decorators';
+import {computed, customElement, observe, property} from '@polymer/decorators';
+import {html, PolymerElement} from '@polymer/polymer';
 import * as THREE from 'three';
-
+import '../../../components/polymer/irons_and_papers';
 import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
 import {RequestManager} from '../../../components/tf_backend/requestManager';
-import {runsColorScale} from '../../../components/tf_color_scale/colorScale';
-import {formatDate} from '../../../components/tf_card_heading/util';
-import '../../../components/polymer/irons_and_papers';
 import '../../../components/tf_card_heading/tf-card-heading';
-
+import {formatDate} from '../../../components/tf_card_heading/util';
+import {runsColorScale} from '../../../components/tf_color_scale/colorScale';
 import {
   ArrayBufferDataProvider,
   ErrorCodes,

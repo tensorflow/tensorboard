@@ -13,13 +13,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {PolymerElement, html} from '@polymer/polymer';
 import {customElement, observe, property} from '@polymer/decorators';
+import {html, PolymerElement} from '@polymer/polymer';
 import * as d3 from 'd3';
 import * as _ from 'lodash';
-
-import * as tf_hparams_utils from '../tf_hparams_utils/tf-hparams-utils';
 import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
+import * as tf_hparams_utils from '../tf_hparams_utils/tf-hparams-utils';
 
 /**
  * A d3-based scatter plot matrix visualization component.

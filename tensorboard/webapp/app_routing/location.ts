@@ -15,9 +15,13 @@ limitations under the License.
 import {Injectable} from '@angular/core';
 import {fromEvent, Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
-
 import {createURLSearchParamsFromSerializableQueryParams} from './internal_utils';
-import {Navigation, Route, SerializableQueryParams} from './types';
+import {
+  Navigation,
+  NavigationFromHistory,
+  Route,
+  SerializableQueryParams,
+} from './types';
 
 export interface LocationInterface {
   getHref(): string;
@@ -28,11 +32,11 @@ export interface LocationInterface {
 
   getPath(): string;
 
-  replaceState(path: string): void;
+  replaceState(data: any, url: string | null): void;
 
-  pushState(path: string): void;
+  pushState(url: string): void;
 
-  onPopState(): Observable<Navigation>;
+  onPopState(): Observable<NavigationFromHistory>;
 
   getResolvedPath(relativePath: string): string;
 
@@ -80,19 +84,24 @@ export class Location implements LocationInterface {
     return window.location.pathname;
   }
 
-  replaceState(path: string): void {
-    window.history.replaceState(null, '', path);
+  getHistoryState() {
+    return window.history.state;
   }
 
-  pushState(path: string): void {
-    window.history.pushState(null, '', path);
+  replaceState(data: any, url: string | null): void {
+    window.history.replaceState(data, '', url);
   }
 
-  onPopState(): Observable<Navigation> {
-    return fromEvent(window, 'popstate').pipe(
-      map(() => {
+  pushState(url: string): void {
+    window.history.pushState(null, '', url);
+  }
+
+  onPopState(): Observable<NavigationFromHistory> {
+    return fromEvent<PopStateEvent>(window, 'popstate').pipe(
+      map((e) => {
         return {
           pathname: this.getPath(),
+          state: e.state,
         };
       })
     );

@@ -13,22 +13,20 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import * as d3 from 'd3';
-import * as Plottable from 'plottable';
 import * as _ from 'lodash';
-
+import * as Plottable from 'plottable';
 import {PointerInteraction} from '../vz_chart_helpers/plottable-interactions';
 import * as vz_chart_helpers from '../vz_chart_helpers/vz-chart-helpers';
 import {
   SymbolFn,
-  XComponents,
   TooltipColumn,
+  XComponents,
 } from '../vz_chart_helpers/vz-chart-helpers';
 import '../vz_chart_helpers/vz-chart-tooltip';
-
 import {LinearScale} from './linear-scale';
 import {LogScale} from './log-scale';
-import {ITfScale} from './tf-scale';
 import {PanZoomDragLayer} from './panZoomDragLayer';
+import {ITfScale} from './tf-scale';
 
 /**
  * An interface that describes a fill area to visualize. The fill area is

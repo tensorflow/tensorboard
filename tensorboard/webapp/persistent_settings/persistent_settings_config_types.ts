@@ -14,7 +14,6 @@ limitations under the License.
 ==============================================================================*/
 import {InjectionToken} from '@angular/core';
 import {Selector} from '@ngrx/store';
-
 import {PersistableSettings} from './_data_source/types';
 
 export type SettingSelector<

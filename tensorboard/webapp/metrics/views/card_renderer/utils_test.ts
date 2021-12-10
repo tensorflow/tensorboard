@@ -14,7 +14,6 @@ limitations under the License.
 ==============================================================================*/
 import {buildRun} from '../../../runs/store/testing';
 import {PartialSeries} from './scalar_card_types';
-
 import {getDisplayNameForRun, partitionSeries} from './utils';
 
 describe('metrics card_renderer utils test', () => {

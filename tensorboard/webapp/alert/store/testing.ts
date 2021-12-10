@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {ALERT_FEATURE_KEY, AlertState, State} from './alert_types';
+import {AlertState, ALERT_FEATURE_KEY, State} from './alert_types';
 
 export function buildAlertState(override: Partial<AlertState>): AlertState {
   return {

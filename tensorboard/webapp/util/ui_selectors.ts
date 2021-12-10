@@ -26,7 +26,6 @@ limitations under the License.
  */
 
 import {createSelector} from '@ngrx/store';
-
 import {
   getExperimentIdsFromRoute,
   getExperimentIdToExperimentAliasMap,

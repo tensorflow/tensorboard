@@ -14,12 +14,9 @@ limitations under the License.
 ==============================================================================*/
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {createSelector, select, Store} from '@ngrx/store';
-import {State} from './store/debugger_types';
-
 import {debuggerLoaded, debuggerUnloaded} from './actions';
 import {getActiveRunId, getDebuggerRunListing} from './store';
-
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
+import {State} from './store/debugger_types';
 
 @Component({
   selector: 'tf-debugger-v2',

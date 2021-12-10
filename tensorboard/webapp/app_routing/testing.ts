@@ -13,15 +13,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Injectable, Provider} from '@angular/core';
-
 import {of} from 'rxjs';
-
 import {navigated, NavigatedPayload} from './actions';
 import {Location} from './location';
 import {Route, RouteKind} from './types';
-
-/** @typehack */ import * as _typeHackModels from '@ngrx/store/src/models';
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
 export function buildRoute(routeOverride: Partial<Route> = {}): Route {
   return {
@@ -111,6 +106,7 @@ export class TestableLocation extends Location {
   override onPopState() {
     return of({
       pathname: '/is/cool/',
+      state: null,
     });
   }
 }

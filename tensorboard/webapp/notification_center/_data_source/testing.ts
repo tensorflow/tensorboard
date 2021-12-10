@@ -14,14 +14,11 @@ limitations under the License.
 ==============================================================================*/
 import {Injectable} from '@angular/core';
 import {of} from 'rxjs';
-
 import {
+  BackendNotification,
   NotificationCenterDataSource,
   NotificationCenterResponse,
-  BackendNotification,
 } from './backend_types';
-
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
 @Injectable()
 export class TestingNotificationCenterDataSource

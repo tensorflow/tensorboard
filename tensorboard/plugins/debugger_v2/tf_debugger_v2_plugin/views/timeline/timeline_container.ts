@@ -13,9 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {ChangeDetectionStrategy, Component} from '@angular/core';
-import {select, Store, createSelector} from '@ngrx/store';
-
-import {State} from '../../store/debugger_types';
+import {createSelector, select, Store} from '@ngrx/store';
 import {
   executionDigestFocused,
   executionScrollLeft,
@@ -25,19 +23,21 @@ import {
 import {
   getActiveRunId,
   getDisplayCount,
-  getNumExecutionsLoaded,
-  getNumExecutions,
   getExecutionPageSize,
   getExecutionScrollBeginIndex,
+  getFocusAlertTypesOfVisibleExecutionDigests,
   getFocusedExecutionDisplayIndex,
   getFocusedExecutionIndex,
+  getNumExecutions,
+  getNumExecutionsLoaded,
   getVisibleExecutionDigests,
-  getFocusAlertTypesOfVisibleExecutionDigests,
 } from '../../store';
-import {DataLoadState, ExecutionDigest} from '../../store/debugger_types';
+import {
+  DataLoadState,
+  ExecutionDigest,
+  State,
+} from '../../store/debugger_types';
 import {ExecutionDigestForDisplay} from './timeline_component';
-
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
 const FUNCTION_OP_TYPE_PREFIXES: string[] = [
   '__forward_',

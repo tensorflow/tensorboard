@@ -14,7 +14,6 @@ limitations under the License.
 ==============================================================================*/
 import {Component} from '@angular/core';
 import {select, Store} from '@ngrx/store';
-
 import {graphOpFocused} from '../../actions';
 import {
   getFocusedGraphOpConsumers,
@@ -22,8 +21,6 @@ import {
   getFocusedGraphOpInputs,
 } from '../../store';
 import {State} from '../../store/debugger_types';
-
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
 @Component({
   selector: 'tf-debugger-v2-graph',

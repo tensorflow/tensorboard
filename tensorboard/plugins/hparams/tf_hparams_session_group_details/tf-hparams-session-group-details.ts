@@ -13,18 +13,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {PolymerElement, html} from '@polymer/polymer';
 import {customElement, observe, property} from '@polymer/decorators';
 import * as IronResizableBehavior from '@polymer/iron-resizable-behavior';
-
-import {mixinBehaviors} from '../../../components/polymer/legacy_class';
+import {html, PolymerElement} from '@polymer/polymer';
 import '../../../components/polymer/irons_and_papers';
+import {mixinBehaviors} from '../../../components/polymer/legacy_class';
 import '../../../components/tf_backend/tf-backend';
-import {RequestDataCallback} from '../../../components/tf_dashboard_common/data-loader-behavior';
-import * as tf_hparams_utils from '../tf_hparams_utils/tf-hparams-utils';
 import * as tf_color_scale from '../../../components/tf_color_scale/palettes';
+import {RequestDataCallback} from '../../../components/tf_dashboard_common/data-loader-behavior';
 import * as vz_chart_helpers from '../../../components/vz_chart_helpers/vz-chart-helpers';
 import '../../scalar/tf_scalar_dashboard/tf-scalar-card';
+import * as tf_hparams_utils from '../tf_hparams_utils/tf-hparams-utils';
 
 // TODO: add dependency once the Polymer 3 scalar dashboard is migrated.
 // import '../tf_scalar_dashboard/tf-scalar-card';

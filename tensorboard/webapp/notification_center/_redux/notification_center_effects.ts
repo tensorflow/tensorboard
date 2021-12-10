@@ -17,15 +17,10 @@ import {Actions, createEffect, ofType, OnInitEffects} from '@ngrx/effects';
 import {Action, createAction, Store} from '@ngrx/store';
 import {EMPTY, Observable} from 'rxjs';
 import {catchError, map, mergeMap} from 'rxjs/operators';
-
 import {State} from '../../app_state';
 import {NotificationCenterDataSource} from '../_data_source/index';
 import * as actions from './notification_center_actions';
 import {CategoryEnum} from './notification_center_types';
-
-/** @typehack */ import * as _typeHackNgrxEffects from '@ngrx/effects';
-/** @typehack */ import * as _typeHackModels from '@ngrx/store/src/models';
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
 export const initAction = createAction('[NotificationCenter Effects] Init');
 

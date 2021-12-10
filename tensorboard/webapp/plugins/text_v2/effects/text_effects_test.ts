@@ -13,32 +13,30 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {TestBed} from '@angular/core/testing';
-
 import {provideMockActions} from '@ngrx/effects/testing';
 import {Action, Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
-import {ReplaySubject, of} from 'rxjs';
-
-import {TextEffects} from './text_effects';
-import {
-  textRunToTagsLoaded,
-  textPluginLoaded,
-  textTagGroupVisibilityChanged,
-  textDataLoaded,
-} from '../actions';
+import {of, ReplaySubject} from 'rxjs';
+import {CategoryType} from '../../../../components/tf_categorization_utils/categorizationUtils';
 import {State} from '../../../app_state';
+import {manualReload, reload} from '../../../core/actions';
 import {
-  TextV2DataSource,
+  textDataLoaded,
+  textPluginLoaded,
+  textRunToTagsLoaded,
+  textTagGroupVisibilityChanged,
+} from '../actions';
+import {
   RunToTags,
   StepDatum,
+  TextV2DataSource,
 } from '../data_source/text_v2_data_source';
-import {CategoryType} from '../../../../components/tf_categorization_utils/categorizationUtils';
-import {
-  getTextData,
-  getTextAllVisibleRunTags,
-} from '../store/text_v2_selectors';
-import {reload, manualReload} from '../../../core/actions';
 import {TextV2DataSourceModule} from '../data_source/text_v2_data_source_module';
+import {
+  getTextAllVisibleRunTags,
+  getTextData,
+} from '../store/text_v2_selectors';
+import {TextEffects} from './text_effects';
 
 describe('text_effects', () => {
   let textEffects: TextEffects;

@@ -13,29 +13,24 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {NO_ERRORS_SCHEMA} from '@angular/core';
-import {TestBed, ComponentFixture} from '@angular/core/testing';
-import {By} from '@angular/platform-browser';
-
-import {Action, Store} from '@ngrx/store';
-import {provideMockStore, MockStore} from '@ngrx/store/testing';
-
+import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {MatCheckboxModule} from '@angular/material/checkbox';
-
+import {By} from '@angular/platform-browser';
+import {Action, Store} from '@ngrx/store';
+import {MockStore, provideMockStore} from '@ngrx/store/testing';
+import {getExperimentIdsFromRoute} from '../../../../../app_routing/store/app_routing_selectors';
 import {State} from '../../../../../app_state';
+import {buildRun} from '../../../../../runs/store/testing';
+import * as selectors from '../../../../../selectors';
+import {
+  getFlaggedAnnotations,
+  getHiddenAnnotations,
+  getSelectedAnnotations,
+  getShowCounts,
+} from '../../../store';
 import {appStateFromNpmiState, createNpmiState} from '../../../testing';
 import {AnnotationComponent} from './annotation_component';
 import {AnnotationContainer} from './annotation_container';
-import {
-  getSelectedAnnotations,
-  getFlaggedAnnotations,
-  getHiddenAnnotations,
-  getShowCounts,
-} from '../../../store';
-import * as selectors from '../../../../../selectors';
-import {buildRun} from '../../../../../runs/store/testing';
-
-/** @typehack */ import * as _typeHackStore from '@ngrx/store';
-import {getExperimentIdsFromRoute} from '../../../../../app_routing/store/app_routing_selectors';
 
 describe('Npmi Annotations List Row', () => {
   let store: MockStore<State>;

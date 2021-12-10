@@ -22,9 +22,8 @@ import '../plugins/histogram/tf_histogram_dashboard/tf-histogram-dashboard';
 import '../plugins/hparams/tf_hparams_dashboard/tf-hparams-dashboard';
 import '../plugins/image/tf_image_dashboard/tf-image-dashboard';
 import '../plugins/mesh/tf_mesh_dashboard/tf-mesh-dashboard';
-import '../plugins/pr_curve/tf_pr_curve_dashboard/tf-pr-curve-dashboard';
 import '../plugins/profile_redirect/tf_profile_redirect_dashboard/tf-profile-redirect-dashboard';
+import '../plugins/pr_curve/tf_pr_curve_dashboard/tf-pr-curve-dashboard';
 import '../plugins/scalar/tf_scalar_dashboard/tf-scalar-dashboard';
 import '../plugins/text/tf_text_dashboard/tf-text-dashboard';
-
 import './polymer3_interop_helper';

@@ -13,10 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {createAction, props} from '@ngrx/store';
-
 import {PersistableSettings} from '../_data_source/types';
-
-/** @typehack */ import * as _typeHackModels from '@ngrx/store/src/models';
 
 /**
  * Describes settings loaded from a global settings storage. Dispatched once

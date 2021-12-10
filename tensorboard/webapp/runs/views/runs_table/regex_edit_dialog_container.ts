@@ -24,7 +24,6 @@ import {
   startWith,
   take,
 } from 'rxjs/operators';
-
 import {State} from '../../../app_state';
 import {getDarkModeEnabled} from '../../../selectors';
 import {selectors as settingsSelectors} from '../../../settings/';

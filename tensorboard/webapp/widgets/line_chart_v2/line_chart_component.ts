@@ -18,18 +18,15 @@ import {
   ChangeDetectorRef,
   Component,
   ElementRef,
-  EventEmitter,
   Input,
   OnChanges,
   OnDestroy,
   OnInit,
-  Output,
   SimpleChanges,
   TemplateRef,
   ViewChild,
 } from '@angular/core';
 import {Observable, ReplaySubject} from 'rxjs';
-
 import {ChartImpl} from './lib/chart';
 import {Chart} from './lib/chart_types';
 import {

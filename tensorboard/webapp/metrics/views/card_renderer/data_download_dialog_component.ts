@@ -19,10 +19,9 @@ import {
   Input,
   Output,
 } from '@angular/core';
-
 import {Run} from '../../../runs/types';
-import {CardMetadata} from '../../types';
 import {PluginType} from '../../data_source/types';
+import {CardMetadata} from '../../types';
 
 @Component({
   selector: 'data_download_dialog_component',

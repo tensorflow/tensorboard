@@ -23,12 +23,11 @@ import {MatMenuModule} from '@angular/material/menu';
 import {MatMenuHarness} from '@angular/material/menu/testing';
 import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
-
 import {MatIconTestingModule} from '../../../testing/mat_icon_module';
 import {Extent, Scale, ScaleType} from '../lib/public_types';
 import {createScale} from '../lib/scale';
-import {LineChartAxisComponent} from './line_chart_axis_view';
 import * as utils from './line_chart_axis_utils';
+import {LineChartAxisComponent} from './line_chart_axis_view';
 
 @Component({
   selector: 'testable-comp',

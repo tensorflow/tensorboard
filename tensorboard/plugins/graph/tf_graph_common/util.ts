@@ -16,7 +16,6 @@ limitations under the License.
  * @fileoverview Utility functions for the tensorflow graph visualizer.
  */
 import * as _ from 'lodash';
-
 import {notifyActionEventFromPolymer} from '../../../components/tb_debug';
 import {
   GraphDebugActionEventId,

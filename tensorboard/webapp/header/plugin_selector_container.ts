@@ -13,15 +13,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Component} from '@angular/core';
-import {Store, select, createSelector} from '@ngrx/store';
-
-import {getActivePlugin, getPlugins, State} from '../core/store';
+import {createSelector, select, Store} from '@ngrx/store';
 import {changePlugin} from '../core/actions';
-
+import {getActivePlugin, getPlugins, State} from '../core/store';
 import {PluginId} from '../types/api';
 import {UiPluginMetadata} from './types';
-
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
 const getUiPlugins = createSelector(getPlugins, (listing): UiPluginMetadata[] =>
   Object.keys(listing).map((key) => Object.assign({}, {id: key}, listing[key]))

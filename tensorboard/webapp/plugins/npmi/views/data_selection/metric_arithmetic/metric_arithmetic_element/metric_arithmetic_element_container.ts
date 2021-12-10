@@ -12,20 +12,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component, ChangeDetectionStrategy, Input} from '@angular/core';
+import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {select, Store} from '@ngrx/store';
-
 import {map} from 'rxjs/operators';
-
-import {State} from '../../../../store/npmi_types';
+import * as npmiActions from '../../../../actions';
 import {
   getEmbeddingDataSet,
   getEmbeddingsMetric,
   getMetricFilters,
 } from '../../../../store';
-import * as npmiActions from '../../../../actions';
-
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
+import {State} from '../../../../store/npmi_types';
 
 @Component({
   selector: 'npmi-metric-arithmetic-element',

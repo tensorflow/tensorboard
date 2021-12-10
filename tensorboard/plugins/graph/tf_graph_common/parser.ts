@@ -13,7 +13,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import * as tb_debug from '../../../components/tb_debug';
-
 import {ProgressTracker} from './common';
 import * as tf_graph_proto from './proto';
 import * as tf_graph_util from './util';

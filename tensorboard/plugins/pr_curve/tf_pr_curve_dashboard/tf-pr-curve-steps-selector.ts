@@ -13,11 +13,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {PolymerElement, html} from '@polymer/polymer';
 import {computed, customElement, observe, property} from '@polymer/decorators';
+import {html, PolymerElement} from '@polymer/polymer';
+import * as _ from 'lodash';
 import '../../../components/polymer/irons_and_papers';
 import {runsColorScale} from '../../../components/tf_color_scale/colorScale';
-import * as _ from 'lodash';
 
 @customElement('tf-pr-curve-steps-selector')
 // tslint:disable-next-line:no-unused-variable

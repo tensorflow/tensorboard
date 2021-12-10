@@ -18,7 +18,6 @@ limitations under the License.
 import * as d3 from 'd3';
 import {graphlib} from 'dagre';
 import * as _ from 'lodash';
-
 import * as tf_graph_common from './common';
 import * as tf_graph from './graph';
 import {

@@ -12,6 +12,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+export * from './backend_types';
 export * from './notification_center_data_source';
 export * from './notification_center_data_source_module';
-export * from './backend_types';

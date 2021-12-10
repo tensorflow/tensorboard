@@ -15,13 +15,11 @@ limitations under the License.
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
 import {FormsModule} from '@angular/forms';
-
 import {MatButtonModule} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
-
+import {ViolinFilterModule} from './violin_filter/violin_filter_module';
 import {ViolinFiltersComponent} from './violin_filters_component';
 import {ViolinFiltersContainer} from './violin_filters_container';
-import {ViolinFilterModule} from './violin_filter/violin_filter_module';
 
 @NgModule({
   declarations: [ViolinFiltersComponent, ViolinFiltersContainer],

@@ -14,7 +14,12 @@ limitations under the License.
 ==============================================================================*/
 
 import {createAction, props} from '@ngrx/store';
-
+import {
+  ExecutionDataResponse,
+  ExecutionDigestsResponse,
+  GraphExecutionDataResponse,
+  SourceFileResponse,
+} from '../data_source/tfdbg2_data_source';
 import {
   Alert,
   AlertsBreakdown,
@@ -25,16 +30,6 @@ import {
   StackFrame,
   StackFramesById,
 } from '../store/debugger_types';
-import {
-  ExecutionDigestsResponse,
-  ExecutionDataResponse,
-  GraphExecutionDataResponse,
-  SourceFileResponse,
-} from '../data_source/tfdbg2_data_source';
-
-// HACK: Below import is for type inference.
-// https://github.com/bazelbuild/rules_nodejs/issues/1013
-/** @typehack */ import * as _typeHackModels from '@ngrx/store/src/models';
 
 /**
  * Actions for Debugger V2.

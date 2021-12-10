@@ -14,8 +14,8 @@ limitations under the License.
 ==============================================================================*/
 import {DataLoadState, LoadState} from '../../../types/data';
 import {
-  EmbeddingDataSet,
   EmbeddingDataPoint,
+  EmbeddingDataSet,
   EmbeddingListing,
 } from '../util/umap';
 

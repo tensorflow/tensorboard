@@ -29,7 +29,6 @@ import {
   tap,
   withLatestFrom,
 } from 'rxjs/operators';
-
 import {State as AppState} from '../../../../webapp/app_state';
 import {
   changePlugin,
@@ -117,9 +116,6 @@ import {
   State as DebuggerState,
 } from '../store/debugger_types';
 import {PLUGIN_ID} from '../types';
-
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
-/** @typehack */ import * as _typeHackNgrxEffects from '@ngrx/effects';
 
 type State = AppState & DebuggerState;
 

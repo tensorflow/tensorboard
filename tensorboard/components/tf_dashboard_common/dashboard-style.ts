@@ -13,8 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {registerStyleDomModule} from '../polymer/register_style_dom_module';
 import '../polymer/irons_and_papers';
+import {registerStyleDomModule} from '../polymer/register_style_dom_module';
 
 registerStyleDomModule({
   moduleName: 'dashboard-style',

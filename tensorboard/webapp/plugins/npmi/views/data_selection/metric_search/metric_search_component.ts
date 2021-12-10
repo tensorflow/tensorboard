@@ -15,10 +15,10 @@ limitations under the License.
 import {
   ChangeDetectionStrategy,
   Component,
-  Input,
-  Output,
   EventEmitter,
   HostBinding,
+  Input,
+  Output,
 } from '@angular/core';
 import {MatAutocompleteSelectedEvent} from '@angular/material/autocomplete';
 

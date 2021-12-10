@@ -13,11 +13,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {
-  NpmiState,
   DataLoadState,
+  NpmiState,
   NPMI_FEATURE_KEY,
-  State,
   SortOrder,
+  State,
   ViewActive,
 } from '../store/npmi_types';
 import {buildEmbeddingDataSet} from '../util/umap';

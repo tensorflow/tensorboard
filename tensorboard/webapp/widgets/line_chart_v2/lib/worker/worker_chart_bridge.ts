@@ -19,8 +19,8 @@ import {decompactDataSeries} from './compact_data_series';
 import {
   GuestToMainType,
   HostToGuestEvent,
-  InitMessage,
   HostToGuestMessage,
+  InitMessage,
   RendererType,
 } from './message_types';
 

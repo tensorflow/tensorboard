@@ -16,7 +16,6 @@ import {ChangeDetectionStrategy, Component, Input, OnInit} from '@angular/core';
 import {Store} from '@ngrx/store';
 import {combineLatest, Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
-
 import {State} from '../../../app_state';
 import {ExperimentAlias} from '../../../experiments/types';
 import {
@@ -24,7 +23,6 @@ import {
   getExperimentIdToExperimentAliasMap,
   getRun,
 } from '../../../selectors';
-
 import {getDisplayNameForRun} from './utils';
 
 @Component({

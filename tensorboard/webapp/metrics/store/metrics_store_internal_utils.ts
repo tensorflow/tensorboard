@@ -17,7 +17,6 @@ limitations under the License.
  */
 
 import {DataLoadState} from '../../types/data';
-
 import {isSampledPlugin, PluginType, SampledPluginType} from '../data_source';
 import {
   CardId,
@@ -25,7 +24,6 @@ import {
   CardUniqueInfo,
   NonPinnedCardId,
 } from '../internal_types';
-
 import {
   CardMetadataMap,
   CardStepIndexMap,

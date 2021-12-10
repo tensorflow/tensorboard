@@ -13,23 +13,21 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {PolymerElement, html} from '@polymer/polymer';
 import {customElement, observe, property} from '@polymer/decorators';
-
+import {html, PolymerElement} from '@polymer/polymer';
 import '../../../components/polymer/irons_and_papers';
+import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
 import {Canceller} from '../../../components/tf_backend/canceller';
 import {RequestManager} from '../../../components/tf_backend/requestManager';
 import {getRouter} from '../../../components/tf_backend/router';
 import '../../../components/tf_dashboard_common/tf-dashboard-layout';
 import * as tf_storage from '../../../components/tf_storage';
 import * as vz_sorting from '../../../components/vz_sorting/sorting';
-import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
-
 import '../tf_graph_board/tf-graph-board';
-import '../tf_graph_controls/tf-graph-controls';
-import '../tf_graph_loader/tf-graph-dashboard-loader';
 import * as tf_graph_op from '../tf_graph_common/op';
 import * as tf_graph_render from '../tf_graph_common/render';
+import '../tf_graph_controls/tf-graph-controls';
+import '../tf_graph_loader/tf-graph-dashboard-loader';
 
 /**
  * The (string) name for the run of the selected dataset in the graph dashboard.

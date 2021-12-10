@@ -16,7 +16,6 @@ limitations under the License.
 import {Component, Input} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
-
 import {RangeInputComponent, TEST_ONLY} from './range_input_component';
 
 @Component({

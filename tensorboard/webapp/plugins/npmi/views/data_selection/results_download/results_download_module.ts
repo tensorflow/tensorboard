@@ -14,10 +14,8 @@ limitations under the License.
 ==============================================================================*/
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
-
-import {MatIconModule} from '@angular/material/icon';
 import {MatButtonModule} from '@angular/material/button';
-
+import {MatIconModule} from '@angular/material/icon';
 import {ResultsDownloadComponent} from './results_download_component';
 import {ResultsDownloadContainer} from './results_download_container';
 

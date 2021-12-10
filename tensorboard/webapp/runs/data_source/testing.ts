@@ -14,7 +14,6 @@ limitations under the License.
 ==============================================================================*/
 import {Injectable} from '@angular/core';
 import {Observable, of} from 'rxjs';
-
 import {BackendHparamsValueType, DatasetType} from './runs_backend_types';
 import {
   DomainType,
@@ -22,8 +21,6 @@ import {
   Run,
   RunsDataSource,
 } from './runs_data_source_types';
-
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
 export function buildHparamsAndMetadata(
   override: Partial<HparamsAndMetadata>

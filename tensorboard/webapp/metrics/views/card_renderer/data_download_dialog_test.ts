@@ -20,7 +20,6 @@ import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
-
 import {State} from '../../../app_state';
 import {Run} from '../../../runs/store/runs_types';
 import {buildRun} from '../../../runs/store/testing';

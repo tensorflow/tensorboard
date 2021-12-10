@@ -14,10 +14,10 @@ limitations under the License.
 ==============================================================================*/
 import {Experiment} from '../types';
 import {
-  EXPERIMENTS_FEATURE_KEY,
-  ExperimentsState,
-  State,
   ExperimentsDataState,
+  ExperimentsState,
+  EXPERIMENTS_FEATURE_KEY,
+  State,
 } from './experiments_types';
 
 /**

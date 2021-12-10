@@ -13,15 +13,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import * as actions from '../actions';
+import {createNpmiState, createSampleEmbeddingData} from '../testing';
 import {reducers} from './npmi_reducers';
 import {
+  ArithmeticKind,
   DataLoadState,
   Operator,
   SortOrder,
-  ArithmeticKind,
   ViewActive,
 } from './npmi_types';
-import {createSampleEmbeddingData, createNpmiState} from '../testing';
 
 describe('npmi_reducers', () => {
   describe('Data loading', () => {

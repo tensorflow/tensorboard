@@ -13,12 +13,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {TestBed} from '@angular/core/testing';
-
 import {
-  TBHttpClientTestingModule,
   HttpTestingController,
+  TBHttpClientTestingModule,
 } from '../../../webapp_data_source/tb_http_client_testing';
-
 import {TextV2ServerDataSource} from './text_v2_server_data_source';
 
 describe('tb_server_data_source', () => {

@@ -15,7 +15,6 @@ limitations under the License.
 import {Injectable} from '@angular/core';
 import {EMPTY, Observable, of} from 'rxjs';
 import {map, tap} from 'rxjs/operators';
-
 import {LocalStorage} from '../../util/local_storage';
 import {BackendSettings, PersistableSettings, ThemeValue} from './types';
 

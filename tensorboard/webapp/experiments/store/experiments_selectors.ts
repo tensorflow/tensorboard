@@ -13,17 +13,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {createFeatureSelector, createSelector} from '@ngrx/store';
-
 import {Experiment} from '../types';
-
 import {
-  EXPERIMENTS_FEATURE_KEY,
   ExperimentsDataState,
   ExperimentsState,
+  EXPERIMENTS_FEATURE_KEY,
   State,
 } from './experiments_types';
-
-/** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
 const getExperimentsState = createFeatureSelector<State, ExperimentsState>(
   EXPERIMENTS_FEATURE_KEY

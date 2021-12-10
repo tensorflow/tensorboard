@@ -14,7 +14,6 @@ limitations under the License.
 ==============================================================================*/
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
-
 import {IntersectionObserverModule} from '../../../widgets/intersection_observer/intersection_observer_module';
 import {CardLazyLoader} from './card_lazy_loader';
 import {CardViewComponent} from './card_view_component';

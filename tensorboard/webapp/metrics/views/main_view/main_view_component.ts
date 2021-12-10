@@ -20,7 +20,6 @@ import {
   Input,
   Output,
 } from '@angular/core';
-
 import {PluginType} from '../../types';
 import {CardObserver} from '../card_renderer/card_lazy_loader';
 

@@ -16,9 +16,8 @@ limitations under the License.
 import {Component, DebugElement, Input} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
-
-import {createScale} from '../lib/scale';
 import {Extent, ScaleType} from '../lib/public_types';
+import {createScale} from '../lib/scale';
 import {LineChartGridView} from './line_chart_grid_view';
 
 @Component({

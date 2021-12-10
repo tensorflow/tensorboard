@@ -12,13 +12,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Action, createReducer, on} from '@ngrx/store';
-
+import {Action, createReducer} from '@ngrx/store';
 import {TextState} from './text_types';
-
-// HACK: These imports are for type inference.
-// https://github.com/bazelbuild/rules_nodejs/issues/1013
-/** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
 const DATA_A_B_RUN1 = [
   {

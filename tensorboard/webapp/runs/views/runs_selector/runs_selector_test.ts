@@ -18,7 +18,6 @@ import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
-
 import {State} from '../../../app_state';
 import {getExperimentIdsFromRoute} from '../../../selectors';
 import {RunsTableColumn} from '../runs_table/types';

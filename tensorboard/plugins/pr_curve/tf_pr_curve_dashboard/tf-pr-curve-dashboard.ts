@@ -13,11 +13,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {PolymerElement, html} from '@polymer/polymer';
 import {computed, customElement, property} from '@polymer/decorators';
+import {html, PolymerElement} from '@polymer/polymer';
+import * as _ from 'lodash';
 import '../../../components/polymer/irons_and_papers';
 import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
-
 import {getTags} from '../../../components/tf_backend/backend';
 import {RequestManager} from '../../../components/tf_backend/requestManager';
 import {getRouter} from '../../../components/tf_backend/router';
@@ -29,12 +29,9 @@ import '../../../components/tf_dashboard_common/tf-option-selector';
 import '../../../components/tf_paginated_view/tf-category-paginated-view';
 import '../../../components/tf_runs_selector/tf-runs-selector';
 import * as tf_utils from '../../../components/tf_utils/utils';
-
 import './tf-pr-curve-card';
 import {TfPrCurveCard} from './tf-pr-curve-card';
 import './tf-pr-curve-steps-selector';
-
-import * as _ from 'lodash';
 
 @customElement('tf-pr-curve-dashboard')
 // tslint:disable-next-line:no-unused-variable

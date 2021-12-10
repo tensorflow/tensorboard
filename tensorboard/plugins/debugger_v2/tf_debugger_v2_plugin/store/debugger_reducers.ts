@@ -13,7 +13,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Action, createReducer, on} from '@ngrx/store';
-
 import * as actions from '../actions';
 import {
   ExecutionDataResponse,
@@ -24,8 +23,8 @@ import {
 import {getFocusedStackFramesHelper} from './debugger_store_helpers';
 import {
   computeBottommostLineSpec,
-  findFileIndex,
   findBeginEndRangeIndex,
+  findFileIndex,
   isFrameBottommostInStackTrace,
 } from './debugger_store_utils';
 import {
@@ -35,17 +34,13 @@ import {
   DataLoadState,
   DebuggerState,
   Executions,
-  Graphs,
   GraphExecutions,
+  Graphs,
   InfNanAlert,
-  StackFramesById,
   SourceFileSpec,
   StackFrame,
+  StackFramesById,
 } from './debugger_types';
-
-// HACK: These imports are for type inference.
-// https://github.com/bazelbuild/rules_nodejs/issues/1013
-/** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
 const DEFAULT_EXECUTION_PAGE_SIZE = 100;
 const DEFAULT_GRAPH_EXECUTION_PAGE_SIZE = 200;

@@ -13,7 +13,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Action, createReducer, on} from '@ngrx/store';
-
 import {stateRehydratedFromUrl} from '../../app_routing/actions';
 import {createRouteContextedState} from '../../app_routing/route_contexted_reducer_helper';
 import {RouteKind} from '../../app_routing/types';
@@ -44,6 +43,7 @@ import {
   TooltipSort,
   URLDeserializedState,
 } from '../internal_types';
+import {groupCardIdWithMetdata} from '../utils';
 import {
   buildOrReturnStateWithPinnedCopy,
   buildOrReturnStateWithUnresolvedImportedPins,
@@ -59,15 +59,14 @@ import {
   CardStepIndexMap,
   MetricsRoutefulState,
   MetricsRoutelessState,
+  MetricsSettings,
   MetricsState,
+  METRICS_SETTINGS_DEFAULT,
   NonSampledPluginTagMetadata,
   TagMetadata,
   TimeSeriesData,
   TimeSeriesLoadable,
-  METRICS_SETTINGS_DEFAULT,
-  MetricsSettings,
 } from './metrics_types';
-import {groupCardIdWithMetdata} from '../utils';
 
 function buildCardMetadataList(tagMetadata: TagMetadata): CardMetadata[] {
   const results: CardMetadata[] = [];

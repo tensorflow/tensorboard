@@ -14,9 +14,8 @@ limitations under the License.
 ==============================================================================*/
 
 import {computed, customElement, property} from '@polymer/decorators';
-import {PolymerElement, html} from '@polymer/polymer';
+import {html, PolymerElement} from '@polymer/polymer';
 import * as _ from 'lodash';
-
 import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
 import {getTags} from '../../../components/tf_backend/backend';
 import {RequestManager} from '../../../components/tf_backend/requestManager';
@@ -27,8 +26,8 @@ import '../../../components/tf_dashboard_common/dashboard-style';
 import '../../../components/tf_dashboard_common/tf-dashboard-layout';
 import '../../../components/tf_paginated_view/tf-category-paginated-view';
 import '../../../components/tf_runs_selector/tf-runs-selector';
-import {AudioTagInfo, TfAudioLoader} from './tf-audio-loader';
 import './tf-audio-loader';
+import {AudioTagInfo, TfAudioLoader} from './tf-audio-loader';
 
 /*
 tf-audio-dashboard displays a dashboard that loads audio from a TensorFlow run.

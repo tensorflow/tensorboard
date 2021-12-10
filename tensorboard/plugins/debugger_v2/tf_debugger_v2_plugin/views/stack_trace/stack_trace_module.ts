@@ -15,7 +15,6 @@ limitations under the License.
 
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
-
 import {SourceCodeModule} from '../../../../../webapp/widgets/source_code/source_code_module';
 import {StackTraceComponent} from './stack_trace_component';
 import {StackTraceContainer} from './stack_trace_container';

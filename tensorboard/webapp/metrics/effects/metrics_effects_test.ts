@@ -16,21 +16,22 @@ import {TestBed} from '@angular/core/testing';
 import {provideMockActions} from '@ngrx/effects/testing';
 import {Action, Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
+import {of, Subject} from 'rxjs';
+import {buildNavigatedAction, buildRoute} from '../../app_routing/testing';
+import {RouteKind} from '../../app_routing/types';
+import {State} from '../../app_state';
 import * as coreActions from '../../core/actions';
 import {getActivePlugin} from '../../core/store';
 import * as coreTesting from '../../core/testing';
-import {DataLoadState} from '../../types/data';
-import {TBHttpClientTestingModule} from '../../webapp_data_source/tb_http_client_testing';
-import {of, Subject} from 'rxjs';
-
-import {buildNavigatedAction, buildRoute} from '../../app_routing/testing';
-import {State} from '../../app_state';
 import * as selectors from '../../selectors';
+import {LoadingMechanismType} from '../../types/api';
+import {DataLoadState} from '../../types/data';
 import {nextElementId} from '../../util/dom';
+import {TBHttpClientTestingModule} from '../../webapp_data_source/tb_http_client_testing';
 import * as actions from '../actions';
 import {
-  METRICS_PLUGIN_ID,
   MetricsDataSource,
+  METRICS_PLUGIN_ID,
   MultiRunPluginType,
   PluginType,
   SingleRunPluginType,
@@ -47,8 +48,6 @@ import {
 } from '../testing';
 import {CardId, TooltipSort} from '../types';
 import {CardFetchInfo, MetricsEffects, TEST_ONLY} from './index';
-import {RouteKind} from '../../app_routing/types';
-import {LoadingMechanismType} from '../../types/api';
 
 describe('metrics effects', () => {
   let dataSource: MetricsDataSource;

@@ -14,9 +14,7 @@ limitations under the License.
 ==============================================================================*/
 
 import {html} from '@polymer/polymer';
-
 import '../../../components/polymer/irons_and_papers';
-
 import './styles';
 
 export const template = html`

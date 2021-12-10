@@ -12,11 +12,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {createSelector, createFeatureSelector} from '@ngrx/store';
+import {createFeatureSelector, createSelector} from '@ngrx/store';
 import {AlertInfo} from '../types';
-import {AlertState, State, ALERT_FEATURE_KEY} from './alert_types';
-
-/** @typehack */ import * as _typeHackStore from '@ngrx/store';
+import {AlertState, ALERT_FEATURE_KEY, State} from './alert_types';
 
 const selectAlertState = createFeatureSelector<State, AlertState>(
   ALERT_FEATURE_KEY

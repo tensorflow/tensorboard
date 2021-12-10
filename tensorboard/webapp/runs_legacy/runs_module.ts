@@ -13,7 +13,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {NgModule} from '@angular/core';
-
 import {LegacyRunsSelectorModule as LegacyRunsSelectorViewModule} from './views/legacy_runs_selector/legacy_runs_selector_module';
 
 @NgModule({

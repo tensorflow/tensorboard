@@ -22,11 +22,10 @@ import {MatSnackBar} from '@angular/material/snack-bar';
 import {Store} from '@ngrx/store';
 import {Subject} from 'rxjs';
 import {filter, takeUntil} from 'rxjs/operators';
-
-import {State} from '../store/alert_types';
 import {getLatestAlert} from '../../selectors';
-import {AlertDisplaySnackbarContainer} from './alert_display_snackbar_container';
+import {State} from '../store/alert_types';
 import {AlertInfo} from '../types';
+import {AlertDisplaySnackbarContainer} from './alert_display_snackbar_container';
 
 /**
  * Renders alerts in a 'snackbar' to indicate them to the user.

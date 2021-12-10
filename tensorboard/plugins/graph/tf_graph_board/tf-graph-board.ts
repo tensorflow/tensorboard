@@ -12,17 +12,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {PolymerElement, html} from '@polymer/polymer';
 import {customElement, observe, property} from '@polymer/decorators';
-
+import {html, PolymerElement} from '@polymer/polymer';
 import '../../../components/polymer/irons_and_papers';
-import '../tf_graph_info/tf-graph-info';
+import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
 import '../tf_graph/tf-graph';
 import * as tf_graph from '../tf_graph_common/graph';
-import * as tf_graph_render from '../tf_graph_common/render';
-import {LegacyElementMixin} from '../../../components/polymer/legacy_element_mixin';
-import {ColorBy} from '../tf_graph_common/view_types';
 import * as tf_graph_hierarchy from '../tf_graph_common/hierarchy';
+import * as tf_graph_render from '../tf_graph_common/render';
+import {ColorBy} from '../tf_graph_common/view_types';
+import '../tf_graph_info/tf-graph-info';
 
 /**
  * Some UX features, such as 'color by structure', rely on the 'template'

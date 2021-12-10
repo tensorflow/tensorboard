@@ -14,19 +14,18 @@ limitations under the License.
 ==============================================================================*/
 import {NgModule} from '@angular/core';
 import {createSelector, StoreModule} from '@ngrx/store';
-
-import {SettingsModule as ViewModule} from './_views/settings_module';
-import {reducers} from './_redux/settings_reducers';
-import {SETTINGS_FEATURE_KEY, State} from './_redux/settings_types';
 import {
   PersistableSettings,
   PersistentSettingsConfigModule,
 } from '../persistent_settings';
+import {reducers} from './_redux/settings_reducers';
 import {
   getPageSize,
   getReloadEnabled,
   getReloadPeriodInMs,
 } from './_redux/settings_selectors';
+import {SETTINGS_FEATURE_KEY, State} from './_redux/settings_types';
+import {SettingsModule as ViewModule} from './_views/settings_module';
 
 export function createAutoReloadSettingSelector() {
   return createSelector(getReloadEnabled, (autoReload) => {

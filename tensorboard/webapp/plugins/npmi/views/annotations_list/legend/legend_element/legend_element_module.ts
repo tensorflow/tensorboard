@@ -14,7 +14,6 @@ limitations under the License.
 ==============================================================================*/
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
-
 import {LegendElementComponent} from './legend_element_component';
 
 @NgModule({

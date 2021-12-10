@@ -15,13 +15,9 @@ limitations under the License.
 import {createAction, props} from '@ngrx/store';
 import {
   AnnotationDataListing,
-  MetricListing,
   EmbeddingDataSet,
+  MetricListing,
 } from '../store/npmi_types';
-
-// HACK: Below import is for type inference.
-// https://github.com/bazelbuild/rules_nodejs/issues/1013
-/** @typehack */ import * as _typeHackModels from '@ngrx/store/src/models';
 
 /**
  * Actions for the NPMI Component.

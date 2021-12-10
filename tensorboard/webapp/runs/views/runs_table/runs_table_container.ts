@@ -31,10 +31,10 @@ import {
   take,
   takeUntil,
 } from 'rxjs/operators';
-
 import * as alertActions from '../../../alert/actions';
 import {areSameRouteAndExperiments} from '../../../app_routing';
 import {State} from '../../../app_state';
+import {ExperimentAlias} from '../../../experiments/types';
 import {
   actions as hparamsActions,
   selectors as hparamsSelectors,
@@ -71,7 +71,6 @@ import {
   runSelectorSortChanged,
   runTableShown,
 } from '../../actions';
-import {ExperimentAlias} from '../../../experiments/types';
 import {MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT} from '../../store/runs_types';
 import {SortKey, SortType} from '../../types';
 import {
@@ -80,8 +79,6 @@ import {
   MetricColumn,
 } from './runs_table_component';
 import {RunsTableColumn, RunTableItem} from './types';
-
-/** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
 const getRunsLoading = createSelector<
   State,

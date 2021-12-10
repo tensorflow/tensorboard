@@ -57,6 +57,7 @@
     "karma-requirejs": "^1.1.0",
     "karma-sourcemap-loader": "^0.3.8",
     "prettier": "2.4.1",
+    "prettier-plugin-organize-imports": "2.3.4",
     "requirejs": "^2.3.6",
     "rollup": "^2.56.2",
     "terser": "^5.7.1",

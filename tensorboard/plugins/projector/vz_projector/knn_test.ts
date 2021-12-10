@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {findKNNGPUCosDistNorm, findKNN, NearestEntry, TEST_ONLY} from './knn';
+import {findKNN, findKNNGPUCosDistNorm, NearestEntry, TEST_ONLY} from './knn';
 import {cosDistNorm, unit} from './vector';
 
 describe('projector knn test', () => {

@@ -20,23 +20,22 @@ import {
   TestBed,
   tick,
 } from '@angular/core/testing';
-import {PluginType} from '../../data_source';
 import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
-
-import {CardGridComponent} from './card_grid_component';
-import {CardGridContainer} from './card_grid_container';
-import {CardIdWithMetadata} from '../metrics_view_types';
 import {Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {State} from '../../../app_state';
-import {selectors as settingsSelectors} from '../../../settings';
 import * as selectors from '../../../selectors';
 import {
   getEnabledCardWidthSetting,
   getMetricsCardMinWidth,
   getMetricsTagGroupExpansionState,
 } from '../../../selectors';
+import {selectors as settingsSelectors} from '../../../settings';
+import {PluginType} from '../../data_source';
+import {CardIdWithMetadata} from '../metrics_view_types';
+import {CardGridComponent} from './card_grid_component';
+import {CardGridContainer} from './card_grid_container';
 
 const scrollElementHeight = 100;
 

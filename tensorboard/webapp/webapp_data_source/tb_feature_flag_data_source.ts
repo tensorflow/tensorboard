@@ -13,8 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Injectable} from '@angular/core';
-
 import {FeatureFlags} from '../feature_flag/types';
+import {QueryParams} from './query_params';
 import {
   ENABLE_CARD_WIDTH_SETTING_PARAM_KEY,
   ENABLE_COLOR_GROUP_BY_REGEX_QUERY_PARAM_KEY,
@@ -26,7 +26,6 @@ import {
   SCALARS_BATCH_SIZE_PARAM_KEY,
   TBFeatureFlagDataSource,
 } from './tb_feature_flag_data_source_types';
-import {QueryParams} from './query_params';
 
 const DARK_MODE_MEDIA_QUERY = '(prefers-color-scheme: dark)';
 

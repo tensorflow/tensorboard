@@ -14,11 +14,9 @@ limitations under the License.
 ==============================================================================*/
 
 import {computed, customElement, property} from '@polymer/decorators';
-import {PolymerElement, html} from '@polymer/polymer';
-
-import {LegacyElementMixin} from '../polymer/legacy_element_mixin';
+import {html, PolymerElement} from '@polymer/polymer';
 import '../polymer/irons_and_papers';
-
+import {LegacyElementMixin} from '../polymer/legacy_element_mixin';
 import './tf-dropdown-trigger';
 import {FilterableCheckboxListItem} from './tf-filterable-checkbox-list';
 

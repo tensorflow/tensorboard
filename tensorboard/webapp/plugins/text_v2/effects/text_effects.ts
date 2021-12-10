@@ -13,35 +13,30 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {Injectable} from '@angular/core';
-import {Store} from '@ngrx/store';
 import {Actions, createEffect, ofType} from '@ngrx/effects';
-import {forkJoin, Observable, merge} from 'rxjs';
+import {Store} from '@ngrx/store';
+import {forkJoin, merge, Observable} from 'rxjs';
 import {
+  last,
   map,
   mergeMap,
-  tap,
   switchMap,
-  last,
+  tap,
   withLatestFrom,
 } from 'rxjs/operators';
-
+import {State} from '../../../app_state';
+import {manualReload, reload} from '../../../core/actions';
 import {
+  textDataLoaded,
   textPluginLoaded,
   textRunToTagsLoaded,
   textTagGroupVisibilityChanged,
-  textDataLoaded,
 } from '../actions';
 import {TextV2DataSource} from '../data_source/text_v2_data_source';
-import {State} from '../../../app_state';
 import {
-  getTextData,
   getTextAllVisibleRunTags,
+  getTextData,
 } from '../store/text_v2_selectors';
-import {manualReload, reload} from '../../../core/actions';
-
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
-
-/** @typehack */ import * as _typeHackNgrxEffects from '@ngrx/effects';
 
 @Injectable()
 export class TextEffects {

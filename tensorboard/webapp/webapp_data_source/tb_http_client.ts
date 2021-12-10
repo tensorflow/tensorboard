@@ -12,23 +12,20 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Injectable} from '@angular/core';
 import {HttpClient, HttpHeaders} from '@angular/common/http';
+import {Injectable} from '@angular/core';
 import {Store} from '@ngrx/store';
 import {Observable} from 'rxjs';
 import {filter, mergeMap, take, withLatestFrom} from 'rxjs/operators';
-
 import {AppRootProvider} from '../app_routing/app_root';
-
-// Intentionally import directly from feature_flag/, not the hourglass
-// AppState/selectors. AppState depends on code from feature directories that
-// use TBHttpClient themselves, so we avoid a possible circular dependency.
-import {State} from '../feature_flag/store/feature_flag_types';
 import {
   getIsFeatureFlagsLoaded,
   getIsInColab,
 } from '../feature_flag/store/feature_flag_selectors';
-
+// Intentionally import directly from feature_flag/, not the hourglass
+// AppState/selectors. AppState depends on code from feature directories that
+// use TBHttpClient themselves, so we avoid a possible circular dependency.
+import {State} from '../feature_flag/store/feature_flag_types';
 import {
   DeleteOptions,
   GetOptions,

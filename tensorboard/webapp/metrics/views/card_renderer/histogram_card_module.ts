@@ -14,13 +14,11 @@ limitations under the License.
 ==============================================================================*/
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
-
 import {MatButtonModule} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import {HistogramModule} from '../../../widgets/histogram/histogram_module';
 import {TruncatedPathModule} from '../../../widgets/text/truncated_path_module';
-
 import {HistogramCardComponent} from './histogram_card_component';
 import {HistogramCardContainer} from './histogram_card_container';
 import {RunNameModule} from './run_name_module';

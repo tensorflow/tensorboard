@@ -13,7 +13,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {createAction, props} from '@ngrx/store';
-
 import {ElementId} from '../../util/dom';
 import {
   TagMetadata,
@@ -27,9 +26,6 @@ import {
   TooltipSort,
   XAxisType,
 } from '../internal_types';
-
-/** @typehack */ import * as _typeHackModels from '@ngrx/store/src/models';
-/** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
 export const metricsSettingsPaneClosed = createAction(
   '[Metrics] Metrics Settings Pane Closed'

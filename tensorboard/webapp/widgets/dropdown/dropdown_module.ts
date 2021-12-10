@@ -15,7 +15,6 @@ limitations under the License.
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
 import {MatSelectModule} from '@angular/material/select';
-
 import {DropdownComponent} from './dropdown_component';
 
 @NgModule({

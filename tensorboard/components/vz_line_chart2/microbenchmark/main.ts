@@ -13,9 +13,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {getBenchmarks} from './spec.js';
+import {consoleReporter} from './reporter.js';
 import {runner} from './runner.js';
-import {htmlTableReporter, consoleReporter} from './reporter.js';
+import {getBenchmarks} from './spec.js';
 
 (window as any).requestIdleCallback(async () => {
   const results = await runner(getBenchmarks());

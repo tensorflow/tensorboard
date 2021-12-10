@@ -12,20 +12,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component, ChangeDetectionStrategy} from '@angular/core';
+import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {select, Store} from '@ngrx/store';
-
 import {map} from 'rxjs/operators';
-
 import {State} from '../../../../app_state';
 import {getCurrentRouteRunSelection} from '../../../../selectors';
+import * as npmiActions from '../../actions';
 import {
   getSidebarExpanded,
   getSidebarWidth,
 } from './../../store/npmi_selectors';
-import * as npmiActions from '../../actions';
-
-/** @typehack */ import * as _typeHackRxjs from 'rxjs';
 
 @Component({
   selector: 'npmi-main',

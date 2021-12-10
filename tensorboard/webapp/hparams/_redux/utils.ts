@@ -15,10 +15,10 @@ limitations under the License.
 
 import {
   DiscreteFilter,
+  DiscreteHparamValue,
   DiscreteHparamValues,
   DomainType,
   IntervalFilter,
-  DiscreteHparamValue,
 } from '../types';
 
 export function getIdFromExperimentIds(experimentIds: string[]): string {

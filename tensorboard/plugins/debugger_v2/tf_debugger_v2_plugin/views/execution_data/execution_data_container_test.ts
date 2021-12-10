@@ -18,10 +18,8 @@ limitations under the License.
 import {CommonModule} from '@angular/common';
 import {TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
-
 import {Store} from '@ngrx/store';
-import {provideMockStore, MockStore} from '@ngrx/store/testing';
-
+import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {DebuggerComponent} from '../../debugger_component';
 import {DebuggerContainer} from '../../debugger_container';
 import {
@@ -36,8 +34,6 @@ import {
 } from '../../testing';
 import {ExecutionDataContainer} from './execution_data_container';
 import {ExecutionDataModule} from './execution_data_module';
-
-/** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
 describe('Execution Data Container', () => {
   let store: MockStore<State>;

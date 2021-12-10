@@ -18,34 +18,32 @@ limitations under the License.
 import * as d3 from 'd3';
 import {graphlib} from 'dagre';
 import * as _ from 'lodash';
-
 import * as tb_debug from '../../../components/tb_debug';
-
 import {NodeStats, ProgressTracker} from './common';
-import * as template from './template';
+import * as tf_graph from './graph';
 import {
-  ROOT_NAME,
-  GraphType,
-  GroupNode,
-  Metaedge,
-  Metanode,
-  MetaedgeImpl,
-  Node,
-  NodeType,
-  OpNode,
-  SeriesNode,
-  SlimGraph,
   createGraph,
   createMetaedge,
   createMetanode,
   createSeriesNode,
+  Edges,
   getHierarchicalPath,
   getSeriesNodeName,
-  Edges,
+  GraphType,
+  GroupNode,
   LibraryFunctionData,
+  Metaedge,
+  MetaedgeImpl,
+  Metanode,
+  Node,
+  NodeType,
+  OpNode,
+  ROOT_NAME,
+  SeriesNode,
+  SlimGraph,
 } from './graph';
-import * as tf_graph from './graph';
 import * as tf_graph_proto from './proto';
+import * as template from './template';
 import * as tf_graph_util from './util';
 
 export enum HierarchyEvent {

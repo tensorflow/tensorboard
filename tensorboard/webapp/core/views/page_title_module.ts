@@ -12,11 +12,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
-
-import {PageTitleContainer} from './page_title_container';
+import {NgModule} from '@angular/core';
 import {PageTitleComponent} from './page_title_component';
+import {PageTitleContainer} from './page_title_container';
 
 @NgModule({
   declarations: [PageTitleContainer, PageTitleComponent],

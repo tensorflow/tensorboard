@@ -13,8 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {PolymerElement, html} from '@polymer/polymer';
-import {customElement, property, computed} from '@polymer/decorators';
+import {computed, customElement, property} from '@polymer/decorators';
+import {html, PolymerElement} from '@polymer/polymer';
 
 // tf-wbr-string safely renders a string, with <wbr> word break elements inserted
 // after substrings that match a regular expression pattern.

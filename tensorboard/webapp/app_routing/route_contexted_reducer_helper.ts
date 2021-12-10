@@ -41,7 +41,6 @@ limitations under the License.
  */
 
 import {ActionReducer, createReducer, on} from '@ngrx/store';
-
 import {navigated} from './actions';
 import {areSameRouteAndExperiments} from './internal_utils';
 import {Route} from './types';

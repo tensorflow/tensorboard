@@ -12,15 +12,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {
-  Directive,
-  HostBinding,
-  HostListener,
-  Inject,
-  Input,
-} from '@angular/core';
+import {Directive, HostBinding, HostListener, Input} from '@angular/core';
 import {Store} from '@ngrx/store';
-
 import {State} from '../../app_state';
 import {navigationRequested} from '../actions';
 import {AppRootProvider} from '../app_root';

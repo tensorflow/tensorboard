@@ -18,20 +18,18 @@ limitations under the License.
 import {CommonModule} from '@angular/common';
 import {TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
-
 import {Store} from '@ngrx/store';
-import {provideMockStore, MockStore} from '@ngrx/store/testing';
-
+import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {sourceLineFocused} from '../../actions';
 import {DebuggerComponent} from '../../debugger_component';
 import {DebuggerContainer} from '../../debugger_container';
-import {CodeLocationType, State} from '../../store/debugger_types';
 import {
   getCodeLocationOrigin,
-  getFocusedStackFrames,
   getFocusedSourceLineSpec,
+  getFocusedStackFrames,
   getStickToBottommostFrameInFocusedFile,
 } from '../../store';
+import {CodeLocationType, State} from '../../store/debugger_types';
 import {
   createDebuggerState,
   createState,
@@ -40,8 +38,6 @@ import {
 import {StackTraceComponent} from './stack_trace_component';
 import {StackTraceContainer} from './stack_trace_container';
 import {StackTraceModule} from './stack_trace_module';
-
-/** @typehack */ import * as _typeHackStore from '@ngrx/store';
 
 describe('Stack Trace container', () => {
   let store: MockStore<State>;
