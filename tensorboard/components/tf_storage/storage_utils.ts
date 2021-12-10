@@ -77,7 +77,7 @@ export function writeComponent(component: string, useLocationReplace = false) {
     if (useLocationReplace) {
       const url = new URL(window.location.href);
       url.hash = component;
-      window.history.replaceState(null, '', url.toString());
+      window.history.replaceState(window.history.state, '', url.toString());
     } else {
       window.location.hash = component;
     }

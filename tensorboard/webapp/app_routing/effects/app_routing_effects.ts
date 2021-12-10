@@ -46,25 +46,79 @@ import {
 } from '../internal_utils';
 import {Location} from '../location';
 import {ProgrammaticalNavigationModule} from '../programmatical_navigation_module';
-import {RouteConfigs} from '../route_config';
+import {RouteConfigs, RouteMatch} from '../route_config';
 import {RouteRegistryModule} from '../route_registry_module';
 import {
   getActiveNamespaceId,
   getActiveRoute,
 } from '../store/app_routing_selectors';
-import {Navigation, Route, RouteKind, RouteParams} from '../types';
+import {Route, RouteKind, RouteParams} from '../types';
 
 const initAction = createAction('[App Routing] Effects Init');
 
-interface InternalNavigation extends Navigation {
-  browserInitiated?: boolean;
+interface InternalNavigation {
+  pathname: string;
+  options: NavigationOptions;
 }
 
-interface NavigationOptions {
-  replaceState: boolean;
-  resetNamespacedState: boolean;
+interface InternalRouteMatch {
+  routeMatch: RouteMatch;
+  options: NavigationOptions;
 }
 
+interface InternalRoute {
+  route: Route;
+  options: NavigationOptions;
+}
+
+/**
+ * Describes how to update namespace and namespace id during navigation.
+ */
+enum NamespaceUpdateOption {
+  // Navigation should happen within the same namespace. The namespace id stays
+  // the same.
+  UNCHANGED,
+  // A new namespace should be generated for this navigation.
+  NEW,
+  // A specific namespace has been specified by history. It is possibly the same
+  // as the active namespace but it is also possibly a different one.
+  FROM_HISTORY,
+}
+
+type NavigationOptions =
+  | {
+      browserInitiated: boolean;
+      replaceState: boolean;
+      namespaceUpdateOption:
+        | NamespaceUpdateOption.NEW
+        | NamespaceUpdateOption.UNCHANGED;
+    }
+  | {
+      browserInitiated: boolean;
+      replaceState: boolean;
+      // When namespace is FROM_HISTORY, a namespaceId must also be provided.
+      namespaceUpdateOption: NamespaceUpdateOption.FROM_HISTORY;
+      namespaceId: string;
+    };
+
+/**
+ * Effects to translate attempted app navigations into Route navigation actions.
+ *
+ * There are four events that trigger the effects in this class:
+ *
+ *   * Application load
+ *   * navigationRequest action
+ *   * Browser history popstate event
+ *   * Programmatical navigations (see: ProgrammaticalNavigationModule)
+ *
+ * The progression of how internal data is transformed is:
+ *   * On event, immediately generate an InternalNavigation.
+ *   * Based on app's Route configuration, transform to an InternalRouteMatch.
+ *   * If the navigation is valid, transform into an InternalRoute.
+ *
+ * When an InternalRoute has been successfully created, browser history is
+ * updated and a navigation() action is fired.
+ */
 @Injectable()
 export class AppRoutingEffects {
   private readonly routeConfigs: RouteConfigs;
@@ -81,15 +135,28 @@ export class AppRoutingEffects {
     this.routeConfigs = registry.getRouteConfigs();
   }
 
-  private readonly onNavigationRequested$ = this.actions$.pipe(
-    ofType(navigationRequested),
-    map((navigation) => {
-      const resolvedPathname = navigation.pathname.startsWith('/')
-        ? this.appRootProvider.getAbsPathnameWithAppRoot(navigation.pathname)
-        : this.location.getResolvedPath(navigation.pathname);
-      return {...navigation, pathname: resolvedPathname};
-    })
-  );
+  /**
+   * Generates InternalNavigation from navigationRequested action.
+   */
+  private readonly onNavigationRequested$: Observable<InternalNavigation> =
+    this.actions$.pipe(
+      ofType(navigationRequested),
+      map((navigation) => {
+        const resolvedPathname = navigation.pathname.startsWith('/')
+          ? this.appRootProvider.getAbsPathnameWithAppRoot(navigation.pathname)
+          : this.location.getResolvedPath(navigation.pathname);
+        return {
+          pathname: resolvedPathname,
+          options: {
+            browserInitiated: false,
+            replaceState: navigation.replaceState ?? false,
+            namespaceUpdateOption: navigation.resetNamespacedState
+              ? NamespaceUpdateOption.NEW
+              : NamespaceUpdateOption.UNCHANGED,
+          },
+        };
+      })
+    );
 
   /**
    * @exports
@@ -105,34 +172,58 @@ export class AppRoutingEffects {
     );
   });
 
-  private readonly onInit$: Observable<Navigation> = this.actions$
+  /**
+   * Generates InternalNavigation from application load.
+   */
+  private readonly onInit$: Observable<InternalNavigation> = this.actions$
     .pipe(ofType(initAction))
     .pipe(
       delay(0),
       map(() => {
         return {
           pathname: this.location.getPath(),
-          replaceState: true,
-          browserInitiated: true,
+          options: {
+            browserInitiated: true,
+            replaceState: true,
+            namespaceUpdateOption: NamespaceUpdateOption.UNCHANGED,
+          },
         };
       })
     );
 
   /**
-   * Input observable must have absolute pathname with, when appRoot is present,
-   * appRoot prefixed (e.g., window.location.pathname).
+   * Generates InternalNavigation from browser history popstate event.
+   */
+  private readonly onPopState$: Observable<InternalNavigation> = this.location
+    .onPopState()
+    .pipe(
+      map((navigation) => {
+        return {
+          pathname: navigation.pathname,
+          options: {
+            browserInitiated: true,
+            replaceState: true,
+            namespaceUpdateOption: NamespaceUpdateOption.FROM_HISTORY,
+            namespaceId: navigation.state?.namespaceId,
+          },
+        };
+      })
+    );
+
+  /**
+   * Generates an InternalRouteMatch from the following events:
+   *
+   *   * Application load.
+   *   * navigationRequested action.
+   *   * Browser history popstate event.
+   *
+   * The input InternalNavigation values must have absolute pathname with
+   * appRoot prefixed (e.g., window.location.pathname) when appRoot is defined.
    */
   private readonly userInitNavRoute$ = merge(
     this.onNavigationRequested$,
     this.onInit$,
-    this.location.onPopState().pipe(
-      map((navigation) => {
-        return {
-          ...navigation,
-          browserInitiated: true,
-        };
-      })
-    )
+    this.onPopState$
   ).pipe(
     map<InternalNavigation, InternalNavigation>((navigation) => {
       // Expect to have absolute navigation here.
@@ -152,16 +243,18 @@ export class AppRoutingEffects {
       const routeMatch = this.routeConfigs.match(navigationWithAbsolutePath);
       return {
         routeMatch,
-        options: {
-          replaceState: navigationWithAbsolutePath.replaceState,
-          browserInitiated: navigationWithAbsolutePath.browserInitiated,
-          resetNamespacedState: navigationWithAbsolutePath.resetNamespacedState,
-        },
+        options: navigationWithAbsolutePath.options,
       };
     })
   );
 
-  private readonly programmticalNavRoute$ = this.actions$.pipe(
+  /**
+   * Generates an InternalNavigation then InternalRouteMatch for programmatical
+   * navigations.
+   *
+   * See: ProgrammaticalNavigationModule.
+   */
+  private readonly programmaticalNavRoute$ = this.actions$.pipe(
     map((action) => {
       return this.programmaticalNavModule.getNavigation(action);
     }),
@@ -197,21 +290,25 @@ export class AppRoutingEffects {
         options: {
           replaceState: false,
           browserInitiated: false,
-          resetNamespacedState: false,
-        },
+          namespaceUpdateOption: NamespaceUpdateOption.UNCHANGED,
+        } as NavigationOptions,
       };
     })
   );
 
-  private readonly validatedRoute$ = merge(
+  /**
+   * Merges all the event paths, ensuring they have generated a valid
+   * InternalRouteMatch.
+   */
+  private readonly validatedRouteMatch$: Observable<InternalRouteMatch> = merge(
     this.userInitNavRoute$,
-    this.programmticalNavRoute$
+    this.programmaticalNavRoute$
   ).pipe(
     filter(({routeMatch}) => Boolean(routeMatch)),
-    map((routeMatchAndOptions) => {
+    map(({routeMatch, options}) => {
       return {
-        routeMatch: routeMatchAndOptions.routeMatch!,
-        options: routeMatchAndOptions.options,
+        routeMatch: routeMatch!,
+        options,
       };
     })
   );
@@ -220,20 +317,25 @@ export class AppRoutingEffects {
    * @export
    */
   navigate$ = createEffect(() => {
-    const dispatchNavigating$ = this.validatedRoute$.pipe(
+    const dispatchNavigating$ = this.validatedRouteMatch$.pipe(
       withLatestFrom(this.store.select(getActiveRoute)),
-      mergeMap(([routes, oldRoute]) => {
+      mergeMap(([internalRouteMatch, oldRoute]) => {
+        // Check for unsaved updates and only proceed if the user confirms they
+        // want to continue without saving.
         const sameRouteId =
           oldRoute !== null &&
-          getRouteId(routes.routeMatch.routeKind, routes.routeMatch.params) ===
-            getRouteId(oldRoute.routeKind, oldRoute.params);
+          getRouteId(
+            internalRouteMatch.routeMatch.routeKind,
+            internalRouteMatch.routeMatch.params
+          ) === getRouteId(oldRoute.routeKind, oldRoute.params);
         const dirtySelectors =
           this.dirtyUpdatesRegistry.getDirtyUpdatesSelectors();
 
-        // Do not warn about dirty updates when route ID is the same (e.g. when
+        // Do not warn about unsaved updates when route ID is the same (e.g. when
         // changing tabs in the same experiment page or query params in experiment
         // list).
-        if (sameRouteId || !dirtySelectors.length) return of(routes);
+        if (sameRouteId || !dirtySelectors.length)
+          return of(internalRouteMatch);
         return forkJoin(
           this.dirtyUpdatesRegistry
             .getDirtyUpdatesSelectors()
@@ -257,7 +359,7 @@ export class AppRoutingEffects {
             return true;
           }),
           map(() => {
-            return routes;
+            return internalRouteMatch;
           })
         );
       }),
@@ -284,60 +386,48 @@ export class AppRoutingEffects {
           );
         }
       }),
-      switchMap(
-        ({
-          routeMatch,
-          options,
-        }): Observable<{
-          route: Route;
-          navigationOptions: NavigationOptions;
-        }> => {
-          const navigationOptions = {
-            replaceState: options.replaceState ?? false,
-            resetNamespacedState: options.resetNamespacedState ?? false,
-          };
-
-          if (routeMatch.deepLinkProvider === null) {
-            // Without a DeepLinkProvider emit a single result without query
-            // params.
-            return of({
-              route: {
-                routeKind: routeMatch.routeKind,
-                params: routeMatch.params,
-                pathname: routeMatch.pathname,
-                queryParams: [],
-              },
-              navigationOptions,
-            });
-          }
-
-          // With a DeepLinkProvider emit a new result each time the query
-          // params change.
-          return routeMatch
-            .deepLinkProvider!.serializeStateToQueryParams(this.store)
-            .pipe(
-              map((queryParams, index) => {
-                return {
-                  route: {
-                    routeKind: routeMatch.routeKind,
-                    params: routeMatch.params,
-                    pathname: routeMatch.pathname,
-                    queryParams,
-                  },
-                  // Only honor replaceState value on first emit. On subsequent
-                  // emits we always want to replaceState rather than pushState.
-                  navigationOptions:
-                    index === 0
-                      ? navigationOptions
-                      : {
-                          replaceState: true,
-                          resetNamespacedState: false,
-                        },
-                };
-              })
-            );
+      switchMap(({routeMatch, options}): Observable<InternalRoute> => {
+        if (routeMatch.deepLinkProvider === null) {
+          // Without a DeepLinkProvider emit a single result without query
+          // params.
+          return of({
+            route: {
+              routeKind: routeMatch.routeKind,
+              params: routeMatch.params,
+              pathname: routeMatch.pathname,
+              queryParams: [],
+            },
+            options,
+          });
         }
-      ),
+
+        // With a DeepLinkProvider emit a new result each time the query
+        // params change.
+        return routeMatch
+          .deepLinkProvider!.serializeStateToQueryParams(this.store)
+          .pipe(
+            map((queryParams, index) => {
+              return {
+                route: {
+                  routeKind: routeMatch.routeKind,
+                  params: routeMatch.params,
+                  pathname: routeMatch.pathname,
+                  queryParams,
+                },
+                // Only honor replaceState value on first emit. On subsequent
+                // emits we always want to replaceState rather than pushState.
+                options:
+                  index === 0
+                    ? options
+                    : {
+                        ...options,
+                        replaceState: true,
+                        resetNamespacedState: false,
+                      },
+              };
+            })
+          );
+      }),
       tap(({route}) => {
         // b/160185039: Allows the route store + router outlet to change
         // before the route change so all components do not have to
@@ -356,7 +446,7 @@ export class AppRoutingEffects {
 
     const changeUrl$ = dispatchNavigating$.pipe(
       withLatestFrom(this.store.select(getActiveRoute)),
-      map(([{route, navigationOptions}, oldRoute]) => {
+      map(([{route, options}, oldRoute]) => {
         // The URL hash can be set via HashStorageComponent (which uses
         // Polymer's tf-storage). DeepLinkProviders also modify the URL when
         // a provider's serializeStateToQueryParams() emits. These result in
@@ -378,10 +468,10 @@ export class AppRoutingEffects {
         return {
           preserveHash,
           route,
-          navigationOptions,
+          options,
         };
       }),
-      tap(({preserveHash, route, navigationOptions}) => {
+      tap(({preserveHash, route, options}) => {
         const shouldUpdateHistory = !areRoutesEqual(route, {
           pathname: this.appRootProvider.getAppRootlessPathname(
             this.location.getPath()
@@ -390,8 +480,9 @@ export class AppRoutingEffects {
         });
         if (!shouldUpdateHistory) return;
 
-        if (navigationOptions.replaceState) {
+        if (options.replaceState) {
           this.location.replaceState(
+            this.location.getHistoryState(),
             this.appRootProvider.getAbsPathnameWithAppRoot(
               this.location.getFullPathFromRouteOrNav(route, preserveHash)
             )
@@ -414,21 +505,33 @@ export class AppRoutingEffects {
       ),
       map(
         ([
-          {route, navigationOptions},
+          {route, options},
           oldRoute,
           beforeNamespaceId,
           enabledTimeNamespacedState,
         ]) => {
+          const afterNamespaceId = getAfterNamespaceId(
+            enabledTimeNamespacedState,
+            route,
+            options,
+            beforeNamespaceId
+          );
+
+          if (enabledTimeNamespacedState) {
+            this.location.replaceState(
+              {
+                ...this.location.getHistoryState(),
+                namespaceId: afterNamespaceId,
+              },
+              /* do not replace path */ null
+            );
+          }
+
           return navigated({
             before: oldRoute,
             after: route,
             beforeNamespaceId,
-            afterNamespaceId: getAfterNamespaceId(
-              enabledTimeNamespacedState,
-              route,
-              navigationOptions,
-              beforeNamespaceId
-            ),
+            afterNamespaceId,
           });
         }
       )
@@ -444,14 +547,19 @@ export class AppRoutingEffects {
 function getAfterNamespaceId(
   enabledTimeNamespacedState: boolean,
   route: Route,
-  navigationOptions: NavigationOptions,
+  options: NavigationOptions,
   beforeNamespaceId: string | null
 ): string {
   if (!enabledTimeNamespacedState) {
     return getRouteId(route.routeKind, route.params);
   } else {
     // Time-namespaced state is enabled.
-    if (beforeNamespaceId == null || navigationOptions.resetNamespacedState) {
+    if (options.namespaceUpdateOption === NamespaceUpdateOption.FROM_HISTORY) {
+      return options.namespaceId;
+    } else if (
+      beforeNamespaceId == null ||
+      options.namespaceUpdateOption === NamespaceUpdateOption.NEW
+    ) {
       return Date.now().toString();
     } else {
       return beforeNamespaceId;
