@@ -722,7 +722,9 @@ describe('metrics reducers', () => {
         actions.metricsResetImageBrightness()
       );
       expect(nextState.settings.imageBrightnessInMilli).toBe(300);
-      expect(nextState.settingOverrides.imageBrightnessInMilli).toBe(undefined);
+      expect(
+        nextState.settingOverrides.hasOwnProperty('imageBrightnessInMilli')
+      ).toBe(false);
     });
 
     it('resets imageContrastInMilli', () => {
@@ -739,7 +741,9 @@ describe('metrics reducers', () => {
         actions.metricsResetImageContrast()
       );
       expect(nextState.settings.imageContrastInMilli).toBe(300);
-      expect(nextState.settingOverrides.imageContrastInMilli).toBe(undefined);
+      expect(
+        nextState.settingOverrides.hasOwnProperty('imageContrastInMilli')
+      ).toBe(false);
     });
 
     it('changes imageShowActualSize on metricsToggleImageShowActualSize', () => {
@@ -799,7 +803,9 @@ describe('metrics reducers', () => {
       });
       const nextState = reducers(prevState, actions.metricsResetCardWidth());
       expect(nextState.settings.cardMinWidth).toBe(400);
-      expect(nextState.settingOverrides.cardMinWidth).toBe(null);
+      expect(nextState.settingOverrides.hasOwnProperty('cardMinWidth')).toBe(
+        false
+      );
     });
   });
 
