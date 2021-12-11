@@ -199,9 +199,13 @@ export class MetricsEffects implements OnInitEffects {
      */
     const requests: TimeSeriesRequest[] = fetchInfos.map((fetchInfo) => {
       const {plugin, tag, runId, sample} = fetchInfo;
-      return isSingleRunPlugin(plugin)
-        ? {plugin, tag, sample, runId: runId!}
-        : {plugin, tag, sample, experimentIds};
+      const partialRequest: TimeSeriesRequest = isSingleRunPlugin(plugin)
+        ? {plugin, tag, runId: runId!}
+        : {plugin, tag, experimentIds};
+      if (sample !== undefined) {
+        partialRequest.sample = sample;
+      }
+      return partialRequest;
     });
 
     // Fetch and handle responses.

@@ -33,7 +33,7 @@ export const npmiPluginDataLoaded = createAction(
   props<{
     annotationData: AnnotationDataListing;
     metrics: MetricListing;
-    embeddingDataSet?: EmbeddingDataSet;
+    embeddingDataSet: EmbeddingDataSet | undefined;
   }>()
 );
 

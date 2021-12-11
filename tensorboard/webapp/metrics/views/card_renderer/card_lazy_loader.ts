@@ -57,9 +57,17 @@ export class CardObserver {
       return;
     }
     this.intersectionCallback = intersectionCallback;
+
+    const init: IntersectionObserverInit = {
+      threshold: 0,
+      root: this.root ?? null,
+    };
+    if (this.buffer) {
+      init.rootMargin = this.buffer;
+    }
     this.intersectionObserver = new IntersectionObserver(
       this.onCardIntersection.bind(this),
-      {threshold: 0, root: this.root, rootMargin: this.buffer}
+      init
     );
   }
 

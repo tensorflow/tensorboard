@@ -31,7 +31,7 @@ interface PositiveMatch {
   params: RouteParams;
   pathParts: string[];
   isRedirection: boolean;
-  redirectionQueryParams?: SerializableQueryParams;
+  redirectionQueryParams?: SerializableQueryParams | undefined;
 }
 
 type Match = NegativeMatch | PositiveMatch;
@@ -285,7 +285,7 @@ export interface NonRedirectionRouteMatch extends BaseRedirectionRouteMatch {
 
 export interface RedirectionRouteMatch extends BaseRedirectionRouteMatch {
   originateFromRedirection: true;
-  redirectionOnlyQueryParams?: Route['queryParams'];
+  redirectionOnlyQueryParams: Route['queryParams'] | undefined;
 }
 
 export type RouteMatch = NonRedirectionRouteMatch | RedirectionRouteMatch;
@@ -441,7 +441,8 @@ export class RouteConfigs {
         deepLinkProvider: definition.deepLinkProvider ?? null,
         pathname: definition.path,
         params: {},
-        originateFromRedirection: wasRedirected,
+        originateFromRedirection: true,
+        redirectionOnlyQueryParams: undefined,
       };
     }
 

@@ -54,7 +54,7 @@ function buildRouteMatch(override: Partial<RouteMatch> = {}): RouteMatch {
     deepLinkProvider: null,
     originateFromRedirection: false,
     ...override,
-  };
+  } as RouteMatch;
 }
 
 describe('route config', () => {

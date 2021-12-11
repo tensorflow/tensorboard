@@ -84,7 +84,7 @@ export class TBHttpClient implements TBHttpClientInterface {
     path: string,
     // Angular's HttpClient is typed exactly this way.
     body: any | null,
-    options: PostOptions = {}
+    options: PostOptions | undefined = {}
   ): Observable<ResponseType> {
     options = withXsrfHeader(options);
     return this.store.select(getIsFeatureFlagsLoaded).pipe(
@@ -99,7 +99,7 @@ export class TBHttpClient implements TBHttpClientInterface {
         // See b/72932164.
         if (isInColab) {
           return this.http.get<ResponseType>(resolvedPath, {
-            headers: options.headers,
+            headers: options.headers ?? {},
             params: convertFormDataToObject(body),
           });
         } else {

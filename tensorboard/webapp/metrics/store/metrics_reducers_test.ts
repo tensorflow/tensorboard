@@ -2018,7 +2018,7 @@ describe('metrics reducers', () => {
 
         const after = reducers(
           before,
-          actions.timeSelectionChanged({startStep: 2})
+          actions.timeSelectionChanged({startStep: 2, endStep: undefined})
         );
 
         expect(after.selectedTime).toEqual({
@@ -2058,9 +2058,7 @@ describe('metrics reducers', () => {
 
           const after = reducers(
             before,
-            actions.timeSelectionChanged({
-              startStep: 2,
-            })
+            actions.timeSelectionChanged({startStep: 2, endStep: undefined})
           );
 
           expect(after.selectedTime).toEqual({
@@ -2077,9 +2075,7 @@ describe('metrics reducers', () => {
 
         const nextState = reducers(
           beforeState,
-          actions.timeSelectionChanged({
-            startStep: 2,
-          })
+          actions.timeSelectionChanged({startStep: 2, endStep: undefined})
         );
 
         expect(nextState.selectTimeEnabled).toBe(true);
@@ -2116,9 +2112,7 @@ describe('metrics reducers', () => {
 
           const nextState = reducers(
             beforeState,
-            actions.timeSelectionChanged({
-              startStep: 150,
-            })
+            actions.timeSelectionChanged({startStep: 150, endStep: undefined})
           );
 
           expect(nextState.selectedTime).toEqual({

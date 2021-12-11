@@ -32,7 +32,7 @@ export abstract class NpmiDataSource {
   abstract fetchData(experimentIds: string[]): Observable<{
     annotationData: AnnotationDataListing;
     metrics: MetricListing;
-    embeddingDataSet?: EmbeddingDataSet;
+    embeddingDataSet: EmbeddingDataSet | undefined;
   }>;
 }
 

@@ -167,7 +167,9 @@ describe('runs_table', () => {
     if (columns) {
       fixture.componentInstance.columns = columns;
     }
-    fixture.componentInstance.usePagination = usePagination;
+    if (usePagination !== undefined) {
+      fixture.componentInstance.usePagination = usePagination;
+    }
     fixture.detectChanges();
 
     return fixture;
