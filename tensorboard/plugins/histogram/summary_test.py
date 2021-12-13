@@ -122,6 +122,8 @@ class SummaryBaseTest(object):
     def test_with_large_counts(self):
         # Check for accumulating floating point errors with large counts (> 2^24).
         # See https://github.com/tensorflow/tensorflow/issues/51419 for details.
+        if os.environ.get("TEST_SIZE", "small") != "large":
+            self.skipTest("Not enough RAM to run this test.")
         large_count = 20_000_000
         data = [0] + [1] * large_count
         pb = self.histogram("large_count", data=data, buckets=2)
