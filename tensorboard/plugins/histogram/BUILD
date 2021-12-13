@@ -125,21 +125,6 @@ py_test(
     ],
 )
 
-py_test(
-    name = "large_count_summary_test",
-    # Ensure enough RAM for test_with_large_counts.
-    size = "large",
-    srcs = ["large_count_summary_test.py"],
-    main = "large_count_summary_test.py",
-    srcs_version = "PY3",
-    deps = [
-        ":summary",
-        "//tensorboard:expect_tensorflow_installed",
-        "//tensorboard/compat/proto:protos_all_py_pb2",
-        "//tensorboard/util:tensor_util",
-    ],
-)
-
 py_binary(
     name = "histograms_demo",
     srcs = ["histograms_demo.py"],

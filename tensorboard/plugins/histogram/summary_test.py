@@ -119,6 +119,16 @@ class SummaryBaseTest(object):
         buckets = tensor_util.make_ndarray(pb.value[0].tensor)
         self.assertEqual(buckets.shape, (bucket_count, 3))
 
+    def test_with_large_counts(self):
+        # Check for accumulating floating point errors with large counts (> 2^24).
+        # See https://github.com/tensorflow/tensorflow/issues/51419 for details.
+        large_count = 20_000_000
+        data = [0] + [1] * large_count
+        pb = self.histogram("large_count", data=data, buckets=2)
+        buckets = tensor_util.make_ndarray(pb.value[0].tensor)
+        self.assertEqual(buckets[0][2], 1)
+        self.assertEqual(buckets[1][2], large_count)
+
 
 class SummaryV1PbTest(SummaryBaseTest, tf.test.TestCase):
     def histogram(self, *args, **kwargs):
