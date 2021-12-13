@@ -224,6 +224,8 @@ describe('route config', () => {
           routeKind: RouteKind.EXPERIMENT,
           pathname: '/tb/bestest',
           params: {},
+          originateFromRedirection: true,
+          redirectionOnlyQueryParams: undefined,
         })
       );
     });
@@ -268,6 +270,8 @@ describe('route config', () => {
           routeKind: RouteKind.EXPERIMENT,
           pathname: '/tb',
           params: {},
+          originateFromRedirection: true,
+          redirectionOnlyQueryParams: undefined,
         })
       );
     });
@@ -494,6 +498,8 @@ describe('route config', () => {
           routeKind: RouteKind.EXPERIMENT,
           pathname: '/default',
           params: {},
+          originateFromRedirection: true,
+          redirectionOnlyQueryParams: undefined,
         })
       );
     });
@@ -508,6 +514,7 @@ describe('route config', () => {
         buildRouteMatch({
           pathname: '/c',
           originateFromRedirection: true,
+          redirectionOnlyQueryParams: undefined,
         })
       );
     });
