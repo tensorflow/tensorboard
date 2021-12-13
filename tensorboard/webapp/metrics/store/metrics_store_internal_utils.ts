@@ -295,7 +295,17 @@ export function buildOrReturnStateWithPinnedCopy(
   };
 }
 
-export function updateCardMaps(
+/**
+ * Returns updated cardToPinnedCopy, pinnedCardToOriginal, and cardmetadatamap.
+ * Under the same namespace, cardToPinnedCopy and pinnedCardToOriginal are
+ * routeful state and remained still, which might stil include the outdated
+ * mapping of removed experiments. This function handles the mappings.
+ * In the reducer nextCardmetadatamap is created from empty instead of
+ * preserving the previous map, which might also contain outdated mapping due to
+ * the same reason. To preserve the pinned card mapping we need to adding the
+ * pinned card mappng to cardmetadatamap.
+ */
+export function updatePinnedCardMappingsUnderNamespaceUnchanged(
   cardToPinnedCopy: CardToPinnedCard,
   pinnedCardToOriginal: PinnedCardToCard,
   nextCardMetadataMap: CardMetadataMap,

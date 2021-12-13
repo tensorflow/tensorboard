@@ -30,7 +30,7 @@ import {
   getRunIds,
   getTimeSeriesLoadable,
   TEST_ONLY,
-  updateCardMaps,
+  updatePinnedCardMappingsUnderNamespaceUnchanged,
 } from './metrics_store_internal_utils';
 import {ImageTimeSeriesData} from './metrics_types';
 import {CardId} from '../internal_types';
@@ -503,8 +503,8 @@ describe('metrics store utils', () => {
     });
   });
 
-  describe('updateCardMaps', () => {
-    it('keeps cardToPinnedCopy and pinnedCardToOriginal as status quo on all pinned cards are in cardlist ', () => {
+  describe('updatePinnedCardMappingsUnderNamespaceUnchanged', () => {
+    it('remains cardToPinnedCopy and pinnedCardToOriginal unchanged on all pinned cards included in cardlist ', () => {
       const cardToPinnedCopy = new Map([
         ['card1', 'card-pin1'],
         ['card2', 'card-pin2'],
@@ -523,7 +523,7 @@ describe('metrics store utils', () => {
         nextCardToPinnedCopy,
         nextPinnedCardToOriginal,
         nextCardMetadataMap,
-      } = updateCardMaps(
+      } = updatePinnedCardMappingsUnderNamespaceUnchanged(
         cardToPinnedCopy,
         pinnedCardToOriginal,
         cardMetadataMap,
@@ -544,7 +544,7 @@ describe('metrics store utils', () => {
       );
     });
 
-    it('removes pinned cards from the maps when the cards are not in cardList ', () => {
+    it('removes pinned cards from the maps on pinned cards not included in cardList ', () => {
       const cardToPinnedCopy = new Map([
         ['card1', 'card-pin1'],
         ['card2', 'card-pin2'],
@@ -563,7 +563,7 @@ describe('metrics store utils', () => {
         nextCardToPinnedCopy,
         nextPinnedCardToOriginal,
         nextCardMetadataMap,
-      } = updateCardMaps(
+      } = updatePinnedCardMappingsUnderNamespaceUnchanged(
         cardToPinnedCopy,
         pinnedCardToOriginal,
         cardMetadataMap,
@@ -582,18 +582,19 @@ describe('metrics store utils', () => {
       );
     });
 
-    it('preserves pinned cards in cardMetadataMap', () => {
+    it('preserves pinned cards mapping in cardMetadataMap', () => {
       const cardToPinnedCopy = new Map([['card1', 'card-pin1']]);
       const pinnedCardToOriginal = new Map([['card-pin1', 'card1']]);
       const cardMetadataMap = {card1: createCardMetadata()};
       const cardList = ['card1'];
 
-      const {nextCardMetadataMap} = updateCardMaps(
-        cardToPinnedCopy,
-        pinnedCardToOriginal,
-        cardMetadataMap,
-        cardList
-      );
+      const {nextCardMetadataMap} =
+        updatePinnedCardMappingsUnderNamespaceUnchanged(
+          cardToPinnedCopy,
+          pinnedCardToOriginal,
+          cardMetadataMap,
+          cardList
+        );
 
       const expectedCardMetadataMap = {
         card1: createCardMetadata(),
