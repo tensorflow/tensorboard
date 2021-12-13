@@ -129,20 +129,12 @@ describe('Graph Container', () => {
               },
             ];
             store.overrideSelector(getFocusedGraphOpInfo, op2);
-            store.overrideSelector(getFocusedGraphOpInputs, [
-              {
-                ...op2.inputs[0],
-                data: neighborDataAvailable ? op1 : undefined,
-              },
-            ]);
-            store.overrideSelector(getFocusedGraphOpConsumers, [
-              [
-                {
-                  ...op2.consumers[0][0],
-                  data: neighborDataAvailable ? op3 : undefined,
-                },
-              ],
-            ]);
+            const input = {...op2.inputs[0]};
+            if (neighborDataAvailable) input.data = op1;
+            store.overrideSelector(getFocusedGraphOpInputs, [input]);
+            const consumer = {...op2.consumers[0][0]};
+            if (neighborDataAvailable) consumer.data = op3;
+            store.overrideSelector(getFocusedGraphOpConsumers, [[consumer]]);
 
             fixture.detectChanges();
 
