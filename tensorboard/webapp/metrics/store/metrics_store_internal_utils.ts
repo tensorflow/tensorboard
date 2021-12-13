@@ -296,7 +296,7 @@ export function buildOrReturnStateWithPinnedCopy(
 }
 
 /**
- * Returns updated cardToPinnedCopy, pinnedCardToOriginal, and cardmetadatamap.
+ * Returns updated cardToPinnedCopy, pinnedCardToOriginal, and cardMetadataMap.
  * Under the same namespace, cardToPinnedCopy and pinnedCardToOriginal are
  * routeful state and remained still, which might stil include the outdated
  * mapping of removed experiments. This function handles the mappings.

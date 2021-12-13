@@ -29,11 +29,10 @@ import {
   getPinnedCardId,
   getRunIds,
   getTimeSeriesLoadable,
-  TEST_ONLY,
   updatePinnedCardMappingsUnderNamespaceUnchanged,
+  TEST_ONLY,
 } from './metrics_store_internal_utils';
 import {ImageTimeSeriesData} from './metrics_types';
-import {CardId} from '../internal_types';
 
 describe('metrics store utils', () => {
   it('getTimeSeriesLoadable properly gets loadables', () => {
@@ -504,83 +503,88 @@ describe('metrics store utils', () => {
   });
 
   describe('updatePinnedCardMappingsUnderNamespaceUnchanged', () => {
-    it('remains cardToPinnedCopy and pinnedCardToOriginal unchanged on all pinned cards included in cardlist ', () => {
-      const cardToPinnedCopy = new Map([
-        ['card1', 'card-pin1'],
-        ['card2', 'card-pin2'],
-      ]);
-      const pinnedCardToOriginal = new Map([
-        ['card-pin1', 'card1'],
-        ['card-pin2', 'card2'],
-      ]);
-      const cardList = ['card1', 'card2'];
-      const cardMetadataMap = {
-        card1: createCardMetadata(),
-        card2: createCardMetadata(),
-      };
-
-      const {
-        nextCardToPinnedCopy,
-        nextPinnedCardToOriginal,
-        nextCardMetadataMap,
-      } = updatePinnedCardMappingsUnderNamespaceUnchanged(
-        cardToPinnedCopy,
-        pinnedCardToOriginal,
-        cardMetadataMap,
-        cardList
-      );
-
-      expect(nextCardToPinnedCopy).toEqual(
-        new Map([
+    it(
+      'remains cardToPinnedCopy and pinnedCardToOriginal unchanged on all ' +
+        'pinned cards included in cardlist ',
+      () => {
+        const cardToPinnedCopy = new Map([
           ['card1', 'card-pin1'],
           ['card2', 'card-pin2'],
-        ])
-      );
-      expect(nextPinnedCardToOriginal).toEqual(
-        new Map([
+        ]);
+        const pinnedCardToOriginal = new Map([
           ['card-pin1', 'card1'],
           ['card-pin2', 'card2'],
-        ])
-      );
-    });
+        ]);
+        const cardList = ['card1', 'card2'];
+        const cardMetadataMap = {
+          card1: createCardMetadata(),
+          card2: createCardMetadata(),
+        };
 
-    it('removes pinned cards from the maps on pinned cards not included in cardList ', () => {
-      const cardToPinnedCopy = new Map([
-        ['card1', 'card-pin1'],
-        ['card2', 'card-pin2'],
-      ]);
-      const pinnedCardToOriginal = new Map([
-        ['card-pin1', 'card1'],
-        ['card-pin2', 'card2'],
-      ]);
-      const cardList = ['card1', 'card3'];
-      const cardMetadataMap = {
-        card1: createCardMetadata(),
-        card3: createCardMetadata(),
-      };
+        const {nextCardToPinnedCopy, nextPinnedCardToOriginal} =
+          updatePinnedCardMappingsUnderNamespaceUnchanged(
+            cardToPinnedCopy,
+            pinnedCardToOriginal,
+            cardMetadataMap,
+            cardList
+          );
 
-      const {
-        nextCardToPinnedCopy,
-        nextPinnedCardToOriginal,
-        nextCardMetadataMap,
-      } = updatePinnedCardMappingsUnderNamespaceUnchanged(
-        cardToPinnedCopy,
-        pinnedCardToOriginal,
-        cardMetadataMap,
-        cardList
-      );
+        expect(nextCardToPinnedCopy).toEqual(
+          new Map([
+            ['card1', 'card-pin1'],
+            ['card2', 'card-pin2'],
+          ])
+        );
+        expect(nextPinnedCardToOriginal).toEqual(
+          new Map([
+            ['card-pin1', 'card1'],
+            ['card-pin2', 'card2'],
+          ])
+        );
+      }
+    );
 
-      const expectedCardMetadataMap = {
-        card1: createCardMetadata(),
-        card3: createCardMetadata(),
-        'card-pin1': createCardMetadata(),
-      };
-      expect(nextCardMetadataMap).toEqual(expectedCardMetadataMap);
-      expect(nextCardToPinnedCopy).toEqual(new Map([['card1', 'card-pin1']]));
-      expect(nextPinnedCardToOriginal).toEqual(
-        new Map([['card-pin1', 'card1']])
-      );
-    });
+    it(
+      'removes pinned cards from the maps on pinned cards not included in' +
+        'cardList',
+      () => {
+        const cardToPinnedCopy = new Map([
+          ['card1', 'card-pin1'],
+          ['card2', 'card-pin2'],
+        ]);
+        const pinnedCardToOriginal = new Map([
+          ['card-pin1', 'card1'],
+          ['card-pin2', 'card2'],
+        ]);
+        const cardList = ['card1', 'card3'];
+        const cardMetadataMap = {
+          card1: createCardMetadata(),
+          card3: createCardMetadata(),
+        };
+
+        const {
+          nextCardToPinnedCopy,
+          nextPinnedCardToOriginal,
+          nextCardMetadataMap,
+        } = updatePinnedCardMappingsUnderNamespaceUnchanged(
+          cardToPinnedCopy,
+          pinnedCardToOriginal,
+          cardMetadataMap,
+          cardList
+        );
+
+        const expectedCardMetadataMap = {
+          card1: createCardMetadata(),
+          card3: createCardMetadata(),
+          'card-pin1': createCardMetadata(),
+        };
+        expect(nextCardMetadataMap).toEqual(expectedCardMetadataMap);
+        expect(nextCardToPinnedCopy).toEqual(new Map([['card1', 'card-pin1']]));
+        expect(nextPinnedCardToOriginal).toEqual(
+          new Map([['card-pin1', 'card1']])
+        );
+      }
+    );
 
     it('preserves pinned cards mapping in cardMetadataMap', () => {
       const cardToPinnedCopy = new Map([['card1', 'card-pin1']]);
