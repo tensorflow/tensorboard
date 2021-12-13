@@ -131,11 +131,8 @@ py_test(
     size = "large",
     srcs = ["summary_test.py"],
     args = [
-        "SummaryV1OpTest.test_with_large_counts",
-        "SummaryV1PbTest.test_with_large_counts",
-        "SummaryV2PbTest.test_with_large_counts",
-        "SummaryV3OpTest.test_with_large_counts",
-        "SummaryV3OpGraphTest.test_with_large_counts",
+        "-- -k",
+        "test_with_large_counts",
     ],
     main = "summary_test.py",
     srcs_version = "PY3",
