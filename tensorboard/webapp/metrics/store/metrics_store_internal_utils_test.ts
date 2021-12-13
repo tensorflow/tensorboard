@@ -504,8 +504,7 @@ describe('metrics store utils', () => {
 
   describe('updatePinnedCardMappingsUnderNamespaceUnchanged', () => {
     it(
-      'remains cardToPinnedCopy and pinnedCardToOriginal unchanged on all ' +
-        'pinned cards included in cardlist ',
+      `remains cardToPinnedCopy and pinnedCardToOriginal unchanged on all pinned cards included in cardlist `,
       () => {
         const cardToPinnedCopy = new Map([
           ['card1', 'card-pin1'],
@@ -545,8 +544,7 @@ describe('metrics store utils', () => {
     );
 
     it(
-      'removes pinned cards from the maps on pinned cards not included in' +
-        'cardList',
+      `removes pinned cards from the maps on pinned cards not included in cardList`,
       () => {
         const cardToPinnedCopy = new Map([
           ['card1', 'card-pin1'],
