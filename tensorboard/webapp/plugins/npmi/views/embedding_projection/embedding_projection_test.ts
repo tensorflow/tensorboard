@@ -17,6 +17,7 @@ limitations under the License.
  */
 import {TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
+import {NO_ERRORS_SCHEMA} from '@angular/core';
 
 import {Store, Action} from '@ngrx/store';
 import {provideMockStore, MockStore} from '@ngrx/store/testing';
@@ -30,7 +31,6 @@ import {EmbeddingProjectionContainer} from './embedding_projection_container';
 import * as npmiActions from '../../actions';
 
 /** @typehack */ import * as _typeHackStore from '@ngrx/store';
-import {NO_ERRORS_SCHEMA} from '@angular/core';
 
 describe('Npmi Embedding Projection Container', () => {
   let store: MockStore<State>;

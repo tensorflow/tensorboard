@@ -36,6 +36,10 @@ limitations under the License.
   font-weight: 500;
 }
 
+.projection {
+  overflow-y: auto;
+}
+
 .side-toggle {
   align-items: center;
   background-color: mat.get-color-from-palette($tb-background, raised-button);
@@ -45,8 +49,4 @@ limitations under the License.
   height: 30px;
   justify-content: center;
   width: 30px;
-}
-
-.projection {
-  overflow-y: auto;
 }
