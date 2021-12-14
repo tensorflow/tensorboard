@@ -18,7 +18,7 @@ export declare interface Experiment {
   name: string;
   start_time: number;
   owner?: string;
-  description: string | undefined;
+  description?: string;
   hparams?: string;
   tags?: string[];
   related_links?: Array<{name: string; url: string}>;

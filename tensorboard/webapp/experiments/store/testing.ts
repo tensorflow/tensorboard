@@ -27,7 +27,6 @@ import {
 export function buildExperiment(override?: Partial<Experiment>): Experiment {
   return {
     id: '1',
-    description: undefined,
     name: 'Default Experiment',
     start_time: 1,
     ...override,

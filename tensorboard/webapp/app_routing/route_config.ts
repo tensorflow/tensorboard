@@ -31,7 +31,7 @@ interface PositiveMatch {
   params: RouteParams;
   pathParts: string[];
   isRedirection: boolean;
-  redirectionQueryParams?: SerializableQueryParams | undefined;
+  redirectionQueryParams: SerializableQueryParams | undefined;
 }
 
 type Match = NegativeMatch | PositiveMatch;
@@ -172,6 +172,7 @@ abstract class RouteConfigMatcher {
       params: combinedParams,
       pathParts,
       isRedirection: false,
+      redirectionQueryParams: undefined,
     };
   }
 
@@ -186,6 +187,7 @@ abstract class RouteConfigMatcher {
       params,
       pathParts,
       isRedirection: false,
+      redirectionQueryParams: undefined,
     };
   }
 
@@ -243,6 +245,7 @@ class StaticRedirectionRouteConfigMatcher extends RouteConfigMatcher {
       params: match.params,
       pathParts: newPathParts,
       isRedirection: true,
+      redirectionQueryParams: undefined,
     };
   }
 }

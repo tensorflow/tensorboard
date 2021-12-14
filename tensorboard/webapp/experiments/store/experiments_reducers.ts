@@ -25,7 +25,6 @@ import {ExperimentsDataState, ExperimentsState} from './experiments_types';
 const defaultExperiment: Experiment = {
   id: DEFAULT_EXPERIMENT_ID,
   name: '',
-  description: undefined,
   start_time: 0,
 };
 
