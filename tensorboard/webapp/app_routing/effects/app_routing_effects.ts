@@ -328,9 +328,9 @@ export class AppRoutingEffects {
           areSameRouteAndExperiments(oldRoute, internalRouteMatch.routeMatch);
         const dirtySelectors =
           this.dirtyUpdatesRegistry.getDirtyUpdatesSelectors();
-        // Do not warn about unsaved updates when route ID is the same (e.g. when
-        // changing tabs in the same experiment page or query params in experiment
-        // list).
+        // Do not warn about unsaved updates when route and experiments are the
+        // same (e.g. when changing tabs in the same experiment page or query
+        // params in experiment list).
         if (sameRouteAndExperiments || !dirtySelectors.length)
           return of(internalRouteMatch);
         return forkJoin(
