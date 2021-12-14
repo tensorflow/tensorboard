@@ -114,13 +114,13 @@ text {
 
 .extent-edit-button {
   background-color: mat.get-color-from-palette(mat.$gray-palette, 200);
-  display: none;
   font-size: 0;
   height: 24px;
   line-height: 24px;
   position: absolute;
   right: 5px;
   top: 5px;
+  visibility: hidden;
   width: 24px;
 
   mat-icon {
@@ -164,8 +164,9 @@ text {
 }
 
 .axis:hover .extent-edit-button,
+.axis:focus-within .extent-edit-button,
 .extent-edit-menu-opened {
-  display: initial;
+  visibility: visible;
 }
 
 .major {

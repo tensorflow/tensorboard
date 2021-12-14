@@ -17,6 +17,13 @@ limitations under the License.
 :host {
   contain: strict;
   display: inline-block;
+
+  .custom-vis {
+    // custom-vis shows on top of interactive-view but we still need to give
+    // mouse interactions to the interactive-view. Currently, the contract is
+    // that you can only supply purely visual UI on top of the line chart.
+    pointer-events: none;
+  }
 }
 
 .container {
@@ -60,13 +67,6 @@ limitations under the License.
     position: absolute;
     top: 0;
     width: 100%;
-  }
-
-  .custom-vis {
-    // custom-vis shows on top of interactive-view but we still need to give
-    // mouse interactions to the interactive-view. Currently, the contract is
-    // that you can only supply purely visual UI on top of the line chart.
-    pointer-events: none;
   }
 }
 
