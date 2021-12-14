@@ -74,7 +74,7 @@ jobs:
           printf '%s\n' >>~/.bazelrc \
             "common --google_credentials=${creds_file}" \
             "common --remote_upload_local_results=true" \
-            "common --remote_timeout=5m" \
+            "common --remote_timeout=3m" \
             ;
       - name: 'Install TensorFlow'
         run: pip install "${TENSORFLOW_VERSION}"
