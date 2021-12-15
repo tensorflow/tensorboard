@@ -342,7 +342,7 @@ export const getFocusedGraphOpInputs = createSelector(
           ...inputSpec,
         };
         if (graph.has(inputSpec.op_name)) {
-          spec.data = graph.get(inputSpec.op_name);
+          spec.data = graph.get(inputSpec.op_name)!;
         }
         return spec;
       });
@@ -427,7 +427,7 @@ export const getFocusedGraphOpConsumers = createSelector(
         return slotConsumers.map((consumerSpec) => {
           const spec: GraphOpConsumerSpec = {...consumerSpec};
           if (graph.has(consumerSpec.op_name)) {
-            spec.data = graph.get(consumerSpec.op_name);
+            spec.data = graph.get(consumerSpec.op_name)!;
           }
           return spec;
         });

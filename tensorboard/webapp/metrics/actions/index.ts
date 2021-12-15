@@ -173,7 +173,7 @@ export const timeSelectionChanged = createAction(
   '[Metrics] Linked Time Selection Changed',
   props<{
     startStep: number;
-    endStep?: number;
+    endStep: number | undefined;
   }>()
 );
 

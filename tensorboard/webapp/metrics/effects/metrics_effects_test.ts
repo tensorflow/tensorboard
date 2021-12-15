@@ -36,6 +36,7 @@ import {
   PluginType,
   SingleRunPluginType,
   TagMetadata,
+  TimeSeriesRequest,
   TimeSeriesResponse,
 } from '../data_source';
 import {getMetricsTagMetadataLoadState} from '../store';
@@ -328,11 +329,10 @@ describe('metrics effects', () => {
         }
       }
 
-      function buildTimeSeriesResponse() {
+      function buildTimeSeriesResponse(): TimeSeriesResponse {
         return {
           plugin: PluginType.SCALARS,
           tag: 'tagA',
-          sample: undefined,
           runToSeries: {
             run1: createScalarStepData(),
           },
@@ -377,13 +377,11 @@ describe('metrics effects', () => {
                   plugin: PluginType.SCALARS as MultiRunPluginType,
                   tag: 'tagA',
                   experimentIds: ['exp1'],
-                  sample: undefined,
                 },
                 {
                   plugin: PluginType.SCALARS as MultiRunPluginType,
                   tag: 'tagA',
                   experimentIds: ['exp1'],
-                  sample: undefined,
                 },
               ],
             }),
@@ -425,7 +423,6 @@ describe('metrics effects', () => {
                   plugin: PluginType.SCALARS as MultiRunPluginType,
                   tag: 'tagA',
                   experimentIds: ['exp1'],
-                  sample: undefined,
                 },
               ],
             }),
@@ -594,11 +591,10 @@ describe('metrics effects', () => {
           })
         );
 
-        const expectedRequest = {
+        const expectedRequest: TimeSeriesRequest = {
           plugin: PluginType.SCALARS as MultiRunPluginType,
           tag: 'tagA',
           experimentIds: ['exp1'],
-          sample: undefined,
         };
         expect(fetchTimeSeriesSpy.calls.count()).toBe(1);
         expect(fetchTimeSeriesSpy).toHaveBeenCalledWith([expectedRequest]);
@@ -693,12 +689,11 @@ describe('metrics effects', () => {
           })
         );
 
-        const expectedRequests = [
+        const expectedRequests: TimeSeriesRequest[] = [
           {
             plugin: PluginType.SCALARS as MultiRunPluginType,
             tag: 'tagA',
             experimentIds: ['exp1'],
-            sample: undefined,
           },
           {
             plugin: PluginType.IMAGES as SingleRunPluginType,

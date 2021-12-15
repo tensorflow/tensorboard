@@ -2,6 +2,7 @@
   "compilerOptions": {
     "downlevelIteration": true,
     "emitDecoratorMetadata": true,
+    "exactOptionalPropertyTypes": true,
     "experimentalDecorators": true,
     "importHelpers": true,
     "inlineSourceMap": true,

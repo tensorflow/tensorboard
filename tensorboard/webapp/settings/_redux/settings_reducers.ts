@@ -89,7 +89,7 @@ const reducer = createReducer(
       Number.isFinite(partialSettings.pageSize) &&
       partialSettings.pageSize! > 0
     ) {
-      nextSettings.pageSize = partialSettings.pageSize;
+      nextSettings.pageSize = Number(partialSettings.pageSize);
     }
 
     if (typeof partialSettings.autoReload === 'boolean') {
@@ -100,7 +100,9 @@ const reducer = createReducer(
       Number.isFinite(partialSettings.autoReloadPeriodInMs) &&
       partialSettings.autoReloadPeriodInMs! > MIN_RELOAD_PERIOD_IN_MS
     ) {
-      nextSettings.reloadPeriodInMs = partialSettings.autoReloadPeriodInMs;
+      nextSettings.reloadPeriodInMs = Number(
+        partialSettings.autoReloadPeriodInMs
+      );
     }
 
     return {

@@ -14,6 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import {Action, createReducer, on} from '@ngrx/store';
 import * as actions from '../actions';
+import {AlertInfo} from '../types';
 import {AlertState} from './alert_types';
 
 const initialState: AlertState = {
@@ -25,14 +26,14 @@ const reducer = createReducer(
   on(
     actions.alertReported,
     (state: AlertState, {localizedMessage, followupAction}): AlertState => {
-      return {
-        ...state,
-        latestAlert: {
-          localizedMessage,
-          followupAction,
-          created: Date.now(),
-        },
+      const latestAlert: AlertInfo = {
+        localizedMessage,
+        created: Date.now(),
       };
+      if (followupAction) {
+        latestAlert.followupAction = followupAction;
+      }
+      return {...state, latestAlert};
     }
   )
 );

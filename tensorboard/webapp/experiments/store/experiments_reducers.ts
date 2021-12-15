@@ -19,9 +19,10 @@ import {
   createReducer,
 } from '@ngrx/store';
 import {DEFAULT_EXPERIMENT_ID} from '../../app_routing/types';
+import {Experiment} from '../types';
 import {ExperimentsDataState, ExperimentsState} from './experiments_types';
 
-const defaultExperiment = {
+const defaultExperiment: Experiment = {
   id: DEFAULT_EXPERIMENT_ID,
   name: '',
   start_time: 0,

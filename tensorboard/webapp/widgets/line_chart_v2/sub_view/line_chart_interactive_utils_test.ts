@@ -103,12 +103,17 @@ describe('line_chart_v2/sub_view/interactive_utils test', () => {
       wheelOption: Partial<WheelEventInit> = {},
       mouseOption: Partial<{offsetX: number; offsetY: number}> = {}
     ): WheelEvent {
-      const event = new WheelEvent('wheel', {
+      const wheelEventInit: WheelEventInit = {
         deltaMode: WheelEvent.DOM_DELTA_LINE,
         ...wheelOption,
-        clientX: mouseOption.offsetX,
-        clientY: mouseOption.offsetY,
-      });
+      };
+      if (mouseOption.offsetX !== undefined) {
+        wheelEventInit.clientX = mouseOption.offsetX;
+      }
+      if (mouseOption.offsetY !== undefined) {
+        wheelEventInit.clientY = mouseOption.offsetY;
+      }
+      const event = new WheelEvent('wheel', wheelEventInit);
 
       return event;
     }

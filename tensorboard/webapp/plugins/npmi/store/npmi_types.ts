@@ -87,7 +87,7 @@ export interface NpmiState {
   pluginDataLoaded: LoadState;
   annotationData: AnnotationDataListing;
   runToMetrics: MetricListing;
-  embeddingDataSet?: EmbeddingDataSet;
+  embeddingDataSet: EmbeddingDataSet | undefined;
 
   // based on user interaction
   selectedAnnotations: Annotation[];

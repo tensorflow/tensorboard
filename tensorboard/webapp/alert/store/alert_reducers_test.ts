@@ -41,7 +41,6 @@ describe('alert_reducers', () => {
     const state2 = alertReducers.reducers(state1, action1);
     expect(state2.latestAlert!).toEqual({
       localizedMessage: 'Foo1 failed',
-      followupAction: undefined,
       created: 123,
     });
 

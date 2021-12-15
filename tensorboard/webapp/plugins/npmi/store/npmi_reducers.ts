@@ -32,6 +32,7 @@ const initialState: NpmiState = {
     lastLoadedTimeInMs: null,
   },
   annotationData: {},
+  embeddingDataSet: undefined,
   runToMetrics: {},
   selectedAnnotations: [],
   flaggedAnnotations: [],

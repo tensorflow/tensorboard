@@ -43,7 +43,9 @@ describe('alert_effects', () => {
             actionCreator: alertActionOccurred,
             alertFromAction: (action: Action) => {
               if (shouldReportAlert) {
-                return {localizedMessage: 'alert details'};
+                return {
+                  localizedMessage: 'alert details',
+                };
               }
               return null;
             },
@@ -67,7 +69,9 @@ describe('alert_effects', () => {
     actions$.next(alertActionOccurred);
 
     expect(recordedActions).toEqual([
-      alertActions.alertReported({localizedMessage: 'alert details'}),
+      alertActions.alertReported({
+        localizedMessage: 'alert details',
+      }),
     ]);
   });
 

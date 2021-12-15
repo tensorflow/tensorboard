@@ -51,7 +51,7 @@ export class IntersectionObserverDirective implements OnInit, OnDestroy {
         root: this.cdkScrollable
           ? this.cdkScrollable.getElementRef().nativeElement
           : null,
-        rootMargin: this.intersectionObserverMargin,
+        rootMargin: this.intersectionObserverMargin ?? '',
       }
     );
     intersectionObserver.observe(this.ref.nativeElement);

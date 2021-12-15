@@ -44,22 +44,51 @@ export class OSSSettingsConverter extends SettingsConverter<
   BackendSettings
 > {
   uiToBackend(settings: PersistableSettings): BackendSettings {
-    const serializableSettings: BackendSettings = {
-      ignoreOutliers: settings.ignoreOutliers,
-      scalarSmoothing: settings.scalarSmoothing,
+    const serializableSettings: BackendSettings = {};
+
+    if (settings.ignoreOutliers !== undefined) {
+      serializableSettings.ignoreOutliers = settings.ignoreOutliers;
+    }
+    if (settings.scalarSmoothing !== undefined) {
+      serializableSettings.scalarSmoothing = settings.scalarSmoothing;
+    }
+    if (settings.tooltipSortString !== undefined) {
       // TooltipSort is a string enum and has string values; no need to
       // serialize it differently to account for their unintended changes.
-      tooltipSort: settings.tooltipSortString,
-      autoReload: settings.autoReload,
-      autoReloadPeriodInMs: settings.autoReloadPeriodInMs,
-      paginationSize: settings.pageSize,
-      theme: settings.themeOverride,
-      notificationLastReadTimeInMs: settings.notificationLastReadTimeInMs,
-      sideBarWidthInPercent: settings.sideBarWidthInPercent,
-      timeSeriesPromotionDismissed: settings.timeSeriesPromotionDismissed,
-      timeSeriesSettingsPaneOpened: settings.timeSeriesSettingsPaneOpened,
-      timeSeriesCardMinWidth: settings.timeSeriesCardMinWidth,
-    };
+      serializableSettings.tooltipSort = settings.tooltipSortString;
+    }
+    if (settings.autoReload !== undefined) {
+      serializableSettings.autoReload = settings.autoReload;
+    }
+    if (settings.autoReloadPeriodInMs !== undefined) {
+      serializableSettings.autoReloadPeriodInMs = settings.autoReloadPeriodInMs;
+    }
+    if (settings.pageSize !== undefined) {
+      serializableSettings.paginationSize = settings.pageSize;
+    }
+    if (settings.themeOverride !== undefined) {
+      serializableSettings.theme = settings.themeOverride;
+    }
+    if (settings.notificationLastReadTimeInMs !== undefined) {
+      serializableSettings.notificationLastReadTimeInMs =
+        settings.notificationLastReadTimeInMs;
+    }
+    if (settings.sideBarWidthInPercent !== undefined) {
+      serializableSettings.sideBarWidthInPercent =
+        settings.sideBarWidthInPercent;
+    }
+    if (settings.timeSeriesPromotionDismissed !== undefined) {
+      serializableSettings.timeSeriesPromotionDismissed =
+        settings.timeSeriesPromotionDismissed;
+    }
+    if (settings.timeSeriesSettingsPaneOpened !== undefined) {
+      serializableSettings.timeSeriesSettingsPaneOpened =
+        settings.timeSeriesSettingsPaneOpened;
+    }
+    if (settings.timeSeriesCardMinWidth !== undefined) {
+      serializableSettings.timeSeriesCardMinWidth =
+        settings.timeSeriesCardMinWidth;
+    }
     return serializableSettings;
   }
 
