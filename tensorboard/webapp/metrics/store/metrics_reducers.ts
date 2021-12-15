@@ -610,21 +610,17 @@ const reducer = createReducer(
     };
   }),
   on(actions.metricsResetImageBrightness, (state) => {
+    const {imageBrightnessInMilli, ...nextOverride} = state.settingOverrides;
     return {
       ...state,
-      settingOverrides: {
-        ...state.settingOverrides,
-        imageBrightnessInMilli: undefined,
-      },
+      settingOverrides: nextOverride,
     };
   }),
   on(actions.metricsResetImageContrast, (state) => {
+    const {imageContrastInMilli, ...nextOverride} = state.settingOverrides;
     return {
       ...state,
-      settingOverrides: {
-        ...state.settingOverrides,
-        imageContrastInMilli: undefined,
-      },
+      settingOverrides: nextOverride,
     };
   }),
   on(actions.metricsToggleImageShowActualSize, (state) => {
@@ -659,12 +655,10 @@ const reducer = createReducer(
     };
   }),
   on(actions.metricsResetCardWidth, (state) => {
+    const {cardMinWidth, ...nextOverride} = state.settingOverrides;
     return {
       ...state,
-      settingOverrides: {
-        ...state.settingOverrides,
-        cardMinWidth: null,
-      },
+      settingOverrides: nextOverride,
     };
   }),
   on(

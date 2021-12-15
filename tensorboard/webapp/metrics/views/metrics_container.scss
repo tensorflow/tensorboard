@@ -16,6 +16,7 @@ limitations under the License.
 @import 'tensorboard/webapp/theme/tb_theme';
 
 :host {
+  contain: strict;
   display: flex;
   flex-direction: column;
   height: 100%;

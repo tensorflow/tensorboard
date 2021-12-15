@@ -40,7 +40,7 @@ export interface LocationInterface {
 
   getResolvedPath(relativePath: string): string;
 
-  getFullPathFromRouteOrNav(routeLike: Route | Navigation): string;
+  getFullPathFromRoute(route: Route): string;
 }
 
 const utils = {
@@ -48,15 +48,6 @@ const utils = {
     return window.location.href;
   },
 };
-
-function isNavigation(
-  navOrRoute: Navigation | Route
-): navOrRoute is Navigation {
-  return (
-    navOrRoute.hasOwnProperty('pathname') &&
-    !navOrRoute.hasOwnProperty('queryParams')
-  );
-}
 
 @Injectable()
 export class Location implements LocationInterface {
@@ -107,23 +98,23 @@ export class Location implements LocationInterface {
     );
   }
 
+  /**
+   * Converts a relative path to an absolute path.
+   */
   getResolvedPath(relativePath: string): string {
     const url = new URL(relativePath, utils.getHref());
     return url.pathname;
   }
 
-  getFullPathFromRouteOrNav(
-    routeLike: Route | Navigation,
-    shouldPreserveHash?: boolean
-  ): string {
-    // TODO(stephanwlee): support hashes in the routeLike.
-    const pathname = this.getResolvedPath(routeLike.pathname);
+  getFullPathFromRoute(route: Route, shouldPreserveHash?: boolean): string {
+    // TODO(stephanwlee): support hashes in the route.
+    const pathname = this.getResolvedPath(route.pathname);
     let search = '';
-    if (!isNavigation(routeLike) && routeLike.queryParams.length) {
+    if (route.queryParams.length) {
       search =
         '?' +
         createURLSearchParamsFromSerializableQueryParams(
-          routeLike.queryParams
+          route.queryParams
         ).toString();
     }
     const hash = shouldPreserveHash ? this.getHash() : '';

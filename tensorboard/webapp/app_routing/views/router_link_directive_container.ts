@@ -49,9 +49,7 @@ export class RouterLinkDirectiveContainer {
   get href() {
     if (!this.pathname) return null;
     return this.appRootProvider.getAbsPathnameWithAppRoot(
-      this.location.getFullPathFromRouteOrNav({
-        pathname: this.pathname,
-      })
+      this.location.getResolvedPath(this.pathname)
     );
   }
 
