@@ -484,13 +484,13 @@ export class AppRoutingEffects {
           this.location.replaceState(
             this.location.getHistoryState(),
             this.appRootProvider.getAbsPathnameWithAppRoot(
-              this.location.getFullPathFromRouteOrNav(route, preserveHash)
+              this.location.getFullPathFromRoute(route, preserveHash)
             )
           );
         } else {
           this.location.pushState(
             this.appRootProvider.getAbsPathnameWithAppRoot(
-              this.location.getFullPathFromRouteOrNav(route, preserveHash)
+              this.location.getFullPathFromRoute(route, preserveHash)
             )
           );
         }
