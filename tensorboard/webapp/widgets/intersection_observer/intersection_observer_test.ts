@@ -163,7 +163,7 @@ describe('widgets/intersection_observer test', () => {
     ]);
   });
 
-  it('does not set rootMargin at all if it is not specified', async () => {
+  it('does not set rootMargin at all if it is not specified', () => {
     const intersectionObserverSpy = spyOn(
       globalThis,
       'IntersectionObserver'
