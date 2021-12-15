@@ -86,7 +86,8 @@ export interface ObjectRenderer<CacheValue = {}> {
   setUseDarkMode(useDarkMode: boolean): void;
 
   /**
-   * Disposes rendering context. After invocation, renderer will never be used.
+   * Disposes rendering context. After invocation, renderer should never be
+   * used.
    */
   dispose(): void;
 }
