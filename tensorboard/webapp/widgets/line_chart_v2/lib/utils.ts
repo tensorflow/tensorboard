@@ -22,10 +22,22 @@ export function convertRectToExtent(rect: Rect): Extent {
   };
 }
 
-const cachedIsWebGl2Supported = Boolean(
-  self.hasOwnProperty('document') &&
-    document.createElement('canvas').getContext('webgl2')
-);
+let cachedIsWebGl2Supported = false;
+
+{
+  if (
+    self.hasOwnProperty('WebGL2RenderingContext') &&
+    self.hasOwnProperty('document')
+  ) {
+    const canvas = document.createElement('canvas');
+
+    canvas.addEventListener('webglcontextcreationerror', () => {
+      cachedIsWebGl2Supported = false;
+    });
+    const context = canvas.getContext('webgl2');
+    cachedIsWebGl2Supported = Boolean(context);
+  }
+}
 
 export function isWebGl2Supported(): boolean {
   return cachedIsWebGl2Supported;

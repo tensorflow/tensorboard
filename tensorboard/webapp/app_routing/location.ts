@@ -16,12 +16,7 @@ import {Injectable} from '@angular/core';
 import {fromEvent, Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
 import {createURLSearchParamsFromSerializableQueryParams} from './internal_utils';
-import {
-  Navigation,
-  NavigationFromHistory,
-  Route,
-  SerializableQueryParams,
-} from './types';
+import {NavigationFromHistory, Route, SerializableQueryParams} from './types';
 
 export interface LocationInterface {
   getHref(): string;

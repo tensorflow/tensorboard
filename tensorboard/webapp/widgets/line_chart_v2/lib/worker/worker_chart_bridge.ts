@@ -104,6 +104,10 @@ function createPortHandler(port: MessagePort, initMessage: InitMessage) {
         }
         break;
       }
+      case HostToGuestEvent.DISPOSED: {
+        lineChart.dispose();
+        break;
+      }
     }
   };
 }
