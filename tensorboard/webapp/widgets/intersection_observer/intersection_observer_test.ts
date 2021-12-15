@@ -162,4 +162,23 @@ describe('widgets/intersection_observer test', () => {
       [{visible: true}],
     ]);
   });
+
+  it('does not set rootMargin at all if it is not specified', async () => {
+    const intersectionObserverSpy = spyOn(
+      globalThis,
+      'IntersectionObserver'
+    ).and.callThrough();
+    const fixture = TestBed.createComponent(TestableComponent);
+    fixture.componentInstance.onVisibilityChange = jasmine.createSpy();
+    // intersectionObserverMargin is not set on purpose.
+    fixture.detectChanges();
+
+    expect(intersectionObserverSpy).toHaveBeenCalledOnceWith(
+      jasmine.any(Function),
+      {
+        root: jasmine.any(HTMLElement),
+        // rootMargin property is omitted as expected.
+      }
+    );
+  });
 });

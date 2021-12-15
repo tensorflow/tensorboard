@@ -43,17 +43,19 @@ export class IntersectionObserverDirective implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
-    const intersectionObserver = new IntersectionObserver(
-      (entries) => {
-        this.onEvent$.next(entries);
-      },
-      {
-        root: this.cdkScrollable
-          ? this.cdkScrollable.getElementRef().nativeElement
-          : null,
-        rootMargin: this.intersectionObserverMargin ?? '',
-      }
-    );
+    const init: IntersectionObserverInit = {
+      root: this.cdkScrollable
+        ? this.cdkScrollable.getElementRef().nativeElement
+        : null,
+    };
+    if (this.intersectionObserverMargin) {
+      // Firefox does not like `rootMargin` without unit so it must be a string
+      // with unit.
+      init.rootMargin = this.intersectionObserverMargin;
+    }
+    const intersectionObserver = new IntersectionObserver((entries) => {
+      this.onEvent$.next(entries);
+    }, init);
     intersectionObserver.observe(this.ref.nativeElement);
     this.ngUnsubscribe$.subscribe(() => {
       intersectionObserver.unobserve(this.ref.nativeElement);
