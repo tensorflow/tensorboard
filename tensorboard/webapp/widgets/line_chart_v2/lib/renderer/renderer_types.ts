@@ -84,6 +84,11 @@ export interface ObjectRenderer<CacheValue = {}> {
   destroyObject(cachedValue: CacheValue): void;
 
   setUseDarkMode(useDarkMode: boolean): void;
+
+  /**
+   * Disposes rendering context. After invocation, renderer will never be used.
+   */
+  dispose(): void;
 }
 
 interface PaintOption {

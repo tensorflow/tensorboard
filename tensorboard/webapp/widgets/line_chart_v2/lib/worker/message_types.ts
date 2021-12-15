@@ -28,6 +28,7 @@ export enum HostToGuestEvent {
   INIT,
   DOM_RESIZED,
   DARK_MODE_UPDATED,
+  DISPOSED,
 }
 
 export interface InitMessage {
@@ -73,8 +74,13 @@ export interface DarkModeUpdatedMessage {
   useDarkMode: boolean;
 }
 
+export interface DisposeMessage {
+  type: HostToGuestEvent.DISPOSED;
+}
+
 export type HostToGuestMessage =
   | DarkModeUpdatedMessage
+  | DisposeMessage
   | ResizeMessage
   | ScaleUpdateMessage
   | SeriesMetadataChangedMessage

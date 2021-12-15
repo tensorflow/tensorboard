@@ -495,4 +495,8 @@ export class ThreeRenderer implements ObjectRenderer<CacheValue> {
   flush() {
     this.renderer.render(this.scene, this.coordinator.getCamera());
   }
+
+  dispose() {
+    this.renderer.dispose();
+  }
 }

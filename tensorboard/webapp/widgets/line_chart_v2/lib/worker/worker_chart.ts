@@ -80,6 +80,7 @@ export class WorkerChart implements Chart {
   }
 
   dispose() {
+    this.sendMessage({type: HostToGuestEvent.DISPOSED});
     this.workerInstance.free();
     this.txMessagePort.close();
   }

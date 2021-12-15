@@ -270,4 +270,8 @@ export class SvgRenderer implements ObjectRenderer<CacheValue> {
       data: vertices,
     };
   }
+
+  dispose() {
+    // noop.
+  }
 }
