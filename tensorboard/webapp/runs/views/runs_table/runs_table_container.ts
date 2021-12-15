@@ -393,14 +393,13 @@ export class RunsTableContainer implements OnInit, OnDestroy {
     if (this.columns.includes(RunsTableColumn.CHECKBOX)) {
       const runsExceedLimitForRoute$ = this.store.select(getActiveRoute).pipe(
         takeUntil(this.ngUnsubscribe),
-        // BDTODO: This needs to be tested manually.
         distinctUntilChanged((prevRoute, currRoute) => {
           return areSameRouteAndExperiments(prevRoute, currRoute);
         }),
         switchMap(() => {
           return rawAllUnsortedRunTableItems$.pipe(
             filter((runTableItems: RunTableItem[]) => {
-              return runTableItems.length > MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT;
+              return runTableItems.length > 1;
             }),
             take(1)
           );
