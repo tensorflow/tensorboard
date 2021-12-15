@@ -14,7 +14,11 @@ limitations under the License.
 ==============================================================================*/
 
 import * as utils from './internal_utils';
-import {buildCompareRoute, buildExperimentRoute, buildRoute} from './testing';
+import {
+  buildCompareRoute,
+  buildExperimentRouteFromId,
+  buildRoute,
+} from './testing';
 import {RouteKind} from './types';
 
 describe('app_routing/utils', () => {
@@ -171,24 +175,38 @@ describe('app_routing/utils', () => {
     });
   });
 
-  describe('areSameRouteAndExperiments', () => {
+  describe('areSameRouteKindAndExperiments', () => {
     it('returns true when both routes are null', () => {
-      expect(utils.areSameRouteAndExperiments(null, null)).toBeTrue();
+      expect(utils.areSameRouteKindAndExperiments(null, null)).toBeTrue();
     });
 
     it('returns false when one route is null', () => {
-      expect(utils.areSameRouteAndExperiments(buildRoute(), null)).toBeFalse();
-      expect(utils.areSameRouteAndExperiments(null, buildRoute())).toBeFalse();
+      expect(
+        utils.areSameRouteKindAndExperiments(buildRoute(), null)
+      ).toBeFalse();
+      expect(
+        utils.areSameRouteKindAndExperiments(null, buildRoute())
+      ).toBeFalse();
     });
 
-    it('returns false when different ', () => {
-      expect(utils.areSameRouteAndExperiments(buildRoute(), null)).toBeFalse();
-      expect(utils.areSameRouteAndExperiments(null, buildRoute())).toBeFalse();
+    it('returns false when different kinds', () => {
+      expect(
+        utils.areSameRouteKindAndExperiments(
+          buildCompareRoute(['a:123']),
+          buildExperimentRouteFromId('123')
+        )
+      ).toBeFalse();
+      expect(
+        utils.areSameRouteKindAndExperiments(
+          buildExperimentRouteFromId('123'),
+          buildCompareRoute(['a:123'])
+        )
+      ).toBeFalse();
     });
 
     it('returns true when both routes have no experiments', () => {
       expect(
-        utils.areSameRouteAndExperiments(
+        utils.areSameRouteKindAndExperiments(
           buildRoute({routeKind: RouteKind.EXPERIMENTS}),
           buildRoute({routeKind: RouteKind.EXPERIMENTS})
         )
@@ -197,14 +215,14 @@ describe('app_routing/utils', () => {
 
     it('returns false when one route has no experiments', () => {
       expect(
-        utils.areSameRouteAndExperiments(
+        utils.areSameRouteKindAndExperiments(
           buildRoute({routeKind: RouteKind.EXPERIMENTS}),
-          buildExperimentRoute('123')
+          buildExperimentRouteFromId('123')
         )
       ).toBeFalse();
       expect(
-        utils.areSameRouteAndExperiments(
-          buildExperimentRoute('123'),
+        utils.areSameRouteKindAndExperiments(
+          buildExperimentRouteFromId('123'),
           buildRoute({routeKind: RouteKind.EXPERIMENTS})
         )
       ).toBeFalse();
@@ -212,18 +230,18 @@ describe('app_routing/utils', () => {
 
     it('returns true when same experiment', () => {
       expect(
-        utils.areSameRouteAndExperiments(
-          buildExperimentRoute('111'),
-          buildExperimentRoute('111')
+        utils.areSameRouteKindAndExperiments(
+          buildExperimentRouteFromId('111'),
+          buildExperimentRouteFromId('111')
         )
       ).toBeTrue();
     });
 
     it('returns false when different experiments', () => {
       expect(
-        utils.areSameRouteAndExperiments(
-          buildExperimentRoute('111'),
-          buildExperimentRoute('222')
+        utils.areSameRouteKindAndExperiments(
+          buildExperimentRouteFromId('111'),
+          buildExperimentRouteFromId('222')
         )
       ).toBeFalse();
     });
@@ -232,19 +250,19 @@ describe('app_routing/utils', () => {
       // Experiment id is the value after the colon and the values before the
       // colons are ignored aliases.
       expect(
-        utils.areSameRouteAndExperiments(
+        utils.areSameRouteKindAndExperiments(
           buildCompareRoute(['a:111', 'b:222']),
           buildCompareRoute(['a:111', 'b:222'])
         )
       ).toBeTrue();
       expect(
-        utils.areSameRouteAndExperiments(
+        utils.areSameRouteKindAndExperiments(
           buildCompareRoute(['a:111', 'b:222']),
           buildCompareRoute(['a:111', 'c:222'])
         )
       ).toBeTrue();
       expect(
-        utils.areSameRouteAndExperiments(
+        utils.areSameRouteKindAndExperiments(
           buildCompareRoute(['a:111', 'b:222']),
           buildCompareRoute(['b:222', 'a:111'])
         )
@@ -255,19 +273,19 @@ describe('app_routing/utils', () => {
       // Experiment id is the value after the colon and the values before the
       // colons are ignored aliases.
       expect(
-        utils.areSameRouteAndExperiments(
+        utils.areSameRouteKindAndExperiments(
           buildCompareRoute(['111:a', '222:b']),
           buildCompareRoute(['111:c', '222:b'])
         )
       ).toBeFalse();
       expect(
-        utils.areSameRouteAndExperiments(
+        utils.areSameRouteKindAndExperiments(
           buildCompareRoute(['111:a', '222:b', '333:c']),
           buildCompareRoute(['111:a', '222:b'])
         )
       ).toBeFalse();
       expect(
-        utils.areSameRouteAndExperiments(
+        utils.areSameRouteKindAndExperiments(
           buildCompareRoute(['111:a', '222:b']),
           buildCompareRoute(['111:a', '222:b', '333:c'])
         )

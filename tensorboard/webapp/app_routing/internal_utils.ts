@@ -85,7 +85,7 @@ export function getExperimentIdsFromRouteParams(
 }
 
 /**
- * @deprecated Use areSameRouteAndExperiments.
+ * @deprecated Use areSameRouteKindAndExperiments.
  */
 export function getRouteId(routeKind: RouteKind, params: RouteParams): string {
   switch (routeKind) {
@@ -113,7 +113,7 @@ export function getRouteId(routeKind: RouteKind, params: RouteParams): string {
  * kind and point to the same set of resources. It just happens that in
  * TensorBoard, currently, the only resources are experiments.
  */
-export function areSameRouteAndExperiments(
+export function areSameRouteKindAndExperiments(
   route1: Pick<Route, 'routeKind' | 'params'> | null,
   route2: Pick<Route, 'routeKind' | 'params'> | null
 ) {

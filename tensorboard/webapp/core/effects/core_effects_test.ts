@@ -29,7 +29,7 @@ import {
 } from '../../app_routing/store/app_routing_selectors';
 import {
   buildCompareRoute,
-  buildExperimentRoute,
+  buildExperimentRouteFromId,
   buildNavigatedAction,
   buildRoute,
 } from '../../app_routing/testing';
@@ -121,7 +121,7 @@ describe('core_effects', () => {
       .and.returnValue(of(createEnvironment()));
 
     store.overrideSelector(getEnabledExperimentalPlugins, []);
-    store.overrideSelector(getActiveRoute, buildExperimentRoute('foo'));
+    store.overrideSelector(getActiveRoute, buildExperimentRouteFromId('foo'));
     store.overrideSelector(getActivePlugin, null);
     store.overrideSelector(getExperimentIdToExperimentAliasMap, {});
     store.overrideSelector(getRouteKind, RouteKind.EXPERIMENT);
@@ -245,7 +245,10 @@ describe('core_effects', () => {
       );
 
       it('ignores the action when loadState is loading', fakeAsync(() => {
-        store.overrideSelector(getActiveRoute, buildExperimentRoute('foo'));
+        store.overrideSelector(
+          getActiveRoute,
+          buildExperimentRouteFromId('foo')
+        );
         store.overrideSelector(getPluginsListLoaded, {
           state: DataLoadState.LOADING,
           lastLoadedTimeInMs: null,
@@ -277,7 +280,10 @@ describe('core_effects', () => {
           state: DataLoadState.FAILED,
           lastLoadedTimeInMs: null,
         });
-        store.overrideSelector(getActiveRoute, buildExperimentRoute('bar'));
+        store.overrideSelector(
+          getActiveRoute,
+          buildExperimentRouteFromId('bar')
+        );
         store.refreshState();
         tick(TEST_ONLY.DATA_LOAD_CONDITIONAL_THROTTLE_IN_MS);
 
@@ -302,7 +308,10 @@ describe('core_effects', () => {
           lastLoadedTimeInMs: null,
           failureCode: null,
         });
-        store.overrideSelector(getActiveRoute, buildExperimentRoute('baz'));
+        store.overrideSelector(
+          getActiveRoute,
+          buildExperimentRouteFromId('baz')
+        );
         store.refreshState();
         tick(TEST_ONLY.DATA_LOAD_CONDITIONAL_THROTTLE_IN_MS);
 
@@ -319,7 +328,7 @@ describe('core_effects', () => {
     });
 
     it('ignores navigated when route is not changed', fakeAsync(() => {
-      store.overrideSelector(getActiveRoute, buildExperimentRoute('foo'));
+      store.overrideSelector(getActiveRoute, buildExperimentRouteFromId('foo'));
       store.overrideSelector(getPluginsListLoaded, {
         state: DataLoadState.NOT_LOADED,
         lastLoadedTimeInMs: null,
@@ -346,7 +355,7 @@ describe('core_effects', () => {
       httpMock.expectNone('data/plugins_listing');
       tick(TEST_ONLY.DATA_LOAD_CONDITIONAL_THROTTLE_IN_MS);
 
-      store.overrideSelector(getActiveRoute, buildExperimentRoute('bar'));
+      store.overrideSelector(getActiveRoute, buildExperimentRouteFromId('bar'));
       store.refreshState();
       action.next(
         buildNavigatedAction({
@@ -359,7 +368,7 @@ describe('core_effects', () => {
 
     it('fetches polymer runs when alias map changes when in comparison', fakeAsync(() => {
       store.overrideSelector(getRouteKind, RouteKind.COMPARE_EXPERIMENT);
-      store.overrideSelector(getActiveRoute, buildExperimentRoute('foo'));
+      store.overrideSelector(getActiveRoute, buildExperimentRouteFromId('foo'));
       store.overrideSelector(getExperimentIdToExperimentAliasMap, {
         eid1: {aliasText: 'alias 1', aliasNumber: 1},
         eid2: {aliasText: 'alias 2', aliasNumber: 2},
@@ -392,7 +401,7 @@ describe('core_effects', () => {
       // Do not really care about actions up to here; it is covered elsewhere.
       recordedActions = [];
 
-      store.overrideSelector(getActiveRoute, buildExperimentRoute('foo'));
+      store.overrideSelector(getActiveRoute, buildExperimentRouteFromId('foo'));
       store.refreshState();
       tick(TEST_ONLY.DATA_LOAD_CONDITIONAL_THROTTLE_IN_MS);
       action.next(
@@ -526,7 +535,10 @@ describe('core_effects', () => {
         recordedActions = [];
 
         store.overrideSelector(getRouteKind, RouteKind.EXPERIMENT);
-        store.overrideSelector(getActiveRoute, buildExperimentRoute('foo'));
+        store.overrideSelector(
+          getActiveRoute,
+          buildExperimentRouteFromId('foo')
+        );
         store.refreshState();
 
         tick(TEST_ONLY.DATA_LOAD_CONDITIONAL_THROTTLE_IN_MS);
@@ -750,7 +762,7 @@ describe('core_effects', () => {
 
     it('fetches runs and plugins listing', fakeAsync(() => {
       store.overrideSelector(getRouteKind, RouteKind.NOT_SET);
-      store.overrideSelector(getActiveRoute, buildExperimentRoute('foo'));
+      store.overrideSelector(getActiveRoute, buildExperimentRouteFromId('foo'));
       store.overrideSelector(getPluginsListLoaded, {
         state: DataLoadState.NOT_LOADED,
         lastLoadedTimeInMs: null,

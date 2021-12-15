@@ -26,7 +26,7 @@ import {
   tap,
   withLatestFrom,
 } from 'rxjs/operators';
-import {areSameRouteAndExperiments} from '../../app_routing';
+import {areSameRouteKindAndExperiments} from '../../app_routing';
 import {navigated} from '../../app_routing/actions';
 import {State} from '../../app_state';
 import * as coreActions from '../../core/actions';
@@ -114,7 +114,7 @@ export class RunsEffects {
     ofType(navigated),
     withLatestFrom(this.store.select(getActiveRoute)),
     distinctUntilChanged(([, prevRoute], [, currRoute]) => {
-      return areSameRouteAndExperiments(prevRoute, currRoute);
+      return areSameRouteKindAndExperiments(prevRoute, currRoute);
     }),
     withLatestFrom(this.store.select(getExperimentIdsFromRoute)),
     filter(([, experimentIds]) => !!experimentIds),

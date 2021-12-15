@@ -41,7 +41,7 @@ import {AppRootProvider} from '../app_root';
 import {DirtyUpdatesRegistryModule} from '../dirty_updates_registry_module';
 import {
   areRoutesEqual,
-  areSameRouteAndExperiments,
+  areSameRouteKindAndExperiments,
   getRouteId,
   serializeCompareExperimentParams,
 } from '../internal_utils';
@@ -325,7 +325,10 @@ export class AppRoutingEffects {
         // want to continue without saving.
         const sameRouteAndExperiments =
           oldRoute !== null &&
-          areSameRouteAndExperiments(oldRoute, internalRouteMatch.routeMatch);
+          areSameRouteKindAndExperiments(
+            oldRoute,
+            internalRouteMatch.routeMatch
+          );
         const dirtySelectors =
           this.dirtyUpdatesRegistry.getDirtyUpdatesSelectors();
         // Do not warn about unsaved updates when route and experiments are the
@@ -457,7 +460,7 @@ export class AppRoutingEffects {
         const preserveHash =
           oldRoute === null ||
           route === null ||
-          areSameRouteAndExperiments(oldRoute, route);
+          areSameRouteKindAndExperiments(oldRoute, route);
         return {
           preserveHash,
           route,

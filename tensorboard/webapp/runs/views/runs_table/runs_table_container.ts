@@ -32,7 +32,7 @@ import {
   takeUntil,
 } from 'rxjs/operators';
 import * as alertActions from '../../../alert/actions';
-import {areSameRouteAndExperiments} from '../../../app_routing';
+import {areSameRouteKindAndExperiments} from '../../../app_routing';
 import {State} from '../../../app_state';
 import {ExperimentAlias} from '../../../experiments/types';
 import {
@@ -378,9 +378,7 @@ export class RunsTableContainer implements OnInit, OnDestroy {
 
     /**
      * For consumers who show checkboxes, notify users that new runs may not be
-     * selected by default. Avoid showing it more than once per route, since it
-     * would be annoying to see the alert on every auto-reload (assuming a new
-     * run per reload).
+     * selected by default.
      *
      * Warning: this pattern is not recommended in general. Dispatching
      * `alertReported` would be better handled in a Ngrx Reducer in response
@@ -394,12 +392,15 @@ export class RunsTableContainer implements OnInit, OnDestroy {
       const runsExceedLimitForRoute$ = this.store.select(getActiveRoute).pipe(
         takeUntil(this.ngUnsubscribe),
         distinctUntilChanged((prevRoute, currRoute) => {
-          return areSameRouteAndExperiments(prevRoute, currRoute);
+          // Avoid showing it more than once per route, since it would be
+          // annoying to see the alert on every auto-reload or when user
+          // changes tabs.
+          return areSameRouteKindAndExperiments(prevRoute, currRoute);
         }),
         switchMap(() => {
           return rawAllUnsortedRunTableItems$.pipe(
             filter((runTableItems: RunTableItem[]) => {
-              return runTableItems.length > 1;
+              return runTableItems.length > MAX_NUM_RUNS_TO_ENABLE_BY_DEFAULT;
             }),
             take(1)
           );

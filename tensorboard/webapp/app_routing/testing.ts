@@ -41,16 +41,12 @@ export function buildCompareRoute(
   };
 }
 
-export function buildExperimentRoute(
-  experimentId: string,
-  routeOverride: Partial<Route> = {}
-): Route {
+export function buildExperimentRouteFromId(experimentId: string): Route {
   return {
     routeKind: RouteKind.EXPERIMENT,
     pathname: '/experiment',
     params: {experimentId},
     queryParams: [],
-    ...routeOverride,
   };
 }
 

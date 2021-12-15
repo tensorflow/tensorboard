@@ -19,7 +19,7 @@ import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {of, ReplaySubject} from 'rxjs';
 import {
   buildCompareRoute,
-  buildExperimentRoute,
+  buildExperimentRouteFromId,
   buildNavigatedAction,
   buildRoute,
 } from '../../app_routing/testing';
@@ -638,7 +638,7 @@ describe('runs_effects', () => {
     });
 
     it('does not cancel request even if user navigates away', () => {
-      store.overrideSelector(getActiveRoute, buildExperimentRoute('123'));
+      store.overrideSelector(getActiveRoute, buildExperimentRouteFromId('123'));
       store.overrideSelector(getExperimentIdsFromRoute, ['123']);
 
       const createFooRuns = () => [
@@ -658,7 +658,7 @@ describe('runs_effects', () => {
       action.next(buildNavigatedAction());
 
       // Emulate navigation to a new experiment route.
-      store.overrideSelector(getActiveRoute, buildExperimentRoute('456'));
+      store.overrideSelector(getActiveRoute, buildExperimentRouteFromId('456'));
       store.overrideSelector(getExperimentIdsFromRoute, ['456']);
       // Force selectors to re-evaluate with a change in store.
       store.refreshState();

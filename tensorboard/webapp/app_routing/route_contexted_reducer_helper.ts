@@ -42,7 +42,7 @@ limitations under the License.
 
 import {ActionReducer, createReducer, on} from '@ngrx/store';
 import {navigated} from './actions';
-import {areSameRouteAndExperiments} from './internal_utils';
+import {areSameRouteKindAndExperiments} from './internal_utils';
 import {Route} from './types';
 
 // `privateNamespacedState` loosely typed only for ease of writing tests.
@@ -183,8 +183,11 @@ export function createRouteContextedState<
           );
         }
 
-        if (!areSameRouteAndExperiments(before, after) && onRouteIdChanged) {
-          // Route and/or the set of experiments have changed. Delegate additional changes to the caller.
+        if (
+          !areSameRouteKindAndExperiments(before, after) &&
+          onRouteIdChanged
+        ) {
+          // areSameRouteKindAndExperimentsperiments have changed. Delegate additional changes to the caller.
           nextFullState = onRouteIdChanged(nextFullState, after);
         }
 

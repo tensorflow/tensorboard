@@ -29,7 +29,7 @@ import {
   throttleTime,
   withLatestFrom,
 } from 'rxjs/operators';
-import {areSameRouteAndExperiments} from '../../app_routing';
+import {areSameRouteKindAndExperiments} from '../../app_routing';
 import {navigated} from '../../app_routing/actions';
 import {
   getActiveRoute,
@@ -113,7 +113,7 @@ export class CoreEffects {
         ofType(coreLoaded, navigated),
         withLatestFrom(this.store.select(getActiveRoute)),
         distinctUntilChanged(([, beforeRoute], [, afterRoute]) => {
-          return areSameRouteAndExperiments(beforeRoute, afterRoute);
+          return areSameRouteKindAndExperiments(beforeRoute, afterRoute);
         })
       ),
       this.actions$.pipe(ofType(reload, manualReload))

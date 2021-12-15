@@ -17,7 +17,7 @@ import {Store} from '@ngrx/store';
 import {combineLatest} from 'rxjs';
 import {map} from 'rxjs/operators';
 import {State} from '../../app_state';
-import {areSameRouteAndExperiments} from '../internal_utils';
+import {areSameRouteKindAndExperiments} from '../internal_utils';
 import {RouteRegistryModule} from '../route_registry_module';
 import {
   getActiveRoute,
@@ -44,7 +44,7 @@ export class RouterOutletContainer {
       }
       const isRouteTransitioning =
         nextRoute !== null &&
-        !areSameRouteAndExperiments(activeRoute, nextRoute);
+        !areSameRouteKindAndExperiments(activeRoute, nextRoute);
       return isRouteTransitioning
         ? null
         : this.registry.getNgComponentByRouteKind(activeRoute.routeKind);
