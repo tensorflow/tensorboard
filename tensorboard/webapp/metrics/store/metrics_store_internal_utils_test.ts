@@ -25,12 +25,12 @@ import {
   canCreateNewPins,
   createPluginDataWithLoadable,
   createRunToLoadState,
+  generateNextPinnedCardMappings,
   getCardId,
   getPinnedCardId,
   getRunIds,
   getTimeSeriesLoadable,
   TEST_ONLY,
-  updatePinnedCardMappingsUnderNamespaceUnchanged,
 } from './metrics_store_internal_utils';
 import {ImageTimeSeriesData} from './metrics_types';
 
@@ -502,8 +502,8 @@ describe('metrics store utils', () => {
     });
   });
 
-  describe('updatePinnedCardMappingsUnderNamespaceUnchanged', () => {
-    it(`remains cardToPinnedCopy and pinnedCardToOriginal unchanged on all pinned cards included in cardlist `, () => {
+  describe('updatePinnedCardMappings', () => {
+    it(`keeps cardToPinnedCopy and pinnedCardToOriginal unchanged on all pinned cards included in cardlist`, () => {
       const cardToPinnedCopy = new Map([
         ['card1', 'card-pin1'],
         ['card2', 'card-pin2'],
@@ -519,7 +519,7 @@ describe('metrics store utils', () => {
       };
 
       const {nextCardToPinnedCopy, nextPinnedCardToOriginal} =
-        updatePinnedCardMappingsUnderNamespaceUnchanged(
+        generateNextPinnedCardMappings(
           cardToPinnedCopy,
           pinnedCardToOriginal,
           cardMetadataMap,
@@ -558,20 +558,14 @@ describe('metrics store utils', () => {
       const {
         nextCardToPinnedCopy,
         nextPinnedCardToOriginal,
-        nextCardMetadataMap,
-      } = updatePinnedCardMappingsUnderNamespaceUnchanged(
+        pinnedCardMetadataMap,
+      } = generateNextPinnedCardMappings(
         cardToPinnedCopy,
         pinnedCardToOriginal,
         cardMetadataMap,
         cardList
       );
 
-      const expectedCardMetadataMap = {
-        card1: createCardMetadata(),
-        card3: createCardMetadata(),
-        'card-pin1': createCardMetadata(),
-      };
-      expect(nextCardMetadataMap).toEqual(expectedCardMetadataMap);
       expect(nextCardToPinnedCopy).toEqual(new Map([['card1', 'card-pin1']]));
       expect(nextPinnedCardToOriginal).toEqual(
         new Map([['card-pin1', 'card1']])
@@ -584,19 +578,17 @@ describe('metrics store utils', () => {
       const cardMetadataMap = {card1: createCardMetadata()};
       const cardList = ['card1'];
 
-      const {nextCardMetadataMap} =
-        updatePinnedCardMappingsUnderNamespaceUnchanged(
-          cardToPinnedCopy,
-          pinnedCardToOriginal,
-          cardMetadataMap,
-          cardList
-        );
+      const {pinnedCardMetadataMap} = generateNextPinnedCardMappings(
+        cardToPinnedCopy,
+        pinnedCardToOriginal,
+        cardMetadataMap,
+        cardList
+      );
 
       const expectedCardMetadataMap = {
-        card1: createCardMetadata(),
         'card-pin1': createCardMetadata(),
       };
-      expect(nextCardMetadataMap).toEqual(expectedCardMetadataMap);
+      expect(pinnedCardMetadataMap).toEqual(expectedCardMetadataMap);
     });
   });
 });

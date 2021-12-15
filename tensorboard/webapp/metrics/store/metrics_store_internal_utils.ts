@@ -305,7 +305,7 @@ export function buildOrReturnStateWithPinnedCopy(
  * the same reason. To preserve the pinned card mapping we need to adding the
  * pinned card mappng to cardmetadatamap.
  */
-export function updatePinnedCardMappingsUnderNamespaceUnchanged(
+export function generateNextPinnedCardMappings(
   cardToPinnedCopy: CardToPinnedCard,
   pinnedCardToOriginal: PinnedCardToCard,
   nextCardMetadataMap: CardMetadataMap,
@@ -327,20 +327,21 @@ export function updatePinnedCardMappingsUnderNamespaceUnchanged(
     }
   }
 
-  // Updates cardMetadataMap to preserve the mapping of pinned cards.
+  // Creates pinnedCardMetadataMap to preserve the mapping of pinned cards .
+  const pinnedCardMetadataMap = {} as CardMetadataMap;
   for (const [
     pinnedCardId,
     originalCardId,
   ] of nextPinnedCardToOriginal.entries()) {
     if (nextCardToPinnedCopy.has(originalCardId)) {
-      nextCardMetadataMap[pinnedCardId] = nextCardMetadataMap[originalCardId];
+      pinnedCardMetadataMap[pinnedCardId] = nextCardMetadataMap[originalCardId];
     }
   }
 
   return {
     nextCardToPinnedCopy,
     nextPinnedCardToOriginal,
-    nextCardMetadataMap,
+    pinnedCardMetadataMap,
   };
 }
 

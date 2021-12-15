@@ -365,7 +365,7 @@ describe('metrics reducers', () => {
       );
     });
 
-    it('updates cardMetadataMap and remains pinned/original cards mapping unchanged on non-pinned cards removal', () => {
+    it('updates cardMetadataMap and keeps pinned/original cards mapping unchanged on non-pinned cards removal', () => {
       const cardMetadata1 = {
         plugin: PluginType.HISTOGRAMS,
         tag: 'tagA',
@@ -379,13 +379,11 @@ describe('metrics reducers', () => {
       const cardId1 = getCardId(cardMetadata1);
       const cardId2 = getCardId(cardMetadata2);
       const pinnedCopyId1 = getPinnedCardId(cardId1);
-      const pinnedCopyId2 = getPinnedCardId(cardId2);
       const beforeState = buildMetricsState({
         cardMetadataMap: {
           [cardId1]: cardMetadata1,
           [cardId2]: cardMetadata2,
           [pinnedCopyId1]: cardMetadata1,
-          [pinnedCopyId2]: cardMetadata2,
         },
         cardList: [cardId1, cardId2],
         cardToPinnedCopy: new Map([[cardId1, pinnedCopyId1]]),
@@ -421,7 +419,7 @@ describe('metrics reducers', () => {
       );
     });
 
-    it('updates cardMetadataMap and remains pinned/original cards mapping unchanged on adding new cards', () => {
+    it('updates cardMetadataMap and keeps pinned/original cards mapping unchanged on adding new cards', () => {
       const cardMetadata1 = {
         plugin: PluginType.HISTOGRAMS,
         tag: 'tagA',
@@ -435,7 +433,6 @@ describe('metrics reducers', () => {
       const cardId1 = getCardId(cardMetadata1);
       const cardId2 = getCardId(cardMetadata2);
       const pinnedCopyId1 = getPinnedCardId(cardId1);
-      const pinnedCopyId2 = getPinnedCardId(cardId2);
       const beforeState = buildMetricsState({
         cardMetadataMap: {
           [cardId1]: cardMetadata1,
@@ -610,7 +607,7 @@ describe('metrics reducers', () => {
       const expectedCardMetadataMap: CardMetadataMap = {};
       expectedCardMetadataMap[cardId] = cardMetadata;
 
-      expect(nextState.cardMetadataMap['<cardId>']).not.toBe(origCardMetadata);
+      expect(nextState.cardMetadataMap.hasOwnProperty('<cardId>')).toBe(false);
       expect(nextState.cardMetadataMap[cardId]).toEqual(
         expectedCardMetadataMap[cardId]
       );

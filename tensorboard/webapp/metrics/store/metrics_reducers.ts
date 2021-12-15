@@ -50,10 +50,10 @@ import {
   canCreateNewPins,
   createPluginDataWithLoadable,
   createRunToLoadState,
+  generateNextPinnedCardMappings,
   getCardId,
   getRunIds,
   getTimeSeriesLoadable,
-  updatePinnedCardMappingsUnderNamespaceUnchanged,
 } from './metrics_store_internal_utils';
 import {
   CardMetadataMap,
@@ -280,8 +280,8 @@ const {initialState, reducers: routeContextReducer} = createRouteContextedState<
     return {
       ...state,
       // We want to trigger tag metadata to reload every time route id changed, which is
-      // needed wthin the same namespace.
-      // TODO(japie1235813):moves the reload trigging to a proper place.
+      // needed within the same namespace.
+      // TODO(japie1235813):moves the reload triggering to a proper place.
       tagMetadataLoadState: {
         state: DataLoadState.NOT_LOADED,
         lastLoadedTimeInMs: null,
@@ -513,20 +513,22 @@ const reducer = createReducer(
         }
       }
 
-      // Updates pinned/original card id mapping and cardmetadatamap because
-      // they are routeful state and remain unchanged under the same namespace.
-      // The mappings are outdated under experiments removal.
-      // The outputs remain the same on the namespace changed.
+      // Generates next pinned/original card id mapping because they are routeful
+      // state and remain unchanged under the same namespace.
       const {
         nextCardToPinnedCopy,
         nextPinnedCardToOriginal,
-        nextCardMetadataMap,
-      } = updatePinnedCardMappingsUnderNamespaceUnchanged(
+        pinnedCardMetadataMap,
+      } = generateNextPinnedCardMappings(
         state.cardToPinnedCopy,
         state.pinnedCardToOriginal,
         newCardMetadataMap,
         nextCardList
       );
+      const nextCardMetadataMap = {
+        ...newCardMetadataMap,
+        ...pinnedCardMetadataMap,
+      };
 
       const resolvedResult = buildOrReturnStateWithUnresolvedImportedPins(
         state.unresolvedImportedPinnedCards,
