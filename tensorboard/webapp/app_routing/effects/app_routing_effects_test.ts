@@ -71,8 +71,9 @@ describe('app_routing_effects', () => {
   let location: Location;
   let actualActions: Action[];
   let onPopStateSubject: ReplaySubject<NavigationFromHistory>;
-  let pushStateSpy: jasmine.Spy;
-  let replaceStateSpy: jasmine.Spy;
+  let pushStateUrlSpy: jasmine.Spy;
+  let replaceStateUrlSpy: jasmine.Spy;
+  let replaceStateDataSpy: jasmine.Spy;
   let getHistoryStateSpy: jasmine.Spy;
   let getHashSpy: jasmine.Spy;
   let getPathSpy: jasmine.Spy;
@@ -195,8 +196,9 @@ describe('app_routing_effects', () => {
     location = TestBed.inject(TestableLocation) as Location;
     onPopStateSubject = new ReplaySubject<NavigationFromHistory>(1);
     spyOn(location, 'onPopState').and.returnValue(onPopStateSubject);
-    pushStateSpy = spyOn(location, 'pushState');
-    replaceStateSpy = spyOn(location, 'replaceState');
+    pushStateUrlSpy = spyOn(location, 'pushStateUrl');
+    replaceStateUrlSpy = spyOn(location, 'replaceStateUrl');
+    replaceStateDataSpy = spyOn(location, 'replaceStateData');
     getHistoryStateSpy = spyOn(location, 'getHistoryState').and.returnValue({});
     getHashSpy = spyOn(location, 'getHash').and.returnValue('');
     getPathSpy = spyOn(location, 'getPath').and.returnValue('');
@@ -499,11 +501,11 @@ describe('app_routing_effects', () => {
               }),
             }),
           ]);
-          expect(pushStateSpy).not.toHaveBeenCalled();
+          expect(pushStateUrlSpy).not.toHaveBeenCalled();
 
           tick();
 
-          expect(pushStateSpy).toHaveBeenCalledOnceWith('/experiments');
+          expect(pushStateUrlSpy).toHaveBeenCalledOnceWith('/experiments');
 
           expect(actualActions).toEqual([
             jasmine.any(Object),
@@ -568,10 +570,10 @@ describe('app_routing_effects', () => {
         action.next(effects.ngrxOnInitEffects());
         tick();
 
-        expect(replaceStateSpy).toHaveBeenCalledWith(
-          {namespaceId: Date.now().toString(), other: 'data'},
-          null
-        );
+        expect(replaceStateDataSpy).toHaveBeenCalledWith({
+          namespaceId: Date.now().toString(),
+          other: 'data',
+        });
       }));
 
       it('are generated when resetNamespacedState is true', fakeAsync(() => {
@@ -862,7 +864,7 @@ describe('app_routing_effects', () => {
 
       it(
         'replaces state on subsequent query param changes to prevent pushing ' +
-          ' new history entry',
+          'new history entry',
         fakeAsync(() => {
           // Mimic initial navigation.
           action.next(
@@ -876,11 +878,11 @@ describe('app_routing_effects', () => {
 
           // Based on information in the action (replaceState = false), the initial history state is
           // pushed rather than reset.
-          expect(pushStateSpy).toHaveBeenCalled();
-          expect(replaceStateSpy).not.toHaveBeenCalled();
+          expect(pushStateUrlSpy).toHaveBeenCalled();
+          expect(replaceStateUrlSpy).not.toHaveBeenCalled();
 
-          pushStateSpy.calls.reset();
-          replaceStateSpy.calls.reset();
+          pushStateUrlSpy.calls.reset();
+          replaceStateUrlSpy.calls.reset();
 
           // Mimic subsequent change in query parameter.
           serializeStateToQueryParamsSubject.next([
@@ -889,8 +891,8 @@ describe('app_routing_effects', () => {
           tick();
 
           // History state is replaced rather than pushed.
-          expect(pushStateSpy).not.toHaveBeenCalled();
-          expect(replaceStateSpy).toHaveBeenCalled();
+          expect(pushStateUrlSpy).not.toHaveBeenCalled();
+          expect(replaceStateUrlSpy).toHaveBeenCalled();
         })
       );
 
@@ -998,8 +1000,8 @@ describe('app_routing_effects', () => {
 
         tick();
 
-        expect(pushStateSpy).not.toHaveBeenCalled();
-        expect(replaceStateSpy).not.toHaveBeenCalled();
+        expect(pushStateUrlSpy).not.toHaveBeenCalled();
+        expect(replaceStateUrlSpy).not.toHaveBeenCalled();
       }));
 
       describe('programmatical navigation integration', () => {
@@ -1234,16 +1236,15 @@ describe('app_routing_effects', () => {
 
           tick();
           if (expected.pushStateUrl === null) {
-            expect(pushStateSpy).not.toHaveBeenCalled();
+            expect(pushStateUrlSpy).not.toHaveBeenCalled();
           } else {
-            expect(pushStateSpy).toHaveBeenCalledWith(expected.pushStateUrl);
+            expect(pushStateUrlSpy).toHaveBeenCalledWith(expected.pushStateUrl);
           }
 
           if (expected.replaceStateUrl === null) {
-            expect(replaceStateSpy).not.toHaveBeenCalled();
+            expect(replaceStateUrlSpy).not.toHaveBeenCalled();
           } else {
-            expect(replaceStateSpy).toHaveBeenCalledWith(
-              {},
+            expect(replaceStateUrlSpy).toHaveBeenCalledWith(
               expected.replaceStateUrl
             );
           }
@@ -1516,7 +1517,9 @@ describe('app_routing_effects', () => {
 
         tick();
 
-        expect(pushStateSpy).toHaveBeenCalledWith('/foo/bar/baz/experiments');
+        expect(pushStateUrlSpy).toHaveBeenCalledWith(
+          '/foo/bar/baz/experiments'
+        );
       }));
     });
   });

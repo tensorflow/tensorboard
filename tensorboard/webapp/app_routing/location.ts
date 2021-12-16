@@ -27,9 +27,11 @@ export interface LocationInterface {
 
   getPath(): string;
 
-  replaceState(data: any, url: string | null): void;
+  replaceStateUrl(url: string): void;
 
-  pushState(url: string): void;
+  pushStateUrl(url: string): void;
+
+  replaceStateData(data: any): void;
 
   onPopState(): Observable<NavigationFromHistory>;
 
@@ -74,12 +76,16 @@ export class Location implements LocationInterface {
     return window.history.state;
   }
 
-  replaceState(data: any, url: string | null): void {
-    window.history.replaceState(data, '', url);
+  replaceStateUrl(url: string): void {
+    window.history.replaceState(window.history.state, '', url);
   }
 
-  pushState(url: string): void {
+  pushStateUrl(url: string): void {
     window.history.pushState(null, '', url);
+  }
+
+  replaceStateData(data: any) {
+    window.history.replaceState(data, '');
   }
 
   onPopState(): Observable<NavigationFromHistory> {

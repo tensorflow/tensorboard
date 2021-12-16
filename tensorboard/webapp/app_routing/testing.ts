@@ -95,9 +95,11 @@ export class TestableLocation extends Location {
     return '/is/cool/';
   }
 
-  override replaceState(path: string) {}
+  override replaceStateUrl(path: string) {}
 
-  override pushState(path: string) {}
+  override pushStateUrl(path: string) {}
+
+  override replaceStateData(data: any) {}
 
   override onPopState() {
     return of({
