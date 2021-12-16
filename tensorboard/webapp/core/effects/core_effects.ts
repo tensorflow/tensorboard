@@ -29,10 +29,11 @@ import {
   throttleTime,
   withLatestFrom,
 } from 'rxjs/operators';
+import {areSameRouteKindAndExperiments} from '../../app_routing';
 import {navigated} from '../../app_routing/actions';
 import {
+  getActiveRoute,
   getExperimentIdToExperimentAliasMap,
-  getRouteId,
   getRouteKind,
 } from '../../app_routing/store/app_routing_selectors';
 import {RouteKind} from '../../app_routing/types';
@@ -110,9 +111,9 @@ export class CoreEffects {
     merge(
       this.actions$.pipe(
         ofType(coreLoaded, navigated),
-        withLatestFrom(this.store.select(getRouteId)),
-        distinctUntilChanged(([, beforeRouteId], [, afterRouteId]) => {
-          return beforeRouteId === afterRouteId;
+        withLatestFrom(this.store.select(getActiveRoute)),
+        distinctUntilChanged(([, beforeRoute], [, afterRoute]) => {
+          return areSameRouteKindAndExperiments(beforeRoute, afterRoute);
         })
       ),
       this.actions$.pipe(ofType(reload, manualReload))
@@ -209,19 +210,19 @@ export class CoreEffects {
             // the URL has been modified to reflect new alias or experiment id.
             //
             // While we can subscribe to `navigated` without
-            // `distinctUntilChanged` on `routeId` (alias changes do not cause
-            // `routeId` to change), it is hard to throttle quick
-            // alias Map changes while immediately making a request for a real
-            // navigation. For example, for route A and route B:
+            // `distinctUntilChanged` and `areSameRouteExperiments`, it is hard
+            // to throttle quick alias Map changes while immediately making a
+            // request for a real navigation. For example, for route A and
+            // route B:
             //
             //   0   100   600   700
             //   A -> A' -> A" -> B
             //   ↑          ↑     ↑
             //  req  noop  req   req
             //
-            // Above, we would like to make the request on `routeId` changes
-            // immediately while debouncing alias changes while on the same
-            // `routeId`.
+            // Above, we would like to make the request immediately when the set
+            // of experiments change while debouncing alias changes when the set
+            // of experiments have not changed.
             //
             // Instead of more elaborate rxjs techniques, we are
             // using `delay(0)` to give the router a chance to modify the URL

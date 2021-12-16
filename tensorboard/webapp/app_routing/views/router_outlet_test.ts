@@ -154,7 +154,7 @@ describe('router_outlet', () => {
     expect(fixture.nativeElement.innerText).toBe('I am a test');
   });
 
-  it('does not remove page when navigating to the same routeId', () => {
+  it('does not remove page when navigating to same route kind and experiments', () => {
     store.overrideSelector(
       getActiveRoute,
       buildRoute({

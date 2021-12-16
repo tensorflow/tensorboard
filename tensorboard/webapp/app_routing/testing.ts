@@ -15,7 +15,6 @@ limitations under the License.
 import {Injectable, Provider} from '@angular/core';
 import {of} from 'rxjs';
 import {navigated, NavigatedPayload} from './actions';
-import {getRouteId} from './internal_utils';
 import {Location} from './location';
 import {Route, RouteKind} from './types';
 
@@ -35,10 +34,19 @@ export function buildCompareRoute(
 ): Route {
   return {
     routeKind: RouteKind.COMPARE_EXPERIMENT,
-    pathname: '/campare',
+    pathname: '/compare',
     params: {experimentIds: aliasAndExperimentIds.join(',')},
     queryParams: [],
     ...routeOverride,
+  };
+}
+
+export function buildExperimentRouteFromId(experimentId: string): Route {
+  return {
+    routeKind: RouteKind.EXPERIMENT,
+    pathname: '/experiment',
+    params: {experimentId},
+    queryParams: [],
   };
 }
 
@@ -53,7 +61,7 @@ export function buildNavigatedAction(overrides?: Partial<NavigatedPayload>) {
 }
 
 /**
- * A navigation that corresponds to a change in route id (new route context)
+ * A navigation that corresponds to a change in routeId (new route context)
  * will be created.
  */
 export function buildNavigatedToNewRouteIdAction() {
@@ -68,8 +76,8 @@ export function buildNavigatedToNewRouteIdAction() {
   return navigated({
     before: beforeRoute,
     after: afterRoute,
-    beforeNamespaceId: getRouteId(beforeRoute.routeKind, beforeRoute.params),
-    afterNamespaceId: getRouteId(afterRoute.routeKind, afterRoute.params),
+    beforeNamespaceId: 'beforeNamespace',
+    afterNamespaceId: 'afterNamespace',
   });
 }
 

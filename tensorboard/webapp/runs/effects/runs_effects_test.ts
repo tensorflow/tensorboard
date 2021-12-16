@@ -17,12 +17,17 @@ import {provideMockActions} from '@ngrx/effects/testing';
 import {Action, Store} from '@ngrx/store';
 import {MockStore, provideMockStore} from '@ngrx/store/testing';
 import {of, ReplaySubject} from 'rxjs';
-import {buildNavigatedAction} from '../../app_routing/testing';
+import {
+  buildCompareRoute,
+  buildExperimentRouteFromId,
+  buildNavigatedAction,
+  buildRoute,
+} from '../../app_routing/testing';
 import {State} from '../../app_state';
 import * as coreActions from '../../core/actions';
 import {
+  getActiveRoute,
   getExperimentIdsFromRoute,
-  getRouteId,
   getRuns,
   getRunsLoadState,
 } from '../../selectors';
@@ -117,7 +122,7 @@ describe('runs_effects', () => {
       lastLoadedTimeInMs: 0,
     });
     store.overrideSelector(getExperimentIdsFromRoute, null);
-    store.overrideSelector(getRouteId, 'foo');
+    store.overrideSelector(getActiveRoute, buildRoute());
   });
 
   describe('loadRunsOnRunTableShown', () => {
@@ -332,7 +337,10 @@ describe('runs_effects', () => {
     ].forEach(({specAction, specName}) => {
       describe(`on ${specName}`, () => {
         it(`fetches runs and hparams based on expIds in the route`, () => {
-          store.overrideSelector(getRouteId, 'c,exp1:123,exp2:456');
+          store.overrideSelector(
+            getActiveRoute,
+            buildCompareRoute(['exp1:123', 'exp2:456'])
+          );
           store.overrideSelector(getExperimentIdsFromRoute, ['123', '456']);
           const createFooRuns = () => [
             createRun({
@@ -413,7 +421,10 @@ describe('runs_effects', () => {
                 lastLoadedTimeInMs: null,
               })
             );
-          store.overrideSelector(getRouteId, 'c,exp1:123,exp2:456');
+          store.overrideSelector(
+            getActiveRoute,
+            buildCompareRoute(['exp1:123', ' exp2:456'])
+          );
           store.overrideSelector(getExperimentIdsFromRoute, ['123', '456']);
           store.refreshState();
 
@@ -493,7 +504,10 @@ describe('runs_effects', () => {
               lastLoadedTimeInMs: null,
             })
           );
-        store.overrideSelector(getRouteId, 'c,exp1:123,exp2:456');
+        store.overrideSelector(
+          getActiveRoute,
+          buildCompareRoute(['exp1:123', ' exp2:456'])
+        );
         store.overrideSelector(getExperimentIdsFromRoute, ['123', '456']);
         store.refreshState();
 
@@ -519,8 +533,8 @@ describe('runs_effects', () => {
         ]);
       });
 
-      it('ignores a navigation to the same routeId (hash changes)', () => {
-        store.overrideSelector(getRouteId, 'e,123');
+      it('ignores a navigation to same route and experiments (hash changes)', () => {
+        store.overrideSelector(getActiveRoute, buildRoute());
         store.overrideSelector(getExperimentIdsFromRoute, ['123']);
         const createFooRuns = () => [
           createRun({
@@ -597,7 +611,10 @@ describe('runs_effects', () => {
     });
 
     it('does not hang because one run failed to fetch', () => {
-      store.overrideSelector(getRouteId, 'c,exp1:123,exp2:456');
+      store.overrideSelector(
+        getActiveRoute,
+        buildCompareRoute(['exp1:123', 'exp2:456'])
+      );
       store.overrideSelector(getExperimentIdsFromRoute, ['123', '456']);
       store.refreshState();
 
@@ -621,7 +638,7 @@ describe('runs_effects', () => {
     });
 
     it('does not cancel request even if user navigates away', () => {
-      store.overrideSelector(getRouteId, 'e,123');
+      store.overrideSelector(getActiveRoute, buildExperimentRouteFromId('123'));
       store.overrideSelector(getExperimentIdsFromRoute, ['123']);
 
       const createFooRuns = () => [
@@ -641,7 +658,7 @@ describe('runs_effects', () => {
       action.next(buildNavigatedAction());
 
       // Emulate navigation to a new experiment route.
-      store.overrideSelector(getRouteId, 'e,456');
+      store.overrideSelector(getActiveRoute, buildExperimentRouteFromId('456'));
       store.overrideSelector(getExperimentIdsFromRoute, ['456']);
       // Force selectors to re-evaluate with a change in store.
       store.refreshState();
@@ -680,7 +697,10 @@ describe('runs_effects', () => {
     });
 
     it('fires FAILED action when at least one runs fetch failed', () => {
-      store.overrideSelector(getRouteId, 'c,exp1:123,exp2:456');
+      store.overrideSelector(
+        getActiveRoute,
+        buildCompareRoute(['exp1:123', 'exp2:456'])
+      );
       store.overrideSelector(getExperimentIdsFromRoute, ['123', '456']);
       store.refreshState();
 
@@ -704,7 +724,10 @@ describe('runs_effects', () => {
     });
 
     it('fires FAILED action when at least one hparams fetch failed', () => {
-      store.overrideSelector(getRouteId, 'c,exp1:123,exp2:456');
+      store.overrideSelector(
+        getActiveRoute,
+        buildCompareRoute(['exp1:123', 'exp2:456'])
+      );
       store.overrideSelector(getExperimentIdsFromRoute, ['123', '456']);
       store.refreshState();
 

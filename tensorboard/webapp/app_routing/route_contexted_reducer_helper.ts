@@ -14,7 +14,11 @@ limitations under the License.
 ==============================================================================*/
 /**
  * @fileoverview Reducer helper for maintaining states that are are associated
- * with a routeId.
+ * with a namespace.
+ *
+ * Formerly a namespace had a 1-1 relationship with route and was denoted by
+ * routeId but now this is a bit more generic. Thus a lot of the types here
+ * refer to `route`. We will clean this up in the future.
  *
  * Each TensorBoard experiment/compare view is regarded as a
  * separate instance of "app" where no states are shared. As a result, a run
@@ -22,7 +26,7 @@ limitations under the License.
  * facilitates maintaining such states.
  *
  * The helper helps maintain the route-dependent (or routeful) states by
- * maintaining a dictionary of routeId to the route-dependent states. It
+ * maintaining a dictionary of namespaces to the route-dependent states. It
  * abstracts routes by, upon navigation, storing current route-dependent state
  * in the dictionary and reading/applying the state for the new route from the
  * dictionary. When the dictionary is empty, it applies the initialState. Client
@@ -38,7 +42,7 @@ limitations under the License.
 
 import {ActionReducer, createReducer, on} from '@ngrx/store';
 import {navigated} from './actions';
-import {getRouteId} from './internal_utils';
+import {areSameRouteKindAndExperiments} from './internal_utils';
 import {Route} from './types';
 
 // `privateNamespacedState` loosely typed only for ease of writing tests.
@@ -47,7 +51,7 @@ import {Route} from './types';
 // During the runtime, it always has value because of `initialState`.
 interface PrivateState<RoutefulState> {
   privateNamespacedState?: {
-    [routeId: string]: RoutefulState;
+    [namespaceId: string]: RoutefulState;
   };
 }
 
@@ -119,7 +123,7 @@ export function createRouteContextedState<
     afterNamespaceId: string
   ) {
     let nextContextedStateCache: {
-      [routeId: string]: RoutefulState;
+      [namespaceId: string]: RoutefulState;
     } = {...state.privateNamespacedState};
 
     if (beforeNamespaceId) {
@@ -179,12 +183,11 @@ export function createRouteContextedState<
           );
         }
 
-        const afterRouteId = getRouteId(after.routeKind, after.params);
-        const beforeRouteId = before
-          ? getRouteId(before.routeKind, before.params)
-          : null;
-        if (beforeRouteId !== afterRouteId && onRouteIdChanged) {
-          // Route ids have changed. Delegate additional changes to the caller.
+        if (
+          !areSameRouteKindAndExperiments(before, after) &&
+          onRouteIdChanged
+        ) {
+          // areSameRouteKindAndExperimentsperiments have changed. Delegate additional changes to the caller.
           nextFullState = onRouteIdChanged(nextFullState, after);
         }
 

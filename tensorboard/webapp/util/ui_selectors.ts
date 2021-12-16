@@ -46,7 +46,7 @@ import {ColorPalette} from './colors';
 import {matchRunToRegex, RunMatchable} from './matcher';
 
 /**
- * Selects the run selection (runId to boolean) of current routeId.
+ * Selects the run selection (runId to boolean) of current set of experiments.
  *
  * Note that emits null when current route is not about an experiment.
  */

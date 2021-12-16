@@ -26,12 +26,13 @@ import {
   tap,
   withLatestFrom,
 } from 'rxjs/operators';
+import {areSameRouteKindAndExperiments} from '../../app_routing';
 import {navigated} from '../../app_routing/actions';
 import {State} from '../../app_state';
 import * as coreActions from '../../core/actions';
 import {
+  getActiveRoute,
   getExperimentIdsFromRoute,
-  getRouteId,
   getRuns,
   getRunsLoadState,
 } from '../../selectors';
@@ -111,9 +112,9 @@ export class RunsEffects {
 
   private readonly experimentsWithStaleRunsOnRouteChange$ = this.actions$.pipe(
     ofType(navigated),
-    withLatestFrom(this.store.select(getRouteId)),
-    distinctUntilChanged(([, prevRouteId], [, currRouteId]) => {
-      return prevRouteId === currRouteId;
+    withLatestFrom(this.store.select(getActiveRoute)),
+    distinctUntilChanged(([, prevRoute], [, currRoute]) => {
+      return areSameRouteKindAndExperiments(prevRoute, currRoute);
     }),
     withLatestFrom(this.store.select(getExperimentIdsFromRoute)),
     filter(([, experimentIds]) => !!experimentIds),

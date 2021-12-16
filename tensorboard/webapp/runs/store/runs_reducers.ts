@@ -79,7 +79,7 @@ const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
   // runs are fetched (new runs added or runs removed). Both of those cases
   // are handled by their respective reducer functions and, while there is no
   // strong guarantees at the moment, because we are using RouteContextedState,
-  // even if new runs are fetched for a routeId that is not active, refresh of
+  // even if new runs are fetched for a route that is not active, refresh of
   // a background experiment data will not result in correct state update.
   // While user can change groupBy state in the URL to trigger (1), that will
   // result in browser postback and the app will rebootstrap anyways.

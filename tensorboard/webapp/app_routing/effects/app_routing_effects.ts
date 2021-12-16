@@ -41,6 +41,7 @@ import {AppRootProvider} from '../app_root';
 import {DirtyUpdatesRegistryModule} from '../dirty_updates_registry_module';
 import {
   areRoutesEqual,
+  areSameRouteKindAndExperiments,
   getRouteId,
   serializeCompareExperimentParams,
 } from '../internal_utils';
@@ -322,19 +323,18 @@ export class AppRoutingEffects {
       mergeMap(([internalRouteMatch, oldRoute]) => {
         // Check for unsaved updates and only proceed if the user confirms they
         // want to continue without saving.
-        const sameRouteId =
+        const sameRouteAndExperiments =
           oldRoute !== null &&
-          getRouteId(
-            internalRouteMatch.routeMatch.routeKind,
-            internalRouteMatch.routeMatch.params
-          ) === getRouteId(oldRoute.routeKind, oldRoute.params);
+          areSameRouteKindAndExperiments(
+            oldRoute,
+            internalRouteMatch.routeMatch
+          );
         const dirtySelectors =
           this.dirtyUpdatesRegistry.getDirtyUpdatesSelectors();
-
-        // Do not warn about unsaved updates when route ID is the same (e.g. when
-        // changing tabs in the same experiment page or query params in experiment
-        // list).
-        if (sameRouteId || !dirtySelectors.length)
+        // Do not warn about unsaved updates when route and experiments are the
+        // same (e.g. when changing tabs in the same experiment page or query
+        // params in experiment list).
+        if (sameRouteAndExperiments || !dirtySelectors.length)
           return of(internalRouteMatch);
         return forkJoin(
           this.dirtyUpdatesRegistry
@@ -430,11 +430,8 @@ export class AppRoutingEffects {
       }),
       tap(({route}) => {
         // b/160185039: Allows the route store + router outlet to change
-        // before the route change so all components do not have to
-        // safeguard against the case when `routeId` (routeKind and
-        // routeParams) do not have unexpected values. Because we
-        // debounceTime, technically, it does not fire two actions
-        // sequentially.
+        // before the route change. Because we debounceTime, technically, it does
+        // not fire two actions sequentially.
         this.store.dispatch(navigating({after: route}));
       }),
       // Inject some async-ness so:
@@ -463,8 +460,7 @@ export class AppRoutingEffects {
         const preserveHash =
           oldRoute === null ||
           route === null ||
-          getRouteId(oldRoute.routeKind, oldRoute.params) ===
-            getRouteId(route.routeKind, route.params);
+          areSameRouteKindAndExperiments(oldRoute, route);
         return {
           preserveHash,
           route,

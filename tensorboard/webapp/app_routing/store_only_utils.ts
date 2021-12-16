@@ -15,7 +15,6 @@ limitations under the License.
 import {ExperimentAlias} from '../experiments/types';
 import {
   getExperimentIdsFromRouteParams,
-  getRouteId,
   parseCompareExperimentStr,
 } from './internal_utils';
 import {CompareRouteParams, Route} from './types';
@@ -76,14 +75,4 @@ export function getExperimentIdsFromNavigation(
     navigation.routeKind,
     navigation.params
   );
-}
-
-/**
- * Returns routeId from navigation.
- *
- * This utility is used by only limited packages. Please refer to visiblity in
- * BUILD.
- */
-export function getRouteIdFromNavigation(navigation: Route): string {
-  return getRouteId(navigation.routeKind, navigation.params);
 }

@@ -11,6 +11,7 @@ tf_ng_module(
     deps = [
         "//tensorboard/webapp:app_state",
         "//tensorboard/webapp:tb_polymer_interop_types",
+        "//tensorboard/webapp/app_routing",
         "//tensorboard/webapp/app_routing:types",
         "//tensorboard/webapp/app_routing/actions",
         "//tensorboard/webapp/app_routing/store",

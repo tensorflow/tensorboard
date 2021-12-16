@@ -22,6 +22,7 @@ import {
 import {createSelector, Store} from '@ngrx/store';
 import {combineLatest, Observable, of, Subject} from 'rxjs';
 import {
+  distinctUntilChanged,
   filter,
   map,
   shareReplay,
@@ -31,6 +32,7 @@ import {
   takeUntil,
 } from 'rxjs/operators';
 import * as alertActions from '../../../alert/actions';
+import {areSameRouteKindAndExperiments} from '../../../app_routing';
 import {State} from '../../../app_state';
 import {ExperimentAlias} from '../../../experiments/types';
 import {
@@ -45,11 +47,11 @@ import {
   IntervalFilter,
 } from '../../../hparams/types';
 import {
+  getActiveRoute,
   getCurrentRouteRunSelection,
   getEnabledColorGroup,
   getExperiment,
   getExperimentIdToExperimentAliasMap,
-  getRouteId,
   getRunColorMap,
   getRuns,
   getRunSelectorPaginationOption,
@@ -376,9 +378,7 @@ export class RunsTableContainer implements OnInit, OnDestroy {
 
     /**
      * For consumers who show checkboxes, notify users that new runs may not be
-     * selected by default. Avoid showing it more than once per route, since it
-     * would be annoying to see the alert on every auto-reload (assuming a new
-     * run per reload).
+     * selected by default.
      *
      * Warning: this pattern is not recommended in general. Dispatching
      * `alertReported` would be better handled in a Ngrx Reducer in response
@@ -389,8 +389,14 @@ export class RunsTableContainer implements OnInit, OnDestroy {
      * the store aware of the visibility of any run tables.
      */
     if (this.columns.includes(RunsTableColumn.CHECKBOX)) {
-      const runsExceedLimitForRoute$ = this.store.select(getRouteId).pipe(
+      const runsExceedLimitForRoute$ = this.store.select(getActiveRoute).pipe(
         takeUntil(this.ngUnsubscribe),
+        distinctUntilChanged((prevRoute, currRoute) => {
+          // Avoid showing it more than once per route, since it would be
+          // annoying to see the alert on every auto-reload or when user
+          // changes tabs.
+          return areSameRouteKindAndExperiments(prevRoute, currRoute);
+        }),
         switchMap(() => {
           return rawAllUnsortedRunTableItems$.pipe(
             filter((runTableItems: RunTableItem[]) => {

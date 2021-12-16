@@ -38,7 +38,6 @@ import {
   getExperiment,
   getExperimentIdsFromRoute,
   getExperimentIdToAliasMap,
-  getRouteId,
   getRouteKind,
   getRunSelectionMap,
 } from '../selectors';
@@ -55,7 +54,6 @@ describe('ui_selectors test', () => {
   beforeEach(() => {
     // Clear memoization in the internal selectors.
     getExperimentIdsFromRoute.release();
-    getRouteId.release();
     getRunSelectionMap.release();
     getCurrentRouteRunSelection.release();
     getExperiment.release();
