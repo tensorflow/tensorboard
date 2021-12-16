@@ -73,9 +73,8 @@ limitations under the License.
 .run-divider {
   background-color: mat.get-color-from-palette($tb-foreground, divider);
   content: '';
-  height: 3px;
+  height: 1px;
   overflow: hidden;
-  width: 100%;
 }
 
 .grabber {
