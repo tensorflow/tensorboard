@@ -50,6 +50,7 @@ import {
   canCreateNewPins,
   createPluginDataWithLoadable,
   createRunToLoadState,
+  generateNextCardStepIndex,
   generateNextPinnedCardMappings,
   getCardId,
   getRunIds,
@@ -530,13 +531,18 @@ const reducer = createReducer(
         ...pinnedCardMetadataMap,
       };
 
+      const nextCardStepIndex = generateNextCardStepIndex(
+        state.cardStepIndex,
+        nextCardMetadataMap
+      );
+
       const resolvedResult = buildOrReturnStateWithUnresolvedImportedPins(
         state.unresolvedImportedPinnedCards,
         nextCardList,
         nextCardMetadataMap,
         nextCardToPinnedCopy,
         nextPinnedCardToOriginal,
-        state.cardStepIndex
+        nextCardStepIndex
       );
 
       return {

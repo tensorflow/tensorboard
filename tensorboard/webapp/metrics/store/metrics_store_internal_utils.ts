@@ -346,6 +346,22 @@ export function generateNextPinnedCardMappings(
 }
 
 /**
+ * Removes cards not in cardMetadataMap from cardStepIndex mapping.
+ */
+export function generateNextCardStepIndex(
+  cardStepIndex: CardStepIndexMap,
+  cardMetadataMap: CardMetadataMap
+): CardStepIndexMap {
+  const nextCardStepIndexMap = {} as CardStepIndexMap;
+  Object.entries(cardStepIndex).forEach(([cardId, step]) => {
+    if (cardMetadataMap[cardId]) {
+      nextCardStepIndexMap[cardId] = step;
+    }
+  });
+  return nextCardStepIndexMap;
+}
+
+/**
  * The maximum number of pins we allow the user to create. This is intentionally
  * finite at the moment to mitigate super long URL lengths, until there is more
  * durable value storage for pins.
