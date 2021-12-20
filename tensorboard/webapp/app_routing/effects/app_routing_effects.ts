@@ -477,14 +477,13 @@ export class AppRoutingEffects {
         if (!shouldUpdateHistory) return;
 
         if (options.replaceState) {
-          this.location.replaceState(
-            this.location.getHistoryState(),
+          this.location.replaceStateUrl(
             this.appRootProvider.getAbsPathnameWithAppRoot(
               this.location.getFullPathFromRoute(route, preserveHash)
             )
           );
         } else {
-          this.location.pushState(
+          this.location.pushStateUrl(
             this.appRootProvider.getAbsPathnameWithAppRoot(
               this.location.getFullPathFromRoute(route, preserveHash)
             )
@@ -513,15 +512,10 @@ export class AppRoutingEffects {
             beforeNamespaceId
           );
 
-          if (enabledTimeNamespacedState) {
-            this.location.replaceState(
-              {
-                ...this.location.getHistoryState(),
-                namespaceId: afterNamespaceId,
-              },
-              /* do not replace path */ null
-            );
-          }
+          this.location.replaceStateData({
+            ...this.location.getHistoryState(),
+            namespaceId: afterNamespaceId,
+          });
 
           return navigated({
             before: oldRoute,
