@@ -54,6 +54,13 @@ export const getActiveNamespaceId = createSelector(
   }
 );
 
+export const getKnownNamespaceIds = createSelector(
+  getAppRoutingState,
+  (state): Set<string> => {
+    return state.knownNamespaceIds;
+  }
+);
+
 export const getRegisteredRouteKinds = createSelector<
   State,
   AppRoutingState,

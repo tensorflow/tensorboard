@@ -35,6 +35,7 @@ import {RouteRegistryModule} from '../route_registry_module';
 import {
   getActiveNamespaceId,
   getActiveRoute,
+  getKnownNamespaceIds,
 } from '../store/app_routing_selectors';
 import {buildRoute, provideLocationTesting, TestableLocation} from '../testing';
 import {
@@ -206,6 +207,7 @@ describe('app_routing_effects', () => {
 
     store.overrideSelector(getActiveRoute, null);
     store.overrideSelector(getActiveNamespaceId, null);
+    store.overrideSelector(getKnownNamespaceIds, new Set<string>());
     store.overrideSelector(getEnabledTimeNamespacedState, false);
     actualActions = [];
 
@@ -715,8 +717,7 @@ describe('app_routing_effects', () => {
 
     describe('deeplink reads', () => {
       beforeEach(() => {
-        store.overrideSelector(getActiveRoute, null);
-        store.overrideSelector(getActiveNamespaceId, null);
+        store.overrideSelector(getKnownNamespaceIds, new Set<string>());
         store.refreshState();
       });
 
@@ -773,6 +774,69 @@ describe('app_routing_effects', () => {
           ]);
         }));
       });
+
+      it('dispatches stateRehydratedFromUrl when known namespace id', fakeAsync(() => {
+        deserializeQueryParamsSpy.and.returnValue({a: 'A', b: 'B'});
+        getPathSpy.and.returnValue('/compare/a:b');
+
+        store.overrideSelector(
+          getKnownNamespaceIds,
+          new Set(['namespaceA', 'namespaceC'])
+        );
+        store.refreshState();
+
+        onPopStateSubject.next({
+          pathname: '/compare/a:b',
+          state: {namespaceId: 'namespaceB'},
+        });
+        tick();
+
+        expect(actualActions).toEqual([
+          actions.stateRehydratedFromUrl({
+            routeKind: RouteKind.COMPARE_EXPERIMENT,
+            partialState: {a: 'A', b: 'B'},
+          }),
+          actions.navigating({
+            after: buildRoute({
+              routeKind: RouteKind.COMPARE_EXPERIMENT,
+              params: {experimentIds: 'a:b'},
+              pathname: '/compare/a:b',
+              queryParams: [],
+            } as unknown as Route),
+          }),
+          jasmine.any(Object), // actions.navigated
+        ]);
+      }));
+
+      it('does not dispatch stateRehydratedFromUrl when unknown namespace id', fakeAsync(() => {
+        deserializeQueryParamsSpy.and.returnValue({a: 'A', b: 'B'});
+        getPathSpy.and.returnValue('/compare/a:b');
+
+        store.overrideSelector(
+          getKnownNamespaceIds,
+          new Set(['namespaceA', 'namespaceB', 'namespaceC'])
+        );
+        store.refreshState();
+
+        onPopStateSubject.next({
+          pathname: '/compare/a:b',
+          state: {namespaceId: 'namespaceB'},
+        });
+        tick();
+
+        expect(actualActions).toEqual([
+          // Note: No actions.stateRehydratedFromUrl.
+          actions.navigating({
+            after: buildRoute({
+              routeKind: RouteKind.COMPARE_EXPERIMENT,
+              params: {experimentIds: 'a:b'},
+              pathname: '/compare/a:b',
+              queryParams: [],
+            } as unknown as Route),
+          }),
+          jasmine.any(Object), // actions.navigated
+        ]);
+      }));
     });
 
     describe('deeplinks writes', () => {

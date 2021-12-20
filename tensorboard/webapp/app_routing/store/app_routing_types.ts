@@ -19,10 +19,14 @@ export const APP_ROUTING_FEATURE_KEY = 'app_routing';
 export interface AppRoutingState {
   activeRoute: Route | null;
   // Transient state that tells certain components like the router-outlet to
-  // make changes before a route change. `ntextRoute` is non-null only while
+  // make changes before a route change. `nextRoute` is non-null only while
   // we are navigating.
   nextRoute: Route | null;
+  // The id of the namespace that is currently active.
   activeNamespaceId: string | null;
+  // All namespaces that currently have a representation in state. This includes
+  // the active namespace but also any cached namespaces.
+  knownNamespaceIds: Set<string>;
   registeredRouteKeys: Set<RouteKind>;
 }
 
