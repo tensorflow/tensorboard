@@ -14,10 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import {createFeatureSelector, createSelector} from '@ngrx/store';
 import {ExperimentAlias} from '../../experiments/types';
-import {
-  getExperimentIdsFromRouteParams,
-  getRouteId as getRouteIdFromKindAndParams,
-} from '../internal_utils';
+import {getExperimentIdsFromRouteParams} from '../internal_utils';
 import {
   getCompareExperimentIdAliasSpec,
   getCompareExperimentIdAliasWithNumberSpec,
@@ -83,17 +80,6 @@ export const getExperimentIdsFromRoute = createSelector(
   getRouteParams,
   (routeKind, routeParams): string[] | null => {
     return getExperimentIdsFromRouteParams(routeKind, routeParams);
-  }
-);
-
-/**
- * @deprecated Use getActiveRoute and, possibly, areSameRouteKindAndExperiments.
- */
-export const getRouteId = createSelector(
-  getRouteKind,
-  getRouteParams,
-  (routeKind, routeParams): string => {
-    return getRouteIdFromKindAndParams(routeKind, routeParams);
   }
 );
 

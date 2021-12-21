@@ -24,7 +24,7 @@ import {getEnabledTimeNamespacedState} from '../../feature_flag/store/feature_fl
 import * as actions from '../actions';
 import {AppRootProvider, TestableAppRootProvider} from '../app_root';
 import {DirtyUpdatesRegistryModule} from '../dirty_updates_registry_module';
-import {getRouteId} from '../internal_utils';
+import {getRouteNamespaceId} from '../internal_utils';
 import {Location} from '../location';
 import {
   NavigateToCompare,
@@ -291,7 +291,7 @@ describe('app_routing_effects', () => {
               queryParams: [],
             }),
             beforeNamespaceId: null,
-            afterNamespaceId: getRouteId(RouteKind.EXPERIMENTS, {}),
+            afterNamespaceId: getRouteNamespaceId(RouteKind.EXPERIMENTS, {}),
           }),
         ]);
       })
@@ -322,13 +322,13 @@ describe('app_routing_effects', () => {
           pathname: '/experiments',
           queryParams: [],
         });
-        const activeRouteId = getRouteId(RouteKind.EXPERIMENTS, {});
+        const namespaceId = getRouteNamespaceId(RouteKind.EXPERIMENTS, {});
         const dirtyExperimentsFactory = () => {
           return {experimentIds: ['otter']};
         };
 
         store.overrideSelector(getActiveRoute, activeRoute);
-        store.overrideSelector(getActiveNamespaceId, activeRouteId);
+        store.overrideSelector(getActiveNamespaceId, namespaceId);
         store.overrideSelector(
           testDirtyExperimentsSelector,
           dirtyExperimentsFactory()
@@ -371,7 +371,7 @@ describe('app_routing_effects', () => {
         );
       });
 
-      it('does not warn user when changing tab (same routeId)', fakeAsync(() => {
+      it('does not warn user when changing experiment tab', fakeAsync(() => {
         spyOn(window, 'confirm');
         const activeRoute = buildRoute({
           routeKind: RouteKind.EXPERIMENT,
@@ -379,11 +379,11 @@ describe('app_routing_effects', () => {
           pathname: '/experiment/meow',
           queryParams: [],
         });
-        const activeRouteId = getRouteId(RouteKind.EXPERIMENT, {
+        const namespaceId = getRouteNamespaceId(RouteKind.EXPERIMENT, {
           experimentId: 'meow',
         });
         store.overrideSelector(getActiveRoute, activeRoute);
-        store.overrideSelector(getActiveNamespaceId, activeRouteId);
+        store.overrideSelector(getActiveNamespaceId, namespaceId);
         store.refreshState();
         getPathSpy.and.returnValue('/experiment/meow');
         // Changing tab.
@@ -399,8 +399,8 @@ describe('app_routing_effects', () => {
           actions.navigated({
             before: activeRoute,
             after: activeRoute,
-            beforeNamespaceId: activeRouteId,
-            afterNamespaceId: activeRouteId,
+            beforeNamespaceId: namespaceId,
+            afterNamespaceId: namespaceId,
           }),
         ]);
       }));
@@ -466,8 +466,8 @@ describe('app_routing_effects', () => {
                 pathname: '/experiment/meow',
                 queryParams: [],
               }),
-              beforeNamespaceId: getRouteId(RouteKind.EXPERIMENTS, {}),
-              afterNamespaceId: getRouteId(RouteKind.EXPERIMENT, {
+              beforeNamespaceId: getRouteNamespaceId(RouteKind.EXPERIMENTS, {}),
+              afterNamespaceId: getRouteNamespaceId(RouteKind.EXPERIMENT, {
                 experimentId: 'meow',
               }),
             }),
@@ -518,7 +518,7 @@ describe('app_routing_effects', () => {
                 queryParams: [],
               }),
               beforeNamespaceId: null,
-              afterNamespaceId: getRouteId(RouteKind.EXPERIMENTS, {}),
+              afterNamespaceId: getRouteNamespaceId(RouteKind.EXPERIMENTS, {}),
             }),
           ]);
         })
@@ -794,9 +794,12 @@ describe('app_routing_effects', () => {
                 queryParams: [],
               } as unknown as Route),
               beforeNamespaceId: null,
-              afterNamespaceId: getRouteId(RouteKind.COMPARE_EXPERIMENT, {
-                experimentIds: 'a:b',
-              }),
+              afterNamespaceId: getRouteNamespaceId(
+                RouteKind.COMPARE_EXPERIMENT,
+                {
+                  experimentIds: 'a:b',
+                }
+              ),
             }),
           ]);
         }));
@@ -845,9 +848,12 @@ describe('app_routing_effects', () => {
                 queryParams: [],
               }),
               beforeNamespaceId: null,
-              afterNamespaceId: getRouteId(RouteKind.COMPARE_EXPERIMENT, {
-                experimentIds: 'a:b',
-              }),
+              afterNamespaceId: getRouteNamespaceId(
+                RouteKind.COMPARE_EXPERIMENT,
+                {
+                  experimentIds: 'a:b',
+                }
+              ),
             }),
           ]);
         })
@@ -883,9 +889,12 @@ describe('app_routing_effects', () => {
               queryParams: [{key: 'a', value: 'a_value'}],
             }),
             beforeNamespaceId: null,
-            afterNamespaceId: getRouteId(RouteKind.COMPARE_EXPERIMENT, {
-              experimentIds: 'a:b',
-            }),
+            afterNamespaceId: getRouteNamespaceId(
+              RouteKind.COMPARE_EXPERIMENT,
+              {
+                experimentIds: 'a:b',
+              }
+            ),
           }),
         ]);
       }));
@@ -1169,7 +1178,7 @@ describe('app_routing_effects', () => {
       );
       store.overrideSelector(
         getActiveNamespaceId,
-        getRouteId(RouteKind.EXPERIMENTS, {})
+        getRouteNamespaceId(RouteKind.EXPERIMENTS, {})
       );
       store.refreshState();
 
@@ -1199,8 +1208,8 @@ describe('app_routing_effects', () => {
             pathname: '/experiments',
             queryParams: [],
           }),
-          beforeNamespaceId: getRouteId(RouteKind.EXPERIMENTS, {}),
-          afterNamespaceId: getRouteId(RouteKind.EXPERIMENTS, {}),
+          beforeNamespaceId: getRouteNamespaceId(RouteKind.EXPERIMENTS, {}),
+          afterNamespaceId: getRouteNamespaceId(RouteKind.EXPERIMENTS, {}),
         }),
       ]);
     }));
@@ -1285,9 +1294,9 @@ describe('app_routing_effects', () => {
           pathname: '/experiments',
           queryParams: [],
         });
-        const activeRouteId = getRouteId(RouteKind.EXPERIMENTS, {});
+        const namespaceId = getRouteNamespaceId(RouteKind.EXPERIMENTS, {});
         store.overrideSelector(getActiveRoute, activeRoute);
-        store.overrideSelector(getActiveNamespaceId, activeRouteId);
+        store.overrideSelector(getActiveNamespaceId, namespaceId);
         store.refreshState();
         getHashSpy.and.returnValue('');
         getPathSpy.and.returnValue('/experiments');
@@ -1305,9 +1314,9 @@ describe('app_routing_effects', () => {
           pathname: '/experiments',
           queryParams: [],
         });
-        const activeRouteId = getRouteId(RouteKind.EXPERIMENTS, {});
+        const namespaceId = getRouteNamespaceId(RouteKind.EXPERIMENTS, {});
         store.overrideSelector(getActiveRoute, activeRoute);
-        store.overrideSelector(getActiveNamespaceId, activeRouteId);
+        store.overrideSelector(getActiveNamespaceId, namespaceId);
         store.refreshState();
         getHashSpy.and.returnValue('');
         getPathSpy.and.returnValue('meow');
@@ -1328,9 +1337,9 @@ describe('app_routing_effects', () => {
           pathname: '/experiments',
           queryParams: [],
         });
-        const activeRouteId = getRouteId(RouteKind.EXPERIMENTS, {});
+        const namespaceId = getRouteNamespaceId(RouteKind.EXPERIMENTS, {});
         store.overrideSelector(getActiveRoute, activeRoute);
-        store.overrideSelector(getActiveNamespaceId, activeRouteId);
+        store.overrideSelector(getActiveNamespaceId, namespaceId);
         store.refreshState();
         getHashSpy.and.returnValue('');
         getPathSpy.and.returnValue('meow');
@@ -1365,16 +1374,16 @@ describe('app_routing_effects', () => {
       // This hash preservation spec may become obsolete. If we enable app_routing
       // to properly set the URL hash, and all TB embedders use app_routing, then
       // this spec can be removed.
-      it('preserves hash upon navigations to the same routeId', () => {
+      it('preserves hash upon navigations to the same experiment', () => {
         const activeRoute = buildRoute({
           routeKind: RouteKind.EXPERIMENT,
           pathname: '/experiment',
           params: {experimentId: '123'},
           queryParams: [],
         });
-        const activeRouteId = getRouteId(RouteKind.EXPERIMENT, {});
+        const namespaceId = getRouteNamespaceId(RouteKind.EXPERIMENT, {});
         store.overrideSelector(getActiveRoute, activeRoute);
-        store.overrideSelector(getActiveNamespaceId, activeRouteId);
+        store.overrideSelector(getActiveNamespaceId, namespaceId);
         store.refreshState();
         getHashSpy.and.returnValue('#foo');
         getPathSpy.and.returnValue('meow');
@@ -1389,16 +1398,16 @@ describe('app_routing_effects', () => {
         );
       });
 
-      it('discards hash upon navigations to a new routeId', () => {
+      it('discards hash upon navigations to a new experiment', () => {
         const activeRoute = buildRoute({
           routeKind: RouteKind.EXPERIMENTS,
           pathname: '/experiments',
           queryParams: [],
         });
-        const activeRouteId = getRouteId(RouteKind.EXPERIMENT, {});
+        const namespaceId = getRouteNamespaceId(RouteKind.EXPERIMENT, {});
 
         store.overrideSelector(getActiveRoute, activeRoute);
-        store.overrideSelector(getActiveNamespaceId, activeRouteId);
+        store.overrideSelector(getActiveNamespaceId, namespaceId);
         store.refreshState();
         getHashSpy.and.returnValue('#foo');
         getPathSpy.and.returnValue('meow');

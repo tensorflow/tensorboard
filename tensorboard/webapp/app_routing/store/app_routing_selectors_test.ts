@@ -167,37 +167,6 @@ describe('app_routing_selectors', () => {
     });
   });
 
-  describe('getRouteId', () => {
-    beforeEach(() => {
-      selectors.getRouteId.release();
-    });
-
-    it('returns routeId from an activeRoute', () => {
-      const state = buildStateFromAppRoutingState(
-        buildAppRoutingState({
-          activeRoute: buildRoute({
-            routeKind: RouteKind.EXPERIMENT,
-            pathname: '/experiment/234',
-            params: {
-              experimentId: '234',
-            },
-            queryParams: [],
-          }),
-        })
-      );
-
-      expect(selectors.getRouteId(state)).toBe('2/234');
-    });
-
-    it('returns "__not_set" when it does not have an active one', () => {
-      const state = buildStateFromAppRoutingState(
-        buildAppRoutingState({activeRoute: null})
-      );
-
-      expect(selectors.getRouteId(state)).toBe('__not_set');
-    });
-  });
-
   describe('getRegisteredRouteKinds', () => {
     beforeEach(() => {
       selectors.getRegisteredRouteKinds.release();

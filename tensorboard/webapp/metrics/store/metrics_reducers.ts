@@ -274,7 +274,7 @@ const {initialState, reducers: routeContextReducer} = createRouteContextedState<
     visibleCardMap: new Map<ElementId, CardId>(),
   },
 
-  /** onRouteIdChanged */
+  /** onRouteKindOrExperimentsChanged */
   (state) => {
     return {
       ...state,
