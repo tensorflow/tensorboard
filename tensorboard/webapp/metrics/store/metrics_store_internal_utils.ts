@@ -296,45 +296,38 @@ export function buildOrReturnStateWithPinnedCopy(
 }
 
 /**
- * Returns updated cardToPinnedCopy, pinnedCardToOriginal, and cardMetadataMap.
- * Under the same namespace, cardToPinnedCopy and pinnedCardToOriginal are
- * routeful state and remained still, which might stil include the outdated
- * mapping of removed experiments. This function handles the mappings.
- * In the reducer nextCardmetadatamap is created from empty instead of
  * preserving the previous map, which might also contain outdated mapping due to
- * the same reason. To preserve the pinned card mapping we need to adding the
- * pinned card mappng to cardmetadatamap.
+ * Determines which pinned cards should continue to be present in the metrics
+ * state after an update to the set of experiments/tags/cards. Pinned cards are
+ * removed if their corresponding card is no longer present in the state (perhaps
+ * because the corresponding experiment and tag have been removed from the
+ * comparison). No new pinned cards are added by this function. It generates new
+ * cardToPinnedCopy, pinnedCardToOriginal maps to reflect the new set of pinned
+ * cards. It generates a cardMetadataMap object that is a combination of the input
+ * nextCardMetadataMap as well as metadata for the new set of pinned cards.
+ * @param previousCardToPinnedCopy The set of pinned cards that were present before
+ *  the update. This is a superset of pinned cards that may continue to be present
+ *  after the update.
+ * @param nextCardMetadataMap Metadata for all cards that will be present after
+ *  the update (we assume it does not yet include metadata for pinned copies of cards).
+ * @param nextCardList The set of base cards that will continue to be present in the
+ *  dashboard after the update.
  */
 export function generateNextPinnedCardMappings(
-  cardToPinnedCopy: CardToPinnedCard,
-  pinnedCardToOriginal: PinnedCardToCard,
+  previousCardToPinnedCopy: CardToPinnedCard,
+  previousPinnedCardToOriginal: PinnedCardToCard,
   nextCardMetadataMap: CardMetadataMap,
   nextCardList: CardId[]
 ) {
   const nextCardToPinnedCopy = new Map() as CardToPinnedCard;
-  for (const cardId of nextCardList) {
-    if (cardToPinnedCopy.has(cardId)) {
-      nextCardToPinnedCopy.set(cardId, cardToPinnedCopy.get(cardId)!);
-    }
-  }
-
-  const nextPinnedCardToOriginal = new Map(pinnedCardToOriginal);
-  // Removes previous pinned cards which are not in nextCardList; updated when
-  // experiments are removed
-  for (const [pinnedCardId, originalCardId] of pinnedCardToOriginal.entries()) {
-    if (!nextCardList.includes(originalCardId)) {
-      nextPinnedCardToOriginal.delete(pinnedCardId);
-    }
-  }
-
-  // Creates pinnedCardMetadataMap to preserve the mapping of pinned cards .
+  const nextPinnedCardToOriginal = new Map() as PinnedCardToCard;
   const pinnedCardMetadataMap = {} as CardMetadataMap;
-  for (const [
-    pinnedCardId,
-    originalCardId,
-  ] of nextPinnedCardToOriginal.entries()) {
-    if (nextCardToPinnedCopy.has(originalCardId)) {
-      pinnedCardMetadataMap[pinnedCardId] = nextCardMetadataMap[originalCardId];
+  for (const cardId of nextCardList) {
+    if (previousCardToPinnedCopy.has(cardId)) {
+      const pinnedCardId = previousCardToPinnedCopy.get(cardId)!;
+      nextCardToPinnedCopy.set(cardId, pinnedCardId);
+      nextPinnedCardToOriginal.set(pinnedCardId, cardId);
+      pinnedCardMetadataMap[pinnedCardId] = nextCardMetadataMap[cardId];
     }
   }
 
@@ -349,12 +342,12 @@ export function generateNextPinnedCardMappings(
  * Removes cards not in cardMetadataMap from cardStepIndex mapping.
  */
 export function generateNextCardStepIndex(
-  cardStepIndex: CardStepIndexMap,
-  cardMetadataMap: CardMetadataMap
+  previousCardStepIndex: CardStepIndexMap,
+  nextCardMetadataMap: CardMetadataMap
 ): CardStepIndexMap {
   const nextCardStepIndexMap = {} as CardStepIndexMap;
-  Object.entries(cardStepIndex).forEach(([cardId, step]) => {
-    if (cardMetadataMap[cardId]) {
+  Object.entries(previousCardStepIndex).forEach(([cardId, step]) => {
+    if (nextCardMetadataMap[cardId]) {
       nextCardStepIndexMap[cardId] = step;
     }
   });

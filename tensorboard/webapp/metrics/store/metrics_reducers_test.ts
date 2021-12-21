@@ -498,6 +498,7 @@ describe('metrics reducers', () => {
         cardStepIndex: {
           [pinnedCopyId1]: 1,
           [pinnedCopyId2]: 2,
+          [cardId1]: 1,
           [cardId2]: 2,
         },
         cardToPinnedCopy: new Map([
@@ -527,6 +528,7 @@ describe('metrics reducers', () => {
         },
         cardStepIndex: {
           [pinnedCopyId1]: 1,
+          [cardId1]: 1,
         },
       });
       expect(nextState.cardMetadataMap).toEqual(expectedState.cardMetadataMap);
