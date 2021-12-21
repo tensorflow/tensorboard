@@ -178,10 +178,10 @@ class _DeleteExperimentIntent(_Intent):
 
     _MESSAGE_TEMPLATE = textwrap.dedent(
         """\
-        This will delete the experiment on https://tensorboard.dev with the
-        following experiment ID:
+        This will delete the {num} experiment(s) on
+        https://tensorboard.dev with the following experiment ID(s):
 
-        {experiment_id}
+        {experiment_id_list}
 
         You have chosen to delete an experiment. All experiments uploaded
         to TensorBoard.dev are publicly visible. Do not upload sensitive
@@ -189,36 +189,71 @@ class _DeleteExperimentIntent(_Intent):
         """
     )
 
-    def __init__(self, experiment_id):
-        self.experiment_id = experiment_id
+    def __init__(self, experiment_id_list):
+        self.experiment_id_list = experiment_id_list
 
     def get_ack_message_body(self):
-        return self._MESSAGE_TEMPLATE.format(experiment_id=self.experiment_id)
+        return self._MESSAGE_TEMPLATE.format(
+            num=len(self.experiment_id_list),
+            experiment_id_list=self.experiment_id_list,
+        )
 
     def execute(self, server_info, channel):
         api_client = write_service_pb2_grpc.TensorBoardWriterServiceStub(
             channel
         )
-        experiment_id = self.experiment_id
-        if not experiment_id:
+        if not self.experiment_id_list:
             raise base_plugin.FlagsError(
-                "Must specify a non-empty experiment ID to delete."
+                "Must specify at least one experiment ID to delete."
             )
-        try:
-            uploader_lib.delete_experiment(api_client, experiment_id)
-        except uploader_lib.ExperimentNotFoundError:
-            _die(
-                "No such experiment %s. Either it never existed or it has "
-                "already been deleted." % experiment_id
-            )
-        except uploader_lib.PermissionDeniedError:
-            _die(
-                "Cannot delete experiment %s because it is owned by a "
-                "different user." % experiment_id
-            )
-        except grpc.RpcError as e:
-            _die("Internal error deleting experiment: %s" % e)
-        print("Deleted experiment %s." % experiment_id)
+        # Map from eid to (msg, action) pair.
+        results = {}
+        NO_ACTION = "NO_ACTION"
+        DIE_ACTION = "DIE_ACTION"
+        for experiment_id in set(self.experiment_id_list):
+            if not experiment_id:
+                results[experiment_id] = (
+                    "Skipping empty experiment_id.",
+                    NO_ACTION,
+                )
+                continue
+            try:
+                uploader_lib.delete_experiment(api_client, experiment_id)
+                results[experiment_id] = (
+                    "Deleted experiment %s." % experiment_id,
+                    NO_ACTION,
+                )
+            except uploader_lib.ExperimentNotFoundError:
+                results[experiment_id] = (
+                    "No such experiment %s. Either it never existed or it has "
+                    "already been deleted." % experiment_id,
+                    DIE_ACTION,
+                )
+            except uploader_lib.PermissionDeniedError:
+                results[experiment_id] = (
+                    "Cannot delete experiment %s because it is owned by a "
+                    "different user." % experiment_id,
+                    DIE_ACTION,
+                )
+            except grpc.RpcError as e:
+                results[experiment_id] = (
+                    (
+                        "Internal error deleting experiment %s: %s."
+                        % (experiment_id, e)
+                    ),
+                    DIE_ACTION,
+                )
+        # business logic on the receipt
+        any_die_action = False
+        err_msg = ""
+        for (msg, action) in results.values():
+            if action == NO_ACTION:
+                print(msg)
+            if action == DIE_ACTION:
+                err_msg += msg + "\n"
+                any_die_action = True
+        if any_die_action:
+            _die(err_msg)
 
 
 class _UpdateMetadataIntent(_Intent):
@@ -576,7 +611,7 @@ def _get_intent(flags, experiment_url_callback=None):
             return _DeleteExperimentIntent(flags.experiment_id)
         else:
             raise base_plugin.FlagsError(
-                "Must specify experiment to delete via `--experiment_id`."
+                "Must specify experiment(s) to delete via `--experiment_id`."
             )
     elif cmd == flags_parser.SUBCOMMAND_KEY_LIST:
         return _ListIntent(json=flags.json)

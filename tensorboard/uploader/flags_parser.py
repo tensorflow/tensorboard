@@ -180,9 +180,10 @@ def define_flags(parser):
     delete.add_argument(
         "--experiment_id",
         metavar="EXPERIMENT_ID",
-        type=str,
-        default=None,
-        help="ID of an experiment to delete permanently",
+        type=lambda option: option.split(","),
+        default=[],
+        help="ID of an experiment to delete permanently. Comma separated list"
+        "of experiment ids is also supported.",
     )
 
     list_parser = subparsers.add_parser(
