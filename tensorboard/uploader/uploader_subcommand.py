@@ -213,8 +213,9 @@ class _DeleteExperimentIntent(_Intent):
         for experiment_id in set(self.experiment_id_list):
             if not experiment_id:
                 results[experiment_id] = (
-                    "Must specify a non-empty experiment ID to delete.",
+                    "Skipping empty experiment_id.",
                     NO_ACTION)
+                continue
             try:
                 uploader_lib.delete_experiment(api_client, experiment_id)
                 results[experiment_id] = (
@@ -234,7 +235,10 @@ class _DeleteExperimentIntent(_Intent):
                 )
             except grpc.RpcError as e:
                 results[experiment_id] = (
-                    "Internal error deleting experiment: %s." % e,
+                    (
+                        "Internal error deleting experiment %s: %s." %
+                        (experiment_id, e)
+                    ),
                     DIE_ACTION
                 )
         # business logic on the receipt
