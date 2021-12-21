@@ -528,7 +528,7 @@ describe('app_routing_effects', () => {
     });
 
     describe('time-namespaced ids', () => {
-      it('are generated on bootstrap (when none exists)', fakeAsync(() => {
+      it('are generated on bootstrap when none in history', fakeAsync(() => {
         store.overrideSelector(getActiveRoute, null);
         store.overrideSelector(getActiveNamespaceId, null);
         store.overrideSelector(getEnabledTimeNamespacedState, true);
@@ -536,7 +536,6 @@ describe('app_routing_effects', () => {
 
         getPathSpy.and.returnValue('/experiments');
         getSearchSpy.and.returnValue([]);
-
         action.next(effects.ngrxOnInitEffects());
 
         tick();
@@ -553,6 +552,35 @@ describe('app_routing_effects', () => {
             beforeNamespaceId: null,
             // Newly-generated Id based on mock clock time.
             afterNamespaceId: Date.now().toString(),
+          }),
+        ]);
+      }));
+
+      it('are reused from history on bootstrap', fakeAsync(() => {
+        store.overrideSelector(getActiveRoute, null);
+        store.overrideSelector(getActiveNamespaceId, null);
+        store.overrideSelector(getEnabledTimeNamespacedState, true);
+        store.refreshState();
+
+        getPathSpy.and.returnValue('/experiments');
+        getHistoryStateSpy.and.returnValue({namespaceId: 'id_from_history'});
+        getSearchSpy.and.returnValue([]);
+        action.next(effects.ngrxOnInitEffects());
+
+        tick();
+
+        expect(actualActions).toEqual([
+          jasmine.any(Object),
+          actions.navigated({
+            before: null,
+            after: buildRoute({
+              routeKind: RouteKind.EXPERIMENTS,
+              pathname: '/experiments',
+            }),
+            // From getActiveNamespaceId().
+            beforeNamespaceId: null,
+            // From history.
+            afterNamespaceId: 'id_from_history',
           }),
         ]);
       }));

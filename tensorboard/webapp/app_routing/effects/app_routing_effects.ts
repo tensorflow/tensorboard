@@ -87,21 +87,20 @@ enum NamespaceUpdateOption {
   FROM_HISTORY,
 }
 
-type NavigationOptions =
+type NamespaceUpdate =
   | {
-      browserInitiated: boolean;
-      replaceState: boolean;
-      namespaceUpdateOption:
-        | NamespaceUpdateOption.NEW
-        | NamespaceUpdateOption.UNCHANGED;
+      option: NamespaceUpdateOption.NEW | NamespaceUpdateOption.UNCHANGED;
     }
   | {
-      browserInitiated: boolean;
-      replaceState: boolean;
-      // When namespace is FROM_HISTORY, a namespaceId must also be provided.
-      namespaceUpdateOption: NamespaceUpdateOption.FROM_HISTORY;
+      option: NamespaceUpdateOption.FROM_HISTORY;
       namespaceId: string;
     };
+
+type NavigationOptions = {
+  browserInitiated: boolean;
+  replaceState: boolean;
+  namespaceUpdate: NamespaceUpdate;
+};
 
 /**
  * Effects to translate attempted app navigations into Route navigation actions.
@@ -152,9 +151,11 @@ export class AppRoutingEffects {
           options: {
             browserInitiated: false,
             replaceState: navigation.replaceState ?? false,
-            namespaceUpdateOption: navigation.resetNamespacedState
-              ? NamespaceUpdateOption.NEW
-              : NamespaceUpdateOption.UNCHANGED,
+            namespaceUpdate: {
+              option: navigation.resetNamespacedState
+                ? NamespaceUpdateOption.NEW
+                : NamespaceUpdateOption.UNCHANGED,
+            },
           },
         };
       })
@@ -182,12 +183,31 @@ export class AppRoutingEffects {
     .pipe(
       delay(0),
       map(() => {
+        const namespaceId: string | undefined =
+          this.location.getHistoryState()?.namespaceId;
+
+        const namespaceUpdate: NamespaceUpdate =
+          namespaceId === undefined
+            ? // There is no namespace id in the browser history entry. This is,
+              // therefore, some sort of new navigation to the app. Set options
+              // so that a new namespace id is set downstream.
+              {
+                option: NamespaceUpdateOption.NEW,
+              }
+            : // There is a namespace id in the browser history entry. This is,
+              // therefore, a page reload. Set options so that the namespace id
+              // is reused downstream.
+              {
+                option: NamespaceUpdateOption.FROM_HISTORY,
+                namespaceId: namespaceId,
+              };
+
         return {
           pathname: this.location.getPath(),
           options: {
             browserInitiated: true,
             replaceState: true,
-            namespaceUpdateOption: NamespaceUpdateOption.UNCHANGED,
+            namespaceUpdate,
           },
         };
       })
@@ -205,8 +225,10 @@ export class AppRoutingEffects {
           options: {
             browserInitiated: true,
             replaceState: true,
-            namespaceUpdateOption: NamespaceUpdateOption.FROM_HISTORY,
-            namespaceId: navigation.state?.namespaceId,
+            namespaceUpdate: {
+              option: NamespaceUpdateOption.FROM_HISTORY,
+              namespaceId: navigation.state?.namespaceId,
+            },
           },
         };
       })
@@ -292,7 +314,7 @@ export class AppRoutingEffects {
         options: {
           replaceState: false,
           browserInitiated: false,
-          namespaceUpdateOption: NamespaceUpdateOption.UNCHANGED,
+          namespaceUpdate: {option: NamespaceUpdateOption.UNCHANGED},
         } as NavigationOptions,
       };
     })
@@ -563,11 +585,11 @@ function getAfterNamespaceId(
     return getRouteId(route.routeKind, route.params);
   } else {
     // Time-namespaced state is enabled.
-    if (options.namespaceUpdateOption === NamespaceUpdateOption.FROM_HISTORY) {
-      return options.namespaceId;
+    if (options.namespaceUpdate.option === NamespaceUpdateOption.FROM_HISTORY) {
+      return options.namespaceUpdate.namespaceId;
     } else if (
       beforeNamespaceId == null ||
-      options.namespaceUpdateOption === NamespaceUpdateOption.NEW
+      options.namespaceUpdate.option === NamespaceUpdateOption.NEW
     ) {
       return Date.now().toString();
     } else {
