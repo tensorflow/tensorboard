@@ -395,9 +395,9 @@ export class AppRoutingEffects {
         // have in-memory state for the namespace being navigated to.
 
         const isKnownNamespace =
-          options.namespaceUpdateOption ===
+          options.namespaceUpdate.option ===
             NamespaceUpdateOption.FROM_HISTORY &&
-          knownNamespaceIds.has(options.namespaceId);
+          knownNamespaceIds.has(options.namespaceUpdate.namespaceId);
 
         if (
           !options.browserInitiated ||
