@@ -63,7 +63,9 @@ class UploadIntentTest(tf.test.TestCase):
         mock_uploader = mock.MagicMock()
         mock_stdout_write = mock.MagicMock()
         with mock.patch.object(
-            uploader_lib, "TensorBoardUploader", return_value=mock_uploader,
+            uploader_lib,
+            "TensorBoardUploader",
+            return_value=mock_uploader,
         ), mock.patch.object(
             sys.stdout, "write", mock_stdout_write
         ), mock.patch.object(
@@ -267,7 +269,8 @@ class UploadIntentTest(tf.test.TestCase):
         #    printed.
         stdout_writes = [x[0][0] for x in mock_stdout_write.call_args_list]
         self.assertRegex(
-            ",".join(stdout_writes), f".*Deleted experiment {eid_1}.*",
+            ",".join(stdout_writes),
+            f".*Deleted experiment {eid_1}.*",
         )
 
     def testDeleteIntentDeletesMultipleExperiments(self):
@@ -361,7 +364,9 @@ class UploadIntentTest(tf.test.TestCase):
             uploader_lib, "delete_experiment", mock_delete_experiment
         ), mock.patch.object(
             write_service_pb2_grpc, "TensorBoardWriterServiceStub"
-        ), mock.patch.object(sys, "exit", mock_sys_exit):
+        ), mock.patch.object(
+            sys, "exit", mock_sys_exit
+        ):
             # Set up an UploadIntent configured with one_shot and an empty temp
             # directory.
             intent = uploader_subcommand._DeleteExperimentIntent(
@@ -374,7 +379,8 @@ class UploadIntentTest(tf.test.TestCase):
                     eid_6_permission_denied,
                     eid_7_ok,
                     eid_8_rate_limited,
-                    eid_9_ok]
+                    eid_9_ok,
+                ]
             )
             # Execute the intent.execute method.
             intent.execute(server_info_pb2.ServerInfoResponse(), None)
@@ -384,29 +390,37 @@ class UploadIntentTest(tf.test.TestCase):
         self.assertEqual(mock_delete_experiment.call_count, 8)
         # Expect that ".*Deleted experiment.*" and the eid are among the things
         #    printed to stdout
-        stdout_msg = ",".join([x[0][0] for x in mock_stdout_write.call_args_list])
+        stdout_msg = ",".join(
+            [x[0][0] for x in mock_stdout_write.call_args_list]
+        )
         self.assertRegex(stdout_msg, f".*Deleted experiment {eid_1_ok}.*")
         self.assertRegex(stdout_msg, f".*Deleted experiment {eid_3_ok}.*")
         self.assertRegex(stdout_msg, f".*Deleted experiment {eid_5_ok}.*")
         self.assertRegex(stdout_msg, f".*Deleted experiment {eid_7_ok}.*")
         self.assertRegex(stdout_msg, f".*Deleted experiment {eid_9_ok}.*")
         self.assertRegex(stdout_msg, ".*Skipping empty experiment_id.*")
-        self.assertNotRegex(stdout_msg, f".*Deleted experiment {eid_4_missing}.*")
         self.assertNotRegex(
-            stdout_msg, f".*Deleted experiment {eid_6_permission_denied}.*")
+            stdout_msg, f".*Deleted experiment {eid_4_missing}.*"
+        )
         self.assertNotRegex(
-            stdout_msg, f".*Deleted experiment {eid_8_rate_limited}.*")
+            stdout_msg, f".*Deleted experiment {eid_6_permission_denied}.*"
+        )
+        self.assertNotRegex(
+            stdout_msg, f".*Deleted experiment {eid_8_rate_limited}.*"
+        )
         # Expect appropriate error messages sent to stderr
-        stderr_msg = ",".join([x[0][0] for x in mock_stderr_write.call_args_list])
+        stderr_msg = ",".join(
+            [x[0][0] for x in mock_stderr_write.call_args_list]
+        )
+        self.assertRegex(stderr_msg, f".*No such experiment {eid_4_missing}.*")
         self.assertRegex(
             stderr_msg,
-            f".*No such experiment {eid_4_missing}.*")
+            f".*Cannot delete experiment {eid_6_permission_denied}.*",
+        )
         self.assertRegex(
             stderr_msg,
-            f".*Cannot delete experiment {eid_6_permission_denied}.*")
-        self.assertRegex(
-            stderr_msg,
-            f".*Internal error deleting experiment {eid_8_rate_limited}.*")
+            f".*Internal error deleting experiment {eid_8_rate_limited}.*",
+        )
         # Expect a call to kill the process.
         self.assertEqual(mock_sys_exit.call_count, 1)
 

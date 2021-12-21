@@ -214,32 +214,34 @@ class _DeleteExperimentIntent(_Intent):
             if not experiment_id:
                 results[experiment_id] = (
                     "Skipping empty experiment_id.",
-                    NO_ACTION)
+                    NO_ACTION,
+                )
                 continue
             try:
                 uploader_lib.delete_experiment(api_client, experiment_id)
                 results[experiment_id] = (
                     "Deleted experiment %s." % experiment_id,
-                    NO_ACTION)
+                    NO_ACTION,
+                )
             except uploader_lib.ExperimentNotFoundError:
                 results[experiment_id] = (
                     "No such experiment %s. Either it never existed or it has "
                     "already been deleted." % experiment_id,
-                    DIE_ACTION
+                    DIE_ACTION,
                 )
             except uploader_lib.PermissionDeniedError:
                 results[experiment_id] = (
                     "Cannot delete experiment %s because it is owned by a "
                     "different user." % experiment_id,
-                    DIE_ACTION
+                    DIE_ACTION,
                 )
             except grpc.RpcError as e:
                 results[experiment_id] = (
                     (
-                        "Internal error deleting experiment %s: %s." %
-                        (experiment_id, e)
+                        "Internal error deleting experiment %s: %s."
+                        % (experiment_id, e)
                     ),
-                    DIE_ACTION
+                    DIE_ACTION,
                 )
         # business logic on the receipt
         any_die_action = False
@@ -252,8 +254,6 @@ class _DeleteExperimentIntent(_Intent):
                 any_die_action = True
         if any_die_action:
             _die(err_msg)
-
-
 
 
 class _UpdateMetadataIntent(_Intent):
