@@ -182,7 +182,7 @@ def define_flags(parser):
         metavar="EXPERIMENT_ID",
         type=lambda option: option.split(","),
         default=[],
-        help="ID of an experiment to delete permanently.  Comma separated list"
+        help="ID of an experiment to delete permanently. Comma separated list"
         "of experiment ids is also supported.",
     )
 

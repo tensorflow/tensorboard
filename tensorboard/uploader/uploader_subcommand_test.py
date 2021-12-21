@@ -31,6 +31,7 @@ from tensorboard.uploader import uploader_subcommand
 from tensorboard.plugins.histogram import metadata as histograms_metadata
 from tensorboard.plugins.graph import metadata as graphs_metadata
 from tensorboard.plugins.scalar import metadata as scalars_metadata
+from tensorboard.plugins import base_plugin
 
 
 # By default allow at least one plugin for each upload type: Scalar, Tensor, and
@@ -53,7 +54,7 @@ class UploadIntentTest(tf.test.TestCase):
         """
         # Mock three places:
         # 1. The uploader itself, we will inspect invocations of its methods but
-        #    do not want to actually uplaod anything.
+        #    do not want to actually upload anything.
         # 2. Writing to stdout, so we can inspect messages to the user.
         # 3. The creation of the grpc WriteServiceChannel, which happens in the
         #    non dry_run execution, but we don't want to actually open a network
@@ -61,9 +62,7 @@ class UploadIntentTest(tf.test.TestCase):
         mock_uploader = mock.MagicMock()
         mock_stdout_write = mock.MagicMock()
         with mock.patch.object(
-            uploader_lib,
-            "TensorBoardUploader",
-            return_value=mock_uploader,
+            uploader_lib, "TensorBoardUploader", return_value=mock_uploader,
         ), mock.patch.object(
             sys.stdout, "write", mock_stdout_write
         ), mock.patch.object(
@@ -89,7 +88,7 @@ class UploadIntentTest(tf.test.TestCase):
         """Test the upload intent under the one-shot mode."""
         # Mock three places:
         # 1. The uploader itself, we will inspect invocations of its methods but
-        #    do not want to actually uplaod anything.
+        #    do not want to actually upload anything.
         # 2. Writing to stdout, so we can inspect messages to the user.
         # 3. The creation of the grpc WriteServiceChannel, which happens in the
         #    non dry_run execution, but we don't want to actually open a network
@@ -228,6 +227,88 @@ class UploadIntentTest(tf.test.TestCase):
                 "fieldmask"
             ]
             self.assertEqual(actual_mask, expected_mask)
+
+    def testDeleteIntentDeletesExistingExperiment(self):
+        """Test the delete intent under the one-shot mode."""
+        # Setup: A uploader_lib which will report success (return `None`) on the
+        #   deletion of an experiment.
+        eid_1 = "1111"
+        mock_delete_experiment = mock.MagicMock(return_value=None)
+        mock_stdout_write = mock.MagicMock()
+
+        # Execute: A _DeleteExperimentIntent on the list containing exactly
+        #  one experiment_id
+        #
+        # Mock three places:
+        # 1. Writing to stdout, so we can inspect messages to the user.
+        # 2. uploader_lib.delete_experiment itself, we will inspect invocations
+        #    this method but do not want to actually delete anything.
+        # 3. The creation of the grpc TensorBoardWriterServiceStub, which
+        #    happens in intent, but we don't want to actually open a network
+        #    communication.
+        with mock.patch.object(
+            sys.stdout, "write", mock_stdout_write
+        ), mock.patch.object(
+            uploader_lib, "delete_experiment", mock_delete_experiment
+        ), mock.patch.object(
+            write_service_pb2_grpc, "TensorBoardWriterServiceStub"
+        ):
+            # Set up an UploadIntent configured with one_shot and an empty temp
+            # directory.
+            intent = uploader_subcommand._DeleteExperimentIntent(
+                experiment_id_list=[eid_1]
+            )
+            # Execute the intent.execute method.
+            intent.execute(server_info_pb2.ServerInfoResponse(), None)
+
+        # Expect that there is one call to delete_experiment.
+        self.assertEqual(mock_delete_experiment.call_count, 1)
+        # Expect that ".*Deleted experiment.*" and the eid are among the things
+        #    printed.
+        stdout_writes = [x[0][0] for x in mock_stdout_write.call_args_list]
+        self.assertRegex(
+            ",".join(stdout_writes), f".*Deleted experiment {eid_1}.*",
+        )
+
+    def testDeleteIntentRaisesWhenAskedToDeleteZeroExperiments(self):
+        """Test the delete intent under the one-shot mode."""
+        # Setup: A uploader_lib which will report success (return `None`) on the
+        #   deletion of an experiment.
+        mock_delete_experiment = mock.MagicMock(return_value=None)
+        mock_stdout_write = mock.MagicMock()
+
+        # Execute: A _DeleteExperimentIntent on the empty list.
+        #
+        # Mock three places:
+        # 1. Writing to stdout, so we can inspect messages to the user.
+        # 2. uploader_lib.delete_experiment itself, we will inspect invocations
+        #    this method but do not want to actually delete anything.
+        # 3. The creation of the grpc TensorBoardWriterServiceStub, which
+        #    happens in intent, but we don't want to actually open a network
+        #    communication.
+        with mock.patch.object(
+            sys.stdout, "write", mock_stdout_write
+        ), mock.patch.object(
+            uploader_lib, "delete_experiment", mock_delete_experiment
+        ), mock.patch.object(
+            write_service_pb2_grpc, "TensorBoardWriterServiceStub"
+        ):
+            # Set up an UploadIntent configured with one_shot and an empty temp
+            # directory.
+            intent = uploader_subcommand._DeleteExperimentIntent(
+                experiment_id_list=[]
+            )
+            # Execute the intent.execute method.
+            # Expect raises with appropriate message.
+            with self.assertRaisesRegex(
+                base_plugin.FlagsError,
+                "Must specify at least one experiment ID to delete.*",
+            ):
+                intent.execute(server_info_pb2.ServerInfoResponse(), None)
+
+        # Expect:
+        # Expect that there are zero calls to delete_experiment.
+        self.assertEqual(mock_delete_experiment.call_count, 0)
 
 
 if __name__ == "__main__":
