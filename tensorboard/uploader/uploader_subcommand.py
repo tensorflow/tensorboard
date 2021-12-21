@@ -195,7 +195,8 @@ class _DeleteExperimentIntent(_Intent):
     def get_ack_message_body(self):
         return self._MESSAGE_TEMPLATE.format(
             num=len(self.experiment_id_list),
-            experiment_id_list=self.experiment_id_list)
+            experiment_id_list=self.experiment_id_list,
+        )
 
     def execute(self, server_info, channel):
         api_client = write_service_pb2_grpc.TensorBoardWriterServiceStub(
@@ -203,8 +204,8 @@ class _DeleteExperimentIntent(_Intent):
         )
         if not self.experiment_id_list:
             raise base_plugin.FlagsError(
-                    "Must specify at least one experiment ID to delete."
-                )
+                "Must specify at least one experiment ID to delete."
+            )
         for experiment_id in self.experiment_id_list:
             if not experiment_id:
                 raise base_plugin.FlagsError(
