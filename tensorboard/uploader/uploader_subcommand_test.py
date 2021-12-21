@@ -317,8 +317,8 @@ class UploadIntentTest(tf.test.TestCase):
         self.assertRegex(out_msg, f".*Deleted experiment {eid_3}.*")
 
     def testDeleteIntentHandlesUndeletableExperiemtns(self):
-        # Setup: A uploader_lib which will report success (return `None`) on the
-        #   deletion of an experiment.
+        # Setup: A uploader_lib which will emit scripted results for differen
+        # eids.  See mock_delete_func for script.
         eid_1_ok = "1111"
         eid_2_empty = ""
         eid_3_ok = "3333"
@@ -425,8 +425,6 @@ class UploadIntentTest(tf.test.TestCase):
         self.assertEqual(mock_sys_exit.call_count, 1)
 
     def testDeleteIntentRaisesWhenAskedToDeleteZeroExperiments(self):
-        # Setup: A uploader_lib which will report success (return `None`) on the
-        #   deletion of an experiment.
         mock_delete_experiment = mock.MagicMock(return_value=None)
         mock_stdout_write = mock.MagicMock()
 
