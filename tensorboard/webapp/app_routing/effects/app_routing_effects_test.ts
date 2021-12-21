@@ -803,7 +803,7 @@ describe('app_routing_effects', () => {
         }));
       });
 
-      it('dispatches stateRehydratedFromUrl when known namespace id', fakeAsync(() => {
+      it('dispatches stateRehydratedFromUrl when unknown namespace id', fakeAsync(() => {
         deserializeQueryParamsSpy.and.returnValue({a: 'A', b: 'B'});
         getPathSpy.and.returnValue('/compare/a:b');
 
@@ -836,7 +836,7 @@ describe('app_routing_effects', () => {
         ]);
       }));
 
-      it('does not dispatch stateRehydratedFromUrl when unknown namespace id', fakeAsync(() => {
+      it('does not dispatch stateRehydratedFromUrl when known namespace id', fakeAsync(() => {
         deserializeQueryParamsSpy.and.returnValue({a: 'A', b: 'B'});
         getPathSpy.and.returnValue('/compare/a:b');
 
