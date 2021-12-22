@@ -16,7 +16,7 @@ limitations under the License.
  * @fileoverview Types of experiments that come from the backend.
  */
 
-import {RouteContextedState} from '../../app_routing/route_contexted_reducer_helper';
+import {NamespaceContextedState} from '../../app_routing/route_contexted_reducer_helper';
 import {LoadState} from '../../types/data';
 import {SortDirection} from '../../types/ui';
 import {HparamValue} from '../data_source/runs_data_source_types';
@@ -46,7 +46,7 @@ export type RunId = string;
 // 'RouteKey' is a serialization of multiple experiment IDs.
 export type RouteKey = string;
 
-export interface RunsDataRoutefulState {
+export interface RunsDataNamespacedState {
   defaultRunColorIdForGroupBy: Map<RunId, number>;
   // Monotonically increasing opaque id that uniquely identifies color that can
   // be used as an index, starting from 0. -1 is a reversed to denote no matches
@@ -60,7 +60,7 @@ export interface RunsDataRoutefulState {
   regexFilter: string;
 }
 
-export interface RunsDataRoutelessState {
+export interface RunsDataNonNamespacedState {
   runIds: Record<ExperimentId, RunId[]>;
   runIdToExpId: Record<RunId, ExperimentId>;
   runMetadata: Record<RunId, Run>;
@@ -81,24 +81,24 @@ export interface RunsDataRoutelessState {
 /**
  * Interface that describes shape of the `data` state in the runs feature.
  */
-export type RunsDataState = RouteContextedState<
-  RunsDataRoutefulState,
-  RunsDataRoutelessState
+export type RunsDataState = NamespaceContextedState<
+  RunsDataNamespacedState,
+  RunsDataNonNamespacedState
 >;
 
-export interface RunsUiRoutefulState {
+export interface RunsUiNamespacedState {
   paginationOption: {pageIndex: number; pageSize: number};
   sort: {key: SortKey | null; direction: SortDirection};
 }
 
-export interface RunsUiRoutelessState {}
+export interface RunsUiNonNamespacedState {}
 
 /**
  * Interface that describes shape of the `ui` state in the runs feature.
  */
-export type RunsUiState = RouteContextedState<
-  RunsUiRoutefulState,
-  RunsUiRoutelessState
+export type RunsUiState = NamespaceContextedState<
+  RunsUiNamespacedState,
+  RunsUiNonNamespacedState
 >;
 
 /**

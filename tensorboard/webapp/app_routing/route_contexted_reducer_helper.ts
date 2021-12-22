@@ -13,31 +13,42 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 /**
- * @fileoverview Reducer helper for maintaining states that are are associated
- * with a namespace.
+ * @fileoverview Helper for reducers to maintain namespaced state.
  *
- * Formerly a namespace had a 1-1 relationship with route and was denoted by
- * routeId but now this is a bit more generic. Thus a lot of the types here
- * refer to `route`. We will clean this up in the future.
+ * A "namespace", in this context, is a logical grouping of routes/points in
+ * browser history. As a user navigates in the app, from one route to another,
+ * they may be navigating within the same namespace or navigating between
+ * different namespaces.
  *
- * Each TensorBoard experiment/compare view is regarded as a
- * separate instance of "app" where no states are shared. As a result, a run
- * selection in an experiment/1 should differ from experiment/2. This module
- * facilitates maintaining such states.
+ * "Namespaced state", then, is state that is tied to the lifetime of namespaces.
+ * This state may need to be swapped out to cache, reset, or swapped in from
+ * cache as user navigates from one namespace to another.
  *
- * The helper helps maintain the route-dependent (or routeful) states by
- * maintaining a dictionary of namespaces to the route-dependent states. It
- * abstracts routes by, upon navigation, storing current route-dependent state
- * in the dictionary and reading/applying the state for the new route from the
- * dictionary. When the dictionary is empty, it applies the initialState. Client
- * can assume the values of the non-"private" top-level properties appropriately
- * combine the values for route-independent state with state for the active
- * route.
+ * This helper manages namespaced state by determining when namespaced state
+ * needs to be swapped into cache, reset, and swapped out of cache. At a high
+ * level, it listens for user navigations and applies the following rules:
+ *
+ *   * As a user navigates within a namespace, namespaced state is neither
+ *     swapped in from / out to cache nor reset. (Thus changes to state by
+ *     reducers accumulate over time)
+ *
+ *   * When a user navigates from one namespace to a new namespace, then the
+ *     previous namespace's state is cached and next namespace's state is created
+ *     new -- the state is essentially reset. (Thus subsequent changes to state
+ *     by reducers are on the newly-reset state)
+ *
+ *   * When user navigates from one namespace to an existing namespace, then the
+ *     previous namespace's state is cached and the next namespaces' state is
+ *     swapped out from cache. (Thus subsequent changes to state by reducers are
+ *     on the uncached state.)
+ *
  *
  * Clients should never peek into or modify the property,
  * `privateNamespacedState`.
  *
- * For discussion, please refer to docs/design/route-contexted-state.md.
+ * For discussion, please refer to:
+ *   * The original route-based namespace design: docs/design/route-contexted-state.md.
+ *   * The new time-based namespace design: http://go/tb-timespaced-state
  */
 
 import {ActionReducer, createReducer, on} from '@ngrx/store';
@@ -46,105 +57,116 @@ import {areSameRouteKindAndExperiments} from './internal_utils';
 import {Route} from './types';
 
 // `privateNamespacedState` loosely typed only for ease of writing tests.
-// Otherwise, all the reducers that has routeful state has to change the test
-// to create an object that satisfy the typing.
-// During the runtime, it always has value because of `initialState`.
-interface PrivateState<RoutefulState> {
+// Otherwise, all the reducers that have namespaced state have to change the test
+// to create an object that satisfies the typing.
+// In practice, it always has value because of `initialState`.
+interface PrivateState<NamespacedState> {
   privateNamespacedState?: {
-    [namespaceId: string]: RoutefulState;
+    [namespaceId: string]: NamespacedState;
   };
 }
 
 /**
- * Complete type definition of route contexted state.
+ * NamespaceContextedState is all of a feature/reducer's defined State
+ * subdivided into NamespacedState and NonNamespacedState.
  *
  * Example usage:
- * type ReducerState = RouteContextedState<
- *     {myRoutefulState: number},
- *     {nonRoutefulState: string},
+ * type ReducerState = NamespaceContextedState<
+ *     {myNamespacedState: number},
+ *     {nonNamespacedState: string},
  * >;
  */
-export type RouteContextedState<
-  RoutefulState extends {},
-  NonRoutefulState extends {}
-> = NonRoutefulState & RoutefulState & PrivateState<RoutefulState>;
+export type NamespaceContextedState<
+  NamespacedState extends {},
+  NonNamespacedState extends {}
+> = NonNamespacedState & NamespacedState & PrivateState<NamespacedState>;
 
 /**
- * Utility for managing routeful states. It returns route contexted
- * `initialState` and `reducers` that help manage the routeful state.
+ * Utility for managing namespaced state. It returns namespace-contexted
+ * `initialState` and `reducers` that help manage the namespaced state.
  *
- * An optional `onRouteKindOrExperimentsChanged` function will modify the state
- * after it is loaded from the cache.
+ * An optional `onRouteKindOrExperimentsChanged` function allows more
+ * fine-grained changes on state after a key change in Route - that is, after
+ * navigating to a Route with either a change in route kind or in the set of
+ * experiments. It guarantees that the change happens after namespaced state has
+ * been properly cached or reset, if appropriate. Note that this callback may be
+ * called even when namespace is not changed -- not all navigations to Routes
+ * lead to namespaces changes.
  *
  * Example usage:
  *
- * const {initialState, reducers: routeReducers} =
- *    createRouteContextedState(
- *        {myRoutefulState: 0},
- *        {nonRoutefulState: 'one'},
+ * const {initialState, reducers: namespacedReducers} =
+ *    createNamespaceContextedState(
+ *        {myNamespacedState: 0},
+ *        {nonNamespacedState: 'one'},
  *        (state) => {
- *          console.log('Reset state upon mounting a new route');
- *          return {myRoutefulState: 0, nonRoutefulState: 'one'};
+ *          // Perform more complex state transformations based on route kind
+ *          // or the set of experiments.
+ *          return {nonNamespacedState: 'one'};
  *        }
  *    );
  *
  * export const reducers = composeReducers(routeReducers, reducer);
  */
-export function createRouteContextedState<
-  RoutefulState extends {},
-  NonRoutefulState extends {}
+export function createNamespaceContextedState<
+  NamespacedState extends {},
+  NonNamespacedState extends {}
 >(
-  routefulInitialState: RoutefulState,
-  nonRoutefulInitialState: NonRoutefulState,
+  namespacedInitialState: NamespacedState,
+  nonNamespacedInitialState: NonNamespacedState,
   onRouteKindOrExperimentsChanged?: (
-    state: RouteContextedState<RoutefulState, NonRoutefulState>,
+    state: NamespaceContextedState<NamespacedState, NonNamespacedState>,
     newRoute: Route
-  ) => RouteContextedState<RoutefulState, NonRoutefulState>
+  ) => NamespaceContextedState<NamespacedState, NonNamespacedState>
 ): {
-  initialState: RouteContextedState<RoutefulState, NonRoutefulState>;
-  reducers: ActionReducer<RouteContextedState<RoutefulState, NonRoutefulState>>;
+  initialState: NamespaceContextedState<NamespacedState, NonNamespacedState>;
+  reducers: ActionReducer<
+    NamespaceContextedState<NamespacedState, NonNamespacedState>
+  >;
 } {
-  type FullState = RouteContextedState<RoutefulState, NonRoutefulState>;
-  const keys = Object.keys(routefulInitialState) as Array<keyof RoutefulState>;
+  type FullState = NamespaceContextedState<NamespacedState, NonNamespacedState>;
+  const keys = Object.keys(namespacedInitialState) as Array<
+    keyof NamespacedState
+  >;
 
   const initialState: FullState = {
-    ...routefulInitialState,
-    ...nonRoutefulInitialState,
+    ...namespacedInitialState,
+    ...nonNamespacedInitialState,
     privateNamespacedState: {},
   };
 
   /**
-   * Updates routeful state to match key `afterNamespaceId`. Takes existing routeful
-   * state and caches it using key `beforeNamespaceId`.
+   * Updates namespaced state to match key `afterNamespaceId`. Takes existing
+   * namespaced state and caches it using key `beforeNamespaceId`.
    */
-  function updateRoutefulState(
+  function updateNamespacedState(
     state: FullState,
     beforeNamespaceId: string | null,
     afterNamespaceId: string
   ) {
     let nextContextedStateCache: {
-      [namespaceId: string]: RoutefulState;
+      [namespaceId: string]: NamespacedState;
     } = {...state.privateNamespacedState};
 
     if (beforeNamespaceId) {
-      // Swap out routeful state to cache, keyed by beforeNamespaceId.
-      const routefulStateToCache = {} as RoutefulState;
+      // Swap out namespaced state to cache, keyed by beforeNamespaceId.
+      const namespacedStateToCache = {} as NamespacedState;
       for (const key of keys) {
-        routefulStateToCache[key] = (state as RoutefulState)[key];
+        namespacedStateToCache[key] = (state as NamespacedState)[key];
       }
       nextContextedStateCache = {
         ...nextContextedStateCache,
-        [beforeNamespaceId]: routefulStateToCache,
+        [beforeNamespaceId]: namespacedStateToCache,
       };
     }
 
-    // Update routeful state to reflect afterNamespaceId.
-    let nextRoutefulState = {};
+    // Update namespaced state to reflect afterNamespaceId.
+    let nextNamespacedState = {};
     // Note: state.privateNamespacedState always exists in practice except
     // for in tests.
     if (state.privateNamespacedState?.[afterNamespaceId]) {
       // Swap in existing state since it already exists in the cache.
-      nextRoutefulState = state.privateNamespacedState[afterNamespaceId];
+      nextNamespacedState = state.privateNamespacedState[afterNamespaceId];
     } else if (beforeNamespaceId) {
       // Reset to initial state since we had a cache miss and this is not
       // initial load.
@@ -152,12 +174,12 @@ export function createRouteContextedState<
       // Note: We don't reset to initial state on initial load because we
       // assume the state already has values from bootstrapping deeplinks and
       // we should not overwrite the values.
-      nextRoutefulState = routefulInitialState;
+      nextNamespacedState = namespacedInitialState;
     }
 
     return {
       ...state,
-      ...nextRoutefulState,
+      ...nextNamespacedState,
       privateNamespacedState: nextContextedStateCache,
     };
   }
@@ -175,8 +197,8 @@ export function createRouteContextedState<
       ): FullState => {
         let nextFullState: FullState = state;
         if (beforeNamespaceId !== afterNamespaceId) {
-          // Namespaces have changed. Update routeful state.
-          nextFullState = updateRoutefulState(
+          // Namespaces have changed. Update namespaced state.
+          nextFullState = updateNamespacedState(
             state,
             beforeNamespaceId,
             afterNamespaceId

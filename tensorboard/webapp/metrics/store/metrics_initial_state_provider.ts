@@ -37,8 +37,9 @@ export function getConfig(
 
   return {
     initialState: {
-      // For other states, please make sure you only provide the routeless state. Routeful
-      // initial state cannot be dependency injected as of right now.
+      // For other states, please make sure you only provide the non-namespaced
+      // state. Namespaced initial state cannot be dependency injected as of
+      // right now.
       ...INITIAL_STATE,
       settings,
     },

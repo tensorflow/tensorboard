@@ -26,56 +26,60 @@ import {firstValueFrom} from 'rxjs';
 import {composeReducers} from '../util/ngrx';
 import {navigated} from './actions';
 import {
-  createRouteContextedState,
-  RouteContextedState,
+  createNamespaceContextedState,
+  NamespaceContextedState,
 } from './route_contexted_reducer_helper';
 import {buildNavigatedToNewExperimentAction, buildRoute} from './testing';
 import {RouteKind} from './types';
 
-interface RoutefulState {
-  routeful: number;
+interface NamespacedState {
+  namespaced: number;
 }
 
-interface NonRoutefulState {
-  notRouteful: number;
+interface NonNamespacedState {
+  nonNamespaced: number;
 }
 
-type ContextedState = RouteContextedState<RoutefulState, NonRoutefulState>;
+type ContextedState = NamespaceContextedState<
+  NamespacedState,
+  NonNamespacedState
+>;
 
-const incrementRouteful = createAction('[TEST] Toggle Routeful');
-const incrementNotRouteful = createAction('[TEST] Toggle Not Routeful');
+const incrementNamespaced = createAction('[TEST] Toggle Namespaced');
+const incrementNonNamespaced = createAction('[TEST] Toggle Not Namespaced');
 
-const {initialState, reducers: routeReducers} = createRouteContextedState<
-  RoutefulState,
-  NonRoutefulState
->({routeful: 0}, {notRouteful: 1});
+const {initialState, reducers: namespacedReducers} =
+  createNamespaceContextedState<NamespacedState, NonNamespacedState>(
+    {namespaced: 0},
+    {nonNamespaced: 1}
+  );
 
 const reducer = createReducer<ContextedState>(
   initialState,
-  on(incrementRouteful, (state) => {
-    return {...state, routeful: state.routeful + 1};
+  on(incrementNamespaced, (state) => {
+    return {...state, namespaced: state.namespaced + 1};
   }),
-  on(incrementNotRouteful, (state) => {
-    return {...state, notRouteful: state.notRouteful + 1};
+  on(incrementNonNamespaced, (state) => {
+    return {...state, nonNamespaced: state.nonNamespaced + 1};
   })
 );
 
-const reducers = composeReducers(routeReducers, reducer);
+const reducers = composeReducers(namespacedReducers, reducer);
 
 describe('route_contexted_reducer_helper', () => {
   describe('helper reducers', () => {
-    it('swaps routeful state in and out of cache', () => {
+    it('swaps namespaced state in and out of cache', () => {
       const state1 = {
-        routeful: 1,
-        notRouteful: 2,
+        namespaced: 1,
+        nonNamespaced: 2,
         privateNamespacedState: {
           namespace2: {
-            routeful: 10,
+            namespaced: 10,
           },
         },
       };
 
-      const state2 = routeReducers(
+      const state2 = namespacedReducers(
         state1,
         navigated({
           before: buildRoute({
@@ -93,9 +97,9 @@ describe('route_contexted_reducer_helper', () => {
         })
       );
 
-      expect(state2.routeful).toBe(10);
+      expect(state2.namespaced).toBe(10);
 
-      const state3 = routeReducers(
+      const state3 = namespacedReducers(
         state2,
         navigated({
           before: buildRoute({
@@ -113,17 +117,17 @@ describe('route_contexted_reducer_helper', () => {
         })
       );
 
-      expect(state3.routeful).toBe(1);
+      expect(state3.namespaced).toBe(1);
     });
 
-    it('sets routeful state to initialValue on cache miss', () => {
+    it('sets namespaced state to initialValue on cache miss', () => {
       const state = {
-        routeful: 2000,
-        notRouteful: 2,
+        namespaced: 2000,
+        nonNamespaced: 2,
         privateNamespacedState: {},
       };
 
-      const nextState = routeReducers(
+      const nextState = namespacedReducers(
         state,
         navigated({
           before: buildRoute({
@@ -141,20 +145,20 @@ describe('route_contexted_reducer_helper', () => {
         })
       );
 
-      expect(nextState.routeful).toBe(initialState.routeful);
+      expect(nextState.namespaced).toBe(initialState.namespaced);
     });
 
     it(
-      'does not modify routeful state on cache miss when `before` is empty ' +
+      'does not modify namespaced state on cache miss when `before` is empty ' +
         'since it can have value from deeplinks',
       () => {
         const state = {
-          routeful: 1337,
-          notRouteful: 2,
+          namespaced: 1337,
+          nonNamespaced: 2,
           privateNamespacedState: {},
         };
 
-        const nextState = routeReducers(
+        const nextState = namespacedReducers(
           state,
           navigated({
             before: null,
@@ -168,22 +172,22 @@ describe('route_contexted_reducer_helper', () => {
           })
         );
 
-        expect(nextState.routeful).toBe(1337);
+        expect(nextState.namespaced).toBe(1337);
       }
     );
 
-    it('modifies routeful state on cache hit even when `before` is null', () => {
+    it('modifies namespaced state on cache hit even when `before` is null', () => {
       const state1 = {
-        routeful: 2000,
-        notRouteful: 2,
+        namespaced: 2000,
+        nonNamespaced: 2,
         privateNamespacedState: {
           namespace1: {
-            routeful: 10,
+            namespaced: 10,
           },
         },
       };
 
-      const state2 = routeReducers(
+      const state2 = namespacedReducers(
         state1,
         navigated({
           before: null,
@@ -197,21 +201,21 @@ describe('route_contexted_reducer_helper', () => {
         })
       );
 
-      expect(state2.routeful).toBe(10);
+      expect(state2.namespaced).toBe(10);
     });
 
-    it('does not modify routeful state when navigating to same namespace', () => {
+    it('does not modify namespaced state when navigating to same namespace', () => {
       const state = {
-        routeful: 2000,
-        notRouteful: 2,
+        namespaced: 2000,
+        nonNamespaced: 2,
         privateNamespacedState: {
           namespace2: {
-            routeful: 3,
+            namespaced: 3,
           },
         },
       };
 
-      const nextState = routeReducers(
+      const nextState = namespacedReducers(
         state,
         navigated({
           before: buildRoute({
@@ -229,32 +233,32 @@ describe('route_contexted_reducer_helper', () => {
         })
       );
 
-      expect(nextState.routeful).toBe(2000);
-      expect(nextState.notRouteful).toBe(2);
+      expect(nextState.namespaced).toBe(2000);
+      expect(nextState.nonNamespaced).toBe(2);
     });
   });
 
   describe('integration', () => {
     it('does not change behavior of reducers', () => {
       const state = {
-        routeful: 1,
-        notRouteful: 10,
+        namespaced: 1,
+        nonNamespaced: 10,
         privateNamespacedState: {},
       };
-      const routefulNextState = reducers(state, incrementRouteful());
-      expect(routefulNextState.routeful).toBe(2);
+      const namespacedNextState = reducers(state, incrementNamespaced());
+      expect(namespacedNextState.namespaced).toBe(2);
 
-      const notRoutefulNextState = reducers(state, incrementNotRouteful());
-      expect(notRoutefulNextState.notRouteful).toBe(11);
+      const nonNamespacedNextState = reducers(state, incrementNonNamespaced());
+      expect(nonNamespacedNextState.nonNamespaced).toBe(11);
     });
 
     it('keeps helper reducers still functional', () => {
       const state1 = {
-        routeful: 1,
-        notRouteful: 2,
+        namespaced: 1,
+        nonNamespaced: 2,
         privateNamespacedState: {
           namespace2: {
-            routeful: 10,
+            namespaced: 10,
           },
         },
       };
@@ -277,7 +281,7 @@ describe('route_contexted_reducer_helper', () => {
         })
       );
 
-      expect(state2.routeful).toBe(10);
+      expect(state2.namespaced).toBe(10);
 
       const state3 = reducers(
         state2,
@@ -297,74 +301,78 @@ describe('route_contexted_reducer_helper', () => {
         })
       );
 
-      expect(state3.routeful).toBe(1);
+      expect(state3.namespaced).toBe(1);
     });
   });
 
   describe('onRouteKindOrExperimentsChanged', () => {
     it('transforms the state', () => {
-      const {reducers: routeReducers} = createRouteContextedState<
-        RoutefulState,
-        NonRoutefulState
-      >({routeful: 0}, {notRouteful: 1}, (state) => {
-        return {...state, routeful: 999};
+      const {reducers: namespacedReducers} = createNamespaceContextedState<
+        NamespacedState,
+        NonNamespacedState
+      >({namespaced: 0}, {nonNamespaced: 1}, (state) => {
+        return {...state, namespaced: 999};
       });
 
       const state1 = {
-        routeful: 0,
-        notRouteful: 1,
+        namespaced: 0,
+        nonNamespaced: 1,
       };
-      const state2 = routeReducers(
+      const state2 = namespacedReducers(
         state1,
         buildNavigatedToNewExperimentAction()
       );
 
-      expect(state2.routeful).toBe(999);
+      expect(state2.namespaced).toBe(999);
     });
 
     it('transforms state before reducers', () => {
-      const {initialState, reducers: routeReducers} = createRouteContextedState<
-        RoutefulState,
-        NonRoutefulState
-      >({routeful: 0}, {notRouteful: 1}, (state, route) => {
-        return {...state, routeful: 999};
-      });
+      const {initialState, reducers: namespacedReducers} =
+        createNamespaceContextedState<NamespacedState, NonNamespacedState>(
+          {namespaced: 0},
+          {nonNamespaced: 1},
+          (state, route) => {
+            return {...state, namespaced: 999};
+          }
+        );
 
       const reducer = createReducer<ContextedState>(
         initialState,
         on(navigated, (state) => {
-          return {...state, routeful: 123};
+          return {...state, namespaced: 123};
         })
       );
-      const reducers = composeReducers(routeReducers, reducer);
+      const reducers = composeReducers(namespacedReducers, reducer);
 
       const state1 = {
-        routeful: 0,
-        notRouteful: 1,
+        namespaced: 0,
+        nonNamespaced: 1,
       };
       const state2 = reducers(state1, buildNavigatedToNewExperimentAction());
 
-      expect(state2.routeful).toBe(123);
+      expect(state2.namespaced).toBe(123);
     });
 
     it('allows transformation with route information', () => {
-      const {initialState, reducers: routeReducers} = createRouteContextedState<
-        RoutefulState,
-        NonRoutefulState
-      >({routeful: 0}, {notRouteful: 1}, (state, route) => {
-        return {
-          ...state,
-          routeful: route.routeKind === RouteKind.EXPERIMENTS ? 7 : 999,
-        };
-      });
+      const {initialState, reducers: namespacedReducers} =
+        createNamespaceContextedState<NamespacedState, NonNamespacedState>(
+          {namespaced: 0},
+          {nonNamespaced: 1},
+          (state, route) => {
+            return {
+              ...state,
+              namespaced: route.routeKind === RouteKind.EXPERIMENTS ? 7 : 999,
+            };
+          }
+        );
 
       const noopReducer = createReducer<ContextedState>(initialState);
 
-      const reducers = composeReducers(routeReducers, noopReducer);
+      const reducers = composeReducers(namespacedReducers, noopReducer);
 
       const state1 = {
-        routeful: 0,
-        notRouteful: 1,
+        namespaced: 0,
+        nonNamespaced: 1,
       };
       const state2 = reducers(
         state1,
@@ -377,7 +385,7 @@ describe('route_contexted_reducer_helper', () => {
           afterNamespaceId: 'namespace1',
         })
       );
-      expect(state2.routeful).toBe(7);
+      expect(state2.namespaced).toBe(7);
 
       const state3 = reducers(
         state1,
@@ -393,7 +401,7 @@ describe('route_contexted_reducer_helper', () => {
           afterNamespaceId: 'namespace2',
         })
       );
-      expect(state3.routeful).toBe(999);
+      expect(state3.namespaced).toBe(999);
     });
   });
 });
@@ -419,8 +427,8 @@ describe('route_contexted_reducer_helper ngrx integration test', () => {
   it('contains correct initial value', async () => {
     const initialState = await firstValueFrom(store.select(selectAll));
     expect(initialState).toEqual({
-      routeful: 0,
-      notRouteful: 1,
+      namespaced: 0,
+      nonNamespaced: 1,
       privateNamespacedState: {},
     });
   });
