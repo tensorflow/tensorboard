@@ -20,6 +20,7 @@ const initialState: AppRoutingState = {
   activeRoute: null,
   nextRoute: null,
   activeNamespaceId: null,
+  knownNamespaceIds: new Set(),
   registeredRouteKeys: new Set(),
 };
 
@@ -29,11 +30,17 @@ const reducer = createReducer(
     return {...state, nextRoute: after};
   }),
   on(actions.navigated, (state, {after, afterNamespaceId}) => {
+    let knownNamespaceIds = state.knownNamespaceIds;
+    if (!state.knownNamespaceIds.has(afterNamespaceId)) {
+      knownNamespaceIds = new Set(state.knownNamespaceIds);
+      knownNamespaceIds.add(afterNamespaceId);
+    }
     return {
       ...state,
       activeRoute: after,
       nextRoute: null,
       activeNamespaceId: afterNamespaceId,
+      knownNamespaceIds,
     };
   }),
   on(actions.routeConfigLoaded, (state, {routeKinds}) => {

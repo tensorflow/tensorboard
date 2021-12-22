@@ -90,6 +90,50 @@ describe('app_routing_reducers', () => {
       );
       expect(nextState.activeNamespaceId).toEqual('namespace1');
     });
+
+    it('adds to knownNamespaceIds', () => {
+      const originalKnownNamespaceIds = new Set<string>(['n1', 'n2']);
+      const state = buildAppRoutingState({
+        knownNamespaceIds: originalKnownNamespaceIds,
+      });
+
+      const nextState = appRoutingReducers.reducers(
+        state,
+        actions.navigated({
+          before: null,
+          after: buildRoute(),
+          beforeNamespaceId: null,
+          afterNamespaceId: 'n3',
+        })
+      );
+
+      expect(nextState.knownNamespaceIds).toEqual(
+        new Set<string>(['n1', 'n2', 'n3'])
+      );
+      expect(nextState.knownNamespaceIds).not.toBe(originalKnownNamespaceIds);
+    });
+
+    it('does not create new knownNamespaceIds when no changes necessary', () => {
+      const originalKnownNamespaceIds = new Set<string>(['n1', 'n2']);
+      const state = buildAppRoutingState({
+        knownNamespaceIds: originalKnownNamespaceIds,
+      });
+
+      const nextState = appRoutingReducers.reducers(
+        state,
+        actions.navigated({
+          before: null,
+          after: buildRoute(),
+          beforeNamespaceId: null,
+          afterNamespaceId: 'n2',
+        })
+      );
+
+      expect(nextState.knownNamespaceIds).toEqual(
+        new Set<string>(['n1', 'n2'])
+      );
+      expect(nextState.knownNamespaceIds).toBe(originalKnownNamespaceIds);
+    });
   });
 
   describe('routeConfigLoaded', () => {

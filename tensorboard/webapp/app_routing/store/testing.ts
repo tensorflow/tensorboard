@@ -25,6 +25,7 @@ export function buildAppRoutingState(
     activeRoute: null,
     nextRoute: null,
     activeNamespaceId: null,
+    knownNamespaceIds: new Set(),
     registeredRouteKeys: new Set(),
     ...override,
   };

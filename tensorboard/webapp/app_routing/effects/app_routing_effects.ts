@@ -52,6 +52,7 @@ import {RouteRegistryModule} from '../route_registry_module';
 import {
   getActiveNamespaceId,
   getActiveRoute,
+  getKnownNamespaceIds,
 } from '../store/app_routing_selectors';
 import {Route, RouteKind, RouteParams} from '../types';
 
@@ -385,30 +386,48 @@ export class AppRoutingEffects {
           })
         );
       }),
-      tap(({routeMatch, options}) => {
-        if (options.browserInitiated && routeMatch.deepLinkProvider) {
-          // Query paramter formed by the redirector is passed to the
-          // deserializer instead of one from Location.getSearch(). This
-          // behavior emulates redirected URL to be on the URL bar such as
-          // "/compare?foo=bar" based on information provided by redirector (do
-          // note that location.getSearch() will return current query parameter
-          // which is pre-redirection URL).
-          const queryParams =
-            routeMatch.originateFromRedirection &&
-            routeMatch.redirectionOnlyQueryParams
-              ? routeMatch.redirectionOnlyQueryParams
-              : this.location.getSearch();
-          const rehydratingState =
-            routeMatch.deepLinkProvider.deserializeQueryParams(queryParams);
-          this.store.dispatch(
-            stateRehydratedFromUrl({
-              routeKind: routeMatch.routeKind,
-              partialState: rehydratingState,
-            })
-          );
+      withLatestFrom(this.store.select(getKnownNamespaceIds)),
+      tap(([{routeMatch, options}, knownNamespaceIds]) => {
+        // Possibly rehydrate state from the URL.
+        //
+        // We do this on "browser initiated" events (like a page load or
+        // navigation in browser history) but we only do this when we don't yet
+        // have in-memory state for the namespace being navigated to.
+
+        const isKnownNamespace =
+          options.namespaceUpdate.option ===
+            NamespaceUpdateOption.FROM_HISTORY &&
+          knownNamespaceIds.has(options.namespaceUpdate.namespaceId);
+
+        if (
+          !options.browserInitiated ||
+          isKnownNamespace ||
+          !routeMatch.deepLinkProvider
+        ) {
+          return;
         }
+
+        // Query parameter formed by the redirector is passed to the
+        // deserializer instead of one from Location.getSearch(). This
+        // behavior emulates redirected URL to be on the URL bar such as
+        // "/compare?foo=bar" based on information provided by redirector (do
+        // note that location.getSearch() will return current query parameter
+        // which is pre-redirection URL).
+        const queryParams =
+          routeMatch.originateFromRedirection &&
+          routeMatch.redirectionOnlyQueryParams
+            ? routeMatch.redirectionOnlyQueryParams
+            : this.location.getSearch();
+        const rehydratingState =
+          routeMatch.deepLinkProvider.deserializeQueryParams(queryParams);
+        this.store.dispatch(
+          stateRehydratedFromUrl({
+            routeKind: routeMatch.routeKind,
+            partialState: rehydratingState,
+          })
+        );
       }),
-      switchMap(({routeMatch, options}): Observable<InternalRoute> => {
+      switchMap(([{routeMatch, options}]): Observable<InternalRoute> => {
         if (routeMatch.deepLinkProvider === null) {
           // Without a DeepLinkProvider emit a single result without query
           // params.

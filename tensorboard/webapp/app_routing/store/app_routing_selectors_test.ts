@@ -65,6 +65,24 @@ describe('app_routing_selectors', () => {
     });
   });
 
+  describe('getKnownNamespaceIds', () => {
+    beforeEach(() => {
+      selectors.getKnownNamespaceIds.release();
+    });
+
+    it('returns knownNamespaceIds', () => {
+      const state = buildStateFromAppRoutingState(
+        buildAppRoutingState({
+          knownNamespaceIds: new Set<string>(['n1', 'n2', 'n3']),
+        })
+      );
+
+      expect(selectors.getKnownNamespaceIds(state)).toEqual(
+        new Set<string>(['n1', 'n2', 'n3'])
+      );
+    });
+  });
+
   describe('getRouteKind', () => {
     beforeEach(() => {
       selectors.getRouteKind.release();
