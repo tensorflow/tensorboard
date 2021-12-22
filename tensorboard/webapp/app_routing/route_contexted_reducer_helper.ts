@@ -73,8 +73,8 @@ export type RouteContextedState<
  * Utility for managing routeful states. It returns route contexted
  * `initialState` and `reducers` that help manage the routeful state.
  *
- * An optional `onRouteIdChanged` function will modify the state after it
- * is loaded from the cache.
+ * An optional `onRouteKindOrExperimentsChanged` function will modify the state
+ * after it is loaded from the cache.
  *
  * Example usage:
  *
@@ -96,7 +96,7 @@ export function createRouteContextedState<
 >(
   routefulInitialState: RoutefulState,
   nonRoutefulInitialState: NonRoutefulState,
-  onRouteIdChanged?: (
+  onRouteKindOrExperimentsChanged?: (
     state: RouteContextedState<RoutefulState, NonRoutefulState>,
     newRoute: Route
   ) => RouteContextedState<RoutefulState, NonRoutefulState>
@@ -185,10 +185,11 @@ export function createRouteContextedState<
 
         if (
           !areSameRouteKindAndExperiments(before, after) &&
-          onRouteIdChanged
+          onRouteKindOrExperimentsChanged
         ) {
-          // areSameRouteKindAndExperimentsperiments have changed. Delegate additional changes to the caller.
-          nextFullState = onRouteIdChanged(nextFullState, after);
+          // RouteKind or Experiments have changed. Delegate additional changes
+          // to the caller.
+          nextFullState = onRouteKindOrExperimentsChanged(nextFullState, after);
         }
 
         return nextFullState;

@@ -29,7 +29,7 @@ import {
   createRouteContextedState,
   RouteContextedState,
 } from './route_contexted_reducer_helper';
-import {buildNavigatedToNewRouteIdAction, buildRoute} from './testing';
+import {buildNavigatedToNewExperimentAction, buildRoute} from './testing';
 import {RouteKind} from './types';
 
 interface RoutefulState {
@@ -301,7 +301,7 @@ describe('route_contexted_reducer_helper', () => {
     });
   });
 
-  describe('onRouteIdChanged', () => {
+  describe('onRouteKindOrExperimentsChanged', () => {
     it('transforms the state', () => {
       const {reducers: routeReducers} = createRouteContextedState<
         RoutefulState,
@@ -314,7 +314,10 @@ describe('route_contexted_reducer_helper', () => {
         routeful: 0,
         notRouteful: 1,
       };
-      const state2 = routeReducers(state1, buildNavigatedToNewRouteIdAction());
+      const state2 = routeReducers(
+        state1,
+        buildNavigatedToNewExperimentAction()
+      );
 
       expect(state2.routeful).toBe(999);
     });
@@ -339,7 +342,7 @@ describe('route_contexted_reducer_helper', () => {
         routeful: 0,
         notRouteful: 1,
       };
-      const state2 = reducers(state1, buildNavigatedToNewRouteIdAction());
+      const state2 = reducers(state1, buildNavigatedToNewExperimentAction());
 
       expect(state2.routeful).toBe(123);
     });

@@ -61,10 +61,9 @@ export function buildNavigatedAction(overrides?: Partial<NavigatedPayload>) {
 }
 
 /**
- * A navigation that corresponds to a change in routeId (new route context)
- * will be created.
+ * Builds a navigated() event that corresponds to a change in experiment.
  */
-export function buildNavigatedToNewRouteIdAction() {
+export function buildNavigatedToNewExperimentAction() {
   const beforeRoute = buildRoute({
     routeKind: RouteKind.EXPERIMENT,
     params: {experimentId: 'abc'},

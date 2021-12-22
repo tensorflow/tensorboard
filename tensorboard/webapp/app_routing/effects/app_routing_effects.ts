@@ -42,7 +42,7 @@ import {DirtyUpdatesRegistryModule} from '../dirty_updates_registry_module';
 import {
   areRoutesEqual,
   areSameRouteKindAndExperiments,
-  getRouteId,
+  getRouteNamespaceId,
   serializeCompareExperimentParams,
 } from '../internal_utils';
 import {Location} from '../location';
@@ -582,7 +582,7 @@ function getAfterNamespaceId(
   beforeNamespaceId: string | null
 ): string {
   if (!enabledTimeNamespacedState) {
-    return getRouteId(route.routeKind, route.params);
+    return getRouteNamespaceId(route.routeKind, route.params);
   } else {
     // Time-namespaced state is enabled.
     if (options.namespaceUpdate.option === NamespaceUpdateOption.FROM_HISTORY) {
